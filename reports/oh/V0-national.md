@@ -5,11 +5,13 @@
 - **Generated:** 2026-10-06 · schemas 1.3
 - **Data:** as pulled into `LOTLINE_DATA_DIR`; sources and dates in `docs/data_provenance.md`
 - **Held-out years not compared:** none (no holdouts)
-- **Result *(proposed rule: exact match every compared year)*:** **GAPS TO EXPLAIN**: 20 of 34 years match exactly; **34 of 34 within 1%** (suggested rule; see module docstring)
+- **Result *(rule: every compared year within 1%)*:** **PASS**: 34 of 34 years within 1%; 20 match exactly
 
 ## 1. BPS place files add up to Census state totals
 
 Units in new privately owned residential buildings, with Census imputation. `diff` = ours − Census. Census revises state totals after the annual survey (late reports, corrections), so small gaps are expected.
+
+![Yearly gap between our place sums and Census state totals](V0-bps-reconciliation.png)
 
 | year | ours | census | diff | diff_pct | diff_1 | diff_2 | diff_3_4 | diff_5p | status |
 |---|---|---|---|---|---|---|---|---|---|
@@ -86,22 +88,3 @@ Units in new privately owned residential buildings, with Census imputation. `dif
 - `fhfa_hpi_annual`: Public domain (U.S. Government work, 17 U.S.C. §105)
 - `fred`: Freddie Mac PMMS, republished by FRED with permission; attribution required
 - `fred`: Public domain (BLS, U.S. Government work)
-
-## Gaps to explain
-
-| year | ours | census | diff | diff_pct | diff_1 | diff_2 | diff_3_4 | diff_5p | status |
-|---|---|---|---|---|---|---|---|---|---|
-| 1992 | 42,616 | 42,610 | 6 | +0.01% | 6 | 0 | 0 | 0 | within 1% |
-| 1993 | 44,387 | 44,235 | 152 | +0.34% | 148 | 4 | 0 | 0 | within 1% |
-| 1994 | 47,157 | 47,152 | 5 | +0.01% | 5 | 0 | 0 | 0 | within 1% |
-| 1995 | 44,818 | 44,812 | 6 | +0.01% | 6 | 0 | 0 | 0 | within 1% |
-| 1996 | 49,288 | 49,280 | 8 | +0.02% | 8 | 0 | 0 | 0 | within 1% |
-| 1997 | 46,493 | 46,487 | 6 | +0.01% | 6 | 0 | 0 | 0 | within 1% |
-| 1998 | 48,039 | 48,034 | 5 | +0.01% | 5 | 0 | 0 | 0 | within 1% |
-| 1999 | 55,888 | 55,880 | 8 | +0.01% | 8 | 0 | 0 | 0 | within 1% |
-| 2000 | 49,756 | 49,745 | 11 | +0.02% | 11 | 0 | 0 | 0 | within 1% |
-| 2001 | 49,957 | 49,931 | 26 | +0.05% | 26 | 0 | 0 | 0 | within 1% |
-| 2002 | 51,253 | 51,246 | 7 | +0.01% | 7 | 0 | 0 | 0 | within 1% |
-| 2003 | 53,385 | 53,041 | 344 | +0.65% | 336 | 8 | 0 | 0 | within 1% |
-| 2013 | 19,965 | 19,903 | 62 | +0.31% | 62 | 0 | 0 | 0 | within 1% |
-| 2014 | 19,954 | 19,872 | 82 | +0.41% | 82 | 0 | 0 | 0 | within 1% |

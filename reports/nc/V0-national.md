@@ -5,11 +5,13 @@
 - **Generated:** 2026-10-06 · schemas 1.3
 - **Data:** as pulled into `LOTLINE_DATA_DIR`; sources and dates in `docs/data_provenance.md`
 - **Held-out years not compared:** 2023, 2024, 2025, 2026 (V5-NC-CHARLOTTE (Charlotte))
-- **Result *(proposed rule: exact match every compared year)*:** **GAPS TO EXPLAIN**: 28 of 31 years match exactly; **29 of 31 within 1%** (suggested rule; see module docstring)
+- **Result *(rule: every compared year within 1%)*:** **GAPS TO EXPLAIN**: 29 of 31 years within 1%; 28 match exactly
 
 ## 1. BPS place files add up to Census state totals
 
 Units in new privately owned residential buildings, with Census imputation. `diff` = ours − Census. Census revises state totals after the annual survey (late reports, corrections), so small gaps are expected.
+
+![Yearly gap between our place sums and Census state totals](V0-bps-reconciliation.png)
 
 | year | ours | census | diff | diff_pct | diff_1 | diff_2 | diff_3_4 | diff_5p | status |
 |---|---|---|---|---|---|---|---|---|---|
@@ -86,10 +88,9 @@ Units in new privately owned residential buildings, with Census imputation. `dif
 - `fred`: Freddie Mac PMMS, republished by FRED with permission; attribution required
 - `fred`: Public domain (BLS, U.S. Government work)
 
-## Gaps to explain
+## Years outside 1% (to explain)
 
 | year | ours | census | diff | diff_pct | diff_1 | diff_2 | diff_3_4 | diff_5p | status |
 |---|---|---|---|---|---|---|---|---|---|
 | 1992 | 49,245 | 48,158 | 1,087 | +2.26% | 965 | 6 | 68 | 48 | gap |
 | 1993 | 54,331 | 53,281 | 1,050 | +1.97% | 1,002 | 8 | 40 | 0 | gap |
-| 2006 | 100,017 | 99,979 | 38 | +0.04% | 38 | 0 | 0 | 0 | within 1% |

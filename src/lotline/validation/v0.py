@@ -11,10 +11,12 @@ Question: do our adapters count what the publishers count? For each state this w
 4. FHFA and ACS gaps that later steps must work around.
 5. Licenses, from the manifest.
 
-Pass rule *(proposed, validation plan §3)*: BPS totals match exactly in every compared year. Census says exact
-agreement isn't expected: state totals are revised after the annual survey and include late reports and
-corrections the place files may not (BPS methodology). The report therefore also counts years within
-TOLERANCE, the rule we suggest adopting at pre-registration.
+Pass rule: every compared year within TOLERANCE (1%) of Census's state total; years outside it are listed for
+explanation. This replaces the validation plan's proposed "match exactly" (deviation D-001 in
+docs/analysis_plan.md, adopted by Ben 2026-10-06): Census revises state totals after the annual survey with
+late reports and corrections the place files may not carry (BPS methodology), so exact agreement isn't
+achievable. The check is directional: it shows our pipeline counts what Census counts, not that it is exact.
+A chart of the yearly gap is written next to the report.
 """
 
 from __future__ import annotations
@@ -31,7 +33,7 @@ from lotline.schemas import SCHEMAS_VERSION
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 UNITS = ["units_1", "units_2", "units_3_4", "units_5p"]
-TOLERANCE = 0.01  # suggested: |ours - Census| / Census within 1% per year
+TOLERANCE = 0.01  # pass rule: |ours - Census| / Census within 1% per year (analysis plan D-001)
 
 
 def held_out_years(state: str) -> set[int]:
@@ -72,6 +74,11 @@ def reconcile(places: pd.DataFrame, census_state: pd.DataFrame, blocked: set[int
             }
         )
     return pd.DataFrame(rows)
+
+
+def passes(rec: pd.DataFrame) -> bool:
+    """Pass rule (analysis plan D-001): no compared year outside TOLERANCE. Held-out years don't count."""
+    return not (rec["status"] == "gap").any()
 
 
 def attribution(places: pd.DataFrame) -> pd.DataFrame:
@@ -129,8 +136,8 @@ def _read(store: DataStore, state: str, table: str) -> pd.DataFrame | None:
     return pd.read_parquet(path) if path.exists() else None
 
 
-def build_report(state: str, store: DataStore) -> tuple[str, bool]:
-    """Return (markdown, passed)."""
+def build_report(state: str, store: DataStore) -> tuple[str, bool, pd.DataFrame]:
+    """Return (markdown, passed, reconciliation table)."""
     cfg = load_state(state)
     bps_places = _read(store, state, "bps_place_year")
     if bps_places is None:
@@ -143,8 +150,8 @@ def build_report(state: str, store: DataStore) -> tuple[str, bool]:
     compared = rec[rec["status"].isin(["match", "within 1%", "gap"])]
     exact = int((compared["status"] == "match").sum())
     within = int(compared["status"].isin(["match", "within 1%"]).sum())
-    gaps = compared[compared["status"] != "match"]
-    passed = gaps.empty
+    gaps = compared[compared["status"] == "gap"]
+    passed = passes(rec)
 
     sections = [
         f"# V0 national data check: {cfg.name}",
@@ -158,15 +165,17 @@ def build_report(state: str, store: DataStore) -> tuple[str, bool]:
         + " ("
         + (", ".join(f"{h.test_id} ({h.place})" for h in cfg.holdouts) or "no holdouts")
         + ")",
-        f"- **Result *(proposed rule: exact match every compared year)*:** "
-        f"{'**PASS**' if passed else '**GAPS TO EXPLAIN**'}: {exact} of {len(compared)} years match exactly; "
-        f"**{within} of {len(compared)} within {TOLERANCE:.0%}** (suggested rule; see module docstring)",
+        f"- **Result *(rule: every compared year within {TOLERANCE:.0%})*:** "
+        f"{'**PASS**' if passed else '**GAPS TO EXPLAIN**'}: {within} of {len(compared)} years within "
+        f"{TOLERANCE:.0%}; {exact} match exactly",
         "",
         "## 1. BPS place files add up to Census state totals",
         "",
         "Units in new privately owned residential buildings, with Census imputation. `diff` = ours − Census. "
         "Census revises state totals after the annual survey (late reports, corrections), so small gaps are "
         "expected.",
+        "",
+        f"![Yearly gap between our place sums and Census state totals]({CHART_NAME})",
         "",
         _table(rec),
         "",
@@ -224,13 +233,81 @@ def build_report(state: str, store: DataStore) -> tuple[str, bool]:
     lic = sorted({(e.source, e.license) for e in store.manifest()})
     sections += [f"- `{s}`: {licence}" for s, licence in lic] + [""]
     if not passed:
-        sections += ["## Gaps to explain", "", _table(gaps), ""]
-    return "\n".join(sections), passed
+        sections += [f"## Years outside {TOLERANCE:.0%} (to explain)", "", _table(gaps), ""]
+    return "\n".join(sections), passed, rec
 
 
 def write_report(state: str, store: DataStore, root: Path = REPO_ROOT) -> tuple[Path, bool]:
-    text, passed = build_report(state, store)
+    text, passed, rec = build_report(state, store)
     out = root / "reports" / state.lower() / "V0-national.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text)
+    plot_reconciliation(rec, load_state(state).name, out.parent / CHART_NAME)
     return out, passed
+
+
+# Chart colors: reference palette (dataviz skill), light surface; one series, so no legend.
+CHART_NAME = "V0-bps-reconciliation.png"
+SURFACE, INK, INK_2, INK_MUTED, SERIES, BAND = (
+    "#fcfcfb",
+    "#0b0b0b",
+    "#52514e",
+    "#8a8984",
+    "#2a78d6",
+    "#ebeae6",
+)
+
+
+def plot_reconciliation(rec: pd.DataFrame, state_name: str, path: Path) -> Path:
+    """Bar per year: (ours − Census) / Census with the ±TOLERANCE band; held-out years marked only."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    df = rec.copy()
+    shown = df[df["status"].isin(["match", "within 1%", "gap"])]
+    pct = (shown["diff"] / shown["census"] * 100).astype(float)
+    fig, ax = plt.subplots(figsize=(9, 3.4), dpi=120, facecolor=SURFACE)
+    ax.set_facecolor(SURFACE)
+    ax.axhspan(-TOLERANCE * 100, TOLERANCE * 100, color=BAND, zorder=0, lw=0)
+    ax.axhline(0, color=INK_MUTED, lw=0.8, zorder=1)
+    ax.bar(shown["year"], pct, width=0.6, color=SERIES, zorder=2)
+    for year, value in zip(shown["year"], pct, strict=True):
+        if (
+            abs(value) > TOLERANCE * 100
+        ):  # label only the years that break the rule; vertical so runs don't collide
+            ax.annotate(
+                f"{value:+.1f}%",
+                (year, value),
+                xytext=(0, 3 if value > 0 else -3),
+                textcoords="offset points",
+                ha="center",
+                va="bottom" if value > 0 else "top",
+                rotation=90,
+                fontsize=7,
+                color=INK_2,
+            )
+    held = df[df["status"] == "held out (not compared)"]["year"]
+    for year in held:
+        ax.text(year, 0, "held out", rotation=90, ha="center", va="bottom", fontsize=7, color=INK_MUTED)
+    hi = max(2.0, float(pct.max()) * 1.35) if len(pct) else 2.0  # room above bars for vertical labels
+    lo = min(-2.0, float(pct.min()) * 1.35) if len(pct) else -2.0
+    ax.set_ylim(lo, hi)
+    ax.set_xlim(df["year"].min() - 1, df["year"].max() + 1)
+    ax.set_title(
+        f"{state_name}: permit units, our place sums vs Census state totals (shaded band = ±1%)",
+        loc="left",
+        fontsize=10,
+        color=INK,
+    )
+    ax.set_ylabel("ours − Census, % of Census", fontsize=8, color=INK_2)
+    ax.tick_params(colors=INK_2, labelsize=8, length=0)
+    ax.grid(axis="y", color=BAND, lw=0.6, zorder=0)
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
+    ax.spines["bottom"].set_color(INK_MUTED)
+    fig.tight_layout()
+    fig.savefig(path, facecolor=SURFACE)
+    plt.close(fig)
+    return path

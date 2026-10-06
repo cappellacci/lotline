@@ -46,3 +46,23 @@ def test_attribution_shares():
 def test_held_out_years_from_config():
     assert {2024, 2025, 2026} <= v0.held_out_years("MN")
     assert 2023 in v0.held_out_years("NC") and v0.held_out_years("OH") == set()
+
+
+def test_pass_rule_allows_gaps_within_one_percent_only():
+    census = _census([[2020, 1000, 0], [2021, 1000, 0]])
+    ok = v0.reconcile(_places([[2020, "a", 1010, 0], [2021, "a", 990, 0]]), census, blocked=set())
+    assert v0.passes(ok)  # +1.0% and -1.0% sit on the edge of the band
+    bad = v0.reconcile(_places([[2020, "a", 1011, 0], [2021, "a", 1000, 0]]), census, blocked=set())
+    assert not v0.passes(bad)
+    held = v0.reconcile(_places([[2020, "a", 1000, 0]]), _census([[2020, 1000, 0], [2021, 5000, 0]]), {2021})
+    assert v0.passes(held)  # held-out years are never judged
+
+
+def test_chart_is_written_and_skips_held_out_years(tmp_path):
+    rec = v0.reconcile(
+        _places([[2020, "a", 1000, 0], [2021, "a", 1030, 0], [2022, "a", 5, 0]]),
+        _census([[2020, 1000, 0], [2021, 1000, 0], [2022, 900, 0]]),
+        blocked={2022},
+    )
+    path = v0.plot_reconciliation(rec, "Testland", tmp_path / "chart.png")
+    assert path.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"

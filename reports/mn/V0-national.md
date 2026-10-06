@@ -5,11 +5,13 @@
 - **Generated:** 2026-10-06 · schemas 1.3
 - **Data:** as pulled into `LOTLINE_DATA_DIR`; sources and dates in `docs/data_provenance.md`
 - **Held-out years not compared:** 2024, 2025, 2026 (V5-MN-STPAUL (St. Paul))
-- **Result *(proposed rule: exact match every compared year)*:** **GAPS TO EXPLAIN**: 10 of 32 years match exactly; **30 of 32 within 1%** (suggested rule; see module docstring)
+- **Result *(rule: every compared year within 1%)*:** **GAPS TO EXPLAIN**: 30 of 32 years within 1%; 10 match exactly
 
 ## 1. BPS place files add up to Census state totals
 
 Units in new privately owned residential buildings, with Census imputation. `diff` = ours − Census. Census revises state totals after the annual survey (late reports, corrections), so small gaps are expected.
+
+![Yearly gap between our place sums and Census state totals](V0-bps-reconciliation.png)
 
 | year | ours | census | diff | diff_pct | diff_1 | diff_2 | diff_3_4 | diff_5p | status |
 |---|---|---|---|---|---|---|---|---|---|
@@ -87,29 +89,9 @@ Units in new privately owned residential buildings, with Census imputation. `dif
 - `fred`: Freddie Mac PMMS, republished by FRED with permission; attribution required
 - `fred`: Public domain (BLS, U.S. Government work)
 
-## Gaps to explain
+## Years outside 1% (to explain)
 
 | year | ours | census | diff | diff_pct | diff_1 | diff_2 | diff_3_4 | diff_5p | status |
 |---|---|---|---|---|---|---|---|---|---|
 | 1992 | 26,880 | 26,360 | 520 | +1.97% | 520 | 0 | 0 | 0 | gap |
 | 1993 | 27,666 | 27,265 | 401 | +1.47% | 401 | 0 | 0 | 0 | gap |
-| 1994 | 25,630 | 25,629 | 1 | +0.00% | 1 | 0 | 0 | 0 | within 1% |
-| 1996 | 27,054 | 27,043 | 11 | +0.04% | 11 | 0 | 0 | 0 | within 1% |
-| 1997 | 24,909 | 24,900 | 9 | +0.04% | 9 | 0 | 0 | 0 | within 1% |
-| 1998 | 30,447 | 30,443 | 4 | +0.01% | 4 | 0 | 0 | 0 | within 1% |
-| 1999 | 33,344 | 33,341 | 3 | +0.01% | 3 | 0 | 0 | 0 | within 1% |
-| 2000 | 33,007 | 32,814 | 193 | +0.59% | 59 | 16 | 3 | 115 | within 1% |
-| 2001 | 34,261 | 34,151 | 110 | +0.32% | 110 | 0 | 0 | 0 | within 1% |
-| 2002 | 39,172 | 38,977 | 195 | +0.50% | 123 | 68 | 4 | 0 | within 1% |
-| 2003 | 42,360 | 42,046 | 314 | +0.75% | 198 | 46 | 0 | 70 | within 1% |
-| 2004 | 41,850 | 41,843 | 7 | +0.02% | 7 | 0 | 0 | 0 | within 1% |
-| 2005 | 36,522 | 36,509 | 13 | +0.04% | 13 | 0 | 0 | 0 | within 1% |
-| 2007 | 17,935 | 17,930 | 5 | +0.03% | 5 | 0 | 0 | 0 | within 1% |
-| 2008 | 11,555 | 11,551 | 4 | +0.03% | 4 | 0 | 0 | 0 | within 1% |
-| 2009 | 9,429 | 9,425 | 4 | +0.04% | 4 | 0 | 0 | 0 | within 1% |
-| 2010 | 9,841 | 9,840 | 1 | +0.01% | 1 | 0 | 0 | 0 | within 1% |
-| 2011 | 8,894 | 8,890 | 4 | +0.04% | 4 | 0 | 0 | 0 | within 1% |
-| 2012 | 16,105 | 16,095 | 10 | +0.06% | 10 | 0 | 0 | 0 | within 1% |
-| 2013 | 17,372 | 17,313 | 59 | +0.34% | 53 | 6 | 0 | 0 | within 1% |
-| 2014 | 17,005 | 16,990 | 15 | +0.09% | 9 | 2 | 4 | 0 | within 1% |
-| 2021 | 33,653 | 33,652 | 1 | +0.00% | 1 | 0 | 0 | 0 | within 1% |
