@@ -21,14 +21,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      # --run executes commands.setup from challenge.toml, so project deps get installed
-      # into this runner's Python before the license scan below.
+      - uses: astral-sh/setup-uv@v6
+      # --run executes commands.setup (uv sync --frozen) and commands.test from challenge.toml.
       - name: Static + run checks
         run: python compliance_check.py --run
+      # Run inside the project venv so pip-licenses sees the project's dependencies.
       - name: Dependency licenses
-        run: |
-          pip install pip-licenses
-          python compliance_check.py --deps
+        run: uv run python compliance_check.py --deps
       - name: GitHub security settings
         if: ${{ env.GH_TOKEN != '' }}
         run: python compliance_check.py --github

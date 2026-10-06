@@ -8,3 +8,9 @@ __pycache__/
 .DS_Store
 data/*
 !data/.gitkeep
+uv-cache/
+# Generated results; frozen blind-test predictions are committed (BUILD_PLAN §5.4)
+results/*
+!results/frozen/
+reports/**/*.parquet
+# Source data lives in LOTLINE_DATA_DIR (default ~/lotline-data), outside the repo

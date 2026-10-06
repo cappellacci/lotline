@@ -30,6 +30,9 @@ from pathlib import Path
 
 BENCHMARK = {"adu", "missing_middle", "tod", "parking", "fees"}
 METRICS = {"permits", "starts", "completions", "stock_growth"}
+# Final deliverables that can't exist until the end. While challenge.toml has project.stage = "build",
+# their FAILs are reported as WARN so CI stays usable; set stage = "submission" before submitting.
+SUBMISSION_ONLY = {"D1", "D2", "D3"}
 APPROVED_LICENSES = {
     "Apache-2.0": [r"Apache License", r"Version 2\.0"],
     "MIT": [r"Permission is hereby granted, free of charge"],
@@ -101,6 +104,8 @@ class Checker:
 
     # helpers -----------------------------------------------------------
     def add(self, cid, status, msg):
+        if status == "FAIL" and cid in SUBMISSION_ONLY and self.get("project", "stage", default="submission") == "build":
+            status, msg = "WARN", msg + " (due at submission; stage = build)"
         self.results.append(Result(cid, status, msg))
 
     def get(self, *keys, default=None):
