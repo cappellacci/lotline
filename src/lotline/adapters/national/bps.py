@@ -92,6 +92,10 @@ def to_canonical(raw: pd.DataFrame, state: str) -> pd.DataFrame:
     df["bps_id"] = df["state_fips"] + df["id6"]
     df["county_geoid"] = df["state_fips"] + df["county"]
     df["geoid"] = [_geoid(r.state_fips, r.county, r.fips_place, r.fips_mcd) for r in df.itertuples()]
+    # Ohio files county-issued permits outside any city or township as "<X> County Part" with no FIPS
+    # codes; like "Unincorporated Area" rows they belong to the county.
+    county_part = df["geoid"].isna() & df["name"].str.contains(r"County Part(?:@\d+)?$", regex=True)
+    df.loc[county_part, "geoid"] = df.loc[county_part, "county_geoid"]
     total_rep = df[[f"units_{s}_rep" for s in SIZES]].sum(axis=1)
     total = df[[f"units_{s}" for s in SIZES]].sum(axis=1)
     df["imputed"] = (df["months_reported"] < 12) | (total_rep != total)
@@ -99,18 +103,25 @@ def to_canonical(raw: pd.DataFrame, state: str) -> pd.DataFrame:
 
 
 def _geoid(state_fips: str, county: str, place: str, mcd: str) -> str | None:
-    """Census place GEOID (SS+PPPPP) where there is one, else county subdivision (SS+CCC+MMMMM), else None."""
+    """Jurisdiction GEOID: Census place (SS+PPPPP), else county subdivision (SS+CCC+MMMMM), else the county
+    (SS+CCC) for "<County> Unincorporated Area" rows, where the county itself issues permits.
+
+    Files before ~2007 have no FIPS codes at all; those rows get None here and are filled by backfill_geoids.
+    """
     if place not in NO_PLACE:
         return state_fips + place.zfill(5)
     if mcd not in NO_MCD:
         return state_fips + county + mcd.zfill(5)
-    return None  # e.g. "<County> Unincorporated Area": aggregate through county_geoid
+    if place == "99990":
+        return state_fips + county
+    return None
 
 
 def _name_key(name: pd.Series) -> pd.Series:
     """Normalize place names for matching across years ("St. Paul" == "Saint Paul city")."""
     s = (
         name.str.lower()
+        .str.replace(r"@\d+$", "", regex=True)  # BPS marks each county part of a multi-county place "@n"
         .str.replace(r"\bsaint\b", "st", regex=True)
         .str.replace(r"[^a-z0-9 ]", "", regex=True)
     )
@@ -120,8 +131,8 @@ def _name_key(name: pd.Series) -> pd.Series:
 def backfill_geoids(df: pd.DataFrame) -> pd.DataFrame:
     """Fill missing GEOIDs from the latest year that has one.
 
-    From 1992 on, rows link by BPS ID. Before 1992 the IDs mean different places, so rows link by
-    (county, normalized name) instead, and only where that key is unique.
+    From 1992 on, rows link by BPS ID. Before 1992 the IDs mean different places, so those rows, and any
+    later row the ID can't place, link by (county, normalized name), only where that key is unique.
     """
     df = df.copy()
     known = df.dropna(subset=["geoid"]).sort_values("year")
@@ -129,13 +140,24 @@ def backfill_geoids(df: pd.DataFrame) -> pd.DataFrame:
     by_id = known[known["year"] >= ID_ERA_START].groupby("bps_id")["geoid"].last()
     df.loc[era, "geoid"] = df.loc[era, "geoid"].fillna(df.loc[era, "bps_id"].map(by_id))
 
-    pre = ~era & df["geoid"].isna()
-    if pre.any():
-        ref = df[era].dropna(subset=["geoid"]).sort_values("year")
-        ref = ref.assign(key=ref["county_geoid"] + "|" + _name_key(ref["name"]))
-        ref = ref.groupby("key")["geoid"].agg(lambda g: g.iloc[-1] if g.nunique() == 1 else None).dropna()
-        keys = df.loc[pre, "county_geoid"] + "|" + _name_key(df.loc[pre, "name"])
-        df.loc[pre, "geoid"] = keys.map(ref)
+    # Rows still missing a GEOID (before 1992, or a place whose ID changed or vanished before FIPS codes
+    # appeared in ~2007) fall back to (county, normalized name), then to the name alone where it is unique
+    # in the state (multi-county places are filed under different counties in different years).
+    ref = df[era].dropna(subset=["geoid"])
+    names = _name_key(ref["name"])
+    for keys_ref, keys_df in (
+        (ref["county_geoid"] + "|" + names, lambda d: d["county_geoid"] + "|" + _name_key(d["name"])),
+        (names, lambda d: _name_key(d["name"])),
+    ):
+        todo = df["geoid"].isna()
+        if not todo.any():
+            break
+        unique = (
+            ref.assign(key=keys_ref)
+            .groupby("key")["geoid"]
+            .agg(lambda g: g.iloc[0] if g.nunique() == 1 else None)
+        )
+        df.loc[todo, "geoid"] = keys_df(df.loc[todo]).map(unique.dropna())
     return df
 
 

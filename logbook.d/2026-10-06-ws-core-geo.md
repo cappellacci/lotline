@@ -1,0 +1,14 @@
+### LB-NNN · 2026-10-06 · Build: Jurisdictions table (permit-issuing places) and BPS ↔ GEOID linkage
+- **Question:** Can every building permit be tied to a named Census geography, so permits, ACS and FHFA join on one key?
+- **What I did:**
+  - `build/jurisdictions.py`: the universe is every GEOID in a state's BPS table (places, townships, and counties for their unincorporated areas). Names and 2020 population come from the 2020 Census redistricting file (new `adapters/national/decennial.py`). `data_tier` defaults to 3 (national data only), raised per place in state configs later.
+  - BPS fixes: unincorporated-area rows now carry their county GEOID; Ohio's "<X> County Part" rows too. The GEOID backfill now falls back to (county, name), then to the name alone where it is unique in the state; it strips BPS's "@n" multi-county suffix and never guesses ambiguous names.
+- **Inputs:** Census API `2020/dec/pl` (P1_001N); BPS place files.
+- **Outputs:** `src/lotline/build/jurisdictions.py`, `src/lotline/adapters/national/decennial.py`, BPS adapter changes, `tests/core/test_jurisdictions.py`, more BPS tests (55 passing). Data (not committed): `processed/<st>/jurisdictions/jurisdictions.parquet` (MN 1,034 · NC 257 · OH 954 · TX 1,011). ACS pull finished: 8.9M rows across the four states, 2010–2024; API key absent from the manifest.
+- **Findings:**
+  - **From 2009 on, 100% of BPS units in all four states map to a jurisdiction.** Before 2009, 0.07–2.9% can't be placed (places that left the BPS universe before FIPS codes were added, e.g. Hickory NC after 2005).
+  - **The BPS universe for NC has only 157 places** (of ~550 municipalities). Most small NC towns' permits are issued by county inspections and appear only in county unincorporated totals. Consequence for NC reform measurement: town-level effects need local permit data.
+  - Unincorporated areas get no 2020 population: the county total overstates them, and places straddling county lines make "county minus places" unreliable from these files.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the code and tests and traced the unattributed permits to their cause in the raw files.
+- **Open / next:** `lotline provenance` (generate `docs/data_provenance.md`, with Freddie Mac attribution); V0 report per state with holdout-safe reconciliation; tag `schemas-v1`.

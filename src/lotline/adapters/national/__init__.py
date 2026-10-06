@@ -9,3 +9,13 @@ SOURCES = {
     "fhfa": (fhfa, "market_geo_year"),
     "fred": (fred, "market_geo_year"),
 }
+
+
+def _register_builds() -> None:
+    # build steps that combine national sources; imported late to avoid a cycle
+    from lotline.build import jurisdictions
+
+    SOURCES["jurisdictions"] = (jurisdictions, "jurisdictions")
+
+
+_register_builds()
