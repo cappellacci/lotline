@@ -1,0 +1,8 @@
+Survey,State,6-Digit,County,Census Place,FIPS Place,FIPS MCD,Pop,CSA,CBSA,Footnote,Central,Zip,Region,Division,Number of,Place,,1-unit,,,2-units,,,3-4 units,,,5+ units,,,1-unit rep,,,2-units rep,,,3-4 units rep,,,5+ units rep
+Date,Code,ID,Code,Code,Code,Code,  ,Code,Code,Code,City,Code,Code,Code,Months Rep,Name,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value
+ 
+2024,27,497800,053,2585,43000 ,43000 ,433111 ,378,33460, ,1,55415      ,2,4,12,Minneapolis,65,65,6500,0,0,0,0,0,0,1,351,35100,65,65,6500,0,0,0,0,0,0,1,351,35100
+2024,27,712600,123,3350,58000 ,58000 ,300000 ,378,33460, ,1,55101      ,2,4,12,Saint Paul city,75,75,7500,0,0,0,0,0,0,1,253,25300,75,75,7500,0,0,0,0,0,0,1,253,25300
+2024,27,140500,001,0001,00000 ,02224 ,500 ,999,99999, , ,56431      ,2,4,12,Arna township,1,1,100,0,0,0,0,0,0,0,0,0,1,1,100,0,0,0,0,0,0,0,0,0
+2024,27,999901,003,0002,99990 ,00000 ,0 ,999,99999, , ,0      ,2,4,12,Anoka County Unincorporated Area,2,2,200,0,0,0,0,0,0,0,0,0,2,2,200,0,0,0,0,0,0,0,0,0
+2024,27,555500,053,2600,12345 ,12345 ,900 ,378,33460, , ,55000      ,2,4,12,Lake Elmo, Village of,3,3,300,0,0,0,0,0,0,0,0,0,3,3,300,0,0,0,0,0,0,0,0,0
