@@ -94,7 +94,8 @@ class BpsPlaceYear(_Strict):
 
     state: Series[str] = pa.Field(**_STATE)
     bps_id: Series[str] = pa.Field(str_matches=r"^\d{2}\d{6}$")  # state FIPS + BPS 6-digit ID
-    geoid: Series[str] = pa.Field(nullable=True)  # Census place (7) or county subdivision (10) GEOID
+    # jurisdiction GEOID: place (7), county subdivision (10) or county for unincorporated areas (5)
+    geoid: Series[str] = pa.Field(nullable=True)
     county_geoid: Series[str] = pa.Field(str_matches=r"^\d{5}$")
     name: Series[str]
     year: Series[pd.Int64Dtype] = pa.Field(ge=1980, le=2100)
