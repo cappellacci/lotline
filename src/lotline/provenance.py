@@ -14,7 +14,7 @@ from collections import defaultdict
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-from lotline.adapters.national import acs, bps, decennial, fhfa, fred
+from lotline.adapters.national import acs, bps, bps_state, decennial, fhfa, fred
 from lotline.io.store import DataStore, ManifestEntry
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -23,6 +23,7 @@ DOC_PATH = REPO_ROOT / "docs" / "data_provenance.md"
 # manifest source id -> adapter module exposing PROVENANCE
 ADAPTERS = {
     bps.SOURCE: bps,
+    bps_state.SOURCE: bps_state,
     fhfa.SOURCE: fhfa,
     acs.SOURCE: acs,
     fred.SOURCE: fred,

@@ -46,6 +46,22 @@ def _provenance(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def _validate(args: argparse.Namespace) -> int:
+    from lotline.config import all_states
+    from lotline.io import DataStore
+    from lotline.validation import v0
+
+    if args.step != "V0":
+        print(f"step {args.step} is not implemented yet")
+        return 2
+    ok = True
+    for state in [args.state.upper()] if args.state else all_states():
+        path, passed = v0.write_report(state, DataStore())
+        ok &= passed
+        print(f"{state} V0: {'PASS' if passed else 'gaps to explain'} -> {path}")
+    return 0 if ok else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lotline", description="Lotline housing reform simulator.")
     parser.add_argument("--version", action="version", version=f"lotline {__version__}")
@@ -63,6 +79,11 @@ def build_parser() -> argparse.ArgumentParser:
     prov.add_argument("--write", action="store_true", help="regenerate the document before checking it")
     prov.add_argument("--check", action="store_true", help="check only (the default)")
     prov.set_defaults(func=_provenance)
+
+    val = sub.add_parser("validate", help="run a validation-ladder step and write its report")
+    val.add_argument("--state", help="two-letter state code (default: every configured state)")
+    val.add_argument("--step", default="V0", help="ladder step (V0 so far)")
+    val.set_defaults(func=_validate)
     return parser
 
 
