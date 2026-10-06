@@ -14,7 +14,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.0"
+SCHEMAS_VERSION = "1.1"  # 1.1: market_geo_year level-prefixed geo, HPI columns
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -119,13 +119,25 @@ class BpsPlaceYear(_Strict):
 
 
 class MarketGeoYear(_Strict):
-    geo: Series[str]
+    """Market conditions by geography and year. Each source fills its own columns; the rest may be absent.
+
+    `geo` is prefixed by level so codes can't collide (county 27053 vs ZIP 27053): `national:US`,
+    `state:27`, `cbsa:33460`, `county:27053`, `zip5:55415`, `tract:27053000100`.
+    """
+
+    geo: Series[str] = pa.Field(str_matches=r"^(national|state|cbsa|county|zip5|tract):[0-9A-Z]+$")
     year: Series[pd.Int64Dtype] = pa.Field(ge=1970, le=2100)
-    hpi: Series[float] = pa.Field(nullable=True)
+    hpi: Optional[Series[float]] = pa.Field(nullable=True, gt=0)  # FHFA, base 100 in the series' first year
+    hpi_base2000: Optional[Series[float]] = pa.Field(nullable=True, gt=0)  # comparable across places
+    hpi_change_pct: Optional[Series[float]] = pa.Field(nullable=True)
     median_value: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
     median_rent: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
-    ppi_resid_inputs: Series[float] = pa.Field(nullable=True)
-    mortgage_rate: Series[float] = pa.Field(nullable=True)
+    ppi_resid_inputs: Optional[Series[float]] = pa.Field(nullable=True)
+    mortgage_rate: Optional[Series[float]] = pa.Field(nullable=True)
+
+    @pa.dataframe_check
+    def one_row_per_geo_year(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["geo", "year"]).any()
 
 
 class Reforms(_Strict):

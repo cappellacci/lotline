@@ -3,6 +3,8 @@ state: MN
 name: Minnesota
 fips: "27"
 bps_region: Midwest Region
+# USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
+zip3_ranges: [[550, 567]]
 holdouts:
   - test_id: V5-MN-STPAUL
     place: St. Paul

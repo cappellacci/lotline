@@ -24,7 +24,7 @@ def _fetch(args: argparse.Namespace) -> int:
         for source in sources:
             adapter, table = SOURCES[source]
             df = adapter.load(state, store, refresh=args.refresh)
-            out = store.processed(state, table)
+            out = store.processed(state, table, source)
             out.parent.mkdir(parents=True, exist_ok=True)
             df.to_parquet(out, index=False)
             print(f"{state} {source}: {len(df):,} rows -> {out}")
