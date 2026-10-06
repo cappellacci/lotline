@@ -33,6 +33,11 @@ keys.
 uv run python scripts/fetch_data.py --state MN --source bps
 ```
 
+Sources so far: `bps` (Census Building Permits Survey), `fhfa` (FHFA house price indexes) and `acs` (Census
+American Community Survey 5-year). The ACS needs a free Census API key: sign up at
+https://api.census.gov/data/key_signup.html, click the activation link Census emails you, and put the key in
+`.env` as `CENSUS_API_KEY=...`. The key is sent with each request but never written to the download manifest.
+
 ## Tests
 
 ```bash
