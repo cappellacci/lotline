@@ -109,3 +109,30 @@ def _git_repo(path):
     (path / "README").write_text("x")
     _run(path, "add", ".")
     _run(path, "commit", "-q", "-m", "init")
+
+
+def test_year_only_permits_cannot_leak():
+    # permits from a year-only source carry issue_year but no issue_date
+    df = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["3712000"] * 5,
+            "issue_date": ["2023-05-31", None, None, "2023-06-01", None],
+            "issue_year": [2023, 2022, 2023, 2023, None],
+        }
+    )
+    out = holdout.apply(
+        df,
+        "NC",
+        holdouts=[CHARLOTTE],
+        geoid_col="jurisdiction_geoid",
+        date_col="issue_date",
+        year_col="issue_year",
+    )
+    # kept: dated before the window, and a 2022 year-only row; dropped: a 2023 year-only row (overlaps the
+    # window), a dated row inside it, and a row with neither date nor year (when unsure, hide it)
+    assert out.index.tolist() == [0, 1]
+
+
+def test_mask_needs_a_time_column():
+    with pytest.raises(ValueError):
+        holdout.held_out_mask(_annual(), [STPAUL])
