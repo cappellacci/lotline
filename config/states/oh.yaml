@@ -3,5 +3,7 @@ state: OH
 name: Ohio
 fips: "39"
 bps_region: Midwest Region
+# USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
+zip3_ranges: [[430, 459]]
 holdouts: []
 sources: []

@@ -61,8 +61,10 @@ class DataStore:
     def interim(self, state: str) -> Path:
         return self.root / "interim" / state.lower()
 
-    def processed(self, state: str, table: str) -> Path:
-        return self.root / "processed" / state.lower() / f"{table}.parquet"
+    def processed(self, state: str, table: str, source: str | None = None) -> Path:
+        """Folder holding a canonical table (read it whole with pandas.read_parquet), or one source's file."""
+        folder = self.root / "processed" / state.lower() / table
+        return folder / f"{source}.parquet" if source else folder
 
     @property
     def manifest_path(self) -> Path:

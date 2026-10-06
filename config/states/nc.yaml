@@ -3,6 +3,8 @@ state: NC
 name: North Carolina
 fips: "37"
 bps_region: South Region
+# USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
+zip3_ranges: [[270, 289]]
 holdouts:
   - test_id: V5-NC-CHARLOTTE
     place: Charlotte

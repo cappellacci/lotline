@@ -54,6 +54,7 @@ class StateConfig(_Model):
     sources: list[Source] = []
     land_use_crosswalk: str | None = None
     train_until: dict[str, dt.date] = {}  # geoid -> last date usable for fitting
+    zip3_ranges: list[tuple[int, int]] = []  # USPS 3-digit ZIP prefixes (inclusive) that belong to the state
 
 
 class Parameter(_Model):

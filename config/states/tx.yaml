@@ -3,5 +3,7 @@ state: TX
 name: Texas
 fips: "48"
 bps_region: South Region
+# USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
+zip3_ranges: [[733, 733], [750, 799], [885, 885]]
 holdouts: []
 sources: []
