@@ -1,0 +1,7 @@
+# Texas. Austin HOME test; "no sale prices" path (BUILD_PLAN §6).
+state: TX
+name: Texas
+fips: "48"
+bps_region: South Region
+holdouts: []
+sources: []

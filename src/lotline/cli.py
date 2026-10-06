@@ -9,8 +9,25 @@ from lotline import __version__
 
 
 def _fetch(args: argparse.Namespace) -> int:
-    # Adapters register sources here from week 1 (WS-CORE); until then there is nothing to download.
-    print("no sources registered yet")
+    from lotline.adapters.national import SOURCES
+    from lotline.config import all_states
+    from lotline.io import DataStore
+
+    states = [args.state.upper()] if args.state else all_states()
+    sources = [args.source] if args.source else sorted(SOURCES)
+    unknown = [s for s in sources if s not in SOURCES]
+    if unknown:
+        print(f"unknown source(s): {', '.join(unknown)}; available: {', '.join(sorted(SOURCES))}")
+        return 2
+    store = DataStore()
+    for state in states:
+        for source in sources:
+            adapter, table = SOURCES[source]
+            df = adapter.load(state, store, refresh=args.refresh)
+            out = store.processed(state, table)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            df.to_parquet(out, index=False)
+            print(f"{state} {source}: {len(df):,} rows -> {out}")
     return 0
 
 
@@ -19,9 +36,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"lotline {__version__}")
     sub = parser.add_subparsers(dest="command")
 
-    fetch = sub.add_parser("fetch", help="download source data into LOTLINE_DATA_DIR")
-    fetch.add_argument("--state", help="two-letter state code, e.g. MN")
-    fetch.add_argument("--source", help="source id, e.g. bps")
+    fetch = sub.add_parser(
+        "fetch", help="download source data into LOTLINE_DATA_DIR and build canonical tables"
+    )
+    fetch.add_argument("--state", help="two-letter state code, e.g. MN (default: every configured state)")
+    fetch.add_argument("--source", help="source id, e.g. bps (default: every registered source)")
+    fetch.add_argument("--refresh", action="store_true", help="re-check sources for newer files")
     fetch.set_defaults(func=_fetch)
     return parser
 

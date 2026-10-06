@@ -1,0 +1,7 @@
+# Ohio. Sparse-evidence, transport-only run (BUILD_PLAN §6).
+state: OH
+name: Ohio
+fips: "39"
+bps_region: Midwest Region
+holdouts: []
+sources: []

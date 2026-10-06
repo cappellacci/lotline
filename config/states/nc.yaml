@@ -1,0 +1,13 @@
+# North Carolina. Second full in-state validation (BUILD_PLAN §6).
+state: NC
+name: North Carolina
+fips: "37"
+bps_region: South Region
+holdouts:
+  - test_id: V5-NC-CHARLOTTE
+    place: Charlotte
+    geoid: "3712000"
+    outcome_from: 2023-06-01
+    outcome_until: 2099-12-31
+    reason: V5 blind forward test of the Charlotte UDO (duplex/triplex on N1 lots, effective 2023-06-01)
+sources: []

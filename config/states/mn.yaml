@@ -1,0 +1,13 @@
+# Minnesota. Primary state (BUILD_PLAN §6). WS-CORE owns structure + holdouts; WS-MN fills in sources.
+state: MN
+name: Minnesota
+fips: "27"
+bps_region: Midwest Region
+holdouts:
+  - test_id: V5-MN-STPAUL
+    place: St. Paul
+    geoid: "2758000"
+    outcome_from: 2024-01-01
+    outcome_until: 2026-12-31
+    reason: V5 blind forward test of the St. Paul 2023 reform (validation plan §3)
+sources: []

@@ -16,6 +16,7 @@ def test_cli_version(capsys):
     assert capsys.readouterr().out.strip() == f"lotline {lotline.__version__}"
 
 
-def test_fetch_stub(capsys):
-    assert main(["fetch", "--state", "MN", "--source", "bps"]) == 0
-    assert "no sources registered yet" in capsys.readouterr().out
+def test_fetch_rejects_unknown_source(capsys):
+    # no network: an unknown source fails before any download
+    assert main(["fetch", "--state", "MN", "--source", "nope"]) == 2
+    assert "unknown source" in capsys.readouterr().out

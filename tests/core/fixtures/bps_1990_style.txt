@@ -1,0 +1,6 @@
+Survey,State,6-Digit,County,MSA/,PMSA,Region,Division,Number of,,Place,,1-unit,,,2-units,,,3-4 units,,,5+ units,,,1-unit rep,,,2-units rep,,,3-4 units rep,,,5+ units rep
+Date,Code,ID,Code,CMSA,Code,Code,Code,Months Rep,,Name,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value
+ 
+9012,27,140500,053,9999,9999,2,4,12,12,Minneapolis,10,10,1000,0,0,0,0,0,0,1,50,5000,10,10,1000,0,0,0,0,0,0,1,50,5000
+9012,27,192500,123,9999,9999,2,4,9,9,St. Paul,8,8,800,0,0,0,0,0,0,0,0,0,6,6,600,0,0,0,0,0,0,0,0,0
+9012,19,000100,001,9999,9999,2,4,12,12,Other State Town,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
