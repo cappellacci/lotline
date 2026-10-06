@@ -1,0 +1,36 @@
+# Submission manifest read by compliance_check.py.
+# Paths are relative to the repo root. Fill these in as the project takes shape.
+
+[project]
+name = "lotline"
+state = ""                      # e.g. "NC" (one state, results added up statewide)
+outcome_metric = "permits"      # permits | starts | completions | stock_growth
+outcome_metric_justification = ""   # one or two sentences on why this metric
+horizon_years = 5               # the Handbook requires a 5-year projection
+
+# Baseline is always required. List at least 3 of: adu, missing_middle, tod, parking, fees
+scenarios = ["baseline", "missing_middle", "adu", "fees"]
+# Optional state-specific extra scenarios (kept separate from the benchmark set)
+extra_scenarios = []
+
+[commands]
+setup = ""                      # single documented setup command, e.g. "make setup" or "uv sync"
+test = ""                       # e.g. "pytest -q"
+
+[links]
+tool_url = ""                   # deployed tool or notebook link
+video_url = ""                  # demo video, no account required, <= 5 min
+repo_url = "https://github.com/cappellacci/lotline"   # public GitHub repo (personal account cappellacci)
+
+[docs]
+readme = "README.md"
+model_overview = "docs/model_and_assumptions.md"      # <= 25 pages
+scenario_comparison = "docs/policy_scenario_comparison.md"   # <= 4 pages, non-technical
+data_provenance = "docs/data_provenance.md"
+disclosures = "docs/disclosures.md"
+slides_pdf = "docs/slides.pdf"                        # <= 30 slides
+sbom = "sbom.spdx.json"                               # exported from GitHub dependency graph
+
+[data]
+max_committed_file_mb = 25      # larger files suggest source data committed instead of downloaded
+acquisition_scripts = ["scripts/fetch_data.py"]       # automated download from authoritative sources

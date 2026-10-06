@@ -1,0 +1,54 @@
+title,labels,milestone,body
+First commit of scaffold + research docs on main,ws:00,M0 Bootstrap,"WS-00 task 1. Must be pushed before Oct 7, 9:00 a.m. ET."
+pyproject + uv.lock + package skeleton + smoke test,ws:00,M0 Bootstrap,WS-00 tasks 2–5.
+"CI for uv: compliance (license scan inside venv), tests, ruff; dependabot.yml",ws:00,M0 Bootstrap,WS-00 tasks 7–8.
+"challenge.toml commands + README setup/test; disclosures (certifi, Claude Code)",ws:00,M0 Bootstrap,"WS-00 tasks 6, 10."
+logbook.d fragments + merge_logbook.py,ws:00,M0 Bootstrap,WS-00 task 11.
+"Enable secret scanning, push protection, Dependabot alerts, CodeQL; protect main",ben,M0 Bootstrap,BUILD_PLAN §9 item 4.
+Copy project-only research docs into docs/research,ben,M0 Bootstrap,BUILD_PLAN §9 item 1.
+Manual CSV export of Minneapolis CCS and St. Paul permit layers,ben,M0 Bootstrap,"Rolling windows lose history. Store under ~/lotline-data/manual/, not in the repo."
+Email organizers re: Oct 7–14 gap; record answer in HANDOFF,ben,M1 Core contracts,BUILD_PLAN §0 and §9 item 7.
+Data requests: Met Council pre-2021 parcel vintages; Durham permit freshness; Carthage towns,ben,M1 Core contracts,BUILD_PLAN §9 items 8–9.
+"schemas.py v1 (7 canonical tables, building_type_std) + assert_conforms",ws:core,M1 Core contracts,WS-CORE. Tag schemas-v1 when merged.
+"Config models (state, params) + loaders",ws:core,M1 Core contracts,WS-CORE.
+"IO: data dir, cache, manifest.jsonl, ArcGIS/Socrata/CKAN pagers",ws:core,M1 Core contracts,WS-CORE.
+"Holdout registry + loader filter + --unblind guard + leak test (pre-fill MN St. Paul, NC Charlotte)",ws:core,M1 Core contracts,WS-CORE; BUILD_PLAN §5.4. Must merge before any state ingestion.
+"National adapters: BPS (reported/imputed), ACS, FHFA, FRED, PPI, geographies + BPS-ID crosswalk",ws:core;ladder:V0,M1 Core contracts,WS-CORE.
+CLI (fetch/build/validate/provenance) + generated data_provenance.md,ws:core,M1 Core contracts,WS-CORE.
+"V0 report scaffold + national V0 for MN, NC, TX, OH",ws:core;ladder:V0,M1 Core contracts,WS-CORE.
+MN snapshots: Minneapolis CCS + St. Paul permits (dated raw copies),ws:mn;ladder:V0,M2 MN+NC V0,WS-MN day 1.
+"MN adapters: Met Council permits, regional parcels, Hennepin, Ramsey, MnGeo, zoning, PLU",ws:mn;ladder:V0,M2 MN+NC V0,WS-MN.
+MN reforms CSV incl. metro suburb ADU ordinance dates (top 20 cities first),ws:mn,M2 MN+NC V0,WS-MN; unlocks staggered ADU design.
+MN V0 report,ws:mn;ladder:V0,M2 MN+NC V0,WS-MN acceptance.
+"NC adapters: OneMap (+10-county crosswalks), Wake, Raleigh, Durham, Mecklenburg, zoning",ws:nc;ladder:V0,M2 MN+NC V0,WS-NC.
+NC reforms CSV incl. S.L. 2026-59 baseline mandate,ws:nc,M2 MN+NC V0,WS-NC.
+NC V0 report (Charlotte pre-2023-06 only),ws:nc;ladder:V0,M2 MN+NC V0,WS-NC.
+Panels builder (numerator/denominator separate),ws:engine,M2 MN+NC V0,WS-ENGINE.
+"Baseline model + V1 backtest harness (all 4 states, BPS)",ws:engine;ladder:V1,"M3 TX+OH V0, V1/V2",WS-ENGINE.
+"Pro forma (rental + for-sale prototypes, code step at 3+ units) with hand-worked tests",ws:engine,"M3 TX+OH V0, V1/V2",WS-ENGINE.
+Hazard model + V2 harness (MN first),ws:engine;ladder:V2,"M3 TX+OH V0, V1/V2",WS-ENGINE.
+"TX adapters: Austin permits, TCAD, StratMap, HCAD, San Antonio",ws:tx;ladder:V0,"M3 TX+OH V0, V1/V2",WS-TX.
+TX V0 report + reforms CSV,ws:tx;ladder:V0,"M3 TX+OH V0, V1/V2",WS-TX.
+"OH adapters: statewide parcels, Franklin auditor, Columbus, Cincinnati, Cleveland (runtime-only)",ws:oh;ladder:V0,"M3 TX+OH V0, V1/V2",WS-OH.
+OH V0 report + reforms CSV,ws:oh;ladder:V0,"M3 TX+OH V0, V1/V2",WS-OH.
+"Comparable adapters: Portland, RLIS, Seattle, CA APR, LA, Bend",ws:evidence,"M3 TX+OH V0, V1/V2",WS-EVIDENCE.
+"Comparables table v1 (uptake per 1,000 eligible parcels, event time)",ws:evidence,"M3 TX+OH V0, V1/V2",WS-EVIDENCE.
+"Estimators: did, synth, pooling, transport + simulation tests",ws:evidence;ladder:V3,"M3 TX+OH V0, V1/V2",WS-EVIDENCE.
+Choose official benchmark state (by Nov 10),ben,"M3 TX+OH V0, V1/V2",Recommendation: MN. Update challenge.toml state.
+docs/analysis_plan.md with thresholds; tag prereg-v1,ben;ladder:V3,"M4 Prereg, V3/V4, freezes",Validation plan §2–3. Blocks every V3 issue.
+MN V3: staggered ADU DiD across metro; Minneapolis MM synth + border,ws:mn;ladder:V3,"M4 Prereg, V3/V4, freezes",WS-MN.
+Freeze St. Paul prediction (V5-MN-STPAUL) by Nov 17,ws:mn;ladder:V5,"M4 Prereg, V3/V4, freezes",WS-MN.
+NC V3: Raleigh vs R-1; Durham tiers; Raleigh ADU synth,ws:nc;ladder:V3,"M4 Prereg, V3/V4, freezes",WS-NC.
+Freeze Charlotte prediction (V5-NC-CHARLOTTE) by Nov 17,ws:nc;ladder:V5,"M4 Prereg, V3/V4, freezes",WS-NC.
+NC V6a Carthage fee DiD (exploratory),ws:nc;ladder:V6,"M4 Prereg, V3/V4, freezes",WS-NC.
+Austin HOME V3/V4,ws:tx;ladder:V3,"M4 Prereg, V3/V4, freezes",WS-TX.
+Leave-one-place-out backtests (V4),ws:evidence;ladder:V4,"M4 Prereg, V3/V4, freezes",WS-EVIDENCE.
+V6b fee threshold crossing ($50k vs real fees),ws:engine;ladder:V6,"M4 Prereg, V3/V4, freezes",WS-ENGINE.
+Unblind St. Paul; report,ws:mn;ladder:V5,M5 Unblind + scorecard,WS-MN.
+Unblind Charlotte; report,ws:nc;ladder:V5,M5 Unblind + scorecard,WS-NC.
+OH V7 transport-only statewide run,ws:oh;ladder:V7,M5 Unblind + scorecard,WS-OH.
+MN V7 overlap diagnostics (Greater MN),ws:mn;ladder:V7,M5 Unblind + scorecard,WS-MN.
+"Scenario modules, combine (no double count), aggregate, Monte Carlo + Sobol",ws:engine,M5 Unblind + scorecard,WS-ENGINE.
+Streamlit app + deploy,ws:app,M6 Product + submission,WS-APP.
+Model & Assumptions Overview; Policy Scenario Comparison,ws:app,M6 Product + submission,WS-APP.
+"Slides PDF, demo video, SBOM, final compliance --all",ws:app,M6 Product + submission,"WS-APP. Submit before Dec 16, 11:59 p.m. ET."
