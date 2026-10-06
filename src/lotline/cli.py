@@ -31,6 +31,21 @@ def _fetch(args: argparse.Namespace) -> int:
     return 0
 
 
+def _provenance(args: argparse.Namespace) -> int:
+    from lotline import provenance
+    from lotline.io import DataStore
+
+    store = DataStore()
+    if args.write:
+        print(f"wrote {provenance.write(store)}")
+    problems = provenance.check(store)
+    for p in problems:
+        print(f"FAIL {p}")
+    if not problems:
+        print("provenance OK: every processed source is documented and the document is current")
+    return 1 if problems else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lotline", description="Lotline housing reform simulator.")
     parser.add_argument("--version", action="version", version=f"lotline {__version__}")
@@ -43,6 +58,11 @@ def build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("--source", help="source id, e.g. bps (default: every registered source)")
     fetch.add_argument("--refresh", action="store_true", help="re-check sources for newer files")
     fetch.set_defaults(func=_fetch)
+
+    prov = sub.add_parser("provenance", help="generate or check docs/data_provenance.md from the manifest")
+    prov.add_argument("--write", action="store_true", help="regenerate the document before checking it")
+    prov.add_argument("--check", action="store_true", help="check only (the default)")
+    prov.set_defaults(func=_provenance)
     return parser
 
 

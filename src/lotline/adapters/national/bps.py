@@ -43,6 +43,29 @@ ID_ERA_START = 1992  # first year of the current 6-digit ID numbering
 DEFAULT_YEARS = range(ID_ERA_START, 2026)
 
 
+PROVENANCE = {
+    "title": "Census Building Permits Survey (BPS), annual place-level files",
+    "landing_url": "https://www.census.gov/construction/bps/",
+    "table": "bps_place_year",
+    "cleaning": [
+        "Parse each regional annual file; ID columns found by header name (layouts change by era)",
+        "Keep units and buildings for 1, 2, 3-4 and 5+ unit buildings, both imputed totals and reported-only",
+        "Flag `imputed` when a place reported fewer than 12 months or reported units differ from the total",
+        "Assign GEOIDs: place, else county subdivision, else county for unincorporated/'County Part' rows; "
+        "backfill earlier years by BPS ID (1992 on), then county + name, then unique name",
+        "Remove held-out place-years (validation/holdout.py) before the table is written",
+    ],
+    "limitations": [
+        "BPS 6-digit IDs were renumbered in 1992 and reused; pre-1992 rows link by name only",
+        "Before 2009, 0.07-2.9% of units belong to places that left the survey before FIPS codes existed and "
+        "cannot be placed",
+        "ADUs are often not recorded as new units (Upzoned #301); BPS may undercount them",
+        "NC's BPS universe has ~157 places; most small towns' permits sit in county unincorporated totals",
+        "Small gaps vs Census state totals in some years (e.g. TX 2020 +835 units), likely release vintages",
+    ],
+}
+
+
 def file_url(region: str, year: int) -> str:
     return f"{BASE_URL}/{region.replace(' ', '%20')}/{REGIONS[region]}{year}a.txt"
 

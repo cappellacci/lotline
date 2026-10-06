@@ -14,7 +14,9 @@ import pandas as pd
 from lotline.adapters.national.acs import _fetch_json, api_key
 from lotline.io import DataStore
 
-SOURCE = "census_acs5"  # shares the Census API fetch path and key handling
+ADAPTER = "national.decennial"
+VERSION = "1.0"
+SOURCE = "census_dec_pl"
 URL = "https://api.census.gov/data/2020/dec/pl"
 QUERIES = {
     "county": ("for=county:*&in=state:{fips}", ["state", "county"]),
@@ -23,6 +25,23 @@ QUERIES = {
         "for=county%20subdivision:*&in=state:{fips}&in=county:*",
         ["state", "county", "county subdivision"],
     ),
+}
+
+
+PROVENANCE = {
+    "title": "Census 2020 redistricting data (P.L. 94-171): names and total population",
+    "landing_url": "https://www.census.gov/programs-surveys/decennial-census/about/rdo/summary-files.html",
+    "table": "jurisdictions",
+    "cleaning": [
+        "Short names (before the first comma) and P1_001N total population for counties, places and county "
+        "subdivisions",
+        "Joined to the BPS jurisdiction universe by GEOID",
+    ],
+    "limitations": [
+        "Jurisdictions dissolved or renamed before 2020 keep their BPS name and no population",
+        "Unincorporated county areas get no population (county totals would overstate them)",
+        "2020 counts carry Census disclosure-avoidance noise for small places",
+    ],
 }
 
 
@@ -41,11 +60,13 @@ def parse(payload: list[list[str]], level: str) -> pd.DataFrame:
 
 def load(state_fips: str, state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     key = api_key()
-    raw = store.raw("census_dec_pl", 2020)
+    raw = store.raw(SOURCE, 2020)
     frames = []
     for level, (query, _) in QUERIES.items():
         url = f"{URL}?get=NAME,P1_001N&{query.format(fips=state_fips)}"
-        frames.append(
-            parse(_fetch_json(url, raw / f"{state.lower()}_{level}.json", store, refresh, key), level)
+        dest = raw / f"{state.lower()}_{level}.json"
+        payload = _fetch_json(
+            url, dest, store, refresh, key, source=SOURCE, adapter=ADAPTER, adapter_version=VERSION
         )
+        frames.append(parse(payload, level))
     return pd.concat(frames, ignore_index=True)

@@ -49,6 +49,23 @@ class CensusKeyError(RuntimeError):
     pass
 
 
+PROVENANCE = {
+    "title": "Census American Community Survey 5-year estimates (B25024, B25003, B25064, B25077, B25034)",
+    "landing_url": "https://www.census.gov/data/developers/data-sets/acs-5year.html",
+    "table": "acs_geo_year",
+    "cleaning": [
+        "Long format: one row per geography, 5-year vintage and variable, with the published 90% MOE",
+        "Census special-value codes become missing; a 'controlled' MOE (-555555555) becomes 0",
+        "Labels kept per vintage because some categories change over time",
+    ],
+    "limitations": [
+        "Adjacent 5-year vintages share four years of sample: never difference them",
+        "0.3-2% of estimates are suppressed, mostly small places and townships",
+        "Requires a free Census API key (CENSUS_API_KEY); the key is never written to the manifest",
+    ],
+}
+
+
 def api_key() -> str:
     key = os.environ.get("CENSUS_API_KEY") or _dotenv_value("CENSUS_API_KEY")
     if not key:
@@ -115,15 +132,26 @@ def parse(payload: list[list[str]], level: str, end_year: int, labels: dict[str,
     return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
 
 
-def _fetch_json(url: str, dest: Path, store: DataStore, refresh: bool, key: str | None = None):
+def _fetch_json(
+    url: str,
+    dest: Path,
+    store: DataStore,
+    refresh: bool,
+    key: str | None = None,
+    *,
+    source: str = SOURCE,
+    adapter: str = ADAPTER,
+    adapter_version: str = VERSION,
+):
+    """Fetch a Census API JSON response (shared by the ACS and decennial adapters)."""
     path = fetch(
         url,
         dest,
         store=store,
-        source=SOURCE,
+        source=source,
         license=LICENSE,
-        adapter=ADAPTER,
-        adapter_version=VERSION,
+        adapter=adapter,
+        adapter_version=adapter_version,
         refresh=refresh,
         secret_params={"key": key} if key else None,
     )
