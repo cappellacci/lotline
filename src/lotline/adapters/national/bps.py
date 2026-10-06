@@ -61,7 +61,10 @@ PROVENANCE = {
         "cannot be placed",
         "ADUs are often not recorded as new units (Upzoned #301); BPS may undercount them",
         "NC's BPS universe has ~157 places; most small towns' permits sit in county unincorporated totals",
-        "Small gaps vs Census state totals in some years (e.g. TX 2020 +835 units), likely release vintages",
+        "Place sums exceed Census state totals in some years because Census revises state and county totals "
+        "after the annual survey (BPS methodology); MN, NC, OH within 1% except 1992-93; TX 1-2% high in "
+        "2003-2014, concentrated in county unincorporated rows (e.g. Denton County 2014: +2,145 units). "
+        "See reports/<st>/V0-national.md",
     ],
 }
 
