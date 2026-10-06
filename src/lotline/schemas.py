@@ -14,7 +14,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.2"  # 1.1: market_geo_year level-prefixed geo, HPI columns; 1.2: acs_geo_year
+SCHEMAS_VERSION = "1.3"  # 1.1: market geo prefix + HPI; 1.2: acs_geo_year; 1.3: market cpi_u
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -126,7 +126,7 @@ class MarketGeoYear(_Strict):
     """
 
     geo: Series[str] = pa.Field(str_matches=r"^(national|state|cbsa|county|zip5|tract):[0-9A-Z]+$")
-    year: Series[pd.Int64Dtype] = pa.Field(ge=1970, le=2100)
+    year: Series[pd.Int64Dtype] = pa.Field(ge=1940, le=2100)
     hpi: Optional[Series[float]] = pa.Field(nullable=True, gt=0)  # FHFA, base 100 in the series' first year
     hpi_base2000: Optional[Series[float]] = pa.Field(nullable=True, gt=0)  # comparable across places
     hpi_change_pct: Optional[Series[float]] = pa.Field(nullable=True)
@@ -134,6 +134,7 @@ class MarketGeoYear(_Strict):
     median_rent: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
     ppi_resid_inputs: Optional[Series[float]] = pa.Field(nullable=True)
     mortgage_rate: Optional[Series[float]] = pa.Field(nullable=True)
+    cpi_u: Optional[Series[float]] = pa.Field(nullable=True, gt=0)  # deflator: real dollars (protocol §5.9)
 
     @pa.dataframe_check
     def one_row_per_geo_year(cls, df: pd.DataFrame) -> bool:

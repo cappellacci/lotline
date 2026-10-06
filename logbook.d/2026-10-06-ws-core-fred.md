@@ -1,0 +1,14 @@
+### LB-NNN · 2026-10-06 · Build: Mortgage rates, construction input prices and CPI (FRED)
+- **Question:** Can we add the national cost-of-money and cost-of-building series the pro forma and the baseline need, plus a deflator for real 2025 dollars (protocol §5.9)?
+- **What I did:**
+  - FRED adapter (public CSV endpoint, no key): MORTGAGE30US (Freddie Mac PMMS, weekly), WPUIP2311001 (BLS PPI, residential construction inputs, monthly), CPIAUCSL (BLS CPI-U, monthly) → `market_geo_year` rows at `national:US`, annual means.
+  - Complete years only; partial years (1971 mortgage, 1986 PPI, 2026) stay missing. **One stated exception:** a single missing observation between two published ones is interpolated (time-weighted) before averaging.
+  - Schemas 1.3: `cpi_u` column on `market_geo_year`; year floor lowered to 1940 (CPI starts 1947).
+- **Inputs:** https://fred.stlouisfed.org/graph/fredgraph.csv?id=… (pulled 2026-10-06).
+- **Outputs:** `src/lotline/adapters/national/fred.py`, `tests/core/test_fred.py`. Data (not committed): `processed/<state>/market_geo_year/fred.parquet` (80 years).
+- **Findings:**
+  - **BLS published no October 2025 CPI** (federal shutdown). Without the single-gap rule, the 2025 base year for real dollars would be missing. With it: CPI-U 2025 = 322.19; mortgage 6.60%; PPI residential inputs 322.07 (2024: 313.70 / 6.72% / 315.20).
+  - **MORTGAGE30US is Freddie Mac data** republished by FRED with permission. It needs an attribution line wherever it is shown; the license is recorded in the manifest. Flag for `docs/data_provenance.md`.
+- **Decisions:** Proposed: the single-gap interpolation rule for national monthly series.
+- **AI:** Claude Code wrote the adapter and tests (50 passing), found the CPI gap in the raw file, and checked values against the raw series.
+- **Open / next:** Census geographies + BPS crosswalk → `jurisdictions`; `lotline provenance`; V0 report.
