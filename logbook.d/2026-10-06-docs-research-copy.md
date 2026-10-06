@@ -1,0 +1,11 @@
+### LB-NNN · 2026-10-06 · Build: Copy project-only research docs into the repo
+- **Question:** Can Claude Code instances read every research doc the build plan cites?
+- **What I did:**
+  - Ben copied the nine Cowork-only research docs (BUILD_PLAN §9 item 1) plus the Oct 5 webinar notes into `docs/research/`.
+  - Claude Code checked that all nine named files were present, skimmed them for secrets or personal data before publishing to the public repo, and committed them unchanged.
+- **Inputs:** Cowork project research files; LB-006, LB-008, LB-012, LB-013, LB-022.
+- **Outputs:** `docs/research/{lotline-methods-review.md, lotline-evidence-register.csv, lotline-methods-extraction.csv, lotline-statistical-protocol.md, lotline-two-prong-design.md, lotline-data-availability.md, lotline-data-catalog.csv, lotline-data-summary.csv, podcast-upzoned-301-notes.md, webinar-2026-10-05-data-tools-notes.md}`
+- **Findings:** Nothing sensitive. The mentors in the webinar notes are described by role, not by name. The podcast notes summarize with short timestamped quotes.
+- **Decisions:** none.
+- **AI:** Claude Code verified the file list, scanned for secrets (`compliance_check.py` T5 plus a keyword grep), and opened and merged the PR. Content is unchanged from the Cowork copies.
+- **Open / next:** Closes #8. Commit freeze from Oct 7 09:00 to Oct 14 09:01 ET.
