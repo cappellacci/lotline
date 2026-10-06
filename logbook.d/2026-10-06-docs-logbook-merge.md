@@ -1,0 +1,14 @@
+### LB-NNN · 2026-10-06 · Data feasibility: Gap-week scouting, Durham permits and the Carthage town list
+- **Question:** Is Durham's permit feed still updated, and is there a published list of towns hit by *Quality Built Homes v. Carthage*?
+- **What I did:**
+  - Queried the Durham Inspections ArcGIS layer (`webgis2.durhamnc.gov/.../Inspections/MapServer/12`). It timed out with no response from this network, while `durhamnc.gov` itself answered. Checked the Hub listing instead.
+  - Read the UNC School of Government posts on *Carthage* (2016) and system development fees (S.L. 2017-138), and searched for a list of affected towns.
+- **Inputs:** `docs/research/lotline-data-catalog.csv` (Durham row), `lotline-causal-diagram-fees.md`, `lotline-validation-plan.md`.
+- **Outputs:** this entry.
+- **Findings:**
+  - **Durham "All Building Permits (table only)" was last updated 2024-11-13 (77,723 records)**, so it looks stale. A separate **"Active Building Permits"** layer exists and is likely a rolling window, which would make it a manual-snapshot candidate like the Minneapolis and St. Paul layers. Fallbacks: the city's Monthly Construction Activity Reports and the LDO permit search.
+  - **No published list of Carthage-affected towns.** The SOG posts name only Carthage (fees of $1,000–$30,000 per connection). Amicus municipalities were Apex, Concord, Holly Springs, Jacksonville, Kannapolis, Surf City and Winston-Salem, which is a lower bound. Key dates: ruling 2016-08-19; S.L. 2017-138 took effect 2017-10-01, and existing fees had to conform by 2018-07-01; the refund limitation period was cut to 3 years (N.C. Sup. Ct., Aug 2018).
+  - **The likely source for treatment status is the UNC EFC / NCLM annual water and wastewater rates survey** (every year since 2005, about 400–500 utilities, with connection fees, downloadable spreadsheets). Comparing utilities' capacity and impact fees for 2015/16 against 2017/18 could identify which towns dropped fees.
+- **Decisions:** none. Proposed: add the EFC rates survey to the NC data catalog as the source for the V6 fee-shock treatment list.
+- **AI:** Claude Code ran the queries and web reads; facts come from the cited SOG and EFC pages and the Durham Hub listing. Not yet checked: whether the EFC spreadsheets actually record capacity fees by utility and year.
+- **Open / next:** Ben checks Durham freshness by hand (gap-week item 9). Confirm the EFC spreadsheet fields. Consider snapshotting Durham "Active Building Permits".

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Fold logbook.d/*.md fragments into LOGBOOK.md (and claude/LOGBOOK.md if present).
 
-Fragments are sorted by the date in their heading, then by file name, and numbered LB-NNN after the last entry
-already in LOGBOOK.md. The merged fragments are then deleted. Dry run by default. Standard library only.
+Fragments are sorted by the date in their heading, then by the time the fragment was first committed (so
+same-day entries keep the order the work happened), then by file name, and numbered LB-NNN after the last
+entry already in LOGBOOK.md. The merged fragments are then deleted. Dry run by default. Standard library only.
 
     python scripts/dev/merge_logbook.py            # dry run
     python scripts/dev/merge_logbook.py --apply    # append, then delete fragments
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -24,8 +26,20 @@ def last_number(logbook: str) -> int:
     return max(nums, default=0)
 
 
+def added_at(path: Path) -> int:
+    """Unix time of the commit that added `path`; uncommitted or outside git sorts last."""
+    r = subprocess.run(
+        ["git", "log", "--diff-filter=A", "--format=%ct", "-1", "--", path.name],
+        cwd=path.parent,
+        capture_output=True,
+        text=True,
+    )
+    out = r.stdout.strip()
+    return int(out) if r.returncode == 0 and out.isdigit() else sys.maxsize
+
+
 def load_fragments(frag_dir: Path) -> list[tuple[str, Path, str]]:
-    """Return (date, path, text) for each fragment, sorted by date then file name."""
+    """Return (date, path, text) for each fragment, sorted by date, commit time, then file name."""
     out = []
     for path in sorted(frag_dir.glob("*.md")):
         if path.name.lower() == "readme.md":
@@ -35,7 +49,7 @@ def load_fragments(frag_dir: Path) -> list[tuple[str, Path, str]]:
         if len(heads) != 1:
             sys.exit(f"{path}: expected one 'LB-NNN · date' heading, found {len(heads)}")
         out.append((heads[0][1], path, text))
-    return sorted(out, key=lambda t: (t[0], t[1].name))
+    return sorted(out, key=lambda t: (t[0], added_at(t[1]), t[1].name))
 
 
 def merge(logbook: str, fragments: list[tuple[str, Path, str]]) -> tuple[str, list[str]]:
