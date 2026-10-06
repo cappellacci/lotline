@@ -19,6 +19,7 @@ from lotline.io import DataStore
 from lotline.schemas import validate
 
 SOURCE = "jurisdictions"
+MANIFEST_SOURCES = [bps.SOURCE, decennial.SOURCE]  # what this build reads (for `lotline provenance --check`)
 DEFAULT_TIER = 3
 
 

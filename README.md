@@ -38,6 +38,12 @@ American Community Survey 5-year). The ACS needs a free Census API key: sign up 
 https://api.census.gov/data/key_signup.html, click the activation link Census emails you, and put the key in
 `.env` as `CENSUS_API_KEY=...`. The key is sent with each request but never written to the download manifest.
 
+`docs/data_provenance.md` is generated from the download manifest; regenerate it after fetching:
+
+```bash
+uv run lotline provenance --write
+```
+
 ## Tests
 
 ```bash

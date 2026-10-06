@@ -43,6 +43,25 @@ TRACT_RENAME = {
 }
 
 
+PROVENANCE = {
+    "title": "FHFA House Price Index, annual all-transactions (state, CBSA, county, ZIP5, tract)",
+    "landing_url": "https://www.fhfa.gov/data/hpi/datasets",
+    "table": "market_geo_year",
+    "cleaning": [
+        "Skip FHFA's title rows; keep native HPI, HPI with 2000 base, and annual change",
+        "Prefix geography codes by level (county:27053, zip5:55415, ...)",
+        "Assign ZIP5 to states by USPS 3-digit prefix ranges (config/states); keep CBSAs touching the state",
+        "Suppressed years are left missing, never interpolated",
+    ],
+    "limitations": [
+        "Sub-state annual indexes are labeled 'developmental' by FHFA",
+        "Thin places suppressed: TX county indexes for 179 of 254 counties; 1-9% of tract-years missing",
+        "FHFA overwrites files in place; earlier vintages survive only as manifest hashes",
+        "Native HPI is base 100 in each series' first year; compare places with the base-2000 index",
+    ],
+}
+
+
 def read_table(path: Path) -> pd.DataFrame:
     """Read an FHFA annual file, skipping its title rows; everything as strings.
 

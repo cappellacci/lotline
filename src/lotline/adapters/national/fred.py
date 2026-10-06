@@ -47,6 +47,24 @@ SERIES = {
 MIN_OBS = {"weekly": 52, "monthly": 12}
 
 
+PROVENANCE = {
+    "title": "FRED: 30-year mortgage rate (Freddie Mac PMMS), PPI residential construction inputs, CPI-U",
+    "landing_url": "https://fred.stlouisfed.org/",
+    "table": "market_geo_year",
+    "attribution": "Mortgage rates: Freddie Mac, Primary Mortgage Market Survey, via FRED (with permission)",
+    "cleaning": [
+        "Calendar-year means over complete years only (52+ weekly or 12 monthly observations)",
+        "A single missing observation between two published ones is linearly interpolated (Oct 2025 CPI)",
+        "Stored at geo national:US for every state",
+    ],
+    "limitations": [
+        "BLS published no October 2025 CPI (federal shutdown); 2025 CPI uses an interpolated October",
+        "FRED revises series in place; raw copies are kept per month pulled",
+        "The mortgage rate is Freddie Mac data: attribution required wherever it is shown",
+    ],
+}
+
+
 def parse(text: str) -> pd.Series:
     """FRED CSV (observation_date, value) → float series indexed by date; '.' marks a missing value."""
     from io import StringIO
