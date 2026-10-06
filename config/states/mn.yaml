@@ -3,6 +3,7 @@ state: MN
 name: Minnesota
 fips: "27"
 bps_region: Midwest Region
+township_permits: true  # townships issue building permits (BPS rows per township)
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[550, 567]]
 holdouts:

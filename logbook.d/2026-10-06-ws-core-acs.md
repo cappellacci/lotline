@@ -1,0 +1,12 @@
+### LB-NNN · 2026-10-06 · Build: Census ACS 5-year housing tables, with margins of error
+- **Question:** Can we add housing stock by structure type, tenure, year built, median rent and median value for every place, township, county and tract in the four states, without losing the margins of error or leaking the API key?
+- **What I did:**
+  - New canonical table `acs_geo_year` (schemas 1.2): long format, one row per geography × 5-year vintage × variable, with estimate, 90% MOE and the label as published that year (B25034's year-built bands change across vintages).
+  - ACS adapter for B25024, B25003, B25064, B25077 and B25034 at state, county, place, tract and (where townships issue permits: MN, OH) county-subdivision level, vintages 2010–2024. Census's negative codes become missing; a "controlled" MOE becomes 0.
+  - `fetch()` gained `secret_params`: the key is merged into the request but kept out of the manifest, cache key and error messages. HTML error pages (invalid key) are deleted instead of cached.
+- **Inputs:** Census Data API (`/data/<year>/acs/acs5`, `groups/<table>.json`); CENSUS_API_KEY from Ben (in `.env`, gitignored).
+- **Outputs:** `src/lotline/adapters/national/acs.py`, `tests/core/test_acs.py`, schema 1.2, `township_permits` flag in `config/states/*.yaml`, README note on the key. Data (not committed): `processed/<state>/acs_geo_year/acs.parquet`.
+- **Findings:** MN 2019–23 check: Minneapolis median value $345,600 ± $3,908, median gross rent $1,329 ± $19, 17,048 ± 937 two-unit-structure homes. 0.3–2% of estimates are suppressed (mostly small townships and places). Key verified absent from the manifest.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the adapter and tests (45 passing), verified the key with one request without printing it, and checked the manifest for key leakage.
+- **Open / next:** move medians into `market_geo_year` in the build step; FRED mortgage rate and BLS PPI; Census geographies + BPS crosswalk → `jurisdictions`.

@@ -40,12 +40,16 @@ def fetch(
     refresh: bool = False,
     retries: int = 4,
     backoff: float = 2.0,
+    secret_params: dict[str, str] | None = None,
 ) -> Path:
     """Download `url` to `dest` (under the store's raw/ tree) unless a cached copy is still current.
 
     A cached file is reused without a request unless `refresh` is set; with `refresh`, a conditional
     request (ETag / Last-Modified) avoids re-downloading unchanged files. Every new download appends
     a manifest entry with its sha256.
+
+    `secret_params` (e.g. an API key) are added to the request only: the manifest, cache key and any error
+    message use `url` without them.
     """
     dest = Path(dest)
     prior = store.latest(url)
@@ -62,14 +66,15 @@ def fetch(
     own = http is None
     http = http or client()
     try:
-        resp = _get_with_retries(http, url, headers, retries, backoff)
+        resp = _get_with_retries(http, url, headers, retries, backoff, secret_params or {})
     finally:
         if own:
             http.close()
 
     if resp.status_code == 304:
         return dest
-    resp.raise_for_status()
+    if resp.is_error:
+        raise httpx.HTTPStatusError(f"HTTP {resp.status_code} for {url}", request=resp.request, response=resp)
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(dest.suffix + ".part")
@@ -95,14 +100,14 @@ def fetch(
 
 
 def _get_with_retries(
-    http: httpx.Client, url: str, headers: dict, retries: int, backoff: float
+    http: httpx.Client, url: str, headers: dict, retries: int, backoff: float, secret_params: dict[str, str]
 ) -> httpx.Response:
     for attempt in range(retries + 1):
         try:
-            resp = http.get(url, headers=headers)
-        except httpx.TransportError:
+            resp = http.get(httpx.URL(url).copy_merge_params(secret_params), headers=headers)
+        except httpx.TransportError as exc:
             if attempt == retries:
-                raise
+                raise httpx.TransportError(f"{type(exc).__name__} for {url}") from None
         else:
             if resp.status_code not in RETRY_STATUS or attempt == retries:
                 return resp

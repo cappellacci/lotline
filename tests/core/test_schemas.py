@@ -22,14 +22,15 @@ def _permit(**over):
     return pd.DataFrame([row | over])
 
 
-def test_all_seven_tables_registered():
-    assert SCHEMAS_VERSION == "1.1"
+def test_all_tables_registered():
+    assert SCHEMAS_VERSION == "1.2"
     assert set(TABLES) == {
         "jurisdictions",
         "parcels",
         "permits",
         "bps_place_year",
         "market_geo_year",
+        "acs_geo_year",
         "reforms",
         "fees",
     }

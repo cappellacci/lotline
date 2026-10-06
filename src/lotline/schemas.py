@@ -14,7 +14,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.1"  # 1.1: market_geo_year level-prefixed geo, HPI columns
+SCHEMAS_VERSION = "1.2"  # 1.1: market_geo_year level-prefixed geo, HPI columns; 1.2: acs_geo_year
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -140,6 +140,28 @@ class MarketGeoYear(_Strict):
         return not df.duplicated(["geo", "year"]).any()
 
 
+class AcsGeoYear(_Strict):
+    """American Community Survey 5-year estimates, long format: one row per geography, vintage and variable.
+
+    `end_year` is the last year of the 5-year window (2023 = 2019-2023). Adjacent vintages share four years
+    of sample, so never difference them; compare non-overlapping windows. `moe` is the published 90% margin
+    of error (0 where Census marks the estimate as controlled). Labels are kept per vintage because some
+    categories changed over time (e.g. B25034 year-built bands).
+    """
+
+    geo: Series[str] = pa.Field(str_matches=r"^(state|county|place|cousub|tract):[0-9]+$")
+    end_year: Series[pd.Int64Dtype] = pa.Field(ge=2009, le=2100)
+    table_id: Series[str] = pa.Field(str_matches=r"^[BC]\d{5}[A-Z]?$")
+    variable: Series[str] = pa.Field(str_matches=r"^[BC]\d{5}[A-Z]?_\d{3}$")
+    label: Series[str]
+    estimate: Series[float] = pa.Field(nullable=True)
+    moe: Series[float] = pa.Field(nullable=True, ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_geo_vintage_variable(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["geo", "end_year", "variable"]).any()
+
+
 class Reforms(_Strict):
     state: Series[str] = pa.Field(**_STATE)
     jurisdiction_geoid: Series[str]
@@ -174,6 +196,7 @@ TABLES: dict[str, type[pa.DataFrameModel]] = {
     "permits": Permits,
     "bps_place_year": BpsPlaceYear,
     "market_geo_year": MarketGeoYear,
+    "acs_geo_year": AcsGeoYear,
     "reforms": Reforms,
     "fees": Fees,
 }

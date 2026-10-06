@@ -54,6 +54,7 @@ class StateConfig(_Model):
     sources: list[Source] = []
     land_use_crosswalk: str | None = None
     train_until: dict[str, dt.date] = {}  # geoid -> last date usable for fitting
+    township_permits: bool = False  # townships (county subdivisions) issue permits and get their own rows
     zip3_ranges: list[tuple[int, int]] = []  # USPS 3-digit ZIP prefixes (inclusive) that belong to the state
 
 

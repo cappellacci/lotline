@@ -3,6 +3,7 @@ state: NC
 name: North Carolina
 fips: "37"
 bps_region: South Region
+township_permits: false  # townships issue building permits (BPS rows per township)
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[270, 289]]
 holdouts:
