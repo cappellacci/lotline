@@ -3,9 +3,10 @@
 
 [project]
 name = "lotline"
+stage = "build"                 # build | submission. Set to "submission" before submitting (D1-D3 become hard FAILs)
 state = ""                      # e.g. "NC" (one state, results added up statewide)
 outcome_metric = "permits"      # permits | starts | completions | stock_growth
-outcome_metric_justification = ""   # one or two sentences on why this metric
+outcome_metric_justification = "Permits respond first to a zoning or fee change and are the one outcome measured the same way in every state: the Census Building Permits Survey reports them monthly for every permit-issuing place, split by 1, 2, 3-4 and 5+ unit buildings."   # leaning (HANDOFF); revisit when the benchmark state is chosen
 horizon_years = 5               # the Handbook requires a 5-year projection
 
 # Baseline is always required. List at least 3 of: adu, missing_middle, tod, parking, fees
@@ -14,8 +15,8 @@ scenarios = ["baseline", "missing_middle", "adu", "fees"]
 extra_scenarios = []
 
 [commands]
-setup = ""                      # single documented setup command, e.g. "make setup" or "uv sync"
-test = ""                       # e.g. "pytest -q"
+setup = "uv sync --frozen"      # single documented setup command (needs uv: https://docs.astral.sh/uv/)
+test = "uv run pytest -q"
 
 [links]
 tool_url = ""                   # deployed tool or notebook link

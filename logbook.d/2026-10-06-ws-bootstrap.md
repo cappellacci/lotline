@@ -1,0 +1,13 @@
+### LB-NNN · 2026-10-06 · Build: Phase 0 repo bootstrap (WS-00)
+- **Question:** Can the repo go from scaffold to a reproducible, CI-checked Python project before registration closes (Oct 7, 9:00 a.m. ET)?
+- **What I did:**
+  - First commit of the existing scaffold and research docs on `main`, then branch `ws/bootstrap`.
+  - `pyproject.toml` (Python 3.12, src layout, hatchling) with week-1 runtime deps and dev deps; `uv.lock` pins everything. Empty package skeleton matching BUILD_PLAN §4; `lotline --version` and a `lotline fetch` stub, wrapped by `scripts/fetch_data.py`.
+  - CI moved to uv (`compliance.yml` runs the license scan inside the venv; new `tests.yml` runs ruff + pytest); `dependabot.yml` for uv and Actions.
+  - `compliance_check.py` gained `project.stage = "build"` in `challenge.toml`: until it is set to `"submission"`, the end-of-project deliverables D1–D3 report WARN instead of FAIL so CI is usable during the build. `logbook.d/` fragments + `scripts/dev/merge_logbook.py` (with tests).
+- **Inputs:** `CLAUDE.md`, `docs/build/BUILD_PLAN.md` §3–4, `docs/build/workstreams/WS-00-bootstrap.md`, `HANDOFF.md` §3.
+- **Outputs:** `pyproject.toml`, `uv.lock`, `src/lotline/**`, `tests/test_smoke.py`, `tests/test_merge_logbook.py`, `scripts/fetch_data.py`, `scripts/dev/merge_logbook.py`, `logbook.d/README.md`, `.github/workflows/{compliance,tests}.yml`, `.github/dependabot.yml`, `challenge.toml`, `README.md`, `docs/disclosures.md`, `.gitignore`, `.env.example`.
+- **Findings:** Dependency licenses all permissive except certifi (MPL-2.0, via httpx), now disclosed with a justification. numpy bundles small CC0/0BSD/Zlib components (permissive; noted). `compliance_check.py --run` shows 0 FAIL.
+- **Decisions:** Proposed: `stage = "build"` switch for D1–D3 (flip before submitting). Proposed: S4 justification text for the `permits` metric filled in `challenge.toml` (still "leaning"; revisit with the benchmark state).
+- **AI:** Claude Code wrote all files in this PR. Checked by `uv run pytest -q` (5 passed), `uv run ruff check .`, `python compliance_check.py --run` and `--deps` (0 FAIL), and a fresh `git clone` + `uv sync --frozen` + tests.
+- **Open / next:** Ben enables secret scanning, push protection, Dependabot alerts, CodeQL default setup and branch protection; runs `create_issues.py --apply`. No commits Oct 7 09:00 → Oct 14 09:01 ET.
