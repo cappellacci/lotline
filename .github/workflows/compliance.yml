@@ -18,7 +18,7 @@ jobs:
       GH_TOKEN: ${{ secrets.COMPLIANCE_TOKEN }}   # fine-grained PAT with repo security read access (optional)
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
