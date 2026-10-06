@@ -23,7 +23,7 @@ def _permit(**over):
 
 
 def test_all_tables_registered():
-    assert SCHEMAS_VERSION == "1.2"
+    assert SCHEMAS_VERSION == "1.3"
     assert set(TABLES) == {
         "jurisdictions",
         "parcels",
