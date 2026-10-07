@@ -62,6 +62,26 @@ def _validate(args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
+def _schemas(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from lotline.schemas import data_dictionary
+
+    doc = Path(__file__).resolve().parents[2] / "docs" / "schemas.md"
+    text = data_dictionary()
+    if args.write:
+        doc.write_text(text)
+        print(f"wrote {doc}")
+        return 0
+    current = doc.exists() and doc.read_text() == text
+    print(
+        "docs/schemas.md is current"
+        if current
+        else "docs/schemas.md is out of date: run `lotline schemas --write`"
+    )
+    return 0 if current else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lotline", description="Lotline housing reform simulator.")
     parser.add_argument("--version", action="version", version=f"lotline {__version__}")
@@ -84,6 +104,10 @@ def build_parser() -> argparse.ArgumentParser:
     val.add_argument("--state", help="two-letter state code (default: every configured state)")
     val.add_argument("--step", default="V0", help="ladder step (V0 so far)")
     val.set_defaults(func=_validate)
+
+    sch = sub.add_parser("schemas", help="generate or check the data dictionary docs/schemas.md")
+    sch.add_argument("--write", action="store_true", help="regenerate docs/schemas.md")
+    sch.set_defaults(func=_schemas)
     return parser
 
 
