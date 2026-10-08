@@ -9,7 +9,7 @@ A running record of **how** the Lotline entry was built: what question each step
 - Entries LB-001 to LB-009 were **reconstructed on 2026-09-30** from the docs and artifacts they produced; later entries are written as the work happens.
 - Entries are added two ways: by the Claude session doing the work (rule in `CLAUDE.md`), and by a nightly review that scans the repo, project docs and artifacts for anything new since the last scan. Nightly entries are marked *(auto-review)*.
 
-**Last scan:** 2026-10-07T00:55Z
+**Last scan:** 2026-10-08T07:46Z
 
 ---
 
@@ -30,7 +30,7 @@ A running record of **how** the Lotline entry was built: what question each step
 | 10. Causal design and validation | Oct 3–4 | What could fake or hide a policy effect, and how do we prove the model before using it? | Causal diagrams (general/ADU, MM, fees), 54-factor confounder register, in-state validation plan | LB-015, LB-016 |
 | 11. Build transition | Oct 4 | How do we move to code across four states, in parallel, through GitHub? | Build plan, 9 Claude Code workstream briefs, 53-issue backlog | LB-020 |
 | 12. Repo bootstrap | Oct 6 | Is the repo public, reproducible and CI-checked before registration closes? | github.com/cappellacci/lotline: uv project, CI, protected `main`, research docs, issue backlog | LB-021, LB-023, LB-024 |
-| 13. Core data and contracts | Oct 6–7 | Can national data for four states flow through shared, tested contracts, with blind tests protected? | BPS, FHFA, ACS, FRED and 2020 Census adapters; holdout filter; generated provenance and data dictionary; V0 reports; tag `schemas-v1` | LB-027 – LB-034 |
+| 13. Core data and contracts | Oct 6–8 | Can national data for four states flow through shared, tested contracts, with blind tests protected? | BPS, FHFA, ACS, FRED and 2020 Census adapters; holdout filter; generated provenance and data dictionary; V0 reports; tag `schemas-v1`; ArcGIS pager for state adapters | LB-027 – LB-037 |
 
 ---
 
@@ -516,3 +516,39 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** Proposed: freeze 1.4 as `schemas-v1`. Within v1 only additive changes; anything else is v2 via `contract-change`.
 - **AI:** Claude Code (with a read-only subagent) did the review, schema changes and tests; Claude verified the subagent's main claims against the source docs before acting.
 - **Open / next:** Ben merges, then tag `schemas-v1` on main; start WS-MN, WS-NC, WS-ENGINE.
+
+### LB-035 · 2026-10-07 · Build: schemas-v1 merged and tagged on main (auto-review)
+- **Question:** Is the 1.4 contract (LB-034) now the frozen base the state, engine and evidence workstreams build on?
+- **What I did:**
+  - PR #67 (`ws/core-schemas-v1`, "schemas 1.4: contract review, freeze candidate for schemas-v1") was merged to `main` on 2026-10-07 (merge commit `3583f34`).
+  - Annotated tag `schemas-v1` ("canonical table contracts frozen at schemas 1.4") was created on that merge commit and pushed to `origin`.
+- **Inputs:** LB-034.
+- **Outputs:** `main` @ `3583f34`; tag `schemas-v1` (github.com/cappellacci/lotline). The LB-034 files (`src/lotline/schemas.py`, `docs/schemas.md`, holdout filter, tests, regenerated `reports/<st>/V0-national.md`) are now on `main`.
+- **Findings:** none new; this closes LB-034's open item.
+- **Decisions:** LB-034's proposal took effect: within v1 only additive schema changes; anything else is v2 via `contract-change`. Not yet recorded as a row in the HANDOFF decisions log.
+- **AI:** Recorded by the nightly review from git history (merge commit and tag); the merge and tag were done in GitHub/git, presumably by Ben.
+- **Open / next:** start WS-MN, WS-NC, WS-ENGINE on `schemas-v1`; WS-TX to explain the 2003–2014 V0 gap.
+
+### LB-036 · 2026-10-08 · Build: ArcGIS REST pager (io/arcgis.py)
+- **Question:** Can every state adapter download full ArcGIS layers (most MN and NC permit and parcel sources) through one tested helper that caches, logs and snapshots each page?
+- **What I did:**
+  - `io/arcgis.py`: reads layer metadata. Pages with `resultOffset` ordered by object ID when the layer supports pagination; otherwise falls back to object-ID chunks (e.g. Durham's MapServer).
+  - Continues correctly when the server caps a page below the requested size (`exceededTransferLimit`). Raises on ArcGIS error bodies (HTTP 200) without caching them, and on duplicate IDs.
+  - Optional WGS84 geometry (centroids requested only for polygon layers; point layers reject them). Epoch-millisecond date helper.
+  - Each page goes through `fetch()` into `raw/<source>/<date>/<name>/`, so rolling windows get dated snapshots and every page is in the manifest.
+- **Inputs:** WS-CORE brief (IO tasks); Minneapolis CCS Permits layer for a live test.
+- **Outputs:** `src/lotline/io/arcgis.py`, `tests/core/test_arcgis.py` (12 tests against a fake server; 99 total passing); kickoff plan notes (uncommitted `docs/build/kickoff-2026-10-14.md`).
+- **Findings:** Live test (scratch store, not the project data dir): 7,627 of 7,627 Minneapolis permits issued since 2026-08-01, 8 pages in 8 s, no duplicates. The layer carries applicant names and addresses, so adapters must request only needed fields. `dwellingUnitsNew` is text and empty in about two-thirds of rows (unknown, not 0). `returnCentroid` is rejected by point layers (fixed).
+- **Decisions:** none.
+- **AI:** Claude Code wrote the pager and tests and ran the live check. **Created 2026-10-08, inside the Oct 7–14 gap the Rules don't cover**, at Ben's direction after Claude flagged Rules §3/§7(a) (organizer answer pending).
+- **Open / next:** state-source registry; `build/eligible.py` skeleton.
+
+### LB-037 · 2026-10-08 · Admin: Correction to LB-035 (who merged and tagged schemas-v1)
+- **Question:** Who performed the merge of PR #67 and the `schemas-v1` tag recorded in LB-035?
+- **What I did:** Corrects LB-035, whose AI line says the merge and tag were "presumably by Ben". Claude Code merged PR #67 (2026-10-07 08:44 UTC, 4:44 a.m. ET, before registration closed) and created and pushed the annotated tag `schemas-v1` on merge commit `3583f34`, both at Ben's explicit request in the session.
+- **Inputs:** LB-035; the session record; `git show schemas-v1`.
+- **Outputs:** this entry.
+- **Findings:** none.
+- **Decisions:** none.
+- **AI:** Claude Code wrote this correction while folding logbook fragments (LB-036).
+- **Open / next:** none.
