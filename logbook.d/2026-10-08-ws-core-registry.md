@@ -1,0 +1,12 @@
+### LB-NNN · 2026-10-08 · Build: Source registry, state sources plug in without touching CORE
+- **Question:** Can state workstreams add data sources that `lotline fetch` runs and `lotline provenance` documents, without editing shared CORE code, and without any way to skip the holdout filter?
+- **What I did:**
+  - `lotline/registry.py`: national sources listed explicitly. Any module in `adapters/states/<st>/` defining `SOURCE`, `TABLE`, `PROVENANCE` and `load()` is discovered as a source for that state (CLI id = module name). Half-defined modules, unknown tables, incomplete provenance, duplicate names and duplicate manifest ids are errors; helper modules are skipped.
+  - `lotline fetch` and `lotline provenance` now read the registry; new `lotline sources` lists what is available per state.
+  - **Central holdout guard:** after every load, `lotline fetch` re-checks permits and BPS output with `holdout.assert_no_leak` and stops with `HoldoutLeak` if held-out rows got through.
+- **Inputs:** kickoff plan §1 (WS-CORE day-1 items).
+- **Outputs:** `src/lotline/registry.py`, `src/lotline/cli.py`, `src/lotline/provenance.py`, `src/lotline/validation/holdout.py`, `tests/core/test_registry.py` (108 tests passing); kickoff plan updated (uncommitted).
+- **Findings:** Real-data check: `lotline sources`, `lotline provenance` (OK) and `lotline fetch --state MN --source bps` (32,418 rows, guard passed) behave as before.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the registry, guard and tests (fake state package in a temp dir). **Created 2026-10-08, inside the Oct 7–14 gap**, at Ben's direction after Claude flagged Rules §3/§7(a).
+- **Open / next:** `build/eligible.py` skeleton + `config/params/eligibility.yaml`.

@@ -14,21 +14,11 @@ from collections import defaultdict
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-from lotline.adapters.national import acs, bps, bps_state, decennial, fhfa, fred
+from lotline import registry
 from lotline.io.store import DataStore, ManifestEntry
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOC_PATH = REPO_ROOT / "docs" / "data_provenance.md"
-
-# manifest source id -> adapter module exposing PROVENANCE
-ADAPTERS = {
-    bps.SOURCE: bps,
-    bps_state.SOURCE: bps_state,
-    fhfa.SOURCE: fhfa,
-    acs.SOURCE: acs,
-    fred.SOURCE: fred,
-    decennial.SOURCE: decennial,
-}
 
 HEADER = """# Lotline: Data Provenance
 
@@ -77,14 +67,15 @@ def render(manifest: list[ManifestEntry]) -> str:
     for e in latest.values():
         by_source[e.source].append(e)
 
-    unknown = sorted(set(by_source) - set(ADAPTERS))
+    adapters = registry.provenance_modules()
+    unknown = sorted(set(by_source) - set(adapters))
     if unknown:
         raise ProvenanceError(f"manifest has sources with no adapter metadata: {unknown}")
 
     rows, details = [], []
-    for source in sorted(by_source, key=lambda s: ADAPTERS[s].PROVENANCE["title"]):
+    for source in sorted(by_source, key=lambda s: adapters[s].PROVENANCE["title"]):
         entries = sorted(by_source[source], key=lambda e: e.path)
-        meta = ADAPTERS[source].PROVENANCE
+        meta = adapters[source].PROVENANCE
         licenses = sorted({e.license for e in entries})
         version = _vintages(entries) + _publisher_dates(entries)
         rows.append(
@@ -132,15 +123,12 @@ def render(manifest: list[ManifestEntry]) -> str:
 
 def processed_sources(store: DataStore) -> set[str]:
     """Manifest source ids behind every processed table file (processed/<st>/<table>/<source>.parquet)."""
-    from lotline.adapters.national import SOURCES
-
-    by_cli_name = {name: module for name, (module, _) in SOURCES.items()}
     found = set()
     for path in (store.root / "processed").glob("*/*/*.parquet"):
-        module = by_cli_name.get(path.stem)
-        if module is None:
+        src = registry.sources_for(path.parent.parent.name).get(path.stem)
+        if src is None:
             raise ProvenanceError(f"{path}: no registered source named {path.stem!r}")
-        found |= set(getattr(module, "MANIFEST_SOURCES", [getattr(module, "SOURCE", path.stem)]))
+        found |= set(src.manifest_sources)
     return found
 
 

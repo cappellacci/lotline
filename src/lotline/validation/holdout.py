@@ -107,3 +107,26 @@ def apply(
         check_unblind(test_id, repo)
     still_blind = [h for h in registry if h.test_id not in unblind]
     return df.loc[~held_out_mask(df, still_blind, **cols)].copy()
+
+
+# Outcome tables and the columns the filter needs. Checked centrally after every adapter run (lotline fetch),
+# so a state adapter that forgets to filter fails loudly instead of writing held-out rows.
+OUTCOME_COLUMNS = {
+    "bps_place_year": {"geoid_col": "geoid", "year_col": "year"},
+    "permits": {"geoid_col": "jurisdiction_geoid", "date_col": "issue_date", "year_col": "issue_year"},
+}
+
+
+class HoldoutLeak(RuntimeError):
+    """An adapter returned rows that the holdout filter should have removed."""
+
+
+def assert_no_leak(df: pd.DataFrame, table: str, state: str) -> None:
+    cols = OUTCOME_COLUMNS.get(table)
+    if cols is None or df.empty:
+        return
+    leaked = int(held_out_mask(df, holdouts_for(state), **cols).sum())
+    if leaked:
+        raise HoldoutLeak(
+            f"{state} {table}: {leaked} held-out rows reached the output; the adapter must call holdout.apply"
+        )
