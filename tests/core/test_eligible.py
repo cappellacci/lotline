@@ -56,7 +56,14 @@ def _parcels():
 
 
 JURIS = pd.DataFrame(
-    {"state": ["MN"], "geoid": ["2743000"], "name": ["Minneapolis city"], "kind": ["place"], "data_tier": [1]}
+    {
+        "state": ["MN"],
+        "geoid": ["2743000"],
+        "name": ["Minneapolis city"],
+        "kind": ["place"],
+        "data_tier": [1],
+        "county_geoid": ["27053"],
+    }
 )
 
 
@@ -130,6 +137,7 @@ def test_acs_fallback_is_low_quality_and_skips_unknown_places():
                     "name": ["Arna township"],
                     "kind": ["township"],
                     "data_tier": [3],
+                    "county_geoid": ["27001"],
                 }
             ),
         ],
@@ -148,7 +156,7 @@ def test_unknown_theme_is_an_error():
         eligible.classify(_parcels(), "tod")
 
 
-def test_acs_fallback_never_gives_a_county_total_to_an_unincorporated_area():
+def test_rest_of_county_is_the_county_minus_its_permit_issuing_places():
     acs = pd.DataFrame(
         {
             "geo": ["county:37183", "place:3755000"],
@@ -167,10 +175,12 @@ def test_acs_fallback_never_gives_a_county_total_to_an_unincorporated_area():
             "name": ["Wake County Unincorporated Area", "Raleigh city"],
             "kind": ["county_unincorporated", "place"],
             "data_tier": [3, 3],
+            "county_geoid": ["37183", "37183"],
         }
     )
-    out = eligible.from_acs(acs, juris, themes=("adu",))
-    assert out.jurisdiction_geoid.tolist() == ["3755000"]  # Wake's county total includes Raleigh
+    out = eligible.from_acs(acs, juris, themes=("adu",)).set_index("jurisdiction_geoid")
+    assert out.loc["3755000", "eligible_parcels"] == 120000
+    assert out.loc["37183", "eligible_parcels"] == 180000  # never the whole county total of 300,000
 
 
 def _acs_rows():
@@ -195,6 +205,7 @@ def _acs_rows():
                     "name": ["Arna township"],
                     "kind": ["township"],
                     "data_tier": [3],
+                    "county_geoid": ["27001"],
                 }
             ),
         ],
@@ -211,8 +222,23 @@ def test_combine_uses_one_source_per_jurisdiction():
     assert list(by_place["2700102224"]) == ["acs_sf_fallback"]  # Arna township doesn't: fallback
 
 
-def test_load_builds_from_processed_tables(tmp_path):
+def test_load_builds_from_processed_tables(tmp_path, monkeypatch):
+    from lotline.adapters.national import geoparts
     from lotline.io import DataStore
+
+    # no network in tests: stand-ins for the 2020 Census share lookups
+    monkeypatch.setattr(
+        geoparts,
+        "county_shares",
+        lambda fips, places, store, refresh=False: pd.DataFrame(
+            {"place_geoid": places, "county_geoid": ["27053"] * len(places), "share": 1.0}
+        ),
+    )
+    monkeypatch.setattr(
+        geoparts,
+        "township_shares",
+        lambda *a, **k: pd.DataFrame(columns=["place_geoid", "township_geoid", "share"]),
+    )
 
     store = DataStore(tmp_path)
     acs, juris = _acs_rows()
@@ -227,3 +253,59 @@ def test_load_builds_from_processed_tables(tmp_path):
     _parcels().to_parquet(parcels_path)
     out = eligible.load("MN", store)
     assert set(out.loc[out.jurisdiction_geoid == "2743000", "denominator_source"]) == {"parcels"}
+
+
+def test_allocation_hand_worked_ohio_style_county():
+    """County 39001 has 1,000 one-unit homes. Inside it:
+    - City A (independent, its own county subdivision): 300 homes, 2/3 of its 2020 housing in 39001 and
+      1/3 in county 39003 -> contributes 200 to 39001.
+    - Township T (3900110000): 250 homes by ACS, *including* village V (dependent), 60 homes, wholly in T.
+      T's net homes = 250 - 60 = 190.
+    - Village V: 60 homes, all in 39001.
+    Rest of 39001 = 1,000 - 200 (A) - 60 (V) - 190 (T) = 550.
+    County 39003 has 120 homes and only A's other third (100) in it: rest = 20.
+    """
+    acs = pd.DataFrame(
+        {
+            "geo": ["county:39001", "county:39003", "place:3900100", "cousub:3900110000", "place:3900200"],
+            "end_year": [2023] * 5,
+            "estimate": [1000.0, 120.0, 300.0, 250.0, 60.0],
+        }
+    )
+    juris = pd.DataFrame(
+        {
+            "geoid": ["3900100", "3900110000", "3900200", "39001", "39003"],
+            "kind": ["place", "township", "place", "county_unincorporated", "county_unincorporated"],
+        }
+    )
+    county_shares = pd.DataFrame(
+        {
+            "place_geoid": ["3900100", "3900100", "3900200"],
+            "county_geoid": ["39001", "39003", "39001"],
+            "share": [2 / 3, 1 / 3, 1.0],
+        }
+    )
+    township_shares = pd.DataFrame(
+        {"place_geoid": ["3900200"], "township_geoid": ["3900110000"], "share": [1.0]}
+    )
+    homes = eligible.allocate_homes(acs, juris, county_shares, township_shares).set_index(
+        "jurisdiction_geoid"
+    )
+    assert homes.loc["3900100", "homes"] == pytest.approx(300)  # a place keeps its whole total
+    assert homes.loc["3900110000", "homes"] == pytest.approx(190)  # township net of its village
+    assert homes.loc["3900200", "homes"] == pytest.approx(60)
+    assert homes.loc["39001", "homes"] == pytest.approx(550)
+    assert homes.loc["39003", "homes"] == pytest.approx(20)
+    # nothing counted twice: jurisdictions add back up to the two county totals
+    assert homes["homes"].sum() == pytest.approx(1000 + 120)
+
+
+def test_negative_remainder_is_clipped_and_flagged():
+    acs = pd.DataFrame(
+        {"geo": ["county:39001", "place:3900100"], "end_year": [2023, 2023], "estimate": [100.0, 130.0]}
+    )  # sampling noise: the place exceeds its county
+    juris = pd.DataFrame({"geoid": ["3900100", "39001"], "kind": ["place", "county_unincorporated"]})
+    shares = pd.DataFrame({"place_geoid": ["3900100"], "county_geoid": ["39001"], "share": [1.0]})
+    empty = pd.DataFrame(columns=["place_geoid", "township_geoid", "share"])
+    homes = eligible.allocate_homes(acs, juris, shares, empty).set_index("jurisdiction_geoid")
+    assert homes.loc["39001", "homes"] == 0 and bool(homes.loc["39001", "clipped"])

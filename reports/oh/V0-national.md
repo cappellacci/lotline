@@ -63,7 +63,7 @@ Units in new privately owned residential buildings, with Census imputation. `dif
 
 - `jurisdictions`: 954 rows; kinds {'place': 569, 'township': 297, 'county_unincorporated': 88}
 
-- `eligible_parcels`: 25,910 rows · 2010–2024 · 865 jurisdictions · source (quality): acs_sf_fallback (low) 25,910
+- `eligible_parcels`: 28,550 rows · 2010–2024 · 953 jurisdictions · source (quality): acs_sf_fallback (low) 28,550
 
 - `market_geo_year`: 137,321 rows · 1947–2026 · 3,692 geographies · nulls: `hpi` 3.10%, `hpi_base2000` 8.00%, `hpi_change_pct` 7.16%
 
@@ -87,6 +87,7 @@ Units in new privately owned residential buildings, with Census imputation. `dif
 - `census_bps_place_annual`: Public domain (U.S. Government work, 17 U.S.C. §105)
 - `census_bps_state_annual`: Public domain (U.S. Government work, 17 U.S.C. §105)
 - `census_dec_pl`: Public domain (U.S. Government work, 17 U.S.C. §105)
+- `census_geo_codes`: Public domain (U.S. Government work, 17 U.S.C. §105)
 - `fhfa_hpi_annual`: Public domain (U.S. Government work, 17 U.S.C. §105)
 - `fred`: Freddie Mac PMMS, republished by FRED with permission; attribution required
 - `fred`: Public domain (BLS, U.S. Government work)

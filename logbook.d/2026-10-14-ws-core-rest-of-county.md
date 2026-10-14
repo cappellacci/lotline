@@ -1,0 +1,15 @@
+### LB-NNN · 2026-10-14 · Build: Rest-of-county denominators, and the Ohio village double count fixed
+- **Question:** Can unincorporated county areas, where most NC permits are issued, get a denominator that covers the same ground as their permit counts, without counting any home twice?
+- **What I did:**
+  - `eligible.allocate_homes`: a place keeps its ACS total; a township is its ACS total minus the permit-issuing places inside it; rest of county = county total minus every permit-issuing place's in-county homes and every township's net homes. Negative remainders (sampling noise) are set to 0 and flagged.
+  - `adapters/national/geoparts.py`: the Census 2020 code files show which places span counties and which aren't their own county subdivision. 2020 Census **DHC** housing units split those places by county and by township. The P.L. 94-171 file doesn't publish the township geography; the API allows no wildcards, so it's one cached request per multi-county place or relevant township, made once.
+  - `lotline fetch --source eligible` now emits rest-of-county rows; the provenance document lists the new source.
+- **Inputs:** ACS B25024_002 (2010–2024); Census `national_place_by_county2020.txt`, `national_cousub2020.txt`; 2020 DHC `H1_001N`.
+- **Outputs:** `src/lotline/build/eligible.py`, `src/lotline/adapters/national/geoparts.py`, `src/lotline/registry.py`, `tests/core/test_eligible.py` (hand-worked Ohio-style county: jurisdictions add back up exactly to county totals), `tests/core/test_geoparts.py`; regenerated `docs/data_provenance.md`, `reports/*/V0-national.md` (125 tests passing, also with network blocked).
+- **Findings:**
+  - Share of each state's one-unit detached homes (ACS 2019–23) now inside a permit-issuing jurisdiction's denominator: **NC 100.0%** (was 32%), **OH 100.5%**, **MN 97.9%**, **TX 89.9%**.
+  - MN and TX fall short where counties have no unincorporated BPS row (MN 15 counties, TX 200 of 254): those homes have no permit series, so leaving them out keeps numerator and denominator aligned.
+  - **Ohio double count fixed:** 360 of 569 permit-issuing OH places sit inside a township's ACS count; townships now exclude them, removing **129,734** double-counted homes (2019–23). Five OH county remainders were negative (noise) and clipped, which explains the 0.5% overshoot.
+- **Decisions:** Proposed: split places by 2020 housing-unit shares, fixed for all ACS years (stated in provenance limitations).
+- **AI:** Claude Code designed and wrote the allocation, adapter and tests. It found the Ohio double count while designing, and found the P.L.→DHC geography gap in the first live run.
+- **Open / next:** WS-ENGINE uses `eligible_parcels` with `denominator_source`/`quality`; MOE propagation for remainders (not attempted).

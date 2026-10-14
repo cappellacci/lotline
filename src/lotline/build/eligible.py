@@ -113,34 +113,100 @@ def from_parcels(
     return validate(pd.DataFrame(rows), "eligible_parcels")
 
 
-def from_acs(
-    acs: pd.DataFrame, jurisdictions: pd.DataFrame, themes: tuple[str, ...] = THEMES
+def allocate_homes(
+    acs_sf: pd.DataFrame,
+    jurisdictions: pd.DataFrame,
+    county_shares: pd.DataFrame,
+    township_shares: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Fallback denominator: ACS one-unit detached homes per place or township, by 5-year end year.
+    """Homes per permit-issuing jurisdiction and ACS year, with nothing counted twice.
+
+    - **place**: its ACS total.
+    - **township**: its ACS total minus the permit-issuing places that sit inside it (Ohio villages that
+      aren't their own county subdivision), each subtracted in proportion to its 2020 housing units there.
+    - **county_unincorporated** ("rest of county"): the county's ACS total minus every permit-issuing place's
+      homes in that county (split by 2020 housing-unit shares when a place spans counties) and every
+      township's net homes. A negative remainder (sampling noise) is set to 0 and flagged `clipped`.
+
+    `acs_sf`: rows of B25024_002 with `geo` (`county:`, `place:`, `cousub:`), `end_year`, `estimate`.
+    `county_shares`: place_geoid, county_geoid, share (each place's shares sum to 1).
+    `township_shares`: place_geoid, township_geoid, share (dependent places only).
+    """
+    est = acs_sf.assign(geoid=acs_sf["geo"].str.split(":").str[1]).dropna(subset=["estimate"])
+    est = est.set_index(["geoid", "end_year"])["estimate"]
+    j = jurisdictions.set_index("geoid")
+    places = j.index[j["kind"] == "place"]
+    townships = j.index[j["kind"] == "township"]
+    counties = j.index[j["kind"] == "county_unincorporated"]
+    shares_c = county_shares[county_shares["place_geoid"].isin(places)]
+    shares_t = township_shares[
+        township_shares["place_geoid"].isin(places) & township_shares["township_geoid"].isin(townships)
+    ]
+    out = []
+    for year in sorted(est.index.get_level_values("end_year").unique()):
+        get = est.xs(year, level="end_year")
+        homes = {g: float(get[g]) for g in places if g in get.index}
+        for t in townships:
+            if t not in get.index:
+                continue
+            inside = shares_t[shares_t["township_geoid"] == t]
+            homes[t] = float(get[t]) - sum(
+                homes.get(p, 0.0) * s for p, s in zip(inside["place_geoid"], inside["share"], strict=True)
+            )
+        in_county: dict[str, float] = {}
+        for p, c, s in zip(shares_c["place_geoid"], shares_c["county_geoid"], shares_c["share"], strict=True):
+            in_county[c] = in_county.get(c, 0.0) + homes.get(p, 0.0) * s
+        for t in townships:
+            if t in homes:
+                in_county[t[:5]] = in_county.get(t[:5], 0.0) + homes[t]
+        for c in counties:
+            if c in get.index:
+                homes[c] = float(get[c]) - in_county.get(c, 0.0)
+        for g, h in homes.items():
+            out.append(
+                {"jurisdiction_geoid": g, "end_year": int(year), "homes": max(h, 0.0), "clipped": h < 0}
+            )
+    return pd.DataFrame(out, columns=["jurisdiction_geoid", "end_year", "homes", "clipped"])
+
+
+def from_acs(
+    acs: pd.DataFrame,
+    jurisdictions: pd.DataFrame,
+    themes: tuple[str, ...] = THEMES,
+    county_shares: pd.DataFrame | None = None,
+    township_shares: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Fallback denominator: ACS one-unit detached homes per permit-issuing jurisdiction, by 5-year end year,
+    including unincorporated county areas ("rest of county"). See `allocate_homes`.
 
     Counts *homes*, not parcels, and can't see zoning, so it is the same for every theme and always `low`.
-    Unincorporated county areas have no ACS geography of their own and get no fallback row.
+    Without share tables, every place is assumed to lie in the county BPS files it under and no place is
+    assumed to sit inside a township.
     """
-    # Places and county subdivisions only: an ACS county row would give an unincorporated area the whole
-    # county's homes, double-counting every city in it.
-    sf = acs[(acs["variable"] == ACS_SF_DETACHED) & acs["geo"].str.match(r"^(place|cousub):")].copy()
-    sf["geoid"] = sf["geo"].str.split(":").str[1]
+    sf = acs[(acs["variable"] == ACS_SF_DETACHED) & acs["geo"].str.match(r"^(county|place|cousub):")]
     j = jurisdictions.set_index("geoid")
-    sf = sf[sf["geoid"].isin(j.index) & sf["estimate"].notna()]
+    if county_shares is None:
+        pl = jurisdictions[jurisdictions["kind"] == "place"]
+        county_shares = pd.DataFrame(
+            {"place_geoid": pl["geoid"], "county_geoid": pl["county_geoid"], "share": 1.0}
+        )
+    if township_shares is None:
+        township_shares = pd.DataFrame(columns=["place_geoid", "township_geoid", "share"])
+    homes = allocate_homes(sf, jurisdictions, county_shares, township_shares)
     rows = [
         {
-            "state": j.loc[r.geoid, "state"],
-            "jurisdiction_geoid": r.geoid,
+            "state": j.loc[r.jurisdiction_geoid, "state"],
+            "jurisdiction_geoid": r.jurisdiction_geoid,
             "year": int(r.end_year),
             "theme": theme,
             "rule_version": RULE_VERSION,
-            "eligible_parcels": int(round(r.estimate)),
-            "data_tier": int(j.loc[r.geoid, "data_tier"]),
+            "eligible_parcels": int(round(r.homes)),
+            "data_tier": int(j.loc[r.jurisdiction_geoid, "data_tier"]),
             "denominator_source": "acs_sf_fallback",
             "denominator_quality": "low",
         }
         for theme in themes
-        for r in sf.itertuples()
+        for r in homes.itertuples()
     ]
     return validate(pd.DataFrame(rows), "eligible_parcels")
 
@@ -148,7 +214,8 @@ def from_acs(
 # ---- `lotline fetch --source eligible` -----------------------------------------------------------------
 
 SOURCE = "eligible"
-MANIFEST_SOURCES = ["census_acs5", "census_bps_place_annual", "census_dec_pl"]  # ACS + jurisdictions' inputs
+# ACS, jurisdictions' inputs, and the 2020 code files and housing-unit parts used to split places
+MANIFEST_SOURCES = ["census_acs5", "census_bps_place_annual", "census_dec_pl", "census_geo_codes"]
 
 
 def combine(parcel_rows: pd.DataFrame | None, acs_rows: pd.DataFrame) -> pd.DataFrame:
@@ -174,4 +241,14 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     parcels_path = store.processed(state, "parcels")
     parcels = pd.read_parquet(parcels_path) if parcels_path.exists() else None
     parcel_rows = from_parcels(parcels, juris) if parcels is not None and len(parcels) else None
-    return combine(parcel_rows, from_acs(acs_table, juris))
+
+    from lotline.adapters.national import geoparts
+    from lotline.config import load_state
+
+    cfg = load_state(state)
+    places = juris.loc[juris["kind"] == "place", "geoid"].tolist()
+    townships = juris.loc[juris["kind"] == "township", "geoid"].tolist()
+    c_shares = geoparts.county_shares(cfg.fips, places, store, refresh)
+    t_shares = geoparts.township_shares(cfg.fips, places, townships, store, refresh)
+    acs_rows = from_acs(acs_table, juris, county_shares=c_shares, township_shares=t_shares)
+    return combine(parcel_rows, acs_rows)
