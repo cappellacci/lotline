@@ -1,4 +1,4 @@
-"""Command-line entry point: `lotline --version`, `lotline fetch`."""
+"""Command-line entry point: `lotline fetch`, `sources`, `provenance`, `validate`, `schemas`."""
 
 from __future__ import annotations
 
@@ -9,25 +9,42 @@ from lotline import __version__
 
 
 def _fetch(args: argparse.Namespace) -> int:
-    from lotline.adapters.national import SOURCES
+    from lotline import registry
     from lotline.config import all_states
     from lotline.io import DataStore
+    from lotline.validation.holdout import assert_no_leak
 
     states = [args.state.upper()] if args.state else all_states()
-    sources = [args.source] if args.source else sorted(SOURCES)
-    unknown = [s for s in sources if s not in SOURCES]
-    if unknown:
-        print(f"unknown source(s): {', '.join(unknown)}; available: {', '.join(sorted(SOURCES))}")
-        return 2
     store = DataStore()
     for state in states:
-        for source in sources:
-            adapter, table = SOURCES[source]
-            df = adapter.load(state, store, refresh=args.refresh)
-            out = store.processed(state, table, source)
+        available = registry.sources_for(state)
+        names = [args.source] if args.source else sorted(available)
+        unknown = [n for n in names if n not in available]
+        if unknown:
+            print(
+                f"{state}: unknown source(s) {', '.join(unknown)}; available: {', '.join(sorted(available))}"
+            )
+            return 2
+        for name in names:
+            src = available[name]
+            df = src.module.load(state, store, refresh=args.refresh)
+            assert_no_leak(df, src.table, state)
+            out = store.processed(state, src.table, name)
             out.parent.mkdir(parents=True, exist_ok=True)
             df.to_parquet(out, index=False)
-            print(f"{state} {source}: {len(df):,} rows -> {out}")
+            print(f"{state} {name}: {len(df):,} rows -> {out}")
+    return 0
+
+
+def _sources(args: argparse.Namespace) -> int:
+    from lotline import registry
+    from lotline.config import all_states
+
+    for state in [args.state.upper()] if args.state else all_states():
+        for name, src in sorted(registry.sources_for(state).items()):
+            scope = "national" if src.states is None else state
+            title = getattr(src.module, "PROVENANCE", {}).get("title", "")
+            print(f"{state}  {name:<16} {scope:<9} -> {src.table:<16} {title}")
     return 0
 
 
@@ -94,6 +111,10 @@ def build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("--source", help="source id, e.g. bps (default: every registered source)")
     fetch.add_argument("--refresh", action="store_true", help="re-check sources for newer files")
     fetch.set_defaults(func=_fetch)
+
+    srcs = sub.add_parser("sources", help="list the data sources available for each state")
+    srcs.add_argument("--state", help="two-letter state code (default: every configured state)")
+    srcs.set_defaults(func=_sources)
 
     prov = sub.add_parser("provenance", help="generate or check docs/data_provenance.md from the manifest")
     prov.add_argument("--write", action="store_true", help="regenerate the document before checking it")
