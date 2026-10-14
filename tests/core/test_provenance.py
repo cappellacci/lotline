@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 
 from lotline import provenance
 from lotline.adapters.national import bps, fred
@@ -79,10 +78,27 @@ def test_only_latest_entry_per_url_counts(tmp_path):
     assert "2026-10-06" in doc and "2026-01-01" not in doc
 
 
-def test_unknown_source_is_an_error(tmp_path):
-    store = _store(tmp_path, [_entry("mystery", "raw/mystery/1/a", "https://x/m")])
-    with pytest.raises(provenance.ProvenanceError, match="mystery"):
-        provenance.render(store.manifest())
+def test_sources_from_another_branch_are_left_out_and_named(tmp_path):
+    # worktrees share LOTLINE_DATA_DIR: another branch's unmerged adapter must not break this one
+    store = _store(
+        tmp_path,
+        [
+            _entry(fred.SOURCE, f"raw/{fred.SOURCE}/2026-10/a.csv", "https://x/a"),
+            _entry("mystery", "raw/mystery/1/a", "https://x/m"),
+        ],
+    )
+    doc = provenance.render(store.manifest())
+    assert "mystery" not in doc and "FRED" in doc
+    assert provenance.other_branch_sources(store) == ["mystery"]
+
+
+def test_processed_files_from_unregistered_sources_are_skipped_not_fatal(tmp_path):
+    store = _store(tmp_path, [_entry(fred.SOURCE, f"raw/{fred.SOURCE}/2026-10/a.csv", "https://x/a")])
+    out = store.processed("MN", "permits", "metc_permits")  # another branch's adapter
+    out.parent.mkdir(parents=True)
+    pd.DataFrame({"x": [1]}).to_parquet(out)
+    assert provenance.processed_sources(store) == set()
+    assert provenance.unregistered_processed(store) == ["processed/mn/permits/metc_permits.parquet"]
 
 
 def test_check_flags_stale_doc_and_undocumented_processed_tables(tmp_path):

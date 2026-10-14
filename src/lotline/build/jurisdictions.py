@@ -13,13 +13,17 @@ from __future__ import annotations
 
 import pandas as pd
 
-from lotline.adapters.national import bps, decennial
+from lotline.adapters.national import bps, cbsa, decennial
 from lotline.config import load_state
 from lotline.io import DataStore
 from lotline.schemas import validate
 
 SOURCE = "jurisdictions"
-MANIFEST_SOURCES = [bps.SOURCE, decennial.SOURCE]  # what this build reads (for `lotline provenance --check`)
+MANIFEST_SOURCES = [
+    bps.SOURCE,
+    decennial.SOURCE,
+    cbsa.SOURCE,
+]  # what this build reads (for `lotline provenance --check`)
 DEFAULT_TIER = 3
 
 
@@ -29,8 +33,11 @@ def kind_of(geoid: str, township_permits: bool) -> str:
     )
 
 
-def build(state: str, bps_table: pd.DataFrame, census: pd.DataFrame) -> pd.DataFrame:
-    """Combine one state's BPS place-years with 2020 Census names and populations."""
+def build(
+    state: str, bps_table: pd.DataFrame, census: pd.DataFrame, cbsas: pd.DataFrame | None = None
+) -> pd.DataFrame:
+    """Combine one state's BPS place-years with 2020 Census names and populations, and (if given) the
+    OMB metro/micro area of each jurisdiction's county."""
     cfg = load_state(state)
     latest = (
         bps_table.dropna(subset=["geoid"])
@@ -50,6 +57,10 @@ def build(state: str, bps_table: pd.DataFrame, census: pd.DataFrame) -> pd.DataF
     )
     df["name"] = df["census_name"].fillna(df["name"])
     df["data_tier"] = df["geoid"].map(cfg.data_tiers).fillna(DEFAULT_TIER).astype("Int64")
+    if cbsas is not None:
+        by_county = cbsas.set_index("county_geoid")
+        df["cbsa_code"] = df["county_geoid"].map(by_county["cbsa_code"])
+        df["cbsa_type"] = df["county_geoid"].map(by_county["cbsa_type"])
     return validate(df, "jurisdictions")
 
 
@@ -57,4 +68,5 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     bps_table = store.read(state, "bps_place_year")
     if bps_table is None:
         bps_table = bps.load(state, store, refresh=refresh)
-    return build(state, bps_table, decennial.load(load_state(state).fips, state, store, refresh=refresh))
+    census = decennial.load(load_state(state).fips, state, store, refresh=refresh)
+    return build(state, bps_table, census, cbsa.load(store, refresh=refresh))

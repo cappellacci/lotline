@@ -67,10 +67,10 @@ def render(manifest: list[ManifestEntry]) -> str:
     for e in latest.values():
         by_source[e.source].append(e)
 
+    # Sources downloaded on another branch (shared LOTLINE_DATA_DIR) whose adapter isn't on this one are left
+    # out, so the committed document matches the code it ships with; `other_branch_sources` names them.
     adapters = registry.provenance_modules()
-    unknown = sorted(set(by_source) - set(adapters))
-    if unknown:
-        raise ProvenanceError(f"manifest has sources with no adapter metadata: {unknown}")
+    by_source = {s: e for s, e in by_source.items() if s in adapters}
 
     rows, details = [], []
     for source in sorted(by_source, key=lambda s: adapters[s].PROVENANCE["title"]):
@@ -122,14 +122,27 @@ def render(manifest: list[ManifestEntry]) -> str:
 
 
 def processed_sources(store: DataStore) -> set[str]:
-    """Manifest source ids behind every processed table file (processed/<st>/<table>/<source>.parquet)."""
+    """Manifest source ids behind every processed table file built by a source registered on this branch."""
     found = set()
     for path in (store.root / "processed").glob("*/*/*.parquet"):
         src = registry.sources_for(path.parent.parent.name).get(path.stem)
-        if src is None:
-            raise ProvenanceError(f"{path}: no registered source named {path.stem!r}")
-        found |= set(src.manifest_sources)
+        if src is not None:  # files from another branch's unmerged source: see unregistered_processed
+            found |= set(src.manifest_sources)
     return found
+
+
+def other_branch_sources(store: DataStore) -> list[str]:
+    """Manifest sources with no adapter on this branch: downloaded by another worktree's unmerged adapter."""
+    return sorted({e.source for e in store.manifest()} - set(registry.provenance_modules()))
+
+
+def unregistered_processed(store: DataStore) -> list[str]:
+    """Processed table files written by a source that isn't registered on this branch."""
+    out = []
+    for path in sorted((store.root / "processed").glob("*/*/*.parquet")):
+        if path.stem not in registry.sources_for(path.parent.parent.name):
+            out.append(str(path.relative_to(store.root)))
+    return out
 
 
 def write(store: DataStore, doc: Path = DOC_PATH) -> Path:

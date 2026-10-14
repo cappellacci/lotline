@@ -55,6 +55,12 @@ def _provenance(args: argparse.Namespace) -> int:
     store = DataStore()
     if args.write:
         print(f"wrote {provenance.write(store)}")
+    for name in provenance.other_branch_sources(store):
+        print(
+            f"note: {name!r} was downloaded by another worktree (no adapter on this branch); not documented"
+        )
+    for rel in provenance.unregistered_processed(store):
+        print(f"note: {rel} comes from a source not registered on this branch; skipped")
     problems = provenance.check(store)
     for p in problems:
         print(f"FAIL {p}")
