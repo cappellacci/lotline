@@ -15,3 +15,175 @@ benchmark_mean_years:
   unit: years
   source: "Validation plan V1: benchmark (a) 'last-3-year average'"
   notes: "Fixed by the pre-registered benchmark definition."
+
+benchmark_trend_years:
+  value: 10
+  low: 5
+  high: 10
+  unit: years
+  source: "Validation plan V1: benchmark (b) 'a simple trend'; window length chosen a priori (WS-ENGINE round 2, 2026-10-14), not tuned"
+  notes: "OLS line over the 10 years ending at the forecast origin. Long enough not to chase one boom or bust year; counts only, so it needs no denominator."
+
+# ---- The baseline model (model/baseline.py: baseline_forecast) ----
+
+level_years:
+  value: 5
+  low: 3
+  high: 7
+  unit: years
+  source: "Chosen a priori (WS-ENGINE round 2, 2026-10-14), not tuned on the V1 windows: one more cycle-length than the 3-year benchmark to average out lumpy years"
+  notes: "A place's recent level = units / eligible parcels summed over the last 5 years. Must have all 5 years of numerator and denominator."
+
+min_group_places:
+  value: 5
+  low: 2
+  high: 10
+  unit: places
+  source: "Statistical protocol §5.7 (Fay-Herriot shrinkage toward a group rate); minimum chosen a priori"
+  notes: "A place shrinks toward its county's rate if the county has at least this many places with a level; otherwise toward the state's rate."
+
+use_reported_only:
+  value: 1
+  low: 0
+  high: 1
+  unit: flag (1 = yes)
+  source: "Validation plan §1 (non-reforming places: 'BPS (reported-only, not imputed)')"
+  notes: "1 = model and score BPS reported units (units_*_rep); 0 = totals including Census imputation. The backtest also runs 0 as a sensitivity."
+
+simulation_draws:
+  value: 4000
+  low: 1000
+  high: 20000
+  unit: draws
+  source: "Monte Carlo size: summed P10 and P90 moved by less than 1% between two seeds (MN, 2018 origin, 1-unit and 5+ units, checked 2026-10-14)"
+  notes: "Draws per place used to form P10/P50/P90."
+
+simulation_seed:
+  value: 20261014
+  low: 0
+  high: 4294967295
+  unit: integer seed
+  source: "Fixed so every run is reproducible from config alone (WS-ENGINE acceptance)"
+  notes: "Any value works; changing it moves P10/P90 slightly, not systematically."
+
+interval_low_quantile:
+  value: 0.10
+  low: 0.10
+  high: 0.10
+  unit: quantile
+  source: "CLAUDE.md 'show uncertainty'; validation plan V1 (P10-P90 coverage)"
+  notes: "Lower end of the range shown."
+
+interval_high_quantile:
+  value: 0.90
+  low: 0.90
+  high: 0.90
+  unit: quantile
+  source: "CLAUDE.md 'show uncertainty'; validation plan V1 (P10-P90 coverage)"
+  notes: "Upper end of the range shown."
+
+cycle_history_years:
+  value: 25
+  low: 10
+  high: 33
+  unit: years
+  source: "Census BPS place files start in 1992; 25 years before a 2016 origin reaches back to 1992 and spans the 2000s boom, the 2008 bust and the recovery. Chosen a priori."
+  notes: "Year-to-year changes in the state's total permits (places present in both years) over this many years before the origin are resampled to simulate the regional cycle."
+
+# ---- V1 backtest (model/backtest.py) ----
+
+v1_fit_end_years_first:
+  value: 2016
+  low: 2016
+  high: 2016
+  unit: year
+  source: "Validation plan V1: 'Fit on data through 2018 ... Repeat with fits ending 2016 and 2020'"
+  notes: "Fit windows run from this year to v1_fit_end_years_last in steps of v1_fit_end_step."
+
+v1_fit_end_years_last:
+  value: 2020
+  low: 2020
+  high: 2020
+  unit: year
+  source: "Validation plan V1"
+  notes: ""
+
+v1_fit_end_step:
+  value: 2
+  low: 2
+  high: 2
+  unit: years
+  source: "Validation plan V1 (2016, 2018, 2020)"
+  notes: ""
+
+v1_last_outcome_year:
+  value: 2025
+  low: 2025
+  high: 2025
+  unit: year
+  source: "Validation plan V1: 'Forecast 2019-2025'; newest BPS annual file"
+  notes: "Forecast years after this are not scored."
+
+v1_bias_first_year:
+  value: 2023
+  low: 2023
+  high: 2023
+  unit: year
+  source: "Validation plan V1: 'no systematic bias in the post-2022 window'"
+  notes: "Mean signed error is checked over forecast years from 2023 on."
+
+v1_bias_tolerance:
+  value: 0.25
+  low: 0.10
+  high: 0.50
+  unit: share of MAE
+  source: "Proposed (WS-ENGINE round 2, 2026-10-14) to make V1's 'no systematic bias' testable; to confirm at pre-registration"
+  notes: "Passes if |mean signed error| in post-2022 years is at most this share of the model's MAE in the same years."
+
+v1_coverage_low:
+  value: 0.70
+  low: 0.70
+  high: 0.70
+  unit: share
+  source: "Validation plan V1 pass (proposed): coverage 70-90%"
+  notes: "Below this the P10-P90 band is overconfident."
+
+v1_coverage_high:
+  value: 0.90
+  low: 0.90
+  high: 0.90
+  unit: share
+  source: "Validation plan V1 pass (proposed): coverage 70-90%"
+  notes: "Above this the band is too wide to be useful."
+
+use_direct_variance:
+  value: 1
+  low: 0
+  high: 1
+  unit: flag (1 = yes)
+  source: "Deviation (WS-ENGINE round 2, 2026-10-14), after the first V1 run: one-off subdivision years in tiny places were taken as their pace. Both settings are reported in the PR and logbook."
+  notes: "1 = a place's sampling variance is the larger of the negative-binomial variance (from its size) and its own observed year-to-year variance; 0 = negative-binomial only (the pre-declared spec)."
+
+use_state_momentum:
+  value: 0
+  low: 0
+  high: 1
+  unit: flag (1 = yes)
+  source: "Validation plan V1 ('If it fails: add rates or regional demand to the baseline explicitly'); WS-ENGINE brief: a regional cycle term only if the backtest shows it helps"
+  notes: "1 = scale each place's level by the state's recent pace (state_momentum). Off: in the V1 run of 2026-10-14 the effect was mixed (pooled 1-unit MAE 10.14 vs 10.18, 5+ 2.73 vs 2.68 per 1,000 parcels; 20 vs 17 of 48 cells pass) and it did not fix the NC/TX 1-unit under-forecast. Both runs are in the PR and logbook."
+
+momentum_recent_years:
+  value: 3
+  low: 1
+  high: 5
+  unit: years
+  source: "Chosen a priori to match the 3-year benchmark window (validation plan V1), not tuned"
+  notes: "Only used when use_state_momentum = 1."
+
+v1_min_eligible_parcels:
+  value: 20
+  low: 0
+  high: 50
+  unit: eligible parcels at the forecast origin
+  source: "Ben's decision 5, 2026-10-14 (WS-ENGINE V1 report, PR #93): places with fewer than 20 eligible parcels dominated the error of every method"
+  notes: "Scoring only: smaller places are still forecast and are rolled into their county for reporting. 0 scores every place (the original V1 run)."

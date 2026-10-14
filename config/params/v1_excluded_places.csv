@@ -1,0 +1,7 @@
+geoid,place,reason
+2743000,Minneapolis MN,"Reformed (2040 Plan: triplexes citywide, parking minimums removed). PLACEHOLDER until config/reforms/*.csv holds a reform registry."
+2758000,St. Paul MN,"Reformed (ADUs, 1-4 units citywide 2024). PLACEHOLDER until config/reforms/*.csv holds a reform registry."
+3755000,Raleigh NC,"Reformed (ADU 2020, Missing Middle 2021-22; validation plan §1). PLACEHOLDER until config/reforms/*.csv holds a reform registry."
+3719000,Durham NC,"Reformed (Expanding Housing Choices 2019; validation plan §1). PLACEHOLDER until config/reforms/*.csv holds a reform registry."
+3712000,Charlotte NC,"Reformed (UDO 2023; validation plan §1). PLACEHOLDER until config/reforms/*.csv holds a reform registry."
+4805000,Austin TX,"Reformed (HOME 2023-24). PLACEHOLDER until config/reforms/*.csv holds a reform registry."
