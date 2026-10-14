@@ -59,34 +59,32 @@ that file, without being asked:
 - Name every output by path or artifact link; point to any HANDOFF decision it added.
 - Say what Claude did and how it was checked (feeds `docs/disclosures.md`).
 - Append only; never rewrite old entries. Corrections go in a new entry that references the old one.
-- Keep the repo copy (`LOGBOOK.md`) and the project copy (`claude/LOGBOOK.md`) identical, and update the
-  "story so far" table when a new phase starts.
+- Update the "story so far" table when a new phase starts.
 
 **Exception for Claude Code workstream instances** (several run in parallel): don't edit `LOGBOOK.md` or
 `HANDOFF.md` directly. Write one fragment per PR to `logbook.d/<YYYY-MM-DD>-<branch>.md` using the same template;
 Ben folds fragments in with `scripts/dev/merge_logbook.py`. Propose HANDOFF decisions in the PR description.
 
-## Project ↔ repo sync (every session)
+## One copy: this repo (every session)
 
-The claude.ai project ("Lotline") and this repo are **separate stores that do not sync on their own**. A doc
-saved to one is not in the other until a session writes it there. (On 2026-10-06, 10 research docs existed
-only in the project and had to be restored to `docs/research/`.)
+Cowork and Claude Code both work in **`~/Engineering/Lotline`**: this repo (macOS treats `Lotline` and `lotline`
+as the same folder). Every shared doc has exactly one home, its repo path. There are no mirror copies.
 
-- **Whenever you create or update a shared doc in one place, write the same content to the other in the same
-  session.** Path mapping:
+| Doc | Lives at |
+|---|---|
+| Research | `docs/research/<file>` |
+| Build plan, briefs, kickoff plans | `docs/build/<file>` |
+| Logbook, handoff | `LOGBOOK.md`, `HANDOFF.md` |
+| Instructions, readme | `CLAUDE.md`, `README.md` |
 
-  | Project path | Repo path |
-  |---|---|
-  | `research/<file>` | `docs/research/<file>` |
-  | `build/<file>` | `docs/build/<file>` |
-  | `claude/LOGBOOK.md` | `LOGBOOK.md` |
-  | `claude/HANDOFF.md` | `HANDOFF.md` |
-  | `CLAUDE.md`, `README.md` | same path at repo root |
-
-- If you can't reach the other side (e.g. the session isn't linked to Ben's computer), say so at the end of the
-  session and list the files still to be copied, so nothing silently drifts.
-- Images and data stay repo-only (e.g. causal-diagram PNGs); never put downloaded data in either place.
-- Claude Code workstream instances follow the workstream rules below instead (repo only, via PRs).
+- **Never create mirror folders** (`claude/`, `research/`, `build/` at the root): two copies drift apart.
+- If an online claude.ai Project also holds copies, treat them as read-only references. The repo wins; refresh
+  them by uploading from the repo when needed.
+- **Sessions that work directly in the main checkout (Cowork, the nightly review)** commit their work through
+  a PR before the session ends, so it is never left uncommitted when branches change. They write logbook
+  entries as **fragments in `logbook.d/`** (same template), not edits to `LOGBOOK.md`, so folding stays clean.
+- Claude Code workstream instances work in their own git worktrees, never in the main checkout.
+- Images and data rules are unchanged: images stay in the repo; downloaded data never goes in the repo.
 
 ## Rules timing (checked 2026-10-04)
 

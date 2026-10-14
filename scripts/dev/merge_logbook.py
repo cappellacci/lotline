@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fold logbook.d/*.md fragments into LOGBOOK.md (and claude/LOGBOOK.md if present).
+"""Fold logbook.d/*.md fragments into LOGBOOK.md.
 
 Fragments are sorted by the date in their heading, then by the time the fragment was first committed (so
 same-day entries keep the order the work happened), then by file name, and numbered LB-NNN after the last
@@ -70,7 +70,7 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
     ap.add_argument("--apply", action="store_true", help="write LOGBOOK.md and delete merged fragments")
     a = ap.parse_args(argv)
 
-    targets = [p for p in (root / "LOGBOOK.md", root / "claude" / "LOGBOOK.md") if p.exists()]
+    targets = [p for p in (root / "LOGBOOK.md",) if p.exists()]  # one copy (CLAUDE.md)
     if not targets:
         sys.exit("LOGBOOK.md not found")
     fragments = load_fragments(root / "logbook.d")
@@ -84,7 +84,7 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
     if not a.apply:
         print("dry run; use --apply to write")
         return 0
-    for target in targets:  # the project copy is kept identical to the repo copy (CLAUDE.md)
+    for target in targets:
         target.write_text(new_text)
     for _, path, _ in fragments:
         path.unlink()
