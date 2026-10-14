@@ -1,0 +1,21 @@
+OBJECTID,SDE_ID,CO_CODE,CTU_CODE,CTU_NAME,YEAR,TENURE,HOUSING_TYPE,RES_PERMIT_TYPE,BUILDINGS,UNITS,PIN,PERMIT_VALUE,note
+1,1001,053,43000,Minneapolis,2018,OWN,SFD,NU,1,1,0532102724410003,350000,SFD new; Hennepin PIN with county prefix
+2,1002,053,43000,Minneapolis,2018,OWN,ADU,NU,1,1,1502724430043,120000,ADU new; Hennepin PIN without prefix
+3,1003,053,43000,Minneapolis,2020,RNT,DTQ,NU,1,3,,600000,DTQ triplex: stays DTQ
+4,1004,053,43000,Minneapolis,2020,RNT,MF5,NU,1,120,,25000000,MF5 large building
+5,1005,053,43000,Minneapolis,2020,OWN,SFD,RM,1,1,,,demolition
+6,1006,053,43000,Minneapolis,2021,RNT,DTQ,FS,1,2,,90000,conversion from single family
+7,1007,053,43000,Minneapolis,2021,OWN,SFD,TD,1,1,,,conversion to DTQ (loss in SFD)
+8,1008,053,43000,Minneapolis,2022,RNT,MF5,RE,1,40,,2000000,remodel over $1M: no unit change
+9,1009,053,43000,Minneapolis,2022,OWN,TH,NU,2,,,,unknown units
+10,1010,123,58000,St. Paul,2022,OWN,ADU,NU,1,1,123223023110005,80000,St. Paul pre-holdout: kept
+11,1011,123,58000,St. Paul,2023,RNT,DTQ,NU,1,4,,700000,St. Paul pre-holdout: kept
+12,1012,123,58000,St. Paul,2025,RNT,DTQ,NU,1,2,,1,St. Paul held out: must disappear
+13,1013,123,58000,St. Paul,2024,OWN,SFD,RM,1,1,,,St. Paul held out: must disappear
+14,1014,003,05554,Bethel,2019,OWN,SFD,NU,1,1,003233224130070,300000,township-coded city? place lookup decides
+15,1015,003,40166,Linwood,2019,OWN,SFD,NU,1,1,0,310000,township: 10-digit GEOID; '0' PIN is null
+16,1016,037,17288,Eagan,2016,OWN,TH,NU,1,1,037-01-54500-01-100,280000,Dakota PIN punctuation
+17,1017,019,10918,Chaska,2017,COP,MF5,NU,1,60,019010110110,9000000,co-op tenure; Carver prefixed PIN
+18,1018,139,59998,Savage,2017,,SFD,MO,1,1,200670550,,moved out; null tenure
+19,1019,163,71032,Woodbury,2023,OWN,XYZ,NU,1,1,,,unknown housing type
+20,1020,163,71032,Woodbury,2023,OWN,SFD,ZZ,1,1,,,unknown permit code

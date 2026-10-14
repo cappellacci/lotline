@@ -13,4 +13,15 @@ holdouts:
     outcome_from: 2024-01-01
     outcome_until: 2026-12-31
     reason: V5 blind forward test of the St. Paul 2023 reform (validation plan §3)
-sources: []
+# Last date usable for fitting, by GEOID (validation plan §2). St. Paul: data through 2023 only (V5 blind test).
+train_until:
+  "2758000": 2023-12-31
+sources:
+  - name: metc_permits
+    url: https://arcgis.metc.state.mn.us/data1/rest/services/structure/Other_Structure_Public/FeatureServer/0
+    license: Public domain (Minnesota Government Data Practices Act, Minn. Stat. ch. 13)
+    access: arcgis
+    cadence: annual (prior year posted mid-year)
+    notes: >-
+      Met Council Residential Permits, 7-county metro, permit-year ledger 2009 on. Listed on the Geospatial
+      Commons as us-mn-state-metc-econ-residential-building-permts (file GDB also offered; not used).
