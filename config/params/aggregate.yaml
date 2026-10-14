@@ -17,10 +17,26 @@ displacement_share:
   source: "Statistical protocol §6 (decision table: '0-50% range parameter'); methods review §5 (pitfall 1, displacement and spillovers); two-prong design; E001 (Auckland bounds), E004 (Lower Hutt)"
   notes: "Share of a place's gain that is pulled in from neighbors rather than new statewide. Shown as 'in this place' vs 'net statewide'. Central value is the midpoint of the range until neighbor-place data say otherwise."
 
-completion_factor:
-  value: 0.90
-  low: 0.85
-  high: 0.95
+completion_factor_single_family:
+  value: 0.97
+  low: 0.95
+  high: 1.0
   unit: completions per permitted unit
-  source: "Statistical protocol §6 (decision table: Census Survey of Construction lags; local completion data, default 0.85-0.95)"
-  notes: "Permits-to-completions factor, shown separately from permits (protocol §5.10). Central value is the midpoint of the range."
+  source: "Census New Residential Construction via FRED, long-run completions per permitted unit, recomputed by scripts/dev/completion_factors.py (lotline.model.completion): PERMIT1NSA vs COMPU1UNSA, 1-year lag; 1.04 (1990-2019), 1.02 (2000-2019), 1.03 (2010-2022)"
+  notes: "Also used for ADUs. Measured ratios exceed 1 because Census completions include areas that issue no permits (2-5% of starts) and townhouses permitted as 2+ units; the rate for permitted units is just under 1. Central 0.97 allows for that; range to 1.0."
+
+completion_factor_multifamily:
+  value: 0.80
+  low: 0.74
+  high: 0.88
+  unit: completions per permitted unit
+  source: "Census New Residential Construction via FRED, long-run completions per permitted unit, recomputed by scripts/dev/completion_factors.py (lotline.model.completion): PERMIT24NSA+PERMIT5NSA vs COMPU24UNSA+COMPU5MUNSA, 2-year lag; 0.77 (1990-2019), 0.74 (2000-2019), 0.79 (2010-2022)"
+  notes: "Buildings with 2+ units, used for missing middle. Measured ratios are a lower bound: townhouse rows permitted as 2+ units are completed as single-family. Central 0.80 sits just above the measured range; high end allows for the misclassification."
+
+completion_factor_all:
+  value: 0.93
+  low: 0.89
+  high: 0.96
+  unit: completions per permitted unit
+  source: "Census New Residential Construction via FRED, long-run completions per permitted unit, recomputed by scripts/dev/completion_factors.py (lotline.model.completion): PERMITNSA vs COMPUTNSA, 1-year lag; 0.96 (1990-2019), 0.93 (2000-2019), 0.91 (2010-2022)"
+  notes: "All housing, for the baseline. Replaces the placeholder 0.90 (0.85-0.95) from the statistical protocol §6 decision table. Range spans the measured windows less the 2-3% of completions in areas that issue no permits."

@@ -20,6 +20,8 @@ def test_engine_parameters_from_the_research_docs():
     agg, fees = load_params("aggregate"), load_params("fees")
     assert (agg["adu_net_new_share"].low, agg["adu_net_new_share"].high) == (0.5, 0.8)
     assert (agg["displacement_share"].low, agg["displacement_share"].high) == (0.0, 0.5)
-    assert (agg["completion_factor"].low, agg["completion_factor"].high) == (0.85, 0.95)
+    assert agg["completion_factor_multifamily"].value < agg["completion_factor_single_family"].value
+    for key in ("completion_factor_single_family", "completion_factor_multifamily", "completion_factor_all"):
+        assert "scripts/dev/completion_factors.py" in agg[key].source  # reproducible from Census data
     cut = fees["handbook_fee_per_unit_usd"].value * fees["handbook_fee_cut_share"].value
     assert cut == 25_000  # Handbook: -50% of $50k = -$25k per unit

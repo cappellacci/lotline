@@ -56,6 +56,8 @@ PROVENANCE = {
         "Calendar-year means over complete years only (52+ weekly or 12 monthly observations)",
         "A single missing observation between two published ones is linearly interpolated (Oct 2025 CPI)",
         "Stored at geo national:US for every state",
+        "Also downloaded (not stored in a table): Census permits and completions by building size "
+        "(PERMIT*NSA, COMPU*NSA) for the completion factors, via scripts/dev/completion_factors.py",
     ],
     "limitations": [
         "BLS published no October 2025 CPI (federal shutdown); 2025 CPI uses an interpolated October",
