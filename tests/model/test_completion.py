@@ -23,3 +23,18 @@ def test_completion_ratio_needs_every_year():
     completions = pd.Series({2011: 90.0})
     with pytest.raises(ValueError, match="missing years"):
         completion.completion_ratio(completions, permits, 2010, 2011, lag=1)
+
+
+def test_factor_by_building_type_and_scenario():
+    from lotline.config import load_params
+
+    params = load_params("aggregate")
+    assert completion.factor_key("ADU") == completion.factor_key("SFD") == "completion_factor_single_family"
+    assert completion.factor_key("TH") == "completion_factor_single_family"  # Census counts townhouses as SF
+    assert completion.factor_key("DTQ") == completion.factor_key("MF5") == "completion_factor_multifamily"
+    assert completion.factor_key("UNKNOWN") == completion.factor_key("OTHER") == "completion_factor_all"
+    assert completion.factor_key(scenario="missing_middle") == "completion_factor_multifamily"
+    for key in {*completion.FACTOR_BY_TYPE.values(), *completion.FACTOR_BY_SCENARIO.values()}:
+        assert key in params  # every mapped factor exists, with a source
+    with pytest.raises(ValueError):
+        completion.factor_key("SFD", scenario="adu")

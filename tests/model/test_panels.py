@@ -129,7 +129,9 @@ def test_market_covariates_national_and_hpi_fallback():
     assert p.loc[("3700001", 2024), "hpi_geo"] == "county:37001"
 
     no_county = MARKET[MARKET["geo"] != "county:37001"]
-    only_county = panels.build(BPS, _eligible(), no_county, theme="adu", rule_version="1.0")
+    only_county = panels.build(
+        BPS, _eligible(), no_county, theme="adu", rule_version="1.0", hpi_levels=("county",)
+    )
     assert only_county["hpi"].isna().all()
     both = panels.build(
         BPS, _eligible(), no_county, theme="adu", rule_version="1.0", hpi_levels=("county", "state")
@@ -164,3 +166,99 @@ def test_load_refuses_held_out_outcomes(tmp_path):
     leaked = pd.concat([BPS, _bps([("37120000", "3712000", "37119", 2024, 1, 0, False)])], ignore_index=True)
     with pytest.raises(HoldoutLeak):
         panels.load("NC", _store(tmp_path, leaked), theme="adu", rule_version="1.0")
+
+
+def test_hpi_fallback_chain_county_cbsa_noncbsa_state():
+    """Four jurisdictions, 2024. A's county 48453 has its own index (100). B's county 48491 has none, but its
+    metro 12420 does (200). C's county 48001 has none and isn't in a CBSA: FHFA's Texas "non CBSA" series
+    cbsa:00048 (300). D is like C but in a year with no non-CBSA value: the state index (400)."""
+
+    def row(geoid, county, year):
+        r = {
+            "state": "TX",
+            "bps_id": "48" + geoid[-6:],
+            "geoid": geoid,
+            "county_geoid": county,
+            "name": geoid,
+            "year": year,
+            "months_reported": 12,
+            "imputed": False,
+        }
+        return r | {c: 1 for c in panels.UNITS}
+
+    bps = pd.DataFrame(
+        [
+            row("4800001", "48453", 2024),
+            row("4800002", "48491", 2024),
+            row("4800003", "48001", 2024),
+            row("4800004", "48001", 2023),
+        ]
+    )
+    eligible = pd.DataFrame(
+        {
+            "state": "TX",
+            "jurisdiction_geoid": ["4800001"],
+            "year": [2024],
+            "theme": "adu",
+            "rule_version": "1.0",
+            "eligible_parcels": [10],
+            "data_tier": [3],
+            "denominator_source": "acs_sf_fallback",
+            "denominator_quality": "low",
+        }
+    )
+    market = pd.DataFrame(
+        {
+            "geo": ["county:48453", "cbsa:12420", "cbsa:00048", "state:48", "state:48"],
+            "year": [2024, 2024, 2024, 2024, 2023],
+            "hpi": [100.0, 200.0, 300.0, 350.0, 400.0],
+            "hpi_base2000": [1.0, 2.0, 3.0, 3.5, 4.0],
+        }
+    )
+    juris = pd.DataFrame(
+        {"geoid": ["4800001", "4800002", "4800003", "4800004"], "cbsa_code": ["12420", "12420", None, None]}
+    )
+    p = panels.build(bps, eligible, market, theme="adu", rule_version="1.0", jurisdictions=juris)
+    got = p.set_index("geoid")[["hpi", "hpi_geo"]]
+    assert got.loc["4800001"].tolist() == [100.0, "county:48453"]
+    assert got.loc["4800002"].tolist() == [200.0, "cbsa:12420"]
+    assert got.loc["4800003"].tolist() == [300.0, "cbsa:00048"]
+    assert got.loc["4800004"].tolist() == [400.0, "state:48"]
+
+
+def test_denominator_carried_forward_to_later_years_only():
+    """ACS estimate for 2023 (500) and none for 2022 or 2024: 2024 carries 2023's value forward
+    (denominator_year 2023); 2022, before the first estimate, stays missing."""
+
+    def row(year):
+        r = {
+            "state": "MN",
+            "bps_id": "27000001",
+            "geoid": "2700001",
+            "county_geoid": "27053",
+            "name": "x",
+            "year": year,
+            "months_reported": 12,
+            "imputed": False,
+        }
+        return r | {c: 1 for c in panels.UNITS}
+
+    bps = pd.DataFrame([row(2022), row(2023), row(2024)])
+    eligible = pd.DataFrame(
+        {
+            "state": "MN",
+            "jurisdiction_geoid": ["2700001"],
+            "year": [2023],
+            "theme": "adu",
+            "rule_version": "1.0",
+            "eligible_parcels": [500],
+            "data_tier": [3],
+            "denominator_source": "acs_sf_fallback",
+            "denominator_quality": "low",
+        }
+    )
+    market = pd.DataFrame({"geo": ["national:US"], "year": [2024], "cpi_u": [313.7]})
+    p = panels.build(bps, eligible, market, theme="adu", rule_version="1.0").set_index("year")
+    assert pd.isna(p.loc[2022, "eligible_parcels"])
+    assert p.loc[2023, "eligible_parcels"] == 500 and p.loc[2023, "denominator_year"] == 2023
+    assert p.loc[2024, "eligible_parcels"] == 500 and p.loc[2024, "denominator_year"] == 2023

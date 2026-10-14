@@ -34,3 +34,35 @@ def completion_ratio(completions: pd.Series, permits: pd.Series, start: int, end
     if missing:
         raise ValueError(f"missing years: {sorted(set(missing))}")
     return float(completions.loc[list(need_c)].sum() / permits.loc[list(need_p)].sum())
+
+
+# Which measured factor applies (config/params/aggregate.yaml). Census completions count townhouses as
+# single-family attached, so TH uses the single-family factor; ADUs are small detached or attached units built
+# like single-family homes. Combined and unknown types use the all-units factor.
+FACTOR_BY_TYPE = {
+    "SFD": "completion_factor_single_family",
+    "TH": "completion_factor_single_family",
+    "ADU": "completion_factor_single_family",
+    "U2": "completion_factor_multifamily",
+    "U3_4": "completion_factor_multifamily",
+    "U5_6": "completion_factor_multifamily",
+    "U7P": "completion_factor_multifamily",
+    "DTQ": "completion_factor_multifamily",
+    "MF5": "completion_factor_multifamily",
+}
+FACTOR_BY_SCENARIO = {
+    "adu": "completion_factor_single_family",
+    "missing_middle": "completion_factor_multifamily",
+    "baseline": "completion_factor_all",
+}
+
+
+def factor_key(building_type_std: str | None = None, scenario: str | None = None) -> str:
+    """Parameter name of the completion factor for a building type or a scenario (exactly one)."""
+    if (building_type_std is None) == (scenario is None):
+        raise ValueError("pass exactly one of building_type_std or scenario")
+    if scenario is not None:
+        if scenario not in FACTOR_BY_SCENARIO:
+            raise ValueError(f"no completion factor mapped for scenario {scenario!r}")
+        return FACTOR_BY_SCENARIO[scenario]
+    return FACTOR_BY_TYPE.get(building_type_std, "completion_factor_all")
