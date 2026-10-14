@@ -54,6 +54,7 @@ def build(state: str, bps_table: pd.DataFrame, census: pd.DataFrame) -> pd.DataF
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    path = store.processed(state, "bps_place_year", "bps")
-    bps_table = pd.read_parquet(path) if path.exists() else bps.load(state, store, refresh=refresh)
+    bps_table = store.read(state, "bps_place_year")
+    if bps_table is None:
+        bps_table = bps.load(state, store, refresh=refresh)
     return build(state, bps_table, decennial.load(load_state(state).fips, state, store, refresh=refresh))

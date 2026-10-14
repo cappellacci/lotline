@@ -15,6 +15,8 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pandas as pd
+
 DEFAULT_DATA_DIR = "~/lotline-data"
 
 
@@ -65,6 +67,18 @@ class DataStore:
         """Folder holding a canonical table (read it whole with pandas.read_parquet), or one source's file."""
         folder = self.root / "processed" / state.lower() / table
         return folder / f"{source}.parquet" if source else folder
+
+    def read(self, state: str, table: str) -> pd.DataFrame | None:
+        """A processed table, combining every source's file (`processed/<st>/<table>/*.parquet`).
+
+        Use this instead of `pandas.read_parquet(folder)`: reading the folder as one dataset keeps only the
+        first file's columns, so e.g. FRED's `cpi_u` vanishes from `market_geo_year`. Here each file is read
+        on its own and rows are stacked with the union of columns. Returns None if the table isn't built.
+        """
+        files = sorted(self.processed(state, table).glob("*.parquet"))
+        if not files:
+            return None
+        return pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
 
     @property
     def manifest_path(self) -> Path:
