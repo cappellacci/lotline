@@ -23,6 +23,7 @@ from __future__ import annotations
 import pandas as pd
 
 from lotline.config import Parameter, load_params
+from lotline.io import DataStore
 from lotline.schemas import validate
 
 RULE_VERSION = "1.0"
@@ -142,3 +143,35 @@ def from_acs(
         for r in sf.itertuples()
     ]
     return validate(pd.DataFrame(rows), "eligible_parcels")
+
+
+# ---- `lotline fetch --source eligible` -----------------------------------------------------------------
+
+SOURCE = "eligible"
+MANIFEST_SOURCES = ["census_acs5", "census_bps_place_annual", "census_dec_pl"]  # ACS + jurisdictions' inputs
+
+
+def combine(parcel_rows: pd.DataFrame | None, acs_rows: pd.DataFrame) -> pd.DataFrame:
+    """One denominator source per jurisdiction: parcels where a state has them, the ACS fallback elsewhere."""
+    if parcel_rows is None or parcel_rows.empty:
+        return acs_rows
+    covered = set(parcel_rows["jurisdiction_geoid"])
+    rest = acs_rows[~acs_rows["jurisdiction_geoid"].isin(covered)]
+    return validate(pd.concat([parcel_rows, rest], ignore_index=True), "eligible_parcels")
+
+
+def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
+    """Build `eligible_parcels` for one state from processed tables (building any that are missing)."""
+    from lotline.adapters.national import acs
+    from lotline.build import jurisdictions as jur
+
+    def processed_or(table: str, build):
+        path = store.processed(state, table)
+        return pd.read_parquet(path) if path.exists() else build()
+
+    juris = processed_or("jurisdictions", lambda: jur.load(state, store, refresh=refresh))
+    acs_table = processed_or("acs_geo_year", lambda: acs.load(state, store, refresh=refresh))
+    parcels_path = store.processed(state, "parcels")
+    parcels = pd.read_parquet(parcels_path) if parcels_path.exists() else None
+    parcel_rows = from_parcels(parcels, juris) if parcels is not None and len(parcels) else None
+    return combine(parcel_rows, from_acs(acs_table, juris))

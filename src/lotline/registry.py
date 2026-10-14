@@ -48,13 +48,14 @@ class Source:
 
 def _national() -> list[Source]:
     from lotline.adapters.national import acs, bps, fhfa, fred
-    from lotline.build import jurisdictions
+    from lotline.build import eligible, jurisdictions
 
     return [
         Source("acs", acs, "acs_geo_year", None),
         Source("bps", bps, "bps_place_year", None),
         Source("fhfa", fhfa, "market_geo_year", None),
         Source("fred", fred, "market_geo_year", None),
+        Source("eligible", eligible, "eligible_parcels", None),
         Source("jurisdictions", jurisdictions, "jurisdictions", None),
     ]
 

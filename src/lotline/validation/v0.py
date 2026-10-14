@@ -189,6 +189,7 @@ def build_report(state: str, store: DataStore) -> tuple[str, bool, pd.DataFrame]
     for table, year_col, geo_col in (
         ("bps_place_year", "year", "bps_id"),
         ("jurisdictions", None, "geoid"),
+        ("eligible_parcels", "year", "jurisdiction_geoid"),
         ("market_geo_year", "year", "geo"),
         ("acs_geo_year", "end_year", "geo"),
     ):
@@ -198,6 +199,15 @@ def build_report(state: str, store: DataStore) -> tuple[str, bool, pd.DataFrame]
             continue
         if year_col is None:
             sections += [f"- `{table}`: {len(df):,} rows; kinds {df['kind'].value_counts().to_dict()}", ""]
+            continue
+        if table == "eligible_parcels":
+            mix = df.groupby(["denominator_source", "denominator_quality"]).size().to_dict()
+            mix_text = ", ".join(f"{s} ({q}) {n:,}" for (s, q), n in mix.items())
+            sections += [
+                f"- `{table}`: {len(df):,} rows · {df[year_col].min()}–{df[year_col].max()} · "
+                f"{df[geo_col].nunique():,} jurisdictions · source (quality): {mix_text}",
+                "",
+            ]
             continue
         c = coverage(df, year_col, geo_col)
         nulls = ", ".join(f"`{k}` {v}" for k, v in c["nulls"].items()) or "none"
