@@ -5,9 +5,30 @@ housing production over five years, compared with a no-change baseline.
 
 > Status: early setup (Phase 0). See `HANDOFF.md` and `docs/build/BUILD_PLAN.md`.
 
+## Command contract
+
+The three commands reviewers use to reproduce Lotline from a clean checkout. They need
+[uv](https://docs.astral.sh/uv/getting-started/installation/) and nothing else (uv installs Python 3.12 if missing).
+
+| Step  | Command | Notes |
+| ----- | ------- | ----- |
+| Setup | `uv sync --frozen` | Installs the exact pinned dependencies from `uv.lock` into `.venv/` |
+| Run   | `uv run lotline --help` | Command-line tool for now; the interactive app arrives in Phase 5 and this row will name its command |
+| Test  | `uv run pytest -q` | Runs the automated tests (small synthetic fixtures, no downloads needed) |
+
+Commands that download data need a `.env`: copy `.env.example` to `.env` and fill in the values (see [Data](#data)).
+
+## Documentation
+
+- [Model & Assumptions Overview](docs/model_and_assumptions.md): how the tool works and what it assumes
+- [Policy Scenario Comparison](docs/policy_scenario_comparison.md): scenario ranking and what drives it
+- [Data Provenance](docs/data_provenance.md): sources, licenses and preparation steps
+- [Disclosures](docs/disclosures.md): AI tools, models, external services and dependency licenses
+- [Data dictionary](docs/schemas.md) and [analysis plan](docs/analysis_plan.md)
+
 ## License
 
-Licensed under the **Apache License 2.0** (Apache-2.0). See [`LICENSE`](LICENSE).
+Licensed under the **Apache License 2.0** (Apache-2.0). See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
 
 ## Setup
 
@@ -61,4 +82,12 @@ Lint: `uv run ruff check .`
 
 Dependabot (`.github/dependabot.yml`) keeps dependencies and GitHub Actions current. Secret scanning, push protection,
 Dependabot alerts and **CodeQL default setup** are turned on in the repository's Settings → Code security
-(no CodeQL workflow file is needed).
+(no CodeQL workflow file is needed). Private vulnerability reporting is on; see [`SECURITY.md`](SECURITY.md) to report
+an issue.
+
+## Team
+
+- Ben Cappellacci (Team Leader)
+
+All contributors agree to the Apache-2.0 license and the challenge's
+[Official Rules](https://housingchallenge.turnout.rocks/rules.html).

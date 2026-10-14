@@ -33,6 +33,15 @@ Handbook: https://housingchallenge.turnout.rocks/handbook.html
 - Swapping in alternative datasets is scored (Replicability, 25%), so data inputs sit behind simple adapters.
 - A non-technical policymaker is the primary user. Labels are in plain language.
 
+## Judging panel (`/judge`)
+
+A simulated panel of expert judges lives in `.claude/agents/judge-*.md` (shared rules: `.claude/judging/RUBRIC.md`;
+command: `.claude/commands/judge.md`). Six judges score the entry the way the Rules §8 panel would: gatekeeper
+(pass/fail gates), transparency (30%), replicability (25%), usability (20%), methodology (15%) and policy insight
+(10%); a head judge merges them into `reports/judging/<run-id>/SCORECARD.md` with a ranked action plan. Run
+`/judge` (working tree) or `/judge all --ref main` (what real judges see) before each milestone. Judges are
+read-only on the repo, work in temp clones, never download data and never touch holdouts. Runs are gitignored.
+
 ## Before every commit
 
 ```bash
@@ -56,6 +65,28 @@ that file, without being asked:
 **Exception for Claude Code workstream instances** (several run in parallel): don't edit `LOGBOOK.md` or
 `HANDOFF.md` directly. Write one fragment per PR to `logbook.d/<YYYY-MM-DD>-<branch>.md` using the same template;
 Ben folds fragments in with `scripts/dev/merge_logbook.py`. Propose HANDOFF decisions in the PR description.
+
+## Project ↔ repo sync (every session)
+
+The claude.ai project ("Lotline") and this repo are **separate stores that do not sync on their own**. A doc
+saved to one is not in the other until a session writes it there. (On 2026-10-06, 10 research docs existed
+only in the project and had to be restored to `docs/research/`.)
+
+- **Whenever you create or update a shared doc in one place, write the same content to the other in the same
+  session.** Path mapping:
+
+  | Project path | Repo path |
+  |---|---|
+  | `research/<file>` | `docs/research/<file>` |
+  | `build/<file>` | `docs/build/<file>` |
+  | `claude/LOGBOOK.md` | `LOGBOOK.md` |
+  | `claude/HANDOFF.md` | `HANDOFF.md` |
+  | `CLAUDE.md`, `README.md` | same path at repo root |
+
+- If you can't reach the other side (e.g. the session isn't linked to Ben's computer), say so at the end of the
+  session and list the files still to be copied, so nothing silently drifts.
+- Images and data stay repo-only (e.g. causal-diagram PNGs); never put downloaded data in either place.
+- Claude Code workstream instances follow the workstream rules below instead (repo only, via PRs).
 
 ## Rules timing (checked 2026-10-04)
 

@@ -14,3 +14,8 @@ results/*
 !results/frozen/
 reports/**/*.parquet
 # Source data lives in LOTLINE_DATA_DIR (default ~/lotline-data), outside the repo
+
+# Official challenge PDFs (third-party documents, kept locally)
+rules and resources/
+# Local judging-panel runs (/judge); not part of the submission
+reports/judging/

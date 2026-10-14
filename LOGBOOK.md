@@ -9,7 +9,7 @@ A running record of **how** the Lotline entry was built: what question each step
 - Entries LB-001 to LB-009 were **reconstructed on 2026-09-30** from the docs and artifacts they produced; later entries are written as the work happens.
 - Entries are added two ways: by the Claude session doing the work (rule in `CLAUDE.md`), and by a nightly review that scans the repo, project docs and artifacts for anything new since the last scan. Nightly entries are marked *(auto-review)*.
 
-**Last scan:** 2026-10-06T00:53Z
+**Last scan:** 2026-10-14T00:53Z
 
 ---
 
@@ -30,6 +30,8 @@ A running record of **how** the Lotline entry was built: what question each step
 | 10. Causal design and validation | Oct 3–4 | What could fake or hide a policy effect, and how do we prove the model before using it? | Causal diagrams (general/ADU, MM, fees), 54-factor confounder register, in-state validation plan | LB-015, LB-016 |
 | 11. Build transition | Oct 4 | How do we move to code across four states, in parallel, through GitHub? | Build plan, 9 Claude Code workstream briefs, 53-issue backlog | LB-020 |
 | 12. Repo bootstrap | Oct 6 | Is the repo public, reproducible and CI-checked before registration closes? | github.com/cappellacci/lotline: uv project, CI, protected `main`, research docs, issue backlog | LB-021, LB-023, LB-024 |
+| 13. Core data and contracts | Oct 6–8 | Can national data for four states flow through shared, tested contracts, with blind tests protected? | BPS, FHFA, ACS, FRED and 2020 Census adapters; holdout filter; generated provenance and data dictionary; V0 reports; tag `schemas-v1`; ArcGIS pager for state adapters | LB-027 – LB-037 |
+| 14. Coding Period opens | Oct 14 | Is the repo aligned with the official rules, template and judging rubric, and does every state have a sound denominator? | Rules-PDF review; starter-template alignment; `/judge` panel; eligible-parcel rule with rest-of-county denominators | LB-041 – LB-046 |
 
 ---
 
@@ -370,3 +372,306 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** none.
 - **AI:** Claude Code verified the file list, scanned for secrets (`compliance_check.py` T5 plus a keyword grep), and opened and merged the PR. Content is unchanged from the Cowork copies.
 - **Open / next:** Closes #8. Commit freeze from Oct 7 09:00 to Oct 14 09:01 ET.
+
+### LB-025 · 2026-10-06 · Admin: Project ↔ repo sync rule in CLAUDE.md (auto-review)
+- **Question:** How do we stop the claude.ai project and the repo drifting apart, after 10 research docs turned out to exist only in the project (LB-024)?
+- **What I did:**
+  - Added a "Project ↔ repo sync (every session)" section to `CLAUDE.md`: any shared doc created or updated in one store is written to the other in the same session, with a path map (`research/` ↔ `docs/research/`, `build/` ↔ `docs/build/`, `claude/LOGBOOK.md` ↔ `LOGBOOK.md`, `claude/HANDOFF.md` ↔ `HANDOFF.md`, `CLAUDE.md`/`README.md` at the root).
+  - If the other side can't be reached, the session lists the files still to copy. Images and data stay repo-only; Claude Code workstream instances stay repo-only via PRs.
+- **Inputs:** LB-024; `CLAUDE.md`.
+- **Outputs:** `CLAUDE.md` (uncommitted working-tree change as of this scan; the project copy of `CLAUDE.md` has not been updated).
+- **Findings:** none beyond the rule itself.
+- **Decisions:** none logged in HANDOFF.
+- **AI:** the edit was made in a session that didn't log itself; this entry was added by the nightly review from the diff.
+- **Open / next:** commit the `CLAUDE.md` change (before Oct 7 09:00 ET or after the freeze ends Oct 14 09:01 ET) and mirror it to the project's `CLAUDE.md`. Nine logbook fragments for Oct 6 work (WS-CORE adapters, jurisdictions, provenance, V0 check, schemas-v1, Durham/Carthage scouting) are waiting in `logbook.d/` for `merge_logbook.py --apply`.
+
+### LB-026 · 2026-10-06 · Data feasibility: Gap-week scouting, Durham permits and the Carthage town list
+- **Question:** Is Durham's permit feed still updated, and is there a published list of towns hit by *Quality Built Homes v. Carthage*?
+- **What I did:**
+  - Queried the Durham Inspections ArcGIS layer (`webgis2.durhamnc.gov/.../Inspections/MapServer/12`). It timed out with no response from this network, while `durhamnc.gov` itself answered. Checked the Hub listing instead.
+  - Read the UNC School of Government posts on *Carthage* (2016) and system development fees (S.L. 2017-138), and searched for a list of affected towns.
+- **Inputs:** `docs/research/lotline-data-catalog.csv` (Durham row), `lotline-causal-diagram-fees.md`, `lotline-validation-plan.md`.
+- **Outputs:** this entry.
+- **Findings:**
+  - **Durham "All Building Permits (table only)" was last updated 2024-11-13 (77,723 records)**, so it looks stale. A separate **"Active Building Permits"** layer exists and is likely a rolling window, which would make it a manual-snapshot candidate like the Minneapolis and St. Paul layers. Fallbacks: the city's Monthly Construction Activity Reports and the LDO permit search.
+  - **No published list of Carthage-affected towns.** The SOG posts name only Carthage (fees of $1,000–$30,000 per connection). Amicus municipalities were Apex, Concord, Holly Springs, Jacksonville, Kannapolis, Surf City and Winston-Salem, which is a lower bound. Key dates: ruling 2016-08-19; S.L. 2017-138 took effect 2017-10-01, and existing fees had to conform by 2018-07-01; the refund limitation period was cut to 3 years (N.C. Sup. Ct., Aug 2018).
+  - **The likely source for treatment status is the UNC EFC / NCLM annual water and wastewater rates survey** (every year since 2005, about 400–500 utilities, with connection fees, downloadable spreadsheets). Comparing utilities' capacity and impact fees for 2015/16 against 2017/18 could identify which towns dropped fees.
+- **Decisions:** none. Proposed: add the EFC rates survey to the NC data catalog as the source for the V6 fee-shock treatment list.
+- **AI:** Claude Code ran the queries and web reads; facts come from the cited SOG and EFC pages and the Durham Hub listing. Not yet checked: whether the EFC spreadsheets actually record capacity fees by utility and year.
+- **Open / next:** Ben checks Durham freshness by hand (gap-week item 9). Confirm the EFC spreadsheet fields. Consider snapshotting Durham "Active Building Permits".
+
+### LB-027 · 2026-10-06 · Build: Core contracts, holdout filter, and the first data pull (Census BPS, four states)
+- **Question:** Can we build the shared contracts and blinding safeguard, then pull national permit data for MN, NC, TX and OH through them?
+- **What I did:**
+  - `schemas.py` (v1.0): pandera models for the seven canonical tables (BUILD_PLAN §5.1) plus `assert_conforms`. `bps_place_year` gained `bps_id`, `county_geoid`, `months_reported` and reported-only `units_*_rep` so imputation stays visible.
+  - IO layer: `LOTLINE_DATA_DIR` resolution, raw/interim/processed paths, cached downloads (ETag/Last-Modified, sha256, retries, project user agent) and an append-only `manifest.jsonl`.
+  - Config: pydantic state and parameter models. `config/states/{mn,nc,tx,oh}.yaml` with the two V5 holdouts (St. Paul 2024–26, `2758000`; Charlotte from 2023-06-01, `3712000`). `validation/holdout.py` filters held-out rows by default; `--unblind` needs `results/frozen/<test_id>.json` committed on `main`.
+  - BPS adapter: annual place files 1992–2025 for each region, parsed by header name (layouts change across eras), GEOIDs for places, townships and unincorporated remainders, imputed flag. `lotline fetch --source bps` built all four states.
+- **Inputs:** Census BPS place files (www2.census.gov/econ/bps/Place), WS-CORE brief, BUILD_PLAN §4–5, validation plan §2.
+- **Outputs:** `src/lotline/{schemas.py, io/, config/, validation/holdout.py, adapters/national/bps.py, cli.py}`, `config/states/*.yaml`, `tests/core/*`. Data (not committed): `~/lotline-data/processed/{mn,nc,oh,tx}/bps_place_year.parquet` (MN 32,418 · NC 8,075 · OH 30,772 · TX 30,507 place-years; 68 raw files in the manifest).
+- **Findings:**
+  - **BPS 6-digit IDs were renumbered in 1992** (Minneapolis 140500 → 497800) and old numbers were reused for other places. Linking years by ID alone gave 1990 Minneapolis the wrong GEOID. Fix: IDs link years from 1992 on; earlier rows match on county + name. Default range starts in 1992.
+  - Place sums reconcile with BPS state totals **exactly** in most state-years checked; small positive gaps remain (TX 2005 +115, 2020 +835, 2025 +855; MN 2005 +13; OH and TX 1995 +6/+3), with no duplicate places, so likely release-vintage differences. To explain in V0.
+  - **V0 design constraint:** in held-out state-years, state total minus place sum would reveal the held-out city by subtraction, so the reconciliation must skip MN 2024–26 and NC 2023+ until unblinding.
+- **Decisions:** Proposed: continue committing through Oct 7–14 (Ben's call on 2026-10-06; record in HANDOFF, since CLAUDE.md and BUILD_PLAN §0 say otherwise).
+- **AI:** Claude Code wrote the code and tests (33 passing; synthetic fixtures only) and checked the pipeline against Census's own state totals. **Holdout incident:** while smoke-testing the parser, before the filter existed, Claude printed St. Paul's 2024 BPS totals (75 single-family units, 253 in 5+ unit buildings). These are public Census totals, not the V5 outcome series (2–4 unit units on eligible lots), and the research docs already quote St. Paul 2024–25 outcomes (`lotline-mn-scouting.md`, Minneapolis Fed). Logged so the V5 write-up can note it.
+- **Open / next:** ACS, FHFA, FRED/PPI and geography adapters; ArcGIS/Socrata pagers; `lotline provenance`; V0 report (with holdout-safe reconciliation); explain the TX/MN gaps; tag `schemas-v1` after review.
+
+### LB-028 · 2026-10-06 · Build: FHFA house price indexes for four states
+- **Question:** Can we add house-price trends (a key driver of whether reforms pencil out) for MN, NC, TX and OH at every geography FHFA publishes?
+- **What I did:**
+  - FHFA adapter for the annual all-transactions HPI at state, CBSA, county, ZIP5 and tract level. Finds the header row past FHFA's title rows, keeps the base-2000 index (comparable across places) and never interpolates suppressed years.
+  - `market_geo_year` schema 1.1: level-prefixed `geo` (`county:27053` vs `zip5:27053` can't collide), plus `hpi_base2000` and `hpi_change_pct`; other market columns optional.
+  - ZIP5 rows carry no state, so they are assigned by USPS 3-digit prefix ranges in `config/states/*.yaml`. CBSAs are kept if they touch the state (from FHFA's name suffix, e.g. "Duluth, MN-WI").
+  - Processed output is now `processed/<state>/<table>/<source>.parquet`, so several sources can feed one table. Added `openpyxl` (MIT; et-xmlfile MIT), approved by Ben, because FHFA publishes these files only as .xlsx.
+- **Inputs:** https://www.fhfa.gov/data/hpi/datasets (annual files, last updated 2026-03-31).
+- **Outputs:** `src/lotline/adapters/national/fhfa.py`, schema 1.1, `tests/core/test_fhfa.py`. Data (not committed): `processed/{mn,nc,oh,tx}/market_geo_year/fhfa.parquet`. MN: 87 counties, 29 CBSAs, 583 ZIPs, 1,432 tracts. NC: 99 counties, 2,182 tracts. OH: 88 counties, 2,695 tracts. TX: 179 of 254 counties, 3,531 tracts.
+- **Findings:** FHFA suppresses thin places: **TX has county indexes for only 179 of 254 counties**, and 1–9% of tract-years are missing (TX highest). The rural, sparse-data case needs a fallback (CBSA or state index), to be chosen in the build step.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the adapter and tests (38 passing) and checked coverage against expected county counts.
+- **Open / next:** FRED (mortgage rate) and the BLS PPI for construction inputs; Census ACS once Ben has a key; FHFA raw files are stored under vintage `current` (FHFA overwrites in place), so earlier vintages survive only as manifest hashes.
+
+### LB-029 · 2026-10-06 · Build: Census ACS 5-year housing tables, with margins of error
+- **Question:** Can we add housing stock by structure type, tenure, year built, median rent and median value for every place, township, county and tract in the four states, without losing the margins of error or leaking the API key?
+- **What I did:**
+  - New canonical table `acs_geo_year` (schemas 1.2): long format, one row per geography × 5-year vintage × variable, with estimate, 90% MOE and the label as published that year (B25034's year-built bands change across vintages).
+  - ACS adapter for B25024, B25003, B25064, B25077 and B25034 at state, county, place, tract and (where townships issue permits: MN, OH) county-subdivision level, vintages 2010–2024. Census's negative codes become missing; a "controlled" MOE becomes 0.
+  - `fetch()` gained `secret_params`: the key is merged into the request but kept out of the manifest, cache key and error messages. HTML error pages (invalid key) are deleted instead of cached.
+- **Inputs:** Census Data API (`/data/<year>/acs/acs5`, `groups/<table>.json`); CENSUS_API_KEY from Ben (in `.env`, gitignored).
+- **Outputs:** `src/lotline/adapters/national/acs.py`, `tests/core/test_acs.py`, schema 1.2, `township_permits` flag in `config/states/*.yaml`, README note on the key. Data (not committed): `processed/<state>/acs_geo_year/acs.parquet`.
+- **Findings:** MN 2019–23 check: Minneapolis median value $345,600 ± $3,908, median gross rent $1,329 ± $19, 17,048 ± 937 two-unit-structure homes. 0.3–2% of estimates are suppressed (mostly small townships and places). Key verified absent from the manifest.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the adapter and tests (45 passing), verified the key with one request without printing it, and checked the manifest for key leakage.
+- **Open / next:** move medians into `market_geo_year` in the build step; FRED mortgage rate and BLS PPI; Census geographies + BPS crosswalk → `jurisdictions`.
+
+### LB-030 · 2026-10-06 · Build: Mortgage rates, construction input prices and CPI (FRED)
+- **Question:** Can we add the national cost-of-money and cost-of-building series the pro forma and the baseline need, plus a deflator for real 2025 dollars (protocol §5.9)?
+- **What I did:**
+  - FRED adapter (public CSV endpoint, no key): MORTGAGE30US (Freddie Mac PMMS, weekly), WPUIP2311001 (BLS PPI, residential construction inputs, monthly), CPIAUCSL (BLS CPI-U, monthly) → `market_geo_year` rows at `national:US`, annual means.
+  - Complete years only; partial years (1971 mortgage, 1986 PPI, 2026) stay missing. **One stated exception:** a single missing observation between two published ones is interpolated (time-weighted) before averaging.
+  - Schemas 1.3: `cpi_u` column on `market_geo_year`; year floor lowered to 1940 (CPI starts 1947).
+- **Inputs:** https://fred.stlouisfed.org/graph/fredgraph.csv?id=… (pulled 2026-10-06).
+- **Outputs:** `src/lotline/adapters/national/fred.py`, `tests/core/test_fred.py`. Data (not committed): `processed/<state>/market_geo_year/fred.parquet` (80 years).
+- **Findings:**
+  - **BLS published no October 2025 CPI** (federal shutdown). Without the single-gap rule, the 2025 base year for real dollars would be missing. With it: CPI-U 2025 = 322.19; mortgage 6.60%; PPI residential inputs 322.07 (2024: 313.70 / 6.72% / 315.20).
+  - **MORTGAGE30US is Freddie Mac data** republished by FRED with permission. It needs an attribution line wherever it is shown; the license is recorded in the manifest. Flag for `docs/data_provenance.md`.
+- **Decisions:** Proposed: the single-gap interpolation rule for national monthly series.
+- **AI:** Claude Code wrote the adapter and tests (50 passing), found the CPI gap in the raw file, and checked values against the raw series.
+- **Open / next:** Census geographies + BPS crosswalk → `jurisdictions`; `lotline provenance`; V0 report.
+
+### LB-031 · 2026-10-06 · Build: Jurisdictions table (permit-issuing places) and BPS ↔ GEOID linkage
+- **Question:** Can every building permit be tied to a named Census geography, so permits, ACS and FHFA join on one key?
+- **What I did:**
+  - `build/jurisdictions.py`: the universe is every GEOID in a state's BPS table (places, townships, and counties for their unincorporated areas). Names and 2020 population come from the 2020 Census redistricting file (new `adapters/national/decennial.py`). `data_tier` defaults to 3 (national data only), raised per place in state configs later.
+  - BPS fixes: unincorporated-area rows now carry their county GEOID; Ohio's "<X> County Part" rows too. The GEOID backfill now falls back to (county, name), then to the name alone where it is unique in the state; it strips BPS's "@n" multi-county suffix and never guesses ambiguous names.
+- **Inputs:** Census API `2020/dec/pl` (P1_001N); BPS place files.
+- **Outputs:** `src/lotline/build/jurisdictions.py`, `src/lotline/adapters/national/decennial.py`, BPS adapter changes, `tests/core/test_jurisdictions.py`, more BPS tests (55 passing). Data (not committed): `processed/<st>/jurisdictions/jurisdictions.parquet` (MN 1,034 · NC 257 · OH 954 · TX 1,011). ACS pull finished: 8.9M rows across the four states, 2010–2024; API key absent from the manifest.
+- **Findings:**
+  - **From 2009 on, 100% of BPS units in all four states map to a jurisdiction.** Before 2009, 0.07–2.9% can't be placed (places that left the BPS universe before FIPS codes were added, e.g. Hickory NC after 2005).
+  - **The BPS universe for NC has only 157 places** (of ~550 municipalities). Most small NC towns' permits are issued by county inspections and appear only in county unincorporated totals. Consequence for NC reform measurement: town-level effects need local permit data.
+  - Unincorporated areas get no 2020 population: the county total overstates them, and places straddling county lines make "county minus places" unreliable from these files.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the code and tests and traced the unattributed permits to their cause in the raw files.
+- **Open / next:** `lotline provenance` (generate `docs/data_provenance.md`, with Freddie Mac attribution); V0 report per state with holdout-safe reconciliation; tag `schemas-v1`.
+
+### LB-032 · 2026-10-06 · Build: Data provenance generated from the download manifest
+- **Question:** Can the required data-provenance document (D7) be produced from what was actually downloaded, so it can't drift from the data?
+- **What I did:**
+  - `lotline provenance --write` builds `docs/data_provenance.md` from `manifest.jsonl` (URLs, vintages, access dates, publisher dates, bytes, licenses as recorded) plus a `PROVENANCE` block in each adapter (title, landing page, cleaning steps, known limitations, required attribution).
+  - `--check` fails if the document is stale or if any processed table came from a source with no manifest entries.
+  - Fixed attribution: 2020 Census downloads had been logged under the ACS source because they share its fetch helper; they now log as `census_dec_pl` (re-recorded).
+- **Inputs:** `~/lotline-data/manifest.jsonl` (pulls of 2026-10-06), adapter metadata.
+- **Outputs:** `src/lotline/provenance.py`, `PROVENANCE` blocks in `adapters/national/{bps,fhfa,acs,fred,decennial}.py`, CLI `lotline provenance`, `tests/core/test_provenance.py` (59 tests passing), generated `docs/data_provenance.md` (5 datasets).
+- **Findings:** The compliance check now passes D7 on generated content. Freddie Mac's attribution requirement appears in the document automatically.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the generator, metadata and tests, and found the decennial mis-attribution while building it.
+- **Open / next:** V0 report per state (coverage, nulls, BPS reconciliation that skips held-out state-years); tag `schemas-v1`.
+
+### LB-033 · 2026-10-06 · Validation: V0 national data check for MN, NC, OH, TX
+- **Question:** Do our adapters count what the publishers count (validation plan §3, V0)?
+- **What I did:**
+  - `lotline validate --step V0` writes `reports/<st>/V0-national.md`: BPS place sums vs Census state totals by year and size; share of units tied to a jurisdiction and share imputed; coverage and null rates of every processed table; FHFA and ACS gaps; licenses.
+  - **Held-out state-years are not compared** (MN 2024–26, NC 2023+): state total minus our sum would reveal St. Paul or Charlotte by subtraction. Tested.
+  - New `bps_state` adapter (Census state totals, reconciliation only) with its own provenance entry.
+- **Inputs:** processed tables from LB-024 onward; Census BPS state annual files 1992–2025.
+- **Outputs:** `src/lotline/validation/v0.py`, `src/lotline/adapters/national/bps_state.py`, `tests/core/test_v0.py` (65 tests passing), `reports/<st>/V0-bps-reconciliation.png`, `docs/analysis_plan.md` (draft, D-001), `reports/{mn,nc,oh,tx}/V0-national.md`, regenerated `docs/data_provenance.md`.
+- **Findings:**
+  - **Exact match is the wrong pass rule.** Census revises state and county totals after the annual survey (late reports, corrections; BPS methodology), so place files don't always add up. Exact matches: MN 10/32, NC 28/31, OH 20/34, TX 6/34. **Within 1%:** MN 30/32, NC 29/31, OH 34/34, TX 21/34.
+  - **TX runs 1–2% high in 2003–2014**, almost all single-family, concentrated in county unincorporated rows (Denton County 2014: +2,145 units vs the county file; "Denton County Unincorporated Area" alone 2,031). For WS-TX to resolve; recorded as a known limitation.
+  - All states: 1992–93 gaps of 1.5–10%, right after BPS's 1992 renumbering.
+- **Decisions:** **Ben adopted the 1% rule** (2026-10-06): "within 1% of Census per compared year; larger gaps explained" replaces "match exactly". Recorded as deviation D-001 in the new draft `docs/analysis_plan.md`. Under it: **OH PASS**; MN and NC fail only 1992–93; TX fails 13 years (2003–2014 pattern). Ben also approved `matplotlib` (PSF license; deps BSD/MIT/MIT-CMU) for the reconciliation chart `reports/<st>/V0-bps-reconciliation.png`.
+- **AI:** Claude Code wrote the report, traced the gaps (reported-only vs imputed, then the county files), and read Census's BPS methodology for the cause.
+- **Open / next:** WS-TX explains the 2003–2014 gap; tag `schemas-v1`.
+
+### LB-034 · 2026-10-06 · Build: Contract review and schemas-v1 freeze candidate (1.4)
+- **Question:** Are the canonical tables ready to freeze for the state, engine and evidence workstreams, or would they block them?
+- **What I did:**
+  - A read-only sweep (Claude subagent) of BUILD_PLAN §5–6, all workstream briefs, statistical protocol §5, the validation plan, causal diagrams and MN data catalog, listing every field downstream work needs. Spot-checked the key claims against the docs.
+  - Probed the contract mechanics directly and found two silent-corruption bugs: text "False"/"0" coerced to True in boolean columns, and misspelled optional columns silently dropped.
+  - Schemas 1.4: new `eligible_parcels` table (the denominator, by jurisdiction × year × theme × rule version, with source and quality; protocol §5.1–5.2). `permits` allows year-only dates, unknown units and demolitions (null ≠ 0), adds ADU type, zoning at permit, floor area, application and final-date types, and a unique key. `parcels` adds a fixed land-use vocabulary and eligibility inputs (HOA, floodplain, historic, lot width, value basis, sale flags, centroid). `reforms` adds `reform_id`, status, adoption/end dates, `supersedes`, rubric fields (min lot, ADU size, stories, parking per unit, zones) and two-coder fields. `fees` adds components (water/sewer separate), basis enum, percent-of-value, dollar year, building type and a key. Jurisdiction kinds add `state` and `region`; market geo adds place and county subdivision. All booleans are nullable and reject strings; misspelled columns raise.
+  - Holdout filter: year-only permits now fall back to their year, and undated rows at a held-out place are hidden. This closes a leak the new permit shape would have opened.
+  - Generated data dictionary `docs/schemas.md` (`lotline schemas --write`) with a CI test that fails if it drifts.
+- **Inputs:** `src/lotline/schemas.py` 1.3; docs listed above.
+- **Outputs:** `src/lotline/schemas.py` (1.4), `src/lotline/validation/holdout.py`, `src/lotline/cli.py`, `docs/schemas.md`, `tests/core/test_schemas.py` and `test_holdout.py` (87 tests passing).
+- **Findings:** Without the denominator table, the protocol's canonical unit (units per 1,000 eligible parcels) had nowhere to live. Deferred as additive (allowed within v1): approval days, pre-approved plans, HOA share and data-regime flags on reforms (causal diagram §7.1); tier-input flags on jurisdictions; `train_until` values in state configs. BUILD_PLAN §5.1 is now out of date; `docs/schemas.md` supersedes it.
+- **Decisions:** Proposed: freeze 1.4 as `schemas-v1`. Within v1 only additive changes; anything else is v2 via `contract-change`.
+- **AI:** Claude Code (with a read-only subagent) did the review, schema changes and tests; Claude verified the subagent's main claims against the source docs before acting.
+- **Open / next:** Ben merges, then tag `schemas-v1` on main; start WS-MN, WS-NC, WS-ENGINE.
+
+### LB-035 · 2026-10-07 · Build: schemas-v1 merged and tagged on main (auto-review)
+- **Question:** Is the 1.4 contract (LB-034) now the frozen base the state, engine and evidence workstreams build on?
+- **What I did:**
+  - PR #67 (`ws/core-schemas-v1`, "schemas 1.4: contract review, freeze candidate for schemas-v1") was merged to `main` on 2026-10-07 (merge commit `3583f34`).
+  - Annotated tag `schemas-v1` ("canonical table contracts frozen at schemas 1.4") was created on that merge commit and pushed to `origin`.
+- **Inputs:** LB-034.
+- **Outputs:** `main` @ `3583f34`; tag `schemas-v1` (github.com/cappellacci/lotline). The LB-034 files (`src/lotline/schemas.py`, `docs/schemas.md`, holdout filter, tests, regenerated `reports/<st>/V0-national.md`) are now on `main`.
+- **Findings:** none new; this closes LB-034's open item.
+- **Decisions:** LB-034's proposal took effect: within v1 only additive schema changes; anything else is v2 via `contract-change`. Not yet recorded as a row in the HANDOFF decisions log.
+- **AI:** Recorded by the nightly review from git history (merge commit and tag); the merge and tag were done in GitHub/git, presumably by Ben.
+- **Open / next:** start WS-MN, WS-NC, WS-ENGINE on `schemas-v1`; WS-TX to explain the 2003–2014 V0 gap.
+
+### LB-036 · 2026-10-08 · Build: ArcGIS REST pager (io/arcgis.py)
+- **Question:** Can every state adapter download full ArcGIS layers (most MN and NC permit and parcel sources) through one tested helper that caches, logs and snapshots each page?
+- **What I did:**
+  - `io/arcgis.py`: reads layer metadata. Pages with `resultOffset` ordered by object ID when the layer supports pagination; otherwise falls back to object-ID chunks (e.g. Durham's MapServer).
+  - Continues correctly when the server caps a page below the requested size (`exceededTransferLimit`). Raises on ArcGIS error bodies (HTTP 200) without caching them, and on duplicate IDs.
+  - Optional WGS84 geometry (centroids requested only for polygon layers; point layers reject them). Epoch-millisecond date helper.
+  - Each page goes through `fetch()` into `raw/<source>/<date>/<name>/`, so rolling windows get dated snapshots and every page is in the manifest.
+- **Inputs:** WS-CORE brief (IO tasks); Minneapolis CCS Permits layer for a live test.
+- **Outputs:** `src/lotline/io/arcgis.py`, `tests/core/test_arcgis.py` (12 tests against a fake server; 99 total passing); kickoff plan notes (uncommitted `docs/build/kickoff-2026-10-14.md`).
+- **Findings:** Live test (scratch store, not the project data dir): 7,627 of 7,627 Minneapolis permits issued since 2026-08-01, 8 pages in 8 s, no duplicates. The layer carries applicant names and addresses, so adapters must request only needed fields. `dwellingUnitsNew` is text and empty in about two-thirds of rows (unknown, not 0). `returnCentroid` is rejected by point layers (fixed).
+- **Decisions:** none.
+- **AI:** Claude Code wrote the pager and tests and ran the live check. **Created 2026-10-08, inside the Oct 7–14 gap the Rules don't cover**, at Ben's direction after Claude flagged Rules §3/§7(a) (organizer answer pending).
+- **Open / next:** state-source registry; `build/eligible.py` skeleton.
+
+### LB-037 · 2026-10-08 · Admin: Correction to LB-035 (who merged and tagged schemas-v1)
+- **Question:** Who performed the merge of PR #67 and the `schemas-v1` tag recorded in LB-035?
+- **What I did:** Corrects LB-035, whose AI line says the merge and tag were "presumably by Ben". Claude Code merged PR #67 (2026-10-07 08:44 UTC, 4:44 a.m. ET, before registration closed) and created and pushed the annotated tag `schemas-v1` on merge commit `3583f34`, both at Ben's explicit request in the session.
+- **Inputs:** LB-035; the session record; `git show schemas-v1`.
+- **Outputs:** this entry.
+- **Findings:** none.
+- **Decisions:** none.
+- **AI:** Claude Code wrote this correction while folding logbook fragments (LB-036).
+- **Open / next:** none.
+
+### LB-038 · 2026-10-08 · Build: Source registry, state sources plug in without touching CORE (auto-review)
+- **Question:** Can state workstreams add data sources that `lotline fetch` runs and `lotline provenance` documents, without editing shared CORE code and without any way to skip the holdout filter?
+- **What I did:**
+  - `src/lotline/registry.py`: national sources listed explicitly; any module in `adapters/states/<st>/` defining `SOURCE`, `TABLE`, `PROVENANCE` and `load()` is discovered as a source for that state. Half-defined modules, unknown tables, incomplete provenance and duplicate names or manifest ids are errors.
+  - `lotline fetch` and `lotline provenance` now read the registry; new `lotline sources` lists sources per state.
+  - Central holdout guard: after every load, `lotline fetch` re-checks permits and BPS output with `holdout.assert_no_leak` and stops with `HoldoutLeak` if held-out rows got through.
+- **Inputs:** kickoff plan §1 (WS-CORE day-1 items, LB-039); LB-027, LB-036.
+- **Outputs:** commit `573054f` on branch `ws/core-registry` (pushed, **not yet merged to `main`**): `src/lotline/registry.py`, `src/lotline/cli.py`, `src/lotline/provenance.py`, `src/lotline/validation/holdout.py`, `src/lotline/adapters/national/__init__.py`, `tests/core/test_registry.py`, `README.md`, fragment `logbook.d/2026-10-08-ws-core-registry.md`.
+- **Findings:** per the fragment: 108 tests passing; `lotline sources`, `lotline provenance` and `lotline fetch --state MN --source bps` (32,418 rows, guard passed) behave as before.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the registry, guard and tests (commit co-authored). **Created 2026-10-08, inside the Oct 7–14 gap the Rules don't cover**, at Ben's direction (per the fragment). Logged by the nightly review from the commit and its unfolded fragment: when folding, drop `logbook.d/2026-10-08-ws-core-registry.md` rather than adding a second entry.
+- **Open / next:** merge the `ws/core-registry` PR; `build/eligible.py` skeleton + `config/params/eligibility.yaml`.
+
+### LB-039 · 2026-10-08 · Build: Day-1 kickoff plan for the Oct 14 Coding Period (auto-review)
+- **Question:** What exactly do Ben and the first three Claude Code sessions (WS-MN, WS-NC, WS-ENGINE) do on Oct 14 so each lands one small, mergeable PR on day 1?
+- **What I did:**
+  - §0 pre-9:01 checklist for Ben: manual exports of the Minneapolis and St. Paul rolling-window permit layers (#9), record the organizer answer on gap-week work, `gh auth switch`, three worktrees with `.env` copies, `uv sync --frozen`.
+  - §1 WS-CORE day-1 items: ArcGIS pager (built, LB-036), state-source registry (built, LB-038), `build/eligible.py` skeleton (still to do).
+  - §2–4 a kickoff prompt and ordered day-1 checklist per workstream: MN `metc_permits` adapter and `mn.yaml` (`train_until` for St. Paul); NC freshness checks for Durham, Raleigh adapter on a synthetic fixture, `carthage_towns.csv` research; ENGINE `config/params/` skeleton, `panels.py`, V1 benchmarks and a CPI deflator, all synthetic.
+  - §5 daily rhythm (small PRs, fragments, contract changes via WS-CORE) and the freezes to plan for (St. Paul and Charlotte predictions by Nov 17; `prereg-v1` before V3).
+- **Inputs:** BUILD_PLAN, workstream briefs WS-MN/NC/ENGINE, validation plan; LB-026, LB-030, LB-031, LB-036.
+- **Outputs:** `docs/build/kickoff-2026-10-14.md` (177 lines; **draft, deliberately uncommitted** during the gap week; no project copy).
+- **Findings:** Minneapolis CCS layer carries personal data (request only needed fields) and text unit fields that are empty in about two-thirds of rows (null, not 0). BPS covers only 157 NC places, so town-level NC outcomes need local permits. Holdout reminders written into each kickoff prompt (St. Paul 2024–26, Charlotte from 2023-06-01).
+- **Decisions:** none logged; the FHFA fallback order for 75 TX counties is flagged as a decision for Ben.
+- **AI:** Written in a Claude Code session on Oct 8 (mentioned in LB-036 and the registry fragment as "kickoff plan notes"); this entry was added by the nightly review from the file's content.
+- **Open / next:** commit with the first PR on Oct 14 or discard (per the file); Ben's §0 checklist before 9:01 a.m. ET.
+
+### LB-040 · 2026-10-08 · Deliverables: Plain-language "Approach and Progress" doc (auto-review)
+- **Question:** How do we explain Lotline's approach and progress so far to a non-technical reader?
+- **What I did:**
+  - Wrote a short doc: approach and goals (three reforms on one parcel pool; "calibrate where reforms are old, apply where they aren't"; ranges and sliders; validation on held-out places; four states, MN first) and 11 dated key steps from rules intake (Sep 29) to the `schemas-v1` freeze (Oct 7).
+- **Inputs:** LB-001 to LB-035 and the docs they produced.
+- **Outputs:** [Lotline: Approach and Progress](https://claude.ai/code/artifact/86a0a12d-1578-4ee7-a562-82648e72f4b6) (Claude Doc, dated 2026-10-08, Ben as author).
+- **Findings:** none new; a summary of existing work. It does not yet mention the ArcGIS pager or source registry (LB-036, LB-038).
+- **Decisions:** none.
+- **AI:** Presumably drafted by Claude in a session that didn't log itself; intended audience (team, mentors, a submission write-up) isn't stated in the doc. Logged by the nightly review from the doc's content.
+- **Open / next:** keep it in step with the logbook if it is meant to be shared.
+
+### LB-041 · 2026-10-14 · Admin: Official Rules, Handbook and Data List PDFs reviewed
+- **Question:** Do the official PDFs Ben added (`rules and resources/`) change anything in HANDOFF, and what does the new Official Data List mean for our state choice?
+- **What I did:**
+  - Extracted and read all three PDFs in full (Rules 12 pp., Handbook, Data List) and checked them against HANDOFF §2–4 (built from the web pages on 2026-09-29). Extracted the Data List's link targets.
+  - Wrote the review: no conflicts; 8 under-weighted points (N1–N8); Data List table set against our earlier state scores; 6 proposed actions.
+  - HANDOFF: sources line, a status row, new checklist items **S9** (four questions per scenario) and **S10** (no parcel-level precision in outputs), D7 extended (small-cell risk; per-state "data available vs. used"), "last verified" moved to 2026-10-14.
+  - Added `rules and resources/` to `.gitignore`.
+- **Inputs:** the three PDFs; HANDOFF; `lotline-state-reassessment.md`; `lotline-data-availability.md`; webinar notes (2026-10-05).
+- **Outputs:** `docs/research/rules-pdfs-2026-10-14-review.md` (project: `research/rules-pdfs-2026-10-14-review.md`); `HANDOFF.md`; `.gitignore`. All uncommitted (written ~4 a.m. ET, before the Coding Period opens at 9:01).
+- **Findings:** Handbook says parcel-level precision scores lower and wants direction, magnitude, uncertainty and drivers over precise forecasts. Rules §8 asks for what data was available in the state vs. used. The Data List covers AZ, CT, OR, HI, PA, TN, UT, VA, WI, RI, NH, none of MN/TX/NC/OH. Rules still silent on the Oct 7–14 gap.
+- **Decisions:** none taken; proposed for Ben: "parcels in, regions out" as a design rule; WI as a portability state (in place of or alongside OH).
+- **AI:** Claude (Cowork) read the PDFs, wrote the review and edited HANDOFF; checks were text comparisons against HANDOFF and the earlier research docs.
+- **Open / next:** Ben to decide N1 rule and WI; template/reference-example diff once Platform access arrives (E5); commit these files after 9:01 a.m. ET with the day-1 PRs.
+
+### LB-042 · 2026-10-14 · Deliverables: Simulated judging panel (`/judge`)
+- **Question:** How do we get expert, evidence-based feedback on Lotline against each Rules §8 criterion, early and repeatedly, from code as well as docs?
+- **What I did:**
+  - Built a shared rubric (`RUBRIC.md`): sources of truth, 0–10 anchored scale with **Today** and **Ceiling** scores, evidence tags ([ran]/[read]/[inferred]), finding format with points at stake, an ownership matrix to avoid double-counting, and guardrails (read-only, temp clones, no downloads, holdouts untouched).
+  - Wrote seven Claude Code subagents, each with a persona, reading order, signature probes and anchors: gatekeeper (T/D/S gates, timing, checker audit), transparency (trace-a-number, assumption census, docstring coverage, reading grade), replicability (clean clone, 5-mutant check, coverage, swap-a-state, dependency audit), usability (Streamlit AppTest task scripts, stress inputs, labels audit), methodology (Handbook definitions, feasibility/additionality/overlap, equation↔test map, property checks), policy insight (memo test, driver decomposition, sparse-data bonus), head judge (moderation, weighted total, points-per-hour action plan, trend).
+  - `/judge` command runs gatekeeper + five judges in parallel, then the head judge, into `reports/judging/<run-id>/` (gitignored).
+- **Inputs:** Rules §7–8 and Handbook (web, 2026-10-14); HANDOFF §2–3; rules-PDF review N1–N8; BUILD_PLAN; CLAUDE.md.
+- **Outputs:** `judging-panel/{agents,commands,judging}/` (staging copy; Ben moves it into `.claude/`, which remote tools can't write); `CLAUDE.md` "Judging panel" section; `.gitignore` (`reports/judging/`).
+- **Findings:** none on the entry yet; first run pending.
+- **Decisions:** none.
+- **AI:** Claude (Cowork) wrote the rubric, agents and command from the Rules text and repo layout; checked that frontmatter parses as YAML and that referenced repo paths exist. Not yet run end to end.
+- **Open / next:** install into `.claude/`, run `/judge`, review the first SCORECARD.
+
+### LB-043 · 2026-10-14 · Admin: Align the repo with the organizers' starter template
+- **Question:** What does the official starter template (`theturnout/housing-challenge-starter-template`, published 2026-10-13) expect that Lotline doesn't have yet?
+- **What I did:**
+  - Read every file in the template and compared it with the repo, HANDOFF §5 and `compliance_check.py`. The eligibility gates, doc outlines, page limits and fee baseline already match; `compliance_check.py --github` showed 0 FAIL.
+  - Turned on **private vulnerability reporting** (the template's setup guide, step 5; it was off) through the GitHub API.
+  - README: added a Setup / Run / Test **command contract** table, a **Documentation** section that links our docs under the template's titles, and a **Team** section (Ben confirmed the roster). Added `SECURITY.md`, `NOTICE` (Apache-2.0; no third-party attributions) and `.github/PULL_REQUEST_TEMPLATE.md` carrying the CLAUDE.md commit checklist.
+- **Inputs:** https://github.com/theturnout/housing-challenge-starter-template (commit `5864b73`); `HANDOFF.md` §5; `compliance_check.py --github`.
+- **Outputs:** `README.md`, `SECURITY.md`, `NOTICE`, `.github/PULL_REQUEST_TEMPLATE.md`; repo setting: private vulnerability reporting on.
+- **Findings:** The template says copyleft dependencies must be "flagged and resolved", which is stricter than our written justification for `certifi` (MPL-2.0); worth asking the organizers. The template's scenario-comparison stub leaves out ADUs, but its own spec lists them, so `adu` stays valid. The README Run row is a placeholder until the Phase 5 app exists. `docs/disclosures.md` still says "External APIs: none", though `fetch` calls the Census API (key) plus BPS and FHFA downloads.
+- **Decisions:** Proposed: add private vulnerability reporting to HANDOFF T6 and to `compliance_check.py --github`.
+- **AI:** Claude Code compared the template and wrote these files; checked by `python compliance_check.py` (0 FAIL) and a GitHub API read-back of the vulnerability-reporting setting. Written before 09:01 ET on 2026-10-14; committed only after the Coding Period opened.
+- **Open / next:** fix the External APIs disclosure; replace the README Run row when the app lands.
+
+### LB-044 · 2026-10-14 · Build: Eligible-parcel rule v1.0 (the denominator) and first parameter file
+- **Question:** Can every state produce the protocol's denominator (eligible parcels per jurisdiction-year, stored apart from permits) from parcels where they exist and from the ACS where they don't?
+- **What I did:**
+  - `build/eligible.py` (rule 1.0): ADU-eligible = existing single-family house, ≤1 unit where known, lot ≥ floor, not excluded (HOA, floodplain, historic district where known); missing-middle adds single-family-only zoning. Unknown inputs are kept but flagged as *assumed*, and the assumed share sets `denominator_quality`. `from_parcels` writes `eligible_parcels` per jurisdiction, vintage and theme.
+  - `from_acs` fallback: ACS one-unit detached homes (B25024_002) for places and townships, always quality `low` (protocol §6).
+  - `config/params/eligibility.yaml`, the first parameter file: lot floors 0 (Handbook definitions set none), exclusion toggles, quality bands, each with a source.
+- **Inputs:** BUILD_PLAN §5.3; statistical protocol §5.1–5.2, §6; Handbook ADU and missing-middle definitions; WS-NC brief.
+- **Outputs:** `src/lotline/build/eligible.py`, `config/params/eligibility.yaml`, `tests/core/test_eligible.py` (10 tests, incl. a parcel-by-parcel hand-worked example; 109 total passing).
+- **Findings:**
+  - First real-data run caught a double count: ACS **county** rows matched unincorporated-area IDs, giving each the whole county's homes (NC came to 4.1M, more than the state has). Fixed: places and county subdivisions only; tested.
+  - After the fix, permit-issuing places and townships hold **MN 78%, TX 70%, OH 64%, NC 32%** of each state's one-unit detached homes (ACS 2019–23). NC's low share matches its 157-place BPS universe: **a statewide total needs a "rest of county" denominator for unincorporated areas**, or most of NC's single-family stock drops out. For WS-ENGINE.
+- **Decisions:** Proposed: lot-size floors stay 0 (Handbook) until a sourced sensitivity range exists; quality bands 5% / 50% to confirm at pre-registration.
+- **AI:** Claude Code wrote the rule, parameters and tests, ran the real-data check and fixed the double count it revealed. Built in a separate worktree (`../lotline-ws-core`) because another session was working in the main checkout.
+- **Open / next:** wire `eligible_parcels` into `lotline fetch`/`build` once the registry (#70) is merged; county-remainder denominators.
+
+### LB-045 · 2026-10-14 · Build: eligible_parcels built by `lotline fetch` for all four states
+- **Question:** Can every state get a denominator table from one command, with each jurisdiction's source and quality visible?
+- **What I did:**
+  - Registered `eligible` as a national build source: `lotline fetch --source eligible` builds `eligible_parcels` from processed tables, building jurisdictions or ACS first if missing.
+  - One denominator source per jurisdiction (`combine`): parcels where a state has a `parcels` table, the ACS fallback elsewhere, never both.
+  - V0 reports now list the `eligible_parcels` coverage with its source × quality mix.
+- **Inputs:** `build/eligible.py` rule 1.0 (LB for #76), processed ACS and jurisdictions tables.
+- **Outputs:** `src/lotline/build/eligible.py` (`combine`, `load`), `src/lotline/registry.py`, `src/lotline/validation/v0.py`, `tests/core/test_eligible.py` (120 tests passing), regenerated `reports/*/V0-national.md`. Data (not committed): `processed/<st>/eligible_parcels/eligible.parquet` (MN 28,636 · NC 4,710 · OH 25,910 · TX 28,472 rows, 2010–2024).
+- **Findings:** All four states are currently 100% ACS fallback (quality low) until state parcel adapters land; `lotline provenance` stays OK.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the wiring and tests and ran it on real data.
+- **Open / next:** county-remainder denominators for unincorporated areas (WS-ENGINE, see #76).
+
+### LB-046 · 2026-10-14 · Build: Rest-of-county denominators, and the Ohio village double count fixed
+- **Question:** Can unincorporated county areas, where most NC permits are issued, get a denominator that covers the same ground as their permit counts, without counting any home twice?
+- **What I did:**
+  - `eligible.allocate_homes`: a place keeps its ACS total; a township is its ACS total minus the permit-issuing places inside it; rest of county = county total minus every permit-issuing place's in-county homes and every township's net homes. Negative remainders (sampling noise) are set to 0 and flagged.
+  - `adapters/national/geoparts.py`: the Census 2020 code files show which places span counties and which aren't their own county subdivision. 2020 Census **DHC** housing units split those places by county and by township. The P.L. 94-171 file doesn't publish the township geography; the API allows no wildcards, so it's one cached request per multi-county place or relevant township, made once.
+  - `lotline fetch --source eligible` now emits rest-of-county rows; the provenance document lists the new source.
+- **Inputs:** ACS B25024_002 (2010–2024); Census `national_place_by_county2020.txt`, `national_cousub2020.txt`; 2020 DHC `H1_001N`.
+- **Outputs:** `src/lotline/build/eligible.py`, `src/lotline/adapters/national/geoparts.py`, `src/lotline/registry.py`, `tests/core/test_eligible.py` (hand-worked Ohio-style county: jurisdictions add back up exactly to county totals), `tests/core/test_geoparts.py`; regenerated `docs/data_provenance.md`, `reports/*/V0-national.md` (125 tests passing, also with network blocked).
+- **Findings:**
+  - Share of each state's one-unit detached homes (ACS 2019–23) now inside a permit-issuing jurisdiction's denominator: **NC 100.0%** (was 32%), **OH 100.5%**, **MN 97.9%**, **TX 89.9%**.
+  - MN and TX fall short where counties have no unincorporated BPS row (MN 15 counties, TX 200 of 254): those homes have no permit series, so leaving them out keeps numerator and denominator aligned.
+  - **Ohio double count fixed:** 360 of 569 permit-issuing OH places sit inside a township's ACS count; townships now exclude them, removing **129,734** double-counted homes (2019–23). Five OH county remainders were negative (noise) and clipped, which explains the 0.5% overshoot.
+- **Decisions:** Proposed: split places by 2020 housing-unit shares, fixed for all ACS years (stated in provenance limitations).
+- **AI:** Claude Code designed and wrote the allocation, adapter and tests. It found the Ohio double count while designing, and found the P.L.→DHC geography gap in the first live run.
+- **Open / next:** WS-ENGINE uses `eligible_parcels` with `denominator_source`/`quality`; MOE propagation for remainders (not attempted).

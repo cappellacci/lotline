@@ -1,0 +1,12 @@
+Lotline
+Copyright 2026 Ben Cappellacci
+
+This product includes software developed for the Housing Data and Technology
+Innovation Challenge.
+
+--------------------------------------------------------------------------------
+Third-party attributions
+--------------------------------------------------------------------------------
+
+None. Dependencies are installed from their own packages and are not copied into
+this repository; their licenses are listed in docs/disclosures.md and the SBOM.
