@@ -1,0 +1,26 @@
+# Gross-to-net and statewide aggregation (model/aggregate.py, protocol §5.10). Every value has a source.
+# Where a source gives only a range, the central value is its midpoint and the notes say so.
+
+adu_net_new_share:
+  value: 0.65
+  low: 0.50
+  high: 0.80
+  unit: share of permitted ADUs
+  source: "Statistical protocol §5.10; methods review §3b; E039 (CCI 2021: ~48% housing), E051 (UCLA 2020: 76%), E052 (Oregon DEQ 2014: 80%)"
+  notes: "Share of permitted ADUs that add a home (long-term residence), not an office, guest room or short-term rental. Central value is the midpoint of the 50-80% range."
+
+displacement_share:
+  value: 0.25
+  low: 0.0
+  high: 0.50
+  unit: share of local gain
+  source: "Statistical protocol §6 (decision table: '0-50% range parameter'); methods review §5 (pitfall 1, displacement and spillovers); two-prong design; E001 (Auckland bounds), E004 (Lower Hutt)"
+  notes: "Share of a place's gain that is pulled in from neighbors rather than new statewide. Shown as 'in this place' vs 'net statewide'. Central value is the midpoint of the range until neighbor-place data say otherwise."
+
+completion_factor:
+  value: 0.90
+  low: 0.85
+  high: 0.95
+  unit: completions per permitted unit
+  source: "Statistical protocol §6 (decision table: Census Survey of Construction lags; local completion data, default 0.85-0.95)"
+  notes: "Permits-to-completions factor, shown separately from permits (protocol §5.10). Central value is the midpoint of the range."

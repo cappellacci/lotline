@@ -1,0 +1,34 @@
+# Fee scenario (model/scenarios/fees.py, methods review §3c, fees causal diagram). Every value has a source.
+# The Handbook fixes the fee level and the cut, so those have no sensitivity range (low = high = value).
+
+handbook_fee_per_unit_usd:
+  value: 50000
+  low: 50000
+  high: 50000
+  unit: USD per unit
+  source: "Handbook benchmark fees scenario: total development fees assumed $50,000 per unit (fees causal diagram, scenario line)"
+  notes: "Fixed by the Handbook. Real local fees are far lower in most places checked (fees causal diagram §2; data availability §0 and R8) and are shown side by side. Dollar year not stated by the Handbook: see PR."
+
+handbook_fee_cut_share:
+  value: 0.5
+  low: 0.5
+  high: 0.5
+  unit: share of fees
+  source: "Handbook benchmark fees scenario: cut total development fees by 50% (i.e. -$25,000 per unit)"
+  notes: "Fixed by the Handbook."
+
+land_capture_share:
+  value: 0.5
+  low: 0.25
+  high: 0.75
+  unit: share of fee change
+  source: "Methods review §3c (lambda_land 0.25-0.75+, central 0.5); fees causal diagram (C18); E064, E066, E068"
+  notes: "Share of a fee cut captured by landowners instead of builders. Higher in strong markets. Lead sensitivity parameter (protocol §7)."
+
+fee_permit_elasticity:
+  value: 1.5
+  low: 0.5
+  high: 3.0
+  unit: "% change in permits per % change in development cost"
+  source: "Methods review §3c (epsilon 0.5-3, central 1.5); fees causal diagram; E081 (tract-level ~0.3) argues for the low end locally"
+  notes: "Treat as a prior (fee agent's proposal). The low case of the fee scenario must include zero effect."
