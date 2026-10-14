@@ -94,11 +94,11 @@ def test_sources_from_another_branch_are_left_out_and_named(tmp_path):
 
 def test_processed_files_from_unregistered_sources_are_skipped_not_fatal(tmp_path):
     store = _store(tmp_path, [_entry(fred.SOURCE, f"raw/{fred.SOURCE}/2026-10/a.csv", "https://x/a")])
-    out = store.processed("MN", "permits", "metc_permits")  # another branch's adapter
+    out = store.processed("MN", "permits", "zz_unmerged_source")  # another branch's adapter
     out.parent.mkdir(parents=True)
     pd.DataFrame({"x": [1]}).to_parquet(out)
     assert provenance.processed_sources(store) == set()
-    assert provenance.unregistered_processed(store) == ["processed/mn/permits/metc_permits.parquet"]
+    assert provenance.unregistered_processed(store) == ["processed/mn/permits/zz_unmerged_source.parquet"]
 
 
 def test_check_flags_stale_doc_and_undocumented_processed_tables(tmp_path):
