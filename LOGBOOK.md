@@ -31,7 +31,7 @@ A running record of **how** the Lotline entry was built: what question each step
 | 11. Build transition | Oct 4 | How do we move to code across four states, in parallel, through GitHub? | Build plan, 9 Claude Code workstream briefs, 53-issue backlog | LB-020 |
 | 12. Repo bootstrap | Oct 6 | Is the repo public, reproducible and CI-checked before registration closes? | github.com/cappellacci/lotline: uv project, CI, protected `main`, research docs, issue backlog | LB-021, LB-023, LB-024 |
 | 13. Core data and contracts | Oct 6–8 | Can national data for four states flow through shared, tested contracts, with blind tests protected? | BPS, FHFA, ACS, FRED and 2020 Census adapters; holdout filter; generated provenance and data dictionary; V0 reports; tag `schemas-v1`; ArcGIS pager for state adapters | LB-027 – LB-037 |
-| 14. Coding Period opens | Oct 14 | Is the repo aligned with the official rules, template and judging rubric, and does every state have a sound denominator? | Rules-PDF review; starter-template alignment; `/judge` panel; eligible-parcel rule with rest-of-county denominators | LB-041 – LB-046 |
+| 14. Coding Period opens | Oct 14 | Is the repo aligned with the official rules, template and judging rubric, and does every state have a sound denominator? | Rules-PDF review; starter-template alignment; `/judge` panel; eligible-parcel rule with rest-of-county denominators; first MN/NC/engine workstreams; CBSA crosswalk; measured completion factors; permit-text parser | LB-041 – LB-056 |
 
 ---
 
@@ -675,3 +675,171 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** Proposed: split places by 2020 housing-unit shares, fixed for all ACS years (stated in provenance limitations).
 - **AI:** Claude Code designed and wrote the allocation, adapter and tests. It found the Ohio double count while designing, and found the P.L.→DHC geography gap in the first live run.
 - **Open / next:** WS-ENGINE uses `eligible_parcels` with `denominator_source`/`quality`; MOE propagation for remainders (not attempted).
+
+### LB-047 · 2026-10-14 · Build: Fix silent column loss when reading multi-source tables
+- **Question:** Do processed tables built by several sources (e.g. `market_geo_year` from FHFA and FRED) read back with all their columns?
+- **What I did:**
+  - Confirmed a bug reported by the WS-ENGINE agent: `pandas.read_parquet(<table folder>)` keeps only the first file's schema, so FRED's `cpi_u`, `mortgage_rate` and `ppi_resid_inputs` vanished from `market_geo_year` reads.
+  - Added `DataStore.read(state, table)`: reads each source file and stacks the rows with the union of columns. Switched the V0 report, the `eligible` build and the `jurisdictions` build to it. No other folder reads remain.
+- **Inputs:** WS-ENGINE day-1 report (PR #80).
+- **Outputs:** `src/lotline/io/store.py`, `src/lotline/validation/v0.py`, `src/lotline/build/{eligible,jurisdictions}.py`, `tests/core/test_io.py` (126 tests passing), regenerated `reports/*/V0-national.md`.
+- **Findings:** Only the V0 coverage line had been affected (it under-reported `market_geo_year` columns); no model code consumed the dropped columns yet. Found before the engine's real-dollar conversion would have hit it.
+- **Decisions:** Rule for all workstreams: read processed tables with `DataStore.read`, never `read_parquet(folder)`.
+- **AI:** The WS-ENGINE subagent found and reported the bug; Claude Code (WS-CORE) verified it on real data and wrote the fix and test.
+- **Open / next:** WS-ENGINE can replace its `panels.read_market` workaround with `DataStore.read`.
+
+### LB-048 · 2026-10-14 · Build: County-to-metro (CBSA) crosswalk; provenance works across parallel branches
+- **Question:** Where a county has no FHFA house-price index, what is the next-best index, and can every branch keep its provenance check passing while three workstreams share one data folder?
+- **What I did:**
+  - New adapter `adapters/national/cbsa.py`: the official OMB July 2023 county → CBSA delineation (Census "List 1", public domain). All 175 FHFA CBSA codes in MN, NC, OH and TX match it.
+  - Schemas 1.5 (additive): `jurisdictions.cbsa_code` and `cbsa_type` (metro/micro), filled from each jurisdiction's county. Data dictionary regenerated.
+  - Provenance: downloads by another worktree's unmerged adapter (e.g. the MN/NC agents' `metc_residential_permits`, `raleigh_permits`) are left out of the document and named as notes; processed files from unregistered sources are skipped with a note. The check still fails if a registered table depends on an undocumented download.
+- **Inputs:** Census delineation `list1_2023.xlsx`; FHFA CBSA codes; WS-ENGINE decision 1 (PR #80).
+- **Outputs:** `src/lotline/adapters/national/cbsa.py`, `src/lotline/schemas.py` (1.5), `src/lotline/build/jurisdictions.py`, `src/lotline/registry.py`, `src/lotline/provenance.py`, `src/lotline/cli.py`, `docs/schemas.md`, `docs/data_provenance.md`, `tests/core/test_cbsa.py`, `tests/core/test_provenance.py` (130 tests passing).
+- **Findings:** Jurisdictions in a CBSA: MN 65%, NC 83%, OH 85%, TX 80%. Counties lacking a 2024 county HPI: MN 1, NC 2, OH 0, **TX 56**; the CBSA index covers 11 of TX's 56. The other 45 are rural: their best fallback is FHFA's state "non CBSA" series. Proposed engine chain: **county → CBSA → state non-CBSA → state**.
+- **Decisions (Ben, 2026-10-14):** (1) build the county→metro crosswalk from official open files (done here); (3) the Handbook's $50k fee is in **2025 dollars**; (4) ADU net-new share 0.65 (0.50–0.80; E039, E051, E052), displacement 0.25 (0–0.50) and completion factor 0.90 (0.85–0.95) accepted as labelled assumptions, to become **user-tunable controls** in the app later. Open: (2) which calendar year an ACS 5-year estimate stands for (recommended: end year, carry the latest forward); sourcing the completion factor from the Census Survey of Construction.
+- **AI:** Claude Code verified the FHFA code match, wrote the adapter, schema change, provenance fix and tests, and ran them on real data.
+- **Open / next:** WS-ENGINE: fallback chain in `panels.py`; `DataStore.read` instead of its `read_market` workaround.
+
+### LB-049 · 2026-10-14 · Admin: Correction to LB-026 (Carthage amicus towns unverified)
+- **Question:** Is the list of seven towns recorded in LB-026 as amicus filers in *Quality Built Homes v. Town of Carthage* supported by the opinion?
+- **What I did:** Corrects LB-026. That entry said "Amicus municipalities were Apex, Concord, Holly Springs, Jacksonville, Kannapolis, Surf City and Winston-Salem". The claim came from a web-search tool's summary on 2026-10-06, not from the opinion. On 2026-10-14 the WS-NC agent read the 2016 opinion (369 N.C. 15) and found no municipal amici listed. Claude Code then searched for any source tying those towns to an amicus filing and found none; the opinion pages (Justia, CourtListener) didn't serve readable text to automated fetches.
+- **Inputs:** LB-026; WS-NC day-1 report (PR #83); web searches 2026-10-14.
+- **Outputs:** this entry. `config/reforms/nc_carthage_towns.csv` (PR #83) already marks those seven rows low confidence.
+- **Findings:** Treat the seven-town list as **unverified**. The UNC EFC rate tables (2006, 2009, Jan 2015) do show capacity fees for those towns, so they remain candidates, but not as amici.
+- **Decisions:** none.
+- **AI:** Claude Code recorded an unverified search summary as fact in LB-026; this entry corrects it. Lesson applied: legal and factual claims are checked against the primary document before logging.
+- **Open / next:** Ben chooses the V6a treatment-list source (WS-NC decision 3).
+
+### LB-050 · 2026-10-14 · Build: WS-NC day 1, Raleigh permits adapter, Durham freshness, Carthage town list draft
+- **Question:** Is Durham's permit feed still updated, can Raleigh's permit layer be turned into canonical `permits` with honest unit counts, and can the *Carthage* town list be sourced from the UNC EFC fee tables?
+- **What I did:**
+  - Durham: re-queried the webgis2 MapServer (still times out from this network), then searched ArcGIS Online and found the city's hosted copy (`services2.arcgis.com/.../Inspections/FeatureServer/12`, "All Building Permits"). Checked count, newest `ISSUE_DATE` and edit date. Inspected "Active Building Permits" (`Permits/FeatureServer/13`).
+  - `src/lotline/adapters/states/nc/raleigh_permits.py`: Open Raleigh Building Permits FeatureServer through the ArcGIS pager with an explicit non-personal field list; type from `censuslandusecode`; city ADU flag → `ADU`; `missing_middle` → `reform_flag_raw`; units repair rule (reported only if it fits the type code, else derived from the code, else null); demolitions; holdout filter. Tests on a synthetic fixture in `tests/states/nc/`.
+  - Live pull (184,524 records, 177,473 issued permits kept) and comparison with the Census BPS Raleigh row, 2008–2025.
+  - Carthage: read the 2016 opinion's counsel list (case.law) and the EFC Jan 2015 per-utility connection-fee tables (Wayback copy; extracted text locally with a throwaway pypdf, not a project dependency).
+- **Inputs:** Open Raleigh Building Permits layer; Durham ArcGIS Online items; `processed/nc/bps_place_year`; 2020 Census place list (`raw/census_dec_pl`); EFC 2015 memo and tables; 369 N.C. 15; LB-026, LB-031.
+- **Outputs:** `src/lotline/adapters/states/nc/raleigh_permits.py`, `tests/states/nc/test_raleigh_permits.py`, `config/states/nc.yaml` (3 sources with notes), `config/reforms/nc_carthage_towns.csv` (8 rows, draft), `docs/data_provenance.md` (regenerated). Data (not committed): `processed/nc/permits/raleigh_permits.parquet`.
+- **Findings:**
+  - **Durham is fresh, not stale.** The hosted "All Building Permits" layer has 93,180 records, `ISSUE_DATE` 2007-10-22 to 2026-10-09, data last edited 2026-10-14; the 2024-11-13 date on the Hub items is item metadata. "Active Building Permits" is a status-based rolling window (6,910 open permits, no dates), not needed while the full layer is fresh.
+  - **Raleigh matches BPS closely through 2023** (SFD+TH permits vs BPS 1-unit buildings within ~5%; 5+ units usually within 10%, at most ~20% under), except BPS 2019 (380 vs 930 local), which looks like a BPS-side gap. **From 2024 `housingunitstotal` is empty**: 1-4 unit counts are derived from the type code, but 5+ unit permits have unknown units (226–350 known vs ~3,300 BPS units a year), so 2024+ multifamily units are missing, not zero. The catalog's "2013 anomaly" did not reproduce in new-dwelling totals.
+  - **Carthage list:** the 2016 opinion names no municipal amici (only Leading Builders of America, NC Home Builders Association, NC Water Quality Association), so LB-026's seven-town "amicus" list is unsourced. All seven had capacity-type fees in the EFC Jan 2015 table; no NC 2017/18 per-utility table was found (the "2018 Tap and Impact Fee Tables" PDF is New Hampshire). The EFC table also misses plat-stage impact fees like Carthage's own.
+- **Decisions:** proposed in the PR: (1) Durham uses the hosted FeatureServer, recorded fresh; (2) Raleigh 2024+ MF5 units stay null until a reviewed description parser (`units_confidence=inferred`) is approved; (3) the V6a treatment definition needs a post-ruling fee source before the town list can be trusted.
+- **AI:** Claude Code (WS-NC instance) ran the queries, wrote the adapter, tests and CSV, and checked the adapter against BPS totals. Every CSV row cites its source; amicus status is marked unverified.
+- **Open / next:** Durham adapter (filter to city via PIN or spatial join); parse 5+ unit counts from Raleigh descriptions; find a 2017/18 NC fee source (EFC rates dashboard data, the 2019 EFC SDF report, or town fee schedules); Carthage II (2018) counsel list for municipal amici.
+
+### LB-051 · 2026-10-14 · Build: WS-MN day 1, Met Council permits adapter
+- **Question:** Can the Met Council residential permit ledger (7-county metro) feed the canonical `permits` table, holdouts removed, and do its ADU and DTQ counts look like the published figures?
+- **What I did:**
+  - Found the real download: the Geospatial Commons page now redirects to an ArcGIS Hub item whose feature layer (`arcgis.metc.state.mn.us/.../Other_Structure_Public/FeatureServer/0`) Met Council recommends; the file GDB alternative would need a GDAL dependency, so it is not used.
+  - Built `metc_permits` (registry source): SFD/ADU/TH/DTQ/MF5 kept whole; `RES_PERMIT_TYPE` ledger codes → `units_new`/`units_removed`, demolition and conversion flags; year-only dates; place/township GEOIDs from FIPS codes; PINs as county FIPS + local PIN; personal fields (address, owner name, notes) never requested; `holdout.apply` before validation.
+  - 12 contract tests on a 20-row synthetic fixture (held-out St. Paul 2024/2025 rows vanish, year-only, DTQ, unknown units, PIN forms, pager path with a mock server).
+  - Live fetch (`lotline fetch --state MN --source metc_permits`) and provenance section.
+- **Inputs:** Met Council Residential Permits layer (public domain), metadata page (code definitions), `processed/mn/jurisdictions`.
+- **Outputs:** `src/lotline/adapters/states/mn/metc_permits.py`, `tests/states/mn/`, `config/states/mn.yaml` (source + `train_until`), `docs/data_provenance.md`.
+- **Findings:**
+  - 2025 is already posted (data run 2009–2025). 114,363 rows after the holdout filter; 98.3% of rows match a jurisdictions GEOID (rest: Carver/Scott townships and a few special areas missing from the jurisdictions table).
+  - ADU recording break (C32): no ADU rows 2009–2013, one in 2014, then 24–38 a year from 2016. Metro ADUs 2016–24: 279 (published ≈300; St. Paul 2024 excluded by the filter).
+  - Minneapolis ADUs 2016–22 in Met Council: 106, against 232 published by the city (TCB 2023): Met Council likely undercounts Minneapolis ADUs.
+- **Decisions:** (proposed) gain rows carry `units_removed=0` and loss rows `units_new=0` (ledger, other side is 0 by construction); missing UNITS → both null.
+- **AI:** Claude wrote the adapter, fixture and tests; checked by the contract tests, ruff, full pytest, `compliance_check.py` (0 FAIL) and a live run with the central `HoldoutLeak` check. No St. Paul 2024–26 outcomes were printed or summarized.
+- **Open / next:** jurisdictions table lacks ~24 metro county subdivisions (WS-CORE); Minneapolis ADU gap vs city count for V0; `mpls_permits` and `stpaul_permits` snapshots; manual CSV import once `~/lotline-data/manual/` exists.
+
+### LB-052 · 2026-10-14 · Build: Jurisdictions covered only by local permit data (in_bps flag)
+- **Question:** How do places that a state's own permit source covers, but the Census BPS doesn't (WS-MN: 24 Met Council county subdivisions), get into the jurisdictions table without breaking BPS-based denominators?
+- **What I did:**
+  - Schemas 1.6 (additive): `jurisdictions.in_bps`. BPS places are `True`; places only a local permit source reports are added with `False`, named and populated from the 2020 Census. A GEOID the Census doesn't know is skipped with a warning, never invented.
+  - `jurisdictions.load` reads the state's processed `permits` table for those GEOIDs (rerun after adding a permit source).
+  - `eligible.allocate_homes`: county remainders subtract only BPS-universe jurisdictions, because BPS files a local-only township's permits under its county. Local-only places still get their own denominators for local-source rates.
+- **Inputs:** WS-MN day-1 report (PR #85); processed Met Council permits.
+- **Outputs:** `src/lotline/schemas.py` (1.6), `src/lotline/build/jurisdictions.py`, `src/lotline/build/eligible.py`, `docs/schemas.md`, `tests/core/test_jurisdictions.py`, `tests/core/test_eligible.py` (154 tests passing).
+- **Findings:** MN gains 22 local-only townships (Carver and Scott County); Met Council rows matching a jurisdiction rise from **98.3% to 99.9%**. BPS-universe denominators are unchanged (MN 97.9%, NC 100.0%, OH 100.5%, TX 89.9% of one-unit detached homes). Two Met Council codes (2703719358, 10 rows; 2713959356, 129 rows) aren't in the 2020 Census code files, likely Fort Snelling and the Shakopee Mdewakanton Sioux Community under newer codes; skipped and named.
+- **Decisions:** Rule for the engine: aggregate within one universe (BPS or a local source), never across both; `in_bps` makes that possible.
+- **AI:** Claude Code designed the universe rule, implemented and tested it, and ran it on real data.
+- **Open / next:** map the two unknown codes if WS-MN finds their Census equivalents.
+
+### LB-053 · 2026-10-14 · Build: Engine day 1 — parameter files, jurisdiction-year panel, V1 benchmarks, real dollars
+- **Question:** Can the engine read every number from sourced config, put permits next to their denominator without ever storing a rate, and score the two benchmarks the V1 baseline must beat?
+- **What I did:**
+  - `config/params/`: `aggregate.yaml` (ADU net-new share 50–80%, displacement 0–50%, completion 0.85–0.95), `fees.yaml` (Handbook $50k and −50%, land capture λ 0.25–0.75, elasticity ε 0.5–3), `baseline.yaml` (5-year horizon, 3-year benchmark mean), `money.yaml` (2025 dollars). Each cites the research doc and E-ids; range-only sources use the midpoint as central value, and the notes say so.
+  - `build/panels.py`: (state, geoid, year) panel from BPS (units by size class, total and reported-only; BPS rows sharing a GEOID summed), `eligible_parcels` for one explicit theme and rule version (with source, quality, tier), national CPI-U / mortgage rate / PPI and FHFA HPI by county (optional state fallback, `hpi_geo` says which). `load` re-checks the holdout filter on BPS.
+  - `model/baseline.py`: last-k-year mean and OLS linear trend (floored at 0), pure functions of history up to the forecast origin; `model/money.py`: deflator `nominal × index[2025] / index[year]`.
+- **Inputs:** WS-ENGINE brief; kickoff §4; schemas-v1; protocol §5.9–5.10 and §6; methods review §3b–3c, §5; fees causal diagram; validation plan V1; LB-030 (CPI-U 2025 = 322.19), LB-044–LB-046.
+- **Outputs:** `config/params/{aggregate,fees,baseline,money}.yaml`, `src/lotline/build/panels.py`, `src/lotline/model/{baseline,money}.py`, `tests/model/` (28 tests, 152 total passing).
+- **Findings:**
+  - Reading `processed/<st>/market_geo_year/` whole with pandas keeps only the first file's columns and silently drops FRED's `cpi_u`, `mortgage_rate` and `ppi_resid_inputs`. `panels.read_market` reads file by file; the shared IO helper should too (for WS-CORE).
+  - Read-only shape check on real processed tables: panels build for all four states with no duplicate keys; the denominator covers ~45% of BPS rows (2010–2024 ACS years only) and HPI 88% (TX) to 99.8% (OH).
+- **Decisions:** Proposed: HPI fallback order (county only by default; state optional; CBSA needs a county→CBSA crosswalk); ACS 5-year end year used as the denominator's calendar year; dollar year of the Handbook's $50k.
+- **AI:** Claude Code wrote the parameter files (sources checked against `docs/research/`), the panel, benchmarks, deflator and tests; every equation has a hand-worked example in its test docstring. Synthetic fixtures only; real tables read once, read-only, to check shapes.
+- **Open / next:** sources for formalization share, trend fit window and revenue-replaced toggle; ACS covariates in the panel; the real baseline model (V1).
+
+### LB-054 · 2026-10-14 · Build: Type-specific completion factors measured from Census data
+- **Question:** What share of permitted units is actually completed, and does it differ by building type enough to matter for the ADU and missing-middle scenarios?
+- **What I did:**
+  - `model/completion.py`: long-run ratio of completions (years start+lag to end+lag) to permits (start to end), from monthly NSA Census New Residential Construction series via FRED; hand-worked tests.
+  - `scripts/dev/completion_factors.py` downloads the series through the IO layer (manifest-logged) and prints the ratios, so the parameters can be recomputed by anyone.
+  - `config/params/aggregate.yaml`: the placeholder `completion_factor` 0.90 (0.85–0.95) replaced by `completion_factor_single_family` 0.97 (0.95–1.0; also ADUs), `completion_factor_multifamily` 0.80 (0.74–0.88; missing middle) and `completion_factor_all` 0.93 (0.89–0.96; baseline), each citing its series and measured values.
+- **Inputs:** FRED PERMITNSA, COMPUTNSA, PERMIT1NSA, COMPU1UNSA, PERMIT24NSA, PERMIT5NSA, COMPU24UNSA, COMPU5MUNSA (pulled 2026-10-14).
+- **Outputs:** `src/lotline/model/completion.py`, `scripts/dev/completion_factors.py`, `config/params/aggregate.yaml`, `tests/model/test_completion.py`, `tests/model/test_params.py`, FRED provenance note, regenerated `docs/data_provenance.md`.
+- **Findings:** Completions per permitted unit, windows 1990–2019 / 2000–2019 / 2010–2022: all units 0.96 / 0.93 / 0.91; single-family 1.04 / 1.02 / 1.03 (above 1: non-permit areas and townhouse classification); 2+ units 0.77 / 0.74 / 0.79 (a lower bound for the same reason). Using one factor would overstate missing-middle output by about 15–20%.
+- **Decisions (Ben, 2026-10-14):** type-specific completion factors from Census data replace the placeholder. Also confirmed: an ACS 5-year estimate counts for its last year (2019–23 → 2023), with the newest estimate carried forward to unpublished years.
+- **AI:** Claude Code (coordinating session) measured the ratios, wrote the module, script, parameters and tests on the WS-ENGINE branch, and checked the script reproduces the measured values.
+- **Open / next:** the engine uses the type-specific factor per scenario (ADU → single-family, missing middle → multifamily, baseline → all).
+
+### LB-055 · 2026-10-14 · Build: Engine panel follow-ups: HPI fallback chain, ACS carry-forward, shared reader, completion factor by type
+- **Question:** Can the jurisdiction-year panel apply Ben's Oct 14 decisions so every row has a house-price index and a current denominator, with each choice visible?
+- **What I did:**
+  - HPI fallback chain (decision 1): county → the county's metro/micro area (`jurisdictions.cbsa_code`, #82) → FHFA's state "non CBSA" series (`cbsa:000SS`) → state; `hpi_geo` records which.
+  - ACS convention (decision 2): an estimate counts for its last year; years after a jurisdiction's newest estimate carry it forward (never backward); new `denominator_year` column.
+  - Panel reads through `DataStore.read` (#81); the `read_market` workaround is removed.
+  - `model/completion.factor_key`: single-family, townhouse and ADU → single-family factor; 2+ unit types → multifamily; else all units; scenarios adu / missing_middle / baseline mapped accordingly.
+- **Inputs:** PR #80 day-1 engine; decisions logged in LB fragments for #82 and the completion factors.
+- **Outputs:** `src/lotline/build/panels.py`, `src/lotline/model/completion.py`, `tests/model/test_panels.py`, `tests/model/test_completion.py` (187 tests passing).
+- **Findings:** Real data, 2015–2025: every panel row now has an HPI. TX uses the metro level for 178 rows and the non-CBSA series for 663; MN/NC/OH need the non-CBSA series for 17/25/10. 2025 rows with a denominator: 100% MN/NC/OH, 98% TX (via carry-forward). No duplicate keys.
+- **Decisions:** none new (applies decisions 1 and 2 and the completion-factor decision).
+- **AI:** Claude Code (coordinating session) wrote the changes and hand-worked tests on the WS-ENGINE branch and ran the panel on real data.
+- **Open / next:** model/aggregate.py uses `factor_key` per scenario; Monte Carlo over the parameter ranges.
+
+### LB-056 · 2026-10-14 · Build: shared permit-description parser (WS-CORE)
+- **Question:** Can one tested, explainable parser read unit counts, building type, ADU kind, demolition
+  and conversion from free-text permit descriptions, so any state adapter can fill gaps such as Raleigh's
+  2024+ multifamily permits with no unit count?
+- **What I did:**
+  - Wrote `parse_description(text) -> PermitTextFacts` (standard-library `re` only): named, commented
+    phrase rules for counts ("48 apt units", "(3) unit", "three units", "6-plex"), type words (duplex,
+    triplex, fourplex, 2-4 → DTQ, 5+ → MF5, townhouse, single-family, manufactured), ADUs and their kind,
+    alteration (→ 0 new units), demolition (units removed) and conversion (net units). Every value comes
+    with `evidence` (rule + matched phrase).
+  - Precision over recall: traps (bedrooms, stories, years, sizes, lot/building/permit numbers, "Unit 5",
+    "2 HC units", "2 over 2"), project totals on one-building-of-several permits, contradictions and
+    buildings named as existing or separately permitted all return None.
+  - 91 synthetic test cases in `tests/core/test_permit_text.py`, each hand-checked.
+  - Read-only accuracy check on Raleigh permits 2015-2023 (new construction with a plausible recorded
+    count); a narrow evaluation pull (permit number, type code, units, description fields) was fetched
+    through the IO layer into `LOTLINE_DATA_DIR/raw/raleigh_permits/2026-10-14/permit_text_eval/`.
+    Nothing from it is in the repo.
+- **Inputs:** `docs/schemas.md` (permits contract), Raleigh adapter (WS-NC), Open Raleigh building
+  permits layer (descriptions). No Charlotte or St. Paul data was read.
+- **Outputs:** `src/lotline/parse/__init__.py`, `src/lotline/parse/permit_text.py`,
+  `tests/core/test_permit_text.py`.
+- **Findings:**
+  - Raleigh 2015-2023, n = 13,058: a count is returned for 61% of records with 99.9% precision. By type
+    (coverage / precision): SFD 98% / 100%; duplex 88% / 98%; 3-4 units 65% / 92% (n = 20); 5+ units
+    24% / 96.5% (136 of 141); ADU 88% / 100%; manufactured 90% / 100%. Building type agrees with the
+    city's code in 99.9% of the 86% of records where one is returned.
+  - Raleigh 2024-2025 5+ unit permits with an empty unit field: 37 of 80 (46%) get a count from the
+    description. 5+ coverage is capped by the text: 61% of descriptions are cut at 100 characters and
+    many name only the project and building number.
+  - Main errors: a project total read as the building's count when the text doesn't say it is one
+    building of several; townhouse permits are issued one per townhouse while the text gives the row
+    size (so townhouse counts go to `building_units`, not `units_new`); per-unit condo permits that
+    describe the whole building. Alteration permits get a positive count in 0.35%; demolitions are
+    recognised in 99% and units removed match the city's code in 95%.
+- **Decisions:** Proposed: (1) adapters use the parser only to fill a missing structured value, with
+  `units_confidence`/`type_confidence = "inferred"`; (2) townhouse row size is not a per-permit count.
+- **AI:** Claude Code wrote the parser, tests and the evaluation script (kept outside the repo), iterated
+  the rules against the Raleigh error list using only general phrase patterns, and checked every test
+  expectation by hand; ruff, pytest and `compliance_check.py` pass.
+- **Open / next:** wire into the Raleigh adapter (WS-NC) for 2024+ 104/105 permits (needs the description
+  field added to its request; it is excluded today as free text); describe the rules in the methodology
+  document; try it on other jurisdictions' descriptions.
