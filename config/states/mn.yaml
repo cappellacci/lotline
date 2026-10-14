@@ -25,3 +25,12 @@ sources:
     notes: >-
       Met Council Residential Permits, 7-county metro, permit-year ledger 2009 on. Listed on the Geospatial
       Commons as us-mn-state-metc-econ-residential-building-permts (file GDB also offered; not used).
+  - name: mpls_permits
+    url: https://services.arcgis.com/afSMGVsC7QlRK1kZ/arcgis/rest/services/CCS_Permits/FeatureServer/0
+    license: CC0 1.0 (City of Minneapolis open data waiver)
+    access: arcgis
+    cadence: rolling window from Dec 2016, updated daily; every fetch is a dated snapshot
+    notes: >-
+      Minneapolis Construction Code Services permits. Building permits only (Res, Commercial, Wrecking).
+      Applicant and owner names and applicant address are never requested. No ADU flag: ADUs are inferred
+      from the scope of work (type_confidence=inferred).
