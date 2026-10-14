@@ -1,0 +1,9 @@
+# Real dollars (model/money.py, protocol §5.9).
+
+real_dollar_year:
+  value: 2025
+  low: 2025
+  high: 2025
+  unit: calendar year
+  source: "Statistical protocol §5.9: 'Real 2025 dollars'; CPI-U 2025 annual = 322.19 with October 2025 interpolated (LB-030)"
+  notes: "Prices and rents are deflated with CPI-U, construction costs with the BLS PPI for residential construction inputs (protocol §5.9)."

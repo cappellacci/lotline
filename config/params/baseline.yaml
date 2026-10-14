@@ -1,0 +1,17 @@
+# Baseline forecast and the V1 benchmarks it must beat (model/baseline.py, validation plan V1).
+
+forecast_horizon_years:
+  value: 5
+  low: 5
+  high: 5
+  unit: years
+  source: "Challenge brief (CLAUDE.md): housing production over 5 years compared with a baseline"
+  notes: "Fixed by the challenge."
+
+benchmark_mean_years:
+  value: 3
+  low: 3
+  high: 3
+  unit: years
+  source: "Validation plan V1: benchmark (a) 'last-3-year average'"
+  notes: "Fixed by the pre-registered benchmark definition."

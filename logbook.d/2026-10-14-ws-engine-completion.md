@@ -1,0 +1,12 @@
+### LB-NNN · 2026-10-14 · Build: Type-specific completion factors measured from Census data
+- **Question:** What share of permitted units is actually completed, and does it differ by building type enough to matter for the ADU and missing-middle scenarios?
+- **What I did:**
+  - `model/completion.py`: long-run ratio of completions (years start+lag to end+lag) to permits (start to end), from monthly NSA Census New Residential Construction series via FRED; hand-worked tests.
+  - `scripts/dev/completion_factors.py` downloads the series through the IO layer (manifest-logged) and prints the ratios, so the parameters can be recomputed by anyone.
+  - `config/params/aggregate.yaml`: the placeholder `completion_factor` 0.90 (0.85–0.95) replaced by `completion_factor_single_family` 0.97 (0.95–1.0; also ADUs), `completion_factor_multifamily` 0.80 (0.74–0.88; missing middle) and `completion_factor_all` 0.93 (0.89–0.96; baseline), each citing its series and measured values.
+- **Inputs:** FRED PERMITNSA, COMPUTNSA, PERMIT1NSA, COMPU1UNSA, PERMIT24NSA, PERMIT5NSA, COMPU24UNSA, COMPU5MUNSA (pulled 2026-10-14).
+- **Outputs:** `src/lotline/model/completion.py`, `scripts/dev/completion_factors.py`, `config/params/aggregate.yaml`, `tests/model/test_completion.py`, `tests/model/test_params.py`, FRED provenance note, regenerated `docs/data_provenance.md`.
+- **Findings:** Completions per permitted unit, windows 1990–2019 / 2000–2019 / 2010–2022: all units 0.96 / 0.93 / 0.91; single-family 1.04 / 1.02 / 1.03 (above 1: non-permit areas and townhouse classification); 2+ units 0.77 / 0.74 / 0.79 (a lower bound for the same reason). Using one factor would overstate missing-middle output by about 15–20%.
+- **Decisions (Ben, 2026-10-14):** type-specific completion factors from Census data replace the placeholder. Also confirmed: an ACS 5-year estimate counts for its last year (2019–23 → 2023), with the newest estimate carried forward to unpublished years.
+- **AI:** Claude Code (coordinating session) measured the ratios, wrote the module, script, parameters and tests on the WS-ENGINE branch, and checked the script reproduces the measured values.
+- **Open / next:** the engine uses the type-specific factor per scenario (ADU → single-family, missing middle → multifamily, baseline → all).
