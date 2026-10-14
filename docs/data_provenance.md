@@ -19,6 +19,7 @@ by `lotline fetch` into `LOTLINE_DATA_DIR`, never committed; each download is lo
 | Census Building Permits Survey (BPS), annual state totals (reconciliation only) (`census_bps_state_annual`) | https://www.census.gov/construction/bps/ | 1992–2025 (34 vintages); publisher files last modified up to 2026-05-14 | 2026-10-06 | Public domain (U.S. Government work, 17 U.S.C. §105) | Parse units for 1, 2, 3-4 and 5+ unit buildings (with imputation) per state and year | Used only to check that place files add up; never an input to the model; Held-out state-years are not compared, so a held-out place can't be recovered by subtraction |
 | FHFA House Price Index, annual all-transactions (state, CBSA, county, ZIP5, tract) (`fhfa_hpi_annual`) | https://www.fhfa.gov/data/hpi/datasets | current | 2026-10-06 | Public domain (U.S. Government work, 17 U.S.C. §105) | Skip FHFA's title rows; keep native HPI, HPI with 2000 base, and annual change; Prefix geography codes by level (county:27053, zip5:55415, ...); Assign ZIP5 to states by USPS 3-digit prefix ranges (config/states); keep CBSAs touching the state; Suppressed years are left missing, never interpolated | Sub-state annual indexes are labeled 'developmental' by FHFA; Thin places suppressed: TX county indexes for 179 of 254 counties; 1-9% of tract-years missing; FHFA overwrites files in place; earlier vintages survive only as manifest hashes; Native HPI is base 100 in each series' first year; compare places with the base-2000 index |
 | FRED: 30-year mortgage rate (Freddie Mac PMMS), PPI residential construction inputs, CPI-U (`fred`) | https://fred.stlouisfed.org/ | 2026-10; publisher files last modified up to 2026-10-01 | 2026-10-06 | Freddie Mac PMMS, republished by FRED with permission; attribution required; Public domain (BLS, U.S. Government work) | Calendar-year means over complete years only (52+ weekly or 12 monthly observations); A single missing observation between two published ones is linearly interpolated (Oct 2025 CPI); Stored at geo national:US for every state | BLS published no October 2025 CPI (federal shutdown); 2025 CPI uses an interpolated October; FRED revises series in place; raw copies are kept per month pulled; The mortgage rate is Freddie Mac data: attribution required wherever it is shown |
+| OMB core-based statistical area (CBSA) delineation, July 2023 (county to metro/micro area) (`census_cbsa_delineation`) | https://www.census.gov/geographies/reference-files/time-series/demo/metro-micro/delineation-files.html | 2023; publisher files last modified up to 2023-08-04 | 2026-10-14 | Public domain (U.S. Government work, 17 U.S.C. §105) | Skip the title rows; keep CBSA code, title, metro/micro type and county FIPS; County GEOID = state FIPS + county FIPS; one CBSA per county; Each jurisdiction gets its county's CBSA (multi-county places: the county BPS files them under) | Rural counties belong to no CBSA (no code); 2023 delineation applied to all years; CBSA boundaries changed in 2013 and 2023 |
 
 ## Datasets
 
@@ -171,3 +172,23 @@ by `lotline fetch` into `LOTLINE_DATA_DIR`, never committed; each download is lo
 - BLS published no October 2025 CPI (federal shutdown); 2025 CPI uses an interpolated October
 - FRED revises series in place; raw copies are kept per month pulled
 - The mortgage rate is Freddie Mac data: attribution required wherever it is shown
+
+### OMB core-based statistical area (CBSA) delineation, July 2023 (county to metro/micro area)
+
+- **Source id:** `census_cbsa_delineation` → table `jurisdictions (cbsa_code, cbsa_type)` (adapter `national.cbsa` v1.0)
+- **Source:** https://www.census.gov/geographies/reference-files/time-series/demo/metro-micro/delineation-files.html
+- **Version:** 2023; publisher files last modified up to 2023-08-04
+- **Accessed:** 2026-10-14
+- **Files:** 1 (0.1 MB); URLs and sha256 in `manifest.jsonl`
+- **License / terms:** Public domain (U.S. Government work, 17 U.S.C. §105)
+
+**Cleaning steps**
+
+1. Skip the title rows; keep CBSA code, title, metro/micro type and county FIPS
+1. County GEOID = state FIPS + county FIPS; one CBSA per county
+1. Each jurisdiction gets its county's CBSA (multi-county places: the county BPS files them under)
+
+**Known limitations**
+
+- Rural counties belong to no CBSA (no code)
+- 2023 delineation applied to all years; CBSA boundaries changed in 2013 and 2023

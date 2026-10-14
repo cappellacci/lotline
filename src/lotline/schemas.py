@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.4"  # schemas-v1 freeze; history in docs/schemas.md
+SCHEMAS_VERSION = "1.5"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -94,6 +94,9 @@ class Jurisdictions(_Strict):
     bps_id: Optional[Series[str]] = pa.Field(nullable=True)
     pop_2020: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True, ge=0)
     data_tier: Series[pd.Int64Dtype] = pa.Field(isin=DATA_TIERS)
+    # metro/micro area of the jurisdiction's county (OMB 2023); null for rural counties outside any CBSA
+    cbsa_code: Optional[Series[str]] = pa.Field(nullable=True, str_matches=r"^\d{5}$")
+    cbsa_type: Optional[Series[str]] = pa.Field(nullable=True, isin=["metro", "micro"])
 
 
 class Parcels(_Strict):
@@ -415,6 +418,7 @@ HISTORY = [
         "two coders, status and amendments; fees components, basis, dollar year; nullable booleans; "
         "misspelled-column guard",
     ),
+    ("1.5", "jurisdictions: optional cbsa_code and cbsa_type (OMB 2023 county to metro/micro area)"),
 ]
 
 

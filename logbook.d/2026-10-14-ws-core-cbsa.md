@@ -1,0 +1,12 @@
+### LB-NNN · 2026-10-14 · Build: County-to-metro (CBSA) crosswalk; provenance works across parallel branches
+- **Question:** Where a county has no FHFA house-price index, what is the next-best index, and can every branch keep its provenance check passing while three workstreams share one data folder?
+- **What I did:**
+  - New adapter `adapters/national/cbsa.py`: the official OMB July 2023 county → CBSA delineation (Census "List 1", public domain). All 175 FHFA CBSA codes in MN, NC, OH and TX match it.
+  - Schemas 1.5 (additive): `jurisdictions.cbsa_code` and `cbsa_type` (metro/micro), filled from each jurisdiction's county. Data dictionary regenerated.
+  - Provenance: downloads by another worktree's unmerged adapter (e.g. the MN/NC agents' `metc_residential_permits`, `raleigh_permits`) are left out of the document and named as notes; processed files from unregistered sources are skipped with a note. The check still fails if a registered table depends on an undocumented download.
+- **Inputs:** Census delineation `list1_2023.xlsx`; FHFA CBSA codes; WS-ENGINE decision 1 (PR #80).
+- **Outputs:** `src/lotline/adapters/national/cbsa.py`, `src/lotline/schemas.py` (1.5), `src/lotline/build/jurisdictions.py`, `src/lotline/registry.py`, `src/lotline/provenance.py`, `src/lotline/cli.py`, `docs/schemas.md`, `docs/data_provenance.md`, `tests/core/test_cbsa.py`, `tests/core/test_provenance.py` (130 tests passing).
+- **Findings:** Jurisdictions in a CBSA: MN 65%, NC 83%, OH 85%, TX 80%. Counties lacking a 2024 county HPI: MN 1, NC 2, OH 0, **TX 56**; the CBSA index covers 11 of TX's 56. The other 45 are rural: their best fallback is FHFA's state "non CBSA" series. Proposed engine chain: **county → CBSA → state non-CBSA → state**.
+- **Decisions (Ben, 2026-10-14):** (1) build the county→metro crosswalk from official open files (done here); (3) the Handbook's $50k fee is in **2025 dollars**; (4) ADU net-new share 0.65 (0.50–0.80; E039, E051, E052), displacement 0.25 (0–0.50) and completion factor 0.90 (0.85–0.95) accepted as labelled assumptions, to become **user-tunable controls** in the app later. Open: (2) which calendar year an ACS 5-year estimate stands for (recommended: end year, carry the latest forward); sourcing the completion factor from the Census Survey of Construction.
+- **AI:** Claude Code verified the FHFA code match, wrote the adapter, schema change, provenance fix and tests, and ran them on real data.
+- **Open / next:** WS-ENGINE: fallback chain in `panels.py`; `DataStore.read` instead of its `read_market` workaround.
