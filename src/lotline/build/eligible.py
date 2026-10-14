@@ -138,6 +138,10 @@ def allocate_homes(
     places = j.index[j["kind"] == "place"]
     townships = j.index[j["kind"] == "township"]
     counties = j.index[j["kind"] == "county_unincorporated"]
+    # County remainders subtract only BPS-universe jurisdictions: BPS files a local-only township's permits in
+    # its county's row, so its homes must stay in that county's denominator too.
+    in_bps = j["in_bps"].fillna(True).astype(bool) if "in_bps" in j else pd.Series(True, index=j.index)
+    bps_members = set(j.index[in_bps])
     shares_c = county_shares[county_shares["place_geoid"].isin(places)]
     shares_t = township_shares[
         township_shares["place_geoid"].isin(places) & township_shares["township_geoid"].isin(townships)
@@ -155,9 +159,10 @@ def allocate_homes(
             )
         in_county: dict[str, float] = {}
         for p, c, s in zip(shares_c["place_geoid"], shares_c["county_geoid"], shares_c["share"], strict=True):
-            in_county[c] = in_county.get(c, 0.0) + homes.get(p, 0.0) * s
+            if p in bps_members:
+                in_county[c] = in_county.get(c, 0.0) + homes.get(p, 0.0) * s
         for t in townships:
-            if t in homes:
+            if t in homes and t in bps_members:
                 in_county[t[:5]] = in_county.get(t[:5], 0.0) + homes[t]
         for c in counties:
             if c in get.index:

@@ -309,3 +309,23 @@ def test_negative_remainder_is_clipped_and_flagged():
     empty = pd.DataFrame(columns=["place_geoid", "township_geoid", "share"])
     homes = eligible.allocate_homes(acs, juris, shares, empty).set_index("jurisdiction_geoid")
     assert homes.loc["39001", "homes"] == 0 and bool(homes.loc["39001", "clipped"])
+
+
+def test_local_only_township_stays_in_its_county_remainder():
+    """County 27139 has 1,000 homes. Empire township (local-only, not in BPS) has 100. BPS files Empire's
+    permits in the county's unincorporated row, so the remainder keeps them: 1,000, not 900. Empire still
+    gets its own 100 for rates built from the local permit source."""
+    acs = pd.DataFrame(
+        {"geo": ["county:27139", "cousub:2713919036"], "end_year": [2023, 2023], "estimate": [1000.0, 100.0]}
+    )
+    juris = pd.DataFrame(
+        {
+            "geoid": ["27139", "2713919036"],
+            "kind": ["county_unincorporated", "township"],
+            "in_bps": [True, False],
+        }
+    )
+    empty_c = pd.DataFrame(columns=["place_geoid", "county_geoid", "share"])
+    empty_t = pd.DataFrame(columns=["place_geoid", "township_geoid", "share"])
+    homes = eligible.allocate_homes(acs, juris, empty_c, empty_t).set_index("jurisdiction_geoid")["homes"]
+    assert homes["27139"] == 1000 and homes["2713919036"] == 100

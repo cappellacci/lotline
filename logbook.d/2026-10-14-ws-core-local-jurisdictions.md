@@ -1,0 +1,12 @@
+### LB-NNN · 2026-10-14 · Build: Jurisdictions covered only by local permit data (in_bps flag)
+- **Question:** How do places that a state's own permit source covers, but the Census BPS doesn't (WS-MN: 24 Met Council county subdivisions), get into the jurisdictions table without breaking BPS-based denominators?
+- **What I did:**
+  - Schemas 1.6 (additive): `jurisdictions.in_bps`. BPS places are `True`; places only a local permit source reports are added with `False`, named and populated from the 2020 Census. A GEOID the Census doesn't know is skipped with a warning, never invented.
+  - `jurisdictions.load` reads the state's processed `permits` table for those GEOIDs (rerun after adding a permit source).
+  - `eligible.allocate_homes`: county remainders subtract only BPS-universe jurisdictions, because BPS files a local-only township's permits under its county. Local-only places still get their own denominators for local-source rates.
+- **Inputs:** WS-MN day-1 report (PR #85); processed Met Council permits.
+- **Outputs:** `src/lotline/schemas.py` (1.6), `src/lotline/build/jurisdictions.py`, `src/lotline/build/eligible.py`, `docs/schemas.md`, `tests/core/test_jurisdictions.py`, `tests/core/test_eligible.py` (154 tests passing).
+- **Findings:** MN gains 22 local-only townships (Carver and Scott County); Met Council rows matching a jurisdiction rise from **98.3% to 99.9%**. BPS-universe denominators are unchanged (MN 97.9%, NC 100.0%, OH 100.5%, TX 89.9% of one-unit detached homes). Two Met Council codes (2703719358, 10 rows; 2713959356, 129 rows) aren't in the 2020 Census code files, likely Fort Snelling and the Shakopee Mdewakanton Sioux Community under newer codes; skipped and named.
+- **Decisions:** Rule for the engine: aggregate within one universe (BPS or a local source), never across both; `in_bps` makes that possible.
+- **AI:** Claude Code designed the universe rule, implemented and tested it, and ran it on real data.
+- **Open / next:** map the two unknown codes if WS-MN finds their Census equivalents.
