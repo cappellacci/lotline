@@ -40,6 +40,9 @@ around that reflects lumpy years and the regional building cycle. Per place and 
 4. **Optional regional cycle term** (`use_state_momentum`): every place's level is scaled by the state's pace
    over the last `momentum_recent_years` relative to its pace over the level window (`state_momentum`).
    Off by default: the V1 backtest decides whether it earns its place.
+
+5. **Optional demand term** (spec C, analysis plan D-006): a per-place multiplier on the level from
+   `model.demand.multipliers`, passed as `multiplier`. None (spec B) leaves every level as it is.
 """
 
 from __future__ import annotations
@@ -314,8 +317,13 @@ def forecast_draws(
     group: str = "county_geoid",
     params: dict[str, Parameter] | None = None,
     key: str = "geoid",
+    multiplier: pd.Series | None = None,
 ) -> tuple[pd.DataFrame, np.ndarray]:
-    """`baseline_forecast` plus its simulated counts: draws[i] are the draws behind row i of the table."""
+    """`baseline_forecast` plus its simulated counts: draws[i] are the draws behind row i of the table.
+
+    `multiplier` (place key -> factor, e.g. spec C's demand term from `model.demand.multipliers`) scales each
+    place's level, and its variance by the square, like a known constant; places not in it keep 1.
+    """
     p = params or load_params("baseline")
     horizon = int(p["forecast_horizon_years"].value)
     n = int(p["simulation_draws"].value)
@@ -333,7 +341,7 @@ def forecast_draws(
         key=key,
     )
     columns = [key, "state", "year", "horizon", "parcels_origin", "level", "direct", "group_rate", "b"]
-    columns += ["momentum", "mean", "p10", "p50", "p90"]
+    columns += ["momentum", "demand", "mean", "p10", "p50", "p90"]
     tables, all_draws = [], []
     for state, ps in places.groupby("state", sort=True):
         history = int(p["cycle_history_years"].value)
@@ -344,12 +352,17 @@ def forecast_draws(
                 in_state, value, origin, int(p["momentum_recent_years"].value), int(p["level_years"].value)
             )
         ps = ps.assign(momentum=factor, level=ps["level"] * factor, level_var=ps["level_var"] * factor**2)
+        demand = np.ones(len(ps))
+        if multiplier is not None:
+            demand = ps[key].map(multiplier).fillna(1.0).to_numpy(dtype=float)
+        ps = ps.assign(demand=demand, level=ps["level"] * demand, level_var=ps["level_var"] * demand**2)
         shocks = cycle_shocks(hist[hist["state"] == state], value, origin, history, key)
         draws = _simulate(ps, shocks, horizon, n, rng)  # (places, horizon, n)
         lo, mid, hi, mean = interval_from_draws(draws, low, high)
         rows = ps.loc[ps.index.repeat(horizon), [key, "state", "parcels_origin", "level", "direct"]]
         rows = rows.assign(group_rate=np.repeat(ps["group_rate"].to_numpy(), horizon))
         rows = rows.assign(b=np.repeat(ps["b"].to_numpy(), horizon), momentum=factor)
+        rows = rows.assign(demand=np.repeat(ps["demand"].to_numpy(), horizon))
         rows["horizon"] = np.tile(np.arange(1, horizon + 1), len(ps))
         rows["year"] = origin + rows["horizon"]
         for name, q in (("mean", mean), ("p10", lo), ("p50", mid), ("p90", hi)):
@@ -369,13 +382,16 @@ def baseline_forecast(
     group: str = "county_geoid",
     params: dict[str, Parameter] | None = None,
     key: str = "geoid",
+    multiplier: pd.Series | None = None,
 ) -> pd.DataFrame:
     """The baseline: per place, the next `forecast_horizon_years` of `value` counts as P10/P50/P90 and mean.
 
     Only rows with year <= origin are used. Long table: key, state, year, horizon, parcels_origin, level
     (shrunk rate per 1,000 parcels), direct, group_rate, b (shrinkage weight), mean, p10, p50, p90.
     """
-    table, _ = forecast_draws(panel, value, origin, group=group, params=params, key=key)
+    table, _ = forecast_draws(
+        panel, value, origin, group=group, params=params, key=key, multiplier=multiplier
+    )
     return table
 
 
