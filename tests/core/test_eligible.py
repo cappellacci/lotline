@@ -171,3 +171,59 @@ def test_acs_fallback_never_gives_a_county_total_to_an_unincorporated_area():
     )
     out = eligible.from_acs(acs, juris, themes=("adu",))
     assert out.jurisdiction_geoid.tolist() == ["3755000"]  # Wake's county total includes Raleigh
+
+
+def _acs_rows():
+    acs = pd.DataFrame(
+        {
+            "geo": ["place:2743000", "cousub:2700102224"],
+            "end_year": [2023, 2023],
+            "table_id": ["B25024"] * 2,
+            "variable": ["B25024_002"] * 2,
+            "label": ["Total:!!1, detached"] * 2,
+            "estimate": [82307.0, 120.0],
+            "moe": [1.0, 1.0],
+        }
+    )
+    juris = pd.concat(
+        [
+            JURIS,
+            pd.DataFrame(
+                {
+                    "state": ["MN"],
+                    "geoid": ["2700102224"],
+                    "name": ["Arna township"],
+                    "kind": ["township"],
+                    "data_tier": [3],
+                }
+            ),
+        ],
+        ignore_index=True,
+    )
+    return acs, juris
+
+
+def test_combine_uses_one_source_per_jurisdiction():
+    acs, juris = _acs_rows()
+    out = eligible.combine(eligible.from_parcels(_parcels(), juris), eligible.from_acs(acs, juris))
+    by_place = out.groupby("jurisdiction_geoid")["denominator_source"].unique()
+    assert list(by_place["2743000"]) == ["parcels"]  # Minneapolis has parcels: no ACS row kept
+    assert list(by_place["2700102224"]) == ["acs_sf_fallback"]  # Arna township doesn't: fallback
+
+
+def test_load_builds_from_processed_tables(tmp_path):
+    from lotline.io import DataStore
+
+    store = DataStore(tmp_path)
+    acs, juris = _acs_rows()
+    for table, df in (("acs_geo_year", acs), ("jurisdictions", juris)):
+        path = store.processed("MN", table, "x")
+        path.parent.mkdir(parents=True)
+        df.to_parquet(path)
+    out = eligible.load("MN", store)
+    assert set(out["denominator_source"]) == {"acs_sf_fallback"} and len(out) == 4  # 2 places x 2 themes
+    parcels_path = store.processed("MN", "parcels", "x")
+    parcels_path.parent.mkdir(parents=True)
+    _parcels().to_parquet(parcels_path)
+    out = eligible.load("MN", store)
+    assert set(out.loc[out.jurisdiction_geoid == "2743000", "denominator_source"]) == {"parcels"}
