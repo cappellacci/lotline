@@ -65,3 +65,22 @@ def test_retries_transient_errors(tmp_path):
 def test_data_dir_from_env(monkeypatch, tmp_path):
     monkeypatch.setenv("LOTLINE_DATA_DIR", str(tmp_path))
     assert data_dir() == tmp_path.resolve()
+
+
+def test_read_keeps_every_sources_columns(tmp_path):
+    # pandas.read_parquet(folder) keeps only the first file's schema; DataStore.read must not
+    import pandas as pd
+
+    store = DataStore(tmp_path)
+    folder = store.processed("MN", "market_geo_year")
+    folder.mkdir(parents=True)
+    pd.DataFrame({"geo": ["county:27053"], "year": [2024], "hpi": [500.0]}).to_parquet(
+        folder / "fhfa.parquet"
+    )
+    pd.DataFrame({"geo": ["national:US"], "year": [2024], "cpi_u": [313.7]}).to_parquet(
+        folder / "fred.parquet"
+    )
+    df = store.read("MN", "market_geo_year")
+    assert {"hpi", "cpi_u"} <= set(df.columns) and len(df) == 2
+    assert df.set_index("geo").loc["national:US", "cpi_u"] == 313.7
+    assert store.read("MN", "parcels") is None  # not built

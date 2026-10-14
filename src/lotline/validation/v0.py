@@ -132,8 +132,7 @@ def _fmt(v) -> str:
 
 
 def _read(store: DataStore, state: str, table: str) -> pd.DataFrame | None:
-    path = store.processed(state, table)
-    return pd.read_parquet(path) if path.exists() else None
+    return store.read(state, table)
 
 
 def build_report(state: str, store: DataStore) -> tuple[str, bool, pd.DataFrame]:

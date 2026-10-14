@@ -233,13 +233,12 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     from lotline.build import jurisdictions as jur
 
     def processed_or(table: str, build):
-        path = store.processed(state, table)
-        return pd.read_parquet(path) if path.exists() else build()
+        df = store.read(state, table)
+        return df if df is not None else build()
 
     juris = processed_or("jurisdictions", lambda: jur.load(state, store, refresh=refresh))
     acs_table = processed_or("acs_geo_year", lambda: acs.load(state, store, refresh=refresh))
-    parcels_path = store.processed(state, "parcels")
-    parcels = pd.read_parquet(parcels_path) if parcels_path.exists() else None
+    parcels = store.read(state, "parcels")
     parcel_rows = from_parcels(parcels, juris) if parcels is not None and len(parcels) else None
 
     from lotline.adapters.national import geoparts

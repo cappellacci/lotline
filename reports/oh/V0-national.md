@@ -65,7 +65,7 @@ Units in new privately owned residential buildings, with Census imputation. `dif
 
 - `eligible_parcels`: 28,550 rows · 2010–2024 · 953 jurisdictions · source (quality): acs_sf_fallback (low) 28,550
 
-- `market_geo_year`: 137,321 rows · 1947–2026 · 3,692 geographies · nulls: `hpi` 3.10%, `hpi_base2000` 8.00%, `hpi_change_pct` 7.16%
+- `market_geo_year`: 137,321 rows · 1947–2026 · 3,692 geographies · nulls: `hpi` 3.10%, `hpi_base2000` 8.00%, `hpi_change_pct` 7.16%, `mortgage_rate` 99.96%, `ppi_resid_inputs` 99.97%, `cpi_u` 99.94%
 
 - `acs_geo_year`: 2,379,412 rows · 2010–2024 · 6,477 geographies · nulls: `estimate` 0.41%, `moe` 0.42%
 
@@ -91,3 +91,4 @@ Units in new privately owned residential buildings, with Census imputation. `dif
 - `fhfa_hpi_annual`: Public domain (U.S. Government work, 17 U.S.C. §105)
 - `fred`: Freddie Mac PMMS, republished by FRED with permission; attribution required
 - `fred`: Public domain (BLS, U.S. Government work)
+- `raleigh_permits`: Open Raleigh Data Policy (public open data, no warranty; https://data.raleighnc.gov)
