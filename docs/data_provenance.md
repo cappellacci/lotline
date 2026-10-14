@@ -12,7 +12,8 @@ by `lotline fetch` into `LOTLINE_DATA_DIR`, never committed; each download is lo
 
 | Dataset | Source (URL) | Version | Access date | License / terms | Cleaning steps | Known limitations |
 |---|---|---|---|---|---|---|
-| Census 2020 redistricting data (P.L. 94-171): names and total population (`census_dec_pl`) | https://www.census.gov/programs-surveys/decennial-census/about/rdo/summary-files.html | 2020 | 2026-10-06 | Public domain (U.S. Government work, 17 U.S.C. §105) | Short names (before the first comma) and P1_001N total population for counties, places and county subdivisions; Joined to the BPS jurisdiction universe by GEOID | Jurisdictions dissolved or renamed before 2020 keep their BPS name and no population; Unincorporated county areas get no population (county totals would overstate them); 2020 counts carry Census disclosure-avoidance noise for small places |
+| Census 2020 geography: code files and DHC housing-unit parts (`census_geo_codes`) | https://www.census.gov/library/reference/code-lists/ansi.html | 2020; publisher files last modified up to 2023-02-13 | 2026-10-14 | Public domain (U.S. Government work, 17 U.S.C. §105) | Read pipe-delimited files; build 7-digit place and 10-digit county-subdivision GEOIDs; A place is its own county subdivision when a subdivision with its FIPS code has class C*; Places with more than one county get 2020 housing-unit shares by county (DHC H1_001N); Places that aren't their own subdivision get 2020 housing-unit shares by township (DHC H1_001N) | Splits use 2020 housing units, fixed for every ACS year: homes are assumed spread like 2020 housing; Housing units of all types are used to split one-unit detached homes |
+| Census 2020 redistricting data (P.L. 94-171): names and total population (`census_dec_pl`) | https://www.census.gov/programs-surveys/decennial-census/about/rdo/summary-files.html | 2020 | 2026-10-06 to 2026-10-14 | Public domain (U.S. Government work, 17 U.S.C. §105) | Short names (before the first comma) and P1_001N total population for counties, places and county subdivisions; Joined to the BPS jurisdiction universe by GEOID | Jurisdictions dissolved or renamed before 2020 keep their BPS name and no population; Unincorporated county areas get no population (county totals would overstate them); 2020 counts carry Census disclosure-avoidance noise for small places |
 | Census American Community Survey 5-year estimates (B25024, B25003, B25064, B25077, B25034) (`census_acs5`) | https://www.census.gov/data/developers/data-sets/acs-5year.html | 2010–2024 (15 vintages) | 2026-10-06 | Public domain (U.S. Government work, 17 U.S.C. §105) | Long format: one row per geography, 5-year vintage and variable, with the published 90% MOE; Census special-value codes become missing; a 'controlled' MOE (-555555555) becomes 0; Labels kept per vintage because some categories change over time | Adjacent 5-year vintages share four years of sample: never difference them; 0.3-2% of estimates are suppressed, mostly small places and townships; Requires a free Census API key (CENSUS_API_KEY); the key is never written to the manifest |
 | Census Building Permits Survey (BPS), annual place-level files (`census_bps_place_annual`) | https://www.census.gov/construction/bps/ | 1992–2025 (34 vintages); publisher files last modified up to 2026-05-14 | 2026-10-06 | Public domain (U.S. Government work, 17 U.S.C. §105) | Parse each regional annual file; ID columns found by header name (layouts change by era); Keep units and buildings for 1, 2, 3-4 and 5+ unit buildings, both imputed totals and reported-only; Flag `imputed` when a place reported fewer than 12 months or reported units differ from the total; Assign GEOIDs: place, else county subdivision, else county for unincorporated/'County Part' rows; backfill earlier years by BPS ID (1992 on), then county + name, then unique name; Remove held-out place-years (validation/holdout.py) before the table is written | BPS 6-digit IDs were renumbered in 1992 and reused; pre-1992 rows link by name only; Before 2009, 0.07-2.9% of units belong to places that left the survey before FIPS codes existed and cannot be placed; ADUs are often not recorded as new units (Upzoned #301); BPS may undercount them; NC's BPS universe has ~157 places; most small towns' permits sit in county unincorporated totals; Place sums exceed Census state totals in some years because Census revises state and county totals after the annual survey (BPS methodology); MN, NC, OH within 1% except 1992-93; TX 1-2% high in 2003-2014, concentrated in county unincorporated rows (e.g. Denton County 2014: +2,145 units). See reports/<st>/V0-national.md |
 | Census Building Permits Survey (BPS), annual state totals (reconciliation only) (`census_bps_state_annual`) | https://www.census.gov/construction/bps/ | 1992–2025 (34 vintages); publisher files last modified up to 2026-05-14 | 2026-10-06 | Public domain (U.S. Government work, 17 U.S.C. §105) | Parse units for 1, 2, 3-4 and 5+ unit buildings (with imputation) per state and year | Used only to check that place files add up; never an input to the model; Held-out state-years are not compared, so a held-out place can't be recovered by subtraction |
@@ -21,13 +22,34 @@ by `lotline fetch` into `LOTLINE_DATA_DIR`, never committed; each download is lo
 
 ## Datasets
 
+### Census 2020 geography: code files and DHC housing-unit parts
+
+- **Source id:** `census_geo_codes` → table `none (inputs to eligible_parcels allocation)` (adapter `national.geoparts` v1.0)
+- **Source:** https://www.census.gov/library/reference/code-lists/ansi.html
+- **Version:** 2020; publisher files last modified up to 2023-02-13
+- **Accessed:** 2026-10-14
+- **Files:** 562 (5.1 MB); URLs and sha256 in `manifest.jsonl`
+- **License / terms:** Public domain (U.S. Government work, 17 U.S.C. §105)
+
+**Cleaning steps**
+
+1. Read pipe-delimited files; build 7-digit place and 10-digit county-subdivision GEOIDs
+1. A place is its own county subdivision when a subdivision with its FIPS code has class C*
+1. Places with more than one county get 2020 housing-unit shares by county (DHC H1_001N)
+1. Places that aren't their own subdivision get 2020 housing-unit shares by township (DHC H1_001N)
+
+**Known limitations**
+
+- Splits use 2020 housing units, fixed for every ACS year: homes are assumed spread like 2020 housing
+- Housing units of all types are used to split one-unit detached homes
+
 ### Census 2020 redistricting data (P.L. 94-171): names and total population
 
 - **Source id:** `census_dec_pl` → table `jurisdictions` (adapter `national.decennial` v1.0)
 - **Source:** https://www.census.gov/programs-surveys/decennial-census/about/rdo/summary-files.html
 - **Version:** 2020
-- **Accessed:** 2026-10-06
-- **Files:** 12 (0.7 MB); URLs and sha256 in `manifest.jsonl`
+- **Accessed:** 2026-10-06 to 2026-10-14
+- **Files:** 56 (0.7 MB); URLs and sha256 in `manifest.jsonl`
 - **License / terms:** Public domain (U.S. Government work, 17 U.S.C. §105)
 
 **Cleaning steps**
