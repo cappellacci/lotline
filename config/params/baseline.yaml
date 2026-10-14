@@ -170,7 +170,7 @@ use_state_momentum:
   high: 1
   unit: flag (1 = yes)
   source: "Validation plan V1 ('If it fails: add rates or regional demand to the baseline explicitly'); WS-ENGINE brief: a regional cycle term only if the backtest shows it helps"
-  notes: "1 = scale each place's level by the state's recent pace (state_momentum). Off: in the V1 run of 2026-10-14 it changed pooled MAE by under 1% (1-unit 10.14 vs 10.18 per 1,000 parcels) and did not fix the NC/TX 1-unit under-forecast. Both runs are in the PR and logbook."
+  notes: "1 = scale each place's level by the state's recent pace (state_momentum). Off: in the V1 run of 2026-10-14 the effect was mixed (pooled 1-unit MAE 10.14 vs 10.18, 5+ 2.73 vs 2.68 per 1,000 parcels; 20 vs 17 of 48 cells pass) and it did not fix the NC/TX 1-unit under-forecast. Both runs are in the PR and logbook."
 
 momentum_recent_years:
   value: 3
