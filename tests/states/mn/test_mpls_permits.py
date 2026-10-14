@@ -44,7 +44,8 @@ def test_personal_fields_never_requested_nor_kept(permits):
 
 def test_one_row_per_permit_units_counted_once(permits):
     assert "mpls-PLUM9022" not in permits.index  # plumbing permits are not building permits
-    assert len(permits) == 24  # 26 rows - 1 plumbing - 1 repeat of a multi-parcel permit
+    # 26 rows - 1 plumbing - 1 repeat of a multi-parcel permit + 1 ADU row for a new house built with an ADU
+    assert len(permits) == 25
     multi = permits.loc["mpls-BLDG9019"]
     assert multi.units_new == 6 and multi.building_type_std == "U5_6"
     assert multi.parcel_id == "270533333333333333"  # lowest APN of the two parcels
@@ -92,6 +93,7 @@ def test_adu_inferred_only_with_evidence(permits):
         "mpls-BLDG9006",  # accessory structure, the APN has a house permit
         "mpls-BLDG9008",  # basement ADU conversion
         "mpls-BLDG9010",  # legalized existing ADU
+        "mpls-BLDG9023-ADU",  # new house built with a basement ADU: its own ADU row
     ]
     assert (adus.type_confidence == "inferred").all()
     assert adus.adu_type.to_dict() == {
@@ -100,15 +102,25 @@ def test_adu_inferred_only_with_evidence(permits):
         "mpls-BLDG9006": "detached",
         "mpls-BLDG9008": "internal_conversion",
         "mpls-BLDG9010": "detached",
+        "mpls-BLDG9023-ADU": "internal_conversion",
     }
-    # Units stay as the city reported them: 0 on most ADU permits.
-    assert permits.loc["mpls-BLDG9002", ["units_new", "units_confidence"]].tolist() == [0, "reported"]
-    assert permits.loc["mpls-BLDG9005", "units_new"] == 1
-    # Not ADUs: negated, future, new house with an ADU, work on or repairs to an existing ADU.
+    # An ADU permit adds a home: the city's 0 becomes 1, inferred (Ben, 2026-10-14); a reported 1 stays.
+    assert permits.loc["mpls-BLDG9002", ["units_new", "units_confidence"]].tolist() == [1, "inferred"]
+    assert permits.loc["mpls-BLDG9005", ["units_new", "units_confidence"]].tolist() == [1, "reported"]
+    # New house with an ADU: house row keeps its reported 1 unit; the ADU row adds 1, inferred, no money.
+    assert permits.loc["mpls-BLDG9023", ["building_type_std", "units_new"]].tolist() == ["SFD", 1]
+    adu_row = permits.loc["mpls-BLDG9023-ADU"]
+    assert (adu_row.units_new, adu_row.units_confidence, adu_row.type_confidence) == (
+        1,
+        "inferred",
+        "inferred",
+    )
+    assert pd.isna(adu_row.valuation_usd) and adu_row.parcel_id == permits.loc["mpls-BLDG9023", "parcel_id"]
+    # Not ADUs themselves: negated, future, the new house (its ADU has its own row), work on an existing ADU.
     for pid in ("mpls-BLDG9003", "mpls-BLDG9004", "mpls-BLDG9023", "mpls-BLDG9009", "mpls-BLDG9024"):
         assert permits.loc[pid, "building_type_std"] == "SFD", pid
     assert permits.loc["mpls-BLDG9025", "building_type_std"] == "DTQ"
-    assert permits.adu_type.notna().sum() == 5
+    assert permits.adu_type.notna().sum() == 6
 
 
 def test_demolitions_and_conversions(permits):
@@ -148,10 +160,21 @@ def test_load_through_pager(tmp_path):
         return httpx.Response(200, json={"features": feats[off:]})
 
     out = mp.load("MN", store, http=httpx.Client(transport=httpx.MockTransport(handler)))
-    assert len(out) == 24
+    assert len(out) == 25
     assert all(r.source == mp.SOURCE for r in store.manifest())
     query = seen[1].params
     assert query["outFields"].split(",") == mp.FIELDS
     assert query["where"] == "permitType IN ('Res','Commercial','Wrecking')"
     assert not set(query["outFields"].split(",")) & mp.PERSONAL
     json.dumps(mp.PROVENANCE)  # provenance is plain data
+
+
+def test_house_that_counted_its_adu_gives_one_unit_to_the_adu_row():
+    """New SFD reporting 2 units for "house + ADU": house 1 (derived), ADU row 1 (inferred). Total 2."""
+    raw = _raw()
+    row = raw[raw.permitNumber == "BLDG9023"].copy()
+    row["permitNumber"], row["OBJECTID"], row["dwellingUnitsNew"] = "BLDG9099", 9099, "2"
+    out = mp.to_permits(pd.concat([raw, row], ignore_index=True)).set_index("permit_id")
+    assert out.loc["mpls-BLDG9099", ["units_new", "units_confidence"]].tolist() == [1, "derived"]
+    assert out.loc["mpls-BLDG9099-ADU", "units_new"] == 1
+    assert out.loc[["mpls-BLDG9099", "mpls-BLDG9099-ADU"], "units_new"].sum() == 2

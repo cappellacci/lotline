@@ -17,8 +17,16 @@ work) is read only to find ADUs; it can name engineers or architects, so it is n
 work says "ADU", the unit field does not). A permit is typed `ADU` (`type_confidence="inferred"`) only when
 all hold: a residential building permit on an SFD/two-family/accessory structure, work that builds or
 converts space (not a whole new house), a scope of work that names an ADU and does not negate it ("NOT AN
-ADU", "FUTURE ADU"), an existing house on the parcel, and a reported unit gain of at most 1. Units stay as
-the city reported them.
+ADU", "FUTURE ADU"), an existing house on the parcel, and a reported unit gain of at most 1. An ADU permit
+adds a home, so one reporting 0 (or no) new units gets `units_new = 1`, `units_confidence="inferred"`
+(Ben, 2026-10-14).
+
+A **new house or two-family built with an ADU** ("NEW SINGLE FAMILY HOUSE WITH BASEMENT ADU") keeps its row
+for the main building and gets a second row for the ADU (`permit_id` + `-ADU`, 1 unit, inferred). If the city
+counted the ADU in the house's units (SFD reporting 2+, two-family 3+), one unit moves from the house row to
+the ADU row (`derived`), so nothing is counted twice (Ben, 2026-10-14).
+
+Cancelled, expired and withdrawn permits are kept; status is in `permit_class_raw` for filtering downstream.
 """
 
 from __future__ import annotations
@@ -157,6 +165,11 @@ PROVENANCE = {
         "another non-new house permit); and at most 1 new unit reported. adu_type from the comments "
         "(basement/attic → internal_conversion, garage/detached → detached, attached/addition → attached, "
         "else unknown)",
+        "ADU units: a permit typed ADU that reports 0 or no new units gets units_new=1, inferred (an ADU "
+        "permit adds a home)",
+        "A new SFD/two-family permit whose comments name an ADU gets a second row (permit_id + '-ADU', "
+        "1 unit, inferred, no valuation/fees); if the house reports the ADU in its units (SFD 2+, "
+        "two-family 3+), one unit moves to the ADU row (house row 'derived')",
         "is_conversion=True for work types Conversion/UnitCon or when a permit both adds and removes units",
         "valuation_usd = permit_Value, fees_paid_usd = totalFees (city fees and taxes; 0 kept as 0)",
         "permit_class_raw = permitType:occupancyType:workType:status (status is kept so cancelled permits "
@@ -167,10 +180,9 @@ PROVENANCE = {
     "limitations": [
         "Rolling window: the layer starts in Dec 2016 and older permits drop out; only dated snapshots keep "
         "them. 2016 holds December only",
-        "dwellingUnitsNew is reported as 0 on most ADU permits, so units_new undercounts ADUs; count ADU "
-        "permits (or parcels) instead of summing units_new",
-        "ADU typing is inferred from free text: it misses ADUs whose scope of work doesn't say 'ADU' and "
-        "can't tell a new house built with an ADU (typed SFD) from one without",
+        "dwellingUnitsNew is 0 on most ADU permits; ADU units are therefore inferred (1 per ADU permit), not "
+        "reported",
+        "ADU typing is inferred from free text: it misses ADUs whose scope of work doesn't say 'ADU'",
         "Cancelled, expired and withdrawn permits stay in the table (status is in permit_class_raw)",
         "Demolished units are unknown for anything but whole single-family houses",
         "A permit listed on several parcels keeps only its lowest APN",
@@ -233,6 +245,16 @@ def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
     btype = btype.mask(adu, "ADU")
     confidence = confidence.mask(adu, "inferred")
     adu_type = pd.Series(pd.NA, index=raw.index, dtype="string").mask(adu, text.map(adu_kind))
+    adu_units_inferred = adu & ~(new >= 1).fillna(False)  # city reported 0 or nothing for the ADU
+    new = new.mask(adu_units_inferred, 1)
+
+    # A new house or two-family built with an ADU: the ADU gets its own row below; if the city counted it in
+    # the house's units, move one unit to that row.
+    with_adu = new_house_with_adu(ptype, occ, work, text)
+    base_units = occ.map({"SFD": 1, "TFD": 2})
+    counted_in_house = with_adu & (new > base_units).fillna(False)
+    new = new.mask(counted_in_house, new - 1)
+    btype = btype.mask(counted_in_house & occ.isin(MULTI), new.map(size_class, na_action="ignore"))
 
     # Wrecking rows never report eliminated units; a whole single-family house is one unit.
     sfd_wreck = wrecking & (occ == "SFD") & removed.isna()
@@ -242,6 +264,8 @@ def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
     units_conf = units_conf.mask(new.notna() & removed.notna(), "reported")
     units_conf = units_conf.mask(sfd_wreck, "derived")
     units_conf = units_conf.mask(wrecking & ~sfd_wreck, "unknown")
+    units_conf = units_conf.mask(adu_units_inferred, "inferred")
+    units_conf = units_conf.mask(counted_in_house, "derived")
 
     conversion = work.isin(CONVERSION_WORK) | ((new > 0) & (removed > 0)).fillna(False)
 
@@ -274,11 +298,36 @@ def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
             "source": SOURCE,
         }
     )
+    df = pd.concat([df, _adu_rows(df[with_adu.to_numpy()], text[with_adu])], ignore_index=True)
     df = df[df["issue_date"].notna()]  # never issued: not a permit yet
     df = holdout.apply(
         df, state, geoid_col="jurisdiction_geoid", date_col="issue_date", year_col="issue_year"
     )
     return validate(df.reset_index(drop=True), TABLE)
+
+
+def new_house_with_adu(ptype: pd.Series, occ: pd.Series, work: pd.Series, text: pd.Series) -> pd.Series:
+    """A permit for a new single- or two-family house whose scope of work also builds an ADU."""
+    names_adu = text.str.contains(ADU_TEXT) & ~text.str.contains(ADU_NEGATED)
+    rule = (ptype == "Res") & occ.isin({"SFD", "TFD"}) & (work == "New") & names_adu
+    return rule.fillna(False).astype(bool)
+
+
+def _adu_rows(houses: pd.DataFrame, text: pd.Series) -> pd.DataFrame:
+    """One ADU row per new house built with an ADU: 1 new unit, inferred; money stays on the house row."""
+    rows = houses.copy()
+    rows["permit_id"] = rows["permit_id"] + "-ADU"
+    rows["building_type_std"] = "ADU"
+    rows["type_confidence"] = "inferred"
+    rows["adu_type"] = text.map(adu_kind).to_numpy()
+    rows["units_new"] = 1
+    rows["units_removed"] = 0
+    rows["units_confidence"] = "inferred"
+    rows["is_demolition"] = False
+    rows["is_conversion"] = False
+    rows["valuation_usd"] = float("nan")
+    rows["fees_paid_usd"] = float("nan")
+    return rows
 
 
 def is_adu(
