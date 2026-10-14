@@ -1,0 +1,14 @@
+### LB-NNN · 2026-10-14 · Build: Eligible-parcel rule v1.0 (the denominator) and first parameter file
+- **Question:** Can every state produce the protocol's denominator (eligible parcels per jurisdiction-year, stored apart from permits) from parcels where they exist and from the ACS where they don't?
+- **What I did:**
+  - `build/eligible.py` (rule 1.0): ADU-eligible = existing single-family house, ≤1 unit where known, lot ≥ floor, not excluded (HOA, floodplain, historic district where known); missing-middle adds single-family-only zoning. Unknown inputs are kept but flagged as *assumed*, and the assumed share sets `denominator_quality`. `from_parcels` writes `eligible_parcels` per jurisdiction, vintage and theme.
+  - `from_acs` fallback: ACS one-unit detached homes (B25024_002) for places and townships, always quality `low` (protocol §6).
+  - `config/params/eligibility.yaml`, the first parameter file: lot floors 0 (Handbook definitions set none), exclusion toggles, quality bands, each with a source.
+- **Inputs:** BUILD_PLAN §5.3; statistical protocol §5.1–5.2, §6; Handbook ADU and missing-middle definitions; WS-NC brief.
+- **Outputs:** `src/lotline/build/eligible.py`, `config/params/eligibility.yaml`, `tests/core/test_eligible.py` (10 tests, incl. a parcel-by-parcel hand-worked example; 109 total passing).
+- **Findings:**
+  - First real-data run caught a double count: ACS **county** rows matched unincorporated-area IDs, giving each the whole county's homes (NC came to 4.1M, more than the state has). Fixed: places and county subdivisions only; tested.
+  - After the fix, permit-issuing places and townships hold **MN 78%, TX 70%, OH 64%, NC 32%** of each state's one-unit detached homes (ACS 2019–23). NC's low share matches its 157-place BPS universe: **a statewide total needs a "rest of county" denominator for unincorporated areas**, or most of NC's single-family stock drops out. For WS-ENGINE.
+- **Decisions:** Proposed: lot-size floors stay 0 (Handbook) until a sourced sensitivity range exists; quality bands 5% / 50% to confirm at pre-registration.
+- **AI:** Claude Code wrote the rule, parameters and tests, ran the real-data check and fixed the double count it revealed. Built in a separate worktree (`../lotline-ws-core`) because another session was working in the main checkout.
+- **Open / next:** wire `eligible_parcels` into `lotline fetch`/`build` once the registry (#70) is merged; county-remainder denominators.
