@@ -6,6 +6,7 @@ Sources, read 2026-09-29:
 - Official Rules: https://housingchallenge.turnout.rocks/rules.html (controls if anything conflicts)
 - Participant Handbook: https://housingchallenge.turnout.rocks/handbook.html
 - Landing page: https://housingchallenge.turnout.rocks/
+- PDFs of the Rules, Handbook and the new **Official Data List**, in `rules and resources/` (added 2026-10-14; review in `docs/research/rules-pdfs-2026-10-14-review.md`)
 
 The rules say the Sponsor/Administrator can change them at any time (§22). Re-read both pages before each milestone and update the "last verified" date at the bottom.
 
@@ -23,6 +24,7 @@ The rules say the Sponsor/Administrator can change them at any time (§22). Re-r
 | Build plan | `docs/build/BUILD_PLAN.md` v1 (2026-10-04) with Claude Code workstream briefs in `docs/build/workstreams/`. **Phase 0 (repo bootstrap, WS-00) must be pushed before Oct 7, 9:00 a.m. ET.** No commits Oct 7 09:00 → Oct 14 09:01 unless the organizers confirm that week counts. |
 | Research assets | "Housing Data Readiness Ranking" artifact (v3, 2026-09-30): all 50 states + DC scored on reform post-periods and lot-level data. `lotline-policy-inventory.csv`: 199 linked laws/ordinances. All states now researched; low-confidence rows flagged. |
 | Scenarios | **Missing Middle + ADUs + Fee reduction** (project focus). Parking a planned stretch 4th (2026-09-30). Scenarios can be combined. All share one parcel-count and pro forma engine. |
+| Official PDFs (2026-10-14) | Rules/Handbook PDFs match this file; 8 under-weighted points logged (N1–N8 in the review), incl. **avoid parcel-level precision** in outputs. Official Data List covers 11 states (AZ, CT, OR, HI, PA, TN, UT, VA, WI, RI, NH), **none of MN/TX/NC/OH**; WI proposed as a portability state (open for Ben). |
 | Outcome metric | Leaning **permits** (Census Building Permits Survey: monthly, every state, splits 1 / 2 / 3–4 / 5+ unit buildings). |
 | Design principle | A general framework that any jurisdiction can feed its own data into, however sparse, with results added up to a statewide total. |
 
@@ -85,6 +87,8 @@ Legend: **AUTO** = checked by `compliance_check.py` · **MANUAL** = a person con
 - [ ] **S5** MANUAL: Results **added up to a statewide total** for one chosen state (a sub-state breakdown is optional).
 - [ ] **S6** MANUAL: Results shown as ranges, sensitivity or uncertainty, **never single numbers only**.
 - [ ] **S7** MANUAL: Optional state-specific extra scenarios are clearly labeled as separate from the benchmark ones.
+- [ ] **S9** MANUAL: For **each** scenario the tool and docs show: change vs. baseline · what drives it · sensitivity to key inputs · what the model can't tell policymakers (Handbook, Benchmark Scenarios).
+- [ ] **S10** MANUAL: Outputs are state/region level; no lot-by-lot predictions presented as results (Handbook, *What to Avoid*: parcel-level precision scores lower).
 - [ ] **S8** MANUAL: **All Submission work was created on or after Sept 14, 2026.** Pre-existing code, including our own earlier market monitors, is not reused unless it is open-source and disclosed. Rebuilding ideas is fine; copying earlier private code is the risk.
 
 ### D. Deliverables: an incomplete Submission is not scored (Rules §7a)
@@ -94,7 +98,7 @@ Legend: **AUTO** = checked by `compliance_check.py` · **MANUAL** = a person con
 - [ ] **D4** AUTO (sections) + MANUAL (length): **Model & Assumptions Overview**, ≤25 pages single-spaced, with all 7 sections: purpose and scope · core assumptions and rationale · data sources and cleaning steps · methodological approach (equations, logic flows, scenario definitions) · limitations and edge cases · sensitivity notes · intended users and use cases.
 - [ ] **D5** AUTO: Source code with docs that let a third party run it independently.
 - [ ] **D6** AUTO (sections) + MANUAL (length/tone): **Policy Scenario Comparison**, ≤4 pages single-spaced, non-technical, covering: comparison to baseline · what drives the differences · critical assumptions · limitations.
-- [ ] **D7** AUTO: Data provenance: every dataset has source, version, access date, license, cleaning steps and known limitations (Handbook).
+- [ ] **D7** AUTO: Data provenance: every dataset has source, version, access date, license, cleaning steps and known limitations (Handbook), plus re-identification/small-cell risk for any aggregated data. Per state, a table of **what data was available and what was used** (Rules §8, Transparency).
 - [ ] **D8** AUTO: Disclosures of AI coding tools, pretrained models/weights/embeddings, external APIs/hosted services, and third-party code/deps/datasets with licenses; plus any dependency-license exceptions (§7b–c).
 - [ ] **D9** MANUAL: Submitted by the Team Leader through the team link **before 11:59 p.m. ET Dec 16, 2026**. Nothing is accepted late.
 
@@ -149,4 +153,4 @@ python compliance_check.py --all        # everything
 
 The script exits non-zero on any **FAIL**. **WARN** items need a look, and **MANUAL** items are listed as a reminder. It only uses the Python 3.11+ standard library, so it adds no dependencies of its own.
 
-*Last verified against the Rules and Handbook: 2026-09-29.*
+*Last verified against the Rules and Handbook: 2026-10-14 (official PDFs in `rules and resources/`).*
