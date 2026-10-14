@@ -11,9 +11,12 @@ latest BPS name and a missing population. Unincorporated county areas also get n
 
 from __future__ import annotations
 
+import warnings
+from collections.abc import Iterable
+
 import pandas as pd
 
-from lotline.adapters.national import bps, cbsa, decennial
+from lotline.adapters.national import bps, cbsa, decennial, geoparts
 from lotline.config import load_state
 from lotline.io import DataStore
 from lotline.schemas import validate
@@ -34,10 +37,21 @@ def kind_of(geoid: str, township_permits: bool) -> str:
 
 
 def build(
-    state: str, bps_table: pd.DataFrame, census: pd.DataFrame, cbsas: pd.DataFrame | None = None
+    state: str,
+    bps_table: pd.DataFrame,
+    census: pd.DataFrame,
+    cbsas: pd.DataFrame | None = None,
+    local_geoids: Iterable[str] = (),
+    place_counties: dict[str, str] | None = None,
 ) -> pd.DataFrame:
     """Combine one state's BPS place-years with 2020 Census names and populations, and (if given) the
-    OMB metro/micro area of each jurisdiction's county."""
+    OMB metro/micro area of each jurisdiction's county.
+
+    `local_geoids` are jurisdictions that a state's own permit source reports but BPS doesn't (e.g. Met
+    Council townships whose permits BPS files under the county). They're added with `in_bps = False`, named
+    from the 2020 Census; a GEOID the Census doesn't know is skipped with a warning, never invented.
+    `place_counties` gives such a place's county (from the Census place-by-county file).
+    """
     cfg = load_state(state)
     latest = (
         bps_table.dropna(subset=["geoid"])
@@ -55,6 +69,10 @@ def build(
         census_name=latest["geoid"].map(pops["census_name"]),
         pop_2020=latest["geoid"].map(pops["pop_2020"]).astype("Int64"),
     )
+    df["in_bps"] = True
+    df = pd.concat(
+        [df, _local_rows(state, df, census, local_geoids, place_counties or {})], ignore_index=True
+    )
     df["name"] = df["census_name"].fillna(df["name"])
     df["data_tier"] = df["geoid"].map(cfg.data_tiers).fillna(DEFAULT_TIER).astype("Int64")
     if cbsas is not None:
@@ -64,9 +82,65 @@ def build(
     return validate(df, "jurisdictions")
 
 
+def _local_rows(
+    state: str,
+    bps_rows: pd.DataFrame,
+    census: pd.DataFrame,
+    geoids: Iterable[str],
+    place_counties: dict[str, str],
+) -> pd.DataFrame:
+    cfg = load_state(state)
+    known = census[census["level"] != "county"].drop_duplicates("geoid").set_index("geoid")
+    rows, skipped = [], []
+    for g in sorted(set(geoids) - set(bps_rows["geoid"])):
+        if g not in known.index or len(g) not in (7, 10):
+            skipped.append(g)
+            continue
+        county = g[:5] if len(g) == 10 else place_counties.get(g)
+        rows.append(
+            {
+                "geoid": g,
+                "name": known.loc[g, "census_name"],
+                "bps_id": None,
+                "county_geoid": county,
+                "state": state,
+                "kind": kind_of(g, cfg.township_permits),
+                "census_name": known.loc[g, "census_name"],
+                "pop_2020": known.loc[g, "pop_2020"],
+                "in_bps": False,
+            }
+        )
+    if skipped:
+        warnings.warn(
+            f"{state}: {len(skipped)} local permit GEOIDs unknown to the 2020 Census skipped: {skipped[:10]}",
+            stacklevel=2,
+        )
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "geoid",
+            "name",
+            "bps_id",
+            "county_geoid",
+            "state",
+            "kind",
+            "census_name",
+            "pop_2020",
+            "in_bps",
+        ],
+    )
+
+
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     bps_table = store.read(state, "bps_place_year")
     if bps_table is None:
         bps_table = bps.load(state, store, refresh=refresh)
-    census = decennial.load(load_state(state).fips, state, store, refresh=refresh)
-    return build(state, bps_table, census, cbsa.load(store, refresh=refresh))
+    fips = load_state(state).fips
+    census = decennial.load(fips, state, store, refresh=refresh)
+    permits = store.read(state, "permits")  # state sources' jurisdictions (rerun after a new permit source)
+    local = set(permits["jurisdiction_geoid"].dropna()) if permits is not None else set()
+    pbc = geoparts.place_by_county(fips, store, refresh) if local else None
+    place_counties = (
+        dict(zip(pbc["place_geoid"], pbc["county_geoid"], strict=True)) if pbc is not None else {}
+    )
+    return build(state, bps_table, census, cbsa.load(store, refresh=refresh), local, place_counties)

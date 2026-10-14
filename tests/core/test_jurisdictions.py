@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from lotline.adapters.national import decennial
 from lotline.build import jurisdictions
@@ -49,3 +50,23 @@ def test_build_combines_bps_universe_with_census_names_and_population():
     assert pd.isna(df.loc["27003", "pop_2020"])  # never the whole county's population
     assert df.loc["2799999", "name"] == "Old Town" and pd.isna(df.loc["2799999", "pop_2020"])
     assert (df.data_tier == 3).all()
+
+
+def test_local_only_jurisdictions_are_added_from_the_census_and_flagged():
+    bps_table = _bps([["2743000", "Minneapolis", "27497800", "27053", 2024]])
+    census = pd.DataFrame(
+        {
+            "geoid": ["2743000", "2713919036"],
+            "level": ["place", "cousub"],
+            "census_name": ["Minneapolis city", "Empire township"],
+            "pop_2020": [429954, 3200],
+        }
+    ).astype({"pop_2020": "Int64"})
+    with pytest.warns(UserWarning, match="unknown to the 2020 Census"):
+        df = jurisdictions.build("MN", bps_table, census, local_geoids=["2713919036", "2799999999"])
+    df = df.set_index("geoid")
+    assert_conforms(df.reset_index(), "jurisdictions")
+    assert bool(df.loc["2743000", "in_bps"]) and not bool(df.loc["2713919036", "in_bps"])
+    assert df.loc["2713919036", "name"] == "Empire township" and df.loc["2713919036", "kind"] == "township"
+    assert df.loc["2713919036", "county_geoid"] == "27139"
+    assert "2799999999" not in df.index  # never invented

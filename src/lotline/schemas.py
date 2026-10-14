@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.5"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.6"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -97,6 +97,9 @@ class Jurisdictions(_Strict):
     # metro/micro area of the jurisdiction's county (OMB 2023); null for rural counties outside any CBSA
     cbsa_code: Optional[Series[str]] = pa.Field(nullable=True, str_matches=r"^\d{5}$")
     cbsa_type: Optional[Series[str]] = pa.Field(nullable=True, isin=["metro", "micro"])
+    # True: a permit-issuing place in the Census BPS universe. False: only a local permit source covers it
+    # (e.g. Met Council townships BPS files under a county). Aggregate within one universe, never across both.
+    in_bps: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
 
 
 class Parcels(_Strict):
@@ -419,6 +422,7 @@ HISTORY = [
         "misspelled-column guard",
     ),
     ("1.5", "jurisdictions: optional cbsa_code and cbsa_type (OMB 2023 county to metro/micro area)"),
+    ("1.6", "jurisdictions: optional in_bps (False for places only a local permit source covers)"),
 ]
 
 

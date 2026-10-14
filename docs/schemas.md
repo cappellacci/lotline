@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.5** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.6** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -22,6 +22,7 @@ Conventions: unknown is null (never 0 or false); money is nominal dollars of the
 | `data_tier` | integer | yes | no | one of `1`, `2`, `3` |
 | `cbsa_code` | text | no | yes | matches `^\d{5}$` |
 | `cbsa_type` | text | no | yes | one of `metro`, `micro` |
+| `in_bps` | true/false | no | yes |  |
 
 ## `parcels`
 
@@ -252,3 +253,4 @@ Table checks: `one_row_per_key`
 | 1.3 | market_geo_year.cpi_u |
 | 1.4 | schemas-v1 freeze: eligible_parcels (denominator); permits allow year-only dates, unknown units and demolitions, ADU type, zoning, floor area; parcels eligibility inputs; reforms rubric fields, two coders, status and amendments; fees components, basis, dollar year; nullable booleans; misspelled-column guard |
 | 1.5 | jurisdictions: optional cbsa_code and cbsa_type (OMB 2023 county to metro/micro area) |
+| 1.6 | jurisdictions: optional in_bps (False for places only a local permit source covers) |
