@@ -240,7 +240,7 @@ Claude Code's built-in worktree mode works too. What matters is **one branch and
 - **CI must pass:** tests + compliance + license scan. Ben reviews and merges, usually daily.
 - **Rebase often.** When `schemas.py` changes, WS-CORE announces it in the PR and bumps the `schemas` version.
 - **Logbook:** each PR adds `logbook.d/<date>-<branch>.md` using the LOGBOOK template. `scripts/dev/merge_logbook.py` folds fragments into `LOGBOOK.md` weekly, which avoids merge conflicts. Instances never edit `LOGBOOK.md` or `HANDOFF.md` directly; they propose decisions in the PR description and Ben records them.
-- **Cowork stays the research and planning desk.** Research docs in `docs/research/` are canonical for Claude Code. When Cowork updates a research doc, it writes both the project copy and the repo copy.
+- **Cowork stays the research and planning desk.** Research docs in `docs/research/` are canonical for Claude Code. Cowork works in the same folder (`~/Engineering/Lotline`) and writes each doc once, at its repo path (CLAUDE.md, "One copy: this repo").
 
 ---
 
