@@ -121,3 +121,57 @@ def test_load_applies_holdout_filter(raw, monkeypatch):
 def test_registered_as_nc_source():
     registry.check_module(rp)
     assert registry.sources_for("NC")["raleigh_permits"].table == "permits"
+
+
+# Description fallback: permit id -> work description (synthetic text in the style of the city's records)
+DESCRIPTIONS = {
+    "MF-EMPTY": "BUILDING 4 - 56 UNITS MAIN CASE# BLDNR-000001-2025",  # unknown 105 count -> 56 inferred
+    "MF-ZERO": "NEW APT BLDG WITH 3 UNITS",  # 3 does not fit a 105 permit -> stays unknown
+    "MF-OK": "NEW APT BLDG WITH 12 UNITS",  # reported 79 is never overridden
+    "REPAIR-SFD": "NEW 4-UNIT TOWNHOME BLDG",  # code-derived value is never overridden
+    "ALT-1": "INTERIOR ALTERATION",  # alterations stay null, not 0
+    "DEMO-X": "DEMOLISH EXISTING 6 UNIT APARTMENT BUILDING",  # 648 demolition: units removed inferred
+    "NOCODE": "NEW SINGLE FAMILY DWELLING",  # no type code -> SFD inferred, 1 unit inferred
+}
+
+
+@pytest.fixture
+def raw_desc(raw) -> pd.DataFrame:
+    extra = raw.iloc[[0, 0]].copy()
+    extra["permitnum"] = ["DEMO-X", "NOCODE"]
+    extra["censuslandusecode"] = [648, None]
+    extra["permitclass"] = ["648", ""]
+    extra["permittypemapped"] = ["Demolition", "Building"]
+    extra["workclass"] = ["Demolish", "New"]
+    extra["adu_type"] = None
+    df = pd.concat([raw, extra], ignore_index=True)
+    df[rp.DESCRIPTION_FIELD] = df["permitnum"].map(DESCRIPTIONS)
+    return df
+
+
+def test_description_fills_only_unknown_values(raw_desc):
+    out = _by_id(rp.build(raw_desc))
+    assert (out.loc["MF-EMPTY", "units_new"], out.loc["MF-EMPTY", "units_confidence"]) == (56, "inferred")
+    assert out.loc["MF-EMPTY", "type_confidence"] == "high"  # the code's type is kept
+    assert pd.isna(out.loc["MF-ZERO", "units_new"]) and out.loc["MF-ZERO", "units_confidence"] == "unknown"
+    assert (out.loc["MF-OK", "units_new"], out.loc["MF-OK", "units_confidence"]) == (79, "reported")
+    assert (out.loc["REPAIR-SFD", "units_new"], out.loc["REPAIR-SFD", "units_confidence"]) == (1, "derived")
+    assert pd.isna(out.loc["ALT-1", "units_new"])
+    demo = out.loc["DEMO-X"]
+    assert demo.units_new == 0 and demo.units_removed == 6 and demo.units_confidence == "inferred"
+    nocode = out.loc["NOCODE"]
+    assert (nocode.building_type_std, nocode.type_confidence) == ("SFD", "inferred")
+    assert (nocode.units_new, nocode.units_confidence) == (1, "inferred")
+    assert_conforms(rp.build(raw_desc), "permits")
+
+
+def test_description_fallback_can_be_switched_off(raw_desc, monkeypatch):
+    monkeypatch.setattr(rp, "USE_DESCRIPTION", False)
+    out = _by_id(rp.build(raw_desc))
+    assert pd.isna(out.loc["MF-EMPTY", "units_new"]) and out.loc["NOCODE", "building_type_std"] == "UNKNOWN"
+
+
+def test_description_is_the_only_free_text_field():
+    assert rp.DESCRIPTION_FIELD in rp.OUT_FIELDS
+    banned = ("name", "owner", "contractor", "comment", "address", "street", "tenant")
+    assert not [f for f in rp.OUT_FIELDS if any(b in f.lower() for b in banned)]
