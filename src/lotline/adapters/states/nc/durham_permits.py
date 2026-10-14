@@ -53,6 +53,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 
 import numpy as np
 import pandas as pd
@@ -99,6 +100,17 @@ OUT_FIELDS = [
 ]
 DROP_STATUS = {"void", "disapproved", "received"}
 
+# EHC (Expanding Housing Choices, 2019) reform flags live in PROJECT_TYPE, which elsewhere holds phone numbers
+# and e-mail addresses. Only rows starting "EHC" are requested (server-side), and only the code plus these
+# whitelisted component keywords are kept; the text itself is never stored (Ben, 2026-10-14).
+EHC_WHERE = "PROJECT_TYPE LIKE 'EHC%'"
+EHC_COMPONENTS = {
+    "adu": re.compile(r"\badu\b|accessory", re.I),
+    "duplex": re.compile(r"duplex", re.I),
+    "flag_lot": re.compile(r"flag[\s-]*lot", re.I),
+    "small_lot": re.compile(r"small[\s-]*lot", re.I),
+}
+
 # BLD_Type -> (building_type_std, units derived when the reported count is missing or implausible)
 BLD_TYPES: dict[str, tuple[str, int | None]] = {
     "single family house": ("SFD", 1),
@@ -144,12 +156,17 @@ PROVENANCE = {
         "majority side of located permits sharing the longest 8-5 digit prefix of their NC PIN, then of "
         "their parent parcel (pending plats); the rest (~0.5%) go to the city",
         "One row per permit number (a permit spanning several parcels is listed once per parcel)",
+        "Permits whose side can't be inferred (~0.5%) default to the city (Ben, 2026-10-14): ~92% of located "
+        "permits are in the city",
+        "reform_flag_raw: 'EHC' plus whitelisted components (adu, duplex, flag_lot, small_lot) for "
+        "permits whose PROJECT_TYPE starts 'EHC', fetched by a server-side filter; the text is never stored",
         "Holdout filter applied (NC holdout is Charlotte; no Durham rows are held out)",
     ],
     "limitations": [
         "City limits are today's, not those in force at issue: a permit on land annexed after it was issued "
         "counts as city. Durham annexes most new subdivisions before building (utility extension), so the "
-        "error is small but grows for older years",
+        "error is small but grows for older years. City-only figures therefore lean toward the city (single-"
+        "family above BPS in 9 of 11 years): compare city + county with BPS until annexation dates are added",
         "About 3% of permits have no point; their side is inferred from neighbouring PINs (97-99.5% "
         "agreement on located permits) and ~0.5% are assigned to the city by default",
         "5+ and 3-4 unit permits without a plausible DWELLING_UNITS have unknown units (null)",
@@ -297,8 +314,22 @@ def _row(bld_type, occupancy, activity, reported) -> tuple:
     return btype, conf_t, units, pd.NA, conf_u, False
 
 
-def build(raw: pd.DataFrame, rings: list, state: str = "NC") -> pd.DataFrame:
-    """Raw layer attributes (+ lon/lat) and city-limit rings → canonical permits rows (before holdouts)."""
+def ehc_flags(raw: pd.DataFrame) -> pd.Series:
+    """PermitNum → 'EHC' or 'EHC:<components>' from rows whose PROJECT_TYPE starts with EHC. Only the code and
+    whitelisted component keywords survive; the free text is dropped here."""
+    text = raw["PROJECT_TYPE"].astype("string").fillna("")
+    ehc = text.str.match(r"\s*EHC", case=False)
+    flags = {}
+    for permit, value in zip(raw.loc[ehc, "PermitNum"].astype("string").str.strip(), text[ehc], strict=True):
+        parts = sorted(k for k, pattern in EHC_COMPONENTS.items() if pattern.search(value))
+        flags[permit] = "EHC" + (":" + ",".join(parts) if parts else "")
+    return pd.Series(flags, dtype="string")
+
+
+def build(raw: pd.DataFrame, rings: list, state: str = "NC", ehc: pd.Series | None = None) -> pd.DataFrame:
+    """Raw layer attributes (+ lon/lat) and city-limit rings → canonical permits rows (before holdouts).
+
+    `ehc` (from `ehc_flags`) adds the EHC reform flag as `reform_flag_raw`."""
     df = raw.copy()
     issue_date = _dates(df["ISSUE_DATE"])
     status = df["PmtStatus"].astype("string").str.strip().str.lower()
@@ -358,6 +389,8 @@ def build(raw: pd.DataFrame, rings: list, state: str = "NC") -> pd.DataFrame:
     out["final_date_type"] = pd.Series("certificate_of_occupancy", index=out.index).where(
         out["final_date"].notna()
     )
+    flags = ehc if ehc is not None else pd.Series(dtype="string")
+    out["reform_flag_raw"] = out["permit_id"].map(flags).astype("string")
     out["units_new"] = out["units_new"].astype("Int64")
     out["units_removed"] = out["units_removed"].astype("Int64")
     out["is_demolition"] = out["is_demolition"].astype("boolean")
@@ -386,6 +419,24 @@ def download(store: DataStore, *, refresh: bool = False, vintage: str | None = N
     )
 
 
+def download_ehc(store: DataStore, *, refresh: bool = False, vintage: str | None = None) -> pd.Series:
+    """EHC flags only: rows filtered on the server, PROJECT_TYPE reduced to a code immediately."""
+    raw = download_layer(
+        LAYER_URL,
+        store=store,
+        source=SOURCE,
+        license=LICENSE,
+        adapter=ADAPTER,
+        adapter_version=VERSION,
+        name="ehc_flags",
+        where=EHC_WHERE,
+        out_fields="OBJECTID,PermitNum,PROJECT_TYPE",
+        vintage=vintage,
+        refresh=refresh,
+    )
+    return ehc_flags(raw)
+
+
 def download_city_limits(store: DataStore, *, refresh: bool = False, vintage: str | None = None) -> list:
     """Rings (WGS84 lon/lat) of the City of Durham corporate limits, fetched through the IO layer."""
     vintage = vintage or dt.date.today().isoformat()
@@ -412,7 +463,8 @@ def download_city_limits(store: DataStore, *, refresh: bool = False, vintage: st
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     vintage = dt.date.today().isoformat()
     rings = download_city_limits(store, refresh=refresh, vintage=vintage)
-    df = build(download(store, refresh=refresh, vintage=vintage), rings, state=state)
+    ehc = download_ehc(store, refresh=refresh, vintage=vintage)
+    df = build(download(store, refresh=refresh, vintage=vintage), rings, state=state, ehc=ehc)
     df = holdout.apply(
         df, state, geoid_col="jurisdiction_geoid", date_col="issue_date", year_col="issue_year"
     )

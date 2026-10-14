@@ -181,6 +181,7 @@ def test_load_applies_holdout(monkeypatch, raw, tmp_path):
 
     monkeypatch.setattr(dp, "download", lambda store, **kw: raw)
     monkeypatch.setattr(dp, "download_city_limits", lambda store, **kw: CITY)
+    monkeypatch.setattr(dp, "download_ehc", lambda store, **kw: pd.Series(dtype="string"))
     monkeypatch.setattr(dp.holdout, "apply", fake_apply)
     out = dp.load("NC", store=None)
     assert calls == {
@@ -190,3 +191,29 @@ def test_load_applies_holdout(monkeypatch, raw, tmp_path):
         "year_col": "issue_year",
     }
     assert_conforms(out, "permits")
+
+
+def test_ehc_flags_keep_only_the_code_and_whitelisted_components():
+    """PROJECT_TYPE can hold contact details: only 'EHC' and known component keywords may survive."""
+    raw = pd.DataFrame(
+        {
+            "PermitNum": ["P1", "P2", "P3", "P4"],
+            "PROJECT_TYPE": [
+                "EHC - small lot, call 919-555-0100",
+                "EHC-ADU detached unit",
+                "EHC- jane@example.com",
+                "Alteration call 919-555-0199",
+            ],
+        }
+    )
+    flags = dp.ehc_flags(raw)
+    assert flags.to_dict() == {"P1": "EHC:small_lot", "P2": "EHC:adu", "P3": "EHC"}
+    assert not flags.str.contains(r"\d|@").any()  # no phone digits or e-mail survive
+
+
+def test_ehc_flag_lands_in_reform_flag_raw(raw):
+    permit = str(raw["PermitNum"].iloc[0]).strip()
+    out = dp.build(raw, CITY, ehc=pd.Series({permit: "EHC:duplex"}, dtype="string"))
+    row = out.set_index("permit_id").loc[permit]
+    assert row["reform_flag_raw"] == "EHC:duplex"
+    assert out["reform_flag_raw"].notna().sum() == 1
