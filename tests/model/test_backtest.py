@@ -130,3 +130,18 @@ def test_model_is_calibrated_and_competitive_in_a_stationary_world():
     assert v["coverage_rand"].between(0.7, 0.95).all()
     assert (v["mae_model"] <= v["mae_last_k_mean"]).all()
     assert (v["mae_model"] < v["mae_linear_trend"]).all()
+
+
+def test_places_below_the_minimum_size_are_forecast_but_not_scored():
+    """Decision 5: a place with fewer than v1_min_eligible_parcels (20) eligible parcels at the origin is
+    left out of scoring. Shrink one place to 10 parcels: it disappears from the window; others stay."""
+    panel = _panel()
+    small = panel["geoid"] == "4800003"
+    panel.loc[small, "eligible_parcels"] = 10
+    out = backtest.window(panel, "1", 2018, params=PARAMS, excluded=backtest.excluded_places())
+    assert "4800003" not in set(out["geoid"]) and out["geoid"].nunique() == 22  # 24 - reformer - small one
+    no_floor = PARAMS | {
+        "v1_min_eligible_parcels": PARAMS["v1_min_eligible_parcels"].model_copy(update={"value": 0.0})
+    }
+    out0 = backtest.window(panel, "1", 2018, params=no_floor, excluded=backtest.excluded_places())
+    assert "4800003" in set(out0["geoid"])

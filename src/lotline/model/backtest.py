@@ -110,6 +110,11 @@ def window(
     for col in ("forecast", "mean", "p10", "p90"):
         out[col] = baseline.PER * out[col].astype(float) / parcels
     origin = fit[fit["year"] == fit_end].drop_duplicates(KEY).set_index(KEY)
+    # Places too small to score (decision 5, Ben 2026-10-14): still forecast, rolled into their county for
+    # reporting, but left out of V1 scoring because a few lots swing their rates for every method.
+    floor = p["v1_min_eligible_parcels"].value
+    big_enough = origin.index[origin["eligible_parcels"].astype(float) >= floor]
+    out = out[out[KEY].isin(big_enough)].copy()
     sizes = origin.loc[origin.index.isin(out[KEY]), ["state", "eligible_parcels"]]
     tercile = sizes.groupby("state", group_keys=False)["eligible_parcels"].apply(
         lambda s: _terciles(s.astype(float))

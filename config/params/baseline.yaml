@@ -179,3 +179,11 @@ momentum_recent_years:
   unit: years
   source: "Chosen a priori to match the 3-year benchmark window (validation plan V1), not tuned"
   notes: "Only used when use_state_momentum = 1."
+
+v1_min_eligible_parcels:
+  value: 20
+  low: 0
+  high: 50
+  unit: eligible parcels at the forecast origin
+  source: "Ben's decision 5, 2026-10-14 (WS-ENGINE V1 report, PR #93): places with fewer than 20 eligible parcels dominated the error of every method"
+  notes: "Scoring only: smaller places are still forecast and are rolled into their county for reporting. 0 scores every place (the original V1 run)."
