@@ -31,6 +31,7 @@ A running record of **how** the Lotline entry was built: what question each step
 | 11. Build transition | Oct 4 | How do we move to code across four states, in parallel, through GitHub? | Build plan, 9 Claude Code workstream briefs, 53-issue backlog | LB-020 |
 | 12. Repo bootstrap | Oct 6 | Is the repo public, reproducible and CI-checked before registration closes? | github.com/cappellacci/lotline: uv project, CI, protected `main`, research docs, issue backlog | LB-021, LB-023, LB-024 |
 | 13. Core data and contracts | Oct 6–8 | Can national data for four states flow through shared, tested contracts, with blind tests protected? | BPS, FHFA, ACS, FRED and 2020 Census adapters; holdout filter; generated provenance and data dictionary; V0 reports; tag `schemas-v1`; ArcGIS pager for state adapters | LB-027 – LB-037 |
+| 14. Coding Period opens | Oct 14 | Is the repo aligned with the official rules, template and judging rubric, and does every state have a sound denominator? | Rules-PDF review; starter-template alignment; `/judge` panel; eligible-parcel rule with rest-of-county denominators | LB-041 – LB-046 |
 
 ---
 
@@ -617,3 +618,60 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** none.
 - **AI:** Claude (Cowork) wrote the rubric, agents and command from the Rules text and repo layout; checked that frontmatter parses as YAML and that referenced repo paths exist. Not yet run end to end.
 - **Open / next:** install into `.claude/`, run `/judge`, review the first SCORECARD.
+
+### LB-043 · 2026-10-14 · Admin: Align the repo with the organizers' starter template
+- **Question:** What does the official starter template (`theturnout/housing-challenge-starter-template`, published 2026-10-13) expect that Lotline doesn't have yet?
+- **What I did:**
+  - Read every file in the template and compared it with the repo, HANDOFF §5 and `compliance_check.py`. The eligibility gates, doc outlines, page limits and fee baseline already match; `compliance_check.py --github` showed 0 FAIL.
+  - Turned on **private vulnerability reporting** (the template's setup guide, step 5; it was off) through the GitHub API.
+  - README: added a Setup / Run / Test **command contract** table, a **Documentation** section that links our docs under the template's titles, and a **Team** section (Ben confirmed the roster). Added `SECURITY.md`, `NOTICE` (Apache-2.0; no third-party attributions) and `.github/PULL_REQUEST_TEMPLATE.md` carrying the CLAUDE.md commit checklist.
+- **Inputs:** https://github.com/theturnout/housing-challenge-starter-template (commit `5864b73`); `HANDOFF.md` §5; `compliance_check.py --github`.
+- **Outputs:** `README.md`, `SECURITY.md`, `NOTICE`, `.github/PULL_REQUEST_TEMPLATE.md`; repo setting: private vulnerability reporting on.
+- **Findings:** The template says copyleft dependencies must be "flagged and resolved", which is stricter than our written justification for `certifi` (MPL-2.0); worth asking the organizers. The template's scenario-comparison stub leaves out ADUs, but its own spec lists them, so `adu` stays valid. The README Run row is a placeholder until the Phase 5 app exists. `docs/disclosures.md` still says "External APIs: none", though `fetch` calls the Census API (key) plus BPS and FHFA downloads.
+- **Decisions:** Proposed: add private vulnerability reporting to HANDOFF T6 and to `compliance_check.py --github`.
+- **AI:** Claude Code compared the template and wrote these files; checked by `python compliance_check.py` (0 FAIL) and a GitHub API read-back of the vulnerability-reporting setting. Written before 09:01 ET on 2026-10-14; committed only after the Coding Period opened.
+- **Open / next:** fix the External APIs disclosure; replace the README Run row when the app lands.
+
+### LB-044 · 2026-10-14 · Build: Eligible-parcel rule v1.0 (the denominator) and first parameter file
+- **Question:** Can every state produce the protocol's denominator (eligible parcels per jurisdiction-year, stored apart from permits) from parcels where they exist and from the ACS where they don't?
+- **What I did:**
+  - `build/eligible.py` (rule 1.0): ADU-eligible = existing single-family house, ≤1 unit where known, lot ≥ floor, not excluded (HOA, floodplain, historic district where known); missing-middle adds single-family-only zoning. Unknown inputs are kept but flagged as *assumed*, and the assumed share sets `denominator_quality`. `from_parcels` writes `eligible_parcels` per jurisdiction, vintage and theme.
+  - `from_acs` fallback: ACS one-unit detached homes (B25024_002) for places and townships, always quality `low` (protocol §6).
+  - `config/params/eligibility.yaml`, the first parameter file: lot floors 0 (Handbook definitions set none), exclusion toggles, quality bands, each with a source.
+- **Inputs:** BUILD_PLAN §5.3; statistical protocol §5.1–5.2, §6; Handbook ADU and missing-middle definitions; WS-NC brief.
+- **Outputs:** `src/lotline/build/eligible.py`, `config/params/eligibility.yaml`, `tests/core/test_eligible.py` (10 tests, incl. a parcel-by-parcel hand-worked example; 109 total passing).
+- **Findings:**
+  - First real-data run caught a double count: ACS **county** rows matched unincorporated-area IDs, giving each the whole county's homes (NC came to 4.1M, more than the state has). Fixed: places and county subdivisions only; tested.
+  - After the fix, permit-issuing places and townships hold **MN 78%, TX 70%, OH 64%, NC 32%** of each state's one-unit detached homes (ACS 2019–23). NC's low share matches its 157-place BPS universe: **a statewide total needs a "rest of county" denominator for unincorporated areas**, or most of NC's single-family stock drops out. For WS-ENGINE.
+- **Decisions:** Proposed: lot-size floors stay 0 (Handbook) until a sourced sensitivity range exists; quality bands 5% / 50% to confirm at pre-registration.
+- **AI:** Claude Code wrote the rule, parameters and tests, ran the real-data check and fixed the double count it revealed. Built in a separate worktree (`../lotline-ws-core`) because another session was working in the main checkout.
+- **Open / next:** wire `eligible_parcels` into `lotline fetch`/`build` once the registry (#70) is merged; county-remainder denominators.
+
+### LB-045 · 2026-10-14 · Build: eligible_parcels built by `lotline fetch` for all four states
+- **Question:** Can every state get a denominator table from one command, with each jurisdiction's source and quality visible?
+- **What I did:**
+  - Registered `eligible` as a national build source: `lotline fetch --source eligible` builds `eligible_parcels` from processed tables, building jurisdictions or ACS first if missing.
+  - One denominator source per jurisdiction (`combine`): parcels where a state has a `parcels` table, the ACS fallback elsewhere, never both.
+  - V0 reports now list the `eligible_parcels` coverage with its source × quality mix.
+- **Inputs:** `build/eligible.py` rule 1.0 (LB for #76), processed ACS and jurisdictions tables.
+- **Outputs:** `src/lotline/build/eligible.py` (`combine`, `load`), `src/lotline/registry.py`, `src/lotline/validation/v0.py`, `tests/core/test_eligible.py` (120 tests passing), regenerated `reports/*/V0-national.md`. Data (not committed): `processed/<st>/eligible_parcels/eligible.parquet` (MN 28,636 · NC 4,710 · OH 25,910 · TX 28,472 rows, 2010–2024).
+- **Findings:** All four states are currently 100% ACS fallback (quality low) until state parcel adapters land; `lotline provenance` stays OK.
+- **Decisions:** none.
+- **AI:** Claude Code wrote the wiring and tests and ran it on real data.
+- **Open / next:** county-remainder denominators for unincorporated areas (WS-ENGINE, see #76).
+
+### LB-046 · 2026-10-14 · Build: Rest-of-county denominators, and the Ohio village double count fixed
+- **Question:** Can unincorporated county areas, where most NC permits are issued, get a denominator that covers the same ground as their permit counts, without counting any home twice?
+- **What I did:**
+  - `eligible.allocate_homes`: a place keeps its ACS total; a township is its ACS total minus the permit-issuing places inside it; rest of county = county total minus every permit-issuing place's in-county homes and every township's net homes. Negative remainders (sampling noise) are set to 0 and flagged.
+  - `adapters/national/geoparts.py`: the Census 2020 code files show which places span counties and which aren't their own county subdivision. 2020 Census **DHC** housing units split those places by county and by township. The P.L. 94-171 file doesn't publish the township geography; the API allows no wildcards, so it's one cached request per multi-county place or relevant township, made once.
+  - `lotline fetch --source eligible` now emits rest-of-county rows; the provenance document lists the new source.
+- **Inputs:** ACS B25024_002 (2010–2024); Census `national_place_by_county2020.txt`, `national_cousub2020.txt`; 2020 DHC `H1_001N`.
+- **Outputs:** `src/lotline/build/eligible.py`, `src/lotline/adapters/national/geoparts.py`, `src/lotline/registry.py`, `tests/core/test_eligible.py` (hand-worked Ohio-style county: jurisdictions add back up exactly to county totals), `tests/core/test_geoparts.py`; regenerated `docs/data_provenance.md`, `reports/*/V0-national.md` (125 tests passing, also with network blocked).
+- **Findings:**
+  - Share of each state's one-unit detached homes (ACS 2019–23) now inside a permit-issuing jurisdiction's denominator: **NC 100.0%** (was 32%), **OH 100.5%**, **MN 97.9%**, **TX 89.9%**.
+  - MN and TX fall short where counties have no unincorporated BPS row (MN 15 counties, TX 200 of 254): those homes have no permit series, so leaving them out keeps numerator and denominator aligned.
+  - **Ohio double count fixed:** 360 of 569 permit-issuing OH places sit inside a township's ACS count; townships now exclude them, removing **129,734** double-counted homes (2019–23). Five OH county remainders were negative (noise) and clipped, which explains the 0.5% overshoot.
+- **Decisions:** Proposed: split places by 2020 housing-unit shares, fixed for all ACS years (stated in provenance limitations).
+- **AI:** Claude Code designed and wrote the allocation, adapter and tests. It found the Ohio double count while designing, and found the P.L.→DHC geography gap in the first live run.
+- **Open / next:** WS-ENGINE uses `eligible_parcels` with `denominator_source`/`quality`; MOE propagation for remainders (not attempted).
