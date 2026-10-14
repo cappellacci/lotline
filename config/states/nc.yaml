@@ -13,4 +13,37 @@ holdouts:
     outcome_from: 2023-06-01
     outcome_until: 2099-12-31
     reason: V5 blind forward test of the Charlotte UDO (duplex/triplex on N1 lots, effective 2023-06-01)
-sources: []
+sources:
+  - name: raleigh_permits
+    url: https://services.arcgis.com/v400IkDOw1ad7Yad/arcgis/rest/services/Building_Permits/FeatureServer/0
+    license: Open Raleigh Data Policy (public open data, no warranty)
+    access: arcgis
+    cadence: daily
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/raleigh_permits.py. 184,524 records 2000-present on 2026-10-14
+      (data last edited 2026-10-10). Units repaired from censuslandusecode where housingunitstotal is empty
+      (from 2024) or implausible; see the adapter's PROVENANCE.
+  - name: durham_permits
+    url: https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Inspections/FeatureServer/12
+    license: City of Durham open data (Privacy Notice and Terms of Service on the Hub item)
+    access: arcgis
+    cadence: daily
+    notes: >-
+      Freshness checked 2026-10-14. Verdict FRESH via the hosted copy above: 93,180 records, ISSUE_DATE
+      2007-10-22 to 2026-10-09, layer data last edited 2026-10-14 08:40 UTC; 2026 has 4,164 permits so far
+      (2023 5,631; 2024 5,179; 2025 5,833). Has DWELLING_UNITS, CO_SIGNOFF_DATE, PIN, BLD_Type; supports
+      pagination and statistics. The older MapServer (webgis2.durhamnc.gov/server/rest/services/PublicServices/
+      Inspections/MapServer/12) still times out from this network (2026-10-06 and 2026-10-14), and the Hub
+      items "All Building Permits" (f352381d9b3c4949b4aead66f6e62889) and "(table only)" show 2024-11-13 as
+      item metadata date, which is why it looked stale. Issued by City-County Inspections, which serves both
+      the city and the county; the layer has no city/county field, so the city filter needs the PIN or a
+      spatial join. Adapter not built yet.
+  - name: durham_active_permits
+    url: https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Permits/FeatureServer/13
+    license: City of Durham open data (Privacy Notice and Terms of Service on the Hub item)
+    access: arcgis
+    cadence: daily
+    notes: >-
+      "Active Building Permits": a rolling window by status, not by date. On 2026-10-14 it held 6,910 open
+      permits (6,794 issued, 116 received; IDs from 19xxxxxx to 26xxxxxx), no date fields, edited daily. Closed
+      permits drop out, so it is not needed while the hosted All Building Permits layer is fresh. Not loaded.
