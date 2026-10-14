@@ -356,13 +356,14 @@ WORK_ITEM = re.compile(
 )
 _CONVERT_WORD = re.compile(r"\bconver(?:t|ts|ting|ted|sion)\b", re.I)
 
-# Rule 7. Demolition of a whole building (common misspellings included). "Demo" followed by a permit
+# Rule 7. Demolition of a whole building (common misspellings included; "wreck"/"wrecking" is Minneapolis's
+# word for it, WS-MN #89). "Demo" followed by a permit
 # number is a reference to another permit ("Complete DEMO-001048", "Demo 45399-2020", "demo BL-158040",
 # "demo permit #..."); a plain number after it is a size ("DEMO 1731 SQ FT"). Interior, partial and
 # selective demolition is alteration work.
 DEMOLITION = re.compile(
     r"(?<!interior\s)(?<!partial\s)(?<!selective\s)"
-    r"\b(?:demo|demol\w*|deconstruct\w*|raze|razing|tear\s*-?\s*down)\b"
+    r"\b(?:demo|demol\w*|deconstruct\w*|raze|razing|tear\s*-?\s*down|wreck(?:s|ed|ing)?)\b"
     r"(?!\s*[-#]\s*\d|\s*:?\s*(?:[a-z]{1,6}-)?\d+-\d|\s*:?\s*[a-z]{1,6}-\d|\s+(?:permit|case|#))",
     re.I,
 )

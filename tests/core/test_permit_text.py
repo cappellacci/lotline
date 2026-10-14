@@ -144,3 +144,16 @@ def test_unknown_is_none_never_zero():
 def test_result_is_frozen():
     with pytest.raises(dataclasses.FrozenInstanceError):
         parse_description("Duplex").units_new = 3  # type: ignore[misc]
+
+
+@pytest.mark.parametrize(
+    ("text", "removed"),
+    [
+        ("Wrecking a single family dwelling", 1),  # Minneapolis's wording (WS-MN #89): was read as a NEW SFD
+        ("WRECK existing duplex", 2),
+        ("wrecked single-family house and detached garage", 1),
+    ],
+)
+def test_wrecking_is_demolition_not_new_construction(text, removed):
+    facts = parse_description(text)
+    assert facts.is_demolition is True and facts.units_new == 0 and facts.units_removed == removed
