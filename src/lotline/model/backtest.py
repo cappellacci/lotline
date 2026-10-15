@@ -17,7 +17,11 @@ denominator are observed. Reforming places are excluded (`config/params/v1_exclu
 placeholder until a reform registry exists). Held-out rows never reach this module: the panel loader reads
 holdout-filtered tables and re-checks them.
 
-Run on real data: `uv run python -m lotline.model.backtest --state MN NC OH TX`.
+**Specifications:** `spec="B"` is the adopted baseline (D-002). `spec="C"` (D-006) multiplies each place's
+level by the demand term from `model.demand` (county household growth and house-price change), with its
+coefficients fitted per state on the fit years only; it needs each state's `demand.DemandInputs`.
+
+Run on real data: `uv run python -m lotline.model.backtest --state MN NC OH TX [--spec C]`.
 """
 
 from __future__ import annotations
@@ -29,12 +33,13 @@ import numpy as np
 import pandas as pd
 
 from lotline.config import CONFIG_DIR, Parameter, load_params
-from lotline.model import baseline
+from lotline.model import baseline, demand
 
 EXCLUDED_CSV = CONFIG_DIR / "params" / "v1_excluded_places.csv"
 METHODS = ("model", *baseline.BENCHMARKS)
 TERCILES = ("small", "medium", "large")
 KEY = "geoid"
+SPECS = ("B", "C")
 
 
 def excluded_places(path: Path = EXCLUDED_CSV) -> set[str]:
@@ -63,13 +68,21 @@ def window(
     group: str = "county_geoid",
     excluded: set[str] | None = None,
     reported_only: bool | None = None,
+    spec: str = "B",
+    demand_inputs: demand.DemandInputs | None = None,
 ) -> pd.DataFrame:
     """One fit window: every method's forecast beside the observed value, one row per place-year-method.
 
     Columns: state, geoid, size_class, fit_end, year, horizon, method, tercile, parcels (target year),
     actual, forecast, mean, p10, p90 (rates per 1,000 eligible parcels; mean/p10/p90 only for the model;
-    the model's forecast is its P50) and coverage_rand (model only, see `baseline.randomized_coverage`).
+    the model's forecast is its P50), coverage_rand (model only, see `baseline.randomized_coverage`), spec,
+    and the demand term behind the model row: multiplier (1 in spec B), fallback (spec C: True where the
+    place used multiplier 1), beta_h and beta_p (NaN in spec B).
     """
+    if spec not in SPECS:
+        raise ValueError(f"spec {spec!r} not in {SPECS}")
+    if spec == "C" and demand_inputs is None:
+        raise ValueError("spec C needs demand_inputs (county households and the FHFA index)")
     p = params or load_params("baseline")
     if reported_only is None:
         reported_only = bool(p["use_reported_only"].value)
@@ -80,7 +93,11 @@ def window(
     last = min(fit_end + horizon, int(p["v1_last_outcome_year"].value))
     fit = panel[panel["year"] <= fit_end]
 
-    table, draws = baseline.forecast_draws(fit, value, fit_end, group=group, params=p)
+    mult, fits = None, {}
+    if spec == "C":
+        mult, fits = demand.multipliers(fit, value, fit_end, demand_inputs, params=p, group=group)
+    factor = mult.set_index(KEY)["multiplier"] if mult is not None else None
+    table, draws = baseline.forecast_draws(fit, value, fit_end, group=group, params=p, multiplier=factor)
     observed = table[[KEY, "year"]].merge(panel[[KEY, "year", value]], on=[KEY, "year"], how="left")[value]
     seen = observed.notna().to_numpy()
     lo, hi = p["interval_low_quantile"].value, p["interval_high_quantile"].value
@@ -121,8 +138,18 @@ def window(
     )
     out["tercile"] = out[KEY].map(tercile)
     out["size_class"], out["fit_end"], out["horizon"] = size_class, fit_end, out["year"] - fit_end
+    out["spec"] = spec
+    if mult is not None:
+        m = mult.set_index(KEY)
+        out["multiplier"] = out[KEY].map(m["multiplier"]).fillna(1.0)
+        out["fallback"] = out[KEY].map(m["fallback"]).fillna(True).astype(bool)
+    else:
+        out["multiplier"], out["fallback"] = 1.0, False
+    out["beta_h"] = out["state"].map({s: f.beta_h for s, f in fits.items()}).astype(float)
+    out["beta_p"] = out["state"].map({s: f.beta_p for s, f in fits.items()}).astype(float)
     cols = ["state", KEY, "size_class", "fit_end", "year", "horizon", "method", "tercile", "parcels"]
     cols += ["actual", "forecast", "mean", "p10", "p90", "coverage_rand"]
+    cols += ["spec", "multiplier", "fallback", "beta_h", "beta_p"]
     return out[cols].sort_values([KEY, "year", "method"], ignore_index=True)
 
 
@@ -198,17 +225,41 @@ def run(
     group: str = "county_geoid",
     reported_only: bool | None = None,
     excluded: set[str] | None = None,
+    spec: str = "B",
+    demand_inputs: dict[str, demand.DemandInputs] | None = None,
 ) -> pd.DataFrame:
-    """All windows for every state panel and size class -> one long results table (see `window`)."""
+    """All windows for every state panel and size class -> one long results table (see `window`).
+
+    `demand_inputs` is keyed like `panels` (by state) and is needed for spec C.
+    """
     p = params or load_params("baseline")
     excluded = excluded_places() if excluded is None else excluded
+    d = demand_inputs or {}
     parts = [
-        window(panel, s, end, params=p, group=group, excluded=excluded, reported_only=reported_only)
-        for panel in panels.values()
+        window(
+            panel,
+            s,
+            end,
+            params=p,
+            group=group,
+            excluded=excluded,
+            reported_only=reported_only,
+            spec=spec,
+            demand_inputs=d.get(state),
+        )
+        for state, panel in panels.items()
         for s in size_classes
         for end in fit_ends(p)
     ]
     return pd.concat(parts, ignore_index=True)
+
+
+def demand_inputs_for(state: str, store) -> demand.DemandInputs:  # pragma: no cover - real data
+    """Spec C's inputs from a state's processed ACS and market tables (no downloads)."""
+    acs, market = store.read(state, "acs_geo_year"), store.read(state, "market_geo_year")
+    if acs is None or market is None:
+        raise FileNotFoundError(f"{state}: build acs_geo_year and market_geo_year first")
+    return demand.inputs_from_tables(acs, market)
 
 
 def main(argv: list[str] | None = None) -> None:  # pragma: no cover - real-data entry point
@@ -223,6 +274,7 @@ def main(argv: list[str] | None = None) -> None:  # pragma: no cover - real-data
     ap.add_argument("--totals", action="store_true", help="score totals incl. imputation, not reported units")
     ap.add_argument("--out", type=Path, help="write the long results table here (CSV)")
     ap.add_argument("--set", nargs="*", default=[], help="parameter overrides, name=value (sensitivity runs)")
+    ap.add_argument("--spec", choices=SPECS, default="B", help="B: baseline; C: + demand term (D-006)")
     a = ap.parse_args(argv)
     params = load_params("baseline")
     for item in a.set:
@@ -230,7 +282,17 @@ def main(argv: list[str] | None = None) -> None:  # pragma: no cover - real-data
         params[name] = params[name].model_copy(update={"value": float(val)})
     store = DataStore()
     loaded = {s: panel_mod.load(s, store, theme=a.theme, rule_version=a.rule_version) for s in a.state}
-    results = run(loaded, params=params, group=a.group, reported_only=False if a.totals else None)
+    inputs = None
+    if a.spec == "C":
+        inputs = {s: demand_inputs_for(s, store) for s in a.state}
+    results = run(
+        loaded,
+        params=params,
+        group=a.group,
+        reported_only=False if a.totals else None,
+        spec=a.spec,
+        demand_inputs=inputs,
+    )
     if a.out:
         results.to_csv(a.out, index=False)
     pd.set_option("display.width", 200)

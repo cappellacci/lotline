@@ -187,3 +187,37 @@ v1_min_eligible_parcels:
   unit: eligible parcels at the forecast origin
   source: "Ben's decision 5, 2026-10-14 (WS-ENGINE V1 report, PR #93): places with fewer than 20 eligible parcels dominated the error of every method"
   notes: "Scoring only: smaller places are still forecast and are rolled into their county for reporting. 0 scores every place (the original V1 run)."
+
+# ---- Spec C: two demand signals (model/demand.py; analysis plan D-006, pre-declared 2026-10-14) ----
+
+household_growth_years:
+  value: 5
+  low: 5
+  high: 5
+  unit: years
+  source: "Analysis plan D-006: ACS B25003_001 5-year window ending at the origin vs the non-overlapping window ending 5 years earlier, annualized"
+  notes: "g = (E[t] / E[t - 5])^(1/5) - 1 for the place's county. Fixed by the pre-declared specification."
+
+hpi_change_years:
+  value: 3
+  low: 3
+  high: 3
+  unit: years
+  source: "Analysis plan D-006: FHFA house-price change over the 3 years to the origin, annualized"
+  notes: "q = (HPI[t] / HPI[t - 3])^(1/3) - 1 on one geography of the panel's fallback chain. Fixed by the pre-declared specification."
+
+irls_tolerance:
+  value: 1.0e-8
+  low: 1.0e-12
+  high: 1.0e-6
+  unit: relative change in Poisson deviance between iterations
+  source: "R glm.control default (epsilon = 1e-8): converged when |dev - dev_old| / (|dev| + 0.1) < epsilon"
+  notes: "Replaces a coefficient-change rule (1e-10) that never settled for nearly collinear signals (found on CI, PR #95). A numerical setting, not part of the model specification."
+
+irls_max_iterations:
+  value: 100
+  low: 25
+  high: 1000
+  unit: iterations
+  source: "Numerical setting for the Poisson IRLS fit, chosen a priori: Poisson log-link IRLS usually converges in under 10 steps"
+  notes: "If the fit has not converged by then (or the sample has no permits), the state and size class gets multiplier 1 (spec B) and this is reported."

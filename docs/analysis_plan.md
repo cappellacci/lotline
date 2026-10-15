@@ -52,3 +52,16 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - no other changes; same windows, parameters and pass criteria (D-003 to D-005).
 - **Reporting:** spec C is compared with spec B and both benchmarks in every cell. Whichever passes more cells is not automatically adopted; Ben decides, and the choice is logged as D-007.
 - **Decided by:** Ben, 2026-10-14 (choice of signals proposed by Claude Code, approved before running).
+
+### D-007 · 2026-10-15 · Baseline stays spec B; spec C (demand signals) not adopted
+- **Compared (PR #95, both runs from `python -m lotline.model.backtest --spec B|C`, fits ending 2016/2018/2020,
+  MN NC OH TX):** B and C each pass 17 of 48 V1 cells. Single-family MAE 10.08 (B) vs 10.01 (C); 5+ units 2.82
+  vs 2.92. NC/TX single-family post-2022 bias of the mean −8.00/−11.08 (B) vs −7.16/−9.53 (C); every NC/TX
+  single-family cell still fails under both.
+- **Decision:** keep spec B as the baseline. C's gain is small, it is worse for 5+ units, and its fitted
+  coefficients are unstable (signs flip across states and windows; |β| up to 66 for 2–4 unit buildings, where
+  household and price growth are correlated).
+- **Kept for reproducibility:** spec C remains available as `--spec C` (default B).
+- **Open:** a more stable demand form (one combined signal, or a statewide cycle term), pre-declared before
+  any run, to address the NC/TX single-family under-forecast.
+- **Decided by:** Ben, 2026-10-15.
