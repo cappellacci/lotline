@@ -29,7 +29,20 @@ Reported values that pass are `units_confidence="reported"`; code-derived ones a
 `"unknown"`. A missing count is never filled with 0. Demolitions get `units_new = 0` and `units_removed`
 from `housingunitsexist` or the demolition code (645 → 1, 646 → 2, 647/648 unknown).
 
-Only non-personal fields are requested (no owner, contractor, address or free-text fields).
+**Description fallback.** Where the structured fields leave a value unknown, the shared parser
+`lotline.parse.permit_text.parse_description` reads the permit's work description
+(`proposedworkdescription`, 100 characters) and fills only that value, marked `"inferred"`
+(see `fill_from_description`):
+
+- new 104 / 105 permits with unknown units: the parsed count, if it fits the code (3-4 or 5+);
+- demolitions with unknown units removed: the parsed count removed;
+- permits with no type code: the parsed building type (and, for a dwelling type, a fitting count).
+
+A parsed value never overrides a reported or code-derived one, and the parser's `building_units` (the size of
+a townhouse row, not this permit's count) is not stored. Switch it off with `USE_DESCRIPTION = False`.
+
+Only non-personal fields are requested: no owner, contractor, tenant, project-name, address or comment
+fields. The work description is the one free-text field read.
 """
 
 from __future__ import annotations
@@ -38,11 +51,12 @@ import pandas as pd
 
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp
+from lotline.parse.permit_text import parse_description
 from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.nc.raleigh_permits"
-VERSION = "1.0"
+VERSION = "1.1"
 SOURCE = "raleigh_permits"
 TABLE = "permits"
 LAYER_URL = (
@@ -52,7 +66,10 @@ LANDING_URL = "https://data-ral.opendata.arcgis.com/datasets/ral::building-permi
 LICENSE = "Open Raleigh Data Policy (public open data, no warranty; https://data.raleighnc.gov)"
 RALEIGH_GEOID = "3755000"  # Census place GEOID of the permit-issuing city
 
-# Non-personal fields only: no owner, contractor, address, coordinates or comment fields.
+# Non-personal fields only: no owner, contractor, tenant, project-name, address, coordinate or comment fields.
+# The work description is the one free-text field (its twin `description` holds the same text).
+DESCRIPTION_FIELD = "proposedworkdescription"
+USE_DESCRIPTION = True  # fill unknown units/types from the description (Ben reviewing, 2026-10-14)
 OUT_FIELDS = [
     "OBJECTID",
     "permitnum",
@@ -75,6 +92,7 @@ OUT_FIELDS = [
     "pin",
     "jurisdiction_inout_ral",
     "statuscurrentmapped",
+    DESCRIPTION_FIELD,
 ]
 
 # Census BPS building-type code -> (building_type_std, units per permit when derivable)
@@ -94,7 +112,15 @@ DEMOLITION_CODES: dict[int, tuple[str, int | None]] = {
     649: ("OTHER", None),  # nonresidential: no dwelling units removed, but not known to be 0 from the code
 }
 ADU_TYPES = {"attached adu": "attached", "detached adu": "detached", "internal adu": "internal_conversion"}
-PLAUSIBLE = {"SFD": (1, 1), "TH": (1, None), "ADU": (1, 1), "U2": (2, 2), "U3_4": (3, 4), "MF5": (5, None)}
+PLAUSIBLE = {
+    "SFD": (1, 1),
+    "TH": (1, None),
+    "ADU": (1, 1),
+    "U2": (2, 2),
+    "U3_4": (3, 4),
+    "DTQ": (2, 4),  # only from the description parser ("2-4 units")
+    "MF5": (5, None),
+}
 
 PROVENANCE = {
     "title": "City of Raleigh Building Permits (Open Raleigh, daily, 2000 to present)",
@@ -118,6 +144,10 @@ PROVENANCE = {
         "missing_middle flag copied to reform_flag_raw; censuslandusecode/workclass to permit_class_raw",
         "Every row is assigned to Raleigh (3755000), the permit-issuing office, including permits issued "
         "in its extraterritorial jurisdiction (totals match the Census BPS Raleigh row within a few %)",
+        "Description fallback (lotline.parse.permit_text): where units or type stay unknown, the work "
+        "description (proposedworkdescription) fills only that value, marked inferred: 104/105 counts that "
+        "fit the code, units removed by demolitions, and the type of permits with no code; never overrides "
+        "a reported or derived value; the parser's building_units is not stored",
         "Holdout filter applied (NC holdout is Charlotte; no Raleigh rows are held out)",
     ],
     "limitations": [
@@ -125,7 +155,8 @@ PROVENANCE = {
         "derived from the building-type code rather than reported",
         "Five-or-more and three-or-four family permits without a plausible reported count have unknown "
         "units (null). From 2024 almost every 105 permit is unknown, so 2024+ multifamily units are "
-        "missing, not zero (the unit count is often in the free-text description, not yet parsed)",
+        "missing, not zero; the description parser recovers a count only where the text states one plainly "
+        "(it is truncated at 100 characters, and project totals or two different counts give no count)",
         "Townhouse permits with no reported count are derived as 1 unit; the few that cover a whole "
         "building (4-9 units reported in 2023-24) would be undercounted when unreported",
         "The adu_type and missing_middle flags are populated only from 2019-2020 on; earlier ADUs and "
@@ -164,6 +195,44 @@ def units_for(btype: str, reported, derived) -> tuple[object, str]:
     if derived is not None and pd.notna(derived):
         return int(derived), "derived"
     return pd.NA, "unknown"
+
+
+def _fits(btype: str, n) -> bool:
+    lo, hi = PLAUSIBLE.get(btype, (1, None))
+    return n is not None and n >= lo and (hi is None or n <= hi)
+
+
+def fill_from_description(parts: pd.DataFrame, text: pd.Series) -> pd.DataFrame:
+    """Fill values the structured fields leave unknown from the parsed description; mark them `inferred`.
+
+    `parts` has building_type_std, type_confidence, units_new, units_removed, units_confidence and
+    is_demolition per permit (as built in `build`). Only three gaps are filled, each only when the parsed
+    value is consistent with what the source does say:
+
+    - new dwellings with unknown units (104 / 105 without a plausible count): a count that fits the type;
+    - demolitions with unknown units removed: the parsed units removed;
+    - no type code (UNKNOWN): the parsed type, plus a fitting count when it is a dwelling type.
+    """
+    parts = parts.copy()
+    dwelling = parts["building_type_std"].isin(list(PLAUSIBLE))
+    gap_units = dwelling & ~parts["is_demolition"] & parts["units_confidence"].eq("unknown")
+    gap_removed = parts["is_demolition"] & parts["units_removed"].isna()
+    gap_type = parts["building_type_std"].eq("UNKNOWN")
+    for i in parts.index[(gap_units | gap_removed | gap_type) & text.notna()]:
+        facts = parse_description(text.at[i])
+        if gap_type.at[i] and facts.building_type_std:
+            parts.at[i, "building_type_std"] = facts.building_type_std
+            parts.at[i, "type_confidence"] = "inferred"
+            if not parts.at[i, "is_demolition"] and _fits(facts.building_type_std, facts.units_new):
+                parts.at[i, "units_new"] = facts.units_new
+                parts.at[i, "units_confidence"] = "inferred"
+        elif gap_units.at[i] and _fits(parts.at[i, "building_type_std"], facts.units_new):
+            parts.at[i, "units_new"] = facts.units_new
+            parts.at[i, "units_confidence"] = "inferred"
+        elif gap_removed.at[i] and facts.is_demolition and facts.units_removed is not None:
+            parts.at[i, "units_removed"] = facts.units_removed
+            parts.at[i, "units_confidence"] = "inferred"
+    return parts
 
 
 def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
@@ -227,6 +296,9 @@ def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
             "is_demolition",
         ],
     )
+    if USE_DESCRIPTION and DESCRIPTION_FIELD in df:
+        text = df[DESCRIPTION_FIELD].astype("string").str.strip().replace("", pd.NA)
+        parts = fill_from_description(parts, text)
     workclass = df["workclass"].astype("string").str.strip()
     out = pd.DataFrame(
         {
