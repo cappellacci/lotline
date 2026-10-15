@@ -7,4 +7,14 @@ township_permits: true  # townships issue building permits (BPS rows per townshi
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[430, 459]]
 holdouts: []
-sources: []
+sources:
+  - name: columbus_permits
+    url: https://services1.arcgis.com/9yy6msODkIBzkUXU/arcgis/rest/services/Building_Permits/FeatureServer/0
+    license: CC0-1.0 (City of Columbus; ArcGIS item f7a785b863454d96a0fe3f5aa5368e7d)
+    access: arcgis
+    cadence: nightly
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/columbus_permits.py. About 685,000 permits 2010-present on
+      2026-10-15 (data last edited 2026-10-15); the adapter downloads only new-structure and demolition
+      permits (29,183). Building type from CONST_TYPE_CODE (Census BPS code). No ADU flag or description
+      field, so ADUs can't be identified. Pre-2010 permits sit in separate Historic_Building_Permits services.
