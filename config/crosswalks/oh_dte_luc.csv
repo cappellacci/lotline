@@ -1,0 +1,328 @@
+state_luc,label,land_use_std,basis
+100,Agr-Vacant Land,AGRICULTURAL,DTE 1xx agricultural
+101,Agr-Cash-Grain Farm,AGRICULTURAL,DTE 1xx agricultural
+102,Agr-Livestock Farm,AGRICULTURAL,DTE 1xx agricultural
+103,Agr-Dairy Farm,AGRICULTURAL,DTE 1xx agricultural
+104,Agr-Poultry Farm,AGRICULTURAL,DTE 1xx agricultural
+105,Agr-Fruit & Nut Farm,AGRICULTURAL,DTE 1xx agricultural
+106,Agr-Veg Farm,AGRICULTURAL,DTE 1xx agricultural
+107,Agr-Tobacco Farm,AGRICULTURAL,DTE 1xx agricultural
+108,Agr-Nursery,AGRICULTURAL,DTE 1xx agricultural
+109,Agr-Green House,AGRICULTURAL,DTE 1xx agricultural
+110,Agr-CAUV-Vacant Land,AGRICULTURAL,DTE 1xx agricultural
+111,Agr-CAUV-Cash-Grain Farm,AGRICULTURAL,DTE 1xx agricultural
+112,Agr-CAUV-Livestock Farm,AGRICULTURAL,DTE 1xx agricultural
+113,Agr-CAUV-Dairy Farm,AGRICULTURAL,DTE 1xx agricultural
+114,Agr-CAUV-Poultry Farm,AGRICULTURAL,DTE 1xx agricultural
+115,Agr-CAUV-Fruit & Nut Farm,AGRICULTURAL,DTE 1xx agricultural
+116,Agr-CAUV-Veg Farm,AGRICULTURAL,DTE 1xx agricultural
+117,Agr-CAUV-Tobacco Farm,AGRICULTURAL,DTE 1xx agricultural
+118,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+119,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+120,Agr-Timber,AGRICULTURAL,DTE 1xx agricultural
+121,Agr-CAUV-Timber,AGRICULTURAL,DTE 1xx agricultural
+122,Agr-CAUV-Comm Timber,AGRICULTURAL,DTE 1xx agricultural
+123,Agr-Forest-FLT Before,AGRICULTURAL,DTE 1xx agricultural
+124,Agr-Forest-FLT After,AGRICULTURAL,DTE 1xx agricultural
+125,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+140,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+141,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+155,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+160,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+161,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+162,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+163,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+165,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+166,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+167,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+168,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+169,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+170,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+171,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+172,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+174,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+180,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+181,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+182,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+183,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+185,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+190,Agr-Other,AGRICULTURAL,DTE 1xx agricultural
+198,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+199,Agr-CAUV-Other,AGRICULTURAL,DTE 1xx agricultural
+200,Min-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+210,Min-Coal Land,OTHER,DTE 2xx mineral
+220,Min-Coal Rights-Working,OTHER,DTE 2xx mineral
+240,Min-Oil and Gas-Working,OTHER,DTE 2xx mineral
+260,Min-Other,OTHER,DTE 2xx mineral
+261,Min-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+270,Min-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+300,Ind-Vacant Land,INDUSTRIAL,DTE 300 industrial vacant land
+301,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+302,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+303,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+304,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+305,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+306,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+310,Ind-Food Processing,INDUSTRIAL,DTE 3xx industrial
+317,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+320,Ind-Foundaries,INDUSTRIAL,DTE 3xx industrial
+330,Ind-Manufacturing-Medium,INDUSTRIAL,DTE 3xx industrial
+340,Ind-Manufacturing-Light,INDUSTRIAL,DTE 3xx industrial
+341,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+342,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+343,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+350,Ind-Warehouse,INDUSTRIAL,DTE 3xx industrial
+351,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+352,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+353,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+354,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+355,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+356,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+357,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+360,Ind-Truck Terminal,INDUSTRIAL,DTE 3xx industrial
+370,Ind-Machine Shop,INDUSTRIAL,DTE 3xx industrial
+371,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+372,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+375,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+380,Ind-Mine/Quarry,INDUSTRIAL,DTE 3xx industrial
+389,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+390,Ind-Grain Elevator,INDUSTRIAL,DTE 3xx industrial
+391,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+393,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+394,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+395,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+396,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+397,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+398,Ind-Custom Code,INDUSTRIAL,county custom code in the DTE industrial/commercial band
+399,Ind-Other,INDUSTRIAL,DTE 3xx industrial
+400,Com-Vacant Land,COMMERCIAL,DTE 400 commercial vacant land
+401,Com-Apartment- 4 to 19,MULTIFAMILY_5P,DTE 401 apartments 4-19 units: includes 4-unit buildings (no finer code)
+402,Com-Apartment- 20 to 39,MULTIFAMILY_5P,DTE 402 apartments 20-39 units
+403,Com-Apartment- 40+,MULTIFAMILY_5P,DTE 403 apartments 40+ units
+404,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+405,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+406,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+407,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+408,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+409,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+410,Com-Motel,COMMERCIAL,DTE 4xx commercial
+411,Com-Hotel,COMMERCIAL,DTE 4xx commercial
+412,Com-Nursing Home,COMMERCIAL,DTE 4xx commercial
+413,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+414,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+415,Com-Mobile Home Park,MOBILE_HOME,DTE 415 mobile home park (commercial)
+416,Com-Camp Ground,COMMERCIAL,DTE 4xx commercial
+417,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+418,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+419,Com-Other,COMMERCIAL,DTE 4xx commercial
+420,Com-Retail-Small,COMMERCIAL,DTE 4xx commercial
+421,Com-Supermarket,COMMERCIAL,DTE 4xx commercial
+422,Com-Discount Store,COMMERCIAL,DTE 4xx commercial
+423,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+424,Com-Department Store,COMMERCIAL,DTE 4xx commercial
+425,Com-Shopping Center-NHBD,COMMERCIAL,DTE 4xx commercial
+426,Com-Shopping Center-Comun,COMMERCIAL,DTE 4xx commercial
+427,Com-Shopping Center-Regional,COMMERCIAL,DTE 4xx commercial
+428,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+429,Com-Other,COMMERCIAL,DTE 4xx commercial
+430,Com-Retaurant,COMMERCIAL,DTE 4xx commercial
+431,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+432,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+433,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+434,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+435,Com-Drive In,COMMERCIAL,DTE 4xx commercial
+436,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+437,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+438,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+439,Com-Other Food,COMMERCIAL,DTE 4xx commercial
+440,Com-Dry Cleaning,COMMERCIAL,DTE 4xx commercial
+441,Com-Funeral Home,COMMERCIAL,DTE 4xx commercial
+442,Com-Medical Clinic,COMMERCIAL,DTE 4xx commercial
+443,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+444,Com-Full Service Bank,COMMERCIAL,DTE 4xx commercial
+445,Com-Saving and Loan,COMMERCIAL,DTE 4xx commercial
+446,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+447,Com-Office,COMMERCIAL,DTE 4xx commercial
+448,Com-Office 3+ Walkup,COMMERCIAL,DTE 4xx commercial
+449,Com-Office 3+ Elevator,COMMERCIAL,DTE 4xx commercial
+450,Com-Condo,COMMERCIAL,DTE 4xx commercial
+451,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+452,Com-Auto Service,COMMERCIAL,DTE 4xx commercial
+453,Com-Car Wash,COMMERCIAL,DTE 4xx commercial
+454,Com-Auto Sales,COMMERCIAL,DTE 4xx commercial
+455,Com-Garage,COMMERCIAL,DTE 4xx commercial
+456,Com-Parking Garage,COMMERCIAL,DTE 4xx commercial
+457,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+458,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+459,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+460,Com-Theater,COMMERCIAL,DTE 4xx commercial
+461,Com-Drive in Theater,COMMERCIAL,DTE 4xx commercial
+462,Com-Golf Driving Range,COMMERCIAL,DTE 4xx commercial
+463,Com-Golf Course,COMMERCIAL,DTE 4xx commercial
+464,Com-Bowling Alley,COMMERCIAL,DTE 4xx commercial
+465,Com-Lodge Hall,COMMERCIAL,DTE 4xx commercial
+466,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+467,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+468,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+469,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+470,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+471,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+472,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+474,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+475,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+476,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+477,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+478,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+479,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+480,Com-Warehouse,COMMERCIAL,DTE 4xx commercial
+481,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+482,Com-Truck Terminal,COMMERCIAL,DTE 4xx commercial
+484,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+485,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+486,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+488,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+489,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+490,Com-Marine Service,COMMERCIAL,DTE 4xx commercial
+491,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+492,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+493,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+494,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+495,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+496,Com-Marina,COMMERCIAL,DTE 4xx commercial
+497,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+498,Com-Custom Code,COMMERCIAL,county custom code in the DTE industrial/commercial band
+499,Com-Other,COMMERCIAL,DTE 4xx commercial
+500,Res-Vacant Land,VACANT_RESIDENTIAL,DTE 500 residential vacant land
+501,Res-Custom Code,VACANT_RESIDENTIAL,"DTE 500 series, unplatted tract (last digit 1-5 = acreage class): vacant residential land"
+502,Res-Custom Code,VACANT_RESIDENTIAL,"DTE 500 series, unplatted tract (last digit 1-5 = acreage class): vacant residential land"
+503,Res-Custom Code,VACANT_RESIDENTIAL,"DTE 500 series, unplatted tract (last digit 1-5 = acreage class): vacant residential land"
+504,Res-Custom Code,VACANT_RESIDENTIAL,"DTE 500 series, unplatted tract (last digit 1-5 = acreage class): vacant residential land"
+505,Res-Custom Code,VACANT_RESIDENTIAL,"DTE 500 series, unplatted tract (last digit 1-5 = acreage class): vacant residential land"
+507,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+508,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+510,Res-Single Family,SF_DETACHED,DTE 510 single-family dwelling
+511,Res-Custom Code,SF_DETACHED,"DTE 510 series, unplatted tract (last digit 1-5 = acreage class): single-family dwelling"
+512,Res-Custom Code,SF_DETACHED,"DTE 510 series, unplatted tract (last digit 1-5 = acreage class): single-family dwelling"
+513,Res-Custom Code,SF_DETACHED,"DTE 510 series, unplatted tract (last digit 1-5 = acreage class): single-family dwelling"
+514,Res-Custom Code,SF_DETACHED,"DTE 510 series, unplatted tract (last digit 1-5 = acreage class): single-family dwelling"
+515,Res-Custom Code,SF_DETACHED,"DTE 510 series, unplatted tract (last digit 1-5 = acreage class): single-family dwelling"
+517,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+518,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+520,Res-Two Family,DUPLEX,DTE 520 two-family dwelling
+521,Res-Custom Code,DUPLEX,"DTE 520 series, unplatted tract (last digit 1-5 = acreage class): two-family dwelling"
+522,Res-Custom Code,DUPLEX,"DTE 520 series, unplatted tract (last digit 1-5 = acreage class): two-family dwelling"
+523,Res-Custom Code,DUPLEX,"DTE 520 series, unplatted tract (last digit 1-5 = acreage class): two-family dwelling"
+524,Res-Custom Code,DUPLEX,"DTE 520 series, unplatted tract (last digit 1-5 = acreage class): two-family dwelling"
+525,Res-Custom Code,DUPLEX,"DTE 520 series, unplatted tract (last digit 1-5 = acreage class): two-family dwelling"
+528,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+530,Res-Three Family,TRI_QUAD,DTE 530 three-family dwelling
+531,Res-Custom Code,TRI_QUAD,"DTE 530 series, unplatted tract (last digit 1-5 = acreage class): three-family dwelling"
+532,Res-Custom Code,TRI_QUAD,"DTE 530 series, unplatted tract (last digit 1-5 = acreage class): three-family dwelling"
+535,Res-Custom Code,TRI_QUAD,"DTE 530 series, unplatted tract (last digit 1-5 = acreage class): three-family dwelling"
+538,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+540,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+541,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+542,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+543,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+545,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+550,Res-Condo,CONDO_UNIT,DTE 550 condominium residential unit
+551,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+552,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+553,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+554,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+555,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+556,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+557,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+558,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+559,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+560,Res-Mobile Home,MOBILE_HOME,DTE 560 manufactured/mobile home
+561,Res-Custom Code,MOBILE_HOME,"DTE 560 series, unplatted tract (last digit 1-5 = acreage class): mobile home on real estate"
+562,Res-Custom Code,MOBILE_HOME,"DTE 560 series, unplatted tract (last digit 1-5 = acreage class): mobile home on real estate"
+563,Res-Custom Code,MOBILE_HOME,"DTE 560 series, unplatted tract (last digit 1-5 = acreage class): mobile home on real estate"
+564,Res-Custom Code,MOBILE_HOME,"DTE 560 series, unplatted tract (last digit 1-5 = acreage class): mobile home on real estate"
+565,Res-Custom Code,MOBILE_HOME,"DTE 560 series, unplatted tract (last digit 1-5 = acreage class): mobile home on real estate"
+566,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+567,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+568,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+569,Res-Custom Code,MOBILE_HOME,mobile home on personal property (Defiance County list)
+570,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+571,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+572,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+573,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+574,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+575,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+579,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+580,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+581,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+582,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+583,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+584,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+585,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+588,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+590,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+592,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+593,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+594,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+595,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+598,Res-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+599,Res-Other,OTHER,DTE 599 other residential structures
+600,Exm-USA,INSTITUTIONAL,DTE 6xx exempt
+605,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+610,Exm-Ohio,INSTITUTIONAL,DTE 6xx exempt
+611,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+615,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+620,Exm-County,INSTITUTIONAL,DTE 6xx exempt
+621,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+622,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+623,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+624,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+625,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+626,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+627,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+629,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+630,Exm-Township,INSTITUTIONAL,DTE 6xx exempt
+631,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+640,Exm-Municipality,INSTITUTIONAL,DTE 6xx exempt
+644,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+645,Exm-Metro Housing,INSTITUTIONAL,DTE 645 exempt: metropolitan housing authority (structure type unknown)
+646,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+650,Exm-Board of Education,INSTITUTIONAL,DTE 6xx exempt
+651,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+652,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+655,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+660,Exm-Park District,INSTITUTIONAL,DTE 6xx exempt
+665,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+670,Exm-Private College,INSTITUTIONAL,DTE 6xx exempt
+675,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+680,Exm-Charitable,INSTITUTIONAL,DTE 6xx exempt
+681,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+682,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+685,Exm-Public Woship,INSTITUTIONAL,DTE 6xx exempt
+690,Exm-Graveyards,INSTITUTIONAL,DTE 6xx exempt
+691,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+695,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+698,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+699,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
+700,Abt-Redevelopment-R.C. 1728.10,UNKNOWN,DTE 7xx tax abatement: does not say the use
+702,Abt-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+710,Abt-Reinvest,UNKNOWN,DTE 7xx tax abatement: does not say the use
+715,Abt-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+720,Abt-Muni Improvement-R.C. 5709.41,UNKNOWN,DTE 7xx tax abatement: does not say the use
+723,Abt-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+740,Abt-Othe Tax-C.C. 165. 165.41,UNKNOWN,DTE 7xx tax abatement: does not say the use
+745,Abt-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+750,Abt-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+765,Abt-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+770,Abt-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+800,Utl-Ag Land,OTHER,DTE 8xx public utility
+820,Utl-Industrial Land,OTHER,DTE 8xx public utility
+830,Utl-Land and Improvement,OTHER,DTE 8xx public utility
+840,Utl-Railroad Real Operating,OTHER,DTE 8xx public utility
+850,Utl-Railroad Real Non Operating,OTHER,DTE 8xx public utility
+860,Utl-Railroad Personal Operating,OTHER,DTE 8xx public utility
+880,Utl-Personal Property,OTHER,DTE 8xx public utility
+881,Utl-Custom Code,OTHER,county custom code in the DTE utility band
+899,Utl-Custom Code,OTHER,county custom code in the DTE utility band
+900,Utl-Custom Code,UNKNOWN,"county custom code: meaning varies by county, not guessed"
+999,,UNKNOWN,unrecognized
+999,,UNKNOWN,999 placeholder (no DTE class)
