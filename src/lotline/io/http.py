@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import hashlib
 import time
 from pathlib import Path
 
 import httpx
 
 from lotline import __version__
-from lotline.io.store import DataStore, ManifestEntry, utc_now
+from lotline.io.store import DataStore, ManifestEntry, sha256_file, utc_now
 
 USER_AGENT = f"lotline/{__version__} (+https://github.com/cappellacci/lotline; open-source housing research)"
 RETRY_STATUS = {429, 500, 502, 503, 504}
@@ -17,14 +16,6 @@ RETRY_STATUS = {429, 500, 502, 503, 504}
 
 def client(timeout: float = 60.0) -> httpx.Client:
     return httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=timeout, follow_redirects=True)
-
-
-def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def fetch(

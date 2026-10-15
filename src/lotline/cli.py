@@ -1,4 +1,4 @@
-"""Command-line entry point: `lotline fetch`, `sources`, `provenance`, `validate`, `schemas`."""
+"""Command-line entry point: `lotline fetch`, `sources`, `provenance`, `manifest`, `validate`, `schemas`."""
 
 from __future__ import annotations
 
@@ -69,6 +69,50 @@ def _provenance(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def _supersede(args: argparse.Namespace) -> int:
+    from fnmatch import fnmatch
+
+    from lotline.io import DataStore
+    from lotline.io.store import entry_key
+    from lotline.provenance import current_files
+
+    if not (args.stale or args.before or args.path):
+        print("narrow the selection with --stale, --before and/or --path (never a whole source at once)")
+        return 2
+    store = DataStore()
+    live = store.manifest(include_superseded=False)
+    current = {entry_key(e) for e in current_files(live)}
+    picked, kept = [], 0
+    for e in live:
+        if e.source != args.source:
+            continue
+        if args.before and not e.accessed_at < args.before:
+            continue
+        if args.path and not fnmatch(e.path, args.path):
+            continue
+        stale = store.is_stale(e)
+        if args.stale and not stale:
+            continue
+        if entry_key(e) in current and not stale:
+            kept += 1  # the latest download of a file that is still intact on disk: never superseded
+            continue
+        picked.append(e)
+    print(f"{args.source}: {len(picked)} entr{'y' if len(picked) == 1 else 'ies'} selected", end="")
+    print(f"; {kept} kept because they are the current, intact record of their file" if kept else "")
+    for e in picked[:10]:
+        print(f"  {e.accessed_at}  {e.path}")
+    if len(picked) > 10:
+        print(f"  ... and {len(picked) - 10} more")
+    if not picked:
+        return 0
+    if not args.apply:
+        print("dry run: nothing written; add --apply to record these as superseded")
+        return 0
+    written = store.supersede(picked, args.reason)
+    print(f"recorded {len(written)} in {store.superseded_path}; run `lotline provenance --write` next")
+    return 0
+
+
 def _validate(args: argparse.Namespace) -> int:
     from lotline.config import all_states
     from lotline.io import DataStore
@@ -126,6 +170,23 @@ def build_parser() -> argparse.ArgumentParser:
     prov.add_argument("--write", action="store_true", help="regenerate the document before checking it")
     prov.add_argument("--check", action="store_true", help="check only (the default)")
     prov.set_defaults(func=_provenance)
+
+    man = sub.add_parser("manifest", help="maintain the download manifest (append-only)")
+    man_sub = man.add_subparsers(dest="manifest_command", required=True)
+    sup = man_sub.add_parser(
+        "supersede",
+        help="mark download entries as no longer current, with a reason (never deletes them)",
+        description="Record manifest entries as superseded in manifest.superseded.jsonl. The entries stay in "
+        "manifest.jsonl; provenance leaves them out. Dry run unless --apply. The latest download of a file "
+        "that is still intact on disk is never superseded.",
+    )
+    sup.add_argument("--source", required=True, help="manifest source id, e.g. durham_permits")
+    sup.add_argument("--stale", action="store_true", help="only entries whose file is missing or has changed")
+    sup.add_argument("--before", help="only entries accessed before this UTC time, e.g. 2026-10-14T22:30")
+    sup.add_argument("--path", help="only entries whose path matches this glob, e.g. 'raw/x/2026-10-14/*'")
+    sup.add_argument("--reason", required=True, help="why these entries are no longer current")
+    sup.add_argument("--apply", action="store_true", help="write the records (default: dry run)")
+    sup.set_defaults(func=_supersede)
 
     val = sub.add_parser("validate", help="run a validation-ladder step and write its report")
     val.add_argument("--state", help="two-letter state code (default: every configured state)")

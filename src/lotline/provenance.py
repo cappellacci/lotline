@@ -3,9 +3,9 @@
 The document is never hand-edited (BUILD_PLAN §4). `lotline provenance --write` regenerates it; `--check`
 fails if it is out of date or if any processed table was built from a source the document doesn't cover.
 
-Per source, the manifest supplies what was actually downloaded (URLs, vintages, access dates, bytes, sha256,
-license as recorded at download time); the adapter supplies the human parts (title, cleaning steps, known
-limitations, attribution).
+Per source, the manifest's current entries (one per file, superseded entries left out) supply what was
+actually downloaded (URLs, vintages, access dates, bytes, sha256, license as recorded at download time); the
+adapter supplies the human parts (title, cleaning steps, known limitations, attribution).
 """
 
 from __future__ import annotations
@@ -28,7 +28,8 @@ HEADER = """# Lotline: Data Provenance
 Every dataset Lotline uses: where it came from, which version, when it was accessed, under what license,
 how it was cleaned, and its known limitations (Participant Handbook, Data and Resources). Data is downloaded
 by `lotline fetch` into `LOTLINE_DATA_DIR`, never committed; each download is logged with its sha256 in
-`manifest.jsonl` there, so a pull can be verified byte for byte.
+`manifest.jsonl` there, so a pull can be verified byte for byte. File counts and sizes cover each file's
+latest download; entries marked superseded (`lotline manifest supersede`) are left out.
 """
 
 
@@ -58,13 +59,24 @@ def _cell(text: str) -> str:
     return text.replace("|", "\\|").replace("\n", " ")
 
 
+def current_files(manifest: list[ManifestEntry]) -> list[ManifestEntry]:
+    """One entry per file: the latest entry per URL, then the latest per path.
+
+    Different URLs can write the same file (a layer re-downloaded with another field list, say); the file on
+    disk is then the last download, so only that entry counts. In manifest order.
+    """
+    last_for_url = {e.url: i for i, e in enumerate(manifest)}
+    by_path: dict[str, tuple[int, ManifestEntry]] = {}
+    for i, e in enumerate(manifest):
+        if last_for_url[e.url] == i:
+            by_path[e.path] = (i, e)
+    return [e for _, e in sorted(by_path.values(), key=lambda pair: pair[0])]
+
+
 def render(manifest: list[ManifestEntry]) -> str:
-    """Build the markdown document. Only the latest manifest entry per URL counts."""
-    latest: dict[str, ManifestEntry] = {}
-    for e in manifest:
-        latest[e.url] = e
+    """Build the markdown document from current (not superseded) entries, one per file."""
     by_source: dict[str, list[ManifestEntry]] = defaultdict(list)
-    for e in latest.values():
+    for e in current_files(manifest):
         by_source[e.source].append(e)
 
     # Sources downloaded on another branch (shared LOTLINE_DATA_DIR) whose adapter isn't on this one are left
@@ -146,14 +158,14 @@ def unregistered_processed(store: DataStore) -> list[str]:
 
 
 def write(store: DataStore, doc: Path = DOC_PATH) -> Path:
-    doc.write_text(render(store.manifest()))
+    doc.write_text(render(store.manifest(include_superseded=False)))
     return doc
 
 
 def check(store: DataStore, doc: Path = DOC_PATH) -> list[str]:
     """Problems that make the committed document stale or incomplete (empty list = OK)."""
     problems = []
-    manifest = store.manifest()
+    manifest = store.manifest(include_superseded=False)
     documented = {e.source for e in manifest}
     missing = sorted(processed_sources(store) - documented)
     if missing:
