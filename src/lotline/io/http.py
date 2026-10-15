@@ -14,6 +14,10 @@ USER_AGENT = f"lotline/{__version__} (+https://github.com/cappellacci/lotline; o
 RETRY_STATUS = {429, 500, 502, 503, 504}
 
 
+class RawOverwriteError(RuntimeError):
+    """A download would overwrite a raw file that was downloaded from a different URL."""
+
+
 def client(timeout: float = 60.0) -> httpx.Client:
     return httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=timeout, follow_redirects=True)
 
@@ -41,8 +45,19 @@ def fetch(
 
     `secret_params` (e.g. an API key) are added to the request only: the manifest, cache key and any error
     message use `url` without them.
+
+    Raw files are kept exactly as downloaded, so a file already on disk that was downloaded from a different
+    URL is never overwritten (or returned as this URL's cached copy): `RawOverwriteError` asks the caller to
+    write to another path. Refreshing the same URL may update its file (the manifest keeps each hash).
     """
     dest = Path(dest)
+    rel = str(dest.resolve().relative_to(store.root))
+    owner = store.latest_for_path(rel)
+    if dest.exists() and owner and owner.url != url:
+        raise RawOverwriteError(
+            f"{rel} holds a download from a different URL ({owner.url}); write {url} to another path "
+            "(a new vintage or name) so the earlier raw file is kept"
+        )
     prior = store.latest(url)
     if dest.exists() and prior and not refresh:
         return dest
@@ -75,7 +90,7 @@ def fetch(
     store.record(
         ManifestEntry(
             url=url,
-            path=str(dest.resolve().relative_to(store.root)),
+            path=rel,
             accessed_at=utc_now(),
             sha256=sha256_file(dest),
             bytes=dest.stat().st_size,

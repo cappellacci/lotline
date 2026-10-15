@@ -168,6 +168,11 @@ class DataStore:
         path = self.root / entry.path
         return not path.is_file() or sha256_file(path) != entry.sha256
 
+    def latest_for_path(self, path: str) -> ManifestEntry | None:
+        """Most recent current (not superseded) manifest entry for the file at `path` (relative), if any."""
+        hits = [e for e in self.manifest(include_superseded=False) if e.path == path]
+        return hits[-1] if hits else None
+
     def latest(self, url: str) -> ManifestEntry | None:
         """Most recent manifest entry for `url`, if any."""
         hits = [e for e in self.manifest() if e.url == url]

@@ -1,6 +1,8 @@
 import httpx
+import pytest
 
 from lotline.io import DataStore, fetch
+from lotline.io.http import RawOverwriteError
 from lotline.io.store import data_dir
 
 
@@ -84,3 +86,22 @@ def test_read_keeps_every_sources_columns(tmp_path):
     assert {"hpi", "cpi_u"} <= set(df.columns) and len(df) == 2
     assert df.set_index("geo").loc["national:US", "cpi_u"] == 313.7
     assert store.read("MN", "parcels") is None  # not built
+
+
+def test_fetch_never_overwrites_a_raw_file_from_another_url(tmp_path):
+    store = DataStore(tmp_path)
+    dest = store.raw("src", 2024) / "a.txt"
+    ok = httpx.MockTransport(lambda r: httpx.Response(200, content=r.url.query or b"plain"))
+
+    def get(url, **kw):
+        return fetch(url, dest, store=store, source="src", license="PD", adapter="t", adapter_version="1",
+                     http=httpx.Client(transport=ok), **kw)  # fmt: skip
+
+    get("https://example.test/a.txt?fields=a")
+    for kw in ({}, {"refresh": True}):  # neither a cached read nor a refresh may touch another URL's file
+        with pytest.raises(RawOverwriteError, match="different URL"):
+            get("https://example.test/a.txt?fields=b", **kw)
+    assert dest.read_bytes() == b"fields=a" and len(store.manifest()) == 1
+    dest.unlink()  # no file on disk: nothing to protect, so the new URL may write it
+    get("https://example.test/a.txt?fields=b")
+    assert dest.read_bytes() == b"fields=b"
