@@ -7,4 +7,15 @@ township_permits: true  # townships issue building permits (BPS rows per townshi
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[430, 459]]
 holdouts: []
-sources: []
+land_use_crosswalk: config/crosswalks/oh_dte_luc.csv
+sources:
+  - name: oh_parcels
+    url: https://services2.arcgis.com/MlJ0G8iWUyC7jAmu/arcgis/rest/services/OhioStatewidePacels_full_view/FeatureServer/0
+    license: State of Ohio OGRIP public data, 'as is' (no use restrictions stated for public downloads)
+    access: arcgis
+    cadence: as counties send exports (layer last edited 2026-09-23)
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/oh_parcels.py (tier 2: StateLUC + LandArea only). 6,313,610
+      parcels in 88 counties on 2026-10-15; Franklin and Hamilton downloaded first (exports dated 2023-09-26 and
+      2023-08-02). The 2022 vintage (maps.ohio.gov Statewide_Parcels_2022) is token-gated and skipped. No
+      city/township field: load() stays off until parcels can be placed by point-in-polygon.
