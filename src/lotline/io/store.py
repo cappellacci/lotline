@@ -5,10 +5,17 @@ $LOTLINE_DATA_DIR/
   interim/{state}/...                 parsed, typed
   processed/{state}/{table}.parquet   canonical tables
   manifest.jsonl                      one line per download
+  manifest.superseded.jsonl           one line per download entry marked as no longer current
+
+Both files are append-only: nothing is ever deleted from them. An entry that no longer describes the file
+on disk (the same path was downloaded again under a different URL, or an exploratory pull was redone) is
+marked superseded in the second file, with a reason, instead of being removed from the first. Supersede
+records live in their own file so that older code reading `manifest.jsonl` keeps working.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from dataclasses import asdict, dataclass
@@ -51,6 +58,27 @@ class ManifestEntry:
     last_modified: str | None = None
 
 
+def entry_key(entry: ManifestEntry) -> tuple[str, str, str]:
+    """What identifies one download: the file it wrote, its hash and when it happened."""
+    return (entry.path, entry.sha256, entry.accessed_at)
+
+
+@dataclass(frozen=True)
+class Supersession:
+    """A record that one manifest entry is no longer current. The entry itself stays in the manifest."""
+
+    path: str
+    sha256: str
+    accessed_at: str
+    source: str
+    reason: str
+    superseded_at: str  # ISO 8601, UTC
+
+    @property
+    def key(self) -> tuple[str, str, str]:
+        return (self.path, self.sha256, self.accessed_at)
+
+
 class DataStore:
     """Paths and manifest for one data directory."""
 
@@ -90,16 +118,68 @@ class DataStore:
         with self.manifest_path.open("a") as fh:
             fh.write(json.dumps(asdict(entry), sort_keys=True) + "\n")
 
-    def manifest(self) -> list[ManifestEntry]:
+    def manifest(self, *, include_superseded: bool = True) -> list[ManifestEntry]:
+        """Every download entry, in the order recorded; `include_superseded=False` drops superseded ones."""
         if not self.manifest_path.exists():
             return []
         lines = self.manifest_path.read_text().splitlines()
-        return [ManifestEntry(**json.loads(line)) for line in lines if line.strip()]
+        entries = [ManifestEntry(**json.loads(line)) for line in lines if line.strip()]
+        if include_superseded:
+            return entries
+        gone = {s.key for s in self.supersessions()}
+        return [e for e in entries if entry_key(e) not in gone]
+
+    @property
+    def superseded_path(self) -> Path:
+        return self.root / "manifest.superseded.jsonl"
+
+    def supersessions(self) -> list[Supersession]:
+        if not self.superseded_path.exists():
+            return []
+        lines = self.superseded_path.read_text().splitlines()
+        return [Supersession(**json.loads(line)) for line in lines if line.strip()]
+
+    def supersede(self, entries: list[ManifestEntry], reason: str) -> list[Supersession]:
+        """Mark manifest entries as no longer current (append-only). Returns the records written.
+
+        Entries already superseded are skipped; an entry that isn't in the manifest raises ValueError.
+        """
+        if not reason.strip():
+            raise ValueError("a reason is required to supersede manifest entries")
+        known = {entry_key(e) for e in self.manifest()}
+        done = {s.key for s in self.supersessions()}
+        stamp = utc_now()
+        written = []
+        for e in entries:
+            if entry_key(e) not in known:
+                raise ValueError(f"not in the manifest: {e.path} ({e.accessed_at})")
+            if entry_key(e) in done:
+                continue
+            done.add(entry_key(e))
+            written.append(Supersession(e.path, e.sha256, e.accessed_at, e.source, reason.strip(), stamp))
+        if written:
+            with self.superseded_path.open("a") as fh:
+                for s in written:
+                    fh.write(json.dumps(asdict(s), sort_keys=True) + "\n")
+        return written
+
+    def is_stale(self, entry: ManifestEntry) -> bool:
+        """True when the entry's file is missing or no longer has the recorded sha256."""
+        path = self.root / entry.path
+        return not path.is_file() or sha256_file(path) != entry.sha256
 
     def latest(self, url: str) -> ManifestEntry | None:
         """Most recent manifest entry for `url`, if any."""
         hits = [e for e in self.manifest() if e.url == url]
         return hits[-1] if hits else None
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def utc_now() -> str:
