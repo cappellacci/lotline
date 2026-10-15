@@ -207,12 +207,12 @@ hpi_change_years:
   notes: "q = (HPI[t] / HPI[t - 3])^(1/3) - 1 on one geography of the panel's fallback chain. Fixed by the pre-declared specification."
 
 irls_tolerance:
-  value: 1.0e-10
-  low: 1.0e-14
+  value: 1.0e-8
+  low: 1.0e-12
   high: 1.0e-6
-  unit: largest absolute change in any coefficient between iterations
-  source: "Numerical setting for the Poisson IRLS fit (model/demand.py), chosen a priori: far below any coefficient change that moves a forecast"
-  notes: "IRLS stops when no coefficient moves by more than this."
+  unit: relative change in Poisson deviance between iterations
+  source: "R glm.control default (epsilon = 1e-8): converged when |dev - dev_old| / (|dev| + 0.1) < epsilon"
+  notes: "Replaces a coefficient-change rule (1e-10) that never settled for nearly collinear signals (found on CI, PR #95). A numerical setting, not part of the model specification."
 
 irls_max_iterations:
   value: 100

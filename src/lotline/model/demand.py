@@ -133,30 +133,45 @@ def poisson_irls(
     """Poisson log-link regression with an offset by iteratively reweighted least squares.
 
     Maximizes Σ y·η − exp(η) with η = offset + Xβ. Each step solves the weighted least squares
-    (XᵀWX) β = XᵀW z with weights W = μ and working response z = η − offset + (y − μ) / μ. Starts from the
-    intercept-only solution, with x's first column taken to be the constant. Returns (β, converged).
+    (XᵀWX) β = XᵀW z with weights W = μ and working response z = η − offset + (y − μ) / μ, by least squares
+    (stable when the signals are nearly collinear). Starts from the intercept-only solution, with x's first
+    column taken to be the constant; a rank-deficient X (e.g. a signal that never varies) is reported as
+    not converged rather than given a made-up coefficient. Converged when the relative change in deviance
+    is below `tol` (|ΔD| / (|D| + 0.1) < tol, the rule R's glm uses): a coefficient-change rule never
+    settles when two signals are nearly collinear, because rounding keeps the coefficients jittering.
+    Returns (β, converged).
     """
     y, x, offset = (np.asarray(a, dtype=float) for a in (y, x, offset))
     beta = np.zeros(x.shape[1])
     if y.sum() <= 0:
         return beta, False
+    if np.linalg.matrix_rank(x) < x.shape[1]:  # a signal that can't be identified: report it, don't invent β
+        return beta, False
     beta[0] = np.log(y.sum() / np.exp(offset).sum())
+    dev = _deviance(y, np.exp(offset + x @ beta))
     for _ in range(max_iter):
         eta = offset + x @ beta
         mu = np.exp(eta)
         z = eta - offset + (y - mu) / mu
-        xw = x * mu[:, None]
-        try:
-            new = np.linalg.solve(xw.T @ x, xw.T @ z)
-        except np.linalg.LinAlgError:
-            return beta, False
+        sw = np.sqrt(mu)
+        new = np.linalg.lstsq(x * sw[:, None], z * sw, rcond=None)[0]
         if not np.all(np.isfinite(new)):
             return beta, False
-        done = np.max(np.abs(new - beta)) < tol
-        beta = new
+        new_dev = _deviance(y, np.exp(offset + x @ new))
+        if not np.isfinite(new_dev):
+            return beta, False
+        done = abs(new_dev - dev) / (abs(new_dev) + 0.1) < tol
+        beta, dev = new, new_dev
         if done:
             return beta, True
     return beta, False
+
+
+def _deviance(y: np.ndarray, mu: np.ndarray) -> float:
+    """Poisson deviance 2 Σ [y log(y/μ) − (y − μ)], with y log(y/μ) = 0 where y = 0."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        term = np.where(y > 0, y * np.log(y / mu), 0.0)
+    return float(2 * np.sum(term - (y - mu)))
 
 
 def fit_sample(

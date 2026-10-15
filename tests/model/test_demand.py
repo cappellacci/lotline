@@ -112,7 +112,9 @@ def test_multiplier_scales_the_level_and_its_variance():
 # A synthetic state: 3 counties growing at 0%, 2% and 4% a year in households, prices rising 1%, 3%, 5%.
 # Places permit Poisson(rate × parcels / 1000 × exp(BETA_H·g + BETA_P·q)) with g, q as of each year.
 BETA_H, BETA_P = 15.0, 5.0
-COUNTIES = {"48001": (0.0, 0.01), "48003": (0.02, 0.03), "48005": (0.04, 0.05)}
+# Price growth must not be a linear function of household growth, or (1, g, q) is singular and no fit can
+# separate β_h from β_p (the earlier 0.01/0.03/0.05 was g + 0.01 exactly: it failed on CI, PR #95).
+COUNTIES = {"48001": (0.0, 0.03), "48003": (0.02, 0.01), "48005": (0.04, 0.05)}
 
 
 def _inputs(years=range(2000, 2026)):
