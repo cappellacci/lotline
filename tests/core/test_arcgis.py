@@ -74,11 +74,17 @@ def _download(tmp_path, http, **kw):
     )
 
 
+def _pages(tmp_path, vintage):
+    """Raw page files of every query folder under raw/test_permits/<vintage>/layer/."""
+    return sorted((tmp_path / f"raw/test_permits/{vintage}/layer").glob("q-*/page_*.json"))
+
+
 def test_offset_paging_gets_every_feature_once(tmp_path):
     df = _download(tmp_path, _server(n=25, max_records=10), vintage="2026-10-14")
     assert sorted(df.OBJECTID) == list(range(1, 26))
-    pages = sorted(p.name for p in (tmp_path / "raw/test_permits/2026-10-14/layer").glob("page_*.json"))
-    assert pages == ["page_0001.json", "page_0002.json", "page_0003.json"]
+    pages = _pages(tmp_path, "2026-10-14")
+    assert [p.name for p in pages] == ["page_0001.json", "page_0002.json", "page_0003.json"]
+    assert len({p.parent for p in pages}) == 1  # one query folder
     entries = DataStore(tmp_path).manifest()
     assert len(entries) == 4 and all(e.source == "test_permits" for e in entries)  # layer.json + 3 pages
 
@@ -97,14 +103,14 @@ def test_exact_multiple_of_page_size_terminates(tmp_path):
 def test_object_id_fallback_without_pagination(tmp_path):
     df = _download(tmp_path, _server(n=1203, max_records=1000, pagination=False), vintage="v")
     assert sorted(df.OBJECTID) == list(range(1, 1204))
-    assert (tmp_path / "raw/test_permits/v/layer/object_ids.json").exists()
-    assert len(list((tmp_path / "raw/test_permits/v/layer").glob("page_*.json"))) == 3  # chunks of 500
+    assert len(list((tmp_path / "raw/test_permits/v/layer").glob("q-*/object_ids.json"))) == 1
+    assert len(_pages(tmp_path, "v")) == 3  # chunks of 500
 
 
 def test_error_body_raises_and_is_not_cached(tmp_path):
     with pytest.raises(arcgis.ArcGISError, match="Invalid query"):
         _download(tmp_path, _server(error=True), vintage="v")
-    assert not list((tmp_path / "raw/test_permits/v/layer").glob("page_*.json"))
+    assert not _pages(tmp_path, "v")
 
 
 def test_geometry_returns_wgs84_points(tmp_path):
@@ -121,7 +127,7 @@ def test_same_day_reuses_cache_and_new_day_is_a_new_snapshot(tmp_path):
     assert len(calls) == 2  # metadata + one page, second run served from cache
     _download(tmp_path, _server(n=5, calls=calls), vintage="2026-10-21")
     assert len(calls) == 4
-    assert (tmp_path / "raw/test_permits/2026-10-21/layer/page_0001.json").exists()
+    assert [p.name for p in _pages(tmp_path, "2026-10-21")] == ["page_0001.json"]
 
 
 def test_query_url_is_deterministic():
@@ -142,7 +148,7 @@ def test_layer_without_object_id_field_is_an_error():
 
 def test_raw_pages_are_valid_json(tmp_path):
     _download(tmp_path, _server(n=3), vintage="v")
-    page = tmp_path / "raw/test_permits/v/layer/page_0001.json"
+    (page,) = _pages(tmp_path, "v")
     assert len(json.loads(page.read_text())["features"]) == 3
 
 
@@ -150,3 +156,23 @@ def test_polygon_layers_return_centroids(tmp_path):
     calls = []
     df = _download(tmp_path, _server(n=3, calls=calls, polygon=True), geometry=True, vintage="v")
     assert any("returnCentroid=true" in c for c in calls) and set(df.lat) == {44.0}
+
+
+def test_a_different_query_the_same_day_is_a_new_snapshot_not_an_overwrite(tmp_path):
+    calls = []
+    _download(tmp_path, _server(n=5, calls=calls), vintage="v", out_fields="OBJECTID,UNITS")
+    first = {p: p.read_bytes() for p in _pages(tmp_path, "v")}
+    _download(tmp_path, _server(n=5, calls=calls), vintage="v", out_fields="OBJECTID")
+    pages = _pages(tmp_path, "v")
+    assert len(pages) == 2 and len({p.parent for p in pages}) == 2  # two query folders
+    assert all(p.read_bytes() == b for p, b in first.items())  # the first query's pages are untouched
+    assert len(calls) == 3  # layer.json is shared and cached; one page per query
+
+
+def test_query_folder_depends_on_what_defines_the_query():
+    base = {"where": "1=1", "outFields": "*", "f": "json"}
+    same = arcgis.query_folder(dict(reversed(base.items())), 10, "offset")
+    assert arcgis.query_folder(base, 10, "offset") == same and same.startswith("q-") and len(same) == 10
+    assert arcgis.query_folder(base | {"outFields": "A"}, 10, "offset") != same
+    assert arcgis.query_folder(base, 20, "offset") != same
+    assert arcgis.query_folder(base, 10, "object_ids") != same

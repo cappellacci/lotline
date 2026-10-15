@@ -9,14 +9,20 @@ Most state permit and parcel sources are ArcGIS FeatureServer or MapServer layer
   then query the IDs in chunks.
 
 A short page with `exceededTransferLimit` means the server capped the page below what we asked for; paging
-continues from the number of features actually returned. Raw pages land under
-`raw/<source>/<vintage>/<name>/page_NNNN.json`; with the default vintage (today's date) every fetch of a
-rolling window is a dated snapshot.
+continues from the number of features actually returned.
+
+Raw files land under `raw/<source>/<vintage>/<name>/`: the layer description as `layer.json`, and each query's
+pages in their own folder, `q-<hash>/page_NNNN.json` (plus `object_ids.json` for ID chunks). The hash covers
+what defines the query (filter, fields, geometry, page size, paging strategy), so rerunning the same query
+reuses its cached pages, while a different query the same day (another field list, say) becomes a new
+snapshot instead of overwriting the first. With the default vintage (today's date) every fetch of a rolling
+window is a dated snapshot.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import time
 from dataclasses import dataclass
@@ -48,6 +54,12 @@ class LayerInfo:
 def query_url(layer_url: str, **params) -> str:
     """Deterministic query URL (sorted parameters), so the same request always hits the same cache entry."""
     return f"{layer_url.rstrip('/')}/query?{urlencode(sorted(params.items()))}"
+
+
+def query_folder(params: dict, page_size: int, strategy: str) -> str:
+    """Folder name for one query's pages: 'q-' + 8 hex digits of the parameters that define the query."""
+    key = json.dumps({"params": params, "page_size": page_size, "strategy": strategy}, sort_keys=True)
+    return "q-" + hashlib.sha256(key.encode()).hexdigest()[:8]
 
 
 def _json(path: Path) -> dict:
@@ -147,7 +159,10 @@ def download_layer(
             base |= {"outSR": "4326"}
             if info.geometry_type == "esriGeometryPolygon":  # point layers reject returnCentroid
                 base |= {"returnCentroid": "true"}
-        if info.supports_pagination and info.supports_order_by:
+        by_offset = info.supports_pagination and info.supports_order_by
+        strategy = "offset" if by_offset else "object_ids"
+        ctx.raw_dir = ctx.raw_dir / query_folder(base, size, strategy)
+        if by_offset:
             features = _by_offset(ctx, layer_url, base, info, size)
         else:
             features = _by_object_ids(ctx, layer_url, base, info, size)
