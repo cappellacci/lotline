@@ -9,7 +9,7 @@ A running record of **how** the Lotline entry was built: what question each step
 - Entries LB-001 to LB-009 were **reconstructed on 2026-09-30** from the docs and artifacts they produced; later entries are written as the work happens.
 - Entries are added two ways: by the Claude session doing the work (rule in `CLAUDE.md`), and by a nightly review that scans the repo, project docs and artifacts for anything new since the last scan. Nightly entries are marked *(auto-review)*.
 
-**Last scan:** 2026-10-14T00:53Z
+**Last scan:** 2026-10-15T08:17Z
 
 ---
 
@@ -944,3 +944,13 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** D-007 · baseline stays spec B (Ben, 2026-10-15), recorded in `docs/analysis_plan.md`. Parser defaults confirmed (Ben, 2026-10-15): (1) Raleigh's work description is downloaded (the one free-text field; no names, addresses or comments); (2) the parser's townhouse row size (`building_units`) is not stored; (3, approved 2026-10-14) description values only fill gaps, marked inferred.
 - **AI:** Claude Code (WS-CORE) wrote D-007, merged on Ben's instruction, verified `main` (364 tests, compliance 0 FAIL, provenance check passing) and checked the restored manifest line by line against the backup and the current file before replacing it, then re-hashed the restored entries' files.
 - **Open / next:** a more stable demand signal for the NC/TX single-family under-forecast; a CORE "supersede" record so stale manifest entries can be marked rather than deleted, and a provenance file count by distinct path rather than by entry.
+
+### LB-064 · 2026-10-15 · Admin: Submission form link and checklist (auto-review)
+- **Question:** What exactly will we enter in the official submission form, and what must be true before Ben submits?
+- **What I did:** Recorded the HackHQ submission link received from the Challenge Team on 2026-10-15 (Team Leader only) and mapped each form field (project name, description, team, repo URL, final commit SHA, demo video, slide deck PDF ≤30 slides, optional live tool URL, scenarios, states) to our answer or source with a ready/not-ready mark, plus a pre-submit checklist. The link is kept in the project doc only, not in the public repo.
+- **Inputs:** Challenge Team email (2026-10-15); `HANDOFF.md` §3 manual checks; `challenge.toml`.
+- **Outputs:** project doc `claude/SUBMISSION.md` (not in the repo).
+- **Findings:** Deadline Dec 16, 2026, 11:59 PM ET; edits allowed until then. Only Ben submits (the submitter is treated as team lead and prize recipient). Judges evaluate the repo at the final commit SHA, so any later push means updating the SHA. Submitting early and emailing the Challenge Team gets an eligibility check; target a first full submission in early December. Still open: description, roster confirmation, Model & Assumptions and Policy Scenario Comparison docs in the repo, video, deck, benchmark state (MN recommended).
+- **Decisions:** none new (target date is a plan, not a logged decision).
+- **AI:** Written by a Claude session into the project; found and logged by the nightly review, which did not see the session itself.
+- **Open / next:** pick the benchmark state; draft the description.
