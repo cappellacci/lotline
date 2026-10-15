@@ -136,3 +136,44 @@ def test_year_only_permits_cannot_leak():
 def test_mask_needs_a_time_column():
     with pytest.raises(ValueError):
         holdout.held_out_mask(_annual(), [STPAUL])
+
+
+def test_parcel_rolls_after_the_window_opens_stay_hidden():
+    # a roll is a snapshot: one taken in or after the window shows what was built there, so no end date
+    rolls = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["2758000"] * 5 + ["2743000"],
+            "vintage": pd.array([2023, 2024, 2026, 2027, 2030, 2030], dtype="Int64"),
+        }
+    )
+    hidden = holdout.held_out_mask(
+        rolls, [STPAUL], geoid_col="jurisdiction_geoid", year_col="vintage", snapshot=True
+    )
+    assert hidden.tolist() == [False, True, True, True, True, False]  # Minneapolis (2743000) is not held out
+    as_events = holdout.held_out_mask(rolls, [STPAUL], geoid_col="jurisdiction_geoid", year_col="vintage")
+    assert not as_events.iloc[3]  # without snapshot, 2027 would wrongly pass
+
+
+def test_parcel_roll_dates_beat_years_and_undated_years_are_strict():
+    rolls = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["3712000"] * 3,
+            "vintage": pd.array([2023, 2023, 2022], dtype="Int64"),
+            "vintage_date": pd.to_datetime(["2023-05-31", None, None]),
+        }
+    )
+    cols = dict(geoid_col="jurisdiction_geoid", date_col="vintage_date", year_col="vintage", snapshot=True)
+    # dated before the UDO: usable; 2023 with no date: hidden (could be after June 1); 2022: usable
+    assert holdout.held_out_mask(rolls, [CHARLOTTE], **cols).tolist() == [False, True, False]
+
+
+def test_central_guard_checks_parcels_with_or_without_vintage_date(monkeypatch):
+    monkeypatch.setattr(holdout, "holdouts_for", lambda state: [STPAUL])
+    ok = pd.DataFrame({"jurisdiction_geoid": ["2758000"], "vintage": pd.array([2023], dtype="Int64")})
+    holdout.assert_no_leak(ok, "parcels", "MN")
+    late = ok.assign(vintage=pd.array([2025], dtype="Int64"))
+    with pytest.raises(holdout.HoldoutLeak):
+        holdout.assert_no_leak(late, "parcels", "MN")
+    dated = ok.assign(vintage_date=pd.to_datetime(["2024-03-01"]))
+    with pytest.raises(holdout.HoldoutLeak):
+        holdout.assert_no_leak(dated, "parcels", "MN")

@@ -61,12 +61,17 @@ def held_out_mask(
     geoid_col: str = "geoid",
     date_col: str | None = None,
     year_col: str | None = None,
+    snapshot: bool = False,
 ) -> pd.Series:
     """True for rows that fall inside any holdout's place and outcome window.
 
     Pass `date_col`, `year_col`, or both (permits: `issue_date` and `issue_year`). With both, a row's date is
     used when present and its year otherwise. A year counts as held out if any day of it is in the window.
     A row at a held-out place with no date and no year is held out: when unsure, hide it.
+
+    `snapshot=True` is for tables that describe a state of the world at a date (parcel rolls) rather than
+    events: a roll taken on or after `outcome_from` shows what was built in the window (land use, units, year
+    built), so it is held out with no end date. A roll with only a year is held out from that start year on.
     """
     if date_col is None and year_col is None:
         raise ValueError("pass date_col, year_col or both")
@@ -75,10 +80,10 @@ def held_out_mask(
         place = (df[geoid_col].astype("string") == h.geoid).fillna(False).astype(bool)
         dates = pd.to_datetime(df[date_col]) if date_col else pd.Series(pd.NaT, index=df.index)
         years = df[year_col] if year_col else pd.Series(pd.NA, index=df.index, dtype="Int64")
-        by_date = (dates >= pd.Timestamp(h.outcome_from)) & (dates <= pd.Timestamp(h.outcome_until))
-        by_year = (
-            ((years >= h.outcome_from.year) & (years <= h.outcome_until.year)).fillna(False).astype(bool)
-        )
+        until = pd.Timestamp.max if snapshot else pd.Timestamp(h.outcome_until)
+        until_year = 9999 if snapshot else h.outcome_until.year
+        by_date = (dates >= pd.Timestamp(h.outcome_from)) & (dates <= until)
+        by_year = ((years >= h.outcome_from.year) & (years <= until_year)).fillna(False).astype(bool)
         undated = dates.isna() & years.isna()
         in_window = by_date.where(dates.notna(), by_year | undated).astype(bool)
         mask |= place & in_window
@@ -114,6 +119,13 @@ def apply(
 OUTCOME_COLUMNS = {
     "bps_place_year": {"geoid_col": "geoid", "year_col": "year"},
     "permits": {"geoid_col": "jurisdiction_geoid", "date_col": "issue_date", "year_col": "issue_year"},
+    # Parcel rolls are snapshots: any roll of a held-out place taken on or after the window opens is hidden.
+    "parcels": {
+        "geoid_col": "jurisdiction_geoid",
+        "date_col": "vintage_date",
+        "year_col": "vintage",
+        "snapshot": True,
+    },
 }
 
 
@@ -125,6 +137,10 @@ def assert_no_leak(df: pd.DataFrame, table: str, state: str) -> None:
     cols = OUTCOME_COLUMNS.get(table)
     if cols is None or df.empty:
         return
+    if (
+        cols.get("date_col") not in df.columns
+    ):  # optional date column (e.g. vintage_date) absent: use the year
+        cols = {k: v for k, v in cols.items() if k != "date_col"}
     leaked = int(held_out_mask(df, holdouts_for(state), **cols).sum())
     if leaked:
         raise HoldoutLeak(
