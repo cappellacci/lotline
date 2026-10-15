@@ -22,7 +22,6 @@ window is a dated snapshot.
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
 import json
 import time
 from dataclasses import dataclass
@@ -33,7 +32,7 @@ import httpx
 import pandas as pd
 
 from lotline.io.http import client, fetch
-from lotline.io.store import DataStore
+from lotline.io.store import DataStore, query_folder
 
 ID_CHUNK = 500  # object IDs per query: keeps GET URLs well under common length limits
 
@@ -54,12 +53,6 @@ class LayerInfo:
 def query_url(layer_url: str, **params) -> str:
     """Deterministic query URL (sorted parameters), so the same request always hits the same cache entry."""
     return f"{layer_url.rstrip('/')}/query?{urlencode(sorted(params.items()))}"
-
-
-def query_folder(params: dict, page_size: int, strategy: str) -> str:
-    """Folder name for one query's pages: 'q-' + 8 hex digits of the parameters that define the query."""
-    key = json.dumps({"params": params, "page_size": page_size, "strategy": strategy}, sort_keys=True)
-    return "q-" + hashlib.sha256(key.encode()).hexdigest()[:8]
 
 
 def _json(path: Path) -> dict:

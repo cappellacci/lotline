@@ -179,6 +179,16 @@ class DataStore:
         return hits[-1] if hits else None
 
 
+def query_folder(params: dict, page_size: int, strategy: str) -> str:
+    """Folder name for one paged query's raw pages: 'q-' + 8 hex digits of what defines the query.
+
+    Same query, same folder (a rerun reuses the cache); a different filter, field list, page size or paging
+    strategy gets its own folder, so a re-pull never overwrites another query's pages.
+    """
+    key = json.dumps({"params": params, "page_size": page_size, "strategy": strategy}, sort_keys=True)
+    return "q-" + hashlib.sha256(key.encode()).hexdigest()[:8]
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as fh:
