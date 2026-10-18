@@ -10,7 +10,7 @@ import pytest
 
 from lotline import registry
 from lotline.adapters.states.oh import oh_parcels as op
-from lotline.schemas import LAND_USES
+from lotline.schemas import LAND_USES, assert_conforms
 
 
 def _ms(day: str) -> int:
@@ -50,7 +50,7 @@ def test_ids_counties_and_dedup(parcels):
     assert len(parcels) == 8  # no-ID polygon dropped; stacked duplicate kept once
     assert parcels.loc["39049010-000005-00", "lot_sqft"] == 4000.0  # the larger polygon is kept
     assert set(parcels.county_geoid) == {"39049", "39061"}
-    assert parcels.jurisdiction_geoid.isna().all()  # not assigned below the county yet
+    assert parcels.jurisdiction_geoid.isna().all()  # assigned later, from the centroids
 
 
 def test_land_use_crosswalk(parcels):
@@ -95,22 +95,34 @@ def test_personal_fields_never_requested():
     assert not op.PERSONAL & set(op.OUT_FIELDS)
 
 
-def test_load_is_off_until_jurisdictions_can_be_assigned():
-    assert "oh_parcels" in registry.sources_for("OH")
-    with pytest.raises(RuntimeError, match="city or township"):
-        op.load("OH", store=None)
+def test_resolve_jurisdictions_uses_only_known_geoids():
+    county = pd.Series(["39049"] * 5)
+    found = pd.Series(["3918000", "3904910000", "3999999", "3904999999", None])
+    cousub = pd.Series(["3904918000", "3904910000", "3904920000", "3904999999", None])
+    known = {"3918000", "3904910000", "3904920000", "39049"}
+    geoid, how = op.resolve_jurisdictions(county, found, cousub, known)
+    assert geoid.tolist() == ["3918000", "3904910000", "3904920000", "39049", "39049"]
+    assert how.tolist() == ["place", "township", "township_of_place", "county_fallback", "county_fallback"]
 
 
-def test_download_retries_a_flaky_page_then_succeeds(raw, monkeypatch):
+def test_load_assigns_jurisdictions_and_applies_snapshot_holdout(raw, monkeypatch):
+    raw["lon"], raw["lat"] = -83.0, 40.0
+    monkeypatch.setattr(op, "download", lambda store, refresh=False: raw)
+    monkeypatch.setattr(
+        op,
+        "assign_jurisdictions",
+        lambda df, state, store: (df.assign(jurisdiction_geoid=df["county_geoid"]), None),
+    )
     calls = []
+    real = op.holdout.apply
 
-    def flaky(url, **kw):
-        calls.append(kw["where"])
-        if len(calls) == 1:
-            raise op.ArcGISError("400: Cannot perform query. Invalid query parameters.")
-        return raw[raw.County == kw["where"].split("'")[1]]
+    def spy(df, state, **kw):
+        calls.append(kw)
+        return real(df, state, **kw)
 
-    monkeypatch.setattr(op, "download_layer", flaky)
-    monkeypatch.setattr(op, "RETRY_WAIT_S", 0.0)
-    out = op.download(store=None, counties=["Hamilton"])
-    assert calls == ["County='Hamilton'", "County='Hamilton'"] and len(out) == 3
+    monkeypatch.setattr(op.holdout, "apply", spy)
+    out = op.load("OH", store=None)
+    assert "oh_parcels" in registry.sources_for("OH")
+    assert calls[0]["snapshot"] is True and calls[0]["geoid_col"] == "jurisdiction_geoid"
+    assert len(out) == 8 and out["lon"].eq(-83.0).all()
+    assert_conforms(out, "parcels")

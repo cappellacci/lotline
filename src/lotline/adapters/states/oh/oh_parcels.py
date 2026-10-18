@@ -14,10 +14,17 @@ auditor exports. The layer carries only a few attributes. This adapter reads two
 **Vintage.** The layer is edited as counties send new exports, so `vintage_date` is the county's export date
 (`CurrentTo`, the latest in the county), and `vintage` its year: Franklin and Hamilton are both 2023 exports.
 
-**Jurisdiction.** The layer has no city or township field. `jurisdiction_geoid` would need a point-in-polygon
-join of parcel centroids to Census places and county subdivisions (townships), which needs a WS-CORE helper.
-Until then the rows carry only `county_geoid`, and `load()` refuses to run (see `JURISDICTION_READY`), so a
-county-wide denominator can never reach `eligible_parcels`. `build()` works for diagnostics.
+**Jurisdiction.** The layer has no city or township field, so each parcel's label point (centroid, requested
+from the server) is placed with `lotline.geo.place_or_township`: an incorporated place, else the county
+subdivision (Ohio townships issue permits). The result is then checked against the OH `jurisdictions` table
+(the Census permit-issuing places and townships) by `resolve_jurisdictions`:
+
+1. the place or township found, if it is in the table;
+2. else the parcel's county subdivision, if that is in the table (a village that is not a permit issuer in
+   its own right sits inside a township that is);
+3. else the county's remainder row (`county_unincorporated`, 5-digit GEOID), e.g. for a parcel whose
+   centroid falls in a fictitious or non-functioning subdivision (FUNCSTAT F/N), on a boundary sliver, or
+   has no centroid. These counts are reported, not hidden.
 
 **Scope.** `COUNTIES` lists the counties downloaded (server-side `County='...'` filter, one query per county).
 
@@ -27,19 +34,18 @@ Only non-personal fields are requested: no situs address, mailing address fields
 from __future__ import annotations
 
 import csv
-import time
 from pathlib import Path
 
 import pandas as pd
 
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
-from lotline.io.arcgis import ArcGISError, download_layer, epoch_ms_to_timestamp
+from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp
 from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.oh.oh_parcels"
-VERSION = "0.1"
+VERSION = "1.0"
 SOURCE = "oh_parcels"
 TABLE = "parcels"
 LAYER_URL = (
@@ -54,12 +60,9 @@ LUC_CROSSWALK = CONFIG_DIR / "crosswalks" / "oh_dte_luc.csv"
 COUNTY_FIPS = CONFIG_DIR / "crosswalks" / "oh_county_fips.csv"
 COUNTIES = ["Franklin", "Hamilton"]  # first pass; the full state is 88 counties (see PROVENANCE)
 SQFT_PER_ACRE = 43_560.0
-# The server intermittently answers deep-offset pages with "400: Invalid query parameters" and then serves the
-# same page on a later try (seen on Franklin at offset ~418,000). Pages already fetched are cached, so a retry
-# resumes where it stopped. (A retry in the shared pager would be better: WS-CORE request.)
-RETRIES = 5
-RETRY_WAIT_S = 20.0
-JURISDICTION_READY = False  # flips once parcels can be placed in a city or township (WS-CORE helper)
+# The server intermittently answers deep-offset pages with "400: Invalid query parameters" and serves the same
+# page on a later try (seen on Franklin at offset ~418,000); the pager retries error bodies.
+RETRIES = 5  # pager retries on ArcGIS error bodies (mechanics, not a model parameter)
 
 PERSONAL = {
     "SitusAddressAll",
@@ -102,11 +105,16 @@ PROVENANCE = {
         "Ohio South State Plane)",
         "vintage_date = the county's latest CurrentTo (export date); vintage = its year",
         "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
-        "Holdout filter applied (Ohio has no holdouts); the snapshot rule (#100) is not on main yet",
+        "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
+        "stored as lon/lat",
+        "jurisdiction_geoid by lotline.geo.place_or_township (TIGERweb ACS 2025 incorporated places, else "
+        "county subdivisions), kept only if in the OH jurisdictions table; else the parcel's county "
+        "subdivision if in the table; else the county's remainder row (5-digit GEOID)",
+        "Holdout filter applied with snapshot=True (Ohio has no holdouts)",
     ],
     "limitations": [
-        "No jurisdiction below the county: the layer has no city/township field. load() refuses to run "
-        "until parcels are placed by point-in-polygon (needs a WS-CORE helper and parcel centroids)",
+        "Jurisdictions come from centroids and 2025 boundaries, not from the auditor: a parcel straddling a "
+        "boundary goes wherever its label point falls, and annexations after 2025 are not reflected",
         "Attributes are minimal: no units, year built, building area, values or sales; county CAMA data are "
         "needed for those (tier 1 counties such as Franklin)",
         "County exports are of different dates (Franklin 2023-09-26, Hamilton 2023-08-02); the layer is "
@@ -148,7 +156,7 @@ def lot_sqft(land_acres: pd.Series, shape_sqft: pd.Series) -> pd.Series:
 
 
 def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
-    """Raw layer attributes → `parcels` rows; jurisdiction_geoid stays null (only county_geoid is known)."""
+    """Raw layer attributes (+ `lon`/`lat` centroids) → `parcels` rows, before jurisdictions are assigned."""
     df = raw.copy()
     df["local_id"] = df["LocalParcelID"].astype("string").str.strip().replace("", pd.NA)
     df = df.loc[df["local_id"].notna()].copy()
@@ -161,6 +169,7 @@ def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
     vintage_date = exported.groupby(df["county_geoid"]).transform("max")
     code = luc_code(df["StateLUC"])
     xwalk = luc_crosswalk()
+    nan = pd.Series(float("nan"), index=df.index)
     out = pd.DataFrame(
         {
             "state": state,
@@ -172,6 +181,8 @@ def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
             "lot_sqft": lot_sqft(df["LandArea"], df["Shape__Area"]),
             "land_use_std": code.map(xwalk).fillna("UNKNOWN"),
             "land_use_raw": df["StateLUC"].astype("string").str.strip().replace("", pd.NA),
+            "lon": pd.to_numeric(df.get("lon", nan), errors="coerce"),
+            "lat": pd.to_numeric(df.get("lat", nan), errors="coerce"),
             "source": SOURCE,
             "_shape": pd.to_numeric(df["Shape__Area"], errors="coerce"),
         },
@@ -182,40 +193,76 @@ def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
+def resolve_jurisdictions(
+    county_geoid: pd.Series, found: pd.Series, cousub: pd.Series, known: set[str]
+) -> tuple[pd.Series, pd.Series]:
+    """(jurisdiction_geoid, how) per parcel, using only GEOIDs in the jurisdictions table (`known`).
+
+    `found` is `place_or_township` (place, else county subdivision); `cousub` the county subdivision alone.
+    `how` is "place", "township", "township_of_place" (a place not in the table → its township) or
+    "county_fallback" (neither is in the table, or no centroid: the county's remainder row).
+    """
+    found = found.astype("string")
+    cousub = cousub.astype("string")
+    in_found = found.isin(known).fillna(False).astype(bool)
+    in_cousub = cousub.isin(known).fillna(False).astype(bool)
+    geoid = found.where(in_found, cousub.where(in_cousub, county_geoid.astype("string")))
+    how = pd.Series("county_fallback", index=found.index, dtype="string")
+    how = how.mask(in_cousub & ~in_found, "township_of_place")
+    how = how.mask(in_found & found.str.len().eq(10), "township")
+    how = how.mask(in_found & found.str.len().eq(7), "place")
+    return geoid, how
+
+
+def assign_jurisdictions(df: pd.DataFrame, state: str, store: DataStore) -> tuple[pd.DataFrame, pd.Series]:
+    """Fill `jurisdiction_geoid` from the centroids; return the rows and how each was placed."""
+    from lotline import geo
+    from lotline.adapters.national.tiger_boundaries import load_polygons
+    from lotline.build import jurisdictions as jur
+
+    juris = store.read(state, "jurisdictions")
+    if juris is None:
+        juris = jur.load(state, store)
+    known = set(juris["geoid"])
+    found = geo.place_or_township(df["lon"], df["lat"], state, store)
+    cousub = pd.Series(
+        geo.assign(df["lon"].to_numpy(), df["lat"].to_numpy(), load_polygons(state, store, "cousub")),
+        index=df.index,
+        dtype=object,
+    )
+    geoid, how = resolve_jurisdictions(df["county_geoid"], found, cousub, known)
+    return df.assign(jurisdiction_geoid=geoid), how
+
+
 def download(store: DataStore, *, counties: list[str] | None = None, refresh: bool = False) -> pd.DataFrame:
-    frames = []
-    for county in counties or COUNTIES:
-        for attempt in range(1, RETRIES + 1):
-            try:
-                frames.append(
-                    download_layer(
-                        LAYER_URL,
-                        store=store,
-                        source=SOURCE,
-                        license=LICENSE,
-                        adapter=ADAPTER,
-                        adapter_version=VERSION,
-                        name="parcels",
-                        where=f"County='{county}'",
-                        out_fields=",".join(OUT_FIELDS),
-                        refresh=refresh and attempt == 1,
-                    )
-                )
-                break
-            except ArcGISError:
-                if attempt == RETRIES:
-                    raise
-                time.sleep(RETRY_WAIT_S * attempt)
+    frames = [
+        download_layer(
+            LAYER_URL,
+            store=store,
+            source=SOURCE,
+            license=LICENSE,
+            adapter=ADAPTER,
+            adapter_version=VERSION,
+            name="parcels",
+            where=f"County='{county}'",
+            out_fields=",".join(OUT_FIELDS),
+            geometry="centroid",
+            retries=RETRIES,
+            refresh=refresh,
+        )
+        for county in counties or COUNTIES
+    ]
     return pd.concat(frames, ignore_index=True)
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    if not JURISDICTION_READY:
-        raise RuntimeError(
-            "oh_parcels: parcels can't be placed in a city or township yet (no jurisdiction field in the "
-            "layer). Writing county-wide rows would give eligible_parcels a wrong denominator, so load() is "
-            "off until the WS-CORE point-in-polygon helper exists. Use build(download(store)) to inspect."
-        )
-    df = build(download(store, refresh=refresh), state=state)
-    df = holdout.apply(df, state, geoid_col="jurisdiction_geoid", date_col="vintage_date", year_col="vintage")
+    df, _ = assign_jurisdictions(build(download(store, refresh=refresh), state=state), state, store)
+    df = holdout.apply(
+        df,
+        state,
+        geoid_col="jurisdiction_geoid",
+        date_col="vintage_date",
+        year_col="vintage",
+        snapshot=True,
+    )
     return validate(df, TABLE)
