@@ -34,6 +34,7 @@ import pandas as pd
 from lotline.io.http import client, fetch
 from lotline.io.store import DataStore, query_folder
 
+GEOMETRY_MODES = {"none", "point", "centroid", "polygon"}
 ID_CHUNK = 500  # object IDs per query: keeps GET URLs well under common length limits
 
 
@@ -48,6 +49,7 @@ class LayerInfo:
     supports_pagination: bool
     supports_order_by: bool
     geometry_type: str | None = None  # e.g. esriGeometryPoint, esriGeometryPolygon
+    supports_centroid: bool = False  # the server can compute polygon label points (returnCentroid)
 
 
 def query_url(layer_url: str, **params) -> str:
@@ -74,22 +76,32 @@ class _Ctx:
     http: httpx.Client
     pause: float
     refresh: bool
+    retries: int = 3
+    backoff: float = 2.0
 
     def get(self, url: str, name: str) -> dict:
-        path = fetch(
-            url,
-            self.raw_dir / name,
-            store=self.store,
-            source=self.source,
-            license=self.license,
-            adapter=self.adapter,
-            adapter_version=self.adapter_version,
-            http=self.http,
-            refresh=self.refresh,
-        )
-        if self.pause:
-            time.sleep(self.pause)  # be polite to small municipal servers
-        return _json(path)
+        """Fetch one page; an ArcGIS error body (HTTP 200) is retried with backoff, then raised."""
+        for attempt in range(self.retries + 1):
+            path = fetch(
+                url,
+                self.raw_dir / name,
+                store=self.store,
+                source=self.source,
+                license=self.license,
+                adapter=self.adapter,
+                adapter_version=self.adapter_version,
+                http=self.http,
+                refresh=self.refresh,
+            )
+            if self.pause:
+                time.sleep(self.pause)  # be polite to small municipal servers
+            try:
+                return _json(path)  # an error page is deleted, so the next attempt downloads again
+            except ArcGISError:
+                if attempt == self.retries:
+                    raise
+                time.sleep(self.backoff * 2**attempt)  # some servers fail deep pages intermittently
+        raise AssertionError("unreachable")
 
 
 def layer_info(meta: dict) -> LayerInfo:
@@ -105,6 +117,7 @@ def layer_info(meta: dict) -> LayerInfo:
         supports_pagination=bool(adv.get("supportsPagination", False)),
         supports_order_by=bool(adv.get("supportsOrderBy", True)),
         geometry_type=meta.get("geometryType"),
+        supports_centroid=bool(adv.get("supportsReturningGeometryCentroid", False)),
     )
 
 
@@ -119,18 +132,31 @@ def download_layer(
     name: str = "layer",
     where: str = "1=1",
     out_fields: str = "*",
-    geometry: bool = False,
+    geometry: bool | str = False,
     vintage: str | None = None,
     page_size: int | None = None,
     pause: float = 0.5,
     refresh: bool = False,
     http: httpx.Client | None = None,
+    retries: int = 3,
+    retry_backoff: float = 2.0,
 ) -> pd.DataFrame:
-    """Download all features matching `where` and return their attributes (plus `lon`/`lat` if `geometry`).
+    """Download all features matching `where` and return their attributes, plus geometry if asked.
 
-    Geometry, when requested, is returned as a WGS84 point: the feature's point, or the label point of a
-    polygon when the server can compute it (`returnCentroid`), so parcel layers yield centroids.
+    `geometry` (all in WGS84):
+
+    - `False`: attributes only;
+    - `True` or `"point"`: `lon`/`lat` of the feature's point, or of a polygon's label point when the server
+      can compute it (`returnCentroid`), so parcel layers yield centroids;
+    - `"centroid"`: polygon label points only, without downloading the polygons (about a quarter of the
+      bytes on a parcel layer); polygon layers only;
+    - `"polygon"`: a `rings` column (a list of rings, each a list of [lon, lat] pairs); polygon layers only.
+
+    An ArcGIS error body is retried `retries` times with exponential backoff before it is raised.
     """
+    mode = {False: "none", True: "point"}.get(geometry, geometry)  # type: ignore[arg-type]
+    if mode not in GEOMETRY_MODES:
+        raise ValueError(f"geometry must be one of False, True, {sorted(GEOMETRY_MODES - {'none'})}")
     vintage = vintage or dt.date.today().isoformat()
     own = http is None
     ctx = _Ctx(
@@ -143,15 +169,33 @@ def download_layer(
         http or client(timeout=120),
         pause,
         refresh,
+        retries,
+        retry_backoff,
     )
     try:
         info = layer_info(ctx.get(f"{layer_url.rstrip('/')}?f=json", "layer.json"))
         size = min(page_size or info.max_records, info.max_records)
-        base = {"where": where, "outFields": out_fields, "f": "json", "returnGeometry": str(geometry).lower()}
-        if geometry:
+        polygon_layer = info.geometry_type == "esriGeometryPolygon"
+        if mode in ("centroid", "polygon") and not polygon_layer:
+            raise ArcGISError(f"geometry={mode!r} needs a polygon layer, not {info.geometry_type}")
+        if mode == "centroid" and not info.supports_centroid:  # such servers ignore returnCentroid silently
+            raise ArcGISError("this server can't compute centroids (returnCentroid); use geometry='polygon'")
+        fields = [f.strip() for f in out_fields.split(",")]
+        if (
+            "*" not in fields and info.object_id_field not in fields
+        ):  # needed for paging and the overlap check
+            out_fields = ",".join([info.object_id_field, *fields])
+        downloads = mode in ("point", "polygon")
+        base = {
+            "where": where,
+            "outFields": out_fields,
+            "f": "json",
+            "returnGeometry": str(downloads).lower(),
+        }
+        if mode != "none":
             base |= {"outSR": "4326"}
-            if info.geometry_type == "esriGeometryPolygon":  # point layers reject returnCentroid
-                base |= {"returnCentroid": "true"}
+        if (mode == "point" and polygon_layer) or mode == "centroid":  # point layers reject returnCentroid
+            base |= {"returnCentroid": "true"}
         by_offset = info.supports_pagination and info.supports_order_by
         strategy = "offset" if by_offset else "object_ids"
         ctx.raw_dir = ctx.raw_dir / query_folder(base, size, strategy)
@@ -162,7 +206,7 @@ def download_layer(
     finally:
         if own:
             ctx.http.close()
-    return _to_frame(features, info.object_id_field, geometry)
+    return _to_frame(features, info.object_id_field, mode)
 
 
 def _by_offset(ctx: _Ctx, url: str, base: dict, info: LayerInfo, size: int) -> list[dict]:
@@ -198,11 +242,13 @@ def _by_object_ids(ctx: _Ctx, url: str, base: dict, info: LayerInfo, size: int) 
     return features
 
 
-def _to_frame(features: list[dict], oid: str, geometry: bool) -> pd.DataFrame:
+def _to_frame(features: list[dict], oid: str, mode: str) -> pd.DataFrame:
     rows = []
     for f in features:
         row = dict(f.get("attributes") or {})
-        if geometry:
+        if mode == "polygon":
+            row["rings"] = (f.get("geometry") or {}).get("rings")
+        elif mode != "none":
             g = f.get("centroid") or f.get("geometry") or {}
             row["lon"], row["lat"] = g.get("x"), g.get("y")
         rows.append(row)
