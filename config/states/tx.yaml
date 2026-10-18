@@ -7,4 +7,13 @@ township_permits: false  # townships issue building permits (BPS rows per townsh
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[733, 733], [750, 799], [885, 885]]
 holdouts: []
-sources: []
+sources:
+  - name: austin_permits
+    url: https://data.austintexas.gov/Building-and-Development/Issued-Construction-Permits/3syk-w9eu
+    license: Public Domain U.S. Government (City of Austin open data)
+    access: socrata
+    cadence: daily
+    notes: >-
+      Adapter src/lotline/adapters/states/tx/austin_permits.py. Building permits with a Census code 101-106,
+      436 or 645-649 in permit_class, plus plain-class 'New' permits (159,334 rows on 2026-10-18). R-102
+      Secondary Apartment is the city's ADU class (dataset 687g-qcqy); it nearly stops after HOME (2024).
