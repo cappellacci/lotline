@@ -69,8 +69,7 @@ def _download(tmp_path, http, **kw):
         adapter="test",
         adapter_version="1",
         http=http,
-        pause=0,
-        **({"retry_backoff": 0} | kw),
+        **({"pause": 0, "retry_backoff": 0} | kw),
     )
 
 
@@ -263,3 +262,13 @@ def test_object_id_field_is_always_requested(tmp_path):
 def test_centroid_mode_refuses_servers_that_cannot_compute_centroids(tmp_path):
     with pytest.raises(arcgis.ArcGISError, match="can't compute centroids"):
         _download(tmp_path, _polygon_server(centroids=False), geometry="centroid", vintage="v")
+
+
+def test_cached_pages_skip_the_politeness_pause(tmp_path, monkeypatch):
+    sleeps = []
+    monkeypatch.setattr(arcgis.time, "sleep", sleeps.append)
+    _download(tmp_path, _server(n=25), vintage="v", pause=0.5)
+    assert sleeps == [0.5] * 4  # layer.json + 3 pages, each downloaded
+    sleeps.clear()
+    _download(tmp_path, _server(n=25), vintage="v", pause=0.5)
+    assert sleeps == []  # all from cache: no request, no pause
