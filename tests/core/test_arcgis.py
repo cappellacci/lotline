@@ -70,7 +70,7 @@ def _download(tmp_path, http, **kw):
         adapter_version="1",
         http=http,
         pause=0,
-        **kw,
+        **({"retry_backoff": 0} | kw),
     )
 
 
@@ -176,3 +176,90 @@ def test_query_folder_depends_on_what_defines_the_query():
     assert arcgis.query_folder(base | {"outFields": "A"}, 10, "offset") != same
     assert arcgis.query_folder(base, 20, "offset") != same
     assert arcgis.query_folder(base, 10, "object_ids") != same
+
+
+def _polygon_server(n=3, fail_first=0, calls=None, centroids=True):
+    """A polygon layer: features carry rings; the server computes label points (centroids) on request.
+    `fail_first` query requests get an ArcGIS error body (HTTP 200), as flaky servers do on deep pages."""
+    left = [fail_first]
+    square = [[[-83.0, 40.0], [-82.9, 40.0], [-82.9, 40.1], [-83.0, 40.1], [-83.0, 40.0]]]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        q = {k: v[0] for k, v in parse_qs(urlparse(str(request.url)).query).items()}
+        if not request.url.path.endswith("/query"):
+            return httpx.Response(
+                200,
+                json={
+                    "maxRecordCount": 10,
+                    "geometryType": "esriGeometryPolygon",
+                    "objectIdField": "OBJECTID",
+                    "advancedQueryCapabilities": {
+                        "supportsPagination": True,
+                        "supportsOrderBy": True,
+                        "supportsReturningGeometryCentroid": centroids,
+                    },
+                },
+            )
+        if calls is not None:
+            calls.append(q)
+        if left[0]:
+            left[0] -= 1
+            return httpx.Response(200, json={"error": {"code": 400, "message": "Invalid query parameters"}})
+        feats = []
+        for i in range(1, n + 1):
+            f = {"attributes": {"OBJECTID": i}}
+            if q.get("returnGeometry") == "true":
+                f["geometry"] = {"rings": square}
+            if q.get("returnCentroid") == "true":
+                f["centroid"] = {"x": -82.95, "y": 40.05}
+            feats.append(f)
+        off = int(q["resultOffset"])
+        return httpx.Response(200, json={"features": feats[off : off + 10]})
+
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def test_centroid_mode_gets_label_points_without_polygons(tmp_path):
+    calls = []
+    df = _download(tmp_path, _polygon_server(calls=calls), geometry="centroid", vintage="v")
+    assert set(df.lon) == {-82.95} and set(df.lat) == {40.05} and "rings" not in df
+    assert calls[0]["returnGeometry"] == "false" and calls[0]["returnCentroid"] == "true"
+
+
+def test_polygon_mode_returns_rings(tmp_path):
+    df = _download(tmp_path, _polygon_server(), geometry="polygon", vintage="v")
+    assert len(df) == 3 and df.rings.iloc[0][0][1] == [-82.9, 40.0] and "lon" not in df
+
+
+def test_centroid_and_polygon_modes_need_a_polygon_layer(tmp_path):
+    for mode in ("centroid", "polygon"):
+        with pytest.raises(arcgis.ArcGISError, match="needs a polygon layer"):
+            _download(tmp_path, _server(n=3), geometry=mode, vintage="v")
+    with pytest.raises(ValueError, match="geometry must be"):
+        _download(tmp_path, _server(n=3), geometry="lines", vintage="v")
+
+
+def test_flaky_error_pages_are_retried(tmp_path):
+    calls = []
+    df = _download(tmp_path, _polygon_server(fail_first=2, calls=calls), vintage="v", retries=3)
+    assert len(df) == 3 and len(calls) == 3  # two error bodies, then the page
+    (page,) = _pages(tmp_path, "v")
+    assert "error" not in json.loads(page.read_text())  # error bodies are never kept as data
+
+
+def test_persistent_errors_raise_after_the_retries(tmp_path):
+    calls = []
+    with pytest.raises(arcgis.ArcGISError, match="Invalid query parameters"):
+        _download(tmp_path, _polygon_server(fail_first=99, calls=calls), vintage="v", retries=2)
+    assert len(calls) == 3
+
+
+def test_object_id_field_is_always_requested(tmp_path):
+    calls = []
+    df = _download(tmp_path, _polygon_server(calls=calls), out_fields="NAME", vintage="v")
+    assert calls[0]["outFields"] == "OBJECTID,NAME" and len(df) == 3
+
+
+def test_centroid_mode_refuses_servers_that_cannot_compute_centroids(tmp_path):
+    with pytest.raises(arcgis.ArcGISError, match="can't compute centroids"):
+        _download(tmp_path, _polygon_server(centroids=False), geometry="centroid", vintage="v")
