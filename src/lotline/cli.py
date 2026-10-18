@@ -76,6 +76,9 @@ def _supersede(args: argparse.Namespace) -> int:
     from lotline.io.store import entry_key
     from lotline.provenance import current_files
 
+    if args.abandoned and not args.path:
+        print("--abandoned needs --path: name the folder of the query that was replaced")
+        return 2
     if not (args.stale or args.before or args.path):
         print("narrow the selection with --stale, --before and/or --path (never a whole source at once)")
         return 2
@@ -93,12 +96,17 @@ def _supersede(args: argparse.Namespace) -> int:
         stale = store.is_stale(e)
         if args.stale and not stale:
             continue
-        if entry_key(e) in current and not stale:
+        if entry_key(e) in current and not stale and not args.abandoned:
             kept += 1  # the latest download of a file that is still intact on disk: never superseded
             continue
         picked.append(e)
     print(f"{args.source}: {len(picked)} entr{'y' if len(picked) == 1 else 'ies'} selected", end="")
-    print(f"; {kept} kept because they are the current, intact record of their file" if kept else "")
+    print(
+        f"; {kept} kept because they are the current, intact record of their file (use --abandoned with "
+        "--path for a replaced query)"
+        if kept
+        else ""
+    )
     for e in picked[:10]:
         print(f"  {e.accessed_at}  {e.path}")
     if len(picked) > 10:
@@ -110,6 +118,28 @@ def _supersede(args: argparse.Namespace) -> int:
         return 0
     written = store.supersede(picked, args.reason)
     print(f"recorded {len(written)} in {store.superseded_path}; run `lotline provenance --write` next")
+    return 0
+
+
+def _register(args: argparse.Namespace) -> int:
+    import datetime as dt
+    from pathlib import Path
+
+    from lotline.io import DataStore
+
+    file = Path(args.file).expanduser()
+    if not file.is_file():
+        print(f"no such file: {file}")
+        return 2
+    vintage = args.vintage or dt.date.fromtimestamp(file.stat().st_mtime).isoformat()
+    try:
+        entry = DataStore().register(
+            file, source=args.source, url=args.url, license=args.license, vintage=vintage
+        )
+    except FileExistsError as exc:
+        print(exc)
+        return 1
+    print(f"registered {entry.path} ({entry.bytes:,} bytes, sha256 {entry.sha256[:12]}...)")
     return 0
 
 
@@ -184,9 +214,27 @@ def build_parser() -> argparse.ArgumentParser:
     sup.add_argument("--stale", action="store_true", help="only entries whose file is missing or has changed")
     sup.add_argument("--before", help="only entries accessed before this UTC time, e.g. 2026-10-14T22:30")
     sup.add_argument("--path", help="only entries whose path matches this glob, e.g. 'raw/x/2026-10-14/*'")
+    sup.add_argument(
+        "--abandoned",
+        action="store_true",
+        help="also mark intact files: the pages of a query that was replaced by another one (needs --path)",
+    )
     sup.add_argument("--reason", required=True, help="why these entries are no longer current")
     sup.add_argument("--apply", action="store_true", help="write the records (default: dry run)")
     sup.set_defaults(func=_supersede)
+    reg = man_sub.add_parser(
+        "register",
+        help="record a file downloaded by hand (e.g. in a browser) as a raw download",
+        description="Link (or copy) a hand-downloaded file to raw/<source>/<vintage>/ and append a manifest "
+        "entry with its sha256, so adapters and provenance treat it like any other download. Use it when a "
+        "site can only be downloaded in a browser. The original file is left in place.",
+    )
+    reg.add_argument("file", help="the downloaded file, e.g. ~/lotline-data/manual/tcad/2026_certified.zip")
+    reg.add_argument("--source", required=True, help="manifest source id the adapter reads, e.g. tcad")
+    reg.add_argument("--url", required=True, help="the page or link the file was downloaded from")
+    reg.add_argument("--license", required=True, help="license or terms of use, as published")
+    reg.add_argument("--vintage", help="vintage folder (default: the file's modification date)")
+    reg.set_defaults(func=_register)
 
     val = sub.add_parser("validate", help="run a validation-ladder step and write its report")
     val.add_argument("--state", help="two-letter state code (default: every configured state)")
