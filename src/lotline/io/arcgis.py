@@ -89,6 +89,7 @@ class _Ctx:
     def get(self, url: str, name: str) -> dict:
         """Fetch one page; an ArcGIS error body (HTTP 200) is retried with backoff, then raised."""
         for attempt in range(self.retries + 1):
+            cached = (self.raw_dir / name).exists() and not self.refresh
             path = fetch(
                 url,
                 self.raw_dir / name,
@@ -100,8 +101,8 @@ class _Ctx:
                 http=self.http,
                 refresh=self.refresh,
             )
-            if self.pause:
-                time.sleep(self.pause)  # be polite to small municipal servers
+            if self.pause and not cached:
+                time.sleep(self.pause)  # be polite to small municipal servers (a cached page sent nothing)
             try:
                 return _json(path)  # an error page is deleted, so the next attempt downloads again
             except ArcGISError:

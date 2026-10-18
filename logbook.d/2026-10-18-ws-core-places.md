@@ -1,0 +1,15 @@
+### LB-NNN · 2026-10-18 · Build: points to places or townships (TIGERweb ACS 2025)
+- **Question:** How do we put a parcel or permit point that carries only a county field (Ohio's ~6.3M statewide parcels) into the government that permits it, fast enough for a whole state and without a GIS dependency?
+- **What I did:**
+  - New national source `tiger_boundaries` (`census_tigerweb_acs2025`): TIGERweb ACS 2025 layers 18 (incorporated places) and 15 (county subdivisions), queried by state through the ArcGIS pager in polygon mode, 50 polygons per page, fixed vintage folder `acs2025`. Documented-only in the registry.
+  - New `lotline/geo.py` (numpy only): even-odd point-in-polygon over all rings with a vectorized scanline (points sorted by y, `searchsorted` per edge, ragged (edge, point) expansion in chunks, parity by `bincount`); `assign` (points sorted by x, each polygon scans only its strip); `place_or_township` (place, else county subdivision where `township_permits`, else None so the caller uses the county).
+  - ArcGIS pager: the politeness pause is skipped for pages served from cache (a cached Ohio load took 29 s of pure sleeping; now 0.3-0.4 s).
+- **Inputs:** TIGERweb Places_CouSub_ConCity_SubMCD MapServer (public domain); `config/states/*.yaml` `township_permits`.
+- **Outputs:** `src/lotline/adapters/national/tiger_boundaries.py`, `src/lotline/geo.py`, `src/lotline/registry.py`, `src/lotline/io/arcgis.py`, `tests/core/test_geo.py`, `tests/core/test_arcgis.py`, `docs/data_provenance.md`.
+- **Findings:**
+  - Ohio: 925 incorporated places (318,236 vertices; Columbus 256 rings, 18,250 vertices) and 1,607 county subdivisions (656,821 vertices). First download 31 s + 60 s; cached loads under 0.5 s.
+  - Known points: downtown Columbus → 3918000, Upper Arlington → 3979002 ("Upper Arlington city"), a rural Franklin County point → 3904963254 (Pleasant township), a Holmes County point → 3907570156 (Salt Creek township).
+  - Throughput: 100,000 random points in Franklin County's bbox: Columbus alone 0.04 s (~2.4M points/s), all Ohio places 0.11 s; 6.3M clustered synthetic points statewide through `place_or_township`: 7.1 s, ~1.1 GB peak memory. A full Ohio parcel run takes seconds, not hours.
+- **Decisions:** Proposed: boundaries are the ACS 2025 (Jan 2025) vintage for every year; CDPs excluded; boundary points follow the half-open even-odd rule (no tolerance).
+- **AI:** Claude Code (WS-CORE) wrote the adapter, geometry module and tests. Checked against a pure-Python reference ray cast on 2,000 random points with a concave star, a hole and a separate ring (forcing tiny chunks), synthetic hole/enclave/multipolygon/boundary cases, a fake TIGERweb server, and the live Ohio known points above.
+- **Open / next:** WS-OH can call `lotline.geo.place_or_township` on parcel centroids; MN/NC/TX parcel layers can reuse it. Annexation timing near edges is not modeled.
