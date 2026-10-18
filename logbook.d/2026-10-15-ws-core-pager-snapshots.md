@@ -1,9 +1,0 @@
-### LB-NNN · 2026-10-15 · Build: Raw downloads are never overwritten by a different query
-- **Question:** How do we stop a same-day re-pull with a different field list from overwriting raw files that must stay exactly as downloaded (the cause of the 266 stale manifest entries superseded in #97)?
-- **What I did:** Two layers. (1) `fetch()` now refuses to overwrite, or serve as cached, a raw file whose current manifest entry came from a different URL (`RawOverwriteError`, asking the caller to use another path); refreshing the same URL works as before. (2) The ArcGIS pager writes each query's pages to its own folder, `raw/<source>/<vintage>/<name>/q-<hash>/`, where the hash covers the filter, fields, geometry, page size and paging strategy; `layer.json` stays shared. Rerunning the same query reuses its cache; a different query becomes a new snapshot.
-- **Inputs:** LB for `ws/core-supersede` (#97); `src/lotline/io/http.py`, `src/lotline/io/arcgis.py`.
-- **Outputs:** `src/lotline/io/http.py`, `src/lotline/io/arcgis.py`, `src/lotline/io/store.py` (`latest_for_path`), `tests/core/test_io.py`, `tests/core/test_arcgis.py`.
-- **Findings:** The overwrite came from `fetch()` matching its cache by URL only: a new URL found no cached copy and wrote over the existing file. The same gap could also have returned another query's file as a cached copy. No current manifest entry shares a path with another URL, so the guard doesn't trip on existing data. Snapshots already on disk keep the old layout; new pulls use query folders.
-- **Decisions:** none.
-- **AI:** Claude Code (WS-CORE) wrote the change and 3 new tests (plus 4 updated pager tests); 375 tests pass. Live check against Durham's city-limits layer in a scratch data folder: two field lists gave two query folders, and a rerun was served from cache (3 manifest entries, not 4).
-- **Open / next:** none.
