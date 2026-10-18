@@ -9,7 +9,7 @@ A running record of **how** the Lotline entry was built: what question each step
 - Entries LB-001 to LB-009 were **reconstructed on 2026-09-30** from the docs and artifacts they produced; later entries are written as the work happens.
 - Entries are added two ways: by the Claude session doing the work (rule in `CLAUDE.md`), and by a nightly review that scans the repo, project docs and artifacts for anything new since the last scan. Nightly entries are marked *(auto-review)*.
 
-**Last scan:** 2026-10-15T08:17Z
+**Last scan:** 2026-10-18T21:36Z
 
 ---
 
@@ -33,6 +33,7 @@ A running record of **how** the Lotline entry was built: what question each step
 | 13. Core data and contracts | Oct 6–8 | Can national data for four states flow through shared, tested contracts, with blind tests protected? | BPS, FHFA, ACS, FRED and 2020 Census adapters; holdout filter; generated provenance and data dictionary; V0 reports; tag `schemas-v1`; ArcGIS pager for state adapters | LB-027 – LB-037 |
 | 14. Coding Period opens | Oct 14 | Is the repo aligned with the official rules, template and judging rubric, and does every state have a sound denominator? | Rules-PDF review; starter-template alignment; `/judge` panel; eligible-parcel rule with rest-of-county denominators; first MN/NC/engine workstreams; CBSA crosswalk; measured completion factors; permit-text parser | LB-041 – LB-056 |
 | 15. City permits and the V1 baseline | Oct 14–15 | Do city permit records line up with Census counts, and does a simple baseline beat naive forecasts out of sample? | Minneapolis, Durham and Raleigh permit adapters; V1 baseline (spec B) and backtest harness; spec C tried and not adopted (D-007) | LB-057 – LB-063 |
+| 16. Texas and Ohio start; shared tooling | Oct 15–18 | Can the pipeline take Texas and Ohio sources, and parcels without leaking holdouts? | TX and OH reform CSVs (second-coded sample), Columbus permits; Socrata pager, parcel holdout rule, manual-download registry, pager geometry modes, place/township assignment | LB-064 – LB-074 |
 
 ---
 
@@ -954,3 +955,117 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** none new (target date is a plan, not a logged decision).
 - **AI:** Written by a Claude session into the project; found and logged by the nightly review, which did not see the session itself.
 - **Open / next:** pick the benchmark state; draft the description.
+
+### LB-065 · 2026-10-15 · Build: Superseding stale manifest entries; provenance counts each file once
+- **Question:** How do we mark download entries that no longer describe the file on disk without deleting them from the append-only manifest, and why did the provenance doc overstate file counts?
+- **What I did:** Added `lotline manifest supersede` (dry run unless `--apply`; needs `--source`, a `--reason` and at least one of `--stale`, `--before`, `--path`; never supersedes the latest download of a file that is still intact on disk). Records go to a second append-only file, `manifest.superseded.jsonl`, so `manifest.jsonl` is never rewritten and older code that reads it keeps working. Provenance now counts each file once (latest entry per URL, then per path) and leaves superseded entries out. Moved `sha256_file` into `io/store.py` (still importable from `io/http`).
+- **Inputs:** LB-063 (restored Durham entries); `~/lotline-data/manifest.jsonl`.
+- **Outputs:** `src/lotline/io/store.py`, `src/lotline/provenance.py`, `src/lotline/cli.py`, `src/lotline/io/http.py`, `tests/core/test_manifest_supersede.py`, `docs/data_provenance.md`; `~/lotline-data/manifest.superseded.jsonl` (266 records, not in the repo).
+- **Findings:** Not only Durham was overcounted: same-day ArcGIS re-pulls with a different field list rewrote the same dated page files for Raleigh, Durham and Minneapolis, and each re-pull's URL counted as a new file. Durham 144 → 50 files (108.0 → 37.7 MB), and the two other sources 159 → 80 and 225 → 132. Every entry the per-path rule drops is stale (93/93, 94/94, 79/79), and those 266 are the only stale entries in the manifest; all were superseded with a reason. Durham's older license text no longer shows.
+- **Decisions:** none (proposal: a same-day re-pull with a different field list should write to a new snapshot folder rather than overwrite raw files).
+- **AI:** Claude Code (WS-CORE) wrote the code and 8 tests on synthetic manifests; checked every dropped entry's hash against its file before applying; full suite and compliance check pass.
+- **Open / next:** consider making the ArcGIS pager refuse to overwrite a raw file whose manifest entry came from a different URL.
+
+### LB-066 · 2026-10-15 · Build: Raw downloads are never overwritten by a different query
+- **Question:** How do we stop a same-day re-pull with a different field list from overwriting raw files that must stay exactly as downloaded (the cause of the 266 stale manifest entries superseded in #97)?
+- **What I did:** Two layers. (1) `fetch()` now refuses to overwrite, or serve as cached, a raw file whose current manifest entry came from a different URL (`RawOverwriteError`, asking the caller to use another path); refreshing the same URL works as before. (2) The ArcGIS pager writes each query's pages to its own folder, `raw/<source>/<vintage>/<name>/q-<hash>/`, where the hash covers the filter, fields, geometry, page size and paging strategy; `layer.json` stays shared. Rerunning the same query reuses its cache; a different query becomes a new snapshot.
+- **Inputs:** LB for `ws/core-supersede` (#97); `src/lotline/io/http.py`, `src/lotline/io/arcgis.py`.
+- **Outputs:** `src/lotline/io/http.py`, `src/lotline/io/arcgis.py`, `src/lotline/io/store.py` (`latest_for_path`), `tests/core/test_io.py`, `tests/core/test_arcgis.py`.
+- **Findings:** The overwrite came from `fetch()` matching its cache by URL only: a new URL found no cached copy and wrote over the existing file. The same gap could also have returned another query's file as a cached copy. No current manifest entry shares a path with another URL, so the guard doesn't trip on existing data. Snapshots already on disk keep the old layout; new pulls use query folders.
+- **Decisions:** none.
+- **AI:** Claude Code (WS-CORE) wrote the change and 3 new tests (plus 4 updated pager tests); 375 tests pass. Live check against Durham's city-limits layer in a scratch data folder: two field lists gave two query folders, and a rerun was served from cache (3 manifest entries, not 4).
+- **Open / next:** none.
+
+### LB-067 · 2026-10-15 · Validation: Holdout guard covers parcel rolls
+- **Question:** Can a parcel roll leak held-out outcomes, and does the central guard catch it?
+- **What I did:** Found that the central leak check (`assert_no_leak`, run after every `lotline fetch`) covered only `permits` and `bps_place_year`. A parcel roll of a held-out place taken after the window opens shows what was built there (land use, units, year built). Added `snapshot=True` to `held_out_mask`/`apply`: a roll dated on or after `outcome_from` is held out with no end date, and a roll with only a year is held out from that year on (strict when unsure). Registered `parcels` with the central guard (`vintage_date`, falling back to `vintage`).
+- **Inputs:** `src/lotline/validation/holdout.py`; holdouts in `config/states/{mn,nc}.yaml`.
+- **Outputs:** `src/lotline/validation/holdout.py`, `tests/core/test_holdout.py`.
+- **Findings:** No parcels table has been built yet, so nothing on disk needed re-checking. Consequence for adapters: St. Paul parcels can come only from rolls of 2023 or earlier, and Charlotte parcels only from a roll dated before 2023-06-01; a current roll has no St. Paul or Charlotte rows.
+- **Decisions:** none (proposal: parcel adapters for MN and NC call `holdout.apply(..., snapshot=True)`; round-3 briefs say so).
+- **AI:** Claude Code (WS-CORE) spotted the gap while drafting the MN/NC round-3 briefs, wrote the change and 3 tests; 378 tests pass.
+- **Open / next:** the same snapshot rule may be needed for `eligible_parcels` if it is ever built from a roll directly rather than from `parcels`.
+
+### LB-068 · 2026-10-15 · Policy analysis: Texas reform CSV (WS-TX)
+- **Question:** Which Texas city and state reforms change housing headroom, when did each take effect, and how do they code on the protocol §5.4 rubric?
+- **What I did:**
+  - Coded 14 rows in `config/reforms/tx.csv` against `schemas.Reforms`: Austin HOME phase 1, phase 2 (two coverage steps) and the 2023 parking repeal; Houston lot-size reforms (1999 urban area, 2013 citywide) and Livable Places (ADU and 3–8 unit types, 2023); San Antonio UDC ADU changes (2023); 2025 state laws SB 15, SB 840, HB 24, SB 1883, plus HB 852 (2019).
+  - Opened every source URL (city pages, enrolled bill text and bill history on capitol.texas.gov, Houston's 2013 Chapter 42 implementation memo).
+  - Added `tests/states/tx/test_reforms.py`: schema validation, header order, sources, GEOIDs, `supersedes` chain, hand-checked values.
+- **Inputs:** `docs/research/lotline-policy-inventory.csv` (TX rows) as the starting list; sources listed per row.
+- **Outputs:** `config/reforms/tx.csv`, `tests/states/tx/test_reforms.py`.
+- **Findings:**
+  - The 2025 ADU bill (SB 673) did not pass: it stalled on the House calendar (last action 2025-05-26). No state ADU law changes headroom.
+  - SB 15 (small lots) only reaches unplatted single-family tracts of 5+ acres in large cities, so it barely touches infill; SB 840 (housing by right on commercial land) is a 2025+ confounder for large-city multifamily counts.
+  - Austin's citywide parking repeal (vote 2023-11-02) lands in the same window as HOME phase 1: a confounder for the V3/V4 test.
+- **Decisions:** Proposed: code treatment timing for HOME as the date applications were first accepted (2024-02-05; 2024-08-16 and 2024-11-16 for phase 2).
+- **AI:** Claude found and read the sources and coded every row (single coder); the test checks the schema and values hand-read from the sources. Ben's second-coder pass is still needed.
+- **Open / next:** Unsourced: HOME FAR tiers, Austin parking effective date, Houston 1998 exact date and ordinance numbers, San Antonio ADU size cap. Second coder (Ben).
+- **Second coder (2026-10-18):** Ben checked 3 rows: Austin HOME phase 1 and Houston 2013 agree; San Antonio ADU adjudicated (owner occupancy confirmed; size cap 800 sq ft or 50% of the primary up to 1,600 added from the UDC text). Open: a possible later Austin change to four units.
+
+### LB-069 · 2026-10-15 · Build: Socrata pager for city permit portals
+- **Question:** Can TX and OH load Socrata-hosted permits (Austin `3syk-w9eu`, Cincinnati `uhjb-xac9`) through the same cached, logged IO layer as ArcGIS sources?
+- **What I did:** Added `lotline.io.socrata.download_dataset`: SODA paging with `$limit`/`$offset` ordered by the row id `:id`, an overlap check on every page, the dataset description saved as `dataset.json`, and each query's pages in their own `q-<hash>` folder (shared `query_folder`, moved to `io/store.py`). `select` is required, so no adapter downloads every column by default (Austin's dataset holds contractor and applicant names and phone numbers). SODA error messages are surfaced. An optional `SOCRATA_APP_TOKEN` is sent but never logged.
+- **Inputs:** Austin Issued Construction Permits metadata and a one-week query.
+- **Outputs:** `src/lotline/io/socrata.py`, `src/lotline/io/store.py`, `src/lotline/io/arcgis.py`, `tests/core/test_socrata.py`, `.env.example`.
+- **Findings:** Live check: 1,195 Austin permits issued 2024-03-04 to 03-10 in 3 pages of 500 (2.9 s); an identical rerun came from cache (4 manifest entries). `permit_class` mixes coded labels ("R- 101 Single Family Houses") with plain ones ("Residential"), which WS-TX must map. A first version could loop forever if a server repeated full pages; overlap is now checked page by page.
+- **Decisions:** none.
+- **AI:** Claude Code (WS-CORE) wrote the pager and 8 tests on a fake SODA server; 383 tests pass; live check in a scratch data folder.
+- **Open / next:** a CKAN helper only if a source needs more than `fetch()` of a resource URL (San Antonio's CSVs don't).
+
+### LB-070 · 2026-10-15 · Build: Columbus building permits adapter (OH)
+- **Question:** Can Columbus's open permit layer give new units by year and size class that line up with the Census BPS, and can it identify ADUs?
+- **What I did:** Added `columbus_permits` (ArcGIS pager, CC0 layer, server-side filter to new-structure and demolition permits, non-personal fields only). Building type from `CONST_TYPE_CODE`, the Census BPS code the city assigns; `UNITS` kept where it fits the code, else derived (SFD/TH 1, duplex 2) or null (3-4, 5+). Compared units by year and size class with `bps_place_year` for Columbus (3918000), 2010-2025.
+- **Inputs:** Columbus Building_Permits FeatureServer/0 (ArcGIS item f7a785b863454d96a0fe3f5aa5368e7d); `processed/oh/bps_place_year`.
+- **Outputs:** `src/lotline/adapters/states/oh/columbus_permits.py`, `tests/states/oh/test_columbus_permits.py`, `config/states/oh.yaml`, `docs/data_provenance.md`; `~/lotline-data/processed/oh/permits/columbus_permits.parquet` (29,157 permits, not in the repo).
+- **Findings:** Trade and partial permits (electrical, plumbing, fire alarm, foundation-only) carry the project's Census code and unit count, so only "New Structure" permits may count as dwellings; a first pull that filtered on the code alone double-counted. With that rule, 1-unit totals match BPS within ±10% in 14 of 16 years (2012 is off by a single 433-unit townhouse typo: 726 vs 723 without it; 2015 is 13% high); 5+ units run 47-101% of BPS in the other years (unknown-unit permits and timing), and 2023 is 41% high because nine permits on one parcel each repeat a 198-unit project total. The layer has no ADU flag and no description field, so ADUs can't be identified from it.
+- **Decisions:** proposed: (1) keep project-total repeats and typos as reported for now, or add a dedupe rule; (2) ADUs in Columbus need another source (zoning/ADU registry or Franklin auditor).
+- **AI:** Claude Code (WS-OH) explored the layer with server-side statistics, wrote the adapter and 10 tests on a synthetic fixture, ran the fetch and the BPS comparison; full suite, ruff and compliance check pass.
+- **Open / next:** `config/reforms/oh.csv`; Cincinnati permits once `io/socrata` is on main; statewide parcels.
+
+### LB-071 · 2026-10-15 · Policy analysis: Ohio reforms CSV (Cincinnati, Columbus, Cleveland)
+- **Question:** Which Ohio local reforms (2024-25) can be coded with the protocol §5.4 rubric from sources we actually opened, and does any 2024-25 Ohio state law change zoning headroom?
+- **What I did:** Read the Legistar records (Cincinnati Ord. 0199-2024; Columbus Ord. 2112/2113-2024 and 2526-2025; Cleveland Ord. 347-2024), the Columbus ADU ordinance's Exhibit A (§3332.355) and fact sheet, the Cleveland FBC areas page, the APA blog on Zone In and a law-firm summary of Connected Communities; coded 8 rows into `config/reforms/oh.csv`; added a schema test.
+- **Inputs:** Legistar web API (cincinnatioh, columbus, cityofcleveland); city and secondary pages listed per row in `source_url`.
+- **Outputs:** `config/reforms/oh.csv`, `tests/states/oh/test_reforms.py`.
+- **Findings:** Columbus ADUs are by right citywide from 2025-12-25 (computed: mayor's signature 2025-11-25 + the 30-day standard), one per single-unit lot (two in R-4), max(65% of the house, 1,000 sq ft), no parking, no owner-occupancy rule. Zone In phase 1 rezoned ~12,300 corridor parcels, effective 2024-08-29 (computed the same way). Cincinnati Connected Communities passed as an emergency on 2024-06-05; the enacted text is a scanned PDF, so its provisions are coded from a secondary summary. No Ohio state zoning mandate for 2024-25 was found, but ohio.gov sites were unreachable from this network.
+- **Decisions:** proposed: second coder (Ben) spot-checks all 8 rows; confirm the computed Columbus effective dates.
+- **AI:** Claude Code (WS-OH) researched and coded every row (single coder), read Exhibit A text with a temporary PDF tool, and wrote the validation test; full suite, ruff and compliance check pass.
+- **Open / next:** Cincinnati distance thresholds and effective date from the enacted text; Cleveland pilot-area mapping ordinance and FBC rubric fields; Ohio HB 96 (2025) pro-housing grant program from a primary source.
+- **Second coder (2026-10-18):** Ben checked 3 rows and supplied the signed Cincinnati ordinance 199-2024. Correction: its Section 6 puts the zoning changes into effect on **2024-07-01** for permit applications filed from that date (the emergency passage on 2024-06-05 only prepared for it), so all four Cincinnati rows now use 2024-07-01. Middle housing is permitted by right (subject to design standards) in three mapped designations, with no distance thresholds; the parking row now includes Middle Housing areas. Zone In adoption date set to the Council vote (2024-07-29). Columbus ADU confirmed.
+
+### LB-072 · 2026-10-18 · Build: Registering hand-downloaded files; superseding abandoned queries
+- **Question:** How do files that can only be downloaded in a browser (Travis CAD rolls behind a bot challenge; the Minneapolis and St. Paul manual exports, #9) enter the manifest, and how is a replaced query's intact raw folder kept out of provenance?
+- **What I did:** Added `lotline manifest register <file> --source --url --license [--vintage]` (`DataStore.register`): links the file (or copies it across file systems) to `raw/<source>/<vintage>/`, records its sha256 with `adapter=manual_export` and the file's save time, refuses a different file under the same name and is a no-op when repeated; `DataStore.registered(source)` lists them for adapters. Added `--abandoned` to `lotline manifest supersede`, which also marks intact files but only with `--path`, for the pages of a query that was replaced (Columbus's first pull, `q-f0979caf`).
+- **Inputs:** WS-TX and WS-OH round-1 reports (2026-10-15).
+- **Outputs:** `src/lotline/io/store.py`, `src/lotline/cli.py`, `tests/core/test_manifest_register.py`.
+- **Findings:** none beyond the design.
+- **Decisions:** Ben, 2026-10-18, on the WS-OH questions: keep Columbus permits' repeated project totals and unit typos as reported for now; look for a Columbus ADU source; spot-check a sample of reform rows; leave the apartment code 401 (4-19 units → MF5) mapping as it is.
+- **AI:** Claude Code (WS-CORE) wrote the change and 4 tests; 379 tests pass.
+- **Open / next:** after OH #104 merges, supersede `q-f0979caf` with `--abandoned` and regenerate provenance.
+
+### LB-073 · 2026-10-18 · Build: Pager geometry modes and retries on ArcGIS error pages
+- **Question:** Can the ArcGIS pager fetch polygon boundaries (for placing parcels in cities and townships) and parcel centroids without polygons, and survive servers that fail deep pages intermittently (WS-OH request)?
+- **What I did:** `download_layer(geometry=...)` now takes `False`, `True`/`"point"` (unchanged queries, so existing caches still hit), `"centroid"` (label points only, polygon layers whose server advertises `supportsReturningGeometryCentroid`) and `"polygon"` (a `rings` column). ArcGIS error bodies are retried with exponential backoff (`retries=3`) before raising; error pages are never kept. The object-ID field is always requested (added only when `out_fields` lacks it).
+- **Inputs:** WS-OH round-1 report; TIGERweb Places/County Subdivisions MapServer; Ohio Statewide Parcels FeatureServer.
+- **Outputs:** `src/lotline/io/arcgis.py`, `tests/core/test_arcgis.py`.
+- **Findings:** Live: TIGERweb ACS 2025 Incorporated Places returned Columbus (256 rings, 18,250 vertices) and Toledo as polygons in 2.6 s. TIGERweb's MapServer silently ignores `returnCentroid` (it doesn't advertise the capability), so centroid mode now refuses such servers instead of returning empty coordinates. On the Ohio parcels layer, centroid mode returned 13,218 Vinton County parcels, 99.8% with a point (78 s). Requesting `out_fields` without the object-ID field used to crash the overlap check; no existing adapter did that.
+- **Decisions:** none.
+- **AI:** Claude Code (WS-CORE) wrote the change and 7 tests (382 pass); live checks in scratch data folders.
+- **Open / next:** the place/township assignment helper that uses polygon mode.
+
+### LB-074 · 2026-10-18 · Build: points to places or townships (TIGERweb ACS 2025)
+- **Question:** How do we put a parcel or permit point that carries only a county field (Ohio's ~6.3M statewide parcels) into the government that permits it, fast enough for a whole state and without a GIS dependency?
+- **What I did:**
+  - New national source `tiger_boundaries` (`census_tigerweb_acs2025`): TIGERweb ACS 2025 layers 18 (incorporated places) and 15 (county subdivisions), queried by state through the ArcGIS pager in polygon mode, 50 polygons per page, fixed vintage folder `acs2025`. Documented-only in the registry.
+  - New `lotline/geo.py` (numpy only): even-odd point-in-polygon over all rings with a vectorized scanline (points sorted by y, `searchsorted` per edge, ragged (edge, point) expansion in chunks, parity by `bincount`); `assign` (points sorted by x, each polygon scans only its strip); `place_or_township` (place, else county subdivision where `township_permits`, else None so the caller uses the county).
+  - ArcGIS pager: the politeness pause is skipped for pages served from cache (a cached Ohio load took 29 s of pure sleeping; now 0.3-0.4 s).
+- **Inputs:** TIGERweb Places_CouSub_ConCity_SubMCD MapServer (public domain); `config/states/*.yaml` `township_permits`.
+- **Outputs:** `src/lotline/adapters/national/tiger_boundaries.py`, `src/lotline/geo.py`, `src/lotline/registry.py`, `src/lotline/io/arcgis.py`, `tests/core/test_geo.py`, `tests/core/test_arcgis.py`, `docs/data_provenance.md`.
+- **Findings:**
+  - Ohio: 925 incorporated places (318,236 vertices; Columbus 256 rings, 18,250 vertices) and 1,607 county subdivisions (656,821 vertices). First download 31 s + 60 s; cached loads under 0.5 s.
+  - Known points: downtown Columbus → 3918000, Upper Arlington → 3979002 ("Upper Arlington city"), a rural Franklin County point → 3904963254 (Pleasant township), a Holmes County point → 3907570156 (Salt Creek township).
+  - Throughput: 100,000 random points in Franklin County's bbox: Columbus alone 0.04 s (~2.4M points/s), all Ohio places 0.11 s; 6.3M clustered synthetic points statewide through `place_or_township`: 7.1 s, ~1.1 GB peak memory. A full Ohio parcel run takes seconds, not hours.
+- **Decisions:** Proposed: boundaries are the ACS 2025 (Jan 2025) vintage for every year; CDPs excluded; boundary points follow the half-open even-odd rule (no tolerance).
+- **AI:** Claude Code (WS-CORE) wrote the adapter, geometry module and tests. Checked against a pure-Python reference ray cast on 2,000 random points with a concave star, a hole and a separate ring (forcing tiny chunks), synthetic hole/enclave/multipolygon/boundary cases, a fake TIGERweb server, and the live Ohio known points above.
+- **Open / next:** WS-OH can call `lotline.geo.place_or_township` on parcel centroids; MN/NC/TX parcel layers can reuse it. Annexation timing near edges is not modeled.
