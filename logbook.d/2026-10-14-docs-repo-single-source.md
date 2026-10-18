@@ -1,0 +1,13 @@
+### LB-NNN · 2026-10-14 · Admin: One copy of every doc: the repo (replaces the project ↔ repo sync rule)
+- **Question:** Since Cowork works from the same folder as the repo (`~/Engineering/Lotline`), is the two-copy sync rule (LB-025) still needed?
+- **What I did:**
+  - Confirmed `~/Engineering/Lotline` and the repo are the same folder (case-insensitive APFS, same inode), and that the six project-mapped files changed since Oct 6 were already current there.
+  - Replaced CLAUDE.md's "Project ↔ repo sync" section with "One copy: this repo": each doc lives once at its repo path; no mirror folders; any online claude.ai Project copy is a read-only reference.
+  - New rule for sessions working directly in the main checkout (Cowork, nightly review): commit via a PR before the session ends, and log as fragments in `logbook.d/`. Today the main checkout held uncommitted work during branch changes, and direct `LOGBOOK.md` edits collided with fragment folds three times.
+  - Matching cleanups: the BUILD_PLAN §7.3 Cowork line; `merge_logbook.py` no longer writes a second `claude/LOGBOOK.md`.
+- **Inputs:** LB-025 (sync rule), Ben's confirmation that Cowork works from this folder.
+- **Outputs:** `CLAUDE.md`, `docs/build/BUILD_PLAN.md`, `scripts/dev/merge_logbook.py`.
+- **Findings:** none beyond the above.
+- **Decisions:** Proposed for HANDOFF: the repo is the single source for every shared doc; main-checkout sessions use PRs and logbook fragments.
+- **AI:** Claude Code drafted the change for Ben's review.
+- **Open / next:** Ben confirms the main-checkout rule suits Cowork and the nightly review.
