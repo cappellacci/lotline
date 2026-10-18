@@ -6,6 +6,7 @@ $LOTLINE_DATA_DIR/
   processed/{state}/{table}.parquet   canonical tables
   manifest.jsonl                      one line per download
   manifest.superseded.jsonl           one line per download entry marked as no longer current
+  manual/...                          (optional) files saved by hand before `lotline manifest register`
 
 Both files are append-only: nothing is ever deleted from them. An entry that no longer describes the file
 on disk (the same path was downloaded again under a different URL, or an exploratory pull was redone) is
@@ -18,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -162,6 +164,65 @@ class DataStore:
                 for s in written:
                     fh.write(json.dumps(asdict(s), sort_keys=True) + "\n")
         return written
+
+    def register(
+        self,
+        file: Path,
+        *,
+        source: str,
+        url: str,
+        license: str,
+        vintage: str,
+        adapter: str = "manual_export",
+        adapter_version: str = "1",
+    ) -> ManifestEntry:
+        """Record a file downloaded by hand (e.g. in a browser) as a raw download, append-only.
+
+        The file is linked (or copied, across file systems) to `raw/<source>/<vintage>/<file name>` so manual
+        downloads sit where every other raw file does; the original stays where it was. `url` is the page or
+        link it came from; `accessed_at` is the file's modification time (when it was saved). Registering the
+        same file again is a no-op; a different file under the same name is refused.
+        """
+        file = Path(file).expanduser().resolve()
+        if not file.is_file():
+            raise FileNotFoundError(file)
+        dest = self.raw(source, vintage) / file.name
+        rel = str(dest.relative_to(self.root))
+        digest = sha256_file(file)
+        known = self.latest_for_path(rel)
+        if dest.exists():
+            if sha256_file(dest) != digest:
+                raise FileExistsError(f"{rel} already holds a different file; use another vintage or name")
+            if known and known.sha256 == digest:
+                return known  # already registered
+        else:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                os.link(file, dest)  # no second copy of a large download
+            except OSError:
+                shutil.copy2(file, dest)
+        stamp = datetime.fromtimestamp(file.stat().st_mtime, UTC).replace(microsecond=0).isoformat()
+        entry = ManifestEntry(
+            url=url,
+            path=rel,
+            accessed_at=stamp,
+            sha256=digest,
+            bytes=dest.stat().st_size,
+            source=source,
+            license=license,
+            adapter=adapter,
+            adapter_version=adapter_version,
+        )
+        self.record(entry)
+        return entry
+
+    def registered(self, source: str) -> list[ManifestEntry]:
+        """Current manifest entries of hand-downloaded files for `source` (see `register`), in order."""
+        return [
+            e
+            for e in self.manifest(include_superseded=False)
+            if e.source == source and e.adapter == "manual_export"
+        ]
 
     def is_stale(self, entry: ManifestEntry) -> bool:
         """True when the entry's file is missing or no longer has the recorded sha256."""
