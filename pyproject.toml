@@ -7,7 +7,6 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dynamic = ["version"]
 dependencies = [
-    "duckdb",
     "httpx",
     "matplotlib>=3.11.2",
     "openpyxl>=3.1.5",

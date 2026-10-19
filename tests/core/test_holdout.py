@@ -212,3 +212,14 @@ def test_reporting_geoids_need_a_reason():
 def test_the_real_nc_config_holds_out_mecklenburg_county():
     (clt,) = holdout.holdouts_for("NC")
     assert "37119" in clt.geoids and clt.reporting_reason
+
+def test_holdout_window_edges_are_inclusive_and_exact():
+    # St. Paul's window ends 2026-12-31: the last day is hidden, the next day is not (dates win over years)
+    permits = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["2758000"] * 4,
+            "issue_date": pd.to_datetime(["2023-12-31", "2024-01-01", "2026-12-31", "2027-01-01"]),
+        }
+    )
+    hidden = holdout.held_out_mask(permits, [STPAUL], geoid_col="jurisdiction_geoid", date_col="issue_date")
+    assert hidden.tolist() == [False, True, True, False]

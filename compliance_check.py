@@ -82,6 +82,23 @@ DOC_SECTIONS = {
         "third-party code/deps/datasets + licenses": r"third[- ]party|dependenc",
     },
 }
+# Doc quality: every section of these docs needs real text, not just a heading (a stub passes the topic check).
+MIN_SECTION_WORDS = 30
+STUB_CHECKED = {"model_overview", "scenario_comparison"}
+# Rules §8 and the Handbook: topics a complete data document covers beyond the per-dataset fields.
+DATA_DOC_EXTRAS = {
+    "per-state data available vs. used": r"available.{0,40}used|used.{0,40}available",
+    "re-identification / small-cell risk": r"re-?identification|small[- ]cell",
+}
+# External services the adapters call: (name, pattern in src/, pattern the disclosures must contain).
+EXTERNAL_SERVICES = [
+    ("Census Data API", r"api\.census\.gov", r"census"),
+    ("Census TIGERweb", r"tigerweb", r"tigerweb"),
+    ("FRED", r"fred\.stlouisfed", r"\bFRED\b"),
+    ("FHFA", r"fhfa\.gov", r"FHFA"),
+    ("ArcGIS REST", r"arcgis", r"arcgis"),
+    ("Socrata", r"socrata", r"socrata"),
+]
 SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__", ".mypy_cache",
              ".pytest_cache", "dist", "build", ".tox", "data/raw", "data/cache"}
 
@@ -209,9 +226,43 @@ class Checker:
                 note = f"; ~{words} words, check <=25 pages"
             if key == "scenario_comparison" and words > 2600:
                 note = f"; ~{words} words, likely over 4 pages"
-            self.add(cid, "FAIL" if missing else ("WARN" if note else "PASS"),
-                     (f"missing: {', '.join(missing)}" if missing else f"{p.name}: all required topics present") + note)
+            problems = []
+            if key in STUB_CHECKED:
+                stubs = self.stub_sections(text)
+                if stubs:
+                    problems.append(f"sections with under {MIN_SECTION_WORDS} words: {', '.join(stubs)}")
+            if key == "data_provenance":
+                problems += [f"no {name}" for name, rx in DATA_DOC_EXTRAS.items() if not re.search(rx, text, re.I)]
+            if key == "disclosures":
+                problems += [f"external service used but not disclosed: {s}" for s in self.undisclosed_services(text)]
+            if missing:
+                self.add(cid, "FAIL", f"missing: {', '.join(missing)}" + note)
+            elif problems:
+                # A stub or an incomplete doc is a FAIL at submission; while building it is a WARN to act on.
+                building = self.get("project", "stage", default="submission") == "build"
+                self.add(cid, "WARN" if building else "FAIL", f"{p.name}: " + "; ".join(problems) + note)
+            else:
+                self.add(cid, "WARN" if note else "PASS", f"{p.name}: all required topics present" + note)
         self.add("D9", "MANUAL", "Team Leader submits via team link before 11:59 p.m. ET 2026-12-16")
+
+    @staticmethod
+    def stub_sections(text: str) -> list[str]:
+        """Headings (## or deeper) whose body, before the next heading, has fewer than MIN_SECTION_WORDS words."""
+        text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        parts = re.split(r"(?m)^(#{2,6}\s+.*)$", text)
+        stubs = []
+        for i in range(1, len(parts), 2):
+            heading = parts[i].lstrip("#").strip()
+            body = parts[i + 1] if i + 1 < len(parts) else ""
+            if len(re.findall(r"[A-Za-z0-9]+", body)) < MIN_SECTION_WORDS:
+                stubs.append(heading)
+        return stubs
+
+    def undisclosed_services(self, disclosures: str) -> list[str]:
+        src = self.root / "src"
+        code = "\n".join(p.read_text(errors="ignore") for p in src.rglob("*.py")) if src.exists() else ""
+        return [name for name, used, named in EXTERNAL_SERVICES
+                if re.search(used, code, re.I) and not re.search(named, disclosures, re.I)]
 
     @staticmethod
     def pdf_pages(path: Path) -> int | None:
