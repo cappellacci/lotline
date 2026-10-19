@@ -272,3 +272,12 @@ def test_cached_pages_skip_the_politeness_pause(tmp_path, monkeypatch):
     sleeps.clear()
     _download(tmp_path, _server(n=25), vintage="v", pause=0.5)
     assert sleeps == []  # all from cache: no request, no pause
+
+
+def test_html_block_page_is_an_error_and_never_cached(tmp_path):
+    html = httpx.Client(
+        transport=httpx.MockTransport(lambda r: httpx.Response(200, text="<html>Request Rejected</html>"))
+    )
+    with pytest.raises(arcgis.ArcGISError, match="not JSON"):
+        _download(tmp_path, html, vintage="v", retries=1)
+    assert not (tmp_path / "raw/test_permits/v/layer/layer.json").exists()
