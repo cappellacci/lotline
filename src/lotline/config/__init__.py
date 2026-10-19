@@ -28,11 +28,22 @@ class Holdout(_Model):
     outcome_from: dt.date
     outcome_until: dt.date
     reason: str
+    # Other GEOIDs whose rows contain this place's outcomes, e.g. the county BPS files a place's permits under
+    # (Charlotte's are reported under Mecklenburg County, 37119). They are held out over the same window.
+    reporting_geoids: list[str] = Field(default_factory=list)
+    reporting_reason: str | None = None
+
+    @property
+    def geoids(self) -> list[str]:
+        """The place plus every GEOID its outcomes are reported under."""
+        return [self.geoid, *self.reporting_geoids]
 
     @model_validator(mode="after")
     def _ordered(self) -> Holdout:
         if self.outcome_until < self.outcome_from:
             raise ValueError(f"{self.test_id}: outcome_until is before outcome_from")
+        if self.reporting_geoids and not self.reporting_reason:
+            raise ValueError(f"{self.test_id}: reporting_geoids need a reporting_reason")
         return self
 
 

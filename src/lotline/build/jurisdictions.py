@@ -131,14 +131,28 @@ def _local_rows(
     )
 
 
+def local_geoids(state: str, store: DataStore) -> set[str]:
+    """Jurisdictions a state's own sources report (permits and parcels), plus every holdout place.
+
+    A holdout place is always its own jurisdiction, even where BPS files it under a county (Charlotte):
+    otherwise an adapter that keeps only known GEOIDs would relabel its rows as the county's (#123).
+    Rerun `lotline fetch --source jurisdictions` after adding a permit or parcel source.
+    """
+    local: set[str] = set()
+    for table in ("permits", "parcels"):
+        rows = store.read(state, table)
+        if rows is not None:
+            local |= set(rows["jurisdiction_geoid"].dropna().astype(str))
+    return local | {h.geoid for h in load_state(state).holdouts}
+
+
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     bps_table = store.read(state, "bps_place_year")
     if bps_table is None:
         bps_table = bps.load(state, store, refresh=refresh)
     fips = load_state(state).fips
     census = decennial.load(fips, state, store, refresh=refresh)
-    permits = store.read(state, "permits")  # state sources' jurisdictions (rerun after a new permit source)
-    local = set(permits["jurisdiction_geoid"].dropna()) if permits is not None else set()
+    local = local_geoids(state, store)
     pbc = geoparts.place_by_county(fips, store, refresh) if local else None
     place_counties = (
         dict(zip(pbc["place_geoid"], pbc["county_geoid"], strict=True)) if pbc is not None else {}
