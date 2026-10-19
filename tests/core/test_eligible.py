@@ -26,7 +26,9 @@ CASES = [
     ("p5", "DUPLEX", 2, 6000.0, True, False, False, False, False),  # not a SF house
     ("p6", "SF_DETACHED", 1, 6000.0, True, True, False, False, False),  # HOA: excluded
     ("p7", "SF_DETACHED", 1, 6000.0, True, False, True, False, False),  # floodplain: excluded
-    ("p8", "VACANT_RESIDENTIAL", None, 6000.0, True, None, None, False, False),  # no existing house
+    # vacant SF-zoned lot: no house for an ADU, but missing middle counts it (Handbook; D-014)
+    ("p8", "VACANT_RESIDENTIAL", None, 6000.0, True, None, None, False, True),
+    ("p9", "VACANT_RESIDENTIAL", None, 6000.0, False, None, None, False, False),  # vacant, not SF-only zoned
 ]
 
 
@@ -83,11 +85,12 @@ def test_unknowns_are_kept_but_flagged():
 def test_counts_and_quality_per_jurisdiction():
     out = eligible.from_parcels(_parcels(), JURIS).set_index("theme")
     assert_conforms(out.reset_index(), "eligible_parcels")
-    # ADU: p1, p2, p3 eligible, 1 of 3 assumed (33%) -> medium; MM: p1, p3, 1 of 2 assumed (50%) -> low
+    # ADU: p1, p2, p3 eligible, 1 of 3 assumed (33%) -> medium
+    # MM: p1, p3 and the vacant SF-zoned lot p8; only p3 rests on an unknown, 1 of 3 (33%) -> medium
     assert out.loc["adu", "eligible_parcels"] == 3 and out.loc["adu", "denominator_quality"] == "medium"
     assert (
-        out.loc["missing_middle", "eligible_parcels"] == 2
-        and out.loc["missing_middle", "denominator_quality"] == "low"
+        out.loc["missing_middle", "eligible_parcels"] == 3
+        and out.loc["missing_middle", "denominator_quality"] == "medium"
     )
     assert set(out["rule_version"]) == {eligible.RULE_VERSION} and set(out["data_tier"]) == {1}
     assert set(out["denominator_source"]) == {"parcels"}
@@ -329,3 +332,15 @@ def test_local_only_township_stays_in_its_county_remainder():
     empty_t = pd.DataFrame(columns=["place_geoid", "township_geoid", "share"])
     homes = eligible.allocate_homes(acs, juris, empty_c, empty_t).set_index("jurisdiction_geoid")["homes"]
     assert homes["27139"] == 1000 and homes["2713919036"] == 100
+
+
+@pytest.mark.parametrize("theme", ["adu", "missing_middle"])
+def test_lot_size_floor_is_inclusive(theme):
+    # with a 5,000 sq ft floor, a lot of exactly 5,000 qualifies and one of 4,999 does not
+    params = load_params("eligibility")
+    key = f"min_lot_sqft_{theme}"
+    params = {**params, key: params[key].model_copy(update={"value": 5000.0})}
+    lots = _parcels().iloc[[0, 0]].copy()
+    lots["parcel_id"] = ["at", "below"]
+    lots["lot_sqft"] = [5000.0, 4999.0]
+    assert eligible.classify(lots, theme, params)["eligible"].tolist() == [True, False]

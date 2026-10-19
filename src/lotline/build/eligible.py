@@ -5,8 +5,11 @@ One versioned rule, applied the same way to every state and comparable place. A 
 - **adu**: an existing single-family house (`land_use_std == SF_DETACHED`), at most one unit where the
   roll records units, lot at least `min_lot_sqft_adu`, not excluded (HOA, floodplain, historic district,
   where known). Handbook: "one ADU per parcel with an existing single-family building".
-- **missing_middle**: the same, on a lot zoned single-family-only (`sf_only_zoned`), lot at least
-  `min_lot_sqft_missing_middle`. Handbook: "2-6 units on single-family-only parcels".
+- **missing_middle**: a lot zoned single-family-only (`sf_only_zoned`) that holds an existing single-family
+  house (at most one unit where known) **or is vacant residential land** (`VACANT_RESIDENTIAL`), lot at least
+  `min_lot_sqft_missing_middle`, not excluded. Handbook: "2-6 units on single-family-only parcels"; unlike
+  ADUs, it does not require an existing building (analysis plan D-014; rule 1.1). The ACS fallback has no
+  vacant land, so where it is used the missing-middle denominator excludes vacant lots (flagged as `low`).
 
 Unknown is never silently dropped or counted as known. A parcel whose zoning is unknown counts as
 single-family-only (WS-NC brief: "assume SF-only unless known"), a missing lot size passes the floor only
@@ -26,7 +29,7 @@ from lotline.config import Parameter, load_params
 from lotline.io import DataStore
 from lotline.schemas import validate
 
-RULE_VERSION = "1.0"
+RULE_VERSION = "1.1"  # 1.1: vacant SF-zoned lots count for missing middle (D-014)
 THEMES = ("adu", "missing_middle")
 ACS_SF_DETACHED = "B25024_002"  # units in structure: 1, detached
 EXCLUSIONS = {
@@ -62,13 +65,17 @@ def classify(parcels: pd.DataFrame, theme: str, params: dict[str, Parameter] | N
     for column, toggle in EXCLUSIONS.items():
         if p[toggle].value >= 1:
             excluded |= _col(parcels, column).fillna(False).astype(bool)
-    eligible = sf_house & one_unit & lot_ok & ~excluded
+    house = sf_house & one_unit
     assumed = units.isna() | lot.isna()
 
-    if theme == "missing_middle":
+    if theme == "adu":
+        eligible = house & lot_ok & ~excluded  # an ADU needs an existing single-family building
+    else:  # missing middle: an existing house or a vacant residential lot, on single-family-only zoning
+        vacant = parcels["land_use_std"] == "VACANT_RESIDENTIAL"
         zoning = _col(parcels, "sf_only_zoned")
-        eligible &= zoning.fillna(True).astype(bool)  # unknown zoning: assume SF-only, and say so
-        assumed |= zoning.isna()
+        eligible = (house | vacant) & lot_ok & ~excluded & zoning.fillna(True).astype(bool)
+        # unknown zoning: assumed SF-only, and flagged as an assumption
+        assumed = (assumed & ~vacant) | (lot.isna() & vacant) | zoning.isna()
 
     return pd.DataFrame({"eligible": eligible.astype(bool), "assumed": (eligible & assumed).astype(bool)})
 
