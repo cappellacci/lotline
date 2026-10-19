@@ -17,3 +17,14 @@ sources:
       Adapter src/lotline/adapters/states/tx/austin_permits.py. Building permits with a Census code 101-106,
       436 or 645-649 in permit_class, plus plain-class 'New' permits (159,334 rows on 2026-10-18). R-102
       Secondary Apartment is the city's ADU class (dataset 687g-qcqy); it nearly stops after HOME (2024).
+  - name: tcad_parcels
+    url: https://traviscad.org/publicinformation/
+    license: Public information posted by Travis Central Appraisal District
+    access: manual
+    cadence: annual certified roll (July), plus supplements
+    notes: >-
+      Adapter src/lotline/adapters/states/tx/tcad_parcels.py. traviscad.org sits behind a bot challenge, so Ben
+      downloads the "2026 Certified Appraisal Export (July)" zip in a browser and it is registered with
+      `lotline manifest register --source tcad` (Legacy 8.0.33 fixed-width layout, export dated 2026-07-18,
+      557 MB zipped, about 18 GB unzipped). 239,626 City of Austin parcels (Travis County part only). Land use
+      from TCAD's own codes (config/crosswalks/tx_tcad_state_codes.csv), else the state category.

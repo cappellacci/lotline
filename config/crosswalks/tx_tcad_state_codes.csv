@@ -1,0 +1,12 @@
+state_cd,tcad_description,land_use_std,notes,source_url
+A1,SINGLE FAMILY RESIDENCE,SF_DETACHED,"TCAD does not separate townhomes on their own lots from detached houses; both stay SF_DETACHED.",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+A2,SINGLE FAMILY RESIDENCE MH,MOBILE_HOME,"Manufactured home on a single-family lot.",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+A3,SINGLE FAMILY RESIDENCE DETAILS,SF_DETACHED,"Secondary improvement details on a single-family property.",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+A4,CONDOS,CONDO_UNIT,"Condominium unit (state category A, but not a detached house).",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+A5,CONDOS DETAILS,CONDO_UNIT,"Improvement details on a condominium unit.",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+A9,HS COMMERCIAL HIGHEST & BEST USE,SF_DETACHED,"A homestead house appraised at a commercial highest and best use; the use is still a single-family home.",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+B1,MULTIFAMILY,MULTIFAMILY_5P,"Multifamily not split into duplex, triplex or fourplex (B2-B4), so taken as 5 or more units.",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+B2,DUPLEX,DUPLEX,,https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+B3,TRI-PLEX,TRI_QUAD,,https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+B4,FOUR-PLEX,TRI_QUAD,,https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
+B5,MULTIFAMILY WITH HS,OTHER,"Owner-occupied (homestead) multifamily; the number of units is not given.",https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip
