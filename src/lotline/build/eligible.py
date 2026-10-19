@@ -74,7 +74,8 @@ def classify(parcels: pd.DataFrame, theme: str, params: dict[str, Parameter] | N
         vacant = parcels["land_use_std"] == "VACANT_RESIDENTIAL"
         zoning = _col(parcels, "sf_only_zoned")
         eligible = (house | vacant) & lot_ok & ~excluded & zoning.fillna(True).astype(bool)
-        assumed = (assumed & ~vacant) | (lot.isna() & vacant) | zoning.isna()  # unknown zoning: assume SF-only
+        # unknown zoning: assumed SF-only, and flagged as an assumption
+        assumed = (assumed & ~vacant) | (lot.isna() & vacant) | zoning.isna()
 
     return pd.DataFrame({"eligible": eligible.astype(bool), "assumed": (eligible & assumed).astype(bool)})
 
