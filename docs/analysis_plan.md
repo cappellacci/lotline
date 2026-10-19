@@ -65,3 +65,21 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Open:** a more stable demand form (one combined signal, or a statewide cycle term), pre-declared before
   any run, to address the NC/TX single-family under-forecast.
 - **Decided by:** Ben, 2026-10-15.
+
+### D-008 · 2026-10-19 · Repeated project totals counted once
+- **Was:** permit units summed as each city reports them (WS-OH Columbus and Cincinnati adapters, PRs #106/#112).
+  Several city files put a multi-building project's **total** on every building's permit: Columbus 2023, nine
+  permits on one parcel each say 198 units; Austin 2022, nine permits on one parcel each say 280.
+- **Now:** when permits are counted (`lotline.build.permits.count_units`), if at least
+  `repeated_total_min_permits` = 3 new-construction permits on the same parcel, jurisdiction and year all report
+  the same count of at least `repeated_total_min_units` = 50 units, that count is counted **once** (on the lowest
+  `permit_id`); the others count 0. Demolitions and permits with no parcel are never grouped. The adapters'
+  tables stay as reported.
+- **Parameters:** `config/params/permits.yaml` (ranges 20–100 units, 2–5 permits).
+- **Sensitivity, both ways:** the rule on is the primary count; `dedupe=False` gives the as-reported count, and
+  both are shown wherever permit counts are compared or used.
+- **Effect (2026-10-19, 5+ units vs BPS):** Columbus 2023 1.41 → 1.02 of BPS; Austin 2022 1.42 → 1.25. Over
+  2018–2025 the rule removes 1,963 units (13 permits) in Columbus and 4,167 (31) in Austin; none in Cincinnati,
+  whose excess over BPS has a different cause (open).
+- **Why:** counting a project nine times overstates multifamily building, the outcome most reforms target.
+- **Decided by:** Ben, 2026-10-19.
