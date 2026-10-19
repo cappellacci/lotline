@@ -1,0 +1,2 @@
+entity_name,jurisdiction_geoid,notes,source_url
+CITY OF AUSTIN,4805000,"Taxing-unit name as it should appear in PROP_ENT.TXT (entity_name, columns 64-113). Not yet checked against a real TCAD file: the adapter fails, listing the entity names it saw, if no property matches.",https://traviscad.org/wp-content/largefiles/Website_Legacy8.0.33-AppraisalExportLayout_06182026.zip

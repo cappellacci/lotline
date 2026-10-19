@@ -1,0 +1,18 @@
+ptad_code,ptad_description,land_use_std,notes,source_url
+A,SINGLE-FAMILY,SF_DETACHED,"State category A. Appraisal districts may also file townhomes and condominium units here; refine with district subcodes (e.g. TCAD A1, A2...) once a district's code table (STATE_CD.TXT) is read.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+B,MULTIFAMILY,OTHER,"State category B covers buildings with more than one dwelling; the category alone does not say how many, and land_use_std has no 2+-unit value, so OTHER (not MULTIFAMILY_5P) until district subcodes split duplexes, 3-4 and 5+.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+C1,VACANT LOTS,VACANT_RESIDENTIAL,"State category C1 (vacant lots and land tracts). Some vacant commercial lots may be filed here; district subcodes can separate them.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+C2,COLONIA LOTS,VACANT_RESIDENTIAL,"State category C2 (lots in colonias, generally unimproved residential lots).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+D1,QUALIFIED OPEN-SPACE LAND,AGRICULTURAL,"State category D1 (land with an agricultural or open-space valuation).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+D2,FARM & RANCH IMP,AGRICULTURAL,"State category D2 (farm and ranch improvements on qualified land).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+E,NON-AG LAND AND IMPROVEMENTS,OTHER,"State category E (rural land without an ag valuation, including rural homesites): mixed uses, so OTHER.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+F1,COMMERCIAL REAL,COMMERCIAL,"State category F1.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+F2,INDUSTRIAL REAL,INDUSTRIAL,"State category F2.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+G,ALL MINERALS,OTHER,"State category G (oil, gas and other minerals).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+J,ALL UTILITIES,OTHER,"State category J (utilities and railroads).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+L1,COMMERCIAL PERSONAL,OTHER,"State category L1 (business personal property, not land; real-property rows only are loaded).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+L2,INDUSTRIAL PERSONAL,OTHER,"State category L2 (industrial personal property, not land).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+M1,MOBILE HOMES,MOBILE_HOME,"State category M1.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+N,INTANGIBLE PERSONAL PROPERTY,OTHER,"State category N.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+O,RESIDENTIAL INVENTORY,VACANT_RESIDENTIAL,"State category O (lots and homes held for sale by a developer or builder): mostly new subdivision lots, some with a house under construction.",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
+S,SPECIAL INVENTORY,OTHER,"State category S (dealer inventory: vehicles, boats, manufactured housing for sale).",https://comptroller.texas.gov/auto-data/PT2/PVS/2025F/2272469141D.php
