@@ -25,3 +25,17 @@ def test_engine_parameters_from_the_research_docs():
         assert "scripts/dev/completion_factors.py" in agg[key].source  # reproducible from Census data
     cut = fees["handbook_fee_per_unit_usd"].value * fees["handbook_fee_cut_share"].value
     assert cut == 25_000  # Handbook: -50% of $50k = -$25k per unit
+
+
+def test_fee_elasticity_range_includes_zero_and_stays_in_the_v6_band():
+    """D-010: low case is no effect; the high case stays inside V6's 0 to +12% single-family band.
+
+    By hand at the high end: 1.75 x 0.75 (1 - lambda low) x 25,000 / 350,000 (illustrative TDC) = 0.09375.
+    """
+    fees = load_params("fees")
+    eps, lam = fees["fee_permit_elasticity"], fees["land_capture_share"]
+    assert eps.low == 0.0
+    assert eps.value == pytest.approx(0.3)  # E081 tract-level unit elasticity
+    high_effect = eps.high * (1 - lam.low) * 25_000 / 350_000
+    assert high_effect == pytest.approx(0.09375)
+    assert 0.0 <= high_effect <= 0.12

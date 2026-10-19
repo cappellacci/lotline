@@ -123,3 +123,21 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   completion) and with the interest saved when fees are paid at permit.
 - **Decided by:** proposed by WS-ENGINE; accepted by Ben, 2026-10-19 (the "approx." parameter values are to be
   checked against their sources in a follow-up PR before V2 uses them).
+
+### D-010 · 2026-10-19 · Fee elasticity re-anchored to the evidence register; low end 0
+- **Research docs (methods review §3c; fees causal diagram):** ε 0.5–3, central 1.5, with a note that E081
+  argues for the low end and that the low case must include zero. The central value had no study behind it,
+  and the high case (3 × 0.75 × ~7% ≈ +16%) fell outside the V6 pass band (judging panel MS-03).
+- **Chosen (`config/params/fees.yaml` `fee_permit_elasticity`):** central **0.3** (E081, tract-level unit
+  elasticity), low **0** (E058 and E062: fee effects not significant), high **1.75** (E080 and E082, metro-wide
+  supply elasticities). E059/E060 (non-water/sewer fees can raise building) are handled by the revenue-replaced
+  toggle in `scenarios/fees.py`, not by a negative ε.
+- **Cost to price:** the studies estimate elasticities with respect to price. For the project at the margin of
+  feasibility, price ≈ total development cost (land included), so a fee cut of (1 − λ) × Δfee reaching
+  builders acts like a price rise of (1 − λ) × Δfee / TDC. The formula %Δ permits = ε × (1 − λ) × Δfee / TDC ×
+  ramp(t) is unchanged; it slightly overstates the effect where projects earn above-normal profit.
+- **Effect:** at an illustrative TDC of $350k (the $25k cut ≈ 7%), central ≈ +1% and high ≈ +9% single-family
+  permits over 5 years, inside V6's 0 to +12% band (test: `test_fee_elasticity_range_includes_zero_...`).
+  No results change yet: no model code reads ε. The V6b pro forma route remains the primary fee estimate; ε is
+  the fallback where parcel data are missing.
+- **Decided by:** Ben, 2026-10-19 (accepting MS-03 via the coordinator).
