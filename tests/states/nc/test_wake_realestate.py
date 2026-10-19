@@ -10,7 +10,9 @@ import pytest
 
 from lotline import registry
 from lotline.adapters.states.nc import wake_realestate as wr
+from lotline.io import DataStore
 from lotline.schemas import LAND_USES, assert_conforms
+from lotline.validation import holdout
 
 # REID, card, type&use, design, land class, year, units, heated, bldg value, acres, city, flag, price, date
 ROWS = [
@@ -99,3 +101,42 @@ def test_no_personal_columns_read():
 
 def test_registered():
     assert registry.sources_for("NC")["wake_realestate"].module.TABLE == "parcels"
+
+
+def test_load_without_registered_roll_explains_register(tmp_path):
+    with pytest.raises(FileNotFoundError, match="lotline manifest register .*--source wake_realestate"):
+        wr.load("NC", DataStore(tmp_path))
+
+
+def test_load_ignores_scripted_downloads_and_the_sales_file(tmp_path, monkeypatch):
+    store = DataStore(tmp_path / "data")
+    sales = tmp_path / wr.SALES_FILE
+    sales.write_bytes(b"sales")
+    store.register(
+        sales, source=wr.SOURCE, url=f"{wr.BASE}/{wr.SALES_FILE}", license=wr.LICENSE, vintage="2026-10-19"
+    )
+    with pytest.raises(FileNotFoundError, match="No Wake real estate roll"):
+        wr.load("NC", store)
+
+
+def test_load_reads_registered_roll_with_snapshot_holdout(tmp_path, monkeypatch):
+    store = DataStore(tmp_path / "data")
+    roll = tmp_path / wr.ROLL_FILE
+    roll.write_bytes(b"stand-in for the xlsx")
+    store.register(
+        roll, source=wr.SOURCE, url=f"{wr.BASE}/{wr.ROLL_FILE}", license=wr.LICENSE, vintage="2023-12-31"
+    )
+    raw = pd.DataFrame(ROWS, columns=COLS)
+    raw["Assessed_Land_Value"] = "50000"
+    raw["Zoning"] = "R-4"
+    seen, calls = [], []
+    monkeypatch.setattr(wr, "read", lambda path: seen.append(path.name) or raw)
+    real_apply = holdout.apply
+    monkeypatch.setattr(
+        wr.holdout, "apply", lambda df, st, **kw: calls.append(kw) or real_apply(df, st, **kw)
+    )
+    out = wr.load("NC", store)
+    assert seen == [wr.ROLL_FILE]
+    assert calls and calls[0]["snapshot"] is True
+    assert len(out) == 7
+    assert_conforms(out, "parcels")
