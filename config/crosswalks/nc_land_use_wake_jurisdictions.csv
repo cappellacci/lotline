@@ -1,0 +1,17 @@
+city_code,city,geoid,source_url
+RAL,RALEIGH,3755000,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+CAR,CARY,3710740,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+APE,APEX,3701520,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+WAK,WAKE FOREST,3770540,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+FUQ,FUQUAY VARINA,3725300,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+HOL,HOLLY SPRINGS,3732260,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+GAR,GARNER,3725480,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+MOR,MORRISVILLE,3744520,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+KNI,KNIGHTDALE,3736080,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+WEN,WENDELL,3771860,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+ZEB,ZEBULON,3776220,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+ROL,ROLESVILLE,3757640,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+ANG,ANGIER,3701400,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+DUR,DURHAM,3719000,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+CLA,CLAYTON,3712860,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
+OUT,OUTSIDE CITY LIMIT,,https://s3.us-west-1.amazonaws.com/wakegov.com.if-us-west-1/s3fs-public/documents/2020-10/CodeDescriptions.pdf; https://www2.census.gov/geo/docs/reference/codes2020/place/st37_nc_place2020.txt
