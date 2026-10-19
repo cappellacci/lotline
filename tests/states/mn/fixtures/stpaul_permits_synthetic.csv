@@ -1,0 +1,11 @@
+OBJECTID,PERMITNUMBER,PIN,STATUS,ISSUEDATE,FINALDATE,SUB_TYPE,WORK_TYPE,FOLDERDESCRIPTION,STATE_VALUATION,note
+1,20 900001,032823220116,Finaled,1525273200000,1541084400000,Single Family Dwelling,New,New house,350000,new SFD: 1 unit derived
+2,20 900002,252923130179,Finaled,1551711600000,1567350000000,2-Family/Duplex,New,New duplex,500000,new duplex: 2 units derived
+3,20 900003,202923340010,Active/Issued,1593615600000,,Residential (Multi-Fam),New,New fourplex,900000,multifam: unknown units
+4,20 900004,,Inspected,1609858800000,,Single Family Dwelling,Express Repair,"Reroof, call Testperson 651-555-0100",9000,repair: 0 units; blank PIN; contact text never stored
+5,20 900005,000000000000,Finaled,1643814000000,1646146800000,Accessory Structure,New,Detached garage,40000,garage: OTHER; zero PIN null
+6,20 900006,082823430032,Inspected,1685631600000,1688223600000,Single Family Dwelling,Remodel,Basement ADU,60000,remodel: unknown units; final date dropped (not Finaled)
+7,20 900007,112823240014,Finaled,1704078000000,1706799600000,Single Family Dwelling,New,New house,300000,2023-12-31 local: kept
+8,20 900008,112823240084,Finaled,1709305200000,1714575600000,Single Family Dwelling,New,New house,300000,held out (2024)
+9,20 900009,272923440069,Active/Issued,1743519600000,,2-Family/Duplex,New,New duplex,400000,held out (2025)
+10,20 900010,032823230061,Active/Issued,,,Commercial,Remodel,Office,100000,never issued: dropped

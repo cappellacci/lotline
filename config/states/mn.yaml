@@ -34,3 +34,14 @@ sources:
       Minneapolis Construction Code Services permits. Building permits only (Res, Commercial, Wrecking).
       Applicant and owner names and applicant address are never requested. No ADU flag: ADUs are inferred
       from the scope of work (type_confidence=inferred).
+  - name: stpaul_permits
+    url: https://services1.arcgis.com/9meaaHE3uiba0zr8/arcgis/rest/services/Building_Permits_/FeatureServer/0
+    license: Public domain (City of Saint Paul item license; provided 'as is')
+    access: arcgis
+    cadence: >-
+      rolling 10-year window, but frozen: layer data last edited 2025-07-01 (layer.json editingInfo, checked
+      2026-10-19); every fetch is a dated snapshot
+    notes: >-
+      St. Paul DSI building permits from 2015-06-30. No unit counts, no ADU flag: secondary to Met Council for
+      St. Paul outcomes. V5 holdout: rows from 2024 on are filtered before any processing. Street address and
+      contractor name/address are never requested.
