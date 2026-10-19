@@ -9,9 +9,12 @@ statewide layer with standard field names. The values inside some fields are sti
   and its land-use description in `parusedesc`. `config/crosswalks/nc_land_use_counties.csv` says, per
   county, which fields to read in which order (the first field with a crosswalk match wins) and points to
   the county's crosswalk `config/crosswalks/nc_land_use_<county>.csv` (field, code → `land_use_std`).
-  Where the county flag `vacant_when_unimproved` is set, a residential match from a fallback field (a land
-  use, not a building type) on a parcel with no building value (`improvval` 0 or empty) becomes
-  `VACANT_RESIDENTIAL`: the land use says "single-family", but nothing is built yet.
+  The county's first `building_fields` fields describe a building (0 when the county sends only a land
+  use). Where the county flag `vacant_when_unimproved` is set, a residential match from a land-use field on
+  a parcel with no building becomes `VACANT_RESIDENTIAL`: the land use says "single-family", but nothing is
+  built yet. "No building" reads the county's `built_signal`: `improvval` 0 or empty, or, for Union, which
+  sends no building values, `structyear` 0 or empty. The same file records each county's data tier (brief:
+  1 = year built and use codes, 2 = use codes only, 3 = neither) and the basis for it.
 - **Year built.** `structyear`; 0 or empty means unknown (completeness differs by county).
 - **Lot size.** `gisacres` (GIS polygon area) × 43,560.
 - **Values.** `landval` / `improvval`, the county's assessed values as of its last revaluation
@@ -109,8 +112,9 @@ PROVENANCE = {
         "parcel_id = county GEOID + parno; a parno repeated within a county keeps the lowest OBJECTID; "
         "parcels without a parno are dropped",
         "land_use_std from the county's crosswalk (config/crosswalks/nc_land_use_<county>.csv), reading the "
-        "fields in the county's order; a residential land use (fallback field) with no building value → "
-        "VACANT_RESIDENTIAL where the county flag says so; unmatched → UNKNOWN",
+        "fields in the county's order; a residential land use (not a building-type field) with no building "
+        "(improvval, or structyear for Union, 0) → VACANT_RESIDENTIAL where the county flag says so; "
+        "unmatched → UNKNOWN",
         "land_use_raw = '<field>=<code>' of the matched code (else the first field's raw value)",
         "year_built = structyear when 1700..vintage year; 0 and empty → unknown",
         "lot_sqft = gisacres × 43,560 (GIS polygon area); land_value/bldg_value = landval/improvval, "
@@ -122,13 +126,16 @@ PROVENANCE = {
         "Holdout filter applied with snapshot=True: the 2026 roll drops every Charlotte (3712000) parcel",
     ],
     "limitations": [
-        "Current roll only: no history; per-county transform dates differ (Mecklenburg 2026-01-07, Wake "
-        "2026-05-17, Durham 2026-05-13 on 2026-10-19)",
+        "Current roll only: no history; per-county transform dates differ (2026-01-07 Mecklenburg to "
+        "2026-05-29 Cabarrus on 2026-10-19)",
+        "Ten largest counties so far (2020 Census): Wake, Mecklenburg, Guilford, Forsyth, Cumberland, "
+        "Durham, Buncombe, Union, Gaston, Cabarrus (Cabarrus edges New Hanover by about 100 people)",
         "Land-use codes are county-native and crosswalked county by county; some codes are ambiguous "
         "(Mecklenburg DUPLEX-TRIPLEX → DUPLEX; patio homes → SF_ATTACHED; Wake ONE FAMILY includes "
         "townhouses and condominium units, which only the county file's Design Style separates)",
         "No dwelling-unit counts or building area in the layer",
-        "structyear completeness varies by county (see the PR / V0 report)",
+        "structyear is empty (0) for Durham, Forsyth, Buncombe and Cabarrus; Cabarrus sends no land-use "
+        "code (tier 3); Union's RES lumps every housing type; Guilford MULTI-FAMILY<4 (2-4 units) → TRI_QUAD",
         "Jurisdictions come from parcel points and 2025 boundaries; a place that is not a BPS permit issuer "
         "(Charlotte and the Mecklenburg towns, which BPS reports under the county) keeps its place GEOID",
         "Charlotte parcels are all held out (current roll, V5 holdout); a pre-2023-06-01 Mecklenburg roll "
@@ -145,11 +152,16 @@ class County:
     fields: tuple[str, ...]
     vacant_when_unimproved: bool
     zoning_field: str | None
+    building_fields: int = 1  # leading fields that describe a building; the rest are land uses
+    built_signal: str = "improvval"  # > 0 means a building stands (improvval, or structyear where no values)
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
     with path.open(newline="") as f:
         return list(csv.DictReader(f))
+
+
+BUILT_SIGNALS = ("improvval", "structyear")
 
 
 def counties(path: Path = COUNTIES_CSV) -> dict[str, County]:
@@ -165,7 +177,11 @@ def counties(path: Path = COUNTIES_CSV) -> dict[str, County]:
             fields=tuple(f.strip() for f in r["land_use_fields"].split(";") if f.strip()),
             vacant_when_unimproved=flag == "True",
             zoning_field=r["zoning_field"].strip() or None,
+            building_fields=int(r["building_fields"]),
+            built_signal=r["built_signal"].strip(),
         )
+        if out[r["county_fips"]].built_signal not in BUILT_SIGNALS:
+            raise ValueError(f"{path.name}: built_signal must be one of {BUILT_SIGNALS}")
     return out
 
 
@@ -223,7 +239,12 @@ def map_land_use(
 def land_use(df: pd.DataFrame, county: County) -> tuple[pd.Series, pd.Series]:
     """(land_use_std, land_use_raw) for one county's rows."""
     return map_land_use(
-        df, crosswalk(county.crosswalk), county.fields, vacant_when_unimproved=county.vacant_when_unimproved
+        df,
+        crosswalk(county.crosswalk),
+        county.fields,
+        vacant_when_unimproved=county.vacant_when_unimproved,
+        building_fields=county.building_fields,
+        bldg_col=county.built_signal,
     )
 
 

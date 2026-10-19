@@ -1,0 +1,38 @@
+field,code,description,land_use_std,notes,source_url
+parusedesc,AGRI/HORT,AGRI/HORT,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AIRPORT,AIRPORT,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,APART,APART,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,ASSIST LIV/SKILLCARE,ASSIST LIV/SKILLCARE,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMM,COMM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMON AREA,COMMON AREA,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONDO,CONDO,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,DEVELOPMT RESTRICTED,DEVELOPMT RESTRICTED,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,DRAINAGE LOT,DRAINAGE LOT,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FUNERAL HM/CEMETERY,FUNERAL HM/CEMETERY,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOLF COURSE,GOLF COURSE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOLFCRSE,GOLFCRSE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOV OWNED,GOV OWNED,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOTEL/MOTEL,HOTEL/MOTEL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,IND,IND,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INSTITUTIONAL,INSTITUTIONAL,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,LEASED,LEASED,UNKNOWN,use not given (undifferentiated),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MED,MED,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MFG HOM,MFG HOM,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MH PARK,MH PARK,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI-FAMILY5>,MULTI-FAMILY5>,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI-FAMILY<4,MULTI-FAMILY<4,TRI_QUAD,2-4 units: counted as 3-4 units (duplexes cannot be told apart),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,NONE,NONE,UNKNOWN,use not given (undifferentiated),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OFFICE,OFFICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PETROL/GAS,PETROL/GAS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,QUARR,QUARR,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RAILROAD CORRIDOR,RAILROAD CORRIDOR,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,REC/PARK,REC/PARK,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RESIDENTIAL,RESIDENTIAL,SF_DETACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RETAIL,RETAIL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SCHOOL/COLL/UNIV,SCHOOL/COLL/UNIV,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE WIDE MH,SINGLE WIDE MH,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TOWNHOUSE,TOWNHOUSE,SF_ATTACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TWINHOME,TWINHOME,SF_ATTACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,UTILITY USE,UTILITY USE,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,Unknown Owner,Unknown Owner,UNKNOWN,use not given (undifferentiated),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,VACANT,VACANT,UNKNOWN,use not given (undifferentiated),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0

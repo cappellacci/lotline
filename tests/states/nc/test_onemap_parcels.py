@@ -168,3 +168,40 @@ def test_no_personal_fields_requested():
 
 def test_registered():
     assert registry.sources_for("NC")["onemap_parcels"].module.TABLE == "parcels"
+
+
+def test_vacant_rule_for_single_land_use_field_and_structyear_signal():
+    xw = {("parusedesc", "RES"): "SF_DETACHED", ("parusedesc", "COM"): "COMMERCIAL"}
+    df = pd.DataFrame(
+        {
+            "parusedesc": ["RES", "RES", "COM"],
+            "improvval": [0, 0, 0],  # Union: no building values at all
+            "structyear": [1998, 0, 0],
+        }
+    )
+    std, raw = om.map_land_use(
+        df, xw, ("parusedesc",), vacant_when_unimproved=True, building_fields=0, bldg_col="structyear"
+    )
+    assert list(std) == ["SF_DETACHED", "VACANT_RESIDENTIAL", "COMMERCIAL"]
+    assert raw[1] == "parusedesc=RES"
+    # with building_fields=1 the only field counts as a building type: never vacant
+    std1, _ = om.map_land_use(df, xw, ("parusedesc",), vacant_when_unimproved=True, bldg_col="structyear")
+    assert list(std1) == ["SF_DETACHED", "SF_DETACHED", "COMMERCIAL"]
+
+
+def test_ten_largest_counties_configured():
+    cfg = om.counties()
+    ten = {"37183", "37119", "37081", "37067", "37051", "37063", "37021", "37179", "37071", "37025"}
+    assert set(cfg) == ten
+    assert cfg["37179"].built_signal == "structyear" and cfg["37063"].building_fields == 0
+    assert cfg["37183"].building_fields == 1
+    for c in cfg.values():
+        xw = om.crosswalk(c.crosswalk)
+        assert set(xw.values()) <= set(LAND_USES), c.name
+        assert {f for f, _ in xw} <= set(c.fields), c.name
+
+
+def test_county_tiers_follow_the_brief():
+    tiers = pd.read_csv(om.COUNTIES_CSV, dtype=str).set_index("county")["data_tier"]
+    assert set(tiers) <= {"1", "2", "3"}
+    assert tiers["Wake"] == "1" and tiers["Durham"] == "2" and tiers["Cabarrus"] == "3"
