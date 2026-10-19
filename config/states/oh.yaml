@@ -7,6 +7,7 @@ township_permits: true  # townships issue building permits (BPS rows per townshi
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[430, 459]]
 holdouts: []
+land_use_crosswalk: config/crosswalks/oh_dte_luc.csv
 sources:
   - name: columbus_permits
     url: https://services1.arcgis.com/9yy6msODkIBzkUXU/arcgis/rest/services/Building_Permits/FeatureServer/0
@@ -18,3 +19,13 @@ sources:
       2026-10-15 (data last edited 2026-10-15); the adapter downloads only new-structure and demolition
       permits (29,183). Building type from CONST_TYPE_CODE (Census BPS code). No ADU flag or description
       field, so ADUs can't be identified. Pre-2010 permits sit in separate Historic_Building_Permits services.
+  - name: oh_parcels
+    url: https://services2.arcgis.com/MlJ0G8iWUyC7jAmu/arcgis/rest/services/OhioStatewidePacels_full_view/FeatureServer/0
+    license: State of Ohio OGRIP public data, 'as is' (no use restrictions stated for public downloads)
+    access: arcgis
+    cadence: as counties send exports (layer last edited 2026-09-23)
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/oh_parcels.py (tier 2: StateLUC + LandArea only). 6,313,610
+      parcels in 88 counties on 2026-10-15; Franklin and Hamilton downloaded first (exports dated 2023-09-26 and
+      2023-08-02). The 2022 vintage (maps.ohio.gov Statewide_Parcels_2022) is token-gated and skipped. Jurisdiction
+      by centroid point-in-polygon (lotline.geo.place_or_township).
