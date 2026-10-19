@@ -9,7 +9,7 @@ A running record of **how** the Lotline entry was built: what question each step
 - Entries LB-001 to LB-009 were **reconstructed on 2026-09-30** from the docs and artifacts they produced; later entries are written as the work happens.
 - Entries are added two ways: by the Claude session doing the work (rule in `CLAUDE.md`), and by a nightly review that scans the repo, project docs and artifacts for anything new since the last scan. Nightly entries are marked *(auto-review)*.
 
-**Last scan:** 2026-10-18T21:36Z
+**Last scan:** 2026-10-19T00:53Z
 
 ---
 
@@ -33,7 +33,7 @@ A running record of **how** the Lotline entry was built: what question each step
 | 13. Core data and contracts | Oct 6–8 | Can national data for four states flow through shared, tested contracts, with blind tests protected? | BPS, FHFA, ACS, FRED and 2020 Census adapters; holdout filter; generated provenance and data dictionary; V0 reports; tag `schemas-v1`; ArcGIS pager for state adapters | LB-027 – LB-037 |
 | 14. Coding Period opens | Oct 14 | Is the repo aligned with the official rules, template and judging rubric, and does every state have a sound denominator? | Rules-PDF review; starter-template alignment; `/judge` panel; eligible-parcel rule with rest-of-county denominators; first MN/NC/engine workstreams; CBSA crosswalk; measured completion factors; permit-text parser | LB-041 – LB-056 |
 | 15. City permits and the V1 baseline | Oct 14–15 | Do city permit records line up with Census counts, and does a simple baseline beat naive forecasts out of sample? | Minneapolis, Durham and Raleigh permit adapters; V1 baseline (spec B) and backtest harness; spec C tried and not adopted (D-007) | LB-057 – LB-063 |
-| 16. Texas and Ohio start; shared tooling | Oct 15–18 | Can the pipeline take Texas and Ohio sources, and parcels without leaking holdouts? | TX and OH reform CSVs (second-coded sample), Columbus permits; Socrata pager, parcel holdout rule, manual-download registry, pager geometry modes, place/township assignment | LB-064 – LB-074 |
+| 16. Texas and Ohio start; shared tooling | Oct 15–19 | Can the pipeline take Texas and Ohio sources, and parcels without leaking holdouts? | TX and OH reform CSVs (second-coded sample), Columbus, Cincinnati and Austin permits, Travis CAD 2026 roll, Ohio statewide parcels; Socrata pager, parcel holdout rule, manual-download registry, pager geometry modes, place/township assignment, repeated project totals counted once (D-008); one copy of every doc (the repo) | LB-064 – LB-082 |
 
 ---
 
@@ -1069,3 +1069,98 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** Proposed: boundaries are the ACS 2025 (Jan 2025) vintage for every year; CDPs excluded; boundary points follow the half-open even-odd rule (no tolerance).
 - **AI:** Claude Code (WS-CORE) wrote the adapter, geometry module and tests. Checked against a pure-Python reference ray cast on 2,000 random points with a concave star, a hole and a separate ring (forcing tiny chunks), synthetic hole/enclave/multipolygon/boundary cases, a fake TIGERweb server, and the live Ohio known points above.
 - **Open / next:** WS-OH can call `lotline.geo.place_or_township` on parcel centroids; MN/NC/TX parcel layers can reuse it. Annexation timing near edges is not modeled.
+
+### LB-075 · 2026-10-14 · Admin: One copy of every doc: the repo (replaces the project ↔ repo sync rule)
+- **Question:** Since Cowork works from the same folder as the repo (`~/Engineering/Lotline`), is the two-copy sync rule (LB-025) still needed?
+- **What I did:**
+  - Confirmed `~/Engineering/Lotline` and the repo are the same folder (case-insensitive APFS, same inode), and that the six project-mapped files changed since Oct 6 were already current there.
+  - Replaced CLAUDE.md's "Project ↔ repo sync" section with "One copy: this repo": each doc lives once at its repo path; no mirror folders; any online claude.ai Project copy is a read-only reference.
+  - New rule for sessions working directly in the main checkout (Cowork, nightly review): commit via a PR before the session ends, and log as fragments in `logbook.d/`. Today the main checkout held uncommitted work during branch changes, and direct `LOGBOOK.md` edits collided with fragment folds three times.
+  - Matching cleanups: the BUILD_PLAN §7.3 Cowork line; `merge_logbook.py` no longer writes a second `claude/LOGBOOK.md`.
+- **Inputs:** LB-025 (sync rule), Ben's confirmation that Cowork works from this folder.
+- **Outputs:** `CLAUDE.md`, `docs/build/BUILD_PLAN.md`, `scripts/dev/merge_logbook.py`.
+- **Findings:** none beyond the above.
+- **Decisions:** Proposed for HANDOFF: the repo is the single source for every shared doc; main-checkout sessions use PRs and logbook fragments.
+- **AI:** Claude Code drafted the change for Ben's review.
+- **Open / next:** Ben confirms the main-checkout rule suits Cowork and the nightly review.
+
+### LB-076 · 2026-10-15 · Data feasibility: Ohio statewide parcels (Franklin, Hamilton)
+- **Question:** Can the Ohio Statewide Parcels public view give a tier-2 parcel denominator (DTE land use + lot size), and what blocks a statewide run?
+- **What I did:** Added `oh_parcels` (per-county server-side filter, non-personal fields, retry on the server's intermittent 400s) with two crosswalks: `config/crosswalks/oh_dte_luc.csv` (327 DTE classes → `land_use_std`; 5x1-5x5 are the 5x0 use on unplatted acreage, per the Defiance County code list) and `config/crosswalks/oh_county_fips.csv` (88 counties, checked against the jurisdictions table). Downloaded Franklin and Hamilton and profiled them with `build()`.
+- **Inputs:** OhioStatewidePacels_full_view FeatureServer/0; Defiance County auditor land-use code list; `processed/oh/acs_geo_year` (B25024) for coverage.
+- **Outputs:** `src/lotline/adapters/states/oh/oh_parcels.py`, the two crosswalks, `tests/states/oh/test_oh_parcels.py`, `config/states/oh.yaml`, `docs/data_provenance.md`. Raw pages in `~/lotline-data/raw/oh_parcels/` (not in the repo); no processed table written.
+- **Findings:** 6,313,610 parcels in 88 counties. Franklin 448,726 and Hamilton 352,528 parcels after cleaning (exports of 2023-09-26 and 2023-08-02). Single-family parcels are 96% of ACS one-unit-detached homes in both counties (297,269 vs 309,840; 213,250 vs 222,028). UNKNOWN land use 7.1% / 4.5%, mostly county custom codes 553 and 508. Franklin's LandArea is empty or 0 for 97.5% of parcels, so its lots use polygon area; in Hamilton the two agree (median ratio 1.00). The layer has no city or township field.
+- **Decisions:** proposed: `load()` stays off until parcels can be placed in places/townships by point-in-polygon (WS-CORE helper + centroid-only pager option); 401 (apartments 4-19) maps to MULTIFAMILY_5P.
+- **AI:** Claude Code (WS-OH) explored the layer, wrote the adapter, crosswalks and 9 synthetic-fixture tests, ran the downloads and profile; full suite, ruff, compliance and provenance pass.
+- **Open / next:** WS-CORE helper for jurisdictions; full-state paging (~3,160 pages); county crosswalks for custom codes.
+
+### LB-077 · 2026-10-18 · Build: Austin permits adapter (WS-TX)
+- **Question:** Can Austin's Issued Construction Permits feed `permits` with BPS-comparable building types, ADUs and the HOME two-/three-unit signal?
+- **What I did:**
+  - Added `austin_permits` (Socrata `3syk-w9eu` via `lotline.io.socrata.download_dataset`): building permits with a Census code 101-106, 436 or 645-649 in `permit_class`, plus plain-class "New" permits; explicit non-personal field list.
+  - Type from the Census code (R-102 Secondary Apartment = ADU, per the city's ADU dataset `687g-qcqy`); `housing_units` kept where plausible, else derived from the code; the description parser fills gaps only (inferred); HOME "TWO/THREE UNIT RES" phrase → `reform_flag_raw`.
+  - Jurisdiction: AUSTIN FULL PURPOSE and AUSTIN LTD → 4805000; ETJ, other cities and blank left out (2,862 of 159,334 rows).
+  - Compared with BPS (Austin 4805000) 2010-2025 and with `687g-qcqy`.
+- **Inputs:** `3syk-w9eu` and `687g-qcqy` (2026-10-18 snapshots); `bps_place_year` (TX).
+- **Outputs:** `src/lotline/adapters/states/tx/austin_permits.py`, `tests/states/tx/test_austin_permits.py`, `config/states/tx.yaml`, `docs/data_provenance.md`.
+- **Findings:**
+  - 151,655 permits. 1-5+ unit totals are 0.80-1.30x BPS; single-family runs 5-20% below BPS every year; 5+ exceeds BPS in 2019-2023 (1.41x in 2022), where multi-building permits repeat a project's total.
+  - R-102 (ADU) permits: 3,166 kept, matching `687g-qcqy` (3,244, all R-102 rows) after status/jurisdiction filters. They collapse after HOME (90 in 2024, 9 in 2025): second and third homes are now R-101/R-103 permits marked "TWO/THREE UNIT RES" (2024: 37 permits; 2025: 149 permits, 163 units). ADU series break in 2024.
+  - Duplex (R-103) units jump in 2025 (527 vs 178 in 2024).
+- **Decisions:** Proposed: count AUSTIN LTD with Austin; keep 5+ units as reported (no project-total dedupe) until a rule is agreed.
+- **AI:** Claude explored the dataset with aggregate SoQL queries, wrote the adapter and tests (synthetic fixture), and ran the BPS and ADU-dataset comparisons; numbers in the PR come from that run.
+- **Open / next:** Explain the single-family gap; a project-total rule for 5+; TCAD adapter for hand-downloaded files.
+
+### LB-078 · 2026-10-18 · Build: TCAD parcels adapter for hand-downloaded rolls (WS-TX)
+- **Question:** Can Travis CAD's certified roll feed `parcels` for Austin once Ben downloads the files in a browser (the site's bot check blocks scripted downloads)?
+- **What I did:**
+  - Added `tcad_parcels`: reads every zip registered with `lotline manifest register --source tcad` (`DataStore.registered`), parses the fixed-width PROP, PROP_ENT, STATE_CD, LAND_DET and IMP_DET files by position per TCAD's Legacy 8.0.33 layout, never slicing owner, mailing, mortgage or deed fields.
+  - City placement by taxing-unit name (`config/crosswalks/tx_tcad_entities.csv`: CITY OF AUSTIN → 4805000); land use via the state category (`config/crosswalks/tx_ptad_land_use.csv`, Comptroller categories A–S).
+  - With no file registered, `load()` stops with the exact register command and the download page.
+  - Tests on a synthetic fixed-width zip (21 cases).
+- **Inputs:** TCAD export layout (xlsx in `Website_Legacy8.0.33-AppraisalExportLayout_06182026.zip`); Comptroller 2025 Property Value Study page for category names.
+- **Outputs:** `src/lotline/adapters/states/tx/tcad_parcels.py`, `tests/states/tx/test_tcad_parcels.py`, `config/crosswalks/tx_ptad_land_use.csv`, `config/crosswalks/tx_tcad_entities.csv`.
+- **Findings:** The export has no units or building area; land use only at the state-category level until TCAD's subcodes are read from STATE_CD.TXT. Category B (2+ units) has no matching `land_use_std` value.
+- **Decisions:** Proposed: category A → SF_DETACHED, B → OTHER until subcodes are crosswalked.
+- **AI:** Claude read the layout spreadsheet, wrote the adapter, crosswalks and tests; nothing was run on real TCAD data (none registered yet).
+- **Open / next:** Ben registers the 2026 certified zip (and EARS 2022–2025 if wanted); then verify the entity name, implied decimals and coverage on the real file.
+
+### LB-079 · 2026-10-18 · Build: Ohio parcels placed in cities and townships (Franklin, Hamilton)
+- **Question:** Can the statewide parcels be assigned to permit-issuing jurisdictions, and how do single-family parcel counts compare with ACS by place?
+- **What I did:** Rebased #106 on main; switched to the pager's `geometry="centroid"` and retries; assigned `jurisdiction_geoid` with `lotline.geo.place_or_township` and `resolve_jurisdictions` (only GEOIDs in the OH jurisdictions table; else the parcel's township; else the county remainder row); `holdout.apply(..., snapshot=True)`; load() on. Replaced county-wide offset paging (30+ s/page and server 400s past offset ~400,000) with per-county OBJECTID-range queries (100,000 ids); superseded the abandoned queries.
+- **Inputs:** OhioStatewidePacels_full_view; TIGERweb ACS 2025 places/county subdivisions (#110); `processed/oh/jurisdictions`, `acs_geo_year`.
+- **Outputs:** `src/lotline/adapters/states/oh/oh_parcels.py`, `tests/states/oh/test_oh_parcels.py`, `docs/data_provenance.md`; `processed/oh/parcels/oh_parcels.parquet` (801,254 parcels; not in the repo).
+- **Findings:** 618,410 parcels (77.2%) fall in a permit-issuing place; 182,844 go to the county remainder row: 174,159 in townships (Franklin and Hamilton townships are not BPS issuers; the county permits them), 8,679 in 9 villages outside the BPS universe (Indian Hill, Amberley, ...), 6 without a polygon match. Single-family parcels vs ACS one-unit detached homes: Cincinnati 0.92, Columbus 0.90 (Franklin part only; the city spills into Delaware and Fairfield), Upper Arlington 1.02, Gahanna 0.99, Grove City 0.97. Fetch for both counties: 35 min, 527 page requests.
+- **Decisions:** proposed: county remainder rows are the right home for township parcels where the county permits them.
+- **AI:** Claude Code (WS-OH) rewrote the adapter, added tests (29 in tests/states/oh), ran the fetch and comparisons; full suite, ruff, compliance and provenance pass.
+- **Open / next:** full-state run (proposal in PR #106); ACS for multi-county places' county parts.
+
+### LB-080 · 2026-10-18 · Build: Cincinnati building permits adapter (OH)
+- **Question:** Can Cincinnati's open permit data give new units by year and size class that match the Census BPS, and what do 2-4 unit permits look like around Connected Communities (2024-07-01)?
+- **What I did:** Added `cincy_permits` via `lotline.io.socrata` (main BLDS dataset `uhjb-xac9`, server-side filter to new-construction building and wrecking permits; combo dataset `thvx-5mem` only for rows whose work description names an ADU or townhouse, parsed with `parse_description` and never stored). Type from use group + units (no Census code). Compared with `bps_place_year` for 3915000, 2010-2025.
+- **Inputs:** data.cincinnati-oh.gov datasets uhjb-xac9 and thvx-5mem; `processed/oh/bps_place_year`.
+- **Outputs:** `src/lotline/adapters/states/oh/cincy_permits.py`, `tests/states/oh/test_cincy_permits.py`, `config/states/oh.yaml`, `docs/data_provenance.md`; `processed/oh/permits/cincy_permits.parquet` (8,190 permits; not in the repo).
+- **Findings:** 1-unit and 2-unit permits track BPS closely (e.g. 2025: 161 vs 168, 4 vs 4); 2024-25 totals are within 3%. 5+ units run up to 1.6x BPS in some years (2012, 2015, 2018, 2019, 2022) because several permits on one project report the same project total (kept as reported, Ben's decision for Columbus). Descriptively, 2-4 unit permits were 9 (23 units) in the two years before 2024-07-01 and 10 (24 units) in the two years after: no visible change (not a causal estimate). 26 ADU permits found from combo descriptions.
+- **Decisions:** none new (repeated project totals kept as reported, as for Columbus).
+- **AI:** Claude Code (WS-OH) explored both datasets with SoQL aggregates, wrote the adapter and 8 synthetic-fixture tests, ran the fetch and comparison; full suite, ruff, compliance and provenance pass.
+- **Open / next:** a project-total dedupe rule for both cities if V0 needs it.
+
+### LB-081 · 2026-10-19 · Build: Repeated project totals counted once (D-008)
+- **Question:** City permit files repeat a multi-building project's total unit count on every building's permit; how do we count it once, transparently, and what does that do to Columbus, Cincinnati and Austin against BPS?
+- **What I did:** Added `config/params/permits.yaml` (`repeated_total_min_units` 50, range 20-100; `repeated_total_min_permits` 3, range 2-5) and `src/lotline/build/permits.py`: `flag_repeated_totals` (same jurisdiction, parcel, year and unit count ≥ 50 on ≥ 3 new-construction permits → keep the lowest `permit_id`, flag the rest; demolitions and no-parcel rows never grouped) and `count_units` (units by jurisdiction × year × BPS size class, `dedupe=True` primary, `False` as-reported sensitivity). Logged D-008 in `docs/analysis_plan.md`. Ran it read-only on the processed Columbus, Cincinnati and Austin tables against `bps_place_year` 5+ units, 2018-2025, plus a 3×3 threshold grid.
+- **Inputs:** `processed/oh/permits/{columbus,cincy}_permits`, `processed/tx/permits/austin_permits`, `processed/{oh,tx}/bps_place_year` (no MN or NC tables read).
+- **Outputs:** `config/params/permits.yaml`, `src/lotline/build/permits.py`, `tests/core/test_build_permits.py`, `docs/analysis_plan.md` (D-008).
+- **Findings:** Columbus 2023 5+ units go from 1.41 to 1.02 of BPS (8 × 198 removed); Austin 2022 from 1.42 to 1.25 (incl. 8 × 280). 2018-25 removed: Columbus 13 permits / 1,963 units, Austin 31 / 4,167, Cincinnati none: its 1.6x years (2018, 2019, 2022) have no parcel with 3+ identical large counts, so its excess has another cause. Flagged groups mostly carry the identical valuation on every permit (a sign of a repeated total); Austin 2018 parcel 484530418070701 (3 × 64, valuations differ) may be real identical buildings.
+- **Decisions:** D-008 (Ben, 2026-10-19): repeated project totals counted once, sensitivity both ways. Also recorded, Ben 2026-10-19: **TX** — Austin limited-purpose permits count as Austin (ETJ and other cities excluded); HOME treatment for V3/V4 = "TWO/THREE UNIT RES" flag plus duplex permits, not R-102; TCAD land use A → SF_DETACHED, B → OTHER, C1/O → VACANT_RESIDENTIAL, E → OTHER until district subcodes are crosswalked; TCAD starts with the 2026 certified export; San Antonio permits skipped for now. **OH** — township and non-BPS-village parcels go to the county remainder row; full-state parcels run approved; Cincinnati 1-unit = SFD inferred; Columbus ADUs via a public-records request to BZS (no adapter); Franklin auditor terms read as not prohibiting download (no auditor adapter now).
+- **AI:** Claude Code (WS-CORE) wrote the rule, params, D-008 text and 6 hand-worked synthetic tests (9 × 198 → 198 once; 3 × 12, 2 × 280, no parcel, split years and demolitions untouched; thresholds from params); ran the real-data comparison read-only. Full suite, ruff, compliance and provenance checked.
+- **Open / next:** explain Cincinnati 5+ excess (pairs such as 2 × 127 on one parcel in 2022, CNEW and RNEW permits on one project, BPS timing); wire `count_units` into V0/V3 permit comparisons once those consume city permits.
+
+### LB-082 · 2026-10-19 · Build: Travis CAD 2026 roll loaded; TCAD land-use codes
+- **Question:** Does the Travis CAD adapter work on the real certified roll, and are its land-use categories right?
+- **What I did:** Ben downloaded the "2026 Certified Appraisal Export (July)" in a browser (traviscad.org is behind a bot challenge); WS-CORE registered it with `lotline manifest register --source tcad` (hard link into `raw/tcad/2026-07-18/`) and ran `lotline fetch --state TX --source tcad_parcels`. Read TCAD's code table (`STATE_CD.TXT`) and added `config/crosswalks/tx_tcad_state_codes.csv`, looked up before the state category: A4/A5 condos → CONDO_UNIT, A2 → MOBILE_HOME, B1 → MULTIFAMILY_5P, B2 → DUPLEX, B3/B4 → TRI_QUAD, B5 (multifamily with homestead) → OTHER. Added the source to `config/states/tx.yaml`.
+- **Inputs:** TCAD 2026 certified export (Legacy 8.0.33 fixed width, 557 MB zipped, about 18 GB unzipped; PROP_ENT 9.8 GB, PROP 4.9 GB).
+- **Outputs:** `config/crosswalks/tx_tcad_state_codes.csv`, `src/lotline/adapters/states/tx/tcad_parcels.py`, `tests/states/tx/test_tcad_parcels.py`, `config/states/tx.yaml`, `docs/data_provenance.md` (TCAD section only).
+- **Findings:** 239,626 City of Austin parcels (Travis County part), unique parcel IDs, every one with lot size and appraisal values; 5.8% without year built; single-family lot median 7,431 sq ft (10-90%: 3,128-13,825). "CITY OF AUSTIN" appears in PROP_ENT as expected. The category-level rule had counted 35,946 condo units (A4/A5) as detached houses; with TCAD codes: 163,890 SF detached, 35,946 condo units, 8,921 duplexes, 1,143 triplex/fourplex, 1,976 multifamily (5+), 14,132 vacant residential. SF detached = 0.78 of ACS 2020-24 one-unit detached homes for Austin (209,772), as expected since part of Austin lies in Williamson and Hays counties. The run takes 42 s and 0.8 GB of memory.
+- **Decisions:** none new (applies Ben's 2026-10-19 decision to start with the 2026 certified export).
+- **AI:** Claude Code (WS-CORE) registered and ran the export, read STATE_CD.TXT, wrote the crosswalk and tests (507 pass). The Ohio parcels row of the provenance doc is left as on main because the statewide Ohio run is still writing files; WS-OH regenerates it.
+- **Open / next:** Austin parcels in Williamson and Hays counties (WCAD, Hays CAD) if the Austin denominator must be complete; older rolls only via the EARS submissions (different layout).
