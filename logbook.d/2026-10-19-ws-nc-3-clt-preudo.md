@@ -13,3 +13,16 @@
   pre-2023-06-01 CAMA extract; no use of current CAMA for Charlotte.
 - **AI:** Claude (WS-NC) and a research subagent searched and read metadata; nothing was downloaded.
 - **Open / next:** Ben's decision on the land-use gap (options a/b/c in the note).
+
+### LB-NNN · 2026-10-19 · Build: Charlotte UDO Zoning Translation adapter (pre-window zoning)
+- **Question:** Can the translation layer be fetched as a dated pre-window source without risk of taking
+  post-window data?
+- **What I did:** Ben chose to fetch it (decision 3). Wrote `clt_udo_translation`: it reads the layer description
+  over HTTP first and stops unless `editingInfo.dataLastEditDate` is before the Charlotte window (it read
+  2023-05-31T18:29:59Z); only then does it download (no address or editor fields). Same date becomes `vintage_date`,
+  so the snapshot holdout re-checks every row. All 164 pages (324,180 features) are cached.
+- **Outputs:** `src/lotline/adapters/states/nc/clt_udo_translation.py`, `tests/states/nc/test_clt_udo_translation.py`,
+  source entry in `config/states/nc.yaml`.
+- **AI:** Claude (WS-NC) wrote the adapter and synthetic tests, including that the guard runs before any download.
+- **Open / next:** the processed table needs place assignment, blocked while census.gov rejects requests from this
+  network (TIGERweb "Request Rejected" since about 05:46 ET on 2026-10-19).
