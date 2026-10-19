@@ -29,3 +29,13 @@ sources:
       parcels in 88 counties on 2026-10-15; Franklin and Hamilton downloaded first (exports dated 2023-09-26 and
       2023-08-02). The 2022 vintage (maps.ohio.gov Statewide_Parcels_2022) is token-gated and skipped. Jurisdiction
       by centroid point-in-polygon (lotline.geo.place_or_township).
+  - name: cincy_permits
+    url: https://data.cincinnati-oh.gov/resource/uhjb-xac9.json
+    license: Public Domain (City of Cincinnati open data)
+    access: socrata
+    cadence: daily
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/cincy_permits.py. Main BLDS dataset uhjb-xac9 (building and wrecking
+      permits, new-construction and demolition work classes only) plus combo permits thvx-5mem (only rows whose
+      work description names an ADU or townhouse). 8,190 permits kept on 2026-10-18. No Census code: type from
+      the building-code use group and units.
