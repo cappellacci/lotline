@@ -32,10 +32,14 @@ around that reflects lumpy years and the regional building cycle. Per place and 
    (1 − B_i) · v_i. Big places (small v_i) keep their own rate; small places move toward the group's.
 3. **Range (P10/P50/P90), by simulation** (`simulation_draws`, fixed `simulation_seed`), from three sources:
    the true level is drawn from a gamma with mean μ_i and the posterior variance; the regional cycle
-   multiplies it by exp(sum of h resampled, demeaned year-to-year log changes in the state's total permits
-   over the `cycle_history_years` before the origin), a random walk, so the band widens with the horizon;
-   and the year's count is negative binomial around that. The point forecast is the median (P50), which is
-   what minimises mean absolute error; `mean` is reported too, because means add up to state totals.
+   multiplies it by exp(sum of h resampled year-to-year log changes in the state's total permits over the
+   `cycle_history_years` before the origin), a random walk, so the band widens with the horizon; and the
+   year's count is negative binomial around that. The changes are centred so that exp(change) averages 1,
+   which keeps the mean flat over the horizon (D-011). The resampled calendar years come from one matrix
+   per state, origin and draw (`cycle_years`), shared by every size class and scenario, so draw j is the
+   same run of boom and bust years for single-family and 5+ units, whichever places are in the run. The
+   point forecast is the median (P50), which is what minimises mean absolute error; `mean` is reported too,
+   because means add up to state totals.
 
 4. **Optional regional cycle term** (`use_state_momentum`): every place's level is scaled by the state's pace
    over the last `momentum_recent_years` relative to its pace over the level window (`state_momentum`).
@@ -46,6 +50,8 @@ around that reflects lumpy years and the regional building cycle. Per place and 
 """
 
 from __future__ import annotations
+
+import zlib
 
 import numpy as np
 import pandas as pd
@@ -238,26 +244,70 @@ def level_estimates(
     return places.reset_index()
 
 
-def cycle_shocks(
+def cycle_shock_series(
     panel: pd.DataFrame, value: str, origin: int, history_years: int, key: str = "geoid"
-) -> np.ndarray:
-    """Demeaned year-to-year log changes in the state's total permits, years (origin − history_years, origin].
+) -> pd.Series:
+    """Centred year-to-year log changes in the state's total permits, indexed by the later calendar year.
 
-    Each change compares the same places in both years (a place entering or leaving BPS is not a boom or a
-    bust). Changes where either total is 0 are dropped. Demeaned so the cycle widens the range without
-    tilting the median.
+    Years (origin − history_years, origin]. Each change compares the same places in both years (a place
+    entering or leaving BPS is not a boom or a bust). Changes where either total is 0 are dropped.
+    Centred by subtracting log(mean(exp(x))), so a resampled exp(change) averages exactly 1 and the cycle
+    widens the range without pushing the mean up with the horizon (D-011; subtracting mean(x) instead made
+    E[exp(Σ)] grow, about +6% by year 5, judging panel MS-07).
     """
     h = panel[(panel["year"] > origin - history_years) & (panel["year"] <= origin) & panel[value].notna()]
     wide = h.pivot_table(index=key, columns="year", values=value, aggfunc="sum")
-    changes = []
+    changes: dict[int, float] = {}
     years = sorted(wide.columns)
     for prev, cur in zip(years[:-1], years[1:], strict=True):
         both = wide[[prev, cur]].dropna()
         a, b = float(both[prev].sum()), float(both[cur].sum())
         if cur == prev + 1 and a > 0 and b > 0:
-            changes.append(np.log(b / a))
-    x = np.asarray(changes, dtype=float)
-    return x - x.mean() if len(x) else x
+            changes[int(cur)] = float(np.log(b / a))
+    x = pd.Series(changes, dtype=float)
+    return x - np.log(np.mean(np.exp(x))) if len(x) else x
+
+
+def cycle_shocks(
+    panel: pd.DataFrame, value: str, origin: int, history_years: int, key: str = "geoid"
+) -> np.ndarray:
+    """The values of `cycle_shock_series`, oldest year first."""
+    return cycle_shock_series(panel, value, origin, history_years, key).to_numpy()
+
+
+def cycle_years(
+    seed: int, state: str, origin: int, history_years: int, horizon: int, n: int
+) -> tuple[np.ndarray, np.ndarray]:
+    """One matrix of resampled calendar years per state, origin and draw: shape (horizon, n).
+
+    Candidate years are the ends of the possible changes, origin − history_years + 2 … origin. The random
+    numbers come from their own generator, seeded by (simulation seed, state, origin) only, so every size
+    class and scenario run for that state and origin resamples the same years in the same draws, whatever
+    places are present (MS-06). Also returns uniforms of the same shape, used when a size class has no change
+    for a drawn year (a zero total): that cell takes one of the class's available years instead.
+    """
+    state_code = zlib.crc32(str(state).encode())
+    rng = np.random.default_rng([int(seed), state_code, int(origin)])
+    candidates = np.arange(origin - history_years + 2, origin + 1)
+    years = rng.choice(candidates, size=(horizon, n)) if len(candidates) else np.empty((horizon, n), int)
+    return years, rng.random((horizon, n))
+
+
+def cycle_factor(shocks: pd.Series, years: np.ndarray, fallback: np.ndarray) -> np.ndarray:
+    """exp(cumulative sum of the shocks for the drawn years), shape (horizon, n); all ones with no shocks.
+
+    By hand: shocks {2019: a, 2020: b}, years [[2019], [2020]] -> [[e^a], [e^(a+b)]]. A drawn year with no
+    shock (2018 here) takes available[floor(u × 2)] for its fallback uniform u.
+    """
+    if not len(shocks):
+        return np.ones(years.shape)
+    available = shocks.index.to_numpy()
+    values = shocks.to_numpy(dtype=float)
+    pos = np.searchsorted(available, years)
+    found = (pos < len(available)) & (available[np.minimum(pos, len(available) - 1)] == years)
+    alt = np.minimum((fallback * len(available)).astype(int), len(available) - 1)
+    picked = np.where(found, np.minimum(pos, len(available) - 1), alt)
+    return np.exp(values[picked].cumsum(axis=0))
 
 
 def state_momentum(
@@ -286,9 +336,12 @@ def interval_from_draws(draws: np.ndarray, low: float, high: float) -> tuple[np.
 
 
 def _simulate(
-    places: pd.DataFrame, shocks: np.ndarray, horizon: int, n: int, rng: np.random.Generator
+    places: pd.DataFrame, cycle: np.ndarray | None, horizon: int, n: int, rng: np.random.Generator
 ) -> np.ndarray:
-    """Count draws, shape (places, horizon, n): gamma level × cycle factor × negative-binomial year."""
+    """Count draws, shape (places, horizon, n): gamma level × cycle factor × negative-binomial year.
+
+    `cycle` is the (horizon, n) factor from `cycle_factor`, or None for no cycle.
+    """
     mu = places["level"].to_numpy(dtype=float)
     var = places["level_var"].to_numpy(dtype=float)
     p = places["parcels_origin"].to_numpy(dtype=float)
@@ -297,9 +350,7 @@ def _simulate(
     shape = np.where(ok, mu**2 / np.where(ok, var, 1), 1.0)
     scale = np.where(ok, var / np.where(mu > 0, mu, 1), 0.0)
     theta = np.where(ok[:, None], rng.gamma(shape[:, None], scale[:, None], size=(len(mu), n)), mu[:, None])
-    if len(shocks):
-        cycle = np.exp(rng.choice(shocks, size=(horizon, n)).cumsum(axis=0))
-    else:
+    if cycle is None:
         cycle = np.ones((horizon, n))
     lam = theta[:, None, :] * cycle[None, :, :] * p[:, None, None] / PER
     k_inv = np.broadcast_to(inv_k[:, None, None], lam.shape)
@@ -356,8 +407,12 @@ def forecast_draws(
         if multiplier is not None:
             demand = ps[key].map(multiplier).fillna(1.0).to_numpy(dtype=float)
         ps = ps.assign(demand=demand, level=ps["level"] * demand, level_var=ps["level_var"] * demand**2)
-        shocks = cycle_shocks(hist[hist["state"] == state], value, origin, history, key)
-        draws = _simulate(ps, shocks, horizon, n, rng)  # (places, horizon, n)
+        shocks = cycle_shock_series(hist[hist["state"] == state], value, origin, history, key)
+        years, fallback = cycle_years(
+            int(p["simulation_seed"].value), str(state), origin, history, horizon, n
+        )
+        cycle = cycle_factor(shocks, years, fallback)
+        draws = _simulate(ps, cycle, horizon, n, rng)  # (places, horizon, n)
         lo, mid, hi, mean = interval_from_draws(draws, low, high)
         rows = ps.loc[ps.index.repeat(horizon), [key, "state", "parcels_origin", "level", "direct"]]
         rows = rows.assign(group_rate=np.repeat(ps["group_rate"].to_numpy(), horizon))

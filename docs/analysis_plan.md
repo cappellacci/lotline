@@ -141,3 +141,27 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   No results change yet: no model code reads ε. The V6b pro forma route remains the primary fee estimate; ε is
   the fallback where parcel data are missing.
 - **Decided by:** Ben, 2026-10-19 (accepting MS-03 via the coordinator).
+
+### D-011 · 2026-10-19 · Baseline cycle: shared calendar years, and centred so the mean stays flat
+- **Was (`model/baseline.py`):** the cycle shocks were demeaned (x − mean x) and resampled from the same
+  random-number stream as the per-place draws, after them. Two problems (judging panel MS-06, MS-07):
+  (a) which cycle years a draw got depended on how many places were in the run, so single-family and 5+ unit
+  draws were coupled or not by accident; (b) E[exp(Σ shocks)] > 1, so the mean drifted up with the horizon
+  (about +6% by year 5).
+- **Now:** (a) one matrix of resampled calendar years per state, origin and draw (`cycle_years`, seeded by
+  simulation seed, state and origin only), shared by every size class and scenario; a size class with no
+  change for a drawn year takes another of its years. (b) shocks centred by log(mean(exp(x))), so each
+  year's factor averages 1 and the mean stays flat when nothing changes. Tests: `test_cycle_keeps_the_mean_
+  flat_over_the_horizon`, `test_cycle_coupling_does_not_depend_on_which_places_are_present` (both fail on
+  the old code).
+- **Effect on V1 (spec B, MN NC OH TX, run 2026-10-19):** **17 → 13 of 48 cells pass.** All of it comes
+  from (b): with (a) alone the run is unchanged (17 cells; model MAE 10.084 / 0.368 / 0.196 / 2.824 for
+  1 / 2 / 3–4 / 5+ units vs 2.822 before for 5+). With both: beats benchmarks 40 → 41 cells, coverage OK
+  33 → 32, **bias OK 26 → 21**; MAE 10.08 → 10.13 (single-family), 0.368 → 0.367, 0.196 → 0.193,
+  2.82 → 2.77 (5+). The six flipped cells (MN 2018 1, 2; MN 2020 3–4, 5+; TX 2018 5+ fail now; MN 2018 3–4
+  passes now) all turn on the bias test, which judges the mean (D-004). The model already under-forecasts
+  after 2022; the old upward drift of the mean was partly hiding that.
+- **Why:** the old pass count leaned on an artefact. The under-forecast after 2022 is now visible and is
+  the thing to address (e.g. state momentum or spec C), not to tune away here.
+- **Decided by:** Ben, 2026-10-19 (accepting MS-06 and MS-07 via the coordinator); the drop to 13 of 48 is
+  for Ben to note in the PR.

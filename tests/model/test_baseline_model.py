@@ -111,7 +111,9 @@ def test_direct_variance_counts_a_one_off_year_as_noise():
 
 
 def test_cycle_shocks_by_hand():
-    """State totals 100 -> 200 -> 100 (same places): log changes ln 2 and −ln 2, mean 0, so unchanged.
+    """State totals 100 -> 200 -> 100 (same places): log changes ln 2 and −ln 2.
+    Centred by log(mean(e^x)) = log((2 + 0.5) / 2) = log 1.25: shocks ln 2 − ln 1.25 = ln 1.6 and
+    −ln 2 − ln 1.25 = ln 0.4, whose exponentials average (1.6 + 0.4) / 2 = 1.
     Place Z appears only in 2020: it is not in the 2019-2020 comparison, so it can't fake a boom."""
     p = _panel(
         [
@@ -125,12 +127,14 @@ def test_cycle_shocks_by_hand():
         ]
     )
     shocks = baseline.cycle_shocks(p, "units_1", 2020, history_years=3)
-    assert shocks == pytest.approx([math.log(2), -math.log(2)])
+    assert shocks == pytest.approx([math.log(1.6), math.log(0.4)])
+    series = baseline.cycle_shock_series(p, "units_1", 2020, history_years=3)
+    assert list(series.index) == [2019, 2020]
     assert len(baseline.cycle_shocks(p, "units_1", 2020, history_years=2)) == 1  # only 2019 -> 2020
 
 
 def test_cycle_shocks_are_demeaned():
-    """Totals 100 -> 200 -> 400: both changes ln 2; demeaned they are 0 (the cycle widens, never tilts)."""
+    """Totals 100 -> 200 -> 400: both changes ln 2; centred they are 0 (a steady trend is not a cycle)."""
     p = _panel([("A", "C1", 2018, 100, 1), ("A", "C1", 2019, 200, 1), ("A", "C1", 2020, 400, 1)])
     assert baseline.cycle_shocks(p, "units_1", 2020, history_years=3) == pytest.approx([0.0, 0.0])
 
@@ -161,7 +165,7 @@ def test_simulation_without_level_noise_or_cycle_is_poisson():
     """Level 10 per 1,000 on 500 parcels, no level uncertainty, 1/k = 0, no cycle: counts are Poisson(5),
     so P10 = 2, P50 = 5, P90 = 8 and the mean is 5."""
     places = pd.DataFrame({"level": [10.0], "level_var": [0.0], "parcels_origin": [500.0], "inv_k": [0.0]})
-    draws = baseline._simulate(places, np.array([]), 2, 40000, np.random.default_rng(0))
+    draws = baseline._simulate(places, None, 2, 40000, np.random.default_rng(0))
     lo, mid, hi, mean = baseline.interval_from_draws(draws, 0.1, 0.9)
     assert (lo[0, 0], mid[0, 0], hi[0, 0]) == (2.0, 5.0, 8.0)
     assert mean[0, 1] == pytest.approx(5.0, abs=0.05)
@@ -170,19 +174,90 @@ def test_simulation_without_level_noise_or_cycle_is_poisson():
 def test_simulation_negative_binomial_variance():
     """With 1/k = 0.5 and λ = 4: Var = 4 + 0.5·16 = 12 (Poisson would be 4)."""
     places = pd.DataFrame({"level": [8.0], "level_var": [0.0], "parcels_origin": [500.0], "inv_k": [0.5]})
-    draws = baseline._simulate(places, np.array([]), 1, 200000, np.random.default_rng(0))
+    draws = baseline._simulate(places, None, 1, 200000, np.random.default_rng(0))
     assert draws.mean() == pytest.approx(4.0, abs=0.05)
     assert draws.var() == pytest.approx(12.0, rel=0.03)
 
 
 def test_cycle_widens_the_range_with_the_horizon():
     places = pd.DataFrame({"level": [10.0], "level_var": [0.0], "parcels_origin": [5000.0], "inv_k": [0.0]})
-    shocks = np.linspace(-0.3, 0.3, 7)
+    shocks = pd.Series(np.linspace(-0.3, 0.3, 7), index=range(2014, 2021))
+    years, u = baseline.cycle_years(1, "NC", 2020, 8, 5, 20000)
+    cycle = baseline.cycle_factor(shocks, years, u)
     lo, _, hi, _ = baseline.interval_from_draws(
-        baseline._simulate(places, shocks, 5, 20000, np.random.default_rng(0)), 0.1, 0.9
+        baseline._simulate(places, cycle, 5, 20000, np.random.default_rng(0)), 0.1, 0.9
     )
     width = hi[0] - lo[0]
     assert width[0] < width[2] < width[4]
+
+
+def test_cycle_factor_by_hand():
+    """Docstring example: shocks {2019: 0.1, 2020: -0.3}; years [[2019], [2020]] -> e^0.1, e^(0.1 − 0.3).
+    2018 has no shock: with u = 0.6 it takes available[floor(0.6 × 2)] = 2020's shock."""
+    shocks = pd.Series([0.1, -0.3], index=[2019, 2020])
+    f = baseline.cycle_factor(shocks, np.array([[2019], [2020]]), np.zeros((2, 1)))
+    assert f[:, 0] == pytest.approx([math.exp(0.1), math.exp(-0.2)])
+    f = baseline.cycle_factor(shocks, np.array([[2018]]), np.array([[0.6]]))
+    assert f[0, 0] == pytest.approx(math.exp(-0.3))
+    assert (baseline.cycle_factor(pd.Series(dtype=float), np.array([[2019]]), np.zeros((1, 1))) == 1).all()
+
+
+def test_cycle_years_depend_only_on_seed_state_and_origin():
+    a, ua = baseline.cycle_years(7, "NC", 2018, 25, 5, 100)
+    b, ub = baseline.cycle_years(7, "NC", 2018, 25, 5, 100)
+    assert (a == b).all() and (ua == ub).all()
+    assert a.min() >= 2018 - 25 + 2 and a.max() <= 2018
+    assert not (a == baseline.cycle_years(7, "OH", 2018, 25, 5, 100)[0]).all()
+
+
+def test_cycle_keeps_the_mean_flat_over_the_horizon():
+    """No change in the level and a strongly cyclical history: the mean cycle factor stays 1 in every year.
+
+    Shocks ±0.4: with the old centring (subtract mean(x) = 0) E[e^x] = cosh 0.4 = 1.081 a year, so the year-5
+    mean would be 1.081^5 = 1.48. Centred by log(mean(e^x)) each step averages 1, so every year's mean is 1.
+    """
+    p = _panel([("A", "C1", y, 100 if y % 2 else 149, 1) for y in range(1995, 2021)])
+    shocks = baseline.cycle_shock_series(p, "units_1", 2020, history_years=25)
+    assert np.mean(np.exp(shocks)) == pytest.approx(1.0)
+    years, u = baseline.cycle_years(3, "NC", 2020, 25, 5, 200_000)
+    mean_by_year = baseline.cycle_factor(shocks, years, u).mean(axis=1)
+    assert mean_by_year == pytest.approx(np.ones(5), abs=0.01)
+
+
+def _big_place_panel():
+    """One large place with a strong cycle and a small place Z in the same state that never builds.
+
+    units_2 is 3 × units_1 (the same cycle), but Z has no units_2 record, so the two size classes are run
+    with different sets of places, as happens with real data.
+    """
+    rows = []
+    for y in range(1992, 2019):
+        units = 2000 if y % 3 == 0 else 1200 if y % 3 == 1 else 700
+        rows += [("A", "C1", y, units, 200_000), ("Z", "C1", y, 0, 300)]
+    df = _panel(rows)
+    return df.assign(units_2=(df["units_1"] * 3).where(df["geoid"] == "A"))
+
+
+def _year5_draws(panel, value):
+    table, draws = baseline.forecast_draws(panel, value, 2018, group="state", params=PARAMS)
+    row = table.index[(table["geoid"] == "A") & (table["horizon"] == 5)][0]
+    return draws[row].astype(float)
+
+
+def test_cycle_coupling_does_not_depend_on_which_places_are_present():
+    """MS-06: draw j is the same run of cycle years for every size class, whichever places are present.
+
+    Place A is large and its draws are mostly cycle. units_1 is run with places A and Z, units_2 with A only.
+    Before D-011 the cycle was drawn after the per-place gamma draws, whose number depends on the places, so
+    A's year-5 draws for the two classes were unrelated (correlation −0.02 when checked). Now the cycle years
+    are shared (0.77; the rest is A's own level and count noise). Same places in both classes: ~1.
+    """
+    panel = _big_place_panel()
+    ones = _year5_draws(panel, "units_1")
+    twos = _year5_draws(panel, "units_2")
+    assert np.corrcoef(ones, twos)[0, 1] > 0.5
+    only_a = _year5_draws(panel[panel["geoid"] == "A"], "units_1")
+    assert np.corrcoef(only_a, twos)[0, 1] > 0.99
 
 
 def _stationary_panel(seed=0, places=30, years=range(1992, 2026)):
