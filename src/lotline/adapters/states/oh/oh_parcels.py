@@ -61,7 +61,7 @@ LICENSE = (
 )
 LUC_CROSSWALK = CONFIG_DIR / "crosswalks" / "oh_dte_luc.csv"
 COUNTY_FIPS = CONFIG_DIR / "crosswalks" / "oh_county_fips.csv"
-COUNTIES = ["Franklin", "Hamilton"]  # first pass; the full state is 88 counties (see PROVENANCE)
+COUNTIES: list[str] | None = None  # None: all 88 counties in oh_county_fips.csv (a list limits the run)
 SQFT_PER_ACRE = 43_560.0
 # The server intermittently answers deep-offset pages with "400: Invalid query parameters" and serves the same
 # page on a later try (seen on Franklin at offset ~418,000); the pager retries error bodies.
@@ -97,8 +97,8 @@ PROVENANCE = {
     "table": TABLE,
     "cleaning": [
         "Requested fields exclude situs and mailing address fields and CAMA links (no personal data)",
-        "Downloaded one county at a time with a server-side filter (County='<name>'); Franklin and Hamilton "
-        "so far",
+        "Downloaded one county at a time (all 88) with a server-side filter (County='<name>') and OBJECTID "
+        "ranges",
         "Rows without a LocalParcelID (polygons with no auditor record) are dropped; parcel_id = county "
         "GEOID + LocalParcelID; a parcel ID repeated within a county (stacked polygons) keeps one row, the "
         "largest polygon",
@@ -242,6 +242,17 @@ def assign_jurisdictions(df: pd.DataFrame, state: str, store: DataStore) -> tupl
     return df.assign(jurisdiction_geoid=geoid), how
 
 
+def snapshot_vintage() -> str:
+    """Raw-snapshot folder: today's date, or `OH_PARCELS_VINTAGE` (YYYY-MM-DD) to resume an earlier run.
+
+    A statewide run takes most of a day; resuming it on a later date with the same vintage reuses the pages
+    already cached instead of starting a new snapshot.
+    """
+    import os
+
+    return os.environ.get("OH_PARCELS_VINTAGE") or pd.Timestamp.today().date().isoformat()
+
+
 def oid_range(store: DataStore, *, refresh: bool = False) -> tuple[int, int]:
     """(min, max) OBJECTID of the layer, from a statistics query downloaded through `fetch()`."""
     import json
@@ -258,7 +269,7 @@ def oid_range(store: DataStore, *, refresh: bool = False) -> tuple[int, int]:
     url = query_url(LAYER_URL, where="1=1", outStatistics=stats, f="json")
     path = fetch(
         url,
-        store.raw(SOURCE, pd.Timestamp.today().date().isoformat()) / "parcels" / "oid_range.json",
+        store.raw(SOURCE, snapshot_vintage()) / "parcels" / "oid_range.json",
         store=store,
         source=SOURCE,
         license=LICENSE,
@@ -285,7 +296,7 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
     """
     lo, hi = oid_range(store, refresh=refresh)
     frames = []
-    for county in counties or COUNTIES:
+    for county in counties or COUNTIES or sorted(county_fips()):
         for a, b in chunks(lo, hi):
             frames.append(
                 download_layer(
@@ -300,6 +311,7 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
                     out_fields=",".join(OUT_FIELDS),
                     geometry="centroid",
                     retries=RETRIES,
+                    vintage=snapshot_vintage(),
                     refresh=refresh,
                 )
             )
