@@ -26,9 +26,9 @@ land_capture_share:
   notes: "Share of a fee cut captured by landowners instead of builders. Higher in strong markets. Lead sensitivity parameter (protocol §7)."
 
 fee_permit_elasticity:
-  value: 1.5
-  low: 0.5
-  high: 3.0
-  unit: "% change in permits per % change in development cost"
-  source: "Methods review §3c (epsilon 0.5-3, central 1.5); fees causal diagram; E081 (tract-level ~0.3) argues for the low end locally"
-  notes: "Treat as a prior (fee agent's proposal). The low case of the fee scenario must include zero effect."
+  value: 0.3
+  low: 0.0
+  high: 1.75
+  unit: "% change in permits per % change in price received by builders (applied to a cost change as a share of total development cost)"
+  source: "Central: E081 Baum-Snow & Han 2024, tract-level unit supply elasticity ~0.3. Low 0: E058 Mayer & Somerville 2000 (impact-fee coefficient not significant) and E062 Campbell & Alm 2006 (negative, not significant). High: E080 Saiz 2010 (population-weighted metro average 1.75) and E082 Aastveit et al. 2020 (median metro 1.75 in 2012-17), the larger metro-wide response. E059/E060 Burge & Ihlanfeldt 2006 find non-water/sewer fees can raise building (fees buy approvals and infrastructure): that sign is handled by the revenue-replaced toggle in scenarios/fees.py, not by a negative elasticity here. See D-010."
+  notes: "These are supply elasticities with respect to price, not cost. Conversion: for the project at the margin of feasibility, price is about equal to total development cost (land included), so a cut of (1 - lambda) x fee reaching builders acts like a price rise of (1 - lambda) x fee / TDC. Hence %change permits = elasticity x (1 - lambda) x fee change / TDC (fees causal diagram). Using TDC rather than price slightly overstates the effect where projects earn above-normal profit. Range check (illustrative TDC $350k, so the $25k cut is ~7%): central 0.3 x 0.5 x 7% ~ +1%; high 1.75 x 0.75 x 7% ~ +9%, inside the V6 pass band (0 to +12% single-family)."
