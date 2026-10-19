@@ -126,3 +126,26 @@ def test_load_assigns_jurisdictions_and_applies_snapshot_holdout(raw, monkeypatc
     assert calls[0]["snapshot"] is True and calls[0]["geoid_col"] == "jurisdiction_geoid"
     assert len(out) == 8 and out["lon"].eq(-83.0).all()
     assert_conforms(out, "parcels")
+
+
+def test_oid_chunks_cover_the_range_half_open():
+    assert op.chunks(1, 250_000, size=100_000) == [(0, 100_000), (100_000, 200_000), (200_000, 300_000)]
+    assert op.chunks(100_000, 100_000, size=100_000) == [(100_000, 200_000)]
+
+
+def test_download_queries_each_county_by_oid_range(raw, monkeypatch):
+    seen = []
+
+    def fake(url, **kw):
+        seen.append(kw["where"])
+        county = kw["where"].split("'")[1]
+        return raw[raw.County == county] if "OBJECTID>=0 " in kw["where"] else raw.iloc[0:0]
+
+    monkeypatch.setattr(op, "oid_range", lambda store, refresh=False: (1, 150_000))
+    monkeypatch.setattr(op, "download_layer", fake)
+    out = op.download(store=None, counties=["Hamilton"])
+    assert seen == [
+        "County='Hamilton' AND OBJECTID>=0 AND OBJECTID<100000",
+        "County='Hamilton' AND OBJECTID>=100000 AND OBJECTID<200000",
+    ]
+    assert len(out) == 3

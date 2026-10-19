@@ -24,9 +24,12 @@ subdivision (Ohio townships issue permits). The result is then checked against t
    its own right sits inside a township that is);
 3. else the county's remainder row (`county_unincorporated`, 5-digit GEOID), e.g. for a parcel whose
    centroid falls in a fictitious or non-functioning subdivision (FUNCSTAT F/N), on a boundary sliver, or
-   has no centroid. These counts are reported, not hidden.
+   has no centroid, or where the county building department, not the township, permits unincorporated
+   land (the case in Franklin and Hamilton, where the county remainder is the Census permit issuer). These
+   counts are reported, not hidden.
 
-**Scope.** `COUNTIES` lists the counties downloaded (server-side `County='...'` filter, one query per county).
+**Scope.** `COUNTIES` lists the counties downloaded: one server-side query per county and OBJECTID range
+(`OID_CHUNK`), so each query stays shallow, is cached on its own and resumes after a failure.
 
 Only non-personal fields are requested: no situs address, mailing address fields or CAMA links.
 """
@@ -62,6 +65,7 @@ COUNTIES = ["Franklin", "Hamilton"]  # first pass; the full state is 88 counties
 SQFT_PER_ACRE = 43_560.0
 # The server intermittently answers deep-offset pages with "400: Invalid query parameters" and serves the same
 # page on a later try (seen on Franklin at offset ~418,000); the pager retries error bodies.
+OID_CHUNK = 100_000  # OBJECTIDs per query (mechanics: keeps paging offsets shallow)
 RETRIES = 5  # pager retries on ArcGIS error bodies (mechanics, not a model parameter)
 
 PERSONAL = {
@@ -115,6 +119,10 @@ PROVENANCE = {
     "limitations": [
         "Jurisdictions come from centroids and 2025 boundaries, not from the auditor: a parcel straddling a "
         "boundary goes wherever its label point falls, and annexations after 2025 are not reflected",
+        "In Franklin and Hamilton no township is a permit issuer in the jurisdictions table (the county "
+        "building department permits unincorporated land), so township parcels go to the county's remainder "
+        "row (174,159 parcels on 2026-10-18), as do 9 villages outside the Census permit universe (8,679: "
+        "Indian Hill, Amberley); 6 parcels had no centroid polygon match",
         "Attributes are minimal: no units, year built, building area, values or sales; county CAMA data are "
         "needed for those (tier 1 counties such as Franklin)",
         "County exports are of different dates (Franklin 2023-09-26, Hamilton 2023-08-02); the layer is "
@@ -234,25 +242,69 @@ def assign_jurisdictions(df: pd.DataFrame, state: str, store: DataStore) -> tupl
     return df.assign(jurisdiction_geoid=geoid), how
 
 
+def oid_range(store: DataStore, *, refresh: bool = False) -> tuple[int, int]:
+    """(min, max) OBJECTID of the layer, from a statistics query downloaded through `fetch()`."""
+    import json
+
+    from lotline.io.arcgis import query_url
+    from lotline.io.http import fetch
+
+    stats = json.dumps(
+        [
+            {"statisticType": "min", "onStatisticField": "OBJECTID", "outStatisticFieldName": "lo"},
+            {"statisticType": "max", "onStatisticField": "OBJECTID", "outStatisticFieldName": "hi"},
+        ]
+    )
+    url = query_url(LAYER_URL, where="1=1", outStatistics=stats, f="json")
+    path = fetch(
+        url,
+        store.raw(SOURCE, pd.Timestamp.today().date().isoformat()) / "parcels" / "oid_range.json",
+        store=store,
+        source=SOURCE,
+        license=LICENSE,
+        adapter=ADAPTER,
+        adapter_version=VERSION,
+        refresh=refresh,
+    )
+    attrs = json.loads(path.read_text())["features"][0]["attributes"]
+    return int(attrs["lo"]), int(attrs["hi"])
+
+
+def chunks(lo: int, hi: int, size: int = OID_CHUNK) -> list[tuple[int, int]]:
+    """Half-open OBJECTID ranges [a, b) covering lo..hi."""
+    start = lo - lo % size
+    return [(a, a + size) for a in range(start, hi + 1, size)]
+
+
 def download(store: DataStore, *, counties: list[str] | None = None, refresh: bool = False) -> pd.DataFrame:
-    frames = [
-        download_layer(
-            LAYER_URL,
-            store=store,
-            source=SOURCE,
-            license=LICENSE,
-            adapter=ADAPTER,
-            adapter_version=VERSION,
-            name="parcels",
-            where=f"County='{county}'",
-            out_fields=",".join(OUT_FIELDS),
-            geometry="centroid",
-            retries=RETRIES,
-            refresh=refresh,
-        )
-        for county in counties or COUNTIES
-    ]
-    return pd.concat(frames, ignore_index=True)
+    """One query per county and OBJECTID range, so no query pages deeper than OID_CHUNK rows.
+
+    Paging one county to the end (450,000 rows on Franklin) slows to 30+ s a page and the server starts
+    failing pages past an offset of about 400,000. A county's OBJECTIDs are spread over the whole layer, so
+    the ranges are the layer's (empty ones return at once); each range is its own cached, resumable query.
+    """
+    lo, hi = oid_range(store, refresh=refresh)
+    frames = []
+    for county in counties or COUNTIES:
+        for a, b in chunks(lo, hi):
+            frames.append(
+                download_layer(
+                    LAYER_URL,
+                    store=store,
+                    source=SOURCE,
+                    license=LICENSE,
+                    adapter=ADAPTER,
+                    adapter_version=VERSION,
+                    name="parcels",
+                    where=f"County='{county}' AND OBJECTID>={a} AND OBJECTID<{b}",
+                    out_fields=",".join(OUT_FIELDS),
+                    geometry="centroid",
+                    retries=RETRIES,
+                    refresh=refresh,
+                )
+            )
+    frames = [f for f in frames if len(f)]
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=OUT_FIELDS)
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
