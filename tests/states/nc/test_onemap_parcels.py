@@ -134,8 +134,11 @@ def test_place_kept_outside_bps_and_charlotte_held_out(parcels):
     kept = holdout.apply(
         df, "NC", geoid_col="jurisdiction_geoid", date_col="vintage_date", year_col="vintage", snapshot=True
     )
-    assert "37119M4" not in set(kept.parcel_id)  # the 2026 roll is after 2023-06-01
-    assert {"37119M1", "37119M2", "37119M3"} <= set(kept.parcel_id)  # rest of Mecklenburg stays
+    kept_ids = set(kept.parcel_id)
+    assert "37119M4" not in kept_ids  # Charlotte: the 2026 roll is after 2023-06-01
+    # D-012: BPS files Charlotte under 37119, so the county rows are held out over the same window
+    assert not {"37119M2", "37119M3"} & kept_ids
+    assert "37119M1" in kept_ids  # a Mecklenburg town (Huntersville) stays
     out = kept.drop(columns=["lon", "lat"]).assign(lon=-78.6, lat=35.8)
     assert_conforms(out, "parcels")
 

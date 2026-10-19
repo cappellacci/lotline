@@ -64,4 +64,5 @@ sources:
       (2026-10-19: from Mecklenburg 2026-01-07 to Cabarrus 2026-05-29). Ten largest counties (2020 Census).
       Land-use codes are county-native: crosswalks in config/crosswalks/nc_land_use_<county>.csv; field order,
       vacant rule and data tier per county in nc_land_use_counties.csv.
-      Current roll only, so every Charlotte (3712000) parcel is held out by the snapshot rule.
+      Current roll only, so every Charlotte (3712000) and unincorporated Mecklenburg (37119, D-012) parcel is
+      held out by the snapshot rule; the Mecklenburg towns stay.

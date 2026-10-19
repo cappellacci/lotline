@@ -32,7 +32,8 @@ each parcel was placed so these cases can be reported.
 
 **Holdout.** Charlotte (3712000) is the V5 holdout from 2023-06-01. This roll is from 2026, so every
 Charlotte parcel is dropped by the snapshot rule (`holdout.apply(..., snapshot=True)`) before anything is
-returned. The rest of Mecklenburg stays.
+returned. Since D-012 the holdout also covers Mecklenburg County's own GEOID (37119, where BPS files
+Charlotte's permits), so unincorporated Mecklenburg parcels are dropped too; the Mecklenburg towns stay.
 
 **Privacy.** Only non-personal fields are requested (see `OUT_FIELDS`): no owner names or types, mailing or
 site addresses, legal descriptions, subdivision names or deed references.
@@ -123,7 +124,8 @@ PROVENANCE = {
         "vintage_date = the county's transform date from NC1Map_Parcels_Transform_Dates; vintage = its year",
         "jurisdiction_geoid = incorporated place by lotline.geo.place_or_township (TIGERweb ACS 2025), kept "
         "even when the place is not a BPS permit issuer; else the county remainder (5-digit GEOID)",
-        "Holdout filter applied with snapshot=True: the 2026 roll drops every Charlotte (3712000) parcel",
+        "Holdout filter with snapshot=True: the 2026 roll drops every Charlotte (3712000) parcel and, "
+        "under D-012, every unincorporated Mecklenburg (37119) parcel",
     ],
     "limitations": [
         "Current roll only: no history; per-county transform dates differ (2026-01-07 Mecklenburg to "
