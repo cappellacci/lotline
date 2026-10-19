@@ -102,3 +102,24 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Why:** the judging panel's methodology review (MS-02, 2026-10-19). Vacant lots carry the lowest existing-use value, so they are where small multi-unit buildings are most likely to pencil; leaving them out understated the missing-middle denominator and departed from the Handbook definition.
 - **Limits:** where a jurisdiction has no usable parcels, the ACS fallback (one-unit detached homes) has no vacant land, so its missing-middle denominator still excludes vacant lots; those denominators are already `low` quality.
 - **Decided by:** Ben, 2026-10-19.
+
+### D-009 · 2026-10-19 · Pro forma specification choices the research docs leave open
+- **Research docs (methods review §2a, register C43/C46/C48/C54):** feasible when value − (hard + soft + fees +
+  financing + target profit) ≥ existing-use value × (1 + margin); code step at 3+ units; fee carry depends on
+  payment timing. They don't say what the profit is measured on, or how the code step and fees enter.
+- **Chosen (`src/lotline/model/proforma.py`, `config/params/proforma.yaml`):**
+  - profit = margin × finished value (not × cost), so a fee change moves residual land value one-for-one, plus
+    interest when fees are paid at permit (`fee_paid_at_permit`). The register's NZ hurdles (17–25% on cost)
+    are converted to value (h / (1 + h) ≈ 15–20%);
+  - the code step is a percentage added to hard cost per sq ft for triplexes, fourplexes and 5–6 unit
+    buildings, with a longer build time; townhouses stay under the residential code; a switch
+    (`triplex_under_irc`) covers places such as Austin (PM2024-0002) that let triplexes use it;
+  - land capture λ enters as the share of a fee cut that does not reach builders (fees causal diagram,
+    (1 − λ)); the "revenue replaced" toggle (C51) is left to `model/scenarios/fees.py`, since it acts on
+    infrastructure capacity, not on project cost;
+  - an ADU keeps the house, so its existing-use value is 0.
+- **Why:** the simplest forms that match the docs' equations and keep each line checkable by hand.
+- **Reporting:** a fee cut is reported both as the cut itself (exactly $25,000 per unit when fees are paid at
+  completion) and with the interest saved when fees are paid at permit.
+- **Decided by:** proposed by WS-ENGINE; accepted by Ben, 2026-10-19 (the "approx." parameter values are to be
+  checked against their sources in a follow-up PR before V2 uses them).

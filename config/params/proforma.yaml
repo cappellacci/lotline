@@ -1,0 +1,187 @@
+# Pro forma / residual land value (model/proforma.py; methods review §2a; causal diagrams C40, C43, C45, C46, C48, C54).
+# All dollar amounts are 2025 dollars (money.yaml real_dollar_year). Market prices and rents are NOT here: they are
+# arguments, from local data. Fee levels are arguments too (Handbook $50k from fees.yaml, or real local fees).
+# Values marked "approx." were taken from memory of the public source and should be re-checked against it.
+
+# ---- Prototype sizes (definitions of the buildings we test) ----
+
+adu_sqft:
+  value: 800
+  low: 600
+  high: 1000
+  unit: sq ft per unit
+  source: "WS-ENGINE brief: 'ADU 600-1,000 sq ft'; Handbook ADU scenario requires >= 600 sq ft"
+  notes: "Midpoint of the brief's range."
+
+single_family_sqft:
+  value: 2150
+  low: 1600
+  high: 2700
+  unit: sq ft per unit
+  source: "Census Characteristics of New Housing: median new single-family home ~2,150-2,300 sq ft in 2023-24 (approx.)"
+  notes: "Wide range covers smaller infill homes and larger suburban homes."
+
+townhouse_sqft:
+  value: 1700
+  low: 1400
+  high: 2000
+  unit: sq ft per unit
+  source: "No solid public source found for new townhouse size alone (Census CNH reports single-family attached with detached); judgment, wide range"
+
+plex_unit_sqft:
+  value: 1000
+  low: 750
+  high: 1300
+  unit: sq ft per unit
+  source: "Census Characteristics of New Housing: median new multifamily unit ~1,050-1,100 sq ft (approx.); used for duplex to 6-unit buildings"
+
+townhouse_units:
+  value: 4
+  low: 2
+  high: 6
+  unit: units per project
+  source: "Handbook Missing Middle scenario: 2-6 units; a 4-unit townhouse row is the prototype (choice, not fitted)"
+  notes: "A prototype definition, not sampled in the uncertainty runs."
+
+small_multifamily_units:
+  value: 6
+  low: 5
+  high: 6
+  unit: units per building
+  source: "WS-ENGINE brief: '5-6 unit' prototype; Handbook Missing Middle upper bound of 6 units"
+  notes: "A prototype definition, not sampled in the uncertainty runs."
+
+# ---- Construction costs ----
+
+hard_cost_per_sqft_usd:
+  value: 165
+  low: 120
+  high: 260
+  unit: USD per sq ft (2025)
+  source: "NAHB Cost of Constructing a Home 2024 (public): construction cost ~$162 per sq ft of finished area (approx.), indexed to 2025 with the BLS PPI for residential construction inputs (~+2%, approx.)"
+  notes: "National average for a builder's single-family home. The range covers low-cost Southern markets to high-cost metros; replace with a local value when one exists (index it with money.deflate and the PPI)."
+
+code_step_premium:
+  value: 0.10
+  low: 0.03
+  high: 0.25
+  unit: share added to hard cost per sq ft
+  source: "No solid public source found (confounder register C43: 'to source'). Judgment: commercial code (IBC) adds sprinklers, accessibility and licensed design to 3+ unit attached buildings; wide range"
+  notes: "Applies to triplexes (unless triplex_under_irc = 1), fourplexes and 5-6 unit buildings. Townhouses stay under the residential code (IRC R101.2 scope)."
+
+triplex_under_irc:
+  value: 0
+  low: 0
+  high: 1
+  unit: "switch (0 = commercial code, 1 = residential code)"
+  source: "ICC IRC R101.2 scope (detached one- and two-family dwellings and townhouses); City of Austin policy memo PM2024-0002 lets some triplexes stay under the IRC (as reported to WS-ENGINE, to verify)"
+  notes: "A policy setting, not sampled in the uncertainty runs. Set to 1 for a jurisdiction that lets triplexes use the residential code."
+
+adu_hard_cost_premium:
+  value: 0.15
+  low: 0.0
+  high: 0.40
+  unit: share added to hard cost per sq ft
+  source: "No solid public source found. Judgment: small buildings cost more per sq ft (kitchen and bath spread over fewer sq ft); wide range"
+
+soft_cost_share:
+  value: 0.20
+  low: 0.10
+  high: 0.30
+  unit: share of hard cost
+  source: "Conventional pro forma range (design, engineering, permits other than fees, insurance, legal); Terner Center 'Making It Pencil' 2023 (E077) itemizes soft costs for its prototype. No single public figure for small infill; wide range"
+
+# ---- Financing (C45, C54) ----
+
+construction_loan_rate:
+  value: 0.085
+  low: 0.065
+  high: 0.11
+  unit: annual interest rate
+  source: "FRED DPRIME (bank prime rate ~7.25-7.5% in 2025) plus a typical 0.5-1.5 point spread for small construction loans (approx.)"
+  notes: "The developer rate channel (C45). Also used as the carrying cost of fees paid at permit (C54)."
+
+average_draw_share:
+  value: 0.5
+  low: 0.4
+  high: 0.65
+  unit: share of hard + soft cost outstanding on average
+  source: "Standard construction-loan approximation: money is drawn as work proceeds, so on average about half the cost is borrowed over the build period"
+
+construction_years_irc:
+  value: 0.75
+  low: 0.5
+  high: 1.25
+  unit: years
+  source: "Census Survey of Construction, average months from start to completion: single-family ~7-9 months in 2023-24 (approx.)"
+  notes: "ADUs, detached homes, duplexes and townhouses (residential code)."
+
+construction_years_ibc:
+  value: 1.25
+  low: 0.75
+  high: 2.0
+  unit: years
+  source: "Census Survey of Construction, average months from start to completion for multifamily buildings (approx. 12-20 months, longer for large buildings); small 3-6 unit buildings set toward the low end"
+  notes: "Triplexes, fourplexes and 5-6 unit buildings under the commercial code."
+
+fee_paid_at_permit:
+  value: 1.0
+  low: 0.0
+  high: 1.0
+  unit: share of fees paid at permit (carried through construction)
+  source: "Confounder register C54: fees paid at permit add financing carry; deferral to completion (e.g. Washington single-family) removes it. Most places collect at permit"
+
+# ---- Value of the finished building ----
+
+sale_cost_share:
+  value: 0.05
+  low: 0.03
+  high: 0.08
+  unit: share of sale price
+  source: "NAHB Cost of Constructing a Home 2024: sales commission plus marketing ~4-5% of price (approx.)"
+
+rental_vacancy_rate:
+  value: 0.05
+  low: 0.03
+  high: 0.08
+  unit: share of potential rent
+  source: "Underwriting convention for stabilized new rentals; Census Housing Vacancy Survey national rental vacancy ~7% in 2025 (approx.) as the high end"
+
+operating_expense_share:
+  value: 0.35
+  low: 0.25
+  high: 0.45
+  unit: share of collected rent
+  source: "No public source found (income-and-expense surveys such as IREM are proprietary). Convention for small rentals (taxes, insurance, repairs, management); wide range"
+
+cap_rate:
+  value: 0.055
+  low: 0.045
+  high: 0.075
+  unit: annual net operating income / value
+  source: "Published summaries of national multifamily cap-rate surveys, ~5-5.5% in 2025 (approx.); small 2-6 unit properties trade at higher cap rates, hence the wide upper range; Eriksen & Orlando 2024 (E078) on cap rates offsetting costs"
+  notes: "A market input in principle; replace with a local value when one exists."
+
+# ---- Profit hurdles and feasibility (C46, C48) ----
+
+developer_margin:
+  value: 0.15
+  low: 0.10
+  high: 0.20
+  unit: share of finished value
+  source: "Confounder register C48 and E030 (Wellington): hurdles of 17-20% on cost for infill, 20-23% for redevelopment; 17-25% on cost equals ~15-20% of value (h / (1 + h)); NAHB 2024 builder profit ~11% of price (approx.) as the low end"
+  notes: "Measured on value so a fee change moves residual land value one-for-one (see D-009)."
+
+adu_margin:
+  value: 0.10
+  low: 0.0
+  high: 0.20
+  unit: share of finished value
+  source: "No solid public source found. Judgment: homeowners building an ADU need less return than a developer (C22 owner channel); wide range including zero"
+
+existing_use_margin:
+  value: 0.10
+  low: 0.0
+  high: 0.25
+  unit: share above existing-use value
+  source: "Methods review §2a and register C46: feasible when residual land value >= existing-use value x (1 + margin). No published value for the margin; judgment, wide range"
