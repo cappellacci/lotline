@@ -13,6 +13,11 @@ holdouts:
     outcome_from: 2023-06-01
     outcome_until: 2099-12-31
     reason: V5 blind forward test of the Charlotte UDO (duplex/triplex on N1 lots, effective 2023-06-01)
+    reporting_geoids: ["37119"]
+    reporting_reason: >-
+      BPS has no Charlotte place row: Charlotte-Mecklenburg Code Enforcement reports Charlotte's permits (and
+      the Mecklenburg towns') under Mecklenburg County (37119), so 37119 rows carry Charlotte's outcomes and
+      are held out over the same window (found 2026-10-19, #123).
 sources:
   - name: raleigh_permits
     url: https://services.arcgis.com/v400IkDOw1ad7Yad/arcgis/rest/services/Building_Permits/FeatureServer/0

@@ -70,3 +70,15 @@ def test_local_only_jurisdictions_are_added_from_the_census_and_flagged():
     assert df.loc["2713919036", "name"] == "Empire township" and df.loc["2713919036", "kind"] == "township"
     assert df.loc["2713919036", "county_geoid"] == "27139"
     assert "2799999999" not in df.index  # never invented
+
+
+def test_holdout_places_and_parcel_places_are_always_local_jurisdictions(tmp_path):
+    from lotline.build.jurisdictions import local_geoids
+    from lotline.io import DataStore
+
+    store = DataStore(tmp_path)
+    out = store.processed("NC", "parcels", "onemap_parcels")
+    out.parent.mkdir(parents=True)
+    pd.DataFrame({"jurisdiction_geoid": ["3743480", "37119", None]}).to_parquet(out)  # Matthews, county
+    local = local_geoids("NC", store)
+    assert {"3712000", "3743480", "37119"} <= local  # Charlotte even with no Charlotte rows anywhere

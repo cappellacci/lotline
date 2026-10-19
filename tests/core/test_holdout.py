@@ -177,3 +177,38 @@ def test_central_guard_checks_parcels_with_or_without_vintage_date(monkeypatch):
     dated = ok.assign(vintage_date=pd.to_datetime(["2024-03-01"]))
     with pytest.raises(holdout.HoldoutLeak):
         holdout.assert_no_leak(dated, "parcels", "MN")
+
+
+def test_reporting_geoids_are_held_out_like_the_place():
+    # BPS files Charlotte's permits under Mecklenburg County: its rows carry Charlotte's outcomes
+    clt = Holdout(
+        test_id="V5-NC-CHARLOTTE",
+        place="Charlotte",
+        geoid="3712000",
+        outcome_from="2023-06-01",
+        outcome_until="2099-12-31",
+        reason="test",
+        reporting_geoids=["37119"],
+        reporting_reason="BPS reports Charlotte under the county",
+    )
+    bps = pd.DataFrame({"geoid": ["37119", "37119", "37119", "37183"], "year": [2022, 2023, 2025, 2025]})
+    hidden = holdout.held_out_mask(bps, [clt], geoid_col="geoid", year_col="year")
+    assert hidden.tolist() == [False, True, True, False]  # Wake (37183) is untouched
+
+
+def test_reporting_geoids_need_a_reason():
+    with pytest.raises(ValueError, match="reporting_reason"):
+        Holdout(
+            test_id="V5-NC-CHARLOTTE",
+            place="Charlotte",
+            geoid="3712000",
+            outcome_from="2023-06-01",
+            outcome_until="2099-12-31",
+            reason="test",
+            reporting_geoids=["37119"],
+        )
+
+
+def test_the_real_nc_config_holds_out_mecklenburg_county():
+    (clt,) = holdout.holdouts_for("NC")
+    assert "37119" in clt.geoids and clt.reporting_reason
