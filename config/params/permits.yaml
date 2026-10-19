@@ -1,0 +1,18 @@
+# Permit counting rules (build/permits.py, analysis plan D-008). Every value has a source.
+# Applied when permits are counted, never to the adapters' "as reported" tables.
+
+repeated_total_min_units:
+  value: 50
+  low: 20
+  high: 100
+  unit: units per permit
+  source: "Ben, 2026-10-19 (decision D-008); calibrated on observed repeats: Columbus 2023 9×198, Austin 2022 9×280"
+  notes: "Only permits reporting at least this many new units can be read as repeating a project total. Small identical buildings (e.g. three 12-unit buildings) are common and are left alone. Sensitivity: 20-100."
+
+repeated_total_min_permits:
+  value: 3
+  low: 2
+  high: 5
+  unit: permits
+  source: "Ben, 2026-10-19 (decision D-008); calibrated on observed repeats: Columbus 2023 9×198, Austin 2022 9×280"
+  notes: "A parcel-year-unit count must appear on at least this many permits before the repeats are dropped. Two large identical buildings on one parcel are plausible, so 2 is the low end of the sensitivity range."
