@@ -25,9 +25,12 @@ line**, so nothing personal reaches memory as a field or the table. The raw zip 
 - City of Austin: a property is placed in a city when one of its `PROP_ENT.TXT` taxing units is named in
   `config/crosswalks/tx_tcad_entities.csv` (CITY OF AUSTIN → 4805000). Properties not taxed by a listed city
   are left out of this table (they belong to other cities or the county).
-- Land use: the improvement's state code (else the land's) → its state category via `STATE_CD.TXT`
-  (`ptd_state_cd`), else the code itself, then `config/crosswalks/tx_ptad_land_use.csv` at the category level
-  (A, B, C1, ...; tried as the full code, then its first two characters, then the first). Unmatched → UNKNOWN.
+- Land use: the improvement's state code (else the land's), first looked up in TCAD's own codes
+  (`config/crosswalks/tx_tcad_state_codes.csv`: A4/A5 condos, A2 mobile homes, B2 duplexes, B3/B4 triplexes
+  and fourplexes, read from the 2026 export's `STATE_CD.TXT`); otherwise → its state category via
+  `STATE_CD.TXT` (`ptd_state_cd`), else the code itself, then `config/crosswalks/tx_ptad_land_use.csv` at
+  the category level (A, B, C1, ...; tried as the full code, then its first two characters, then the first).
+  Unmatched → UNKNOWN.
   `land_use_raw` keeps the district code.
 - Lot size: the sum of the land segments' square feet; where that is 0 or missing, legal acreage × 43,560.
 - Year built: the earliest improvement-detail year from 1800 to the roll year (additions are later; the
@@ -67,6 +70,7 @@ LAYOUT_URL = (
 LICENSE = "Public information (Texas Public Information Act); published by Travis Central Appraisal District"
 TRAVIS_FIPS = "48453"
 LAND_USE_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_ptad_land_use.csv"
+DISTRICT_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_tcad_state_codes.csv"
 ENTITY_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_tcad_entities.csv"
 SQFT_PER_ACRE = 43_560  # definition of the acre
 
@@ -199,11 +203,23 @@ def _norm(name: str) -> str:
     return re.sub(r"\s+", " ", name or "").strip().upper()
 
 
-def land_use(code: str | None, state_codes: dict[str, str], crosswalk: dict[str, str]) -> str:
-    """District state code → land_use_std via its state category (see the module docstring)."""
+def load_district_crosswalk(path: Path = DISTRICT_CROSSWALK) -> dict[str, str]:
+    with path.open(newline="") as fh:
+        return {r["state_cd"].strip().upper(): r["land_use_std"].strip() for r in csv.DictReader(fh)}
+
+
+def land_use(
+    code: str | None,
+    state_codes: dict[str, str],
+    crosswalk: dict[str, str],
+    district: dict[str, str] | None = None,
+) -> str:
+    """District state code → land_use_std: TCAD's own code first, else its state category (see module doc)."""
     if not code:
         return "UNKNOWN"
     code = code.strip().upper()
+    if district and code in district:
+        return district[code]
     ptd = state_codes.get(code, code).strip().upper() or code
     for key in (ptd, ptd[:2], ptd[:1]):
         if key in crosswalk:
@@ -215,6 +231,7 @@ def read_roll(path: Path, *, vintage_date: pd.Timestamp | None = None) -> pd.Dat
     """One registered TCAD zip → parcels rows for the cities in the entity crosswalk (before validation)."""
     entities = load_entities()
     crosswalk = load_land_use_crosswalk()
+    district = load_district_crosswalk()
     with zipfile.ZipFile(path) as zf:
         if _member(zf, "prop") is None:
             raise FileNotFoundError(
@@ -284,7 +301,7 @@ def read_roll(path: Path, *, vintage_date: pd.Timestamp | None = None) -> pd.Dat
             "jurisdiction_geoid": df["prop_id"].map(city_of),
             "county_geoid": TRAVIS_FIPS,
             "lot_sqft": seg.where(seg > 0, acreage * SQFT_PER_ACRE).astype("float64"),
-            "land_use_std": code.map(lambda c: land_use(c, state_codes, crosswalk)),
+            "land_use_std": code.map(lambda c: land_use(c, state_codes, crosswalk, district)),
             "land_use_raw": code.replace("", pd.NA),
             "units": pd.Series(pd.NA, index=df.index, dtype="Int64"),
             "year_built": df["prop_id"].map(built).astype("Int64"),

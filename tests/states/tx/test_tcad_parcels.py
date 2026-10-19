@@ -105,7 +105,9 @@ def test_land_use_via_state_category(roll):
     assert (
         roll.loc["484530202020202", "land_use_std"] == "VACANT_RESIDENTIAL"
     )  # land code when no improvement
-    assert roll.loc["484530303030303", "land_use_std"] == "OTHER"  # category B: 2+ units, count unknown
+    assert (
+        roll.loc["484530303030303", "land_use_std"] == "DUPLEX"
+    )  # TCAD code B2, from the district crosswalk
     assert roll.loc["484530707070707", "land_use_std"] == "UNKNOWN"
 
 
@@ -193,3 +195,14 @@ def test_crosswalks_are_sourced():
 
 def test_registered_as_tx_source():
     assert "tcad_parcels" in registry.sources_for("TX")
+
+
+@pytest.mark.parametrize(
+    "code, expected",
+    [("A1", "SF_DETACHED"), ("A2", "MOBILE_HOME"), ("A4", "CONDO_UNIT"), ("A5", "CONDO_UNIT"),
+     ("B1", "MULTIFAMILY_5P"), ("B2", "DUPLEX"), ("B3", "TRI_QUAD"), ("B4", "TRI_QUAD"), ("B5", "OTHER"),
+     ("C1", "VACANT_RESIDENTIAL"), ("F1", "COMMERCIAL")],
+)  # fmt: skip
+def test_tcad_codes_come_first_then_the_state_category(code, expected):
+    district = tp.load_district_crosswalk()
+    assert tp.land_use(code, {}, tp.load_land_use_crosswalk(), district) == expected
