@@ -3,7 +3,9 @@
 A transparent, open-source simulator of how state housing reforms (missing middle, ADUs, development fee cuts) change
 housing production over five years, compared with a no-change baseline.
 
-> Status: early setup (Phase 0). See `HANDOFF.md` and `docs/build/BUILD_PLAN.md`.
+> Status (October 2026): building. Data adapters for Minnesota, North Carolina, Texas and Ohio and the
+> baseline forecast are in place; the scenario engines, interactive tool and final documents are in progress.
+> See `HANDOFF.md` and `docs/build/BUILD_PLAN.md`.
 
 ## Command contract
 
@@ -29,6 +31,10 @@ Commands that download data need a `.env`: copy `.env.example` to `.env` and fil
 ## License
 
 Licensed under the **Apache License 2.0** (Apache-2.0). See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+
+Why Apache-2.0: it is permissive, so any state agency, researcher or vendor can reuse and adapt Lotline,
+including in their own tools, without having to open their code; it adds an explicit patent grant and requires
+that changes be noted, which suits public-sector reuse; and it is one of the licenses the Challenge accepts.
 
 ## Setup
 
