@@ -64,7 +64,7 @@ from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.tx.austin_permits"
-VERSION = "1.0"
+VERSION = "1.1"
 SOURCE = "austin_permits"
 TABLE = "permits"
 DOMAIN = "data.austintexas.gov"
@@ -160,7 +160,10 @@ PROVENANCE = {
         "reform_flag_raw: 'TWO UNIT RES' / 'THREE UNIT RES' when the description names the HOME two- or "
         "three-unit residential use",
         "final_date = completed_date (final_date_type completion); application_date = applieddate",
-        "parcel_id = '48453' + tcad_id (the Travis CAD geographic ID) where present",
+        "parcel_id = '48453' + tcad_id where it is a Travis CAD geographic ID (digits only); an ID that "
+        "starts with a letter (e.g. 'R654373', the account format of the Williamson and Hays appraisal "
+        "districts) is kept as written, without a county prefix, because the permit doesn't say which "
+        "district it is",
         "permit_class_raw = permit_class | work_class; Holdout filter applied (Texas has no holdouts)",
         "Cross-check only (not loaded): the city's ADU dataset 687g-qcqy (a view of R-102 permits) was read "
         "once under this source as 'adu_permits_687g' (permit number, class, date, status, jurisdiction, "
@@ -175,9 +178,10 @@ PROVENANCE = {
         "(each home an R-101 or R-103), marked only by the description phrase, so ADU series break in 2024",
         "Five-or-more permits sometimes repeat a project total on each building permit (e.g. nine permits "
         "on one parcel in 2022 each report 280 units), so 2019-2023 5+ units exceed the BPS (up to 1.41x in "
-        "2022); kept as reported",
-        "Single-family units run 5-20% below the BPS every year 2010-2025 (cause not yet found; townhouse "
-        "units filed under 104/105 and ADUs would both count as single-family in the BPS)",
+        "2022); kept as reported here and counted once when permits are counted (D-008)",
+        "Single-family (R-101) units alone run 5-20% below BPS 1-unit units 2010-2025: the BPS files most "
+        "ADUs and duplex sides as 1-unit homes. All homes in 1-2 unit buildings (R-101 + R-102 + R-103 vs "
+        "BPS 1 + 2 units) are within 10% every year (0.91-1.09; reports/tx/V0.md)",
         "Mixed-use (106) dwellings are OTHER, not MF5: compare 5+ counts with the BPS with and without them",
         "Some 104/105 permits lack a plausible housing_units value; their units come from the description "
         "or stay null",
@@ -284,7 +288,9 @@ def build(raw: pd.DataFrame, state: str = "TX") -> pd.DataFrame:
     )
     desc = df["description"].astype("string")
     home = desc.str.extract(HOME_USE, expand=False).str.upper()
-    tcad = _text(df["tcad_id"]).str.replace(r"\D", "", regex=True).replace("", pd.NA)
+    cad_id = _text(df["tcad_id"]).str.upper()
+    other_cad = cad_id.str.match(r"^[A-Z]").fillna(False).astype(bool)  # e.g. R654373: not a TCAD geo ID
+    tcad = cad_id.str.replace(r"\D", "", regex=True).replace("", pd.NA).where(~other_cad)
     sqft = pd.to_numeric(df["total_new_add_sqft"], errors="coerce")
     value = pd.to_numeric(df["total_job_valuation"], errors="coerce")
     final = _dates(df["completed_date"])
@@ -292,7 +298,7 @@ def build(raw: pd.DataFrame, state: str = "TX") -> pd.DataFrame:
         {
             "state": state,
             "permit_id": _text(df["permit_number"]),
-            "parcel_id": (TRAVIS_FIPS + tcad).where(tcad.notna()),
+            "parcel_id": (TRAVIS_FIPS + tcad).where(tcad.notna(), cad_id.where(other_cad)),
             "jurisdiction_geoid": AUSTIN_GEOID,
             "issue_year": df["_issue"].dt.year.astype("Int64"),
             "issue_date": df["_issue"],

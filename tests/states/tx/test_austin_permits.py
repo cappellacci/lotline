@@ -115,6 +115,7 @@ def raw() -> pd.DataFrame:
     df["permit_class_mapped"] = "Residential"
     df["condominium"] = "No"
     df["tcad_id"] = "0123456789"
+    df.loc[df["permit_number"] == "DUP-SIDE", "tcad_id"] = "R654373"  # Williamson/Hays CAD account
     df["applieddate"] = "2012-01-01T00:00:00.000"
     df["calendar_year_issued"] = df["issue_date"].str[:4]
     df["completed_date"] = ["2026-01-15T00:00:00.000" if i % 2 else None for i in range(len(df))]
@@ -194,6 +195,7 @@ def test_dates_parcel_and_raw_class(permits):
     assert p.final_date == pd.Timestamp("2026-01-15") and p.final_date_type == "completion"
     assert pd.isna(permits.loc["SFD-1", "final_date"]) and pd.isna(permits.loc["SFD-1", "final_date_type"])
     assert p.parcel_id == "484530123456789"
+    assert permits.loc["DUP-SIDE", "parcel_id"] == "R654373"  # other district: no Travis prefix
     assert permits.loc["MF-NULL", "permit_class_raw"] == "C- 105 Five or More Family Bldgs|Shell"
     assert (permits.issue_year == permits.issue_date.dt.year).all()
 
