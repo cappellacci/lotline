@@ -53,14 +53,25 @@ VERSION = "1.0"
 SOURCE = "wake_realestate"
 TABLE = "parcels"
 BASE = "https://services.wake.gov/realdata_extracts"
-ROLL_URL = f"{BASE}/Real_Est_Data_Final_Dec2023.xlsx"
-ROLL_VINTAGE = "2023-12"  # raw folder name
+ROLL_FILE = "Real_Est_Data_Final_Dec2023.xlsx"
+SALES_FILE = "Qualified_Sales_Past_24Months.xlsx"  # registered for the record; no canonical sales table yet
 VINTAGE_DATE = pd.Timestamp("2023-12-31")  # "Final Dec2023" roll, the last before the 2024 revaluation
 LANDING_URL = (
     "https://www.wake.gov/departments-government/tax-administration/data-files-statistics-and-reports/"
     "real-estate-property-data-files"
 )
 LICENSE = "Wake County public records (no license stated)"
+REGISTER_HELP = (
+    "No Wake real estate roll is registered. services.wake.gov/robots.txt disallows automated access, so the "
+    f"file is downloaded by hand: open {LANDING_URL} in a browser, download '{ROLL_FILE}' (and, for the "
+    f"record, '{SALES_FILE}'), then run:\n"
+    f"  uv run lotline manifest register ~/Downloads/{ROLL_FILE} --source {SOURCE} "
+    f"--url {BASE}/{ROLL_FILE} --license '{LICENSE}' --vintage 2023-12-31\n"
+    f"  uv run lotline manifest register ~/Downloads/{SALES_FILE} --source {SOURCE} "
+    f"--url {BASE}/{SALES_FILE} --license '{LICENSE}' "
+    "--vintage <the file's date on the page, e.g. 2026-10-17>\n"
+    "and fetch again: uv run lotline fetch --state NC --source wake_realestate"
+)
 LAND_USE_CSV = CONFIG_DIR / "crosswalks" / "nc_land_use_wake_realestate.csv"
 CITY_CSV = CONFIG_DIR / "crosswalks" / "nc_land_use_wake_jurisdictions.csv"
 LAND_USE_FIELDS = ("TYPE_AND_USE|DESIGN_STYLE", "TYPE_AND_USE", "Land_classification")
@@ -99,6 +110,8 @@ PROVENANCE = {
     "landing_url": LANDING_URL,
     "table": TABLE,
     "cleaning": [
+        "Files downloaded by hand in a browser (services.wake.gov/robots.txt disallows automated access) and "
+        "registered with `lotline manifest register --source wake_realestate`; nothing is fetched by script",
         "Only non-personal columns are read (USECOLS): owner names, mailing and street addresses, legal "
         "description, property index, deed book/page, special write-in and billing class are never loaded",
         "Column names checked against the county Record Layout (2019-01-14): all 87 match, without 'Unused'",
@@ -202,28 +215,26 @@ def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
-def download(store: DataStore, *, refresh: bool = False) -> Path:
-    from lotline.io.http import fetch
-
-    return fetch(
-        ROLL_URL,
-        store.raw(SOURCE, ROLL_VINTAGE) / Path(ROLL_URL).name,
-        store=store,
-        source=SOURCE,
-        license=LICENSE,
-        adapter=ADAPTER,
-        adapter_version=VERSION,
-        refresh=refresh,
-    )
-
-
 def read(path: Path) -> pd.DataFrame:
     """The roll's non-personal columns only, as text."""
     return pd.read_excel(path, usecols=USECOLS, dtype=str, engine="openpyxl")
 
 
+def roll_entries(store: DataStore) -> list:
+    """Registered copies of the December 2023 roll (the qualified-sales file is registered but not read)."""
+    return [e for e in store.registered(SOURCE) if Path(e.path).name == ROLL_FILE]
+
+
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    df = build(read(download(store, refresh=refresh)), state=state)
+    if state.upper() != "NC":
+        raise ValueError(f"{SOURCE} covers Wake County, North Carolina only, not {state}")
+    entries = roll_entries(store)
+    if not entries:
+        raise FileNotFoundError(REGISTER_HELP)
+    entry = entries[-1]  # the latest registration
+    if store.is_stale(entry):
+        raise FileNotFoundError(f"registered Wake roll missing or changed since registration: {entry.path}")
+    df = build(read(store.root / entry.path), state=state)
     df = holdout.apply(
         df,
         state,
