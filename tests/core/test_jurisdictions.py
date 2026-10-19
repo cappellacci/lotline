@@ -82,3 +82,31 @@ def test_holdout_places_and_parcel_places_are_always_local_jurisdictions(tmp_pat
     pd.DataFrame({"jurisdiction_geoid": ["3743480", "37119", None]}).to_parquet(out)  # Matthews, county
     local = local_geoids("NC", store)
     assert {"3712000", "3743480", "37119"} <= local  # Charlotte even with no Charlotte rows anywhere
+
+
+def test_tiers_follow_the_loaded_parcels():
+    from lotline.build.jurisdictions import tiers_from_parcels
+
+    def roll(geoid, n, land_use, year_share):
+        known = int(n * year_share)
+        return pd.DataFrame(
+            {
+                "jurisdiction_geoid": [geoid] * n,
+                "vintage": [2026] * n,
+                "land_use_std": [land_use] * n,
+                "year_built": pd.array([1990] * known + [None] * (n - known), dtype="Int64"),
+            }
+        )
+
+    parcels = pd.concat(
+        [
+            roll("4805000", 10, "SF_DETACHED", 1.0),  # land use and year built: tier 1
+            roll("3918000", 10, "SF_DETACHED", 0.0),  # land use only: tier 2
+            roll("3915000", 10, "UNKNOWN", 1.0),  # no usable land use: tier 3
+            roll("3901000", 10, "SF_DETACHED", 0.7),  # year built for 70% only (< 80%): tier 2
+        ]
+    )
+    old = roll("4805000", 10, "UNKNOWN", 0.0).assign(vintage=2020)  # an older roll doesn't count
+    tiers = tiers_from_parcels(pd.concat([parcels, old]))
+    assert tiers == {"4805000": 1, "3918000": 2, "3915000": 3, "3901000": 2}
+    assert tiers_from_parcels(None) == {}

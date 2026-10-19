@@ -40,3 +40,11 @@ completion_factor_all:
   unit: completions per permitted unit
   source: "Census New Residential Construction via FRED, long-run completions per permitted unit, recomputed by scripts/dev/completion_factors.py (lotline.model.completion): PERMITNSA vs COMPUTNSA, 1-year lag; 0.96 (1990-2019), 0.93 (2000-2019), 0.91 (2010-2022)"
   notes: "All housing, for the baseline. Replaces the placeholder 0.90 (0.85-0.95) from the statistical protocol §6 decision table. Range spans the measured windows less the 2-3% of completions in areas that issue no permits."
+
+min_eligible_parcels_publish:
+  value: 20
+  low: 10
+  high: 50
+  unit: eligible parcels
+  source: "Analysis plan D-015 (Ben, 2026-10-19), matching the V1 scoring floor (D-005, config/params/baseline.yaml v1_min_eligible_parcels); judging finding TR-07"
+  notes: "Places with fewer eligible parcels than this are not shown on their own in the tool or reports: their results are folded into the county or region. Small places have rates too noisy to read and few enough parcels that a result could point at individual properties."

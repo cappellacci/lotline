@@ -1,0 +1,19 @@
+# Data tiers (BUILD_PLAN §5; state briefs): which local data a jurisdiction has. Tier 1: parcels with land use
+# and year built; tier 2: parcels with land use only; tier 3: national data only. Assigned from the loaded
+# parcels table (build/jurisdictions.py); `data_tiers` in config/states/<st>.yaml overrides. Decision D-016.
+
+tier2_min_land_use_share:
+  value: 0.9
+  low: 0.7
+  high: 0.98
+  unit: share of parcels with a known land use (latest roll)
+  source: "Tier definitions in docs/build/workstreams/WS-NC.md ('tier 1 ... year built and use codes, tier 2 ... use codes only, tier 3 ... neither') and BUILD_PLAN §5; threshold is Lotline judgment (D-016)"
+  notes: "A jurisdiction's parcels count as having land use when at least this share of its parcels has a land use other than UNKNOWN. Below it, the eligible-parcel count rests on too many guesses to beat the ACS fallback's tier."
+
+tier1_min_year_built_share:
+  value: 0.8
+  low: 0.5
+  high: 0.95
+  unit: share of built parcels with a known year built (latest roll)
+  source: "Same tier definitions (WS-NC brief, BUILD_PLAN §5); threshold is Lotline judgment (D-016)"
+  notes: "Built parcels are those not VACANT_RESIDENTIAL. Year built lets the model see recent construction on a parcel (V2 mechanism tests); counties that send it for most homes reach tier 1."

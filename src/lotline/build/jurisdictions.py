@@ -5,8 +5,9 @@ unincorporated areas), so permits, ACS and FHFA can all be joined through one ke
 population come from the 2020 Census (P.L. 94-171); a jurisdiction that no longer existed in 2020 keeps its
 latest BPS name and a missing population. Unincorporated county areas also get no population (see build).
 
-`data_tier` defaults to 3 (national data only: BPS, ACS, FHFA). State workstreams raise it in
-`config/states/<st>.yaml` (`data_tiers: {geoid: tier}`) as local parcel and permit data are added.
+`data_tier` is 3 (national data only: BPS, ACS, FHFA) unless the loaded parcels show better data: tier 2 with
+land use, tier 1 with land use and year built (`tiers_from_parcels`, D-016). `data_tiers: {geoid: tier}` in
+`config/states/<st>.yaml` overrides the data-driven tier.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ from collections.abc import Iterable
 import pandas as pd
 
 from lotline.adapters.national import bps, cbsa, decennial, geoparts
-from lotline.config import load_state
+from lotline.config import load_params, load_state
 from lotline.io import DataStore
 from lotline.schemas import validate
 
@@ -42,6 +43,7 @@ def build(
     census: pd.DataFrame,
     cbsas: pd.DataFrame | None = None,
     local_geoids: Iterable[str] = (),
+    parcel_tiers: dict[str, int] | None = None,
     place_counties: dict[str, str] | None = None,
 ) -> pd.DataFrame:
     """Combine one state's BPS place-years with 2020 Census names and populations, and (if given) the
@@ -74,7 +76,8 @@ def build(
         [df, _local_rows(state, df, census, local_geoids, place_counties or {})], ignore_index=True
     )
     df["name"] = df["census_name"].fillna(df["name"])
-    df["data_tier"] = df["geoid"].map(cfg.data_tiers).fillna(DEFAULT_TIER).astype("Int64")
+    tiers = pd.Series({**(parcel_tiers or {}), **cfg.data_tiers}, dtype="Int64")  # config overrides data
+    df["data_tier"] = df["geoid"].map(tiers).fillna(DEFAULT_TIER).astype("Int64")
     if cbsas is not None:
         by_county = cbsas.set_index("county_geoid")
         df["cbsa_code"] = df["county_geoid"].map(by_county["cbsa_code"])
@@ -131,6 +134,37 @@ def _local_rows(
     )
 
 
+def tiers_from_parcels(parcels: pd.DataFrame | None, params: dict | None = None) -> dict[str, int]:
+    """Data tier per jurisdiction from its latest parcel roll (D-016; thresholds in config/params/tiers.yaml).
+
+    Tier 1: land use known for at least `tier2_min_land_use_share` of parcels and year built known for at
+    least `tier1_min_year_built_share` of built (non-vacant) parcels; tier 2: land use only; tier 3 otherwise.
+    """
+    if parcels is None or parcels.empty:
+        return {}
+    p = params or load_params("tiers")
+    latest = parcels[parcels["vintage"] == parcels.groupby("jurisdiction_geoid")["vintage"].transform("max")]
+    built = latest["land_use_std"] != "VACANT_RESIDENTIAL"
+    has_year = (
+        latest["year_built"].notna() if "year_built" in latest else pd.Series(False, index=latest.index)
+    )
+    stats = (
+        pd.DataFrame(
+            {
+                "geoid": latest["jurisdiction_geoid"].astype(str),
+                "land_use": latest["land_use_std"] != "UNKNOWN",
+                "year": has_year.where(built),
+            }
+        )
+        .groupby("geoid")
+        .agg(land_use=("land_use", "mean"), year=("year", "mean"))
+    )
+    has_land_use = stats["land_use"] >= p["tier2_min_land_use_share"].value
+    has_year_built = stats["year"].fillna(0) >= p["tier1_min_year_built_share"].value
+    tier = pd.Series(3, index=stats.index).mask(has_land_use, 2).mask(has_land_use & has_year_built, 1)
+    return {g: int(t) for g, t in tier.items()}
+
+
 def local_geoids(state: str, store: DataStore) -> set[str]:
     """Jurisdictions a state's own sources report (permits and parcels), plus every holdout place.
 
@@ -157,4 +191,5 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     place_counties = (
         dict(zip(pbc["place_geoid"], pbc["county_geoid"], strict=True)) if pbc is not None else {}
     )
-    return build(state, bps_table, census, cbsa.load(store, refresh=refresh), local, place_counties)
+    tiers = tiers_from_parcels(store.read(state, "parcels"))
+    return build(state, bps_table, census, cbsa.load(store, refresh=refresh), local, place_counties, tiers)

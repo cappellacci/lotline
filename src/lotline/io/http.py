@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fcntl
 import time
 from pathlib import Path
 
@@ -12,6 +13,9 @@ from lotline.io.store import DataStore, ManifestEntry, sha256_file, utc_now
 
 USER_AGENT = f"lotline/{__version__} (+https://github.com/cappellacci/lotline; open-source housing research)"
 RETRY_STATUS = {429, 500, 502, 503, 504}
+# Minimum seconds between requests to these hosts, across every process sharing LOTLINE_DATA_DIR (parallel
+# workstreams). census.gov blocked this project's network on 2026-10-19 after parallel TIGERweb downloads.
+MIN_INTERVAL = {"census.gov": 1.0}
 
 
 class RawOverwriteError(RuntimeError):
@@ -72,6 +76,7 @@ def fetch(
     own = http is None
     http = http or client()
     try:
+        _wait_turn(store, url)
         resp = _get_with_retries(http, url, headers, retries, backoff, secret_params or {})
     finally:
         if own:
@@ -103,6 +108,29 @@ def fetch(
         )
     )
     return dest
+
+
+def _wait_turn(store: DataStore, url: str) -> None:
+    """Space requests to rate-limited hosts (MIN_INTERVAL) using a lock file in the data directory, so the
+    limit holds across processes."""
+    host = httpx.URL(url).host
+    domain = next((d for d in MIN_INTERVAL if host == d or host.endswith("." + d)), None)
+    if domain is None:
+        return
+    lock = store.root / ".ratelimit" / domain
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    with lock.open("a+") as fh:
+        fcntl.flock(fh, fcntl.LOCK_EX)  # one process at a time decides when to send
+        fh.seek(0)
+        last = float(fh.read().strip() or 0)
+        wait = last + MIN_INTERVAL[domain] - time.time()
+        if wait > 0:
+            time.sleep(wait)
+        fh.seek(0)
+        fh.truncate()
+        fh.write(f"{time.time():.3f}")
+        fh.flush()
+        fcntl.flock(fh, fcntl.LOCK_UN)
 
 
 def _get_with_retries(

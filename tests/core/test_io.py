@@ -105,3 +105,21 @@ def test_fetch_never_overwrites_a_raw_file_from_another_url(tmp_path):
     dest.unlink()  # no file on disk: nothing to protect, so the new URL may write it
     get("https://example.test/a.txt?fields=b")
     assert dest.read_bytes() == b"fields=b"
+
+
+def test_census_requests_are_spaced_across_processes(tmp_path, monkeypatch):
+    from lotline.io import http as h
+
+    clock = {"now": 1000.0}
+    slept = []
+    monkeypatch.setattr(h.time, "time", lambda: clock["now"])
+    monkeypatch.setattr(
+        h.time, "sleep", lambda s: (slept.append(round(s, 3)), clock.update(now=clock["now"] + s))
+    )
+    store = DataStore(tmp_path)
+    h._wait_turn(store, "https://tigerweb.geo.census.gov/arcgis/rest/services/x?f=json")  # first: no wait
+    clock["now"] += 0.25
+    h._wait_turn(store, "https://api.census.gov/data/2024/acs/acs5")  # same domain, 0.25 s later
+    h._wait_turn(store, "https://example.test/a.txt")  # other hosts: never limited
+    assert slept == [0.75]
+    assert (tmp_path / ".ratelimit" / "census.gov").read_text() == "1001.000"
