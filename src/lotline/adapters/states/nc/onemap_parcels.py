@@ -178,26 +178,53 @@ def _clean(s: pd.Series) -> pd.Series:
     return s.astype("string").str.strip().fillna("")
 
 
-def land_use(df: pd.DataFrame, county: County) -> tuple[pd.Series, pd.Series]:
-    """(land_use_std, land_use_raw) for one county's rows."""
-    xw = crosswalk(county.crosswalk)
+def _codes(df: pd.DataFrame, field: str) -> pd.Series:
+    """Cleaned codes of `field`; a composite field "a|b" joins the cleaned parts with "|"."""
+    parts = [_clean(df[f]) if f in df else pd.Series("", index=df.index) for f in field.split("|")]
+    out = parts[0]
+    for part in parts[1:]:
+        out = out + "|" + part
+    return out
+
+
+def map_land_use(
+    df: pd.DataFrame,
+    xw: dict[tuple[str, str], str],
+    fields: tuple[str, ...],
+    *,
+    vacant_when_unimproved: bool,
+    building_fields: int = 1,
+    bldg_col: str = "improvval",
+) -> tuple[pd.Series, pd.Series]:
+    """(land_use_std, land_use_raw): the first of `fields` whose code is in the crosswalk wins.
+
+    The first `building_fields` fields describe a building; a residential match from a later field (land use)
+    on a parcel with no building value becomes VACANT_RESIDENTIAL when `vacant_when_unimproved` is set.
+    """
     std = pd.Series(pd.NA, index=df.index, dtype="string")
     raw = pd.Series(pd.NA, index=df.index, dtype="string")
-    from_fallback = pd.Series(False, index=df.index)
-    for i, field in enumerate(county.fields):
-        codes = _clean(df[field]) if field in df else pd.Series("", index=df.index)
+    from_land_use = pd.Series(False, index=df.index)
+    for i, field in enumerate(fields):
+        codes = _codes(df, field)
         mapped = codes.map(lambda c, f=field: xw.get((f, c))).astype("string")
         take = std.isna() & mapped.notna()
         std = std.mask(take, mapped)
         raw = raw.mask(take, field + "=" + codes)
-        from_fallback = from_fallback | (take & (i > 0))
-    if county.vacant_when_unimproved:
-        bldg = pd.to_numeric(df["improvval"], errors="coerce").fillna(0)
-        vacant = from_fallback & std.isin(RESIDENTIAL).fillna(False) & (bldg <= 0)
+        from_land_use = from_land_use | (take & (i >= building_fields))
+    if vacant_when_unimproved:
+        bldg = pd.to_numeric(df[bldg_col], errors="coerce").fillna(0)
+        vacant = from_land_use & std.isin(RESIDENTIAL).fillna(False) & (bldg <= 0)
         std = std.mask(vacant, "VACANT_RESIDENTIAL")
-    first = _clean(df[county.fields[0]]).replace("", pd.NA)
+    first = _codes(df, fields[0]).replace("", pd.NA)
     raw = raw.fillna(first)
     return std.fillna("UNKNOWN"), raw
+
+
+def land_use(df: pd.DataFrame, county: County) -> tuple[pd.Series, pd.Series]:
+    """(land_use_std, land_use_raw) for one county's rows."""
+    return map_land_use(
+        df, crosswalk(county.crosswalk), county.fields, vacant_when_unimproved=county.vacant_when_unimproved
+    )
 
 
 def year_built(structyear: pd.Series, vintage: pd.Series) -> pd.Series:
