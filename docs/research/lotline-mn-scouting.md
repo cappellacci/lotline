@@ -49,7 +49,7 @@
   - Fee score lowered to 1.
 - **Uptake evidence from the data:**
   - Minneapolis ADUs: 232 total through 2022, falling from 47 in 2016 to 13 in 2022 (TCB, 2023).
-  - St. Paul's 2023 reform: 76 units in 2–4 unit buildings in 2024 (18% of permits) and 47 in 2025 (Minneapolis Fed, 2026).
+  - St. Paul's 2023 reform: post-reform outcome counts (Minneapolis Fed) **removed on 2026-10-19**: St. Paul's 2024–2026 outcomes are the V5 blind test (analysis plan D-013).
   - About 300 metro ADUs in 2016–2024 (Star Tribune, citing Met Council data).
   - **Minnesota is a low-uptake state for both reforms.** That is valuable as a test, and it means the statewide effects we report will probably be small.
 - **Do now:** Minneapolis and St. Paul permit layers are rolling windows, so history disappears as they roll. A snapshot script should run as soon as coding opens (14 Oct). Until then, a manual CSV export is a cheap safeguard.
