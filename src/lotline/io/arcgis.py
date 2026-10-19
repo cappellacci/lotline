@@ -58,7 +58,13 @@ def query_url(layer_url: str, **params) -> str:
 
 
 def _json(path: Path) -> dict:
-    data = json.loads(path.read_text())
+    try:
+        data = json.loads(path.read_text())
+    except (
+        ValueError
+    ):  # an HTML page (e.g. "Request Rejected") instead of JSON: never cache it as data (#132)
+        path.unlink()
+        raise ArcGISError(f"not JSON (an error or block page?): {path.name}") from None
     if "error" in data:  # ArcGIS reports errors as HTTP 200 with an error body
         path.unlink()  # never cache an error page as data
         raise ArcGISError(f"{data['error'].get('code')}: {data['error'].get('message')}")
