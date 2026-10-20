@@ -46,6 +46,15 @@ def main() -> None:
             f"outside calibration range {int(shown['outside_calibration'].sum())} of {len(shown)}; "
             f"rules: {shown['rule_class'].value_counts().to_dict()}"
         )
+        sampled = shown["draws_from_unknown_rule"] > 0
+        share = shown.loc[sampled, "eligible_parcels"].sum() / shown["eligible_parcels"].sum()
+        print(
+            f"  rule drawn (D-022) for {int(sampled.sum())} of {len(shown)} places "
+            f"({share:.0%} of eligible "
+            f"parcels); drawn classes over those places: none {shown.loc[sampled, 'drawn_none'].mean():.2f}, "
+            f"partial {shown.loc[sampled, 'drawn_partial'].mean():.2f}, "
+            f"handbook {shown.loc[sampled, 'drawn_handbook'].mean():.2f}"
+        )
         print(
             f"  sum of place means, 5 years: Handbook ADU permits {shown['handbook_adus_mean'].sum():,.0f}, "
             f"added {shown['adu_permits_added_mean'].sum():,.0f}, additional homes "
@@ -60,6 +69,7 @@ def main() -> None:
             f"PCR {r['price_to_cost_central']:.2f}; "
             f"mature hazard {r['mature_hazard_central'] * 1000:.2f}/1,000; "
             f"outside range by {r['calibration_distance']:.2f}; rule {r['rule_class']} ({r['rule_note']}); "
+            f"P(none/partial/handbook) {r['p_none']:.2f}/{r['p_partial']:.2f}/{r['p_handbook']:.2f}; "
             f"observed {r['observed_adu_per_year']:.1f}/yr"
         )
         for key, label in (
