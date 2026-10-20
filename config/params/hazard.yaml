@@ -8,12 +8,12 @@
 # ---- The evidence anchor ----
 
 adu_mature_hazard_ref:
-  value: 0.004
-  low: 0.002
-  high: 0.005
-  unit: ADU permits per eligible single-family parcel per year
-  source: "adu-study-design.md working calibration band: about 2-5 ADU permits per 1,000 single-family lots per year at maturity for a strong reform in a high-cost city, Portland about 4 (inference from E044, E046, E047, E052); cross-check E047: Portland 472 ADU permits in 2018"
-  notes: "Gross permits, including formalized units and ADUs not used as homes (handled by adu_formalization_share and adu_net_new_share in aggregate.yaml). The band's own label is 'inference, uncertain'."
+  value: 0.000467
+  low: 0.000275
+  high: 0.000868
+  unit: ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate
+  source: "Estimated, D-019 (pre-registered fit/test split), scripts/dev/calibrate_adu.py: negative-binomial maximum likelihood over 64 place-years (Minneapolis and 10 Twin Cities suburbs with coded ADU rules, 2016-2025; 243 ADU permits), 90% profile-likelihood interval; Raleigh 2021-25 held out as the test. Was the adu-study-design band (4 per 1,000, Portland; E046, E047)"
+  notes: "About 0.12 of Portland's 4 per 1,000 (D-019 explains the gap). Minneapolis supplies 222 of the 243 permits. Overdispersion is large (alpha 6.6): places differ far more than rent, value and rates explain. Re-run the script when Austin's ADU rules are coded (it then joins the fit set) or Durham's denominator is fixed (it joins the test set)."
 
 adu_ref_rent_usd:
   value: 1573

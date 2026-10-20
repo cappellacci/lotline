@@ -280,4 +280,73 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - *Never used:* St. Paul (V5, all years), Charlotte (V5), any held-out row.
   - *Decision rule:* the fitted θ and interval replace the anchor whatever the test shows; a test total outside
     its 90% interval is reported as a transport failure, not refitted.
+- **Results of the pre-registered fit (run 2026-10-20 after the pre-registration commit fd21217;
+  `scripts/dev/calibrate_adu.py`):**
+  - *Data used:* fit set = Minneapolis (2016–25) and 10 Twin Cities suburbs with coded ADU rules (Apple
+    Valley, Blaine, Bloomington, Eagan, Edina, Maplewood, Minnetonka, Plymouth, Roseville, St. Louis Park):
+    64 place-years, 243 ADU permits, 222 of them Minneapolis's. Austin is not in it: its ADU rules are not
+    coded yet (the pre-registered rule). Test set = Raleigh 2021–25. Durham is not tested: the roll the test
+    would use has 5 ADU-eligible parcels.
+  - *Partial-rule share:* profile maximum at s = 1.00, 90% interval 0.26–1.00, wider than the judgment range,
+    so **not identified; kept at 0.3 (judgment)**.
+  - ***Anchor: θ = 0.000467 per parcel a year, 90% profile interval 0.000275–0.000868*** (0.47 per 1,000; α =
+    6.6). Written to `hazard.yaml` as value and range, per the decision rule.
+  - *Test (Raleigh 2021–25):* observed 230; predicted mean 112, median 62, 90% predictive interval 2–445.
+    Inside, so not a transport failure by the pre-registered rule, but the interval is wide because α is large
+    and the mean is half of what Raleigh built.
+  - *Cross-check with Portland (4 per 1,000; E046, E047):* the estimate is 0.12 of it. Reasons, none of which
+    the fit can separate: Portland's count is gross permits, including legalized units (formalization, E049)
+    and a $7–12k fee waiver from 2010 (E047); Portland's higher construction costs are not netted out (the
+    model uses national costs for both); "per 1,000 lots" in the Portland figure is undefined (E022; protocol
+    §0); and the fit set is mostly one Midwestern city plus suburbs whose ADU rules remain restrictive.
+  - *Misfit, reported not fixed:* with s held at 0.3 the fitted path underpredicts Minneapolis 2016–20 (under
+    its owner-occupancy rule: about 30 a year observed vs 2–8 fitted) and overpredicts it from 2023 (13–16 vs
+    13–21). The current-rules check with the new anchor gives 0.3x observed in Minneapolis (45 vs 179,
+    2016–22), Raleigh (24 vs 81) and Austin (592 vs 2,302, rules uncoded). Heavily restricted suburbs (permits
+    by conditional use, owner on site, extra parking, occupant caps) with no ADUs carry the same s = 0.3 as
+    Minneapolis's lighter rule and pull θ down.
+  - *Exploratory, not pre-registered and not used:* treating Austin's uncoded rules as mature
+    Handbook-equivalent adds 2,545 permits; then s is identified (0.22, 0.10–0.56) and θ = 0.000779
+    (0.000400–0.001751); Raleigh 230 vs mean 187 (90% 8–704). WS-CORE notes Austin's rules cover SF-3 lots of
+    5,750+ sq ft only, so this overstates Austin's coverage (D-021 proposal).
+  - *Effect on the development run* (origin 2025; five-year sums of place means, added ADU permits / additional
+    homes): MN 1,362 / 753; NC 2,088 / 1,154; OH 1,584 / 876; TX 7,859 / 4,340 (with the 0.004 band anchor
+    they were 9,607, 17,561, 10,722 and 54,180 permits; NC also falls through D-020).
+- **Next specification (to be pre-registered before it is run, not run here):** a partial-rule share graded
+  by the number of Handbook conditions a rule fails, rule coverage (D-021), and a place random effect in place
+  of a single α; refit when Austin's rules are coded and Durham's roll is fixed.
 - **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
+
+### D-020 · 2026-10-20 · Scenario geography: units that never share a parcel
+- **Found (WS-CORE):** `places_from_store` modelled local-only places (`in_bps` False: Charlotte, Concord and
+  other Mecklenburg and Cabarrus towns, 23 MN townships) and the county remainder rows that contain them, so
+  their parcels were counted twice.
+- **Now (`scenarios/adu.non_overlapping`):** local-only places stay as their own scenario units (they carry
+  their own rules); their eligible parcels are subtracted from the remainder of each county they sit in, split
+  by Census 2020 county shares (`geoparts.county_shares`), clipped at 0 and flagged. Only remainders whose
+  denominator is the ACS fallback overlap: `eligible.allocate_homes` keeps local-only homes in them, while a
+  remainder counted from a parcel roll holds only the parcels assigned to the county row (each parcel has one
+  jurisdiction). Columns `eligible_parcels_reported` and `overlap_removed` show the change. The baseline
+  permit series stays on BPS reporting units.
+- **Effect (2026-10-20 tables):** eligible parcels removed: NC 344,992 of 3,413,981 (Mecklenburg's
+  remainder 275,566 → 18,920), MN 10,459, OH 0, TX 0. WS-CORE's figures (NC 419,293, OH 4,000) also counted
+  remainders built from parcel rolls (e.g. Union County, 27,997, which holds none of its towns' parcels).
+- **Open:** places BPS files under a county that are not in `jurisdictions` (Wilmington, Hickory, Salisbury,
+  Statesville) carry no rules of their own; a county row's c should become a parcel-weighted mix of the rules
+  of the places inside it (with D-021's coverage share).
+- **Decided by:** proposed by WS-CORE, implemented by WS-ENGINE, 2026-10-20; for Ben to confirm in the PR.
+
+### D-021 · 2026-10-20 · Proposed: rule coverage (zones, minimum lot sizes) in the ADU rule classifier
+- **Gap (WS-CORE):** `rule_restrictions` reads only the rubric's yes/no fields. A rule limited to some zones
+  or to lots above a minimum size (Austin's 2015/2023 ADU rules: SF-3 only, lots of 5,750+ sq ft) reads as
+  Handbook-equivalent for the whole place. This overstates current rules (understating the Handbook gain) and
+  makes such a place a full-coverage observation in the anchor fit (D-019).
+- **Proposal (for a follow-up PR; not built here):** each place's eligible parcels split into covered and
+  not covered by its rule. Coverage share = share of ADU-eligible parcels whose zoning is in `coverage_zones`
+  and whose lot meets `min_lot_sqft`, computed from parcel zoning and lot size where the roll has them; where
+  it doesn't, a sourced default by rule scope ("citywide" 1.0; district- or lot-size-limited, judgment 0.5,
+  range 0.2–0.8). Then c_place = c × coverage share (uncovered parcels have no rule and get the full Handbook
+  increment), in the scenario and in the anchor fit alike. A county remainder's c = the parcel-weighted mix
+  of the rules of the places inside it (D-020's open item). `min_lot_sqft > 0` with no parcel data counts as
+  limited coverage rather than "partial", so the two adjustments don't overlap.
+- **Decided by:** proposed by WS-CORE and WS-ENGINE, 2026-10-20; for Ben.

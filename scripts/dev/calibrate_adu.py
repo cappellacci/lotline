@@ -11,8 +11,8 @@ a coded ADU rule in force by 1 July and a permit source flagging ADUs that year
 
 Prints the fit (θ with its 90% profile interval, α, the partial-rule share decision), the test set's observed
 vs predicted counts with 90% predictive intervals, and the comparison with Portland's anchor.
-`--explore-austin` adds an exploratory fit (not pre-registered, never used for the parameter) treating Austin's
-uncoded ADU rules as a mature Handbook-equivalent rule, to preview what coding Austin will do.
+`--explore-austin` adds an exploratory fit (not pre-registered, never used for the parameter) treating
+Austin's uncoded ADU rules as a mature Handbook-equivalent rule, to preview what coding Austin will do.
 """
 
 from __future__ import annotations
@@ -96,7 +96,8 @@ def fit_and_test(fit_rows: pd.DataFrame, test_rows: pd.DataFrame) -> cal.Fit:
     mean = float((kt * fit.theta).sum())
     verdict = "inside" if lo <= obs <= hi else "OUTSIDE: transport failure, reported not refitted"
     print(
-        f"  TOTAL: observed {obs}, predicted median {mid:.0f}, mean {mean:.0f} (90% {lo:.0f}-{hi:.0f}) -> {verdict}"
+        f"  TOTAL: observed {obs}, predicted median {mid:.0f}, mean {mean:.0f} "
+        f"(90% {lo:.0f}-{hi:.0f}) -> {verdict}"
     )
     return fit
 

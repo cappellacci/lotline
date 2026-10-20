@@ -8,6 +8,9 @@ import pytest
 from lotline.model import hazard
 
 P = hazard.central_params()
+P4 = dict(
+    P, adu_mature_hazard_ref=0.004
+)  # hand examples use the old anchor; the method does not depend on it
 
 
 def _phi(z):
@@ -55,7 +58,7 @@ def test_mature_hazard_one_place_by_hand():
     ref_value = 12 * 1573 * 0.95 * 0.65 / 0.055
     f_ref = _phi((math.log(ref_value / 187_966.35) - math.log(1.1)) / 0.5)
     by_hand = 0.004 / f_ref * f * 0.5**0.25 * math.exp(-0.07 * 2)
-    h = hazard.adu_mature_hazard(1100, P["adu_ref_home_value_usd"] / 2, P["adu_ref_mortgage_rate"] + 2)
+    h = hazard.adu_mature_hazard(1100, P["adu_ref_home_value_usd"] / 2, P["adu_ref_mortgage_rate"] + 2, P4)
     assert float(h) == pytest.approx(by_hand)
     assert float(h) == pytest.approx(0.0014219, abs=1e-7)
 

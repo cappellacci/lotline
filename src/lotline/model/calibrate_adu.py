@@ -181,8 +181,8 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
     ramp_handbook, ramp_partial (largest ramp over Handbook-equivalent / restricted rules in force),
     k_handbook, k_partial (= parcels × h1 × ramp). Reads holdout-filtered tables only.
 
-    `assume_rules` (geoid -> [(class, effective Timestamp)]) stands in for a place with no coded ADU rule; only
-    for clearly labelled exploratory runs, never for the pre-registered fit.
+    `assume_rules` (geoid -> [(class, effective Timestamp)]) stands in for a place with no coded ADU rule;
+    only for clearly labelled exploratory runs, never for the pre-registered fit.
     """
     import pandas as pd
 
@@ -212,19 +212,22 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
     counts = adu.observed_adu_counts(permits, min(years), max(years)).set_index(["geoid", "year"])[
         "adu_permits"
     ]
+    from lotline.config import load_state
+
+    fips = load_state(state).fips
     reforms = adu.load_reforms(state)
     reforms = reforms[(reforms["theme"] == "adu") & (reforms["status"] == "in_force")]
     rows = []
     for g in geoids:
-        mine = reforms[reforms["jurisdiction_geoid"] == g]
-        rules = [
-            (
-                "partial" if adu.rule_restrictions(adu._resolved(reforms, r.reform_id))[0] else "handbook",
-                r.effective_date,
-                r.end_date,
-            )
-            for r in mine.itertuples()
-        ]
+        mine = reforms[reforms["jurisdiction_geoid"].isin([g, fips])]  # a state law applies everywhere
+        rules = []
+        for r in mine.itertuples():
+            rubric = adu._resolved(reforms, r.reform_id)
+            per_lot = rubric.get("adus_per_lot", getattr(r, "adus_per_lot", None))
+            if per_lot is not None and pd.notna(per_lot) and float(per_lot) == 0:
+                continue  # an explicit "no ADUs" row is not an ADU rule (#164)
+            cls = "partial" if adu.rule_restrictions(rubric)[0] else "handbook"
+            rules.append((cls, r.effective_date, r.end_date))
         if not rules and assume_rules and g in assume_rules:
             rules = [(c, eff, pd.NaT) for c, eff in assume_rules[g]]
         e = elig[elig["jurisdiction_geoid"] == g]

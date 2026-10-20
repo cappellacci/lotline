@@ -54,3 +54,21 @@ def test_predictive_counts_center_on_theta_k():
     fit = cal.Fit(theta=0.002, low=0.0018, high=0.0022, alpha=0.1, loglik=0.0, n=10)
     draws = cal.predictive([10_000, 50_000], fit, draws=20_000)
     assert draws.mean(axis=0) == pytest.approx([20, 100], rel=0.05)
+
+
+def test_k_of_share_by_hand():
+    """k = max(s × k_partial, k_handbook): s = 0.3, k_partial (100, 0), k_handbook (10, 50) -> (30, 50)."""
+    assert cal.k_of_share([10, 50], [100, 0], 0.3) == pytest.approx([30, 50])
+
+
+def test_partial_share_is_recovered_when_the_data_identify_it():
+    """Many partial-rule and many Handbook-rule place-years with Poisson counts from θ = 0.002 and s = 0.25:
+    the profile interval for s contains 0.25 and is narrower than the judgment range (0.1-0.6)."""
+    rng = np.random.default_rng(7)
+    n = 120
+    kp = np.r_[rng.uniform(20_000, 80_000, n), np.zeros(n)]
+    kh = np.r_[np.zeros(n), rng.uniform(20_000, 80_000, n)]
+    y = rng.poisson(0.002 * cal.k_of_share(kh, kp, 0.25))
+    grid = np.round(np.arange(0.05, 1.0001, 0.05), 2)
+    _, ll, (lo, hi) = cal.profile_share(y, kh, kp, grid)
+    assert lo <= 0.25 <= hi and hi - lo < 0.5
