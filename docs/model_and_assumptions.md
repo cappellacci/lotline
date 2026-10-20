@@ -771,8 +771,8 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 |---|---|---|---|---|
 | `mm_panel_first_year` | 2010 | fixed | calendar year | Choice (D-024): the first year with missing-middle eligible-parcel rolls (rule 1.1) and ACS 5-year estimates… |
 | `mm_panel_last_year` | 2025 | fixed | calendar year | Choice (D-024): the last full year of Census BPS place permits |
-| `mm_estimation_min_population` | 10,000 | 10,000–50,000 | people (2020 Census) | Choice, flagged for Ben (D-024): comparison places of at least 10,000 people, the lower edge of D-022's middl… |
-| `mm_dose_grade_permit` | 0.3333 | fixed | share of the by-right dose | Choice, flagged for Ben (D-024), mirroring D-023's equal steps: a rule that allows 2-4 units only by permit o… |
+| `mm_estimation_min_population` | 10,000 | 10,000–50,000 | people (2020 Census) | Choice (D-024, approved by Ben 2026-10-20): comparison places of at least 10,000 people, the lower edge of D-… |
+| `mm_dose_grade_permit` | 0.3333 | fixed | share of the by-right dose | Choice (D-024, approved by Ben 2026-10-20), mirroring D-023's equal steps: a rule that allows 2-4 units only… |
 
 **`config/params/money.yaml`** (1 parameter)
 
