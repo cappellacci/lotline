@@ -243,12 +243,32 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   σ = 0.5 lowers its hazard by ~20%, far less than observed; local costs (climate, foundations) and lot or
   design rules (size, setbacks, internal ADUs keeping owner occupancy) are not in the model; (3) Minneapolis's
   rule coding leaves size and parking uncoded, so "Handbook-equivalent" may overstate its rules.
-- **Proposal for Ben (not applied; no parameter was tuned):** (a) re-anchor `adu_mature_hazard_ref` from
-  0.004 (0.002–0.005) to **0.002 (0.001–0.004)**, citing Austin and Raleigh as post-reform, non-holdout
-  calibration places and keeping Portland as the high end; on the development run this lowers added ADU
-  permits by 35–37% in every state (five-year sums of place means: MN 9,607 → 6,078; NC 17,561 → 11,151; OH
-  10,722 → 6,825; TX 54,180 → 34,089);
-  (b) have WS-MN check Minneapolis's ADU size, setback and parking rules before any reform-strength
-  multiplier; (c) for V2, a place-level realization factor (observed ÷ model under current rules) where ADU
-  permits are flagged, applied to the Handbook increment, as the two-prong design's reconciliation step.
-- **Decided by:** proposed by WS-ENGINE, 2026-10-20; for Ben to decide in the PR.
+- **Superseded proposal:** a hand-set anchor of 0.002 was proposed here and **declined by Ben (2026-10-20)**:
+  a hand-picked anchor is arbitrary. Instead the anchor is estimated from Lotline's own post-reform data with
+  the pre-registered split below.
+- **Pre-registration (written and committed before any fit was run, 2026-10-20):**
+  - *Quantity:* `adu_mature_hazard_ref` (θ, the reference place's mature ADU permits per eligible parcel a
+    year), estimated on the log scale. Expected count for place i in year y: μ = θ × k, with
+    k = eligible parcels × (mature hazard at θ = 1, from that year's ACS rent and value, newest vintage ≤ y,
+    2025 dollars, and that year's actual mortgage rate) × the largest c × ramp(years since effective, at
+    mid-year) over the coded ADU rules in force (`config/reforms/*.csv`, read at run time) — the scenario's
+    current-rules path without the observed floor (the floor would make the fit circular). All other
+    parameters at their central values.
+  - *Likelihood:* negative binomial, Var = μ + αμ², α estimated (Poisson when α → 0).
+    `adu_partial_rule_share` is estimated jointly only if its 90% profile interval is narrower than its
+    judgment range (0.1–0.6); otherwise it stays at 0.3 (judgment) and the report says so.
+  - *Interval:* 90% profile-likelihood interval for θ (α, and s if estimated, profiled out); it becomes θ's
+    low–high range in `hazard.yaml`.
+  - *Observed counts:* ADU permits per place-year, the larger of the flagging sources each year (Met Council or
+    city), from holdout-filtered tables. A place-year enters only if a coded ADU rule is in force by 1 July and
+    its permit source flags ADUs that year.
+  - *Fit set:* Minneapolis 2016–2025; every other Twin Cities place with a coded ADU rule, 2016–2025 (Met
+    Council flags from 2016); Austin 2016–2023 once its ADU rules are coded (its 2024–25 counts, 90 and 9, look
+    incomplete and are excluded in advance).
+  - *Test set:* Raleigh 2021–2025 (rule in force from July 2020); Durham once its eligible-parcel count is
+    fixed. Reported: observed vs predicted (median and 90% interval from a parametric bootstrap: log θ normal
+    from the profile interval, NB counts) per year and in total.
+  - *Never used:* St. Paul (V5, all years), Charlotte (V5), any held-out row.
+  - *Decision rule:* the fitted θ and interval replace the anchor whatever the test shows; a test total outside
+    its 90% interval is reported as a transport failure, not refitted.
+- **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
