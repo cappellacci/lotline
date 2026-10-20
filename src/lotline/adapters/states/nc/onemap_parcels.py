@@ -140,8 +140,8 @@ PROVENANCE = {
         "code (tier 3); Union's RES lumps every housing type; Guilford MULTI-FAMILY<4 (2-4 units) → TRI_QUAD",
         "Jurisdictions come from parcel points and 2025 boundaries; a place that is not a BPS permit issuer "
         "(Charlotte and the Mecklenburg towns, which BPS reports under the county) keeps its place GEOID",
-        "Charlotte parcels are all held out (current roll, V5 holdout); a pre-2023-06-01 Mecklenburg roll "
-        "is needed for the Charlotte denominator",
+        "Charlotte and unincorporated Mecklenburg parcels are all held out (current roll, V5 holdout, "
+        "D-012): only the six Mecklenburg towns remain; a pre-2023-06-01 roll is needed for Charlotte",
     ],
 }
 

@@ -21,3 +21,8 @@
 - **AI:** Claude (WS-NC) wrote the adapter, crosswalks and synthetic tests and reviewed the distributions.
 - **Open / next:** the processed table needs place assignment (TIGERweb), blocked while census.gov rejects requests
   from this network; Mecklenburg's figures and the provenance section follow once it is back.
+- **Update 2026-10-20:** census.gov answered again; WS-CORE refetched the NC places and I marked the cached HTML
+  block-page entry of `place_37/layer.json` superseded. Built `processed/nc/parcels/onemap_parcels.parquet`: 1,638,027
+  parcels in ten counties, `assert_no_leak` passes (no 3712000 or 37119 rows). Mecklenburg keeps 77,715 parcels in
+  six towns (Huntersville 28,228 to Pineville 4,213), year built on 100% of built homes there: tier 1. Provenance
+  section added (main's text kept for every other source).
