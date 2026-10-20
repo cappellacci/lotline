@@ -66,3 +66,13 @@ sources:
       vacant rule and data tier per county in nc_land_use_counties.csv.
       Current roll only, so every Charlotte (3712000) and unincorporated Mecklenburg (37119, D-012) parcel is
       held out by the snapshot rule; the Mecklenburg towns stay.
+  - name: clt_udo_translation
+    url: https://services.arcgis.com/9Nl857LBlQVyzq54/arcgis/rest/services/Unified_Development_Ordinance_Zoning_Translation/FeatureServer/193
+    license: City of Charlotte open data (public records; no license stated)
+    access: arcgis
+    cadence: one-off (frozen translation layer; data last edited 2023-05-31)
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/clt_udo_translation.py. Parcels in Charlotte's zoning jurisdiction
+      with pre-UDO and UDO districts (324,180 features). Data last edited 2023-05-31, before the V5 window
+      (2023-06-01); the adapter checks editingInfo.dataLastEditDate before downloading and stops if it moves.
+      No land use or year built: see reports/nc/charlotte_pre_udo_parcels.md.
