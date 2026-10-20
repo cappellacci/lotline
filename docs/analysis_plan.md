@@ -673,14 +673,18 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     10% (underpowered), with no supplementary test.
   - **Range: stratified place bootstrap** (treated and untreated places resampled separately, 999 draws, the
     whole imputation repeated per draw), basic 90% intervals for ATT_k, the overall ATT and R. The D-023
-    score bootstrap is not used (defect 4).
+    score bootstrap is not used (defect 4). On synthetic panels with six singleton cohorts (30 panels,
+    2026-10-20) this interval covered the truth 77% of the time (D-023's 37%) with an unbiased point
+    estimate, so with fewer than 10 contributing treated places the range is labelled "probably too
+    narrow" and the RI p-value carries the inference.
 - **Checks (all reported, pass or fail; none chooses the specification):**
   1. *Pre-trends:* treated observations at k = −3…−1 are held out of the untreated fit and imputed; their mean
      y − μ̂0 per 1,000 parcels has a 90% bootstrap interval containing 0.
   2. *Anticipation (C29):* T re-dated to the announcement year (the coded `announced_date`, else the council
      `adoption_date`; places with neither keep T and are listed). The window T_ann ≤ t < T is held out and
-     imputed: its mean y − μ̂0 has a 90% interval containing 0, and the overall ATT with T = T_ann stays
-     inside the main 90% interval.
+     imputed: its mean y − μ̂0 has a 90% interval containing 0, and the overall ATT with that window held
+     out of the untreated fit stays inside the main 90% interval. (T is not re-dated for the ATT: that would
+     put years with no effect into the post bins and dilute it mechanically, as a synthetic test showed.)
   3. *Placebo dates* 2 years early on pre-adoption data: interval contains 0.
   4. *Placebo outcome,* permits in 5+ unit buildings: interval contains 0.
   5. *Excluding 2020–21:* each ATT_k inside its main 90% interval.
