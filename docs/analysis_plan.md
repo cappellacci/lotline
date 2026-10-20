@@ -563,3 +563,18 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     (164 left out for no dated rule; St. Paul excluded); 12 ever treated (6 adopting in 2016–2025), 9 never
     treated; 13 places have no ADU permit in any year. With today's coding the estimate would be underpowered;
     the run waits for the adoption-date research.
+- **First real run aborted (2026-10-20):** the one-time run failed numerically: PPML separation (cohort ×
+  event-time cells, and possibly place and modifier combinations, with all-zero outcomes put the maximum
+  likelihood at infinity), giving coefficients in the hundreds, exp overflows in the bootstrap and
+  randomization inference, absurd transport means, then a crash writing `--out`. The run was treated as
+  aborted and **no estimate from it was looked at or interpreted**; its log is committed unread as
+  `reports/adu-d023/aborted-2026-10-20-log.txt` (warnings may be truncated). **Fix, mechanical and independent
+  of the results:** separation removed before fitting (Correia, Guimarães & Zylkin 2019): places and years
+  with all-zero outcomes, one-signed indicator columns whose rows all have zero outcomes (dropped with their
+  rows), then the iterated-rectifier check for any remaining separated observations, repeated until nothing
+  changes, every drop reported; modifiers entered as z-scores over the treated places (θ per standard
+  deviation); the fit fails loudly (`EstimationError`) on non-convergence, |η − offset| > 30, a coefficient
+  beyond ±20, or an effectively zero standard error, and the same guards apply in the bootstrap,
+  randomization inference, leave-one-out and transport (which also refuses a predicted mean above 5% of
+  eligible parcels a year); `--out` is a directory of named CSVs, written only after every stage succeeds.
+  Tested on synthetic panels with all-zero cohort cells and with a separating modifier. **One rerun follows.**
