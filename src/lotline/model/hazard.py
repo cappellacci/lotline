@@ -89,15 +89,22 @@ def feasible_share(price_to_cost, margin: float, dispersion: float):
 
 
 def adu_price_to_cost(
-    monthly_rent, fee_per_unit: float | None = None, params: Mapping[str, float] | None = None
+    monthly_rent,
+    fee_per_unit: float | None = None,
+    params: Mapping[str, float] | None = None,
+    cost_index: float = 1.0,
 ):
     """ADU value over its cost from the pro forma (rental), for a place's median gross rent (2025 dollars).
 
     value = 12 × rent × ratio × (1 − vacancy) × (1 − operating costs) / cap rate;
     cost = hard + soft + fees + interest while building (profit left out: the margin enters `feasible_share`).
-    Value is linear in rent, so the pro forma runs once at $1 a month and scales.
+    Value is linear in rent, so the pro forma runs once at $1 a month and scales. `cost_index` scales the
+    hard cost per sq ft (2025 level) by a year's real construction cost relative to 2025
+    (`cost_index_by_year`).
     """
-    p = central_params() if params is None else params
+    p = central_params() if params is None else dict(params)
+    if cost_index != 1.0:
+        p = dict(p, hard_cost_per_sqft_usd=p["hard_cost_per_sqft_usd"] * cost_index)
     fee = p["adu_fee_per_unit_usd"] if fee_per_unit is None else fee_per_unit
     unit_rent = proforma.Market(sale_price_per_sqft=0.0, monthly_rent_per_sqft=1.0 / p["adu_sqft"])
     pf = proforma.pro_forma("adu", "rental", unit_rent, fee, p)
@@ -106,16 +113,30 @@ def adu_price_to_cost(
     return rent * pf.value / cost
 
 
-def adu_mature_hazard(monthly_rent, home_value, mortgage_rate, params: Mapping[str, float] | None = None):
+def adu_mature_hazard(
+    monthly_rent,
+    home_value,
+    mortgage_rate,
+    params: Mapping[str, float] | None = None,
+    cost_index: float = 1.0,
+):
     """Yearly chance that an eligible parcel adds an ADU once a strong reform has matured (0 to 1).
 
     h = u × F(PCR) × (V / V_ref)^β_equity × exp(−β_rate × (r − r_ref)), u = h_ref / F(PCR_ref), capped at 1.
-    At the reference place's own rent, value and rate it returns exactly h_ref.
+    At the reference place's own rent, value, rate and cost era it returns exactly h_ref. `cost_index` is the
+    target year's real construction cost relative to 2025 (1 for forward runs); the reference uses
+    `adu_ref_cost_index` if a parameter set gives one (default 1: the reference priced at 2025 costs, as in
+    every fit so far).
     """
     p = central_params() if params is None else params
     margin, sigma = p["adu_margin"], p["adu_feasibility_dispersion"]
-    f = feasible_share(adu_price_to_cost(monthly_rent, params=p), margin, sigma)
-    f_ref = float(feasible_share(adu_price_to_cost(p["adu_ref_rent_usd"], params=p), margin, sigma))
+    f = feasible_share(adu_price_to_cost(monthly_rent, params=p, cost_index=cost_index), margin, sigma)
+    ref_index = p.get("adu_ref_cost_index", 1.0)
+    f_ref = float(
+        feasible_share(
+            adu_price_to_cost(p["adu_ref_rent_usd"], params=p, cost_index=ref_index), margin, sigma
+        )
+    )
     u = p["adu_mature_hazard_ref"] / f_ref
     value = np.asarray(home_value, dtype=float)
     equity = (np.where(value > 0, value, 0.0) / p["adu_ref_home_value_usd"]) ** p["adu_equity_elasticity"]
@@ -123,6 +144,18 @@ def adu_mature_hazard(monthly_rent, home_value, mortgage_rate, params: Mapping[s
         -p["adu_rate_semi_elasticity"] * (np.asarray(mortgage_rate, dtype=float) - p["adu_ref_mortgage_rate"])
     )
     return np.clip(u * f * equity * rate, 0.0, 1.0)
+
+
+def cost_index_by_year(market) -> dict[int, float]:
+    """Real construction cost relative to 2025: (PPI residential construction inputs / CPI-U) in year t over
+    the same ratio in the base year (money.yaml), from `market_geo_year` (national)."""
+    from lotline.model import money
+
+    ppi = money.index_by_year(market, "ppi_resid_inputs")
+    cpi = money.index_by_year(market, "cpi_u")
+    real = (ppi / cpi).dropna()
+    base = money.base_year()
+    return {int(y): float(v / real.loc[base]) for y, v in real.items()}
 
 
 def _outside(x, low: float, high: float):

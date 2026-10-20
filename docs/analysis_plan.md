@@ -416,6 +416,13 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - *Test prediction and decision rule:* as fit 3; θ, α, β_rate (if identified), s_sub (if identified), and any
     identified share replace the configured values whatever the test shows. Forward runs keep 2025's real
     construction cost (index 1) and draw the rate path as before.
+- **Fit 4: withdrawn before it was run (Ben, 2026-10-20).** The pre-registration above (commit cf123ba) stays
+  as written, but no fit 4 was run: adding terms to chase the observed trend was rejected. The ADU estimation
+  will be re-specified from the causal diagram (§3) and protocol §5.6–5.7 (staggered-adoption count model
+  with year effects, place random effects, an eligible-parcel offset, event-time ramp effects and pre-period
+  effect modifiers). Only a tested building block from that round is kept: `hazard.adu_price_to_cost` and
+  `adu_mature_hazard` accept a real construction-cost index (`hazard.cost_index_by_year`, PPI residential
+  inputs / CPI-U relative to 2025); it defaults to 1, so no current result changes.
 - **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
 
 ### D-020 · 2026-10-20 · Scenario geography: units that never share a parcel

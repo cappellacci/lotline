@@ -11,7 +11,10 @@ import pytest
 from lotline.model.scenarios import adu
 
 P = adu.central_params()
-A4 = {"adu_mature_hazard_ref": 0.004}  # the hand example's anchor (the configured one is estimated, D-019)
+A4 = {
+    "adu_mature_hazard_ref": 0.004,
+    "adu_ref_cost_index": 1.0,
+}  # the hand example's anchor (the configured one is estimated, D-019)
 
 
 def _places(**cols):
@@ -218,8 +221,10 @@ def test_forward_runs_draw_the_rate_path_and_backtests_use_the_given_rate():
     _, t_hist = adu.run(_places(mortgage_rate=3.0), 2018, draws=300)
     assert t_hist["mortgage_rate_central"].iloc[0] == 3.0
     _, t_fixed = adu.run(forecast, 2025, draws=300)
-    spread = lambda t: t["adu_permits_added_p90"].iloc[0] - t["adu_permits_added_p10"].iloc[0]  # noqa: E731
-    assert spread(t_forward) > spread(t_fixed)  # drawing the rate widens the range
+    # drawing the rate path changes the result (its width is dominated by place effects since D-019 fit 3)
+    assert t_forward["adu_permits_added_mean"].iloc[0] != pytest.approx(
+        t_fixed["adu_permits_added_mean"].iloc[0]
+    )
 
 
 def test_an_explicit_no_adu_row_is_none_and_a_state_law_still_wins():
