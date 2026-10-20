@@ -81,6 +81,32 @@ class Supersession:
         return (self.path, self.sha256, self.accessed_at)
 
 
+# path -> (inode, bytes read, parsed records). The manifest files are append-only, so after the first
+# read only the lines added since are parsed: a rerun over thousands of cached pages no longer re-reads
+# the whole file per page. Another process's appends are picked up on the next call; a replaced file is
+# read again in full.
+_JSONL_CACHE: dict[Path, tuple[int, int, list]] = {}
+
+
+def _read_jsonl(path: Path, cls) -> list:
+    if not path.exists():
+        _JSONL_CACHE.pop(path, None)
+        return []
+    st = path.stat()
+    inode, offset, items = _JSONL_CACHE.get(path, (st.st_ino, 0, []))
+    if inode != st.st_ino or st.st_size < offset:
+        offset, items = 0, []
+    if st.st_size > offset:
+        with path.open("rb") as fh:
+            fh.seek(offset)
+            chunk = fh.read()
+        end = chunk.rfind(b"\n") + 1  # leave a line another process is still writing for the next call
+        items = items + [cls(**json.loads(line)) for line in chunk[:end].splitlines() if line.strip()]
+        offset += end
+    _JSONL_CACHE[path] = (st.st_ino, offset, items)
+    return list(items)
+
+
 class DataStore:
     """Paths and manifest for one data directory."""
 
@@ -122,10 +148,7 @@ class DataStore:
 
     def manifest(self, *, include_superseded: bool = True) -> list[ManifestEntry]:
         """Every download entry, in the order recorded; `include_superseded=False` drops superseded ones."""
-        if not self.manifest_path.exists():
-            return []
-        lines = self.manifest_path.read_text().splitlines()
-        entries = [ManifestEntry(**json.loads(line)) for line in lines if line.strip()]
+        entries = _read_jsonl(self.manifest_path, ManifestEntry)
         if include_superseded:
             return entries
         gone = {s.key for s in self.supersessions()}
@@ -136,10 +159,7 @@ class DataStore:
         return self.root / "manifest.superseded.jsonl"
 
     def supersessions(self) -> list[Supersession]:
-        if not self.superseded_path.exists():
-            return []
-        lines = self.superseded_path.read_text().splitlines()
-        return [Supersession(**json.loads(line)) for line in lines if line.strip()]
+        return _read_jsonl(self.superseded_path, Supersession)
 
     def supersede(self, entries: list[ManifestEntry], reason: str) -> list[Supersession]:
         """Mark manifest entries as no longer current (append-only). Returns the records written.

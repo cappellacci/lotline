@@ -3,7 +3,7 @@ import pytest
 
 from lotline.io import DataStore, fetch
 from lotline.io.http import RawOverwriteError
-from lotline.io.store import data_dir
+from lotline.io.store import ManifestEntry, data_dir
 
 
 def _fetch(store, transport, **kw):
@@ -123,3 +123,30 @@ def test_census_requests_are_spaced_across_processes(tmp_path, monkeypatch):
     h._wait_turn(store, "https://example.test/a.txt")  # other hosts: never limited
     assert slept == [0.75]
     assert (tmp_path / ".ratelimit" / "census.gov").read_text() == "1001.000"
+
+
+def test_manifest_reads_appends_incrementally_and_survives_a_replaced_file(tmp_path):
+    store = DataStore(tmp_path)
+
+    def entry(i):
+        return ManifestEntry(
+            url=f"https://example.test/{i}",
+            path=f"raw/s/v/{i}",
+            accessed_at=f"2026-10-20T00:00:0{i}Z",
+            sha256="0" * 64,
+            bytes=1,
+            source="s",
+            license="PD",
+            adapter="t",
+            adapter_version="1",
+        )
+
+    store.record(entry(1))
+    assert [e.url for e in store.manifest()] == ["https://example.test/1"]
+    store.record(entry(2))
+    with store.manifest_path.open("a") as fh:
+        fh.write('{"url": "half a line')  # another process mid-write: not read yet
+    assert [e.path for e in store.manifest()] == ["raw/s/v/1", "raw/s/v/2"]
+    store.manifest_path.unlink()
+    store.record(entry(3))  # a new file (new inode): read again from the start
+    assert [e.path for e in store.manifest()] == ["raw/s/v/3"]
