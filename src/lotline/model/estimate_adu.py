@@ -618,6 +618,16 @@ def mm_in_force(reforms, geoid, fips, date, by_right_share: float) -> float:
     return 0.0
 
 
+def nearest_roll(e: pd.DataFrame, y) -> float:
+    """Eligible parcels of one place in year `y`: the latest roll at or before `y`, else the earliest roll
+    after it (`e`: rows of `eligible_parcels` for one place, theme and rule version). NaN if there are none.
+    By hand: rolls 2012 = 10, 2018 = 20; year 2015 -> 10, 2010 -> 10, 2020 -> 20."""
+    if e.empty:
+        return np.nan
+    ey = e.assign(after=e["year"] > y, gap=(e["year"] - y).abs()).sort_values(["after", "gap"])
+    return float(ey["eligible_parcels"].iloc[0])
+
+
 @dataclass
 class Panel:
     data: pd.DataFrame
@@ -674,12 +684,6 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
     hh = acs[acs["variable"] == "B25003_001"].set_index(["geo", "end_year"])["estimate"]
     central = adu.central_params()
 
-    def eligible_at(e, y):
-        if e.empty:
-            return np.nan
-        ey = e.assign(after=e["year"] > y, gap=(e["year"] - y).abs()).sort_values(["after", "gap"])
-        return float(ey["eligible_parcels"].iloc[0])
-
     rows, no_rule, notes = [], [], []
     for g in geoids:
         per_year, coded = _rules_by_year(reforms, reforms, g, fips, years, coverage, fp, grades)
@@ -712,7 +716,8 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
                 mods["pcr"] = float(hazard.adu_price_to_cost(v["rent"], params=central, cost_index=ci))
                 mods["log_value"] = float(np.log(v["home_value"]))
             pre = [
-                bps["units_1"].get((g, yy), np.nan) / eligible_at(e, yy) * 1000 for yy in (y0 - 2, y0 - 1, y0)
+                bps["units_1"].get((g, yy), np.nan) / nearest_roll(e, yy) * 1000
+                for yy in (y0 - 2, y0 - 1, y0)
             ]
             pre = [x for x in pre if not np.isnan(x)]
             mods["pre_permits"] = float(np.mean(pre)) if pre else np.nan
@@ -727,7 +732,7 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
                     "name": juris["name"].get(g, g),
                     "year": int(y),
                     "y": int(counts.get((g, int(y)), 0)),
-                    "eligible": eligible_at(e, y),
+                    "eligible": nearest_roll(e, y),
                     "T": T,
                     "dose": dose,
                     "rate": float(rate.get(int(y), np.nan)),
