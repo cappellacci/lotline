@@ -8,12 +8,12 @@
 # ---- The evidence anchor ----
 
 adu_mature_hazard_ref:
-  value: 0.000467
-  low: 0.000275
-  high: 0.000868
+  value: 0.000790
+  low: 0.000526
+  high: 0.001255
   unit: ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate
-  source: "Estimated, D-019 (pre-registered fit/test split), scripts/dev/calibrate_adu.py: negative-binomial maximum likelihood over 64 place-years (Minneapolis and 10 Twin Cities suburbs with coded ADU rules, 2016-2025; 243 ADU permits), 90% profile-likelihood interval; Raleigh 2021-25 held out as the test. Was the adu-study-design band (4 per 1,000, Portland; E046, E047)"
-  notes: "About 0.12 of Portland's 4 per 1,000 (D-019 explains the gap). Minneapolis supplies 222 of the 243 permits. Overdispersion is large (alpha 6.6): places differ far more than rent, value and rates explain. Re-run the script when Austin's ADU rules are coded (it then joins the fit set) or Durham's denominator is fixed (it joins the test set)."
+  source: "Estimated, D-019 fit 2 (pre-registered; blank rule fields integrated as a mixture, D-022), scripts/dev/calibrate_adu.py: negative-binomial maximum likelihood over 115 place-years (Minneapolis, Austin 2016-23 and 14 Twin Cities suburbs with coded ADU rules; 2,799 ADU permits), 90% profile-likelihood interval; Raleigh 2021-25 held out as the test. Fit 1 (D-019): 0.000467 (0.000275-0.000868). Research band: 4 per 1,000, Portland (E046, E047)"
+  notes: "About 0.20 of Portland's 4 per 1,000 (D-019 explains the gap). Overdispersion is large (alpha 7.5): Austin builds ~8x and Minneapolis ~1.4x the fitted mean while most suburbs build far less. Re-run the script when more rules are coded or Durham's denominator is rebuilt; no code change needed."
 
 adu_ref_rent_usd:
   value: 1573

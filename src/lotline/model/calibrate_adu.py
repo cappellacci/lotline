@@ -300,8 +300,8 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
     reforms = all_reforms[(all_reforms["theme"] == "adu") & (all_reforms["status"] == "in_force")]
     every = pd.concat([adu.load_reforms(st).assign(state=st) for st in adu.REFORM_STATES], ignore_index=True)
     min_count = int(load_params("adu")["adu_rule_min_coded"].value)
-    counts = adu.field_restrict_counts(every, pd.Timestamp.today().normalize())  # as pre-registered (D-019)
-    fp = adu.field_probabilities(counts, state, min_count)
+    field_counts = adu.field_restrict_counts(every, pd.Timestamp.today().normalize())  # pre-registered
+    fp = adu.field_probabilities(field_counts, state, min_count)
     rows = []
     for g in geoids:
         mine = reforms[reforms["jurisdiction_geoid"].isin([g, fips])]  # a state law applies everywhere

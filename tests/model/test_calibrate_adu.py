@@ -111,3 +111,76 @@ def test_k_paths_by_hand():
     }
     a, b = cal.k_paths(rows, 0.3)
     assert (a[0], b[0]) == pytest.approx((150, 500))
+
+
+def test_place_years_keeps_observed_counts(monkeypatch):
+    """Regression (fit 2's first run): the observed ADU counts must reach the fit rows, not be overwritten."""
+    import pandas as pd
+
+    from lotline.model.scenarios import adu
+
+    class Store:
+        def read(self, state, table):
+            return {
+                "market_geo_year": pd.DataFrame(
+                    {
+                        "geo": ["national:US"] * 2,
+                        "year": [2024, 2025],
+                        "cpi_u": [100.0, 100.0],
+                        "mortgage_rate": [6.0, 6.0],
+                    }
+                ),
+                "acs_geo_year": pd.DataFrame(
+                    {
+                        "geo": ["place:9900001"] * 2,
+                        "end_year": [2024, 2024],
+                        "variable": ["B25064_001", "B25077_001"],
+                        "estimate": [1500.0, 400_000.0],
+                    }
+                ),
+                "jurisdictions": pd.DataFrame(
+                    {"geoid": ["9900001"], "name": ["Test city"], "kind": ["place"]}
+                ),
+                "eligible_parcels": pd.DataFrame(
+                    {
+                        "jurisdiction_geoid": ["9900001"],
+                        "year": [2024],
+                        "theme": ["adu"],
+                        "rule_version": [__import__("lotline.build.eligible", fromlist=["x"]).RULE_VERSION],
+                        "eligible_parcels": [10_000],
+                    }
+                ),
+                "permits": pd.DataFrame(
+                    {
+                        "jurisdiction_geoid": ["9900001"] * 3,
+                        "source": ["city"] * 3,
+                        "issue_year": [2025] * 3,
+                        "building_type_std": ["ADU", "ADU", "SFD"],
+                        "adu_type": [None] * 3,
+                    }
+                ),
+            }[table]
+
+    reforms = pd.DataFrame(
+        {
+            "reform_id": ["T1"],
+            "state": ["MN"],
+            "jurisdiction_geoid": ["9900001"],
+            "theme": ["adu"],
+            "status": ["in_force"],
+            "effective_date": pd.to_datetime(["2020-01-01"]),
+            "end_date": pd.NaT,
+            "supersedes": [None],
+            "by_right": [True],
+            "owner_occ": [False],
+            "adu_detached_allowed": [True],
+            "adu_max_sqft": [800.0],
+            "parking": ["none"],
+            "parking_min_per_unit": [0.0],
+            "adus_per_lot": [1],
+            "coverage": ["Citywide"],
+        }
+    )
+    monkeypatch.setattr(adu, "load_reforms", lambda st: reforms if st == "MN" else reforms.iloc[0:0])
+    rows = cal.place_years("MN", Store(), ["9900001"], [2025])
+    assert rows["adu_permits"].tolist() == [2]
