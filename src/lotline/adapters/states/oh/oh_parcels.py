@@ -107,7 +107,8 @@ PROVENANCE = {
         "that pattern, 7xx abatement codes, 999 and blanks → UNKNOWN",
         "lot_sqft = LandArea (acres) × 43,560 where LandArea > 0, else Shape__Area (sq ft in EPSG:3735, "
         "Ohio South State Plane)",
-        "vintage_date = the county's latest CurrentTo (export date); vintage = its year",
+        "vintage_date = the county's latest CurrentTo (export date); vintage = its year; a county with no "
+        "CurrentTo on any parcel takes the download (snapshot) date",
         "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
         "stored as lon/lat",
@@ -163,7 +164,7 @@ def lot_sqft(land_acres: pd.Series, shape_sqft: pd.Series) -> pd.Series:
     return (acres * SQFT_PER_ACRE).where(acres > 0, shape.where(shape > 0)).astype("float64")
 
 
-def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
+def build(raw: pd.DataFrame, state: str = "OH", snapshot_date: str | None = None) -> pd.DataFrame:
     """Raw layer attributes (+ `lon`/`lat` centroids) → `parcels` rows, before jurisdictions are assigned."""
     df = raw.copy()
     df["local_id"] = df["LocalParcelID"].astype("string").str.strip().replace("", pd.NA)
@@ -175,6 +176,10 @@ def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
         raise ValueError(f"oh_parcels: counties not in {COUNTY_FIPS.name}: {unknown}")
     exported = epoch_ms_to_timestamp(df["CurrentTo"]).dt.normalize().astype("datetime64[ns]")
     vintage_date = exported.groupby(df["county_geoid"]).transform("max")
+    # Some counties' exports carry no CurrentTo at all: their roll date is unknown, so they take the
+    # download (snapshot) date, the latest date the roll can describe (conservative under the snapshot rule).
+    if snapshot_date is not None:
+        vintage_date = vintage_date.fillna(pd.Timestamp(snapshot_date))
     code = luc_code(df["StateLUC"])
     xwalk = luc_crosswalk()
     nan = pd.Series(float("nan"), index=df.index)
@@ -320,7 +325,8 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    df, _ = assign_jurisdictions(build(download(store, refresh=refresh), state=state), state, store)
+    raw = download(store, refresh=refresh)
+    df, _ = assign_jurisdictions(build(raw, state=state, snapshot_date=snapshot_vintage()), state, store)
     df = holdout.apply(
         df,
         state,

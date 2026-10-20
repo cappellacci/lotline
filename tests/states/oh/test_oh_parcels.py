@@ -149,3 +149,11 @@ def test_download_queries_each_county_by_oid_range(raw, monkeypatch):
         "County='Hamilton' AND OBJECTID>=100000 AND OBJECTID<200000",
     ]
     assert len(out) == 3
+
+
+def test_county_without_export_date_takes_the_snapshot_date(raw):
+    raw.loc[raw.County == "Hamilton", "CurrentTo"] = None
+    out = op.build(raw, snapshot_date="2026-10-19").set_index("parcel_id")
+    ham = out[out.county_geoid == "39061"]
+    assert (ham.vintage_date == pd.Timestamp("2026-10-19")).all() and (ham.vintage == 2026).all()
+    assert (out[out.county_geoid == "39049"].vintage == 2023).all()
