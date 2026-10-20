@@ -1,0 +1,13 @@
+### LB-NNN · 2026-10-20 · Contract: Citation fields for reforms and fees; config/fees (schemas 1.7)
+- **Question:** Where do the city-ordinance pipeline's verified rules, fees and citations go?
+- **What I did:**
+  - **Schemas 1.7 (additive):** `reforms` and `fees` gain optional `source_section`, `source_quote` (≤300 characters), `verified_by` and `verified_date`; `fees` gains `notes`.
+  - **Fee table:** hand-coded fees live in `config/fees/<st>.csv`, loaded and validated by `lotline.config.load_fees`, with a README.
+  - **Existing reform files:** all reform CSVs gain the four empty citation columns, in canonical order.
+  - **Regenerated** `docs/schemas.md`.
+- **Inputs:** Ben's approval (2026-10-20) of the city-ordinance pipeline and a fee table.
+- **Outputs:** `src/lotline/schemas.py`, `src/lotline/config/__init__.py`, `config/fees/README.md`, `config/reforms/*.csv`, `docs/schemas.md`, `tests/core/test_fees_config.py`, `tests/core/test_schemas.py`.
+- **Findings:** none.
+- **Decisions:** Ben, 2026-10-20 (fee table and citation fields).
+- **AI:** Claude Code (WS-CORE); all tests pass.
+- **Open / next:** `scripts/dev/ordinance_records.py` converts verified pipeline records into reform and fee rows.

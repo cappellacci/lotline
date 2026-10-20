@@ -100,6 +100,28 @@ def all_states(config_dir: Path = CONFIG_DIR) -> list[str]:
     return sorted(p.stem.upper() for p in (config_dir / "states").glob("*.yaml"))
 
 
+def load_fees(state: str, config_dir: Path = CONFIG_DIR):
+    """Hand-coded development fees for a state (config/fees/<st>.csv), validated against the `fees` schema.
+
+    Rows come from each city's official fee schedule (the city-ordinance pipeline or a manual lookup), with a
+    citation. Returns None when the state has no fee file yet.
+    """
+    import pandas as pd
+
+    from lotline.schemas import validate
+
+    path = config_dir / "fees" / f"{state.lower()}.csv"
+    if not path.exists():
+        return None
+    df = pd.read_csv(path, dtype={"jurisdiction_geoid": str})
+    for col in ("effective_date", "verified_date"):
+        if col in df:
+            df[col] = pd.to_datetime(df[col])
+    for col in ("year", "dollar_year"):
+        df[col] = df[col].astype("Int64")
+    return validate(df, "fees")
+
+
 def load_params(name: str, config_dir: Path = CONFIG_DIR) -> dict[str, Parameter]:
     """Load config/params/<name>.yaml: parameter name -> {value, low, high, unit, source, notes}."""
     raw = yaml.safe_load((config_dir / "params" / f"{name}.yaml").read_text()) or {}

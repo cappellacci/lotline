@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.6** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.7** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -215,6 +215,10 @@ One row per reform component, coded with the protocol §5.4 rubric (a vector, no
 | `coverage` | text | yes | no |  |
 | `coverage_zones` | text | no | yes |  |
 | `source_url` | text | yes | no |  |
+| `source_section` | text | no | yes |  |
+| `source_quote` | text | no | yes | str_length |
+| `verified_by` | text | no | yes |  |
+| `verified_date` | date | no | yes |  |
 | `coder` | text | yes | no |  |
 | `coder_2` | text | yes | yes |  |
 | `coder_agreement` | text | yes | no | one of `agree`, `adjudicated`, `single_coder` |
@@ -242,6 +246,11 @@ Table checks: `one_row_per_key`
 | `dollar_year` | integer | yes | no | ≥ 1970; ≤ 2100 |
 | `payment_timing` | text | no | yes |  |
 | `source` | text | yes | no |  |
+| `source_section` | text | no | yes |  |
+| `source_quote` | text | no | yes | str_length |
+| `verified_by` | text | no | yes |  |
+| `verified_date` | date | no | yes |  |
+| `notes` | text | no | yes |  |
 
 ## Version history
 
@@ -254,3 +263,4 @@ Table checks: `one_row_per_key`
 | 1.4 | schemas-v1 freeze: eligible_parcels (denominator); permits allow year-only dates, unknown units and demolitions, ADU type, zoning, floor area; parcels eligibility inputs; reforms rubric fields, two coders, status and amendments; fees components, basis, dollar year; nullable booleans; misspelled-column guard |
 | 1.5 | jurisdictions: optional cbsa_code and cbsa_type (OMB 2023 county to metro/micro area) |
 | 1.6 | jurisdictions: optional in_bps (False for places only a local permit source covers) |
+| 1.7 | reforms and fees: optional citation fields (source_section, source_quote, verified_by, verified_date); fees: optional notes; hand-coded fees live in config/fees/<st>.csv |
