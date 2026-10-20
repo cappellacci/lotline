@@ -1,0 +1,27 @@
+usdc_code,census_label,building_type_std,activity,derived_units,notes,source_url
+101,Single Family Houses,SFD,new,1,includes attached one-family houses (townhouses) and modular homes; not mobile homes,https://www.census.gov/construction/bps/sample/items.txt
+103,Two-Family Buildings,U2,new,,,https://www.census.gov/construction/bps/sample/items.txt
+104,Three- and Four-Family Buildings,U3_4,new,,,https://www.census.gov/construction/bps/sample/items.txt
+105,Five-or-More Family Buildings,MF5,new,,,https://www.census.gov/construction/bps/sample/items.txt
+213,"Hotels, Motels, and Tourist Cabins Intended for Transient Accommodations",OTHER,nonresidential,0,transient: no housing units,https://www.census.gov/construction/bps/sample/items.txt
+214,Other Nonhousekeeping Shelter,OTHER,nonresidential,0,no housing units,https://www.census.gov/construction/bps/sample/items.txt
+318,"Amusement, Social and Recreational Buildings",OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+319,Churches and Other Religious Buildings,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+320,Industrial Buildings,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+321,Parking Garages (Buildings and Open Decked),OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+322,Service Stations and Repair Garages,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+323,Hospitals and Institutional Buildings,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+324,"Office, Bank, and Professional Buildings",OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+325,Public Works and Utilities Buildings,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+326,Schools and Other Educational Buildings,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+327,Stores and Customer Services,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+328,Other Nonresidential Buildings,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+329,Structures Other Than Buildings,OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt
+434,"Additions, Alterations, and Conversions to Residential Buildings",UNKNOWN,alteration,,units unknown unless the description states a conversion or an ADU,https://www.census.gov/construction/bps/sample/items.txt
+437,"Additions, Alterations and Conversions - Nonresidential and Nonhousekeeping",OTHER,alteration,0,,https://www.census.gov/construction/bps/sample/items.txt
+438,Additions of Residential Garages and Carports,OTHER,alteration,0,an ADU over a garage is read from the description,https://www.census.gov/construction/bps/sample/items.txt
+645,One-Family Homes,SFD,demolition,1,units_removed derived,https://www.census.gov/construction/bps/sample/items.txt
+646,Two-Family Buildings,U2,demolition,2,units_removed derived,https://www.census.gov/construction/bps/sample/items.txt
+647,Three- and Four-Family Buildings,U3_4,demolition,,units_removed from numunits only,https://www.census.gov/construction/bps/sample/items.txt
+648,Five-or-More Family Buildings,MF5,demolition,,units_removed from numunits only,https://www.census.gov/construction/bps/sample/items.txt
+649,All Other Buildings and Structures,OTHER,demolition,0,,https://www.census.gov/construction/bps/sample/items.txt
