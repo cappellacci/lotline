@@ -1,0 +1,13 @@
+### LB-NNN · 2026-10-20 · Data: ADU adoption dates for 162 Twin Cities metro places (D-023 comparison set)
+- **Question:** When, if ever, did each metro place allow ADUs? (The D-023 estimator needs adoption dates.)
+- **What I did:** Ran the adoption-date workflow (162 research agents and their checkers; robots.txt first, never worked around). Saved the records and wrote a priority manual list of the 30 largest still-unknown places.
+- **Inputs:** official city, county and township ordinances and codes.
+- **Outputs:** `docs/research/ordinances/metro-adu-adoption-2026-10-20.json`, `docs/build/manual-adu-adoption-dates.md`, `docs/research/ordinances/README.md`.
+- **Findings:**
+  - **Status found for 52 places:** 15 by right, 23 permit required, 14 not allowed (all 14 with a quoted code section). 110 unknown, mostly blocked code hosts.
+  - **Dated changes:** 27 places have them (23 read with a quote); about 21 fall in 2016–2025.
+  - **Checks:** the checker confirmed 55 of 63 quoted items.
+  - **Cost:** about 12.5M subagent tokens.
+- **Decisions:** none.
+- **AI:** Claude Code workflow (208 agents); WS-CORE assembled the outputs.
+- **Open / next:** WS-MN codes the confirmed rows into `config/reforms/mn.csv`; Ben's manual lookups for the priority list.
