@@ -110,3 +110,15 @@ def test_tiers_follow_the_loaded_parcels():
     tiers = tiers_from_parcels(pd.concat([parcels, old]))
     assert tiers == {"4805000": 1, "3918000": 2, "3915000": 3, "3901000": 2}
     assert tiers_from_parcels(None) == {}
+
+
+def test_parcel_tiers_and_place_counties_reach_the_right_columns():
+    # load() passes both maps; a place-to-county map must never be read as tiers (bug fixed 2026-10-20)
+    bps_table = _bps([["2743000", "Minneapolis", "27497800", "27053", 2024]])
+    census = pd.DataFrame(
+        {"geoid": ["2743000"], "level": ["place"], "census_name": ["Minneapolis city"], "pop_2020": [429954]}
+    ).astype({"pop_2020": "Int64"})
+    df = jurisdictions.build(
+        "MN", bps_table, census, place_counties={"2743000": "27053"}, parcel_tiers={"2743000": 1}
+    ).set_index("geoid")
+    assert df.loc["2743000", "data_tier"] == 1

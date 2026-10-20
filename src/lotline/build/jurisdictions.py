@@ -43,8 +43,9 @@ def build(
     census: pd.DataFrame,
     cbsas: pd.DataFrame | None = None,
     local_geoids: Iterable[str] = (),
-    parcel_tiers: dict[str, int] | None = None,
+    *,
     place_counties: dict[str, str] | None = None,
+    parcel_tiers: dict[str, int] | None = None,
 ) -> pd.DataFrame:
     """Combine one state's BPS place-years with 2020 Census names and populations, and (if given) the
     OMB metro/micro area of each jurisdiction's county.
@@ -192,4 +193,12 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
         dict(zip(pbc["place_geoid"], pbc["county_geoid"], strict=True)) if pbc is not None else {}
     )
     tiers = tiers_from_parcels(store.read(state, "parcels"))
-    return build(state, bps_table, census, cbsa.load(store, refresh=refresh), local, place_counties, tiers)
+    return build(
+        state,
+        bps_table,
+        census,
+        cbsa.load(store, refresh=refresh),
+        local,
+        place_counties=place_counties,
+        parcel_tiers=tiers,
+    )
