@@ -30,6 +30,10 @@ how it was cleaned, and its known limitations (Participant Handbook, Data and Re
 by `lotline fetch` into `LOTLINE_DATA_DIR`, never committed; each download is logged with its sha256 in
 `manifest.jsonl` there, so a pull can be verified byte for byte. File counts and sizes cover each file's
 latest download; entries marked superseded (`lotline manifest supersede`) are left out.
+
+Two topics live in the hand-written companion `docs/data_availability.md`, since this file is generated: for
+each state, which data are available and which Lotline used (with the reason for each gap), and the
+re-identification and small-cell risk statement (what record-level data are held and what is published).
 """
 
 
