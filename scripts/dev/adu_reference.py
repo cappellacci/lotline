@@ -60,6 +60,9 @@ def main() -> None:
         f"30-year mortgage rate: mean 2015-2019 {ref_rate:.2f}%, range 2015-2023 "
         f"{nat.loc[2015:2023].min():.2f}-{nat.loc[2015:2023].max():.2f}%"
     )
+    idx = hazard.cost_index_by_year(market)
+    ref_idx = sum(idx[y] for y in range(2015, 2020)) / 5
+    print(f"real construction cost (PPI resid. inputs / CPI-U, 2025 = 1): 2015-19 mean {ref_idx:.4f}")
     ratios = [r[2] for r in rows.values()]
     values = [r[1] for r in rows.values()]
     print(

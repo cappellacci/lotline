@@ -8,9 +8,8 @@ import pytest
 from lotline.model import hazard
 
 P = hazard.central_params()
-P4 = dict(
-    P, adu_mature_hazard_ref=0.004
-)  # hand examples use the old anchor; the method does not depend on it
+# hand examples use the old anchor and a reference at 2025 costs; the method does not depend on either
+P4 = dict(P, adu_mature_hazard_ref=0.004, adu_ref_cost_index=1.0)
 
 
 def _phi(z):
@@ -43,7 +42,10 @@ def test_adu_price_to_cost_by_hand():
 
 def test_mature_hazard_equals_the_anchor_at_the_reference_place():
     h = hazard.adu_mature_hazard(
-        P["adu_ref_rent_usd"], P["adu_ref_home_value_usd"], P["adu_ref_mortgage_rate"]
+        P["adu_ref_rent_usd"],
+        P["adu_ref_home_value_usd"],
+        P["adu_ref_mortgage_rate"],
+        cost_index=P.get("adu_ref_cost_index", 1.0),
     )
     assert float(h) == pytest.approx(P["adu_mature_hazard_ref"])
 
@@ -99,3 +101,20 @@ def test_widen_keeps_the_mean_and_does_nothing_inside_the_range():
     wide = hazard.widen(0.002, 0.5, z)  # s = 1.0 × 0.5: log-sd 0.5
     assert wide.mean() == pytest.approx(0.002, rel=0.01)
     assert np.std(np.log(wide)) == pytest.approx(0.5, rel=0.01)
+
+
+def test_cost_index_by_hand():
+    """Hard cost × 1.1: cost = 1.1 × 187,966.35 (hard, soft and interest all scale) -> PCR falls by 1/1.1."""
+    base = hazard.adu_price_to_cost(1100, params=P)
+    assert hazard.adu_price_to_cost(1100, params=P, cost_index=1.1) == pytest.approx(base / 1.1)
+    # with a reference priced at an earlier cost era (index 0.88), a place at that era's cost and the
+    # reference's rent, value and rate gets exactly the anchor
+    ref = dict(P, adu_ref_cost_index=0.88)
+    h = hazard.adu_mature_hazard(
+        1573, P["adu_ref_home_value_usd"], P["adu_ref_mortgage_rate"], ref, cost_index=0.88
+    )
+    assert float(h) == pytest.approx(P["adu_mature_hazard_ref"])
+    # higher costs never raise the hazard
+    lo = hazard.adu_mature_hazard(1400, 400_000, 6.0, P, cost_index=0.9)
+    hi = hazard.adu_mature_hazard(1400, 400_000, 6.0, P, cost_index=1.1)
+    assert float(hi) < float(lo)
