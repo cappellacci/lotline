@@ -657,3 +657,14 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   how to treat a permutation refit that does not converge (e.g. count and report failed permutations and
   compute the p-value over the rest, or restart BFGS from the main estimate), then run the remaining stages
   once.
+- **Convergence rule for repeated refits (Ben, 2026-10-20; written before the remaining stages are run):**
+  in any stage that refits the model many times (randomization inference, the wild bootstrap, leave-one-out
+  and the checks), a refit that does not converge is retried once, starting from the main-model estimates;
+  if it still fails it is excluded and counted, and results are reported over the rest ("998 of 999
+  converged; p over 998"). Isolated failures never stop the run. A stage stops, and is reported as not
+  computed, only if failures exceed 5% of its refits; a stage that is a single refit (a check, the binary
+  dose) is reported as not computed if it fails after the retry, and the run continues. Wild-bootstrap draws
+  are one Newton step, not refits: a draw beyond the coefficient bound is excluded and counted the same way.
+  The remaining stages (randomization inference, the five checks, robustness, transport) are then run once,
+  reusing the main model as estimated: its fit is recomputed deterministically only to recover the Hessian
+  and place scores, and checked to match the logged estimates.
