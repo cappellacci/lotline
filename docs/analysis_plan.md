@@ -578,3 +578,15 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   randomization inference, leave-one-out and transport (which also refuses a predicted mean above 5% of
   eligible parcels a year); `--out` is a directory of named CSVs, written only after every stage succeeds.
   Tested on synthetic panels with all-zero cohort cells and with a separating modifier. **One rerun follows.**
+- **Rerun (2026-10-20, the one rerun after the fix) stopped by the numerical guard:** the point fit converged
+  (11 iterations) but kept only **143 of 760 place-years**: 53 places with no ADU permit in any year and 87
+  separated observations were dropped; 21 cohort × event-time cells were dropped (all-zero outcomes or no
+  variation left) and 8 more as collinear with the fixed effects, and **all four modifier terms θ and δ were
+  collinear with the fixed effects** in what remained. The wild score bootstrap then produced a draw beyond
+  the coefficient bound and the run raised `EstimationError`; nothing was written. No estimate was printed
+  (the script prints estimates only after the bootstrap). Log: `reports/adu-d023/run-2026-10-20-log.txt`.
+  Under "what would change the plan" the result is reported as **underpowered**; no assumption was added and
+  no further run was made. Options for Ben (each needs a new dated entry before any run): pool event times
+  and cohorts (e.g. one post-adoption effect, or k = 0–1, 2–3, 4+), report the D-023 robustness estimators
+  (negative binomial with place random effects, which keeps places with zeros; the Borusyak imputation
+  estimator) as primary, or widen the panel (more places with dated rules, earlier ADU-flag years).
