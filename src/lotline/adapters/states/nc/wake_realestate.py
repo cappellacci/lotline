@@ -25,7 +25,10 @@ and land class repeat on every card; units and heated area are per card.
 - **Zoning.** `Zoning` as recorded by the assessor (`zoning_source = "county tax roll"`).
 - **Jurisdiction.** `CITY` (the city whose limits contain the parcel) via
   `config/crosswalks/nc_land_use_wake_jurisdictions.csv`; outside city limits → Wake's county remainder
-  (37183). No coordinates in the file.
+  (37183). No coordinates in the file. A city that lies mostly outside Wake (Durham, Angier, Clayton: under
+  10% of their 2020 housing units in Wake, column `use_wake_roll`) is left out: its few Wake parcels can't
+  stand for the whole place, and a sliver roll would become that place's denominator (Durham's ADU count
+  was 5). Those places are counted from NC OneMap instead.
 
 **Vintage.** `vintage_date` 2023-12-31 (the "Final Dec2023" roll; the file's web listing shows 2024-01-02),
 `vintage` 2023. Wake has no holdout; `holdout.apply(..., snapshot=True)` runs anyway.
@@ -125,7 +128,8 @@ PROVENANCE = {
         "last_sale_price/date = Total_sale_Price/Total_Sale_Date (price 0 → unknown); sale_qualified = "
         "flag A or C; sale_multi_parcel = flag C; no flag → unknown",
         "jurisdiction_geoid from CITY via config/crosswalks/nc_land_use_wake_jurisdictions.csv; outside "
-        "city limits → 37183 (county remainder)",
+        "city limits → 37183 (county remainder); cities mostly outside Wake (Durham, Angier, Clayton: "
+        "use_wake_roll False, under 10% of 2020 housing units in Wake) are left out",
         "vintage_date 2023-12-31, vintage 2023; holdout filter applied with snapshot=True (no Wake holdout)",
     ],
     "limitations": [
@@ -150,6 +154,11 @@ def land_use_crosswalk(path: Path = LAND_USE_CSV) -> dict[tuple[str, str], str]:
 
 def city_geoids(path: Path = CITY_CSV) -> dict[str, str]:
     return {r["city_code"]: r["geoid"] for r in _read_csv(path) if r["geoid"]}
+
+
+def partial_cities(path: Path = CITY_CSV) -> set[str]:
+    """City codes of places mostly outside Wake: the roll would hold only a sliver of them."""
+    return {r["city_code"] for r in _read_csv(path) if r["use_wake_roll"].strip() == "False"}
 
 
 def _num(s: pd.Series) -> pd.Series:
@@ -212,6 +221,7 @@ def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
     out["zoning_source"] = out["zoning_raw"].notna().map({True: "county tax roll", False: pd.NA})
     out["zoning_source"] = out["zoning_source"].astype("string")
     out["vintage"] = out["vintage"].astype("Int64")
+    out = out.loc[~city.isin(partial_cities()).fillna(False)]  # places mostly outside Wake
     return out.reset_index(drop=True)
 
 

@@ -30,6 +30,11 @@ Census permit universe): BPS files Charlotte and the other Mecklenburg towns und
 mapping them to the county would hide Charlotte from the holdout filter. `assign_jurisdictions` returns how
 each parcel was placed so these cases can be reported.
 
+**Coverage.** A place that straddles a loaded and an unloaded county is kept only if at least half of its
+2020 housing units lie in the loaded counties (Census 2020 DHC parts, `geoparts.county_shares`). Otherwise
+its few parcels here would become its whole denominator: Chapel Hill (6.6% in Durham County), Burlington
+(2.8% in Guilford), Clayton (0% in Wake). Those places fall back to the ACS denominator instead.
+
 **Holdout.** Charlotte (3712000) is the V5 holdout from 2023-06-01. This roll is from 2026, so every
 Charlotte parcel is dropped by the snapshot rule (`holdout.apply(..., snapshot=True)`) before anything is
 returned. Since D-012 the holdout also covers Mecklenburg County's own GEOID (37119, where BPS files
@@ -67,6 +72,10 @@ COUNTIES_CSV = CROSSWALK_DIR / "nc_land_use_counties.csv"
 SQFT_PER_ACRE = 43_560.0
 OID_CHUNK = 100_000  # OBJECTIDs per query (mechanics: keeps paging offsets shallow; counties are contiguous)
 RETRIES = 5  # pager retries on ArcGIS error bodies (mechanics)
+# A place counts from this roll only if most of its 2020 housing units lie in the counties loaded (mechanics:
+# a roll holding a sliver of a place, e.g. Chapel Hill's Durham County part, would replace its ACS fallback
+# with a near-zero denominator).
+MIN_PLACE_COVERAGE = 0.5
 RESIDENTIAL = {
     "SF_DETACHED",
     "SF_ATTACHED",
@@ -124,6 +133,8 @@ PROVENANCE = {
         "vintage_date = the county's transform date from NC1Map_Parcels_Transform_Dates; vintage = its year",
         "jurisdiction_geoid = incorporated place by lotline.geo.place_or_township (TIGERweb ACS 2025), kept "
         "even when the place is not a BPS permit issuer; else the county remainder (5-digit GEOID)",
+        "Places with under half of their 2020 housing units in the loaded counties are left out (they fall "
+        "back to ACS): e.g. Chapel Hill, Burlington, Clayton, Angier",
         "Holdout filter with snapshot=True: the 2026 roll drops every Charlotte (3712000) parcel and, "
         "under D-012, every unincorporated Mecklenburg (37119) parcel",
     ],
@@ -424,10 +435,32 @@ def download(store: DataStore, *, fips: list[str] | None = None, refresh: bool =
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=OUT_FIELDS)
 
 
+def undercovered(shares: pd.DataFrame, loaded: set[str], minimum: float = MIN_PLACE_COVERAGE) -> set[str]:
+    """Places with less than `minimum` of their 2020 housing units in the loaded counties.
+
+    `shares`: place_geoid, county_geoid, share (each place's shares sum to 1; geoparts.county_shares).
+    """
+    covered = shares.assign(inside=shares["county_geoid"].isin(loaded) * shares["share"])
+    total = covered.groupby("place_geoid")["inside"].sum()
+    return set(total.index[total < minimum])
+
+
+def drop_undercovered(df: pd.DataFrame, state: str, store: DataStore) -> pd.DataFrame:
+    """Leave out places that lie mostly outside the loaded counties (they fall back to ACS)."""
+    from lotline.adapters.national import geoparts
+    from lotline.config import load_state
+
+    places = sorted(g for g in df["jurisdiction_geoid"].dropna().unique() if len(g) == 7)
+    shares = geoparts.county_shares(load_state(state).fips, places, store)
+    out = undercovered(shares, set(df["county_geoid"].dropna().unique()))
+    return df.loc[~df["jurisdiction_geoid"].isin(out)]
+
+
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     dates = vintage_dates(download_dates(store, refresh=refresh))
     df = build(download(store, refresh=refresh), dates, state=state)
     df, _ = assign_jurisdictions(df, state, store)
+    df = drop_undercovered(df, state, store)
     df = holdout.apply(
         df,
         state,

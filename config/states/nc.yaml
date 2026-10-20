@@ -18,6 +18,27 @@ holdouts:
       BPS has no Charlotte place row: Charlotte-Mecklenburg Code Enforcement reports Charlotte's permits (and
       the Mecklenburg towns') under Mecklenburg County (37119), so 37119 rows carry Charlotte's outcomes and
       are held out over the same window (found 2026-10-19, #123).
+# One parcels source per jurisdiction (build/eligible.single_source), so no place switches rolls between
+# years. Wake places and the Wake remainder: the county's pre-revaluation December 2023 roll (V2 baseline;
+# its Design Style separates townhouses, which NC OneMap codes as detached). Charlotte: the pre-UDO
+# translation layer (zoning only, dated 2023-05-31). Everyone else: NC OneMap. Places mostly outside Wake
+# (Durham, Angier, Clayton) are not in the Wake roll (config/crosswalks/nc_land_use_wake_jurisdictions.csv).
+parcel_sources:
+  "3755000": wake_realestate  # Raleigh
+  "3710740": wake_realestate  # Cary
+  "3701520": wake_realestate  # Apex
+  "3770540": wake_realestate  # Wake Forest
+  "3725300": wake_realestate  # Fuquay-Varina
+  "3732260": wake_realestate  # Holly Springs
+  "3725480": wake_realestate  # Garner
+  "3744520": wake_realestate  # Morrisville
+  "3736080": wake_realestate  # Knightdale
+  "3771860": wake_realestate  # Wendell
+  "3776220": wake_realestate  # Zebulon
+  "3757640": wake_realestate  # Rolesville
+  "37183": wake_realestate  # Wake County outside city limits
+  "3712000": clt_udo_translation  # Charlotte
+  "*": onemap_parcels
 sources:
   - name: raleigh_permits
     url: https://services.arcgis.com/v400IkDOw1ad7Yad/arcgis/rest/services/Building_Permits/FeatureServer/0
