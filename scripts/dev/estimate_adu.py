@@ -65,6 +65,11 @@ def full(store, out: Path | None) -> None:
     draws, perms = int(p["adu_estimation_bootstrap_draws"]), int(p["adu_estimation_permutations"])
     kw = {"modifiers": list(est.MODIFIERS)}
     panel = est.build_panel("MN", store, source=SOURCE).data
+    # D-023 implementation choice (Ben, 2026-10-20): places that adopted before 2010 have no pre-adoption
+    # measurements, so they don't inform the modifier terms (missing -> zero deviation in the design)
+    early = panel["T"] < 2010
+    panel.loc[early, list(est.MODIFIERS)] = float("nan")
+    print(f"modifiers set to missing for {panel.loc[early, 'place'].nunique()} places adopted before 2010")
     fit = est.estimate(panel, **kw)
     boot = est.score_bootstrap(fit, draws=draws, seed=20261020)
     main = est.summarize(fit, boot)
