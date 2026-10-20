@@ -66,3 +66,11 @@ def test_chart_is_written_and_skips_held_out_years(tmp_path):
     )
     path = v0.plot_reconciliation(rec, "Testland", tmp_path / "chart.png")
     assert path.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_licenses_list_only_this_states_sources():
+    from lotline.validation.v0 import state_sources
+
+    tx, nc = state_sources("TX"), state_sources("NC")
+    assert {"austin_permits", "census_bps_state_annual"} <= tx
+    assert "raleigh_permits" in nc and "raleigh_permits" not in tx
