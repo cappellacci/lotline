@@ -2,6 +2,7 @@
 
 The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metro places; 110 stay unknown, mostly because the code host blocked automated reading. The D-023 estimator needs, for each place, **whether ADUs are allowed and since when** (the ordinance and its effective date). These are the 30 largest unknown places, in order of population: each lookup adds the most data. Record: status (by right / permit / not allowed), the effective date of each change, the ordinance number and link, and a short quote. Full records: `docs/research/ordinances/metro-adu-adoption-2026-10-20.json`.
 
+
 ## Brooklyn Center city (GEOID 2707948, pop. 33782)
 - Zoning authority: City of Brooklyn Center (the city does its own zoning; Hennepin County does not zone incorporated cities)
 - [ ] Brooklyn Center's new zoning code (the rewrite run by Bolton & Menk, 2021-2023): find the adopting ordinance number, the adoption and effective dates, and the ADU section. A search  
@@ -94,6 +95,18 @@ The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metr
 - [ ] Search the city council minutes and ordinance archive for accessory dwelling, accessory apartment or secondary unit amendments  
   https://www.rosemountmn.gov/490/Ordinances  
   _Why manual:_ The web search budget ran out after 0 successful searches, so no ordinance number could be found by search. The city's T
+
+## White Bear Lake city (GEOID 2769970, pop. 24883)
+- Zoning authority: City of White Bear Lake (incorporated city in Ramsey County; zones itself under its own City Code zoning chapter)
+- [ ] Current White Bear Lake zoning code: check the residential districts and accessory-use sections for accessory dwelling units / accessory apartments, and note the ordinance numbers   
+  https://www.whitebearlakemn.gov/  
+  _Why manual:_ The city site (whitebearlake.org redirects to whitebearlakemn.gov) returned HTTP 403 even for robots.txt; per the rules 
+- [ ] Hosted White Bear Lake city code (American Legal): ADU provisions and the amendment history for each section  
+  https://codelibrary.amlegal.com/codes/whitebearlakemn/latest/overview  
+  _Why manual:_ HTTP 403 on fetch (robots.txt itself was readable and does not block ClaudeBot); I did not confirm the city's code is ho
+- [ ] City council minutes and ordinances adopting or amending ADU rules (search 'accessory dwelling unit' in the agendas and minutes archive)  
+  https://www.whitebearlakemn.gov/  
+  _Why manual:_ City site blocked (403). No web search was possible because the session's search budget was already used up
 
 ## Champlin city (GEOID 2710846, pop. 23919)
 - Zoning authority: City of Champlin (municipal zoning code, Chapter 126 of the City Code)
@@ -200,6 +213,15 @@ The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metr
   https://codelibrary.amlegal.com/codes/forestlakemn/latest/forestlake_mn/0-0-0-1  
   _Why manual:_ Needs the official code's history notes, which were blocked by the 403.
 
+## Stillwater city (GEOID 2762824, pop. 19394)
+- Zoning authority: City of Stillwater (incorporated city in Washington County; it does its own zoning under City Code Chapter 31, the zoning ordinance)
+- [ ] Stillwater City Code Chapter 31 (zoning): the current accessory dwelling unit section, plus the history notes that list the adopting ordinance numbers and dates for ADU provisions  
+  https://library.municode.com/mn/stillwater/codes/code_of_ordinances  
+  _Why manual:_ library.municode.com returned 403 on robots.txt, so it was not fetched. The shared WebSearch budget for this turn was al
+- [ ] City of Stillwater adopted ordinances and council minutes on accessory dwelling units (first allowance, plus any later changes such as dropping owner occupancy or allowing detached  
+  https://www.stillwatermn.gov/  
+  _Why manual:_ stillwatermn.gov returned 403 on robots.txt (likely a bot block), so it was not fetched. Check the city's ordinance arch
+
 ## Anoka city (GEOID 2701720, pop. 17921)
 - Zoning authority: City of Anoka (incorporated city; zones itself under its City Code, hosted on Municode)
 - [ ] Anoka City Code, zoning chapter: check the definitions and the residential district permitted, conditional and accessory use lists for 'accessory dwelling unit', 'accessory apartme  
@@ -237,18 +259,6 @@ The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metr
   _Why manual:_ The city's Zoning page does not mention ADUs.
 
 ## Rogers city (GEOID 2755186, pop. 13295)
-- Zoning authority: City of Rogers (Hennepin County). Hassan Township no longer exists: an orderly annexation took in the whole township (MBA docket OA-992-39, approved 1
-- [ ] Rogers City Code zoning chapter (Ch. 125): check whether accessory dwelling units, accessory apartments or secondary units are allowed, and under which ordinance and date. A Ramsey  
-  https://codelibrary.amlegal.com/codes/rogersmn/latest/overview  
-  _Why manual:_ HTTP 403 when fetched. Per the rules, I did not retry or work around it.
-- [ ] City of Rogers planning or zoning pages, and council ordinances adopted since 2022, looking for any ADU ordinance  
-  https://www.rogersmn.gov/  
-  _Why manual:_ robots.txt disallows ClaudeBot from all paths (Disallow: /), so I did not fetch it
-- [ ] Hassan Township's own zoning ordinance from before 2012, to see whether it allowed accessory or second dwellings before the 2012 annexation into Rogers  
-  https://www.mba.state.mn.us/maindocket-record/47087  
-  _Why manual:_ No official source for Hassan Township's old zoning ordinance was found within the search budget. The MBA record (read) 
-
-## Rogers city (GEOID 2755186, pop. 13295)
 - Zoning authority: City of Rogers (incorporated city in Hennepin County; zones itself). This comes from Rogers being an incorporated city, not from a document I read.
 - [ ] Rogers City Code zoning chapter: find the section on accessory dwelling units, accessory apartments or secondary units, check whether ADUs are allowed today (by right, by permit or  
   https://www.rogersmn.gov/  
@@ -259,6 +269,30 @@ The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metr
 - [ ] City council minutes and ordinances adopting or amending ADU rules, which would date when ADUs were first allowed and any later changes such as dropping owner occupancy or allowing  
   https://www.rogersmn.gov/  
   _Why manual:_ The web search budget was used up before any search ran, and the city site is blocked to ClaudeBot by robots.txt. A pers
+
+## Mounds View city (GEOID 2744530, pop. 13249)
+- Zoning authority: City of Mounds View (incorporated city in Ramsey County; zones itself under its city code zoning title)
+- [ ] Mounds View city code zoning chapters: check for accessory dwelling unit / accessory apartment provisions, whether attached or detached ADUs are allowed, permit type, owner-occupan  
+  https://codelibrary.amlegal.com/codes/moundsviewmn/latest/overview  
+  _Why manual:_ amlegal returned HTTP 403 (bot challenge), so the page was not read. robots.txt does not disallow general agents. I also
+- [ ] City of Mounds View website: planning/zoning pages, council minutes and adopted ordinances that mention ADUs or accessory dwelling units (search council packets for 'accessory dwel  
+  https://www.moundsviewmn.org/  
+  _Why manual:_ The site returned HTTP 403 even for robots.txt, so nothing was fetched.
+- [ ] Possible alternate code host (Municode) for the Mounds View code, if the city's code is published there  
+  https://library.municode.com/mn/mounds_view  
+  _Why manual:_ library.municode.com returned HTTP 403 for robots.txt. I did not fetch it or confirm that it hosts this code.
+
+## Waconia city (GEOID 2767432, pop. 13033)
+- Zoning authority: City of Waconia (incorporated city in Carver County; zones itself through its City Code, whose zoning chapters are hosted on Municode)
+- [ ] Waconia City Code zoning chapters (Municode): search for 'accessory dwelling', 'accessory apartment', 'secondary unit' and 'guest house'. Check whether ADUs are permitted, conditio  
+  https://library.municode.com/mn/waconia/codes/code_of_ordinances  
+  _Why manual:_ The city's ordinances page (waconiamn.gov/172) redirects to Municode. Municode returned HTTP 403 even for robots.txt, so
+- [ ] Municode's 'Supplement history' / ordinance list for Waconia, to date any ADU amendment  
+  https://library.municode.com/mn/waconia/codes/code_of_ordinances  
+  _Why manual:_ Same 403 block. The city's Proposed Ordinances and Code Requirements/Zoning Ordinance pages do not mention ADUs.
+- [ ] Planning Commission and City Council agendas and minutes: search for any ADU text amendment (likely 2020-2026 if one exists)  
+  https://www.waconiamn.gov/505/Agendas-Minutes  
+  _Why manual:_ Not read: the read budget was used up and web search was unavailable because the session's search limit had been reached
 
 ## Vadnais Heights city (GEOID 2766460, pop. 12912)
 - Zoning authority: City of Vadnais Heights (city zones itself; zoning code is in the City Code hosted on Municode)
@@ -272,6 +306,27 @@ The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metr
   https://www.cityvadnaisheights.com/AgendaCenter  
   _Why manual:_ Not reached within the budget. Without web search, no ordinance number was identified to look up.
 
+## East Bethel city (GEOID 2717486, pop. 11786)
+- Zoning authority: City of East Bethel (incorporated city; zones itself through the East Bethel Zoning Ordinance, City Code Appendix A, which Municode hosts)
+- [ ] Check the official East Bethel Zoning Ordinance (City Code Appendix A) on Municode. Look at Section 9 Definitions ('accessory apartment' is defined as an apartment inside a single-  
+  http://library.municode.com/index.aspx?clientId=14116  
+  _Why manual:_ library.municode.com returned HTTP 403 for robots.txt, so I did not fetch it or try to get around the block. The city we
+- [ ] Read East Bethel Planning Commission and City Council minutes, or ask city planning staff, about any ADU or accessory apartment ordinance, including Ord. 2025-03 (7-14-25) and Ord.  
+  https://www.ci.east-bethel.mn.us/105/Agendas-Minutes-Videos  
+  _Why manual:_ The read budget was used up. None of the city pages I read (home, City Code, Planning Division) mention ADUs or accessor
+
+## Mendota Heights city (GEOID 2741696, pop. 11744)
+- Zoning authority: City of Mendota Heights (Dakota County, MN), which zones itself under City Code Title 12 Zoning. The code is hosted by American Legal Publishing.
+- [ ] Mendota Heights City Code Title 12 (Zoning), recently rewritten into Chapter 2B base districts and Article 3B/4A use standards. Check the land use and accessory use tables (Title 1  
+  https://codelibrary.amlegal.com/codes/mendotahtsmn/latest/overview  
+  _Why manual:_ codelibrary.amlegal.com returned HTTP 403 to automated fetch (robots.txt does not block ClaudeBot). Per the rules this w
+- [ ] Adopting ordinance for the full Title 12 zoning rewrite (before Ord. 603 of 10/7/2025, which amended the new Chapter 2B tables), plus any earlier ADU or accessory-apartment ordinan  
+  https://www.mendotaheightsmn.gov/agendacenter  
+  _Why manual:_ The search budget was used up; the WebSearch call returned a budget-exhausted error, so there was no search for ADU ordi
+- [ ] Ordinance 603 (adopted Oct 7, 2025), which amends Title 12 Zoning. It was read in full and does not mention accessory dwelling units, but it confirms the zoning code was recently r  
+  https://www.mendotaheightsmn.gov/DocumentCenter/View/2593  
+  _Why manual:_ Read; contains no ADU evidence, so it is listed only as context for manual follow-up.
+
 ## Lake Elmo city (GEOID 2734244, pop. 11335)
 - Zoning authority: City of Lake Elmo (incorporated city; zones itself under City Code Title XV, Chapter 154 Zoning). Washington County does not zone it.
 - [ ] Lake Elmo City Code Chapter 154 (Zoning): find whether 'accessory dwelling unit' is a permitted, conditional or interim use in each residential/rural district, the definition secti  
@@ -281,18 +336,6 @@ The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metr
   https://www.lakeelmo.gov/  
   _Why manual:_ lakeelmo.gov returned HTTP 403 even for robots.txt; legacy lakeelmo.org has an expired TLS certificate
 
-## White Bear township (GEOID 2712369916, pop. 11049)
-- Zoning authority: City of White Bear Lake (incorporated city in Ramsey County; zones itself under its own City Code zoning chapter)
-- [ ] Current White Bear Lake zoning code: check the residential districts and accessory-use sections for accessory dwelling units / accessory apartments, and note the ordinance numbers   
-  https://www.whitebearlakemn.gov/  
-  _Why manual:_ The city site (whitebearlake.org redirects to whitebearlakemn.gov) returned HTTP 403 even for robots.txt; per the rules 
-- [ ] Hosted White Bear Lake city code (American Legal): ADU provisions and the amendment history for each section  
-  https://codelibrary.amlegal.com/codes/whitebearlakemn/latest/overview  
-  _Why manual:_ HTTP 403 on fetch (robots.txt itself was readable and does not block ClaudeBot); I did not confirm the city's code is ho
-- [ ] City council minutes and ordinances adopting or amending ADU rules (search 'accessory dwelling unit' in the agendas and minutes archive)  
-  https://www.whitebearlakemn.gov/  
-  _Why manual:_ City site blocked (403). No web search was possible because the session's search budget was already used up
-
 ## Victoria city (GEOID 2767036, pop. 10546)
 - Zoning authority: City of Victoria (incorporated city in Carver County; zones itself). Not confirmed from a document read in this run.
 - [ ] Victoria City Code zoning chapter (Chapter 1000 / zoning ordinance): check whether accessory dwelling units / accessory apartments are allowed in residential districts, by right or  
@@ -301,51 +344,3 @@ The adoption-date run (2026-10-20) found the ADU rule history for 52 of 162 metr
 - [ ] City of Victoria website: planning/zoning pages, adopted ordinances, and city council minutes on ADU or accessory apartment amendments (including any 2024-2025 housing-related code  
   https://www.victoriamn.gov/  
   _Why manual:_ victoriamn.gov and ci.victoria.mn.us returned HTTP 403 on robots.txt (victoriamn.org did not resolve); did not retry or 
-
-## Arden Hills city (GEOID 2702026, pop. 9939)
-- Zoning authority: City of Arden Hills (city zoning code, City Code Chapter 13, published on American Legal Publishing)
-- [ ] Check the current Arden Hills City Code Chapter 13 (Zoning) for any accessory dwelling unit or accessory apartment provision. Note whether ADUs are permitted, need a CUP, or are no  
-  https://codelibrary.amlegal.com/codes/ardenhills/latest/ardenhills_mn/0-0-0-1  
-  _Why manual:_ codelibrary.amlegal.com returned HTTP 403 to the fetcher. Its robots.txt does not block our agents. I did not retry.
-- [ ] Check whether the 2026 Zoning and Subdivision Code Update, with proposed ordinances considered in Sept–Oct 2026, adds or changes ADU rules. Find the adopted ordinance number and da  
-  https://www.cityofardenhills.org/1242/Zoning-and-Subdivision-Code-Update  
-  _Why manual:_ The project page lists proposed use-specific standards such as cottage courtyards but does not mention ADUs. The draft c
-- [ ] Search the archived ordinances and council minutes for any earlier ADU or accessory apartment amendment.  
-  https://miweblink2.metro-inet.us/ahpublic/Welcome.aspx  
-  _Why manual:_ This is a Laserfiche WebLink archive that has to be browsed interactively. I did not read it within the budget.
-
-## Mound city (GEOID 2744476, pop. 9398)
-- Zoning authority: City of Mounds View (incorporated city in Ramsey County; zones itself under its city code zoning title)
-- [ ] Mounds View city code zoning chapters: check for accessory dwelling unit / accessory apartment provisions, whether attached or detached ADUs are allowed, permit type, owner-occupan  
-  https://codelibrary.amlegal.com/codes/moundsviewmn/latest/overview  
-  _Why manual:_ amlegal returned HTTP 403 (bot challenge), so the page was not read. robots.txt does not disallow general agents. I also
-- [ ] City of Mounds View website: planning/zoning pages, council minutes and adopted ordinances that mention ADUs or accessory dwelling units (search council packets for 'accessory dwel  
-  https://www.moundsviewmn.org/  
-  _Why manual:_ The site returned HTTP 403 even for robots.txt, so nothing was fetched.
-- [ ] Possible alternate code host (Municode) for the Mounds View code, if the city's code is published there  
-  https://library.municode.com/mn/mounds_view  
-  _Why manual:_ library.municode.com returned HTTP 403 for robots.txt. I did not fetch it or confirm that it hosts this code.
-
-## Oak Grove city (GEOID 2747690, pop. 8929)
-- Zoning authority: City of Oak Grove (a statutory city in Anoka County; it administers its own zoning code, not the county)
-- [ ] Oak Grove city code, zoning chapter: is there an accessory dwelling unit / accessory apartment provision, when was it adopted, and by which ordinance number (also check later amend  
-  https://www.ci.oak-grove.mn.us/  
-  _Why manual:_ The city's robots.txt sets Disallow: / for User-agent *, so the site was not fetched.
-- [ ] Oak Grove code of ordinances on Municode (if hosted there): search for 'accessory dwelling' and check the ordinance history notes  
-  https://library.municode.com/mn/oak_grove  
-  _Why manual:_ library.municode.com returned HTTP 403 on robots.txt, so it was not retried or fetched.
-- [ ] Planning commission and city council minutes or ordinances mentioning accessory dwelling units / accessory apartments, to date the first adoption and any amendments  
-  https://www.ci.oak-grove.mn.us/  
-  _Why manual:_ The site is blocked by robots.txt. Web search was also unavailable because the shared per-turn search limit was already 
-
-## Minnetrista city (GEOID 2743306, pop. 8262)
-- Zoning authority: City of Minnetrista (incorporated city in Hennepin County; does its own zoning)
-- [ ] Minnetrista City Code zoning chapter: find the accessory dwelling unit / accessory apartment provisions, whether they are permitted or need a CUP or IUP, and the history notes list  
-  https://codelibrary.amlegal.com/codes/minnetristamn/latest/overview  
-  _Why manual:_ American Legal returned HTTP 403 to the fetch tool, so the page was not retried. robots.txt does not block ClaudeBot.
-- [ ] City website: adopted ordinances, and planning commission or city council minutes on accessory dwelling units (for the dates and ordinance numbers)  
-  https://www.cityofminnetrista.gov/  
-  _Why manual:_ cityofminnetrista.com redirects to cityofminnetrista.gov, which returned HTTP 403 even for robots.txt, so the page was n
-- [ ] Web search for Minnetrista ADU ordinance history  
-  https://www.cityofminnetrista.gov/  
-  _Why manual:_ The shared WebSearch budget for this turn ran out, so no search was run

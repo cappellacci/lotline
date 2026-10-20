@@ -55,11 +55,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701905266",
+   "name": "Benton township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 753
   },
   "record": {
    "zoning_authority": "Carver County (unincorporated Benton Township falls under the Carver County Zoning Code, Chapter 152 of the County Code; the County's policy-area map treats the Agricultural Policy Area as base zoning for non-incorporated areas). Not checked against an official source because of 403 blocks.",
@@ -88,11 +88,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701909406",
+   "name": "Camden township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 924
   },
   "record": {
    "zoning_authority": "Carver County (likely). Camden Township is an unincorporated township in Carver County. Zoneomics mirrors for other Carver County townships (Laketown, Watertown, Young America, Dahlgren, Hancock, San Francisco) reproduce the Carver County Zoning Code, Chapter 152, which applies 'outside the corporate limits of incorporated areas'. So the county code most likely governs Camden too, but this was not confirmed from an official source.",
@@ -120,11 +120,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701914482",
+   "name": "Dahlgren township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 854
   },
   "record": {
    "zoning_authority": "Carver County (Dahlgren Township is unincorporated and is zoned under the Carver County Zoning Code, County Code Chapter 152, which the county administers for its townships). This comes from search snippets of code mirrors for neighboring Carver County townships, not from an official page I read.",
@@ -153,11 +153,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701926918",
+   "name": "Hancock township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 336
   },
   "record": {
    "zoning_authority": "Carver County (Hancock Township is an unincorporated township in Carver County, 27019; the Carver County Zoning Code, Chapter 152, covers unincorporated areas. Third-party mirrors list it for several Carver County townships, so this is likely but not checked against an official page.)",
@@ -180,11 +180,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701929726",
+   "name": "Hollywood township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 1058
   },
   "record": {
    "zoning_authority": "Carver County (Hollywood Township is an unincorporated Carver County township and uses the county's zoning, Carver County Code Chapter 152, the \"Carver County Zoning Code\"). This comes from secondary sources (energyzoning.org township pages, Zoneomics mirrors of the county code) and has not been confirmed on an official county page.",
@@ -213,11 +213,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701935108",
+   "name": "Laketown township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 1966
   },
   "record": {
    "zoning_authority": "Carver County (county zoning code, Chapter 152 of the Carver County Code, administered by Carver County Planning & Water Management). A third-party code mirror (Zoneomics) lists Laketown Township's zoning code as the Carver County Zoning Code. I could not confirm this on an official site because carvercountymn.gov returned 403.",
@@ -309,11 +309,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701958486",
+   "name": "San Francisco township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 871
   },
   "record": {
    "zoning_authority": "Carver County. San Francisco Township is unincorporated, and the Carver County Zoning Code (County Code Chapter 152) covers the parts of the county outside city limits. This comes from search snippets and the township pages on a code mirror. I could not confirm it on an official page because both official hosts returned 403.",
@@ -336,11 +336,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701968566",
+   "name": "Watertown township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 1188
   },
   "record": {
    "zoning_authority": "Carver County (unincorporated Watertown Township is zoned under the Carver County Zoning Code, County Code Chapter 152; the county's land use policy map indicates the county sets base zoning for all non-incorporated areas, and townships choose only density options). Not verified from a primary source this run because the county sites returned 403.",
@@ -363,11 +363,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701967450",
+   "name": "Waconia township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 1068
   },
   "record": {
    "zoning_authority": "Carver County (county zoning ordinance, Carver County Code Chapter 152, administered by Carver County Planning & Water Management for unincorporated townships including Waconia Township). This follows the task's guidance for Carver County townships; this run did not confirm it from an official source.",
@@ -395,11 +395,11 @@
  },
  {
   "place": {
-   "geoid": "2710144",
-   "name": "Carver city",
-   "kind": "place",
+   "geoid": "2701972130",
+   "name": "Young America township",
+   "kind": "township",
    "county": "27019",
-   "pop": 5829
+   "pop": 683
   },
   "record": {
    "zoning_authority": "Carver County (Young America Township is unincorporated and zoned under the Carver County Zoning Code, Chapter 152; the code's amendment section says the Carver County Board of Commissioners amends it, as Ord. 97-2021 confirms)",
@@ -852,11 +852,11 @@
  },
  {
   "place": {
-   "geoid": "2716341120",
-   "name": "May township",
+   "geoid": "2705321965",
+   "name": "Fort Snelling UT",
    "kind": "township",
-   "county": "27163",
-   "pop": 2670
+   "county": "27053",
+   "pop": 440
   },
   "record": {
    "zoning_authority": "Unknown, not confirmed. Fort Snelling is an unorganized territory of Hennepin County, so the county would be the default local authority. But most of its land is federal or state (VA, military, MSP airport under the Metropolitan Airports Commission, Fort Snelling State Park, National Park Service), and no Hennepin County zoning ordinance covering it was found.",
@@ -907,11 +907,11 @@
  },
  {
   "place": {
-   "geoid": "2755186",
-   "name": "Rogers city",
-   "kind": "place",
+   "geoid": "2705327476",
+   "name": "Hassan township",
+   "kind": "township",
    "county": "27053",
-   "pop": 13295
+   "pop": null
   },
   "record": {
    "zoning_authority": "City of Rogers (Hennepin County). Hassan Township no longer exists: an orderly annexation took in the whole township (MBA docket OA-992-39, approved 12/13/2011, effective 12/31/2011 / January 1, 2012), so the former township land is now zoned under the Rogers City Code (zoning chapter 125). Hennepin County does not zone townships, so before 2012 Hassan Township presumably zoned itself, but this was not verified.",
@@ -1596,11 +1596,11 @@
  },
  {
   "place": {
-   "geoid": "2704834",
-   "name": "Belle Plaine city",
-   "kind": "place",
+   "geoid": "2713904852",
+   "name": "Belle Plaine township",
+   "kind": "township",
    "county": "27139",
-   "pop": 7395
+   "pop": 863
   },
   "record": {
    "zoning_authority": "Scott County (Belle Plaine Township is unincorporated; Scott County Zoning Ordinance No. 3, \u00a71-3, applies to all unincorporated lands of Scott County except as provided in an orderly annexation agreement)",
@@ -1648,11 +1648,11 @@
  },
  {
   "place": {
-   "geoid": "2713708",
-   "name": "Credit River",
-   "kind": "place",
+   "geoid": "2713913726",
+   "name": "Credit River township",
+   "kind": "township",
    "county": "27139",
-   "pop": null
+   "pop": 5493
   },
   "record": {
    "adu_status_today": "permit_required",
@@ -1928,11 +1928,11 @@
  },
  {
   "place": {
-   "geoid": "2716341120",
-   "name": "May township",
+   "geoid": "2713928322",
+   "name": "Helena township",
    "kind": "township",
-   "county": "27163",
-   "pop": 2670
+   "county": "27139",
+   "pop": 1795
   },
   "record": {
    "zoning_authority": "Scott County (Helena Township is unincorporated; Scott County Zoning Ordinance No. 3, Section 1-3, applies to all unincorporated lands of the county. The township board reviews applications and makes recommendations.)",
@@ -1999,11 +1999,11 @@
  },
  {
   "place": {
-   "geoid": "2716341120",
-   "name": "May township",
+   "geoid": "2713931580",
+   "name": "Jackson township",
    "kind": "township",
-   "county": "27163",
-   "pop": 2670
+   "county": "27139",
+   "pop": 1616
   },
   "record": {
    "zoning_authority": "Scott County, MN (Planning Department / County Board). Scott County Zoning Ordinance No. 3, Section 1-3, applies to \"all lands within the unincorporated areas of Scott County, except as provided for in an orderly annexation agreement\", which covers Jackson Township. I did not confirm whether any part of the township falls under an orderly annexation agreement with Shakopee.",
@@ -2098,11 +2098,11 @@
  },
  {
   "place": {
-   "geoid": "2716341120",
-   "name": "May township",
+   "geoid": "2713957184",
+   "name": "St. Lawrence township",
    "kind": "township",
-   "county": "27163",
-   "pop": 2670
+   "county": "27139",
+   "pop": 492
   },
   "record": {
    "zoning_authority": "Scott County (Scott County Zoning Ordinance No. 3, which by its own terms applies to all lands within the unincorporated areas of Scott County; St. Lawrence Township is unincorporated and has no zoning code of its own)",
@@ -2223,11 +2223,11 @@
  },
  {
   "place": {
-   "geoid": "2716341120",
-   "name": "May township",
+   "geoid": "2713958324",
+   "name": "Sand Creek township",
    "kind": "township",
-   "county": "27163",
-   "pop": 2670
+   "county": "27139",
+   "pop": 1497
   },
   "record": {
    "zoning_authority": "Scott County, MN. Sand Creek Township is unincorporated, and the Scott County Zoning Ordinance applies to \"all lands within the unincorporated areas of Scott County\" (\u00a71-3). The township board only recommends on permit requests.",
@@ -2619,11 +2619,11 @@
  },
  {
   "place": {
-   "geoid": "2713945754",
-   "name": "New Market township",
-   "kind": "township",
+   "geoid": "2718662",
+   "name": "Elko New Market city",
+   "kind": "place",
    "county": "27139",
-   "pop": 3525
+   "pop": 4846
   },
   "record": {
    "zoning_authority": "City of Elko New Market (own zoning code, City Code Title 11). Not zoned by Scott County.",
@@ -2837,11 +2837,11 @@
  },
  {
   "place": {
-   "geoid": "2705554",
-   "name": "Bethel city",
+   "geoid": "2717486",
+   "name": "East Bethel city",
    "kind": "place",
    "county": "27003",
-   "pop": 476
+   "pop": 11786
   },
   "record": {
    "zoning_authority": "City of East Bethel (incorporated city; zones itself through the East Bethel Zoning Ordinance, City Code Appendix A, which Municode hosts)",
@@ -3156,11 +3156,11 @@
  },
  {
   "place": {
-   "geoid": "2703726882",
-   "name": "Hampton township",
-   "kind": "township",
+   "geoid": "2726864",
+   "name": "Hampton city",
+   "kind": "place",
    "county": "27037",
-   "pop": 832
+   "pop": 744
   },
   "record": {
    "zoning_authority": "City of Hampton (zones itself under Code of Ordinances Chapter 152, Zoning; it is not zoned by Dakota County)",
@@ -3655,11 +3655,11 @@
  },
  {
   "place": {
-   "geoid": "2734622",
-   "name": "Lakeland city",
+   "geoid": "2734658",
+   "name": "Lakeland Shores city",
    "kind": "place",
    "county": "27163",
-   "pop": 1710
+   "pop": 339
   },
   "record": {
    "zoning_authority": "City of Lakeland Shores (an incorporated city in Washington County; it zones itself, not the county). Its code could not be read, so this is not confirmed from code text.",
@@ -3965,11 +3965,11 @@
  },
  {
   "place": {
-   "geoid": "2716341120",
-   "name": "May township",
-   "kind": "township",
-   "county": "27163",
-   "pop": 2670
+   "geoid": "2741138",
+   "name": "Mayer city",
+   "kind": "place",
+   "county": "27019",
+   "pop": 2453
   },
   "record": {
    "zoning_authority": "City of Mayer (incorporated city in Carver County; zones itself under its own city code). Not confirmed from the code text, because no official source could be read.",
@@ -4414,11 +4414,11 @@
  },
  {
   "place": {
-   "geoid": "2744476",
-   "name": "Mound city",
+   "geoid": "2744530",
+   "name": "Mounds View city",
    "kind": "place",
-   "county": "27053",
-   "pop": 9398
+   "county": "27123",
+   "pop": 13249
   },
   "record": {
    "zoning_authority": "City of Mounds View (incorporated city in Ramsey County; zones itself under its city code zoning title)",
@@ -4446,11 +4446,11 @@
  },
  {
   "place": {
-   "geoid": "2741678",
-   "name": "Mendota city",
+   "geoid": "2741696",
+   "name": "Mendota Heights city",
    "kind": "place",
    "county": "27037",
-   "pop": 183
+   "pop": 11744
   },
   "record": {
    "zoning_authority": "City of Mendota Heights (Dakota County, MN), which zones itself under City Code Title 12 Zoning. The code is hosted by American Legal Publishing.",
@@ -4602,11 +4602,11 @@
  },
  {
   "place": {
-   "geoid": "2701972130",
-   "name": "Young America township",
-   "kind": "township",
+   "geoid": "2747520",
+   "name": "Norwood Young America city",
+   "kind": "place",
    "county": "27019",
-   "pop": 683
+   "pop": 3863
   },
   "record": {
    "zoning_authority": "City of Norwood Young America (incorporated city; zones itself, not Carver County)",
@@ -5014,11 +5014,11 @@
  },
  {
   "place": {
-   "geoid": "2703753116",
-   "name": "Randolph township",
-   "kind": "township",
+   "geoid": "2753098",
+   "name": "Randolph city",
+   "kind": "place",
    "county": "27037",
-   "pop": 760
+   "pop": 466
   },
   "record": {
    "zoning_authority": "City of Randolph (incorporated city in Dakota County; it does its own zoning). Not confirmed from a document I read.",
@@ -5518,7 +5518,13 @@
   }
  },
  {
-  "place": null,
+  "place": {
+   "geoid": "2756680",
+   "name": "St. Anthony city (Hennepin and Ramsey Counties)",
+   "kind": "place",
+   "county": "27053",
+   "pop": 9257
+  },
   "record": {
    "zoning_authority": "City of St. Anthony (St. Anthony Village), which does its own zoning under City Code Chapter 154 (Zoning)",
    "adu_status_today": "by_right",
@@ -5598,11 +5604,11 @@
  },
  {
   "place": {
-   "geoid": "2713961978",
-   "name": "Spring Lake township",
-   "kind": "township",
-   "county": "27139",
-   "pop": 3464
+   "geoid": "2761996",
+   "name": "Spring Lake Park city",
+   "kind": "place",
+   "county": "27003",
+   "pop": 7188
   },
   "record": {
    "zoning_authority": "City of Spring Lake Park (municipal zoning code; city in Anoka County, with a small part in Ramsey County)",
@@ -5630,11 +5636,11 @@
  },
  {
   "place": {
-   "geoid": "2716362842",
-   "name": "Stillwater township",
-   "kind": "township",
+   "geoid": "2762824",
+   "name": "Stillwater city",
+   "kind": "place",
    "county": "27163",
-   "pop": 1866
+   "pop": 19394
   },
   "record": {
    "zoning_authority": "City of Stillwater (incorporated city in Washington County; it does its own zoning under City Code Chapter 31, the zoning ordinance)",
@@ -5726,11 +5732,11 @@
  },
  {
   "place": {
-   "geoid": "2703766820",
-   "name": "Vermillion township",
-   "kind": "township",
+   "geoid": "2766802",
+   "name": "Vermillion city",
+   "kind": "place",
    "county": "27037",
-   "pop": 1290
+   "pop": 441
   },
   "record": {
    "zoning_authority": "City of Vermillion (incorporated city in Dakota County; cities in Minnesota do their own zoning, so Dakota County's township zoning does not apply). Not confirmed from a primary source.",
@@ -5892,11 +5898,11 @@
  },
  {
   "place": {
-   "geoid": "2701967450",
-   "name": "Waconia township",
-   "kind": "township",
+   "geoid": "2767432",
+   "name": "Waconia city",
+   "kind": "place",
    "county": "27019",
-   "pop": 1068
+   "pop": 13033
   },
   "record": {
    "zoning_authority": "City of Waconia (incorporated city in Carver County; zones itself through its City Code, whose zoning chapters are hosted on Municode)",
@@ -5930,11 +5936,11 @@
  },
  {
   "place": {
-   "geoid": "2701968566",
-   "name": "Watertown township",
-   "kind": "township",
+   "geoid": "2768548",
+   "name": "Watertown city",
+   "kind": "place",
    "county": "27019",
-   "pop": 1188
+   "pop": 4659
   },
   "record": {
    "zoning_authority": "City of Watertown (Carver County city; it runs its own Planning Commission and zoning code, published on Municode)",
@@ -5984,11 +5990,11 @@
  },
  {
   "place": {
-   "geoid": "2712369916",
-   "name": "White Bear township",
-   "kind": "township",
+   "geoid": "2769970",
+   "name": "White Bear Lake city",
+   "kind": "place",
    "county": "27123",
-   "pop": 11049
+   "pop": 24883
   },
   "record": {
    "zoning_authority": "City of White Bear Lake (incorporated city in Ramsey County; zones itself under its own City Code zoning chapter)",

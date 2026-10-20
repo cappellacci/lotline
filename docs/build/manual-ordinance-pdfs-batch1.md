@@ -2,6 +2,7 @@
 
 From the city-ordinance pipeline's first batch (2026-10-20): 20 Minnesota cities plus Austin, Raleigh and Durham. Each item is an official document the pipeline found but could not read, because robots.txt disallows it, the host returned 403 or a bot challenge, or it needs a login. Download it in a browser and save it under `~/lotline-data/manual/ordinances/<city>/` (outside the repo), then register it with `lotline manifest register` so it is logged like any download. Items the pipeline could read are already captured, with quotes, and are not repeated here.
 
+
 ## Minneapolis, MN
 
 - [ ] **Ordinance:** Accessory dwelling units allowed citywide (zoning text amendment) (2014)  
