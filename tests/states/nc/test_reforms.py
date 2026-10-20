@@ -106,3 +106,18 @@ def test_bad_boolean_is_rejected(tmp_path):
     df.to_csv(bad, index=False)
     with pytest.raises(AssertionError, match="by_right"):
         _read(bad)
+
+
+def test_adu_rules_round_4(reforms):
+    r = reforms.set_index("reform_id")
+    # Raleigh's 2019 overlay: not by right; TC-16-19 supersedes it
+    assert r.at["NC-3755000-adu-2019", "by_right"] == False  # noqa: E712
+    assert r.at["NC-3755000-adu-2020", "supersedes"] == "NC-3755000-adu-2019"
+    # Wilmington LDC-7-424: adopted and effective 2024-05-21; owner occupancy unknown
+    w = r.loc["NC-3774440-adu-2024"]
+    assert w["effective_date"] == pd.Timestamp("2024-05-21") and w["adu_max_sqft"] == 1200
+    assert pd.isna(w["owner_occ"])
+    # Charlotte 2012-067A ends when the UDO replaces the ordinance (no inheritance into the UDO row)
+    c = r.loc["NC-3712000-adu-2012"]
+    assert c["end_date"] == pd.Timestamp("2023-06-01") and c["parking_min_per_unit"] == 1
+    assert pd.isna(r.at["NC-3712000-adu-2023", "supersedes"])
