@@ -722,7 +722,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - With coded comparisons only: 7 places, 0 never-treated comparisons.
   - 50,000+ sample: 121 places, 10 with no 2–4 unit home in any year.
   - Every treated place has all four modifiers. ADU rules are coded for 102 of the 560 places.
-- **Decided by:** pending; Ben approves (or amends) before any estimate is run.
+- **Decided by:** Ben, 2026-10-20, as proposed (including the `mm.yaml` choices: the 10,000-person floor and
+  the 1/3 permit grade), before any estimate was run.
 
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
@@ -780,6 +781,3 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   interval contained 0 in 87–97% of 70 panels, with a small negative lean (~−0.15, a third of its spread).
 - **Run once;** whatever it shows is reported. No re-specification without a new dated entry.
 - **Decided by:** Ben, 2026-10-20 (options 1 and 2); details written by WS-ENGINE before the run.
-
-- **Decided by:** Ben, 2026-10-20, as proposed (including the `mm.yaml` choices: the 10,000-person floor and
-  the 1/3 permit grade), before any estimate was run.
