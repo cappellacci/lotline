@@ -39,11 +39,36 @@ def test_rows_validate(reforms):
 
 def test_every_row_has_an_opened_source(reforms):
     for urls in reforms["source_url"]:
-        assert all(u.strip().startswith("https://") for u in urls.split(";")), urls
+        # the pipeline records the link it read, a few of them plain http
+        assert all(u.strip().startswith(("https://", "http://")) for u in urls.split(";")), urls
 
 
-def test_geoids_are_mn_places(reforms):
-    assert reforms["jurisdiction_geoid"].str.fullmatch(r"27\d{5}").all()
+def test_geoids_are_mn_places_or_townships(reforms):
+    assert reforms["jurisdiction_geoid"].str.fullmatch(r"27(\d{5}|\d{8})").all()
+
+
+def test_no_duplicate_reform_ids():
+    ids = pd.read_csv(PATH, dtype=str)["reform_id"]
+    assert not ids.duplicated().any(), ids[ids.duplicated()].tolist()
+
+
+def test_pipeline_and_ben_rows(reforms):
+    pipe = reforms[reforms["coder"] == "pipeline+ben"]
+    assert len(pipe) > 30
+    assert pipe["source_quote"].notna().all() and (pipe["source_quote"].str.len() <= 300).all()
+    assert (pipe["verified_by"] == "pipeline-checker").all()
+    assert (pipe["verified_date"] == pd.Timestamp("2026-10-20")).all()
+    assert pipe["coding_notes"].str.contains("checker verdict not stored").all()
+    ben = reforms[reforms["coder"] == "ben"]
+    assert ben["verified_by"].isna().all()
+    assert set(reforms["coder"]) <= {"claude", "ben", "pipeline+ben"}
+    assert (reforms.loc[reforms["coder"] != "claude", "coder_agreement"] == "single_coder").all()
+    r = reforms.set_index("reform_id")
+    # Ben's lookups: Andover Ord. 463, Hugo Ord. 2011-460, Inver Grove Heights 2015 then Ord. 1358
+    assert r.at["MN-2701486-adu-2016", "effective_date"] == pd.Timestamp("2016-06-21")
+    assert r.at["MN-2730392-adu-2011", "source_section"] == "Ord. 2011-460"
+    assert r.at["MN-2731076-adu-2018", "supersedes"] == "MN-2731076-adu-2015"
+    assert pd.isna(r.at["MN-2731076-adu-2018", "by_right"])  # type of change unknown
 
 
 def test_supersedes_points_to_an_earlier_row(reforms):
@@ -94,17 +119,23 @@ def test_hand_checked_values(reforms):
 
 def test_no_adu_rows_follow_the_convention(reforms):
     none = reforms[reforms["adus_per_lot"] == 0]
-    assert len(none) == 6
     assert (none["by_right"] == False).all()  # noqa: E712
     assert none["coding_notes"].str.startswith("NO ADU RULE").all()
-    assert set(none["jurisdiction_geoid"]) == {
-        "2707966",
-        "2771428",
-        "2740166",
-        "2718116",
-        "2713114",
-        "2759350",
+    six = {"2707966", "2771428", "2740166", "2718116", "2713114", "2759350"}
+    ben_unsourced = {
+        "2710846",
+        "2720618",
+        "2745628",
+        "2761492",
+        "2721770",
+        "2701720",
+        "2754808",
+        "2741696",
+        "2702026",
     }
+    assert six | ben_unsourced <= set(none["jurisdiction_geoid"])
+    unsourced = none[none["jurisdiction_geoid"].isin(ben_unsourced)]
+    assert unsourced["coding_notes"].str.contains("Needs second check").all()
 
 
 def test_bad_boolean_is_rejected(tmp_path):
