@@ -1,0 +1,20 @@
+county,pattern,land_use_std,refine_by_units,note,source_url
+*,^VACANT LAND - (RESIDENTIAL|RES|LAKESHORE|APARTMENT),VACANT_RESIDENTIAL,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^VACANT LAND - COMMERCIAL,COMMERCIAL,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^VACANT LAND - INDUSTRIAL,INDUSTRIAL,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,GARAGE|^RESIDENTIAL MISC|COMMON AREA,OTHER,no,"Condo garages, misc residential structures, common areas",https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^MIXED USE,MIXED_USE,no,Commercial/industrial with homes,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,CO-OP MASTER,MULTIFAMILY_5P,yes,Cooperative building (master parcel),https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,CO-OP|COOPERATIVE|CONDOMINIUM,CONDO_UNIT,no,Condominium and cooperative units,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,TOWNHOUSE|ZERO LOT LINE,SF_ATTACHED,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,DOUBLE BUNGALOW|2 UNIT,DUPLEX,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,TRIPLEX|3 UNIT,TRI_QUAD,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^APARTMENT,MULTIFAMILY_5P,yes,4+ unit apartments (4 units become TRI_QUAD by TOTAL_UNITS),https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^RESIDENTIAL( 1 UNIT)?( +- LAKESHORE| LAKE SHORE)?$,SF_DETACHED,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,FRATERNITY|SORORITY|MED|NURSING,INSTITUTIONAL,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,FARM,AGRICULTURAL,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^INDUSTRIAL,INDUSTRIAL,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,RAILROAD|UTILITY,OTHER,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^COMMERCIAL,COMMERCIAL,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^NONE$,UNKNOWN,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,.,OTHER,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d

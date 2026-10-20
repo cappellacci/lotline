@@ -58,3 +58,13 @@ sources:
       2026-10-19). St. Paul only from the 2021-2023 rolls (V5 snapshot rule). Rolls 2002-2020 are token-locked
       (ds1/GISParcels, checked 2026-10-19). Hennepin NUM_UNITS/DWELL_TYPE blank. Owner, taxpayer and situs
       address fields never requested.
+  - name: mpls_assessor_parcels
+    url: https://services.arcgis.com/afSMGVsC7QlRK1kZ/arcgis/rest/services
+    license: CC0 1.0 (City of Minneapolis open data waiver)
+    access: arcgis
+    cadence: one table per assessment year (Assessors_Parcel_Data_2017..2022, Assessing_Department_Parcel_Data_2023..2026)
+    notes: >-
+      Minneapolis assessor parcels (units, building use incl. ADU houses, year built, zoning, values), proposed in
+      place of hennepin_parcels: gis.hennepin.us robots.txt disallows all paths, and Hennepin's Hub download is a
+      whole-file export with owner/taxpayer names and no unit count. Owner, taxpayer and address fields never
+      requested.
