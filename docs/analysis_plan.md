@@ -728,7 +728,54 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
   - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
 
-
+### D-026 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
+- **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline
+  engine. In simulation, log forecast error against log(origin level / 5-year mean) had correlation 0.66,
+  state-year P10–P90 coverage was 74% and 5-year total coverage 68% (nominal 80%). (1) The cycle's random
+  walk starts at 1 from the level-window mean, not at the state's level in the origin year
+  (`model/baseline.py`), a likely cause of the NC/TX under-forecast (D-006, D-011). (2) Spec C applies
+  exp(β_h · g + β_p · q) with uncentred signals while dropping β_0 (`model/demand.py`), so a place at average
+  demand gets a multiplier that is not 1; D-007's rejection of spec C rests on that bug, and its test
+  re-implemented the formula and missed it. (3) The negative-binomial 1/k and the place's own variance
+  (`use_direct_variance`) are estimated on raw annual counts that already contain the cycle, so cycle variance
+  is counted twice. (4) The same `default_rng(simulation_seed)` is restarted for every size class, so classes
+  share random numbers by accident. (5) The backtest scores only place-years, never state totals, and the V1
+  windows have been used to choose specifications.
+- **Fixed now, before any run (each with a hand-worked synthetic test):**
+  1. **Cycle starts at the origin-year state level** (`cycle_start_at_origin` = 1). Each place's level is
+     multiplied by a_s = S_T / S̄, where S_t is the state's total of the size class over the places that have a
+     level, S_T its origin-year value and S̄ its mean over the level window; the random walk then runs from
+     there, so E[S_{T+h}] = S_T when nothing changes. The level's variance scales by a_s². This is
+     `state_momentum` with a 1-year recent window; if `use_state_momentum` = 1 its factor replaces a_s (never
+     both). 0 restores the old start.
+  2. **Spec C centred at the fit-sample means.** Multiplier = exp(β_h (g − ḡ) + β_p (q − q̄)), with ḡ, q̄ the
+     means of g and q over the Poisson fit sample (the regression is fitted on the centred signals; slopes are
+     unchanged, β_0 becomes the drift at average demand). β_0 stays unapplied, as D-006 intended: a place at
+     average demand keeps spec B's level.
+  3. **Dispersion on detrended counts** (`detrend_dispersion` = 1). Before 1/k and the place's own variance of
+     annual rates are computed, each place-year count (and rate) is divided by the state's cycle index for that
+     year, s_t = S_t / S̄ over the level window (s_t = 1 where S_t = 0). With no cycle (s_t ≡ 1) both estimates
+     are exactly as before. 0 restores the raw estimates.
+  4. **Random numbers per size class**: the per-place draws come from `default_rng([seed, size class column,
+     state, origin])`, so classes and states never share random numbers by accident. The cycle years stay
+     shared on purpose (D-011).
+  5. **State-total scoring in V1.** For every state, fit end, size class and forecast year, the scored places'
+     draws are summed draw by draw (so the shared cycle is kept), and compared with the sum of the same places'
+     observed counts; also the window total (all forecast years, places scored in every year). Reported: the
+     randomized P10–P90 coverage (D-003), the PIT histogram in deciles (non-randomized PIT, Czado et al. 2009),
+     the CRPS of the summed draws, and absolute error of the P50 of the sum against the benchmarks' sums.
+     These are **reported, not new pass criteria**; 80% is the reference.
+- **V1 is a development set.** The 2016/2018/2020 windows have been used to choose among specs A, B and C,
+  state momentum, the D-011 cycle fix and the scoring floor, so V1 scores are in-sample for specification
+  choice and are labelled "development set" in the backtest output and reports. Confirmatory evidence comes
+  only from the holdout tests.
+- **Runs declared now (MN NC OH TX, fit ends 2016/2018/2020, eligibility rule as on `main`):** spec B old
+  (`main` before this change) and new (all five fixes), place-level and state-level; attribution runs of the
+  new code with `cycle_start_at_origin` = 0 and with `detrend_dispersion` = 0; spec C once with the fix. All
+  are reported in the PR, whatever they show. No parameter is tuned on these runs; adopting the new baseline,
+  and whether spec C deserves another look, is Ben's decision, logged as a later entry.
+- **Decided by:** pre-declared by Claude Code (WS-ENGINE) at the coordinator session's request, 2026-10-20;
+  Ben to confirm in the PR.
 
 ### D-031 · 2026-10-21 · ADU effect: additive imputation as robustness to D-025, and review fixes ported to the D-025 path (written after D-025's main estimate was seen; not the main estimator)
 - **What had been seen when this was written:** D-025's main estimate (overall 2.26 on the log scale, 90%
