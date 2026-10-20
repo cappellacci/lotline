@@ -457,3 +457,40 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   with no code change.
 - **Calibration:** blank fields are integrated over (D-019 fits 2 and 3); places with no ADU row stay out of
   the fit.
+
+### D-023 · 2026-10-20 · ADU effect estimated with a staggered-adoption count model (pre-registered; supersedes the D-019 fits)
+- **Why:** the D-019 fits calibrated one anchor to places that already allowed ADUs, with no comparison places and no year effects. That departs from the causal diagram (`docs/research/lotline-causal-diagram.md` §3) and the statistical protocol (§5.6–5.7). Common shocks after 2021 (rates, construction costs, the market) could not be separated from the reform, and the modifiers' strength was imposed by judgment, not estimated. Fits 1–3 are superseded as estimates of the effect; fit 4 was withdrawn unrun (Ben, 2026-10-20).
+- **Estimand:** additional ADU permits per eligible single-family parcel caused by an ADU rule, by years since it took effect, and how that effect varies with pre-reform conditions. "Additional" means relative to the same place without the rule (protocol §1).
+- **Data:**
+  - **Places and years:** every Twin Cities metro place with Met Council residential permits, 2016–2025; ADUs are flagged from 2016, so 2016 is the first year and the measurement is the same before and after each reform (C32).
+  - **Outcome:** ADU permits per place-year. Minneapolis uses the larger of Met Council and city counts, as in `calibrate_adu.observed_adu_counts`.
+  - **Exposure:** eligible parcels (rule 1.1) as the offset.
+  - **Excluded:** St. Paul, entirely; it is the V5 blind test. Charlotte from 2023-06-01 is never used.
+  - **Places with no dated ADU rule are left out of estimation,** not imputed. The adoption-date run (2026-10-20) fills them, and a place enters once its rule history is coded with a source.
+- **Treatment and dose (C10, C11, C13):** D_it = the place's ADU rule in force on 1 July of year t, graded as: none = 0; permit or conditional use required; by right with owner occupancy; by right without it. The grade is multiplied by rule coverage (D-021). The adoption year T_i is the first year a by-right rule is in force. Places never treated (explicit "no ADUs") and not yet treated are the comparisons.
+- **Model:** Poisson pseudo-maximum likelihood (PPML) on counts with the log(eligible) offset, place fixed effects and year fixed effects, estimated with Wooldridge's extended two-way fixed-effects estimator (cohort × event-time effects) for staggered adoption. TWFE with unit trends is not used (protocol §5.6).
+
+  E[ADUs_it] = Eligible_it · exp( α_i + γ_t + Σ_k β_k · 1[t − T_i = k] + Σ_m θ_m · (X_im − X̄_m) · 1[t ≥ T_i] + ρ · (r_t − r̄) · 1[t ≥ T_i] + δ · MM_it )
+
+  | Term | Meaning | Causal diagram |
+  |---|---|---|
+  | α_i | Place fixed effect | C06, C14, C15 (level differences) |
+  | γ_t | Year fixed effect | National rates, costs, COVID and the cycle (C01–C03, C42) |
+  | β_k | Event-time effects, k = 0…5+ | Ramp and builder learning (C24); grade and coverage enter by scaling the indicator with D_it |
+  | θ_m | Effect modifiers, measured before adoption (bad-controls rule, C17) | Price-to-cost from the pro forma at the pre-adoption year (C40); median home value as the owner-equity proxy (C22); pre-reform 1-unit permits per 1,000 eligible parcels (C06); ACS household growth over the 5 years before adoption as the local-demand proxy (C04; a shift-share employment index replaces it if added later) |
+  | ρ | Mortgage rate × treated | Rates as an effect modifier (C01, C22): the same rule yields less at higher rates |
+  | δ | 2–4 units legal by right on the same lot | ADU ↔ missing-middle substitution (C30); reported as weakly identified if fewer than 5 places change status |
+
+- **Inference:** wild cluster bootstrap by place (999 draws). Randomization inference that permutes adoption years among treated places is reported alongside, because treated places are few.
+- **Checks, from causal diagram §5 (all reported, pass or fail):**
+  1. **Pre-trend leads** k = −3…−1: jointly not different from 0 at the 10% level.
+  2. **Placebo adoption dates** 2 years early: no effect.
+  3. **Placebo outcome,** permits in 5+ unit buildings: no effect.
+  4. **Excluding 2020–21:** effects within their 90% intervals.
+  5. **Leave-one-treated-place-out:** no single place moves the pooled effect by more than its 90% interval.
+- **Out-of-sample test (transport, protocol §5.5, §5.8):** with the Minnesota estimates and each place's own pre-reform modifiers, predict ADU permits for Austin (2016–2023, coded rules), Raleigh (2021–2025) and Durham (2019–2025). The test passes if each place's observed total lies in its 80% prediction interval, and the coverage of yearly 80% intervals across the three is between 60% and 95%. Places outside the Minnesota modifier range are flagged, and their intervals widened as in `hazard.widen`.
+- **Forecast use:** for a target place, the scenario's added ADUs = Eligible × [exp(η_with rule) − exp(η_without)] summed over 2026–2030. η uses the place's α (or, for places without ADU data, a hierarchical prior by state, size band and modifiers; protocol §5.7), the event-time β, its own modifiers, ρ at the stated rate path (`mortgage_rate_forecast`) and γ_2026–2030 held at the 2025 level with the rate effect added. Uncertainty comes from bootstrap draws of all coefficients plus Poisson-gamma noise. The net-new and formalization shares (D-019) then apply as before.
+- **Robustness (reported, not used to choose):** negative-binomial with place random effects (protocol §5.7); the Borusyak imputation estimator; the dose as a binary by-right indicator.
+- **What would change the plan:** if the pre-trend check fails, report it and use HonestDiD bounds; there is no re-specification without a new dated entry. If too few places have dated rules after the adoption-date run, report the estimates as underpowered rather than adding assumptions.
+- **Code:** `src/lotline/model/estimate_adu.py`, tested by recovering known β, θ and ρ from simulated staggered-adoption panels before any real run.
+- **Decided by:** Ben, 2026-10-20.
