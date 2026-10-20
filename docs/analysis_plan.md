@@ -647,3 +647,13 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   interval contained 0 in 87–97% of 70 panels, with a small negative lean (~−0.15, a third of its spread).
 - **Run once;** whatever it shows is reported. No re-specification without a new dated entry.
 - **Decided by:** Ben, 2026-10-20 (options 1 and 2); details written by WS-ENGINE before the run.
+- **The run (2026-10-20, once; log `reports/adu-d025/run-2026-10-20-log.txt`):** the main model converged on
+  the full panel (76 places, 760 place-years, 31 treated, 53 with no ADU in any year; no column dropped, no
+  separated rows, no variance parameter at a bound) and its estimates with bootstrap intervals were printed.
+  The run then **stopped at randomization inference**: one of the 999 refits with permuted adoption years
+  did not converge (BFGS) and the guard raised `EstimationError`, so randomization inference, the five checks,
+  the robustness estimators and the transport test were not computed and no CSV was written. The main-model
+  estimates are reported as they stand, without those checks. Not re-run. Decision needed (new dated entry):
+  how to treat a permutation refit that does not converge (e.g. count and report failed permutations and
+  compute the p-value over the rest, or restart BFGS from the main estimate), then run the remaining stages
+  once.
