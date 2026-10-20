@@ -111,3 +111,9 @@ def test_check_flags_stale_doc_and_undocumented_processed_tables(tmp_path):
     out.parent.mkdir(parents=True)
     pd.DataFrame({"x": [1]}).to_parquet(out)
     assert any(bps.SOURCE in p for p in provenance.check(store, doc))
+
+
+def test_header_links_the_hand_written_companion():
+    """The generated doc can't hold hand-written text, so its header must point to a companion that exists."""
+    assert "`docs/data_availability.md`" in provenance.HEADER
+    assert (provenance.REPO_ROOT / "docs" / "data_availability.md").exists()
