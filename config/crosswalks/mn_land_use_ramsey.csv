@@ -1,0 +1,21 @@
+county,pattern,land_use_std,refine_by_units,note,source_url
+*,^(RES/EXEMPT )?SINGLE FAMILY,SF_DETACHED,no,"Single-family house, with or without an accessory dwelling unit",https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,^SHORT TERM RENTAL,SF_DETACHED,yes,Short-term rental home (refined by living units),https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,TWO FAM|TWO RESIDENCES,DUPLEX,no,"Two-family dwellings, and two houses on one lot",https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,THREE FAMILY,TRI_QUAD,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,TOWNHOME - (GARAGE|NON-TAX)|NON-TAX OUTLOT|CONDO GARAGE,OTHER,no,"Garages, storage units and common outlots",https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,TOWNHOME - VACANT|CONDO VACANT|RESIDENTIAL. VACANT|RESID/EXEMPT VACANT|APARTMENT VACANT,VACANT_RESIDENTIAL,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,TWIN HOME|TOWNHOME,SF_ATTACHED,no,"Twin homes and townhome units (inner, outer, detached association units, TICO)",https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,CONDOMINIUM (OFFICE|WAREHOUSE)|RETAIL CONDO|CONDO OFFICE,COMMERCIAL,no,Non-residential condominium units,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,^(EXEMPT )?CONDO$|RESIDENTIAL CO-OP,CONDO_UNIT,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,APARTMENTS 4-6|APARTMENT MISC,MULTIFAMILY_5P,yes,4-6 unit apartments: 4 units become TRI_QUAD by living units,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,APARTMENT|APT OR COMPLEX,MULTIFAMILY_5P,no,Apartments of 7+ units (and exempt 4+),https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,MIXED RESID,MIXED_USE,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,MH INVENTORY|MANUFACTURED HOME|MOBILE HOME,MOBILE_HOME,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,RESIDENTIAL. OTHER|RES/EXEMPT OTHER,UNKNOWN,yes,Other residential (refined by living units),https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,ASSISTED LIVING|NURSING|CLINIC|CHARIT|CHURCH|LIBRARY|BD OF EDUC|SCHOOL|DAYCARE|WELFARE|CULTURAL|GRAVEYARD|CEMETERY|FIRESTATION,INSTITUTIONAL,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,AGRICULTURAL|GREENHOUSE,AGRICULTURAL,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,INDUSTRIAL|IND WAREHOUSE|MANUFACTURING|FOUNDERY|PROCESS PLANT|TRUCK TERMINAL|RESEARCH|MINI STORAGE,INDUSTRIAL,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,EXEMPT PROP|EXEMPT. VACANT|RAILROAD|UTILITY|PUB UTI|WATER DISTRICT,OTHER,no,"Public, exempt, railroad and utility land",https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,RETAIL|STORE|SHOPPING|OFFICE|BANK|HOTEL|MOTEL|RESTAURANT|FOOD SRV|GAS STATION|SERVICE STATION|CAR WASH|AUTO|THEATER|BOWLING|FITNESS|GOLF|LODGE|FUNERAL|SUPERMARKET|STRIP CENTER|COMMERCIAL|VETERINARY|CORPORATE|SPORT|ASSEMBLY,COMMERCIAL,no,,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+*,.,OTHER,no,Any other described use,https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
