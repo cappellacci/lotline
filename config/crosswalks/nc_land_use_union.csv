@@ -1,0 +1,8 @@
+field,code,description,land_use_std,notes,source_url
+parusedesc,COM,COM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,EXEMPT,EXEMPT,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FARM,FARM,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,IND,IND,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OTHER,OTHER,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES,RES,SF_DETACHED,"all residential (single-family, attached, multifamily, manufactured, vacant lots) in one class: counted as single-family; a RES parcel with no year built is vacant",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,UTIL,UTIL,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0

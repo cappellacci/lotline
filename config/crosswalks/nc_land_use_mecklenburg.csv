@@ -1,0 +1,271 @@
+field,code,description,land_use_std,notes,source_url
+parusecd2,01,SINGLE FAMILY RESIDENTIAL,SF_DETACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,01T,SINGLE FAMILY RES TINY HOME,SF_DETACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,02,MANUFACTURED HOME-DOUBLEWIDE,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,03,MANUFACTURED HOME-SINGLEWIDE,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,04,RESIDENTIAL CONDOMINIUM < 7 STORIES,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,05,PATIO HOME,SF_ATTACHED,Patio home: small-lot attached or zero-lot-line house; coded attached (ambiguous),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,06,RESIDENTIAL CONDO HI-RISE > 6 STORIES,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,07,SINGLE FAMILY HISTORICAL PROPERTY,SF_DETACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,08,SINGLE FAMILY MODULAR,SF_DETACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,09,TOWNHOUSE,SF_ATTACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,10,RETAIL FREESTANDING,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,10C,RETAIL CONDO,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,11,CONVENIENCE STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,11M,MINI MART CONVENIENCE STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,11R,RETAIL/CONVENIENCE STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,12A,CAR WASH SELF-SERVICE TYPE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,12B,CAR WASH DRIVE-THRU TYPE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,12C,CAR WASH FULL-SERVICE TYPE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,13DD,RETAIL DISCOUNT/DEPT STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,13DR,RETAIL DRUG STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,13DS,RETAIL DEPARTMENT STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,13WDS,RETAIL WAREHOUSE DISCOUNT STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,14,RETAIL SUPERMARKET-GROCERY,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,15,RETAIL SHOPPING MALL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,16,RETAIL INLINE STRIP SHOPPING CENTER,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,17A,OFFICE A CLASS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,17B,OFFICE B CLASS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,17C,OFFICE C CLASS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,17M,OFFICE MODULAR,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,17OR,OFFICE & RETAIL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,17R,OFFICE CONVERSION FROM SFR,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,17X,OFFICE/RETAIL/MULTI-FAMILY,MIXED_USE,Office/retail/multi-family,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,18A,OFFICE HI-RISE A > 4 STORIES,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,18B,OFFICE HI-RISE B > 4 STORIES,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,19,MEDICAL/DENTAL OFFICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,19A,VETERINARIAN OFFICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,20,MEDICAL CONDOMINIUM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,21,RESTAURANT,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,22,FAST FOOD,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,22A,FAST FOOD/CONVENIENCE STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,22M,MOTOR SPORTS GARAGE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,23,BANK,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,24,OFFICE CONDOMINIUM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,27,DEALERSHIP SHOWROOM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,27M,MINI SPECIALTY AUTOMOTIVE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,27S,AUTO SERVICE CENTER,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,28,PARKING GARAGE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,28U,UNDERGROUND PARKING,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,29,MINI WAREHOUSE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,29B,MINI WAREHOUSE CLIMATE CONTROL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,30,LAB- RESEARCH,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,31,DAYCARE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,32,THEATRE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,33,NIGHTCLUB/LOUNGE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,33M,MICRO BREWERY/WINERY,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,34,BOWLING ALLEY/SKATING RINK,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,34R,RECREATIONAL CENTER,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,35,COMMERCIAL CONDOMINIUM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,36,ANIMAL DAY SPA,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,37,HOTEL LODGING HI-RISE > 6 STORIES,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,37B,BED & BREAKFEST,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,37E,HOTEL/EXTENDED STAY,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,37F,HOTEL FULL SERVICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,37L,HOTEL LIMITED SERVICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,37M,MOTEL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,38,FURNITURE SHOWROOM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,39,MOTEL/HOTEL LODGING < 7 STORIES,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,40,INDUSTRIAL,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,40R,INDUSTRIAL RESEARCH & DEVELOPMENT,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,41,LIGHT MANUFACTURING,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,41B,"LIGHT MANUFACTURING > 75,000 SF",INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,42,HEAVY MANUFACTURING,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,43,LUMBER YARD,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,44,PACKING PLANT,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,46,BOTTLING PLANT,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,47,WAREHOUSE CONDOMINIUM,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,48,WAREHOUSE,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,48D,WAREHOUSE LIGHT DISTRIBUTION,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,48F,INDUSTRIAL FLEX,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,48M,MEGA WAREHOUSE,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,49,PREFAB WAREHOUSE,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,50,COMPUTER DATA CENTER,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,51,COLD STORAGE,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,52,TRANSIT/TRUCK WAREHOUSE,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,53,SERVICE GARAGE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,55,STADIUM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,56,ARENA,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,57,SPORTS ENTERTAINMENT CENTER,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,60G,APARTMENT-GARDEN <=3 STORIES,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,60H,APARTMENT-HIRISE >=7 STORIES,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,60M,MID RISE APARTMENT 4-6 STORIES,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,60T,APARTMENT-TOWNHOUSE,MULTIFAMILY_5P,Apartment townhouses (rental complex),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,62,DUPLEX-TRIPLEX,DUPLEX,DUPLEX-TRIPLEX: the code does not separate duplexes from triplexes; coded DUPLEX,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,63A,DORMITORY,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,64,LIBRARY,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,65,STABLE,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,69,GROUP HOME,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,71,CHURCH,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,74A,ASSISTED LIVING,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,74C,CONTINUING CARE,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,74E,HOME FOR THE ELDERLY,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,74N,NURSING HOME/CONVALESCENT HOSPITAL,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,76,FUNERAL HOME/MORTUARY,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,77,CLUB-LODGE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,78,COUNTRY CLUB,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,80T,Passenger Terminal,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,82,CONVENTION CENTER,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,83PU,SCHOOL-PUBLIC,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,83PV,SCHOOL-PRIVATE,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,84,COLLEGE/UNIVERSITY,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,85PU,HOSPITAL-PUBLIC,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,85PV,HOSPITAL-PRIVATE,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,85U,URGENT CARE FACILITY,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,86,COUNTY,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,87,STATE,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,88,FEDERAL,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,89,MUNICIPAL,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,90,FITNESS CENTER/HEALTH CLUB,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,91,UTILITY/MECHANICAL EQUIPMENT BUILDING,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,91CS,CELLULAR EQUIPMENT SHED - STATE CERTIFIED,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,100 YEAR FLOOD PLAIN - AC,100 YEAR FLOOD PLAIN - AC,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,100 YEAR FLOOD PLAIN - LT,100 YEAR FLOOD PLAIN - LT,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AGRICULTURAL - COMMERCIAL PRODUCTION,AGRICULTURAL - COMMERCIAL PRODUCTION,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AIR RIGHTS PARCEL,AIR RIGHTS PARCEL,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AIRPORT,AIRPORT,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AUTO SALES AND SERVICE,AUTO SALES AND SERVICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,BANK,BANK,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,BILL BOARD,BILL BOARD,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"BREWERY, BOTTLER, CANNERY, WINERY","BREWERY, BOTTLER, CANNERY, WINERY",INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,BUFFER STRIP,BUFFER STRIP,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CAR WASH,CAR WASH,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CELL TOWER,CELL TOWER,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CHURCH,CHURCH,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"CLUB, LODGES, UNION HALL, SWIM CLUB","CLUB, LODGES, UNION HALL, SWIM CLUB",OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COLLEGE - PUBLIC,COLLEGE - PUBLIC,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL,COMMERCIAL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL COMMON AREA,COMMERCIAL COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL CONDOMINIUM,COMMERCIAL CONDOMINIUM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL CONDOMINIUM COMMON AREA,COMMERCIAL CONDOMINIUM COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"COMMERCIAL SERVICE(LAUNDRY,TV,RADIO,ETC)","COMMERCIAL SERVICE(LAUNDRY,TV,RADIO,ETC)",COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL WATER FRONTAGE,COMMERCIAL WATER FRONTAGE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONDO AFFORDABLE HOUSING,CONDO AFFORDABLE HOUSING,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONDOMINIUM,CONDOMINIUM,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONDOMINIUM COMMON AREA,CONDOMINIUM COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONDOMINIUM HIGH RISE,CONDOMINIUM HIGH RISE,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONDOMINIUM WATER FRONTAGE,CONDOMINIUM WATER FRONTAGE,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONSERVATION - AGRICULTURAL COMM,CONSERVATION - AGRICULTURAL COMM,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONSERVATION - FORESTRY COMM,CONSERVATION - FORESTRY COMM,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONSERVATION - HORTICULTURAL COMM,CONSERVATION - HORTICULTURAL COMM,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONSERVATION - WILDLIFE,CONSERVATION - WILDLIFE,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONSERVATION - WOODLAND EXCESS AC,CONSERVATION - WOODLAND EXCESS AC,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONVENIENCE STORE,CONVENIENCE STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONVIENCE/FAST FOOD STORE,CONVIENCE/FAST FOOD STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COS NO AV10,COS NO AV10,UNKNOWN,Use not given,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COUNTRY CLUB,COUNTRY CLUB,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,DAY CARE CENTER,DAY CARE CENTER,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,DEPARTMENT STORE,DEPARTMENT STORE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,ENVIRONMENTAL HAZARD,ENVIRONMENTAL HAZARD,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FAST FOOD,FAST FOOD,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FIRE DEPARTMENT,FIRE DEPARTMENT,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FLUM/SWIM FLOODWAY (NO BUILD ZONE),FLUM/SWIM FLOODWAY (NO BUILD ZONE),OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FOREST - COMMERCIAL PRODUCTION,FOREST - COMMERCIAL PRODUCTION,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"FUNERAL (MORTUARY, CEMETERY, CREMATORIUM, MAUS)","FUNERAL (MORTUARY, CEMETERY, CREMATORIUM, MAUS)",INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOLF COURSE CLASS 1 - CHAMPIONSHIP,GOLF COURSE CLASS 1 - CHAMPIONSHIP,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOLF COURSE CLASS 2 - PRIVATE CLUB,GOLF COURSE CLASS 2 - PRIVATE CLUB,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOLF COURSE CLASS 3 - SEMI-PRIVATE & MUNICIPAL,GOLF COURSE CLASS 3 - SEMI-PRIVATE & MUNICIPAL,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOLF COURSE CLASS 4 - MINIMUM QUALITY,GOLF COURSE CLASS 4 - MINIMUM QUALITY,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GREENWAY TRAIL,GREENWAY TRAIL,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HABITAT FOR HUMANITY,HABITAT FOR HUMANITY,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOME FOR THE AGED,HOME FOR THE AGED,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HORTICULTURAL - COMMERCIAL PRODUCTION,HORTICULTURAL - COMMERCIAL PRODUCTION,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"HOSPITAL, PRIVATE","HOSPITAL, PRIVATE",INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOSPITALS - PUBLIC,HOSPITALS - PUBLIC,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOTEL/MOTEL < 7 FLOORS,HOTEL/MOTEL < 7 FLOORS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOTEL/MOTEL > 6 FLOORS,HOTEL/MOTEL > 6 FLOORS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INDUSTRIAL,INDUSTRIAL,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INDUSTRIAL COMMON AREA,INDUSTRIAL COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INDUSTRIAL PARK,INDUSTRIAL PARK,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INSTITUTIONAL,INSTITUTIONAL,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,ISLAND,ISLAND,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,LABORATORY / RESEARCH,LABORATORY / RESEARCH,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,LEASEHOLD INTEREST,LEASEHOLD INTEREST,UNKNOWN,Use not given,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,LIGHT MANUFACTURING,LIGHT MANUFACTURING,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"LOUNGE, NIGHT CLUB, BAR","LOUNGE, NIGHT CLUB, BAR",COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,LUMBER YARD,LUMBER YARD,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MARINA LAND,MARINA LAND,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MEDICAL CONDOMINIUM,MEDICAL CONDOMINIUM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MEDICAL CONDOMINIUM COMMON AREA,MEDICAL CONDOMINIUM COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MEDICAL OFFICE,MEDICAL OFFICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MINI WAREHOUSE,MINI WAREHOUSE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MINIATURE GOLF COURSES/DRIVING RANGE,MINIATURE GOLF COURSES/DRIVING RANGE,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MINING,MINING,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MOBILE HOME HS,MOBILE HOME HS,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MOBILE HOME PARK,MOBILE HOME PARK,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MOBILE HOME SUBDIVISION,MOBILE HOME SUBDIVISION,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILTY AFFORDABLE HOUSING,MULTI FAMILTY AFFORDABLE HOUSING,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILY,MULTI FAMILY,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILY COMMON AREA,MULTI FAMILY COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILY DUPLEX/TRIPLEX,MULTI FAMILY DUPLEX/TRIPLEX,DUPLEX,Does not separate duplexes from triplexes; coded DUPLEX,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILY GARDEN,MULTI FAMILY GARDEN,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILY HIGH RISE,MULTI FAMILY HIGH RISE,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILY TOWNHOUSE,MULTI FAMILY TOWNHOUSE,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI FAMILY WATER ACCESS,MULTI FAMILY WATER ACCESS,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MUNICIPAL AIRPORT,MUNICIPAL AIRPORT,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MUNICIPAL EDUCATION,MUNICIPAL EDUCATION,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,NEW PARCEL,NEW PARCEL,UNKNOWN,Use not given,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,NO LAND INTEREST,NO LAND INTEREST,UNKNOWN,Use not given,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,NURSING HOME,NURSING HOME,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OFFICE,OFFICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OFFICE CONDOMINIUM,OFFICE CONDOMINIUM,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OFFICE CONDOMINIUM COMMON AREA,OFFICE CONDOMINIUM COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OFFICE HIGH RISE - > 6 STORIES,OFFICE HIGH RISE - > 6 STORIES,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OTHER COUNTY PROPERTY,OTHER COUNTY PROPERTY,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OTHER FEDERAL,OTHER FEDERAL,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OTHER MUNICIPAL,OTHER MUNICIPAL,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PACKING PLANT,PACKING PLANT,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PARKING,PARKING,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PATIO HOME,PATIO HOME,SF_ATTACHED,Patio home: coded attached (ambiguous),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PATIO HOME - COMMON,PATIO HOME - COMMON,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PATIO HOME - WATERFRONT,PATIO HOME - WATERFRONT,SF_ATTACHED,Patio home: coded attached (ambiguous),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PETROLEUM AND GAS,PETROLEUM AND GAS,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PVT Owned RR with Rail ROW,PVT Owned RR with Rail ROW,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,R101,R101,UNKNOWN,Use not given,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,REC AREA,REC AREA,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RESERVED PARCEL,RESERVED PARCEL,UNKNOWN,Use not given,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RESIDENTIAL AFFORDABLE HOUSING,RESIDENTIAL AFFORDABLE HOUSING,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RESTAURANT,RESTAURANT,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RETREATS,RETREATS,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RIGHT OF WAY,RIGHT OF WAY,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,ROADWAY CORRIDOR,ROADWAY CORRIDOR,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RURAL HOMESITE,RURAL HOMESITE,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SCHOOL - PUBLIC,SCHOOL - PUBLIC,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"SCHOOL,COLLEGE, PRIVATE","SCHOOL,COLLEGE, PRIVATE",INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SERVICE GARAGE,SERVICE GARAGE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SERVICE STATION,SERVICE STATION,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SHOPPING CENTER - MALL,SHOPPING CENTER - MALL,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SHOPPING CENTER - STRIP,SHOPPING CENTER - STRIP,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL,SINGLE FAMILY RESIDENTIAL,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL - ACREAGE,SINGLE FAMILY RESIDENTIAL - ACREAGE,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL - COMMON,SINGLE FAMILY RESIDENTIAL - COMMON,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL - GOLF,SINGLE FAMILY RESIDENTIAL - GOLF,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL - RIVER,SINGLE FAMILY RESIDENTIAL - RIVER,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL - WATER VIEW,SINGLE FAMILY RESIDENTIAL - WATER VIEW,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL - WATERFRONT,SINGLE FAMILY RESIDENTIAL - WATERFRONT,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL GATED COMMUNITY,SINGLE FAMILY RESIDENTIAL GATED COMMUNITY,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SINGLE FAMILY RESIDENTIAL MINI FARM/ESTATE,SINGLE FAMILY RESIDENTIAL MINI FARM/ESTATE,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,STATE PROP,STATE PROP,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"SUBMERGED LAND, RIVERS AND LAKES","SUBMERGED LAND, RIVERS AND LAKES",OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SUPERMARKET,SUPERMARKET,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TOWN HOUSE  GOLF COURSE FRONTAGE,TOWN HOUSE  GOLF COURSE FRONTAGE,SF_ATTACHED,Townhouse land use,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TOWN HOUSE  SFR,TOWN HOUSE  SFR,SF_ATTACHED,Townhouse land use,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TOWN HOUSE  WATER ACCESS,TOWN HOUSE  WATER ACCESS,SF_ATTACHED,Townhouse land use,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TOWN HOUSE  WATER FRONTAGE,TOWN HOUSE  WATER FRONTAGE,SF_ATTACHED,Townhouse land use,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TOWN HOUSE COMMON AREA,TOWN HOUSE COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TOWNHOUSE AFFORDABLE HOUSING,TOWNHOUSE AFFORDABLE HOUSING,SF_ATTACHED,Townhouse land use,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,TRUCK TERMINAL,TRUCK TERMINAL,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,UNSUITABLE FOR SEPTIC,UNSUITABLE FOR SEPTIC,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,USE VALUE HOMESITE,USE VALUE HOMESITE,SF_DETACHED,Single-family land use; vacant if no building value,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"UTILITY (GAS, ELECTRIC, TELEPHONE, TELEGRAPH, RAIL","UTILITY (GAS, ELECTRIC, TELEPHONE, TELEGRAPH, RAIL",OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,UTILITY EASEMENT,UTILITY EASEMENT,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,UTILITY/P,UTILITY/P,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WAREHOUSE CONDOMINIUM,WAREHOUSE CONDOMINIUM,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WAREHOUSE CONDOMINIUM COMMON AREA,WAREHOUSE CONDOMINIUM COMMON AREA,OTHER,Common area,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WAREHOUSING,WAREHOUSING,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,"WASTELAND, SLIVERS, GULLIES, ROCK OUTCROP","WASTELAND, SLIVERS, GULLIES, ROCK OUTCROP",OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WATER PLANT,WATER PLANT,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WATER RETENTION POND,WATER RETENTION POND,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WELL LOT,WELL LOT,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WETLAND,WETLAND,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,WOODLAND - EXCESS ON AG PCL,WOODLAND - EXCESS ON AG PCL,AGRICULTURAL,Present-use or conservation land,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0

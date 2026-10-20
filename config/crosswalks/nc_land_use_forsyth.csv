@@ -1,0 +1,60 @@
+field,code,description,land_use_std,notes,source_url
+parusedesc,1.01-SFD Dwelling,1.01-SFD Dwelling,SF_DETACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.02-Duplex,1.02-Duplex,DUPLEX,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.03-Triplex,1.03-Triplex,TRI_QUAD,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.04-Quadraplex,1.04-Quadraplex,TRI_QUAD,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.05-Manuf Homes,1.05-Manuf Homes,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.06-MF Dwellings,1.06-MF Dwellings,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.07-Apt Buildings,1.07-Apt Buildings,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.08-Condominiums,1.08-Condominiums,CONDO_UNIT,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.09-TownHomes,1.09-TownHomes,SF_ATTACHED,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.10-MobileHomeParks,1.10-MobileHomeParks,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.11-Grp-Tran Qters,1.11-Grp-Tran Qters,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,1.12-Other Res,1.12-Other Res,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,10.01-Mining-Exc A,10.01-Mining-Exc A,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,2.01-Com Retail-WS,2.01-Com Retail-WS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,2.02-Com Services,2.02-Com Services,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,2.03-Hotels-Lodging,2.03-Hotels-Lodging,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,2.90-Vacant Com-WS-S,2.90-Vacant Com-WS-S,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,21.01-Cropland,21.01-Cropland,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,22.00-Orchards-GVNO,22.00-Orchards-GVNO,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,23.02-Poultry,23.02-Poultry,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,29.01-Farmsteads,29.01-Farmsteads,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,29.04-AgriculturalRF,29.04-AgriculturalRF,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,29.05-Farm PATL,29.05-Farm PATL,AGRICULTURAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,3.01-GServices -Inst,3.01-GServices -Inst,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,3.02-Educational,3.02-Educational,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,3.03-Relig-Inst,3.03-Relig-Inst,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,3.04-Medical-HCFac,3.04-Medical-HCFac,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,3.05-Membership Org,3.05-Membership Org,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,3.07-Cemt-Maus-Colum,3.07-Cemt-Maus-Colum,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,3.90-Vacant Inst,3.90-Vacant Inst,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,4.01-Light Manuf,4.01-Light Manuf,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,4.02-Heavy Manuf,4.02-Heavy Manuf,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,4.03-Raw M Refi-Prep,4.03-Raw M Refi-Prep,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,4.90-Vacant ManufInd,4.90-Vacant ManufInd,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,42.00-Retention-SP,42.00-Retention-SP,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,49.00-Non-U-P-U-W-B,49.00-Non-U-P-U-W-B,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,5.01-Rail TransFaci,5.01-Rail TransFaci,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,5.02-Road TranFac,5.02-Road TranFac,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,5.03-Air TransFac,5.03-Air TransFac,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,6.01-Commun Fac,6.01-Commun Fac,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,6.02-Elec-Gas Util,6.02-Elec-Gas Util,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,6.03-Water-WW Util,6.03-Water-WW Util,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,6.04-Solid-HWDS,6.04-Solid-HWDS,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,6.90-Vacant Com-Util,6.90-Vacant Com-Util,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,7.01-Industrial Park,7.01-Industrial Park,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,7.02-Office Park,7.02-Office Park,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,7.03-Shopp Cntr-Mall,7.03-Shopp Cntr-Mall,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,7.90-Vacnt Ind-OP-SC,7.90-Vacnt Ind-OP-SC,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,8.00-Mixed U-DevLand,8.00-Mixed U-DevLand,MIXED_USE,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,9.01-Indoor C-PA-R-E,9.01-Indoor C-PA-R-E,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,9.02-Outdoor C-P-R-E,9.02-Outdoor C-P-R-E,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,9.90-Vacant C-PA-R-E,9.90-Vacant C-PA-R-E,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,91.00-Vacant SF Res,91.00-Vacant SF Res,VACANT_RESIDENTIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,92.00-Vacant MF Res,92.00-Vacant MF Res,VACANT_RESIDENTIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,93.00-Vacant Com,93.00-Vacant Com,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,94.00-Vacant Inst,94.00-Vacant Inst,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,95.00-Vacant Indus,95.00-Vacant Indus,INDUSTRIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,96.00-Passive U-U-L,96.00-Passive U-U-L,OTHER,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,99.00-Unk Use Land,99.00-Unk Use Land,UNKNOWN,use not given (undifferentiated),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0

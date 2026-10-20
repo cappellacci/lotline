@@ -1,0 +1,3 @@
+field,code,description,land_use_std,notes,source_url
+parusecd2,I,IMPROVED,UNKNOWN,"improved/vacant flag only, no use: Cabarrus sends no land-use code to NC OneMap",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,V,VACANT,UNKNOWN,"improved/vacant flag only, no use: Cabarrus sends no land-use code to NC OneMap",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
