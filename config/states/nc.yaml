@@ -86,3 +86,15 @@ sources:
       Charlotte and unincorporated-county permits from 2023-06-01 (V5, D-012), and holdout.apply drops the rest
       before anything is written. On 2026-10-20 the server answered this network with a Cloudflare browser
       challenge (HTTP 403), so no data has been downloaded; the taxjuris town spellings are unverified.
+  - name: wake_realestate
+    url: https://www.wake.gov/departments-government/tax-administration/data-files-statistics-and-reports/real-estate-property-data-files
+    license: Wake County public records (no license stated)
+    access: manual
+    cadence: one-off (final roll before the 2024 revaluation; the current file is refreshed daily)
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/wake_realestate.py. services.wake.gov/robots.txt disallows all
+      automated access, so Ben downloads Real_Est_Data_Final_Dec2023.xlsx (and, for the record,
+      Qualified_Sales_Past_24Months.xlsx) in a browser from the page above and registers them with
+      `lotline manifest register --source wake_realestate`. 443,785 cards for 427,566 parcels; columns match
+      the county Record Layout (2019-01-14). V2 baseline roll for Raleigh. Only non-personal columns are read.
+      The qualified-sales file is registered but not read (no canonical sales table yet).
