@@ -32,11 +32,15 @@ def main() -> None:
     a = ap.parse_args()
     store = DataStore()
     minimum = load_params("aggregate")["min_eligible_parcels_publish"].value
-    frames = []
+    frames, summaries, yearlies = [], [], []
     for state in a.state:
         places = adu.places_from_store(state, store, a.origin)
         missing = places[["rent", "home_value"]].isna().any(axis=1)
-        _, totals = adu.run(places[~missing].reset_index(drop=True), a.origin)
+        yearly, totals, summary = adu.run(
+            places[~missing].reset_index(drop=True), a.origin, summary_by="state"
+        )
+        summaries.append(summary)
+        yearlies.append(yearly.assign(state=state))
         totals["state"] = state
         frames.append(totals)
         shown = totals[totals["eligible_parcels"] >= minimum]
@@ -46,12 +50,31 @@ def main() -> None:
             f"outside calibration range {int(shown['outside_calibration'].sum())} of {len(shown)}; "
             f"rules: {shown['rule_class'].value_counts().to_dict()}"
         )
+        sampled = shown["draws_from_unknown_rule"] > 0
+        share = shown.loc[sampled, "eligible_parcels"].sum() / shown["eligible_parcels"].sum()
+        print(
+            f"  rule drawn (D-022) for {int(sampled.sum())} of {len(shown)} places "
+            f"({share:.0%} of eligible "
+            f"parcels); drawn classes over those places: none {shown.loc[sampled, 'drawn_none'].mean():.2f}, "
+            f"partial {shown.loc[sampled, 'drawn_partial'].mean():.2f}, "
+            f"handbook {shown.loc[sampled, 'drawn_handbook'].mean():.2f}"
+        )
         print(
             f"  sum of place means, 5 years: Handbook ADU permits {shown['handbook_adus_mean'].sum():,.0f}, "
             f"added {shown['adu_permits_added_mean'].sum():,.0f}, additional homes "
             f"{shown['additional_homes_mean'].sum():,.0f} on {shown['eligible_parcels'].sum():,.0f} parcels"
         )
     allp = pd.concat(frames, ignore_index=True)
+    summ = pd.concat(summaries, ignore_index=True)
+    print("\nState totals: sum of draws over non-overlapping places (P10 / P50 / P90, mean)")
+    for outcome in ("adu_permits_added", "additional_homes"):
+        print(f"  {outcome}")
+        for state, g in summ[summ["outcome"] == outcome].groupby("state"):
+            cells = "; ".join(
+                f"{r.period} {r.p10:,.0f}/{r.p50:,.0f}/{r.p90:,.0f} ({r['mean']:,.0f})"
+                for _, r in g.iterrows()
+            )
+            print(f"    {state}: {cells}")
     named = allp[allp["geoid"].isin(NAMED)]
     print("\nNamed places, five-year totals (development run, origin", a.origin, ")")
     for _, r in named.iterrows():
@@ -60,6 +83,7 @@ def main() -> None:
             f"PCR {r['price_to_cost_central']:.2f}; "
             f"mature hazard {r['mature_hazard_central'] * 1000:.2f}/1,000; "
             f"outside range by {r['calibration_distance']:.2f}; rule {r['rule_class']} ({r['rule_note']}); "
+            f"P(none/partial/handbook) {r['p_none']:.2f}/{r['p_partial']:.2f}/{r['p_handbook']:.2f}; "
             f"observed {r['observed_adu_per_year']:.1f}/yr"
         )
         for key, label in (
@@ -74,6 +98,10 @@ def main() -> None:
             )
     if a.out:
         allp.to_csv(a.out, index=False)
+        summ.to_csv(a.out.with_name(a.out.stem + "_state.csv"), index=False)
+        pd.concat(yearlies, ignore_index=True).to_csv(
+            a.out.with_name(a.out.stem + "_yearly.csv"), index=False
+        )
 
 
 if __name__ == "__main__":

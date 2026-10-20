@@ -179,7 +179,9 @@ def test_current_rules_classes_amendments_and_state_laws():
         (pd.Timestamp("2025-12-31") - pd.Timestamp("2021-01-01")).days / 365.25
     )
     assert out.loc["200", "rule_class"] == "partial" and "parking required" in out.loc["200", "rule_note"]
-    assert out.loc["300", "rule_class"] == "none" and "S1" in out.loc["300", "rule_note"]
+    # D-022: no ADU row in force is unknown, not "none" (the scheduled state law is still noted)
+    assert out.loc["300", "rule_class"] == "unknown" and "S1" in out.loc["300", "rule_note"]
+    assert pd.isna(out.loc["300", "p_partial"])
     early = adu.current_rules(reforms, ["100"], "27", pd.Timestamp("2018-06-30")).set_index("geoid")
     assert early.loc["100", "rule_class"] == "partial"  # owner-occupancy rule in force then
 
@@ -258,3 +260,133 @@ def test_scenario_units_never_share_a_parcel():
     assert rolls["eligible_parcels"].sum() == pytest.approx(2200) and rolls["overlap_removed"].sum() == 0
     clipped = adu.non_overlapping(places.assign(eligible_parcels=[100.0, 500.0, 300.0, 400.0]), juris, shares)
     assert clipped.set_index("geoid").loc["C", "eligible_parcels"] == 0 and clipped["overlap_clipped"].any()
+
+
+def test_uncoded_place_takes_its_band_prior_by_hand():
+    """D-022: 5 coded places in a state's band, 2 with a restricted rule ('other') and 3 Handbook-equivalent
+    -> an uncoded place in that band is restricted with probability 0.4, and about 40% of its draws are."""
+    zeros = [0.0] * 5
+    coded = pd.DataFrame(
+        {
+            "state": ["MN"] * 5,
+            "population": [20_000] * 5,
+            "p_none": zeros,
+            "p_owner": zeros,
+            "p_other": [1, 1, 0, 0, 0.0],
+            "p_both": zeros,
+            "p_handbook": [0, 0, 1, 1, 1.0],
+        }
+    )
+    edges = (10_000, 50_000)
+    priors = adu.rule_priors(coded, edges, min_count=5)
+    mid = priors.set_index(["state", "band"]).loc[("MN", 1)]
+    assert (mid["p_none"], mid["p_other"], mid["p_handbook"]) == pytest.approx((0, 0.4, 0.6))
+    assert mid["source"] == "state and band" and mid["n_coded"] == 5
+    small = priors.set_index(["state", "band"]).loc[("MN", 0)]
+    assert small["source"] == "state, all bands" and small["p_other"] == pytest.approx(0.4)
+    place = pd.DataFrame({"geoid": ["U"], "state": ["MN"], "population": [30_000], "rule_class": ["unknown"]})
+    place = place.assign(**{c: np.nan for c in adu.P_COLS})
+    filled = adu.apply_priors(place, priors, edges)
+    assert filled.loc[0, "p_other"] == pytest.approx(0.4)
+    many = pd.concat([filled] * 20_000, ignore_index=True)
+    c, idx, sampled = adu.draw_rule_share(many, P, np.random.default_rng(0))
+    assert (idx == adu.TYPES.index("other")).mean() == pytest.approx(0.4, abs=0.01) and sampled.all()
+    assert set(np.unique(c)) == {P["adu_partial_rule_share"], 1.0}
+
+
+def test_rule_types_and_graded_shares_by_hand():
+    """Owner occupancy alone -> 'owner' (c = m_o); parking -> 'other' (m_x); both -> m_o × m_x.
+    Owner known to fail and parking blank with P 0.25 -> owner 0.75, both 0.25."""
+    assert adu.type_of({"owner_occ"}) == "owner" and adu.type_of({"parking"}) == "other"
+    assert adu.type_of({"owner_occ", "by_right"}) == "both" and adu.type_of(set()) == "handbook"
+    v = adu.type_distribution(["owner_occ"], ["parking"], {"parking": 0.25})
+    assert dict(zip(adu.TYPES, v, strict=True)) == pytest.approx(
+        {"none": 0, "owner": 0.75, "other": 0, "both": 0.25, "handbook": 0}
+    )
+    params = dict(P, adu_owner_occupancy_share=0.5, adu_partial_rule_share=0.3)
+    assert adu.c_values(params) == pytest.approx([0, 0.5, 0.3, 0.15, 1])
+
+
+def test_rule_coverage_by_hand():
+    """D-021: 4 single-family parcels, zones R-1 (3) and R-2; lot minimum 6,000 met by 2 of the R-1 parcels ->
+    covers 2 / 4. No zones or minimum: citywide 1, a limited area (overlay) the judgment share."""
+    parcels = pd.DataFrame({"zoning_raw": ["R-1", "R1", "r-1", "R-2"], "lot_sqft": [7000, 6500, 5000, 9000]})
+    params = adu.central_params()
+    rule = {"coverage_zones": "R-1", "min_lot_sqft": 6000.0, "coverage": "R-1 only"}
+    assert adu.rule_coverage(rule, parcels, params)[0] == pytest.approx(0.5)
+    assert adu.rule_coverage({"coverage": "Citywide"}, None, params) == (1.0, "citywide")
+    limited = adu.rule_coverage({"coverage": "Only inside an ADU overlay district"}, None, params)
+    assert limited[0] == params["adu_rule_limited_coverage_share"]
+    no_zoning = adu.rule_coverage({"coverage_zones": "SF-3"}, parcels.drop(columns="zoning_raw"), params)
+    assert no_zoning[0] == params["adu_rule_zoned_coverage_share"]
+    v = adu.apply_coverage(np.array([0, 0, 0, 0, 1.0]), 0.75)
+    assert v == pytest.approx([0.25, 0, 0, 0, 0.75])
+
+
+def test_a_blank_field_is_never_read_as_unrestrictive():
+    """A row that passes every coded condition but leaves parking blank is Handbook only with probability
+    1 − P(parking restricts). By hand, coded parking: 1 of 4 rules requires it -> P = 0.25 ->
+    (0, 0.25, 0.75)."""
+    reforms = _reforms(
+        [
+            ("R1", "500", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, None, None),
+            (
+                "K1",
+                "601",
+                "adu",
+                "in_force",
+                "2020-01-01",
+                None,
+                None,
+                True,
+                False,
+                True,
+                800,
+                "one space required",
+                None,
+            ),
+            ("K2", "602", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, "none", 0),
+            ("K3", "603", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, "none", 0),
+            ("K4", "604", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, "none", 0),
+        ]
+    ).assign(state="MN")
+    as_of = pd.Timestamp("2025-12-31")
+    counts = adu.field_restrict_counts(reforms, as_of)
+    probs = adu.field_probabilities(counts, "MN", min_count=4)
+    assert probs["parking"] == pytest.approx(0.25)
+    out = adu.current_rules(reforms, ["500"], "27", as_of, probs).set_index("geoid")
+    assert out.loc["500", "rule_class"] == "uncertain"
+    assert out.loc["500", ["p_none", "p_partial", "p_handbook"]].tolist() == pytest.approx([0, 0.25, 0.75])
+    assert out.loc["500", "p_other"] == pytest.approx(0.25)  # parking is an 'other' restriction
+    assert "parking" in out.loc["500", "unknown_fields"]
+    # unknown parking text is unknown too, never "not required"
+    assert "parking" in adu.rule_restrictions({"parking": "see code", "by_right": True})[1]
+
+
+def test_central_path_uses_the_expected_rule_share():
+    """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 -> c = 0.72 (rule long in force)."""
+    p = _places(rule_class="unknown", rule_age=50.0).assign(
+        p_none=0.0, p_owner=0.0, p_other=0.4, p_both=0.0, p_handbook=0.6
+    )
+    mix = adu.central_path(p)
+    hand = adu.central_path(_places(rule_class="handbook", rule_age=50.0))
+    hm = mix["mature_hazard"][0]
+    assert mix["current"][0, 0] == pytest.approx(2000 * 0.72 * hm, rel=1e-6)
+    assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm / (1 + math.exp(4 / 3)), rel=1e-6)
+    assert hand["added"].sum() == 0
+
+
+def test_state_summary_sums_draws_over_places():
+    """Means add up: the state's mean equals the sum of its places' means, per year and over five years; the
+    state's P10-P90 comes from summed draws, so it is not the sum of the places' P10s and P90s."""
+    places = _places(rent=[1100.0, 1500.0, 1900.0], eligible_parcels=[2000.0, 5000.0, 800.0]).assign(
+        state="MN"
+    )
+    yearly, totals, summary = adu.run(places, 2025, draws=300, summary_by="state")
+    five = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2026-2030")].iloc[0]
+    assert five["mean"] == pytest.approx(totals["additional_homes_mean"].sum())
+    y1 = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2026")].iloc[0]
+    assert y1["mean"] == pytest.approx(yearly.loc[yearly["year"] == 2026, "additional_homes_mean"].sum())
+    assert five["p10"] <= five["p50"] <= five["p90"]
+    # percentiles of the summed draws, not sums of the places' percentiles (either can be larger)
+    assert five["p90"] != pytest.approx(totals["additional_homes_p90"].sum())

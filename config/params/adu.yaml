@@ -13,9 +13,17 @@ adu_partial_rule_share:
   value: 0.3
   low: 0.1
   high: 0.6
-  unit: share of Handbook uptake reached under current local rules
-  source: "Judgment. Applies where ADUs are allowed but with an owner-occupancy rule, parking, discretionary approval, attached-only or a cap under 600 sq ft. adu-study-design.md: partial reforms did little (Minneapolis ~20/yr before 2021, DC <30/yr E046, New Hampshire 0.1-1.5 per 1,000 houses E056); E053 (local rules neutralized state mandates); that contrast mixes weak markets with weak rules, so the market part is left to the hazard"
-  notes: "Used only where a coded ADU rule is in force at the origin and fails at least one Handbook condition."
+  unit: share of Handbook uptake reached under current local rules (m_x)
+  source: "Judgment. Applies where ADUs are allowed but with parking, a permit by conditional use (not by right), attached ADUs only or a cap under 600 sq ft (owner occupancy has its own share since D-019 fit 3). adu-study-design.md: partial reforms did little (DC <30/yr E046, New Hampshire 0.1-1.5 per 1,000 houses E056); E053 (local rules neutralized state mandates); C21 (approval process)"
+  notes: "A rule failing both owner occupancy and another condition gets m_o x m_x. Estimated in D-019 fit 3 only if the data identify it."
+
+adu_owner_occupancy_share:
+  value: 1.0
+  low: 0.9
+  high: 1.0
+  unit: share of Handbook uptake reached when owner occupancy is the only restriction (m_o)
+  source: "Estimated, D-019 fit 3 (pre-registered): profile maximum 1.0, 90% profile interval 0.9-1.0 (grid 0.1-1.0), narrower than the judgment range 0.2-1.0, so estimated. Minneapolis built more ADUs under its owner-occupancy rule (2016-20) than after dropping it. Judgment before the fit: 0.5"
+  notes: "Owner-occupancy rules show no measurable effect on permitted ADUs in these places (most ADUs are built by owner-occupants: Portland 62% cash, C22, E045)."
 
 adu_observed_first_year:
   value: 2019
@@ -44,3 +52,50 @@ adu_simulation_seed:
   high: 4294967295
   unit: random seed
   source: "Choice: a fixed seed makes every run reproducible"
+
+# ---- Unknown rules (D-022): anything not coded is unknown ----
+
+adu_rule_band_small_max_pop:
+  value: 10000
+  low: 10000
+  high: 10000
+  unit: 2020 population (upper edge of the small-place band)
+  source: "Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+ for the rule priors of places with no coded ADU rule"
+
+adu_rule_band_mid_max_pop:
+  value: 50000
+  low: 50000
+  high: 50000
+  unit: 2020 population (upper edge of the middle band)
+  source: "Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+"
+
+adu_rule_min_coded:
+  value: 5
+  low: 5
+  high: 5
+  unit: coded places (or coded field values)
+  source: "Choice (D-022): a state-and-band rule prior, or a state's field probability, needs at least 5 coded places (values); otherwise the state's pooled share, then the all-state share"
+
+adu_unknown_rule_age_years:
+  value: 10
+  low: 10
+  high: 10
+  unit: years
+  source: "Choice (D-022): a sampled rule with no known date is treated as long in force (ramp ~1), so current-rules uptake under it is mature. Most coded ADU rules in force date from 2014-2023"
+
+# ---- Rule coverage (D-021) ----
+
+adu_rule_zoned_coverage_share:
+  value: 0.75
+  low: 0.75
+  high: 0.75
+  unit: share of eligible single-family lots covered
+  source: "Judgment (D-021): a rule limited to listed zoning districts or a lot-size minimum, where the parcel roll has no zoning or lot size to measure it. Coded zone lists are mostly a place's main single-family districts (e.g. Austin SF-1 to SF-3), so most eligible lots are covered"
+  notes: "Used only where parcels can't measure coverage; measured shares replace it as rolls gain zoning. Fixed in a run (not sampled)."
+
+adu_rule_limited_coverage_share:
+  value: 0.2
+  low: 0.2
+  high: 0.2
+  unit: share of eligible single-family lots covered
+  source: "Judgment (D-021): a rule whose coverage text names a limited area (an overlay, a half-mile corridor, new subdivisions, historic districts, transit areas) with no zone list to measure it, e.g. St. Paul's 2016 Green Line rule, Raleigh's 2019 overlay"

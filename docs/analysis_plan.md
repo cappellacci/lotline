@@ -315,6 +315,75 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Next specification (to be pre-registered before it is run, not run here):** a partial-rule share graded
   by the number of Handbook conditions a rule fails, rule coverage (D-021), and a place random effect in place
   of a single α; refit when Austin's rules are coded and Durham's roll is fixed.
+- **Fit 2 pre-registration (written and pushed before fit 2 was run, 2026-10-20; follows D-022):**
+  - *Unchanged from fit 1:* quantity θ, NB likelihood, 90% profile interval, fit and test sets, the
+    partial-share rule (estimated jointly only if its 90% interval is narrower than 0.1–0.6), the decision
+    rule (fit 2's θ and interval replace fit 1's in `hazard.yaml` whatever the test shows).
+  - *Blank rubric fields are integrated, not dropped:* a place-year whose rule class depends on blank fields
+    enters with a two-component mixture, P(y) = q·NB(y; θ·k_A) + (1 − q)·NB(y; θ·k_B), where path A has those
+    rules restricted (partial) and path B Handbook-equivalent, and q = 1 − Π(1 − p_field) with p_field the
+    coded share restricting that field (`scenarios.adu.field_probabilities`, coded rules in force at the
+    fit's run date, state share if 5+ values, else pooled). All rules of one place-year that depend on blanks
+    move together (amendments share their resolved fields). Dropping them instead would remove Minneapolis's
+    2021–25 years and most suburbs.
+  - *Place-years with no coded rule* stay out of the fit (as in fit 1); *explicit "no ADUs"* place-years have
+    an expected count of 0 and are left out, with any observed ADUs there reported.
+  - *Parking:* a citywide parking reform with a zero minimum in force by 1 July fills a blank ADU parking
+    field (D-022).
+- **Fit 3 pre-registration (written and pushed before fit 3 was run, 2026-10-20; Ben's next specification):**
+  - *Fit set:* Minneapolis, the Twin Cities places with coded ADU rules (St. Paul never), and **Austin
+    2016–2023** (its rules are now coded; 2024–25 excluded as before). Place-years need a coded rule in force
+    by 1 July and permits that flag ADUs that year. *Test set:* Raleigh 2021–25 and Durham 2021–25 if every
+    roll the test uses has 1,000+ ADU-eligible parcels (after the NC rebuild). Never: St. Paul, Charlotte,
+    any held-out row.
+  - *Expected count:* μ_it = θ × u_i × parcels × h_m(θ = 1; that year's rent, value, actual rate) × max over
+    the rules in force of c(type) × coverage × ramp(age at mid-year). Rule types (D-022): Handbook c = 1;
+    owner occupancy only c = m_o; other restrictions (parking, not by right, attached only, cap under 600 sq ft)
+    c = m_x; both c = m_o·m_x. Coverage per D-021 (zones, lot minimum; judgment shares where parcels can't
+    measure it).
+  - *Place effects:* yes. u_i ~ Gamma(mean 1, variance α), shared across a place's years, with counts Poisson
+    given u_i (closed-form marginal likelihood per place). This replaces fit 2's per-year NB, whose large α
+    (7.5) reflected differences between places, not years.
+  - *Blank rubric fields (D-022):* integrated at place level: each place's blank fields restrict or not
+    together over its years, with probabilities from the coded rules (state share if 5+ values, else pooled);
+    the place likelihood is the probability-weighted sum over those combinations.
+  - *Parameters:* θ (log scale), α, m_o, m_x. m_o and m_x on a grid 0.1, 0.2, …, 1.0; each is estimated if its
+    90% profile interval (others profiled) is narrower than its judgment range (m_o 0.2–1.0, m_x 0.1–0.6),
+    else held at its judgment value (m_o 0.5, m_x 0.3). θ's 90% interval: profile likelihood with α and any
+    estimated share profiled out.
+  - *Test prediction:* parametric bootstrap: log θ normal from its interval, a new u per test place, a
+    blank-field combination per place, Poisson counts per year; observed vs median and 90% interval per year
+    and in total.
+  - *Decision rule:* θ, α (as `adu_place_effect_variance`) and any estimated share replace the configured
+    values whatever the test shows; a test total outside its 90% interval is reported as a transport failure,
+    not refitted. The scenario draws a new u per place in each simulation draw from the fitted α.
+- **Fit 2 results (run 2026-10-20 after the fit-2 pre-registration, commit f5ee618):** the first run read
+  every observed count as 0 (a variable-name bug in `place_years` overwrote the observed counts with the field
+  counts); it was discarded, the bug fixed with a regression test, and the same specification re-run once:
+  θ = 0.000790 (90% 0.000526–0.001255), α = 7.5, partial share not identified (0.06–1.00, kept at 0.3); Austin
+  entered the fit set through WS-TX's coding (2,545 permits, fitted 306); Raleigh 230 vs mean 127 (90% 1–499).
+  Superseded by fit 3.
+- **Fit 3 results (run once on 2026-10-20 after the fit-3 pre-registration, commit 4aa1113, and the NC rebuild
+  that fixed Durham):**
+  - *Data:* fit set 16 places, 115 place-years, 2,799 ADU permits (Minneapolis 222, Austin 2016–23 2,545,
+    14 suburbs 32); test set Raleigh and Durham 2021–25 (Durham's roll now has 67,180 ADU-eligible parcels).
+  - ***θ = 0.001038 per parcel a year, 90% profile interval 0.000453–0.003173*** (0.26 of Portland's 4 per
+    1,000); place-effect variance α = 4.735; ***m_o = 1.0 (0.9–1.0), estimated***; m_x not identified
+    (0.1–1.0), kept at 0.3. Written to `hazard.yaml` (anchor, `adu_place_effect_variance`) and `adu.yaml`
+    (`adu_owner_occupancy_share`) per the decision rule.
+  - *Fitted place multipliers:* Austin 10.95, Edina 1.30, Minnetonka 1.29, Minneapolis 0.50, Richfield and
+    Roseville 0.39, Burnsville 0.33, Plymouth 0.15, Bloomington 0.06, Blaine 0.02, Eagan, Lakeville and St.
+    Louis Park ≈ 0.
+  - *Minneapolis by year, observed vs typical-place mean:* 2016 28 vs 15.1; 2017 30 vs 29.6; 2018 25 vs 39.3;
+    2019 35 vs 47.4; 2020 28 vs 56.0; 2021 16 vs 60.2; 2022 17 vs 53.0; 2023 14 vs 48.6; 2024 16 vs 49.2; 2025
+    13 vs 49.8.
+  - *Test:* Raleigh 2021–25 observed 23, 55, 54, 37, 61 (total 230) vs predicted mean 9.0, 19.9, 30.2,
+    38.9, 43.1 (total 141; median 11; 90% 0–687); Durham observed 32, 35, 77, 51, 44 (239) vs 15.0, 23.5,
+    28.6, 51.7, 53.1 (172; median 15; 90% 0–865). Inside, so not a transport failure by the rule; the
+    intervals are wide because a new place's multiplier is unknown.
+  - *Reading:* rent, home value and rates explain little of the difference between places; the owner-occupancy
+    rule had no measurable effect; Minneapolis's decline after 2020 is not captured (the model rises with the
+    ramp and rents). The Portland gap reasons above still apply.
 - **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
 
 ### D-020 · 2026-10-20 · Scenario geography: units that never share a parcel
@@ -350,3 +419,41 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   of the rules of the places inside it (D-020's open item). `min_lot_sqft > 0` with no parcel data counts as
   limited coverage rather than "partial", so the two adjustments don't overlap.
 - **Decided by:** proposed by WS-CORE and WS-ENGINE, 2026-10-20; for Ben.
+- **Implemented (2026-10-20, Ben approved):** `scenarios/adu.rule_coverage` and `coverage_map`. Zones and lot
+  minimums are measured on each place's single-family detached parcels (latest roll) among parcels whose zoning
+  or lot size is known (a written-out district name also matches its code's acronym, e.g. "Urban Neighborhood
+  1" = UN1); where a roll can't measure a limit, `adu_rule_zoned_coverage_share` 0.75 (judgment). With no
+  zones or lot minimum, a rule covers everything unless its text names a limited area explicitly ("only
+  inside/within/in", "within …", new subdivisions, a half-mile corridor): `adu_rule_limited_coverage_share`
+  0.2 (judgment). The uncovered share of a rule's type probabilities moves to "none". Examples measured:
+  Minneapolis 2023 zones 94%; St. Paul 2016/2018 54%; Austin 2015 rule 64%, 2010 rule 49% (lot minimum from
+  parcels × zones judgment). County rows: `county_mix` blends the rules of coded places BPS files under the
+  county (Wilmington) by their share of the row's eligible parcels (ACS one-unit detached homes); the mean c
+  is right, though a draw still picks one type for the whole row.
+
+### D-022 · 2026-10-20 · Anything not coded is unknown (option C)
+- **Decided by Ben (2026-10-20):** a place with no ADU row, and a blank rubric field in a coded row, are
+  unknown, never "no rule" or "no restriction".
+- **Now (`scenarios/adu.py`):**
+  - rules are one of five types: none, owner occupancy only, other restrictions (parking, not by right,
+    attached only, cap under 600 sq ft), both, Handbook-equivalent; c = 0, m_o, m_x, m_o·m_x, 1;
+  - a blank field restricts with the share of coded rules that restrict it (state share if 5+ coded values,
+    else pooled over the four states); a row's type is a probability over the five types;
+  - a place with no ADU row takes the mean type probabilities of the coded places in its state and size band
+    (<10k, 10–50k, 50k+ people in 2020), falling back to the state's pooled mean, then the all-state mean,
+    below 5 coded places (`adu_rule_min_coded`);
+  - explicit "no ADUs" rows stay "none" (#164); a citywide parking reform with no minimum settles a blank ADU
+    parking field;
+  - each simulation draw samples each place's type; the central path uses the expected c; outputs report each
+    place's type probabilities, whether its type was drawn, and the drawn shares; a drawn rule with no known
+    date is taken as long in force (`adu_unknown_rule_age_years` 10).
+- **Counts behind it (config/reforms on main, 2026-10-20; rules in force on 31 December 2025):** coded field
+  values restricting / known, pooled: owner occupancy 23/36, parking 18/34, by right 5/37, detached 5/40, size
+  0/29. Coded places by state and band (none/partial/Handbook/uncertain): MN 50k+ 5/11/3/1, MN 10–50k 1/4/0/0;
+  NC 50k+ 0/0/1/3; OH 50k+ 4/7/1/0, 10–50k 2/1/0/0; TX 50k+ 10/6/2/0. Small places in every state borrow
+  their prior from the state's pooled coded places or the all-state mean.
+- **Bias to watch:** states coded their largest places first, so priors for small places come from large
+  ones. As WS-CORE's ordinance lookup codes more places, the priors and field shares update from the CSVs
+  with no code change.
+- **Calibration:** blank fields are integrated over (D-019 fits 2 and 3); places with no ADU row stay out of
+  the fit.
