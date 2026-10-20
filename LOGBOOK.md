@@ -9,7 +9,7 @@ A running record of **how** the Lotline entry was built: what question each step
 - Entries LB-001 to LB-009 were **reconstructed on 2026-09-30** from the docs and artifacts they produced; later entries are written as the work happens.
 - Entries are added two ways: by the Claude session doing the work (rule in `CLAUDE.md`), and by a nightly review that scans the repo, project docs and artifacts for anything new since the last scan. Nightly entries are marked *(auto-review)*.
 
-**Last scan:** 2026-10-19T00:53Z
+**Last scan:** 2026-10-20T00:58Z
 
 ---
 
@@ -1164,3 +1164,52 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** none new (applies Ben's 2026-10-19 decision to start with the 2026 certified export).
 - **AI:** Claude Code (WS-CORE) registered and ran the export, read STATE_CD.TXT, wrote the crosswalk and tests (507 pass). The Ohio parcels row of the provenance doc is left as on main because the statewide Ohio run is still writing files; WS-OH regenerates it.
 - **Open / next:** Austin parcels in Williamson and Hays counties (WCAD, Hays CAD) if the Austin denominator must be complete; older rolls only via the EARS submissions (different layout).
+
+### LB-083 · 2026-10-19 · Validation: Judging panel run on main @ e31b4ed (auto-review)
+- **Question:** How would the entry score today against the Rules §8 rubric, and what are the biggest levers before Dec 16?
+- **What I did:** (inferred from the reports) Ran the `/judge` panel on a clean clone of `main` at e31b4ed (build stage): a gatekeeper plus five criterion judges, combined into a weighted scorecard with "today" and "ceiling" scores.
+- **Inputs:** clean clone of `main` @ e31b4ed; Official Rules §7a/§8; WS briefs and BUILD_PLAN.
+- **Outputs:** `reports/judging/2026-10-19-0518-e31b4ed/` (`SCORECARD.md`, `RUN.md`, `judge-gatekeeper.md`, `judge-transparency.md`, `judge-replicability.md`, `judge-usability.md`, `judge-methodology.md`, `judge-policy-insight.md`).
+- **Findings:**
+  - Not scored as of today (incomplete under §7a: no tool, deck or video; D4 and D6 stubs; D8 said "None so far" while the code calls external APIs). Weighted total 44.5/100 today, 72.2 at ceiling; a top-5 entry likely sits around 75–85.
+  - Strengths: 507 tests pass from a clean clone (91% coverage), hand-worked equation tests, generated provenance. Weakest: Usability (1.4 today, ceiling 5.8 under the current WS-APP plan) and Transparency's empty deliverable docs.
+  - Recommended now: draft D4 and a D6 skeleton, rewrite the WS-APP brief around user tasks, close cheap gate items (D8, held-out St. Paul figures, eligibility E1/E6) and four engine fixes (MM denominator, fee elasticity range, RNG coupling, `prereg-v1` tag).
+- **Decisions:** none recorded by the run itself; several same-day fragments (gate fixes, D-010, D-011, D-013, D-014, Model & Assumptions draft) act on its findings.
+- **AI:** Claude ran the panel; `judge-gatekeeper.md` and `judge-methodology.md` were reconstructed by the main session from the judges' replies after a disk-full error (scores complete, some probe output summarized). Logged by the nightly review; no session entry found for the run itself.
+- **Open / next:** Usability plan rewrite (WS-APP); re-run the panel after the fixes land.
+
+### LB-084 · 2026-10-19 · Build: ArcGIS pager rejects non-JSON block pages; analysis plan housekeeping (auto-review)
+- **Question:** Stop an HTML "Request Rejected" page from being cached as data, and keep the decisions log in order.
+- **What I did:**
+  - `lotline.io.arcgis._json`: a reply that is not JSON now deletes the cached file and raises `ArcGISError` ("not JSON (an error or block page?)"), the same treatment as ArcGIS error bodies (issue #132, PR #134); test added.
+  - `docs/analysis_plan.md`: decision entries put back in numeric order and D-013's "Decided by" line, lost in a merge, restored (PR #136).
+- **Inputs:** issue #132.
+- **Outputs:** `src/lotline/io/arcgis.py`, `tests/core/test_arcgis.py`, `docs/analysis_plan.md` (commits 17abe84, 403eff7; merged to `main`).
+- **Findings:** none beyond the above.
+- **Decisions:** none.
+- **AI:** Claude Code made both changes (co-authored commits); no session logbook fragment found, so logged by the nightly review.
+- **Open / next:** none.
+
+### LB-085 · 2026-10-19 · Build: Ohio parcels set up for the full 88-county run (auto-review)
+- **Question:** Run the approved statewide Ohio parcels fetch (LB-079, LB-081 decisions) in a way that survives a day-long run.
+- **What I did:** `oh_parcels` now downloads all 88 counties in `oh_county_fips.csv` by default (a list still limits the run), with OBJECTID ranges per county; new `snapshot_vintage()` reads `OH_PARCELS_VINTAGE` (YYYY-MM-DD) so a run resumed on a later date reuses the cached pages of the same snapshot. Provenance cleaning text updated to match.
+- **Inputs:** LB-079 adapter; Ben's 2026-10-19 approval of the full-state run.
+- **Outputs:** `src/lotline/adapters/states/oh/oh_parcels.py` on branch `ws/oh-3-statewide` (commit be97ad9; not merged, no PR or fragment yet).
+- **Findings:** Not stated in the commit; LB-082 notes the statewide run was still writing files on Oct 19.
+- **Decisions:** none new.
+- **AI:** Claude Code (WS-OH) made the change; results of the statewide run are not recorded yet.
+- **Open / next:** finish the run, regenerate the Ohio provenance row, open the PR with a logbook fragment.
+
+### LB-086 · 2026-10-19 · Build: Met Council regional parcels and Ramsey County parcels adapters, work in progress (WS-MN) (auto-review)
+- **Question:** Can the Twin Cities parcel denominator come from the Met Council regional parcel points (2021–2025 rolls plus the current roll), with Ramsey County's own layer adding lot frontage, while keeping St. Paul held out?
+- **What I did:** (from WIP commits; intent read from the docstrings)
+  - `metc_parcels`: 7-county parcel points, one row per parcel per roll; `vintage` = service-name year, `vintage_date` = county `EXP_DATE` (Ben, 2026-10-19); jurisdiction by `place_or_township`, checked against `CTU_NAME`, else the county remainder row; `USECLASS1` → `land_use_std` by ordered rules, overridden by `DWELL_TYPE` where recorded and refined by unit counts; owner/taxpayer/situs fields never requested.
+  - Holdout: St. Paul rows only from rolls exported up to 2023 (`holdout.apply(..., snapshot=True)` on both the point's jurisdiction and `CTU_NAME`).
+  - `ramsey_parcels`: Ramsey current roll outside St. Paul (excluded at the server query and again by the holdout filter), adding `ParcelFrontage` → `lot_width_ft` and the detailed land-use description.
+  - Crosswalks `mn_land_use.csv`, `mn_land_use_dwelling.csv`, `mn_land_use_ramsey.csv`; `config/states/mn.yaml` source entry; synthetic-fixture tests.
+- **Inputs:** Met Council `Parcel_Points_2021`…`2025` and `Parcel_Points_Aggregate`; Ramsey `CAD_AttributedParcelPoint_ViewOnly`; Minn. Stat. 273.13 property classes.
+- **Outputs:** branches `ws/mn-3-metc-parcels` (ffd2be0, 4d5de80) and `ws/mn-3-ramsey-parcels` (adds d26821b): `src/lotline/adapters/states/mn/metc_parcels.py`, `src/lotline/adapters/states/mn/ramsey_parcels.py`, the three crosswalks, `tests/states/mn/test_metc_parcels.py`, `tests/states/mn/test_ramsey_parcels.py`, fixtures. Not merged; no fragment yet.
+- **Findings:** Rolls 2002–2020 are token-locked (checked 2026-10-19; requested from Met Council, #11). The "2023" roll was exported 2023-10-01 to 2024-01-08 depending on county, and the "2025" roll is a mid-2025 export. Hennepin leaves `NUM_UNITS`/`DWELL_TYPE` blank. No real-data results recorded yet.
+- **Decisions:** Recorded in code: vintage naming and dating rule (Ben, 2026-10-19).
+- **AI:** Claude Code (WS-MN) wrote the WIP adapters and tests; whether tests pass on the branch was not checked by this review.
+- **Open / next:** finish and run the adapters, open PRs with logbook fragments; the `mn.yaml` diff on the branch replaces the `stpaul_permits` source entry, which needs reconciling with `main` at merge.
