@@ -157,14 +157,17 @@ def _name_key(name: pd.Series) -> pd.Series:
 def backfill_geoids(df: pd.DataFrame) -> pd.DataFrame:
     """Fill missing GEOIDs from the latest year that has one.
 
-    From 1992 on, rows link by BPS ID. Before 1992 the IDs mean different places, so those rows, and any
-    later row the ID can't place, link by (county, normalized name), only where that key is unique.
+    From 1992 on, rows link by BPS ID, and every row of an ID takes the GEOID of its latest year. Some
+    2007-2015 files code a place under a second GEOID (Elko New Market, MN: 2718862 in 2007-2015, 2718662
+    otherwise), and a township that incorporates keeps one series (Baldwin, MN): one permit issuer, one
+    jurisdiction. Before 1992 the IDs mean different places, so those rows, and any later row the ID can't
+    place, link by (county, normalized name), only where that key is unique.
     """
     df = df.copy()
     known = df.dropna(subset=["geoid"]).sort_values("year")
     era = df["year"] >= ID_ERA_START
     by_id = known[known["year"] >= ID_ERA_START].groupby("bps_id")["geoid"].last()
-    df.loc[era, "geoid"] = df.loc[era, "geoid"].fillna(df.loc[era, "bps_id"].map(by_id))
+    df.loc[era, "geoid"] = df.loc[era, "bps_id"].map(by_id).fillna(df.loc[era, "geoid"])
 
     # Rows still missing a GEOID (before 1992, or a place whose ID changed or vanished before FIPS codes
     # appeared in ~2007) fall back to (county, normalized name), then to the name alone where it is unique

@@ -83,3 +83,17 @@ def test_ambiguous_names_are_not_guessed():
     old = _rows(id6="999999", name="Union township", county="005", year=2000)  # matches neither county
     df = bps.backfill_geoids(pd.concat([bps.to_canonical(f, "OH") for f in (a, b, old)], ignore_index=True))
     assert pd.isna(df.geoid.iloc[2])
+
+
+def test_one_bps_id_gets_one_geoid_its_latest():
+    # Elko New Market, MN: 2007-2015 files code it 2718862, the others 2718662 (and pre-2007 rows have none)
+    df = pd.DataFrame(
+        {
+            "year": [2005, 2010, 2016, 2024],
+            "bps_id": ["27533200"] * 4,
+            "geoid": [None, "2718862", "2718662", "2718662"],
+            "county_geoid": ["27139"] * 4,
+            "name": ["Elko New Market"] * 4,
+        }
+    )
+    assert bps.backfill_geoids(df)["geoid"].tolist() == ["2718662"] * 4

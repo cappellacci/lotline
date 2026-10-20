@@ -181,4 +181,4 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 ### D-017 · 2026-10-20 · Parcel rolls with mostly unknown land use use the ACS denominator
 - **Found:** with Ohio's statewide parcels (#150), Summit County sends no land use, so Akron's roll counted **0 eligible parcels rated `high` quality**: parcels of unknown use are never eligible, and the quality share counted only unknown units, lot size and zoning. Lucas County (55% unknown) gave Toledo a large undercount.
 - **Now:** a jurisdiction-roll is used as a parcel denominator only if its land use is known for at least `tier2_min_land_use_share` (0.9, the tier 2 threshold from D-016) of its parcels; otherwise that jurisdiction uses the ACS fallback (`build/eligible.usable_rolls`). On Ohio's 2023 rolls this moves 18% of parcels, including all of five counties (Hardin, Lucas, Meigs, Muskingum, Summit at jurisdiction level), to the fallback.
-- **Decided by:** pending Ben (WS-OH decision 1, recommended yes).
+- **Decided by:** Ben, 2026-10-20.
