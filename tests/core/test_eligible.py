@@ -243,6 +243,12 @@ def test_load_builds_from_processed_tables(tmp_path, monkeypatch):
         lambda *a, **k: pd.DataFrame(columns=["place_geoid", "township_geoid", "share"]),
     )
 
+    # the test's parcels have source "t": don't let the real MN config's `parcel_sources` filter them out
+    import lotline.config as config
+
+    real = config.load_state
+    monkeypatch.setattr(config, "load_state", lambda st: real(st).model_copy(update={"parcel_sources": {}}))
+
     store = DataStore(tmp_path)
     acs, juris = _acs_rows()
     for table, df in (("acs_geo_year", acs), ("jurisdictions", juris)):
@@ -344,3 +350,14 @@ def test_lot_size_floor_is_inclusive(theme):
     lots["parcel_id"] = ["at", "below"]
     lots["lot_sqft"] = [5000.0, 4999.0]
     assert eligible.classify(lots, theme, params)["eligible"].tolist() == [True, False]
+
+
+def test_overlapping_parcel_sources_are_never_double_counted():
+    a = _parcels()
+    b = a.assign(source="city_assessor")
+    both = pd.concat([a, b], ignore_index=True)
+    with pytest.raises(ValueError, match="parcel_sources"):
+        eligible.single_source(both, {})
+    kept = eligible.single_source(both, {"2743000": "city_assessor", "*": "t"})
+    assert len(kept) == len(a) and set(kept["source"]) == {"city_assessor"}
+    assert len(eligible.single_source(a, {})) == len(a)  # one source: unchanged

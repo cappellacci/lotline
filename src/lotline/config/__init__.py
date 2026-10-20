@@ -66,6 +66,9 @@ class StateConfig(_Model):
     land_use_crosswalk: str | None = None
     train_until: dict[str, dt.date] = {}  # geoid -> last date usable for fitting
     data_tiers: dict[str, int] = {}  # geoid -> data tier (1 best, 3 national data only); default 3
+    # Where parcel sources overlap: jurisdiction GEOID -> the one parcels source to count it from, with "*" as
+    # the default for the rest (build/eligible.single_source). Without it, overlapping sources are an error.
+    parcel_sources: dict[str, str] = {}
     township_permits: bool = False  # townships (county subdivisions) issue permits and get their own rows
     zip3_ranges: list[tuple[int, int]] = []  # USPS 3-digit ZIP prefixes (inclusive) that belong to the state
 

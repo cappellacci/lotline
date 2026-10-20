@@ -230,6 +230,29 @@ SOURCE = "eligible"
 MANIFEST_SOURCES = ["census_acs5", "census_bps_place_annual", "census_dec_pl", "census_geo_codes"]
 
 
+def single_source(parcels: pd.DataFrame, choice: dict[str, str]) -> pd.DataFrame:
+    """Keep one parcels source per jurisdiction, so no parcel is counted twice (#147).
+
+    `choice` is the state config's `parcel_sources` (GEOID -> source, `"*"` for the rest). Without one, a
+    jurisdiction-roll covered by two sources raises instead of being double-counted.
+    """
+    if parcels.empty:
+        return parcels
+    if choice:
+        wanted = parcels["jurisdiction_geoid"].astype(str).map(choice).fillna(choice.get("*", ""))
+        return parcels[parcels["source"] == wanted]
+    n = parcels.groupby(["jurisdiction_geoid", "vintage"])["source"].nunique()
+    overlap = n[n > 1]
+    if len(overlap):
+        sources = sorted(parcels["source"].unique())
+        raise ValueError(
+            f"{len(overlap)} jurisdiction-rolls are covered by more than one parcels source ({sources}), "
+            f"e.g. {list(overlap.index[:3])}: set `parcel_sources` in the state config to pick one per "
+            "jurisdiction"
+        )
+    return parcels
+
+
 def combine(parcel_rows: pd.DataFrame | None, acs_rows: pd.DataFrame) -> pd.DataFrame:
     """One denominator source per jurisdiction: parcels where a state has them, the ACS fallback elsewhere."""
     if parcel_rows is None or parcel_rows.empty:
@@ -250,13 +273,14 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
 
     juris = processed_or("jurisdictions", lambda: jur.load(state, store, refresh=refresh))
     acs_table = processed_or("acs_geo_year", lambda: acs.load(state, store, refresh=refresh))
-    parcels = store.read(state, "parcels")
-    parcel_rows = from_parcels(parcels, juris) if parcels is not None and len(parcels) else None
-
     from lotline.adapters.national import geoparts
     from lotline.config import load_state
 
     cfg = load_state(state)
+    parcels = store.read(state, "parcels")
+    if parcels is not None and len(parcels):
+        parcels = single_source(parcels, cfg.parcel_sources)
+    parcel_rows = from_parcels(parcels, juris) if parcels is not None and len(parcels) else None
     places = juris.loc[juris["kind"] == "place", "geoid"].tolist()
     townships = juris.loc[juris["kind"] == "township", "geoid"].tolist()
     c_shares = geoparts.county_shares(cfg.fips, places, store, refresh)
