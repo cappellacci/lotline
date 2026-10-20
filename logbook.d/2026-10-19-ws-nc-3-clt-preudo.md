@@ -26,3 +26,7 @@
 - **AI:** Claude (WS-NC) wrote the adapter and synthetic tests, including that the guard runs before any download.
 - **Open / next:** the processed table needs place assignment, blocked while census.gov rejects requests from this
   network (TIGERweb "Request Rejected" since about 05:46 ET on 2026-10-19).
+- **Update 2026-10-20:** with census.gov back, built `processed/nc/parcels/clt_udo_translation.parquet`: 324,129
+  parcels (51 split polygons merged), all `vintage_date` 2023-05-31; 300,726 in Charlotte, 23,348 in its ETJ (37119);
+  169,077 Charlotte parcels zoned conventional R-3 to R-8 before the UDO (the districts that became N1-A to N1-D).
+  `assert_no_leak` passes. Provenance section added.
