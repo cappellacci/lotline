@@ -306,7 +306,19 @@ def current_rules(
             out["note"] += "; scheduled after origin: " + ", ".join(later)
         return out
 
-    out = pd.DataFrame([{"geoid": g, **assess(g)} for g in geoids])
+    cols = [
+        "geoid",
+        "rule_class",
+        "rule_id",
+        "effective",
+        "note",
+        "unknown_fields",
+        "p_none",
+        "p_partial",
+        "p_handbook",
+    ]
+    out = pd.DataFrame([{"geoid": g, **assess(g)} for g in geoids], columns=cols)
+    out["effective"] = pd.to_datetime(out["effective"])
     out = out.rename(columns={"effective": "rule_effective", "note": "rule_note"})
     age = (as_of - out["rule_effective"]).dt.days / 365.25
     return out.assign(rule_age=age.where(out["rule_class"] != "none"))
