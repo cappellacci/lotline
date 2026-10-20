@@ -76,3 +76,13 @@ sources:
       with pre-UDO and UDO districts (324,180 features). Data last edited 2023-05-31, before the V5 window
       (2023-06-01); the adapter checks editingInfo.dataLastEditDate before downloading and stops if it moves.
       No land use or year built: see reports/nc/charlotte_pre_udo_parcels.md.
+  - name: meck_permits
+    url: https://meckgis.mecklenburgcountync.gov/server/rest/services/BuildingPermits/FeatureServer/0
+    license: Mecklenburg County GIS public data (accuracy disclaimer; no license stated)
+    access: arcgis
+    cadence: rolling (permits since 1990; ArcGIS item fc9d171ecd4d44a58c7dad840cd58aa2)
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/meck_permits.py. Holdout-first: a server-side filter leaves out
+      Charlotte and unincorporated-county permits from 2023-06-01 (V5, D-012), and holdout.apply drops the rest
+      before anything is written. On 2026-10-20 the server answered this network with a Cloudflare browser
+      challenge (HTTP 403), so no data has been downloaded; the taxjuris town spellings are unverified.
