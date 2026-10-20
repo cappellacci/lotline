@@ -16,6 +16,13 @@ holdouts:
 # Last date usable for fitting, by GEOID (validation plan §2). St. Paul: data through 2023 only (V5 blind test).
 train_until:
   "2758000": 2023-12-31
+# One parcels source per jurisdiction where MN parcel sources overlap (build/eligible.single_source, #147).
+# Minneapolis: the city assessor tables carry units and building use (PENDING BEN, decision 1); everyone else:
+# Met Council regional parcels (St. Paul from the 2021-2023 rolls only, V5; PENDING BEN, decision 2).
+# ramsey_parcels (current roll, frontage) is not a denominator source.
+parcel_sources:
+  "2743000": mpls_assessor_parcels
+  "*": metc_parcels
 sources:
   - name: metc_permits
     url: https://arcgis.metc.state.mn.us/data1/rest/services/structure/Other_Structure_Public/FeatureServer/0
