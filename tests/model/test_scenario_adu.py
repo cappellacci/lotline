@@ -374,3 +374,18 @@ def test_central_path_uses_the_expected_rule_share():
     assert mix["current"][0, 0] == pytest.approx(2000 * 0.72 * hm, rel=1e-6)
     assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm / (1 + math.exp(4 / 3)), rel=1e-6)
     assert hand["added"].sum() == 0
+
+
+def test_state_summary_sums_draws_over_places():
+    """Means add up: the state's mean equals the sum of its places' means, per year and over five years; the
+    state's P10-P90 comes from summed draws, so it is not the sum of the places' P10s and P90s."""
+    places = _places(rent=[1100.0, 1500.0, 1900.0], eligible_parcels=[2000.0, 5000.0, 800.0]).assign(
+        state="MN"
+    )
+    yearly, totals, summary = adu.run(places, 2025, draws=300, summary_by="state")
+    five = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2026-2030")].iloc[0]
+    assert five["mean"] == pytest.approx(totals["additional_homes_mean"].sum())
+    y1 = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2026")].iloc[0]
+    assert y1["mean"] == pytest.approx(yearly.loc[yearly["year"] == 2026, "additional_homes_mean"].sum())
+    assert five["p10"] <= five["p50"] <= five["p90"]
+    assert five["p90"] < totals["additional_homes_p90"].sum() + 1e-9  # sum of draws, not sum of percentiles

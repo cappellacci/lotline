@@ -184,3 +184,55 @@ def test_place_years_keeps_observed_counts(monkeypatch):
     monkeypatch.setattr(adu, "load_reforms", lambda st: reforms if st == "MN" else reforms.iloc[0:0])
     rows = cal.place_years("MN", Store(), ["9900001"], [2025])
     assert rows["adu_permits"].tolist() == [2]
+
+
+def test_frailty_loglik_by_hand():
+    """One year, y = 2, θk = 1. α = 1: log(1/8) (geometric, as nb_loglik). α -> 0: Poisson log(e^-1 / 2).
+    Two years, y = (1, 0), θk = (1, 1), α = 1: log 1 + log Γ(2) − log Γ(1) + 0 − 2 log 3 = −2 log 3."""
+    assert cal.frailty_loglik_place([2], [1.0], 1.0, 1.0) == pytest.approx(math.log(1 / 8))
+    assert cal.frailty_loglik_place([2], [1.0], 1.0, 0.0) == pytest.approx(-1 - math.log(2))
+    assert cal.frailty_loglik_place([1, 0], [1.0, 1.0], 1.0, 1.0) == pytest.approx(-2 * math.log(3))
+
+
+def _place(y, base, types, cr, w):
+    return cal.PlaceData(
+        "MN",
+        "X",
+        "X",
+        np.arange(len(y)),
+        np.asarray(y, float),
+        np.asarray(base, float),
+        np.asarray(types),
+        np.asarray(cr, float),
+        np.asarray(w, float),
+    )
+
+
+def test_blank_field_combinations_are_a_weighted_sum_by_hand():
+    """One place, one year, one rule with a blank owner field: P(owner rule) 0.25 -> type 'owner' (c = m_o
+    = 0.5), else 'handbook' (c = 1). base 2, cr 1, θ 1, Poisson, y = 1:
+    log(0.25 · Pois(1; 1) + 0.75 · Pois(1; 2)) = log(0.25 e^-1 + 0.75 · 2 e^-2)."""
+    owner, hb = 1, 4
+    pl = _place([1], [2.0], [[[owner]], [[hb]]], [[1.0]], [0.25, 0.75])
+    expected = math.log(0.25 * math.exp(-1) + 0.75 * 2 * math.exp(-2))
+    assert cal.frailty_loglik([pl], 1.0, 0.0, cal._cvals(0.5, 0.3)) == pytest.approx(expected)
+
+
+def test_fit3_recovers_theta_and_owner_share():
+    """40 simulated places × 8 years: half under an owner-occupancy rule (m_o = 0.5), half Handbook;
+    θ = 0.002,
+    place effects α = 0.3. The 90% interval contains 0.002 and m_o is estimated near 0.5."""
+    rng = np.random.default_rng(5)
+    places = []
+    for i in range(40):
+        base = np.full(8, rng.uniform(20_000, 60_000))
+        t = 1 if i % 2 else 4
+        u = rng.gamma(1 / 0.3, 0.3)
+        c = 0.5 if t == 1 else 1.0
+        y = rng.poisson(0.002 * u * c * base)
+        places.append(_place(y, base, np.full((1, 8, 1), t), np.ones((8, 1)), [1.0]))
+    fit = cal.fit3(places, grid=(0.25, 0.5, 1.0), ranges=((0.2, 1.0), (0.1, 0.6)))
+    assert fit.low <= 0.002 <= fit.high
+    assert fit.owner_estimated and fit.m_owner == 0.5
+    assert not fit.other_estimated  # no place has an 'other' rule: m_x is not identified
+    assert fit.alpha == pytest.approx(0.3, rel=0.6)

@@ -117,10 +117,90 @@ def fit_and_test(fit_rows: pd.DataFrame, test_rows: pd.DataFrame) -> cal.Fit:
     return fit
 
 
+def fit3_main(store) -> None:
+    """D-019 fit 3, pre-registered: graded shares, gamma place effects, blank fields per place, coverage."""
+    mn = cal.place_data("MN", store, mn_places(), FIT_YEARS_MN)
+    austin = cal.place_data("TX", store, [AUSTIN], FIT_YEARS_AUSTIN)
+    fit_places = mn + austin
+    test = cal.place_data("NC", store, [RALEIGH, DURHAM], TEST_YEARS)
+    rows = cal.place_years("NC", store, [DURHAM], TEST_YEARS)
+    durham_ok = len(rows) > 0 and rows["eligible_parcels"].min() >= 1000
+    if not durham_ok:
+        smallest = int(rows["eligible_parcels"].min()) if len(rows) else 0
+        print(f"Durham: a roll the test uses has {smallest} ADU-eligible parcels (< 1,000) -> not tested")
+        test = [p for p in test if p.geoid != DURHAM]
+    print("=== Fit 3 (D-019, pre-registered) ===\nFit set:")
+    for pl in fit_places:
+        print(
+            f"  {pl.name:22s} {pl.years.min()}-{pl.years.max()}  n={len(pl.y):2d}  "
+            f"observed {int(pl.y.sum()):5d}  "
+            f"blank-field combinations {len(pl.w)}"
+        )
+    fit = cal.fit3(fit_places)
+    print(
+        f"theta = {fit.theta:.6f}  90% profile interval {fit.low:.6f}-{fit.high:.6f} "
+        f"({fit.theta * 1000:.3f} per 1,000 a year at Portland's rent, value and rate; "
+        f"{fit.theta / PORTLAND:.2f} of Portland's 4)"
+    )
+    print(
+        f"place-effect variance alpha = {fit.alpha:.3f}; places {fit.n_places}, place-years {fit.n_years}, "
+        f"log-likelihood {fit.loglik:.2f}"
+    )
+    for label, val, (lo, hi), est, jr in (
+        ("owner-occupancy share m_o", fit.m_owner, fit.owner_interval, fit.owner_estimated, "0.2-1.0"),
+        ("other-restriction share m_x", fit.m_other, fit.other_interval, fit.other_estimated, "0.1-0.6"),
+    ):
+        verdict = "estimated" if est else "not identified -> judgment value kept"
+        print(f"{label}: {val:.1f}  (profile 90% {lo:.1f}-{hi:.1f}; judgment range {jr}) -> {verdict}")
+    cv = cal._cvals(fit.m_owner, fit.m_other)
+    print("\nObserved vs fitted (mean without the place's own effect; with it = posterior mean of u):")
+    for pl in fit_places:
+        k = (pl.w[:, None] * pl.k(cv)).sum(axis=0)
+        mean0 = fit.theta * k
+        r = 1 / fit.alpha if fit.alpha > 0 else np.inf
+        u_post = (pl.y.sum() + r) / (r + mean0.sum()) if np.isfinite(r) else 1.0
+        print(
+            f"  {pl.name:22s} observed {int(pl.y.sum()):5d}  fitted {mean0.sum():7.1f}  with own effect "
+            f"{u_post * mean0.sum():7.1f}  (u = {u_post:.2f})"
+        )
+        if pl.geoid == "2743000":
+            print(
+                "    Minneapolis by year: "
+                + "; ".join(
+                    f"{int(yr)} {int(o)} vs {m:.1f}" for yr, o, m in zip(pl.years, pl.y, mean0, strict=True)
+                )
+            )
+    print("\nTest set (not used in the fit): observed vs predicted median (90% predictive interval)")
+    for pl in test:
+        draws = cal.predict_place(pl, fit, seed=20261020)
+        for t, yr in enumerate(pl.years):
+            lo, mid, hi = np.percentile(draws[:, t], [5, 50, 95])
+            flag = "inside" if lo <= pl.y[t] <= hi else "OUTSIDE"
+            print(
+                f"  {pl.name:14s} {int(yr)}: observed {int(pl.y[t]):4d}  "
+                f"predicted {mid:6.0f} ({lo:.0f}-{hi:.0f}) "
+                f"mean {draws[:, t].mean():6.1f}  {flag}"
+            )
+        tot = draws.sum(axis=1)
+        lo, mid, hi = np.percentile(tot, [5, 50, 95])
+        obs = int(pl.y.sum())
+        verdict = "inside" if lo <= obs <= hi else "OUTSIDE: transport failure, reported not refitted"
+        print(
+            f"  {pl.name} TOTAL: observed {obs}, predicted median {mid:.0f}, mean {tot.mean():.0f} "
+            f"(90% {lo:.0f}-{hi:.0f}) -> {verdict}"
+        )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--fit", type=int, default=3, choices=(2, 3), help="2: the earlier spec, for reproduction"
+    )
     ap.add_argument("--explore-austin", action="store_true")
     a = ap.parse_args()
+    if a.fit == 3:
+        fit3_main(DataStore())
+        return
     store = DataStore()
     mn = cal.place_years("MN", store, mn_places(), FIT_YEARS_MN)
     austin = cal.place_years("TX", store, [AUSTIN], FIT_YEARS_AUSTIN)

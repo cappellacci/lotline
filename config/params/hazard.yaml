@@ -145,3 +145,11 @@ adu_extrapolation_widening:
   high: 2.0
   unit: standard deviation of log(hazard) per unit of log distance outside the calibration range
   source: "Judgment. Statistical protocol §5.5 step 3 and two-prong design: don't extrapolate silently; flag and widen. At 1.0, a place with rent 40% below the reference range (log distance 0.5) gets an extra log-sd of 0.5 (P10-P90 about x0.5 to x1.9)"
+
+adu_place_effect_variance:
+  value: 0.5
+  low: 0.5
+  high: 0.5
+  unit: variance of a place's multiplier on the ADU hazard (gamma, mean 1)
+  source: "Placeholder until D-019 fit 3 is run (the fit's alpha replaces it): places differ in ADU uptake far beyond rent, value and rates (fit 2's per-year overdispersion was 7.5)"
+  notes: "Each simulation draw gives each place its own multiplier; it widens place ranges and, because places are independent, much less the state totals."

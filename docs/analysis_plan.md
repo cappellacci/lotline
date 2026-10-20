@@ -392,3 +392,41 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   of the rules of the places inside it (D-020's open item). `min_lot_sqft > 0` with no parcel data counts as
   limited coverage rather than "partial", so the two adjustments don't overlap.
 - **Decided by:** proposed by WS-CORE and WS-ENGINE, 2026-10-20; for Ben.
+- **Implemented (2026-10-20, Ben approved):** `scenarios/adu.rule_coverage` and `coverage_map`. Zones and lot
+  minimums are measured on each place's single-family detached parcels (latest roll) among parcels whose zoning
+  or lot size is known (a written-out district name also matches its code's acronym, e.g. "Urban Neighborhood
+  1" = UN1); where a roll can't measure a limit, `adu_rule_zoned_coverage_share` 0.75 (judgment). With no
+  zones or lot minimum, a rule covers everything unless its text names a limited area explicitly ("only
+  inside/within/in", "within …", new subdivisions, a half-mile corridor): `adu_rule_limited_coverage_share`
+  0.2 (judgment). The uncovered share of a rule's type probabilities moves to "none". Examples measured:
+  Minneapolis 2023 zones 94%; St. Paul 2016/2018 54%; Austin 2015 rule 64%, 2010 rule 49% (lot minimum from
+  parcels × zones judgment). County rows: `county_mix` blends the rules of coded places BPS files under the
+  county (Wilmington) by their share of the row's eligible parcels (ACS one-unit detached homes); the mean c
+  is right, though a draw still picks one type for the whole row.
+
+### D-022 · 2026-10-20 · Anything not coded is unknown (option C)
+- **Decided by Ben (2026-10-20):** a place with no ADU row, and a blank rubric field in a coded row, are
+  unknown, never "no rule" or "no restriction".
+- **Now (`scenarios/adu.py`):**
+  - rules are one of five types: none, owner occupancy only, other restrictions (parking, not by right,
+    attached only, cap under 600 sq ft), both, Handbook-equivalent; c = 0, m_o, m_x, m_o·m_x, 1;
+  - a blank field restricts with the share of coded rules that restrict it (state share if 5+ coded values,
+    else pooled over the four states); a row's type is a probability over the five types;
+  - a place with no ADU row takes the mean type probabilities of the coded places in its state and size band
+    (<10k, 10–50k, 50k+ people in 2020), falling back to the state's pooled mean, then the all-state mean,
+    below 5 coded places (`adu_rule_min_coded`);
+  - explicit "no ADUs" rows stay "none" (#164); a citywide parking reform with no minimum settles a blank ADU
+    parking field;
+  - each simulation draw samples each place's type; the central path uses the expected c; outputs report each
+    place's type probabilities, whether its type was drawn, and the drawn shares; a drawn rule with no known
+    date is taken as long in force (`adu_unknown_rule_age_years` 10).
+- **Counts behind it (config/reforms on main, 2026-10-20; rules in force on 31 December 2025):** coded field
+  values restricting / known, pooled: owner occupancy 23/36, parking 18/34, by right 5/37, detached 5/40, size
+  0/29. Coded places by state and band (none/partial/Handbook/uncertain): MN 50k+ 5/11/3/1, MN 10–50k 1/4/0/0;
+  NC 50k+ 0/0/1/3; OH 50k+ 4/7/1/0, 10–50k 2/1/0/0; TX 50k+ 10/6/2/0. Small places in every state borrow
+  their prior from the state's pooled coded places or the all-state mean.
+- **Bias to watch:** states coded their largest places first, so priors for small places come from large
+  ones. As WS-CORE's ordinance lookup codes more places, the priors and field shares update from the CSVs
+  with no code change.
+- **Calibration:** blank fields are integrated over (D-019 fits 2 and 3); places with no ADU row stay out of
+  the fit.

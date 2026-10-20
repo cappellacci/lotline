@@ -656,9 +656,20 @@ def central_path(
 
 
 def run(
-    places: pd.DataFrame, origin: int, *, draws: int | None = None, enabled: bool = True
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+    places: pd.DataFrame,
+    origin: int,
+    *,
+    draws: int | None = None,
+    enabled: bool = True,
+    summary_by: str | None = None,
+):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
+
+    With `summary_by` (a column, e.g. 'state'), also returns a third table: for each group, year and the
+    five-year total, P10/P50/P90 and mean of the **sum of draws** over the group's places (places must be
+    non-overlapping units, D-020), so shared draws (rates, costs, the anchor) add up correctly.
+    Each draw multiplies each place's hazard by its own u ~ Gamma(mean 1, variance
+    `adu_place_effect_variance`), the place effects fitted in D-019 fit 3.
 
     `places` columns: geoid, eligible_parcels, rent (median gross rent, 2025 dollars), home_value (2025
     dollars), optional mortgage_rate (a backtest passes the year's actual rate; where it is missing, each draw
@@ -676,6 +687,12 @@ def run(
     drawn = np.zeros((n, len(places)))
     horizon = int(load_params("baseline")["forecast_horizon_years"].value)
     z = np.random.default_rng(seed + 1).standard_normal((n, len(places)))
+    var_u = central["adu_place_effect_variance"]
+    u_all = (
+        np.random.default_rng(seed + 3).gamma(1 / var_u, var_u, size=(n, len(places)))
+        if var_u > 0
+        else np.ones((n, len(places)))
+    )
     e = places["eligible_parcels"].to_numpy(dtype=float)
     keys = {
         "handbook": "handbook_adus",
@@ -695,6 +712,7 @@ def run(
         args = (places["rent"], places["home_value"], rates(p))
         hm = hazard.adu_mature_hazard(*args, p)
         hm = hazard.widen(hm, hazard.calibration_distance(*args, p)["total"], z[d], p)
+        hm = np.clip(hm * u_all[d], 0.0, 1.0)
         c, idx, sampled = draw_rule_share(places, p, rule_rng)
         drawn[d] = idx
         paths = pool_paths(
@@ -733,7 +751,29 @@ def run(
             table[f"{name}_mean"] = a.mean(axis=0)
             for q in (10, 50, 90):
                 table[f"{name}_p{q}"] = np.percentile(a, q, axis=0)
-    return yearly, totals
+    if summary_by is None:
+        return yearly, totals
+    rows = []
+    for group, idx in pd.Series(range(len(places)), index=places[summary_by].to_numpy()).groupby(level=0):
+        cols = idx.to_numpy()
+        for key, name in keys.items():
+            sums = out[key][:, cols, :].sum(axis=1)  # (draws, years)
+            for h in range(horizon + 1):
+                a = sums.sum(axis=1) if h == horizon else sums[:, h]
+                label = f"{origin + 1}-{origin + horizon}" if h == horizon else str(origin + 1 + h)
+                p10, p50, p90 = np.percentile(a, [10, 50, 90])
+                rows.append(
+                    {
+                        summary_by: group,
+                        "period": label,
+                        "outcome": name,
+                        "p10": p10,
+                        "p50": p50,
+                        "p90": p90,
+                        "mean": a.mean(),
+                    }
+                )
+    return yearly, totals, pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------------------------------------
