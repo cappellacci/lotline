@@ -81,7 +81,7 @@ def test_hand_checked_values(reforms):
     assert h["effective_date"] == pd.Timestamp("2023-11-26") and h["unit_cap"] == 4
     assert set(h["coverage_zones"].split(";")) == {"H1", "H2"}
     assert r.at["MN-2758000-adu-2023", "adus_per_lot"] == 2
-    # St. Paul ADUs: Green Line 2016, citywide 2018-10-17, owner occupancy dropped by Ord. 22-1 (eff. 2022-03-05)
+    # St. Paul ADUs: citywide 2018-10-17; owner occupancy dropped by Ord. 22-1 (effective 2022-03-05)
     assert r.at["MN-2758000-adu-2018", "adoption_date"] == pd.Timestamp("2018-10-17")
     assert r.at["MN-2758000-adu-2022", "effective_date"] == pd.Timestamp("2022-03-05")
 
