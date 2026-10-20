@@ -32,3 +32,46 @@ fee_permit_elasticity:
   unit: "% change in permits per % change in price received by builders (applied to a cost change as a share of total development cost)"
   source: "Central: E081 Baum-Snow & Han 2024, tract-level unit supply elasticity ~0.3. Low 0: E058 Mayer & Somerville 2000 (impact-fee coefficient not significant) and E062 Campbell & Alm 2006 (negative, not significant). High: E080 Saiz 2010 (population-weighted metro average 1.75) and E082 Aastveit et al. 2020 (median metro 1.75 in 2012-17), the larger metro-wide response. E059/E060 Burge & Ihlanfeldt 2006 find non-water/sewer fees can raise building (fees buy approvals and infrastructure): that sign is handled by the revenue-replaced toggle in scenarios/fees.py, not by a negative elasticity here. See D-010."
   notes: "These are supply elasticities with respect to price, not cost. Conversion: for the project at the margin of feasibility, price is about equal to total development cost (land included), so a cut of (1 - lambda) x fee reaching builders acts like a price rise of (1 - lambda) x fee / TDC. Hence %change permits = elasticity x (1 - lambda) x fee change / TDC (fees causal diagram). Using TDC rather than price slightly overstates the effect where projects earn above-normal profit. Range check (illustrative TDC $350k, so the $25k cut is ~7%): central 0.3 x 0.5 x 7% ~ +1%; high 1.75 x 0.75 x 7% ~ +9%, inside the V6 pass band (0 to +12% single-family)."
+
+fee_ramp_half_years:
+  value: 1.0
+  low: 0.5
+  high: 2.0
+  unit: years after the cut until half the response shows in permits
+  source: "Judgment (D-026): a cut applies to permits pulled after it takes effect, but projects already in design were priced at the old fee and new projects need design and approval first (proforma.yaml construction_years_irc covers building, not this pre-permit lag). Same logistic form as the ADU ramp (hazard.ramp)."
+  notes: "ramp(t) = 1 / (1 + exp(-(t - half) / slope)); by hand, half 1, slope 0.5: t = 1 -> 0.5, t = 2 -> 0.88, t = 5 -> 0.9997."
+
+fee_ramp_slope_years:
+  value: 0.5
+  low: 0.25
+  high: 1.0
+  unit: years
+  source: "Judgment (D-026): the response goes from ~12% to ~88% of its full size within about 2 years of the half point"
+
+fee_feasibility_min_lots:
+  value: 20
+  low: 20
+  high: 20
+  unit: lots feasible before the cut
+  source: "Choice (D-027): the feasibility channel divides lots feasible after the cut by lots feasible before; with fewer than this many feasible before, the ratio is too noisy, so the place uses the elasticity route"
+
+fee_new_home_years:
+  value: 7
+  low: 7
+  high: 7
+  unit: years before the origin
+  source: "Choice (D-027): a place's new-home value is the median assessed value per sq ft of detached homes built in the last 7 years, times the single-family prototype's size; long enough to find homes in slow-building places"
+
+fee_simulation_draws:
+  value: 1000
+  low: 500
+  high: 5000
+  unit: draws
+  source: "Choice: same as adu_simulation_draws"
+
+fee_simulation_seed:
+  value: 20261021
+  low: 0
+  high: 4294967295
+  unit: random seed
+  source: "Choice: a fixed seed makes every run reproducible"

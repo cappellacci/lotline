@@ -590,3 +590,40 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   and cohorts (e.g. one post-adoption effect, or k = 0–1, 2–3, 4+), report the D-023 robustness estimators
   (negative binomial with place random effects, which keeps places with zeros; the Borusyak imputation
   estimator) as primary, or widen the panel (more places with dated rules, earlier ADU-flag years).
+
+### D-026 · 2026-10-20 · Proposed: fee scenario mechanics (`scenarios/fees.py`, thread 02)
+- **Fee level:** `local` mode uses each place's coded single-family fee per unit from `config/fees`. That is the
+  SFD and OTHER rows, each component at its newest year with a per-unit amount, summed. `handbook` mode uses the
+  Rules' $50,000 everywhere. Both are reported. The cut is 50% of the level; builders keep (1 − λ) of it.
+- **Channels:** (a) feasibility where parcel data give candidate lots (vacant residential land values) and a
+  new-home value; %Δ permits = lots feasible after the cut / lots feasible before − 1 (permits scale with
+  feasible lots). (b) Elasticity everywhere else (D-010): %Δ = ε × saving / TDC, with TDC = the place's ACS
+  median home value. That is an existing-home price used as the price of a home at the margin of feasibility,
+  which tends to understate TDC and so overstate the effect.
+- **Ramp:** the response phases in with the logistic ramp, half 1 year (0.5–2) and slope 0.5 (0.25–1), both
+  judgment. Projects in design when the cut lands were priced at the old fee.
+- **Baseline:** added units = the baseline model's mean units a year × %Δ × ramp. In the development run the
+  baseline covers all four BPS size classes, while the dose comes from the single-family prototype. That is a
+  v1 simplification: per-unit fees and TDC differ for 2–4 and 5+ unit buildings. The range comes from the
+  scenario's parameters, not from the baseline's draws.
+- **No revenue toggle yet:** the "revenue not replaced" offset (fees causal diagram, C51) has no sourced size.
+  It stays open.
+- **Decided by:** proposed by thread 02 in the fee-scenario PR; for Ben to confirm.
+
+### D-027 · 2026-10-20 · Proposed: feasibility-channel inputs from parcel rolls
+- Candidate lots are VACANT_RESIDENTIAL parcels with a land value in the newest roll ≤ origin + 1.
+- New-home value is the median (land + building value) per sq ft of detached homes built in the last 7 years,
+  × 2,150 sq ft. These are assessed values in the roll's own dollars, taken as 2025 dollars.
+- A place uses the channel only when at least 20 lots were feasible before the cut, so the ratio is not noise.
+- In the MN development run only Minneapolis qualifies. Dakota and Anoka County rolls code no vacant
+  residential parcels, and several places lack year built or building sq ft.
+- **Decided by:** proposed by thread 02; for Ben to confirm.
+
+### D-028 · 2026-10-20 · Proposed: when a coded local fee is complete enough to use
+- A place's coded fee is used only if it includes a water/sewer fee. Utility fees are usually the largest
+  component and the one most often missing (fees causal diagram §2). Otherwise the place takes the national
+  prior ($50k).
+- Batch 1 consequences: Minneapolis (no SAC coded) and Austin (one $335 item) take the prior. That jumps
+  from too low to too high, so the output lists `fee_source` and `fee_components` for every place.
+- **Decided by:** proposed by thread 02; for Ben to confirm. An alternative is a component-wise prior
+  (fill only the missing components).
