@@ -35,6 +35,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.build import eligible
 from lotline.config import CONFIG_DIR, Parameter, load_params
 from lotline.model import baseline, demand
 
@@ -272,7 +273,9 @@ def main(argv: list[str] | None = None) -> None:  # pragma: no cover - real-data
     ap = argparse.ArgumentParser(description="V1 baseline backtest on processed (holdout-filtered) data")
     ap.add_argument("--state", nargs="+", required=True)
     ap.add_argument("--theme", default="adu", help="eligible-parcel theme used as the denominator")
-    ap.add_argument("--rule-version", default="1.0")
+    ap.add_argument(
+        "--rule-version", default=eligible.RULE_VERSION, help="eligibility rule (default: current)"
+    )
     ap.add_argument("--group", default="county_geoid", help="shrinkage group column, or 'state'")
     ap.add_argument("--totals", action="store_true", help="score totals incl. imputation, not reported units")
     ap.add_argument("--out", type=Path, help="write the long results table here (CSV)")
