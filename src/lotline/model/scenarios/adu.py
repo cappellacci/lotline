@@ -371,8 +371,8 @@ def current_rules(
     - **Coverage** (D-021): `coverage[reform_id]` (else judged from the rule's text) moves the uncovered share
       of eligible lots to 'none'.
     Several rows in force (local and state law): the most permissive type (highest c at central values)
-    counts. `rule_class` is 'none', 'partial', 'handbook', 'uncertain' (mixed) or 'unknown'; `p_partial` is
-    the owner + other + both share.
+    counts. `rule_class` describes the rules' own conditions, before coverage: 'none', 'partial', 'handbook',
+    'uncertain' (blank fields) or 'unknown'; the p_* include coverage; `p_partial` = owner + other + both.
     """
     live, adu = _live(reforms, as_of)
     scheduled = adu[adu["effective_date"] > as_of]
@@ -394,15 +394,17 @@ def current_rules(
             }
             out |= {c: np.nan for c in P_COLS}
         else:
-            vectors, best = [], None
+            vectors, raw, best = [], [], None
             for _, row in rows.iterrows():
                 rubric = with_parking(_resolved(adu, row["reform_id"]), reforms, geoid, as_of)
                 cov = 1.0
                 if _no_adus(rubric):
                     v, note, unknown = np.eye(len(TYPES))[0], f"no ADUs allowed ({row['reform_id']})", []
+                    v_raw = v
                 else:
                     failed, unknown = restriction_fields(rubric, min_sqft)
                     v = type_distribution(failed, unknown, fp)
+                    v_raw = v.copy()
                     labels = [LABELS[f](min_sqft) for f in failed]
                     note = ("partial: " + "; ".join(labels)) if failed else "Handbook-equivalent"
                     if unknown:
@@ -413,13 +415,14 @@ def current_rules(
                     if cov < 1:
                         v = apply_coverage(v, cov)
                         note += f"; covers {cov:.0%} of eligible lots"
+                raw.append(v_raw)
                 vectors.append(v)
                 rank = float(v @ cvals)
                 if best is None or rank > best[0]:
                     best = (rank, row, unknown, note, cov)
             p = _combine_max(vectors, cvals)
             _, row, unknown, note, cov = best
-            cls = _class(p)
+            cls = _class(_combine_max(raw, cvals))  # the rules' own conditions; coverage is reported apart
             out = {
                 "rule_class": cls,
                 "rule_id": row["reform_id"],

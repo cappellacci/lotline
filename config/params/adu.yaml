@@ -18,12 +18,12 @@ adu_partial_rule_share:
   notes: "A rule failing both owner occupancy and another condition gets m_o x m_x. Estimated in D-019 fit 3 only if the data identify it."
 
 adu_owner_occupancy_share:
-  value: 0.5
-  low: 0.2
+  value: 1.0
+  low: 0.9
   high: 1.0
   unit: share of Handbook uptake reached when owner occupancy is the only restriction (m_o)
-  source: "Judgment (D-019 fit 3, set before the fit). Owner-occupancy rules bar investor-built ADUs, but most ADUs are built by owner-occupants (Portland 62% cash, C22; E045), so the loss is smaller than for parking or discretionary review; Minneapolis built ~30 ADUs a year under its owner rule 2016-20 and fewer after dropping it. Range to 1 (no effect)"
-  notes: "Estimated in D-019 fit 3 only if the data identify it (90% profile interval narrower than this range)."
+  source: "Estimated, D-019 fit 3 (pre-registered): profile maximum 1.0, 90% profile interval 0.9-1.0 (grid 0.1-1.0), narrower than the judgment range 0.2-1.0, so estimated. Minneapolis built more ADUs under its owner-occupancy rule (2016-20) than after dropping it. Judgment before the fit: 0.5"
+  notes: "Owner-occupancy rules show no measurable effect on permitted ADUs in these places (most ADUs are built by owner-occupants: Portland 62% cash, C22, E045)."
 
 adu_observed_first_year:
   value: 2019

@@ -8,12 +8,12 @@
 # ---- The evidence anchor ----
 
 adu_mature_hazard_ref:
-  value: 0.000790
-  low: 0.000526
-  high: 0.001255
+  value: 0.001038
+  low: 0.000453
+  high: 0.003173
   unit: ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate
-  source: "Estimated, D-019 fit 2 (pre-registered; blank rule fields integrated as a mixture, D-022), scripts/dev/calibrate_adu.py: negative-binomial maximum likelihood over 115 place-years (Minneapolis, Austin 2016-23 and 14 Twin Cities suburbs with coded ADU rules; 2,799 ADU permits), 90% profile-likelihood interval; Raleigh 2021-25 held out as the test. Fit 1 (D-019): 0.000467 (0.000275-0.000868). Research band: 4 per 1,000, Portland (E046, E047)"
-  notes: "About 0.20 of Portland's 4 per 1,000 (D-019 explains the gap). Overdispersion is large (alpha 7.5): Austin builds ~8x and Minneapolis ~1.4x the fitted mean while most suburbs build far less. Re-run the script when more rules are coded or Durham's denominator is rebuilt; no code change needed."
+  source: "Estimated, D-019 fit 3 (pre-registered: graded rule shares, gamma place effects, blank fields integrated per place, rule coverage), scripts/dev/calibrate_adu.py: Poisson-gamma maximum likelihood over 16 places, 115 place-years (Minneapolis, Austin 2016-23, 14 Twin Cities suburbs; 2,799 ADU permits), 90% profile-likelihood interval; Raleigh and Durham 2021-25 held out as the test. Earlier fits: 0.000467 (fit 1), 0.000790 (fit 2). Research band: 4 per 1,000, Portland (E046, E047)"
+  notes: "About 0.26 of Portland's 4 per 1,000 (D-019 explains the gap). This is the anchor for a typical place; each place's own multiplier varies widely (adu_place_effect_variance). Re-run the script as more rules are coded; no code change needed."
 
 adu_ref_rent_usd:
   value: 1573
@@ -147,9 +147,9 @@ adu_extrapolation_widening:
   source: "Judgment. Statistical protocol §5.5 step 3 and two-prong design: don't extrapolate silently; flag and widen. At 1.0, a place with rent 40% below the reference range (log distance 0.5) gets an extra log-sd of 0.5 (P10-P90 about x0.5 to x1.9)"
 
 adu_place_effect_variance:
-  value: 0.5
-  low: 0.5
-  high: 0.5
+  value: 4.735
+  low: 4.735
+  high: 4.735
   unit: variance of a place's multiplier on the ADU hazard (gamma, mean 1)
-  source: "Placeholder until D-019 fit 3 is run (the fit's alpha replaces it): places differ in ADU uptake far beyond rent, value and rates (fit 2's per-year overdispersion was 7.5)"
-  notes: "Each simulation draw gives each place its own multiplier; it widens place ranges and, because places are independent, much less the state totals."
+  source: "Estimated, D-019 fit 3 (alpha): fitted place multipliers range from ~0 (Eagan, Lakeville, St. Louis Park) to ~11 (Austin)"
+  notes: "Each simulation draw gives each place its own multiplier, so a single place's range is very wide (its median is far below its mean); state totals, summed over many independent places, are much tighter. Fixed at the estimate (its uncertainty is not propagated)."

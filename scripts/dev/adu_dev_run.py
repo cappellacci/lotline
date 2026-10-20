@@ -32,11 +32,15 @@ def main() -> None:
     a = ap.parse_args()
     store = DataStore()
     minimum = load_params("aggregate")["min_eligible_parcels_publish"].value
-    frames = []
+    frames, summaries, yearlies = [], [], []
     for state in a.state:
         places = adu.places_from_store(state, store, a.origin)
         missing = places[["rent", "home_value"]].isna().any(axis=1)
-        _, totals = adu.run(places[~missing].reset_index(drop=True), a.origin)
+        yearly, totals, summary = adu.run(
+            places[~missing].reset_index(drop=True), a.origin, summary_by="state"
+        )
+        summaries.append(summary)
+        yearlies.append(yearly.assign(state=state))
         totals["state"] = state
         frames.append(totals)
         shown = totals[totals["eligible_parcels"] >= minimum]
@@ -61,6 +65,16 @@ def main() -> None:
             f"{shown['additional_homes_mean'].sum():,.0f} on {shown['eligible_parcels'].sum():,.0f} parcels"
         )
     allp = pd.concat(frames, ignore_index=True)
+    summ = pd.concat(summaries, ignore_index=True)
+    print("\nState totals: sum of draws over non-overlapping places (P10 / P50 / P90, mean)")
+    for outcome in ("adu_permits_added", "additional_homes"):
+        print(f"  {outcome}")
+        for state, g in summ[summ["outcome"] == outcome].groupby("state"):
+            cells = "; ".join(
+                f"{r.period} {r.p10:,.0f}/{r.p50:,.0f}/{r.p90:,.0f} ({r['mean']:,.0f})"
+                for _, r in g.iterrows()
+            )
+            print(f"    {state}: {cells}")
     named = allp[allp["geoid"].isin(NAMED)]
     print("\nNamed places, five-year totals (development run, origin", a.origin, ")")
     for _, r in named.iterrows():
@@ -84,6 +98,10 @@ def main() -> None:
             )
     if a.out:
         allp.to_csv(a.out, index=False)
+        summ.to_csv(a.out.with_name(a.out.stem + "_state.csv"), index=False)
+        pd.concat(yearlies, ignore_index=True).to_csv(
+            a.out.with_name(a.out.stem + "_yearly.csv"), index=False
+        )
 
 
 if __name__ == "__main__":

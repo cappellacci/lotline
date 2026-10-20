@@ -388,4 +388,5 @@ def test_state_summary_sums_draws_over_places():
     y1 = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2026")].iloc[0]
     assert y1["mean"] == pytest.approx(yearly.loc[yearly["year"] == 2026, "additional_homes_mean"].sum())
     assert five["p10"] <= five["p50"] <= five["p90"]
-    assert five["p90"] < totals["additional_homes_p90"].sum() + 1e-9  # sum of draws, not sum of percentiles
+    # percentiles of the summed draws, not sums of the places' percentiles (either can be larger)
+    assert five["p90"] != pytest.approx(totals["additional_homes_p90"].sum())
