@@ -724,3 +724,60 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Every treated place has all four modifiers. ADU rules are coded for 102 of the 560 places.
 - **Decided by:** Ben, 2026-10-20, as proposed (including the `mm.yaml` choices: the 10,000-person floor and
   the 1/3 permit grade), before any estimate was run.
+
+### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
+- **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
+  ADU, 143 of 760 place-years kept, no modifier identified, the bootstrap tripped the guard; D-023 notes).
+  Ben approved options 1 and 2 together (2026-10-20): pool the event-time effects and make the protocol's
+  pooled model (§5.7) the main model. Written and pushed before any run of it on real data.
+- **Main model (`src/lotline/model/pooled_adu.py`):**
+
+  y_it ~ NegBin(mean μ_it, variance μ + κμ²),
+  μ_it = Eligible_it · exp( a + u_i + γ_t + Σ_b β_b · D_it · 1[t − T_i ∈ band b] + Σ_m θ_m · z_im · 1[t ≥ T_i]
+                            + ρ · (r_t − r̄) · 1[t ≥ T_i] + δ · MM_it ),  u_i ~ Normal(0, σ²)
+
+  - bands b: event time k = 0–1, 2–3, 4+; D_it as in D-023 (grade × coverage, blanks per D-022);
+  - u_i: place random effects (partial pooling: places with no ADU stay in, shrunk to the mean);
+    γ_t: year fixed effects (first year 0); log(eligible parcels) offset;
+  - z_im: the D-023 pre-adoption modifiers as z-scores over the treated places (θ per SD); places adopting
+    before 2010 don't inform them (Ben, D-023 run choices); modifiers stay in and are flagged **weakly
+    identified** when their 90% interval spans more than 1 on the log scale; never dropped silently;
+  - r̄: the panel's mean rate.
+- **Estimation:** maximum marginal likelihood; each place's integral over u_i by adaptive Gauss-Hermite
+  quadrature with 31 nodes (15 proved too few for skewed places against brute-force integration in
+  development); BFGS with analytic scores (posterior-weighted quadrature sums; checked against numerical
+  derivatives); log σ and log κ mapped through tanh to stay within ±6 and ±8, and a variance parameter at its
+  limit (no place heterogeneity, or Poisson counts) is held there and reported.
+- **Separation and identification:** columns with no non-zero value, or whose non-zero rows all have zero
+  counts, are dropped and reported; the iterated rectifier (Correia, Guimarães & Zylkin 2019) on the fixed
+  design drops any separated rows; columns that become collinear are then dropped, intercept first; all
+  reported. The fit fails loudly (`EstimationError`) if BFGS doesn't converge, a coefficient other than the
+  intercept leaves ±20, the Hessian (free parameters) is not negative definite, or an SE is effectively 0.
+- **Inference:** wild cluster score bootstrap by place, 999 draws, Webb weights (one Newton step from the
+  estimate with the analytic place scores); basic bootstrap 90% intervals. **Overall effect** = the band
+  effects averaged with weights equal to the treated place-years in each band. Randomization inference: 999
+  permutations of adoption years among treated places, re-fitting the model; statistic = the overall effect.
+- **Checks (D-023, same pass rules, applied to this model):** pre-trend leads k = −3…−1 jointly zero (Wald
+  with the bootstrap covariance, pass p ≥ 0.10); placebo adoption 2 years early on pre-adoption data
+  (overall effect's 90% interval contains 0); placebo outcome, permits in 5+ unit buildings (same); excluding
+  2020–21 (band effects and overall effect inside the main 90% intervals); leaving out each treated place
+  (overall effect inside the main 90% interval).
+- **Robustness (reported, not used to choose):** D-023's fixed-effects PPML with the pooled bands (reported
+  as "did not estimate" with the guard's message if it fails); the Borusyak-Jaravel-Spiess imputation
+  estimator for counts (PPML with place and year effects on untreated place-years, imputed untreated means for
+  treated place-years, effect per band = log Σy / Σμ̂0; place-cluster pairs bootstrap, 999 draws); the main
+  model with a binary by-right dose.
+- **Transport test (D-023 rule):** Austin 2016–2023, Raleigh 2021–2025, Durham 2019–2025, predicted with
+  this model's bootstrap draws and year effects, each place's own pre-adoption modifiers, its random effect
+  from its pre-adoption years (posterior mode and curvature, a normal draw) when it has permits then, else
+  u ~ Normal(0, σ²), negative-binomial counts; widened outside the Minnesota modifier range (as D-023). Passes
+  if each place's observed total lies in its 80% interval and yearly 80% coverage is 60–95%. Raises on
+  non-finite or absurd (> 5% of eligible parcels a year) means.
+- **Sample, holdouts, exclusions:** as D-023 (Twin Cities places with Met Council permits, 2016–2025; St.
+  Paul out entirely; Charlotte from 2023-06 never used; places with no dated ADU rule left out and counted).
+- **Simulation properties (development, before any real run):** on synthetic panels with ~70% all-zero
+  places and ~50–130 ADU permits, band effects, θ, ρ and δ were covered by their 90% intervals in at least
+  22 of 30 panels each; with no reform effect and a −0.7 common shock from 2022, the overall effect's 90%
+  interval contained 0 in 87–97% of 70 panels, with a small negative lean (~−0.15, a third of its spread).
+- **Run once;** whatever it shows is reported. No re-specification without a new dated entry.
+- **Decided by:** Ben, 2026-10-20 (options 1 and 2); details written by WS-ENGINE before the run.
