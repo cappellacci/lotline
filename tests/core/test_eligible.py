@@ -361,3 +361,22 @@ def test_overlapping_parcel_sources_are_never_double_counted():
     kept = eligible.single_source(both, {"2743000": "city_assessor", "*": "t"})
     assert len(kept) == len(a) and set(kept["source"]) == {"city_assessor"}
     assert len(eligible.single_source(a, {})) == len(a)  # one source: unchanged
+
+
+def test_rolls_with_mostly_unknown_land_use_fall_back_to_acs():
+    # a roll with no land use can't count eligible parcels: it must not report 0, it must use the ACS fallback
+    good = _parcels()
+    blank = good.assign(jurisdiction_geoid="2706616", land_use_std="UNKNOWN")
+    assert eligible.usable_rolls(pd.concat([good, blank])).tolist() == [True] * len(good) + [False] * len(
+        blank
+    )
+    juris = pd.concat([JURIS, JURIS.assign(geoid="2706616")], ignore_index=True)
+    rows = eligible.from_parcels(pd.concat([good, blank], ignore_index=True), juris)
+    assert set(rows["jurisdiction_geoid"]) == {"2743000"}
+    acs = rows.assign(
+        jurisdiction_geoid="2706616", denominator_source="acs_sf_fallback", denominator_quality="low"
+    )
+    combined = eligible.combine(rows, acs)
+    assert set(combined.loc[combined.jurisdiction_geoid == "2706616", "denominator_source"]) == {
+        "acs_sf_fallback"
+    }
