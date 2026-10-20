@@ -1,0 +1,386 @@
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: overflow encountered in multiply
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/Users/bencappellacci/Engineering/lotline/src/lotline/model/estimate_adu.py:309: RuntimeWarning: overflow encountered in exp
+  mu0 = np.exp(eta)
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:603: RuntimeWarning: invalid value encountered in scalar divide
+  avg = avg_as_array = np.multiply(a, wgt,
+/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+modifiers set to missing for 2 places adopted before 2010
+             term  estimate     se       low      high  p_two_sided
+      cell_2002_5   68.0003 0.4379   67.3332   68.6871       0.0000
+      cell_2009_5   15.6028 2.0728   12.0095   18.9827       0.0000
+      cell_2015_1  -47.3965 1.2487  -49.4316  -45.3977       0.0000
+      cell_2015_2  -48.8347 0.4714  -49.6189  -48.1137       0.0000
+      cell_2015_3  -14.6070 0.9874  -16.2197  -13.0028       0.0000
+      cell_2015_4  -46.9742 1.1413  -48.7749  -45.1172       0.0000
+      cell_2015_5   -1.0888 2.5746   -5.1400    3.0133       0.7437
+      cell_2016_0  -36.7466 0.0000  -36.7466  -36.7465       0.0000
+      cell_2016_1    0.5664 1.4096   -1.7783    2.8377       0.7017
+      cell_2016_2   -1.0297 0.1949   -1.3510   -0.7193       0.0000
+      cell_2016_3  -36.6500 0.0000  -36.6501  -36.6500       0.0000
+      cell_2016_4   -1.1064 1.4917   -3.5861    1.2632       0.5185
+      cell_2017_0  -49.9091 0.0021  -49.9126  -49.9058       0.0000
+      cell_2017_1  -12.5216 0.0474  -12.5969  -12.4485       0.0000
+      cell_2017_2   -5.9803 1.2465   -7.9039   -4.0370       0.0000
+      cell_2017_3   -9.4202 0.6407  -10.4879   -8.3782       0.0000
+      cell_2017_4   -8.1642 0.8257   -9.5046   -6.8984       0.0000
+      cell_2017_5  -10.0812 0.8196  -11.3688   -8.7249       0.0000
+      cell_2018_0  140.9661 0.8611  139.5884  142.3096       0.0000
+      cell_2018_1   78.0051 0.1281   77.7975   78.2188       0.0000
+      cell_2018_2   75.1771 0.1299   74.9664   75.3940       0.0000
+      cell_2018_3   61.1902 0.1931   60.8757   61.5139       0.0000
+      cell_2018_4  108.0712 1.9582  105.0049  111.2183       0.0000
+      cell_2018_5  109.2896 1.2307  107.4151  111.2296       0.0000
+      cell_2020_0  802.7412 0.0416  802.6802  802.8030       0.0000
+      cell_2020_1  802.8705 0.0416  802.8095  802.9323       0.0000
+      cell_2020_2  803.2679 0.0416  803.2068  803.3297       0.0000
+      cell_2020_3  846.9092 1.2569  844.9644  848.8477       0.0000
+      cell_2020_4  802.9817 0.0529  802.9041  803.0602       0.0000
+      cell_2020_5  803.0600 0.0563  802.9773  803.1437       0.0000
+      cell_2022_0  -81.4766 2.3634  -85.2758  -77.4714       0.0000
+      cell_2022_1  -81.5770 1.5868  -84.0595  -78.9164       0.0000
+      cell_2022_2 -130.7905 0.0601 -130.8884 -130.6925       0.0000
+      cell_2022_3  -82.2112 1.5132  -84.5469  -79.7372       0.0000
+      cell_2023_0 -144.0308 1.7229 -146.7032 -141.4225       0.0000
+      cell_2023_1 -178.9344 2.0157 -182.0616 -175.6923       0.0000
+      cell_2023_2 -145.3306 1.7180 -148.0219 -142.5684       0.0000
+      cell_2024_0 -186.9511 4.7578 -192.9807 -180.8982       0.0000
+      cell_2024_1 -186.3345 4.7585 -192.3896 -180.3362       0.0000
+        theta_pcr   38.7731 1.5463   36.7219   40.7438       0.0000
+  theta_log_value  207.4593 1.2444  205.7015  209.2872       0.0000
+theta_pre_permits   -9.0097 0.0488   -9.0791   -8.9400       0.0000
+  theta_hh_growth  936.1648 0.3846  935.5628  936.7445       0.0000
+              rho   -0.2165 0.2377   -0.6174    0.1680       0.3834
+            delta  -32.9313 1.9245  -35.9693  -29.9405       0.0000
+           beta_0  -36.7466 0.0000  -36.7466  -36.7465       0.0000
+           beta_1  -44.7577 5.2995  -58.0918  -40.6486       0.0000
+           beta_2  -48.8347 0.4714  -49.6189  -48.1137       0.0000
+           beta_3  -36.6500 0.0000  -36.6501  -36.6500       0.0000
+           beta_4  -41.5408 4.3484  -50.6761  -36.7558       0.0000
+           beta_5   -1.0888 2.5746   -5.1400    3.0133       0.7437
+              att  -46.3384 2.0038  -50.5356  -44.1690       0.0000
+randomization inference: overall effect -46.3384, p = 0.148
+{'check': 'pre-trend leads', 'statistic': 1931.1271047807656, 'p': 0.0, 'pass': False}
+{'check': 'placebo dates (−2 years)', 'estimate': np.float64(-26.440501426741907), 'low': np.float64(-17.784236991763326), 'high': np.float64(337.6969330612698), 'pass': True}
+{'check': 'placebo outcome (5+ units)', 'estimate': np.float64(-815.3367223558589), 'low': np.float64(-815.3367223785351), 'high': np.float64(-815.3367223325936), 'pass': False}
+{'check': 'excluding (2020, 2021)', 'outside': ['beta_0', 'beta_1', 'beta_2', 'beta_3', 'beta_4', 'beta_5', 'att'], 'pass': False}
+{'check': 'leave one treated place out', 'moved': [('2708794', nan), ('2714158', nan), ('2715022', -27.17034643912206), ('2724308', -6.635406203050159), ('2743000', -7.969933161354666), ('2748580', -52.36517630004144), ('2754214', -6.623627577098259)], 'pass': False}
+  place         name  year  observed         mean  p05  p10  p90          p95  outside_range
+4805000  Austin city  2016       234 1.555744e+12  0.0  0.0  1.0 1.972967e+12            0.0
+4805000  Austin city  2017       357 3.938910e+12  0.0  0.0  2.0 5.443513e+12            0.0
+4805000  Austin city  2018       340 3.470000e+02  0.0  0.0  0.0 5.720000e+02            0.0
+4805000  Austin city  2019       375 1.348832e+12  0.0  0.0  1.0 1.824505e+12            0.0
+4805000  Austin city  2020       330 1.443738e+13  0.0  0.0  7.1 1.539698e+13            0.0
+4805000  Austin city  2021       341 1.403039e+13  0.0  0.0  6.0 1.382177e+13            0.0
+4805000  Austin city  2022       325 5.669499e+12  0.0  0.0  4.0 1.195239e+13            0.0
+4805000  Austin city  2023       243 3.491629e+12  0.0  0.0  3.0 1.013925e+13            0.0
+4805000  Austin city total      2545 4.447237e+13  0.0  0.0 24.1 6.069400e+13            0.0
+3755000 Raleigh city  2021        23 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3755000 Raleigh city  2022        55 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3755000 Raleigh city  2023        54 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3755000 Raleigh city  2024        37 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3755000 Raleigh city  2025        61 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3755000 Raleigh city total       230 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3719000  Durham city  2019        18 6.900000e+00  3.0  3.0 11.0 1.200000e+01            0.0
+3719000  Durham city  2020        12 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3719000  Durham city  2021        32 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3719000  Durham city  2022        35 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3719000  Durham city  2023        77 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3719000  Durham city  2024        51 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3719000  Durham city  2025        44 0.000000e+00  0.0  0.0  0.0 0.000000e+00            0.0
+3719000  Durham city total       269 6.900000e+00  3.0  3.0 11.0 1.200000e+01            0.0
+{'totals_inside_80': False, 'yearly_coverage_80': 0.0, 'pass': False}
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline/scripts/dev/estimate_adu.py", line 120, in <module>
+    main()
+  File "/Users/bencappellacci/Engineering/lotline/scripts/dev/estimate_adu.py", line 116, in main
+    smoke(store) if a.smoke else full(store, a.out)
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/scripts/dev/estimate_adu.py", line 103, in full
+    main.to_csv(out, index=False)
+  File "/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 3976, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/pandas/io/formats/format.py", line 1025, in to_csv
+    csv_formatter.save()
+  File "/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/pandas/io/formats/csvs.py", line 251, in save
+    with get_handle(
+         ^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 930, in get_handle
+    handle = open(
+             ^^^^^
+IsADirectoryError: [Errno 21] Is a directory: 'reports/adu-d023'
+uv run python scripts/dev/estimate_adu.py --full --out reports/adu-d023  60.00s user 5.30s system 101% cpu 1:04.36 total

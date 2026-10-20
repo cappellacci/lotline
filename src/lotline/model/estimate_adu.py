@@ -94,6 +94,39 @@ class PPMLFit:
         return out
 
 
+class EstimationError(RuntimeError):
+    """The estimate is not usable (non-convergence, divergence, degenerate standard errors): fail loudly."""
+
+
+ETA_BOUND = 30.0  # |η − offset| above this means a rate of e^30 per parcel: divergence
+COEF_BOUND = 20.0  # |coefficient| above this on the log scale means divergence
+SE_FLOOR = 1e-7  # an SE below SE_FLOOR × max(1, |b|) is effectively zero
+
+
+def relu_separated(Z: np.ndarray, y: np.ndarray, tol: float = 1e-6, max_iter: int = 2000) -> np.ndarray:
+    """Observations separated in the sense of Correia, Guimarães & Zylkin (2019), by their iterated
+    rectifier: find z = Zγ with z = 0 where y > 0 and z >= 0 where y = 0; observations with z > 0 are
+    separated (their MLE is at −∞). Weighted least squares with a large weight on y > 0, the target for y = 0
+    observations replaced each round by max(fitted, 0). Returns a boolean mask of separated observations."""
+    pos = y > 0
+    if pos.all():
+        return np.zeros(len(y), dtype=bool)
+    sw = np.where(pos, 1e3, 1.0)
+    pinv = np.linalg.pinv(Z * sw[:, None])
+    u = np.where(pos, 0.0, 1.0)
+    for _ in range(max_iter):
+        z = Z @ (pinv @ (u * sw))
+        z_pos_ok = np.all(np.abs(z[pos]) <= tol) if pos.any() else True
+        if z_pos_ok and np.all(z[~pos] >= -tol):
+            return (~pos) & (z > tol)
+        new = np.where(pos, 0.0, np.maximum(z, 0.0))
+        if np.max(np.abs(new - u)) < tol * 1e-2:
+            break
+        u = new
+    z = Z @ (pinv @ (u * sw))
+    return (~pos) & (z > 1e-3)
+
+
 def ppml(
     y,
     X,
@@ -103,46 +136,89 @@ def ppml(
     names: Sequence[str],
     tol: float = 1e-10,
     max_iter: int = 200,
+    check: bool = True,
 ) -> PPMLFit:
     """Poisson pseudo-maximum likelihood with place and year fixed effects, by IRLS.
 
-    E[y] = exp(offset + X b + α_place + γ_year). Places with all-zero y are dropped, then regressor columns
-    that are zero on every kept row. By hand (no regressors): one place, two years, y = (2, 6), offset
-    log(1, 1):
-    α = log 2, γ_2 = log 3.
+    E[y] = exp(offset + X b + α_place + γ_year). Before fitting, separation is removed (Correia, Guimarães &
+    Zylkin 2019), repeating until nothing changes: places and years with all-zero outcomes are dropped; any
+    regressor column of one sign whose non-zero rows all have zero outcomes is dropped with those rows (e.g. a
+    cohort × event-time cell with no permits); the iterated-rectifier check (`relu_separated`) drops any
+    remaining separated observations. Regressors collinear with the fixed effects are dropped. Every drop is
+    recorded on the fit. With `check`, the fit fails loudly (`EstimationError`) if IRLS does not converge, if
+    |η − offset| or a coefficient exceeds its bound, or if a coefficient's cluster-robust SE is effectively 0.
+    By hand (no regressors): one place, two years, y = (2, 6), offset 0: α = log 2, γ_2 = log 3.
     """
-    y = np.asarray(y, dtype=float)
-    X = np.asarray(X, dtype=float).reshape(len(y), -1)
-    offset = np.asarray(offset, dtype=float)
-    place = np.asarray(place)
-    year = np.asarray(year)
-    names = list(names)
+    y0 = np.asarray(y, dtype=float)
+    X0 = np.asarray(X, dtype=float).reshape(len(y0), -1)
+    off0 = np.asarray(offset, dtype=float)
+    place0 = np.asarray(place)
+    year0 = np.asarray(year)
+    names_all = list(names)
+    keep = np.ones(len(y0), dtype=bool)
+    cols = np.ones(X0.shape[1], dtype=bool)
+    dropped_columns: list[str] = []
+    separated: list[tuple] = []
 
-    totals = pd.Series(y).groupby(place).transform("sum").to_numpy()
-    keep = totals > 0
-    dropped_places = sorted(set(place[~keep]) - set(place[keep]), key=str)
-    y, X, offset, place, year = y[keep], X[keep], offset[keep], place[keep], year[keep]
-    nonzero = np.abs(X).sum(axis=0) > 0
-    dropped_columns = [n for n, k in zip(names, nonzero, strict=True) if not k]
-    X = X[:, nonzero]
-    names = [n for n, k in zip(names, nonzero, strict=True) if k]
+    def fe_matrix(mask):
+        _, p_idx = np.unique(place0[mask], return_inverse=True)
+        _, y_idx = np.unique(year0[mask], return_inverse=True)
+        P = np.eye(p_idx.max() + 1)[p_idx]
+        Y = np.eye(y_idx.max() + 1)[y_idx][:, 1:]
+        return np.hstack([X0[mask][:, cols], P, Y])
 
+    for _ in range(50):
+        changed = False
+        for groups in (place0, year0):
+            tot = pd.Series(y0[keep]).groupby(groups[keep]).transform("sum").to_numpy()
+            zero = np.zeros(len(y0), dtype=bool)
+            zero[np.where(keep)[0][tot <= 0]] = True
+            if zero.any():
+                keep &= ~zero
+                changed = True
+        for j in np.where(cols)[0]:
+            x = X0[keep, j]
+            nz = x != 0
+            if not nz.any():
+                cols[j] = False
+                dropped_columns.append(f"{names_all[j]} (no variation left)")
+                changed = True
+                continue
+            one_sign = np.all(x[nz] > 0) or np.all(x[nz] < 0)
+            if one_sign and y0[keep][nz].sum() == 0:
+                rows = np.where(keep)[0][nz]
+                separated += [(place0[r], int(year0[r])) for r in rows]
+                keep[rows] = False
+                cols[j] = False
+                dropped_columns.append(f"{names_all[j]} (all-zero outcome: separated)")
+                changed = True
+        if changed:
+            continue
+        sep = relu_separated(fe_matrix(keep), y0[keep])
+        if sep.any():
+            rows = np.where(keep)[0][sep]
+            separated += [(place0[r], int(year0[r])) for r in rows]
+            keep[rows] = False
+            continue
+        break
+    dropped_places = sorted(set(place0[~keep]) - set(place0[keep]), key=str)
+
+    y, offset, place, year = y0[keep], off0[keep], place0[keep], year0[keep]
+    names = [n for n, c in zip(names_all, cols, strict=True) if c]
     places, p_idx = np.unique(place, return_inverse=True)
     years, y_idx = np.unique(year, return_inverse=True)
-    P = np.eye(len(places))[p_idx]
-    Y = np.eye(len(years))[y_idx][:, 1:]
-    Z = np.hstack([X, P, Y])
-    # also drop regressors that are collinear with the fixed effects (e.g. a dose constant within place)
+    Z = np.hstack([X0[keep][:, cols], np.eye(len(places))[p_idx], np.eye(len(years))[y_idx][:, 1:]])
     rank_cols = list(range(len(names)))
     if np.linalg.matrix_rank(Z) < Z.shape[1]:
         rank_cols = _independent_columns(Z, len(names))
     if len(rank_cols) < len(names):
-        dropped_columns += [n for i, n in enumerate(names) if i not in rank_cols]
+        dropped_columns += [
+            f"{n} (collinear with fixed effects)" for i, n in enumerate(names) if i not in rank_cols
+        ]
         keep_cols = list(rank_cols) + list(range(len(names), Z.shape[1]))
         Z = Z[:, keep_cols]
         names = [names[i] for i in rank_cols]
 
-    # start from the place-year mean
     eta = offset + np.log(max(y.mean(), 1e-8) / np.exp(offset).mean())
     mu = np.exp(eta)
     b = np.zeros(Z.shape[1])
@@ -153,21 +229,20 @@ def ppml(
         w = np.sqrt(mu)
         b, *_ = np.linalg.lstsq(Z * w[:, None], z * w, rcond=None)
         eta = offset + Z @ b
-        eta = np.clip(eta, -50, 50)
-        mu = np.exp(eta)
+        if check and np.max(np.abs(eta - offset)) > ETA_BOUND:
+            raise EstimationError(f"PPML diverged: |eta - offset| = {np.max(np.abs(eta - offset)):.1f}")
+        mu = np.exp(np.clip(eta, -700, 700))
         dev = 2 * np.sum(np.where(y > 0, y * np.log(np.where(y > 0, y, 1) / mu), 0.0) - (y - mu))
         if abs(dev_old - dev) <= tol * (abs(dev) + 1):
             converged = True
             break
         dev_old = dev
     k = len(names)
-    alpha = b[k : k + len(places)]
-    gamma = np.r_[0.0, b[k + len(places) :]]
-    return PPMLFit(
+    fit = PPMLFit(
         names,
         b[:k],
-        alpha,
-        gamma,
+        b[k : k + len(places)],
+        np.r_[0.0, b[k + len(places) :]],
         mu,
         keep,
         Z,
@@ -178,6 +253,34 @@ def ppml(
         iterations,
         converged,
     )
+    fit.years = years
+    fit.separated = separated
+    if check:
+        check_fit(fit)
+    return fit
+
+
+def check_fit(fit: PPMLFit) -> None:
+    """Fail loudly if the fit is not usable: no convergence, a coefficient beyond COEF_BOUND, a non-finite
+    value, or a cluster-robust SE effectively 0 (SE < SE_FLOOR × max(1, |b|))."""
+    if not fit.converged:
+        raise EstimationError(f"PPML did not converge in {fit.iterations} iterations")
+    if not np.all(np.isfinite(fit.coef)) or not np.all(np.isfinite(fit.mu)):
+        raise EstimationError("PPML produced non-finite values")
+    big = [(n, c) for n, c in zip(fit.names, fit.coef, strict=True) if abs(c) > COEF_BOUND]
+    if big:
+        raise EstimationError(f"coefficients beyond ±{COEF_BOUND}: {big}")
+    if len(fit.names):
+        H = np.linalg.pinv(fit.hessian)
+        S = fit.cluster_scores("cr0")
+        se = np.sqrt(np.clip(np.diag(H @ (S.T @ S) @ H)[: len(fit.names)], 0, None))
+        tiny = [
+            (n, s_)
+            for n, s_, c in zip(fit.names, se, fit.coef, strict=True)
+            if s_ < SE_FLOOR * max(1, abs(c))
+        ]
+        if tiny:
+            raise EstimationError(f"standard errors effectively zero: {tiny}")
 
 
 def _independent_columns(Z: np.ndarray, n_test: int) -> list[int]:
@@ -227,6 +330,7 @@ def build_design(
     dose (D_it), rate (r_t), mm (MM_it) and the place-level `modifiers` (measured before adoption).
 
     Cohort cells: dose × 1[T = g, t − T = k], k = 0 … K_MAX (K_MAX pools later years); with
+    Modifiers enter as z-scores over the treated places (θ per standard deviation).
     `cohort_cells=False`, one column per k pooled over cohorts. `leads` adds 1[t − T = k] for k < 0
     (unscaled), for the pre-trend check. θ: (X − mean over treated places) × 1[t ≥ T]; ρ: (r − r̄) × 1[t ≥
     T] with
@@ -260,8 +364,8 @@ def build_design(
         names.append(f"lead_{-k}")
     treated_places = panel.loc[~np.isnan(T)].drop_duplicates("place")
     for m in modifiers:
-        centre = float(treated_places[m].mean()) if len(treated_places) else 0.0
-        x = panel[m].to_numpy(dtype=float) - centre
+        centre, scale = modifier_scale(treated_places, m)
+        x = (panel[m].to_numpy(dtype=float) - centre) / scale
         cols.append(np.nan_to_num(x) * post)
         names.append(f"theta_{m}")
     if use_rate:
@@ -274,6 +378,15 @@ def build_design(
         names.append("delta")
     X = np.column_stack(cols) if cols else np.zeros((len(panel), 0))
     return Design(X, names, cells, n_cells)
+
+
+def modifier_scale(treated_places: pd.DataFrame, m: str) -> tuple[float, float]:
+    """(mean, standard deviation) of a modifier over the treated places that have it: modifiers enter as
+    z-scores, so θ is per standard deviation (1 if fewer than two values or no spread)."""
+    v = treated_places[m].dropna().to_numpy(dtype=float)
+    centre = float(v.mean()) if len(v) else 0.0
+    sd = float(v.std(ddof=1)) if len(v) > 1 else 0.0
+    return centre, (sd if sd > 0 else 1.0)
 
 
 @dataclass
@@ -359,6 +472,8 @@ def score_bootstrap(est: Estimate, draws: int = 999, seed: int = 0, adjust: str 
         wts = rng.choice(WEBB, size=S.shape[0])
         b = full + H_inv @ (wts @ S)
         coef = b[:k]
+        if not np.all(np.isfinite(coef)) or np.max(np.abs(coef), initial=0) > COEF_BOUND:
+            raise EstimationError("bootstrap draw diverged (non-finite or beyond the coefficient bound)")
         rows.append({**dict(zip(fit.names, coef, strict=True)), **aggregate(est, coef)})
     return pd.DataFrame(rows)
 
@@ -418,10 +533,7 @@ def randomization_inference(panel: pd.DataFrame, permutations: int = 999, seed: 
         p = panel.copy()
         newT = p["place"].map(perm)
         p["T"] = newT.where(p["place"].isin(places), p["T"])
-        try:
-            out.append(aggregate(estimate(p, **design_kw)).get("att", np.nan))
-        except np.linalg.LinAlgError:
-            out.append(np.nan)
+        out.append(aggregate(estimate(p, **design_kw)).get("att", np.nan))  # EstimationError propagates
     dist = np.array(out, dtype=float)
     dist = dist[~np.isnan(dist)]
     return att, float(np.mean(np.abs(dist) >= abs(att))) if len(dist) else np.nan, dist
@@ -738,7 +850,7 @@ def transport_predict(
     kappa = overdispersion(est_)
     treated = est_.panel[est_.panel["T"].notna()].drop_duplicates("place")
     mods = [n.replace("theta_", "") for n in f.names if n.startswith("theta_")]
-    centre = {m: float(treated[m].mean()) for m in mods}
+    scale = {m: modifier_scale(treated, m) for m in mods}
     rng_mod = {
         m: (float(treated[m].min()), float(treated[m].max()), float(treated[m].std(ddof=1))) for m in mods
     }
@@ -783,10 +895,17 @@ def transport_predict(
                     eta[t] += row.get(f"beta_{k}", 0.0) * d["dose"].iloc[t]
                     for m in mods:
                         x = d[m].iloc[0]
-                        eta[t] += row.get(f"theta_{m}", 0.0) * (0.0 if np.isnan(x) else x - centre[m])
+                        c, sd = scale[m]
+                        eta[t] += row.get(f"theta_{m}", 0.0) * (0.0 if np.isnan(x) else (x - c) / sd)
                     eta[t] += row.get("rho", 0.0) * (d["rate"].iloc[t] - rate_ref)
                 eta[t] += row.get("delta", 0.0) * d["mm"].iloc[t]
             s = widening * dist
+            log_rate = eta - np.log(d["eligible"].to_numpy())
+            if not np.all(np.isfinite(log_rate)) or np.max(log_rate) > np.log(MAX_YEARLY_RATE):
+                raise EstimationError(
+                    f"transport for {place}: predicted ADU rate beyond {MAX_YEARLY_RATE:.0%} of "
+                    "eligible parcels a year (or non-finite)"
+                )
             mu = np.exp(eta + s * rng.standard_normal() - s**2 / 2)
             lam = rng.gamma(1 / kappa, mu * kappa) if kappa > 0 else mu
             sims[i] = rng.poisson(lam)
@@ -826,6 +945,9 @@ def transport_predict(
             }
         )
     return pd.DataFrame(out)
+
+
+MAX_YEARLY_RATE = 0.05  # a mean above 5% of eligible parcels adding an ADU in one year is absurd: fail
 
 
 def transport_verdict(pred: pd.DataFrame) -> dict:

@@ -8,7 +8,9 @@ The panel: every Twin Cities metro place with Met Council residential permits, 2
 places with no dated ADU rule left out and counted). The full run: PPML with place and year fixed effects and
 cohort × event-time effects (`lotline.model.estimate_adu`), the wild cluster score bootstrap (999 draws),
 randomization inference (999 permutations of adoption years), the five checks of D-023, and the transport test
-for Austin (2016-2023), Raleigh (2021-2025) and Durham (2019-2025). Outputs go to --out (CSV) and stdout.
+for Austin (2016-2023), Raleigh (2021-2025) and Durham (2019-2025). --out is a directory: estimates.csv,
+bootstrap_draws.csv, randomization.csv, checks.csv, transport.csv, transport_verdict.csv, dropped.csv and
+panel.csv. A numerical failure raises (EstimationError) before anything is written.
 """
 
 from __future__ import annotations
@@ -61,6 +63,8 @@ def smoke(store) -> None:
 
 
 def full(store, out: Path | None) -> None:
+    """The one pre-registered run. Any numerical failure raises (estimate_adu.EstimationError) before anything
+    is written; on success every table is written to the directory `out` as named CSVs."""
     p = {k: v.value for k, v in load_params("adu").items()}
     draws, perms = int(p["adu_estimation_bootstrap_draws"]), int(p["adu_estimation_permutations"])
     kw = {"modifiers": list(est.MODIFIERS)}
@@ -71,10 +75,17 @@ def full(store, out: Path | None) -> None:
     panel.loc[early, list(est.MODIFIERS)] = float("nan")
     print(f"modifiers set to missing for {panel.loc[early, 'place'].nunique()} places adopted before 2010")
     fit = est.estimate(panel, **kw)
+    f = fit.fit
+    print(
+        f"PPML converged in {f.iterations} iterations; kept {int(f.keep.sum())} of {len(f.keep)} place-years"
+    )
+    print(f"dropped places (no ADU permit in any kept year): {len(f.dropped_places)}")
+    print(f"dropped columns: {f.dropped_columns}")
+    print(f"separated observations dropped: {len(f.separated)}")
     boot = est.score_bootstrap(fit, draws=draws, seed=20261020)
     main = est.summarize(fit, boot)
     print(main.round(4).to_string(index=False))
-    att, p_ri, _ = est.randomization_inference(panel, permutations=perms, seed=20261020, **kw)
+    att, p_ri, ri_dist = est.randomization_inference(panel, permutations=perms, seed=20261020, **kw)
     print(f"randomization inference: overall effect {att:.4f}, p = {p_ri:.3f}")
     checks = [
         est.check_leads(panel, draws=draws, seed=1, **kw),
@@ -98,11 +109,24 @@ def full(store, out: Path | None) -> None:
         window=window,
     )
     print(pred.round(1).to_string(index=False))
-    print(est.transport_verdict(pred))
+    verdict = est.transport_verdict(pred)
+    print(verdict)
     if out:
-        main.to_csv(out, index=False)
-        pred.to_csv(out.with_name(out.stem + "_transport.csv"), index=False)
-        pd.DataFrame(checks).to_csv(out.with_name(out.stem + "_checks.csv"), index=False)
+        out.mkdir(parents=True, exist_ok=True)
+        main.to_csv(out / "estimates.csv", index=False)
+        boot.to_csv(out / "bootstrap_draws.csv", index=False)
+        pd.DataFrame({"att_permuted": ri_dist}).assign(att=att, p=p_ri).to_csv(
+            out / "randomization.csv", index=False
+        )
+        pd.DataFrame(checks).to_csv(out / "checks.csv", index=False)
+        pred.to_csv(out / "transport.csv", index=False)
+        pd.DataFrame([verdict]).to_csv(out / "transport_verdict.csv", index=False)
+        drops = [{"kind": "place", "what": x} for x in f.dropped_places]
+        drops += [{"kind": "column", "what": x} for x in f.dropped_columns]
+        drops += [{"kind": "separated place-year", "what": f"{pl} {yr}"} for pl, yr in f.separated]
+        pd.DataFrame(drops, columns=["kind", "what"]).to_csv(out / "dropped.csv", index=False)
+        panel.to_csv(out / "panel.csv", index=False)
+        print(f"wrote CSVs to {out}/")
 
 
 def main() -> None:

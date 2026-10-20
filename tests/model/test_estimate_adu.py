@@ -75,7 +75,8 @@ def test_ppml_two_by_two_difference_in_differences_by_hand():
     place."""
     y = [2, 4, 3, 12]
     X = np.array([[0], [0], [0], [1]], float)
-    fit = est.ppml(y, X, np.log([10, 10, 20, 20]), ["A", "A", "B", "B"], [1, 2, 1, 2], ["beta"])
+    # saturated: residuals are exactly 0, so the SE is 0 by construction; skip the degenerate-SE check
+    fit = est.ppml(y, X, np.log([10, 10, 20, 20]), ["A", "A", "B", "B"], [1, 2, 1, 2], ["beta"], check=False)
     assert fit.coef_of("beta") == pytest.approx(math.log(2))
     assert fit.mu == pytest.approx(y)
 
@@ -106,9 +107,10 @@ def test_recovers_event_time_effects_theta_rho_and_delta():
         panel = simulate(seed=seed)
         fit = est.estimate(panel, modifiers=["m1"], rate_ref=RATE_MEAN)
         summ = est.summarize(fit, est.score_bootstrap(fit, draws=199, seed=seed)).set_index("term")
-        m_bar = panel.loc[panel["T"].notna()].drop_duplicates("place")["m1"].mean()
-        truth = {f"beta_{k}": b + 0.5 * m_bar for k, b in enumerate(beta)}
-        truth |= {"theta_m1": 0.5, "rho": -0.15, "delta": -0.3}
+        m = panel.loc[panel["T"].notna()].drop_duplicates("place")["m1"]
+        truth = {f"beta_{k}": b + 0.5 * m.mean() for k, b in enumerate(beta)}
+        # modifiers enter as z-scores over treated places, so θ per SD = 0.5 × SD(m1)
+        truth |= {"theta_m1": 0.5 * m.std(ddof=1), "rho": -0.15, "delta": -0.3}
         for term, v in truth.items():
             row = summ.loc[term]
             covered[term] = covered.get(term, 0) + int(row["low"] <= v <= row["high"])
@@ -238,3 +240,71 @@ def test_transport_predictions_cover_held_out_places_from_the_same_process():
     assert verdict["yearly_coverage_80"] >= 0.6
     tot = pred[pred["year"] == "total"]
     assert ((tot["observed"] >= tot["p05"]) & (tot["observed"] <= tot["p95"])).mean() >= 0.8
+
+
+# ---- Separation and numerical guards (D-023 rerun fix) ----
+
+
+def test_relu_finds_separated_observations_by_hand():
+    """y = (0, 0, 1, 1) with an intercept and x = (1, 1, 0, 0): z = x is 0 where y > 0 and positive where
+    y = 0, so observations 1 and 2 are separated. With x = (1, 0, 1, 0) and y = (0, 1, 1, 0) nothing is."""
+    Z = np.column_stack([np.ones(4), [1, 1, 0, 0]])
+    assert est.relu_separated(Z, np.array([0, 0, 1, 1.0])).tolist() == [True, True, False, False]
+    Z2 = np.column_stack([np.ones(4), [1, 0, 1, 0]])
+    assert not est.relu_separated(Z2, np.array([0, 1, 1, 0.0])).any()
+
+
+def test_all_zero_cohort_cells_are_dropped_and_effects_still_recovered():
+    """Cohort 2022 builds nothing in its first four post years (cells all zero): those cells are dropped as
+    separated, PPML converges, and β_1 and θ are still covered by their 90% intervals in at least 15 of 20
+    panels (over 20 other seeds in development θ: mean error 0.001, coverage 95%)."""
+    beta = (0.3, 0.6, 0.9, 1.1, 1.2, 1.25)
+    covered = covered_theta = 0
+    for seed in range(200, 200 + N_SIMS):
+        panel = simulate(seed=seed)
+        zero = (panel["T"] == 2022) & (panel["year"] >= 2022)
+        panel.loc[zero, "y"] = 0
+        fit = est.estimate(panel, modifiers=["m1"])
+        assert any(c.startswith("cell_2022_") and "separated" in c for c in fit.fit.dropped_columns)
+        assert fit.fit.converged and np.max(np.abs(fit.fit.coef)) < est.COEF_BOUND
+        summ = est.summarize(fit, est.score_bootstrap(fit, draws=199, seed=seed)).set_index("term")
+        m_bar = panel.loc[panel["T"].notna()].drop_duplicates("place")["m1"]
+        sd = m_bar.std(ddof=1)
+        truth = beta[1] + 0.5 * m_bar.mean()  # β_1 at the treated mean (θ per SD is 0.5·sd)
+        covered += summ.loc["beta_1", "low"] <= truth <= summ.loc["beta_1", "high"]
+        covered_theta += summ.loc["theta_m1", "low"] <= 0.5 * sd <= summ.loc["theta_m1", "high"]
+    assert covered >= MIN_COVERED and covered_theta >= MIN_COVERED
+
+
+def test_a_separating_modifier_is_caught_and_the_fit_stays_bounded():
+    """Three treated places build nothing after adoption and are the only ones with modifier m2 = 1: their
+    post-adoption observations are separated through a combination of the cells and θ·post (no single column
+    shows it); the iterated rectifier finds them, PPML converges and θ stays bounded."""
+    panel = simulate(seed=21)
+    treated = panel.loc[panel["T"].notna(), "place"].unique()[:3]
+    panel["m2"] = panel["place"].isin(treated).astype(float)
+    post = panel["year"] >= panel["T"]
+    panel.loc[panel["place"].isin(treated) & post, "y"] = 0
+    fit = est.estimate(panel, modifiers=["m1", "m2"])
+    seps = {pl for pl, _ in fit.fit.separated}
+    assert seps >= set(treated)
+    assert fit.fit.converged and np.max(np.abs(fit.fit.coef)) < est.COEF_BOUND
+
+
+def test_diagnostics_fail_loudly():
+    panel = simulate(seed=22)
+    d = est.build_design(panel, modifiers=["m1"])
+    with pytest.raises(est.EstimationError, match="did not converge"):
+        est.ppml(
+            panel["y"], d.X, np.log(panel["eligible"]), panel["place"], panel["year"], d.names, max_iter=1
+        )
+    with pytest.raises(est.EstimationError, match="standard errors effectively zero"):
+        X = np.array([[0], [0], [0], [1]], float)
+        est.ppml([2, 4, 3, 12], X, np.zeros(4), ["A", "A", "B", "B"], [1, 2, 1, 2], ["beta"])
+    fit = est.estimate(panel, modifiers=["m1"])
+    boot = est.score_bootstrap(fit, draws=50, seed=22).assign(
+        beta_0=15.0, beta_1=15.0, beta_2=15.0, beta_3=15.0, beta_4=15.0, beta_5=15.0
+    )
+    target = panel[panel["T"].notna()].head(10).assign(name="X")
+    with pytest.raises(est.EstimationError, match="beyond"):
+        est.transport_predict(fit, boot, target, draws=20, seed=1)
