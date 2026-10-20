@@ -88,6 +88,24 @@ def quality(assumed_share: float, params: dict[str, Parameter]) -> str:
     return "high"
 
 
+def usable_rolls(parcels: pd.DataFrame, min_known: float | None = None) -> pd.Series:
+    """True for parcels in a jurisdiction-roll whose land use is known often enough to count from.
+
+    A roll with land use known for fewer than `tier2_min_land_use_share` of its parcels (the tier 2 threshold,
+    D-016; config/params/tiers.yaml) would undercount: parcels of UNKNOWN use are never eligible. Such
+    jurisdiction-rolls are left out, so the ACS fallback is used for them (Summit County, Ohio, sends no land
+    use at all: Akron would otherwise have 0 eligible parcels).
+    """
+    if min_known is None:
+        min_known = load_params("tiers")["tier2_min_land_use_share"].value
+    known = (
+        (parcels["land_use_std"] != "UNKNOWN")
+        .groupby([parcels["jurisdiction_geoid"], parcels["vintage"]])
+        .transform("mean")
+    )
+    return known >= min_known
+
+
 def from_parcels(
     parcels: pd.DataFrame,
     jurisdictions: pd.DataFrame,
@@ -97,6 +115,7 @@ def from_parcels(
     """Count eligible parcels per jurisdiction, roll vintage and theme -> the `eligible_parcels` table."""
     p = params or load_params("eligibility")
     tiers = jurisdictions.set_index("geoid")["data_tier"]
+    parcels = parcels[usable_rolls(parcels)]  # the rest fall back to the ACS denominator (combine)
     rows = []
     for theme in themes:
         flags = classify(parcels, theme, p)
