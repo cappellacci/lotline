@@ -66,3 +66,15 @@ sources:
       vacant rule and data tier per county in nc_land_use_counties.csv.
       Current roll only, so every Charlotte (3712000) and unincorporated Mecklenburg (37119, D-012) parcel is
       held out by the snapshot rule; the Mecklenburg towns stay.
+  - name: wake_realestate
+    url: https://www.wake.gov/departments-government/tax-administration/data-files-statistics-and-reports/real-estate-property-data-files
+    license: Wake County public records (no license stated)
+    access: manual
+    cadence: one-off (final roll before the 2024 revaluation; the current file is refreshed daily)
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/wake_realestate.py. services.wake.gov/robots.txt disallows all
+      automated access, so Ben downloads Real_Est_Data_Final_Dec2023.xlsx (and, for the record,
+      Qualified_Sales_Past_24Months.xlsx) in a browser from the page above and registers them with
+      `lotline manifest register --source wake_realestate`. 443,785 cards for 427,566 parcels; columns match
+      the county Record Layout (2019-01-14). V2 baseline roll for Raleigh. Only non-personal columns are read.
+      The qualified-sales file is registered but not read (no canonical sales table yet).
