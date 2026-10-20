@@ -48,13 +48,14 @@ class Source:
 
 def _national() -> list[Source]:
     from lotline.adapters.national import acs, bps, fhfa, fred
-    from lotline.build import eligible, jurisdictions
+    from lotline.build import demand, eligible, jurisdictions
 
     return [
         Source("acs", acs, "acs_geo_year", None),
         Source("bps", bps, "bps_place_year", None),
         Source("fhfa", fhfa, "market_geo_year", None),
         Source("fred", fred, "market_geo_year", None),
+        Source("demand", demand, "market_geo_year", None),
         Source("eligible", eligible, "eligible_parcels", None),
         Source("jurisdictions", jurisdictions, "jurisdictions", None),
     ]
@@ -62,9 +63,9 @@ def _national() -> list[Source]:
 
 def documented_only() -> list[ModuleType]:
     """Modules that download data (so need provenance) but aren't run by `lotline fetch` on their own."""
-    from lotline.adapters.national import bps_state, cbsa, decennial, geoparts, tiger_boundaries
+    from lotline.adapters.national import bps_state, cbp, cbsa, decennial, geoparts, tiger_boundaries
 
-    return [bps_state, cbsa, decennial, geoparts, tiger_boundaries]
+    return [bps_state, cbp, cbsa, decennial, geoparts, tiger_boundaries]
 
 
 def check_module(module: ModuleType) -> None:
