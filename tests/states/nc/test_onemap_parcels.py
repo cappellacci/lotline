@@ -208,3 +208,26 @@ def test_county_tiers_follow_the_brief():
     tiers = pd.read_csv(om.COUNTIES_CSV, dtype=str).set_index("county")["data_tier"]
     assert set(tiers) <= {"1", "2", "3"}
     assert tiers["Wake"] == "1" and tiers["Durham"] == "2" and tiers["Cabarrus"] == "3"
+
+
+def test_places_mostly_outside_loaded_counties_are_left_out(monkeypatch):
+    shares = pd.DataFrame(
+        {
+            "place_geoid": ["3711800", "3711800", "3710740", "3710740", "3719000"],
+            "county_geoid": ["37135", "37063", "37183", "37037", "37063"],
+            "share": [0.934, 0.066, 0.972, 0.028, 1.0],
+        }
+    )
+    loaded = {"37063", "37183"}
+    assert om.undercovered(shares, loaded) == {"3711800"}  # Chapel Hill: 6.6% in Durham County
+    from lotline.adapters.national import geoparts
+
+    monkeypatch.setattr(geoparts, "county_shares", lambda fips, places, store, refresh=False: shares)
+    df = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["3711800", "3710740", "3719000", "37063"],
+            "county_geoid": ["37063", "37183", "37063", "37063"],
+        }
+    )
+    kept = om.drop_undercovered(df, "NC", store=None)
+    assert list(kept["jurisdiction_geoid"]) == ["3710740", "3719000", "37063"]
