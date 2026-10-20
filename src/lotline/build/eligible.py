@@ -253,19 +253,21 @@ def single_source(parcels: pd.DataFrame, choice: dict[str, str]) -> pd.DataFrame
     """Keep one parcels source per jurisdiction, so no parcel is counted twice (#147).
 
     `choice` is the state config's `parcel_sources` (GEOID -> source, `"*"` for the rest). Without one, a
-    jurisdiction-roll covered by two sources raises instead of being double-counted.
+    jurisdiction covered by two sources, in the same roll year or in different ones, raises instead of being
+    double-counted or switching source between years (Durham: a 2023 Wake roll holding only its 363 Wake
+    County parcels next to its 2026 OneMap roll, so every origin before 2026 saw 5 eligible parcels).
     """
     if parcels.empty:
         return parcels
     if choice:
         wanted = parcels["jurisdiction_geoid"].astype(str).map(choice).fillna(choice.get("*", ""))
         return parcels[parcels["source"] == wanted]
-    n = parcels.groupby(["jurisdiction_geoid", "vintage"])["source"].nunique()
+    n = parcels.groupby("jurisdiction_geoid")["source"].nunique()
     overlap = n[n > 1]
     if len(overlap):
         sources = sorted(parcels["source"].unique())
         raise ValueError(
-            f"{len(overlap)} jurisdiction-rolls are covered by more than one parcels source ({sources}), "
+            f"{len(overlap)} jurisdictions are covered by more than one parcels source ({sources}), "
             f"e.g. {list(overlap.index[:3])}: set `parcel_sources` in the state config to pick one per "
             "jurisdiction"
         )
