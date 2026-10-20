@@ -1,10 +1,12 @@
 """The ADU hazard: the yearly chance that an eligible single-family parcel adds an ADU (BUILD_PLAN §5;
 two-prong design; statistical protocol §5.5-5.8; causal diagram C22).
 
-The evidence gives one number we can lean on: after a strong ADU reform in a high-cost city, about 2-5 ADU
-permits per 1,000 single-family lots a year at maturity (Portland about 4; adu-study-design.md). The hazard
-**transports** that number to another place through the things that make an ADU worth building there, then
-phases it in after adoption:
+The anchor h_ref is the mature hazard of a typical place at the reference place's (Portland, 2015-19) rent,
+home value and mortgage rate, estimated from Lotline's own post-reform places (D-019 fit 3,
+`scripts/dev/calibrate_adu.py`: about 1.0 per 1,000 eligible parcels a year, 90% interval 0.45-3.2; the
+research band's Portland figure of about 4 per 1,000 is the comparison, not the anchor). The hazard
+**transports** it to another place through the things that make an ADU worth building there, then phases it
+in after adoption:
 
     h(t) = ramp(t) × h_mature
 
@@ -35,7 +37,9 @@ phases it in after adoption:
 places Lotline covers are not. `calibration_distance` measures how far a place's rent, home value and mortgage
 rate lie outside the range the reference cities span (in logs, 0 inside). The model still uses the formula
 there, but `widen` multiplies each draw's hazard by exp(w·d·z − (w·d)²/2), z standard normal, which keeps
-the mean and widens the range the further out the place is (`adu_extrapolation_widening` = w). Places outside
+the mean and widens the range the further out the place is (`adu_extrapolation_widening` = w). z is a
+transport (model) error, so the scenario shares it across places in a draw
+(`scenarios.adu.extrapolation_noise`, `adu_extrapolation_shared_share`, D-027). Places outside
 are flagged in the output: no silent extrapolation (protocol §5.5 step 3).
 
 Every number comes from config/params/hazard.yaml and proforma.yaml; scripts/dev/adu_reference.py recomputes
@@ -191,8 +195,9 @@ def calibration_distance(monthly_rent, home_value, mortgage_rate, params: Mappin
 def widen(hazard, distance, z, params: Mapping[str, float] | None = None):
     """Spread a hazard further the further a place lies outside the calibration range, keeping its mean.
 
-    hazard × exp(s·z − s²/2), s = w × distance, z standard normal (one per draw); capped at 1. Inside the
-    range (distance 0) it returns the hazard unchanged.
+    hazard × exp(s·z − s²/2), s = w × distance, z standard normal (one per draw and place, correlated across
+    places by `scenarios.adu.extrapolation_noise`); capped at 1. Inside the range (distance 0) it returns the
+    hazard unchanged.
     """
     p = central_params() if params is None else params
     s = p["adu_extrapolation_widening"] * np.asarray(distance, dtype=float)

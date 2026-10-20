@@ -728,6 +728,40 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
   - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
 
+### D-027 · 2026-10-20 · ADU scenario: how the uncertainty draws are made
+- **Was (`scenarios/adu.py` `draw_params`, `run`):** every parameter drawn triangular(low, central, high),
+  including the estimated anchor `adu_mature_hazard_ref` (1.038e-3, 90% profile interval 0.453e-3–3.173e-3),
+  whose triangular median is 1.47e-3, 41% above the estimate; the place-effect variance α fixed at 4.735; the
+  extrapolation noise z drawn independently for every place, so it averaged out in state totals; the 2015–25
+  mortgage stress range drawn triangular(2.96, 6.60, 6.81) (mean 5.46%) as if it were a forecast, independently
+  of the cap rate and construction-loan rate; and the judgment parameters drawn independently of an anchor that
+  was fitted at their central values.
+- **Now:**
+  - the anchor and α are lognormal with median at the estimate and log-SD from the 90% interval,
+    (ln high − ln low) / 3.29 (anchor 0.592, the fit's own predictive-check convention; α 0.281 from the fit's
+    observed information, giving 2.98–7.52); their correlation from the observed information (0.004);
+  - each draw shifts log anchor and log α by Σ_j g_j (p_j − central p_j), g_j = d log θ̂ / d p_j from refitting
+    the D-019 fit 3 likelihood with each judgment parameter moved by ±10% of its range
+    (`scripts/dev/calibrate_adu.py --draw-terms` → `config/params/adu_anchor.yaml`; 19 parameters enter the
+    fit, the largest being the partial-rule share, −3.05 per unit, and the ramp half-life, +0.27 per year);
+  - the extrapolation noise is √s · z_draw + √(1 − s) · e_place with `adu_extrapolation_shared_share` s = 1.0
+    (choice: it is a transport-model error; place-to-place differences are already in the fitted place
+    effects); 0.5 is a sensitivity;
+  - the mortgage rate is held at the central 6.60% in the forecast draws; its 2015–25 low and high are run as
+    sensitivities (`scripts/dev/adu_dev_run.py`), so the cap-rate and loan-rate draws no longer mix with a
+    rate scenario.
+- **Effect (development run, origin 2025, five-year additional homes, P10 / P50 / P90):** Minnesota
+  779 / 1,556 / 2,880 → 271 / 845 / 2,623; North Carolina 1,044 / 2,272 / 4,847 → 355 / 1,212 / 4,059; Ohio
+  574 / 1,262 / 2,920 → 133 / 506 / 2,462; Texas 4,074 / 8,211 / 16,607 → 1,334 / 4,417 / 15,515. Rates at
+  2.96% raise every state by about 30%; at 6.81%, under 2%.
+- **Found while doing it, not changed here:** re-running the fit 3 likelihood on today's coded rules gives
+  41 places and 253 place-years (θ̂ 0.000879, α̂ 3.52), not the 16 places and 115 place-years behind the
+  configured 0.001038 and 4.735; the observed-information SE and the slopes come from today's fit set and are
+  applied around the configured values. Refreshing the anchor itself is a separate decision.
+- **Why:** reviewing the ADU ranges (2026-10-20) found them biased upward at the median and too narrow at the
+  state level. Every result must be a range that a reader can trust (Rules; CLAUDE.md).
+- **Decided by:** proposed by Claude Code (ADU draws fix), for Ben to confirm.
+
 ### D-029 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
 - **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline
   engine. In simulation, log forecast error against log(origin level / 5-year mean) had correlation 0.66,

@@ -210,9 +210,10 @@ def test_observed_counts_take_the_larger_source_not_the_sum():
     assert adu.adu_share_of_one_unit(permits, 2020, 2020) == (5, 6)
 
 
-def test_forward_runs_draw_the_rate_path_and_backtests_use_the_given_rate():
-    """No rate given -> each draw uses mortgage_rate_forecast (market.yaml), so the central run equals a run
-    given the central forecast rate; a given (historical) rate is used as is, never replaced."""
+def test_forward_runs_use_the_central_rate_and_backtests_use_the_given_rate():
+    """No rate given -> every draw uses the central mortgage_rate_forecast (market.yaml; its 2015-25 range is
+    a sensitivity, D-027), so a forward run equals a run given the central rate, draw for draw; a given
+    (historical) rate is used as is; a sensitivity at the range's low end changes the result."""
     no_rate = _places().drop(columns="mortgage_rate")
     forecast = _places(mortgage_rate=P["mortgage_rate_forecast"])
     assert adu.central_path(no_rate)["added"] == pytest.approx(adu.central_path(forecast)["added"])
@@ -221,10 +222,102 @@ def test_forward_runs_draw_the_rate_path_and_backtests_use_the_given_rate():
     _, t_hist = adu.run(_places(mortgage_rate=3.0), 2018, draws=300)
     assert t_hist["mortgage_rate_central"].iloc[0] == 3.0
     _, t_fixed = adu.run(forecast, 2025, draws=300)
-    # drawing the rate path changes the result (its width is dominated by place effects since D-019 fit 3)
-    assert t_forward["adu_permits_added_mean"].iloc[0] != pytest.approx(
+    assert t_forward["adu_permits_added_mean"].iloc[0] == pytest.approx(
         t_fixed["adu_permits_added_mean"].iloc[0]
     )
+    low = adu.specs()["mortgage_rate_forecast"].low
+    _, t_low = adu.run(no_rate, 2025, draws=300, params={"mortgage_rate_forecast": low})
+    assert t_low["mortgage_rate_central"].iloc[0] == low
+    assert t_low["adu_permits_added_mean"].iloc[0] != pytest.approx(
+        t_forward["adu_permits_added_mean"].iloc[0]
+    )
+
+
+def _no_slopes(corr: float = 0.0) -> dict:
+    """An adu_anchor.yaml with every slope 0: the anchor draws without the judgment-parameter shift."""
+    out = {"adu_anchor_info_corr": corr}
+    for k in adu.anchor_inputs():
+        out[f"anchor_slope_theta__{k}"] = out[f"anchor_slope_alpha__{k}"] = 0.0
+    return out
+
+
+def test_log_sd_from_the_90_percent_interval_by_hand():
+    """Anchor 90% interval 0.000453-0.003173: (ln 0.003173 − ln 0.000453) / (2 × 1.644854) = 0.5917."""
+    s = adu.specs()["adu_mature_hazard_ref"]
+    assert adu.log_sd(s) == pytest.approx((math.log(0.003173) - math.log(0.000453)) / 3.289708, rel=1e-6)
+    assert adu.log_sd(s) == pytest.approx(0.5917, abs=1e-4)
+
+
+def test_anchor_draws_have_their_median_at_the_estimate():
+    """D-027: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
+    the judgment shift), not triangular(low, central, high), whose median for the anchor is ~1.47e-3, 41%
+    above the estimate 1.038e-3."""
+    spec = adu.specs()
+    sets = adu.draw_params(20_000, 7, _no_slopes())
+    theta = np.array([p["adu_mature_hazard_ref"] for p in sets])
+    alpha = np.array([p["adu_place_effect_variance"] for p in sets])
+    t, a = spec["adu_mature_hazard_ref"], spec["adu_place_effect_variance"]
+    assert np.median(theta) == pytest.approx(t.value, rel=0.02)
+    assert np.std(np.log(theta)) == pytest.approx(adu.log_sd(t), rel=0.03)
+    assert np.median(alpha) == pytest.approx(a.value, rel=0.02)
+    assert np.percentile(theta, 5) == pytest.approx(t.value * math.exp(-1.644854 * adu.log_sd(t)), rel=0.05)
+    old = np.random.default_rng(7).triangular(t.low, t.value, t.high, 20_000)
+    assert np.median(old) > 1.4 * t.value  # the bias D-027 removes
+
+
+def test_anchor_shifts_with_the_judgment_parameters_it_was_fitted_at_by_hand():
+    """With one slope g = −2 on adu_feasibility_dispersion (σ), log θ_d = (the no-slope draw) − 2 (σ_d − 0.5),
+    draw for draw; so a draw with σ = 0.6 has θ e^−0.2 = 0.8187 times the no-slope draw. Every other parameter
+    is drawn identically. Under the configured slopes the median anchor stays within 10% of the estimate."""
+    base = adu.draw_params(500, 3, _no_slopes())
+    anchor = _no_slopes() | {"anchor_slope_theta__adu_feasibility_dispersion": -2.0}
+    shifted = adu.draw_params(500, 3, anchor)
+    for b, s in zip(base, shifted, strict=True):
+        sigma = s["adu_feasibility_dispersion"]
+        assert sigma == b["adu_feasibility_dispersion"]
+        assert s["adu_mature_hazard_ref"] == pytest.approx(
+            b["adu_mature_hazard_ref"] * math.exp(-2.0 * (sigma - 0.5))
+        )
+        assert s["adu_place_effect_variance"] == pytest.approx(b["adu_place_effect_variance"])
+    real = np.array([p["adu_mature_hazard_ref"] for p in adu.draw_params(5_000, 3)])
+    assert np.median(real) == pytest.approx(adu.specs()["adu_mature_hazard_ref"].value, rel=0.10)
+
+
+def test_stress_ranges_are_held_at_central_in_the_draws():
+    """The mortgage-rate stress range and the shared extrapolation-noise share are sensitivities (D-027)."""
+    sets = adu.draw_params(200, 1)
+    for k in adu.SENSITIVITY:
+        assert {p[k] for p in sets} == {adu.specs()[k].value}
+
+
+def test_extrapolation_noise_keeps_each_place_standard_normal_and_shares_by_hand():
+    """share 1: one z per draw (every place equal); share 0.5: correlation 0.5 between places; every column
+    mean 0, SD 1, so `hazard.widen` keeps each place's mean and spread."""
+    z1 = adu.extrapolation_noise(4, 3, 1.0, 0)
+    assert np.all(z1 == z1[:, :1])
+    z = adu.extrapolation_noise(40_000, 2, 0.5, 0)
+    assert z.mean(axis=0) == pytest.approx([0, 0], abs=0.02)
+    assert z.std(axis=0) == pytest.approx([1, 1], abs=0.02)
+    assert np.corrcoef(z.T)[0, 1] == pytest.approx(0.5, abs=0.02)
+
+
+def test_shared_extrapolation_noise_widens_state_intervals():
+    """30 identical places far below the calibration range (rent $700), every other parameter held at its
+    central value and place effects off, so only the extrapolation noise varies: with the noise
+    shared (D-027) the state's P10-P90 of added permits is much wider than with independent noise per place,
+    which averages out over the 30 places; the mean is unchanged (widening keeps the mean)."""
+    places = _places(rent=[700.0] * 30, geoid=[f"P{i}" for i in range(30)]).assign(state="MN")
+    out = {}
+    for share in (0.0, 1.0):
+        fixed = adu.central_params() | {
+            "adu_extrapolation_shared_share": share,
+            "adu_place_effect_variance": 0,
+        }
+        _, _, summ = adu.run(places, 2025, draws=600, summary_by="state", params=fixed)
+        out[share] = summ[(summ["outcome"] == "adu_permits_added") & (summ["period"] == "2026-2030")].iloc[0]
+    width = {k: v["p90"] - v["p10"] for k, v in out.items()}
+    assert width[1.0] > 1.5 * width[0.0]
+    assert out[1.0]["mean"] == pytest.approx(out[0.0]["mean"], rel=0.15)
 
 
 def test_an_explicit_no_adu_row_is_none_and_a_state_law_still_wins():
