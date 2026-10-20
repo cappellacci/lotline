@@ -384,6 +384,38 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - *Reading:* rent, home value and rates explain little of the difference between places; the owner-occupancy
     rule had no measurable effect; Minneapolis's decline after 2020 is not captured (the model rises with the
     ramp and rents). The Portland gap reasons above still apply.
+- **Fit 4 pre-registration (written and pushed before fit 4 was run, 2026-10-20; Ben: fit 3 is not on trend):**
+  - *Unchanged from fit 3:* fit set (Minneapolis 2016–25, the Twin Cities places with coded ADU rules, Austin
+    2016–23), test set (Raleigh and Durham 2021–25), place-year inclusion rule, Poisson counts with a gamma
+    place effect (variance α) shared over a place's years, blank rule fields integrated per place, coverage
+    (D-021), graded shares m_o and m_x, holdouts (St. Paul never; Charlotte never; no held-out row).
+  - *Expected count:* μ_it = θ · u_i · parcels · h_m(θ = 1, β_rate = 0; year t's rent, home value and **real
+    construction cost**) · max_r c(type) · coverage · ramp · exp(−β_rate (r_t − r_ref)) · (1 − s_sub)^MM_it ·
+    exp(Σ_j b_j x_itj).
+  - *Construction cost by year (new):* the pro forma's hard cost per sq ft (2025 level) × the real cost index
+    (PPI residential construction inputs / CPI-U, year t ÷ 2025; `market_geo_year.ppi_resid_inputs`). The
+    reference place (Portland 2015–19) uses its own era's mean index (2015–19), so only cost changes relative
+    to the reference transport.
+  - *Rate effect (new, estimated):* β_rate with each year's actual 30-year rate. It replaces the judgment value
+    if its 90% profile interval is narrower than 0.30; otherwise the judgment value 0.07 (0–0.15) stays.
+  - *Substitution with missing middle (new, C47):* MM_it = 1 when a coded missing-middle rule allowing 2+
+    units in single-family zones is in force by 1 July (`config/reforms/*.csv`, theme missing_middle,
+    `unit_cap` ≥ 2 or blank, `by_right` not False; a blank `by_right` counts with the share of coded
+    missing-middle rows that are by right). Uptake × (1 − s_sub). s_sub is estimated, with a 90% profile
+    interval; it is "identified" only if that interval is narrower than 0.8; otherwise s_sub = 0 in the
+    scenario and the report says so. In the fit set only Minneapolis (3 units from 2020-01-01) has MM_it = 1.
+  - *Covariates for later:* the fit takes a generic table of place-year covariates x_itj with log-linear
+    coefficients b_j, so dated ADU programs (fee waivers, pre-approved plans) and fee histories can enter later
+    under their own pre-registration. None is added in fit 4.
+  - *Diagnostic only (not used for any parameter):* a second fit adds a post-2020 indicator (years ≥ 2021)
+    with coefficient γ, reported with its interval. If γ's interval excludes 0, the report says the trend is
+    still not explained.
+  - *Estimation:* maximum likelihood by coordinate ascent over (log θ, log α, β_rate, s_sub, m_o, m_x);
+    90% profile intervals for θ, β_rate, s_sub, m_o and m_x (others re-maximized at each grid point). m_o and
+    m_x follow fit 3's rule (estimated only if their interval is narrower than their judgment range).
+  - *Test prediction and decision rule:* as fit 3; θ, α, β_rate (if identified), s_sub (if identified), and any
+    identified share replace the configured values whatever the test shows. Forward runs keep 2025's real
+    construction cost (index 1) and draw the rate path as before.
 - **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
 
 ### D-020 · 2026-10-20 · Scenario geography: units that never share a parcel
