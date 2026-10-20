@@ -533,3 +533,32 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **What would change the plan:** if the pre-trend check fails, report it and use HonestDiD bounds; there is no re-specification without a new dated entry. If too few places have dated rules after the adoption-date run, report the estimates as underpowered rather than adding assumptions.
 - **Code:** `src/lotline/model/estimate_adu.py`, tested by recovering known β, θ and ρ from simulated staggered-adoption panels before any real run.
 - **Decided by:** Ben, 2026-10-20.
+- **Implementation notes (2026-10-20, WS-ENGINE; choices the specification leaves open, for Ben to confirm
+  before the real run):**
+  - *Dose values:* the grades are ordered in D-023 but not valued; equal steps are used: permit or conditional
+    use 1/3, by right with owner occupancy 2/3, by right without it 1 (`adu.yaml` `adu_dose_grade_*`), times
+    coverage (D-021). Blank by_right / owner_occ fields enter with their coded shares (D-022), so the dose is
+    an expectation. The binary by-right dose is the robustness check.
+  - *Adoption year T_i:* the first year (from 1990) a rule whose P(by right) ≥ 0.5 is in force on 1 July.
+    Places adopting before 2016 have only late event times in the panel; cohort cells that are constant within
+    a place are collinear with its fixed effect and dropped by the estimator (reported).
+  - *Modifiers (year T_i − 1):* price-to-cost from the pro forma with that year's ACS rent (newest vintage,
+    not before 2010) and real construction cost (`hazard.cost_index_by_year`); log median home value; BPS
+    1-unit permits per 1,000 eligible parcels, mean of T − 3 … T − 1; household growth = log of ACS households
+    (B25003) at T − 1 over T − 6 (vintages from 2015 and 2010 at the earliest). Places adopting before 2010
+    get modifiers measured after adoption; they are listed.
+  - *PPML:* places with no ADU permit in any year are dropped (no finite fixed effect; no information under
+    Poisson fixed effects); regressors collinear with the fixed effects are dropped; both are reported.
+  - *Bootstrap:* the wild cluster score bootstrap uses Webb six-point weights (few clusters) and CR2-adjusted
+    cluster scores; without CR2, standard errors ran ~10–15% low on simulated panels. Intervals are basic
+    bootstrap intervals; the lead test is a Wald test with the bootstrap covariance.
+  - *Randomization inference:* statistic = the overall effect (event-time cells averaged with counterfactual
+    expected permits as weights).
+  - *Transport:* a target place's level α comes from its own pre-adoption years (with its sampling error) when
+    it has permits then, else a draw from the Minnesota places' α; Minnesota year effects; count noise is
+    Poisson-gamma with the panel's overdispersion (moment estimate). Raleigh's panel starts in 2019 and
+    Durham's in 2016 so their pre-adoption years inform α; only D-023's test years are scored.
+  - *Smoke test of the panel (2026-10-20, counts only):* 21 Twin Cities places with dated ADU rules × 2016–2025
+    (164 left out for no dated rule; St. Paul excluded); 12 ever treated (6 adopting in 2016–2025), 9 never
+    treated; 13 places have no ADU permit in any year. With today's coding the estimate would be underpowered;
+    the run waits for the adoption-date research.
