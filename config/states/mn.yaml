@@ -75,3 +75,12 @@ sources:
       place of hennepin_parcels: gis.hennepin.us robots.txt disallows all paths, and Hennepin's Hub download is a
       whole-file export with owner/taxpayer names and no unit count. Owner, taxpayer and address fields never
       requested.
+  - name: ramsey_parcels
+    url: https://gis.ramseycountymn.gov/server/rest/services/Cadastral/CAD_AttributedParcelPoint_ViewOnly/FeatureServer/0
+    license: Public data (Ramsey County GIS open data; no license terms stated, Minn. Stat. ch. 13)
+    access: arcgis
+    cadence: current roll only (property data joined 2026-10-08 at the first fetch); dated snapshot per fetch
+    notes: >-
+      Ramsey parcel points outside St. Paul (server-side filter; V5 snapshot rule leaves no St. Paul rows in a
+      2026 roll). Adds lot frontage (lot_width_ft). Owner, taxpayer, homestead names/addresses and site address
+      never requested. The county firewall rejects "OR ... IS NULL" in a where clause (HTTP 403): two queries.
