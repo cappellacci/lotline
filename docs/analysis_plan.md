@@ -330,6 +330,33 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     an expected count of 0 and are left out, with any observed ADUs there reported.
   - *Parking:* a citywide parking reform with a zero minimum in force by 1 July fills a blank ADU parking
     field (D-022).
+- **Fit 3 pre-registration (written and pushed before fit 3 was run, 2026-10-20; Ben's next specification):**
+  - *Fit set:* Minneapolis, the Twin Cities places with coded ADU rules (St. Paul never), and **Austin
+    2016–2023** (its rules are now coded; 2024–25 excluded as before). Place-years need a coded rule in force
+    by 1 July and permits that flag ADUs that year. *Test set:* Raleigh 2021–25 and Durham 2021–25 if every
+    roll the test uses has 1,000+ ADU-eligible parcels (after the NC rebuild). Never: St. Paul, Charlotte,
+    any held-out row.
+  - *Expected count:* μ_it = θ × u_i × parcels × h_m(θ = 1; that year's rent, value, actual rate) × max over
+    the rules in force of c(type) × coverage × ramp(age at mid-year). Rule types (D-022): Handbook c = 1;
+    owner occupancy only c = m_o; other restrictions (parking, not by right, attached only, cap under 600 sq ft)
+    c = m_x; both c = m_o·m_x. Coverage per D-021 (zones, lot minimum; judgment shares where parcels can't
+    measure it).
+  - *Place effects:* yes. u_i ~ Gamma(mean 1, variance α), shared across a place's years, with counts Poisson
+    given u_i (closed-form marginal likelihood per place). This replaces fit 2's per-year NB, whose large α
+    (7.5) reflected differences between places, not years.
+  - *Blank rubric fields (D-022):* integrated at place level: each place's blank fields restrict or not
+    together over its years, with probabilities from the coded rules (state share if 5+ values, else pooled);
+    the place likelihood is the probability-weighted sum over those combinations.
+  - *Parameters:* θ (log scale), α, m_o, m_x. m_o and m_x on a grid 0.1, 0.2, …, 1.0; each is estimated if its
+    90% profile interval (others profiled) is narrower than its judgment range (m_o 0.2–1.0, m_x 0.1–0.6),
+    else held at its judgment value (m_o 0.5, m_x 0.3). θ's 90% interval: profile likelihood with α and any
+    estimated share profiled out.
+  - *Test prediction:* parametric bootstrap: log θ normal from its interval, a new u per test place, a
+    blank-field combination per place, Poisson counts per year; observed vs median and 90% interval per year
+    and in total.
+  - *Decision rule:* θ, α (as `adu_place_effect_variance`) and any estimated share replace the configured
+    values whatever the test shows; a test total outside its 90% interval is reported as a transport failure,
+    not refitted. The scenario draws a new u per place in each simulation draw from the fitted α.
 - **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
 
 ### D-020 · 2026-10-20 · Scenario geography: units that never share a parcel
