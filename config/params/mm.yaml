@@ -29,3 +29,24 @@ mm_dose_grade_permit:
   high: 0.3333
   unit: share of the by-right dose
   source: "Choice (D-024, approved by Ben 2026-10-20), mirroring D-023's equal steps: a rule that allows 2-4 units only by permit or conditional use counts 1/3 of the same rule by right. The binary by-right dose is D-024's robustness check"
+
+mm_estimation_bootstrap_draws:
+  value: 999
+  low: 999
+  high: 999
+  unit: draws
+  source: "D-024: wild cluster score bootstrap by place, 999 draws (as D-023)"
+
+mm_estimation_permutations:
+  value: 999
+  low: 999
+  high: 999
+  unit: reassignments
+  source: "D-024: randomization inference reassigns the treated places' adoption and dose paths within state and size band, 999 times"
+
+mm_transport_widening:
+  value: 1.0
+  low: 1.0
+  high: 1.0
+  unit: standard deviation of log(predicted mean) per unit log distance outside the fitted modifier range
+  source: "D-024: places outside the fitted modifier range are flagged and their intervals widened as in hazard.widen; same scale as adu_transport_widening (1.0, judgment)"
