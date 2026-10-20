@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.6"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.7"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -326,6 +326,12 @@ class Reforms(_Strict):
     coverage: Series[str]  # plain-language area description
     coverage_zones: Optional[Series[str]] = pa.Field(nullable=True)  # ";"-separated district codes, e.g. "N1"
     source_url: Series[str]
+    # Citation (1.7): the section and a verbatim quote (<= 300 characters) that establish the coded values,
+    # and who independently re-opened the source and confirmed it (the city-ordinance pipeline's checker).
+    source_section: Optional[Series[str]] = pa.Field(nullable=True)
+    source_quote: Optional[Series[str]] = pa.Field(nullable=True, str_length={"max_value": 300})
+    verified_by: Optional[Series[str]] = pa.Field(nullable=True)
+    verified_date: Optional[Series[pd.Timestamp]] = pa.Field(nullable=True)
     coder: Series[str]
     coder_2: Series[str] = pa.Field(nullable=True)
     coder_agreement: Series[str] = pa.Field(isin=CODER_AGREEMENT)
@@ -352,7 +358,13 @@ class Fees(_Strict):
     pct_of_value: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=100)
     dollar_year: Series[pd.Int64Dtype] = pa.Field(ge=1970, le=2100)
     payment_timing: Optional[Series[str]] = pa.Field(nullable=True)  # e.g. "at permit", "at CO" (C54)
-    source: Series[str]
+    source: Series[str]  # the fee schedule's URL (config/fees) or the adapter's source id
+    # Citation (1.7), as in reforms
+    source_section: Optional[Series[str]] = pa.Field(nullable=True)
+    source_quote: Optional[Series[str]] = pa.Field(nullable=True, str_length={"max_value": 300})
+    verified_by: Optional[Series[str]] = pa.Field(nullable=True)
+    verified_date: Optional[Series[pd.Timestamp]] = pa.Field(nullable=True)
+    notes: Optional[Series[str]] = pa.Field(nullable=True)
 
     @pa.dataframe_check
     def one_row_per_key(cls, df: pd.DataFrame) -> bool:
@@ -423,6 +435,11 @@ HISTORY = [
     ),
     ("1.5", "jurisdictions: optional cbsa_code and cbsa_type (OMB 2023 county to metro/micro area)"),
     ("1.6", "jurisdictions: optional in_bps (False for places only a local permit source covers)"),
+    (
+        "1.7",
+        "reforms and fees: optional citation fields (source_section, source_quote, verified_by, "
+        "verified_date); fees: optional notes; hand-coded fees live in config/fees/<st>.csv",
+    ),
 ]
 
 
