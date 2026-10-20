@@ -12,7 +12,28 @@ from lotline.schemas import columns, validate
 
 PATH = CONFIG_DIR / "reforms" / "oh.csv"
 BOOL_COLS = ["by_right", "owner_occ", "adu_detached_allowed", "lot_split"]
-PLACES = {"3915000": "Cincinnati", "3916000": "Cleveland", "3918000": "Columbus"}
+PLACES = {  # Ohio's 20 largest places (2020 census), the ADU rule round of 2026-10-20
+    "3918000": "Columbus",
+    "3916000": "Cleveland",
+    "3915000": "Cincinnati",
+    "3977000": "Toledo",
+    "3901000": "Akron",
+    "3921000": "Dayton",
+    "3961000": "Parma",
+    "3912000": "Canton",
+    "3944856": "Lorain",
+    "3933012": "Hamilton",
+    "3988000": "Youngstown",
+    "3974118": "Springfield",
+    "3940040": "Kettering",
+    "3925256": "Elyria",
+    "3919778": "Cuyahoga Falls",
+    "3949840": "Middletown",
+    "3941664": "Lakewood",
+    "3954040": "Newark",
+    "3925704": "Euclid",
+    "3922694": "Dublin",
+}
 
 
 def _read() -> pd.DataFrame:
@@ -73,3 +94,37 @@ def test_columbus_adu_rubric(reforms):
 def test_single_coder_rows_have_no_second_coder(reforms):
     single = reforms["coder_agreement"] == "single_coder"
     assert reforms.loc[single, "coder_2"].isna().all()
+
+
+def test_no_adu_rows_follow_the_convention(reforms):
+    none = reforms[(reforms["theme"] == "adu") & (reforms["adus_per_lot"] == 0)]
+    assert len(none) >= 8
+    assert (~none["by_right"].astype(bool)).all()
+    assert none["coding_notes"].str.startswith("NO ADU RULE").all()
+
+
+def test_ended_rules_hand_over_to_their_successor(reforms):
+    by_id = reforms.set_index("reform_id")
+    for rid, old in by_id["supersedes"].dropna().items():
+        if pd.notna(by_id.at[old, "end_date"]):
+            assert by_id.at[old, "end_date"] <= by_id.at[rid, "effective_date"], rid
+
+
+@pytest.mark.parametrize(
+    "geoid, as_of, expected",
+    [
+        ("3918000", "2024-12-31", "none"),  # Columbus before Ord. 2526-2025
+        ("3918000", "2026-01-31", "handbook"),
+        ("3915000", "2022-12-31", "none"),
+        ("3915000", "2024-12-31", "partial"),  # owner occupancy
+        ("3916000", "2025-12-31", "none"),
+        ("3921000", "2024-12-31", "partial"),  # conditional use
+        ("3954040", "2025-12-31", "none"),
+        ("3974118", "2025-12-31", "partial"),
+    ],
+)
+def test_scenario_reads_the_rule_class(geoid, as_of, expected):
+    from lotline.model.scenarios import adu
+
+    rules = adu.current_rules(adu.load_reforms("OH"), [geoid], "39", pd.Timestamp(as_of))
+    assert rules.loc[0, "rule_class"] == expected

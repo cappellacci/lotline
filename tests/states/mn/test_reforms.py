@@ -72,7 +72,13 @@ def test_hand_checked_values(reforms):
     # Minneapolis ADUs: 2014 owner-occupied only; 2021 amendment drops it for attached/detached ADUs
     assert bool(r.at["MN-2743000-adu-2014", "owner_occ"])
     assert not bool(r.at["MN-2743000-adu-2021", "owner_occ"])
-    assert r.at["MN-2743000-adu-2021", "supersedes"] == "MN-2743000-adu-2014"
+    assert r.at["MN-2743000-adu-2021", "supersedes"] == "MN-2743000-adu-2016"
+    assert r.at["MN-2743000-adu-2016", "supersedes"] == "MN-2743000-adu-2014"
+    # since 2014: 800 sq ft attached/internal, no ADU parking; owner occupancy ends 2021-03-06
+    assert r.at["MN-2743000-adu-2014", "adu_max_sqft"] == 800
+    assert r.at["MN-2743000-adu-2014", "parking_min_per_unit"] == 0
+    assert r.at["MN-2743000-adu-2021", "effective_date"] == pd.Timestamp("2021-03-06")
+    assert r.at["MN-2743000-adu-2023", "effective_date"] == pd.Timestamp("2023-07-01")
     # 2040 injunction windows end when stayed / lifted
     assert r.at["MN-2743000-moratorium-2022", "end_date"] == pd.Timestamp("2022-07-26")
     assert r.at["MN-2743000-moratorium-2023", "end_date"] == pd.Timestamp("2024-05-13")
@@ -84,6 +90,21 @@ def test_hand_checked_values(reforms):
     # St. Paul ADUs: citywide 2018-10-17; owner occupancy dropped by Ord. 22-1 (effective 2022-03-05)
     assert r.at["MN-2758000-adu-2018", "adoption_date"] == pd.Timestamp("2018-10-17")
     assert r.at["MN-2758000-adu-2022", "effective_date"] == pd.Timestamp("2022-03-05")
+
+
+def test_no_adu_rows_follow_the_convention(reforms):
+    none = reforms[reforms["adus_per_lot"] == 0]
+    assert len(none) == 6
+    assert (none["by_right"] == False).all()  # noqa: E712
+    assert none["coding_notes"].str.startswith("NO ADU RULE").all()
+    assert set(none["jurisdiction_geoid"]) == {
+        "2707966",
+        "2771428",
+        "2740166",
+        "2718116",
+        "2713114",
+        "2759350",
+    }
 
 
 def test_bad_boolean_is_rejected(tmp_path):

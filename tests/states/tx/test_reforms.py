@@ -82,3 +82,59 @@ def test_bad_boolean_is_rejected(tmp_path):
     df.to_csv(bad, index=False)
     with pytest.raises(AssertionError, match="by_right"):
         _read(bad)
+
+
+# The 20 largest Texas places by 2020 population (Census PL 94-171, `jurisdictions.pop_2020`)
+TOP_20 = {
+    "4835000": "Houston",
+    "4865000": "San Antonio",
+    "4819000": "Dallas",
+    "4805000": "Austin",
+    "4827000": "Fort Worth",
+    "4824000": "El Paso",
+    "4804000": "Arlington",
+    "4817000": "Corpus Christi",
+    "4858016": "Plano",
+    "4845000": "Lubbock",
+    "4837000": "Irving",
+    "4841464": "Laredo",
+    "4829000": "Garland",
+    "4827684": "Frisco",
+    "4803000": "Amarillo",
+    "4830464": "Grand Prairie",
+    "4845744": "McKinney",
+    "4810768": "Brownsville",
+    "4839148": "Killeen",
+    "4856000": "Pasadena",
+}
+
+
+# Not coded yet: no ADU source could be opened (official code hosts block automated access); second coder
+PENDING = {"4817000": "Corpus Christi", "4856000": "Pasadena"}
+
+
+def test_every_top_20_place_has_an_adu_rule(reforms):
+    adu = reforms[reforms["theme"] == "adu"]
+    coded = set(adu["jurisdiction_geoid"])
+    missing = {g: n for g, n in TOP_20.items() if g not in coded and g not in PENDING}
+    assert not missing, f"no ADU row (coded rule or explicit 'none'): {missing}"
+    assert not set(PENDING) & coded, "a pending place is now coded: drop it from PENDING"
+
+
+def test_no_adu_rows_are_explicit(reforms):
+    # A place whose code allows no ADU in single-family zones is coded adus_per_lot = 0, not left blank
+    none = reforms[(reforms["theme"] == "adu") & (reforms["adus_per_lot"] == 0)]
+    assert (none["by_right"] == False).all()  # noqa: E712
+    assert none["coding_notes"].str.startswith("NO ADU RULE").all()
+    assert none["source_url"].notna().all()
+
+
+def test_austin_adu_history(reforms):
+    r = reforms.set_index("reform_id")
+    # Ord. 20151119-080: 15% of a 5,750 sq ft lot, one parking space
+    assert r.at["TX-4805000-adu-2015", "adu_max_sqft"] == 862
+    assert r.at["TX-4805000-adu-2015", "parking_min_per_unit"] == 1
+    # parking minimums gone 2023-11-02; HOME phase 1 from 2024-02-05
+    assert r.at["TX-4805000-adu-2023", "supersedes"] == "TX-4805000-adu-2015"
+    assert r.at["TX-4805000-adu-2024", "effective_date"] == pd.Timestamp("2024-02-05")
+    assert r.at["TX-4805000-adu-2024", "supersedes"] == "TX-4805000-adu-2023"
