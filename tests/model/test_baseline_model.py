@@ -102,12 +102,160 @@ def test_direct_variance_counts_a_one_off_year_as_noise():
     That beats the negative-binomial variance, so with use_direct_variance B is treated as noisier."""
     p = TWO.copy()
     p.loc[(p["geoid"] == "B") & (p["year"] == 2020), "units_1"] = 2
-    kw = dict(level_years=2, min_group_places=1, group="state")
+    kw = dict(level_years=2, min_group_places=1, group="state", detrend=False)
     on = baseline.level_estimates(p, "units_1", 2020, use_direct_variance=True, **kw).set_index("geoid")
     off = baseline.level_estimates(p, "units_1", 2020, use_direct_variance=False, **kw).set_index("geoid")
     assert on.loc["B", "v_direct"] == pytest.approx(100.0)
     assert off.loc["B", "v"] < 100.0
     assert on.loc["B", "v"] == pytest.approx(100.0)
+
+
+def test_cycle_index_by_hand():
+    """Docstring example: state totals 10, 20, 30 -> mean 20 -> s = 0.5, 1, 1.5; a year with total 0 -> 1."""
+    p = _panel([("A", "C1", y, u, 1000) for y, u in [(2018, 4), (2019, 8), (2020, 12)]])
+    p = pd.concat([p, _panel([("B", "C1", y, u, 1000) for y, u in [(2018, 6), (2019, 12), (2020, 18)]])])
+    assert baseline.cycle_index(p, "units_1").tolist() == pytest.approx([0.5, 1.0, 1.5] * 2)
+    z = _panel([("A", "C1", 2019, 0, 1000), ("A", "C1", 2020, 6, 1000)])
+    assert baseline.cycle_index(z, "units_1").tolist() == pytest.approx([1.0, 2.0])
+
+
+# A common cycle and nothing else (D-026): A builds 10, 20, 30 and B 20, 40, 60 on 1,000 parcels each.
+# State totals 30, 60, 90 -> s = 0.5, 1, 1.5; detrended, A is 20, 20, 20 and B 40, 40, 40.
+# Raw: A mean 20, variance 100 (excess 80); B mean 40, variance 400 (excess 360) -> 1/k = 440 / 2000 = 0.22,
+#      and A's own variance of rates 100 / 3 years = 33.3. Detrended: no variance left, 1/k = 0, v_direct = 0.
+CYCLE_ONLY = _panel(
+    [("A", "C1", y, u, 1000) for y, u in [(2018, 10), (2019, 20), (2020, 30)]]
+    + [("B", "C1", y, u, 1000) for y, u in [(2018, 20), (2019, 40), (2020, 60)]]
+)
+
+
+def test_dispersion_is_estimated_on_detrended_counts():
+    kw = dict(level_years=3, min_group_places=1, group="state")
+    raw = baseline.level_estimates(CYCLE_ONLY, "units_1", 2020, detrend=False, **kw).set_index("geoid")
+    det = baseline.level_estimates(CYCLE_ONLY, "units_1", 2020, detrend=True, **kw).set_index("geoid")
+    assert raw["inv_k"].iloc[0] == pytest.approx(0.22)
+    assert raw.loc["A", "v_direct"] == pytest.approx(100 / 3)
+    assert det["inv_k"].iloc[0] == 0.0
+    assert det["v_direct"].tolist() == pytest.approx([0.0, 0.0])
+    assert det["direct"].tolist() == raw["direct"].tolist() == pytest.approx([20.0, 40.0])  # level untouched
+
+
+def test_detrending_changes_nothing_without_a_cycle():
+    """Flat state totals (s_t = 1): the detrended estimates equal the raw ones exactly."""
+    p = _panel([("A", "C1", 2019, 3, 100), ("A", "C1", 2020, 7, 100)])
+    p = pd.concat([p, _panel([("B", "C1", 2019, 7, 100), ("B", "C1", 2020, 3, 100)])])
+    kw = dict(level_years=2, min_group_places=1, group="state")
+    raw = baseline.level_estimates(p, "units_1", 2020, detrend=False, **kw)
+    det = baseline.level_estimates(p, "units_1", 2020, detrend=True, **kw)
+    pd.testing.assert_frame_equal(raw, det)
+
+
+def _params(**values):
+    return PARAMS | {k: PARAMS[k].model_copy(update={"value": float(v)}) for k, v in values.items()}
+
+
+# One place, 1,000 parcels, 10 units a year through 2019 and 20 in 2020 (origin), level window 2016-2020:
+# S̄ = (4 · 10 + 20) / 5 = 12, S_T = 20, so the cycle starts at a_s = 20 / 12 = 1.667 and the level, 12 per
+# 1,000 parcels, becomes 20: the forecast mean is 20 units a year, not the window's 12.
+STEP = _panel([("A", "C1", y, 20 if y == 2020 else 10, 1000) for y in range(1992, 2021)])
+
+
+def test_cycle_starts_at_the_origin_year_level():
+    table, draws = baseline.forecast_draws(STEP, "units_1", 2020, group="state", params=PARAMS)
+    assert table["momentum"].tolist() == pytest.approx([20 / 12] * 5)
+    assert table["level"].tolist() == pytest.approx([20.0] * 5)
+    assert draws.mean(axis=1) == pytest.approx(np.full(5, 20.0), rel=0.03)  # the cycle keeps the mean flat
+    old, old_draws = baseline.forecast_draws(
+        STEP, "units_1", 2020, group="state", params=_params(cycle_start_at_origin=0)
+    )
+    assert old["momentum"].tolist() == [1.0] * 5 and old["level"].tolist() == pytest.approx([12.0] * 5)
+    assert old_draws.mean(axis=1) == pytest.approx(np.full(5, 12.0), rel=0.03)
+
+
+def test_state_momentum_replaces_the_cycle_start():
+    """With use_state_momentum (3 recent years: (10 + 10 + 20) / 3 over 12 = 1.111) the start is not
+    applied on top."""
+    table, _ = baseline.forecast_draws(
+        STEP, "units_1", 2020, group="state", params=_params(use_state_momentum=1)
+    )
+    assert table["momentum"].iloc[0] == pytest.approx(40 / 3 / 12)
+
+
+def test_cycle_start_ignores_a_statewide_zero_at_the_origin():
+    """Nothing built anywhere in the origin year: a log random walk can't start at 0, so a_s = 1."""
+    p = _panel([("A", "C1", y, 0 if y == 2020 else 10, 1000) for y in range(1992, 2021)])
+    table, _ = baseline.forecast_draws(p, "units_1", 2020, group="state", params=PARAMS)
+    assert table["momentum"].tolist() == [1.0] * 5
+
+
+def test_size_classes_have_their_own_random_numbers():
+    """D-026: two size classes with identical records and no cycle (flat totals) must not get identical
+    draws. Before, every class restarted default_rng(simulation_seed), so their draws were the same numbers
+    (correlation 1); now each class has its own generator, so the correlation is ~0."""
+    rows = [(f"P{i}", "C1", y, 5 + i, 1000) for i in range(6) for y in range(1992, 2021)]
+    p = _panel(rows).assign(units_5p=lambda d: d["units_1"])
+    _, ones = baseline.forecast_draws(p, "units_1", 2020, group="state", params=PARAMS)
+    _, fives = baseline.forecast_draws(p, "units_5p", 2020, group="state", params=PARAMS)
+    assert not np.array_equal(ones, fives)
+    assert abs(np.corrcoef(ones[0], fives[0])[0, 1]) < 0.1
+
+
+def _common_cycle_panel(states=40, places=40, sigma=0.2, inv_k=0.1, seed=7):
+    """Many synthetic states, each one replication of the model's own world: every place builds
+    NB(rate · parcels / 1000 · C_t) with C_t a random walk shared by the state's places (log steps
+    N(−σ²/2, σ), so E[C_{t+1} | C_t] = C_t)."""
+    rng = np.random.default_rng(seed)
+    years = np.arange(1992, 2024)
+    frames = []
+    for s in range(states):
+        steps = rng.normal(-(sigma**2) / 2, sigma, len(years))
+        cycle = np.exp(np.cumsum(steps))
+        parcels = rng.integers(500, 8000, places)
+        rate = rng.gamma(2.0, 10.0, places)
+        lam = rate[:, None] * parcels[:, None] / 1000 * cycle[None, :]
+        counts = rng.poisson(rng.gamma(1 / inv_k, lam * inv_k))
+        frames.append(
+            pd.DataFrame(
+                {
+                    "geoid": np.repeat([f"S{s:02d}P{i:02d}" for i in range(places)], len(years)),
+                    "county_geoid": np.repeat([f"S{s:02d}C{i % 4}" for i in range(places)], len(years)),
+                    "year": np.tile(years, places),
+                    "units_1": counts.reshape(-1),
+                    "eligible_parcels": np.repeat(parcels, len(years)),
+                    "state": f"S{s:02d}",
+                }
+            )
+        )
+    return pd.concat(frames, ignore_index=True)
+
+
+def test_state_totals_are_calibrated_under_a_common_cycle():
+    """D-026: 40 synthetic states with a shared random-walk cycle; forecast from 2018, score 2019-2023.
+
+    Summing each state's draws draw by draw, the state-year and 5-year-total P10-P90 bands should cover
+    about 80%, and the error of the 5-year total should not depend on where the origin year sat against the
+    level-window mean. Before D-026 (the cycle started at the window mean, and its variance was counted again
+    in the dispersion) this fixture gave 72.5% state-year and 72.5% total coverage and a correlation of 0.52
+    between log(actual / forecast mean) and log(origin total / window mean); now 81.5%, 85% and −0.17.
+    """
+    panel = _common_cycle_panel()
+    params = _params(simulation_draws=400)
+    table, draws = baseline.forecast_draws(panel[panel["year"] <= 2018], "units_1", 2018, params=params)
+    table["obs"] = table[["geoid", "year"]].merge(panel, how="left")["units_1"].to_numpy()
+    year_cov, total_cov, log_err = [], [], {}
+    for state, g in table.groupby("state"):
+        for _, gy in g.groupby("year"):
+            s = draws[gy.index].sum(axis=0)
+            year_cov.append(baseline.randomized_coverage(s[None], np.array([gy["obs"].sum()]), 0.1, 0.9)[0])
+        total = draws[g.index].sum(axis=0)
+        total_cov.append(baseline.randomized_coverage(total[None], np.array([g["obs"].sum()]), 0.1, 0.9)[0])
+        log_err[state] = np.log(g["obs"].sum() / total.mean())
+    window = panel[panel["year"].between(2014, 2018)].groupby(["state", "year"])["units_1"].sum().unstack()
+    gap = np.log(window[2018] / window.mean(axis=1))
+    err = pd.Series(log_err)
+    assert 0.75 <= np.mean(year_cov) <= 0.9
+    assert 0.7 <= np.mean(total_cov) <= 0.95
+    assert abs(np.corrcoef(err, gap[err.index])[0, 1]) < 0.3
 
 
 def test_cycle_shocks_by_hand():

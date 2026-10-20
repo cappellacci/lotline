@@ -156,7 +156,11 @@ def test_multipliers_by_construction():
     table, fits = demand.multipliers(panel, "units_1", 2018, _inputs(), params=PARAMS)
     f = fits["TX"]
     assert f.converged and f.n > 0
-    expect = np.exp(f.beta_h * table["g"] + f.beta_p * table["q"])
+    # centred at the fit sample's own means (D-026), computed here independently of `fit`
+    sample = demand.fit_sample(panel[panel["year"] <= 2018], "units_1", 2018, _inputs(), PARAMS)
+    g_bar, q_bar = sample["g"].mean(), sample["q"].mean()
+    assert (f.g_mean, f.q_mean) == pytest.approx((g_bar, q_bar))
+    expect = np.exp(f.beta_h * (table["g"] - g_bar) + f.beta_p * (table["q"] - q_bar))
     assert np.allclose(table["multiplier"], expect)
     assert not table["fallback"].any()
     # a county with no household estimates: those places fall back to multiplier 1
@@ -165,6 +169,26 @@ def test_multipliers_by_construction():
     table2, _ = demand.multipliers(panel, "units_1", 2018, demand.DemandInputs(hh, inputs.hpi), params=PARAMS)
     gone = table2["geoid"].str.startswith("4805")
     assert table2.loc[gone, "fallback"].all() and (table2.loc[gone, "multiplier"] == 1.0).all()
+
+
+def test_multiplier_by_hand():
+    """Docstring example (D-026): β_h = 10 and β_p = 2 around ḡ = 0.02, q̄ = 0.05. β_0 is never applied."""
+    f = demand.DemandFit(0.3, 10.0, 2.0, 100, True, g_mean=0.02, q_mean=0.05)
+    assert f.multiplier(0.03, 0.05) == pytest.approx(np.exp(0.1))
+    assert f.multiplier(0.02, 0.05) == pytest.approx(1.0)
+    assert f.multiplier(0.02, 0.10) == pytest.approx(np.exp(0.1))
+
+
+def test_average_demand_keeps_spec_b():
+    """D-026: on the fit sample, the log multiplier averages exactly 0, whatever β is: a place at average
+    demand keeps spec B's level. Before, the signals were uncentred while β_0 was dropped, so the average
+    log multiplier was β_h ḡ + β_p q̄, not 0 (here 0.011; with real data's |β| up to 66, D-007, far more)."""
+    panel = _panel()
+    sample = demand.fit_sample(panel, "units_1", 2018, _inputs(), PARAMS)
+    f = demand.fit(sample, PARAMS)
+    assert f.converged
+    assert np.log(f.multiplier(sample["g"], sample["q"])).mean() == pytest.approx(0.0, abs=1e-12)
+    assert abs(f.beta_h * sample["g"].mean() + f.beta_p * sample["q"].mean()) > 0.005  # the bias it removes
 
 
 def test_multipliers_never_see_after_the_origin():

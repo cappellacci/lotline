@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from lotline.config import load_params
-from lotline.model import backtest
+from lotline.model import backtest, baseline
 
 PARAMS = load_params("baseline")
 
@@ -75,6 +75,46 @@ def test_no_post_2022_years_is_not_a_bias_failure():
     assert bool(v["bias_ok"])
 
 
+def test_crps_by_hand():
+    """Docstring example: draws 0, 2 and y = 1 -> 0.5. All draws at y -> 0. All at 3, y = 1 -> |3 − 1| = 2."""
+    draws = np.array([[0, 2], [1, 1], [3, 3]])
+    assert baseline.crps_from_draws(draws, np.array([1, 1, 1])) == pytest.approx([0.5, 0.0, 2.0])
+
+
+def test_pit_histogram_by_hand():
+    """Draws 0, 0, 0, 1 and y = 0: the PIT step is [0, 0.75], so each decile below 0.7 gets 0.1 / 0.75 =
+    0.1333, 0.7-0.8 gets 0.05 / 0.75 = 0.0667 and the top two none. The masses sum to 1."""
+    lo, hi = baseline.pit_step(np.array([[0, 0, 0, 1]]), np.array([0]))
+    states = pd.DataFrame({"scope": ["year"], "pit_lo": lo, "pit_hi": hi})
+    h = backtest.pit_histogram(states).drop(columns="scope").iloc[0].to_numpy()
+    assert h == pytest.approx([0.4 / 3] * 7 + [0.2 / 3, 0.0, 0.0])
+    assert h.sum() == pytest.approx(1.0)
+
+
+def test_score_state_by_hand():
+    """Two state-years: actual 100 and 200; P50 of the summed draws 110 and 150; means 120 and 180;
+    last-k sums 90 and 260; trend sums 100 and 200. MAE model (10 + 50) / 2 = 30, last-k (10 + 60) / 2 = 35,
+    trend 0; bias of the mean (20 − 20) / 2 = 0; ratio (120 + 180) / 300 = 1."""
+    states = pd.DataFrame(
+        {
+            "state": "TX",
+            "fit_end": 2020,
+            "size_class": "1",
+            "scope": "year",
+            "actual": [100.0, 200.0],
+            "p50": [110.0, 150.0],
+            "mean": [120.0, 180.0],
+            "fc_last_k_mean": [90.0, 260.0],
+            "fc_linear_trend": [100.0, 200.0],
+            "coverage_rand": [1.0, 0.5],
+            "crps": [4.0, 6.0],
+        }
+    )
+    s = backtest.score_state(states).iloc[0]
+    assert (s["n"], s["mae_model"], s["mae_last_k_mean"], s["mae_linear_trend"]) == (2, 30.0, 35.0, 0.0)
+    assert (s["coverage_rand"], s["crps"], s["bias_mean"], s["ratio_mean"]) == (0.75, 5.0, 0.0, 1.0)
+
+
 def _panel(seed=0, places=24, years=range(1992, 2026)):
     """A stationary synthetic state: Poisson permits at a fixed rate per place. Includes 4805000 (excluded
     as a placeholder reformer)."""
@@ -122,14 +162,50 @@ def test_window_forecasts_never_see_outcomes():
 
 
 def test_model_is_calibrated_and_competitive_in_a_stationary_world():
-    """Where nothing changes, the model's band should cover about 80% and its error should not lose to the
-    3-year mean (it averages more years and shrinks noisy places)."""
+    """Where nothing changes, the model's band should cover about 80% and its error should stay close to the
+    3-year mean's and beat the trend's.
+
+    Before D-026 the model never lost to the 3-year mean here. Since D-026 the cycle starts at the state's
+    origin-year total, which in a world with no cycle is only that year's sampling noise (about ±3% for these
+    40 places), so the model can lose by a few percent (2 of 3 windows, by up to 5%). That is the price of
+    the random-walk start where there is no random walk; with a common cycle it is what makes the state
+    totals calibrated (`test_state_totals_are_calibrated_under_a_common_cycle`)."""
     p = _panel(places=40)
     res = backtest.run({"TX": p}, ("1",), params=PARAMS, excluded=set())
     v = backtest.verdict(backtest.score(res, PARAMS), PARAMS)
     assert v["coverage_rand"].between(0.7, 0.95).all()
-    assert (v["mae_model"] <= v["mae_last_k_mean"]).all()
+    assert (v["mae_model"] <= 1.1 * v["mae_last_k_mean"]).all()
     assert (v["mae_model"] < v["mae_linear_trend"]).all()
+
+
+def test_state_window_sums_the_scored_places():
+    """State totals are sums over exactly the scored place-years: observed counts, benchmark counts and
+    (draw by draw) the model's draws; the window total is the sum of the five years."""
+    panel = _panel()
+    w = backtest.window(panel, "1", 2018, params=PARAMS, excluded=backtest.excluded_places())
+    st = backtest.state_window(panel, "1", 2018, params=PARAMS, excluded=backtest.excluded_places())
+    years = st[st["scope"] == "year"].set_index("year")
+    model = w[w["method"] == "model"]
+    counts = (model["actual"] * model["parcels"] / 1000).groupby(model["year"]).sum()
+    assert years["actual"].to_numpy() == pytest.approx(counts.to_numpy())
+    assert (years["places"] == 23).all()  # 24 places less the excluded reformer
+    lk = w[w["method"] == "last_k_mean"]
+    assert years["fc_last_k_mean"].to_numpy() == pytest.approx(
+        (lk["forecast"] * lk["parcels"] / 1000).groupby(lk["year"]).sum().to_numpy()
+    )
+    total = st[st["scope"] == "total"].iloc[0]
+    assert total["actual"] == pytest.approx(years["actual"].sum())
+    assert total["mean"] == pytest.approx(years["mean"].sum(), rel=1e-9)  # draw-by-draw sums add up
+    assert (st["p10"] <= st["p50"]).all() and (st["p50"] <= st["p90"]).all()
+    assert st["coverage_rand"].between(0, 1).all() and (st["crps"] >= 0).all()
+    assert (st["pit_lo"] <= st["pit_hi"]).all()
+    places, states = backtest.run(
+        {"TX": panel}, ("1",), params=PARAMS, excluded=backtest.excluded_places(), state_totals=True
+    )
+    assert set(states["fit_end"]) == {2016, 2018, 2020} and set(states["scope"]) == {"year", "total"}
+    pd.testing.assert_frame_equal(
+        states[states["fit_end"] == 2018].reset_index(drop=True), st.reset_index(drop=True)
+    )
 
 
 def test_places_below_the_minimum_size_are_forecast_but_not_scored():

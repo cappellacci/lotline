@@ -1,6 +1,7 @@
 """Spec C (analysis plan D-006): two demand signals on top of the baseline's recent pace.
 
-Spec B keeps each place at its own recent pace. Spec C multiplies that level by `exp(β_h · g + β_p · q)`:
+Spec B keeps each place at its own recent pace. Spec C multiplies that level by
+`exp(β_h · (g − ḡ) + β_p · (q − q̄))`, with ḡ and q̄ the means of the signals over the fit sample (D-026):
 
 - **g, household growth:** annualized growth of occupied housing units (ACS `B25003_001`) in the place's
   county, the 5-year estimate ending in year t against the non-overlapping one ending 5 years earlier:
@@ -11,11 +12,14 @@ Spec B keeps each place at its own recent pace. Spec C multiplies that level by 
   value); if it lacks either year, the next level down that has both. A ratio never mixes geographies.
 - **β_h, β_p:** pooled Poisson regression per state and size class on fit years only (t ≤ origin). For each
   place-year with a full trailing history, the expected count is `E_it` = the spec-B level from years
-  t−5..t−1 × eligible parcels in t / 1,000, and `y_it ~ Poisson(exp(log E_it + β_0 + β_h g_it + β_p q_it))`,
+  t−5..t−1 × eligible parcels in t / 1,000, and
+  `y_it ~ Poisson(exp(log E_it + β_0 + β_h (g_it − ḡ) + β_p (q_it − q̄)))`,
   fitted by iteratively reweighted least squares (`poisson_irls`).
 - **Forecast:** g and q at the origin, held over the horizon. β_0 is estimated but **not applied**: it
   absorbs the average drift between spec B's level and the next year's count so the slopes aren't biased,
-  and D-006 leaves spec B's level otherwise unchanged. A place without g or q at the origin keeps
+  and D-006 leaves spec B's level otherwise unchanged. Because the signals are centred, a place at average
+  demand gets multiplier exactly 1 (before D-026 the signals were not centred, so such a place was scaled by
+  exp(β_h ḡ + β_p q̄), which dropping β_0 does not cancel). A place without g or q at the origin keeps
   multiplier 1 (spec B), and so does every place when the fit fails (no permits, or no convergence).
 """
 
@@ -50,6 +54,16 @@ class DemandFit:
     beta_p: float
     n: int  # place-years in the fit
     converged: bool
+    g_mean: float = 0.0  # ḡ, q̄: the fit sample's mean signals, where the multiplier is 1
+    q_mean: float = 0.0
+
+    def multiplier(self, g, q):
+        """exp(β_h (g − ḡ) + β_p (q − q̄)); β_0 is not applied (module docstring).
+
+        By hand: β_h = 10, ḡ = 0.02, β_p = 2, q̄ = 0.05. A place with g = 0.03, q = 0.05 gets
+        exp(10 · 0.01 + 0) = e^0.1 = 1.10517; one at g = 0.02, q = 0.05 gets exactly 1.
+        """
+        return np.exp(self.beta_h * (g - self.g_mean) + self.beta_p * (q - self.q_mean))
 
 
 def inputs_from_tables(acs: pd.DataFrame, market: pd.DataFrame) -> DemandInputs:
@@ -203,6 +217,7 @@ def fit_sample(
             min_group_places=int(params["min_group_places"].value),
             group=group,
             use_direct_variance=bool(params["use_direct_variance"].value),
+            detrend=bool(params["detrend_dispersion"].value),
             key=key,
         )
         if lev.empty:
@@ -223,10 +238,13 @@ def fit_sample(
 
 
 def fit(sample: pd.DataFrame, params: dict[str, Parameter]) -> DemandFit:
-    """β_0, β_h, β_p from a `fit_sample` table; a failed fit (no permits, no convergence) gives 0s."""
+    """β_0, β_h, β_p from a `fit_sample` table, on signals centred at their sample means; a failed fit (no
+    permits, no convergence) gives 0s."""
     if sample.empty:
         return DemandFit(0.0, 0.0, 0.0, 0, False)
-    x = np.column_stack([np.ones(len(sample)), sample["g"].to_numpy(float), sample["q"].to_numpy(float)])
+    g, q = sample["g"].to_numpy(float), sample["q"].to_numpy(float)
+    g_mean, q_mean = float(g.mean()), float(q.mean())
+    x = np.column_stack([np.ones(len(sample)), g - g_mean, q - q_mean])
     beta, ok = poisson_irls(
         sample["y"].to_numpy(float),
         x,
@@ -235,8 +253,8 @@ def fit(sample: pd.DataFrame, params: dict[str, Parameter]) -> DemandFit:
         max_iter=int(params["irls_max_iterations"].value),
     )
     if not ok:
-        return DemandFit(0.0, 0.0, 0.0, len(sample), False)
-    return DemandFit(float(beta[0]), float(beta[1]), float(beta[2]), len(sample), True)
+        return DemandFit(0.0, 0.0, 0.0, len(sample), False, g_mean, q_mean)
+    return DemandFit(float(beta[0]), float(beta[1]), float(beta[2]), len(sample), True, g_mean, q_mean)
 
 
 def multipliers(
@@ -249,7 +267,7 @@ def multipliers(
     group: str = "county_geoid",
     key: str = "geoid",
 ) -> tuple[pd.DataFrame, dict[str, DemandFit]]:
-    """Spec C's multiplier per place at the origin: exp(β_h · g + β_p · q), β fitted per state.
+    """Spec C's multiplier per place at the origin: `DemandFit.multiplier`, β fitted per state.
 
     Returns (table with key, state, g, q, multiplier, fallback; fits by state). fallback is True where the
     place has no g or q at the origin, or its state's fit failed: those places get multiplier 1 (spec B).
@@ -264,7 +282,7 @@ def multipliers(
         fits[str(state)] = f
         rows = ps[ps["year"] == origin].drop_duplicates(key)
         s = signals(rows, inputs, p)
-        m = np.exp(f.beta_h * s["g"] + f.beta_p * s["q"])
+        m = f.multiplier(s["g"], s["q"])
         fallback = s["g"].isna() | s["q"].isna() | (not f.converged)
         tables.append(
             pd.DataFrame(

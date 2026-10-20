@@ -221,3 +221,21 @@ irls_max_iterations:
   unit: iterations
   source: "Numerical setting for the Poisson IRLS fit, chosen a priori: Poisson log-link IRLS usually converges in under 10 steps"
   notes: "If the fit has not converged by then (or the sample has no permits), the state and size class gets multiplier 1 (spec B) and this is reported."
+
+# ---- Calibration fixes (analysis plan D-026, pre-declared 2026-10-20 before any run) ----
+
+cycle_start_at_origin:
+  value: 1
+  low: 0
+  high: 1
+  unit: flag (1 = yes)
+  source: "Analysis plan D-026 (2026-10-20): a random walk starts from its last value; on synthetic data the old start (the level-window mean) gave 74% state-year and 68% 5-year-total P10-P90 coverage"
+  notes: "1 = every place's level is scaled by the state's origin-year total over its level-window mean (state_momentum with a 1-year recent window), so the cycle runs from the origin-year level. Replaced by use_state_momentum's factor when that is on. 0 = the old start."
+
+detrend_dispersion:
+  value: 1
+  low: 0
+  high: 1
+  unit: flag (1 = yes)
+  source: "Analysis plan D-026 (2026-10-20): the simulation adds the cycle separately, so the count dispersion and a place's own variance must not contain it too"
+  notes: "1 = before 1/k and the place's own variance of annual rates are estimated, each year's count is divided by the state's cycle index for that year (state total / its level-window mean). Identical to 0 when the state total is flat."

@@ -23,27 +23,33 @@ around that reflects lumpy years and the regional building cycle. Per place and 
 2. **Shrinkage (Fay-Herriot, protocol §5.7).** The group rate ḡ is the same ratio of sums over all places
    in the place's county (or the state, if the county has fewer than `min_group_places` places). Annual
    counts are treated as negative binomial, Var(c) = λ + λ²/k, with 1/k estimated by pooled moments
-   (`nb_inverse_dispersion`). The sampling variance of y_i uses the group-smoothed mean count
-   λ_i = ḡ · P̄_i / 1000 (P̄_i = mean eligible parcels): v_i = 10⁶ / P̄_i² · (λ_i + λ_i²/k) / m, raised
-   to the place's own observed variance of annual rates / m when that is larger (`use_direct_variance`), so
-   one subdivision year in a 40-parcel township counts as noise, not as its pace.
+   (`nb_inverse_dispersion`) on detrended counts: each year's count is divided by the state's cycle index
+   s_t = S_t / S̄ (`cycle_index`; S_t the state's total over the places with a level, S̄ its window mean), so
+   the cycle, which step 3 adds separately, is not counted twice (`detrend_dispersion`, D-026). The sampling
+   variance of y_i uses the group-smoothed mean count λ_i = ḡ · P̄_i / 1000 (P̄_i = mean eligible parcels):
+   v_i = 10⁶ / P̄_i² · (λ_i + λ_i²/k) / m, raised to the place's own observed variance of (detrended) annual
+   rates / m when that is larger (`use_direct_variance`), so one subdivision year in a 40-parcel township
+   counts as noise, not as its pace.
    The between-place variance A = max(0, mean (y_i − ḡ)² − mean v_i) (moments, per state), the weight
    B_i = v_i / (v_i + A), and the shrunk level μ_i = (1 − B_i) · y_i + B_i · ḡ with posterior variance
    (1 − B_i) · v_i. Big places (small v_i) keep their own rate; small places move toward the group's.
 3. **Range (P10/P50/P90), by simulation** (`simulation_draws`, fixed `simulation_seed`), from three sources:
-   the true level is drawn from a gamma with mean μ_i and the posterior variance; the regional cycle
-   multiplies it by exp(sum of h resampled year-to-year log changes in the state's total permits over the
-   `cycle_history_years` before the origin), a random walk, so the band widens with the horizon; and the
-   year's count is negative binomial around that. The changes are centred so that exp(change) averages 1,
-   which keeps the mean flat over the horizon (D-011). The resampled calendar years come from one matrix
-   per state, origin and draw (`cycle_years`), shared by every size class and scenario, so draw j is the
-   same run of boom and bust years for single-family and 5+ units, whichever places are in the run. The
-   point forecast is the median (P50), which is what minimises mean absolute error; `mean` is reported too,
-   because means add up to state totals.
+   the true level is drawn from a gamma with mean μ_i and the posterior variance; the regional cycle starts at
+   the state's origin-year level, a_s = S_T / S̄ (`cycle_start_at_origin`, D-026: a random walk starts from
+   its last value, not from the window mean), and multiplies it by exp(sum of h resampled year-to-year log
+   changes in the state's total permits over the `cycle_history_years` before the origin), a random walk, so
+   the band widens with the horizon; and the year's count is negative binomial around that. The changes are
+   centred so that exp(change) averages 1, which keeps the mean flat over the horizon (D-011). The resampled
+   calendar years come from one matrix per state, origin and draw (`cycle_years`), shared by every size class
+   and scenario, so draw j is the same run of boom and bust years for single-family and 5+ units, whichever
+   places are in the run. The per-place gamma and count draws have their own generator per state, size class
+   and origin (D-026). The point forecast is the median (P50), which is what minimises mean absolute error;
+   `mean` is reported too, because means add up to state totals.
 
 4. **Optional regional cycle term** (`use_state_momentum`): every place's level is scaled by the state's pace
    over the last `momentum_recent_years` relative to its pace over the level window (`state_momentum`).
-   Off by default: the V1 backtest decides whether it earns its place.
+   Off by default: the V1 backtest decides whether it earns its place. When on, it replaces the cycle start
+   a_s of step 3 (a_s is the same factor with a 1-year recent window), never both.
 
 5. **Optional demand term** (spec C, analysis plan D-006): a per-place multiplier on the level from
    `model.demand.multipliers`, passed as `multiplier`. None (spec B) leaves every level as it is.
@@ -197,12 +203,14 @@ def level_estimates(
     min_group_places: int,
     group: str = "county_geoid",
     use_direct_variance: bool = True,
+    detrend: bool = True,
     key: str = "geoid",
 ) -> pd.DataFrame:
     """Step 1-2 of the model: each place's direct rate, its group rate, and the Fay-Herriot shrunk rate.
 
     Uses only rows with year in [origin − level_years + 1, origin]; a place needs all of those years with both
-    a count and a positive denominator. One row per place.
+    a count and a positive denominator. One row per place. `detrend` divides each year's count by the state's
+    `cycle_index` before 1/k and the place's own variance are estimated (the level itself is never detrended).
     """
     first = origin - level_years + 1
     w = panel[(panel["year"] >= first) & (panel["year"] <= origin)]
@@ -226,9 +234,13 @@ def level_estimates(
     sums = sums.where(~places["group"].str.startswith("state:"), state_sums)  # fallback = whole state
     places["group_rate"] = PER * sums["units"] / sums["parcels_sum"]
 
-    counts = w[w[key].isin(places.index)].groupby(key)[value]
-    annual = PER * w[value].astype(float) / w[PARCELS].astype(float)
-    places["v_direct"] = annual.groupby(w[key]).var(ddof=1).reindex(places.index).fillna(0.0) / level_years
+    inw = w[w[key].isin(places.index)]
+    c = inw[value].astype(float)
+    if detrend:
+        c = c / cycle_index(inw, value)
+    counts = c.groupby(inw[key])
+    annual = PER * c / inw[PARCELS].astype(float)
+    places["v_direct"] = annual.groupby(inw[key]).var(ddof=1).reindex(places.index).fillna(0.0) / level_years
     out = []
     for _state, p in places.groupby("state"):
         inv_k = nb_inverse_dispersion([counts.get_group(g).to_numpy() for g in p.index])
@@ -242,6 +254,20 @@ def level_estimates(
     places["level"] = (1 - places["b"]) * places["direct"] + places["b"] * places["group_rate"]
     places["level_var"] = (1 - places["b"]) * places["v"]
     return places.reset_index()
+
+
+def cycle_index(rows: pd.DataFrame, value: str) -> pd.Series:
+    """Each row's state cycle index s_t = S_t / S̄: the state's total in the row's year over its mean.
+
+    `rows` are the place-years of a level window (every place present in every year). Where a year's total
+    is 0, s_t = 1 (every count that year is 0, so nothing is divided). By hand: totals 10, 20, 30 ->
+    S̄ = 20 and s = 0.5, 1, 1.5; a place's counts 1, 2, 3 detrend to 2, 2, 2, so it has no cycle variance left.
+    """
+    totals = rows.groupby(["state", "year"])[value].sum().astype(float)
+    mean = totals.groupby(level="state").transform("mean")
+    s = (totals / mean).where((totals > 0) & (mean > 0), 1.0)
+    idx = pd.MultiIndex.from_arrays([rows["state"], rows["year"]])
+    return pd.Series(s.reindex(idx).to_numpy(dtype=float), index=rows.index)
 
 
 def cycle_shock_series(
@@ -379,7 +405,7 @@ def forecast_draws(
     horizon = int(p["forecast_horizon_years"].value)
     n = int(p["simulation_draws"].value)
     low, high = p["interval_low_quantile"].value, p["interval_high_quantile"].value
-    rng = np.random.default_rng(int(p["simulation_seed"].value))
+    seed = int(p["simulation_seed"].value)
     hist = panel[panel["year"] <= origin]
     places = level_estimates(
         hist,
@@ -389,6 +415,7 @@ def forecast_draws(
         min_group_places=int(p["min_group_places"].value),
         group=group,
         use_direct_variance=bool(p["use_direct_variance"].value),
+        detrend=bool(p["detrend_dispersion"].value),
         key=key,
     )
     columns = [key, "state", "year", "horizon", "parcels_origin", "level", "direct", "group_rate", "b"]
@@ -397,21 +424,31 @@ def forecast_draws(
     for state, ps in places.groupby("state", sort=True):
         history = int(p["cycle_history_years"].value)
         in_state = hist[(hist["state"] == state) & hist[key].isin(ps[key])]
-        factor = 1.0
+        # Where the cycle starts (D-026): the state's origin-year level, or its recent pace with momentum on.
+        recent = 0
         if bool(p["use_state_momentum"].value):
-            factor = state_momentum(
-                in_state, value, origin, int(p["momentum_recent_years"].value), int(p["level_years"].value)
-            )
+            recent = int(p["momentum_recent_years"].value)
+        elif bool(p["cycle_start_at_origin"].value):
+            recent = 1
+        factor = 1.0
+        if recent:
+            factor = state_momentum(in_state, value, origin, recent, int(p["level_years"].value))
+            if (
+                factor == 0 and recent == 1
+            ):  # nothing built statewide at the origin: a log walk can't start at 0
+                factor = 1.0
         ps = ps.assign(momentum=factor, level=ps["level"] * factor, level_var=ps["level_var"] * factor**2)
         demand = np.ones(len(ps))
         if multiplier is not None:
             demand = ps[key].map(multiplier).fillna(1.0).to_numpy(dtype=float)
         ps = ps.assign(demand=demand, level=ps["level"] * demand, level_var=ps["level_var"] * demand**2)
         shocks = cycle_shock_series(hist[hist["state"] == state], value, origin, history, key)
-        years, fallback = cycle_years(
-            int(p["simulation_seed"].value), str(state), origin, history, horizon, n
-        )
+        years, fallback = cycle_years(seed, str(state), origin, history, horizon, n)
         cycle = cycle_factor(shocks, years, fallback)
+        # Own generator per state, size class and origin (D-026): no accidental sharing between classes.
+        rng = np.random.default_rng(
+            [seed, zlib.crc32(value.encode()), zlib.crc32(str(state).encode()), origin]
+        )
         draws = _simulate(ps, cycle, horizon, n, rng)  # (places, horizon, n)
         lo, mid, hi, mean = interval_from_draws(draws, low, high)
         rows = ps.loc[ps.index.repeat(horizon), [key, "state", "parcels_origin", "level", "direct"]]
@@ -461,10 +498,37 @@ def randomized_coverage(draws: np.ndarray, observed: np.ndarray, low: float, hig
     By hand: draws 0,0,0,1 (F(0−) = 0, F(0) = 0.75), y = 0, band [0.1, 0.9]: overlap 0.75 − 0.1 = 0.65,
     coverage 0.65 / 0.75 = 0.867. y = 1: step [0.75, 1.0], overlap 0.9 − 0.75 = 0.15, coverage 0.6.
     """
+    f_minus, f = pit_step(draws, observed)
+    return step_share(f_minus, f, low, high)
+
+
+def pit_step(draws: np.ndarray, observed: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """F(y−) = P(Y < y) and F(y) = P(Y <= y) of each row's draws at its observed y: the PIT's step."""
     y = np.asarray(observed, dtype=float)[:, None]
-    f_minus = (draws < y).mean(axis=1)
-    f = (draws <= y).mean(axis=1)
+    return (draws < y).mean(axis=1), (draws <= y).mean(axis=1)
+
+
+def step_share(f_minus: np.ndarray, f: np.ndarray, low: float, high: float) -> np.ndarray:
+    """Share of each PIT step [F(y−), F(y)] inside [low, high] (a point step counts 1 if inside, else 0).
+
+    With [low, high] = a PIT decile, the mean over outcomes is that decile's height in the non-randomized PIT
+    histogram (Czado, Gneiting & Held 2009); a calibrated forecast puts 0.1 in each.
+    """
     width = f - f_minus
     overlap = np.clip(np.minimum(f, high) - np.maximum(f_minus, low), 0.0, None)
     inside = ((f_minus >= low) & (f_minus <= high)).astype(float)
     return np.where(width > 0, overlap / np.where(width > 0, width, 1.0), inside)
+
+
+def crps_from_draws(draws: np.ndarray, observed: np.ndarray) -> np.ndarray:
+    """CRPS of each row's empirical predictive distribution: E|X − y| − ½ E|X − X'| (lower is better).
+
+    E|X − X'| over all n² ordered pairs, from the sorted draws: Σ_i Σ_j |x_i − x_j| = 2 Σ_i (2i − n + 1) x_(i)
+    (i = 0 … n − 1). By hand: draws 0, 2 and y = 1: E|X − y| = 1, Σ|x_i − x_j| = 4, so CRPS = 1 − 4 / 8 = 0.5,
+    the same as ∫ (F(x) − 1[x ≥ y])² dx = 0.25 · 1 + 0.25 · 1.
+    """
+    x = np.sort(np.asarray(draws, dtype=float), axis=-1)
+    y = np.asarray(observed, dtype=float)[:, None]
+    n = x.shape[-1]
+    weights = 2 * np.arange(n) - n + 1
+    return np.abs(x - y).mean(axis=-1) - (x * weights).sum(axis=-1) / n**2
