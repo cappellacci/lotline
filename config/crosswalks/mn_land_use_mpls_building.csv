@@ -1,0 +1,5 @@
+county,pattern,land_use_std,refine_by_units,note,source_url
+*,DUPLEX W/ADU,DUPLEX,no,Duplex with an accessory dwelling unit,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,SF HOUSE W/ADU|[RM] WITH ACCESSORY DWELLING|DETACHED ADU,SF_DETACHED,no,House with an accessory dwelling unit: the lot stays single-family,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^APARTMENT 4 OR (5|10),MULTIFAMILY_5P,yes,"4-10 unit apartments (4 units become TRI_QUAD by TOTAL_UNITS)",https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
+*,^APARTMENT (6\+|11 OR 49),MULTIFAMILY_5P,no,,https://www.arcgis.com/home/item.html?id=d9bb827c0465472a937d325b22f9939d
