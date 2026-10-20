@@ -73,9 +73,9 @@ def test_hand_checked_values(reforms):
     assert clt["effective_date"] == pd.Timestamp("2023-06-01")
     assert clt["unit_cap"] == 3
     assert "N1-A" in clt["coverage_zones"].split(";")
-    # S.L. 2026-59 Sec. 44: statewide row, effective 2027-01-15, no parking minimum, cap floor 800 sq ft
-    sl = r.loc["NC-37-adu-2027"]
-    assert sl["jurisdiction_geoid"] == "37"
+    # S.L. 2026-59 Sec. 44: one row per covered city, effective 2027-01-15, no parking minimum, cap floor 800
+    sl = r.loc["NC-SL2026-59-3712000"]
+    assert sl["jurisdiction_geoid"] == "3712000"
     assert sl["effective_date"] == pd.Timestamp("2027-01-15")
     assert sl["parking_min_per_unit"] == 0
     assert sl["adu_max_sqft"] == 800
@@ -84,11 +84,14 @@ def test_hand_checked_values(reforms):
     assert r.at["NC-37063-adu-2019", "adoption_date"] == pd.Timestamp("2019-10-28")
 
 
-def test_statewide_adu_law_lists_its_cities(reforms):
-    notes = reforms.set_index("reform_id").at["NC-37-adu-2027", "coding_notes"]
-    for geoid in ["3712000", "3755000", "3728000", "3719000", "3775000"]:
-        assert geoid in notes
-    assert "Excluded as coastal: Wilmington 3774440" in notes
+def test_state_adu_law_is_coded_per_covered_city(reforms):
+    sl = reforms[reforms["reform_id"].str.startswith("NC-SL2026-59-")].set_index("jurisdiction_geoid")
+    assert not (reforms["jurisdiction_geoid"] == "37").any()  # a 2-digit row would cover every NC place
+    assert (sl["status"] == "in_force").sum() == 19
+    assert set(sl.index[sl["status"] == "pending"]) == {"3770540", "3732260"}  # sensitivity only
+    assert sl.loc["3770540", "coding_notes"].startswith("SENSITIVITY ONLY")
+    assert "3774440" not in sl.index  # Wilmington: coastal, excluded
+    assert (sl["effective_date"] == pd.Timestamp("2027-01-15")).all()
 
 
 def test_carthage_list_stays_in_its_own_file(reforms):
