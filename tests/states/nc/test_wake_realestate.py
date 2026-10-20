@@ -24,6 +24,7 @@ ROWS = [
     ("0000005", "02", "07", "G", "G", "1985", "12", "9000", "900000", "2", "RAL", "A", "0", None),  # 2nd card
     ("0000006", "01", "02", "B", "R", "1950", "2", "1800", "100000", "0.2", "OUT", "T", "90000", "2015-07-07"),  # noqa: E501
     ("0000007", "01", "47", None, "C", "1990", "0", "5000", "800000", "1", "APE", None, "0", None),
+    ("0000008", "01", "01", "A", "R", "2001", "1", "1900", "250000", "0.3", "DUR", "A", "300000", "2020-02-02"),  # noqa: E501
 ]  # fmt: skip
 COLS = [
     "REAL_ESTATE_ID", "CARD_NUMBER", "TYPE_AND_USE", "DESIGN_STYLE", "Land_classification", "Year_Built",
@@ -36,7 +37,7 @@ COLS = [
 def parcels() -> pd.DataFrame:
     raw = pd.DataFrame(ROWS, columns=COLS)
     raw["Assessed_Land_Value"] = "50000"
-    raw["Zoning"] = ["R-4", "R-6", "PD", "R-4", "RX-3", "RX-3", "R-30", "CX-3"]
+    raw["Zoning"] = ["R-4", "R-6", "PD", "R-4", "RX-3", "RX-3", "R-30", "CX-3", "RS-10"]
     return wr.build(raw).set_index("parcel_id")
 
 
@@ -140,3 +141,10 @@ def test_load_reads_registered_roll_with_snapshot_holdout(tmp_path, monkeypatch)
     assert calls and calls[0]["snapshot"] is True
     assert len(out) == 7
     assert_conforms(out, "parcels")
+
+
+def test_cities_mostly_outside_wake_are_left_out(parcels):
+    # Durham has 0.1% of its 2020 housing units in Wake: a sliver roll must not become its denominator
+    assert "371830000008" not in parcels.index
+    assert "3719000" not in set(parcels["jurisdiction_geoid"])
+    assert wr.partial_cities() == {"DUR", "ANG", "CLA"}

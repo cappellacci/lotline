@@ -380,3 +380,11 @@ def test_rolls_with_mostly_unknown_land_use_fall_back_to_acs():
     assert set(combined.loc[combined.jurisdiction_geoid == "2706616", "denominator_source"]) == {
         "acs_sf_fallback"
     }
+
+
+def test_two_sources_in_different_roll_years_also_need_a_choice():
+    # Durham: a 2023 roll from one source and a 2026 roll from another must not silently mix
+    a = _parcels()
+    b = a.assign(source="county_roll", vintage=2023)
+    with pytest.raises(ValueError, match="parcel_sources"):
+        eligible.single_source(pd.concat([a, b], ignore_index=True), {})
