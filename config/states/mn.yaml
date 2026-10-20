@@ -45,3 +45,16 @@ sources:
       St. Paul DSI building permits from 2015-06-30. No unit counts, no ADU flag: secondary to Met Council for
       St. Paul outcomes. V5 holdout: rows from 2024 on are filtered before any processing. Street address and
       contractor name/address are never requested.
+  - name: metc_parcels
+    url: https://arcgis.metc.state.mn.us/data1/rest/services/parcels
+    license: Public domain (Minnesota Government Data Practices Act); MetroGIS counties share without fee or license
+    access: arcgis
+    cadence: >-
+      quarterly current roll (Parcel_Points_Aggregate) plus archived rolls Parcel_Points_2021..2025; county
+      export dates (EXP_DATE): 2021-12-28..2022-01-12, 2022-12-29..2023-01-18, 2023-10-01..2024-01-08,
+      2024-12-30..2025-01-15, 2025-06-27..2025-07-23 (mid-year), current 2026-06-27..2026-07-13
+    notes: >-
+      7-county parcel points. vintage = service-name year, vintage_date = county's latest EXP_DATE (Ben,
+      2026-10-19). St. Paul only from the 2021-2023 rolls (V5 snapshot rule). Rolls 2002-2020 are token-locked
+      (ds1/GISParcels, checked 2026-10-19). Hennepin NUM_UNITS/DWELL_TYPE blank. Owner, taxpayer and situs
+      address fields never requested.
