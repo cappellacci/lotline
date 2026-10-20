@@ -1,0 +1,61 @@
+county,pattern,land_use_std,refine_by_units,note,source_url
+Washington,^100$,SF_DETACHED,no,Washington code-only value: 100 = Res 1 unit (county label on other rows),https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^(105|155)$,DUPLEX,yes,Washington 105/155 = Res 2-3 units,https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^110$,MULTIFAMILY_5P,yes,Washington 110 = Apt 4+ units,https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^140$,VACANT_RESIDENTIAL,no,Washington 140 = Res V Land,https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^150$,SF_DETACHED,no,Washington 150 = Res 1 unit short-term rental,https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^(200|210|211|252)$,AGRICULTURAL,no,"Washington 200/210/211/252 = agricultural, rural vacant, managed forest",https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^(300|310|315|318|320)$,COMMERCIAL,no,Washington 3xx commercial codes,https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^305$,INDUSTRIAL,no,Washington 305 = Industrial,https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^(350|352)$,MOBILE_HOME,no,Washington 350/352 = MH Park,https://www.revisor.mn.gov/statutes/cite/273.13
+Washington,^(125|335|337|355|360|9\d\d)$,OTHER,no,"Washington seasonal, utilities, non-profit and exempt codes",https://www.revisor.mn.gov/statutes/cite/273.13
+Scott,^2$,UNKNOWN,no,Scott: bare code '2' has no label,https://www.revisor.mn.gov/statutes/cite/273.13
+Scott,^(201|202)$,SF_DETACHED,no,Scott 201/202 = residential single unit,https://www.revisor.mn.gov/statutes/cite/273.13
+Scott,^(203|209)$,DUPLEX,yes,Scott 203/209 = residential 1-3 units (non-homestead 2-3),https://www.revisor.mn.gov/statutes/cite/273.13
+Scott,^210$,OTHER,no,Scott 210 = condo storage,https://www.revisor.mn.gov/statutes/cite/273.13
+Scott,^(220|262)$,MOBILE_HOME,no,Scott 220/262 = manufactured home park,https://www.revisor.mn.gov/statutes/cite/273.13
+Scott,^232$,COMMERCIAL,no,Scott 232 = commercial seasonal recreation (resort),https://www.revisor.mn.gov/statutes/cite/273.13
+Scott,^(222V?|9\d\w)$,OTHER,no,Scott non-profit and 9xx exempt codes without labels,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Residential-Zero Lot Line,SF_ATTACHED,no,Zero-lot-line double bungalow halves are separate parcels,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Double Bungalow,DUPLEX,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Triplex,TRI_QUAD,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Townhouse,SF_ATTACHED,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Condo - Garage,OTHER,no,Condo garage or storage unit,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^(Condominium|Cooperative|Apartment Condominium),CONDO_UNIT,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Vacant Land - (Residential|Lakeshore|Rural Residential|Apartment),VACANT_RESIDENTIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Vacant Land - Commercial,COMMERCIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Vacant Land - Industrial,INDUSTRIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^(Vacant Land - Rural Farm|Farm),AGRICULTURAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Residential - Misc,UNKNOWN,yes,"Misc, bed and breakfast or multiple residential",https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Housing - Low Income < 4 Units,UNKNOWN,yes,Class 4d rental of 1-3 units: size unknown,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Housing - Low Income > 3 Units,MULTIFAMILY_5P,yes,Class 4d rental of 4+ units (4-unit buildings included),https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^(Residential|Residential Lake Shore|Blind|Blind Joint Tenancy|Disabled|Disabled Joint Tenancy)$,SF_DETACHED,no,Residential homestead and non-homestead classes; Hennepin labels duplexes and triplexes separately,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Common Area,OTHER,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Hennepin,^Apartment$,MULTIFAMILY_5P,yes,Class 4a apartments (4+ units),https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Residential-condominium-storage,OTHER,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Residential-condominium,CONDO_UNIT,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Residential-townhouse,SF_ATTACHED,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Residential$,SF_DETACHED,yes,Dakota 'Residential' covers 1-3 unit homes; units and dwelling type refine it,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Apartment-(mobile home|mobile home park)$,MOBILE_HOME,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Apartment-nursing home,INSTITUTIONAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Apartment$,MULTIFAMILY_5P,yes,,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Cabin,OTHER,no,Seasonal residential recreation,https://www.revisor.mn.gov/statutes/cite/273.13
+Dakota,^Exempt$,OTHER,no,"Dakota's single exempt class (public, church, school land alike)",https://www.revisor.mn.gov/statutes/cite/273.13
+*,condo storage|condominium-storage|CONDO GARAGE,OTHER,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,2-3 Unit Short Term Rental,DUPLEX,yes,Residential 2-3 unit short-term rental,https://www.revisor.mn.gov/statutes/cite/273.13
+*,1 Unit Short Term Rental,SF_DETACHED,no,Residential 1 unit short-term rental,https://www.revisor.mn.gov/statutes/cite/273.13
+*,UNIMPROVED RESIDENTIAL LAND|Res V Land|RESIDENTIAL SINGLE FAMILY-VACANT|TOWNHOMES-VACANT|CONDOMINIUMS-VACANT|DUPLEXES.*-VACANT|QUADS-VACANT|APARTMENTS / COOP-VACANT,VACANT_RESIDENTIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,MANUFACTURED HOME|MFD HOME|MH Park|MHP INVENTORY|mobile home,MOBILE_HOME,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,TOWNHOMES,SF_ATTACHED,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,CONDOMINIUMS|L Condo Coop,CONDO_UNIT,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,QUADS,TRI_QUAD,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,RESIDENTIAL 1[ -]TO[ -]3 UNIT|1-3 UNIT|Res 2-3 units|RESIDENTIAL DUPLEX/TRIPLEX|DUPLEXES|Ag 2 - 3 Units,DUPLEX,yes,"Class 4b(1): non-homestead 2-3 units (single units are class 4bb), refined by units",https://www.revisor.mn.gov/statutes/cite/273.13
+*,SINGLE UNIT|Res 1 unit|RESIDENTIAL SINGLE FAMILY,SF_DETACHED,no,Class 1a/1b/4bb single unit; townhomes and condos inside it are separated by dwelling type where the county records it,https://www.revisor.mn.gov/statutes/cite/273.13
+*,APT 4 ?\+|APARTMENT 4 OR MORE|APARMENT 4|Apt 4\+|APARTMENTS / COOP|RESIDENTIAL 4\+ OWNERS,MULTIFAMILY_5P,yes,Class 4a: 4+ units (4-unit buildings refined to TRI_QUAD where units are known),https://www.revisor.mn.gov/statutes/cite/273.13
+*,LOW INC|LOW INCOME|Low Income Housing|COMMUNITY LAND TRUST,UNKNOWN,yes,Class 4d: affordable rental of any size,https://www.revisor.mn.gov/statutes/cite/273.13
+*,STUDENT HOUSING|Student Hse|NURSING|ELDERLY|SENIOR|Sr Citizens|SHELTER|TRANSITIONAL|Trans Housing|CHILDRENS HOME|CHILD CARE|CHARIT|CHURCH|SCHOOL|SCH-|COLLEGE|HOSPITAL|APPRENTICESHIP|Sorority|HIST SOCIET|NON-PROFIT|Community Org|Veteran|COMSRV|Comm Serv,INSTITUTIONAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,SEASONAL|SRR|CABIN|^4C12,OTHER,no,Seasonal residential recreation (cabins),https://www.revisor.mn.gov/statutes/cite/273.13
+*,INDUST|Machinery,INDUSTRIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,COMMERCIAL|Com Ma & Pa|SERVICE STATION|RESORT|GOLF|Marina|Restaurant|Social Club|ARENA|BParkNProf,COMMERCIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,\bAG\b|AGRICULTURAL|FARM|RURAL VAC|MANAGED FOREST|^2A|^2B|ACTIVELY FARMING,AGRICULTURAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,.,OTHER,no,"Everything else is public, exempt, utility, railroad, common area or tax-forfeit land",https://www.revisor.mn.gov/statutes/cite/273.13
