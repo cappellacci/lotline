@@ -769,9 +769,10 @@ def randomization_inference(panel, permutations=999, seed=0, method="ppml", work
 
 def added_homes(est_, boot: pd.DataFrame | None = None, level: float = 0.90) -> pd.DataFrame:
     """Homes the rules added in the treated places' post-adoption years: fitted mean minus the mean with the
-    treatment terms (β, θ, ρ) switched off, per place, with totals per 1,000 eligible parcels a year. Bootstrap
-    rows re-scale the fitted means by the change in the treatment terms only (place and year effects held at
-    the estimate). Columns: place, name, years, added, low, high, per_1000_parcels_year."""
+    treatment terms (β, θ, ρ) switched off, per place, and per 1,000 eligible parcels a year. Interval:
+    each bootstrap draw's treatment terms applied to the untreated means, μ0 (e^(X b*) − 1), with place and
+    year effects held at the estimate. Columns: place, name, years, added, low, high,
+    per_1000_parcels_year."""
     fit, d, p = est_.fit, est_.design, est_.panel
     X = d.X[fit.keep][:, [d.names.index(n) for n in fit.names]]
     treat = [i for i, n in enumerate(fit.names) if n.startswith(("beta_", "theta_", "rho"))]
@@ -793,9 +794,11 @@ def added_homes(est_, boot: pd.DataFrame | None = None, level: float = 0.90) -> 
             tot = draws[:, on].sum(axis=1)
             dev_lo, dev_hi = np.quantile(tot - add, [a, 1 - a])
             lo, hi = add - dev_hi, add - dev_lo
-        rows.append({"place": place, "name": g["name"].iloc[0] if "name" in g else place, "years": int(on.sum()),
-                     "added": add, "low": lo, "high": hi,
-                     "per_1000_parcels_year": add / float(g["eligible"].mean()) / int(on.sum()) * 1000})  # fmt: skip
+        n = int(on.sum())
+        name = g["name"].iloc[0] if "name" in g else place
+        per = add / float(g["eligible"].mean()) / n * 1000
+        rows.append({"place": place, "name": name, "years": n, "added": add, "low": lo, "high": hi,
+                     "per_1000_parcels_year": per})  # fmt: skip
     return pd.DataFrame(rows)
 
 

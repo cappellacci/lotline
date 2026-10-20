@@ -212,3 +212,30 @@ def test_imputation_estimator_recovers_a_full_dose_effect():
     out = mm.imputation_effects(simulate(seed=11, n_places=120, n_treated=24, effects=eff, full_dose=True))
     assert out["att"] == pytest.approx(0.5, abs=0.1) and out["places"] == 24
     assert set(out) >= {"beta_0", "beta_2", "beta_4"}
+
+
+def test_added_homes_by_hand(clean):
+    p, e, _, boot = clean
+    a = mm.added_homes(e, boot)
+    assert set(a["place"]) == set(p.loc[p["T"].notna(), "place"])
+    # by hand: fitted post-adoption means minus the same means with β, θ and ρ removed
+    post = p["T"].notna() & (p["year"] >= p["T"])
+    one = a.iloc[0]
+    rows = p[post & (p["place"] == one["place"])]
+    assert one["years"] == len(rows)
+    assert one["low"] <= one["added"] <= one["high"]
+    assert one["per_1000_parcels_year"] == pytest.approx(
+        one["added"] / rows["eligible"].mean() / len(rows) * 1000
+    )
+    assert a["added"].sum() == pytest.approx(
+        float((e.fit.mu - e.fit.mu * np.exp(-e.design.X[e.fit.keep][:, :3] @ e.fit.coef[:3]
+               - e.design.X[e.fit.keep][:, 3:5] @ e.fit.coef[3:5]))[post.to_numpy()[e.fit.keep]].sum()),
+        rel=1e-9,
+    )  # fmt: skip
+
+
+def test_randomization_inference_does_not_depend_on_the_number_of_workers():
+    p = simulate(seed=7, n_places=60, n_treated=12)
+    serial = mm.randomization_inference(p, permutations=8, seed=3, modifiers=(), workers=1)
+    parallel = mm.randomization_inference(p, permutations=8, seed=3, modifiers=(), workers=2)
+    assert serial[1] == parallel[1] and np.allclose(serial[2], parallel[2]) and serial[3] == parallel[3]
