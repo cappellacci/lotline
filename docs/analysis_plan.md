@@ -207,3 +207,48 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   visible. The fitted comparables model (protocol §5.7) can replace the anchor and σ later without changing
   the interface.
 - **Decided by:** proposed by WS-ENGINE, 2026-10-20; for Ben to confirm in the PR.
+
+### D-019 · 2026-10-20 · ADU scenario: increment over current rules, additionality, and a first check against observed ADUs
+- **Research docs:** the Handbook defines the scenario (one ADU per eligible single-family parcel, ≥600 sq ft,
+  no parking); the protocol (§5.10) asks for net-new and formalization adjustments; the judging panel asked for
+  the increment over existing local rules (MS-01), a wider net-new range and a formalization share (MS-09), and
+  additionality for ADUs already counted as 1-unit permits (MS-10). How to combine these is left open.
+- **Chosen (`src/lotline/model/scenarios/adu.py`):**
+  - current rules from the coded reforms in force at the origin: Handbook-equivalent (c = 1), partial (owner
+    occupancy, parking, discretionary, attached only or a cap under 600 sq ft: c = `adu_partial_rule_share`
+    0.3, judgment) or none (c = 0); uncoded rubric fields count as not restrictive and are listed;
+  - the Handbook adds (1 − c) × h_m × ramp(t) on top of the current rule's own ramp; observed ADU rates
+    (2019–22, where permits flag ADUs) are a floor under both paths, so ADUs already built are never "added";
+  - a separate pool of parcels without an ADU under each set of rules (at most one ADU per parcel);
+  - `adu_net_new_share` low end 0.50 → 0.45 (E039 ≈ 48%); new `adu_formalization_share` 0.10 (0–0.30,
+    judgment from E049, E050); new `baseline_adu_share_of_one_unit` 0.033 (0.0047 Twin Cities metro – 0.0765
+    Austin, `scripts/dev/adu_baseline_share.py`);
+  - forward runs draw a flat 2026–30 mortgage rate from `mortgage_rate_forecast` (6.60%; 2.96–6.81%, the
+    2015–25 annual range as a stress range, `market.yaml`); validation uses each year's actual rate;
+  - where a place's only parcel roll is after the origin (Austin's 2026 roll), that roll is used and flagged
+    (a denominator, not an outcome).
+- **First check against observed ADUs** (`scripts/dev/adu_current_rules_check.py`, 2016–22, before every
+  holdout window, actual rates, central-parameter draws; raised by WS-CORE on #161). Model ADU permits under
+  each place's coded current rules vs observed: **Minneapolis 315 vs 179 (1.8x)**, **Raleigh 172 vs 81
+  (2.1x)**, **Austin 4,230 vs 2,302 (1.8x)** (Austin's ADU rules are not coded; treated as mature). The
+  closer fit in Minneapolis before 2021 rests on the judgment partial share (0.3) under its owner-occupancy
+  rule; after the rule was dropped (2021–22) Minneapolis built 16–17 a year, against a mature Handbook hazard
+  of 2.71 per 1,000 parcels (~200 a year): an order of magnitude. Austin, inside the calibration range on rent
+  (distance 0), builds 1.98 per 1,000 a year against the model's 4.06. Durham could not be checked: its
+  ADU-eligible parcel count is 5 (a denominator fault, reported to WS-NC/WS-CORE).
+- **Reasons, in the order the evidence supports them:** (1) the anchor: Portland's ~4 per 1,000 is gross,
+  includes formalization and a $7–12k fee waiver (E047) and long-built ADU know-how (C24); Austin and Raleigh,
+  post-reform and with rents near or inside the range, run at about half of it; (2) transport through rent
+  alone: with national construction costs, Minneapolis's price-to-cost (1.0) is only 11% below Portland's, so
+  σ = 0.5 lowers its hazard by ~20%, far less than observed; local costs (climate, foundations) and lot or
+  design rules (size, setbacks, internal ADUs keeping owner occupancy) are not in the model; (3) Minneapolis's
+  rule coding leaves size and parking uncoded, so "Handbook-equivalent" may overstate its rules.
+- **Proposal for Ben (not applied; no parameter was tuned):** (a) re-anchor `adu_mature_hazard_ref` from
+  0.004 (0.002–0.005) to **0.002 (0.001–0.004)**, citing Austin and Raleigh as post-reform, non-holdout
+  calibration places and keeping Portland as the high end; on the development run this lowers added ADU
+  permits by 35–37% in every state (five-year sums of place means: MN 9,607 → 6,078; NC 17,561 → 11,151; OH
+  10,722 → 6,825; TX 54,180 → 34,089);
+  (b) have WS-MN check Minneapolis's ADU size, setback and parking rules before any reform-strength
+  multiplier; (c) for V2, a place-level realization factor (observed ÷ model under current rules) where ADU
+  permits are flagged, applied to the Handbook increment, as the two-prong design's reconciliation step.
+- **Decided by:** proposed by WS-ENGINE, 2026-10-20; for Ben to decide in the PR.

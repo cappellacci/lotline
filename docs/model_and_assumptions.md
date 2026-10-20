@@ -63,7 +63,8 @@ Running four states is the test that a state with thin data can still use the me
 - It does not judge whether a reform is a good idea. It estimates production, with its uncertainty.
 - It does not model reforms other than the three above, or local rules layered on top of them, except as
   clearly labelled extra scenarios (none are defined yet).
-- It does not yet produce scenario results. See "Status" below.
+- It produces ADU scenario results only as development runs (not yet published); missing middle and fees are
+  not built. See "Status" below.
 
 ### Status: what is built and what is planned
 
@@ -76,7 +77,7 @@ Running four states is the test that a state with thin data can still use the me
 | Baseline forecast with P10/P50/P90 | **Built**, tested, backtested (V1) | `model/baseline.py`, `model/backtest.py` |
 | Pro forma (residual land value, 7 building prototypes) | **Built**, tested | `model/proforma.py` |
 | Real 2025 dollars; completion factors | **Built**, tested | `model/money.py`, `model/completion.py` |
-| Scenario modules (ADU, missing middle, fees) | **Planned** | `model/scenarios/` holds only an empty `__init__.py` |
+| Scenario modules (ADU, missing middle, fees) | ADU **built**, tested (2026-10-20); missing middle and fees **planned** | `model/scenarios/adu.py`, `config/params/adu.yaml`, `market.yaml` |
 | Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); missing middle **planned** | `model/hazard.py`, `config/params/hazard.yaml` |
 | Evidence prong (comparable places, transport) | **Planned** | `src/lotline/evidence/` is empty |
 | Combined scenarios (no lot counted twice) | **Planned** | `model/combine` (BUILD_PLAN §5) |
@@ -125,7 +126,7 @@ that shape results most. The full parameter table is under "Sensitivity notes".
 | A9 | **Buildings of 3+ attached units cost more to build** (+10% per sq ft) because they fall under the commercial building code; townhouses and duplexes do not. A switch lets triplexes use the residential code where a city allows it. | The commercial code adds sprinklers, accessibility and licensed design. No solid public source gives the size of the step, so the range is wide (3–25%). | `code_step_premium`, `triplex_under_irc`; D-009 |
 | A10 | **Half of a fee cut ends up in land prices** (range 25–75%). | Fee incidence research: landowners capture part of any cost cut, more in strong markets. | `fees.yaml` `land_capture_share` |
 | A11 | **Building responds weakly to cost cuts**: a fee elasticity of 0.3, range 0 (no effect) to 1.75. | Quantity studies of fees are mostly null; 0.3 is a tract-level supply elasticity, 1.75 a metro-wide one. | `fees.yaml` `fee_permit_elasticity`; D-010 |
-| A12 | **Some new ADUs are not new homes** (65% are; range 50–80%), and **some of a place's gain is pulled from its neighbours** (25%; range 0–50%). | ADUs are also used as offices, guest rooms or short-term rentals; reforms partly shift building between places. | `aggregate.yaml` (use in aggregation is **planned**) |
+| A12 | **Some new ADUs are not new homes** (65% are; range 45–80%; and 10% of ADU permits, 0–30%, legalize an existing unit), and **some of a place's gain is pulled from its neighbours** (25%; range 0–50%). | ADUs are also used as offices, guest rooms or short-term rentals; reforms partly shift building between places. | `aggregate.yaml` (net-new and formalization used in the ADU scenario; displacement **planned**) |
 | A13 | **Held-out outcomes stay hidden.** St. Paul from 2024 and Charlotte from June 2023 (with Mecklenburg County's BPS rows) are removed from every table until a frozen prediction is committed on `main`. | Keeps the forward tests (V5) honest. Two exposures are disclosed. | `config/states/*.yaml`, `validation/holdout.py`; D-012, D-013 |
 
 Rationale for the less obvious choices:
@@ -413,14 +414,57 @@ interval. Each simulation draw multiplies the hazard by exp(s·z − s²/2), s =
 **Properties the tests check:** the hazard equals the anchor at the reference place; higher price-to-cost never
 lowers it (any parameter draw in range); it never leaves [0, 1]; widening keeps the mean.
 
-### How each scenario will run (planned)
+### The ADU scenario: extra homes over current local rules
 
-No scenario module exists yet. The forms below are the designs the modules must implement, each with a
-hand-worked test; this section will be updated as they land.
+`model/scenarios/adu.py`, parameters in `config/params/adu.yaml`, `market.yaml` and the ADU shares in
+`aggregate.yaml` (D-019). The Handbook scenario allows one ADU on every eligible single-family parcel, at least
+600 sq ft, by right, with no parking requirement. It is applied **only above the rules a place already has**.
+For each place and each year t = 1 … 5 after the origin:
 
-- **ADU:** extra ADU permits = ADU-eligible lots × share where an ADU pencils (owner's lower margin,
-  existing-use value 0) × transported uptake rate × ramp over time, then × `adu_net_new_share` (0.65) for
-  units that are really new homes.
+    current rules   h_cur(t) = max(c × h_m × ramp(a + t), observed ADU rate)
+    Handbook rules  h_hb(t)  = max(c × h_m × ramp(a + t) + (1 − c) × h_m × ramp(t), observed ADU rate)
+    gross ADUs(t)   = parcels still without an ADU × h(t)            (each set of rules keeps its own pool)
+    ADU permits added(t) = Handbook gross ADUs(t) − current-rules gross ADUs(t)
+    additional homes(t)  = ADU permits added(t) × net-new share (0.65; 0.45–0.80) × (1 − formalization share (0.10; 0–0.30))
+
+| Piece | Plain words |
+|---|---|
+| h_m | The place's mature ADU hazard (previous section). |
+| c | How close current local rules are to the Handbook, from the coded reforms (`config/reforms/<st>.csv`) in force on 31 December of the origin year: 1 if a detached ADU of 600+ sq ft is allowed by right with no owner-occupancy or parking rule; `adu_partial_rule_share` (0.3; 0.1–0.6, judgment) if ADUs are allowed with any of those restrictions; 0 if no ADU rule is coded. A state law counts where it is more permissive. Rubric fields that are not coded count as not restrictive and are listed, so a coding gap never creates a Handbook gain. |
+| a | Years since that rule took effect: a recent reform (Columbus, December 2025) is still ramping up under current rules, and the Handbook adds nothing to it. |
+| Observed ADU rate | Where local permits flag ADUs (Met Council, Minneapolis, Raleigh, Durham, Cincinnati, Austin), ADU permits per eligible parcel a year over 2019–2022. ADUs a place already builds are in its baseline, so they are never counted as added (additionality, judging finding MS-10). |
+| Pool | Each year's ADUs use up parcels, so a parcel gets at most one ADU. |
+
+**Additionality and the baseline.** Census BPS counts a detached ADU as a 1-unit permit, so the baseline's
+single-family forecast already holds some ADUs: 0.47% of 1-unit permits in the Twin Cities metro (Met Council
+2019–22) and 7.65% in Austin (`baseline_adu_share_of_one_unit`, 3.3% pooled, from
+`scripts/dev/adu_baseline_share.py`). The scenario adds only the difference between Handbook and current rules,
+so its units go on top of the baseline without counting those ADUs twice.
+
+**Mortgage rates.** A forward run draws one 30-year rate per simulation draw from `mortgage_rate_forecast`
+(`market.yaml`): central 6.60% (FRED annual mean for 2025), range 2.96–6.81% (the 2015–2025 annual low and high,
+a stress range, not a forecast), flat over 2026–2030. Backtests and validation checks never use it: they use
+each year's actual rate from `market_geo_year`.
+
+**Worked example** (`test_one_jurisdiction_year_by_hand`): 2,000 eligible parcels, mature hazard 0.0014219 (the
+hazard example), no ADU rule today. Year 1: ramp 0.2086, so 2,000 × 0.0014219 × 0.2086 = **0.593 ADU permits
+added**, all of them extra because current rules give none; additional homes = 0.593 × 0.65 × 0.90 = **0.347**.
+Year 2: (2,000 − 0.593) × 0.0014219 × 0.5 = 1.42 permits added.
+
+**Output.** Per place and year, and as five-year totals: P10/P50/P90 and mean (over 1,000 draws of every
+uncertain parameter) of Handbook ADU permits, current-rules ADU permits, permits added and additional homes,
+beside the eligible parcels (numerator and denominator kept apart), the central price-to-cost and hazard, the
+rule class and note, and the calibration distance with an outside-the-range flag. Five-year ranges are
+percentiles of each draw's sum. Places below 20 eligible parcels are not shown alone (D-015).
+
+**Checks against places that already allow ADUs** (`scripts/dev/adu_current_rules_check.py`, 2016–2022,
+actual rates; not fitted, see D-019): under their current rules the model gives **1.8x** observed ADU permits
+in Minneapolis (179 observed vs 315), **2.1x** in Raleigh (81 vs 172) and **1.8x** in Austin (2,302 vs 4,230).
+At full Handbook-level rules Minneapolis builds far less than the model's mature hazard: 0.23 vs 2.71 per
+1,000 parcels in 2022. Austin, whose rent sits inside the calibration range, builds about 2.0 per 1,000 a year,
+half the 4 per 1,000 anchor. Until D-019's proposal is decided, ADU results should be read as **likely too
+high, by about 2x**.
+
 - **Missing middle:** for each eligible lot, compare the best 2–6 unit prototype's residual land value with
   the lot's existing-use value; lots that newly pencil enter the hazard. Proposed (judging panel): apply the
   benchmark only to the increment above what local rules already allow.
@@ -451,7 +495,7 @@ proposed there are confirmed at pre-registration (tag `prereg-v1`, **not yet mad
 |---|---|---|
 | V0 Data reproduction | Do our adapters count what the publishers count? | **Run.** BPS place sums within 1% of Census state totals (D-001) in MN 30/32 years, NC 29/31, OH 34/34, TX 21/34 (`reports/*/V0-national.md`; TX 2003–2014 runs 1–2% high, open). Austin local permits / BPS for homes in 1–2 unit buildings = **0.98** pooled 2010–2025, every year within 10%; 5+ units 1.04 with D-008 (`reports/tx/V0.md`). |
 | V1 Baseline accuracy | Does the baseline beat the benchmarks out of sample? | **Run** (fits ending 2016, 2018, 2020; 4 states × 3 windows × 4 size classes = 48 cells). After D-011: **13 of 48 cells pass** all three tests; the model beats both benchmarks in 41, coverage is in range in 32, bias in range in 21. Mean absolute error per 1,000 parcels: single-family 10.13, 2 units 0.367, 3–4 units 0.193, 5+ units 2.77 (D-011). NC results must be re-run on the rebuilt table (D-012). |
-| V2 Mechanism | Do the pro forma and hazard predict which parcels redevelop? | Pro forma built; hazard **planned**; not run. |
+| V2 Mechanism | Do the pro forma and hazard predict which parcels redevelop? | Pro forma and ADU hazard built. First check (ADU, places that already allow them, 2016–22): model 1.8–2.1x observed in Minneapolis, Raleigh and Austin (D-019). Parcel-level V2 **not run**. |
 | V3 In-state causal estimates | What did Raleigh's and Durham's reforms do? | **Planned.** |
 | V4 Backtests of known reforms | Would the range have contained what happened? | **Planned.** |
 | V5 Blind forward tests | St. Paul and Charlotte, predicted before outcomes are seen | **Planned**; predictions to be frozen by Nov 17. Exposures disclosed (D-012, D-013). |
@@ -536,8 +580,10 @@ Parameters expected to drive scenario results (to be confirmed by the planned gl
 - **Missing middle:** hard cost per sq ft ($120–260), the commercial-code step (3–25%), the developer margin
   (10–20% of value), the cap rate (4.5–7.5%) and the existing-use margin (0–25%), each through how many lots
   pencil; then the hazard (planned).
-- **ADU:** owner's margin (0–20%), ADU size (600–1,000 sq ft) and cost premium (0–40%), the transported uptake
-  rate (planned) and the net-new share (50–80%).
+- **ADU:** the anchor hazard (2–5 per 1,000 lots a year), how sharply uptake falls with price-to-cost (σ
+  0.25–0.8), the partial-rule share (0.1–0.6), the mortgage rate path (2.96–6.81%), the net-new share
+  (45–80%) and the formalization share (0–30%); for most places, also the widening outside the calibration
+  range.
 - **All scenarios:** the displacement share (0–50%) decides how much of a place's gain is new statewide.
 
 ### Planned tornado chart
@@ -559,13 +605,26 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 <!-- params-table:start -->
 <!-- GENERATED by `uv run python scripts/dev/params_table.py` from config/params/*.yaml. Do not edit by hand. -->
 
-90 parameters in 9 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
+99 parameters in 11 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
-**`config/params/aggregate.yaml`** (6 parameters)
+**`config/params/adu.yaml`** (6 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `adu_net_new_share` | 0.65 | 0.5–0.8 | share of permitted ADUs | Statistical protocol §5.10 |
+| `adu_handbook_min_sqft` | 600 | fixed | sq ft | Handbook benchmark ADU scenario: one ADU per eligible single-family parcel, at least 600 sq ft, no parking re… |
+| `adu_partial_rule_share` | 0.3 | 0.1–0.6 | share of Handbook uptake reached under current local rules | Judgment |
+| `adu_observed_first_year` | 2019 | fixed | calendar year | Choice (D-019): observed ADU permits from 2019, after the main Twin Cities and Austin ADU rules took effect |
+| `adu_observed_last_year` | 2022 | fixed | calendar year | Choice (D-019): observed ADU permits to 2022, before the 2023 rate shock and outside every holdout window (St |
+| `adu_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: P10/P90 of 1,000 draws move by under 2% between seeds on the development run |
+| `adu_simulation_seed` | 20261020 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |
+
+**`config/params/aggregate.yaml`** (8 parameters)
+
+| Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
+|---|---|---|---|---|
+| `adu_net_new_share` | 0.65 | 0.45–0.8 | share of permitted ADUs | Statistical protocol §5.10 |
+| `adu_formalization_share` | 0.1 | 0–0.3 | share of ADU permits that legalize an existing unpermitted unit | Judgment, from E049 (San Jose 2016-20: ~78% of detached ADU construction unpermitted, 3-4 informal per formal… |
+| `baseline_adu_share_of_one_unit` | 0.033 | 0.0047–0.0765 | ADU permits / (ADU + detached single-family permits) | scripts/dev/adu_baseline_share.py: Met Council residential permits and Austin permits, 2019-2022 (MS-10): Twi… |
 | `displacement_share` | 0.25 | 0–0.5 | share of local gain | Statistical protocol §6 (decision table: '0-50% range parameter') |
 | `completion_factor_single_family` | 0.97 | 0.95–1 | completions per permitted unit | Census New Residential Construction via FRED, long-run completions per permitted unit, recomputed by scripts/… |
 | `completion_factor_multifamily` | 0.8 | 0.74–0.88 | completions per permitted unit | Census New Residential Construction via FRED, long-run completions per permitted unit, recomputed by scripts/… |
@@ -647,6 +706,12 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_ramp_half_years` | 2 | 1–3.5 | years after adoption to reach half the mature hazard | adu-study-design.md: immediate where conversions and pent-up demand exist (LA garages, E038) |
 | `adu_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, set so the ramp goes from ~20% to ~80% of mature uptake in about 2 years (Seattle's ~3 years to pla… |
 | `adu_extrapolation_widening` | 1 | 0.5–2 | standard deviation of log(hazard) per unit of log distance outside the calibration range | Judgment |
+
+**`config/params/market.yaml`** (1 parameter)
+
+| Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
+|---|---|---|---|---|
+| `mortgage_rate_forecast` | 6.6 | 2.96–6.81 | percent (30-year fixed), held flat over the 5-year forecast (2026-2030) | Central: FRED MORTGAGE30US annual mean for 2025, 6.595% (market_geo_year.mortgage_rate, national:US) |
 
 **`config/params/money.yaml`** (1 parameter)
 

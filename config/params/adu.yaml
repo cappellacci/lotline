@@ -1,0 +1,46 @@
+# Handbook ADU scenario (model/scenarios/adu.py). The hazard is in hazard.yaml; the net-new and formalization
+# shares are in aggregate.yaml.
+
+adu_handbook_min_sqft:
+  value: 600
+  low: 600
+  high: 600
+  unit: sq ft
+  source: "Handbook benchmark ADU scenario: one ADU per eligible single-family parcel, at least 600 sq ft, no parking requirement"
+  notes: "Fixed by the Handbook. A local rule capping ADUs below this size counts as a partial rule. The ADU prototype (proforma.yaml adu_sqft, 600-1,000) never goes below it."
+
+adu_partial_rule_share:
+  value: 0.3
+  low: 0.1
+  high: 0.6
+  unit: share of Handbook uptake reached under current local rules
+  source: "Judgment. Applies where ADUs are allowed but with an owner-occupancy rule, parking, discretionary approval, attached-only or a cap under 600 sq ft. adu-study-design.md: partial reforms did little (Minneapolis ~20/yr before 2021, DC <30/yr E046, New Hampshire 0.1-1.5 per 1,000 houses E056); E053 (local rules neutralized state mandates); that contrast mixes weak markets with weak rules, so the market part is left to the hazard"
+  notes: "Used only where a coded ADU rule is in force at the origin and fails at least one Handbook condition."
+
+adu_observed_first_year:
+  value: 2019
+  low: 2019
+  high: 2019
+  unit: calendar year
+  source: "Choice (D-019): observed ADU permits from 2019, after the main Twin Cities and Austin ADU rules took effect"
+
+adu_observed_last_year:
+  value: 2022
+  low: 2022
+  high: 2022
+  unit: calendar year
+  source: "Choice (D-019): observed ADU permits to 2022, before the 2023 rate shock and outside every holdout window (St. Paul, Charlotte)"
+
+adu_simulation_draws:
+  value: 1000
+  low: 500
+  high: 5000
+  unit: draws
+  source: "Choice: P10/P90 of 1,000 draws move by under 2% between seeds on the development run"
+
+adu_simulation_seed:
+  value: 20261020
+  low: 0
+  high: 4294967295
+  unit: random seed
+  source: "Choice: a fixed seed makes every run reproducible"
