@@ -182,3 +182,28 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Found:** with Ohio's statewide parcels (#150), Summit County sends no land use, so Akron's roll counted **0 eligible parcels rated `high` quality**: parcels of unknown use are never eligible, and the quality share counted only unknown units, lot size and zoning. Lucas County (55% unknown) gave Toledo a large undercount.
 - **Now:** a jurisdiction-roll is used as a parcel denominator only if its land use is known for at least `tier2_min_land_use_share` (0.9, the tier 2 threshold from D-016) of its parcels; otherwise that jurisdiction uses the ACS fallback (`build/eligible.usable_rolls`). On Ohio's 2023 rolls this moves 18% of parcels, including all of five counties (Hardin, Lucas, Meigs, Muskingum, Summit at jurisdiction level), to the fallback.
 - **Decided by:** Ben, 2026-10-20.
+
+### D-018 · 2026-10-20 · ADU hazard: functional forms the research docs leave open
+- **Research docs:** the two-prong design and protocol §5.5–5.8 say the mature hazard comes from comparable
+  places and is transported by effect modifiers (price-to-cost first, C22 equity and rates for ADUs), with a
+  ramp over event time and no silent extrapolation. They don't give the functional forms, the reference place
+  or how to widen outside the comparables' range.
+- **Chosen (`src/lotline/model/hazard.py`, `config/params/hazard.yaml`):**
+  - anchor: 4 ADU permits per 1,000 eligible lots a year (2–5), the adu-study-design calibration band, with
+    **Portland 2015–19** as the reference place (ACS 2015–19 rent and value, `scripts/dev/adu_reference.py`);
+    the comparables pooling of protocol §5.7 is not built yet, so this is the band, not a fitted posterior;
+  - price-to-cost enters through the **share of lots that pencil**, F = Φ((ln PCR − ln(1 + margin)) / σ), a
+    lognormal spread of lot-level ratios around the place's ratio; uptake among lots that pencil is the same
+    everywhere (u = h_ref / F(PCR_ref)). This makes uptake rise with profit, stay a probability and match the
+    anchor at the reference;
+  - reference and target share the same cost parameters (national hard cost), so with national costs only
+    rent (and home value, rates) transports; Portland's higher local costs are not netted out (open);
+  - equity as a power of median home value and rates as an exponential in the mortgage rate, both judgment
+    with ranges that include no effect;
+  - logistic ramp in years since adoption, half-way at 2 years;
+  - calibration range = the span of Portland, Seattle and Los Angeles (rent, home value) and 2015–23 (rates);
+    outside it the hazard gets mean-preserving lognormal noise with log-sd = w × log distance (w = 1).
+- **Why:** the simplest forms that use the pro forma, keep each step checkable by hand and make extrapolation
+  visible. The fitted comparables model (protocol §5.7) can replace the anchor and σ later without changing
+  the interface.
+- **Decided by:** proposed by WS-ENGINE, 2026-10-20; for Ben to confirm in the PR.

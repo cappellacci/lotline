@@ -1,0 +1,147 @@
+# ADU hazard (model/hazard.py): the yearly chance that an eligible single-family parcel adds an ADU, transported
+# from strong reforms in high-cost cities by price-to-cost, home equity and mortgage rates, phased in by a ramp.
+# Dollar amounts in 2025 dollars. Reference and calibration values are recomputed by scripts/dev/adu_reference.py
+# and are fixed (low = high): they describe the reference cities, they are not uncertain inputs.
+# "Judgment" marks values with no published estimate; their ranges are wide and include no effect where it is
+# plausible.
+
+# ---- The evidence anchor ----
+
+adu_mature_hazard_ref:
+  value: 0.004
+  low: 0.002
+  high: 0.005
+  unit: ADU permits per eligible single-family parcel per year
+  source: "adu-study-design.md working calibration band: about 2-5 ADU permits per 1,000 single-family lots per year at maturity for a strong reform in a high-cost city, Portland about 4 (inference from E044, E046, E047, E052); cross-check E047: Portland 472 ADU permits in 2018"
+  notes: "Gross permits, including formalized units and ADUs not used as homes (handled by adu_formalization_share and adu_net_new_share in aggregate.yaml). The band's own label is 'inference, uncertain'."
+
+adu_ref_rent_usd:
+  value: 1573
+  low: 1573
+  high: 1573
+  unit: USD per month (2025)
+  source: "scripts/dev/adu_reference.py: ACS 2015-2019 B25064 median gross rent, Portland city OR (place 4159000), CPI-U to 2025 dollars"
+  notes: "The reference place for adu_mature_hazard_ref. Fixed: describes Portland, not an uncertain input."
+
+adu_ref_home_value_usd:
+  value: 519222
+  low: 519222
+  high: 519222
+  unit: USD (2025)
+  source: "scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars"
+
+adu_ref_mortgage_rate:
+  value: 3.99
+  low: 3.99
+  high: 3.99
+  unit: percent (30-year fixed)
+  source: "scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-2019"
+
+adu_calibration_rent_low_usd:
+  value: 1573
+  low: 1573
+  high: 1573
+  unit: USD per month (2025)
+  source: "scripts/dev/adu_reference.py: lowest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (2025 dollars): Portland 1,573 (1,248 nominal)"
+  notes: "Places below this rent are outside the calibration range: flagged, interval widened."
+
+adu_calibration_rent_high_usd:
+  value: 2034
+  low: 2034
+  high: 2034
+  unit: USD per month (2025)
+  source: "scripts/dev/adu_reference.py: highest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (2025 dollars): Seattle 2,034 (1,614 nominal); Los Angeles 1,827"
+
+adu_calibration_value_low_usd:
+  value: 519222
+  low: 519222
+  high: 519222
+  unit: USD (2025)
+  source: "scripts/dev/adu_reference.py: lowest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (2025 dollars): Portland (412,000 nominal)"
+
+adu_calibration_value_high_usd:
+  value: 835671
+  low: 835671
+  high: 835671
+  unit: USD (2025)
+  source: "scripts/dev/adu_reference.py: highest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (2025 dollars): Seattle (663,100 nominal); Los Angeles 802,652"
+
+adu_calibration_rate_low:
+  value: 2.96
+  low: 2.96
+  high: 2.96
+  unit: percent (30-year fixed)
+  source: "scripts/dev/adu_reference.py: lowest annual mean of FRED MORTGAGE30US over 2015-2023, the years the comparables' uptake covers (E044 to 2023)"
+
+adu_calibration_rate_high:
+  value: 6.81
+  low: 6.81
+  high: 6.81
+  unit: percent (30-year fixed)
+  source: "scripts/dev/adu_reference.py: highest annual mean of FRED MORTGAGE30US over 2015-2023"
+
+# ---- Transport: how uptake changes with local conditions ----
+
+adu_rent_to_median_ratio:
+  value: 1.0
+  low: 0.8
+  high: 1.2
+  unit: ADU rent / place median gross rent
+  source: "Judgment. E039 (CCI 2021): median California ADU rent $2,000 for a small new unit; a new 800 sq ft unit rents near a place's median gross rent (smaller than the median unit, but new)"
+  notes: "Applies to target and reference alike, so it matters only through the feasibility threshold."
+
+adu_feasibility_dispersion:
+  value: 0.5
+  low: 0.25
+  high: 0.8
+  unit: standard deviation of log(lot's own price-to-cost)
+  source: "Judgment. Lots differ in what an ADU costs and earns (garages to convert, lot size, slope: E040, E043); no published spread. Range from near-uniform lots (0.25) to very mixed (0.8)"
+  notes: "Sets how fast uptake falls as price-to-cost drops: a place with rent 30% below Portland's gets 17% of Portland's hazard at 0.25, 49% at 0.5 and 66% at 0.8 (other modifiers equal)."
+
+adu_equity_elasticity:
+  value: 0.25
+  low: 0.0
+  high: 0.5
+  unit: "% change in hazard per % change in median home value"
+  source: "Judgment. Confounder register C22 (owners finance ADUs: Portland 62% cash, 2% construction loans); E045 (~40% used home equity). No published elasticity; range includes no effect"
+
+adu_rate_semi_elasticity:
+  value: 0.07
+  low: 0.0
+  high: 0.15
+  unit: share change in hazard per percentage point of mortgage rate
+  source: "Judgment. Confounder register C01 and C22 (rates reach ADUs through home-equity and cash-out borrowing, beyond the construction-loan cost already in the pro forma). No published estimate; range includes no effect"
+  notes: "At 0.07, a rate 2.6 points above the 2015-19 mean lowers the hazard by about 17%."
+
+adu_fee_per_unit_usd:
+  value: 0
+  low: 0
+  high: 0
+  unit: USD per ADU (2025)
+  source: "E073 (Terner 2019): many California cities waive ADU fees, others charge up to $50k; the Handbook ADU scenario does not change fees. No fee is assumed for the reference or the target alike"
+  notes: "Fixed at 0 until local ADU fees are coded; a local fee would lower that place's price-to-cost."
+
+# ---- Ramp after adoption ----
+
+adu_ramp_half_years:
+  value: 2.0
+  low: 1.0
+  high: 3.5
+  unit: years after adoption to reach half the mature hazard
+  source: "adu-study-design.md: immediate where conversions and pent-up demand exist (LA garages, E038); 2-3 years to plateau for detached ADUs (Seattle ~3, E044); Portland kept rising ~6 years (E046); confounder C24 (builder learning)"
+
+adu_ramp_slope_years:
+  value: 0.75
+  low: 0.5
+  high: 1.5
+  unit: years (logistic scale)
+  source: "Judgment, set so the ramp goes from ~20% to ~80% of mature uptake in about 2 years (Seattle's ~3 years to plateau, E044); wider values give Portland's slower rise (E046)"
+
+# ---- Outside the calibration range ----
+
+adu_extrapolation_widening:
+  value: 1.0
+  low: 0.5
+  high: 2.0
+  unit: standard deviation of log(hazard) per unit of log distance outside the calibration range
+  source: "Judgment. Statistical protocol §5.5 step 3 and two-prong design: don't extrapolate silently; flag and widen. At 1.0, a place with rent 40% below the reference range (log distance 0.5) gets an extra log-sd of 0.5 (P10-P90 about x0.5 to x1.9)"

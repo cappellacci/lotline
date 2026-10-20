@@ -77,7 +77,7 @@ Running four states is the test that a state with thin data can still use the me
 | Pro forma (residual land value, 7 building prototypes) | **Built**, tested | `model/proforma.py` |
 | Real 2025 dollars; completion factors | **Built**, tested | `model/money.py`, `model/completion.py` |
 | Scenario modules (ADU, missing middle, fees) | **Planned** | `model/scenarios/` holds only an empty `__init__.py` |
-| Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Planned** | `model/` (BUILD_PLAN §5) |
+| Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); missing middle **planned** | `model/hazard.py`, `config/params/hazard.yaml` |
 | Evidence prong (comparable places, transport) | **Planned** | `src/lotline/evidence/` is empty |
 | Combined scenarios (no lot counted twice) | **Planned** | `model/combine` (BUILD_PLAN §5) |
 | Statewide aggregation, net-new and displacement shares | **Planned** (parameters set) | `config/params/aggregate.yaml` |
@@ -360,7 +360,8 @@ scenario two answers that inform each other:
 
 1. **Mechanism prong, "what do your own economics say?"** Eligible parcels → pro forma feasibility → an annual
    *redevelopment hazard* (the share of feasible lots actually built on each year) → permits. Built: the
-   eligible-parcel rule and the pro forma. **Planned:** the hazard and its ramp-up over the five years.
+   eligible-parcel rule, the pro forma, and the ADU hazard with its ramp-up (next section). **Planned:** the
+   hazard for missing middle.
 2. **Evidence prong, "what happened in places like you?"** Measured effects from places that already reformed
    (Portland, Seattle, California, Spokane and Auckland in the design; Raleigh and Durham in state), per 1,000
    eligible lots and by year since the reform. **Planned:** the comparables table, an original ADU
@@ -372,6 +373,45 @@ The evidence prong calibrates the mechanism prong's free parameters (the hazard 
 mechanism prong translates the evidence to local prices and costs. Where the two disagree, the tool will show
 why. With roughly 10–15 reformed places with usable data, mostly high-cost West Coast cities, the evidence pool
 is thin; places far from any comparable will lean on the mechanism prong and say so.
+
+### The ADU hazard: how many eligible lots add an ADU each year
+
+`model/hazard.py`, parameters in `config/params/hazard.yaml` (D-018). The evidence gives one anchor: after a
+strong ADU reform in a high-cost city, about **2–5 ADU permits per 1,000 single-family lots a year** at
+maturity, Portland about 4 (`docs/research/adu-study-design.md`, an inference the document itself calls
+uncertain). The hazard carries that anchor to another place through what makes an ADU worth building there,
+and phases it in after adoption:
+
+    hazard in year t = ramp(t) × mature hazard
+    mature hazard     = u × F(PCR) × (V / V_ref)^β_equity × exp(−β_rate × (r − r_ref)),  u = h_ref / F(PCR_ref)
+
+| Piece | Plain words | Value (range) |
+|---|---|---|
+| PCR | ADU price-to-cost ratio from the pro forma (rented out): value (a year's rent after vacancy and operating costs ÷ cap rate) over cost (hard + soft + fees + interest while building). Rent = the place's median gross rent (ACS) × `adu_rent_to_median_ratio`. | e.g. 1.13 Portland 2015–19, 0.79 at $1,100 a month |
+| F(PCR) | Share of lots where an ADU pencils. Lots differ (a garage to convert, slope, the owner's plans), so each lot's ratio is lognormal around the place's PCR; a lot pencils above 1 + the owner's margin. F = Φ((ln PCR − ln(1 + margin)) / σ). | σ 0.5 (0.25–0.8), judgment; margin 10% (0–20%) |
+| u | Uptake among lots that pencil, set so the reference place gets the anchor exactly. Reference and target use the same costs, so only local rent, home value and rates transport. | h_ref 0.004 (0.002–0.005) |
+| Home equity (C22) | Owners pay for most ADUs (Portland 62% cash; ~40% used home equity, E045): median home value relative to Portland's. | β_equity 0.25 (0–0.5), judgment |
+| Rates (C01, C22) | 30-year mortgage rate relative to the 2015–19 mean (3.99%), beyond the construction loan already in the pro forma. | β_rate 0.07 per point (0–0.15), judgment |
+| ramp(t) | Logistic over years since adoption: 1 / (1 + exp(−(t − half) / slope)). | half 2 years (1–3.5), slope 0.75 (0.5–1.5) |
+
+The reference values (Portland's rent $1,573 and home value $519,222 in 2025 dollars, ACS 2015–19; the 2015–19
+mortgage rate) and the **calibration range** (rent $1,573–2,034 and home value $519k–836k across Portland,
+Seattle and Los Angeles; rates 2.96–6.81% over 2015–23) are recomputed by `scripts/dev/adu_reference.py`.
+
+**Worked example** (the test `test_mature_hazard_one_place_by_hand`): rent $1,100, home value half Portland's,
+mortgage rate 2 points above 2015–19. PCR = 148,200 / 187,966 = 0.788; F = Φ((ln 0.788 − ln 1.1) / 0.5) =
+Φ(−0.666) = 0.253. Portland: PCR 1.127, F_ref = 0.520, so u = 0.004 / 0.520 = 0.0077. Equity 0.5^0.25 = 0.841;
+rates e^(−0.07 × 2) = 0.869. Mature hazard = 0.0077 × 0.253 × 0.841 × 0.869 = **0.00142**, 1.4 ADUs per 1,000
+eligible lots a year; in year 1 after adoption the ramp gives 21% of that.
+
+**Outside the calibration range.** Most places Lotline covers have lower rents and home values than the
+reference cities. The formula still applies there, but it is extrapolation, so the tool says so: each place
+gets its log distance outside the range (rent, home value and rate added up; 0 inside), a flag, and a wider
+interval. Each simulation draw multiplies the hazard by exp(s·z − s²/2), s = `adu_extrapolation_widening`
+(1.0, range 0.5–2) × distance, z standard normal; the mean stays put and P10–P90 widens with distance.
+
+**Properties the tests check:** the hazard equals the anchor at the reference place; higher price-to-cost never
+lowers it (any parameter draw in range); it never leaves [0, 1]; widening keeps the mean.
 
 ### How each scenario will run (planned)
 
@@ -519,7 +559,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 <!-- params-table:start -->
 <!-- GENERATED by `uv run python scripts/dev/params_table.py` from config/params/*.yaml. Do not edit by hand. -->
 
-72 parameters in 8 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
+90 parameters in 9 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
 **`config/params/aggregate.yaml`** (6 parameters)
 
@@ -584,6 +624,29 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `handbook_fee_cut_share` | 0.5 | fixed | share of fees | Handbook benchmark fees scenario: cut total development fees by 50% (i.e. -$25,000 per unit) |
 | `land_capture_share` | 0.5 | 0.25–0.75 | share of fee change | Methods review §3c (lambda_land 0.25-0.75+, central 0.5) |
 | `fee_permit_elasticity` | 0.3 | 0–1.75 | % change in permits per % change in price received by builders (applied to a cost change as a share of total development cost) | Central: E081 Baum-Snow & Han 2024, tract-level unit supply elasticity ~0.3 |
+
+**`config/params/hazard.yaml`** (18 parameters)
+
+| Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
+|---|---|---|---|---|
+| `adu_mature_hazard_ref` | 0.004 | 0.002–0.005 | ADU permits per eligible single-family parcel per year | adu-study-design.md working calibration band: about 2-5 ADU permits per 1,000 single-family lots per year at… |
+| `adu_ref_rent_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25064 median gross rent, Portland city OR (place 4159000), CPI-U… |
+| `adu_ref_home_value_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars |
+| `adu_ref_mortgage_rate` | 3.99 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-20… |
+| `adu_calibration_rent_low_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: lowest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (20… |
+| `adu_calibration_rent_high_usd` | 2,034 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: highest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (2… |
+| `adu_calibration_value_low_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: lowest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (20… |
+| `adu_calibration_value_high_usd` | 835,671 | fixed | USD (2025) | scripts/dev/adu_reference.py: highest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (2… |
+| `adu_calibration_rate_low` | 2.96 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: lowest annual mean of FRED MORTGAGE30US over 2015-2023, the years the comparabl… |
+| `adu_calibration_rate_high` | 6.81 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: highest annual mean of FRED MORTGAGE30US over 2015-2023 |
+| `adu_rent_to_median_ratio` | 1 | 0.8–1.2 | ADU rent / place median gross rent | Judgment |
+| `adu_feasibility_dispersion` | 0.5 | 0.25–0.8 | standard deviation of log(lot's own price-to-cost) | Judgment |
+| `adu_equity_elasticity` | 0.25 | 0–0.5 | % change in hazard per % change in median home value | Judgment |
+| `adu_rate_semi_elasticity` | 0.07 | 0–0.15 | share change in hazard per percentage point of mortgage rate | Judgment |
+| `adu_fee_per_unit_usd` | 0 | fixed | USD per ADU (2025) | E073 (Terner 2019): many California cities waive ADU fees, others charge up to $50k |
+| `adu_ramp_half_years` | 2 | 1–3.5 | years after adoption to reach half the mature hazard | adu-study-design.md: immediate where conversions and pent-up demand exist (LA garages, E038) |
+| `adu_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, set so the ramp goes from ~20% to ~80% of mature uptake in about 2 years (Seattle's ~3 years to pla… |
+| `adu_extrapolation_widening` | 1 | 0.5–2 | standard deviation of log(hazard) per unit of log distance outside the calibration range | Judgment |
 
 **`config/params/money.yaml`** (1 parameter)
 
