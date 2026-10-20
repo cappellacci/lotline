@@ -590,3 +590,117 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   and cohorts (e.g. one post-adoption effect, or k = 0–1, 2–3, 4+), report the D-023 robustness estimators
   (negative binomial with place random effects, which keeps places with zeros; the Borusyak imputation
   estimator) as primary, or widen the panel (more places with dated rules, earlier ADU-flag years).
+
+### D-026 · 2026-10-20 · ADU effect: imputation estimator on the additive scale (pre-registered before any real-data estimate; supersedes D-023's primary estimator)
+- **Status:** written before any D-026 estimate exists. Nothing from the D-023 runs was looked at beyond what
+  D-023 records (drop counts and the guard failure). **No real-data run until Ben approves this entry.**
+- **Why D-023's estimator is replaced, not re-tuned:** a review on 2026-10-20, checked against the code and
+  reproduced on synthetic panels (`tests/model/test_estimate_adu.py`, "failing regimes"), found design
+  defects that more data would not fix:
+  1. treated places with no ADU in any pre-adoption year have their pre-years dropped as separated; their
+     cohort cells are then collinear with the place effect and enter the aggregate as near-zero contrasts (a
+     simulated true effect of log 50 was estimated at −0.31);
+  2. places treated before 2016, and the 2016 cohort, have no untreated year in the panel: their cells are
+     unidentified and their paths identify the year effects, i.e. already-treated places serve as controls,
+     which protocol §5.6 forbids;
+  3. with one place per cohort, the modifier × post terms θ are collinear with the cohort × event cells;
+  4. with singleton cohorts the CR2 score-bootstrap 90% intervals covered about 23% of the time;
+  5. places with a permit or conditional-use rule were coded as never treated, and the dose before T was
+     ignored;
+  6. randomization inference permuted T but left the dose path where it was;
+  7. the transport test used the largest year effect, not the 2025 one, for years after the panel;
+  8. household growth was measured from max(T − 1, 2015), so 2011–15 adopters got post-adoption growth.
+  The causal-diagram review added: parking and process reforms are not controlled; the anticipation test (C29)
+  and the spillover robustness run (C26) were never specified as runs; and protocol §5.6 names
+  Callaway–Sant'Anna or Borusyak, which D-023 replaced without a deviation entry. This entry is that entry.
+- **Estimand (changed scale):** additional ADU permits per 1,000 eligible single-family parcels per year caused
+  by a by-right ADU rule, relative to the rule it replaced, averaged over treated place-years in event-time
+  bins k = t − T_i ∈ {0–1, 2–3, 4+}, plus the overall average over all treated place-years. Additive, so
+  place results add up to the statewide total (protocol §6, "levels for aggregation"). The proportional
+  version (additional permits per counterfactual permit) is reported as a secondary number.
+- **Primary estimator: imputation (Borusyak, Jaravel & Spiess 2024) with a Poisson untreated model.**
+  1. *Untreated observations:* never-treated places in all years, and treated places in years t < T_i.
+  2. *Untreated model,* fitted by PPML on untreated observations only, with the log(eligible) offset:
+     E[y_it(0)] = Eligible_it · exp(α_i + γ_t + λ'Z_it), with the same separation handling and numerical
+     guards as D-023 (`ppml`).
+  3. *Imputation:* μ̂0_it = Eligible_it · exp(α̂_i + γ̂_t + λ̂'Z_it) for each treated observation.
+  4. *Effect:* ATT_k = 1,000 · Σ_{it ∈ bin k} (y_it − μ̂0_it) / Σ_{it ∈ bin k} Eligible_it. The overall ATT
+     uses all treated observations. Secondary: R_k = Σ (y − μ̂0) / Σ μ̂0.
+- **Time-varying controls Z_it (estimated on untreated observations only):**
+  - *Replaced ADU rule:* the graded dose (D-023 grades × coverage) of the non-by-right rule in force. For
+    treated years the counterfactual keeps the value from year T_i − 1, so the effect is "by right versus
+    the rule it replaced". This fixes defect 5: permit and conditional-use places are untreated places with
+    a non-zero control, not clean never-treated places.
+  - *Parking reform:* 1 if a coded citywide `parking` reform with a zero minimum is in force on 1 July (as
+    `adu.parking_waived`, D-022; C08).
+  - *Process reform:* 1 if a coded `process` reform is in force on 1 July (C21).
+  - *Missing middle:* MM_it as in D-023 (C30, as a control only).
+  - The actual value of each non-ADU control is used for treated years too (these are not the treatment). A
+    control with no variation among untreated observations is dropped and reported: on 2026-10-20 the
+    Minnesota rules file codes 2 parking rows, 2 missing-middle rows and no process rows, so these controls
+    may be dropped; a reform bundled with the ADU rule in the same place-year is then not separable and is
+    reported as a bundle (C08).
+- **Sample and exclusions (all listed in the output, none silent):**
+  - places treated before the panel (T_i < 2016) and the 2016 cohort are excluded: they have no untreated
+    year, so α_i is not identified and they are never used as controls (defect 2);
+  - any treated place with no kept untreated year after separation, which includes places with zero ADUs in
+    every pre-adoption year, is excluded from the ATT (defect 1). Their post-adoption permits are reported
+    descriptively, and an upper bound that counts all of them as additional (μ̂0 = 0) is reported beside the
+    ATT;
+  - treated observations in a year with no untreated observation (no γ̂_t) are excluded;
+  - St. Paul is never used (V5); places with no dated ADU rule are left out (D-023).
+- **Identification floor:** if fewer than 3 treated places contribute to the ATT, it is reported as not
+  estimable, not as an estimate.
+- **What is not identified in the Minnesota data, and what replaces it:**
+  - θ (pre-adoption modifiers) and δ (missing-middle substitution) are not identified with this many treated
+    places (defect 3; D-023's rerun dropped all four θ and δ as collinear). The primary estimator has neither.
+    Heterogeneity is **described**: each contributing place's own ATT_i next to its modifiers (price-to-cost,
+    log home value, pre-reform 1-unit permits per 1,000 parcels, household growth), with Spearman rank
+    correlations shown as description, with no test and no use in the forecast.
+  - ρ (rates × treated) is dropped for the same reason. The ATT by calendar year is shown as description.
+  - Modifier dependence for transport and forecasting moves to the hierarchical negative-binomial model of
+    protocol §5.7, with priors fixed now: θ_m ~ Normal(0, 0.25²) per standard deviation of modifier m on the
+    log effect; ρ ~ Normal(0, 0.10²) per percentage point; place random-effect SD ~ Half-Normal(0, 1); NB
+    overdispersion 1/κ ~ Exponential(1). It needs its own run approval; until then the forecast uses the
+    pooled ATT with no modifier adjustment.
+- **Inference:**
+  - **Primary: randomization inference** on the overall ATT, sharp null of no effect. Adoption years are
+    permuted among the contributing treated places, and **each place's whole dose path moves with its T**:
+    dose_new(t) = dose_old(t − (T_new − T_old)), held at the first observed pre-adoption value before the
+    panel and at the last value after it (defect 6). All distinct assignments are enumerated when there are
+    at most 999 of them, else 999 are drawn; p = share of |ATT_perm| ≥ |ATT| including the observed
+    assignment. If the smallest attainable p is above 0.10, the result is reported as unable to reject at
+    10% (underpowered), with no supplementary test.
+  - **Range: stratified place bootstrap** (treated and untreated places resampled separately, 999 draws, the
+    whole imputation repeated per draw), basic 90% intervals for ATT_k, the overall ATT and R. The D-023
+    score bootstrap is not used (defect 4).
+- **Checks (all reported, pass or fail; none chooses the specification):**
+  1. *Pre-trends:* treated observations at k = −3…−1 are held out of the untreated fit and imputed; their mean
+     y − μ̂0 per 1,000 parcels has a 90% bootstrap interval containing 0.
+  2. *Anticipation (C29):* T re-dated to the announcement year (the coded `announced_date`, else the council
+     `adoption_date`; places with neither keep T and are listed). The window T_ann ≤ t < T is held out and
+     imputed: its mean y − μ̂0 has a 90% interval containing 0, and the overall ATT with T = T_ann stays
+     inside the main 90% interval.
+  3. *Placebo dates* 2 years early on pre-adoption data: interval contains 0.
+  4. *Placebo outcome,* permits in 5+ unit buildings: interval contains 0.
+  5. *Excluding 2020–21:* each ATT_k inside its main 90% interval.
+  6. *Leave one treated place out:* the overall ATT stays inside the main 90% interval.
+  7. *Spillovers (C26): first ring excluded.* Untreated places that share a boundary with a treated place are
+     dropped from the untreated fit; the overall ATT stays inside the main 90% interval. Adjacency comes from
+     Census TIGER/Line 2020 place and county-subdivision boundaries, fetched through the IO layer with a
+     provenance row. Until that dataset exists the check is reported as not run.
+- **Transport and forecast:** a target's counterfactual is imputed from its own pre-adoption years with the
+  Minnesota year effects (γ̂_2025 for years after the panel, defect 7), plus ATT_k · Eligible / 1,000 drawn
+  from the bootstrap, with Poisson-gamma count noise from the untreated fit. The D-023 transport pass rule
+  is unchanged. A target with no pre-adoption permits takes a level drawn from the Minnesota places' α̂.
+- **Modifier measurement (defect 8):** household growth is log(households at T − 1 / households at T − 6)
+  only when both ACS vintages exist; otherwise it is missing (never measured from a later year).
+- **Robustness (reported, not used to choose):** D-023's PPML with pooled event-time bins (no cohort cells,
+  no θ); the dose-weighted ATT (Σ (y − μ̂0) / Σ Eligible × dose); the zero-pre upper bound above.
+- **What would change the plan:** a failed check is reported, not fixed by re-specification; a failed
+  pre-trend check moves the headline to HonestDiD bounds. Any change needs a new dated entry before the run.
+- **Code:** `src/lotline/model/estimate_adu.py` (`impute`, `randomization_inference`, `place_bootstrap`, the
+  D-026 checks), tested on synthetic panels that reproduce each failing regime (zero pre-periods, singleton
+  cohorts, a 2016 cohort, pre-panel adopters whose effect keeps growing after k = 5): each fails under the
+  D-023 estimator and passes under this one.
+- **Decided by:** proposed 2026-10-20 (Claude Code, from the 2026-10-20 review); **awaiting Ben's approval.**
