@@ -11,6 +11,7 @@ import pytest
 from lotline.model.scenarios import adu
 
 P = adu.central_params()
+A4 = {"adu_mature_hazard_ref": 0.004}  # the hand example's anchor (the configured one is estimated, D-019)
 
 
 def _places(**cols):
@@ -37,7 +38,7 @@ def test_one_jurisdiction_year_by_hand():
     Current rules give none, so all 0.5933 are added. Homes = 0.5933 × 0.65 (net-new) × (1 − 0.10)
     (formalization) = 0.3470. Year 2: pool 2,000 − 0.5933; ramp(2) = 0.5; 1,999.407 × 0.0014219 × 0.5 =
     1.4215."""
-    out = adu.central_path(_places())
+    out = adu.central_path(_places(), params=A4)
     ramp1 = 1 / (1 + math.exp(4 / 3))
     year1 = 2000 * 0.0014219229 * ramp1
     assert out["mature_hazard"][0] == pytest.approx(0.0014219229, rel=1e-6)
@@ -232,3 +233,28 @@ def test_an_explicit_no_adu_row_is_none_and_a_state_law_still_wins():
     assert "no ADUs allowed" in before.loc["400", "rule_note"] and pd.isna(before.loc["400", "rule_age"])
     after = adu.current_rules(reforms, ["400"], "27", pd.Timestamp("2025-12-31")).set_index("geoid")
     assert after.loc["400", "rule_class"] == "handbook" and after.loc["400", "rule_id"] == "S1"
+
+
+def test_scenario_units_never_share_a_parcel():
+    """D-020 by hand: remainders C (1,000) and D (500); local-only place L (300, two thirds in C) and an
+    ordinary BPS place P (400). Units become C 800, D 400, L 300, P 400: the statewide eligible total is the
+    sum over non-overlapping units, 1,900, not 2,200."""
+    places = pd.DataFrame(
+        {
+            "geoid": ["C", "D", "L", "P"],
+            "kind": ["county_unincorporated", "county_unincorporated", "place", "place"],
+            "county_geoid": ["C", "D", "C", "D"],
+            "eligible_parcels": [1000.0, 500.0, 300.0, 400.0],
+        }
+    )
+    juris = places[["geoid", "kind", "county_geoid"]].assign(in_bps=[True, True, False, True])
+    shares = pd.DataFrame({"place_geoid": ["L", "L"], "county_geoid": ["C", "D"], "share": [2 / 3, 1 / 3]})
+    out = adu.non_overlapping(places, juris, shares).set_index("geoid")
+    assert out["eligible_parcels"].to_dict() == pytest.approx({"C": 800, "D": 400, "L": 300, "P": 400})
+    assert out["eligible_parcels"].sum() == pytest.approx(1900)
+    assert out["overlap_removed"].sum() == pytest.approx(300)
+    # a remainder counted from a parcel roll holds no place's parcels: nothing is subtracted from it
+    rolls = adu.non_overlapping(places.assign(denominator_source="parcels"), juris, shares)
+    assert rolls["eligible_parcels"].sum() == pytest.approx(2200) and rolls["overlap_removed"].sum() == 0
+    clipped = adu.non_overlapping(places.assign(eligible_parcels=[100.0, 500.0, 300.0, 400.0]), juris, shares)
+    assert clipped.set_index("geoid").loc["C", "eligible_parcels"] == 0 and clipped["overlap_clipped"].any()

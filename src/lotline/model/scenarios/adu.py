@@ -274,13 +274,13 @@ def pool_paths(
 
 
 def central_path(
-    places: pd.DataFrame, horizon: int | None = None, enabled: bool = True
+    places: pd.DataFrame, horizon: int | None = None, enabled: bool = True, params: dict | None = None
 ) -> dict[str, np.ndarray]:
     """The scenario at central parameter values, no widening: arrays (places × years) for each outcome.
 
-    For hand checks and the worked example; `run` gives the ranges.
+    For hand checks and the worked example; `run` gives the ranges. `params` overrides central values.
     """
-    p = central_params()
+    p = central_params() | (params or {})
     horizon = horizon or int(load_params("baseline")["forecast_horizon_years"].value)
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
     rate = given.fillna(p["mortgage_rate_forecast"]).to_numpy(dtype=float)
@@ -404,6 +404,62 @@ def acs_values(acs: pd.DataFrame, geos: pd.Series, year: int, cpi: pd.Series) ->
     return wide.join(vintage)
 
 
+def non_overlapping(places: pd.DataFrame, jurisdictions: pd.DataFrame, county_shares: pd.DataFrame):
+    """Make scenario units that never share a parcel (D-020).
+
+    County remainders ("rest of county") keep the homes of local-only places and townships (`in_bps` False:
+    BPS files their permits in the county row), so a scenario that models both counts those parcels twice.
+    This happens only where the remainder's denominator is the ACS fallback (`eligible.allocate_homes`); a
+    remainder counted from a parcel roll never overlaps, since every parcel belongs to one jurisdiction.
+    Each local-only place stays its own unit (it carries its own rules); its eligible parcels are subtracted
+    from the ACS-fallback remainder of every county it sits in, by `county_shares` (place_geoid,
+    county_geoid, share; a place without shares sits wholly in its `county_geoid`). Negative results are set
+    to 0 and flagged.
+
+    Adds `eligible_parcels_reported` (before) and `overlap_removed`; `eligible_parcels` becomes the
+    non-overlapping count. By hand: county C remainder 1,000 and D remainder 500; local-only L has 300
+    parcels, two thirds in C -> C 800, D 400, L 300; total 1,500 instead of 1,800.
+    """
+    out = places.copy()
+    out["eligible_parcels_reported"] = out["eligible_parcels"].astype(float)
+    j = jurisdictions.set_index("geoid")
+    in_bps = j["in_bps"].astype("boolean").fillna(True).astype(bool)
+    local_only = [g for g in out["geoid"] if g in j.index and not in_bps[g]]
+    # Only ACS-fallback remainders overlap: `eligible.allocate_homes` keeps local-only homes in them. A
+    # remainder counted from a parcel roll holds only parcels assigned to the county row, never a place's.
+    source = out["denominator_source"] if "denominator_source" in out else pd.Series("acs", index=out.index)
+    remainder = {
+        r.county_geoid: i
+        for i, r in out.iterrows()
+        if r.get("kind") == "county_unincorporated" and source[i] != "parcels"
+    }
+    removed = pd.Series(0.0, index=out.index)
+    parcels = out.set_index("geoid")["eligible_parcels_reported"]
+    for g in local_only:
+        shares = county_shares[county_shares["place_geoid"] == g]
+        if shares.empty:
+            shares = pd.DataFrame({"county_geoid": [j.at[g, "county_geoid"]], "share": [1.0]})
+        for c, sh in zip(shares["county_geoid"], shares["share"], strict=True):
+            if c in remainder:
+                removed[remainder[c]] += float(parcels[g]) * float(sh)
+    net = out["eligible_parcels_reported"] - removed
+    out["overlap_clipped"] = net < 0
+    out["eligible_parcels"] = net.clip(lower=0.0)
+    out["overlap_removed"] = out["eligible_parcels_reported"] - out["eligible_parcels"]
+    return out
+
+
+def _county_shares(state: str, store, places: pd.DataFrame) -> pd.DataFrame:
+    """Census 2020 county shares of the local-only places (cached Census files via the IO layer)."""
+    from lotline.adapters.national import geoparts
+    from lotline.config import load_state
+
+    local = places.loc[~places["in_bps"].fillna(True).astype(bool) & (places["kind"] == "place"), "geoid"]
+    if local.empty:
+        return pd.DataFrame(columns=["place_geoid", "county_geoid", "share"])
+    return geoparts.county_shares(load_state(state).fips, sorted(local), store)
+
+
 def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     """One row per jurisdiction with ADU-eligible parcels: every input `run` needs, from processed tables.
 
@@ -427,9 +483,10 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
         columns={"jurisdiction_geoid": "geoid", "year": "parcels_year", "after": "parcels_after_origin"}
     )
     elig = elig.drop(columns="gap")
-    juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "county_geoid"]]
+    juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "county_geoid", "in_bps"]]
     places = elig.merge(juris, on="geoid", how="left")
     places = places[places["eligible_parcels"].fillna(0) > 0].reset_index(drop=True)
+    places = non_overlapping(places, store.read(state, "jurisdictions"), _county_shares(state, store, places))
 
     market = store.read(state, "market_geo_year")
     cpi = money.index_by_year(market, "cpi_u")

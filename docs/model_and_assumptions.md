@@ -377,10 +377,11 @@ is thin; places far from any comparable will lean on the mechanism prong and say
 
 ### The ADU hazard: how many eligible lots add an ADU each year
 
-`model/hazard.py`, parameters in `config/params/hazard.yaml` (D-018). The evidence gives one anchor: after a
-strong ADU reform in a high-cost city, about **2–5 ADU permits per 1,000 single-family lots a year** at
-maturity, Portland about 4 (`docs/research/adu-study-design.md`, an inference the document itself calls
-uncertain). The hazard carries that anchor to another place through what makes an ADU worth building there,
+`model/hazard.py`, parameters in `config/params/hazard.yaml` (D-018). The hazard has one anchor: the mature
+ADU permits per eligible lot a year at the reference place's rent, home value and rates (Portland 2015–19).
+The research band puts Portland at about 4 per 1,000 (`docs/research/adu-study-design.md`); Lotline now
+**estimates the anchor from its own post-reform places: 0.47 per 1,000 (90% interval 0.28–0.87)**, see
+"Estimating the anchor" below and D-019. The hazard carries that anchor to another place through what makes an ADU worth building there,
 and phases it in after adoption:
 
     hazard in year t = ramp(t) × mature hazard
@@ -390,7 +391,7 @@ and phases it in after adoption:
 |---|---|---|
 | PCR | ADU price-to-cost ratio from the pro forma (rented out): value (a year's rent after vacancy and operating costs ÷ cap rate) over cost (hard + soft + fees + interest while building). Rent = the place's median gross rent (ACS) × `adu_rent_to_median_ratio`. | e.g. 1.13 Portland 2015–19, 0.79 at $1,100 a month |
 | F(PCR) | Share of lots where an ADU pencils. Lots differ (a garage to convert, slope, the owner's plans), so each lot's ratio is lognormal around the place's PCR; a lot pencils above 1 + the owner's margin. F = Φ((ln PCR − ln(1 + margin)) / σ). | σ 0.5 (0.25–0.8), judgment; margin 10% (0–20%) |
-| u | Uptake among lots that pencil, set so the reference place gets the anchor exactly. Reference and target use the same costs, so only local rent, home value and rates transport. | h_ref 0.004 (0.002–0.005) |
+| u | Uptake among lots that pencil, set so the reference place gets the anchor exactly. Reference and target use the same costs, so only local rent, home value and rates transport. | h_ref 0.000467 (0.000275–0.000868), estimated (D-019) |
 | Home equity (C22) | Owners pay for most ADUs (Portland 62% cash; ~40% used home equity, E045): median home value relative to Portland's. | β_equity 0.25 (0–0.5), judgment |
 | Rates (C01, C22) | 30-year mortgage rate relative to the 2015–19 mean (3.99%), beyond the construction loan already in the pro forma. | β_rate 0.07 per point (0–0.15), judgment |
 | ramp(t) | Logistic over years since adoption: 1 / (1 + exp(−(t − half) / slope)). | half 2 years (1–3.5), slope 0.75 (0.5–1.5) |
@@ -399,7 +400,8 @@ The reference values (Portland's rent $1,573 and home value $519,222 in 2025 dol
 mortgage rate) and the **calibration range** (rent $1,573–2,034 and home value $519k–836k across Portland,
 Seattle and Los Angeles; rates 2.96–6.81% over 2015–23) are recomputed by `scripts/dev/adu_reference.py`.
 
-**Worked example** (the test `test_mature_hazard_one_place_by_hand`): rent $1,100, home value half Portland's,
+**Worked example** (the test `test_mature_hazard_one_place_by_hand`, with the earlier anchor 0.004 for round
+arithmetic; the hazard scales in proportion to the anchor): rent $1,100, home value half Portland's,
 mortgage rate 2 points above 2015–19. PCR = 148,200 / 187,966 = 0.788; F = Φ((ln 0.788 − ln 1.1) / 0.5) =
 Φ(−0.666) = 0.253. Portland: PCR 1.127, F_ref = 0.520, so u = 0.004 / 0.520 = 0.0077. Equity 0.5^0.25 = 0.841;
 rates e^(−0.07 × 2) = 0.869. Mature hazard = 0.0077 × 0.253 × 0.841 × 0.869 = **0.00142**, 1.4 ADUs per 1,000
@@ -457,13 +459,28 @@ beside the eligible parcels (numerator and denominator kept apart), the central 
 rule class and note, and the calibration distance with an outside-the-range flag. Five-year ranges are
 percentiles of each draw's sum. Places below 20 eligible parcels are not shown alone (D-015).
 
-**Checks against places that already allow ADUs** (`scripts/dev/adu_current_rules_check.py`, 2016–2022,
-actual rates; not fitted, see D-019): under their current rules the model gives **1.8x** observed ADU permits
-in Minneapolis (179 observed vs 315), **2.1x** in Raleigh (81 vs 172) and **1.8x** in Austin (2,302 vs 4,230).
-At full Handbook-level rules Minneapolis builds far less than the model's mature hazard: 0.23 vs 2.71 per
-1,000 parcels in 2022. Austin, whose rent sits inside the calibration range, builds about 2.0 per 1,000 a year,
-half the 4 per 1,000 anchor. Until D-019's proposal is decided, ADU results should be read as **likely too
-high, by about 2x**.
+**Estimating the anchor** (`model/calibrate_adu.py`, `scripts/dev/calibrate_adu.py`; split pre-registered in
+D-019 before fitting). Counts of ADU permits in place-years with a coded ADU rule in force and permits that
+flag ADUs are fitted with a negative-binomial likelihood around the scenario's own current-rules path
+(eligible parcels × anchor × hazard modifiers × c × ramp), using each year's actual rent, home value and
+mortgage rate. Fit set: Minneapolis and 10 Twin Cities suburbs, 2016–2025 (64 place-years, 243 ADU permits;
+Austin joins once its ADU rules are coded). Test set: Raleigh 2021–25 (Durham once its parcel count is fixed).
+
+- **Anchor:** 0.000467 per parcel a year (90% profile interval 0.000275–0.000868), about 0.12 of Portland's
+  4 per 1,000. Overdispersion is large (α = 6.6): places differ far more than rent, value and rates explain.
+- **Partial-rule share:** not identified by these data (90% interval 0.26–1.00), so it stays at 0.3
+  (judgment). The data lean the other way from the judgment: Minneapolis built more ADUs under its
+  owner-occupancy rule (about 30 a year, 2016–20) than after dropping it (13–17 a year, 2021–25).
+- **Test (Raleigh 2021–25):** 230 ADU permits observed; predicted mean 112, median 62, 90% interval 2–445.
+  Inside the interval, but only because the interval is very wide; the model's mean is half of what Raleigh
+  built.
+- **Current-rules check with the estimated anchor** (`scripts/dev/adu_current_rules_check.py`, 2016–22): the
+  model now gives **0.3x** the observed ADU permits in Minneapolis (45 vs 179), Raleigh (24 vs 81) and
+  Austin (592 vs 2,302; rules not coded). The fit is pulled down by suburbs with tightly restricted ADU rules
+  and no ADUs, scored at the same 0.3 partial share as Minneapolis's lighter rule.
+
+ADU results should therefore be read as **likely too low for the larger cities** until the next
+pre-registered specification (D-019 lists it) is fitted.
 
 - **Missing middle:** for each eligible lot, compare the best 2–6 unit prototype's residual land value with
   the lot's existing-use value; lots that newly pencil enter the hazard. Proposed (judging panel): apply the
@@ -495,7 +512,7 @@ proposed there are confirmed at pre-registration (tag `prereg-v1`, **not yet mad
 |---|---|---|
 | V0 Data reproduction | Do our adapters count what the publishers count? | **Run.** BPS place sums within 1% of Census state totals (D-001) in MN 30/32 years, NC 29/31, OH 34/34, TX 21/34 (`reports/*/V0-national.md`; TX 2003–2014 runs 1–2% high, open). Austin local permits / BPS for homes in 1–2 unit buildings = **0.98** pooled 2010–2025, every year within 10%; 5+ units 1.04 with D-008 (`reports/tx/V0.md`). |
 | V1 Baseline accuracy | Does the baseline beat the benchmarks out of sample? | **Run** (fits ending 2016, 2018, 2020; 4 states × 3 windows × 4 size classes = 48 cells). After D-011: **13 of 48 cells pass** all three tests; the model beats both benchmarks in 41, coverage is in range in 32, bias in range in 21. Mean absolute error per 1,000 parcels: single-family 10.13, 2 units 0.367, 3–4 units 0.193, 5+ units 2.77 (D-011). NC results must be re-run on the rebuilt table (D-012). |
-| V2 Mechanism | Do the pro forma and hazard predict which parcels redevelop? | Pro forma and ADU hazard built. First check (ADU, places that already allow them, 2016–22): model 1.8–2.1x observed in Minneapolis, Raleigh and Austin (D-019). Parcel-level V2 **not run**. |
+| V2 Mechanism | Do the pro forma and hazard predict which parcels redevelop? | Pro forma and ADU hazard built; ADU anchor estimated on Twin Cities places, tested on Raleigh (D-019): Raleigh 230 observed vs mean 112 (90% 2–445). Parcel-level V2 **not run**. |
 | V3 In-state causal estimates | What did Raleigh's and Durham's reforms do? | **Planned.** |
 | V4 Backtests of known reforms | Would the range have contained what happened? | **Planned.** |
 | V5 Blind forward tests | St. Paul and Charlotte, predicted before outcomes are seen | **Planned**; predictions to be frozen by Nov 17. Exposures disclosed (D-012, D-013). |
@@ -580,7 +597,7 @@ Parameters expected to drive scenario results (to be confirmed by the planned gl
 - **Missing middle:** hard cost per sq ft ($120–260), the commercial-code step (3–25%), the developer margin
   (10–20% of value), the cap rate (4.5–7.5%) and the existing-use margin (0–25%), each through how many lots
   pencil; then the hazard (planned).
-- **ADU:** the anchor hazard (2–5 per 1,000 lots a year), how sharply uptake falls with price-to-cost (σ
+- **ADU:** the anchor hazard (0.28–0.87 per 1,000 lots a year, estimated), how sharply uptake falls with price-to-cost (σ
   0.25–0.8), the partial-rule share (0.1–0.6), the mortgage rate path (2.96–6.81%), the net-new share
   (45–80%) and the formalization share (0–30%); for most places, also the widening outside the calibration
   range.
@@ -688,7 +705,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `adu_mature_hazard_ref` | 0.004 | 0.002–0.005 | ADU permits per eligible single-family parcel per year | adu-study-design.md working calibration band: about 2-5 ADU permits per 1,000 single-family lots per year at… |
+| `adu_mature_hazard_ref` | 0.000467 | 0.000275–0.000868 | ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate | Estimated, D-019 (pre-registered fit/test split), scripts/dev/calibrate_adu.py: negative-binomial maximum lik… |
 | `adu_ref_rent_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25064 median gross rent, Portland city OR (place 4159000), CPI-U… |
 | `adu_ref_home_value_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars |
 | `adu_ref_mortgage_rate` | 3.99 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-20… |
