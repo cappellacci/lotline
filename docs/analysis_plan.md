@@ -384,6 +384,45 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - *Reading:* rent, home value and rates explain little of the difference between places; the owner-occupancy
     rule had no measurable effect; Minneapolis's decline after 2020 is not captured (the model rises with the
     ramp and rents). The Portland gap reasons above still apply.
+- **Fit 4 pre-registration (written and pushed before fit 4 was run, 2026-10-20; Ben: fit 3 is not on trend):**
+  - *Unchanged from fit 3:* fit set (Minneapolis 2016–25, the Twin Cities places with coded ADU rules, Austin
+    2016–23), test set (Raleigh and Durham 2021–25), place-year inclusion rule, Poisson counts with a gamma
+    place effect (variance α) shared over a place's years, blank rule fields integrated per place, coverage
+    (D-021), graded shares m_o and m_x, holdouts (St. Paul never; Charlotte never; no held-out row).
+  - *Expected count:* μ_it = θ · u_i · parcels · h_m(θ = 1, β_rate = 0; year t's rent, home value and **real
+    construction cost**) · max_r c(type) · coverage · ramp · exp(−β_rate (r_t − r_ref)) · (1 − s_sub)^MM_it ·
+    exp(Σ_j b_j x_itj).
+  - *Construction cost by year (new):* the pro forma's hard cost per sq ft (2025 level) × the real cost index
+    (PPI residential construction inputs / CPI-U, year t ÷ 2025; `market_geo_year.ppi_resid_inputs`). The
+    reference place (Portland 2015–19) uses its own era's mean index (2015–19), so only cost changes relative
+    to the reference transport.
+  - *Rate effect (new, estimated):* β_rate with each year's actual 30-year rate. It replaces the judgment value
+    if its 90% profile interval is narrower than 0.30; otherwise the judgment value 0.07 (0–0.15) stays.
+  - *Substitution with missing middle (new, C47):* MM_it = 1 when a coded missing-middle rule allowing 2+
+    units in single-family zones is in force by 1 July (`config/reforms/*.csv`, theme missing_middle,
+    `unit_cap` ≥ 2 or blank, `by_right` not False; a blank `by_right` counts with the share of coded
+    missing-middle rows that are by right). Uptake × (1 − s_sub). s_sub is estimated, with a 90% profile
+    interval; it is "identified" only if that interval is narrower than 0.8; otherwise s_sub = 0 in the
+    scenario and the report says so. In the fit set only Minneapolis (3 units from 2020-01-01) has MM_it = 1.
+  - *Covariates for later:* the fit takes a generic table of place-year covariates x_itj with log-linear
+    coefficients b_j, so dated ADU programs (fee waivers, pre-approved plans) and fee histories can enter later
+    under their own pre-registration. None is added in fit 4.
+  - *Diagnostic only (not used for any parameter):* a second fit adds a post-2020 indicator (years ≥ 2021)
+    with coefficient γ, reported with its interval. If γ's interval excludes 0, the report says the trend is
+    still not explained.
+  - *Estimation:* maximum likelihood by coordinate ascent over (log θ, log α, β_rate, s_sub, m_o, m_x);
+    90% profile intervals for θ, β_rate, s_sub, m_o and m_x (others re-maximized at each grid point). m_o and
+    m_x follow fit 3's rule (estimated only if their interval is narrower than their judgment range).
+  - *Test prediction and decision rule:* as fit 3; θ, α, β_rate (if identified), s_sub (if identified), and any
+    identified share replace the configured values whatever the test shows. Forward runs keep 2025's real
+    construction cost (index 1) and draw the rate path as before.
+- **Fit 4: withdrawn before it was run (Ben, 2026-10-20).** The pre-registration above (commit cf123ba) stays
+  as written, but no fit 4 was run: adding terms to chase the observed trend was rejected. The ADU estimation
+  will be re-specified from the causal diagram (§3) and protocol §5.6–5.7 (staggered-adoption count model
+  with year effects, place random effects, an eligible-parcel offset, event-time ramp effects and pre-period
+  effect modifiers). Only a tested building block from that round is kept: `hazard.adu_price_to_cost` and
+  `adu_mature_hazard` accept a real construction-cost index (`hazard.cost_index_by_year`, PPI residential
+  inputs / CPI-U relative to 2025); it defaults to 1, so no current result changes.
 - **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
 
 ### D-020 · 2026-10-20 · Scenario geography: units that never share a parcel
@@ -494,3 +533,32 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **What would change the plan:** if the pre-trend check fails, report it and use HonestDiD bounds; there is no re-specification without a new dated entry. If too few places have dated rules after the adoption-date run, report the estimates as underpowered rather than adding assumptions.
 - **Code:** `src/lotline/model/estimate_adu.py`, tested by recovering known β, θ and ρ from simulated staggered-adoption panels before any real run.
 - **Decided by:** Ben, 2026-10-20.
+- **Implementation notes (2026-10-20, WS-ENGINE; choices the specification leaves open, for Ben to confirm
+  before the real run):**
+  - *Dose values:* the grades are ordered in D-023 but not valued; equal steps are used: permit or conditional
+    use 1/3, by right with owner occupancy 2/3, by right without it 1 (`adu.yaml` `adu_dose_grade_*`), times
+    coverage (D-021). Blank by_right / owner_occ fields enter with their coded shares (D-022), so the dose is
+    an expectation. The binary by-right dose is the robustness check.
+  - *Adoption year T_i:* the first year (from 1990) a rule whose P(by right) ≥ 0.5 is in force on 1 July.
+    Places adopting before 2016 have only late event times in the panel; cohort cells that are constant within
+    a place are collinear with its fixed effect and dropped by the estimator (reported).
+  - *Modifiers (year T_i − 1):* price-to-cost from the pro forma with that year's ACS rent (newest vintage,
+    not before 2010) and real construction cost (`hazard.cost_index_by_year`); log median home value; BPS
+    1-unit permits per 1,000 eligible parcels, mean of T − 3 … T − 1; household growth = log of ACS households
+    (B25003) at T − 1 over T − 6 (vintages from 2015 and 2010 at the earliest). Places adopting before 2010
+    get modifiers measured after adoption; they are listed.
+  - *PPML:* places with no ADU permit in any year are dropped (no finite fixed effect; no information under
+    Poisson fixed effects); regressors collinear with the fixed effects are dropped; both are reported.
+  - *Bootstrap:* the wild cluster score bootstrap uses Webb six-point weights (few clusters) and CR2-adjusted
+    cluster scores; without CR2, standard errors ran ~10–15% low on simulated panels. Intervals are basic
+    bootstrap intervals; the lead test is a Wald test with the bootstrap covariance.
+  - *Randomization inference:* statistic = the overall effect (event-time cells averaged with counterfactual
+    expected permits as weights).
+  - *Transport:* a target place's level α comes from its own pre-adoption years (with its sampling error) when
+    it has permits then, else a draw from the Minnesota places' α; Minnesota year effects; count noise is
+    Poisson-gamma with the panel's overdispersion (moment estimate). Raleigh's panel starts in 2019 and
+    Durham's in 2016 so their pre-adoption years inform α; only D-023's test years are scored.
+  - *Smoke test of the panel (2026-10-20, counts only):* 21 Twin Cities places with dated ADU rules × 2016–2025
+    (164 left out for no dated rule; St. Paul excluded); 12 ever treated (6 adopting in 2016–2025), 9 never
+    treated; 13 places have no ADU permit in any year. With today's coding the estimate would be underpowered;
+    the run waits for the adoption-date research.

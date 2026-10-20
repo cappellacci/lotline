@@ -99,3 +99,47 @@ adu_rule_limited_coverage_share:
   high: 0.2
   unit: share of eligible single-family lots covered
   source: "Judgment (D-021): a rule whose coverage text names a limited area (an overlay, a half-mile corridor, new subdivisions, historic districts, transit areas) with no zone list to measure it, e.g. St. Paul's 2016 Green Line rule, Raleigh's 2019 overlay"
+
+# ---- D-023 estimation: dose grades (choice to confirm; D-023 orders the grades but gives no values) ----
+
+adu_dose_grade_permit:
+  value: 0.3333
+  low: 0.3333
+  high: 0.3333
+  unit: dose (share of a by-right rule without owner occupancy)
+  source: "Choice, flagged for Ben (D-023 orders the grades none < permit or conditional use < by right with owner occupancy < by right without it, with no values): equal steps, 1/3. The binary by-right dose is D-023's robustness check"
+
+adu_dose_grade_owner:
+  value: 0.6667
+  low: 0.6667
+  high: 0.6667
+  unit: dose
+  source: "Choice, flagged for Ben (D-023 grade order; equal steps): by right with owner occupancy, 2/3"
+
+adu_dose_grade_by_right:
+  value: 1.0
+  low: 1.0
+  high: 1.0
+  unit: dose
+  source: "D-023: by right without owner occupancy is the full dose"
+
+adu_estimation_bootstrap_draws:
+  value: 999
+  low: 999
+  high: 999
+  unit: draws
+  source: "D-023: wild cluster bootstrap by place, 999 draws"
+
+adu_estimation_permutations:
+  value: 999
+  low: 999
+  high: 999
+  unit: permutations
+  source: "Choice: randomization inference permuting adoption years among treated places (D-023 asks for it, not its size); 999 matches the bootstrap"
+
+adu_transport_widening:
+  value: 1.0
+  low: 1.0
+  high: 1.0
+  unit: standard deviation of log(predicted mean) per unit distance outside the Minnesota modifier range
+  source: "D-023: places outside the Minnesota modifier range are flagged and their intervals widened as in hazard.widen; same scale as adu_extrapolation_widening (1.0, judgment)"
