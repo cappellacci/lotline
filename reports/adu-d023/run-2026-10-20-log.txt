@@ -1,0 +1,19 @@
+modifiers set to missing for 2 places adopted before 2010
+PPML converged in 11 iterations; kept 143 of 760 place-years
+dropped places (no ADU permit in any kept year): 53
+dropped columns: ['cell_2012_4 (no variation left)', 'cell_2012_5 (no variation left)', 'cell_2013_3 (no variation left)', 'cell_2013_4 (no variation left)', 'cell_2013_5 (no variation left)', 'cell_2014_2 (no variation left)', 'cell_2014_3 (no variation left)', 'cell_2014_4 (no variation left)', 'cell_2014_5 (no variation left)', 'cell_2016_0 (all-zero outcome: separated)', 'cell_2016_2 (all-zero outcome: separated)', 'cell_2016_3 (all-zero outcome: separated)', 'cell_2017_0 (all-zero outcome: separated)', 'cell_2017_1 (all-zero outcome: separated)', 'cell_2018_1 (all-zero outcome: separated)', 'cell_2018_2 (all-zero outcome: separated)', 'cell_2018_3 (all-zero outcome: separated)', 'cell_2020_0 (all-zero outcome: separated)', 'cell_2020_1 (all-zero outcome: separated)', 'cell_2020_2 (all-zero outcome: separated)', 'cell_2020_4 (all-zero outcome: separated)', 'cell_2020_5 (all-zero outcome: separated)', 'cell_2021_0 (no variation left)', 'cell_2021_1 (no variation left)', 'cell_2021_2 (no variation left)', 'cell_2021_3 (no variation left)', 'cell_2021_4 (no variation left)', 'cell_2022_2 (all-zero outcome: separated)', 'cell_2023_1 (all-zero outcome: separated)', 'cell_2025_0 (no variation left)', 'cell_2002_5 (collinear with fixed effects)', 'cell_2016_5 (collinear with fixed effects)', 'cell_2017_5 (collinear with fixed effects)', 'cell_2018_0 (collinear with fixed effects)', 'cell_2018_5 (collinear with fixed effects)', 'cell_2020_3 (collinear with fixed effects)', 'cell_2022_0 (collinear with fixed effects)', 'cell_2024_1 (collinear with fixed effects)', 'theta_pcr (collinear with fixed effects)', 'theta_log_value (collinear with fixed effects)', 'theta_pre_permits (collinear with fixed effects)', 'theta_hh_growth (collinear with fixed effects)', 'delta (collinear with fixed effects)']
+separated observations dropped: 87
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_adu.py", line 144, in <module>
+    main()
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_adu.py", line 140, in main
+    smoke(store) if a.smoke else full(store, a.out)
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_adu.py", line 85, in full
+    boot = est.score_bootstrap(fit, draws=draws, seed=20261020)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/src/lotline/model/estimate_adu.py", line 476, in score_bootstrap
+    raise EstimationError("bootstrap draw diverged (non-finite or beyond the coefficient bound)")
+lotline.model.estimate_adu.EstimationError: bootstrap draw diverged (non-finite or beyond the coefficient bound)
+uv run python scripts/dev/estimate_adu.py --full --out reports/adu-d023/  17.88s user 2.10s system 102% cpu 19.401 total
+exit 1
