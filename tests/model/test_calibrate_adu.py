@@ -72,3 +72,42 @@ def test_partial_share_is_recovered_when_the_data_identify_it():
     grid = np.round(np.arange(0.05, 1.0001, 0.05), 2)
     _, ll, (lo, hi) = cal.profile_share(y, kh, kp, grid)
     assert lo <= 0.25 <= hi and hi - lo < 0.5
+
+
+def test_mixture_loglik_by_hand():
+    """y = 2, μ_a = 1, μ_b = 2, q = 0.5, Poisson:
+    log(0.5·e^-1·1/2 + 0.5·e^-2·4/2) = log(0.091970 + 0.135335) = −1.4814."""
+    expected = math.log(0.5 * math.exp(-1) / 2 + 0.5 * math.exp(-2) * 4 / 2)
+    assert cal.mix_loglik([2], [1.0], [2.0], [0.5], 0.0) == pytest.approx(expected)
+    assert expected == pytest.approx(-1.4814, abs=1e-4)
+    # q = 0 is the plain likelihood at μ_b; q = 1 at μ_a
+    assert cal.mix_loglik([2], [1.0], [2.0], [0.0], 0.7) == pytest.approx(cal.nb_loglik([2], [2.0], 0.7))
+    assert cal.mix_loglik([2], [1.0], [2.0], [1.0], 0.7) == pytest.approx(cal.nb_loglik([2], [1.0], 0.7))
+
+
+def test_mixture_fit_reduces_to_the_plain_fit_and_recovers_theta():
+    rng = np.random.default_rng(11)
+    k = rng.uniform(2_000, 40_000, 200)
+    y = rng.poisson(0.003 * k)
+    plain = cal.fit_anchor(y, k)
+    mixed = cal.fit_anchor(y, k, k_b=k, q=np.full(200, 0.4))  # both components equal: same fit
+    assert mixed.theta == pytest.approx(plain.theta, rel=1e-4)
+    # half the places are restricted (k × 0.3) with known probability 0.5: θ is still recovered
+    restricted = rng.random(200) < 0.5
+    y2 = rng.poisson(0.003 * np.where(restricted, 0.3 * k, k))
+    fit = cal.fit_anchor(y2, 0.3 * k, k_b=k, q=np.full(200, 0.5))
+    assert fit.low <= 0.003 <= fit.high
+
+
+def test_k_paths_by_hand():
+    """parcels 1,000, h1 0.5, s 0.3: a rule with blanks fully ramped (ramp_blank 1), none other.
+    A (blank restricts): 500 × 0.3 = 150; B (it doesn't): 500 × 1 = 500."""
+    rows = {
+        "eligible_parcels": np.array([1000.0]),
+        "h1": np.array([0.5]),
+        "ramp_partial": np.array([0.0]),
+        "ramp_handbook": np.array([0.0]),
+        "ramp_blank": np.array([1.0]),
+    }
+    a, b = cal.k_paths(rows, 0.3)
+    assert (a[0], b[0]) == pytest.approx((150, 500))

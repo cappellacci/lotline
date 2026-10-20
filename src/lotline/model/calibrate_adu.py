@@ -78,11 +78,54 @@ def _golden_max(f, lo: float, hi: float, tol: float = 1e-7, iters: int = 200) ->
 LOG_ALPHA = (-12.0, 4.0)  # α from ~6e-6 (effectively Poisson) to ~55
 
 
-def profile_alpha(y, mu) -> tuple[float, float]:
-    """max over α of the NB log-likelihood -> (alpha, loglik); compares against Poisson (α = 0)."""
-    la, ll = _golden_max(lambda la: nb_loglik(y, mu, math.exp(la)), *LOG_ALPHA)
-    pois = nb_loglik(y, mu, 0.0)
-    return (0.0, pois) if pois >= ll else (math.exp(la), ll)
+def nb_loglik_rows(y, mu, alpha: float) -> np.ndarray:
+    """Per-observation NB log-likelihood (Poisson when alpha <= 1e-8); −inf where μ <= 0."""
+    y = np.asarray(y, dtype=float)
+    mu = np.asarray(mu, dtype=float)
+    safe = np.where(mu > 0, mu, 1.0)
+    if alpha <= 1e-8:
+        ll = y * np.log(safe) - safe - _lgamma(y + 1)
+    else:
+        r = 1.0 / alpha
+        ll = (
+            _lgamma(y + r)
+            - math.lgamma(r)
+            - _lgamma(y + 1)
+            + r * np.log(r / (r + safe))
+            + y * np.log(safe / (r + safe))
+        )
+    return np.where(mu > 0, ll, -np.inf)
+
+
+def mix_loglik(y, mu_a, mu_b, q, alpha: float) -> float:
+    """Σ log(q·NB(y; μ_a) + (1 − q)·NB(y; μ_b)): a rule class unknown with P(class A) = q (D-022).
+
+    q = 0 is the plain NB likelihood at μ_b. By hand, y = 2, μ_a = 1, μ_b = 2, q = 0.5, Poisson:
+    log(0.5·e^−1/2 + 0.5·4e^−2/2) = log(0.09197 + 0.13534) = −1.4814.
+    """
+    q = np.broadcast_to(np.asarray(q, dtype=float), np.shape(y))
+    la, lb = nb_loglik_rows(y, mu_a, alpha), nb_loglik_rows(y, mu_b, alpha)
+    with np.errstate(divide="ignore"):
+        terms = np.logaddexp(np.log(q) + la, np.log1p(-q) + lb)
+    return float(np.sum(terms))
+
+
+def profile_alpha(y, mu, mu_b=None, q=None) -> tuple[float, float]:
+    """max over α of the (mixture) NB log-likelihood -> (alpha, loglik); compares against Poisson (α = 0).
+
+    Without `mu_b`/`q` it is the plain NB likelihood at `mu`."""
+    if mu_b is None or q is None:
+
+        def ll(a):
+            return nb_loglik(y, mu, a)
+    else:
+
+        def ll(a):
+            return mix_loglik(y, mu, mu_b, q, a)
+
+    la, best = _golden_max(lambda la: ll(math.exp(la)), *LOG_ALPHA)
+    pois = ll(0.0)
+    return (0.0, pois) if pois >= best else (math.exp(la), best)
 
 
 @dataclass(frozen=True)
@@ -100,19 +143,28 @@ class Fit:
         return (math.log(self.high) - math.log(self.low)) / (2 * Z_95)
 
 
-def fit_anchor(y, k, log_theta_range: tuple[float, float] = (-14.0, 0.0)) -> Fit:
+def fit_anchor(y, k, log_theta_range: tuple[float, float] = (-14.0, 0.0), k_b=None, q=None) -> Fit:
     """Maximum-likelihood θ for counts y ~ NB(θ k, α), α profiled; 90% profile-likelihood interval.
+
+    With `k_b` and `q` (D-022), each count is a mixture: P(y) = q·NB(y; θ k) + (1 − q)·NB(y; θ k_b).
 
     `k` may be 2-D (one row per value of a nuisance parameter such as the partial-rule share s): the profile
     then also maximizes over the rows, so θ's interval accounts for not knowing s.
     """
     y = np.asarray(y, dtype=float)
     ks = np.atleast_2d(np.asarray(k, dtype=float))
-    keep = (ks > 0).all(axis=0)
-    y, ks = y[keep], ks[:, keep]
+    kbs = ks if k_b is None else np.atleast_2d(np.asarray(k_b, dtype=float))
+    qs = np.zeros(ks.shape[1]) if q is None else np.asarray(q, dtype=float)
+    mixed = q is not None
+    keep = ((ks > 0) | (qs == 0)).all(axis=0) & ((kbs > 0) | (qs == 1)).all(axis=0)
+    y, ks, kbs, qs = y[keep], ks[:, keep], kbs[:, keep], qs[keep]
 
     def best(lt: float) -> tuple[float, float]:
-        fits = [profile_alpha(y, math.exp(lt) * row) for row in ks]
+        t = math.exp(lt)
+        fits = [
+            profile_alpha(y, t * a, t * b, qs) if mixed else profile_alpha(y, t * a)
+            for a, b in zip(ks, kbs, strict=True)
+        ]
         return max(fits, key=lambda f: f[1])
 
     def prof(lt: float) -> float:
@@ -137,12 +189,17 @@ def fit_anchor(y, k, log_theta_range: tuple[float, float] = (-14.0, 0.0)) -> Fit
     return Fit(math.exp(lt_hat), math.exp(low), math.exp(high), alpha, ll_hat, int(len(y)))
 
 
-def predictive(k, fit: Fit, draws: int = 10_000, seed: int = 0) -> np.ndarray:
-    """Parametric-bootstrap predictive counts, shape (draws, len(k)): log θ ~ N(log θ̂, se), NB(θ k, α)."""
+def predictive(k, fit: Fit, draws: int = 10_000, seed: int = 0, k_b=None, q=None) -> np.ndarray:
+    """Parametric-bootstrap predictive counts, shape (draws, len(k)): log θ ~ N(log θ̂, se), NB(θ k, α).
+
+    With `k_b` and `q`, each draw uses k with probability q, else k_b (a rule class left unknown, D-022)."""
     rng = np.random.default_rng(seed)
     k = np.asarray(k, dtype=float)
     theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=(draws, 1)))
-    mu = theta * k[None, :]
+    if k_b is not None and q is not None:
+        pick = rng.random((draws, len(k))) < np.asarray(q, dtype=float)[None, :]
+        k = np.where(pick, k[None, :], np.asarray(k_b, dtype=float)[None, :])
+    mu = theta * k
     if fit.alpha > 0:
         mu = rng.gamma(1.0 / fit.alpha, mu * fit.alpha)
     return rng.poisson(mu)
@@ -172,6 +229,30 @@ def profile_share(y, k_handbook, k_partial, grid) -> tuple[np.ndarray, np.ndarra
 # ---------------------------------------------------------------------------------------------------------
 # Place-years from the processed tables (the scenario's current-rules path)
 # ---------------------------------------------------------------------------------------------------------
+
+
+def k_paths(rows, share: float) -> tuple[np.ndarray, np.ndarray]:
+    """Expected counts at θ = 1 when blank-dependent rules restrict (A) or don't (B), for partial share s:
+    A = parcels × h1 × max(s × max(ramp_partial, ramp_blank), ramp_handbook);
+    B = parcels × h1 × max(s × ramp_partial, max(ramp_handbook, ramp_blank)). Equal where ramp_blank = 0."""
+    base = np.asarray(rows["eligible_parcels"] * rows["h1"], dtype=float)
+    rp, rh, rb = (np.asarray(rows[c], dtype=float) for c in ("ramp_partial", "ramp_handbook", "ramp_blank"))
+    a = base * np.maximum(share * np.maximum(rp, rb), rh)
+    b = base * np.maximum(share * rp, np.maximum(rh, rb))
+    return a, b
+
+
+def profile_share_rows(y, rows, grid) -> tuple[np.ndarray, np.ndarray, tuple[float, float]]:
+    """`profile_share` for place-years whose class may depend on blank fields (mixture over `q_blank`)."""
+    grid = np.asarray(grid, dtype=float)
+    q = np.asarray(rows["q_blank"], dtype=float)
+    ll = []
+    for s in grid:
+        a, b = k_paths(rows, s)
+        ll.append(fit_anchor(y, a, k_b=b, q=q).loglik)
+    ll = np.array(ll)
+    inside = grid[2 * (ll.max() - ll) <= CHI2_90]
+    return grid, ll, (float(inside.min()), float(inside.max()))
 
 
 def place_years(state: str, store, geoids, years, params=None, assume_rules=None):
@@ -212,34 +293,36 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
     counts = adu.observed_adu_counts(permits, min(years), max(years)).set_index(["geoid", "year"])[
         "adu_permits"
     ]
-    from lotline.config import load_state
+    from lotline.config import load_params, load_state
 
     fips = load_state(state).fips
-    reforms = adu.load_reforms(state)
-    reforms = reforms[(reforms["theme"] == "adu") & (reforms["status"] == "in_force")]
+    all_reforms = adu.load_reforms(state)
+    reforms = all_reforms[(all_reforms["theme"] == "adu") & (all_reforms["status"] == "in_force")]
+    every = pd.concat([adu.load_reforms(st).assign(state=st) for st in adu.REFORM_STATES], ignore_index=True)
+    min_count = int(load_params("adu")["adu_rule_min_coded"].value)
+    counts = adu.field_restrict_counts(every, pd.Timestamp.today().normalize())  # as pre-registered (D-019)
+    fp = adu.field_probabilities(counts, state, min_count)
     rows = []
     for g in geoids:
         mine = reforms[reforms["jurisdiction_geoid"].isin([g, fips])]  # a state law applies everywhere
-        rules = []
-        for r in mine.itertuples():
-            rubric = adu._resolved(reforms, r.reform_id)
-            per_lot = rubric.get("adus_per_lot", getattr(r, "adus_per_lot", None))
-            if per_lot is not None and pd.notna(per_lot) and float(per_lot) == 0:
-                continue  # an explicit "no ADUs" row is not an ADU rule (#164)
-            cls = "partial" if adu.rule_restrictions(rubric)[0] else "handbook"
-            rules.append((cls, r.effective_date, r.end_date))
-        if not rules and assume_rules and g in assume_rules:
-            rules = [(c, eff, pd.NaT) for c, eff in assume_rules[g]]
         e = elig[elig["jurisdiction_geoid"] == g]
         kind = juris.loc[g, "kind"] if g in juris.index else "place"
         geo = f"{adu.ACS_PREFIX.get(kind, 'place')}:{g}"
         for y in years:
             mid = pd.Timestamp(f"{y}-07-01")
-            live = [
-                (c, (mid - eff).days / 365.25)
-                for c, eff, end in rules
-                if eff <= mid and (pd.isna(end) or end > mid)
-            ]
+            live = []  # (class, age, q): class partial / handbook / blank (Handbook unless a blank restricts)
+            for r in mine.itertuples():
+                if not (r.effective_date <= mid and (pd.isna(r.end_date) or r.end_date > mid)):
+                    continue
+                rubric = adu.with_parking(adu._resolved(reforms, r.reform_id), all_reforms, g, mid)
+                if adu._no_adus(rubric):
+                    continue  # an explicit "no ADUs" row is not an ADU rule (#164)
+                fails, unknown = adu.rule_restrictions(rubric)
+                q = 1 - float(np.prod([1 - fp[f] for f in unknown])) if unknown and not fails else 0.0
+                cls = "partial" if fails else ("blank" if q > 0 else "handbook")
+                live.append((cls, (mid - r.effective_date).days / 365.25, q))
+            if not live and assume_rules and g in assume_rules:
+                live = [(c, (mid - eff).days / 365.25, 0.0) for c, eff in assume_rules[g] if eff <= mid]
             if not live or (g, y) not in covered or e.empty:
                 continue
             ey = e.assign(after=e["year"] > y, gap=(e["year"] - y).abs()).sort_values(["after", "gap"])
@@ -249,17 +332,19 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
                 continue
             v = v.iloc[0]
             h1 = float(hazard.adu_mature_hazard(v["rent"], v["home_value"], float(rate[y]), p)) / unit
-            ramp = {
-                c: max(
+
+            def ramp_of(c, live=live):
+                return max(
                     (
                         float(hazard.ramp(a, p["adu_ramp_half_years"], p["adu_ramp_slope_years"]))
-                        for cc, a in live
+                        for cc, a, _ in live
                         if cc == c
                     ),
                     default=0.0,
                 )
-                for c in ("handbook", "partial")
-            }
+
+            ramp = {c: ramp_of(c) for c in ("handbook", "partial", "blank")}
+            q_blank = max((q for c, _, q in live if c == "blank"), default=0.0)
             rows.append(
                 {
                     "state": state,
@@ -274,6 +359,8 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
                     "h1": h1,
                     "ramp_handbook": ramp["handbook"],
                     "ramp_partial": ramp["partial"],
+                    "ramp_blank": ramp["blank"],
+                    "q_blank": q_blank,
                 }
             )
     out = pd.DataFrame(rows)

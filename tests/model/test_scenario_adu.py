@@ -263,8 +263,8 @@ def test_scenario_units_never_share_a_parcel():
 
 
 def test_uncoded_place_takes_its_band_prior_by_hand():
-    """D-022: 5 coded places in a state's band, 2 partial and 3 Handbook-equivalent -> an uncoded place in that
-    band is partial with probability 0.4, and about 40% of its draws are partial."""
+    """D-022: 5 coded places in a state's band, 2 partial and 3 Handbook-equivalent -> an uncoded place in
+    that band is partial with probability 0.4, and about 40% of its draws are partial."""
     coded = pd.DataFrame(
         {
             "state": ["MN"] * 5,
@@ -302,7 +302,8 @@ def test_uncoded_place_takes_its_band_prior_by_hand():
 
 def test_a_blank_field_is_never_read_as_unrestrictive():
     """A row that passes every coded condition but leaves parking blank is Handbook only with probability
-    1 − P(parking restricts). By hand, coded parking: 1 of 4 rules requires it -> P = 0.25 -> (0, 0.25, 0.75)."""
+    1 − P(parking restricts). By hand, coded parking: 1 of 4 rules requires it -> P = 0.25 ->
+    (0, 0.25, 0.75)."""
     reforms = _reforms(
         [
             ("R1", "500", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, None, None),

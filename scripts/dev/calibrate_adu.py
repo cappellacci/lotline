@@ -3,6 +3,8 @@
 
     uv run python scripts/dev/calibrate_adu.py [--explore-austin]
 
+Fit 2 (D-022): a place-year whose rule class depends on blank rubric fields enters as a two-component mixture.
+
 Fit set: Minneapolis and every other Twin Cities place with a coded ADU rule (2016-2025; St. Paul never, it is
 the V5 blind test), and Austin 2016-2023 once its ADU rules are coded. Test set: Raleigh 2021-2025, and Durham
 once its ADU-eligible parcel count is fixed (every roll the test uses has 1,000+). Place-years enter only with
@@ -47,12 +49,18 @@ def describe(rows: pd.DataFrame) -> None:
 
 
 def fit_and_test(fit_rows: pd.DataFrame, test_rows: pd.DataFrame) -> cal.Fit:
+    """Fit 2 (D-019, D-022): place-years whose rule class depends on blank fields enter as a mixture."""
     y = fit_rows["adu_permits"].to_numpy()
-    kh, kp = fit_rows["k_handbook"].to_numpy(), fit_rows["k_partial"].to_numpy()
+    q = fit_rows["q_blank"].to_numpy()
     share = adu.central_params()["adu_partial_rule_share"]
-    ks = kh
-    if (kp > kh).any():
-        grid, ll, (s_lo, s_hi) = cal.profile_share(y, kh, kp, GRID)
+    print(
+        f"Place-years whose class depends on blank fields: {(q > 0).sum()} of {len(q)} "
+        f"(mean P(restricted) {q[q > 0].mean() if (q > 0).any() else 0:.2f})"
+    )
+    grid_used = None
+    rp = fit_rows["ramp_partial"].to_numpy()
+    if ((rp > 0) | (q > 0)).any():
+        grid, ll, (s_lo, s_hi) = cal.profile_share_rows(y, fit_rows, GRID)
         s_hat = float(grid[np.argmax(ll)])
         identified = (s_hi - s_lo) < (JUDGMENT_RANGE[1] - JUDGMENT_RANGE[0])
         verdict = (
@@ -63,40 +71,47 @@ def fit_and_test(fit_rows: pd.DataFrame, test_rows: pd.DataFrame) -> cal.Fit:
             f"(judgment range {JUDGMENT_RANGE[0]}-{JUDGMENT_RANGE[1]}): {verdict}"
         )
         if identified:
-            share = s_hat
-            ks = np.array([cal.k_of_share(kh, kp, s) for s in grid])
-        else:
-            ks = cal.k_of_share(kh, kp, share)
-    fit = cal.fit_anchor(y, ks)
-    fitted = fit.theta * cal.k_of_share(kh, kp, share)
+            share, grid_used = s_hat, grid
+    if grid_used is not None:
+        paths = [cal.k_paths(fit_rows, s) for s in grid_used]
+        ka, kb = np.array([a for a, _ in paths]), np.array([b for _, b in paths])
+    else:
+        ka, kb = cal.k_paths(fit_rows, share)
+    fit = cal.fit_anchor(y, ka, k_b=kb, q=q)
+    a, b = cal.k_paths(fit_rows, share)
+    fitted = fit.theta * (q * a + (1 - q) * b)
     print(
         f"theta = {fit.theta:.6f}  90% profile interval {fit.low:.6f}-{fit.high:.6f}  "
         f"({fit.theta * 1000:.3f} per 1,000 parcels a year at Portland's rent, value and rate)"
     )
     print(
         f"alpha = {fit.alpha:.3f}; n = {fit.n} place-years; log-likelihood {fit.loglik:.2f}; "
-        f"observed {y.sum()}, fitted {fitted.sum():.0f}"
+        f"observed {y.sum()}, fitted mean {fitted.sum():.0f}"
     )
+    for name, d in fit_rows.assign(fitted=fitted).groupby("name"):
+        if d.adu_permits.sum() >= 5 or d.fitted.sum() >= 5:
+            print(f"    {name:22s} observed {d.adu_permits.sum():5d}  fitted mean {d.fitted.sum():7.1f}")
     print(f"vs Portland's 4 per 1,000: {fit.theta / PORTLAND:.2f} of it")
     if test_rows.empty:
         print("Test set: no place-years")
         return fit
-    kt = cal.k_of_share(test_rows["k_handbook"], test_rows["k_partial"], share)
-    draws = cal.predictive(kt, fit, draws=20_000, seed=20261020)
+    ta, tb = cal.k_paths(test_rows, share)
+    tq = test_rows["q_blank"].to_numpy()
+    draws = cal.predictive(ta, fit, draws=20_000, seed=20261020, k_b=tb, q=tq)
+    mean_t = fit.theta * (tq * ta + (1 - tq) * tb)
     print("Test set (not used in the fit): observed vs predicted median (90% predictive interval)")
     for i, r in test_rows.iterrows():
         lo, mid, hi = np.percentile(draws[:, i], [5, 50, 95])
         flag = "inside" if lo <= r.adu_permits <= hi else "OUTSIDE"
         print(
             f"  {r['name']:14s} {r.year}: observed {r.adu_permits:4d}  predicted {mid:5.0f} "
-            f"({lo:.0f}-{hi:.0f}), mean {kt[i] * fit.theta:5.1f}  {flag}"
+            f"({lo:.0f}-{hi:.0f}), mean {mean_t[i]:5.1f}  {flag}"
         )
     lo, mid, hi = np.percentile(draws.sum(axis=1), [5, 50, 95])
     obs = int(test_rows["adu_permits"].sum())
-    mean = float((kt * fit.theta).sum())
     verdict = "inside" if lo <= obs <= hi else "OUTSIDE: transport failure, reported not refitted"
     print(
-        f"  TOTAL: observed {obs}, predicted median {mid:.0f}, mean {mean:.0f} "
+        f"  TOTAL: observed {obs}, predicted median {mid:.0f}, mean {mean_t.sum():.0f} "
         f"(90% {lo:.0f}-{hi:.0f}) -> {verdict}"
     )
     return fit
