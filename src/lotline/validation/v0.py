@@ -26,6 +26,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline import registry
 from lotline.adapters.national import bps_state
 from lotline.config import load_state
 from lotline.io import DataStore
@@ -34,6 +35,15 @@ from lotline.schemas import SCHEMAS_VERSION
 REPO_ROOT = Path(__file__).resolve().parents[3]
 UNITS = ["units_1", "units_2", "units_3_4", "units_5p"]
 TOLERANCE = 0.01  # pass rule: |ours - Census| / Census within 1% per year (analysis plan D-001)
+
+
+def state_sources(state: str) -> set[str]:
+    """Manifest source ids of the adapters that run for `state` (national ones included). The manifest is
+    shared by every state and branch, so the licenses section lists only these."""
+    out = {sid for sid, m in registry.provenance_modules().items() if ".national." in m.__name__}
+    for name, src in registry.sources_for(state).items():
+        out |= {name, getattr(src.module, "SOURCE", name)}
+    return out
 
 
 def held_out_years(state: str) -> set[int]:
@@ -239,7 +249,7 @@ def build_report(state: str, store: DataStore) -> tuple[str, bool, pd.DataFrame]
                 f"- ACS {lv} estimates suppressed: {_pct(sub['estimate'].isna().sum(), len(sub))}"
             )
     sections += ["", "## 5. Licenses", ""]
-    lic = sorted({(e.source, e.license) for e in store.manifest()})
+    lic = sorted({(e.source, e.license) for e in store.manifest() if e.source in state_sources(state)})
     sections += [f"- `{s}`: {licence}" for s, licence in lic] + [""]
     if not passed:
         sections += [f"## Years outside {TOLERANCE:.0%} (to explain)", "", _table(gaps), ""]
