@@ -47,7 +47,15 @@ from lotline.model import hazard, proforma
 PARAM_FILES = ("proforma", "hazard", "adu", "market")
 AGGREGATE_KEYS = ("adu_net_new_share", "adu_formalization_share")
 FIXED = proforma.NOT_SAMPLED | {"adu_simulation_draws", "adu_simulation_seed"}
-RUBRIC = ("by_right", "owner_occ", "adu_detached_allowed", "adu_max_sqft", "parking", "parking_min_per_unit")
+RUBRIC = (
+    "by_right",
+    "owner_occ",
+    "adu_detached_allowed",
+    "adu_max_sqft",
+    "parking",
+    "parking_min_per_unit",
+    "adus_per_lot",
+)
 
 
 def specs() -> dict:
@@ -151,7 +159,17 @@ def current_rules(reforms: pd.DataFrame, geoids, state_fips: str, as_of: pd.Time
         rank = {"none": 0, "partial": 1, "handbook": 2}
         best = {"rule_class": "none", "rule_id": None, "effective": pd.NaT, "note": "no ADU rule coded"}
         for _, row in live[live["jurisdiction_geoid"].isin([geoid, state_fips])].iterrows():
-            fails, unknown = rule_restrictions(_resolved(adu, row["reform_id"]), min_sqft)
+            rubric = _resolved(adu, row["reform_id"])
+            if pd.notna(rubric.get("adus_per_lot")) and float(rubric["adus_per_lot"]) == 0:
+                # an explicit "no ADUs" row: the place has a rule, and it allows none
+                if best["rule_id"] is None:
+                    best = {
+                        **best,
+                        "rule_id": row["reform_id"],
+                        "note": f"no ADUs allowed ({row['reform_id']})",
+                    }
+                continue
+            fails, unknown = rule_restrictions(rubric, min_sqft)
             cls = "partial" if fails else "handbook"
             note = ("partial: " + "; ".join(fails)) if fails else "Handbook-equivalent"
             if unknown:
