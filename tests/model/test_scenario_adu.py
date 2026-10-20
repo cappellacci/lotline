@@ -179,7 +179,9 @@ def test_current_rules_classes_amendments_and_state_laws():
         (pd.Timestamp("2025-12-31") - pd.Timestamp("2021-01-01")).days / 365.25
     )
     assert out.loc["200", "rule_class"] == "partial" and "parking required" in out.loc["200", "rule_note"]
-    assert out.loc["300", "rule_class"] == "none" and "S1" in out.loc["300", "rule_note"]
+    # D-022: no ADU row in force is unknown, not "none" (the scheduled state law is still noted)
+    assert out.loc["300", "rule_class"] == "unknown" and "S1" in out.loc["300", "rule_note"]
+    assert pd.isna(out.loc["300", "p_partial"])
     early = adu.current_rules(reforms, ["100"], "27", pd.Timestamp("2018-06-30")).set_index("geoid")
     assert early.loc["100", "rule_class"] == "partial"  # owner-occupancy rule in force then
 
@@ -258,3 +260,90 @@ def test_scenario_units_never_share_a_parcel():
     assert rolls["eligible_parcels"].sum() == pytest.approx(2200) and rolls["overlap_removed"].sum() == 0
     clipped = adu.non_overlapping(places.assign(eligible_parcels=[100.0, 500.0, 300.0, 400.0]), juris, shares)
     assert clipped.set_index("geoid").loc["C", "eligible_parcels"] == 0 and clipped["overlap_clipped"].any()
+
+
+def test_uncoded_place_takes_its_band_prior_by_hand():
+    """D-022: 5 coded places in a state's band, 2 partial and 3 Handbook-equivalent -> an uncoded place in that
+    band is partial with probability 0.4, and about 40% of its draws are partial."""
+    coded = pd.DataFrame(
+        {
+            "state": ["MN"] * 5,
+            "population": [20_000] * 5,
+            "p_none": [0.0] * 5,
+            "p_partial": [1, 1, 0, 0, 0.0],
+            "p_handbook": [0, 0, 1, 1, 1.0],
+        }
+    )
+    edges = (10_000, 50_000)
+    priors = adu.rule_priors(coded, edges, min_count=5)
+    mid = priors.set_index(["state", "band"]).loc[("MN", 1)]
+    assert (mid["p_none"], mid["p_partial"], mid["p_handbook"]) == pytest.approx((0, 0.4, 0.6))
+    assert mid["source"] == "state and band" and mid["n_coded"] == 5
+    small = priors.set_index(["state", "band"]).loc[("MN", 0)]
+    assert small["source"] == "state, all bands" and small["p_partial"] == pytest.approx(0.4)
+    place = pd.DataFrame(
+        {
+            "geoid": ["U"],
+            "state": ["MN"],
+            "population": [30_000],
+            "rule_class": ["unknown"],
+            "p_none": [np.nan],
+            "p_partial": [np.nan],
+            "p_handbook": [np.nan],
+        }
+    )
+    filled = adu.apply_priors(place, priors, edges)
+    assert filled.loc[0, "p_partial"] == pytest.approx(0.4)
+    c, sampled = adu.draw_rule_share(
+        pd.concat([filled] * 20_000, ignore_index=True), 0.3, np.random.default_rng(0)
+    )
+    assert (c == 0.3).mean() == pytest.approx(0.4, abs=0.01) and sampled.all()
+
+
+def test_a_blank_field_is_never_read_as_unrestrictive():
+    """A row that passes every coded condition but leaves parking blank is Handbook only with probability
+    1 − P(parking restricts). By hand, coded parking: 1 of 4 rules requires it -> P = 0.25 -> (0, 0.25, 0.75)."""
+    reforms = _reforms(
+        [
+            ("R1", "500", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, None, None),
+            (
+                "K1",
+                "601",
+                "adu",
+                "in_force",
+                "2020-01-01",
+                None,
+                None,
+                True,
+                False,
+                True,
+                800,
+                "one space required",
+                None,
+            ),
+            ("K2", "602", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, "none", 0),
+            ("K3", "603", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, "none", 0),
+            ("K4", "604", "adu", "in_force", "2020-01-01", None, None, True, False, True, 800, "none", 0),
+        ]
+    ).assign(state="MN")
+    as_of = pd.Timestamp("2025-12-31")
+    counts = adu.field_restrict_counts(reforms, as_of)
+    probs = adu.field_probabilities(counts, "MN", min_count=4)
+    assert probs["parking"] == pytest.approx(0.25)
+    out = adu.current_rules(reforms, ["500"], "27", as_of, probs).set_index("geoid")
+    assert out.loc["500", "rule_class"] == "uncertain"
+    assert out.loc["500", ["p_none", "p_partial", "p_handbook"]].tolist() == pytest.approx([0, 0.25, 0.75])
+    assert "parking" in out.loc["500", "unknown_fields"]
+    # unknown parking text is unknown too, never "not required"
+    assert "parking" in adu.rule_restrictions({"parking": "see code", "by_right": True})[1]
+
+
+def test_central_path_uses_the_expected_rule_share():
+    """E[c] = p_partial × s + p_handbook: with (0, 0.4, 0.6) and s = 0.3, c = 0.72 (rule long in force)."""
+    p = _places(rule_class="unknown", rule_age=50.0).assign(p_none=0.0, p_partial=0.4, p_handbook=0.6)
+    mix = adu.central_path(p)
+    hand = adu.central_path(_places(rule_class="handbook", rule_age=50.0))
+    hm = mix["mature_hazard"][0]
+    assert mix["current"][0, 0] == pytest.approx(2000 * 0.72 * hm, rel=1e-6)
+    assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm / (1 + math.exp(4 / 3)), rel=1e-6)
+    assert hand["added"].sum() == 0

@@ -109,10 +109,17 @@ def _resolved(rows: pd.DataFrame, rid: str) -> dict:
     return out
 
 
-def rule_restrictions(rubric: Mapping, min_sqft: float = 600) -> tuple[list[str], list[str]]:
-    """Which Handbook conditions a coded ADU rule fails, and which rubric fields are not coded.
+CLASSES = ("none", "partial", "handbook")
+FIELDS = ("by_right", "owner_occ", "adu_detached_allowed", "adu_max_sqft", "parking")
 
-    `min_sqft` is the Handbook minimum (adu.yaml `adu_handbook_min_sqft`)."""
+
+def rule_restrictions(rubric: Mapping, min_sqft: float = 600) -> tuple[list[str], list[str]]:
+    """Which Handbook conditions a coded ADU rule fails, and which conditions it leaves unknown (D-022).
+
+    A blank field is unknown, never "no restriction". Parking is known when `parking_min_per_unit` is coded,
+    or the text says "no …" (none required) or names a requirement ("required", "space"); any other text, or
+    none, is unknown. `min_sqft` is the Handbook minimum (adu.yaml `adu_handbook_min_sqft`).
+    Returns (labels of failed conditions, names of unknown fields from FIELDS)."""
     fails, unknown = [], []
     checks = {
         "by_right": lambda v: v is False or str(v).lower() == "false",
@@ -120,71 +127,184 @@ def rule_restrictions(rubric: Mapping, min_sqft: float = 600) -> tuple[list[str]
         "adu_detached_allowed": lambda v: v is False or str(v).lower() == "false",
         "adu_max_sqft": lambda v: float(v) < min_sqft,
     }
-    labels = {
-        "by_right": "not by right",
-        "owner_occ": "owner must live on site",
-        "adu_detached_allowed": "no detached ADUs",
-        "adu_max_sqft": f"size cap under {min_sqft:g} sq ft",
-    }
     for field, fails_if in checks.items():
-        if field not in rubric:
+        if field not in rubric or pd.isna(rubric[field]):
             unknown.append(field)
         elif fails_if(rubric[field]):
-            fails.append(labels[field])
+            fails.append(LABELS[field](min_sqft))
     minimum = rubric.get("parking_min_per_unit")
-    text = str(rubric.get("parking", "")).lower()
-    if minimum is not None and float(minimum) > 0:
-        fails.append("parking required")
-    elif minimum is None and text and not text.startswith("no") and ("requir" in text or "space" in text):
-        fails.append("parking required")
-    elif minimum is None and not text:
+    text = str(rubric.get("parking", "") if pd.notna(rubric.get("parking", None)) else "").strip().lower()
+    if minimum is not None and pd.notna(minimum):
+        if float(minimum) > 0:
+            fails.append(LABELS["parking"](min_sqft))
+    elif text.startswith("no"):
+        pass
+    elif "requir" in text or "space" in text:
+        fails.append(LABELS["parking"](min_sqft))
+    else:
         unknown.append("parking")
     return fails, unknown
 
 
-def current_rules(reforms: pd.DataFrame, geoids, state_fips: str, as_of: pd.Timestamp) -> pd.DataFrame:
-    """Per jurisdiction: rule class ('none', 'partial', 'handbook'), the rule's effective date and a note.
+LABELS = {
+    "by_right": lambda m: "not by right",
+    "owner_occ": lambda m: "owner must live on site",
+    "adu_detached_allowed": lambda m: "no detached ADUs",
+    "adu_max_sqft": lambda m: f"size cap under {m:g} sq ft",
+    "parking": lambda m: "parking required",
+}
 
-    Uses ADU reforms in force on `as_of` (effective, not ended, not superseded by a newer one in force); a
-    state law (2-digit GEOID) applies everywhere, and the more permissive of state and local rule counts.
-    """
+
+def _live(reforms: pd.DataFrame, as_of: pd.Timestamp) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """(ADU rows in force on as_of and not superseded by one in force, all in-force ADU rows)."""
     adu = reforms[(reforms["theme"] == "adu") & (reforms["status"] == "in_force")]
     live = adu[(adu["effective_date"] <= as_of) & (adu["end_date"].isna() | (adu["end_date"] > as_of))]
-    superseded = set(live["supersedes"].dropna())
-    live = live[~live["reform_id"].isin(superseded)]
+    return live[~live["reform_id"].isin(set(live["supersedes"].dropna()))], adu
+
+
+def parking_waived(reforms: pd.DataFrame, geoid: str, date: pd.Timestamp) -> bool:
+    """True if a citywide 'parking' reform with a zero minimum is in force for `geoid` on `date` (D-022).
+
+    Such a row settles a blank ADU parking field: no parking can be required for an ADU there.
+    """
+    r = reforms[(reforms["theme"] == "parking") & (reforms["status"] == "in_force")]
+    r = r[(r["jurisdiction_geoid"] == geoid) & (r["effective_date"] <= date)]
+    r = r[r["end_date"].isna() | (r["end_date"] > date)]
+    zero = pd.to_numeric(r.get("parking_min_per_unit"), errors="coerce") == 0
+    citywide = r["coverage"].fillna("").str.lower().str.contains("citywide") if "coverage" in r else False
+    return bool((zero & citywide).any())
+
+
+def with_parking(rubric: Mapping, reforms: pd.DataFrame, geoid: str, date: pd.Timestamp) -> dict:
+    """The ADU rubric with a blank parking field filled from a citywide zero-minimum parking reform."""
+    out = dict(rubric)
+    blank = pd.isna(out.get("parking_min_per_unit", np.nan)) and pd.isna(out.get("parking", np.nan))
+    if blank and parking_waived(reforms, geoid, date):
+        out["parking_min_per_unit"] = 0.0
+    return out
+
+
+def _no_adus(rubric: Mapping) -> bool:
+    v = rubric.get("adus_per_lot")
+    return v is not None and pd.notna(v) and float(v) == 0
+
+
+def field_restrict_counts(reforms: pd.DataFrame, as_of: pd.Timestamp, min_sqft: float = 600) -> pd.DataFrame:
+    """Per field: how many coded rules in force state it (known) and how many of those restrict (D-022).
+
+    The probability that a blank field restricts is restricting / known among coded rules (by state, with the
+    pooled count as fallback: `field_probabilities`). Explicit 'no ADUs' rows are not counted.
+    """
+    live, adu = _live(reforms, as_of)
+    rows = []
+    for r in live.itertuples():
+        rubric = with_parking(_resolved(adu, r.reform_id), reforms, r.jurisdiction_geoid, as_of)
+        if _no_adus(rubric):
+            continue
+        fails, unknown = rule_restrictions(rubric, min_sqft)
+        for f in FIELDS:
+            if f not in unknown:
+                rows.append({"state": r.state, "field": f, "restricts": LABELS[f](min_sqft) in fails})
+    df = pd.DataFrame(rows, columns=["state", "field", "restricts"])
+    return df.groupby(["state", "field"])["restricts"].agg(known="count", restricting="sum").reset_index()
+
+
+def field_probabilities(counts: pd.DataFrame, state: str, min_count: int) -> dict[str, float]:
+    """P(blank field restricts) for one state: its own coded share if it has min_count known values,
+    else the pooled share over all states (D-022). A field nobody has coded gets 0.5 (no information)."""
+    out = {}
+    for f in FIELDS:
+        own = counts[(counts["state"] == state) & (counts["field"] == f)]
+        pooled = counts[counts["field"] == f]
+        use = own if len(own) and own["known"].sum() >= min_count else pooled
+        known = use["known"].sum()
+        out[f] = float(use["restricting"].sum() / known) if known else 0.5
+    return out
+
+
+def _combine_max(vectors: list[np.ndarray]) -> np.ndarray:
+    """Distribution of the most permissive class over independent rules: P(max <= k) = Π P(rule <= k)."""
+    cdf = np.prod([np.cumsum(v) for v in vectors], axis=0)
+    return np.diff(np.r_[0.0, cdf])
+
+
+def current_rules(
+    reforms: pd.DataFrame, geoids, state_fips: str, as_of: pd.Timestamp, field_probs: Mapping | None = None
+) -> pd.DataFrame:
+    """Per jurisdiction: the probability its current ADU rule is none / partial / Handbook-equivalent (D-022).
+
+    - **No ADU row** (local or statewide): `rule_class` 'unknown'; p_* are left missing for `rule_priors`.
+    - **A coded row:** partial if a known field fails; else each blank field restricts with
+      `field_probs[field]` (independently), so p_partial = 1 − Π(1 − p_field) and the rest is Handbook.
+      `rule_class` is 'partial', 'handbook', or 'uncertain' (Handbook unless a blank restricts).
+    - **Explicit 'no ADUs' row** (`adus_per_lot` = 0, #164): 'none'.
+    Several rows in force (local and state law): the more permissive class counts. Rows in force on `as_of`,
+    not superseded. `field_probs` defaults to 0.5 per blank field.
+    """
+    live, adu = _live(reforms, as_of)
     scheduled = adu[adu["effective_date"] > as_of]
     min_sqft = load_params("adu")["adu_handbook_min_sqft"].value
+    fp = {f: 0.5 for f in FIELDS} | dict(field_probs or {})
 
     def assess(geoid: str) -> dict:
-        rank = {"none": 0, "partial": 1, "handbook": 2}
-        best = {"rule_class": "none", "rule_id": None, "effective": pd.NaT, "note": "no ADU rule coded"}
-        for _, row in live[live["jurisdiction_geoid"].isin([geoid, state_fips])].iterrows():
-            rubric = _resolved(adu, row["reform_id"])
-            if pd.notna(rubric.get("adus_per_lot")) and float(rubric["adus_per_lot"]) == 0:
-                # an explicit "no ADUs" row: the place has a rule, and it allows none
-                if best["rule_id"] is None:
-                    best = {
-                        **best,
-                        "rule_id": row["reform_id"],
-                        "note": f"no ADUs allowed ({row['reform_id']})",
-                    }
-                continue
-            fails, unknown = rule_restrictions(rubric, min_sqft)
-            cls = "partial" if fails else "handbook"
-            note = ("partial: " + "; ".join(fails)) if fails else "Handbook-equivalent"
-            if unknown:
-                note += " (not coded: " + ", ".join(unknown) + ")"
-            if rank[cls] > rank[best["rule_class"]]:
-                best = {
-                    "rule_class": cls,
-                    "rule_id": row["reform_id"],
-                    "effective": row["effective_date"],
-                    "note": note,
-                }
+        rows = live[live["jurisdiction_geoid"].isin([geoid, state_fips])]
+        if rows.empty:
+            out = {
+                "rule_class": "unknown",
+                "rule_id": None,
+                "effective": pd.NaT,
+                "note": "no ADU rule coded",
+                "unknown_fields": "",
+                "p_none": np.nan,
+                "p_partial": np.nan,
+                "p_handbook": np.nan,
+            }
+        else:
+            vectors, notes, best = [], [], None
+            for _, row in rows.iterrows():
+                rubric = with_parking(_resolved(adu, row["reform_id"]), reforms, geoid, as_of)
+                if _no_adus(rubric):
+                    v, note, unknown = np.array([1.0, 0, 0]), f"no ADUs allowed ({row['reform_id']})", []
+                else:
+                    fails, unknown = rule_restrictions(rubric, min_sqft)
+                    if fails:
+                        v, note = np.array([0, 1.0, 0]), "partial: " + "; ".join(fails)
+                    else:
+                        q = 1 - float(np.prod([1 - fp[f] for f in unknown]))
+                        v = np.array([0, q, 1 - q])
+                        note = (
+                            "Handbook-equivalent"
+                            if not unknown
+                            else f"Handbook unless a blank restricts ({q:.0%})"
+                        )
+                    if unknown:
+                        note += " (not coded: " + ", ".join(unknown) + ")"
+                vectors.append(v)
+                notes.append(note)
+                rank = float(v @ np.arange(3))
+                if best is None or rank > best[0]:
+                    best = (rank, row, unknown, note)
+            p = _combine_max(vectors)
+            _, row, unknown, note = best
+            cls = (
+                "none" if p[0] == 1 else "partial" if p[1] == 1 else "handbook" if p[2] == 1 else "uncertain"
+            )
+            out = {
+                "rule_class": cls,
+                "rule_id": row["reform_id"],
+                "effective": row["effective_date"],
+                "note": note,
+                "unknown_fields": ";".join(unknown),
+                "p_none": p[0],
+                "p_partial": p[1],
+                "p_handbook": p[2],
+            }
+            if cls == "none":
+                out["effective"] = pd.NaT
         later = scheduled[scheduled["jurisdiction_geoid"].isin([geoid, state_fips])]["reform_id"].tolist()
         if later:
-            best["note"] += "; scheduled after origin: " + ", ".join(later)
-        return best
+            out["note"] += "; scheduled after origin: " + ", ".join(later)
+        return out
 
     out = pd.DataFrame([{"geoid": g, **assess(g)} for g in geoids])
     out = out.rename(columns={"effective": "rule_effective", "note": "rule_note"})
@@ -192,8 +312,77 @@ def current_rules(reforms: pd.DataFrame, geoids, state_fips: str, as_of: pd.Time
     return out.assign(rule_age=age.where(out["rule_class"] != "none"))
 
 
+def size_band(population, edges) -> np.ndarray:
+    """Place-size band 0, 1, 2 … from 2020 population and band edges (e.g. 10,000 and 50,000)."""
+    return np.searchsorted(np.asarray(edges, dtype=float), np.asarray(population, dtype=float), side="right")
+
+
+def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
+    """Class probabilities for places with no ADU row, from the coded places themselves (D-022).
+
+    `coded`: state, population, p_none, p_partial, p_handbook for every place with a coded rule (fractional
+    where blanks leave the class uncertain). For each state and size band: the mean of the coded places'
+    probabilities, if at least `min_count` places are coded there; else the state's pooled mean (all bands);
+    else the mean over every state. Returns state, band, n_coded, source, p_none, p_partial, p_handbook.
+    By hand: 5 coded places in a band, 2 partial and 3 Handbook -> (0, 0.4, 0.6).
+    """
+    c = coded.assign(band=size_band(coded["population"], edges))
+    p_cols = ["p_none", "p_partial", "p_handbook"]
+    rows = []
+    for state in sorted(c["state"].unique()):
+        for band in range(len(edges) + 1):
+            own = c[(c["state"] == state) & (c["band"] == band)]
+            whole = c[c["state"] == state]
+            if len(own) >= min_count:
+                use, src = own, "state and band"
+            elif len(whole) >= min_count:
+                use, src = whole, "state, all bands"
+            else:
+                use, src = c, "all states"
+            rows.append(
+                {
+                    "state": state,
+                    "band": band,
+                    "n_coded": len(own),
+                    "source": src,
+                    **use[p_cols].mean().to_dict(),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFrame:
+    """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`."""
+    out = places.assign(band=size_band(places["population"].fillna(0), edges))
+    pr = priors.set_index(["state", "band"])
+    pooled = priors[["p_none", "p_partial", "p_handbook"]].mean()
+    unknown = out["rule_class"] == "unknown"
+    src = pd.Series("coded", index=out.index, dtype=object)
+    for i in out.index[unknown]:
+        key = (out.at[i, "state"], out.at[i, "band"])
+        row = pr.loc[key] if key in pr.index else None
+        for col in ("p_none", "p_partial", "p_handbook"):
+            out.at[i, col] = row[col] if row is not None else pooled[col]
+        src[i] = row["source"] if row is not None else "all states"
+    return out.assign(prior_source=src)
+
+
+def expected_rule_share(places: pd.DataFrame, partial_share: float) -> np.ndarray:
+    """E[c] = p_partial × s + p_handbook: the central-path value of c (D-022)."""
+    return (places["p_partial"] * partial_share + places["p_handbook"]).to_numpy(dtype=float)
+
+
+def draw_rule_share(places: pd.DataFrame, partial_share: float, rng: np.random.Generator):
+    """One draw of each place's rule class -> (c, uncertain mask): c = 0, s or 1."""
+    p = places[["p_none", "p_partial", "p_handbook"]].to_numpy(dtype=float)
+    u = rng.random(len(p))[:, None]
+    cls = (u > np.cumsum(p, axis=1)).sum(axis=1).clip(max=2)
+    c = np.array([0.0, partial_share, 1.0])[cls]
+    return c, p.max(axis=1) < 1
+
+
 def rule_share(rule_class: pd.Series, partial_share: float) -> np.ndarray:
-    """c: 0 with no rule, `adu_partial_rule_share` for a restricted rule, 1 for a Handbook-equivalent one."""
+    """c for a known class: 0 with no rule, `adu_partial_rule_share` for a restricted rule, 1 for Handbook."""
     return rule_class.map({"none": 0.0, "partial": partial_share, "handbook": 1.0}).to_numpy(dtype=float)
 
 
@@ -273,6 +462,20 @@ def pool_paths(
     return Paths(hb, cur)
 
 
+def with_rule_probs(places: pd.DataFrame, params: Mapping[str, float]) -> pd.DataFrame:
+    """Probability columns for every place: from `rule_class` where they are missing (known classes), and a
+    rule age of `adu_unknown_rule_age_years` where the class is sampled and no rule date is known (D-022)."""
+    out = places.copy()
+    for cls in CLASSES:
+        col = f"p_{cls}"
+        known = (out["rule_class"] == cls).astype(float)
+        out[col] = out[col].fillna(known) if col in out else known
+    sampled = out[["p_none", "p_partial", "p_handbook"]].max(axis=1) < 1
+    age = out["rule_age"] if "rule_age" in out else pd.Series(np.nan, index=out.index)
+    out["rule_age"] = age.where(~(sampled & age.isna()), params["adu_unknown_rule_age_years"])
+    return out
+
+
 def central_path(
     places: pd.DataFrame, horizon: int | None = None, enabled: bool = True, params: dict | None = None
 ) -> dict[str, np.ndarray]:
@@ -281,11 +484,12 @@ def central_path(
     For hand checks and the worked example; `run` gives the ranges. `params` overrides central values.
     """
     p = central_params() | (params or {})
+    places = with_rule_probs(places, p)
     horizon = horizon or int(load_params("baseline")["forecast_horizon_years"].value)
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
     rate = given.fillna(p["mortgage_rate_forecast"]).to_numpy(dtype=float)
     hm = hazard.adu_mature_hazard(places["rent"], places["home_value"], rate, p)
-    c = rule_share(places["rule_class"], p["adu_partial_rule_share"])
+    c = expected_rule_share(places, p["adu_partial_rule_share"])  # E[c] over the rule classes (D-022)
     paths = pool_paths(
         places["eligible_parcels"],
         hm,
@@ -320,9 +524,12 @@ def run(
     Totals are percentiles of each draw's five-year sum, not sums of percentiles.
     """
     central = central_params()
+    places = with_rule_probs(places, central)
     n = int(draws or central["adu_simulation_draws"])
     seed = int(central["adu_simulation_seed"])
     sets = draw_params(n, seed)
+    rule_rng = np.random.default_rng(seed + 2)
+    drawn = np.zeros((n, len(places)))
     horizon = int(load_params("baseline")["forecast_horizon_years"].value)
     z = np.random.default_rng(seed + 1).standard_normal((n, len(places)))
     e = places["eligible_parcels"].to_numpy(dtype=float)
@@ -344,7 +551,8 @@ def run(
         args = (places["rent"], places["home_value"], rates(p))
         hm = hazard.adu_mature_hazard(*args, p)
         hm = hazard.widen(hm, hazard.calibration_distance(*args, p)["total"], z[d], p)
-        c = rule_share(places["rule_class"], p["adu_partial_rule_share"])
+        c, sampled = draw_rule_share(places, p["adu_partial_rule_share"], rule_rng)
+        drawn[d] = np.select([c == 0, c == 1], [0, 2], 1)
         paths = pool_paths(
             e,
             hm,
@@ -367,6 +575,10 @@ def run(
         price_to_cost_central=hazard.adu_price_to_cost(places["rent"], params=central),
         calibration_distance=dist["total"],
         outside_calibration=dist["total"] > 0,
+        draws_from_unknown_rule=np.where(sampled, 1.0, 0.0) if n else 0.0,
+        drawn_none=(drawn == 0).mean(axis=0),
+        drawn_partial=(drawn == 1).mean(axis=0),
+        drawn_handbook=(drawn == 2).mean(axis=0),
     ).reset_index(drop=True)
     yearly = info.loc[info.index.repeat(horizon)].reset_index(drop=True)
     yearly["horizon"] = np.tile(np.arange(1, horizon + 1), len(places))
@@ -460,6 +672,45 @@ def _county_shares(state: str, store, places: pd.DataFrame) -> pd.DataFrame:
     return geoparts.county_shares(load_state(state).fips, sorted(local), store)
 
 
+REFORM_STATES = ("MN", "NC", "OH", "TX")
+
+
+def rule_inputs(state: str, store, geoids, as_of: pd.Timestamp) -> tuple[pd.DataFrame, dict]:
+    """Rule probabilities for `geoids` in `state` (D-022), and the counts behind them.
+
+    Field probabilities come from every state's coded rules in force (`field_restrict_counts`); priors for
+    places with no ADU row come from the coded places of every state, by state and size band (`rule_priors`).
+    Reads config/reforms/*.csv at run time, so newly coded rules shrink the unknowns with no code change.
+    Returns (table: geoid, rule_class, p_none, p_partial, p_handbook, rule_age, …, prior_source; info dict).
+    """
+    from lotline.config import load_state
+
+    p = load_params("adu")
+    min_count = int(p["adu_rule_min_coded"].value)
+    edges = (p["adu_rule_band_small_max_pop"].value, p["adu_rule_band_mid_max_pop"].value)
+    reforms = {st: load_reforms(st).assign(state=st) for st in REFORM_STATES}
+    counts = field_restrict_counts(pd.concat(reforms.values(), ignore_index=True), as_of)
+    coded = []
+    for st, r in reforms.items():
+        local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
+        if not local:
+            continue
+        fp = field_probabilities(counts, st, min_count)
+        cr = current_rules(r, local, load_state(st).fips, as_of, fp)
+        cr = cr[cr["rule_class"] != "unknown"]
+        pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
+        coded.append(cr.assign(state=st, population=cr["geoid"].map(pop).astype(float)))
+    coded = pd.concat(coded, ignore_index=True).dropna(subset=["population"])
+    priors = rule_priors(coded, edges, min_count)
+    fp = field_probabilities(counts, state, min_count)
+    rules = current_rules(reforms[state], geoids, load_state(state).fips, as_of, fp)
+    pop = store.read(state, "jurisdictions").set_index("geoid")["pop_2020"]
+    rules = rules.assign(state=state, population=rules["geoid"].map(pop).astype(float))
+    rules = apply_priors(rules, priors, edges).drop(columns=["state", "band"])
+    info = {"field_counts": counts, "field_probs": fp, "priors": priors, "coded": coded}
+    return rules, info
+
+
 def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     """One row per jurisdiction with ADU-eligible parcels: every input `run` needs, from processed tables.
 
@@ -470,7 +721,6 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     Reads only holdout-filtered tables (DataStore); no outcome after the origin is used.
     """
     from lotline.build import eligible as eligible_rule
-    from lotline.config import load_state
     from lotline.model import money
 
     elig = store.read(state, "eligible_parcels")
@@ -495,9 +745,8 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     places = places.merge(acs, left_on="acs_geo", right_index=True, how="left")
     places["mortgage_rate"] = np.nan  # forward run: the rate path is a drawn parameter (market.yaml)
 
-    fips = load_state(state).fips
     as_of = pd.Timestamp(f"{origin}-12-31")
-    rules = current_rules(load_reforms(state), places["geoid"], fips, as_of)
+    rules, _ = rule_inputs(state, store, places["geoid"], as_of)
     places = places.merge(rules, on="geoid", how="left")
 
     p = load_params("adu")

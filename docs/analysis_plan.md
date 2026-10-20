@@ -315,6 +315,21 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Next specification (to be pre-registered before it is run, not run here):** a partial-rule share graded
   by the number of Handbook conditions a rule fails, rule coverage (D-021), and a place random effect in place
   of a single α; refit when Austin's rules are coded and Durham's roll is fixed.
+- **Fit 2 pre-registration (written and pushed before fit 2 was run, 2026-10-20; follows D-022):**
+  - *Unchanged from fit 1:* quantity θ, NB likelihood, 90% profile interval, fit and test sets, the
+    partial-share rule (estimated jointly only if its 90% interval is narrower than 0.1–0.6), the decision
+    rule (fit 2's θ and interval replace fit 1's in `hazard.yaml` whatever the test shows).
+  - *Blank rubric fields are integrated, not dropped:* a place-year whose rule class depends on blank fields
+    enters with a two-component mixture, P(y) = q·NB(y; θ·k_A) + (1 − q)·NB(y; θ·k_B), where path A has those
+    rules restricted (partial) and path B Handbook-equivalent, and q = 1 − Π(1 − p_field) with p_field the
+    coded share restricting that field (`scenarios.adu.field_probabilities`, coded rules in force at the
+    fit's run date, state share if 5+ values, else pooled). All rules of one place-year that depend on blanks
+    move together (amendments share their resolved fields). Dropping them instead would remove Minneapolis's
+    2021–25 years and most suburbs.
+  - *Place-years with no coded rule* stay out of the fit (as in fit 1); *explicit "no ADUs"* place-years have
+    an expected count of 0 and are left out, with any observed ADUs there reported.
+  - *Parking:* a citywide parking reform with a zero minimum in force by 1 July fills a blank ADU parking
+    field (D-022).
 - **Decided by:** scenario choices proposed by WS-ENGINE; estimation and split decided by Ben, 2026-10-20.
 
 ### D-020 · 2026-10-20 · Scenario geography: units that never share a parcel

@@ -44,3 +44,33 @@ adu_simulation_seed:
   high: 4294967295
   unit: random seed
   source: "Choice: a fixed seed makes every run reproducible"
+
+# ---- Unknown rules (D-022): anything not coded is unknown ----
+
+adu_rule_band_small_max_pop:
+  value: 10000
+  low: 10000
+  high: 10000
+  unit: 2020 population (upper edge of the small-place band)
+  source: "Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+ for the rule priors of places with no coded ADU rule"
+
+adu_rule_band_mid_max_pop:
+  value: 50000
+  low: 50000
+  high: 50000
+  unit: 2020 population (upper edge of the middle band)
+  source: "Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+"
+
+adu_rule_min_coded:
+  value: 5
+  low: 5
+  high: 5
+  unit: coded places (or coded field values)
+  source: "Choice (D-022): a state-and-band rule prior, or a state's field probability, needs at least 5 coded places (values); otherwise the state's pooled share, then the all-state share"
+
+adu_unknown_rule_age_years:
+  value: 10
+  low: 10
+  high: 10
+  unit: years
+  source: "Choice (D-022): a sampled rule with no known date is treated as long in force (ramp ~1), so current-rules uptake under it is mature. Most coded ADU rules in force date from 2014-2023"
