@@ -344,3 +344,14 @@ def test_lot_size_floor_is_inclusive(theme):
     lots["parcel_id"] = ["at", "below"]
     lots["lot_sqft"] = [5000.0, 4999.0]
     assert eligible.classify(lots, theme, params)["eligible"].tolist() == [True, False]
+
+
+def test_overlapping_parcel_sources_are_never_double_counted():
+    a = _parcels()
+    b = a.assign(source="city_assessor")
+    both = pd.concat([a, b], ignore_index=True)
+    with pytest.raises(ValueError, match="parcel_sources"):
+        eligible.single_source(both, {})
+    kept = eligible.single_source(both, {"2743000": "city_assessor", "*": "t"})
+    assert len(kept) == len(a) and set(kept["source"]) == {"city_assessor"}
+    assert len(eligible.single_source(a, {})) == len(a)  # one source: unchanged
