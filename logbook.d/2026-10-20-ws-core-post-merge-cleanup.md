@@ -1,0 +1,17 @@
+### LB-NNN · 2026-10-20 · Build: Post-merge cleanup: one GEOID per BPS ID, decisions recorded, provenance and V0 regenerated
+- **Question:** After merging the overnight PRs, are the shared tables, docs and reports consistent with main?
+- **What I did:**
+  - **One GEOID per BPS ID:** every row of a BPS ID now takes its latest year's GEOID. 12 IDs in MN, OH and TX had two GEOIDs, e.g. Elko New Market 2718862 in 2007–2015 vs 2718662, and Baldwin, MN township → city. There are no same-year overlaps, so nothing is double-counted. Test added.
+  - **Decisions recorded:** Ben's 2026-10-20 decisions in config and docs: MN decisions 1–2 (`mn.yaml`), D-017 (OH decision 1), NC Union tier 2 and Guilford "2–4 units" → TRI_QUAD.
+  - **Rebuilt:** BPS, jurisdictions and eligible parcels for MN, NC, OH and TX.
+  - **Regenerated:** `docs/data_provenance.md` and the four V0 national reports.
+- **Inputs:** processed tables in `LOTLINE_DATA_DIR`; Ben's decisions of 2026-10-20.
+- **Outputs:** `src/lotline/adapters/national/bps.py`, `tests/core/test_bps.py`, `config/states/mn.yaml`, `config/crosswalks/nc_land_use_counties.csv`, `config/crosswalks/nc_land_use_guilford.csv`, `docs/analysis_plan.md`, `docs/data_provenance.md`, `reports/{mn,nc,oh,tx}/V0-national.md`.
+- **Findings:**
+  - **V0 results unchanged:** OH PASS; MN, NC, TX gaps to explain, as before.
+  - **NC:** the 2009+ BPS total fell by 33,900 units, from holding out Mecklenburg 2023–2025 (D-012).
+  - **Jurisdictions on parcel denominators:** MN 188, NC 101, OH 831, TX 1 (Austin).
+  - **Data tiers:** MN 116 tier 1 / 69 tier 2; NC 54 / 32; OH 826 tier 2.
+- **Decisions:** records Ben's 2026-10-20 decisions (no new ones).
+- **AI:** Claude Code (WS-CORE) made the changes and checked them; all tests pass.
+- **Open / next:** NC V1 re-run on the rebuilt table (D-012); Mecklenburg permits await the county's reply.

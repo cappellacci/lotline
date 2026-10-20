@@ -20,7 +20,7 @@ parusedesc,MED,MED,INSTITUTIONAL,,https://services.nconemap.gov/secure/rest/serv
 parusedesc,MFG HOM,MFG HOM,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,MH PARK,MH PARK,MOBILE_HOME,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,MULTI-FAMILY5>,MULTI-FAMILY5>,MULTIFAMILY_5P,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
-parusedesc,MULTI-FAMILY<4,MULTI-FAMILY<4,TRI_QUAD,2-4 units: counted as 3-4 units (duplexes cannot be told apart),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI-FAMILY<4,MULTI-FAMILY<4,TRI_QUAD,2-4 units: counted as 3-4 units (duplexes cannot be told apart); confirmed by Ben 2026-10-20,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,NONE,NONE,UNKNOWN,use not given (undifferentiated),https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,OFFICE,OFFICE,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,PETROL/GAS,PETROL/GAS,COMMERCIAL,,https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
