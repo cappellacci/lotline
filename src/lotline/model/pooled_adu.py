@@ -483,21 +483,104 @@ def estimate_pooled(panel: pd.DataFrame, check: bool = True, max_iter: int = 500
 # ---------------------------------------------------------------------------------------------------------
 
 
-def score_bootstrap(fit: PooledFit, draws: int = 999, seed: int = 0) -> pd.DataFrame:
+@dataclass
+class RefitLog:
+    """Convergence accounting for one stage (D-025 rule): refits tried, converged at first, converged on the
+    retry from the main estimates, and failed (excluded); bootstrap draws tried and excluded."""
+
+    stage: str
+    refits: int = 0
+    first: int = 0
+    retried: int = 0
+    failed: int = 0
+    draws: int = 0
+    draws_excluded: int = 0
+    max_share: float = 0.05
+
+    @property
+    def summary(self) -> str:
+        parts = []
+        if self.refits:
+            ok = self.first + self.retried
+            parts.append(
+                f"{ok} of {self.refits} refits converged ({self.retried} on retry, {self.failed} excluded)"
+            )
+        if self.draws:
+            parts.append(f"{self.draws - self.draws_excluded} of {self.draws} bootstrap draws kept")
+        return f"{self.stage}: " + "; ".join(parts) if parts else f"{self.stage}: nothing refitted"
+
+    def check(self) -> None:
+        """Stop the stage (StageFailed) if failures exceed `max_share` of its refits or draws."""
+        if self.refits and self.failed > self.max_share * self.refits:
+            raise StageFailed(f"{self.summary}: more than {self.max_share:.0%} of refits failed")
+        if self.draws and self.draws_excluded > self.max_share * self.draws:
+            raise StageFailed(f"{self.summary}: more than {self.max_share:.0%} of bootstrap draws diverged")
+
+
+class StageFailed(EstimationError):
+    """A stage of the run could not be computed under the D-025 convergence rule."""
+
+
+def start_from(main: PooledFit, d: PooledDesign) -> np.ndarray:
+    """Starting values for a refit's design from the main model's estimates, matched by name (0 for a column
+    the main model doesn't have), with its log σ and log κ."""
+    mk = main.design.X.shape[1]
+    lp = main.log_params
+    by_name = dict(zip(main.design.names, lp[:mk], strict=True))
+    return np.r_[[by_name.get(n, 0.0) for n in d.names], lp[mk], lp[mk + 1]]
+
+
+def _default_fitter(panel, start: PooledFit | None = None, **kw) -> PooledFit:
+    d = build_pooled_design(panel, **kw)
+    return fit_pooled(d, start=start_from(start, d) if start is not None else None)
+
+
+def refit(
+    panel, main: PooledFit | None, log: RefitLog, fitter: Callable | None = None, **kw
+) -> PooledFit | None:
+    """One refit under the D-025 rule: try; if it doesn't converge, retry once starting from the main-model
+    estimates; if it still fails, count it as excluded and return None."""
+    fitter = fitter or _default_fitter
+    log.refits += 1
+    try:
+        fit = fitter(panel, **kw)
+        log.first += 1
+        return fit
+    except EstimationError:
+        pass
+    try:
+        fit = fitter(panel, start=main, **kw)
+        log.retried += 1
+        return fit
+    except EstimationError:
+        log.failed += 1
+        return None
+
+
+def score_bootstrap(
+    fit: PooledFit, draws: int = 999, seed: int = 0, log: RefitLog | None = None
+) -> pd.DataFrame:
     """Wild cluster score bootstrap by place (Webb weights): b* = b̂ − H⁻¹ Σ_g w_g S_g (H negative
-    definite)."""
+    definite). A draw beyond the coefficient bound is excluded and counted in `log` (D-025 rule); without a
+    log, any such draw raises."""
     rng = np.random.default_rng(seed)
     Hi = np.linalg.inv(fit.hessian)
+    k = fit.design.X.shape[1]
     rows = []
     for _ in range(draws):
         w = rng.choice(WEBB, size=fit.scores.shape[0])
         b = fit.params - Hi @ (w @ fit.scores)
-        if (
-            not np.all(np.isfinite(b))
-            or np.max(np.abs(b[: fit.design.X.shape[1]][1:]), initial=0) > COEF_BOUND
-        ):
+        bad = not np.all(np.isfinite(b)) or np.max(np.abs(b[:k][1:]), initial=0) > COEF_BOUND
+        if log is not None:
+            log.draws += 1
+            if bad:
+                log.draws_excluded += 1
+                continue
+        elif bad:
             raise EstimationError("pooled bootstrap draw diverged")
-        rows.append(dict(zip(fit.names, to_log(b, fit.design.X.shape[1]), strict=True)))
+        rows.append(dict(zip(fit.names, to_log(b, k), strict=True)))
+    if log is not None:
+        log.check()
     return pd.DataFrame(rows)
 
 
@@ -545,30 +628,43 @@ def overall_effect(fit: PooledFit, params: np.ndarray | None = None) -> float:
     return float(np.average(b, weights=w)) if w else float("nan")
 
 
-def randomization_inference(panel, permutations: int, seed: int = 0, **design_kw):
-    """Permute adoption years among treated places, re-fit, compare the overall pooled effect."""
+def randomization_inference(
+    panel, permutations: int, main: PooledFit, seed: int = 0, fitter=None, **design_kw
+):
+    """Permute adoption years among treated places, re-fit (D-025 convergence rule), compare the overall
+    pooled effect of `main` with the permutation distribution. Returns (observed, p over the converged
+    refits, distribution, log)."""
     rng = np.random.default_rng(seed)
-    base = estimate_pooled(panel, **design_kw)
-    obs = overall_effect(base)
+    log = RefitLog("randomization inference")
+    obs = overall_effect(main)
     treated = panel.loc[panel["T"].notna(), ["place", "T"]].drop_duplicates("place")
     out = []
     for _ in range(permutations):
         perm = dict(zip(treated["place"], rng.permutation(treated["T"].to_numpy()), strict=True))
         p = panel.copy()
         p["T"] = p["place"].map(perm).where(p["place"].isin(perm), p["T"])
-        out.append(overall_effect(estimate_pooled(p, **design_kw)))
+        f = refit(p, main, log, fitter, **design_kw)
+        if f is not None:
+            out.append(overall_effect(f))
+    log.check()
     dist = np.array(out)
-    return obs, float(np.mean(np.abs(dist) >= abs(obs))), dist
+    return obs, float(np.mean(np.abs(dist) >= abs(obs))), dist, log
 
 
 # ---------------------------------------------------------------------------------------------------------
-# Checks (D-023 §checks, applied to the D-025 model)
+# Checks (D-023 §checks, applied to the D-025 model, under the D-025 convergence rule)
 # ---------------------------------------------------------------------------------------------------------
 
 
-def _effect_interval(panel, draws, seed, **kw):
-    fit = estimate_pooled(panel, **kw)
-    boot = score_bootstrap(fit, draws=draws, seed=seed)
+def _not_computed(name: str, log: RefitLog, why: str = "did not converge after a retry") -> dict:
+    return {"check": name, "pass": None, "note": f"not computed: {why}", "convergence": log.summary}
+
+
+def _effect_interval(panel, draws, seed, main, log, fitter=None, **kw):
+    fit = refit(panel, main, log, fitter, **kw)
+    if fit is None:
+        return None
+    boot = score_bootstrap(fit, draws=draws, seed=seed, log=log)
     k = fit.design.X.shape[1]
     dist = np.array([overall_effect(fit, from_log(r.to_numpy(), k)) for _, r in boot[fit.names].iterrows()])
     est_ = overall_effect(fit)
@@ -576,51 +672,84 @@ def _effect_interval(panel, draws, seed, **kw):
     return fit, boot, est_, est_ - hi, est_ - lo
 
 
-def check_leads(panel, draws=999, seed=0, **kw) -> dict:
+def check_leads(panel, main: PooledFit, draws=999, seed=0, fitter=None, **kw) -> dict:
     """Pre-trend leads k = −3…−1 jointly zero at the 10% level (Wald with the bootstrap covariance)."""
-    fit = estimate_pooled(panel, leads=(-3, -2, -1), **kw)
-    boot = score_bootstrap(fit, draws=draws, seed=seed)
+    name, log = "pre-trend leads", RefitLog("pre-trend leads")
+    try:
+        fit = refit(panel, main, log, fitter, leads=(-3, -2, -1), **kw)
+        if fit is None:
+            return _not_computed(name, log)
+        boot = score_bootstrap(fit, draws=draws, seed=seed, log=log)
+    except StageFailed as err:
+        return _not_computed(name, log, str(err))
     terms = [t for t in ("lead_3", "lead_2", "lead_1") if t in fit.names]
     if not terms:
-        return {"check": "pre-trend leads", "p": np.nan, "pass": False, "note": "no lead estimable"}
+        return {
+            "check": name,
+            "p": np.nan,
+            "pass": False,
+            "note": "no lead estimable",
+            "convergence": log.summary,
+        }
     b = np.array([fit.value(t) for t in terms])
     D = boot[terms].to_numpy()
     Vi = np.linalg.pinv(np.cov(D, rowvar=False).reshape(len(terms), len(terms)))
     W = float(b @ Vi @ b)
     dev = D - b
     p = float(np.mean(np.einsum("ij,jk,ik->i", dev, Vi, dev) >= W))
-    return {"check": "pre-trend leads", "statistic": W, "p": p, "pass": bool(p >= 0.10)}
+    return {"check": name, "statistic": W, "p": p, "pass": bool(p >= 0.10), "convergence": log.summary}
 
 
-def check_placebo_dates(panel, shift=2, draws=999, seed=0, **kw) -> dict:
+def _interval_check(name, p, main, draws, seed, fitter, **kw) -> dict:
+    log = RefitLog(name)
+    try:
+        r = _effect_interval(p, draws, seed, main, log, fitter, **kw)
+    except StageFailed as err:
+        return _not_computed(name, log, str(err))
+    if r is None:
+        return _not_computed(name, log)
+    _, _, e, lo, hi = r
+    return {
+        "check": name,
+        "estimate": e,
+        "low": lo,
+        "high": hi,
+        "pass": bool(lo <= 0 <= hi),
+        "convergence": log.summary,
+    }
+
+
+def check_placebo_dates(panel, main: PooledFit, shift=2, draws=999, seed=0, fitter=None, **kw) -> dict:
     p = panel[(panel["T"].isna()) | (panel["year"] < panel["T"])].copy()
     p["T"] = p["T"] - shift
     p.loc[p["T"].notna(), "dose"] = 1.0
-    _, _, e, lo, hi = _effect_interval(p, draws, seed, **kw)
-    return {
-        "check": f"placebo dates (−{shift} years)",
-        "estimate": e,
-        "low": lo,
-        "high": hi,
-        "pass": bool(lo <= 0 <= hi),
-    }
+    return _interval_check(f"placebo dates (−{shift} years)", p, main, draws, seed, fitter, **kw)
 
 
-def check_placebo_outcome(panel, draws=999, seed=0, **kw) -> dict:
+def check_placebo_outcome(panel, main: PooledFit, draws=999, seed=0, fitter=None, **kw) -> dict:
     p = panel.assign(y=panel["units_5p"].round().astype(int))
-    _, _, e, lo, hi = _effect_interval(p, draws, seed, **kw)
-    return {
-        "check": "placebo outcome (5+ units)",
-        "estimate": e,
-        "low": lo,
-        "high": hi,
-        "pass": bool(lo <= 0 <= hi),
-    }
+    return _interval_check("placebo outcome (5+ units)", p, main, draws, seed, fitter, **kw)
 
 
-def check_excluding(panel, main: pd.DataFrame, years=(2020, 2021), draws=999, seed=0, **kw) -> dict:
-    fit, _, e, _, _ = _effect_interval(panel[~panel["year"].isin(years)], draws, seed, **kw)
-    m = main.set_index("term")
+def check_excluding(
+    panel,
+    main: PooledFit,
+    main_summary: pd.DataFrame,
+    years=(2020, 2021),
+    draws=999,
+    seed=0,
+    fitter=None,
+    **kw,
+) -> dict:
+    name, log = f"excluding {years}", RefitLog(f"excluding {years}")
+    try:
+        r = _effect_interval(panel[~panel["year"].isin(years)], draws, seed, main, log, fitter, **kw)
+    except StageFailed as err:
+        return _not_computed(name, log, str(err))
+    if r is None:
+        return _not_computed(name, log)
+    fit, _, e, _, _ = r
+    m = main_summary.set_index("term")
     outside = [
         n
         for n in BAND_NAMES
@@ -628,17 +757,26 @@ def check_excluding(panel, main: pd.DataFrame, years=(2020, 2021), draws=999, se
     ]
     if "overall" in m.index and not (m.loc["overall", "low"] <= e <= m.loc["overall", "high"]):
         outside.append("overall")
-    return {"check": f"excluding {years}", "outside": outside, "pass": not outside}
+    return {"check": name, "estimate": e, "outside": outside, "pass": not outside, "convergence": log.summary}
 
 
-def check_leave_one_out(panel, main: pd.DataFrame, **kw) -> dict:
-    m = main.set_index("term").loc["overall"]
-    moved = []
+def check_leave_one_out(panel, main: PooledFit, main_summary: pd.DataFrame, fitter=None, **kw) -> dict:
+    name, log = "leave one treated place out", RefitLog("leave one treated place out")
+    m = main_summary.set_index("term").loc["overall"]
+    moved, effects = [], {}
     for place in panel.loc[panel["T"].notna(), "place"].unique():
-        e = overall_effect(estimate_pooled(panel[panel["place"] != place], **kw))
+        f = refit(panel[panel["place"] != place], main, log, fitter, **kw)
+        if f is None:
+            continue
+        e = overall_effect(f)
+        effects[place] = e
         if not (m["low"] <= e <= m["high"]):
             moved.append((place, e))
-    return {"check": "leave one treated place out", "moved": moved, "pass": not moved}
+    try:
+        log.check()
+    except StageFailed as err:
+        return _not_computed(name, log, str(err))
+    return {"check": name, "moved": moved, "pass": not moved, "convergence": log.summary, "effects": effects}
 
 
 def summarize_main(fit: PooledFit, boot: pd.DataFrame, level: float = 0.90) -> pd.DataFrame:

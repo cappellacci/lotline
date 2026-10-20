@@ -12,3 +12,15 @@
 - **Decisions:** none; the handling of non-converging permutation refits needs a dated entry.
 - **AI:** Claude ran the script once and transcribed the printed estimates.
 - **Open / next:** decide the permutation-failure rule; run the remaining stages once.
+
+### LB-NNN · 2026-10-20 · Build + run: D-025 convergence rule; remaining stages run once
+- **Question:** With Ben's convergence rule for repeated refits, what do randomization inference, the checks,
+  robustness and transport show for the D-025 main model?
+- **What I did:** wrote the rule under D-025 and pushed it (e5185ed) before running; implemented it
+  (`pooled_adu.refit`, `RefitLog`, tolerant score bootstrap, stage stop above 5%), with stub tests (fails
+  once then succeeds on retry from the main estimates; fails twice and is excluded; > 5% stops a stage; a
+  single-refit check reported as not computed); added `--remaining` to `scripts/dev/estimate_pooled_adu.py`,
+  which reuses the main model (recomputed deterministically and checked against the first run's log) and runs
+  the remaining stages once.
+- **Outputs:** `src/lotline/model/pooled_adu.py`, `tests/model/test_pooled_adu.py`, the script,
+  `reports/adu-d025/` (results), `docs/analysis_plan.md` (D-025 notes).

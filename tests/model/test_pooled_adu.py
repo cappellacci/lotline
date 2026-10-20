@@ -233,3 +233,77 @@ def test_imputation_robustness_recovers_the_effect_on_a_dense_panel():
     eff = pa.imputation_effects(p)
     for name, b in zip(pa.BAND_NAMES, BETA, strict=True):
         assert eff[name] == pytest.approx(b, abs=0.15)
+
+
+# ---- D-025 convergence rule for repeated refits ----
+
+
+class StubFitter:
+    """Fails on chosen calls (by call number), else returns a fixed fit; records the `start` it got."""
+
+    def __init__(self, fit, fail_calls):
+        self.fit, self.fail_calls, self.calls, self.starts = fit, set(fail_calls), 0, []
+
+    def __call__(self, panel, start=None, **kw):
+        self.calls += 1
+        self.starts.append(start)
+        if self.calls in self.fail_calls:
+            raise EstimationError("stub: did not converge")
+        return self.fit
+
+
+@pytest.fixture(scope="module")
+def small_fit():
+    p = sparse_panel(seed=50, n_places=60, a_mean=-9.5)
+    return p, pa.estimate_pooled(p, modifiers=["m1"])
+
+
+def test_a_refit_that_fails_once_succeeds_on_the_retry_from_the_main_estimates(small_fit):
+    panel, main = small_fit
+    stub = StubFitter(main, fail_calls={1})
+    log = pa.RefitLog("stage")
+    assert pa.refit(panel, main, log, stub) is main
+    assert stub.starts == [None, main]  # the retry starts from the main model
+    assert (log.refits, log.first, log.retried, log.failed) == (1, 0, 1, 0)
+
+
+def test_a_refit_that_fails_twice_is_counted_and_excluded(small_fit):
+    panel, main = small_fit
+    log = pa.RefitLog("stage")
+    assert pa.refit(panel, main, log, StubFitter(main, fail_calls={1, 2})) is None
+    assert (log.refits, log.failed) == (1, 1)
+    assert "0 of 1 refits converged" in log.summary
+
+
+def test_randomization_inference_excludes_isolated_failures_and_reports_the_count(small_fit):
+    """20 permutations, one fails twice: p is computed over 19 and the run carries on."""
+    panel, main = small_fit
+    stub = StubFitter(main, fail_calls={5, 6})  # the 5th refit fails, and its retry too
+    obs, p, dist, log = pa.randomization_inference(panel, 20, main, seed=1, fitter=stub, modifiers=["m1"])
+    assert len(dist) == 19 and log.failed == 1
+    assert log.summary.startswith("randomization inference: 19 of 20 refits converged")
+
+
+def test_a_stage_stops_when_failures_exceed_five_percent(small_fit):
+    """2 of 20 permutations failing (10%) stops the stage with StageFailed."""
+    panel, main = small_fit
+    stub = StubFitter(main, fail_calls={3, 4, 9, 10})
+    with pytest.raises(pa.StageFailed, match="more than 5%"):
+        pa.randomization_inference(panel, 20, main, seed=1, fitter=stub, modifiers=["m1"])
+
+
+def test_a_single_refit_check_is_reported_not_computed_and_the_run_continues(small_fit):
+    panel, main = small_fit
+    out = pa.check_placebo_outcome(
+        panel, main, draws=50, fitter=StubFitter(main, fail_calls={1, 2}), modifiers=["m1"]
+    )
+    assert out["pass"] is None and out["note"].startswith("not computed")
+
+
+def test_start_from_matches_by_name(small_fit):
+    panel, main = small_fit
+    d = pa.build_pooled_design(panel, modifiers=["m1"], leads=(-1,))
+    s = pa.start_from(main, d)
+    assert s[d.names.index("lead_1")] == 0.0
+    assert s[d.names.index("theta_m1")] == pytest.approx(main.value("theta_m1"))
+    assert s[-2] == pytest.approx(main.value("log_sigma"))
