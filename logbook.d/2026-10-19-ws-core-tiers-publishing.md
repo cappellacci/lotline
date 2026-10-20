@@ -1,0 +1,9 @@
+### LB-NNN · 2026-10-19 · Build: Data tiers from loaded parcels (D-016), publishing minimum (D-015), census.gov rate limit
+- **Question:** Are jurisdictions labelled with the data they actually have, are small places kept out of published results, and can parallel downloads stop tripping census.gov's block?
+- **What I did:** Added `build/jurisdictions.tiers_from_parcels`: tier 1 when a jurisdiction's latest roll has land use for ≥90% of parcels and year built for ≥80% of built parcels, tier 2 with land use only, tier 3 otherwise (`config/params/tiers.yaml`; state config overrides). Added `min_eligible_parcels_publish` = 20 to `config/params/aggregate.yaml` (D-015). Added a cross-process rate limit in `io/http.fetch` for census.gov hosts (1 request per second, via a lock file in the data directory). Rewrote the `model/backtest.py` header's coverage line to describe randomized coverage (D-003). Logged D-015 and D-016.
+- **Inputs:** Model & Assumptions draft findings (#135); judging finding TR-07; census.gov block of 2026-10-19 (support ID recorded in Ben's request to Census).
+- **Outputs:** `src/lotline/build/jurisdictions.py`, `config/params/tiers.yaml`, `config/params/aggregate.yaml`, `src/lotline/io/http.py`, `src/lotline/model/backtest.py`, `docs/analysis_plan.md` (D-015, D-016), `tests/core/test_jurisdictions.py`, `tests/core/test_io.py`.
+- **Findings:** Before this, every jurisdiction in every state was tier 3, including Austin (TCAD roll with land use and year built).
+- **Decisions:** D-015 and D-016 (Ben, 2026-10-19).
+- **AI:** Claude Code (WS-CORE) wrote the change and tests (hand-worked tier example; rate limit with a fake clock); all tests pass.
+- **Open / next:** rebuild jurisdictions for states with parcels after merge; regenerate the Model & Assumptions parameter table and run its `--check` in CI once #135 is on main.

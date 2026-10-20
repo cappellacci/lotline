@@ -7,8 +7,11 @@ scored against what BPS recorded:
 - **Error:** mean absolute error in units per 1,000 eligible parcels, each place-year counting once. Counts
   become rates with the target year's denominator (carried forward from the newest ACS estimate, as the panel
   does), the same for every method. The model's point forecast is its P50.
-- **Coverage:** share of place-years whose observed rate lies in the model's [P10, P90] band, ends included
-  (counts are whole numbers, so a band of [0, 0] covers an observed 0).
+- **Coverage:** randomized coverage of the central [P10, P90] band (analysis plan D-003;
+  `baseline.randomized_coverage`): for whole-number outcomes, each observed value counts as covered by the
+  share of its predictive-CDF step that lies inside the band, so a calibrated forecast covers 80% on average.
+  The pass range is 70-90%. The inclusive share (ends included) is still reported, but it flatters forecasts
+  of mostly-zero counts, so it is not the test.
 - **Bias after 2022:** mean signed error (forecast − observed) for years from `v1_bias_first_year`.
 - **By place size:** the same error within terciles of eligible parcels at the fit end, per state.
 
