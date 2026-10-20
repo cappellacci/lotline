@@ -61,7 +61,7 @@ LICENSE = (
 )
 LUC_CROSSWALK = CONFIG_DIR / "crosswalks" / "oh_dte_luc.csv"
 COUNTY_FIPS = CONFIG_DIR / "crosswalks" / "oh_county_fips.csv"
-COUNTIES = ["Franklin", "Hamilton"]  # first pass; the full state is 88 counties (see PROVENANCE)
+COUNTIES: list[str] | None = None  # None: all 88 counties in oh_county_fips.csv (a list limits the run)
 SQFT_PER_ACRE = 43_560.0
 # The server intermittently answers deep-offset pages with "400: Invalid query parameters" and serves the same
 # page on a later try (seen on Franklin at offset ~418,000); the pager retries error bodies.
@@ -97,8 +97,8 @@ PROVENANCE = {
     "table": TABLE,
     "cleaning": [
         "Requested fields exclude situs and mailing address fields and CAMA links (no personal data)",
-        "Downloaded one county at a time with a server-side filter (County='<name>'); Franklin and Hamilton "
-        "so far",
+        "Downloaded one county at a time (all 88) with a server-side filter (County='<name>') and OBJECTID "
+        "ranges",
         "Rows without a LocalParcelID (polygons with no auditor record) are dropped; parcel_id = county "
         "GEOID + LocalParcelID; a parcel ID repeated within a county (stacked polygons) keeps one row, the "
         "largest polygon",
@@ -107,7 +107,8 @@ PROVENANCE = {
         "that pattern, 7xx abatement codes, 999 and blanks → UNKNOWN",
         "lot_sqft = LandArea (acres) × 43,560 where LandArea > 0, else Shape__Area (sq ft in EPSG:3735, "
         "Ohio South State Plane)",
-        "vintage_date = the county's latest CurrentTo (export date); vintage = its year",
+        "vintage_date = the county's latest CurrentTo (export date); vintage = its year; a county with no "
+        "CurrentTo on any parcel takes the download (snapshot) date",
         "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
         "stored as lon/lat",
@@ -163,7 +164,7 @@ def lot_sqft(land_acres: pd.Series, shape_sqft: pd.Series) -> pd.Series:
     return (acres * SQFT_PER_ACRE).where(acres > 0, shape.where(shape > 0)).astype("float64")
 
 
-def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
+def build(raw: pd.DataFrame, state: str = "OH", snapshot_date: str | None = None) -> pd.DataFrame:
     """Raw layer attributes (+ `lon`/`lat` centroids) → `parcels` rows, before jurisdictions are assigned."""
     df = raw.copy()
     df["local_id"] = df["LocalParcelID"].astype("string").str.strip().replace("", pd.NA)
@@ -175,6 +176,10 @@ def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
         raise ValueError(f"oh_parcels: counties not in {COUNTY_FIPS.name}: {unknown}")
     exported = epoch_ms_to_timestamp(df["CurrentTo"]).dt.normalize().astype("datetime64[ns]")
     vintage_date = exported.groupby(df["county_geoid"]).transform("max")
+    # Some counties' exports carry no CurrentTo at all: their roll date is unknown, so they take the
+    # download (snapshot) date, the latest date the roll can describe (conservative under the snapshot rule).
+    if snapshot_date is not None:
+        vintage_date = vintage_date.fillna(pd.Timestamp(snapshot_date))
     code = luc_code(df["StateLUC"])
     xwalk = luc_crosswalk()
     nan = pd.Series(float("nan"), index=df.index)
@@ -242,6 +247,17 @@ def assign_jurisdictions(df: pd.DataFrame, state: str, store: DataStore) -> tupl
     return df.assign(jurisdiction_geoid=geoid), how
 
 
+def snapshot_vintage() -> str:
+    """Raw-snapshot folder: today's date, or `OH_PARCELS_VINTAGE` (YYYY-MM-DD) to resume an earlier run.
+
+    A statewide run takes most of a day; resuming it on a later date with the same vintage reuses the pages
+    already cached instead of starting a new snapshot.
+    """
+    import os
+
+    return os.environ.get("OH_PARCELS_VINTAGE") or pd.Timestamp.today().date().isoformat()
+
+
 def oid_range(store: DataStore, *, refresh: bool = False) -> tuple[int, int]:
     """(min, max) OBJECTID of the layer, from a statistics query downloaded through `fetch()`."""
     import json
@@ -258,7 +274,7 @@ def oid_range(store: DataStore, *, refresh: bool = False) -> tuple[int, int]:
     url = query_url(LAYER_URL, where="1=1", outStatistics=stats, f="json")
     path = fetch(
         url,
-        store.raw(SOURCE, pd.Timestamp.today().date().isoformat()) / "parcels" / "oid_range.json",
+        store.raw(SOURCE, snapshot_vintage()) / "parcels" / "oid_range.json",
         store=store,
         source=SOURCE,
         license=LICENSE,
@@ -285,7 +301,7 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
     """
     lo, hi = oid_range(store, refresh=refresh)
     frames = []
-    for county in counties or COUNTIES:
+    for county in counties or COUNTIES or sorted(county_fips()):
         for a, b in chunks(lo, hi):
             frames.append(
                 download_layer(
@@ -300,6 +316,7 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
                     out_fields=",".join(OUT_FIELDS),
                     geometry="centroid",
                     retries=RETRIES,
+                    vintage=snapshot_vintage(),
                     refresh=refresh,
                 )
             )
@@ -308,7 +325,8 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    df, _ = assign_jurisdictions(build(download(store, refresh=refresh), state=state), state, store)
+    raw = download(store, refresh=refresh)
+    df, _ = assign_jurisdictions(build(raw, state=state, snapshot_date=snapshot_vintage()), state, store)
     df = holdout.apply(
         df,
         state,
