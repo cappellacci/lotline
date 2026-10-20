@@ -591,7 +591,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (negative binomial with place random effects, which keeps places with zeros; the Borusyak imputation
   estimator) as primary, or widen the panel (more places with dated rules, earlier ADU-flag years).
 
-### D-024 · 2026-10-20 · Proposed: missing-middle effect estimated on a pooled four-state panel (pre-registration; for Ben's approval, no estimate run)
+### D-024 · 2026-10-20 · Missing-middle effect estimated on a pooled four-state panel (pre-registered; approved before any estimate)
 - **Why:** the missing-middle scenario needs an estimate, from observed reforms, of how many extra 2–4 unit
   homes get permitted when 2–4 units become legal on single-family lots. This entry fixes the estimand, sample,
   model, checks and out-of-sample test **before any estimate is run**. It mirrors D-023 and applies its lesson:
@@ -628,9 +628,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     that are by right (3 of 3 today); a blank cap takes the mean units grade of coded caps.
   - Adoption year T_i: the first year a rule with P(by right) ≥ 0.5 is in force on 1 July. Treated today:
     Minneapolis 2020, Durham city and Durham County 2020, Raleigh 2022, Austin, Houston and Cincinnati 2024.
-- **Comparisons (for Ben):** places with no coded missing-middle rule are unknown under D-022. With only coded
+- **Comparisons:** places with no coded missing-middle rule are unknown under D-022. With only coded
   places there are **no never-treated comparisons**: the 2024 adopters would be the only controls for
-  2020–2023, and 2024–2025 would have none. **Proposed:** places with no coded rule count as never treated for
+  2020–2023, and 2024–2025 would have none. **Decided:** places with no coded rule count as never treated for
   this estimate only. This is a deviation from D-022, stated here. It rests on two points: no statewide rule
   allowing 2–4 units on single-family lots is coded for any of the four states (the pipeline's Minnesota
   records found none as of 2025), and a place mislabelled as untreated pulls the estimate toward zero. The robustness checks bound that risk. To shrink it:
@@ -780,3 +780,6 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   interval contained 0 in 87–97% of 70 panels, with a small negative lean (~−0.15, a third of its spread).
 - **Run once;** whatever it shows is reported. No re-specification without a new dated entry.
 - **Decided by:** Ben, 2026-10-20 (options 1 and 2); details written by WS-ENGINE before the run.
+
+- **Decided by:** Ben, 2026-10-20, as proposed (including the `mm.yaml` choices: the 10,000-person floor and
+  the 1/3 permit grade), before any estimate was run.
