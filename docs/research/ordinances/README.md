@@ -11,3 +11,4 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
 
 - `batch1-2026-10-20.json`: 20 Minnesota cities, Austin, Raleigh, Durham. Manual list:
   `docs/build/manual-ordinance-pdfs-batch1.md`.
+- `metro-adu-adoption-2026-10-20.json`: ADU rule history for 162 Twin Cities metro places (the D-023 comparison set; St. Paul excluded). Priority manual list: `docs/build/manual-adu-adoption-dates.md`.
