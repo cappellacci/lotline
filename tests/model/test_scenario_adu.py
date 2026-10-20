@@ -124,7 +124,7 @@ def _reforms(rows):
         "supersedes",
         *adu.RUBRIC,
     ]
-    df = pd.DataFrame(rows, columns=cols)
+    df = pd.DataFrame([tuple(r) + (None,) * (len(cols) - len(r)) for r in rows], columns=cols)
     for c in ("effective_date", "end_date"):
         df[c] = pd.to_datetime(df[c])
     return df
@@ -217,3 +217,18 @@ def test_forward_runs_draw_the_rate_path_and_backtests_use_the_given_rate():
     _, t_fixed = adu.run(forecast, 2025, draws=300)
     spread = lambda t: t["adu_permits_added_p90"].iloc[0] - t["adu_permits_added_p10"].iloc[0]  # noqa: E731
     assert spread(t_forward) > spread(t_fixed)  # drawing the rate widens the range
+
+
+def test_an_explicit_no_adu_row_is_none_and_a_state_law_still_wins():
+    # "adus_per_lot = 0": the city's code allows no ADUs. It must read as "none", not as a partial rule.
+    reforms = _reforms(
+        [
+            ("N1", "400", "adu", "in_force", "2010-01-01", None, None, True, False, True, 800, "none", 0, 0),
+            ("S1", "27", "adu", "in_force", "2024-01-01", None, None, True, False, True, 800, "none", 0, 1),
+        ]
+    )
+    before = adu.current_rules(reforms, ["400"], "27", pd.Timestamp("2020-06-30")).set_index("geoid")
+    assert before.loc["400", "rule_class"] == "none" and before.loc["400", "rule_id"] == "N1"
+    assert "no ADUs allowed" in before.loc["400", "rule_note"] and pd.isna(before.loc["400", "rule_age"])
+    after = adu.current_rules(reforms, ["400"], "27", pd.Timestamp("2025-12-31")).set_index("geoid")
+    assert after.loc["400", "rule_class"] == "handbook" and after.loc["400", "rule_id"] == "S1"
