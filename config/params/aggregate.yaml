@@ -3,11 +3,27 @@
 
 adu_net_new_share:
   value: 0.65
-  low: 0.50
+  low: 0.45
   high: 0.80
   unit: share of permitted ADUs
-  source: "Statistical protocol §5.10; methods review §3b; E039 (CCI 2021: ~48% housing), E051 (UCLA 2020: 76%), E052 (Oregon DEQ 2014: 80%)"
-  notes: "Share of permitted ADUs that add a home (long-term residence), not an office, guest room or short-term rental. Central value is the midpoint of the 50-80% range."
+  source: "Statistical protocol §5.10; methods review §3b; E039 (CCI 2021: ~48% housing), E051 (UCLA 2020: 76%), E052 (Oregon DEQ 2014: 80%); low end 0.45 below E039 (judging finding MS-09, D-019)"
+  notes: "Share of permitted ADUs that add a home (long-term residence), not an office, guest room or short-term rental. Central value kept at 0.65; the low end was 0.50, above E039's 48%."
+
+adu_formalization_share:
+  value: 0.10
+  low: 0.0
+  high: 0.30
+  unit: share of ADU permits that legalize an existing unpermitted unit
+  source: "Judgment, from E049 (San Jose 2016-20: ~78% of detached ADU construction unpermitted, 3-4 informal per formal) and E050 (Freddie Mac: 34-80% of homes in three LA neighborhoods had unpermitted units); statistical protocol §5.10 asks for a formalization adjustment (MS-09)"
+  notes: "A legalized unit is a permit but not a new home. No study measures the share of post-reform permits that are legalizations; the high end reflects West Coast informality, the low end markets with little informal stock."
+
+baseline_adu_share_of_one_unit:
+  value: 0.033
+  low: 0.0047
+  high: 0.0765
+  unit: ADU permits / (ADU + detached single-family permits)
+  source: "scripts/dev/adu_baseline_share.py: Met Council residential permits and Austin permits, 2019-2022 (MS-10): Twin Cities metro 127 of 26,874 = 0.0047; Austin 1,371 of 17,928 = 0.0765; pooled 0.033"
+  notes: "Census BPS counts a detached ADU as a 1-unit permit, so the baseline single-family forecast already holds some ADUs. Used to split the baseline into houses and ADUs where a place's own permits don't flag ADUs. The two sources differ 16-fold: Austin has allowed ADUs for years in a high-rent market; most metro suburbs restrict them. The range is that spread."
 
 displacement_share:
   value: 0.25
