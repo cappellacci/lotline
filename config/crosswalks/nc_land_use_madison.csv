@@ -1,0 +1,13 @@
+field,code,description,land_use_std,notes,source_url
+parusedesc,RESIDENTAL IMPROVED,RESIDENTAL IMPROVED,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RURAL VACANT,RURAL VACANT,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RESIDENTIAL VACANT,RESIDENTIAL VACANT,VACANT_RESIDENTIAL,"keyword rule vacant (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RURAL IMPROVED,RURAL IMPROVED,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,EXEMPT VACANT,EXEMPT VACANT,INSTITUTIONAL,"keyword rule vacant_exempt (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL IMPROVED,COMMERCIAL IMPROVED,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,EXEMPT IMPROVED,EXEMPT IMPROVED,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL VACANT,COMMERCIAL VACANT,COMMERCIAL,"keyword rule vacant_commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOVERNMENT VACANT,GOVERNMENT VACANT,INSTITUTIONAL,"keyword rule vacant_exempt (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOVERNMENT IMPROVED,GOVERNMENT IMPROVED,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INDUSTRIAL IMPROVED,INDUSTRIAL IMPROVED,INDUSTRIAL,"keyword rule industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INDUSTRIAL VACANT,INDUSTRIAL VACANT,INDUSTRIAL,"keyword rule vacant_industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
