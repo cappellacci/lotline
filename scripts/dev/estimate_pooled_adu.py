@@ -69,7 +69,9 @@ def logged_estimates(log_path: Path) -> dict[str, float]:
     return out
 
 
-def stages(store, panel, fit, boot, main, out: Path | None, log_note: str = "") -> None:
+def stages(
+    store, panel, fit, boot, main, out: Path | None, log_note: str = "", skip_ri: str | None = None
+) -> None:
     """Randomization inference, the five checks, robustness and transport, all under the D-025 convergence
     rule; CSVs written to `out` at the end (with convergence counts)."""
     p = {k: v.value for k, v in load_params("adu").items()}
@@ -78,6 +80,8 @@ def stages(store, panel, fit, boot, main, out: Path | None, log_note: str = "") 
     logs = []
 
     try:
+        if skip_ri:
+            raise pa.StageFailed(skip_ri)
         obs, p_ri, ri_dist, ri_log = pa.randomization_inference(panel, perms, fit, seed=20261020, **kw)
         logs.append(ri_log.summary)
         print(f"randomization inference: overall {obs:.4f}, p = {p_ri:.3f} over {len(ri_dist)}", flush=True)
@@ -190,7 +194,7 @@ def full(store, out: Path | None) -> None:
     stages(store, panel, fit, boot, main, out)
 
 
-def remaining(store, out: Path | None, first_log: Path) -> None:
+def remaining(store, out: Path | None, first_log: Path, skip_ri: str | None = None) -> None:
     """The stages after the main model, reusing it: the fit is recomputed deterministically (to recover its
     Hessian and place scores) and must match the estimates logged by the first run to 1e-4."""
     panel, fit, boot, main = main_model(store)
@@ -200,7 +204,7 @@ def remaining(store, out: Path | None, first_log: Path) -> None:
     if not logged or diffs:
         raise SystemExit(f"main model does not match the first run's log: {diffs or 'nothing parsed'}")
     print(f"main model matches the first run's {len(logged)} logged estimates (to 1e-4); reusing it")
-    stages(store, panel, fit, boot, main, out, log_note="(main model reused)")
+    stages(store, panel, fit, boot, main, out, log_note="(main model reused)", skip_ri=skip_ri)
 
 
 def main() -> None:
@@ -215,12 +219,15 @@ def main() -> None:
         help="run the stages after the main model, reusing it (checked against the first run's log)",
     )
     ap.add_argument("--out", type=Path)
+    ap.add_argument(
+        "--skip-ri", metavar="REASON", help="don't attempt randomization inference; report REASON"
+    )
     a = ap.parse_args()
     store = DataStore()
     if a.smoke:
         smoke(store)
     elif a.remaining:
-        remaining(store, a.out, a.remaining)
+        remaining(store, a.out, a.remaining, a.skip_ri)
     else:
         full(store, a.out)
 
