@@ -152,14 +152,14 @@ def run(
     except (estimate_adu.EstimationError, np.linalg.LinAlgError) as err:
         why = why or f"PPML failed: {err}"
     if why:
-        log(f"FALLBACK (pre-specified): {why}; main model is now D-025's negative binomial with place random "
-            "effects (pooled_adu, on the relabelled D-024 panel)")  # fmt: skip
-        method = "nb"
+        log(f"FALLBACK (pre-specified): {why}; main model is now the negative binomial with place random "
+            "effects (Poisson-gamma, Hausman-Hall-Griliches; the 17:06 run's fallback)")  # fmt: skip
+        method = "re"
         try:
-            main = mm.estimate(panel, method="nb", **kw)
+            main = mm.estimate(panel, method="re", **kw)
         except (estimate_adu.EstimationError, np.linalg.LinAlgError, ValueError) as err:
             log(f"NO ESTIMATE: the fallback could not be estimated either: {err}")
-            status = {"model": "none", "ppml": why, "nb": str(err)}
+            status = {"model": "none", "ppml": why, "re": str(err)}
             return {"status": pd.DataFrame([status])}
     f = main.fit
     log(
@@ -233,13 +233,15 @@ def run(
     for c in checks:
         log(f"check: {c}")
     rob, rob_notes = term_rows(f"main ({method})", s), []
-    other = "ppml" if method == "nb" else "nb"
-    robust(
-        f"model: {other}",
-        lambda: term_rows(other, mm.summary(mm.estimate(panel, method=other, **kw), draws=draws, seed=8)[0]),
-        rob,
-        rob_notes,
-    )
+    for other in [m for m in ("ppml", "re", "nb") if m != method]:  # nb = D-025's estimator (pooled_adu)
+        robust(
+            f"model: {other}",
+            lambda o=other: term_rows(
+                o, mm.summary(mm.estimate(panel, method=o, **kw), draws=draws, seed=8)[0]
+            ),
+            rob,
+            rob_notes,
+        )
     robust(
         "Borusyak imputation (point only)",
         lambda: [

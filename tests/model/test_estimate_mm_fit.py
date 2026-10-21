@@ -330,3 +330,43 @@ def test_d025_fallback_adapter_on_a_panel_it_can_fit():
     e2 = mm.estimate(p[~p["place"].isin(held)], method="nb", modifiers=("pcr",))
     pred = mm.transport_predict(e2, mm.summary(e2, draws=29, seed=1)[1], p[p["place"].isin(held)], draws=300)
     assert set(pred.loc[pred["year"] == "total", "place"]) == set(held)
+
+
+def test_a_diverging_reassignment_is_counted_as_failed_not_a_crash(monkeypatch):
+    p = simulate(seed=7, n_places=60, n_treated=12)
+    real = mm.fit_re
+    calls = {"n": 0}
+
+    def flaky(*a, **kw):  # the base fit works; every other reassignment's fit diverges as in the 17:06 run
+        calls["n"] += 1
+        if calls["n"] > 1 and calls["n"] % 2 == 0:
+            return mm._re_parts(
+                np.array([1e3, 1e3, 0.0]), np.ones((1, 2)), np.ones(1), np.zeros(1), np.zeros(1, int), 1
+            )
+        return real(*a, **kw)
+
+    monkeypatch.setattr(mm, "fit_re", flaky)
+    att, p_val, dist, failed = mm.randomization_inference(
+        p, permutations=6, seed=0, method="re", modifiers=()
+    )
+    assert failed == 3 and len(dist) == 3 and np.isfinite(att)
+    # inside the real fit, the same divergence now surfaces as EstimationError
+    with pytest.raises(estimate_adu.EstimationError):
+        real(np.ones(4), np.zeros((4, 0)), np.full(4, -1e3), ["a", "a", "b", "b"], [1, 2, 1, 2], [])
+
+
+def test_damped_newton_step_by_hand():
+    def ll(t):
+        return -float((t[0] - 1.0) ** 2)
+
+    step, s, new = mm._damped_newton_step(
+        np.zeros(1), np.array([2.0]), np.array([[-2.0]]), ll(np.zeros(1)), ll
+    )
+    assert step[0] == pytest.approx(1.0) and s == 1.0 and new == pytest.approx(0.0)
+    # an indefinite Hessian (wrong-signed curvature): damping still finds an uphill step
+    step, s, new = mm._damped_newton_step(
+        np.zeros(1), np.array([2.0]), np.array([[2.0]]), ll(np.zeros(1)), ll
+    )
+    assert step is not None and new > ll(np.zeros(1))
+    # at the maximum nothing raises the likelihood
+    assert mm._damped_newton_step(np.ones(1), np.zeros(1), np.array([[-2.0]]), 0.0, ll)[0] is None

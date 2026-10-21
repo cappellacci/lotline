@@ -661,6 +661,8 @@ def _re_parts(theta, Z, y, off, cl, n_cl):
     import math
 
     b, la = theta[:-1], theta[-1]
+    if not np.isfinite(la) or abs(la) > 50:
+        raise ValueError("diverged")
     a = math.exp(la)
     eta = off + Z @ b
     if np.max(np.abs(eta - off)) > 30:
@@ -678,13 +680,42 @@ def _re_parts(theta, Z, y, off, cl, n_cl):
     return ll, np.hstack([sz, sa[:, None]]), mu, ratio
 
 
+def _damped_newton_step(theta, g, H, ll_old, loglik, max_damping: int = 20):
+    """(step, step length, new log likelihood) for a safeguarded Newton ascent: solve (−H + λI) step = g with
+    λ = 0 first and then rising (Levenberg damping, scaled by the largest |H_jj|), accepting the first
+    direction that goes uphill (g·step > 0) and, after halving the step at most 30 times, raises the log
+    likelihood. Returns (None, 0, ll_old) if no damping finds an increase. By hand: ll = −(x − 1)², x = 0,
+    g = 2, H = −2: the plain Newton step 1 lands on the maximum."""
+    scale = max(1.0, float(np.max(np.abs(np.diag(H)))))
+    n = len(theta)
+    for i in range(max_damping):
+        lam = 0.0 if i == 0 else scale * 10.0 ** (i - 8)
+        step = np.linalg.lstsq(-H + lam * np.eye(n), g, rcond=None)[0]
+        if not np.all(np.isfinite(step)) or float(g @ step) <= 0:
+            continue
+        s = 1.0
+        for _ in range(30):
+            try:
+                ll_new = loglik(theta + s * step)
+            except ValueError:
+                ll_new = -np.inf
+            if ll_new > ll_old:
+                return step, s, ll_new
+            s /= 2
+    return None, 0.0, ll_old
+
+
+LOG_A_BOUND = 15.0  # log of the gamma shape: var(u) = e^-15 is no place heterogeneity (held at the bound)
+
+
 def fit_re(y, X, offset, place, year, names, tol: float = 1e-9, max_iter: int = 100) -> REFit:
     """Poisson-gamma place random effects with state × year fixed effects (the negative binomial panel model
     of Hausman, Hall & Griliches 1984; D-024's fallback, protocol §5.7), by Newton's method on the closed-
     form marginal likelihood (`_re_parts`) with a finite-difference Hessian of the analytic score. Keeps
     places whose counts are all zero (they inform a and the year effects). Regressors collinear with the
-    year effects and intercept are dropped. Fails loudly (`EstimationError`) on non-convergence or a
-    coefficient beyond ±20."""
+    year effects and intercept are dropped. log a is held at `LOG_A_BOUND` when the data show no place
+    heterogeneity (Poisson counts), and left out of the step test there. Fails loudly (`EstimationError`) on
+    non-convergence or a coefficient beyond ±20."""
     from lotline.model.estimate_adu import COEF_BOUND, EstimationError, _independent_columns
 
     y = np.asarray(y, dtype=float)
@@ -727,19 +758,20 @@ def fit_re(y, X, offset, place, year, names, tol: float = 1e-9, max_iter: int = 
             except ValueError as err:
                 raise EstimationError(f"random-effects fit diverged at iteration {it}") from err
         H = (H + H.T) / 2
-        step = np.linalg.lstsq(-H, g, rcond=None)[0]
-        ll_old, s = _re_parts(theta, Z, y, off, cl, n_cl)[0], 1.0
-        while s > 1e-6:
-            try:
-                ll_new = _re_parts(theta + s * step, Z, y, off, cl, n_cl)[0]
-            except ValueError:
-                ll_new = -np.inf
-            if ll_new >= ll_old - 1e-10:
-                break
-            s /= 2
+        ll_old = _re_parts(theta, Z, y, off, cl, n_cl)[0]
+        step, s, ll_new = _damped_newton_step(
+            theta, g, H, ll_old, lambda t: _re_parts(t, Z, y, off, cl, n_cl)[0]
+        )
+        if step is None:  # no direction raises the likelihood: at a maximum to numerical precision
+            converged = abs(float(g @ np.linalg.pinv(-H) @ g)) < 1e-6 * (abs(ll_old) + 1)
+            ll = ll_old
+            break
         theta = theta + s * step
-        ll = ll_new
-        if np.max(np.abs(s * step)) < tol * 1e3 or abs(ll - ll_old) < tol * (abs(ll) + 1):
+        at_bound = theta[-1] >= LOG_A_BOUND  # no place heterogeneity left (Poisson counts): hold log a there
+        theta[-1] = min(theta[-1], LOG_A_BOUND)
+        ll = _re_parts(theta, Z, y, off, cl, n_cl)[0] if at_bound else ll_new
+        moved = np.abs(s * step)[:-1] if at_bound else np.abs(s * step)
+        if np.max(moved) < tol * 1e3 or abs(ll - ll_old) < tol * (abs(ll) + 1):
             converged = True
             break
     if not converged:
