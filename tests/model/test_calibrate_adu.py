@@ -236,3 +236,34 @@ def test_fit3_recovers_theta_and_owner_share():
     assert fit.owner_estimated and fit.m_owner == 0.5
     assert not fit.other_estimated  # no place has an 'other' rule: m_x is not identified
     assert fit.alpha == pytest.approx(0.3, rel=0.6)
+
+
+def test_loglik_hessian_by_hand():
+    """One place, two years, y = (3, 1), base (100, 100), Handbook rule (c = 1), θ = 0.02, α = 0.5:
+    θK = 0.02 × 200 = 4, r = 2, Y = 4. ∂²/∂(log θ)² = −(Y + r) r θK / (r + θK)² = −6 × 2 × 4 / 36 = −4/3."""
+    pl = _place([3, 1], [100.0, 100.0], np.full((1, 2, 1), 4), np.ones((2, 1)), [1.0])
+    h = cal.loglik_hessian([pl], 0.02, 0.5, cal._cvals(1.0, 0.3))
+    assert h[0, 0] == pytest.approx(-4 / 3, rel=1e-4)
+    assert h[0, 1] == pytest.approx(h[1, 0])
+
+
+def test_information_se_matches_the_spread_of_repeated_fits():
+    """25 simulated places × 3 years, θ = 0.002, α = 0.5: the observed-information log-SE of θ is close to
+    the spread of log θ̂ over 15 repeated simulations, and log θ̂ and log α̂ are nearly uncorrelated."""
+    cv = cal._cvals(1.0, 0.3)
+
+    def sim(seed):
+        rng = np.random.default_rng(seed)
+        out = []
+        for _ in range(25):
+            base = np.full(3, rng.uniform(5_000, 20_000))
+            y = rng.poisson(0.002 * rng.gamma(2.0, 0.5) * base)
+            out.append(_place(y, base, np.full((1, 3, 1), 4), np.ones((3, 1)), [1.0]))
+        return out
+
+    places = sim(0)
+    theta, alpha = cal.fit_theta_alpha(places, cv)
+    se_t, se_a, corr = cal.information_se(places, theta, alpha, cv)
+    fits = [math.log(cal.fit_theta_alpha(sim(s), cv)[0]) for s in range(1, 16)]
+    assert se_t == pytest.approx(np.std(fits), rel=0.5)
+    assert abs(corr) < 0.3 and se_a > 0
