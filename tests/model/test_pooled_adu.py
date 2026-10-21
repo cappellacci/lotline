@@ -433,3 +433,53 @@ def test_sensitivity_runs_build_the_declared_panels(small_fit):
     assert (r["T"] == T_ann).all() and (r.loc[r["year"] == T_ann, "dose"] == 1.0).all()
     assert rec.kws[2]["controls"] == ["parking", "process"]
     assert all("inside_main" in o for o in out)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# HonestDiD bounds (D-025 note 2026-10-21)
+# ---------------------------------------------------------------------------------------------------------
+
+
+def test_honest_set_by_hand():
+    """θ 0.9, leads (0.1, 0.2, 0.3), ω (0.5, 0.5). RM, M̄ 1: M_pre 0.1, Σω(k+1) = 1.5, bias 0.3 ± 0.15 ->
+    (0.45, 0.75). SD, M 0: slope 0.1, bias 0.3 + 0.1 × 1.5 = 0.45 -> 0.45; M 0.1: ± 0.1 × (0.5·1 + 0.5·3)
+    = ± 0.2."""
+    assert pa.honest_set(0.9, (0.1, 0.2, 0.3), [0.5, 0.5], "rm", 1.0) == pytest.approx((0.45, 0.75))
+    assert pa.honest_set(0.9, (0.1, 0.2, 0.3), [0.5, 0.5], "sd", 0.0) == pytest.approx((0.45, 0.45))
+    assert pa.honest_set(0.9, (0.1, 0.2, 0.3), [0.5, 0.5], "sd", 0.1) == pytest.approx((0.25, 0.65))
+
+
+def test_honest_bounds_recover_the_effect_under_a_known_linear_violation():
+    """True effect 0.5 at every event time; a linear pre-trend δ_k = 0.1 (k + 4) continues after adoption.
+    The naive pooled estimate is biased upward; smoothness with M = 0 recovers 0.5 exactly, and the
+    relative-magnitudes set with M̄ = 1 has 0.5 at its edge (the violation's steps equal the pre-period's)."""
+    omega = np.array([0.3, 0.3, 0.2, 0.1, 0.1])
+    k = np.arange(len(omega))
+    tau, delta = 0.5, lambda kk: 0.1 * (kk + 4)
+    theta = float(omega @ (tau + delta(k)))
+    leads = (delta(-3), delta(-2), delta(-1))
+    assert theta > 0.5 + 0.3
+    sd0 = pa.honest_set(theta, leads, omega, "sd", 0.0)
+    assert sd0 == pytest.approx((0.5, 0.5))
+    lo, hi = pa.honest_set(theta, leads, omega, "rm", 1.0)
+    assert lo == pytest.approx(0.5) and hi > 0.5
+    lo_half, _ = pa.honest_set(theta, leads, omega, "rm", 0.5)
+    assert lo_half > 0.5  # M̄ below the true ratio excludes the truth: the restriction is binding
+    # noisy draws: the robust interval contains the truth and the identified set
+    rng = np.random.default_rng(0)
+    th = theta + 0.05 * rng.standard_normal(999)
+    ld = [tuple(np.array(leads) + 0.02 * rng.standard_normal(3)) for _ in range(999)]
+    tab = pa.honest_bounds(theta, leads, th, ld, omega)
+    row = tab[(tab["restriction"] == "smoothness") & (tab["m"] == 0.0)].iloc[0]
+    assert row["ci_low"] < 0.5 < row["ci_high"]
+    assert (tab["ci_low"] <= tab["set_low"] + 1e-12).all() and (
+        tab["ci_high"] >= tab["set_high"] - 1e-12
+    ).all()
+
+
+def test_honest_bounds_collapse_without_a_pre_trend_and_breakdown_is_found():
+    omega = np.array([0.5, 0.5])
+    assert pa.honest_set(0.8, (0.0, 0.0, 0.0), omega, "rm", 2.0) == pytest.approx((0.8, 0.8))
+    # leads (0, 0, 0.2): M_pre 0.2, Σω(k+1) 1.5; set 0.6 ± 0.3 M̄ includes 0 from M̄ = 2 (no noise)
+    th, ld = np.full(50, 0.8), [(0.0, 0.0, 0.2)] * 50
+    assert pa.rm_breakdown(th, ld, omega) == pytest.approx(2.0)
