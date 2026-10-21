@@ -697,6 +697,37 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   predictive draws against the 5% limit, while this entry specifies the predicted mean; with σ ≈ 2.1 Austin's
   draws (no pre-adoption years, so u from the prior) exceeded it. Fixed to check the mean, with a test, and a
   transport failure now records the stage instead of stopping the run; **not re-run** pending Ben.
+- **Transport re-run (2026-10-21, once, Ben approved; log `reports/adu-d025/transport-2026-10-21-log.txt`):**
+  transport only, with the guard on the predicted mean; main model reused (matched all 22 logged estimates).
+  **Fails the D-023 rule:** totals inside their 80% intervals: Austin no (observed 2,545 vs P10–P90 0–279),
+  Raleigh no (230 vs 0–49), Durham yes (269 vs 9–272); yearly coverage 15% (rule 60–95%). No place is outside
+  the Minnesota modifier range. Austin has no pre-adoption years in its window (adopted 2010), so its effect is
+  drawn from the prior; in Raleigh (2022 on) and Durham (2020 on) the missing-middle term δ = −2.69, identified
+  from Minneapolis alone, pushes predictions far below what was observed.
+- **HonestDiD bounds: choices fixed before running (2026-10-21, WS-ENGINE; Ben asked for them because the
+  pre-trend test failed, as D-023 pre-registers; Rambachan & Roth 2023):**
+  - *Event study input:* the pre-trend-leads refit (the one check 1 used): the lead coefficients for event
+    times k = −3, −2, −1 are the pre-period coefficients, relative to the omitted periods (k ≤ −4 and the
+    never-treated). That reference, not k = −1, is normalised to 0, so the restrictions chain from
+    δ_{−4} = 0 through the estimated δ_{−3}, δ_{−2}, δ_{−1}.
+  - *Target:* the pooled post-adoption effect at realised doses, θ = the mean over treated place-years with
+    k ≥ 0 of β_band(k) × dose_it (same bands, weights by place-years). The bias for that target is
+    Σ_k ω_k δ_k, where ω_k is the share of those place-years at event time k (k = 0 … the panel's largest),
+    since the leads are indicators, not dose-scaled.
+  - *Relative magnitudes, Δ^RM(M̄):* every post-period step |δ_k − δ_{k−1}| ≤ M̄ × M_pre, with
+    M_pre = max(|δ_{−3}|, |δ_{−2} − δ_{−3}|, |δ_{−1} − δ_{−2}|). The bias is in δ_{−1} ± M̄ M_pre Σ_k ω_k (k + 1)
+    (ω ≥ 0, so the extreme is every step at the bound). M̄ ∈ {0.5, 1, 1.5, 2}.
+  - *Smoothness, Δ^SD(M):* post-period second differences at most M, extrapolating the last pre-period slope
+    s = δ_{−1} − δ_{−2}. The bias is in Σ_k ω_k [δ_{−1} + (k + 1) s] ± M Σ_k ω_k (k + 1)(k + 2) / 2.
+    M ∈ {0, 0.05, 0.1, 0.2} (log points per year²; M = 0 is linear extrapolation).
+  - *Inference:* the identified set's bounds are recomputed on each of the leads refit's 999 bootstrap draws
+    (θ, δ and M_pre all re-drawn). The 90% robust interval runs from the 5th percentile of the lower bound to
+    the 95th percentile of the upper bound. This is simpler than Rambachan & Roth's conditional (ARP) and
+    FLCI intervals, and conservative.
+  - *Reported:* identified set and robust interval for each M̄ and M, the breakdown M̄ (the smallest at which the
+    interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
+  - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
+
 
 
 ### D-031 · 2026-10-21 · ADU effect: additive imputation as robustness to D-025, and review fixes ported to the D-025 path (written after D-025's main estimate was seen; not the main estimator)

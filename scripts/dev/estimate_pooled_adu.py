@@ -143,27 +143,7 @@ def stages(
         print({k: v for k, v in c.items() if k != "dropped"})
         logs.append(c.get("convergence", ""))
 
-    targets, window = [], {}
-    for g, (state, years, scored) in TRANSPORT.items():
-        targets.append(est.build_panel(state, store, years=years, geoids=[g]).data)
-        window[g] = scored
-    try:
-        pred = pa.transport_predict(
-            fit,
-            boot,
-            panel,
-            pd.concat(targets, ignore_index=True),
-            seed=20261020,
-            widening=p["adu_transport_widening"],
-            window=window,
-        )
-        print(pred.round(1).to_string(index=False))
-        verdict = est.transport_verdict(pred)
-    except est.EstimationError as err:  # D-025 rule: report the stage as not computed and carry on
-        pred = pd.DataFrame()
-        verdict = {"pass": None, "note": f"not computed: {err}"}
-        logs.append(f"transport NOT COMPUTED: {err}")
-    print(verdict, flush=True)
+    pred, verdict = transport_stage(store, panel, fit, boot, p, logs)
     print("convergence:", *logs, sep="\n  ")
 
     if out:
@@ -217,16 +197,60 @@ def full(store, out: Path | None) -> None:
     stages(store, panel, fit, boot, main, out)
 
 
-def remaining(store, out: Path | None, first_log: Path, skip_ri: str | None = None) -> None:
-    """The stages after the main model, reusing it: the fit is recomputed deterministically (to recover its
-    Hessian and place scores) and must match the estimates logged by the first run to 1e-4."""
+def transport_stage(store, panel, fit, boot, p, logs):
+    """The D-025 transport test (Austin, Raleigh, Durham); a numerical failure is reported, not raised."""
+    targets, window = [], {}
+    for g, (state, years, scored) in TRANSPORT.items():
+        targets.append(est.build_panel(state, store, years=years, geoids=[g]).data)
+        window[g] = scored
+    try:
+        pred = pa.transport_predict(
+            fit,
+            boot,
+            panel,
+            pd.concat(targets, ignore_index=True),
+            seed=20261020,
+            widening=p["adu_transport_widening"],
+            window=window,
+        )
+        print(pred.round(2).to_string(index=False))
+        verdict = est.transport_verdict(pred)
+    except est.EstimationError as err:  # D-025 rule: report the stage as not computed and carry on
+        pred = pd.DataFrame()
+        verdict = {"pass": None, "note": f"not computed: {err}"}
+        logs.append(f"transport NOT COMPUTED: {err}")
+    print(verdict, flush=True)
+    return pred, verdict
+
+
+def transport_only(store, out: Path | None, first_log: Path) -> None:
+    """Only the transport test, reusing the main model (checked against the first run's log to 1e-4)."""
     panel, fit, boot, main = main_model(store)
+    check_matches(main, first_log)
+    p = {k: v.value for k, v in load_params("adu").items()}
+    logs: list[str] = []
+    pred, verdict = transport_stage(store, panel, fit, boot, p, logs)
+    print("convergence:", *(logs or ["transport computed"]), sep="\n  ")
+    if out:
+        out.mkdir(parents=True, exist_ok=True)
+        pred.to_csv(out / "transport.csv", index=False)
+        pd.DataFrame([verdict]).to_csv(out / "transport_verdict.csv", index=False)
+
+
+def check_matches(main, first_log: Path) -> None:
     logged = logged_estimates(first_log)
     now = main.set_index("term")["estimate"].to_dict()
     diffs = {t: (v, now.get(t)) for t, v in logged.items() if t not in now or abs(now[t] - v) > 1e-4}
     if not logged or diffs:
         raise SystemExit(f"main model does not match the first run's log: {diffs or 'nothing parsed'}")
     print(f"main model matches the first run's {len(logged)} logged estimates (to 1e-4); reusing it")
+
+
+def remaining(store, out: Path | None, first_log: Path, skip_ri: str | None = None) -> None:
+    """The stages after the main model, reusing it: the fit is recomputed deterministically (to recover its
+    Hessian and place scores) and must match the estimates logged by the first run to 1e-4."""
+    panel, fit, boot, main = main_model(store)
+    check_matches(main, first_log)
     stages(store, panel, fit, boot, main, out, log_note="(main model reused)", skip_ri=skip_ri)
 
 
@@ -241,6 +265,12 @@ def main() -> None:
         metavar="FIRST_RUN_LOG",
         help="run the stages after the main model, reusing it (checked against the first run's log)",
     )
+    g.add_argument(
+        "--transport-only",
+        type=Path,
+        metavar="FIRST_RUN_LOG",
+        help="run only the transport test, reusing the main model (checked against the first run's log)",
+    )
     ap.add_argument("--out", type=Path)
     ap.add_argument(
         "--skip-ri", metavar="REASON", help="don't attempt randomization inference; report REASON"
@@ -249,6 +279,8 @@ def main() -> None:
     store = DataStore()
     if a.smoke:
         smoke(store)
+    elif a.transport_only:
+        transport_only(store, a.out, a.transport_only)
     elif a.remaining:
         remaining(store, a.out, a.remaining, a.skip_ri)
     else:

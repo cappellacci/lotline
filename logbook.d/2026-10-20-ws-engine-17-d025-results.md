@@ -40,3 +40,11 @@
   binary dose 1.50 (0.33–2.67). Transport not computed (guard checked draws, not the mean as specified;
   fixed, not re-run). Minneapolis fitted with its own effect tracks its post-2020 decline.
 - **AI:** Claude ran the stages once and transcribed the results.
+
+### LB-NNN · 2026-10-21 · Run: D-025 transport test (fails)
+- **Question:** Does the D-025 model predict ADU permits outside Minnesota (Austin, Raleigh, Durham)?
+- **What I did:** added a transport-only mode reusing the verified main model; ran it once (Ben approved).
+- **Outputs:** `reports/adu-d025/transport-2026-10-21-log.txt`; dated D-025 note in `docs/analysis_plan.md`.
+- **Findings:** fails: 1 of 3 totals inside 80% intervals, yearly coverage 15%. Predictions far too low; δ from
+  Minneapolis alone suppresses Raleigh and Durham; Austin's effect is drawn from the prior.
+- **AI:** Claude wrote the mode, ran it once and transcribed the results.
