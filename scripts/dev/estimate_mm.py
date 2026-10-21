@@ -3,6 +3,7 @@
 
     uv run python scripts/dev/estimate_mm.py --smoke                 # counts only, no estimate
     uv run python scripts/dev/estimate_mm.py --dry-run --out DIR     # --full pipeline on simulated data
+    uv run python scripts/dev/estimate_mm.py --dry-run --fallback --out DIR   # ... through the D-025 fallback
     uv run python scripts/dev/estimate_mm.py --full --out DIR        # the pre-registered run (once)
     uv run python scripts/dev/estimate_mm.py --coverage              # interval coverage on simulated panels
 
@@ -135,23 +136,31 @@ def run(
     transport: dict = TRANSPORT,
     flagged: list | None = None,
     durham_pair=(DURHAM_CITY, DURHAM_COUNTY),
+    force_fallback: str = "",
 ) -> dict:
-    """The D-024 run on `panel`. Returns named tables; writes nothing."""
+    """The D-024 run on `panel`. Returns named tables; writes nothing. `force_fallback` (dry runs only) takes
+    the fallback path as if PPML had failed with that message."""
     draws, perms = int(p["mm_estimation_bootstrap_draws"]), int(p["mm_estimation_permutations"])
     out: dict[str, pd.DataFrame] = {}
     kw = {"modifiers": list(mm.MAIN_MODIFIERS)}
-    method, why = "ppml", ""
+    method, why = "ppml", force_fallback
     try:
         main = mm.estimate(panel, method="ppml", **kw)
         gone = mm.treated_dropped(main)
-        if gone:
+        if gone and not why:
             why = f"PPML dropped treated places {gone}"
     except (estimate_adu.EstimationError, np.linalg.LinAlgError) as err:
-        why = f"PPML failed: {err}"
+        why = why or f"PPML failed: {err}"
     if why:
-        log(f"FALLBACK (pre-specified): {why}; main model is now Poisson-gamma place random effects")
-        method = "re"
-        main = mm.estimate(panel, method="re", **kw)
+        log(f"FALLBACK (pre-specified): {why}; main model is now D-025's negative binomial with place random "
+            "effects (pooled_adu, on the relabelled D-024 panel)")  # fmt: skip
+        method = "nb"
+        try:
+            main = mm.estimate(panel, method="nb", **kw)
+        except (estimate_adu.EstimationError, np.linalg.LinAlgError, ValueError) as err:
+            log(f"NO ESTIMATE: the fallback could not be estimated either: {err}")
+            status = {"model": "none", "ppml": why, "nb": str(err)}
+            return {"status": pd.DataFrame([status])}
     f = main.fit
     log(
         f"main fit ({method}): {f.iterations} iterations; "
@@ -224,7 +233,7 @@ def run(
     for c in checks:
         log(f"check: {c}")
     rob, rob_notes = term_rows(f"main ({method})", s), []
-    other = "ppml" if method == "re" else "re"
+    other = "ppml" if method == "nb" else "nb"
     robust(
         f"model: {other}",
         lambda: term_rows(other, mm.summary(mm.estimate(panel, method=other, **kw), draws=draws, seed=8)[0]),
@@ -373,7 +382,7 @@ def simulated_panel(seed: int = 0) -> pd.DataFrame:
     rows = []
     for pl in places:
         st, T = treated.get(pl, (pl[:2], np.nan))
-        alpha = rng.normal(-7.0, 0.7) if (pl in treated or rng.random() > 0.3) else -18.0
+        alpha = rng.normal(-7.0, 0.7) if pl in treated else rng.normal(-9.0, 2.0)  # many never permit
         elig, pcr, lv = rng.uniform(5e3, 8e4), rng.normal(1, 0.2), rng.normal(12.5, 0.3)
         dose = rng.choice([1 / 3, 0.5, 1.0]) if pl in treated else 0.0
         pop = 60000.0 if pl in treated else float(rng.choice([20000, 60000]))
@@ -415,7 +424,7 @@ def full(store, out_dir: Path, workers: int) -> None:
     write(out, out_dir)
 
 
-def dry_run(out_dir: Path, workers: int) -> None:
+def dry_run(out_dir: Path, workers: int, fallback: bool = False) -> None:
     p = {k: v.value for k, v in load_params("mm").items()}
     p.update(mm_estimation_bootstrap_draws=49, mm_estimation_permutations=16)
     panel = simulated_panel()
@@ -430,7 +439,8 @@ def dry_run(out_dir: Path, workers: int) -> None:
         ]
     }
     out = run(panel, p, workers, local=local, transport={"A": ["NCT1", "NCT2", "NCT3"], "B": ["MNT1"]},
-              flagged=["MNC00", "MNC01"], durham_pair=("NCT1", "NCT2"))  # fmt: skip
+              flagged=["MNC00", "MNC01"], durham_pair=("NCT1", "NCT2"),
+              force_fallback="forced for the dry run" if fallback else "")  # fmt: skip
     write(out, out_dir)
 
 
@@ -470,6 +480,7 @@ def main() -> None:
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--smoke", action="store_true")
     g.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--fallback", action="store_true", help="--dry-run only: take the fallback path")
     g.add_argument("--full", action="store_true")
     g.add_argument("--coverage", action="store_true")
     ap.add_argument("--out", type=Path)
@@ -480,7 +491,7 @@ def main() -> None:
     elif a.coverage:
         coverage()
     elif a.dry_run:
-        dry_run(a.out or Path("dry-run-out"), a.workers)
+        dry_run(a.out or Path("dry-run-out"), a.workers, fallback=a.fallback)
     else:
         if a.out is None:
             ap.error("--full needs --out")

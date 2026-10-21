@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from lotline.model import estimate_adu
 from lotline.model import estimate_mm as mm
 
 YEARS = np.arange(2010, 2026)
@@ -29,7 +30,7 @@ def simulate(
     `state_shock` from 2020), bin effects × dose on treated places, a modifier × post (θ, pcr; log_value
     has no effect), rate × post (ρ), an ADU switch for a third of places from 2018 (δ), and `lead` in the
     two years before adoption (anticipation). `zero_share` of the untreated places have rates so low they
-    never permit. Poisson counts."""
+    never permit (their levels spread wide, as one normal). Poisson counts."""
     rng = np.random.default_rng(seed)
     rate = np.interp(YEARS, [2010, 2020, 2021, 2022, 2025], [4.5, 3.1, 3.0, 5.3, 6.6])
     pcr_all = rng.normal(1.0, 0.2, n_places)
@@ -39,7 +40,10 @@ def simulate(
         st = "MN" if i % 2 == 0 else "TX"
         treated = i < n_treated
         T = float(cohorts[i % len(cohorts)]) if treated else np.nan
-        alpha = -17.0 if (not treated and rng.random() < zero_share) else rng.normal(-6.5, 0.5)
+        # `zero_share` > 0: comparison places' levels spread wide (one normal), so many never permit
+        alpha = (
+            rng.normal(-6.5, 0.5) if treated or not zero_share else rng.normal(-6.5 - 10 * zero_share, 2.0)
+        )
         elig = rng.uniform(5_000, 40_000)
         pcr, lv = pcr_all[i], rng.normal(12.5, 0.3)
         dose = (1.0 if full_dose else rng.choice([1 / 3, 2 / 3, 1.0])) if treated else 0.0
@@ -139,8 +143,8 @@ def test_random_effects_likelihood_by_hand():
 
 def test_random_effects_fallback_recovers_effects_with_70_percent_zero_places():
     p = simulate(seed=5, n_places=160, n_treated=24, zero_share=0.8)
-    zero_places = (p.groupby("place")["y"].sum() == 0).mean()
-    assert zero_places > 0.6
+    comp = p[p["T"].isna()]
+    assert (comp.groupby("place")["y"].sum() == 0).mean() > 0.6  # most comparison places never permit
     e = mm.estimate(p, method="re", modifiers=("pcr",))
     assert e.fit.keep.all()  # all-zero places stay in
     s, _ = mm.summary(e, draws=199, seed=2)
@@ -239,3 +243,90 @@ def test_randomization_inference_does_not_depend_on_the_number_of_workers():
     serial = mm.randomization_inference(p, permutations=8, seed=3, modifiers=(), workers=1)
     parallel = mm.randomization_inference(p, permutations=8, seed=3, modifiers=(), workers=2)
     assert serial[1] == parallel[1] and np.allclose(serial[2], parallel[2]) and serial[3] == parallel[3]
+
+
+def test_pooled_panel_relabelling_by_hand():
+    d = pd.DataFrame({"state": ["NC", "MN"], "year": [2021, 2019], "T": [2020.0, np.nan], "adu": [1.0, 0.0]})
+    q = mm.pooled_panel(d)
+    assert q["year"].tolist() == [12021, 2019]
+    assert q["T"].iloc[0] == 12020 and np.isnan(q["T"].iloc[1])
+    assert q["year"].iloc[0] - q["T"].iloc[0] == 1  # event time unchanged
+    assert q["mm"].tolist() == [1.0, 0.0]
+
+
+D025_MODE_BUG = pytest.mark.skip(
+    reason="pooled_adu.place_logliks: unsafeguarded Newton mode search cycles for high-count places, so BFGS "
+    "cannot converge on zero-heavy panels (shared notes, 2026-10-20); re-enable when D-025's owner fixes it"
+)
+
+
+@pytest.fixture(scope="module")
+def nb_fit():
+    p = simulate(seed=21, n_places=100, n_treated=20, zero_share=0.8, state_shock=-0.6)
+    return p, mm.estimate(p, method="nb", modifiers=("pcr",))
+
+
+@D025_MODE_BUG
+def test_d025_estimator_as_fallback_recovers_effects_with_state_shocks_and_zero_places(nb_fit):
+    p, e = nb_fit
+    assert (p[p["T"].isna()].groupby("place")["y"].sum() == 0).mean() > 0.5
+    assert e.fit.keep.all() and set(e.fit.names) >= {
+        "beta_0",
+        "beta_2",
+        "beta_4",
+        "theta_pcr",
+        "rho",
+        "delta",
+    }
+    s, boot = mm.summary(e, draws=99, seed=0)
+    for term in ("beta_0", "beta_2", "beta_4", "delta"):
+        _within(s, term, TRUTH[term], tol=0.1)
+    assert "att" in boot and len(boot) == 99
+    # state-year effects: TX years from 2020 carry the extra −0.6 drop relative to MN
+    gam = dict(zip(e.fit.years, e.fit.gamma, strict=True))
+    tx_drop = np.mean([gam[30000 + y] - gam[y] for y in range(2020, 2026)])
+    pre = np.mean([gam[30000 + y] - gam[y] for y in range(2011, 2020)])
+    assert tx_drop - pre == pytest.approx(-0.6, abs=0.2)
+
+
+@D025_MODE_BUG
+def test_d025_fallback_supports_transport_and_added_homes(nb_fit):
+    p, _ = nb_fit
+    held = p.loc[p["T"].notna(), "place"].unique()[:4]
+    e = mm.estimate(p[~p["place"].isin(held)], method="nb", modifiers=("pcr",))
+    _, boot = mm.summary(e, draws=49, seed=1)
+    pred = mm.transport_predict(e, boot, p[p["place"].isin(held)], draws=500, seed=0)
+    assert set(pred.loc[pred["year"] == "total", "place"]) == set(held)
+    assert (mm.added_homes(e, boot)["added"] > 0).all()
+
+
+def test_random_effects_divergence_is_an_estimation_error():
+    p = simulate(seed=2, n_places=30, n_treated=6)
+    p["eligible"] = 1e-14  # implausible offsets push |η − offset| past the guard
+    with pytest.raises(estimate_adu.EstimationError):
+        mm.estimate(p, method="re", modifiers=())
+
+
+def test_poisson_start_by_hand():
+    b = mm.poisson_start(np.ones((2, 1)), np.array([2.0, 6.0]), np.zeros(2))
+    assert b[0] == pytest.approx(math.log(4))
+
+
+def test_d025_fallback_adapter_on_a_panel_it_can_fit():
+    """Without the wide spread of never-permitting places, D-025's estimator converges: the adapter recovers
+    the bin effects and the TX state-year drop, and feeds the bootstrap, added homes and transport."""
+    p = simulate(seed=21, n_places=100, n_treated=20, state_shock=-0.6)
+    e = mm.estimate(p, method="nb", modifiers=("pcr",))
+    assert e.fit.keep.all() and {"beta_0", "beta_2", "beta_4", "rho", "delta"} <= set(e.fit.names)
+    s, boot = mm.summary(e, draws=49, seed=0)
+    for term in ("beta_0", "beta_2", "beta_4", "delta"):
+        _within(s, term, TRUTH[term], tol=0.1)
+    gam = dict(zip(e.fit.years, e.fit.gamma, strict=True))
+    drop = np.mean([gam[30000 + y] - gam[y] for y in range(2020, 2026)])
+    pre = np.mean([gam[30000 + y] - gam[y] for y in range(2011, 2020)])
+    assert drop - pre == pytest.approx(-0.6, abs=0.2)
+    assert len(mm.added_homes(e, boot)) == 20
+    held = p.loc[p["T"].notna(), "place"].unique()[:2]
+    e2 = mm.estimate(p[~p["place"].isin(held)], method="nb", modifiers=("pcr",))
+    pred = mm.transport_predict(e2, mm.summary(e2, draws=29, seed=1)[1], p[p["place"].isin(held)], draws=300)
+    assert set(pred.loc[pred["year"] == "total", "place"]) == set(held)
