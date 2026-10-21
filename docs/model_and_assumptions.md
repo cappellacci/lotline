@@ -735,10 +735,10 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `handbook_fee_cut_share` | 0.5 | fixed | share of fees | Handbook benchmark fees scenario: cut total development fees by 50% (i.e. -$25,000 per unit) |
 | `land_capture_share` | 0.5 | 0.25–0.75 | share of fee change | Methods review §3c (lambda_land 0.25-0.75+, central 0.5) |
 | `fee_permit_elasticity` | 0.3 | 0–1.75 | % change in permits per % change in price received by builders (applied to a cost change as a share of total development cost) | Central: E081 Baum-Snow & Han 2024, tract-level unit supply elasticity ~0.3 |
-| `fee_ramp_half_years` | 1 | 0.5–2 | years after the cut until half the response shows in permits | Judgment (D-026): a cut applies to permits pulled after it takes effect, but projects already in design were… |
-| `fee_ramp_slope_years` | 0.5 | 0.25–1 | years | Judgment (D-026): the response goes from ~12% to ~88% of its full size within about 2 years of the half point |
-| `fee_feasibility_min_lots` | 20 | fixed | lots feasible before the cut | Choice (D-027): the feasibility channel divides lots feasible after the cut by lots feasible before |
-| `fee_new_home_years` | 7 | fixed | years before the origin | Choice (D-027): a place's new-home value is the median assessed value per sq ft of detached homes built in th… |
+| `fee_ramp_half_years` | 1 | 0.5–2 | years after the cut until half the response shows in permits | Judgment (D-032): a cut applies to permits pulled after it takes effect, but projects already in design were… |
+| `fee_ramp_slope_years` | 0.5 | 0.25–1 | years | Judgment (D-032): the response goes from ~12% to ~88% of its full size within about 2 years of the half point |
+| `fee_feasibility_min_lots` | 20 | fixed | lots feasible before the cut | Choice (D-033): the feasibility channel divides lots feasible after the cut by lots feasible before |
+| `fee_new_home_years` | 7 | fixed | years before the origin | Choice (D-033): a place's new-home value is the median assessed value per sq ft of detached homes built in th… |
 | `fee_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: same as adu_simulation_draws |
 | `fee_simulation_seed` | 20261021 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |
 

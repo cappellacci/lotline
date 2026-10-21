@@ -38,7 +38,7 @@ fee_ramp_half_years:
   low: 0.5
   high: 2.0
   unit: years after the cut until half the response shows in permits
-  source: "Judgment (D-026): a cut applies to permits pulled after it takes effect, but projects already in design were priced at the old fee and new projects need design and approval first (proforma.yaml construction_years_irc covers building, not this pre-permit lag). Same logistic form as the ADU ramp (hazard.ramp)."
+  source: "Judgment (D-032): a cut applies to permits pulled after it takes effect, but projects already in design were priced at the old fee and new projects need design and approval first (proforma.yaml construction_years_irc covers building, not this pre-permit lag). Same logistic form as the ADU ramp (hazard.ramp)."
   notes: "ramp(t) = 1 / (1 + exp(-(t - half) / slope)); by hand, half 1, slope 0.5: t = 1 -> 0.5, t = 2 -> 0.88, t = 5 -> 0.9997."
 
 fee_ramp_slope_years:
@@ -46,21 +46,21 @@ fee_ramp_slope_years:
   low: 0.25
   high: 1.0
   unit: years
-  source: "Judgment (D-026): the response goes from ~12% to ~88% of its full size within about 2 years of the half point"
+  source: "Judgment (D-032): the response goes from ~12% to ~88% of its full size within about 2 years of the half point"
 
 fee_feasibility_min_lots:
   value: 20
   low: 20
   high: 20
   unit: lots feasible before the cut
-  source: "Choice (D-027): the feasibility channel divides lots feasible after the cut by lots feasible before; with fewer than this many feasible before, the ratio is too noisy, so the place uses the elasticity route"
+  source: "Choice (D-033): the feasibility channel divides lots feasible after the cut by lots feasible before; with fewer than this many feasible before, the ratio is too noisy, so the place uses the elasticity route"
 
 fee_new_home_years:
   value: 7
   low: 7
   high: 7
   unit: years before the origin
-  source: "Choice (D-027): a place's new-home value is the median assessed value per sq ft of detached homes built in the last 7 years, times the single-family prototype's size; long enough to find homes in slow-building places"
+  source: "Choice (D-033): a place's new-home value is the median assessed value per sq ft of detached homes built in the last 7 years, times the single-family prototype's size; long enough to find homes in slow-building places"
 
 fee_simulation_draws:
   value: 1000

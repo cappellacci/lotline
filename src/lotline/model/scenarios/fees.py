@@ -43,7 +43,7 @@ PARAM_FILES = ("fees", "proforma")
 FIXED = proforma.NOT_SAMPLED | {"fee_simulation_draws", "fee_simulation_seed", "fee_feasibility_min_lots"}
 MODES = ("local", "handbook")
 SFD_TYPES = ("SFD", "OTHER")  # OTHER rows apply to any building type and are priced at the SFD prototype
-REQUIRED_COMPONENT = "water_sewer"  # a local fee total without it is too incomplete to use (D-028)
+REQUIRED_COMPONENT = "water_sewer"  # a local fee total without it is too incomplete to use (D-034)
 
 
 def specs() -> dict:

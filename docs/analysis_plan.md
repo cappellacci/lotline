@@ -648,7 +648,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Run once;** whatever it shows is reported. No re-specification without a new dated entry.
 - **Decided by:** Ben, 2026-10-20 (options 1 and 2); details written by WS-ENGINE before the run.
 
-### D-026 · 2026-10-20 · Proposed: fee scenario mechanics (`scenarios/fees.py`, thread 02)
+### D-032 · 2026-10-20 · Proposed: fee scenario mechanics (`scenarios/fees.py`, thread 02)
 - **Fee level:** `local` mode uses each place's coded single-family fee per unit from `config/fees`. That is the
   SFD and OTHER rows, each component at its newest year with a per-unit amount, summed. `handbook` mode uses the
   Rules' $50,000 everywhere. Both are reported. The cut is 50% of the level; builders keep (1 − λ) of it.
@@ -667,7 +667,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   It stays open.
 - **Decided by:** proposed by thread 02 in the fee-scenario PR; for Ben to confirm.
 
-### D-027 · 2026-10-20 · Proposed: feasibility-channel inputs from parcel rolls
+### D-033 · 2026-10-20 · Proposed: feasibility-channel inputs from parcel rolls
 - Candidate lots are VACANT_RESIDENTIAL parcels with a land value in the newest roll ≤ origin + 1.
 - New-home value is the median (land + building value) per sq ft of detached homes built in the last 7 years,
   × 2,150 sq ft. These are assessed values in the roll's own dollars, taken as 2025 dollars.
@@ -676,7 +676,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   residential parcels, and several places lack year built or building sq ft.
 - **Decided by:** proposed by thread 02; for Ben to confirm.
 
-### D-028 · 2026-10-20 · Proposed: when a coded local fee is complete enough to use
+### D-034 · 2026-10-20 · Proposed: when a coded local fee is complete enough to use
 - A place's coded fee is used only if it includes a water/sewer fee. Utility fees are usually the largest
   component and the one most often missing (fees causal diagram §2). Otherwise the place takes the national
   prior ($50k).
