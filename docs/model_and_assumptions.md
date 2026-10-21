@@ -414,10 +414,7 @@ eligible lots a year; in year 1 after adoption the ramp gives 21% of that.
 reference cities. The formula still applies there, but it is extrapolation, so the tool says so: each place
 gets its log distance outside the range (rent, home value and rate added up; 0 inside), a flag, and a wider
 interval. Each simulation draw multiplies the hazard by exp(s·z − s²/2), s = `adu_extrapolation_widening`
-(1.0, range 0.5–2) × distance, z standard normal; the mean stays put and P10–P90 widens with distance. z
-stands for error in the transport formula itself, so in a draw it is the same for every place
-(`adu_extrapolation_shared_share` 1.0, D-030): it does not average out when places are added up to a state.
-Place-to-place differences are carried by the fitted place multipliers instead.
+(1.0, range 0.5–2) × distance, z standard normal; the mean stays put and P10–P90 widens with distance.
 
 **Properties the tests check:** the hazard equals the anchor at the reference place; higher price-to-cost never
 lowers it (any parameter draw in range); it never leaves [0, 1]; widening keeps the mean.
@@ -449,10 +446,9 @@ single-family forecast already holds some ADUs: 0.47% of 1-unit permits in the T
 `scripts/dev/adu_baseline_share.py`). The scenario adds only the difference between Handbook and current rules,
 so its units go on top of the baseline without counting those ADUs twice.
 
-**Mortgage rates.** A forward run holds the 30-year rate at `mortgage_rate_forecast` (`market.yaml`), 6.60%
-(FRED annual mean for 2025), flat over 2026–2030. Its range, 2.96–6.81% (the 2015–2025 annual low and high), is
-a stress range, not a forecast, so it is run as a **sensitivity** (the same draws with the rate at the low or
-the high), not mixed into the forecast range (D-030). Backtests and validation checks never use it: they use
+**Mortgage rates.** A forward run draws one 30-year rate per simulation draw from `mortgage_rate_forecast`
+(`market.yaml`): central 6.60% (FRED annual mean for 2025), range 2.96–6.81% (the 2015–2025 annual low and high,
+a stress range, not a forecast), flat over 2026–2030. Backtests and validation checks never use it: they use
 each year's actual rate from `market_geo_year`.
 
 **Worked example** (`test_one_jurisdiction_year_by_hand`): 2,000 eligible parcels, mature hazard 0.0014219 (the
@@ -466,21 +462,6 @@ beside the eligible parcels (numerator and denominator kept apart), the central 
 rule class and note, and the calibration distance with an outside-the-range flag. Five-year ranges are
 percentiles of each draw's sum. Places below 20 eligible parcels are not shown alone (D-015).
 
-**How the draws are made (D-030).** Each of the 1,000 draws takes:
-
-- every judgment parameter from a triangular distribution over its low, central and high values;
-- the **anchor** and the **place-effect variance α**, which are estimated, from a lognormal with its median at
-  the estimate and its spread from the 90% interval (anchor log-SD 0.59; α 3.0–7.5 from the fit's observed
-  information). Both were fitted with the judgment parameters at their central values, so each draw moves
-  them with that draw's judgment values: log anchor shifts by Σ g_j × (p_j − central p_j), where g_j is how
-  much the fitted anchor moves when parameter j moves (`config/params/adu_anchor.yaml`, from
-  `scripts/dev/calibrate_adu.py --draw-terms`). A draw with a steeper fall-off in uptake, for example, gets a
-  higher anchor, so it still fits the Minnesota and Austin permits;
-- one multiplier per place from Gamma(mean 1, variance α of that draw);
-- one extrapolation error per draw, shared by every place (above).
-
-The mortgage-rate stress range and the half-shared extrapolation error are sensitivities, run separately.
-
 **Estimating the anchor** (`model/calibrate_adu.py`, `scripts/dev/calibrate_adu.py`; each specification
 pre-registered in D-019 before it was run). Fit 3, the current one: ADU permit counts in place-years with a
 coded ADU rule in force and permits that flag ADUs, modelled as Poisson around the scenario's current-rules
@@ -492,7 +473,7 @@ its years; blank rule fields are integrated over per place (D-022). Fit set: Min
 | Parameter | Estimate | 90% interval | Note |
 |---|---|---|---|
 | Anchor (typical place, Portland's rent/value/rate) | 1.04 per 1,000 parcels a year | 0.45–3.17 | 0.26 of Portland's 4 per 1,000 (research band) |
-| Place-effect variance α | 4.7 | 3.0–7.5 (observed information, D-030) | multipliers from ~0 (Eagan, Lakeville) to ~11 (Austin) |
+| Place-effect variance α | 4.7 | — | multipliers from ~0 (Eagan, Lakeville) to ~11 (Austin) |
 | Owner-occupancy share m_o | 1.0 | 0.9–1.0 | estimated: an owner-occupancy rule shows no measurable effect |
 | Other-restriction share m_x | 0.3 (judgment) | 0.1–1.0 (not identified) | kept at its judgment value |
 
@@ -510,26 +491,14 @@ places, are much tighter (below).
 
 **Statewide totals, development run** (origin 2025, P10 / P50 / P90 of draws summed over non-overlapping
 places, D-020; ADU permits added over current rules, and additional homes after the net-new and formalization
-shares), 2026–2030. "Before" is the same code and data with the draws as they were before D-030 (anchor
-triangular, α fixed, extrapolation noise independent per place, mortgage rate drawn over its stress range);
-"after" is D-030.
+shares), 2026–2030:
 
-| State | ADU permits added, before | ADU permits added, after | Additional homes, before | Additional homes, after |
-|---|---|---|---|---|
-| Minnesota | 1,498 / 2,840 / 5,253 | 509 / 1,567 / 4,945 | 779 / 1,556 / 2,880 | 271 / 845 / 2,623 |
-| North Carolina | 1,947 / 4,137 / 8,678 | 640 / 2,264 / 7,181 | 1,044 / 2,272 / 4,847 | 355 / 1,212 / 4,059 |
-| Ohio | 1,046 / 2,276 / 5,233 | 241 / 932 / 4,505 | 574 / 1,262 / 2,920 | 133 / 506 / 2,462 |
-| Texas | 7,731 / 14,972 / 29,445 | 2,399 / 8,078 / 27,249 | 4,074 / 8,211 / 16,607 | 1,334 / 4,417 / 15,515 |
-
-Medians fall by about 45–60% and P10s by 65–80%, while P90s fall only 5–17%: the old median sat on an anchor 41%
-above its estimate and on a mean mortgage rate of 5.5% rather than 6.6%, and the old P10s were held up by
-place-level noise that averaged out. P50 is now about 3–4 times P10, and P90 3–5 times P50: at the state level the anchor and the transport are the uncertainty, and they do not cancel out.
-
-**Sensitivities** (five-year additional homes, P10 / P50 / P90): with the mortgage rate back at its 2015–25 low
-of 2.96%, Minnesota 364 / 1,103 / 3,426, North Carolina 463 / 1,598 / 5,233, Ohio 169 / 660 / 3,141, Texas
-1,693 / 5,684 / 19,505 (about 30% above the forecast); at the 2015–25 high of 6.81%, within 2% of the forecast.
-With only half of the extrapolation error shared: Minnesota 304 / 902 / 2,655, North Carolina 404 / 1,284 /
-3,971, Ohio 182 / 630 / 2,724, Texas 1,550 / 4,784 / 14,724.
+| State | ADU permits added | Additional homes |
+|---|---|---|
+| Minnesota | 1,457 / 2,719 / 5,065 | 762 / 1,516 / 2,814 |
+| North Carolina | 1,727 / 3,850 / 8,101 | 950 / 2,117 / 4,540 |
+| Ohio | 1,046 / 2,276 / 5,233 | 574 / 1,262 / 2,920 |
+| Texas | 7,731 / 14,972 / 29,445 | 4,074 / 8,211 / 16,607 |
 
 Places whose ADU rule is not coded (most of them) draw their rule from coded places like them (D-022), so
 these totals will move as more rules are coded.
@@ -651,7 +620,7 @@ Parameters expected to drive scenario results (to be confirmed by the planned gl
   pencil; then the hazard (planned).
 - **ADU:** the place-to-place variation in uptake (place-effect variance 4.7), the anchor hazard (0.45–3.17
   per 1,000 lots a year, estimated), how sharply uptake falls with price-to-cost (σ
-  0.25–0.8), the partial-rule share (0.1–0.6), the mortgage rate (2.96–6.81%, a sensitivity), the net-new share
+  0.25–0.8), the partial-rule share (0.1–0.6), the mortgage rate path (2.96–6.81%), the net-new share
   (45–80%) and the formalization share (0–30%); for most places, also the widening outside the calibration
   range.
 - **All scenarios:** the displacement share (0–50%) decides how much of a place's gain is new statewide.
@@ -675,7 +644,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 <!-- params-table:start -->
 <!-- GENERATED by `uv run python scripts/dev/params_table.py` from config/params/*.yaml. Do not edit by hand. -->
 
-161 parameters in 13 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
+168 parameters in 14 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
 **`config/params/adu.yaml`** (19 parameters)
 
@@ -854,6 +823,18 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
 | `mortgage_rate_forecast` | 6.6 | 2.96–6.81 | percent (30-year fixed), held flat over the 5-year forecast (2026-2030) | Central: FRED MORTGAGE30US annual mean for 2025, 6.595% (market_geo_year.mortgage_rate, national:US) |
+
+**`config/params/mm.yaml`** (7 parameters)
+
+| Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
+|---|---|---|---|---|
+| `mm_panel_first_year` | 2010 | fixed | calendar year | Choice (D-024): the first year with missing-middle eligible-parcel rolls (rule 1.1) and ACS 5-year estimates… |
+| `mm_panel_last_year` | 2025 | fixed | calendar year | Choice (D-024): the last full year of Census BPS place permits |
+| `mm_estimation_min_population` | 10,000 | 10,000–50,000 | people (2020 Census) | Choice (D-024, approved by Ben 2026-10-20): comparison places of at least 10,000 people, the lower edge of D-… |
+| `mm_dose_grade_permit` | 0.3333 | fixed | share of the by-right dose | Choice (D-024, approved by Ben 2026-10-20), mirroring D-023's equal steps: a rule that allows 2-4 units only… |
+| `mm_estimation_bootstrap_draws` | 999 | fixed | draws | D-024: wild cluster score bootstrap by place, 999 draws (as D-023) |
+| `mm_estimation_permutations` | 999 | fixed | reassignments | D-024: randomization inference reassigns the treated places' adoption and dose paths within state and size ba… |
+| `mm_transport_widening` | 1 | fixed | standard deviation of log(predicted mean) per unit log distance outside the fitted modifier range | D-024: places outside the fitted modifier range are flagged and their intervals widened as in hazard.widen |
 
 **`config/params/money.yaml`** (1 parameter)
 
