@@ -29,3 +29,14 @@
   7.1% > 5%), so not computed. A script defect stopped the whole run at that point, so the checks, robustness
   and transport were not run; fixed in code (stage failures are recorded and the run continues; RI stops as
   soon as its limit is broken) and not re-run, pending Ben.
+
+### LB-NNN · 2026-10-21 · Run: D-025 checks and robustness (pre-trend test fails; robustness disagrees)
+- **Question:** Do the pre-registered checks and robustness estimators support the D-025 main estimate?
+- **What I did:** sped up refits (bincount; identical to 1e-10, tested; committed first); ran the remaining
+  stages once with randomization inference reported as not computed (7.1% failed).
+- **Outputs:** `reports/adu-d025/stages-2026-10-21-log.txt`; D-025 dated note; transport guard fix with test.
+- **Findings:** pre-trend leads fail (p = 0.025); placebo dates not computed; placebo outcome, excluding
+  2020–21 and leave-one-out pass. Fixed-effects PPML uninformative (SE ≈ 2.4); imputation negative on 7 rows;
+  binary dose 1.50 (0.33–2.67). Transport not computed (guard checked draws, not the mean as specified;
+  fixed, not re-run). Minneapolis fitted with its own effect tracks its post-2020 decline.
+- **AI:** Claude ran the stages once and transcribed the results.

@@ -336,3 +336,17 @@ def test_score_accumulation_matches_the_previous_implementation():
     finally:
         pa._sum_by = saved
     assert np.max(np.abs(S_new - S_old)) < 1e-10
+
+
+def test_transport_guard_is_on_the_predicted_mean_not_single_draws(small_fit):
+    """A wide place-effect distribution (σ = e^0.7 ≈ 2, as estimated) gives long-tailed single draws but a
+    sane mean: no error. Raising the intercept by 12 makes the mean absurd (> 5% of parcels a year): error."""
+    panel, main = small_fit
+    boot = pa.score_bootstrap(main, draws=50, seed=1)
+    target = panel[panel["T"].notna()].groupby("place").head(10)
+    target = target[target["place"] == target["place"].iloc[0]].assign(name="x", y=0)
+    wide = boot.assign(log_sigma=0.7)
+    pa.transport_predict(main, wide, panel, target, draws=300, seed=1)
+    absurd = boot.assign(intercept=boot["intercept"] + 12)
+    with pytest.raises(EstimationError, match="predicted mean"):
+        pa.transport_predict(main, absurd, panel, target, draws=100, seed=1)

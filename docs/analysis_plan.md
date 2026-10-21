@@ -677,3 +677,23 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (the script now records a failed stage and continues; randomization inference stops as soon as its 5%
   limit is broken) but **not re-run**: running the checks, robustness and transport needs Ben's go-ahead.
   Reading: about 1 in 14 permuted adoption-date panels does not converge even after a retry.
+- **Checks, robustness and transport run (2026-10-21, once; log `reports/adu-d025/stages-2026-10-21-log.txt`;
+  Ben approved; refits sped up first by an identical score accumulation, 7442d47):** main model reused
+  (matched all 22 logged estimates; bootstrap 999/999 kept). Randomization inference not re-attempted: **not
+  computed: 71 of 999 (7.1%) failed, above the 5% limit**. Checks against D-023's pass rules:
+  1. pre-trend leads: Wald 5.94, **p = 0.025 → fails** (the D-023 rule calls for HonestDiD bounds);
+  2. placebo dates (−2 years): **not computed** (the refit did not converge after a retry);
+  3. placebo outcome (5+ units): 0.48 (−0.62 to 1.64) → passes;
+  4. excluding 2020–21: overall 2.91, every band and the overall effect inside the main intervals → passes
+     (the refit converged on the retry);
+  5. leave one treated place out: 31 of 31 refits converged (3 on retry); no place moves the overall effect
+     outside its interval → passes.
+  Robustness: fixed-effects PPML (193 rows kept; two modifiers collinear with fixed effects): bands −0.16,
+  −0.59, −0.39 with SEs ≈ 2.4 (uninformative); Borusyak imputation: only 7 treated place-years imputable
+  (162 not: their places have no permits before adoption): bands −0.52 (−1.71 to 0.68), −1.55 (−3.09 to
+  −0.35), 4+ not estimable, overall −0.94 (−2.25 to 0.30); binary dose: overall 1.50 (0.33 to 2.67), bands
+  1.48, 1.23, 1.61. **The robustness estimators do not support the main estimate's size, and the imputation
+  estimate has the opposite sign on very few rows.** Transport: **not computed**: the code checked single
+  predictive draws against the 5% limit, while this entry specifies the predicted mean; with σ ≈ 2.1 Austin's
+  draws (no pre-adoption years, so u from the prior) exceeded it. Fixed to check the mean, with a test, and a
+  transport failure now records the stage instead of stopping the run; **not re-run** pending Ben.
