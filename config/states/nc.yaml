@@ -106,7 +106,11 @@ sources:
       Adapter src/lotline/adapters/states/nc/meck_permits.py. Holdout-first: a server-side filter leaves out
       Charlotte and unincorporated-county permits from 2023-06-01 (V5, D-012), and holdout.apply drops the rest
       before anything is written. On 2026-10-20 the server answered this network with a Cloudflare browser
-      challenge (HTTP 403), so no data has been downloaded; the taxjuris town spellings are unverified.
+      challenge (HTTP 403). On 2026-10-21 Ben downloaded the same layer by hand from the county's Open Data
+      Viewer (https://maps.mecklenburgcountync.gov/opendata-viewer, "Building Permits - Winchester", legacy
+      permits; GeoPackage dated 2026-10-12) and registered it; the adapter reads that file with the same
+      holdout-first filter in its query. The taxjuris spellings are verified on it (unincorporated permits are
+      MECKLENBURG).
   - name: wake_realestate
     url: https://www.wake.gov/departments-government/tax-administration/data-files-statistics-and-reports/real-estate-property-data-files
     license: Wake County public records (no license stated)
