@@ -857,3 +857,20 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (a)), and refit failures fell from 7.1% to 2.9%. Its p = 0.111 means the overall effect is not
   distinguishable at 10% from effects produced by reshuffled adoption years. HonestDiD bounds for the
   corrected main are **pending** WS-ENGINE's `honest_bounds`.
+- **HonestDiD run plan (2026-10-21, written before running; Ben approved one run per main):**
+  - *Code review:* `pooled_adu.honest_bounds`, `honest_set`, `rm_breakdown` and `event_study_inputs`
+    (68c7ae6, WS-ENGINE) were checked against the choices fixed above (3f0d5e2). The relative-magnitudes and
+    smoothness bias formulas, the grids, the inputs from the leads refit and the bootstrap union interval
+    all match, and no defect was found. One point for readers: θ is the effect at realised doses (each
+    band × the place-year's dose), so it is smaller than the main model's "overall", which averages the
+    per-unit-dose bands.
+  - *Runs, once per main:* `estimate_pooled_adu.py --honest LOG --hh-growth as_run|corrected`. Each run
+    recomputes that main model and checks it against its log to 1e-4 (as-run: `run-2026-10-20-log.txt`;
+    corrected: `corrected-2026-10-21-log.txt`). It then refits the pre-trend-leads model exactly as check 1
+    did (leads k = −3…−1, D-025 convergence rule, 999 wild-bootstrap draws, seed 1). From that refit it
+    computes `honest_bounds` and the breakdown M̄ (`rm_breakdown`, grid step 0.01) for the pooled effect.
+  - *Per band (an extension of the pooled target, using the same `honest_set`):* θ_b = mean over the band's
+    treated place-years of β_b × dose, with ω restricted to the band's event times and renormalised.
+  - *Reported:* identified sets, robust 90% intervals and breakdown M̄ for each target and main; the event
+    study (leads and bands with 90% intervals); charts of the robust interval against M̄ with the breakdown
+    marked. Nothing here changes the D-025 main result or chooses a specification.

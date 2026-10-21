@@ -271,6 +271,81 @@ def remaining(store, out: Path | None, first_log: Path, skip_ri: str | None = No
     stages(store, panel, fit, boot, main, out, log_note="(main model reused)", skip_ri=skip_ri)
 
 
+def band_inputs(fit, boot, panel, band: int):
+    """θ_b (mean of β_band × dose over the band's treated place-years), per draw, and ω restricted to the
+    band's event times (renormalised), for `pa.honest_set` on one band (D-031 HonestDiD plan)."""
+    post = panel[panel["T"].notna() & (panel["year"] >= panel["T"])]
+    k = (post["year"] - post["T"]).to_numpy(dtype=int)
+    on = pa._band_of(k) == band
+    omega = np.bincount(k[on], minlength=k.max() + 1) / on.sum()
+    mean_dose = float(post["dose"].to_numpy(dtype=float)[on].mean())
+    name = pa.BAND_NAMES[band]
+    est_ = dict(zip(fit.names, fit.log_params, strict=True))
+    theta = float(est_.get(name, 0.0)) * mean_dose
+    draws = boot[name].to_numpy() * mean_dose if name in boot else np.zeros(len(boot))
+    return theta, draws, omega
+
+
+def honest(store, out: Path | None, first_log: Path) -> None:
+    """HonestDiD bounds (D-025 choices, D-031 run plan) for one main model: reproduce it (checked against
+    its log), refit the pre-trend-leads model as check 1 did, then `pa.honest_bounds` and `pa.rm_breakdown`
+    for the pooled effect and each band."""
+    p = {k: v.value for k, v in load_params("adu").items()}
+    draws = int(p["adu_estimation_bootstrap_draws"])
+    kw = {"modifiers": list(est.MODIFIERS)}
+    panel, fit, boot, main = main_model(store)
+    check_matches(main, first_log)
+    log = pa.RefitLog("pre-trend leads (HonestDiD)")
+    lfit = pa.refit(panel, fit, log, leads=(-3, -2, -1), **kw)
+    if lfit is None:
+        raise SystemExit(f"the leads refit did not converge after a retry: {log.summary}")
+    lboot = pa.score_bootstrap(lfit, draws=draws, seed=1, log=log)
+    print(log.summary)
+    es = pa.summarize(lfit, lboot).set_index("term")
+    terms = [("lead_3", "−3"), ("lead_2", "−2"), ("lead_1", "−1")]
+    terms += [(b, lab) for b, lab in zip(pa.BAND_NAMES, ("0–1", "2–3", "4+"), strict=True)]
+    event = pd.DataFrame(
+        [
+            {"term": t, "k_label": lab, **es.loc[t, ["estimate", "low", "high"]].to_dict()}
+            for t, lab in terms
+            if t in es.index
+        ]
+    )
+    print("event study (leads refit):\n", event.round(4).to_string(index=False))
+    theta, leads, theta_d, lead_d, omega = pa.event_study_inputs(lfit, lboot, panel)
+    targets = {"pooled": (theta, theta_d, omega)}
+    for b, name in enumerate(pa.BAND_NAMES):
+        if name in lfit.names:
+            targets[name] = band_inputs(lfit, lboot, panel, b)
+    rows = []
+    for target, (th, th_d, om) in targets.items():
+        tab = pa.honest_bounds(th, leads, th_d, lead_d, om)
+        brk = pa.rm_breakdown(th_d, lead_d, om)
+        q = np.quantile(th_d - th, [0.05, 0.95])
+        orig = {
+            "restriction": "original",
+            "m": np.nan,
+            "set_low": th,
+            "set_high": th,
+            "ci_low": th - q[1],
+            "ci_high": th - q[0],
+            "ci_includes_0": bool(th - q[1] <= 0 <= th - q[0]),
+        }
+        both = pd.concat([pd.DataFrame([orig]), tab], ignore_index=True)
+        rows.append(both.assign(target=target, breakdown=brk))
+        print(f"{target}: θ {th:.4f}, breakdown M̄ {brk}")
+    res = pd.concat(rows, ignore_index=True)
+    lead_names = ("δ_−3", "δ_−2", "δ_−1")
+    print("leads:", dict(zip(lead_names, np.round(leads, 4), strict=True)))
+    print("ω_k:", np.round(omega, 3).tolist())
+    print(res.round(4).to_string(index=False))
+    if out:
+        out.mkdir(parents=True, exist_ok=True)
+        event.to_csv(out / "event_study.csv", index=False)
+        res.to_csv(out / "honest_bounds.csv", index=False)
+        print(f"wrote event_study.csv and honest_bounds.csv to {out}/")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     g = ap.add_mutually_exclusive_group(required=True)
@@ -281,6 +356,12 @@ def main() -> None:
         type=Path,
         metavar="FIRST_RUN_LOG",
         help="run the stages after the main model, reusing it (checked against the first run's log)",
+    )
+    g.add_argument(
+        "--honest",
+        type=Path,
+        metavar="MAIN_RUN_LOG",
+        help="HonestDiD bounds for the main model logged in MAIN_RUN_LOG (reproduced and checked first)",
     )
     g.add_argument(
         "--transport-only",
@@ -305,6 +386,8 @@ def main() -> None:
     store = DataStore()
     if a.smoke:
         smoke(store)
+    elif a.honest:
+        honest(store, a.out, a.honest)
     elif a.transport_only:
         transport_only(store, a.out, a.transport_only)
     elif a.remaining:
