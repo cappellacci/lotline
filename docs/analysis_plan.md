@@ -697,3 +697,10 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   predictive draws against the 5% limit, while this entry specifies the predicted mean; with σ ≈ 2.1 Austin's
   draws (no pre-adoption years, so u from the prior) exceeded it. Fixed to check the mean, with a test, and a
   transport failure now records the stage instead of stopping the run; **not re-run** pending Ben.
+- **Transport re-run (2026-10-21, once, Ben approved; log `reports/adu-d025/transport-2026-10-21-log.txt`):**
+  transport only, with the guard on the predicted mean; main model reused (matched all 22 logged estimates).
+  **Fails the D-023 rule:** totals inside their 80% intervals: Austin no (observed 2,545 vs P10–P90 0–279),
+  Raleigh no (230 vs 0–49), Durham yes (269 vs 9–272); yearly coverage 15% (rule 60–95%). No place is outside
+  the Minnesota modifier range. Austin has no pre-adoption years in its window (adopted 2010), so its effect is
+  drawn from the prior; in Raleigh (2022 on) and Durham (2020 on) the missing-middle term δ = −2.69, identified
+  from Minneapolis alone, pushes predictions far below what was observed.
