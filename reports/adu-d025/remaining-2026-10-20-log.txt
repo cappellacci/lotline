@@ -1,0 +1,19 @@
+main bootstrap: 999 of 999 bootstrap draws kept
+main model matches the first run's 22 logged estimates (to 1e-4); reusing it
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_pooled_adu.py", line 226, in <module>
+    main()
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_pooled_adu.py", line 220, in main
+    remaining(store, a.out, a.remaining)
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_pooled_adu.py", line 200, in remaining
+    stages(store, panel, fit, boot, main, out, log_note="(main model reused)")
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_pooled_adu.py", line 80, in stages
+    obs, p_ri, ri_dist, ri_log = pa.randomization_inference(panel, perms, fit, seed=20261020, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/src/lotline/model/pooled_adu.py", line 649, in randomization_inference
+    log.check()
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/src/lotline/model/pooled_adu.py", line 515, in check
+    raise StageFailed(f"{self.summary}: more than {self.max_share:.0%} of refits failed")
+lotline.model.pooled_adu.StageFailed: randomization inference: 928 of 999 refits converged (84 on retry, 71 excluded): more than 5% of refits failed
+uv run python scripts/dev/estimate_pooled_adu.py --remaining  --out   15363.95s user 290.03s system 85% cpu 5:06:37.66 total
+exit 1

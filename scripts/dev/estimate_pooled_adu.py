@@ -51,40 +51,55 @@ def smoke(store) -> None:
     )
 
 
-def full(store, out: Path | None) -> None:
+def logged_estimates(log_path: Path) -> dict[str, float]:
+    """The main-model estimates printed by the first run (term -> estimate), parsed from its log."""
+    out, on = {}, False
+    for line in log_path.read_text().splitlines():
+        parts = line.split()
+        if parts[:2] == ["term", "estimate"]:
+            on = True
+            continue
+        if on:
+            if len(parts) < 7:
+                break
+            try:
+                out[parts[0]] = float(parts[1])
+            except ValueError:
+                break
+    return out
+
+
+def stages(
+    store, panel, fit, boot, main, out: Path | None, log_note: str = "", skip_ri: str | None = None
+) -> None:
+    """Randomization inference, the five checks, robustness and transport, all under the D-025 convergence
+    rule; CSVs written to `out` at the end (with convergence counts)."""
     p = {k: v.value for k, v in load_params("adu").items()}
     draws, perms = int(p["adu_estimation_bootstrap_draws"]), int(p["adu_estimation_permutations"])
     kw = {"modifiers": list(est.MODIFIERS)}
-    panel = load_panel(store)
-    places = panel.drop_duplicates("place")
-    print(
-        f"panel: {panel['place'].nunique()} places, {len(panel)} place-years, "
-        f"treated {int(places['T'].notna().sum())}, "
-        f"places with no ADU in any year {int((panel.groupby('place')['y'].sum() == 0).sum())}"
-    )
+    logs = []
 
-    fit = pa.estimate_pooled(panel, **kw)
-    d = fit.design
-    print(
-        f"main model converged; dropped {d.dropped}; separated rows {len(d.separated)}; "
-        f"at bound {fit.at_bound}"
-    )
-    boot = pa.score_bootstrap(fit, draws=draws, seed=20261020)
-    main = pa.summarize_main(fit, boot)
-    print(main.round(4).to_string(index=False))
-
-    obs, p_ri, ri_dist = pa.randomization_inference(panel, permutations=perms, seed=20261020, **kw)
-    print(f"randomization inference: overall {obs:.4f}, p = {p_ri:.3f}")
+    try:
+        if skip_ri:
+            raise pa.StageFailed(skip_ri)
+        obs, p_ri, ri_dist, ri_log = pa.randomization_inference(panel, perms, fit, seed=20261020, **kw)
+        logs.append(ri_log.summary)
+        print(f"randomization inference: overall {obs:.4f}, p = {p_ri:.3f} over {len(ri_dist)}", flush=True)
+    except pa.StageFailed as err:  # D-025 rule: the stage is reported as not computed; the run continues
+        obs, p_ri, ri_dist = pa.overall_effect(fit), float("nan"), np.array([])
+        logs.append(f"randomization inference NOT COMPUTED: {err}")
+    print(logs[-1], flush=True)
 
     checks = [
-        pa.check_leads(panel, draws=draws, seed=1, **kw),
-        pa.check_placebo_dates(panel, draws=draws, seed=2, **kw),
-        pa.check_placebo_outcome(panel, draws=draws, seed=3, **kw),
-        pa.check_excluding(panel, main, draws=draws, seed=4, **kw),
-        pa.check_leave_one_out(panel, main, **kw),
+        pa.check_leads(panel, fit, draws=draws, seed=1, **kw),
+        pa.check_placebo_dates(panel, fit, draws=draws, seed=2, **kw),
+        pa.check_placebo_outcome(panel, fit, draws=draws, seed=3, **kw),
+        pa.check_excluding(panel, fit, main, draws=draws, seed=4, **kw),
+        pa.check_leave_one_out(panel, fit, main, **kw),
     ]
     for c in checks:
-        print(c)
+        print({k: v for k, v in c.items() if k != "effects"})
+        logs.append(c.get("convergence", ""))
 
     fe = pa.fe_ppml_pooled(panel, **kw)
     print("robustness, fixed-effects PPML:", fe)
@@ -100,53 +115,125 @@ def full(store, out: Path | None) -> None:
         )
     imp_tab = pd.DataFrame(imp_rows)
     print(
-        "robustness, imputation:",
+        "robustness, imputation:\n",
         imp_tab.round(4).to_string(index=False),
-        f"(imputed rows {imp['imputed_rows']}, not imputable {imp['not_imputable_rows']})",
+        f"\n(imputed rows {imp['imputed_rows']}, not imputable {imp['not_imputable_rows']})",
     )
-    bin_fit = pa.estimate_pooled(panel, binary_dose=True, **kw)
-    bin_main = pa.summarize_main(bin_fit, pa.score_bootstrap(bin_fit, draws=draws, seed=6))
-    print("robustness, binary dose:\n", bin_main.round(4).to_string(index=False))
+    bin_log = pa.RefitLog("binary dose")
+    bin_fit = pa.refit(panel, fit, bin_log, binary_dose=True, **kw)
+    if bin_fit is None:
+        bin_main = pd.DataFrame([{"term": "not computed", "estimate": np.nan}])
+    else:
+        bin_main = pa.summarize_main(bin_fit, pa.score_bootstrap(bin_fit, draws=draws, seed=6, log=bin_log))
+    logs.append(bin_log.summary)
+    print("robustness, binary dose:\n", bin_main.round(4).to_string(index=False), "\n", bin_log.summary)
 
-    targets, window = [], {}
-    for g, (state, years, scored) in TRANSPORT.items():
-        targets.append(est.build_panel(state, store, years=years, geoids=[g]).data)
-        window[g] = scored
-    pred = pa.transport_predict(
-        fit,
-        boot,
-        panel,
-        pd.concat(targets, ignore_index=True),
-        seed=20261020,
-        widening=p["adu_transport_widening"],
-        window=window,
-    )
-    print(pred.round(1).to_string(index=False))
-    verdict = est.transport_verdict(pred)
-    print(verdict)
+    pred, verdict = transport_stage(store, panel, fit, boot, p, logs)
+    print("convergence:", *logs, sep="\n  ")
 
-    effects = pa.place_effects(fit.log_params, d)
     if out:
+        d = fit.design
         out.mkdir(parents=True, exist_ok=True)
         main.to_csv(out / "estimates.csv", index=False)
         boot.to_csv(out / "bootstrap_draws.csv", index=False)
-        pd.DataFrame({"overall_permuted": ri_dist}).assign(overall=obs, p=p_ri).to_csv(
+        pd.DataFrame({"overall_permuted": ri_dist}).assign(overall=obs, p=p_ri, kept=len(ri_dist)).to_csv(
             out / "randomization.csv", index=False
         )
-        pd.DataFrame(checks).to_csv(out / "checks.csv", index=False)
+        pd.DataFrame([{k: v for k, v in c.items() if k != "effects"} for c in checks]).to_csv(
+            out / "checks.csv", index=False
+        )
+        loo = checks[-1].get("effects", {})
+        pd.DataFrame({"place": list(loo), "overall_without": list(loo.values())}).to_csv(
+            out / "leave_one_out.csv", index=False
+        )
         pd.DataFrame([fe]).to_csv(out / "robust_fe_ppml.csv", index=False)
         imp_tab.to_csv(out / "robust_imputation.csv", index=False)
         bin_main.to_csv(out / "robust_binary_dose.csv", index=False)
         pred.to_csv(out / "transport.csv", index=False)
         pd.DataFrame([verdict]).to_csv(out / "transport_verdict.csv", index=False)
-        pd.DataFrame({"place": d.places, "random_effect": effects}).to_csv(
+        pd.DataFrame({"place": d.places, "random_effect": pa.place_effects(fit.log_params, d)}).to_csv(
             out / "place_effects.csv", index=False
         )
+        pd.DataFrame({"stage": logs}).to_csv(out / "convergence.csv", index=False)
         drops = [{"kind": "column", "what": x} for x in d.dropped]
         drops += [{"kind": "separated place-year", "what": f"{pl} {yr}"} for pl, yr in d.separated]
         pd.DataFrame(drops, columns=["kind", "what"]).to_csv(out / "dropped.csv", index=False)
         panel.to_csv(out / "panel.csv", index=False)
-        print(f"wrote CSVs to {out}/")
+        print(f"wrote CSVs to {out}/ {log_note}")
+
+
+def main_model(store):
+    p = {k: v.value for k, v in load_params("adu").items()}
+    draws = int(p["adu_estimation_bootstrap_draws"])
+    panel = load_panel(store)
+    fit = pa.estimate_pooled(panel, modifiers=list(est.MODIFIERS))
+    boot_log = pa.RefitLog("main bootstrap")
+    boot = pa.score_bootstrap(fit, draws=draws, seed=20261020, log=boot_log)
+    print(boot_log.summary)
+    return panel, fit, boot, pa.summarize_main(fit, boot)
+
+
+def full(store, out: Path | None) -> None:
+    panel, fit, boot, main = main_model(store)
+    print(main.round(4).to_string(index=False))
+    stages(store, panel, fit, boot, main, out)
+
+
+def transport_stage(store, panel, fit, boot, p, logs):
+    """The D-025 transport test (Austin, Raleigh, Durham); a numerical failure is reported, not raised."""
+    targets, window = [], {}
+    for g, (state, years, scored) in TRANSPORT.items():
+        targets.append(est.build_panel(state, store, years=years, geoids=[g]).data)
+        window[g] = scored
+    try:
+        pred = pa.transport_predict(
+            fit,
+            boot,
+            panel,
+            pd.concat(targets, ignore_index=True),
+            seed=20261020,
+            widening=p["adu_transport_widening"],
+            window=window,
+        )
+        print(pred.round(2).to_string(index=False))
+        verdict = est.transport_verdict(pred)
+    except est.EstimationError as err:  # D-025 rule: report the stage as not computed and carry on
+        pred = pd.DataFrame()
+        verdict = {"pass": None, "note": f"not computed: {err}"}
+        logs.append(f"transport NOT COMPUTED: {err}")
+    print(verdict, flush=True)
+    return pred, verdict
+
+
+def transport_only(store, out: Path | None, first_log: Path) -> None:
+    """Only the transport test, reusing the main model (checked against the first run's log to 1e-4)."""
+    panel, fit, boot, main = main_model(store)
+    check_matches(main, first_log)
+    p = {k: v.value for k, v in load_params("adu").items()}
+    logs: list[str] = []
+    pred, verdict = transport_stage(store, panel, fit, boot, p, logs)
+    print("convergence:", *(logs or ["transport computed"]), sep="\n  ")
+    if out:
+        out.mkdir(parents=True, exist_ok=True)
+        pred.to_csv(out / "transport.csv", index=False)
+        pd.DataFrame([verdict]).to_csv(out / "transport_verdict.csv", index=False)
+
+
+def check_matches(main, first_log: Path) -> None:
+    logged = logged_estimates(first_log)
+    now = main.set_index("term")["estimate"].to_dict()
+    diffs = {t: (v, now.get(t)) for t, v in logged.items() if t not in now or abs(now[t] - v) > 1e-4}
+    if not logged or diffs:
+        raise SystemExit(f"main model does not match the first run's log: {diffs or 'nothing parsed'}")
+    print(f"main model matches the first run's {len(logged)} logged estimates (to 1e-4); reusing it")
+
+
+def remaining(store, out: Path | None, first_log: Path, skip_ri: str | None = None) -> None:
+    """The stages after the main model, reusing it: the fit is recomputed deterministically (to recover its
+    Hessian and place scores) and must match the estimates logged by the first run to 1e-4."""
+    panel, fit, boot, main = main_model(store)
+    check_matches(main, first_log)
+    stages(store, panel, fit, boot, main, out, log_note="(main model reused)", skip_ri=skip_ri)
 
 
 def main() -> None:
@@ -154,10 +241,32 @@ def main() -> None:
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--smoke", action="store_true")
     g.add_argument("--full", action="store_true")
+    g.add_argument(
+        "--remaining",
+        type=Path,
+        metavar="FIRST_RUN_LOG",
+        help="run the stages after the main model, reusing it (checked against the first run's log)",
+    )
+    g.add_argument(
+        "--transport-only",
+        type=Path,
+        metavar="FIRST_RUN_LOG",
+        help="run only the transport test, reusing the main model (checked against the first run's log)",
+    )
     ap.add_argument("--out", type=Path)
+    ap.add_argument(
+        "--skip-ri", metavar="REASON", help="don't attempt randomization inference; report REASON"
+    )
     a = ap.parse_args()
     store = DataStore()
-    smoke(store) if a.smoke else full(store, a.out)
+    if a.smoke:
+        smoke(store)
+    elif a.transport_only:
+        transport_only(store, a.out, a.transport_only)
+    elif a.remaining:
+        remaining(store, a.out, a.remaining, a.skip_ri)
+    else:
+        full(store, a.out)
 
 
 if __name__ == "__main__":

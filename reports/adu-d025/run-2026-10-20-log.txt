@@ -1,0 +1,47 @@
+panel: 76 places, 760 place-years, treated 31, places with no ADU in any year 53
+main model converged; dropped []; separated rows 0; at bound []
+             term  estimate     se      low     high  p_two_sided  weakly_identified
+        intercept  -14.3967 0.9396 -15.8606 -12.8158       0.0000              False
+        year_2017    0.7336 0.6579  -0.4149   1.7687       0.2503              False
+        year_2018    0.1942 0.7938  -1.0894   1.4813       0.8358              False
+        year_2019    0.4410 0.5554  -0.4638   1.3144       0.4745              False
+        year_2020    1.9982 0.8275   0.6485   3.4289       0.0120              False
+        year_2021    1.7686 0.8162   0.3272   3.1303       0.0220              False
+        year_2022    1.6800 0.7840   0.3982   2.9240       0.0230              False
+        year_2023    1.9285 0.8154   0.6448   3.2640       0.0070              False
+        year_2024    2.1569 0.8944   0.7228   3.6347       0.0090              False
+        year_2025    2.4923 0.8379   1.0903   3.8524       0.0000              False
+         beta_0_1    2.3209 0.9878   0.6127   3.9323       0.0070               True
+         beta_2_3    1.8776 1.4751  -0.5213   4.1532       0.2052               True
+          beta_4p    2.3759 1.4789  -0.0110   4.7191       0.0991               True
+        theta_pcr   -0.5843 0.5215  -1.4323   0.2793       0.2863               True
+  theta_log_value   -0.2131 0.4106  -0.9131   0.4864       0.6106               True
+theta_pre_permits    0.2344 0.8740  -1.2386   1.6986       0.8068               True
+  theta_hh_growth   -0.3672 0.7917  -1.6713   1.0450       0.6466               True
+              rho   -0.1809 0.1988  -0.5018   0.1626       0.3744              False
+            delta   -2.6930 0.3792  -3.3009  -2.0383       0.0000               True
+        log_sigma    0.7262 0.2297   0.3483   1.1080       0.0010              False
+        log_kappa   -1.2891 2.9677  -5.6162   2.3080       0.8248              False
+          overall    2.2640 1.2266   0.2214   4.2096       0.0581               True
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_pooled_adu.py", line 164, in <module>
+    main()
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_pooled_adu.py", line 160, in main
+    smoke(store) if a.smoke else full(store, a.out)
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/scripts/dev/estimate_pooled_adu.py", line 76, in full
+    obs, p_ri, ri_dist = pa.randomization_inference(panel, permutations=perms, seed=20261020, **kw)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/src/lotline/model/pooled_adu.py", line 559, in randomization_inference
+    out.append(overall_effect(estimate_pooled(p, **design_kw)))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/src/lotline/model/pooled_adu.py", line 478, in estimate_pooled
+    return fit_pooled(build_pooled_design(panel, **design_kw), check=check, max_iter=max_iter)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/src/lotline/model/pooled_adu.py", line 444, in fit_pooled
+    check_pooled(fit)
+  File "/Users/bencappellacci/Engineering/lotline-ws-eng/src/lotline/model/pooled_adu.py", line 450, in check_pooled
+    raise EstimationError("pooled model: BFGS did not converge")
+lotline.model.estimate_adu.EstimationError: pooled model: BFGS did not converge
+uv run python scripts/dev/estimate_pooled_adu.py --full --out   119.93s user 8.77s system 78% cpu 2:43.08 total
+exit 1

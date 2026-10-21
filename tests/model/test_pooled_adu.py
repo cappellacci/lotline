@@ -233,3 +233,170 @@ def test_imputation_robustness_recovers_the_effect_on_a_dense_panel():
     eff = pa.imputation_effects(p)
     for name, b in zip(pa.BAND_NAMES, BETA, strict=True):
         assert eff[name] == pytest.approx(b, abs=0.15)
+
+
+# ---- D-025 convergence rule for repeated refits ----
+
+
+class StubFitter:
+    """Fails on chosen calls (by call number), else returns a fixed fit; records the `start` it got."""
+
+    def __init__(self, fit, fail_calls):
+        self.fit, self.fail_calls, self.calls, self.starts = fit, set(fail_calls), 0, []
+
+    def __call__(self, panel, start=None, **kw):
+        self.calls += 1
+        self.starts.append(start)
+        if self.calls in self.fail_calls:
+            raise EstimationError("stub: did not converge")
+        return self.fit
+
+
+@pytest.fixture(scope="module")
+def small_fit():
+    p = sparse_panel(seed=50, n_places=60, a_mean=-9.5)
+    return p, pa.estimate_pooled(p, modifiers=["m1"])
+
+
+def test_a_refit_that_fails_once_succeeds_on_the_retry_from_the_main_estimates(small_fit):
+    panel, main = small_fit
+    stub = StubFitter(main, fail_calls={1})
+    log = pa.RefitLog("stage")
+    assert pa.refit(panel, main, log, stub) is main
+    assert stub.starts == [None, main]  # the retry starts from the main model
+    assert (log.refits, log.first, log.retried, log.failed) == (1, 0, 1, 0)
+
+
+def test_a_refit_that_fails_twice_is_counted_and_excluded(small_fit):
+    panel, main = small_fit
+    log = pa.RefitLog("stage")
+    assert pa.refit(panel, main, log, StubFitter(main, fail_calls={1, 2})) is None
+    assert (log.refits, log.failed) == (1, 1)
+    assert "0 of 1 refits converged" in log.summary
+
+
+def test_randomization_inference_excludes_isolated_failures_and_reports_the_count(small_fit):
+    """20 permutations, one fails twice: p is computed over 19 and the run carries on."""
+    panel, main = small_fit
+    stub = StubFitter(main, fail_calls={5, 6})  # the 5th refit fails, and its retry too
+    obs, p, dist, log = pa.randomization_inference(panel, 20, main, seed=1, fitter=stub, modifiers=["m1"])
+    assert len(dist) == 19 and log.failed == 1
+    assert log.summary.startswith("randomization inference: 19 of 20 refits converged")
+
+
+def test_a_stage_stops_when_failures_exceed_five_percent(small_fit):
+    """2 of 20 permutations failing (10%) stops the stage with StageFailed."""
+    panel, main = small_fit
+    stub = StubFitter(main, fail_calls={3, 4, 9, 10})
+    with pytest.raises(pa.StageFailed, match="more than 5%"):
+        pa.randomization_inference(panel, 20, main, seed=1, fitter=stub, modifiers=["m1"])
+
+
+def test_a_single_refit_check_is_reported_not_computed_and_the_run_continues(small_fit):
+    panel, main = small_fit
+    out = pa.check_placebo_outcome(
+        panel, main, draws=50, fitter=StubFitter(main, fail_calls={1, 2}), modifiers=["m1"]
+    )
+    assert out["pass"] is None and out["note"].startswith("not computed")
+
+
+def test_start_from_matches_by_name(small_fit):
+    panel, main = small_fit
+    d = pa.build_pooled_design(panel, modifiers=["m1"], leads=(-1,))
+    s = pa.start_from(main, d)
+    assert s[d.names.index("lead_1")] == 0.0
+    assert s[d.names.index("theta_m1")] == pytest.approx(main.value("theta_m1"))
+    assert s[-2] == pytest.approx(main.value("log_sigma"))
+
+
+def test_score_accumulation_matches_the_previous_implementation():
+    """The bincount accumulation equals the earlier np.add.at version to 1e-10 (sums and place scores)."""
+    rng = np.random.default_rng(3)
+    idx = rng.integers(0, 40, 900)
+    M = rng.normal(size=(900, 23))
+    old = np.zeros((40, 23))
+    np.add.at(old, idx, M)
+    assert np.max(np.abs(pa._sum_by(idx, M, 40) - old)) < 1e-10
+    p = sparse_panel(seed=2, a_mean=-9.5)
+    d = pa.build_pooled_design(p, modifiers=["m1"])
+    k = d.X.shape[1]
+    params = np.r_[rng.normal(0, 0.1, k), -0.3, -1.0]
+    params[0] = -9.0
+    _, S_new = pa.place_logliks(params, d, grad=True)
+
+    def old_sum(i, A, G):
+        out = np.zeros((G, A.shape[1]))
+        np.add.at(out, i, A)
+        return out
+
+    saved = pa._sum_by
+    try:
+        pa._sum_by = old_sum
+        _, S_old = pa.place_logliks(params, d, grad=True)
+    finally:
+        pa._sum_by = saved
+    assert np.max(np.abs(S_new - S_old)) < 1e-10
+
+
+def test_transport_guard_is_on_the_predicted_mean_not_single_draws(small_fit):
+    """A wide place-effect distribution (σ = e^0.7 ≈ 2, as estimated) gives long-tailed single draws but a
+    sane mean: no error. Raising the intercept by 12 makes the mean absurd (> 5% of parcels a year): error."""
+    panel, main = small_fit
+    boot = pa.score_bootstrap(main, draws=50, seed=1)
+    target = panel[panel["T"].notna()].groupby("place").head(10)
+    target = target[target["place"] == target["place"].iloc[0]].assign(name="x", y=0)
+    wide = boot.assign(log_sigma=0.7)
+    pa.transport_predict(main, wide, panel, target, draws=300, seed=1)
+    absurd = boot.assign(intercept=boot["intercept"] + 12)
+    with pytest.raises(EstimationError, match="predicted mean"):
+        pa.transport_predict(main, absurd, panel, target, draws=100, seed=1)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# HonestDiD bounds (D-025 note 2026-10-21)
+# ---------------------------------------------------------------------------------------------------------
+
+
+def test_honest_set_by_hand():
+    """θ 0.9, leads (0.1, 0.2, 0.3), ω (0.5, 0.5). RM, M̄ 1: M_pre 0.1, Σω(k+1) = 1.5, bias 0.3 ± 0.15 ->
+    (0.45, 0.75). SD, M 0: slope 0.1, bias 0.3 + 0.1 × 1.5 = 0.45 -> 0.45; M 0.1: ± 0.1 × (0.5·1 + 0.5·3)
+    = ± 0.2."""
+    assert pa.honest_set(0.9, (0.1, 0.2, 0.3), [0.5, 0.5], "rm", 1.0) == pytest.approx((0.45, 0.75))
+    assert pa.honest_set(0.9, (0.1, 0.2, 0.3), [0.5, 0.5], "sd", 0.0) == pytest.approx((0.45, 0.45))
+    assert pa.honest_set(0.9, (0.1, 0.2, 0.3), [0.5, 0.5], "sd", 0.1) == pytest.approx((0.25, 0.65))
+
+
+def test_honest_bounds_recover_the_effect_under_a_known_linear_violation():
+    """True effect 0.5 at every event time; a linear pre-trend δ_k = 0.1 (k + 4) continues after adoption.
+    The naive pooled estimate is biased upward; smoothness with M = 0 recovers 0.5 exactly, and the
+    relative-magnitudes set with M̄ = 1 has 0.5 at its edge (the violation's steps equal the pre-period's)."""
+    omega = np.array([0.3, 0.3, 0.2, 0.1, 0.1])
+    k = np.arange(len(omega))
+    tau, delta = 0.5, lambda kk: 0.1 * (kk + 4)
+    theta = float(omega @ (tau + delta(k)))
+    leads = (delta(-3), delta(-2), delta(-1))
+    assert theta > 0.5 + 0.3
+    sd0 = pa.honest_set(theta, leads, omega, "sd", 0.0)
+    assert sd0 == pytest.approx((0.5, 0.5))
+    lo, hi = pa.honest_set(theta, leads, omega, "rm", 1.0)
+    assert lo == pytest.approx(0.5) and hi > 0.5
+    lo_half, _ = pa.honest_set(theta, leads, omega, "rm", 0.5)
+    assert lo_half > 0.5  # M̄ below the true ratio excludes the truth: the restriction is binding
+    # noisy draws: the robust interval contains the truth and the identified set
+    rng = np.random.default_rng(0)
+    th = theta + 0.05 * rng.standard_normal(999)
+    ld = [tuple(np.array(leads) + 0.02 * rng.standard_normal(3)) for _ in range(999)]
+    tab = pa.honest_bounds(theta, leads, th, ld, omega)
+    row = tab[(tab["restriction"] == "smoothness") & (tab["m"] == 0.0)].iloc[0]
+    assert row["ci_low"] < 0.5 < row["ci_high"]
+    assert (tab["ci_low"] <= tab["set_low"] + 1e-12).all() and (
+        tab["ci_high"] >= tab["set_high"] - 1e-12
+    ).all()
+
+
+def test_honest_bounds_collapse_without_a_pre_trend_and_breakdown_is_found():
+    omega = np.array([0.5, 0.5])
+    assert pa.honest_set(0.8, (0.0, 0.0, 0.0), omega, "rm", 2.0) == pytest.approx((0.8, 0.8))
+    # leads (0, 0, 0.2): M_pre 0.2, Σω(k+1) 1.5; set 0.6 ± 0.3 M̄ includes 0 from M̄ = 2 (no noise)
+    th, ld = np.full(50, 0.8), [(0.0, 0.0, 0.2)] * 50
+    assert pa.rm_breakdown(th, ld, omega) == pytest.approx(2.0)

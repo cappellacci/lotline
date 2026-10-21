@@ -647,3 +647,83 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   interval contained 0 in 87–97% of 70 panels, with a small negative lean (~−0.15, a third of its spread).
 - **Run once;** whatever it shows is reported. No re-specification without a new dated entry.
 - **Decided by:** Ben, 2026-10-20 (options 1 and 2); details written by WS-ENGINE before the run.
+- **The run (2026-10-20, once; log `reports/adu-d025/run-2026-10-20-log.txt`):** the main model converged on
+  the full panel (76 places, 760 place-years, 31 treated, 53 with no ADU in any year; no column dropped, no
+  separated rows, no variance parameter at a bound) and its estimates with bootstrap intervals were printed.
+  The run then **stopped at randomization inference**: one of the 999 refits with permuted adoption years
+  did not converge (BFGS) and the guard raised `EstimationError`, so randomization inference, the five checks,
+  the robustness estimators and the transport test were not computed and no CSV was written. The main-model
+  estimates are reported as they stand, without those checks. Not re-run. Decision needed (new dated entry):
+  how to treat a permutation refit that does not converge (e.g. count and report failed permutations and
+  compute the p-value over the rest, or restart BFGS from the main estimate), then run the remaining stages
+  once.
+- **Convergence rule for repeated refits (Ben, 2026-10-20; written before the remaining stages are run):**
+  in any stage that refits the model many times (randomization inference, the wild bootstrap, leave-one-out
+  and the checks), a refit that does not converge is retried once, starting from the main-model estimates;
+  if it still fails it is excluded and counted, and results are reported over the rest ("998 of 999
+  converged; p over 998"). Isolated failures never stop the run. A stage stops, and is reported as not
+  computed, only if failures exceed 5% of its refits; a stage that is a single refit (a check, the binary
+  dose) is reported as not computed if it fails after the retry, and the run continues. Wild-bootstrap draws
+  are one Newton step, not refits: a draw beyond the coefficient bound is excluded and counted the same way.
+  The remaining stages (randomization inference, the five checks, robustness, transport) are then run once,
+  reusing the main model as estimated: its fit is recomputed deterministically only to recover the Hessian
+  and place scores, and checked to match the logged estimates.
+- **Remaining stages run (2026-10-20, once; log `reports/adu-d025/remaining-2026-10-20-log.txt`, 5 h 07 min):**
+  the main model was recomputed and matched all 22 logged estimates to 1e-4 (reused, unchanged); its wild
+  bootstrap kept 999 of 999 draws. **Randomization inference: 928 of 999 permutation refits converged (84 on
+  the retry from the main estimates, 71 excluded = 7.1%), above the 5% limit, so the stage is not computed.**
+  A defect in the run script then stopped the whole run instead of only that stage (the stage failure was not
+  caught), so the five checks, the robustness estimators and the transport test were not run. Fixed in code
+  (the script now records a failed stage and continues; randomization inference stops as soon as its 5%
+  limit is broken) but **not re-run**: running the checks, robustness and transport needs Ben's go-ahead.
+  Reading: about 1 in 14 permuted adoption-date panels does not converge even after a retry.
+- **Checks, robustness and transport run (2026-10-21, once; log `reports/adu-d025/stages-2026-10-21-log.txt`;
+  Ben approved; refits sped up first by an identical score accumulation, 7442d47):** main model reused
+  (matched all 22 logged estimates; bootstrap 999/999 kept). Randomization inference not re-attempted: **not
+  computed: 71 of 999 (7.1%) failed, above the 5% limit**. Checks against D-023's pass rules:
+  1. pre-trend leads: Wald 5.94, **p = 0.025 → fails** (the D-023 rule calls for HonestDiD bounds);
+  2. placebo dates (−2 years): **not computed** (the refit did not converge after a retry);
+  3. placebo outcome (5+ units): 0.48 (−0.62 to 1.64) → passes;
+  4. excluding 2020–21: overall 2.91, every band and the overall effect inside the main intervals → passes
+     (the refit converged on the retry);
+  5. leave one treated place out: 31 of 31 refits converged (3 on retry); no place moves the overall effect
+     outside its interval → passes.
+  Robustness: fixed-effects PPML (193 rows kept; two modifiers collinear with fixed effects): bands −0.16,
+  −0.59, −0.39 with SEs ≈ 2.4 (uninformative); Borusyak imputation: only 7 treated place-years imputable
+  (162 not: their places have no permits before adoption): bands −0.52 (−1.71 to 0.68), −1.55 (−3.09 to
+  −0.35), 4+ not estimable, overall −0.94 (−2.25 to 0.30); binary dose: overall 1.50 (0.33 to 2.67), bands
+  1.48, 1.23, 1.61. **The robustness estimators do not support the main estimate's size, and the imputation
+  estimate has the opposite sign on very few rows.** Transport: **not computed**: the code checked single
+  predictive draws against the 5% limit, while this entry specifies the predicted mean; with σ ≈ 2.1 Austin's
+  draws (no pre-adoption years, so u from the prior) exceeded it. Fixed to check the mean, with a test, and a
+  transport failure now records the stage instead of stopping the run; **not re-run** pending Ben.
+- **Transport re-run (2026-10-21, once, Ben approved; log `reports/adu-d025/transport-2026-10-21-log.txt`):**
+  transport only, with the guard on the predicted mean; main model reused (matched all 22 logged estimates).
+  **Fails the D-023 rule:** totals inside their 80% intervals: Austin no (observed 2,545 vs P10–P90 0–279),
+  Raleigh no (230 vs 0–49), Durham yes (269 vs 9–272); yearly coverage 15% (rule 60–95%). No place is outside
+  the Minnesota modifier range. Austin has no pre-adoption years in its window (adopted 2010), so its effect is
+  drawn from the prior; in Raleigh (2022 on) and Durham (2020 on) the missing-middle term δ = −2.69, identified
+  from Minneapolis alone, pushes predictions far below what was observed.
+- **HonestDiD bounds: choices fixed before running (2026-10-21, WS-ENGINE; Ben asked for them because the
+  pre-trend test failed, as D-023 pre-registers; Rambachan & Roth 2023):**
+  - *Event study input:* the pre-trend-leads refit (the one check 1 used): the lead coefficients for event
+    times k = −3, −2, −1 are the pre-period coefficients, relative to the omitted periods (k ≤ −4 and the
+    never-treated). That reference, not k = −1, is normalised to 0, so the restrictions chain from
+    δ_{−4} = 0 through the estimated δ_{−3}, δ_{−2}, δ_{−1}.
+  - *Target:* the pooled post-adoption effect at realised doses, θ = the mean over treated place-years with
+    k ≥ 0 of β_band(k) × dose_it (same bands, weights by place-years). The bias for that target is
+    Σ_k ω_k δ_k, where ω_k is the share of those place-years at event time k (k = 0 … the panel's largest),
+    since the leads are indicators, not dose-scaled.
+  - *Relative magnitudes, Δ^RM(M̄):* every post-period step |δ_k − δ_{k−1}| ≤ M̄ × M_pre, with
+    M_pre = max(|δ_{−3}|, |δ_{−2} − δ_{−3}|, |δ_{−1} − δ_{−2}|). The bias is in δ_{−1} ± M̄ M_pre Σ_k ω_k (k + 1)
+    (ω ≥ 0, so the extreme is every step at the bound). M̄ ∈ {0.5, 1, 1.5, 2}.
+  - *Smoothness, Δ^SD(M):* post-period second differences at most M, extrapolating the last pre-period slope
+    s = δ_{−1} − δ_{−2}. The bias is in Σ_k ω_k [δ_{−1} + (k + 1) s] ± M Σ_k ω_k (k + 1)(k + 2) / 2.
+    M ∈ {0, 0.05, 0.1, 0.2} (log points per year²; M = 0 is linear extrapolation).
+  - *Inference:* the identified set's bounds are recomputed on each of the leads refit's 999 bootstrap draws
+    (θ, δ and M_pre all re-drawn). The 90% robust interval runs from the 5th percentile of the lower bound to
+    the 95th percentile of the upper bound. This is simpler than Rambachan & Roth's conditional (ARP) and
+    FLCI intervals, and conservative.
+  - *Reported:* identified set and robust interval for each M̄ and M, the breakdown M̄ (the smallest at which the
+    interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
+  - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
