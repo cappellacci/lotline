@@ -724,6 +724,116 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Every treated place has all four modifiers. ADU rules are coded for 102 of the 560 places.
 - **Decided by:** Ben, 2026-10-20, as proposed (including the `mm.yaml` choices: the 10,000-person floor and
   the 1/3 permit grade), before any estimate was run.
+- **Run (2026-10-20, WS-ENGINE-MM; `scripts/dev/estimate_mm.py --full`, outputs in `reports/mm-d024/`):**
+  - **First run aborted (17:06):**
+    - PPML diverged (|η − offset| = 119.9), so the pre-specified fallback fired.
+    - The script's fallback was a Poisson-gamma place random-effects model (Hausman, Hall & Griliches 1984),
+      written in `estimate_mm.fit_re`. Its main estimates and added homes were printed.
+    - Randomization inference then crashed: a reassignment's fit raised a plain `ValueError` that the loop did
+      not catch. Nothing was written. The log is committed as is: `aborted-2026-10-20-log.txt`.
+  - **Fix (mechanical, independent of the results) and one rerun (20:35, Ben: "try again"):**
+    - divergence and overflow in `fit_re` raise `EstimationError`;
+    - Newton steps are safeguarded: damped when not uphill, and never accepted if they lower the likelihood;
+    - log a is held at a bound of 15 when the counts show no place heterogeneity;
+    - randomization inference and every check count a failed fit instead of crashing.
+    - Same specification and seed. The main fit is deterministic, and its estimates match the aborted run's
+      exactly.
+  - **The fallback is not "D-025's estimator", which D-024 names.** D-025 (`pooled_adu`) was on main from
+    16:30, before both runs. The rerun kept the 17:06 fallback, as instructed. D-025's estimator was run as a
+    robustness model, through `estimate_mm.fit_nb` with its code unchanged: on the D-024 panel relabelled so
+    that its year effects are D-024's state × year effects and its δ is D-024's ADU term.
+    - It converged on the real panel. At its maximum the analytic and numerical scores agree, and no place's
+      likelihood jumps.
+    - Its mode search can fail on synthetic panels with many never-permitting places (shared notes,
+      2026-10-20), but not on this one.
+    - **Ben to decide** whether D-025's estimate (below) replaces the fallback's as D-024's main estimate.
+      That would follow D-024's wording; the checks would then need running for it.
+  - **Implementation choices:**
+    - state × year effects as one integer code per state and year;
+    - randomization inference: each treated place's whole package moves (adoption year, calendar-year dose
+      path, modifiers), within state and size band, to places with any 2–4 unit home;
+    - the overall effect weights the bins by counterfactual expected homes (`estimate_adu.aggregate`, as in
+      D-023);
+    - added homes = fitted minus treatment-off means; their intervals hold place and year effects at the
+      estimate;
+    - check 7b dropped 16 Minnesota comparison places by name;
+    - check 8 re-fits with a city's local counts when they differ from BPS by more than 25%.
+  - **Main estimates (Poisson-gamma fallback; log scale; 90% basic bootstrap intervals):**
+    - overall **0.77 (0.07 to 1.54)**, i.e. about 2.2 times the 2–4 unit homes at full dose;
+    - years 0–1: 0.79 (0.20 to 1.38); 2–3: 1.14 (−0.62 to 2.91); 4+: −0.13 (−2.40 to 1.89);
+    - price-to-cost: θ = 0.91 (0.05 to 1.78) per SD; home value: θ = −1.00 (−1.61 to −0.41) per SD;
+      rate: ρ = 0.11 (−0.14 to 0.36); ADU rule: δ = −0.53 (−1.09 to 0.08).
+    - Read the intervals as narrower than stated. On simulated panels with seven treated places, nominal 90%
+      intervals covered 68–85% (`--coverage`).
+  - **Randomization inference: p = 0.70** (956 reassignments, 43 not fitted). The effect is no larger than
+    where the reform's timing and dose are moved to other places.
+  - **Added 2–4 unit homes in the treated places' post-adoption years: 2,650 in all.**
+    - **Houston alone accounts for 2,422 (1,426 to 3,188), about 91%.** It is the only full-dose place,
+      has no zoning, and its deed restrictions bind (flagged by the methodology review).
+    - The others: Durham city 150 (6 to 236), Raleigh 119 (−16 to 189), Minneapolis 93 (−109 to 201),
+      Durham County 6, Cincinnati −8, Austin −131 (−286 to −12).
+  - **Checks:**
+    1. Leads: **pass** (p = 0.59).
+    2. Placebo dates: **fail**, 0.54 (0.03 to 1.00).
+    3. Placebo outcome (5+ units): **fail**, −1.11 (−1.53 to −0.54).
+    4. Substitution (1-unit homes): 0.00 (−0.38 to 0.39).
+    5. Excluding 2020–21: **pass**.
+    6. Leave one out: **fail**. Without Minneapolis the overall effect is −0.02; the others give 0.56–1.34.
+       D-024's rule asks for the NB pooled estimate alongside, and D-025's NB is the robustness line below.
+    7. Contamination: 50,000+ only, **pass** (0.94); without the 16 pipeline-flagged places, **pass** (0.74).
+    8. Local measurement: Met Council and Minneapolis agree with BPS (ratio 1.00); Raleigh too (0.98). The
+       Minneapolis city source is 1.63× and Durham's 1.59×; re-fits with their local counts give 0.03 (−0.46
+       to 0.65) and 0.51 (−0.27 to 1.39).
+  - **Robustness:**
+    - PPML: did not estimate (the same divergence).
+    - Imputation estimator: did not estimate (its PPML diverged: |η − offset| = 124.4).
+    - **D-025's negative binomial: −0.25 (−1.10 to 0.77)**; bins 0.07, −1.29, −1.85. Its place-year
+      overdispersion is large (κ ≈ 5.5, σ ≈ 2.4). The Poisson-gamma model has none beyond the place effect,
+      so it weights large-count place-years such as Houston's far more.
+    - Binary dose: 0.69 (0.30 to 1.13).
+    - All four modifiers: 1.35 (0.34 to 2.45).
+    - Met Council, Twin Cities alone: −0.79 (−3.02 to 1.82).
+  - **Out-of-sample tests:**
+    - **A (North Carolina): fail.** Durham city 279 observed vs 80% interval 35–283 (inside); Raleigh 263
+      vs 90–378 (inside); Durham County 12 vs 0–7 (outside). Yearly coverage 75%.
+    - **B (Minneapolis): fail.** 304 observed vs 63–290; yearly coverage 67%.
+    - D-024's rule (every total inside its 80% interval) passes only about half the time for three places
+      even when the model is right (0.8³ ≈ 0.51). This is noted, not changed.
+  - **Reading:** this run gives no credible estimate of the missing-middle effect.
+    - The central estimate is positive, but randomization inference finds nothing unusual (p = 0.70).
+    - Two placebo checks fail, one city drives the result, and D-025's model, which fits overdispersion
+      better, gives a negative estimate with an interval spanning 0.
+    - Both out-of-sample tests fail, and Houston supplies nine-tenths of the added homes.
+    - The scenario should not take this as its missing-middle evidence prong without a new dated entry.
+  - **Open:** WS-MN has not yet coded St. Louis Park's 2025 rule or the explicit "no" rows; check 7b covers
+    that gap.
+- **Switch to D-025's estimator (2026-10-21, Ben; written before the run of its checks):**
+  - **Why:** D-024 names "D-025's estimator if approved" as the fallback. D-025 was approved and on main
+    (16:30, 2026-10-20) before both runs, and its estimator converges on the real panel. The 2026-10-20 runs
+    used the Poisson-gamma model instead.
+  - **Decision:** D-024's main estimate is now D-025's negative binomial with normal place random effects
+    (`pooled_adu`, unchanged, through `estimate_mm.fit_nb`). The Poisson-gamma run stays reported as the
+    comparison. Its point estimate on the real panel is already known from the 2026-10-20 robustness line:
+    −0.25 (−1.10 to 0.77).
+  - **One run (Ben approves exactly one):** the same `--full` pipeline, spec and seed, with `nb` as the main
+    model (`--method nb`). It covers:
+    - the wild score bootstrap (999 draws) and added homes;
+    - randomization inference (999 reassignments);
+    - checks 1–8, where leave-one-out covers Minneapolis and Houston dependence (each treated place left out,
+      plus Durham city and county together);
+    - robustness: PPML, Poisson-gamma, binary dose, four modifiers, Met Council alone;
+    - out-of-sample tests A and B with the same pass rules.
+  - **Convergence rule (fixed now):**
+    - A fit that raises `EstimationError` is not used: BFGS did not converge, the Hessian was not negative
+      definite, a coefficient left ±20, or an SE was effectively 0.
+    - For randomization inference, failed reassignments are skipped and counted. p is the share of the
+      fitted reassignments with |overall effect| ≥ the observed one.
+    - **If more than 10% of reassignments fail, p is reported as unreliable,** because failures may not be
+      random.
+    - A check whose fit fails is reported as "could not be estimated", which counts as a fail.
+  - **The overall effect** weights the bins by counterfactual expected homes (as for the fallback), so the
+    two models compare like with like. D-025's own place-year weighting is not used here.
+  - Outputs go to `reports/mm-d024-nb/`, next to the fallback's `reports/mm-d024/`.
 
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
