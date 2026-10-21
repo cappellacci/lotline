@@ -19,4 +19,4 @@ reports/**/*.parquet
 rules and resources/
 # Local judging-panel runs (/judge); not part of the submission
 reports/judging/
-reports/adu-d0*/panel.csv
+reports/adu-d0*/**/panel.csv

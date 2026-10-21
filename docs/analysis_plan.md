@@ -824,3 +824,36 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     fixed above) once it is on `ws/engine-17-d025-results`; pending if it is not there when the refit ends.
     No separate implementation.
   - *Logs:* `reports/adu-d025/corrected-2026-10-21-log.txt`, CSVs in `reports/adu-d025/corrected-2026-10-21/`.
+- **Corrected-growth refit (2026-10-21, once; log `reports/adu-d025/corrected-2026-10-21-log.txt`, CSVs in
+  `reports/adu-d025/corrected-2026-10-21/`; 2 h 15 min):** household growth became missing for 5 places
+  (Eagan 2014, Hugo 2012, Lakeville 2013, Minneapolis 2015, Richfield 2015). Every stage was computed.
+
+  | | As-run main (2026-10-20) | Corrected main |
+  |---|---|---|
+  | θ_hh_growth (per SD) | −0.37 (−1.67 to 1.05) | 0.17 (−1.63 to 2.08) |
+  | Band 0–1 | 2.32 (0.61 to 3.93) | 2.36 (0.56 to 4.00) |
+  | Band 2–3 | 1.88 (−0.52 to 4.15) | 1.97 (−0.60 to 4.36) |
+  | Band 4+ | 2.38 (−0.01 to 4.72) | 2.53 (−0.15 to 5.11) |
+  | Overall | 2.26 (0.22 to 4.21) | 2.37 (0.12 to 4.51) |
+  | Randomization inference | not computed (7.1% of refits failed, T-only permutation) | p = 0.111 over 970 of 999 (2.9% failed; dose paths moved) |
+  | Pre-trend leads (pass p ≥ 0.10) | p = 0.025, fails | p = 0.052, fails |
+  | Placebo dates | not computed | not computed |
+  | Placebo outcome | 0.48 (−0.62 to 1.64), passes | 0.69 (−0.50 to 1.86), passes |
+  | Excluding 2020–21 | passes | passes (3.18) |
+  | Leave one out | passes | passes |
+  | Transport (WS-ENGINE's as-run re-run vs this run) | 1 of 3 totals inside, yearly 15%: fails | 1 of 3 totals inside (Durham), yearly 15%: fails |
+
+  The other estimates were close to the as-run ones (bands within 0.15, θ for price-to-cost −0.65 vs −0.58,
+  δ −2.75 vs −2.69). Robustness on the corrected panel: fixed-effects PPML −0.16 / −0.59 / −0.39 (SEs ≈ 2.4);
+  log-scale imputation overall −0.94 (−2.25 to 0.30) on 7 imputable rows; binary dose 1.57 (0.41 to 2.71);
+  D-031 additive imputation **not estimable** (2 contributing treated places: 9 treated in or before 2016,
+  22 with no ADU before adoption). D-031 (c) sensitivity runs, each inside the main 90% interval: excluding
+  the 7 places treated before 2016, 2.92 (1.14 to 4.62); T at the announcement year (11 places re-dated),
+  2.99 (1.13 to 4.98); parking and process controls, 3.01 (1.37 to 4.70).
+  **Reading, by the rule fixed in the plan:** household growth **does not matter for this test**. The
+  overall effect moves by 0.11, under the 0.5 threshold; its interval still excludes 0; the transport
+  verdict is unchanged. θ_hh_growth is uninformative either way (intervals ±1.5 around 0). The randomization
+  inference that now computes cannot be credited to household growth: this run also moved dose paths (D-031
+  (a)), and refit failures fell from 7.1% to 2.9%. Its p = 0.111 means the overall effect is not
+  distinguishable at 10% from effects produced by reshuffled adoption years. HonestDiD bounds for the
+  corrected main are **pending** WS-ENGINE's `honest_bounds`.
