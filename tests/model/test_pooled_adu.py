@@ -350,3 +350,86 @@ def test_transport_guard_is_on_the_predicted_mean_not_single_draws(small_fit):
     absurd = boot.assign(intercept=boot["intercept"] + 12)
     with pytest.raises(EstimationError, match="predicted mean"):
         pa.transport_predict(main, absurd, panel, target, draws=100, seed=1)
+
+
+# ---- D-031 ports to the D-025 path ----
+
+
+class RecordingFitter(StubFitter):
+    """Never fails; records the panels and design keywords it was asked to fit."""
+
+    def __init__(self, fit):
+        super().__init__(fit, set())
+        self.panels, self.kws = [], []
+
+    def __call__(self, panel, start=None, **kw):
+        self.panels.append(panel)
+        self.kws.append(kw)
+        return super().__call__(panel, start, **kw)
+
+
+def _with_rule_history(panel):
+    """Treated places: a permit rule (dose 1/3) in the two years before T, by right (1) from T, 0 before."""
+    k = panel["year"] - panel["T"]
+    dose = np.where(k >= 0, 1.0, np.where(k >= -2, 1 / 3, 0.0))
+    return panel.assign(dose=np.where(panel["T"].notna(), dose, 0.0))
+
+
+def test_randomization_inference_moves_the_dose_path_with_adoption(small_fit):
+    """D-031 (a): in every permuted panel each treated place's dose is 1 from its new T on and 1/3 in the two
+    years before; the D-025 code moved T only, leaving the dose where the old adoption year put it."""
+    panel, main = small_fit
+    panel = _with_rule_history(panel)
+    rec = RecordingFitter(main)
+    pa.randomization_inference(panel, 10, main, seed=2, fitter=rec, modifiers=["m1"])
+    assert len(rec.panels) == 10
+    changed = 0
+    for p in rec.panels:
+        t = p[p["T"].notna()]
+        k = t["year"] - t["T"]
+        assert (t.loc[k >= 0, "dose"] == 1.0).all()
+        inside = (k < 0) & (k >= -2) & (t["year"] >= YEARS.min())
+        assert t.loc[inside, "dose"].to_numpy() == pytest.approx(1 / 3)
+        changed += int((p["T"] != panel["T"]).any())
+    assert changed >= 8  # the permutations really move adoption years
+
+
+def test_controls_enter_the_design_unscaled():
+    panel = sparse_panel(seed=3, n_places=40, a_mean=-9.5)
+    panel["parking"] = (panel["year"] >= 2020).astype(float) * (panel["place"] < "P020")
+    d = pa.build_pooled_design(panel, controls=["parking"])
+    j = d.names.index("control_parking")
+    assert d.X[:, j] == pytest.approx(panel["parking"].to_numpy())
+    zero = pa.build_pooled_design(panel.assign(process=0.0), controls=["process"])
+    assert "control_process (no non-zero value)" in zero.dropped
+
+
+def test_sensitivity_runs_build_the_declared_panels(small_fit):
+    """D-031 (c): (1) places treated before the panel are dropped; (2) T moves to the announcement year with
+    the dose path; (3) parking and process enter as controls. Each run is reported beside the main
+    estimate."""
+    panel, main = small_fit
+    panel = _with_rule_history(panel)
+    treated = panel.loc[panel["T"].notna(), "place"].unique()
+    early = treated[0]
+    panel.loc[panel["place"] == early, "T"] = 2012.0
+    ann = treated[1]
+    T_ann = float(panel.loc[panel["place"] == ann, "T"].iloc[0]) - 1
+    panel["T_announce"] = np.where(panel["place"] == ann, T_ann, np.nan)
+    panel["parking"] = 0.0
+    panel["process"] = 0.0
+    boot = pa.score_bootstrap(main, draws=50, seed=1)
+    main_summary = pa.summarize_main(main, boot)
+    rec = RecordingFitter(main)
+    out = pa.sensitivity_runs(panel, main, main_summary, draws=50, fitter=rec, modifiers=["m1"])
+    assert [o["check"].split(" (")[0] for o in out] == [
+        "excluding places treated before the panel",
+        "T at the announcement year",
+        "parking and process controls",
+    ]
+    assert early not in set(rec.panels[0]["place"])
+    re = rec.panels[1]
+    r = re[re["place"] == ann]
+    assert (r["T"] == T_ann).all() and (r.loc[r["year"] == T_ann, "dose"] == 1.0).all()
+    assert rec.kws[2]["controls"] == ["parking", "process"]
+    assert all("inside_main" in o for o in out)

@@ -1,10 +1,10 @@
-"""ADU effect estimators (model/estimate_adu.py). Synthetic data only.
+"""ADU estimators in model/estimate_adu.py. Synthetic data only.
 
-- D-023 extended TWFE PPML (now the robustness estimator): PPML by hand, recovery of known effects, a common
-  shock, separation and numerical guards.
-- D-026 imputation (primary): hand-worked examples, the four regimes that broke D-023 (each shown failing
-  under D-023 and passing under D-026), randomization inference with the dose path moved, controls, checks,
-  transport, and the household-growth and post-panel year-effect fixes."""
+- D-023 extended TWFE PPML (superseded by D-025): PPML by hand, recovery of known effects, a common shock,
+  separation and numerical guards.
+- D-031 additive imputation (robustness to D-025): hand-worked examples, the four regimes that broke D-023
+  (each shown failing under D-023 and passing under D-031), the replaced-rule and parking controls, and the
+  household-growth fix."""
 
 import math
 
@@ -159,6 +159,15 @@ def test_aggregate_weights_cells_by_counterfactual_permits():
     assert agg["beta_0"] == pytest.approx((0.2 * wts[0] + 0.6 * wts[1]) / wts.sum())
 
 
+def test_randomization_inference_finds_a_real_effect_and_not_a_null_one():
+    real = simulate(seed=5, n_places=60)
+    att, p, _ = est.randomization_inference(real, permutations=39, seed=5, modifiers=[], use_mm=False)
+    assert att > 0.5 and p <= 0.1
+    null = simulate(seed=6, n_places=60, beta=(0, 0, 0, 0, 0, 0), theta=0, rho=0, delta=0)
+    att0, p0, _ = est.randomization_inference(null, permutations=39, seed=6, modifiers=[], use_mm=False)
+    assert p0 > 0.1
+
+
 def test_pre_trend_leads_test_has_the_right_size():
     """With no anticipation the joint lead test (k = −3…−1) rejects at the 10% level in at most 5 of 20
     panels (expected 2; on 150 panels during development it rejected 11-12%)."""
@@ -193,6 +202,49 @@ def test_rule_dose_by_hand():
     assert est.rule_dose({"adus_per_lot": 0}, 1.0, fp, (1 / 3, 2 / 3, 1.0)) == (0.0, 0.0)
     owner = est.rule_dose({"by_right": True, "owner_occ": True}, 1.0, fp, (1 / 3, 2 / 3, 1.0))
     assert owner == pytest.approx((2 / 3, 1.0))
+
+
+def _with_placebo(panel, seed, effect=0.0):
+    """Add a 5+ unit outcome unrelated to ADU rules (or with a fake `effect` after adoption)."""
+    rng = np.random.default_rng(seed)
+    e = panel["year"] - panel["T"]
+    lvl = panel.groupby("place")["eligible"].transform("first") * 0.0005
+    mu = lvl * np.exp(np.where(e >= 0, effect, 0.0))
+    return panel.assign(units_5p=rng.poisson(mu))
+
+
+def test_checks_pass_on_a_clean_simulation():
+    panel = _with_placebo(simulate(seed=11), 11)
+    kw = {"modifiers": ["m1"]}
+    main = est.summarize(est.estimate(panel, **kw), est.score_bootstrap(est.estimate(panel, **kw), 199, 11))
+    assert est.check_leads(panel, draws=199, seed=11, **kw)["pass"]
+    assert est.check_placebo_dates(panel, draws=199, seed=11, **kw)["pass"]
+    assert est.check_placebo_outcome(panel, draws=199, seed=11, **kw)["pass"]
+    assert est.check_excluding(panel, main, draws=199, seed=11, **kw)["pass"]
+    assert est.check_leave_one_out(panel, main, **kw)["pass"]
+
+
+def test_placebo_outcome_check_fails_when_the_placebo_responds():
+    panel = _with_placebo(simulate(seed=12), 12, effect=0.5)
+    assert not est.check_placebo_outcome(panel, draws=199, seed=12, modifiers=["m1"])["pass"]
+
+
+def test_transport_predictions_cover_held_out_places_from_the_same_process():
+    """Fit on 115 simulated places, predict 15 held-out treated places with their own modifiers: the D-023
+    pass rule holds (totals inside their 80% intervals, yearly coverage of the 80% intervals 60-95%)."""
+    panel = simulate(seed=13, n_places=130)
+    treated = panel.loc[panel["T"].notna(), "place"].unique()
+    held = set(treated[:15])
+    fit_panel = panel[~panel["place"].isin(held)]
+    target = panel[panel["place"].isin(held)].assign(name=lambda d: d["place"])
+    e = est.estimate(fit_panel, modifiers=["m1"])
+    boot = est.score_bootstrap(e, draws=199, seed=13)
+    pred = est.transport_predict(e, boot, target, draws=400, seed=13)
+    verdict = est.transport_verdict(pred)
+    # over 8 seeds in development: totals inside 90% intervals 91%, inside 80% intervals 88%, yearly 80% 82%
+    assert verdict["yearly_coverage_80"] >= 0.6
+    tot = pred[pred["year"] == "total"]
+    assert ((tot["observed"] >= tot["p05"]) & (tot["observed"] <= tot["p95"])).mean() >= 0.8
 
 
 # ---- Separation and numerical guards (D-023 rerun fix) ----
@@ -254,15 +306,22 @@ def test_diagnostics_fail_loudly():
     with pytest.raises(est.EstimationError, match="standard errors effectively zero"):
         X = np.array([[0], [0], [0], [1]], float)
         est.ppml([2, 4, 3, 12], X, np.zeros(4), ["A", "A", "B", "B"], [1, 2, 1, 2], ["beta"])
+    fit = est.estimate(panel, modifiers=["m1"])
+    boot = est.score_bootstrap(fit, draws=50, seed=22).assign(
+        beta_0=15.0, beta_1=15.0, beta_2=15.0, beta_3=15.0, beta_4=15.0, beta_5=15.0
+    )
+    target = panel[panel["T"].notna()].head(10).assign(name="X")
+    with pytest.raises(est.EstimationError, match="beyond"):
+        est.transport_predict(fit, boot, target, draws=20, seed=1)
 
 
 # =========================================================================================================
-# D-026: imputation on the additive scale
+# D-031: imputation on the additive scale (robustness to D-025)
 # =========================================================================================================
 
 
-def simulate_d026(seed=0, treated=(), n_never=20, alpha_never=-8.0, effect=None, trend=0.06, dose_pre=0.0):
-    """A panel for D-026: `treated` is a list of (T, α) per treated place (T may be before 2016); untreated
+def simulate_d031(seed=0, treated=(), n_never=20, alpha_never=-8.0, effect=None, trend=0.06, dose_pre=0.0):
+    """A panel for D-031: `treated` is a list of (T, α) per treated place (T may be before 2016); untreated
     counts are Poisson(Eligible · exp(α + γ_t)), treated ones multiplied by exp(effect(k)). Keeps the true
     means (mu0_true, mu) so the true additive ATT on any set of rows is known. The dose is 1 from T and
     `dose_pre` (a permit rule) in the two years before T."""
@@ -325,7 +384,7 @@ def test_impute_by_hand():
     assert r.rows.loc[3, "mu0"] == pytest.approx(6.0)
     assert r.att["att"] == pytest.approx(3.0) and r.att["ratio"] == pytest.approx(0.5)
     assert r.att["att_k0_1"] == pytest.approx(3.0) and np.isnan(r.att["att_k2_3"])
-    assert not r.estimable  # one contributing place is below the D-026 floor of 3
+    assert not r.estimable  # one contributing place is below the D-031 floor of 3
 
 
 def test_replaced_rule_dose_by_hand():
@@ -353,18 +412,18 @@ def test_shift_dose_path_by_hand():
     assert est.shift_dose_path(years, dose, 2019, 2017) == pytest.approx([1 / 3, 1, 1, 1, 1, 1])
 
 
-# ---- The four regimes that broke D-023 (review 2026-10-20): each fails under D-023, passes under D-026 ----
+# ---- The four regimes that broke D-023 (review 2026-10-20): each fails under D-023, passes under D-031 ----
 
 
 def test_regime_zero_pre_periods():
     """Six treated places (cohorts 2021-22) have no ADU before adoption and a log-50 effect; six others
     (2019-20) have permits before. D-023 drops the zero places' pre-years as separated and their cells add
-    near-zero contrasts, so its overall log effect lands far below log 50. D-026 excludes them (listed, with
+    near-zero contrasts, so its overall log effect lands far below log 50. D-031 excludes them (listed, with
     an upper bound over all treated places that counts their permits as additional) and recovers the
     additive ATT on the rest within 10%."""
     for seed in range(3):
         treated = [(2019, -8.5)] * 3 + [(2020, -8.5)] * 3 + [(2021, -12.5)] * 3 + [(2022, -12.5)] * 3
-        panel = simulate_d026(seed, treated, effect=lambda k: math.log(50))
+        panel = simulate_d031(seed, treated, effect=lambda k: math.log(50))
         zero = panel["place"].isin(panel.loc[panel["T"] >= 2021, "place"]) & (panel["year"] < panel["T"])
         panel.loc[zero, "y"] = 0
         assert d023_att(panel) < math.log(50) - 0.5  # D-023 fails
@@ -385,12 +444,12 @@ def test_regime_zero_pre_periods():
 def test_regime_2016_cohort():
     """Four places adopt in 2016, the panel's first year, with an effect that ramps up. D-023 keeps their
     cells, which only have a contrast against one another, and their paths pull the year effects up: its
-    overall effect is near zero against a true log effect near 0.9. D-026 excludes the 2016 cohort and
+    overall effect is near zero against a true log effect near 0.9. D-031 excludes the 2016 cohort and
     recovers the additive ATT (mean error over 5 panels within 15% of the truth)."""
     errs, truths = [], []
     for seed in range(5):
         treated = [(2016, -8)] * 4 + [(2019, -8)] * 3 + [(2021, -8)] * 3
-        panel = simulate_d026(seed, treated, effect=lambda k: 0.3 + 0.2 * min(k, 5))
+        panel = simulate_d031(seed, treated, effect=lambda k: 0.3 + 0.2 * min(k, 5))
         r = est.impute(panel)
         truth, log_truth = true_att(r, panel)
         assert d023_att(panel) < log_truth - 0.5  # D-023 fails
@@ -405,11 +464,11 @@ def test_regime_pre_panel_adopters_whose_effect_keeps_growing():
     """Six places adopted in 2008-10 and their effect keeps growing past k = 5 (0.15 a year). Under D-023 the
     pooled 5+ cell is constant within place, so it is absorbed by the place effect and the growth loads onto
     the year effects: already-treated places act as controls and the in-panel effect is read as ~0.
-    D-026 excludes them and recovers the additive ATT (mean error over 5 panels within 15%)."""
+    D-031 excludes them and recovers the additive ATT (mean error over 5 panels within 15%)."""
     errs, truths = [], []
     for seed in range(5):
         treated = [(2008, -8)] * 3 + [(2010, -8)] * 3 + [(2019, -8)] * 3 + [(2021, -8)] * 3
-        panel = simulate_d026(seed, treated, effect=lambda k: 0.15 * k)
+        panel = simulate_d031(seed, treated, effect=lambda k: 0.15 * k)
         r = est.impute(panel)
         truth, log_truth = true_att(r, panel)
         assert d023_att(panel) < log_truth - 0.25  # D-023 fails
@@ -422,15 +481,15 @@ def test_regime_pre_panel_adopters_whose_effect_keeps_growing():
 def test_regime_singleton_cohorts():
     """Six treated places, each its own cohort (2017-22), and a doubling of permits. Under D-023 the modifier
     term θ is collinear with the cohort cells (dropped), and the CR2 score-bootstrap 90% interval of the
-    overall effect covers the truth in under 70% of panels (37% over 30 panels in development). D-026 has no
+    overall effect covers the truth in under 70% of panels (37% over 30 panels in development). D-031 has no
     θ, its ATT is unbiased (mean error well inside the spread) and its place-bootstrap interval covers more
-    often (77% over 30 panels in development; still below 90%, which is why D-026 makes randomization
+    often (77% over 30 panels in development; still below 90%, which is why D-031 makes randomization
     inference primary)."""
     old_cover = new_cover = 0
     errs = []
     n = 12
     for seed in range(1000, 1000 + n):
-        panel = simulate_d026(seed, [(T, -8.0) for T in range(2017, 2023)])
+        panel = simulate_d031(seed, [(T, -8.0) for T in range(2017, 2023)])
         panel["m1"] = np.random.default_rng(seed).normal(size=len(panel))
         panel["m1"] = panel.groupby("place")["m1"].transform("first")
         old = est.estimate(panel, modifiers=["m1"], use_rate=False, use_mm=False)
@@ -450,56 +509,7 @@ def test_regime_singleton_cohorts():
     assert abs(e.mean()) < 2 * e.std(ddof=1) / np.sqrt(n) + 0.02
 
 
-# ---- Randomization inference (D-026 primary): the dose path moves with T (D-023 defect 6) ----
-
-
-def test_randomization_inference_moves_the_dose_path_with_adoption():
-    """Every treated place has a permit rule (dose 1/3) in the two years before T and a by-right rule (1) from
-    T. In each permuted panel, each place's dose must be 1 from its new T on and 1/3 in the two years before
-    (the replaced-rule control then stays 1/3 after adoption). D-023's version moved T only, leaving the old
-    dose path behind."""
-    panel = simulate_d026(7, [(2018, -8), (2019, -8), (2020, -8), (2022, -8)], n_never=8, dose_pre=1 / 3)
-    seen = []
-
-    def stat(res):
-        seen.append(res.rows)
-        return res.att["att"]
-
-    ri = est.randomization_inference(panel, statistic=stat)
-    assert ri.enumerated and ri.n_assignments == 24 and len(ri.dist) == 24
-    assert ri.p_min == pytest.approx(1 / 24)
-    for rows in seen[1:]:
-        t = rows[rows["T"].notna()]
-        k = t["year"] - t["T"]
-        assert (t.loc[k >= 0, "dose"] == 1.0).all()
-        assert t.loc[(k == -1) | (k == -2), "dose"].to_numpy() == pytest.approx(1 / 3)
-        assert t.loc[k >= 0, "z_rule"].to_numpy() == pytest.approx(1 / 3)
-
-
-def test_randomization_inference_finds_a_real_effect_and_not_a_null_one():
-    """Five treated places with distinct adoption years (120 assignments, all enumerated): a doubling of
-    permits gives p <= 0.10; no effect gives p > 0.10."""
-    treated = [(T, -7.5) for T in range(2018, 2023)]
-    real = simulate_d026(5, treated, effect=lambda k: math.log(2.0))
-    ri = est.randomization_inference(real)
-    assert ri.enumerated and ri.n_assignments == 120 and ri.att > 0 and ri.p <= 0.10
-    null = simulate_d026(6, treated, effect=lambda k: 0.0)
-    assert est.randomization_inference(null).p > 0.10
-
-
-def test_randomization_inference_has_the_right_size():
-    """With no effect the RI p-value is below 0.10 in at most 3 of 12 panels (expected 1.2; P(>3) ≈ 0.03 for
-    a correct test; draws mode, 39 permutations)."""
-    rejected = 0
-    for seed in range(300, 312):
-        panel = simulate_d026(
-            seed, [(T, -8.0) for T in (2018, 2019, 2019, 2020, 2021, 2022, 2023)], effect=lambda k: 0.0
-        )
-        rejected += est.randomization_inference(panel, permutations=39, seed=seed).p < 0.10
-    assert rejected <= 3
-
-
-# ---- Controls (D-026): parking and process reforms; the replaced ADU rule ----
+# ---- Controls (D-031): parking and process reforms; the replaced ADU rule ----
 
 
 def test_a_parking_reform_is_not_read_as_the_adu_effect():
@@ -509,7 +519,7 @@ def test_a_parking_reform_is_not_read_as_the_adu_effect():
     errs_with, errs_without, lams = [], [], []
     for seed in range(5):
         treated = [(T, -8.0) for T in (2019, 2020, 2021, 2022, 2023) for _ in range(2)]
-        panel = simulate_d026(seed, treated, n_never=20)
+        panel = simulate_d031(seed, treated, n_never=20)
         idx = panel["place"].str[1:].astype(int)
         parking = ((idx % 2 == 0) | panel["T"].notna()) & (panel["year"] >= 2020)
         panel["parking"] = parking.astype(float)
@@ -536,7 +546,7 @@ def test_a_place_with_a_permit_rule_is_an_untreated_place_with_a_control():
     errs, lams = [], []
     for seed in range(5):
         treated = [(T, -8.0) for T in (2019, 2020, 2021, 2022) for _ in range(2)]
-        panel = simulate_d026(seed, treated, n_never=30, dose_pre=1 / 3)
+        panel = simulate_d031(seed, treated, n_never=30, dose_pre=1 / 3)
         idx = panel["place"].str[1:].astype(int)
         k = panel["year"] - panel["T"]
         permit = (panel["T"].isna() & (idx % 3 == 0) & (panel["year"] >= 2019)) | (k >= -2)
@@ -551,83 +561,7 @@ def test_a_place_with_a_permit_rule_is_an_untreated_place_with_a_control():
     assert abs(np.mean(errs)) < 0.10
 
 
-# ---- Checks (D-026) ----
-
-
-def _with_extras(panel, seed, effect_5p=0.0):
-    rng = np.random.default_rng(seed)
-    e = panel["year"] - panel["T"]
-    lvl = panel["eligible"] * 0.0005
-    return panel.assign(
-        units_5p=rng.poisson(lvl * np.exp(np.where(e >= 0, effect_5p, 0.0))), T_announce=panel["T"] - 1
-    )
-
-
-def test_checks_pass_on_a_clean_simulation():
-    treated = [(T, -7.5) for T in (2019, 2020, 2021, 2022) for _ in range(3)]
-    panel = _with_extras(simulate_d026(11, treated, n_never=20), 11)
-    r = est.impute(panel)
-    main = est.summarize_att(r, est.place_bootstrap(panel, draws=99, seed=11))
-    kw = {"draws": 99, "seed": 11}
-    assert est.check_pretrends(panel, **kw)["pass"]
-    assert est.check_anticipation(panel, main, **kw)["pass"]
-    assert est.check_placebo_dates(panel, **kw)["pass"]
-    assert est.check_placebo_outcome(panel, **kw)["pass"]
-    assert est.check_excluding(panel, main)["pass"]
-    assert est.check_leave_one_out(panel, main)["pass"]
-    never = sorted(panel.loc[panel["T"].isna(), "place"].unique())
-    neighbors = {never[0]: {r.contributing[0]}, never[1]: {never[2]}}
-    ring = est.check_first_ring(panel, main, neighbors)
-    assert ring["dropped"] == [never[0]] and ring["pass"]
-    assert est.check_first_ring(panel, main, None)["pass"] is None
-
-
-def test_checks_catch_anticipation_and_a_responding_placebo():
-    """Treated places build 50% more in the two years before adoption (announced two years early): the
-    held-out pre-trend and anticipation checks fail. A 5+ unit outcome that responds to adoption fails the
-    placebo."""
-    treated = [(T, -7.5) for T in (2019, 2020, 2021, 2022) for _ in range(3)]
-    panel = simulate_d026(12, treated, n_never=20)
-    k = panel["year"] - panel["T"]
-    panel["y"] = np.random.default_rng(12).poisson(panel["mu"] * np.where((k >= -2) & (k < 0), 1.5, 1.0))
-    panel = _with_extras(panel, 12, effect_5p=0.6).assign(T_announce=lambda d: d["T"] - 2)
-    main = est.summarize_att(est.impute(panel), est.place_bootstrap(panel, draws=99, seed=12))
-    assert not est.check_pretrends(panel, draws=99, seed=12)["pass"]
-    assert not est.check_anticipation(panel, main, draws=99, seed=12)["pass"]
-    assert not est.check_placebo_outcome(panel, draws=99, seed=12)["pass"]
-
-
-# ---- Transport (D-026), year effects after the panel (D-023 defect 7), household growth (defect 8) ----
-
-
-def test_year_effect_after_the_panel_is_the_last_years():
-    """Year effects peak in 2020 and fall after: for 2026-27 the 2025 effect is used (D-023 used the largest
-    one, 2020's), and a no-effect target's predicted mean follows it."""
-    panel = simulate_d026(14, [(2020, -8.0)] * 4, n_never=30, trend=0.0)
-    bump = np.where(panel["year"] == 2020, math.exp(0.8), 1.0)
-    panel["y"] = np.random.default_rng(14).poisson(panel["mu"] * bump)
-    r = est.impute(panel)
-    g = dict(zip(r.fit.years, r.fit.gamma, strict=True))
-    assert max(g, key=g.get) == 2020
-    assert est.year_effect(r.fit, 2027) == pytest.approx(g[2025])
-    assert est.year_effect(r.fit, 2010) == pytest.approx(g[2016])
-    # adopts in 2026 with a zero effect: 2024-25 set its level, 2026-27 are predicted
-    target = pd.DataFrame(
-        {
-            "place": "X",
-            "name": "X",
-            "year": [2024, 2025, 2026, 2027],
-            "y": [10, 10, 0, 0],
-            "eligible": 10_000.0,
-            "T": 2026.0,
-            "dose": [0.0, 0.0, 1.0, 1.0],
-            "mm": 0.0,
-        }
-    )
-    boot = pd.DataFrame({f"att_{b}": [0.0] for b in est.BINS})
-    pred = est.transport_predict(r, boot, target, draws=4000, seed=1).set_index("year")
-    lvl = 20 / (10_000 * (math.exp(g[2024]) + math.exp(g[2025])))
-    assert pred.loc[2027, "mean"] == pytest.approx(10_000 * lvl * math.exp(g[2025]), rel=0.1)
+# ---- Household growth (D-023 defect 8, ported to the D-025 panel by D-031) ----
 
 
 def test_household_growth_is_never_measured_after_adoption():
@@ -636,26 +570,3 @@ def test_household_growth_is_never_measured_after_adoption():
     hh = pd.Series({("place:1", y): 1000.0 * 1.02 ** (y - 2010) for y in range(2010, 2025)})
     assert est.household_growth(hh, "place:1", 2020) == pytest.approx(5 * math.log(1.02))
     assert np.isnan(est.household_growth(hh, "place:1", 2013))
-
-
-def test_transport_predictions_cover_held_out_places_from_the_same_process():
-    """Fit on simulated places, predict 12 held-out treated places from their own pre-adoption years: totals
-    inside their 90% intervals for at least 80% of places, yearly 80% coverage at least 60%."""
-    treated = [(T, -7.5) for T in (2018, 2019, 2020, 2021, 2022) for _ in range(6)]
-    panel = simulate_d026(13, treated, n_never=30)
-    held = panel.loc[panel["T"].notna(), "place"].unique()[::2][:12]
-    fit_panel = panel[~panel["place"].isin(held)]
-    r = est.impute(fit_panel)
-    boot = est.place_bootstrap(fit_panel, draws=99, seed=13)
-    pred = est.transport_predict(r, boot, panel[panel["place"].isin(held)], draws=1000, seed=13)
-    assert est.transport_verdict(pred)["yearly_coverage_80"] >= 0.6
-    tot = pred[pred["year"] == "total"]
-    assert ((tot["observed"] >= tot["p05"]) & (tot["observed"] <= tot["p95"])).mean() >= 0.8
-
-
-def test_transport_fails_loudly_on_an_absurd_rate():
-    panel = simulate_d026(15, [(T, -8.0) for T in (2019, 2020, 2021)], n_never=10)
-    r = est.impute(panel)
-    boot = pd.DataFrame({f"att_{b}": [500.0] for b in est.BINS})  # 50% of parcels a year
-    with pytest.raises(est.EstimationError, match="beyond"):
-        est.transport_predict(r, boot, panel[panel["T"].notna()], draws=20, seed=1)
