@@ -127,6 +127,10 @@ def robust(label, fn, rows, notes):
         log(f"robustness {label}: could not be estimated: {err}")
 
 
+class _Skip(Exception):
+    """Internal: skip the PPML-first path when the main model is set directly."""
+
+
 def run(
     panel: pd.DataFrame,
     p: dict,
@@ -137,21 +141,36 @@ def run(
     flagged: list | None = None,
     durham_pair=(DURHAM_CITY, DURHAM_COUNTY),
     force_fallback: str = "",
+    main_method: str = "",
 ) -> dict:
     """The D-024 run on `panel`. Returns named tables; writes nothing. `force_fallback` (dry runs only) takes
-    the fallback path as if PPML had failed with that message."""
+    the fallback path as if PPML had failed with that message. `main_method` ('nb': D-025's estimator, Ben
+    2026-10-21) fits that model as the main one directly."""
     draws, perms = int(p["mm_estimation_bootstrap_draws"]), int(p["mm_estimation_permutations"])
     out: dict[str, pd.DataFrame] = {}
     kw = {"modifiers": list(mm.MAIN_MODIFIERS)}
     method, why = "ppml", force_fallback
+    if main_method:
+        log(f"MAIN MODEL {main_method} (D-024 note 2026-10-21: D-025's estimator)")
+        method = main_method
+        try:
+            main = mm.estimate(panel, method=method, **kw)
+        except (estimate_adu.EstimationError, np.linalg.LinAlgError, ValueError) as err:
+            log(f"NO ESTIMATE: the main model could not be estimated: {err}")
+            return {"status": pd.DataFrame([{"model": method, "error": str(err)}])}
     try:
+        if main_method:
+            raise _Skip
+
         main = mm.estimate(panel, method="ppml", **kw)
         gone = mm.treated_dropped(main)
         if gone and not why:
             why = f"PPML dropped treated places {gone}"
+    except _Skip:
+        pass
     except (estimate_adu.EstimationError, np.linalg.LinAlgError) as err:
         why = why or f"PPML failed: {err}"
-    if why:
+    if why and not main_method:
         log(f"FALLBACK (pre-specified): {why}; main model is now the negative binomial with place random "
             "effects (Poisson-gamma, Hausman-Hall-Griliches; the 17:06 run's fallback)")  # fmt: skip
         method = "re"
@@ -163,7 +182,7 @@ def run(
             return {"status": pd.DataFrame([status])}
     f = main.fit
     log(
-        f"main fit ({method}): {f.iterations} iterations; "
+        f"main fit ({method}): {'BFGS converged' if method == 'nb' else f'{f.iterations} iterations'}; "
         f"kept {int(f.keep.sum())} of {len(f.keep)} place-years; "
         f"dropped places {len(f.dropped_places)}; dropped columns {f.dropped_columns}; "
         f"separated observations {len(getattr(f, 'separated', []))}"
@@ -182,7 +201,9 @@ def run(
     att, p_ri, dist, failed = mm.randomization_inference(panel, permutations=perms, seed=SEED, method=method,
                                                          workers=workers, **kw)  # fmt: skip
     log(
-        f"randomization inference: overall effect {att:.4f}, p = {p_ri:.3f} ({len(dist)} reassignments, "
+        f"randomization inference: overall effect {att:.4f}, p = {p_ri:.3f} "
+        f"({'RELIABLE' if failed <= 0.10 * perms else 'UNRELIABLE: over 10% failed'}; "
+        f"{len(dist)} reassignments, "
         f"{failed} could not be fitted)"
     )
     kwm = {"method": method, **kw}
@@ -302,7 +323,9 @@ def run(
     out["estimates"] = s.assign(model=method, fallback_reason=why)
     out["bootstrap_draws"] = boot
     out["added_homes"] = added
-    out["randomization"] = pd.DataFrame({"att_permuted": dist}).assign(att=att, p=p_ri, failed=failed)
+    out["randomization"] = pd.DataFrame({"att_permuted": dist}).assign(
+        att=att, p=p_ri, failed=failed, reliable=failed <= 0.10 * perms
+    )
     out["checks"] = pd.DataFrame(checks)
     out["leave_one_out"] = loo_table
     out["local_measurement"] = pd.DataFrame(local_rows)
@@ -372,7 +395,7 @@ def write(out: dict, path: Path) -> None:
     log(f"wrote {len(out)} CSVs to {path}/")
 
 
-def simulated_panel(seed: int = 0) -> pd.DataFrame:
+def simulated_panel(seed: int = 0, spread: float = 2.0) -> pd.DataFrame:
     """A panel shaped like the real one (four states, 2010-2025, mostly zeros, seven treated places in
     2020/2022/2024) with known effects, for --dry-run only."""
     rng = np.random.default_rng(seed)
@@ -384,7 +407,7 @@ def simulated_panel(seed: int = 0) -> pd.DataFrame:
     rows = []
     for pl in places:
         st, T = treated.get(pl, (pl[:2], np.nan))
-        alpha = rng.normal(-7.0, 0.7) if pl in treated else rng.normal(-9.0, 2.0)  # many never permit
+        alpha = rng.normal(-7.0, 0.7) if pl in treated else rng.normal(-9.0, spread)  # many never permit
         elig, pcr, lv = rng.uniform(5e3, 8e4), rng.normal(1, 0.2), rng.normal(12.5, 0.3)
         dose = rng.choice([1 / 3, 0.5, 1.0]) if pl in treated else 0.0
         pop = 60000.0 if pl in treated else float(rng.choice([20000, 60000]))
@@ -409,7 +432,7 @@ def simulated_panel(seed: int = 0) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def full(store, out_dir: Path, workers: int) -> None:
+def full(store, out_dir: Path, workers: int, main_method: str = "") -> None:
     p = {k: v.value for k, v in load_params("mm").items()}
     log("building the main panel")
     panel = mm.build_panel(store).data
@@ -422,14 +445,18 @@ def full(store, out_dir: Path, workers: int) -> None:
     ).data
     flagged = pipeline_flagged(panel)
     log(f"check 7b drops {len(flagged)} pipeline-flagged comparison places: {flagged}")
-    out = run(panel, p, workers, local=local_inputs(store), metc=metc, flagged=flagged)
+    out = run(
+        panel, p, workers, local=local_inputs(store), metc=metc, flagged=flagged, main_method=main_method
+    )
     write(out, out_dir)
 
 
-def dry_run(out_dir: Path, workers: int, fallback: bool = False) -> None:
+def dry_run(out_dir: Path, workers: int, fallback: bool = False, main_method: str = "") -> None:
     p = {k: v.value for k, v in load_params("mm").items()}
     p.update(mm_estimation_bootstrap_draws=49, mm_estimation_permutations=16)
-    panel = simulated_panel()
+    # D-025's mode search can fail on very wide spreads of never-permitting places (shared notes), so its
+    # dry run uses a narrower one
+    panel = simulated_panel(spread=1.0 if main_method == "nb" else 2.0)
     log(f"DRY RUN on a simulated panel ({panel['place'].nunique()} places); not real data")
     sim = panel[(panel["place"] == "MNT1") & (panel["year"] >= 2016)]  # a local source counting 2× from 2016
     local = {
@@ -442,7 +469,8 @@ def dry_run(out_dir: Path, workers: int, fallback: bool = False) -> None:
     }
     out = run(panel, p, workers, local=local, transport={"A": ["NCT1", "NCT2", "NCT3"], "B": ["MNT1"]},
               flagged=["MNC00", "MNC01"], durham_pair=("NCT1", "NCT2"),
-              force_fallback="forced for the dry run" if fallback else "")  # fmt: skip
+              force_fallback="forced for the dry run" if fallback else "",
+              main_method=main_method)  # fmt: skip
     write(out, out_dir)
 
 
@@ -487,17 +515,18 @@ def main() -> None:
     g.add_argument("--coverage", action="store_true")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--method", choices=["nb"], help="--full/--dry-run: fit this as the main model directly")
     a = ap.parse_args()
     if a.smoke:
         smoke(DataStore())
     elif a.coverage:
         coverage()
     elif a.dry_run:
-        dry_run(a.out or Path("dry-run-out"), a.workers, fallback=a.fallback)
+        dry_run(a.out or Path("dry-run-out"), a.workers, fallback=a.fallback, main_method=a.method or "")
     else:
         if a.out is None:
             ap.error("--full needs --out")
-        full(DataStore(), a.out, a.workers)
+        full(DataStore(), a.out, a.workers, main_method=a.method or "")
 
 
 if __name__ == "__main__":

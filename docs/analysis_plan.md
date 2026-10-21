@@ -807,6 +807,33 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - The scenario should not take this as its missing-middle evidence prong without a new dated entry.
   - **Open:** WS-MN has not yet coded St. Louis Park's 2025 rule or the explicit "no" rows; check 7b covers
     that gap.
+- **Switch to D-025's estimator (2026-10-21, Ben; written before the run of its checks):**
+  - **Why:** D-024 names "D-025's estimator if approved" as the fallback. D-025 was approved and on main
+    (16:30, 2026-10-20) before both runs, and its estimator converges on the real panel. The 2026-10-20 runs
+    used the Poisson-gamma model instead.
+  - **Decision:** D-024's main estimate is now D-025's negative binomial with normal place random effects
+    (`pooled_adu`, unchanged, through `estimate_mm.fit_nb`). The Poisson-gamma run stays reported as the
+    comparison. Its point estimate on the real panel is already known from the 2026-10-20 robustness line:
+    −0.25 (−1.10 to 0.77).
+  - **One run (Ben approves exactly one):** the same `--full` pipeline, spec and seed, with `nb` as the main
+    model (`--method nb`). It covers:
+    - the wild score bootstrap (999 draws) and added homes;
+    - randomization inference (999 reassignments);
+    - checks 1–8, where leave-one-out covers Minneapolis and Houston dependence (each treated place left out,
+      plus Durham city and county together);
+    - robustness: PPML, Poisson-gamma, binary dose, four modifiers, Met Council alone;
+    - out-of-sample tests A and B with the same pass rules.
+  - **Convergence rule (fixed now):**
+    - A fit that raises `EstimationError` is not used: BFGS did not converge, the Hessian was not negative
+      definite, a coefficient left ±20, or an SE was effectively 0.
+    - For randomization inference, failed reassignments are skipped and counted. p is the share of the
+      fitted reassignments with |overall effect| ≥ the observed one.
+    - **If more than 10% of reassignments fail, p is reported as unreliable,** because failures may not be
+      random.
+    - A check whose fit fails is reported as "could not be estimated", which counts as a fail.
+  - **The overall effect** weights the bins by counterfactual expected homes (as for the fallback), so the
+    two models compare like with like. D-025's own place-year weighting is not used here.
+  - Outputs go to `reports/mm-d024-nb/`, next to the fallback's `reports/mm-d024/`.
 
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
