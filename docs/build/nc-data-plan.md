@@ -1,7 +1,8 @@
 # North Carolina data plan (thread 10, step 1)
 
-*WS-NC, 2026-10-21. Status: **draft for Ben's approval.** Nothing heavy (large downloads, research beyond
-targeted lookups) starts until Ben approves. Brief: `docs/build/handoffs/10-north-carolina-data-complete.md`.*
+*WS-NC, 2026-10-21. Status: **decisions 1–4 approved by Ben on 2026-10-21** (S1 download, S3 Greensboro, S4–S6
+research at about one fetch per place, V5 option (b)); 5 and 6 explained, open. Brief:
+`docs/build/handoffs/10-north-carolina-data-complete.md`.*
 
 **Goal:** North Carolina can run end to end through the baseline forecast, the ADU scenario (D-025), the
 missing-middle scenario (D-024), the fee scenario and the county and state totals (thread 9), for all 322 NC
