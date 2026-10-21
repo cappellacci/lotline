@@ -1,6 +1,6 @@
 # North Carolina data plan (thread 10, step 1)
 
-*WS-NC, 2026-10-21. Status: **decisions 1–4 approved by Ben on 2026-10-21** (S1 download, S3 Greensboro, S4–S6
+*WS-NC, 2026-10-21. Status: **decisions 1–4 and 6 approved by Ben on 2026-10-21** (S1 download, S3 Greensboro, S4–S6
 research at about one fetch per place, V5 option (b)); 5 and 6 explained, open. Brief:
 `docs/build/handoffs/10-north-carolina-data-complete.md`.*
 
@@ -115,4 +115,4 @@ Nothing in this plan opens Charlotte or Mecklenburg outcomes from 2023-06-01.
 3. **Approve S4–S6 research** at about one direct fetch per place (no search sweeps).
 4. **V5 roll choice:** (b) now, (a) if Mecklenburg answers by Nov 10?
 5. Do the Wake download and the Mecklenburg email (§4).
-6. **S13:** OK to open the `contract-change` issue for WS-CORE, recommending option (b)?
+6. **S13:** OK to open the `contract-change` issue for WS-CORE, recommending option (b)? **Approved 2026-10-21: issue #208**, which also lists sources of real historical rolls to investigate first (Wake year-end files, NCSU county archives, county GIS archives, NC CGIA).
