@@ -7,9 +7,9 @@
 The panel is D-023's (`estimate_adu.build_panel`: Twin Cities places with Met Council permits, 2016-2025; St.
 Paul never; places with no dated ADU rule left out; places adopting before 2010 don't inform the modifiers).
 The full run: the main model with the wild score bootstrap (999), randomization inference (999), the five
-checks, the robustness estimators (fixed-effects PPML, Borusyak imputation, binary dose) and the transport
-test for Austin, Raleigh and Durham. --out is a directory; CSVs are written only after every stage succeeds; a
-numerical failure raises EstimationError first.
+checks, the robustness estimators (fixed-effects PPML, Borusyak imputation, binary dose, D-031 additive
+imputation), the D-031 sensitivity runs and the transport test for Austin, Raleigh and Durham. --out is a
+directory; CSVs are written only after every stage succeeds; a numerical failure raises EstimationError first.
 """
 
 from __future__ import annotations
@@ -128,6 +128,21 @@ def stages(
     logs.append(bin_log.summary)
     print("robustness, binary dose:\n", bin_main.round(4).to_string(index=False), "\n", bin_log.summary)
 
+    # D-031: additive imputation (robustness) and the pre-declared sensitivity runs of the D-025 model
+    add = est.impute(panel)
+    add_main = est.summarize_att(add, est.place_bootstrap(panel, draws=draws, seed=7))
+    print("robustness, additive imputation (D-031), per 1,000 eligible parcels a year:")
+    print(add.excluded.to_string(index=False))
+    if add.estimable:
+        print(add_main.round(4).to_string(index=False))
+    else:
+        n = len(add.contributing)
+        print(f"not estimable: {n} contributing treated places (floor {est.MIN_CONTRIBUTING})")
+    sens = pa.sensitivity_runs(panel, fit, main, draws=draws, seed=8, **kw)
+    for c in sens:
+        print({k: v for k, v in c.items() if k != "dropped"})
+        logs.append(c.get("convergence", ""))
+
     pred, verdict = transport_stage(store, panel, fit, boot, p, logs)
     print("convergence:", *logs, sep="\n  ")
 
@@ -149,6 +164,9 @@ def stages(
         pd.DataFrame([fe]).to_csv(out / "robust_fe_ppml.csv", index=False)
         imp_tab.to_csv(out / "robust_imputation.csv", index=False)
         bin_main.to_csv(out / "robust_binary_dose.csv", index=False)
+        add_main.assign(estimable=add.estimable).to_csv(out / "robust_additive_imputation.csv", index=False)
+        add.excluded.to_csv(out / "robust_additive_imputation_excluded.csv", index=False)
+        pd.DataFrame(sens).to_csv(out / "sensitivity.csv", index=False)
         pred.to_csv(out / "transport.csv", index=False)
         pd.DataFrame([verdict]).to_csv(out / "transport_verdict.csv", index=False)
         pd.DataFrame({"place": d.places, "random_effect": pa.place_effects(fit.log_params, d)}).to_csv(

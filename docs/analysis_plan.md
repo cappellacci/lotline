@@ -727,3 +727,80 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - *Reported:* identified set and robust interval for each M̄ and M, the breakdown M̄ (the smallest at which the
     interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
   - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
+
+
+
+### D-031 · 2026-10-21 · ADU effect: additive imputation as robustness to D-025, and review fixes ported to the D-025 path (written after D-025's main estimate was seen; not the main estimator)
+- **What had been seen when this was written:** D-025's main estimate (overall 2.26 on the log scale, 90%
+  interval 0.22–4.21) and its 2026-10-21 checks and robustness results (above). **This entry cannot change
+  the D-025 main result.** It adds a robustness estimator, fixes defects in code the remaining D-025 stages
+  use, and declares sensitivity runs before those stages are run. It was first drafted on 2026-10-20 (under a
+  number since reserved by handoff 09) as a proposed replacement for D-023's main estimator. Ben kept D-025 as the main model (2026-10-21),
+  so it was renumbered and reframed. No D-031 estimate has been computed on real data.
+- **The 2026-10-20 review of D-023 (checked against the code and reproduced on synthetic panels), and what
+  still applies:**
+  1. treated places with no ADU before adoption had their pre-years dropped as separated, and their cohort
+     cells entered the aggregate as near-zero contrasts (a simulated true log-50 effect came out near
+     2.5–3.2); 2. places treated before 2016, and the 2016 cohort, have no untreated year, so already-treated
+     places identified the year effects; 3. with singleton cohorts θ × post was collinear with the cohort
+     cells; 4. the CR2 score bootstrap undercovered with singleton cohorts (37% for a 90% interval over 30
+     synthetic panels). These are defects of D-023's fixed-effects design, which D-025 replaced. D-025's own
+     imputation robustness run shows the data side of defect 1: 162 of 169 treated place-years could not be
+     imputed, because their places had no permits before adoption.
+  5. Permit or conditional-use places count as never treated, and the dose before T is ignored. This still
+     holds in D-025 and is **not changed** here; the D-031 estimator handles it with a replaced-rule control.
+  6. Randomization inference permuted T but not the dose path: **applies to `pooled_adu`; fixed (a).**
+  7. D-023's transport used the largest year effect after the panel. D-025's transport refuses years
+     outside the estimation years, so this does not apply.
+  8. Household growth was measured from max(T − 1, 2015), giving 2010–15 adopters post-adoption growth. It
+     is in the shared panel builder: **fixed (b).**
+- **Deviations from D-025, written before its remaining stages (randomization inference, placebo dates,
+  transport, HonestDiD) are run:**
+  - **(a) Randomization inference moves each place's dose path with its permuted adoption year**
+    (`estimate_adu.permute_adoption`): dose_new(t) = dose_old(t − (T_new − T_old)), held at the first
+    observed value before the panel and the last after it. The 2026-10-20 attempt (7.1% of refits failed)
+    permuted T only. A permuted place's post years then carried its old dose, often 0 or a permit grade. That
+    may have contributed to the failed refits; this is not tested.
+  - **(b) Household growth** = log(households at T − 1 / households at T − 6), and **missing** unless both
+    ACS vintages exist (`estimate_adu.household_growth`). For places adopting in 2010–15 the modifier
+    becomes missing, which means a zero deviation in the design. The D-025 main fit used the defective
+    values, so `estimate_pooled_adu.py --remaining` will stop at its 1e-4 match check. **Decision for Ben:**
+    (i) re-estimate the main model once on the corrected panel, report both, and condition the remaining
+    stages on the corrected one (recommended: the defect is a measurement bug, independent of results); or
+    (ii) keep the main model as estimated and report the corrected-growth refit as a sensitivity.
+  - **(c) Sensitivity runs of the D-025 model** (`pooled_adu.sensitivity_runs`). Each is one refit under
+    the D-025 convergence rule, with score-bootstrap intervals, reported beside the main estimate and not
+    used to choose:
+    1. *excluding places treated before 2016*, which have no untreated year in the panel (review point 2);
+    2. *T at the announcement year* (C29): the coded `announced_date`, else the council `adoption_date`, of
+       the rule that made the place by right; places with neither keep T and are counted. The dose path moves
+       with T. With no anticipation this moves zero-effect years into band 0–1, so a smaller 0–1 band is
+       expected; a larger effect points to anticipation;
+    3. *parking and process reforms as time-varying controls* (C08, C21): 1 if a citywide zero-minimum
+       parking reform (`adu.parking_waived`) or any coded process reform is in force on 1 July. A control
+       with no variation is dropped and reported; on 2026-10-21 `config/reforms/mn.csv` codes 2 parking
+       rows and no process rows.
+- **D-031 robustness estimator: imputation on the additive scale** (`estimate_adu.impute`, reported
+  beside D-025's log-scale imputation):
+  - untreated model by PPML on untreated place-years only: E[y(0)] = Eligible · exp(α_i + γ_t + λ'Z), with
+    Z = the replaced ADU rule's dose (carried forward from T − 1 in treated years), parking, process and
+    missing middle;
+  - ATT_k = 1,000 · Σ (y − μ̂0) / Σ Eligible for k ∈ {0–1, 2–3, 4+} and overall, in additional permits per
+    1,000 eligible parcels a year; the ratio Σ (y − μ̂0) / Σ μ̂0 is secondary;
+  - places treated in or before 2016, and treated places with no kept untreated year, are excluded and
+    listed; an upper bound that counts every permit of the zero-pre places as additional is reported
+    beside the ATT;
+  - range: stratified place bootstrap (treated and untreated places resampled separately, 999 draws);
+  - fewer than 3 contributing treated places means "not estimable". Given D-025's imputation run (7
+    imputable treated place-years), this is the expected outcome in Minnesota. The estimator's value there is
+    to state the exclusions and the zero-pre bound plainly.
+- **Evidence (synthetic panels, `tests/model/test_estimate_adu.py`):** each regime test asserts that D-023
+  fails and D-031 passes on the same panel. Zero pre-periods: D-023 2.5–3.2 against log 50; D-031's
+  additive ATT within 10%. A 2016 cohort: D-023 ≈ −0.1 against ~0.9; D-031 within 15%. Pre-panel adopters
+  whose effect keeps growing past k = 5: D-023 ≈ 0 against ~0.45; D-031 within 15%. Singleton cohorts:
+  D-023 drops θ as collinear and undercovers; D-031 is unbiased, and its bootstrap covered 77% for a nominal
+  90% over 30 panels, so with fewer than 10 contributing places its range is labelled "probably too narrow".
+- **Not carried over from the first draft:** randomization inference as primary for this estimator, its own
+  seven checks and transport, and the hierarchical-NB priors (D-025 already has θ).
+- **Decided by:** Ben, 2026-10-21 (D-025 stays the main model; this estimator is robustness). Details by
+  Claude Code; **(a)–(c) and the household-growth choice await Ben's approval.**

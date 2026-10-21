@@ -21,6 +21,12 @@
   is fast and valid with few clusters. Randomization inference (`randomization_inference`) permutes adoption
   years among treated places and re-fits.
 
+**D-031 (robustness to the D-025 main model, `impute`):** Borusyak-style imputation on the additive scale
+(additional ADU permits per 1,000 eligible parcels a year), with the untreated model fitted on untreated
+place-years only; places with no untreated year, or no kept one, are excluded and listed. `shift_dose_path`
+and `permute_adoption` move a place's dose path with its adoption year (used by randomization inference in
+`pooled_adu`).
+
 Only NumPy and pandas. Every equation has a test against simulated panels with known coefficients
 (tests/model/test_estimate_adu.py), including a pure common shock that must not be read as a reform effect.
 """
@@ -80,7 +86,7 @@ class PPMLFit:
         if adjust == "cr0":
             np.add.at(out, inv, self.design * (self.y - self.mu)[:, None])
             return out
-        H_inv = np.linalg.pinv(self.hessian)
+        H_inv = _pinv(self.hessian)
         sw = np.sqrt(self.mu)
         for g in range(len(codes)):
             rows = inv == g
@@ -103,6 +109,15 @@ COEF_BOUND = 20.0  # |coefficient| above this on the log scale means divergence
 SE_FLOOR = 1e-7  # an SE below SE_FLOOR × max(1, |b|) is effectively zero
 
 
+def _pinv(A: np.ndarray) -> np.ndarray:
+    """Pseudo-inverse; LAPACK's divide-and-conquer SVD occasionally fails to converge on a finite, full-rank
+    matrix, and the transpose then usually succeeds (pinv(A) = pinv(Aᵀ)ᵀ)."""
+    try:
+        return np.linalg.pinv(A)
+    except np.linalg.LinAlgError:
+        return np.linalg.pinv(A.T).T
+
+
 def relu_separated(Z: np.ndarray, y: np.ndarray, tol: float = 1e-6, max_iter: int = 2000) -> np.ndarray:
     """Observations separated in the sense of Correia, Guimarães & Zylkin (2019), by their iterated
     rectifier: find z = Zγ with z = 0 where y > 0 and z >= 0 where y = 0; observations with z > 0 are
@@ -112,7 +127,7 @@ def relu_separated(Z: np.ndarray, y: np.ndarray, tol: float = 1e-6, max_iter: in
     if pos.all():
         return np.zeros(len(y), dtype=bool)
     sw = np.where(pos, 1e3, 1.0)
-    pinv = np.linalg.pinv(Z * sw[:, None])
+    pinv = _pinv(Z * sw[:, None])
     u = np.where(pos, 0.0, 1.0)
     for _ in range(max_iter):
         z = Z @ (pinv @ (u * sw))
@@ -271,7 +286,7 @@ def check_fit(fit: PPMLFit) -> None:
     if big:
         raise EstimationError(f"coefficients beyond ±{COEF_BOUND}: {big}")
     if len(fit.names):
-        H = np.linalg.pinv(fit.hessian)
+        H = _pinv(fit.hessian)
         S = fit.cluster_scores("cr0")
         se = np.sqrt(np.clip(np.diag(H @ (S.T @ S) @ H)[: len(fit.names)], 0, None))
         tiny = [
@@ -464,7 +479,7 @@ def score_bootstrap(est: Estimate, draws: int = 999, seed: int = 0, adjust: str 
     fit = est.fit
     rng = np.random.default_rng(seed)
     S = fit.cluster_scores(adjust)
-    H_inv = np.linalg.pinv(fit.hessian)
+    H_inv = _pinv(fit.hessian)
     k = len(fit.names)
     full = np.r_[fit.coef, fit.alpha, fit.gamma[1:]]
     rows = []
@@ -512,15 +527,221 @@ def joint_wald(boot: pd.DataFrame, est: Estimate, terms: Sequence[str]) -> tuple
     b = np.array([est.fit.coef_of(t) for t in terms])
     D = boot[terms].to_numpy()
     V = np.cov(D, rowvar=False).reshape(len(terms), len(terms))
-    Vi = np.linalg.pinv(V)
+    Vi = _pinv(V)
     W = float(b @ Vi @ b)
     dev = D - b
     Wb = np.einsum("ij,jk,ik->i", dev, Vi, dev)
     return W, float(np.mean(Wb >= W))
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-031: imputation on the additive scale (robustness to the D-025 main model)
+# ---------------------------------------------------------------------------------------------------------
+
+BINS = {"k0_1": (0, 1), "k2_3": (2, 3), "k4p": (4, np.inf)}  # event-time bins of the ATT (D-031)
+CONTROLS = ("parking", "process", "mm")  # time-varying non-ADU reforms, used as observed (D-031)
+MIN_CONTRIBUTING = 3  # fewer treated places than this: the ATT is reported as not estimable (D-031)
+
+
+def replaced_rule_dose(panel: pd.DataFrame) -> np.ndarray:
+    """The control for the ADU rule a by-right rule replaced (D-031): the dose in force in untreated years,
+    and for treated years (t >= T) the place's dose in year T − 1 carried forward, so the effect reads "by
+    right versus the rule it replaced". By hand: dose path (0, 1/3, 1/3, 1, 1) over 2016-2020 with T = 2019
+    gives (0, 1/3, 1/3, 1/3, 1/3); a never-treated place keeps its own path."""
+    out = panel["dose"].to_numpy(dtype=float).copy()
+    T = panel["T"].to_numpy(dtype=float)
+    year = panel["year"].to_numpy(dtype=float)
+    before = panel.loc[panel["year"] == panel["T"] - 1].set_index("place")["dose"]
+    treated = ~np.isnan(T) & (year >= T)
+    out[treated] = panel.loc[treated, "place"].map(before).fillna(0.0).to_numpy(dtype=float)
+    return out
+
+
+def _bin_of(e: np.ndarray) -> np.ndarray:
+    out = np.full(len(e), "", dtype=object)
+    for name, (lo, hi) in BINS.items():
+        out[(e >= lo) & (e <= hi)] = name
+    return out
+
+
+@dataclass
+class Imputation:
+    """One D-031 imputation fit. `rows` is the panel (after exclusions) with mu0 (imputed counterfactual for
+    treated and held-out rows), treated, held, used (enters the ATT) and bin; `att` holds the overall ATT
+    ('att'), ATT_k ('att_k0_1', 'att_k2_3', 'att_k4p') per 1,000 eligible parcels a year, the proportional
+    versions ('ratio', 'ratio_k…'), the zero-pre upper bound ('att_upper_zero_pre') and the held-out mean
+    residual ('held'); `excluded` lists every excluded place with its reason."""
+
+    fit: PPMLFit
+    rows: pd.DataFrame
+    att: dict
+    excluded: pd.DataFrame
+    contributing: list
+    per_place: pd.DataFrame
+
+    @property
+    def estimable(self) -> bool:
+        return len(self.contributing) >= MIN_CONTRIBUTING
+
+
+def _per_1000(resid, elig) -> float:
+    s = float(np.sum(elig))
+    return 1000.0 * float(np.sum(resid)) / s if s > 0 else np.nan
+
+
+def impute(panel: pd.DataFrame, controls: Sequence[str] = CONTROLS, held: str | None = None) -> Imputation:
+    """D-031 imputation estimator (Borusyak, Jaravel & Spiess 2024) with a Poisson untreated model.
+
+    1. Places treated in or before the panel's first year have no untreated year: excluded (never controls).
+    2. PPML on untreated rows only (never-treated places, treated places before T, minus rows flagged in the
+       boolean column `held`): E[y(0)] = Eligible · exp(α_i + γ_t + λ'Z), Z = the replaced-rule dose
+       (`replaced_rule_dose`) and the `controls` present in the panel. Separation, collinearity and guards as
+       in `ppml`.
+    3. μ̂0 for treated and held rows from α̂, γ̂, λ̂. Treated places with no α̂ (no kept untreated year, e.g. no
+       ADU before adoption) are excluded and listed; treated rows in a year with no γ̂ are not used.
+    4. ATT = 1,000 · Σ (y − μ̂0) / Σ Eligible over used treated rows, overall and by event-time bin; the
+       ratio Σ (y − μ̂0) / Σ μ̂0; the upper bound that counts every permit of the zero-pre places as additional.
+
+    By hand: untreated A (2, 4) and B (3, ·) over two years, B treated in year 2 with y = 9, eligible 1,000
+    everywhere: α̂_B = log 3 − log 1,000, γ̂_2 = log 2 (from A), μ̂0 = 6, ATT = 1,000 · (9 − 6) / 1,000 = 3.
+    """
+    p = panel.reset_index(drop=True).copy()
+    first = p["year"].min()
+    T = p["T"].to_numpy(dtype=float)
+    early = p.loc[~np.isnan(T) & (T <= first), "place"].unique()
+    excluded = [
+        {"place": pl, "reason": f"treated in or before {int(first)} (no untreated year in the panel)"}
+        for pl in early
+    ]
+    p = p[~p["place"].isin(early)].reset_index(drop=True)
+    e = event_time(p["year"], p["T"])
+    treated = np.nan_to_num(e, nan=-1.0) >= 0
+    held_mask = p[held].to_numpy(dtype=bool) & ~treated if held else np.zeros(len(p), dtype=bool)
+    untreated = ~treated & ~held_mask
+    p["z_rule"] = replaced_rule_dose(p)
+    zcols = ["z_rule"] + [c for c in controls if c in p]
+    Z = p[zcols].to_numpy(dtype=float)
+    names = [f"lambda_{c}" for c in zcols]
+    off = np.log(p["eligible"].to_numpy(dtype=float))
+    fit = ppml(
+        p.loc[untreated, "y"],
+        Z[untreated],
+        off[untreated],
+        p.loc[untreated, "place"],
+        p.loc[untreated, "year"],
+        names,
+    )
+    alpha = dict(zip(np.unique(fit.cluster), fit.alpha, strict=True))
+    gamma = dict(zip(fit.years, fit.gamma, strict=True))
+    lam = np.array([fit.coef_of(n) if n in fit.names else 0.0 for n in names])
+    a = p["place"].map(alpha).to_numpy(dtype=float)
+    g = p["year"].map(gamma).to_numpy(dtype=float)
+    mu0 = np.exp(off + a + g + Z @ lam)
+    target = treated | held_mask
+    p["mu0"] = np.where(target, mu0, np.nan)
+    p["treated"], p["held"] = treated, held_mask
+    p["bin"] = np.where(treated, _bin_of(np.nan_to_num(e, nan=-1.0)), "")
+    p["used"] = treated & np.isfinite(p["mu0"].to_numpy())
+
+    ever = p.loc[p["T"].notna(), "place"].unique()
+    no_alpha = [pl for pl in ever if pl not in alpha]
+    excluded += [
+        {"place": pl, "reason": "no kept untreated year (e.g. no ADU permit before adoption)"}
+        for pl in no_alpha
+    ]
+    u = p[p["used"]]
+    att = {"att": _per_1000(u["y"] - u["mu0"], u["eligible"])}
+    for b in BINS:
+        ub = u[u["bin"] == b]
+        att[f"att_{b}"] = _per_1000(ub["y"] - ub["mu0"], ub["eligible"]) if len(ub) else np.nan
+        att[f"ratio_{b}"] = float((ub["y"] - ub["mu0"]).sum() / ub["mu0"].sum()) if len(ub) else np.nan
+    att["ratio"] = float((u["y"] - u["mu0"]).sum() / u["mu0"].sum()) if len(u) else np.nan
+    z = p[p["place"].isin(no_alpha) & treated]
+    att["att_upper_zero_pre"] = _per_1000(
+        np.r_[(u["y"] - u["mu0"]).to_numpy(), z["y"].to_numpy()], np.r_[u["eligible"], z["eligible"]]
+    )
+    h = p[held_mask & np.isfinite(p["mu0"].to_numpy())]
+    att["held"] = _per_1000(h["y"] - h["mu0"], h["eligible"]) if len(h) else np.nan
+    g_ = u.assign(resid=u["y"] - u["mu0"]).groupby("place")
+    per_place = pd.DataFrame(
+        {"att_i": 1000.0 * g_["resid"].sum() / g_["eligible"].sum(), "years": g_.size()}
+    ).reset_index()
+    contributing = sorted(u["place"].unique(), key=str)
+    return Imputation(
+        fit, p, att, pd.DataFrame(excluded, columns=["place", "reason"]), contributing, per_place
+    )
+
+
+def shift_dose_path(years: np.ndarray, dose: np.ndarray, T_old: float, T_new: float) -> np.ndarray:
+    """A place's dose path moved with its adoption year (randomization inference, D-031): dose_new(t) =
+    dose_old(t − (T_new − T_old)), held at the first observed value before the panel and the last after it.
+    By hand: years 2016-2021, dose (0, 0, 1/3, 1, 1, 1), T 2019 → 2020: (0, 0, 0, 1/3, 1, 1)."""
+    order = np.argsort(years)
+    y, d = np.asarray(years, dtype=float)[order], np.asarray(dose, dtype=float)[order]
+    src = y - (T_new - T_old)
+    idx = np.clip(np.searchsorted(y, src), 0, len(y) - 1)
+    out = np.empty(len(y))
+    out[order] = d[idx]
+    return out
+
+
+def permute_adoption(panel: pd.DataFrame, assignment: dict) -> pd.DataFrame:
+    """Panel with new adoption years `assignment` {place: T_new}; each place's dose path moves with its T."""
+    p = panel.copy()
+    for pl, T_new in assignment.items():
+        rows = p["place"] == pl
+        T_old = float(p.loc[rows, "T"].iloc[0])
+        p.loc[rows, "dose"] = shift_dose_path(
+            p.loc[rows, "year"].to_numpy(), p.loc[rows, "dose"].to_numpy(), T_old, float(T_new)
+        )
+        p.loc[rows, "T"] = float(T_new)
+    return p
+
+
+def place_bootstrap(panel: pd.DataFrame, draws: int = 999, seed: int = 0, fn=None, **kw) -> pd.DataFrame:
+    """Stratified place bootstrap (D-031 range): treated and untreated places resampled separately with
+    replacement (each copy its own place), the whole imputation repeated; returns `fn(panel)` (default the
+    `impute(...).att` dictionary) per draw."""
+    fn = fn or (lambda p: impute(p, **kw).att)
+    rng = np.random.default_rng(seed)
+    first = panel["year"].min()
+    T = panel.drop_duplicates("place").set_index("place")["T"]
+    strata = [T.index[T.notna() & (T > first)].to_numpy(), T.index[T.isna()].to_numpy()]
+    by_place = {pl: d for pl, d in panel.groupby("place", sort=False)}
+    rows = []
+    for _ in range(draws):
+        parts = []
+        for s in strata:
+            for j, pl in enumerate(rng.choice(s, size=len(s), replace=True)):
+                parts.append(by_place[pl].assign(place=f"{pl}#{j}"))
+        rows.append(fn(pd.concat(parts, ignore_index=True)))
+    return pd.DataFrame(rows)
+
+
+def summarize_att(res: Imputation, boot: pd.DataFrame, level: float = 0.90) -> pd.DataFrame:
+    """ATT terms with bootstrap SEs and basic intervals (estimate reflected around the draws' deviations)."""
+    a = (1 - level) / 2
+    rows = []
+    for term, v in res.att.items():
+        if term not in boot or not np.isfinite(v):
+            continue
+        d = boot[term].dropna().to_numpy()
+        lo, hi = np.quantile(d - v, [a, 1 - a]) if len(d) else (np.nan, np.nan)
+        rows.append(
+            {
+                "term": term,
+                "estimate": v,
+                "se": float(np.std(d, ddof=1)) if len(d) > 1 else np.nan,
+                "low": v - hi,
+                "high": v - lo,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def randomization_inference(panel: pd.DataFrame, permutations: int = 999, seed: int = 0, **design_kw):
-    """Permute adoption years among treated places (each keeps its own dose path shifted with it), re-fit,
+    """Permute adoption years among treated places (each place's dose path moves with it, `permute_adoption`;
+    D-031: the D-023 code moved T only), re-fit,
     and compare the overall effect: p = share of |att_perm| >= |att|."""
     rng = np.random.default_rng(seed)
     base = estimate(panel, **design_kw)
@@ -529,10 +750,7 @@ def randomization_inference(panel: pd.DataFrame, permutations: int = 999, seed: 
     places, Ts = treated["place"].to_numpy(), treated["T"].to_numpy()
     out = []
     for _ in range(permutations):
-        perm = dict(zip(places, rng.permutation(Ts), strict=True))
-        p = panel.copy()
-        newT = p["place"].map(perm)
-        p["T"] = newT.where(p["place"].isin(places), p["T"])
+        p = permute_adoption(panel, dict(zip(places, rng.permutation(Ts), strict=True)))
         out.append(aggregate(estimate(p, **design_kw)).get("att", np.nan))  # EstimationError propagates
     dist = np.array(out, dtype=float)
     dist = dist[~np.isnan(dist)]
@@ -618,6 +836,40 @@ def mm_in_force(reforms, geoid, fips, date, by_right_share: float) -> float:
     return 0.0
 
 
+def household_growth(hh: pd.Series, geo: str, T: int) -> float:
+    """log(households at T − 1 / households at T − 6) from ACS vintages (Series indexed by (geo, end_year)),
+    missing when either vintage is absent: never measured from a later year (D-031, defect 8; D-023 used
+    max(T − 1, 2015), so 2011-15 adopters got post-adoption growth). By hand: 1,100 at 2019 over 1,000 at
+    2014 for T = 2020 gives log 1.1."""
+    a, b = hh.get((geo, T - 1), np.nan), hh.get((geo, T - 6), np.nan)
+    return float(np.log(a / b)) if np.isfinite(a) and np.isfinite(b) and a > 0 and b > 0 else np.nan
+
+
+def announcement_year(reforms, geoid, fips, T: float) -> float:
+    """Year a place's first by-right ADU rule was announced (D-031 anticipation sensitivity): among ADU rows
+    taking effect in the year before 1 July of T, the earliest coded `announced_date`, else `adoption_date`;
+    capped at T. NaN if never treated or neither date is coded."""
+    if np.isnan(T):
+        return np.nan
+    r = reforms[(reforms["theme"] == "adu") & reforms["jurisdiction_geoid"].isin([geoid, fips])]
+    lo, hi = pd.Timestamp(f"{int(T) - 1}-07-01"), pd.Timestamp(f"{int(T)}-07-01")
+    r = r[(r["effective_date"] > lo) & (r["effective_date"] <= hi)]
+    dates = []
+    for row in r.itertuples():
+        d = getattr(row, "announced_date", pd.NaT)
+        d = getattr(row, "adoption_date", pd.NaT) if pd.isna(d) else d
+        if pd.notna(d):
+            dates.append(d)
+    return float(min(min(dates).year, int(T))) if dates else np.nan
+
+
+def process_in_force(reforms, geoid, fips, date) -> float:
+    """1 if a coded `process` reform (C21) is in force for the place on `date`, else 0 (D-031 control)."""
+    r = reforms[(reforms["theme"] == "process") & (reforms["status"] == "in_force")]
+    r = r[r["jurisdiction_geoid"].isin([geoid, fips]) & (r["effective_date"] <= date)]
+    return float((r["end_date"].isna() | (r["end_date"] > date)).any())
+
+
 @dataclass
 class Panel:
     data: pd.DataFrame
@@ -633,7 +885,8 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
     St. Paul is excluded entirely; places with no dated ADU rule are left out (and listed). Columns: place,
     name, year, y (ADU permits; the larger source per year), eligible (ADU rule 1.1, nearest roll), T
     (adoption year: first year a rule with P(by right) >= 0.5 is in force on 1 July; NaN if never), dose
-    (D_it), rate (national 30-year mean), mm, the pre-adoption modifiers (`MODIFIERS`, measured in year
+    (D_it), rate (national 30-year mean), mm, parking and process (D-031 controls), T_announce
+    (`announcement_year`), the pre-adoption modifiers (`MODIFIERS`, measured in year
     T − 1) and units_5p (BPS units in 5+ unit buildings, the placebo outcome).
     """
     from lotline.build import eligible as eligible_rule
@@ -716,11 +969,12 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
             ]
             pre = [x for x in pre if not np.isnan(x)]
             mods["pre_permits"] = float(np.mean(pre)) if pre else np.nan
-            a, b = hh.get((geo, max(y0, 2015)), np.nan), hh.get((geo, max(y0, 2015) - 5), np.nan)
-            mods["hh_growth"] = float(np.log(a / b)) if a and b and a > 0 and b > 0 else np.nan
+            mods["hh_growth"] = household_growth(hh, geo, int(T))
             if y0 < 2010:
                 notes.append(f"{g}: adopted {int(T)}; modifiers measured from 2010 on (after adoption)")
+        T_ann = announcement_year(reforms, g, fips, T)
         for y, (dose, _) in zip(years, per_year, strict=True):
+            mid = pd.Timestamp(f"{int(y)}-07-01")
             rows.append(
                 {
                     "place": g,
@@ -729,9 +983,12 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
                     "y": int(counts.get((g, int(y)), 0)),
                     "eligible": eligible_at(e, y),
                     "T": T,
+                    "T_announce": T_ann,
                     "dose": dose,
                     "rate": float(rate.get(int(y), np.nan)),
-                    "mm": mm_in_force(reforms, g, fips, pd.Timestamp(f"{int(y)}-07-01"), mm_share),
+                    "mm": mm_in_force(reforms, g, fips, mid, mm_share),
+                    "parking": float(adu.parking_waived(reforms, g, mid)),
+                    "process": process_in_force(reforms, g, fips, mid),
                     "units_5p": float(bps["units_5p"].get((g, int(y)), 0.0)),
                     **mods,
                 }

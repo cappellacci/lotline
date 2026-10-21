@@ -40,6 +40,7 @@ from lotline.model.estimate_adu import (
     WEBB,
     EstimationError,
     modifier_scale,
+    permute_adoption,
     ppml,
     relu_separated,
 )
@@ -81,11 +82,14 @@ def build_pooled_design(
     use_mm: bool = True,
     rate_ref: float | None = None,
     binary_dose: bool = False,
+    controls: Sequence[str] = (),
 ) -> PooledDesign:
     """Regressors for the D-025 model from a panel with columns place, year, y, eligible, T, dose, rate, mm
-    and the modifiers. Bands scale the dose (or 1[by right] with `binary_dose`). A column with no non-zero
-    entry, or whose non-zero rows all have zero counts (not estimable: the likelihood rises without bound as
-    its coefficient falls), is dropped and listed in `dropped`; then separated rows (`relu_separated`)."""
+    and the modifiers. Bands scale the dose (or 1[by right] with `binary_dose`). `controls` adds those
+    panel columns unscaled as time-varying controls, named control_<column> (D-031 sensitivity run). A
+    column with no non-zero entry, or whose non-zero rows all have zero counts (not estimable: the likelihood
+    rises without bound as its coefficient falls), is dropped and listed in `dropped`; then separated rows
+    (`relu_separated`)."""
     y = panel["y"].to_numpy(dtype=float)
     t = panel["year"].to_numpy()
     T = panel["T"].to_numpy(dtype=float)
@@ -121,6 +125,9 @@ def build_pooled_design(
     if use_mm and "mm" in panel:
         cols.append(panel["mm"].to_numpy(dtype=float))
         names.append("delta")
+    for c in controls:
+        cols.append(panel[c].to_numpy(dtype=float))
+        names.append(f"control_{c}")
     X = np.column_stack(cols)
     keep, dropped = [], []
     for j, n in enumerate(names):
@@ -634,7 +641,8 @@ def overall_effect(fit: PooledFit, params: np.ndarray | None = None) -> float:
 def randomization_inference(
     panel, permutations: int, main: PooledFit, seed: int = 0, fitter=None, **design_kw
 ):
-    """Permute adoption years among treated places, re-fit (D-025 convergence rule), compare the overall
+    """Permute adoption years among treated places, each place's dose path moving with its T (D-031 (a)),
+    re-fit (D-025 convergence rule), compare the overall
     pooled effect of `main` with the permutation distribution. Returns (observed, p over the converged
     refits, distribution, log)."""
     rng = np.random.default_rng(seed)
@@ -644,8 +652,7 @@ def randomization_inference(
     out = []
     for _ in range(permutations):
         perm = dict(zip(treated["place"], rng.permutation(treated["T"].to_numpy()), strict=True))
-        p = panel.copy()
-        p["T"] = p["place"].map(perm).where(p["place"].isin(perm), p["T"])
+        p = permute_adoption(panel, perm)  # D-031 (a): each dose path moves with its adoption year
         f = refit(p, main, log, fitter, **design_kw)
         if f is not None:
             out.append(overall_effect(f))
@@ -802,6 +809,81 @@ def summarize_main(fit: PooledFit, boot: pd.DataFrame, level: float = 0.90) -> p
         "weakly_identified": bool(hi - lo > 1.0),
     }
     return pd.concat([out, pd.DataFrame([row])], ignore_index=True)
+
+
+SENSITIVITY_CONTROLS = ("parking", "process")
+
+
+def sensitivity_runs(
+    panel, main: PooledFit, main_summary: pd.DataFrame, draws=999, seed=0, fitter=None, **kw
+) -> list[dict]:
+    """The D-031 (c) sensitivity runs of the D-025 model, each one refit under the D-025 convergence rule with
+    a score-bootstrap 90% interval of the overall effect, reported beside the main estimate (`inside_main`:
+    inside the main 90% interval), not used to choose:
+
+    1. places treated before the panel's first year excluded (no untreated year in the panel);
+    2. T at the announcement year (`T_announce`; places without one keep T), each dose path moved with its T;
+    3. parking and process reforms as time-varying controls (`SENSITIVITY_CONTROLS`; a control with no
+       variation is dropped by the design and listed).
+    """
+    first = panel["year"].min()
+    m = main_summary.set_index("term").loc["overall"]
+    early = panel.loc[panel["T"] < first, "place"].unique()
+    Ta = panel.drop_duplicates("place").set_index("place")["T_announce"] if "T_announce" in panel else None
+    moved = {}
+    if Ta is not None:
+        T = panel.drop_duplicates("place").set_index("place")["T"]
+        moved = {
+            pl: float(Ta[pl]) for pl in T.index if pd.notna(T[pl]) and pd.notna(Ta[pl]) and Ta[pl] < T[pl]
+        }
+    present = [c for c in SENSITIVITY_CONTROLS if c in panel]
+    runs = [
+        (
+            "excluding places treated before the panel",
+            panel[~panel["place"].isin(early)],
+            {},
+            f"{len(early)} places excluded",
+        ),
+        (
+            "T at the announcement year (C29)",
+            permute_adoption(panel, moved),
+            {},
+            f"{len(moved)} places re-dated"
+            + ("" if Ta is not None else "; no announcement dates in the panel"),
+        ),
+        (
+            "parking and process controls (C08, C21)",
+            panel,
+            {"controls": present},
+            f"controls: {present or 'none in the panel'}",
+        ),
+    ]
+    out = []
+    for name, p, extra, note in runs:
+        log = RefitLog(name)
+        try:
+            r = _effect_interval(p, draws, seed, main, log, fitter, **kw, **extra)
+        except StageFailed as err:
+            out.append({**_not_computed(name, log, str(err)), "note_sample": note})
+            continue
+        if r is None:
+            out.append({**_not_computed(name, log), "note_sample": note})
+            continue
+        fit, _, e, lo, hi = r
+        out.append(
+            {
+                "check": name,
+                "estimate": e,
+                "low": lo,
+                "high": hi,
+                **{b: fit.value(b) for b in BAND_NAMES if b in fit.design.names},
+                "inside_main": bool(m["low"] <= e <= m["high"]),
+                "dropped": fit.design.dropped,
+                "note_sample": note,
+                "convergence": log.summary,
+            }
+        )
+    return out
 
 
 # ---------------------------------------------------------------------------------------------------------
