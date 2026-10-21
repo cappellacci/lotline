@@ -13,7 +13,7 @@ adu_mature_hazard_ref:
   high: 0.003173
   unit: ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate
   source: "Estimated, D-019 fit 3 (pre-registered: graded rule shares, gamma place effects, blank fields integrated per place, rule coverage), scripts/dev/calibrate_adu.py: Poisson-gamma maximum likelihood over 16 places, 115 place-years (Minneapolis, Austin 2016-23, 14 Twin Cities suburbs; 2,799 ADU permits), 90% profile-likelihood interval; Raleigh and Durham 2021-25 held out as the test. Earlier fits: 0.000467 (fit 1), 0.000790 (fit 2). Research band: 4 per 1,000, Portland (E046, E047)"
-  notes: "About 0.26 of Portland's 4 per 1,000 (D-019 explains the gap). This is the anchor for a typical place; each place's own multiplier varies widely (adu_place_effect_variance). Re-run the script as more rules are coded; no code change needed. Drawn lognormal (D-027): median at the estimate, log-SD 0.592 from the 90% interval ((ln high - ln low) / 3.29, as the fit's own predictive check), then shifted with the judgment parameters it was fitted at (adu_anchor.yaml). Not triangular: triangular(low, value, high) put the median at 1.47e-3, 41% above the estimate."
+  notes: "About 0.26 of Portland's 4 per 1,000 (D-019 explains the gap). This is the anchor for a typical place; each place's own multiplier varies widely (adu_place_effect_variance). Re-run the script as more rules are coded; no code change needed. Drawn lognormal (D-030): median at the estimate, log-SD 0.592 from the 90% interval ((ln high - ln low) / 3.29, as the fit's own predictive check), then shifted with the judgment parameters it was fitted at (adu_anchor.yaml). Not triangular: triangular(low, value, high) put the median at 1.47e-3, 41% above the estimate."
 
 adu_ref_rent_usd:
   value: 1573
@@ -144,8 +144,8 @@ adu_extrapolation_shared_share:
   low: 0.5
   high: 1.0
   unit: share of the extrapolation noise's variance common to every place in a draw
-  source: "Choice (D-027). The extrapolation widening stands for error in the transport formula (the shape of F, the equity and rate elasticities), which is the same model error for every place in a draw, not a fresh error per place. Place-to-place differences are already carried by the fitted place effects (adu_place_effect_variance, D-019 fit 3), so a per-place widening term would count them twice. Each draw's noise for place i is sqrt(share) z + sqrt(1 - share) e_i, z and e_i standard normal, so each place keeps the same spread and only the correlation between places changes"
-  notes: "Held at the central value in the forecast draws; 0.5 (half shared) is run as a sensitivity (scripts/dev/adu_dev_run.py). Before D-027 the noise was drawn independently per place (share 0), which let it average out in state totals."
+  source: "Choice (D-030). The extrapolation widening stands for error in the transport formula (the shape of F, the equity and rate elasticities), which is the same model error for every place in a draw, not a fresh error per place. Place-to-place differences are already carried by the fitted place effects (adu_place_effect_variance, D-019 fit 3), so a per-place widening term would count them twice. Each draw's noise for place i is sqrt(share) z + sqrt(1 - share) e_i, z and e_i standard normal, so each place keeps the same spread and only the correlation between places changes"
+  notes: "Held at the central value in the forecast draws; 0.5 (half shared) is run as a sensitivity (scripts/dev/adu_dev_run.py). Before D-030 the noise was drawn independently per place (share 0), which let it average out in state totals."
 
 adu_extrapolation_widening:
   value: 1.0
@@ -160,4 +160,4 @@ adu_place_effect_variance:
   high: 7.523
   unit: variance of a place's multiplier on the ADU hazard (gamma, mean 1)
   source: "Estimated, D-019 fit 3 (alpha): fitted place multipliers range from ~0 (Eagan, Lakeville, St. Louis Park) to ~11 (Austin)"
-  notes: "Each simulation draw gives each place its own multiplier, so a single place's range is very wide (its median is far below its mean); state totals, summed over many independent places, are much tighter. Drawn lognormal around the estimate (D-027): low and high are the 90% interval from the observed-information log-SE 0.281 (adu_anchor.yaml, recomputed on the current fit set; correlation with log theta about 0, so the two are drawn nearly independently), then shifted with the judgment parameters it was fitted at. Before D-027 it was fixed (its uncertainty not propagated)."
+  notes: "Each simulation draw gives each place its own multiplier, so a single place's range is very wide (its median is far below its mean); state totals, summed over many independent places, are much tighter. Drawn lognormal around the estimate (D-030): low and high are the 90% interval from the observed-information log-SE 0.281 (adu_anchor.yaml, recomputed on the current fit set; correlation with log theta about 0, so the two are drawn nearly independently), then shifted with the judgment parameters it was fitted at. Before D-030 it was fixed (its uncertainty not propagated)."

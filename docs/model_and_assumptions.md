@@ -416,7 +416,7 @@ gets its log distance outside the range (rent, home value and rate added up; 0 i
 interval. Each simulation draw multiplies the hazard by exp(s·z − s²/2), s = `adu_extrapolation_widening`
 (1.0, range 0.5–2) × distance, z standard normal; the mean stays put and P10–P90 widens with distance. z
 stands for error in the transport formula itself, so in a draw it is the same for every place
-(`adu_extrapolation_shared_share` 1.0, D-027): it does not average out when places are added up to a state.
+(`adu_extrapolation_shared_share` 1.0, D-030): it does not average out when places are added up to a state.
 Place-to-place differences are carried by the fitted place multipliers instead.
 
 **Properties the tests check:** the hazard equals the anchor at the reference place; higher price-to-cost never
@@ -452,7 +452,7 @@ so its units go on top of the baseline without counting those ADUs twice.
 **Mortgage rates.** A forward run holds the 30-year rate at `mortgage_rate_forecast` (`market.yaml`), 6.60%
 (FRED annual mean for 2025), flat over 2026–2030. Its range, 2.96–6.81% (the 2015–2025 annual low and high), is
 a stress range, not a forecast, so it is run as a **sensitivity** (the same draws with the rate at the low or
-the high), not mixed into the forecast range (D-027). Backtests and validation checks never use it: they use
+the high), not mixed into the forecast range (D-030). Backtests and validation checks never use it: they use
 each year's actual rate from `market_geo_year`.
 
 **Worked example** (`test_one_jurisdiction_year_by_hand`): 2,000 eligible parcels, mature hazard 0.0014219 (the
@@ -466,7 +466,7 @@ beside the eligible parcels (numerator and denominator kept apart), the central 
 rule class and note, and the calibration distance with an outside-the-range flag. Five-year ranges are
 percentiles of each draw's sum. Places below 20 eligible parcels are not shown alone (D-015).
 
-**How the draws are made (D-027).** Each of the 1,000 draws takes:
+**How the draws are made (D-030).** Each of the 1,000 draws takes:
 
 - every judgment parameter from a triangular distribution over its low, central and high values;
 - the **anchor** and the **place-effect variance α**, which are estimated, from a lognormal with its median at
@@ -492,7 +492,7 @@ its years; blank rule fields are integrated over per place (D-022). Fit set: Min
 | Parameter | Estimate | 90% interval | Note |
 |---|---|---|---|
 | Anchor (typical place, Portland's rent/value/rate) | 1.04 per 1,000 parcels a year | 0.45–3.17 | 0.26 of Portland's 4 per 1,000 (research band) |
-| Place-effect variance α | 4.7 | 3.0–7.5 (observed information, D-027) | multipliers from ~0 (Eagan, Lakeville) to ~11 (Austin) |
+| Place-effect variance α | 4.7 | 3.0–7.5 (observed information, D-030) | multipliers from ~0 (Eagan, Lakeville) to ~11 (Austin) |
 | Owner-occupancy share m_o | 1.0 | 0.9–1.0 | estimated: an owner-occupancy rule shows no measurable effect |
 | Other-restriction share m_x | 0.3 (judgment) | 0.1–1.0 (not identified) | kept at its judgment value |
 
@@ -510,9 +510,9 @@ places, are much tighter (below).
 
 **Statewide totals, development run** (origin 2025, P10 / P50 / P90 of draws summed over non-overlapping
 places, D-020; ADU permits added over current rules, and additional homes after the net-new and formalization
-shares), 2026–2030. "Before" is the same code and data with the draws as they were before D-027 (anchor
+shares), 2026–2030. "Before" is the same code and data with the draws as they were before D-030 (anchor
 triangular, α fixed, extrapolation noise independent per place, mortgage rate drawn over its stress range);
-"after" is D-027.
+"after" is D-030.
 
 | State | ADU permits added, before | ADU permits added, after | Additional homes, before | Additional homes, after |
 |---|---|---|---|---|
@@ -834,7 +834,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_fee_per_unit_usd` | 0 | fixed | USD per ADU (2025) | E073 (Terner 2019): many California cities waive ADU fees, others charge up to $50k |
 | `adu_ramp_half_years` | 2 | 1–3.5 | years after adoption to reach half the mature hazard | adu-study-design.md: immediate where conversions and pent-up demand exist (LA garages, E038) |
 | `adu_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, set so the ramp goes from ~20% to ~80% of mature uptake in about 2 years (Seattle's ~3 years to pla… |
-| `adu_extrapolation_shared_share` | 1 | 0.5–1 | share of the extrapolation noise's variance common to every place in a draw | Choice (D-027) |
+| `adu_extrapolation_shared_share` | 1 | 0.5–1 | share of the extrapolation noise's variance common to every place in a draw | Choice (D-030) |
 | `adu_extrapolation_widening` | 1 | 0.5–2 | standard deviation of log(hazard) per unit of log distance outside the calibration range | Judgment |
 | `adu_place_effect_variance` | 4.735 | 2.98–7.523 | variance of a place's multiplier on the ADU hazard (gamma, mean 1) | Estimated, D-019 fit 3 (alpha): fitted place multipliers range from ~0 (Eagan, Lakeville, St |
 

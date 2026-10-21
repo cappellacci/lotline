@@ -212,7 +212,7 @@ def test_observed_counts_take_the_larger_source_not_the_sum():
 
 def test_forward_runs_use_the_central_rate_and_backtests_use_the_given_rate():
     """No rate given -> every draw uses the central mortgage_rate_forecast (market.yaml; its 2015-25 range is
-    a sensitivity, D-027), so a forward run equals a run given the central rate, draw for draw; a given
+    a sensitivity, D-030), so a forward run equals a run given the central rate, draw for draw; a given
     (historical) rate is used as is; a sensitivity at the range's low end changes the result."""
     no_rate = _places().drop(columns="mortgage_rate")
     forecast = _places(mortgage_rate=P["mortgage_rate_forecast"])
@@ -249,7 +249,7 @@ def test_log_sd_from_the_90_percent_interval_by_hand():
 
 
 def test_anchor_draws_have_their_median_at_the_estimate():
-    """D-027: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
+    """D-030: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
     the judgment shift), not triangular(low, central, high), whose median for the anchor is ~1.47e-3, 41%
     above the estimate 1.038e-3."""
     spec = adu.specs()
@@ -262,7 +262,7 @@ def test_anchor_draws_have_their_median_at_the_estimate():
     assert np.median(alpha) == pytest.approx(a.value, rel=0.02)
     assert np.percentile(theta, 5) == pytest.approx(t.value * math.exp(-1.644854 * adu.log_sd(t)), rel=0.05)
     old = np.random.default_rng(7).triangular(t.low, t.value, t.high, 20_000)
-    assert np.median(old) > 1.4 * t.value  # the bias D-027 removes
+    assert np.median(old) > 1.4 * t.value  # the bias D-030 removes
 
 
 def test_anchor_shifts_with_the_judgment_parameters_it_was_fitted_at_by_hand():
@@ -284,7 +284,7 @@ def test_anchor_shifts_with_the_judgment_parameters_it_was_fitted_at_by_hand():
 
 
 def test_stress_ranges_are_held_at_central_in_the_draws():
-    """The mortgage-rate stress range and the shared extrapolation-noise share are sensitivities (D-027)."""
+    """The mortgage-rate stress range and the shared extrapolation-noise share are sensitivities (D-030)."""
     sets = adu.draw_params(200, 1)
     for k in adu.SENSITIVITY:
         assert {p[k] for p in sets} == {adu.specs()[k].value}
@@ -304,7 +304,7 @@ def test_extrapolation_noise_keeps_each_place_standard_normal_and_shares_by_hand
 def test_shared_extrapolation_noise_widens_state_intervals():
     """30 identical places far below the calibration range (rent $700), every other parameter held at its
     central value and place effects off, so only the extrapolation noise varies: with the noise
-    shared (D-027) the state's P10-P90 of added permits is much wider than with independent noise per place,
+    shared (D-030) the state's P10-P90 of added permits is much wider than with independent noise per place,
     which averages out over the 30 places; the mean is unchanged (widening keeps the mean)."""
     places = _places(rent=[700.0] * 30, geoid=[f"P{i}" for i in range(30)]).assign(state="MN")
     out = {}

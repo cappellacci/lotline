@@ -6,7 +6,7 @@
 For each state: inputs from the processed, holdout-filtered tables (`scenarios.adu.places_from_store`), then
 `scenarios.adu.run`. Prints five-year totals (P10/P50/P90 of each draw's sum) for named places and, per state,
 how many places fall outside the calibration range and the sum of the places' mean additional homes, then
-state totals (P10/P50/P90 of draws summed over places). Sensitivities (D-027), unless `--no-sensitivities`:
+state totals (P10/P50/P90 of draws summed over places). Sensitivities (D-030), unless `--no-sensitivities`:
 the state five-year totals with the mortgage rate at the low and high of its 2015-25 stress range, and with
 half of the extrapolation noise shared instead of all of it. Places below the publishing minimum (D-015) and
 places missing ACS rent or value are counted, not shown.
@@ -109,7 +109,7 @@ def main() -> None:
 
 
 def print_sensitivities(inputs: dict, origin: int, central: pd.DataFrame) -> None:
-    """Five-year state totals (P10/P50/P90) under each sensitivity, next to the forecast run (D-027)."""
+    """Five-year state totals (P10/P50/P90) under each sensitivity, next to the forecast run (D-030)."""
     specs = adu.specs()
     rate, shared = specs["mortgage_rate_forecast"], specs["adu_extrapolation_shared_share"]
     cases = {

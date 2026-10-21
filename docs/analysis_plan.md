@@ -728,7 +728,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
   - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
 
-### D-027 · 2026-10-20 · ADU scenario: how the uncertainty draws are made
+### D-030 · 2026-10-20 · ADU scenario: how the uncertainty draws are made
 - **Was (`scenarios/adu.py` `draw_params`, `run`):** every parameter drawn triangular(low, central, high),
   including the estimated anchor `adu_mature_hazard_ref` (1.038e-3, 90% profile interval 0.453e-3–3.173e-3),
   whose triangular median is 1.47e-3, 41% above the estimate; the place-effect variance α fixed at 4.735; the

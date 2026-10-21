@@ -39,7 +39,7 @@ rate lie outside the range the reference cities span (in logs, 0 inside). The mo
 there, but `widen` multiplies each draw's hazard by exp(w·d·z − (w·d)²/2), z standard normal, which keeps
 the mean and widens the range the further out the place is (`adu_extrapolation_widening` = w). z is a
 transport (model) error, so the scenario shares it across places in a draw
-(`scenarios.adu.extrapolation_noise`, `adu_extrapolation_shared_share`, D-027). Places outside
+(`scenarios.adu.extrapolation_noise`, `adu_extrapolation_shared_share`, D-030). Places outside
 are flagged in the output: no silent extrapolation (protocol §5.5 step 3).
 
 Every number comes from config/params/hazard.yaml and proforma.yaml; scripts/dev/adu_reference.py recomputes

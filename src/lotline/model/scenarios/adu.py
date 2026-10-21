@@ -27,7 +27,7 @@ most one ADU, and cumulative ADUs never exceed eligible parcels.
     ADU permits added (t) = Handbook gross ADUs(t) − current-rules gross ADUs(t)
     additional homes (t)  = ADU permits added (t) × adu_net_new_share × (1 − adu_formalization_share)
 
-Every result is a range: P10/P50/P90 and the mean over `adu_simulation_draws` draws (`draw_params`, D-027):
+Every result is a range: P10/P50/P90 and the mean over `adu_simulation_draws` draws (`draw_params`, D-030):
 judgment parameters triangular(low, central, high); the fitted anchor and place-effect variance lognormal
 around their estimates, shifted with the judgment parameters they were fitted at; one place multiplier per
 place; extrapolation noise shared across places (`extrapolation_noise`). The mortgage-rate stress range is a
@@ -85,7 +85,7 @@ NOT_IN_FIT = frozenset({"adu_extrapolation_widening"})
 
 def anchor_inputs() -> list[str]:
     """The drawn parameters the D-019 fit 3 likelihood depends on: the anchor θ and place-effect variance α
-    were fitted at their central values, so each draw shifts θ and α with them (`draw_params`, D-027)."""
+    were fitted at their central values, so each draw shifts θ and α with them (`draw_params`, D-030)."""
     skip = FIXED | set(LOGNORMAL) | set(SENSITIVITY) | set(AGGREGATE_KEYS) | NOT_IN_FIT
     return [k for k, s in specs().items() if k not in skip and s.low != s.high]
 
@@ -100,7 +100,7 @@ def log_sd(spec) -> float:
 
 
 def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) -> list[dict[str, float]]:
-    """n parameter sets (D-027).
+    """n parameter sets (D-030).
 
     - Judgment parameters: triangular(low, central, high); fixed ones held.
     - `SENSITIVITY` parameters (the 2015-25 mortgage-rate stress range, the shared share of extrapolation
@@ -135,7 +135,7 @@ def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) ->
 
 
 def anchor_terms() -> dict[str, float]:
-    """config/params/adu_anchor.yaml: the anchor's observed-information terms and slopes (D-027)."""
+    """config/params/adu_anchor.yaml: the anchor's observed-information terms and slopes (D-030)."""
     return {k: s.value for k, s in load_params("adu_anchor").items()}
 
 
@@ -714,11 +714,11 @@ def central_path(
 
 
 def extrapolation_noise(n: int, n_places: int, shared: float, seed: int) -> np.ndarray:
-    """Standard-normal extrapolation noise (draws × places): √shared · z_d + √(1 − shared) · e_di (D-027).
+    """Standard-normal extrapolation noise (draws × places): √shared · z_d + √(1 − shared) · e_di (D-030).
 
     z_d is one number per draw, common to every place; e_di is each place's own. Every entry stays standard
     normal, so `hazard.widen` keeps each place's mean and spread; only the correlation between places,
-    `shared`, changes. shared = 1: one z per draw; 0: independent per place (before D-027).
+    `shared`, changes. shared = 1: one z per draw; 0: independent per place (before D-030).
     """
     rng = np.random.default_rng(seed)
     common = rng.standard_normal((n, 1))
