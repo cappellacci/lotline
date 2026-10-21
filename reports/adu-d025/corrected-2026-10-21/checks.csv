@@ -1,0 +1,6 @@
+check,statistic,p,pass,convergence,note,estimate,low,high,outside,moved
+pre-trend leads,4.963679276224691,0.05205205205205205,False,"pre-trend leads: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept",,,,,,
+placebo dates (−2 years),,,,"placebo dates (−2 years): 0 of 1 refits converged (0 on retry, 1 excluded)",not computed: did not converge after a retry,,,,,
+placebo outcome (5+ units),,,True,"placebo outcome (5+ units): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept",,0.6933130306998956,-0.49528405381210927,1.8628594393491245,,
+"excluding (2020, 2021)",,,True,"excluding (2020, 2021): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept",,3.1824843927756086,,,[],
+leave one treated place out,,,True,"leave one treated place out: 31 of 31 refits converged (0 on retry, 0 excluded)",,,,,,[]
