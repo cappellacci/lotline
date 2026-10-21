@@ -256,9 +256,12 @@ def place_logliks(params: np.ndarray, d: PooledDesign, newton_steps: int = 30, g
 
 
 def _sum_by(idx: np.ndarray, M: np.ndarray, G: int) -> np.ndarray:
-    out = np.zeros((G, M.shape[1]))
-    np.add.at(out, idx, M)
-    return out
+    """Row sums of M within groups idx (G groups): one `bincount` per column (much faster than np.add.at)."""
+    return (
+        np.column_stack([np.bincount(idx, M[:, j], G) for j in range(M.shape[1])])
+        if M.shape[1]
+        else np.zeros((G, 0))
+    )
 
 
 def place_effects(params: np.ndarray, d: PooledDesign) -> np.ndarray:

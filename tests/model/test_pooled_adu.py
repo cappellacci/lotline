@@ -307,3 +307,32 @@ def test_start_from_matches_by_name(small_fit):
     assert s[d.names.index("lead_1")] == 0.0
     assert s[d.names.index("theta_m1")] == pytest.approx(main.value("theta_m1"))
     assert s[-2] == pytest.approx(main.value("log_sigma"))
+
+
+def test_score_accumulation_matches_the_previous_implementation():
+    """The bincount accumulation equals the earlier np.add.at version to 1e-10 (sums and place scores)."""
+    rng = np.random.default_rng(3)
+    idx = rng.integers(0, 40, 900)
+    M = rng.normal(size=(900, 23))
+    old = np.zeros((40, 23))
+    np.add.at(old, idx, M)
+    assert np.max(np.abs(pa._sum_by(idx, M, 40) - old)) < 1e-10
+    p = sparse_panel(seed=2, a_mean=-9.5)
+    d = pa.build_pooled_design(p, modifiers=["m1"])
+    k = d.X.shape[1]
+    params = np.r_[rng.normal(0, 0.1, k), -0.3, -1.0]
+    params[0] = -9.0
+    _, S_new = pa.place_logliks(params, d, grad=True)
+
+    def old_sum(i, A, G):
+        out = np.zeros((G, A.shape[1]))
+        np.add.at(out, i, A)
+        return out
+
+    saved = pa._sum_by
+    try:
+        pa._sum_by = old_sum
+        _, S_old = pa.place_logliks(params, d, grad=True)
+    finally:
+        pa._sum_by = saved
+    assert np.max(np.abs(S_new - S_old)) < 1e-10
