@@ -1,0 +1,64 @@
+[06:35:50] building the main panel
+[06:36:50] panel: 560 places, 8763 place-years with an outcome
+[06:36:56] check 7b drops 16 pipeline-flagged comparison places: ['2701900', '2702908', '2706382', '2706616', '2708794', '2717000', '2717288', '2718116', '2718188', '2735180', '2740166', '2743252', '2751730', '2756896', '2757220', '2771428']
+[06:36:56] MAIN MODEL nb (D-024 note 2026-10-21: D-025's estimator)
+[06:38:24] main fit (nb): BFGS converged; kept 8763 of 8763 place-years; dropped places 0; dropped columns []; separated observations 0
+[06:38:25] main estimates (log scale; proportional_effect = e^estimate - 1):
+           term  estimate     se     low    high  p_two_sided  proportional_effect
+         beta_0    0.0719 0.4557 -0.6641  0.8162       0.8639               0.0745
+         beta_2   -1.2877 1.2738 -3.3283  0.8505       0.3473              -0.7241
+         beta_4   -1.8466 1.5799 -4.5096  0.7689       0.2523              -0.8422
+      theta_pcr    1.1924 0.4881  0.3362  1.9883       0.0120               2.2949
+theta_log_value   -1.2342 0.4680 -1.9897 -0.4398       0.0110              -0.7089
+            rho    0.4279 0.1722  0.1281  0.7036       0.0060               0.5341
+          delta    0.0638 0.5464 -0.7952  1.0419       0.9119               0.0659
+            att   -0.2545 0.5863 -1.0453  0.8601       0.6737              -0.2247
+[06:38:25] added 2-4 unit homes in the treated places' post-adoption years:
+  place                              name  years  added     low   high  per_1000_parcels_year
+2743000                  Minneapolis city      6  -50.8  -318.5   62.9                   -0.1
+  37063 Durham County Unincorporated Area      6    5.3    -3.0    9.1                    0.1
+3719000                       Durham city      6  283.7  -166.6  489.4                    0.6
+3755000                      Raleigh city      4   75.9  -181.8  190.7                    0.2
+3915000                   Cincinnati city      2   -2.3   -64.1   26.9                   -0.0
+4805000                       Austin city      2  -19.1  -932.1  397.8                   -0.1
+4835000                      Houston city      2 2338.5 -1390.4 4047.6                    2.6
+[19:11:28] randomization inference: overall effect -0.2545, p = 0.964 (RELIABLE; 973 reassignments, 26 could not be fitted)
+[19:41:31] check: {'check': 'pre-trend leads', 'statistic': 2.0591495718532666, 'p': 0.5925925925925926, 'pass': True}
+[19:41:31] check: {'check': 'placebo dates (−2 years)', 'estimate': np.float64(0.39274961097696676), 'low': np.float64(-0.17002219177693317), 'high': np.float64(0.953284942228799), 'pass': True}
+[19:41:31] check: {'check': 'placebo outcome (5+ unit homes)', 'estimate': np.float64(-2.011732115305197), 'low': np.float64(-3.208561383473943), 'high': np.float64(1.2918927185088394), 'pass': True}
+[19:41:31] check: {'check': 'substitution (1-unit homes; no pass rule)', 'estimate': np.float64(-0.6401868553921112), 'low': np.float64(-0.9573398085242971), 'high': np.float64(-0.3359067482054706), 'pass': None}
+[19:41:31] check: {'check': 'excluding 2020-21', 'estimate_beta_0': 0.7093012865883928, 'estimate_beta_2': -0.9144178259585403, 'estimate_beta_4': -1.3026730742245045, 'estimate_att': 0.27439292590622016, 'outside': [], 'pass': True}
+[19:41:31] check: {'check': 'leave one treated place out', 'moved': [], 'pass': True}
+[19:41:31] check: {'check': 'contamination (a): 50,000+ people only', 'estimate_att': -0.18554647637968452, 'outside': [], 'pass': True}
+[19:41:31] check: {'check': 'contamination (b): without pipeline-flagged places', 'estimate_att': -0.5054914759423398, 'outside': [], 'pass': True, 'dropped_places': 16}
+[19:41:31] check: {'check': 'local measurement (reported)', 'pass': None, 'note': '2743000 metc_residential_permits: post ratio 1.00; 2743000 mpls_ccs_permits: post ratio 1.63; 3719000 durham_permits: post ratio 1.59; 3755000 raleigh_permits: post ratio 0.98'}
+[19:41:32] robustness model: ppml: could not be estimated: PPML diverged: |eta - offset| = 119.9
+[19:41:38] robustness model: re: done
+[19:41:38] robustness Borusyak imputation (point only): could not be estimated: PPML diverged: |eta - offset| = 124.4
+[19:42:51] robustness binary by-right dose: done
+[19:44:38] robustness all four modifiers: done
+[19:44:39] robustness Met Council, Twin Cities alone: done
+[19:44:39] robustness: {'fit': 'main (nb)', 'estimate': 0.07189876821200457, 'low': -0.6641260015836425, 'high': 0.8161594044123397, 'term': 'beta_0'}
+[19:44:39] robustness: {'fit': 'main (nb)', 'estimate': -1.2877362771915226, 'low': -3.3282914753297073, 'high': 0.8505071594336411, 'term': 'beta_2'}
+[19:44:39] robustness: {'fit': 'main (nb)', 'estimate': -1.8466075692968238, 'low': -4.509636526145109, 'high': 0.7689006372493778, 'term': 'beta_4'}
+[19:44:39] robustness: {'fit': 'main (nb)', 'estimate': -0.25453170970246874, 'low': -1.0453278546809337, 'high': 0.8600585276977891, 'term': 'att'}
+[19:44:39] robustness: {'fit': 're', 'estimate': 0.7941096401559101, 'low': 0.18047433549104497, 'high': 1.3933792763484392, 'term': 'beta_0'}
+[19:44:39] robustness: {'fit': 're', 'estimate': 1.1436167502409356, 'low': -0.6036938768474913, 'high': 2.8500314451905133, 'term': 'beta_2'}
+[19:44:39] robustness: {'fit': 're', 'estimate': -0.13207845154833264, 'low': -2.3756611617258114, 'high': 2.092992443011793, 'term': 'beta_4'}
+[19:44:39] robustness: {'fit': 're', 'estimate': 0.7683361928682105, 'low': 0.04540546830991621, 'high': 1.5868259861812204, 'term': 'att'}
+[19:44:39] robustness: {'fit': 'binary dose', 'estimate': -0.08592787297455483, 'low': -0.6453538655626413, 'high': 0.49871059289333, 'term': 'beta_0'}
+[19:44:39] robustness: {'fit': 'binary dose', 'estimate': -0.7131999917362668, 'low': -1.8062690128669698, 'high': 0.3911302776216927, 'term': 'beta_2'}
+[19:44:39] robustness: {'fit': 'binary dose', 'estimate': -0.8815951974403564, 'low': -2.2081229955900485, 'high': 0.5301869733043127, 'term': 'beta_4'}
+[19:44:39] robustness: {'fit': 'binary dose', 'estimate': -0.22986756383799906, 'low': -0.7914574712453557, 'high': 0.5214156559639009, 'term': 'att'}
+[19:44:39] robustness: {'fit': 'four modifiers', 'estimate': -0.37215978350235907, 'low': -1.503982062761658, 'high': 0.7682234402108439, 'term': 'beta_0'}
+[19:44:39] robustness: {'fit': 'four modifiers', 'estimate': -2.29726580646617, 'low': -4.470964037831205, 'high': -0.1945002439505008, 'term': 'beta_2'}
+[19:44:39] robustness: {'fit': 'four modifiers', 'estimate': -2.99819362670436, 'low': -5.581521486602788, 'high': -0.37383884079292606, 'term': 'beta_4'}
+[19:44:39] robustness: {'fit': 'four modifiers', 'estimate': -0.8262604166176302, 'low': -1.8037523206729131, 'high': 0.5018677681876749, 'term': 'att'}
+[19:44:39] robustness: {'fit': 'Met Council alone', 'estimate': -1.1934140888225186, 'low': -5.533262020054161, 'high': 3.180950372764533, 'term': 'beta_0'}
+[19:44:39] robustness: {'fit': 'Met Council alone', 'estimate': -2.4780068025243946, 'low': -7.133483060808922, 'high': 2.1749249571711364, 'term': 'beta_2'}
+[19:44:39] robustness: {'fit': 'Met Council alone', 'estimate': -3.47478926072703, 'low': -8.354766903715593, 'high': 1.5057754328756041, 'term': 'beta_4'}
+[19:44:39] robustness: {'fit': 'Met Council alone', 'estimate': -2.2191533259751055, 'low': -5.378665326771821, 'high': 1.5952648984571187, 'term': 'att'}
+[19:46:08] out-of-sample A: North Carolina: could not be estimated: transport for 3719000: predicted rate beyond 5% a year
+[19:47:17] out-of-sample B: Minneapolis: could not be estimated: transport for 2743000: predicted rate beyond 5% a year
+[19:47:17] wrote 11 CSVs to reports/mm-d024-nb/
+exit 0

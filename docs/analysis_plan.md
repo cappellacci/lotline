@@ -834,6 +834,62 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **The overall effect** weights the bins by counterfactual expected homes (as for the fallback), so the
     two models compare like with like. D-025's own place-year weighting is not used here.
   - Outputs go to `reports/mm-d024-nb/`, next to the fallback's `reports/mm-d024/`.
+- **Run with D-025's estimator (2026-10-21, 06:35–19:47; `--full --method nb`, outputs in
+  `reports/mm-d024-nb/`):** the one approved run. It completed.
+  - **Side by side** (log scale with 90% intervals; e^x − 1 is the proportional change in 2–4 unit homes at
+    full dose):
+
+    | | D-025 negative binomial (main) | Poisson-gamma fallback (2026-10-20) |
+    |---|---|---|
+    | Overall effect | **−0.25 (−1.05 to 0.86)** | 0.77 (0.07 to 1.54) |
+    | Years 0–1 / 2–3 / 4+ | 0.07 / −1.29 / −1.85 | 0.79 / 1.14 / −0.13 |
+    | Randomization inference | p = 0.96 (973 fitted, 26 failed: reliable) | p = 0.70 (956 fitted, 43 failed) |
+    | 1. Pre-trend leads | pass (p = 0.59) | pass (p = 0.59) |
+    | 2. Placebo dates | pass: 0.39 (−0.17 to 0.95) | **fail**: 0.54 (0.03 to 1.00) |
+    | 3. Placebo outcome, 5+ units | pass: −2.01 (−3.21 to 1.29) | **fail**: −1.11 (−1.53 to −0.54) |
+    | 4. Substitution, 1-unit homes (no rule) | −0.64 (−0.96 to −0.34) | 0.00 (−0.38 to 0.39) |
+    | 5. Excluding 2020–21 | pass | pass |
+    | 6. Leave one out (Minneapolis; Houston) | pass (−0.68; −0.57; all −0.71 to −0.12) | **fail** (Minneapolis out: −0.02) |
+    | 7. Contamination (a) 50,000+; (b) pipeline-flagged dropped | pass (−0.19); pass (−0.51) | pass (0.94); pass (0.74) |
+    | 8. Local counts re-fit (Minneapolis; Durham) | −0.64; −0.33 | 0.03; 0.51 |
+    | Out-of-sample A (NC) / B (Minneapolis) | **could not be estimated** (rate guard) | **fail** / **fail** |
+    | Added 2–4 unit homes, all 7 places | 2,631; Houston 2,338 (−1,390 to 4,048) | 2,650; Houston 2,422 (1,426 to 3,188) |
+
+  - **D-025's other terms:**
+    - price-to-cost: θ = 1.19 (0.34 to 1.99) per SD;
+    - home value: θ = −1.23 (−1.99 to −0.44) per SD;
+    - rate × treated: ρ = 0.43 (0.13 to 0.70);
+    - ADU rule: δ = 0.06 (−0.80 to 1.04).
+  - **D-025's robustness:**
+    - binary dose: −0.23 (−0.79 to 0.52);
+    - four modifiers: −0.83 (−1.80 to 0.50);
+    - Met Council alone: −2.22 (−5.38 to 1.60);
+    - Poisson-gamma: 0.77, as before;
+    - PPML and the imputation estimator: did not estimate (PPML diverges).
+  - **Out-of-sample:** both tests stopped at the guard that refuses a predicted rate above 5% of eligible
+    parcels a year in any draw (D-023's rule, applied to every draw). Durham's and Minneapolis's draws
+    combine wide bin effects with the modifier and rate terms. Under the convergence rule this counts as a
+    fail.
+  - **Added homes:** D-025's total comes from the modifier and rate terms, not the bins. With ρ > 0 and the
+    2024–25 rates, and Houston's modifiers, its predicted gain is positive although the bin effects are
+    negative. Its interval spans 0.
+  - **Interval coverage:** the simulation that found too-narrow intervals (68–85%) tested PPML. D-025's
+    coverage on this design has not been measured.
+  - **Reading for a policymaker:**
+    - D-025's estimate is the more trustworthy of the two. It allows for the year-to-year noise in permit
+      counts, and it passes the three checks the fallback failed (placebo dates, placebo outcome, leave one
+      out).
+    - What it finds: within 2–6 years of the rule, the seven cities show no detectable rise in 2–4 unit
+      permits relative to similar places. The central estimate is a 22% fall (−0.25). The interval runs from
+      a 65% fall to a 136% rise, and the reshuffled reform dates produce effects this large 96% of the time.
+    - **Neither estimate is credible enough to drive the scenario effects:**
+      - the fallback fails three checks and both out-of-sample tests;
+      - D-025's is too imprecise to size an effect, and its out-of-sample tests could not be run.
+    - **Recommendation:** use the in-state estimate as validation only. The scenario's missing-middle effect
+      should come from the pro forma and the external evidence. This result says a large short-run jump is not
+      what these cities saw, and the pro forma's ramp should be consistent with that.
+  - **Run time:** 13 hours, 12.5 of them randomization inference (999 refits at roughly 6 minutes each on 8
+    workers, against about 1.5 minutes measured for single fits).
 
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
