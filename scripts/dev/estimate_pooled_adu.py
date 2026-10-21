@@ -132,18 +132,23 @@ def stages(
     for g, (state, years, scored) in TRANSPORT.items():
         targets.append(est.build_panel(state, store, years=years, geoids=[g]).data)
         window[g] = scored
-    pred = pa.transport_predict(
-        fit,
-        boot,
-        panel,
-        pd.concat(targets, ignore_index=True),
-        seed=20261020,
-        widening=p["adu_transport_widening"],
-        window=window,
-    )
-    print(pred.round(1).to_string(index=False))
-    verdict = est.transport_verdict(pred)
-    print(verdict)
+    try:
+        pred = pa.transport_predict(
+            fit,
+            boot,
+            panel,
+            pd.concat(targets, ignore_index=True),
+            seed=20261020,
+            widening=p["adu_transport_widening"],
+            window=window,
+        )
+        print(pred.round(1).to_string(index=False))
+        verdict = est.transport_verdict(pred)
+    except est.EstimationError as err:  # D-025 rule: report the stage as not computed and carry on
+        pred = pd.DataFrame()
+        verdict = {"pass": None, "note": f"not computed: {err}"}
+        logs.append(f"transport NOT COMPUTED: {err}")
+    print(verdict, flush=True)
     print("convergence:", *logs, sep="\n  ")
 
     if out:

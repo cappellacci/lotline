@@ -828,7 +828,8 @@ def transport_predict(
     (z-scored on the estimation panel's treated places); its random effect from its pre-adoption years
     (posterior mode and curvature, drawn normal) when it has any, else u ~ Normal(0, σ²); negative-binomial
     counts with κ. Out-of-range modifiers widen the place's predictive (as hazard.widen). Raises
-    EstimationError on non-finite or absurd means (> 5% of eligible parcels a year)."""
+    EstimationError on non-finite predictions or a predicted MEAN above 5% of eligible parcels a year (single
+    draws may exceed it: with a large place-effect σ the predictive tail is long)."""
     rng = np.random.default_rng(seed)
     d = fit.design
     k = d.X.shape[1]
@@ -883,6 +884,7 @@ def transport_predict(
         off = np.log(g["eligible"].to_numpy(dtype=float))
         pre = post == 0
         sims = np.zeros((draws, len(g)))
+        mus = np.zeros((draws, len(g)))
         lp = fit.log_params
         for i in range(draws):
             b = to_log(rows_b[rng.integers(len(rows_b))], k)
@@ -901,16 +903,20 @@ def transport_predict(
             else:
                 u_draw = rng.normal(0, sigma)
             s = widening * dist
-            log_rate = eta - off + u_draw
-            if not np.all(np.isfinite(log_rate)) or np.max(log_rate) > math.log(MAX_YEARLY_RATE):
-                raise EstimationError(
-                    f"transport for {place}: predicted ADU rate beyond {MAX_YEARLY_RATE:.0%} of "
-                    "eligible parcels a year (or non-finite)"
-                )
-            mu = np.exp(eta + u_draw + s * rng.standard_normal() - s**2 / 2)
+            if not np.all(np.isfinite(eta + u_draw)):
+                raise EstimationError(f"transport for {place}: non-finite prediction")
+            mu = np.exp(np.minimum(eta + u_draw + s * rng.standard_normal() - s**2 / 2, 700))
+            mus[i] = mu
             lam = rng.gamma(1 / kappa, mu * kappa) if kappa > 1e-6 else mu
             sims[i] = rng.poisson(lam)
         _ = lp
+        # D-025 guard on the predicted MEAN (not single draws, whose tails are wide when σ is large)
+        mean_rate = mus.mean(axis=0) / g["eligible"].to_numpy(dtype=float)
+        if not np.all(np.isfinite(mean_rate)) or np.max(mean_rate) > MAX_YEARLY_RATE:
+            raise EstimationError(
+                f"transport for {place}: predicted mean ADU rate {np.max(mean_rate):.1%} of eligible parcels "
+                f"a year (limit {MAX_YEARLY_RATE:.0%}) or non-finite"
+            )
         lo_y, hi_y = (window or {}).get(place, (-np.inf, np.inf))
         scored = ((g["year"] >= lo_y) & (g["year"] <= hi_y)).to_numpy()
         for t in np.where(scored)[0]:
