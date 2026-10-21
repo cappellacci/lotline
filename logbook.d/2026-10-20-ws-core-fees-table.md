@@ -1,0 +1,14 @@
+### LB-NNN · 2026-10-20 · Build: Fee table from city-ordinance records (thread 02, PR A)
+- **Question:** Which fees do the cities in ordinance batch 1 charge a new home, per unit, in a form the fee scenario can use?
+- **What I did:**
+  - Wrote `scripts/dev/ordinance_records.py`. It keeps only fee items from a schedule that was read and that carry a verbatim quote. It maps component, building type and basis onto the `fees` schema and converts each item to a per-unit amount by a named rule (valuation table, share of the permit fee, state surcharge, per SAC/meter, per unit, flat). Land-based and conditional fees stay blank.
+  - Valuation-based fees are worked out at the pro forma's prototype valuation (units × sq ft × $165/sq ft, central). Fees for a stated size band count only when the prototype falls inside it. Three item-level overrides are listed in the script.
+  - Wrote `config/fees/mn.csv` (171 rows), `nc.csv` (11) and `tx.csv` (2), all validated by `load_fees`. Synthetic tests are hand-worked.
+- **Inputs:** `docs/research/ordinances/batch1-2026-10-20.json`; `config/params/proforma.yaml`; processed `jurisdictions` tables (city → GEOID).
+- **Outputs:** `scripts/dev/ordinance_records.py`, `config/fees/{mn,nc,tx}.csv`, `config/fees/README.md`, `tests/core/test_ordinance_records.py`.
+- **Findings:**
+  - Of 266 fee items, 161 were kept and 105 dropped: 99 had no quote, 4 were totals, escrows or minimum fees, and 2 came from a schedule that was not read. 15 of 23 cities have usable rows. Blaine, Durham, Eagan, Eden Prairie, Edina, Minnetonka, Plymouth and Woodbury have none.
+  - Coded single-family fees per unit (newest year of each component) range from $5.6k (Raleigh, with no building-permit fee coded) to $17.8k (Maple Grove), with a median of about $7.2k. That is far below the Handbook's $50k. Coverage is partial where items had no quote: Austin has one $335 item, Minneapolis has no utility fees, and St. Louis Park's newest schedule lacks the permit fee.
+- **Decisions:** proposed in the PR: blank `amount_per_unit_usd` = "not paid by a typical infill home"; OTHER rows priced at the single-family prototype; schedule year rules.
+- **AI:** Claude Code (thread 02). Every converted row was read against its record. Hand checks: Bloomington $986.13 + $5.50 × 255 = $2,388.63; Rochester $649.50 + $3.50 × 255 = $1,542. Tests pass.
+- **Open / next:** store the checker's verdicts so `verified_by` can be filled; a manual lookup for the quote-less items; PR B (fee scenario) reads these rows.

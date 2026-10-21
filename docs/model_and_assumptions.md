@@ -78,7 +78,8 @@ Running four states is the test that a state with thin data can still use the me
 | Pro forma (residual land value, 7 building prototypes) | **Built**, tested | `model/proforma.py` |
 | Real 2025 dollars; completion factors | **Built**, tested | `model/money.py`, `model/completion.py` |
 | Scenario modules (ADU, missing middle, fees) | ADU **built**, tested (2026-10-20); missing middle and fees **planned** | `model/scenarios/adu.py`, `config/params/adu.yaml`, `market.yaml` |
-| ADU effect estimation, staggered adoption: D-026 imputation (primary), D-023 extended TWFE (robustness) | **Built**, tested on simulated panels including the regimes that broke D-023 (2026-10-20); **not yet run** on real data (D-026 awaits Ben's approval) | `model/estimate_adu.py`, `scripts/dev/estimate_adu.py` |
+| ADU effect estimation, staggered adoption (D-023; superseded by D-025) and D-031 additive imputation (robustness to D-025) | **Built**, tested on simulated panels including the regimes that broke D-023 (2026-10-20); D-031 **not yet run** on real data | `model/estimate_adu.py`, `scripts/dev/estimate_adu.py` |
+| ADU effect estimation, pooled hierarchical negative binomial (D-025, main model) | **Built**, tested on sparse synthetic panels (2026-10-20); run once after this entry | `model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py` |
 | Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); missing middle **planned** | `model/hazard.py`, `config/params/hazard.yaml` |
 | Evidence prong (comparable places, transport) | **Planned** | `src/lotline/evidence/` is empty |
 | Combined scenarios (no lot counted twice) | **Planned** | `model/combine` (BUILD_PLAN §5) |
