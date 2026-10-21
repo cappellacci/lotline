@@ -668,3 +668,12 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   The remaining stages (randomization inference, the five checks, robustness, transport) are then run once,
   reusing the main model as estimated: its fit is recomputed deterministically only to recover the Hessian
   and place scores, and checked to match the logged estimates.
+- **Remaining stages run (2026-10-20, once; log `reports/adu-d025/remaining-2026-10-20-log.txt`, 5 h 07 min):**
+  the main model was recomputed and matched all 22 logged estimates to 1e-4 (reused, unchanged); its wild
+  bootstrap kept 999 of 999 draws. **Randomization inference: 928 of 999 permutation refits converged (84 on
+  the retry from the main estimates, 71 excluded = 7.1%), above the 5% limit, so the stage is not computed.**
+  A defect in the run script then stopped the whole run instead of only that stage (the stage failure was not
+  caught), so the five checks, the robustness estimators and the transport test were not run. Fixed in code
+  (the script now records a failed stage and continues; randomization inference stops as soon as its 5%
+  limit is broken) but **not re-run**: running the checks, robustness and transport needs Ben's go-ahead.
+  Reading: about 1 in 14 permuted adoption-date panels does not converge even after a retry.

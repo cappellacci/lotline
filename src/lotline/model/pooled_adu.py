@@ -646,6 +646,8 @@ def randomization_inference(
         f = refit(p, main, log, fitter, **design_kw)
         if f is not None:
             out.append(overall_effect(f))
+        if log.failed > log.max_share * permutations:  # the 5% limit is already broken: stop now
+            break
     log.check()
     dist = np.array(out)
     return obs, float(np.mean(np.abs(dist) >= abs(obs))), dist, log

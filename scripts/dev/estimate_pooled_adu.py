@@ -77,11 +77,14 @@ def stages(store, panel, fit, boot, main, out: Path | None, log_note: str = "") 
     kw = {"modifiers": list(est.MODIFIERS)}
     logs = []
 
-    obs, p_ri, ri_dist, ri_log = pa.randomization_inference(panel, perms, fit, seed=20261020, **kw)
-    logs.append(ri_log.summary)
-    print(
-        f"randomization inference: overall {obs:.4f}, p = {p_ri:.3f} over {len(ri_dist)} ({ri_log.summary})"
-    )
+    try:
+        obs, p_ri, ri_dist, ri_log = pa.randomization_inference(panel, perms, fit, seed=20261020, **kw)
+        logs.append(ri_log.summary)
+        print(f"randomization inference: overall {obs:.4f}, p = {p_ri:.3f} over {len(ri_dist)}", flush=True)
+    except pa.StageFailed as err:  # D-025 rule: the stage is reported as not computed; the run continues
+        obs, p_ri, ri_dist = pa.overall_effect(fit), float("nan"), np.array([])
+        logs.append(f"randomization inference NOT COMPUTED: {err}")
+    print(logs[-1], flush=True)
 
     checks = [
         pa.check_leads(panel, fit, draws=draws, seed=1, **kw),

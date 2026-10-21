@@ -24,3 +24,8 @@
   the remaining stages once.
 - **Outputs:** `src/lotline/model/pooled_adu.py`, `tests/model/test_pooled_adu.py`, the script,
   `reports/adu-d025/` (results), `docs/analysis_plan.md` (D-025 notes).
+- **Findings (remaining-stages run, 5 h 07 min):** main model reused (matched all 22 logged estimates; its
+  bootstrap kept 999/999). Randomization inference: 928 of 999 refits converged (84 on retry, 71 excluded,
+  7.1% > 5%), so not computed. A script defect stopped the whole run at that point, so the checks, robustness
+  and transport were not run; fixed in code (stage failures are recorded and the run continues; RI stops as
+  soon as its limit is broken) and not re-run, pending Ben.
