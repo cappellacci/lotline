@@ -890,6 +890,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       what these cities saw, and the pro forma's ramp should be consistent with that.
   - **Run time:** 13 hours, 12.5 of them randomization inference (999 refits at roughly 6 minutes each on 8
     workers, against about 1.5 minutes measured for single fits).
+  - **Code as run:** `pooled_adu` as of commit 448be4c. Main's later changes to it were not used: score
+    accumulation by `bincount` (identical to 1e-10, faster) and D-025's own retry-from-main-estimates
+    convergence rule. D-024's convergence rule (above) applied instead.
 
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
@@ -947,3 +950,337 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   interval contained 0 in 87–97% of 70 panels, with a small negative lean (~−0.15, a third of its spread).
 - **Run once;** whatever it shows is reported. No re-specification without a new dated entry.
 - **Decided by:** Ben, 2026-10-20 (options 1 and 2); details written by WS-ENGINE before the run.
+- **The run (2026-10-20, once; log `reports/adu-d025/run-2026-10-20-log.txt`):** the main model converged on
+  the full panel (76 places, 760 place-years, 31 treated, 53 with no ADU in any year; no column dropped, no
+  separated rows, no variance parameter at a bound) and its estimates with bootstrap intervals were printed.
+  The run then **stopped at randomization inference**: one of the 999 refits with permuted adoption years
+  did not converge (BFGS) and the guard raised `EstimationError`, so randomization inference, the five checks,
+  the robustness estimators and the transport test were not computed and no CSV was written. The main-model
+  estimates are reported as they stand, without those checks. Not re-run. Decision needed (new dated entry):
+  how to treat a permutation refit that does not converge (e.g. count and report failed permutations and
+  compute the p-value over the rest, or restart BFGS from the main estimate), then run the remaining stages
+  once.
+- **Convergence rule for repeated refits (Ben, 2026-10-20; written before the remaining stages are run):**
+  in any stage that refits the model many times (randomization inference, the wild bootstrap, leave-one-out
+  and the checks), a refit that does not converge is retried once, starting from the main-model estimates;
+  if it still fails it is excluded and counted, and results are reported over the rest ("998 of 999
+  converged; p over 998"). Isolated failures never stop the run. A stage stops, and is reported as not
+  computed, only if failures exceed 5% of its refits; a stage that is a single refit (a check, the binary
+  dose) is reported as not computed if it fails after the retry, and the run continues. Wild-bootstrap draws
+  are one Newton step, not refits: a draw beyond the coefficient bound is excluded and counted the same way.
+  The remaining stages (randomization inference, the five checks, robustness, transport) are then run once,
+  reusing the main model as estimated: its fit is recomputed deterministically only to recover the Hessian
+  and place scores, and checked to match the logged estimates.
+- **Remaining stages run (2026-10-20, once; log `reports/adu-d025/remaining-2026-10-20-log.txt`, 5 h 07 min):**
+  the main model was recomputed and matched all 22 logged estimates to 1e-4 (reused, unchanged); its wild
+  bootstrap kept 999 of 999 draws. **Randomization inference: 928 of 999 permutation refits converged (84 on
+  the retry from the main estimates, 71 excluded = 7.1%), above the 5% limit, so the stage is not computed.**
+  A defect in the run script then stopped the whole run instead of only that stage (the stage failure was not
+  caught), so the five checks, the robustness estimators and the transport test were not run. Fixed in code
+  (the script now records a failed stage and continues; randomization inference stops as soon as its 5%
+  limit is broken) but **not re-run**: running the checks, robustness and transport needs Ben's go-ahead.
+  Reading: about 1 in 14 permuted adoption-date panels does not converge even after a retry.
+- **Checks, robustness and transport run (2026-10-21, once; log `reports/adu-d025/stages-2026-10-21-log.txt`;
+  Ben approved; refits sped up first by an identical score accumulation, 7442d47):** main model reused
+  (matched all 22 logged estimates; bootstrap 999/999 kept). Randomization inference not re-attempted: **not
+  computed: 71 of 999 (7.1%) failed, above the 5% limit**. Checks against D-023's pass rules:
+  1. pre-trend leads: Wald 5.94, **p = 0.025 → fails** (the D-023 rule calls for HonestDiD bounds);
+  2. placebo dates (−2 years): **not computed** (the refit did not converge after a retry);
+  3. placebo outcome (5+ units): 0.48 (−0.62 to 1.64) → passes;
+  4. excluding 2020–21: overall 2.91, every band and the overall effect inside the main intervals → passes
+     (the refit converged on the retry);
+  5. leave one treated place out: 31 of 31 refits converged (3 on retry); no place moves the overall effect
+     outside its interval → passes.
+  Robustness: fixed-effects PPML (193 rows kept; two modifiers collinear with fixed effects): bands −0.16,
+  −0.59, −0.39 with SEs ≈ 2.4 (uninformative); Borusyak imputation: only 7 treated place-years imputable
+  (162 not: their places have no permits before adoption): bands −0.52 (−1.71 to 0.68), −1.55 (−3.09 to
+  −0.35), 4+ not estimable, overall −0.94 (−2.25 to 0.30); binary dose: overall 1.50 (0.33 to 2.67), bands
+  1.48, 1.23, 1.61. **The robustness estimators do not support the main estimate's size, and the imputation
+  estimate has the opposite sign on very few rows.** Transport: **not computed**: the code checked single
+  predictive draws against the 5% limit, while this entry specifies the predicted mean; with σ ≈ 2.1 Austin's
+  draws (no pre-adoption years, so u from the prior) exceeded it. Fixed to check the mean, with a test, and a
+  transport failure now records the stage instead of stopping the run; **not re-run** pending Ben.
+- **Transport re-run (2026-10-21, once, Ben approved; log `reports/adu-d025/transport-2026-10-21-log.txt`):**
+  transport only, with the guard on the predicted mean; main model reused (matched all 22 logged estimates).
+  **Fails the D-023 rule:** totals inside their 80% intervals: Austin no (observed 2,545 vs P10–P90 0–279),
+  Raleigh no (230 vs 0–49), Durham yes (269 vs 9–272); yearly coverage 15% (rule 60–95%). No place is outside
+  the Minnesota modifier range. Austin has no pre-adoption years in its window (adopted 2010), so its effect is
+  drawn from the prior; in Raleigh (2022 on) and Durham (2020 on) the missing-middle term δ = −2.69, identified
+  from Minneapolis alone, pushes predictions far below what was observed.
+- **HonestDiD bounds: choices fixed before running (2026-10-21, WS-ENGINE; Ben asked for them because the
+  pre-trend test failed, as D-023 pre-registers; Rambachan & Roth 2023):**
+  - *Event study input:* the pre-trend-leads refit (the one check 1 used): the lead coefficients for event
+    times k = −3, −2, −1 are the pre-period coefficients, relative to the omitted periods (k ≤ −4 and the
+    never-treated). That reference, not k = −1, is normalised to 0, so the restrictions chain from
+    δ_{−4} = 0 through the estimated δ_{−3}, δ_{−2}, δ_{−1}.
+  - *Target:* the pooled post-adoption effect at realised doses, θ = the mean over treated place-years with
+    k ≥ 0 of β_band(k) × dose_it (same bands, weights by place-years). The bias for that target is
+    Σ_k ω_k δ_k, where ω_k is the share of those place-years at event time k (k = 0 … the panel's largest),
+    since the leads are indicators, not dose-scaled.
+  - *Relative magnitudes, Δ^RM(M̄):* every post-period step |δ_k − δ_{k−1}| ≤ M̄ × M_pre, with
+    M_pre = max(|δ_{−3}|, |δ_{−2} − δ_{−3}|, |δ_{−1} − δ_{−2}|). The bias is in δ_{−1} ± M̄ M_pre Σ_k ω_k (k + 1)
+    (ω ≥ 0, so the extreme is every step at the bound). M̄ ∈ {0.5, 1, 1.5, 2}.
+  - *Smoothness, Δ^SD(M):* post-period second differences at most M, extrapolating the last pre-period slope
+    s = δ_{−1} − δ_{−2}. The bias is in Σ_k ω_k [δ_{−1} + (k + 1) s] ± M Σ_k ω_k (k + 1)(k + 2) / 2.
+    M ∈ {0, 0.05, 0.1, 0.2} (log points per year²; M = 0 is linear extrapolation).
+  - *Inference:* the identified set's bounds are recomputed on each of the leads refit's 999 bootstrap draws
+    (θ, δ and M_pre all re-drawn). The 90% robust interval runs from the 5th percentile of the lower bound to
+    the 95th percentile of the upper bound. This is simpler than Rambachan & Roth's conditional (ARP) and
+    FLCI intervals, and conservative.
+  - *Reported:* identified set and robust interval for each M̄ and M, the breakdown M̄ (the smallest at which the
+    interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
+  - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
+
+### D-029 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
+- **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline
+  engine. In simulation, log forecast error against log(origin level / 5-year mean) had correlation 0.66,
+  state-year P10–P90 coverage was 74% and 5-year total coverage 68% (nominal 80%). (1) The cycle's random
+  walk starts at 1 from the level-window mean, not at the state's level in the origin year
+  (`model/baseline.py`), a likely cause of the NC/TX under-forecast (D-006, D-011). (2) Spec C applies
+  exp(β_h · g + β_p · q) with uncentred signals while dropping β_0 (`model/demand.py`), so a place at average
+  demand gets a multiplier that is not 1; D-007's rejection of spec C rests on that bug, and its test
+  re-implemented the formula and missed it. (3) The negative-binomial 1/k and the place's own variance
+  (`use_direct_variance`) are estimated on raw annual counts that already contain the cycle, so cycle variance
+  is counted twice. (4) The same `default_rng(simulation_seed)` is restarted for every size class, so classes
+  share random numbers by accident. (5) The backtest scores only place-years, never state totals, and the V1
+  windows have been used to choose specifications.
+- **Fixed now, before any run (each with a hand-worked synthetic test):**
+  1. **Cycle starts at the origin-year state level** (`cycle_start_at_origin` = 1). Each place's level is
+     multiplied by a_s = S_T / S̄, where S_t is the state's total of the size class over the places that have a
+     level, S_T its origin-year value and S̄ its mean over the level window; the random walk then runs from
+     there, so E[S_{T+h}] = S_T when nothing changes. The level's variance scales by a_s². This is
+     `state_momentum` with a 1-year recent window; if `use_state_momentum` = 1 its factor replaces a_s (never
+     both). 0 restores the old start.
+  2. **Spec C centred at the fit-sample means.** Multiplier = exp(β_h (g − ḡ) + β_p (q − q̄)), with ḡ, q̄ the
+     means of g and q over the Poisson fit sample (the regression is fitted on the centred signals; slopes are
+     unchanged, β_0 becomes the drift at average demand). β_0 stays unapplied, as D-006 intended: a place at
+     average demand keeps spec B's level.
+  3. **Dispersion on detrended counts** (`detrend_dispersion` = 1). Before 1/k and the place's own variance of
+     annual rates are computed, each place-year count (and rate) is divided by the state's cycle index for that
+     year, s_t = S_t / S̄ over the level window (s_t = 1 where S_t = 0). With no cycle (s_t ≡ 1) both estimates
+     are exactly as before. 0 restores the raw estimates.
+  4. **Random numbers per size class**: the per-place draws come from `default_rng([seed, size class column,
+     state, origin])`, so classes and states never share random numbers by accident. The cycle years stay
+     shared on purpose (D-011).
+  5. **State-total scoring in V1.** For every state, fit end, size class and forecast year, the scored places'
+     draws are summed draw by draw (so the shared cycle is kept), and compared with the sum of the same places'
+     observed counts; also the window total (all forecast years, places scored in every year). Reported: the
+     randomized P10–P90 coverage (D-003), the PIT histogram in deciles (non-randomized PIT, Czado et al. 2009),
+     the CRPS of the summed draws, and absolute error of the P50 of the sum against the benchmarks' sums.
+     These are **reported, not new pass criteria**; 80% is the reference.
+- **V1 is a development set.** The 2016/2018/2020 windows have been used to choose among specs A, B and C,
+  state momentum, the D-011 cycle fix and the scoring floor, so V1 scores are in-sample for specification
+  choice and are labelled "development set" in the backtest output and reports. Confirmatory evidence comes
+  only from the holdout tests.
+- **Runs declared now (MN NC OH TX, fit ends 2016/2018/2020, eligibility rule as on `main`):** spec B old
+  (`main` before this change) and new (all five fixes), place-level and state-level; attribution runs of the
+  new code with `cycle_start_at_origin` = 0 and with `detrend_dispersion` = 0; spec C once with the fix. All
+  are reported in the PR, whatever they show. No parameter is tuned on these runs; adopting the new baseline,
+  and whether spec C deserves another look, is Ben's decision, logged as a later entry.
+- **Decided by:** pre-declared by Claude Code (WS-ENGINE) at the coordinator session's request, 2026-10-20;
+  Ben to confirm in the PR.
+
+### D-030 · 2026-10-20 · ADU scenario: how the uncertainty draws are made
+- **Was (`scenarios/adu.py` `draw_params`, `run`):** every parameter drawn triangular(low, central, high),
+  including the estimated anchor `adu_mature_hazard_ref` (1.038e-3, 90% profile interval 0.453e-3–3.173e-3),
+  whose triangular median is 1.47e-3, 41% above the estimate; the place-effect variance α fixed at 4.735; the
+  extrapolation noise z drawn independently for every place, so it averaged out in state totals; the 2015–25
+  mortgage stress range drawn triangular(2.96, 6.60, 6.81) (mean 5.46%) as if it were a forecast, independently
+  of the cap rate and construction-loan rate; and the judgment parameters drawn independently of an anchor that
+  was fitted at their central values.
+- **Now:**
+  - the anchor and α are lognormal with median at the estimate and log-SD from the 90% interval,
+    (ln high − ln low) / 3.29 (anchor 0.592, the fit's own predictive-check convention; α 0.281 from the fit's
+    observed information, giving 2.98–7.52); their correlation from the observed information (0.004);
+  - each draw shifts log anchor and log α by Σ_j g_j (p_j − central p_j), g_j = d log θ̂ / d p_j from refitting
+    the D-019 fit 3 likelihood with each judgment parameter moved by ±10% of its range
+    (`scripts/dev/calibrate_adu.py --draw-terms` → `config/params/adu_anchor.yaml`; 19 parameters enter the
+    fit, the largest being the partial-rule share, −3.05 per unit, and the ramp half-life, +0.27 per year);
+  - the extrapolation noise is √s · z_draw + √(1 − s) · e_place with `adu_extrapolation_shared_share` s = 1.0
+    (choice: it is a transport-model error; place-to-place differences are already in the fitted place
+    effects); 0.5 is a sensitivity;
+  - the mortgage rate is held at the central 6.60% in the forecast draws; its 2015–25 low and high are run as
+    sensitivities (`scripts/dev/adu_dev_run.py`), so the cap-rate and loan-rate draws no longer mix with a
+    rate scenario.
+- **Effect (development run, origin 2025, five-year additional homes, P10 / P50 / P90):** Minnesota
+  779 / 1,556 / 2,880 → 271 / 845 / 2,623; North Carolina 1,044 / 2,272 / 4,847 → 355 / 1,212 / 4,059; Ohio
+  574 / 1,262 / 2,920 → 133 / 506 / 2,462; Texas 4,074 / 8,211 / 16,607 → 1,334 / 4,417 / 15,515. Rates at
+  2.96% raise every state by about 30%; at 6.81%, under 2%.
+- **Found while doing it, not changed here:** re-running the fit 3 likelihood on today's coded rules gives
+  41 places and 253 place-years (θ̂ 0.000879, α̂ 3.52), not the 16 places and 115 place-years behind the
+  configured 0.001038 and 4.735; the observed-information SE and the slopes come from today's fit set and are
+  applied around the configured values. Refreshing the anchor itself is a separate decision.
+- **Why:** reviewing the ADU ranges (2026-10-20) found them biased upward at the median and too narrow at the
+  state level. Every result must be a range that a reader can trust (Rules; CLAUDE.md).
+- **Decided by:** proposed by Claude Code (ADU draws fix), for Ben to confirm.
+
+### D-031 · 2026-10-21 · ADU effect: additive imputation as robustness to D-025, and review fixes ported to the D-025 path (written after D-025's main estimate was seen; not the main estimator)
+- **What had been seen when this was written:** D-025's main estimate (overall 2.26 on the log scale, 90%
+  interval 0.22–4.21) and its 2026-10-21 checks and robustness results (above). **This entry cannot change
+  the D-025 main result.** It adds a robustness estimator, fixes defects in code the remaining D-025 stages
+  use, and declares sensitivity runs before those stages are run. It was first drafted on 2026-10-20 (under a
+  number since reserved by handoff 09) as a proposed replacement for D-023's main estimator. Ben kept D-025 as the main model (2026-10-21),
+  so it was renumbered and reframed. No D-031 estimate has been computed on real data.
+- **The 2026-10-20 review of D-023 (checked against the code and reproduced on synthetic panels), and what
+  still applies:**
+  1. treated places with no ADU before adoption had their pre-years dropped as separated, and their cohort
+     cells entered the aggregate as near-zero contrasts (a simulated true log-50 effect came out near
+     2.5–3.2); 2. places treated before 2016, and the 2016 cohort, have no untreated year, so already-treated
+     places identified the year effects; 3. with singleton cohorts θ × post was collinear with the cohort
+     cells; 4. the CR2 score bootstrap undercovered with singleton cohorts (37% for a 90% interval over 30
+     synthetic panels). These are defects of D-023's fixed-effects design, which D-025 replaced. D-025's own
+     imputation robustness run shows the data side of defect 1: 162 of 169 treated place-years could not be
+     imputed, because their places had no permits before adoption.
+  5. Permit or conditional-use places count as never treated, and the dose before T is ignored. This still
+     holds in D-025 and is **not changed** here; the D-031 estimator handles it with a replaced-rule control.
+  6. Randomization inference permuted T but not the dose path: **applies to `pooled_adu`; fixed (a).**
+  7. D-023's transport used the largest year effect after the panel. D-025's transport refuses years
+     outside the estimation years, so this does not apply.
+  8. Household growth was measured from max(T − 1, 2015), giving 2010–15 adopters post-adoption growth. It
+     is in the shared panel builder: **fixed (b).**
+- **Deviations from D-025, written before its remaining stages (randomization inference, placebo dates,
+  transport, HonestDiD) are run:**
+  - **(a) Randomization inference moves each place's dose path with its permuted adoption year**
+    (`estimate_adu.permute_adoption`): dose_new(t) = dose_old(t − (T_new − T_old)), held at the first
+    observed value before the panel and the last after it. The 2026-10-20 attempt (7.1% of refits failed)
+    permuted T only. A permuted place's post years then carried its old dose, often 0 or a permit grade. That
+    may have contributed to the failed refits; this is not tested.
+  - **(b) Household growth** = log(households at T − 1 / households at T − 6), and **missing** unless both
+    ACS vintages exist (`estimate_adu.household_growth`). For places adopting in 2010–15 the modifier
+    becomes missing, which means a zero deviation in the design. The D-025 main fit used the defective
+    values, so `estimate_pooled_adu.py --remaining` will stop at its 1e-4 match check. **Decision for Ben:**
+    (i) re-estimate the main model once on the corrected panel, report both, and condition the remaining
+    stages on the corrected one (recommended: the defect is a measurement bug, independent of results); or
+    (ii) keep the main model as estimated and report the corrected-growth refit as a sensitivity.
+  - **(c) Sensitivity runs of the D-025 model** (`pooled_adu.sensitivity_runs`). Each is one refit under
+    the D-025 convergence rule, with score-bootstrap intervals, reported beside the main estimate and not
+    used to choose:
+    1. *excluding places treated before 2016*, which have no untreated year in the panel (review point 2);
+    2. *T at the announcement year* (C29): the coded `announced_date`, else the council `adoption_date`, of
+       the rule that made the place by right; places with neither keep T and are counted. The dose path moves
+       with T. With no anticipation this moves zero-effect years into band 0–1, so a smaller 0–1 band is
+       expected; a larger effect points to anticipation;
+    3. *parking and process reforms as time-varying controls* (C08, C21): 1 if a citywide zero-minimum
+       parking reform (`adu.parking_waived`) or any coded process reform is in force on 1 July. A control
+       with no variation is dropped and reported; on 2026-10-21 `config/reforms/mn.csv` codes 2 parking
+       rows and no process rows.
+- **D-031 robustness estimator: imputation on the additive scale** (`estimate_adu.impute`, reported
+  beside D-025's log-scale imputation):
+  - untreated model by PPML on untreated place-years only: E[y(0)] = Eligible · exp(α_i + γ_t + λ'Z), with
+    Z = the replaced ADU rule's dose (carried forward from T − 1 in treated years), parking, process and
+    missing middle;
+  - ATT_k = 1,000 · Σ (y − μ̂0) / Σ Eligible for k ∈ {0–1, 2–3, 4+} and overall, in additional permits per
+    1,000 eligible parcels a year; the ratio Σ (y − μ̂0) / Σ μ̂0 is secondary;
+  - places treated in or before 2016, and treated places with no kept untreated year, are excluded and
+    listed; an upper bound that counts every permit of the zero-pre places as additional is reported
+    beside the ATT;
+  - range: stratified place bootstrap (treated and untreated places resampled separately, 999 draws);
+  - fewer than 3 contributing treated places means "not estimable". Given D-025's imputation run (7
+    imputable treated place-years), this is the expected outcome in Minnesota. The estimator's value there is
+    to state the exclusions and the zero-pre bound plainly.
+- **Evidence (synthetic panels, `tests/model/test_estimate_adu.py`):** each regime test asserts that D-023
+  fails and D-031 passes on the same panel. Zero pre-periods: D-023 2.5–3.2 against log 50; D-031's
+  additive ATT within 10%. A 2016 cohort: D-023 ≈ −0.1 against ~0.9; D-031 within 15%. Pre-panel adopters
+  whose effect keeps growing past k = 5: D-023 ≈ 0 against ~0.45; D-031 within 15%. Singleton cohorts:
+  D-023 drops θ as collinear and undercovers; D-031 is unbiased, and its bootstrap covered 77% for a nominal
+  90% over 30 panels, so with fewer than 10 contributing places its range is labelled "probably too narrow".
+- **Not carried over from the first draft:** randomization inference as primary for this estimator, its own
+  seven checks and transport, and the hierarchical-NB priors (D-025 already has θ).
+- **Decided by:** Ben, 2026-10-21 (D-025 stays the main model; this estimator is robustness). Details by
+  Claude Code; **(a)–(c) and the household-growth choice await Ben's approval.**
+- **Plan for the corrected-growth refit (2026-10-21, written before running; Ben chose option (i) for (b)
+  and approved each run once):**
+  - *Panel:* the D-025 panel with household growth measured by `household_growth` (missing unless the T − 1
+    and T − 6 vintages exist). `estimate_pooled_adu.py --hh-growth as_run` reproduces the first main model's
+    panel, so both can be compared; the run prints every place whose household growth changes.
+  - *Runs, once each:* `--full --hh-growth corrected`. This is the main model, its wild score bootstrap, and
+    the remaining stages under the D-025 convergence rule: randomization inference with dose paths moved
+    (D-031 (a)), the five checks, the robustness estimators (fixed-effects PPML, log-scale imputation,
+    binary dose, D-031 additive imputation), the D-031 (c) sensitivity runs, and the transport test (guard on
+    the predicted mean). The as-run main's transport is WS-ENGINE's 2026-10-21 re-run (above) and is not
+    repeated.
+  - *Comparison reported:* θ_hh_growth, the band effects and the overall effect, as-run against corrected,
+    with their 90% intervals. "Household growth matters for this test" is defined in advance: the overall
+    effect moves by more than a quarter of the as-run interval's half-width (0.5 log points), or its 90%
+    interval starts or stops containing 0, or the transport verdict changes. Otherwise it does not matter
+    here.
+  - *HonestDiD for the corrected main:* computed with WS-ENGINE's `pooled_adu.honest_bounds` (the choices
+    fixed above) once it is on `ws/engine-17-d025-results`; pending if it is not there when the refit ends.
+    No separate implementation.
+  - *Logs:* `reports/adu-d025/corrected-2026-10-21-log.txt`, CSVs in `reports/adu-d025/corrected-2026-10-21/`.
+- **Corrected-growth refit (2026-10-21, once; log `reports/adu-d025/corrected-2026-10-21-log.txt`, CSVs in
+  `reports/adu-d025/corrected-2026-10-21/`; 2 h 15 min):** household growth became missing for 5 places
+  (Eagan 2014, Hugo 2012, Lakeville 2013, Minneapolis 2015, Richfield 2015). Every stage was computed.
+
+  | | As-run main (2026-10-20) | Corrected main |
+  |---|---|---|
+  | θ_hh_growth (per SD) | −0.37 (−1.67 to 1.05) | 0.17 (−1.63 to 2.08) |
+  | Band 0–1 | 2.32 (0.61 to 3.93) | 2.36 (0.56 to 4.00) |
+  | Band 2–3 | 1.88 (−0.52 to 4.15) | 1.97 (−0.60 to 4.36) |
+  | Band 4+ | 2.38 (−0.01 to 4.72) | 2.53 (−0.15 to 5.11) |
+  | Overall | 2.26 (0.22 to 4.21) | 2.37 (0.12 to 4.51) |
+  | Randomization inference | not computed (7.1% of refits failed, T-only permutation) | p = 0.111 over 970 of 999 (2.9% failed; dose paths moved) |
+  | Pre-trend leads (pass p ≥ 0.10) | p = 0.025, fails | p = 0.052, fails |
+  | Placebo dates | not computed | not computed |
+  | Placebo outcome | 0.48 (−0.62 to 1.64), passes | 0.69 (−0.50 to 1.86), passes |
+  | Excluding 2020–21 | passes | passes (3.18) |
+  | Leave one out | passes | passes |
+  | Transport (WS-ENGINE's as-run re-run vs this run) | 1 of 3 totals inside, yearly 15%: fails | 1 of 3 totals inside (Durham), yearly 15%: fails |
+
+  The other estimates were close to the as-run ones (bands within 0.15, θ for price-to-cost −0.65 vs −0.58,
+  δ −2.75 vs −2.69). Robustness on the corrected panel: fixed-effects PPML −0.16 / −0.59 / −0.39 (SEs ≈ 2.4);
+  log-scale imputation overall −0.94 (−2.25 to 0.30) on 7 imputable rows; binary dose 1.57 (0.41 to 2.71);
+  D-031 additive imputation **not estimable** (2 contributing treated places: 9 treated in or before 2016,
+  22 with no ADU before adoption). D-031 (c) sensitivity runs, each inside the main 90% interval: excluding
+  the 7 places treated before 2016, 2.92 (1.14 to 4.62); T at the announcement year (11 places re-dated),
+  2.99 (1.13 to 4.98); parking and process controls, 3.01 (1.37 to 4.70).
+  **Reading, by the rule fixed in the plan:** household growth **does not matter for this test**. The
+  overall effect moves by 0.11, under the 0.5 threshold; its interval still excludes 0; the transport
+  verdict is unchanged. θ_hh_growth is uninformative either way (intervals ±1.5 around 0). The randomization
+  inference that now computes cannot be credited to household growth: this run also moved dose paths (D-031
+  (a)), and refit failures fell from 7.1% to 2.9%. Its p = 0.111 means the overall effect is not
+  distinguishable at 10% from effects produced by reshuffled adoption years. HonestDiD bounds for the
+  corrected main are **pending** WS-ENGINE's `honest_bounds`.
+- **HonestDiD run plan (2026-10-21, written before running; Ben approved one run per main):**
+  - *Code review:* `pooled_adu.honest_bounds`, `honest_set`, `rm_breakdown` and `event_study_inputs`
+    (68c7ae6, WS-ENGINE) were checked against the choices fixed above (3f0d5e2). The relative-magnitudes and
+    smoothness bias formulas, the grids, the inputs from the leads refit and the bootstrap union interval
+    all match, and no defect was found. One point for readers: θ is the effect at realised doses (each
+    band × the place-year's dose), so it is smaller than the main model's "overall", which averages the
+    per-unit-dose bands.
+  - *Runs, once per main:* `estimate_pooled_adu.py --honest LOG --hh-growth as_run|corrected`. Each run
+    recomputes that main model and checks it against its log to 1e-4 (as-run: `run-2026-10-20-log.txt`;
+    corrected: `corrected-2026-10-21-log.txt`). It then refits the pre-trend-leads model exactly as check 1
+    did (leads k = −3…−1, D-025 convergence rule, 999 wild-bootstrap draws, seed 1). From that refit it
+    computes `honest_bounds` and the breakdown M̄ (`rm_breakdown`, grid step 0.01) for the pooled effect.
+  - *Per band (an extension of the pooled target, using the same `honest_set`):* θ_b = mean over the band's
+    treated place-years of β_b × dose, with ω restricted to the band's event times and renormalised.
+  - *Reported:* identified sets, robust 90% intervals and breakdown M̄ for each target and main; the event
+    study (leads and bands with 90% intervals); charts of the robust interval against M̄ with the breakdown
+    marked. Nothing here changes the D-025 main result or chooses a specification.
+- **HonestDiD runs (2026-10-21, once per main; logs `reports/adu-d025/honest-asrun-2026-10-21-log.txt` and
+  `honest-corrected-2026-10-21-log.txt`): bounds not identified, and the printed bounds are invalid.**
+  Both mains were reproduced (all 22 logged estimates matched) and both leads refits converged with 999 of
+  999 draws. **But lead_1 (δ_−1) was dropped from both refits as "all counts zero where it applies":** the 22
+  treated place-years one year before adoption had 0 ADU permits (k = −3: 5 permits in 19 place-years;
+  k = −2: 1 in 21; k = −1: 0 in 22; k = 0: 9 in 22; places adopting 2017+, `permits_by_event_time.csv`).
+  δ_−1's estimate is therefore −∞. `event_study_inputs` counted the dropped lead as 0, so every bound and
+  breakdown value printed in those logs rests on δ_−1 = 0 and **is not valid**. The bounds CSVs were not
+  kept; the logs are kept as the record.
+  - *Fix (D-031, this PR):* `event_study_inputs` now raises if a lead or band was not estimated, with a test,
+    and the `--honest` stage reports "not computed". This is a defect in the committed code, not a change of
+    the choices fixed above.
+  - *What can still be said, from valid quantities:* θ at realised doses from the leads refit is 1.47
+    (−0.11 to 3.04) as-run and 1.52 (−0.25 to 3.34) corrected. **The pooled effect's 90% interval includes 0
+    before any allowance for a trend violation**, so the pooled breakdown M̄ is 0 whatever δ_−1 is. The
+    0–1-year band alone excludes 0: 1.60 (0.37 to 2.79) as-run, 1.61 (0.28 to 2.99) corrected. Its robustness
+    to trend violations cannot be computed as specified. Leads: δ_−3 = 1.44 (0.49 to 2.44) as-run, 1.41 (0.36
+    to 2.52) corrected; δ_−2 ≈ −0.2 with intervals spanning ±2.
+  - *Reading:* the pre-adoption path (a blip at k = −3, then nothing the year before) looks like owners
+    holding projects until the rule passed (C29), but with 0–5 permits a year across ~20 places it cannot
+    be told apart from noise. The data are too thin for a trend-violation analysis.
+  - *Options for Ben (each needs its own dated note before any run):* (1) pool leads k = −2…−1 into one lead
+    (1 permit in 43 place-years: estimable, very weak), keeping the choices above; (2) run the same bounds on
+    the announcement-dated sensitivity model (2.99, 1.13 to 4.98), whose re-dating moves the dip into the
+    post period; (3) report HonestDiD as not identified and rest on the randomization inference (p = 0.111)
+    and the failed leads test. Recommended: (3).
