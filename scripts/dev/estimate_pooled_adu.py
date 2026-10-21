@@ -33,8 +33,11 @@ TRANSPORT = {  # place: (state, panel years incl. pre-adoption, scored years)
 }
 
 
+HH_GROWTH = "corrected"  # D-031 (b); "as_run" reproduces the panel the first D-025 main model used
+
+
 def load_panel(store) -> pd.DataFrame:
-    panel = est.build_panel("MN", store, source=SOURCE).data
+    panel = est.build_panel("MN", store, source=SOURCE, hh_growth=HH_GROWTH).data
     early = panel["T"] < 2010  # D-023 run choice (Ben): early adopters don't inform the modifier terms
     panel.loc[early, list(est.MODIFIERS)] = float("nan")
     return panel
@@ -201,7 +204,7 @@ def transport_stage(store, panel, fit, boot, p, logs):
     """The D-025 transport test (Austin, Raleigh, Durham); a numerical failure is reported, not raised."""
     targets, window = [], {}
     for g, (state, years, scored) in TRANSPORT.items():
-        targets.append(est.build_panel(state, store, years=years, geoids=[g]).data)
+        targets.append(est.build_panel(state, store, years=years, geoids=[g], hh_growth=HH_GROWTH).data)
         window[g] = scored
     try:
         pred = pa.transport_predict(
@@ -273,9 +276,18 @@ def main() -> None:
     )
     ap.add_argument("--out", type=Path)
     ap.add_argument(
+        "--hh-growth",
+        choices=["corrected", "as_run"],
+        default="corrected",
+        help="household-growth modifier: corrected (D-031 b, default) or as_run (the first main model's)",
+    )
+    ap.add_argument(
         "--skip-ri", metavar="REASON", help="don't attempt randomization inference; report REASON"
     )
     a = ap.parse_args()
+    global HH_GROWTH
+    HH_GROWTH = a.hh_growth
+    print(f"household growth: {HH_GROWTH}")
     store = DataStore()
     if a.smoke:
         smoke(store)
