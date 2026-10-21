@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import dataclasses
 
 import pandas as pd
 
@@ -29,14 +30,29 @@ MIN_SHARE = 0.5  # mechanics: download filter only; D-017 then checks each juris
 # coded SF_DETACHED over ACS B25024_002 (one-unit detached homes, 2020-2024) outside 0.6-1.4.
 EXCLUDED = {
     "37015": "Bertie: one broad 'RESIDENTIAL' class, 2.84 x ACS",
-    "37123": "Montgomery: one broad 'RESIDENTIAL' class, 2.55 x ACS",
     "37079": "Greene: one broad 'Residential' class, 2.52 x ACS",
-    "37083": "Halifax: one broad 'Residential' class, 2.32 x ACS",
+    "37083": "Halifax: one broad 'Residential' class and no building values, 2.32 x ACS",
     "37091": "Hertford: broad 'RES' and 'Residential and Agriculture' classes, 2.10 x ACS",
-    "37191": "Wayne: rural single-family class lumps other homes, 1.66 x ACS",
     "37141": "Pender: one broad 'Residential' class, 1.55 x ACS",
-    "37163": "Sampson: one broad 'RESIDENTIAL' class, 1.52 x ACS",
-    "37047": "Columbus: houses coded 'OCCUPIED RURAL' (read as agricultural), 0.32 x ACS",
+    "37163": "Sampson: one broad 'RESIDENTIAL' class and no building values, 1.52 x ACS",
+}
+# Counties the first draft got wrong whose codes do separate houses (checked against ACS on improved parcels:
+# reports/nc/onemap_county_check.md): fields read in order, leading building fields, vacant rule.
+OVERRIDES = {
+    "37047": (
+        ("parusedsc2", "parusedesc"),
+        1,
+        True,
+        "Columbus: building type in parusedsc2 (SINGLE FAMILY UNIT, "
+        "MOBILE HOME, MODULAR; NONE = no building), land use in parusedesc",
+    ),
+    "37191": (("parusedesc",), 0, True, "Wayne: vacant rule on (rural single-family class includes lots)"),
+    "37123": (
+        ("parusedsc2", "parusedesc"),
+        0,
+        True,
+        "Montgomery: manufactured homes coded apart; vacant rule on",
+    ),
 }
 
 
@@ -58,9 +74,33 @@ def main(argv: list[str] | None = None) -> None:
     have = set(m.counties())
     names = county_names(store)
     kept, dropped = [], []
-    for fips in sorted(set(names) - have - set(EXCLUDED)):
+    for fips in sorted(set(names) - have - set(EXCLUDED)):  # rerun adds only counties not yet configured
         inv = m.code_inventory(store, fips[2:])
         d = oc.draft(inv)
+        if fips in OVERRIDES:
+            fields, _, vacant, _ = OVERRIDES[fips]
+            rows = inv.loc[inv["field"].isin(fields)].copy()
+            std_rule = rows["code"].map(oc.classify)
+            rows = rows.assign(land_use_std=[s for s, _ in std_rule], rule=[r for _, r in std_rule])
+            rows = rows.loc[rows["land_use_std"].notna()].assign(description=lambda r: r["code"])
+            total = inv.groupby("field")["n"].sum().max()
+            share = max(rows.loc[rows["field"] == f, "n"].sum() / total for f in fields)
+            yb = d.year_built_share
+            tier = (
+                1
+                if share >= oc.TIER2_MIN_LAND_USE and yb >= oc.TIER1_MIN_YEAR_BUILT
+                else (2 if share >= oc.TIER2_MIN_LAND_USE else 3)
+            )
+            basis = f"land-use codes for {share:.0%} of parcels (best field); structyear {yb:.0%}"
+            d = dataclasses.replace(
+                d,
+                rows=rows,
+                fields=fields,
+                vacant_when_unimproved=vacant,
+                land_use_share=float(share),
+                data_tier=tier,
+                tier_basis=basis,
+            )
         unmatched = inv.loc[
             inv["field"].isin(d.fields[:1]) & inv["code"].map(lambda c: oc.classify(c)[0] is None)
         ]
@@ -99,9 +139,11 @@ def main(argv: list[str] | None = None) -> None:
         w = csv.writer(f)
         for fips, d in kept:
             name = names[fips]
-            w.writerow([fips, name, f"nc_land_use_{slug(name)}.csv", ";".join(d.fields), 0,
+            bf, note = (OVERRIDES[fips][1], OVERRIDES[fips][3]) if fips in OVERRIDES else (0, "")
+            w.writerow([fips, name, f"nc_land_use_{slug(name)}.csv", ";".join(d.fields), bf,
                         d.vacant_when_unimproved, d.built_signal, "", d.data_tier, d.tier_basis,
-                        "drafted from the county's code inventory by keyword rules (onemap_codes), reviewed",
+                        "drafted from the county's code inventory by keyword rules (onemap_codes), reviewed"
+                        + (f"; fields set by hand ({note})" if note else ""),
                         SOURCE_URL])  # fmt: skip
     print(f"wrote {len(kept)} crosswalks and appended them to {m.COUNTIES_CSV.name}")
 

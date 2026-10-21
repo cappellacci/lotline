@@ -9,7 +9,7 @@ statewide layer with standard field names. The values inside some fields are sti
   and its land-use description in `parusedesc`. `config/crosswalks/nc_land_use_counties.csv` says, per
   county, which fields to read in which order (the first field with a crosswalk match wins) and points to
   the county's crosswalk `config/crosswalks/nc_land_use_<county>.csv` (field, code → `land_use_std`).
-  The ten largest counties were crosswalked by hand; 35 more were drafted from their code inventories
+  The ten largest counties were crosswalked by hand; 38 more were drafted from their code inventories
   (`code_inventory`, statistics queries) by `onemap_codes` and reviewed
   (`scripts/dev/nc_onemap_crosswalks.py`).
   The county's first `building_fields` fields describe a building (0 when the county sends only a land
@@ -144,10 +144,10 @@ PROVENANCE = {
     "limitations": [
         "Current roll only: no history; per-county transform dates differ (2026-01-07 Mecklenburg to "
         "2026-05-29 Cabarrus on 2026-10-19)",
-        "45 of 100 counties: the ten largest (2020 Census) crosswalked by hand, 35 more drafted from their "
+        "48 of 100 counties: the ten largest (2020 Census) crosswalked by hand, 38 more drafted from their "
         "code inventories by keyword rules (onemap_codes) and reviewed; 46 send no usable land-use code (37 "
-        "send none) and 9 were left out after a check against ACS one-unit homes "
-        "(reports/nc/onemap_county_check.md); those 55 stay on the ACS fallback",
+        "send none) and 6 were left out after a check against ACS one-unit homes "
+        "(reports/nc/onemap_county_check.md); those 52 stay on the ACS fallback",
         "Land-use codes are county-native and crosswalked county by county; some codes are ambiguous "
         "(Mecklenburg DUPLEX-TRIPLEX → DUPLEX; patio homes → SF_ATTACHED; Wake ONE FAMILY includes "
         "townhouses and condominium units, which only the county file's Design Style separates)",
