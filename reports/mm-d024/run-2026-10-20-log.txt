@@ -1,0 +1,94 @@
+[20:35:49] building the main panel
+[20:36:51] panel: 560 places, 8763 place-years with an outcome
+[20:36:58] check 7b drops 16 pipeline-flagged comparison places: ['2701900', '2702908', '2706382', '2706616', '2708794', '2717000', '2717288', '2718116', '2718188', '2735180', '2740166', '2743252', '2751730', '2756896', '2757220', '2771428']
+[20:36:59] FALLBACK (pre-specified): PPML failed: PPML diverged: |eta - offset| = 119.9; main model is now the negative binomial with place random effects (Poisson-gamma, Hausman-Hall-Griliches; the 17:06 run's fallback)
+[20:37:04] main fit (re): 5 iterations; kept 8763 of 8763 place-years; dropped places 0; dropped columns []; separated observations 0
+[20:37:05] main estimates (log scale; proportional_effect = e^estimate - 1):
+           term  estimate     se     low    high  p_two_sided  proportional_effect
+         beta_0    0.7941 0.3435  0.2038  1.3847       0.0100               1.2125
+         beta_2    1.1436 1.0804 -0.6214  2.9099       0.3173               2.1381
+         beta_4   -0.1321 1.3016 -2.4002  1.8923       0.9209              -0.1237
+      theta_pcr    0.9117 0.5349  0.0513  1.7834       0.0801               1.4885
+theta_log_value   -0.9974 0.3733 -1.6132 -0.4073       0.0010              -0.6312
+            rho    0.1068 0.1520 -0.1400  0.3587       0.4925               0.1127
+          delta   -0.5264 0.3559 -1.0936  0.0815       0.1522              -0.4093
+            att    0.7683 0.4370  0.0713  1.5368       0.0881               1.1562
+[20:37:05] added 2-4 unit homes in the treated places' post-adoption years:
+  place                              name  years  added    low   high  per_1000_parcels_year
+2743000                  Minneapolis city      6   93.1 -109.1  201.5                    0.2
+  37063 Durham County Unincorporated Area      6    5.5   -0.3    8.8                    0.1
+3719000                       Durham city      6  150.1    5.6  235.6                    0.3
+3755000                      Raleigh city      4  118.7  -16.4  189.1                    0.3
+3915000                   Cincinnati city      2   -8.1  -42.6    5.8                   -0.1
+4805000                       Austin city      2 -130.8 -286.5  -11.6                   -0.4
+4835000                      Houston city      2 2421.6 1426.2 3187.9                    2.7
+[21:05:48] randomization inference: overall effect 0.7683, p = 0.704 (956 reassignments, 43 could not be fitted)
+[21:07:15] check: {'check': 'pre-trend leads', 'statistic': 2.252458152179711, 'p': 0.5895895895895896, 'pass': True}
+[21:07:15] check: {'check': 'placebo dates (−2 years)', 'estimate': np.float64(0.5405032753492877), 'low': np.float64(0.03237278073616334), 'high': np.float64(0.9968148832135142), 'pass': False}
+[21:07:15] check: {'check': 'placebo outcome (5+ unit homes)', 'estimate': np.float64(-1.1111380923223906), 'low': np.float64(-1.5323709961534897), 'high': np.float64(-0.5447141259353236), 'pass': False}
+[21:07:15] check: {'check': 'substitution (1-unit homes; no pass rule)', 'estimate': np.float64(0.003984959266150588), 'low': np.float64(-0.38172494158432807), 'high': np.float64(0.391650694651391), 'pass': None}
+[21:07:15] check: {'check': 'excluding 2020-21', 'estimate_beta_0': 0.6918080699108783, 'estimate_beta_2': 1.0329158472996265, 'estimate_beta_4': -0.35926574824027235, 'estimate_att': 0.6553348414935691, 'outside': [], 'pass': True}
+[21:07:15] check: {'check': 'leave one treated place out', 'moved': ['2743000'], 'pass': False}
+[21:07:15] check: {'check': 'contamination (a): 50,000+ people only', 'estimate_att': 0.93677205525684, 'outside': [], 'pass': True}
+[21:07:15] check: {'check': 'contamination (b): without pipeline-flagged places', 'estimate_att': 0.7404787937819085, 'outside': [], 'pass': True, 'dropped_places': 16}
+[21:07:15] check: {'check': 'local measurement (reported)', 'pass': None, 'note': '2743000 metc_residential_permits: post ratio 1.00; 2743000 mpls_ccs_permits: post ratio 1.63; 3719000 durham_permits: post ratio 1.59; 3755000 raleigh_permits: post ratio 0.98'}
+[21:07:16] robustness model: ppml: could not be estimated: PPML diverged: |eta - offset| = 119.9
+[21:08:50] robustness model: nb: done
+[21:08:50] robustness Borusyak imputation (point only): could not be estimated: PPML diverged: |eta - offset| = 124.4
+[21:08:55] robustness binary by-right dose: done
+[21:09:01] robustness all four modifiers: done
+[21:09:02] robustness Met Council, Twin Cities alone: done
+[21:09:02] robustness: {'fit': 'main (re)', 'estimate': 0.7941096401559101, 'low': 0.2037651288020812, 'high': 1.3847070759341729, 'term': 'beta_0'}
+[21:09:02] robustness: {'fit': 'main (re)', 'estimate': 1.1436167502409356, 'low': -0.6214207590571128, 'high': 2.9098907789367345, 'term': 'beta_2'}
+[21:09:02] robustness: {'fit': 'main (re)', 'estimate': -0.13207845154833264, 'low': -2.400246479698267, 'high': 1.8922709705687388, 'term': 'beta_4'}
+[21:09:02] robustness: {'fit': 'main (re)', 'estimate': 0.7683361928682105, 'low': 0.0713364125892787, 'high': 1.536842325144974, 'term': 'att'}
+[21:09:02] robustness: {'fit': 'nb', 'estimate': 0.07189876821200457, 'low': -0.7067296421300586, 'high': 0.7724664841189521, 'term': 'beta_0'}
+[21:09:02] robustness: {'fit': 'nb', 'estimate': -1.2877362771915226, 'low': -3.3441001930626912, 'high': 0.7441074047957474, 'term': 'beta_2'}
+[21:09:02] robustness: {'fit': 'nb', 'estimate': -1.8466075692968238, 'low': -4.722127819989987, 'high': 0.6059933385283551, 'term': 'beta_4'}
+[21:09:02] robustness: {'fit': 'nb', 'estimate': -0.25453170970246874, 'low': -1.1039419241518726, 'high': 0.7709702994763113, 'term': 'att'}
+[21:09:02] robustness: {'fit': 'binary dose', 'estimate': 0.7155217742631614, 'low': 0.3675920363470995, 'high': 1.0905811145363369, 'term': 'beta_0'}
+[21:09:02] robustness: {'fit': 'binary dose', 'estimate': 0.7467973959416722, 'low': -0.15073673942746602, 'high': 1.5674114091314046, 'term': 'beta_2'}
+[21:09:02] robustness: {'fit': 'binary dose', 'estimate': 0.10092235431273583, 'low': -0.805571916856513, 'high': 1.0470804218212661, 'term': 'beta_4'}
+[21:09:02] robustness: {'fit': 'binary dose', 'estimate': 0.687544305931737, 'low': 0.30245606088712756, 'high': 1.131367962581174, 'term': 'att'}
+[21:09:02] robustness: {'fit': 'four modifiers', 'estimate': 1.562000832972515, 'low': 0.6358810145776506, 'high': 2.5055860891277386, 'term': 'beta_0'}
+[21:09:02] robustness: {'fit': 'four modifiers', 'estimate': 0.42823995577568086, 'low': -1.096569187533568, 'high': 2.0223255167963314, 'term': 'beta_2'}
+[21:09:02] robustness: {'fit': 'four modifiers', 'estimate': -1.3234659457216522, 'low': -3.3043775632537926, 'high': 0.6645915402945939, 'term': 'beta_4'}
+[21:09:02] robustness: {'fit': 'four modifiers', 'estimate': 1.3495155121717943, 'low': 0.34096643179673447, 'high': 2.449276063988785, 'term': 'att'}
+[21:09:02] robustness: {'fit': 'Met Council alone', 'estimate': 0.7801971323043271, 'low': -2.294196579430011, 'high': 3.9699965071087195, 'term': 'beta_0'}
+[21:09:02] robustness: {'fit': 'Met Council alone', 'estimate': -1.262556908898311, 'low': -4.581127706016507, 'high': 1.750766026561999, 'term': 'beta_2'}
+[21:09:02] robustness: {'fit': 'Met Council alone', 'estimate': -2.453795069471473, 'low': -5.989769995642077, 'high': 1.051792292580966, 'term': 'beta_4'}
+[21:09:02] robustness: {'fit': 'Met Council alone', 'estimate': -0.7894734403336761, 'low': -3.017592086813493, 'high': 1.8152102422800696, 'term': 'att'}
+[21:09:07] out-of-sample A: North Carolina:
+  place                              name  year  observed  mean  p05  p10   p90   p95  outside_range
+  37063 Durham County Unincorporated Area  2020       0.0   0.3  0.0  0.0   1.0   1.0            0.0
+  37063 Durham County Unincorporated Area  2021       0.0   0.4  0.0  0.0   1.0   2.0            0.0
+  37063 Durham County Unincorporated Area  2022       0.0   0.5  0.0  0.0   1.0   2.0            0.0
+  37063 Durham County Unincorporated Area  2023       0.0   0.3  0.0  0.0   1.0   1.0            0.0
+  37063 Durham County Unincorporated Area  2024       0.0   0.6  0.0  0.0   2.0   3.0            0.0
+  37063 Durham County Unincorporated Area  2025      12.0   0.7  0.0  0.0   2.0   3.0            0.0
+  37063 Durham County Unincorporated Area total      12.0   2.8  0.0  0.0   7.0  10.0            0.0
+3719000                       Durham city  2020      14.0  13.2  1.0  2.0  28.0  36.0            0.0
+3719000                       Durham city  2021      17.0  21.7  3.0  4.0  45.0  60.0            0.0
+3719000                       Durham city  2022      63.0  24.7  2.0  4.0  54.1  75.0            0.0
+3719000                       Durham city  2023      75.0  14.0  0.0  1.0  32.0  51.0            0.0
+3719000                       Durham city  2024      38.0  32.3  2.0  3.0  71.0 109.0            0.0
+3719000                       Durham city  2025      72.0  35.8  2.0  4.0  84.0 125.0            0.0
+3719000                       Durham city total     279.0 141.7 26.0 35.0 283.0 410.0            0.0
+3755000                      Raleigh city  2022      50.0  24.8  4.0  5.0  52.0  69.0            0.0
+3755000                      Raleigh city  2023      83.0  13.0  1.0  1.0  29.0  41.0            0.0
+3755000                      Raleigh city  2024      52.0  83.2 16.0 22.0 167.0 212.0            0.0
+3755000                      Raleigh city  2025      78.0  94.5 19.0 27.0 185.0 230.0            0.0
+3755000                      Raleigh city total     263.0 215.4 73.0 90.0 378.0 460.0            0.0
+verdict {'totals_inside_80': False, 'yearly_coverage_80': 0.75, 'pass': False}
+[21:09:13] out-of-sample B: Minneapolis:
+  place             name  year  observed  mean  p05  p10   p90   p95  outside_range
+2743000 Minneapolis city  2020      54.0  18.3  2.0  3.0  39.0  53.0            0.0
+2743000 Minneapolis city  2021      53.0  19.0  2.0  3.0  42.0  58.0            0.0
+2743000 Minneapolis city  2022      63.0  35.2  5.0  7.0  74.0  99.0            0.0
+2743000 Minneapolis city  2023      60.0  45.8  9.0 12.0  93.0 115.0            0.0
+2743000 Minneapolis city  2024      36.0  23.3  2.0  3.0  50.1  69.0            0.0
+2743000 Minneapolis city  2025      38.0  18.5  1.0  2.0  42.0  58.0            0.0
+2743000 Minneapolis city total     304.0 160.2 51.0 63.0 290.0 357.0            0.0
+verdict {'totals_inside_80': False, 'yearly_coverage_80': 0.6666666666666666, 'pass': False}
+[21:09:13] wrote 11 CSVs to reports/mm-d024/
+exit 0
