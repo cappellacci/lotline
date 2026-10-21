@@ -5,9 +5,9 @@ HonestDiD sensitivity. Reads committed run outputs only; no estimation.
     uv run python scripts/dev/plot_d025_followups.py
 
 Inputs: reports/adu-d025/run-2026-10-20-log.txt (the as-run main, printed table),
-reports/adu-d025/corrected-2026-10-21/estimates.csv, and, when present, the HonestDiD outputs in
-reports/adu-d025/corrected-2026-10-21/ (event_study.csv, honest_bounds.csv, honest_bands.csv). Writes PNGs to
-reports/adu-d025/figures/.
+reports/adu-d025/corrected-2026-10-21/estimates.csv, and, when present, the HonestDiD outputs
+(event_study.csv, honest_bounds.csv) in reports/adu-d025/honest-asrun-2026-10-21/ and
+honest-corrected-2026-10-21/. Writes PNGs to reports/adu-d025/figures/.
 """
 
 from __future__ import annotations
@@ -114,100 +114,107 @@ def comparison() -> Path:
     return path
 
 
-def event_study() -> Path | None:
-    """Leads (k = −3…−1) and bands from the pre-trend-leads refit, with 90% intervals (event_study.csv:
-    term, k_label, estimate, low, high)."""
-    f = CORR / "event_study.csv"
-    if not f.exists():
-        return None
-    d = pd.read_csv(f)
-    fig, ax = plt.subplots(figsize=(8.5, 4.2), facecolor=SURFACE)
-    color = SERIES["Corrected household growth (2026-10-21)"]
-    x = range(len(d))
-    ax.vlines(x, d["low"], d["high"], color=color, linewidth=2)
-    ax.plot(x, d["estimate"], "o", color=color, markersize=8, markeredgecolor=SURFACE, markeredgewidth=2)
-    ax.axhline(0, color=TEXT2, linewidth=1)
-    n_pre = int((d["term"].str.startswith("lead")).sum())
-    ax.axvline(n_pre - 0.5, color=GRID, linewidth=1, linestyle="--")
-    ax.text(n_pre - 0.45, ax.get_ylim()[1], " adoption", color=TEXT2, fontsize=8, va="top")
-    ax.set_xticks(list(x), d["k_label"], color=TEXT)
+HONEST = {
+    "As-run main (2026-10-20)": ROOT / "honest-asrun-2026-10-21",
+    "Corrected household growth (2026-10-21)": ROOT / "honest-corrected-2026-10-21",
+}
+BANDS_ORDER = ["beta_0_1", "beta_2_3", "beta_4p"]
+
+
+def _axes(ax, ylabel: str | None = None) -> None:
     ax.set_facecolor(SURFACE)
-    for s in ("top", "right", "bottom"):
-        ax.spines[s].set_visible(False)
+    for sp in ("top", "right", "bottom"):
+        ax.spines[sp].set_visible(False)
     ax.spines["left"].set_color(GRID)
     ax.tick_params(colors=TEXT2, length=0)
     ax.yaxis.grid(True, color=GRID, linewidth=0.8)
     ax.set_axisbelow(True)
-    ax.set_ylabel("Log difference vs. 4+ years before / never treated", color=TEXT2)
-    ax.set_xlabel("Years relative to the by-right ADU rule", color=TEXT2)
-    ax.set_title(
-        "ADU permits were already rising before adoption (pre-trend leads)",
-        loc="left",
-        color=TEXT,
-        fontsize=12,
-        fontweight="bold",
-    )
+    if ylabel:
+        ax.set_ylabel(ylabel, color=TEXT2)
+
+
+def _title(fig, text: str) -> None:
+    fig.suptitle(text, x=0.01, ha="left", color=TEXT, fontsize=12, fontweight="bold")
+
+
+def event_study() -> Path | None:
+    """Leads (k = −3…−1) and bands from each main's pre-trend-leads refit, with 90% intervals."""
+    tabs = {lab: d / "event_study.csv" for lab, d in HONEST.items() if (d / "event_study.csv").exists()}
+    if not tabs:
+        return None
+    fig, ax = plt.subplots(figsize=(8.5, 4.4), facecolor=SURFACE)
+    slots = ["lead_3", "lead_2", "lead_1", *BANDS_ORDER]
+    labels = ["−3", "−2", "−1", "0–1", "2–3", "4+"]
+    for j, (label, f) in enumerate(tabs.items()):
+        d = pd.read_csv(f)
+        x = [slots.index(t) + (-0.12 if j == 0 else 0.12) for t in d["term"]]
+        ax.vlines(x, d["low"], d["high"], color=SERIES[label], linewidth=2)
+        ax.plot(
+            x,
+            d["estimate"],
+            "o",
+            color=SERIES[label],
+            markersize=8,
+            markeredgecolor=SURFACE,
+            markeredgewidth=2,
+            label=label,
+        )
+        missing_lead_1 = "lead_1" not in set(d["term"])
+    if missing_lead_1:  # 0 ADU permits the year before adoption: estimate at −∞, not estimable
+        ax.text(
+            2,
+            0.15,
+            "not estimable:\n0 permits in\n22 place-years",
+            ha="center",
+            va="bottom",
+            fontsize=8,
+            color=TEXT2,
+        )
+        ax.annotate("", (2, -2.2), (2, 0.05), arrowprops={"arrowstyle": "->", "color": TEXT2})
+    ax.axhline(0, color=TEXT2, linewidth=1)
+    ax.axvline(2.5, color=TEXT2, linewidth=1, linestyle=":")
+    ax.set_xticks(range(len(slots)), labels, color=TEXT)
+    _axes(ax, "Log difference vs 4+ years before / never treated")
+    ax.set_xlabel("Years relative to the by-right ADU rule (leads, then bands)", color=TEXT2)
+    _title(fig, "Before adoption, ADU permits spiked at −3 years, then fell to zero the year before")
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, frameon=False, fontsize=8, labelcolor=TEXT2)
     fig.tight_layout()
-    path = OUT / "event_study_corrected.png"
+    path = OUT / "event_study.png"
     fig.savefig(path, dpi=160, facecolor=SURFACE)
     plt.close(fig)
     return path
 
 
-def honest() -> Path | None:
-    """Robust 90% intervals against M̄ (relative magnitudes) and M (smoothness) for the pooled effect, with
-    the original estimate and the breakdown M̄ (honest_bounds.csv from pooled_adu.honest_bounds, plus a
-    row restriction='original')."""
-    f = CORR / "honest_bounds.csv"
+def permits_by_event_time() -> Path | None:
+    """Raw ADU permits per 1,000 eligible parcels by years since adoption, places adopting 2017+
+    (permits_by_event_time.csv; descriptive, no model)."""
+    f = ROOT / "honest-corrected-2026-10-21" / "permits_by_event_time.csv"
     if not f.exists():
         return None
     d = pd.read_csv(f)
-    orig = d[d["restriction"] == "original"].iloc[0]
-    color = SERIES["Corrected household growth (2026-10-21)"]
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4.2), facecolor=SURFACE, sharey=True)
-    panels = (
-        ("relative magnitudes", "M̄ (post-adoption drift / largest pre-adoption step)"),
-        ("smoothness", "M (change in the pre-trend's slope, log points per year²)"),
+    fig, ax = plt.subplots(figsize=(8.5, 4.2), facecolor=SURFACE)
+    color = SERIES["As-run main (2026-10-20)"]
+    ax.bar(d["k"], d["per_1000_parcels"], width=0.7, color=color, edgecolor=SURFACE, linewidth=2)
+    for _, r in d.iterrows():
+        ax.annotate(
+            f"{int(r['adu_permits'])} / {int(r['place_years'])}",
+            (r["k"], r["per_1000_parcels"]),
+            xytext=(0, 4),
+            textcoords="offset points",
+            ha="center",
+            fontsize=8,
+            color=TEXT2,
+        )
+    ax.axvline(-0.5, color=TEXT2, linewidth=1, linestyle=":")
+    ax.text(-0.45, ax.get_ylim()[1] * 0.95, " rule takes effect", color=TEXT2, fontsize=8, va="top")
+    ax.set_xticks(
+        d["k"].astype(int), [f"{int(k):+d}".replace("-", "−") if k else "0" for k in d["k"]], color=TEXT
     )
-    for ax, (kind, xlabel) in zip(axes, panels, strict=True):
-        s = d[d["restriction"] == kind]
-        xs = ["original", *[f"{m:g}" for m in s["m"]]]
-        lows = [orig["ci_low"], *s["ci_low"]]
-        highs = [orig["ci_high"], *s["ci_high"]]
-        ax.vlines(range(len(xs)), lows, highs, color=[TEXT2] + [color] * len(s), linewidth=3)
-        ax.plot([0], [orig["set_low"]], "o", color=TEXT2, markersize=8)
-        ax.axhline(0, color=TEXT2, linewidth=1)
-        ax.set_xticks(range(len(xs)), xs, color=TEXT)
-        ax.set_facecolor(SURFACE)
-        for sp in ("top", "right", "bottom"):
-            ax.spines[sp].set_visible(False)
-        ax.spines["left"].set_color(GRID)
-        ax.tick_params(colors=TEXT2, length=0)
-        ax.yaxis.grid(True, color=GRID, linewidth=0.8)
-        ax.set_axisbelow(True)
-        ax.set_xlabel(xlabel, color=TEXT2, fontsize=9)
-        ax.set_title(kind.capitalize(), loc="left", color=TEXT, fontsize=10)
-        if kind == "relative magnitudes" and "breakdown" in d.columns and pd.notna(orig.get("breakdown")):
-            ax.text(
-                len(xs) - 0.6,
-                ax.get_ylim()[1],
-                f"breakdown M̄ = {orig['breakdown']:.2f}",
-                ha="right",
-                va="top",
-                color=TEXT2,
-                fontsize=9,
-            )
-    axes[0].set_ylabel("Pooled effect, robust 90% interval (log)", color=TEXT2)
-    fig.suptitle(
-        "How large a continued pre-trend would erase the ADU effect? (HonestDiD)",
-        x=0.01,
-        ha="left",
-        color=TEXT,
-        fontsize=12,
-        fontweight="bold",
-    )
+    _axes(ax, "ADU permits per 1,000 eligible parcels a year")
+    ax.set_xlabel("Years since the by-right ADU rule (labels: permits / place-years)", color=TEXT2)
+    _title(fig, "Treated places issued no ADU permits the year before their rule took effect")
     fig.tight_layout()
-    path = OUT / "honestdid_corrected.png"
+    path = OUT / "permits_by_event_time.png"
     fig.savefig(path, dpi=160, facecolor=SURFACE)
     plt.close(fig)
     return path
@@ -215,7 +222,7 @@ def honest() -> Path | None:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for p in (comparison(), event_study(), honest()):
+    for p in (comparison(), event_study(), permits_by_event_time()):
         print(p or "skipped (input not computed yet)")
 
 

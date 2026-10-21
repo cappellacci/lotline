@@ -22,4 +22,17 @@
 - **Decisions:** none new (dated notes only; Ben's option (i)).
 - **AI:** Claude Code wrote the switch, the plan and the results note, ran the job once and transcribed the
   numbers from the committed log. Tests: 884 passed; ruff clean; compliance 0 FAIL.
-- **Open / next:** HonestDiD for the corrected main once WS-ENGINE pushes `pooled_adu.honest_bounds`.
+- **Open / next:** see the HonestDiD addendum below.
+- **Addendum (HonestDiD, same day):**
+  - Merged WS-ENGINE's `honest_bounds` (68c7ae6) into #193 and #198 and reviewed it against 3f0d5e2: the
+    formulas, grids and interval match.
+  - Ran `--honest` once per main (plan note first). Both leads refits dropped δ_−1, because the year before
+    adoption had 0 ADU permits in 22 place-years. `event_study_inputs` had counted it as 0, so the printed
+    bounds are invalid. Fixed: it now raises, with a test.
+  - Valid result: the pooled effect's interval includes 0 even with no trend violation (breakdown M̄ = 0);
+    only the 0–1-year band excludes 0, and its robustness can't be computed.
+  - Charts: `reports/adu-d025/figures/asrun_vs_corrected.png`, `event_study.png`,
+    `permits_by_event_time.png`.
+  - Also: the merge into #193 (ce75952) swept in an untracked run `panel.csv`; removed in 3032805 and
+    ignored. It remains in that branch's history.
+  - Options for Ben (pool leads, the announcement-dated model, or report as not identified) are in D-031.

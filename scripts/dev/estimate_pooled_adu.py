@@ -312,7 +312,14 @@ def honest(store, out: Path | None, first_log: Path) -> None:
         ]
     )
     print("event study (leads refit):\n", event.round(4).to_string(index=False))
-    theta, leads, theta_d, lead_d, omega = pa.event_study_inputs(lfit, lboot, panel)
+    try:
+        theta, leads, theta_d, lead_d, omega = pa.event_study_inputs(lfit, lboot, panel)
+    except est.EstimationError as err:  # a dropped lead or band: the bounds are not identified (D-031 note)
+        print(f"HonestDiD NOT COMPUTED: {err}")
+        if out:
+            out.mkdir(parents=True, exist_ok=True)
+            event.to_csv(out / "event_study.csv", index=False)
+        return
     targets = {"pooled": (theta, theta_d, omega)}
     for b, name in enumerate(pa.BAND_NAMES):
         if name in lfit.names:

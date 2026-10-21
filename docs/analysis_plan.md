@@ -874,3 +874,29 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - *Reported:* identified sets, robust 90% intervals and breakdown M̄ for each target and main; the event
     study (leads and bands with 90% intervals); charts of the robust interval against M̄ with the breakdown
     marked. Nothing here changes the D-025 main result or chooses a specification.
+- **HonestDiD runs (2026-10-21, once per main; logs `reports/adu-d025/honest-asrun-2026-10-21-log.txt` and
+  `honest-corrected-2026-10-21-log.txt`): bounds not identified, and the printed bounds are invalid.**
+  Both mains were reproduced (all 22 logged estimates matched) and both leads refits converged with 999 of
+  999 draws. **But lead_1 (δ_−1) was dropped from both refits as "all counts zero where it applies":** the 22
+  treated place-years one year before adoption had 0 ADU permits (k = −3: 5 permits in 19 place-years;
+  k = −2: 1 in 21; k = −1: 0 in 22; k = 0: 9 in 22; places adopting 2017+, `permits_by_event_time.csv`).
+  δ_−1's estimate is therefore −∞. `event_study_inputs` counted the dropped lead as 0, so every bound and
+  breakdown value printed in those logs rests on δ_−1 = 0 and **is not valid**. The bounds CSVs were not
+  kept; the logs are kept as the record.
+  - *Fix (D-031, this PR):* `event_study_inputs` now raises if a lead or band was not estimated, with a test,
+    and the `--honest` stage reports "not computed". This is a defect in the committed code, not a change of
+    the choices fixed above.
+  - *What can still be said, from valid quantities:* θ at realised doses from the leads refit is 1.47
+    (−0.11 to 3.04) as-run and 1.52 (−0.25 to 3.34) corrected. **The pooled effect's 90% interval includes 0
+    before any allowance for a trend violation**, so the pooled breakdown M̄ is 0 whatever δ_−1 is. The
+    0–1-year band alone excludes 0: 1.60 (0.37 to 2.79) as-run, 1.61 (0.28 to 2.99) corrected. Its robustness
+    to trend violations cannot be computed as specified. Leads: δ_−3 = 1.44 (0.49 to 2.44) as-run, 1.41 (0.36
+    to 2.52) corrected; δ_−2 ≈ −0.2 with intervals spanning ±2.
+  - *Reading:* the pre-adoption path (a blip at k = −3, then nothing the year before) looks like owners
+    holding projects until the rule passed (C29), but with 0–5 permits a year across ~20 places it cannot
+    be told apart from noise. The data are too thin for a trend-violation analysis.
+  - *Options for Ben (each needs its own dated note before any run):* (1) pool leads k = −2…−1 into one lead
+    (1 permit in 43 place-years: estimable, very weak), keeping the choices above; (2) run the same bounds on
+    the announcement-dated sensitivity model (2.99, 1.13 to 4.98), whose re-dating moves the dip into the
+    post period; (3) report HonestDiD as not identified and rest on the randomization inference (p = 0.111)
+    and the failed leads test. Recommended: (3).

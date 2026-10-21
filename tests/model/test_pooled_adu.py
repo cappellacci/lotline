@@ -483,3 +483,15 @@ def test_honest_bounds_collapse_without_a_pre_trend_and_breakdown_is_found():
     # leads (0, 0, 0.2): M_pre 0.2, Σω(k+1) 1.5; set 0.6 ± 0.3 M̄ includes 0 from M̄ = 2 (no noise)
     th, ld = np.full(50, 0.8), [(0.0, 0.0, 0.2)] * 50
     assert pa.rm_breakdown(th, ld, omega) == pytest.approx(2.0)
+
+
+def test_honest_inputs_refuse_a_lead_that_was_not_estimated():
+    """D-031 fix: if every treated place has zero ADUs the year before adoption, lead_1 is dropped (its
+    estimate is −∞). The HonestDiD inputs must refuse, not count it as 0."""
+    p = sparse_panel(seed=50, n_places=60, a_mean=-9.5)
+    p.loc[(p["year"] - p["T"]) == -1, "y"] = 0
+    fit = pa.estimate_pooled(p, modifiers=["m1"], leads=(-3, -2, -1))
+    assert "lead_1 (all counts zero where it applies: not estimable)" in fit.design.dropped
+    boot = pa.score_bootstrap(fit, draws=20, seed=1)
+    with pytest.raises(EstimationError, match="lead_1"):
+        pa.event_study_inputs(fit, boot, p)
