@@ -14,13 +14,13 @@ scored against what BPS recorded:
   of mostly-zero counts, so it is not the test.
 - **Bias after 2022:** mean signed error (forecast − observed) for years from `v1_bias_first_year`.
 - **By place size:** the same error within terciles of eligible parcels at the fit end, per state.
-- **State totals (D-026):** for every state, fit end, size class and forecast year, the scored places' draws
+- **State totals (D-029):** for every state, fit end, size class and forecast year, the scored places' draws
   are summed draw by draw (keeping the cycle they share) and compared with the same places' observed sum;
   also over the whole window (places scored in every year). Reported: randomized P10-P90 coverage, the PIT
   step (for the PIT histogram, `pit_histogram`), the CRPS of the summed draws, and absolute error of the P50
   of the sum against the benchmarks' sums (`state_window`, `score_state`). Reported, not a pass criterion.
 
-**V1 is a development set (D-026).** The 2016/2018/2020 windows have been used to choose among
+**V1 is a development set (D-029).** The 2016/2018/2020 windows have been used to choose among
 specifications (A, B, C, state momentum, the D-011 cycle fix, the scoring floor), so their scores are
 in-sample for that choice. Confirmatory evidence comes only from the holdout tests.
 
@@ -53,7 +53,7 @@ METHODS = ("model", *baseline.BENCHMARKS)
 TERCILES = ("small", "medium", "large")
 KEY = "geoid"
 SPECS = ("B", "C")
-DEV_SET_LABEL = "V1 windows 2016/2018/2020: development set (used to choose specifications; D-026)"
+DEV_SET_LABEL = "V1 windows 2016/2018/2020: development set (used to choose specifications; D-029)"
 PIT_BINS = 10
 
 

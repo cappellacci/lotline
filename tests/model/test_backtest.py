@@ -165,7 +165,7 @@ def test_model_is_calibrated_and_competitive_in_a_stationary_world():
     """Where nothing changes, the model's band should cover about 80% and its error should stay close to the
     3-year mean's and beat the trend's.
 
-    Before D-026 the model never lost to the 3-year mean here. Since D-026 the cycle starts at the state's
+    Before D-029 the model never lost to the 3-year mean here. Since D-029 the cycle starts at the state's
     origin-year total, which in a world with no cycle is only that year's sampling noise (about ±3% for these
     40 places), so the model can lose by a few percent (2 of 3 windows, by up to 5%). That is the price of
     the random-walk start where there is no random walk; with a common cycle it is what makes the state

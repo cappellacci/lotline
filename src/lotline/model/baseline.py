@@ -25,7 +25,7 @@ around that reflects lumpy years and the regional building cycle. Per place and 
    counts are treated as negative binomial, Var(c) = λ + λ²/k, with 1/k estimated by pooled moments
    (`nb_inverse_dispersion`) on detrended counts: each year's count is divided by the state's cycle index
    s_t = S_t / S̄ (`cycle_index`; S_t the state's total over the places with a level, S̄ its window mean), so
-   the cycle, which step 3 adds separately, is not counted twice (`detrend_dispersion`, D-026). The sampling
+   the cycle, which step 3 adds separately, is not counted twice (`detrend_dispersion`, D-029). The sampling
    variance of y_i uses the group-smoothed mean count λ_i = ḡ · P̄_i / 1000 (P̄_i = mean eligible parcels):
    v_i = 10⁶ / P̄_i² · (λ_i + λ_i²/k) / m, raised to the place's own observed variance of (detrended) annual
    rates / m when that is larger (`use_direct_variance`), so one subdivision year in a 40-parcel township
@@ -35,7 +35,7 @@ around that reflects lumpy years and the regional building cycle. Per place and 
    (1 − B_i) · v_i. Big places (small v_i) keep their own rate; small places move toward the group's.
 3. **Range (P10/P50/P90), by simulation** (`simulation_draws`, fixed `simulation_seed`), from three sources:
    the true level is drawn from a gamma with mean μ_i and the posterior variance; the regional cycle starts at
-   the state's origin-year level, a_s = S_T / S̄ (`cycle_start_at_origin`, D-026: a random walk starts from
+   the state's origin-year level, a_s = S_T / S̄ (`cycle_start_at_origin`, D-029: a random walk starts from
    its last value, not from the window mean), and multiplies it by exp(sum of h resampled year-to-year log
    changes in the state's total permits over the `cycle_history_years` before the origin), a random walk, so
    the band widens with the horizon; and the year's count is negative binomial around that. The changes are
@@ -43,7 +43,7 @@ around that reflects lumpy years and the regional building cycle. Per place and 
    calendar years come from one matrix per state, origin and draw (`cycle_years`), shared by every size class
    and scenario, so draw j is the same run of boom and bust years for single-family and 5+ units, whichever
    places are in the run. The per-place gamma and count draws have their own generator per state, size class
-   and origin (D-026). The point forecast is the median (P50), which is what minimises mean absolute error;
+   and origin (D-029). The point forecast is the median (P50), which is what minimises mean absolute error;
    `mean` is reported too, because means add up to state totals.
 
 4. **Optional regional cycle term** (`use_state_momentum`): every place's level is scaled by the state's pace
@@ -424,7 +424,7 @@ def forecast_draws(
     for state, ps in places.groupby("state", sort=True):
         history = int(p["cycle_history_years"].value)
         in_state = hist[(hist["state"] == state) & hist[key].isin(ps[key])]
-        # Where the cycle starts (D-026): the state's origin-year level, or its recent pace with momentum on.
+        # Where the cycle starts (D-029): the state's origin-year level, or its recent pace with momentum on.
         recent = 0
         if bool(p["use_state_momentum"].value):
             recent = int(p["momentum_recent_years"].value)
@@ -445,7 +445,7 @@ def forecast_draws(
         shocks = cycle_shock_series(hist[hist["state"] == state], value, origin, history, key)
         years, fallback = cycle_years(seed, str(state), origin, history, horizon, n)
         cycle = cycle_factor(shocks, years, fallback)
-        # Own generator per state, size class and origin (D-026): no accidental sharing between classes.
+        # Own generator per state, size class and origin (D-029): no accidental sharing between classes.
         rng = np.random.default_rng(
             [seed, zlib.crc32(value.encode()), zlib.crc32(str(state).encode()), origin]
         )

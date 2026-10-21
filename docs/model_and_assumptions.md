@@ -246,7 +246,7 @@ parcels. Eligibility follows one versioned rule, applied the same way in every s
 
 **In plain words:** each place keeps building at its own recent pace, pulled toward its neighbours' pace when
 its own record is too short or too small to trust. The range around that reflects lumpy years and the
-regional building cycle. This is spec B (D-002, D-007), with the cycle fixed by D-011 and D-026. The full specification
+regional building cycle. This is spec B (D-002, D-007), with the cycle fixed by D-011 and D-029. The full specification
 is in the header of `src/lotline/model/baseline.py`; every step has a hand-worked test in
 `tests/model/test_baseline_model.py`.
 
@@ -263,7 +263,7 @@ For each place *i* and building-size class, with rates per 1,000 eligible parcel
    1/k = max(0, Σ(s_i² − c̄_i) / Σ c̄_i²), with c̄_i and s_i² the mean and variance of place i's annual counts.
    The counts are first divided by the state's cycle index for their year (the state's total that year over
    its window mean), because the regional cycle is added separately in step 5 and must not be counted twice
-   (`detrend_dispersion` = 1, D-026). The same detrended rates are used for the place's own variance below.
+   (`detrend_dispersion` = 1, D-029). The same detrended rates are used for the place's own variance below.
    The sampling variance of y_i uses the count the group rate implies, λ_i = ḡ · P̄_i / 1000 (P̄_i = mean
    eligible parcels): v_i = 10⁶ / P̄_i² · (λ_i + λ_i²/k) / m. It is raised to the place's own observed variance
    of annual rates divided by *m* when that is larger (`use_direct_variance` = 1).
@@ -274,7 +274,7 @@ For each place *i* and building-size class, with rates per 1,000 eligible parcel
 5. **Range, by simulation.** For each of 4,000 draws (`simulation_draws`, fixed `simulation_seed`): the true
    level is drawn from a gamma distribution with mean μ_i and the variance above; it is moved to where the
    state stood in the origin year (× the state's origin-year total over its window mean,
-   `cycle_start_at_origin` = 1, D-026: a boom or bust under way at the origin carries on, rather than snapping
+   `cycle_start_at_origin` = 1, D-029: a boom or bust under way at the origin carries on, rather than snapping
    back to the 5-year average); it is multiplied by a regional cycle factor; and each year's count is drawn from a negative binomial around the result. The cycle
    factor is exp(sum of *h* resampled year-to-year log changes in the state's total permits over the 25 years
    before the origin, `cycle_history_years`), so the band widens with the horizon *h*. The changes are centred
@@ -282,12 +282,12 @@ For each place *i* and building-size class, with rates per 1,000 eligible parcel
    changes (D-011). The same resampled calendar years are used for every size class and scenario in a given
    state, origin and draw, so draw *j* is the same run of boom and bust years for single-family and 5+ units.
    The rest of each draw (level and yearly count) uses random numbers of its own for every state and size
-   class (D-026).
+   class (D-029).
 6. **Outputs.** P10, P50 and P90 of the draws, and the mean. P50 is the point forecast because it minimizes
    absolute error; the mean is reported because means add up to state totals and medians do not.
 
 Two optional terms exist and are **off**: a state momentum factor (`use_state_momentum` = 0; the backtest
-showed mixed results) and the spec C demand multiplier (D-006, D-007; available as `--spec C`; since D-026 its signals are centred
+showed mixed results) and the spec C demand multiplier (D-006, D-007; available as `--spec C`; since D-029 its signals are centred
 on the fit sample's averages, so a place with average demand keeps spec B's level).
 
 ### Worked example: two places
@@ -722,8 +722,8 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `hpi_change_years` | 3 | fixed | years | Analysis plan D-006: FHFA house-price change over the 3 years to the origin, annualized |
 | `irls_tolerance` | 1e-08 | 1e-12–1e-06 | relative change in Poisson deviance between iterations | R glm.control default (epsilon = 1e-8): converged when \|dev - dev_old\| / (\|dev\| + 0.1) < epsilon |
 | `irls_max_iterations` | 100 | 25–1,000 | iterations | Numerical setting for the Poisson IRLS fit, chosen a priori: Poisson log-link IRLS usually converges in under… |
-| `cycle_start_at_origin` | 1 | 0–1 | flag (1 = yes) | Analysis plan D-026 (2026-10-20): a random walk starts from its last value |
-| `detrend_dispersion` | 1 | 0–1 | flag (1 = yes) | Analysis plan D-026 (2026-10-20): the simulation adds the cycle separately, so the count dispersion and a pla… |
+| `cycle_start_at_origin` | 1 | 0–1 | flag (1 = yes) | Analysis plan D-029 (2026-10-20): a random walk starts from its last value |
+| `detrend_dispersion` | 1 | 0–1 | flag (1 = yes) | Analysis plan D-029 (2026-10-20): the simulation adds the cycle separately, so the count dispersion and a pla… |
 
 **`config/params/eligibility.yaml`** (7 parameters)
 

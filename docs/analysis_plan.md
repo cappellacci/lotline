@@ -728,7 +728,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
   - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
 
-### D-026 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
+### D-029 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
 - **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline
   engine. In simulation, log forecast error against log(origin level / 5-year mean) had correlation 0.66,
   state-year P10–P90 coverage was 74% and 5-year total coverage 68% (nominal 80%). (1) The cycle's random

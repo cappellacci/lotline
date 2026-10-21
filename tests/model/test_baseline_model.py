@@ -119,7 +119,7 @@ def test_cycle_index_by_hand():
     assert baseline.cycle_index(z, "units_1").tolist() == pytest.approx([1.0, 2.0])
 
 
-# A common cycle and nothing else (D-026): A builds 10, 20, 30 and B 20, 40, 60 on 1,000 parcels each.
+# A common cycle and nothing else (D-029): A builds 10, 20, 30 and B 20, 40, 60 on 1,000 parcels each.
 # State totals 30, 60, 90 -> s = 0.5, 1, 1.5; detrended, A is 20, 20, 20 and B 40, 40, 40.
 # Raw: A mean 20, variance 100 (excess 80); B mean 40, variance 400 (excess 360) -> 1/k = 440 / 2000 = 0.22,
 #      and A's own variance of rates 100 / 3 years = 33.3. Detrended: no variance left, 1/k = 0, v_direct = 0.
@@ -189,7 +189,7 @@ def test_cycle_start_ignores_a_statewide_zero_at_the_origin():
 
 
 def test_size_classes_have_their_own_random_numbers():
-    """D-026: two size classes with identical records and no cycle (flat totals) must not get identical
+    """D-029: two size classes with identical records and no cycle (flat totals) must not get identical
     draws. Before, every class restarted default_rng(simulation_seed), so their draws were the same numbers
     (correlation 1); now each class has its own generator, so the correlation is ~0."""
     rows = [(f"P{i}", "C1", y, 5 + i, 1000) for i in range(6) for y in range(1992, 2021)]
@@ -230,11 +230,11 @@ def _common_cycle_panel(states=40, places=40, sigma=0.2, inv_k=0.1, seed=7):
 
 
 def test_state_totals_are_calibrated_under_a_common_cycle():
-    """D-026: 40 synthetic states with a shared random-walk cycle; forecast from 2018, score 2019-2023.
+    """D-029: 40 synthetic states with a shared random-walk cycle; forecast from 2018, score 2019-2023.
 
     Summing each state's draws draw by draw, the state-year and 5-year-total P10-P90 bands should cover
     about 80%, and the error of the 5-year total should not depend on where the origin year sat against the
-    level-window mean. Before D-026 (the cycle started at the window mean, and its variance was counted again
+    level-window mean. Before D-029 (the cycle started at the window mean, and its variance was counted again
     in the dispersion) this fixture gave 72.5% state-year and 72.5% total coverage and a correlation of 0.52
     between log(actual / forecast mean) and log(origin total / window mean); now 81.5%, 85% and −0.17.
     """

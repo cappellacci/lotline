@@ -1,8 +1,8 @@
-### LB-NNN · 2026-10-20 · Build: baseline calibration fixes and state-total scoring (D-026)
+### LB-NNN · 2026-10-20 · Build: baseline calibration fixes and state-total scoring (D-029)
 - **Question:** Are the baseline's ranges calibrated for state totals, and do five defects found in review
   (cycle start, spec C centring, cycle variance counted twice, shared seeds, place-only scoring) explain the
   NC/TX under-forecast?
-- **What I did:** pre-declared D-026 in `docs/analysis_plan.md` (own commit, before any run). Then in
+- **What I did:** pre-declared D-029 in `docs/analysis_plan.md` (own commit, before any run). Then in
   `model/baseline.py`: the cycle starts at the state's origin-year level (`cycle_start_at_origin`); 1/k and a
   place's own variance use counts divided by the state cycle index (`detrend_dispersion`, `cycle_index`);
   per-place draws get their own generator per state, size class and origin; `pit_step`, `step_share`,
@@ -17,7 +17,7 @@
   mean/actual 0.75 → 0.86 (NC 0.69 → 0.80, TX 0.75 → 0.87). The gain comes from the cycle start; detrending
   is neutral to slightly negative on V1. In a stationary world the new start costs up to 5% MAE against the
   3-year mean (test relaxed, documented). Spec C (fixed) 17 cells; β still unstable.
-- **Decisions:** D-026 (pre-declared; Ben to confirm adoption in the PR).
+- **Decisions:** D-029 (pre-declared; Ben to confirm adoption in the PR).
 - **AI:** Claude Code wrote the pre-declaration, code, tests and runs; failing-on-old-code checked by running
   the new tests against `main`'s source. V1 outputs stayed in the session scratchpad (no data committed).
 - **Open / next:** noisy origin totals (small states, 5+ units) suggest a local-level filter for the start;

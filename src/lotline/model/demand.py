@@ -1,7 +1,7 @@
 """Spec C (analysis plan D-006): two demand signals on top of the baseline's recent pace.
 
 Spec B keeps each place at its own recent pace. Spec C multiplies that level by
-`exp(β_h · (g − ḡ) + β_p · (q − q̄))`, with ḡ and q̄ the means of the signals over the fit sample (D-026):
+`exp(β_h · (g − ḡ) + β_p · (q − q̄))`, with ḡ and q̄ the means of the signals over the fit sample (D-029):
 
 - **g, household growth:** annualized growth of occupied housing units (ACS `B25003_001`) in the place's
   county, the 5-year estimate ending in year t against the non-overlapping one ending 5 years earlier:
@@ -18,7 +18,7 @@ Spec B keeps each place at its own recent pace. Spec C multiplies that level by
 - **Forecast:** g and q at the origin, held over the horizon. β_0 is estimated but **not applied**: it
   absorbs the average drift between spec B's level and the next year's count so the slopes aren't biased,
   and D-006 leaves spec B's level otherwise unchanged. Because the signals are centred, a place at average
-  demand gets multiplier exactly 1 (before D-026 the signals were not centred, so such a place was scaled by
+  demand gets multiplier exactly 1 (before D-029 the signals were not centred, so such a place was scaled by
   exp(β_h ḡ + β_p q̄), which dropping β_0 does not cancel). A place without g or q at the origin keeps
   multiplier 1 (spec B), and so does every place when the fit fails (no permits, or no convergence).
 """
