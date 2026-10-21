@@ -27,7 +27,7 @@ Only NumPy and pandas.
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -953,6 +953,115 @@ def transport_predict(
             }
         )
     return pd.DataFrame(out)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# HonestDiD bounds (D-025 dated note, 2026-10-21; Rambachan & Roth 2023)
+# ---------------------------------------------------------------------------------------------------------
+
+RM_GRID = (0.5, 1.0, 1.5, 2.0)
+SD_GRID = (0.0, 0.05, 0.1, 0.2)
+
+
+def honest_set(theta: float, leads, omega, kind: str, m: float) -> tuple[float, float]:
+    """Identified set for the pooled post-adoption effect θ under a bound on how the pre-trend continues.
+
+    `leads` = (δ_−3, δ_−2, δ_−1) relative to δ_−4 = 0; `omega[k]` = share of treated place-years at event time
+    k = 0, 1, … (sums to 1). Bias B = Σ_k ω_k δ_k.
+    - 'rm' (relative magnitudes, M̄ = m): |δ_k − δ_{k−1}| ≤ m · M_pre, M_pre the largest pre-period step:
+      B in δ_−1 ± m · M_pre · Σ ω_k (k + 1).
+    - 'sd' (smoothness, M = m): second differences at most m, extending the slope δ_−1 − δ_−2:
+      B in Σ ω_k [δ_−1 + (k + 1)(δ_−1 − δ_−2)] ± m · Σ ω_k (k + 1)(k + 2) / 2.
+    Returns (θ − B_max, θ − B_min). By hand: θ 0.9, leads (0.1, 0.2, 0.3), ω = (0.5, 0.5), 'rm' m = 1:
+    M_pre 0.1, Σ ω (k + 1) = 1.5, B in 0.3 ± 0.15 -> (0.45, 0.75).
+    """
+    d3, d2, d1 = (float(x) for x in leads)
+    w = np.asarray(omega, dtype=float)
+    k1 = np.arange(1, len(w) + 1)
+    if kind == "rm":
+        mpre = max(abs(d3), abs(d2 - d3), abs(d1 - d2))
+        centre, half = d1, m * mpre * float(w @ k1)
+    elif kind == "sd":
+        centre = d1 + (d1 - d2) * float(w @ k1)
+        half = m * float(w @ (k1 * (k1 + 1) / 2))
+    else:
+        raise ValueError(kind)
+    return theta - centre - half, theta - centre + half
+
+
+def honest_bounds(
+    theta_hat: float,
+    leads_hat,
+    theta_draws,
+    lead_draws,
+    omega,
+    level: float = 0.90,
+    rm_grid=RM_GRID,
+    sd_grid=SD_GRID,
+) -> pd.DataFrame:
+    """Identified sets (`honest_set`) at the estimates and robust intervals from the bootstrap: the
+    (1 − level)/2 quantile of the draws' lower bounds to the (1 + level)/2 quantile of their upper bounds."""
+    a = (1 - level) / 2
+    rows = []
+    for kind, grid in (("rm", rm_grid), ("sd", sd_grid)):
+        for m in grid:
+            lo, hi = honest_set(theta_hat, leads_hat, omega, kind, m)
+            sets = np.array(
+                [honest_set(t, d, omega, kind, m) for t, d in zip(theta_draws, lead_draws, strict=True)]
+            )
+            rows.append(
+                {
+                    "restriction": "relative magnitudes" if kind == "rm" else "smoothness",
+                    "m": m,
+                    "set_low": lo,
+                    "set_high": hi,
+                    "ci_low": float(np.quantile(sets[:, 0], a)),
+                    "ci_high": float(np.quantile(sets[:, 1], 1 - a)),
+                }
+            )
+    out = pd.DataFrame(rows)
+    return out.assign(ci_includes_0=(out["ci_low"] <= 0) & (out["ci_high"] >= 0))
+
+
+def rm_breakdown(theta_draws, lead_draws, omega, level: float = 0.90, step: float = 0.01, top: float = 10.0):
+    """Smallest M̄ (relative magnitudes, on a grid of `step`) whose robust interval includes 0 (NaN if none
+    up to `top`)."""
+    a = (1 - level) / 2
+    for m in np.arange(0.0, top + step / 2, step):
+        sets = np.array(
+            [honest_set(t, d, omega, "rm", m) for t, d in zip(theta_draws, lead_draws, strict=True)]
+        )
+        if np.quantile(sets[:, 0], a) <= 0 <= np.quantile(sets[:, 1], 1 - a):
+            return float(round(m, 6))
+    return float("nan")
+
+
+def event_study_inputs(fit: PooledFit, boot: pd.DataFrame, panel: pd.DataFrame):
+    """From the pre-trend-leads refit: θ (mean of β_band(k) × dose over treated place-years with k >= 0),
+    the leads (δ_−3, δ_−2, δ_−1), each also per bootstrap draw, and ω_k (shares of those place-years by k).
+    A band or lead that was dropped counts as 0."""
+    post = panel[panel["T"].notna() & (panel["year"] >= panel["T"])]
+    k = (post["year"] - post["T"]).to_numpy(dtype=int)
+    dose = post["dose"].to_numpy(dtype=float)
+    band = _band_of(k)
+    omega = np.bincount(k, minlength=k.max() + 1) / len(k)
+
+    def theta(values: Mapping) -> float:
+        b = np.array([float(values.get(n, 0.0)) for n in BAND_NAMES])
+        return float(np.mean(b[band] * dose))
+
+    def leads(values: Mapping) -> tuple[float, float, float]:
+        return tuple(float(values.get(f"lead_{j}", 0.0)) for j in (3, 2, 1))
+
+    est_ = dict(zip(fit.names, fit.log_params, strict=True))
+    draws = boot.to_dict("records")
+    return (
+        theta(est_),
+        leads(est_),
+        np.array([theta(r) for r in draws]),
+        [leads(r) for r in draws],
+        omega,
+    )
 
 
 # ---------------------------------------------------------------------------------------------------------
