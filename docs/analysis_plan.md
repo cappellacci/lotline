@@ -1115,7 +1115,3 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     the announcement-dated sensitivity model (2.99, 1.13 to 4.98), whose re-dating moves the dip into the
     post period; (3) report HonestDiD as not identified and rest on the randomization inference (p = 0.111)
     and the failed leads test. Recommended: (3).
-
-
-- **Decided by:** Ben, 2026-10-20, as proposed (including the `mm.yaml` choices: the 10,000-person floor and
-  the 1/3 permit grade), before any estimate was run.
