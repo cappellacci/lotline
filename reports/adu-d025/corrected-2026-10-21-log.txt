@@ -1,0 +1,149 @@
+commit b2f09a3; started 2026-10-21 04:14 EDT
+uv run python -u scripts/dev/estimate_pooled_adu.py --full --hh-growth corrected --out reports/adu-d025/corrected-2026-10-21/
+household growth: corrected
+main bootstrap: 999 of 999 bootstrap draws kept
+household growth differs (corrected vs as_run) for 5 places:
+                     name       T  hh_growth  hh_growth_as_run
+place                                                         
+2717288        Eagan city  2014.0        NaN          0.017614
+2730392         Hugo city  2012.0        NaN          0.129099
+2735180    Lakeville city  2013.0        NaN          0.077265
+2743000  Minneapolis city  2015.0        NaN          0.007415
+2754214    Richfield city  2015.0        NaN          0.022007
+             term  estimate     se      low     high  p_two_sided  weakly_identified
+        intercept  -14.3931 0.9310 -15.8584 -12.8183       0.0000              False
+        year_2017    0.6913 0.6830  -0.4741   1.7717       0.3043              False
+        year_2018    0.1907 0.7842  -1.0674   1.4563       0.8418              False
+        year_2019    0.3844 0.5613  -0.5193   1.2910       0.5465              False
+        year_2020    1.9715 0.8510   0.6033   3.4502       0.0210              False
+        year_2021    1.7104 0.8096   0.3069   3.0567       0.0270              False
+        year_2022    1.6429 0.7730   0.3723   2.8820       0.0260              False
+        year_2023    1.9258 0.8090   0.6888   3.2401       0.0080              False
+        year_2024    2.1281 0.8700   0.7181   3.5699       0.0100              False
+        year_2025    2.4426 0.8200   1.0883   3.7932       0.0000              False
+         beta_0_1    2.3571 1.0323   0.5649   4.0045       0.0160               True
+         beta_2_3    1.9695 1.5332  -0.6044   4.3637       0.2082               True
+          beta_4p    2.5284 1.6494  -0.1537   5.1051       0.1281               True
+        theta_pcr   -0.6479 0.5538  -1.5590   0.2647       0.2623               True
+  theta_log_value   -0.0222 0.4718  -0.7775   0.7775       0.9590               True
+theta_pre_permits   -0.1410 1.0370  -1.9116   1.5588       0.8809               True
+  theta_hh_growth    0.1739 1.0397  -1.6329   2.0781       0.8869               True
+              rho   -0.1987 0.1975  -0.5187   0.1391       0.3373              False
+            delta   -2.7520 0.4035  -3.4080  -2.0509       0.0000               True
+        log_sigma    0.7576 0.2427   0.3616   1.1764       0.0010              False
+        log_kappa   -1.4051 3.4002  -6.3476   2.5088       0.8378              False
+          overall    2.3737 1.3605   0.1247   4.5094       0.0671               True
+randomization inference: overall 2.3737, p = 0.111 over 970
+randomization inference: 970 of 999 refits converged (70 on retry, 29 excluded)
+{'check': 'pre-trend leads', 'statistic': 4.963679276224691, 'p': 0.05205205205205205, 'pass': False, 'convergence': 'pre-trend leads: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept'}
+{'check': 'placebo dates (−2 years)', 'pass': None, 'note': 'not computed: did not converge after a retry', 'convergence': 'placebo dates (−2 years): 0 of 1 refits converged (0 on retry, 1 excluded)'}
+{'check': 'placebo outcome (5+ units)', 'estimate': 0.6933130306998956, 'low': np.float64(-0.49528405381210927), 'high': np.float64(1.8628594393491245), 'pass': True, 'convergence': 'placebo outcome (5+ units): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept'}
+{'check': 'excluding (2020, 2021)', 'estimate': 3.1824843927756086, 'outside': [], 'pass': True, 'convergence': 'excluding (2020, 2021): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept'}
+{'check': 'leave one treated place out', 'moved': [], 'pass': True, 'convergence': 'leave one treated place out: 31 of 31 refits converged (0 on retry, 0 excluded)'}
+robustness, fixed-effects PPML: {'estimated': True, 'beta_0_1': np.float64(-0.16350662651428338), 'beta_2_3': np.float64(-0.5857517975885003), 'beta_4p': np.float64(-0.39005963555714523), 'theta_pcr': np.float64(1.3309291521454647), 'theta_log_value': np.float64(-0.2192158162790533), 'rho': np.float64(-0.20401785761663765), 'delta': np.float64(-2.150539339780507), 'se_beta_0_1': np.float64(2.4563212007741777), 'se_beta_2_3': np.float64(2.32814264539965), 'se_beta_4p': np.float64(2.411253336669219), 'se_theta_pcr': np.float64(2.6091011910912214), 'se_theta_log_value': np.float64(1.0576758461615645), 'se_rho': np.float64(0.19908100510610993), 'se_delta': np.float64(0.713845493954384), 'dropped': ['theta_pre_permits (collinear with fixed effects)', 'theta_hh_growth (collinear with fixed effects)'], 'kept_rows': 193}
+robustness, imputation:
+     term  estimate     low    high  finite_draws
+beta_0_1   -0.5244 -1.7143  0.6840           838
+beta_2_3   -1.5481 -3.0891 -0.3491           824
+ beta_4p      -inf     NaN     NaN             0
+ overall   -0.9362 -2.2547  0.3006           860 
+(imputed rows 7, not imputable 162)
+robustness, binary dose:
+              term  estimate     se      low     high  p_two_sided  weakly_identified
+        intercept  -14.3449 0.9265 -15.9271 -12.8040       0.0000              False
+        year_2017    0.3906 0.4800  -0.4227   1.1627       0.4454              False
+        year_2018    0.2097 0.4611  -0.5774   0.9668       0.6547              False
+        year_2019    0.1209 0.4591  -0.6126   0.8701       0.8128              False
+        year_2020    1.8112 0.6161   0.7969   2.8562       0.0010              False
+        year_2021    1.5370 0.7239   0.3486   2.7174       0.0250              False
+        year_2022    1.6427 0.6017   0.6422   2.6926       0.0000              False
+        year_2023    1.8583 0.6634   0.7487   2.9576       0.0010              False
+        year_2024    2.0060 0.7547   0.7470   3.2885       0.0000              False
+        year_2025    2.1252 0.8177   0.7740   3.4608       0.0000              False
+         beta_0_1    1.5035 0.7743   0.2732   2.7064       0.0190               True
+         beta_2_3    1.3045 0.8846  -0.1664   2.7521       0.1481               True
+          beta_4p    1.7024 0.7151   0.5707   2.8960       0.0090               True
+        theta_pcr   -0.5537 0.5840  -1.4832   0.4289       0.3524               True
+  theta_log_value    0.1107 0.4782  -0.6685   0.9053       0.8288               True
+theta_pre_permits   -0.4167 0.8861  -1.8713   1.0222       0.6937               True
+  theta_hh_growth    0.5119 0.9469  -1.0377   2.0767       0.6196               True
+              rho   -0.1762 0.1503  -0.4118   0.0733       0.2803              False
+            delta   -2.2171 0.4055  -2.9218  -1.5541       0.0000               True
+        log_sigma    0.7935 0.2060   0.4456   1.1260       0.0000              False
+        log_kappa   -7.9999 0.0000  -7.9999  -7.9999       0.0000              False
+          overall    1.5717 0.7082   0.4065   2.7089       0.0170               True 
+ binary dose: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+robustness, additive imputation (D-031), per 1,000 eligible parcels a year:
+     place                                                      reason
+   2701486  treated in or before 2016 (no untreated year in the panel)
+   2706616  treated in or before 2016 (no untreated year in the panel)
+   2717288  treated in or before 2016 (no untreated year in the panel)
+   2730392  treated in or before 2016 (no untreated year in the panel)
+   2731076  treated in or before 2016 (no untreated year in the panel)
+   2735180  treated in or before 2016 (no untreated year in the panel)
+   2743000  treated in or before 2016 (no untreated year in the panel)
+   2751730  treated in or before 2016 (no untreated year in the panel)
+   2754214  treated in or before 2016 (no untreated year in the panel)
+   2708794 no kept untreated year (e.g. no ADU permit before adoption)
+   2712700 no kept untreated year (e.g. no ADU permit before adoption)
+   2713456 no kept untreated year (e.g. no ADU permit before adoption)
+   2714158 no kept untreated year (e.g. no ADU permit before adoption)
+   2715022 no kept untreated year (e.g. no ADU permit before adoption)
+2716315688 no kept untreated year (e.g. no ADU permit before adoption)
+   2718188 no kept untreated year (e.g. no ADU permit before adoption)
+   2724308 no kept untreated year (e.g. no ADU permit before adoption)
+   2730140 no kept untreated year (e.g. no ADU permit before adoption)
+   2740382 no kept untreated year (e.g. no ADU permit before adoption)
+   2744476 no kept untreated year (e.g. no ADU permit before adoption)
+   2744530 no kept untreated year (e.g. no ADU permit before adoption)
+   2745430 no kept untreated year (e.g. no ADU permit before adoption)
+   2753026 no kept untreated year (e.g. no ADU permit before adoption)
+   2755186 no kept untreated year (e.g. no ADU permit before adoption)
+   2755726 no kept untreated year (e.g. no ADU permit before adoption)
+   2757220 no kept untreated year (e.g. no ADU permit before adoption)
+   2762824 no kept untreated year (e.g. no ADU permit before adoption)
+   2766460 no kept untreated year (e.g. no ADU permit before adoption)
+   2768818 no kept untreated year (e.g. no ADU permit before adoption)
+not estimable: 2 contributing treated places (floor 3)
+{'check': 'excluding places treated before the panel', 'estimate': 2.9209332070173755, 'low': np.float64(1.1378454606295803), 'high': np.float64(4.6196931304335465), 'beta_0_1': 2.4951070085255367, 'beta_2_3': 2.683635833469468, 'beta_4p': 3.7369418152638643, 'inside_main': True, 'note_sample': '7 places excluded', 'convergence': 'excluding places treated before the panel: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept'}
+{'check': 'T at the announcement year (C29)', 'estimate': 2.989038991588219, 'low': np.float64(1.13347141657149), 'high': np.float64(4.980901271823921), 'beta_0_1': 2.6787240020659815, 'beta_2_3': 2.4653068851744746, 'beta_4p': 3.34931552959059, 'inside_main': True, 'note_sample': '11 places re-dated', 'convergence': 'T at the announcement year (C29): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept'}
+{'check': 'parking and process controls (C08, C21)', 'estimate': 3.006422078111618, 'low': np.float64(1.3732335741667165), 'high': np.float64(4.697008990489759), 'beta_0_1': 2.8653685369578286, 'beta_2_3': 2.660129524682517, 'beta_4p': 3.2017524475081114, 'inside_main': True, 'note_sample': "controls: ['parking', 'process']", 'convergence': 'parking and process controls (C08, C21): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept'}
+  place         name  year  observed   mean  p05  p10  p50   p90    p95  outside_range
+4805000  Austin city  2016       234   8.95  0.0  0.0  0.0   9.0  27.00            0.0
+4805000  Austin city  2017       357  28.92  0.0  0.0  0.0  20.0  60.05            0.0
+4805000  Austin city  2018       340  11.02  0.0  0.0  0.0  10.0  25.00            0.0
+4805000  Austin city  2019       375  16.30  0.0  0.0  0.0  13.0  33.00            0.0
+4805000  Austin city  2020       330  83.51  0.0  0.0  1.0  73.0 185.10            0.0
+4805000  Austin city  2021       341  48.70  0.0  0.0  1.0  51.0 154.25            0.0
+4805000  Austin city  2022       325  35.51  0.0  0.0  1.0  33.0  90.05            0.0
+4805000  Austin city  2023       243  37.56  0.0  0.0  1.0  30.0  90.05            0.0
+4805000  Austin city total      2545 270.48  0.0  0.0 14.5 358.1 861.00            0.0
+3755000 Raleigh city  2021        23  19.64  0.0  0.0  5.0  39.0  72.10            0.0
+3755000 Raleigh city  2022        55   0.81  0.0  0.0  0.0   2.0   3.00            0.0
+3755000 Raleigh city  2023        54   1.37  0.0  0.0  0.0   3.0   5.00            0.0
+3755000 Raleigh city  2024        37   2.25  0.0  0.0  0.0   3.0   6.00            0.0
+3755000 Raleigh city  2025        61   5.25  0.0  0.0  0.0   5.0  11.00            0.0
+3755000 Raleigh city total       230  29.31  0.0  0.0  8.0  57.0  98.00            0.0
+3719000  Durham city  2019        18   6.97  0.0  0.0  5.0  15.0  20.00            0.0
+3719000  Durham city  2020        12  23.42  0.0  0.0 10.0  62.0  91.00            0.0
+3719000  Durham city  2021        32  18.71  0.0  0.0  6.0  42.0  68.00            0.0
+3719000  Durham city  2022        35   9.79  0.0  0.0  2.0  21.0  35.00            0.0
+3719000  Durham city  2023        77  10.70  0.0  0.0  2.0  25.0  41.00            0.0
+3719000  Durham city  2024        51  13.83  0.0  0.0  3.0  26.0  45.00            0.0
+3719000  Durham city  2025        44  19.57  0.0  0.0  4.0  37.0  68.00            0.0
+3719000  Durham city total       269 102.99  1.0  6.0 57.0 230.1 334.10            0.0
+{'totals_inside_80': False, 'yearly_coverage_80': 0.15, 'pass': False}
+convergence:
+  randomization inference: 970 of 999 refits converged (70 on retry, 29 excluded)
+  pre-trend leads: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+  placebo dates (−2 years): 0 of 1 refits converged (0 on retry, 1 excluded)
+  placebo outcome (5+ units): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+  excluding (2020, 2021): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+  leave one treated place out: 31 of 31 refits converged (0 on retry, 0 excluded)
+  binary dose: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+  excluding places treated before the panel: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+  T at the announcement year (C29): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+  parking and process controls (C08, C21): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+wrote CSVs to reports/adu-d025/corrected-2026-10-21/ 
+uv run python -u scripts/dev/estimate_pooled_adu.py --full --hh-growth  --out  7516.05s user 104.51s system 94% cpu 2:14:31.07 total
+exit 0

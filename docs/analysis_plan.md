@@ -804,3 +804,99 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   seven checks and transport, and the hierarchical-NB priors (D-025 already has θ).
 - **Decided by:** Ben, 2026-10-21 (D-025 stays the main model; this estimator is robustness). Details by
   Claude Code; **(a)–(c) and the household-growth choice await Ben's approval.**
+- **Plan for the corrected-growth refit (2026-10-21, written before running; Ben chose option (i) for (b)
+  and approved each run once):**
+  - *Panel:* the D-025 panel with household growth measured by `household_growth` (missing unless the T − 1
+    and T − 6 vintages exist). `estimate_pooled_adu.py --hh-growth as_run` reproduces the first main model's
+    panel, so both can be compared; the run prints every place whose household growth changes.
+  - *Runs, once each:* `--full --hh-growth corrected`. This is the main model, its wild score bootstrap, and
+    the remaining stages under the D-025 convergence rule: randomization inference with dose paths moved
+    (D-031 (a)), the five checks, the robustness estimators (fixed-effects PPML, log-scale imputation,
+    binary dose, D-031 additive imputation), the D-031 (c) sensitivity runs, and the transport test (guard on
+    the predicted mean). The as-run main's transport is WS-ENGINE's 2026-10-21 re-run (above) and is not
+    repeated.
+  - *Comparison reported:* θ_hh_growth, the band effects and the overall effect, as-run against corrected,
+    with their 90% intervals. "Household growth matters for this test" is defined in advance: the overall
+    effect moves by more than a quarter of the as-run interval's half-width (0.5 log points), or its 90%
+    interval starts or stops containing 0, or the transport verdict changes. Otherwise it does not matter
+    here.
+  - *HonestDiD for the corrected main:* computed with WS-ENGINE's `pooled_adu.honest_bounds` (the choices
+    fixed above) once it is on `ws/engine-17-d025-results`; pending if it is not there when the refit ends.
+    No separate implementation.
+  - *Logs:* `reports/adu-d025/corrected-2026-10-21-log.txt`, CSVs in `reports/adu-d025/corrected-2026-10-21/`.
+- **Corrected-growth refit (2026-10-21, once; log `reports/adu-d025/corrected-2026-10-21-log.txt`, CSVs in
+  `reports/adu-d025/corrected-2026-10-21/`; 2 h 15 min):** household growth became missing for 5 places
+  (Eagan 2014, Hugo 2012, Lakeville 2013, Minneapolis 2015, Richfield 2015). Every stage was computed.
+
+  | | As-run main (2026-10-20) | Corrected main |
+  |---|---|---|
+  | θ_hh_growth (per SD) | −0.37 (−1.67 to 1.05) | 0.17 (−1.63 to 2.08) |
+  | Band 0–1 | 2.32 (0.61 to 3.93) | 2.36 (0.56 to 4.00) |
+  | Band 2–3 | 1.88 (−0.52 to 4.15) | 1.97 (−0.60 to 4.36) |
+  | Band 4+ | 2.38 (−0.01 to 4.72) | 2.53 (−0.15 to 5.11) |
+  | Overall | 2.26 (0.22 to 4.21) | 2.37 (0.12 to 4.51) |
+  | Randomization inference | not computed (7.1% of refits failed, T-only permutation) | p = 0.111 over 970 of 999 (2.9% failed; dose paths moved) |
+  | Pre-trend leads (pass p ≥ 0.10) | p = 0.025, fails | p = 0.052, fails |
+  | Placebo dates | not computed | not computed |
+  | Placebo outcome | 0.48 (−0.62 to 1.64), passes | 0.69 (−0.50 to 1.86), passes |
+  | Excluding 2020–21 | passes | passes (3.18) |
+  | Leave one out | passes | passes |
+  | Transport (WS-ENGINE's as-run re-run vs this run) | 1 of 3 totals inside, yearly 15%: fails | 1 of 3 totals inside (Durham), yearly 15%: fails |
+
+  The other estimates were close to the as-run ones (bands within 0.15, θ for price-to-cost −0.65 vs −0.58,
+  δ −2.75 vs −2.69). Robustness on the corrected panel: fixed-effects PPML −0.16 / −0.59 / −0.39 (SEs ≈ 2.4);
+  log-scale imputation overall −0.94 (−2.25 to 0.30) on 7 imputable rows; binary dose 1.57 (0.41 to 2.71);
+  D-031 additive imputation **not estimable** (2 contributing treated places: 9 treated in or before 2016,
+  22 with no ADU before adoption). D-031 (c) sensitivity runs, each inside the main 90% interval: excluding
+  the 7 places treated before 2016, 2.92 (1.14 to 4.62); T at the announcement year (11 places re-dated),
+  2.99 (1.13 to 4.98); parking and process controls, 3.01 (1.37 to 4.70).
+  **Reading, by the rule fixed in the plan:** household growth **does not matter for this test**. The
+  overall effect moves by 0.11, under the 0.5 threshold; its interval still excludes 0; the transport
+  verdict is unchanged. θ_hh_growth is uninformative either way (intervals ±1.5 around 0). The randomization
+  inference that now computes cannot be credited to household growth: this run also moved dose paths (D-031
+  (a)), and refit failures fell from 7.1% to 2.9%. Its p = 0.111 means the overall effect is not
+  distinguishable at 10% from effects produced by reshuffled adoption years. HonestDiD bounds for the
+  corrected main are **pending** WS-ENGINE's `honest_bounds`.
+- **HonestDiD run plan (2026-10-21, written before running; Ben approved one run per main):**
+  - *Code review:* `pooled_adu.honest_bounds`, `honest_set`, `rm_breakdown` and `event_study_inputs`
+    (68c7ae6, WS-ENGINE) were checked against the choices fixed above (3f0d5e2). The relative-magnitudes and
+    smoothness bias formulas, the grids, the inputs from the leads refit and the bootstrap union interval
+    all match, and no defect was found. One point for readers: θ is the effect at realised doses (each
+    band × the place-year's dose), so it is smaller than the main model's "overall", which averages the
+    per-unit-dose bands.
+  - *Runs, once per main:* `estimate_pooled_adu.py --honest LOG --hh-growth as_run|corrected`. Each run
+    recomputes that main model and checks it against its log to 1e-4 (as-run: `run-2026-10-20-log.txt`;
+    corrected: `corrected-2026-10-21-log.txt`). It then refits the pre-trend-leads model exactly as check 1
+    did (leads k = −3…−1, D-025 convergence rule, 999 wild-bootstrap draws, seed 1). From that refit it
+    computes `honest_bounds` and the breakdown M̄ (`rm_breakdown`, grid step 0.01) for the pooled effect.
+  - *Per band (an extension of the pooled target, using the same `honest_set`):* θ_b = mean over the band's
+    treated place-years of β_b × dose, with ω restricted to the band's event times and renormalised.
+  - *Reported:* identified sets, robust 90% intervals and breakdown M̄ for each target and main; the event
+    study (leads and bands with 90% intervals); charts of the robust interval against M̄ with the breakdown
+    marked. Nothing here changes the D-025 main result or chooses a specification.
+- **HonestDiD runs (2026-10-21, once per main; logs `reports/adu-d025/honest-asrun-2026-10-21-log.txt` and
+  `honest-corrected-2026-10-21-log.txt`): bounds not identified, and the printed bounds are invalid.**
+  Both mains were reproduced (all 22 logged estimates matched) and both leads refits converged with 999 of
+  999 draws. **But lead_1 (δ_−1) was dropped from both refits as "all counts zero where it applies":** the 22
+  treated place-years one year before adoption had 0 ADU permits (k = −3: 5 permits in 19 place-years;
+  k = −2: 1 in 21; k = −1: 0 in 22; k = 0: 9 in 22; places adopting 2017+, `permits_by_event_time.csv`).
+  δ_−1's estimate is therefore −∞. `event_study_inputs` counted the dropped lead as 0, so every bound and
+  breakdown value printed in those logs rests on δ_−1 = 0 and **is not valid**. The bounds CSVs were not
+  kept; the logs are kept as the record.
+  - *Fix (D-031, this PR):* `event_study_inputs` now raises if a lead or band was not estimated, with a test,
+    and the `--honest` stage reports "not computed". This is a defect in the committed code, not a change of
+    the choices fixed above.
+  - *What can still be said, from valid quantities:* θ at realised doses from the leads refit is 1.47
+    (−0.11 to 3.04) as-run and 1.52 (−0.25 to 3.34) corrected. **The pooled effect's 90% interval includes 0
+    before any allowance for a trend violation**, so the pooled breakdown M̄ is 0 whatever δ_−1 is. The
+    0–1-year band alone excludes 0: 1.60 (0.37 to 2.79) as-run, 1.61 (0.28 to 2.99) corrected. Its robustness
+    to trend violations cannot be computed as specified. Leads: δ_−3 = 1.44 (0.49 to 2.44) as-run, 1.41 (0.36
+    to 2.52) corrected; δ_−2 ≈ −0.2 with intervals spanning ±2.
+  - *Reading:* the pre-adoption path (a blip at k = −3, then nothing the year before) looks like owners
+    holding projects until the rule passed (C29), but with 0–5 permits a year across ~20 places it cannot
+    be told apart from noise. The data are too thin for a trend-violation analysis.
+  - *Options for Ben (each needs its own dated note before any run):* (1) pool leads k = −2…−1 into one lead
+    (1 permit in 43 place-years: estimable, very weak), keeping the choices above; (2) run the same bounds on
+    the announcement-dated sensitivity model (2.99, 1.13 to 4.98), whose re-dating moves the dip into the
+    post period; (3) report HonestDiD as not identified and rest on the randomization inference (p = 0.111)
+    and the failed leads test. Recommended: (3).

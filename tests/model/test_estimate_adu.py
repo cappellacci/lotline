@@ -570,3 +570,6 @@ def test_household_growth_is_never_measured_after_adoption():
     hh = pd.Series({("place:1", y): 1000.0 * 1.02 ** (y - 2010) for y in range(2010, 2025)})
     assert est.household_growth(hh, "place:1", 2020) == pytest.approx(5 * math.log(1.02))
     assert np.isnan(est.household_growth(hh, "place:1", 2013))
+    # as_run reproduces the first D-025 main model's measurement: 2015 over 2010 for a 2013 adopter
+    assert est.household_growth(hh, "place:1", 2013, as_run=True) == pytest.approx(5 * math.log(1.02))
+    assert est.household_growth(hh, "place:1", 2020, as_run=True) == est.household_growth(hh, "place:1", 2020)

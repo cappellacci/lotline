@@ -836,12 +836,14 @@ def mm_in_force(reforms, geoid, fips, date, by_right_share: float) -> float:
     return 0.0
 
 
-def household_growth(hh: pd.Series, geo: str, T: int) -> float:
+def household_growth(hh: pd.Series, geo: str, T: int, as_run: bool = False) -> float:
     """log(households at T − 1 / households at T − 6) from ACS vintages (Series indexed by (geo, end_year)),
-    missing when either vintage is absent: never measured from a later year (D-031, defect 8; D-023 used
-    max(T − 1, 2015), so 2011-15 adopters got post-adoption growth). By hand: 1,100 at 2019 over 1,000 at
-    2014 for T = 2020 gives log 1.1."""
-    a, b = hh.get((geo, T - 1), np.nan), hh.get((geo, T - 6), np.nan)
+    missing when either vintage is absent: never measured from a later year (D-031, defect 8). `as_run`
+    reproduces the measurement the D-025 main model was estimated with (end year max(T − 1, 2015), so 2010-15
+    adopters got post-adoption growth), for the as-run versus corrected comparison. By hand: 1,100 at 2019
+    over 1,000 at 2014 for T = 2020 gives log 1.1."""
+    end = max(T - 1, 2015) if as_run else T - 1
+    a, b = hh.get((geo, end), np.nan), hh.get((geo, end - 5), np.nan)
     return float(np.log(a / b)) if np.isfinite(a) and np.isfinite(b) and a > 0 and b > 0 else np.nan
 
 
@@ -878,7 +880,14 @@ class Panel:
     notes: list
 
 
-def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source: str | None = None) -> Panel:
+def build_panel(
+    state: str,
+    store,
+    years=range(2016, 2026),
+    geoids=None,
+    source: str | None = None,
+    hh_growth: str = "corrected",
+) -> Panel:
     """The D-023 estimation panel for one state from processed, holdout-filtered tables.
 
     Places: `geoids`, or every place in permit source `source` (Twin Cities: 'metc_residential_permits').
@@ -887,7 +896,8 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
     (adoption year: first year a rule with P(by right) >= 0.5 is in force on 1 July; NaN if never), dose
     (D_it), rate (national 30-year mean), mm, parking and process (D-031 controls), T_announce
     (`announcement_year`), the pre-adoption modifiers (`MODIFIERS`, measured in year
-    T − 1) and units_5p (BPS units in 5+ unit buildings, the placebo outcome).
+    T − 1) and units_5p (BPS units in 5+ unit buildings, the placebo outcome). `hh_growth`: "corrected"
+    (default) or "as_run" (`household_growth`).
     """
     from lotline.build import eligible as eligible_rule
     from lotline.config import load_params, load_state
@@ -969,7 +979,7 @@ def build_panel(state: str, store, years=range(2016, 2026), geoids=None, source:
             ]
             pre = [x for x in pre if not np.isnan(x)]
             mods["pre_permits"] = float(np.mean(pre)) if pre else np.nan
-            mods["hh_growth"] = household_growth(hh, geo, int(T))
+            mods["hh_growth"] = household_growth(hh, geo, int(T), as_run=hh_growth == "as_run")
             if y0 < 2010:
                 notes.append(f"{g}: adopted {int(T)}; modifiers measured from 2010 on (after adoption)")
         T_ann = announcement_year(reforms, g, fips, T)

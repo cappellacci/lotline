@@ -1121,7 +1121,13 @@ def rm_breakdown(theta_draws, lead_draws, omega, level: float = 0.90, step: floa
 def event_study_inputs(fit: PooledFit, boot: pd.DataFrame, panel: pd.DataFrame):
     """From the pre-trend-leads refit: θ (mean of β_band(k) × dose over treated place-years with k >= 0),
     the leads (δ_−3, δ_−2, δ_−1), each also per bootstrap draw, and ω_k (shares of those place-years by k).
-    A band or lead that was dropped counts as 0."""
+    Raises `EstimationError` if a lead or band was dropped from the refit: a term dropped because every count
+    where it applies is zero has its estimate at −∞, not 0, so the bias chain δ_−4 = 0 → δ_−1 (and θ) is not
+    identified (D-031 HonestDiD note, 2026-10-21; the first version counted it as 0)."""
+    missing = [n for n in (*BAND_NAMES, "lead_3", "lead_2", "lead_1") if n not in fit.names]
+    if missing:
+        why = [d for d in fit.design.dropped if d.split(" ")[0] in missing]
+        raise EstimationError(f"HonestDiD inputs not identified: {missing} not estimated ({why})")
     post = panel[panel["T"].notna() & (panel["year"] >= panel["T"])]
     k = (post["year"] - post["T"]).to_numpy(dtype=int)
     dose = post["dose"].to_numpy(dtype=float)
