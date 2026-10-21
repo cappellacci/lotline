@@ -194,8 +194,22 @@ def main_model(store):
     return panel, fit, boot, pa.summarize_main(fit, boot)
 
 
+def changed_growth(store, panel) -> None:
+    """Places whose household-growth modifier differs between the as-run and corrected panels (D-031 (b))."""
+    other = "as_run" if HH_GROWTH == "corrected" else "corrected"
+    alt = est.build_panel("MN", store, source=SOURCE, hh_growth=other).data
+    alt.loc[alt["T"] < 2010, list(est.MODIFIERS)] = float("nan")
+    a = panel.drop_duplicates("place").set_index("place")[["name", "T", "hh_growth"]]
+    b = alt.drop_duplicates("place").set_index("place")["hh_growth"].rename(f"hh_growth_{other}")
+    d = a.join(b)
+    diff = d[~((d["hh_growth"] == d[b.name]) | (d["hh_growth"].isna() & d[b.name].isna()))]
+    print(f"household growth differs ({HH_GROWTH} vs {other}) for {len(diff)} places:")
+    print(diff.to_string())
+
+
 def full(store, out: Path | None) -> None:
     panel, fit, boot, main = main_model(store)
+    changed_growth(store, panel)
     print(main.round(4).to_string(index=False))
     stages(store, panel, fit, boot, main, out)
 

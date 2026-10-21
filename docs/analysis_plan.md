@@ -804,3 +804,23 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   seven checks and transport, and the hierarchical-NB priors (D-025 already has θ).
 - **Decided by:** Ben, 2026-10-21 (D-025 stays the main model; this estimator is robustness). Details by
   Claude Code; **(a)–(c) and the household-growth choice await Ben's approval.**
+- **Plan for the corrected-growth refit (2026-10-21, written before running; Ben chose option (i) for (b)
+  and approved each run once):**
+  - *Panel:* the D-025 panel with household growth measured by `household_growth` (missing unless the T − 1
+    and T − 6 vintages exist). `estimate_pooled_adu.py --hh-growth as_run` reproduces the first main model's
+    panel, so both can be compared; the run prints every place whose household growth changes.
+  - *Runs, once each:* `--full --hh-growth corrected`. This is the main model, its wild score bootstrap, and
+    the remaining stages under the D-025 convergence rule: randomization inference with dose paths moved
+    (D-031 (a)), the five checks, the robustness estimators (fixed-effects PPML, log-scale imputation,
+    binary dose, D-031 additive imputation), the D-031 (c) sensitivity runs, and the transport test (guard on
+    the predicted mean). The as-run main's transport is WS-ENGINE's 2026-10-21 re-run (above) and is not
+    repeated.
+  - *Comparison reported:* θ_hh_growth, the band effects and the overall effect, as-run against corrected,
+    with their 90% intervals. "Household growth matters for this test" is defined in advance: the overall
+    effect moves by more than a quarter of the as-run interval's half-width (0.5 log points), or its 90%
+    interval starts or stops containing 0, or the transport verdict changes. Otherwise it does not matter
+    here.
+  - *HonestDiD for the corrected main:* computed with WS-ENGINE's `pooled_adu.honest_bounds` (the choices
+    fixed above) once it is on `ws/engine-17-d025-results`; pending if it is not there when the refit ends.
+    No separate implementation.
+  - *Logs:* `reports/adu-d025/corrected-2026-10-21-log.txt`, CSVs in `reports/adu-d025/corrected-2026-10-21/`.
