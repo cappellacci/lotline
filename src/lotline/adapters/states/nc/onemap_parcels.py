@@ -9,6 +9,9 @@ statewide layer with standard field names. The values inside some fields are sti
   and its land-use description in `parusedesc`. `config/crosswalks/nc_land_use_counties.csv` says, per
   county, which fields to read in which order (the first field with a crosswalk match wins) and points to
   the county's crosswalk `config/crosswalks/nc_land_use_<county>.csv` (field, code → `land_use_std`).
+  The ten largest counties were crosswalked by hand; 38 more were drafted from their code inventories
+  (`code_inventory`, statistics queries) by `onemap_codes` and reviewed
+  (`scripts/dev/nc_onemap_crosswalks.py`).
   The county's first `building_fields` fields describe a building (0 when the county sends only a land
   use). Where the county flag `vacant_when_unimproved` is set, a residential match from a land-use field on
   a parcel with no building becomes `VACANT_RESIDENTIAL`: the land use says "single-family", but nothing is
@@ -128,7 +131,7 @@ PROVENANCE = {
         "land_use_raw = '<field>=<code>' of the matched code (else the first field's raw value)",
         "year_built = structyear when 1700..vintage year; 0 and empty → unknown",
         "lot_sqft = gisacres × 43,560 (GIS polygon area); land_value/bldg_value = landval/improvval, "
-        "value_basis 'assessed'; last_sale_date = saledate",
+        "value_basis 'assessed'; last_sale_date = saledate (before 1900 or after the roll date → unknown)",
         "zoning_raw from the county's zoning field where it sends one (Durham: parusecode)",
         "vintage_date = the county's transform date from NC1Map_Parcels_Transform_Dates; vintage = its year",
         "jurisdiction_geoid = incorporated place by lotline.geo.place_or_township (TIGERweb ACS 2025), kept "
@@ -141,8 +144,10 @@ PROVENANCE = {
     "limitations": [
         "Current roll only: no history; per-county transform dates differ (2026-01-07 Mecklenburg to "
         "2026-05-29 Cabarrus on 2026-10-19)",
-        "Ten largest counties so far (2020 Census): Wake, Mecklenburg, Guilford, Forsyth, Cumberland, "
-        "Durham, Buncombe, Union, Gaston, Cabarrus (Cabarrus edges New Hanover by about 100 people)",
+        "48 of 100 counties: the ten largest (2020 Census) crosswalked by hand, 38 more drafted from their "
+        "code inventories by keyword rules (onemap_codes) and reviewed; 46 send no usable land-use code (37 "
+        "send none) and 6 were left out after a check against ACS one-unit homes "
+        "(reports/nc/onemap_county_check.md); those 52 stay on the ACS fallback",
         "Land-use codes are county-native and crosswalked county by county; some codes are ambiguous "
         "(Mecklenburg DUPLEX-TRIPLEX → DUPLEX; patio homes → SF_ATTACHED; Wake ONE FAMILY includes "
         "townhouses and condominium units, which only the county file's Design Style separates)",
@@ -267,6 +272,18 @@ def year_built(structyear: pd.Series, vintage: pd.Series) -> pd.Series:
     return y.where(ok).round().astype("Int64")
 
 
+EARLIEST_SALE = pd.Timestamp("1900-01-01")  # mechanics: earlier "sale dates" are placeholders or typos
+
+
+def sale_date(saledate: pd.Series, vintage_date: pd.Series) -> pd.Series:
+    """Last sale date; dates before 1900 or after the roll's own date (typos such as year 3021) → unknown."""
+    ms = pd.to_numeric(saledate, errors="coerce")
+    lo = (EARLIEST_SALE - pd.Timestamp("1970-01-01")) // pd.Timedelta(milliseconds=1)
+    hi = (pd.Timestamp("2200-01-01") - pd.Timestamp("1970-01-01")) // pd.Timedelta(milliseconds=1)
+    ts = epoch_ms_to_timestamp(ms.where(ms.between(lo, hi))).astype("datetime64[ns]")
+    return ts.where(ts <= vintage_date.astype("datetime64[ns]"))
+
+
 def vintage_dates(dates: pd.DataFrame) -> dict[str, pd.Timestamp]:
     """5-digit county GEOID → transform date (normalized), from the Transform Dates layer attributes."""
     ts = epoch_ms_to_timestamp(dates["transfdate"]).dt.normalize()
@@ -316,7 +333,7 @@ def build(raw: pd.DataFrame, dates: dict[str, pd.Timestamp], state: str = "NC") 
             "land_value": pd.to_numeric(df["landval"], errors="coerce").where(lambda v: v >= 0),
             "bldg_value": pd.to_numeric(df["improvval"], errors="coerce").where(lambda v: v >= 0),
             "value_basis": "assessed",
-            "last_sale_date": epoch_ms_to_timestamp(df["saledate"]).astype("datetime64[ns]"),
+            "last_sale_date": sale_date(df["saledate"], vintage_date),
             "zoning_raw": zoning,
             "zoning_source": zoning.notna().map({True: "county tax data (OneMap parusecode)", False: pd.NA}),
             "lon": pd.to_numeric(df.get("lon", nan), errors="coerce"),
@@ -387,6 +404,70 @@ def _oid_ranges(store: DataStore, fips3: list[str], *, refresh: bool) -> dict[st
     return {
         f["attributes"]["cntyfips"]: (int(f["attributes"]["lo"]), int(f["attributes"]["hi"])) for f in feats
     }
+
+
+LAND_USE_FIELDS = ("parusecode", "parusedesc", "parusecd2", "parusedsc2")
+# Inventory columns: all parcels, parcels with a building value, parcels with a structure year.
+INVENTORY_FILTERS = {"n": "1=1", "n_improved": "improvval>0", "n_structyear": "structyear>0"}
+
+
+def code_inventory(store: DataStore, fips3: str, *, refresh: bool = False) -> pd.DataFrame:
+    """One county's land-use codes, field by field, with parcel counts, from statistics queries (no parcels).
+
+    Columns: `field`, `code` (cleaned as the crosswalk matches it), `n`, `n_improved` (improvval > 0),
+    `n_structyear` (structyear > 0) and `truncated` (the server stopped at its group limit: the field is
+    close to free text and is not used as a crosswalk field). Used to draft and review a county's crosswalk;
+    each query is a manifest download.
+    """
+    import json
+
+    from lotline.io.arcgis import query_url
+    from lotline.io.http import fetch
+
+    stats = json.dumps(
+        [{"statisticType": "count", "onStatisticField": "objectid", "outStatisticFieldName": "n"}]
+    )
+    frames = []
+    for field in LAND_USE_FIELDS:
+        merged, truncated = None, False
+        for col, cond in INVENTORY_FILTERS.items():
+            url = query_url(
+                LAYER_URL,
+                where=f"cntyfips='{fips3}' AND {cond}",
+                outStatistics=stats,
+                groupByFieldsForStatistics=field,
+                f="json",
+            )
+            path = fetch(
+                url,
+                store.raw(SOURCE, pd.Timestamp.today().date().isoformat())
+                / "codes"
+                / f"{fips3}_{field}_{col}.json",
+                store=store,
+                source=SOURCE,
+                license=LICENSE,
+                adapter=ADAPTER,
+                adapter_version=VERSION,
+                refresh=refresh,
+            )
+            data = json.loads(path.read_text())
+            if "features" not in data:
+                path.unlink()
+                raise ValueError(
+                    f"onemap_parcels: code inventory for {fips3} {field} failed: {str(data)[:200]}"
+                )
+            truncated = truncated or bool(data.get("exceededTransferLimit"))
+            rows = pd.DataFrame([f["attributes"] for f in data["features"]], columns=[field, "n"])
+            rows = rows.assign(code=_clean(rows[field])).groupby("code", as_index=False)["n"].sum()
+            rows = rows.rename(columns={"n": col})
+            merged = rows if merged is None else merged.merge(rows, on="code", how="left")
+        assert merged is not None
+        frames.append(merged.assign(field=field, truncated=truncated))
+    out = pd.concat(frames, ignore_index=True)
+    for col in INVENTORY_FILTERS:
+        out[col] = out[col].fillna(0).astype("int64")
+    out = out[["field", "code", *INVENTORY_FILTERS, "truncated"]]
+    return out.sort_values(["field", "n", "code"], ascending=[True, False, True], ignore_index=True)
 
 
 def chunks(lo: int, hi: int, size: int = OID_CHUNK) -> list[tuple[int, int]]:
