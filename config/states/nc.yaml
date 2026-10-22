@@ -65,6 +65,17 @@ sources:
       county and the layer has no jurisdiction field: the adapter places each permit by point-in-polygon
       against the City of Durham corporate limits (CoD_Boundary FeatureServer/1, current limits), with an
       NC PIN-prefix fallback for permits without a point; see the adapter's PROVENANCE.
+  - name: greensboro_permits
+    url: https://gis.greensboro-nc.gov/arcgis/rest/services/OpenGateCity/OpenData_HRES_DS/MapServer/2
+    license: City of Greensboro open data (public records; no license stated)
+    access: arcgis
+    cadence: daily
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/greensboro_permits.py. "Engineering & Inspections - Building
+      Permits" table (no geometry, no parcel number): 125,092 permits issued 1990-07-30 to 2026-10-20 on
+      2026-10-21. gis.greensboro-nc.gov/robots.txt does not exist (404). Units from OccupancyDesc and
+      NumUnits; ADUs from the description parser. Missing from the catalog until 2026-10-21 (it listed only
+      the current-year ArcGIS experience).
   - name: durham_active_permits
     url: https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Permits/FeatureServer/13
     license: City of Durham open data (Privacy Notice and Terms of Service on the Hub item)
@@ -106,7 +117,11 @@ sources:
       Adapter src/lotline/adapters/states/nc/meck_permits.py. Holdout-first: a server-side filter leaves out
       Charlotte and unincorporated-county permits from 2023-06-01 (V5, D-012), and holdout.apply drops the rest
       before anything is written. On 2026-10-20 the server answered this network with a Cloudflare browser
-      challenge (HTTP 403), so no data has been downloaded; the taxjuris town spellings are unverified.
+      challenge (HTTP 403). On 2026-10-21 Ben downloaded the same layer by hand from the county's Open Data
+      Viewer (https://maps.mecklenburgcountync.gov/opendata-viewer, "Building Permits - Winchester", legacy
+      permits; GeoPackage dated 2026-10-12) and registered it; the adapter reads that file with the same
+      holdout-first filter in its query. The taxjuris spellings are verified on it (unincorporated permits are
+      MECKLENBURG).
   - name: wake_realestate
     url: https://www.wake.gov/departments-government/tax-administration/data-files-statistics-and-reports/real-estate-property-data-files
     license: Wake County public records (no license stated)

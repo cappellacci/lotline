@@ -182,6 +182,7 @@ def test_load_applies_holdout(monkeypatch, raw, tmp_path):
     monkeypatch.setattr(dp, "download", lambda store, **kw: raw)
     monkeypatch.setattr(dp, "download_city_limits", lambda store, **kw: CITY)
     monkeypatch.setattr(dp, "download_ehc", lambda store, **kw: pd.Series(dtype="string"))
+    monkeypatch.setattr(dp, "download_annexations", lambda store, **kw: [])
     monkeypatch.setattr(dp.holdout, "apply", fake_apply)
     out = dp.load("NC", store=None)
     assert calls == {
@@ -217,3 +218,30 @@ def test_ehc_flag_lands_in_reform_flag_raw(raw):
     row = out.set_index("permit_id").loc[permit]
     assert row["reform_flag_raw"] == "EHC:duplex"
     assert out["reform_flag_raw"].notna().sum() == 1
+
+
+# An annexation covering the lower-left quarter of the city, approved 2023-06-01.
+ANNEX = [(pd.Timestamp("2023-06-01"), [[[0, 0], [0, 0.6], [0.6, 0.6], [0.6, 0], [0, 0]]])]
+
+
+def test_annexed_after_issue_hand_worked():
+    df = pd.DataFrame(
+        {
+            "lon": [0.5, 0.5, 1.5, np.nan],
+            "lat": [0.5, 0.5, 1.5, np.nan],
+            "issue_date": pd.to_datetime(["2023-03-02", "2023-07-01", "2020-01-01", "2020-01-01"]),
+        }
+    )
+    # inside, issued before approval → True; inside, after → False; outside the annexation; no point
+    assert dp.annexed_after_issue(df, ANNEX).tolist() == [True, False, False, False]
+
+
+def test_build_moves_permits_issued_before_annexation_to_the_county(raw):
+    before = dp.build(raw, CITY).set_index("permit_id")["jurisdiction_geoid"]
+    after = dp.build(raw, CITY, annexations=ANNEX).set_index("permit_id")["jurisdiction_geoid"]
+    # SFD-1 sits at IN (0.5, 0.5), issued 2023-03-02, before the 2023-06-01 approval: county then.
+    assert before["SFD-1"] == "3719000" and after["SFD-1"] == "37063"
+    # SFD-2 at the same point, issued 2024-05-06 after approval: still the city.
+    assert after["SFD-2"] == "3719000"
+    changed = set(before.index[before != after])
+    assert all(after[c] == "37063" for c in changed)  # only ever city → county
