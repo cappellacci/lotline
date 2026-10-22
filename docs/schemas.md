@@ -65,7 +65,7 @@ Table checks: `one_row_per_parcel_vintage`
 
 ## `eligible_parcels`
 
-The denominator: eligible parcels per jurisdiction-year, stored apart from permits (protocol §5.1-5.2). One row per jurisdiction, year and eligibility-rule version, so a rule change never overwrites history.
+The denominator: eligible parcels per jurisdiction-year, stored apart from permits (protocol §5.1-5.2). One row per jurisdiction, year and eligibility-rule version, so a rule change never overwrites history. `denominator_source` says where each count comes from: a real parcel roll (`parcels`), the place's ACS one-unit-detached series scaled to its roll(s) in a year without a roll (`parcels_scaled_acs`, #208), the ACS fallback (`acs_sf_fallback`) or a published count (`published`).
 
 Table checks: `one_row_per_key`
 
@@ -78,7 +78,7 @@ Table checks: `one_row_per_key`
 | `rule_version` | text | yes | no |  |
 | `eligible_parcels` | integer | yes | no | ≥ 0 |
 | `data_tier` | integer | yes | no | one of `1`, `2`, `3` |
-| `denominator_source` | text | yes | no | one of `parcels`, `acs_sf_fallback`, `published` |
+| `denominator_source` | text | yes | no | one of `parcels`, `parcels_scaled_acs`, `acs_sf_fallback`, `published` |
 | `denominator_quality` | text | yes | no | one of `high`, `medium`, `low` |
 
 ## `permits`

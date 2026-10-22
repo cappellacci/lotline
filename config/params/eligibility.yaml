@@ -56,3 +56,11 @@ quality_low_min_unknown_share:
   unit: share of eligible parcels
   source: "Lotline convention (proposed, to confirm at pre-registration): denominator quality bands"
   notes: "At or above this share resting on assumptions, quality is 'low'. ACS fallback denominators are always 'low'."
+
+scale_max_year_gap:
+  value: 3
+  low: 0
+  high: 5
+  unit: years
+  source: "Lotline convention (issue #208, option 1 approved by Ben 2026-10-21): a roll anchors the ACS series only if an ACS 5-year end year lies within this many years of the roll year"
+  notes: "Rolls newer than the latest ACS release (NC OneMap 2026 vs ACS 2024) are matched to the nearest ACS end year. A roll further than this from any ACS year scales nothing, and its jurisdiction keeps only its real roll years."
