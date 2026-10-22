@@ -1,0 +1,15 @@
+field,code,description,land_use_std,notes,source_url
+parusedsc2,RESIDENTIAL PRIMARY,RESIDENTIAL PRIMARY,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,COMMON AREA,COMMON AREA,OTHER,"keyword rule special_lot (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,MOBILE HOME LOT,MOBILE HOME LOT,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,RESIDENTIAL TOWNHOUSE,RESIDENTIAL TOWNHOUSE,SF_ATTACHED,"keyword rule townhouse (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,GOLF COURSE LOT,GOLF COURSE LOT,OTHER,"keyword rule other (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,RESIDENTIAL AGRICULTURE FRONTAGE,RESIDENTIAL AGRICULTURE FRONTAGE,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,WOODLAND,WOODLAND,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,CEMETERY,CEMETERY,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,MOBILE HOME PARK,MOBILE HOME PARK,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Common Area Interest,Common Area Interest,OTHER,"keyword rule special_lot (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,PASTURE,PASTURE,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,CELL TOWER,CELL TOWER,OTHER,"keyword rule utility (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,COMMERCIAL PRIMARY,COMMERCIAL PRIMARY,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,RIGHT OF WAY,RIGHT OF WAY,OTHER,"keyword rule utility (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
