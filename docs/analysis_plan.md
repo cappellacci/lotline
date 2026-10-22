@@ -1225,6 +1225,16 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     the announcement-dated sensitivity model (2.99, 1.13 to 4.98), whose re-dating moves the dip into the
     post period; (3) report HonestDiD as not identified and rest on the randomization inference (p = 0.111)
     and the failed leads test. Recommended: (3).
+- **HonestDiD decision (Ben, 2026-10-21): option (3).** HonestDiD is recorded as **not identified** for the
+  D-025 ADU effect. The inference rests on randomization inference (p = 0.111, corrected main) and the
+  failed pre-trend leads test (p = 0.025 as-run, 0.052 corrected). Options (1) and (2) are not run.
+  - *Ben's reasoning:* more data should make HonestDiD informative later. Concretely:
+    - more adopting places with ADU permits in the years just before adoption, so δ_−1 (and δ_−2) can be
+      estimated instead of sitting at −∞;
+    - longer pre-adoption periods, so the largest pre-period step M_pre rests on more than three noisy leads;
+    - the multi-state panel, which pools those years across states.
+  - HonestDiD is rerun, with the code already tested here (`--honest`, which refuses unestimated leads), once
+    that panel exists. No other run follows from this note.
 
 ### D-035 · 2026-10-22 · Eligible-parcel history for places counted from a parcel roll: ACS scaled to the roll (#208)
 - **Found:** a jurisdiction counted from a parcel roll had a denominator only in its roll year(s), while ACS-fallback

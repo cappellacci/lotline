@@ -36,3 +36,7 @@
   - Also: the merge into #193 (ce75952) swept in an untracked run `panel.csv`; removed in 3032805 and
     ignored. It remains in that branch's history.
   - Options for Ben (pool leads, the announcement-dated model, or report as not identified) are in D-031.
+- **Decision (Ben, 2026-10-21):** option 3. HonestDiD is recorded as not identified (dated note under D-031); the
+  inference rests on randomization inference (p = 0.111) and the failed leads test. It is rerun with the tested
+  `--honest` stage once the multi-state panel provides adopting places with permits in the years just before
+  adoption and longer pre-periods. Nothing else run.
