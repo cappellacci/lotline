@@ -32,9 +32,10 @@ and land class repeat on every card; units and heated area are per card.
 
 **Vintages.** Two pre-revaluation rolls, each read when registered (`ROLLS`): "Final Dec2023"
 (`vintage_date` 2023-12-31; the web listing shows 2024-01-02), required, and "Final Nov2019" (2019-11-30, the
-last roll before the 2020 revaluation; Ben's browser download of 2026-10-21), optional. Both have the same 87
-columns. Each roll keeps its own `vintage`, its own year-built cap and the city limits it records (`CITY`), so
-a 2019 parcel is placed by 2019's limits. Wake has no holdout; `holdout.apply(..., snapshot=True)` runs anyway.
+last roll before the 2020 revaluation; Ben's browser download of 2026-10-21), optional. Both have the same
+87 columns. Each roll keeps its own `vintage`, its own year-built cap and the city limits it records
+(`CITY`), so a 2019 parcel is placed by 2019's limits. Wake has no holdout; `holdout.apply(...,
+snapshot=True)` runs anyway.
 
 **Privacy.** The spreadsheet carries owner names and mailing addresses. Only the columns in `USECOLS` are
 read, so owner, mailing, street-address, legal-description, deed and free-text fields never reach memory or
@@ -60,7 +61,8 @@ SOURCE = "wake_realestate"
 TABLE = "parcels"
 BASE = "https://services.wake.gov/realdata_extracts"
 ROLL_FILE = "Real_Est_Data_Final_Dec2023.xlsx"  # the required (latest) roll
-# Every pre-revaluation roll the adapter reads, with its vintage date (the folder lists no others, 2026-10-22).
+# Every pre-revaluation roll the adapter reads, with its vintage date (the county's folder lists no others,
+# checked by Ben 2026-10-22).
 ROLLS = {
     ROLL_FILE: pd.Timestamp("2023-12-31"),  # last roll before the 2024 revaluation
     "Real_Est_Data_Final_Nov2019.xlsx": pd.Timestamp("2019-11-30"),  # last roll before the 2020 revaluation
@@ -138,10 +140,12 @@ PROVENANCE = {
         "jurisdiction_geoid from CITY via config/crosswalks/nc_land_use_wake_jurisdictions.csv; outside "
         "city limits → 37183 (county remainder); cities mostly outside Wake (Durham, Angier, Clayton: "
         "use_wake_roll False, under 10% of 2020 housing units in Wake) are left out",
-        "vintage_date 2023-12-31 (Dec 2023 roll) and 2019-11-30 (Nov 2019 roll, when registered); holdout filter applied with snapshot=True (no Wake holdout)",
+        "vintage_date 2023-12-31 (Dec 2023 roll) and 2019-11-30 (Nov 2019 roll, when registered); "
+        "holdout filter applied with snapshot=True (no Wake holdout)",
     ],
     "limitations": [
-        "One county only (Wake); values are as of the preceding revaluation (2016 for the 2019 roll, 2020 for the 2023 roll), not market values in the roll year",
+        "One county only (Wake); values are as of the preceding revaluation (2016 for the 2019 roll, "
+        "2020 for the 2023 roll), not market values in the roll year",
         "Jurisdiction is the assessor's city code (no coordinates); parcels in Raleigh's ETJ outside city "
         "limits go to the county remainder",
         "Design Style on card 01 only; multi-card parcels (1.1% of cards) take the main building's type",
@@ -174,7 +178,9 @@ def _num(s: pd.Series) -> pd.Series:
 
 
 def build(raw: pd.DataFrame, state: str = "NC", vintage_date: pd.Timestamp = VINTAGE_DATE) -> pd.DataFrame:
-    """Card rows of one roll (USECOLS, as text) → one `parcels` row per REAL_ESTATE_ID, dated `vintage_date`."""
+    """Card rows of one roll (USECOLS, as text) → one `parcels` row per REAL_ESTATE_ID, dated `vintage_date`.
+
+    The default date is the Dec 2023 roll's."""
     df = raw.copy()
     df["reid"] = df["REAL_ESTATE_ID"].astype("string").str.strip().replace("", pd.NA)
     df = df.loc[df["reid"].notna()].copy()
@@ -239,7 +245,7 @@ def read(path: Path) -> pd.DataFrame:
 
 
 def roll_entries(store: DataStore, name: str = ROLL_FILE) -> list:
-    """Registered copies of one roll (default: Dec 2023; the qualified-sales file is registered but not read)."""
+    """Registered copies of one roll (default Dec 2023); the qualified-sales file is never read."""
     return [e for e in store.registered(SOURCE) if Path(e.path).name == name]
 
 
@@ -255,7 +261,9 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
             continue
         entry = entries[-1]  # the latest registration
         if store.is_stale(entry):
-            raise FileNotFoundError(f"registered Wake roll missing or changed since registration: {entry.path}")
+            raise FileNotFoundError(
+                f"registered Wake roll missing or changed since registration: {entry.path}"
+            )
         frames.append(build(read(store.root / entry.path), state=state, vintage_date=vintage_date))
     df = pd.concat(frames, ignore_index=True)
     df = holdout.apply(
