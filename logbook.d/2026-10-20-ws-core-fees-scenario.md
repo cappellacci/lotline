@@ -1,0 +1,18 @@
+### LB-NNN · 2026-10-20 · Build: First fee scenario (thread 02, PR B)
+- **Question:** How many homes would the Handbook's 50% fee cut add over five years, using each place's real fees where they are coded, and with what range?
+- **What I did:**
+  - Wrote `src/lotline/model/scenarios/fees.py`. The fee level is the coded local fee (D-034 completeness rule) or the $50k Handbook prior, in `local` and `handbook` modes. Half of it is cut; builders keep (1 − λ).
+  - Two channels: pro forma feasibility on parcel rolls (lots feasible after / before − 1), and the D-010 elasticity route (ε × saving / TDC) as the fallback. Both phase in with a logistic ramp.
+  - P10/P50/P90 come from 1,000 draws of ε, λ, the ramp and the pro forma parameters, with state sums of draws (D-020).
+  - New parameters in `fees.yaml` (ramp, feasibility minimum, new-home window, draws, seed), with sources. Proposed D-032–D-034 in `docs/analysis_plan.md`.
+  - Hand-worked tests: a zero cut equals the baseline; a bigger cut never lowers output (both channels, both modes); the elasticity, ramp, feasibility and local-fee aggregation are checked by hand.
+  - `scripts/dev/fee_dev_run.py` is the development run.
+- **Inputs:** `config/fees/*.csv` (PR A); `config/params/fees.yaml`, `proforma.yaml`; holdout-filtered BPS panel, ACS and parcel tables in `LOTLINE_DATA_DIR`.
+- **Outputs:** `src/lotline/model/scenarios/fees.py`, `scripts/dev/fee_dev_run.py`, `tests/model/test_fee_scenario.py`, `config/params/fees.yaml`, `docs/model_and_assumptions.md` (parameter table), `docs/analysis_plan.md` (D-032–D-034).
+- **Findings (development run, origin 2025, MN, 12 places with coded fees, St. Paul left out; not a result):**
+  - With local fees, the cut adds P10 115 / P50 290 / P90 700 units over five years. With the Handbook's $50k, it adds 269 / 660 / 1,485.
+  - Real coded fees are $3.4k–$17.8k per unit, so local cuts are 7–36% of the Handbook's $25k. Through the elasticity route, most places gain +0.1% to +0.3% (local) or about +1% (Handbook).
+  - Minneapolis is the only place on the feasibility channel (+4.1% central). It takes the $50k prior because no SAC is coded, so it dominates the total.
+- **Decisions:** D-032 (mechanics), D-033 (parcel inputs) and D-034 (local-fee completeness) are proposed for Ben.
+- **AI:** Claude Code (thread 02); hand-worked unit tests; the development run was read place by place.
+- **Open / next:** Raleigh and Austin have no baseline: their parcel rolls start in 2023 and 2026. Revenue toggle (C51). Per-building-type fees and TDC for 2–4 and 5+ units. Vacant-lot coding for the Dakota and Anoka rolls.
