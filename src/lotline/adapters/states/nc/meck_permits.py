@@ -42,6 +42,15 @@ kept even though BPS has no row for these places (#123); no point → the `taxju
 owner city/state/ZIP, project name, project description or address. The two work descriptions
 (`permitdesc`, `workdesc`) are requested only for the parser; they are read in memory and never kept.
 
+**Registered file (2026-10-21).** Ben downloaded the same layer by hand from the county's Open Data Viewer
+(https://maps.mecklenburgcountync.gov/opendata-viewer, dataset "Building Permits - Winchester", described
+as legacy permits; newer permits are in a separate Accela file) as `Winchester_BuildingPermits.zip`, a
+GeoPackage with the same field names. When that file is registered (`lotline manifest register --source
+meck_permits`), `load` reads it instead of the server, with the same holdout-first rule: the SQL query
+(`file_where`) never reads Charlotte or unincorporated permits from the window, and only `FILE_COLUMNS`
+are selected (no owner name, phone, e-mail or address). Points come as NC State Plane feet
+(`x_coord`/`y_coord`) and are converted with `stateplane.to_lonlat`.
+
 **Access (2026-10-20).** The layer's server (meckgis.mecklenburgcountync.gov) answers this network with a
 Cloudflare browser challenge (HTTP 403). The adapter does not try to get past it; until the county serves
 the query API to scripts again, a run stops at the download with that error.
@@ -101,22 +110,33 @@ PROVENANCE = {
     "landing_url": LANDING_URL,
     "table": TABLE,
     "cleaning": [
-        "Server-side filter: only permits issued before the Charlotte holdout window (2023-06-01, from the "
-        "holdout config), or later in a non-held-out town by taxjuris; held-out rows are not downloaded",
+        "Read from Ben's hand download of the county's 'Building Permits - Winchester' GeoPackage (Open "
+        "Data Viewer, data dated 2026-10-12, registered 2026-10-21; downloaded from Europe through a US VPN "
+        "because the county's GIS servers did not answer there); the server query is used only when no "
+        "file is registered",
+        "Holdout-first filter in the query itself (file_where in SQLite; server_where on the live layer): "
+        "only permits issued before the Charlotte window (2023-06-01, from the holdout config), or later in "
+        "a non-held-out town by taxjuris; held-out rows are never read",
         "holdout.apply on the point-based place right after the rows are built (D-012: 3712000 and 37119)",
-        "Requested fields exclude owner name, city, state and ZIP, project name, number, description and "
-        "address; permitdesc/workdesc are read only by the description parser and never kept",
+        "Requested fields exclude owner name, phone, e-mail, address, city, state and ZIP, project name, "
+        "number, description and address; permitdesc/workdesc are read only by the description parser and "
+        "never kept",
+        "File points (x_coord/y_coord, NC State Plane feet, EPSG:2264) converted to lon/lat by "
+        "stateplane.to_lonlat (checked: median 7 m from the pre-UDO parcel centroids of the same parcels)",
         "jurisdiction_geoid = place of the permit point (TIGERweb ACS 2025), else taxjuris, else 37119",
         "building_type_std and units from the Census item code in usdcdesc "
-        "(config/crosswalks/nc_meck_usdc_codes.csv); numunits when it fits the type; description parser "
+        "(config/crosswalks/nc_meck_usdc_codes.csv, including the county's own 102 townhouse, 112 mobile "
+        "home, 114 and 115 condominium codes); numunits when it fits the type; description parser "
         "for gaps (inferred); single-family code → 1 unit (derived)",
         "zoning_raw = zonecode; parcel_id = 37119 + parcelnum; valuation_usd = bldgcost; final_date = "
         "compldate (completion); floor_area_sqft = heatsqft",
     ],
     "limitations": [
-        "taxjuris spellings in the town list are unverified until the layer can be read; a wrong spelling "
-        "drops that town's permits from 2023-06-01 (check_town_rows stops the run)",
-        "Code 101 includes attached houses: SFD unless the description names a townhouse",
+        "A 'legacy' file: the county moved residential applications to Accela in 2025 and publishes those "
+        "permits in a separate Accela file, not loaded; the towns' legacy permits still run to 2026-10",
+        "Countywide new one-unit homes are 0.88-1.02 of BPS 37119 in 2012-2022 (1.2-1.3 in 2010-2011); "
+        "apartments vary 0.5-1.6 by year (permit timing)",
+        "Code 101 is SFD unless the description names a townhouse; the county codes townhouses 102",
         "Permits filed under Charlotte but standing in a town after 2023-06-01 are not downloaded",
     ],
 }
@@ -187,7 +207,7 @@ def classify(row: pd.Series, codes: dict[str, dict[str, str]]) -> dict:
     out = dict(adu_type=None, units_new=None, units_removed=None, units_confidence="unknown",
                is_demolition=activity == "demolition" if activity else None,
                is_conversion=facts.is_conversion)  # fmt: skip
-    adu_ok = code in (None, "101", "434", "438") or not isinstance(code, str)
+    adu_ok = not isinstance(code, str) or code in ("101", "434", "438")  # no code (None or NA) is fine
     if facts.building_type_std == "ADU" and adu_ok and not facts.is_demolition:
         out.update(adu_type=facts.adu_type or "unknown", units_new=1, units_confidence="inferred")
         return dict(out, building_type_std="ADU", type_confidence="inferred")
@@ -291,6 +311,78 @@ def download(store: DataStore, state: str = "NC", *, refresh: bool = False) -> p
     )
 
 
+FILE_NAME = "Winchester_BuildingPermits.zip"
+GPKG_TABLE = "BuildingPermits_Winchester"
+# File column → the layer's field name used by `build` (the file renames two of them).
+FILE_COLUMNS = {
+    "OBJECTID": "objectid",
+    "permitnum": "permitnum",
+    "permitstat": "permitstat",
+    "permittype": "permittype",
+    "parcelnum": "parcelnum",
+    "taxjuris": "taxjuris",
+    "zonecode": "zonecode",
+    "typeofbldg": "typeofbldg",
+    "num_units": "numunits",
+    "usdcdesc": "usdcdesc",
+    "issuedate": "issuedate",
+    "compldate": "compldate",
+    "bldgcost": "bldgcost",
+    "worktype": "worktype",
+    "heat_sqft": "heatsqft",
+    "permitdesc": "permitdesc",  # parser input only, never kept
+    "workdesc": "workdesc",  # parser input only, never kept
+    "x_coord": "x_coord",
+    "y_coord": "y_coord",
+}
+FILE_PERSONAL = {"ownname", "ownphone", "ownaddr", "owncity", "ownstate", "ownemail", "owner_zip", "projname",
+                 "projnum", "projdesc", "projadd", "subdiv", "addressid", "cntystcode"}  # fmt: skip
+
+
+def file_where(state: str = "NC") -> str:
+    """SQLite version of `server_where`: issue dates are ISO text ('2023-05-31T12:00:00.0Z')."""
+    opens = window_opens(state).date().isoformat()
+    towns = ",".join("'" + t.replace("'", "''") + "'" for t in open_towns(state))
+    return f"issuedate < '{opens}' OR (issuedate >= '{opens}' AND UPPER(TRIM(taxjuris)) IN ({towns}))"
+
+
+def _iso_to_ms(values: pd.Series) -> pd.Series:
+    ts = pd.to_datetime(values, utc=True, errors="coerce", format="ISO8601")
+    ms = (ts - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta(milliseconds=1)
+    return ms.astype("Int64")
+
+
+def read_file(path: Path, state: str = "NC") -> pd.DataFrame:
+    """The registered GeoPackage zip → raw rows shaped like the layer's (dates in epoch ms, plus lon/lat).
+
+    Held-out rows are filtered out by the query itself (`file_where`), before anything is read.
+    """
+    import sqlite3
+    import zipfile
+
+    from lotline.adapters.states.nc import stateplane
+
+    extracted = path.parent / "extracted"
+    with zipfile.ZipFile(path) as z:
+        name = next(n for n in z.namelist() if n.endswith(".gpkg"))
+        gpkg = extracted / name
+        if not gpkg.exists():
+            z.extract(name, extracted)
+    cols = ", ".join(f'"{c}"' for c in FILE_COLUMNS)
+    with sqlite3.connect(f"file:{gpkg}?mode=ro", uri=True) as con:
+        raw = pd.read_sql(f'SELECT {cols} FROM "{GPKG_TABLE}" WHERE {file_where(state)}', con)
+    raw = raw.rename(columns=FILE_COLUMNS)
+    for col in ("issuedate", "compldate"):
+        raw[col] = _iso_to_ms(raw[col])
+    raw["lon"], raw["lat"] = stateplane.to_lonlat(raw.pop("x_coord"), raw.pop("y_coord"))
+    return raw
+
+
+def file_entries(store: DataStore) -> list:
+    """Registered copies of the hand-downloaded GeoPackage (latest last)."""
+    return [e for e in store.registered(SOURCE) if Path(e.path).name == FILE_NAME]
+
+
 def places(raw: pd.DataFrame, state: str, store: DataStore) -> pd.Series:
     from lotline import geo
 
@@ -302,7 +394,14 @@ def places(raw: pd.DataFrame, state: str, store: DataStore) -> pd.Series:
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     if state.upper() != "NC":
         raise ValueError(f"{SOURCE} covers Mecklenburg County, North Carolina only, not {state}")
-    raw = download(store, state, refresh=refresh)
+    entries = file_entries(store)
+    if entries:
+        entry = entries[-1]
+        if store.is_stale(entry):
+            raise FileNotFoundError(f"registered Mecklenburg permits file missing or changed: {entry.path}")
+        raw = read_file(store.root / entry.path, state)
+    else:
+        raw = download(store, state, refresh=refresh)
     df = build(raw, places(raw, state, store), state=state)
     df = holdout.apply(
         df, state, geoid_col="jurisdiction_geoid", date_col="issue_date", year_col="issue_year"

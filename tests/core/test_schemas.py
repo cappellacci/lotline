@@ -114,7 +114,7 @@ def _df(table, **over):
 
 
 def test_every_table_has_a_minimal_valid_row():
-    assert SCHEMAS_VERSION == "1.7"
+    assert SCHEMAS_VERSION == "1.8"
     assert set(TABLES) == set(MINIMAL)
     for table in TABLES:
         assert_conforms(_df(table), table)

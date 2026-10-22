@@ -13,8 +13,9 @@ For each jurisdiction and each of the five years after the origin, t = 1 … 5:
   rule in force at the origin allows a detached ADU of 600+ sq ft by right with no owner-occupancy or parking
   requirement; `adu_partial_rule_share` when ADUs are allowed with any of those restrictions; 0 when no ADU
   rule is coded. a = years since that rule took effect, so a recent reform is still ramping up under current
-  rules. Unknown (uncoded) rubric fields count as not restrictive and are listed, so a coding gap never
-  creates a Handbook gain.
+  rules. A blank (uncoded) rubric field is unknown, never "not restrictive": it restricts with the share of
+  coded rules that restrict it, and a place with no coded rule draws its type from coded places like it
+  (D-022).
 - **Observed ADU rate**: where local permits flag ADUs, ADU permits per eligible parcel per year over
   `adu_observed_first_year`–`adu_observed_last_year`. It is a floor on the current-rules hazard: ADUs a place
   already builds are in its baseline and are never counted as added (additionality, MS-10).
@@ -26,11 +27,13 @@ most one ADU, and cumulative ADUs never exceed eligible parcels.
     ADU permits added (t) = Handbook gross ADUs(t) − current-rules gross ADUs(t)
     additional homes (t)  = ADU permits added (t) × adu_net_new_share × (1 − adu_formalization_share)
 
-Every result is a range: P10/P50/P90 and the mean over `adu_simulation_draws` draws of every uncertain
-parameter (pro forma, hazard, net-new and formalization shares, partial-rule share). Numerator (units) and
-denominator (eligible parcels) stay in separate columns. Nothing is fitted here: the hazard's anchor comes
-from
-the evidence band (D-018) and observed local ADUs enter only as the additionality floor.
+Every result is a range: P10/P50/P90 and the mean over `adu_simulation_draws` draws (`draw_params`, D-030):
+judgment parameters triangular(low, central, high); the fitted anchor and place-effect variance lognormal
+around their estimates, shifted with the judgment parameters they were fitted at; one place multiplier per
+place; extrapolation noise shared across places (`extrapolation_noise`). The mortgage-rate stress range is a
+sensitivity (`params=`), not part of the forecast range. Numerator (units) and denominator (eligible parcels)
+stay in separate columns. Nothing is fitted here: the anchor comes from D-019 fit 3
+(`scripts/dev/calibrate_adu.py`), and observed local ADUs enter only as the additionality floor.
 """
 
 from __future__ import annotations
@@ -43,6 +46,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from lotline.build.eligible import PARCEL_SOURCES
 from lotline.config import CONFIG_DIR, load_params
 from lotline.model import hazard, proforma
 
@@ -74,14 +78,66 @@ def central_params() -> dict[str, float]:
     return {k: s.value for k, s in specs().items()}
 
 
-def draw_params(n: int, seed: int) -> list[dict[str, float]]:
-    """n parameter sets: each uncertain parameter triangular(low, central, high); fixed ones held."""
+Z_90 = 1.644854  # standard normal 95th percentile: a 90% interval spans ±Z_90 log-SDs
+LOGNORMAL = ("adu_mature_hazard_ref", "adu_place_effect_variance")
+SENSITIVITY = ("mortgage_rate_forecast", "adu_extrapolation_shared_share")
+NOT_IN_FIT = frozenset({"adu_extrapolation_widening"})
+
+
+def anchor_inputs() -> list[str]:
+    """The drawn parameters the D-019 fit 3 likelihood depends on: the anchor θ and place-effect variance α
+    were fitted at their central values, so each draw shifts θ and α with them (`draw_params`, D-030)."""
+    skip = FIXED | set(LOGNORMAL) | set(SENSITIVITY) | set(AGGREGATE_KEYS) | NOT_IN_FIT
+    return [k for k, s in specs().items() if k not in skip and s.low != s.high]
+
+
+def log_sd(spec) -> float:
+    """Log-SD of a lognormal whose 90% interval is (low, high): (ln high − ln low) / (2 × 1.645). The same
+    convention as the fit's own predictive check (`calibrate_adu.Fit3.log_se`).
+
+    By hand, anchor 0.000453-0.003173: (ln 0.003173 − ln 0.000453) / 3.2897 = 1.9466 / 3.2897 = 0.5917.
+    """
+    return (np.log(spec.high) - np.log(spec.low)) / (2 * Z_90)
+
+
+def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) -> list[dict[str, float]]:
+    """n parameter sets (D-030).
+
+    - Judgment parameters: triangular(low, central, high); fixed ones held.
+    - `SENSITIVITY` parameters (the 2015-25 mortgage-rate stress range, the shared share of extrapolation
+      noise): held at central; their low and high are run as sensitivities, not mixed into the forecast range.
+    - The estimated anchor θ and place-effect variance α (`LOGNORMAL`): lognormal with median at the estimate
+      and log-SD from the 90% interval (`log_sd`), correlated as the fit's observed information says, then
+      shifted with the judgment parameters they were fitted at:
+      log θ_d = log θ̂ + sd_θ ε_θ + Σ_j g_j (p_jd − p̂_j), g_j = d log θ̂ / d p_j (config/params/adu_anchor.yaml,
+      from `scripts/dev/calibrate_adu.py --draw-terms`; a parameter not listed there has slope 0); the same
+      for α.
+    """
     rng = np.random.default_rng(seed)
+    sp = specs()
+    held = FIXED | set(SENSITIVITY) | set(LOGNORMAL)
     cols = {
-        k: np.full(n, s.value) if k in FIXED or s.low == s.high else rng.triangular(s.low, s.value, s.high, n)
-        for k, s in specs().items()
+        k: np.full(n, s.value) if k in held or s.low == s.high else rng.triangular(s.low, s.value, s.high, n)
+        for k, s in sp.items()
     }
+    a = anchor_terms() if anchor is None else anchor
+    corr = a["adu_anchor_info_corr"]
+    e1, e2 = rng.standard_normal(n), rng.standard_normal(n)
+    eps = {
+        "adu_mature_hazard_ref": e1,
+        "adu_place_effect_variance": corr * e1 + np.sqrt(1 - corr**2) * e2,
+    }
+    for key, tag in zip(LOGNORMAL, ("theta", "alpha"), strict=True):
+        s = sp[key]
+        shift = sum(a.get(f"anchor_slope_{tag}__{j}", 0.0) * (cols[j] - sp[j].value) for j in anchor_inputs())
+        sd = log_sd(s) if s.low < s.high else 0.0
+        cols[key] = np.exp(np.log(s.value) + sd * eps[key] + shift)
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
+
+
+def anchor_terms() -> dict[str, float]:
+    """config/params/adu_anchor.yaml: the anchor's observed-information terms and slopes (D-030)."""
+    return {k: s.value for k, s in load_params("adu_anchor").items()}
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -658,6 +714,19 @@ def central_path(
     }
 
 
+def extrapolation_noise(n: int, n_places: int, shared: float, seed: int) -> np.ndarray:
+    """Standard-normal extrapolation noise (draws × places): √shared · z_d + √(1 − shared) · e_di (D-030).
+
+    z_d is one number per draw, common to every place; e_di is each place's own. Every entry stays standard
+    normal, so `hazard.widen` keeps each place's mean and spread; only the correlation between places,
+    `shared`, changes. shared = 1: one z per draw; 0: independent per place (before D-030).
+    """
+    rng = np.random.default_rng(seed)
+    common = rng.standard_normal((n, 1))
+    own = rng.standard_normal((n, n_places))
+    return np.sqrt(shared) * common + np.sqrt(1.0 - shared) * own
+
+
 def run(
     places: pd.DataFrame,
     origin: int,
@@ -665,14 +734,19 @@ def run(
     draws: int | None = None,
     enabled: bool = True,
     summary_by: str | None = None,
+    params: Mapping[str, float] | None = None,
+    anchor: Mapping[str, float] | None = None,
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
     With `summary_by` (a column, e.g. 'state'), also returns a third table: for each group, year and the
     five-year total, P10/P50/P90 and mean of the **sum of draws** over the group's places (places must be
     non-overlapping units, D-020), so shared draws (rates, costs, the anchor) add up correctly.
-    Each draw multiplies each place's hazard by its own u ~ Gamma(mean 1, variance
-    `adu_place_effect_variance`), the place effects fitted in D-019 fit 3.
+    Each draw multiplies each place's hazard by its own u ~ Gamma(mean 1, variance α_d), the place effects
+    fitted in D-019 fit 3, with α_d that draw's place-effect variance (`draw_params`). The extrapolation
+    noise is shared across places in a draw (`extrapolation_noise`). `params` holds parameters at given values
+    in every draw (sensitivities, e.g. `mortgage_rate_forecast` at its low); `anchor` replaces
+    config/params/adu_anchor.yaml (tests).
 
     `places` columns: geoid, eligible_parcels, rent (median gross rent, 2025 dollars), home_value (2025
     dollars), optional mortgage_rate (a backtest passes the year's actual rate; where it is missing, each draw
@@ -681,21 +755,20 @@ def run(
     where not observed). Extra columns are carried through.
     Totals are percentiles of each draw's five-year sum, not sums of percentiles.
     """
-    central = central_params()
+    central = central_params() | dict(params or {})
     places = with_rule_probs(places, central)
     n = int(draws or central["adu_simulation_draws"])
     seed = int(central["adu_simulation_seed"])
-    sets = draw_params(n, seed)
+    sets = [p | dict(params or {}) for p in draw_params(n, seed, anchor)]
     rule_rng = np.random.default_rng(seed + 2)
     drawn = np.zeros((n, len(places)))
     horizon = int(load_params("baseline")["forecast_horizon_years"].value)
-    z = np.random.default_rng(seed + 1).standard_normal((n, len(places)))
-    var_u = central["adu_place_effect_variance"]
-    u_all = (
-        np.random.default_rng(seed + 3).gamma(1 / var_u, var_u, size=(n, len(places)))
-        if var_u > 0
-        else np.ones((n, len(places)))
+    z = extrapolation_noise(n, len(places), central["adu_extrapolation_shared_share"], seed + 1)
+    var_u = np.array([p["adu_place_effect_variance"] for p in sets])[:, None]
+    gamma = np.random.default_rng(seed + 3).standard_gamma(
+        1 / np.maximum(var_u, 1e-12), size=(n, len(places))
     )
+    u_all = np.where(var_u > 0, gamma * var_u, 1.0)
     e = places["eligible_parcels"].to_numpy(dtype=float)
     keys = {
         "handbook": "handbook_adus",
@@ -708,7 +781,7 @@ def run(
 
     def rates(
         p,
-    ):  # a forward run draws the rate path (market.yaml); a backtest passes each year's actual rate
+    ):  # a forward run uses mortgage_rate_forecast (market.yaml, central unless a sensitivity sets it)
         return given.fillna(p["mortgage_rate_forecast"]).to_numpy(dtype=float)
 
     for d, p in enumerate(sets):
@@ -825,12 +898,13 @@ def non_overlapping(places: pd.DataFrame, jurisdictions: pd.DataFrame, county_sh
     in_bps = j["in_bps"].astype("boolean").fillna(True).astype(bool)
     local_only = [g for g in out["geoid"] if g in j.index and not in_bps[g]]
     # Only ACS-fallback remainders overlap: `eligible.allocate_homes` keeps local-only homes in them. A
-    # remainder counted from a parcel roll holds only parcels assigned to the county row, never a place's.
+    # remainder counted from a parcel roll holds only parcels assigned to the county row, never a place's;
+    # so does one scaled to that roll in a year without one (`parcels_scaled_acs`, #208).
     source = out["denominator_source"] if "denominator_source" in out else pd.Series("acs", index=out.index)
     remainder = {
         r.county_geoid: i
         for i, r in out.iterrows()
-        if r.get("kind") == "county_unincorporated" and source[i] != "parcels"
+        if r.get("kind") == "county_unincorporated" and source[i] not in PARCEL_SOURCES
     }
     removed = pd.Series(0.0, index=out.index)
     parcels = out.set_index("geoid")["eligible_parcels_reported"]
@@ -984,7 +1058,7 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
 
     Eligible parcels (theme 'adu', current rule version) from the newest year <= origin (else the earliest
     later roll, flagged `parcels_after_origin`); ACS rent and value from the newest vintage <= origin; no
-    mortgage rate (forward runs draw `mortgage_rate_forecast`); coded ADU rules in force on 31 December of the
+    mortgage rate (forward runs use `mortgage_rate_forecast`); coded ADU rules in force on 31 December of the
     origin year; observed ADU permits per parcel where local permits flag ADUs.
     Reads only holdout-filtered tables (DataStore); no outcome after the origin is used.
     """

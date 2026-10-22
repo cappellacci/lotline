@@ -1,0 +1,2 @@
+estimated,beta_0_1,beta_2_3,beta_4p,theta_pcr,theta_log_value,rho,delta,se_beta_0_1,se_beta_2_3,se_beta_4p,se_theta_pcr,se_theta_log_value,se_rho,se_delta,dropped,kept_rows
+True,-0.16350662651428338,-0.5857517975885003,-0.39005963555714523,1.3309291521454647,-0.2192158162790533,-0.20401785761663765,-2.150539339780507,2.4563212007741777,2.32814264539965,2.411253336669219,2.6091011910912214,1.0576758461615645,0.19908100510610993,0.713845493954384,"['theta_pre_permits (collinear with fixed effects)', 'theta_hh_growth (collinear with fixed effects)']",193

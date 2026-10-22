@@ -1,0 +1,78 @@
+field,code,description,land_use_std,notes,source_url
+parusecd2,MA-SINGLE FAMILY,MA-SINGLE FAMILY,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,MH-REAL,MH-REAL,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,MA-CONDO,MA-CONDO,CONDO_UNIT,"keyword rule condo (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,TOWNHOUSE,TOWNHOUSE,SF_ATTACHED,"keyword rule townhouse (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,MA-MODULAR,MA-MODULAR,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,ON FRAME MODULAR,ON FRAME MODULAR,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,MA-DUPLEX RESID,MA-DUPLEX RESID,DUPLEX,"keyword rule duplex (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,MA-GARAGE APT,MA-GARAGE APT,MULTIFAMILY_5P,"keyword rule multifamily (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,MA-BOAT HOUSE,MA-BOAT HOUSE,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusecd2,TRIPLEX,TRIPLEX,TRI_QUAD,"keyword rule tri_quad (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-SINGLE FAMILY,RES-SINGLE FAMILY,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,REAL PROP MANF HOME,REAL PROP MANF HOME,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-CONDO,RES-CONDO,CONDO_UNIT,"keyword rule condo (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL,COMMERCIAL,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-TOWNHOUSE,RES-TOWNHOUSE,SF_ATTACHED,"keyword rule townhouse (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PERSONAL PROPERTY MH,PERSONAL PROPERTY MH,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-MODULAR,RES-MODULAR,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMM VACANT LAND,COMM VACANT LAND,COMMERCIAL,"keyword rule vacant_commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOVERNMENTAL,GOVERNMENTAL,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-LEASEHOLD,RES-LEASEHOLD,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MANU HOME PARK,MANU HOME PARK,OTHER,"keyword rule other (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-DUPLEX,RES-DUPLEX,DUPLEX,"keyword rule duplex (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,APARTMENT,APARTMENT,MULTIFAMILY_5P,"keyword rule multifamily (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RELIGIOUS,RELIGIOUS,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INDUSTRIAL,INDUSTRIAL,INDUSTRIAL,"keyword rule industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CHURCH,CHURCH,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MEDICAL,MEDICAL,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PROP OWNER'S ASSOC,PROP OWNER'S ASSOC,OTHER,"keyword rule other (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMM-CONDO,COMM-CONDO,CONDO_UNIT,"keyword rule condo (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-MULTI RE,RES-MULTI RE,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,APT-CONDO,APT-CONDO,CONDO_UNIT,"keyword rule condo (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CEMETARY,CEMETARY,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AGRICULTURE-HORTICUL,AGRICULTURE-HORTICUL,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MINI WAREHOUSES,MINI WAREHOUSES,INDUSTRIAL,"keyword rule industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,UTILITIES,UTILITIES,OTHER,"keyword rule utility (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,LOW INCOME APARTMENT,LOW INCOME APARTMENT,MULTIFAMILY_5P,"keyword rule multifamily (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,EDUCATIONAL,EDUCATIONAL,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CELLULAR TOWER,CELLULAR TOWER,OTHER,"keyword rule utility (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RECREATIONAL,RECREATIONAL,OTHER,"keyword rule other (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,IND VACANT LAND,IND VACANT LAND,INDUSTRIAL,"keyword rule vacant_industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,BANKS,BANKS,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CONVENIENCE STORES,CONVENIENCE STORES,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,GOLF COURSES,GOLF COURSES,OTHER,"keyword rule other (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RV PARK,RV PARK,OTHER,"keyword rule other (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FAST FOOD REST,FAST FOOD REST,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,PARKING LOT,PARKING LOT,OTHER,"keyword rule special_lot (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,STRIP SHOPPING CTR,STRIP SHOPPING CTR,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMM-LI,COMM-LI,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MOTEL,MOTEL,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,VOLUNTEER FIRE DEPT,VOLUNTEER FIRE DEPT,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AUTO DEALERSHIP,AUTO DEALERSHIP,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RESTAURANTS,RESTAURANTS,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FIRE DEPARTMENT,FIRE DEPARTMENT,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,POST OFFICE,POST OFFICE,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,CHURCH-FELLOWSHIP,CHURCH-FELLOWSHIP,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOTEL,HOTEL,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,DRUG STORES,DRUG STORES,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MULTI-USE CONV STORE,MULTI-USE CONV STORE,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,SOLAR FARM,SOLAR FARM,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AUTO PARTS STORE,AUTO PARTS STORE,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOME IMPV CENTER,HOME IMPV CENTER,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,HOSPITAL,HOSPITAL,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RES-TRIPLEX,RES-TRIPLEX,TRI_QUAD,"keyword rule tri_quad (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,DRIVE-THRU BANKS,DRIVE-THRU BANKS,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,FORESTLAND,FORESTLAND,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,AUTO SERVICE CTR,AUTO SERVICE CTR,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,OPEN SPACE,OPEN SPACE,OTHER,"keyword rule special_lot (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,SINGLE FAMILY,SINGLE FAMILY,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,REAL PROPERTY MH,REAL PROPERTY MH,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,CONDOMINIUM,CONDOMINIUM,CONDO_UNIT,"keyword rule condo (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,TOWNHOUSE,TOWNHOUSE,SF_ATTACHED,"keyword rule townhouse (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,MODULAR,MODULAR,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,ON FRAME MODULAR,ON FRAME MODULAR,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,DUPLEX RESIDENTIAL,DUPLEX RESIDENTIAL,DUPLEX,"keyword rule duplex (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,GARAGE APT,GARAGE APT,MULTIFAMILY_5P,"keyword rule multifamily (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,BOAT HOUSE,BOAT HOUSE,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,TRIPLEX,TRIPLEX,TRI_QUAD,"keyword rule tri_quad (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0

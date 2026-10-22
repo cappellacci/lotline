@@ -1,8 +1,12 @@
 usdc_code,census_label,building_type_std,activity,derived_units,notes,source_url
 101,Single Family Houses,SFD,new,1,includes attached one-family houses (townhouses) and modular homes; not mobile homes,https://www.census.gov/construction/bps/sample/items.txt
+102,One Family Attached/Townhouse (land sold w/unit),TH,new,1,"county code: attached one-family houses (townhouses), one permit per unit; Census reports them with 101","Mecklenburg County Building Permits - Winchester (county Open Data Viewer), usdcdesc labels; Census BPS item list https://www.census.gov/construction/bps/sample/items.txt"
 103,Two-Family Buildings,U2,new,,,https://www.census.gov/construction/bps/sample/items.txt
 104,Three- and Four-Family Buildings,U3_4,new,,,https://www.census.gov/construction/bps/sample/items.txt
 105,Five-or-More Family Buildings,MF5,new,,,https://www.census.gov/construction/bps/sample/items.txt
+112,Mobile Home,OTHER,new,1,"county code: manufactured homes; BPS excludes these, so they stay out of BPS-comparable types (as in durham_permits)","Mecklenburg County Building Permits - Winchester (county Open Data Viewer), usdcdesc labels; Census BPS item list https://www.census.gov/construction/bps/sample/items.txt"
+114,3 & 4 Family Condos (no land sold w/unit),U3_4,new,,county code: condominium buildings of 3-4 units (Census 104),"Mecklenburg County Building Permits - Winchester (county Open Data Viewer), usdcdesc labels; Census BPS item list https://www.census.gov/construction/bps/sample/items.txt"
+115,5 or More Family Condos (no land sold w/unit),MF5,new,,county code: condominium buildings of 5+ units (Census 105),"Mecklenburg County Building Permits - Winchester (county Open Data Viewer), usdcdesc labels; Census BPS item list https://www.census.gov/construction/bps/sample/items.txt"
 213,"Hotels, Motels, and Tourist Cabins Intended for Transient Accommodations",OTHER,nonresidential,0,transient: no housing units,https://www.census.gov/construction/bps/sample/items.txt
 214,Other Nonhousekeeping Shelter,OTHER,nonresidential,0,no housing units,https://www.census.gov/construction/bps/sample/items.txt
 318,"Amusement, Social and Recreational Buildings",OTHER,nonresidential,0,,https://www.census.gov/construction/bps/sample/items.txt

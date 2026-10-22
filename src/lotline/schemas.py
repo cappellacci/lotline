@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.7"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.8"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -72,7 +72,7 @@ DATE_PRECISION = ["day", "month", "year"]
 VALUE_BASIS = ["market", "assessed", "appraisal", "unknown"]
 FEE_COMPONENTS = ["water_sewer", "impact", "permit", "planning", "other"]
 FEE_BASIS = ["per_unit", "per_sqft", "per_lue", "pct_of_value", "flat", "other"]
-DENOMINATOR_SOURCES = ["parcels", "acs_sf_fallback", "published"]
+DENOMINATOR_SOURCES = ["parcels", "parcels_scaled_acs", "acs_sf_fallback", "published"]
 QUALITY = ["high", "medium", "low"]
 
 _STATE = {"str_matches": r"^[A-Z]{2}$"}
@@ -145,6 +145,9 @@ class EligibleParcels(_Strict):
     """The denominator: eligible parcels per jurisdiction-year, stored apart from permits (protocol §5.1-5.2).
 
     One row per jurisdiction, year and eligibility-rule version, so a rule change never overwrites history.
+    `denominator_source` says where each count comes from: a real parcel roll (`parcels`), the place's ACS
+    one-unit-detached series scaled to its roll(s) in a year without a roll (`parcels_scaled_acs`, #208), the
+    ACS fallback (`acs_sf_fallback`) or a published count (`published`).
     """
 
     state: Series[str] = pa.Field(**_STATE)
@@ -261,6 +264,11 @@ class MarketGeoYear(_Strict):
     ppi_resid_inputs: Optional[Series[float]] = pa.Field(nullable=True)
     mortgage_rate: Optional[Series[float]] = pa.Field(nullable=True)
     cpi_u: Optional[Series[float]] = pa.Field(nullable=True, gt=0)  # deflator: real dollars (protocol §5.9)
+    # Local demand index (build/demand.py, C04): log points of job growth since the base year predicted from
+    # the pre-period industry mix; `_loo` leaves the county's own jobs out of national growth
+    demand_bartik: Optional[Series[float]] = pa.Field(nullable=True)
+    demand_bartik_loo: Optional[Series[float]] = pa.Field(nullable=True)
+    demand_imputed_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)
 
     @pa.dataframe_check
     def one_row_per_geo_year(cls, df: pd.DataFrame) -> bool:
@@ -439,6 +447,11 @@ HISTORY = [
         "1.7",
         "reforms and fees: optional citation fields (source_section, source_quote, verified_by, "
         "verified_date); fees: optional notes; hand-coded fees live in config/fees/<st>.csv",
+    ),
+    (
+        "1.8",
+        "market_geo_year: optional demand_bartik, demand_bartik_loo, demand_imputed_share (shift-share "
+        "local demand index, C04); eligible_parcels: denominator_source value parcels_scaled_acs (#208)",
     ),
 ]
 

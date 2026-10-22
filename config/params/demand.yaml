@@ -1,0 +1,33 @@
+# Local demand index (build/demand.py; causal diagram C04, E081). Inputs: Census County Business Patterns.
+
+share_first_year:
+  value: 2010
+  low: 2010
+  high: 2010
+  unit: calendar year
+  source: "Causal diagram §3a, C04: 'shift-share employment index from pre-period industry mix'; WS-DATA-DEMAND brief (docs/build/handoffs/03-demand-index.md): 'e.g. the 2010-2012 average'"
+  notes: "First year of the window whose average industry mix fixes each county's shares. The same window for every place. For a place that adopted a reform before 2013 (some ADU rules date from the 1980s-90s), the mix is measured after adoption, not before; a county's industry mix moves slowly, so this should matter little, but it is not strictly pre-period for those places."
+
+share_last_year:
+  value: 2012
+  low: 2012
+  high: 2012
+  unit: calendar year
+  source: "WS-DATA-DEMAND brief (docs/build/handoffs/03-demand-index.md): 'the 2010-2012 average'"
+  notes: "Last year of the share window. Three years average out one-off swings in a small county's mix."
+
+growth_base_year:
+  value: 2012
+  low: 2012
+  high: 2012
+  unit: calendar year
+  source: "Set to the last share year, so national growth is measured only after the mix is fixed (standard shift-share timing; causal diagram C04)"
+  notes: "The index is 0 in this year. Only changes in the index over time carry meaning; the base year sets the zero point, not the slope."
+
+suppressed_cell_position:
+  value: 0.5
+  low: 0.0
+  high: 1.0
+  unit: position inside the published employment range (0 = bottom, 1 = top)
+  source: "Census CBP methodology: through 2016, withheld employment is published as a range flag (a = 0-19 ... m = 100,000+); the midpoint is the usual fill when only the range is known"
+  notes: "Affects only 2010-2016 county cells that CBP withheld. low and high bound how much the fill can matter: rerun at 0 and 1 to see it. demand_imputed_share reports how much of each county's pre-period mix rests on filled cells."

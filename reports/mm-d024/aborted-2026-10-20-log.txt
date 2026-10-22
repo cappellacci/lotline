@@ -1,0 +1,81 @@
+[17:06:47] building the main panel
+[17:11:32] panel: 560 places, 8763 place-years with an outcome
+[17:12:02] check 7b drops 16 pipeline-flagged comparison places: ['2701900', '2702908', '2706382', '2706616', '2708794', '2717000', '2717288', '2718116', '2718188', '2735180', '2740166', '2743252', '2751730', '2756896', '2757220', '2771428']
+[17:12:07] FALLBACK (pre-specified): PPML failed: PPML diverged: |eta - offset| = 119.9; main model is now Poisson-gamma place random effects
+[17:12:26] main fit (re): 5 iterations; kept 8763 of 8763 place-years; dropped places 0; dropped columns []; separated observations 0
+[17:12:30] main estimates (log scale; proportional_effect = e^estimate - 1):
+           term  estimate     se     low    high  p_two_sided  proportional_effect
+         beta_0    0.7941 0.3435  0.2038  1.3847       0.0100               1.2125
+         beta_2    1.1436 1.0804 -0.6214  2.9099       0.3173               2.1381
+         beta_4   -0.1321 1.3016 -2.4002  1.8923       0.9209              -0.1237
+      theta_pcr    0.9117 0.5349  0.0513  1.7834       0.0801               1.4885
+theta_log_value   -0.9974 0.3733 -1.6132 -0.4073       0.0010              -0.6312
+            rho    0.1068 0.1520 -0.1400  0.3587       0.4925               0.1127
+          delta   -0.5264 0.3559 -1.0936  0.0815       0.1522              -0.4093
+            att    0.7683 0.4370  0.0713  1.5368       0.0881               1.1562
+[17:12:30] added 2-4 unit homes in the treated places' post-adoption years:
+  place                              name  years  added    low   high  per_1000_parcels_year
+2743000                  Minneapolis city      6   93.1 -109.1  201.5                    0.2
+  37063 Durham County Unincorporated Area      6    5.5   -0.3    8.8                    0.1
+3719000                       Durham city      6  150.1    5.6  235.6                    0.3
+3755000                      Raleigh city      4  118.7  -16.4  189.1                    0.3
+3915000                   Cincinnati city      2   -8.1  -42.6    5.8                   -0.1
+4805000                       Austin city      2 -130.8 -286.5  -11.6                   -0.4
+4835000                      Houston city      2 2421.6 1426.2 3187.9                    2.7
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/process.py", line 263, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/process.py", line 212, in _process_chunk
+    return [fn(*args) for args in chunk]
+            ^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/src/lotline/model/estimate_mm.py", line 742, in _ri_one
+    estimate(reassign(panel, np.random.default_rng([seed, i]), pool=pool), method=method, **kw)
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/src/lotline/model/estimate_mm.py", line 512, in estimate
+    fit = fit_re(p["y"], d.X, off, p["place"], year_code(p), d.names)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/src/lotline/model/estimate_mm.py", line 622, in fit_re
+    H[:, j] = (grad(tp) - grad(tm)) / (2 * h)
+                          ^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/src/lotline/model/estimate_mm.py", line 611, in grad
+    return _re_parts(t, Z, y, off, cl, n_cl)[1].sum(axis=0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/src/lotline/model/estimate_mm.py", line 567, in _re_parts
+    raise ValueError("diverged")
+ValueError: diverged
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/scripts/dev/estimate_mm.py", line 491, in <module>
+    main()
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/scripts/dev/estimate_mm.py", line 487, in main
+    full(DataStore(), a.out, a.workers)
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/scripts/dev/estimate_mm.py", line 414, in full
+    out = run(panel, p, workers, local=local_inputs(store), metc=metc, flagged=flagged)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/scripts/dev/estimate_mm.py", line 173, in run
+    att, p_ri, dist, failed = mm.randomization_inference(panel, permutations=perms, seed=SEED, method=method,
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-mm-panel/src/lotline/model/estimate_mm.py", line 760, in randomization_inference
+    res = list(ex.map(_ri_one, jobs, chunksize=max(1, permutations // (4 * workers))))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/process.py", line 642, in _chain_from_iterable_of_lists
+    for element in iterable:
+                   ^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+ValueError: diverged
+exit 1

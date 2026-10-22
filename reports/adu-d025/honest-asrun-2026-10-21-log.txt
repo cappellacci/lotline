@@ -1,0 +1,59 @@
+commit da0be0c; started 2026-10-21 12:33 EDT
+uv run python -u scripts/dev/estimate_pooled_adu.py --honest reports/adu-d025/run-2026-10-20-log.txt --hh-growth as_run --out reports/adu-d025/honest-asrun-2026-10-21/
+household growth: as_run
+main bootstrap: 999 of 999 bootstrap draws kept
+main model matches the first run's 22 logged estimates (to 1e-4); reusing it
+pre-trend leads (HonestDiD): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept
+event study (leads refit):
+     term k_label  estimate     low   high
+  lead_3      −3    1.4417  0.4939 2.4372
+  lead_2      −2   -0.2097 -1.9382 1.5280
+beta_0_1     0–1    2.5150  0.5864 4.3841
+beta_2_3     2–3    2.0544 -0.8439 5.0436
+ beta_4p      4+    2.5503 -0.5282 5.6317
+pooled: θ 1.4684, breakdown M̄ 0.0
+beta_0_1: θ 1.5981, breakdown M̄ 0.17
+beta_2_3: θ 1.2449, breakdown M̄ 0.0
+beta_4p: θ 1.4853, breakdown M̄ 0.0
+leads: {'δ_−3': np.float64(1.4417), 'δ_−2': np.float64(-0.2097), 'δ_−1': np.float64(0.0)}
+ω_k: [0.142, 0.124, 0.107, 0.089, 0.077, 0.071, 0.059, 0.065, 0.053, 0.047, 0.036, 0.024, 0.018, 0.012, 0.012, 0.012, 0.012, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006]
+        restriction    m  set_low  set_high   ci_low  ci_high  ci_includes_0   target  breakdown
+           original  NaN   1.4684    1.4684  -0.1085   3.0388           True   pooled       0.00
+relative magnitudes 0.50  -3.7104    6.6471  -9.7281  12.4266           True   pooled       0.00
+relative magnitudes 1.00  -8.8891   11.8258 -20.5565  23.1073           True   pooled       0.00
+relative magnitudes 1.50 -14.0679   17.0046 -31.2773  33.8822           True   pooled       0.00
+relative magnitudes 2.00 -19.2466   22.1833 -42.0618  44.3606           True   pooled       0.00
+         smoothness 0.00   0.1532    0.1532 -11.3334  12.1122           True   pooled       0.00
+         smoothness 0.05  -1.6081    1.9144 -13.0946  13.8734           True   pooled       0.00
+         smoothness 0.10  -3.3693    3.6757 -14.8558  15.6347           True   pooled       0.00
+         smoothness 0.20  -6.8918    7.1981 -18.3783  19.1572           True   pooled       0.00
+           original  NaN   1.5981    1.5981   0.3726   2.7857          False beta_0_1       0.17
+relative magnitudes 0.50   0.3871    2.8090  -1.1994   4.8722           True beta_0_1       0.17
+relative magnitudes 1.00  -0.8239    4.0200  -3.5765   7.2364           True beta_0_1       0.17
+relative magnitudes 1.50  -2.0349    5.2310  -6.0529   9.6711           True beta_0_1       0.17
+relative magnitudes 2.00  -3.2459    6.4420  -8.5854  12.1985           True beta_0_1       0.17
+         smoothness 0.00   1.2905    1.2905  -1.5818   4.3099           True beta_0_1       0.17
+         smoothness 0.05   1.1939    1.3872  -1.6785   4.4066           True beta_0_1       0.17
+         smoothness 0.10   1.0972    1.4839  -1.7751   4.5033           True beta_0_1       0.17
+         smoothness 0.20   0.9039    1.6772  -1.9685   4.6966           True beta_0_1       0.17
+           original  NaN   1.2449    1.2449  -0.5114   3.0561           True beta_2_3       0.00
+relative magnitudes 0.50  -1.6074    4.0972  -5.2314   7.7814           True beta_2_3       0.00
+relative magnitudes 1.00  -4.4597    6.9495 -11.1145  13.3911           True beta_2_3       0.00
+relative magnitudes 1.50  -7.3120    9.8018 -17.0238  19.1757           True beta_2_3       0.00
+relative magnitudes 2.00 -10.1644   12.6541 -22.9159  25.1820           True beta_2_3       0.00
+         smoothness 0.00   0.5205    0.5205  -6.1697   7.6867           True beta_2_3       0.00
+         smoothness 0.05   0.1296    0.9114  -6.5606   8.0776           True beta_2_3       0.00
+         smoothness 0.10  -0.2613    1.3023  -6.9515   8.4685           True beta_2_3       0.00
+         smoothness 0.20  -1.0431    2.0841  -7.7333   9.2503           True beta_2_3       0.00
+           original  NaN   1.4853    1.4853  -0.3076   3.2799           True  beta_4p       0.00
+relative magnitudes 0.50  -6.4992    9.4697 -15.7871  18.1171           True  beta_4p       0.00
+relative magnitudes 1.00 -14.4837   17.4542 -32.4335  34.7062           True  beta_4p       0.00
+relative magnitudes 1.50 -22.4682   25.4387 -49.0442  51.0037           True  beta_4p       0.00
+relative magnitudes 2.00 -30.4527   33.4232 -65.7221  67.5024           True  beta_4p       0.00
+         smoothness 0.00  -0.5425   -0.5425 -18.2054  17.4104           True  beta_4p       0.00
+         smoothness 0.05  -3.6238    2.5389 -21.2867  20.4917           True  beta_4p       0.00
+         smoothness 0.10  -6.7051    5.6202 -24.3680  23.5730           True  beta_4p       0.00
+         smoothness 0.20 -12.8677   11.7828 -30.5307  29.7357           True  beta_4p       0.00
+wrote event_study.csv and honest_bounds.csv to reports/adu-d025/honest-asrun-2026-10-21/
+  55.46s user 3.69s system 68% cpu 1:26.37 total
+exit 0

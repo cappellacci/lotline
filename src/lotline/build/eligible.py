@@ -19,18 +19,24 @@ and the share of eligible parcels resting on one sets `denominator_quality`.
 Where a state has no usable parcels, `from_acs` falls back to ACS one-unit detached homes (B25024_002),
 always quality `low` (protocol §6: "fall back to ACS SF units"). Every number comes from
 config/params/eligibility.yaml.
+
+A jurisdiction counted from parcels has a real count only in its roll year(s). `scale_history` fills its other
+ACS years from its own ACS series scaled to the roll(s), flagged `parcels_scaled_acs` (#208), so engines that
+need the 2010-2024 level window have a denominator in every year.
 """
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from lotline.config import Parameter, load_params
 from lotline.io import DataStore
-from lotline.schemas import validate
+from lotline.schemas import columns, validate
 
 RULE_VERSION = "1.1"  # 1.1: vacant SF-zoned lots count for missing middle (D-014)
 THEMES = ("adu", "missing_middle")
+PARCEL_SOURCES = ("parcels", "parcels_scaled_acs")  # counted from a roll, or scaled to one (#208)
 ACS_SF_DETACHED = "B25024_002"  # units in structure: 1, detached
 EXCLUSIONS = {
     "hoa": "exclude_hoa",
@@ -274,13 +280,90 @@ def single_source(parcels: pd.DataFrame, choice: dict[str, str]) -> pd.DataFrame
     return parcels
 
 
+def _nearest_acs_year(year: int, acs_years: list[int], max_gap: float) -> int | None:
+    """The ACS end year closest to a roll year (the later on a tie), or None if none is within `max_gap`."""
+    best = min(acs_years, key=lambda a: (abs(a - year), -a), default=None)
+    return best if best is not None and abs(best - year) <= max_gap else None
+
+
+def scale_history(
+    parcel_rows: pd.DataFrame,
+    acs_rows: pd.DataFrame,
+    params: dict[str, Parameter] | None = None,
+) -> pd.DataFrame:
+    """Years without a roll for parcel-counted jurisdictions: their ACS series scaled to the roll(s) (#208).
+
+    A jurisdiction counted from a parcel roll has a real count only in its roll year(s); the ACS fallback has
+    one in every ACS end year. For each jurisdiction and theme:
+
+    1. Each roll year r is an **anchor**: scale factor f_r = parcels_r / ACS_a, where a is the ACS end year
+       nearest r (r itself if released; the later on a tie), at most `scale_max_year_gap` years away. An
+       anchor whose ACS count is 0 or missing is skipped.
+    2. For every ACS end year t that has no roll: f(t) is f_r at a single anchor; with two or more, linear
+       in t between neighbouring anchors and held at the first / last anchor's value outside them.
+    3. The filled count is round(ACS_t · f(t)), `denominator_source = "parcels_scaled_acs"`, with the
+       `denominator_quality` of the nearest anchor (the earlier on a tie).
+
+    A real roll year always keeps its real count. Jurisdictions with no usable anchor get no filled rows.
+    By hand: rolls 2019 (90 parcels, ACS 100 -> f 0.9) and 2023 (110, ACS 100 -> f 1.1); ACS 2021 = 200 ->
+    f 1.0, 200; ACS 2010 = 50 -> f 0.9, 45; ACS 2024 = 120 -> f 1.1, 132.
+    Returns only the filled rows, in the `eligible_parcels` schema.
+    """
+    p = params or load_params("eligibility")
+    max_gap = p["scale_max_year_gap"].value
+    acs = {
+        key: g.set_index("year")["eligible_parcels"].astype(float)
+        for key, g in acs_rows.groupby(["jurisdiction_geoid", "theme"])
+    }
+    rows = []
+    for (geoid, theme), g in parcel_rows.groupby(["jurisdiction_geoid", "theme"], sort=True):
+        if (geoid, theme) not in acs:
+            continue
+        series = acs[(geoid, theme)]
+        acs_years = sorted(int(y) for y in series.index)
+        anchors = []  # (roll year, factor, quality)
+        for r in g.sort_values("year").itertuples():
+            a = _nearest_acs_year(int(r.year), acs_years, max_gap)
+            if a is None or not series[a] > 0:
+                continue
+            anchors.append((int(r.year), float(r.eligible_parcels) / float(series[a]), r.denominator_quality))
+        if not anchors:
+            continue
+        xs = np.array([a[0] for a in anchors], dtype=float)
+        fs = np.array([a[1] for a in anchors], dtype=float)
+        first = g.iloc[0]
+        real = set(g["year"].astype(int))
+        for t in acs_years:
+            if t in real:
+                continue
+            factor = float(np.interp(t, xs, fs))  # flat beyond the first and last anchor
+            nearest = min(anchors, key=lambda a: (abs(a[0] - t), a[0]))
+            rows.append(
+                {
+                    "state": first["state"],
+                    "jurisdiction_geoid": geoid,
+                    "year": t,
+                    "theme": theme,
+                    "rule_version": first["rule_version"],
+                    "eligible_parcels": int(round(series[t] * factor)),
+                    "data_tier": int(first["data_tier"]),
+                    "denominator_source": "parcels_scaled_acs",
+                    "denominator_quality": nearest[2],
+                }
+            )
+    return validate(pd.DataFrame(rows, columns=columns("eligible_parcels")), "eligible_parcels")
+
+
 def combine(parcel_rows: pd.DataFrame | None, acs_rows: pd.DataFrame) -> pd.DataFrame:
-    """One denominator source per jurisdiction: parcels where a state has them, the ACS fallback elsewhere."""
+    """One denominator source per jurisdiction: parcels where a state has them (real roll years, the rest
+    filled by `scale_history`), the ACS fallback elsewhere."""
     if parcel_rows is None or parcel_rows.empty:
         return acs_rows
     covered = set(parcel_rows["jurisdiction_geoid"])
     rest = acs_rows[~acs_rows["jurisdiction_geoid"].isin(covered)]
-    return validate(pd.concat([parcel_rows, rest], ignore_index=True), "eligible_parcels")
+    filled = scale_history(parcel_rows, acs_rows)
+    parts = [df for df in (parcel_rows, filled, rest) if len(df)]
+    return validate(pd.concat(parts, ignore_index=True), "eligible_parcels")
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
