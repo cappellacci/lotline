@@ -195,7 +195,8 @@ def test_vacant_rule_for_single_land_use_field_and_structyear_signal():
 def test_ten_largest_counties_configured():
     cfg = om.counties()
     ten = {"37183", "37119", "37081", "37067", "37051", "37063", "37021", "37179", "37071", "37025"}
-    assert set(cfg) == ten
+    assert ten <= set(cfg)  # hand-coded; the other configured counties were drafted (onemap_codes)
+    assert all(f.startswith("37") and len(f) == 5 for f in cfg) and len(cfg) <= 100
     assert cfg["37179"].built_signal == "structyear" and cfg["37063"].building_fields == 0
     assert cfg["37183"].building_fields == 1
     for c in cfg.values():
@@ -231,3 +232,13 @@ def test_places_mostly_outside_loaded_counties_are_left_out(monkeypatch):
     )
     kept = om.drop_undercovered(df, "NC", store=None)
     assert list(kept["jurisdiction_geoid"]) == ["3710740", "3719000", "37063"]
+
+
+def test_implausible_sale_dates_are_unknown():
+    ms = [
+        int(pd.Timestamp(d, tz="UTC").timestamp() * 1000) if d else None
+        for d in ["2019-05-01", "3021-08-30", "1850-01-01", "2026-09-01", None]
+    ]
+    out = om.sale_date(pd.Series(ms), pd.Series([pd.Timestamp("2026-06-01")] * 5))
+    assert out.iloc[0] == pd.Timestamp("2019-05-01")
+    assert out.iloc[1:].isna().all()  # typo year, before 1900, after the roll date, missing
