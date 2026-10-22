@@ -30,8 +30,11 @@ and land class repeat on every card; units and heated area are per card.
   stand for the whole place, and a sliver roll would become that place's denominator (Durham's ADU count
   was 5). Those places are counted from NC OneMap instead.
 
-**Vintage.** `vintage_date` 2023-12-31 (the "Final Dec2023" roll; the file's web listing shows 2024-01-02),
-`vintage` 2023. Wake has no holdout; `holdout.apply(..., snapshot=True)` runs anyway.
+**Vintages.** Two pre-revaluation rolls, each read when registered (`ROLLS`): "Final Dec2023"
+(`vintage_date` 2023-12-31; the web listing shows 2024-01-02), required, and "Final Nov2019" (2019-11-30, the
+last roll before the 2020 revaluation; Ben's browser download of 2026-10-21), optional. Both have the same 87
+columns. Each roll keeps its own `vintage`, its own year-built cap and the city limits it records (`CITY`), so
+a 2019 parcel is placed by 2019's limits. Wake has no holdout; `holdout.apply(..., snapshot=True)` runs anyway.
 
 **Privacy.** The spreadsheet carries owner names and mailing addresses. Only the columns in `USECOLS` are
 read, so owner, mailing, street-address, legal-description, deed and free-text fields never reach memory or
@@ -56,7 +59,12 @@ VERSION = "1.0"
 SOURCE = "wake_realestate"
 TABLE = "parcels"
 BASE = "https://services.wake.gov/realdata_extracts"
-ROLL_FILE = "Real_Est_Data_Final_Dec2023.xlsx"
+ROLL_FILE = "Real_Est_Data_Final_Dec2023.xlsx"  # the required (latest) roll
+# Every pre-revaluation roll the adapter reads, with its vintage date (the folder lists no others, 2026-10-22).
+ROLLS = {
+    ROLL_FILE: pd.Timestamp("2023-12-31"),  # last roll before the 2024 revaluation
+    "Real_Est_Data_Final_Nov2019.xlsx": pd.Timestamp("2019-11-30"),  # last roll before the 2020 revaluation
+}
 SALES_FILE = "Qualified_Sales_Past_24Months.xlsx"  # registered for the record; no canonical sales table yet
 VINTAGE_DATE = pd.Timestamp("2023-12-31")  # "Final Dec2023" roll, the last before the 2024 revaluation
 LANDING_URL = (
@@ -109,7 +117,7 @@ USECOLS = [
 ]
 
 PROVENANCE = {
-    "title": "Wake County real estate roll, final pre-revaluation file (December 2023)",
+    "title": "Wake County real estate rolls, final pre-revaluation files (November 2019, December 2023)",
     "landing_url": LANDING_URL,
     "table": TABLE,
     "cleaning": [
@@ -123,17 +131,17 @@ PROVENANCE = {
         "parcel_id = 37183 + REAL_ESTATE_ID",
         "land_use_std via config/crosswalks/nc_land_use_wake_realestate.csv: Type & Use + Design Style, then "
         "Type & Use, then Land Class; a residential Land Class with no building value → VACANT_RESIDENTIAL",
-        "year_built = Year_Built of card 01 when 1700..2023; 0 → unknown",
+        "year_built = Year_Built of card 01 when 1700..the roll year; 0 → unknown",
         "lot_sqft = Deeded_Acreage × 43,560; land/bldg values assessed (2020 revaluation)",
         "last_sale_price/date = Total_sale_Price/Total_Sale_Date (price 0 → unknown); sale_qualified = "
         "flag A or C; sale_multi_parcel = flag C; no flag → unknown",
         "jurisdiction_geoid from CITY via config/crosswalks/nc_land_use_wake_jurisdictions.csv; outside "
         "city limits → 37183 (county remainder); cities mostly outside Wake (Durham, Angier, Clayton: "
         "use_wake_roll False, under 10% of 2020 housing units in Wake) are left out",
-        "vintage_date 2023-12-31, vintage 2023; holdout filter applied with snapshot=True (no Wake holdout)",
+        "vintage_date 2023-12-31 (Dec 2023 roll) and 2019-11-30 (Nov 2019 roll, when registered); holdout filter applied with snapshot=True (no Wake holdout)",
     ],
     "limitations": [
-        "One county only (Wake); values are as of the 2020 revaluation, not market values in 2023",
+        "One county only (Wake); values are as of the preceding revaluation (2016 for the 2019 roll, 2020 for the 2023 roll), not market values in the roll year",
         "Jurisdiction is the assessor's city code (no coordinates); parcels in Raleigh's ETJ outside city "
         "limits go to the county remainder",
         "Design Style on card 01 only; multi-card parcels (1.1% of cards) take the main building's type",
@@ -165,8 +173,8 @@ def _num(s: pd.Series) -> pd.Series:
     return pd.to_numeric(s, errors="coerce")
 
 
-def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
-    """Card rows (USECOLS, as text) → one `parcels` row per REAL_ESTATE_ID."""
+def build(raw: pd.DataFrame, state: str = "NC", vintage_date: pd.Timestamp = VINTAGE_DATE) -> pd.DataFrame:
+    """Card rows of one roll (USECOLS, as text) → one `parcels` row per REAL_ESTATE_ID, dated `vintage_date`."""
     df = raw.copy()
     df["reid"] = df["REAL_ESTATE_ID"].astype("string").str.strip().replace("", pd.NA)
     df = df.loc[df["reid"].notna()].copy()
@@ -188,7 +196,7 @@ def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
         bldg_col="Assessed_Building_Value",
     )
     year = _num(main["Year_Built"])
-    year = year.where((year >= 1700) & (year <= VINTAGE_DATE.year)).round().astype("Int64")
+    year = year.where((year >= 1700) & (year <= vintage_date.year)).round().astype("Int64")
     acres = _num(main["Deeded_Acreage"])
     price = _num(main["Total_sale_Price"])
     flag = main["Disq_and_Qual_flag"].astype("string").str.strip().replace("", pd.NA)
@@ -197,8 +205,8 @@ def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
         {
             "state": state,
             "parcel_id": COUNTY + main.index.astype("string"),
-            "vintage": VINTAGE_DATE.year,
-            "vintage_date": VINTAGE_DATE,
+            "vintage": vintage_date.year,
+            "vintage_date": vintage_date,
             "jurisdiction_geoid": city.map(city_geoids()).fillna(COUNTY).astype("string"),
             "county_geoid": COUNTY,
             "lot_sqft": (acres * SQFT_PER_ACRE).where(acres > 0).astype("float64"),
@@ -230,21 +238,26 @@ def read(path: Path) -> pd.DataFrame:
     return pd.read_excel(path, usecols=USECOLS, dtype=str, engine="openpyxl")
 
 
-def roll_entries(store: DataStore) -> list:
-    """Registered copies of the December 2023 roll (the qualified-sales file is registered but not read)."""
-    return [e for e in store.registered(SOURCE) if Path(e.path).name == ROLL_FILE]
+def roll_entries(store: DataStore, name: str = ROLL_FILE) -> list:
+    """Registered copies of one roll (default: Dec 2023; the qualified-sales file is registered but not read)."""
+    return [e for e in store.registered(SOURCE) if Path(e.path).name == name]
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     if state.upper() != "NC":
         raise ValueError(f"{SOURCE} covers Wake County, North Carolina only, not {state}")
-    entries = roll_entries(store)
-    if not entries:
+    if not roll_entries(store):
         raise FileNotFoundError(REGISTER_HELP)
-    entry = entries[-1]  # the latest registration
-    if store.is_stale(entry):
-        raise FileNotFoundError(f"registered Wake roll missing or changed since registration: {entry.path}")
-    df = build(read(store.root / entry.path), state=state)
+    frames = []
+    for name, vintage_date in ROLLS.items():
+        entries = roll_entries(store, name)
+        if not entries:  # only the Dec 2023 roll is required
+            continue
+        entry = entries[-1]  # the latest registration
+        if store.is_stale(entry):
+            raise FileNotFoundError(f"registered Wake roll missing or changed since registration: {entry.path}")
+        frames.append(build(read(store.root / entry.path), state=state, vintage_date=vintage_date))
+    df = pd.concat(frames, ignore_index=True)
     df = holdout.apply(
         df,
         state,

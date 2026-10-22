@@ -148,3 +148,34 @@ def test_cities_mostly_outside_wake_are_left_out(parcels):
     assert "371830000008" not in parcels.index
     assert "3719000" not in set(parcels["jurisdiction_geoid"])
     assert wr.partial_cities() == {"DUR", "ANG", "CLA"}
+
+
+def test_load_reads_both_rolls_as_separate_vintages(tmp_path, monkeypatch):
+    store = DataStore(tmp_path / "data")
+    for name, vintage in [(wr.ROLL_FILE, "2023-12-31"), ("Real_Est_Data_Final_Nov2019.xlsx", "2019-11-30")]:
+        f = tmp_path / name
+        f.write_bytes(name.encode())  # distinct stand-ins
+        store.register(f, source=wr.SOURCE, url=f"{wr.BASE}/{name}", license=wr.LICENSE, vintage=vintage)
+    raw = pd.DataFrame(ROWS, columns=COLS)
+    raw["Assessed_Land_Value"] = "50000"
+    raw["Zoning"] = "R-4"
+    seen = []
+    monkeypatch.setattr(wr, "read", lambda path: seen.append(path.name) or raw)
+    out = wr.load("NC", store)
+    assert sorted(seen) == sorted(wr.ROLLS)
+    assert sorted(out["vintage"].unique()) == [2019, 2023]
+    assert set(out["vintage_date"].unique()) == {pd.Timestamp("2019-11-30"), pd.Timestamp("2023-12-31")}
+    assert (out.groupby("vintage").size() == 7).all()  # the same parcels in each roll
+    assert_conforms(out, "parcels")
+
+
+def test_year_built_is_capped_at_the_roll_year():
+    raw = pd.DataFrame(ROWS, columns=COLS)
+    raw["Assessed_Land_Value"] = "50000"
+    raw["Zoning"] = "R-4"
+    raw.loc[0, "Year_Built"] = "2021"
+    out19 = wr.build(raw, vintage_date=pd.Timestamp("2019-11-30"))
+    out23 = wr.build(raw, vintage_date=pd.Timestamp("2023-12-31"))
+    pid = out23["parcel_id"].iloc[0]
+    assert out23.set_index("parcel_id").loc[pid, "year_built"] == 2021
+    assert pd.isna(out19.set_index("parcel_id").loc[pid, "year_built"])  # built after the 2019 roll
