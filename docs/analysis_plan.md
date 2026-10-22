@@ -591,6 +591,250 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (negative binomial with place random effects, which keeps places with zeros; the Borusyak imputation
   estimator) as primary, or widen the panel (more places with dated rules, earlier ADU-flag years).
 
+### D-024 · 2026-10-20 · Missing-middle effect estimated on a pooled four-state panel (pre-registered; approved before any estimate)
+- **Why:** the missing-middle scenario needs an estimate, from observed reforms, of how many extra 2–4 unit
+  homes get permitted when 2–4 units become legal on single-family lots. This entry fixes the estimand, sample,
+  model, checks and out-of-sample test **before any estimate is run**. It mirrors D-023 and applies its lesson:
+  check first whether the data can carry place fixed effects (smoke counts below).
+- **Estimand:** additional homes permitted in 2–4 unit buildings per missing-middle eligible parcel, caused by
+  a rule that allows 2–4 units on single-family lots, by years since the rule took effect, and how that varies
+  with pre-reform conditions. "Additional" means relative to the same place without the rule (protocol §1).
+  Gross homes: demolitions and the single-family rebuild they replace are netted out in the scenario, not here
+  (causal diagram MM §1).
+- **Why a pooled four-state panel, not Minnesota alone:** in the Twin Cities only Minneapolis has a coded
+  missing-middle rule (St. Paul is the V5 blind test). One treated city cannot support a staggered design. The
+  four reform states have 7 treated places with coded rules, all measured the same way by Census BPS.
+- **Data (`src/lotline/model/estimate_mm.py`, `build_panel`):**
+  - **Places and years:** every BPS permit-issuing place in MN, NC, OH and TX with at least 10,000 people
+    (2020 Census; `mm_estimation_min_population`), plus every place with a coded missing-middle rule;
+    2010–2025 (`mm_panel_first_year`, `mm_panel_last_year`): the first year with eligible-parcel rolls and ACS
+    for every place, giving Minneapolis and Durham ten years before their reforms.
+  - **Outcome:** BPS homes in 2-unit and 3–4 unit buildings (`units_2 + units_3_4`), the same measurement in
+    every state and year. Townhouses are 1-unit buildings in BPS and stay out; 5–6 unit buildings are mixed
+    into BPS 5+ with large apartments and stay out. A place-year with no BPS row is missing, never 0.
+  - **Exposure:** missing-middle eligible parcels (rule 1.1, D-014) as the offset, from the nearest roll; the
+    ACS fallback (D-017) supplies 330 of the 560 places' denominators. Place effects absorb level errors;
+    only changes over time matter.
+  - **Excluded:** St. Paul entirely (V5); Charlotte, Mecklenburg County and every place reporting under it
+    entirely (holdout from 2023-06-01, D-012; Charlotte's reform falls in the window).
+- **Treatment and dose:** from coded `missing_middle` rows in `config/reforms/*.csv`, in force on 1 July of
+  year t. Dose D_it = units grade × approval grade × coverage:
+  - units allowed on a single-family lot: 2 → 1/3, 3 → 2/3, 4 or more → 1. The outcome only counts 2–4 unit
+    buildings, so a rule allowing more than 4 (St. Paul, Houston) counts as a full dose. The Handbook scenario
+    allows 2–6 units: 5–6 unit buildings come from the pro forma side, not this estimate;
+  - approval: by right 1, by permit or conditional use 1/3 (`mm_dose_grade_permit`, equal steps as in D-023);
+  - coverage of single-family zones measured on parcels as in D-021 (`adu.rule_coverage`, reused as is);
+  - blank fields take coded shares (D-022): a blank `by_right` takes the share of coded missing-middle rules
+    that are by right (3 of 3 today); a blank cap takes the mean units grade of coded caps.
+  - Adoption year T_i: the first year a rule with P(by right) ≥ 0.5 is in force on 1 July. Treated today:
+    Minneapolis 2020, Durham city and Durham County 2020, Raleigh 2022, Austin, Houston and Cincinnati 2024.
+- **Comparisons:** places with no coded missing-middle rule are unknown under D-022. With only coded
+  places there are **no never-treated comparisons**: the 2024 adopters would be the only controls for
+  2020–2023, and 2024–2025 would have none. **Decided:** places with no coded rule count as never treated for
+  this estimate only. This is a deviation from D-022, stated here. It rests on two points: no statewide rule
+  allowing 2–4 units on single-family lots is coded for any of the four states (the pipeline's Minnesota
+  records found none as of 2025), and a place mislabelled as untreated pulls the estimate toward zero. The robustness checks bound that risk. To shrink it:
+  - places the ordinance pipeline found legalizing 2–4 units should be coded with dates before the run (St.
+    Louis Park 2025; Bloomington 2025–26 needs a manual lookup; `docs/research/ordinances/`; WS-MN);
+  - places the pipeline found not to allow them (Brooklyn Park, Coon Rapids, Rochester) should be coded as
+    explicit "no" rows.
+- **Model (main):** Poisson pseudo-maximum likelihood with the log(eligible parcels) offset, place fixed effects
+  and **state × year** fixed effects. The four states' markets moved differently, and each state has 56–232
+  places. Effects are estimated with Wooldridge's extended two-way fixed effects, pooled into three event-time
+  bins:
+
+  E[y_it] = Eligible_it · exp( α_i + γ_{s(i),t} + Σ_b β_b · D_it · 1[t − T_i ∈ b] + Σ_m θ_m · z_im · 1[t ≥ T_i]
+  + ρ · (r_t − r̄) · 1[t ≥ T_i] + δ · ADU_it ),  b ∈ {0–1, 2–3, 4+}
+
+  | Term | Meaning | Causal diagram (MM) |
+  |---|---|---|
+  | α_i | Place fixed effect (includes duplexes some zones already allowed) | C05, C06, C14 (levels) |
+  | γ_st | State × year effect | Rates, costs, COVID and the cycle by state (C01–C03, C42) |
+  | β_b | Effect by years since adoption, pooled 0–1, 2–3, 4+, scaled by dose | Ramp and builder learning |
+  | θ_m | Modifiers measured at T − 1, as z-scores over treated places. Main: price-to-cost of a rental duplex from the pro forma (C40; constant factors cancel in the z-score) and log median home value (the existing-use value a teardown must beat, C46). Robustness only: 2–4 unit homes per 1,000 eligible parcels over T − 3…T − 1 (C06) and log household growth T − 6…T − 1 (C04; the shift-share demand index from thread 3 replaces it when it lands, by a dated note) | Modifiers 1–2 of MM §2 |
+  | ρ | Mortgage rate × treated | Developer financing (C45; the national 30-year rate stands in for construction-loan rates) |
+  | δ | P(a by-right ADU rule is in force); uncoded places take the coded mean of their state, size band and year | ADU on the same lot competes (C47) |
+
+  - **Why fixed effects here and not for ADUs (smoke counts):** every treated place has 2–4 unit homes in
+    most years. A place fixed-effects model keeps 420 of 560 places; the 140 it drops (no 2–4 unit home in any
+    year) are all comparisons, and under Poisson fixed effects they carry no information about the effect.
+    With seven treated places, the main model has only two modifiers. More would be fitted from as many
+    places as parameters.
+  - Separation removal, numerical guards and failing loudly are as in D-023 (`estimate_adu.ppml`).
+  - **Pre-specified fallback:** if the PPML fit raises `EstimationError` or drops a treated place, the negative
+    binomial with place random effects (protocol §5.7; D-025's estimator if approved) becomes the main model,
+    with the same terms. No new entry is needed for that switch, and the failure is reported.
+- **Inference:** seven treated places is too few for the wild cluster bootstrap to be trusted alone. Reported:
+  - the wild cluster score bootstrap by place (Webb weights, CR2, 999 draws, as in D-023) for intervals;
+  - randomization inference as the test of "no effect": the seven adoption-year and dose paths are reassigned
+    at random to places in the same state and size band (D-022 bands), 999 times. The p-value is the share of
+    reassignments with an overall effect at least as large.
+- **Checks (all reported, pass or fail; pass rules fixed now):**
+  1. **Pre-trend leads** k = −3…−1: jointly not different from 0 at the 10% level.
+  2. **Placebo adoption dates** 2 years early, using only pre-adoption years: the 90% interval contains 0.
+  3. **Placebo outcome,** BPS homes in 5+ unit buildings: the 90% interval contains 0.
+  4. **Substitution (reported, no pass rule):** BPS 1-unit homes as the outcome. A fall is the single-family
+     rebuild being replaced (C30), which the scenario nets out; it is not noise.
+  5. **Excluding 2020–21:** every bin's effect stays inside the main 90% interval.
+  6. **Leave one treated place out** (Durham city and county also left out together, one ordinance): the
+     overall effect stays inside the main 90% interval.
+  7. **Comparison contamination:** re-fit (a) on places of 50,000+ people only (121 places) and (b) without
+     comparison places the ordinance pipeline lists as having a missing-middle ordinance or an unknown status.
+     Pass: the overall effect stays inside the main 90% interval.
+  8. **Local measurement (reported):** for Minneapolis (Met Council and city permits), Durham and Raleigh
+     (city permits), local 2–4 unit counts vs BPS, before and after adoption. If they differ by more than 25% in
+     the post years, that city's local-count estimate is shown next to the BPS one.
+- **Out-of-sample tests (protocol §5.5, §5.8):**
+  - **A (headline): predict North Carolina.** Fit without Durham city, Durham County and Raleigh; NC's year
+    effects still come from NC's comparison places. Predict their post-adoption 2–4 unit homes from their own
+    pre-adoption level (α from their 2010–2019 or 2010–2021 years, with its sampling error), their modifiers and
+    the fitted effects. Pass: each place's observed post-adoption total lies in its 80% prediction interval, and
+    the coverage of yearly 80% intervals across the three places is between 60% and 95%.
+  - **B: predict Minneapolis** the same way from a fit without it; same pass rule for its single total.
+  - Either way, the later bins (2–3, 4+) then rest on one or two cities. This is stated with the results.
+    Places outside the fitted modifier range are flagged and their intervals widened as in `hazard.widen`.
+- **Forecast use:** for a target place, the scenario's added 2–4 unit homes = Eligible × [exp(η with the
+  Handbook rule) − exp(η without)], summed over 2026–2030. The Handbook rule is 4+ units by right citywide
+  (dose 1). Observed doses run 0.2–1 (only Houston is at 1), so dose 1 leans on the dose scaling; the binary
+  dose check below shows how much. η uses the place's α where it is in the panel, otherwise a draw from places
+  in the same state and size band. It also uses the bins' β, the place's modifiers, ρ under
+  `mortgage_rate_forecast`, and γ held at the 2025 level with the rate effect added. Uncertainty comes from
+  bootstrap draws of all coefficients plus Poisson-gamma noise. Demolitions and the rebuild substitution are
+  then netted out in the scenario.
+- **Robustness (reported, not used to choose):** the negative binomial with place random effects (it keeps
+  the 140 all-zero places and gives the prior for places outside the panel); the Borusyak imputation
+  estimator; a binary by-right dose; all four modifiers; the 50,000+ sample; Met Council 2–4 unit permits
+  for the Twin Cities alone (2016–2025: 64 places, 1 treated, 40 with no 2–4 unit permit in any year; too thin
+  to stand alone).
+- **Not in this entry:** the within-city design the causal diagram ranks strongest, which compares eligible
+  and ineligible lots in the same city (Raleigh R-1; Durham's suburban tier). It needs permits geocoded to
+  zones, a later entry.
+- **What would change the plan:** if the pre-trend check fails, report it and use HonestDiD bounds. If leave
+  one out fails, report which place drives the effect and show the NB pooled estimate next to it. No other
+  re-specification without a new dated entry.
+- **Smoke test of the panel (2026-10-20, counts only; `scripts/dev/estimate_mm.py --smoke`):**
+  - 560 places × 2010–2025 (MN 100, NC 56, OH 172, TX 232); 8,763 place-years with an outcome (197 missing
+    from BPS); 2,682 places under the population floor and 2 holdout places excluded.
+  - Treated: 7, all inside the panel years (2020: 3, 2022: 1, 2024: 3). Comparisons: 553, all uncoded.
+  - 140 places have no 2–4 unit home in any year, none of them treated; a place fixed-effects model keeps 420;
+    73% of place-years are zero.
+  - Treated place-years by bin: 0–1: 14 (7 places); 2–3: 8 (4 places); 4+: 6 (3 places).
+  - With coded comparisons only: 7 places, 0 never-treated comparisons.
+  - 50,000+ sample: 121 places, 10 with no 2–4 unit home in any year.
+  - Every treated place has all four modifiers. ADU rules are coded for 102 of the 560 places.
+- **Decided by:** Ben, 2026-10-20, as proposed (including the `mm.yaml` choices: the 10,000-person floor and
+  the 1/3 permit grade), before any estimate was run.
+- **Run (2026-10-20, WS-ENGINE-MM; `scripts/dev/estimate_mm.py --full`, outputs in `reports/mm-d024/`):**
+  - **First run aborted (17:06):**
+    - PPML diverged (|η − offset| = 119.9), so the pre-specified fallback fired.
+    - The script's fallback was a Poisson-gamma place random-effects model (Hausman, Hall & Griliches 1984),
+      written in `estimate_mm.fit_re`. Its main estimates and added homes were printed.
+    - Randomization inference then crashed: a reassignment's fit raised a plain `ValueError` that the loop did
+      not catch. Nothing was written. The log is committed as is: `aborted-2026-10-20-log.txt`.
+  - **Fix (mechanical, independent of the results) and one rerun (20:35, Ben: "try again"):**
+    - divergence and overflow in `fit_re` raise `EstimationError`;
+    - Newton steps are safeguarded: damped when not uphill, and never accepted if they lower the likelihood;
+    - log a is held at a bound of 15 when the counts show no place heterogeneity;
+    - randomization inference and every check count a failed fit instead of crashing.
+    - Same specification and seed. The main fit is deterministic, and its estimates match the aborted run's
+      exactly.
+  - **The fallback is not "D-025's estimator", which D-024 names.** D-025 (`pooled_adu`) was on main from
+    16:30, before both runs. The rerun kept the 17:06 fallback, as instructed. D-025's estimator was run as a
+    robustness model, through `estimate_mm.fit_nb` with its code unchanged: on the D-024 panel relabelled so
+    that its year effects are D-024's state × year effects and its δ is D-024's ADU term.
+    - It converged on the real panel. At its maximum the analytic and numerical scores agree, and no place's
+      likelihood jumps.
+    - Its mode search can fail on synthetic panels with many never-permitting places (shared notes,
+      2026-10-20), but not on this one.
+    - **Ben to decide** whether D-025's estimate (below) replaces the fallback's as D-024's main estimate.
+      That would follow D-024's wording; the checks would then need running for it.
+  - **Implementation choices:**
+    - state × year effects as one integer code per state and year;
+    - randomization inference: each treated place's whole package moves (adoption year, calendar-year dose
+      path, modifiers), within state and size band, to places with any 2–4 unit home;
+    - the overall effect weights the bins by counterfactual expected homes (`estimate_adu.aggregate`, as in
+      D-023);
+    - added homes = fitted minus treatment-off means; their intervals hold place and year effects at the
+      estimate;
+    - check 7b dropped 16 Minnesota comparison places by name;
+    - check 8 re-fits with a city's local counts when they differ from BPS by more than 25%.
+  - **Main estimates (Poisson-gamma fallback; log scale; 90% basic bootstrap intervals):**
+    - overall **0.77 (0.07 to 1.54)**, i.e. about 2.2 times the 2–4 unit homes at full dose;
+    - years 0–1: 0.79 (0.20 to 1.38); 2–3: 1.14 (−0.62 to 2.91); 4+: −0.13 (−2.40 to 1.89);
+    - price-to-cost: θ = 0.91 (0.05 to 1.78) per SD; home value: θ = −1.00 (−1.61 to −0.41) per SD;
+      rate: ρ = 0.11 (−0.14 to 0.36); ADU rule: δ = −0.53 (−1.09 to 0.08).
+    - Read the intervals as narrower than stated. On simulated panels with seven treated places, nominal 90%
+      intervals covered 68–85% (`--coverage`).
+  - **Randomization inference: p = 0.70** (956 reassignments, 43 not fitted). The effect is no larger than
+    where the reform's timing and dose are moved to other places.
+  - **Added 2–4 unit homes in the treated places' post-adoption years: 2,650 in all.**
+    - **Houston alone accounts for 2,422 (1,426 to 3,188), about 91%.** It is the only full-dose place,
+      has no zoning, and its deed restrictions bind (flagged by the methodology review).
+    - The others: Durham city 150 (6 to 236), Raleigh 119 (−16 to 189), Minneapolis 93 (−109 to 201),
+      Durham County 6, Cincinnati −8, Austin −131 (−286 to −12).
+  - **Checks:**
+    1. Leads: **pass** (p = 0.59).
+    2. Placebo dates: **fail**, 0.54 (0.03 to 1.00).
+    3. Placebo outcome (5+ units): **fail**, −1.11 (−1.53 to −0.54).
+    4. Substitution (1-unit homes): 0.00 (−0.38 to 0.39).
+    5. Excluding 2020–21: **pass**.
+    6. Leave one out: **fail**. Without Minneapolis the overall effect is −0.02; the others give 0.56–1.34.
+       D-024's rule asks for the NB pooled estimate alongside, and D-025's NB is the robustness line below.
+    7. Contamination: 50,000+ only, **pass** (0.94); without the 16 pipeline-flagged places, **pass** (0.74).
+    8. Local measurement: Met Council and Minneapolis agree with BPS (ratio 1.00); Raleigh too (0.98). The
+       Minneapolis city source is 1.63× and Durham's 1.59×; re-fits with their local counts give 0.03 (−0.46
+       to 0.65) and 0.51 (−0.27 to 1.39).
+  - **Robustness:**
+    - PPML: did not estimate (the same divergence).
+    - Imputation estimator: did not estimate (its PPML diverged: |η − offset| = 124.4).
+    - **D-025's negative binomial: −0.25 (−1.10 to 0.77)**; bins 0.07, −1.29, −1.85. Its place-year
+      overdispersion is large (κ ≈ 5.5, σ ≈ 2.4). The Poisson-gamma model has none beyond the place effect,
+      so it weights large-count place-years such as Houston's far more.
+    - Binary dose: 0.69 (0.30 to 1.13).
+    - All four modifiers: 1.35 (0.34 to 2.45).
+    - Met Council, Twin Cities alone: −0.79 (−3.02 to 1.82).
+  - **Out-of-sample tests:**
+    - **A (North Carolina): fail.** Durham city 279 observed vs 80% interval 35–283 (inside); Raleigh 263
+      vs 90–378 (inside); Durham County 12 vs 0–7 (outside). Yearly coverage 75%.
+    - **B (Minneapolis): fail.** 304 observed vs 63–290; yearly coverage 67%.
+    - D-024's rule (every total inside its 80% interval) passes only about half the time for three places
+      even when the model is right (0.8³ ≈ 0.51). This is noted, not changed.
+  - **Reading:** this run gives no credible estimate of the missing-middle effect.
+    - The central estimate is positive, but randomization inference finds nothing unusual (p = 0.70).
+    - Two placebo checks fail, one city drives the result, and D-025's model, which fits overdispersion
+      better, gives a negative estimate with an interval spanning 0.
+    - Both out-of-sample tests fail, and Houston supplies nine-tenths of the added homes.
+    - The scenario should not take this as its missing-middle evidence prong without a new dated entry.
+  - **Open:** WS-MN has not yet coded St. Louis Park's 2025 rule or the explicit "no" rows; check 7b covers
+    that gap.
+- **Switch to D-025's estimator (2026-10-21, Ben; written before the run of its checks):**
+  - **Why:** D-024 names "D-025's estimator if approved" as the fallback. D-025 was approved and on main
+    (16:30, 2026-10-20) before both runs, and its estimator converges on the real panel. The 2026-10-20 runs
+    used the Poisson-gamma model instead.
+  - **Decision:** D-024's main estimate is now D-025's negative binomial with normal place random effects
+    (`pooled_adu`, unchanged, through `estimate_mm.fit_nb`). The Poisson-gamma run stays reported as the
+    comparison. Its point estimate on the real panel is already known from the 2026-10-20 robustness line:
+    −0.25 (−1.10 to 0.77).
+  - **One run (Ben approves exactly one):** the same `--full` pipeline, spec and seed, with `nb` as the main
+    model (`--method nb`). It covers:
+    - the wild score bootstrap (999 draws) and added homes;
+    - randomization inference (999 reassignments);
+    - checks 1–8, where leave-one-out covers Minneapolis and Houston dependence (each treated place left out,
+      plus Durham city and county together);
+    - robustness: PPML, Poisson-gamma, binary dose, four modifiers, Met Council alone;
+    - out-of-sample tests A and B with the same pass rules.
+  - **Convergence rule (fixed now):**
+    - A fit that raises `EstimationError` is not used: BFGS did not converge, the Hessian was not negative
+      definite, a coefficient left ±20, or an SE was effectively 0.
+    - For randomization inference, failed reassignments are skipped and counted. p is the share of the
+      fitted reassignments with |overall effect| ≥ the observed one.
+    - **If more than 10% of reassignments fail, p is reported as unreliable,** because failures may not be
+      random.
+    - A check whose fit fails is reported as "could not be estimated", which counts as a fail.
+  - **The overall effect** weights the bins by counterfactual expected homes (as for the fallback), so the
+    two models compare like with like. D-025's own place-year weighting is not used here.
+  - Outputs go to `reports/mm-d024-nb/`, next to the fallback's `reports/mm-d024/`.
+
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
   ADU, 143 of 760 place-years kept, no modifier identified, the bootstrap tripped the guard; D-023 notes).
@@ -728,7 +972,88 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
   - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
 
+### D-029 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
+- **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline
+  engine. In simulation, log forecast error against log(origin level / 5-year mean) had correlation 0.66,
+  state-year P10–P90 coverage was 74% and 5-year total coverage 68% (nominal 80%). (1) The cycle's random
+  walk starts at 1 from the level-window mean, not at the state's level in the origin year
+  (`model/baseline.py`), a likely cause of the NC/TX under-forecast (D-006, D-011). (2) Spec C applies
+  exp(β_h · g + β_p · q) with uncentred signals while dropping β_0 (`model/demand.py`), so a place at average
+  demand gets a multiplier that is not 1; D-007's rejection of spec C rests on that bug, and its test
+  re-implemented the formula and missed it. (3) The negative-binomial 1/k and the place's own variance
+  (`use_direct_variance`) are estimated on raw annual counts that already contain the cycle, so cycle variance
+  is counted twice. (4) The same `default_rng(simulation_seed)` is restarted for every size class, so classes
+  share random numbers by accident. (5) The backtest scores only place-years, never state totals, and the V1
+  windows have been used to choose specifications.
+- **Fixed now, before any run (each with a hand-worked synthetic test):**
+  1. **Cycle starts at the origin-year state level** (`cycle_start_at_origin` = 1). Each place's level is
+     multiplied by a_s = S_T / S̄, where S_t is the state's total of the size class over the places that have a
+     level, S_T its origin-year value and S̄ its mean over the level window; the random walk then runs from
+     there, so E[S_{T+h}] = S_T when nothing changes. The level's variance scales by a_s². This is
+     `state_momentum` with a 1-year recent window; if `use_state_momentum` = 1 its factor replaces a_s (never
+     both). 0 restores the old start.
+  2. **Spec C centred at the fit-sample means.** Multiplier = exp(β_h (g − ḡ) + β_p (q − q̄)), with ḡ, q̄ the
+     means of g and q over the Poisson fit sample (the regression is fitted on the centred signals; slopes are
+     unchanged, β_0 becomes the drift at average demand). β_0 stays unapplied, as D-006 intended: a place at
+     average demand keeps spec B's level.
+  3. **Dispersion on detrended counts** (`detrend_dispersion` = 1). Before 1/k and the place's own variance of
+     annual rates are computed, each place-year count (and rate) is divided by the state's cycle index for that
+     year, s_t = S_t / S̄ over the level window (s_t = 1 where S_t = 0). With no cycle (s_t ≡ 1) both estimates
+     are exactly as before. 0 restores the raw estimates.
+  4. **Random numbers per size class**: the per-place draws come from `default_rng([seed, size class column,
+     state, origin])`, so classes and states never share random numbers by accident. The cycle years stay
+     shared on purpose (D-011).
+  5. **State-total scoring in V1.** For every state, fit end, size class and forecast year, the scored places'
+     draws are summed draw by draw (so the shared cycle is kept), and compared with the sum of the same places'
+     observed counts; also the window total (all forecast years, places scored in every year). Reported: the
+     randomized P10–P90 coverage (D-003), the PIT histogram in deciles (non-randomized PIT, Czado et al. 2009),
+     the CRPS of the summed draws, and absolute error of the P50 of the sum against the benchmarks' sums.
+     These are **reported, not new pass criteria**; 80% is the reference.
+- **V1 is a development set.** The 2016/2018/2020 windows have been used to choose among specs A, B and C,
+  state momentum, the D-011 cycle fix and the scoring floor, so V1 scores are in-sample for specification
+  choice and are labelled "development set" in the backtest output and reports. Confirmatory evidence comes
+  only from the holdout tests.
+- **Runs declared now (MN NC OH TX, fit ends 2016/2018/2020, eligibility rule as on `main`):** spec B old
+  (`main` before this change) and new (all five fixes), place-level and state-level; attribution runs of the
+  new code with `cycle_start_at_origin` = 0 and with `detrend_dispersion` = 0; spec C once with the fix. All
+  are reported in the PR, whatever they show. No parameter is tuned on these runs; adopting the new baseline,
+  and whether spec C deserves another look, is Ben's decision, logged as a later entry.
+- **Decided by:** pre-declared by Claude Code (WS-ENGINE) at the coordinator session's request, 2026-10-20;
+  Ben to confirm in the PR.
 
+### D-030 · 2026-10-20 · ADU scenario: how the uncertainty draws are made
+- **Was (`scenarios/adu.py` `draw_params`, `run`):** every parameter drawn triangular(low, central, high),
+  including the estimated anchor `adu_mature_hazard_ref` (1.038e-3, 90% profile interval 0.453e-3–3.173e-3),
+  whose triangular median is 1.47e-3, 41% above the estimate; the place-effect variance α fixed at 4.735; the
+  extrapolation noise z drawn independently for every place, so it averaged out in state totals; the 2015–25
+  mortgage stress range drawn triangular(2.96, 6.60, 6.81) (mean 5.46%) as if it were a forecast, independently
+  of the cap rate and construction-loan rate; and the judgment parameters drawn independently of an anchor that
+  was fitted at their central values.
+- **Now:**
+  - the anchor and α are lognormal with median at the estimate and log-SD from the 90% interval,
+    (ln high − ln low) / 3.29 (anchor 0.592, the fit's own predictive-check convention; α 0.281 from the fit's
+    observed information, giving 2.98–7.52); their correlation from the observed information (0.004);
+  - each draw shifts log anchor and log α by Σ_j g_j (p_j − central p_j), g_j = d log θ̂ / d p_j from refitting
+    the D-019 fit 3 likelihood with each judgment parameter moved by ±10% of its range
+    (`scripts/dev/calibrate_adu.py --draw-terms` → `config/params/adu_anchor.yaml`; 19 parameters enter the
+    fit, the largest being the partial-rule share, −3.05 per unit, and the ramp half-life, +0.27 per year);
+  - the extrapolation noise is √s · z_draw + √(1 − s) · e_place with `adu_extrapolation_shared_share` s = 1.0
+    (choice: it is a transport-model error; place-to-place differences are already in the fitted place
+    effects); 0.5 is a sensitivity;
+  - the mortgage rate is held at the central 6.60% in the forecast draws; its 2015–25 low and high are run as
+    sensitivities (`scripts/dev/adu_dev_run.py`), so the cap-rate and loan-rate draws no longer mix with a
+    rate scenario.
+- **Effect (development run, origin 2025, five-year additional homes, P10 / P50 / P90):** Minnesota
+  779 / 1,556 / 2,880 → 271 / 845 / 2,623; North Carolina 1,044 / 2,272 / 4,847 → 355 / 1,212 / 4,059; Ohio
+  574 / 1,262 / 2,920 → 133 / 506 / 2,462; Texas 4,074 / 8,211 / 16,607 → 1,334 / 4,417 / 15,515. Rates at
+  2.96% raise every state by about 30%; at 6.81%, under 2%.
+- **Found while doing it, not changed here:** re-running the fit 3 likelihood on today's coded rules gives
+  41 places and 253 place-years (θ̂ 0.000879, α̂ 3.52), not the 16 places and 115 place-years behind the
+  configured 0.001038 and 4.735; the observed-information SE and the slopes come from today's fit set and are
+  applied around the configured values. Refreshing the anchor itself is a separate decision.
+- **Why:** reviewing the ADU ranges (2026-10-20) found them biased upward at the median and too narrow at the
+  state level. Every result must be a range that a reader can trust (Rules; CLAUDE.md).
+- **Decided by:** proposed by Claude Code (ADU draws fix), for Ben to confirm.
 
 ### D-031 · 2026-10-21 · ADU effect: additive imputation as robustness to D-025, and review fixes ported to the D-025 path (written after D-025's main estimate was seen; not the main estimator)
 - **What had been seen when this was written:** D-025's main estimate (overall 2.26 on the log scale, 90%
@@ -910,3 +1235,21 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - the multi-state panel, which pools those years across states.
   - HonestDiD is rerun, with the code already tested here (`--honest`, which refuses unestimated leads), once
     that panel exists. No other run follows from this note.
+
+### D-035 · 2026-10-22 · Eligible-parcel history for places counted from a parcel roll: ACS scaled to the roll (#208)
+- **Found:** a jurisdiction counted from a parcel roll had a denominator only in its roll year(s), while ACS-fallback
+  jurisdictions had one in every ACS end year (2010–2024). In NC that left 218 jurisdictions, Raleigh, Durham and
+  Greensboro among them, with no denominator in the baseline level window, the V1 backtests or the fee scenario.
+  The same holds wherever a state counts from a current roll only (MN outside the Met Council archives, OH, TX).
+- **Now (`build/eligible.scale_history`, called by `combine`):** each real roll year is an anchor with scale factor
+  parcels / ACS one-unit-detached homes, the ACS end year being the roll year or the nearest one within
+  `scale_max_year_gap` (3 years; `config/params/eligibility.yaml`). Every other ACS year gets ACS × factor; with
+  two or more anchors the factor is linear between them and flat outside. Real roll years keep their real counts.
+  Filled rows have `denominator_source = "parcels_scaled_acs"` (new schema value) and the quality of the nearest
+  roll. The ADU scenario's overlap step treats them like roll counts (`PARCEL_SOURCES`).
+- **Why:** option 1 of #208. Mechanical, works in every state that has ACS, keeps ACS's year-to-year movement and
+  ends exactly at the roll. Year-built backcasting (option 2) misses demolitions, splits and vacant lots and is
+  tier 1 only; it stays a check, not the main path.
+- **Limits:** the factor carries the roll's mix (vacant lots, zoning, exclusions) back in time unchanged, and ACS
+  sampling noise moves the filled years. Rolls newer than ACS (NC OneMap 2026) anchor the latest ACS year (2024).
+- **Decided by:** Ben, 2026-10-21 (option 1 in #208, real rolls kept wherever they exist).

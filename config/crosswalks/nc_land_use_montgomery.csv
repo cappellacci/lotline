@@ -1,0 +1,14 @@
+field,code,description,land_use_std,notes,source_url
+parusedesc,RESIDENTIAL,RESIDENTIAL,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,MANUFACTURED HOME,MANUFACTURED HOME,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,COMMERCIAL,COMMERCIAL,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,INDUSTRIAL,INDUSTRIAL,INDUSTRIAL,"keyword rule industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,RESIDENTIAL,RESIDENTIAL,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,MANUFACTURED HOME,MANUFACTURED HOME,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,COMMERCIAL,COMMERCIAL,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,INDUSTRIAL,INDUSTRIAL,INDUSTRIAL,"keyword rule industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Z COMMERCIAL,Z COMMERCIAL,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Z RESIDENTIAL 3,Z RESIDENTIAL 3,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Z INDUSTRIAL,Z INDUSTRIAL,INDUSTRIAL,"keyword rule industrial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Z RESIDENTIAL 2,Z RESIDENTIAL 2,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Z RESIDENTIAL 1,Z RESIDENTIAL 1,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0

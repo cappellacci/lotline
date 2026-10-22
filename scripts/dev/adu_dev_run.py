@@ -5,9 +5,11 @@
 
 For each state: inputs from the processed, holdout-filtered tables (`scenarios.adu.places_from_store`), then
 `scenarios.adu.run`. Prints five-year totals (P10/P50/P90 of each draw's sum) for named places and, per state,
-how many places fall outside the calibration range and the sum of the places' mean additional homes (a sum of
-means: the statewide range needs the aggregation step, a later round). Places below the publishing minimum
-(D-015) and places missing ACS rent or value are counted, not shown.
+how many places fall outside the calibration range and the sum of the places' mean additional homes, then
+state totals (P10/P50/P90 of draws summed over places). Sensitivities (D-030), unless `--no-sensitivities`:
+the state five-year totals with the mortgage rate at the low and high of its 2015-25 stress range, and with
+half of the extrapolation noise shared instead of all of it. Places below the publishing minimum (D-015) and
+places missing ACS rent or value are counted, not shown.
 """
 
 from __future__ import annotations
@@ -29,16 +31,16 @@ def main() -> None:
     ap.add_argument("--origin", type=int, default=2025)
     ap.add_argument("--state", nargs="+", default=["MN", "NC", "OH", "TX"])
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--no-sensitivities", action="store_true")
     a = ap.parse_args()
     store = DataStore()
     minimum = load_params("aggregate")["min_eligible_parcels_publish"].value
-    frames, summaries, yearlies = [], [], []
+    frames, summaries, yearlies, inputs = [], [], [], {}
     for state in a.state:
         places = adu.places_from_store(state, store, a.origin)
         missing = places[["rent", "home_value"]].isna().any(axis=1)
-        yearly, totals, summary = adu.run(
-            places[~missing].reset_index(drop=True), a.origin, summary_by="state"
-        )
+        inputs[state] = places[~missing].reset_index(drop=True)
+        yearly, totals, summary = adu.run(inputs[state], a.origin, summary_by="state")
         summaries.append(summary)
         yearlies.append(yearly.assign(state=state))
         totals["state"] = state
@@ -75,6 +77,8 @@ def main() -> None:
                 for _, r in g.iterrows()
             )
             print(f"    {state}: {cells}")
+    if not a.no_sensitivities:
+        print_sensitivities(inputs, a.origin, summ)
     named = allp[allp["geoid"].isin(NAMED)]
     print("\nNamed places, five-year totals (development run, origin", a.origin, ")")
     for _, r in named.iterrows():
@@ -102,6 +106,32 @@ def main() -> None:
         pd.concat(yearlies, ignore_index=True).to_csv(
             a.out.with_name(a.out.stem + "_yearly.csv"), index=False
         )
+
+
+def print_sensitivities(inputs: dict, origin: int, central: pd.DataFrame) -> None:
+    """Five-year state totals (P10/P50/P90) under each sensitivity, next to the forecast run (D-030)."""
+    specs = adu.specs()
+    rate, shared = specs["mortgage_rate_forecast"], specs["adu_extrapolation_shared_share"]
+    cases = {
+        "forecast (central)": None,
+        f"mortgage rate {rate.low:g}% (2015-25 low)": {"mortgage_rate_forecast": rate.low},
+        f"mortgage rate {rate.high:g}% (2015-25 high)": {"mortgage_rate_forecast": rate.high},
+        f"extrapolation noise {shared.low:g} shared": {"adu_extrapolation_shared_share": shared.low},
+    }
+    period = f"{origin + 1}-{origin + 5}"
+    print(f"\nSensitivities, state five-year totals {period} (P10 / P50 / P90, mean)")
+    for outcome in ("adu_permits_added", "additional_homes"):
+        print(f"  {outcome}")
+        for label, fixed in cases.items():
+            cells = []
+            for state, places in inputs.items():
+                if fixed is None:
+                    summ = central[central["state"] == state]
+                else:
+                    summ = adu.run(places, origin, summary_by="state", params=fixed)[2]
+                r = summ[(summ["outcome"] == outcome) & (summ["period"] == period)].iloc[0]
+                cells.append(f"{state} {r.p10:,.0f}/{r.p50:,.0f}/{r.p90:,.0f} ({r['mean']:,.0f})")
+            print(f"    {label:34s} " + "; ".join(cells))
 
 
 if __name__ == "__main__":

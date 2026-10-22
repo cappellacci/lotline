@@ -221,7 +221,11 @@ def test_combine_uses_one_source_per_jurisdiction():
     acs, juris = _acs_rows()
     out = eligible.combine(eligible.from_parcels(_parcels(), juris), eligible.from_acs(acs, juris))
     by_place = out.groupby("jurisdiction_geoid")["denominator_source"].unique()
-    assert list(by_place["2743000"]) == ["parcels"]  # Minneapolis has parcels: no ACS row kept
+    # Minneapolis has parcels: no ACS fallback row kept. Its 2024 roll (3 eligible) anchors ACS 2023 (82,307),
+    # so 2023 is filled as 82,307 x 3 / 82,307 = 3, flagged as scaled (#208)
+    assert list(by_place["2743000"]) == ["parcels", "parcels_scaled_acs"]
+    mpls = out[(out.jurisdiction_geoid == "2743000") & (out.theme == "adu")].set_index("year")
+    assert mpls.loc[2024, "eligible_parcels"] == 3 and mpls.loc[2023, "eligible_parcels"] == 3
     assert list(by_place["2700102224"]) == ["acs_sf_fallback"]  # Arna township doesn't: fallback
 
 
@@ -261,7 +265,10 @@ def test_load_builds_from_processed_tables(tmp_path, monkeypatch):
     parcels_path.parent.mkdir(parents=True)
     _parcels().to_parquet(parcels_path)
     out = eligible.load("MN", store)
-    assert set(out.loc[out.jurisdiction_geoid == "2743000", "denominator_source"]) == {"parcels"}
+    assert set(out.loc[out.jurisdiction_geoid == "2743000", "denominator_source"]) == {
+        "parcels",
+        "parcels_scaled_acs",
+    }
 
 
 def test_allocation_hand_worked_ohio_style_county():
@@ -388,3 +395,110 @@ def test_two_sources_in_different_roll_years_also_need_a_choice():
     b = a.assign(source="county_roll", vintage=2023)
     with pytest.raises(ValueError, match="parcel_sources"):
         eligible.single_source(pd.concat([a, b], ignore_index=True), {})
+
+
+# ---- history for parcel-counted places: ACS scaled to the roll(s) (#208) ----------------------------------
+
+
+def _rows(source, years_counts, theme="adu", geoid="3755000", quality=None):
+    q = quality or ("low" if source == "acs_sf_fallback" else "high")
+    return pd.DataFrame(
+        [
+            {
+                "state": "NC",
+                "jurisdiction_geoid": geoid,
+                "year": y,
+                "theme": theme,
+                "rule_version": eligible.RULE_VERSION,
+                "eligible_parcels": n,
+                "data_tier": 1,
+                "denominator_source": source,
+                "denominator_quality": q[y] if isinstance(q, dict) else q,
+            }
+            for y, n in years_counts.items()
+        ]
+    )
+
+
+def _filled(parcel_rows, acs_rows, gap=None):
+    params = load_params("eligibility")
+    if gap is not None:
+        params["scale_max_year_gap"] = params["scale_max_year_gap"].model_copy(update={"value": gap})
+    out = eligible.scale_history(parcel_rows, acs_rows, params)
+    assert_conforms(out, "eligible_parcels")
+    return out
+
+
+def test_one_roll_scales_every_other_acs_year_by_one_factor():
+    # NC OneMap style: roll 2026 (1,200 parcels) is newer than the latest ACS (2024: 1,000), so it anchors
+    # 2024 (gap 2): f = 1.2. Filled: 2010 800 x 1.2 = 960; 2024 1,000 x 1.2 = 1,200. No row for 2026 itself.
+    acs = _rows("acs_sf_fallback", {2010: 800, 2017: 905, 2024: 1000})
+    out = _filled(_rows("parcels", {2026: 1200}), acs).set_index("year")
+    assert out["eligible_parcels"].to_dict() == {2010: 960, 2017: 1086, 2024: 1200}  # 905 x 1.2 = 1,086
+    assert set(out["denominator_source"]) == {"parcels_scaled_acs"}
+    assert set(out["denominator_quality"]) == {"high"} and set(out["data_tier"]) == {1}
+
+
+def test_two_rolls_interpolate_the_factor_and_hold_it_flat_outside():
+    # Wake style: rolls 2019 (90, ACS 100 -> f 0.9) and 2023 (110, ACS 100 -> f 1.1).
+    # 2021 is halfway: f 1.0 -> 200. 2020: f 0.95 -> 0.95 x 120 = 114. 2010 before both: f 0.9 -> 45.
+    # 2024 after both: f 1.1 -> 132. The roll years 2019 and 2023 are never filled (they keep 90 and 110).
+    acs = _rows("acs_sf_fallback", {2010: 50, 2019: 100, 2020: 120, 2021: 200, 2023: 100, 2024: 120})
+    rolls = _rows("parcels", {2019: 90, 2023: 110}, quality={2019: "medium", 2023: "high"})
+    out = _filled(rolls, acs).set_index("year")
+    assert out["eligible_parcels"].to_dict() == {2010: 45, 2020: 114, 2021: 200, 2024: 132}
+    # quality of the nearest roll; 2021 is equidistant and takes the earlier one
+    assert out["denominator_quality"].to_dict() == {
+        2010: "medium",
+        2020: "medium",
+        2021: "medium",
+        2024: "high",
+    }
+
+
+def test_combine_keeps_real_roll_counts_and_drops_the_fallback():
+    acs = _rows("acs_sf_fallback", {2019: 100, 2021: 200, 2023: 100})
+    other = _rows("acs_sf_fallback", {2021: 70}, geoid="3700000")
+    rolls = _rows("parcels", {2019: 90, 2023: 110})
+    out = eligible.combine(rolls, pd.concat([acs, other], ignore_index=True))
+    raleigh = out[out.jurisdiction_geoid == "3755000"].set_index("year")
+    assert raleigh["eligible_parcels"].to_dict() == {2019: 90, 2021: 200, 2023: 110}
+    assert raleigh["denominator_source"].to_dict() == {
+        2019: "parcels",
+        2021: "parcels_scaled_acs",
+        2023: "parcels",
+    }
+    assert out.loc[out.jurisdiction_geoid == "3700000", "denominator_source"].tolist() == ["acs_sf_fallback"]
+
+
+def test_each_theme_scales_by_its_own_factor():
+    # the ACS fallback is the same for both themes; the roll counts differ (MM adds vacant SF-zoned lots)
+    acs = pd.concat([_rows("acs_sf_fallback", {2020: 100, 2024: 200}, theme=t) for t in eligible.THEMES])
+    rolls = pd.concat(
+        [_rows("parcels", {2024: 180}, theme="adu"), _rows("parcels", {2024: 240}, theme="missing_middle")]
+    )
+    out = _filled(rolls, acs).set_index("theme")
+    assert out.loc["adu", "eligible_parcels"] == 90  # 100 x 180/200
+    assert out.loc["missing_middle", "eligible_parcels"] == 120  # 100 x 240/200
+
+
+def test_a_roll_too_far_from_any_acs_year_scales_nothing():
+    acs = _rows("acs_sf_fallback", {2010: 800, 2024: 1000})
+    assert _filled(_rows("parcels", {2026: 1200}), acs, gap=1).empty  # 2 years from ACS 2024 > 1
+    assert len(_filled(_rows("parcels", {2026: 1200}), acs, gap=2)) == 2
+
+
+def test_anchor_with_zero_or_missing_acs_is_skipped():
+    # ACS 2019 is 0: that roll can't give a factor, so only the 2023 anchor (f 1.1) is used everywhere
+    acs = _rows("acs_sf_fallback", {2019: 0, 2021: 200, 2023: 100})
+    out = _filled(_rows("parcels", {2019: 90, 2023: 110}), acs).set_index("year")
+    assert out["eligible_parcels"].to_dict() == {2021: 220}  # 2019 keeps its real roll; ACS 0 isn't filled
+    # a parcel-counted place with no ACS series at all gets nothing
+    assert _filled(_rows("parcels", {2023: 110}, geoid="3799999"), acs).empty
+
+
+def test_nearest_acs_year_prefers_the_exact_year_then_the_later_on_a_tie():
+    years = [2010, 2012, 2014]
+    assert eligible._nearest_acs_year(2012, years, 3) == 2012
+    assert eligible._nearest_acs_year(2013, years, 3) == 2014  # tie between 2012 and 2014
+    assert eligible._nearest_acs_year(2018, years, 3) is None  # 4 years from 2014

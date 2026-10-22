@@ -1,0 +1,14 @@
+field,code,description,land_use_std,notes,source_url
+parusedsc2,Single Family,Single Family,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Multi-Section MH,Multi-Section MH,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Townhome,Townhome,SF_ATTACHED,"keyword rule townhouse (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Beach House,Beach House,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Duplex,Duplex,DUPLEX,"keyword rule duplex (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Single Wide MH,Single Wide MH,MOBILE_HOME,"keyword rule mobile (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Beach Condo,Beach Condo,CONDO_UNIT,"keyword rule condo (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Beach Duplex,Beach Duplex,DUPLEX,"keyword rule duplex (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,BEACH TOWNHOME,BEACH TOWNHOME,SF_ATTACHED,"keyword rule townhouse (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Condominimum,Condominimum,CONDO_UNIT,"keyword rule condo (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Multi-Family,Multi-Family,MULTIFAMILY_5P,"keyword rule multifamily (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Apartment,Apartment,MULTIFAMILY_5P,"keyword rule multifamily (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedsc2,Mixed Use Res/Com,Mixed Use Res/Com,MIXED_USE,"keyword rule mixed (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0

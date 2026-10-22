@@ -7,4 +7,4 @@ mortgage_rate_forecast:
   high: 6.81
   unit: percent (30-year fixed), held flat over the 5-year forecast (2026-2030)
   source: "Central: FRED MORTGAGE30US annual mean for 2025, 6.595% (market_geo_year.mortgage_rate, national:US). Low and high: the lowest and highest annual means over 2015-2025 (2.96% in 2021, 6.81% in 2023), used as a stress range"
-  notes: "One rate per simulation draw, the same in every year of the path and every place. The range is historical, not a forecast distribution: it says how much the result would move if rates returned to anywhere in the last decade's range. Drawn triangular (low, central, high), so most draws sit between 4.5% and 6.8%."
+  notes: "A stress range, not a forecast distribution (D-030): the forecast draws hold the rate at the central 6.60%, flat over the horizon, and the low and high are run as sensitivities (what the result would be if rates returned to the bottom or top of the last decade's range; scripts/dev/adu_dev_run.py). Before D-030 it was drawn triangular(2.96, 6.60, 6.81), mean 5.46, independently of the cap rate and construction-loan rate, which mixed a scenario into the forecast range."
