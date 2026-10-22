@@ -550,6 +550,45 @@ def fit3(
     )
 
 
+def fit_theta_alpha(places: list[PlaceData], cvals: np.ndarray, log_theta_range=(-14.0, 0.0)):
+    """Maximum likelihood (θ, α) at fixed rule shares: log θ by golden section with α profiled out."""
+
+    def best_alpha(lt):
+        return _golden_max(lambda la: frailty_loglik(places, math.exp(lt), math.exp(la), cvals), *LOG_ALPHA)
+
+    lt, _ = _golden_max(lambda lt: best_alpha(lt)[1], *log_theta_range)
+    return math.exp(lt), math.exp(best_alpha(lt)[0])
+
+
+def loglik_hessian(places: list[PlaceData], theta: float, alpha: float, cvals: np.ndarray, step=1e-3):
+    """Hessian of `frailty_loglik` in (log θ, log α), by central differences.
+
+    By hand, one place, one rule combination: ∂²/∂(log θ)² = −(Y + r) r θK / (r + θK)², r = 1/α, Y = Σ y,
+    K = Σ k (the y log θ term is linear in log θ).
+    """
+    lt0, la0 = math.log(theta), math.log(alpha)
+
+    def f(lt, la):
+        return frailty_loglik(places, math.exp(lt), math.exp(la), cvals)
+
+    h = step
+    out = np.zeros((2, 2))
+    out[0, 0] = (f(lt0 + h, la0) - 2 * f(lt0, la0) + f(lt0 - h, la0)) / h**2
+    out[1, 1] = (f(lt0, la0 + h) - 2 * f(lt0, la0) + f(lt0, la0 - h)) / h**2
+    out[0, 1] = out[1, 0] = (
+        f(lt0 + h, la0 + h) - f(lt0 + h, la0 - h) - f(lt0 - h, la0 + h) + f(lt0 - h, la0 - h)
+    ) / (4 * h * h)
+    return out
+
+
+def information_se(places: list[PlaceData], theta: float, alpha: float, cvals: np.ndarray):
+    """(log-SE of θ, log-SE of α, their correlation) from the observed information at (θ, α): the inverse of
+    minus `loglik_hessian`. At the maximum this is the usual large-sample covariance of (log θ̂, log α̂)."""
+    cov = np.linalg.inv(-loglik_hessian(places, theta, alpha, cvals))
+    se = np.sqrt(np.diag(cov))
+    return float(se[0]), float(se[1]), float(cov[0, 1] / (se[0] * se[1]))
+
+
 def predict_place(pl: PlaceData, fit: Fit3, draws: int = 20_000, seed: int = 0) -> np.ndarray:
     """Predictive counts (draws × years) for a place not in the fit: log θ normal from the interval, a new
     u ~ Gamma(mean 1, variance α), one blank-field combination, Poisson counts per year."""
