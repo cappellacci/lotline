@@ -1,0 +1,31 @@
+main bootstrap: 999 of 999 bootstrap draws kept
+main model matches the first run's 22 logged estimates (to 1e-4); reusing it
+  place         name  year  observed   mean  p05  p10  p50   p90    p95  outside_range
+4805000  Austin city  2016       234   8.81  0.0  0.0  0.0   8.1  21.00            0.0
+4805000  Austin city  2017       357  30.37  0.0  0.0  0.0  15.0  43.05            0.0
+4805000  Austin city  2018       340   9.93  0.0  0.0  0.0   8.0  22.00            0.0
+4805000  Austin city  2019       375  21.96  0.0  0.0  0.0  12.0  33.05            0.0
+4805000  Austin city  2020       330 100.37  0.0  0.0  2.0  70.1 171.00            0.0
+4805000  Austin city  2021       341  81.10  0.0  0.0  1.0  48.0 135.00            0.0
+4805000  Austin city  2022       325  44.22  0.0  0.0  1.0  29.0  82.00            0.0
+4805000  Austin city  2023       243  39.60  0.0  0.0  1.0  31.0  98.00            0.0
+4805000  Austin city total      2545 336.36  0.0  0.0 13.0 279.0 713.25            0.0
+3755000 Raleigh city  2021        23  16.96  0.0  0.0  4.0  35.0  61.00            0.0
+3755000 Raleigh city  2022        55   0.58  0.0  0.0  0.0   2.0   3.00            0.0
+3755000 Raleigh city  2023        54   1.19  0.0  0.0  0.0   2.0   5.00            0.0
+3755000 Raleigh city  2024        37   1.21  0.0  0.0  0.0   2.0   5.00            0.0
+3755000 Raleigh city  2025        61   5.06  0.0  0.0  0.0   5.0  10.00            0.0
+3755000 Raleigh city total       230  25.01  0.0  0.0  6.5  49.0  78.05            0.0
+3719000  Durham city  2019        18   7.34  0.0  0.0  5.0  16.0  22.00            0.0
+3719000  Durham city  2020        12  28.94  0.0  0.0 13.0  77.0 113.00            0.0
+3719000  Durham city  2021        32  20.31  0.0  0.0  8.0  51.0  79.00            0.0
+3719000  Durham city  2022        35  11.46  0.0  0.0  3.0  25.0  40.00            0.0
+3719000  Durham city  2023        77  14.69  0.0  0.0  3.0  30.0  48.00            0.0
+3719000  Durham city  2024        51  14.81  0.0  0.0  5.0  30.0  52.00            0.0
+3719000  Durham city  2025        44  24.54  0.0  0.0  7.0  41.0  80.00            0.0
+3719000  Durham city total       269 122.10  3.0  9.0 69.0 272.0 391.05            0.0
+{'totals_inside_80': False, 'yearly_coverage_80': 0.15, 'pass': False}
+convergence:
+  transport computed
+uv run python -u scripts/dev/estimate_pooled_adu.py --transport-only   24.43s user 2.14s system 107% cpu 24.739 total
+exit 0

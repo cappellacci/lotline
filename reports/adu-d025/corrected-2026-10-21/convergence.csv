@@ -1,0 +1,11 @@
+stage
+"randomization inference: 970 of 999 refits converged (70 on retry, 29 excluded)"
+"pre-trend leads: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept"
+"placebo dates (−2 years): 0 of 1 refits converged (0 on retry, 1 excluded)"
+"placebo outcome (5+ units): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept"
+"excluding (2020, 2021): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept"
+"leave one treated place out: 31 of 31 refits converged (0 on retry, 0 excluded)"
+"binary dose: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept"
+"excluding places treated before the panel: 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept"
+"T at the announcement year (C29): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept"
+"parking and process controls (C08, C21): 1 of 1 refits converged (0 on retry, 0 excluded); 999 of 999 bootstrap draws kept"
