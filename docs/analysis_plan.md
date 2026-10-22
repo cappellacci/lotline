@@ -971,6 +971,23 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - *Reported:* identified set and robust interval for each M̄ and M, the breakdown M̄ (the smallest at which the
     interval includes 0), the original θ, and the ω_k. No result is used to choose a specification.
   - *Code:* `pooled_adu.honest_bounds`, tested on a synthetic event study with a known linear violation.
+- **Implementation note: faster refits, estimates unchanged (2026-10-22, Claude Code; not a new decision):**
+  real runs were slow (randomization inference took hours; hard refits run to the BFGS iteration limit).
+  `pooled_adu` now (1) evaluates all 31 quadrature nodes at once with the same arithmetic in the same order,
+  so log-likelihoods, scores, BFGS paths and estimates are **bit-identical** to the first runs'; (2) computes
+  the Hessian analytically (Louis' identity) instead of by central differences of the analytic gradient,
+  which agrees to 1e-7 relative and doesn't enter the estimate (`hessian="numerical"` keeps the old one);
+  (3) can run the independent refits (randomization inference, leave-one-out, the single-refit checks) in
+  parallel processes, with every permutation drawn up front in the serial order and results read back in
+  order, so outputs, convergence counts and the 5% stop are the serial run's (`--workers`).
+  **Checked on synthetic panels:** 999 permutations gave the same p and the same 999 permuted effects to the
+  last bit (719 s → 342 s serial, 95 s on 8 processes); 360 hard refits (6 panels with retries and exclusions)
+  gave identical effects and identical counts (303 first, 27 retried, 30 excluded) 3.5× faster. A warm start
+  of BFGS from the main fit's curvature was tried and **not adopted**: its estimates differ from a cold
+  start's at the stopping tolerance (~1e-4) and on the hard panels it excluded 41 refits instead of 30
+  (`WARM_START`, off). A real rerun still needs Ben's approval; the scripts' check against the logged
+  estimates (1e-4) is how it would confirm equivalence. Tests: `tests/model/test_pooled_adu.py` (speed
+  section).
 
 ### D-029 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
 - **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline
