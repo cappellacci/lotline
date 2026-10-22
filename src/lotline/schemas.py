@@ -72,7 +72,7 @@ DATE_PRECISION = ["day", "month", "year"]
 VALUE_BASIS = ["market", "assessed", "appraisal", "unknown"]
 FEE_COMPONENTS = ["water_sewer", "impact", "permit", "planning", "other"]
 FEE_BASIS = ["per_unit", "per_sqft", "per_lue", "pct_of_value", "flat", "other"]
-DENOMINATOR_SOURCES = ["parcels", "acs_sf_fallback", "published"]
+DENOMINATOR_SOURCES = ["parcels", "parcels_scaled_acs", "acs_sf_fallback", "published"]
 QUALITY = ["high", "medium", "low"]
 
 _STATE = {"str_matches": r"^[A-Z]{2}$"}
@@ -145,6 +145,9 @@ class EligibleParcels(_Strict):
     """The denominator: eligible parcels per jurisdiction-year, stored apart from permits (protocol §5.1-5.2).
 
     One row per jurisdiction, year and eligibility-rule version, so a rule change never overwrites history.
+    `denominator_source` says where each count comes from: a real parcel roll (`parcels`), the place's ACS
+    one-unit-detached series scaled to its roll(s) in a year without a roll (`parcels_scaled_acs`, #208), the
+    ACS fallback (`acs_sf_fallback`) or a published count (`published`).
     """
 
     state: Series[str] = pa.Field(**_STATE)
@@ -448,7 +451,7 @@ HISTORY = [
     (
         "1.8",
         "market_geo_year: optional demand_bartik, demand_bartik_loo, demand_imputed_share (shift-share "
-        "local demand index, C04)",
+        "local demand index, C04); eligible_parcels: denominator_source value parcels_scaled_acs (#208)",
     ),
 ]
 
