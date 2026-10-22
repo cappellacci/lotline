@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.7** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.8** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -164,6 +164,9 @@ Table checks: `one_row_per_geo_year`
 | `ppi_resid_inputs` | number | no | yes |  |
 | `mortgage_rate` | number | no | yes |  |
 | `cpi_u` | number | no | yes | > 0 |
+| `demand_bartik` | number | no | yes |  |
+| `demand_bartik_loo` | number | no | yes |  |
+| `demand_imputed_share` | number | no | yes | ≥ 0; ≤ 1 |
 
 ## `acs_geo_year`
 
@@ -264,3 +267,4 @@ Table checks: `one_row_per_key`
 | 1.5 | jurisdictions: optional cbsa_code and cbsa_type (OMB 2023 county to metro/micro area) |
 | 1.6 | jurisdictions: optional in_bps (False for places only a local permit source covers) |
 | 1.7 | reforms and fees: optional citation fields (source_section, source_quote, verified_by, verified_date); fees: optional notes; hand-coded fees live in config/fees/<st>.csv |
+| 1.8 | market_geo_year: optional demand_bartik, demand_bartik_loo, demand_imputed_share (shift-share local demand index, C04); eligible_parcels: denominator_source value parcels_scaled_acs (#208) |
