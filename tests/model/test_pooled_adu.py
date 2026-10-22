@@ -495,3 +495,103 @@ def test_honest_inputs_refuse_a_lead_that_was_not_estimated():
     boot = pa.score_bootstrap(fit, draws=20, seed=1)
     with pytest.raises(EstimationError, match="lead_1"):
         pa.event_study_inputs(fit, boot, p)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Speed (D-025 implementation note, 2026-10-22): the faster refits give the same answers
+# ---------------------------------------------------------------------------------------------------------
+
+
+def test_analytic_hessian_matches_the_numerical_one():
+    """Louis' identity (`place_logliks(hess=True)`) against central differences of the analytic gradient, at
+    an arbitrary point and at a fitted maximum (internal scale, through the tanh map): equal to the
+    finite-difference error; the point estimate does not depend on the Hessian at all."""
+    p = sparse_panel(seed=1)
+    d = pa.build_pooled_design(p, modifiers=["m1"])
+    k = d.X.shape[1]
+    params = np.r_[np.random.default_rng(0).normal(0, 0.1, k), -0.2, -1.0]
+    params[0] = -11.0
+    _, S, H = pa.place_logliks(params, d, hess=True)
+    assert np.array_equal(S, pa.place_logliks(params, d, grad=True)[1])
+    num = pa._jacobian(lambda q: pa.place_logliks(q, d, grad=True)[1].sum(axis=0), params)
+    assert np.max(np.abs(H - (num + num.T) / 2)) < 1e-5 * np.max(np.abs(num))
+    small = sparse_panel(seed=50, n_places=60, a_mean=-9.5)
+    an = pa.estimate_pooled(small, modifiers=["m1"])
+    nu = pa.estimate_pooled(small, modifiers=["m1"], hessian="numerical")
+    assert np.array_equal(an.params, nu.params) and an.loglik == nu.loglik
+    assert np.max(np.abs(an.hessian - nu.hessian)) < 1e-5 * np.max(np.abs(nu.hessian))
+    se_a, se_n = np.sqrt(np.diag(an.cov)), np.sqrt(np.diag(nu.cov))
+    assert se_a == pytest.approx(se_n, rel=1e-5)
+
+
+def test_parallel_refits_give_the_serial_result(small_fit):
+    """Randomization inference and leave-one-out with 2 processes: the same permuted effects (exactly), p,
+    convergence counts and places as the serial loop."""
+    panel, main = small_fit
+    s = pa.randomization_inference(panel, 6, main, seed=4, modifiers=["m1"])
+    q = pa.randomization_inference(panel, 6, main, seed=4, workers=2, modifiers=["m1"])
+    assert s[0] == q[0] and s[1] == q[1] and np.array_equal(s[2], q[2])
+    assert s[3].summary == q[3].summary and len(q[3].seconds) == 6
+    summ = pa.summarize_main(main, pa.score_bootstrap(main, draws=99, seed=1))
+    lo_s = pa.check_leave_one_out(panel.loc[panel["place"] < "P012"], main, summ, modifiers=["m1"])
+    lo_q = pa.check_leave_one_out(panel.loc[panel["place"] < "P012"], main, summ, workers=2, modifiers=["m1"])
+    assert lo_s["effects"] == lo_q["effects"] and lo_s["convergence"] == lo_q["convergence"]
+
+
+def test_the_five_percent_stop_is_where_the_serial_loop_stops(small_fit):
+    """Jobs are read back in order, so the stage stops at the same refit as the serial loop: here the 8th of
+    20 (calls 3-4 are refit 3 and its retry, calls 9-10 refit 8 and its retry: the second failure), counting
+    only the refits up to it."""
+    panel, main = small_fit
+    stub = StubFitter(main, fail_calls={3, 4, 9, 10})
+    with pytest.raises(pa.StageFailed, match=r"6 of 8 refits converged \(0 on retry, 2 excluded\)"):
+        pa.randomization_inference(panel, 20, main, seed=1, fitter=stub, modifiers=["m1"])
+
+
+def test_warm_start_reaches_the_same_maximum_in_fewer_iterations(small_fit):
+    """BFGS warm-started from the main fit's inverse Hessian stops at the same maximum as from the identity,
+    to BFGS's stopping tolerance (gradient below 1e-6 × (1 + |log-likelihood|), so a few 1e-5 here): same
+    log-likelihood to 1e-6, estimates within 1e-3 (far below their standard errors), overall effect within
+    1e-4; and in fewer iterations. It is off by default (`WARM_START`): not bit-identical, and on hard panels
+    it converged less often (D-025 implementation note)."""
+    panel, main = small_fit
+    treated = panel.loc[panel["T"].notna(), ["place", "T"]].drop_duplicates("place")
+    rng = np.random.default_rng(9)
+    for _ in range(3):
+        perm = dict(zip(treated["place"], rng.permutation(treated["T"].to_numpy()), strict=True))
+        d = pa.build_pooled_design(pa.permute_adoption(panel, perm), modifiers=["m1"])
+        cold = pa.fit_pooled(d)
+        warm = pa.fit_pooled(d, hinv0=pa.warm_hinv(main, d))
+        assert warm.loglik == pytest.approx(cold.loglik, abs=1e-6)
+        free = [j for j, n in enumerate(cold.names) if n not in cold.at_bound]
+        diff = np.abs(warm.log_params - cold.log_params)[free]
+        assert np.max(diff) < 1e-3
+        assert np.max(diff / np.sqrt(np.diag(cold.cov))[free]) < 1e-2
+        assert abs(pa.overall_effect(warm) - pa.overall_effect(cold)) < 1e-4
+        assert warm.iterations < cold.iterations
+
+
+def test_warm_start_is_off_by_default_and_on_by_the_flag(small_fit, monkeypatch):
+    panel, main = small_fit
+    calls = []
+    real = pa.fit_pooled
+
+    def spy(d, **kw):
+        calls.append(kw.get("hinv0"))
+        return real(d, **kw)
+
+    monkeypatch.setattr(pa, "fit_pooled", spy)
+    pa.refit(panel, main, pa.RefitLog("x"), modifiers=["m1"])
+    assert calls[-1] is None
+    monkeypatch.setattr(pa, "WARM_START", True)
+    pa.refit(panel, main, pa.RefitLog("x"), modifiers=["m1"])
+    assert calls[-1] is not None and calls[-1].shape == (len(main.names),) * 2
+
+
+def test_refit_times_and_iterations_are_recorded(small_fit):
+    panel, main = small_fit
+    log = pa.RefitLog("stage")
+    fit = pa.refit(panel, main, log, modifiers=["m1"])
+    assert fit.iterations > 0 and fit.evals[1] >= fit.iterations
+    assert log.iterations == [fit.iterations] and log.seconds[0] > 0
+    assert log.timing.startswith("stage: 1 refits in")

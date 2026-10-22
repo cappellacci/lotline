@@ -12,12 +12,21 @@
   −∞ as a fixed effect would be (D-023's failure).
 - **Estimation:** maximum marginal likelihood. Each place's integral over u_i is computed by adaptive
   Gauss-Hermite quadrature (`QUAD_NODES` nodes, centred at the mode of the place's integrand found by Newton
-  steps); the marginal likelihood is maximized by BFGS with central-difference gradients. A regressor that is
-  zero wherever counts are positive (an event-time band with no ADU) cannot be estimated; it is dropped and
-  reported, never silently.
-- **Inference:** a wild cluster score bootstrap by place (Webb weights): per-place score contributions by
-  central differences, one Newton step b* = b̂ + H⁻¹ Σ_g w_g S_g per draw, H the numerical Hessian of the
-  marginal log-likelihood. Randomization inference re-fits with adoption years permuted among treated places.
+  steps); the marginal likelihood is maximized by BFGS with analytic gradients (the posterior-weighted
+  complete-data scores, `place_logliks(grad=True)`). A regressor that is zero wherever counts are positive
+  (an event-time band with no ADU) cannot be estimated; it is dropped and reported, never silently.
+- **Inference:** a wild cluster score bootstrap by place (Webb weights): the analytic per-place scores, one
+  Newton step b* = b̂ + H⁻¹ Σ_g w_g S_g per draw, H the Hessian of the marginal log-likelihood (analytic, by
+  Louis' identity; `hessian="numerical"` gives the first runs' central differences of the analytic gradient,
+  equal to the finite-difference error). Randomization inference re-fits with adoption years permuted among
+  treated places.
+- **Speed** (D-025 implementation note, 2026-10-22; estimates unchanged): all quadrature nodes are evaluated
+  at once with the same arithmetic in the same order (log-likelihoods and scores bit-identical to the first
+  runs'), the Hessian is analytic, and the independent refits (randomization inference, leave-one-out) can
+  run in parallel processes (`workers`) with the serial result. `WARM_START` (off) starts each refit's BFGS
+  from the main fit's curvature: faster on easy refits, but its estimates differ from a cold start's at
+  BFGS's stopping tolerance (~1e-4) and on hard synthetic panels more refits failed (41 vs 30 of 360), so it
+  is not used. `RefitLog.timing` reports the refit times and BFGS iterations of a stage.
 - **Guards:** the fit raises `EstimationError` (shared with `estimate_adu`) if BFGS doesn't converge, if a
   coefficient leaves ±20, if the Hessian is not negative definite, or if an SE is effectively zero.
 
@@ -27,6 +36,7 @@ Only NumPy and pandas.
 from __future__ import annotations
 
 import math
+import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 
@@ -191,24 +201,55 @@ def _lgamma(x):
     return np.vectorize(math.lgamma, otypes=[float])(np.asarray(x, dtype=float))
 
 
-def _nb_tables(y: np.ndarray, r: float) -> tuple[np.ndarray, np.ndarray]:
+def _nb_tables(y: np.ndarray, r: float, second: bool = False):
     """For integer counts y: log Γ(y + r) − log Γ(r) = Σ_{j<y} log(r + j), and its r-derivative
-    ψ(y + r) − ψ(r) = Σ_{j<y} 1/(r + j), by cumulative sums (exact, no special functions)."""
+    ψ(y + r) − ψ(r) = Σ_{j<y} 1/(r + j), by cumulative sums (exact, no special functions). With `second`,
+    also Σ_{j<y} 1/(r + j)² (minus the second r-derivative, for the analytic Hessian)."""
     yi = y.astype(int)
     top = int(yi.max()) if len(yi) else 0
     j = np.arange(top)
     lg = np.r_[0.0, np.cumsum(np.log(r + j))]
     dg = np.r_[0.0, np.cumsum(1.0 / (r + j))]
-    return lg[yi], dg[yi]
+    if not second:
+        return lg[yi], dg[yi]
+    tg = np.r_[0.0, np.cumsum(1.0 / (r + j) ** 2)]
+    return lg[yi], dg[yi], tg[yi]
 
 
-def place_logliks(params: np.ndarray, d: PooledDesign, newton_steps: int = 30, grad: bool = False):
+def _cached(d: PooledDesign) -> dict:
+    """Per-design constants reused by every likelihood evaluation: log y!, and the place index of each
+    (node, row) pair flattened so one `bincount` sums all quadrature nodes at once (in the same row order as
+    one `bincount` per node, so the sums are bit-identical)."""
+    c = d.__dict__.get("_cache")
+    if c is None or c["n"] != len(d.y) or c["G"] != len(d.places):
+        G = len(d.places)
+        c = {
+            "n": len(d.y),
+            "G": G,
+            "log_fact": d.log_fact,
+            "flat": (np.arange(QUAD_NODES)[:, None] * G + d.place_idx[None, :]).ravel(),
+        }
+        d._cache = c
+    return c
+
+
+_NODE_CONST = np.array([math.log(w) + x**2 for x, w in zip(_NODES, _WEIGHTS, strict=True)])
+
+
+def place_logliks(
+    params: np.ndarray, d: PooledDesign, newton_steps: int = 30, grad: bool = False, hess: bool = False
+):
     """Marginal log-likelihood of each place: log ∫ Π_t NB(y_it; μ_it e^u) φ(u; 0, σ²) du, by adaptive
     Gauss-Hermite quadrature (the integrand's mode û_i by Newton steps, its curvature, `QUAD_NODES` nodes).
 
     params = (fixed coefficients…, log σ, log κ). With `grad`, also returns the places' scores (places ×
     parameters): the posterior-weighted (quadrature) sums of Σ_t X_it (y − μ) r/(r + μ) for the coefficients,
     u²/σ² − 1 for log σ, and −r [Σ_{j<y} 1/(r + j) + log(r/(r + μ)) + (μ − y)/(r + μ)] for log κ (r = 1/κ).
+    With `hess` (implies `grad`), also the Hessian of the summed marginal log-likelihood by Louis' identity:
+    Σ_i { E_i[∂²ℓ] + E_i[s sᵀ] − S_i S_iᵀ }, E_i the same posterior (quadrature) weights, ℓ the
+    complete-data log density of place i at a node, s its derivative and S_i the place's score
+    (`_complete_data_hessian`).
+    All nodes are evaluated at once; the arithmetic, and its order, is that of one node at a time.
     """
     k = d.X.shape[1]
     b, log_s, log_k = params[:k], params[k], params[k + 1]
@@ -218,48 +259,89 @@ def place_logliks(params: np.ndarray, d: PooledDesign, newton_steps: int = 30, g
     G = len(d.places)
     idx = d.place_idx
     y = d.y
-    lg, dg = _nb_tables(y, r)
-    const = lg - d.log_fact
+    c = _cached(d)
+    tables = _nb_tables(y, r, second=hess)
+    lg, dg = tables[0], tables[1]
+    const = lg - c["log_fact"]
 
-    def h_and_derivs(u):
+    def mode_derivs(u):  # first and second u-derivatives of each place's log integrand
         mu = np.exp(np.clip(eta + u[idx], -700, 50))
-        ll = const + r * np.log(r / (r + mu)) + y * np.log(np.where(mu > 0, mu, 1e-300) / (r + mu))
         g = (y - mu) * r / (r + mu)
         h2 = -mu * r * (r + y) / (r + mu) ** 2
-        H = np.bincount(idx, ll, G) - 0.5 * (u / sigma) ** 2 - 0.5 * math.log(2 * math.pi) - log_s
         dH = np.bincount(idx, g, G) - u / sigma**2
         d2H = np.bincount(idx, h2, G) - 1 / sigma**2
-        return H, dH, d2H, mu, g
+        return dH, d2H
 
     u = np.zeros(G)
     for _ in range(newton_steps):
-        _, dH, d2H, _, _ = h_and_derivs(u)
+        dH, d2H = mode_derivs(u)
         step = dH / d2H
         u = u - np.clip(step, -5, 5)
         if np.max(np.abs(step)) < 1e-10:
             break
-    d2H = h_and_derivs(u)[2]
+    d2H = mode_derivs(u)[1]
     s = 1 / np.sqrt(-d2H)
-    vals = np.empty((QUAD_NODES, G))
-    nodes = []
-    for q, (x, w) in enumerate(zip(_NODES, _WEIGHTS, strict=True)):
-        uq = u + math.sqrt(2) * s * x
-        Hq, _, _, mu, g = h_and_derivs(uq)
-        vals[q] = math.log(w) + x**2 + Hq
-        nodes.append((uq, mu, g))
+    # all nodes at once: rows of UQ / MU are nodes
+    UQ = u[None, :] + math.sqrt(2) * s[None, :] * _NODES[:, None]
+    MU = np.exp(np.clip(eta[None, :] + UQ[:, idx], -700, 50))
+    log_share = np.log(r / (r + MU))
+    LL = const + r * log_share + y * np.log(np.where(MU > 0, MU, 1e-300) / (r + MU))
+    flat, QG = c["flat"], QUAD_NODES * G
+    HQ = np.bincount(flat, LL.ravel(), QG).reshape(QUAD_NODES, G)
+    HQ = HQ - 0.5 * (UQ / sigma) ** 2 - 0.5 * math.log(2 * math.pi) - log_s
+    vals = _NODE_CONST[:, None] + HQ
     total = np.logaddexp.reduce(vals, axis=0)
     ll = np.log(math.sqrt(2)) + np.log(s) + total
-    if not grad:
+    if not (grad or hess):
         return ll
     omega = np.exp(vals - total[None, :])  # posterior weights of the nodes, per place
+    GQ = (y - MU) * r / (r + MU)
+    # per node, per place: Σ_t X_it g_it (one bincount per column over all nodes)
+    A = np.empty((QUAD_NODES, G, k))
+    for j in range(k):
+        A[:, :, j] = np.bincount(flat, (d.X[:, j][None, :] * GQ).ravel(), QG).reshape(QUAD_NODES, G)
+    DK = -r * (dg + log_share + (MU - y) / (r + MU))
+    BK = np.bincount(flat, DK.ravel(), QG).reshape(QUAD_NODES, G)
     S = np.zeros((G, k + 2))
-    for q, (uq, mu, g) in enumerate(nodes):
+    for q in range(QUAD_NODES):
         wq = omega[q]
-        S[:, :k] += wq[:, None] * _sum_by(idx, d.X * g[:, None], G)
-        S[:, k] += wq * (uq**2 / sigma**2 - 1)
-        dk = -r * (dg + np.log(r / (r + mu)) + (mu - y) / (r + mu))
-        S[:, k + 1] += wq * np.bincount(idx, dk, G)
-    return ll, S
+        S[:, :k] += wq[:, None] * A[q]
+        S[:, k] += wq * (UQ[q] ** 2 / sigma**2 - 1)
+        S[:, k + 1] += wq * BK[q]
+    if not hess:
+        return ll, S
+    H = _complete_data_hessian(d, r, sigma, omega, UQ, MU, tables[2], A, BK) - S.T @ S
+    return ll, S, H
+
+
+def _complete_data_hessian(d, r, sigma, omega, UQ, MU, tg, A, BK) -> np.ndarray:
+    """Σ_i Σ_q ω_iq (∂²ℓ_iq + s_iq s_iqᵀ) over places i and nodes q (the first two terms of Louis' identity),
+    for (b, log σ, log κ). Per row, with g = (y − μ) r/(r + μ) and A_r = ∂ℓ/∂r:
+      ∂²ℓ/∂η²       = −μ r (r + y)/(r + μ)²
+      ∂²ℓ/∂η ∂log κ = −r (y − μ) μ/(r + μ)²
+      ∂²ℓ/∂(log κ)² = r A_r + r² ∂A_r/∂r,   A_r = Σ_{j<y} 1/(r + j) + log(r/(r + μ)) + (μ − y)/(r + μ),
+                      ∂A_r/∂r = −Σ_{j<y} 1/(r + j)² + 1/r − 1/(r + μ) − (μ − y)/(r + μ)²
+    and for the place effect's prior, ∂²/∂(log σ)² = −2u²/σ² (no cross terms)."""
+    k = d.X.shape[1]
+    y, idx, X = d.y, d.place_idx, d.X
+    W = omega[:, idx]  # node weights per row
+    rm = r + MU
+    h_eta = -MU * r * (r + y) / rm**2
+    h_cross = -r * (y - MU) * MU / rm**2
+    dg = _nb_tables(y, r)[1]
+    a_r = dg + np.log(r / rm) + (MU - y) / rm
+    da_r = -tg + 1 / r - 1 / rm - (MU - y) / rm**2
+    h_kk = r * a_r + r**2 * da_r
+    H = np.zeros((k + 2, k + 2))
+    H[:k, :k] = (X * (W * h_eta).sum(axis=0)[:, None]).T @ X
+    H[:k, k + 1] = H[k + 1, :k] = X.T @ (W * h_cross).sum(axis=0)
+    H[k + 1, k + 1] = float((W * h_kk).sum())
+    H[k, k] = float((omega * (-2 * UQ**2 / sigma**2)).sum())
+    # E[s sᵀ]: per node, the place scores s_q (G × (k + 2)) weighted by ω_q
+    for q in range(QUAD_NODES):
+        sq = np.column_stack([A[q], UQ[q] ** 2 / sigma**2 - 1, BK[q]])
+        H += (sq * omega[q][:, None]).T @ sq
+    return H
 
 
 def _sum_by(idx: np.ndarray, M: np.ndarray, G: int) -> np.ndarray:
@@ -314,23 +396,41 @@ def _jacobian(f: Callable, x: np.ndarray, h: float = 1e-5) -> np.ndarray:
 
 
 def bfgs_max(
-    f: Callable, x0: np.ndarray, tol: float = 1e-6, max_iter: int = 500, grad: Callable | None = None
+    f: Callable,
+    x0: np.ndarray,
+    tol: float = 1e-6,
+    max_iter: int = 500,
+    grad: Callable | None = None,
+    hinv0: np.ndarray | None = None,
+    info: dict | None = None,
 ) -> tuple[np.ndarray, float, bool]:
     """Maximize f by BFGS (minimizing −f) with an Armijo backtracking line search and central-difference
-    gradients. Converged when the largest gradient component is below `tol` × (1 + |f|)."""
+    gradients (or `grad`). Converged when the largest gradient component is below `tol` × (1 + |f|).
+
+    `hinv0` warm-starts the inverse-Hessian approximation (of −f; positive definite), e.g. a refit starting
+    from the main model's curvature; default the scaled identity. A non-descent direction still resets to the
+    scaled identity. `info`, if given, receives the iteration and evaluation counts."""
+
+    counts = {"iterations": 0, "f_evals": 0, "g_evals": 0}
+    if info is not None:
+        info.update(counts)
+        counts = info
 
     def F(x):
+        counts["f_evals"] += 1
         v = f(x)
         return np.inf if not np.isfinite(v) else -v
 
     def dF(x):
+        counts["g_evals"] += 1
         return -grad(x) if grad is not None else _grad(F, x)
 
     x = np.asarray(x0, dtype=float).copy()
     Fx = F(x)
     G = dF(x)
-    Hinv = np.eye(len(x)) / max(1.0, np.max(np.abs(G)))
-    for _ in range(max_iter):
+    Hinv = np.eye(len(x)) / max(1.0, np.max(np.abs(G))) if hinv0 is None else np.array(hinv0, dtype=float)
+    for it in range(max_iter):
+        counts["iterations"] = it
         if np.max(np.abs(G)) < tol * (1 + abs(Fx)):
             return x, -Fx, True
         p = -Hinv @ G
@@ -357,6 +457,7 @@ def bfgs_max(
                 s_, s_
             )
         x, Fx, G = xn, Fn, Gn
+    counts["iterations"] = max_iter
     return x, -Fx, bool(np.max(np.abs(G)) < tol * (1 + abs(Fx)))
 
 
@@ -407,10 +508,45 @@ class PooledFit:
         return Hi @ (self.scores.T @ self.scores) @ Hi
 
 
+HESSIAN = "analytic"  # or "numerical": central differences of the analytic gradient (the first runs' method)
+
+
+def warm_hinv(main: PooledFit, d: PooledDesign) -> np.ndarray:
+    """Inverse-Hessian start for BFGS on design `d` from the main fit's curvature (internal scale), matched
+    by name: −H⁻¹ of the main model for the shared parameters, the identity for a column the main model
+    doesn't have, and for a variance parameter held at its bound."""
+    names = [*d.names, "log_sigma", "log_kappa"]
+    pos = {n: j for j, n in enumerate(main.names)}
+    held = set(getattr(main, "at_bound", []))
+    shared = [j for j, n in enumerate(names) if n in pos and n not in held]
+    src = [pos[names[j]] for j in shared]
+    free = [j for j, n in enumerate(main.names) if n not in held]
+    Hm = -main.hessian[np.ix_(free, free)]
+    Ci = np.linalg.inv(Hm)
+    at = {j: i for i, j in enumerate(free)}
+    out = np.eye(len(names))
+    sel = [at[j] for j in src]
+    out[np.ix_(shared, shared)] = Ci[np.ix_(sel, sel)]
+    return out
+
+
 def fit_pooled(
-    d: PooledDesign, start: np.ndarray | None = None, check: bool = True, max_iter: int = 500
+    d: PooledDesign,
+    start: np.ndarray | None = None,
+    check: bool = True,
+    max_iter: int = 500,
+    hessian: str | None = None,
+    hinv0: np.ndarray | None = None,
 ) -> PooledFit:
-    """Maximum marginal likelihood of the D-025 model; raises EstimationError if unusable."""
+    """Maximum marginal likelihood of the D-025 model; raises EstimationError if unusable (with the BFGS
+    `iterations` and `seconds` attached to the error). `hessian`: "analytic" (Louis' identity,
+    `place_logliks(hess=True)`; the default, `HESSIAN`) or "numerical" (central differences of the analytic
+    gradient); they agree to the finite-difference error (tests). `hinv0`: BFGS warm start (`warm_hinv`); it
+    changes the path, not the maximum (to BFGS's convergence tolerance; tests)."""
+    t0 = time.perf_counter()
+    hessian = hessian or HESSIAN
+    if hessian not in ("analytic", "numerical"):
+        raise ValueError(f"hessian must be 'analytic' or 'numerical', not {hessian!r}")
     k = d.X.shape[1]
     if start is None:
         start = np.zeros(k + 2)
@@ -424,24 +560,47 @@ def fit_pooled(
             return -np.inf
         return float(place_logliks(to_log(z, k), d).sum())
 
+    def chain(z):  # d(log σ)/dz and d(log κ)/dz through the tanh map, and their z-derivatives
+        cs, ck = 1 / math.cosh(z[k] / SIGMA_BOUND) ** 2, 1 / math.cosh(z[k + 1] / KAPPA_BOUND) ** 2
+        return (
+            cs,
+            ck,
+            -2 / SIGMA_BOUND * cs * math.tanh(z[k] / SIGMA_BOUND),
+            (-2 / KAPPA_BOUND * ck * math.tanh(z[k + 1] / KAPPA_BOUND)),
+        )
+
     def scores(z):
         _, S = place_logliks(to_log(z, k), d, grad=True)
-        S[:, k] *= 1 / math.cosh(z[k] / SIGMA_BOUND) ** 2  # chain rule through the tanh map
-        S[:, k + 1] *= 1 / math.cosh(z[k + 1] / KAPPA_BOUND) ** 2
+        cs, ck, _, _ = chain(z)
+        S[:, k] *= cs  # chain rule through the tanh map
+        S[:, k + 1] *= ck
         return S
 
     def g(z):
         return scores(z).sum(axis=0)
 
-    x, fx, ok = bfgs_max(f, z0, grad=g, max_iter=max_iter)
+    info: dict = {}
+    x, fx, ok = bfgs_max(f, z0, grad=g, max_iter=max_iter, hinv0=hinv0, info=info)
+    t1 = time.perf_counter()
     # a variance parameter at its limit (no place heterogeneity, or Poisson counts) is held there: its
     # curvature is ~0, so it is left out of the Hessian and scores (reported as at its bound)
     logs = to_log(x, k)
     at_bound = [j for j, lim in ((k, SIGMA_BOUND), (k + 1, KAPPA_BOUND)) if abs(logs[j]) > 0.95 * lim]
     free = [j for j in range(k + 2) if j not in at_bound]
-    H = _jacobian(g, x, 1e-5)
-    H = (H + H.T) / 2
-    S = scores(x)
+    if hessian == "numerical":
+        H = _jacobian(g, x, 1e-5)
+        H = (H + H.T) / 2
+        S = scores(x)
+    else:  # the log-scale Hessian mapped to the internal scale: J H Jᵀ + diag(gradient × second derivative)
+        _, S, H = place_logliks(logs, d, hess=True)
+        cs, ck, ds, dk = chain(x)
+        J = np.r_[np.ones(k), cs, ck]
+        gl = S.sum(axis=0)
+        H = H * np.outer(J, J)
+        H[k, k] += gl[k] * ds
+        H[k + 1, k + 1] += gl[k + 1] * dk
+        S[:, k] *= cs
+        S[:, k + 1] *= ck
     H_free = H[np.ix_(free, free)]
     H = np.full_like(H, 0.0)
     H[np.ix_(free, free)] = H_free
@@ -450,8 +609,15 @@ def fit_pooled(
         S[:, j] = 0.0
     fit = PooledFit(d, x, fx, ok, H, S)
     fit.at_bound = [("log_sigma" if j == k else "log_kappa") for j in at_bound]
+    fit.iterations = info["iterations"]
+    fit.evals = (info["f_evals"], info["g_evals"])
+    fit.seconds = {"bfgs": t1 - t0, "hessian": time.perf_counter() - t1}
     if check:
-        check_pooled(fit)
+        try:
+            check_pooled(fit)
+        except EstimationError as err:
+            err.iterations, err.seconds = fit.iterations, time.perf_counter() - t0
+            raise
     return fit
 
 
@@ -484,8 +650,12 @@ def check_pooled(fit: PooledFit) -> None:
         raise EstimationError(f"pooled model: standard errors effectively zero: {tiny}")
 
 
-def estimate_pooled(panel: pd.DataFrame, check: bool = True, max_iter: int = 500, **design_kw) -> PooledFit:
-    return fit_pooled(build_pooled_design(panel, **design_kw), check=check, max_iter=max_iter)
+def estimate_pooled(
+    panel: pd.DataFrame, check: bool = True, max_iter: int = 500, hessian: str | None = None, **design_kw
+) -> PooledFit:
+    return fit_pooled(
+        build_pooled_design(panel, **design_kw), check=check, max_iter=max_iter, hessian=hessian
+    )
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -506,6 +676,24 @@ class RefitLog:
     draws: int = 0
     draws_excluded: int = 0
     max_share: float = 0.05
+    seconds: list = field(default_factory=list)  # per refit (both attempts), wall-clock
+    iterations: list = field(default_factory=list)  # per refit, BFGS iterations summed over attempts
+    boot_seconds: float = 0.0
+
+    @property
+    def timing(self) -> str:
+        """Where the stage's time went: refits' median and slowest, the share taken by the slowest 5%."""
+        if not self.seconds:
+            return f"{self.stage}: no refits timed"
+        t = np.sort(np.asarray(self.seconds))[::-1]
+        top = t[: max(1, math.ceil(0.05 * len(t)))]
+        it = np.asarray(self.iterations)
+        return (
+            f"{self.stage}: {len(t)} refits in {t.sum():.1f} s "
+            f"(median {np.median(t):.2f} s, max {t[0]:.2f} s; "
+            f"slowest 5% {top.sum() / t.sum():.0%} of the time); BFGS iterations median {np.median(it):.0f}, "
+            f"max {it.max():.0f}" + (f"; bootstrap {self.boot_seconds:.2f} s" if self.boot_seconds else "")
+        )
 
     @property
     def summary(self) -> str:
@@ -540,31 +728,109 @@ def start_from(main: PooledFit, d: PooledDesign) -> np.ndarray:
     return np.r_[[by_name.get(n, 0.0) for n in d.names], lp[mk], lp[mk + 1]]
 
 
-def _default_fitter(panel, start: PooledFit | None = None, **kw) -> PooledFit:
+WARM_START = (
+    False  # True: refits start BFGS from the main model's inverse Hessian (`warm_hinv`); see the D-025 note
+)
+
+
+def _default_fitter(panel, start: PooledFit | None = None, warm: PooledFit | None = None, **kw) -> PooledFit:
+    """Build the design and fit it. `start`: start from that fit's estimates (the D-025 retry). `warm`: the
+    main fit whose curvature warm-starts BFGS (`WARM_START`); the starting point is unchanged."""
     d = build_pooled_design(panel, **kw)
-    return fit_pooled(d, start=start_from(start, d) if start is not None else None)
+    ref = start if start is not None else warm
+    hinv0 = warm_hinv(ref, d) if WARM_START and ref is not None else None
+    return fit_pooled(d, start=start_from(start, d) if start is not None else None, hinv0=hinv0)
 
 
 def refit(
     panel, main: PooledFit | None, log: RefitLog, fitter: Callable | None = None, **kw
 ) -> PooledFit | None:
     """One refit under the D-025 rule: try; if it doesn't converge, retry once starting from the main-model
-    estimates; if it still fails, count it as excluded and return None."""
+    estimates; if it still fails, count it as excluded and return None. The refit's time and BFGS iterations
+    (both attempts) are added to `log`. With the default fitter the main fit also warm-starts BFGS."""
+    extra = {"warm": main} if fitter is None and main is not None else {}
     fitter = fitter or _default_fitter
     log.refits += 1
+    t0, iters = time.perf_counter(), 0
     try:
-        fit = fitter(panel, **kw)
-        log.first += 1
-        return fit
-    except EstimationError:
-        pass
+        try:
+            fit = fitter(panel, **extra, **kw)
+            log.first += 1
+            iters += getattr(fit, "iterations", 0)
+            return fit
+        except EstimationError as err:
+            iters += getattr(err, "iterations", 0)
+        try:
+            fit = fitter(panel, start=main, **kw)
+            log.retried += 1
+            iters += getattr(fit, "iterations", 0)
+            return fit
+        except EstimationError as err:
+            iters += getattr(err, "iterations", 0)
+            log.failed += 1
+            return None
+    finally:
+        log.seconds.append(time.perf_counter() - t0)
+        log.iterations.append(iters)
+
+
+# Independent refits across processes (randomization inference, leave-one-out). Every job is fixed before
+# any runs (the permutations are drawn up front, in the serial order) and results are read back in job order,
+# so the output, including where the 5% rule stops a stage, is that of the serial loop.
+
+_SHARED: dict = {}
+
+
+def _init_worker(panel, main, fitter, kw, settings=None) -> None:
+    """Worker set-up: the shared inputs, and the parent's `WARM_START` and `HESSIAN` (a spawned process
+    imports the module afresh)."""
+    global WARM_START, HESSIAN
+    _SHARED.update(panel=panel, main=main, fitter=fitter, kw=kw)
+    if settings is not None:
+        WARM_START, HESSIAN = settings
+
+
+def _refit_job(job, shared: dict | None = None):
+    """One refit of a modified panel: ("permute", {place: T}) or ("drop", place). Returns (overall effect or
+    None, the job's RefitLog)."""
+    sh = shared if shared is not None else _SHARED
+    panel = sh["panel"]
+    kind, arg = job
+    p = permute_adoption(panel, arg) if kind == "permute" else panel[panel["place"] != arg]
+    log = RefitLog(kind)
+    f = refit(p, sh["main"], log, sh["fitter"], **sh["kw"])
+    return (None if f is None else overall_effect(f)), log
+
+
+def _absorb(log: RefitLog, part: RefitLog) -> None:
+    log.refits += part.refits
+    log.first += part.first
+    log.retried += part.retried
+    log.failed += part.failed
+    log.seconds += part.seconds
+    log.iterations += part.iterations
+
+
+def _run_refits(panel, main, jobs, fitter, kw, workers: int = 1):
+    """Yield (effect, job log) for each job, in job order; `workers` > 1 uses that many processes (the
+    fitter must then be picklable: the default, or a module-level callable). Stopping early cancels the
+    jobs not yet started."""
+    if workers <= 1:
+        shared = {"panel": panel, "main": main, "fitter": fitter, "kw": kw}
+        for job in jobs:
+            yield _refit_job(job, shared)
+        return
+    from concurrent.futures import ProcessPoolExecutor
+
+    ex = ProcessPoolExecutor(
+        max_workers=workers,
+        initializer=_init_worker,
+        initargs=(panel, main, fitter, kw, (WARM_START, HESSIAN)),
+    )
     try:
-        fit = fitter(panel, start=main, **kw)
-        log.retried += 1
-        return fit
-    except EstimationError:
-        log.failed += 1
-        return None
+        yield from ex.map(_refit_job, jobs)
+    finally:
+        ex.shutdown(wait=True, cancel_futures=True)
 
 
 def score_bootstrap(
@@ -573,6 +839,7 @@ def score_bootstrap(
     """Wild cluster score bootstrap by place (Webb weights): b* = b̂ − H⁻¹ Σ_g w_g S_g (H negative
     definite). A draw beyond the coefficient bound is excluded and counted in `log` (D-025 rule); without a
     log, any such draw raises."""
+    t0 = time.perf_counter()
     rng = np.random.default_rng(seed)
     Hi = np.linalg.inv(fit.hessian)
     k = fit.design.X.shape[1]
@@ -590,6 +857,7 @@ def score_bootstrap(
             raise EstimationError("pooled bootstrap draw diverged")
         rows.append(dict(zip(fit.names, to_log(b, k), strict=True)))
     if log is not None:
+        log.boot_seconds += time.perf_counter() - t0
         log.check()
     return pd.DataFrame(rows)
 
@@ -639,23 +907,26 @@ def overall_effect(fit: PooledFit, params: np.ndarray | None = None) -> float:
 
 
 def randomization_inference(
-    panel, permutations: int, main: PooledFit, seed: int = 0, fitter=None, **design_kw
+    panel, permutations: int, main: PooledFit, seed: int = 0, fitter=None, workers: int = 1, **design_kw
 ):
     """Permute adoption years among treated places, each place's dose path moving with its T (D-031 (a)),
     re-fit (D-025 convergence rule), compare the overall
     pooled effect of `main` with the permutation distribution. Returns (observed, p over the converged
-    refits, distribution, log)."""
+    refits, distribution, log). `workers` > 1 refits in parallel processes with the same result (the
+    permutations are drawn up front in the serial order; `log.timing` has the refit times)."""
     rng = np.random.default_rng(seed)
     log = RefitLog("randomization inference")
     obs = overall_effect(main)
     treated = panel.loc[panel["T"].notna(), ["place", "T"]].drop_duplicates("place")
+    jobs = [
+        ("permute", dict(zip(treated["place"], rng.permutation(treated["T"].to_numpy()), strict=True)))
+        for _ in range(permutations)
+    ]  # D-031 (a): each dose path moves with its adoption year (`permute_adoption`)
     out = []
-    for _ in range(permutations):
-        perm = dict(zip(treated["place"], rng.permutation(treated["T"].to_numpy()), strict=True))
-        p = permute_adoption(panel, perm)  # D-031 (a): each dose path moves with its adoption year
-        f = refit(p, main, log, fitter, **design_kw)
-        if f is not None:
-            out.append(overall_effect(f))
+    for e, part in _run_refits(panel, main, jobs, fitter, design_kw, workers):
+        _absorb(log, part)
+        if e is not None:
+            out.append(e)
         if log.failed > log.max_share * permutations:  # the 5% limit is already broken: stop now
             break
     log.check()
@@ -669,7 +940,13 @@ def randomization_inference(
 
 
 def _not_computed(name: str, log: RefitLog, why: str = "did not converge after a retry") -> dict:
-    return {"check": name, "pass": None, "note": f"not computed: {why}", "convergence": log.summary}
+    return {
+        "check": name,
+        "pass": None,
+        "note": f"not computed: {why}",
+        "convergence": log.summary,
+        "timing": log.timing,
+    }
 
 
 def _effect_interval(panel, draws, seed, main, log, fitter=None, **kw):
@@ -702,6 +979,7 @@ def check_leads(panel, main: PooledFit, draws=999, seed=0, fitter=None, **kw) ->
             "pass": False,
             "note": "no lead estimable",
             "convergence": log.summary,
+            "timing": log.timing,
         }
     b = np.array([fit.value(t) for t in terms])
     D = boot[terms].to_numpy()
@@ -709,7 +987,14 @@ def check_leads(panel, main: PooledFit, draws=999, seed=0, fitter=None, **kw) ->
     W = float(b @ Vi @ b)
     dev = D - b
     p = float(np.mean(np.einsum("ij,jk,ik->i", dev, Vi, dev) >= W))
-    return {"check": name, "statistic": W, "p": p, "pass": bool(p >= 0.10), "convergence": log.summary}
+    return {
+        "check": name,
+        "statistic": W,
+        "p": p,
+        "pass": bool(p >= 0.10),
+        "convergence": log.summary,
+        "timing": log.timing,
+    }
 
 
 def _interval_check(name, p, main, draws, seed, fitter, **kw) -> dict:
@@ -728,6 +1013,7 @@ def _interval_check(name, p, main, draws, seed, fitter, **kw) -> dict:
         "high": hi,
         "pass": bool(lo <= 0 <= hi),
         "convergence": log.summary,
+        "timing": log.timing,
     }
 
 
@@ -769,18 +1055,28 @@ def check_excluding(
     ]
     if "overall" in m.index and not (m.loc["overall", "low"] <= e <= m.loc["overall", "high"]):
         outside.append("overall")
-    return {"check": name, "estimate": e, "outside": outside, "pass": not outside, "convergence": log.summary}
+    return {
+        "check": name,
+        "estimate": e,
+        "outside": outside,
+        "pass": not outside,
+        "convergence": log.summary,
+        "timing": log.timing,
+    }
 
 
-def check_leave_one_out(panel, main: PooledFit, main_summary: pd.DataFrame, fitter=None, **kw) -> dict:
+def check_leave_one_out(
+    panel, main: PooledFit, main_summary: pd.DataFrame, fitter=None, workers: int = 1, **kw
+) -> dict:
     name, log = "leave one treated place out", RefitLog("leave one treated place out")
     m = main_summary.set_index("term").loc["overall"]
     moved, effects = [], {}
-    for place in panel.loc[panel["T"].notna(), "place"].unique():
-        f = refit(panel[panel["place"] != place], main, log, fitter, **kw)
-        if f is None:
+    places = panel.loc[panel["T"].notna(), "place"].unique()
+    jobs = [("drop", place) for place in places]
+    for place, (e, part) in zip(places, _run_refits(panel, main, jobs, fitter, kw, workers), strict=True):
+        _absorb(log, part)
+        if e is None:
             continue
-        e = overall_effect(f)
         effects[place] = e
         if not (m["low"] <= e <= m["high"]):
             moved.append((place, e))
@@ -788,7 +1084,30 @@ def check_leave_one_out(panel, main: PooledFit, main_summary: pd.DataFrame, fitt
         log.check()
     except StageFailed as err:
         return _not_computed(name, log, str(err))
-    return {"check": name, "moved": moved, "pass": not moved, "convergence": log.summary, "effects": effects}
+    return {
+        "check": name,
+        "moved": moved,
+        "pass": not moved,
+        "convergence": log.summary,
+        "timing": log.timing,
+        "effects": effects,
+    }
+
+
+def run_parallel(calls: Sequence[tuple[Callable, tuple, dict]], workers: int = 1) -> list:
+    """Run independent calls (function, args, kwargs), e.g. the single-refit checks, in `workers` processes;
+    results in call order, as if run one after another (functions must be module-level)."""
+    if workers <= 1:
+        return [fn(*a, **k) for fn, a, k in calls]
+    from concurrent.futures import ProcessPoolExecutor
+
+    with ProcessPoolExecutor(
+        max_workers=min(workers, len(calls)),
+        initializer=_init_worker,
+        initargs=(None, None, None, {}, (WARM_START, HESSIAN)),
+    ) as ex:
+        futs = [ex.submit(fn, *a, **k) for fn, a, k in calls]
+        return [f.result() for f in futs]
 
 
 def summarize_main(fit: PooledFit, boot: pd.DataFrame, level: float = 0.90) -> pd.DataFrame:
@@ -881,6 +1200,7 @@ def sensitivity_runs(
                 "dropped": fit.design.dropped,
                 "note_sample": note,
                 "convergence": log.summary,
+                "timing": log.timing,
             }
         )
     return out

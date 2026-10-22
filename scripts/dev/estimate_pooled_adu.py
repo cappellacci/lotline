@@ -72,11 +72,16 @@ def logged_estimates(log_path: Path) -> dict[str, float]:
     return out
 
 
+WORKERS = 1  # processes for the independent refits (--workers); results are those of the serial run
+
+
 def stages(
     store, panel, fit, boot, main, out: Path | None, log_note: str = "", skip_ri: str | None = None
 ) -> None:
     """Randomization inference, the five checks, robustness and transport, all under the D-025 convergence
-    rule; CSVs written to `out` at the end (with convergence counts)."""
+    rule; CSVs written to `out` at the end (with convergence counts). With WORKERS > 1 the refits of
+    randomization inference and leave-one-out, and the four single-refit checks, run in parallel processes
+    with the serial result (D-025 implementation note, 2026-10-22); refit times are printed."""
     p = {k: v.value for k, v in load_params("adu").items()}
     draws, perms = int(p["adu_estimation_bootstrap_draws"]), int(p["adu_estimation_permutations"])
     kw = {"modifiers": list(est.MODIFIERS)}
@@ -85,23 +90,30 @@ def stages(
     try:
         if skip_ri:
             raise pa.StageFailed(skip_ri)
-        obs, p_ri, ri_dist, ri_log = pa.randomization_inference(panel, perms, fit, seed=20261020, **kw)
+        obs, p_ri, ri_dist, ri_log = pa.randomization_inference(
+            panel, perms, fit, seed=20261020, workers=WORKERS, **kw
+        )
         logs.append(ri_log.summary)
+        print(ri_log.timing, flush=True)
         print(f"randomization inference: overall {obs:.4f}, p = {p_ri:.3f} over {len(ri_dist)}", flush=True)
     except pa.StageFailed as err:  # D-025 rule: the stage is reported as not computed; the run continues
         obs, p_ri, ri_dist = pa.overall_effect(fit), float("nan"), np.array([])
         logs.append(f"randomization inference NOT COMPUTED: {err}")
     print(logs[-1], flush=True)
 
-    checks = [
-        pa.check_leads(panel, fit, draws=draws, seed=1, **kw),
-        pa.check_placebo_dates(panel, fit, draws=draws, seed=2, **kw),
-        pa.check_placebo_outcome(panel, fit, draws=draws, seed=3, **kw),
-        pa.check_excluding(panel, fit, main, draws=draws, seed=4, **kw),
-        pa.check_leave_one_out(panel, fit, main, **kw),
-    ]
+    checks = pa.run_parallel(
+        [
+            (pa.check_leads, (panel, fit), {"draws": draws, "seed": 1, **kw}),
+            (pa.check_placebo_dates, (panel, fit), {"draws": draws, "seed": 2, **kw}),
+            (pa.check_placebo_outcome, (panel, fit), {"draws": draws, "seed": 3, **kw}),
+            (pa.check_excluding, (panel, fit, main), {"draws": draws, "seed": 4, **kw}),
+        ],
+        WORKERS,
+    )
+    checks.append(pa.check_leave_one_out(panel, fit, main, workers=WORKERS, **kw))
     for c in checks:
-        print({k: v for k, v in c.items() if k != "effects"})
+        print({k: v for k, v in c.items() if k not in ("effects", "timing")})
+        print("  ", c.get("timing", ""))
         logs.append(c.get("convergence", ""))
 
     fe = pa.fe_ppml_pooled(panel, **kw)
@@ -143,7 +155,7 @@ def stages(
         print(f"not estimable: {n} contributing treated places (floor {est.MIN_CONTRIBUTING})")
     sens = pa.sensitivity_runs(panel, fit, main, draws=draws, seed=8, **kw)
     for c in sens:
-        print({k: v for k, v in c.items() if k != "dropped"})
+        print({k: v for k, v in c.items() if k not in ("dropped", "timing")})
         logs.append(c.get("convergence", ""))
 
     pred, verdict = transport_stage(store, panel, fit, boot, p, logs)
@@ -157,7 +169,7 @@ def stages(
         pd.DataFrame({"overall_permuted": ri_dist}).assign(overall=obs, p=p_ri, kept=len(ri_dist)).to_csv(
             out / "randomization.csv", index=False
         )
-        pd.DataFrame([{k: v for k, v in c.items() if k != "effects"} for c in checks]).to_csv(
+        pd.DataFrame([{k: v for k, v in c.items() if k not in ("effects", "timing")} for c in checks]).to_csv(
             out / "checks.csv", index=False
         )
         loo = checks[-1].get("effects", {})
@@ -169,7 +181,9 @@ def stages(
         bin_main.to_csv(out / "robust_binary_dose.csv", index=False)
         add_main.assign(estimable=add.estimable).to_csv(out / "robust_additive_imputation.csv", index=False)
         add.excluded.to_csv(out / "robust_additive_imputation_excluded.csv", index=False)
-        pd.DataFrame(sens).to_csv(out / "sensitivity.csv", index=False)
+        pd.DataFrame(sens).drop(columns="timing", errors="ignore").to_csv(
+            out / "sensitivity.csv", index=False
+        )
         pred.to_csv(out / "transport.csv", index=False)
         pd.DataFrame([verdict]).to_csv(out / "transport_verdict.csv", index=False)
         pd.DataFrame({"place": d.places, "random_effect": pa.place_effects(fit.log_params, d)}).to_csv(
@@ -386,9 +400,16 @@ def main() -> None:
     ap.add_argument(
         "--skip-ri", metavar="REASON", help="don't attempt randomization inference; report REASON"
     )
+    ap.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="processes for the independent refits (same results as 1, the serial run)",
+    )
     a = ap.parse_args()
-    global HH_GROWTH
+    global HH_GROWTH, WORKERS
     HH_GROWTH = a.hh_growth
+    WORKERS = a.workers
     print(f"household growth: {HH_GROWTH}")
     store = DataStore()
     if a.smoke:
