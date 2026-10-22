@@ -10,8 +10,9 @@
   entry), `docs/data_provenance.md`.
 - **Findings:**
   - The Dec 2023 roll is byte-identical to the 2026-10-19 automated copy (sha256 7762d75a…, 162,388,401
-    bytes). `register` treats an identical file as already recorded, so its manifest entry is unchanged; the
-    processed Wake parcels need no rebuild.
+    bytes), so the processed Wake parcels needed no rebuild. `register` first kept the old automated entry for
+    the identical file; the browser copy was then registered under the adapter's documented vintage
+    (2023-12-31) and the automated entry superseded (in #207).
   - The sales file differs (Wake refreshes it daily; nothing reads it yet).
 - **Decisions:** none.
 - **AI:** Claude Code (Opus 5.5) found the right link (the page's link opens a folder listing), checked
