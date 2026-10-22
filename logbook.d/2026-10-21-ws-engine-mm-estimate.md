@@ -1,0 +1,20 @@
+### LB-NNN · 2026-10-21 · Study design: D-024 re-estimated with D-025's estimator
+- **Question:** With D-025's negative binomial as D-024's main model (Ben, 2026-10-21), what is the missing-middle effect, does it pass the checks the Poisson-gamma fallback failed, and is either estimate credible enough to drive the scenario?
+- **What I did:**
+  - wrote the switch and a convergence rule under D-024 before running;
+  - added `--method nb`, dry-ran it, and timed real reassignment fits (about 85 s each, converged);
+  - ran the full D-024 pipeline once with D-025's estimator: bootstrap, randomization inference (999 reassignments), eight checks, robustness, out-of-sample tests.
+- **Inputs:** D-024 and its 2026-10-20 Run note; D-025 (`pooled_adu`); the panel and pipeline from LB (D-024 run).
+- **Outputs:** `reports/mm-d024-nb/` (CSVs and run log); notes under D-024 in `docs/analysis_plan.md` (the switch, written before the run, and the side-by-side results); `scripts/dev/estimate_mm.py --method nb`.
+- **Findings:**
+  - D-025: overall −0.25 (90%: −1.05 to 0.86); randomization inference p = 0.96 (26 of 999 reassignments failed).
+  - It passes placebo dates, placebo outcome, leave one out (Minneapolis or Houston out: −0.68, −0.57) and both contamination checks.
+  - Its out-of-sample tests could not be estimated: the 5% rate guard tripped.
+  - The fallback was 0.77, failed three checks and both out-of-sample tests.
+  - Neither estimate can size the effect: no detectable short-run rise in 2–4 unit permits in the seven cities.
+- **Decisions:** proposed for Ben: in-state estimates serve as validation only. Missing-middle scenario effects come from the pro forma and external evidence, and the pro forma's ramp should be consistent with no large short-run jump.
+- **AI:** Claude Code (WS-ENGINE-MM) ran the approved run and wrote the notes. Checked by the dry run, the real-panel timing check, the full test suite, ruff and the compliance check.
+- **Open / next:**
+  - D-025's interval coverage on this design hasn't been measured.
+  - The out-of-sample guard applies per draw. Making it apply to the mean would need a new dated entry.
+  - The run took 13 hours.
