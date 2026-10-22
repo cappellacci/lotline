@@ -118,3 +118,85 @@ def test_crosswalks_and_privacy():
 
 def test_registered():
     assert registry.sources_for("NC")["meck_permits"].module.TABLE == "permits"
+
+
+# --- the registered GeoPackage (Ben's hand download, 2026-10-21) --------------------------------------------
+def _gpkg_zip(tmp_path, rows):
+    """A tiny stand-in for Winchester_BuildingPermits.zip: one table, the file's column names."""
+    import sqlite3
+    import zipfile
+
+    cols = list(mp.FILE_COLUMNS) + sorted(mp.FILE_PERSONAL)
+    gpkg = tmp_path / "Winchester_BuildingPermits.gpkg"
+    with sqlite3.connect(gpkg) as con:
+        con.execute(f'CREATE TABLE "{mp.GPKG_TABLE}" ({", ".join(f"{c!r} TEXT" for c in cols)})')
+        for r in rows:
+            vals = {c: None for c in cols} | r
+            con.execute(
+                f'INSERT INTO "{mp.GPKG_TABLE}" VALUES ({",".join("?" * len(cols))})', [vals[c] for c in cols]
+            )
+    z = tmp_path / "dl" / mp.FILE_NAME
+    z.parent.mkdir()
+    with zipfile.ZipFile(z, "w") as f:
+        f.write(gpkg, gpkg.name)
+    return z
+
+
+def _r(pid, juris, issued, usdc, **extra):
+    return {"permitnum": pid, "taxjuris": juris, "issuedate": issued, "usdcdesc": usdc, **extra}
+
+
+FILE_ROWS = [  # permitnum, taxjuris, issuedate (the file's ISO text), usdcdesc
+    _r("F1", "CHARLOTTE", "2022-03-01T12:00:00.0Z", "101 - SFD", num_units="1", x_coord="1450000",
+       y_coord="540000", ownname="SOMEONE", ownemail="x@y.z"),
+    _r("F2", "CHARLOTTE", "2024-03-01T12:00:00.0Z", "103 - TWO"),
+    _r("F3", "MECKLENBURG", "2023-07-01T12:00:00.0Z", "101 - SFD"),
+    _r("F4", "Huntersville ", "2024-05-05T12:00:00.0Z", "101 - SFD", heat_sqft="2100"),
+    _r("F5", "MATTHEWS", "2023-05-31T12:00:00.0Z", "104 - 3-4"),
+]  # fmt: skip
+
+
+def test_file_query_never_reads_held_out_rows(tmp_path):
+    raw = mp.read_file(_gpkg_zip(tmp_path, FILE_ROWS))
+    assert set(raw["permitnum"]) == {
+        "F1",
+        "F4",
+        "F5",
+    }  # F2 (Charlotte) and F3 (county) after the window: never read
+    assert "issuedate < '2023-06-01'" in mp.file_where() and "CHARLOTTE" not in mp.file_where()
+
+
+def test_file_columns_renamed_dates_in_ms_and_no_personal_fields(tmp_path):
+    raw = mp.read_file(_gpkg_zip(tmp_path, FILE_ROWS)).set_index("permitnum")
+    assert not set(raw.columns) & mp.FILE_PERSONAL and not set(mp.FILE_COLUMNS) & mp.FILE_PERSONAL
+    assert {"numunits", "heatsqft", "lon", "lat"} <= set(raw.columns)
+    assert raw.loc["F1", "issuedate"] == ms("2022-03-01T12:00:00")
+    assert -81.2 < raw.loc["F1", "lon"] < -80.5 and 35.0 < raw.loc["F1", "lat"] < 35.5  # Charlotte area
+    assert pd.isna(raw.loc["F4", "lon"])  # no coordinates
+
+
+def test_load_reads_the_registered_file(tmp_path, monkeypatch):
+    store = DataStore(tmp_path / "data")
+    z = _gpkg_zip(tmp_path, FILE_ROWS)
+    store.register(
+        z, source=mp.SOURCE, url="https://example.test/viewer", license="test", vintage="2026-10-12"
+    )
+    monkeypatch.setattr(mp, "download", lambda *a, **k: pytest.fail("the server must not be queried"))
+    monkeypatch.setattr(
+        mp, "places", lambda raw, state, store: pd.Series(pd.NA, index=raw.index, dtype="string")
+    )
+    out = mp.load("NC", store)
+    assert set(out.permit_id) == {"F1", "F4", "F5"}
+    holdout.assert_no_leak(out, "permits", "NC")
+
+
+def test_county_codes_for_townhouses_condos_and_mobile_homes():
+    codes = mp.usdc_codes()
+    row = lambda code, n: pd.Series({"usdc": code, "numunits": n, "permitdesc": None, "workdesc": None})  # noqa: E731
+    th = mp.classify(row("102", 1), codes)
+    assert (th["building_type_std"], th["units_new"], th["units_confidence"]) == ("TH", 1, "reported")
+    condo = mp.classify(row("115", 40), codes)
+    assert (condo["building_type_std"], condo["units_new"]) == ("MF5", 40)
+    assert mp.classify(row("114", 4), codes)["building_type_std"] == "U3_4"
+    mh = mp.classify(row("112", None), codes)
+    assert (mh["building_type_std"], mh["units_new"], mh["units_confidence"]) == ("OTHER", 1, "derived")
