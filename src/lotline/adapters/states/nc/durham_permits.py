@@ -40,6 +40,12 @@ from DWELLING_UNITS or the type (SFD, TH, ADU, mobile home → 1; duplex → 2; 
    built from state-plane grid digits, so parcels that share a PIN prefix are neighbours. The permit takes
    the majority side of located permits sharing the longest 8- to 5-digit prefix of its normalised
    10-digit PIN. Checked on located permits (leave-one-PIN-out): 99.5% agreement at 8 digits, 97% at 6.
+   **Annexation date (#94).** Today's limits include land annexed after a permit was issued. A located
+   permit inside the city that also lies inside an approved annexation (the city's "Consolidated
+   Annexation" development cases, `Planning` layer 19, approved from 2013 on) whose approval date
+   (`A_STATUS_DATE`) is after the permit's issue date was outside the city when issued → `37063`. Limits:
+   annexations approved before 2013 are not in that layer, so 2007-2012 permits on land annexed in
+   2007-2012 stay with the city; permits placed by PIN (step 2) are not re-dated.
 3. Else a pending-plat parcel ID ("154829-PP221052") takes the majority side of located permits on its
    parent parcel 154829.
 4. Else `UNLOCATED_GEOID` (the city, where 96% of located new-construction permits fall). About 0.5% of
@@ -71,6 +77,9 @@ LAYER_URL = "https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/
 BOUNDARY_URL = (
     "https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/CoD_Boundary/FeatureServer/1"
 )
+# Approved "Consolidated Annexation" development cases (polygons; A_STATUS_DATE = council approval), 2013 on.
+ANNEX_URL = "https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Planning/FeatureServer/19"
+ANNEX_WHERE = "A_TYPE='PL_ANEX' AND A_STATUS='APP'"
 # The public ArcGIS item of the hosted "Inspections" service (layer 12 is All Building Permits). The Hub item
 # f352381d9b3c4949b4aead66f6e62889 points at the older MapServer, which times out.
 LANDING_URL = "https://www.arcgis.com/home/item.html?id=c169c12616a54fcc99aac37ff4997a82"
@@ -155,6 +164,8 @@ PROVENANCE = {
         "layer, fetched with the permits) → 3719000, outside → 37063; permits without a point take the "
         "majority side of located permits sharing the longest 8-5 digit prefix of their NC PIN, then of "
         "their parent parcel (pending plats); the rest (~0.5%) go to the city",
+        "Annexation date (#94): a located city permit inside an approved Consolidated Annexation case "
+        "(Planning layer 19) approved after its issue date goes to the county (37063)",
         "One row per permit number (a permit spanning several parcels is listed once per parcel)",
         "Permits whose side can't be inferred (~0.5%) default to the city (Ben, 2026-10-14): ~92% of located "
         "permits are in the city",
@@ -163,10 +174,9 @@ PROVENANCE = {
         "Holdout filter applied (NC holdout is Charlotte; no Durham rows are held out)",
     ],
     "limitations": [
-        "City limits are today's, not those in force at issue: a permit on land annexed after it was issued "
-        "counts as city. Durham annexes most new subdivisions before building (utility extension), so the "
-        "error is small but grows for older years. City-only figures therefore lean toward the city (single-"
-        "family above BPS in 9 of 11 years): compare city + county with BPS until annexation dates are added",
+        "City limits are today's, corrected by annexation date from 2013 on only: annexations approved "
+        "before 2013 are not in the Consolidated Annexation layer, so a 2007-2012 permit on land annexed in "
+        "2007-2012 still counts as city; permits placed by PIN are not re-dated",
         "About 3% of permits have no point; their side is inferred from neighbouring PINs (97-99.5% "
         "agreement on located permits) and ~0.5% are assigned to the city by default",
         "5+ and 3-4 unit permits without a plausible DWELLING_UNITS have unknown units (null)",
@@ -256,6 +266,22 @@ def assign_jurisdiction(df: pd.DataFrame, rings: list) -> pd.Series:
     return geoid
 
 
+def annexed_after_issue(df: pd.DataFrame, annexations: list[tuple[pd.Timestamp, list]]) -> pd.Series:
+    """True for located permits inside an annexation approved after the permit's issue date (#94).
+
+    `df` needs `lon`, `lat` and `issue_date`; `annexations` holds (approval date, rings) per case.
+    """
+    out = pd.Series(False, index=df.index)
+    has_pt = df["lon"].notna() & df["lat"].notna() & df["issue_date"].notna()
+    for approved, rings in annexations:
+        cand = has_pt & (df["issue_date"] < approved) & ~out
+        if not cand.any():
+            continue
+        inside = points_in_rings(df.loc[cand, "lon"], df.loc[cand, "lat"], rings)
+        out[df.index[cand][inside]] = True
+    return out
+
+
 # --------------------------------------------------------------------------------------------------------
 # Attribute rules
 # --------------------------------------------------------------------------------------------------------
@@ -326,10 +352,17 @@ def ehc_flags(raw: pd.DataFrame) -> pd.Series:
     return pd.Series(flags, dtype="string")
 
 
-def build(raw: pd.DataFrame, rings: list, state: str = "NC", ehc: pd.Series | None = None) -> pd.DataFrame:
+def build(
+    raw: pd.DataFrame,
+    rings: list,
+    state: str = "NC",
+    ehc: pd.Series | None = None,
+    annexations: list[tuple[pd.Timestamp, list]] | None = None,
+) -> pd.DataFrame:
     """Raw layer attributes (+ lon/lat) and city-limit rings → canonical permits rows (before holdouts).
 
-    `ehc` (from `ehc_flags`) adds the EHC reform flag as `reform_flag_raw`."""
+    `ehc` (from `ehc_flags`) adds the EHC reform flag as `reform_flag_raw`; `annexations` (from
+    `download_annexations`) moves permits issued before their land was annexed to the county (#94)."""
     df = raw.copy()
     issue_date = _dates(df["ISSUE_DATE"])
     status = df["PmtStatus"].astype("string").str.strip().str.lower()
@@ -340,6 +373,9 @@ def build(raw: pd.DataFrame, rings: list, state: str = "NC", ehc: pd.Series | No
         if col not in df:
             df[col] = np.nan
     df["jurisdiction_geoid"] = assign_jurisdiction(df, rings)
+    if annexations:
+        later = annexed_after_issue(df, annexations) & df["jurisdiction_geoid"].eq(DURHAM_CITY_GEOID)
+        df.loc[later, "jurisdiction_geoid"] = DURHAM_COUNTY_GEOID
 
     activity = df["BLDB_ACTIVITY"].astype("string").str.strip().str.upper().fillna("")
     reported = pd.to_numeric(df["DWELLING_UNITS"], errors="coerce")
@@ -460,11 +496,48 @@ def download_city_limits(store: DataStore, *, refresh: bool = False, vintage: st
     return [ring for f in data["features"] for ring in f["geometry"]["rings"]]
 
 
+def download_annexations(
+    store: DataStore, *, refresh: bool = False, vintage: str | None = None
+) -> list[tuple[pd.Timestamp, list]]:
+    """(approval date, rings) of the City of Durham's approved annexations, fetched through the IO layer."""
+    vintage = vintage or dt.date.today().isoformat()
+    url = query_url(
+        ANNEX_URL,
+        where=ANNEX_WHERE,
+        outFields="A_NUMBER,A_STATUS_DATE",
+        returnGeometry="true",
+        outSR="4326",
+        f="json",
+    )
+    path = fetch(
+        url,
+        store.raw(SOURCE, vintage) / "annexations" / "annexations.json",
+        store=store,
+        source=SOURCE,
+        license=LICENSE,
+        adapter=ADAPTER,
+        adapter_version=VERSION,
+        refresh=refresh,
+    )
+    data = json.loads(path.read_text())
+    if "error" in data or not data.get("features") or data.get("exceededTransferLimit"):
+        path.unlink(missing_ok=True)
+        raise RuntimeError(f"Durham annexations: no complete answer from {ANNEX_URL}")
+    out = []
+    for f in data["features"]:
+        when = epoch_ms_to_timestamp(pd.Series([f["attributes"]["A_STATUS_DATE"]])).dt.normalize().iloc[0]
+        if pd.notna(when) and f.get("geometry"):
+            out.append((when, f["geometry"]["rings"]))
+    return sorted(out, key=lambda t: t[0])
+
+
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     vintage = dt.date.today().isoformat()
     rings = download_city_limits(store, refresh=refresh, vintage=vintage)
     ehc = download_ehc(store, refresh=refresh, vintage=vintage)
-    df = build(download(store, refresh=refresh, vintage=vintage), rings, state=state, ehc=ehc)
+    annexations = download_annexations(store, refresh=refresh, vintage=vintage)
+    raw = download(store, refresh=refresh, vintage=vintage)
+    df = build(raw, rings, state=state, ehc=ehc, annexations=annexations)
     df = holdout.apply(
         df, state, geoid_col="jurisdiction_geoid", date_col="issue_date", year_col="issue_year"
     )
