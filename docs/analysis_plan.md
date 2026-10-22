@@ -1225,3 +1225,21 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     the announcement-dated sensitivity model (2.99, 1.13 to 4.98), whose re-dating moves the dip into the
     post period; (3) report HonestDiD as not identified and rest on the randomization inference (p = 0.111)
     and the failed leads test. Recommended: (3).
+
+### D-035 · 2026-10-22 · Eligible-parcel history for places counted from a parcel roll: ACS scaled to the roll (#208)
+- **Found:** a jurisdiction counted from a parcel roll had a denominator only in its roll year(s), while ACS-fallback
+  jurisdictions had one in every ACS end year (2010–2024). In NC that left 218 jurisdictions, Raleigh, Durham and
+  Greensboro among them, with no denominator in the baseline level window, the V1 backtests or the fee scenario.
+  The same holds wherever a state counts from a current roll only (MN outside the Met Council archives, OH, TX).
+- **Now (`build/eligible.scale_history`, called by `combine`):** each real roll year is an anchor with scale factor
+  parcels / ACS one-unit-detached homes, the ACS end year being the roll year or the nearest one within
+  `scale_max_year_gap` (3 years; `config/params/eligibility.yaml`). Every other ACS year gets ACS × factor; with
+  two or more anchors the factor is linear between them and flat outside. Real roll years keep their real counts.
+  Filled rows have `denominator_source = "parcels_scaled_acs"` (new schema value) and the quality of the nearest
+  roll. The ADU scenario's overlap step treats them like roll counts (`PARCEL_SOURCES`).
+- **Why:** option 1 of #208. Mechanical, works in every state that has ACS, keeps ACS's year-to-year movement and
+  ends exactly at the roll. Year-built backcasting (option 2) misses demolitions, splits and vacant lots and is
+  tier 1 only; it stays a check, not the main path.
+- **Limits:** the factor carries the roll's mix (vacant lots, zoning, exclusions) back in time unchanged, and ACS
+  sampling noise moves the filled years. Rolls newer than ACS (NC OneMap 2026) anchor the latest ACS year (2024).
+- **Decided by:** Ben, 2026-10-21 (option 1 in #208, real rolls kept wherever they exist).

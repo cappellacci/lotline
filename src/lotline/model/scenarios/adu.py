@@ -46,6 +46,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from lotline.build.eligible import PARCEL_SOURCES
 from lotline.config import CONFIG_DIR, load_params
 from lotline.model import hazard, proforma
 
@@ -897,12 +898,13 @@ def non_overlapping(places: pd.DataFrame, jurisdictions: pd.DataFrame, county_sh
     in_bps = j["in_bps"].astype("boolean").fillna(True).astype(bool)
     local_only = [g for g in out["geoid"] if g in j.index and not in_bps[g]]
     # Only ACS-fallback remainders overlap: `eligible.allocate_homes` keeps local-only homes in them. A
-    # remainder counted from a parcel roll holds only parcels assigned to the county row, never a place's.
+    # remainder counted from a parcel roll holds only parcels assigned to the county row, never a place's;
+    # so does one scaled to that roll in a year without one (`parcels_scaled_acs`, #208).
     source = out["denominator_source"] if "denominator_source" in out else pd.Series("acs", index=out.index)
     remainder = {
         r.county_geoid: i
         for i, r in out.iterrows()
-        if r.get("kind") == "county_unincorporated" and source[i] != "parcels"
+        if r.get("kind") == "county_unincorporated" and source[i] not in PARCEL_SOURCES
     }
     removed = pd.Series(0.0, index=out.index)
     parcels = out.set_index("geoid")["eligible_parcels_reported"]
