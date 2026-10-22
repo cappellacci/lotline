@@ -12,3 +12,12 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
 - `batch1-2026-10-20.json`: 20 Minnesota cities, Austin, Raleigh, Durham. Manual list:
   `docs/build/manual-ordinance-pdfs-batch1.md`.
 - `metro-adu-adoption-2026-10-20.json`: ADU rule history for 162 Twin Cities metro places (the D-023 comparison set; St. Paul excluded). Priority manual list: `docs/build/manual-adu-adoption-dates.md`.
+
+## Fill-in tables for Ben (manual lookups)
+
+- `nc-adu-lookups-todo.csv` and `nc-mm-lookups-todo.csv` (2026-10-21, NC thread 10): the 40 largest North
+  Carolina places (Census 2020), largest first, minus places already coded. Most city sites answer scripts with
+  HTTP 403, so these need a browser. Fill the blank columns with a source link; confirmed rows are then coded
+  into `config/reforms/nc.csv`.
+- `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
+  places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).

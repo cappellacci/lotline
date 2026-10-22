@@ -1,0 +1,17 @@
+occupancy,building_type_std,role,derived_units,notes
+One Family Residence,SFD,dwelling,1,"One permit per house; NumUnits 1 on most new permits"
+Townhouse,TH,dwelling,1,"One permit per townhouse unit (NumUnits 1 or 0)"
+Duplex,U2,dwelling,2,"NumUnits 1 on most duplex permits: NumUnits 1-2 is taken as reported (often one permit per half of the building); 0 or missing → 2"
+Condominiums,UNKNOWN,multi,,"Per-unit or per-building permits; type and units from NumUnits when it is 2 or more"
+Apartment-Individual Units,UNKNOWN,apartment_unit,,"One permit per apartment inside a building permitted by its shell permit; some (2021, 2026) repeat the building's NumUnits on every apartment, so these never count units"
+Apartment Building - Shell,UNKNOWN,multi,,"Building shell with NumUnits = the building's apartments"
+Foundation Only,UNKNOWN,foundation,,"Foundation-only permit ahead of the building permit: 0 units (the dwelling is counted on its building permit)"
+Foundation Only-Townhouse,UNKNOWN,foundation,,"As Foundation Only"
+Foundation Only-Apartment Building,UNKNOWN,foundation,,"As Foundation Only"
+Foundation Only-Condominiums,UNKNOWN,foundation,,"As Foundation Only"
+Mobile Home,OTHER,dwelling,1,"Manufactured home: BPS excludes these, so they stay out of BPS-comparable types (as in durham_permits)"
+Accessory Building/Carport-detached,OTHER,accessory,,"Shed, carport or detached accessory building: 0 units unless the description names an accessory dwelling"
+Residential Garage,OTHER,accessory,,"As Accessory Building"
+Group Home,OTHER,nonresidential,,"Group quarters: not housing units in BPS"
+Dormitory,OTHER,nonresidential,,"Group quarters: not housing units in BPS"
+Hotels/Motels,OTHER,nonresidential,,

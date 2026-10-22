@@ -1,0 +1,11 @@
+place,geoid,pop,need,start_url,fiscal_year,water_capacity_fee_per_home_usd,sewer_capacity_fee_per_home_usd,impact_or_other_fees_per_home_usd,source_url,notes
+Charlotte (Charlotte Water),3712000,874579,"Charlotte Water system development fees for a single-family home (5/8 or 3/4-inch meter), FY2016-FY2026; fees are an input, so the V5 holdout does not apply",https://www.charlottenc.gov/Water,,,,,city site answers scripts with HTTP 403 (works in a browser)
+Durham,3719000,283506,"Water and sewer capital facility fees per single-family home, FY2016-FY2026 (batch-1 found the FY2024 PDF: DocumentCenter/View/52048)",https://www.durhamnc.gov/DocumentCenter/View/52048/Water-Management_Capital-Facility-Fee_FY23-24,,,,,durhamnc.gov answers scripts with HTTP 403 (even robots.txt)
+Greensboro,3728000,299035,"Water and sewer capacity/system development fees per single-family home, FY2016-FY2026",https://www.greensboro-nc.gov/,,,,,city site answers scripts with HTTP 403
+Winston-Salem,3775000,249545,"Water and sewer system development fees per single-family home (City/County Utilities), FY2016-FY2026",https://www.cityofws.org/,,,,,city site answers scripts with HTTP 403
+Fayetteville (PWC),3722920,208501,"Fayetteville PWC water and sewer system development fees per single-family home, FY2016-FY2026",https://www.faypwc.com/,,,,,not tried
+Cary,3710740,174721,"Water and sewer development fees and transportation/parks impact fees per single-family home, FY2016-FY2026",https://www.carync.gov/,,,,,city site answers scripts with HTTP 403
+Wilmington (CFPUA),3774440,115451,"Cape Fear Public Utility Authority system development charges per single-family home, FY2016-FY2026",https://www.cfpua.org/,,,,,not tried
+High Point,3731400,114059,"Water and sewer capacity fees per single-family home, FY2016-FY2026",https://www.highpointnc.gov/,,,,,city site answers scripts with HTTP 403
+Concord,3714100,105240,"Water and sewer system development fees per single-family home, FY2016-FY2026",https://concordnc.gov/,,,,,site reachable from here; not searched
+Asheville,3702140,94589,"Water system development fees per single-family home (sewer is MSD of Buncombe County), FY2016-FY2026",https://www.ashevillenc.gov/,,,,,site reachable from here; not searched
