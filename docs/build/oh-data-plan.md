@@ -1,6 +1,7 @@
 # Ohio data plan (thread 11, step 1)
 
-*WS-OH, 2026-10-23. Status: **draft, waiting for Ben's approval** (§6). Brief:
+*WS-OH, 2026-10-23. Status: **decisions 1–4 approved by Ben on 2026-10-23** (S1, S2/S4 research, S6a downloads, S7 Cleveland under
+ODbL); §4 items open. Brief:
 `docs/build/handoffs/11-ohio-data-complete.md`. Template: `docs/build/nc-data-plan.md`.*
 
 **Goal:** Ohio can run end to end through the baseline, the ADU scenario (D-025), the missing-middle scenario
