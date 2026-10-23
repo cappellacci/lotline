@@ -3,7 +3,7 @@
 **Question.** Ben sent ordinance documents for nine of the eleven NC places under 50,000 that the dev run (PR #213) drew rules for: Wilson, Indian Trail, Salisbury, Monroe, Fuquay-Varina, Cornelius, Sanford, Morrisville and Statesville (Goldsboro and New Bern still missing). Code their ADU and missing-middle rules from the primary text.
 
 **Outputs.**
-- `config/reforms/nc.csv`: 15 rows (9 ADU, 6 missing middle). No ADU row for Monroe (ADUs only in the Concord Avenue overlay); no missing-middle row for Fuquay-Varina or Indian Trail (duplexes not allowed in their single-family districts).
+- `config/reforms/nc.csv`: 15 rows (9 ADU, 6 missing middle), plus Concord's ADU row (TA-10-24, owner occupancy removed; City Council approval 2024-11-14 from the case page Ben found). No ADU row for Monroe (ADUs only in the Concord Avenue overlay); no missing-middle row for Fuquay-Varina or Indian Trail (duplexes not allowed in their single-family districts).
 - `config/fees/nc.csv`: Wilson water and sewer system development fees ($1,407 + $2,425 per home, 3/4-inch meter) and tap fees (not in the per-unit total, as Raleigh's), schedule as of 2026-07-01. Goldsboro's fee sheet lists only planning application fees: no row.
 
 **Findings worth knowing.**
