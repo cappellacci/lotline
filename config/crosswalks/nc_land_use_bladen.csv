@@ -1,7 +1,7 @@
 field,code,description,land_use_std,notes,source_url
 parusedesc,VACANT RESIDENTIAL,VACANT RESIDENTIAL,VACANT_RESIDENTIAL,"keyword rule vacant (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,RESIDENTIAL IMPROVED,RESIDENTIAL IMPROVED,SF_DETACHED,"keyword rule single_family (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
-parusedesc,RURAL IMPROVED,RURAL IMPROVED,AGRICULTURAL,"keyword rule agricultural (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
+parusedesc,RURAL IMPROVED,RURAL IMPROVED,SF_DETACHED,"rural parcel with a building: read as a house (rural_home rule; checked against ACS 2026-10-23: Bladen unincorporated 0.42 before), scripts/dev/nc_onemap_crosswalks.py",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,COMMERCIAL IMPROVED,COMMERCIAL IMPROVED,COMMERCIAL,"keyword rule commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,VACANT COMMERCIAL,VACANT COMMERCIAL,COMMERCIAL,"keyword rule vacant_commercial (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
 parusedesc,EXEMPT IMPROVED,EXEMPT IMPROVED,INSTITUTIONAL,"keyword rule institutional (scripts/dev/nc_onemap_crosswalks.py, reviewed)",https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/MapServer/0
