@@ -17,6 +17,17 @@ sources:
       Adapter src/lotline/adapters/states/tx/austin_permits.py. Building permits with a Census code 101-106,
       436 or 645-649 in permit_class, plus plain-class 'New' permits (159,334 rows on 2026-10-18). R-102
       Secondary Apartment is the city's ADU class (dataset 687g-qcqy); it nearly stops after HOME (2024).
+  - name: dallas_permits
+    url: https://services2.arcgis.com/rwnOSbfKSwyTBcwN/arcgis/rest/services/NewPermit_2008_2024/FeatureServer/0
+    license: City of Dallas Planning and Development Department (public ArcGIS item; no license stated)
+    access: arcgis
+    cadence: none (one-time extract, "no updates planned")
+    notes: >-
+      Adapter src/lotline/adapters/states/tx/dallas_permits.py. "New Permits 1971-2024": every permit created
+      1971-2024, pulled from POSSE in November 2024 at the move to DallasNow (1,798,425 rows; last edited
+      2024-12-10). Building permits for new construction and additions on residential land uses only. Ends
+      2024-11-12: 2025 is not covered. The Socrata set e7gq-4sah (2018-2025, no unit field, no license) is not
+      used. Lead from Ben's notes on public Dallas sources (docs/disclosures.md).
   - name: tcad_parcels
     url: https://traviscad.org/publicinformation/
     license: Public information posted by Travis Central Appraisal District
