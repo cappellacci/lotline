@@ -1,0 +1,23 @@
+### LB-NNN · 2026-10-23 · data/NC · What ADU and missing-middle rules do nine more NC towns have, and since when?
+
+**Question.** Ben sent ordinance documents for nine of the eleven NC places under 50,000 that the dev run (PR #213) drew rules for: Wilson, Indian Trail, Salisbury, Monroe, Fuquay-Varina, Cornelius, Sanford, Morrisville and Statesville (Goldsboro and New Bern still missing). Code their ADU and missing-middle rules from the primary text.
+
+**Outputs.**
+- `config/reforms/nc.csv`: 15 rows (9 ADU, 6 missing middle), plus Asheboro (ADU and duplex rows, from Table 5-1 read off the rendered page) and Concord's ADU row (TA-10-24, owner occupancy removed; City Council approval 2024-11-14 from the case page Ben found). No ADU row for Monroe (ADUs only in the Concord Avenue overlay); no missing-middle row for Fuquay-Varina or Indian Trail (duplexes not allowed in their single-family districts).
+- `config/fees/nc.csv`: Wilson water and sewer system development fees ($1,407 + $2,425 per home, 3/4-inch meter) and tap fees (not in the per-unit total, as Raleigh's), schedule as of 2026-07-01. Goldsboro's fee sheet lists only planning application fees: no row.
+
+**Findings worth knowing.**
+- Statesville does allow ADUs (UDC Sec. 5.02(C): one per lot, lesser of 50% or 1,000 sq ft, owner-occupied), contradicting Ben's search summary.
+- Statesville's 2026-06-01 amendment allows 2-4 attached units by right in R-8 and R-5 districts on lots of record before 2026-05-11.
+- Salisbury's ADUs need a special use permit in its main residential districts (by right only in mixed-use districts).
+- Wilson and Sanford's chapters carry no dates; their dates come from Ben's 2026-10-21 lookups and are marked as such. Most other dates are `[earliest-known]` (the ordinance's adoption date).
+
+**How Claude worked and checked.** PDFs (in `~/lotline-data/manual/nc_udos/`, downloaded by Ben) were converted to text with pypdf. Three Claude subagents each coded three towns into candidate rows, reading use tables by cell position where the text lost the layout. Claude then checked every `source_quote` verbatim against the text, spot-checked the Statesville, Indian Trail and Salisbury ADU terms by hand, fixed the undated rows, noted every disagreement with Ben's lookups in `coding_notes`, and ran the NC and core tests and `compliance_check.py`. All rows are single-coder; none verified by a second person.
+
+**Fees, second batch (same day).** Ben downloaded fee schedules for the top-10 building places (`~/lotline-data/manual/nc_fees/`). Three Claude subagents coded them into 48 rows of `config/fees/nc.csv`; Claude checked quotes against the text, re-read the image-only sheets (WSACC, MSD) itself, and computed per-home totals with `scenarios.fees.local_fees`. NC places with fees: 2 → 12. Per single-family home: Johnston $14,070, Apex $10,373, Fuquay-Varina $10,037, Brunswick $9,846 (3 bedrooms), Asheville $4,968, Winston-Salem and Forsyth $3,677, Buncombe $3,568 (MSD sewer only), Greensboro $3,165, Cabarrus $2,968 (WSACC wholesale only, a floor). **Left out:** Durham (only a 2009 impact-fee table and no water/sewer capacity sheet; the scenario uses the newest year as current, so 2009 rows would pass as today's fee) and New Hanover (CFPUA's schedule not supplied).
+
+**Fees, third batch (same day).** Ben added CFPUA (website screenshots, read by Claude; no effective date shown, year = date viewed), Durham's FY2018-19 capital facility fee ordinance, and Concord's FY2025-26 schedule. Added: Wilmington and unincorporated New Hanover $5,735 per home (CFPUA); Durham $3,299 (2018, flagged possibly outdated; the 2009 impact-fee tables stay out); Concord $2,791 (city water and sewer SDFs; whether builders also pay the WSACC wholesale fee is not stated). NC places with fees: 16. One CFPUA screenshot was an unrelated Austin map and was ignored.
+
+**Durham update (same day).** Ben found Raftelis's September 2023 capital facilities fee study for FY2024: 5/8-inch meter water $2,591 + sewer $3,028 = $5,619 per home, the maximum cost-justified fee (the City may adopt less; adoption not confirmed). Coded as year 2023, so the scenario now uses it for Durham instead of the 2018 ordinance ($3,299), which stays as history.
+
+**Durham confirmed (same day).** Ben added the City of Durham Reference Guide for Development (2026-07-01 edition). Its p. 252 lists the capital facility fees in force since 2024-01-01 at exactly Raftelis's FY2024 maximum (5/8-inch: water $2,591, sewer treatment $2,015, collection $1,013; total $5,619). The two "adoption not confirmed" study rows were replaced by rows sourced to the guide (year 2024); the meter set ($721) is recorded outside the total; sewer-basin fees noted, not coded.
