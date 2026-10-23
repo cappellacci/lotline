@@ -13,7 +13,7 @@
 - **Findings:**
   - 35,695 permits kept (33,110 city, 2,585 ETJ). New houses, city plus ETJ, are 94–102% of BPS one-unit
     homes in 2021–2025, so BPS files ETJ permits under San Antonio.
-  - 295 ADU permits after removing revisions (129 of the 421 ADU rows were revisions): 39, 41, 50, 60 and 60
+  - 295 ADU permits after removing revisions (126 of the 421 ADU rows were revisions): 39, 41, 50, 60 and 60
     a year in 2021–2025, against the UDC change of 2023-01-01.
   - No unit field: 2–4 and 5+ unit homes stay with BPS.
 - **Decisions:** proposed: ETJ permits go to the county remainder, not the city (the city's parcels are the
