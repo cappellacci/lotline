@@ -1,0 +1,15 @@
+### LB-NNN · 2026-10-23 · Data feasibility: Ohio data plan (thread 11, step 1)
+- **Question:** What does Ohio still need to run end to end and, above all, to add places to the multi-state ADU and missing-middle estimation panels?
+- **What I did:**
+  - Checked the brief's snapshot against `main` (`f7cc92a`) and `~/lotline-data/processed/oh`: parcels by county and export date, unknown land use by county and place, permits by building type, eligible-parcel sources.
+  - Probed permit sources without downloading: Columbus layer fields, Cleveland layer counts, one ArcGIS search each for Dayton, Toledo, Akron, Cuyahoga Falls, Hamilton, Lakewood, Dublin; read the Franklin County Auditor permit and dwelling files already on disk.
+  - Wrote the subtask plan with costs, priorities, owners, Ben's manual items and the decisions needed.
+- **Inputs:** `docs/build/handoffs/11-ohio-data-complete.md`, `docs/build/nc-data-plan.md`, WS-OH brief, catalog OH rows, `config/reforms/oh.csv`, D-017, D-024, D-025, D-035.
+- **Outputs:** `docs/build/oh-data-plan.md`.
+- **Findings:**
+  - Columbus's zero ADU permits are missing data, not zeros; the Franklin County Auditor's permit file carries the same permit numbers with work descriptions (113 ADU or carriage-house mentions, 2021–2026), so it can flag ADUs for Columbus and its suburbs at once.
+  - 7 of Ohio's 20 largest places (Cleveland, Toledo, Akron, Dayton, Hamilton, Cuyahoga Falls, Middletown) are on the ACS fallback under the D-017 gate; the unknowns are blank codes, so the fix is county files.
+  - The processed eligible table predates D-035, so parcel-counted places have no history rows until it is rebuilt.
+- **Decisions:** none yet; the plan asks Ben to approve S1, S2/S4 research, S6a downloads and Cleveland under ODbL.
+- **AI:** Claude Code (WS-OH) ran the checks and wrote the plan; counts come from the processed tables and live ArcGIS count queries, quoted in the plan.
+- **Open / next:** after approval: S3 rebuild, then S1 Franklin permits adapter and S2 rule rows.
