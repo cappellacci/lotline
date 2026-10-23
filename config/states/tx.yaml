@@ -17,6 +17,17 @@ sources:
       Adapter src/lotline/adapters/states/tx/austin_permits.py. Building permits with a Census code 101-106,
       436 or 645-649 in permit_class, plus plain-class 'New' permits (159,334 rows on 2026-10-18). R-102
       Secondary Apartment is the city's ADU class (dataset 687g-qcqy); it nearly stops after HOME (2024).
+  - name: sa_permits
+    url: https://data.sanantonio.gov/dataset/building-permits
+    license: CC-BY (City of San Antonio open data, Creative Commons Attribution)
+    access: csv
+    cadence: daily (current file); 2020-2024 file closed
+    notes: >-
+      Adapter src/lotline/adapters/states/tx/sa_permits.py. "Building Permits": PERMITS ISSUED 2020-2024
+      (resource c22b1ef2) and PERMITS ISSUED (2025 on, c21106f9), 518,502 rows issued 2020-07-20 to
+      2026-10-16 on 2026-10-23. Downloaded from the /dataset/ CSV links; robots.txt disallows /api/ and
+      /datastore/. No unit field; ADUs from the "Res Accessory Dwelling Permit" type. ETJ permits (address
+      "City of San Antonio ETJ", council district 0) go to the Bexar County remainder.
   - name: tcad_parcels
     url: https://traviscad.org/publicinformation/
     license: Public information posted by Travis Central Appraisal District
