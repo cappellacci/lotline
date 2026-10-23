@@ -17,6 +17,19 @@ sources:
       Adapter src/lotline/adapters/states/tx/austin_permits.py. Building permits with a Census code 101-106,
       436 or 645-649 in permit_class, plus plain-class 'New' permits (159,334 rows on 2026-10-18). R-102
       Secondary Apartment is the city's ADU class (dataset 687g-qcqy); it nearly stops after HOME (2024).
+  - name: fw_permits
+    url: https://services5.arcgis.com/3ddLCBXe1bRt7mzj/arcgis/rest/services/CFW_Open_Data_Development_Permits_View/FeatureServer/0
+    license: CC-BY 4.0 (City of Fort Worth open data)
+    access: arcgis
+    cadence: daily
+    notes: >-
+      Adapter src/lotline/adapters/states/tx/fw_permits.py. "CFW Development Permits Table" (Accela, filed
+      2001-06-30 on; 1,620,675 rows of all permit types on 2026-10-23). Residential building and
+      accessory-structure permits and residential commercial building permits only. The table holds status
+      snapshots (one row per status a permit passed through), so rows are collapsed by permit number. No
+      issue date: issue_year is the filing year. Units from Use_Type / Specific_Use and Units
+      (config/crosswalks/tx_fw_use.csv); ADUs from the description parser. services5.arcgis.com has no
+      robots.txt rules for the service path.
   - name: tcad_parcels
     url: https://traviscad.org/publicinformation/
     license: Public information posted by Travis Central Appraisal District
