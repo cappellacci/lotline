@@ -1,6 +1,7 @@
 # Texas data plan (thread 12, step 1)
 
-*WS-TX, 2026-10-23. Status: **draft for Ben's approval** (decisions in §6). Brief:
+*WS-TX, 2026-10-23. Status: **all four decisions in §6 approved by Ben on 2026-10-23** (S1a, S1b, S1c Dallas,
+S4–S6 research at about one fetch per place; Ben downloads StratMap 2026 and the four earlier vintages). Brief:
 `docs/build/handoffs/12-texas-data-complete.md`. Template: `docs/build/nc-data-plan.md`.*
 
 **Goal:** Texas runs end to end for all 1,006 jurisdictions with every input real or a labelled fallback, and,
