@@ -1,0 +1,17 @@
+### LB-NNN · 2026-10-23 · Build: Ohio ADU flags from the Franklin County Auditor permit file (S1, with S3)
+- **Question:** Can Ohio add places to the ADU estimation panel beyond Cincinnati, starting with Columbus, whose permit layer has no ADU flag?
+- **What I did:**
+  - S3: rebuilt Ohio eligible parcels on `main` (`lotline fetch --state OH --source eligible`), adding D-035's scaled history; checked real rows unchanged and one jurisdiction per parcel.
+  - Downloaded four Franklin County Auditor appraisal snapshots' `Permit.xlsx` through the IO layer (approved, ~134 MB); the 2022-12-15 and 2026-10-15 files together cover 1990 to now.
+  - New adapter `franklin_permits`: ADU permits from named description rules (noun + creation verb, living-space and in-law-unit cues, existing-work and project exclusions, trade permits marking the permit they cite, one ADU per parcel in two years), placed through `oh_parcels`; Columbus left to `columbus_permits`, which now relabels its own permits by permit number.
+  - Hand-checked every flagged permit and 50 rejected candidates, tightening the rules twice.
+- **Inputs:** Franklin County Auditor Outside User Files (appraisal snapshots); Columbus Building Permits layer; `oh_parcels`; Census BPS (coverage check); Ord. 2526-2025's explanation (57 ADU permits 2019–Sep 2025).
+- **Outputs:** `src/lotline/adapters/states/oh/franklin_permits.py`, `src/lotline/adapters/states/oh/columbus_permits.py`, `tests/states/oh/test_franklin_permits.py`, `tests/states/oh/test_columbus_permits.py`, `config/states/oh.yaml`, `docs/data_provenance.md`, `docs/data_availability.md`, catalog Franklin row.
+- **Findings:**
+  - Columbus files ADUs as new single-family houses (Census code 101) or additions; 20 Columbus permits are now ADUs (10 were SFD), and 8 suburban ADUs are in `franklin_permits` (Bexley, Dublin, Gahanna, Grove City, New Albany, Upper Arlington, Westerville, Worthington).
+  - Precision is good (about 9 in 10 flags read as new ADUs) but recall is low: 14 Columbus ADUs for 2019 to Sep 2025 against the 57 the city reports.
+  - The auditor file is not a complete permit record (about a tenth of BPS single-family units for Columbus, more than BPS for Grove City), so it supplies ADUs only.
+  - After the rebuild, 7 jurisdictions still lack a full 2010–2024 denominator (Violet, Greenfield and Pleasant townships; Henry and Lorain county remainders; Smithfield and Waverly villages): no ACS anchor within three years.
+- **Decisions:** none new; for WS-ENGINE, Columbus's ADU counts undercount by about four times and the panel's caller must list the Franklin places (zero-ADU places have no row).
+- **AI:** Claude Code (WS-OH) wrote the adapters and tests (synthetic fixtures for every named rule) and ran the hand review; counts are from the processed tables and the live layer.
+- **Open / next:** S2 and S4 rule rows (Franklin suburbs, big markets with no ADU data) with fill-in tables for Ben; ask WS-ENGINE how to treat the Columbus undercount.
