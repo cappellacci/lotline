@@ -28,4 +28,6 @@ Each file is a self-contained brief for one Claude Code session. Start a session
 | `07-adu-estimation-d025.md` | ADU estimation, D-025 (pooled hierarchical NB) | Running in the main session |
 | `08-minnesota-data-complete.md` | Finish Minnesota's data for statewide end-to-end simulation | — |
 | `10-north-carolina-data-complete.md` | North Carolina end-to-end data collection: assess, plan subtasks, work them | Plan approved by Ben before heavy work |
+| `11-ohio-data-complete.md` | Ohio end-to-end data: assess, plan, work (week of 2026-10-26) | Plan approved by Ben |
+| `12-texas-data-complete.md` | Texas end-to-end data: assess, plan, work (week of 2026-10-26) | Plan approved by Ben |
 | `09-combine-and-aggregate.md` | Combine scenarios on the same lots; aggregate to county and state; demand cap | Best after D-025; works with stubs before |
