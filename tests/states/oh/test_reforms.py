@@ -34,6 +34,9 @@ PLACES = {  # Ohio's 20 largest places (2020 census), the ADU rule round of 2026
     "3925704": "Euclid",
     "3922694": "Dublin",
 }
+ROUND_2 = {  # the 2026-10-26 round: places 21-40 and the Franklin County places in franklin_permits
+    "3929106": "Gahanna",
+}
 
 
 def _read() -> pd.DataFrame:
@@ -57,7 +60,7 @@ def test_header_is_the_canonical_column_list():
 def test_rows_validate(reforms):
     assert len(reforms) >= 4
     assert (reforms["state"] == "OH").all()
-    assert set(reforms["jurisdiction_geoid"]) <= set(PLACES) | {"39"}
+    assert set(reforms["jurisdiction_geoid"]) <= set(PLACES) | set(ROUND_2) | {"39"}
 
 
 def test_every_row_has_an_https_source(reforms):

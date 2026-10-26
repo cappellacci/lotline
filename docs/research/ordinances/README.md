@@ -21,3 +21,9 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   into `config/reforms/nc.csv`.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
+- `oh-adu-lookups-todo.csv` and `oh-mm-lookups-todo.csv` (2026-10-26, Ohio thread 11, S2/S4): Ohio's 40 largest
+  places and the Franklin County places of 5,000+ people (the ones `franklin_permits` covers), largest first. A
+  place appears if a rule is uncoded or a coded row has an open question (named in `need`). The ADU table also
+  says what ADU permit data Lotline has (`adu_permit_data_now`) and asks where yearly ADU permit counts could
+  come from: the big markets (Cleveland, Toledo, Akron, Dayton …) have none. Places on American Legal answer
+  scripts with HTTP 403, so they need a browser. Confirmed rows are then coded into `config/reforms/oh.csv`.
