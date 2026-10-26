@@ -43,7 +43,8 @@ layer; its Fiscal Office layer lists every parcel twice, identical rows, so the 
 Lucas (Toledo) leaves 55% blank; its Auditor's 2025 land-use layer fills them (no year built). Cuyahoga
 (Cleveland) sends 999 for 12%; its Fiscal Office layer has 4-digit codes (the DTE class plus a county digit,
 read as the first three), an exempt-use code where the tax code is blank (`ext_luc`: Cleveland's 25,000
-land-bank and other exempt parcels) and the year each building was built (`min_age`, the oldest).
+land-bank and other exempt parcels) and the year each building was built (`min_age`, the oldest). Butler
+(Hamilton, Middletown) has DTE land use and year built in the county's `CURRENTPARCELS` layer.
 
 **Scope.** `COUNTIES` lists the counties downloaded: one server-side query per county and OBJECTID range
 (`OID_CHUNK`), so each query stays shallow, is cached on its own and resumes after a failure.
@@ -139,6 +140,15 @@ COUNTY_LAYERS: dict[str, CountyLayer] = {
         exempt_luc_field="ext_luc",  # blank tax_luc on exempt parcels (Cleveland land-bank lots: 6411)
         year_built_field="min_age",  # the oldest building's year built (the field holds years, not ages)
     ),
+    "39017": CountyLayer(
+        name="butler",
+        url="https://maps.bcohio.gov/server/rest/services/PARCELSEARCH/MapServer/0",
+        license="Butler County public GIS data (maps.bcohio.gov; no reuse terms stated)",
+        as_of="read 2026-10-26",
+        parcel_field="PIN",
+        luc_field="LUC",
+        year_built_field="YRBLT",
+    ),
 }
 
 PERSONAL = {
@@ -184,10 +194,11 @@ PROVENANCE = {
         "CurrentTo on any parcel takes the download (snapshot) date",
         "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
         "County layers (COUNTY_LAYERS: Summit Fiscal Office as of 2025-03-25, Lucas Auditor tax year 2025, "
-        "Cuyahoga Fiscal Office tax year 2026; owner and address fields never requested) joined on the "
-        "parcel ID, attributes only: the county's DTE land-use code fills land_use_std where the statewide "
-        "layer is UNKNOWN (never replacing a known code); residential year built → year_built (1700 to now, "
-        "else unknown); Summit lists each parcel twice, the first row is kept",
+        "Cuyahoga Fiscal Office tax year 2026, Butler CURRENTPARCELS read 2026-10-26; owner and address "
+        "fields never requested) joined on the parcel ID, attributes only: the county's DTE land-use code "
+        "fills land_use_std where the statewide layer is UNKNOWN (never replacing a known code); residential "
+        "year built → year_built (1700 to now, else unknown); Summit lists each parcel twice, the first row "
+        "is kept",
         "One roll per jurisdiction: after placement, a jurisdiction spanning counties with different export "
         "dates takes the latest one for all its parcels (8 jurisdictions on 2026-10-26, e.g. Twinsburg)",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
@@ -205,7 +216,9 @@ PROVENANCE = {
         "row (174,159 parcels on 2026-10-18), as do 9 villages outside the Census permit universe (8,679: "
         "Indian Hill, Amberley); 6 parcels had no centroid polygon match",
         "Attributes are minimal: no units, year built, building area, values or sales; county layers fill "
-        "land use and year built only where listed in COUNTY_LAYERS (Summit, Lucas, Cuyahoga)",
+        "land use and year built only where listed in COUNTY_LAYERS (Summit, Lucas, Cuyahoga, Butler); "
+        "Montgomery's (Dayton) county server failed TLS verification (incomplete certificate chain) on "
+        "2026-10-26 and is not used",
         "Lucas and Cuyahoga county GIS hosts dropped connections from some networks on 2026-10-26 (they "
         "answered over a VPN); a failed county download stops the run rather than silently skipping",
         "A county layer is of its own date (Summit 2025-03), not the statewide export's: a parcel created "

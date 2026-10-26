@@ -30,8 +30,9 @@ sources:
       2023-08-02). The 2022 vintage (maps.ohio.gov Statewide_Parcels_2022) is token-gated and skipped. Jurisdiction
       by centroid point-in-polygon (lotline.geo.place_or_township). County layers (COUNTY_LAYERS) fill
       unknown land use and add year built by parcel ID: Summit County Fiscal Office (as of 2025-03-25), Lucas
-      County Auditor 2025 land use, Cuyahoga County Fiscal Office (tax year 2026). The Lucas and Cuyahoga GIS
-      hosts dropped connections from some networks on 2026-10-26 and answered over a VPN.
+      County Auditor 2025 land use, Cuyahoga County Fiscal Office (tax year 2026), Butler County
+      CURRENTPARCELS. The Lucas and Cuyahoga GIS hosts dropped connections from some networks on 2026-10-26 and
+      answered over a VPN; Montgomery's (Dayton) server failed TLS verification and is not used.
   - name: cincy_permits
     url: https://data.cincinnati-oh.gov/resource/uhjb-xac9.json
     license: Public Domain (City of Cincinnati open data)

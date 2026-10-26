@@ -1,17 +1,18 @@
-### LB-NNN · 2026-10-26 · Build: Ohio county land use (Summit, Lucas, Cuyahoga) and one roll per jurisdiction (S5)
+### LB-NNN · 2026-10-26 · Build: Ohio county land use (Summit, Lucas, Cuyahoga, Butler) and one roll per jurisdiction (S5)
 - **Question:** Can county auditor layers fill the statewide parcel layer's missing land use, moving Akron and other places off the ACS fallback?
 - **What I did:**
   - Probed Summit, Lucas and Cuyahoga county parcel layers (metadata and counts). Summit's Fiscal Office layer has DTE land use and year built. The Lucas and Cuyahoga GIS hosts timed out at first and answered once Ben turned on a VPN: Lucas has 2025 land use (and yearly cadastres 2013–2025 with shapes only), Cuyahoga 4-digit DTE codes, exempt codes and year built.
   - `oh_parcels`: county layers (`COUNTY_LAYERS`) joined by parcel ID, attributes only (no owner or address fields); county land use fills `UNKNOWN` only, year built added; Summit's doubled rows deduplicated; Cuyahoga's exempt code read where its tax code is blank, with crosswalk row 641 (municipal and land-bank property → INSTITUTIONAL).
   - Found and fixed a pre-existing split: 8 jurisdictions spanning counties with different export dates had one partial roll per export year (Twinsburg's 2023 count was 1 parcel). Now one vintage per jurisdiction, the latest.
+  - Probed Montgomery and Butler (Ben's request): Butler's county server (`maps.bcohio.gov`, CURRENTPARCELS) has DTE land use and year built and was added; Montgomery's engineer server fails TLS verification (incomplete certificate chain), so it was not used. No open Warren County layer was found.
   - Rebuilt `parcels` from the cached 2026-10-19 snapshot (no statewide re-download), then `jurisdictions` and `eligible_parcels`.
 - **Inputs:** Summit County TaxParcels_dashboard (as of 2025-03-25); Lucas County Auditor Parcel General Land Use Classification 2025; Cuyahoga County Fiscal Office Parcel_Fabric_Taxparcels (tax year 2026); cached Ohio Statewide Parcels; `config/crosswalks/oh_dte_luc.csv`.
 - **Outputs:** `src/lotline/adapters/states/oh/oh_parcels.py`, `tests/states/oh/test_oh_parcels.py`, `config/crosswalks/oh_dte_luc.csv` (row 641), `config/states/oh.yaml`, `docs/data_availability.md`, `docs/data_provenance.md` (oh_parcels only).
 - **Findings:**
-  - Unknown land use: Summit 100% → 4.3%, Lucas 55% → 3.8%, Cuyahoga 13% → 1.2% (Akron 5.1%, Toledo 4.6%, Cleveland 1.1%); 580,000 parcels gain a year built (Summit, Cuyahoga).
-  - 49 jurisdictions leave the ACS fallback (120 → 72), including Cleveland, Toledo and Akron; tier 1 places 0 → 56 (largest: Parma, Cuyahoga Falls, Lakewood, Euclid); Cleveland, Toledo and Akron are tier 2.
+  - Unknown land use: Summit 100% → 4.3%, Lucas 55% → 3.8%, Cuyahoga 13% → 1.2% (Akron 5.1%, Toledo 4.6%, Cleveland 1.1%); 700,000 parcels gain a year built (Summit, Cuyahoga, Butler).
+  - 49 jurisdictions leave the ACS fallback (120 → 72), including Cleveland, Toledo and Akron; tier 1 places 0 → 60 (largest: Parma, Cuyahoga Falls, Lakewood, Euclid); Cleveland, Toledo and Akron are tier 2.
   - 2024 eligible lots: Cleveland 92,316 (ACS) → 80,693, Toledo 86,593 → 81,585, Akron 63,239 → 59,904; Twinsburg 1 → 5,054 (split-roll fix).
-  - Still on the fallback among the 20 largest: Dayton, Hamilton, Middletown.
+  - Still on the fallback among the 40 largest: Dayton (18.6% unknown; Montgomery server unusable), Hamilton (10.4%: Butler parcels with no appraisal record), Middletown (15.2%: its Warren County part).
 - **Decisions:** one vintage per jurisdiction for Ohio's statewide layer (proposed; documented in the adapter).
 - **AI:** Claude Code (WS-OH) probed the layers, wrote the join and tests (hand-worked fixtures), and compared every changed jurisdiction before and after.
-- **Open / next:** Montgomery (Dayton) and Butler (Hamilton, Middletown) county layers; Franklin `Dwelling.xlsx` year built (S6a); Lucas cadastre history (parcel counts 2013–2025) as a check on D-035.
+- **Open / next:** Montgomery (Dayton): a working route to the county's data (Ben); Warren County land use (Middletown, Mason); Franklin `Dwelling.xlsx` year built (S6a); Lucas cadastre history (parcel counts 2013–2025) as a check on D-035.
