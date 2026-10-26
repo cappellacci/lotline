@@ -19,5 +19,9 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   Carolina places (Census 2020), largest first, minus places already coded. Most city sites answer scripts with
   HTTP 403, so these need a browser. Fill the blank columns with a source link; confirmed rows are then coded
   into `config/reforms/nc.csv`.
+- `tx-adu-lookups-todo.csv` and `tx-mm-lookups-todo.csv` (2026-10-23, Texas thread 12, S4/S5): places among
+  Texas's 40 largest (Census 2020) whose ADU or missing-middle rules one read of the zoneomics code mirror did not
+  settle, largest first, plus a line for the second-coder check of every flagged row in `config/reforms/tx.csv`.
+  Rows that were settled are coded by `scripts/dev/tx_rules_21_40.py`.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
