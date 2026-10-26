@@ -40,6 +40,10 @@ code fills `land_use_std` where the statewide layer has none (`UNKNOWN`), read w
 its residential year built becomes `year_built` (a year from 1700 to now; 0 or blank → unknown). A known
 statewide code is never replaced. Summit County (Akron, Cuyahoga Falls) sends no land use to the statewide
 layer; its Fiscal Office layer lists every parcel twice, identical rows, so the first row per parcel is kept.
+Lucas (Toledo) leaves 55% blank; its Auditor's 2025 land-use layer fills them (no year built). Cuyahoga
+(Cleveland) sends 999 for 12%; its Fiscal Office layer has 4-digit codes (the DTE class plus a county digit,
+read as the first three), an exempt-use code where the tax code is blank (`ext_luc`: Cleveland's 25,000
+land-bank and other exempt parcels) and the year each building was built (`min_age`, the oldest).
 
 **Scope.** `COUNTIES` lists the counties downloaded: one server-side query per county and OBJECTID range
 (`OID_CHUNK`), so each query stays shallow, is cached on its own and resumes after a failure.
@@ -95,6 +99,7 @@ class CountyLayer:
     parcel_field: str  # the county's parcel number (= the statewide LocalParcelID)
     luc_field: str  # DTE land-use code
     year_built_field: str | None = None
+    exempt_luc_field: str | None = None  # the use code of a tax-exempt parcel, read where luc_field is blank
 
 
 COUNTY_LAYERS: dict[str, CountyLayer] = {
@@ -112,6 +117,27 @@ COUNTY_LAYERS: dict[str, CountyLayer] = {
         parcel_field="PARCELID",
         luc_field="USECD",
         year_built_field="RESYRBLT",
+    ),
+    "39095": CountyLayer(
+        name="lucas",
+        url=(
+            "https://lcaudgis.co.lucas.oh.us/gisaudserver/rest/services/Hosted/"
+            "Parcel_General_Land_Use_Classification_2025/FeatureServer/0"
+        ),
+        license="Lucas County Auditor (AREIS) public GIS data (no reuse terms stated)",
+        as_of="tax year 2025",
+        parcel_field="parid",
+        luc_field="luc",
+    ),
+    "39035": CountyLayer(
+        name="cuyahoga",
+        url="https://gis.cuyahogacounty.gov/server/rest/services/CCFO/Parcel_Fabric_Taxparcels/FeatureServer/0",
+        license="Cuyahoga County Fiscal Office public GIS data (no reuse terms stated)",
+        as_of="tax year 2026",
+        parcel_field="parcel_id",
+        luc_field="tax_luc",  # 4-digit: the DTE class plus a county digit ('5100' → 510)
+        exempt_luc_field="ext_luc",  # blank tax_luc on exempt parcels (Cleveland land-bank lots: 6411)
+        year_built_field="min_age",  # the oldest building's year built (the field holds years, not ages)
     ),
 }
 
@@ -157,10 +183,11 @@ PROVENANCE = {
         "vintage_date = the county's latest CurrentTo (export date); vintage = its year; a county with no "
         "CurrentTo on any parcel takes the download (snapshot) date",
         "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
-        "County layers (COUNTY_LAYERS: Summit County Fiscal Office, as of 2025-03-25) joined on the parcel "
-        "ID, attributes only: the county's DTE land-use code fills land_use_std where the statewide layer is "
-        "UNKNOWN (never replacing a known code); residential year built → year_built (1700 to now, else "
-        "unknown); Summit lists each parcel twice, the first row is kept",
+        "County layers (COUNTY_LAYERS: Summit Fiscal Office as of 2025-03-25, Lucas Auditor tax year 2025, "
+        "Cuyahoga Fiscal Office tax year 2026; owner and address fields never requested) joined on the "
+        "parcel ID, attributes only: the county's DTE land-use code fills land_use_std where the statewide "
+        "layer is UNKNOWN (never replacing a known code); residential year built → year_built (1700 to now, "
+        "else unknown); Summit lists each parcel twice, the first row is kept",
         "One roll per jurisdiction: after placement, a jurisdiction spanning counties with different export "
         "dates takes the latest one for all its parcels (8 jurisdictions on 2026-10-26, e.g. Twinsburg)",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
@@ -178,7 +205,9 @@ PROVENANCE = {
         "row (174,159 parcels on 2026-10-18), as do 9 villages outside the Census permit universe (8,679: "
         "Indian Hill, Amberley); 6 parcels had no centroid polygon match",
         "Attributes are minimal: no units, year built, building area, values or sales; county layers fill "
-        "land use and year built only where listed in COUNTY_LAYERS (Summit so far)",
+        "land use and year built only where listed in COUNTY_LAYERS (Summit, Lucas, Cuyahoga)",
+        "Lucas and Cuyahoga county GIS hosts dropped connections from some networks on 2026-10-26 (they "
+        "answered over a VPN); a failed county download stops the run rather than silently skipping",
         "A county layer is of its own date (Summit 2025-03), not the statewide export's: a parcel created "
         "after it keeps the statewide (unknown) land use",
         "County exports are of different dates (Franklin 2023-09-26, Hamilton 2023-08-02); the layer is "
@@ -265,6 +294,8 @@ def county_attributes(raw: pd.DataFrame, county_geoid: str, layer: CountyLayer) 
     """A county layer's rows → one row per parcel: parcel_id, luc (3-digit code), year_built."""
     pid = raw[layer.parcel_field].astype("string").str.strip().replace("", pd.NA)
     luc = luc_code(raw[layer.luc_field])
+    if layer.exempt_luc_field:
+        luc = luc.fillna(luc_code(raw[layer.exempt_luc_field]))
     if layer.year_built_field:
         year = pd.to_numeric(raw[layer.year_built_field], errors="coerce")
         year = year.where(year.between(YEAR_BUILT_MIN, pd.Timestamp.today().year)).astype("Int64")
@@ -292,9 +323,8 @@ def apply_county_attributes(parcels: pd.DataFrame, attrs: pd.DataFrame, layer_na
 
 
 def download_county(store: DataStore, layer: CountyLayer, *, refresh: bool = False) -> pd.DataFrame:
-    fields = [layer.parcel_field, layer.luc_field] + (
-        [layer.year_built_field] if layer.year_built_field else []
-    )
+    optional = [layer.year_built_field, layer.exempt_luc_field]
+    fields = [layer.parcel_field, layer.luc_field] + [f for f in optional if f]
     return download_layer(
         layer.url,
         store=store,

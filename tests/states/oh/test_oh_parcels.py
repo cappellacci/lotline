@@ -108,8 +108,12 @@ def test_resolve_jurisdictions_uses_only_known_geoids():
 def test_load_assigns_jurisdictions_and_applies_snapshot_holdout(raw, monkeypatch):
     raw["lon"], raw["lat"] = -83.0, 40.0
     monkeypatch.setattr(op, "download", lambda store, refresh=False: raw)
-    no_rows = pd.DataFrame(columns=["PARCELID", "USECD", "RESYRBLT"])
-    monkeypatch.setattr(op, "download_county", lambda store, layer, refresh=False: no_rows)
+
+    def no_rows(store, layer, refresh=False):
+        cols = [layer.parcel_field, layer.luc_field, layer.year_built_field, layer.exempt_luc_field]
+        return pd.DataFrame(columns=[c for c in cols if c])
+
+    monkeypatch.setattr(op, "download_county", no_rows)
     monkeypatch.setattr(
         op,
         "assign_jurisdictions",
@@ -210,6 +214,22 @@ def test_apply_county_attributes_fills_only_unknown_land_use():
     assert out.loc["391530199999", "land_use_std"] == "UNKNOWN"  # unmapped county code stays unknown
     assert out.loc["391530100001", "year_built"] == 1920 and out.loc["391532809199", "year_built"] == 1986
     assert pd.isna(out.loc["39049010-000001-00", "year_built"])  # other counties untouched
+
+
+def test_four_digit_county_codes_read_as_dte_classes():
+    cuyahoga = op.COUNTY_LAYERS["39035"]
+    raw = pd.DataFrame(
+        {
+            "parcel_id": ["00101003", "00101004", "00101005"],
+            "tax_luc": ["5100", None, None],
+            "ext_luc": [None, "6411", None],  # exempt parcel: its use is in the exempt code
+            "min_age": [1962, None, None],
+        }
+    )
+    a = op.county_attributes(raw, "39035", cuyahoga)
+    assert a["luc"].tolist()[:2] == ["510", "641"] and pd.isna(a["luc"].iloc[2])
+    assert op.luc_crosswalk()["641"] == "INSTITUTIONAL"
+    assert a["parcel_id"].iloc[0] == "3903500101003" and a["year_built"].iloc[0] == 1962
 
 
 def test_county_layers_are_attribute_only():
