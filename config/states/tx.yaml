@@ -7,6 +7,12 @@ township_permits: false  # townships issue building permits (BPS rows per townsh
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[733, 733], [750, 799], [885, 885]]
 holdouts: []
+# One parcels source per jurisdiction (build/eligible.single_source): Austin keeps the TCAD roll (Travis
+# County part, with TCAD's own codes for duplexes, triplexes and condos); everyone else, including Austin's
+# Williamson and Hays neighbours, StratMap.
+parcel_sources:
+  "4805000": tcad  # Austin
+  "*": stratmap_parcels
 sources:
   - name: austin_permits
     url: https://data.austintexas.gov/Building-and-Development/Issued-Construction-Permits/3syk-w9eu
@@ -17,6 +23,17 @@ sources:
       Adapter src/lotline/adapters/states/tx/austin_permits.py. Building permits with a Census code 101-106,
       436 or 645-649 in permit_class, plus plain-class 'New' permits (159,334 rows on 2026-10-18). R-102
       Secondary Apartment is the city's ADU class (dataset 687g-qcqy); it nearly stops after HOME (2024).
+  - name: stratmap_parcels
+    url: https://data.geographic.texas.gov/collection/?c=1d33dafb-6e9c-40ac-887d-f4577909ed9b
+    license: CC0 1.0 (TxGIO StratMap Land Parcels)
+    access: manual
+    cadence: annual collection (2019, 2021-2026)
+    notes: >-
+      Adapter src/lotline/adapters/states/tx/stratmap_parcels.py. TxGIO collects every appraisal district's
+      parcels into one schema each year; CC0 on the DataHub (api.tnris.org lists the collections). The download
+      host answers scripts with a CloudFront 403, so Ben downloads the statewide zip in a browser and registers
+      it with `lotline manifest register --source stratmap_parcels`. Land use from the PTAD state code
+      (stat_land_use); jurisdiction by polygon centroid. The REST map service has querying turned off.
   - name: tcad_parcels
     url: https://traviscad.org/publicinformation/
     license: Public information posted by Travis Central Appraisal District
