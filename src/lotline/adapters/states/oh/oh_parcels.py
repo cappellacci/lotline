@@ -28,6 +28,19 @@ subdivision (Ohio townships issue permits). The result is then checked against t
    land (the case in Franklin and Hamilton, where the county remainder is the Census permit issuer). These
    counts are reported, not hidden.
 
+**One roll per jurisdiction.** A city spanning two counties whose exports are dated differently (Twinsburg:
+Summit 2026, Cuyahoga 2023) would otherwise get two partial "rolls", one per export year, each counted as the
+whole city. The layer is one current snapshot, so after placement every parcel of a jurisdiction takes the
+latest export date among its counties (`one_vintage_per_jurisdiction`; the later date is the conservative one
+under the snapshot rule).
+
+**County layers.** Where a county auditor publishes its own parcel layer, `COUNTY_LAYERS` names it, and its
+attributes (no geometry) are joined on the parcel ID (`apply_county_attributes`): the county's DTE land-use
+code fills `land_use_std` where the statewide layer has none (`UNKNOWN`), read with the same crosswalk, and
+its residential year built becomes `year_built` (a year from 1700 to now; 0 or blank → unknown). A known
+statewide code is never replaced. Summit County (Akron, Cuyahoga Falls) sends no land use to the statewide
+layer; its Fiscal Office layer lists every parcel twice, identical rows, so the first row per parcel is kept.
+
 **Scope.** `COUNTIES` lists the counties downloaded: one server-side query per county and OBJECTID range
 (`OID_CHUNK`), so each query stays shallow, is cached on its own and resumes after a failure.
 
@@ -37,6 +50,7 @@ Only non-personal fields are requested: no situs address, mailing address fields
 from __future__ import annotations
 
 import csv
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -67,6 +81,39 @@ SQFT_PER_ACRE = 43_560.0
 # page on a later try (seen on Franklin at offset ~418,000); the pager retries error bodies.
 OID_CHUNK = 100_000  # OBJECTIDs per query (mechanics: keeps paging offsets shallow)
 RETRIES = 5  # pager retries on ArcGIS error bodies (mechanics, not a model parameter)
+YEAR_BUILT_MIN = 1700  # an earlier year built is a data error (unknown)
+
+
+@dataclass(frozen=True)
+class CountyLayer:
+    """A county auditor's parcel layer whose attributes fill gaps in the statewide layer."""
+
+    name: str
+    url: str
+    license: str
+    as_of: str  # the layer's last edit date, for provenance
+    parcel_field: str  # the county's parcel number (= the statewide LocalParcelID)
+    luc_field: str  # DTE land-use code
+    year_built_field: str | None = None
+
+
+COUNTY_LAYERS: dict[str, CountyLayer] = {
+    "39153": CountyLayer(
+        name="summit",
+        url=(
+            "https://services3.arcgis.com/3Ukh5HzAdI6WZ3KP/arcgis/rest/services/"
+            "TaxParcels_dashboard/FeatureServer/0"
+        ),
+        license=(
+            "Summit County Fiscal Office public GIS data (ArcGIS Online, owner Summit_Admin; "
+            "no reuse terms stated)"
+        ),
+        as_of="2025-03-25",
+        parcel_field="PARCELID",
+        luc_field="USECD",
+        year_built_field="RESYRBLT",
+    ),
+}
 
 PERSONAL = {
     "SitusAddressAll",
@@ -110,6 +157,12 @@ PROVENANCE = {
         "vintage_date = the county's latest CurrentTo (export date); vintage = its year; a county with no "
         "CurrentTo on any parcel takes the download (snapshot) date",
         "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
+        "County layers (COUNTY_LAYERS: Summit County Fiscal Office, as of 2025-03-25) joined on the parcel "
+        "ID, attributes only: the county's DTE land-use code fills land_use_std where the statewide layer is "
+        "UNKNOWN (never replacing a known code); residential year built → year_built (1700 to now, else "
+        "unknown); Summit lists each parcel twice, the first row is kept",
+        "One roll per jurisdiction: after placement, a jurisdiction spanning counties with different export "
+        "dates takes the latest one for all its parcels (8 jurisdictions on 2026-10-26, e.g. Twinsburg)",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
         "stored as lon/lat",
         "jurisdiction_geoid by lotline.geo.place_or_township (TIGERweb ACS 2025 incorporated places, else "
@@ -124,8 +177,10 @@ PROVENANCE = {
         "building department permits unincorporated land), so township parcels go to the county's remainder "
         "row (174,159 parcels on 2026-10-18), as do 9 villages outside the Census permit universe (8,679: "
         "Indian Hill, Amberley); 6 parcels had no centroid polygon match",
-        "Attributes are minimal: no units, year built, building area, values or sales; county CAMA data are "
-        "needed for those (tier 1 counties such as Franklin)",
+        "Attributes are minimal: no units, year built, building area, values or sales; county layers fill "
+        "land use and year built only where listed in COUNTY_LAYERS (Summit so far)",
+        "A county layer is of its own date (Summit 2025-03), not the statewide export's: a parcel created "
+        "after it keeps the statewide (unknown) land use",
         "County exports are of different dates (Franklin 2023-09-26, Hamilton 2023-08-02); the layer is "
         "a current snapshot, not a history",
         "Franklin's LandArea is empty or 0 for 97.5% of parcels, so its lot sizes are GIS polygon areas",
@@ -204,6 +259,63 @@ def build(raw: pd.DataFrame, state: str = "OH", snapshot_date: str | None = None
     out = out.sort_values(["parcel_id", "_shape"], ascending=[True, False], na_position="last")
     out = out.drop_duplicates(["state", "parcel_id", "vintage"], keep="first").drop(columns="_shape")
     return out.reset_index(drop=True)
+
+
+def county_attributes(raw: pd.DataFrame, county_geoid: str, layer: CountyLayer) -> pd.DataFrame:
+    """A county layer's rows → one row per parcel: parcel_id, luc (3-digit code), year_built."""
+    pid = raw[layer.parcel_field].astype("string").str.strip().replace("", pd.NA)
+    luc = luc_code(raw[layer.luc_field])
+    if layer.year_built_field:
+        year = pd.to_numeric(raw[layer.year_built_field], errors="coerce")
+        year = year.where(year.between(YEAR_BUILT_MIN, pd.Timestamp.today().year)).astype("Int64")
+    else:
+        year = pd.Series(pd.NA, index=raw.index, dtype="Int64")
+    out = pd.DataFrame({"parcel_id": county_geoid + pid, "luc": luc, "year_built": year})
+    return out.loc[pid.notna()].drop_duplicates("parcel_id", keep="first").reset_index(drop=True)
+
+
+def apply_county_attributes(parcels: pd.DataFrame, attrs: pd.DataFrame, layer_name: str) -> pd.DataFrame:
+    """Fill UNKNOWN land use and year built from a county layer (see the module docstring)."""
+    xwalk = luc_crosswalk()
+    a = attrs.set_index("parcel_id")
+    out = parcels.copy()
+    if "year_built" not in out:
+        out["year_built"] = pd.Series(pd.NA, index=out.index, dtype="Int64")
+    code = out["parcel_id"].map(a["luc"]).astype("string")
+    std = code.map(xwalk)
+    fill = out["land_use_std"].eq("UNKNOWN") & std.notna()
+    out.loc[fill, "land_use_std"] = std[fill]
+    out.loc[fill, "land_use_raw"] = code[fill] + f" ({layer_name} county layer)"
+    year = out["parcel_id"].map(a["year_built"]).astype("Int64")
+    out["year_built"] = out["year_built"].astype("Int64").fillna(year)
+    return out
+
+
+def download_county(store: DataStore, layer: CountyLayer, *, refresh: bool = False) -> pd.DataFrame:
+    fields = [layer.parcel_field, layer.luc_field] + (
+        [layer.year_built_field] if layer.year_built_field else []
+    )
+    return download_layer(
+        layer.url,
+        store=store,
+        source=SOURCE,
+        license=layer.license,
+        adapter=ADAPTER,
+        adapter_version=VERSION,
+        name=f"county_{layer.name}",
+        out_fields=",".join(fields),
+        retries=RETRIES,
+        vintage=snapshot_vintage(),
+        refresh=refresh,
+    )
+
+
+def one_vintage_per_jurisdiction(df: pd.DataFrame) -> pd.DataFrame:
+    """Every parcel of a jurisdiction takes its latest county export date (see the module docstring)."""
+    latest = df.groupby("jurisdiction_geoid")["vintage_date"].transform("max")
+    out = df.assign(vintage_date=latest.fillna(df["vintage_date"]))
+    out["vintage"] = out["vintage_date"].dt.year.astype("Int64").fillna(df["vintage"])
+    return out
 
 
 def resolve_jurisdictions(
@@ -326,7 +438,12 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     raw = download(store, refresh=refresh)
-    df, _ = assign_jurisdictions(build(raw, state=state, snapshot_date=snapshot_vintage()), state, store)
+    df = build(raw, state=state, snapshot_date=snapshot_vintage())
+    for county_geoid, layer in COUNTY_LAYERS.items():
+        attrs = county_attributes(download_county(store, layer, refresh=refresh), county_geoid, layer)
+        df = apply_county_attributes(df, attrs, layer.name)
+    df, _ = assign_jurisdictions(df, state, store)
+    df = one_vintage_per_jurisdiction(df)
     df = holdout.apply(
         df,
         state,

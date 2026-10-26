@@ -1,0 +1,17 @@
+### LB-NNN · 2026-10-26 · Build: Ohio county land use (Summit) and one roll per jurisdiction (S5)
+- **Question:** Can county auditor layers fill the statewide parcel layer's missing land use, moving Akron and other places off the ACS fallback?
+- **What I did:**
+  - Probed Summit, Lucas and Cuyahoga county parcel layers (metadata and counts). Summit's Fiscal Office layer has DTE land use and year built; the Lucas (yearly cadastres 2013–2025) and Cuyahoga county GIS hosts did not answer from this machine (TCP timeout; the counties' main websites answer).
+  - `oh_parcels`: county layers (`COUNTY_LAYERS`) joined by parcel ID, attributes only; county land use fills `UNKNOWN` only, year built added; Summit's doubled rows deduplicated.
+  - Found and fixed a pre-existing split: 8 jurisdictions spanning counties with different export dates had one partial roll per export year (Twinsburg's 2023 count was 1 parcel). Now one vintage per jurisdiction, the latest.
+  - Rebuilt `parcels` from the cached 2026-10-19 snapshot (no statewide re-download), then `jurisdictions` and `eligible_parcels`.
+- **Inputs:** Summit County TaxParcels_dashboard (ArcGIS Online, as of 2025-03-25); cached Ohio Statewide Parcels; `config/crosswalks/oh_dte_luc.csv`.
+- **Outputs:** `src/lotline/adapters/states/oh/oh_parcels.py`, `tests/states/oh/test_oh_parcels.py`, `config/states/oh.yaml`, `docs/data_availability.md`, `docs/data_provenance.md` (oh_parcels only).
+- **Findings:**
+  - Summit unknown land use 100% → 4.3% (Akron 5.1%, Cuyahoga Falls 3.1%); 190,742 parcels gain a year built.
+  - 14 jurisdictions leave the ACS fallback (Akron, Cuyahoga Falls, Stow, Barberton …); Ohio's first 10 tier-1 places (Cuyahoga Falls, Stow, Twinsburg, Tallmadge …); Akron is tier 2 (year built on 69% of parcels).
+  - Akron's 2024 denominator: 63,239 (ACS) → 59,904 (parcels). Twinsburg 1 → 5,054; Tallmadge 95 → 5,485.
+  - Still on the fallback among the 20 largest: Cleveland, Toledo, Dayton, Hamilton, Middletown.
+- **Decisions:** one vintage per jurisdiction for Ohio's statewide layer (proposed; documented in the adapter).
+- **AI:** Claude Code (WS-OH) probed the layers, wrote the join and tests (hand-worked fixtures), and compared every changed jurisdiction before and after.
+- **Open / next:** Lucas and Cuyahoga hosts (Ben to try in a browser); Dayton (Montgomery 19% unknown) and Butler (Hamilton, Middletown) county layers; Franklin `Dwelling.xlsx` year built (S6a).

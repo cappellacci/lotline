@@ -108,6 +108,8 @@ def test_resolve_jurisdictions_uses_only_known_geoids():
 def test_load_assigns_jurisdictions_and_applies_snapshot_holdout(raw, monkeypatch):
     raw["lon"], raw["lat"] = -83.0, 40.0
     monkeypatch.setattr(op, "download", lambda store, refresh=False: raw)
+    no_rows = pd.DataFrame(columns=["PARCELID", "USECD", "RESYRBLT"])
+    monkeypatch.setattr(op, "download_county", lambda store, layer, refresh=False: no_rows)
     monkeypatch.setattr(
         op,
         "assign_jurisdictions",
@@ -157,3 +159,73 @@ def test_county_without_export_date_takes_the_snapshot_date(raw):
     ham = out[out.county_geoid == "39061"]
     assert (ham.vintage_date == pd.Timestamp("2026-10-19")).all() and (ham.vintage == 2026).all()
     assert (out[out.county_geoid == "39049"].vintage == 2023).all()
+
+
+SUMMIT = op.CountyLayer(
+    name="summit",
+    url="https://example.test/0",
+    license="test",
+    as_of="2025-03-25",
+    parcel_field="PARCELID",
+    luc_field="USECD",
+    year_built_field="RESYRBLT",
+)
+
+
+def test_county_attributes_dedupe_and_clean_years():
+    raw = pd.DataFrame(
+        {
+            "PARCELID": ["2809199", "2809199", "0106462", "0100001", None, "0100002"],
+            "USECD": ["510", "510", "640", "520", "510", None],
+            "RESYRBLT": [1986, 1986, None, 0, 1950, 1650],
+        }
+    )
+    a = op.county_attributes(raw, "39153", SUMMIT).set_index("parcel_id")
+    assert list(a.index) == ["391532809199", "391530106462", "391530100001", "391530100002"]  # pairs once
+    assert a.loc["391532809199", "year_built"] == 1986
+    assert pd.isna(a.loc["391530100001", "year_built"])  # 0 is unknown, not year 0
+    assert pd.isna(a.loc["391530100002", "year_built"])  # before 1700: a data error
+    assert pd.isna(a.loc["391530100002", "luc"])
+
+
+def test_apply_county_attributes_fills_only_unknown_land_use():
+    parcels = pd.DataFrame(
+        {
+            "parcel_id": ["391532809199", "391530100001", "391530199999", "39049010-000001-00"],
+            "land_use_std": ["UNKNOWN", "SF_DETACHED", "UNKNOWN", "SF_DETACHED"],
+            "land_use_raw": [None, "510: Res-Single Family", None, "510: Res-Single Family"],
+        }
+    )
+    attrs = pd.DataFrame(
+        {
+            "parcel_id": ["391532809199", "391530100001", "391530199999"],
+            "luc": ["510", "520", "553"],  # 553: a county custom code, not in the crosswalk
+            "year_built": pd.array([1986, 1920, pd.NA], dtype="Int64"),
+        }
+    )
+    out = op.apply_county_attributes(parcels, attrs, "summit").set_index("parcel_id")
+    assert out.loc["391532809199", "land_use_std"] == "SF_DETACHED"
+    assert out.loc["391532809199", "land_use_raw"] == "510 (summit county layer)"
+    assert out.loc["391530100001", "land_use_std"] == "SF_DETACHED"  # a known statewide code is kept
+    assert out.loc["391530199999", "land_use_std"] == "UNKNOWN"  # unmapped county code stays unknown
+    assert out.loc["391530100001", "year_built"] == 1920 and out.loc["391532809199", "year_built"] == 1986
+    assert pd.isna(out.loc["39049010-000001-00", "year_built"])  # other counties untouched
+
+
+def test_county_layers_are_attribute_only():
+    for geoid, layer in op.COUNTY_LAYERS.items():
+        assert len(geoid) == 5 and geoid.startswith("39")
+        assert layer.parcel_field and layer.luc_field
+
+
+def test_one_vintage_per_jurisdiction():
+    df = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["3978050", "3978050", "3901000"],
+            "vintage_date": pd.to_datetime(["2023-08-01", "2026-10-19", "2026-10-19"]),
+            "vintage": pd.array([2023, 2026, 2026], dtype="Int64"),
+        }
+    )
+    out = op.one_vintage_per_jurisdiction(df)
+    assert out["vintage"].tolist() == [2026, 2026, 2026]  # Twinsburg's Cuyahoga parcel joins the 2026 roll
+    assert (out["vintage_date"] == pd.Timestamp("2026-10-19")).all()
