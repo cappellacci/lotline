@@ -19,5 +19,8 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   Carolina places (Census 2020), largest first, minus places already coded. Most city sites answer scripts with
   HTTP 403, so these need a browser. Fill the blank columns with a source link; confirmed rows are then coded
   into `config/reforms/nc.csv`.
+- `tx-fee-lookups-todo.csv` (2026-10-26, Texas thread 12, S6): water/sewer and impact fees per home for the four
+  Texas cities with permit data and Houston, plus Austin's parkland and meter fees. Austin's water/wastewater
+  impact fees and street impact fee are coded in `config/fees/tx.csv`.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
