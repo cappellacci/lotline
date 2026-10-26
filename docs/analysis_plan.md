@@ -83,6 +83,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   whose excess over BPS has a different cause (open).
 - **Why:** counting a project nine times overstates multifamily building, the outcome most reforms target.
 - **Decided by:** Ben, 2026-10-19.
+- **Amended by:** D-036 (2026-10-26), which extends the rule to permits with no parcel.
 
 ### D-009 · 2026-10-19 · Pro forma specification choices the research docs leave open
 - **Research docs (methods review §2a, register C43/C46/C48/C54):** feasible when value − (hard + soft + fees +
@@ -1366,3 +1367,60 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Limits:** the factor carries the roll's mix (vacant lots, zoning, exclusions) back in time unchanged, and ACS
   sampling noise moves the filled years. Rolls newer than ACS (NC OneMap 2026) anchor the latest ACS year (2024).
 - **Decided by:** Ben, 2026-10-21 (option 1 in #208, real rolls kept wherever they exist).
+
+### D-036 · 2026-10-26 · Repeated project totals on permits with no parcel number (amends D-008, #221)
+- **Was (D-008):** permits with no `parcel_id` were never grouped. Fort Worth (`fw_permits`) and Dallas
+  (`dallas_permits`) publish no parcel number, and some projects put the project's total on every building's
+  permit: Fort Worth 2024, seven consecutive permits each say 404 units; Dallas 2023, eleven same-day permits
+  each say 471. Their 5+ unit counts reach 2.6× (Fort Worth) and 7.5× (Dallas 2024) of Census BPS.
+- **Now (`lotline.build.permits.flag_repeated_totals`, used by `count_units`):** permits with no parcel are
+  grouped by jurisdiction, year, **day** (`issue_date`, else `application_date`) and the same unit count of at
+  least `repeated_total_min_units` = 50, when the group has at least `repeated_total_min_permits` = 3 permits.
+  Within a group, only permits whose floor area per unit is below `repeated_total_max_sqft_per_unit` = 300 sq ft
+  **or whose floor area is missing** are read as repeating the total: their count goes once on the lowest
+  `permit_id` among them; the others of them count 0. Permits with a plausible floor area per unit stay as
+  reported. Permits with no date and demolitions are never grouped. The parcel branch of D-008 is unchanged.
+- **Why the 50-unit floor stays:** same-day runs of 3+ permits with the same count are common below 50 units
+  (2,131 of 3,240 two-to-49-unit permits in Fort Worth, 4,278 of 6,638 in Dallas, 2010–2025: rows of duplexes
+  and fourplexes). The floor keeps every one of them as reported.
+- **Why floor area per unit:** among 50+ unit permits, the same-day groups claim a median 75 (Fort Worth) and
+  100 (Dallas) sq ft per unit, against 1,150 and 592 for the rest; 87% and 92% of the grouped units sit on
+  permits under 300 sq ft per unit. No home is that small (building-code minimum dwelling size, see the
+  parameter's source), so such a permit carries a project total. About a fifth of Fort Worth's grouped permits
+  have normal floor area: likely real identical buildings, which the area test keeps.
+- **Parameter:** `repeated_total_max_sqft_per_unit` in `config/params/permits.yaml` (300; sensitivity 200–500).
+- **Sensitivity, both ways:** as in D-008, the rule on is the primary count and `dedupe=False` gives the
+  as-reported count.
+- **Effect measured before the area test (issue #221, counts only, 5+ units vs BPS 5+):** these grouped every
+  same-day repeat regardless of floor area (Fort Worth on filing date, Dallas on issue date), so the final rule
+  removes somewhat less (87–92% of the grouped units fall under the area test). To re-measure on the final rule.
+
+  | Fort Worth | As reported | Removed | BPS 5+ | Ratio before → after |
+  |---|---|---|---|---|
+  | 2016 | 6,402 | 153 | 3,845 | 1.67 → 1.63 |
+  | 2018 | 5,527 | 230 | 3,705 | 1.49 → 1.43 |
+  | 2020 | 5,391 | 2,475 | 2,100 | 2.57 → 1.39 |
+  | 2023 | 8,050 | 2,312 | 3,144 | 2.56 → 1.83 |
+  | 2024 | 15,455 | 8,464 | 5,877 | 2.63 → 1.19 |
+  | 2025 | 3,729 | 949 | 3,348 | 1.11 → 0.83 |
+
+  | Dallas | As reported | Rule on | BPS 5+ | Ratio before → after |
+  |---|---|---|---|---|
+  | 2010 | 4,211 | 1,684 | 1,716 | 2.45 → 0.98 |
+  | 2011 | 5,219 | 4,256 | 3,414 | 1.53 → 1.25 |
+  | 2019 | 8,360 | 5,756 | 5,712 | 1.46 → 1.01 |
+  | 2021 | 8,457 | 7,989 | 7,533 | 1.12 → 1.06 |
+  | 2022 | 19,003 | 7,599 | 7,485 | 2.54 → 1.02 |
+  | 2023 | 13,810 | 5,321 | 4,179 | 3.30 → 1.27 |
+  | 2024 | 29,037 | 8,276 | 3,871 | 7.50 → 2.14 |
+
+  Dallas 2024 ends 2024-11-12 in the source. Fort Worth 2022 (1.80×) has no repeats; part of its excess has
+  another cause (open). 1-unit homes are 0.84–1.01 of BPS throughout, so the excess is specific to repeated
+  multifamily totals.
+- **Limits:** a project whose buildings are filed on different days is not caught; a single or paired permit
+  with an implausible area per unit (47% of Dallas's ungrouped 50+ unit permits) is not caught either. An
+  area-only rule would be a further decision.
+- **Applies everywhere:** the branch runs on any permit with no parcel, so it can also touch no-parcel rows in
+  other cities' files (e.g. the MN and Austin v0 comparisons, which call `flag_repeated_totals`).
+- **Decided by:** Ben, 2026-10-26 (#221: group by same day and same count, protect duplexes and fourplexes;
+  collapse only implausible floor area per unit).

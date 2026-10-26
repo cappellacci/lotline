@@ -1,4 +1,4 @@
-# Permit counting rules (build/permits.py, analysis plan D-008). Every value has a source.
+# Permit counting rules (build/permits.py, analysis plan D-008 and D-036). Every value has a source.
 # Applied when permits are counted, never to the adapters' "as reported" tables.
 
 repeated_total_min_units:
@@ -16,3 +16,11 @@ repeated_total_min_permits:
   unit: permits
   source: "Ben, 2026-10-19 (decision D-008); calibrated on observed repeats: Columbus 2023 9×198, Austin 2022 9×280"
   notes: "A parcel-year-unit count must appear on at least this many permits before the repeats are dropped. Two large identical buildings on one parcel are plausible, so 2 is the low end of the sensitivity range."
+
+repeated_total_max_sqft_per_unit:
+  value: 300
+  low: 200
+  high: 500
+  unit: sq ft of floor area per unit
+  source: "Ben, 2026-10-26 (decision D-036, issue #221). Floor: building-code minimum dwelling size: ICC IBC §1208.4 efficiency dwelling units (living room at least 190 sq ft in the 2018/2021 IBC, 220 sq ft in 2015, plus a separate bathroom and a kitchen) and IRC R304.1 (each habitable room at least 70 sq ft); edition adopted varies by state, to verify per state"
+  notes: "Applies only to permits with no parcel number (D-036). In a same-day group of 3+ permits each reporting the same 50+ units, a permit whose floor area divided by its units is below this value (or whose floor area is missing) is read as repeating the project total, since no real home is that small. Fort Worth and Dallas 2010-2025: grouped permits claim a median of 75-100 sq ft per unit, ungrouped 50+ unit permits 592-1,150. Sensitivity: 200 (near the code minimum) to 500 (still below Dallas's ungrouped median)."
