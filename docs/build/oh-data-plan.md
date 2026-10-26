@@ -105,3 +105,15 @@ index, statewide sales (88 different auditor systems; WS-OH gotcha), and the Nat
 3. **Approve S6a downloads** (Franklin archives, ~1 GB in `~/lotline-data`).
 4. **S7:** fetch Cleveland under ODbL, yes or no?
 5. Do §4's items 1–3 when the tables are ready.
+
+## 7. S5 probe results (2026-10-26, metadata and counts only)
+
+No parcels were downloaded; every request was layer metadata or a count.
+
+| County (unknown land use now) | Source found | What it has | Status |
+|---|---|---|---|
+| **Summit** (100%: Akron, Cuyahoga Falls) | Summit County `TaxParcels_dashboard` (ArcGIS Online, owner Summit_Admin; last edited 2025-03) | `USECD` in the same state DTE codes our crosswalk reads (347,326 rows coded 510 = single-family), `CLASSCD`, **`RESYRBLT` (year built)**, `RESSTRTYP`, values. Each parcel appears **twice** (518,514 rows, identical pairs), so dedupe by `PARCELID`. IDs map to the roll by prefixing `39153` ('2809199' → '391532809199'). A Tallmadge copy dated 2026-07-16 (265,902 rows, one per parcel) has the same fields. | **Ready:** an attribute-only join onto `oh_parcels` by parcel ID (no geometry needed) fills land use and year built (tier 1 for Summit places). About 260k rows of attributes, roughly 20–40 MB of JSON. Off the train. |
+| **Lucas** (55%: Toledo 65%) | Lucas County Auditor GIS (`lcaudgis.co.lucas.oh.us`): `Parcel General Land Use Classification 2025` and **yearly `Cadastre 2013` … `Cadastre 2025` layers** | Land use for 2025, and possibly a parcel history from 2013 (S6) | **Host times out from this network** (the county's main website answers). The ArcGIS Online copies hold only geometry and IDs (191,387 parcels) or a 1,402-row subset. Retry off the train; check the cadastre layers' fields for land use and year built. |
+| **Cuyahoga** (13%: Cleveland 24%) | Cuyahoga County Fiscal Office `CCFO/Parcel_Fabric_Taxparcels` on `gis.cuyahogacounty.gov` | Not read | **Host times out from this network** (also the `.us` alias). Retry off the train. Cleveland's open-data "Property Insights" layer is a fallback for the city only (ODbL). |
+
+**Next, on a good connection:** (1) retry the Lucas and Cuyahoga hosts and read their fields; (2) if Ben approves, write an attribute-join step for Summit (and Lucas, Cuyahoga if they work) in `oh_parcels`, rebuild eligible parcels and report which places leave the ACS fallback.

@@ -12,4 +12,4 @@
   - The processed eligible table predates D-035, so parcel-counted places have no history rows until it is rebuilt.
 - **Decisions:** none yet; the plan asks Ben to approve S1, S2/S4 research, S6a downloads and Cleveland under ODbL.
 - **AI:** Claude Code (WS-OH) ran the checks and wrote the plan; counts come from the processed tables and live ArcGIS count queries, quoted in the plan.
-- **Open / next:** after approval: S3 rebuild, then S1 Franklin permits adapter and S2 rule rows.
+- **Open / next:** approved 2026-10-23 (S3, S1 and S2/S4 done in later PRs). S5 probes (2026-10-26, plan §7): Summit's county layer has DTE land use and year built and is ready to join; Lucas (yearly cadastres 2013–2025) and Cuyahoga hosts timed out from the train network, so retry them.
