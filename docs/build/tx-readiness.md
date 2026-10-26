@@ -2,7 +2,7 @@
 
 *WS-TX, 2026-10-26. Status: **draft**. It counts `main` at `f7cc92a` and, separately, what the open Texas PRs
 would add once merged: #220 (San Antonio permits), #222 (Fort Worth), #223 (rules 21-40), #225 (Dallas),
-#227 (StratMap adapter) and #228 (docs). Numbers come from the processed tables in `~/lotline-data`
+#227 (StratMap adapter), #228 (docs), #230 (D-036, repeated totals without parcels) and #231 (Austin fees). Numbers come from the processed tables in `~/lotline-data`
 and the branch files. **No engine, scenario or development run was made** (data-thread rule). Plan:
 `docs/build/tx-data-plan.md`.*
 
@@ -10,7 +10,7 @@ and the branch files. **No engine, scenario or development run was made** (data-
 
 - **Texas can run end to end today, but almost entirely on fallbacks.** Every one of its 1,006 jurisdictions
   (952 places, 54 county remainders) has a Census permit outcome, ACS, FHFA and a demand index. Only Austin
-  has a parcel count, and no place has a coded water or sewer fee.
+  has a parcel count, and only Austin has a coded water or sewer fee (#231).
 - **The statewide parcel roll is the biggest single gain.** StratMap's CC0 statewide roll would replace the
   ACS denominator for most of Texas. The adapter is ready (#227) and waits for the download.
 - **For the estimates:** Texas would bring **4 places to the ADU estimate** (Austin and San Antonio treated;
@@ -31,7 +31,7 @@ missing data.
 | Denominator (eligible parcels) | Austin from TCAD (2026 roll, Travis part); 1,003 jurisdictions on the ACS fallback; 2 with neither (Marshall Creek, Starbase: no 2020 population) | adapter for the StratMap roll (#227), not yet run | ACS one-unit homes (D-017), quality "low" | Ben's StratMap download → S2a run → S3 rebuild with D-035 history. The table on disk predates D-035, so rebuild either way |
 | ADU rules | 18 places coded (8 allow ADUs, 10 "none") | 28 places (14 allow, 14 "none"); 33 rows await a second coder | D-022 draws a rule type for uncoded places | Ben's lookups (`tx-adu-lookups-todo.csv`: Corpus Christi, Pasadena, McKinney, Killeen first); second coder |
 | Missing-middle rules | Austin (HOME 2024), Houston (Livable Places 2023) | + League City (duplexes in RSF-2, 2020, date to check), "none" rows for Mesquite, Waco, Round Rock, Richardson, Abilene, Edinburg | Uncoded places count as untreated by default (D-022) | `tx-mm-lookups-todo.csv` (32 places) |
-| Fees | 2 Austin building-permit fee rows; no water or sewer fee | same | Handbook $50,000 per home (D-034) | S6: Austin Water, Fort Worth, Dallas, Houston pages; SAWS by hand |
+| Fees | 2 Austin building-permit fee rows; no water or sewer fee | + Austin water/wastewater impact fees and street impact fee (#231): Austin's local total is **$1,434.74 per home**, used under D-034 (Ben, 2026-10-26) and stated as a floor until its parkland and meter fees are coded | Handbook $50,000 per home (D-034) for every other place | `tx-fee-lookups-todo.csv`: SAWS, Fort Worth, Houston, Dallas, Austin parkland and meters (**Ben**) |
 | Prices | No sale prices (Texas non-disclosure law); TCAD appraised values for Austin | StratMap appraised values statewide once loaded | ACS values moved forward with FHFA | Nothing to collect: state law |
 | Market and rates | ACS for 950 of 952 places and all 54 counties (2010-2024); FHFA (county, tract, ZIP, CBSA); FRED (national) | same | — | — |
 | Demand index | 253 of 254 counties, 2010-2023 (every jurisdiction's county is covered) | same | — | — |
@@ -63,12 +63,12 @@ date to check) with #223. Six more places become untreated on evidence rather th
 |---|---|---|---|
 | No statewide parcels loaded | 1,003 jurisdictions on the ACS denominator (quality low) | StratMap download (§4 of the plan), then S2a run and S3 rebuild | **Ben**, then me |
 | Austin's Williamson and Hays parts | Austin's denominator misses them (TCAD is Travis only) | Decide TCAD vs StratMap for Austin (`parcel_sources`, #227) | **Ben** |
-| Repeated apartment totals (Fort Worth, Dallas) | 5+ unit permit counts up to 2.6x and 7.5x BPS | Parcel-free D-008 rule with the floor-area guard (#221) | WS-CORE + **Ben** |
+| Repeated apartment totals (Fort Worth, Dallas) | 5+ unit permit counts up to 2.6x and 7.5x BPS | D-036 (#230: same day, same count of 50+, 3+ permits, under 300 sq ft per unit), decided by Ben 2026-10-26 | In review |
 | Dallas 2025 permits | Dallas ends 2024-11-12 | City monthly workbooks or a records request | Later |
 | Houston has no record-level permits | No ADU outcome for Texas's largest city | HCAD parcel changes (WS-TX brief), out of scope here | Later |
 | Rule rows read on a mirror (33) | Dates marked CHECK can't serve as events yet | Second coder against the official codes | **Ben** |
 | Uncoded rules (ADU 14 places, MM 32) | D-022 defaults | Fill-in tables in `docs/research/ordinances/` | **Ben** |
-| No water or sewer fees | Fee scenario uses $50k everywhere | S6 | Me; **Ben** for SAWS |
+| Water or sewer fees outside Austin; Austin's parkland and meter fees | Fee scenario uses $50k outside Austin; Austin's $1,434.74 is a floor | Fill-in table `tx-fee-lookups-todo.csv` | **Ben** |
 | Earlier parcel vintages | Denominator history is ACS scaled to one roll (D-035) | StratMap 2019-2025 downloads (S2b) | **Ben**, then me |
 | Two places without ACS (Marshall Creek, Starbase) | No denominator at all | Check whether they report to BPS; else leave out and say so | Me |
 
