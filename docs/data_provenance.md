@@ -904,6 +904,7 @@ re-identification and small-cell risk statement (what record-level data are held
 **Known limitations**
 
 - Attribute coverage varies by appraisal district: some counties send no state land-use code or year built; the D-017 gate keeps those on the ACS denominator
+- The 2026-09 release has no land-use codes and no area units for any county (all null), so its rolls never pass the land-use gate; earlier releases carry the state code for part of the state
 - PTAD category B (multifamily) does not say how many units; no unit counts
 - Centroids of very irregular parcels can fall just outside them; placing by centroid can misplace parcels on a city boundary
 

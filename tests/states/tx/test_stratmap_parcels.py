@@ -187,6 +187,8 @@ def rows_and_shapes():
         base_row(prop_id="105", legal_area="0.2"),
         base_row(prop_id="", geo_id="GEO9", stat_land_="D1"),
         base_row(prop_id="106", fips=""),
+        base_row(prop_id="107", tax_year="0"),  # no roll year: the registration's vintage
+        base_row(prop_id="108", tax_year="2025"),  # an older county roll inside the release: same roll
     ]
     shapes = [[square(-97.8 + i / 1000, 30.2, 0.0005 * (2 if i == 6 else 1))] for i in range(len(rows))]
     return rows, shapes
@@ -211,6 +213,13 @@ def test_build_land_use_lots_years_values(tmp_path):
     assert p.loc["48453GEO9", "land_use_std"] == "AGRICULTURAL"  # geo_id when prop_id is blank
     assert p.loc["48453100", "value_basis"] == "appraisal" and p.loc["48453100", "bldg_value"] == 300000
     assert p.loc["48453100", "year_built"] == 1995 and p.loc["48453100", "vintage"] == 2026
+    assert (
+        p.loc["48453107", "vintage"] == 2026 and p.loc["48453108", "vintage"] == 2026
+    )  # one roll per release
+    assert (
+        sm.read_roll(tmp_path / "s.zip", vintage=None).set_index("parcel_id").loc["48453108", "vintage"]
+        == 2025
+    )
 
 
 def test_one_row_per_property_keeps_the_largest_polygon(tmp_path):
@@ -264,7 +273,10 @@ def test_load_registered_zip_assigns_and_validates(tmp_path, monkeypatch):
     rows, shapes = rows_and_shapes()
     src = write_zip(tmp_path / "stratmap26-landparcels_48_lp.zip", shapes, rows)
     store = DataStore(tmp_path / "data")
-    store.register(src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2026-09")
+    store.register(src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2025-06")
+    store.register(
+        src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2026-09"
+    )  # not read
     juris = pd.DataFrame({"geoid": ["4805000", "48453", "48201"]})
     monkeypatch.setattr(store, "read", lambda state, table: juris)
     from lotline import geo
@@ -275,7 +287,17 @@ def test_load_registered_zip_assigns_and_validates(tmp_path, monkeypatch):
     out = sm.load("TX", store)
     assert_conforms(out, "parcels")
     assert set(out.jurisdiction_geoid) == {"4805000"}
-    assert len(out) == 7  # nine rows: property 105 twice, one without a county
+    assert len(out) == 9  # eleven rows: property 105 twice, one without a county
+
+
+def test_load_reads_only_the_named_rolls(tmp_path):
+    rows, shapes = rows_and_shapes()
+    src = write_zip(tmp_path / "stratmap22-landparcels_48_lp.zip", shapes, rows)
+    store = DataStore(tmp_path / "data")
+    store.register(src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2022-07")
+    assert "2022-07" not in sm.ROLLS
+    with pytest.raises(FileNotFoundError, match="none of the rolls read"):
+        sm.load("TX", store)
 
 
 def test_registered_as_tx_source():

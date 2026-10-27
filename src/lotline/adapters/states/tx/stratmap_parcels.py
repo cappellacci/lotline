@@ -8,7 +8,8 @@ publishes them as **CC0 1.0** (public domain) on its DataHub: collections for 20
 **Hand-downloaded files.** The DataHub download host (`data.geographic.texas.gov`) answers scripted requests
 with a CloudFront 403, so Ben downloads each zip in a browser and registers it (`lotline manifest register
 --source stratmap_parcels --vintage <YYYY-MM>`, see `REGISTER_HELP`); nothing is fetched by script. `load()`
-reads every registered zip, one roll each.
+reads the registered rolls named in `ROLLS` (2019-03 and 2025-06: the releases with the most land-use codes;
+see the comment there), one roll at a time.
 
 **Format.** Zipped ESRI shapefiles (`lotline.adapters.states.tx.shapefile`), any number per zip, or a zipped
 Esri file geodatabase (`lotline.adapters.states.tx.filegdb`), as the statewide files are: every polygon
@@ -40,8 +41,10 @@ site addresses (`situs_*`) and the legal description are in the same records but
 - **Year built:** `year_built` from 1800 to the roll year, else missing (StratMap fills it in few counties).
 - **Values:** land = `land_value`, building = `imp_value`; `value_basis = "appraisal"`. **Texas is a
   non-disclosure state: there are no sale prices.**
-- **Roll year:** `tax_year`, else the registration's vintage year; `vintage_date` = the vintage folder when it
-  is a date.
+- **Roll year:** the registration's vintage year for every parcel in the release, so a release is one roll
+  (the 2019-03 release mixes counties' 2018 and 2019 tax years; splitting by `tax_year` would leave a city
+  that spans counties with partial rolls); `tax_year` (1900-2100, some districts send 0) only when the
+  registration has no vintage. `vintage_date` = the vintage folder when it is a date.
 - **Jurisdiction:** the parcel's centroid placed with `lotline.geo.place_or_township` (TIGERweb incorporated
   places); a centroid in no place, or in a place that is not a Texas jurisdiction, goes to its county's
   remainder (the county GEOID). Units, building area and homestead are not in StratMap: left null.
@@ -71,10 +74,12 @@ SOURCE = "stratmap_parcels"
 TABLE = "parcels"
 LANDING_URL = "https://data.geographic.texas.gov/collection/?c=1d33dafb-6e9c-40ac-887d-f4577909ed9b"
 LICENSE = "CC0 1.0 (TxGIO StratMap Land Parcels)"
+COLLECTION_URL = "https://data.geographic.texas.gov/collection/?c={}"
 LAND_USE_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_ptad_land_use.csv"
 SQFT_PER_ACRE = 43_560  # definition of the acre
 SQFT_PER_SQM = 10.763910  # 1 / 0.3048**2
 MIN_YEAR_BUILT = 1800
+MIN_TAX_YEAR, MAX_TAX_YEAR = 1900, 2100  # the parcels schema's vintage range
 FIELDS = [
     "prop_id", "geo_id", "fips", "county", "tax_year", "stat_land_use", "loc_land_use", "legal_area",
     "lgl_area_unit", "gis_area", "gis_area_unit", "land_value", "imp_value", "year_built",
@@ -85,11 +90,21 @@ PERSONAL = {
     "situs_zip", "legal_desc",
 }  # fmt: skip
 
+# Registered vintages that are read (vintage folder names). StratMap's releases differ in what they carry
+# (WS-TX, 2026-10-27, share of parcels with a state land-use code): 2019-03 60%, 2022-07 none, 2024-02 35%,
+# 2025-06 55%, 2026-09 none (no land use or area units for any county). A roll without land use never passes
+# the D-017 gate, and each statewide roll takes about 2.6 GB in memory, so the two rolls with the most land
+# use are read: 2019 (Harris, Tarrant, Bexar, Travis, El Paso, Fort Bend all 98%+) and 2025 (Harris, Tarrant,
+# Dallas, Bexar, Hidalgo 88%+). They are the D-035 anchors; the other registered rolls are kept but not read.
+ROLLS = ("2019-03", "2025-06")
+
 REGISTER_HELP = (
-    "No StratMap parcels zip is registered. Download the statewide file in a browser from "
-    f"{LANDING_URL} (stratmap26-landparcels_48_lp.zip, 2.7 GB), then run:\n"
-    "  uv run lotline manifest register ~/Downloads/stratmap26-landparcels_48_lp.zip --source "
-    f'stratmap_parcels --vintage 2026-09 --url "{LANDING_URL}" --license "{LICENSE}"'
+    "No StratMap parcels zip is registered. Download the statewide files in a browser (each vintage has its "
+    f"own collection; 2026: {LANDING_URL}), e.g. stratmap25-landparcels_48_lp.zip (2.8 GB) from "
+    f"{COLLECTION_URL.format('0fa04328-872e-481c-b453-126a74777593')}, then run:\n"
+    "  uv run lotline manifest register ~/Downloads/stratmap25-landparcels_48_lp.zip --source "
+    f'stratmap_parcels --vintage 2025-06 --url "<collection URL>" --license "{LICENSE}"\n'
+    f"Rolls read: {', '.join(ROLLS)} (ROLLS)."
 )
 
 PROVENANCE = {
@@ -113,6 +128,8 @@ PROVENANCE = {
     "limitations": [
         "Attribute coverage varies by appraisal district: some counties send no state land-use code or year "
         "built; the D-017 gate keeps those on the ACS denominator",
+        "The 2026-09 release has no land-use codes and no area units for any county (all null), so its "
+        "rolls never pass the land-use gate; earlier releases carry the state code for part of the state",
         "PTAD category B (multifamily) does not say how many units; no unit counts",
         "Centroids of very irregular parcels can fall just outside them; placing by centroid can misplace "
         "parcels on a city boundary",
@@ -201,9 +218,11 @@ def rows(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_un
     county = ("48" + fips).where(fips.str.fullmatch(r"\d{3}") & (fips != "000"))
     prop = get("prop_id").str.replace(r"\.0$", "", regex=True)
     pid = prop.where(prop != "", get("geo_id"))
-    year = pd.to_numeric(get("tax_year"), errors="coerce").astype("Int64")
-    if vintage is not None:
-        year = year.fillna(vintage)
+    if vintage is not None:  # one roll per release: county parts with an older tax year stay in it
+        year = pd.Series(vintage, index=df.index, dtype="Int64")
+    else:
+        year = pd.to_numeric(get("tax_year"), errors="coerce")
+        year = year.where(year.between(MIN_TAX_YEAR, MAX_TAX_YEAR)).astype("Int64")  # some districts send 0
     stat = get("stat_land_use").str.upper()
     raw_code = stat.where(stat != "", get("loc_land_use").str.upper())
     built = pd.to_numeric(get("year_built"), errors="coerce")
@@ -303,20 +322,24 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     stale = [e.path for e in entries if store.is_stale(e)]
     if stale:
         raise FileNotFoundError(f"registered StratMap files missing or changed since registration: {stale}")
-    rolls = []
-    for e in entries:
-        year, date = _vintage(e.path)
-        rolls.append(read_roll(store.root / e.path, vintage=year, vintage_date=date))
-    df = pd.concat(rolls, ignore_index=True)
     # the same roll registered twice (e.g. a re-download) counts once: keep the later registration
-    df = df.drop_duplicates(["state", "parcel_id", "vintage"], keep="last")
-    df = assign_jurisdictions(df, store)
-    df = holdout.apply(
-        df,
-        "TX",
-        geoid_col="jurisdiction_geoid",
-        date_col="vintage_date",
-        year_col="vintage",
-        snapshot=True,
-    )
-    return validate(df, TABLE)
+    by_vintage = {Path(e.path).parent.name: e for e in entries}
+    chosen = [e for v, e in sorted(by_vintage.items()) if v in ROLLS]
+    if not chosen:
+        raise FileNotFoundError(
+            f"none of the rolls read ({', '.join(ROLLS)}) is registered: {sorted(by_vintage)}"
+        )
+    rolls = []
+    for e in chosen:  # one roll at a time, so only one roll's raw fields are in memory
+        year, date = _vintage(e.path)
+        df = assign_jurisdictions(read_roll(store.root / e.path, vintage=year, vintage_date=date), store)
+        df = holdout.apply(
+            df,
+            "TX",
+            geoid_col="jurisdiction_geoid",
+            date_col="vintage_date",
+            year_col="vintage",
+            snapshot=True,
+        )
+        rolls.append(validate(df, TABLE))
+    return pd.concat(rolls, ignore_index=True)

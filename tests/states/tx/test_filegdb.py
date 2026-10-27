@@ -261,6 +261,17 @@ def test_ten_character_names_match():
     assert filegdb.match_fields(table, ["stat_land_use", "fips"]) == {"stat_land_use": "stat_land_"}
 
 
+def test_empty_shape_gives_nan():
+    empty = varuint(5) + varuint(0)  # polygon type, zero points: no counts or bounding box follow
+    square_blob = shape_blob([square(0, 0, 2)])
+    _, p = filegdb._varuint(square_blob, 0)  # drop the length prefix: polygon_stats takes the blobs
+    blobs = [empty, square_blob[p:]]
+    x, y, area = filegdb.polygon_stats(
+        np.frombuffer(b"".join(blobs), dtype=np.uint8), np.array(list(map(len, blobs)))
+    )
+    assert np.isnan([x[0], y[0], area[0]]).all() and area[1] == pytest.approx(4 * SCALE**2)
+
+
 def test_non_polygon_shapes_stop():
     blob = np.frombuffer(varuint(1) + varuint(3) + varuint(1) + varuint(1), dtype=np.uint8)  # a point
     with pytest.raises(ValueError, match="not polygons"):

@@ -302,11 +302,15 @@ def polygon_stats(blob: np.ndarray, glen: np.ndarray) -> tuple[np.ndarray, np.nd
     goff = np.r_[0, np.cumsum(glen)[:-1]]
     live = np.flatnonzero(glen > 0)
     v0 = np.searchsorted(vstart, goff[live])
+    n_values = np.searchsorted(vstart, goff[live] + glen[live]) - v0
     shape = u[v0]
-    ok = np.isin(shape & 0xFF, list(POLYGON_SHAPES))
+    ok = np.isin(shape & 0xFF, [0, *POLYGON_SHAPES])  # 0: a null shape
     if not ok.all():
         bad = sorted(set((shape[~ok] & 0xFF).tolist()))
         raise ValueError(f"geometry shape types {bad} are not polygons")
+    # an empty shape is its type and a zero count: too short to hold both counts and a bounding box
+    full = (n_values >= 7) & (shape & 0xFF > 0)
+    live, v0, shape = live[full], v0[full], shape[full]
     npts, nparts = u[v0 + 1], u[v0 + 2]
     curve = ((shape & CURVES_FLAG) != 0).astype(np.int64)
     keep = (npts > 0) & (nparts > 0)
