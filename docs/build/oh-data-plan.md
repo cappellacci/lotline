@@ -143,6 +143,10 @@ Largest payoff first. Everything here needs a browser, a decision or an email; t
 9. `docs/research/ordinances/oh-mm-lookups-todo.csv` (47 places). Most valuable row: **Euclid** (Ord. 120-2024, two-family dwellings in U1: is U1 the single-family district, and the effective date?). This is likely Ohio's second missing-middle event.
 10. **Columbus ADU counts:** ask Building & Zoning Services for yearly ADU permit counts or a list of ADU permit numbers since 2015 (the Ord. 2526-2025 fact sheet cites 57 for 2019 to Sep 2025).
 11. **Montgomery County terms:** open the "Disclaimer" page next to GIS Downloads (https://www.mcohio.org/631/GIS-Downloads); it sits behind a bot check for me. Tell me if it states reuse terms; I recorded "no reuse terms stated".
+    **Ben, 2026-10-27:** the Auditor's disclaimers state no reuse restrictions but give no explicit open-data
+    license (record it as "no reuse terms stated", like Franklin's). A CAMA download is listed, and its official
+    layout includes parcel land-use codes, so option (a) of item 4 is open: download it in a browser (the site's
+    bot check blocks scripts) and register it with `lotline manifest register`.
 12. **Warren County** (Middletown's Warren part, Mason): look on the Warren County Auditor's site for a parcel download with land-use codes (a CSV or geodatabase like Montgomery's). If there is one, send the link.
 
 **Emails**
