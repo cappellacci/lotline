@@ -132,7 +132,7 @@ Largest payoff first. Everything here needs a browser, a decision or an email; t
    extract in a browser if one exists (the Real Estate pages sit behind a bot check for scripts) and send me
    the file; (b) a stated proxy (a parcel with one building of tax class R = single-family), which is a
    method choice under D-017; (c) leave Dayton on the ACS estimate. My pick: (a), else (c).
-5. **Columbus in the ADU panel (D-025):** the auditor descriptions find about 1 in 4 of Columbus's ADUs (14 vs the city's 57 for 2019 to Sep 2025). Include Columbus with a measurement note, or leave it out until the city's own counts arrive (item 9)?
+5. **Columbus in the ADU panel (D-025):** the auditor descriptions find about 1 in 4 of Columbus's ADUs (14 vs the city's 57 for 2019 to Sep 2025). Include Columbus with a measurement note, or leave it out until the city's own counts arrive (item 10)?
 
 **Reviews**
 6. PRs, in order: **#217** (plan; this list), **#224** (Franklin ADU flags), **#226** (Gahanna rule + fill-in tables), **#232** (county land use: Summit, Lucas, Cuyahoga, Butler; Franklin year built; no new dependency).
