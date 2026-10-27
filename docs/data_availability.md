@@ -7,7 +7,7 @@ It answers two questions the Rules (§8) and the Handbook (Data and Resources) a
 2. **Could anything Lotline publishes identify a person or a single property** (re-identification and
    small-cell risk)?
 
-**Status date:** 2026-10-19, `main` at commit `99b206c`. Every "used" entry names the module that reads the data,
+**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-26). Every "used" entry names the module that reads the data,
 so it can be checked in `src/lotline/`. "In review" means an open pull request adds it; it is not on `main` yet.
 What "available" means comes from our own scouting: `docs/research/lotline-data-availability.md` (R1–R10),
 `docs/research/lotline-data-catalog.csv`, `docs/research/lotline-data-catalog-mn.csv` and
@@ -88,17 +88,17 @@ These national sources feed every state the same way.
 
 | Data need | Available | Used | Why not / limits |
 |---|---|---|---|
-| Permits by building size (R4) | BPS; Austin issued construction permits (Census class codes); San Antonio permits from 2020 (fields not verified); Houston aggregates only; Dallas no current open permits | `bps`, `austin_permits` | San Antonio not yet; Houston and Dallas have no usable record-level permits |
-| ADU / building type flag (R5) | Austin class R-102 (secondary apartment) | `austin_permits` | R-102 nearly stops after HOME (2024), when ADUs became 2- and 3-unit uses |
-| Completions and demolitions (R6) | Austin completion dates and demolitions | `austin_permits` | |
-| Parcels with land use (R1) | Travis Central Appraisal District roll (TCAD); StratMap statewide parcels (not standardized); Harris CAD | `tcad_parcels` (City of Austin, Travis County part) | TCAD sits behind a bot check, so Ben downloads the roll by hand and registers it. Austin's Williamson and Hays County parts are missing. StratMap and Harris CAD: not yet |
-| Year built (R1) | TCAD improvement year built; StratMap (sparse); ACS B25034 | `tcad_parcels`, `acs` | |
-| Lot size (R1) | TCAD land size | `tcad_parcels` | |
-| Parcel history (R2) | TCAD annual certified rolls | not yet | Only the 2026 roll is loaded |
-| Zoning (R3) | Austin zoning GIS; Mercatus DFW 2024 file (license not stated) | no | Parcels carry no zoning yet; the HOME reform rows name the zones (SF-1 to SF-3) in `config/reforms/tx.csv` |
-| Sale prices and rents (R7) | Sale prices are confidential in Texas (non-disclosure, Tax Code §22.27); MLS and Zillow terms don't allow redistribution; TCAD appraised values; ACS; FHFA | `tcad_parcels` (appraised values, `value_basis = appraisal`), `acs`, `fhfa` | No transaction prices: the pro forma uses appraised values and ACS values moved forward with FHFA |
-| Fees (R8) | Austin Water impact fees (~$7.7k water and wastewater) and 2023 impact fee report; SAWS fees | not yet | The scenario uses the Handbook $50,000 |
-| Reform dates (R9) | Austin HOME phases 1–2 (2024) and parking (2023); Houston lot size (1999, 2013) and Livable Places (2023); San Antonio ADU (2023); 2019 and 2025 state laws (fees, lot size, process) | `config/reforms/tx.csv` (14 coded reform components) | |
+| Permits by building size (R4) | BPS; record-level permits for Austin (Census class codes), Fort Worth (filed 2001 on, unit counts), Dallas (1971 to 2024-11, unit counts), San Antonio (2020-07 on, no unit field); Houston monthly aggregates only; Collin CAD and Arlington only from 2023 | `bps`, `austin_permits`; in review: `fw_permits` (#222), `dallas_permits` (#225), `sa_permits` (#220) | Fort Worth and Dallas apartment permits repeat project totals and have no parcel number, so D-008 cannot group them yet (#221). Dallas's layer ends 2024-11-12 (move to DallasNow); its Socrata set (2018-2025) has no unit field and no license. San Antonio's 2-4 and 5+ units stay with BPS. Houston has no record-level permits |
+| ADU / building type flag (R5) | Austin class R-102; San Antonio's "Res Accessory Dwelling Permit" type; Fort Worth and Dallas only in work descriptions | `austin_permits`; in review: `sa_permits`, `fw_permits`, `dallas_permits` (description parser) | R-102 nearly stops after HOME (2024), when ADUs became 2- and 3-unit uses. Fort Worth's ADUs are non-rental (its rule), Dallas has one in the window |
+| Completions and demolitions (R6) | Austin completion dates and demolitions; Fort Worth final-inspection dates | `austin_permits`; in review: `fw_permits` | Demolitions are not in the Fort Worth, Dallas or San Antonio record sets used |
+| Parcels with land use (R1) | TCAD roll (Travis); TxGIO StratMap Land Parcels, statewide, CC0, from 253 appraisal districts (2019, 2021-2026); Harris CAD | `tcad_parcels` (City of Austin, Travis County part); in review: `stratmap_parcels` (#227, adapter ready, awaiting Ben's download) | TCAD and StratMap's DataHub both block scripts, so Ben downloads and registers them. Austin stays on TCAD (`parcel_sources`), so its Williamson and Hays parts are not counted. Until StratMap is loaded, every other Texas jurisdiction uses the ACS denominator |
+| Year built (R1) | TCAD improvement year built; StratMap (filled by some districts only); ACS B25034 | `tcad_parcels`, `acs`; in review: `stratmap_parcels` | |
+| Lot size (R1) | TCAD land size; StratMap legal and GIS areas | `tcad_parcels`; in review: `stratmap_parcels` | |
+| Parcel history (R2) | TCAD annual rolls; StratMap collections 2019 and 2021-2026 | not yet (one TCAD roll; D-035 scales ACS to it) | Earlier StratMap vintages give real eligible-parcel counts in more years once downloaded (plan S2b) |
+| Zoning (R3) | Austin zoning GIS; Dallas permits carry base zoning; Mercatus DFW 2024 file (license not stated) | no | Parcels carry no zoning; the HOME reform rows name the zones (SF-1 to SF-3) in `config/reforms/tx.csv` |
+| Sale prices and rents (R7) | Sale prices are confidential in Texas (non-disclosure, Tax Code §22.27); MLS and Zillow terms don't allow redistribution; appraised values (TCAD, StratMap); ACS; FHFA | `tcad_parcels` (appraised values, `value_basis = appraisal`), `acs`, `fhfa` | No transaction prices: the pro forma uses appraised values and ACS values moved forward with FHFA |
+| Fees (R8) | Austin building-permit fees (FY2024-25); Austin Water impact fees (~$7.7k water and wastewater); SAWS fees (robots-blocked); city fee schedules | `config/fees/tx.csv` (2 Austin permit-fee rows) | No water or sewer impact fee is coded yet, so the fee scenario uses the Handbook $50,000 (plan S6) |
+| Reform dates (R9) | City ordinances (the official code hosts block automated reading; the zoneomics.com mirror allows it); 2019 and 2025 state laws | `config/reforms/tx.csv` (35 rows on `main`; 17 more in review, #223) | ADU rules coded for 18 of the 20 largest places, plus places 21-40 in #223; missing-middle rules dated for Austin and Houston, League City partly, and "none" for six more. Rows read on the mirror await a second coder; Ben's lookups in `docs/research/ordinances/tx-*-lookups-todo.csv` |
 
 ## Biggest gaps, by state
 
@@ -108,8 +108,9 @@ These national sources feed every state the same way.
   the same ACS-fallback position. No sale prices statewide.
 - **Ohio:** parcels for 2 of 88 counties, with land use and lot size only (no year built, units or values).
   No ADU flag in Columbus. Thin reform evidence by design.
-- **Texas:** parcels only for the Travis County part of Austin, downloaded by hand; no sale prices (state law);
-  only one city's permits.
+- **Texas:** parcels only for the Travis County part of Austin until the statewide StratMap roll is
+  downloaded (adapter in review); no sale prices (state law); record-level permits for four cities (three in
+  review), with repeated apartment totals in two of them (#221).
 - **All states:** no open zoning statewide (National Zoning Atlas license), national construction costs only,
   and fees fixed at the Handbook's $50,000.
 
