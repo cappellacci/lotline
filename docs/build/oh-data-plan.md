@@ -126,22 +126,28 @@ Largest payoff first. Everything here needs a browser, a decision or an email; t
 1. **#232, crosswalk row 641** (Cuyahoga exempt code 6411, mostly Cleveland land-bank and municipal lots → INSTITUTIONAL, so not eligible lots). OK?
 2. **#232, one roll per jurisdiction** (a city spanning counties takes its latest county export date; fixed Twinsburg's 1-parcel count). OK?
 3. **D-017 gate:** Hamilton is 10.4% unknown, just over the 10% cutoff, so it stays on the ACS estimate. Keep the cutoff, or allow a small tolerance?
-4. **Columbus in the ADU panel (D-025):** the auditor descriptions find about 1 in 4 of Columbus's ADUs (14 vs the city's 57 for 2019 to Sep 2025). Include Columbus with a measurement note, or leave it out until the city's own counts arrive (item 9)?
+4. **Dayton (Montgomery County):** the auditor's weekly geodatabase (1.2 GB, downloaded 2026-10-26) has **no
+   parcel land-use code**, only generalized planning land-use polygons and a building tax class (R/C/A/E/I)
+   per parcel, so pyogrio was not added after all. Options: (a) you download the auditor's real-estate (CAMA)
+   extract in a browser if one exists (the Real Estate pages sit behind a bot check for scripts) and send me
+   the file; (b) a stated proxy (a parcel with one building of tax class R = single-family), which is a
+   method choice under D-017; (c) leave Dayton on the ACS estimate. My pick: (a), else (c).
+5. **Columbus in the ADU panel (D-025):** the auditor descriptions find about 1 in 4 of Columbus's ADUs (14 vs the city's 57 for 2019 to Sep 2025). Include Columbus with a measurement note, or leave it out until the city's own counts arrive (item 9)?
 
 **Reviews**
-5. PRs, in order: **#217** (plan; this list), **#224** (Franklin ADU flags), **#226** (Gahanna rule + fill-in tables), **#232** (county land use: Summit, Lucas, Cuyahoga, Butler, and Montgomery once tonight's run finishes; adds **pyogrio** and the GEOS disclosure).
-6. **Dependabot:** 4 alerts on main (1 critical, 3 high): GitHub → Security → Dependabot.
+6. PRs, in order: **#217** (plan; this list), **#224** (Franklin ADU flags), **#226** (Gahanna rule + fill-in tables), **#232** (county land use: Summit, Lucas, Cuyahoga, Butler; Franklin year built; no new dependency).
+7. **Dependabot:** 4 alerts on main (1 critical, 3 high): GitHub → Security → Dependabot.
 
 **Lookups (browser; the code hosts block scripts)**
-7. `docs/research/ordinances/oh-adu-lookups-todo.csv` (47 places, largest first). Most valuable rows: **Dayton** (your Ord. 31991-22A vs the coded 2023-05-10 row: which came first, effective date, by right or conditional), **Akron, Parma, Canton, Lorain, Cuyahoga Falls** (no ADU rule coded; American Legal), and for **Cleveland, Toledo, Akron, Dayton** the `adu_permit_counts_source` column (where yearly ADU permit counts could come from).
-8. `docs/research/ordinances/oh-mm-lookups-todo.csv` (47 places). Most valuable row: **Euclid** (Ord. 120-2024, two-family dwellings in U1: is U1 the single-family district, and the effective date?). This is likely Ohio's second missing-middle event.
-9. **Columbus ADU counts:** ask Building & Zoning Services for yearly ADU permit counts or a list of ADU permit numbers since 2015 (the Ord. 2526-2025 fact sheet cites 57 for 2019 to Sep 2025).
-10. **Montgomery County terms:** open the "Disclaimer" page next to GIS Downloads (https://www.mcohio.org/631/GIS-Downloads); it sits behind a bot check for me. Tell me if it states reuse terms; I recorded "no reuse terms stated".
-11. **Warren County** (Middletown's Warren part, Mason): look on the Warren County Auditor's site for a parcel download with land-use codes (a CSV or geodatabase like Montgomery's). If there is one, send the link.
+8. `docs/research/ordinances/oh-adu-lookups-todo.csv` (47 places, largest first). Most valuable rows: **Dayton** (your Ord. 31991-22A vs the coded 2023-05-10 row: which came first, effective date, by right or conditional), **Akron, Parma, Canton, Lorain, Cuyahoga Falls** (no ADU rule coded; American Legal), and for **Cleveland, Toledo, Akron, Dayton** the `adu_permit_counts_source` column (where yearly ADU permit counts could come from).
+9. `docs/research/ordinances/oh-mm-lookups-todo.csv` (47 places). Most valuable row: **Euclid** (Ord. 120-2024, two-family dwellings in U1: is U1 the single-family district, and the effective date?). This is likely Ohio's second missing-middle event.
+10. **Columbus ADU counts:** ask Building & Zoning Services for yearly ADU permit counts or a list of ADU permit numbers since 2015 (the Ord. 2526-2025 fact sheet cites 57 for 2019 to Sep 2025).
+11. **Montgomery County terms:** open the "Disclaimer" page next to GIS Downloads (https://www.mcohio.org/631/GIS-Downloads); it sits behind a bot check for me. Tell me if it states reuse terms; I recorded "no reuse terms stated".
+12. **Warren County** (Middletown's Warren part, Mason): look on the Warren County Auditor's site for a parcel download with land-use codes (a CSV or geodatabase like Montgomery's). If there is one, send the link.
 
 **Emails**
-12. **OGRIP** (§4 item 3): access to the 2022 statewide parcel vintage, a second Ohio roll year.
+13. **OGRIP** (§4 item 3): access to the 2022 statewide parcel vintage, a second Ohio roll year.
 
 **Housekeeping**
-13. `uv` was updated to 0.13.5 on this machine (0.6.5 rewrote `uv.lock` wholesale). Other machines or sessions on old `uv` should run `uv self update` before changing dependencies.
-14. After merging, fold the logbook fragments: `python scripts/dev/merge_logbook.py --apply`.
+14. `uv` was updated to 0.13.5 on this machine (0.6.5 rewrote `uv.lock` wholesale). Other machines or sessions on old `uv` should run `uv self update` before changing dependencies.
+15. After merging, fold the logbook fragments: `python scripts/dev/merge_logbook.py --apply`.
