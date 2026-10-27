@@ -27,3 +27,12 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   says what ADU permit data Lotline has (`adu_permit_data_now`) and asks where yearly ADU permit counts could
   come from: the big markets (Cleveland, Toledo, Akron, Dayton …) have none. Places on American Legal answer
   scripts with HTTP 403, so they need a browser. Confirmed rows are then coded into `config/reforms/oh.csv`.
+- `oh-rules-tracker.csv` (2026-10-27): Ben's working list for the two Ohio tables above, one row per place,
+  ranked by what a found rule adds. **Priority 1**: Columbus's yearly ADU counts, Euclid (likely Ohio's second
+  missing-middle event) and the Franklin County places whose ADU permits are already flagged (a dated ADU rule
+  puts each straight into the ADU panel). **Priority 2**: the largest cities: Cleveland and Toledo (dates of
+  recent reforms), Dayton (missing middle) and the five with no ADU rule coded (Akron, Parma, Canton, Lorain,
+  Cuyahoga Falls). **Priority 3**: everyone else, largest first. `what_to_check` says what to look for;
+  `udo_name`, `udo_url`, `adu_first_allowed`, `mm_first_allowed`, `status` and `ben_notes` are for Ben. The
+  detailed fields stay in the two tables above. Built once from those tables, `config/reforms/oh.csv` and the
+  processed `jurisdictions` table.
