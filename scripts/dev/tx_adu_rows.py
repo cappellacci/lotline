@@ -242,6 +242,22 @@ none_row(
     adoption="2018-06-27",
     coverage="Single-family districts (R-1ac(A) to R-5(A)); a board case or an overlay rezoning is needed",
 )
+# Added 2026-10-26 (WS-TX): the rule before the 2018 framework, so Dallas has a dated rule for 2010-2017 too.
+none_row(
+    "4819000",
+    2010,
+    "Before the 2018 framework: only a non-rental 'additional dwelling unit' by Board of Adjustment special "
+    "exception; no rentable ADU",
+    FLOOR,
+    "https://dallascityhall.com/departments/pnv/Pages/Accessory_Dwelling_Units.aspx; "
+    "https://dallascityhall.com/departments/sustainabledevelopment/planning/DCH%20Documents/ADU/ADU_ZOAC_CaseReport-10.1.2020_FINAL.pdf",
+    "from the sources of TX-4819000-adu-2018 (read 2026-10-20): 'Before 2018 only the non-rental special exception "
+    "existed'; its adoption date was not found, so the row starts at the study window (2010-01-01) and rule_age is "
+    "a lower bound. Added so Dallas has a dated rule for every panel year (D-025 leaves out place-years with no "
+    "dated rule)." + FLAG + "§51A-4.209 on amlegal returned 403.",
+    coverage="Single-family districts; non-rental additional dwelling units by special exception only",
+)
+next(r for r in ROWS if r["reform_id"] == "TX-4819000-adu-2018")["supersedes"] = "TX-4819000-adu-2010"
 
 # ---- Fort Worth (4827000): none -----------------------------------------------------------------------------
 none_row(
