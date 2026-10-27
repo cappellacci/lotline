@@ -10,10 +10,11 @@ with a CloudFront 403, so Ben downloads each zip in a browser and registers it (
 --source stratmap_parcels --vintage <YYYY-MM>`, see `REGISTER_HELP`); nothing is fetched by script. `load()`
 reads every registered zip, one roll each.
 
-**Format.** Zipped ESRI shapefiles (`lotline.adapters.states.tx.shapefile`): any number of shapefiles per zip
-(a statewide file or one per county). A zip holding a file geodatabase (`.gdb`) instead stops with a clear
-error: reading one needs GDAL, a new dependency for Ben to approve. Coordinates are converted with the `.prj`
-(`lotline.adapters.states.tx.projection`).
+**Format.** Zipped ESRI shapefiles (`lotline.adapters.states.tx.shapefile`), any number per zip, or a zipped
+Esri file geodatabase (`lotline.adapters.states.tx.filegdb`), as the statewide files are: every polygon
+table in it except the geodatabase's own `GDB_*` tables. Both readers are numpy only (Ben chose this over
+GDAL/pyogrio, whose wheels bundle LGPL libraries, 2026-10-27). Coordinates are converted with the `.prj`
+or the table's coordinate system (`lotline.adapters.states.tx.projection`).
 
 **Fields read** (`FIELDS`, matched also by their 10-character `.dbf` truncation): prop_id, geo_id, fips,
 county, tax_year, stat_land_use, loc_land_use, legal_area, lgl_area_unit, gis_area, gis_area_unit,
@@ -32,8 +33,10 @@ site addresses (`situs_*`) and the legal description are in the same records but
   `land_use_raw` when the state code is blank, for county crosswalks later. Counties with too little known
   land use stay on the ACS denominator by the D-017 gate (`build/eligible`), not here.
 - **Lot size:** `legal_area` in its stated unit (`lgl_area_unit`: acres ×43,560, square feet ×1, square
-  metres ×10.7639); else `gis_area` in its unit; else, when the projection is equal-area (Albers), the
-  polygon's own area. Otherwise missing.
+  metres ×10.7639); else `gis_area` in its unit; else the polygon's own area, on an equal-area projection
+  (Albers) as drawn and on Web Mercator corrected to true area at the centroid's latitude
+  (`projection.sqm_per_unit2`). Otherwise missing. StratMap 2026 has no area units at all, so its lots come
+  from the polygons.
 - **Year built:** `year_built` from 1800 to the roll year, else missing (StratMap fills it in few counties).
 - **Values:** land = `land_value`, building = `imp_value`; `value_basis = "appraisal"`. **Texas is a
   non-disclosure state: there are no sale prices.**
@@ -56,7 +59,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from lotline.adapters.states.tx import projection, shapefile
+from lotline.adapters.states.tx import filegdb, projection, shapefile
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.schemas import validate
@@ -96,12 +99,13 @@ PROVENANCE = {
     "cleaning": [
         "Downloaded by hand in a browser (the DataHub host blocks scripts) and registered with "
         "`lotline manifest register --source stratmap_parcels`; nothing is fetched by script",
-        "Only parcel ID, county, tax year, land-use codes, areas, values and year built are decoded from the "
-        ".dbf; owner names, mailing and site addresses and legal descriptions are never decoded",
+        "Only parcel ID, county, tax year, land-use codes, areas, values and year built are decoded (from "
+        "the .dbf or the geodatabase table); owner names, mailing and site addresses and legal descriptions "
+        "are never decoded",
         "land_use_std from the PTAD state code (stat_land_use) via config/crosswalks/tx_ptad_land_use.csv; "
         "blank or unmatched -> UNKNOWN",
-        "lot_sqft from legal_area, else gis_area, in their stated units, else the polygon's area on an "
-        "equal-area projection",
+        "lot_sqft from legal_area, else gis_area, in their stated units, else the polygon's true area "
+        "(equal-area projection, or Web Mercator corrected for latitude)",
         "jurisdiction_geoid = incorporated place holding the polygon centroid (lotline.geo), else the county "
         "remainder; parcel_id = county GEOID + prop_id; one row per parcel and roll (largest polygon)",
         "value_basis = appraisal; no sale prices (Texas non-disclosure)",
@@ -154,8 +158,8 @@ def lot_sqft(df: pd.DataFrame, sqm_per_unit2: float | None) -> pd.Series:
         df.get("gis_area_unit", pd.Series("", index=df.index))
     )
     out = legal.where(legal > 0, gis.where(gis > 0))
-    if sqm_per_unit2:
-        shape = df["area"] * sqm_per_unit2 * SQFT_PER_SQM
+    if sqm_per_unit2 is not None:
+        shape = pd.Series(df["area"].to_numpy() * sqm_per_unit2 * SQFT_PER_SQM, index=df.index)
         out = out.where(out > 0, shape.where(shape > 0))
     return out.astype("float64")
 
@@ -174,12 +178,23 @@ def read_layer(zf: zipfile.ZipFile, layer: shapefile.Layer) -> pd.DataFrame:
     wkt = zf.read(layer.prj).decode("ascii", "replace")
     lon, lat = projection.from_wkt(wkt)(shapes["x"].to_numpy(), shapes["y"].to_numpy())
     df = attrs.assign(lon=lon, lat=lat, area=shapes["area"].to_numpy())
-    df.attrs["sqm_per_unit2"] = projection.equal_area_sqm_per_unit2(wkt)
+    df.attrs["sqm_per_unit2"] = projection.sqm_per_unit2(wkt, lat)
     return df.loc[~df["_deleted"]].drop(columns="_deleted")
 
 
 def build(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_unit2=None) -> pd.DataFrame:
     """Attribute rows (with lon, lat, area) → parcels rows, before jurisdiction assignment."""
+    return one_per_parcel(rows(df, vintage=vintage, vintage_date=vintage_date, sqm_per_unit2=sqm_per_unit2))
+
+
+def one_per_parcel(df: pd.DataFrame) -> pd.DataFrame:
+    """A property drawn as several polygons keeps its largest, so it counts once."""
+    df = df.sort_values("_area", na_position="first").drop_duplicates(["parcel_id", "vintage"], keep="last")
+    return df.drop(columns="_area").reset_index(drop=True)
+
+
+def rows(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_unit2=None) -> pd.DataFrame:
+    """Attribute rows → parcels rows with their polygon area (`_area`), one per polygon."""
     crosswalk = load_land_use_crosswalk()
     get = lambda c: df[c].astype("string").fillna("") if c in df else pd.Series("", index=df.index)  # noqa: E731
     fips = get("fips").str.replace(r"\D", "", regex=True).str[-3:].str.zfill(3)
@@ -214,9 +229,7 @@ def build(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_u
             "_area": df["area"].to_numpy(),
         }
     )
-    out = out.loc[out["parcel_id"].notna() & out["vintage"].notna()]
-    out = out.sort_values("_area", na_position="first").drop_duplicates(["parcel_id", "vintage"], keep="last")
-    return out.drop(columns="_area").reset_index(drop=True)
+    return out.loc[out["parcel_id"].notna() & out["vintage"].notna()]
 
 
 def resolve_jurisdictions(county_geoid: pd.Series, place: pd.Series, known: set[str]) -> pd.Series:
@@ -243,12 +256,8 @@ def read_roll(path: Path, *, vintage: int | None, vintage_date=None) -> pd.DataF
         found = shapefile.layers(zf)
         if not found:
             if any(".gdb/" in n.lower() for n in zf.namelist()):
-                raise NotImplementedError(
-                    f"{path.name} holds a file geodatabase, not shapefiles: reading it needs GDAL "
-                    "(pyogrio), a new dependency for Ben to approve, or register the per-county "
-                    "shapefile zips instead"
-                )
-            raise FileNotFoundError(f"{path.name}: no shapefile (.shp with .dbf) inside")
+                return read_geodatabase(zf, vintage=vintage, vintage_date=vintage_date)
+            raise FileNotFoundError(f"{path.name}: no shapefile (.shp with .dbf) or file geodatabase inside")
         rolls = []
         for layer in found:
             df = read_layer(zf, layer)
@@ -256,6 +265,24 @@ def read_roll(path: Path, *, vintage: int | None, vintage_date=None) -> pd.DataF
                 build(df, vintage=vintage, vintage_date=vintage_date, sqm_per_unit2=df.attrs["sqm_per_unit2"])
             )
     return pd.concat(rolls, ignore_index=True)
+
+
+def read_geodatabase(zf: zipfile.ZipFile, *, vintage: int | None, vintage_date=None) -> pd.DataFrame:
+    """Every polygon table in a zipped file geodatabase → parcels rows, read in chunks."""
+    found = filegdb.polygon_tables(zf)
+    if not found:
+        raise FileNotFoundError(f"{zf.filename}: the file geodatabase has no polygon table")
+    parts = []
+    for table in found:
+        if not table.wkt:
+            raise ValueError(f"{table.member}: no coordinate system, so the parcels cannot be placed")
+        to_lonlat = projection.from_wkt(table.wkt)
+        for chunk in filegdb.read_rows(zf, table, FIELDS):
+            lon, lat = to_lonlat(chunk["x"].to_numpy(), chunk["y"].to_numpy())
+            chunk = chunk.assign(lon=lon, lat=lat)
+            sqm = projection.sqm_per_unit2(table.wkt, lat)
+            parts.append(rows(chunk, vintage=vintage, vintage_date=vintage_date, sqm_per_unit2=sqm))
+    return one_per_parcel(pd.concat(parts, ignore_index=True))
 
 
 def _vintage(rel_path: str) -> tuple[int | None, pd.Timestamp | None]:

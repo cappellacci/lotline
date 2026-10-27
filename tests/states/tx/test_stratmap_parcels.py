@@ -119,6 +119,25 @@ def test_geographic_web_mercator_and_unsupported():
         projection.from_wkt(merc.replace("Mercator_Auxiliary_Sphere", "Transverse_Mercator"))
 
 
+def test_web_mercator_true_area_factor_hand_worked():
+    merc = (
+        'PROJCS["WGS_1984_Web_Mercator_Auxiliary_Sphere",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",'
+        'SPHEROID["WGS_1984",6378137.0,298.257223563]]],PROJECTION["Mercator_Auxiliary_Sphere"],'
+        'UNIT["Meter",1.0]]'
+    )
+    # e^2 = f (2 - f) = 0.00669438 (WGS84); at 0: 1 - e^2; at 60 N: 0.25 (1 - e^2) / (1 - 0.75 e^2)^2
+    got = projection.sqm_per_unit2(merc, [0.0, 60.0])
+    assert got == pytest.approx([0.99330562, 0.25 * 0.99330562 / (1 - 0.75 * 0.00669438) ** 2], rel=1e-7)
+    assert got[1] == pytest.approx(0.25, rel=0.01)  # close to the sphere's cos^2
+    assert (
+        projection.sqm_per_unit2(TX_ALBERS, [30.0]) == 1.0 and projection.sqm_per_unit2(GEOG, [30.0]) is None
+    )
+    # lot size from the polygon when no stated area: 1,000 squared units at 0 N -> 993.3 m^2
+    df = pd.DataFrame({"area": [1000.0, 1000.0], "legal_area": ["", "0.5"], "lgl_area_unit": ["", "AC"]})
+    lots = sm.lot_sqft(df, projection.sqm_per_unit2(merc, [0.0, 0.0]))
+    assert lots.tolist() == pytest.approx([993.30562 * sm.SQFT_PER_SQM, 0.5 * 43_560])
+
+
 # ---- shapefile reader ------------------------------------------------------------------------------------
 def test_centroids_and_areas_hand_worked(tmp_path):
     hole = [(4, 4), (6, 4), (6, 6), (4, 6), (4, 4)]  # counter-clockwise: a hole
@@ -228,11 +247,11 @@ def test_resolve_jurisdictions_place_else_county():
     assert got.tolist() == ["4805000", "48453", "48201"]
 
 
-def test_geodatabase_zip_explains_the_dependency(tmp_path):
+def test_zip_without_shapefile_or_geodatabase_stops(tmp_path):
     path = tmp_path / "g.zip"
     with zipfile.ZipFile(path, "w") as zf:
-        zf.writestr("stratmap26.gdb/a00000001.gdbtable", b"x")
-    with pytest.raises(NotImplementedError, match="pyogrio"):
+        zf.writestr("readme.txt", b"x")
+    with pytest.raises(FileNotFoundError, match="no shapefile"):
         sm.read_roll(path, vintage=2026)
 
 
