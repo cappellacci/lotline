@@ -32,7 +32,9 @@ sources:
       unknown land use and add year built by parcel ID: Summit County Fiscal Office (as of 2025-03-25), Lucas
       County Auditor 2025 land use, Cuyahoga County Fiscal Office (tax year 2026), Butler County
       CURRENTPARCELS. The Lucas and Cuyahoga GIS hosts dropped connections from some networks on 2026-10-26 and
-      answered over a VPN; Montgomery's (Dayton) server failed TLS verification and is not used.
+      answered over a VPN. Franklin County Auditor Dwelling.xlsx adds year built (Columbus tier 1). Montgomery
+      (Dayton): the engineer's server failed TLS verification and the auditor's weekly geodatabase has no
+      parcel land-use code, so Dayton stays on the ACS fallback.
   - name: cincy_permits
     url: https://data.cincinnati-oh.gov/resource/uhjb-xac9.json
     license: Public Domain (City of Cincinnati open data)

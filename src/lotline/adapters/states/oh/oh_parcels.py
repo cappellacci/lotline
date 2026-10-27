@@ -44,7 +44,12 @@ Lucas (Toledo) leaves 55% blank; its Auditor's 2025 land-use layer fills them (n
 (Cleveland) sends 999 for 12%; its Fiscal Office layer has 4-digit codes (the DTE class plus a county digit,
 read as the first three), an exempt-use code where the tax code is blank (`ext_luc`: Cleveland's 25,000
 land-bank and other exempt parcels) and the year each building was built (`min_age`, the oldest). Butler
-(Hamilton, Middletown) has DTE land use and year built in the county's `CURRENTPARCELS` layer.
+(Hamilton, Middletown) has DTE land use and year built in the county's `CURRENTPARCELS` layer. Franklin
+(Columbus) sends land use already; the Auditor's appraisal `Dwelling.xlsx` adds year built (one row per
+dwelling card; the earliest is kept). A layer with `table` set is an Excel workbook, fetched through the IO
+layer. Montgomery (Dayton) publishes no parcel land-use code: its weekly geodatabase (GIS_SQLDB, read on
+2026-10-26) has only generalized land-use polygons and a building tax class, so Dayton stays on the ACS
+fallback.
 
 **Scope.** `COUNTIES` lists the counties downloaded: one server-side query per county and OBJECTID range
 (`OID_CHUNK`), so each query stays shallow, is cached on its own and resumes after a failure.
@@ -94,13 +99,15 @@ class CountyLayer:
     """A county auditor's parcel layer whose attributes fill gaps in the statewide layer."""
 
     name: str
-    url: str
+    url: str  # an ArcGIS layer, or an Excel workbook (`table` set: the sheet)
     license: str
     as_of: str  # the layer's last edit date, for provenance
     parcel_field: str  # the county's parcel number (= the statewide LocalParcelID)
-    luc_field: str  # DTE land-use code
+    luc_field: str | None = None  # DTE land-use code (None: year built only)
     year_built_field: str | None = None
     exempt_luc_field: str | None = None  # the use code of a tax-exempt parcel, read where luc_field is blank
+    table: str | int | None = None  # file only: the Excel sheet to read
+    parcel_regex: str | None = None  # first group = the statewide LocalParcelID, where the formats differ
 
 
 COUNTY_LAYERS: dict[str, CountyLayer] = {
@@ -148,6 +155,19 @@ COUNTY_LAYERS: dict[str, CountyLayer] = {
         parcel_field="PIN",
         luc_field="LUC",
         year_built_field="YRBLT",
+    ),
+    "39049": CountyLayer(
+        name="franklin",
+        url=(
+            "https://apps.franklincountyauditor.com/Outside_User_Files/2026/"
+            "2026-10-15%20Appraisal/Dwelling.xlsx"
+        ),
+        license="Franklin County Auditor public records (disclaimer: 'as is'; no reuse terms stated)",
+        as_of="appraisal snapshot 2026-10-15",
+        parcel_field="PARCEL ID",  # '010-000002-00': district, parcel, card suffix
+        year_built_field="YRBLT",  # one row per dwelling card; the earliest is kept
+        table=0,
+        parcel_regex=r"^(\d{3}-\d{6})",
     ),
 }
 
@@ -197,8 +217,9 @@ PROVENANCE = {
         "Cuyahoga Fiscal Office tax year 2026, Butler CURRENTPARCELS read 2026-10-26; owner and address "
         "fields never requested) joined on the parcel ID, attributes only: the county's DTE land-use code "
         "fills land_use_std where the statewide layer is UNKNOWN (never replacing a known code); residential "
-        "year built → year_built (1700 to now, else unknown); Summit lists each parcel twice, the first row "
-        "is kept",
+        "year built → year_built (1700 to now, else unknown); a parcel listed more than once keeps its first "
+        "code and its earliest year built (Summit lists each parcel twice; Franklin's Dwelling.xlsx, "
+        "appraisal snapshot 2026-10-15, has one row per dwelling card and adds year built only)",
         "One roll per jurisdiction: after placement, a jurisdiction spanning counties with different export "
         "dates takes the latest one for all its parcels (8 jurisdictions on 2026-10-26, e.g. Twinsburg)",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
@@ -216,9 +237,10 @@ PROVENANCE = {
         "row (174,159 parcels on 2026-10-18), as do 9 villages outside the Census permit universe (8,679: "
         "Indian Hill, Amberley); 6 parcels had no centroid polygon match",
         "Attributes are minimal: no units, year built, building area, values or sales; county layers fill "
-        "land use and year built only where listed in COUNTY_LAYERS (Summit, Lucas, Cuyahoga, Butler); "
-        "Montgomery's (Dayton) county server failed TLS verification (incomplete certificate chain) on "
-        "2026-10-26 and is not used",
+        "land use and year built only where listed in COUNTY_LAYERS (Summit, Lucas, Cuyahoga, Butler, "
+        "Franklin); Montgomery (Dayton) publishes no parcel land-use code: its engineer's server failed TLS "
+        "verification and the Auditor's weekly geodatabase (read 2026-10-26) has only generalized land-use "
+        "polygons and a building tax class",
         "Lucas and Cuyahoga county GIS hosts dropped connections from some networks on 2026-10-26 (they "
         "answered over a VPN); a failed county download stops the run rather than silently skipping",
         "A county layer is of its own date (Summit 2025-03), not the statewide export's: a parcel created "
@@ -304,9 +326,16 @@ def build(raw: pd.DataFrame, state: str = "OH", snapshot_date: str | None = None
 
 
 def county_attributes(raw: pd.DataFrame, county_geoid: str, layer: CountyLayer) -> pd.DataFrame:
-    """A county layer's rows → one row per parcel: parcel_id, luc (3-digit code), year_built."""
+    """A county layer's rows → one row per parcel: parcel_id, luc (3-digit code), year_built.
+
+    A parcel listed more than once (Summit's doubled rows, one row per dwelling card in Franklin) keeps its
+    first land-use code and its earliest year built (the principal dwelling).
+    """
     pid = raw[layer.parcel_field].astype("string").str.strip().replace("", pd.NA)
-    luc = luc_code(raw[layer.luc_field])
+    if layer.parcel_regex:
+        pid = pid.str.extract(layer.parcel_regex, expand=False)
+    nan = pd.Series(pd.NA, index=raw.index, dtype="string")
+    luc = luc_code(raw[layer.luc_field]) if layer.luc_field else nan
     if layer.exempt_luc_field:
         luc = luc.fillna(luc_code(raw[layer.exempt_luc_field]))
     if layer.year_built_field:
@@ -314,8 +343,10 @@ def county_attributes(raw: pd.DataFrame, county_geoid: str, layer: CountyLayer) 
         year = year.where(year.between(YEAR_BUILT_MIN, pd.Timestamp.today().year)).astype("Int64")
     else:
         year = pd.Series(pd.NA, index=raw.index, dtype="Int64")
-    out = pd.DataFrame({"parcel_id": county_geoid + pid, "luc": luc, "year_built": year})
-    return out.loc[pid.notna()].drop_duplicates("parcel_id", keep="first").reset_index(drop=True)
+    out = pd.DataFrame({"parcel_id": county_geoid + pid, "luc": luc, "year_built": year}).loc[pid.notna()]
+    agg = out.groupby("parcel_id", sort=False).agg(luc=("luc", "first"), year_built=("year_built", "min"))
+    agg["year_built"] = agg["year_built"].astype("Int64")
+    return agg.reset_index()
 
 
 def apply_county_attributes(parcels: pd.DataFrame, attrs: pd.DataFrame, layer_name: str) -> pd.DataFrame:
@@ -335,9 +366,33 @@ def apply_county_attributes(parcels: pd.DataFrame, attrs: pd.DataFrame, layer_na
     return out
 
 
+def read_county_file(path: Path, layer: CountyLayer, fields: list[str]) -> pd.DataFrame:
+    """Named columns of a county Excel workbook (the only file format read so far)."""
+    if path.suffix.lower() in (".xlsx", ".xls"):
+        return pd.read_excel(
+            path, sheet_name=layer.table or 0, usecols=fields, dtype={layer.parcel_field: str}
+        )
+    raise ValueError(f"oh_parcels: no reader for county file {path.name} (Excel workbooks only)")
+
+
 def download_county(store: DataStore, layer: CountyLayer, *, refresh: bool = False) -> pd.DataFrame:
-    optional = [layer.year_built_field, layer.exempt_luc_field]
-    fields = [layer.parcel_field, layer.luc_field] + [f for f in optional if f]
+    optional = [layer.luc_field, layer.year_built_field, layer.exempt_luc_field]
+    fields = [layer.parcel_field] + [f for f in optional if f]
+    if layer.table is not None:
+        from lotline.io.http import fetch
+
+        name = layer.url.rsplit("/", 1)[-1]
+        path = fetch(
+            layer.url,
+            store.raw(SOURCE, snapshot_vintage()) / f"county_{layer.name}" / name,
+            store=store,
+            source=SOURCE,
+            license=layer.license,
+            adapter=ADAPTER,
+            adapter_version=VERSION,
+            refresh=refresh,
+        )
+        return read_county_file(path, layer, fields)
     return download_layer(
         layer.url,
         store=store,

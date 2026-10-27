@@ -235,7 +235,7 @@ def test_four_digit_county_codes_read_as_dte_classes():
 def test_county_layers_are_attribute_only():
     for geoid, layer in op.COUNTY_LAYERS.items():
         assert len(geoid) == 5 and geoid.startswith("39")
-        assert layer.parcel_field and layer.luc_field
+        assert layer.parcel_field and (layer.luc_field or layer.year_built_field)  # something to fill
 
 
 def test_one_vintage_per_jurisdiction():
@@ -249,3 +249,44 @@ def test_one_vintage_per_jurisdiction():
     out = op.one_vintage_per_jurisdiction(df)
     assert out["vintage"].tolist() == [2026, 2026, 2026]  # Twinsburg's Cuyahoga parcel joins the 2026 roll
     assert (out["vintage_date"] == pd.Timestamp("2026-10-19")).all()
+
+
+def test_dwelling_cards_keep_the_earliest_year_and_map_parcel_ids():
+    franklin = op.CountyLayer(
+        name="franklin",
+        url="https://example.test/Dwelling.xlsx",
+        license="test",
+        as_of="test",
+        parcel_field="PARCEL ID",
+        year_built_field="YRBLT",
+        table="Sheet1",
+        parcel_regex=r"^(\d{3}-\d{6})",
+    )
+    raw = pd.DataFrame(
+        {
+            "PARCEL ID": ["010-000002-00", "010-000002-00", "010-000003-00", "bad"],
+            "YRBLT": [1925, 2021, 0, 1950],  # a house (1925) and a carriage house (2021) on one parcel
+        }
+    )
+    a = op.county_attributes(raw, "39049", franklin).set_index("parcel_id")
+    assert list(a.index) == ["39049010-000002", "39049010-000003"]  # suffix dropped; unparseable ID dropped
+    assert a.loc["39049010-000002", "year_built"] == 1925
+    assert pd.isna(a.loc["39049010-000003", "year_built"]) and a["luc"].isna().all()  # year built only
+
+
+def test_read_county_file_reads_only_named_columns_from_a_workbook(tmp_path):
+    path = tmp_path / "Dwelling.xlsx"
+    pd.DataFrame({"PARCEL ID": ["010-000002-00"], "YRBLT": [1925], "OWNER": ["not read"]}).to_excel(
+        path, index=False
+    )
+    layer = op.CountyLayer(
+        name="t",
+        url="https://example.test/Dwelling.xlsx",
+        license="test",
+        as_of="test",
+        parcel_field="PARCEL ID",
+        year_built_field="YRBLT",
+        table=0,
+    )
+    df = op.read_county_file(path, layer, ["PARCEL ID", "YRBLT"])
+    assert list(df.columns) == ["PARCEL ID", "YRBLT"] and df["PARCEL ID"].iloc[0] == "010-000002-00"
