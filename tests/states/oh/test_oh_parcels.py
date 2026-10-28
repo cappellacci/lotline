@@ -116,6 +116,11 @@ def test_load_assigns_jurisdictions_and_applies_snapshot_holdout(raw, monkeypatc
     monkeypatch.setattr(op, "download_county", no_rows)
     monkeypatch.setattr(
         op,
+        "download_franklin_roll",
+        lambda store, date, refresh=False: pd.DataFrame(columns=["PARCEL ID", "LUC"]),
+    )
+    monkeypatch.setattr(
+        op,
         "assign_jurisdictions",
         lambda df, state, store: (df.assign(jurisdiction_geoid=df["county_geoid"]), None),
     )
@@ -290,3 +295,78 @@ def test_read_county_file_reads_only_named_columns_from_a_workbook(tmp_path):
     )
     df = op.read_county_file(path, layer, ["PARCEL ID", "YRBLT"])
     assert list(df.columns) == ["PARCEL ID", "YRBLT"] and df["PARCEL ID"].iloc[0] == "010-000002-00"
+
+
+def _placed_roll() -> pd.DataFrame:
+    """A placed statewide roll: Franklin 2023 (A wholly inside; B 1 house of 2 in Franklin) plus Delaware."""
+    rows = [
+        # parcel_id, county, jurisdiction, land use, lot, year built
+        ("39049010-000001", "39049", "A", "SF_DETACHED", 5000.0, 1950),
+        ("39049010-000002", "39049", "A", "DUPLEX", 4000.0, 1920),
+        ("39049010-000003", "39049", "A", "SF_DETACHED", 6000.0, 2001),
+        ("39049020-000001", "39049", "B", "SF_DETACHED", 7000.0, 1990),
+        ("39049030-000001", "39049", "A", "COMMERCIAL", 9000.0, pd.NA),
+        ("39049030-000002", "39049", "C", "COMMERCIAL", 9000.0, pd.NA),
+        ("39041000-000001", "39041", "B", "SF_DETACHED", 8000.0, 2005),
+    ]
+    df = pd.DataFrame(
+        rows,
+        columns=["parcel_id", "county_geoid", "jurisdiction_geoid", "land_use_std", "lot_sqft", "year_built"],
+    )
+    df["year_built"] = df["year_built"].astype("Int64")
+    df["state"], df["vintage"], df["vintage_date"] = "OH", 2023, pd.Timestamp("2023-09-26")
+    df["vintage"] = df["vintage"].astype("Int64")
+    df["land_use_raw"], df["lon"], df["lat"], df["source"] = "x", -83.0, 40.0, "oh_parcels"
+    return df
+
+
+def _archive(*rows) -> pd.DataFrame:
+    return pd.DataFrame(rows, columns=["PARCEL ID", "LUC"])
+
+
+def test_franklin_roll_places_by_roll_then_dominant_district():
+    current = _placed_roll().query("county_geoid == '39049'")
+    raw = _archive(
+        ("010-000001-00", "510"),
+        ("010-000001-01", "510"),  # second card of the same parcel: one row
+        ("010-000002-00", "510"),  # a duplex in 2023, a house in 2018: the archive's own code counts
+        ("010-999999-00", "500"),  # not in the roll; district 010 is all A (3 of 3) → A, lot unknown
+        ("030-999999-00", "510"),  # district 030 is half A, half C → dropped
+        ("BAD", "510"),
+    )
+    out = op.franklin_roll(raw, "2018-12-17", current).set_index("parcel_id")
+    assert list(out.index) == ["39049010-000001", "39049010-000002", "39049010-999999"]
+    assert (out["vintage"] == 2018).all() and (out["vintage_date"] == pd.Timestamp("2018-12-17")).all()
+    assert out["jurisdiction_geoid"].tolist() == ["A", "A", "A"]
+    assert out["land_use_std"].tolist() == ["SF_DETACHED", "SF_DETACHED", "VACANT_RESIDENTIAL"]
+    assert (
+        out.loc["39049010-000001", "lot_sqft"] == 5000.0 and out.loc["39049010-000001", "year_built"] == 1950
+    )
+    assert pd.isna(out.loc["39049010-999999", "lot_sqft"])
+    assert out.loc["39049010-000002", "land_use_raw"] == "510 (Franklin Auditor 2018-12-17)"
+
+    # year built for a parcel missing from the roll comes from the dwelling file; the roll's own wins
+    years = pd.Series({"39049010-999999": 2017, "39049010-000001": 1800}, dtype="Int64")
+    filled = op.franklin_roll(raw, "2018-12-17", current, year_built=years).set_index("parcel_id")
+    assert filled.loc["39049010-999999", "year_built"] == 2017
+    assert filled.loc["39049010-000001", "year_built"] == 1950
+
+
+def test_franklin_yearly_rolls_only_for_places_wholly_in_the_county():
+    df = _placed_roll()
+    raw = _archive(("010-000001-00", "510"), ("020-000001-00", "510"), ("010-000003-00", "500"))
+    out = op.franklin_yearly_rolls(df, {"2019-12-18": raw, "2023-12-26": raw})
+    added = out[out["vintage"] == 2019]
+    # A has 2 of 2 houses in Franklin → yearly rolls; B has 1 of 2 (Delaware) → none
+    assert set(added["jurisdiction_geoid"]) == {"A"} and len(added) == 2
+    # the statewide roll's own year (2023) is not read twice; the original rows are untouched
+    assert (out["vintage"] == 2023).sum() == len(df)
+    assert_conforms(out, "parcels")
+    assert op.franklin_yearly_rolls(df[df["county_geoid"] != "39049"], {"2019-12-18": raw}).equals(
+        df[df["county_geoid"] != "39049"]
+    )
+
+
+def test_franklin_share_counts_houses_only():
+    share = op.franklin_share(_placed_roll())
+    assert share.to_dict() == {"A": 1.0, "B": 0.5}
