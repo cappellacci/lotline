@@ -36,3 +36,9 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   `udo_name`, `udo_url`, `adu_first_allowed`, `mm_first_allowed`, `status` and `ben_notes` are for Ben. The
   detailed fields stay in the two tables above. Built once from those tables, `config/reforms/oh.csv` and the
   processed `jurisdictions` table.
+  **2026-10-28:** merged Ben's agentic research workbook (`lotline-data/manual/ohio/`, kept outside the repo
+  with the PDFs it saved): `status` is now `researched: lead to confirm`, `researched: nothing found` or
+  `not researched`; `research_*` columns hold its findings, dated ordinances, open questions and evidence
+  URLs (`research_sources`, IDs from its evidence register); `next_step` says what would close each lead;
+  `udo_url` was filled from its code links where empty. The workbook marks most first-permission dates
+  unresolved, so nothing was coded from it yet.
