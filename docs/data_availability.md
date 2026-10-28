@@ -73,7 +73,7 @@ These national sources feed every state the same way.
 | Data need | Available | Used | Why not / limits |
 |---|---|---|---|
 | Permits by building size (R4) | BPS (Ohio townships issue few permits); Columbus permits 2010 on (Census building-type code, units); Cincinnati permits (units); Cleveland permits (no unit counts, ODbL license) | `bps`, `columbus_permits`, `cincy_permits` | Cleveland: no unit counts, and its ODbL share-alike license needs care: no |
-| ADU / building type flag (R5) | Cincinnati work descriptions; Columbus none | `cincy_permits` (ADU from text) | Columbus has no ADU flag or description field, so its ADUs can't be told apart |
+| ADU / building type flag (R5) | Cincinnati work descriptions; Franklin County Auditor permit file (work descriptions for Columbus and its suburbs, 1990 on) | `cincy_permits` (ADU from text), `franklin_permits` (ADUs outside Columbus), `columbus_permits` (ADU flags joined from the auditor file by permit number) | Read from free text with named rules: precise but incomplete (Columbus: 14 flagged for 2019 to Sep 2025 against the 57 ADU permits the city reports); the auditor file is not a complete record of new houses, so it supplies ADUs only |
 | Completions and demolitions (R6) | Cincinnati CO date; Columbus last status date (a proxy) | `cincy_permits`, `columbus_permits` | |
 | Parcels with land use (R1) | Ohio Statewide Parcels (88 counties, land-use class and lot area only) | `oh_parcels` (Franklin and Hamilton counties so far) | The other 86 counties not downloaded yet; they use the ACS fallback |
 | Year built (R1) | Not in the statewide layer; Franklin County Auditor files; ACS B25034 | `acs` (area level only) | County auditor (CAMA) files have their own schemas: not yet |
