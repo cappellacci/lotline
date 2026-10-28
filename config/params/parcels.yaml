@@ -1,0 +1,11 @@
+# Parcel roll completeness (data quality of the parcels table, before the eligible-parcel rule). Used where a
+# state's parcels come from several releases of one statewide collection that a county may send only in part
+# (TX StratMap: src/lotline/adapters/states/tx/stratmap_parcels.py).
+
+min_county_roll_completeness:
+  value: 0.8
+  low: 0.7
+  high: 0.9
+  unit: a county's parcel count in one release, as a share of its largest count in the other releases read
+  source: "Lotline judgment (Ben, 2026-10-27), from the StratMap 2019 and 2025 releases: the median county's 2019 count is 0.94 of its 2025 count (quartiles 0.87 and 0.97, six years of growth), while Harris is at 0.66 and 29 other counties under 0.8 (WS-TX logbook 2026-10-27)"
+  notes: "A county part below this share is taken to be a partial extract, not an older roll, and is left out of that release; the county's jurisdictions then count from the other release or fall back to the ACS denominator. 0.8 sits below the growth seen in the lower quartile and well above the partial extracts."

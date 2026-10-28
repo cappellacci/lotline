@@ -48,6 +48,10 @@ site addresses (`situs_*`) and the legal description are in the same records but
 - **Jurisdiction:** the parcel's centroid placed with `lotline.geo.place_or_township` (TIGERweb incorporated
   places); a centroid in no place, or in a place that is not a Texas jurisdiction, goes to its county's
   remainder (the county GEOID). Units, building area and homestead are not in StratMap: left null.
+- **Partial extracts:** a county's part of a release with fewer than `min_county_roll_completeness` (0.8,
+  config/params/parcels.yaml) of the parcels the county has in the other release read is left out of that
+  release, with every jurisdiction that has parcels in it (`drop_partial_counties`); in 2019, Harris (0.66)
+  and about 30 smaller counties.
 - **Austin** keeps the TCAD roll (`config/states/tx.yaml` `parcel_sources`), so its parcels here are dropped
   later by `build/eligible.single_source`, not by this adapter.
 """
@@ -63,7 +67,7 @@ import numpy as np
 import pandas as pd
 
 from lotline.adapters.states.tx import filegdb, projection, shapefile
-from lotline.config import CONFIG_DIR
+from lotline.config import CONFIG_DIR, load_params
 from lotline.io import DataStore
 from lotline.schemas import validate
 from lotline.validation import holdout
@@ -124,6 +128,9 @@ PROVENANCE = {
         "jurisdiction_geoid = incorporated place holding the polygon centroid (lotline.geo), else the county "
         "remainder; parcel_id = county GEOID + prop_id; one row per parcel and roll (largest polygon)",
         "value_basis = appraisal; no sale prices (Texas non-disclosure)",
+        "Rolls read: 2019-03 and 2025-06 (ROLLS), each release one roll at its release year; a county part "
+        "with under 80% of the county's parcels in the other release (min_county_roll_completeness) is left "
+        "out with every jurisdiction that touches it",
     ],
     "limitations": [
         "Attribute coverage varies by appraisal district: some counties send no state land-use code or year "
@@ -313,6 +320,34 @@ def _vintage(rel_path: str) -> tuple[int | None, pd.Timestamp | None]:
     return int(m.group(1)), date
 
 
+def drop_partial_counties(
+    rolls: list[pd.DataFrame], min_share: float
+) -> tuple[list[pd.DataFrame], pd.DataFrame]:
+    """Leave out county parts of a release that look like partial extracts (`min_county_roll_completeness`).
+
+    A county's part of release i is partial when its parcel count is below `min_share` times the county's
+    largest count in the other releases (a county no other release has is kept). Every jurisdiction with
+    parcels in a partial part is left out of that release too, so no city keeps a roll with part of its
+    parcels missing; it counts from the other release or the ACS fallback. With one release nothing is
+    dropped. Returns the filtered rolls and a table of what was dropped (release, county, counts, share).
+    By hand: county 48201 with 66 parcels in release 0 and 100 in release 1 -> share 0.66 < 0.8, dropped
+    from release 0 with every jurisdiction that has parcels in it.
+    """
+    counts = pd.DataFrame({i: r["county_geoid"].value_counts() for i, r in enumerate(rolls)})
+    kept, dropped = [], []
+    for i, roll in enumerate(rolls):
+        others = counts.drop(columns=i).max(axis=1)
+        share = counts[i] / others
+        bad = share.index[share < min_share]
+        for c in bad:
+            dropped.append({"release": i, "county_geoid": c, "parcels": int(counts.at[c, i]),
+                            "other_release_parcels": int(others[c]), "share": float(share[c])})  # fmt: skip
+        juris = roll.loc[roll["county_geoid"].isin(bad), "jurisdiction_geoid"].unique()
+        kept.append(roll.loc[~(roll["county_geoid"].isin(bad) | roll["jurisdiction_geoid"].isin(juris))])
+    return kept, pd.DataFrame(dropped, columns=["release", "county_geoid", "parcels", "other_release_parcels",
+                                                "share"])  # fmt: skip
+
+
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     if state.upper() != "TX":
         raise ValueError(f"{SOURCE} covers Texas only, not {state}")
@@ -342,4 +377,6 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
             snapshot=True,
         )
         rolls.append(validate(df, TABLE))
+    min_share = load_params("parcels")["min_county_roll_completeness"].value
+    rolls, _ = drop_partial_counties(rolls, min_share)
     return pd.concat(rolls, ignore_index=True)

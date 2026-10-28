@@ -16,6 +16,7 @@ import pytest
 from lotline import registry
 from lotline.adapters.states.tx import projection, shapefile
 from lotline.adapters.states.tx import stratmap_parcels as sm
+from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.schemas import assert_conforms
 
@@ -298,6 +299,29 @@ def test_load_reads_only_the_named_rolls(tmp_path):
     assert "2022-07" not in sm.ROLLS
     with pytest.raises(FileNotFoundError, match="none of the rolls read"):
         sm.load("TX", store)
+
+
+def test_partial_county_parts_dropped_with_their_jurisdictions():
+    def roll(counts):  # {(county, jurisdiction): n parcels}
+        rows = [(c, j) for (c, j), n in counts.items() for _ in range(n)]
+        return pd.DataFrame(rows, columns=["county_geoid", "jurisdiction_geoid"])
+
+    # release 0: Harris (48201) has 66 against 100 in release 1 -> 0.66, partial; Houston also has 10
+    # parcels in Fort Bend (48157), which is complete (10 of 10) but goes with Houston; Galveston (48167) 0.9
+    r0 = roll(
+        {("48201", "4835000"): 50, ("48201", "48201"): 16, ("48157", "4835000"): 10, ("48167", "48167"): 9}
+    )
+    r1 = roll(
+        {("48201", "4835000"): 80, ("48201", "48201"): 20, ("48157", "4835000"): 10, ("48167", "48167"): 10}
+    )
+    (k0, k1), dropped = sm.drop_partial_counties([r0, r1], 0.8)
+    assert set(k0["jurisdiction_geoid"]) == {"48167"} and len(k1) == len(r1)
+    assert dropped.to_dict("records") == [
+        {"release": 0, "county_geoid": "48201", "parcels": 66, "other_release_parcels": 100, "share": 0.66}
+    ]
+    (only,), none = sm.drop_partial_counties([r0], 0.8)  # one release: nothing to compare against
+    assert len(only) == len(r0) and none.empty
+    assert load_params("parcels")["min_county_roll_completeness"].value == 0.8
 
 
 def test_registered_as_tx_source():
