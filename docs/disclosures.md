@@ -44,3 +44,16 @@ Note: numpy (BSD-3-Clause) bundles a few small components under 0BSD, MIT, Zlib 
 
 ## Pre-existing work
 - None. All code was written on or after 2026-09-14.
+- **Knowledge carried over, not code.** Ben has worked on Dallas housing data outside Lotline. For the Dallas
+  permit adapter (`dallas_permits`, 2026-10-23), a written note of his on *public* Dallas sources pointed to the
+  City's "New Permits 1971-2024" ArcGIS layer and warned that some apartment projects repeat their total on
+  every building's permit, and that permits are missing from late 2024 through September 2025 (the move to
+  DallasNow). No code, configuration or data from that work was used; the adapter was written for Lotline
+  from the public layer itself, and every figure in it was checked against that layer and Census BPS.
+- **Published format descriptions, not code.** The file geodatabase reader
+  (`src/lotline/adapters/states/tx/filegdb.py`, 2026-10-27) was written for Lotline from Even Rouault's public,
+  reverse-engineered format description ("FGDB-Spec", github.com/rouault/dump_gdbtable/wiki/FGDB-Spec). No
+  code was taken from GDAL, from that repository's scripts or from any other reader. GDAL/pyogrio was
+  considered and turned down (Ben, 2026-10-27) because its wheels statically link GEOS (LGPL-2.1) and
+  SpatiaLite (MPL-1.1/GPL-2/LGPL-2.1). The shapefile reader (`shapefile.py`) was likewise written from the
+  ESRI and dBASE layout documents.

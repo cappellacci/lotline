@@ -114,7 +114,7 @@ def test_land_use_via_state_category(roll):
 @pytest.mark.parametrize(
     "code, expected",
     [("A1", "SF_DETACHED"), ("M1", "MOBILE_HOME"), ("F1", "COMMERCIAL"), ("D1", "AGRICULTURAL"),
-     ("X", "UNKNOWN"), (None, "UNKNOWN")],
+     ("X", "OTHER"), ("Q", "UNKNOWN"), (None, "UNKNOWN")],
 )  # fmt: skip
 def test_land_use_falls_back_to_code_prefix(code, expected):
     assert tp.land_use(code, {}, tp.load_land_use_crosswalk()) == expected
