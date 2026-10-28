@@ -18,7 +18,8 @@ sources:
       Adapter src/lotline/adapters/states/oh/columbus_permits.py. About 685,000 permits 2010-present on
       2026-10-15 (data last edited 2026-10-15); the adapter downloads only new-structure and demolition
       permits (29,183). Building type from CONST_TYPE_CODE (Census BPS code). No ADU flag or description
-      field, so ADUs can't be identified. Pre-2010 permits sit in separate Historic_Building_Permits services.
+      field: ADUs come from the Franklin County Auditor's permit descriptions (franklin_permits.adu_flags),
+      matched by permit number and parcel. Pre-2010 permits sit in separate Historic_Building_Permits services.
   - name: oh_parcels
     url: https://services2.arcgis.com/MlJ0G8iWUyC7jAmu/arcgis/rest/services/OhioStatewidePacels_full_view/FeatureServer/0
     license: State of Ohio OGRIP public data, 'as is' (no use restrictions stated for public downloads)
@@ -45,3 +46,13 @@ sources:
       permits, new-construction and demolition work classes only) plus combo permits thvx-5mem (only rows whose
       work description names an ADU or townhouse). 8,190 permits kept on 2026-10-18. No Census code: type from
       the building-code use group and units.
+  - name: franklin_permits
+    url: https://apps.franklincountyauditor.com/Outside_User_Files/
+    license: Franklin County Auditor public records (disclaimer 'as is'; no reuse terms stated)
+    access: download
+    cadence: monthly appraisal snapshots (rolling window of permits)
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/franklin_permits.py. Permit.xlsx from the 2022-12-15 and
+      2026-10-15 appraisal snapshots (1990 to now), with each issuing office's permit number and work
+      description. ADU permits only (named description rules), outside Columbus; Columbus's own layer takes
+      the flags by permit number. Not a complete record of new houses (about a tenth of BPS for Columbus).

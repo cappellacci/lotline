@@ -1,0 +1,33 @@
+place,geoid,pop,need,start_url,duplex_on_single_family_lots (by_right/permit/no),triplex_fourplex (by_right/permit/no),first_allowed_date,by_right_since,districts,ordinance,source_url,notes
+San Antonio,4865000,1434625,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Dallas,4819000,1304379,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Austin,4805000,961855,HOME phase 1 effective date,,,,,,,,,(coded) check HOME phase 1 effective date in Ord. 20231207-001 (coded as the applications-open date 2024-02-05)
+Fort Worth,4827000,918915,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+El Paso,4824000,678815,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Arlington,4804000,394266,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Corpus Christi,4817000,317863,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Plano,4858016,285494,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Lubbock,4845000,257141,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Irving,4837000,256684,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Laredo,4841464,255205,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Garland,4829000,246018,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Frisco,4827684,200509,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Amarillo,4803000,200393,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Grand Prairie,4830464,196100,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,ADU row notes: 'Accessory Apartment' points to 2-Family/Duplex uses allowed only in SF-A and 2F
+McKinney,4845744,195308,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Brownsville,4810768,186738,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Killeen,4839148,153095,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Pasadena,4856000,151950,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+McAllen,4845384,142210,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,UDC 2026 use table shows Duplex/Triplex/Fourplex P in some columns; districts not mappable
+Denton,4819972,139869,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,"DDC Table 5.2-A: Duplex S+/P+, Triplex/Fourplex P+ in some columns; districts not mappable (R1-R4?)"
+Carrollton,4813024,133434,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Midland,4848072,132524,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,"Use chart: duplex P in two columns, multifamily P in three; §11-1-4.06: one main building for single-family or duplex use per lot"
+Pearland,4856348,125828,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+College Station,4815976,120511,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Beaumont,4807000,115282,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Odessa,4853388,114428,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Lewisville,4842508,111822,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,"R-7.5, R-6, R-5 purpose statements say the districts accommodate 'two-family dwellings': check the use table"
+Sugar Land,4870808,111026,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Tyler,4874144,105995,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,Sec. 10-67 'Two-Family Residences in R-1C' (title only read): may allow duplexes in R-1C
+Allen,4801924,104627,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
+Wichita Falls,4879000,102316,"whether two-family (duplex) and 3-4 unit buildings are allowed on single-family lots, since when, by right or by permit, which districts",,,,,,,,,
