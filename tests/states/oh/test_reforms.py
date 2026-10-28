@@ -91,7 +91,13 @@ def test_columbus_adu_rubric(reforms):
     adu = reforms.set_index("reform_id").loc["OH-3918000-adu-2025"]
     assert adu.by_right and not adu.owner_occ and adu.adu_detached_allowed
     assert adu.adus_per_lot == 1 and adu.parking_min_per_unit == 0
-    assert adu.effective_date == pd.Timestamp("2025-12-25")
+    assert adu.effective_date == pd.Timestamp("2025-12-24")  # the city's BZS notice
+
+
+def test_euclid_missing_middle_rubric(reforms):
+    mm = reforms.set_index("reform_id").loc["OH-3925704-missing_middle-2024"]
+    assert mm.by_right and mm.unit_cap == 2 and mm.min_lot_sqft == 5000
+    assert mm.effective_date == pd.Timestamp("2024-11-06") and mm.coverage_zones == "U1"
 
 
 def test_single_coder_rows_have_no_second_coder(reforms):

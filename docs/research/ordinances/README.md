@@ -42,3 +42,8 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   URLs (`research_sources`, IDs from its evidence register); `next_step` says what would close each lead;
   `udo_url` was filled from its code links where empty. The workbook marks most first-permission dates
   unresolved, so nothing was coded from it yet.
+  **Later on 2026-10-28:** Ben's Columbus/Euclid pilot workbook (Desktop) was merged too. Euclid's Ord. 120-2024
+  (two-family by right in the former single-family U1 district, effective 2024-11-06) is coded as
+  `OH-3925704-missing_middle-2024`, Ohio's second missing-middle event; Columbus's ADU effective date was
+  corrected to the city's 2025-12-24. Dublin's §153.059 was checked (Bridge Street District only: no
+  conflict) and Hamilton's coded row kept (Ben: the 2023 amendment did not pass).
