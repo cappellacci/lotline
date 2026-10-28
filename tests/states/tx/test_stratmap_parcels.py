@@ -16,6 +16,7 @@ import pytest
 from lotline import registry
 from lotline.adapters.states.tx import projection, shapefile
 from lotline.adapters.states.tx import stratmap_parcels as sm
+from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.schemas import assert_conforms
 
@@ -119,6 +120,25 @@ def test_geographic_web_mercator_and_unsupported():
         projection.from_wkt(merc.replace("Mercator_Auxiliary_Sphere", "Transverse_Mercator"))
 
 
+def test_web_mercator_true_area_factor_hand_worked():
+    merc = (
+        'PROJCS["WGS_1984_Web_Mercator_Auxiliary_Sphere",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",'
+        'SPHEROID["WGS_1984",6378137.0,298.257223563]]],PROJECTION["Mercator_Auxiliary_Sphere"],'
+        'UNIT["Meter",1.0]]'
+    )
+    # e^2 = f (2 - f) = 0.00669438 (WGS84); at 0: 1 - e^2; at 60 N: 0.25 (1 - e^2) / (1 - 0.75 e^2)^2
+    got = projection.sqm_per_unit2(merc, [0.0, 60.0])
+    assert got == pytest.approx([0.99330562, 0.25 * 0.99330562 / (1 - 0.75 * 0.00669438) ** 2], rel=1e-7)
+    assert got[1] == pytest.approx(0.25, rel=0.01)  # close to the sphere's cos^2
+    assert (
+        projection.sqm_per_unit2(TX_ALBERS, [30.0]) == 1.0 and projection.sqm_per_unit2(GEOG, [30.0]) is None
+    )
+    # lot size from the polygon when no stated area: 1,000 squared units at 0 N -> 993.3 m^2
+    df = pd.DataFrame({"area": [1000.0, 1000.0], "legal_area": ["", "0.5"], "lgl_area_unit": ["", "AC"]})
+    lots = sm.lot_sqft(df, projection.sqm_per_unit2(merc, [0.0, 0.0]))
+    assert lots.tolist() == pytest.approx([993.30562 * sm.SQFT_PER_SQM, 0.5 * 43_560])
+
+
 # ---- shapefile reader ------------------------------------------------------------------------------------
 def test_centroids_and_areas_hand_worked(tmp_path):
     hole = [(4, 4), (6, 4), (6, 6), (4, 6), (4, 4)]  # counter-clockwise: a hole
@@ -168,6 +188,8 @@ def rows_and_shapes():
         base_row(prop_id="105", legal_area="0.2"),
         base_row(prop_id="", geo_id="GEO9", stat_land_="D1"),
         base_row(prop_id="106", fips=""),
+        base_row(prop_id="107", tax_year="0"),  # no roll year: the registration's vintage
+        base_row(prop_id="108", tax_year="2025"),  # an older county roll inside the release: same roll
     ]
     shapes = [[square(-97.8 + i / 1000, 30.2, 0.0005 * (2 if i == 6 else 1))] for i in range(len(rows))]
     return rows, shapes
@@ -192,6 +214,13 @@ def test_build_land_use_lots_years_values(tmp_path):
     assert p.loc["48453GEO9", "land_use_std"] == "AGRICULTURAL"  # geo_id when prop_id is blank
     assert p.loc["48453100", "value_basis"] == "appraisal" and p.loc["48453100", "bldg_value"] == 300000
     assert p.loc["48453100", "year_built"] == 1995 and p.loc["48453100", "vintage"] == 2026
+    assert (
+        p.loc["48453107", "vintage"] == 2026 and p.loc["48453108", "vintage"] == 2026
+    )  # one roll per release
+    assert (
+        sm.read_roll(tmp_path / "s.zip", vintage=None).set_index("parcel_id").loc["48453108", "vintage"]
+        == 2025
+    )
 
 
 def test_one_row_per_property_keeps_the_largest_polygon(tmp_path):
@@ -228,11 +257,11 @@ def test_resolve_jurisdictions_place_else_county():
     assert got.tolist() == ["4805000", "48453", "48201"]
 
 
-def test_geodatabase_zip_explains_the_dependency(tmp_path):
+def test_zip_without_shapefile_or_geodatabase_stops(tmp_path):
     path = tmp_path / "g.zip"
     with zipfile.ZipFile(path, "w") as zf:
-        zf.writestr("stratmap26.gdb/a00000001.gdbtable", b"x")
-    with pytest.raises(NotImplementedError, match="pyogrio"):
+        zf.writestr("readme.txt", b"x")
+    with pytest.raises(FileNotFoundError, match="no shapefile"):
         sm.read_roll(path, vintage=2026)
 
 
@@ -245,7 +274,10 @@ def test_load_registered_zip_assigns_and_validates(tmp_path, monkeypatch):
     rows, shapes = rows_and_shapes()
     src = write_zip(tmp_path / "stratmap26-landparcels_48_lp.zip", shapes, rows)
     store = DataStore(tmp_path / "data")
-    store.register(src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2026-09")
+    store.register(src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2025-06")
+    store.register(
+        src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2026-09"
+    )  # not read
     juris = pd.DataFrame({"geoid": ["4805000", "48453", "48201"]})
     monkeypatch.setattr(store, "read", lambda state, table: juris)
     from lotline import geo
@@ -256,7 +288,40 @@ def test_load_registered_zip_assigns_and_validates(tmp_path, monkeypatch):
     out = sm.load("TX", store)
     assert_conforms(out, "parcels")
     assert set(out.jurisdiction_geoid) == {"4805000"}
-    assert len(out) == 7  # nine rows: property 105 twice, one without a county
+    assert len(out) == 9  # eleven rows: property 105 twice, one without a county
+
+
+def test_load_reads_only_the_named_rolls(tmp_path):
+    rows, shapes = rows_and_shapes()
+    src = write_zip(tmp_path / "stratmap22-landparcels_48_lp.zip", shapes, rows)
+    store = DataStore(tmp_path / "data")
+    store.register(src, source=sm.SOURCE, url=sm.LANDING_URL, license=sm.LICENSE, vintage="2022-07")
+    assert "2022-07" not in sm.ROLLS
+    with pytest.raises(FileNotFoundError, match="none of the rolls read"):
+        sm.load("TX", store)
+
+
+def test_partial_county_parts_dropped_with_their_jurisdictions():
+    def roll(counts):  # {(county, jurisdiction): n parcels}
+        rows = [(c, j) for (c, j), n in counts.items() for _ in range(n)]
+        return pd.DataFrame(rows, columns=["county_geoid", "jurisdiction_geoid"])
+
+    # release 0: Harris (48201) has 66 against 100 in release 1 -> 0.66, partial; Houston also has 10
+    # parcels in Fort Bend (48157), which is complete (10 of 10) but goes with Houston; Galveston (48167) 0.9
+    r0 = roll(
+        {("48201", "4835000"): 50, ("48201", "48201"): 16, ("48157", "4835000"): 10, ("48167", "48167"): 9}
+    )
+    r1 = roll(
+        {("48201", "4835000"): 80, ("48201", "48201"): 20, ("48157", "4835000"): 10, ("48167", "48167"): 10}
+    )
+    (k0, k1), dropped = sm.drop_partial_counties([r0, r1], 0.8)
+    assert set(k0["jurisdiction_geoid"]) == {"48167"} and len(k1) == len(r1)
+    assert dropped.to_dict("records") == [
+        {"release": 0, "county_geoid": "48201", "parcels": 66, "other_release_parcels": 100, "share": 0.66}
+    ]
+    (only,), none = sm.drop_partial_counties([r0], 0.8)  # one release: nothing to compare against
+    assert len(only) == len(r0) and none.empty
+    assert load_params("parcels")["min_county_roll_completeness"].value == 0.8
 
 
 def test_registered_as_tx_source():
