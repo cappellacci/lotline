@@ -170,3 +170,4 @@ def test_ben_lookups_2026_10_30(reforms):
     assert r.at["TX-4824000-missing_middle-2010", "unit_cap"] == 2  # El Paso duplex in R-4, R-5
     assert r.at["TX-4819972-missing_middle-2010", "by_right"] == False  # noqa: E712  Denton R4 by SUP
     assert r.at["TX-4856348-adu-2006", "adus_per_lot"] == 0  # Pearland: CUP only
+    assert r.at["TX-4858016-missing_middle-2010", "unit_cap"] == 1  # Plano: no duplex in SF districts

@@ -4,10 +4,10 @@
 Run from the repo root after `tx_corrections_2026_10_30.py`:
 `uv run python scripts/dev/tx_ben_lookups_2026_10_30.py`. Rerunning it is safe.
 
-Ben answered the open items in chat on 2026-10-30. There were seven ADU and code-history questions and a table
-of eight missing-middle lookups. Facts are his unless a note says otherwise. Two terms are read from the local
-PDFs: Killeen's overlay terms (`Killeen_North-Killeen-Overlay_2026-10-20.pdf`) and Lewisville's districts (the
-row coded earlier).
+Ben answered the open items in chat on 2026-10-30. There were seven ADU and code-history questions, a table of
+eight missing-middle lookups, follow-ups for Plano, Lubbock and Laredo, and two Austin fee answers. Facts are
+his unless a note says otherwise. Two terms are read from the local PDFs: Killeen's overlay terms
+(`Killeen_North-Killeen-Overlay_2026-10-20.pdf`) and Lewisville's districts (the row coded earlier).
 
 Conventions follow `tx_adu_rows.py` and `tx_rules_21_40.py`:
 - New rows have new ids.
@@ -226,6 +226,13 @@ ROWS: list[dict] = [
         "https://www.cstx.gov/business-development/unified-development-ordinance/",
         "duplex no in ordinary single-family districts (permitted in D or MH zoning); 3-4 units no in ordinary single-family districts (small multiplexes permitted in MH and MF).",
     ),
+    mm_no(
+        "4858016",
+        "Plano",
+        "Single-family districts SF-20, SF-9, SF-7, SF-6 (and SF-A); two-family dwellings in the 2F district",
+        "https://www.plano.gov/municipal-codes-and-ordinances",
+        "the 2024-2025 zoning amendments do not allow standard two-family homes (duplexes) across the single-family districts; 3-4 unit buildings are multifamily, not allowed in single-family districts (Ben's research workbook, 2026-10-29). Any narrow exception was not identified.",
+    ),
 ]
 
 # reform_id -> (field values, note)
@@ -245,7 +252,38 @@ EDITS: dict[str, tuple[dict, str]] = {
         {"coverage": "RSF-2 duplex permitted (P); RSF-20, RSF-10, RSF-7, RSF-5 one dwelling"},
         f"{BEN}: duplexes are neither permitted nor allowed by SUP in RSF-5 (Chapter 125 Article 3, https://www.leaguecitytx.gov/DocumentCenter/View/45962/Chap-125-Article-3); RSF-5 allows zero-lot-line and attached single-family units, and mobile homes by SUP. The RSF-5 'S' reading of 2026-10-30 (#32) was a column misalignment in the PDF's text layer and is withdrawn.",
     ),
+    # Lubbock: what the 'limited use' approval requires
+    "TX-4845000-missing_middle-2023": (
+        {},
+        f"{BEN}: 'limited use' approval is administrative, by the Director of Planning through a Use Verification Form, when the duplex meets the design, site and building standards of §39.02.018 and Division 3.2: parking behind the building, a rear alley preferred, front garages subordinate (at most 50% of the facade or 28 ft, set back 10 ft, or side-turned), service and trash off the alley, ground-floor heights. That confirms by_right = True (no hearing or board). No ADU on the same lot as a duplex. Sources: https://ecode360.com/45661592, https://ecode360.com/45660753.",
+    ),
+    # Laredo: Ord. 2025-O-004
+    "TX-4841464-missing_middle-2010": (
+        {},
+        f"{BEN}: Ord. 2025-O-004, adopted 2025-01-28, amends the Land Development Code's minimum lot area for duplexes and adds a 'vertical duplex' definition. It sets standards for duplexes in the districts that allow them; it was not found to allow duplexes in RS or R-1, so this row is unchanged. FLAG for second coder: check whether 2025-O-004 changed the use table for any single-family district.",
+    ),
 }
+
+FEES = ROOT / "config" / "fees" / "tx.csv"
+PARKLAND = (
+    f"{BEN}: newly built ADUs and duplex units on existing lots pay the parkland dedication fee unless exempted "
+    "through an affordable housing program (Affordability Unlocked or another certified city program), so "
+    "amount_per_unit_usd is the per-unit amount for the density tier. FLAG for second coder: check the exemption "
+    "list in Land Development Code Ch. 25-1 Art. 14 and the fee table's fiscal year."
+)
+SERVICE_UNITS = (
+    f"{BEN}: Austin Water assigns service units (living unit equivalents) by water meter size, not building type: "
+    "5/8-inch 1.0, 3/4-inch 1.5, 1-inch 2.5 (REca FY2023 development fee schedule, "
+    "https://www.reca.org/uploads/1/3/8/9/138900216/fy23_development_feeschedule.pdf). A home, duplex unit or "
+    "ADU on a 5/8-inch meter is 1 service unit. FLAG for second coder: secondary source; check Austin Water's "
+    "meter-equivalency table."
+)
+# fee rows (Austin) -> (fee_type prefix, field values, note)
+FEE_EDITS: list[tuple[str, bool, str]] = [
+    ("Parkland dedication fee in lieu", True, PARKLAND),
+    ("Water impact fee", False, SERVICE_UNITS),
+    ("Wastewater impact fee", False, SERVICE_UNITS),
+]
 
 # tracker (table, place) -> (status, note)
 TRACKERS: dict[tuple[str, str], tuple[str, str]] = {
@@ -298,6 +336,18 @@ TRACKERS: dict[tuple[str, str], tuple[str, str]] = {
         "open",
         "Ben 2026-10-30: stays pending; no zoning does not establish that a duplex can go on any lot.",
     ),
+    ("mm", "Plano"): (
+        "coded",
+        "Ben 2026-10-30: the 2024-25 amendments do not allow duplexes across the single-family districts; coded TX-4858016-missing_middle-2010.",
+    ),
+    ("mm", "Lubbock"): (
+        "coded",
+        "Ben 2026-10-30: limited use is administrative (Director, Use Verification Form) with design standards (§39.02.018, Div. 3.2); no ADU with a duplex. Still open: the matrix's amendment history and the pre-2023 Ch. 40 rule.",
+    ),
+    ("mm", "Laredo"): (
+        "partial",
+        "Ben 2026-10-30: Ord. 2025-O-004 adopted 2025-01-28 (duplex minimum lot area, vertical duplex definition). Still open: R-1A, R-1B, R-1-MH and the triplex/fourplex matrix.",
+    ),
     ("mm", "Pearland"): (
         "coded",
         "Ben 2026-10-30: duplex rules adopted 2006-02-27; coded TX-4856348-missing_middle-2006 (CUP in R-4).",
@@ -335,6 +385,19 @@ def main() -> None:
     write(PATH, cols, rows)
     flagged = sum("FLAG for second coder" in r["coding_notes"] for r in rows)
 
+    fcols, frows = read(FEES)
+    fee_edits = 0
+    for f in frows:
+        if f["jurisdiction_geoid"] != "4805000":
+            continue
+        for prefix, per_unit, note in FEE_EDITS:
+            if f["fee_type"].startswith(prefix) and note not in f["notes"]:
+                if per_unit and not f["amount_per_unit_usd"]:
+                    f["amount_per_unit_usd"] = f["amount_usd"]
+                f["notes"] = f["notes"].rstrip() + f" Updated {DAY}: " + note
+                fee_edits += 1
+    write(FEES, fcols, frows)
+
     done = 0
     for table in ("adu", "mm"):
         path = ORD / f"tx-{table}-lookups-todo.csv"
@@ -352,7 +415,19 @@ def main() -> None:
                 if count not in t["notes"]:
                     t["notes"] = t["notes"].rstrip() + " | " + count
         write(path, tcols, trows)
-    print(f"{added} rows added, {len(EDITS)} rows updated, {done} tracker rows -> {PATH}")
+    fdone = 0
+    path = ORD / "tx-fee-lookups-todo.csv"
+    tcols, trows = read(path)
+    for t in trows:
+        if t["place"] == "Austin":
+            note = "Ben 2026-10-30: ADUs and duplex units on existing lots pay parkland (unless an affordable-housing exemption); service units follow meter size (5/8-inch 1.0, 3/4-inch 1.5, 1-inch 2.5). Still open: the parkland table's fiscal year."
+            if note not in t["notes"]:
+                t["notes"] = t["notes"].rstrip() + " | " + note
+            fdone += 1
+    write(path, tcols, trows)
+    print(
+        f"{added} rows added, {len(EDITS)} rows updated, {done + fdone} tracker rows, {fee_edits} fee rows -> {PATH}"
+    )
 
 
 if __name__ == "__main__":
