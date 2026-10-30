@@ -153,5 +153,20 @@ def test_corrections_2026_10_30(reforms):
     assert r.at["TX-4865000-adu-2023", "supersedes"] == "TX-4865000-adu-2010"
     assert r.at["TX-4815976-adu-2018", "effective_date"] == pd.Timestamp("2018-11-29")  # Ord. 2018-4059
     assert r.at["TX-4801000-missing_middle-2010", "unit_cap"] == 1  # Ben: district text governs
-    renamed = {"TX-4865000-adu-2001", "TX-4827684-adu-2021", "TX-4841464-adu-1992", "TX-4815976-adu-2023"}
+    renamed = {"TX-4865000-adu-2001", "TX-4827684-adu-2021", "TX-4841464-adu-1992"}
     assert not renamed & set(r.index)
+    # TX-4815976-adu-2023 is reused for the 2023 parking amendment (Ben, 2026-10-30)
+    assert r.at["TX-4815976-adu-2023", "supersedes"] == "TX-4815976-adu-2018"
+
+
+def test_ben_lookups_2026_10_30(reforms):
+    r = reforms.set_index("reform_id")
+    # Killeen overlay: by right, overlay only, does not replace the citywide 'none' row
+    assert r.at["TX-4839148-adu-2026", "by_right"] == True  # noqa: E712
+    assert pd.isna(r.at["TX-4839148-adu-2026", "supersedes"])
+    assert r.at["TX-4839148-adu-2026", "coverage"].startswith("Only inside")
+    assert r.at["TX-4842508-adu-2026", "status"] == "in_force"  # Lewisville, adopted 2026-09-21
+    assert r.at["TX-4819972-adu-2026", "supersedes"] == "TX-4819972-adu-2023"  # Denton DCA25-0001a
+    assert r.at["TX-4824000-missing_middle-2010", "unit_cap"] == 2  # El Paso duplex in R-4, R-5
+    assert r.at["TX-4819972-missing_middle-2010", "by_right"] == False  # noqa: E712  Denton R4 by SUP
+    assert r.at["TX-4856348-adu-2006", "adus_per_lot"] == 0  # Pearland: CUP only
