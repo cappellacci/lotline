@@ -138,3 +138,20 @@ def test_austin_adu_history(reforms):
     assert r.at["TX-4805000-adu-2023", "supersedes"] == "TX-4805000-adu-2015"
     assert r.at["TX-4805000-adu-2024", "effective_date"] == pd.Timestamp("2024-02-05")
     assert r.at["TX-4805000-adu-2024", "supersedes"] == "TX-4805000-adu-2023"
+
+
+def test_corrections_2026_10_30(reforms):
+    # Ben's decisions on tx-corrections-2026-10-29.csv, checked against the local PDFs where noted
+    r = reforms.set_index("reform_id")
+    # Ord. 20151119-080 Part 9
+    assert r.at["TX-4805000-adu-2015", "effective_date"] == pd.Timestamp("2015-11-30")
+    assert r.at["TX-4819000-adu-2018", "effective_date"] == pd.Timestamp("2018-06-30")  # published 2018-06-30
+    assert r.at["TX-4819000-adu-2018", "adoption_date"] == pd.Timestamp("2018-06-27")
+    assert pd.isna(r.at["TX-4824000-adu-2011", "parking_min_per_unit"])  # Ord. 17532 sets no ADU minimum
+    assert r.at["TX-4845744-adu-2022", "adus_per_lot"] == 1  # McKinney: rentable ADU, not "none"
+    assert r.at["TX-4827684-adu-2019", "supersedes"] == "TX-4827684-adu-2011"
+    assert r.at["TX-4865000-adu-2023", "supersedes"] == "TX-4865000-adu-2010"
+    assert r.at["TX-4815976-adu-2018", "effective_date"] == pd.Timestamp("2018-11-29")  # Ord. 2018-4059
+    assert r.at["TX-4801000-missing_middle-2010", "unit_cap"] == 1  # Ben: district text governs
+    renamed = {"TX-4865000-adu-2001", "TX-4827684-adu-2021", "TX-4841464-adu-1992", "TX-4815976-adu-2023"}
+    assert not renamed & set(r.index)
