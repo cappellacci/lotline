@@ -26,5 +26,14 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
 - `tx-fee-lookups-todo.csv` (2026-10-26, Texas thread 12, S6): water/sewer and impact fees per home for the four
   Texas cities with permit data and Houston, plus Austin's parkland and meter fees. Austin's water/wastewater
   impact fees and street impact fee are coded in `config/fees/tx.csv`.
+- **Status of the three Texas tables** (column `status`: open / partial / coded), updated 2026-10-27 from Ben's
+  research workbook (`~/lotline-data/manual/texas/`, an agentic research run, kept out of the repo): Corpus
+  Christi's ADU rule and Austin HOME's dates are coded (`scripts/dev/tx_research_2026_10_27.py`), Carrollton
+  and San Antonio are partial, everything else is still open.
+- `tx-workbook-2026-10-29.json` (Ben's second workbook run, with official PDFs in
+  `~/lotline-data/manual/texas/Official-PDFs/`): 35 rule rows, 38 fee rows, notes on 34 earlier rows and tracker
+  updates, applied by `scripts/dev/tx_research_2026_10_29.py` (append only). After it: ADU 5 coded / 8 partial /
+  2 open, missing middle 20 / 4 / 8, fees 0 / 5 / 0. Changes it proposes to earlier rows are **not applied**: they
+  are in `tx-corrections-2026-10-29.csv` (35 rows, `decision` column blank) for Ben to decide.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).

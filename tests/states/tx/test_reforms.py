@@ -110,7 +110,7 @@ TOP_20 = {
 
 
 # Not coded yet: no ADU source could be opened (official code hosts block automated access); second coder
-PENDING = {"4817000": "Corpus Christi", "4856000": "Pasadena"}
+PENDING = {"4856000": "Pasadena"}  # Corpus Christi coded 2026-10-27 from Ben's research workbook
 
 
 def test_every_top_20_place_has_an_adu_rule(reforms):
