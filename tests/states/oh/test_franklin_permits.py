@@ -30,8 +30,9 @@ COLUMBUS, BEXLEY, WESTERVILLE = "3918000", "3906278", "3983342"
         # the shared parser would call these new ADUs; the named rules don't
         ("REPL A/C - CARRIAGE HOUSE", "12279", False),  # no creation verb
         ("DEMOLITION OF A 360 SQ FT ACCESSORY DWELLING (GARAGE)", "RSWD1610951", False),
-        # CARRIAGE_LIVING: a carriage house without living space is a garage
+        # GARAGE_ONLY: a carriage house described as a garage needs living space (CARRIAGE_LIVING)
         ("NEW DUPLEX AND CARRIAGE HOUSE (DETACHED GARAGE).", "PR2025000127001", False),
+        ("NEW CARRIAGE HOUSE", "1788", True),  # recall (2026-10-28): no living-space words needed
         (
             "ADDITION TO CREATE A 3-CAR CARRIAGE HOUSE WITH A FULL BATHROOM AND OFFICE ABOVE",
             "RBLD1808418",
@@ -42,8 +43,8 @@ COLUMBUS, BEXLEY, WESTERVILLE = "3918000", "3906278", "3983342"
         # NEW_BUILDING_PERMIT: a Columbus new residential building permit needs no verb
         ("CARRIAGE HOUSE WITH LIVING AREA ON 2ND FLOOR", "RBLD1627250", True),
         ("CARRIAGE HOUSE WITH LIVING AREA ON 2ND FLOOR", "ALTR1627250", False),
-        # IN_LAW_UNIT: an in-law suite needs a kitchen, bedroom, fire separation or garage
-        ("ADD MOTHER IN LAW SUITE", "910322", False),
+        # an in-law suite with a creation verb counts (recall, 2026-10-28)
+        ("ADD MOTHER IN LAW SUITE", "910322", True),
         ("ADDITION OF A 4 CAR GARAGE WITH 2 BEDROOM IN-LAW SUITE ABOVE", "RBLD2562", True),
         ("BUILDING NEW 1-HOUR SEPARATED IN-LAW SUITE ADDITION", "ADDR2522466", True),
         # EXISTING_WORK, and the CONVERSION exception
@@ -55,6 +56,12 @@ COLUMBUS, BEXLEY, WESTERVILLE = "3918000", "3906278", "3983342"
             False,
         ),
         ("ALTERATION OF THE EXISTING ATTACHED GARAGE, TURNING IT INTO AN IN-LAW SUITE", "22120140", True),
+        # TRADE_PERMIT_NO: repair and trade permits are not ADUs, unless they carry the building description
+        ("REINSTALL ELECTRIC TO NEW FURNACE IN CARRIAGE HOUSE", "EMEPR2202159", False),
+        ("REMOVE EXISTING WINDOWS AND REPLACE WITH NEW. CARRIAGE HOUSE", "RSWDR2144543", False),
+        ("BUILD 2 STORY FRAME, 1 FAMILY CARRIAGE HOUSE, 2 BEDROOMS", "MMEPR1601115", True),
+        # MULTI_UNIT_ADU: a 3+ unit "carriage house" is a multi-unit building
+        ("BUILD A 2 STORY FRAMED, 3 FAMILY CARRIAGE HOUSE ON FULL SLAB", "NEWR1909273", False),
         # PROJECT_BUILDING: a home in a new development
         ("BUILDING 3 SUITE 102 - 2BDRM ONE FAMILY CARRIAGE HOUSE WITH 2 CAR GARAGE", "B20230323", False),
     ],
@@ -298,3 +305,46 @@ def test_load_needs_parcels():
 
 def test_registered_as_oh_source():
     assert "franklin_permits" in registry.sources_for("OH")
+
+
+@pytest.mark.parametrize(
+    ("text", "own", "expected"),
+    [
+        # a trade permit doing ADU work cites the project permit that created the ADU
+        (
+            "BUILDING PERMIT/PLAN REVIEW: NEWR2449412 GAS LINES FOR NEW CARRIAGE HOUSE",
+            "FUEL25",
+            ["NEWR2449412"],
+        ),
+        ("INSTALL MINI SPLIT FOR CARRIAGE HOUSE NEWR2011803", "MMEP22", ["NEWR2011803"]),
+        # not an addition or new building (ALTR), work on what already stands, or no ADU at all
+        ("ALTR2520586 NEW PLUMBING FOR CARRIAGE HOUSE", "PMEP25", []),
+        ("REWIRE CARRIAGE HOUSE (3) LIGHT FIXTURES RBLD1440604", "EMEP15", []),
+        ("REPLACE EXISTING PLUMBING (CARRIAGE HOUSE) - CBLD1237996", "FUEL14", []),
+        ("INSTALL NEW FURNACE NEWR2413984", "MMEP24", []),
+    ],
+)
+def test_cites_project_for_adu(text, own, expected):
+    assert fp.cites_project_for_adu(fp.clean_text(text), own) == expected
+
+
+def test_cited_project_missing_from_the_file_is_flagged_from_its_trade_permit():
+    raw = _raw(
+        [
+            (
+                "010-000050-00",
+                "2022-09-14",
+                "PMEPR2209999",
+                None,
+                0,
+                "NEWR2207215 PLUMBING FOR NEW CARRIAGE HOUSE",
+            ),
+            ("010-000050-00", "2022-10-01", "EMEPR2210000", None, 0, "NEWR2207215 WIRE NEW CARRIAGE HOUSE"),
+        ]
+    )
+    flags = fp.adu_flags(raw).set_index("permit_no")
+    # the project permit is not in the file: it is flagged once, dated by its earliest trade permit
+    assert list(flags.index) == ["NEWR2207215"]
+    row = flags.loc["NEWR2207215"]
+    assert row.issue_date == pd.Timestamp("2022-09-14") and row.permit_type == "cited project permit"
+    assert row.parcel == "010-000050-00" and row.adu_type == "detached"

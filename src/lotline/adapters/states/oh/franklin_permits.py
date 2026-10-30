@@ -23,22 +23,29 @@ PERMIT/PLAN REVIEW: NEWR2006370"), starts with a trade word (`TRADE`) or carries
 (minor limited scope) suffix, a licence or a scope item (`TRADE_ANYWHERE`). A trade permit is never an ADU
 itself; one that describes a new ADU marks the permit it cites.
 
-**ADU rules (precision over recall).** The shared parser (`lotline.parse.permit_text`) reads any ADU noun as a
-new ADU ("REPL A/C - CARRIAGE HOUSE"), so this adapter uses its own named rules on the description:
+**ADU rules (recall first, since 2026-10-28).** The shared parser (`lotline.parse.permit_text`) reads any
+ADU noun as a new ADU ("REPL A/C - CARRIAGE HOUSE"), so this adapter uses its own named rules on the
+description. Ben chose recall over precision for Columbus's undercount (2026-10-28), so the rules accept vague
+creation cases and keep only the clear exclusions:
 
 - `ADU_NOUN`: accessory dwelling (unit), ADU, carriage house, garage apartment, apartment above a garage,
   (mother-)in-law suite;
-- `ADU_CREATE`: build, construct, erect, new, create, add(ing), convert … to/into, to become, within
+- `ADU_CREATE`: build, construct, erect, new, create, add(ing), convert ... to/into, to become, within
   `ADU_WINDOW` characters before the noun; not needed on a Columbus new residential building permit
   (`NEW_BUILDING_PERMIT`: RBLD, NEWR, CBLD);
-- `CARRIAGE_LIVING`: a carriage house must have rooms (kitchen, living, sleeping, bedroom), a family count, a
-  dwelling unit, an apartment, a tenant, living quarters or a Council variance (Columbus's route for a second
-  dwelling before 2025); otherwise it is a garage;
-- `IN_LAW_UNIT`: an in-law suite must have a kitchen, a bedroom, a fire separation or a garage of its own;
-  otherwise it is a room in the house;
+- `GARAGE_ONLY`: a carriage house described as a garage ("CARRIAGE HOUSE (DETACHED GARAGE)", "3-CAR
+  CARRIAGE HOUSE") needs rooms, a dwelling unit or a Council variance (`CARRIAGE_LIVING`); any other new
+  carriage house counts, and so does any new in-law suite;
+- `CITED_PROJECT`: a trade permit doing ADU work ("NEWR2449412 GAS LINES FOR NEW CARRIAGE HOUSE") marks the
+  new-building or addition permit it cites (RBLD, NEWR, CBLD, ADDR) as the ADU, unless it works on what
+  already stands (`TRADE_EXISTING`: existing, rewire, renovate); a cited permit missing from the file is
+  flagged from its earliest citing trade permit (`permit_type` "cited project permit");
 - `EXISTING_WORK`: renovating, remodelling, repairing, replacing, altering or "existing" right before the
   noun, or roofing, windows, siding or a remodel right after it, or "carriage home style": not a new ADU
   unless a conversion's result is the ADU (`CONVERSION`, "turning it into an in-law suite");
+- `TRADE_PERMIT_NO`: Columbus repair and trade permits (EMEP, MMEP, PMEP, MMLS, FUEL, ROOF, RSWD) are not
+  ADUs themselves unless they carry the project's own building description ("BUILD ...");
+- `MULTI_UNIT_ADU`: a "3 family" or "4 unit" carriage house is a multi-unit building, not an ADU;
 - `PROJECT_BUILDING`: "BUILDING 3 SUITE 102 … CARRIAGE HOUSE" or "LOT 95" is a home in a new development;
 - a description that starts with a demolition word is not an ADU.
 
@@ -47,7 +54,9 @@ above a garage), attached (an addition), internal_conversion (basement, attic, p
 A parcel gets at most one ADU in any `ADU_REPEAT_DAYS`: revisions and re-issued permits are not new ADUs.
 
 Checked by hand on 2026-10-23 against every flagged permit (36 → 35 after fixes, about 9 in 10 read as new
-ADUs) and 50 rejected candidates (about 6 missed ADUs, since fixed, and 9 too vague to call): see the PR.
+ADUs) and 50 rejected candidates (about 6 missed ADUs, since fixed, and 9 too vague to call): see the PR. The
+recall rules (2026-10-28) raise the flags from 35 to 72; each of the 39 added was read by hand, and the five
+clear false positives found (repair permits, multi-unit buildings) became the guards above.
 
 **Place.** The auditor's parcel number ("010-000002-00") is matched to the statewide roll (`oh_parcels`,
 "39049010-000002"); a parcel not in the roll (split after 2023) takes its taxing district's jurisdiction where
@@ -114,7 +123,21 @@ CARRIAGE_LIVING = re.compile(
     r"KITCHEN|\bKIT\b|LIVING|SLEEPING|BEDROOM|BDRM|\b(?:1|ONE|2|TWO) FAM(?:ILY)?\b|CARRIAGE HOUSE DWELLING|"
     r"DWELLING (?:UNIT|ON TOP|ABOVE)|APARTMENT|\bAPT\b|TENANT|COUNCIL VARIANCE|\bCV\d|\bLQ\b|LIVING QUARTERS"
 )
-IN_LAW_UNIT = re.compile(r"KITCHEN|\bKIT\b|BEDROOM|BDRM|1-HOUR|ONE HOUR|SEPARATED|GARAGE")
+GARAGE_ONLY = re.compile(
+    r"CARRIAGE HOUSE\s*\(DETACHED GARAGE\)|GARAGE\s*/\s*CARRIAGE HOUSE|CARRIAGE HOUSE\s*/\s*GARAGE"
+    r"|\b\d[- ]CAR CARRIAGE HOUSE"
+)
+# Columbus repair and trade permits (electrical, mechanical, plumbing, minor limited scope, fuel, roofing,
+# siding/windows/doors) are not an ADU themselves, unless they carry the project's own building description
+# ("BUILD 2 STORY FRAME, 1 FAMILY CARRIAGE HOUSE ...", copied onto some MEP permits)
+TRADE_PERMIT_NO = re.compile(r"^(?:[EMP]MEP|MMLS|FUEL|ROOF|RSWD)")
+BUILDING_DESCRIPTION = re.compile(r"^\W*(?:BUILD|CONSTRUCT)\b")
+# a "3 family carriage house" or "4 unit carriage house" is a multi-unit building, not an accessory unit
+MULTI_UNIT_ADU = re.compile(rf"\b(?:[3-9]|THREE|FOUR|FIVE|SIX)[- ]?(?:UNIT|FAMILY)\s+{_NOUN}")
+# trade work on a structure that already stands is not the project that created the ADU
+TRADE_EXISTING = re.compile(r"\bEXISTING\b|\bREWIR\w*|\bRENOVAT\w*")
+# a trade permit citing one of these (new residential building, addition) for ADU work marks it an ADU
+CITED_PROJECT = re.compile(r"^(?:RBLD|NEWR|CBLD|ADDR)\d")
 CONVERSION = re.compile(
     rf"(?:CONVER\w*|TURNING|TURN)\b.{{0,80}}?\b(?:TO|INTO)\b.{{0,30}}?{_NOUN}|TO BECOME\b.{{0,30}}?{_NOUN}"
 )
@@ -138,9 +161,11 @@ PROVENANCE = {
         f"Snapshots {', '.join(SNAPSHOTS)} read together (1990 to the present); a permit repeated across "
         "snapshots or parcels is kept once per permit number and taxing district",
         "Rows without a permit number (auditor field notes) or with an impossible date are dropped",
-        "ADU permits only, from named description rules (ADU noun + creation verb; carriage houses need "
-        "living space, in-law suites a kitchen, bedroom, fire separation or garage; work on existing units "
-        "excluded); trade permits only mark the permit they cite; one ADU per parcel in any two years",
+        "ADU permits only, from named description rules favouring recall (ADU noun + creation verb; a "
+        "carriage house described as a garage needs living space; work on existing units, repair and trade "
+        "permit numbers and multi-unit buildings excluded); trade permits mark the new-building or addition "
+        "permit they cite, flagged from the earliest trade permit when the project permit is not in the "
+        "file; one ADU per parcel in any two years",
         "Parcel matched to oh_parcels for the jurisdiction; parcels not in the roll take their taxing "
         f"district's jurisdiction where ≥{DISTRICT_SHARE:.0%} of its parcels lie in one",
         "Columbus permits are not written here: columbus_permits relabels its own matching permits as ADUs",
@@ -150,8 +175,8 @@ PROVENANCE = {
     "limitations": [
         "Only permits the issuing office reports to the auditor; not a complete record of new houses, so "
         "only ADU permits are kept",
-        "ADU flags are read from free text (inferred): an ADU described without one of the named nouns is "
-        "missed, and a bare 'mother-in-law suite addition' is left out",
+        "ADU flags are read from free text (inferred) and favour recall: an ADU described without one of the "
+        "named nouns is missed, and some flagged carriage houses or in-law suites may be garages or rooms",
         "No permit status: a flagged ADU may have been withdrawn or never built",
         "Issue date is the auditor's permit date (PERMDT), which may be the application or issue date "
         "depending on the office",
@@ -191,7 +216,9 @@ def existing_work(text: str) -> bool:
 
 def describes_new_adu(text: str, permit_no: str = "") -> bool:
     """True if the description (of permit `permit_no`) creates an ADU under the named rules, trade or not."""
-    if DEMO_START.search(text) or PROJECT_BUILDING.search(text):
+    if DEMO_START.search(text) or PROJECT_BUILDING.search(text) or MULTI_UNIT_ADU.search(text):
+        return False
+    if TRADE_PERMIT_NO.search(permit_no.upper()) and not BUILDING_DESCRIPTION.search(text):
         return False
     builds = bool(NEW_BUILDING_PERMIT.search(permit_no.upper()))
     hit = next(
@@ -205,11 +232,19 @@ def describes_new_adu(text: str, permit_no: str = "") -> bool:
     if hit is None:
         return False
     noun = hit.group(0)
-    if "CARRIAGE" in noun and not CARRIAGE_LIVING.search(text):
-        return False
-    if "LAW" in noun and not IN_LAW_UNIT.search(text):
+    if "CARRIAGE" in noun and GARAGE_ONLY.search(text) and not CARRIAGE_LIVING.search(text):
         return False
     return not existing_work(text)
+
+
+def cites_project_for_adu(text: str, own: str) -> list[str]:
+    """Project permits (`CITED_PROJECT`) that a trade permit doing ADU work cites ("NEWR2006370 INSTALL GAS
+    LINES ... TO GARAGE (CARRIAGE HOUSE)"): the trade needs no creation verb, the project is the new ADU."""
+    if not ADU_NOUN.search(text) or existing_work(text) or DEMO_START.search(text):
+        return []
+    if TRADE_EXISTING.search(text) or MULTI_UNIT_ADU.search(text) or PROJECT_BUILDING.search(text):
+        return []
+    return [c for c in cited_permits(text, own) if CITED_PROJECT.search(c)]
 
 
 def adu_kind(text: str) -> str:
@@ -246,13 +281,26 @@ def adu_flags(raw: pd.DataFrame) -> pd.DataFrame:
         for d, (t, n), x in zip(df["district"], pairs, new, strict=True)
         if x
         for c in cited_permits(t, n)
-    }
+    } | {(d, c) for d, (t, n) in zip(df["district"], pairs, strict=True) for c in cites_project_for_adu(t, n)}
     cited = pd.Series(
         [k in parents for k in zip(df["district"], df["permit_no"], strict=True)], index=df.index
     )
     is_adu = (new & ~trade) | (cited & ~text.map(existing_work))
+    adu = df.loc[is_adu].assign(adu_type=text[is_adu].map(adu_kind))
 
-    adu = df.loc[is_adu].assign(adu_type=text[is_adu].map(adu_kind)).sort_values("issue_date")
+    # a cited project permit missing from the file: its earliest citing trade permit stands in for it
+    present = set(zip(df["district"], df["permit_no"], strict=True))
+    citing = []
+    for i, d, (t, n) in zip(df.index, df["district"], pairs, strict=True):
+        cites = cited_permits(t, n) if new[i] else cites_project_for_adu(t, n)
+        citing += [(i, c) for c in cites if (d, c) in parents and (d, c) not in present]
+    if citing:
+        idx, nos = zip(*citing, strict=True)
+        stand = df.loc[list(idx)].assign(permit_no=list(nos), PERMITTYPE="cited project permit")
+        stand = stand.assign(adu_type=text[list(idx)].map(adu_kind).to_numpy())
+        stand = stand.sort_values("issue_date").drop_duplicates(["district", "permit_no"])
+        adu = pd.concat([adu, stand])
+    adu = adu.sort_values("issue_date")
     keep, last = [], {}
     for i, parcel, d in zip(adu.index, adu["PARCEL ID"], adu["issue_date"], strict=True):
         if parcel in last and (d - last[parcel]).days < ADU_REPEAT_DAYS:
