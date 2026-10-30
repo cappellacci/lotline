@@ -48,7 +48,8 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   - College Station 2023 parking. Reuses the id `TX-4815976-adu-2023`.
   - Pearland's 2006 UDC rules.
   - Missing middle for El Paso, Corpus Christi, Amarillo, Killeen, Denton, Carrollton, College Station and Plano;
-    Lubbock's limited-use terms; Laredo's Ord. 2025-O-004; Austin parkland and service units (`config/fees/tx.csv`).
+    Lubbock's limited-use terms; Laredo's Ord. 2025-O-004; Austin parkland and service units, SAWS middle and
+    high elevation, Houston 2021 (`config/fees/tx.csv`); official sources from the updated workbook.
   - League City RSF-5 has no duplexes.
   - Pasadena stays pending.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest

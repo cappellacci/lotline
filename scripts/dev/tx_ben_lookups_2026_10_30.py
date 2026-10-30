@@ -5,9 +5,11 @@ Run from the repo root after `tx_corrections_2026_10_30.py`:
 `uv run python scripts/dev/tx_ben_lookups_2026_10_30.py`. Rerunning it is safe.
 
 Ben answered the open items in chat on 2026-10-30. There were seven ADU and code-history questions, a table of
-eight missing-middle lookups, follow-ups for Plano, Lubbock and Laredo, and two Austin fee answers. Facts are
-his unless a note says otherwise. Two terms are read from the local PDFs: Killeen's overlay terms
-(`Killeen_North-Killeen-Overlay_2026-10-20.pdf`) and Lewisville's districts (the row coded earlier).
+eight missing-middle lookups, follow-ups for Plano, Lubbock and Laredo, and fee answers for Austin, SAWS, Fort
+Worth, Dallas and Houston. Ben's updated workbook (`...-updated.xlsx`, 2026-10-30) supplies the official
+sources and table readings behind the missing-middle and fee answers. Facts are his unless a note says
+otherwise. Two terms are read from the local PDFs: Killeen's overlay terms (`Killeen_North-Killeen-
+Overlay_2026-10-20.pdf`) and Lewisville's districts (the row coded earlier).
 
 Conventions follow `tx_adu_rows.py` and `tx_rules_21_40.py`:
 - New rows have new ids.
@@ -33,6 +35,7 @@ DAY = "2026-10-30"
 BEN = f"From Ben's own lookup ({DAY}, in chat)"
 FLOOR = "2010-01-01"
 FLAG = " FLAG for second coder: "
+WB2 = "Ben's updated research workbook (2026-10-30, lotline-data/manual/texas/Texas-Municipal-ADU-and-Missing-Middle-Research-updated.xlsx)"
 
 
 def row(**kw) -> dict:
@@ -40,7 +43,7 @@ def row(**kw) -> dict:
     return base | {k: ("" if v is None else str(v)) for k, v in kw.items()}
 
 
-def mm_no(geoid: str, place: str, coverage: str, url: str, note: str) -> dict:
+def mm_no(geoid: str, place: str, coverage: str, url: str, note: str, section: str = "") -> dict:
     return row(
         reform_id=f"TX-{geoid}-missing_middle-2010",
         jurisdiction_geoid=geoid,
@@ -50,6 +53,7 @@ def mm_no(geoid: str, place: str, coverage: str, url: str, note: str) -> dict:
         unit_cap=1,
         coverage=coverage,
         source_url=url,
+        source_section=section,
         coding_notes=f"{BEN}: {note} Dated {FLOOR} (start of the window): when the rule was adopted was not researched."
         + FLAG
         + "check the use table section and that the rule was in force by 2010.",
@@ -162,7 +166,7 @@ ROWS: list[dict] = [
         coverage_zones="R-4;R-5",
         source_url="https://www.elpasotx.com/assets/pdf/Appendix%2BA%2B-%2BTitle%2B20%2BZoning; https://www.elpasotexas.gov/planning-and-inspections/faqs",
         source_section="Title 20 Appendix A (table of permissible uses)",
-        coding_notes=f"{BEN}: duplex no in R-1 through R-3A, permitted in R-4 and R-5; 3-4 units no in those districts (multifamily districts are separate). Dated {FLOOR} (start of the window): the start date was not researched."
+        coding_notes=f"{BEN}: duplex no in R-1 through R-3A, permitted in R-4 and R-5; 3-4 units no in those districts (multifamily districts are separate). {WB2}: the city-published Appendix A lists the duplex as permitted in R-4 and R-5 and not in R-1, R-2, R-2A, R-3 or R-3A; apartments (3+ units) are not permitted in R-1 to R-5; the city FAQ says a residential lot may have one single-family dwelling (plus the ADU exception). R-4 and R-5 are counted as single-family districts that also allow duplexes. Dated {FLOOR} (start of the window): the start date was not researched."
         + FLAG
         + "check Appendix A's two-family row for R-4 and R-5 and that it was in force by 2010.",
     ),
@@ -170,31 +174,25 @@ ROWS: list[dict] = [
         "4817000",
         "Corpus Christi",
         "Standard single-family districts (FR, RE, RS-22, RS-15, RS-10, RS-6, RS-4.5); narrow exceptions in specified overlays and qualifying infill or transitional projects",
-        "https://www.corpuschristitx.gov/department-directory/development-services/unified-development-code-udc/",
-        "duplex no in standard single-family districts, with narrow exceptions in specified overlays or qualifying infill/transitional projects; no general permission for 3-4 units.",
+        "https://online.encodeplus.com/regs/corpuschristi-tx/doc-view.aspx?print=1&tocid=; https://www.corpuschristitx.gov/department-directory/development-services/unified-development-code-udc/",
+        f"duplex no in standard single-family districts, with narrow exceptions in specified overlays or qualifying infill/transitional projects; no general permission for 3-4 units. {WB2}: UDC Table 4.3.2 (FR, RE, RS-22, RS-15, RS-10, RS-6, RS-4.5) does not permit two-family houses and §4.2.2 sets one single-family dwelling per lot; Table 4.4.2 permits them by right in RS-TF and RM; §6.14 allows alternative housing only in specified concepts, overlays and qualifying RS-6/RS-4.5 infill or transitional cases; 3+ units are apartments.",
+        "UDC §4.2.2, Tables 4.3.2 and 4.4.2, §6.14",
     ),
-    row(
-        reform_id="TX-4803000-missing_middle-2010",
-        jurisdiction_geoid="4803000",
-        theme="missing_middle",
-        component="Zoning ordinance: duplex allowed in R-3; not in R-1 or R-2; no 3-4 unit building in R-1 to R-3",
-        effective_date=FLOOR,
-        by_right=True,
-        unit_cap=2,
-        coverage="R-3 (duplex); R-1, R-2 one dwelling",
-        coverage_zones="R-3",
-        source_url="https://downloads.amarillo.gov/Planning/Zoning%20Ordinance%20August%202014.pdf; https://www.amarillo.gov/planning/codes-ordinances/",
-        source_section="Zoning ordinance use table (two-family dwelling)",
-        coding_notes=f"{BEN}: duplex no in R-1/R-2, yes in R-3; 3-4 units no in R-1 to R-3 (multifamily in denser districts). R-3 counted as a single-family district (Amarillo's R-1 to R-3 are its single-family districts); by_right True read from 'yes'. Dated {FLOOR} (start of the window): the start date was not researched."
-        + FLAG
-        + "check that the R-3 duplex is by right (not by SUP) and in force by 2010.",
+    mm_no(
+        "4803000",
+        "Amarillo",
+        "Single-family districts R-1 and R-2 one dwelling; duplexes in R-3, which merged the former two-family and townhouse districts (not counted as single-family)",
+        "https://www.amarillo.gov/wp-content/uploads/2024/09/Zoning-Ordinance-Table-List-COA.pdf; https://downloads.amarillo.gov/Planning/Zoning%20Ordinance%20August%202014.pdf; https://www.amarillo.gov/wp-content/uploads/2025/03/March-2008-Development-Policy-Manual.pdf",
+        f"duplex no in R-1/R-2, yes in R-3; 3-4 units no in R-1 to R-3. {WB2}: the city-hosted Chapter 4-10 use schedule (P permitted, S SUP, blank prohibited) has the two-family use blank in R-1 and R-2 and permitted in R-3, and the Development Policy Manual says R-3 combines the former two-family and townhouse districts; Multiple-Family Housing (3+ units, §4-10-83(4)) is blank in R-1 to R-3. R-3 is therefore a two-family district under the coding rule, so this is a one-dwelling row (an earlier draft of this PR read R-3 as single-family).",
+        "Zoning Ordinance Ch. 4-10 use schedule; §4-10-83",
     ),
     mm_no(
         "4839148",
         "Killeen",
         "Single-family districts (R-1, SF-2 and others); a Zoning Board exception may allow a duplex on a qualifying R-1/SF-2 lot next to business or industrial zoning, and a four-family building in R-2 under a similar exception",
-        "https://www.killeentexas.gov/",
-        "duplex not by right in single-family districts; a Zoning Board exception may allow one on a qualifying R-1/SF-2 lot next to business or industrial zoning; 3-4 units generally no (a narrow four-family exception may apply in R-2 next to business or industrial zoning). Coded as one dwelling because the exception is a board case limited to edge lots.",
+        "https://library.municode.com/TX/Killeen/codes/Code_of_Ordinances?nodeId=PTIICOOR_CH31ZO_ARTIINGE_S31-5COAUBU; https://www.killeentexas.gov/DocumentCenter/View/204/Notice-of-Appeal-to-the-Zoning-Board-of-Adjustments-and-Appeals-PDF",
+        f"duplex not by right in single-family districts; a Zoning Board exception may allow one on a qualifying R-1/SF-2 lot next to business or industrial zoning; 3-4 units generally no (a narrow four-family exception may apply in R-2 next to business or industrial zoning). Coded as one dwelling because the exception is a board case limited to edge lots. {WB2}: §31-186 allows one-family dwellings in R-1; R-2 is the Two-Family district (§31-231); one principal single- or two-family structure per lot in R-1/R-2. The Board may permit a two-family dwelling on an R-1 or SF-2 lot of at least 6,000 sq ft that sides on business or industrial zoning (transitional strip at most 100 ft wide); 3-4 units belong in R-3F, apartments in R-3A.",
+        "Code Ch. 31 §§31-186, 31-231 (R-1, R-2), Zoning Board transitional-use exception",
     ),
     row(
         reform_id="TX-4819972-missing_middle-2010",
@@ -206,9 +204,9 @@ ROWS: list[dict] = [
         unit_cap=2,
         coverage="R4 only (by SUP); R1, R2, R3 one dwelling",
         coverage_zones="R4",
-        source_url="https://www.cityofdenton.com/DocumentCenter/View/427/Denton-Development-Code-PDF",
+        source_url="https://denton-tx.legistar.com/View.ashx?GUID=D3DD0DDF-2105-4CA2-BE49-FE894142AE92&ID=11133786&M=F; https://www.cityofdenton.com/DocumentCenter/View/427/Denton-Development-Code-PDF",
         source_section="Denton Development Code Table 5.2-A",
-        coding_notes=f"{BEN}: duplex no in R1-R3, Specific Use Permit in R4; 3-4 units no in R1-R4 (current rule, after the 2026-01-13 Missing Middle Housing Amendment). Dated {FLOOR} (start of the window): when the R4 SUP started (the 2019 Development Code or the 2026 amendment) was not researched."
+        coding_notes=f"{BEN}: duplex no in R1-R3, Specific Use Permit in R4; 3-4 units no in R1-R4 (current rule, after the 2026-01-13 Missing Middle Housing Amendment). {WB2}: Table 5.2-A (Legistar attachment; P permitted, S SUP, blank prohibited, + use-specific standards) has the duplex blank in RR and R1-R3, S+ in R4, P+ in R6, R7, MN, MD, MR; triplex and fourplex blank through R4, P+ from R6. Dated {FLOOR} (start of the window): when the R4 SUP started (the 2019 Development Code or the 2026 amendment) was not researched."
         + FLAG
         + "find when the R4 duplex SUP started; if it came with DCA25-0001a (2026-01-13), redate this row and add a 2010 one-dwelling row.",
     ),
@@ -216,15 +214,17 @@ ROWS: list[dict] = [
         "4813024",
         "Carrollton",
         "Single-family districts; duplexes permitted in the D (duplex) and multifamily districts only",
-        "https://www.cityofcarrollton.com/departments/departments-g-p/planning/zoning-information/zoning-ordinance",
-        "duplex no in single-family districts (permitted in D and multifamily districts); 3-4 units no in single-family districts. Ord. 3331 (2009-10-06) repealed the triplex/fourplex districts (Ben's research workbook, 2026-10-29).",
+        "https://www.cityofcarrollton.com/home/showpublisheddocument/40713/639150626674770000; https://www.cityofcarrollton.com/departments/departments-g-p/planning/zoning-information",
+        f"duplex no in single-family districts (permitted in D and multifamily districts); 3-4 units no in single-family districts. Ord. 3331 (2009-10-06) repealed the triplex/fourplex districts (Ben's research workbook, 2026-10-29). {WB2}: the Article 5 matrix (updated April 2026) has the Duplex Dwelling cell blank in 'All SF-Detached Districts' and 'All SF-Attached Districts', permitted in D and MF; Multifamily Dwelling (3+) only in MF.",
+        "Comprehensive Zoning Ordinance Article 5, p. 5-4 (use matrix, April 2026)",
     ),
     mm_no(
         "4815976",
         "College Station",
         "Ordinary single-family districts; duplexes permitted in D or MH zoning, small multiplexes in MH and MF",
-        "https://www.cstx.gov/business-development/unified-development-ordinance/",
-        "duplex no in ordinary single-family districts (permitted in D or MH zoning); 3-4 units no in ordinary single-family districts (small multiplexes permitted in MH and MF).",
+        "https://library.municode.com/tx/college_station/codes/code_of_ordinances?nodeId=SPBLADEOR_APXAUNDEOR_ART6USRE; https://www.cstx.gov/business-development/unified-development-ordinance/; https://blog.cstx.gov/wp-content/uploads/2022/08/4-Middle-Housing-Zoning.pdf",
+        f"duplex no in ordinary single-family districts (permitted in D or MH zoning); 3-4 units no in ordinary single-family districts (small multiplexes permitted in MH and MF). {WB2}: UDO Article 6 use table: GS, RS, R and the other one-family districts list neither duplex nor 'Multiplex Small'; MH (Middle Housing, 2022) is a separate district needing a rezoning.",
+        "UDO Article 6 use table",
     ),
     mm_no(
         "4858016",
@@ -278,12 +278,75 @@ SERVICE_UNITS = (
     "ADU on a 5/8-inch meter is 1 service unit. FLAG for second coder: secondary source; check Austin Water's "
     "meter-equivalency table."
 )
-# fee rows (Austin) -> (fee_type prefix, field values, note)
-FEE_EDITS: list[tuple[str, bool, str]] = [
-    ("Parkland dedication fee in lieu", True, PARKLAND),
-    ("Water impact fee", False, SERVICE_UNITS),
-    ("Wastewater impact fee", False, SERVICE_UNITS),
+HOUSTON_SU = (
+    f"{BEN}: a single-family home up to 3,000 sq ft is 1 service unit. {WB2}: the 2020 Cost of Service Study "
+    "(https://www.houstontx.gov/citysec/HPW/impactfeereport.pdf) and the Houston Public Works memo "
+    "(https://www.houstontx.gov/citysec/HPW/impactfeememo.pdf) define the unit by average single-family use."
+)
+# fee rows to annotate -> (jurisdiction, fee_type prefix, fill amount_per_unit_usd from amount_usd, note)
+FEE_EDITS: list[tuple[str, str, bool, str]] = [
+    ("4805000", "Parkland dedication fee in lieu", True, PARKLAND),
+    ("4805000", "Water impact fee", False, SERVICE_UNITS),
+    ("4805000", "Wastewater impact fee", False, SERVICE_UNITS),
+    ("4835000", "Water impact fee, collected rate", False, HOUSTON_SU),
+    ("4835000", "Wastewater impact fee, collected rate", False, HOUSTON_SU),
 ]
+
+SAWS_FY2027 = "https://docsonline.sanantonio.gov/FileUploads/dsd/CurrentFeeSchedule.pdf"
+SAWS_TIMING = "assessed at plat recordation; paid before recordation or at meter set/sewer connection, as elected at plat application"
+HOU_TIMING = "collected when the building permit issues, or at water/wastewater connection if no permit"
+HOU_2021 = "https://houston.novusagenda.com/agendapublic/CoverSheet.aspx?ItemID=23219&MeetingID=488; https://www.houstontx.gov/citysec/agenda/2021/Jun2221.pdf; https://www.houstontx.gov/citysec/HPW/impactfeememo.pdf"
+
+
+def fee(**kw) -> dict:
+    base = {"state": "TX", "fee_component": "water_sewer", "building_type_std": "SFD", "basis": "per_lue"}
+    return base | {k: str(v) for k, v in kw.items()}
+
+
+FEE_ROWS: list[dict] = [
+    *(
+        fee(
+            jurisdiction_geoid="4865000",
+            year=2026,
+            fee_type=f"SAWS water impact fee (flow + system development + water supply), {area} elevation, plats on/after 2019-06-01",
+            amount_usd=total,
+            dollar_year=2026,
+            payment_timing=SAWS_TIMING,
+            source=SAWS_FY2027,
+            source_section="FY2027 Development Fee Schedule (revised Oct. 2026), SAWS Water and Sewer Impact Fees",
+            notes=f"{BEN} and {WB2}: per EDU for a 5/8-inch meter in the {area} elevation area: flow $1,188 + system development ${sysdev:,} + water supply $2,706 = ${total:,}; applies to plats recorded on or after 2019-06-01 (older plats: the 2014 ordinance rows). effective_date blank and amount_per_unit_usd blank, as for the low elevation row (zone- and plat-date dependent). FLAG for second coder: check against the posted schedule.",
+        )
+        for area, sysdev, total in (("middle", 1014, 4908), ("high", 1203, 5097))
+    ),
+    *(
+        fee(
+            jurisdiction_geoid="4835000",
+            year=2021,
+            effective_date="2021-07-01",
+            fee_type=f"{kind} impact fee, collected rate (2021 update)",
+            amount_usd=amount,
+            amount_per_unit_usd=amount,
+            dollar_year=2021,
+            payment_timing=HOU_TIMING,
+            source=HOU_2021,
+            source_section="Ords. 2021-388 (adopted 2021-05-19) and 2021-512 (passed 2021-06-23, collection from 2021-07-01)",
+            notes=f"{BEN} and {WB2}: Ord. 2021-388 adopted the updated land-use assumptions, capital plan and fees on 2021-05-19; Ord. 2021-512 set collection from 2021-07-01. Collected rate per service unit {share} of the maximum ${maximum}); 1 service unit per single-family home up to 3,000 sq ft, so amount_per_unit_usd = amount. The annual 2022-2025 collected rates are not coded. FLAG for second coder: secondary summary of the ordinances; check the effective clause.",
+        )
+        for kind, amount, share, maximum in (
+            ("Water", 1618.11, "(50%", "3,236.21"),
+            ("Wastewater", 1621.63, "(70%", "2,316.62"),
+        )
+    ),
+]
+
+# fee tracker place -> note (all stay partial)
+FEE_TRACKERS = {
+    "Austin": "Ben 2026-10-30: ADUs and duplex units on existing lots pay parkland (unless an affordable-housing exemption); service units follow meter size (5/8-inch 1.0, 3/4-inch 1.5, 1-inch 2.5). Still open: the parkland table's fiscal year.",
+    "San Antonio (SAWS)": "Ben 2026-10-30: FY2027 5/8-inch water $4,908 middle and $5,097 high elevation (plats on/after 2019-06-01), coded. Still open: the exact charges for pre-2019 plats after 2015 (the 2014 ordinance rows cover 2014-2015).",
+    "Fort Worth": "Ben 2026-10-30: the transportation fee depends on service area, plat cohort (2008, 2013, 2017, 2022 studies) and permit date; a home is one residential unit (e.g. 2022 cohort, 2026-27: $1,067.30 Area A, $2,033.20 Area B, $0 L/W). Not coded (area-dependent). Still open: the full 2015-2022 annual series.",
+    "Dallas": "Ben 2026-10-30: no separate DWU impact fee in the reviewed public schedules, but no official statement that none exists. Still open pending DWU confirmation.",
+    "Houston": "Ben 2026-10-30: 1 service unit per single-family home up to 3,000 sq ft; Ord. 2021-388 (2021-05-19) and 2021-512 (collection from 2021-07-01) at $1,618.11 water and $1,621.63 wastewater, coded. Still open: the annual 2015-2022 schedules.",
+}
 
 # tracker (table, place) -> (status, note)
 TRACKERS: dict[tuple[str, str], tuple[str, str]] = {
@@ -315,7 +378,10 @@ TRACKERS: dict[tuple[str, str], tuple[str, str]] = {
         "coded",
         "Ben 2026-10-30: no in single-family districts; coded TX-4817000-missing_middle-2010.",
     ),
-    ("mm", "Amarillo"): ("coded", "Ben 2026-10-30: duplex in R-3; coded TX-4803000-missing_middle-2010."),
+    ("mm", "Amarillo"): (
+        "coded",
+        "Ben 2026-10-30: duplex only in R-3, the former two-family and townhouse district (updated workbook); coded TX-4803000-missing_middle-2010 as one dwelling in R-1/R-2.",
+    ),
     ("mm", "Killeen"): (
         "coded",
         "Ben 2026-10-30: not by right (narrow board exception); coded TX-4839148-missing_middle-2010 as one dwelling.",
@@ -386,12 +452,19 @@ def main() -> None:
     flagged = sum("FLAG for second coder" in r["coding_notes"] for r in rows)
 
     fcols, frows = read(FEES)
+    have = {(f["jurisdiction_geoid"], f["fee_type"]) for f in frows}
+    for f in FEE_ROWS:
+        assert set(f) <= set(fcols), set(f) - set(fcols)
+        if (f["jurisdiction_geoid"], f["fee_type"]) not in have:
+            frows.append({c: f.get(c, "") for c in fcols})
     fee_edits = 0
     for f in frows:
-        if f["jurisdiction_geoid"] != "4805000":
-            continue
-        for prefix, per_unit, note in FEE_EDITS:
-            if f["fee_type"].startswith(prefix) and note not in f["notes"]:
+        for geoid, prefix, per_unit, note in FEE_EDITS:
+            if (
+                f["jurisdiction_geoid"] == geoid
+                and f["fee_type"].startswith(prefix)
+                and note not in f["notes"]
+            ):
                 if per_unit and not f["amount_per_unit_usd"]:
                     f["amount_per_unit_usd"] = f["amount_usd"]
                 f["notes"] = f["notes"].rstrip() + f" Updated {DAY}: " + note
@@ -419,8 +492,8 @@ def main() -> None:
     path = ORD / "tx-fee-lookups-todo.csv"
     tcols, trows = read(path)
     for t in trows:
-        if t["place"] == "Austin":
-            note = "Ben 2026-10-30: ADUs and duplex units on existing lots pay parkland (unless an affordable-housing exemption); service units follow meter size (5/8-inch 1.0, 3/4-inch 1.5, 1-inch 2.5). Still open: the parkland table's fiscal year."
+        note = FEE_TRACKERS.get(t["place"])
+        if note:
             if note not in t["notes"]:
                 t["notes"] = t["notes"].rstrip() + " | " + note
             fdone += 1
