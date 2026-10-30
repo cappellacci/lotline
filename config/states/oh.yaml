@@ -18,7 +18,19 @@ sources:
       Adapter src/lotline/adapters/states/oh/columbus_permits.py. About 685,000 permits 2010-present on
       2026-10-15 (data last edited 2026-10-15); the adapter downloads only new-structure and demolition
       permits (29,183). Building type from CONST_TYPE_CODE (Census BPS code). No ADU flag or description
-      field, so ADUs can't be identified. Pre-2010 permits sit in separate Historic_Building_Permits services.
+      field: ADUs come from the Franklin County Auditor's permit descriptions (franklin_permits.adu_flags),
+      matched by permit number and parcel. Pre-2010 permits sit in separate Historic_Building_Permits services.
+  - name: columbus_variances
+    url: https://webapi.legistar.com/v1/columbus/matters
+    license: City of Columbus public legislative records (Legistar Web API; no reuse terms stated)
+    access: api
+    cadence: as Council passes ordinances (ends with Ord. 2526-2025, effective 2025-12-24)
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/columbus_variances.py. Every Council ordinance with 'Variance' in
+      its title (1,742 on 2026-10-30); ADU approvals kept by named rules on the purpose clause (183, 121 for
+      2019 to Sep 2025 against the city's 110 approved variances). Before Ord. 2526-2025 a Columbus ADU needed
+      a Council use variance. Approvals, not permits: an upper bound on new ADUs, kept beside columbus_permits
+      (the larger count each year is used).
   - name: oh_parcels
     url: https://services2.arcgis.com/MlJ0G8iWUyC7jAmu/arcgis/rest/services/OhioStatewidePacels_full_view/FeatureServer/0
     license: State of Ohio OGRIP public data, 'as is' (no use restrictions stated for public downloads)
@@ -28,7 +40,13 @@ sources:
       Adapter src/lotline/adapters/states/oh/oh_parcels.py (tier 2: StateLUC + LandArea only). 6,313,610
       parcels in 88 counties on 2026-10-15; Franklin and Hamilton downloaded first (exports dated 2023-09-26 and
       2023-08-02). The 2022 vintage (maps.ohio.gov Statewide_Parcels_2022) is token-gated and skipped. Jurisdiction
-      by centroid point-in-polygon (lotline.geo.place_or_township).
+      by centroid point-in-polygon (lotline.geo.place_or_township). County layers (COUNTY_LAYERS) fill
+      unknown land use and add year built by parcel ID: Summit County Fiscal Office (as of 2025-03-25), Lucas
+      County Auditor 2025 land use, Cuyahoga County Fiscal Office (tax year 2026), Butler County
+      CURRENTPARCELS. The Lucas and Cuyahoga GIS hosts dropped connections from some networks on 2026-10-26 and
+      answered over a VPN. Franklin County Auditor Dwelling.xlsx adds year built (Columbus tier 1). Montgomery
+      (Dayton): the engineer's server failed TLS verification and the auditor's weekly geodatabase has no
+      parcel land-use code, so Dayton stays on the ACS fallback.
   - name: cincy_permits
     url: https://data.cincinnati-oh.gov/resource/uhjb-xac9.json
     license: Public Domain (City of Cincinnati open data)
@@ -39,3 +57,13 @@ sources:
       permits, new-construction and demolition work classes only) plus combo permits thvx-5mem (only rows whose
       work description names an ADU or townhouse). 8,190 permits kept on 2026-10-18. No Census code: type from
       the building-code use group and units.
+  - name: franklin_permits
+    url: https://apps.franklincountyauditor.com/Outside_User_Files/
+    license: Franklin County Auditor public records (disclaimer 'as is'; no reuse terms stated)
+    access: download
+    cadence: monthly appraisal snapshots (rolling window of permits)
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/franklin_permits.py. Permit.xlsx from the 2022-12-15 and
+      2026-10-15 appraisal snapshots (1990 to now), with each issuing office's permit number and work
+      description. ADU permits only (named description rules), outside Columbus; Columbus's own layer takes
+      the flags by permit number. Not a complete record of new houses (about a tenth of BPS for Columbus).
