@@ -36,6 +36,14 @@ PLACES = {  # Ohio's 20 largest places (2020 census), the ADU rule round of 2026
 }
 ROUND_2 = {  # the 2026-10-26 round: places 21-40 and the Franklin County places in franklin_permits
     "3929106": "Gahanna",
+    "3906278": "Bexley",  # 2026-10-30: Franklin suburbs from Ben's research
+    "3984742": "Whitehall",
+    "3986604": "Worthington",
+    "3979002": "Upper Arlington",
+    "3953970": "New Albany",
+    "3957862": "Obetz",
+    "3932606": "Groveport",
+    "3935476": "Hilliard",
 }
 
 
