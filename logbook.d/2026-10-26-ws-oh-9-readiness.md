@@ -1,0 +1,15 @@
+### LB-NNN · 2026-10-26 · Data feasibility: Ohio data readiness report (thread 11, step 3, draft)
+- **Question:** How ready is Ohio's data for an end-to-end run, and how many places does it add to the ADU and missing-middle estimation panels?
+- **What I did:**
+  - Counted every model input across Ohio's 952 jurisdictions from the processed tables after the #232 rebuilds (real, fallback, unknown), with population shares.
+  - Applied D-025's and D-024's inclusion rules to count panel places, without running any estimator.
+  - Listed the remaining gaps with what closes each and who owns it.
+- **Inputs:** processed `jurisdictions`, `eligible_parcels`, `permits`, `bps_place_year`; `config/reforms/oh.csv` (#226); PRs #224, #226, #232.
+- **Outputs:** `docs/build/oh-readiness.md`.
+- **Findings:**
+  - 93% of Ohio's population now has an eligible-lot count from real parcels; tier 1 covers 28.5% (72 places, Columbus among them).
+  - Ohio adds 4 places to the ADU panel (Cincinnati, Columbus, Dublin, Gahanna; 1 before this thread) and 1 treated place to missing middle.
+  - The cheapest way to add ADU-panel places is rule rows for the 15 Franklin places whose ADU counts already exist.
+- **Decisions:** none.
+- **AI:** Claude Code (WS-OH) computed the counts and wrote the report; no model or scenario was run.
+- **Open / next:** finalize after #224, #226, #232 merge and Ben's lookups; S7 Cleveland permits, S8 fees.
