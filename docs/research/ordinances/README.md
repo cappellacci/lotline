@@ -40,5 +40,17 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
     (run after the 10-29 script), which also renames four rows whose effective year moved: San Antonio
     `TX-4865000-adu-2001` → `-2010`, Frisco `TX-4827684-adu-2021` → `-2019`, Laredo `TX-4841464-adu-1992` →
     `-2010`, College Station `TX-4815976-adu-2023` → `-2018`.
+- **Ben's own lookups (2026-10-30)**, applied by `scripts/dev/tx_ben_lookups_2026_10_30.py` (run after the
+  corrections script):
+  - Killeen overlay ADUs (passed 4-1, overlay only).
+  - Lewisville cottages: adopted, now in force.
+  - Denton DCA25-0001a (2026-01-13).
+  - College Station 2023 parking. Reuses the id `TX-4815976-adu-2023`.
+  - Pearland's 2006 UDC rules.
+  - Missing middle for El Paso, Corpus Christi, Amarillo, Killeen, Denton, Carrollton, College Station and Plano;
+    Lubbock's limited-use terms; Laredo's Ord. 2025-O-004; Austin parkland and service units, SAWS middle and
+    high elevation, Houston 2021 (`config/fees/tx.csv`); official sources from the updated workbook.
+  - League City RSF-5 has no duplexes.
+  - Pasadena stays pending.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
