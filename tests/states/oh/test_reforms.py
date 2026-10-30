@@ -44,6 +44,9 @@ ROUND_2 = {  # the 2026-10-26 round: places 21-40 and the Franklin County places
     "3957862": "Obetz",
     "3932606": "Groveport",
     "3935476": "Hilliard",
+    "3941720": "Lancaster",  # 2026-10-30: other places from Ben's research
+    "3916014": "Cleveland Heights",
+    "3927048": "Findlay",
 }
 
 
