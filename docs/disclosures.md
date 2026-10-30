@@ -25,7 +25,8 @@ in [`data_provenance.md`](data_provenance.md), which gives each dataset's licens
 | Esri ArcGIS REST services (hosted by public agencies) | `services*.arcgis.com`, `arcgis.metc.state.mn.us`, `www.arcgis.com`, `*.opendata.arcgis.com` | City, county and state permit and parcel layers (Minneapolis, Met Council, Raleigh, Durham, Columbus, NC OneMap, Ohio statewide parcels, St. Paul) | None |
 | Socrata (Tyler Technologies) open-data APIs | `data.austintexas.gov`, `data.cincinnati-oh.gov` | Austin and Cincinnati building permits | None (optional `SOCRATA_APP_TOKEN`, never logged) |
 | Agency download pages | `traviscad.org`, Wake County (`services.wake.gov`) | Appraisal rolls, downloaded by hand in a browser because the site blocks automated access or its `robots.txt` disallows it, then registered with `lotline manifest register` | None |
-| Franklin County Auditor | `auditor.franklincountyohio.gov` | Exploratory download of permit and dwelling tables (Columbus ADU research); not used in any table | None |
+| Franklin County Auditor | `apps.franklincountyauditor.com` | Appraisal files: permit descriptions (ADU flags), dwelling year built and yearly parcel rolls (Franklin County, Ohio) | None |
+| Legistar Web API (Granicus) | `webapi.legistar.com` | City of Columbus Council variance ordinances (ADU approvals before 2026) | None |
 | GitHub | `github.com` | Code hosting, Actions CI, CodeQL code scanning, Dependabot, secret scanning | Project account |
 
 The interactive tool's hosting service will be added here when it is deployed.
