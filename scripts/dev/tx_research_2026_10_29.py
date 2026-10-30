@@ -28,6 +28,13 @@ REFORMS = ROOT / "config" / "reforms" / "tx.csv"
 FEES = ROOT / "config" / "fees" / "tx.csv"
 TRACKERS = {t: ORD / f"tx-{t}-lookups-todo.csv" for t in ("adu", "mm", "fee")}
 CORRECTIONS = ORD / "tx-corrections-2026-10-29.csv"
+# rows renamed later by tx_corrections_2026_10_30.py (Ben's decision), so a rerun finds them
+RENAMED = {
+    "TX-4865000-adu-2001": "TX-4865000-adu-2010",
+    "TX-4827684-adu-2021": "TX-4827684-adu-2019",
+    "TX-4841464-adu-1992": "TX-4841464-adu-2010",
+    "TX-4815976-adu-2023": "TX-4815976-adu-2018",
+}
 
 
 def read(path: Path) -> tuple[list[str], list[dict]]:
@@ -47,7 +54,7 @@ def reforms() -> int:
     cols, rows = read(REFORMS)
     by_id = {r["reform_id"]: r for r in rows}
     for rid, note in DATA["notes"].items():
-        assert rid in by_id, rid
+        rid = rid if rid in by_id else RENAMED[rid]
         if note.strip() not in by_id[rid]["coding_notes"]:
             by_id[rid]["coding_notes"] = by_id[rid]["coding_notes"].rstrip() + " " + note.strip()
     added = 0
@@ -93,6 +100,8 @@ def trackers() -> int:
 
 
 def corrections() -> int:
+    if CORRECTIONS.exists():  # keep Ben's decisions once they are recorded
+        return sum(1 for _ in CORRECTIONS.open()) - 1
     cols = ["reform_id", "field", "current", "proposed", "evidence", "decision"]
     rows = [{c: str(x.get(c, "")) for c in cols} for x in DATA["corrections"]]
     write(CORRECTIONS, cols, rows)

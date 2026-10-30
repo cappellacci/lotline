@@ -34,6 +34,11 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   `~/lotline-data/manual/texas/Official-PDFs/`): 35 rule rows, 38 fee rows, notes on 34 earlier rows and tracker
   updates, applied by `scripts/dev/tx_research_2026_10_29.py` (append only). After it: ADU 5 coded / 8 partial /
   2 open, missing middle 20 / 4 / 8, fees 0 / 5 / 0. Changes it proposes to earlier rows are **not applied**: they
-  are in `tx-corrections-2026-10-29.csv` (35 rows, `decision` column blank) for Ben to decide.
+  are in `tx-corrections-2026-10-29.csv` (35 rows) for Ben to decide.
+  - **Decided 2026-10-30** (`decision` column): 32 accepted, Denton's date kept with a note, College Station's
+    parking left as a note, Abilene kept at one home per lot. Applied by `scripts/dev/tx_corrections_2026_10_30.py`
+    (run after the 10-29 script), which also renames four rows whose effective year moved: San Antonio
+    `TX-4865000-adu-2001` → `-2010`, Frisco `TX-4827684-adu-2021` → `-2019`, Laredo `TX-4841464-adu-1992` →
+    `-2010`, College Station `TX-4815976-adu-2023` → `-2018`.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
