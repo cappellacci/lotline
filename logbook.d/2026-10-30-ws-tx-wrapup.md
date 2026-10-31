@@ -50,3 +50,29 @@
   - Williamson's and Galveston's property-use tables, if Ben wants them.
   - Harris Z codes.
   - Per-vintage parcel files (WS-CORE).
+- **Later the same day (second-coder review and Ben's second batch):**
+  - **Review** (Ben's `tx-second-coder-reviewed.csv`), applied by `scripts/dev/tx_second_coder_2026_10_30.py`:
+    - 2 of 80 rows agreed (Abilene ADU 2010, College Station ADU 2023): `coder_2 = ben-review`.
+    - 4 "partly" findings went into the notes.
+    - 74 rows had a boilerplate "could not independently confirm" note. They stay single-coder and flagged:
+      the second-coder pass is not done for them.
+  - **Ben's second batch** (answers to the ten questions, plus fees), applied by
+    `scripts/dev/tx_ben_lookups_2026_10_30b.py`:
+    - League City's Ord. 2026-10 is in force from 2026-05-26 and by right (Planning Director approval). This
+      undoes the review's pending.
+    - Tyler's garage apartments were in force by 2010: the row is renamed `TX-4874144-adu-2010`.
+    - Laredo's R-1A, R-1B and R-1-MH allow one home.
+    - Notes for Denton (the R4 SUP was in the 2019 code), McKinney (no universal 12,000 sq ft minimum),
+      Killeen and Lewisville (ordinance numbers unconfirmed) and Edinburg.
+    - SAWS 2015-2019 water totals ($4,597 / $4,777 / $4,861) noted on the component rows, not added as rows,
+      which would double-count.
+    - Houston's pre-2021 water rate ($790.55) added.
+  - **Replay fixes:**
+    - The 10-29 script matched fee rows on every column, so later notes made it re-add 10 rows. It now matches
+      on place, year and fee type.
+    - Renames in the corrections and batch scripts now run once, so a reused id
+      (`TX-4815976-adu-2023`, now College Station's parking row) is not renamed again.
+    - Edits meant for a renamed row go to that row.
+    - Rerunning all five Texas scripts in order leaves `config/reforms/tx.csv` and `config/fees/tx.csv`
+      unchanged.
+

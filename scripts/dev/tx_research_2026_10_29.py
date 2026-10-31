@@ -34,6 +34,7 @@ RENAMED = {
     "TX-4827684-adu-2021": "TX-4827684-adu-2019",
     "TX-4841464-adu-1992": "TX-4841464-adu-2010",
     "TX-4815976-adu-2023": "TX-4815976-adu-2018",
+    "TX-4874144-adu-2011": "TX-4874144-adu-2010",  # tx_ben_lookups_2026_10_30b.py
 }
 
 
@@ -54,13 +55,15 @@ def reforms() -> int:
     cols, rows = read(REFORMS)
     by_id = {r["reform_id"]: r for r in rows}
     for rid, note in DATA["notes"].items():
-        rid = rid if rid in by_id else RENAMED[rid]
+        rid = (
+            RENAMED[rid] if RENAMED.get(rid) in by_id else rid
+        )  # the renamed row, even if its old id is reused
         if note.strip() not in by_id[rid]["coding_notes"]:
             by_id[rid]["coding_notes"] = by_id[rid]["coding_notes"].rstrip() + " " + note.strip()
     added = 0
     for r in DATA["rows"]:
         assert set(r) <= set(cols), set(r) - set(cols)
-        if r["reform_id"] not in by_id:
+        if r["reform_id"] not in by_id and RENAMED.get(r["reform_id"]) not in by_id:
             rows.append({c: r.get(c, "") for c in cols})
             added += 1
     write(REFORMS, cols, rows)
@@ -69,14 +72,15 @@ def reforms() -> int:
 
 def fees() -> int:
     cols, rows = read(FEES)
-    have = {tuple(r[c] for c in cols) for r in rows}
+    key = ("jurisdiction_geoid", "year", "fee_type")  # later scripts add notes: match on identity
+    have = {tuple(r[c] for c in key) for r in rows}
     added = 0
     for r in DATA["fee_rows"]:
         assert set(r) <= set(cols), set(r) - set(cols)
         new = {c: str(r.get(c, "") if r.get(c) is not None else "") for c in cols}
-        if tuple(new.values()) not in have:
+        if tuple(new[c] for c in key) not in have:
             rows.append(new)
-            have.add(tuple(new.values()))
+            have.add(tuple(new[c] for c in key))
             added += 1
     write(FEES, cols, rows)
     return added

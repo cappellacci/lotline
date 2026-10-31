@@ -201,7 +201,7 @@ def main() -> None:
         cols, rows = reader.fieldnames, list(reader)
     by_id = {r["reform_id"]: r for r in rows}
     for old, (nums, fields, swaps, note) in EDITS.items():
-        r = by_id.get(old) or by_id[RENAMES[old]]
+        r = by_id[RENAMES[old]] if RENAMES.get(old) in by_id else by_id[old]  # old ids can be reused
         tag = f" Corrected {DAY} ({nums} in tx-corrections-2026-10-29.csv, Ben's decision):"
         if tag in r["coding_notes"]:
             continue
@@ -211,9 +211,11 @@ def main() -> None:
             assert a in r["coding_notes"], (old, a)
             r["coding_notes"] = r["coding_notes"].replace(a, b)
         r["coding_notes"] = r["coding_notes"].rstrip() + tag + " " + note
+    present = {r["reform_id"] for r in rows}
+    renames = {a: b for a, b in RENAMES.items() if b not in present}  # done once; a reused id stays
     for r in rows:
-        r["reform_id"] = RENAMES.get(r["reform_id"], r["reform_id"])
-        r["supersedes"] = RENAMES.get(r["supersedes"], r["supersedes"])
+        r["reform_id"] = renames.get(r["reform_id"], r["reform_id"])
+        r["supersedes"] = renames.get(r["supersedes"], r["supersedes"])
     with PATH.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols, lineterminator="\n")
         w.writeheader()

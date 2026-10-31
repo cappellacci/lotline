@@ -62,5 +62,21 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
     `second_coder_note`.
   - Rows the second coder agrees with get `coder_2` and `coder_agreement = agree` in `config/reforms/tx.csv`;
     disagreements are adjudicated.
+  - **Reviewed 2026-10-30** (Ben's review pass, `second_coder = ben-review`; applied by
+    `scripts/dev/tx_second_coder_2026_10_30.py`):
+    - 2 rows agreed (Abilene ADU 2010, College Station ADU 2023).
+    - 4 "partly" rows have their finding added to the notes.
+    - 74 rows carry the reviewer's "could not independently confirm" note. They stay single-coder and flagged,
+      because a check that could not read the source is not agreement.
+- **Ben's second batch (2026-10-30)**, applied by `scripts/dev/tx_ben_lookups_2026_10_30b.py` (run after the
+  second-coder script):
+  - League City's 2026 ADU row is back in force and by right.
+  - Tyler's garage-apartment row is renamed `TX-4874144-adu-2010`.
+  - Laredo's one-home row now covers R-1A, R-1B and R-1-MH.
+  - Notes for Denton, McKinney, Killeen, Lewisville and Edinburg.
+  - SAWS 2015-2019 water totals noted on the 2014-schedule rows; Houston's pre-2021 water rate as a new row.
+  - Replay order of the Texas scripts: `tx_research_2026_10_29`, `tx_corrections_2026_10_30`,
+    `tx_ben_lookups_2026_10_30`, `tx_second_coder_2026_10_30`, `tx_ben_lookups_2026_10_30b`. Rerunning all five
+    leaves the files unchanged (checked 2026-10-30).
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
