@@ -114,6 +114,8 @@ def test_load_assigns_jurisdictions_and_applies_snapshot_holdout(raw, monkeypatc
         return pd.DataFrame(columns=[c for c in cols if c])
 
     monkeypatch.setattr(op, "download_county", no_rows)
+    monkeypatch.setattr(op, "apply_montgomery_cama", lambda df, store: (df, {}))
+    monkeypatch.setattr(op, "apply_warren", lambda df, store: df)
     monkeypatch.setattr(
         op,
         "download_franklin_roll",
@@ -370,3 +372,134 @@ def test_franklin_yearly_rolls_only_for_places_wholly_in_the_county():
 def test_franklin_share_counts_houses_only():
     share = op.franklin_share(_placed_roll())
     assert share.to_dict() == {"A": 1.0, "B": 0.5}
+
+
+def _fixed_line(fields: dict[int, str], width: int) -> bytes:
+    """A fixed-width record: {1-based start: value}, space-padded to `width`, CRLF-terminated."""
+    buf = bytearray(b" " * width)
+    for start, value in fields.items():
+        buf[start - 1 : start - 1 + len(value)] = value.encode()
+    return bytes(buf) + b"\r\n"
+
+
+def _cama_zip(path, pardat_rows, dwell_rows, folder="Cama_Files_20260930\\"):
+    import zipfile
+
+    pardat = b"".join(_fixed_line({1: pid, 239: luc}, 608) for pid, luc in pardat_rows)
+    # a DWELL record spills its maintenance date onto two short lines, as in the real export
+    dwell = b"".join(_fixed_line({1: pid, 59: yr}, 643) + b"02-JAN-25\r\n\r\n" for pid, yr in dwell_rows)
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr(folder + "PARDAT.DAT", pardat)  # 2026: Windows-style folder; 2011-2025: at the root
+        z.writestr(folder + "DWELL.DAT", dwell)
+    return path
+
+
+def test_read_cama_reads_only_named_fields(tmp_path):
+    path = _cama_zip(tmp_path / "c.zip", [("A01 00101 0001", "510"), ("R72 01209 0070", "613")], [])
+    pardat = op.read_cama(path, "PARDAT.DAT", op.CAMA_PARDAT)
+    assert pardat.to_dict("list") == {"parid": ["A01 00101 0001", "R72 01209 0070"], "luc": ["510", "613"]}
+    old = _cama_zip(tmp_path / "o.zip", [("A01 00101 0001", "510")], [], folder="")
+    assert op.read_cama(old, "PARDAT.DAT", op.CAMA_PARDAT)["luc"].tolist() == ["510"]
+    # no owner, mailing or address field is in either layout
+    assert {"parid", "luc"} == set(op.CAMA_PARDAT) and {"parid", "yrblt"} == set(op.CAMA_DWELL)
+
+
+def test_montgomery_attributes_keep_the_earliest_dwelling_and_valid_years(tmp_path):
+    path = _cama_zip(
+        tmp_path / "c.zip",
+        [("A01 00101 0001", "510"), ("A01 00101 0002", "500"), ("A01 00101 0003", "520")],
+        [("A01 00101 0001", "1925"), ("A01 00101 0001", "1999"), ("A01 00101 0003", "0")],
+    )
+    a = op.montgomery_attributes(
+        op.read_cama(path, "PARDAT.DAT", op.CAMA_PARDAT), op.read_cama(path, "DWELL.DAT", op.CAMA_DWELL)
+    ).set_index("parcel_id")
+    assert list(a.index) == ["39113A01 00101 0001", "39113A01 00101 0002", "39113A01 00101 0003"]
+    assert a.loc["39113A01 00101 0001", "year_built"] == 1925  # two cards: the earliest
+    assert pd.isna(a.loc["39113A01 00101 0002", "year_built"])  # vacant: no dwelling
+    assert pd.isna(a.loc["39113A01 00101 0003", "year_built"])  # 0 is not a year
+    assert a["luc"].tolist() == ["510", "500", "520"]
+
+
+def test_drop_never_in_cama_only_touches_montgomery():
+    df = pd.DataFrame(
+        {
+            "parcel_id": ["39113A01 00101 0001", "39113R72 01209 9999", "39049010-000001"],
+            "county_geoid": ["39113", "39113", "39049"],
+        }
+    )
+    out = op.drop_never_in_cama(df, {"39113A01 00101 0001"})
+    # the Montgomery parcel in no CAMA year goes; Franklin is untouched
+    assert out["parcel_id"].tolist() == ["39113A01 00101 0001", "39049010-000001"]
+
+
+def test_registered_cama_reads_snapshot_dates_from_the_manifest(tmp_path):
+    class Entry:
+        def __init__(self, path):
+            self.path = path
+
+    class Store:
+        root = tmp_path
+
+        def registered(self, source):
+            assert source == op.SOURCE
+            return [
+                Entry("raw/oh_parcels/montgomery_cama_20260930/Cama_Files_20260930.zip"),
+                Entry("raw/oh_parcels/montgomery_cama_20110201/Cama_Files_20110201.zip"),
+                Entry("raw/oh_parcels/2026-10-19/county_franklin/Dwelling.xlsx"),
+            ]
+
+    files = op.registered_cama(Store())
+    assert list(files) == ["2011-02-01", "2026-09-30"]
+    assert files["2026-09-30"] == tmp_path / "raw/oh_parcels/montgomery_cama_20260930/Cama_Files_20260930.zip"
+
+
+def test_montgomery_yearly_rolls_place_by_roll_then_district():
+    roll = pd.DataFrame(
+        {
+            "state": "OH",
+            "parcel_id": ["39113R72 00001 0001", "39113R72 00001 0002", "39113A01 00001 0001"],
+            "vintage": pd.Series([2023] * 3, dtype="Int64"),
+            "vintage_date": pd.Timestamp("2023-06-01"),
+            "jurisdiction_geoid": ["3921000", "3921000", "39113"],
+            "county_geoid": "39113",
+            "land_use_std": "SF_DETACHED",
+            "land_use_raw": "x",
+            "lot_sqft": 5000.0,
+            "year_built": pd.Series([1920, 1950, 1980], dtype="Int64"),
+            "lon": -84.2,
+            "lat": 39.76,
+            "source": "oh_parcels",
+        }
+    )
+    codes = pd.DataFrame(
+        {"parcel_id": ["39113R72 00001 0001", "39113R72 00009 0009"], "code": ["510", "500"]}
+    )
+    out = op.county_yearly_rolls(
+        roll,
+        {"2012-12-01": codes, "2023-11-30": codes},
+        county="39113",
+        label="Montgomery CAMA",
+        district=op._montgomery_district,
+    )
+    added = out[out["vintage"] == 2012].set_index("parcel_id")
+    # matched parcel keeps its roll jurisdiction; the parcel not in the roll takes district R72's (Dayton)
+    assert added["jurisdiction_geoid"].to_dict() == {
+        "39113R72 00001 0001": "3921000",
+        "39113R72 00009 0009": "3921000",
+    }
+    assert added.loc["39113R72 00009 0009", "land_use_std"] == "VACANT_RESIDENTIAL"
+    assert (out["vintage"] == 2023).sum() == 3  # the statewide roll's year is not read twice
+    assert_conforms(out, "parcels")
+
+
+def test_warren_parcel_numbers_are_zero_padded_and_codes_read():
+    raw = pd.DataFrame(
+        {
+            "PARNUM": [1304760020.0, 1712400017.1, None, 701202005.0],
+            "USE_CODE_DSC": ["510-SINGLE FAMILY DWG (PLATTED)", "550-CONDOMINIUM", "500-X", "595-T.I.F."],
+        }
+    )
+    a = op.warren_attributes(raw)
+    # 1304760020 → "01304760020"; the fractional and missing PARNUMs are skipped
+    assert a["parcel_id"].tolist() == ["3916501304760020", "3916500701202005"]
+    assert a["luc"].tolist() == ["510", "595"] and a["year_built"].isna().all()

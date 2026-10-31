@@ -45,8 +45,9 @@ sources:
       County Auditor 2025 land use, Cuyahoga County Fiscal Office (tax year 2026), Butler County
       CURRENTPARCELS. The Lucas and Cuyahoga GIS hosts dropped connections from some networks on 2026-10-26 and
       answered over a VPN. Franklin County Auditor Dwelling.xlsx adds year built (Columbus tier 1). Montgomery
-      (Dayton): the engineer's server failed TLS verification and the auditor's weekly geodatabase has no
-      parcel land-use code, so Dayton stays on the ACS fallback.
+      (Dayton): the Treasurer's CAMA extract, downloaded by hand and registered (2011-2026), adds land use and
+      year built, drops roll polygons in no CAMA year (old lots) and gives yearly rolls. Warren (Mason,
+      Middletown's Warren part): the county parcel geodatabase, registered by hand, adds land use.
   - name: cincy_permits
     url: https://data.cincinnati-oh.gov/resource/uhjb-xac9.json
     license: Public Domain (City of Cincinnati open data)
