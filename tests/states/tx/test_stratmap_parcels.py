@@ -257,6 +257,16 @@ def test_resolve_jurisdictions_place_else_county():
     assert got.tolist() == ["4805000", "48453", "48201"]
 
 
+def test_resolve_jurisdictions_drops_county_remainders_that_are_not_jurisdictions():
+    # 48001 (Anderson) has no remainder jurisdiction: its unincorporated parcels belong to no jurisdiction
+    county = pd.Series(["48001", "48001", "48453"])
+    place = pd.Series(["4803000", None, None], dtype=object)
+    got = sm.resolve_jurisdictions(county, place, {"4803000", "48453"})
+    assert got.iloc[0] == "4803000"
+    assert pd.isna(got.iloc[1])
+    assert got.iloc[2] == "48453"
+
+
 def test_zip_without_shapefile_or_geodatabase_stops(tmp_path):
     path = tmp_path / "g.zip"
     with zipfile.ZipFile(path, "w") as zf:
@@ -326,3 +336,22 @@ def test_partial_county_parts_dropped_with_their_jurisdictions():
 
 def test_registered_as_tx_source():
     assert registry.sources_for("TX")["stratmap_parcels"].module.TABLE == "parcels"
+
+
+def test_county_land_use_fills_unknown_from_listed_codes(tmp_path):
+    path = tmp_path / "county.csv"
+    path.write_text(
+        "county_geoid,code,meaning,land_use_std,confidence,source_url,note,applied\n"
+        "48491,RES,Residential single family,SF_DETACHED,high,https://example.org,,yes\n"
+        "48491,L,Land,VACANT_RESIDENTIAL,low,https://example.org,,no\n"
+        "48167,RL,Residential lot (land type),SF_DETACHED,medium,https://example.org,,no\n"
+        "48201,Z1,Unclear,UNKNOWN,medium,https://example.org,,yes\n"
+    )
+    local = sm.load_county_land_use(path)
+    assert local == {"48491|RES": "SF_DETACHED"}  # rows not applied, and UNKNOWN rows, are not used
+    std = pd.Series(["UNKNOWN", "UNKNOWN", "COMMERCIAL", "UNKNOWN"])
+    county = pd.Series(["48491", "48491", "48491", "48453"])
+    code = pd.Series(["RES", "L", "RES", "RES"])
+    got = sm.county_land_use(std, county, code, local)
+    # only an UNKNOWN parcel in the listed county with a listed code changes
+    assert got.tolist() == ["SF_DETACHED", "UNKNOWN", "COMMERCIAL", "UNKNOWN"]

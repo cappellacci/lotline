@@ -52,5 +52,15 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
     high elevation, Houston 2021 (`config/fees/tx.csv`); official sources from the updated workbook.
   - League City RSF-5 has no duplexes.
   - Pasadena stays pending.
+- `tx-second-coder-2026-10-30.csv`: **the second-coder worksheet**, one line per Texas rule row flagged
+  "FLAG for second coder" (80 on 2026-10-30).
+  - Priority 1: dated reforms inside the window, which become D-024/D-025 events.
+  - Priority 2: dated "none" or one-home rows.
+  - Priority 3: rules in force since 2010 or earlier.
+  - Each line has what was coded, what to check (from the row's own flags) and the sources. Four columns are
+    blank for the second coder: `second_coder`, `agrees (yes/no/partly)`, `correct_value`,
+    `second_coder_note`.
+  - Rows the second coder agrees with get `coder_2` and `coder_agreement = agree` in `config/reforms/tx.csv`;
+    disagreements are adjudicated.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
