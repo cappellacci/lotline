@@ -31,6 +31,16 @@ sources:
       2019 to Sep 2025 against the city's 110 approved variances). Before Ord. 2526-2025 a Columbus ADU needed
       a Council use variance. Approvals, not permits: an upper bound on new ADUs, kept beside columbus_permits
       (the larger count each year is used).
+  - name: montgomery_permits
+    url: https://go.mcohio.org/applications/treasurer/search/filedownloads.cfm
+    license: Montgomery County Auditor/Treasurer public records ('as is'; no reuse restrictions stated, no open-data license)
+    access: manual
+    cadence: monthly CAMA extract (downloaded by hand)
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/montgomery_permits.py. The CAMA zip's PERMIT table (254,376 permits
+      1993-2026 reported to the Auditor, 44% without a description). ADU permits only, by Franklin's named rules
+      plus Montgomery's (work category, multi-family, additions to an existing carriage house): 7 ADUs on
+      2026-09-30 (Dayton 4, Trotwood, Centerville, unincorporated county). An undercount.
   - name: oh_parcels
     url: https://services2.arcgis.com/MlJ0G8iWUyC7jAmu/arcgis/rest/services/OhioStatewidePacels_full_view/FeatureServer/0
     license: State of Ohio OGRIP public data, 'as is' (no use restrictions stated for public downloads)

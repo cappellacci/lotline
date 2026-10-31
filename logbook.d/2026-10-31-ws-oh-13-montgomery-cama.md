@@ -30,3 +30,25 @@ county files Ben downloaded fix that?
 - The first rebuild failed: the 2011–2025 zips keep their tables at the root, not in a folder. The fix is tested
   with both layouts.
 - Only parcel ID, land use and year built are read. No owner or address fields are read.
+
+**Addendum (same day): Montgomery ADU flags.** Ben asked for ADU flags from the CAMA `PERMIT` table, with its
+schema explained first.
+
+**Outputs.** `src/lotline/adapters/states/oh/montgomery_permits.py` (new source) and
+`tests/states/oh/test_montgomery_permits.py`. The September 2026 zip is registered under `montgomery_permits` as
+a hard link.
+
+**The table.** 254,376 permits from 1993 to 2026. Claude reads parcel ID, permit number, date, the `Why` work
+category, valuation and three 80-character notes; address fields are never read. 44% of the notes are blank.
+
+**The rules.** Franklin's recall-first rules, plus Montgomery's own:
+- an addition, dwelling or detached-garage `Why` needs no creation word;
+- trade categories are never ADUs;
+- multi-family "carriage house" buildings (Parkview Apartments) are excluded;
+- so are additions to an existing carriage house and "N-car" garages.
+
+**Result.** 7 ADUs: Dayton 2021, 2022, 2024 and 2025; Trotwood 2024; Centerville 2025; the unincorporated county
+2020. An undercount.
+
+**How Claude checked.** Claude read every flagged permit and every rejected note naming an ADU. The one false
+positive (a Parkview building labelled "BLD 40") became the multi-family guard.
