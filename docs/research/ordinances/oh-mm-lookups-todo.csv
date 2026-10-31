@@ -1,0 +1,48 @@
+place,geoid,pop,need,start_url,duplex_on_single_family_lots (by_right/permit/no),triplex_fourplex (by_right/permit/no),first_allowed_date,by_right_since,districts,ordinance,source_url,notes
+Columbus,3918000,905748,"does any rule since 2010 allow 2-4 units on lots zoned single-family (R-1, R-2, R-3, SR)? Zone In (2024) rezoned corridors to mixed-use and is coded as 'other'; check later Zone In phases and the R-2F district",,,,,,,,,
+Cleveland,3916000,372624,"the form-based code (Ord. 347-2024, July 2024) lets H3/H4 house-scale districts hold 3-4 units per site in four pilot areas: were those areas single-family before? Also the 2026 Housing Innovation District",https://www.clevelandohio.gov/city-hall/boards-commissions/planning/zoning/fbc-areas,,,,,,,,
+Toledo,3977000,270871,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://webapi.legistar.com/v1/toledo/matters/43286,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Akron,3901000,190469,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Dayton,3921000,137644,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://www.daytonohio.gov/DocumentCenter/View/550/City-of-Dayton-Zoning-Code-PDF,,,,,,,,
+Parma,3961000,81146,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Canton,3912000,70872,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Lorain,3944856,65211,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Hamilton,3933012,63399,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Youngstown,3988000,60068,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Springfield,3974118,58662,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://springfieldohio.gov/2025-springfield-zoning-code-now-available/,,,,,,,,
+Kettering,3940040,57862,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Elyria,3925256,52656,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Cuyahoga Falls,3919778,51114,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Middletown,3949840,50987,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Lakewood,3941664,50942,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Newark,3954040,49934,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://www.newarkohio.gov/,,,,,,,,
+Euclid,3925704,49692,"Ord. 120-2024 (passed 2024-10-07) created Ch. 1352 and lists two-family dwellings as permitted in U1 on 5,000 sq ft lots: is U1 the single-family district, and what is the effective date? (likely a second Ohio missing-middle event)",https://codelibrary.amlegal.com/,,,,,,,,code host (American Legal) answers scripts with HTTP 403; works in a browser
+Dublin,3922694,49328,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://dublinohiousa.gov/planning/zoning-code/,,,,,,,,
+Mansfield,3947138,47534,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Mentor,3949056,47450,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Strongsville,3975098,46491,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Cleveland Heights,3916014,45312,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Fairfield,3925970,44907,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Delaware,3921434,41302,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Grove City,3932592,41252,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Reynoldsburg,3966390,41076,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Lancaster,3941720,40552,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Findlay,3927048,40313,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Warren,3980892,39201,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Westerville,3983342,39190,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Hilliard,3935476,37114,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Upper Arlington,3979002,36800,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Marion,3947754,35999,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Gahanna,3929106,35726,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",https://webapi.legistar.com/v1/gahanna/matters/17800,,,,,,,,
+Lima,3943554,35579,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Brunswick,3909680,35426,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+North Ridgeville,3956966,35280,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Mason,3948188,34792,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Whitehall,3984742,20127,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Worthington,3986604,14786,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Bexley,3906278,13928,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+New Albany,3953970,10825,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Canal Winchester,3911332,9107,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Grandview Heights,3931304,8085,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Groveport,3932606,6009,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,
+Obetz,3957862,5489,"when (if ever) duplexes, and 3-4 unit buildings, became allowed on single-family lots; by right or by permit; which districts",,,,,,,,,

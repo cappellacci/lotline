@@ -54,3 +54,29 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   - Pasadena stays pending.
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
+- `oh-adu-lookups-todo.csv` and `oh-mm-lookups-todo.csv` (2026-10-26, Ohio thread 11, S2/S4): Ohio's 40 largest
+  places and the Franklin County places of 5,000+ people (the ones `franklin_permits` covers), largest first. A
+  place appears if a rule is uncoded or a coded row has an open question (named in `need`). The ADU table also
+  says what ADU permit data Lotline has (`adu_permit_data_now`) and asks where yearly ADU permit counts could
+  come from: the big markets (Cleveland, Toledo, Akron, Dayton …) have none. Places on American Legal answer
+  scripts with HTTP 403, so they need a browser. Confirmed rows are then coded into `config/reforms/oh.csv`.
+- `oh-rules-tracker.csv` (2026-10-27): Ben's working list for the two Ohio tables above, one row per place,
+  ranked by what a found rule adds. **Priority 1**: Columbus's yearly ADU counts, Euclid (likely Ohio's second
+  missing-middle event) and the Franklin County places whose ADU permits are already flagged (a dated ADU rule
+  puts each straight into the ADU panel). **Priority 2**: the largest cities: Cleveland and Toledo (dates of
+  recent reforms), Dayton (missing middle) and the five with no ADU rule coded (Akron, Parma, Canton, Lorain,
+  Cuyahoga Falls). **Priority 3**: everyone else, largest first. `what_to_check` says what to look for;
+  `udo_name`, `udo_url`, `adu_first_allowed`, `mm_first_allowed`, `status` and `ben_notes` are for Ben. The
+  detailed fields stay in the two tables above. Built once from those tables, `config/reforms/oh.csv` and the
+  processed `jurisdictions` table.
+  **2026-10-28:** merged Ben's agentic research workbook (`lotline-data/manual/ohio/`, kept outside the repo
+  with the PDFs it saved): `status` is now `researched: lead to confirm`, `researched: nothing found` or
+  `not researched`; `research_*` columns hold its findings, dated ordinances, open questions and evidence
+  URLs (`research_sources`, IDs from its evidence register); `next_step` says what would close each lead;
+  `udo_url` was filled from its code links where empty. The workbook marks most first-permission dates
+  unresolved, so nothing was coded from it yet.
+  **Later on 2026-10-28:** Ben's Columbus/Euclid pilot workbook (Desktop) was merged too. Euclid's Ord. 120-2024
+  (two-family by right in the former single-family U1 district, effective 2024-11-06) is coded as
+  `OH-3925704-missing_middle-2024`, Ohio's second missing-middle event; Columbus's ADU effective date was
+  corrected to the city's 2025-12-24. Dublin's §153.059 was checked (Bridge Street District only: no
+  conflict) and Hamilton's coded row kept (Ben: the 2023 amendment did not pass).

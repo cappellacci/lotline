@@ -34,6 +34,20 @@ PLACES = {  # Ohio's 20 largest places (2020 census), the ADU rule round of 2026
     "3925704": "Euclid",
     "3922694": "Dublin",
 }
+ROUND_2 = {  # the 2026-10-26 round: places 21-40 and the Franklin County places in franklin_permits
+    "3929106": "Gahanna",
+    "3906278": "Bexley",  # 2026-10-30: Franklin suburbs from Ben's research
+    "3984742": "Whitehall",
+    "3986604": "Worthington",
+    "3979002": "Upper Arlington",
+    "3953970": "New Albany",
+    "3957862": "Obetz",
+    "3932606": "Groveport",
+    "3935476": "Hilliard",
+    "3941720": "Lancaster",  # 2026-10-30: other places from Ben's research
+    "3916014": "Cleveland Heights",
+    "3927048": "Findlay",
+}
 
 
 def _read() -> pd.DataFrame:
@@ -57,7 +71,7 @@ def test_header_is_the_canonical_column_list():
 def test_rows_validate(reforms):
     assert len(reforms) >= 4
     assert (reforms["state"] == "OH").all()
-    assert set(reforms["jurisdiction_geoid"]) <= set(PLACES) | {"39"}
+    assert set(reforms["jurisdiction_geoid"]) <= set(PLACES) | set(ROUND_2) | {"39"}
 
 
 def test_every_row_has_an_https_source(reforms):
@@ -88,7 +102,13 @@ def test_columbus_adu_rubric(reforms):
     adu = reforms.set_index("reform_id").loc["OH-3918000-adu-2025"]
     assert adu.by_right and not adu.owner_occ and adu.adu_detached_allowed
     assert adu.adus_per_lot == 1 and adu.parking_min_per_unit == 0
-    assert adu.effective_date == pd.Timestamp("2025-12-25")
+    assert adu.effective_date == pd.Timestamp("2025-12-24")  # the city's BZS notice
+
+
+def test_euclid_missing_middle_rubric(reforms):
+    mm = reforms.set_index("reform_id").loc["OH-3925704-missing_middle-2024"]
+    assert mm.by_right and mm.unit_cap == 2 and mm.min_lot_sqft == 5000
+    assert mm.effective_date == pd.Timestamp("2024-11-06") and mm.coverage_zones == "U1"
 
 
 def test_single_coder_rows_have_no_second_coder(reforms):
