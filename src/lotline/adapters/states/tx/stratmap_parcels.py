@@ -30,9 +30,16 @@ site addresses (`situs_*`) and the legal description are in the same records but
   counts once.
 - **Land use:** the state category code `stat_land_use` (the Comptroller's PTAD codes A1, B2, C1 ...) through
   `config/crosswalks/tx_ptad_land_use.csv`, tried as the full code, its first two characters, then its first
-  (as in `tcad_parcels`). Blank or unmatched → UNKNOWN; the county's own code (`loc_land_use`) is kept in
-  `land_use_raw` when the state code is blank, for county crosswalks later. Counties with too little known
-  land use stay on the ACS denominator by the D-017 gate (`build/eligible`), not here.
+  (as in `tcad_parcels`). A code still unmatched (a district's own subdivision of a state code, such as
+  Harris's Z1-Z5, or the county's own `loc_land_use` when the state code is blank) is looked up per county in
+  `config/crosswalks/tx_county_land_use.csv`. Only rows marked `applied = yes` are used: counties whose code
+  field holds the district's own state-category (use) codes, documented in its export layout (Johnson,
+  Wichita), at high confidence. In most counties that field holds land-type (valuation) codes. Reading those
+  as uses would overcount house lots: Williamson's RES is about 87% single-family. Mapping only a county's
+  non-residential codes would lift places over the D-017 gate while their house lots stay unknown. Those rows
+  stay in the file (`applied = no`) as a research record. Anything else → UNKNOWN; `land_use_raw` keeps the
+  code. Counties with too little known land use stay on the ACS denominator by the D-017 gate
+  (`build/eligible`), not here.
 - **Lot size:** `legal_area` in its stated unit (`lgl_area_unit`: acres ×43,560, square feet ×1, square
   metres ×10.7639); else `gis_area` in its unit; else the polygon's own area, on an equal-area projection
   (Albers) as drawn and on Web Mercator corrected to true area at the centroid's latitude
@@ -47,7 +54,10 @@ site addresses (`situs_*`) and the legal description are in the same records but
   registration has no vintage. `vintage_date` = the vintage folder when it is a date.
 - **Jurisdiction:** the parcel's centroid placed with `lotline.geo.place_or_township` (TIGERweb incorporated
   places); a centroid in no place, or in a place that is not a Texas jurisdiction, goes to its county's
-  remainder (the county GEOID). Units, building area and homestead are not in StratMap: left null.
+  remainder (the county GEOID) when that remainder is a Texas jurisdiction (a BPS reporter). Parcels in
+  neither are left out: their area issues no permits we observe, so no estimate uses them (before 2026-10-30
+  they were kept under the county GEOID and showed up as 72 non-jurisdiction rows in `eligible_parcels`).
+  Units, building area and homestead are not in StratMap: left null.
 - **Partial extracts:** a county's part of a release with fewer than `min_county_roll_completeness` (0.8,
   config/params/parcels.yaml) of the parcels the county has in the other release read is left out of that
   release, with every jurisdiction that has parcels in it (`drop_partial_counties`); in 2019, Harris (0.66)
@@ -80,6 +90,7 @@ LANDING_URL = "https://data.geographic.texas.gov/collection/?c=1d33dafb-6e9c-40a
 LICENSE = "CC0 1.0 (TxGIO StratMap Land Parcels)"
 COLLECTION_URL = "https://data.geographic.texas.gov/collection/?c={}"
 LAND_USE_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_ptad_land_use.csv"
+COUNTY_LAND_USE = CONFIG_DIR / "crosswalks" / "tx_county_land_use.csv"
 SQFT_PER_ACRE = 43_560  # definition of the acre
 SQFT_PER_SQM = 10.763910  # 1 / 0.3048**2
 MIN_YEAR_BUILT = 1800
@@ -122,11 +133,14 @@ PROVENANCE = {
         "the .dbf or the geodatabase table); owner names, mailing and site addresses and legal descriptions "
         "are never decoded",
         "land_use_std from the PTAD state code (stat_land_use) via config/crosswalks/tx_ptad_land_use.csv; "
-        "blank or unmatched -> UNKNOWN",
+        "codes it does not match (district subcodes, or loc_land_use when the state code is blank) via the "
+        "per-county config/crosswalks/tx_county_land_use.csv (rows marked applied: Johnson, Wichita); "
+        "otherwise UNKNOWN",
         "lot_sqft from legal_area, else gis_area, in their stated units, else the polygon's true area "
         "(equal-area projection, or Web Mercator corrected for latitude)",
         "jurisdiction_geoid = incorporated place holding the polygon centroid (lotline.geo), else the county "
-        "remainder; parcel_id = county GEOID + prop_id; one row per parcel and roll (largest polygon)",
+        "remainder when it is a Texas jurisdiction; parcels in neither are left out; parcel_id = county "
+        "GEOID + prop_id; one row per parcel and roll (largest polygon)",
         "value_basis = appraisal; no sale prices (Texas non-disclosure)",
         "Rolls read: 2019-03 and 2025-06 (ROLLS), each release one roll at its release year; a county part "
         "with under 80% of the county's parcels in the other release (min_county_roll_completeness) is left "
@@ -147,6 +161,26 @@ PROVENANCE = {
 def load_land_use_crosswalk(path: Path = LAND_USE_CROSSWALK) -> dict[str, str]:
     with open(path, newline="") as fh:
         return {r["ptad_code"].strip().upper(): r["land_use_std"].strip() for r in csv.DictReader(fh)}
+
+
+def load_county_land_use(path: Path = COUNTY_LAND_USE) -> dict[str, str]:
+    """ "county_geoid|code" -> land_use_std from the per-county crosswalk's applied rows."""
+    if not path.exists():
+        return {}
+    with open(path, newline="") as fh:
+        return {
+            f"{r['county_geoid'].strip()}|{r['code'].strip().upper()}": r["land_use_std"].strip()
+            for r in csv.DictReader(fh)
+            if r.get("applied", "").strip().lower() == "yes" and r["land_use_std"].strip() != "UNKNOWN"
+        }
+
+
+def county_land_use(std: pd.Series, county: pd.Series, code: pd.Series, local: dict) -> pd.Series:
+    """Fill UNKNOWN land use from the county crosswalk where the county's code is listed."""
+    if not local:
+        return std
+    found = (county.fillna("") + "|" + code.fillna("").str.strip()).map(local)
+    return std.where((std != "UNKNOWN") | found.isna(), found)
 
 
 def land_use(code: str, crosswalk: dict[str, str]) -> str:
@@ -220,6 +254,7 @@ def one_per_parcel(df: pd.DataFrame) -> pd.DataFrame:
 def rows(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_unit2=None) -> pd.DataFrame:
     """Attribute rows → parcels rows with their polygon area (`_area`), one per polygon."""
     crosswalk = load_land_use_crosswalk()
+    local = load_county_land_use()
     get = lambda c: df[c].astype("string").fillna("") if c in df else pd.Series("", index=df.index)  # noqa: E731
     fips = get("fips").str.replace(r"\D", "", regex=True).str[-3:].str.zfill(3)
     county = ("48" + fips).where(fips.str.fullmatch(r"\d{3}") & (fips != "000"))
@@ -242,7 +277,9 @@ def rows(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_un
             "vintage_date": pd.Series(vintage_date, index=df.index, dtype="datetime64[ns]"),
             "county_geoid": county.astype("string"),
             "lot_sqft": lot_sqft(df, sqm_per_unit2),
-            "land_use_std": stat.map(lambda c: land_use(c, crosswalk)),
+            "land_use_std": county_land_use(
+                stat.map(lambda c: land_use(c, crosswalk)), county, raw_code, local
+            ),
             "land_use_raw": raw_code.replace("", pd.NA),
             "units": pd.Series(pd.NA, index=df.index, dtype="Int64"),
             "year_built": built.round().astype("Int64"),
@@ -259,10 +296,13 @@ def rows(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_un
 
 
 def resolve_jurisdictions(county_geoid: pd.Series, place: pd.Series, known: set[str]) -> pd.Series:
-    """The place holding the centroid when it is a known jurisdiction, else the county remainder."""
+    """The place holding the centroid when it is a known jurisdiction, else the county remainder when that is
+    one, else missing."""
     place = place.astype("string")
+    county = county_geoid.astype("string")
     ok = place.notna() & place.isin(known).fillna(False)
-    return place.where(ok, county_geoid.astype("string"))
+    county = county.where(county.isin(known).fillna(False))
+    return place.where(ok, county)
 
 
 def assign_jurisdictions(df: pd.DataFrame, store: DataStore) -> pd.DataFrame:
@@ -273,7 +313,8 @@ def assign_jurisdictions(df: pd.DataFrame, store: DataStore) -> pd.DataFrame:
     if juris is None:
         juris = jur.load("TX", store)
     place = geo.place_or_township(df["lon"], df["lat"], "TX", store)
-    return df.assign(jurisdiction_geoid=resolve_jurisdictions(df["county_geoid"], place, set(juris["geoid"])))
+    geoid = resolve_jurisdictions(df["county_geoid"], place, set(juris["geoid"]))
+    return df.assign(jurisdiction_geoid=geoid).loc[geoid.notna()]
 
 
 def read_roll(path: Path, *, vintage: int | None, vintage_date=None) -> pd.DataFrame:

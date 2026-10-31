@@ -172,3 +172,17 @@ def test_ben_lookups_2026_10_30(reforms):
     assert r.at["TX-4856348-adu-2006", "adus_per_lot"] == 0  # Pearland: CUP only
     assert r.at["TX-4858016-missing_middle-2010", "unit_cap"] == 1  # Plano: no duplex in SF districts
     assert r.at["TX-4803000-missing_middle-2010", "unit_cap"] == 1  # Amarillo: R-3 is two-family
+
+
+def test_second_coder_review_2026_10_30(reforms):
+    r = reforms.set_index("reform_id")
+    for rid in ("TX-4801000-adu-2010", "TX-4815976-adu-2023"):
+        assert r.at[rid, "coder_agreement"] == "agree"
+        assert r.at[rid, "coder_2"] == "ben-review"
+    # League City: set to pending by the review, then back in force on Ben's second batch (Ord. 2026-10,
+    # effective on passage 2026-05-26; Planning Director approval, so by right)
+    assert r.at["TX-4841980-adu-2026", "status"] == "in_force"
+    assert r.at["TX-4841980-adu-2026", "by_right"] == True  # noqa: E712
+    # Tyler: garage apartments in R-1C/R-1D by 2010, renamed from TX-4874144-adu-2011
+    assert r.at["TX-4874144-adu-2010", "effective_date"] == pd.Timestamp("2010-01-01")
+    assert "TX-4874144-adu-2011" not in r.index
