@@ -21,7 +21,8 @@ always quality `low` (protocol §6: "fall back to ACS SF units"). Every number c
 config/params/eligibility.yaml.
 
 A jurisdiction counted from parcels has a real count only in its roll year(s). `scale_history` fills its other
-ACS years from its own ACS series scaled to the roll(s), flagged `parcels_scaled_acs` (#208), so engines that
+ACS years from its own ACS series scaled to the roll(s), flagged `parcels_scaled_acs` (#208), or, between two
+rolls, by interpolating the real counts (`parcels_interpolated`, D-035 addendum), so engines that
 need the 2010-2024 level window have a denominator in every year.
 """
 
@@ -36,7 +37,8 @@ from lotline.schemas import columns, validate
 
 RULE_VERSION = "1.1"  # 1.1: vacant SF-zoned lots count for missing middle (D-014)
 THEMES = ("adu", "missing_middle")
-PARCEL_SOURCES = ("parcels", "parcels_scaled_acs")  # counted from a roll, or scaled to one (#208)
+# counted from a roll, interpolated between two rolls, or scaled to one (#208)
+PARCEL_SOURCES = ("parcels", "parcels_interpolated", "parcels_scaled_acs")
 ACS_SF_DETACHED = "B25024_002"  # units in structure: 1, detached
 EXCLUSIONS = {
     "hoa": "exclude_hoa",
@@ -299,14 +301,19 @@ def scale_history(
     1. Each roll year r is an **anchor**: scale factor f_r = parcels_r / ACS_a, where a is the ACS end year
        nearest r (r itself if released; the later on a tie), at most `scale_max_year_gap` years away. An
        anchor whose ACS count is 0 or missing is skipped.
-    2. For every ACS end year t that has no roll: f(t) is f_r at a single anchor; with two or more, linear
-       in t between neighbouring anchors and held at the first / last anchor's value outside them.
-    3. The filled count is round(ACS_t · f(t)), `denominator_source = "parcels_scaled_acs"`, with the
-       `denominator_quality` of the nearest anchor (the earlier on a tie).
+    2. **Between two rolls** (an ACS end year t after the first roll year and before the last), the count is
+       the real counts interpolated linearly between the neighbouring roll years, rounded,
+       `denominator_source = "parcels_interpolated"` (D-035 addendum, 2026-11-01: ACS's sampling noise is
+       larger than the year-to-year change in a built-out place, so real counts on both sides beat a scaled
+       ACS estimate between them).
+    3. **Before the first roll or after the last**, f(t) is the first / last anchor's factor (the only one,
+       with a single roll), and the count is round(ACS_t · f(t)), `denominator_source = "parcels_scaled_acs"`.
+    Either way the row takes the `denominator_quality` of the nearest roll (the earlier on a tie).
 
-    A real roll year always keeps its real count. Jurisdictions with no usable anchor get no filled rows.
-    By hand: rolls 2019 (90 parcels, ACS 100 -> f 0.9) and 2023 (110, ACS 100 -> f 1.1); ACS 2021 = 200 ->
-    f 1.0, 200; ACS 2010 = 50 -> f 0.9, 45; ACS 2024 = 120 -> f 1.1, 132.
+    A real roll year always keeps its real count. Jurisdictions with no usable anchor and fewer than two rolls
+    get no filled rows. By hand: rolls 2019 (90 parcels, ACS 100 -> f 0.9) and 2023 (110, ACS 100 -> f 1.1);
+    2021 is halfway between the rolls -> 100 (interpolated), 2020 -> 95; ACS 2010 = 50 -> f 0.9, 45;
+    ACS 2024 = 120 -> f 1.1, 132.
     Returns only the filled rows, in the `eligible_parcels` schema.
     """
     p = params or load_params("eligibility")
@@ -327,17 +334,28 @@ def scale_history(
             if a is None or not series[a] > 0:
                 continue
             anchors.append((int(r.year), float(r.eligible_parcels) / float(series[a]), r.denominator_quality))
-        if not anchors:
+        rolls = g.sort_values("year")
+        roll_years = rolls["year"].astype(int).to_numpy()
+        roll_counts = rolls["eligible_parcels"].astype(float).to_numpy()
+        if not anchors and len(roll_years) < 2:
             continue
         xs = np.array([a[0] for a in anchors], dtype=float)
         fs = np.array([a[1] for a in anchors], dtype=float)
         first = g.iloc[0]
-        real = set(g["year"].astype(int))
+        real = set(roll_years)
         for t in acs_years:
             if t in real:
                 continue
-            factor = float(np.interp(t, xs, fs))  # flat beyond the first and last anchor
-            nearest = min(anchors, key=lambda a: (abs(a[0] - t), a[0]))
+            nearest = min(
+                zip(roll_years, rolls["denominator_quality"], strict=True),
+                key=lambda r: (abs(r[0] - t), r[0]),
+            )
+            if roll_years[0] < t < roll_years[-1]:  # between two real rolls: interpolate the real counts
+                count, source = float(np.interp(t, roll_years, roll_counts)), "parcels_interpolated"
+            elif anchors:  # before the first roll or after the last: ACS scaled flat to that roll
+                count, source = series[t] * float(np.interp(t, xs, fs)), "parcels_scaled_acs"
+            else:
+                continue
             rows.append(
                 {
                     "state": first["state"],
@@ -345,10 +363,10 @@ def scale_history(
                     "year": t,
                     "theme": theme,
                     "rule_version": first["rule_version"],
-                    "eligible_parcels": int(round(series[t] * factor)),
+                    "eligible_parcels": int(round(count)),
                     "data_tier": int(first["data_tier"]),
-                    "denominator_source": "parcels_scaled_acs",
-                    "denominator_quality": nearest[2],
+                    "denominator_source": source,
+                    "denominator_quality": nearest[1],
                 }
             )
     return validate(pd.DataFrame(rows, columns=columns("eligible_parcels")), "eligible_parcels")

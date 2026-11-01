@@ -1367,6 +1367,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Limits:** the factor carries the roll's mix (vacant lots, zoning, exclusions) back in time unchanged, and ACS
   sampling noise moves the filled years. Rolls newer than ACS (NC OneMap 2026) anchor the latest ACS year (2024).
 - **Decided by:** Ben, 2026-10-21 (option 1 in #208, real rolls kept wherever they exist).
+- **Addendum 2026-11-01: interpolate between two real rolls.**
+  - **Found:** with yearly county rolls (Franklin 2016–2025, Montgomery 2011–2026) and Wake's 2019 and 2023 rolls,
+    the scaled years between real rolls moved with ACS sampling noise rather than with the parcels. Dayton's 2020
+    came out at 45,399 against real counts of 43,819 (2018) and 43,669 (2021). Wake's fast-growing towns lagged
+    their real growth between 2019 and 2023 by up to 14%.
+  - **Now:** a year strictly between two real roll years takes the real counts interpolated linearly, rounded,
+    with `denominator_source = "parcels_interpolated"` (new schema value, schemas 1.9; `PARCEL_SOURCES` includes
+    it). Years before the first roll or after the last keep the scaled ACS series.
+  - **Effect:** 13 OH jurisdictions (all Montgomery: Dayton 2020 → 43,719) and 13 NC jurisdictions (Wake towns,
+    2020–2022; Raleigh +1–1.3%) change. Single-roll places are unchanged.
+  - **Decided by:** Ben, 2026-11-01 (WS-OH Montgomery review, decision 5: "separate PR").
 
 ### D-036 · 2026-10-26 · Repeated project totals on permits with no parcel number (amends D-008, #221)
 - **Was (D-008):** permits with no `parcel_id` were never grouped. Fort Worth (`fw_permits`) and Dallas
