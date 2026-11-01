@@ -47,6 +47,7 @@ ROUND_2 = {  # the 2026-10-26 round: places 21-40 and the Franklin County places
     "3941720": "Lancaster",  # 2026-10-30: other places from Ben's research
     "3916014": "Cleveland Heights",
     "3927048": "Findlay",
+    "3931304": "Grandview Heights",  # 2026-11-01: Ben's research agent
 }
 
 
@@ -141,6 +142,8 @@ def test_ended_rules_hand_over_to_their_successor(reforms):
         ("3921000", "2024-12-31", "partial"),  # conditional use
         ("3954040", "2025-12-31", "none"),
         ("3974118", "2025-12-31", "partial"),
+        ("3919778", "2012-12-31", "partial"),  # Cuyahoga Falls: pre-window, some districts only
+        ("3931304", "2025-12-31", "none"),
     ],
 )
 def test_scenario_reads_the_rule_class(geoid, as_of, expected):
