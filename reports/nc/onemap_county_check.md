@@ -5,6 +5,7 @@
 **Rule used to accept a drafted county:** a ratio between 0.6 and 1.4. The first drafts of nine counties fell outside it.
 
 - **Fixed and kept (3):** Columbus (0.32 → 0.99: houses are in the building-type field `parusedsc2`, not the land-use class "OCCUPIED RURAL"), Wayne (1.66 → 1.09) and Montgomery (2.55 → 1.28): the vacant rule was off, so lots with no building counted as houses. Their fields are set by hand (`OVERRIDES` in `scripts/dev/nc_onemap_crosswalks.py`).
+- **Rural houses (2026-10-23):** Bladen (0.70 → 1.24) and Madison (0.72 → 1.03) coded "RURAL IMPROVED" (a rural parcel with a building) as farmland, so their unincorporated remainders looked half-empty (Bladen 0.42). The new `rural_home` keyword rule in `onemap_codes.py` reads "RURAL IMPROVED", "IMPROVED RURAL" and "OCCUPIED RURAL" as a house; Columbus uses it only where `parusedsc2` is blank (0.99 → 1.00). Bladen's 1.24 is within the band; its rural class likely includes some mobile homes.
 - **Left out (6), on the ACS fallback (`EXCLUDED`):** Pender, Bertie and Greene (one broad "Residential" class: improved parcels match ACS houses *plus* mobile homes, about 1.5–1.6 ×), Hertford (2.10 ×), and Halifax and Sampson (one broad class and no building values).
 
 **Read with care:** Mecklenburg's ratio is low because Charlotte and the unincorporated county are held out (V5). Wake's 1.24 is the known OneMap coding of townhouses as detached; Wake places count from the Wake roll instead. Cabarrus sends no land-use code (all unknown). A ratio below 1 in a drafted county is mostly parcels left `UNKNOWN` (a bare "Vacant" label); D-017 then sends the jurisdictions concerned to the ACS fallback.
@@ -13,9 +14,9 @@
 |---|---|---:|---:|---:|---:|---:|
 | Mecklenburg (37119) | hand | 77,715 | 0% | 52,776 | 275,566 | 0.19 |
 | Davidson (37057) | drafted | 98,494 | 45% | 37,405 | 56,950 | 0.66 |
-| Bladen (37017) | drafted | 31,467 | 2% | 6,625 | 9,458 | 0.70 |
+| Bladen (37017) | drafted, rural_home rule | 31,467 | 2% | 11,711 | 9,458 | 1.24 |
 | Carteret (37031) | drafted | 63,503 | 45% | 22,415 | 31,696 | 0.71 |
-| Madison (37115) | drafted | 19,709 | 5% | 5,899 | 8,139 | 0.72 |
+| Madison (37115) | drafted, rural_home rule | 19,709 | 5% | 8,363 | 8,139 | 1.03 |
 | Buncombe (37021) | hand | 134,729 | 1% | 70,306 | 85,741 | 0.82 |
 | Forsyth (37067) | hand | 166,755 | 0% | 108,828 | 117,350 | 0.93 |
 | Vance (37181) | drafted | 26,344 | 1% | 11,703 | 12,373 | 0.95 |
@@ -25,7 +26,7 @@
 | Henderson (37089) | drafted | 68,298 | 23% | 39,495 | 40,244 | 0.98 |
 | Lenoir (37107) | drafted | 35,978 | 40% | 16,036 | 16,306 | 0.98 |
 | New Hanover (37129) | drafted | 103,409 | 0% | 72,099 | 73,298 | 0.98 |
-| Columbus (37047) | drafted, fields by hand | 51,704 | 2% | 14,513 | 14,606 | 0.99 |
+| Columbus (37047) | drafted, fields by hand | 51,704 | 2% | 14,590 | 14,606 | 1.00 |
 | Watauga (37189) | drafted | 46,252 | 0% | 21,269 | 21,202 | 1.00 |
 | Cumberland (37051) | hand | 132,422 | 0% | 93,915 | 93,087 | 1.01 |
 | Alamance (37001) | drafted | 79,387 | 13% | 51,007 | 50,549 | 1.01 |

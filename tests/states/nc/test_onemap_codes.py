@@ -40,6 +40,9 @@ from lotline.adapters.states.nc import onemap_codes as oc
         ("Exempt Religious", "INSTITUTIONAL"),
         ("Public Utilities", "OTHER"),
         ("GENERAL FARM - PRESENT US", "AGRICULTURAL"),
+        ("RURAL IMPROVED", "SF_DETACHED"),  # a house on rural acreage (Bladen, Madison)
+        ("OCCUPIED RURAL", "SF_DETACHED"),  # Columbus
+        ("VACANT RURAL", "AGRICULTURAL"),
         ("Eating Place-Consumption", "COMMERCIAL"),
         ("958", None),  # a bare numeric code has no label to read
         ("", None),

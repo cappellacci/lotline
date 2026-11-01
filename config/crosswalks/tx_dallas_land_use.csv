@@ -1,0 +1,4 @@
+land_use,building_type_std,role,derived_units,notes
+SINGLE FAMILY DWELLING,SFD,dwelling,1,"One permit per house. UNITS is 1 on most permits from 1992 on; 10 and 20 on many 1975-1982 permits (old coding), read as not fitting"
+TWO FAMILY DWELLING,U2,dwelling,2,"Duplex. UNITS 2 on most permits; 1-2 taken as reported (1 = one permit per half); else 2"
+MULTI-FAMILY DWELLING,UNKNOWN,multi,,"Apartment and townhouse buildings: type and units from UNITS when it is 2 or more. Some projects repeat the project total on every building's permit (D-008, issue #221)"

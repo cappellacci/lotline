@@ -86,6 +86,9 @@ RULES: list[tuple[str, str, str]] = [
         r"SINGLE[ -]?FAM|\b1[ -]?FAM|ONE[ -]?FAM|\bSFR?\b|\bSFD\b|DWELLING|"
         r"RESIDEN|\bRES\b|\bHOUSE\b|RANCH|COTTAGE|BUNGALOW|MODULAR|\bR-?1\b",
     ),
+    # A rural parcel with a building is almost always a house on acreage (Bladen, Madison, Columbus): checked
+    # against ACS one-unit homes on 2026-10-23.
+    ("rural_home", "SF_DETACHED", r"\bRURAL IMPROVED|\bIMPROVED RURAL|\bOCCUPIED RURAL"),
     (
         "agricultural",
         "AGRICULTURAL",

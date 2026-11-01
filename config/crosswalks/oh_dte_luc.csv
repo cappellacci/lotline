@@ -283,6 +283,7 @@ state_luc,label,land_use_std,basis
 630,Exm-Township,INSTITUTIONAL,DTE 6xx exempt
 631,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
 640,Exm-Municipality,INSTITUTIONAL,DTE 6xx exempt
+641,Exm-Custom Code,INSTITUTIONAL,"DTE 6xx exempt; Cuyahoga Fiscal Office exempt code 6411 (municipal and land-bank property, 18,593 Cleveland parcels on 2026-10-26)"
 644,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
 645,Exm-Metro Housing,INSTITUTIONAL,DTE 645 exempt: metropolitan housing authority (structure type unknown)
 646,Exm-Custom Code,INSTITUTIONAL,county custom code in the DTE exempt band
