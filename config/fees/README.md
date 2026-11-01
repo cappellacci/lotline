@@ -17,6 +17,19 @@ band does not contain the prototype, or when a share of the permit fee has no co
 any building type; their valuation-based amounts are worked out for the single-family prototype. `notes` names
 the conversion rule for every row.
 
+**Fees that vary by area, basin, tier or plat date (Ben, 2026-10-30).** Only one row of such a group carries
+`amount_per_unit_usd`. The other rows keep their schedule amounts with `amount_per_unit_usd` blank, and the
+central row's `notes` give the group's low and high as the range.
+- **Areas, basins and density tiers:** the median row is central. With an even count, the central value is the
+  median of the amounts, carried by the row nearest it, the lower one on a tie.
+- **Plat-date cohorts:** the newest cohort is central, because most new homes go on recently platted lots; the
+  older cohorts are the low end.
+- **Texas cases** (`scripts/dev/tx_fee_rule_2026_10_30.py`): SAWS water by elevation area and wastewater by
+  basin; Austin parkland by density tier; Austin water and wastewater impact fees by plat date; Fort Worth by
+  plat cohort.
+- The fee scenario sums `amount_per_unit_usd`, so it uses the central value; using the range needs an engine
+  change (WS-CORE).
+
 **Batch 1 (2026-10-20).** `mn.csv`, `nc.csv` and `tx.csv` come from `docs/research/ordinances/batch1-2026-10-20.json`
 (15 of 23 cities have usable rows). Rebuild with `uv run python scripts/dev/ordinance_records.py`. No row is
 checker-verified yet: `verified_by` is blank until the checker's verdicts are stored.

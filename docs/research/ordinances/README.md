@@ -76,7 +76,8 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   - Notes for Denton, McKinney, Killeen, Lewisville and Edinburg.
   - SAWS 2015-2019 water totals noted on the 2014-schedule rows; Houston's pre-2021 water rate as a new row.
   - Replay order of the Texas scripts: `tx_research_2026_10_29`, `tx_corrections_2026_10_30`,
-    `tx_ben_lookups_2026_10_30`, `tx_second_coder_2026_10_30`, `tx_ben_lookups_2026_10_30b`. Rerunning all five
-    leaves the files unchanged (checked 2026-10-30).
+    `tx_ben_lookups_2026_10_30`, `tx_second_coder_2026_10_30`, `tx_ben_lookups_2026_10_30b`, then
+    `tx_fee_rule_2026_10_30` (Ben's rule for fees that vary by area or plat date, `config/fees/README.md`).
+    Rerunning them all leaves the files unchanged (checked 2026-10-30).
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).
