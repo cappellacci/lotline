@@ -48,6 +48,7 @@ ROUND_2 = {  # the 2026-10-26 round: places 21-40 and the Franklin County places
     "3916014": "Cleveland Heights",
     "3927048": "Findlay",
     "3931304": "Grandview Heights",  # 2026-11-01: Ben's research agent
+    "3932592": "Grove City",
 }
 
 
