@@ -28,9 +28,15 @@ Buildings", 105 "Five or More Family Buildings", 106 manufactured home, 645-649 
 Demolitions (645-649 or a "Demolition" permit type) get `units_new = 0` and `units_removed` from `UNITS` where
 it fits the code, else from the code (645 → 1, 646 → 2); 649 (nonresidential) leaves units removed unknown.
 
-**ADUs cannot be identified.** The layer has no ADU flag and no work-description field, so the shared
-description parser (`lotline.parse.permit_text`) has nothing to read; an ADU permit is filed under
-whatever Census code the city assigned. `adu_type` stays null. See PROVENANCE.
+**ADUs from the Franklin County Auditor's permit file.** The layer has no ADU flag and no work description,
+and the city files most ADUs (carriage houses) as new single-family houses (code 101) or as additions and
+alterations (434). The auditor's permit file carries the same permit numbers with the city's work description,
+and `franklin_permits.adu_flags` reads ADUs from it with named rules. Every flagged permit number is also
+downloaded from this layer (`B1_ALT_ID IN (...)`, whatever its type), and a permit whose number matches a
+flag (and, for an all-digit legacy number, its parcel too) becomes `ADU` (1 unit, inferred; `adu_type` from
+the flag). MEP (trade) permits are never relabelled, and a permit downloaded only because of a flag (outside
+`WHERE`) stays out unless relabelled. A flag whose permit number is not in the layer (2015 permits under
+legacy numbers) is not added. See PROVENANCE.
 
 Only non-personal fields are requested: no applicant names, business names, site address, ZIP or
 permit-portal links.
@@ -141,13 +147,17 @@ PROVENANCE = {
         "UNITS where it fits the code, else 645 → 1, 646 → 2; 649 and nonresidential demolitions unknown",
         "final_date is LAST_STATUS_DT when the status is 'Certificate of Occupancy Issued' or 'Final "
         "Inspection Approved' (a proxy: the date of the last status change)",
+        "ADUs: permit numbers flagged by franklin_permits.adu_flags (Franklin County Auditor permit file, "
+        "work descriptions) are also downloaded; a match on permit number (and parcel, for all-digit "
+        "numbers) that is not an MEP permit becomes ADU (1 unit, inferred, adu_type from the flag)",
         "CONST_TYPE_CODE and GENERAL_TYPE copied to permit_class_raw",
         "Every row is assigned to Columbus (3918000), the permit-issuing city",
         "Holdout filter applied (Ohio has no holdouts; called for uniformity)",
     ],
     "limitations": [
-        "ADUs cannot be identified: no ADU flag, sub-type or work description exists in the layer, so an ADU "
-        "permit is counted under whatever Census code the city assigned it, and adu_type is null",
+        "ADUs are known only where the auditor's file has the permit and its description names the ADU "
+        "(franklin_permits rules); flags under legacy permit numbers that the layer lacks (2015) are not "
+        "added, so ADU counts before 2016 are low",
         "Five-or-more and three-or-four family permits without a plausible UNITS value have unknown units "
         "(null), not zero",
         "Nonresidential new buildings (3xx codes) often carry a UNITS value (e.g. mixed-use or hotel rooms); "
@@ -202,8 +212,16 @@ def classify(code, general_type) -> tuple[str, str, int | None, bool]:
     return "UNKNOWN", "unknown", None, False
 
 
-def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
-    """Raw layer attributes → canonical permits rows (before the holdout filter)."""
+def _parcel_digits(values: pd.Series) -> pd.Series:
+    """'010-191395-00' and '010191395' → '010191395' (district + parcel number)."""
+    return values.astype("string").str.replace(r"\D", "", regex=True).str[:9].replace("", pd.NA)
+
+
+def build(raw: pd.DataFrame, state: str = "OH", adu: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Raw layer attributes → canonical permits rows (before the holdout filter).
+
+    `adu`: flags from `franklin_permits.adu_flags` (permit_no, parcel, adu_type); None leaves ADUs unknown.
+    """
     df = raw.copy()
     df["issue_date"] = _dates(df["ISSUED_DT"])
     status = _text(df["B1_APPL_STATUS"]).str.lower()
@@ -265,29 +283,62 @@ def build(raw: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
     out["units_new"] = out["units_new"].astype("Int64")
     out["units_removed"] = out["units_removed"].astype("Int64")
     out["is_demolition"] = out["is_demolition"].astype("boolean")
-    out = out.loc[out["permit_id"].notna()]
+    is_adu = pd.Series(False, index=out.index)
+    if adu is not None and len(adu):
+        flags = (
+            adu.assign(digits=_parcel_digits(adu["parcel"]))
+            .drop_duplicates("permit_no")
+            .set_index("permit_no")
+        )
+        hit = out["permit_id"].map(flags["digits"])
+        parcel = _parcel_digits(out["parcel_id"])
+        mep = _text(df["B1_PER_SUB_TYPE"]).eq("MEP").fillna(False).astype(bool)
+        # All-digit legacy numbers can repeat across offices, so they must also match the parcel; lettered
+        # Columbus numbers (NEWR2006425) are unique, and their parcel may differ after a split or combination.
+        lettered = out["permit_id"].str.contains(r"[A-Za-z]", regex=True).fillna(False).astype(bool)
+        same_parcel = (parcel.isna() | parcel.eq(hit)).fillna(False).astype(bool)
+        is_adu = hit.notna() & (lettered | same_parcel) & ~mep
+        out.loc[is_adu, ["building_type_std", "type_confidence", "units_new", "units_confidence"]] = [
+            "ADU",
+            "inferred",
+            1,
+            "inferred",
+        ]
+        out.loc[is_adu, "units_removed"] = pd.NA
+        out.loc[is_adu, "is_demolition"] = False
+        out.loc[is_adu, "adu_type"] = out.loc[is_adu, "permit_id"].map(flags["adu_type"])
+    only_for_flag = df["_adu_only"].fillna(False).astype(bool) if "_adu_only" in df else False
+    out = out.loc[out["permit_id"].notna() & ~(only_for_flag & ~is_adu)]
     # Guard: if a permit number repeats, keep the latest issue (none repeated on 2026-10-15).
     out = out.sort_values(["permit_id", "issue_date"]).drop_duplicates(["state", "permit_id"], keep="last")
     return out.reset_index(drop=True)
 
 
-def download(store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    return download_layer(
-        LAYER_URL,
+def download(store: DataStore, *, refresh: bool = False, adu_ids: list[str] | None = None) -> pd.DataFrame:
+    common = dict(
         store=store,
         source=SOURCE,
         license=LICENSE,
         adapter=ADAPTER,
         adapter_version=VERSION,
-        name="building_permits",
-        where=WHERE,
         out_fields=",".join(OUT_FIELDS),
         refresh=refresh,
     )
+    main = download_layer(LAYER_URL, name="building_permits", where=WHERE, **common)
+    if not adu_ids:
+        return main
+    ids = ",".join("'" + i.replace("'", "''") + "'" for i in sorted(set(adu_ids)))
+    extra = download_layer(LAYER_URL, name="adu_permits", where=f"B1_ALT_ID IN ({ids})", **common)
+    extra = extra.loc[~extra["OBJECTID"].isin(main["OBJECTID"])].assign(_adu_only=True)
+    return pd.concat([main, extra], ignore_index=True)
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    df = build(download(store, refresh=refresh), state=state)
+    from lotline.adapters.states.oh import franklin_permits
+
+    adu = franklin_permits.adu_flags(franklin_permits.download(store, refresh=refresh))
+    raw = download(store, refresh=refresh, adu_ids=adu["permit_no"].tolist())
+    df = build(raw, state=state, adu=adu)
     df = holdout.apply(
         df, state, geoid_col="jurisdiction_geoid", date_col="issue_date", year_col="issue_year"
     )

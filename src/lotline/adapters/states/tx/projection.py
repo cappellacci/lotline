@@ -11,6 +11,8 @@ publishers use:
   USGS Professional Paper 1395, 1987, eqs. 14-1 to 14-21 and 3-16), φ found by the iteration of eq. 3-16;
 - **Web Mercator** (`Mercator_Auxiliary_Sphere`, EPSG:3857): spherical inverse on the semi-major axis.
 
+`sqm_per_unit2` gives the true area of a squared projected unit, so lot size can be measured from a polygon.
+
 Anything else raises `ValueError` naming the projection, so a new one is added on purpose, never guessed.
 NAD83 and WGS84 differ by about a metre in Texas, far below what placing a parcel in a city needs.
 
@@ -104,6 +106,32 @@ def equal_area_sqm_per_unit2(wkt: str) -> float | None:
     m = re.search(r'PROJECTION\["([^"]+)"\]', wkt, flags=re.IGNORECASE)
     if m and m.group(1).lower() in ("albers", "albers_conic_equal_area"):
         return _linear_unit(wkt) ** 2
+    return None
+
+
+def sqm_per_unit2(wkt: str, lat) -> float | np.ndarray | None:
+    """True square metres per squared projected unit at each latitude (degrees), or None if not supported.
+
+    - **Albers** is equal-area: the constant `equal_area_sqm_per_unit2`.
+    - **Web Mercator** stretches area by k_x · k_y. On the ellipsoid, x = aλ against the parallel's true
+      length N cos φ dλ gives k_x = √(1 − e² sin² φ) / cos φ, and y = a ln tan(π/4 + φ/2) against the
+      meridian's a (1 − e²) / (1 − e² sin² φ)^1.5 dφ gives k_y = (1 − e² sin² φ)^1.5 / ((1 − e²) cos φ)
+      (Snyder 1987, chapters 3, 4 and 7). So one squared unit is (1 − e²) cos² φ / (1 − e² sin² φ)²
+      square metres: about 0.75 at 30° N. Exact for a small polygon at its
+      centroid's latitude; a parcel spans too little latitude for the factor to change across it.
+    - Geographic coordinates and anything else: None (the polygon's area is not used).
+    """
+    flat = equal_area_sqm_per_unit2(wkt)
+    if flat is not None:
+        return flat
+    m = re.search(r'PROJECTION\["([^"]+)"\]', wkt, flags=re.IGNORECASE)
+    if m and m.group(1).lower() == "mercator_auxiliary_sphere":
+        _, inv_f = _spheroid(wkt)
+        f = 1 / inv_f
+        e2 = f * (2 - f)
+        phi = np.radians(np.asarray(lat, dtype="float64"))
+        s2 = np.sin(phi) ** 2
+        return _linear_unit(wkt) ** 2 * (1 - e2) * np.cos(phi) ** 2 / (1 - e2 * s2) ** 2
     return None
 
 

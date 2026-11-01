@@ -28,6 +28,71 @@ subdivision (Ohio townships issue permits). The result is then checked against t
    land (the case in Franklin and Hamilton, where the county remainder is the Census permit issuer). These
    counts are reported, not hidden.
 
+**One roll per jurisdiction.** A city spanning two counties whose exports are dated differently (Twinsburg:
+Summit 2026, Cuyahoga 2023) would otherwise get two partial "rolls", one per export year, each counted as the
+whole city. The layer is one current snapshot, so after placement every parcel of a jurisdiction takes the
+latest export date among its counties (`one_vintage_per_jurisdiction`; the later date is the conservative one
+under the snapshot rule).
+
+**County layers.** Where a county auditor publishes its own parcel layer, `COUNTY_LAYERS` names it, and its
+attributes (no geometry) are joined on the parcel ID (`apply_county_attributes`): the county's DTE land-use
+code fills `land_use_std` where the statewide layer has none (`UNKNOWN`), read with the same crosswalk, and
+its residential year built becomes `year_built` (a year from 1700 to now; 0 or blank → unknown). A known
+statewide code is never replaced. Summit County (Akron, Cuyahoga Falls) sends no land use to the statewide
+layer; its Fiscal Office layer lists every parcel twice, identical rows, so the first row per parcel is kept.
+Lucas (Toledo) leaves 55% blank; its Auditor's 2025 land-use layer fills them (no year built). Cuyahoga
+(Cleveland) sends 999 for 12%; its Fiscal Office layer has 4-digit codes (the DTE class plus a county digit,
+read as the first three), an exempt-use code where the tax code is blank (`ext_luc`: Cleveland's 25,000
+land-bank and other exempt parcels) and the year each building was built (`min_age`, the oldest). Butler
+(Hamilton, Middletown) has DTE land use and year built in the county's `CURRENTPARCELS` layer. Franklin
+(Columbus) sends land use already; the Auditor's appraisal `Dwelling.xlsx` adds year built (one row per
+dwelling card; the earliest is kept). A layer with `table` set is an Excel workbook, fetched through the IO
+layer.
+
+**Montgomery County (Dayton): CAMA extract.** Montgomery publishes no parcel land-use layer (its weekly
+geodatabase has only generalized land-use polygons and a building tax class), but the Treasurer's "Cama
+Characteristics" download carries the Auditor's appraisal tables in fixed-width form. The zips are saved in a
+browser and registered (`lotline manifest register --source oh_parcels --vintage montgomery_cama_<date>`);
+`registered_cama` finds them. Only parcel ID and land-use code (`PARDAT`) and year built (`DWELL`) are read
+(`CAMA_PARDAT`, `CAMA_DWELL`, and `CAMA_COMDAT` for commercial and apartment buildings); owner, mailing and
+address fields are never read.
+
+- **Drop rule.** About 26,700 Montgomery parcels in the statewide layer have no land-use code and appear in no
+  CAMA roll from 2011 to 2026 (16,089 of Dayton's 16,270 unknown parcels; median 2,957 sq ft): old-lot and
+  retired polygons, not appraised parcels. `drop_never_in_cama` removes roll parcels absent from every
+  registered CAMA file; this took Dayton from 18.6% unknown land use to about 0.2% (checked 2026-10-30).
+- **Attributes.** The latest CAMA file fills unknown land use and year built (the earliest dwelling or
+  commercial building), like the county layers above (`apply_county_attributes`).
+- **Yearly rolls.** Every registered CAMA file becomes a roll vintage, as for Franklin
+  (`county_yearly_rolls`): 2011, 2012, 2014, 2018, 2021, 2022, 2024, 2025 and 2026 on 2026-10-30.
+
+**Warren County (Mason, Middletown's Warren part).** The statewide layer leaves 44% of Warren's parcels
+without land use. The county's parcel geodatabase (`ParcelsAndRoads.gdb.zip`, downloaded in a browser and
+registered as `warren_gdb_<date>`) has the DTE code at the start of `USE_CODE_DSC`; `read_warren` decodes only
+`PARNUM` and `USE_CODE_DSC` with the zipped file-geodatabase reader written for Texas
+(`adapters/states/tx/filegdb.py`), and `warren_attributes` matches PARNUM (zero-padded to 11 digits) to the
+statewide LocalParcelID (81% of roll parcels). Parcels split or renumbered since the 2023 statewide export
+(for example new subdivisions in Middletown's Warren part) do not match and keep unknown land use.
+
+**Franklin County yearly rolls.** The statewide layer is one snapshot (Franklin: 2023), so every other
+year of a place's denominator would be its ACS series scaled to that roll (D-035). The Franklin County
+Auditor keeps a `Parcel.xlsx` (parcel ID, DTE land-use code) in every appraisal snapshot since 2016.
+`FRANKLIN_ROLLS` reads the last snapshot of each year 2016-2025, except the statewide roll's own year, as
+more `parcels` vintages (`franklin_yearly_rolls`), so `build.eligible` counts those years from real parcels
+and scales only 2010-2015 (checked against the scaled history in `docs/build/oh-franklin-history-check.md`).
+Rules:
+
+- only jurisdictions with at least `FRANKLIN_MIN_SHARE` of their single-family houses in Franklin County get
+  yearly rolls: the files cover Franklin only, so a city reaching into another county (Columbus, Dublin,
+  Westerville) would be undercounted in those years; it keeps its single roll and the scaled history;
+- an archive parcel takes the jurisdiction, lot size, year built and centroid of the same parcel in the
+  statewide roll; a parcel not in it (split, combined or renumbered) takes its taxing district's jurisdiction
+  where at least `FRANKLIN_DISTRICT_SHARE` of the district's roll parcels lie in one jurisdiction, with
+  unknown lot size (dropped otherwise: about 50-280 eligible parcels a year county-wide);
+- year built missing from the roll comes from the Auditor's `Dwelling.xlsx` (today's parcel numbers), so a
+  renumbered parcel keeps it and a place's data tier (read from its latest roll) does not drop;
+- land use comes from the archive's own code, through the same crosswalk.
+
 **Scope.** `COUNTIES` lists the counties downloaded: one server-side query per county and OBJECTID range
 (`OID_CHUNK`), so each query stays shallow, is cached on its own and resumes after a failure.
 
@@ -37,6 +102,9 @@ Only non-personal fields are requested: no situs address, mailing address fields
 from __future__ import annotations
 
 import csv
+import re
+import zipfile
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -67,6 +135,85 @@ SQFT_PER_ACRE = 43_560.0
 # page on a later try (seen on Franklin at offset ~418,000); the pager retries error bodies.
 OID_CHUNK = 100_000  # OBJECTIDs per query (mechanics: keeps paging offsets shallow)
 RETRIES = 5  # pager retries on ArcGIS error bodies (mechanics, not a model parameter)
+YEAR_BUILT_MIN = 1700  # an earlier year built is a data error (unknown)
+
+
+@dataclass(frozen=True)
+class CountyLayer:
+    """A county auditor's parcel layer whose attributes fill gaps in the statewide layer."""
+
+    name: str
+    url: str  # an ArcGIS layer, or an Excel workbook (`table` set: the sheet)
+    license: str
+    as_of: str  # the layer's last edit date, for provenance
+    parcel_field: str  # the county's parcel number (= the statewide LocalParcelID)
+    luc_field: str | None = None  # DTE land-use code (None: year built only)
+    year_built_field: str | None = None
+    exempt_luc_field: str | None = None  # the use code of a tax-exempt parcel, read where luc_field is blank
+    table: str | int | None = None  # file only: the Excel sheet to read
+    parcel_regex: str | None = None  # first group = the statewide LocalParcelID, where the formats differ
+
+
+COUNTY_LAYERS: dict[str, CountyLayer] = {
+    "39153": CountyLayer(
+        name="summit",
+        url=(
+            "https://services3.arcgis.com/3Ukh5HzAdI6WZ3KP/arcgis/rest/services/"
+            "TaxParcels_dashboard/FeatureServer/0"
+        ),
+        license=(
+            "Summit County Fiscal Office public GIS data (ArcGIS Online, owner Summit_Admin; "
+            "no reuse terms stated)"
+        ),
+        as_of="2025-03-25",
+        parcel_field="PARCELID",
+        luc_field="USECD",
+        year_built_field="RESYRBLT",
+    ),
+    "39095": CountyLayer(
+        name="lucas",
+        url=(
+            "https://lcaudgis.co.lucas.oh.us/gisaudserver/rest/services/Hosted/"
+            "Parcel_General_Land_Use_Classification_2025/FeatureServer/0"
+        ),
+        license="Lucas County Auditor (AREIS) public GIS data (no reuse terms stated)",
+        as_of="tax year 2025",
+        parcel_field="parid",
+        luc_field="luc",
+    ),
+    "39035": CountyLayer(
+        name="cuyahoga",
+        url="https://gis.cuyahogacounty.gov/server/rest/services/CCFO/Parcel_Fabric_Taxparcels/FeatureServer/0",
+        license="Cuyahoga County Fiscal Office public GIS data (no reuse terms stated)",
+        as_of="tax year 2026",
+        parcel_field="parcel_id",
+        luc_field="tax_luc",  # 4-digit: the DTE class plus a county digit ('5100' → 510)
+        exempt_luc_field="ext_luc",  # blank tax_luc on exempt parcels (Cleveland land-bank lots: 6411)
+        year_built_field="min_age",  # the oldest building's year built (the field holds years, not ages)
+    ),
+    "39017": CountyLayer(
+        name="butler",
+        url="https://maps.bcohio.gov/server/rest/services/PARCELSEARCH/MapServer/0",
+        license="Butler County public GIS data (maps.bcohio.gov; no reuse terms stated)",
+        as_of="read 2026-10-26",
+        parcel_field="PIN",
+        luc_field="LUC",
+        year_built_field="YRBLT",
+    ),
+    "39049": CountyLayer(
+        name="franklin",
+        url=(
+            "https://apps.franklincountyauditor.com/Outside_User_Files/2026/"
+            "2026-10-15%20Appraisal/Dwelling.xlsx"
+        ),
+        license="Franklin County Auditor public records (disclaimer: 'as is'; no reuse terms stated)",
+        as_of="appraisal snapshot 2026-10-15",
+        parcel_field="PARCEL ID",  # '010-000002-00': district, parcel, card suffix
+        year_built_field="YRBLT",  # one row per dwelling card; the earliest is kept
+        table=0,
+        parcel_regex=r"^(\d{3}-\d{6})",
+    ),
+}
 
 PERSONAL = {
     "SitusAddressAll",
@@ -91,6 +238,41 @@ OUT_FIELDS = [
     "Shape__Area",
 ]
 
+FRANKLIN_GEOID = "39049"
+FRANKLIN_ROLL_URL = (
+    "https://apps.franklincountyauditor.com/Outside_User_Files/{year}/{date}%20Appraisal/Parcel.xlsx"
+)
+FRANKLIN_LICENSE = "Franklin County Auditor public records (disclaimer: 'as is'; no reuse terms stated)"
+# The last appraisal snapshot of each year (directory listings read 2026-10-27; 2015 and earlier have none).
+FRANKLIN_ROLLS = {
+    2016: "2016-12-22",
+    2017: "2017-12-19",
+    2018: "2018-12-17",
+    2019: "2019-12-18",
+    2020: "2020-12-25",
+    2021: "2021-12-22",
+    2022: "2022-12-20",
+    2023: "2023-12-26",
+    2024: "2024-12-30",
+    2025: "2025-12-31",
+}
+COUNTY_MIN_SHARE = 0.99  # share of a jurisdiction's houses in the county for it to get yearly rolls
+COUNTY_DISTRICT_SHARE = 0.95  # taxing district → jurisdiction, for parcels missing from the statewide roll
+FRANKLIN_MIN_SHARE = COUNTY_MIN_SHARE  # names used by the Franklin tests and docs
+FRANKLIN_DISTRICT_SHARE = COUNTY_DISTRICT_SHARE
+MONTGOMERY_GEOID = "39113"
+# Montgomery County Auditor CAMA extract (Treasurer "File Downloads", Cama Characteristics), downloaded in a
+# browser and registered with `lotline manifest register --source oh_parcels --vintage montgomery_cama_<date>`
+CAMA_PARDAT = {"parid": (1, 30), "luc": (239, 4)}  # AA407 layout: parcel id, land use code
+CAMA_DWELL = {"parid": (1, 30), "yrblt": (59, 5)}  # parcel id, year built (one row per dwelling card)
+CAMA_COMDAT = {"parid": (1, 30), "yrblt": (49, 5)}  # parcel id, year built (commercial/apartment buildings)
+CAMA_MIN_RECORD = 300  # bytes: shorter lines are a DWELL record's spill-over (its maintenance date)
+WARREN_GEOID = "39165"
+# Warren County GIS parcel geodatabase (ParcelsAndRoads.gdb.zip, downloaded in a browser and registered with
+# `lotline manifest register --source oh_parcels --vintage warren_gdb_<date>`): the Warren_Parcels table
+WARREN_TABLE = "Warren_Parcels"
+WARREN_FIELDS = ["PARNUM", "USE_CODE_DSC"]  # parcel number, "510-SINGLE FAMILY DWG (PLATTED)"
+
 PROVENANCE = {
     "title": "Ohio Statewide Parcels, public view (Ohio OGRIP; county auditor exports)",
     "landing_url": LANDING_URL,
@@ -110,6 +292,27 @@ PROVENANCE = {
         "vintage_date = the county's latest CurrentTo (export date); vintage = its year; a county with no "
         "CurrentTo on any parcel takes the download (snapshot) date",
         "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
+        "County layers (COUNTY_LAYERS: Summit Fiscal Office as of 2025-03-25, Lucas Auditor tax year 2025, "
+        "Cuyahoga Fiscal Office tax year 2026, Butler CURRENTPARCELS read 2026-10-26; owner and address "
+        "fields never requested) joined on the parcel ID, attributes only: the county's DTE land-use code "
+        "fills land_use_std where the statewide layer is UNKNOWN (never replacing a known code); residential "
+        "year built → year_built (1700 to now, else unknown); a parcel listed more than once keeps its first "
+        "code and its earliest year built (Summit lists each parcel twice; Franklin's Dwelling.xlsx, "
+        "appraisal snapshot 2026-10-15, has one row per dwelling card and adds year built only)",
+        "Franklin County yearly rolls: the Auditor's Parcel.xlsx (parcel ID, LUC) from the last appraisal "
+        "snapshot of 2016-2025 (except the statewide roll's year) added as vintages for jurisdictions with "
+        ">= 99% of their single-family houses in Franklin County; each parcel takes the statewide roll's "
+        "jurisdiction, lot size, year built and centroid, else its taxing district's jurisdiction (>= 95% "
+        "of the district in one jurisdiction) with unknown lot size, else it is dropped",
+        "Warren County parcel geodatabase (registered by hand): DTE land-use code from USE_CODE_DSC fills "
+        "unknown land use, matched on PARNUM zero-padded to 11 digits; only PARNUM and USE_CODE_DSC are "
+        "decoded (with the Texas file-geodatabase reader)",
+        "Montgomery County CAMA extract (Treasurer 'Cama Characteristics', registered by hand): roll "
+        "parcels in no CAMA file 2011-2026 are dropped (old-lot and retired polygons); unknown land use and "
+        "year built filled from the latest file; each CAMA file added as a roll vintage for jurisdictions "
+        "with >= 99% of their houses in the county; only parcel ID, land-use code and year built are read",
+        "One roll per jurisdiction: after placement, a jurisdiction spanning counties with different export "
+        "dates takes the latest one for all its parcels (8 jurisdictions on 2026-10-26, e.g. Twinsburg)",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
         "stored as lon/lat",
         "jurisdiction_geoid by lotline.geo.place_or_township (TIGERweb ACS 2025 incorporated places, else "
@@ -124,10 +327,23 @@ PROVENANCE = {
         "building department permits unincorporated land), so township parcels go to the county's remainder "
         "row (174,159 parcels on 2026-10-18), as do 9 villages outside the Census permit universe (8,679: "
         "Indian Hill, Amberley); 6 parcels had no centroid polygon match",
-        "Attributes are minimal: no units, year built, building area, values or sales; county CAMA data are "
-        "needed for those (tier 1 counties such as Franklin)",
+        "Attributes are minimal: no units, year built, building area, values or sales; county layers fill "
+        "land use and year built only where listed in COUNTY_LAYERS (Summit, Lucas, Cuyahoga, Butler, "
+        "Franklin, and Montgomery's CAMA extract); Montgomery's CAMA files are hand downloads (the site "
+        "sits behind a bot check), so a rebuild needs them registered; without them Montgomery keeps the "
+        "statewide land use (Dayton then falls back to ACS)",
+        "Montgomery CAMA archive has gaps (2013, 2015-2017, 2019-2020, 2023): D-035 scales ACS between the "
+        "real years; the 2011 file is February 2011, the 2014 file July 2014",
+        "Lucas and Cuyahoga county GIS hosts dropped connections from some networks on 2026-10-26 (they "
+        "answered over a VPN); a failed county download stops the run rather than silently skipping",
+        "A county layer is of its own date (Summit 2025-03), not the statewide export's: a parcel created "
+        "after it keeps the statewide (unknown) land use",
         "County exports are of different dates (Franklin 2023-09-26, Hamilton 2023-08-02); the layer is "
-        "a current snapshot, not a history",
+        "a current snapshot, not a history (Franklin County's yearly Auditor files are the exception)",
+        "Franklin yearly rolls cover only places wholly in Franklin County: Columbus (97.7% of its houses), "
+        "Dublin, Westerville, Reynoldsburg, Canal Winchester and others reaching into other counties keep "
+        "one roll and D-035's scaled history; parcels created after 2023 are placed by taxing district, and "
+        "50-280 eligible parcels a year with no dominant district are dropped",
         "Franklin's LandArea is empty or 0 for 97.5% of parcels, so its lot sizes are GIS polygon areas",
         "Shape__Area is in the Ohio South State Plane projection; for northern counties (Ohio North zone) "
         "the area carries a small projection error",
@@ -204,6 +420,375 @@ def build(raw: pd.DataFrame, state: str = "OH", snapshot_date: str | None = None
     out = out.sort_values(["parcel_id", "_shape"], ascending=[True, False], na_position="last")
     out = out.drop_duplicates(["state", "parcel_id", "vintage"], keep="first").drop(columns="_shape")
     return out.reset_index(drop=True)
+
+
+def county_attributes(raw: pd.DataFrame, county_geoid: str, layer: CountyLayer) -> pd.DataFrame:
+    """A county layer's rows → one row per parcel: parcel_id, luc (3-digit code), year_built.
+
+    A parcel listed more than once (Summit's doubled rows, one row per dwelling card in Franklin) keeps its
+    first land-use code and its earliest year built (the principal dwelling).
+    """
+    pid = raw[layer.parcel_field].astype("string").str.strip().replace("", pd.NA)
+    if layer.parcel_regex:
+        pid = pid.str.extract(layer.parcel_regex, expand=False)
+    nan = pd.Series(pd.NA, index=raw.index, dtype="string")
+    luc = luc_code(raw[layer.luc_field]) if layer.luc_field else nan
+    if layer.exempt_luc_field:
+        luc = luc.fillna(luc_code(raw[layer.exempt_luc_field]))
+    if layer.year_built_field:
+        year = pd.to_numeric(raw[layer.year_built_field], errors="coerce")
+        year = year.where(year.between(YEAR_BUILT_MIN, pd.Timestamp.today().year)).astype("Int64")
+    else:
+        year = pd.Series(pd.NA, index=raw.index, dtype="Int64")
+    out = pd.DataFrame({"parcel_id": county_geoid + pid, "luc": luc, "year_built": year}).loc[pid.notna()]
+    agg = out.groupby("parcel_id", sort=False).agg(luc=("luc", "first"), year_built=("year_built", "min"))
+    agg["year_built"] = agg["year_built"].astype("Int64")
+    return agg.reset_index()
+
+
+def apply_county_attributes(parcels: pd.DataFrame, attrs: pd.DataFrame, layer_name: str) -> pd.DataFrame:
+    """Fill UNKNOWN land use and year built from a county layer (see the module docstring)."""
+    xwalk = luc_crosswalk()
+    a = attrs.set_index("parcel_id")
+    out = parcels.copy()
+    if "year_built" not in out:
+        out["year_built"] = pd.Series(pd.NA, index=out.index, dtype="Int64")
+    code = out["parcel_id"].map(a["luc"]).astype("string")
+    std = code.map(xwalk)
+    fill = out["land_use_std"].eq("UNKNOWN") & std.notna()
+    out.loc[fill, "land_use_std"] = std[fill]
+    out.loc[fill, "land_use_raw"] = code[fill] + f" ({layer_name} county layer)"
+    year = out["parcel_id"].map(a["year_built"]).astype("Int64")
+    out["year_built"] = out["year_built"].astype("Int64").fillna(year)
+    return out
+
+
+def read_county_file(path: Path, layer: CountyLayer, fields: list[str]) -> pd.DataFrame:
+    """Named columns of a county Excel workbook (the only file format read so far)."""
+    if path.suffix.lower() in (".xlsx", ".xls"):
+        return pd.read_excel(
+            path, sheet_name=layer.table or 0, usecols=fields, dtype={layer.parcel_field: str}
+        )
+    raise ValueError(f"oh_parcels: no reader for county file {path.name} (Excel workbooks only)")
+
+
+def download_county(store: DataStore, layer: CountyLayer, *, refresh: bool = False) -> pd.DataFrame:
+    optional = [layer.luc_field, layer.year_built_field, layer.exempt_luc_field]
+    fields = [layer.parcel_field] + [f for f in optional if f]
+    if layer.table is not None:
+        from lotline.io.http import fetch
+
+        name = layer.url.rsplit("/", 1)[-1]
+        path = fetch(
+            layer.url,
+            store.raw(SOURCE, snapshot_vintage()) / f"county_{layer.name}" / name,
+            store=store,
+            source=SOURCE,
+            license=layer.license,
+            adapter=ADAPTER,
+            adapter_version=VERSION,
+            refresh=refresh,
+        )
+        return read_county_file(path, layer, fields)
+    return download_layer(
+        layer.url,
+        store=store,
+        source=SOURCE,
+        license=layer.license,
+        adapter=ADAPTER,
+        adapter_version=VERSION,
+        name=f"county_{layer.name}",
+        out_fields=",".join(fields),
+        retries=RETRIES,
+        vintage=snapshot_vintage(),
+        refresh=refresh,
+    )
+
+
+def one_vintage_per_jurisdiction(df: pd.DataFrame) -> pd.DataFrame:
+    """Every parcel of a jurisdiction takes its latest county export date (see the module docstring)."""
+    latest = df.groupby("jurisdiction_geoid")["vintage_date"].transform("max")
+    out = df.assign(vintage_date=latest.fillna(df["vintage_date"]))
+    out["vintage"] = out["vintage_date"].dt.year.astype("Int64").fillna(df["vintage"])
+    return out
+
+
+def county_share(df: pd.DataFrame, county: str) -> pd.Series:
+    """Per jurisdiction reaching `county`: the share of its SF_DETACHED parcels inside it."""
+    houses = df[df["land_use_std"] == "SF_DETACHED"]
+    reach = houses.loc[houses["county_geoid"] == county, "jurisdiction_geoid"].unique()
+    houses = houses[houses["jurisdiction_geoid"].isin(reach)]
+    return (houses["county_geoid"] == county).groupby(houses["jurisdiction_geoid"]).mean()
+
+
+def franklin_share(df: pd.DataFrame) -> pd.Series:
+    return county_share(df, FRANKLIN_GEOID)
+
+
+def county_roll(
+    codes: pd.DataFrame,
+    date: str,
+    current: pd.DataFrame,
+    *,
+    county: str,
+    label: str,
+    district,
+    state: str = "OH",
+    year_built: pd.Series | None = None,
+) -> pd.DataFrame:
+    """One county roll file (`parcel_id`, 3-digit `code`) → `parcels` rows of vintage `date`'s year.
+
+    `current` is the statewide roll's parcels in the county, already placed: it gives each roll parcel its
+    jurisdiction and attributes, or, for a parcel missing from it, its taxing district's jurisdiction
+    (`district` maps parcel IDs to the district; used where `COUNTY_DISTRICT_SHARE` of the district lies in
+    one jurisdiction). `year_built` (by parcel ID) fills year built for parcels not in `current`.
+    """
+    df = codes.dropna(subset=["parcel_id"]).drop_duplicates("parcel_id")
+    attrs = ["jurisdiction_geoid", "lot_sqft", "year_built", "lon", "lat"]
+    cur = current.drop_duplicates("parcel_id").set_index("parcel_id")
+    df = df.join(cur[[c for c in attrs if c in cur]], on="parcel_id")
+    juris = cur["jurisdiction_geoid"]
+    by = district(pd.Series(cur.index, index=cur.index))
+    top = juris.groupby(by).agg(lambda j: j.value_counts().index[0])
+    share = juris.groupby(by).agg(lambda j: j.value_counts(normalize=True).iloc[0])
+    fallback = top[share >= COUNTY_DISTRICT_SHARE]
+    df["jurisdiction_geoid"] = df["jurisdiction_geoid"].fillna(district(df["parcel_id"]).map(fallback))
+    df = df.loc[df["jurisdiction_geoid"].notna()]
+    built = df["year_built"].astype("Int64") if "year_built" in df else pd.Series(pd.NA, index=df.index)
+    if year_built is not None:
+        built = built.astype("Int64").fillna(df["parcel_id"].map(year_built).astype("Int64"))
+    when = pd.Timestamp(date)
+    xwalk = luc_crosswalk()
+    return pd.DataFrame(
+        {
+            "state": state,
+            "parcel_id": df["parcel_id"],
+            "vintage": pd.Series(when.year, index=df.index, dtype="Int64"),
+            "vintage_date": when,
+            "jurisdiction_geoid": df["jurisdiction_geoid"].astype("string"),
+            "county_geoid": county,
+            "lot_sqft": pd.to_numeric(df.get("lot_sqft"), errors="coerce").astype("float64"),
+            "land_use_std": df["code"].map(xwalk).fillna("UNKNOWN"),
+            "land_use_raw": (df["code"] + f" ({label} {when.date()})").astype("string"),
+            "year_built": built.astype("Int64"),
+            "lon": pd.to_numeric(df.get("lon"), errors="coerce").astype("float64"),
+            "lat": pd.to_numeric(df.get("lat"), errors="coerce").astype("float64"),
+            "source": SOURCE,
+        }
+    )
+
+
+def county_yearly_rolls(
+    df: pd.DataFrame,
+    rolls: dict[str, pd.DataFrame],
+    *,
+    county: str,
+    label: str,
+    district,
+    year_built: pd.Series | None = None,
+) -> pd.DataFrame:
+    """Add a county's yearly roll files (`parcel_id`, `code` frames by snapshot date) to the placed statewide
+    roll, for jurisdictions with at least `COUNTY_MIN_SHARE` of their houses in the county; the statewide
+    roll's own year is skipped."""
+    current = df[df["county_geoid"] == county]
+    if current.empty:
+        return df
+    share = county_share(df, county)
+    whole = set(share.index[share >= COUNTY_MIN_SHARE])
+    have = set(current["vintage"].dropna().astype(int))
+    extra = []
+    for date, codes in rolls.items():
+        if pd.Timestamp(date).year in have:
+            continue
+        roll = county_roll(
+            codes,
+            date,
+            current,
+            county=county,
+            label=label,
+            district=district,
+            state=str(df["state"].iloc[0]),
+            year_built=year_built,
+        )
+        roll = roll[roll["jurisdiction_geoid"].isin(whole)]
+        if len(roll):
+            extra.append(roll)
+    return pd.concat([df, *extra], ignore_index=True) if extra else df
+
+
+def franklin_codes(raw: pd.DataFrame) -> pd.DataFrame:
+    """Franklin `Parcel.xlsx` (PARCEL ID "010-000002-00", LUC) → `parcel_id` ("39049010-000002"), `code`."""
+    pid = raw["PARCEL ID"].astype("string").str.strip().str.extract(r"^(\d{3}-\d{6})", expand=False)
+    return pd.DataFrame({"parcel_id": FRANKLIN_GEOID + pid, "code": luc_code(raw["LUC"])}).loc[pid.notna()]
+
+
+def _franklin_district(parcel_id: pd.Series) -> pd.Series:
+    return parcel_id.str[5:8]  # "39049010-000002" → "010"
+
+
+def franklin_roll(
+    raw: pd.DataFrame,
+    date: str,
+    current: pd.DataFrame,
+    state: str = "OH",
+    year_built: pd.Series | None = None,
+) -> pd.DataFrame:
+    """One year-end Franklin `Parcel.xlsx` → `parcels` rows (see `county_roll`)."""
+    return county_roll(
+        franklin_codes(raw),
+        date,
+        current,
+        county=FRANKLIN_GEOID,
+        label="Franklin Auditor",
+        district=_franklin_district,
+        state=state,
+        year_built=year_built,
+    )
+
+
+def download_franklin_roll(store: DataStore, date: str, *, refresh: bool = False) -> pd.DataFrame:
+    from lotline.io.http import fetch
+
+    path = fetch(
+        FRANKLIN_ROLL_URL.format(year=date[:4], date=date),
+        store.raw("franklin_auditor", date) / "Parcel.xlsx",
+        store=store,
+        source="franklin_auditor",
+        license=FRANKLIN_LICENSE,
+        adapter=ADAPTER,
+        adapter_version=VERSION,
+        refresh=refresh,
+    )
+    return pd.read_excel(path, usecols=["PARCEL ID", "LUC"], dtype=str)
+
+
+def franklin_yearly_rolls(
+    df: pd.DataFrame, rolls: dict[str, pd.DataFrame], year_built: pd.Series | None = None
+) -> pd.DataFrame:
+    """Add Franklin County yearly rolls (raw `Parcel.xlsx` frames by snapshot date) to the placed statewide
+    roll, for jurisdictions wholly in the county; the statewide roll's own year is skipped."""
+    return county_yearly_rolls(
+        df,
+        {date: franklin_codes(raw) for date, raw in rolls.items()},
+        county=FRANKLIN_GEOID,
+        label="Franklin Auditor",
+        district=_franklin_district,
+        year_built=year_built,
+    )
+
+
+def _fixed(line: bytes, start: int, length: int) -> str:
+    return line[start - 1 : start - 1 + length].decode("latin-1").strip()
+
+
+def read_cama(path: Path, table: str, fields: dict[str, tuple[int, int]]) -> pd.DataFrame:
+    """Named fixed-width fields (1-based start, length) of one table (`PARDAT.DAT`, `DWELL.DAT`) in a
+    Montgomery CAMA zip; only these fields are read (no owner, mailing or address fields)."""
+    with zipfile.ZipFile(path) as z:
+        member = next(n for n in z.namelist() if re.split(r"[\\/]", n)[-1].upper() == table)
+        rows = []
+        with z.open(member) as f:
+            for line in f:
+                if len(line) >= CAMA_MIN_RECORD:  # a DWELL record spills a date onto short lines
+                    rows.append([_fixed(line, *fields[k]) for k in fields])
+    return pd.DataFrame(rows, columns=list(fields))
+
+
+def montgomery_parcel_id(parid: pd.Series) -> pd.Series:
+    """CAMA PARID "A01 00101 0001" → statewide roll ID "39113A01 00101 0001"."""
+    pid = parid.astype("string").str.strip().replace("", pd.NA)
+    return MONTGOMERY_GEOID + pid
+
+
+def montgomery_codes(pardat: pd.DataFrame) -> pd.DataFrame:
+    return pd.DataFrame({"parcel_id": montgomery_parcel_id(pardat["parid"]), "code": luc_code(pardat["luc"])})
+
+
+def montgomery_attributes(
+    pardat: pd.DataFrame, dwell: pd.DataFrame, comdat: pd.DataFrame | None = None
+) -> pd.DataFrame:
+    """Current CAMA → one row per parcel: parcel_id, luc (3-digit), year_built (the earliest building, from
+    the dwelling cards and, where given, the commercial/apartment building records)."""
+    buildings = pd.concat([dwell, comdat], ignore_index=True) if comdat is not None else dwell
+    year = pd.to_numeric(buildings["yrblt"], errors="coerce")
+    year = year.where(year.between(YEAR_BUILT_MIN, pd.Timestamp.today().year))
+    built = year.groupby(montgomery_parcel_id(buildings["parid"])).min().astype("Int64")
+    codes = montgomery_codes(pardat).dropna(subset=["parcel_id"]).drop_duplicates("parcel_id")
+    return pd.DataFrame(
+        {"parcel_id": codes["parcel_id"], "luc": codes["code"], "year_built": codes["parcel_id"].map(built)}
+    ).astype({"year_built": "Int64"})
+
+
+def drop_never_in_cama(df: pd.DataFrame, cama_ids: set[str]) -> pd.DataFrame:
+    """Drop Montgomery roll parcels that are in no CAMA roll at all (old-lot and retired polygons)."""
+    gone = (df["county_geoid"] == MONTGOMERY_GEOID) & ~df["parcel_id"].isin(cama_ids)
+    return df.loc[~gone]
+
+
+def _montgomery_district(parcel_id: pd.Series) -> pd.Series:
+    return parcel_id.str[5:8]  # "39113R72 01209 0070" → "R72"
+
+
+def registered_cama(store: DataStore) -> dict[str, Path]:
+    """Snapshot date ("2026-09-30") → registered Montgomery CAMA zip (`lotline manifest register`)."""
+    out = {}
+    for e in store.registered(SOURCE):
+        m = re.search(r"montgomery_cama_(\d{4})(\d{2})(\d{2})/", e.path)
+        if m:
+            out["-".join(m.groups())] = Path(store.root) / e.path
+    return dict(sorted(out.items()))
+
+
+def warren_attributes(raw: pd.DataFrame) -> pd.DataFrame:
+    """Warren_Parcels rows → parcel_id, luc (3-digit DTE code from USE_CODE_DSC), no year built.
+
+    PARNUM is stored as a number: the statewide LocalParcelID is its 11-digit zero-padded form
+    (1304760020 → "01304760020"); a fractional or missing PARNUM (a condo or split record) is skipped.
+    """
+    num = pd.to_numeric(raw["PARNUM"], errors="coerce")
+    whole = num.notna() & (num == num.round())
+    pid = num[whole].map(lambda x: f"{x:.0f}").str.zfill(11)
+    out = pd.DataFrame({"parcel_id": WARREN_GEOID + pid, "luc": luc_code(raw.loc[whole, "USE_CODE_DSC"])})
+    out["year_built"] = pd.Series(pd.NA, index=out.index, dtype="Int64")
+    return out.drop_duplicates("parcel_id").reset_index(drop=True)
+
+
+def read_warren(path: Path) -> pd.DataFrame:
+    """PARNUM and USE_CODE_DSC from the Warren_Parcels table (owner and mailing fields are not decoded)."""
+    from lotline.adapters.states.tx import filegdb
+
+    with zipfile.ZipFile(path) as z:
+        names = filegdb.catalog_names(z)
+        table = next(t for t in filegdb.tables(z) if names.get(Path(t.member).stem) == WARREN_TABLE)
+        return pd.concat(filegdb.read_rows(z, table, WARREN_FIELDS), ignore_index=True)[WARREN_FIELDS]
+
+
+def apply_warren(df: pd.DataFrame, store: DataStore) -> pd.DataFrame:
+    """Fill Warren County's unknown land use from the latest registered county geodatabase, if any."""
+    files = sorted(
+        Path(store.root) / e.path for e in store.registered(SOURCE) if "/warren_gdb_" in "/" + e.path
+    )
+    if not files:
+        return df
+    return apply_county_attributes(df, warren_attributes(read_warren(files[-1])), "warren county file")
+
+
+def apply_montgomery_cama(df: pd.DataFrame, store: DataStore) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
+    """Fill Montgomery land use and year built from the latest CAMA file and drop parcels in no CAMA year;
+    return the parcels and every year's codes for `county_yearly_rolls`. No CAMA registered: unchanged."""
+    files = registered_cama(store)
+    if not files:
+        return df, {}
+    codes = {d: montgomery_codes(read_cama(p, "PARDAT.DAT", CAMA_PARDAT)) for d, p in files.items()}
+    latest = max(files)
+    attrs = montgomery_attributes(
+        read_cama(files[latest], "PARDAT.DAT", CAMA_PARDAT),
+        read_cama(files[latest], "DWELL.DAT", CAMA_DWELL),
+        read_cama(files[latest], "COMDAT.DAT", CAMA_COMDAT),
+    )
+    ids = set().union(*(set(c["parcel_id"].dropna()) for c in codes.values()))
+    df = apply_county_attributes(drop_never_in_cama(df, ids), attrs, "montgomery CAMA")
+    return df, codes
 
 
 def resolve_jurisdictions(
@@ -326,7 +911,30 @@ def download(store: DataStore, *, counties: list[str] | None = None, refresh: bo
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     raw = download(store, refresh=refresh)
-    df, _ = assign_jurisdictions(build(raw, state=state, snapshot_date=snapshot_vintage()), state, store)
+    df = build(raw, state=state, snapshot_date=snapshot_vintage())
+    franklin_years = None
+    for county_geoid, layer in COUNTY_LAYERS.items():
+        attrs = county_attributes(download_county(store, layer, refresh=refresh), county_geoid, layer)
+        df = apply_county_attributes(df, attrs, layer.name)
+        if county_geoid == FRANKLIN_GEOID:
+            franklin_years = attrs.set_index("parcel_id")["year_built"]
+    df = apply_warren(df, store)
+    df, cama = apply_montgomery_cama(df, store)
+    montgomery_years = None
+    if cama:
+        montgomery_years = df.loc[df["county_geoid"] == MONTGOMERY_GEOID].set_index("parcel_id")["year_built"]
+    df, _ = assign_jurisdictions(df, state, store)
+    df = one_vintage_per_jurisdiction(df)
+    rolls = {date: download_franklin_roll(store, date, refresh=refresh) for date in FRANKLIN_ROLLS.values()}
+    df = franklin_yearly_rolls(df, rolls, year_built=franklin_years)
+    df = county_yearly_rolls(
+        df,
+        cama,
+        county=MONTGOMERY_GEOID,
+        label="Montgomery CAMA",
+        district=_montgomery_district,
+        year_built=montgomery_years,
+    )
     df = holdout.apply(
         df,
         state,

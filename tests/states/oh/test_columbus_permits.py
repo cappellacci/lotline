@@ -75,7 +75,7 @@ def test_conforms_and_drops_void_and_unissued(permits):
     assert_conforms(permits.reset_index(), "permits")
     assert not {"VOID-1", "WDRAWN", "NOT-ISSUED"} & set(permits.index)
     assert (permits.jurisdiction_geoid == cp.COLUMBUS_GEOID).all()
-    assert permits.adu_type.isna().all()  # no ADU flag or description in the layer
+    assert permits.adu_type.isna().all()  # no ADU flag in the layer, and no Franklin flags passed
 
 
 def test_units_reported_when_plausible_else_derived(permits):
@@ -122,7 +122,13 @@ def test_personal_fields_never_requested():
 
 
 def test_load_applies_holdout_filter(raw, monkeypatch):
-    monkeypatch.setattr(cp, "download", lambda store, refresh=False: raw)
+    from lotline.adapters.states.oh import franklin_permits
+
+    no_flags = pd.DataFrame(
+        columns=["PARCEL ID", "PERMDT", "PERMITNUM", "PERMITTYPE", "AMOUNT", "DESCRIPTION"]
+    )
+    monkeypatch.setattr(franklin_permits, "download", lambda store, refresh=False: no_flags)
+    monkeypatch.setattr(cp, "download", lambda store, refresh=False, adu_ids=None: raw)
     calls = []
     real_apply = holdout.apply
 
@@ -139,3 +145,93 @@ def test_load_applies_holdout_filter(raw, monkeypatch):
 
 def test_registered_as_oh_source():
     assert "columbus_permits" in registry.sources_for("OH")
+
+
+def _flags(*rows) -> pd.DataFrame:
+    return pd.DataFrame(rows, columns=["permit_no", "parcel", "adu_type"])
+
+
+@pytest.fixture
+def raw_with_adu(raw) -> pd.DataFrame:
+    extra = pd.DataFrame(
+        [
+            # an alteration that adds a carriage house: outside WHERE, downloaded only for its flag
+            (
+                "ALT-ADU",
+                "434",
+                "1,2,3 Family - Other",
+                _ms("2021-03-01"),
+                1,
+                "Closed",
+                FIN,
+                "Major Alteration",
+                True,
+            ),
+            # an MEP permit under a flagged number: downloaded for the flag, never relabelled, dropped
+            ("MEP-ADU", "", "1,2,3 Family - Other", _ms("2016-03-02"), None, "Closed", FIN, "MEP", True),
+            # lettered number whose parcel changed since (a split): still the flagged permit
+            (
+                "ALT-SPLIT",
+                "434",
+                "1,2,3 Family - Other",
+                _ms("2022-01-01"),
+                1,
+                "Closed",
+                FIN,
+                "Addition",
+                True,
+            ),
+            # all-digit legacy number on another parcel: another office's permit, dropped
+            ("1522299", "434", "1,2,3 Family - Other", _ms("2015-07-14"), 1, "Closed", FIN, "Addition", True),
+        ],
+        columns=[
+            "B1_ALT_ID",
+            "CONST_TYPE_CODE",
+            "GENERAL_TYPE",
+            "ISSUED_DT",
+            "UNITS",
+            "B1_APPL_STATUS",
+            "PERMIT_STATUS",
+            "B1_PER_SUB_TYPE",
+            "_adu_only",
+        ],
+    )
+    extra["LAST_STATUS_DT"] = _ms("2026-01-15")
+    extra["OBJECTID"] = range(100, 100 + len(extra))
+    extra["B1_PARCEL_NBR"] = "010000001"
+    extra["SQFT"] = 600.0
+    extra["G3_VALUE_TTL"] = 90_000.0
+    base = raw.assign(B1_PER_SUB_TYPE="New Construction", _adu_only=False)
+    return pd.concat([base, extra], ignore_index=True)
+
+
+def test_franklin_flags_relabel_matching_permits_as_adus(raw, raw_with_adu):
+    flags = _flags(
+        ("SFD-OK", "010-000001-00", "detached"),  # a carriage house filed as a 101 new house
+        ("ALT-ADU", "010-000001-00", "detached"),
+        ("MEP-ADU", "010-000001-00", "detached"),
+        ("ALT-SPLIT", "010-999999-00", "attached"),
+        ("1522299", "510-999999-00", "attached"),
+        ("NOT-IN-LAYER", "010-000001-00", "unknown"),  # legacy number: nothing to relabel, nothing added
+    )
+    p = cp.build(raw_with_adu, adu=flags).set_index("permit_id")
+    assert_conforms(p.reset_index(), "permits")
+    for pid in ("SFD-OK", "ALT-ADU", "ALT-SPLIT"):
+        row = p.loc[pid]
+        assert (row.building_type_std, row.type_confidence, row.units_new, row.units_confidence) == (
+            "ADU",
+            "inferred",
+            1,
+            "inferred",
+        )
+        assert not row.is_demolition
+    assert p.loc["SFD-OK", "adu_type"] == "detached" and p.loc["ALT-SPLIT", "adu_type"] == "attached"
+    assert not {"MEP-ADU", "1522299", "NOT-IN-LAYER"} & set(p.index)
+    # everything else is unchanged
+    assert p.loc["SFD-ZERO", "building_type_std"] == "SFD" and pd.isna(p.loc["SFD-ZERO", "adu_type"])
+    assert len(p) == len(cp.build(raw)) + 2  # SFD-OK relabelled in place; ALT-ADU and ALT-SPLIT added
+
+
+def test_parcel_digits_match_both_formats():
+    s = cp._parcel_digits(pd.Series(["010-191395-00", "010191395", None]))
+    assert s.iloc[0] == s.iloc[1] == "010191395" and pd.isna(s.iloc[2])
