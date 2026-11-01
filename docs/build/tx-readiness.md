@@ -23,7 +23,8 @@ development run was made** (data-thread rule). Plan: `docs/build/tx-data-plan.md
   - **Second coder:** 81 rows are flagged; 2 agreed in Ben's review (2026-10-30). The worksheet is
     `docs/research/ordinances/tx-second-coder-2026-10-30.csv`.
 - **Fees:** 55 rows (`config/fees/tx.csv`) for six cities: Austin, San Antonio (SAWS), Fort Worth, Houston,
-  Dallas (tap and inspection charges only) and Corpus Christi.
+  Dallas (tap and inspection charges; the city confirms it charges no utility impact fees) and Corpus
+  Christi.
 - **Decision (Ben, 2026-10-30): pool Texas into the ADU estimate (D-025).** Austin and San Antonio enter as
   treated places and Fort Worth and Dallas as comparisons. WS-ENGINE implements the pooling; proposed as a
   HANDOFF decision in the PR.
@@ -76,9 +77,9 @@ Lubbock). Five allow two or more homes from before 2010 (El Paso, Beaumont, Wich
 | County codes that are land types, not uses | Williamson (Round Rock, Georgetown, Cedar Park), Galveston (League City), Bell, Denton, Brazoria and Liberty send land-type (valuation) codes. Reading them as uses would overcount house lots (Williamson's RES is about 87% single-family), so they are recorded in `config/crosswalks/tx_county_land_use.csv` with `applied = no` | Each district's property-use (state class) table in its appraisal export; Williamson's and Galveston's would bring the most places in | Me, if Ben wants it |
 | Harris and Bexar codes | Harris Z1-Z5 (63k parcels) and Bexar 2025 codes are undocumented: download.hcad.org timed out, the Bexar CAD help site returned 403. Houston also stays out because its 2019 extract is partial | The districts' code tables | Later |
 | Releases not read | 2024 is registered but not read (about 2.6 GB per statewide roll in memory) | Per-vintage parcel files (a WS-CORE contract change) | WS-CORE |
-| Fees that vary by area or plat date | Decided (Ben, 2026-10-30): the median area or newest plat cohort is the central per-home amount, the rest the range (`config/fees/README.md`). Local totals: San Antonio $6,981, Fort Worth $5,828, Austin $6,763 (one parkland tier; was $19,054, all three summed), Houston $4,383, Dallas $931 (tap and inspection only). The scenario uses only the central value, and its newest-year rule leaves Austin's 2023 impact fees out | Issue #247 (per-place range; newest year per component) | WS-CORE |
+| Fees that vary by area or plat date | Decided (Ben, 2026-10-30): the median area or newest plat cohort is the central per-home amount, the rest the range (`config/fees/README.md`). Local totals: San Antonio $6,981, Fort Worth $5,828, Austin $6,763 (one parkland tier; was $19,054, all three summed), Houston $4,383, Dallas $931 (tap and inspection; no utility impact fee, confirmed 2026-11-01). The scenario uses only the central value, and its newest-year rule leaves Austin's 2023 impact fees out | Issue #247 (per-place range; newest year per component) | WS-CORE |
 | Rule rows awaiting a second coder | 81 of 103 (2 agreed in Ben's 2026-10-30 review; 74 the review could not check). Dated events can't be relied on until checked | `docs/research/ordinances/tx-second-coder-2026-10-30.csv` (priority 1 first) | **Ben** |
-| Open lookups | ADU: Pasadena; partial for Edinburg (Carrollton coded 2026-11-01). Missing middle: Pasadena (Laredo coded 2026-10-30). Fees: all 5 partial | `docs/research/ordinances/tx-*-lookups-todo.csv` | **Ben** |
+| Open lookups | ADU: Pasadena; partial for Edinburg (Carrollton coded 2026-11-01). Missing middle: Pasadena (Laredo coded 2026-10-30). Fees: Dallas coded, 4 partial | `docs/research/ordinances/tx-*-lookups-todo.csv` | **Ben** |
 | Dallas 2025 permits; Houston record-level permits | Dallas ends 2024-11-12; no ADU outcome for Houston | City workbooks or a records request; HCAD parcel changes | Later |
 | Two places without ACS (Marshall Creek, Starbase) | No denominator | Marshall Creek should leave the jurisdictions table; Starbase's early history belongs to the Cameron County remainder | WS-CORE |
 
