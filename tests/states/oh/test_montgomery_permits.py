@@ -148,3 +148,17 @@ def test_load_applies_holdout_filter(tmp_path, monkeypatch):
 
 def test_registered_as_oh_source():
     assert "montgomery_permits" in registry.sources_for("OH")
+
+
+def test_covered_places_need_enough_reported_permits(monkeypatch):
+    monkeypatch.setattr(mp, "MIN_PERMITS_PER_YEAR", 2)
+    monkeypatch.setattr(mp, "COVERAGE_YEARS", (2020, 2021))
+    raw = pd.DataFrame(
+        {
+            # Dayton (R72): 4 permits in 2 years = 2 a year; Trotwood: 1 in 2 years = 0.5 a year
+            "parid": ["R72 00001 0001"] * 3 + ["R72 99999 0001", "K40 00001 0001", "R72 00001 0001"],
+            "permdt": ["01-JAN-20", "01-JUN-20", "01-JAN-21", "01-MAR-21", "01-JAN-21", "01-JAN-15"],
+        }
+    )
+    # the 2015 permit is outside the window; the parcel not in the roll counts for its district (Dayton)
+    assert mp.covered_places(raw, PARCELS) == [DAYTON]

@@ -418,6 +418,15 @@ def test_montgomery_attributes_keep_the_earliest_dwelling_and_valid_years(tmp_pa
     assert pd.isna(a.loc["39113A01 00101 0002", "year_built"])  # vacant: no dwelling
     assert pd.isna(a.loc["39113A01 00101 0003", "year_built"])  # 0 is not a year
     assert a["luc"].tolist() == ["510", "500", "520"]
+    # a commercial/apartment building record (COMDAT) fills a parcel with no dwelling card
+    comdat = pd.DataFrame({"parid": ["A01 00101 0002", "A01 00101 0001"], "yrblt": ["1963", "1900"]})
+    c = op.montgomery_attributes(
+        op.read_cama(path, "PARDAT.DAT", op.CAMA_PARDAT),
+        op.read_cama(path, "DWELL.DAT", op.CAMA_DWELL),
+        comdat,
+    ).set_index("parcel_id")
+    assert c.loc["39113A01 00101 0002", "year_built"] == 1963
+    assert c.loc["39113A01 00101 0001", "year_built"] == 1900  # the earliest building on the parcel
 
 
 def test_drop_never_in_cama_only_touches_montgomery():

@@ -54,14 +54,15 @@ geodatabase has only generalized land-use polygons and a building tax class), bu
 Characteristics" download carries the Auditor's appraisal tables in fixed-width form. The zips are saved in a
 browser and registered (`lotline manifest register --source oh_parcels --vintage montgomery_cama_<date>`);
 `registered_cama` finds them. Only parcel ID and land-use code (`PARDAT`) and year built (`DWELL`) are read
-(`CAMA_PARDAT`, `CAMA_DWELL`); owner, mailing and address fields are never read.
+(`CAMA_PARDAT`, `CAMA_DWELL`, and `CAMA_COMDAT` for commercial and apartment buildings); owner, mailing and
+address fields are never read.
 
 - **Drop rule.** About 26,700 Montgomery parcels in the statewide layer have no land-use code and appear in no
   CAMA roll from 2011 to 2026 (16,089 of Dayton's 16,270 unknown parcels; median 2,957 sq ft): old-lot and
   retired polygons, not appraised parcels. `drop_never_in_cama` removes roll parcels absent from every
   registered CAMA file; this took Dayton from 18.6% unknown land use to about 0.2% (checked 2026-10-30).
-- **Attributes.** The latest CAMA file fills unknown land use and year built (earliest dwelling card), like
-  the county layers above (`apply_county_attributes`).
+- **Attributes.** The latest CAMA file fills unknown land use and year built (the earliest dwelling or
+  commercial building), like the county layers above (`apply_county_attributes`).
 - **Yearly rolls.** Every registered CAMA file becomes a roll vintage, as for Franklin
   (`county_yearly_rolls`): 2011, 2012, 2014, 2018, 2021, 2022, 2024, 2025 and 2026 on 2026-10-30.
 
@@ -264,6 +265,7 @@ MONTGOMERY_GEOID = "39113"
 # browser and registered with `lotline manifest register --source oh_parcels --vintage montgomery_cama_<date>`
 CAMA_PARDAT = {"parid": (1, 30), "luc": (239, 4)}  # AA407 layout: parcel id, land use code
 CAMA_DWELL = {"parid": (1, 30), "yrblt": (59, 5)}  # parcel id, year built (one row per dwelling card)
+CAMA_COMDAT = {"parid": (1, 30), "yrblt": (49, 5)}  # parcel id, year built (commercial/apartment buildings)
 CAMA_MIN_RECORD = 300  # bytes: shorter lines are a DWELL record's spill-over (its maintenance date)
 WARREN_GEOID = "39165"
 # Warren County GIS parcel geodatabase (ParcelsAndRoads.gdb.zip, downloaded in a browser and registered with
@@ -702,11 +704,15 @@ def montgomery_codes(pardat: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame({"parcel_id": montgomery_parcel_id(pardat["parid"]), "code": luc_code(pardat["luc"])})
 
 
-def montgomery_attributes(pardat: pd.DataFrame, dwell: pd.DataFrame) -> pd.DataFrame:
-    """Current CAMA → one row per parcel: parcel_id, luc (3-digit), year_built (earliest dwelling card)."""
-    year = pd.to_numeric(dwell["yrblt"], errors="coerce")
+def montgomery_attributes(
+    pardat: pd.DataFrame, dwell: pd.DataFrame, comdat: pd.DataFrame | None = None
+) -> pd.DataFrame:
+    """Current CAMA → one row per parcel: parcel_id, luc (3-digit), year_built (the earliest building, from
+    the dwelling cards and, where given, the commercial/apartment building records)."""
+    buildings = pd.concat([dwell, comdat], ignore_index=True) if comdat is not None else dwell
+    year = pd.to_numeric(buildings["yrblt"], errors="coerce")
     year = year.where(year.between(YEAR_BUILT_MIN, pd.Timestamp.today().year))
-    built = year.groupby(montgomery_parcel_id(dwell["parid"])).min().astype("Int64")
+    built = year.groupby(montgomery_parcel_id(buildings["parid"])).min().astype("Int64")
     codes = montgomery_codes(pardat).dropna(subset=["parcel_id"]).drop_duplicates("parcel_id")
     return pd.DataFrame(
         {"parcel_id": codes["parcel_id"], "luc": codes["code"], "year_built": codes["parcel_id"].map(built)}
@@ -776,7 +782,9 @@ def apply_montgomery_cama(df: pd.DataFrame, store: DataStore) -> tuple[pd.DataFr
     codes = {d: montgomery_codes(read_cama(p, "PARDAT.DAT", CAMA_PARDAT)) for d, p in files.items()}
     latest = max(files)
     attrs = montgomery_attributes(
-        read_cama(files[latest], "PARDAT.DAT", CAMA_PARDAT), read_cama(files[latest], "DWELL.DAT", CAMA_DWELL)
+        read_cama(files[latest], "PARDAT.DAT", CAMA_PARDAT),
+        read_cama(files[latest], "DWELL.DAT", CAMA_DWELL),
+        read_cama(files[latest], "COMDAT.DAT", CAMA_COMDAT),
     )
     ids = set().union(*(set(c["parcel_id"].dropna()) for c in codes.values()))
     df = apply_county_attributes(drop_never_in_cama(df, ids), attrs, "montgomery CAMA")

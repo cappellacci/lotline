@@ -7,7 +7,8 @@ reappraisal, 1993 to now (254,376 rows on 2026-09-30). Like the Franklin County 
 (`franklin_permits`) it is not a complete record of building (Dayton reports about 16,000 permits for
 2010-2026, the unincorporated county 75,000, and 44% carry no description), but it is the only Montgomery
 source that names ADUs. So this adapter keeps **ADU permits only**; a jurisdiction with no ADU has no row (the
-ADU panel's caller lists the places).
+ADU panel's caller lists the places: `covered_places`, those reporting at least `MIN_PERMITS_PER_YEAR` permits
+a year, 12 places on 2026-11-01).
 
 **Fields read** (`FIELDS`, AA407 layout positions): parcel ID, the issuing office's permit number, permit
 date, the work category `Why` (DWLG, ADDN, DET GAR, ALT, ELECTRIC, AC …), the valuation and the three
@@ -61,6 +62,10 @@ COUNTY = "39113"
 ADU_REPEAT_DAYS = 730  # one ADU per parcel in any two years (as in franklin_permits)
 DISTRICT_SHARE = 0.95  # taxing district → jurisdiction, for parcels missing from the roll
 MIN_RECORD = 150  # bytes: shorter lines are spill-over, not records
+# ADU-panel coverage (Ben, 2026-11-01): a place's zero-ADU years count as zeros only if it reports at least
+# this many permits a year to the Auditor over COVERAGE_YEARS; below it, missing ADUs are likely unreported
+MIN_PERMITS_PER_YEAR = 100
+COVERAGE_YEARS = (2010, 2025)
 # PERMIT.DAT fields (1-based start, length), AA407 layout; the address fields are not listed
 FIELDS = {
     "parid": (1, 30),
@@ -155,15 +160,28 @@ def jurisdiction_lookup(parcels: pd.DataFrame) -> tuple[dict[str, str], dict[str
     return by_parcel, by_district
 
 
+def place_of(parcel_id: pd.Series, parcels: pd.DataFrame) -> pd.Series:
+    """Jurisdiction of each "39113…" parcel ID: its roll record, else its taxing district's."""
+    by_parcel, by_district = jurisdiction_lookup(parcels)
+    district = parcel_id.str[len(COUNTY) : len(COUNTY) + 3]
+    return parcel_id.map(by_parcel).fillna(district.map(by_district))
+
+
+def covered_places(raw: pd.DataFrame, parcels: pd.DataFrame) -> list[str]:
+    """Jurisdictions whose ADU counts from this table are taken as complete enough for the ADU panel: at least
+    `MIN_PERMITS_PER_YEAR` reported permits a year, on average over `COVERAGE_YEARS` (decision 6, 2026-11-01).
+    The panel's caller passes this list; the rest of the county is left out of the panel."""
+    date = pd.to_datetime(raw["permdt"], format="%d-%b-%y", errors="coerce")
+    first, last = COVERAGE_YEARS
+    window = raw.loc[date.dt.year.between(first, last)]
+    per_year = place_of(COUNTY + window["parid"], parcels).value_counts() / (last - first + 1)
+    return sorted(per_year.index[per_year >= MIN_PERMITS_PER_YEAR])
+
+
 def build(raw: pd.DataFrame, parcels: pd.DataFrame, state: str = "OH") -> pd.DataFrame:
     """Raw PERMIT rows → canonical ADU permits."""
     adu = adu_flags(raw)
-    by_parcel, by_district = jurisdiction_lookup(parcels)
-    juris = (
-        adu["parcel_id"]
-        .map(by_parcel)
-        .fillna(adu["parcel_id"].str[len(COUNTY) : len(COUNTY) + 3].map(by_district))
-    )
+    juris = place_of(adu["parcel_id"], parcels)
     n = len(adu)
     out = pd.DataFrame(
         {

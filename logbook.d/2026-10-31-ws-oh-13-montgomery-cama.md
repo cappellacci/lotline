@@ -52,3 +52,18 @@ category, valuation and three 80-character notes; address fields are never read.
 
 **How Claude checked.** Claude read every flagged permit and every rejected note naming an ADU. The one false
 positive (a Parkview building labelled "BLD 40") became the multi-family guard.
+
+**Addendum 2026-11-01: Ben's decisions on the Montgomery questions.**
+1. Keep the drop rule. It removed 25,940 parcels, all but 3 without a land-use code.
+2. Keep fill-only.
+3. Add commercial and apartment year built (CAMA `COMDAT`). Done: Dayton's year built rises from 76.8% to 81.3%,
+   so it is tier 1. Ohio tier 1 rises from 81 to 85.
+4. Keep the 99% county-share rule; Kettering keeps one roll.
+5. Gap-year interpolation goes in a separate PR.
+6. ADU-panel coverage means at least 100 reported permits a year. It is applied as
+   `montgomery_permits.covered_places`: 12 places.
+7. Accept the 'as is' terms.
+8. No 2023 CAMA file.
+Ben also dropped the OGRIP email.
+
+Tests cover the COMDAT year built and the coverage rule.
