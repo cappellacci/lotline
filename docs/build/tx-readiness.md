@@ -15,11 +15,13 @@ development run was made** (data-thread rule). Plan: `docs/build/tx-data-plan.md
   tier 2, 705 tier 3.
 - **Places of 100,000+:** 33 of 40 count from parcels. Not counting from parcels: Houston, Amarillo, League
   City, Mesquite, Pearland, Round Rock and Tyler.
-- **Rules:** 102 rule rows (`config/reforms/tx.csv`).
-  - **ADU:** coded for 38 places: 22 with a rule that allows ADUs somewhere, 16 "none".
+- **Rules:** 103 rule rows (`config/reforms/tx.csv`).
+  - **ADU:** coded for 39 places: 23 with a rule that allows ADUs somewhere, 16 "none" (Carrollton added
+    2026-11-01).
   - **Missing middle:** coded for 39 places: 10 allow 2 or more homes on some single-family lots (by right or by
     permit), 29 allow one.
-  - **Second coder:** 80 rows are flagged. The worksheet is `docs/research/ordinances/tx-second-coder-2026-10-30.csv`.
+  - **Second coder:** 81 rows are flagged; 2 agreed in Ben's review (2026-10-30). The worksheet is
+    `docs/research/ordinances/tx-second-coder-2026-10-30.csv`.
 - **Fees:** 55 rows (`config/fees/tx.csv`) for six cities: Austin, San Antonio (SAWS), Fort Worth, Houston,
   Dallas (tap and inspection charges only) and Corpus Christi.
 - **Decision (Ben, 2026-10-30): pool Texas into the ADU estimate (D-025).** Austin and San Antonio enter as
@@ -70,13 +72,13 @@ Lubbock). Five allow two or more homes from before 2010 (El Paso, Beaumont, Wich
 
 | Gap | Effect | Closed by | Owner |
 |---|---|---|---|
-| Land use missing in many counties' 2025 records | 526 jurisdictions on the ACS denominator. Many 2025 county parts carry no land-use code at all (Travis, El Paso, Fort Bend, Montgomery, Lubbock, Smith and others), so they count from 2019 only or not at all | Ask TxGIO why the 2022, 2026 and many 2025 county parts carry no land use | **Ben** (TxGIO) |
+| Land use missing in many counties' 2025 records | 526 jurisdictions on the ACS denominator. Many 2025 county parts carry no land-use code at all (Travis, El Paso, Fort Bend, Montgomery, Lubbock, Smith and others), so they count from 2019 only or not at all | Not pursued (Ben, 2026-11-01: a TxGIO answer would come too late for the entry); those counties stay on their 2019 roll or the ACS fallback | — |
 | County codes that are land types, not uses | Williamson (Round Rock, Georgetown, Cedar Park), Galveston (League City), Bell, Denton, Brazoria and Liberty send land-type (valuation) codes. Reading them as uses would overcount house lots (Williamson's RES is about 87% single-family), so they are recorded in `config/crosswalks/tx_county_land_use.csv` with `applied = no` | Each district's property-use (state class) table in its appraisal export; Williamson's and Galveston's would bring the most places in | Me, if Ben wants it |
 | Harris and Bexar codes | Harris Z1-Z5 (63k parcels) and Bexar 2025 codes are undocumented: download.hcad.org timed out, the Bexar CAD help site returned 403. Houston also stays out because its 2019 extract is partial | The districts' code tables | Later |
 | Releases not read | 2024 is registered but not read (about 2.6 GB per statewide roll in memory) | Per-vintage parcel files (a WS-CORE contract change) | WS-CORE |
 | Fees that vary by area or plat date | Decided (Ben, 2026-10-30): the median area or newest plat cohort is the central per-home amount, the rest the range (`config/fees/README.md`). Local totals: San Antonio $6,981, Fort Worth $5,828, Austin $6,763 (one parkland tier; was $19,054, all three summed), Houston $4,383, Dallas $931 (tap and inspection only). The scenario uses only the central value, and its newest-year rule leaves Austin's 2023 impact fees out | Issue #247 (per-place range; newest year per component) | WS-CORE |
-| Rule rows awaiting a second coder | 80 of 102. Dated events can't be relied on until checked | `docs/research/ordinances/tx-second-coder-2026-10-30.csv` (priority 1 first) | **Ben** |
-| Open lookups | ADU: Pasadena; partial for McKinney, Carrollton, League City, Tyler, Edinburg. Missing middle: Laredo (partial), Pasadena. Fees: all 5 partial | `docs/research/ordinances/tx-*-lookups-todo.csv` | **Ben** |
+| Rule rows awaiting a second coder | 81 of 103 (2 agreed in Ben's 2026-10-30 review; 74 the review could not check). Dated events can't be relied on until checked | `docs/research/ordinances/tx-second-coder-2026-10-30.csv` (priority 1 first) | **Ben** |
+| Open lookups | ADU: Pasadena; partial for Edinburg (Carrollton coded 2026-11-01). Missing middle: Pasadena (Laredo coded 2026-10-30). Fees: all 5 partial | `docs/research/ordinances/tx-*-lookups-todo.csv` | **Ben** |
 | Dallas 2025 permits; Houston record-level permits | Dallas ends 2024-11-12; no ADU outcome for Houston | City workbooks or a records request; HCAD parcel changes | Later |
 | Two places without ACS (Marshall Creek, Starbase) | No denominator | Marshall Creek should leave the jurisdictions table; Starbase's early history belongs to the Cameron County remainder | WS-CORE |
 
