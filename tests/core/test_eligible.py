@@ -439,14 +439,22 @@ def test_one_roll_scales_every_other_acs_year_by_one_factor():
     assert set(out["denominator_quality"]) == {"high"} and set(out["data_tier"]) == {1}
 
 
-def test_two_rolls_interpolate_the_factor_and_hold_it_flat_outside():
+def test_two_rolls_interpolate_real_counts_between_and_scale_acs_outside():
     # Wake style: rolls 2019 (90, ACS 100 -> f 0.9) and 2023 (110, ACS 100 -> f 1.1).
-    # 2021 is halfway: f 1.0 -> 200. 2020: f 0.95 -> 0.95 x 120 = 114. 2010 before both: f 0.9 -> 45.
-    # 2024 after both: f 1.1 -> 132. The roll years 2019 and 2023 are never filled (they keep 90 and 110).
+    # Between the rolls the real counts are interpolated whatever ACS says (D-035 addendum):
+    # 2020 = 90 + 20 x 1/4 = 95; 2021 = 100 (ACS 120 and 200 there would have given 114 and 200).
+    # Outside, ACS is scaled flat: 2010 before both: f 0.9 -> 45; 2024 after both: f 1.1 -> 132.
+    # The roll years 2019 and 2023 are never filled (they keep 90 and 110).
     acs = _rows("acs_sf_fallback", {2010: 50, 2019: 100, 2020: 120, 2021: 200, 2023: 100, 2024: 120})
     rolls = _rows("parcels", {2019: 90, 2023: 110}, quality={2019: "medium", 2023: "high"})
     out = _filled(rolls, acs).set_index("year")
-    assert out["eligible_parcels"].to_dict() == {2010: 45, 2020: 114, 2021: 200, 2024: 132}
+    assert out["eligible_parcels"].to_dict() == {2010: 45, 2020: 95, 2021: 100, 2024: 132}
+    assert out["denominator_source"].to_dict() == {
+        2010: "parcels_scaled_acs",
+        2020: "parcels_interpolated",
+        2021: "parcels_interpolated",
+        2024: "parcels_scaled_acs",
+    }
     # quality of the nearest roll; 2021 is equidistant and takes the earlier one
     assert out["denominator_quality"].to_dict() == {
         2010: "medium",
@@ -462,10 +470,10 @@ def test_combine_keeps_real_roll_counts_and_drops_the_fallback():
     rolls = _rows("parcels", {2019: 90, 2023: 110})
     out = eligible.combine(rolls, pd.concat([acs, other], ignore_index=True))
     raleigh = out[out.jurisdiction_geoid == "3755000"].set_index("year")
-    assert raleigh["eligible_parcels"].to_dict() == {2019: 90, 2021: 200, 2023: 110}
+    assert raleigh["eligible_parcels"].to_dict() == {2019: 90, 2021: 100, 2023: 110}  # 2021 halfway
     assert raleigh["denominator_source"].to_dict() == {
         2019: "parcels",
-        2021: "parcels_scaled_acs",
+        2021: "parcels_interpolated",
         2023: "parcels",
     }
     assert out.loc[out.jurisdiction_geoid == "3700000", "denominator_source"].tolist() == ["acs_sf_fallback"]
@@ -489,10 +497,11 @@ def test_a_roll_too_far_from_any_acs_year_scales_nothing():
 
 
 def test_anchor_with_zero_or_missing_acs_is_skipped():
-    # ACS 2019 is 0: that roll can't give a factor, so only the 2023 anchor (f 1.1) is used everywhere
-    acs = _rows("acs_sf_fallback", {2019: 0, 2021: 200, 2023: 100})
+    # ACS 2019 is 0: that roll can't give a factor, so only the 2023 anchor (f 1.1) scales years outside the
+    # rolls (2024: 120 x 1.1 = 132); 2021 lies between two real rolls and is interpolated (100) regardless
+    acs = _rows("acs_sf_fallback", {2019: 0, 2021: 200, 2023: 100, 2024: 120})
     out = _filled(_rows("parcels", {2019: 90, 2023: 110}), acs).set_index("year")
-    assert out["eligible_parcels"].to_dict() == {2021: 220}  # 2019 keeps its real roll; ACS 0 isn't filled
+    assert out["eligible_parcels"].to_dict() == {2021: 100, 2024: 132}
     # a parcel-counted place with no ACS series at all gets nothing
     assert _filled(_rows("parcels", {2023: 110}, geoid="3799999"), acs).empty
 
