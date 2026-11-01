@@ -108,3 +108,13 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   `OH-3925704-missing_middle-2024`, Ohio's second missing-middle event; Columbus's ADU effective date was
   corrected to the city's 2025-12-24. Dublin's §153.059 was checked (Bridge Street District only: no
   conflict) and Hamilton's coded row kept (Ben: the 2023 amendment did not pass).
+
+- `nc-second-coder-2026-11-01.csv` (North Carolina thread 10): **the second-coder worksheet** for the 66 local rule
+  rows in `config/reforms/nc.csv` (every row except the S.L. 2026-59 state-law rows), same columns as the Texas sheet.
+  - Priority 1 (28): dated reforms from 2010 on, which become D-024/D-025 events.
+  - Priority 2 (31): rows dated 2010 or later by the ordinance's adoption date (`[earliest-known]`): the event date
+    itself needs confirming.
+  - Priority 3 (7): rules in force before 2010.
+  - Copies of the ordinances Ben downloaded are in `~/lotline-data/manual/nc_udos/`; `source_url` names the file.
+  - Four columns are blank for the second coder: `second_coder`, `agrees (yes/no/partly)`, `correct_value`,
+    `second_coder_note`. Agreed rows get `coder_2` and `coder_agreement = agree`; disagreements are adjudicated.
