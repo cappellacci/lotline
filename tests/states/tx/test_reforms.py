@@ -186,3 +186,11 @@ def test_second_coder_review_2026_10_30(reforms):
     # Tyler: garage apartments in R-1C/R-1D by 2010, renamed from TX-4874144-adu-2011
     assert r.at["TX-4874144-adu-2010", "effective_date"] == pd.Timestamp("2010-01-01")
     assert "TX-4874144-adu-2011" not in r.index
+
+
+def test_carrollton_adu_2011(reforms):
+    # Ord. 3421 (ratified 2011-01-11): accessory-building dwelling only on 20,000 sq ft of buildable area
+    r = reforms.set_index("reform_id")
+    assert r.at["TX-4813024-adu-2011", "by_right"] == True  # noqa: E712
+    assert r.at["TX-4813024-adu-2011", "min_lot_sqft"] == 20000
+    assert pd.isna(r.at["TX-4813024-adu-2011", "owner_occ"])  # rental and owner occupancy unresolved

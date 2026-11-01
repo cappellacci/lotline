@@ -42,3 +42,13 @@ def test_central_values_by_hand(totals):
     assert totals["4827000"] == pytest.approx(2990 + 2838)
     # Austin: one parkland tier (medium density, $6,009.04), not all three
     assert totals["4805000"] < 10_000
+
+
+def test_dallas_has_no_utility_impact_fee(fees, totals):
+    # the city says it "does not charge utility impact fees" (2023-12-04 minutes): an explicit $0 row
+    d = fees[
+        (fees["jurisdiction_geoid"] == "4819000")
+        & fees["fee_type"].str.startswith("Water and wastewater impact")
+    ]
+    assert len(d) == 1 and d["amount_per_unit_usd"].iloc[0] == 0
+    assert totals["4819000"] == pytest.approx(465.5 + 465.5)  # tap and inspection charges only

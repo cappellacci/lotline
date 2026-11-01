@@ -78,6 +78,7 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   - Replay order of the Texas scripts: `tx_research_2026_10_29`, `tx_corrections_2026_10_30`,
     `tx_ben_lookups_2026_10_30`, `tx_second_coder_2026_10_30`, `tx_ben_lookups_2026_10_30b`, then
     `tx_fee_rule_2026_10_30` (Ben's rule for fees that vary by area or plat date, `config/fees/README.md`).
+    Then `tx_ben_lookups_2026_11_01` (Carrollton ADU and Dallas utility fees, 2026-11-01).
     Rerunning them all leaves the files unchanged (checked 2026-10-30).
 - `nc-fee-lookups-todo.csv` (same day): water/sewer and impact fees per single-family home for the 10 largest
   places other than Raleigh (Raleigh FY2022-FY2027 is coded in `config/fees/nc.csv`).

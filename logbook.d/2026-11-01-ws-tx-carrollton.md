@@ -1,0 +1,37 @@
+### LB-NNN · 2026-11-01 · Policy analysis: Carrollton ADU rule, Dallas utility fees; TxGIO question dropped
+- **Question:** what do Ben's Carrollton and Dallas lookups settle, and what happens to the open TxGIO question?
+- **What I did:**
+  - Coded `TX-4813024-adu-2011` with `scripts/dev/tx_ben_lookups_2026_11_01.py` (rerun-safe).
+  - Set the Carrollton ADU tracker row to coded and added `test_carrollton_adu_2011`.
+  - Marked the TxGIO question as not pursued in `docs/build/tx-readiness.md`.
+- **Inputs:** Ben's lookup in chat (2026-11-01). Its sources are the Carrollton CZO (April 2026 and 2020
+  editions), the CZO amendment register and Article 24.
+- **Outputs:** `config/reforms/tx.csv` (103 rows), `config/fees/tx.csv` (+2 Dallas rows),
+  `docs/research/ordinances/tx-{adu,fee}-lookups-todo.csv`,
+  `scripts/dev/tx_ben_lookups_2026_11_01.py`, `tests/states/tx/test_reforms.py`, `docs/build/tx-readiness.md`,
+  ordinances README.
+- **Findings:**
+  - Under Ord. 3421 (ratified 2011-01-11), an accessory building may be a dwelling only on a lot with at least
+    20,000 sq ft of buildable area, in the SF-detached, SF-attached/townhouse and D districts. No SUP is named,
+    so it is coded by right. A separate meter is prohibited and there is no size cap.
+  - Rental is unresolved, so owner occupancy is left blank. A guest house (Ord. 1947) cannot be rented, and the
+    code does not say whether every accessory dwelling is a guest house.
+  - The effective date and the pre-2011 rule are unresolved, so the row is flagged.
+  - D-021 measures the lot minimum on total lot area, so Carrollton's coverage is an upper bound.
+- **Dallas:**
+  - The city's 2023-12-04 fee-study briefing, in the official committee minutes, says Dallas "does not charge
+    utility impact fees". Coded as an explicit $0 water and wastewater impact-fee row, so the local total of
+    $931 (tap and inspection charges) is complete.
+  - City Code Ch. 49 has two conditional charges, which are not routine:
+    - A lot fee of $0.018 per sq ft per qualifying developer-built main, under 20 years old. Coded with a blank
+      per-home amount.
+    - A special assessment for a main extension over 100 ft. It has no current standard rate, so it goes in
+      the notes.
+  - The Dallas fee lookup is now coded.
+- **Decisions:** Ben 2026-11-01: the TxGIO question is not pursued, because an answer would come too late.
+  Those counties stay on their 2019 roll or the ACS fallback.
+- **AI:** Claude coded the row from Ben's findings and ran the Texas tests and the full suite.
+- **Open / next:**
+  - Pasadena (ADU and missing middle), from Ben's pending lookup.
+  - Second-coder pass.
+  - #247 (WS-CORE).
