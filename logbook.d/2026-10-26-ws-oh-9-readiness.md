@@ -13,3 +13,18 @@
 - **Decisions:** none.
 - **AI:** Claude Code (WS-OH) computed the counts and wrote the report; no model or scenario was run.
 - **Open / next:** finalize after #224, #226, #232 merge and Ben's lookups; S7 Cleveland permits, S8 fees.
+
+**Addendum 2026-11-01.** Ben asked for the report to be rewritten now that #226 and #246 are merged. Claude merged
+`main` (6a70f9d) into the branch and rebuilt `oh_parcels`, `jurisdictions` and `eligible` from the cached
+2026-10-19 snapshot.
+
+- **What went wrong first:** a run without `OH_PARCELS_VINTAGE` started a fresh statewide download dated
+  2026-11-01. It hung on the ArcGIS server and was stopped. It left a partial `raw/oh_parcels/2026-11-01/` folder
+  and 529 manifest entries that nothing uses.
+- **What was counted:** a read-only script counted the tables and `config/reforms/oh.csv`. No model runs.
+- **Headline changes:**
+  - real-parcel share up from 92.5% to 95.5%;
+  - tier 1 up from 72 to 85 places;
+  - the ADU panel up from 4 to 15 places;
+  - missing-middle treated places in the window up from 1 to 2.
+- **Flagged:** township `pop_2020` totals look partial.
