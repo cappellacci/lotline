@@ -50,7 +50,7 @@ These national sources feed every state the same way.
 | Zoning (R3) | Minneapolis Primary Zoning and Built Form (CC0); St. Paul Principal Zoning and its dated archive (2007 on); Met Council Planned Land Use (plan designations, not zoning) | St. Paul archive snapshots of 2023-11-25 and 2023-11-26 (`stpaul_v5`, V5 H1/H2 lots; #259) | No zoning is joined to parcels for the engines yet. The eligible-parcel rule counts a parcel with unknown zoning as single-family-only (`build/eligible.py`), which can overstate eligibility where zoning already allows more |
 | Sale prices and rents (R7) | Regional Parcels last sale price and date; eCRV sales (bulk access for government agencies only); ACS; FHFA | `acs`, `fhfa` | No open sales history; parcel last-sale price waits on a parcel adapter |
 | Fees (R8) | Minneapolis fees paid per permit; city fee schedules (batch-1 records); city fee reports under Minn. Stat. §326B.145 (PDFs); Met Council sewer availability charge | `config/fees/mn.csv` (171 rows, 13 jurisdictions, 2016–2027), `mpls_permits` (`fees_paid_usd`) | No Met Council SAC series yet; places without a per-home total use the Handbook $50,000 (D-034) |
-| Reform dates (R9) | City ordinances and code pages (batch-1 records, Ben's metro ADU adoption records); Minneapolis 2040 Plan litigation; St. Paul 2023 reform; no statewide ADU or middle-housing law enacted | `config/reforms/mn.csv` (107 rows: 96 ADU for 80 places, 7 missing middle, 2 moratorium windows, 2 parking) | Second-coded 2026-11-02 (8 agree, 60 adjudicated, 39 noted); 26 D-025 event dates are DATE UNCONFIRMED (`docs/research/ordinances/mn-second-coder-lookups-2026-11-02.csv`). St. Paul's 2023 rows are coded; its 2024–2026 outcomes stay hidden (V5) |
+| Reform dates (R9) | City ordinances and code pages (batch-1 records, Ben's metro ADU adoption records); Minneapolis 2040 Plan litigation; St. Paul 2023 reform; no statewide ADU or middle-housing law enacted | `config/reforms/mn.csv` (107 rows: 96 ADU for 80 places, 7 missing middle, 2 moratorium windows, 2 parking) | Second-coded 2026-11-02 (8 agree, 60 adjudicated, 39 noted); 25 D-025 event dates are DATE UNCONFIRMED (`docs/research/ordinances/mn-second-coder-lookups-2026-11-02.csv`). St. Paul's 2023 rows are coded; its 2024–2026 outcomes stay hidden (V5) |
 
 ## North Carolina
 
@@ -104,7 +104,7 @@ These national sources feed every state the same way.
 
 - **Minnesota:** 539 of 1,053 jurisdictions count from parcels (86% of the population); 28 counties have not
   opted in to MnGeo and 21 opt-in counties are unusable, so Mankato, Willmar, Brainerd and most of the far
-  north and southwest stay on ACS. No outstate record-level permits; rule rows are second-coded, but 26 ADU event dates are unconfirmed.
+  north and southwest stay on ACS. No outstate record-level permits; rule rows are second-coded, but 25 ADU event dates are unconfirmed.
 - **North Carolina:** parcels (#121, #122) and Charlotte zoning (#120) are in review; until they merge, NC is in
   the same ACS-fallback position. No sale prices statewide.
 - **Ohio:** parcels for 2 of 88 counties, with land use and lot size only (no year built, units or values).

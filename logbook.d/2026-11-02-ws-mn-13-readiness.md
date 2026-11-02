@@ -64,5 +64,7 @@
   2011-10-03) and Rochester (R-1 one home per lot since 1998). His agent's second pass confirmed six adoption
   dates from official records (Lakeville, Medina 2011, Minnetonka, Vadnais Heights, Oakdale, Cottage Grove
   re-dated to 2023-01-01). Recount: 26 of 53 D-025 event rows DATE UNCONFIRMED; 23 places with a confirmed-date
-  event. Proposed to Ben, not applied: delete Medina 2024 (Ord. 733 is a height rule) and settle Roseville.
-- **Open / next:** the 26 unconfirmed dates; Medina 2024 and Roseville; M6–M8.
+  event. Ben then approved deleting Medina 2024 (Ord. 733 is a height rule) and adding Roseville Ord. 1418
+  (2011-10-10, conditional to permitted) as `MN-2755852-adu-2011`. Final recount: 25 of 53 event rows
+  DATE UNCONFIRMED; 24 places with a confirmed-date event.
+- **Open / next:** the 25 unconfirmed dates; M6–M8.

@@ -16,6 +16,8 @@ second coder's findings, so those rows keep their DATE UNCONFIRMED tags. Ben acc
 - Hugo (Ben's own lookup, later the same day): Ord. 2011-459 §1, dated 2011-10-03, adopted the ADU rules
   (Hugo Code §90-277 attributes them to it), not Ord. 2011-460 (2011-11-07). No separate effective or
   publication date was found, so the effective date is coded as adoption.
+- Round 3 (Ben, same day): Medina 2024 deleted (Ord. 733 is a height rule); Roseville Ord. 1418 (2011-10-10)
+  added as an event.
 - Rochester missing middle (Ben's own lookup, same day): a 1998 city planning record says an amendment
   removed duplexes and Performance Residential Developments from R-1 (R-1x kept the former R-1 uses), so
   R-1 was one home per lot before the 2023 UDC. The R-1 row stays `[predates]` and is a control on evidence.
@@ -186,6 +188,37 @@ ROUND2 = {
     ),
 }
 
+# Round 3 (Ben, 2026-11-02): Medina 2024 is a height rule (Ord. 733), not an ADU change, so it is deleted;
+# Roseville Ord. 1418 (2011-10-10) is added as an in-window event between the 2010 (2006 code) and 2021 rows.
+DELETE3 = {"MN-2741480-adu-2024"}
+ROSEVILLE_2011 = dict(
+    reform_id="MN-2755852-adu-2011",
+    jurisdiction_geoid="2755852",
+    theme="adu",
+    component="Roseville Ord. 1418: ADUs made a permitted use (previously conditional) on one-family lots; "
+    "one ADU, attached or detached (above a garage or in an accessory building); "
+    "owner occupancy; 650 sq ft cap",
+    adoption_date="2011-10-10",
+    effective_date="2011-10-10",
+    supersedes="MN-2755852-adu-2010",
+    by_right="True",
+    owner_occ="True",
+    adus_per_lot="1",
+    adu_max_sqft="650",
+    adu_detached_allowed="True",
+    coverage="LDR-1 (per the council summary)",
+    coverage_zones="LDR-1",
+    source_url="https://www.cityofroseville.com/Archive.aspx?ADID=1186;"
+    "https://cityofroseville.com/DocumentView.aspx?DID=4968",
+    source_section="Ord. 1418",
+    coding_notes="Council record 2011-10-10: Council adopted Ord. 1418; the report says earlier city action "
+    "first allowed ADUs as conditional uses and this amendment made them permitted (the 2006 code in the "
+    "2010 row shows the conditional use). One second-coder note instead says Ord. 1418 allowed ADUs by "
+    "conditional use; by_right=True follows the council record. Effective on publication, date not found: "
+    "coded as adoption. 650 sq ft and owner occupancy from the second coder's reading of the ordinance; "
+    "a later 2011 amendment limited occupancy to 2.",
+)
+
 
 def main() -> None:
     with REFORMS.open() as f:
@@ -195,7 +228,7 @@ def main() -> None:
     kept, changed = [], 0
     for row in rows:
         rid = row["reform_id"]
-        if rid in DELETE:
+        if rid in DELETE or rid in DELETE3:
             continue
         kept.append(row)
         if TAG in row["coding_notes"]:
@@ -225,13 +258,23 @@ def main() -> None:
         row["coding_notes"] = f"{row['coding_notes']} {TAG2}: {note}"
         changed += 1
     added = 0
+    if ROSEVILLE_2011["reform_id"] not in ids:
+        for row in kept:
+            if row["reform_id"] == "MN-2755852-adu-2021":
+                row["supersedes"] = ROSEVILLE_2011["reform_id"]
+        row = {k: "" for k in fields}
+        row.update(state="MN", status="in_force", coder="ben", coder_agreement="single_coder")
+        row.update(ROSEVILLE_2011)
+        row["coding_notes"] = f"{row['coding_notes']} Lookup round 3 (Ben, 2026-11-02)."
+        kept.append(row)
+        added += 1
     if NEW["reform_id"] not in ids:
         row = {k: "" for k in fields}
         row.update(state="MN", status="in_force", coder="ben", coder_agreement="single_coder")
         row.update(NEW)
         row["coding_notes"] = f"{row['coding_notes']} {TAG}."
         kept.append(row)
-        added = 1
+        added += 1
     with REFORMS.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         w.writeheader()
