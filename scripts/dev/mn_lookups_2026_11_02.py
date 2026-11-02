@@ -413,6 +413,16 @@ def scott_2025(geoid: str, township: str) -> dict:
 # the row is not an in-window event; DATE UNCONFIRMED comes off (the date no longer matters for timing).
 PREDATES_TAG = "Ben's predates lookup (2026-11-02)"
 BEN_PREDATES = {
+    "MN-2716315688-adu-2022": (
+        {},
+        "a copy of the township Development Code effective 2017-03-16 already allows internal accessory "
+        "apartments in an existing owner-occupied single-family home with a Certificate of Compliance (2.1),"
+        " and the 2019 Comprehensive Plan says the code regulates ADUs. The township's ordinance index shows"
+        " 2022-02 is the Mississippi River Corridor Critical Area ordinance and 2022-03 a zoning-map "
+        "rezoning, so 2022-12-08 is only the code's effective date: not an in-window event. The original "
+        "ordinance and first effective date were not found. (Ben gave the 2017 code copy, the 2019 plan and "
+        "the ordinance index; their links were not recorded here.)",
+    ),
     "MN-2716304132-adu-2018": (
         {
             "coverage": "AG, AP, RR, SFE, TZ, SCR (township code); Shoreland Management Overlay (county)",

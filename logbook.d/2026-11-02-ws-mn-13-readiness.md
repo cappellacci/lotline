@@ -92,6 +92,7 @@
   confirmed places. Mounds View Ord. 1045 confirmed (adopted 2025-08-11, effective 2025-09-13,
   conditional use): 7 unconfirmed. Sunfish Lake adoption confirmed (Ord. 25-12, 2025-12-09; publication unknown,
   may fall after the window): 6 unconfirmed, 39 confirmed. Baytown `[predates]` (2040 plan: the township already
-  permitted accessory apartments): D-025 72 places (44 changes, 28 controls), 5 of 55 event rows unconfirmed.
-- **Open / next:** the 5 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  permitted accessory apartments): D-025 72 places (44 changes, 28 controls), 5 of 55 event rows unconfirmed. Denmark `[predates]` (2017 code
+  already allows them): D-025 71 places (43 changes, 28 controls), 4 of 54 event rows unconfirmed, 39 confirmed.
+- **Open / next:** the 4 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.
