@@ -1,6 +1,6 @@
 # Minnesota data plan (thread 13, part B, step 1)
 
-*WS-MN, 2026-11-01. Status: **draft, for Ben's approval** (§5). Brief: `docs/build/handoffs/13-nc-mn-wrap-up.md`
+*WS-MN, 2026-11-01. Status: **approved by Ben on 2026-11-01** (§5 decisions 1 and 2: the plan and the MnGeo download; 3 and 4 as recommended). Brief: `docs/build/handoffs/13-nc-mn-wrap-up.md`
 (Part B), which replaces the integration run in thread 8's task 6. Thread 8 (`08-minnesota-data-complete.md`)
 was written but never run. Template: `docs/build/nc-data-plan.md`, `docs/build/tx-data-plan.md`.*
 
