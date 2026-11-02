@@ -67,4 +67,8 @@
   event. Ben then approved deleting Medina 2024 (Ord. 733 is a height rule) and adding Roseville Ord. 1418
   (2011-10-10, conditional to permitted) as `MN-2755852-adu-2011`. Final recount: 25 of 53 event rows
   DATE UNCONFIRMED; 24 places with a confirmed-date event.
-- **Open / next:** the 25 unconfirmed dates; M6–M8.
+- **More of Ben's lookups (same PR):** St. Louis Park lead (Council likely 2020-10-05) noted; Richfield ADU
+  re-dated to 2015-07-01 `[earliest-known]`; Richfield Bill No. 2023-2 added as a D-024 event (duplexes by right
+  in R, passed 2023-01-24), so D-024 now has 3 in-window events; Eagan's ADU ordinance noted as Ord. 528.
+- **Open / next:** the 25 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
+  M6–M8.

@@ -21,8 +21,8 @@ commands. This branch is stacked on #260 and #261 and should be merged after the
   the 46 have an event on a confirmed date: 25 of the 53 event rows are tagged DATE UNCONFIRMED. 109 more covered places
   have no rule yet. That
   makes Minnesota the largest contributor to D-025, as it already is today (D-023/D-025's Twin Cities panel).
-- **The missing-middle panel (D-024) has 100 Minnesota places of 10,000+, with 2 in-window events:**
-  Minneapolis (2020) and St. Louis Park (2025), both dates confirmed from the ordinances. St. Paul's 2023 reform is the V5
+- **The missing-middle panel (D-024) has 100 Minnesota places of 10,000+, with 3 in-window events:**
+  Minneapolis (2020), Richfield (2023) and St. Louis Park (2025), all adopted on dates confirmed from official records. St. Paul's 2023 reform is the V5
   holdout.
 - **V5 St. Paul inputs** are in #259: 55,269 eligible H1/H2 lots on the pre-window roll, from the city's dated
   zoning snapshot.
@@ -53,7 +53,7 @@ remainders have no population in that column.
 | **Record-level permits** | **Met Council** 114,363 (2009–2025, 186 metro jurisdictions; SFD, TH, DTQ, MF5, ADU); **Minneapolis CCS** 129,849 (2016–2026); **St. Paul** 73,228 (2015–2023 after the filter) | — | No outstate city has record-level permits (out of scope) |
 | **Permits with an ADU flag** | Met Council: 341 ADUs in 53 places, from 2014 (2016 on in practice). Minneapolis CCS: 211 (inferred from the scope text) | — | Met Council undercounts Minneapolis internal ADUs (LB-057). St. Paul's own file has no ADU flag |
 | **ADU rules** | **80 jurisdictions, 98 rows**: 76 metro places, plus Duluth, Rochester and St. Cloud outstate | The rest draw a rule type (D-022) | 109 Met Council places have no rule (largest: Brooklyn Center, Chaska, Prior Lake, Shoreview, Hastings, Lino Lakes, Northfield). The outstate fill-in table (M6) is not done. 9 in-window D-025 event rows are dated `[earliest-known]` |
-| **Missing-middle rules** | **7 jurisdictions**: Minneapolis 2020 (3 units), St. Louis Park 2025 (N-1 up to 3), St. Paul 2023 (V5), Duluth 2026; "one home" in Rochester (R-1), Brooklyn Park and Coon Rapids | Uncoded places draw a rule type (D-022) | `mn-mm-lookups-todo.csv`: 33 of the 40 largest places, largest first (Bloomington's 2026 Phase II is the likeliest new event) |
+| **Missing-middle rules** | **8 jurisdictions**: Minneapolis 2020 (3 units), Richfield 2023 (duplexes in R), St. Louis Park 2025 (N-1 up to 3), St. Paul 2023 (V5), Duluth 2026; "one home" in Rochester (R-1), Brooklyn Park and Coon Rapids | Uncoded places draw a rule type (D-022) | `mn-mm-lookups-todo.csv`: 33 of the 40 largest places, largest first (Bloomington's 2026 Phase II is the likeliest new event) |
 | Fees | **13 jurisdictions, 171 rows**, 2016–2027: Rochester, Burnsville, Maple Grove, St. Paul, Coon Rapids, Lakeville, Duluth, St. Cloud, St. Louis Park, Apple Valley, Minneapolis, Bloomington, Brooklyn Park | The Handbook prior of $50,000 per home elsewhere (D-034) | No Met Council SAC series (M7, not done) |
 | Market (rent, value, rates, costs) | ACS, FHFA, FRED, statewide | — | — |
 | Demand index | Processed, every county and place, 2010–2023 | — | — |
@@ -83,7 +83,7 @@ So Minnesota's 74 places stay the core of the D-025 panel. Today's estimate alre
 
 | Group | Places |
 |---|---|
-| **In-window events** | Minneapolis (2020-01-01; the injunction windows 2022-06-15 to 2022-07-26 and 2023-11-04 to 2024-05-13 as sensitivity) and St. Louis Park (2025-03-28, Ord. 2690-25; duplex and 3-unit in N-1 and N-2, 4-unit in N-2) |
+| **In-window events** | Minneapolis (2020-01-01; the injunction windows 2022-06-15 to 2022-07-26 and 2023-11-04 to 2024-05-13 as sensitivity) and St. Louis Park (2025-03-28, Ord. 2690-25; duplex and 3-unit in N-1 and N-2, 4-unit in N-2) and Richfield (Bill No. 2023-2, passed 2023-01-24: duplexes by right in R; effective about 30 days after publication, date not found, coded as passage) |
 | Untreated on evidence | Brooklyn Park (R-1), Coon Rapids (LDR1/LDR2) |
 | Untreated on evidence (R-1) | Rochester: R-1 has allowed one home per lot since a 1998 amendment, so the 2023 UDC changed nothing there (`[predates]`); 2-4 units with staff approval in other districts |
 | Outside the panel | St. Paul 2023 (V5 holdout); Duluth 2026 (after the window) |
@@ -176,3 +176,7 @@ DATE UNCONFIRMED. Ben accepted four changes, applied by `scripts/dev/mn_lookups_
   (2011-10-10) added as `MN-2755852-adu-2011`: ADUs went from conditional (the 2006 code) to permitted.
 - **Recount:** D-025 74 places (46 changes, 28 controls); 25 of 53 event rows DATE UNCONFIRMED; 24 places with a
   confirmed-date event.
+- **Richfield and Eagan (Ben):** Bill No. 2023-2 (passed 2023-01-24) allows duplexes by right in R and folds
+  MR-1 into R, so Richfield is a new D-024 event (`MN-2754214-missing_middle-2023`; three-plus units stay
+  multifamily). Eagan's ADU ordinance is almost certainly Ord. 528, 2nd Series (unsigned draft; date still
+  unconfirmed). Richfield's ADU row is re-dated to 2015-07-01 `[earliest-known]` (city handout dated 7/2015).

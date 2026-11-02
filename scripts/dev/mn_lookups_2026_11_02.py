@@ -247,6 +247,42 @@ RICHFIELD_URLS = (
     "https://mcclibraryfunctions.azurewebsites.us/api/ordinanceDownload/15207/1201593/pdf"
 )
 
+# Ben's lookups (2026-11-02): Richfield missing middle (new row) and Eagan's ordinance number (note).
+RICHFIELD_MM = dict(
+    reform_id="MN-2754214-missing_middle-2023",
+    jurisdiction_geoid="2754214",
+    theme="missing_middle",
+    component="Richfield Bill No. 2023-2: two-family dwellings by right in R (Low Density Residential); MR-1 "
+    "eliminated and its properties rezoned to R; still prohibited in R-1; three or more units stay "
+    "multifamily uses, not allowed in R or R-1",
+    adoption_date="2023-01-24",
+    effective_date="2023-01-24",
+    by_right="True",
+    unit_cap="2",
+    coverage="R (Low Density Residential), including the former MR-1 properties",
+    coverage_zones="R",
+    source_url="https://mcclibraryfunctions.azurewebsites.us/api/ordinanceDownload/15207/1201593/pdf;"
+    "https://cms9files.revize.com/richfieldmn/01-24-2023%20City%20Council%20Agenda.pdf;"
+    "https://cms9files.revize.com/richfieldmn/01-24-2023%20Regular.pdf",
+    source_section="Bill No. 2023-2",
+    source_quote="by-right in the R District",
+    coding_notes="Ben's lookup (2026-11-02): signed Bill No. 2023-2 passed 2023-01-24 (council minutes); the "
+    "council-approved summary says two-family homes are allowed by right in R. Effective per Charter 3.09, "
+    "generally 30 days after publication; publication date not found, so effective coded as adoption (the "
+    "true date is about a month or more later). Treated as a change: the summary presents by-right duplexes "
+    "in R as new; R's earlier two-family rule was not read.",
+)
+EAGAN = "MN-2717288-adu-2014"
+EAGAN_TAG = "Ben's Eagan lookup (2026-11-02)"
+EAGAN_NOTE = (
+    "the ADU ordinance is almost certainly Ord. 528, 2nd Series: the draft's Sections 1-3 add ADUs to the"
+    " R-1 and Estate use lists and the ADU standards, and the code history attributes the same sections "
+    "to No. 528 (No. 529 is a separate amendment). The draft is unsigned with the number and dates blank,"
+    " so 528 is a strong identification, not signed-copy confirmation. 2014-05-05 is the code history's "
+    "effective date, not confirmed as the adoption date; publication date unknown. Eagan's online code is"
+    " unofficial (the City Clerk's printed copy is official)."
+)
+
 
 def main() -> None:
     with REFORMS.open() as f:
@@ -297,7 +333,18 @@ def main() -> None:
             ek = "" if EK.strip() in row["coding_notes"] else EK
             row["coding_notes"] = f"{ek}{row['coding_notes']} {RICHFIELD_TAG}: {RICHFIELD_NOTE}"
             changed += 1
+    for row in kept:
+        if row["reform_id"] == EAGAN and EAGAN_TAG not in row["coding_notes"]:
+            row["source_section"] = "Ord. 528, 2nd Series (strong identification, unsigned draft)"
+            row["coding_notes"] = f"{row['coding_notes']} {EAGAN_TAG}: {EAGAN_NOTE}"
+            changed += 1
     added = 0
+    if RICHFIELD_MM["reform_id"] not in ids:
+        row = {k: "" for k in fields}
+        row.update(state="MN", status="in_force", coder="ben", coder_agreement="single_coder")
+        row.update(RICHFIELD_MM)
+        kept.append(row)
+        added += 1
     if ROSEVILLE_2011["reform_id"] not in ids:
         for row in kept:
             if row["reform_id"] == "MN-2755852-adu-2021":
