@@ -71,6 +71,7 @@
   re-dated to 2015-07-01 `[earliest-known]`; Richfield Bill No. 2023-2 added as a D-024 event (duplexes by right
   in R, passed 2023-01-24), so D-024 now has 3 in-window events; Eagan's ADU ordinance noted as Ord. 528;
   Crystal confirmed (Ord. 2017-07, the UDC: adopted 2018-01-02, effective 2018-02-10). Now 24 of 53 D-025 event
-  rows DATE UNCONFIRMED; 25 places with a confirmed-date event.
-- **Open / next:** the 24 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
+  rows DATE UNCONFIRMED; 25 places with a confirmed-date event. Rosemount confirmed (Ord. 2024-04, 2024-06-04,
+  a new authorization per Dakota County) and its fields filled: 23 unconfirmed, 26 confirmed places.
+- **Open / next:** the 23 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.

@@ -298,6 +298,28 @@ BEN_CONFIRM = {
         "(item 6.19) lists the second reading and adoption. The March 2018 Planning Commission 'update' "
         "came later. No signed copy or publication date found.",
     ),
+    "MN-2755726-adu-2024": (
+        {
+            "component": "Rosemount Ord. 2024-04 (zoning code update): internal or attached ADUs allowed with"
+            " standards in A-2, RR, R-1 and R-2; lesser of 75% of the house's living area or 800 sq ft; one "
+            "additional parking space; exterior-material and deck/balcony standards",
+            "by_right": "True",
+            "adu_max_sqft": "800",
+            "adu_detached_allowed": "False",
+            "parking": "one additional space",
+            "coverage": "A-2, RR, R-1, R-2",
+            "coverage_zones": "A-2;RR;R-1;R-2",
+            "source_section": "Ord. 2024-04",
+            "source_url": "https://codelibrary.amlegal.com/codes/rosemountmn/latest/rosemount_mn/0-0-0-15485;"
+            "https://www.co.dakota.mn.us/Government/publiccommittees/CFL/Documents/"
+            "AccessoryDwellingUnitGuide.pdf",
+        },
+        "the official code gives Ord. 2024-04, adopted and effective 2024-06-04 (publication date not found)."
+        " New authorization: Dakota County's 2016 Rosemount profile says the city had no ADU policy, and its"
+        " guide (updated 2023-12-20) lists Rosemount among cities not allowing ADUs. Detached ADUs and owner"
+        " occupancy are not in the reviewed provisions (adu_detached_allowed=False; owner_occ left blank, "
+        "D-022 draws it); by_right=True reads 'allowed with standards' as no discretionary permit.",
+    ),
 }
 
 
