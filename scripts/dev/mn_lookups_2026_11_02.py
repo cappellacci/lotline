@@ -286,6 +286,29 @@ EAGAN_NOTE = (
 # Ben's confirmations (2026-11-02): official records confirm the coded dates, so DATE UNCONFIRMED comes off.
 BEN_TAG = "Ben's confirmation (2026-11-02)"
 BEN_CONFIRM = {
+    "MN-2768818-adu-2022": (
+        {
+            "component": "Wayzata Ord. 811: ADUs a permitted accessory use in all six single-family "
+            "districts; detached allowed (11,000 sq ft lot in R-3A and R-3); 300 sq ft minimum, 33% size "
+            "cap, 960 sq ft cap in R-2A, R-2, R-3A and R-3; one added parking space; owner lives in the "
+            "house or the ADU; one ADU per lot",
+            "effective_date": "2022-06-30",
+            "by_right": "True",
+            "owner_occ": "True",
+            "adus_per_lot": "1",
+            "adu_max_sqft": "960",
+            "adu_detached_allowed": "True",
+            "parking": "one additional space",
+            "coverage": "R-1A, R-1, R-2A, R-2, R-3A, R-3 (all single-family districts)",
+            "coverage_zones": "R-1A;R-1;R-2A;R-2;R-3A;R-3",
+            "source_section": "Ord. 811; City Code Ch. 937",
+        },
+        "Ord. 811 adopted 2022-06-21 at second reading on the 4-0 consent agenda (official meeting summary); "
+        "effective on passage and publication, and the Ch. 937 code history gives 2022-06-30 (no dated "
+        "publication notice found). adu_max_sqft=960 is the cap in R-2A to R-3; R-1A and R-1 have the 33% "
+        "cap only. The 11,000 sq ft lot minimum applies only to detached ADUs in R-3A and R-3 (min_lot_sqft "
+        "left blank).",
+    ),
     "MN-2714158-adu-2018": (
         {
             "source_section": "Ord. 2017-07 (Unified Development Code); City Code 500.09, Table 4, 515.23",
