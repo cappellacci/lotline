@@ -87,3 +87,8 @@ Nothing in this plan opens a St. Paul outcome from 2024-01-01, or a St. Paul rol
    otherwise.
 4. **Second coding:** the MN rule rows are all single-coder, as NC's and Texas's were. Use the same worksheet
    approach (the M5 sheet)?
+
+**Rule added 2026-11-01 (HANDOFF, from the NC review):** a row whose date is only a code rewrite carries
+`[predates]` and is never an event. M4 codes it that way where the batch-1 records show a recodification, and
+the M5 counts leave `[predates]` rows out of the D-024 and D-025 events. NC's review found 10 of 31
+`[earliest-known]` rows were rewrites, so the MN second-coder sheet puts in-window `[earliest-known]` rows first.
