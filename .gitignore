@@ -21,3 +21,6 @@ rules and resources/
 # Local judging-panel runs (/judge); not part of the submission
 reports/judging/
 reports/adu-d0*/**/panel.csv
+
+# Ordinance PDFs downloaded for rule research (third-party documents, kept locally; URLs in the inventory CSVs)
+docs/research/ordinances/*.pdf

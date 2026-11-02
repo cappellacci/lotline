@@ -26,4 +26,17 @@
 - **AI:** Claude Code (Opus 5.5) wrote the scripts and docs. Every count comes from the script's output. An
   early draft counted Rochester's one-home row as an event; that was caught and fixed before writing. No model
   run.
-- **Open / next:** Ben's second-coder pass and lookups; M6–M8.
+- **Second-coder return (2026-11-02, same PR):** Ben's second agent (Codex) filled all 109 rows: 8 yes, 92
+  partly, 9 no. It also wrote over the sheet's left-hand columns; our coding as sent is the sheet at 54e9727.
+  - `scripts/dev/mn_second_coder_2026_11_02.py` appends each finding to `coding_notes` and marks the 8 agreed
+    rows `agree`; no coded value changes (idempotent; `test_reforms` now allows agreed rows).
+  - `docs/research/ordinances/mn-second-coder-decisions-2026-11-02.csv`: 62 recommended actions for Ben
+    (delete Hopkins 2024 and Grant 2016, date fixes for Mounds View, Burnsville and Columbia Heights, field fixes
+    for Chanhassen, Richfield and Oakdale, `[predates]` for Fridley, Forest Lake and Rochester MM, and
+    DATE UNCONFIRMED tags with lookups for rows the reviewer could not confirm).
+  - The agent's other files are committed: research tracker, evidence register, PDF inventory and issues
+    note. Its 17 downloaded PDFs are kept locally; `docs/research/ordinances/*.pdf` is now gitignored.
+  - **AI:** Claude Code (Opus 5.5) compared each reviewer row with `mn.csv` and drafted the recommendations;
+    the Hugo recommendation was corrected after finding it would overwrite Ben's own lookup (Ord. 2011-460).
+- **Open / next:** Ben's decisions on the 62 rows, then a decisions script and a readiness recount; lookups;
+  M6–M8.

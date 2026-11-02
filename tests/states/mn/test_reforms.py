@@ -62,7 +62,11 @@ def test_pipeline_and_ben_rows(reforms):
     ben = reforms[reforms["coder"] == "ben"]
     assert ben["verified_by"].isna().all()
     assert set(reforms["coder"]) <= {"claude", "ben", "pipeline+ben"}
-    assert (reforms.loc[reforms["coder"] != "claude", "coder_agreement"] == "single_coder").all()
+    # Ben's and pipeline rows are single-coded unless the second coder (2026-11-02) agreed.
+    other = reforms[reforms["coder"] != "claude"]
+    agreed = other["coder_agreement"] == "agree"
+    assert (other.loc[~agreed, "coder_agreement"] == "single_coder").all()
+    assert (other.loc[agreed, "coder_2"] == "codex-2026-11-02").all()
     r = reforms.set_index("reform_id")
     # Ben's lookups: Andover Ord. 463, Hugo Ord. 2011-460, Inver Grove Heights 2015 then Ord. 1358
     assert r.at["MN-2701486-adu-2016", "effective_date"] == pd.Timestamp("2016-06-21")
