@@ -74,11 +74,11 @@ Commit the plan as a PR and **ask Ben to approve it before any heavy work** (lar
   the `rural_home` rule); Wake rolls for Nov 2019 and Dec 2023; Charlotte's pre-UDO layer.
 - **Permits:** Raleigh, Durham (annexations dated from 2013, #94), Greensboro, and the Mecklenburg legacy file
   (filtered for the holdout first).
-- **Rules and fees:** 87 rule rows; 132 fee rows for 16 jurisdictions.
+- **Rules and fees:** 92 rule rows; 132 fee rows for 16 jurisdictions.
 - **Denominator history:** #208 and #252 (D-035 and its addendum), with NC's table rebuilt.
 - **V5 Charlotte:** N1 translation, the option (b) prior, and an input check (`reports/nc/V5-charlotte-inputs.md`).
 - **Readiness report** `docs/build/nc-readiness.md` (this PR).
-- **Second-coder worksheet** (#254, open).
+- **Second-coder review** (#254, merged): 28 local rows second-coded, 10 tagged `[predates]`, 5 rows added.
 
 **Where North Carolina stands:**
 - **Jurisdictions:** 454 (157 BPS places, 197 local-only places, 100 county remainders). 218 count from
@@ -87,24 +87,29 @@ Commit the plan as a PR and **ask Ben to approve it before any heavy work** (lar
 - **Tiers:** 124 / 94 / 236.
 - **Real rolls:** 13 Wake jurisdictions have two (2019 and 2023, interpolated between them). Everyone else has
   one roll or ACS.
-- **Rules:** 39 jurisdictions; every row has one coder.
+- **Rules:** 41 jurisdictions. 28 of the 71 local rows are second-coded (8 agree, 20 adjudicated); 43 have one
+  coder.
 - **Fees:** 16 jurisdictions; the Handbook's $50,000 elsewhere.
 - **S10 integration run:** not done. The data-thread rule (thread 13) replaced it with counts.
 
 ### For the engine threads (week of 2026-11-02)
 - **ADU estimate (thread 7, D-025): 8 NC places** with ADU-flagged permits and an in-window rule change.
-  - Raleigh (2019 overlay, 2020 by right, 2022), Durham city (2019, 2023), unincorporated Durham County (2019)
+  - Raleigh (2019-05-20 overlay, 2020 by right, 2022), Durham city (2019, 2023), unincorporated Durham County (2019)
     and Greensboro (2024-04-16).
-  - The Mecklenburg towns: Cornelius (2023), Huntersville (2024), Matthews (2014) and Mint Hill (2011).
+  - The Mecklenburg towns: Cornelius (2023), Huntersville (2024), Matthews (2016, re-dated by the review) and
+    Mint Hill (2011).
   - All four NC permit sources are full permit files, so no covered-places list is needed.
   - Raleigh's ADU flag starts in 2019.
   - Drop 2026 for the Mecklenburg towns and treat 2025 as partial: the legacy file ends.
   - Greensboro and Mecklenburg counts are lower bounds (description parser).
 - **Missing-middle estimate (thread 1, D-024):** 55 BPS places of 10,000+.
   - Firm in-window events: Durham (2019) and Raleigh (2021, 2022).
-  - Nine more in-window rows are dated `[earliest-known]`: Wake Forest, Wilson, Morrisville, Sanford,
-    Burlington, Asheboro, Mooresville, Garner, Monroe. **Run with and without them.**
-  - Apex (2000) is treated before 2010.
+  - Eight more in-window rows are dated `[earliest-known]`: Wake Forest, Wilson, Morrisville, Sanford,
+    Burlington, Mooresville, Garner, Monroe. The second coder confirmed their current rules, not their start
+    dates. **Run with and without them.**
+  - Apex (2000) and New Bern (1996) are treated before 2010.
+  - So are Asheboro and Goldsboro: their rows are `[predates]`.
+  - **`[predates]` rows (10, HANDOFF 2026-11-01) are never events**, whatever their date.
 - **V5 Charlotte (WS-ENGINE, #45, by Nov 17):** read the file and column table in
   `reports/nc/V5-charlotte-inputs.md`.
   - **Cap every annual input at 2022.** ACS, FHFA and the demand index run past 2023-06-01 for Charlotte, and
@@ -116,8 +121,11 @@ Commit the plan as a PR and **ask Ben to approve it before any heavy work** (lar
 - **Hickory and Salisbury** aren't jurisdictions. Their rule rows act only through the county rule mix (D-021).
 
 ### Rows not to lean on as dated events until checked
-- All 87 rule rows have one coder. The 24 `panel_event` rows in #254 come first.
-- The `[earliest-known]` rows: 25 of the 43 local ADU rows and 9 in-window missing-middle rows.
+- 43 local rows still have one coder. Most reviewed rows are "partly": the current rule checks out, and the
+  history or details were left unresolved.
+- The `[earliest-known]` rows: 27 of the 45 local ADU rows (6 of them `[predates]`) and 8 in-window
+  missing-middle rows.
+- Sanford's 2018 missing-middle date is flagged unconfirmed (back on the lookup list).
 - Wilson and Sanford dates come from Ben's lookups. The chapters carry no dates.
 - Monroe 2022 is by special use permit only.
 - Wilmington 2024: the district list wasn't read (coverage is from a news report).
@@ -136,13 +144,15 @@ None of these is in `HANDOFF.md` yet.
 | 2026-10-21 | The 0.6–1.4 ACS band for accepting a drafted county crosswalk (proposed) | `2026-10-21-ws-nc-1-onemap-statewide.md` |
 | 2026-10-21 | A `date_basis` field (adoption / earliest-known) on rule rows (proposed contract change for WS-CORE) | `2026-10-21-ws-nc-4-rules-research.md` |
 | 2026-10-23 | Durham's fee is the 2024 Reference Guide's (equal to the Raftelis maximum); the 2009 impact-fee tables stay out | `2026-10-23-ws-nc-rules-pass2.md` |
+| 2026-11-01 | NC second-coder decisions (Ben: accept the recommendations; keep Mint Hill's duplexes by right). The `[predates]` rule itself is already in HANDOFF | `2026-11-01-ws-nc-second-coder.md` |
 | 2026-10-23 | `rural_home` keyword rule ("RURAL IMPROVED" and similar read as houses) | `2026-10-23-ws-nc-outliers.md` |
 
 ### Left open on purpose
-- **Second-coder pass** (#254), panel-event rows first.
+- **The "partly" second-coder verdicts** (43 single-coder rows), and a predecessor-code check for the 8
+  `[earliest-known]` D-024 rows.
 - **The Mecklenburg archive** (V5 option a), until Nov 10.
 - **The Accela permit file** (the towns from 2025; Charlotte after the freeze).
-- **Lookups:** missing-middle (20 places), ADU (Goldsboro, New Bern; add Davidson and Pineville), fees
+- **Lookups:** missing-middle (17 places), ADU (add Davidson and Pineville), fees
   (Charlotte Water, Fayetteville PWC, Cary, High Point).
 - **One-home rows for Fuquay-Varina and Indian Trail.** Pass 2 found no duplexes; not coded yet.
 - **Durham V0**: whether to compare the city alone with BPS (Ben).

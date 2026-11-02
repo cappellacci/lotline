@@ -65,7 +65,7 @@ counts replace the prior.
 
 ## Input check for the freeze (2026-11-01, thread 13)
 
-Checked on `main` at f9d9624 against the processed tables. Every input below is on `main` (code and config) or
+Checked on `main` at f9d9624, and again at 7fc54e5 after the second-coder review (no V5 input changed), against the processed tables. Every input below is on `main` (code and config) or
 in `~/lotline-data/processed/nc`, and none reads a Charlotte or Mecklenburg outcome from 2023-06-01.
 
 **Reproduced today.** `clt_v5.n1_lots` on the processed layer still gives **169,314 N1 lots**. The layer's

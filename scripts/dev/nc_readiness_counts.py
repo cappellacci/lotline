@@ -9,7 +9,8 @@ Mecklenburg (37119) from 2023-06-01 is read; the Mecklenburg towns' permits stay
 
 "In window" means effective 2010-01-02 to 2025-12-31, as in the Ohio and Texas reports. A D-025 place needs a
 permit source that flags ADUs and covers it, plus a dated ADU rule; a D-024 place is a BPS reporter of
-10,000+ people (2020 Census).
+10,000+ people (2020 Census). A row tagged `[predates]` (HANDOFF, 2026-11-01) is a code rewrite, not a reform:
+it never counts as an event, whatever its date.
 """
 
 from __future__ import annotations
@@ -136,7 +137,15 @@ def main() -> None:
     r["earliest_known"] = (
         r["coding_notes"].str.contains("earliest-known", na=False) | r["adoption_date"].isna()
     )
+    r["predates"] = r["coding_notes"].str.contains("[predates]", na=False, regex=False)
+    r["event"] = r["in_window"] & ~r["predates"]
     print(r.groupby(["theme", "status"]).size().to_string())
+    print(
+        "coder agreement:",
+        r["coder_agreement"].value_counts().to_dict(),
+        "| [predates]:",
+        int(r["predates"].sum()),
+    )
     print(
         "local rows:",
         int((~r["state_law"]).sum()),
@@ -154,12 +163,12 @@ def main() -> None:
     print("rule GEOIDs not in jurisdictions:", sorted(set(r["jurisdiction_geoid"]) - set(j["geoid"])))
     names = j.set_index("geoid")["name"]
 
-    adu = r[(r["theme"] == "adu") & ~r["state_law"] & r["in_window"]]
+    adu = r[(r["theme"] == "adu") & ~r["state_law"] & r["event"]]
     d025 = adu[adu["jurisdiction_geoid"].isin(covered) & ~adu["jurisdiction_geoid"].isin(V5_GEOIDS)]
     print("\nD-025 event rows (covered by an ADU-flagged source, in window):")
     print(
         d025.assign(name=d025["jurisdiction_geoid"].map(names))[
-            ["reform_id", "name", "effective_date", "earliest_known"]
+            ["reform_id", "name", "effective_date", "earliest_known", "coder_agreement"]
         ].to_string(index=False)
     )
     no_rule = sorted(
@@ -171,18 +180,19 @@ def main() -> None:
 
     d24 = places[places["bps"] & (places["pop_2020"] >= 10_000)]
     mm = r[(r["theme"] == "missing_middle")]
-    ev = mm[mm["in_window"] & mm["jurisdiction_geoid"].isin(set(d24["geoid"]) | {"37063"})]
+    ev = mm[mm["event"] & mm["jurisdiction_geoid"].isin(set(d24["geoid"]) | {"37063"})]
     print(
         f"\nD-024: {len(d24)} BPS places of 10,000+; in-window missing-middle rows among them "
         "(plus unincorporated Durham):"
     )
     print(
         ev.assign(name=ev["jurisdiction_geoid"].map(names))[
-            ["reform_id", "name", "effective_date", "by_right", "earliest_known"]
+            ["reform_id", "name", "effective_date", "by_right", "earliest_known", "coder_agreement"]
         ].to_string(index=False)
     )
     out = mm[~mm["reform_id"].isin(ev["reform_id"])]
-    print("other missing-middle rows (not BPS, holdout, or outside the window):", ", ".join(out["reform_id"]))
+    print("other missing-middle rows (not BPS, holdout, outside the window):", ", ".join(out["reform_id"]))
+    print("in-window rows tagged [predates]:", ", ".join(r.loc[r["in_window"] & r["predates"], "reform_id"]))
 
     print("\n## Fees")
     f = pd.read_csv("config/fees/nc.csv", dtype=str)

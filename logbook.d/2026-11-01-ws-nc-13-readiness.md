@@ -30,3 +30,9 @@
   - Part B (Minnesota).
   - Ben: the second-coder pass (#254), the Mecklenburg archive by Nov 10, the Durham V0 decision, and closing
     the stale branches.
+- **Update (same evening):** after #254 merged with the second-coder review, the report and the counts were
+  rerun on 7fc54e5. The script now treats `[predates]` rows as non-events (HANDOFF 2026-11-01).
+  - Data sections are unchanged; only rules moved. There are now 92 rows; 28 local rows are second-coded and
+    10 are tagged `[predates]`.
+  - D-024 in-window events go from 11 to 10 (Asheboro is `[predates]`). D-025 still has 8 places; Matthews was
+    re-dated to 2016 and Raleigh's overlay row to 2019-05-20.

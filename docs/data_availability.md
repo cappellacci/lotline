@@ -7,7 +7,7 @@ It answers two questions the Rules (§8) and the Handbook (Data and Resources) a
 2. **Could anything Lotline publishes identify a person or a single property** (re-identification and
    small-cell risk)?
 
-**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-30, after #244 and the land-use update; North Carolina section: 2026-11-01, at f9d9624). Every "used" entry names the module that reads the data,
+**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-30, after #244 and the land-use update; North Carolina section: 2026-11-01, at 7fc54e5). Every "used" entry names the module that reads the data,
 so it can be checked in `src/lotline/`. "In review" means an open pull request adds it; it is not on `main` yet.
 What "available" means comes from our own scouting: `docs/research/lotline-data-availability.md` (R1–R10),
 `docs/research/lotline-data-catalog.csv`, `docs/research/lotline-data-catalog-mn.csv` and
@@ -54,7 +54,7 @@ These national sources feed every state the same way.
 
 ## North Carolina
 
-*Refreshed 2026-11-01 (thread 13, `docs/build/nc-readiness.md`), `main` at f9d9624.*
+*Refreshed 2026-11-01 (thread 13, `docs/build/nc-readiness.md`), `main` at 7fc54e5, after the second-coder review.*
 
 | Data need | Available | Used | Why not / limits |
 |---|---|---|---|
@@ -68,7 +68,7 @@ These national sources feed every state the same way.
 | Zoning (R3) | Charlotte UDO translation layer (pre-UDO district per parcel, 2023-05-31); Mecklenburg permits' zoning code; Raleigh and Durham city layers | `clt_udo_translation` (V5 N1 lots, `clt_v5`), `meck_permits` (`zoning_raw`) | Other cities not loaded. Unknown zoning counts as single-family-only |
 | Sale prices and rents (R7) | No statewide sale-price file (OneMap has sale date only); Wake qualified sales; ACS; FHFA | `acs`, `fhfa` | Wake qualified sales are registered but not read (no sales table yet) |
 | Fees (R8) | City and utility fee schedules (Ben's downloads); the statewide fee disclosure (S.L. 2026-59), first report not yet published; 2015 UNC EFC connection-fee tables | `config/fees/nc.csv` (132 rows, 16 jurisdictions: Raleigh, Durham, Greensboro, Winston-Salem and Forsyth, Asheville and Buncombe, Concord and Cabarrus, Wilmington and New Hanover (CFPUA), Apex, Fuquay-Varina, Johnston, Brunswick, Wilson); `config/reforms/nc_carthage_towns.csv` | Charlotte Water, Fayetteville PWC, Cary and High Point are open lookups; places without a per-home total use the Handbook $50,000 (D-034) |
-| Reform dates (R9) | City ordinances and UDO PDFs (batch-1 records, Ben's downloads in `~/lotline-data/manual/nc_udos/`); statewide ADU law S.L. 2026-59 (effective 2027-01-15) | `config/reforms/nc.csv` (87 rows: 64 ADU, 22 missing middle, 1 parking; 39 jurisdictions) | No row has a second coder yet (`docs/research/ordinances/nc-second-coder-2026-11-01.csv`). Many dates are the ordinance's adoption date (`[earliest-known]`). Open lookups in `nc-adu-`, `nc-mm-` and `nc-fee-lookups-todo.csv` |
+| Reform dates (R9) | City ordinances and UDO PDFs (batch-1 records, Ben's downloads in `~/lotline-data/manual/nc_udos/`, the second coder's official PDFs); statewide ADU law S.L. 2026-59 (effective 2027-01-15) | `config/reforms/nc.csv` (92 rows: 66 ADU, 25 missing middle, 1 parking; 41 jurisdictions) | Second-coder review 2026-11-01 (#254): 28 of 71 local rows second-coded, 10 tagged `[predates]` (a code rewrite, never an event). Many dates are still the ordinance's adoption date (`[earliest-known]`). Open lookups in `nc-adu-`, `nc-mm-` and `nc-fee-lookups-todo.csv` |
 
 ## Ohio (sparse-evidence state)
 
