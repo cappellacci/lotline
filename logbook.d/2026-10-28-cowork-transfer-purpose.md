@@ -1,0 +1,12 @@
+### LB-NNN · 2026-10-28 · Scope: Transfer is the tool's purpose; the benchmark state is its demonstration
+- **Question:** After the Oct 28 call with Michael, is the goal of Lotline a statewide forecast for one state, or a general-purpose transfer to any state?
+- **What I did:**
+  - Re-read the Handbook (fetched 2026-10-28; the Rules page blocks automated fetching, so the HANDOFF transcription checked against the PDFs on 2026-10-14 was used), the sponsor podcast notes and the Oct 5 webinar notes.
+  - Recorded Ben's decision in HANDOFF (Purpose, Benchmark state and Transfer proof rows; decisions log 2026-10-28).
+  - Added V8 (unseen-state transfer test) to the validation plan.
+- **Inputs:** Handbook; HANDOFF §2; `docs/research/podcast-upzoned-301-notes.md`; `docs/research/webinar-2026-10-05-data-tools-notes.md`; `docs/research/lotline-validation-plan.md`.
+- **Outputs:** `HANDOFF.md`; `docs/research/lotline-validation-plan.md` (§3 V8).
+- **Findings:** The Handbook judges a statewide total for one chosen state and doesn't mention portability; transfer earns points via Replicability & Scalability (25%) and the sparse-data bonus, and is the sponsor's stated next step. The benchmark run is itself a transfer (calibrate where reforms are old, apply where they aren't).
+- **Decisions:** Ben, 2026-10-28: the tool's purpose is general-purpose transfer; the benchmark state is the worked example; prove transfer with an unseen-state run (WI by default); the overlap check and state onboarding become product features.
+- **AI:** Claude (Cowork) drafted the HANDOFF rows, decision text and V8 from Ben's direction; no code or model runs.
+- **Open / next:** choose the benchmark state; confirm the V8 state (WI or ID); add V8 and the onboarding guide to the build plan and issue backlog; update the WS-APP brief so the overlap flag is visible.

@@ -108,3 +108,33 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   `OH-3925704-missing_middle-2024`, Ohio's second missing-middle event; Columbus's ADU effective date was
   corrected to the city's 2025-12-24. Dublin's §153.059 was checked (Bridge Street District only: no
   conflict) and Hamilton's coded row kept (Ben: the 2023 amendment did not pass).
+
+- `nc-second-coder-2026-11-01.csv` (North Carolina thread 10): **the second-coder worksheet** for the 66 local rule
+  rows in `config/reforms/nc.csv` (every row except the S.L. 2026-59 state-law rows), same columns as the Texas sheet.
+  - **Review first: the 24 lines with `panel_event` set** (sorted to the top, 2026-11-01, thread 13). They are the
+    rows that would serve as dated events: 11 D-025 rows (places with ADU-flagged permits: Raleigh, Durham city and
+    county, Greensboro, Cornelius, Huntersville, Matthews, Mint Hill) and 13 D-024 rows (BPS places of 10,000+
+    with a missing-middle change in 2010-2025, plus unincorporated Durham County). 11 of the 24 are priority 2:
+    their date is the ordinance's adoption date, so the event may be earlier than coded.
+  - Priority 1 (28): dated reforms from 2010 on, which become D-024/D-025 events.
+  - Priority 2 (31): rows dated 2010 or later by the ordinance's adoption date (`[earliest-known]`): the event date
+    itself needs confirming.
+  - Priority 3 (7): rules in force before 2010.
+  - Copies of the ordinances Ben downloaded are in `~/lotline-data/manual/nc_udos/`; `source_url` names the file.
+  - Four columns are blank for the second coder: `second_coder`, `agrees (yes/no/partly)`, `correct_value`,
+    `second_coder_note`. Agreed rows get `coder_2` and `coder_agreement = agree`; disagreements are adjudicated.
+  - **Reviewed 2026-11-01** by Ben's second agent (Codex; `second_coder = codex-2026-11-01`; its working files,
+    evidence register and PDFs are in `~/lotline-data/manual/nc/second_coder_2026-11-01/`): 8 yes, 44 partly,
+    14 no, plus 5 supplemental rows (Goldsboro, New Bern, Concord missing middle). Applied by
+    `scripts/dev/nc_second_coder_2026_11_01.py`: the 8 agreed rows get `coder_2` and `coder_agreement = agree`;
+    every reviewed row gets the finding in its notes; no coded value changes.
+  - `nc-second-coder-decisions-2026-11-01.csv`: the 14 disagreements, one value-changing "partly" (Rocky Mount)
+    and the 5 supplemental rows, each with a recommended action, for Ben to decide. Proposed tag `[predates]` in
+    `coding_notes`: the rule was in force before the coded date and the first date is unknown, so the row is not
+    an in-window event.
+  - **Decided 2026-11-01** (Ben: accept the recommendations; keep Mint Hill's duplexes by right). Applied by
+    `scripts/dev/nc_second_coder_decisions_2026_11_01.py` (run after the review script): 15 rows adjudicated,
+    of which 8 tagged `[predates]`; renamed `NC-3702080-adu-2021` → `-2014`, `NC-3741960-adu-2014` → `-2016`,
+    `NC-3757500-adu-2005` → `-2004`; added Goldsboro ADU and duplex, New Bern 'no ADUs' and duplex, Concord
+    duplex/triplex. The reviewer's Thomasville (Georgia) source was rejected; a Newbern, Tennessee PDF in its
+    folder was moved to `wrong_place/`.
