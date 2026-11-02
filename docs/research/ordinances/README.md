@@ -132,3 +132,9 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
     and the 5 supplemental rows, each with a recommended action, for Ben to decide. Proposed tag `[predates]` in
     `coding_notes`: the rule was in force before the coded date and the first date is unknown, so the row is not
     an in-window event.
+  - **Decided 2026-11-01** (Ben: accept the recommendations; keep Mint Hill's duplexes by right). Applied by
+    `scripts/dev/nc_second_coder_decisions_2026_11_01.py` (run after the review script): 15 rows adjudicated,
+    of which 8 tagged `[predates]`; renamed `NC-3702080-adu-2021` → `-2014`, `NC-3741960-adu-2014` → `-2016`,
+    `NC-3757500-adu-2005` → `-2004`; added Goldsboro ADU and duplex, New Bern 'no ADUs' and duplex, Concord
+    duplex/triplex. The reviewer's Thomasville (Georgia) source was rejected; a Newbern, Tennessee PDF in its
+    folder was moved to `wrong_place/`.
