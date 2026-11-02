@@ -313,6 +313,28 @@ STILLWATER_NOTE = (
 )
 
 BEN_CONFIRM = {
+    "MN-2744476-adu-2024": (
+        {
+            "adoption_date": "2024-10-22",
+            "by_right": "True",
+            "owner_occ": "True",
+            "adus_per_lot": "1",
+            "adu_max_sqft": "800",
+            "adu_detached_allowed": "True",
+            "parking": "one off-street space",
+            "coverage": "R-1, R-1A, R-2 (accessory use); MU-D, MU-C (permitted accessory use); lots with a "
+            "single-family home",
+            "coverage_zones": "R-1;R-1A;R-2;MU-D;MU-C",
+            "source_section": "Ord. No. 7-2024; City Code 129-194(i)",
+            "source_url": "https://bloximages.chicago2.vip.townnews.com/hometownsource.com/content/tncms/asse"
+            "ts/v3/classifieds/1/8c/18cb9ce7-168e-5be1-8ba1-1288a110b415/6786d134e4110.pdf.pdf;https://www.c"
+            "ityofmound.com/Documents/Government/Official%20Notifications/2024/combined.pdf",
+        },
+        "Ord. No. 7-2024 adopted 2024-10-22, published in the Laker Pioneer 2024-11-02 and effective "
+        "2024-11-03 (published ordinance). The city packet describes it as adding ADUs; no sign they were "
+        "allowed before. One internal, attached or detached ADU, up to 800 sq ft (or the house footprint if "
+        "smaller), owner occupancy, one off-street space, principal-structure setbacks.",
+    ),
     "MN-2769970-adu-2025": (
         {
             "component": "White Bear Lake Ord. 25-07-2080 (zoning code rewrite): ADUs moved from conditional "

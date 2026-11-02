@@ -78,5 +78,6 @@
   Bear Lake confirmed (Ord. 25-07-2080, CUP to by right, effective 2025-08-20): 20 unconfirmed, 29 confirmed.
   Stillwater's 2017 date is Ord. 1093 (short-term rentals); ADUs date from the late 1990s, so the row is
   `[predates]`: D-025 73 places (45 changes, 28 controls), 19 of 52 event rows unconfirmed, 29 confirmed places.
-- **Open / next:** the 19 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  Mound confirmed (Ord. No. 7-2024, adopted 2024-10-22, effective 2024-11-03): 18 unconfirmed, 30 confirmed.
+- **Open / next:** the 18 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.
