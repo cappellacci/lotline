@@ -381,3 +381,11 @@ Priority 3 places: Anoka city; Apple Valley city; Arden Hills city; Bethel city;
 - The prior City-hosted zoning ordinance contains no ADU provision; §1201.08 likewise prohibits uses not listed. The replacement ordinance therefore newly authorized attached ADUs.
 - Downloaded official PDFs: current 2025 codebook, Dec. 9 item 7a draft packet, and prior zoning ordinance are listed in the PDF inventory and saved under `source-pdfs/`.
 - Primary records needed to close the date gap: signed/enrolled Ordinance 25-12 and its attached proof/affidavit of legal publication, held by the City Clerk per the City’s ordinances page.
+
+
+## Baytown Township accessory apartments — [predates] confirmed; original ordinance record unresolved (2026-11-02)
+
+- The official Baytown Township 2040 Comprehensive Plan, approved 2018-05-07, p. 44, Housing Policy 4, says the Township will “continue to permit Accessory Apartments in Single Family Dwellings.” This confirms the Township rule existed before 2018-05-07 and before the Washington County Development Code Chapter 2 effective date of 2018-06-05. The tracker’s 2018 event should therefore be coded `[predates]`; 2018-06-05 is a County overlay chapter date, not the start date for Baytown Township’s local rule.
+- Current Township code, Chapter Two, Part 3 §2.1, permits one internal accessory apartment in an owner-occupied single-family home in AG, AP, RR, SFE, TZ and SCR with a Certificate of Compliance, no separate curb cut, and annual renewal. This remains distinct from detached ADUs and from duplexes/triplexes.
+- The official Township Ordinances List updated May 2024 indexes historical zoning ordinances and amendments but does not name an accessory-apartment amendment. It cannot establish which base ordinance first contained the provision. Ordinance number, adoption date, publication date, and exact effective date remain **Unresolved**.
+- The official 2018 Plan and May 2024 ordinance index PDFs are listed in the PDF inventory. They were accessible via the official website/search index, but direct local downloads returned HTTP 403, so they were not saved in `source-pdfs/`. The Township Clerk’s archived minutes/ordinance binder or a certified ordinance copy is the remaining primary record needed to resolve the original adoption.

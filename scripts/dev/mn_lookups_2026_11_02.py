@@ -409,6 +409,30 @@ def scott_2025(geoid: str, township: str) -> dict:
     )
 
 
+# Ben's lookups that show a rule older than its coded date (2026-11-02): [earliest-known] and [predates], so
+# the row is not an in-window event; DATE UNCONFIRMED comes off (the date no longer matters for timing).
+PREDATES_TAG = "Ben's predates lookup (2026-11-02)"
+BEN_PREDATES = {
+    "MN-2716304132-adu-2018": (
+        {
+            "coverage": "AG, AP, RR, SFE, TZ, SCR (township code); Shoreland Management Overlay (county)",
+            "coverage_zones": "AG;AP;RR;SFE;TZ;SCR",
+            "source_url": "https://webgen1files1.revize.com/baytowntwpmn/Comp%20Plan/2040/"
+            "Approved2040CompPlan_5.7.18.pdf;"
+            "https://webgen1files1.revize.com/baytowntwpmn/2024.09.04%20Zoning%20Ordinance%20Ch%201-2%20"
+            "Baytown%20Township-CURRENT.pdf;"
+            "https://webgen1files1.revize.com/baytowntwpmn/Ordinances/Baytown%20Township%20Ordinances%20List"
+            "%20-%20Updated%20May%202024.pdf",
+        },
+        "the township's 2040 Comprehensive Plan (adopted 2018-05-07, pp. 43-44) says its zoning ordinance "
+        "already permitted accessory apartments and it would continue to, so the rule predates the county's "
+        "2018-06-05 Chapter 2 date: not an in-window event. Township code Ch. 2 Part 3 2.1: one internal "
+        "accessory apartment in an owner-occupied single-family home in AG, AP, RR, SFE, TZ and SCR, "
+        "Certificate of Compliance, no separate curb cut, annual renewal; no detached ADUs. The first "
+        "township ordinance and its dates were not found (the May 2024 ordinance index does not say).",
+    ),
+}
+
 BEN_CONFIRM = {
     "MN-2763544-adu-2025": (
         {
@@ -743,6 +767,15 @@ def main() -> None:
         if row["reform_id"] == FRIDLEY and FRIDLEY_TAG not in row["coding_notes"]:
             row["effective_date"], row["adoption_date"] = "2022-09-01", ""
             row["coding_notes"] = f"{row['coding_notes']} {FRIDLEY_TAG}: {FRIDLEY_NOTE}"
+            changed += 1
+    for row in kept:
+        rid = row["reform_id"]
+        if rid in BEN_PREDATES and PREDATES_TAG not in row["coding_notes"]:
+            updates, note = BEN_PREDATES[rid]
+            row.update(updates)
+            notes = row["coding_notes"].replace(UNCONF, "").strip()
+            ek = "" if EK.strip() in notes else EK
+            row["coding_notes"] = f"{ek}{PRE}{notes} {PREDATES_TAG}: {note}"
             changed += 1
     added = 0
     for geoid, township in SCOTT.items():
