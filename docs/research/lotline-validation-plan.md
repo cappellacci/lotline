@@ -168,6 +168,21 @@ Thresholds marked *(proposed)* are our judgment, to be confirmed when pre-regist
 - **Pass *(proposed)*:** V1 criteria met in the second state without code changes beyond a new adapter.
 - **Themes:** all.
 
+
+### V8. Unseen-state transfer test (added 2026-10-28)
+
+- **Question:** Does the framework work on a state it was never developed on? This is the direct test of the tool's purpose (HANDOFF decision 2026-10-28: general-purpose transfer).
+- **Why V7 isn't enough:** MN, TX, NC and OH shaped the code, crosswalks and parameters, so success there partly reflects tuning.
+- **Design:**
+  - Pick the state before looking at its outcomes; WI by default (official data list: statewide parcels and zoning; borders MN). ID optional, as the "state with no reform" case.
+  - Onboard it with new adapters and crosswalks only. Any change to shared code, parameters or estimators counts against the test and is logged.
+  - Re-run V0 and V1 there, and produce the full scenario run with the overlap check (protocol §5.5) shown for every place.
+  - If the state has a local reform with a post-period (e.g. a WI city ADU ordinance), freeze a prediction before loading its outcomes, as in V5.
+- **Measures:** onboarding effort (files and hours, from the PR); V0 and V1 results; share of places inside vs. outside the calibration range; for any frozen local prediction, whether the observed value falls in P10–P90.
+- **Pass *(proposed)*:** V0 and V1 pass with no shared-code changes; every out-of-range place is flagged; onboarding documented well enough for a third party to repeat it from the guide.
+- **Deliverables:** a "bring your own state" guide; a slide and a scorecard row; the per-state "data available vs. used" table.
+- **Themes:** all.
+
 ---
 
 ## 4. What each theme gets from the ladder
