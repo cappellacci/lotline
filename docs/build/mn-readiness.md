@@ -18,7 +18,7 @@ commands. This branch is stacked on #260 and #261 and should be merged after the
 - **Of the 40 largest places, only Mankato is on ACS.** Its county (Blue Earth) has not opted in.
 - **The ADU panel (D-025) holds 73 Minnesota places with Met Council or Minneapolis permits and a dated rule:**
   45 with an in-window rule change and 28 "no ADUs" controls (after the second-coder review and lookups). Only 38 of
-  the 45 have an event on a confirmed date: 8 of the 56 event rows are tagged DATE UNCONFIRMED. 109 more covered places
+  the 45 have an event on a confirmed date: 7 of the 56 event rows are tagged DATE UNCONFIRMED. 109 more covered places
   have no rule yet. That
   makes Minnesota the largest contributor to D-025, as it already is today (D-023/D-025's Twin Cities panel).
 - **The missing-middle panel (D-024) has 100 Minnesota places of 10,000+, with 3 in-window events:**
@@ -68,7 +68,7 @@ covered-places list. Minneapolis's CCS permits cover Minneapolis. St. Paul never
 
 | Group | Places | Notes |
 |---|---|---|
-| **Rule change in the window** | **45** | Minneapolis (2014, 2016, 2021, 2023) and 44 suburbs. 11 of their 56 event rows are dated `[earliest-known]` (4 are the 2025 Scott County rows, adoption date unknown) and 8 are DATE UNCONFIRMED; only 38 places have an event on a confirmed date. Run with and without the unconfirmed dates |
+| **Rule change in the window** | **45** | Minneapolis (2014, 2016, 2021, 2023) and 44 suburbs. 11 of their 56 event rows are dated `[earliest-known]` (4 are the 2025 Scott County rows, adoption date unknown) and 7 are DATE UNCONFIRMED; only 38 places have an event on a confirmed date. Run with and without the unconfirmed dates |
 | **"No ADUs" controls** | **28** | Coded "none" rows in covered places |
 | Rule, no event, not a control | 3 | Rules only before the window, or `[predates]` (Stillwater) |
 | **Covered, no rule yet** | 109 | Largest: Brooklyn Center 33,782, Chaska, Prior Lake, Shoreview, Hastings, Lino Lakes, Northfield, Waconia, North St. Paul, East Bethel, Lake Elmo, White Bear township, Little Canada, Victoria. Each one coded joins the panel at once |
@@ -92,7 +92,7 @@ So Minnesota's 73 places stay the core of the D-025 panel. Today's estimate alre
 
 | Gap | Effect | What closes it | Owner |
 |---|---|---|---|
-| **8 D-025 event dates unconfirmed** | 7 of the 45 event places have no event on a confirmed date | City clerks, council minutes or signed ordinances (`mn-second-coder-lookups-2026-11-02.csv`) | **Ben** |
+| **7 D-025 event dates unconfirmed** | 7 of the 45 event places have no event on a confirmed date | City clerks, council minutes or signed ordinances (`mn-second-coder-lookups-2026-11-02.csv`) | **Ben** |
 | 109 covered metro places with no ADU rule | Fewer D-025 places; more D-022 draws | An ADU lookup table for them, largest first (not written yet; the outstate one, M6, isn't either) | Ben, then WS-MN |
 | Missing-middle rules for the 40 largest places | 33 still draw (D-022) | `mn-mm-lookups-todo.csv` | Ben |
 | Bare-code counties (Crow Wing, Itasca, Koochiching, Jackson, Houston) | 51 of their 58 jurisdictions on ACS (Brainerd, Grand Rapids, International Falls) | Each county's property-type code table | Ben (one request each), then WS-MN |
@@ -126,7 +126,7 @@ uv run python scripts/dev/mn_second_coder_sheet.py
 ## 5. Ben's manual items (exact steps)
 
 1. ~~Second-coder pass~~: **done 2026-11-02**; Ben accepted all 62 recommendations (§6).
-2. **Lookups:** the 8 unconfirmed dates in `mn-second-coder-lookups-2026-11-02.csv` need primary records; then
+2. **Lookups:** the 7 unconfirmed dates in `mn-second-coder-lookups-2026-11-02.csv` need primary records; then
    `mn-mm-lookups-todo.csv` (33 places). Hugo and Rochester are settled (§6).
 3. **County code tables** for Crow Wing, Itasca, Koochiching, Jackson and Houston. Ask each assessor for their
    three-digit property-type code list (the codes 151, 111, 765 and others are unlabelled).
@@ -213,3 +213,5 @@ DATE UNCONFIRMED. Ben accepted four changes, applied by `scripts/dev/mn_lookups_
 - **Scott County townships (Ben):** Comprehensive Revision #1 (adopted 2010-01-12, effective 2010-01-20) first
   allowed ADUs, so the four 2010 rows are confirmed. The 2025-05-06 amendment raised the caps (1,000 attached, 1,200
   detached) and dropped the minimum size and room limits: a new 2025 row for each township (Board date unknown).
+- **Mounds View Ord. 1045 (Ben):** adopted 2025-08-11 (5-0), published 2025-08-14, effective 2025-09-13 (30-day
+  clause); detached ADUs are conditional uses in R-1 to R-4.

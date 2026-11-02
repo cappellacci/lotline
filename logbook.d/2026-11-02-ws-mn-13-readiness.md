@@ -89,6 +89,7 @@
   to 600 sq ft: 12 unconfirmed. Fridley re-dated from 2022-01-01 to 2022-09-01 `[earliest-known]` (newsletters:
   adopted March-September 2022); still unconfirmed. Scott County: the four 2010 township rows confirmed
   (Comprehensive Revision #1) and four 2025-05-06 amendment rows added: 56 event rows, 8 unconfirmed, 38
-  confirmed places.
-- **Open / next:** the 8 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  confirmed places. Mounds View Ord. 1045 confirmed (adopted 2025-08-11, effective 2025-09-13,
+  conditional use): 7 unconfirmed.
+- **Open / next:** the 7 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.

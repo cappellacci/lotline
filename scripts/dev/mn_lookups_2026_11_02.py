@@ -410,6 +410,20 @@ def scott_2025(geoid: str, township: str) -> dict:
 
 
 BEN_CONFIRM = {
+    "MN-2744530-adu-2025b": (
+        {
+            "effective_date": "2025-09-13",
+            "by_right": "False",
+            "coverage": "R-1, and R-2 to R-4 under the city's hierarchical zoning; single-family lots",
+            "coverage_zones": "R-1;R-2;R-3;R-4",
+        },
+        "Ord. 1045 adopted 2025-08-11, 5-0; the ordinance text gives publication 2025-08-14 (not 08-12), and "
+        "its 30-day clause puts the effective date at 2025-09-13 (counted per Minn. Stat. 645.15, not "
+        "printed). Detached ADUs are conditional uses (CUP plus a rental-dwelling license and building "
+        "permits), so by_right=False. One detached ADU per single-family lot, 300 sq ft minimum, 50% of the "
+        "house maximum, owner occupancy with a recorded covenant, one added off-street space; license fee "
+        "waived for owner or family occupancy.",
+    ),
     "MN-2755852-adu-2021": (
         {
             "source_section": "Ord. 1606 (Phase 1 zoning update)",
