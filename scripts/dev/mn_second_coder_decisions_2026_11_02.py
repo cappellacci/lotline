@@ -162,6 +162,9 @@ def main() -> None:
         for rid in sheet
         if rid in UNCONFIRMED or rid in EXTRA_LOOKUPS
     ]
+    if LOOKUPS.exists():  # never overwrite Ben's answers
+        print(f"{changed} rows adjudicated, {len(rows) - len(kept)} deleted; {LOOKUPS.name} kept")
+        return
     with LOOKUPS.open("w", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
         w.writerow(["reform_id", "place", "what_to_find", "answer", "source_url"])

@@ -53,4 +53,11 @@
     the committed file.
 - **HANDOFF decision (Ben, 2026-11-02, accepted as option 1):** `DATE UNCONFIRMED` in `coding_notes` marks a dated event with no signed
   ordinance or effective-date record. It still counts as an event; engines run with and without such rows.
-- **Open / next:** Ben's 36 lookups (Burnsville 2020 first); M6–M8.
+- **Lookups applied (2026-11-02, same PR):** Ben's agent answered the 36 lookups; 33 repeat the second coder.
+  Ben accepted four changes (`scripts/dev/mn_lookups_2026_11_02.py`, idempotent): Forest Lake 2023 becomes an
+  event (Ord. 719), Fridley 2022 loses `[predates]`, Mounds View Ord. 1045 added as `-2025b` (Ord. 1042 row
+  renamed `-2025a`), Burnsville 2020 deleted. Recount: D-025 74 places (46 changes, 28 controls); 32 of 53
+  event rows DATE UNCONFIRMED; 17 places with a confirmed-date event.
+  - Fixed on the way: `mn_readiness_counts.py` matched the bare word `earliest-known` (it appears in decision
+    text); it now matches the `[earliest-known]` tag. The decisions script no longer overwrites the lookup file.
+- **Open / next:** primary records for the 32 unconfirmed dates, Hugo and Rochester; M6–M8.

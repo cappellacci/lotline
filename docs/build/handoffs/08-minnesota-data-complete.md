@@ -65,14 +65,14 @@ rule.
 - **Jurisdictions:** 1,053. 539 count from parcels (86% of the population), and 1,043 have every year
   2010–2024. Of the 40 largest places, only Mankato is on ACS.
 - **Tiers:** 130 / 408 / 515.
-- **Rules:** 107 rows, second-coded 2026-11-02 (Ben accepted all 62 recommendations): ADU for 80 places,
+- **Rules:** 107 rows (after lookups: Burnsville 2020 deleted, Mounds View Ord. 1045 added), second-coded 2026-11-02 (Ben accepted all 62 recommendations): ADU for 80 places,
   missing middle for 7.
 - **Fees:** 13 jurisdictions; the Handbook's $50,000 elsewhere.
 
 ### For the engine threads (week of 2026-11-02)
-- **ADU estimate (D-025): 72 MN places with Met Council or Minneapolis permits and a dated rule.**
-  - 44 have an in-window change and 28 are "no ADUs" controls. Of the 51 event rows, 8 are `[earliest-known]`
-    and 31 are DATE UNCONFIRMED; only 16 places have an event on a confirmed date. Run with and without them.
+- **ADU estimate (D-025): 74 MN places with Met Council or Minneapolis permits and a dated rule.**
+  - 46 have an in-window change and 28 are "no ADUs" controls. Of the 53 event rows, 8 are `[earliest-known]`
+    and 32 are DATE UNCONFIRMED; only 17 places have an event on a confirmed date. Run with and without them.
   - St. Paul never enters.
   - Met Council's file covers every metro community, so no covered-places list is needed.
 - **Missing-middle estimate (D-024):** 100 BPS places of 10,000+.
@@ -86,7 +86,7 @@ rule.
 - **Population weights:** `pop_2020` covers places and townships (4.97M). County remainders are blank.
 
 ### Rows not to lean on as dated events until checked
-- The 31 DATE UNCONFIRMED D-025 event rows (`mn-second-coder-lookups-2026-11-02.csv`), Burnsville 2020 first.
+- The 32 DATE UNCONFIRMED D-025 event rows (`mn-second-coder-lookups-2026-11-02.csv`).
 - The 8 `[earliest-known]` D-025 event rows.
 - Brooklyn Park and Coon Rapids: placeholder 2010 dates.
 

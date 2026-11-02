@@ -136,7 +136,7 @@ def main() -> None:
     r["in_window"] = pd.to_datetime(r["effective_date"]).between(*WINDOW)
     r["predates"] = r["coding_notes"].str.contains("[predates]", na=False, regex=False)
     r["earliest_known"] = (
-        r["coding_notes"].str.contains("earliest-known", na=False) | r["adoption_date"].isna()
+        r["coding_notes"].str.contains("[earliest-known]", na=False, regex=False) | r["adoption_date"].isna()
     )
     # A "none" row (no ADUs, or one home per lot) is a control on evidence, not a reform event.
     r["none_row"] = (r["theme"].eq("adu") & r["adus_per_lot"].eq("0")) | (
