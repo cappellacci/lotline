@@ -289,6 +289,29 @@ EAGAN_NOTE = (
 
 # Ben's confirmations (2026-11-02): official records confirm the coded dates, so DATE UNCONFIRMED comes off.
 BEN_TAG = "Ben's confirmation (2026-11-02)"
+# Ben's Stillwater lookup (2026-11-02): the 2017-05-02 date is Ord. No. 1093 (short-term home rentals), not an
+# ADU enactment; ADUs have been allowed since the late 1990s, so the row is [earliest-known] and [predates].
+STILLWATER = "MN-2762824-adu-2017"
+STILLWATER_TAG = "Ben's Stillwater lookup (2026-11-02)"
+STILLWATER_UPDATES = {
+    "component": "Stillwater: ADUs allowed since the late 1990s (first ordinance not found): by conditional "
+    "use permit in TR and RB, outright in CTR; RB ADUs only above a detached garage, up to 800 sq ft, four "
+    "parking spaces; district lot-size and design rules (2021 Planning Commission report, Case 2021-15)",
+    "by_right": "False",
+    "adu_detached_allowed": "True",
+    "coverage": "TR and RB (conditional use), CTR (permitted)",
+    "coverage_zones": "TR;RB;CTR",
+    "source_section": "2021 Planning Commission report, Case 2021-15; Ord. No. 1093 (2017, short-term "
+    "rentals)",
+}
+STILLWATER_NOTE = (
+    "the 2017-05-02 record is Ord. No. 1093, which regulates short-term home rentals and mentions ADUs only "
+    "in a definition (enacted 2017-05-02, published in the Stillwater Gazette 2017-05-12). The city's 2021 "
+    "Planning Commission report (Case 2021-15) says ADUs were allowed from the late 1990s, so this row is "
+    "not an in-window reform. by_right=False codes the conditional-use districts. Open: the late-1990s "
+    "ordinance, and whether the 2021 proposal (expansion to RA) was adopted, a possible in-window event."
+)
+
 BEN_CONFIRM = {
     "MN-2769970-adu-2025": (
         {
@@ -452,6 +475,12 @@ def main() -> None:
             row.update(updates)
             row["coding_notes"] = row["coding_notes"].replace(UNCONF, "").strip()
             row["coding_notes"] = f"{row['coding_notes']} {BEN_TAG}: {note}"
+            changed += 1
+    for row in kept:
+        if row["reform_id"] == STILLWATER and STILLWATER_TAG not in row["coding_notes"]:
+            row.update(STILLWATER_UPDATES)
+            notes = row["coding_notes"].replace(UNCONF, "").strip()
+            row["coding_notes"] = f"{EK}{PRE}{notes} {STILLWATER_TAG}: {STILLWATER_NOTE}"
             changed += 1
     added = 0
     if RICHFIELD_MM["reform_id"] not in ids:

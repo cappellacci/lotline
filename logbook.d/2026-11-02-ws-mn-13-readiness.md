@@ -76,5 +76,7 @@
   confirmed (Ord. 811, adopted 2022-06-21, effective 2022-06-30) and filled: 22 unconfirmed, 27 confirmed places. Plymouth
   confirmed (Ord. 2023-12, 2023-09-12; expanded the 2002 above-garage rule): 21 unconfirmed, 28 confirmed places. White
   Bear Lake confirmed (Ord. 25-07-2080, CUP to by right, effective 2025-08-20): 20 unconfirmed, 29 confirmed.
-- **Open / next:** the 20 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
+  Stillwater's 2017 date is Ord. 1093 (short-term rentals); ADUs date from the late 1990s, so the row is
+  `[predates]`: D-025 73 places (45 changes, 28 controls), 19 of 52 event rows unconfirmed, 29 confirmed places.
+- **Open / next:** the 19 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.
