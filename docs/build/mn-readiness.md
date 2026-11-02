@@ -208,3 +208,5 @@ DATE UNCONFIRMED. Ben accepted four changes, applied by `scripts/dev/mn_lookups_
   dates not found. R-1 only (the stricter section controls over the use table's RR).
 - **Roseville 2021 (Ben):** Ord. 1606 (Phase 1 zoning update) adopted 2021-11-08 made ADUs permitted in LDR and
   LMDR and changed the cap from 600 to 300-650 sq ft; the 2011 row's cap is corrected to 600.
+- **Fridley (Ben):** city newsletters show the ADU ordinance was new in 2022, adopted between March and September;
+  the row moves from the 2022-01-01 placeholder to 2022-09-01 (`[earliest-known]`, still DATE UNCONFIRMED).

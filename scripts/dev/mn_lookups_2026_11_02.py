@@ -333,6 +333,21 @@ ROGERS_NOTE = (
     "should be tagged predates."
 )
 
+# Ben's Fridley lookup (2026-11-02): the 2022-01-01 placeholder is too early. The city's January 2022
+# newsletter says staff would draft an ordinance; its September 2022 newsletter says Council approved it
+# after two public hearings in March. The row moves to 2022-09-01, the earliest date a source shows the rule
+# in force (still [earliest-known] and DATE UNCONFIRMED); adoption falls between March and September 2022.
+FRIDLEY = "MN-2722814-adu-2022"
+FRIDLEY_TAG = "Ben's Fridley lookup (2026-11-02)"
+FRIDLEY_NOTE = (
+    "the city's January 2022 newsletter (p. 4) says staff would draft an ordinance after Council discussed "
+    "allowing ADUs; the September 2022 newsletter (p. 5) says Council approved it after two public hearings "
+    "in March. So ADUs were new in 2022 (not a recodification), adopted between March and September 2022. "
+    "effective_date moved from the 2022-01-01 placeholder to 2022-09-01, the September newsletter, the "
+    "earliest date a source shows the rule in force; adoption_date cleared. Ordinance number, adoption, "
+    "publication and effective dates not found (the Agenda Center archive timed out)."
+)
+
 BEN_CONFIRM = {
     "MN-2755852-adu-2021": (
         {
@@ -628,6 +643,11 @@ def main() -> None:
             notes = row["coding_notes"].replace(UNCONF, "").strip()
             ek = "" if EK.strip() in notes else EK
             row["coding_notes"] = f"{ek}{notes} {ROGERS_TAG}: {ROGERS_NOTE}"
+            changed += 1
+    for row in kept:
+        if row["reform_id"] == FRIDLEY and FRIDLEY_TAG not in row["coding_notes"]:
+            row["effective_date"], row["adoption_date"] = "2022-09-01", ""
+            row["coding_notes"] = f"{row['coding_notes']} {FRIDLEY_TAG}: {FRIDLEY_NOTE}"
             changed += 1
     added = 0
     if RICHFIELD_MM["reform_id"] not in ids:
