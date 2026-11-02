@@ -263,6 +263,8 @@ Priority 3 places: Anoka city; Apple Valley city; Arden Hills city; Bethel city;
 
 
 ## Richfield missing-middle / Bill 2023-2 — effective date unresolved
+- Pre-2023 baseline now confirmed from the official Jan. 10, 2023 Council packet: two-family dwellings were already a conditional use in R when the parcel abutted an arterial or collector street and required a CUP; the proposed amendment changed R to by-right. The draft use table marks two-family dwellings permitted in the former MR-1 district and prohibited in R-1. Therefore this event does not meet the project’s criterion for a *new allowance* on a previously single-family lot; remove it from the in-window new-allowance reform count, while retaining the distinct conditional-to-by-right policy change in notes. This does not resolve the ordinance’s actual publication/effective date. Source: https://cms9files.revize.com/richfieldmn/01-10-2023%20City%20Council%20Agenda.pdf
+
 
 - Official Bill 2023-2 and the Council-approved summary confirm two-family homes (duplexes) became a permitted/by-right use in R, the Low Density Residential District. R-1 remains single-family only; the official summary says it receives no additional zoning changes. Bill §15 eliminates MR-1 and rezones affected parcels into R. Three-or-more-unit multifamily is a separate use and remains prohibited in R/R-1; it is separately addressed in higher-density MR-2/MR-3 districts.
 - Council passed the second reading on 2023-01-24 (5-0). Bill §16 defers effective date to Charter §3.09; ordinary ordinances take effect on the 30th day after publication. The actual Sun Current publication date was not located, so calendar effective date/by-right date remain Unresolved.

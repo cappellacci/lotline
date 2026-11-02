@@ -65,9 +65,9 @@ rule.
 - **Jurisdictions:** 1,053. 539 count from parcels (86% of the population), and 1,043 have every year
   2010–2024. Of the 40 largest places, only Mankato is on ACS.
 - **Tiers:** 130 / 408 / 515.
-- **Rules:** 112 rows (after lookups: Burnsville 2020 deleted, Mounds View Ord. 1045, Roseville 2011, Richfield
-  missing middle and four Scott County 2025 rows added, Medina 2024 deleted), second-coded 2026-11-02 (Ben accepted all 62 recommendations): ADU for 80 places,
-  missing middle for 8.
+- **Rules:** 113 rows (after lookups: Burnsville 2020 deleted, Mounds View Ord. 1045, Roseville 2011, Richfield
+  missing middle (2010 conditional and 2023 by right) and four Scott County 2025 rows added, Medina 2024 deleted), second-coded 2026-11-02 (Ben accepted all 62 recommendations): ADU for 80 places,
+  missing middle for 8 places (9 rows).
 - **Fees:** 13 jurisdictions; the Handbook's $50,000 elsewhere.
 
 ### For the engine threads (week of 2026-11-02)
@@ -77,8 +77,8 @@ rule.
   - St. Paul never enters.
   - Met Council's file covers every metro community, so no covered-places list is needed.
 - **Missing-middle estimate (D-024):** 100 BPS places of 10,000+.
-  - In-window events: Minneapolis 2020 (the injunction windows as sensitivity), Richfield 2023 (duplexes in R,
-    added from Ben's lookup) and St. Louis Park 2025.
+  - In-window events: Minneapolis 2020 (the injunction windows as sensitivity), Richfield 2023 (duplexes in R went
+    from conditional use on arterial lots to by right; Ben's lookups) and St. Louis Park 2025.
   - Brooklyn Park (R-1) and Coon Rapids are untreated on evidence; Rochester's R-1 has been one home per lot since 1998.
 - **V5 St. Paul (#45, by Nov 17):** read `reports/mn/V5-stpaul-inputs.md` (#259). **Cap annual inputs at
   2023.** Disclose D-013's exposure in the freeze file.

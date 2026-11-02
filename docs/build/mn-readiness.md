@@ -83,7 +83,7 @@ So Minnesota's 71 places stay the core of the D-025 panel. Today's estimate alre
 
 | Group | Places |
 |---|---|
-| **In-window events** | Minneapolis (2020-01-01; the injunction windows 2022-06-15 to 2022-07-26 and 2023-11-04 to 2024-05-13 as sensitivity) and St. Louis Park (2025-03-28, Ord. 2690-25; duplex and 3-unit in N-1 and N-2, 4-unit in N-2) and Richfield (Bill No. 2023-2, passed 2023-01-24: duplexes by right in R; effective about 30 days after publication, date not found, coded as passage) |
+| **In-window events** | Minneapolis (2020-01-01; the injunction windows 2022-06-15 to 2022-07-26 and 2023-11-04 to 2024-05-13 as sensitivity) and St. Louis Park (2025-03-28, Ord. 2690-25; duplex and 3-unit in N-1 and N-2, 4-unit in N-2) and Richfield (Bill No. 2023-2, passed 2023-01-24: duplexes by right in R, previously conditional on arterial or collector lots only; effective about 30 days after publication, date not found, coded as passage) |
 | Untreated on evidence | Brooklyn Park (R-1), Coon Rapids (LDR1/LDR2) |
 | Untreated on evidence (R-1) | Rochester: R-1 has allowed one home per lot since a 1998 amendment, so the 2023 UDC changed nothing there (`[predates]`); 2-4 units with staff approval in other districts |
 | Outside the panel | St. Paul 2023 (V5 holdout); Duluth 2026 (after the window) |
@@ -222,3 +222,6 @@ DATE UNCONFIRMED. Ben accepted four changes, applied by `scripts/dev/mn_lookups_
 - **Denmark (Ben):** a 2017 copy of the township code already allows internal accessory apartments, and the 2022
   ordinances were a river-corridor rule and a rezoning, so the 2022 row is `[predates]`: D-025 now 71 places
   (43 changes, 28 controls).
+- **Richfield before 2023 (Ben):** duplexes in R needed a conditional use permit and only on arterial or collector
+  lots; MR-1 was a separate two-family district. Added as `MN-2754214-missing_middle-2010` (a partial dose
+  under D-024), so 2023 stays Richfield's first by-right year and a D-024 event.

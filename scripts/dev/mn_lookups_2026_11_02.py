@@ -276,6 +276,27 @@ RICHFIELD_MM = dict(
     "true date is about a month or more later). Treated as a change: the summary presents by-right duplexes "
     "in R as new; R's earlier two-family rule was not read.",
 )
+RICHFIELD_MM_PRE = dict(
+    reform_id="MN-2754214-missing_middle-2010",
+    jurisdiction_geoid="2754214",
+    theme="missing_middle",
+    component="Richfield before Bill No. 2023-2: two-family dwellings by conditional use permit in R only on "
+    "lots abutting an arterial or collector street; prohibited in R-1; MR-1 was a separate Two-Family "
+    "Residential district (two-family permitted)",
+    effective_date="2010-01-01",
+    by_right="False",
+    unit_cap="2",
+    coverage="R lots abutting arterial or collector streets (conditional use)",
+    coverage_zones="R",
+    source_url="https://cms9files.revize.com/richfieldmn/01-24-2023%20City%20Council%20Agenda.pdf",
+    source_section="2023-01-10 Council packet (description of the prior R rule and use table)",
+    coding_notes="[earliest-known] effective_date is the earliest date this source shows the rule in force, "
+    "not a confirmed first adoption; 2010-01-01 is the placeholder for a rule in force before the window "
+    "(first date unknown). Ben's lookup (2026-11-02): the official 2023-01-10 Council packet describes the "
+    "pre-2023 R rule (duplexes by CUP on arterial or collector lots) and proposes allowing them by right; "
+    "the direct PDF download returned 404. Under D-024 this is a partial (conditional) dose before the "
+    "2023 by-right adoption.",
+)
 EAGAN = "MN-2717288-adu-2014"
 EAGAN_TAG = "Ben's Eagan lookup (2026-11-02)"
 EAGAN_NOTE = (
@@ -797,6 +818,21 @@ def main() -> None:
         row.update(new)
         kept.append(row)
         added += 1
+    if RICHFIELD_MM_PRE["reform_id"] not in ids:
+        row = {k: "" for k in fields}
+        row.update(state="MN", status="in_force", coder="ben", coder_agreement="single_coder")
+        row.update(RICHFIELD_MM_PRE)
+        kept.append(row)
+        added += 1
+        for r in kept:
+            if r["reform_id"] == RICHFIELD_MM["reform_id"]:
+                r["supersedes"] = RICHFIELD_MM_PRE["reform_id"]
+                r["coding_notes"] += (
+                    " Ben's lookup (2026-11-02): before 2023 duplexes in R needed a CUP and only on arterial "
+                    "or collector lots (MN-2754214-missing_middle-2010); Bill No. 2023-2 made them by right "
+                    "across R and eliminated MR-1, so 2023 is Richfield's first by-right year (the D-024 "
+                    "adoption year)."
+                )
     if RICHFIELD_MM["reform_id"] not in ids:
         row = {k: "" for k in fields}
         row.update(state="MN", status="in_force", coder="ben", coder_agreement="single_coder")
