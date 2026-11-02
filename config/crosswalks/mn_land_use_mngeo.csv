@@ -1,0 +1,25 @@
+county,pattern,land_use_std,refine_by_units,note,source_url
+*,Previously SRR|Prev Srr,DUPLEX,yes,"Residential 1-3 units formerly seasonal (class 4b1); 1-3 unit classes read as DUPLEX, refined by units, as in the metro rules",https://www.revisor.mn.gov/statutes/cite/273.13
+*,SEASONAL|\bSRR\b|Seasonal Res|^4c12,OTHER,no,Seasonal residential recreational (class 4c12: cabins),https://www.revisor.mn.gov/statutes/cite/273.13
+*,^Short Term Rental$,UNKNOWN,yes,"Short-term rental of unstated size (Cook, Lake)",https://www.revisor.mn.gov/statutes/cite/273.13
+*,^3A-Commercial/Industrial,COMMERCIAL,no,Class 3a combined label (Isanti, Morrison, Rice),https://www.revisor.mn.gov/statutes/cite/273.13
+*,Unimproved Residential|Res(idential)? ?V(acant)? Land|Residential Vacant Land|^4b4|^4b\(4\)|Res 1-3 Unimpr|^200 - Residential Vacant,VACANT_RESIDENTIAL,no,Class 4b4 unimproved residential land,https://www.revisor.mn.gov/statutes/cite/273.13
+*,^Residential\\? ?single Unit,SF_DETACHED,no,"Mille Lacs, Pope, Steele 'Residential\single Unit' (combined labels start with the first class)",https://www.revisor.mn.gov/statutes/cite/273.13
+*,Apartment|Apt 4|4 Or More Units|^4a\b|Res 4 Or More,MULTIFAMILY_5P,yes,Class 4a: 4+ units (4-unit buildings refined by units),https://www.revisor.mn.gov/statutes/cite/273.13
+*,1-3 Units?|1 To 3 Unit|2-3 Units|^4b1\b|^4B1-|Non-Hstd 1-3,DUPLEX,yes,"Class 4b1: non-homestead 1-3 units, read as DUPLEX and refined by units, as in the metro rules",https://www.revisor.mn.gov/statutes/cite/273.13
+*,Single Unit|Single Res Unit|Res(idential)? ?1 Unit|^1A-Residential Homestead|^4BB1-|^4BB2-|Hmst Hga Single Unit,SF_DETACHED,no,"Class 1a, 1b, 4bb: single residential unit (4bb2: non-homestead house on farm land)",https://www.revisor.mn.gov/statutes/cite/273.13
+*,^Residential$,SF_DETACHED,yes,"Mower, Wabasha, Winona: one residential class (1-3 units), refined by units where known",https://www.revisor.mn.gov/statutes/cite/273.13
+*,^Ag Dwelling$,SF_DETACHED,no,Mower: farm dwelling recorded apart from farm land,https://www.revisor.mn.gov/statutes/cite/273.13
+*,^201$,SF_DETACHED,no,"Bare code 201: 'Residential, Single Unit Dwelling' in the same code scheme as Pipestone and Renville, which label it",https://gisdata.mn.gov/dataset/plan-parcels-open
+*,^200$,VACANT_RESIDENTIAL,no,Bare code 200: 'Residential Vacant Land' (Pipestone and Renville labels),https://gisdata.mn.gov/dataset/plan-parcels-open
+*,^204$,DUPLEX,yes,Bare code 204: '1 To 3 Unit Dwelling' (Pipestone label),https://gisdata.mn.gov/dataset/plan-parcels-open
+*,^205$,MULTIFAMILY_5P,yes,Bare code 205: '4 Or More Units' (Pipestone and Renville labels),https://gisdata.mn.gov/dataset/plan-parcels-open
+*,^101$,AGRICULTURAL,no,Bare code 101: 'Agriculture' (Pipestone and Renville labels),https://gisdata.mn.gov/dataset/plan-parcels-open
+*,^233$,COMMERCIAL,no,Bare code 233: 'Commercial Land And Building' (Pipestone and Renville labels),https://gisdata.mn.gov/dataset/plan-parcels-open
+*,^234$,INDUSTRIAL,no,Bare code 234: 'Industrial Land And Building' (Pipestone and Renville labels),https://gisdata.mn.gov/dataset/plan-parcels-open
+*,^9\d\d$,OTHER,no,"Bare 9xx codes: public, church, charitable and other exempt property (Pipestone and Renville labels)",https://gisdata.mn.gov/dataset/plan-parcels-open
+*,"^\d{1,3}[a-z]?$",UNKNOWN,no,Bare codes with no county labels in this compilation: unknown until a county code table is supplied,https://gisdata.mn.gov/dataset/plan-parcels-open
+Wilkin,.,UNKNOWN,no,"Wilkin's own short codes (Res 2, Site, Comm 1 ...) have no published key",https://gisdata.mn.gov/dataset/plan-parcels-open
+*,Industrial|Indust|Inds ,INDUSTRIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,Commercial|^Comm\b|Comm Land|^3a\b,COMMERCIAL,no,,https://www.revisor.mn.gov/statutes/cite/273.13
+*,^2[abc]|Agric|Agriculture|^Ag |Farm|Rural Vacant|Managed Forest,AGRICULTURAL,no,"Class 2a, 2b, 2c: farm, rural vacant and managed forest land (farm homesteads included, as in the metro rules)",https://www.revisor.mn.gov/statutes/cite/273.13

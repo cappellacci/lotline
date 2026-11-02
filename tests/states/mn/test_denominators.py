@@ -47,7 +47,10 @@ def _eligible() -> pd.DataFrame:
 
 def test_mn_config_picks_one_source_per_jurisdiction():
     choice = load_state("MN").parcel_sources
-    assert choice == {"2743000": "mpls_assessor_parcels", "*": "metc_parcels"}
+    assert choice[MPLS] == "mpls_assessor_parcels"
+    assert choice[STP] == choice[EDINA] == "metc_parcels"  # metro places keep the yearly Met Council rolls
+    assert choice["*"] == "mngeo_parcels"  # outstate: MnGeo's opt-in compilation
+    assert set(choice.values()) == {"mpls_assessor_parcels", "metc_parcels", "mngeo_parcels"}
     kept = elig.single_source(_parcels(), choice)
     assert set(kept.loc[kept.jurisdiction_geoid == MPLS, "source"]) == {"mpls_assessor_parcels"}
     assert set(kept["source"]) == {"mpls_assessor_parcels", "metc_parcels"}

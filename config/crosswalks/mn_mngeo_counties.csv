@@ -1,0 +1,53 @@
+county_fips,county,status,parcels,known_land_use_share,sf_detached_parcels,acs_1unit_detached_2024,ratio,acquired,notes
+27001,Aitkin,acs_check,43024,0.997,6693,11815,0.57,2026-04-22,"single-family parcels 0.57x ACS one-unit detached homes: seasonal cabins (class 4c12) are not houses in the rules, but ACS counts them"
+27005,Becker,loaded,35718,0.946,13659,15827,0.86,2026-07-22,
+27009,Benton,no_land_use,20313,0.0,0,11665,0.0,2026-02-17,useclass1 blank on every parcel
+27011,Big Stone,no_land_use,7899,0.0,0,2472,0.0,2026-07-30,useclass1 blank on every parcel
+27017,Carlton,no_land_use,34068,0.0,0,12770,0.0,2026-07-16,useclass1 blank on every parcel
+27021,Cass,acs_check,51689,0.95,11862,21000,0.56,2026-07-23,"single-family parcels 0.56x ACS one-unit detached homes: seasonal cabins (class 4c12) are not houses in the rules, but ACS counts them"
+27023,Chippewa,loaded,11962,0.939,4055,4453,0.91,2026-03-23,
+27025,Chisago,loaded,29949,0.992,19886,18638,1.07,2026-08-06,
+27027,Clay,loaded,31368,0.96,18892,16460,1.15,2026-08-06,
+27029,Clearwater,loaded,9778,0.975,3073,3505,0.88,2026-04-15,
+27031,Cook,acs_check,12695,0.908,2034,5333,0.38,2026-02-03,"single-family parcels 0.38x ACS one-unit detached homes: seasonal cabins (class 4c12) are not houses in the rules, but ACS counts them"
+27035,Crow Wing,loaded,76486,0.515,25734,34198,0.75,2026-07-19,"bare 3-digit codes: 201, 200, 204, 205, 101, 233, 234 and 9xx read from Pipestone and Renville labels, others unknown (the per-place 90% gate decides)"
+27041,Douglas,no_land_use,33624,0.0,0,17320,0.0,2026-06-30,useclass1 blank on every parcel
+27045,Fillmore,loaded,20917,0.957,7652,8172,0.94,2026-07-09,
+27051,Grant,no_land_use,7726,0.0,0,2690,0.0,2026-08-04,useclass1 blank on every parcel
+27055,Houston,loaded,16719,0.834,7030,7500,0.94,2026-06-29,"bare 3-digit codes: 201, 200, 204, 205, 101, 233, 234 and 9xx read from Pipestone and Renville labels, others unknown (the per-place 90% gate decides)"
+27059,Isanti,loaded,23889,0.997,15232,14229,1.07,2026-07-01,
+27061,Itasca,loaded,80651,0.332,18580,20986,0.89,2026-06-26,"bare 3-digit codes: 201, 200, 204, 205, 101, 233, 234 and 9xx read from Pipestone and Renville labels, others unknown (the per-place 90% gate decides)"
+27063,Jackson,loaded,11035,0.822,3617,4237,0.85,2026-07-09,"bare 3-digit codes: 201, 200, 204, 205, 101, 233, 234 and 9xx read from Pipestone and Renville labels, others unknown (the per-place 90% gate decides)"
+27071,Koochiching,loaded,55291,0.133,5585,6238,0.9,2026-01-14,"bare 3-digit codes: 201, 200, 204, 205, 101, 233, 234 and 9xx read from Pipestone and Renville labels, others unknown (the per-place 90% gate decides)"
+27073,Lac qui Parle,no_land_use,8876,0.0,0,2967,0.0,2025-12-10,useclass1 blank on every parcel
+27075,Lake,loaded,47116,0.983,4584,6429,0.71,2026-04-15,
+27077,Lake of the Woods,no_land_use,8957,0.0,0,2286,0.0,2025-07-15,all codes unlabelled
+27083,Lyon,no_land_use,16402,0.0,0,8104,0.0,2026-06-30,useclass1 blank on every parcel
+27085,McLeod,loaded,20467,0.998,12401,11385,1.09,2026-05-19,
+27089,Marshall,no_land_use,15374,0.0,0,3507,0.0,2024-05-20,useclass1 blank on every parcel
+27095,Mille Lacs,loaded,20928,0.953,8985,9625,0.93,2026-02-24,
+27097,Morrison,loaded,30117,0.987,11571,13361,0.87,2026-07-09,
+27099,Mower,loaded,22956,0.999,16005,13408,1.19,2026-07-10,
+27101,Murray,no_land_use,10206,0.0,0,3963,0.0,2026-08-31,useclass1 blank on every parcel
+27107,Norman,no_land_use,9705,0.0,0,2744,0.0,2026-06-16,useclass1 blank on every parcel
+27109,Olmsted,loaded,75579,0.994,54245,45482,1.19,2026-06-23,
+27111,Otter Tail,loaded,67033,0.961,22904,29694,0.77,2026-02-25,
+27113,Pennington,no_land_use,10470,0.0,0,4455,0.0,2024-11-12,useclass1 blank on every parcel
+27117,Pipestone,loaded,8359,0.996,3490,3690,0.95,2026-08-06,
+27119,Polk,no_land_use,28885,0.0,0,10592,0.0,2026-06-16,useclass1 blank on every parcel
+27121,Pope,loaded,14006,0.917,3987,5420,0.74,2026-06-22,
+27125,Red Lake,no_land_use,4200,0.0,0,1516,0.0,2025-10-22,useclass1 blank on every parcel
+27129,Renville,loaded,16157,0.945,5417,5827,0.93,2026-06-09,
+27131,Rice,loaded,28166,0.998,18792,17925,1.05,2026-04-22,
+27137,St. Louis,loaded,186455,0.991,77968,76325,1.02,2026-02-05,
+27141,Sherburne,loaded,44573,0.956,32357,29407,1.1,2026-04-08,
+27145,Stearns,loaded,73181,0.96,45025,45754,0.98,2026-07-15,
+27147,Steele,loaded,20207,0.991,11816,11988,0.99,2026-04-08,
+27149,Stevens,no_land_use,8146,0.0,0,3059,0.0,2026-02-24,useclass1 blank on every parcel
+27155,Traverse,no_land_use,6229,0.0,0,1565,0.0,2025-06-16,useclass1 blank on every parcel
+27157,Wabasha,loaded,17323,0.971,8245,8080,1.02,2026-07-23,
+27161,Waseca,loaded,12327,0.976,6391,6391,1.0,2026-07-07,
+27167,Wilkin,no_land_use,8572,0.0,0,2213,0.0,2026-07-20,Wilkin's own short codes have no published key; 59% blank
+27169,Winona,loaded,25538,0.96,14063,14344,0.98,2026-07-06,
+27171,Wright,loaded,75691,0.965,51933,44872,1.16,2026-07-01,
+27173,Yellow Medicine,no_land_use,10763,0.0,0,4031,0.0,2025-11-19,useclass1 blank on every parcel
