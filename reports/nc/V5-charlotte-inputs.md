@@ -62,3 +62,49 @@ counts replace the prior.
   outcomes.
 - **Scoring after unblinding.** Mecklenburg's permit service blocks scripts (Cloudflare); Ben may download it
   by hand after the freeze. Otherwise V5 is scored on BPS 37119 (county level, disclosed).
+
+## Input check for the freeze (2026-11-01, thread 13)
+
+Checked on `main` at f9d9624 against the processed tables. Every input below is on `main` (code and config) or
+in `~/lotline-data/processed/nc`, and none reads a Charlotte or Mecklenburg outcome from 2023-06-01.
+
+**Reproduced today.** `clt_v5.n1_lots` on the processed layer still gives **169,314 N1 lots**. The layer's
+`vintage_date` is 2023-05-31, so it predates the window. `clt_v5.town_prior` on today's OneMap roll gives the
+same shares to three decimals (pooled 0.732 single-family, 0.119 vacant). The towns' parcel counts moved by a
+few parcels after the 2026-10-23 OneMap rebuild (Matthews 10,142, Mint Hill 12,028), so the YAML stands.
+
+**Files and columns for WS-ENGINE.**
+
+| Input | File | Columns / call | Dated |
+|---|---|---|---|
+| N1 lots by district | `processed/nc/parcels/clt_udo_translation.parquet` via `lotline.adapters.states.nc.clt_v5.n1_lots` | `jurisdiction_geoid == "3712000"`, `zoning_raw` → `n1` (`config/crosswalks/nc_clt_udo_n1.csv`), `parcel_id`, `lot_sqft` | Layer last edited 2023-05-31 |
+| What N1 lots held (option b prior) | `config/params/v5_charlotte.yaml` | `n1_sf_share` (0.732; 0.515–0.812), `n1_vacant_share` (0.119; 0.067–0.149) | The six towns' current roll; the towns are not held out |
+| Eligible N1 lots | N1 lots × (`n1_sf_share` + `n1_vacant_share`) | about 144,000 (central) | — |
+| Baseline denominator (citywide) | `processed/nc/eligible_parcels/eligible.parquet` | `jurisdiction_geoid == "3712000"`, `theme == "missing_middle"`, `rule_version == "1.1"`, `eligible_parcels`; `denominator_source` is `acs_sf_fallback` | **Use years ≤ 2022 only** (see below) |
+| Baseline permits | `processed/nc/bps_place_year/bps.parquet`, through `holdout.apply` | `geoid == "37119"` (BPS files Charlotte under the county), `units_2`, `units_3_4`, `units_1`, `year` | The filter leaves 1992–2022 |
+| Pre-window Charlotte permits (optional) | `processed/nc/permits/meck_permits.parquet`, through `holdout.apply` | `jurisdiction_geoid == "3712000"`, `building_type_std` (`U2`, `U3_4`), `units_new`, `issue_date` | To 2023-05-31 (filtered at query time and again on read) |
+| Market | `processed/nc/acs_geo_year/acs.parquet` (`geo == "place:3712000"`), `market_geo_year/fhfa.parquet` (`county:37119`, `cbsa:16740`), `fred.parquet` (national) | rent, value, HPI, mortgage rate, construction-cost index | **Use years ≤ 2022** |
+| Demand | `processed/nc/market_geo_year/demand.parquet` | `geo == "county:37119"` or `"place:3712000"`, `demand_bartik_loo` | **Use years ≤ 2022** |
+| Missing-middle effect | whatever D-024 estimate or prior is on `main` at the freeze (`reports/mm-d024*`, `config/params/mm.yaml`) | — | State its source in the freeze file |
+
+**Cap every annual input at 2022.** The holdout filter covers the outcome tables (BPS, permits, parcel rolls).
+It doesn't cover inputs, and four of them run past the window opening for Charlotte:
+- ACS (and so the ACS-fallback denominator) runs to 2024;
+- FHFA runs to 2025;
+- the demand index runs to 2023.
+
+ACS 5-year estimates for 2023 and 2024 count homes built after 2023-06-01, so their one-unit housing stock
+partly reflects the outcome. FHFA and the demand index for 2023 on aren't Charlotte outcomes, but they are
+dated after the window opens. The clean rule is the holdout's own annual rule: **a year that touches the window
+is out, so annual inputs stop at 2022.** WS-ENGINE should record this in the freeze file.
+
+**Open item: option (a).** If Mecklenburg County sends an archived roll dated between January 2022 and
+2023-05-31 by **Tue Nov 10**, WS-NC counts the N1 lots that held a house or were vacant, and those counts
+replace the two shares in `v5_charlotte.yaml`, with the same file and column names. If nothing has arrived by
+Nov 10, the freeze uses option (b) as above.
+
+**For unblinding (after the freeze, not before).** The Mecklenburg legacy permit file thins out in 2025 as the
+county moved to Accela: the six towns' permits fall from about 3,000 a year to 1,569 in 2025. So Charlotte's
+2023–2025 outcomes will need the Accela file, or BPS 37119 at county level, disclosed as such. The legacy file
+carries `zonecode` (as `zoning_raw`), which the validation plan uses to find N1 permits; check that the Accela
+file has an equivalent field before relying on it.
