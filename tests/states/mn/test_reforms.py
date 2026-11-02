@@ -62,17 +62,18 @@ def test_pipeline_and_ben_rows(reforms):
     ben = reforms[reforms["coder"] == "ben"]
     assert ben["verified_by"].isna().all()
     assert set(reforms["coder"]) <= {"claude", "ben", "pipeline+ben"}
-    # Ben's and pipeline rows are single-coded unless the second coder (2026-11-02) agreed.
+    # Ben's and pipeline rows are single-coded unless the second coder (2026-11-02) agreed or Ben adjudicated.
     other = reforms[reforms["coder"] != "claude"]
-    agreed = other["coder_agreement"] == "agree"
-    assert (other.loc[~agreed, "coder_agreement"] == "single_coder").all()
-    assert (other.loc[agreed, "coder_2"] == "codex-2026-11-02").all()
+    reviewed = other["coder_agreement"].isin(["agree", "adjudicated"])
+    assert (other.loc[~reviewed, "coder_agreement"] == "single_coder").all()
+    assert (other.loc[reviewed, "coder_2"] == "codex-2026-11-02").all()
     r = reforms.set_index("reform_id")
     # Ben's lookups: Andover Ord. 463, Hugo Ord. 2011-460, Inver Grove Heights 2015 then Ord. 1358
     assert r.at["MN-2701486-adu-2016", "effective_date"] == pd.Timestamp("2016-06-21")
     assert r.at["MN-2730392-adu-2011", "source_section"] == "Ord. 2011-460"
     assert r.at["MN-2731076-adu-2018", "supersedes"] == "MN-2731076-adu-2015"
-    assert pd.isna(r.at["MN-2731076-adu-2018", "by_right"])  # type of change unknown
+    # Ord. 1358's fields were unknown until the second coder read Code 10-18-1 (accepted by Ben 2026-11-02).
+    assert r.at["MN-2731076-adu-2018", "by_right"] == True  # noqa: E712
 
 
 def test_supersedes_points_to_an_earlier_row(reforms):
@@ -131,13 +132,14 @@ def test_no_adu_rows_follow_the_convention(reforms):
         "2720618",
         "2745628",
         "2761492",
-        "2721770",
         "2701720",
         "2754808",
         "2741696",
         "2702026",
     }
     assert six | ben_unsourced <= set(none["jurisdiction_geoid"])
+    # Forest Lake was a "no ADUs" lookup; the second coder found rural ADUs and Ben accepted the recode.
+    assert "2721770" not in set(none["jurisdiction_geoid"])
     unsourced = none[none["jurisdiction_geoid"].isin(ben_unsourced)]
     assert unsourced["coding_notes"].str.contains("Needs second check").all()
 

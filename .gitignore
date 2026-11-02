@@ -22,5 +22,5 @@ rules and resources/
 reports/judging/
 reports/adu-d0*/**/panel.csv
 
-# Ordinance PDFs downloaded for rule research (third-party documents, kept locally; URLs in the inventory CSVs)
+# Ordinance PDFs for rule research live in LOTLINE_DATA_DIR/manual/<state>/ (MN: manual/mn/second_coder_2026-11-02)
 docs/research/ordinances/*.pdf

@@ -35,8 +35,22 @@
     for Chanhassen, Richfield and Oakdale, `[predates]` for Fridley, Forest Lake and Rochester MM, and
     DATE UNCONFIRMED tags with lookups for rows the reviewer could not confirm).
   - The agent's other files are committed: research tracker, evidence register, PDF inventory and issues
-    note. Its 17 downloaded PDFs are kept locally; `docs/research/ordinances/*.pdf` is now gitignored.
+    note. Its 14 downloaded PDFs moved to `LOTLINE_DATA_DIR/manual/mn/second_coder_2026-11-02/` (as NC); `docs/research/ordinances/*.pdf` is gitignored.
   - **AI:** Claude Code (Opus 5.5) compared each reviewer row with `mn.csv` and drafted the recommendations;
     the Hugo recommendation was corrected after finding it would overwrite Ben's own lookup (Ord. 2011-460).
-- **Open / next:** Ben's decisions on the 62 rows, then a decisions script and a readiness recount; lookups;
-  M6–M8.
+- **Decisions applied (2026-11-02, same PR):** Ben accepted all 62 recommendations.
+  - `scripts/dev/mn_second_coder_decisions_2026_11_02.py` (idempotent): 60 rows adjudicated, 2 deleted (Hopkins
+    2024, Grant 2016), Forest Lake recoded as `MN-2721770-adu-2023`; 3 `[predates]`, 31 DATE UNCONFIRMED; 36
+    lookups written to `docs/research/ordinances/mn-second-coder-lookups-2026-11-02.csv`.
+  - Recount (`mn_readiness_counts.py`): D-025 has 72 places (44 changes, 28 controls). Of the 51 event rows,
+    31 are DATE UNCONFIRMED; only 16 places have an event on a confirmed date. D-024 events unchanged
+    (Minneapolis 2020, St. Louis Park 2025, both now confirmed).
+  - Updated the readiness report (new §6), the MN rows of `docs/data_availability.md` and thread 8's closing.
+  - `tests/states/mn/test_reforms.py` now allows adjudicated rows, drops Forest Lake from the "no ADUs" set
+    and pins Inver Grove Heights' filled `by_right`.
+  - **AI:** a first run appended action text that named tags ("tag [predates]"), which the counts script would
+    have read as real tags (Cottage Grove). Caught in a tag count, fixed by stripping the markers, rerun from
+    the committed file.
+- **Proposed HANDOFF decision:** `DATE UNCONFIRMED` in `coding_notes` marks a dated event with no signed
+  ordinance or effective-date record. It still counts as an event; engines run with and without such rows.
+- **Open / next:** Ben's 36 lookups (Burnsville 2020 first); M6–M8.

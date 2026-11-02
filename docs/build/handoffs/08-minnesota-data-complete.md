@@ -65,18 +65,20 @@ rule.
 - **Jurisdictions:** 1,053. 539 count from parcels (86% of the population), and 1,043 have every year
   2010–2024. Of the 40 largest places, only Mankato is on ACS.
 - **Tiers:** 130 / 408 / 515.
-- **Rules:** 109 rows, all single-coder: ADU for 80 places, missing middle for 7.
+- **Rules:** 107 rows, second-coded 2026-11-02 (Ben accepted all 62 recommendations): ADU for 80 places,
+  missing middle for 7.
 - **Fees:** 13 jurisdictions; the Handbook's $50,000 elsewhere.
 
 ### For the engine threads (week of 2026-11-02)
-- **ADU estimate (D-025): 74 MN places with Met Council or Minneapolis permits and a dated rule.**
-  - 45 have an in-window change (9 of those rows are dated `[earliest-known]`) and 29 are "no ADUs" controls.
+- **ADU estimate (D-025): 72 MN places with Met Council or Minneapolis permits and a dated rule.**
+  - 44 have an in-window change and 28 are "no ADUs" controls. Of the 51 event rows, 8 are `[earliest-known]`
+    and 31 are DATE UNCONFIRMED; only 16 places have an event on a confirmed date. Run with and without them.
   - St. Paul never enters.
   - Met Council's file covers every metro community, so no covered-places list is needed.
 - **Missing-middle estimate (D-024):** 100 BPS places of 10,000+.
-  - In-window events: Minneapolis 2020 (the injunction windows as sensitivity) and St. Louis Park 2025. St.
-    Louis Park's effective date is from a search snippet.
-  - Rochester, Brooklyn Park and Coon Rapids are untreated on evidence.
+  - In-window events: Minneapolis 2020 (the injunction windows as sensitivity) and St. Louis Park 2025, both
+    confirmed from the ordinances.
+  - Brooklyn Park (R-1) and Coon Rapids are untreated on evidence; Rochester is not a control until looked up.
 - **V5 St. Paul (#45, by Nov 17):** read `reports/mn/V5-stpaul-inputs.md` (#259). **Cap annual inputs at
   2023.** Disclose D-013's exposure in the freeze file.
 - **Eligible lots changed for every MN place.** The old table had no pre-2021 history for parcel-counted
@@ -84,9 +86,8 @@ rule.
 - **Population weights:** `pop_2020` covers places and townships (4.97M). County remainders are blank.
 
 ### Rows not to lean on as dated events until checked
-- Every MN rule row has one coder (`mn-second-coder-2026-11-02.csv`; the 55 priority-1 rows first).
-- St. Louis Park 2025's effective date.
-- The 9 `[earliest-known]` D-025 event rows.
+- The 31 DATE UNCONFIRMED D-025 event rows (`mn-second-coder-lookups-2026-11-02.csv`), Burnsville 2020 first.
+- The 8 `[earliest-known]` D-025 event rows.
 - Brooklyn Park and Coon Rapids: placeholder 2010 dates.
 
 ### Decisions to fold into HANDOFF (thread 6)

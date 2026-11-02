@@ -143,6 +143,8 @@ def main() -> None:
         r["theme"].eq("missing_middle") & r["unit_cap"].eq("1")
     )
     r["event"] = r["in_window"] & ~r["predates"] & ~r["none_row"]
+    # Second coder 2026-11-02: a date with no signed-ordinance record still counts, but is flagged.
+    r["unconfirmed"] = r["coding_notes"].str.contains("DATE UNCONFIRMED", na=False, regex=False)
     print(r.groupby(["theme", "status"]).size().to_string())
     print("coder agreement:", r["coder_agreement"].value_counts().to_dict())
     print("jurisdictions per theme:", r.groupby("theme")["jurisdiction_geoid"].nunique().to_dict())
@@ -159,6 +161,14 @@ def main() -> None:
         "D-025 in-window events dated [earliest-known]:",
         int((adu["event"] & adu["earliest_known"] & adu["jurisdiction_geoid"].isin(covered)).sum()),
     )
+    ev = adu[adu["event"] & adu["jurisdiction_geoid"].isin(covered)]
+    firm = ev.loc[~ev["unconfirmed"], "jurisdiction_geoid"]
+    print(
+        f"D-025 in-window event rows {len(ev)} in {ev['jurisdiction_geoid'].nunique()} places; "
+        f"DATE UNCONFIRMED {int(ev['unconfirmed'].sum())} rows; places with a confirmed-date event "
+        f"{firm.nunique()}"
+    )
+    print("coder_2 adjudication:", r["coder_agreement"].value_counts().to_dict())
     missing = j[j["geoid"].isin(covered - with_rule)].sort_values("pop_2020", ascending=False)
     print(
         "covered places with no ADU rule (largest 25):",
