@@ -283,6 +283,23 @@ EAGAN_NOTE = (
     " unofficial (the City Clerk's printed copy is official)."
 )
 
+# Ben's confirmations (2026-11-02): official records confirm the coded dates, so DATE UNCONFIRMED comes off.
+BEN_TAG = "Ben's confirmation (2026-11-02)"
+BEN_CONFIRM = {
+    "MN-2714158-adu-2018": (
+        {
+            "source_section": "Ord. 2017-07 (Unified Development Code); City Code 500.09, Table 4, 515.23",
+            "source_url": "https://www.crystalmn.gov/UserFiles/Servers/Server_10879634/File/Government/"
+            "City%20Code/CityCode.pdf;"
+            "https://nwsccc-crystal.granicus.com/GeneratedAgendaViewer.php?clip_id=563&view_id=4",
+        },
+        "Ord. 2017-07 enacted the Unified Development Code, which authorized ADUs; the official City Code "
+        "(500.09) gives adoption 2018-01-02 and effective 2018-02-10, and the 2018-01-02 Council agenda "
+        "(item 6.19) lists the second reading and adoption. The March 2018 Planning Commission 'update' "
+        "came later. No signed copy or publication date found.",
+    ),
+}
+
 
 def main() -> None:
     with REFORMS.open() as f:
@@ -337,6 +354,14 @@ def main() -> None:
         if row["reform_id"] == EAGAN and EAGAN_TAG not in row["coding_notes"]:
             row["source_section"] = "Ord. 528, 2nd Series (strong identification, unsigned draft)"
             row["coding_notes"] = f"{row['coding_notes']} {EAGAN_TAG}: {EAGAN_NOTE}"
+            changed += 1
+    for row in kept:
+        rid = row["reform_id"]
+        if rid in BEN_CONFIRM and BEN_TAG not in row["coding_notes"]:
+            updates, note = BEN_CONFIRM[rid]
+            row.update(updates)
+            row["coding_notes"] = row["coding_notes"].replace(UNCONF, "").strip()
+            row["coding_notes"] = f"{row['coding_notes']} {BEN_TAG}: {note}"
             changed += 1
     added = 0
     if RICHFIELD_MM["reform_id"] not in ids:

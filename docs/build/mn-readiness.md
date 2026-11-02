@@ -17,8 +17,8 @@ commands. This branch is stacked on #260 and #261 and should be merged after the
   539 of 1,053, up from 186. MnGeo's opt-in compilation added 353 outstate jurisdictions in 31 counties.
 - **Of the 40 largest places, only Mankato is on ACS.** Its county (Blue Earth) has not opted in.
 - **The ADU panel (D-025) holds 74 Minnesota places with Met Council or Minneapolis permits and a dated rule:**
-  46 with an in-window rule change and 28 "no ADUs" controls (after the second-coder review and lookups). Only 24 of
-  the 46 have an event on a confirmed date: 25 of the 53 event rows are tagged DATE UNCONFIRMED. 109 more covered places
+  46 with an in-window rule change and 28 "no ADUs" controls (after the second-coder review and lookups). Only 25 of
+  the 46 have an event on a confirmed date: 24 of the 53 event rows are tagged DATE UNCONFIRMED. 109 more covered places
   have no rule yet. That
   makes Minnesota the largest contributor to D-025, as it already is today (D-023/D-025's Twin Cities panel).
 - **The missing-middle panel (D-024) has 100 Minnesota places of 10,000+, with 3 in-window events:**
@@ -68,7 +68,7 @@ covered-places list. Minneapolis's CCS permits cover Minneapolis. St. Paul never
 
 | Group | Places | Notes |
 |---|---|---|
-| **Rule change in the window** | **46** | Minneapolis (2014, 2016, 2021, 2023) and 45 suburbs. 8 of their 53 event rows are dated `[earliest-known]` and 25 are DATE UNCONFIRMED; only 24 places have an event on a confirmed date. Run with and without the unconfirmed dates |
+| **Rule change in the window** | **46** | Minneapolis (2014, 2016, 2021, 2023) and 45 suburbs. 8 of their 53 event rows are dated `[earliest-known]` and 24 are DATE UNCONFIRMED; only 25 places have an event on a confirmed date. Run with and without the unconfirmed dates |
 | **"No ADUs" controls** | **28** | Coded "none" rows in covered places |
 | Rule, no event, not a control | 2 | Rules only before the window |
 | **Covered, no rule yet** | 109 | Largest: Brooklyn Center 33,782, Chaska, Prior Lake, Shoreview, Hastings, Lino Lakes, Northfield, Waconia, North St. Paul, East Bethel, Lake Elmo, White Bear township, Little Canada, Victoria. Each one coded joins the panel at once |
@@ -92,7 +92,7 @@ So Minnesota's 74 places stay the core of the D-025 panel. Today's estimate alre
 
 | Gap | Effect | What closes it | Owner |
 |---|---|---|---|
-| **25 D-025 event dates unconfirmed** | 22 of the 46 event places have no event on a confirmed date | City clerks, council minutes or signed ordinances (`mn-second-coder-lookups-2026-11-02.csv`) | **Ben** |
+| **24 D-025 event dates unconfirmed** | 21 of the 46 event places have no event on a confirmed date | City clerks, council minutes or signed ordinances (`mn-second-coder-lookups-2026-11-02.csv`) | **Ben** |
 | 109 covered metro places with no ADU rule | Fewer D-025 places; more D-022 draws | An ADU lookup table for them, largest first (not written yet; the outstate one, M6, isn't either) | Ben, then WS-MN |
 | Missing-middle rules for the 40 largest places | 33 still draw (D-022) | `mn-mm-lookups-todo.csv` | Ben |
 | Bare-code counties (Crow Wing, Itasca, Koochiching, Jackson, Houston) | 51 of their 58 jurisdictions on ACS (Brainerd, Grand Rapids, International Falls) | Each county's property-type code table | Ben (one request each), then WS-MN |
@@ -126,7 +126,7 @@ uv run python scripts/dev/mn_second_coder_sheet.py
 ## 5. Ben's manual items (exact steps)
 
 1. ~~Second-coder pass~~: **done 2026-11-02**; Ben accepted all 62 recommendations (§6).
-2. **Lookups:** the 25 unconfirmed dates in `mn-second-coder-lookups-2026-11-02.csv` need primary records; then
+2. **Lookups:** the 24 unconfirmed dates in `mn-second-coder-lookups-2026-11-02.csv` need primary records; then
    `mn-mm-lookups-todo.csv` (33 places). Hugo and Rochester are settled (§6).
 3. **County code tables** for Crow Wing, Itasca, Koochiching, Jackson and Houston. Ask each assessor for their
    three-digit property-type code list (the codes 151, 111, 765 and others are unlabelled).
@@ -180,3 +180,5 @@ DATE UNCONFIRMED. Ben accepted four changes, applied by `scripts/dev/mn_lookups_
   MR-1 into R, so Richfield is a new D-024 event (`MN-2754214-missing_middle-2023`; three-plus units stay
   multifamily). Eagan's ADU ordinance is almost certainly Ord. 528, 2nd Series (unsigned draft; date still
   unconfirmed). Richfield's ADU row is re-dated to 2015-07-01 `[earliest-known]` (city handout dated 7/2015).
+- **Crystal (Ben):** Ord. 2017-07 (the Unified Development Code) authorized ADUs: adopted 2018-01-02, effective
+  2018-02-10 per the official code (500.09), so the coded dates stand and are now confirmed.
