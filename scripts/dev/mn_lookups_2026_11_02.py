@@ -219,6 +219,15 @@ ROSEVILLE_2011 = dict(
     "a later 2011 amendment limited occupancy to 2.",
 )
 
+# Notes only (Ben's lookups, 2026-11-02): leads for dates still unconfirmed.
+TAG4 = "Ben's lookup lead (2026-11-02)"
+NOTES4 = {
+    "MN-2757220-adu-2020": "the 2020-09-16 Planning Commission packet (draft, number and dates blank) says "
+    "Council would likely consider the ordinance on 2020-10-05, probably the first reading; adoption would "
+    "follow at a later meeting, consistent with the coded 2020-11-13. Next: Council minutes or video for "
+    "Oct-Nov 2020, the Sun Sailor legal notice, or the city clerk (Laserfiche search did not load).",
+}
+
 
 def main() -> None:
     with REFORMS.open() as f:
@@ -257,6 +266,11 @@ def main() -> None:
         row.update(updates)
         row["coding_notes"] = f"{row['coding_notes']} {TAG2}: {note}"
         changed += 1
+    for row in kept:
+        rid = row["reform_id"]
+        if rid in NOTES4 and TAG4 not in row["coding_notes"]:
+            row["coding_notes"] = f"{row['coding_notes']} {TAG4}: {NOTES4[rid]}"
+            changed += 1
     added = 0
     if ROSEVILLE_2011["reform_id"] not in ids:
         for row in kept:
