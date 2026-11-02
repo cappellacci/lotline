@@ -85,6 +85,7 @@
   Golden Valley confirmed (adopted 2022-11-01, effective 2022-11-11; Ord. 745 vs 746 noted): 15 unconfirmed,
   33 confirmed. Inver Grove Heights 2015 confirmed (Ord. 1305, adopted 2015-08-24, effective
   2015-11-02): 14 unconfirmed. Andover confirmed (signed Ord. 463, 2016-06-21): 13 unconfirmed, 34
-  confirmed.
-- **Open / next:** the 13 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  confirmed. Roseville 2021 confirmed (Ord. 1606, 2021-11-08); the 2011 row's cap corrected
+  to 600 sq ft: 12 unconfirmed.
+- **Open / next:** the 12 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.

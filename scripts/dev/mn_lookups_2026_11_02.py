@@ -334,6 +334,24 @@ ROGERS_NOTE = (
 )
 
 BEN_CONFIRM = {
+    "MN-2755852-adu-2021": (
+        {
+            "source_section": "Ord. 1606 (Phase 1 zoning update)",
+            "source_url": "https://www.cityofroseville.com/AgendaCenter/ViewFile/Item/8975?fileID=54330;"
+            "https://mn-roseville.civicplus.com/DocumentCenter/View/33515/Title-10-Zoning;"
+            "https://www.cityofroseville.com/DocumentView.aspx?DID=4968",
+        },
+        "Ord. 1606 adopted 2021-11-08 as part of the Phase 1 zoning update (city staff memo; the city-hosted "
+        "'PASSED' zoning text, number and signature fields blank). It made ADUs permitted in LDR and LMDR "
+        "and changed the size rule from a 600 sq ft cap to 300-650 sq ft, still within 75% of the house's "
+        "four-season living area. Detached ADUs, owner occupancy and one added space were already in the "
+        "2011 rule. Effective on publication; publication date not found (effective coded as adoption).",
+    ),
+    "MN-2755852-adu-2011": (
+        {"adu_max_sqft": "600"},
+        "the 2011 rule capped ADUs at 600 sq ft (Ord. 1418 text, 2011 council packet); 650 sq ft came with "
+        "Ord. 1606 in 2021, so adu_max_sqft corrected from 650.",
+    ),
     "MN-2701486-adu-2016": (
         {
             "coverage": "R-1 (conditional use; the use table also marks RR, but the stricter 12-12-5 "
