@@ -219,9 +219,13 @@ ROSEVILLE_2011 = dict(
     "a later 2011 amendment limited occupancy to 2.",
 )
 
-# Notes only (Ben's lookups, 2026-11-02): leads for dates still unconfirmed.
+# Notes only (Ben's lookups, 2026-11-02): leads for dates still unconfirmed, and context for older rows.
 TAG4 = "Ben's lookup lead (2026-11-02)"
 NOTES4 = {
+    "MN-2751730-adu-2002": "the 2023 ordinance history cites Ord. 2002-24 (2002-06-25) as the earlier ADU "
+    "amendment, matching this row's date (original not located). The city says the pre-2023 rule allowed ADUs"
+    " only above attached or detached garages "
+    "(https://www.plymouthmn.gov/Home/Components/News/News/7970/542).",
     "MN-2757220-adu-2020": "the 2020-09-16 Planning Commission packet (draft, number and dates blank) says "
     "Council would likely consider the ordinance on 2020-10-05, probably the first reading; adoption would "
     "follow at a later meeting, consistent with the coded 2020-11-13. Next: Council minutes or video for "
@@ -286,6 +290,19 @@ EAGAN_NOTE = (
 # Ben's confirmations (2026-11-02): official records confirm the coded dates, so DATE UNCONFIRMED comes off.
 BEN_TAG = "Ben's confirmation (2026-11-02)"
 BEN_CONFIRM = {
+    "MN-2751730-adu-2023": (
+        {
+            "source_section": "Ord. 2023-12; Resolution 2023-239 (summary publication)",
+            "source_url": "https://mcclibraryfunctions.azurewebsites.us/api/ordinanceDownload/15701/1237282/p"
+            "df;https://d3n9y02raazwpg.cloudfront.net/nwsccc-plymouth/43307831-7282-11ed-9024-0050569183fa-5"
+            "5f46114-8d12-454f-8f94-e6b3225c3f97-1695907803.pdf;https://www.plymouthmn.gov/home/showpublishe"
+            "ddocument/29065/639069420947600000",
+        },
+        "Ord. 2023-12 adopted 2023-09-12 and effective on passage (ordinance text); council minutes confirm "
+        "adoption and Resolution 2023-239 for summary publication (newspaper date not found). It expanded "
+        "the earlier rule (ADUs only above attached or detached garages, Ord. 2002-24) to internal, attached"
+        " and standalone detached units with an administrative ADU permit.",
+    ),
     "MN-2768818-adu-2022": (
         {
             "component": "Wayzata Ord. 811: ADUs a permitted accessory use in all six single-family "

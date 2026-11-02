@@ -73,6 +73,7 @@
   Crystal confirmed (Ord. 2017-07, the UDC: adopted 2018-01-02, effective 2018-02-10). Now 24 of 53 D-025 event
   rows DATE UNCONFIRMED; 25 places with a confirmed-date event. Rosemount confirmed (Ord. 2024-04, 2024-06-04,
   a new authorization per Dakota County) and its fields filled: 23 unconfirmed, 26 confirmed places. Wayzata
-  confirmed (Ord. 811, adopted 2022-06-21, effective 2022-06-30) and filled: 22 unconfirmed, 27 confirmed places.
-- **Open / next:** the 22 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
+  confirmed (Ord. 811, adopted 2022-06-21, effective 2022-06-30) and filled: 22 unconfirmed, 27 confirmed places. Plymouth
+  confirmed (Ord. 2023-12, 2023-09-12; expanded the 2002 above-garage rule): 21 unconfirmed, 28 confirmed places.
+- **Open / next:** the 21 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.
