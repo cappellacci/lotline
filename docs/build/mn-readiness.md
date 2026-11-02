@@ -17,8 +17,8 @@ commands. This branch is stacked on #260 and #261 and should be merged after the
   539 of 1,053, up from 186. MnGeo's opt-in compilation added 353 outstate jurisdictions in 31 counties.
 - **Of the 40 largest places, only Mankato is on ACS.** Its county (Blue Earth) has not opted in.
 - **The ADU panel (D-025) holds 74 Minnesota places with Met Council or Minneapolis permits and a dated rule:**
-  46 with an in-window rule change and 28 "no ADUs" controls (after the second-coder review and lookups). Only 17 of
-  the 46 have an event on a confirmed date: 32 of the 53 event rows are tagged DATE UNCONFIRMED. 109 more covered places
+  46 with an in-window rule change and 28 "no ADUs" controls (after the second-coder review and lookups). Only 23 of
+  the 46 have an event on a confirmed date: 26 of the 53 event rows are tagged DATE UNCONFIRMED. 109 more covered places
   have no rule yet. That
   makes Minnesota the largest contributor to D-025, as it already is today (D-023/D-025's Twin Cities panel).
 - **The missing-middle panel (D-024) has 100 Minnesota places of 10,000+, with 2 in-window events:**
@@ -68,7 +68,7 @@ covered-places list. Minneapolis's CCS permits cover Minneapolis. St. Paul never
 
 | Group | Places | Notes |
 |---|---|---|
-| **Rule change in the window** | **46** | Minneapolis (2014, 2016, 2021, 2023) and 45 suburbs. 8 of their 53 event rows are dated `[earliest-known]` and 32 are DATE UNCONFIRMED; only 17 places have an event on a confirmed date. Run with and without the unconfirmed dates |
+| **Rule change in the window** | **46** | Minneapolis (2014, 2016, 2021, 2023) and 45 suburbs. 8 of their 53 event rows are dated `[earliest-known]` and 26 are DATE UNCONFIRMED; only 23 places have an event on a confirmed date. Run with and without the unconfirmed dates |
 | **"No ADUs" controls** | **28** | Coded "none" rows in covered places |
 | Rule, no event, not a control | 2 | Rules only before the window |
 | **Covered, no rule yet** | 109 | Largest: Brooklyn Center 33,782, Chaska, Prior Lake, Shoreview, Hastings, Lino Lakes, Northfield, Waconia, North St. Paul, East Bethel, Lake Elmo, White Bear township, Little Canada, Victoria. Each one coded joins the panel at once |
@@ -85,14 +85,14 @@ So Minnesota's 74 places stay the core of the D-025 panel. Today's estimate alre
 |---|---|
 | **In-window events** | Minneapolis (2020-01-01; the injunction windows 2022-06-15 to 2022-07-26 and 2023-11-04 to 2024-05-13 as sensitivity) and St. Louis Park (2025-03-28, Ord. 2690-25; duplex and 3-unit in N-1 and N-2, 4-unit in N-2) |
 | Untreated on evidence | Brooklyn Park (R-1), Coon Rapids (LDR1/LDR2) |
-| Not a control until looked up | Rochester: the 2023 code allows 2-4 units with staff approval outside R-1, and the R-1 row is `[predates]` |
+| Untreated on evidence (R-1) | Rochester: R-1 has allowed one home per lot since a 1998 amendment, so the 2023 UDC changed nothing there (`[predates]`); 2-4 units with staff approval in other districts |
 | Outside the panel | St. Paul 2023 (V5 holdout); Duluth 2026 (after the window) |
 
 ## 3. Remaining gaps and what closes each
 
 | Gap | Effect | What closes it | Owner |
 |---|---|---|---|
-| **32 D-025 event dates unconfirmed** | 29 of the 46 event places have no event on a confirmed date | First lookup pass (2026-11-02) mostly repeated the reviewer; these need city clerks, council minutes or signed ordinances (`mn-second-coder-lookups-2026-11-02.csv`) | **Ben** |
+| **26 D-025 event dates unconfirmed** | 23 of the 46 event places have no event on a confirmed date | City clerks, council minutes or signed ordinances (`mn-second-coder-lookups-2026-11-02.csv`) | **Ben** |
 | 109 covered metro places with no ADU rule | Fewer D-025 places; more D-022 draws | An ADU lookup table for them, largest first (not written yet; the outstate one, M6, isn't either) | Ben, then WS-MN |
 | Missing-middle rules for the 40 largest places | 33 still draw (D-022) | `mn-mm-lookups-todo.csv` | Ben |
 | Bare-code counties (Crow Wing, Itasca, Koochiching, Jackson, Houston) | 51 of their 58 jurisdictions on ACS (Brainerd, Grand Rapids, International Falls) | Each county's property-type code table | Ben (one request each), then WS-MN |
@@ -126,8 +126,8 @@ uv run python scripts/dev/mn_second_coder_sheet.py
 ## 5. Ben's manual items (exact steps)
 
 1. ~~Second-coder pass~~: **done 2026-11-02**; Ben accepted all 62 recommendations (§6).
-2. **Lookups:** the 32 unconfirmed dates in `mn-second-coder-lookups-2026-11-02.csv` need primary records (the
-   first pass repeated the reviewer), plus Hugo and Rochester; then `mn-mm-lookups-todo.csv` (33 places).
+2. **Lookups:** the 26 unconfirmed dates in `mn-second-coder-lookups-2026-11-02.csv` need primary records; then
+   `mn-mm-lookups-todo.csv` (33 places). Hugo and Rochester are settled (§6).
 3. **County code tables** for Crow Wing, Itasca, Koochiching, Jackson and Houston. Ask each assessor for their
    three-digit property-type code list (the codes 151, 111, 765 and others are unlabelled).
 4. ~~Decide whether seasonal cabins count as houses~~: **decided 2026-11-02, they stay out** (§3).
@@ -165,3 +165,12 @@ DATE UNCONFIRMED. Ben accepted four changes, applied by `scripts/dev/mn_lookups_
 - **Mounds View:** Ord. 1045 (adopted 2025-08-11, effective 2025-09-11) added detached ADUs:
   `MN-2744530-adu-2025b`, with the Ord. 1042 row renamed `-2025a`. DATE UNCONFIRMED (the source predates adoption).
 - **Burnsville 2020:** no 2020 adoption found, so the row is deleted; the 2018 rule stands.
+- **Hugo (Ben):** Ord. 2011-459 §1 (2011-10-03) adopted the ADU rules (Hugo Code §90-277), not Ord. 2011-460.
+- **Rochester (Ben):** a 1998 city planning record says an amendment removed duplexes and PRDs from R-1, so R-1 was
+  one home per lot before the 2023 UDC; the R-1 row stays `[predates]` and is a control.
+- **Round 2 (Ben's agent):** official records confirm the adoption dates for Lakeville (Ord. 903), Medina 2011
+  (Ord. 514), Minnetonka (2021-10-04), Vadnais Heights (Ord. 774), Oakdale (Ord. 948) and Cottage Grove (zoning
+  revision approved 2022-12-21, effective 2023-01-01, re-dated from 2023-08-16), so their DATE UNCONFIRMED tags
+  are removed. Golden Valley's month (November 2022) is confirmed, not the day.
+- **Recount:** D-025 74 places (46 changes, 28 controls); 26 of 53 event rows DATE UNCONFIRMED; 23 places with a
+  confirmed-date event.

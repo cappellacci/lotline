@@ -60,4 +60,9 @@
   event rows DATE UNCONFIRMED; 17 places with a confirmed-date event.
   - Fixed on the way: `mn_readiness_counts.py` matched the bare word `earliest-known` (it appears in decision
     text); it now matches the `[earliest-known]` tag. The decisions script no longer overwrites the lookup file.
-- **Open / next:** primary records for the 32 unconfirmed dates, Hugo and Rochester; M6–M8.
+- **Hugo, Rochester and round 2 (2026-11-02, same PR):** Ben's own lookups settle Hugo (Ord. 2011-459,
+  2011-10-03) and Rochester (R-1 one home per lot since 1998). His agent's second pass confirmed six adoption
+  dates from official records (Lakeville, Medina 2011, Minnetonka, Vadnais Heights, Oakdale, Cottage Grove
+  re-dated to 2023-01-01). Recount: 26 of 53 D-025 event rows DATE UNCONFIRMED; 23 places with a confirmed-date
+  event. Proposed to Ben, not applied: delete Medina 2024 (Ord. 733 is a height rule) and settle Roseville.
+- **Open / next:** the 26 unconfirmed dates; Medina 2024 and Roseville; M6–M8.

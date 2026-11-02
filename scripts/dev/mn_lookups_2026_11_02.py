@@ -13,6 +13,12 @@ second coder's findings, so those rows keep their DATE UNCONFIRMED tags. Ben acc
   becomes -2025a and a -2025b row is added (the a/b convention of OH and TX).
 - Burnsville 2020: no 2020 adoption found, so the row is deleted (the accepted decision);
   the 2018 rule stands.
+- Hugo (Ben's own lookup, later the same day): Ord. 2011-459 §1, dated 2011-10-03, adopted the ADU rules
+  (Hugo Code §90-277 attributes them to it), not Ord. 2011-460 (2011-11-07). No separate effective or
+  publication date was found, so the effective date is coded as adoption.
+- Rochester missing middle (Ben's own lookup, same day): a 1998 city planning record says an amendment
+  removed duplexes and Performance Residential Developments from R-1 (R-1x kept the former R-1 uses), so
+  R-1 was one home per lot before the 2023 UDC. The R-1 row stays `[predates]` and is a control on evidence.
 
 Idempotent.
 
@@ -60,6 +66,27 @@ CHANGES = {
         "Internal apartments in A and RR are older (first date unknown; district sections trace to Ord. 537, "
         "2004): the event is the detached A-district ADU.",
     ),
+    "MN-2730392-adu-2011": (
+        [],
+        {
+            "adoption_date": "2011-10-03",
+            "effective_date": "2011-10-03",
+            "source_section": "Ord. 2011-459 §1; Hugo Code §90-277",
+        },
+        "Ben's lookup: Hugo Code §90-277 attributes the ADU provisions to Ord. 2011-459 §1 (2011-10-03), not "
+        "Ord. 2011-460 (2011-11-07, Ben's earlier lookup). No effective or publication date found: effective "
+        "coded as adoption. The official code record's link was not recorded here.",
+    ),
+    "MN-2754880-missing_middle-2023": (
+        [],
+        {},
+        "Ben's lookup: the city's archived 1998 planning record says an amendment removed duplexes and "
+        "Performance Residential Developments from R-1; R-1x kept the former R-1 uses (including PRDs). So "
+        "ordinary R-1 lots allowed one home before the 2023 UDC too: no change in R-1 in 2023, "
+        "the predates tag stands and the row is a control. 3- and 4-unit rules across every legacy "
+        "district are unresolved "
+        "(full archived use table not verified). The record's link was not recorded here.",
+    ),
     "MN-2722814-adu-2022": (
         [PRE],
         {},
@@ -91,6 +118,74 @@ NEW = dict(
     "not stated (D-022 draws it).",
 )
 
+# Round 2 (Ben's agent, later on 2026-11-02): official records for adoption dates. A row whose adoption is now
+# shown by an official record (code history, council packet, minutes) loses DATE UNCONFIRMED; the effective
+# date stays coded as adoption where no publication date was found, as elsewhere.
+TAG2 = "Lookup round 2 (Ben's agent, 2026-11-02)"
+ROUND2 = {
+    "MN-2735180-adu-2013": (
+        True,
+        {"source_url": "https://codelibrary.amlegal.com/codes/lakevillemn/latest/lakeville_mn/0-0-0-9769"},
+        "Lakeville Code 11-59-13 history: Ord. 903 passed 2013-03-04 with the ADU rules.",
+    ),
+    "MN-2741480-adu-2011": (
+        True,
+        {"source_url": "https://www.medinamn.us/wp-content/uploads/2020/12/826.pdf"},
+        "Medina Code 826.98(2)(p) history: Ord. 514 (2011-11-15) amended the ADU provisions.",
+    ),
+    "MN-2743252-adu-2021": (
+        True,
+        {"source_url": "https://www.minnetonkamn.gov/home/showpublisheddocument/9654/637686109292800000"},
+        "council packet records adoption 2021-10-04; publication field blank.",
+    ),
+    "MN-2766460-adu-2024": (
+        True,
+        {"source_section": "Ord. 774"},
+        "the 2024-07-16 council packet has the signed resolution adopting Ord. 774 that day; effective "
+        "after publication, date not found.",
+    ),
+    "MN-2747680-adu-2025": (
+        True,
+        {
+            "source_section": "Ord. 948 (Chapter 25, Zoning)",
+            "source_url": "https://www.oakdalemn.gov/515/Proposed-and-Adopted-Ordinances;"
+            "https://www.oakdalemn.gov/DocumentCenter/View/8307",
+        },
+        "the city's ordinance list shows Ord. 948 replacing Chapter 25, adopted 2025-07-08.",
+    ),
+    "MN-2713456-adu-2023": (
+        True,
+        {
+            "adoption_date": "2022-12-21",
+            "effective_date": "2023-01-01",
+            "source_url": "https://cottagegrovemn.gov/202/Zoning;"
+            "https://codelibrary.amlegal.com/codes/cottagegrovemn/latest/cottagegrove_mn/0-0-0-5016",
+        },
+        "the city says the zoning-code revision was approved 2022-12-21, effective 2023-01-01 (Ord. 1068, "
+        "2023-08-16, is a later amendment). Whether accessory apartments predate the revision is unknown, so "
+        "the row stays earliest-known.",
+    ),
+    "MN-2730392-adu-2011": (
+        False,
+        {"source_url": "https://hugomn.granicus.com/MetaViewer.php?clip_id=171&meta_id=13721&view_id=2"},
+        "official code-history record for Ord. 2011-459 (2011-10-03) added as the source.",
+    ),
+    "MN-2754880-missing_middle-2023": (
+        False,
+        {
+            "source_url": "https://lf.rochestermn.gov/WebLink/DocView.aspx?dbid=0&id=3872480&repo=ROCHESTER;"
+            "https://www.rochestermn.gov/media/poageesh/unified-development-code.pdf"
+        },
+        "the 1998 staff report and Planning Commission minutes added as the source for pre-UDC R-1.",
+    ),
+    "MN-2724308-adu-2022": (
+        False,
+        {},
+        "the city page confirms the Council vote in November 2022 only: the month is confirmed, the day is "
+        "not (2022-11-01 kept as the coded day).",
+    ),
+}
+
 
 def main() -> None:
     with REFORMS.open() as f:
@@ -118,6 +213,16 @@ def main() -> None:
         else:
             continue
         row["coding_notes"] = f"{row['coding_notes'].strip()} {TAG}: {note}"
+        changed += 1
+    for row in kept:
+        rid = row["reform_id"]
+        if rid not in ROUND2 or TAG2 in row["coding_notes"]:
+            continue
+        confirm, updates, note = ROUND2[rid]
+        if confirm:
+            row["coding_notes"] = row["coding_notes"].replace(UNCONF, "").strip()
+        row.update(updates)
+        row["coding_notes"] = f"{row['coding_notes']} {TAG2}: {note}"
         changed += 1
     added = 0
     if NEW["reform_id"] not in ids:

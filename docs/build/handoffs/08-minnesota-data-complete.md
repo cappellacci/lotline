@@ -72,13 +72,13 @@ rule.
 ### For the engine threads (week of 2026-11-02)
 - **ADU estimate (D-025): 74 MN places with Met Council or Minneapolis permits and a dated rule.**
   - 46 have an in-window change and 28 are "no ADUs" controls. Of the 53 event rows, 8 are `[earliest-known]`
-    and 32 are DATE UNCONFIRMED; only 17 places have an event on a confirmed date. Run with and without them.
+    and 26 are DATE UNCONFIRMED; only 23 places have an event on a confirmed date. Run with and without them.
   - St. Paul never enters.
   - Met Council's file covers every metro community, so no covered-places list is needed.
 - **Missing-middle estimate (D-024):** 100 BPS places of 10,000+.
   - In-window events: Minneapolis 2020 (the injunction windows as sensitivity) and St. Louis Park 2025, both
     confirmed from the ordinances.
-  - Brooklyn Park (R-1) and Coon Rapids are untreated on evidence; Rochester is not a control until looked up.
+  - Brooklyn Park (R-1) and Coon Rapids are untreated on evidence; Rochester's R-1 has been one home per lot since 1998.
 - **V5 St. Paul (#45, by Nov 17):** read `reports/mn/V5-stpaul-inputs.md` (#259). **Cap annual inputs at
   2023.** Disclose D-013's exposure in the freeze file.
 - **Eligible lots changed for every MN place.** The old table had no pre-2021 history for parcel-counted
@@ -86,7 +86,7 @@ rule.
 - **Population weights:** `pop_2020` covers places and townships (4.97M). County remainders are blank.
 
 ### Rows not to lean on as dated events until checked
-- The 32 DATE UNCONFIRMED D-025 event rows (`mn-second-coder-lookups-2026-11-02.csv`).
+- The 26 DATE UNCONFIRMED D-025 event rows (`mn-second-coder-lookups-2026-11-02.csv`).
 - The 8 `[earliest-known]` D-025 event rows.
 - Brooklyn Park and Coon Rapids: placeholder 2010 dates.
 

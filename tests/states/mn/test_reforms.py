@@ -68,9 +68,11 @@ def test_pipeline_and_ben_rows(reforms):
     assert (other.loc[~reviewed, "coder_agreement"] == "single_coder").all()
     assert (other.loc[reviewed, "coder_2"] == "codex-2026-11-02").all()
     r = reforms.set_index("reform_id")
-    # Ben's lookups: Andover Ord. 463, Hugo Ord. 2011-460, Inver Grove Heights 2015 then Ord. 1358
+    # Ben's lookups: Andover Ord. 463, Hugo Ord. 2011-459 (corrected by Ben 2026-11-02),
+    # Inver Grove Heights 2015 then Ord. 1358
     assert r.at["MN-2701486-adu-2016", "effective_date"] == pd.Timestamp("2016-06-21")
-    assert r.at["MN-2730392-adu-2011", "source_section"] == "Ord. 2011-460"
+    assert r.at["MN-2730392-adu-2011", "source_section"].startswith("Ord. 2011-459")
+    assert r.at["MN-2730392-adu-2011", "effective_date"] == pd.Timestamp("2011-10-03")
     assert r.at["MN-2731076-adu-2018", "supersedes"] == "MN-2731076-adu-2015"
     # Ord. 1358's fields were unknown until the second coder read Code 10-18-1 (accepted by Ben 2026-11-02).
     assert r.at["MN-2731076-adu-2018", "by_right"] == True  # noqa: E712
