@@ -87,6 +87,8 @@
   2015-11-02): 14 unconfirmed. Andover confirmed (signed Ord. 463, 2016-06-21): 13 unconfirmed, 34
   confirmed. Roseville 2021 confirmed (Ord. 1606, 2021-11-08); the 2011 row's cap corrected
   to 600 sq ft: 12 unconfirmed. Fridley re-dated from 2022-01-01 to 2022-09-01 `[earliest-known]` (newsletters:
-  adopted March-September 2022); still unconfirmed.
-- **Open / next:** the 12 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  adopted March-September 2022); still unconfirmed. Scott County: the four 2010 township rows confirmed
+  (Comprehensive Revision #1) and four 2025-05-06 amendment rows added: 56 event rows, 8 unconfirmed, 38
+  confirmed places.
+- **Open / next:** the 8 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.

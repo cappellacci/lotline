@@ -348,6 +348,67 @@ FRIDLEY_NOTE = (
     "publication and effective dates not found (the Agenda Center archive timed out)."
 )
 
+# Ben's Scott County lookup (2026-11-02): Comprehensive Revision #1 (adopted 2010-01-12, effective 2010-01-20)
+# first allowed ADUs in the unincorporated townships; the 2025-05-06 amendment loosened them (one new row per
+# township).
+SCOTT = {
+    "2713910450": "Cedar Lake",
+    "2713928322": "Helena",
+    "2713931580": "Jackson",
+    "2713957184": "St. Lawrence",
+}
+SCOTT_URLS = (
+    "https://www.scottcountymn.gov/DocumentCenter/View/1428/Zoning-Ordinance-No-3-;"
+    "https://communityfeedback.opengov.com/portals/scottcountymn/Issue_14247;"
+    "https://www.scottcountymn.gov/330/Planning-Zoning"
+)
+SCOTT_2010 = (
+    {
+        "owner_occ": "True",
+        "adus_per_lot": "1",
+        "min_lot_sqft": "217800",
+        "parking": "two additional spaces",
+        "source_section": "Scott County Zoning Ordinance No. 3, Comprehensive Revision #1; Section 7-4",
+        "source_url": SCOTT_URLS
+        + ";https://energyzoning.org/sites/default/files/PDF/27139_Scott_20230211.pdf",
+    },
+    "Comprehensive Revision #1 adopted 2010-01-12, effective 2010-01-20 (county ordinance); the county's 2025"
+    " hearing materials say ADU rules began with that update, so ADUs were new in 2010. Pre-2025 rule (2023 "
+    "text): 300 sq ft minimum, room-count limits, side or rear yard; owner occupancy, family or caregiver "
+    "occupancy, 5-acre minimum for detached ADUs (min_lot_sqft=217800), two added spaces. County zoning "
+    "applies to unincorporated areas only.",
+)
+
+
+def scott_2025(geoid: str, township: str) -> dict:
+    return dict(
+        reform_id=f"MN-{geoid}-adu-2025",
+        jurisdiction_geoid=geoid,
+        theme="adu",
+        component="Scott County Zoning Ordinance No. 3, Section 7-4 amendment (effective 2025-05-06): size "
+        "limits raised to 1,000 sq ft attached and 1,200 sq ft detached; 300 sq ft minimum and room-count "
+        "limits removed; interim-use-permit exception to the cap when converting an existing structure; "
+        "side-or-rear yard rule gone. Owner occupancy, family or caregiver occupancy, 5-acre minimum for "
+        "detached and two added spaces stay",
+        effective_date="2025-05-06",
+        supersedes=f"MN-{geoid}-adu-2010",
+        by_right="False",
+        owner_occ="True",
+        adus_per_lot="1",
+        adu_max_sqft="1000",
+        adu_detached_allowed="True",
+        min_lot_sqft="217800",
+        parking="two additional spaces",
+        coverage=f"{township} township (Scott County zoning, agricultural and residential districts)",
+        source_url=SCOTT_URLS + ";https://energyzoning.org/sites/default/files/PDF/27139_Scott_20230211.pdf",
+        source_section="Scott County Zoning Ordinance No. 3, Section 7-4 (2025 amendment)",
+        coding_notes="Ben's Scott County lookup (2026-11-02): the code amendment index gives effective "
+        "2025-05-06; Board adoption date and ordinance number not found. Compared with the 2023 text "
+        "(energyzoning.org copy). adu_max_sqft=1000 is the attached cap (detached 1,200). by_right=False as "
+        "in 2010: attached ADUs are an administrative use, detached an interim use.",
+    )
+
+
 BEN_CONFIRM = {
     "MN-2755852-adu-2021": (
         {
@@ -568,6 +629,9 @@ BEN_CONFIRM = {
     ),
 }
 
+for _g in SCOTT:
+    BEN_CONFIRM[f"MN-{_g}-adu-2010"] = SCOTT_2010
+
 
 def main() -> None:
     with REFORMS.open() as f:
@@ -650,6 +714,15 @@ def main() -> None:
             row["coding_notes"] = f"{row['coding_notes']} {FRIDLEY_TAG}: {FRIDLEY_NOTE}"
             changed += 1
     added = 0
+    for geoid, township in SCOTT.items():
+        new = scott_2025(geoid, township)
+        if new["reform_id"] in ids:
+            continue
+        row = {k: "" for k in fields}
+        row.update(state="MN", status="in_force", coder="ben", coder_agreement="single_coder")
+        row.update(new)
+        kept.append(row)
+        added += 1
     if RICHFIELD_MM["reform_id"] not in ids:
         row = {k: "" for k in fields}
         row.update(state="MN", status="in_force", coder="ben", coder_agreement="single_coder")
