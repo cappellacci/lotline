@@ -83,6 +83,7 @@
   Rogers: effective 2020-05-26 confirmed by the official code, adoption unknown, `[earliest-known]` (the prior
   chapter was not found): 16 unconfirmed, 32 confirmed; 7 `[earliest-known]` event rows.
   Golden Valley confirmed (adopted 2022-11-01, effective 2022-11-11; Ord. 745 vs 746 noted): 15 unconfirmed,
-  33 confirmed.
-- **Open / next:** the 15 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  33 confirmed. Inver Grove Heights 2015 confirmed (Ord. 1305, adopted 2015-08-24, effective
+  2015-11-02): 14 unconfirmed.
+- **Open / next:** the 14 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.

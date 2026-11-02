@@ -334,6 +334,22 @@ ROGERS_NOTE = (
 )
 
 BEN_CONFIRM = {
+    "MN-2731076-adu-2015": (
+        {
+            "adoption_date": "2015-08-24",
+            "effective_date": "2015-11-02",
+            "source_section": "Ord. 1305",
+            "source_url": "https://codelibrary.amlegal.com/codes/invergrovehtsmn/latest/invergrovehts_mn/0-0-"
+            "0-6027;https://www.ighmn.gov/Archive/ViewFile/Item/1276;https://www.ighmn.gov/Archive/ViewFile/"
+            "Item/1258",
+        },
+        "Ord. 1305 adopted at third reading 2015-08-24, 5-0 (minutes; code history 'Ord. 1305, 8-24-2015'); "
+        "Council set the effective date as 2015-11-02, with publication after that date (notice not found). "
+        "Dakota County's '2015-08-24 effective' confused adoption with effect. First authorization: the "
+        "2015-07-13 minutes say the prior code allowed one dwelling unit in single-family districts. A "
+        "GreenStep Cities report says ADUs were allowed under the 2002 code; it is secondary and conflicts "
+        "with the council record.",
+    ),
     "MN-2724308-adu-2022": (
         {
             "effective_date": "2022-11-11",
