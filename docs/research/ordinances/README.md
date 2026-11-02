@@ -111,6 +111,11 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
 
 - `nc-second-coder-2026-11-01.csv` (North Carolina thread 10): **the second-coder worksheet** for the 66 local rule
   rows in `config/reforms/nc.csv` (every row except the S.L. 2026-59 state-law rows), same columns as the Texas sheet.
+  - **Review first: the 24 lines with `panel_event` set** (sorted to the top, 2026-11-01, thread 13). They are the
+    rows that would serve as dated events: 11 D-025 rows (places with ADU-flagged permits: Raleigh, Durham city and
+    county, Greensboro, Cornelius, Huntersville, Matthews, Mint Hill) and 13 D-024 rows (BPS places of 10,000+
+    with a missing-middle change in 2010-2025, plus unincorporated Durham County). 11 of the 24 are priority 2:
+    their date is the ordinance's adoption date, so the event may be earlier than coded.
   - Priority 1 (28): dated reforms from 2010 on, which become D-024/D-025 events.
   - Priority 2 (31): rows dated 2010 or later by the ordinance's adoption date (`[earliest-known]`): the event date
     itself needs confirming.

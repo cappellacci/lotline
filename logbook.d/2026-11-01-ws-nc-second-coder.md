@@ -5,3 +5,5 @@
 **Outputs.** `docs/research/ordinances/nc-second-coder-2026-11-01.csv` (66 lines: 28 priority 1, 31 priority 2, 7 priority 3), in the Texas worksheet's format; README entry.
 
 **How Claude worked and checked.** Generated from `config/reforms/nc.csv` on main at f9d9624: one line per row not from S.L. 2026-59, with what was coded, a check list built from each row's flags (`[earliest-known]` dates, rows resting on Ben's search-summary lookups, rows contradicting a lookup) and the source with the local file name. No rule rows changed.
+
+**Update (2026-11-01, thread 13).** Added a `panel_event` column and sorted the 24 D-024/D-025 event rows to the top (11 of them rest on `[earliest-known]` dates). Removed a `.venv` symlink that had been committed by mistake and broke CI (`uv sync` could not create `.venv`); `.gitignore` now also ignores a `.venv` symlink, since `.venv/` matches only directories.
