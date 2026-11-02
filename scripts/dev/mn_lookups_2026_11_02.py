@@ -410,6 +410,23 @@ def scott_2025(geoid: str, township: str) -> dict:
 
 
 BEN_CONFIRM = {
+    "MN-2763544-adu-2025": (
+        {
+            "adu_max_sqft": "1200",
+            "coverage_zones": "R-1",
+            "source_section": "Ord. 25-12; City Code 1201.08",
+            "source_url": "https://mail.sunfishlake.org/cc-minutes/sunfish-lake-city-council-minutes-december"
+            "-9-2025;https://sunfishlake.org/images/City_Code/2025%20City%20Code%20Book%20FINAL%202-8-26.pdf"
+            ";https://www.sunfishlake.org/images/Ordinances/Zoning_Ordianance/zo%20sunfish%20lake.pdf;https:"
+            "//mail.sunfishlake.org/images/notices/20251210-7a.pdf",
+        },
+        "Ord. 25-12 adopted 2025-12-09, 5-0, publication authorized (minutes); effective after publication, "
+        "date not found (the Clerk holds the affidavits), so effective coded as adoption. If publication "
+        "fell after 2025-12-31 the event leaves the window. The prior zoning ordinance has no ADU provision "
+        "and prohibits unlisted uses, so attached ADUs are new: permitted in R-1, lesser of 50% of the "
+        "house's finished area or 1,200 sq ft, no owner-occupancy condition; detached ADUs prohibited "
+        "(1201.08).",
+    ),
     "MN-2744530-adu-2025b": (
         {
             "effective_date": "2025-09-13",
