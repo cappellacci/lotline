@@ -3,7 +3,8 @@
 *WS-MN, 2026-11-02. Plan: `docs/build/mn-data-plan.md` (#256, approved 2026-11-01). No model runs: these are
 counts of the processed input tables in `~/lotline-data/processed/mn`, rebuilt on 2026-11-02 with the MnGeo
 parcels (#261), and of `config/reforms/mn.csv` (with #260's rows) and `config/fees/mn.csv`. §4 has the
-commands. This branch is stacked on #260 and #261 and should be merged after them. This report replaces thread
+commands. Updated through 2026-11-02 for the second-coder review and Ben's lookups (§6), with the engine kickoff
+in §0. This branch is stacked on #260 and #261 and should be merged after them. This report replaces thread
 8's integration run: under the data-thread rule, data threads don't run the engines.*
 
 **Bottom line.** Minnesota is ready for the engines. Every one of its 1,053 jurisdictions has:
@@ -17,17 +18,44 @@ commands. This branch is stacked on #260 and #261 and should be merged after the
   539 of 1,053, up from 186. MnGeo's opt-in compilation added 353 outstate jurisdictions in 31 counties.
 - **Of the 40 largest places, only Mankato is on ACS.** Its county (Blue Earth) has not opted in.
 - **The ADU panel (D-025) holds 71 Minnesota places with Met Council or Minneapolis permits and a dated rule:**
-  43 with an in-window rule change and 28 "no ADUs" controls (after the second-coder review and lookups). Only 39 of
-  the 43 have an event on a confirmed date: 4 of the 54 event rows are tagged DATE UNCONFIRMED. 109 more covered places
-  have no rule yet. That
-  makes Minnesota the largest contributor to D-025, as it already is today (D-023/D-025's Twin Cities panel).
+  43 with an in-window rule change and 28 "no ADUs" controls. 39 of the 43 have their event on a confirmed date;
+  4 of the 54 event rows are still DATE UNCONFIRMED. 109 more covered places have no rule yet. Minnesota is the
+  largest contributor to D-025, as it already is today (the Twin Cities panel).
 - **The missing-middle panel (D-024) has 100 Minnesota places of 10,000+, with 3 in-window events:**
-  Minneapolis (2020), Richfield (2023) and St. Louis Park (2025), all adopted on dates confirmed from official records. St. Paul's 2023 reform is the V5
-  holdout.
+  Minneapolis (2020), Richfield (2023) and St. Louis Park (2025), all adopted on dates confirmed from official
+  records. St. Paul's 2023 reform is the V5 holdout.
 - **V5 St. Paul inputs** are in #259: 55,269 eligible H1/H2 lots on the pre-window roll, from the city's dated
   zoning snapshot.
 - **Every rule row has been second-coded** (Codex, 2026-11-02): 8 agreed, 60 adjudicated by Ben (all
-  recommendations accepted), 39 noted with no change; 2 rows deleted as not ADU rules. See §6.
+  recommendations accepted), and Ben's lookups then settled all but 4 reform dates. See §6.
+
+**Starting an engine run? Begin with §0.**
+
+## 0. Engine kickoff (2026-11-02)
+
+What an engine thread needs from Minnesota, in one place. Details are in §2 and §6.
+
+- **Merge first, in order:** #256 (plan), #259 (V5 St. Paul inputs), #260 (missing-middle rules), #261 (MnGeo
+  parcels and the statewide eligible rebuild), then this PR (#262, stacked on #260 and #261). Engines read
+  `config/reforms/mn.csv` from `main`, so nothing here counts until #262 is merged.
+- **Eligible lots changed for every MN place** (#261). The rebuilt tables are already in `LOTLINE_DATA_DIR`
+  (2026-11-02): don't rebuild, but anything run on the old table is stale.
+- **Holdout:** St. Paul (2758000), outcomes from 2024-01-01 and rolls exported on or after that day. Go through
+  `holdout.apply` (rolls with `snapshot=True`); never pass `--unblind`. Don't use the post-reform St. Paul
+  figures (D-013).
+- **Tags in `config/reforms/mn.csv`, which every engine must respect:**
+  - `[predates]` (Stillwater, Baytown, Denmark, Rochester missing middle, and others): never an event.
+  - `[earliest-known]` (10 ADU event rows, including the four 2025 Scott County rows with no Board date): run
+    with and without them as events.
+  - `DATE UNCONFIRMED` (4 rows: Eagan 2014, Richfield 2015, St. Louis Park 2020, Fridley 2022): counts as an
+    event at its date; also run without them (Ben, 2026-11-02).
+  - A "none" row (`adus_per_lot = 0`, or missing-middle `unit_cap = 1`) is a control, never an event.
+
+| Run | What MN adds | Run variants | Caveats |
+|---|---|---|---|
+| **D-025 ADU** (`src/lotline/model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py`) | 71 places: 43 with an in-window change (54 event rows), 28 "no ADUs" controls. Met Council covers every metro community; Minneapolis CCS covers Minneapolis | Main: all event rows. Sensitivities: without the 4 DATE UNCONFIRMED rows; without the 10 `[earliest-known]` rows | ADU flags start in 2014 (Met Council) and 2016 (Minneapolis), so the 2010–2013 events (Scott County townships, Hugo, Medina, Roseville, Lakeville) have no ADU-flagged pre-years. 12 event rows fall in 2025 and have almost no post-period; Sunfish Lake (2025-12-09) may fall just outside the window. Drop Minneapolis 2026 (partial) |
+| **D-024 missing middle** (`src/lotline/model/estimate_mm.py`) | 100 BPS places of 10,000+; 3 in-window events: Minneapolis 2020-01-01, Richfield 2023-01-24, St. Louis Park 2025-03-28. Controls on evidence: Brooklyn Park (R-1), Coon Rapids, Rochester (R-1) | Main: the 3 events. Sensitivity: Minneapolis with the injunction windows (2022-06-15 to 07-26; 2023-11-04 to 2024-05-13) | Richfield's effective date is coded as passage; the true date is about a month later. Its pre-2023 rule (conditional duplexes on arterial lots) is a partial dose. St. Paul is excluded (V5) |
+| **V5 St. Paul** (#45, freeze **by Nov 17**) | `reports/mn/V5-stpaul-inputs.md` (#259): 55,269 eligible H1/H2 lots on the pre-window roll | — | Cap annual inputs at 2023. Disclose D-013's exposure in the freeze file |
 
 ## Corrections to the thread-13 snapshot
 
@@ -134,94 +162,33 @@ uv run python scripts/dev/mn_second_coder_sheet.py
 5. **Review order:** #256 (plan), #259 (V5), #260 (rules), #261 (parcels), then this PR (stacked on #260 and
    #261).
 
-## 6. Second-coder review (2026-11-02)
+## 6. Second-coder review and lookups (2026-11-02)
 
-Ben's second agent (Codex) filled all 109 rows of `mn-second-coder-2026-11-02.csv`: 8 yes, 92 partly, 9 no. It
-was stricter than the NC reviewer: a date counts as confirmed only with a signed ordinance or an effective-date
-record. It also wrote over the sheet's left-hand columns; our coding as sent is the sheet at 54e9727.
+Ben's second agent (Codex) filled all 109 rows of `mn-second-coder-2026-11-02.csv` (8 yes, 92 partly, 9 no).
+It counted a date as confirmed only with a signed ordinance or an effective-date record, and it wrote over the
+sheet's left-hand columns (our coding as sent is the sheet at 54e9727). Ben accepted all 62 recommendations in
+`mn-second-coder-decisions-2026-11-02.csv`, then worked the lookups himself, one place at a time. Every change is
+in a script, idempotent and in run order:
 
-- `scripts/dev/mn_second_coder_2026_11_02.py` appended each finding to `coding_notes` and marked the 8 agreed rows.
-- Ben accepted all 62 recommendations in `mn-second-coder-decisions-2026-11-02.csv`, applied by
-  `scripts/dev/mn_second_coder_decisions_2026_11_02.py`:
-  - **Deleted:** Hopkins 2024 (an accessory-structure footprint rule) and Grant 2016 (a state-law opt-out).
-  - **Dates fixed:** Mounds View (2025-06-29), Burnsville 2018 (2018-05-22), Columbia Heights (2024-08-26), St. Paul
-    ADUs (2018-12-01) and parking (2021-10-01), the 2022 Minneapolis injunction (2022-06-15).
-  - **Values fixed:** Chanhassen (CUP, not by right), Richfield (no detached ADUs), Oakdale (by right); blank fields
-    filled for 8 places from the reviewer's code reading.
-  - **`[predates]`:** Fridley 2022 (a recodification), Forest Lake (recoded from "no ADUs" to rural ADUs, now
-    `MN-2721770-adu-2023`), Rochester missing middle. Brooklyn Park's one-home row now covers R-1 only.
-  - **DATE UNCONFIRMED:** 31 rows keep their dates and go on the lookup list. Ben decided (2026-11-02) that a
-    DATE UNCONFIRMED row still counts as an event, and engines run with and without such rows.
-- The agent's research tracker, evidence register, PDF inventory and issues note are in
-  `docs/research/ordinances/`. Its 14 PDFs are in `LOTLINE_DATA_DIR/manual/mn/second_coder_2026-11-02/`.
+1. `scripts/dev/mn_second_coder_2026_11_02.py`: the reviewer's findings appended as notes; 8 rows marked agree.
+2. `scripts/dev/mn_second_coder_decisions_2026_11_02.py`: the 62 decisions; writes the lookup list.
+3. `scripts/dev/mn_lookups_2026_11_02.py`: Ben's lookups (sources, dates and reasons are in each row's notes).
 
-**Lookups (2026-11-02).** Ben's agent filled `mn-second-coder-lookups-2026-11-02.csv`, but 33 of its 36 answers
-repeat the second coder's findings (one cites this repo's own `manual-lookups.csv`), so those dates stay
-DATE UNCONFIRMED. Ben accepted four changes, applied by `scripts/dev/mn_lookups_2026_11_02.py`:
-- **Forest Lake:** Ord. 719 (2023-01-23, council minutes and ordinance) added ADUs in the A district, so the 2023
-  row is an in-window event (`[predates]` removed).
-- **Fridley:** the city says Council approved its ADU ordinance in 2022, so `[predates]` is removed; the day is
-  DATE UNCONFIRMED.
-- **Mounds View:** Ord. 1045 (adopted 2025-08-11, effective 2025-09-11) added detached ADUs:
-  `MN-2744530-adu-2025b`, with the Ord. 1042 row renamed `-2025a`. DATE UNCONFIRMED (the source predates adoption).
-- **Burnsville 2020:** no 2020 adoption found, so the row is deleted; the 2018 rule stands.
-- **Hugo (Ben):** Ord. 2011-459 §1 (2011-10-03) adopted the ADU rules (Hugo Code §90-277), not Ord. 2011-460.
-- **Rochester (Ben):** a 1998 city planning record says an amendment removed duplexes and PRDs from R-1, so R-1 was
-  one home per lot before the 2023 UDC; the R-1 row stays `[predates]` and is a control.
-- **Round 2 (Ben's agent):** official records confirm the adoption dates for Lakeville (Ord. 903), Medina 2011
-  (Ord. 514), Minnetonka (2021-10-04), Vadnais Heights (Ord. 774), Oakdale (Ord. 948) and Cottage Grove (zoning
-  revision approved 2022-12-21, effective 2023-01-01, re-dated from 2023-08-16), so their DATE UNCONFIRMED tags
-  are removed. Golden Valley's month (November 2022) is confirmed, not the day.
-- **Ben, round 3:** Medina 2024 deleted (Ord. 733 is a height rule, not an ADU change). Roseville Ord. 1418
-  (2011-10-10) added as `MN-2755852-adu-2011`: ADUs went from conditional (the 2006 code) to permitted.
-- **Recount:** D-025 74 places (46 changes, 28 controls); 25 of 53 event rows DATE UNCONFIRMED; 24 places with a
-  confirmed-date event.
-- **Richfield and Eagan (Ben):** Bill No. 2023-2 (passed 2023-01-24) allows duplexes by right in R and folds
-  MR-1 into R, so Richfield is a new D-024 event (`MN-2754214-missing_middle-2023`; three-plus units stay
-  multifamily). Eagan's ADU ordinance is almost certainly Ord. 528, 2nd Series (unsigned draft; date still
-  unconfirmed). Richfield's ADU row is re-dated to 2015-07-01 `[earliest-known]` (city handout dated 7/2015).
-- **Crystal (Ben):** Ord. 2017-07 (the Unified Development Code) authorized ADUs: adopted 2018-01-02, effective
-  2018-02-10 per the official code (500.09), so the coded dates stand and are now confirmed.
-- **Rosemount (Ben):** Ord. 2024-04, adopted and effective 2024-06-04 (official code), first allowed ADUs
-  (Dakota County's 2016 profile and 2023 guide list none): internal or attached, A-2, RR, R-1 and R-2, 800 sq ft.
-- **Wayzata (Ben):** Ord. 811, adopted 2022-06-21 (official meeting summary), effective 2022-06-30 (Ch. 937
-  history); ADUs permitted in all six single-family districts, detached allowed, owner-occupied, one per lot.
-- **Plymouth (Ben):** Ord. 2023-12, adopted and effective 2023-09-12, expanded the 2002 rule (Ord. 2002-24, ADUs
-  only above garages) to internal, attached and detached units.
-- **White Bear Lake (Ben):** Ord. 25-07-2080, adopted 2025-07-22, effective 2025-08-20; the rewrite moved ADUs
-  from conditional use (former 1302.125) to by right, so the event stands.
-- **Stillwater (Ben):** the 2017-05-02 record is Ord. 1093 (short-term home rentals). ADUs were allowed from the
-  late 1990s (2021 Planning Commission report), so the row is `[predates]`. Open: whether the 2021 RA expansion
-  was adopted.
-- **Mound (Ben):** Ord. No. 7-2024, adopted 2024-10-22, published 2024-11-02, effective 2024-11-03; first allowed
-  ADUs (R-1, R-1A, R-2, MU-D, MU-C; 800 sq ft; owner occupancy).
-- **Ramsey (Ben):** Ord. 22-04, adopted 2022-02-08, published 2022-02-11, effective 2022-03-14; first general ADU
-  allowance (R-1, attached or detached, 800 sq ft, owner occupancy, detached on 1+ acre).
-- **Rogers (Ben):** the official code (125-4) confirms the 2020-05-26 effective date; adoption date and ordinance
-  not found. ADUs are an accessory use in AG and R1. The 2020 code repealed a prior chapter that was not found, so
-  the row is `[earliest-known]`.
-- **Golden Valley (Ben):** adopted 2022-11-01 (5-0, minutes), published 2022-11-10, effective 2022-11-11 (inferred);
-  Ord. 745 per the minutes and notice, 746 per a signed copy and the code history. First general ADU allowance.
-- **Inver Grove Heights (Ben):** Ord. 1305 adopted at third reading 2015-08-24, effective 2015-11-02 (set by
-  Council); first ADU authorization per the July 2015 minutes.
-- **Andover (Ben):** the signed Ord. 463 and the 2016-06-21 minutes confirm adoption; publication and effective
-  dates not found. R-1 only (the stricter section controls over the use table's RR).
-- **Roseville 2021 (Ben):** Ord. 1606 (Phase 1 zoning update) adopted 2021-11-08 made ADUs permitted in LDR and
-  LMDR and changed the cap from 600 to 300-650 sq ft; the 2011 row's cap is corrected to 600.
-- **Fridley (Ben):** city newsletters show the ADU ordinance was new in 2022, adopted between March and September;
-  the row moves from the 2022-01-01 placeholder to 2022-09-01 (`[earliest-known]`, still DATE UNCONFIRMED).
-- **Scott County townships (Ben):** Comprehensive Revision #1 (adopted 2010-01-12, effective 2010-01-20) first
-  allowed ADUs, so the four 2010 rows are confirmed. The 2025-05-06 amendment raised the caps (1,000 attached, 1,200
-  detached) and dropped the minimum size and room limits: a new 2025 row for each township (Board date unknown).
-- **Mounds View Ord. 1045 (Ben):** adopted 2025-08-11 (5-0), published 2025-08-14, effective 2025-09-13 (30-day
-  clause); detached ADUs are conditional uses in R-1 to R-4.
-- **Sunfish Lake (Ben):** Ord. 25-12 adopted 2025-12-09 (5-0) first allowed attached ADUs in R-1 (1,200 sq ft); the
-  publication date is unknown, so the event may fall just after the window ends (2025-12-31).
-- **Baytown (Ben):** the township's 2040 plan (adopted 2018-05-07) says its zoning already permitted accessory
-  apartments, so the 2018 row is `[predates]`: D-025 now 72 places (44 changes, 28 controls).
-- **Denmark (Ben):** a 2017 copy of the township code already allows internal accessory apartments, and the 2022
-  ordinances were a river-corridor rule and a rezoning, so the 2022 row is `[predates]`: D-025 now 71 places
-  (43 changes, 28 controls).
-- **Richfield before 2023 (Ben):** duplexes in R needed a conditional use permit and only on arterial or collector
-  lots; MR-1 was a separate two-family district. Added as `MN-2754214-missing_middle-2010` (a partial dose
-  under D-024), so 2023 stays Richfield's first by-right year and a D-024 event.
+| Outcome | Rows |
+|---|---|
+| **Deleted** (not ADU reforms) | Hopkins 2024 (accessory-structure footprints), Grant 2016 (state-law opt-out), Burnsville 2020 (no 2020 adoption), Medina 2024 (a height rule) |
+| **Added** | Roseville 2011 (Ord. 1418, conditional to permitted), Mounds View 2025b (Ord. 1045, detached by CUP), Scott County 2025 amendment for Cedar Lake, Helena, Jackson and St. Lawrence townships, Richfield missing middle 2010 (conditional duplexes) and 2023 (by right, a D-024 event) |
+| **`[predates]`** (never events) | Stillwater (ADUs since the late 1990s; the 2017 date was a rental ordinance), Baytown (2040 plan), Denmark (2017 code), Rochester missing middle (R-1 one home since 1998) |
+| **Dates confirmed from official records** | Andover, Crystal, Golden Valley, Hugo (Ord. 2011-459), Inver Grove Heights 2015 (Ord. 1305), Lakeville, Medina 2011, Minnetonka, Mound, Mounds View 2025a and 2025b, Oakdale, Plymouth, Ramsey, Rogers (effective date), Rosemount, Roseville 2011 and 2021, Scott County 2010 (four townships), St. Louis Park missing middle, Sunfish Lake, Vadnais Heights, Wayzata, White Bear Lake, Forest Lake |
+| **Values fixed** | Chanhassen (CUP, not by right), Mounds View 2025b (CUP), Richfield (no detached ADUs), Oakdale (by right), Brooklyn Park one-home row (R-1 only), Roseville 2011 cap (600 sq ft); blank fields filled for about 15 places from code readings |
+| **Re-dated** | Burnsville 2018 (2018-05-22), Columbia Heights (2024-08-26), Cottage Grove (2023-01-01), Fridley (2022-09-01, earliest known), Golden Valley (effective 2022-11-11), Inver Grove Heights 2015 (effective 2015-11-02), Mounds View (2025-06-29 and 2025-09-13), Richfield ADU (2015-07-01, earliest known), St. Paul ADUs (2018-12-01) and parking (2021-10-01), Minneapolis injunction (2022-06-15), Wayzata (effective 2022-06-30) |
+| **Still DATE UNCONFIRMED** | Eagan 2014 (almost certainly Ord. 528), St. Louis Park ADU 2020 (Council likely first saw it 2020-10-05), Richfield ADU 2015 (Bill No. 2015-4), Fridley 2022: each needs the city clerk's signed ordinance |
+
+**Rule decisions recorded here:** seasonal cabins stay out of eligibility (Ben, 2026-11-02); a "none" row is a
+control, never an event; a `DATE UNCONFIRMED` row counts as an event and engines also run without it (Ben,
+2026-11-02, for HANDOFF). Open, not blocking: whether Stillwater's 2021 RA expansion was adopted; Sunfish Lake's
+publication date (if after 2025-12-31 its event leaves the window); the Richfield missing-middle publication
+date.
+
+The agent's research tracker, evidence register, PDF inventory and issues note are in `docs/research/ordinances/`;
+its 14 PDFs are in `LOTLINE_DATA_DIR/manual/mn/second_coder_2026-11-02/`.

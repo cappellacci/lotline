@@ -96,5 +96,8 @@
   already allows them): D-025 71 places (43 changes, 28 controls), 4 of 54 event rows unconfirmed, 39 confirmed. Richfield's pre-2023 duplex rule (conditional, arterial or
   collector lots in R) added as a 2010 placeholder row; Ben agreed to keep 2023 as the D-024 event (first
   by-right year), not remove it.
+- **Engine kickoff (2026-11-02, same PR):** `docs/build/mn-readiness.md` gains §0 (merge order, holdout, tags,
+  one row each for D-025, D-024 and V5 St. Paul with run variants and caveats) and a condensed §6 (one table of
+  outcomes in place of the running list). Covered ADU event rows by year checked with a one-off read-only count.
 - **Open / next:** the 4 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.
