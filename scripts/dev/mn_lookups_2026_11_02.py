@@ -312,6 +312,27 @@ STILLWATER_NOTE = (
     "ordinance, and whether the 2021 proposal (expansion to RA) was adopted, a possible in-window event."
 )
 
+# Ben's Rogers lookup (2026-11-02): the official code (125-4) gives the effective date, so DATE UNCONFIRMED
+# comes off; the 2020 code repealed the old zoning chapter, which was not found, so the row is
+# [earliest-known].
+ROGERS = "MN-2755186-adu-2020"
+ROGERS_TAG = "Ben's Rogers lookup (2026-11-02)"
+ROGERS_UPDATES = {
+    "adoption_date": "",
+    "coverage": "AG and R1 (accessory use, Table 4)",
+    "coverage_zones": "AG;R1",
+    "source_section": "City Code 125-4 (effective date), Table 4",
+    "source_url": "https://library.municode.com/mn/rogers/codes/code_of_ordinances?nodeId=CH125ZOLADERE",
+}
+ROGERS_NOTE = (
+    "the official code (125-4) gives the zoning chapter's effective date as 2020-05-26; the ordinance number "
+    "and Council adoption date were not found, so adoption_date is cleared (it had copied the effective "
+    "date). Table 4 lists ADUs as an accessory use in AG and R1; permit path, detached units, size, owner "
+    "occupancy and parking not confirmed (D-022 draws them). The code repealed the prior zoning chapter, "
+    "which was not found, so whether ADUs are new in 2020 is unknown: if they were allowed before, the row "
+    "should be tagged predates."
+)
+
 BEN_CONFIRM = {
     "MN-2753026-adu-2022": (
         {
@@ -528,6 +549,13 @@ def main() -> None:
             row.update(STILLWATER_UPDATES)
             notes = row["coding_notes"].replace(UNCONF, "").strip()
             row["coding_notes"] = f"{EK}{PRE}{notes} {STILLWATER_TAG}: {STILLWATER_NOTE}"
+            changed += 1
+    for row in kept:
+        if row["reform_id"] == ROGERS and ROGERS_TAG not in row["coding_notes"]:
+            row.update(ROGERS_UPDATES)
+            notes = row["coding_notes"].replace(UNCONF, "").strip()
+            ek = "" if EK.strip() in notes else EK
+            row["coding_notes"] = f"{ek}{notes} {ROGERS_TAG}: {ROGERS_NOTE}"
             changed += 1
     added = 0
     if RICHFIELD_MM["reform_id"] not in ids:

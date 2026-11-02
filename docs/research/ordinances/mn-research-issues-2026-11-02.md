@@ -308,3 +308,10 @@ Priority 3 places: Anoka city; Apple Valley city; Arden Hills city; Bethel city;
 - Ordinance 22-04 adopted 2022-02-08, published 2022-02-11, effective 2022-03-14 (30 days after passage/publication). The coded March 14 date is effective date, not adoption date.
 - Ordinance amends §§117-1, 117-111 and 117-349, defines ADU, adds it as a permitted use in R-1, makes conversion of lawful nonconforming garage a CUP use, and creates ADU standards. Wording indicates first general authorization; no earlier general ADU allowance located.
 - Ord.22-04 basic standards: max one per existing single-family property, attached or detached, owner occupancy in primary or ADU, max 800 sf, detached lot >=1 acre, attached lot width >=80 ft, max height 22 ft or primary height, principal residential setbacks, no extra parking if primary dwelling parking standard met, shared utilities, permanent foundation, building permit + C of O, no separate sale/parcel.
+
+
+## Rogers ADU 2020 — adoption record and historical baseline unresolved (2026-11-02)
+
+- Official Chapter 125 confirms effective date 2020-05-26 (§125-4), and Table 4 lists accessory dwelling units as accessory uses in AG and R1. The 2020 code repeals the former zoning chapter passed July 1, 1980 (§125-5).
+- Not located: ordinance number, Council adoption date/minutes, publication date/notice, previous zoning text, or ADU-specific standards addressing size, detached units, owner occupancy, lot minimums, parking and application requirements. The city portal blocked access in automated lookup; no source was found that proves May 26 was the adoption date.
+- Because the former code was not located, new-versus-predating status remains unresolved. The 2020 draft and current code table are not enough to prove that ADUs were newly authorized in 2020. Official source links and excerpt are recorded in the source register; effective date and AG/R1 table finding are added to the tracker.
