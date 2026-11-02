@@ -123,3 +123,12 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   - Copies of the ordinances Ben downloaded are in `~/lotline-data/manual/nc_udos/`; `source_url` names the file.
   - Four columns are blank for the second coder: `second_coder`, `agrees (yes/no/partly)`, `correct_value`,
     `second_coder_note`. Agreed rows get `coder_2` and `coder_agreement = agree`; disagreements are adjudicated.
+  - **Reviewed 2026-11-01** by Ben's second agent (Codex; `second_coder = codex-2026-11-01`; its working files,
+    evidence register and PDFs are in `~/lotline-data/manual/nc/second_coder_2026-11-01/`): 8 yes, 44 partly,
+    14 no, plus 5 supplemental rows (Goldsboro, New Bern, Concord missing middle). Applied by
+    `scripts/dev/nc_second_coder_2026_11_01.py`: the 8 agreed rows get `coder_2` and `coder_agreement = agree`;
+    every reviewed row gets the finding in its notes; no coded value changes.
+  - `nc-second-coder-decisions-2026-11-01.csv`: the 14 disagreements, one value-changing "partly" (Rocky Mount)
+    and the 5 supplemental rows, each with a recommended action, for Ben to decide. Proposed tag `[predates]` in
+    `coding_notes`: the rule was in force before the coded date and the first date is unknown, so the row is not
+    an in-window event.
