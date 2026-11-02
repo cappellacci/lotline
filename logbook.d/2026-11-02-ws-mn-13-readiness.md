@@ -74,6 +74,7 @@
   rows DATE UNCONFIRMED; 25 places with a confirmed-date event. Rosemount confirmed (Ord. 2024-04, 2024-06-04,
   a new authorization per Dakota County) and its fields filled: 23 unconfirmed, 26 confirmed places. Wayzata
   confirmed (Ord. 811, adopted 2022-06-21, effective 2022-06-30) and filled: 22 unconfirmed, 27 confirmed places. Plymouth
-  confirmed (Ord. 2023-12, 2023-09-12; expanded the 2002 above-garage rule): 21 unconfirmed, 28 confirmed places.
-- **Open / next:** the 21 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
+  confirmed (Ord. 2023-12, 2023-09-12; expanded the 2002 above-garage rule): 21 unconfirmed, 28 confirmed places. White
+  Bear Lake confirmed (Ord. 25-07-2080, CUP to by right, effective 2025-08-20): 20 unconfirmed, 29 confirmed.
+- **Open / next:** the 20 unconfirmed dates; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.

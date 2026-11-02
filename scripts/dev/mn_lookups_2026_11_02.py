@@ -290,6 +290,34 @@ EAGAN_NOTE = (
 # Ben's confirmations (2026-11-02): official records confirm the coded dates, so DATE UNCONFIRMED comes off.
 BEN_TAG = "Ben's confirmation (2026-11-02)"
 BEN_CONFIRM = {
+    "MN-2769970-adu-2025": (
+        {
+            "component": "White Bear Lake Ord. 25-07-2080 (zoning code rewrite): ADUs moved from conditional "
+            "use (former 1302.125 home accessory apartments) to an administrative, by-right path; one ADU "
+            "per lot, detached allowed, on Lakefront House lots in R-1/R-2a/R-2b/R-2c and Detached House "
+            "lots in R-3/R-4/R-5; lesser of 880 sq ft or half the house; owner occupancy with a recorded "
+            "deed restriction; no extra parking if the house keeps its own",
+            "by_right": "True",
+            "owner_occ": "True",
+            "adus_per_lot": "1",
+            "adu_max_sqft": "880",
+            "adu_detached_allowed": "True",
+            "parking": "no additional space if the house keeps its own off-street parking",
+            "coverage": "Lakefront House lots in R-1, R-2a, R-2b, R-2c; Detached House lots in R-3, R-4, R-5",
+            "coverage_zones": "R-1;R-2a;R-2b;R-2c;R-3;R-4;R-5",
+            "source_section": "Ord. 25-07-2080; Zoning Code 1301.010.3, 1306.030, Tables 1302-1/1302-2",
+            "source_url": "https://www.whitebearlakemn.gov/media/35431;"
+            "https://bloximages.chicago2.vip.townnews.com/presspubs.com/content/tncms/assets/v3/editorial/9/"
+            "15/9154f31b-d2c2-4352-b9df-faafd4a7a1cb/68a71bdc8b312.pdf.pdf;"
+            "https://www.whitebearlakemn.gov/sites/g/files/vyhlif13396/files/media/communitydevelopment/file/"
+            "35516/wbl_zoning_final_effective_2025.08.20rev2.pdf;"
+            "https://www.whitebearlakemn.gov/media/19041",
+        },
+        "Ord. 25-07-2080 adopted unanimously 2025-07-22 (council minutes), summary published 2025-08-20 "
+        "(newspaper notice), effective 2025-08-20 (adopted code 1301.010.3). ADUs predate the rewrite: the "
+        "former code (1302.125) allowed owner-occupied home accessory apartments by conditional use permit; "
+        "the event is the move to by right. ADUs stay distinct from duplexes.",
+    ),
     "MN-2751730-adu-2023": (
         {
             "source_section": "Ord. 2023-12; Resolution 2023-239 (summary publication)",

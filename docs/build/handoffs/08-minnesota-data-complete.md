@@ -72,7 +72,7 @@ rule.
 ### For the engine threads (week of 2026-11-02)
 - **ADU estimate (D-025): 74 MN places with Met Council or Minneapolis permits and a dated rule.**
   - 46 have an in-window change and 28 are "no ADUs" controls. Of the 53 event rows, 8 are `[earliest-known]`
-    and 21 are DATE UNCONFIRMED; only 28 places have an event on a confirmed date. Run with and without them.
+    and 20 are DATE UNCONFIRMED; only 29 places have an event on a confirmed date. Run with and without them.
   - St. Paul never enters.
   - Met Council's file covers every metro community, so no covered-places list is needed.
 - **Missing-middle estimate (D-024):** 100 BPS places of 10,000+.
@@ -86,7 +86,7 @@ rule.
 - **Population weights:** `pop_2020` covers places and townships (4.97M). County remainders are blank.
 
 ### Rows not to lean on as dated events until checked
-- The 21 DATE UNCONFIRMED D-025 event rows (`mn-second-coder-lookups-2026-11-02.csv`).
+- The 20 DATE UNCONFIRMED D-025 event rows (`mn-second-coder-lookups-2026-11-02.csv`).
 - The 8 `[earliest-known]` D-025 event rows.
 - Brooklyn Park and Coon Rapids: placeholder 2010 dates.
 
