@@ -315,3 +315,10 @@ Priority 3 places: Anoka city; Apple Valley city; Arden Hills city; Bethel city;
 - Official Chapter 125 confirms effective date 2020-05-26 (§125-4), and Table 4 lists accessory dwelling units as accessory uses in AG and R1. The 2020 code repeals the former zoning chapter passed July 1, 1980 (§125-5).
 - Not located: ordinance number, Council adoption date/minutes, publication date/notice, previous zoning text, or ADU-specific standards addressing size, detached units, owner occupancy, lot minimums, parking and application requirements. The city portal blocked access in automated lookup; no source was found that proves May 26 was the adoption date.
 - Because the former code was not located, new-versus-predating status remains unresolved. The 2020 draft and current code table are not enough to prove that ADUs were newly authorized in 2020. Official source links and excerpt are recorded in the source register; effective date and AG/R1 table finding are added to the tracker.
+
+
+## Golden Valley ADU ordinance — number conflict; dates and first authorization verified (2026-11-02)
+
+- City Council minutes say Ordinance No.745 was adopted 5-0 on 2022-11-01 and Resolution 22-101 authorized summary publication; Sun Post notice dated 2022-11-10 also calls the ADU measure Ordinance No.745. However, the signed ordinance copy in the Municipal Code Library mirror is headed Ordinance No.746 and the current code history also cites 746, §4, 11-2-2022. The same Council minutes identify Ord.746 as the first consideration of the 2023 Master Fee Schedule. Ordinance number therefore remains formally conflicted; 745 is best supported by minutes and published notice.
+- Publication on 2022-11-10 is supported by the Sun Post issue scan; City policy and ordinance language imply effective 2022-11-11 (the day after publication).
+- First-authorization status is supported by the Jan.2022 City planning memo describing Council direction to create an ordinance “to allow and regulate” ADUs, and no prior ADU authorization was found. Detailed standards and source excerpts are in the source/evidence register.

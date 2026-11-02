@@ -82,5 +82,7 @@
   Ramsey confirmed (Ord. 22-04, adopted 2022-02-08, effective 2022-03-14): 17 unconfirmed, 31 confirmed.
   Rogers: effective 2020-05-26 confirmed by the official code, adoption unknown, `[earliest-known]` (the prior
   chapter was not found): 16 unconfirmed, 32 confirmed; 7 `[earliest-known]` event rows.
-- **Open / next:** the 16 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  Golden Valley confirmed (adopted 2022-11-01, effective 2022-11-11; Ord. 745 vs 746 noted): 15 unconfirmed,
+  33 confirmed.
+- **Open / next:** the 15 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.

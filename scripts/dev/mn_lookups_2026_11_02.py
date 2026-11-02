@@ -334,6 +334,28 @@ ROGERS_NOTE = (
 )
 
 BEN_CONFIRM = {
+    "MN-2724308-adu-2022": (
+        {
+            "effective_date": "2022-11-11",
+            "by_right": "True",
+            "owner_occ": "True",
+            "adus_per_lot": "1",
+            "adu_detached_allowed": "True",
+            "min_lot_sqft": "10000",
+            "parking": "one additional off-street space",
+            "coverage": "R-1 and R-2, single-family lots",
+            "coverage_zones": "R-1;R-2",
+            "source_section": "Ord. 745 (minutes and Sun Post notice; a signed copy and the code history say "
+            "746)",
+        },
+        "Council adopted the ADU ordinance 2022-11-01, 5-0 (minutes); summary published in the Sun Post "
+        "2022-11-10; effective the day after publication per the city and the passage-and-publication "
+        "clause, so 2022-11-11 (inferred). Numbering conflict: the minutes and notice say Ord. 745, a signed "
+        "copy and the code history say 746. First general ADU allowance (2022 planning records; no earlier "
+        "allowance found). Attached and internal ADUs by administrative review; detached by CUP at minimum "
+        "setbacks or administrative review at principal-home setbacks (by_right=True codes the "
+        "administrative path); min_lot_sqft=10000 applies to detached ADUs.",
+    ),
     "MN-2753026-adu-2022": (
         {
             "component": "Ramsey Ord. 22-04: ADUs a permitted use in R-1 (standards in 117-1, 117-111, "
