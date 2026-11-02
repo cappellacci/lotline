@@ -334,6 +334,22 @@ ROGERS_NOTE = (
 )
 
 BEN_CONFIRM = {
+    "MN-2701486-adu-2016": (
+        {
+            "coverage": "R-1 (conditional use; the use table also marks RR, but the stricter 12-12-5 "
+            "controls)",
+            "coverage_zones": "R-1",
+            "source_url": "https://lf.andovermn.gov/WebPortal/DocView.aspx?id=126637&page=1&dbid=0&repo=Andov"
+            "er;https://lf.andovermn.gov/WebPortal/DocView.aspx?id=127704&dbid=0&repo=Andover;https://www.an"
+            "dovermn.gov/DocumentCenter/View/254/Title-12---Zoning-Regulations-PDF-",
+        },
+        "the signed Ord. 463 and the 2016-06-21 Council minutes confirm adoption that day; Council approved "
+        "the summary for publication, but publication and effective dates were not found (effective coded as "
+        "adoption). Ord. 463 added a self-contained ADU definition and rules; the minutes mention an earlier "
+        "'guest house' provision, a different use, so the row stays an event. The specific section (12-12-5) "
+        "limits the conditional use to R-1 while the use table (12-11) also marks RR; the code says the "
+        "stricter provision controls (12-1-3), so R-1 only.",
+    ),
     "MN-2731076-adu-2015": (
         {
             "adoption_date": "2015-08-24",
