@@ -138,3 +138,12 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
     `NC-3757500-adu-2005` → `-2004`; added Goldsboro ADU and duplex, New Bern 'no ADUs' and duplex, Concord
     duplex/triplex. The reviewer's Thomasville (Georgia) source was rejected; a Newbern, Tennessee PDF in its
     folder was moved to `wrong_place/`.
+
+- `mn-mm-lookups-todo.csv` (2026-11-02, thread 13, M4): **Minnesota missing-middle fill-in table**, the 33 of the
+  40 largest MN places with no coded missing-middle row, largest first, in the NC format. `notes` carries what
+  the batch-1 record found, and `start_url` its link where there was one. Five rows were coded from the batch-1
+  records by `scripts/dev/mn_mm_batch1_2026_11_02.py`:
+  - St. Louis Park 2025, an in-window event (N-1 up to 3 homes; effective date from a search snippet, to confirm);
+  - Duluth 2026, after the window (R-1 up to 4);
+  - "one home" rows (`unit_cap = 1`) for Rochester (R-1, 2023 code), Brooklyn Park and Coon Rapids (2010
+    placeholder, `[earliest-known]`).
