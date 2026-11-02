@@ -2,8 +2,9 @@
 
 *WS-NC, 2026-11-01. Plan: `docs/build/nc-data-plan.md` (S1–S13). No model runs: these are counts of the
 processed input tables in `~/lotline-data/processed/nc` and of `config/reforms/nc.csv` and `config/fees/nc.csv`
-on `main` at 7fc54e5 (updated the same evening for the second-coder review, #254). `eligible_parcels` was last rebuilt on 2026-11-01 for #252, and `jurisdictions` and the
-OneMap parcels on 2026-10-23. §4 has the commands. This report replaces S10's integration run: under the
+on `main` at 7fc54e5 (updated the same evening for the second-coder review, #254; engine kickoff §0 added
+2026-11-02). `eligible_parcels` was last rebuilt on 2026-11-01 for #252, and `jurisdictions` and the OneMap
+parcels on 2026-10-23. §4 has the commands. This report replaces S10's integration run: under the
 data-thread rule, data threads don't run the engines.*
 
 **Bottom line.** North Carolina is ready for the engines. Every one of its 454 jurisdictions has:
@@ -25,6 +26,29 @@ The 257 BPS reporters also have a permit outcome. The other 197 are places that 
 - **Second coder (#254, merged):** 28 of the 71 local rule rows are now second-coded (8 agree, 20 adjudicated).
   **10 rows are tagged `[predates]`**: their date is a code rewrite, so under the 2026-11-01 HANDOFF rule they are
   never events. 43 local rows still have one coder.
+
+**Starting an engine run? Begin with §0.**
+
+## 0. Engine kickoff (2026-11-02)
+
+What an engine thread needs from North Carolina, in one place. Details are in §2.
+
+- **Merge first:** this PR (#255). Everything else NC needs is already on `main` (#252 eligible lots, #254
+  second-coder review). The processed tables in `LOTLINE_DATA_DIR` are current: no rebuild is needed.
+- **Holdouts:** Charlotte (3712000) and Mecklenburg County (37119), outcomes from 2023-06-01, stay hidden. Go
+  through `holdout.apply`; never pass `--unblind`.
+- **Tags in `config/reforms/nc.csv`, which every engine must respect:**
+  - `[predates]` (10 rows): never an event; the rule counts as in force from before the window.
+  - `[earliest-known]`: the date may be later than the rule's first appearance. Run with and without these
+    rows as events.
+  - `DATE UNCONFIRMED` (Ben, 2026-11-02): the row counts as an event at its date; also run without it. In NC
+    only Sanford's 2023 ADU row has it, and Sanford is in neither panel.
+
+| Run | What NC adds | Run variants | Caveats |
+|---|---|---|---|
+| **D-025 ADU** (`src/lotline/model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py`) | 8 places with an in-window change: Raleigh, Durham city, Durham County, Greensboro, Cornelius, Huntersville, Matthews, Mint Hill. 5 have firm dates (Raleigh, Durham city and county, Greensboro, Cornelius) | Main: all 8. Sensitivity: firm dates only (drops Matthews 2016 and Mint Hill 2011) | Mecklenburg towns: small counts from the description parser; treat 2025 as partial and drop 2026. Raleigh's ADU flags start in 2019. Charlotte stays out |
+| **D-024 missing middle** (`src/lotline/model/estimate_mm.py`) | 55 BPS places of 10,000+. Firm in-window events: Durham 2019, Raleigh 2021 and 2022 (and Durham County 2019 if remainders are in) | Main: all dated rows. Sensitivity: without the 8 `[earliest-known]` events (Wake Forest, Wilson, Morrisville, Sanford, Burlington, Mooresville, Garner, Monroe) | Charlotte excluded (holdout). Apex and New Bern are treated before the window |
+| **V5 Charlotte** (#45, freeze **by Nov 17**) | `reports/nc/V5-charlotte-inputs.md`: inputs and their check | Option (b), the town prior with its range, unless Mecklenburg sends the archived roll **by Nov 10** | Cap annual inputs at 2022 and say so in the freeze file |
 
 ## Corrections to the thread-13 snapshot
 

@@ -36,3 +36,6 @@
     10 are tagged `[predates]`.
   - D-024 in-window events go from 11 to 10 (Asheboro is `[predates]`). D-025 still has 8 places; Matthews was
     re-dated to 2016 and Raleigh's overlay row to 2019-05-20.
+- **Engine kickoff (2026-11-02):** added §0 to `docs/build/nc-readiness.md`: what to merge, the holdout, the
+  three tags engines must respect (`[predates]`, `[earliest-known]`, `DATE UNCONFIRMED` per Ben's 2026-11-02
+  decision) and one row each for D-025, D-024 and V5 Charlotte with run variants. Text only; no counts changed.
