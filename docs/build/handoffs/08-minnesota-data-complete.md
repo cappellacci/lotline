@@ -97,6 +97,7 @@ rule.
 | 2026-11-01 | V5 St. Paul H1/H2 lots from the dated pre-window zoning snapshot (option b) (Ben) | `2026-11-01-ws-mn-13-v5-stpaul.md` |
 | 2026-11-01 | Cap V5 St. Paul annual inputs at 2023 (proposed) | `2026-11-01-ws-mn-13-v5-stpaul.md` |
 | 2026-11-02 | MnGeo counties: the 0.6–1.4 ACS band; a place whose main county is not loaded stays on ACS; split metro/outstate places take the majority source (proposed) | `2026-11-02-ws-mn-13-mngeo.md` |
+| 2026-11-02 | **Seasonal cabins (class 4c12) are not single-family houses for eligibility** (Ben): the lake townships' undercount against ACS is accepted; Aitkin, Cass and Cook stay on ACS | `2026-11-02-ws-mn-13-readiness.md` |
 | 2026-11-02 | "None" rows (no ADUs, one home per lot) are controls, never events, in the panel counts (proposed; matches OH and TX practice) | `2026-11-02-ws-mn-13-readiness.md` |
 
 ### Left open on purpose
@@ -104,6 +105,5 @@ rule.
   zoning): not started.
 - An ADU lookup table for the 109 covered metro places with no rule. It's the cheapest way to grow D-025.
 - **County code tables** for the five bare-code counties.
-- **Whether seasonal cabins count as houses** (Ben's call).
 - Pre-2021 metro rolls (#11).
 - #258 (provenance for the zoning archive).

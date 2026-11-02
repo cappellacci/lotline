@@ -93,7 +93,7 @@ So Minnesota's 74 places stay the core of the D-025 panel. Today's estimate alre
 | St. Louis Park's effective date | One of two D-024 events rests on a search snippet | Open the city page or the signed ordinance | Ben / WS-MN |
 | Bare-code counties (Crow Wing, Itasca, Koochiching, Jackson, Houston) | 51 of their 58 jurisdictions on ACS (Brainerd, Grand Rapids, International Falls) | Each county's property-type code table | Ben (one request each), then WS-MN |
 | 18 opt-in counties with no use class; 28 counties not opted in | Their places stay on ACS (Mankato is the only large one) | Nothing open to read: county requests only | Not planned |
-| Lake and farm townships | Cabins and farmhouses aren't read as houses, so 14 newly parcel-counted townships count under half their ACS lots | A rule decision: count class 4c12 cabins as houses? (They are single-family buildings; ACS counts them) | **Ben** |
+| Lake and farm townships | Cabins and farmhouses aren't read as houses, so 14 newly parcel-counted townships count under half their ACS lots, and Aitkin, Cass and Cook stay on ACS | **Decided (Ben, 2026-11-02): seasonal cabins (class 4c12) stay out of eligibility**, as in the metro rules. Accepted as a known undercount against ACS | Settled |
 | Pre-2021 metro rolls | Metro history before 2021 is scaled ACS | Met Council's token-locked rolls (#11) | Ben / Met Council |
 | Fees | Handbook prior for 1,040 jurisdictions | M7: Met Council SAC history | WS-MN (not started) |
 | Zoning (D-021 coverage) | All land counts as single-family-only | M8: Met Council Planned Land Use, Minneapolis zoning | WS-MN (not started) |
@@ -126,7 +126,6 @@ uv run python scripts/dev/mn_second_coder_sheet.py
 2. **Lookups:** `mn-mm-lookups-todo.csv` (33 places), and St. Louis Park's effective date (Ord. 2690-25).
 3. **County code tables** for Crow Wing, Itasca, Koochiching, Jackson and Houston. Ask each assessor for their
    three-digit property-type code list (the codes 151, 111, 765 and others are unlabelled).
-4. **Decide:** should seasonal cabins (class 4c12) count as single-family houses for eligibility? That would
-   lift the lake townships and might readmit Aitkin, Cass and Cook.
+4. ~~Decide whether seasonal cabins count as houses~~: **decided 2026-11-02, they stay out** (§3).
 5. **Review order:** #256 (plan), #259 (V5), #260 (rules), #261 (parcels), then this PR (stacked on #260 and
    #261).

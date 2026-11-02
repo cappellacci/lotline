@@ -19,8 +19,11 @@
   - D-025 has 74 MN places (45 changes, 29 controls), plus 109 covered places with no rule. D-024 has 100
     places of 10,000+, with 2 in-window events.
   - All 109 rule rows are single-coder.
-- **Decisions:** proposed: "none" rows are controls, never events, in panel counts.
+- **Decisions:**
+  - Ben, 2026-11-02: seasonal cabins (class 4c12) stay out of eligibility. The lake-township undercount
+    against ACS is accepted, and Aitkin, Cass and Cook stay on ACS.
+  - Proposed: "none" rows are controls, never events, in panel counts.
 - **AI:** Claude Code (Opus 5.5) wrote the scripts and docs. Every count comes from the script's output. An
   early draft counted Rochester's one-home row as an event; that was caught and fixed before writing. No model
   run.
-- **Open / next:** Ben's second-coder pass and lookups; M6–M8; the cabin rule decision.
+- **Open / next:** Ben's second-coder pass and lookups; M6–M8.
