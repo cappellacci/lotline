@@ -147,7 +147,7 @@ The tracker has all 33 rows from `mn-mm-lookups-todo.csv`. Some findings are par
 
 ## Priority 1 final audit (2026-11-02)
 
-- Tracker contains 55 Priority 1 rows spanning 45 distinct places (including duplicate reform events for cities). All rows were revisited for status and second-coder note; “partly” is retained where event dates, final ordinance text, current code detail, fees, or jurisdiction/HOA checks remain unresolved.
+- Tracker contains 56 Priority 1 rows spanning 45 distinct places (including duplicate reform events for cities). All rows were revisited for status and second-coder note; “partly” is retained where event dates, final ordinance text, current code detail, fees, or jurisdiction/HOA checks remain unresolved.
 - Confirmed rows marked “yes” include Minneapolis missing-middle, Dayton ADU, and Hopkins 2022 ADU. St. Louis Park missing-middle is partly because the unit-cap coded value required correction (N-2 allows four units) despite primary law verification.
 - Remaining uncertainty is itemized in row-level notes and this issues list; Priority 1 should not be reported as fully evidence-complete. Notably current-code-only rows include Sunfish Lake, Vadnais Heights, Wayzata, White Bear Lake, Stillwater, Ramsey, Oakdale, Rosemount, Rogers, and other rows with dates or official final enactment records unresolved.
 - HOA/deed rules were not comprehensively researched across all jurisdictions; municipal rules do not establish private covenant status.
@@ -193,10 +193,19 @@ The tracker has all 33 rows from `mn-mm-lookups-todo.csv`. Some findings are par
 
 # Priority 3 city checkpoints and final audit - 2026-11-02
 
-- Audited all 36 Priority 3 rows across 34 distinct places against the sources/notes already linked in the tracker. Final status distribution: 4 yes, 6 no, 26 partly. “No” can mean the event is misclassified or unsubstantiated, not that the current city code prohibits all ADUs.
+- Audited all 36 Priority 3 rows across 34 distinct places against the sources/notes already linked in the tracker. Final status distribution after Forest Lake Ord.719 correction: 5 yes, 5 no, 26 partly. “No” can mean the event is misclassified or unsubstantiated, not that the current city code prohibits all ADUs.
 - The tracker has per-row code sections, source links, short findings, and unresolved adoption/effective dates where available. Evidence-register entries were added for the Priority 3 citations; PDFs linked but not saved locally are explicitly inventory-marked online only.
 - High-priority follow-up gaps: Arden Hills draft vs council action; Castle Rock ordinance adoption proof; Nininger and Woodbury current code/use-table verification; Shakopee, South St. Paul, and several code-portal-only claims; Savage 2026 full ADU dimensional/permit text and adopting ordinance; Blaine final signed 2026 ADU amendment/effective publication (tracker materials disagree on whether council action occurred Mar.16 or May 4); Farmington 2026 zoning amendment effective publication; Minneapolis-area and township boundary/jurisdiction checks.
 - Recent verified distinctions include Brooklyn Park's 2026 ADU proposal still tabled as of Nov. 2; Chanhassen's June 9, 2025 detached-ADU adoption (P1 row controls current rule; P3 “none” is a historical/no-event coding record); Coon Rapids current ADU authorization; Duluth 2026 missing-middle update; West St. Paul Ordinance 26-013 residential use table; and Willernie's current one-family baseline with duplex/multifamily requiring special-use permit.
 - HOA/deed restrictions and fees remain unverified unless explicitly stated in a row. Township areas may be under county zoning or municipal extraterritorial jurisdiction; parcel-level jurisdiction must be confirmed before applying a township rule.
 
 Priority 3 places: Anoka city; Apple Valley city; Arden Hills city; Bethel city; Blaine city; Bloomington city; Brooklyn Park city; Castle Rock township; Champlin city; Chanhassen city; Coon Rapids city; Deephaven city; Duluth city; Eden Prairie city; Farmington city; Forest Lake city; Grant city; Ham Lake city; Hamburg city; Lauderdale city; Maple Grove city; Mendota Heights city; New Hope city; Nininger township; North Oaks city; Plymouth city; Robbinsdale city; Roseville city; Savage city; Shakopee city; South St. Paul city; West St. Paul city; Willernie city; Woodbury city.
+
+
+# Follow-up lookups checkpoint - 2026-11-02
+
+- Filled all 36 answer/source rows in mn-second-coder-lookups-2026-11-02.csv, preserving unresolved dates and distinguishing current code from original enactment history.
+- Mounds View: confirmed separate Ordinance 1045 detached-ADU amendment. Adopted 2025-08-11, published 2025-08-12, effective 2025-09-11 (30 days after passage/publication). Added distinct Priority 1 tracker row MN-2744530-adu-2025-ord1045; Ord.1042 remains the separate internal-ADU row.
+- Forest Lake: corrected former “adu-none” tracker event. Council minutes confirm unanimous adoption of Ord.719 on 2023-01-23, adding accessory dwellings in the A district. Ordinance says effective on adoption and publication; exact publication date unresolved. Current §153.092(B) has 5-acre lot minimum and dimensional/parking/utility standards. Accessory apartments are distinct and currently appear in A and RR; the date first authorized in RR remains unresolved.
+- Fridley: City confirms ADU ordinance approved in 2022, but the ordinance number and exact adoption/effective dates were not found. Current City page provides permit, detached special-use, $1,000 fee and recorded owner-occupancy conditions.
+- The follow-up sheet contains some items sourced from secondary/current-code pages; source URLs are carried forward and the answers identify unresolved primary enactment proof instead of overstating confirmation.

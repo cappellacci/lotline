@@ -150,6 +150,7 @@ record. It also wrote over the sheet's left-hand columns; our coding as sent is 
     filled for 8 places from the reviewer's code reading.
   - **`[predates]`:** Fridley 2022 (a recodification), Forest Lake (recoded from "no ADUs" to rural ADUs, now
     `MN-2721770-adu-2023`), Rochester missing middle. Brooklyn Park's one-home row now covers R-1 only.
-  - **DATE UNCONFIRMED:** 31 rows keep their dates and go on the lookup list.
+  - **DATE UNCONFIRMED:** 31 rows keep their dates and go on the lookup list. Ben decided (2026-11-02) that a
+    DATE UNCONFIRMED row still counts as an event, and engines run with and without such rows.
 - The agent's research tracker, evidence register, PDF inventory and issues note are in
   `docs/research/ordinances/`. Its 14 PDFs are in `LOTLINE_DATA_DIR/manual/mn/second_coder_2026-11-02/`.

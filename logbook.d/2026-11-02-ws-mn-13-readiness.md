@@ -51,6 +51,6 @@
   - **AI:** a first run appended action text that named tags ("tag [predates]"), which the counts script would
     have read as real tags (Cottage Grove). Caught in a tag count, fixed by stripping the markers, rerun from
     the committed file.
-- **Proposed HANDOFF decision:** `DATE UNCONFIRMED` in `coding_notes` marks a dated event with no signed
+- **HANDOFF decision (Ben, 2026-11-02, accepted as option 1):** `DATE UNCONFIRMED` in `coding_notes` marks a dated event with no signed
   ordinance or effective-date record. It still counts as an event; engines run with and without such rows.
 - **Open / next:** Ben's 36 lookups (Burnsville 2020 first); M6–M8.
