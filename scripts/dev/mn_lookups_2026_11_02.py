@@ -228,6 +228,25 @@ NOTES4 = {
     "Oct-Nov 2020, the Sun Sailor legal notice, or the city clerk (Laserfiche search did not load).",
 }
 
+# Ben's Richfield lookup (2026-11-02): the 2015-01-01 placeholder goes. The city's ADU handout is dated
+# 7/2015, the earliest date a source shows the rule in force, so the row is re-dated to 2015-07-01 as
+# [earliest-known]; Bill No. 2015-4's passage date stays unknown (DATE UNCONFIRMED kept).
+RICHFIELD = "MN-2754214-adu-2015"
+RICHFIELD_TAG = "Ben's Richfield lookup (2026-11-02)"
+RICHFIELD_NOTE = (
+    "Bill No. 2015-4's passage, publication and effective dates not found in official records; the city ADU "
+    "handout is dated 7/2015, so effective_date is 2015-07-01 (earliest known in force), replacing the "
+    "2015-01-01 placeholder. Bill No. 2015-9 (text and date not found) and Bill No. 2023-2 (signed, passed "
+    "2023-01-24; carries the ADU provisions forward, allows two-family uses and changes low-density district "
+    "standards) amend it; publication and effective dates for 2023-2 not found."
+)
+RICHFIELD_URLS = (
+    "https://cms9files.revize.com/richfieldmn/Document_Center/Department/Community%20Development/"
+    "Permits%2C%20Inspections%20%26%20Licenses/Zoning%20Handouts%20and%20Applications/"
+    "AccessoryDwellingUnitsHand.pdf;"
+    "https://mcclibraryfunctions.azurewebsites.us/api/ordinanceDownload/15207/1201593/pdf"
+)
+
 
 def main() -> None:
     with REFORMS.open() as f:
@@ -270,6 +289,13 @@ def main() -> None:
         rid = row["reform_id"]
         if rid in NOTES4 and TAG4 not in row["coding_notes"]:
             row["coding_notes"] = f"{row['coding_notes']} {TAG4}: {NOTES4[rid]}"
+            changed += 1
+    for row in kept:
+        if row["reform_id"] == RICHFIELD and RICHFIELD_TAG not in row["coding_notes"]:
+            row["effective_date"] = "2015-07-01"
+            row["source_url"] = f"{row['source_url']};{RICHFIELD_URLS}"
+            ek = "" if EK.strip() in row["coding_notes"] else EK
+            row["coding_notes"] = f"{ek}{row['coding_notes']} {RICHFIELD_TAG}: {RICHFIELD_NOTE}"
             changed += 1
     added = 0
     if ROSEVILLE_2011["reform_id"] not in ids:
