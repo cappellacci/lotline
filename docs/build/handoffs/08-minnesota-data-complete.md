@@ -40,3 +40,70 @@
 
 ## Done when
 PRs for tasks 1–5 are open with green CI; the readiness report lists every remaining gap; the integration run completes for all of MN. Never merge; Ben reviews.
+
+---
+
+## Closed 2026-11-02 (thread 13, part B)
+
+Thread 8 was never run as written. Thread 13 cut it to five must-do items (`docs/build/mn-data-plan.md`, #256,
+approved 2026-11-01) and did those. The integration run (task 6) was replaced by counts, under the data-thread
+rule.
+
+**Delivered (open PRs, in review order):**
+- **#256** the plan.
+- **#259** V5 St. Paul inputs: the city's dated zoning snapshot (2023-11-26) gives 55,269 eligible H1/H2 lots
+  on the pre-window roll.
+- **#260** missing-middle rules from the batch-1 records: St. Louis Park 2025 and Duluth 2026; "one home" rows
+  for Rochester, Brooklyn Park and Coon Rapids; a fill-in table for 33 of the 40 largest places.
+- **#261** Greater Minnesota parcels: `mngeo_parcels`, 31 outstate counties, with `jurisdictions` and
+  `eligible_parcels` rebuilt.
+- **This PR** the readiness report (`docs/build/mn-readiness.md`), the counts script, the second-coder sheet,
+  and the MN rows of `docs/data_availability.md`.
+- **#258** (contract-change, WS-CORE) provenance for the St. Paul zoning archive.
+
+**Where Minnesota stands:**
+- **Jurisdictions:** 1,053. 539 count from parcels (86% of the population), and 1,043 have every year
+  2010–2024. Of the 40 largest places, only Mankato is on ACS.
+- **Tiers:** 130 / 408 / 515.
+- **Rules:** 109 rows, all single-coder: ADU for 80 places, missing middle for 7.
+- **Fees:** 13 jurisdictions; the Handbook's $50,000 elsewhere.
+
+### For the engine threads (week of 2026-11-02)
+- **ADU estimate (D-025): 74 MN places with Met Council or Minneapolis permits and a dated rule.**
+  - 45 have an in-window change (9 of those rows are dated `[earliest-known]`) and 29 are "no ADUs" controls.
+  - St. Paul never enters.
+  - Met Council's file covers every metro community, so no covered-places list is needed.
+- **Missing-middle estimate (D-024):** 100 BPS places of 10,000+.
+  - In-window events: Minneapolis 2020 (the injunction windows as sensitivity) and St. Louis Park 2025. St.
+    Louis Park's effective date is from a search snippet.
+  - Rochester, Brooklyn Park and Coon Rapids are untreated on evidence.
+- **V5 St. Paul (#45, by Nov 17):** read `reports/mn/V5-stpaul-inputs.md` (#259). **Cap annual inputs at
+  2023.** Disclose D-013's exposure in the freeze file.
+- **Eligible lots changed for every MN place.** The old table had no pre-2021 history for parcel-counted
+  places. **Rebuild or re-read before rerunning anything**; anything run on the old table is stale.
+- **Population weights:** `pop_2020` covers places and townships (4.97M). County remainders are blank.
+
+### Rows not to lean on as dated events until checked
+- Every MN rule row has one coder (`mn-second-coder-2026-11-02.csv`; the 55 priority-1 rows first).
+- St. Louis Park 2025's effective date.
+- The 9 `[earliest-known]` D-025 event rows.
+- Brooklyn Park and Coon Rapids: placeholder 2010 dates.
+
+### Decisions to fold into HANDOFF (thread 6)
+
+| Date | Decision | Fragment |
+|---|---|---|
+| 2026-11-01 | MN plan approved (M1–M5 must-do, M6–M8 if time), with the MnGeo download (Ben) | `2026-11-01-ws-mn-13-data-plan.md` |
+| 2026-11-01 | V5 St. Paul H1/H2 lots from the dated pre-window zoning snapshot (option b) (Ben) | `2026-11-01-ws-mn-13-v5-stpaul.md` |
+| 2026-11-01 | Cap V5 St. Paul annual inputs at 2023 (proposed) | `2026-11-01-ws-mn-13-v5-stpaul.md` |
+| 2026-11-02 | MnGeo counties: the 0.6–1.4 ACS band; a place whose main county is not loaded stays on ACS; split metro/outstate places take the majority source (proposed) | `2026-11-02-ws-mn-13-mngeo.md` |
+| 2026-11-02 | "None" rows (no ADUs, one home per lot) are controls, never events, in the panel counts (proposed; matches OH and TX practice) | `2026-11-02-ws-mn-13-readiness.md` |
+
+### Left open on purpose
+- **M6** (outstate ADU fill-in table), **M7** (Met Council SAC fees) and **M8** (planned land use, Minneapolis
+  zoning): not started.
+- An ADU lookup table for the 109 covered metro places with no rule. It's the cheapest way to grow D-025.
+- **County code tables** for the five bare-code counties.
+- **Whether seasonal cabins count as houses** (Ben's call).
+- Pre-2021 metro rolls (#11).
+- #258 (provenance for the zoning archive).

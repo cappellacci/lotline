@@ -1,0 +1,132 @@
+# Minnesota data readiness (thread 13, M5)
+
+*WS-MN, 2026-11-02. Plan: `docs/build/mn-data-plan.md` (#256, approved 2026-11-01). No model runs: these are
+counts of the processed input tables in `~/lotline-data/processed/mn`, rebuilt on 2026-11-02 with the MnGeo
+parcels (#261), and of `config/reforms/mn.csv` (with #260's rows) and `config/fees/mn.csv`. §4 has the
+commands. This branch is stacked on #260 and #261 and should be merged after them. This report replaces thread
+8's integration run: under the data-thread rule, data threads don't run the engines.*
+
+**Bottom line.** Minnesota is ready for the engines. Every one of its 1,053 jurisdictions has:
+- a data tier;
+- BPS permits (or its county's row, for the 23 local-only ones) and market inputs;
+- a rule, either coded or drawn under D-022.
+
+1,051 have an eligible-lot count for 2010–2024. Wyoming township and Baldwin have none, as before this work.
+
+- **86% of Minnesotans** (counted in places and townships) live in a jurisdiction counted from real parcels:
+  539 of 1,053, up from 186. MnGeo's opt-in compilation added 353 outstate jurisdictions in 31 counties.
+- **Of the 40 largest places, only Mankato is on ACS.** Its county (Blue Earth) has not opted in.
+- **The ADU panel (D-025) holds 74 Minnesota places with Met Council or Minneapolis permits and a dated rule:**
+  45 with an in-window rule change and 29 "no ADUs" controls. 109 more covered places have no rule yet. That
+  makes Minnesota the largest contributor to D-025, as it already is today (D-023/D-025's Twin Cities panel).
+- **The missing-middle panel (D-024) has 100 Minnesota places of 10,000+, with 2 in-window events:**
+  Minneapolis (2020) and St. Louis Park (2025, effective date to confirm). St. Paul's 2023 reform is the V5
+  holdout.
+- **V5 St. Paul inputs** are in #259: 55,269 eligible H1/H2 lots on the pre-window roll, from the city's dated
+  zoning snapshot.
+- **No rule row has a second coder** (109 rows). The worksheet puts the 55 panel-event rows first.
+
+## Corrections to the thread-13 snapshot
+
+| Brief said | Found | Note |
+|---|---|---|
+| Eligible lots: check whether the 2021–2025 rolls get `parcels_interpolated` after #252 | **The table predated D-035 altogether**: no `parcels_scaled_acs` rows, so parcel-counted places had no count before 2021 | Rebuilt in #261. The Met Council rolls are yearly, so interpolation changes nothing for them; three places get `parcels_interpolated` rows between assessor or roll years |
+| Ramsey's "2023" roll date: check | St. Paul's part of the 2023 roll was exported **2023-12-26**, before the window | So St. Paul has three pre-window rolls: 2021, 2022, 2023 (#259) |
+| Missing-middle rules: 2 rows | 2 rows, plus two Minneapolis `moratorium` rows (the 2040 Plan injunctions, with start and end dates) and 2 parking rows | The injunction rows serve as the sensitivity rows |
+| Fees: mostly two places | 171 rows for **13 jurisdictions**; Rochester (58) and Burnsville (34) have the most | — |
+
+## 1. Coverage of each model input (1,053 jurisdictions: 763 places, 218 townships, 72 county remainders)
+
+Population shares use `jurisdictions.pop_2020`, which is filled for places and townships (4.97 million). County
+remainders have no population in that column.
+
+| Input | Real | Fallback | Open |
+|---|---|---|---|
+| **Eligible lots (denominator)** | **539 from parcels (86% of the population counted)**: 394 places (82.7%), 121 townships (3.2%), 24 county remainders. Metro (182): Met Council yearly rolls 2021–2026. Minneapolis: assessor rolls 2017–2026. Outstate (356): MnGeo current roll, 31 counties. Earlier years are ACS scaled to the rolls (D-035) | **512 on ACS** (D-017): 368 places (12.4%), 96 townships (1.7%), 48 remainders | Places on ACS: those in the 28 counties that haven't opted in (Mankato, Willmar, Albert Lea, Red Wing, Bemidji, Alexandria, North Mankato, New Ulm, Worthington, Marshall and others); in the 18 opt-in counties with no use class (Sauk Rapids, Benton County, among them); in Aitkin, Cass and Cook (ACS check); and in the five bare-code counties (Brainerd, Grand Rapids, International Falls), where 51 of their 58 jurisdictions fail the 90% gate. Wyoming township and Baldwin have no row |
+| Window | 1,043 jurisdictions have every year 2010–2024 | — | 8 have 2–14 years (unchanged by this work) |
+| Denominator quality | `high` on 1,359 rows in 81 jurisdictions (metro places where units and dwelling type are known) | `low` elsewhere | Zoning unknown, so all land counts as single-family-only (as in NC, OH and TX) |
+| **Data tier** | **Tier 1: 130 (62.0% of the population)**, tier 2: 408 (23.8%) | Tier 3: 515 (14.1%) | Outstate year built is blank in most counties, so most outstate places are tier 2 |
+| Permits, all places | BPS for every permit-issuing place and township | A missing place-year is missing, never 0 (D-024) | 23 local-only jurisdictions are in their county's BPS row |
+| **Record-level permits** | **Met Council** 114,363 (2009–2025, 186 metro jurisdictions; SFD, TH, DTQ, MF5, ADU); **Minneapolis CCS** 129,849 (2016–2026); **St. Paul** 73,228 (2015–2023 after the filter) | — | No outstate city has record-level permits (out of scope) |
+| **Permits with an ADU flag** | Met Council: 341 ADUs in 53 places, from 2014 (2016 on in practice). Minneapolis CCS: 211 (inferred from the scope text) | — | Met Council undercounts Minneapolis internal ADUs (LB-057). St. Paul's own file has no ADU flag |
+| **ADU rules** | **80 jurisdictions, 98 rows**: 76 metro places, plus Duluth, Rochester and St. Cloud outstate | The rest draw a rule type (D-022) | 109 Met Council places have no rule (largest: Brooklyn Center, Chaska, Prior Lake, Shoreview, Hastings, Lino Lakes, Northfield). The outstate fill-in table (M6) is not done. 9 in-window D-025 event rows are dated `[earliest-known]` |
+| **Missing-middle rules** | **7 jurisdictions**: Minneapolis 2020 (3 units), St. Louis Park 2025 (N-1 up to 3), St. Paul 2023 (V5), Duluth 2026; "one home" in Rochester (R-1), Brooklyn Park and Coon Rapids | Uncoded places draw a rule type (D-022) | `mn-mm-lookups-todo.csv`: 33 of the 40 largest places, largest first (Bloomington's 2026 Phase II is the likeliest new event) |
+| Fees | **13 jurisdictions, 171 rows**, 2016–2027: Rochester, Burnsville, Maple Grove, St. Paul, Coon Rapids, Lakeville, Duluth, St. Cloud, St. Louis Park, Apple Valley, Minneapolis, Bloomington, Brooklyn Park | The Handbook prior of $50,000 per home elsewhere (D-034) | No Met Council SAC series (M7, not done) |
+| Market (rent, value, rates, costs) | ACS, FHFA, FRED, statewide | — | — |
+| Demand index | Processed, every county and place, 2010–2023 | — | — |
+| Holdout | **St. Paul V5**: 2758000, outcomes from 2024-01-01; rolls exported from then on hidden (snapshot rule) | — | Freeze by Nov 17 (WS-ENGINE, #45). See `reports/mn/V5-stpaul-inputs.md` (#259) |
+
+## 2. What Minnesota adds to the estimation panels
+
+**ADU estimate (D-025).** To count, a place needs a permit source that covers it and flags ADUs, a dated ADU rule
+and eligible lots. Met Council's residential permit survey covers every metro community: it is a full
+new-construction file, so a year with no ADU still has permit rows, and the panel's caller doesn't need a
+covered-places list. Minneapolis's CCS permits cover Minneapolis. St. Paul never enters.
+
+| Group | Places | Notes |
+|---|---|---|
+| **Rule change in the window** | **45** | Minneapolis (2014, 2016, 2021, 2023) and 44 suburbs. 9 of their event rows are dated `[earliest-known]`: run with and without them |
+| **"No ADUs" controls** | **29** | Coded "none" rows in covered places |
+| **Covered, no rule yet** | 109 | Largest: Brooklyn Center 33,782, Chaska, Prior Lake, Shoreview, Hastings, Lino Lakes, Northfield, Waconia, North St. Paul, East Bethel, Lake Elmo, White Bear township, Little Canada, Victoria. Each one coded joins the panel at once |
+| Rules but no permit source | Duluth, Rochester, St. Cloud | Outstate: no record-level permits, so they can't enter |
+
+So Minnesota's 74 places stay the core of the D-025 panel. Today's estimate already uses the Twin Cities places
+(`scripts/dev/estimate_pooled_adu.py`, `metc_residential_permits`). This work adds no new place to it, but the
+109 covered places without a rule are the cheapest way to grow it: one lookup each.
+
+**Missing-middle estimate (D-024).** The outcome is BPS 2–4 unit homes, so **all 100 Minnesota BPS places of
+10,000+ are in**.
+
+| Group | Places |
+|---|---|
+| **In-window events** | Minneapolis (2020-01-01; the injunction windows 2022-06-17 to 2022-07-26 and 2023-11-04 to 2024-05-13 as sensitivity) and St. Louis Park (2025-03-28: the date is from a search snippet, so confirm it before treating it as firm) |
+| Untreated on evidence | Rochester (R-1, 2023 code), Brooklyn Park, Coon Rapids |
+| Outside the panel | St. Paul 2023 (V5 holdout); Duluth 2026 (after the window) |
+
+## 3. Remaining gaps and what closes each
+
+| Gap | Effect | What closes it | Owner |
+|---|---|---|---|
+| **No second coder on any MN rule row** | The 55 rows that set D-024/D-025 timing rest on one coder | `docs/research/ordinances/mn-second-coder-2026-11-02.csv`, priority 1 first; apply as NC did (`nc_second_coder_2026_11_01.py`) | **Ben** |
+| 109 covered metro places with no ADU rule | Fewer D-025 places; more D-022 draws | An ADU lookup table for them, largest first (not written yet; the outstate one, M6, isn't either) | Ben, then WS-MN |
+| Missing-middle rules for the 40 largest places | 33 still draw (D-022) | `mn-mm-lookups-todo.csv` | Ben |
+| St. Louis Park's effective date | One of two D-024 events rests on a search snippet | Open the city page or the signed ordinance | Ben / WS-MN |
+| Bare-code counties (Crow Wing, Itasca, Koochiching, Jackson, Houston) | 51 of their 58 jurisdictions on ACS (Brainerd, Grand Rapids, International Falls) | Each county's property-type code table | Ben (one request each), then WS-MN |
+| 18 opt-in counties with no use class; 28 counties not opted in | Their places stay on ACS (Mankato is the only large one) | Nothing open to read: county requests only | Not planned |
+| Lake and farm townships | Cabins and farmhouses aren't read as houses, so 14 newly parcel-counted townships count under half their ACS lots | A rule decision: count class 4c12 cabins as houses? (They are single-family buildings; ACS counts them) | **Ben** |
+| Pre-2021 metro rolls | Metro history before 2021 is scaled ACS | Met Council's token-locked rolls (#11) | Ben / Met Council |
+| Fees | Handbook prior for 1,040 jurisdictions | M7: Met Council SAC history | WS-MN (not started) |
+| Zoning (D-021 coverage) | All land counts as single-family-only | M8: Met Council Planned Land Use, Minneapolis zoning | WS-MN (not started) |
+| Provenance for St. Paul's zoning archive | The V5 snapshots aren't in `docs/data_provenance.md` | #258 (contract-change) | WS-CORE |
+
+## 4. How these numbers were made
+
+```bash
+uv run lotline fetch --state MN --source mngeo_parcels
+uv run lotline fetch --state MN --source jurisdictions
+uv run lotline fetch --state MN --source eligible
+uv run python scripts/dev/mn_readiness_counts.py
+uv run python scripts/dev/mn_second_coder_sheet.py
+```
+
+- The rebuild ran on #261's branch, on top of `main` at 7fc54e5. `mngeo_parcels` read its raw cache
+  (`MN_MNGEO_VINTAGE=2026-09-17`, the default). Met Council and Minneapolis parcels were not re-downloaded.
+- Both scripts are read-only. Every permit and BPS table passes through `holdout.apply` before counting, and
+  parcel rolls with `snapshot=True`.
+- **In window:** effective 2010-01-02 to 2025-12-31.
+- **Not events:** a `[predates]` row, a "no ADUs" row (`adus_per_lot = 0`) or a "one home" row
+  (`unit_cap = 1`) is never an event.
+- **D-020:** after `parcel_sources`, no jurisdiction has two parcel sources (182 Met Council, 408 MnGeo,
+  1 Minneapolis assessor).
+
+## 5. Ben's manual items (exact steps)
+
+1. **Second-coder pass** on `mn-second-coder-2026-11-02.csv`, priority 1 (55 panel-event rows) first. Fill the
+   four reviewer columns, then tell WS-MN to apply them.
+2. **Lookups:** `mn-mm-lookups-todo.csv` (33 places), and St. Louis Park's effective date (Ord. 2690-25).
+3. **County code tables** for Crow Wing, Itasca, Koochiching, Jackson and Houston. Ask each assessor for their
+   three-digit property-type code list (the codes 151, 111, 765 and others are unlabelled).
+4. **Decide:** should seasonal cabins (class 4c12) count as single-family houses for eligibility? That would
+   lift the lake townships and might readmit Aitkin, Cass and Cook.
+5. **Review order:** #256 (plan), #259 (V5), #260 (rules), #261 (parcels), then this PR (stacked on #260 and
+   #261).

@@ -7,7 +7,7 @@ It answers two questions the Rules (§8) and the Handbook (Data and Resources) a
 2. **Could anything Lotline publishes identify a person or a single property** (re-identification and
    small-cell risk)?
 
-**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-30, after #244 and the land-use update). Every "used" entry names the module that reads the data,
+**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-30, after #244 and the land-use update; Minnesota section: 2026-11-02, thread 13). Every "used" entry names the module that reads the data,
 so it can be checked in `src/lotline/`. "In review" means an open pull request adds it; it is not on `main` yet.
 What "available" means comes from our own scouting: `docs/research/lotline-data-availability.md` (R1–R10),
 `docs/research/lotline-data-catalog.csv`, `docs/research/lotline-data-catalog-mn.csv` and
@@ -47,10 +47,10 @@ These national sources feed every state the same way.
 | Year built (R1) | Regional Parcels `YEAR_BUILT` (Hennepin leaves units and dwelling type blank); Minneapolis assessor; MnGeo opt-in (blank in most outstate counties); ACS B25034 | `metc_parcels`, `mpls_assessor_parcels`, `mngeo_parcels`, `acs` | Outstate year built is filled only in a few counties (Lake, Sherburne, St. Louis, Wabasha, Clay, Chisago), so most outstate places are tier 2 at best; tiers 130 / 408 / 515 |
 | Lot size (R1) | Regional Parcels; Minneapolis assessor; MnGeo opt-in | `metc_parcels`, `mpls_assessor_parcels`, `mngeo_parcels` (polygon acres, else deed acres) | |
 | Parcel history (R2) | Regional Parcels year-end archives 2021–2025 (open); 2002–2020 services token-locked; Minneapolis assessor 2017–2026; MnGeo current roll only | `metc_parcels` (yearly 2021–2026), `mpls_assessor_parcels` (yearly 2017–2026), `mngeo_parcels` (2026) | Pre-2021 metro vintages need a request to Met Council (#11); earlier years are ACS scaled to the rolls (D-035) |
-| Zoning (R3) | Minneapolis Primary Zoning and Built Form (CC0); St. Paul zoning (public domain, service unclear); Met Council Planned Land Use (plan designations, not zoning) | no | No zoning is joined to parcels yet. The eligible-parcel rule counts a parcel with unknown zoning as single-family-only (`build/eligible.py`), which can overstate eligibility where zoning already allows more |
+| Zoning (R3) | Minneapolis Primary Zoning and Built Form (CC0); St. Paul Principal Zoning and its dated archive (2007 on); Met Council Planned Land Use (plan designations, not zoning) | St. Paul archive snapshots of 2023-11-25 and 2023-11-26 (`stpaul_v5`, V5 H1/H2 lots; #259) | No zoning is joined to parcels for the engines yet. The eligible-parcel rule counts a parcel with unknown zoning as single-family-only (`build/eligible.py`), which can overstate eligibility where zoning already allows more |
 | Sale prices and rents (R7) | Regional Parcels last sale price and date; eCRV sales (bulk access for government agencies only); ACS; FHFA | `acs`, `fhfa` | No open sales history; parcel last-sale price waits on a parcel adapter |
-| Fees (R8) | Minneapolis fees paid per permit; city fee reports under Minn. Stat. §326B.145 (PDFs); Met Council sewer availability charge | `mpls_permits` (`fees_paid_usd` = city fees and taxes per permit) | Fee reports are PDFs, not parsed. The scenario uses the Handbook $50,000 |
-| Reform dates (R9) | Minneapolis triplex rule (2020-01-01) and 2040 Plan litigation; St. Paul ADU (2016, 2018) and 2023 reform; no statewide ADU or middle-housing law enacted | no | `config/reforms/` has no `mn.csv` yet. The St. Paul 2023 date appears only as the V5 blind-test window in `config/states/mn.yaml`, so St. Paul 2024–2026 outcomes stay hidden |
+| Fees (R8) | Minneapolis fees paid per permit; city fee schedules (batch-1 records); city fee reports under Minn. Stat. §326B.145 (PDFs); Met Council sewer availability charge | `config/fees/mn.csv` (171 rows, 13 jurisdictions, 2016–2027), `mpls_permits` (`fees_paid_usd`) | No Met Council SAC series yet; places without a per-home total use the Handbook $50,000 (D-034) |
+| Reform dates (R9) | City ordinances and code pages (batch-1 records, Ben's metro ADU adoption records); Minneapolis 2040 Plan litigation; St. Paul 2023 reform; no statewide ADU or middle-housing law enacted | `config/reforms/mn.csv` (109 rows: 98 ADU for 80 places, 7 missing middle, 2 moratorium windows, 2 parking) | All single-coder (`docs/research/ordinances/mn-second-coder-2026-11-02.csv`). St. Paul's 2023 rows are coded; its 2024–2026 outcomes stay hidden (V5) |
 
 ## North Carolina
 
@@ -102,8 +102,9 @@ These national sources feed every state the same way.
 
 ## Biggest gaps, by state
 
-- **Minnesota:** no parcels, zoning or coded reforms on `main` yet, so the eligible-parcel denominator is the
-  ACS fallback (quality `low`) everywhere, even though rich open metro parcels exist.
+- **Minnesota:** 539 of 1,053 jurisdictions count from parcels (86% of the population); 28 counties have not
+  opted in to MnGeo and 21 opt-in counties are unusable, so Mankato, Willmar, Brainerd and most of the far
+  north and southwest stay on ACS. No outstate record-level permits; rule rows are all single-coder.
 - **North Carolina:** parcels (#121, #122) and Charlotte zoning (#120) are in review; until they merge, NC is in
   the same ACS-fallback position. No sale prices statewide.
 - **Ohio:** parcels for 2 of 88 counties, with land use and lot size only (no year built, units or values).
