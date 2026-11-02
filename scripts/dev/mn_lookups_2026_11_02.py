@@ -313,6 +313,31 @@ STILLWATER_NOTE = (
 )
 
 BEN_CONFIRM = {
+    "MN-2753026-adu-2022": (
+        {
+            "component": "Ramsey Ord. 22-04: ADUs a permitted use in R-1 (standards in 117-1, 117-111, "
+            "117-349); attached or detached, one per existing single-family property; owner occupancy; 800 "
+            "sq ft cap; detached on lots of 1 acre or more; attached needs an 80 ft lot width; CUP to "
+            "convert a lawful nonconforming garage",
+            "adoption_date": "2022-02-08",
+            "by_right": "True",
+            "owner_occ": "True",
+            "adus_per_lot": "1",
+            "adu_max_sqft": "800",
+            "adu_detached_allowed": "True",
+            "min_lot_sqft": "43560",
+            "coverage": "R-1, existing single-family properties",
+            "coverage_zones": "R-1",
+            "source_section": "Ord. 22-04 (p. 3); City Code 117-1, 117-111, 117-349",
+            "source_url": "https://mcclibraryfunctions.azurewebsites.us/api/ordinanceDownload/14286/1135523/p"
+            "df;https://public.destinyhosted.com/ramsedocs/2023/PlanReg/20230427_23153/AGENDApacket__04-27-2"
+            "3_1054_23152.pdf",
+        },
+        "Ord. 22-04 adopted 2022-02-08, published 2022-02-11, effective 2022-03-14 (ordinance p. 3); it added"
+        " ADUs as a permitted use in R-1, and no earlier general allowance was found. min_lot_sqft=43560 is "
+        "the detached minimum. The earlier citizenportal headline (larger attached units by percent of the "
+        "home) may describe a later amendment: not coded.",
+    ),
     "MN-2744476-adu-2024": (
         {
             "adoption_date": "2024-10-22",

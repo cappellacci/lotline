@@ -79,5 +79,6 @@
   Stillwater's 2017 date is Ord. 1093 (short-term rentals); ADUs date from the late 1990s, so the row is
   `[predates]`: D-025 73 places (45 changes, 28 controls), 19 of 52 event rows unconfirmed, 29 confirmed places.
   Mound confirmed (Ord. No. 7-2024, adopted 2024-10-22, effective 2024-11-03): 18 unconfirmed, 30 confirmed.
-- **Open / next:** the 18 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
+  Ramsey confirmed (Ord. 22-04, adopted 2022-02-08, effective 2022-03-14): 17 unconfirmed, 31 confirmed.
+- **Open / next:** the 17 unconfirmed dates; whether Stillwater's 2021 RA expansion was adopted; R's two-family rule before 2023 (to confirm Richfield is a change);
   M6–M8.
