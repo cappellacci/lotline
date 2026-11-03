@@ -1669,3 +1669,51 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Applies to:** missing middle (D-038, PR #272, to be redone this way) and a refit of the ADU anchor on
     the four-state data (D-019 fit 3 predates the NC and TX permit work), under its own dated entry.
   - **Decided by:** Ben, 2026-11-03 ("we need to be rolling our own"); written by WS-ENGINE.
+
+### D-039 · 2026-11-03 · ADU anchor refit on the four states, with a leave-one-place-out backtest (written before the fit)
+- **Why:** D-037's amendment (Ben, 2026-11-03): uptake rates are calibrated on our own four states, and outside
+  studies only check them. The ADU anchor `adu_mature_hazard_ref` comes from D-019 fit 3 on Minneapolis, 10 Twin
+  Cities suburbs and Austin, made before the NC, OH and TX permit work and the Minnesota second coding. (D-038 is
+  the missing-middle anchor, PR #272.)
+- **Model:** fit 3 unchanged: the same likelihood (gamma place effects, graded rule shares, blank fields
+  integrated per place, coverage), the same judgment values and ranges for the owner-occupancy and
+  other-restriction shares, the same 90% profile-likelihood interval, central parameters as on `main`.
+- **What enters:** a place-year enters when a coded ADU rule is in force by 1 July and a permit source flags
+  ADUs that year (`calibrate_adu.place_years`). Holdouts go through the IO layer's filter.
+
+  | State | Places | Years | Note |
+  |---|---|---|---|
+  | MN | every place with a coded ADU rule except St. Paul (V5) | 2016–2025 | as fit 3; Met Council flags from 2016 |
+  | TX | Austin (4805000) | 2016–2023 | as fit 3; HOME ends the R-102 flag in 2024 |
+  | TX | San Antonio (4865000) | 2021–2025 | its permit file starts 2020-07 (D-025 amendment) |
+  | NC | Mint Hill, Matthews, Cornelius, Huntersville (Mecklenburg towns), Greensboro, Durham County | 2016–2025 | Mecklenburg towns' counts are parser-based (NC readiness) |
+  | OH | Cincinnati (3915000) | 2024–2025 | the only OH place whose ADU count is complete; Dayton and Dublin are lower bounds and stay out |
+
+  A count before the fit (place-years and ADU permits only, no estimate) found 42 MN places with 306 ADU
+  permits, Austin 3,082 (2010–2025; fewer in the fit years), San Antonio 242, the six NC places 51, and
+  Cincinnati 8. Austin dominates the counts; its gamma place effect absorbs its level.
+- **Test set (unchanged, held out of every fit):** Raleigh 2021–2025, and Durham city 2021–2025 if every roll it
+  uses has 1,000+ eligible parcels (D-019's rule). These are D-037's ADU out-of-sample tests.
+- **Backtest (V4, leave one place out):**
+  - For every fit place, refit without it and predict its in-window years with `calibrate_adu.predict_place`
+    (a new place effect drawn from the fitted variance; seed 20261020).
+  - Report per place: observed vs predicted median and P10–P90 for its total and each year, plus years since
+    its rule.
+  - **Scores:**
+    - P10–P90 coverage of place totals and of place-years, nominal 80%. V4's proposed pass is 60% or more of
+      place totals.
+    - Mean absolute error per 1,000 eligible parcels per year, against two benchmarks: (a) no effect (0 ADUs)
+      and (b) the outside rate unadjusted (Portland's 4 per 1,000 × eligible parcels × the rule's ramp). The
+      model should beat both.
+    - The same scores for the test set.
+  - **Deviation from V4, stated now:** the refit keeps the other places' years after the left-out place's
+    reform (a cross-place test, not a strict freeze at the year before the reform), and market inputs are
+    actual, not forecast. A strict freeze leaves too little data before most reforms (Minneapolis's rule dates
+    from 2014). So the backtest measures how well the rate transfers to an unseen place, which is what a new
+    state needs.
+- **What changes in config:** nothing until Ben confirms. The fit is reported next to fit 3's 0.001038
+  (0.000453–0.003173). If Ben adopts it, `config/params/hazard.yaml` is updated with this entry as its source,
+  and `--draw-terms` is re-run for `adu_anchor.yaml` (D-030).
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --four-state`, log in `reports/adu-anchor-4state/`.
+- **Decided by:** Ben, 2026-11-03 ("proceed with the next steps", after the D-037 amendment); written by
+  WS-ENGINE before the fit.
