@@ -21,3 +21,6 @@ rules and resources/
 # Local judging-panel runs (/judge); not part of the submission
 reports/judging/
 reports/adu-d0*/**/panel.csv
+
+# Ordinance PDFs for rule research live in LOTLINE_DATA_DIR/manual/<state>/ (MN: manual/mn/second_coder_2026-11-02)
+docs/research/ordinances/*.pdf
