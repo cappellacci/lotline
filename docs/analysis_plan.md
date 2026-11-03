@@ -1990,4 +1990,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - unit tests against hand-worked cases in `tests/model/test_calibrate_mm.py`;
   - the run in `scripts/dev/calibrate_mm_d039.py`, with results to `reports/mm-d039/`.
 - **Decided by:** method drafted by WS-ENGINE, 2026-11-03, on Ben's instruction ("Draft D-039"), for Ben to
-  approve before the run.
+  approve before the run. Approved by Ben, 2026-11-03 ("Approve, build and run").
+- **Before the run (code pushed first; the dry run built the inputs, printed only their structure, fitted
+  nothing):**
+  - **Richfield has no event under the stated rule.** Its 2010 row already allowed two-family dwellings (by
+    conditional use, cap 2). Bill 2023-2 made them by right without raising the cap. The script requires the
+    cap in force at the event to exceed the prior cap, so Richfield leaves the fit set and is listed.
+  - **The prior cap counts any in-force cap, by right or not, as written above.** A by-right reading would
+    instead give Richfield prior cap 1 and an event. That reading is not used.
+  - **Mooresville** again has no pre-reform BPS year.
+  - **Fit set: 14 places.**
+  - **Land share** uses single-family detached parcels with land and building values above 0. The vintage
+    nearest the event is after it for 9 of 13 places.
+  - **Check 6 adds the land-share slope as a second modifier with b held at its main estimate.** A joint
+    two-slope grid was too costly. The check is labelled as such.
