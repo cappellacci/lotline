@@ -267,3 +267,79 @@ def test_information_se_matches_the_spread_of_repeated_fits():
     fits = [math.log(cal.fit_theta_alpha(sim(s), cv)[0]) for s in range(1, 16)]
     assert se_t == pytest.approx(np.std(fits), rel=0.5)
     assert abs(corr) < 0.3 and se_a > 0
+
+
+def _fit3(theta, low, high, alpha):
+    return cal.Fit3(theta, low, high, alpha, 1.0, 0.3, (1.0, 1.0), (0.3, 0.3), False, False, 0.0, 2, 2)
+
+
+def test_predict_places_shares_theta_but_not_place_effects():
+    """D-040: two identical places, one year, base 10,000, Handbook rule, θ = 0.001 (mean 10 each).
+    θ fixed (low = high), α = 1: place totals are independent, so corr ≈ 0 and Var(sum) = 2 Var(one), where
+    Var(one) = μ + α μ² = 10 + 100 = 110. Summing `predict_place` draws (same seed) would correlate them
+    fully.
+    θ uncertain (90% interval 0.0005-0.002) with α ≈ 0: the shared θ makes the places
+    positively correlated."""
+    pls = [_place([0], [10_000.0], np.full((1, 1, 1), 4), np.ones((1, 1)), [1.0]) for _ in range(2)]
+    pls[1] = cal.PlaceData(**{**pls[1].__dict__, "geoid": "Y"})
+    d = cal.predict_places(pls, _fit3(0.001, 0.001, 0.001, 1.0), draws=200_000, seed=1)
+    a, b = d["X"][:, 0], d["Y"][:, 0]
+    assert a.mean() == pytest.approx(10, rel=0.02) and a.var() == pytest.approx(110, rel=0.05)
+    assert abs(np.corrcoef(a, b)[0, 1]) < 0.01
+    assert (a + b).var() == pytest.approx(220, rel=0.05)
+    one = [cal.predict_place(p, _fit3(0.001, 0.001, 0.001, 1.0), draws=1_000, seed=1) for p in pls]
+    assert np.array_equal(*one)  # the trap D-040 avoids: same seed, same draws for every place
+    alone = cal.predict_places(pls[1:], _fit3(0.001, 0.001, 0.001, 1.0), draws=200_000, seed=1)
+    assert np.array_equal(alone["Y"], d["Y"])  # a place draws alike whatever it is predicted with
+    d = cal.predict_places(pls, _fit3(0.001, 0.0005, 0.002, 1e-9), draws=200_000, seed=1)
+    assert np.corrcoef(d["X"][:, 0], d["Y"][:, 0])[0, 1] > 0.3
+
+
+def _permits(rows):
+    cols = ["source", "jurisdiction_geoid", "parcel_id", "issue_year", "building_type_std", "adu_type",
+            "units_new", "is_conversion"]  # fmt: skip
+    import pandas as pd
+
+    return pd.DataFrame(rows, columns=cols)
+
+
+def test_cobuilt_by_hand():
+    """D-041, window 1. Parcel A: ADU 2020 and a new house 2021 (co-built). Parcel B: ADU 2020, a new house
+    2022 (outside the window). Parcel C: ADU 2020 and a house conversion 2020 (not new). Parcel D: ADU 2020
+    and a new house 2020 in another source (not the same source). No parcel: never co-built."""
+    p = _permits([
+        ("s", "1", "A", 2020, "ADU", None, 1, False), ("s", "1", "A", 2021, "SFD", None, 1, False),
+        ("s", "1", "B", 2020, "ADU", None, 1, False), ("s", "1", "B", 2022, "SFD", None, 1, False),
+        ("s", "1", "C", 2020, "ADU", None, 1, False), ("s", "1", "C", 2020, "SFD", None, 1, True),
+        ("s", "1", "D", 2020, "ADU", None, 1, False), ("t", "1", "D", 2020, "SFD", None, 1, False),
+        ("s", "1", None, 2020, "ADU", None, 1, False),
+    ])  # fmt: skip
+    assert cal.cobuilt(p, 1).tolist() == [True, False, False, False, False, False, False, False, False]
+    assert cal.cobuilt(p, 0).tolist() == [False] * 9
+
+
+def test_adu_counts_rules_by_hand():
+    """Place 1, 2020: the survey reports 2 ADUs, the city's own source 3, of which 1 is co-built. Excluding
+    co-built: city 2, survey 2 -> a tie, kept from the city (survey False). Including: city 3 (survey False).
+    Place 2, 2020: survey only, 1 ADU -> survey True."""
+    p = _permits([
+        ("metc_residential_permits", "1", None, 2020, "ADU", None, 1, False),
+        ("metc_residential_permits", "1", None, 2020, "ADU", None, 1, False),
+        ("city", "1", "A", 2020, "ADU", None, 1, False), ("city", "1", "A", 2020, "SFD", None, 1, False),
+        ("city", "1", "B", 2020, "ADU", None, 1, False), ("city", "1", "C", 2020, "ADU", None, 1, False),
+        ("metc_residential_permits", "2", None, 2020, "ADU", None, 1, False),
+    ])  # fmt: skip
+    ex = cal.adu_counts(p, 2020, 2020, {"exclude_cobuilt": True, "window": 1, "report_rate": 0.5})
+    ex = ex.set_index("geoid")
+    assert (ex.loc["1", "adu_permits"], bool(ex.loc["1", "survey"])) == (2, False)
+    assert (ex.loc["2", "adu_permits"], bool(ex.loc["2", "survey"])) == (1, True)
+    inc = cal.adu_counts(p, 2020, 2020, {"exclude_cobuilt": False, "window": 1, "report_rate": 0.5})
+    assert inc.set_index("geoid").loc["1", "adu_permits"] == 3
+
+
+def test_thinning_scales_the_expected_count():
+    """ρ enters as a factor on base: a place with base 1,000 and ρ = 0.5 has k = 500 at θ = 1, so with
+    θ = 0.01 and α -> 0 the predictive mean is 5."""
+    pl = _place([0], [1_000.0 * 0.5], np.full((1, 1, 1), 4), np.ones((1, 1)), [1.0])
+    d = cal.predict_places([pl], _fit3(0.01, 0.01, 0.01, 1e-9), draws=100_000, seed=2)
+    assert d["X"].mean() == pytest.approx(5.0, rel=0.02)

@@ -1,0 +1,348 @@
+set,place,name,state,year,observed,p10,p50,p90,mean,portland,parcels,inside
+Backtest (leave one place out),2701486,Andover city,MN,2016,0,0.0,0.0,1.0,0.21385,2.5665471304735687,9545.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2017,0,0.0,0.0,2.0,0.70965,8.261714356382287,9627.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2018,0,0.0,0.0,5.0,1.69635,19.81977860505824,9741.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2019,0,0.0,1.0,8.0,2.7332,31.455680335004327,9868.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2020,0,0.0,1.0,10.0,3.45765,37.278604913055894,9944.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2021,0,0.0,1.0,10.0,3.55625,39.48607524022001,10046.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2022,0,0.0,1.0,9.0,2.95135,40.42348953126682,10153.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2023,0,0.0,1.0,9.0,3.0331,45.31224878663371,11342.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2024,0,0.0,1.0,10.0,3.4177,46.26903485926355,11571.0,True
+Backtest (leave one place out),2701486,Andover city,MN,2025,1,0.0,1.0,10.0,3.44475,46.28005068998846,11571.0,True
+Backtest (leave one place out),2701486,Andover city,MN,total,1,0.0,9.0,70.0,25.21385,317.1532244473469,103408.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2016,0,0.0,0.0,0.0,0.06645,39.13198364074437,9783.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2017,0,0.0,0.0,0.0,0.0769,40.12399557439261,10031.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2018,0,0.0,0.0,0.0,0.07485,40.9879988072142,10247.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2019,0,0.0,0.0,0.0,0.0857,42.08399967688302,10521.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2020,0,0.0,0.0,0.0,0.09265,43.23999991272695,10810.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2021,0,0.0,0.0,0.0,0.09705,43.85199997664818,10963.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2022,0,0.0,0.0,0.0,0.0872,43.903999993831604,10976.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2023,0,0.0,0.0,0.0,0.082,44.087999998365724,11022.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2024,0,0.0,0.0,0.0,0.082,44.02399999957101,11006.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,2025,0,0.0,0.0,0.0,0.08035,43.90799999988711,10977.0,True
+Backtest (leave one place out),2701900,Apple Valley city,MN,total,0,0.0,0.0,3.0,0.82515,425.3439775802648,106336.0,True
+Backtest (leave one place out),2706382,Blaine city,MN,2022,0,0.0,0.0,2.0,0.7101,8.124283027494105,16481.0,True
+Backtest (leave one place out),2706382,Blaine city,MN,2023,0,0.0,1.0,7.0,2.4655,30.93854855651952,22253.0,True
+Backtest (leave one place out),2706382,Blaine city,MN,2024,0,0.0,2.0,14.0,5.01065,64.64830638668693,24137.0,True
+Backtest (leave one place out),2706382,Blaine city,MN,2025,0,0.0,2.0,19.0,6.71005,85.42305950155205,24136.0,True
+Backtest (leave one place out),2706382,Blaine city,MN,total,0,0.0,6.0,41.0,14.8963,189.1341974722526,87007.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2016,0,0.0,1.0,12.0,4.13045,87.2107304700962,21817.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2017,1,0.0,1.0,13.0,4.43315,85.9651059457237,21495.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2018,0,0.0,1.0,12.0,4.31935,84.38014283674441,21096.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2019,0,0.0,2.0,13.0,4.6908,82.922999908341,20731.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2020,0,0.0,2.0,15.0,5.2191,82.16773949396034,20542.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2021,0,0.0,2.0,16.0,5.6544,85.13192878918345,21283.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2022,0,0.0,2.0,14.0,4.9625,85.15598120658582,21289.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2023,0,0.0,2.0,13.0,4.67775,85.18399503995556,21296.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2024,0,0.0,2.0,20.0,6.88835,85.17999869618238,21295.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,2025,2,0.0,4.0,33.0,11.4541,85.11599965626206,21279.0,True
+Backtest (leave one place out),2706616,Bloomington city,MN,total,3,0.0,20.0,158.0,56.42995,848.4146220430349,212123.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2018,0,0.0,0.0,0.0,0.01185,3.187698726084,10708.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2019,0,0.0,0.0,0.0,0.04085,9.983978618438842,10686.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2020,0,0.0,0.0,0.0,0.1093,23.55245759308472,10967.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2021,0,0.0,0.0,1.0,0.1771,36.921499331480426,11331.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2022,1,0.0,0.0,1.0,0.1729,42.74918760344015,11329.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2023,0,0.0,0.0,1.0,0.16055,44.54237066859144,11312.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2024,0,0.0,0.0,1.0,0.16135,45.068316415397916,11314.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,2025,1,0.0,0.0,1.0,0.1668,45.23030399282964,11320.0,True
+Backtest (leave one place out),2708794,Burnsville city,MN,total,2,0.0,0.0,3.0,1.0007,251.23581294934712,88967.0,True
+Backtest (leave one place out),2710918,Chanhassen city,MN,2025,1,0.0,0.0,1.0,0.2437,2.691913437764832,9611.0,True
+Backtest (leave one place out),2710918,Chanhassen city,MN,total,1,0.0,0.0,1.0,0.2437,2.691913437764832,9611.0,True
+Backtest (leave one place out),2713456,Cottage Grove city,MN,2023,0,0.0,0.0,1.0,0.32335,5.580919930458085,11766.0,True
+Backtest (leave one place out),2713456,Cottage Grove city,MN,2024,0,0.0,0.0,3.0,1.0212,16.30757105217213,12043.0,True
+Backtest (leave one place out),2713456,Cottage Grove city,MN,2025,0,0.0,1.0,6.0,2.0606,32.40054754700586,12276.0,True
+Backtest (leave one place out),2713456,Cottage Grove city,MN,total,0,0.0,1.0,10.0,3.40515,54.28903852963607,36085.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2016,0,0.0,0.0,0.0,0.1132,3.5026559249476743,878.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2017,0,0.0,0.0,0.0,0.1111,3.7773413442459214,945.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2018,0,0.0,0.0,1.0,0.20035,4.0312513948795194,1008.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2019,0,0.0,0.0,1.0,0.1945,4.003803834451213,1001.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2020,0,0.0,0.0,1.0,0.19955,3.931949358155031,983.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2021,0,0.0,0.0,1.0,0.20245,3.9559865570851986,989.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2022,1,0.0,0.0,1.0,0.1733,4.003996410207436,1001.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2023,1,0.0,0.0,1.0,0.1579,4.055999040576054,1014.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2024,0,0.0,0.0,1.0,0.16265,4.071999746795099,1018.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,2025,0,0.0,0.0,1.0,0.1648,4.099999932735603,1025.0,True
+Backtest (leave one place out),2713910450,Cedar Lake township,MN,total,2,0.0,0.0,5.0,1.6798,39.43498354407875,9862.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2016,0,0.0,0.0,0.0,0.1122,2.1662211472056803,543.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2017,0,0.0,0.0,0.0,0.1006,2.1344976484945204,534.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2018,0,0.0,0.0,0.0,0.10915,2.3595618283520996,590.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2019,0,0.0,0.0,0.0,0.0953,2.2598892771877472,565.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2020,0,0.0,0.0,0.0,0.1043,2.1479723350246713,537.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2021,0,0.0,0.0,1.0,0.13515,2.239992388238333,560.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2022,0,0.0,0.0,0.0,0.1087,2.2639979702072015,566.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2023,0,0.0,0.0,0.0,0.10105,2.2959994568941378,574.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2024,0,0.0,0.0,0.0,0.03615,2.3079998564840585,577.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,2025,0,0.0,0.0,0.0,0.0369,2.323999961872571,581.0,True
+Backtest (leave one place out),2713928322,Helena township,MN,total,0,0.0,0.0,3.0,0.9395,22.50013186996102,5627.0,True
+Backtest (leave one place out),2713931580,Jackson township,MN,2016,0,0.0,0.0,0.0,0.0064,0.7699460062812086,193.0,True
+Backtest (leave one place out),2713931580,Jackson township,MN,2017,0,0.0,0.0,0.0,0.00785,0.7434767090261812,186.0,True
+Backtest (leave one place out),2713931580,Jackson township,MN,2018,0,0.0,0.0,0.0,0.00505,0.8558410699446599,214.0,True
+Backtest (leave one place out),2713931580,Jackson township,MN,2019,0,0.0,0.0,0.0,0.0078,0.8759570826621533,219.0,True
+Backtest (leave one place out),2713931580,Jackson township,MN,total,0,0.0,0.0,0.0,0.0271,3.245220867914203,812.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2016,0,0.0,0.0,0.0,0.00815,0.46675483282332336,117.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2018,0,0.0,0.0,0.0,0.00655,0.43591904964470995,109.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2019,0,0.0,0.0,0.0,0.01085,0.6079702126239602,152.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2021,0,0.0,0.0,0.0,0.0214,0.6399978252109523,160.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2022,0,0.0,0.0,0.0,0.0463,0.6399994262069827,160.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2023,0,0.0,0.0,0.0,0.0467,0.6479998467192514,162.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2024,0,0.0,0.0,0.0,0.04475,0.6479999597060961,162.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,2025,0,0.0,0.0,0.0,0.04665,0.6519999893033204,163.0,True
+Backtest (leave one place out),2713957184,St. Lawrence township,MN,total,0,0.0,0.0,1.0,0.23135,4.738641142238596,1185.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,2018,1,0.0,0.0,1.0,0.2693,3.139886357689499,7537.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,2019,0,0.0,0.0,3.0,0.84655,9.027865190826597,7379.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,2020,0,0.0,0.0,6.0,1.97755,19.168467246030694,7651.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,2021,0,0.0,1.0,8.0,2.7584,25.481240528975412,7373.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,2022,0,0.0,1.0,8.0,2.8101,28.32760558865576,7376.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,2023,0,0.0,1.0,8.0,2.7238,29.20797670350944,7382.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,2024,4,0.0,1.0,8.0,2.751,29.43521889979804,7380.0,True
+Backtest (leave one place out),2714158,Crystal city,MN,total,5,0.0,4.0,38.0,14.1367,143.78826051548543,52078.0,True
+Backtest (leave one place out),2715022,Dayton city,MN,2020,0,0.0,0.0,0.0,0.09555,1.0201141228796025,1998.0,True
+Backtest (leave one place out),2715022,Dayton city,MN,2021,0,0.0,0.0,1.0,0.37475,3.380449182103573,2369.0,True
+Backtest (leave one place out),2715022,Dayton city,MN,2022,0,0.0,0.0,2.0,0.52815,6.955124181180095,2566.0,True
+Backtest (leave one place out),2715022,Dayton city,MN,2023,2,0.0,0.0,3.0,0.89925,10.775464658167854,3032.0,True
+Backtest (leave one place out),2715022,Dayton city,MN,2024,0,0.0,0.0,4.0,1.356,12.491817174504808,3226.0,True
+Backtest (leave one place out),2715022,Dayton city,MN,2025,0,0.0,0.0,4.0,1.479,13.581761905891897,3425.0,True
+Backtest (leave one place out),2715022,Dayton city,MN,total,2,0.0,1.0,13.0,4.7327,48.20473122472783,16616.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2018,0,0.0,0.0,0.0,0.0246,0.2029985781532299,715.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2019,0,0.0,0.0,0.0,0.0881,0.7006021481944755,780.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2020,0,0.0,0.0,1.0,0.211,1.6060431111264781,766.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2021,0,0.0,0.0,1.0,0.3303,2.5009873279719264,775.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2022,0,0.0,0.0,1.0,0.32415,2.93079729080103,779.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2023,0,0.0,0.0,1.0,0.2123,3.1121135422607846,791.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2024,0,0.0,0.0,1.0,0.2335,3.209931557528685,806.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,2025,0,0.0,0.0,1.0,0.23535,3.284202330324253,822.0,True
+Backtest (leave one place out),2716304132,Baytown township,MN,total,0,0.0,0.0,5.0,1.6593,17.547675886360864,6234.0,True
+Backtest (leave one place out),2716315688,Denmark township,MN,2023,1,0.0,0.0,0.0,0.028,0.33190284641276246,648.0,False
+Backtest (leave one place out),2716315688,Denmark township,MN,2024,0,0.0,0.0,0.0,0.0817,0.9390476275032085,655.0,True
+Backtest (leave one place out),2716315688,Denmark township,MN,2025,1,0.0,0.0,1.0,0.16205,1.7985639237278819,662.0,True
+Backtest (leave one place out),2716315688,Denmark township,MN,total,2,0.0,0.0,1.0,0.27175,3.069514397643853,1965.0,False
+Backtest (leave one place out),2717288,Eagan city,MN,2016,0,0.0,1.0,6.0,2.1397,30.119341207313102,13634.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2017,0,0.0,1.0,9.0,3.26215,45.473876513555766,13800.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2018,0,0.0,1.0,11.0,3.76145,53.2282942531034,14058.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2019,0,0.0,2.0,12.0,4.1816,54.72916311671351,13886.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2020,0,0.0,2.0,13.0,4.75435,55.259722059570166,13869.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2021,0,0.0,2.0,15.0,5.25835,57.77234311865185,14458.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2022,0,0.0,2.0,13.0,4.62575,57.81224938677409,14457.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2023,0,0.0,2.0,12.0,4.39245,57.719851034376504,14431.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2024,0,0.0,2.0,13.0,4.5401,57.79890784086072,14450.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,2025,0,0.0,2.0,13.0,4.56525,57.843711623756796,14461.0,True
+Backtest (leave one place out),2717288,Eagan city,MN,total,0,0.0,16.0,115.0,41.48115,527.7574601546759,141504.0,True
+Backtest (leave one place out),2718188,Edina city,MN,2024,2,0.0,0.0,3.0,1.03395,4.261028837976768,12682.0,True
+Backtest (leave one place out),2718188,Edina city,MN,2025,3,0.0,1.0,9.0,3.1205,12.9692222447737,12571.0,True
+Backtest (leave one place out),2718188,Edina city,MN,total,5,0.0,1.0,12.0,4.15445,17.230251082750467,25253.0,True
+Backtest (leave one place out),2721770,Forest Lake city,MN,2023,0,0.0,0.0,1.0,0.1813,2.572838325765743,5824.0,True
+Backtest (leave one place out),2721770,Forest Lake city,MN,2024,0,0.0,0.0,2.0,0.54,7.480683269888896,5830.0,True
+Backtest (leave one place out),2721770,Forest Lake city,MN,2025,0,0.0,0.0,3.0,1.1014,15.059280185971259,5868.0,True
+Backtest (leave one place out),2721770,Forest Lake city,MN,total,0,0.0,0.0,5.0,1.8227,25.112801781625897,17522.0,True
+Backtest (leave one place out),2722814,Fridley city,MN,2023,1,0.0,0.0,1.0,0.2288,5.273573471125534,7596.0,True
+Backtest (leave one place out),2722814,Fridley city,MN,2024,3,0.0,0.0,2.0,0.6903,15.149433066533751,8528.0,False
+Backtest (leave one place out),2722814,Fridley city,MN,2025,6,0.0,0.0,4.0,1.1793,25.655401932449575,8532.0,False
+Backtest (leave one place out),2722814,Fridley city,MN,total,10,0.0,1.0,6.0,2.0984,46.07840847010886,24656.0,False
+Backtest (leave one place out),2724308,Golden Valley city,MN,2023,0,0.0,0.0,1.0,0.2095,3.5457046371988694,6356.0,True
+Backtest (leave one place out),2724308,Golden Valley city,MN,2024,0,0.0,0.0,2.0,0.54265,9.714559226429692,6368.0,True
+Backtest (leave one place out),2724308,Golden Valley city,MN,2025,1,0.0,0.0,3.0,1.007,17.85768694797191,6375.0,True
+Backtest (leave one place out),2724308,Golden Valley city,MN,total,1,0.0,0.0,5.0,1.75915,31.117950811600473,19099.0,True
+Backtest (leave one place out),2730140,Hopkins city,MN,2023,0,0.0,0.0,1.0,0.16575,1.8264305679910597,2370.0,True
+Backtest (leave one place out),2730140,Hopkins city,MN,2024,0,0.0,0.0,1.0,0.4608,4.5185243527229,2374.0,True
+Backtest (leave one place out),2730140,Hopkins city,MN,2025,0,0.0,0.0,2.0,0.74205,7.3669100267039225,2377.0,True
+Backtest (leave one place out),2730140,Hopkins city,MN,total,0,0.0,0.0,4.0,1.3686,13.711864947417883,7121.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2016,0,0.0,0.0,4.0,1.32575,13.687639570909775,3510.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2017,0,0.0,0.0,4.0,1.2852,14.120096760444607,3554.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2018,0,0.0,0.0,4.0,1.30475,14.490034179530005,3629.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2019,0,0.0,0.0,4.0,1.3549,13.441644904318517,3362.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2020,0,0.0,0.0,4.0,1.40775,13.758290040622024,3440.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2021,0,0.0,0.0,5.0,1.7368,15.42749411272269,3857.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2022,0,0.0,0.0,5.0,1.6308,16.07986088380509,4020.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2023,0,0.0,0.0,5.0,1.53665,16.491962355219137,4123.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2024,0,0.0,0.0,5.0,1.52885,16.951989828036833,4238.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,2025,0,0.0,0.0,5.0,1.6185,17.567997218728504,4392.0,True
+Backtest (leave one place out),2730392,Hugo city,MN,total,0,0.0,5.0,41.0,14.72995,152.01700985433718,38125.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2016,0,0.0,0.0,1.0,0.313,4.015437502464616,6976.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2017,1,0.0,0.0,3.0,0.87215,11.154962139493051,7166.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2018,0,0.0,0.0,4.0,1.55045,20.317867587629692,7183.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2019,0,0.0,1.0,6.0,2.2859,25.34658692105983,7029.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2020,1,0.0,1.0,8.0,3.02445,28.55969846006031,7345.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2021,4,0.0,1.0,8.0,3.0253,30.5167428746359,7687.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2022,1,0.0,1.0,8.0,2.78635,32.07586835172835,8035.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2023,0,0.0,1.0,7.0,2.70875,31.94314965678583,7990.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2024,1,0.0,1.0,7.0,2.6723,32.003562064446946,8002.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,2025,1,0.0,1.0,7.0,2.68165,32.014828692592346,8004.0,True
+Backtest (leave one place out),2731076,Inver Grove Heights city,MN,total,9,0.0,7.0,58.0,21.9203,247.94870425089687,75417.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2016,0,0.0,1.0,10.0,3.44425,52.72335579309077,15429.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2017,0,0.0,2.0,13.0,4.5493,60.71190822025944,15861.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2018,0,0.0,2.0,13.0,4.7322,65.33231307475765,16527.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2019,0,0.0,2.0,13.0,4.752,67.89930328137501,17028.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2020,0,0.0,2.0,16.0,5.6558,70.42600638368411,17621.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2021,0,0.0,2.0,17.100000000002183,6.34745,73.45204164814552,18367.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2022,0,0.0,2.0,15.0,5.1935,75.30768321432467,18828.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2023,0,0.0,2.0,14.0,4.978,77.2828311971583,19321.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2024,0,0.0,2.0,15.0,5.18605,78.29968870658932,19575.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,2025,0,0.0,2.0,15.0,5.238,78.36791779746028,19592.0,True
+Backtest (leave one place out),2735180,Lakeville city,MN,total,0,0.0,20.0,136.0,50.07655,699.8030493168451,178149.0,True
+Backtest (leave one place out),2740382,Maplewood city,MN,2024,0,0.0,0.0,1.0,0.27995,4.891969032453667,9612.0,True
+Backtest (leave one place out),2740382,Maplewood city,MN,2025,0,0.0,0.0,3.0,0.8009,13.6651645404851,9599.0,True
+Backtest (leave one place out),2740382,Maplewood city,MN,total,0,0.0,0.0,3.0,1.08085,18.557133572938767,19211.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2016,0,0.0,0.0,3.0,0.8016,6.5934177549919575,1698.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2017,0,0.0,0.0,3.0,0.8689,7.167048235308687,1806.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2018,0,0.0,0.0,3.0,0.8532,7.695865283079453,1928.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2019,0,0.0,0.0,3.0,0.87785,8.179475543813236,2046.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2020,0,0.0,0.0,3.0,0.92595,8.274796766479845,2069.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2021,0,0.0,0.0,3.0,1.01205,8.239683888590012,2060.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2022,1,0.0,0.0,2.0,0.56085,8.38391513794772,2096.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2023,0,0.0,0.0,2.0,0.61635,8.651976894304648,2163.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2024,0,0.0,0.0,2.0,0.62235,8.703993889539701,2176.0,True
+Backtest (leave one place out),2741480,Medina city,MN,2025,0,0.0,0.0,2.0,0.6225,8.77599837449272,2194.0,True
+Backtest (leave one place out),2741480,Medina city,MN,total,1,0.0,3.0,22.0,7.7616,80.66617176854798,20236.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2016,28,0.0,4.0,32.0,11.9154,108.07329805847284,74856.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2017,30,0.0,9.0,63.0,23.478,205.21534373064094,75270.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2018,25,0.0,12.0,84.0,31.2483,268.2039541846074,75315.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2019,35,0.0,14.0,101.0,37.67885,291.89227045004554,75346.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2020,28,0.0,16.0,119.0,44.5454,298.8255806814906,75345.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2021,16,0.0,17.5,128.10000000000218,47.8464,300.769663037341,75362.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2022,17,0.0,15.0,113.0,42.1772,301.0408676820863,75305.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2023,14,1.0,29.0,209.0,78.02065,300.9847469320099,75258.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2024,16,1.0,41.0,297.0,111.2958,300.49959830412826,75128.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,2025,13,1.0,46.0,338.1000000000022,126.35165,301.4407177161828,75361.0,True
+Backtest (leave one place out),2743000,Minneapolis city,MN,total,222,5.0,204.0,1477.1000000000022,554.55765,2676.9460407770057,752546.0,True
+Backtest (leave one place out),2743252,Minnetonka city,MN,2022,1,0.0,0.0,2.0,0.5884,8.354547336882007,13307.0,True
+Backtest (leave one place out),2743252,Minnetonka city,MN,2023,2,0.0,0.0,4.0,1.42775,22.059400476792526,13330.0,True
+Backtest (leave one place out),2743252,Minnetonka city,MN,2024,4,0.0,1.0,7.0,2.48055,38.87142719956878,13338.0,True
+Backtest (leave one place out),2743252,Minnetonka city,MN,2025,2,0.0,1.0,9.0,3.1588,48.46824333091001,13308.0,True
+Backtest (leave one place out),2743252,Minnetonka city,MN,total,9,0.0,2.0,22.0,7.6555,117.75361834415332,53283.0,True
+Backtest (leave one place out),2744476,Mound city,MN,2025,0,0.0,0.0,0.0,0.0496,1.929992295739814,3374.0,True
+Backtest (leave one place out),2744476,Mound city,MN,total,0,0.0,0.0,0.0,0.0496,1.929992295739814,3374.0,True
+Backtest (leave one place out),2744530,Mounds View city,MN,2025,0,0.0,0.0,0.0,0.0394,0.8932949334823714,3414.0,True
+Backtest (leave one place out),2744530,Mounds View city,MN,total,0,0.0,0.0,0.0,0.0394,0.8932949334823714,3414.0,True
+Backtest (leave one place out),2745430,New Brighton city,MN,2025,0,0.0,0.0,1.0,0.3215,3.5192410198110187,5436.0,True
+Backtest (leave one place out),2745430,New Brighton city,MN,total,0,0.0,0.0,1.0,0.3215,3.5192410198110187,5436.0,True
+Backtest (leave one place out),2748580,Orono city,MN,2023,4,0.0,0.0,1.0,0.24955,1.6827128713829689,3045.0,False
+Backtest (leave one place out),2748580,Orono city,MN,2024,0,0.0,0.0,2.0,0.7599,4.642591125948905,3064.0,True
+Backtest (leave one place out),2748580,Orono city,MN,2025,1,0.0,0.0,4.0,1.42795,8.57420676730205,3071.0,True
+Backtest (leave one place out),2748580,Orono city,MN,total,5,0.0,1.0,7.0,2.4374,14.899510764633924,9180.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2016,0,0.0,0.0,5.0,1.76445,62.65999311389445,15665.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2017,0,0.0,0.0,5.0,1.8818,64.97599811603284,16244.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2018,0,0.0,0.0,5.0,1.88865,66.44799949167754,16612.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2019,0,0.0,0.0,6.0,2.04245,66.26399986625667,16566.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2020,0,0.0,0.0,7.0,2.35185,67.81599996401857,16954.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2021,0,0.0,1.0,7.0,2.4314,70.21599999017079,17554.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2022,0,0.0,0.0,6.0,2.15255,71.13999999737254,17785.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2023,0,0.0,0.0,6.0,2.00275,71.77199999930063,17943.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2024,0,0.0,0.0,6.0,2.059,71.9479999998157,17987.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,2025,3,0.0,1.0,8.0,2.66895,72.487999999951,18122.0,True
+Backtest (leave one place out),2751730,Plymouth city,MN,total,3,0.0,6.0,57.0,21.24385,685.7279905384908,171432.0,True
+Backtest (leave one place out),2753026,Ramsey city,MN,2022,0,0.0,0.0,0.0,0.0856,2.8122906353226704,7500.0,True
+Backtest (leave one place out),2753026,Ramsey city,MN,2023,0,0.0,0.0,1.0,0.2957,10.714682967537312,9511.0,True
+Backtest (leave one place out),2753026,Ramsey city,MN,2024,0,0.0,0.0,2.0,0.6892,24.866752834066084,10385.0,True
+Backtest (leave one place out),2753026,Ramsey city,MN,2025,0,0.0,0.0,3.0,0.98885,35.52370700302987,10452.0,True
+Backtest (leave one place out),2753026,Ramsey city,MN,total,0,0.0,0.0,6.0,2.05935,73.91743343995594,37848.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2016,0,0.0,0.0,1.0,0.26305,7.9610384047234755,9520.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2017,0,0.0,0.0,2.0,0.70545,19.447732142008473,9715.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2018,0,0.0,0.0,3.0,1.12135,29.480193877736042,9311.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2019,0,0.0,0.0,5.0,1.49565,34.98885369120539,9355.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2020,0,0.0,0.0,6.0,1.904,37.326215693575634,9502.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2021,1,0.0,1.0,6.0,2.02195,38.804993076975386,9748.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2022,0,0.0,0.0,5.0,1.74465,38.890551717270036,9735.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2023,0,0.0,0.0,5.0,1.5278,38.91894414872068,9733.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2024,3,0.0,0.0,5.0,1.62355,38.87657166098014,9720.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,2025,1,0.0,0.0,5.0,1.627,38.871095601946436,9718.0,True
+Backtest (leave one place out),2754214,Richfield city,MN,total,5,0.0,5.0,40.0,14.03445,323.5661900151417,96057.0,True
+Backtest (leave one place out),2755186,Rogers city,MN,2020,0,0.0,0.0,0.0,0.1052,1.0355676677166212,3526.0,True
+Backtest (leave one place out),2755186,Rogers city,MN,2021,0,0.0,0.0,1.0,0.333,3.22806908144908,3494.0,True
+Backtest (leave one place out),2755186,Rogers city,MN,2022,0,0.0,0.0,2.0,0.49925,7.540242738831897,3541.0,True
+Backtest (leave one place out),2755186,Rogers city,MN,2023,0,0.0,0.0,3.0,0.95345,12.275024746360904,3780.0,True
+Backtest (leave one place out),2755186,Rogers city,MN,2024,0,0.0,0.0,4.0,1.3061,14.500530300042463,3846.0,True
+Backtest (leave one place out),2755186,Rogers city,MN,2025,0,0.0,0.0,4.0,1.41275,15.695695284087103,3987.0,True
+Backtest (leave one place out),2755186,Rogers city,MN,total,0,0.0,1.0,12.0,4.60975,54.27512981848807,22174.0,True
+Backtest (leave one place out),2755726,Rosemount city,MN,2024,0,0.0,0.0,1.0,0.1198,2.122629407693508,7451.0,True
+Backtest (leave one place out),2755726,Rosemount city,MN,2025,0,0.0,0.0,1.0,0.41065,6.958317224952542,7725.0,True
+Backtest (leave one place out),2755726,Rosemount city,MN,total,0,0.0,0.0,2.0,0.53045,9.08094663264605,15176.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2016,1,0.0,0.0,5.0,1.809,30.144970591386063,7555.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2017,1,0.0,0.0,5.0,1.9317,31.435357034277697,7864.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2018,0,0.0,0.0,6.0,2.00465,32.03444980810639,8010.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2019,0,0.0,0.0,6.0,2.252,32.38251973863684,8096.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2020,1,0.0,1.0,7.0,2.6096,33.4275983159411,8357.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2021,0,0.0,1.0,8.0,2.77105,34.55589044340002,8639.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2022,0,0.0,1.0,7.0,2.3913,34.57997107468359,8645.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2023,1,0.0,1.0,7.0,2.30835,34.56799237105146,8642.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2024,0,0.0,1.0,6.0,2.29175,34.58399799360063,8646.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,2025,1,0.0,0.0,7.0,2.30675,34.58799947057474,8647.0,True
+Backtest (leave one place out),2755852,Roseville city,MN,total,5,0.0,6.0,60.0,22.67615,332.3007468416585,83101.0,True
+Backtest (leave one place out),2757220,St. Louis Park city,MN,2021,0,0.0,1.0,6.0,1.9723,6.443833766407026,11624.0,True
+Backtest (leave one place out),2757220,St. Louis Park city,MN,2022,0,0.0,2.0,14.0,4.74155,17.593056646015906,11611.0,True
+Backtest (leave one place out),2757220,St. Louis Park city,MN,2023,0,0.0,3.0,23.0,8.0298,32.417816598874666,11611.0,True
+Backtest (leave one place out),2757220,St. Louis Park city,MN,2024,0,0.0,4.0,29.0,10.48495,41.68662657115718,11607.0,True
+Backtest (leave one place out),2757220,St. Louis Park city,MN,2025,0,0.0,4.0,32.0,11.40675,44.95885180619627,11577.0,True
+Backtest (leave one place out),2757220,St. Louis Park city,MN,total,0,0.0,14.0,101.0,36.63535,143.10018538865106,58030.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2017,0,0.0,0.0,0.0,0.0897,1.9119475052170622,6004.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2018,0,0.0,0.0,1.0,0.22275,5.839664451830006,5913.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2019,2,0.0,0.0,2.0,0.5493,13.293684828718122,5998.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2020,2,0.0,0.0,3.0,0.9491,19.561650526112004,5925.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2021,4,0.0,0.0,4.0,1.33025,22.651674176052232,5979.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2022,1,0.0,0.0,4.0,1.3259,23.66352219275231,6003.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2023,2,0.0,0.0,3.0,1.10705,24.030632019318723,6031.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2024,0,0.0,0.0,4.0,1.3148,24.0873977790247,6028.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,2025,1,0.0,0.0,4.0,1.33,24.12149981415984,6032.0,True
+Backtest (leave one place out),2762824,Stillwater city,MN,total,12,0.0,3.0,23.0,8.21885,159.161673293185,53913.0,True
+Backtest (leave one place out),2766460,Vadnais Heights city,MN,2025,0,0.0,0.0,1.0,0.20935,2.4570686005205906,3078.0,True
+Backtest (leave one place out),2766460,Vadnais Heights city,MN,total,0,0.0,0.0,1.0,0.20935,2.4570686005205906,3078.0,True
+Backtest (leave one place out),2768818,Wayzata city,MN,2022,1,0.0,0.0,0.0,0.01655,0.23703549722918735,909.0,False
+Backtest (leave one place out),2768818,Wayzata city,MN,2023,0,0.0,0.0,0.0,0.048,0.7618178557461226,911.0,True
+Backtest (leave one place out),2768818,Wayzata city,MN,2024,0,0.0,0.0,1.0,0.142,1.824982875982328,910.0,True
+Backtest (leave one place out),2768818,Wayzata city,MN,2025,0,0.0,0.0,1.0,0.2325,2.8802348397055204,909.0,True
+Backtest (leave one place out),2768818,Wayzata city,MN,total,1,0.0,0.0,1.0,0.43905,5.704071068663158,3639.0,True
+Backtest (leave one place out),4805000,Austin city,TX,2016,234,0.0,6.0,39.0,15.0029,571.1065427777988,143132.0,False
+Backtest (leave one place out),4805000,Austin city,TX,2017,357,0.0,7.0,42.0,15.88095,576.413480878532,144198.0,False
+Backtest (leave one place out),4805000,Austin city,TX,2018,340,0.0,7.0,43.0,16.50895,588.3340670188169,147109.0,False
+Backtest (leave one place out),4805000,Austin city,TX,2019,375,0.0,9.0,56.0,21.56735,596.3167413234204,149086.0,False
+Backtest (leave one place out),4805000,Austin city,TX,2020,330,0.0,12.0,72.0,27.40925,615.5566031397022,153891.0,False
+Backtest (leave one place out),4805000,Austin city,TX,2021,341,0.0,12.0,74.0,28.2094,607.0620753597693,151766.0,False
+Backtest (leave one place out),4805000,Austin city,TX,2022,325,0.0,11.0,67.0,25.8242,623.9474780828998,155987.0,False
+Backtest (leave one place out),4805000,Austin city,TX,2023,243,0.0,11.0,66.0,25.3495,644.9038576735875,161226.0,False
+Backtest (leave one place out),4805000,Austin city,TX,total,2545,3.0,76.0,455.1000000000022,175.7525,4823.640846254527,1206395.0,False
+Backtest (leave one place out),4865000,San Antonio city,TX,2021,36,0.0,35.0,325.0,124.6924,1425.9154792526035,356480.0,True
+Backtest (leave one place out),4865000,San Antonio city,TX,2022,35,0.0,31.0,290.0,110.94525,1437.498797566734,359375.0,True
+Backtest (leave one place out),4865000,San Antonio city,TX,2023,50,0.0,30.0,276.0,105.9622,1449.0796801968079,362270.0,True
+Backtest (leave one place out),4865000,San Antonio city,TX,2024,59,0.0,32.0,298.0,113.4318,1460.6599152594465,365165.0,True
+Backtest (leave one place out),4865000,San Antonio city,TX,2025,60,0.0,32.0,301.0,115.3114,1472.2399774649864,368060.0,True
+Backtest (leave one place out),4865000,San Antonio city,TX,total,240,2.0,162.0,1491.0,570.34305,7245.393849740578,1811350.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2016,1,0.0,1.0,8.0,2.8573,32.961931791706284,8391.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2017,0,0.0,1.0,9.0,3.1725,33.89266629640628,8514.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2018,0,0.0,1.0,9.0,3.3522,34.743824168987935,8697.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2019,1,0.0,1.0,11.0,4.05425,36.023915322698514,9009.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2020,2,0.0,1.0,9.0,3.5179,38.488605873828384,9623.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2021,1,0.0,1.0,12.0,4.5318,37.73512203218385,9434.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2022,2,0.0,1.0,12.0,4.35795,37.89576737275444,9474.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2023,0,0.0,1.0,11.0,4.25435,39.36793623981675,9842.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2024,2,0.0,1.0,12.0,4.30035,39.423983215088086,9856.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,2025,0,0.0,1.0,12.0,4.31555,39.42399557150419,9856.0,True
+Backtest (leave one place out),3743480,Mint Hill town,NC,total,9,0.0,11.0,101.0,38.71415,369.9577478849747,92696.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2016,0,0.0,0.0,1.0,0.15285,3.1790587806653567,9305.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2017,0,0.0,0.0,2.0,0.54215,9.978195812580404,9542.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2018,0,0.0,0.0,4.0,1.1842,21.829071523607844,9525.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2019,2,0.0,0.0,6.0,1.955,31.989059481216543,9570.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2020,0,0.0,1.0,7.0,2.45675,35.143200208265114,9240.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2021,1,0.0,1.0,7.0,2.33265,32.78482687495358,8308.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2022,2,0.0,0.0,6.0,1.9397,32.29976439250028,8104.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2023,1,0.0,0.0,6.0,1.9364,32.2693615180681,8075.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2024,2,0.0,1.0,6.0,2.1283,33.33168072000802,8335.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,2025,1,0.0,1.0,6.0,2.144,33.33780465610646,8335.0,True
+Backtest (leave one place out),3741960,Matthews town,NC,total,9,0.0,6.0,48.0,16.772,266.1420239679717,88339.0,True
+Backtest (leave one place out),3714700,Cornelius town,NC,2023,1,0.0,0.0,1.0,0.2286,3.954463834626851,8779.0,True
+Backtest (leave one place out),3714700,Cornelius town,NC,2024,2,0.0,0.0,2.0,0.723,11.505815198168952,8835.0,True
+Backtest (leave one place out),3714700,Cornelius town,NC,2025,2,0.0,0.0,4.0,1.4447,22.851046707103322,8835.0,True
+Backtest (leave one place out),3714700,Cornelius town,NC,total,5,0.0,1.0,7.0,2.3963,38.311325739899125,26449.0,True
+Backtest (leave one place out),3733120,Huntersville town,NC,2025,2,0.0,0.0,4.0,1.34725,13.14230209338793,19871.0,True
+Backtest (leave one place out),3733120,Huntersville town,NC,total,2,0.0,0.0,4.0,1.34725,13.14230209338793,19871.0,True
+Backtest (leave one place out),3728000,Greensboro city,NC,2024,3,0.0,1.0,8.0,2.89005,24.12847058363236,71813.0,True
+Backtest (leave one place out),3728000,Greensboro city,NC,2025,5,0.0,3.0,26.0,8.9947,74.0878813987697,71813.0,True
+Backtest (leave one place out),3728000,Greensboro city,NC,total,8,0.0,4.0,33.0,11.88475,98.21635198240206,143626.0,True
+Backtest (leave one place out),37063,Durham County Unincorporated Area,NC,2020,3,0.0,0.0,2.0,0.70535,7.457342791194082,12755.0,False
+Backtest (leave one place out),37063,Durham County Unincorporated Area,NC,2021,1,0.0,0.0,5.0,1.86925,19.28200561591402,12250.0,True
+Backtest (leave one place out),37063,Durham County Unincorporated Area,NC,2022,0,0.0,1.0,9.0,3.1797,35.40365073789939,12450.0,True
+Backtest (leave one place out),37063,Durham County Unincorporated Area,NC,2023,5,0.0,1.0,11.0,3.95425,44.32822100625328,12271.0,True
+Backtest (leave one place out),37063,Durham County Unincorporated Area,NC,2024,4,0.0,1.0,13.0,4.73825,48.741354813019306,12529.0,True
+Backtest (leave one place out),37063,Durham County Unincorporated Area,NC,2025,4,0.0,1.0,13.0,4.86175,49.745842253256896,12529.0,True
+Backtest (leave one place out),37063,Durham County Unincorporated Area,NC,total,17,0.0,5.0,51.0,19.30855,204.95841721753698,74784.0,True
+Backtest (leave one place out),3915000,Cincinnati city,OH,2024,5,0.0,1.0,6.0,2.15215,36.10596867589596,56981.0,True
+Backtest (leave one place out),3915000,Cincinnati city,OH,2025,3,0.0,2.0,16.0,5.69515,94.9020822011742,56981.0,True
+Backtest (leave one place out),3915000,Cincinnati city,OH,total,8,0.0,3.0,23.0,7.8473,131.00805087707016,113962.0,True

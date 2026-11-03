@@ -1861,6 +1861,309 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     0.298 → 0.299.
   - **D-024 and D-025.** Not rerun.
 
+### D-039 · 2026-11-03 · ADU anchor refit on the four states, with a leave-one-place-out backtest (written before the fit)
+- **Why:** D-037's amendment (Ben, 2026-11-03): uptake rates are calibrated on our own four states, and outside
+  studies only check them. The ADU anchor `adu_mature_hazard_ref` comes from D-019 fit 3 on Minneapolis, 10 Twin
+  Cities suburbs and Austin, made before the NC, OH and TX permit work and the Minnesota second coding. (D-038 is
+  the missing-middle anchor, PR #272.)
+- **Model:** fit 3 unchanged: the same likelihood (gamma place effects, graded rule shares, blank fields
+  integrated per place, coverage), the same judgment values and ranges for the owner-occupancy and
+  other-restriction shares, the same 90% profile-likelihood interval, central parameters as on `main`.
+- **What enters:** a place-year enters when a coded ADU rule is in force by 1 July and a permit source flags
+  ADUs that year (`calibrate_adu.place_years`). Holdouts go through the IO layer's filter.
+
+  | State | Places | Years | Note |
+  |---|---|---|---|
+  | MN | every place with a coded ADU rule except St. Paul (V5) | 2016–2025 | as fit 3; Met Council flags from 2016 |
+  | TX | Austin (4805000) | 2016–2023 | as fit 3; HOME ends the R-102 flag in 2024 |
+  | TX | San Antonio (4865000) | 2021–2025 | its permit file starts 2020-07 (D-025 amendment) |
+  | NC | Mint Hill, Matthews, Cornelius, Huntersville (Mecklenburg towns), Greensboro, Durham County | 2016–2025 | Mecklenburg towns' counts are parser-based (NC readiness) |
+  | OH | Cincinnati (3915000) | 2024–2025 | the only OH place whose ADU count is complete; Dayton and Dublin are lower bounds and stay out |
+
+  A count before the fit (place-years and ADU permits only, no estimate) found 42 MN places with 306 ADU
+  permits, Austin 3,082 (2010–2025; fewer in the fit years), San Antonio 242, the six NC places 51, and
+  Cincinnati 8. Austin dominates the counts; its gamma place effect absorbs its level.
+- **Test set (unchanged, held out of every fit):** Raleigh 2021–2025, and Durham city 2021–2025 if every roll it
+  uses has 1,000+ eligible parcels (D-019's rule). These are D-037's ADU out-of-sample tests.
+- **Backtest (V4, leave one place out):**
+  - For every fit place, refit without it and predict its in-window years with `calibrate_adu.predict_place`
+    (a new place effect drawn from the fitted variance; seed 20261020).
+  - Report per place: observed vs predicted median and P10–P90 for its total and each year, plus years since
+    its rule.
+  - **Scores:**
+    - P10–P90 coverage of place totals and of place-years, nominal 80%. V4's proposed pass is 60% or more of
+      place totals.
+    - Mean absolute error per 1,000 eligible parcels per year, against two benchmarks: (a) no effect (0 ADUs)
+      and (b) the outside rate unadjusted (Portland's 4 per 1,000 × eligible parcels × the rule's ramp). The
+      model should beat both.
+    - The same scores for the test set.
+  - **Deviation from V4, stated now:** the refit keeps the other places' years after the left-out place's
+    reform (a cross-place test, not a strict freeze at the year before the reform), and market inputs are
+    actual, not forecast. A strict freeze leaves too little data before most reforms (Minneapolis's rule dates
+    from 2014). So the backtest measures how well the rate transfers to an unseen place, which is what a new
+    state needs.
+- **What changes in config:** nothing until Ben confirms. The fit is reported next to fit 3's 0.001038
+  (0.000453–0.003173). If Ben adopts it, `config/params/hazard.yaml` is updated with this entry as its source,
+  and `--draw-terms` is re-run for `adu_anchor.yaml` (D-030).
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --four-state`, log in `reports/adu-anchor-4state/`.
+- **Decided by:** Ben, 2026-11-03 ("proceed with the next steps", after the D-037 amendment); written by
+  WS-ENGINE before the fit.
+- **The run (2026-11-03 04:15–06:07, once, commit 0ccb4f3; `reports/adu-anchor-4state/`, log
+  `run-2026-11-03-log.txt`; written after the run):**
+  - **Fit:** 51 places, 296 place-years. **θ = 0.001112 per eligible parcel a year (90% 0.000743–0.001742)**,
+    against fit 3's 0.001038 (0.000453–0.003173): the same level, with an interval 2.3-fold wide instead of
+    7-fold. That is 0.28 of Portland's 4 per 1,000 (fit 3: 0.26). Place-effect variance α = 2.46.
+    Owner-occupancy share estimated at 1.0; the other-restriction share stays at its judgment value of 0.3.
+  - **Test set (held out):** Durham is tested this time (every roll has 1,000+ eligible parcels).
+
+    | Place | Observed | Median | P10–P90 |
+    |---|---|---|---|
+    | Raleigh 2021–25 | 230 | 29 | 0–265 |
+    | Durham 2021–25 | 239 | 54 | 1–443 |
+
+    Both are inside, but the medians are far too low. Error per 1,000 eligible parcels a year: model 0.52,
+    no effect 0.62, Portland unadjusted 2.72. The model has the smallest error.
+  - **Backtest (V4, leave one place out, 51 refits):**
+    - P10–P90 covers **48 of 51 place totals (94%)** and 95% of place-years. That passes V4's 60%, but it is
+      above the nominal 80%: the intervals are wider than they need to be. V1's rule reads coverage above 90%
+      as too wide to be useful.
+    - The misses: **Austin, 2,545 observed vs P10–P90 3–455 (median 76)**; Fridley, 10 vs 0–6; Denmark
+      Township, 2 vs 0–1.
+    - Error per 1,000 eligible parcels a year: model median 0.149, no effect 0.141, Portland unadjusted 3.01.
+      The median does no better than "no effect", because most places permit almost no ADUs and the large
+      adopters are under-predicted.
+  - **Correction to the log, after the run:** the Portland benchmark first ignored the blank-field ramp
+    (`ramp_blank`), giving 0 for places like Durham. The code is fixed, and the benchmark column in both
+    backtest CSVs was recomputed from the same place-years. The log's benchmark lines (1.814, 2.539) are as
+    run; the corrected values are above. The fit and the model's predictions are unaffected.
+  - **Reading (WS-ENGINE's, for Ben to confirm):**
+    - The four states pin down the **average** ADU uptake rate well, and it agrees with fit 3 and with the
+      outside evidence: about a quarter of Portland's rate.
+    - They do not yet say **which** places will be big adopters. The place-to-place variation (α ≈ 2.5) is
+      larger than anything the rent, home-value and rate terms explain. So a single city's prediction is a
+      wide range whose median understates cities like Austin, Raleigh and Durham and is near zero for most
+      suburbs.
+    - Next steps this points to:
+      1. explain the place effects with what we have coded (lot sizes and coverage, fees, parking, how the
+         rule is written, city size), each a candidate modifier under a new dated entry;
+      2. backtest statewide totals, where place errors partly cancel. The tool's headline numbers are
+         statewide, so that test matters most, and this run's per-place CSVs don't keep the draws needed for it.
+  - **Config:** unchanged. Adopting θ = 0.001112 (0.000743–0.001742) in `hazard.yaml` and re-running
+    `--draw-terms` is Ben's call.
+
+### D-040 · 2026-11-03 · Statewide backtest of the ADU anchor (written before the run)
+- **Why:** D-039's backtest scores single places and finds the place-to-place variation unexplained. The tool's
+  headline numbers are statewide totals, where place errors partly cancel. Ben chose this test next
+  (2026-11-03, "Statewide backtest").
+- **Model and data:** D-039 unchanged: fit 3, the same fit set and years per state, the same test set
+  (Raleigh and Durham city, 2021–2025), holdouts filtered by the IO layer. No new data.
+- **Joint draws (new function, `calibrate_adu.predict_places`):** a state total needs the places drawn
+  together. `predict_place` seeds each place alike, so summing its output would give every place the same place
+  effect and overstate the spread. Per draw: one θ from its interval, shared by every place predicted from that
+  fit (θ's uncertainty is common to all of them); an independent place effect u ~ Gamma(mean 1, variance α) and
+  blank-field combination per place; Poisson counts per place-year. 20,000 draws, seed 20261020.
+- **Main test, leave one state out (4 refits):** for each of MN, NC, OH and TX, refit on the other three
+  states' fit-set places and predict every fit-set place in the held-out state jointly. The state total is the
+  sum over its places and in-window years. This is the closest test of D-037's purpose: rates estimated
+  elsewhere, applied to a state the fit has not seen (HANDOFF's V8). NC is reported with and without Raleigh and
+  Durham (never in any fit).
+- **Second test, leave one place out, summed by state (51 refits, as D-039):** each place is predicted from the
+  fit without it, with the same seed for θ across refits (so θ draws stay aligned) and independent place
+  effects; the draws are summed within each state. This asks whether the statewide sum is right when the
+  state's other places are in the fit.
+- **Scores, per state and test:** observed total; P10, P50, P90; inside P10–P90; observed ÷ P50; P90 ÷ P10.
+  Benchmarks: no effect (0) and Portland's 4 per 1,000 × eligible parcels × ramp (as D-039, corrected).
+  With four states there is no coverage rate to read. The bar, stated now: a state total is **useful** if it is
+  inside P10–P90 **and** its P50 is within a factor of 2 of the observed total; **inside only** if the
+  interval holds it but the median is further off; **missed** otherwise.
+- **Scope, stated now:** "state total" here is the sum over the coded places in the fit set, not the whole
+  state. The tool's statewide number also extrapolates to uncoded places; this test does not check that step.
+  TX is two places and Austin is most of its count; OH is Cincinnati alone (2 years). Their results are read as
+  single cases.
+- **What changes in config:** nothing. The result feeds Ben's choice on adopting D-039's θ and on D-037's
+  next steps.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --statewide --out reports/adu-statewide`, log in
+  that folder.
+- **Decided by:** Ben, 2026-11-03; written by WS-ENGINE before the run.
+- **The run (2026-11-03 08:23–10:08, once, commit 38eeff4; `reports/adu-statewide/`, log
+  `run-2026-11-03-log.txt`, `statewide.csv`, state-total draws in `draws_loso.npz` and `draws_lopo.npz`;
+  written after the run):**
+  - **Main test, leave one state out.** The fit without each state:
+
+    | Fit without | θ per 1,000 (90%) | α | Places |
+    |---|---|---|---|
+    | MN | 4.67 (2.30–11.61) | 0.61 | 9 |
+    | NC | 1.11 (0.69–1.89) | 3.07 | 45 |
+    | OH | 1.11 (0.74–1.77) | 2.56 | 50 |
+    | TX | 0.78 (0.37–1.68) | 1.94 | 49 |
+
+    | State | Observed | P50 | P10–P90 | Observed ÷ P50 | Verdict |
+    |---|---|---|---|---|---|
+    | MN (42 places) | 306 | 1,115 | 450–2,796 | 0.27 | missed (over) |
+    | NC fit set (6) | 50 | 57 | 13–193 | 0.88 | useful |
+    | NC with Raleigh and Durham (8) | 519 | 213 | 52–781 | 2.44 | inside only |
+    | OH (Cincinnati) | 8 | 3 | 0–23 | 2.67 | inside only |
+    | TX (Austin, San Antonio) | 2,785 | 319 | 45–1,420 | 8.73 | missed (under) |
+
+  - **Second test, leave one place out, summed by state:** MN 306 vs P50 629 (268–1,919), inside only; NC
+    fit set 50 vs 61 (16–189), useful; NC with Raleigh and Durham 519 vs 235 (66–755), inside only; OH as
+    above; TX 2,785 vs 356 (43–1,769), missed.
+  - Portland's rate, unadjusted, over-predicts every state by 7–30-fold (MN 8,836, TX 12,069).
+  - **Reading (WS-ENGINE's, for Ben to confirm):**
+    - One of four state totals is useful by the bar set in advance (NC's six towns), two more are inside only,
+      and MN and TX are missed in opposite directions. **The anchor does not yet transfer to an unseen state.**
+    - The fit moves with which state is left out: without MN (Austin and San Antonio dominating) θ is 4.7 per
+      1,000; without TX it is 0.8. One shared rate with a symmetric place effect cannot fit Texas's two large
+      cities and Minnesota's suburbs at once.
+    - The intervals are wide (P90 ÷ P10 of 6–30) yet still miss, so widening them is not the fix; the level
+      itself is off by state or place type.
+  - **Exploratory, not pre-registered (from D-039's backtest CSVs, grouped after seeing these results):**
+    summing the leave-one-place-out predictive means, suburbs, towns and the county area permitted 126 ADUs
+    against 474 predicted (0.27×), while the seven large cities (Minneapolis, Austin, San Antonio, Raleigh,
+    Durham, Greensboro, Cincinnati) permitted 3,492 against 1,580 (2.2×, mostly Austin, Raleigh and Durham).
+    That points at a place-type modifier (central city vs suburb, or city size), the first candidate under
+    D-039's step 1. It needs its own dated entry before it is fitted.
+  - **Config:** unchanged.
+
+### D-041 · 2026-11-03 · ADU counts made consistent across the four states, then a four-state comparison (written before the fits)
+- **Why:** the diagnosis after D-040 (`reports/adu-statewide/diagnosis-2026-11-03.md`) found that the four
+  states count different things. Ben (2026-11-03): fix the counts first; run every test across all four states
+  and compare them, since that may show something about the data a pooled test hides.
+- **Count rule 1, co-built units (main: excluded):**
+  - **Definition:** an ADU permit is *co-built* if the same source issued a permit for a new single-family house
+    (`building_type_std` SFD, `units_new` ≥ 1, not a conversion) on the same parcel within one calendar year
+    either side.
+  - **Why exclude:** the mechanism models an ADU added to an existing home on an eligible lot. A new house and
+    second unit built together is new construction, a different channel the tool would need to model
+    separately.
+  - **Where it can be checked:** every source with parcel IDs (Austin, Raleigh, Durham, the Mecklenburg towns,
+    Cincinnati, Minneapolis's own records). Met Council, San Antonio and Greensboro have no parcel IDs and
+    can't be checked. San Antonio's permits are all for existing buildings.
+  - **Shares measured before any fit** (counts only, no prediction):
+
+    | Place | Share co-built |
+    |---|---|
+    | Austin 2016–23 | 66% (1,677 of 2,541) |
+    | Raleigh | 18% |
+    | Durham | 7% |
+    | Minneapolis | 7% |
+    | Mecklenburg towns | 11–22% (1–2 each) |
+    | Durham County, Cincinnati | 0% |
+
+  - **Window:** `adu_cobuilt_window_years`, 1.
+- **Count rule 2, survey reporting rate (main: ρ = 0.57):**
+  - **The problem:** Met Council's survey records fewer ADUs than are permitted. Over 2017–2025, it has 111 of
+    the 194 ADUs in Minneapolis's own permit records.
+  - **The fix:** place-years whose count comes from the survey are fitted and predicted as reported counts:
+    expected = ρ × θ × k (Poisson thinning). θ then means the true rate.
+  - **When a count comes from the survey:** the larger source each year is used, as now (D-019), with ties
+    going to the city's own records.
+  - **The range:** `adu_survey_report_rate` 0.57, range 0.3–1.0. The low end is judgment (suburbs may report
+    worse than Minneapolis); the high end is no correction, as D-039.
+  - **Limitation, stated now:** ρ can't correct a city that never reports.
+- **Four-state comparison (every run reports, per state):**
+  1. counts before and after each rule;
+  2. the fit on each state alone: θ, α and θ's interval. "Not estimable" if the fit fails or the interval
+     reaches the search bounds; OH is one place with 2 years, so its fit is expected to be weak;
+  3. leave one state out (D-040);
+  4. leave one place out, with coverage per state and totals summed by state (D-040);
+  5. the test set (Raleigh, Durham);
+  6. a descriptive check of the market term: correlation of log observed rate with log `h1`, pooled and
+     within each state.
+- **Runs:**
+  - **Main:** co-built excluded, ρ = 0.57; all of 1–6.
+  - **Sensitivities:** S1 co-built included; S2 ρ = 1.0; S3 ρ = 0.3. Each runs 1, 2, 3, 5 and 6; leave one
+    place out runs for the main only.
+- **Bars:** D-040's verdict (useful / inside only / missed) for state totals; V4 coverage for places. Every
+  result is shown next to D-039 and D-040.
+- **Config:** the two rules' parameters go in a new `config/params/adu_counts.yaml`, used by the calibration
+  only. The scenario and its draws are unchanged until Ben adopts a refit.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --counts --out reports/adu-counts`.
+- **Decided by:** Ben, 2026-11-03 ("Yes, fix counts first"; four-state comparison in the same message);
+  written by WS-ENGINE before the fits.
+- **Results (2026-11-03, commit 4047239; `reports/adu-counts/`, log `run-2026-11-03-log.txt`):**
+  - **Counts.** Minnesota uses the survey count in 241 of its 249 place-years; no other state uses it.
+
+    | Group | D-039 count | Co-built removed | Change |
+    |---|---|---|---|
+    | MN (42 places) | 306 | 285 | −7% |
+    | NC fit set (6) | 50 | 45 | −10% |
+    | OH (Cincinnati) | 8 | 8 | 0 |
+    | TX (Austin, San Antonio) | 2,785 | 1,108 | −60% |
+    | Test set (Raleigh, Durham) | 469 | 410 | −13% |
+
+  - **Fit on each state alone (main).** These are the comparison Ben asked for.
+
+    | State | θ per 1,000 (90%) | α | Places, place-years |
+    |---|---|---|---|
+    | All four (main) | 1.23 (0.81–2.11) | 2.28 | 51, 296 |
+    | MN | 1.25 (0.71–2.54) | 3.46 | 42, 249 |
+    | NC | 1.27 (0.54–1.77) | 0.00 | 6, 32 |
+    | OH | 2.34 (1.10–5.65) | 0.00 | 1, 2 |
+    | TX | 4.17 (3.95–4.39) | 0.00 | 2, 13 |
+
+    - MN and NC agree closely once the counts are fixed. In D-039 they could not be compared, since MN was
+      read from an under-reporting survey.
+    - TX stays about 3.3 times higher even with co-built units removed. With 2 places, α can't be estimated
+      (0), so its narrow interval is too narrow.
+    - OH (1 place, 2 years) is weak, as expected.
+    - The owner-occupancy share m_owner is estimated at 1.0 pooled and in MN, but 0.2–0.5 in the small state
+      fits. It is weakly identified on its own, and partly takes the place of the state-level differences
+      in θ.
+    - None of the state fits reached the search bounds.
+  - **Leave one state out (main, compared with D-040):**
+
+    | State | Observed | P50 | P10–P90 | Obs ÷ P50 | Verdict | D-040 verdict |
+    |---|---|---|---|---|---|---|
+    | MN | 285 | 570 | 283–1,140 | 0.50 | useful | missed (over) |
+    | NC fit set | 45 | 68 | 16–229 | 0.66 | useful | useful |
+    | NC with Raleigh and Durham | 455 | 255 | 63–933 | 1.78 | useful | inside only |
+    | OH | 8 | 3 | 0–26 | 2.67 | inside only | inside only |
+    | TX | 1,108 | 432 | 48–2,003 | 2.56 | inside only | missed (under) |
+
+    θ without each state: without MN 2.08 (1.24–4.19); without NC 1.31; without OH 1.24; without TX 1.16.
+    In D-040 the spread was 0.78–4.67, about sixfold; here it is 1.16–2.08, under twofold.
+  - **Test set (main, full fit):** Raleigh and Durham 410 against P50 159 (17–704). Inside only, 2.6 times
+    under.
+  - **Leave one place out (main):** coverage 92% (47 of 51 places), 94% of place-years, against D-039's 94%
+    and 95%. Mean absolute error per 1,000 eligible parcels a year is 0.099, against no effect 0.098 and
+    Portland unadjusted 1.97. D-039 had 0.149, 0.141 and 2.54.
+
+    Misses are Fridley (10 against P90 4), Orono (5 against 4), Denmark township (2 against 1) and Austin
+    (868 against P90 684).
+
+    Summed by state: MN 285 against 469 (useful); NC 45 against 69 (useful); TX 1,108 against 464 (inside
+    only).
+  - **Market term:** the correlation of log observed rate with log `h1` is −0.11 pooled, −0.18 in MN and +0.24
+    in NC (8 places). OH and TX have too few places. The sign is still wrong pooled and in MN.
+  - **Sensitivities, leave one state out:**
+
+    | Run | θ all | MN | NC | OH | TX | Test set |
+    |---|---|---|---|---|---|---|
+    | Main (excl., ρ 0.57) | 1.23 | useful | useful | inside only | inside only | inside only |
+    | S1 co-built included | 1.52 | missed | useful | useful | missed | inside only |
+    | S2 ρ = 1.0 | 0.86 | missed | useful | inside only | inside only | inside only |
+    | S3 ρ = 0.3 | 2.16 | useful | inside only | useful | useful | useful |
+
+    S1 reproduces D-040's pattern: the co-built rule is what moves TX and the without-MN fit.
+  - **Reading (WS-ENGINE's, for Ben to confirm):**
+    - **Most of D-040's state misses came from counting.** With co-built units out and the survey corrected,
+      three of four held-out state totals are useful and none is missed. The fit no longer depends much on
+      which state is left out. In MN and NC, fitted separately, the rate is the same, about 1.25 per 1,000.
+    - **What the four-state view shows that the pooled test hid:** Texas is a different regime, not just
+      noise. It sits about three times above MN and NC after both fixes. With only Austin and San Antonio we
+      can't tell whether that is Texas, large cities, or Austin's market. The large-city pattern in D-040's
+      exploratory note (Raleigh and Durham also above P50) points the same way. That remains the first
+      candidate modifier, and it needs its own dated entry.
+    - **Still not shown:** at the place level the model ties the no-effect benchmark (0.099 against 0.098).
+      The market term still has the wrong sign in MN. So the model gets state totals right, but not which
+      place builds more.
+    - **ρ matters, and S3 is not a reason to pick 0.3.** S3 scores best, but 0.3 is the judgment end of the
+      range. Choosing it after seeing the results would be fitting to the backtest. The main value, 0.57,
+      is measured from Minneapolis. A suburban reporting rate would need suburban permit records.
+  - **Config:** unchanged. θ in `hazard.yaml` is not adopted. If Ben adopts the D-041 main fit, it replaces
+    D-039's 1.112 with 1.232 (0.809–2.106).
+
 ### D-042 · 2026-11-03 · Missing-middle uptake, second pre-registered fit: newly allowed types, comparison-place baseline, builder capacity (method only, before any fit)
 - **Status:** fit run once on 2026-11-03 (results at the end of this entry; not taken into params). The method
   was written after the v0.2 causal-diagram review (`docs/research/lotline-causal-diagram-mm.md` §6) and the
@@ -2060,3 +2363,4 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - D-038 was fitted before the Austin and Houston pre-reform rows were added, so it counts types those
     places already allowed (§6.5–6.7);
   - its placebo was not passed, and its own backtest was no better than no effect.
+

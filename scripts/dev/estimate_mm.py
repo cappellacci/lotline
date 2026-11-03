@@ -32,7 +32,7 @@ import pandas as pd
 
 from lotline.config import CONFIG_DIR, load_params
 from lotline.io import DataStore
-from lotline.model import estimate_adu, rule_tags
+from lotline.model import estimate_adu, rule_tags, runs
 from lotline.model import estimate_mm as mm
 
 ROOT = CONFIG_DIR.parent
@@ -443,7 +443,9 @@ def simulated_panel(seed: int = 0, spread: float = 2.0) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def full(store, out_dir: Path, workers: int, main_method: str = "") -> None:
+def full(
+    store, out_dir: Path, workers: int, main_method: str = "", title: str = "", plan_entry: str = ""
+) -> None:
     p = {k: v.value for k, v in load_params("mm").items()}
     log("building the main panel")
     panel = mm.build_panel(store).data
@@ -458,6 +460,25 @@ def full(store, out_dir: Path, workers: int, main_method: str = "") -> None:
     log(f"check 7b drops {len(flagged)} pipeline-flagged comparison places: {flagged}")
     firm = mm.build_panel(store, drop_tags=rule_tags.SENSITIVITIES)
     log(f"tag sensitivity, firm dates only, leaves out {firm.excluded['dropped by tag sensitivity']}")
+    runs.start_manifest(
+        out_dir,
+        model="D-024",
+        title=title or f"Missing middle ({main_method or 'ppml'} main), run of {time.strftime('%Y-%m-%d')}",
+        plan_entry=plan_entry or "D-024",
+        scope=runs.panel_scope(
+            panel,
+            "2-4 unit homes permitted a year (Census BPS)",
+            holdouts="St. Paul entirely; Charlotte and Mecklenburg County from 2023-06-01",
+        ),
+        config={
+            "main estimator": main_method or "ppml (fallback: Poisson-gamma)",
+            "bootstrap draws": int(p["mm_estimation_bootstrap_draws"]),
+            "randomization reassignments": int(p["mm_estimation_permutations"]),
+            "pipeline-flagged places (check 7b)": len(flagged),
+            "tag sensitivity": f"firm dates only (drops {len(firm.excluded['dropped by tag sensitivity'])})",
+            "workers": workers,
+        },
+    )
     out = run(
         panel,
         p,
@@ -469,6 +490,11 @@ def full(store, out_dir: Path, workers: int, main_method: str = "") -> None:
         firm=firm.data,
     )
     write(out, out_dir)
+    if "status" in out:  # the main model (and any fallback) could not be estimated
+        why = "; ".join(f"{k}: {v}" for k, v in out["status"].iloc[0].items())
+        runs.finish_manifest(out_dir, "no_estimate", why)
+    else:
+        runs.finish_manifest(out_dir)
 
 
 def dry_run(out_dir: Path, workers: int, fallback: bool = False, main_method: str = "") -> None:
@@ -536,6 +562,8 @@ def main() -> None:
     ap.add_argument("--out", type=Path)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--method", choices=["nb"], help="--full/--dry-run: fit this as the main model directly")
+    ap.add_argument("--title", default="", help="--full: the run's title in run.yaml and the dashboard")
+    ap.add_argument("--plan-entry", default="", help="--full: the dated analysis-plan entry it implements")
     a = ap.parse_args()
     if a.smoke:
         smoke(DataStore())
@@ -546,7 +574,7 @@ def main() -> None:
     else:
         if a.out is None:
             ap.error("--full needs --out")
-        full(DataStore(), a.out, a.workers, main_method=a.method or "")
+        full(DataStore(), a.out, a.workers, a.method or "", a.title, a.plan_entry)
 
 
 if __name__ == "__main__":

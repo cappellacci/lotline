@@ -255,7 +255,65 @@ def profile_share_rows(y, rows, grid) -> tuple[np.ndarray, np.ndarray, tuple[flo
     return grid, ll, (float(inside.min()), float(inside.max()))
 
 
-def place_years(state: str, store, geoids, years, params=None, assume_rules=None):
+SURVEY_SOURCES = frozenset({"metc_residential_permits"})  # counts reported by cities to a survey (D-041)
+
+
+def count_settings(exclude_cobuilt: bool = True, report_rate: float | None = None) -> dict:
+    """D-041 count rules with `config/params/adu_counts.yaml`'s central values unless overridden."""
+    from lotline.config import load_params
+
+    p = load_params("adu_counts")
+    rho = p["adu_survey_report_rate"].value if report_rate is None else report_rate
+    window = int(p["adu_cobuilt_window_years"].value)
+    return {"exclude_cobuilt": exclude_cobuilt, "window": window, "report_rate": float(rho)}
+
+
+def cobuilt(permits, window: int):
+    """True for an ADU permit whose source also issued a new single-family house permit (SFD, units_new ≥ 1,
+    not a conversion) on the same parcel within `window` calendar years either side (D-041). False where the
+    parcel is unknown."""
+    import pandas as pd
+
+    from lotline.model.scenarios import adu
+
+    new = permits[
+        (permits["building_type_std"] == "SFD")
+        & (permits["units_new"].fillna(0) >= 1)
+        & ~permits["is_conversion"].fillna(False).astype(bool)
+    ][["source", "parcel_id", "issue_year"]].dropna()
+    keys = pd.concat(
+        [new.assign(issue_year=new["issue_year"] + d) for d in range(-window, window + 1)]
+    ).drop_duplicates()
+    keys = set(zip(keys["source"], keys["parcel_id"], keys["issue_year"], strict=True))
+    hit = [
+        (s, q, y) in keys
+        for s, q, y in zip(permits["source"], permits["parcel_id"], permits["issue_year"], strict=True)
+    ]
+    return adu._is_adu(permits) & pd.Series(hit, index=permits.index) & permits["parcel_id"].notna()
+
+
+def adu_counts(permits, first: int, last: int, settings: dict):
+    """As `scenarios.adu.observed_adu_counts` (the larger source each year, never the sum), with D-041's
+    rules: co-built ADUs dropped if `settings['exclude_cobuilt']`, and a `survey` flag where the count kept
+    comes from a survey source (ties go to the city's own records)."""
+    from lotline.model.scenarios import adu
+
+    flagging = permits.loc[adu._is_adu(permits), "source"].unique()
+    p = permits[permits["source"].isin(flagging) & permits["jurisdiction_geoid"].notna()]
+    p = p[(p["issue_year"] >= first) & (p["issue_year"] <= last)]
+    keep = adu._is_adu(p)
+    if settings["exclude_cobuilt"]:
+        keep = keep & ~cobuilt(p, settings["window"])
+    p = p.assign(adu=keep, survey=p["source"].isin(SURVEY_SOURCES))
+    by = p.groupby(["jurisdiction_geoid", "issue_year", "source", "survey"])["adu"].sum().reset_index()
+    by = by.sort_values(["adu", "survey"], ascending=[False, True])  # the larger; on a tie, the city's own
+    out = by.groupby(["jurisdiction_geoid", "issue_year"]).head(1)
+    return out.rename(columns={"jurisdiction_geoid": "geoid", "issue_year": "year", "adu": "adu_permits"})[
+        ["geoid", "year", "adu_permits", "survey"]
+    ]
+
+
+def place_years(state: str, store, geoids, years, params=None, assume_rules=None, counts=None):
     """One row per place-year that can be checked: a coded ADU rule in force by 1 July, and a permit source
     covering the place that flags ADUs that year. Columns: geoid, name, year, adu_permits (observed),
     eligible_parcels, rent, home_value, mortgage_rate (actual), h1 (mature hazard at θ = 1),
@@ -264,6 +322,9 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
 
     `assume_rules` (geoid -> [(class, effective Timestamp)]) stands in for a place with no coded ADU rule;
     only for clearly labelled exploratory runs, never for the pre-registered fit.
+
+    `counts` (`count_settings()`, D-041) applies the count rules; `report_rate` is then ρ for a survey-counted
+    place-year and 1 otherwise, and k is multiplied by it. Without it, counts are as D-039 and the rate is 1.
     """
     import pandas as pd
 
@@ -290,9 +351,12 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
         [(s, y) in flags.index for s, y in zip(covered["source"], covered["issue_year"], strict=True)]
     ]
     covered = set(zip(covered["jurisdiction_geoid"], covered["issue_year"], strict=True))
-    counts = adu.observed_adu_counts(permits, min(years), max(years)).set_index(["geoid", "year"])[
-        "adu_permits"
-    ]
+    if counts is None:
+        rho, counts = 1.0, adu.observed_adu_counts(permits, min(years), max(years)).assign(survey=False)
+    else:
+        rho, counts = counts["report_rate"], adu_counts(permits, min(years), max(years), counts)
+    survey = counts.set_index(["geoid", "year"])["survey"]
+    counts = counts.set_index(["geoid", "year"])["adu_permits"]
     from lotline.config import load_params, load_state
 
     fips = load_state(state).fips
@@ -361,12 +425,14 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
                     "ramp_partial": ramp["partial"],
                     "ramp_blank": ramp["blank"],
                     "q_blank": q_blank,
+                    "report_rate": rho if bool(survey.get((g, y), False)) else 1.0,
                 }
             )
     out = pd.DataFrame(rows)
     if not out.empty:
-        out["k_handbook"] = out["eligible_parcels"] * out["h1"] * out["ramp_handbook"]
-        out["k_partial"] = out["eligible_parcels"] * out["h1"] * out["ramp_partial"]
+        k = out["eligible_parcels"] * out["h1"] * out["report_rate"]
+        out["k_handbook"] = k * out["ramp_handbook"]
+        out["k_partial"] = k * out["ramp_partial"]
     return out
 
 
@@ -600,7 +666,26 @@ def predict_place(pl: PlaceData, fit: Fit3, draws: int = 20_000, seed: int = 0) 
     return rng.poisson((theta * u)[:, None] * ks[combo])
 
 
-def place_data(state: str, store, geoids, years, params=None) -> list[PlaceData]:
+def predict_places(places: list[PlaceData], fit: Fit3, draws: int = 20_000, seed: int = 0) -> dict:
+    """Joint predictive counts for places summed together (D-040): {geoid: draws × years}. One θ per draw,
+    shared by every place (drawn first, as in `predict_place`, so a seed gives the same θ draws in every
+    refit); an independent u and blank-field combination per place, from a stream keyed by (seed, geoid), so a
+    place draws alike whichever places it is predicted with."""
+    import zlib
+
+    rng = np.random.default_rng(seed)
+    theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=draws))
+    cv = _cvals(fit.m_owner, fit.m_other)
+    out = {}
+    for pl in places:
+        rng = np.random.default_rng([seed, zlib.crc32(pl.geoid.encode())])
+        u = rng.gamma(1 / fit.alpha, fit.alpha, size=draws) if fit.alpha > 0 else np.ones(draws)
+        combo = rng.choice(len(pl.w), size=draws, p=pl.w / pl.w.sum())
+        out[pl.geoid] = rng.poisson((theta * u)[:, None] * pl.k(cv)[combo])
+    return out
+
+
+def place_data(state: str, store, geoids, years, params=None, counts=None) -> list[PlaceData]:
     """`PlaceData` per place with checkable years (a coded rule in force by 1 July, ADU-flagging permits).
 
     Uses the scenario's rule reading: `restriction_fields` with citywide parking reforms filling a blank
@@ -614,7 +699,7 @@ def place_data(state: str, store, geoids, years, params=None) -> list[PlaceData]
     from lotline.config import load_params, load_state
     from lotline.model.scenarios import adu
 
-    rows = place_years(state, store, geoids, years, params)
+    rows = place_years(state, store, geoids, years, params, counts=counts)
     if rows.empty:
         return []
     central = {k: v.value for k, v in load_params("adu").items()}
@@ -669,7 +754,7 @@ def place_data(state: str, store, geoids, years, params=None) -> list[PlaceData]
                 name,
                 d["year"].to_numpy(),
                 d["adu_permits"].to_numpy(dtype=float),
-                (d["eligible_parcels"] * d["h1"]).to_numpy(dtype=float),
+                (d["eligible_parcels"] * d["h1"] * d["report_rate"]).to_numpy(dtype=float),
                 types,
                 cr,
                 w,

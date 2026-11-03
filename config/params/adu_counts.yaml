@@ -1,0 +1,18 @@
+# How observed ADU permits are counted for the ADU anchor fit (D-041). Used by model/calibrate_adu.py only;
+# not part of the scenario's draws.
+
+adu_cobuilt_window_years:
+  value: 1
+  low: 0
+  high: 1
+  unit: calendar years either side
+  source: "Choice (D-041): an ADU permit is co-built, and left out of the count, if the same source issued a permit for a new single-family house on the same parcel within this many years. Austin 66% co-built, Raleigh 18%, Durham and Minneapolis 7% (counts measured before the fit)"
+  notes: "Applies only to sources with parcel IDs. 0 means the same calendar year only."
+
+adu_survey_report_rate:
+  value: 0.57
+  low: 0.3
+  high: 1.0
+  unit: share of permitted ADUs that the Met Council survey records (rho)
+  source: "Estimated (D-041): Met Council recorded 111 of the 194 ADUs in Minneapolis's own permit records, 2017-2025. Low end judgment (suburbs may report worse than Minneapolis); high end is no correction (D-039)"
+  notes: "Place-years counted from the survey are fitted and predicted as reported counts, rho x theta x k. Cannot correct a city that never reports."
