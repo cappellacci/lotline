@@ -1862,8 +1862,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **D-024 and D-025.** Not rerun.
 
 ### D-042 · 2026-11-03 · Missing-middle uptake, second pre-registered fit: newly allowed types, comparison-place baseline, builder capacity (method only, before any fit)
-- **Status:** method only. Written after the v0.2 causal-diagram review (`docs/research/lotline-causal-diagram-mm.md`
-  §6) and the coding change noted under D-038. No D-042 fit has been run.
+- **Status:** fit run once on 2026-11-03 (results at the end of this entry; not taken into params). The method
+  was written after the v0.2 causal-diagram review (`docs/research/lotline-causal-diagram-mm.md` §6) and the
+  coding change noted under D-038.
   - **What was looked at before writing:** the panel's structure (places, adoption years, status, eligible
     parcels), parcel-value vintages, and national FRED series.
   - **D-038's own outputs.** D-038's results were already known, including its exploratory fits. Those fits are
@@ -2006,3 +2007,49 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     nearest the event is after it for 9 of 13 places.
   - **Check 6 adds the land-share slope as a second modifier with b held at its main estimate.** A joint
     two-slope grid was too costly. The check is labelled as such.
+- **Results (one run, 2026-11-03, `scripts/dev/calibrate_mm_d042.py`, outputs in `reports/mm-d042/`; about
+  2 h 20 min):**
+  - **Fit set: 13 places, 69 place-years.** Cincinnati also left at run time: Connected Communities covers
+    less than half of the eligible parcels, so the cap in force on most parcels stays 1 and, under the stated
+    rule, there is no cap rise. Raleigh (a test place) has no cap rise for the same reason. Dropped from the
+    pre-registered list: Cincinnati, Mooresville and Richfield.
+  - **Main fit.** θ = 0.17 per 1,000 eligible parcels (90%: 0.056–0.89). α = 6.2 (2.2–20). The ramp's
+    half-way point sits on the grid floor, 0.5 years (0.5–1.0). b = −2.0, the grid edge, and its 90% interval
+    is the whole grid (−2 to 2): the profile moves 1.2 log-likelihood units end to end, so builder capacity is
+    not identified.
+  - **Checks:**
+    1. Placebo date T − 3: θ = 0.095 per 1,000, but its upper bound (112 per 1,000) is far above the main θ.
+       **Not passed** under the stated test (the placebo is uninformative rather than positive).
+    2. Coded comparison places only: 0.086.
+    3. D-038's own-growth baseline: 0.095.
+    4. National 2–4 unit share index: 0.17.
+    5. Without Houston and Austin: 0.23 (11 places; half-way point 2.0).
+    6. Land share as a second modifier: 0.16 (nearest vintage), 0.17 (pre-event vintages only). The nearest
+       vintage is after the event for 9 of 12 places with values.
+    7. σ = 0.25: 0.43; σ = 0.8: 0.14.
+    8. Tagged events dropped: 0.004 (7 places).
+  - **V4 backtest (10 places scored).** Mean absolute error per 1,000 a year:
+
+    | Specification | MAE | P10–P90 coverage |
+    |---|---|---|
+    | D-042 fit | 0.185 | 70% |
+    | D-042, index held at 1 | 0.172 | 70% |
+    | No effect | 0.153 | 60% |
+    | Outside rate | 0.163 | 50% |
+    | D-038 specification | 0.119 | 80% |
+
+    Lubbock dominates every specification's error (about 1.0–1.4 per 1,000). Its pre-reform 2–4 unit pace
+    (115 buildings a year) collapsed to 25 in two years after the reform.
+  - **Test places (full fit).** Minneapolis observed 106 against a P10–P90 of 149–234. Durham city observed 100
+    against 32–96. Durham County observed 0, inside 0–22. Both city misses are also missed by no effect.
+  - **Reading rule.** The error is 21% above no effect, not 10% below; coverage is 70% (passes); α is 6.2,
+    below 7.3 (passes). **Confounders supported: no.** As pre-registered, the finding is that these inputs
+    (the comparison-place baseline and builder capacity) do not predict a place's uptake in our four states.
+    The scenario must carry the wide place-to-place range.
+  - **What this does and does not say.** The D-042 changes made θ smaller and its interval no narrower, and
+    they did not improve prediction. The D-038 specification on the corrected coding did better in the
+    backtest (0.119), but it was not the pre-registered main fit here, and choosing it after seeing this
+    table would be a new decision. The capacity slope's sign rests mostly on Lubbock (the highest-capacity
+    place, with a fall). With 13 places and α ≈ 6, the data cannot separate a modifier from place noise.
+  - **Not written to `config/params/mm_hazard.yaml`.** Ben decides whether to keep D-038's values, take the
+    D-042 θ with its range, or record a new entry. No b key is added.

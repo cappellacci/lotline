@@ -154,3 +154,13 @@
   - Coded comparison places are 4 (MN), 2 (NC), 0 (OH) and 33 (TX), so uncoded places join the comparison set.
 - **Decisions:** none. D-042 waits for Ben's approval before the code and the single run.
 - **AI:** Claude Code (Opus 5.5) drafted the entry. It ran no fit.
+
+### D-042 run and results
+
+- **Date / workstream:** 2026-11-03 · WS-ENGINE (missing-middle anchor, PR #272)
+- **Question:** With only newly allowed types counted, a comparison-place baseline and a builder-capacity modifier, do the confounders predict a place's missing-middle uptake?
+- **Outputs:** `reports/mm-d042/` (README, fits, backtests, profiles, test places); results bullet under D-042 in `docs/analysis_plan.md`.
+- **Result:** no. θ = 0.17 per 1,000 (0.056–0.89), α = 6.2, half-way point at the grid floor, b at the grid edge with its interval spanning the whole grid. Backtest error 0.185 against 0.153 for no effect (D-038 specification 0.119). The placebo is uninformative (not passed). Reading rule: confounders not supported. Cincinnati, Mooresville and Richfield dropped by the stated rules.
+- **How it was checked:** single run as pre-registered; no rerun after the renumbering; numbers in the analysis plan copied from `summary.json` and the CSVs.
+- **Decisions:** none. Params not changed; Ben to choose between D-038 values, the D-042 θ, or a new entry.
+- **AI:** Claude Code (Opus 5.5) ran the script, wrote the results and the README.
