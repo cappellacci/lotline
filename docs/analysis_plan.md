@@ -1114,6 +1114,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Run once:** `uv run python scripts/dev/estimate_pooled_adu.py --full --workers 8 --out
     reports/adu-d025-4state/`, log in the same folder; whatever it shows is reported.
   - **Decided by:** Ben, 2026-11-02 ("let's run the engine"); written by WS-ENGINE before the run.
+- **The four-state run (2026-11-02, 19:56, once; commit 0ca15cc; log
+  `reports/adu-d025-4state/run-2026-11-02-log.txt`): no estimate.** The main model **did not converge**:
+  BFGS reached its 500-iteration limit (19,445 likelihood evaluations, 27 s), so the guard raised
+  `EstimationError` and no stage ran (no bootstrap, checks, sensitivity or transport; no CSV). Not re-run.
+  - **Diagnosis (convergence information only, no coefficient read or reported; the same deterministic fit
+    with the guard off):** 19 columns, none dropped, no separated rows; no coefficient near ±20; neither
+    variance parameter at its bound. So this is slow convergence, not an identification failure. The likely
+    cause is scale: Austin's 2,500 ADU permits in 8 years now sit beside Minnesota places with a few each.
+  - **Decision needed (new dated entry, Ben):** for example, the October refit rule applied to the main model
+    (a retry with a higher iteration limit, or from a Minnesota-only start), or Texas pooled differently.
+    Until then D-025's October estimate on Minnesota alone stays the one on record.
 
 ### D-029 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
 - **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline
