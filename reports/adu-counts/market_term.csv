@@ -1,0 +1,21 @@
+run,scope,places,corr
+main,pooled,53,-0.10594363164372958
+main,MN,42,-0.17922158265168125
+main,NC,8,0.24350372289056738
+main,OH,1,
+main,TX,2,
+S1 co-built included,pooled,53,-0.09306858784526897
+S1 co-built included,MN,42,-0.19178767423368476
+S1 co-built included,NC,8,0.2945663648665567
+S1 co-built included,OH,1,
+S1 co-built included,TX,2,
+S2 rho 1.0,pooled,53,-0.14360430976325156
+S2 rho 1.0,MN,42,-0.18531212303600517
+S2 rho 1.0,NC,8,0.24350372289056738
+S2 rho 1.0,OH,1,
+S2 rho 1.0,TX,2,
+S3 rho 0.3,pooled,53,-0.057088322118758944
+S3 rho 0.3,MN,42,-0.1711489128980467
+S3 rho 0.3,NC,8,0.24350372289056738
+S3 rho 0.3,OH,1,
+S3 rho 0.3,TX,2,
