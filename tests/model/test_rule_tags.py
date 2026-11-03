@@ -65,6 +65,23 @@ def test_flags_by_hand():
     assert f["unconfirmed"].tolist() == [False, False, True, False, False, False, False]
     assert f["none_row"].tolist() == [False, False, False, True, True, False, False]
     assert f["event"].tolist() == [False, True, True, False, False, True, False]
+    assert not f["before_window"].any()
+
+
+def test_placeholder_dates_before_the_window():
+    r = reforms(
+        row("1", "missing_middle", "2010-01-01", "[earliest-known] placeholder", unit_cap=2),
+        row("2", "missing_middle", "2010-01-01", adopted=None, unit_cap=2),  # blank adoption date
+        row("3", "missing_middle", "2010-01-01", unit_cap=2),  # a firm date of 2010-01-01 stays an event
+        row("4", "missing_middle", "2010-01-02", "[earliest-known]", unit_cap=2),  # inside the window
+    )
+    f = rule_tags.flags(r)
+    assert f["before_window"].tolist() == [True, True, False, False]
+    assert f["event"].tolist() == [False, False, True, True]
+    out = rule_tags.apply(r)
+    assert (out.loc[[0, 1], "effective_date"] == rule_tags.ALWAYS_IN_FORCE).all()
+    assert out.loc[2, "effective_date"] == out.loc[3, "effective_date"] - pd.Timedelta(days=1)
+    assert rule_tags.dropped_places(r, range(2010, 2026), ["earliest_known"]) == {"4"}
 
 
 def test_apply_moves_predates_rows_before_any_panel():

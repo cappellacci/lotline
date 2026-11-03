@@ -6,7 +6,9 @@ The data threads mark how sure a rule's date is in free text in `coding_notes` (
 - `[predates]` (HANDOFF, 2026-11-01): the rule was in force before the window. **Never a reform event:** the
   panels put it in force from `ALWAYS_IN_FORCE`, before any panel year, whatever its coded date.
 - `[earliest-known]`, or a blank `adoption_date`: the coded date is the earliest the sources show; the rule
-  may be older. Main runs keep these rows as events; a sensitivity drops them (`dropped_places`).
+  may be older. Main runs keep these rows as events; a sensitivity drops them (`dropped_places`). One dated
+  on or before `WINDOW_START` is the data threads' placeholder for "allowed before the window" (the
+  readiness counts' window starts 2010-01-02), so it is read like `[predates]`.
 - `DATE UNCONFIRMED` (Ben, 2026-11-02): no signed ordinance or effective-date record. The row is an event at
   its coded date; a sensitivity drops it.
 - A "none" row (ADU `adus_per_lot` = 0; missing middle `unit_cap` = 1) is a control on evidence, never an
@@ -30,15 +32,19 @@ UNCONFIRMED = "DATE UNCONFIRMED"
 # The adoption-year searches in both panels start in 1990, so a rule in force from here is treated in every
 # panel year and its adoption year is never inside a panel.
 ALWAYS_IN_FORCE = pd.Timestamp("1990-01-01")
+WINDOW_START = pd.Timestamp("2010-01-01")  # an earliest-known date on or before this: "before the window"
 SENSITIVITIES = ("earliest_known", "unconfirmed")  # the flags `dropped_places` can drop
 
 
 def flags(reforms: pd.DataFrame) -> pd.DataFrame:
-    """Per rule row (same index): `predates`, `earliest_known`, `unconfirmed`, `none_row` and `event`.
+    """Per rule row (same index): `predates`, `earliest_known`, `before_window`, `unconfirmed`, `none_row`
+    and `event`.
 
-    `event` = in force, not `[predates]` and not a "none" row; the date window is the caller's (see
-    `dropped_places`). By hand: notes "[earliest-known] ... [predates]" -> predates and earliest-known, not
-    an event; a blank adoption date -> earliest-known; `adus_per_lot` 0 on an ADU row -> a none row.
+    `before_window` = earliest-known and effective on or before `WINDOW_START`. `event` = in force, not
+    `[predates]`, not before the window and not a "none" row; the panel window is the caller's (see
+    `dropped_places`). By hand: notes "[earliest-known] ... [predates]" -> predates and earliest-known, not an
+    event; a blank adoption date -> earliest-known; the same effective 2010-01-01 -> before the window, not
+    an event; `adus_per_lot` 0 on an ADU row -> a none row.
     """
     notes = reforms["coding_notes"].fillna("").astype(str)
 
@@ -48,21 +54,26 @@ def flags(reforms: pd.DataFrame) -> pd.DataFrame:
     out = pd.DataFrame(index=reforms.index)
     out["predates"] = notes.str.contains(PREDATES, regex=False)
     out["earliest_known"] = notes.str.contains(EARLIEST_KNOWN, regex=False) | reforms["adoption_date"].isna()
+    out["before_window"] = out["earliest_known"] & (reforms["effective_date"] <= WINDOW_START)
     out["unconfirmed"] = notes.str.contains(UNCONFIRMED, regex=False)
     out["none_row"] = ((reforms["theme"] == "adu") & (num("adus_per_lot") == 0)) | (
         (reforms["theme"] == "missing_middle") & (num("unit_cap") == 1)
     )
-    out["event"] = (reforms["status"] == "in_force") & ~out["predates"] & ~out["none_row"]
+    out["event"] = (
+        (reforms["status"] == "in_force") & ~out["predates"] & ~out["before_window"] & ~out["none_row"]
+    )
     return out
 
 
 def apply(reforms: pd.DataFrame) -> pd.DataFrame:
-    """The reforms with every `[predates]` row in force from `ALWAYS_IN_FORCE`: its effective and adoption
-    dates move there and its announcement date is cleared (it announces nothing). Other rows are unchanged.
-    By hand: a by-right row tagged `[predates]` and dated 2021-03-01 -> effective 1990-01-01, so a panel's
-    adoption year is 1990, before its first year."""
+    """The reforms with every `[predates]` or before-the-window row in force from `ALWAYS_IN_FORCE`: its
+    effective and adoption dates move there and its announcement date is cleared (it announces nothing).
+    Other rows are unchanged. By hand: a by-right row tagged `[predates]` and dated 2021-03-01, or an
+    earliest-known one dated 2010-01-01 -> effective 1990-01-01, so a panel's adoption year is 1990, before
+    its first year."""
     out = reforms.copy()
-    pre = flags(out)["predates"]
+    f = flags(out)
+    pre = f["predates"] | f["before_window"]
     for col in ("effective_date", "adoption_date"):
         out.loc[pre, col] = ALWAYS_IN_FORCE
     if "announced_date" in out:
