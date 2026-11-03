@@ -5,6 +5,8 @@ page embeds the runs as JSON and draws every chart in the browser with plain SVG
 network and no extra dependency. Pick up to three runs to compare; for each it shows the method, data scope,
 configuration and reading from the run's manifest, then the overall effect, the effect terms, the checks,
 the robustness fits, randomization inference, leave one out, the out-of-sample tests and the added homes.
+Calibration runs (D-038 to D-041) show instead: the uptake-rate fits, held-out state totals and their
+verdicts, observed against predicted by place, the test places, and the counts and market-term check.
 
     uv run python scripts/dev/results_dashboard.py            # every run under reports/
 """

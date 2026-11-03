@@ -94,9 +94,11 @@ summary { cursor: pointer; color: var(--ink-2); }
 <body>
 <main>
   <h1>Lotline engine runs</h1>
-  <p class="sub">Results of the D-024 (missing middle) and D-025 (ADU) estimation runs, read from each run folder's
-    CSVs and <code>run.yaml</code>. Generated __GENERATED__. Effects are on the log scale: an effect of 0.7 means about
-    e<sup>0.7</sup> ≈ 2 times the homes a place would otherwise have permitted. Intervals are 90% unless noted.</p>
+  <p class="sub">Results of Lotline's engine runs, read from each run folder's CSVs and <code>run.yaml</code>.
+    Generated __GENERATED__. Two kinds of run: <b>effect estimates</b> (D-024 missing middle, D-025 ADU), whose effects
+    are on the log scale (0.7 means about e<sup>0.7</sup> ≈ 2 times the homes a place would otherwise have permitted);
+    and <b>calibrations</b> (D-038 to D-041), which fit an uptake rate θ per 1,000 eligible parcels a year and test it
+    on places and states it was not fitted to. Intervals are 90% unless noted.</p>
 
   <section class="card">
     <h2>Pick runs to compare</h2>
@@ -113,59 +115,98 @@ summary { cursor: pointer; color: var(--ink-2); }
   </section>
 
   <section class="card">
-    <h2>Overall effect</h2>
-    <p class="help">The headline number, its interval, and randomization inference: how often reshuffled
-      adoption dates give an effect at least this large. A small p (under 0.1) means the effect stands out from chance timing.</p>
+    <h2>Headline result</h2>
+    <p class="help">Effect runs: the overall effect, its interval, and randomization inference (how often reshuffled
+      adoption dates give an effect at least this large; under 0.1 stands out from chance timing). Calibration runs:
+      the uptake rate θ, the place-to-place variance α, and how the leave-one-place-out backtest did against
+      predicting no effect at all.</p>
     <div class="tiles" id="tiles"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-kind="effect">
     <h2>Effect estimates by term</h2>
     <p class="help">Each dot is an estimate and its line the 90% interval. Terms to the right of 0 raise
       permits; an interval that crosses 0 cannot tell the direction.</p>
     <div id="terms"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-kind="effect">
     <h2>Checks</h2>
     <p class="help">The pre-registered checks and whether each passed. A failed check means the main estimate
       may reflect something other than the rule.</p>
     <div class="scroll" id="checks"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-kind="effect">
     <h2>Robustness: the overall effect under other choices</h2>
     <p class="help">The same question answered with other estimators, samples or definitions. Reported, never used to
       choose. A result that holds only under one choice is fragile.</p>
     <div id="robust"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-kind="effect">
     <h2>Randomization inference</h2>
     <p class="help">Bars: overall effects when the reform dates are reassigned to other places. Line: the real
       estimate. If many bars sit at or beyond the line, the real effect is not unusual.</p>
     <div class="multiples" id="ri"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-kind="effect">
     <h2>Leave one treated place out</h2>
     <p class="help">The overall effect re-estimated without each treated place in turn. A wide spread means one
       place drives the result. Dashed line: the full estimate.</p>
     <div class="multiples" id="loo"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-kind="effect">
     <h2>Out-of-sample tests</h2>
     <p class="help">Places left out of the fit and predicted. Bar: the 80% prediction interval for the total;
       dot: what was observed. Pass rule as pre-registered (shown per test).</p>
     <div class="multiples" id="oos"></div>
   </section>
 
-  <section class="card">
+  <section class="card" data-kind="effect">
     <h2>Added homes by treated place</h2>
     <p class="help">Homes the model attributes to the rule in each treated place's post-adoption years (missing-middle
       runs). The ten largest, with intervals. Watch for one place supplying most of the total.</p>
     <div class="multiples" id="added"></div>
+  </section>
+  <section class="card" data-kind="calibration">
+    <h2>Uptake rate θ</h2>
+    <p class="help">Each dot is a fitted rate (homes per 1,000 eligible parcels a year at reference market conditions)
+      and its line the 90% interval. Fits on one state alone, or without one state, show whether the states agree.
+      Missing-middle rates count 2–4 unit buildings, so don't compare their size with ADU rates.</p>
+    <div id="cal-fits"></div>
+  </section>
+
+  <section class="card" data-kind="calibration">
+    <h2>State totals, held out</h2>
+    <p class="help">Each state predicted from a fit that never saw it, then summed. Bar: P10–P90; tick: P50; dot: what
+      was observed. <b>Useful</b> means inside the bar and within a factor of 2 of P50; <b>inside only</b> means inside
+      the bar but further off; <b>missed</b> means outside. Log scale.</p>
+    <div class="multiples" id="cal-states"></div>
+  </section>
+
+  <section class="card" data-kind="calibration">
+    <h2>Place by place, held out</h2>
+    <p class="help">Each dot is one place: observed against the P50 predicted when that place was left out of the fit.
+      On the diagonal is a perfect prediction; the shaded band is within a factor of 2. Hollow dots fell outside
+      P10–P90. Log scale (0 is shown at the corner).</p>
+    <div class="multiples" id="cal-places"></div>
+  </section>
+
+  <section class="card" data-kind="calibration">
+    <h2>Test places</h2>
+    <p class="help">Places kept out of every fit and predicted once. Bar: P10–P90; tick: P50; dot: observed. Log scale.</p>
+    <div class="multiples" id="cal-tests"></div>
+  </section>
+
+  <section class="card" data-kind="calibration">
+    <h2>Counts and the market term</h2>
+    <p class="help">What each state's total is under each count rule (runs that apply them), and whether places
+      with a stronger market term really permit more (correlation of log observed rate with log market term; it
+      should be positive).</p>
+    <div class="multiples" id="cal-counts"></div>
   </section>
 </main>
 <div id="tip"></div>
@@ -178,10 +219,9 @@ const MAX = 3;
 let selected = defaultSelection();
 const slotOf = {};   // run id -> colour slot; a run keeps its slot while it stays selected
 
-function defaultSelection() {
+function defaultSelection() {  // the latest run and up to two earlier runs of the same model
   const last = RUNS[RUNS.length - 1];
-  const prev = RUNS.slice(0, -1).reverse().find(r => r.manifest.model === last.manifest.model);
-  return prev ? [prev.id, last.id] : [last.id];
+  return RUNS.filter(r => r.manifest.model === last.manifest.model).slice(-MAX).map(r => r.id);
 }
 function assignSlots() {
   for (const id of Object.keys(slotOf)) if (!selected.includes(id)) delete slotOf[id];
@@ -202,12 +242,14 @@ const clip = (s, px) => { const n = Math.max(6, Math.floor(px / 6.5)); return s.
 const title = r => r.manifest.title || r.id;
 const sw = id => `<span class="swatch" style="background:${colour(id)}"></span>`;
 const STATUS = {completed: "Completed", no_estimate: "No estimate", started: "Did not finish"};
+const kindOf = r => r.calibration ? "calibration" : "effect";
 
 /* ---------- picker ---------- */
 function renderPicker() {
   const groups = {};
   for (const r of RUNS) (groups[r.manifest.model || "Other"] ||= []).push(r);
-  const names = {"D-024": "D-024 · missing middle", "D-025": "D-025 · ADU"};
+  const names = {"D-024": "D-024 · missing middle effect", "D-025": "D-025 · ADU effect",
+    "ADU calibration": "D-039 to D-041 · ADU calibration", "Missing-middle calibration": "D-038 · missing-middle calibration"};
   document.getElementById("picker").innerHTML = Object.entries(groups).map(([m, rs]) =>
     `<div class="group"><b>${esc(names[m] || m)}</b>${rs.map(r => {
       const on = selected.includes(r.id), dis = !on && selected.length >= MAX;
@@ -223,9 +265,12 @@ function renderPicker() {
     renderAll();
   }));
   const models = new Set(selected.map(id => byId(id).manifest.model));
-  document.getElementById("mixnote").innerHTML = models.size > 1
-    ? `<p class="note">These runs estimate different outcomes (ADU permits and 2–4 unit permits). Compare how their checks
-       and robustness behave, not the size of their effects.</p>` : "";
+  const kinds = new Set(selected.map(id => kindOf(byId(id))));
+  document.getElementById("mixnote").innerHTML = kinds.size > 1
+    ? `<p class="note">These runs answer different questions: an effect estimate and a calibrated uptake rate. Each
+       section below shows only the runs it applies to.</p>`
+    : models.size > 1 ? `<p class="note">These runs estimate different outcomes (ADU permits and 2–4 unit permits). Compare how
+       their checks and robustness behave, not the size of their numbers.</p>` : "";
 }
 
 /* ---------- about ---------- */
@@ -257,6 +302,7 @@ function renderAbout() {
 function renderTiles() {
   document.getElementById("tiles").innerHTML = selected.map(id => {
     const r = byId(id), o = r.overall, ri = r.randomization;
+    if (r.calibration) return calTile(id, r);
     if (!o) return `<div class="tile"><h3>${sw(id)}${esc(title(r))}</h3><div class="big">No estimate</div>
       <div class="row">${esc(r.manifest.status_note || "The run produced no overall effect.")}</div></div>`;
     const times = Math.exp(o.estimate);
@@ -480,6 +526,118 @@ function renderAdded() {
   }
 }
 
+/* ---------- calibration runs ---------- */
+const calOf = id => byId(id).calibration;
+function calTile(id, r) {
+  const c = r.calibration, f = c.fits[0], b = c.backtest;
+  const head = f ? `<div class="big">${fmt(f.estimate)} <span class="muted" style="font-size:14px">per 1,000 a year</span></div>
+      <div class="row">θ, ${esc(f.label.toLowerCase())}: 90% interval ${fmt(f.low)} to ${fmt(f.high)}</div>
+      <div class="row">Place-to-place variance α ${fmt(f.alpha)}${f.places ? ` · ${fmt(f.places, 0)} places` : ""}</div>`
+    : `<div class="big">See reading</div><div class="row">This run's fits are in its analysis-plan entry, not a CSV.</div>`;
+  const bt = b ? `<div class="row">Backtest: ${b.covered} of ${b.places} places inside P10–P90${b.place_years ? `, ${Math.round(100 * b.covered_years / b.place_years)}% of place-years` : ""}</div>
+      <div class="row">Error ${fmt(b.error, 3)} vs no effect ${fmt(b.error_none, 3)} <span class="${b.error < b.error_none ? "pass" : "fail"}">${b.error < b.error_none ? "✓ better" : "✗ no better"}</span></div>
+      <div class="muted">${esc(b.error_basis)}</div>` : "";
+  const first = c.states.length ? c.states[0].test : null;  // the main leave-one-state-out test
+  const v = c.states.filter(s => s.test === first).map(s => s.verdict);
+  const sv = v.length ? `<div class="row">${esc(first)}: ${["useful", "inside only", "missed"].map(k => `${v.filter(x => x === k).length} ${k}`).join(" · ")}</div>` : "";
+  const empty = !f && !b && !v.length ? `<div class="row muted">No result files in this checkout. ${esc(r.manifest.manifest_note || "")}</div>` : "";
+  return `<div class="tile"><h3>${sw(id)}${esc(title(r))}</h3>${head}${bt}${sv}${empty}</div>`;
+}
+// log10(1 + v) axis, so 0 sits at the left edge and counts from 1 to 10,000 share one scale
+const L = v => Math.log10(1 + Math.max(0, v));
+const LOG_TICKS = [0, 1, 3, 10, 30, 100, 300, 1000, 3000, 10000, 30000];
+function logAxis(x, hi, top, bottom) {
+  let last = -Infinity;  // drop a label that would touch the one before it (narrow plots)
+  return LOG_TICKS.filter(t => L(t) <= hi + 1e-9).map(t => {
+    const px = x(L(t)), room = px - last >= 8 * t.toLocaleString().length + 6;
+    if (room) last = px;
+    return `<line class="${t === 0 ? "zero" : "grid"}" x1="${px}" x2="${px}" y1="${top}" y2="${bottom}"/>` +
+      (room ? `<text class="tick" x="${px}" y="${bottom + 14}" text-anchor="middle">${t.toLocaleString()}</text>` : "");
+  }).join("");
+}
+const VERDICT = {"useful": "pass", "inside only": "rep", "missed": "fail"};
+// Rows of P10–P90 bars with a P50 tick and an observed dot, grouped under headings, on a log axis.
+function intervalChart(box, id, lines, label) {
+  const W = width(box), left = Math.min(200, W * 0.4), right = 16, row = 26, top = 8;
+  const H = top + row * lines.length + 26;
+  const hi = Math.max(1, ...lines.filter(l => !l.head).flatMap(l => [l.p90, l.observed].map(L))) * 1.04;
+  const x = v => left + v / hi * (W - left - right);
+  let s = logAxis(x, hi, top, top + row * lines.length);
+  lines.forEach((l, i) => {
+    const y = top + row * i + row / 2;
+    if (l.head) { s += `<text x="0" y="${y + 4}" style="fill:var(--ink);font-weight:600">${clip(l.head, W - 8)}</text>`; return; }
+    s += `<text x="${left - 10}" y="${y + 4}" text-anchor="end">${clip(l.name, left - 14)}</text>`;
+    s += `<rect x="${x(L(l.p10))}" y="${y - 5}" width="${Math.max(2, x(L(l.p90)) - x(L(l.p10)))}" height="10" rx="4" fill="${colour(id)}" opacity=".45"/>`;
+    s += `<line x1="${x(L(l.p50))}" x2="${x(L(l.p50))}" y1="${y - 7}" y2="${y + 7}" stroke="${colour(id)}" stroke-width="2"/>`;
+    s += `<circle cx="${x(L(l.observed))}" cy="${y}" r="5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>`;
+    s += `<rect class="hit" x="${left}" y="${y - 10}" width="${W - left - right}" height="20" data-tip="${esc(`${l.name}\nobserved ${fmt(l.observed, 0)}\nP50 ${fmt(l.p50, 0)} · P10–P90 ${fmt(l.p10, 0)} to ${fmt(l.p90, 0)}${l.verdict ? `\n${l.verdict}` : ""}`)}"/>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${s}</svg>`;
+}
+function perRun(elId, has, draw, emptyMsg) {
+  const el = document.getElementById(elId);
+  const ids = selected.filter(id => calOf(id) && has(calOf(id)));
+  if (!ids.length) { el.innerHTML = empty(emptyMsg); return; }
+  el.innerHTML = ids.map(id => `<div data-id="${esc(id)}"></div>`).join("");
+  for (const id of ids) draw(el.querySelector(`[data-id="${CSS.escape(id)}"]`), id, calOf(id));
+}
+function renderCalStates() {
+  perRun("cal-states", c => c.states.length, (box, id, c) => {
+    const tests = [...new Set(c.states.map(s => s.test))];
+    const lines = tests.flatMap(t => [{head: t}, ...c.states.filter(s => s.test === t).map(s => ({...s, name: `${s.group} · ${s.verdict}`}))]);
+    box.innerHTML = `<h3>${sw(id)}${esc(title(byId(id)))}</h3>` + intervalChart(box, id, lines, "Held-out state totals") +
+      table(["Test", "Group", "Observed", "P10", "P50", "P90", "Verdict"], c.states.map(s => [esc(s.test), esc(s.group),
+        fmt(s.observed, 0), fmt(s.p10, 0), fmt(s.p50, 0), fmt(s.p90, 0), `<span class="${VERDICT[s.verdict] || ""}">${esc(s.verdict)}</span>`]), [2, 3, 4, 5]);
+  }, "None of the selected calibration runs scores state totals (D-040 and D-041 do).");
+}
+function renderCalTests() {
+  perRun("cal-tests", c => c.tests.length, (box, id, c) => {
+    box.innerHTML = `<h3>${sw(id)}${esc(title(byId(id)))}</h3>` + intervalChart(box, id, c.tests, "Test places") +
+      table(["Place", "Observed", "P10", "P50", "P90", "Inside"], c.tests.map(t => [esc(t.name), fmt(t.observed, 0),
+        fmt(t.p10, 0), fmt(t.p50, 0), fmt(t.p90, 0), t.inside ? "yes" : "no"]), [1, 2, 3, 4]);
+  }, "None of the selected calibration runs has test-place results in this checkout.");
+}
+function renderCalPlaces() {
+  perRun("cal-places", c => c.places.length, (box, id, c) => {
+    const P = c.places, W = width(box), pad = 40, H = Math.min(W, 420);
+    const hi = Math.max(1, ...P.flatMap(p => [L(p.observed), L(p.p50)])) * 1.04;
+    const x = v => pad + v / hi * (W - pad - 12), y = v => H - 24 - v / hi * (H - 24 - 8);
+    let s = logAxis(x, hi, 8, H - 24);
+    LOG_TICKS.filter(t => L(t) <= hi).forEach(t => { s += `<line class="${t ? "grid" : "zero"}" x1="${pad}" x2="${W - 12}" y1="${y(L(t))}" y2="${y(L(t))}"/><text class="tick" x="${pad - 6}" y="${y(L(t)) + 4}" text-anchor="end">${t.toLocaleString()}</text>`; });
+    const band = [];  // observed within a factor of 2 of P50, drawn in the log(1 + v) space
+    for (let i = 0; i <= 40; i++) { const p = Math.expm1(i / 40 * hi * Math.LN10); band.push([x(L(p)), y(L(p * 2))]); }
+    for (let i = 40; i >= 0; i--) { const p = Math.expm1(i / 40 * hi * Math.LN10); band.push([x(L(p)), y(L(p / 2))]); }
+    s += `<polygon points="${band.map(q => q.join(",")).join(" ")}" fill="var(--wash)" stroke="none"/>`;
+    s += `<line x1="${x(0)}" y1="${y(0)}" x2="${x(hi)}" y2="${y(hi)}" stroke="var(--axis)" stroke-dasharray="4 3"/>`;
+    for (const p of P) {
+      const cx = x(L(p.p50)), cy = y(L(p.observed)), c0 = colour(id);
+      s += `<circle cx="${cx}" cy="${cy}" r="4.5" fill="${p.inside ? c0 : "var(--surface)"}" stroke="${p.inside ? "var(--surface)" : c0}" stroke-width="${p.inside ? 1.5 : 2}"/>`;
+      s += `<circle class="hit" cx="${cx}" cy="${cy}" r="9" data-tip="${esc(`${p.name}${p.state ? ` (${p.state})` : ""}\nobserved ${fmt(p.observed, 0)} · P50 ${fmt(p.p50, 0)}\nP10–P90 ${fmt(p.p10, 0)} to ${fmt(p.p90, 0)} · ${p.inside ? "inside" : "outside"}`)}"/>`;
+    }
+    s += `<text x="${W - 12}" y="${H - 28}" text-anchor="end">predicted P50 →</text><text x="${pad + 4}" y="18">↑ observed</text>`;
+    const b = c.backtest;
+    box.innerHTML = `<h3>${sw(id)}${esc(title(byId(id)))}</h3>
+      <div class="muted">${b.covered} of ${b.places} places inside P10–P90 · error ${fmt(b.error, 3)} vs no effect ${fmt(b.error_none, 3)} (${esc(b.error_basis)})</div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Observed against predicted, by place">${s}</svg>` +
+      table(["Place", "State", "Observed", "P10", "P50", "P90", "Inside"], [...P].sort((a, b) => b.observed - a.observed).map(p =>
+        [esc(p.name), esc(p.state), fmt(p.observed, 0), fmt(p.p10, 0), fmt(p.p50, 0), fmt(p.p90, 0), p.inside ? "yes" : "no"]), [2, 3, 4, 5]);
+  }, "None of the selected calibration runs has a leave-one-place-out backtest in this checkout (D-040 has state totals only).");
+}
+function renderCalCounts() {
+  perRun("cal-counts", c => c.counts.length || c.market.length, (box, id, c) => {
+    const runs = [...new Set(c.counts.map(r => r.run))];
+    const groups = [...new Set(c.counts.map(r => r.group))];
+    const ct = c.counts.length ? `<div class="label">ADU counts by rule</div><div class="scroll"><table><thead><tr><th>Group</th><th class="num">Before (D-039)</th>${runs.map(r => `<th class="num">${esc(r)}</th>`).join("")}</tr></thead><tbody>${groups.map(g => {
+      const rs = c.counts.filter(r => r.group === g);
+      return `<tr><td>${esc(g)}</td><td class="num">${fmt(rs[0].d039_count, 0)}</td>${runs.map(r => { const q = rs.find(x => x.run === r); return `<td class="num">${q ? fmt(q.count, 0) : "–"}</td>`; }).join("")}</tr>`;
+    }).join("")}</tbody></table></div>` : "";
+    const mk = c.market.filter(m => m.corr !== null);
+    const mt = mk.length ? `<div class="label">Market term against observed rate</div><div class="scroll"><table><thead><tr><th>Run</th><th>Scope</th><th class="num">Places</th><th class="num">Correlation</th></tr></thead><tbody>${mk.map(m =>
+      `<tr><td>${esc(m.run)}</td><td>${esc(m.scope)}</td><td class="num">${fmt(m.places, 0)}</td><td class="num"><span class="${m.corr > 0 ? "pass" : "fail"}">${fmt(m.corr)}</span></td></tr>`).join("")}</tbody></table></div>` : "";
+    box.innerHTML = `<h3>${sw(id)}${esc(title(byId(id)))}</h3>${ct}${mt}`;
+  }, "None of the selected calibration runs reports counts or the market term (D-041 does).");
+}
+
 /* ---------- tooltip ---------- */
 const tip = document.getElementById("tip");
 document.addEventListener("mousemove", e => {
@@ -494,11 +652,15 @@ document.addEventListener("mousemove", e => {
 
 function renderAll() {
   assignSlots();
+  const kinds = new Set(selected.map(id => kindOf(byId(id))));
+  document.querySelectorAll("section[data-kind]").forEach(s => { s.hidden = !kinds.has(s.dataset.kind); });
   renderPicker(); renderAbout(); renderTiles();
   forest(document.getElementById("terms"), r => r.terms, "None of the selected runs produced estimates.");
   renderChecks();
   forest(document.getElementById("robust"), r => r.robustness.map(q => ({...q, label: q.fit})), "None of the selected runs has robustness fits.");
   renderRI(); renderLOO(); renderOOS(); renderAdded();
+  forest(document.getElementById("cal-fits"), r => r.calibration ? r.calibration.fits : [], "None of the selected calibration runs has fits in a CSV (D-040's are in its plan entry).");
+  renderCalStates(); renderCalPlaces(); renderCalTests(); renderCalCounts();
 }
 renderAll();
 let resize;

@@ -1,0 +1,35 @@
+id: adu-counts
+title: ADU anchor, consistent counts across four states
+kind: calibration
+model: ADU calibration
+plan_entry: 'D-041: ADU counts made consistent across the four states, then a four-state comparison'
+status: completed
+started: '2026-11-03T10:55:55-05:00'
+finished: '2026-11-03T13:32:08-05:00'
+commit: 4047239
+command: uv run python -u scripts/dev/calibrate_adu.py --counts --workers 9 --out reports/adu-counts
+method: 'D-039''s fit with two count rules set before the fit: ADUs permitted within a year of a new house on the
+  same parcel (co-built) are left out, and survey-counted place-years are fitted as thinned counts (expected =
+  ρ × θ × k). Every test runs per state: a fit on each state alone, leave one state out, leave one place out
+  (main only), the test set and the market-term correlation.'
+scope:
+  states: [MN, NC, OH, TX]
+  years: 2016-2025
+  outcome: ADU permits a year, co-built units excluded
+  places: 51
+  place_years: 296
+  places_by_state: {MN: 42, NC: 6, OH: 1, TX: 2}
+  test set: Raleigh 2021-2025, Durham 2021-2025 (held out)
+config:
+  main: co-built excluded (window 1 year), survey reporting rate ρ 0.57
+  S1: co-built included
+  S2: ρ 1.0 (no survey correction)
+  S3: ρ 0.3
+  parameters: config/params/adu_counts.yaml
+  predictive draws: 20,000
+  workers: 9
+reading: 'For Ben to confirm. Most of D-040''s state misses came from counting: TX falls from 2,785 to 1,108 ADUs,
+  and with both rules MN, NC and NC with Raleigh and Durham are useful, OH and TX inside only, none missed. Fitted
+  alone, MN (1.25) and NC (1.27) agree; TX stays about 3 times higher (4.17), which needs a modifier with its own
+  dated entry. Place-level error still ties no effect (0.099 vs 0.098), and the market term has the wrong sign.
+  S3 scores best but ρ = 0.3 is the judgment end; it is not a reason to pick it.'

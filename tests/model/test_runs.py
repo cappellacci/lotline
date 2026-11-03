@@ -279,3 +279,227 @@ def test_render_refuses_bad_input(mm_run):
         dashboard.render([run, run])
     with pytest.raises(ValueError):
         dashboard.render([{**run, "id": "x", "overall": {"estimate": float("nan")}}])
+
+
+def _calibration_manifest(folder):
+    (folder / "run.yaml").write_text(yaml.safe_dump({"id": folder.name, "kind": "calibration"}))
+    return folder
+
+
+def _bt(place, name, year, observed, p10, p50, p90, parcels, inside):
+    return {
+        "set": "x",
+        "place": place,
+        "name": name,
+        "state": "MN",
+        "year": year,
+        "observed": observed,
+        "p10": p10,
+        "p50": p50,
+        "p90": p90,
+        "mean": p50,
+        "portland": 0,
+        "parcels": parcels,
+        "inside": inside,
+    }
+
+
+def test_adu_calibration_run_by_hand(tmp_path):
+    """A D-041-shaped run. By hand: place-years A 2020 (obs 2, P50 1, 1,000 parcels) and B 2020 (obs 0, P50 2,
+    2,000 parcels): error per 1,000 = mean(|1 - 2| / 1, |2 - 0| / 2) = 1.0; no effect = mean(2 / 1, 0) = 1.0.
+    Totals: A inside, B outside -> 1 of 2 places, 1 of 2 place-years. Fits: the main run's rows and only the
+    sensitivity's pooled row; per-state labels name the state."""
+    folder = _write(
+        tmp_path / "adu-counts",
+        fits=[
+            {
+                "run": "main",
+                "fit": "all",
+                "state": None,
+                "theta_per_1000": 1.2,
+                "low": 0.8,
+                "high": 2.1,
+                "alpha": 2.3,
+                "places": 51,
+            },
+            {
+                "run": "main",
+                "fit": "state",
+                "state": "MN",
+                "theta_per_1000": 1.25,
+                "low": 0.7,
+                "high": 2.5,
+                "alpha": 3.5,
+                "places": 42,
+            },
+            {
+                "run": "main",
+                "fit": "without",
+                "state": "TX",
+                "theta_per_1000": 1.16,
+                "low": 0.7,
+                "high": 2.0,
+                "alpha": 2.4,
+                "places": 49,
+            },
+            {
+                "run": "S1",
+                "fit": "all",
+                "state": None,
+                "theta_per_1000": 1.5,
+                "low": 1.0,
+                "high": 2.4,
+                "alpha": 2.2,
+                "places": 51,
+            },
+            {
+                "run": "S1",
+                "fit": "state",
+                "state": "TX",
+                "theta_per_1000": 10.3,
+                "low": 7.4,
+                "high": 14.7,
+                "alpha": 0.0,
+                "places": 2,
+            },
+        ],
+        statewide=[
+            {
+                "test": "main: leave one state out",
+                "group": "MN",
+                "observed": 285,
+                "p10": 283,
+                "p50": 570,
+                "p90": 1140,
+                "verdict": "useful",
+            }
+        ],
+        counts=[
+            {
+                "run": "main",
+                "group": "TX",
+                "places": 2,
+                "d039_count": 2785,
+                "count": 1108,
+                "survey_place_years": 0,
+            }
+        ],
+        market_term=[{"run": "main", "scope": "pooled", "places": 53, "corr": -0.11}],
+    )
+    _write(
+        folder / "main",
+        backtest_backtest=[
+            _bt("1", "A", "2020", 2, 0, 1, 3, 1000, True),
+            _bt("1", "A", "total", 2, 0, 1, 3, 1000, True),
+            _bt("2", "B", "2020", 0, 1, 2, 4, 2000, False),
+            _bt("2", "B", "total", 0, 1, 2, 4, 2000, False),
+        ],
+        backtest_test=[
+            _bt("9", "Raleigh city", "2021", 23, 0, 2, 17, 86769, False),
+            _bt("9", "Raleigh city", "total", 230, 0, 29, 265, 86769, True),
+        ],
+    )
+    r = runs.load_run(_calibration_manifest(folder))
+    c = r["calibration"]
+    assert r["status"] == "completed" and r["overall"] is None
+    assert [f["label"] for f in c["fits"]] == [
+        "all four states",
+        "MN alone",
+        "without TX",
+        "S1: all four states",
+    ]
+    b = c["backtest"]
+    assert (b["places"], b["covered"], b["place_years"], b["covered_years"]) == (2, 1, 2, 1)
+    assert b["error"] == pytest.approx(1.0) and b["error_none"] == pytest.approx(1.0)
+    assert [p["name"] for p in c["places"]] == ["A", "B"] and c["places"][1]["inside"] is False
+    assert c["tests"] == [
+        {"name": "Raleigh city", "observed": 230, "p10": 0, "p50": 29, "p90": 265, "inside": True}
+    ]
+    assert c["states"][0]["verdict"] == "useful" and c["states"][0]["group"] == "MN"
+    assert c["counts"][0]["count"] == 1108 and c["market"][0]["corr"] == pytest.approx(-0.11)
+
+
+def test_single_fit_and_mm_calibration_layouts(tmp_path):
+    """D-039's one-row `fit.csv` holds θ as a rate (x 1,000); D-038's `fits.csv` has `per_1000` and rates for
+    the interval, and its backtest scores each place: errors are the mean absolute per-place errors."""
+    d039 = _write(
+        tmp_path / "d039",
+        fit=[{"theta": 0.00111, "low": 0.00074, "high": 0.00174, "alpha": 2.46, "n_places": 51}],
+    )
+    f = runs.load_run(_calibration_manifest(d039))["calibration"]["fits"]
+    assert f == [
+        {
+            "label": "all four states",
+            "estimate": pytest.approx(1.11),
+            "low": pytest.approx(0.74),
+            "high": pytest.approx(1.74),
+            "alpha": 2.46,
+            "places": 51,
+        }
+    ]
+    d038 = _write(
+        tmp_path / "d038",
+        fits=[
+            {
+                "fit": "placebo_date_minus3",
+                "theta": 0.000325,
+                "low": 0.0001,
+                "high": 0.0018,
+                "per_1000": 0.325,
+                "alpha": 6.7,
+                "places": 14,
+            }
+        ],
+        backtest=[
+            {
+                "name": "Houston",
+                "fit_observed": 10,
+                "fit_p10": 1,
+                "fit_p50": 2,
+                "fit_p90": 5,
+                "fit_covered": False,
+                "fit_error_per_1000": -1.2,
+                "none_error_per_1000": -1.0,
+            },
+            {
+                "name": "Lubbock",
+                "fit_observed": 0,
+                "fit_p10": 0,
+                "fit_p50": 3,
+                "fit_p90": 9,
+                "fit_covered": True,
+                "fit_error_per_1000": 0.8,
+                "none_error_per_1000": 0.0,
+            },
+        ],
+        test_places=[
+            {
+                "name": "Durham city",
+                "fit_observed": 100,
+                "fit_p10": 35,
+                "fit_p50": 46,
+                "fit_p90": 254,
+                "fit_covered": True,
+            }
+        ],
+    )
+    c = runs.load_run(_calibration_manifest(d038))["calibration"]
+    assert c["fits"][0]["label"] == "placebo date minus3" and c["fits"][0]["low"] == pytest.approx(0.1)
+    assert (c["backtest"]["covered"], c["backtest"]["places"]) == (1, 2)
+    assert c["backtest"]["error"] == pytest.approx(1.0) and c["backtest"]["error_none"] == pytest.approx(0.5)
+    assert c["tests"][0]["p50"] == 46 and c["states"] == [] and c["counts"] == []
+
+
+def test_effect_runs_have_no_calibration(mm_run):
+    assert runs.load_run(mm_run)["calibration"] is None
+
+
+def test_calibration_manifest_without_files(tmp_path):
+    """A calibration run whose CSVs live on another branch loads with its manifest and empty results."""
+    folder = tmp_path / "mm-d038"
+    folder.mkdir()
+    (folder / "run.yaml").write_text(
+        yaml.safe_dump({"id": "mm-d038", "kind": "calibration", "status": "completed"})
+    )
+    c = runs.load_run(folder)["calibration"]
+    assert c["fits"] == [] and c["backtest"] is None and c["places"] == []
