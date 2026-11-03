@@ -40,3 +40,26 @@
   - fix the permit-to-parcel join for check 6;
   - decide on the placebo shortfall;
   - build the missing-middle scenario on these parameters.
+
+### LB-NNN · 2026-11-03 · Research: missing-middle causal diagram v0.2, checked against the D-038 fit
+- **Question:** which confounders and modifiers did D-038 leave out, and which can our own data measure, before
+  D-039 picks any? Ben asked for land value, growth, and year-to-year interest rates to be covered.
+- **What I did:**
+  - Audited all register factors that bear on the fit: what D-038 did with each, which slot it belongs in
+    (baseline, uptake or count), and what data we hold.
+  - Added a v0.2 diagram and two register rows: C55, the national 2–4 unit cycle; C56, the growth index as a bad
+    control.
+  - Read the FRED national series and the D-038 per-place report. Ran no fit or model.
+- **Outputs:**
+  - §6 of `docs/research/lotline-causal-diagram-mm.md`;
+  - rows C55–C56 in `docs/research/lotline-confounder-register.csv`.
+- **Findings:**
+  - Nationally, the 2–4 unit share of permits rose from 2.8% (2014) to 3.9% (2025), mostly in the 2022–25
+    high-rate years. D-038's baseline assumes a flat share, so it is about 15% low in Houston's 2024–25.
+  - Rate regime is confounded with place: every large place is exposed only at about 6.7% rates.
+  - Only about 7 places carry information, so θ can take at most two place-level modifiers.
+  - Pre-reform land values exist for TX (2019) and parts of NC and MN, not Ohio.
+  - Houston's 2–4 count should be checked against its own permit records before any fit.
+- **Decisions:** none. The D-039 proposal is in §6.4, for Ben.
+- **AI:** Claude Code (Opus 5.5) wrote the audit and computed the FRED shares. The figures were checked against
+  `reports/mm-d038/places.csv`, and `compliance_check.py` shows 0 FAIL.
