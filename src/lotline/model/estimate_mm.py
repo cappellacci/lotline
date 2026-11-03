@@ -116,7 +116,8 @@ def rules_by_year(rows: pd.DataFrame, years, coverage: Mapping[str, float], blan
 
 def adoption_year(rows: pd.DataFrame, last_year: int, coverage, blanks, permit_grade, first: int = 1990):
     """T: the first year (from `first`) a rule with P(by right) >= 0.5 and a dose above 0 is in force on 1
-    July; NaN if none by `last_year`."""
+    July; NaN if none by `last_year`. `rows` come through `rule_tags.apply` (as in `build_panel`), so a
+    `[predates]` rule gives T = 1990, before any panel year."""
     years = range(first, last_year + 1)
     for y, (d, br) in zip(years, rules_by_year(rows, years, coverage, blanks, permit_grade), strict=True):
         if br >= 0.5 and d > 0:
@@ -216,16 +217,20 @@ def build_panel(
     source: str = BPS,
     min_population: float | None = None,
     reforms: Mapping[str, pd.DataFrame] | None = None,
+    drop_tags: Sequence[str] = (),
 ) -> MMPanel:
     """The D-024 panel from processed, holdout-filtered tables (see the module docstring for columns).
 
     `source`: 'bps' (main) or a local permit source (e.g. 'metc_residential_permits'), whose places are the
-    ones it covers. `reforms`: state -> coded reforms (default: config/reforms). Excluded places are listed
-    by reason in `excluded`: holdout, under the population floor, no outcome rows, no eligible parcels.
+    ones it covers. `reforms`: state -> coded reforms (default: config/reforms); date tags are read by
+    `rule_tags` (`[predates]` rules in force before the panel). `drop_tags`: the tag sensitivities
+    ('earliest_known', 'unconfirmed') whose in-panel events leave their place out. Excluded places are listed
+    by reason in `excluded`: holdout, dropped by a tag sensitivity, under the population floor, no outcome
+    rows, no eligible parcels.
     """
     from lotline.build import eligible as eligible_rule
     from lotline.config import load_params, load_state
-    from lotline.model import estimate_adu, hazard, money
+    from lotline.model import estimate_adu, hazard, money, rule_tags
     from lotline.model.scenarios import adu
 
     pm = {k: v.value for k, v in load_params("mm").items()}
@@ -237,6 +242,7 @@ def build_panel(
     permit_grade = pm["mm_dose_grade_permit"]
     if reforms is None:
         reforms = {st: adu.load_reforms(st) for st in adu.REFORM_STATES}
+    reforms = {st: rule_tags.apply(r) for st, r in reforms.items()}
     every = pd.concat([r.assign(state=st) for st, r in reforms.items()], ignore_index=True)
     blanks = blank_shares(every[every["status"] == "in_force"])
     adu_grades = (pa_["adu_dose_grade_permit"], pa_["adu_dose_grade_owner"], pa_["adu_dose_grade_by_right"])
@@ -244,11 +250,18 @@ def build_panel(
     edges = (pa_["adu_rule_band_small_max_pop"], pa_["adu_rule_band_mid_max_pop"])
 
     rows, notes = [], []
-    excluded: dict[str, list] = {"holdout": [], "small": [], "no outcome rows": [], "no eligible parcels": []}
+    excluded: dict[str, list] = {
+        "holdout": [],
+        "dropped by tag sensitivity": [],
+        "small": [],
+        "no outcome rows": [],
+        "no eligible parcels": [],
+    }
     for st in states:
         fips = load_state(st).fips
         ref = reforms.get(st, every.iloc[0:0])
         mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]
+        dropped = rule_tags.dropped_places(mm_rows, years, drop_tags)
         juris = store.read(st, "jurisdictions")
         held = _excluded_holdout(juris)
         juris = juris.set_index("geoid")
@@ -279,6 +292,9 @@ def build_panel(
         for g in geoids:
             if g in held:
                 excluded["holdout"].append(g)
+                continue
+            if {g, fips} & dropped:
+                excluded["dropped by tag sensitivity"].append(g)
                 continue
             pop = (
                 pd.to_numeric(juris["pop_2020"].get(g, np.nan), errors="coerce")
