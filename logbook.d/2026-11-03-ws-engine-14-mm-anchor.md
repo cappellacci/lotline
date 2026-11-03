@@ -63,3 +63,28 @@
 - **Decisions:** none. The D-039 proposal is in §6.4, for Ben.
 - **AI:** Claude Code (Opus 5.5) wrote the audit and computed the FRED shares. The figures were checked against
   `reports/mm-d038/places.csv`, and `compliance_check.py` shows 0 FAIL.
+
+### LB-NNN · 2026-11-03 · Data check: Houston's 2024–25 2–4 unit count against the city's own permits
+- **Question:** is the Houston jump that carries D-038 a reporting change in Census BPS?
+- **What I did:**
+  - Pulled the City of Houston residential permit summary through the IO layer. A first ad hoc pull was
+    superseded in the manifest, and the file was re-pulled by the new adapter `checks.houston_permits`.
+    Registered it as a documented-only source, which needed a one-line change to `registry.documented_only`.
+  - Compared it with BPS (`scripts/dev/houston_bps_check.py`).
+  - Read the Houston and Austin reform rows. Fitted nothing.
+- **Outputs:**
+  - `src/lotline/adapters/checks/houston_permits.py`;
+  - `tests/adapters/test_houston_permits.py`;
+  - `reports/mm-d038/houston_check.csv`;
+  - §6.5 of `docs/research/lotline-causal-diagram-mm.md`;
+  - the regenerated `docs/data_provenance.md`.
+- **Findings:**
+  - BPS matches the city's own single-family permits within 7% in every year 2012–2025. There is no
+    reporting break at the reform.
+  - The 2025 fall in houses is real in the city's data, but whether some attached houses were filed as duplexes
+    needs permit-level records.
+  - Houston's duplexes were legal before Livable Places, and 3–4 unit buildings stayed near zero. The D-038
+    Houston "effect" is a duplex trend the reform did not enable. D-039 should count only the types each reform
+    newly allows.
+- **AI:** Claude Code (Opus 5.5) wrote the adapter, script, test and write-up. The checks were the two tests,
+  ruff and `lotline provenance --check`.

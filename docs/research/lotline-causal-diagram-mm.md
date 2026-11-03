@@ -358,3 +358,62 @@ already hold, the **Our data** column names the dataset path under `LOTLINE_DATA
    - **If neither happens:** that is the finding. With this data, a place's uptake cannot be predicted from these
      inputs, and the model should say which local data would be needed.
 5. **Not fitted:** a rate × θ interaction (row 1), lot-split rule type (row 7), and items 12–14.
+
+### 6.5 Houston check: is the 2024–25 jump a measurement change? (2026-11-03)
+
+This was step 1 of §6.4.
+
+- **Script:** `scripts/dev/houston_bps_check.py`, with output in `reports/mm-d038/houston_check.csv`.
+- **Sources compared:** Census BPS for Houston (4835000) against the city's own monthly permit summary
+  (`houston_permits_summary`, from data.houstontx.gov).
+- Nothing was fitted.
+
+**What the city's own counts show:**
+
+- **The BPS count is real, not a Census artefact.**
+  - The city's single-family permits track BPS 1-unit homes within 7% in every year 2012–2025, including
+    2025: city 4,785 against BPS 4,774.
+  - The city has no 2–4 unit class. Its multi-family count minus BPS's 3+ unit homes is a rough stand-in for
+    duplex homes. It roughly lines up with BPS duplex homes:
+
+    | | 2022 | 2023 | 2024 | 2025 |
+    |---|---|---|---|---|
+    | City multi-family minus BPS 3+ | 682 | 593 | 753 | 2,252 |
+    | BPS duplex homes | 714 | 1,000 | 1,134 | 2,108 |
+
+    Before 2022 the stand-in is too noisy to compare, because large apartment permits land in different years.
+  - So there is no break in how Houston reports to Census at the 2024 reform date.
+- **The 2025 fall in houses is in the city's data too, and comes on gradually.**
+  - City single-family permits ran 400–700 a month in 2024. They eased below that in the first half of 2025,
+    and fell to 290–340 from August 2025.
+  - Over the same year, BPS duplex buildings doubled from 567 to 1,054.
+  - Two readings remain open:
+    - a real shift from detached houses to duplexes;
+    - attached houses being filed as duplexes after mid-2025.
+  - Only permit-level records can settle which. They are not on the city portal; this would need a records
+    request.
+- **The bigger problem is the treatment, not the count.** Our coding (`config/reforms/tx.csv`) records two
+  things:
+  - Houston's code already treated a building with up to two units as single-family before Livable Places (city
+    FAQ, Ord. 2023-801 §42-1).
+  - Livable Places (effective 2023-11-27) newly allowed 3–8 units.
+
+  What happened to each building type:
+  - **Duplex buildings** rose under rules that already allowed them: 67 (2017), 140 (2019), 255 (2021), 500
+    (2023), 567 (2024), 1,054 (2025).
+  - **3–4 unit buildings**, the type the reform newly allowed, were 19 in 2024 and 2 in 2025.
+
+  So D-038's Houston "effect" is mostly a duplex trend the reform did not enable. D-038 adds a reform effect on
+  top of each place's pre-reform level times its growth in other homes, and the placebo failure fits this.
+- **What this means for D-039.** D-039 should define the outcome as the building types each reform newly allows,
+  coded per place from the reform rows. For Houston that means 3–4 unit buildings, or 3–8 units where local data
+  can see them.
+  - This is the "reform design" row (row 7 of §6.3) acting on the outcome, not on θ.
+  - Austin's HOME phase 1 (3 units) may raise the same question, if its SF-3 district already allowed duplexes.
+    Our Austin rows don't say, so this needs checking in the ordinance before D-039.
+  - Without Houston, D-038's exploratory fit was 0.57 per 1,000; without Houston and Austin, 0.24. These were
+    exploratory only and are not a D-039 result.
+
+Two data notes, now in the source's provenance:
+- The city file repeats identical 2018 and 2019 totals, which looks like a copied year.
+- Houston's eligible-parcel count is the ACS single-family fallback (quality "low").
