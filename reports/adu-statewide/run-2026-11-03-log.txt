@@ -1,0 +1,28 @@
+commit 38eeff4 start Tue Nov  3 08:23:32 EST 2026
+uv run python -u scripts/dev/calibrate_adu.py --statewide --workers 8 --out reports/adu-statewide
+=== D-040: 51 fit places, test set ['Raleigh city', 'Durham city'] ===
+
+Leave one state out: the fit without each state
+  without MN: theta 4.672 per 1,000 (2.299-11.612), alpha 0.61, places 9
+  without NC: theta 1.107 per 1,000 (0.690-1.893), alpha 3.07, places 45
+  without OH: theta 1.112 per 1,000 (0.735-1.767), alpha 2.56, places 50
+  without TX: theta 0.775 per 1,000 (0.369-1.681), alpha 1.94, places 49
+
+Main: leave one state out
+                     group  places  place_years  observed   p10    p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       306 450.0 1115.0 2796.1 1438.81          0.27          6.21   8836.03      missed
+                        NC       6           32        50  13.0   57.0  193.0   88.54          0.88         14.85    990.73      useful
+                        OH       1            2         8   0.0    3.0   23.0    8.10          2.67           inf    131.01 inside only
+                        TX       2           13      2785  45.0  319.0 1420.1  604.09          8.73         31.56  12069.03      missed
+NC with Raleigh and Durham       8           42       519  52.0  213.0  781.1  344.48          2.44         15.02   3587.74 inside only
+
+Leave one place out: 51 refits on 8 workers ...
+
+Second: leave one place out, summed by state
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       306 268.0 629.0 1919.0 936.41          0.49          7.16   8836.03 inside only
+                        NC       6           32        50  16.0  61.0  189.0  88.56          0.82         11.81    990.73      useful
+                        OH       1            2         8   0.0   3.0   23.0   8.10          2.67           inf    131.01 inside only
+                        TX       2           13      2785  43.0 356.0 1769.1 756.30          7.82         41.14  12069.03      missed
+NC with Raleigh and Durham       8           42       519  66.0 235.0  755.0 345.64          2.21         11.44   3587.74 inside only
+exit 0 end Tue Nov  3 10:08:20 EST 2026

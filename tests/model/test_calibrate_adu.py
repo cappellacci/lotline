@@ -267,3 +267,29 @@ def test_information_se_matches_the_spread_of_repeated_fits():
     fits = [math.log(cal.fit_theta_alpha(sim(s), cv)[0]) for s in range(1, 16)]
     assert se_t == pytest.approx(np.std(fits), rel=0.5)
     assert abs(corr) < 0.3 and se_a > 0
+
+
+def _fit3(theta, low, high, alpha):
+    return cal.Fit3(theta, low, high, alpha, 1.0, 0.3, (1.0, 1.0), (0.3, 0.3), False, False, 0.0, 2, 2)
+
+
+def test_predict_places_shares_theta_but_not_place_effects():
+    """D-040: two identical places, one year, base 10,000, Handbook rule, θ = 0.001 (mean 10 each).
+    θ fixed (low = high), α = 1: place totals are independent, so corr ≈ 0 and Var(sum) = 2 Var(one), where
+    Var(one) = μ + α μ² = 10 + 100 = 110. Summing `predict_place` draws (same seed) would correlate them
+    fully.
+    θ uncertain (90% interval 0.0005-0.002) with α ≈ 0: the shared θ makes the places
+    positively correlated."""
+    pls = [_place([0], [10_000.0], np.full((1, 1, 1), 4), np.ones((1, 1)), [1.0]) for _ in range(2)]
+    pls[1] = cal.PlaceData(**{**pls[1].__dict__, "geoid": "Y"})
+    d = cal.predict_places(pls, _fit3(0.001, 0.001, 0.001, 1.0), draws=200_000, seed=1)
+    a, b = d["X"][:, 0], d["Y"][:, 0]
+    assert a.mean() == pytest.approx(10, rel=0.02) and a.var() == pytest.approx(110, rel=0.05)
+    assert abs(np.corrcoef(a, b)[0, 1]) < 0.01
+    assert (a + b).var() == pytest.approx(220, rel=0.05)
+    one = [cal.predict_place(p, _fit3(0.001, 0.001, 0.001, 1.0), draws=1_000, seed=1) for p in pls]
+    assert np.array_equal(*one)  # the trap D-040 avoids: same seed, same draws for every place
+    alone = cal.predict_places(pls[1:], _fit3(0.001, 0.001, 0.001, 1.0), draws=200_000, seed=1)
+    assert np.array_equal(alone["Y"], d["Y"])  # a place draws alike whatever it is predicted with
+    d = cal.predict_places(pls, _fit3(0.001, 0.0005, 0.002, 1e-9), draws=200_000, seed=1)
+    assert np.corrcoef(d["X"][:, 0], d["Y"][:, 0])[0, 1] > 0.3

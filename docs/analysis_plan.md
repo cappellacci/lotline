@@ -1759,3 +1759,77 @@ Dated, append-only. Each entry says what changed from the research documents, wh
          statewide, so that test matters most, and this run's per-place CSVs don't keep the draws needed for it.
   - **Config:** unchanged. Adopting θ = 0.001112 (0.000743–0.001742) in `hazard.yaml` and re-running
     `--draw-terms` is Ben's call.
+
+### D-040 · 2026-11-03 · Statewide backtest of the ADU anchor (written before the run)
+- **Why:** D-039's backtest scores single places and finds the place-to-place variation unexplained. The tool's
+  headline numbers are statewide totals, where place errors partly cancel. Ben chose this test next
+  (2026-11-03, "Statewide backtest").
+- **Model and data:** D-039 unchanged: fit 3, the same fit set and years per state, the same test set
+  (Raleigh and Durham city, 2021–2025), holdouts filtered by the IO layer. No new data.
+- **Joint draws (new function, `calibrate_adu.predict_places`):** a state total needs the places drawn
+  together. `predict_place` seeds each place alike, so summing its output would give every place the same place
+  effect and overstate the spread. Per draw: one θ from its interval, shared by every place predicted from that
+  fit (θ's uncertainty is common to all of them); an independent place effect u ~ Gamma(mean 1, variance α) and
+  blank-field combination per place; Poisson counts per place-year. 20,000 draws, seed 20261020.
+- **Main test, leave one state out (4 refits):** for each of MN, NC, OH and TX, refit on the other three
+  states' fit-set places and predict every fit-set place in the held-out state jointly. The state total is the
+  sum over its places and in-window years. This is the closest test of D-037's purpose: rates estimated
+  elsewhere, applied to a state the fit has not seen (HANDOFF's V8). NC is reported with and without Raleigh and
+  Durham (never in any fit).
+- **Second test, leave one place out, summed by state (51 refits, as D-039):** each place is predicted from the
+  fit without it, with the same seed for θ across refits (so θ draws stay aligned) and independent place
+  effects; the draws are summed within each state. This asks whether the statewide sum is right when the
+  state's other places are in the fit.
+- **Scores, per state and test:** observed total; P10, P50, P90; inside P10–P90; observed ÷ P50; P90 ÷ P10.
+  Benchmarks: no effect (0) and Portland's 4 per 1,000 × eligible parcels × ramp (as D-039, corrected).
+  With four states there is no coverage rate to read. The bar, stated now: a state total is **useful** if it is
+  inside P10–P90 **and** its P50 is within a factor of 2 of the observed total; **inside only** if the
+  interval holds it but the median is further off; **missed** otherwise.
+- **Scope, stated now:** "state total" here is the sum over the coded places in the fit set, not the whole
+  state. The tool's statewide number also extrapolates to uncoded places; this test does not check that step.
+  TX is two places and Austin is most of its count; OH is Cincinnati alone (2 years). Their results are read as
+  single cases.
+- **What changes in config:** nothing. The result feeds Ben's choice on adopting D-039's θ and on D-037's
+  next steps.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --statewide --out reports/adu-statewide`, log in
+  that folder.
+- **Decided by:** Ben, 2026-11-03; written by WS-ENGINE before the run.
+- **The run (2026-11-03 08:23–10:08, once, commit 38eeff4; `reports/adu-statewide/`, log
+  `run-2026-11-03-log.txt`, `statewide.csv`, state-total draws in `draws_loso.npz` and `draws_lopo.npz`;
+  written after the run):**
+  - **Main test, leave one state out.** The fit without each state:
+
+    | Fit without | θ per 1,000 (90%) | α | Places |
+    |---|---|---|---|
+    | MN | 4.67 (2.30–11.61) | 0.61 | 9 |
+    | NC | 1.11 (0.69–1.89) | 3.07 | 45 |
+    | OH | 1.11 (0.74–1.77) | 2.56 | 50 |
+    | TX | 0.78 (0.37–1.68) | 1.94 | 49 |
+
+    | State | Observed | P50 | P10–P90 | Observed ÷ P50 | Verdict |
+    |---|---|---|---|---|---|
+    | MN (42 places) | 306 | 1,115 | 450–2,796 | 0.27 | missed (over) |
+    | NC fit set (6) | 50 | 57 | 13–193 | 0.88 | useful |
+    | NC with Raleigh and Durham (8) | 519 | 213 | 52–781 | 2.44 | inside only |
+    | OH (Cincinnati) | 8 | 3 | 0–23 | 2.67 | inside only |
+    | TX (Austin, San Antonio) | 2,785 | 319 | 45–1,420 | 8.73 | missed (under) |
+
+  - **Second test, leave one place out, summed by state:** MN 306 vs P50 629 (268–1,919), inside only; NC
+    fit set 50 vs 61 (16–189), useful; NC with Raleigh and Durham 519 vs 235 (66–755), inside only; OH as
+    above; TX 2,785 vs 356 (43–1,769), missed.
+  - Portland's rate, unadjusted, over-predicts every state by 7–30-fold (MN 8,836, TX 12,069).
+  - **Reading (WS-ENGINE's, for Ben to confirm):**
+    - One of four state totals is useful by the bar set in advance (NC's six towns), two more are inside only,
+      and MN and TX are missed in opposite directions. **The anchor does not yet transfer to an unseen state.**
+    - The fit moves with which state is left out: without MN (Austin and San Antonio dominating) θ is 4.7 per
+      1,000; without TX it is 0.8. One shared rate with a symmetric place effect cannot fit Texas's two large
+      cities and Minnesota's suburbs at once.
+    - The intervals are wide (P90 ÷ P10 of 6–30) yet still miss, so widening them is not the fix; the level
+      itself is off by state or place type.
+  - **Exploratory, not pre-registered (from D-039's backtest CSVs, grouped after seeing these results):**
+    summing the leave-one-place-out predictive means, suburbs, towns and the county area permitted 126 ADUs
+    against 474 predicted (0.27×), while the seven large cities (Minneapolis, Austin, San Antonio, Raleigh,
+    Durham, Greensboro, Cincinnati) permitted 3,492 against 1,580 (2.2×, mostly Austin, Raleigh and Durham).
+    That points at a place-type modifier (central city vs suburb, or city size), the first candidate under
+    D-039's step 1. It needs its own dated entry before it is fitted.
+  - **Config:** unchanged.
