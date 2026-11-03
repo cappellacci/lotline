@@ -378,8 +378,17 @@ def to_parcels(
     jurisdictions: pd.DataFrame,
     locate: Locator,
     state: str = "MN",
+    *,
+    source: str = SOURCE,
+    ctu_counties: tuple[str, ...] | None = METRO_COUNTIES,
+    use_rules: list[Rule] | None = None,
 ) -> tuple[pd.DataFrame, pd.Series]:
-    """One roll (+ lon/lat) → validated `parcels` without held-out rows, and how each row was placed."""
+    """One roll (+ lon/lat) → validated `parcels` without held-out rows, and how each row was placed.
+
+    The keyword arguments let MnGeo's statewide compilation (`mngeo_parcels`), which uses the same county
+    schema, reuse this: its source id, the counties whose city and township names are looked up, and its
+    land-use rules.
+    """
     raw = raw.drop(columns=[c for c in raw.columns if c in PERSONAL])
     df = raw.assign(
         county_geoid=_county_geoid(raw["CO_CODE"]),
@@ -395,7 +404,7 @@ def to_parcels(
     lon = pd.to_numeric(df.get("lon"), errors="coerce")
     lat = pd.to_numeric(df.get("lat"), errors="coerce")
     known = set(jurisdictions["geoid"].astype(str))
-    ctu = ctu_geoids(df["CTU_NAME"], ctu_lookup(jurisdictions, METRO_COUNTIES))
+    ctu = ctu_geoids(df["CTU_NAME"], ctu_lookup(jurisdictions, ctu_counties))
     geoid, how = resolve(df["county_geoid"], locate(lon, lat), ctu, known)
     df = df.assign(
         jurisdiction_geoid=geoid,
@@ -443,7 +452,7 @@ def to_parcels(
             "jurisdiction_geoid": df["jurisdiction_geoid"],
             "county_geoid": df["county_geoid"],
             "lot_sqft": (acres * SQFT_PER_ACRE).astype(float),
-            "land_use_std": land_use(county_name, df["USECLASS1"], df["DWELL_TYPE"], units),
+            "land_use_std": land_use(county_name, df["USECLASS1"], df["DWELL_TYPE"], units, use_rules),
             "land_use_raw": _norm_text(df["USECLASS1"]),
             "units": units,
             "year_built": built,
@@ -461,7 +470,7 @@ def to_parcels(
             "homestead": homestead.astype("boolean"),
             "lon": df["lon"],
             "lat": df["lat"],
-            "source": SOURCE,
+            "source": source,
         }
     )
     return validate(out.reset_index(drop=True), TABLE), how.reset_index(drop=True)

@@ -17,12 +17,198 @@ holdouts:
 train_until:
   "2758000": 2023-12-31
 # One parcels source per jurisdiction where MN parcel sources overlap (build/eligible.single_source, #147).
-# Minneapolis: the city assessor tables carry units and building use (Ben, 2026-10-20); everyone else:
-# Met Council regional parcels (St. Paul from the 2021-2023 rolls only, V5; Ben, 2026-10-20).
+# Minneapolis: the city assessor tables carry units and building use (Ben, 2026-10-20). Metro jurisdictions:
+# Met Council regional parcels, yearly rolls (St. Paul from the 2021-2023 rolls only, V5; Ben, 2026-10-20).
+# Everyone else ("*"): MnGeo's opt-in county compilation (thread 13, M2). The metro list is every jurisdiction
+# with Met Council parcels; a place in both a metro and an outstate county takes the source holding most of
+# its parcels on the current rolls: Hanover, Northfield and Rockford take MnGeo (their metro part is left
+# out); Dayton, East Bethel, St. Francis, Linwood and Watertown townships take Met Council.
 # ramsey_parcels (current roll, frontage) is not a denominator source.
 parcel_sources:
   "2743000": mpls_assessor_parcels
-  "*": metc_parcels
+  "2700316": metc_parcels  # Afton city
+  "2700337376": metc_parcels  # Linwood township
+  "2701486": metc_parcels  # Andover city
+  "2701720": metc_parcels  # Anoka city
+  "2701900": metc_parcels  # Apple Valley city
+  "2701905266": metc_parcels  # Benton township
+  "2701909406": metc_parcels  # Camden township
+  "2701914482": metc_parcels  # Dahlgren township
+  "2701926918": metc_parcels  # Hancock township
+  "2701929726": metc_parcels  # Hollywood township
+  "2701935108": metc_parcels  # Laketown township
+  "2701958486": metc_parcels  # San Francisco township
+  "2701967450": metc_parcels  # Waconia township
+  "2701968566": metc_parcels  # Watertown township
+  "2701972130": metc_parcels  # Young America township
+  "2702026": metc_parcels  # Arden Hills city
+  "2703710306": metc_parcels  # Castle Rock township
+  "2703716228": metc_parcels  # Douglas township
+  "2703719376": metc_parcels  # Empire township
+  "2703719871": metc_parcels  # Eureka township
+  "2703725802": metc_parcels  # Greenvale township
+  "2703726882": metc_parcels  # Hampton township
+  "2703740724": metc_parcels  # Marshan township
+  "2703746330": metc_parcels  # Nininger township
+  "2703753116": metc_parcels  # Randolph township
+  "2703753260": metc_parcels  # Ravenna township
+  "2703759008": metc_parcels  # Sciota township
+  "2703766820": metc_parcels  # Vermillion township
+  "2703768530": metc_parcels  # Waterford township
+  "2704114": metc_parcels  # Bayport city
+  "2704834": metc_parcels  # Belle Plaine city
+  "2705321965": metc_parcels  # Fort Snelling UT
+  "2705554": metc_parcels  # Bethel city
+  "2706058": metc_parcels  # Birchwood Village city
+  "2706382": metc_parcels  # Blaine city
+  "2706616": metc_parcels  # Bloomington city
+  "2707948": metc_parcels  # Brooklyn Center city
+  "2707966": metc_parcels  # Brooklyn Park city
+  "2708794": metc_parcels  # Burnsville city
+  "2710144": metc_parcels  # Carver city
+  "2710648": metc_parcels  # Centerville city
+  "2710846": metc_parcels  # Champlin city
+  "2710918": metc_parcels  # Chanhassen city
+  "2710972": metc_parcels  # Chaska city
+  "2711494": metc_parcels  # Circle Pines city
+  "2712369916": metc_parcels  # White Bear township
+  "2712376": metc_parcels  # Coates city
+  "2712664": metc_parcels  # Cologne city
+  "2712700": metc_parcels  # Columbia Heights city
+  "2712718": metc_parcels  # Columbus city
+  "2713114": metc_parcels  # Coon Rapids city
+  "2713168": metc_parcels  # Corcoran city
+  "2713456": metc_parcels  # Cottage Grove city
+  "2713708": metc_parcels  # Credit River
+  "2713904852": metc_parcels  # Belle Plaine township
+  "2713906418": metc_parcels  # Blakeley township
+  "2713910450": metc_parcels  # Cedar Lake township
+  "2713928322": metc_parcels  # Helena township
+  "2713931580": metc_parcels  # Jackson township
+  "2713938294": metc_parcels  # Louisville township
+  "2713945754": metc_parcels  # New Market township
+  "2713957184": metc_parcels  # St. Lawrence township
+  "2713958324": metc_parcels  # Sand Creek township
+  "2713961978": metc_parcels  # Spring Lake township
+  "2714158": metc_parcels  # Crystal city
+  "2715022": metc_parcels  # Dayton city
+  "2715148": metc_parcels  # Deephaven city
+  "2715616": metc_parcels  # Dellwood city
+  "2716304132": metc_parcels  # Baytown township
+  "2716315688": metc_parcels  # Denmark township
+  "2716325982": metc_parcels  # Grey Cloud Island township
+  "2716341120": metc_parcels  # May township
+  "2716362842": metc_parcels  # Stillwater township
+  "2716369520": metc_parcels  # West Lakeland township
+  "2717288": metc_parcels  # Eagan city
+  "2717486": metc_parcels  # East Bethel city
+  "2718116": metc_parcels  # Eden Prairie city
+  "2718188": metc_parcels  # Edina city
+  "2718662": metc_parcels  # Elko New Market city
+  "2720078": metc_parcels  # Excelsior city
+  "2720420": metc_parcels  # Falcon Heights city
+  "2720618": metc_parcels  # Farmington city
+  "2721770": metc_parcels  # Forest Lake city
+  "2722814": metc_parcels  # Fridley city
+  "2723318": metc_parcels  # Gem Lake city
+  "2724308": metc_parcels  # Golden Valley city
+  "2725334": metc_parcels  # Grant city
+  "2725622": metc_parcels  # Greenfield city
+  "2725918": metc_parcels  # Greenwood city
+  "2726666": metc_parcels  # Hamburg city
+  "2726738": metc_parcels  # Ham Lake city
+  "2726864": metc_parcels  # Hampton city
+  "2727530": metc_parcels  # Hastings city
+  "2729258": metc_parcels  # Hilltop city
+  "2730140": metc_parcels  # Hopkins city
+  "2730392": metc_parcels  # Hugo city
+  "2730842": metc_parcels  # Independence city
+  "2731076": metc_parcels  # Inver Grove Heights city
+  "2732174": metc_parcels  # Jordan city
+  "2734244": metc_parcels  # Lake Elmo city
+  "2734622": metc_parcels  # Lakeland city
+  "2734658": metc_parcels  # Lakeland Shores city
+  "2734865": metc_parcels  # Lake St. Croix Beach city
+  "2735180": metc_parcels  # Lakeville city
+  "2735414": metc_parcels  # Landfall city
+  "2735738": metc_parcels  # Lauderdale city
+  "2736836": metc_parcels  # Lexington city
+  "2737016": metc_parcels  # Lilydale city
+  "2737322": metc_parcels  # Lino Lakes city
+  "2737502": metc_parcels  # Little Canada city
+  "2738006": metc_parcels  # Long Lake city
+  "2738222": metc_parcels  # Loretto city
+  "2739428": metc_parcels  # Mahtomedi city
+  "2740166": metc_parcels  # Maple Grove city
+  "2740256": metc_parcels  # Maple Plain city
+  "2740382": metc_parcels  # Maplewood city
+  "2740562": metc_parcels  # Marine on St. Croix city
+  "2741138": metc_parcels  # Mayer city
+  "2741462": metc_parcels  # Medicine Lake city
+  "2741480": metc_parcels  # Medina city
+  "2741678": metc_parcels  # Mendota city
+  "2741696": metc_parcels  # Mendota Heights city
+  "2742092": metc_parcels  # Miesville city
+  "2743252": metc_parcels  # Minnetonka city
+  "2743306": metc_parcels  # Minnetrista city
+  "2744476": metc_parcels  # Mound city
+  "2744530": metc_parcels  # Mounds View city
+  "2745430": metc_parcels  # New Brighton city
+  "2745556": metc_parcels  # New Germany city
+  "2745628": metc_parcels  # New Hope city
+  "2745790": metc_parcels  # Newport city
+  "2745808": metc_parcels  # New Prague city
+  "2746024": metc_parcels  # New Trier city
+  "2747104": metc_parcels  # North Oaks city
+  "2747221": metc_parcels  # North St. Paul city
+  "2747520": metc_parcels  # Norwood Young America city
+  "2747536": metc_parcels  # Nowthen city
+  "2747680": metc_parcels  # Oakdale city
+  "2747690": metc_parcels  # Oak Grove city
+  "2747914": metc_parcels  # Oak Park Heights city
+  "2748580": metc_parcels  # Orono city
+  "2749012": metc_parcels  # Osseo city
+  "2751316": metc_parcels  # Pine Springs city
+  "2751730": metc_parcels  # Plymouth city
+  "2752594": metc_parcels  # Prior Lake city
+  "2753026": metc_parcels  # Ramsey city
+  "2753098": metc_parcels  # Randolph city
+  "2754214": metc_parcels  # Richfield city
+  "2754808": metc_parcels  # Robbinsdale city
+  "2755186": metc_parcels  # Rogers city
+  "2755726": metc_parcels  # Rosemount city
+  "2755852": metc_parcels  # Roseville city
+  "2756680": metc_parcels  # St. Anthony city (Hennepin and Ramsey Counties)
+  "2756770": metc_parcels  # St. Bonifacius city
+  "2756950": metc_parcels  # St. Francis city
+  "2757220": metc_parcels  # St. Louis Park city
+  "2757292": metc_parcels  # St. Marys Point city
+  "2758000": metc_parcels  # St. Paul city
+  "2758018": metc_parcels  # St. Paul Park city
+  "2758738": metc_parcels  # Savage city
+  "2758900": metc_parcels  # Scandia city
+  "2759350": metc_parcels  # Shakopee city
+  "2759998": metc_parcels  # Shoreview city
+  "2760016": metc_parcels  # Shorewood city
+  "2761492": metc_parcels  # South St. Paul city
+  "2761996": metc_parcels  # Spring Lake Park city
+  "2762014": metc_parcels  # Spring Park city
+  "2762824": metc_parcels  # Stillwater city
+  "2763544": metc_parcels  # Sunfish Lake city
+  "2765164": metc_parcels  # Tonka Bay city
+  "2766460": metc_parcels  # Vadnais Heights city
+  "2766802": metc_parcels  # Vermillion city
+  "2767036": metc_parcels  # Victoria city
+  "2767130": metc_parcels  # Village of Minnetonka Beach
+  "2767432": metc_parcels  # Waconia city
+  "2768548": metc_parcels  # Watertown city
+  "2768818": metc_parcels  # Wayzata city
+  "2769700": metc_parcels  # West St. Paul city
+  "2769970": metc_parcels  # White Bear Lake city
+  "2770366": metc_parcels  # Willernie city
+  "2771428": metc_parcels  # Woodbury city
+  "2771500": metc_parcels  # Woodland city
+  "*": mngeo_parcels
 sources:
   - name: metc_permits
     url: https://arcgis.metc.state.mn.us/data1/rest/services/structure/Other_Structure_Public/FeatureServer/0
@@ -52,6 +238,16 @@ sources:
       St. Paul DSI building permits from 2015-06-30. No unit counts, no ADU flag: secondary to Met Council for
       St. Paul outcomes. V5 holdout: rows from 2024 on are filtered before any processing. Street address and
       contractor name/address are never requested.
+  - name: mngeo_parcels
+    url: https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_mngeo/plan_parcels_open/FeatureServer/1
+    license: MnGeo compilation of opt-in county open data; item license "None" (provided as is)
+    access: arcgis
+    cadence: rolling (each county re-sent on its own schedule; dates in layer 0, acqdate)
+    notes: >-
+      Adapter src/lotline/adapters/states/mn/mngeo_parcels.py. 59 opt-in counties on 2026-11-01; only the 31
+      outstate counties marked "loaded" in config/crosswalks/mn_mngeo_counties.csv are read (metro counties
+      stay on metc_parcels). enterprise.gisdata.mn.gov/robots.txt does not exist (404). Owner, taxpayer and
+      situs address fields never requested.
   - name: metc_parcels
     url: https://arcgis.metc.state.mn.us/data1/rest/services/parcels
     license: Public domain (Minnesota Government Data Practices Act); MetroGIS counties share without fee or license

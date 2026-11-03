@@ -22,12 +22,14 @@ in [`data_provenance.md`](data_provenance.md), which gives each dataset's licens
 | Census TIGERweb (ArcGIS REST) | `tigerweb.geo.census.gov` | Place and county-subdivision boundaries (ACS 2025) | None |
 | FRED, Federal Reserve Bank of St. Louis | `fred.stlouisfed.org` | Mortgage rate (Freddie Mac PMMS), PPI, CPI, new residential construction | None (Freddie Mac attribution required) |
 | FHFA | `www.fhfa.gov` | House Price Index files | None |
-| Esri ArcGIS REST services (hosted by public agencies) | `services*.arcgis.com`, `arcgis.metc.state.mn.us`, `www.arcgis.com`, `*.opendata.arcgis.com` | City, county and state permit and parcel layers (Minneapolis, Met Council, Raleigh, Durham, Columbus, NC OneMap, Ohio statewide parcels, St. Paul) | None |
+| Esri ArcGIS REST services (hosted by public agencies) | `services*.arcgis.com`, `arcgis.metc.state.mn.us`, `enterprise.gisdata.mn.gov`, `www.arcgis.com`, `*.opendata.arcgis.com` | City, county and state permit and parcel layers (Minneapolis, Met Council, MnGeo opt-in county parcels, Raleigh, Durham, Columbus, NC OneMap, Ohio statewide parcels, St. Paul) | None |
 | Socrata (Tyler Technologies) open-data APIs | `data.austintexas.gov`, `data.cincinnati-oh.gov` | Austin and Cincinnati building permits | None (optional `SOCRATA_APP_TOKEN`, never logged) |
 | Agency download pages | `traviscad.org`, Wake County (`services.wake.gov`), Montgomery County Treasurer (`go.mcohio.org`), Warren County GIS (`warrencountyohio.gov`) | Appraisal rolls, downloaded by hand in a browser because the site blocks automated access or its `robots.txt` disallows it, then registered with `lotline manifest register` | None |
 | Franklin County Auditor | `apps.franklincountyauditor.com` | Appraisal files: permit descriptions (ADU flags), dwelling year built and yearly parcel rolls (Franklin County, Ohio) | None |
 | Legistar Web API (Granicus) | `webapi.legistar.com` | City of Columbus Council variance ordinances (ADU approvals before 2026) | None |
 | GitHub | `github.com` | Code hosting, Actions CI, CodeQL code scanning, Dependabot, secret scanning | Project account |
+
+**Data with no stated license.** MnGeo's "Parcels, Compiled from Opt-In Open Data Counties" (`mngeo_parcels`) gives its license as "None": the counties publish it as open data, provided as is. Lotline downloads it into `LOTLINE_DATA_DIR` like every other source and never commits or republishes the records; published outputs are jurisdiction-level counts.
 
 The interactive tool's hosting service will be added here when it is deployed.
 
