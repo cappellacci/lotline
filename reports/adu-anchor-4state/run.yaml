@@ -1,0 +1,33 @@
+id: adu-anchor-4state
+title: ADU anchor, four-state refit
+kind: calibration
+model: ADU calibration
+plan_entry: 'D-039: ADU anchor refit on the four states, with a leave-one-place-out backtest'
+status: completed
+started: '2026-11-03T04:15:33-05:00'
+finished: '2026-11-03T06:07:04-05:00'
+commit: 0ccb4f3
+command: uv run python -u scripts/dev/calibrate_adu.py --four-state --workers 8 --out reports/adu-anchor-4state
+method: 'D-019 fit 3: ADU permits a year are Poisson with mean θ × eligible parcels × a market term (rent, home
+  value, rate) × u, where u is a gamma place effect (mean 1, variance α). Blank rule fields are integrated over;
+  the owner-occupancy share is estimated. θ is profiled for a 90% interval. Backtest: refit without each place
+  and predict it (V4).'
+scope:
+  states: [MN, NC, OH, TX]
+  years: 2016-2025 (each place over the years its source counts ADUs)
+  outcome: ADU permits a year (Met Council survey or city records, the larger each year; TX and NC city files)
+  places: 51
+  place_years: 296
+  places_by_state: {MN: 42, NC: 6, OH: 1, TX: 2}
+  test set: Raleigh 2021-2025, Durham 2021-2025 (held out)
+config:
+  fit: D-019 fit 3, owner share estimated, other share 0.3 (judgment)
+  counts: as D-019 (co-built units included, survey not corrected)
+  predictive draws: 20,000
+  workers: 8
+reading: 'For Ben to confirm. θ = 1.11 per 1,000 eligible parcels a year (0.74-1.74), about a quarter of Portland''s
+  rate. The four states pin down the average well, but not which places adopt: α ≈ 2.5 is larger than anything the
+  market term explains. Backtest coverage is 94% of places, but the error ties the no-effect benchmark (0.149 vs
+  0.141). Both test cities fell inside their ranges, with medians far below what was observed.'
+manifest_note: Written by hand on 2026-11-03 from the run's log, CSVs and analysis-plan entry (the run predates
+  calibration manifests).

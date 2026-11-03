@@ -1,0 +1,33 @@
+id: adu-statewide
+title: ADU anchor, statewide backtest
+kind: calibration
+model: ADU calibration
+plan_entry: 'D-040: Statewide backtest of the ADU anchor'
+status: completed
+started: '2026-11-03T08:23:32-05:00'
+finished: '2026-11-03T10:08:20-05:00'
+commit: 38eeff4
+command: uv run python -u scripts/dev/calibrate_adu.py --statewide --workers 8 --out reports/adu-statewide
+method: 'D-039''s fit, scored on state totals. Leave one state out: refit on the other three states and predict
+  every place of the held-out state, drawing θ once per draw and a place effect and blank-rule combination per
+  place, then sum. Verdict: useful if the observed total is inside P10-P90 and within a factor of 2 of P50;
+  inside only; or missed.'
+scope:
+  states: [MN, NC, OH, TX]
+  years: 2016-2025
+  outcome: ADU permits a year, summed by state
+  places: 51
+  place_years: 296
+  places_by_state: {MN: 42, NC: 6, OH: 1, TX: 2}
+  test set: Raleigh and Durham, also reported with NC
+config:
+  fit: as D-039
+  counts: as D-019 (co-built units included, survey not corrected)
+  predictive draws: 20,000 per held-out state
+  seed: 20261020
+reading: 'For Ben to confirm. One of four state totals is useful (NC''s six towns); OH and NC with Raleigh and
+  Durham are inside only; MN is over-predicted (306 vs P50 1,115) and TX under-predicted (2,785 vs 319). θ
+  moves from 0.78 (without TX) to 4.67 (without MN). The diagnosis after this run traced most of it to counts:
+  Austin''s co-built ADUs and Met Council''s under-reporting (D-041). θ by fit is in the analysis plan, not a CSV.'
+manifest_note: Written by hand on 2026-11-03 from the run's log, CSVs and analysis-plan entry (the run predates
+  calibration manifests).

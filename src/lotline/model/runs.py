@@ -10,7 +10,13 @@ and plan entries.
 `load_run` puts either model's CSVs into one shape (overall effect, effect terms, checks, robustness,
 randomization and bootstrap draws, leave one out, out-of-sample tests, added homes), so runs can be compared.
 A run with no `estimates.csv` (one that stopped, or never estimated) loads with its manifest only.
-Tests: tests/model/test_runs.py.
+
+Calibration runs (manifest `kind: calibration`) estimate an uptake rate rather than an effect: the ADU
+anchor, D-039 to D-041 (`scripts/dev/calibrate_adu.py`), and the missing-middle anchor, D-038
+(`scripts/dev/calibrate_mm.py`). `load_run` puts their CSVs under `calibration`: the fits (θ per 1,000
+eligible parcels a year), held-out state totals with their verdicts, place totals from the leave-one-place-out
+backtest with its coverage and error against the no-effect benchmark, the out-of-sample test places and, where
+the run has them, the counts and the market-term check. Tests: tests/model/test_runs.py.
 """
 
 from __future__ import annotations
@@ -286,20 +292,189 @@ def _records(df: pd.DataFrame | None, cols: list[str]) -> list[dict]:
     if df is None:
         return []
     keep = [c for c in cols if c in df.columns]
-    text = ("place", "name", "test", "year")  # a transport table's year is a year or "total"
+    text = ("place", "name", "test", "year", "group", "verdict", "run", "scope")  # a year can be "total"
     return [
         {c: (_text(v) if c in text else _num(v)) for c, v in r.items()} for r in df[keep].to_dict("records")
     ]
 
 
+# Calibration fit rows shown on the dashboard: D-041's `fits.csv` holds 36; the main run's pooled, per-state
+# and leave-one-state-out fits and each sensitivity's pooled fit are enough to compare; the CSV keeps all.
+FIT_KINDS = {"all": "all four states", "state": "{state} alone", "without": "without {state}"}
+
+
+def _fits(folder: Path) -> list[dict]:
+    """θ per 1,000 with its 90% interval: D-039's one-row `fit.csv` (θ as a rate), D-041's `fits.csv` (already
+    per 1,000, one row per run and fit) or D-038's `fits.csv` (main fit and its checks, `per_1000`)."""
+    df = _csv(folder, "fit")
+    if df is not None:
+        r = df.iloc[0]
+        return [
+            {
+                "label": FIT_KINDS["all"],
+                "estimate": _num(r["theta"]) * 1000,
+                "low": _num(r["low"]) * 1000,
+                "high": _num(r["high"]) * 1000,
+                "alpha": _num(r["alpha"]),
+                "places": _num(r["n_places"]),
+            }
+        ]
+    df = _csv(folder, "fits")
+    if df is None:
+        return []
+    out = []
+    if "theta_per_1000" in df.columns:
+        for _, r in df.iterrows():
+            run, fit = _text(r["run"]), _text(r["fit"])
+            if run != "main" and fit != "all":
+                continue
+            label = FIT_KINDS[fit].format(state=_text(r["state"]))
+            out.append(
+                {
+                    "label": f"{run}: {label}" if run != "main" else label,
+                    "estimate": _num(r["theta_per_1000"]),
+                    "low": _num(r["low"]),
+                    "high": _num(r["high"]),
+                    "alpha": _num(r["alpha"]),
+                    "places": _num(r["places"]),
+                }
+            )
+        return out
+    for _, r in df.iterrows():
+        out.append(
+            {
+                "label": _text(r["fit"]).replace("_", " "),
+                "estimate": _num(r["per_1000"]),
+                "low": _num(r["low"]) * 1000,
+                "high": _num(r["high"]) * 1000,
+                "alpha": _num(r["alpha"]),
+                "places": _num(r["places"]),
+            }
+        )
+    return out
+
+
+def _place_totals(folder: Path) -> tuple[list[dict], dict | None]:
+    """Leave-one-place-out place totals and the backtest's summary. ADU runs: the `total` rows of
+    `backtest_backtest.csv` (in the folder or its `main/`), with coverage and the mean absolute error per
+    1,000 eligible parcels a year over place-years, as `calibrate_adu.py` prints them (no effect: predict 0).
+    D-038: `backtest.csv`, one row per place, with its own fit and no-effect errors (per place, averaged per
+    year)."""
+    for sub in (folder, folder / "main"):
+        df = _csv(sub, "backtest_backtest")
+        if df is None:
+            continue
+        tot, yr = df[df["year"] == "total"], df[df["year"] != "total"]
+        places = [
+            {
+                "name": _text(r["name"]),
+                "state": _text(r["state"]),
+                "observed": _num(r["observed"]),
+                "p10": _num(r["p10"]),
+                "p50": _num(r["p50"]),
+                "p90": _num(r["p90"]),
+                "inside": _bool(r["inside"]),
+            }
+            for _, r in tot.iterrows()
+        ]
+        per = 1000 / yr["parcels"]
+        summary = {
+            "places": len(tot),
+            "covered": int(tot["inside"].sum()),
+            "place_years": len(yr),
+            "covered_years": int(yr["inside"].sum()),
+            "error": float(((yr["p50"] - yr["observed"]).abs() * per).mean()),
+            "error_none": float((yr["observed"] * per).mean()),
+            "error_basis": "per 1,000 eligible parcels a year, over place-years",
+        }
+        return places, summary
+    df = _csv(folder, "backtest")
+    if df is None or "fit_p50" not in df.columns:
+        return [], None
+    places = [
+        {
+            "name": _text(r["name"]),
+            "state": "",
+            "observed": _num(r["fit_observed"]),
+            "p10": _num(r["fit_p10"]),
+            "p50": _num(r["fit_p50"]),
+            "p90": _num(r["fit_p90"]),
+            "inside": _bool(r["fit_covered"]),
+        }
+        for _, r in df.iterrows()
+    ]
+    summary = {
+        "places": len(df),
+        "covered": int(df["fit_covered"].astype(str).eq("True").sum()),
+        "place_years": None,
+        "covered_years": None,
+        "error": float(df["fit_error_per_1000"].abs().mean()),
+        "error_none": float(df["none_error_per_1000"].abs().mean()),
+        "error_basis": "per 1,000 eligible parcels a year, per place",
+    }
+    return places, summary
+
+
+def _tests(folder: Path) -> list[dict]:
+    """Out-of-sample place totals: the `total` rows of ADU runs' `backtest_test.csv`; D-038's
+    `test_places.csv`."""
+    for sub in (folder, folder / "main"):
+        df = _csv(sub, "backtest_test")
+        if df is not None:
+            return [
+                {
+                    "name": _text(r["name"]),
+                    "observed": _num(r["observed"]),
+                    "p10": _num(r["p10"]),
+                    "p50": _num(r["p50"]),
+                    "p90": _num(r["p90"]),
+                    "inside": _bool(r["inside"]),
+                }
+                for _, r in df[df["year"] == "total"].iterrows()
+            ]
+    df = _csv(folder, "test_places")
+    if df is None:
+        return []
+    return [
+        {
+            "name": _text(r["name"]),
+            "observed": _num(r["fit_observed"]),
+            "p10": _num(r["fit_p10"]),
+            "p50": _num(r["fit_p50"]),
+            "p90": _num(r["fit_p90"]),
+            "inside": _bool(r["fit_covered"]),
+        }
+        for _, r in df.iterrows()
+    ]
+
+
+def _calibration(folder: Path) -> dict:
+    places, backtest = _place_totals(folder)
+    states = _csv(folder, "statewide")
+    return {
+        "fits": _fits(folder),
+        "states": _records(states, ["test", "group", "observed", "p10", "p50", "p90", "verdict"]),
+        "places": places,
+        "backtest": backtest,
+        "tests": _tests(folder),
+        "counts": _records(
+            _csv(folder, "counts"), ["run", "group", "places", "d039_count", "count", "survey_place_years"]
+        ),
+        "market": _records(_csv(folder, "market_term"), ["run", "scope", "places", "corr"]),
+    }
+
+
 def load_run(folder: Path) -> dict:
     """One run folder as plain data (JSON-ready; missing numbers are None). Keys: `id`, `manifest`, `status`,
     `overall`, `terms`, `checks`, `robustness`, `randomization`, `bootstrap`, `leave_one_out`, `transport`,
-    `transport_verdict`, `added_homes`."""
+    `transport_verdict`, `added_homes`, and `calibration` (None unless the manifest's `kind` is
+    `calibration`)."""
     folder = Path(folder)
     m = read_manifest(folder)
     est = _csv(folder, "estimates")
-    status = m.get("status") or ("completed" if est is not None else "no_estimate")
+    calibration = _calibration(folder) if m.get("kind") == "calibration" else None
+    has_results = est is not None or bool(calibration and (calibration["fits"] or calibration["states"]))
+    status = m.get("status") or ("completed" if has_results else "no_estimate")
     if status == "started" and est is not None:
         status = "completed"
     terms, overall = [], None
@@ -342,6 +517,7 @@ def load_run(folder: Path) -> dict:
         "added_homes": _records(
             _csv(folder, "added_homes"), ["place", "name", "years", "added", "low", "high"]
         ),
+        "calibration": calibration,
     }
 
 

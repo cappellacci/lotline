@@ -1,0 +1,30 @@
+id: mm-d038
+title: Missing-middle anchor, four states
+kind: calibration
+model: Missing-middle calibration
+plan_entry: 'D-038: missing-middle uptake calibrated on the four states (PR #272)'
+status: completed
+finished: '2026-11-03T05:12:21-05:00'
+commit: dd3fb10
+command: uv run python scripts/dev/calibrate_mm.py --out reports/mm-d038
+method: '2-4 unit buildings a year = a baseline (pre-reform mean × growth in the place''s other homes) + θ × u ×
+  eligible parcels × dose × F(price-to-cost) / F(1) × a ramp in years since the reform. u is a gamma place effect
+  (variance α). Pre-registered checks 1-5 refit θ under other choices. Backtest: refit on data before each place''s
+  reform and predict it (V4).'
+scope:
+  states: [MN, NC, OH, TX]
+  years: 2010-2025
+  outcome: Census BPS 2-4 unit buildings a year
+  places: 15
+  place_years: 74
+  test set: Minneapolis, Durham city, Durham County, Raleigh
+config:
+  ramp: half-way point profiled (2.0 years)
+  price-to-cost slope σ: 0.5 (judgment)
+  outside rate for the benchmark: 0.0005
+reading: 'For Ben to confirm. θ = 1.08 per 1,000 (0.36-5.35), α 7.3: a wide anchor that is mostly a Houston
+  number. The placebo date check gave 0.32, so it was not passed. The backtest covers 8 of 12 places but is no
+  more accurate than no effect (0.235 vs 0.234). The Houston check found its jump is duplexes, which were legal
+  before the reform. Houston and Austin were since recoded as [predates]; this run used the old coding.'
+manifest_note: Written by hand on 2026-11-03 from the run's README, CSVs and analysis-plan entry. The CSVs are on
+  PR #272's branch (ws/engine-14-mm-anchor); until it merges, this card shows the manifest only.
