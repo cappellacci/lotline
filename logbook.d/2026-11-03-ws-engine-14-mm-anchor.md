@@ -122,3 +122,17 @@
   - Our coding has no pre-HOME Austin row and no pre-2023 Houston duplex row.
 - **Decisions:** none. The two rows wait for Ben, because they change the D-024 and D-025 panel.
 - **AI:** Claude Code (Opus 5.5) read the ordinance page images and wrote the rows and the write-up.
+
+### LB-NNN · 2026-11-03 · Coding: pre-reform missing-middle rows for Austin and Houston applied
+- **Question:** apply the two proposed rows? Ben said "Apply both rows".
+- **What I did:**
+  - Added TX-4805000-missing_middle-2010 (SF-3 duplex and two-family, cap 2) and TX-4835000-missing_middle-2010
+    (duplexes on single-family lots, cap 2) to `config/reforms/tx.csv`.
+  - Tagged both `[predates]` and linked the 2024 and 2023 reforms to them with `supersedes`.
+  - Marked the decision in `docs/research/ordinances/tx-corrections-2026-11-03.csv` and added a note to D-038.
+  - Computed the D-022 blank shares before and after. Ran no fit.
+- **Findings:**
+  - Both places now have a rule in force before the window, so they leave the D-038 adopter set.
+  - Blank shares barely move: P(by right) 0.842 → 0.846, units grade 0.298 → 0.299.
+  - D-038's committed results predate the change.
+- **Checks:** the Texas reform and schema tests (162 passed) and `compliance_check.py`.

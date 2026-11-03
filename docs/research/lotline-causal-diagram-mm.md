@@ -513,7 +513,10 @@ is new and bracketed text is deleted.
   - Austin: SF-3 duplex and two-family, cap 2, from 2010;
   - Houston: duplex on single-family lots, cap 2, from 2010.
 
-  They are not yet applied to `config/reforms/tx.csv`. Applying them changes the panel that D-024 and D-025
-  read, so it needs Ben's decision.
+  Ben accepted both on 2026-11-03, and they are applied in `config/reforms/tx.csv` with the `[predates]` tag.
+  - Austin and Houston now leave D-038's adopter set (T before 2013).
+  - The 2024 and 2023 reforms supersede the new rows, so they become dose increases: SF-3 2 → 3, SF-1 and SF-2
+    1 → 3, and Houston 2 → 8.
+  - D-038's committed results predate the change (see the note in D-038).
 - **A concurrent reform overlaps the window.** Austin also ended minimum parking citywide on 2023-11-02
   (TX-4805000-parking-2023), three months before HOME phase 1.

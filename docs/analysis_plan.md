@@ -1846,3 +1846,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
        and a new run.
 - **Decided by:** method by WS-ENGINE, 2026-11-03, on Ben's instruction (D-037 amendment); results for Ben to
   confirm in PR #272.
+- **Coding change after the run (2026-11-03, Ben's decision).** `config/reforms/tx.csv` gains
+  TX-4805000-missing_middle-2010 and TX-4835000-missing_middle-2010. Both are tagged `[predates]` and capped
+  at 2 units:
+  - Austin SF-3 already allowed duplexes and two-family use before HOME;
+  - Houston already allowed duplexes on single-family lots before Livable Places.
+
+  Evidence is in causal diagram v0.2 §6.5–6.7 and `docs/research/ordinances/tx-corrections-2026-11-03.csv`.
+  - **Effect on the panel.** Both places now have a missing-middle rule in force before the window (T before
+    2013), so they leave the D-038 adopter set. Their 2023–24 reforms become dose increases.
+  - **Effect on the results above.** They were run on the old coding and are not rerun here. The exploratory
+    fit without Houston and Austin gave 0.24 per 1,000. A run on the new coding belongs to D-039.
+  - **Effect on D-022 blank shares.** These move slightly: P(by right) 0.842 → 0.846, units grade
+    0.298 → 0.299.
+  - **D-024 and D-025.** Not rerun.
