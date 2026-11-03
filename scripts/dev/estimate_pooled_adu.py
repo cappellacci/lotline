@@ -26,7 +26,7 @@ from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import estimate_adu as est
 from lotline.model import pooled_adu as pa
-from lotline.model import rule_tags
+from lotline.model import rule_tags, runs
 
 SOURCE = "metc_residential_permits"
 # D-025 four-state amendment (2026-11-02): Texas pooled in (Ben, 2026-10-30). Each place keeps only the years
@@ -241,10 +241,10 @@ def stages(
         print(f"wrote CSVs to {out}/ {log_note}")
 
 
-def main_model(store):
+def main_model(store, panel: pd.DataFrame | None = None):
     p = {k: v.value for k, v in load_params("adu").items()}
     draws = int(p["adu_estimation_bootstrap_draws"])
-    panel = load_panel(store)
+    panel = load_panel(store) if panel is None else panel
     fit = pa.estimate_pooled(panel, modifiers=list(est.MODIFIERS))
     boot_log = pa.RefitLog("main bootstrap")
     boot = pa.score_bootstrap(fit, draws=draws, seed=20261020, log=boot_log)
@@ -265,11 +265,41 @@ def changed_growth(store, panel) -> None:
     print(diff.to_string())
 
 
-def full(store, out: Path | None) -> None:
-    panel, fit, boot, main = main_model(store)
+def full(store, out: Path | None, title: str = "", plan_entry: str = "") -> None:
+    panel = load_panel(store)
+    if out is not None:
+        p = {k: v.value for k, v in load_params("adu").items()}
+        runs.start_manifest(
+            out,
+            model="D-025",
+            title=title or f"ADU, run of {pd.Timestamp.now():%Y-%m-%d}",
+            plan_entry=plan_entry or "D-025",
+            scope=runs.panel_scope(
+                panel,
+                "ADU permits a year (Met Council; Texas city permit files)",
+                transport_test=", ".join(f"{k} {v[2][0]}-{v[2][1]}" for k, v in TRANSPORT.items()),
+                holdouts="St. Paul entirely",
+            ),
+            config={
+                "main estimator": "pooled hierarchical negative binomial (Gauss-Hermite)",
+                "household growth": HH_GROWTH,
+                "bootstrap draws": int(p["adu_estimation_bootstrap_draws"]),
+                "bootstrap seed": 20261020,
+                "tag sensitivity": "firm dates only",
+                "workers": WORKERS,
+            },
+        )
+    try:
+        panel, fit, boot, main = main_model(store, panel)
+    except (est.EstimationError, np.linalg.LinAlgError) as err:
+        if out is not None:
+            runs.finish_manifest(out, "no_estimate", f"main model: {err}")
+        raise
     changed_growth(store, panel)
     print(main.round(4).to_string(index=False))
     stages(store, panel, fit, boot, main, out)
+    if out is not None:
+        runs.finish_manifest(out)
 
 
 def transport_stage(store, panel, fit, boot, p, logs):
@@ -435,6 +465,8 @@ def main() -> None:
         help="run only the transport test, reusing the main model (checked against the first run's log)",
     )
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--title", default="", help="--full: the run's title in run.yaml and the dashboard")
+    ap.add_argument("--plan-entry", default="", help="--full: the dated analysis-plan entry it implements")
     ap.add_argument(
         "--hh-growth",
         choices=["corrected", "as_run"],
@@ -465,7 +497,7 @@ def main() -> None:
     elif a.remaining:
         remaining(store, a.out, a.remaining, a.skip_ri)
     else:
-        full(store, a.out)
+        full(store, a.out, a.title, a.plan_entry)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,47 @@
+id: mm-d024-4state
+title: Missing middle, four-state refresh (November)
+model: D-024
+plan_entry: 'D-024: four-state refresh (2026-11-02) and its run'
+status: completed
+started: '2026-11-02T19:57:29-05:00'
+finished: '2026-11-03T01:08:41-05:00'
+commit: 0ca15cc
+command: uv run python scripts/dev/estimate_mm.py --full --method nb --workers 8 --out reports/mm-d024-4state/
+scope:
+  states:
+  - MN
+  - NC
+  - OH
+  - TX
+  years: 2010-2025
+  outcome: 2-4 unit homes permitted a year (Census BPS)
+  places: 560
+  place_years: 8763
+  treated: 27
+  sample: BPS places of 10,000+ people plus every coded place
+  holdouts: St. Paul entirely; Charlotte and Mecklenburg County from 2023-06-01
+  adopting_in_window: 20
+  places_by_state:
+    MN: 100
+    NC: 56
+    OH: 172
+    TX: 232
+config:
+  main estimator: negative binomial, normal place random effects (pooled_adu)
+  bootstrap draws: 999
+  randomization reassignments: 999
+  dose: by right 1, by permit 1/3
+  rule tags: 'read (#264): [predates] and pre-window placeholders always in force; none rows are controls'
+  tag sensitivity: firm dates only (drops 8 NC places)
+  eligible parcels: 'OH and TX rebuilt after #252'
+  workers: 8
+reading: 'Still no credible estimate (WS-ENGINE''s reading, for Ben to confirm): overall 1.75 (0.27 to 3.27) but
+  randomization inference p = 0.29, the 5+ unit placebo fails at the same size, out-of-sample A fails, and El Paso
+  (always treated) supplies 54% of added homes.'
+method: 'Staggered difference-in-differences on Census BPS permits for 2-4 unit homes, places of 10,000+ people.
+  Main model: D-025''s negative binomial with normal place random effects (switch of 2026-10-21), effects by years
+  since a by-right rule (0-1, 2-3, 4+) scaled by its dose, plus modifiers (price-to-cost, home value) and a rate
+  term. Inference: wild cluster score bootstrap by place and randomization inference that reassigns adoption paths
+  within state and size band.'
+manifest_note: Written by hand on 2026-11-03 from the run's log, CSVs and analysis-plan entry (the run predates
+  run.yaml).

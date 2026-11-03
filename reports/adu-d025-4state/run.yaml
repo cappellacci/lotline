@@ -1,0 +1,39 @@
+id: adu-d025-4state
+title: ADU, four-state refresh (November)
+model: D-025
+plan_entry: 'D-025: four-state refresh (2026-11-02) and its run'
+status: no_estimate
+status_note: BFGS hit its 500-iteration limit; the convergence guard stopped the run before any estimate.
+started: '2026-11-02T19:56:32-05:00'
+commit: 0ca15cc
+command: uv run python scripts/dev/estimate_pooled_adu.py --full --workers 8 --out reports/adu-d025-4state
+scope:
+  states:
+  - MN
+  - TX
+  years: 2016-2025 (TX places over the years their source counts ADUs)
+  outcome: ADU permits a year (Met Council; TX city permit files)
+  places: 80
+  place_years: 791
+  treated: 31
+  adopting_in_window: 21
+  places_by_state:
+    MN: 76
+    TX: 4
+  transport test: Raleigh 2021-2025, Durham 2019-2025
+  holdouts: St. Paul entirely
+config:
+  main estimator: pooled hierarchical negative binomial (Gauss-Hermite)
+  household growth: corrected (D-031 b)
+  bootstrap draws: 999
+  randomization reassignments: 999
+  tag sensitivity: firm dates only (71 places)
+  workers: 8
+reading: No estimate. Slow convergence, not an identification failure (no separation, nothing at a bound); a re-run
+  needs a new dated entry.
+method: 'Pooled hierarchical negative binomial on ADU permits: place random effects integrated by Gauss-Hermite
+  quadrature, year effects, effects by years since an ADU rule (0-1, 2-3, 4+), modifiers and a rate term. Inference:
+  wild cluster score bootstrap by place (Webb weights) and randomization inference over adoption years; five checks,
+  a transport test and HonestDiD bounds when the pre-trend check fails.'
+manifest_note: Written by hand on 2026-11-03 from the run's log, CSVs and analysis-plan entry (the run predates
+  run.yaml).

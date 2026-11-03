@@ -1,0 +1,32 @@
+id: corrected-2026-10-21
+title: ADU, October (Twin Cities, corrected growth)
+model: D-025
+plan_entry: 'D-025: plan for the corrected-growth refit (2026-10-21) and its run'
+status: completed
+started: '2026-10-21T04:14:00-04:00'
+commit: b2f09a3
+command: uv run python -u scripts/dev/estimate_pooled_adu.py --full --hh-growth corrected --out reports/adu-d025/corrected-2026-10-21/
+scope:
+  states:
+  - MN
+  years: 2016-2025
+  outcome: ADU permits a year (Met Council)
+  places: 76
+  treated: 31
+  sample: Twin Cities places with Met Council permits
+  transport test: Austin 2016-2023, Raleigh 2021-2025, Durham 2019-2025
+  holdouts: St. Paul entirely
+config:
+  main estimator: pooled hierarchical negative binomial (Gauss-Hermite)
+  household growth: corrected (D-031 b)
+  bootstrap draws: 999
+  randomization reassignments: 999
+  bootstrap seed: 20261020
+reading: Overall 2.37 (0.12 to 4.51), but randomization inference p = 0.11 (not distinguishable at 10% from reshuffled
+  adoption years), the pre-trend check fails (p = 0.05) and the transport test fails.
+method: 'Pooled hierarchical negative binomial on ADU permits: place random effects integrated by Gauss-Hermite
+  quadrature, year effects, effects by years since an ADU rule (0-1, 2-3, 4+), modifiers and a rate term. Inference:
+  wild cluster score bootstrap by place (Webb weights) and randomization inference over adoption years; five checks,
+  a transport test and HonestDiD bounds when the pre-trend check fails.'
+manifest_note: Written by hand on 2026-11-03 from the run's log, CSVs and analysis-plan entry (the run predates
+  run.yaml).
