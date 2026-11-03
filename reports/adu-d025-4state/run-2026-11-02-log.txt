@@ -1,0 +1,22 @@
+commit 0ca15cc30d0338fd0ee1eb937200c42db691185d start Mon Nov  2 19:56:32 EST 2026
+household growth: corrected
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline-engine14/scripts/dev/estimate_pooled_adu.py", line 472, in <module>
+    main()
+  File "/Users/bencappellacci/Engineering/lotline-engine14/scripts/dev/estimate_pooled_adu.py", line 468, in main
+    full(store, a.out)
+  File "/Users/bencappellacci/Engineering/lotline-engine14/scripts/dev/estimate_pooled_adu.py", line 269, in full
+    panel, fit, boot, main = main_model(store)
+                             ^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-engine14/scripts/dev/estimate_pooled_adu.py", line 248, in main_model
+    fit = pa.estimate_pooled(panel, modifiers=list(est.MODIFIERS))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-engine14/src/lotline/model/pooled_adu.py", line 656, in estimate_pooled
+    return fit_pooled(
+           ^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline-engine14/src/lotline/model/pooled_adu.py", line 617, in fit_pooled
+    check_pooled(fit)
+  File "/Users/bencappellacci/Engineering/lotline-engine14/src/lotline/model/pooled_adu.py", line 626, in check_pooled
+    raise EstimationError("pooled model: BFGS did not converge")
+lotline.model.estimate_adu.EstimationError: pooled model: BFGS did not converge
+exit 1 end Mon Nov  2 19:57:29 EST 2026
