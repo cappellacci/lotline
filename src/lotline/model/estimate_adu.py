@@ -888,6 +888,7 @@ class Panel:
     excluded_no_rule: list
     excluded_holdout: list
     notes: list
+    excluded_by_tags: list = field(default_factory=list)  # left out by a tag sensitivity (`rule_tags`)
 
 
 def build_panel(
@@ -897,6 +898,7 @@ def build_panel(
     geoids=None,
     source: str | None = None,
     hh_growth: str = "corrected",
+    drop_tags: Sequence[str] = (),
 ) -> Panel:
     """The D-023 estimation panel for one state from processed, holdout-filtered tables.
 
@@ -907,23 +909,30 @@ def build_panel(
     (D_it), rate (national 30-year mean), mm, parking and process (D-031 controls), T_announce
     (`announcement_year`), the pre-adoption modifiers (`MODIFIERS`, measured in year
     T − 1) and units_5p (BPS units in 5+ unit buildings, the placebo outcome). `hh_growth`: "corrected"
-    (default) or "as_run" (`household_growth`).
+    (default) or "as_run" (`household_growth`). Date tags are read by `rule_tags` (`[predates]` rules are in
+    force before the panel); `drop_tags` ('earliest_known', 'unconfirmed') leaves out places whose in-panel
+    ADU event carries that flag (listed in `excluded_by_tags`).
     """
     from lotline.build import eligible as eligible_rule
     from lotline.config import load_params, load_state
-    from lotline.model import hazard, money
+    from lotline.model import hazard, money, rule_tags
     from lotline.model.scenarios import adu
 
     years = list(years)
     fips = load_state(state).fips
     p = {k: v.value for k, v in load_params("adu").items()}
     grades = (p["adu_dose_grade_permit"], p["adu_dose_grade_owner"], p["adu_dose_grade_by_right"])
-    every = pd.concat([adu.load_reforms(st).assign(state=st) for st in adu.REFORM_STATES], ignore_index=True)
+    every = pd.concat(
+        [rule_tags.apply(adu.load_reforms(st)).assign(state=st) for st in adu.REFORM_STATES],
+        ignore_index=True,
+    )
     fcounts = adu.field_restrict_counts(every, pd.Timestamp(f"{max(years)}-12-31"))
     fp = adu.field_probabilities(fcounts, state, int(p["adu_rule_min_coded"]))
     mm_rows = every.loc[every["theme"] == "missing_middle", "by_right"].dropna().astype(str).str.lower()
     mm_share = float((mm_rows == "true").mean()) if len(mm_rows) else 0.5
-    reforms = adu.load_reforms(state)
+    reforms = rule_tags.apply(adu.load_reforms(state))
+    adu_events = reforms[(reforms["theme"] == "adu") & (reforms["status"] == "in_force")]
+    dropped = rule_tags.dropped_places(adu_events, years, drop_tags)
     coverage = adu.coverage_map(state, store, reforms, p).set_index("reform_id")["coverage"].to_dict()
 
     permits = store.read(state, "permits")
@@ -947,8 +956,11 @@ def build_panel(
     hh = acs[acs["variable"] == "B25003_001"].set_index(["geo", "end_year"])["estimate"]
     central = adu.central_params()
 
-    rows, no_rule, notes = [], [], []
+    rows, no_rule, notes, by_tags = [], [], [], []
     for g in geoids:
+        if {g, fips} & dropped:
+            by_tags.append(g)
+            continue
         per_year, coded = _rules_by_year(reforms, reforms, g, fips, years, coverage, fp, grades)
         if not coded:
             no_rule.append(g)
@@ -1009,7 +1021,7 @@ def build_panel(
                 }
             )
     data = pd.DataFrame(rows)
-    return Panel(data, no_rule, held, notes)
+    return Panel(data, no_rule, held, notes, by_tags)
 
 
 # ---------------------------------------------------------------------------------------------------------
