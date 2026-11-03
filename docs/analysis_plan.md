@@ -1633,3 +1633,39 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   the scenario takes a missing-middle evidence prong.
 - **Decided by:** Ben, 2026-11-03 ("Lets proceed with route one but ensure that this is not an irreversible
   decision"); written by WS-ENGINE.
+- **Amendment (2026-11-03, later the same day; Ben): our own four states set the rates; outside evidence only
+  checks them.**
+  - **What changes:** "anchored to evidence from well-studied reforms" above is replaced. The uptake rates
+    (the mature hazard, the ramp, the units per project, and the modifiers through the pro forma) are
+    **calibrated on the post-reform places of MN, NC, OH and TX**, as D-019 already does for the ADU anchor
+    (fit 3: Minneapolis, Austin and 14 Twin Cities suburbs). Studies from other places (Portland, Houston,
+    Auckland, California) are a plausibility check. A calibrated value far outside them has to be explained,
+    but they don't set the values. Where our data can't identify a parameter (for example the ramp's late
+    years, given short post-periods), the entry says so and states what fills the gap.
+  - **Why (Ben):** the purpose of collecting the four states' data is to measure what enacting these rules
+    actually produced. A rate from another market only stands in for that.
+  - **Why this works where D-024 and D-025 did not:** those estimate a *difference* between reformed and
+    comparison places, which needs a credible comparison group and the power to detect a gap. The uptake rate
+    is a *level*: how often an eligible lot in a reformed place gets an ADU or a 2–4 unit building after the
+    rule. We observe that directly.
+  - **What the calibration must handle for missing middle:**
+    - building that was already happening before the rule: subtract each place's pre-reform 2–4 unit rate, or
+      count permits on newly eligible lots where permits carry a parcel number;
+    - general growth in reforming places (the four-state placebo outcome failed): net it out with the place's
+      5+ unit trend or the comparison places' year effects;
+    - short post-periods: say how much of the ramp the data identifies.
+  - **The test is a backtest, as Ben describes it: V4, leave one place out.** For each reformed place,
+    calibrate without it, using only data up to the year before its reform. Predict its years 1–5 and compare
+    with what was permitted. Score:
+    - P10–P90 coverage across places (V4's proposed pass: at least 60%; nominal 80%);
+    - error per 1,000 eligible parcels, against two benchmarks: no effect, and the outside-evidence rate
+      applied unadjusted.
+
+    Durham, Raleigh and Minneapolis remain the pre-declared out-of-sample tests above. Charlotte and St.
+    Paul remain V5, untouched.
+  - **Expected accuracy, stated now:** a single city's count will come with a range, not a point. In D-019 the
+    place-to-place multiplier varies widely (`adu_place_effect_variance`), and D-025's transport test missed
+    Austin. Statewide totals should be tighter than single cities, because place errors partly cancel.
+  - **Applies to:** missing middle (D-038, PR #272, to be redone this way) and a refit of the ADU anchor on
+    the four-state data (D-019 fit 3 predates the NC and TX permit work), under its own dated entry.
+  - **Decided by:** Ben, 2026-11-03 ("we need to be rolling our own"); written by WS-ENGINE.
