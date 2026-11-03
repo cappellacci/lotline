@@ -1,0 +1,2 @@
+theta,low,high,alpha,m_owner,m_other,owner_interval,other_interval,owner_estimated,other_estimated,loglik,n_places,n_years
+0.0011124750998454643,0.0007434705056707716,0.0017422317814428814,2.462719371265935,1.0,0.3,"(0.9, 1.0)","(0.2, 1.0)",True,False,-451.82218077388933,51,296

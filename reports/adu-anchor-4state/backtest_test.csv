@@ -1,0 +1,13 @@
+set,place,name,state,year,observed,p10,p50,p90,mean,portland,parcels,inside
+Test set (held out),3755000,Raleigh city,NC,2021,23,0.0,2.0,17.0,6.23145,186.97282876563338,86769.0,False
+Test set (held out),3755000,Raleigh city,NC,2022,55,0.0,4.0,37.0,13.8012,284.85336577012015,87302.0,False
+Test set (held out),3755000,Raleigh city,NC,2023,54,0.0,6.0,57.0,21.074,331.5758389831356,87835.0,True
+Test set (held out),3755000,Raleigh city,NC,2024,37,0.0,8.0,74.0,27.87955,355.29284106122464,90215.0,True
+Test set (held out),3755000,Raleigh city,NC,2025,61,0.0,9.0,82.0,30.7606,359.3742996881162,90215.0,True
+Test set (held out),3755000,Raleigh city,NC,total,230,0.0,29.0,265.0,99.7468,1518.06917426823,442336.0,True
+Test set (held out),3719000,Durham city,NC,2021,32,0.0,3.0,29.0,10.97695,112.75819055894193,63733.0,False
+Test set (held out),3719000,Durham city,NC,2022,35,0.0,5.0,46.0,17.5664,194.10113410996206,64668.0,True
+Test set (held out),3719000,Durham city,NC,2023,77,0.0,6.0,57.0,21.811,242.330663417408,65900.0,False
+Test set (held out),3719000,Durham city,NC,2024,51,0.0,18.0,153.0,54.2166,262.65974704977225,67180.0,True
+Test set (held out),3719000,Durham city,NC,2025,44,0.0,18.0,156.0,55.4289,267.09408240293897,67180.0,True
+Test set (held out),3719000,Durham city,NC,total,239,1.0,54.0,443.0,159.99985,1078.9438175390233,328661.0,True
