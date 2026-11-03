@@ -413,6 +413,96 @@ def four_state_main(store, out: Path | None, workers: int) -> None:
     _score("Backtest (leave one place out)", store, places, draws, _portland_paths(store, places), out)
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-040: statewide backtest (joint draws summed over a state's places)
+# ---------------------------------------------------------------------------------------------------------
+
+SEED = 20261020
+
+
+def _test_set(store) -> list[cal.PlaceData]:
+    test = cal.place_data("NC", store, [RALEIGH, DURHAM], TEST_YEARS)
+    rows = cal.place_years("NC", store, [DURHAM], TEST_YEARS)
+    if not (len(rows) and rows["eligible_parcels"].min() >= 1000):
+        test = [p for p in test if p.geoid != DURHAM]
+    return test
+
+
+def _leave_state(args) -> tuple[str, cal.Fit3, dict]:
+    places, test, st = args
+    fit = cal.fit3([pl for pl in places if pl.state != st])
+    pred = [pl for pl in places + test if pl.state == st]
+    return st, fit, cal.predict_places(pred, fit, seed=SEED)
+
+
+def _leave_place_joint(args) -> tuple[str, np.ndarray]:
+    places, i = args
+    fit = cal.fit3([pl for j, pl in enumerate(places) if j != i])
+    return places[i].geoid, cal.predict_places([places[i]], fit, seed=SEED)[places[i].geoid]
+
+
+def verdict(observed: float, p10: float, p50: float, p90: float) -> str:
+    """D-040's bar: useful = inside P10-P90 and P50 within a factor of 2 of the observed total."""
+    inside = p10 <= observed <= p90
+    close = p50 > 0 and observed > 0 and 0.5 <= observed / p50 <= 2
+    return "useful" if inside and close else "inside only" if inside else "missed"
+
+
+def state_totals(label: str, groups: dict, draws: dict, portland: dict) -> pd.DataFrame:
+    """One row per group of places: observed total, P10/P50/P90 of the summed joint draws, and the scores."""
+    recs = []
+    for name, pls in groups.items():
+        tot = sum(draws[pl.geoid].sum(axis=1) for pl in pls)
+        obs = float(sum(pl.y.sum() for pl in pls))
+        lo, mid, hi = np.percentile(tot, P_BANDS)
+        recs.append(dict(test=label, group=name, places=len(pls), place_years=sum(len(pl.y) for pl in pls),
+                         observed=int(obs), p10=lo, p50=mid, p90=hi, mean=float(tot.mean()),
+                         obs_over_p50=obs / mid if mid > 0 else float("inf"),
+                         p90_over_p10=hi / lo if lo > 0 else float("inf"),
+                         portland=float(sum(portland[pl.geoid].sum() for pl in pls)),
+                         verdict=verdict(obs, lo, mid, hi)))  # fmt: skip
+    df = pd.DataFrame(recs)
+    print(f"\n{label}")
+    print(df.drop(columns=["test"]).round(2).to_string(index=False), flush=True)
+    return df
+
+
+def _groups(places, test, with_test: bool) -> dict:
+    g = {st: [pl for pl in places if pl.state == st] for st in ("MN", "NC", "OH", "TX")}
+    if with_test:
+        g["NC with Raleigh and Durham"] = g["NC"] + test
+    return g
+
+
+def statewide_main(store, out: Path | None, workers: int) -> None:
+    """D-040: leave one state out (main) and leave one place out summed by state, joint draws."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    places, test = four_state_places(store), _test_set(store)
+    portland = _portland_paths(store, places + test)
+    print(f"=== D-040: {len(places)} fit places, test set {[p.name for p in test]} ===", flush=True)
+    with ProcessPoolExecutor(workers) as pool:
+        loso = list(pool.map(_leave_state, [(places, test, st) for st in ("MN", "NC", "OH", "TX")]))
+        print("\nLeave one state out: the fit without each state", flush=True)
+        draws_s = {}
+        for st, fit, d in loso:
+            print(f"  without {st}: theta {fit.theta * 1000:.3f} per 1,000 ({fit.low * 1000:.3f}-"
+                  f"{fit.high * 1000:.3f}), alpha {fit.alpha:.2f}, places {fit.n_places}")  # fmt: skip
+            draws_s.update(d)
+        main = state_totals("Main: leave one state out", _groups(places, test, True), draws_s, portland)
+        print(f"\nLeave one place out: {len(places)} refits on {workers} workers ...", flush=True)
+        draws_p = dict(pool.map(_leave_place_joint, [(places, i) for i in range(len(places))]))
+    draws_p.update(cal.predict_places(test, cal.fit3(places), seed=SEED))  # test set from the full fit
+    second = state_totals("Second: leave one place out, summed by state", _groups(places, test, True),
+                          draws_p, portland)  # fmt: skip
+    if out is not None:
+        pd.concat([main, second]).to_csv(out / "statewide.csv", index=False)
+        for tag, d in (("loso", draws_s), ("lopo", draws_p)):
+            np.savez_compressed(out / f"draws_{tag}.npz", **{g: v.sum(axis=1) for g, v in d.items()})
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -430,8 +520,12 @@ def main() -> None:
     ap.add_argument(
         "--four-state", action="store_true", help="D-039: four-state fit and leave-one-out backtest"
     )
-    ap.add_argument("--out", type=Path, help="--four-state: folder for fit.csv and the backtest CSVs")
+    ap.add_argument("--statewide", action="store_true", help="D-040: statewide backtest (state totals)")
+    ap.add_argument("--out", type=Path, help="--four-state / --statewide: folder for the CSVs")
     a = ap.parse_args()
+    if a.statewide:
+        statewide_main(DataStore(), a.out, a.workers)
+        return
     if a.four_state:
         four_state_main(DataStore(), a.out, a.workers)
         return

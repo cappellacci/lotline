@@ -600,6 +600,25 @@ def predict_place(pl: PlaceData, fit: Fit3, draws: int = 20_000, seed: int = 0) 
     return rng.poisson((theta * u)[:, None] * ks[combo])
 
 
+def predict_places(places: list[PlaceData], fit: Fit3, draws: int = 20_000, seed: int = 0) -> dict:
+    """Joint predictive counts for places summed together (D-040): {geoid: draws × years}. One θ per draw,
+    shared by every place (drawn first, as in `predict_place`, so a seed gives the same θ draws in every
+    refit); an independent u and blank-field combination per place, from a stream keyed by (seed, geoid), so a
+    place draws alike whichever places it is predicted with."""
+    import zlib
+
+    rng = np.random.default_rng(seed)
+    theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=draws))
+    cv = _cvals(fit.m_owner, fit.m_other)
+    out = {}
+    for pl in places:
+        rng = np.random.default_rng([seed, zlib.crc32(pl.geoid.encode())])
+        u = rng.gamma(1 / fit.alpha, fit.alpha, size=draws) if fit.alpha > 0 else np.ones(draws)
+        combo = rng.choice(len(pl.w), size=draws, p=pl.w / pl.w.sum())
+        out[pl.geoid] = rng.poisson((theta * u)[:, None] * pl.k(cv)[combo])
+    return out
+
+
 def place_data(state: str, store, geoids, years, params=None) -> list[PlaceData]:
     """`PlaceData` per place with checkable years (a coded rule in force by 1 July, ADU-flagging permits).
 
