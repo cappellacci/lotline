@@ -1,0 +1,219 @@
+commit 4047239 start Tue Nov  3 10:55:55 EST 2026
+uv run python -u scripts/dev/calibrate_adu.py --counts --workers 9 --out reports/adu-counts
+
+=== D-041 run: main {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+
+main: leave one state out
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 283.0 570.0 1140.0 660.37          0.50          4.03   6011.53      useful
+                        NC       6           32        45  16.0  68.0  229.0 104.70          0.66         14.31    990.73      useful
+                        OH       1            2         8   0.0   3.0   26.0   9.11          2.67           inf    131.01 inside only
+                        TX       2           13      1108  48.0 432.0 2003.1 852.48          2.56         41.73  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  63.0 255.0  933.0 412.86          1.78         14.81   3587.74      useful
+
+main: test set from the full fit
+             group  places  place_years  observed  p10   p50   p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+Raleigh and Durham       2           10       410 17.0 159.0 704.1 286.66          2.58         41.42   2597.01 inside only
+ run     fit state status  theta_per_1000   low  high  alpha  m_owner  places  place_years
+main     all           ok           1.232 0.809 2.106  2.284      1.0      51          296
+main   state    MN     ok           1.252 0.709 2.536  3.459      1.0      42          249
+main   state    NC     ok           1.270 0.539 1.768  0.000      0.3       6           32
+main   state    OH     ok           2.342 1.100 5.646  0.000      0.5       1            2
+main   state    TX     ok           4.173 3.946 4.394  0.000      0.2       2           13
+main without    MN     ok           2.081 1.235 4.187  0.323      0.4       9           47
+main without    NC     ok           1.306 0.790 2.465  2.984      1.0      45          264
+main without    OH     ok           1.241 0.804 2.153  2.397      1.0      50          294
+main without    TX     ok           1.159 0.740 2.031  2.386      1.0      49          283
+ run  scope  places  corr
+main pooled      53 -0.11
+main     MN      42 -0.18
+main     NC       8  0.24
+main     OH       1   NaN
+main     TX       2   NaN
+
+Leave one place out (main): 51 refits ...
+
+Backtest (leave one place out): 51 places, 296 place-years
+  P10-P90 coverage: place totals 92% (47 of 51), place-years 94%
+  mean abs error per 1,000 eligible parcels a year: model (median) 0.099; no effect 0.098; Portland unadjusted 1.970
+                             name state  observed  p10   p50    p90  portland  inside
+                     Andover city    MN         0  0.0   7.0   43.0     180.8    True
+                Apple Valley city    MN         0  0.0   0.0    2.0     242.4    True
+                      Blaine city    MN         0  0.0   4.0   26.0     107.8    True
+                 Bloomington city    MN         0  0.0  15.0   95.0     483.6    True
+                  Burnsville city    MN         2  0.0   0.0    2.0     143.2    True
+                  Chanhassen city    MN         1  0.0   0.0    1.0       1.5    True
+               Cottage Grove city    MN         0  0.0   1.0    7.0      30.9    True
+              Cedar Lake township    MN         2  0.0   0.0    3.0      22.5    True
+                  Helena township    MN         0  0.0   0.0    2.0      12.8    True
+                 Jackson township    MN         0  0.0   0.0    0.0       1.8    True
+            St. Lawrence township    MN         0  0.0   0.0    1.0       2.7    True
+                     Crystal city    MN         1  0.0   3.0   24.0      82.0    True
+                      Dayton city    MN         2  0.0   1.0    8.0      27.5    True
+                 Baytown township    MN         0  0.0   0.0    3.0      10.0    True
+                 Denmark township    MN         2  0.0   0.0    1.0       1.7   False
+                       Eagan city    MN         0  0.0  11.0   71.0     300.8    True
+                       Edina city    MN         5  0.0   1.0    8.0       9.8    True
+                 Forest Lake city    MN         0  0.0   0.0    3.0      14.3    True
+                     Fridley city    MN        10  0.0   0.0    4.0      26.3   False
+               Golden Valley city    MN         1  0.0   0.0    3.0      17.7    True
+                     Hopkins city    MN         0  0.0   0.0    3.0       7.8    True
+                        Hugo city    MN         0  0.0   4.0   26.0      86.6    True
+         Inver Grove Heights city    MN         9  0.0   4.0   38.0     141.3    True
+                   Lakeville city    MN         0  0.0  13.0   84.0     398.9    True
+                   Maplewood city    MN         0  0.0   0.0    2.0      10.6    True
+                      Medina city    MN         1  0.0   2.0   14.0      46.0    True
+                 Minneapolis city    MN       210  4.0 193.0 1412.0    2500.9    True
+                  Minnetonka city    MN         9  0.0   2.0   13.0      67.1    True
+                       Mound city    MN         0  0.0   0.0    0.0       1.1    True
+                 Mounds View city    MN         0  0.0   0.0    0.0       0.5    True
+                New Brighton city    MN         0  0.0   0.0    1.0       2.0    True
+                       Orono city    MN         5  0.0   0.0    4.0       8.5   False
+                    Plymouth city    MN         3  0.0   4.0   35.0     390.9    True
+                      Ramsey city    MN         0  0.0   0.0    4.0      42.1    True
+                   Richfield city    MN         5  0.0   3.0   25.0     184.4    True
+                      Rogers city    MN         0  0.0   1.0    8.0      30.9    True
+                   Rosemount city    MN         0  0.0   0.0    1.0       5.2    True
+                   Roseville city    MN         5  0.0   4.0   38.0     189.4    True
+              St. Louis Park city    MN         0  0.0   9.0   64.0      81.6    True
+                  Stillwater city    MN        11  0.0   2.0   15.0      90.7    True
+             Vadnais Heights city    MN         0  0.0   0.0    1.0       1.4    True
+                     Wayzata city    MN         1  0.0   0.0    1.0       3.3    True
+                      Austin city    TX       868  2.0  96.0  684.0    4823.6   False
+                 San Antonio city    TX       240  3.0 189.0 1687.1    7245.4    True
+                   Mint Hill town    NC         7  0.0  13.0  110.0     370.0    True
+                    Matthews town    NC         7  0.0   6.0   52.0     266.1    True
+                   Cornelius town    NC         4  0.0   1.0    8.0      38.3    True
+                Huntersville town    NC         2  0.0   0.0    4.0      13.1    True
+                  Greensboro city    NC         8  0.0   5.0   39.0      98.2    True
+Durham County Unincorporated Area    NC        17  0.0   6.0   56.0     205.0    True
+                  Cincinnati city    OH         8  0.0   3.0   26.0     131.0    True
+
+Test set (held out): 2 places, 10 place-years
+  P10-P90 coverage: place totals 100% (2 of 2), place-years 80%
+  mean abs error per 1,000 eligible parcels a year: model (median) 0.422; no effect 0.549; Portland unadjusted 2.796
+        name state  observed  p10  p50   p90  portland  inside
+Raleigh city    NC       188  1.0 34.0 286.0    1518.1    True
+ Durham city    NC       222  1.0 63.0 487.0    1078.9    True
+
+main: leave one place out, summed by state
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 184.0 469.0 1693.2 768.57          0.61          9.20   6011.53      useful
+                        NC       6           32        45  19.0  69.0  212.0  99.51          0.65         11.16    990.73      useful
+                        OH       1            2         8   0.0   3.0   26.0   9.11          2.67           inf    131.01 inside only
+                        TX       2           13      1108  52.0 464.0 2102.2 895.28          2.39         40.43  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  76.0 264.0  833.0 386.18          1.72         10.96   3587.74      useful
+
+=== D-041 run: S1 co-built included {'exclude_cobuilt': False, 'window': 1, 'report_rate': 0.57} ===
+
+S1 co-built included: leave one state out
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland verdict
+                        MN      42          249       306 333.0 911.0 2462.0 1216.64          0.34          7.39   6141.15  missed
+                        NC       6           32        50  21.0  84.0  271.0  126.93          0.60         12.90    990.73  useful
+                        OH       1            2         8   0.0   4.0   31.0   11.14          2.00           inf    131.01  useful
+                        TX       2           13      2785  78.9 498.0 1963.1  860.52          5.59         24.88  12069.03  missed
+NC with Raleigh and Durham       8           42       519  85.0 320.0 1114.1  500.14          1.62         13.11   3587.74  useful
+
+S1 co-built included: test set from the full fit
+             group  places  place_years  observed  p10   p50   p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+Raleigh and Durham       2           10       469 24.0 199.0 848.0 349.28          2.36         35.33   2597.01 inside only
+                 run     fit state status  theta_per_1000   low   high  alpha  m_owner  places  place_years
+S1 co-built included     all           ok           1.518 1.021  2.363  2.198      1.0      51          296
+S1 co-built included   state    MN     ok           1.245 0.745  2.243  2.648      1.0      42          249
+S1 co-built included   state    NC     ok           1.425 0.609  2.133  0.034      0.3       6           32
+S1 co-built included   state    OH     ok           2.342 1.100  5.646  0.000      0.5       1            2
+S1 co-built included   state    TX     ok          10.320 7.412 14.678  0.038      0.1       2           13
+S1 co-built included without    MN     ok           4.672 2.299 11.612  0.608      0.2       9           47
+S1 co-built included without    NC     ok           1.599 1.003  2.713  2.752      1.0      45          264
+S1 co-built included without    OH     ok           1.532 1.019  2.418  2.289      1.0      50          294
+S1 co-built included without    TX     ok           1.176 0.782  1.864  1.879      1.0      49          283
+                 run  scope  places  corr
+S1 co-built included pooled      53 -0.09
+S1 co-built included     MN      42 -0.19
+S1 co-built included     NC       8  0.29
+S1 co-built included     OH       1   NaN
+S1 co-built included     TX       2   NaN
+
+=== D-041 run: S2 rho 1.0 {'exclude_cobuilt': True, 'window': 1, 'report_rate': 1.0} ===
+
+S2 rho 1.0: leave one state out
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 395.0 753.0 1440.0 858.45          0.38          3.65   8836.03      missed
+                        NC       6           32        45   9.0  43.0  150.0  67.65          1.05         16.67    990.73      useful
+                        OH       1            2         8   0.0   2.0   18.0   6.24          4.00           inf    131.01 inside only
+                        TX       2           13      1108  30.9 284.0 1335.0 556.52          3.90         43.20  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  38.0 161.0  608.0 263.65          2.83         16.00   3587.74 inside only
+
+S2 rho 1.0: test set from the full fit
+             group  places  place_years  observed  p10   p50   p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+Raleigh and Durham       2           10       410 11.0 107.0 493.0 197.92          3.83         44.82   2597.01 inside only
+       run     fit state status  theta_per_1000   low  high  alpha  m_owner  places  place_years
+S2 rho 1.0     all           ok           0.855 0.562 1.368  2.430      1.0      51          296
+S2 rho 1.0   state    MN     ok           0.720 0.409 1.386  3.440      1.0      42          249
+S2 rho 1.0   state    NC     ok           1.270 0.539 1.768  0.000      0.3       6           32
+S2 rho 1.0   state    OH     ok           2.342 1.100 5.646  0.000      0.5       1            2
+S2 rho 1.0   state    TX     ok           4.173 3.946 4.394  0.000      0.2       2           13
+S2 rho 1.0 without    MN     ok           2.081 1.235 4.187  0.323      0.4       9           47
+S2 rho 1.0 without    NC     ok           0.839 0.509 1.487  3.132      1.0      45          264
+S2 rho 1.0 without    OH     ok           0.849 0.551 1.383  2.539      1.0      50          294
+S2 rho 1.0 without    TX     ok           0.756 0.484 1.250  2.437      1.0      49          283
+       run  scope  places  corr
+S2 rho 1.0 pooled      53 -0.14
+S2 rho 1.0     MN      42 -0.19
+S2 rho 1.0     NC       8  0.24
+S2 rho 1.0     OH       1   NaN
+S2 rho 1.0     TX       2   NaN
+
+=== D-041 run: S3 rho 0.3 {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.3} ===
+
+S3 rho 0.3: leave one state out
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 207.0 453.0  959.1  535.61          0.63          4.63   4238.01      useful
+                        NC       6           32        45  28.0 121.0  406.0  186.39          0.37         14.50    990.73 inside only
+                        OH       1            2         8   0.0   5.0   42.0   14.57          1.60           inf    131.01      useful
+                        TX       2           13      1108  79.0 751.0 3605.1 1497.55          1.48         45.63  12069.03      useful
+NC with Raleigh and Durham       8           42       455 112.0 459.0 1688.0  750.97          0.99         15.07   3587.74      useful
+
+S3 rho 0.3: test set from the full fit
+             group  places  place_years  observed  p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland verdict
+Raleigh and Durham       2           10       410 30.0 265.0 1207.0 489.23          1.55         40.23   2597.01  useful
+       run     fit state status  theta_per_1000   low  high  alpha  m_owner  places  place_years
+S3 rho 0.3     all           ok           2.158 1.344 3.647  2.287      0.9      51          296
+S3 rho 0.3   state    MN     ok           2.592 1.407 5.133  3.502      0.9      42          249
+S3 rho 0.3   state    NC     ok           1.270 0.539 1.768  0.000      0.3       6           32
+S3 rho 0.3   state    OH     ok           2.342 1.100 5.646  0.000      0.5       1            2
+S3 rho 0.3   state    TX     ok           4.173 3.946 4.394  0.000      0.2       2           13
+S3 rho 0.3 without    MN     ok           2.081 1.235 4.187  0.323      0.4       9           47
+S3 rho 0.3 without    NC     ok           2.476 1.437 4.598  2.947      0.9      45          264
+S3 rho 0.3 without    OH     ok           2.205 1.355 3.773  2.401      0.9      50          294
+S3 rho 0.3 without    TX     ok           2.167 1.295 3.765  2.473      0.9      49          283
+       run  scope  places  corr
+S3 rho 0.3 pooled      53 -0.06
+S3 rho 0.3     MN      42 -0.17
+S3 rho 0.3     NC       8  0.24
+S3 rho 0.3     OH       1   NaN
+S3 rho 0.3     TX       2   NaN
+
+=== Counts per state ===
+                 run    group  places  place_years  d039_count  count  survey_place_years
+                main       MN      42          249         306    285                 241
+                main       NC       6           32          50     45                   0
+                main       OH       1            2           8      8                   0
+                main       TX       2           13        2785   1108                   0
+                main test set       2           10         469    410                   0
+S1 co-built included       MN      42          249         306    306                 240
+S1 co-built included       NC       6           32          50     50                   0
+S1 co-built included       OH       1            2           8      8                   0
+S1 co-built included       TX       2           13        2785   2785                   0
+S1 co-built included test set       2           10         469    469                   0
+          S2 rho 1.0       MN      42          249         306    285                   0
+          S2 rho 1.0       NC       6           32          50     45                   0
+          S2 rho 1.0       OH       1            2           8      8                   0
+          S2 rho 1.0       TX       2           13        2785   1108                   0
+          S2 rho 1.0 test set       2           10         469    410                   0
+          S3 rho 0.3       MN      42          249         306    285                 241
+          S3 rho 0.3       NC       6           32          50     45                   0
+          S3 rho 0.3       OH       1            2           8      8                   0
+          S3 rho 0.3       TX       2           13        2785   1108                   0
+          S3 rho 0.3 test set       2           10         469    410                   0
+exit 0 end Tue Nov  3 13:32:08 EST 2026

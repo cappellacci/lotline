@@ -1,0 +1,21 @@
+run,group,places,place_years,d039_count,count,survey_place_years
+main,MN,42,249,306,285,241
+main,NC,6,32,50,45,0
+main,OH,1,2,8,8,0
+main,TX,2,13,2785,1108,0
+main,test set,2,10,469,410,0
+S1 co-built included,MN,42,249,306,306,240
+S1 co-built included,NC,6,32,50,50,0
+S1 co-built included,OH,1,2,8,8,0
+S1 co-built included,TX,2,13,2785,2785,0
+S1 co-built included,test set,2,10,469,469,0
+S2 rho 1.0,MN,42,249,306,285,0
+S2 rho 1.0,NC,6,32,50,45,0
+S2 rho 1.0,OH,1,2,8,8,0
+S2 rho 1.0,TX,2,13,2785,1108,0
+S2 rho 1.0,test set,2,10,469,410,0
+S3 rho 0.3,MN,42,249,306,285,241
+S3 rho 0.3,NC,6,32,50,45,0
+S3 rho 0.3,OH,1,2,8,8,0
+S3 rho 0.3,TX,2,13,2785,1108,0
+S3 rho 0.3,test set,2,10,469,410,0
