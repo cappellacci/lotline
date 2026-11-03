@@ -1759,3 +1759,38 @@ Dated, append-only. Each entry says what changed from the research documents, wh
          statewide, so that test matters most, and this run's per-place CSVs don't keep the draws needed for it.
   - **Config:** unchanged. Adopting θ = 0.001112 (0.000743–0.001742) in `hazard.yaml` and re-running
     `--draw-terms` is Ben's call.
+
+### D-040 · 2026-11-03 · Statewide backtest of the ADU anchor (written before the run)
+- **Why:** D-039's backtest scores single places and finds the place-to-place variation unexplained. The tool's
+  headline numbers are statewide totals, where place errors partly cancel. Ben chose this test next
+  (2026-11-03, "Statewide backtest").
+- **Model and data:** D-039 unchanged: fit 3, the same fit set and years per state, the same test set
+  (Raleigh and Durham city, 2021–2025), holdouts filtered by the IO layer. No new data.
+- **Joint draws (new function, `calibrate_adu.predict_places`):** a state total needs the places drawn
+  together. `predict_place` seeds each place alike, so summing its output would give every place the same place
+  effect and overstate the spread. Per draw: one θ from its interval, shared by every place predicted from that
+  fit (θ's uncertainty is common to all of them); an independent place effect u ~ Gamma(mean 1, variance α) and
+  blank-field combination per place; Poisson counts per place-year. 20,000 draws, seed 20261020.
+- **Main test, leave one state out (4 refits):** for each of MN, NC, OH and TX, refit on the other three
+  states' fit-set places and predict every fit-set place in the held-out state jointly. The state total is the
+  sum over its places and in-window years. This is the closest test of D-037's purpose: rates estimated
+  elsewhere, applied to a state the fit has not seen (HANDOFF's V8). NC is reported with and without Raleigh and
+  Durham (never in any fit).
+- **Second test, leave one place out, summed by state (51 refits, as D-039):** each place is predicted from the
+  fit without it, with the same seed for θ across refits (so θ draws stay aligned) and independent place
+  effects; the draws are summed within each state. This asks whether the statewide sum is right when the
+  state's other places are in the fit.
+- **Scores, per state and test:** observed total; P10, P50, P90; inside P10–P90; observed ÷ P50; P90 ÷ P10.
+  Benchmarks: no effect (0) and Portland's 4 per 1,000 × eligible parcels × ramp (as D-039, corrected).
+  With four states there is no coverage rate to read. The bar, stated now: a state total is **useful** if it is
+  inside P10–P90 **and** its P50 is within a factor of 2 of the observed total; **inside only** if the
+  interval holds it but the median is further off; **missed** otherwise.
+- **Scope, stated now:** "state total" here is the sum over the coded places in the fit set, not the whole
+  state. The tool's statewide number also extrapolates to uncoded places; this test does not check that step.
+  TX is two places and Austin is most of its count; OH is Cincinnati alone (2 years). Their results are read as
+  single cases.
+- **What changes in config:** nothing. The result feeds Ben's choice on adopting D-039's θ and on D-037's
+  next steps.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --statewide --out reports/adu-statewide`, log in
+  that folder.
+- **Decided by:** Ben, 2026-11-03; written by WS-ENGINE before the run.
