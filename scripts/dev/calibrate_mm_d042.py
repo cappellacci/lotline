@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Calibrate the missing-middle uptake hazard as pre-registered in D-039 (run once).
+"""Calibrate the missing-middle uptake hazard as pre-registered in D-042 (run once).
 
-    uv run python scripts/dev/calibrate_mm_d039.py --out reports/mm-d039
+    uv run python scripts/dev/calibrate_mm_d042.py --out reports/mm-d042
 
-D-039 keeps D-038's likelihood (`lotline.model.calibrate_mm`) and changes three inputs:
+D-042 keeps D-038's likelihood (`lotline.model.calibrate_mm`) and changes three inputs:
 
 1. the event is a place's first in-window rise in its unit cap, and the outcome counts only the BPS building
    classes above the prior cap (`prior_cap`, `event_year`, `retarget`);
@@ -34,7 +34,7 @@ from lotline.model.scenarios import adu
 
 TESTS = {"2743000": "Minneapolis", "3719000": "Durham city", "37063": "Durham County", "3755000": "Raleigh"}
 FIT_FIRST, FIT_LAST = 2013, 2025
-PREREGISTERED = {  # D-039's list; places with no pre-reform BPS year drop out under the stated rule
+PREREGISTERED = {  # D-042's list; places with no pre-reform BPS year drop out under the stated rule
     "Wilson",
     "Morrisville",
     "Wake Forest",
@@ -81,7 +81,7 @@ def bps_classes(store: DataStore, places: set[str]) -> pd.DataFrame:
 
 
 def events_for(store: DataStore, panel: pd.DataFrame, geoids) -> dict[str, tuple[int, int]]:
-    """geoid -> (event year, prior cap) for every place with a D-039 event."""
+    """geoid -> (event year, prior cap) for every place with a D-042 event."""
     pa = {k: v.value for k, v in load_params("adu").items()}
     out = {}
     for st in sorted(panel["state"].unique()):
@@ -94,7 +94,7 @@ def events_for(store: DataStore, panel: pd.DataFrame, geoids) -> dict[str, tuple
                 continue
             mine = rows[rows["jurisdiction_geoid"] == g]
             before, after = cal.prior_cap(mine, int(E) - 1, cov), cal.prior_cap(mine, int(E), cov)
-            if after > before:  # D-039: the event raises the unit cap on most eligible parcels
+            if after > before:  # D-042: the event raises the unit cap on most eligible parcels
                 out[g] = (int(E), before)
             else:
                 NO_CAP_RISE[g] = (int(E), before, after)
@@ -169,7 +169,7 @@ def build(
     nat=None,
     z=None,
 ):
-    """D-039 places for the given events. baseline: 'comparison' (main), 'own' (D-038's), 'national'."""
+    """D-042 places for the given events. baseline: 'comparison' (main), 'own' (D-038's), 'national'."""
     rp = cal.retarget(panel, classes, events)
     series = {}
     if baseline == "comparison":
@@ -292,7 +292,7 @@ def main(out: Path, dry: bool = False) -> None:
 
     places, rp = build(panel, classes, fit_events, margin, sigma, z=z)
     names = {short(p.name) for p in places}
-    assert names <= PREREGISTERED, f"fit set outside D-039's list: {sorted(names - PREREGISTERED)}"
+    assert names <= PREREGISTERED, f"fit set outside D-042's list: {sorted(names - PREREGISTERED)}"
     dropped = sorted(PREREGISTERED - names)
     tick(f"fit set {len(places)} places; not in it: {dropped}")
     if dry:  # structure only, no outcome printed and no fit

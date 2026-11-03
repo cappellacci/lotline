@@ -1,6 +1,6 @@
 # Lotline: Causal diagram, Missing Middle (v0.1, 2026-10-04; v0.2 review 2026-11-03)
 
-**Status:** working draft. §6 (v0.2) checks this diagram against the D-038 fit and lists what D-039 should test. This is the Missing Middle companion to `research/lotline-causal-diagram.md`, which holds the general framework and the ADU-focused diagram. Read that first; this file covers only what changes for 2–6 units on single-family lots.
+**Status:** working draft. §6 (v0.2) checks this diagram against the D-038 fit and lists what D-042 should test. This is the Missing Middle companion to `research/lotline-causal-diagram.md`, which holds the general framework and the ADU-focused diagram. Read that first; this file covers only what changes for 2–6 units on single-family lots.
 **Register:** `research/lotline-confounder-register.csv`. Missing Middle uses 44 of the 56 factors. C43–C49 were added for this theme, and C55–C56 in the v0.2 review (§6).
 
 ---
@@ -187,7 +187,7 @@ Ranked strongest first, with the candidates we have:
 places unexplained (place-effect variance α = 7.3). It also failed its placebo check: moving each adoption date
 3 years earlier still found 0.32 per 1,000. Ben asked (2026-11-03) for the diagram to be checked against what the
 fit controlled, before any new confounders are chosen. That covers land value, growth, and year-to-year interest
-rates as a modifier. This section does that. It is written before any D-039 fit. The national figures below are
+rates as a modifier. This section does that. It is written before any D-042 fit. The national figures below are
 FRED series, not outcomes of any fit or test place.
 
 ### 6.1 Where a variable can enter
@@ -301,7 +301,7 @@ The PNG beside this file still shows v0.1. The mermaid block above is the source
 The **Slot** column uses the three jobs from §6.1: B = baseline, θ = uptake, count = measurement. For data we
 already hold, the **Our data** column names the dataset path under `LOTLINE_DATA_DIR`.
 
-| # | Factor (register) | Slot | What D-038 did | Our data | What is wrong or missing | For D-039 |
+| # | Factor (register) | Slot | What D-038 did | Our data | What is wrong or missing | For D-042 |
 |---|---|---|---|---|---|---|
 | 1 | **National 2–4 unit cycle, including rates** (C01, C42, C45, new C55) | B; θ | Only through g (the place's other homes) | `raw/fred` MORTGAGE30US and PERMIT1/24/5NSA; `raw/census_bps_state_annual` (can drop our four states) | See the note under the table | **Top**, baseline |
 | 2 | **Pre-reform trend and selection into reform** (C05, C06) | B | A flat pre-reform mean × g | BPS place history 2010–2025; `market_geo_year/fhfa` (tract to state) | The placebo failed. Places adopt while 2–4 unit building is already rising, and a flat mean misses that | **Top**, baseline (comparison places or a pre-trend) |
@@ -315,8 +315,8 @@ already hold, the **Our data** column names the dataset path under `LOTLINE_DATA
 | 10 | **Concurrent reforms** (C08) | θ | The tags-dropped check gave 1.60 | Policy inventory; `adu_coded` | Austin's 2023 parking change and fee changes overlap the 2024 reforms; check them against the policy inventory | Medium: code dates, run as a check |
 | 11 | **BPS measurement** (C32, C33) | count | Used BPS buildings as is | BPS `imputed`, `months_reported`. **No Houston permit file fetched** | Houston's 2–4 unit buildings jumped from about 373 a year to 821. A change in classification or reporting would move θ more than anything else here | **High**, a cheap check **before** any fit |
 | 12 | Spillovers between places (C26) | B | None | BPS neighbours | Would bias toward zero; small for a statewide total | Low |
-| 13 | Infrastructure, hazards, HOAs (C20, C38, C12) | θ | None | Little | No usable data at place level | Not for D-039 |
-| 14 | Code step at 3+ units (C43) | θ | None | State codes | Constant within a state, so it is absorbed by the state | Not for D-039 |
+| 13 | Infrastructure, hazards, HOAs (C20, C38, C12) | θ | None | Little | No usable data at place level | Not for D-042 |
+| 14 | Code step at 3+ units (C43) | θ | None | State codes | Constant within a state, so it is absorbed by the state | Not for D-042 |
 
 **Note on row 1, the national 2–4 unit cycle.** These are FRED national figures:
 
@@ -333,10 +333,10 @@ already hold, the **Our data** column names the dataset path under `LOTLINE_DATA
   does not explain 1,642, but it biases θ upward.
 - **Rate regime and place are confounded.** Every large place is exposed only at about 6.7%. Wilson, Wake Forest
   and Morrisville are exposed mostly at 4.6%. Part of α is therefore the rate regime.
-- **Consequence for D-039.** A separate rate modifier on θ cannot be identified with today's exposure. It should
+- **Consequence for D-042.** A separate rate modifier on θ cannot be identified with today's exposure. It should
   go into the baseline through the cycle, and into θ only as a stated assumption (the pro forma slider, C01).
 
-### 6.4 What this means for D-039 (to pre-register; nothing fitted)
+### 6.4 What this means for D-042 (to pre-register; nothing fitted)
 
 1. **A measurement check before any fit.** Fetch Houston's own permit records through the IO layer and check its
    2024–25 BPS 2–4 unit count (row 11). If the jump is a reporting or classification change, it must be fixed
@@ -405,14 +405,14 @@ This was step 1 of §6.4.
 
   So D-038's Houston "effect" is mostly a duplex trend the reform did not enable. D-038 adds a reform effect on
   top of each place's pre-reform level times its growth in other homes, and the placebo failure fits this.
-- **What this means for D-039.** D-039 should define the outcome as the building types each reform newly allows,
+- **What this means for D-042.** D-042 should define the outcome as the building types each reform newly allows,
   coded per place from the reform rows. For Houston that means 3–4 unit buildings, or 3–8 units where local data
   can see them.
   - This is the "reform design" row (row 7 of §6.3) acting on the outcome, not on θ.
   - Austin's HOME phase 1 (3 units) may raise the same question, if its SF-3 district already allowed duplexes.
-    Our Austin rows don't say, so this needs checking in the ordinance before D-039.
+    Our Austin rows don't say, so this needs checking in the ordinance before D-042.
   - Without Houston, D-038's exploratory fit was 0.57 per 1,000; without Houston and Austin, 0.24. These were
-    exploratory only and are not a D-039 result.
+    exploratory only and are not a D-042 result.
 
 Two data notes, now in the source's provenance:
 - The city file repeats identical 2018 and 2019 totals, which looks like a copied year.
@@ -464,7 +464,7 @@ Ben raised this after §6.5.
 
 **What this means:**
 
-- **For D-039.**
+- **For D-042.**
   - Measure Austin's outcome as 3–4 unit buildings, as for Houston (§6.5).
   - Or count city permits by description, where "TWO UNIT RES" is an ADU-type second home on an existing lot.
   - BPS 2-unit buildings cannot tell an ADU from a duplex in Austin after 2023.

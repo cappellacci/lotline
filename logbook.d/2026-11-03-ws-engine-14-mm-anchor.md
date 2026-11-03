@@ -43,7 +43,7 @@
 
 ### LB-NNN · 2026-11-03 · Research: missing-middle causal diagram v0.2, checked against the D-038 fit
 - **Question:** which confounders and modifiers did D-038 leave out, and which can our own data measure, before
-  D-039 picks any? Ben asked for land value, growth, and year-to-year interest rates to be covered.
+  D-042 picks any? Ben asked for land value, growth, and year-to-year interest rates to be covered.
 - **What I did:**
   - Audited all register factors that bear on the fit: what D-038 did with each, which slot it belongs in
     (baseline, uptake or count), and what data we hold.
@@ -60,7 +60,7 @@
   - Only about 7 places carry information, so θ can take at most two place-level modifiers.
   - Pre-reform land values exist for TX (2019) and parts of NC and MN, not Ohio.
   - Houston's 2–4 count should be checked against its own permit records before any fit.
-- **Decisions:** none. The D-039 proposal is in §6.4, for Ben.
+- **Decisions:** none. The D-042 proposal is in §6.4, for Ben.
 - **AI:** Claude Code (Opus 5.5) wrote the audit and computed the FRED shares. The figures were checked against
   `reports/mm-d038/places.csv`, and `compliance_check.py` shows 0 FAIL.
 
@@ -84,7 +84,7 @@
   - The 2025 fall in houses is real in the city's data, but whether some attached houses were filed as duplexes
     needs permit-level records.
   - Houston's duplexes were legal before Livable Places, and 3–4 unit buildings stayed near zero. The D-038
-    Houston "effect" is a duplex trend the reform did not enable. D-039 should count only the types each reform
+    Houston "effect" is a duplex trend the reform did not enable. D-042 should count only the types each reform
     newly allows.
 - **AI:** Claude Code (Opus 5.5) wrote the adapter, script, test and write-up. The checks were the two tests,
   ruff and `lotline provenance --check`.
@@ -137,11 +137,11 @@
   - D-038's committed results predate the change.
 - **Checks:** the Texas reform and schema tests (162 passed) and `compliance_check.py`.
 
-### LB-NNN · 2026-11-03 · Method: D-039 drafted (second missing-middle fit, before any run)
+### LB-NNN · 2026-11-03 · Method: D-042 drafted (second missing-middle fit, before any run)
 - **Question:** how should the missing-middle fit change, given the confounder review and the Houston and
   Austin findings?
 - **What I did:**
-  - Drafted D-039 in `docs/analysis_plan.md`. It makes three changes:
+  - Drafted D-042 in `docs/analysis_plan.md`. It makes three changes:
     - the outcome counts only the building types each reform newly allows (prior cap from the reform rows);
     - the baseline comes from same-state comparison places;
     - there is one modifier, builder capacity.
@@ -152,5 +152,5 @@
   - Only Austin and Houston have an earlier rule followed by a later increase.
   - Only 5 of 14 fit places have a pre-reform value vintage.
   - Coded comparison places are 4 (MN), 2 (NC), 0 (OH) and 33 (TX), so uncoded places join the comparison set.
-- **Decisions:** none. D-039 waits for Ben's approval before the code and the single run.
+- **Decisions:** none. D-042 waits for Ben's approval before the code and the single run.
 - **AI:** Claude Code (Opus 5.5) drafted the entry. It ran no fit.

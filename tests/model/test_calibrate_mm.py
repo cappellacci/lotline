@@ -183,7 +183,7 @@ def test_stacked_loglik_is_the_sum_over_places(alpha):
     assert cal.loglik([a, b], 0.003, alpha, 2.0) == pytest.approx(total)
 
 
-# ---- D-039 ----
+# ---- D-042 ----
 
 
 def _rules():

@@ -1856,14 +1856,14 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Effect on the panel.** Both places now have a missing-middle rule in force before the window (T before
     2013), so they leave the D-038 adopter set. Their 2023–24 reforms become dose increases.
   - **Effect on the results above.** They were run on the old coding and are not rerun here. The exploratory
-    fit without Houston and Austin gave 0.24 per 1,000. A run on the new coding belongs to D-039.
+    fit without Houston and Austin gave 0.24 per 1,000. A run on the new coding belongs to D-042.
   - **Effect on D-022 blank shares.** These move slightly: P(by right) 0.842 → 0.846, units grade
     0.298 → 0.299.
   - **D-024 and D-025.** Not rerun.
 
-### D-039 · 2026-11-03 · Missing-middle uptake, second pre-registered fit: newly allowed types, comparison-place baseline, builder capacity (method only, before any fit)
+### D-042 · 2026-11-03 · Missing-middle uptake, second pre-registered fit: newly allowed types, comparison-place baseline, builder capacity (method only, before any fit)
 - **Status:** method only. Written after the v0.2 causal-diagram review (`docs/research/lotline-causal-diagram-mm.md`
-  §6) and the coding change noted under D-038. No D-039 fit has been run.
+  §6) and the coding change noted under D-038. No D-042 fit has been run.
   - **What was looked at before writing:** the panel's structure (places, adoption years, status, eligible
     parcels), parcel-value vintages, and national FRED series.
   - **D-038's own outputs.** D-038's results were already known, including its exploratory fits. Those fits are
@@ -1874,7 +1874,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - the leave-one-out error was no better than assuming no effect (0.235 against 0.234);
   - most of its excess came from Houston and Austin building types the reforms did not newly allow (§6.5–6.7).
 
-  D-039 changes three things and keeps the rest of D-038.
+  D-042 changes three things and keeps the rest of D-038.
 - **Change 1: count only what each reform newly allows.**
   - **Event.** A place's event is its first rule in force on 1 July of a year 2013–2025 that raises the unit
     cap on most of its eligible parcels. The prior cap is the cap in force the year before, from
@@ -1968,7 +1968,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - the D-038 specification refitted the same way.
   - **Test places:** the D-037 tests are predicted afterwards with the full fit and reported separately.
   - **Reading rule for Ben's question (do the confounders matter?), fixed now.** Supported if all three hold:
-    - the D-039 median error is at least 10% below the no-effect benchmark;
+    - the D-042 median error is at least 10% below the no-effect benchmark;
     - coverage is at least 60%;
     - α is below D-038's 7.3.
 
@@ -1988,9 +1988,11 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - extend `src/lotline/model/calibrate_mm.py` (event and prior cap, outcome classes, comparison index,
     modifier);
   - unit tests against hand-worked cases in `tests/model/test_calibrate_mm.py`;
-  - the run in `scripts/dev/calibrate_mm_d039.py`, with results to `reports/mm-d039/`.
+  - the run in `scripts/dev/calibrate_mm_d042.py`, with results to `reports/mm-d042/`.
 - **Decided by:** method drafted by WS-ENGINE, 2026-11-03, on Ben's instruction ("Draft D-039"), for Ben to
-  approve before the run. Approved by Ben, 2026-11-03 ("Approve, build and run").
+  approve before the run.
+  - **Renumbered D-042 on 2026-11-03.** D-039 to D-041 are the ADU entries (#274, #275, #277). The draft,
+    code and run are unchanged. Approved by Ben, 2026-11-03 ("Approve, build and run").
 - **Before the run (code pushed first; the dry run built the inputs, printed only their structure, fitted
   nothing):**
   - **Richfield has no event under the stated rule.** Its 2010 row already allowed two-family dwellings (by

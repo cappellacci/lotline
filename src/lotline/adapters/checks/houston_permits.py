@@ -1,6 +1,6 @@
 """City of Houston residential building permits by month (single-family and multi-family counts).
 
-Used only to check Census BPS for Houston (D-039 groundwork, `docs/research/lotline-causal-diagram-mm.md`
+Used only to check Census BPS for Houston (D-042 groundwork, `docs/research/lotline-causal-diagram-mm.md`
 §6.5): it has no canonical table and is not run by `lotline fetch`. The file is the city's own monthly summary
 of permits applied for; it has no building-size classes, so it can test BPS's 1-unit count directly and its
 2-4 unit count only as multi-family minus BPS 3+ units.

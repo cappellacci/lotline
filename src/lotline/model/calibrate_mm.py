@@ -14,7 +14,7 @@ For place i in year t at or after its adoption year T_i, at event age a = t − 
   below the grid at u = 0). θ is estimated on the log scale with α and the ramp's half-way point profiled
   out; its 90% interval is {θ : 2(ℓ̂ − ℓ_p(θ)) <= 2.706}.
 
-D-039 (the second pre-registered fit) keeps this likelihood and changes its inputs: the event is the first
+D-042 (the second pre-registered fit) keeps this likelihood and changes its inputs: the event is the first
 in-window rise in a place's unit cap, the outcome counts only the building classes above the prior cap
 (`prior_cap`, `outcome_classes`, `retarget`), the baseline follows comparison places (`comparison_series`,
 `baseline_series`), and θ_i = θ exp(b z_i) with z the centred log builder capacity (`fit_capacity`).
@@ -65,7 +65,7 @@ class Place:
     kr: np.ndarray
     age: np.ndarray
     eligible: np.ndarray
-    z: float = 0.0  # D-039: centred log builder capacity (0 = no modifier)
+    z: float = 0.0  # D-042: centred log builder capacity (0 = no modifier)
 
     @property
     def B(self) -> np.ndarray:
@@ -125,7 +125,7 @@ def place_inputs(
     """`Place` per geoid from the D-024 panel (`estimate_mm.build_panel(...).data`).
 
     growth: 'own' (units_1 + units_5p), 'own_5p' (units_5p), 'state' (the same state's uncoded places' 2-4
-    unit buildings, summed by year), 'given' (`series_by_place[geoid]`, D-039's comparison index) or
+    unit buildings, summed by year), 'given' (`series_by_place[geoid]`, D-042's comparison index) or
     'none'. shift: move T that many years earlier and keep only years before the real T (the placebo-date
     check). Places with no post-reform year or no pre-reform year with
     data are left out.
@@ -428,7 +428,7 @@ def loo_backtest(
 ) -> pd.DataFrame:
     """V4: for each place with T >= min_year, refit on the other places' years <= T − 1, predict its years
     T … T + horizon − 1, and score the fit against no effect and the outside rate (D-038). With `slopes`
-    (D-039), the refit also profiles the capacity slope b and the target is predicted at θ exp(b z)."""
+    (D-042), the refit also profiles the capacity slope b and the target is predicted at θ exp(b z)."""
     rows = []
     for j, target in enumerate(places):
         if target.T < min_year:
@@ -474,16 +474,16 @@ def realized_hazard(places: Sequence[Place]) -> dict:
 
 
 # ---------------------------------------------------------------------------------------------------------
-# D-039: newly allowed classes, comparison-place baseline, builder capacity
+# D-042: newly allowed classes, comparison-place baseline, builder capacity
 # ---------------------------------------------------------------------------------------------------------
 
-CAPACITY_SLOPES = tuple(np.round(np.arange(-2.0, 2.0001, 0.25), 2))  # b grid (D-039)
+CAPACITY_SLOPES = tuple(np.round(np.arange(-2.0, 2.0001, 0.25), 2))  # b grid (D-042)
 POOL_MIN = 20.0  # a state's comparison sum below this (mean over T − 3 … T − 1) -> the four-state pool
 CLASS_COLUMNS = ("bldgs_2", "bldgs_3_4")
 
 
 def prior_cap(rows: pd.DataFrame, year: int, coverage: Mapping[str, float]) -> int:
-    """The unit cap in force on 1 July of `year` on most of a place's eligible parcels (D-039): the largest
+    """The unit cap in force on 1 July of `year` on most of a place's eligible parcels (D-042): the largest
     `unit_cap` of the in-force rows whose coverage is at least 0.5; 1 if none.
 
     By hand: a cap-2 row covering 0.7 and a cap-3 row covering 0.2, both in force -> 2; only the cap-3 row
@@ -505,7 +505,7 @@ def prior_cap(rows: pd.DataFrame, year: int, coverage: Mapping[str, float]) -> i
 
 
 def event_year(T: float, dose_by_year: Mapping[int, float], first: int = 2013, last: int = 2025) -> float:
-    """D-039's event: T when first <= T <= last; for a rule in force before the window, the first year in
+    """D-042's event: T when first <= T <= last; for a rule in force before the window, the first year in
     [first, last] whose dose is above the year before; else NaN.
 
     By hand: T 2020 -> 2020; T 1990 with dose 0.3 to 2023 and 0.5 from 2024 -> 2024; T 1990, flat -> NaN."""
@@ -530,7 +530,7 @@ def outcome_classes(cap: int) -> tuple[str, ...]:
 def retarget(
     panel: pd.DataFrame, classes: pd.DataFrame, events: Mapping[str, tuple[int, int]]
 ) -> pd.DataFrame:
-    """The panel rows of the event places, recast for D-039: T = the event year, `y_buildings` = buildings in
+    """The panel rows of the event places, recast for D-042: T = the event year, `y_buildings` = buildings in
     the classes above the prior cap (every year, so the baseline uses the same classes), and `dose` = the
     increase over the dose in force the year before the event (floored at 0).
 
@@ -575,7 +575,7 @@ def baseline_series(
     state_series: Mapping[int, float], pool: Mapping[int, float], pre_years, min_mean=POOL_MIN
 ):
     """The state's comparison series, or the four-state pool when the state's mean over the pre-reform years
-    is under `min_mean` (D-039). By hand: state {2019: 5, 2020: 10, 2021: 15}, pre 2019-21 -> mean 10 < 20 ->
+    is under `min_mean` (D-042). By hand: state {2019: 5, 2020: 10, 2021: 15}, pre 2019-21 -> mean 10 < 20 ->
     the pool."""
     vals = [state_series.get(y, np.nan) for y in pre_years]
     vals = [v for v in vals if pd.notna(v)]
@@ -605,7 +605,7 @@ class CapacityFit:
 
 
 def fit_capacity(places: Sequence[Place], slopes=CAPACITY_SLOPES, halves=HALF_GRID) -> CapacityFit:
-    """D-039: b profiled on its grid (θ, α and the half-way point maximized at each b), θ's 90% interval the
+    """D-042: b profiled on its grid (θ, α and the half-way point maximized at each b), θ's 90% interval the
     profile over (half, α, b) restricted to the b grid points inside b's 90% set."""
     by_b = {}
     for b in slopes:
