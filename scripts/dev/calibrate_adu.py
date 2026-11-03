@@ -292,6 +292,127 @@ def _entry(v: float, unit: str, how: str) -> list[str]:
     ]
 
 
+# D-039: the four-state fit set (place GEOIDs and years); MN is every coded place but St. Paul, as in fit 3.
+FOUR_STATE = {
+    "TX": {AUSTIN: FIT_YEARS_AUSTIN, "4865000": range(2021, 2026)},  # San Antonio's file starts 2020-07
+    # Mecklenburg towns (parser-based counts), Greensboro, Durham County; Raleigh and Durham are the tests
+    "NC": {g: range(2016, 2026) for g in ("3743480", "3741960", "3714700", "3733120", "3728000", "37063")},
+    "OH": {"3915000": range(2024, 2026)},  # Cincinnati, the only complete OH ADU count
+}
+P_BANDS = (10, 50, 90)
+
+
+def four_state_places(store) -> list[cal.PlaceData]:
+    out = cal.place_data("MN", store, mn_places(), FIT_YEARS_MN)
+    for st, places in FOUR_STATE.items():
+        for g, yrs in places.items():
+            out += cal.place_data(st, store, [g], yrs)
+    return out
+
+
+def _portland_paths(store, places: list[cal.PlaceData]) -> dict[str, np.ndarray]:
+    """Benchmark (b): Portland's 4 per 1,000 × eligible parcels × the ramp of the rule in force, per year."""
+    out = {}
+    for pl in places:
+        rows = cal.place_years(pl.state, store, [pl.geoid], pl.years).set_index("year")
+        ramp = rows[["ramp_handbook", "ramp_partial", "ramp_blank"]].max(axis=1)  # any rule in force
+        out[pl.geoid] = (PORTLAND * rows["eligible_parcels"] * ramp).reindex(pl.years).to_numpy(dtype=float)
+    return out
+
+
+def _leave_out(args) -> tuple[str, np.ndarray]:
+    places, i = args
+    fit = cal.fit3([pl for j, pl in enumerate(places) if j != i])
+    return places[i].geoid, cal.predict_place(places[i], fit, seed=20261020)
+
+
+def _parcels(store, pl: cal.PlaceData) -> np.ndarray:
+    rows = cal.place_years(pl.state, store, [pl.geoid], pl.years).set_index("year")
+    return rows["eligible_parcels"].reindex(pl.years).to_numpy(dtype=float)
+
+
+def _score(label: str, store, places, draws: dict, portland: dict, out: Path | None) -> pd.DataFrame:
+    """Per place and year: observed, P10/P50/P90, inside; then coverage and error per 1,000 parcels a year."""
+    recs = []
+    for pl in places:
+        d, parcels = draws[pl.geoid], _parcels(store, pl)
+        for t, yr in enumerate(pl.years):
+            lo, mid, hi = np.percentile(d[:, t], P_BANDS)
+            recs.append(dict(set=label, place=pl.geoid, name=pl.name, state=pl.state, year=str(int(yr)),
+                             observed=int(pl.y[t]), p10=lo, p50=mid, p90=hi, mean=d[:, t].mean(),
+                             portland=portland[pl.geoid][t], parcels=parcels[t]))  # fmt: skip
+        lo, mid, hi = np.percentile(d.sum(axis=1), P_BANDS)
+        recs.append(dict(set=label, place=pl.geoid, name=pl.name, state=pl.state, year="total",
+                         observed=int(pl.y.sum()), p10=lo, p50=mid, p90=hi, mean=d.sum(axis=1).mean(),
+                         portland=portland[pl.geoid].sum(),
+                         parcels=np.nanmean(parcels) * len(pl.years)))  # fmt: skip
+    df = pd.DataFrame(recs)
+    df["inside"] = (df["observed"] >= df["p10"]) & (df["observed"] <= df["p90"])
+    yr, tot = df[df["year"] != "total"], df[df["year"] == "total"]
+
+    def err(col):  # mean absolute error per 1,000 eligible parcels a year, over place-years
+        return float((abs(yr[col] - yr["observed"]) / yr["parcels"] * 1000).mean())
+
+    print(
+        f"\n{label}: {len(tot)} places, {len(yr)} place-years\n"
+        f"  P10-P90 coverage: place totals {tot['inside'].mean():.0%} "
+        f"({int(tot['inside'].sum())} of {len(tot)}), "
+        f"place-years {yr['inside'].mean():.0%}\n"
+        f"  mean abs error per 1,000 eligible parcels a year: model (median) {err('p50'):.3f}; "
+        f"no effect {float((yr['observed'] / yr['parcels'] * 1000).mean()):.3f}; "
+        f"Portland unadjusted {err('portland'):.3f}"
+    )
+    print(
+        tot[["name", "state", "observed", "p10", "p50", "p90", "portland", "inside"]]
+        .round(1)
+        .to_string(index=False)
+    )
+    if out is not None:
+        df.to_csv(out / f"backtest_{label.split()[0].lower()}.csv", index=False)
+    return df
+
+
+def four_state_main(store, out: Path | None, workers: int) -> None:
+    """D-039: fit 3 on the four-state fit set, the test set, and the leave-one-place-out backtest (V4)."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    places = four_state_places(store)
+    print("=== D-039: fit 3 on the four-state fit set ===")
+    for pl in places:
+        print(
+            f"  {pl.state} {pl.name:34s} {pl.years.min()}-{pl.years.max()}  n={len(pl.y):2d}  "
+            f"observed {int(pl.y.sum()):5d}"
+        )
+    fit = cal.fit3(places)
+    print(
+        f"theta = {fit.theta:.6f}  90% profile interval {fit.low:.6f}-{fit.high:.6f} "
+        f"({fit.theta * 1000:.3f} per 1,000 a year at the reference rent, value and rate; "
+        f"fit 3 on main: 0.001038, 0.000453-0.003173; {fit.theta / PORTLAND:.2f} of Portland's 4)\n"
+        f"place-effect variance alpha = {fit.alpha:.3f}; owner share {fit.m_owner:.1f} "
+        f"({'estimated' if fit.owner_estimated else 'judgment'}), other share {fit.m_other:.1f} "
+        f"({'estimated' if fit.other_estimated else 'judgment'}); "
+        f"places {fit.n_places}, place-years {fit.n_years}",
+        flush=True,
+    )
+    if out is not None:
+        pd.DataFrame([{k: getattr(fit, k) for k in fit.__dataclass_fields__}]).to_csv(
+            out / "fit.csv", index=False
+        )
+    test = cal.place_data("NC", store, [RALEIGH, DURHAM], TEST_YEARS)
+    rows = cal.place_years("NC", store, [DURHAM], TEST_YEARS)
+    if not (len(rows) and rows["eligible_parcels"].min() >= 1000):
+        print("Durham: a roll the test uses has < 1,000 ADU-eligible parcels -> not tested")
+        test = [p for p in test if p.geoid != DURHAM]
+    test_draws = {pl.geoid: cal.predict_place(pl, fit, seed=20261020) for pl in test}
+    _score("Test set (held out)", store, test, test_draws, _portland_paths(store, test), out)
+    print(f"\nLeave-one-place-out backtest: {len(places)} refits on {workers} workers ...", flush=True)
+    with ProcessPoolExecutor(workers) as pool:
+        draws = dict(pool.map(_leave_out, [(places, i) for i in range(len(places))]))
+    _score("Backtest (leave one place out)", store, places, draws, _portland_paths(store, places), out)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -305,8 +426,15 @@ def main() -> None:
         const=CONFIG_DIR / "params" / "adu_anchor.yaml",
         help="write the anchor's SEs and slopes for the scenario's draws (D-030)",
     )
-    ap.add_argument("--workers", type=int, default=4, help="parallel refits for --draw-terms")
+    ap.add_argument("--workers", type=int, default=4, help="parallel refits for --draw-terms / --four-state")
+    ap.add_argument(
+        "--four-state", action="store_true", help="D-039: four-state fit and leave-one-out backtest"
+    )
+    ap.add_argument("--out", type=Path, help="--four-state: folder for fit.csv and the backtest CSVs")
     a = ap.parse_args()
+    if a.four_state:
+        four_state_main(DataStore(), a.out, a.workers)
+        return
     if a.draw_terms:
         draw_terms_main(a.draw_terms, a.workers)
         return
