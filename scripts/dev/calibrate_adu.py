@@ -302,21 +302,23 @@ FOUR_STATE = {
 P_BANDS = (10, 50, 90)
 
 
-def four_state_places(store) -> list[cal.PlaceData]:
-    out = cal.place_data("MN", store, mn_places(), FIT_YEARS_MN)
+def four_state_places(store, counts=None) -> list[cal.PlaceData]:
+    out = cal.place_data("MN", store, mn_places(), FIT_YEARS_MN, counts=counts)
     for st, places in FOUR_STATE.items():
         for g, yrs in places.items():
-            out += cal.place_data(st, store, [g], yrs)
+            out += cal.place_data(st, store, [g], yrs, counts=counts)
     return out
 
 
-def _portland_paths(store, places: list[cal.PlaceData]) -> dict[str, np.ndarray]:
-    """Benchmark (b): Portland's 4 per 1,000 × eligible parcels × the ramp of the rule in force, per year."""
+def _portland_paths(store, places: list[cal.PlaceData], counts=None) -> dict[str, np.ndarray]:
+    """Benchmark (b): Portland's 4 per 1,000 × eligible parcels × the ramp of the rule in force, per year
+    (× the survey reporting rate under D-041's count rules)."""
     out = {}
     for pl in places:
-        rows = cal.place_years(pl.state, store, [pl.geoid], pl.years).set_index("year")
+        rows = cal.place_years(pl.state, store, [pl.geoid], pl.years, counts=counts).set_index("year")
         ramp = rows[["ramp_handbook", "ramp_partial", "ramp_blank"]].max(axis=1)  # any rule in force
-        out[pl.geoid] = (PORTLAND * rows["eligible_parcels"] * ramp).reindex(pl.years).to_numpy(dtype=float)
+        k = PORTLAND * rows["eligible_parcels"] * ramp * rows["report_rate"]
+        out[pl.geoid] = k.reindex(pl.years).to_numpy(dtype=float)
     return out
 
 
@@ -420,8 +422,8 @@ def four_state_main(store, out: Path | None, workers: int) -> None:
 SEED = 20261020
 
 
-def _test_set(store) -> list[cal.PlaceData]:
-    test = cal.place_data("NC", store, [RALEIGH, DURHAM], TEST_YEARS)
+def _test_set(store, counts=None) -> list[cal.PlaceData]:
+    test = cal.place_data("NC", store, [RALEIGH, DURHAM], TEST_YEARS, counts=counts)
     rows = cal.place_years("NC", store, [DURHAM], TEST_YEARS)
     if not (len(rows) and rows["eligible_parcels"].min() >= 1000):
         test = [p for p in test if p.geoid != DURHAM]
@@ -503,6 +505,127 @@ def statewide_main(store, out: Path | None, workers: int) -> None:
             np.savez_compressed(out / f"draws_{tag}.npz", **{g: v.sum(axis=1) for g, v in d.items()})
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-041: consistent counts (co-built units, survey reporting rate), then the four-state comparison
+# ---------------------------------------------------------------------------------------------------------
+
+STATES = ("MN", "NC", "OH", "TX")
+LOG_THETA_BOUNDS = (-14.0, 0.0)  # fit3's search range: an interval reaching it is "not estimable"
+
+
+def _fit_task(args) -> tuple[str, str, cal.Fit3 | None, str]:
+    """('state', st) fits one state alone; ('without', st) leaves it out; ('all', '') fits every place."""
+    kind, st, places = args
+    use = {"state": [p for p in places if p.state == st], "without": [p for p in places if p.state != st],
+           "all": places}[kind]  # fmt: skip
+    try:
+        return kind, st, cal.fit3(use), ""
+    except Exception as e:  # noqa: BLE001 - a failed fit is a reported result ("not estimable")
+        return kind, st, None, f"{type(e).__name__}: {e}"
+
+
+def _fit_row(run: str, kind: str, st: str, fit, err: str) -> dict:
+    if fit is None:
+        return dict(run=run, fit=kind, state=st, status=f"not estimable ({err})")
+    lo, hi = math.log(fit.low), math.log(fit.high)
+    bounded = lo <= LOG_THETA_BOUNDS[0] + 0.05 or hi >= LOG_THETA_BOUNDS[1] - 0.05
+    return dict(run=run, fit=kind, state=st, status="not estimable (bound)" if bounded else "ok",
+                theta_per_1000=fit.theta * 1000, low=fit.low * 1000, high=fit.high * 1000, alpha=fit.alpha,
+                m_owner=fit.m_owner, places=fit.n_places, place_years=fit.n_years)  # fmt: skip
+
+
+def _market(run: str, store, places, counts) -> list[dict]:
+    """Descriptive (D-041 item 6): correlation of log observed rate with log h1 across places."""
+    recs = []
+    for pl in places:
+        rows = cal.place_years(pl.state, store, [pl.geoid], pl.years, counts=counts)
+        exposure = float((rows["eligible_parcels"] * rows["report_rate"]).sum())
+        recs.append(dict(state=pl.state, log_rate=math.log((pl.y.sum() + 0.5) / exposure),
+                         log_h1=math.log(rows["h1"].mean())))  # fmt: skip
+    df = pd.DataFrame(recs)
+    out = [dict(run=run, scope="pooled", places=len(df), corr=float(df["log_rate"].corr(df["log_h1"])))]
+    for st, d in df.groupby("state"):
+        c = float(d["log_rate"].corr(d["log_h1"])) if len(d) >= 3 else float("nan")
+        out.append(dict(run=run, scope=st, places=len(d), corr=c))
+    return out
+
+
+def _count_rows(run: str, store, before, after, counts) -> list[dict]:
+    """D-041 item 1: per state (NC without the test set; the test set on its own), D-039's count, the count
+    under this run's rules, and the place-years counted from the survey."""
+
+    def group(pl):
+        return "test set" if pl.geoid in (RALEIGH, DURHAM) else pl.state
+
+    recs = []
+    for g in STATES + ("test set",):
+        b, a = [p for p in before if group(p) == g], [p for p in after if group(p) == g]
+        rates = [cal.place_years(p.state, store, [p.geoid], p.years, counts=counts)["report_rate"] for p in a]
+        recs.append(dict(run=run, group=g, places=len(a), place_years=sum(len(p.y) for p in a),
+                         d039_count=int(sum(p.y.sum() for p in b)), count=int(sum(p.y.sum() for p in a)),
+                         survey_place_years=int(sum((r < 1).sum() for r in rates))))  # fmt: skip
+    return recs
+
+
+def counts_main(store, out: Path | None, workers: int) -> None:
+    """D-041: the main run (co-built excluded, ρ central) and sensitivities S1-S3, each across four states."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    runs = {
+        "main": cal.count_settings(),
+        "S1 co-built included": cal.count_settings(exclude_cobuilt=False),
+        "S2 rho 1.0": cal.count_settings(report_rate=1.0),
+        "S3 rho 0.3": cal.count_settings(report_rate=0.3),
+    }
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    before = four_state_places(store) + _test_set(store)
+    fits, totals, market, counted = [], [], [], []
+    with ProcessPoolExecutor(workers) as pool:
+        for run, cs in runs.items():
+            print(f"\n=== D-041 run: {run} {cs} ===", flush=True)
+            places, test = four_state_places(store, cs), _test_set(store, cs)
+            counted += _count_rows(run, store, before, places + test, cs)
+            tasks = [("all", "", places)] + [(k, st, places) for k in ("state", "without") for st in STATES]
+            results = list(pool.map(_fit_task, tasks))
+            fits += [_fit_row(run, k, st, f, e) for k, st, f, e in results]
+            full = next(f for k, _, f, _ in results if k == "all")
+            draws = {}
+            for k, st, f, _ in results:
+                if k == "without" and f is not None:
+                    draws |= cal.predict_places([p for p in places + test if p.state == st], f, seed=SEED)
+            portland = _portland_paths(store, places + test, cs)
+            groups = _groups(places, test, True)
+            loso = state_totals(f"{run}: leave one state out", groups, draws, portland)
+            totals.append(loso.assign(run=run))
+            if full is not None:
+                tdraws = cal.predict_places(test, full, seed=SEED)
+                totals.append(state_totals(f"{run}: test set from the full fit", {"Raleigh and Durham": test},
+                                           tdraws, portland).assign(run=run))  # fmt: skip
+            market += _market(run, store, places + test, cs)
+            print(pd.DataFrame([r for r in fits if r["run"] == run]).round(3).to_string(index=False))
+            print(pd.DataFrame([r for r in market if r["run"] == run]).round(2).to_string(index=False))
+            if run == "main":
+                sub = None if out is None else out / "main"
+                if sub is not None:
+                    sub.mkdir(exist_ok=True)
+                print(f"\nLeave one place out (main): {len(places)} refits ...", flush=True)
+                lopo = dict(pool.map(_leave_place_joint, [(places, i) for i in range(len(places))]))
+                _score("Backtest (leave one place out)", store, places, lopo, portland, sub)
+                if full is not None:
+                    _score("Test set (held out)", store, test, tdraws, portland, sub)
+                    lopo |= tdraws
+                totals.append(state_totals("main: leave one place out, summed by state", groups, lopo,
+                                           portland).assign(run=run))  # fmt: skip
+    print("\n=== Counts per state ===")
+    print(pd.DataFrame(counted).to_string(index=False))
+    if out is not None:
+        pd.DataFrame(fits).to_csv(out / "fits.csv", index=False)
+        pd.concat(totals).to_csv(out / "statewide.csv", index=False)
+        pd.DataFrame(market).to_csv(out / "market_term.csv", index=False)
+        pd.DataFrame(counted).to_csv(out / "counts.csv", index=False)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -521,8 +644,12 @@ def main() -> None:
         "--four-state", action="store_true", help="D-039: four-state fit and leave-one-out backtest"
     )
     ap.add_argument("--statewide", action="store_true", help="D-040: statewide backtest (state totals)")
+    ap.add_argument("--counts", action="store_true", help="D-041: consistent counts, four-state comparison")
     ap.add_argument("--out", type=Path, help="--four-state / --statewide: folder for the CSVs")
     a = ap.parse_args()
+    if a.counts:
+        counts_main(DataStore(), a.out, a.workers)
+        return
     if a.statewide:
         statewide_main(DataStore(), a.out, a.workers)
         return
