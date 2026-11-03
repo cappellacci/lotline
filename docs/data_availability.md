@@ -7,7 +7,7 @@ It answers two questions the Rules (§8) and the Handbook (Data and Resources) a
 2. **Could anything Lotline publishes identify a person or a single property** (re-identification and
    small-cell risk)?
 
-**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-30, after #244 and the land-use update). Every "used" entry names the module that reads the data,
+**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-30, after #244 and the land-use update; North Carolina section: 2026-11-01, at 7fc54e5). Every "used" entry names the module that reads the data,
 so it can be checked in `src/lotline/`. "In review" means an open pull request adds it; it is not on `main` yet.
 What "available" means comes from our own scouting: `docs/research/lotline-data-availability.md` (R1–R10),
 `docs/research/lotline-data-catalog.csv`, `docs/research/lotline-data-catalog-mn.csv` and
@@ -54,19 +54,21 @@ These national sources feed every state the same way.
 
 ## North Carolina
 
+*Refreshed 2026-11-01 (thread 13, `docs/build/nc-readiness.md`), `main` at 7fc54e5, after the second-coder review.*
+
 | Data need | Available | Used | Why not / limits |
 |---|---|---|---|
-| Permits by building size (R4) | BPS; Raleigh permits 2000 on (units, Census land-use code); Durham City-County permits 2007 on (dwelling units); Mecklenburg permits (no unit counts) | `bps`, `raleigh_permits`, `durham_permits` | Raleigh's unit field is nearly empty from 2024, so units are rebuilt from the land-use code. Mecklenburg (Charlotte) permits have no unit counts and aren't loaded. Charlotte's BPS rows sit under Mecklenburg County (37119) and are held out for the V5 blind test |
-| ADU / building type flag (R5) | Raleigh ADU type and missing-middle flags; Durham building type | `raleigh_permits` (`adu_type`, `reform_flag_raw`), `durham_permits` (ADU from building type, subtype unknown) | No ADU flag elsewhere in the state |
-| Completions and demolitions (R6) | Raleigh certificate-of-occupancy date; Durham CO sign-off date | `raleigh_permits`, `durham_permits` | Raleigh demolitions only through the work class |
-| Parcels with land use (R1) | NC OneMap statewide parcels (current only; each county has its own land-use codes); Wake County real estate files | in review (#121 `onemap_parcels`, ten largest counties; #122 `wake_realestate`) | On `main`, every NC jurisdiction uses the ACS fallback (`acs_sf_fallback`, quality `low`) |
-| Year built (R1) | OneMap structure year (completeness varies by county); Wake files; ACS B25034 | `acs`; parcel level in review (#121, #122) | |
-| Lot size (R1) | OneMap; Wake files | in review (#121, #122) | |
-| Parcel history (R2) | Wake pre-revaluation December 2023 roll; NCSU Libraries county archives | in review (#122, Wake 2023 roll) | NCSU archives have unclear redistribution terms and irregular years: no |
-| Zoning (R3) | City zoning layers (Charlotte UDO, Raleigh, Durham) | in review (#120, Charlotte UDO zoning translation) | Other cities not yet. Unknown zoning counts as single-family-only |
-| Sale prices and rents (R7) | No statewide sale-price file (OneMap has sale date only); Wake qualified sales; ACS; FHFA | `acs`, `fhfa` | County sales files would have to be assembled county by county: not yet |
-| Fees (R8) | Raleigh fee guide (~$7.4k plus 0.38% of value); Charlotte Water fees; the new statewide fee disclosure (S.L. 2026-59), first report not yet published; 2015 UNC EFC connection-fee tables | `config/reforms/nc_carthage_towns.csv` (towns named in the *Carthage* impact-fee case, with 2015 fees) | Fee schedules are PDFs; the scenario uses the Handbook $50,000 |
-| Reform dates (R9) | Durham Expanding Housing Choices (2019) and SCAD (2023), Durham County (2019), Raleigh ADU and Missing Middle changes (2020–2022), Charlotte UDO (2023), Greensboro ADU change (2024), statewide ADU law S.L. 2026-59 (effective 2027) | `config/reforms/nc.csv` (14 coded reform components) | |
+| Permits by building size (R4) | BPS; record-level permits for Raleigh (2000 on, units, Census land-use code), Durham City-County (2007 on, dwelling units), Greensboro (1990 on, occupancy and unit count) and Mecklenburg County (legacy file, 1990 on, building type and unit count) | `bps`, `raleigh_permits`, `durham_permits`, `greensboro_permits`, `meck_permits` | Raleigh's unit field is nearly empty from 2024, so units are rebuilt from the land-use code. Charlotte's BPS rows sit under Mecklenburg County (37119) and are held out from 2023-06-01 (V5); the Mecklenburg file keeps the six towns in any year and Charlotte and the unincorporated county only to 2023-05-31 (filtered at query time and again on read). The Mecklenburg legacy file thins out in 2025 (move to Accela); the Accela file isn't loaded. Greensboro's per-apartment permits repeat the building's unit count in some years |
+| ADU / building type flag (R5) | Raleigh ADU type and missing-middle flags; Durham building type; Greensboro and Mecklenburg descriptions | `raleigh_permits` (`adu_type`, flagged from 2019), `durham_permits` (ADU from building type), `greensboro_permits` and `meck_permits` (description parser) | Greensboro and Mecklenburg counts are lower bounds. No ADU flag elsewhere in the state |
+| Completions and demolitions (R6) | Raleigh certificate-of-occupancy date; Durham CO sign-off date; Mecklenburg completion date | `raleigh_permits`, `durham_permits`, `meck_permits` | Raleigh demolitions only through the work class |
+| Parcels with land use (R1) | NC OneMap statewide parcels (current only; each county has its own land-use codes); Wake County real estate files; Charlotte's pre-UDO zoning layer | `onemap_parcels` (48 counties, 3.84M parcels, per-county crosswalks in `config/crosswalks/`), `wake_realestate` (Wake places and the Wake remainder, `parcel_sources`) | 52 counties stay on the ACS fallback (D-017): 46 send no usable land use and 6 failed the check against ACS one-unit homes (`reports/nc/onemap_county_check.md`). Charlotte's current roll is held out (snapshot rule) and its pre-UDO layer has no land use, so Charlotte uses ACS. 218 of 454 jurisdictions count from parcels (65% of the population of NC places) |
+| Year built (R1) | OneMap structure year (completeness varies by county); Wake files; ACS B25034 | `onemap_parcels`, `wake_realestate`, `acs` | Sets the data tier: 124 / 94 / 236 |
+| Lot size (R1) | OneMap; Wake files; Charlotte layer | `onemap_parcels`, `wake_realestate`, `clt_udo_translation` | |
+| Parcel history (R2) | Wake rolls for Nov 2019 and Dec 2023 (the county folder has no others); NCSU Libraries county archives; a pre-June-2023 Mecklenburg archive (requested) | `wake_realestate` (both rolls; years between them interpolated, D-035 addendum) | Other places have one roll (2026) with ACS-scaled history (D-035). NCSU archives have unclear redistribution terms and irregular years: no |
+| Zoning (R3) | Charlotte UDO translation layer (pre-UDO district per parcel, 2023-05-31); Mecklenburg permits' zoning code; Raleigh and Durham city layers | `clt_udo_translation` (V5 N1 lots, `clt_v5`), `meck_permits` (`zoning_raw`) | Other cities not loaded. Unknown zoning counts as single-family-only |
+| Sale prices and rents (R7) | No statewide sale-price file (OneMap has sale date only); Wake qualified sales; ACS; FHFA | `acs`, `fhfa` | Wake qualified sales are registered but not read (no sales table yet) |
+| Fees (R8) | City and utility fee schedules (Ben's downloads); the statewide fee disclosure (S.L. 2026-59), first report not yet published; 2015 UNC EFC connection-fee tables | `config/fees/nc.csv` (132 rows, 16 jurisdictions: Raleigh, Durham, Greensboro, Winston-Salem and Forsyth, Asheville and Buncombe, Concord and Cabarrus, Wilmington and New Hanover (CFPUA), Apex, Fuquay-Varina, Johnston, Brunswick, Wilson); `config/reforms/nc_carthage_towns.csv` | Charlotte Water, Fayetteville PWC, Cary and High Point are open lookups; places without a per-home total use the Handbook $50,000 (D-034) |
+| Reform dates (R9) | City ordinances and UDO PDFs (batch-1 records, Ben's downloads in `~/lotline-data/manual/nc_udos/`, the second coder's official PDFs); statewide ADU law S.L. 2026-59 (effective 2027-01-15) | `config/reforms/nc.csv` (92 rows: 66 ADU, 25 missing middle, 1 parking; 41 jurisdictions) | Second-coder review 2026-11-01 (#254): 28 of 71 local rows second-coded, 10 tagged `[predates]` (a code rewrite, never an event). Many dates are still the ordinance's adoption date (`[earliest-known]`). Open lookups in `nc-adu-`, `nc-mm-` and `nc-fee-lookups-todo.csv` |
 
 ## Ohio (sparse-evidence state)
 
@@ -104,8 +106,9 @@ These national sources feed every state the same way.
 
 - **Minnesota:** no parcels, zoning or coded reforms on `main` yet, so the eligible-parcel denominator is the
   ACS fallback (quality `low`) everywhere, even though rich open metro parcels exist.
-- **North Carolina:** parcels (#121, #122) and Charlotte zoning (#120) are in review; until they merge, NC is in
-  the same ACS-fallback position. No sale prices statewide.
+- **North Carolina:** 52 of 100 counties send no usable land use, so 236 of 454 jurisdictions (Charlotte,
+  Concord and Greenville among them) stay on the ACS denominator; only Wake has a second real roll; no sale
+  prices statewide; no rule row has a second coder yet.
 - **Ohio:** parcels for 2 of 88 counties, with land use and lot size only (no year built, units or values).
   No ADU flag in Columbus. Thin reform evidence by design.
 - **Texas:** StratMap parcels are loaded (2019 and 2025 releases), but many counties' 2025 records carry no
@@ -130,8 +133,12 @@ committed (CLAUDE.md; `data/` is gitignored). Two kinds of record-level data are
     built, taxing entity). Owner names, owner and mortgage-company addresses, deeds and the situs address are
     never sliced from the record. It does read the homestead flag (`hs_exempt`), which says whether the owner
     lives there; that stays in the data directory.
-  - Minnesota and North Carolina have no parcel adapter on `main`; #121 and #122 should be reviewed against
-    the same rule.
+  - North Carolina: `onemap_parcels` requests only `OUT_FIELDS` (no owner names or types, mailing or site
+    addresses, legal descriptions); `wake_realestate` reads only `USECOLS` from the county spreadsheet, so owner,
+    mailing, street-address, deed and free-text columns never reach memory; `clt_udo_translation` leaves out
+    the site address and editor names. Each module's `PERSONAL` set is checked by a test in `tests/states/nc/`.
+  - Minnesota's parcel adapters (`metc_parcels`, `mpls_assessor_parcels`, `ramsey_parcels`) are on `main` but
+    have not been reviewed against this rule here yet.
 - **Permits: no names or street addresses, but they point to properties.** Every permit adapter requests a
   fixed field list that leaves out applicant, owner and contractor names and street addresses (`FIELDS`,
   `OUT_FIELDS` or `SELECT` in each module; tests for Minneapolis, St. Paul, Columbus, Cincinnati and Austin
