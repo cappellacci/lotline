@@ -32,7 +32,7 @@ import pandas as pd
 
 from lotline.config import CONFIG_DIR, load_params
 from lotline.io import DataStore
-from lotline.model import estimate_adu
+from lotline.model import estimate_adu, rule_tags
 from lotline.model import estimate_mm as mm
 
 ROOT = CONFIG_DIR.parent
@@ -142,6 +142,7 @@ def run(
     durham_pair=(DURHAM_CITY, DURHAM_COUNTY),
     force_fallback: str = "",
     main_method: str = "",
+    firm: pd.DataFrame | None = None,
 ) -> dict:
     """The D-024 run on `panel`. Returns named tables; writes nothing. `force_fallback` (dry runs only) takes
     the fallback path as if PPML had failed with that message. `main_method` ('nb': D-025's estimator, Ben
@@ -291,6 +292,16 @@ def run(
         rob,
         rob_notes,
     )
+    if firm is not None:  # D-024 four-state amendment (2026-11-02): the one tag sensitivity
+        robust(
+            "tag sensitivity: firm dates only",
+            lambda: term_rows(
+                "firm dates only",
+                mm.summary(mm.estimate(firm, method=method, **kw), draws=draws, seed=13)[0],
+            ),
+            rob,
+            rob_notes,
+        )
     if metc is not None:
         robust(
             "Met Council, Twin Cities alone",
@@ -445,8 +456,17 @@ def full(store, out_dir: Path, workers: int, main_method: str = "") -> None:
     ).data
     flagged = pipeline_flagged(panel)
     log(f"check 7b drops {len(flagged)} pipeline-flagged comparison places: {flagged}")
+    firm = mm.build_panel(store, drop_tags=rule_tags.SENSITIVITIES)
+    log(f"tag sensitivity, firm dates only, leaves out {firm.excluded['dropped by tag sensitivity']}")
     out = run(
-        panel, p, workers, local=local_inputs(store), metc=metc, flagged=flagged, main_method=main_method
+        panel,
+        p,
+        workers,
+        local=local_inputs(store),
+        metc=metc,
+        flagged=flagged,
+        main_method=main_method,
+        firm=firm.data,
     )
     write(out, out_dir)
 
