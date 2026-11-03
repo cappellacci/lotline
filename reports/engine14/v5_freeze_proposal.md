@@ -10,7 +10,8 @@ must be on `main` by **Tue Nov 17** (`holdout.check_unblind` accepts only a froz
 1. **The method is a pre-registration choice.** `results/frozen/` doesn't exist yet. No code makes a V5
    prediction, and the validation plan says *what* to predict but not *how*. The method must be fixed before
    any number is computed, so it needs your sign-off first.
-2. **The effect to use is open.** The handoff says to use "whatever D-024 estimate or prior is on `main`".
+2. **The effect to use is open** (*update 2026-11-03: D-037 settles this in favour of the mechanism route; the
+   timing risk is that its missing-middle anchor must be on `main` before Nov 17*). The handoff says to use "whatever D-024 estimate or prior is on `main`".
    Today `main` has only October's "no credible estimate" (`reports/mm-d024*`) and no missing-middle effect
    prior in `config/params/`. The four-state D-024 run (results PR, this thread) may change that, depending on
    its checks.
@@ -27,7 +28,7 @@ with the uncertainty from every input carried by simulation.
 | Eligible lots | 169,314 N1 lots × (`n1_sf_share` + `n1_vacant_share`), drawn over the YAML ranges (≈144k central; option (a) counts replace the shares) | 55,269 (H1 37,695 + H2 17,574), fixed |
 | Baseline rate | City 2–4 unit homes per eligible lot per year, mean of the last 5 pre-window years: 2018–2022, BPS 37119 `units_2 + units_3_4` (county level, see note) over the city's rule 1.1 denominator | 2019–2023, Met Council `DTQ` units for 2758000 over its rule 1.1 denominator |
 | Baseline range | Lowest and highest of those 5 years, plus Poisson noise on the counts | Same |
-| Effect | The D-024 estimate on `main` at freeze (ATT on the log scale, with its bootstrap interval), or, if D-024 still has no credible estimate, a stated prior: **0 (no effect) as the central value, with D-024's interval as the range**, labelled as such | Same |
+| Effect | **Amended 2026-11-03 (D-037):** the mechanism route's effect (eligible lots × pro forma feasible share × uptake hazard × ramp, drawn over its ranges), once its missing-middle anchor is on `main`. If it isn't by the freeze, fall back to the earlier rule: 0 as the central value with D-024's interval as the range, labelled as such. The D-024 estimate is shown beside it, not used | Same |
 | Annual inputs | Capped at 2022 | Capped at 2023 |
 | Simulation | 10,000 draws, seed fixed in the file; report P10, P50, P90 for the total and each year | Same |
 | Pass (validation plan, proposed) | Observed total within P10–P90; one case, presented as a demonstration | Same |

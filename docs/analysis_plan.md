@@ -1566,3 +1566,106 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   other cities' files (e.g. the MN and Austin v0 comparisons, which call `flag_repeated_totals`).
 - **Decided by:** Ben, 2026-10-26 (#221: group by same day and same count, protect duplexes and fourplexes;
   collapse only implausible floor area per unit).
+
+### D-037 · 2026-11-03 · Scenario effect sizes come from the mechanism route; the in-state estimates validate it (reversible)
+- **Why:** the in-state estimates can't size an effect. Ben deferred this choice on 2026-10-21 (in-state
+  estimates or the mechanism route) until the multi-state data arrived. It has arrived, and neither model gives a
+  usable estimate: D-024's four-state run gives no credible estimate (randomization inference p = 0.29, the
+  placebo outcome fails), and D-025's four-state main model did not converge. The deeper reason is power. The
+  smallest overall effect each run could detect (80% power, 10% two-sided test: 2.49 × the overall effect's
+  standard error, on the log scale):
+
+  | Run | Overall effect (SE) | Smallest detectable effect | As a multiple of permits | Upper 90% bound, as a multiple |
+  |---|---|---|---|---|
+  | D-024, October, Poisson-gamma (`reports/mm-d024`) | 0.77 (0.44) | 1.09 | 3.0× | 4.6× |
+  | D-024, October, negative binomial (`reports/mm-d024-nb`) | −0.25 (0.59) | 1.46 | 4.3× | 2.4× |
+  | D-024, four states (`reports/mm-d024-4state`) | 1.75 (0.93) | 2.31 | 10× | 26× |
+  | D-025, October, Twin Cities (`reports/adu-d025/corrected-2026-10-21`) | 2.37 (1.36) | 3.38 | 30× | 91× |
+
+  Plausible short-run effects of these reforms are well below these thresholds. With about 20 adopting places,
+  short post-periods and mostly-zero counts, more of the same data will not close the gap. The design problems the
+  four-state run exposed (selection into reform, cross-place identification of always-treated places, rules
+  coded as allowed rather than binding, outcome measurement) widen it further.
+- **Decision (route 1):** each scenario's five-year effect is built from mechanisms and anchored to evidence
+  from well-studied reforms:
+  - homes added = eligible parcels × the share that pencil out (`proforma.py`) × an uptake hazard × a ramp;
+  - every input is drawn over its range (as in D-030), so the result is a range.
+  - **ADU:** no change to the scenario. It already works this way (`scenarios/adu.py`; anchor
+    `adu_mature_hazard_ref`, D-019 fit 3, with Portland's 4 per 1,000 as the research band; draws per D-030).
+    D-025 moves to validation.
+  - **Missing middle:** to build, on the same structure:
+    - eligible parcels (rule 1.1, D-014) × feasible share from the pro forma × a developer uptake hazard
+      (`mm_mature_hazard_ref`, new, in `config/params/hazard.yaml`) × a ramp;
+    - the anchor and its range come from external evidence compiled with sources (for example Minneapolis 2040,
+      Houston's 1998 lot-size change, Portland's Residential Infill Project, Auckland's 2016 upzoning).
+    - Until that is built and reviewed, missing-middle scenario numbers are labelled provisional.
+- **What the in-state results are used for:**
+  1. **Consistency check.** Run the mechanism model for the places D-024 and D-025 treated, over their
+     post-adoption years. Report whether the implied overall effect falls inside each in-state 90% interval
+     ("consistent" / "inconsistent"). This is reported, not used to tune. Both D-024 runs are shown: the October
+     negative binomial's upper bound (2.4×) constrains; the four-state run's (26×) barely does.
+  2. **Out-of-sample tests.** Predict the held-out places (D-024: Durham, Durham County, Raleigh, Minneapolis;
+     D-025: Raleigh, Durham) with the mechanism model and score them with the same pass rules. This is the
+     test that decides whether route 1 is working.
+  3. **V5.** The Charlotte and St. Paul freezes use the mechanism model's effect. The V5 freeze proposal
+     (`reports/engine14/v5_freeze_proposal.md`) is amended accordingly.
+- **Kept reversible (Ben, 2026-11-03: decisions here serve a workable model and are revisited when the
+  evidence changes):**
+  - *Nothing is retired.* The estimation code, runs and reports stay on `main` and runnable. D-024 and D-025
+    can be re-run under new dated entries as before.
+  - *The source is a switch, not a rewrite.* The scenario output contract (handoff 09) carries the effect
+    source as a parameter, `effect_source` (`mechanism`, the default from now on, or `in_state`). The
+    in-state path stays wired, so switching back is a parameter change plus a dated entry. Until the contract
+    exists, no code reads it; the ADU scenario already runs on the mechanism route.
+  - *Both are shown.* Wherever a scenario effect is reported (results dashboard, scenario comparison), the
+    in-state estimate sits beside it, so the size of a switch is always visible.
+  - *Revisit when any of these happens:*
+    - an in-state estimate converges, passes randomization inference at p < 0.10, its placebo outcome and its
+      out-of-sample tests;
+    - the mechanism model fails its own out-of-sample tests or is inconsistent with the in-state intervals
+      in a way its ranges can't explain;
+    - new data (more post-adoption years, local permit series, more states) brings the smallest detectable
+      effect under about 2× (0.7 on the log scale).
+- **Not decided here:** the external evidence for the missing-middle anchor, its range and ramp (a separate
+  dated entry, before any missing-middle scenario number is reported); whether D-025 is re-run after its
+  non-convergence (still Ben's call; it is now a validation run, so it is less urgent).
+- **Supersedes:** the deferral of 2026-10-21. This is the dated entry D-024's October reading asked for before
+  the scenario takes a missing-middle evidence prong.
+- **Decided by:** Ben, 2026-11-03 ("Lets proceed with route one but ensure that this is not an irreversible
+  decision"); written by WS-ENGINE.
+- **Amendment (2026-11-03, later the same day; Ben): our own four states set the rates; outside evidence only
+  checks them.**
+  - **What changes:** "anchored to evidence from well-studied reforms" above is replaced. The uptake rates
+    (the mature hazard, the ramp, the units per project, and the modifiers through the pro forma) are
+    **calibrated on the post-reform places of MN, NC, OH and TX**, as D-019 already does for the ADU anchor
+    (fit 3: Minneapolis, Austin and 14 Twin Cities suburbs). Studies from other places (Portland, Houston,
+    Auckland, California) are a plausibility check. A calibrated value far outside them has to be explained,
+    but they don't set the values. Where our data can't identify a parameter (for example the ramp's late
+    years, given short post-periods), the entry says so and states what fills the gap.
+  - **Why (Ben):** the purpose of collecting the four states' data is to measure what enacting these rules
+    actually produced. A rate from another market only stands in for that.
+  - **Why this works where D-024 and D-025 did not:** those estimate a *difference* between reformed and
+    comparison places, which needs a credible comparison group and the power to detect a gap. The uptake rate
+    is a *level*: how often an eligible lot in a reformed place gets an ADU or a 2–4 unit building after the
+    rule. We observe that directly.
+  - **What the calibration must handle for missing middle:**
+    - building that was already happening before the rule: subtract each place's pre-reform 2–4 unit rate, or
+      count permits on newly eligible lots where permits carry a parcel number;
+    - general growth in reforming places (the four-state placebo outcome failed): net it out with the place's
+      5+ unit trend or the comparison places' year effects;
+    - short post-periods: say how much of the ramp the data identifies.
+  - **The test is a backtest, as Ben describes it: V4, leave one place out.** For each reformed place,
+    calibrate without it, using only data up to the year before its reform. Predict its years 1–5 and compare
+    with what was permitted. Score:
+    - P10–P90 coverage across places (V4's proposed pass: at least 60%; nominal 80%);
+    - error per 1,000 eligible parcels, against two benchmarks: no effect, and the outside-evidence rate
+      applied unadjusted.
+
+    Durham, Raleigh and Minneapolis remain the pre-declared out-of-sample tests above. Charlotte and St.
+    Paul remain V5, untouched.
+  - **Expected accuracy, stated now:** a single city's count will come with a range, not a point. In D-019 the
+    place-to-place multiplier varies widely (`adu_place_effect_variance`), and D-025's transport test missed
+    Austin. Statewide totals should be tighter than single cities, because place errors partly cancel.
+  - **Applies to:** missing middle (D-038, PR #272, to be redone this way) and a refit of the ADU anchor on
+    the four-state data (D-019 fit 3 predates the NC and TX permit work), under its own dated entry.
+  - **Decided by:** Ben, 2026-11-03 ("we need to be rolling our own"); written by WS-ENGINE.
