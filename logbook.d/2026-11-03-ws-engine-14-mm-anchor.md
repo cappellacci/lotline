@@ -107,3 +107,18 @@
   stored permits and BPS tables.
 - **Open / next:** Austin ADU counts from 2024 need the description flag, not the class (ADU side). Read the
   pre-HOME Austin code for SF-3 duplexes.
+
+### LB-NNN · 2026-11-03 · Ordinance check: Austin's duplex and two-family rules before HOME
+- **Question:** which Austin single-family zones allowed duplexes before HOME phase 1?
+- **What I did:** read p. 2 of our HOME phase 1 copy as an image, and the 2015 ADU ordinance, both in
+  `manual/texas`. Compared them with our Austin and Houston reform rows. Fitted nothing.
+- **Outputs:**
+  - §6.7 of `docs/research/lotline-causal-diagram-mm.md`;
+  - `docs/research/ordinances/tx-corrections-2026-11-03.csv`, two proposed new rows for Ben.
+- **Findings:**
+  - Duplex and two-family residential were already permitted in SF-3, with up to 2 units per lot. HOME added
+    them in SF-1 and SF-2, added three-unit everywhere, and raised the cap to 3.
+  - Austin's old two-family use was a house plus a second unit in a separate structure, which is an ADU.
+  - Our coding has no pre-HOME Austin row and no pre-2023 Houston duplex row.
+- **Decisions:** none. The two rows wait for Ben, because they change the D-024 and D-025 panel.
+- **AI:** Claude Code (Opus 5.5) read the ordinance page images and wrote the rows and the write-up.

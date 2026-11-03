@@ -459,8 +459,8 @@ Ben raised this after §6.5.
   - Part 8 repeals and replaces §25-2-773, the Duplex Residential Use section.
   - Part 7 deletes §25-2-555(D) of the SF-3 regulations.
 
-  So some SF zoning already allowed duplexes. The struck table text in our scan does not show which districts.
-  Reading the pre-HOME code (§25-2-491 table, §25-2-555) would settle it.
+  So some SF zoning already allowed duplexes. Which districts is settled in §6.7 from the ordinance's own
+  amendment marks.
 
 **What this means:**
 
@@ -471,3 +471,49 @@ Ben raised this after §6.5.
 - **For the ADU side (outside D-038, flagged as a follow-up).** Austin's ADU class stops in 2024, so ADUs counted
   from class 102 are undercounted from 2024. Any ADU fit or check that uses Austin's 2024–25 permits needs the
   description flag, not the class.
+
+### 6.7 What Austin's code allowed before HOME (2026-11-03)
+
+This is settled from our own copy of HOME phase 1. It is p. 2 of
+`manual/texas/Austin_HOME_Phase1_Ord_20231207-001.pdf`, read from the page image. In that copy, underlined text
+is new and bracketed text is deleted.
+
+**§25-2-491, the use table (Part 4).**
+- **SF-3 (Family Residence):** the "P" (permitted) for **Duplex Residential** and for **Two-Unit [Family]
+  Residential** is not underlined. Both uses were already permitted in SF-3.
+- **SF-1 and SF-2:** the P is underlined, so HOME added both uses there.
+- **Three-Unit Residential** is new in all three districts.
+
+**§25-2-492, maximum dwelling units per lot (Part 5).**
+
+| District | Before HOME | After HOME |
+|---|---|---|
+| SF-1 | 1 | 3 |
+| SF-2 | 1 | 3 |
+| SF-3 | 2 | 3 |
+
+**What the old uses were.**
+- Part 8 repeals and replaces an existing §25-2-773, "Duplex Residential Use".
+- Part 7 deletes §25-2-555(D) of the SF-3 rules.
+- Ord. 20151119-080 defines the old Two-Family Residential use (§25-2-774) as a house plus a second unit "in a
+  structure other than the principal structure". That is a garage-apartment ADU, so Austin's "two-family" label
+  covered ADU-type second homes before HOME too.
+
+**What this means:**
+- **Our coding has gaps in both cities.** Austin has no missing-middle row before HOME, so D-038 and D-024 treat
+  Austin as dose 0 before February 2024. Houston has the same gap: its 2023 row notes that a pre-2023 duplex row
+  was never added.
+- **For most Austin lots, HOME added a third unit, not a duplex.** SF-3 holds most of Austin's single-family
+  lots (to confirm against the parcel layer). There, HOME's new allowance is the third unit. Only in SF-1 and
+  SF-2 did it newly allow two units.
+  - The outcome that matches HOME is therefore 3-unit buildings everywhere, plus 2-unit buildings in SF-1 and
+    SF-2 only.
+  - Census BPS can't separate SF-1/SF-2 from SF-3, so that second part needs city permits joined to parcels.
+- **Two new reform rows are proposed for Ben** in `docs/research/ordinances/tx-corrections-2026-11-03.csv`:
+  - Austin: SF-3 duplex and two-family, cap 2, from 2010;
+  - Houston: duplex on single-family lots, cap 2, from 2010.
+
+  They are not yet applied to `config/reforms/tx.csv`. Applying them changes the panel that D-024 and D-025
+  read, so it needs Ben's decision.
+- **A concurrent reform overlaps the window.** Austin also ended minimum parking citywide on 2023-11-02
+  (TX-4805000-parking-2023), three months before HOME phase 1.
