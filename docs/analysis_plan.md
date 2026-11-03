@@ -2053,3 +2053,10 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     place, with a fall). With 13 places and α ≈ 6, the data cannot separate a modifier from place noise.
   - **Not written to `config/params/mm_hazard.yaml`.** Ben decides whether to keep D-038's values, take the
     D-042 θ with its range, or record a new entry. No b key is added.
+- **Decision (Ben, 2026-11-03): keep D-038's values** ("Keep D-038 values"). `config/params/mm_hazard.yaml`
+  keeps θ = 1.08 per 1,000 (0.36–5.35), α = 7.29 and the half-way point 2.0. D-042 is recorded as a run that
+  did not support the confounder model; its θ is not used. Known limits of the kept values, stated in the
+  params notes:
+  - D-038 was fitted before the Austin and Houston pre-reform rows were added, so it counts types those
+    places already allowed (§6.5–6.7);
+  - its placebo was not passed, and its own backtest was no better than no effect.

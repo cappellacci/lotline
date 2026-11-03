@@ -164,3 +164,12 @@
 - **How it was checked:** single run as pre-registered; no rerun after the renumbering; numbers in the analysis plan copied from `summary.json` and the CSVs.
 - **Decisions:** none. Params not changed; Ben to choose between D-038 values, the D-042 θ, or a new entry.
 - **AI:** Claude Code (Opus 5.5) ran the script, wrote the results and the README.
+
+### Decision: keep D-038 values
+
+- **Date / workstream:** 2026-11-03 · WS-ENGINE (missing-middle anchor, PR #272)
+- **Question:** Which missing-middle anchor goes into params after D-042?
+- **Outputs:** decision bullet under D-042 in `docs/analysis_plan.md`; a note on `mm_mature_hazard_ref` in `config/params/mm_hazard.yaml` (values unchanged).
+- **Decisions:** Ben chose to keep D-038's values ("Keep D-038 values"). D-042's θ is not used. Proposed HANDOFF decision in the PR.
+- **How it was checked:** params table regenerated (no change); compliance run.
+- **AI:** Claude Code (Opus 5.5) wrote the decision record and the params note.
