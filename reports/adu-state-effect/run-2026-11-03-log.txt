@@ -1,0 +1,39 @@
+=== D-043: 51 fit places, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+            fit status  theta_per_1000   low  high  alpha   tau  tau_low  tau_high   loglik  d041_theta_per_1000  d041_loglik  m_owner  m_other      states  places  place_years
+all four states     ok           1.232 0.808 2.075  2.284 0.000      0.0     0.668 -383.718                1.232     -383.718      1.0      0.3 MN NC OH TX      51          296
+     without MN     ok           2.102 1.158 4.022  0.152 0.386      0.0     1.156 -152.583                2.081     -152.846      0.4      0.3    NC OH TX       9           47
+     without NC     ok           1.306 0.776 2.727  2.984 0.000      0.0     0.936 -331.416                1.306     -331.416      1.0      0.3    MN OH TX      45          264
+     without OH     ok           1.241 0.801 2.154  2.397 0.000      0.0     0.715 -376.681                1.241     -376.681      1.0      0.3    MN NC TX      50          294
+     without TX     ok           1.159 0.713 1.992  2.386 0.000      0.0     0.724 -284.666                1.159     -284.666      1.0      0.3    MN NC OH      49          283
+
+K1 (D-041 leave one state out, RMS of log obs/P50): 0.791
+group  obs_over_p50
+   MN      0.500000
+   NC      0.661765
+   OH      2.666667
+   TX      2.564815
+K2 (without TX): tau 0.000 (0.000-0.724)
+
+K3 state multipliers (full fit)
+state  v_median  v_low  v_high  theta_s_per_1000
+   MN       1.0    1.0     1.0             1.232
+   NC       1.0    1.0     1.0             1.232
+   OH       1.0    1.0     1.0             1.232
+   TX       1.0    1.0     1.0             1.232
+
+D-043: leave one state out with tau
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 275.0 596.0 1295.0 719.95          0.48          4.71   6011.53 inside only
+                        NC       6           32        45  15.0  68.0  232.1 105.96          0.66         15.47    990.73      useful
+                        OH       1            2         8   0.0   3.0   26.0   9.11          2.67           inf    131.01 inside only
+                        TX       2           13      1108  48.0 430.0 2009.0 853.57          2.58         41.85  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  62.0 255.0  949.0 418.28          1.78         15.31   3587.74      useful
+
+Next to D-041
+                     group  observed   p10   p50    p90     verdict  p90_over_p10  p10_d041  p50_d041  p90_d041 verdict_d041  p90_over_p10_d041
+                        MN       285 275.0 596.0 1295.0 inside only          4.71     283.0     570.0    1140.0       useful               4.03
+                        NC        45  15.0  68.0  232.1      useful         15.47      16.0      68.0     229.0       useful              14.31
+                        OH         8   0.0   3.0   26.0 inside only           inf       0.0       3.0      26.0  inside only                inf
+                        TX      1108  48.0 430.0 2009.0 inside only         41.85      48.0     432.0    2003.1  inside only              41.73
+NC with Raleigh and Durham       455  62.0 255.0  949.0      useful         15.31      63.0     255.0     933.0       useful              14.81
+Median P90/P10 over the four states: 28.7; missed: 0

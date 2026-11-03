@@ -2429,3 +2429,59 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   reports/adu-state-effect`.
 - **Decided by:** Ben, 2026-11-03 ("Its ok if it's a statewide theta as the goal is to calculate a number based
   on the state", then "Yes, draft it"); written by WS-ENGINE before any fit. **Status:** method only, not run.
+- **Results (2026-11-03; code committed with these results, on 886885b; `reports/adu-state-effect/`, log
+  `run-2026-11-03-log.txt`):**
+  - **How it was run:**
+    - The rule shares were held at fit 3's values on the same places: owner 1.0, other 0.3 for the full fit;
+      owner 0.4 without MN. θ, α and τ were fitted with the shares fixed.
+    - With τ = 0, the full fit reproduces D-041 exactly: θ 1.232 and log-likelihood −383.718.
+    - Sensitivity C1 changes only the scenario draw (`hazard.widen_unseen_state`). The calibration backtest
+      has no extrapolation widening, so C1 can't be shown in it.
+  - **τ:**
+
+    | Fit | θ per 1,000 (90%) | α | τ (90%) |
+    |---|---|---|---|
+    | All four states | 1.23 (0.81–2.08) | 2.28 | 0 (0–0.67) |
+    | Without MN | 2.10 (1.16–4.02) | 0.15 | 0.39 (0–1.16) |
+    | Without NC | 1.31 (0.78–2.73) | 2.98 | 0 (0–0.94) |
+    | Without OH | 1.24 (0.80–2.15) | 2.40 | 0 (0–0.72) |
+    | Without TX (K2) | 1.16 (0.71–1.99) | 2.39 | 0 (0–0.72) |
+
+  - **K1 (empirical spread):** 0.79, from D-041's ratios 0.50, 0.66, 2.67 and 2.56. That sits above τ's upper
+    bound of 0.67.
+  - **K3 (state multipliers):** all 1, since τ̂ = 0.
+  - **Leave one state out with τ, next to D-041:**
+
+    | State | Observed | P50 | P10–P90 | Verdict | P90 ÷ P10 | D-041 verdict | D-041 P90 ÷ P10 |
+    |---|---|---|---|---|---|---|---|
+    | MN | 285 | 596 | 275–1,295 | inside only (0.48) | 4.7 | useful (0.50) | 4.0 |
+    | NC | 45 | 68 | 15–232 | useful | 15.5 | useful | 14.3 |
+    | OH | 8 | 3 | 0–26 | inside only | ∞ | inside only | ∞ |
+    | TX | 1,108 | 430 | 48–2,009 | inside only | 41.9 | inside only | 41.7 |
+    | NC with Raleigh and Durham | 455 | 255 | 62–949 | useful | 15.3 | useful | 14.8 |
+
+    None is missed. The median P90 ÷ P10 over the four states is 28.7; D-041's was 28.0. MN moves from useful
+    to inside only because its ratio moved from 0.50 to 0.48, across the bar's factor of 2.
+  - **Reading by the rule written before the fit:**
+    - **τ is estimable** (upper bound 0.67, below 2.5). So `adu_state_effect_sd` is 0, with a range of 0–0.67.
+    - **The range is wide enough:** no state is missed.
+    - **It is not useful for policy by the bar:** the median P90 ÷ P10 is 28.7, above 10. As stated, the tool
+      still reports it.
+  - **What this means (WS-ENGINE's reading, for Ben to confirm):**
+    - **τ = 0 does not mean the states are alike.** It means four states can't tell state differences apart
+      from place differences. The place effects are wide (α 2.3), and OH and TX have one and two places. So
+      Texas being high fits just as well as two high places.
+    - **The upper bound, 0.67, is the informative number.** It is close to K1's 0.79. A new state's total
+      could plausibly be about ×0.4 to ×2.4 of the central estimate from this source alone (P10–P90 at
+      τ = 0.67).
+    - **Under the rule, the central run adds no state spread.** A new state's central range would show only θ's
+      uncertainty and its own places' effects; the state spread appears only in the sensitivity at the high end.
+      That follows the rule, but it understates the uncertainty that motivated this entry.
+    - **Fixing that is a change of method and needs its own dated entry.** One option is to draw τ from its
+      profile interval in each simulation draw instead of fixing it at τ̂. Not done here.
+    - **Why the leave-one-state-out ranges are wide:** OH and TX are one or two places, so their ranges are
+      dominated by single places' effects. That is true with or without τ. A new state with many places, such
+      as Wisconsin, would average its place effects out, so its range would be set mostly by θ and τ.
+  - **Config:** unchanged. `adu_state_effect_sd` is not added to `hazard.yaml` until Ben decides. The scenario
+    function exists (`hazard.widen_unseen_state`, rules "both" and "larger") but is not wired into
+    `scenarios/adu.run` yet.

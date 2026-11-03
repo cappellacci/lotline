@@ -626,6 +626,101 @@ def counts_main(store, out: Path | None, workers: int) -> None:
         pd.DataFrame(counted).to_csv(out / "counts.csv", index=False)
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-043: the state multiplier τ, and leave one state out with it
+# ---------------------------------------------------------------------------------------------------------
+
+D041 = Path(__file__).resolve().parents[2] / "reports" / "adu-counts" / "statewide.csv"
+
+
+def _state_fit_task(args) -> tuple[str, cal.Fit3 | None, cal.StateFit | None, str]:
+    """'' fits every place; a state name leaves that state out. Rule shares come from fit 3 on the same
+    places (D-041's main fit), then θ, α and τ are fitted with the shares held there."""
+    st, places = args
+    use = [p for p in places if p.state != st]
+    try:
+        f3 = cal.fit3(use)
+        return st, f3, cal.fit_state_effect(use, f3.m_owner, f3.m_other), ""
+    except Exception as e:  # noqa: BLE001 - a failed fit is a reported result ("not estimable")
+        return st, None, None, f"{type(e).__name__}: {e}"
+
+
+def _state_fit_row(fit_name: str, f3, sf, err: str) -> dict:
+    if sf is None:
+        return dict(fit=fit_name, status=f"not estimable ({err})")
+    return dict(fit=fit_name, status="ok" if sf.tau_estimable else "tau not estimable (bound)",
+                theta_per_1000=sf.theta * 1000, low=sf.low * 1000, high=sf.high * 1000, alpha=sf.alpha,
+                tau=sf.tau, tau_low=sf.tau_low, tau_high=sf.tau_high, loglik=sf.loglik,
+                d041_theta_per_1000=f3.theta * 1000, d041_loglik=f3.loglik, m_owner=sf.m_owner,
+                m_other=sf.m_other, states=" ".join(sf.states), places=sf.n_places,
+                place_years=sf.n_years)  # fmt: skip
+
+
+def k1_spread() -> tuple[float, pd.DataFrame]:
+    """D-043 check K1: root mean square of log(observed / P50) over D-041's main leave-one-state-out rows."""
+    d = pd.read_csv(D041)
+    d = d[(d["test"] == "main: leave one state out") & d["group"].isin(STATES)]
+    return float(np.sqrt(np.mean(np.log(d["obs_over_p50"]) ** 2))), d[["group", "obs_over_p50"]]
+
+
+def state_effect_main(store, out: Path | None, workers: int) -> None:
+    """D-043: θ, α and τ on the four states (main counts), each state's multiplier, the K1 and K2 checks,
+    and leave one state out with the unseen-state draw, next to D-041's."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    cs = cal.count_settings()
+    places, test = four_state_places(store, cs), _test_set(store, cs)
+    print(f"=== D-043: {len(places)} fit places, counts {cs} ===", flush=True)
+    with ProcessPoolExecutor(workers) as pool:
+        results = list(pool.map(_state_fit_task, [(st, places) for st in ("",) + STATES]))
+    rows = [_state_fit_row("all four states" if st == "" else f"without {st}", f3, sf, e)
+            for st, f3, sf, e in results]  # fmt: skip
+    fits = pd.DataFrame(rows)
+    print(fits.round(3).to_string(index=False), flush=True)
+    full = results[0][2]
+    k1, k1_rows = k1_spread()
+    print(f"\nK1 (D-041 leave one state out, RMS of log obs/P50): {k1:.3f}")
+    print(k1_rows.to_string(index=False))
+    without_tx = next(sf for st, _, sf, _ in results if st == "TX")
+    if without_tx is not None:
+        print(
+            f"K2 (without TX): tau {without_tx.tau:.3f} ({without_tx.tau_low:.3f}-{without_tx.tau_high:.3f})"
+        )
+    mult = []
+    if full is not None:
+        for s, (mid, lo, hi) in cal.state_multipliers(places, full).items():
+            mult.append(
+                dict(state=s, v_median=mid, v_low=lo, v_high=hi, theta_s_per_1000=full.theta * mid * 1000)
+            )
+        print("\nK3 state multipliers (full fit)")
+        print(pd.DataFrame(mult).round(3).to_string(index=False))
+    draws = {}
+    for st, _, sf, _ in results:
+        if st and sf is not None:
+            draws |= cal.predict_unseen_state([p for p in places + test if p.state == st], sf, seed=SEED)
+    portland = _portland_paths(store, places + test, cs)
+    loso = state_totals("D-043: leave one state out with tau", _groups(places, test, True), draws, portland)
+    d041 = pd.read_csv(D041)
+    d041 = d041[d041["test"] == "main: leave one state out"][
+        ["group", "p10", "p50", "p90", "p90_over_p10", "verdict"]
+    ]
+    both = loso.merge(d041, on="group", suffixes=("", "_d041"))
+    print("\nNext to D-041")
+    cols = ["group", "observed", "p10", "p50", "p90", "verdict", "p90_over_p10", "p10_d041", "p50_d041",
+            "p90_d041", "verdict_d041", "p90_over_p10_d041"]  # fmt: skip
+    print(both[cols].round(2).to_string(index=False))
+    ratio = both[both["group"].isin(STATES)]["p90_over_p10"]
+    print(f"Median P90/P10 over the four states: {ratio.median():.1f}; "
+          f"missed: {int((both['verdict'] == 'missed').sum())}")  # fmt: skip
+    if out is not None:
+        fits.to_csv(out / "fits.csv", index=False)
+        both.to_csv(out / "statewide.csv", index=False)
+        pd.DataFrame(mult).to_csv(out / "multipliers.csv", index=False)
+        k1_rows.assign(k1=k1).to_csv(out / "k1.csv", index=False)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -645,8 +740,12 @@ def main() -> None:
     )
     ap.add_argument("--statewide", action="store_true", help="D-040: statewide backtest (state totals)")
     ap.add_argument("--counts", action="store_true", help="D-041: consistent counts, four-state comparison")
+    ap.add_argument("--state-effect", action="store_true", help="D-043: τ, the spread between states")
     ap.add_argument("--out", type=Path, help="--four-state / --statewide: folder for the CSVs")
     a = ap.parse_args()
+    if a.state_effect:
+        state_effect_main(DataStore(), a.out, a.workers)
+        return
     if a.counts:
         counts_main(DataStore(), a.out, a.workers)
         return
