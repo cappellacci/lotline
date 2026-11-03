@@ -136,3 +136,21 @@
   - Blank shares barely move: P(by right) 0.842 → 0.846, units grade 0.298 → 0.299.
   - D-038's committed results predate the change.
 - **Checks:** the Texas reform and schema tests (162 passed) and `compliance_check.py`.
+
+### LB-NNN · 2026-11-03 · Method: D-039 drafted (second missing-middle fit, before any run)
+- **Question:** how should the missing-middle fit change, given the confounder review and the Houston and
+  Austin findings?
+- **What I did:**
+  - Drafted D-039 in `docs/analysis_plan.md`. It makes three changes:
+    - the outcome counts only the building types each reform newly allows (prior cap from the reform rows);
+    - the baseline comes from same-state comparison places;
+    - there is one modifier, builder capacity.
+  - Kept land share, a national 2–4 unit share baseline and dropping Houston and Austin as checks.
+  - Fixed a reading rule for Ben's "do the confounders matter" question.
+  - Before writing, looked only at structure: places by status, prior caps, and parcel-value vintages.
+- **Findings that shaped it:**
+  - Only Austin and Houston have an earlier rule followed by a later increase.
+  - Only 5 of 14 fit places have a pre-reform value vintage.
+  - Coded comparison places are 4 (MN), 2 (NC), 0 (OH) and 33 (TX), so uncoded places join the comparison set.
+- **Decisions:** none. D-039 waits for Ben's approval before the code and the single run.
+- **AI:** Claude Code (Opus 5.5) drafted the entry. It ran no fit.
