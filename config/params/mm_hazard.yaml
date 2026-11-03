@@ -1,51 +1,58 @@
-# PENDING (2026-11-03): these values are the first draft from outside evidence. D-038 (pre-registered) replaces
-# them with a fit on the four states; until that fit lands they are not to be used.
-
-# Missing-middle uptake hazard (D-037 route 1; proposed in D-038, for Ben's review): the yearly chance that an
-# eligible single-family-zoned parcel (rule 1.1, D-014) gets a new 2-6 unit building, at the reference place's
-# market, phased in by a ramp. It plays the role adu_mature_hazard_ref plays for ADUs (hazard.yaml) and is
-# transported the same way: u = h_ref / F(reference), h = u x F(place) x ramp(t), F from the pro forma.
-# Evidence: docs/research/mm-uptake-evidence.md (register E022, E024, E028, E105-E113).
+# Missing-middle uptake hazard (D-037 route 1, as amended: calibrated on our own four states; D-038): the yearly
+# chance that an eligible single-family-zoned parcel (rule 1.1, D-014) gets a new 2-4 unit building, phased in
+# by a ramp. It plays the role adu_mature_hazard_ref plays for ADUs (hazard.yaml):
+#     expected buildings = baseline + θ × u_place × eligible parcels × dose × F(PCR) / F(1) × ramp(t)
+# Estimated by scripts/dev/calibrate_mm.py (src/lotline/model/calibrate_mm.py) on 15 MN, NC, OH and TX places
+# that adopted a by-right rule in 2013-2025; results in reports/mm-d038/. Outside studies (Portland, Houston,
+# Auckland, SB 9: docs/research/mm-uptake-evidence.md) are a plausibility check only.
 # Kept out of hazard.yaml (D-037 named that file) because scenarios/adu.py draws every hazard.yaml parameter
 # from one random stream: a new key there would shift the ADU draws and the V5 ADU numbers (D-038).
-# The reference market values (Portland 2021-24 rent and new-home price) are not set yet: D-038, open item.
 
-# ---- The evidence anchor ----
+# ---- The anchor ----
 
 mm_mature_hazard_ref:
-  value: 0.0005
-  low: 0.00015
-  high: 0.002
-  unit: missing-middle projects (new 2-6 unit buildings) per eligible single-family-zoned parcel per year, at the reference place's market (Portland 2021-24)
-  source: "Proposed, D-038. Portland RIP (E022): 2023, the first mature year, about 430 middle units on 148k single-dwelling lots (2.9 per 1,000; RIP2 year 1 514 units, 3.5), about 0.85 projects per 1,000 at 3.4 units per project (derived); 2021-24 average 1.87 units (0.55 projects) per 1,000. Houston SF-to-townhouse (E105): 1,392 projects on 282,770 parcels 2007-20, 0.35 per 1,000 a year, peak about 0.5-0.7. Central = 0.6 of Portland's mature rate, for a typical place rather than the best-documented success (as the ADU anchor is 0.26 of Portland's)"
-  notes: "Low 0.15 per 1,000: Portland's R7 zone (0.5 units per 1,000 lots a year, E022, about 0.15 projects) and below Houston's average. High 2 per 1,000: Portland's R2.5 zone (4.3 units, about 1.3 projects) x 1.5. Not in the range, and why: California SB 9 (about 0.01-0.02 per 1,000, E028, E110) is a restricted rule (owner occupancy, lot-split fees), not a by-right market response; Auckland (about +45 dwellings per 1,000 upzoned parcels in 2022, E107) is a price-to-income-9 market with 3 units by right on every parcel, which the transport through F is meant to carry. Minneapolis, Durham and Raleigh are D-037 test places and were not used. Draw lognormal, as D-030 does for the ADU anchor: median at the value, log-SD (ln high - ln low) / 3.29 = 0.787."
+  value: 0.001076
+  low: 0.000362
+  high: 0.005347
+  unit: new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1)
+  source: "Estimated, D-038 (pre-registered), scripts/dev/calibrate_mm.py: Poisson-gamma maximum likelihood over 15 places, 74 post-reform place-years (BPS 2-4 unit buildings over each place's pre-reform mean x its growth in other homes), 90% profile-likelihood interval; Minneapolis, Durham, Durham County and Raleigh held out as the D-037 tests"
+  notes: "Rests heavily on Houston's and Austin's 2024-25 years: without Houston 0.57 per 1,000, without both 0.24 (exploratory, reports/mm-d038/exploratory_fits.csv); the leave-one-out refits on data before each target's reform gave 0.08-0.45. The placebo date (T - 3) gives 0.32 per 1,000 (0.10-1.84): part of the measured excess may be growth the control does not remove. Implied mature rates at each place's own dose and PCR, 0.07-0.76 per 1,000, sit inside the outside evidence (Portland 0.55-0.85 projects, Houston 0.35). Drawn lognormal (as D-030): median at the estimate, log-SD (ln high - ln low) / 3.29 = 0.819."
+
+mm_place_effect_variance:
+  value: 7.29
+  low: 3.18
+  high: 19.78
+  unit: variance of a place's multiplier on the missing-middle hazard (gamma, mean 1)
+  source: "Estimated, D-038 (alpha, 90% profile-likelihood interval)"
+  notes: "Very wide, as for ADUs (adu_place_effect_variance 4.7): a single place's range is wide and its median far below its mean; state totals, summed over many places, are tighter. Drawn lognormal around the estimate from its interval."
 
 mm_units_per_project:
-  value: 3.4
-  low: 2.5
+  value: 2.08
+  low: 2.04
   high: 4.0
-  unit: homes per missing-middle project (gross, before the demolished house)
-  source: "Derived, D-038. Portland 2023 (E022): about 430 units in about 125 projects (fourplexes most common). Houston (E105): 5,359 townhouses on 1,392 projects (3.85), median 4, most common 2. Arlington EHO (E106): 190 units on 47 permits (4.0, six-plexes included). Low: a duplex-heavy mix (Arlington 53% of permits 2-3 units)"
-  notes: "Converts projects to homes until the scenario picks a prototype per parcel from the pro forma; then the prototype's unit count replaces it. Net homes subtract the demolished house where there was one (E022: 1.68 -> 3.88 units per demolition)."
+  unit: homes per new 2-4 unit building (gross, before any demolished house)
+  source: "Census BPS, the 15 fit places 2016-2025: 10,210 homes in 4,912 buildings (D-038). Low and high: the lowest and highest state ratios (NC 2.04, OH 2.75, TX 2.07, MN 4.0 on 10 buildings)"
+  notes: "D-038 named local permit files as the source; they give 0.75-2.43 homes per 2-4 unit 'building', below the minimum of 2, because they file one permit per unit or per side of a duplex, so they cannot count buildings. BPS was the pre-registered check and is used instead. BPS 2-4 unit buildings are mostly duplexes (Houston); Portland's mix (3.4, fourplexes) is the outside comparison."
 
 # ---- Ramp after adoption ----
 
 mm_ramp_half_years:
-  value: 2.5
+  value: 2.0
   low: 1.5
-  high: 5.0
+  high: 2.5
   unit: years after adoption to reach half the mature hazard
-  source: "Proposed, D-038. Portland (E022): flat in RIP's first year (Aug 2021-Jul 2022), near its plateau in the second (514 units Aug 2022-Jul 2023; 2024 pace between 2022 and 2023), half-way about 1.5 years. Auckland (E001, E107): effect still rising in year 6 (2021-22), half-way about 4. Houston (E105): about 15 years from 1998 to peak, with two recessions and the 2013 citywide extension. Minneapolis (E021) peaked in year 4 (not used to set it, a test place)"
+  source: "Estimated, D-038: profile likelihood on the grid 0.5-6.0; 2.0 is the maximum and the 90% set holds no other grid point, so low and high are the neighbouring grid points"
+  notes: "Identified only over the ages the data cover: 80% of the exposure is at ages 0.5-2.5, most of it Houston's and Austin's two years. The late years rest on Wilson, Morrisville and Wake Forest's small counts. Outside series suggest 1.5-5 years (Portland, Auckland, Houston); widening the range to that is for Ben to decide (D-038)."
 
 mm_ramp_slope_years:
   value: 0.75
   low: 0.5
   high: 1.5
   unit: years (logistic scale)
-  source: "Judgment, as adu_ramp_slope_years: about 2 years from 20% to 80% of the mature hazard, Portland's year-1 to year-2 jump (E022); 1.5 gives Auckland's steady six-year rise (E001)"
-  notes: "At half 2.5 and slope 0.75: year 1 0.12, year 2 0.34, year 3 0.66, year 4 0.88, year 5 0.97 of the mature hazard."
+  source: "Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature hazard"
+  notes: "At half 2.0 and slope 0.75: year 1 0.21, year 2 0.50, year 3 0.79, year 4 0.94, year 5 0.98 of the mature hazard."
 
-# ---- Feasibility transport (D-038) ----
+# ---- Feasibility transport ----
 
 mm_feasibility_dispersion:
   value: 0.5
@@ -53,4 +60,4 @@ mm_feasibility_dispersion:
   high: 0.8
   unit: standard deviation of log(lot's own price-to-cost) for a rental duplex
   source: "Judgment (D-038), the ADU value (adu_feasibility_dispersion): lots differ in what a 2-4 unit building costs and earns (existing house to buy out, lot size, slope); no published spread. Range from near-uniform lots (0.25) to very mixed (0.8)"
-  notes: "F = Φ((ln PCR − ln(1 + developer_margin)) / σ), relative to F at PCR = 1; run at 0.25 and 0.8 as a check."
+  notes: "F = Φ((ln PCR − ln(1 + developer_margin)) / σ), relative to F at PCR = 1. The anchor moves with it (fit at 0.25: 2.71 per 1,000; at 0.8: 0.93), so draw them together or hold σ at its value."

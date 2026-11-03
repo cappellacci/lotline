@@ -1,36 +1,42 @@
-### LB-NNN · 2026-11-03 · Literature: missing-middle uptake anchor for the mechanism route (D-038, proposed)
-- **Question:** what yearly uptake hazard and ramp should the missing-middle scenario use under D-037's route 1,
-  and what external evidence supports them?
+### LB-NNN · 2026-11-03 · Build: missing-middle uptake calibrated on the four states (D-038)
+- **Question:** what mature uptake hazard, ramp and homes per building does the missing-middle scenario get
+  when they are calibrated on our own post-reform places (D-037 amendment)? How well does that predict
+  reformed places it did not see?
 - **What I did:**
-  - Compiled published by-right missing-middle production in a common unit: projects and homes per 1,000
-    eligible parcels a year at maturity, plus the ramp. Places: Portland RIP, Houston, Auckland, Lower Hutt,
-    SB 9, Oregon HB 2001 cities, Spokane, Arlington, Austin HOME and Edmonton.
-  - Checked the key figures against the source PDFs: Portland's annual per-lot rates and 514 units; Houston's
-    1,392 projects on 282,770 parcels; Auckland's 0.045 per parcel.
-  - Proposed the anchor, units per project and ramp, and drafted D-038 before any missing-middle scenario number.
-- **Inputs:** evidence register E001, E004, E021, E022, E024, E026–E028; D-014, D-019, D-030, D-037;
-  `config/params/hazard.yaml`.
+  - First draft (same day): compiled outside evidence (Portland, Houston, Auckland, SB 9, Oregon, Spokane,
+    Arlington) into `docs/research/mm-uptake-evidence.md` and register rows E105–E113. After Ben's change of
+    direction this became the plausibility check.
+  - Pre-registered the fit in D-038 and pushed it before running anything:
+    - a Poisson-gamma model on BPS 2–4 unit buildings;
+    - each place's pre-reform baseline × its growth in other homes, plus θ × eligible parcels × dose × feasibility
+      × ramp;
+    - a profile-likelihood interval, checks 1–7, a V4 leave-one-place-out backtest and the D-037 test places.
+  - Wrote `src/lotline/model/calibrate_mm.py`, with 17 tests against hand-worked and closed-form cases, and
+    `scripts/dev/calibrate_mm.py`. Ran it once.
+- **Inputs:** the D-024 four-state panel (`estimate_mm.build_panel`, holdout-filtered); D-014, D-019, D-030,
+  D-037 and its amendment.
 - **Outputs:**
-  - `config/params/mm_hazard.yaml` (4 parameters);
+  - `config/params/mm_hazard.yaml`;
+  - `reports/mm-d038/`;
+  - D-038 in `docs/analysis_plan.md`;
   - `docs/research/mm-uptake-evidence.md`;
   - register rows E105–E113;
-  - D-038 in `docs/analysis_plan.md`;
-  - the parameter table in `docs/model_and_assumptions.md` (regenerated).
+  - the parameter table in `docs/model_and_assumptions.md`.
 - **Findings:**
-  - Only Portland and Houston publish an eligible-lot denominator.
-    - Portland: 0.85 projects (2.9 homes) per 1,000 lots in 2023; 0.55 averaged over 2021–24.
-    - Houston: 0.35 per 1,000.
-  - Proposed central 0.5 per 1,000 (range 0.15–2.0) at Portland's market; ramp half-way at 2.5 years (1.5–5).
-  - SB 9 sits below the range as a restricted rule, and Auckland above it as an extreme market.
-- **Decisions:** D-038 proposed, for Ben.
-  - It deviates from D-037's file choice: the parameters go in `mm_hazard.yaml`, because a new `hazard.yaml` key
-    would shift the ADU draws.
-  - Minneapolis, Durham and Raleigh (D-037 test places) set no value. No Charlotte, Mecklenburg or St. Paul
-    outcomes were read.
-- **AI:** Claude Code (Opus 5.5) did the work.
-  - Three research subagents read the sources, and Claude chose the values.
-  - Figures marked "derived" are Claude's arithmetic, shown in the evidence doc. Some yearly counts are read from
-    charts.
-  - No model, estimation or scenario code was run.
-- **Open / next:** the Portland reference market script; a missing-middle feasibility dispersion; the
-  current-rules increment; Portland's permit series by zone and year to replace the chart reads.
+  - θ = 1.08 per 1,000 eligible parcels a year (0.36–5.35), ramp half-way at 2 years, α = 7.3.
+  - The estimate rests on Houston: 0.57 without it, 0.24 without Houston and Austin (exploratory).
+  - The placebo date gives 0.32, so the check is not passed.
+  - Backtest coverage is 67%, but the error is no better than assuming no effect.
+  - The out-of-sample tests are covered 4 of 4.
+  - The local permit files can't count buildings, so BPS gives homes per building: 2.08.
+- **Decisions:** D-038 for Ben to confirm. It deviates from the pre-registration in two places:
+  - homes per building comes from BPS, not the local permit files;
+  - the eligible-lot check was not done (parcel numbers don't match).
+  - Choices left for Ben: accept the fit, widen the ramp range, or change the growth control (a new entry).
+- **AI:** Claude Code (Opus 5.5) wrote the method, code, tests and reading. Research subagents compiled the
+  outside table. The checks were the unit tests, the full suite and `compliance_check.py`. The likelihood was
+  checked against the closed-form negative binomial and frailty cases.
+- **Open / next:**
+  - fix the permit-to-parcel join for check 6;
+  - decide on the placebo shortfall;
+  - build the missing-middle scenario on these parameters.

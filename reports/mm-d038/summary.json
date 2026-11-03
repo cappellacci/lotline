@@ -1,0 +1,29 @@
+{
+  "main": {
+    "fit": "main",
+    "theta": 0.0010759103282838593,
+    "low": 0.00036162822397732975,
+    "high": 0.005347312155062013,
+    "per_1000": 1.0759103282838594,
+    "alpha": 7.291317880753419,
+    "alpha_low": 3.178841020443378,
+    "alpha_high": 19.783499951298506,
+    "half": 2.0,
+    "half_low": 2.0,
+    "half_high": 2.0,
+    "places": 15,
+    "place_years": 74,
+    "loglik": 10363.503760844906
+  },
+  "realized": {
+    "mean_hazard": 0.0009545613683048966,
+    "age_p10": 0.5,
+    "age_p50": 1.5,
+    "age_p90": 2.5
+  },
+  "bps_homes_per_building_fit_places": 2.1446519524617997,
+  "outside_rate": 0.0005,
+  "margin": 0.15,
+  "sigma": 0.5,
+  "seconds": 2055
+}

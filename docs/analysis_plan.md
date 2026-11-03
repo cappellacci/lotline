@@ -1777,5 +1777,72 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Code:** `src/lotline/model/calibrate_mm.py` (likelihood, profile, backtest; unit tests against hand-worked
   examples in `tests/model/test_calibrate_mm.py`); `scripts/dev/calibrate_mm.py` (the run); results to
   `reports/mm-d038/` (no outcome panel written to the repo).
+- **Results (2026-11-03, after the single run; `reports/mm-d038/`):**
+  - **Fit set as run: 15 places, 74 post-reform place-years.** Mooresville drops out under the stated rule: it
+    has no BPS rows before 2023, so no pre-reform baseline.
+  - **θ = 1.08 per 1,000 eligible parcels a year (90% interval 0.36–5.35).**
+    - α = 7.3 (3.2–19.8): the place multiplier varies widely, as it does for ADUs.
+    - Half-way point 2.0 years. No other grid point is inside the 90% set, so the range is the neighbouring
+      grid points, 1.5–2.5.
+    - The mean realized hazard over the observed ages is 0.95 per 1,000.
+    - Exposure-weighted ages run 0.5–2.5 (P10–P90). The ramp is identified only over the first three years.
+  - **Houston carries the estimate.** Its 2024–25 2–4 unit buildings were 1,642 against a baseline of 550; it
+    is the only large excess. Austin is next (251 against 133).
+    - Exploratory fits, not pre-registered and not used: without Houston 0.57 per 1,000 (0.17–3.36); without
+      Houston and Austin 0.24 (0.06–2.43).
+    - Lubbock fell below its baseline (25 against 191). Most small places had no excess.
+  - **Checks:**
+
+    | Check | θ per 1,000 (90% interval) | Reading |
+    |---|---|---|
+    | Main | 1.08 (0.36–5.35) | — |
+    | 1. Placebo date T − 3 (14 places) | 0.32 (0.10–1.84) | **Not passed as pre-registered.** About 0.3 of the main estimate, and its interval overlaps it. Part of the excess may be growth the control misses. |
+    | 2. Growth from units_5p | 1.15 (0.37–6.53) | Robust |
+    | 2. Growth from state comparisons | 1.19 (0.31–5.60) | Robust |
+    | 2. No growth control (g = 1) | 1.18 (0.41–5.88) | Robust |
+    | 3. F ≡ 1 (no feasibility) | 0.81 (0.28–4.02) | Robust |
+    | 3. σ = 0.25 | 2.71 (0.68–18.9) | The anchor moves with σ, because it is defined at PCR = 1 |
+    | 3. σ = 0.8 | 0.93 (0.32–4.54) | — |
+    | 4. Baseline T−5 … T−1 | 0.71 (0.23–3.67) | Somewhat lower |
+    | 5. Tag-sensitive events dropped (9 places) | 1.60 (0.35–26.2) | Wide |
+
+    - Check 6 (eligible lots) was **not done**. None of Cincinnati's or Austin's parcel-numbered permits matched
+      their rolls' `parcel_id` (formats differ). Fixing the join is a follow-up.
+    - Check 7 (plausibility): the implied mature rates at each place's own dose and PCR are 0.07–0.76 per
+      1,000. That is inside the outside table's 0.35–0.85 for full-dose rules (Portland 2021–24 average and
+      2023; Houston's 2007–20 average). No gap over 3×.
+  - **V4 backtest (12 places with T ≥ 2015):**
+    - The refits on data before each target's reform gave θ = 0.08–0.45 per 1,000, with half-way at 0.5.
+      Before the 2024 adopters, the fit set showed little excess.
+    - P10–P90 coverage: **8 of 12 (67%)** for the fit, against 7 of 12 for no effect and 5 of 12 for the
+      outside rate. That passes V4's proposed 60%, but through wide intervals.
+    - Mean absolute error of the median: 0.235 buildings per 1,000 eligible parcels a year, against 0.234 (no
+      effect) and 0.237 (outside rate). **No better than no effect.** Houston (−1.2) and Lubbock (+1.0)
+      dominate the error.
+    - With growth held at 1 (a true forecast): coverage 8 of 12; error 0.228 against 0.227 and 0.231.
+  - **D-037 out-of-sample tests (full fit, years 1–5):**
+    - P10–P90 covered **4 of 4**: Minneapolis, Durham city, Durham County and Raleigh.
+    - No effect covered 1 of 4; the outside rate covered 1 of 4.
+    - Every median is below the observed count, because the gamma's median sits far below its mean.
+    - Error of the median 0.089 per 1,000 a year, against 0.103 (no effect) and 0.066 (outside rate, which is
+      closest).
+  - **Homes per building:**
+    - The local permit files give 0.75–2.43 homes per 2–4 unit "building", which is impossible. They file one
+      permit per unit or per duplex side, so they can't count buildings.
+    - The pre-registered BPS check is used instead: 2.08 for the fit places, 2016–2025 (state ratios 2.04–4.0).
+      BPS 2–4 unit buildings are mostly duplexes.
+  - **Into `mm_hazard.yaml`:** θ 0.001076 (0.000362–0.005347); α 7.29 (3.18–19.78); half-way 2.0 (1.5–2.5);
+    homes per building 2.08 (2.04–4.0); slope and σ as judgment.
+  - **What this means for the scenario:**
+    - The anchor is usable, and its range is wide.
+    - A single place's result is very uncertain (α); state totals are tighter.
+    - The point estimate is mostly a Houston number.
+    - The placebo result and the backtest's lack of accuracy gain say the in-state signal is weak outside the
+      two large Texas cities.
+  - **For Ben to decide:**
+    1. Accept the fit as is.
+    2. Widen the ramp range to the outside series' 1.5–5 years.
+    3. Whether the placebo shortfall calls for a different growth control. That would be a new dated entry
+       and a new run.
 - **Decided by:** method by WS-ENGINE, 2026-11-03, on Ben's instruction (D-037 amendment); results for Ben to
   confirm in PR #272.

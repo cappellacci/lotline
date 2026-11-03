@@ -1,12 +1,15 @@
-# Missing-middle uptake after by-right reforms: the evidence behind `mm_mature_hazard_ref` (2026-11-03)
+# Missing-middle uptake after by-right reforms: outside evidence, a plausibility check for D-038 (2026-11-03)
 
-**Status:** evidence for analysis-plan entry D-038 (proposed). Compiled before any missing-middle scenario number
-was computed. Sources are rows of `lotline-evidence-register.csv` (E-numbers).
+**Status:** plausibility check only (D-037 amendment, Ben 2026-11-03: "we need to be rolling our own"). The
+values in `config/params/mm_hazard.yaml` are fitted on our four states (D-038, `reports/mm-d038/`). This table
+is what the fit is compared against: the implied mature rates, 0.07–0.76 per 1,000 at each fit place's own dose
+and price-to-cost, fall inside it. The table was compiled before any missing-middle fit or scenario number.
+Sources are rows of `lotline-evidence-register.csv` (E-numbers).
 
-**What is being anchored.** D-037 builds the missing-middle effect as eligible parcels (rule 1.1, D-014) × the
+**What is compared.** D-037 builds the missing-middle effect as eligible parcels (rule 1.1, D-014) × the
 share that pencil (pro forma) × an uptake hazard × a ramp. The hazard is the yearly chance that an eligible
 parcel gets a new 2–6 unit building once the reform has matured, at the reference place's market. Its unit here
-is **projects (buildings) per 1,000 eligible parcels per year**. Units per project are a separate parameter.
+is **projects (buildings) per 1,000 eligible parcels per year**, the fit's unit. Units per project are a separate parameter.
 
 **Held out.** Minneapolis, Durham, Durham County and Raleigh are D-037 out-of-sample test places, so their
 outcomes did not set any value (Minneapolis is shown for context from sources already in the register). Charlotte,
@@ -18,17 +21,17 @@ D = derived here (arithmetic shown in the notes); S = stated by the source.
 
 | Place, reform | Source | Denominator | Units / 1,000 parcels / yr | Projects / 1,000 / yr | Ramp | Used for |
 |---|---|---|---|---|---|---|
-| **Portland OR**, RIP (Aug 2021), RIP2 (Aug 2022) | E022 (city report, Jan 2025) | 148k lots in single-dwelling zones (S) | 2023: ≈2.9 (D); RIP2 year 1: 3.5 (D, 514 units); 2021–24 average 1.87 (D from zone rates); R2.5 4.3, R5 2.0, R7 0.5, R10 0.1 (S, annual) | 2023: ≈0.85 (D); average ≈0.55 (D) | Flat in year 1, near plateau in year 2 | **Reference place; central, low and high** |
-| **Houston TX**, 1998 Inner Loop, 2013 citywide lot-size cut | E105 (Furman Center 2023) | 282,770 single-family parcels outside block-vote areas (S) | 1.35 (D, 2007–20 average) | 0.35 (D, average); ≈0.5–0.7 (D, 2015 peak, read from a chart) | About 15 years to peak; recessions in between | Central (lower side); units per project; slow-ramp bound |
-| **Auckland NZ**, Unitary Plan (Nov 2016), MHS and MHU zones | E001 (JUE 2023), E107 (WP 012) | Upzoned parcels; count not published; MHS 146.8 km², MHU 74.6 km² (S) | +45 dwellings per 1,000 upzoned parcels over non-upzoned in 2022 (S: 0.045 per parcel; greenfield included) | ≈10 (D, at 3–5 dwellings per site; assumption) | Rising every year 2016–22; half-way ≈ year 4 | Upper research band, outside the range (see D-038); slow-ramp bound |
+| **Portland OR**, RIP (Aug 2021), RIP2 (Aug 2022) | E022 (city report, Jan 2025) | 148k lots in single-dwelling zones (S) | 2023: ≈2.9 (D); RIP2 year 1: 3.5 (D, 514 units); 2021–24 average 1.87 (D from zone rates); R2.5 4.3, R5 2.0, R7 0.5, R10 0.1 (S, annual) | 2023: ≈0.85 (D); average ≈0.55 (D) | Flat in year 1, near plateau in year 2 | Main comparison (full-dose, strong market) |
+| **Houston TX**, 1998 Inner Loop, 2013 citywide lot-size cut | E105 (Furman Center 2023) | 282,770 single-family parcels outside block-vote areas (S) | 1.35 (D, 2007–20 average) | 0.35 (D, average); ≈0.5–0.7 (D, 2015 peak, read from a chart) | About 15 years to peak; recessions in between | Comparison (lot-split townhouses); slow ramp |
+| **Auckland NZ**, Unitary Plan (Nov 2016), MHS and MHU zones | E001 (JUE 2023), E107 (WP 012) | Upzoned parcels; count not published; MHS 146.8 km², MHU 74.6 km² (S) | +45 dwellings per 1,000 upzoned parcels over non-upzoned in 2022 (S: 0.045 per parcel; greenfield included) | ≈10 (D, at 3–5 dwellings per site; assumption) | Rising every year 2016–22; half-way ≈ year 4 | Upper bound (extreme market); slow ramp |
 | **Lower Hutt NZ**, PC43 (2017–20) | E004 | No parcel count | ≈+23 per 1,000 existing dwellings in 2022 (D) | — | Rose 2018–22, fell 2023 | Context: a single-city upzoning can be large |
-| **California**, SB 9 (2022) | E026, E027, E028, E110 | 6.1M eligible parcels (S, Terner simulation) | ≈0.02 (D, 140 units in 2023) | ≈0.01–0.02 (D) | Flat near zero | Below the range: restricted rule (owner occupancy, lot-split fees) |
+| **California**, SB 9 (2022) | E026, E027, E028, E110 | 6.1M eligible parcels (S, Terner simulation) | ≈0.02 (D, 140 units in 2023) | ≈0.01–0.02 (D) | Flat near zero | Lower bound (restricted rule) |
 | **Oregon HB 2001 cities** | E024, E108 | Not published | — | — | Many cities near 0; Eugene flat ≈100 units a year | Selection: Portland is not typical |
 | **Spokane WA**, BOCA (2022–23) | E025, E109, E113 | Not published | — | — | Middle share (ADUs included) 3–4% → 8% → 10% → 17% (2025): still rising in year 3 | Ramp shape only |
-| **Arlington VA**, EHO (Jul 2023) | E106 | Not published | — | 22–23 zoning permits a year under a 58 cap; 8 reached a building permit | Cut off by litigation | Units per project (4.0); frictions |
+| **Arlington VA**, EHO (Jul 2023) | E106 | Not published | — | 22–23 zoning permits a year under a 58 cap; 8 reached a building permit | Cut off by litigation | Frictions (caps, litigation) |
 | **Austin TX**, HOME (2024) | E111 | Not found | — | — | 436 units in year 1 | Context (secondary source) |
 | **Edmonton AB**, 2024 bylaw | E112 | Not published | — | — | Row housing 8× its prior average in year 1 | Fast-ramp case |
-| *Minneapolis MN*, 2040 Plan (2020): test place, not used | E021 | ≈72.5k lots (unverified) | 0.87 (D, 2023) | 0.33 all 2–4-plexes, 0.15 on former single-family lots (D, 2023) | Peak in year 4 | Not used (D-037 test place) |
+| *Minneapolis MN*, 2040 Plan (2020): test place, not used | E021 | ≈72.5k lots (unverified) | 0.87 (D, 2023) | 0.33 all 2–4-plexes, 0.15 on former single-family lots (D, 2023) | Peak in year 4 | Not used here (D-037 test place) |
 
 ## Notes on the derivations
 
