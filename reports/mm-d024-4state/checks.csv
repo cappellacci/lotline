@@ -1,0 +1,10 @@
+check,statistic,p,pass,estimate,low,high,estimate_beta_0,estimate_beta_2,estimate_beta_4,estimate_att,outside,moved,dropped_places,note
+pre-trend leads,1.0064060155970203,0.8348348348348348,True,,,,,,,,,,,
+placebo dates (−2 years),,,True,0.43241130135272493,-0.11080691900789669,0.9703866710788804,,,,,,,,
+placebo outcome (5+ unit homes),,,False,1.7718962958345097,0.7976990026108034,4.660298003156335,,,,,,,,
+substitution (1-unit homes; no pass rule),,,,-0.470944953461396,-1.029110789365901,0.19219609144025795,,,,,,,,
+excluding 2020-21,,,True,,,,0.9075536718648807,1.4349794737289086,3.2753282716590415,1.756641495925991,[],,,
+leave one treated place out,,,True,,,,,,,,,[],,
+"contamination (a): 50,000+ people only",,,True,,,,,,,1.7265206215031943,[],,,
+contamination (b): without pipeline-flagged places,,,True,,,,,,,1.6773826514572963,[],,15.0,
+local measurement (reported),,,,,,,,,,,,,,2743000 metc_residential_permits: post ratio 1.00; 2743000 mpls_ccs_permits: post ratio 1.63; 3719000 durham_permits: post ratio 1.59; 3755000 raleigh_permits: post ratio 0.98

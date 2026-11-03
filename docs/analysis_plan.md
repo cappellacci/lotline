@@ -927,6 +927,60 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Run once:** `uv run python scripts/dev/estimate_mm.py --full --method nb --workers 8 --out
     reports/mm-d024-4state/`, log in the same folder; whatever it shows is reported.
   - **Decided by:** Ben, 2026-11-02 ("let's run the engine"); written by WS-ENGINE before the run.
+- **The four-state run (2026-11-02 19:57 to 2026-11-03 01:08, commit 0ca15cc; results in `reports/mm-d024-4state/`,
+  log `run-2026-11-02-log.txt`; written after the run):**
+  - **Fit:** BFGS converged on 560 places and 8,763 place-years; nothing dropped, no separation. Check 7b left
+    out 15 pipeline-flagged comparison places, as specified.
+  - **Main estimates (D-025's NB; log scale; 90% wild score bootstrap intervals):**
+    - overall **1.75 (0.27 to 3.27)**, i.e. about 5.8 times the 2–4 unit homes at full dose;
+    - years 0–1: 0.93 (−0.30 to 2.04); 2–3: 1.33 (−0.70 to 3.06); 4+: 3.28 (0.45 to 6.07);
+    - price-to-cost: θ = −0.45 (−1.69 to 0.79); home value: θ = −0.02 (−1.23 to 1.14); rate: ρ = 0.01
+      (−0.33 to 0.38); ADU rule: δ = −0.46 (−1.13 to 0.18).
+  - **Randomization inference: p = 0.29** (999 reassignments, all fitted). Reshuffled adoption paths give an
+    effect this large about three times in ten.
+  - **Added 2–4 unit homes in the treated places' post-adoption years: about 5,560.**
+    - **El Paso supplies 3,006 (54%)** and Houston 1,289 (23%); Lubbock 395, Minneapolis 324, the rest less
+      than 150 each.
+    - El Paso is one of the 7 places whose rule is in force for the whole panel (the `[predates]` and
+      before-the-window rows; with Apex, Asheboro, Goldsboro, New Bern, Dayton and Grove City). Its 16 "post"
+      years all sit in the 4+ bin. With place *random* effects (not fixed), that bin is identified partly by
+      comparing these places with others across places, not by a change within them. Together the 7 supply
+      3,364 of the added homes. This is a property of the specification, noted here, not changed.
+  - **Checks:**
+    1. Leads: **pass** (p = 0.83).
+    2. Placebo dates (−2 years): **pass**, 0.43 (−0.11 to 0.97).
+    3. Placebo outcome (5+ units): **fail**, 1.77 (0.80 to 4.66). The same places' 5+ unit permits rose by as
+       much as their 2–4 unit permits, which points to growth in these places rather than the rule.
+    4. Substitution (1-unit homes): −0.47 (−1.03 to 0.19).
+    5. Excluding 2020–21: **pass** (1.76).
+    6. Leave one out: **pass**. 1.18 without El Paso, 2.22 without Austin, 1.54–2.02 for the others;
+       1.66 without Durham city and county.
+    7. Contamination: 50,000+ only, **pass** (1.73); without the 15 pipeline-flagged places, **pass** (1.68).
+    8. Local measurement (reported): Met Council 1.00 and Raleigh 0.98 against BPS; the Minneapolis city
+       source 1.63, Durham 1.59.
+  - **Robustness (overall effect):** Poisson-gamma 2.15 (1.40 to 3.11); PPML 2.14 (0.97 to 3.51); Borusyak
+    imputation 0.65 (point only, 15 places); **binary by-right dose 0.59 (−0.11 to 1.41)**; four modifiers
+    2.09 (0.57 to 3.71); **firm dates only 0.93 (−0.25 to 2.87)**; Met Council alone −2.02 (−5.24 to 1.81).
+    PPML and the imputation estimator converged this time.
+  - **Out-of-sample tests:**
+    - **A (North Carolina): fail.** Durham city 279 observed vs 80% interval 40–293 (inside); Raleigh 263 vs
+      29–243 (outside); Durham County 12 vs 0–5 (outside). Yearly coverage 69%.
+    - **B (Minneapolis): pass.** 304 observed vs 268–1,967; yearly coverage 83%. The interval is wide and its
+      centre (992) is three times what was observed.
+  - **Reading (WS-ENGINE's, for Ben to confirm):** still **no credible estimate** of the missing-middle
+    effect, by the same standard as October:
+    - the central estimate is large and positive, but randomization inference finds it unremarkable
+      (p = 0.29);
+    - the placebo outcome fails with an effect of the same size, so the reformed places grew in general;
+    - the effect shrinks to an interval spanning 0 under the binary dose and firm-dates-only fits, and to 0.65
+      under the imputation estimator, which uses only within-place change;
+    - more than half of the added homes come from one always-treated place (El Paso), identified across places;
+    - out-of-sample test A fails.
+    - What changed from October: more treated places, the leads, placebo dates and leave-one-out checks now
+      pass, and every estimator converges. What did not: the timing test and the placebo outcome. The
+      recommendation from October stands: use the in-state estimate as validation only. The scenario's
+      missing-middle effect comes from the pro forma and the external evidence.
+  - **Run time:** 5 h 11 min (randomization inference 4 h 35 min on 8 workers).
 
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
