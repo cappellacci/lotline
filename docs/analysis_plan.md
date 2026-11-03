@@ -1833,3 +1833,60 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     That points at a place-type modifier (central city vs suburb, or city size), the first candidate under
     D-039's step 1. It needs its own dated entry before it is fitted.
   - **Config:** unchanged.
+
+### D-041 · 2026-11-03 · ADU counts made consistent across the four states, then a four-state comparison (written before the fits)
+- **Why:** the diagnosis after D-040 (`reports/adu-statewide/diagnosis-2026-11-03.md`) found that the four
+  states count different things. Ben (2026-11-03): fix the counts first; run every test across all four states
+  and compare them, since that may show something about the data a pooled test hides.
+- **Count rule 1, co-built units (main: excluded):**
+  - **Definition:** an ADU permit is *co-built* if the same source issued a permit for a new single-family house
+    (`building_type_std` SFD, `units_new` ≥ 1, not a conversion) on the same parcel within one calendar year
+    either side.
+  - **Why exclude:** the mechanism models an ADU added to an existing home on an eligible lot. A new house and
+    second unit built together is new construction, a different channel the tool would need to model
+    separately.
+  - **Where it can be checked:** every source with parcel IDs (Austin, Raleigh, Durham, the Mecklenburg towns,
+    Cincinnati, Minneapolis's own records). Met Council, San Antonio and Greensboro have no parcel IDs and
+    can't be checked. San Antonio's permits are all for existing buildings.
+  - **Shares measured before any fit** (counts only, no prediction):
+
+    | Place | Share co-built |
+    |---|---|
+    | Austin 2016–23 | 66% (1,677 of 2,541) |
+    | Raleigh | 18% |
+    | Durham | 7% |
+    | Minneapolis | 7% |
+    | Mecklenburg towns | 11–22% (1–2 each) |
+    | Durham County, Cincinnati | 0% |
+
+  - **Window:** `adu_cobuilt_window_years`, 1.
+- **Count rule 2, survey reporting rate (main: ρ = 0.57):**
+  - **The problem:** Met Council's survey records fewer ADUs than are permitted. Over 2017–2025, it has 111 of
+    the 194 ADUs in Minneapolis's own permit records.
+  - **The fix:** place-years whose count comes from the survey are fitted and predicted as reported counts:
+    expected = ρ × θ × k (Poisson thinning). θ then means the true rate.
+  - **When a count comes from the survey:** the larger source each year is used, as now (D-019), with ties
+    going to the city's own records.
+  - **The range:** `adu_survey_report_rate` 0.57, range 0.3–1.0. The low end is judgment (suburbs may report
+    worse than Minneapolis); the high end is no correction, as D-039.
+  - **Limitation, stated now:** ρ can't correct a city that never reports.
+- **Four-state comparison (every run reports, per state):**
+  1. counts before and after each rule;
+  2. the fit on each state alone: θ, α and θ's interval. "Not estimable" if the fit fails or the interval
+     reaches the search bounds; OH is one place with 2 years, so its fit is expected to be weak;
+  3. leave one state out (D-040);
+  4. leave one place out, with coverage per state and totals summed by state (D-040);
+  5. the test set (Raleigh, Durham);
+  6. a descriptive check of the market term: correlation of log observed rate with log `h1`, pooled and
+     within each state.
+- **Runs:**
+  - **Main:** co-built excluded, ρ = 0.57; all of 1–6.
+  - **Sensitivities:** S1 co-built included; S2 ρ = 1.0; S3 ρ = 0.3. Each runs 1, 2, 3, 5 and 6; leave one
+    place out runs for the main only.
+- **Bars:** D-040's verdict (useful / inside only / missed) for state totals; V4 coverage for places. Every
+  result is shown next to D-039 and D-040.
+- **Config:** the two rules' parameters go in a new `config/params/adu_counts.yaml`, used by the calibration
+  only. The scenario and its draws are unchanged until Ben adopts a refit.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --counts --out reports/adu-counts`.
+- **Decided by:** Ben, 2026-11-03 ("Yes, fix counts first"; four-state comparison in the same message);
+  written by WS-ENGINE before the fits.
