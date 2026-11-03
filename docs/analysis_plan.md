@@ -894,6 +894,39 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Code as run:** `pooled_adu` as of commit 448be4c. Main's later changes to it were not used: score
     accumulation by `bincount` (identical to 1e-10, faster) and D-025's own retry-from-main-estimates
     convergence rule. D-024's convergence rule (above) applied instead.
+- **Four-state refresh (2026-11-02; written and pushed before any estimate on the new data; thread 14):**
+  - **Why:** the data threads closed (OH and TX 2026-11-01; NC and MN 2026-11-02). The new data
+    gives almost four times as many treated places (27 against 7), the main reason to rerun after the
+    October run gave no credible estimate.
+  - **What changed in the sample (same rule: BPS places of 10,000+ in MN, NC, OH and TX plus every coded
+    place, 2010–2025; holdouts as before):**
+    - 560 places (MN 100, NC 56, OH 172, TX 232); 27 treated, **20 adopting inside 2010–2025** (MN 3, NC 10,
+      OH 2, TX 5), against 7 treated in October. Counts and reconciliation with the readiness reports:
+      `reports/engine14/panel_counts.md`.
+    - Ohio's 172 include 16 townships of 10,000+ that issue permits (the OH report counted 156 places).
+    - Ohio's and Texas's eligible-parcel tables were rebuilt after #252 (interpolation between two rolls).
+  - **Rule date tags** (`model/rule_tags.py`, #264): a `[predates]` rule, or an earliest-known one dated on or
+    before 2010-01-01 (the "allowed before the window" placeholder), is in force from 1990 and never an
+    event; "none" rows (one home per lot) are controls; `[earliest-known]` or blank-adoption-date rows and
+    `DATE UNCONFIRMED` rows are events at their coded dates in the main run.
+  - **Specification, checks and pass rules unchanged:** D-025's estimator as the main model (switch of
+    2026-10-21), same seed, the wild score bootstrap (999), randomization inference (999), checks 1–8,
+    robustness (PPML, Poisson-gamma, Borusyak imputation, binary dose, four modifiers, Met Council alone), the
+    2026-10-21 convergence rule, and the overall effect weighted by counterfactual expected homes. Leave one
+    out now covers 27 treated places plus Durham city and county together.
+  - **One tag sensitivity (Ben, 2026-11-02: keep the tag sensitivities light):** firm dates only. It leaves
+    out the places whose in-panel event is `[earliest-known]`, has a blank adoption date or is
+    `DATE UNCONFIRMED`: 8 NC places (Burlington, Garner, Monroe, Mooresville, Morrisville, Sanford, Wake
+    Forest, Wilson), 552 places and 20 treated. A dropped place leaves the panel entirely (neither treated
+    nor a comparison: its rule is real, only its date is in doubt). The separate "without `[earliest-known]`"
+    and "without `DATE UNCONFIRMED`" runs are not made: the first drops the same places and the second none.
+    Reported with the robustness lines; never used to choose.
+  - **Out-of-sample tests:** A (North Carolina: Durham city, Durham County, Raleigh) and B (Minneapolis), as
+    before: each target is left out, the model refitted and its counts predicted. They now have more
+    post-reform years (Durham 2020–2025, Raleigh 2022–2025, Minneapolis 2020–2025). Same pass rules.
+  - **Run once:** `uv run python scripts/dev/estimate_mm.py --full --method nb --workers 8 --out
+    reports/mm-d024-4state/`, log in the same folder; whatever it shows is reported.
+  - **Decided by:** Ben, 2026-11-02 ("let's run the engine"); written by WS-ENGINE before the run.
 
 ### D-025 · 2026-10-20 · ADU effect: pooled hierarchical negative binomial (pre-registered; main model replacing D-023's)
 - **Why:** D-023's fixed-effects PPML was underpowered on the Twin Cities panel (53 places never recorded an
@@ -1048,6 +1081,39 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (`WARM_START`, off). A real rerun still needs Ben's approval; the scripts' check against the logged
   estimates (1e-4) is how it would confirm equivalence. Tests: `tests/model/test_pooled_adu.py` (speed
   section).
+- **Four-state refresh (2026-11-02; written and pushed before any estimate on the new data; thread 14):**
+  - **Why:** the data threads closed; Ben decided on 2026-10-30 to pool Texas into this estimate, and the
+    Minnesota rules gained second-coder dates and tags.
+  - **Sample:** Twin Cities places with Met Council permits, 2016–2025 (as before; 76 places: 43 with an
+    in-window change, 28 "no ADUs" controls and 5 with only older rules), **plus Texas's four record-level
+    cities over the years their sources count ADUs in full:**
+    - Austin 2016–2023 (treated): its R-102 ADU flag stops with HOME (February 2024): 243, 90 and 9 ADU
+      permits in 2023–2025 while two-unit permits rise to 384, so 2024–2025 measure a coding change;
+    - San Antonio 2021–2025 (treated; the file starts 2020-07);
+    - Fort Worth 2016–2025 (comparison): its ADUs are non-rental (#222) and still count, since the outcome is
+      ADUs built, not rented;
+    - Dallas 2016–2023 (comparison; the file ends 2024-11).
+    - In all: 80 places, 791 place-years, 31 treated (21 adopting in the panel years), 53 with no ADU in any
+      year, 3,192 ADU permits (Austin about four-fifths). `reports/engine14/panel_counts.md`.
+  - **Not pooled now (the open sample questions, answered conservatively):** North Carolina stays out of the
+    sample, so the transport test stays out of sample. Ohio's 15 places stay out: their counts are lower
+    bounds from ADU-only permit files, and 6 of their 7 changes fall in 2023–2025. Either can be pooled later
+    with a new dated entry.
+  - **Rule date tags:** read by `model/rule_tags.py` (#264), as in D-024's refresh entry.
+  - **Specification, checks and pass rules unchanged:** the model, estimation, bootstrap (999),
+    randomization inference (999), the five checks, robustness, the D-031 sensitivity runs and the
+    2026-10-20 convergence rule. Year effects stay common to all places, as pre-registered (no state-by-year
+    effects); with Texas in, a Texas-wide shock is absorbed only through the year effects shared with
+    Minnesota. This is noted as a limitation, not changed.
+  - **One tag sensitivity (Ben, 2026-11-02: keep it light):** firm dates only, a fresh fit with the wild
+    bootstrap: 9 MN places leave the panel (71 places, 27 treated). Reported, never used to choose.
+  - **Transport test:** Raleigh 2021–2025 and Durham 2019–2025, same rule; Austin is now in the sample and
+    leaves the test.
+  - **HonestDiD:** if check 1 (pre-trend leads) fails, the bounds are computed once with the choices fixed on
+    2026-10-21 (`--honest`).
+  - **Run once:** `uv run python scripts/dev/estimate_pooled_adu.py --full --workers 8 --out
+    reports/adu-d025-4state/`, log in the same folder; whatever it shows is reported.
+  - **Decided by:** Ben, 2026-11-02 ("let's run the engine"); written by WS-ENGINE before the run.
 
 ### D-029 · 2026-10-20 · Baseline calibration fixes and state-total scoring (pre-declared before any run)
 - **Why:** a review on synthetic data (2026-10-20, coordinator session) found five problems in the baseline

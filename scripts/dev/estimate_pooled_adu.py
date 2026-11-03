@@ -5,10 +5,12 @@
     uv run python scripts/dev/estimate_pooled_adu.py --full --out reports/adu-d025/
 
 The panel is D-023's (`estimate_adu.build_panel`: Twin Cities places with Met Council permits, 2016-2025; St.
-Paul never; places with no dated ADU rule left out; places adopting before 2010 don't inform the modifiers).
+Paul never; places with no dated ADU rule left out; places adopting before 2010 don't inform the modifiers),
+plus Austin, San Antonio, Fort Worth and Dallas (`TX_PLACES`, D-025 four-state amendment, 2026-11-02).
 The full run: the main model with the wild score bootstrap (999), randomization inference (999), the five
 checks, the robustness estimators (fixed-effects PPML, Borusyak imputation, binary dose, D-031 additive
-imputation), the D-031 sensitivity runs and the transport test for Austin, Raleigh and Durham. --out is a
+imputation), the D-031 sensitivity runs, the firm-dates tag sensitivity and the transport test for Raleigh
+and Durham. --out is a
 directory; CSVs are written only after every stage succeeds; a numerical failure raises EstimationError first.
 """
 
@@ -24,10 +26,19 @@ from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import estimate_adu as est
 from lotline.model import pooled_adu as pa
+from lotline.model import rule_tags
 
 SOURCE = "metc_residential_permits"
-TRANSPORT = {  # place: (state, panel years incl. pre-adoption, scored years)
-    "4805000": ("TX", range(2016, 2024), (2016, 2023)),  # Austin
+# D-025 four-state amendment (2026-11-02): Texas pooled in (Ben, 2026-10-30). Each place keeps only the years
+# its source counts ADUs in full: San Antonio's file starts 2020-07, Dallas's ends 2024-11, and Austin's
+# R-102 ADU flag stops with HOME (2024).
+TX_PLACES = {
+    "4805000": range(2016, 2024),  # Austin (treated; HOME ended the R-102 ADU flag in 2024)
+    "4865000": range(2021, 2026),  # San Antonio (treated)
+    "4827000": range(2016, 2026),  # Fort Worth (comparison; non-rental ADUs count)
+    "4819000": range(2016, 2024),  # Dallas (comparison)
+}
+TRANSPORT = {  # place: (state, panel years incl. pre-adoption, scored years); Austin is now in the sample
     "3755000": ("NC", range(2019, 2026), (2021, 2025)),  # Raleigh (ADU flags from 2019)
     "3719000": ("NC", range(2016, 2026), (2019, 2025)),  # Durham
 }
@@ -36,22 +47,53 @@ TRANSPORT = {  # place: (state, panel years incl. pre-adoption, scored years)
 HH_GROWTH = "corrected"  # D-031 (b); "as_run" reproduces the panel the first D-025 main model used
 
 
-def load_panel(store) -> pd.DataFrame:
-    panel = est.build_panel("MN", store, source=SOURCE, hh_growth=HH_GROWTH).data
+def load_panel(store, drop_tags=()) -> pd.DataFrame:
+    """Twin Cities places with Met Council permits (2016-2025) and the Texas places in `TX_PLACES`, with the
+    rule date tags read by `rule_tags` (`drop_tags`: the tag sensitivities)."""
+    parts = [est.build_panel("MN", store, source=SOURCE, hh_growth=HH_GROWTH, drop_tags=drop_tags).data]
+    parts[0]["state"] = "MN"
+    for g, years in TX_PLACES.items():
+        tx = est.build_panel("TX", store, years=years, geoids=[g], hh_growth=HH_GROWTH, drop_tags=drop_tags)
+        parts.append(tx.data.assign(state="TX"))
+    panel = pd.concat([p for p in parts if not p.empty], ignore_index=True)
     early = panel["T"] < 2010  # D-023 run choice (Ben): early adopters don't inform the modifier terms
     panel.loc[early, list(est.MODIFIERS)] = float("nan")
     return panel
 
 
 def smoke(store) -> None:
-    panel = load_panel(store)
-    places = panel.drop_duplicates("place")
-    print(
-        f"panel: {panel['place'].nunique()} places × {panel['year'].nunique()} years = {len(panel)} "
-        f"place-years; "
-        f"treated {int(places['T'].notna().sum())}; places with no ADU in any year "
-        f"{int((panel.groupby('place')['y'].sum() == 0).sum())}"
-    )
+    for label, drop in (("main", ()), ("firm dates only", rule_tags.SENSITIVITIES)):
+        panel = load_panel(store, drop_tags=drop)
+        places = panel.drop_duplicates("place")
+        tr = places[places["T"].notna()]
+        inside = tr[tr["T"].between(panel["year"].min(), panel["year"].max())]
+        print(
+            f"{label}: {panel['place'].nunique()} places "
+            f"({places['state'].value_counts().sort_index().to_dict()}), {len(panel)} place-years; "
+            f"treated {len(tr)} (adopting in the panel years {len(inside)}: "
+            f"{inside['T'].astype(int).value_counts().sort_index().to_dict()}); never treated "
+            f"{int(places['T'].isna().sum())}; places with no ADU in any year "
+            f"{int((panel.groupby('place')['y'].sum() == 0).sum())}; ADU permits {int(panel['y'].sum())}"
+        )
+        for st, d in panel.groupby("state"):
+            print(f"  {st}: ADU permits by year {d.groupby('year')['y'].sum().astype(int).to_dict()}")
+
+
+def tag_sensitivity(store, panel, kw, draws) -> pd.DataFrame:
+    """D-025 four-state amendment: the one tag sensitivity, firm dates only (places whose in-panel ADU event
+    is `[earliest-known]`, has a blank adoption date or is DATE UNCONFIRMED are left out). A fresh fit with
+    the wild score bootstrap; reported, never used to choose."""
+    alt = load_panel(store, drop_tags=rule_tags.SENSITIVITIES)
+    gone = sorted(set(panel["place"]) - set(alt["place"]))
+    log = pa.RefitLog("tag sensitivity: firm dates only")
+    try:
+        fit = pa.estimate_pooled(alt, **kw)
+        tab = pa.summarize_main(fit, pa.score_bootstrap(fit, draws=draws, seed=9, log=log))
+    except (est.EstimationError, np.linalg.LinAlgError) as err:
+        tab = pd.DataFrame([{"term": "not computed", "estimate": np.nan, "note": str(err)}])
+    print(f"tag sensitivity, firm dates only (without {gone}):\n", tab.round(4).to_string(index=False))
+    print(" ", log.summary)
+    return tab.assign(dropped_places=";".join(gone), convergence=log.summary)
 
 
 def logged_estimates(log_path: Path) -> dict[str, float]:
@@ -158,6 +200,7 @@ def stages(
         print({k: v for k, v in c.items() if k not in ("dropped", "timing")})
         logs.append(c.get("convergence", ""))
 
+    tags = tag_sensitivity(store, panel, kw, draws)
     pred, verdict = transport_stage(store, panel, fit, boot, p, logs)
     print("convergence:", *logs, sep="\n  ")
 
@@ -184,6 +227,7 @@ def stages(
         pd.DataFrame(sens).drop(columns="timing", errors="ignore").to_csv(
             out / "sensitivity.csv", index=False
         )
+        tags.to_csv(out / "sensitivity_tags.csv", index=False)
         pred.to_csv(out / "transport.csv", index=False)
         pd.DataFrame([verdict]).to_csv(out / "transport_verdict.csv", index=False)
         pd.DataFrame({"place": d.places, "random_effect": pa.place_effects(fit.log_params, d)}).to_csv(
