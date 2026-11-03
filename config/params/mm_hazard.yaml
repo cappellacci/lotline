@@ -44,3 +44,13 @@ mm_ramp_slope_years:
   unit: years (logistic scale)
   source: "Judgment, as adu_ramp_slope_years: about 2 years from 20% to 80% of the mature hazard, Portland's year-1 to year-2 jump (E022); 1.5 gives Auckland's steady six-year rise (E001)"
   notes: "At half 2.5 and slope 0.75: year 1 0.12, year 2 0.34, year 3 0.66, year 4 0.88, year 5 0.97 of the mature hazard."
+
+# ---- Feasibility transport (D-038) ----
+
+mm_feasibility_dispersion:
+  value: 0.5
+  low: 0.25
+  high: 0.8
+  unit: standard deviation of log(lot's own price-to-cost) for a rental duplex
+  source: "Judgment (D-038), the ADU value (adu_feasibility_dispersion): lots differ in what a 2-4 unit building costs and earns (existing house to buy out, lot size, slope); no published spread. Range from near-uniform lots (0.25) to very mixed (0.8)"
+  notes: "F = Φ((ln PCR − ln(1 + developer_margin)) / σ), relative to F at PCR = 1; run at 0.25 and 0.8 as a check."
