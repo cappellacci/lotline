@@ -417,3 +417,57 @@ This was step 1 of §6.4.
 Two data notes, now in the source's provenance:
 - The city file repeats identical 2018 and 2019 totals, which looks like a copied year.
 - Houston's eligible-parcel count is the ACS single-family fallback (quality "low").
+
+### 6.6 Austin check: do post-HOME "two-family" counts hold ADUs? (2026-11-03)
+
+Ben raised this after §6.5.
+
+- **Script:** `scripts/dev/austin_permit_class_check.py`, with output in `reports/mm-d038/austin_check.csv`.
+- **Sources:** the city's new-building permits by Census class (`austin_permits`), set beside BPS.
+- Nothing was fitted.
+
+**The counts:**
+
+| Year | Houses (101) | ADUs (102) | Two-family (103) | ADU + two-family | BPS 2-unit buildings |
+|---|---|---|---|---|---|
+| 2019–22 (mean) | 3,481 | 343 | 124 | 467 | 111 |
+| 2023 | 1,559 | 243 | 78 | 321 | 64 |
+| 2024 | 1,781 | 90 | 101 | 191 | 72 |
+| 2025 | 1,970 | 9 | 367 | 376 | 176 |
+
+**What it shows:**
+
+- **ADUs moved into the two-family class.**
+  - HOME phase 1 (applications from 2024-02-05) removed the secondary-apartment use. The ADU class fell from
+    about 340 a year to 90, then 9.
+  - Two-family permits rose from about 100 to 367 in 2025.
+  - ADU plus two-family together is no higher than before HOME: 376 in 2025, against 424–553 in 2018–22.
+  - 149 of the 2025 permits carry the city's new "TWO UNIT RES" or "THREE UNIT RES" description. The adapter's
+    docstring already said second and third homes are now filed as an R-101 house or an R-103 two-family permit.
+- **Census follows the city's class.** BPS 2-unit buildings rose from 72 to 176 in 2025, the same step as
+  two-family permits.
+  - D-038's Austin excess (251 observed against 133 expected in 2024–25) therefore comes mostly from
+    relabelled ADUs, not new missing-middle buildings.
+  - Three-four unit permits, the type HOME newly allowed (3 units per lot), were 3 in 2024 and 7 in 2025.
+- **The pre-reform series has its own break.** BPS shows 1–2 two-unit buildings a year in 2016–18, against
+  134–213 city two-family permits. Austin's reporting to Census changed around 2016 and again in 2019, so
+  Austin's BPS 2-unit baseline is unreliable before 2019.
+- **What the old code allowed.** Our HOME phase 1 ordinance copy (manual/texas,
+  `Austin_HOME_Phase1_Ord_20231207-001.pdf`) shows three things:
+  - "Duplex Residential" and "Two-Family Residential" uses existed before HOME. Part 4 renames Two-Family to
+    Two-Unit and adds base districts where both are allowed.
+  - Part 8 repeals and replaces §25-2-773, the Duplex Residential Use section.
+  - Part 7 deletes §25-2-555(D) of the SF-3 regulations.
+
+  So some SF zoning already allowed duplexes. The struck table text in our scan does not show which districts.
+  Reading the pre-HOME code (§25-2-491 table, §25-2-555) would settle it.
+
+**What this means:**
+
+- **For D-039.**
+  - Measure Austin's outcome as 3–4 unit buildings, as for Houston (§6.5).
+  - Or count city permits by description, where "TWO UNIT RES" is an ADU-type second home on an existing lot.
+  - BPS 2-unit buildings cannot tell an ADU from a duplex in Austin after 2023.
+- **For the ADU side (outside D-038, flagged as a follow-up).** Austin's ADU class stops in 2024, so ADUs counted
+  from class 102 are undercounted from 2024. Any ADU fit or check that uses Austin's 2024–25 permits needs the
+  description flag, not the class.

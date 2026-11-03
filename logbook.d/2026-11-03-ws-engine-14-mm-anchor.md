@@ -88,3 +88,22 @@
     newly allows.
 - **AI:** Claude Code (Opus 5.5) wrote the adapter, script, test and write-up. The checks were the two tests,
   ruff and `lotline provenance --check`.
+
+### LB-NNN · 2026-11-03 · Data check: Austin's post-HOME two-family counts hold ADUs
+- **Question:** does Austin's 2024–25 jump in 2-unit buildings come from ADUs being recorded as two-family
+  buildings? Ben raised it.
+- **What I did:** counted the city's new-building permits by Census class against BPS
+  (`scripts/dev/austin_permit_class_check.py`). Read the HOME phase 1 ordinance copy in `manual/texas`. Fitted
+  nothing.
+- **Outputs:** `reports/mm-d038/austin_check.csv`; §6.6 of `docs/research/lotline-causal-diagram-mm.md`.
+- **Findings:**
+  - Yes. ADU permits fell from about 340 a year to 9 after HOME removed the secondary-apartment use, while
+    two-family permits rose to 367. Their sum did not rise.
+  - BPS 2-unit buildings follow the city's class, so D-038's Austin excess is mostly relabelled ADUs.
+  - 3–4 unit permits, the type HOME newly allowed, stayed at 3–7 a year.
+  - Austin's BPS 2-unit series also breaks in 2016–18.
+  - Duplex and two-family uses existed before HOME; which districts allowed them is still to be read.
+- **AI:** Claude Code (Opus 5.5) wrote the script and the write-up. The figures were checked against the
+  stored permits and BPS tables.
+- **Open / next:** Austin ADU counts from 2024 need the description flag, not the class (ADU side). Read the
+  pre-HOME Austin code for SF-3 duplexes.
