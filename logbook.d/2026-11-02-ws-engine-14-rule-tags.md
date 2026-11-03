@@ -16,7 +16,7 @@
 - **Inputs:** `config/reforms/{mn,nc,oh,tx}.csv`; `~/lotline-data/processed/{oh,tx}` (rebuilt, previous
   tables backed up outside the repo).
 - **Outputs:** `src/lotline/model/rule_tags.py`; `src/lotline/model/estimate_mm.py`,
-  `src/lotline/model/estimate_adu.py`; `tests/model/test_rule_tags.py` (9 tests).
+  `src/lotline/model/estimate_adu.py`; `tests/model/test_rule_tags.py` (10 tests).
 - **Decisions:**
   - Proposed for HANDOFF: a `DATE UNCONFIRMED` row counts as an event at its coded date; engines also run
     without it (Ben, 2026-11-02).
