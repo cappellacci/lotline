@@ -1669,3 +1669,68 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Applies to:** missing middle (D-038, PR #272, to be redone this way) and a refit of the ADU anchor on
     the four-state data (D-019 fit 3 predates the NC and TX permit work), under its own dated entry.
   - **Decided by:** Ben, 2026-11-03 ("we need to be rolling our own"); written by WS-ENGINE.
+
+### D-038 · 2026-11-03 · Proposed: missing-middle uptake anchor and ramp (written before any missing-middle scenario number)
+- **Status:** proposed by a Claude Code session for Ben's review. No missing-middle scenario number, D-024 run or
+  held-out outcome was computed or read for it. D-037 asked for this entry.
+- **What it sets (`config/params/mm_hazard.yaml`):**
+
+  | Parameter | Value | Low | High | Unit |
+  |---|---|---|---|---|
+  | `mm_mature_hazard_ref` | 0.0005 | 0.00015 | 0.002 | projects (new 2–6 unit buildings) per eligible parcel per year, at Portland 2021–24's market |
+  | `mm_units_per_project` | 3.4 | 2.5 | 4.0 | homes per project, gross |
+  | `mm_ramp_half_years` | 2.5 | 1.5 | 5.0 | years to half the mature hazard |
+  | `mm_ramp_slope_years` | 0.75 | 0.5 | 1.5 | years (logistic scale) |
+
+- **Evidence:** `docs/research/mm-uptake-evidence.md` (register E022, E024, E028, E105–E113). Only two places
+  publish an eligible-lot denominator for by-right 2–6 unit building on ordinary single-family lots:
+  - Portland's Residential Infill Project (E022): 0.85 projects (2.9 homes) per 1,000 lots in 2023, the first
+    mature year; 0.55 (1.87 homes) averaged over 2021–24. By zone: R2.5 ≈1.3 projects, R5 ≈0.6, R7 ≈0.15.
+  - Houston's lot-size reform (E105): 0.35 projects per 1,000 single-family parcels a year over 2007–20 (peak
+    ≈0.5–0.7).
+- **Why these values:**
+  - *Central 0.5 per 1,000:* 0.6 of Portland's mature rate. It equals Portland's 2021–24 average and sits
+    between Houston's average and its peak. It is below Portland's mature rate because Portland is the
+    best-documented success: other Oregon cities, Eugene and Arlington show typical adopters doing less (E024,
+    E106, E108). The ADU anchor shows the same gap: a typical place fitted at 0.26 of Portland's rate (D-019).
+  - *Low 0.15:* Portland's large-lot R7 zone, and below Houston's average.
+  - *High 2.0:* Portland's R2.5 zone × 1.5, for a market hotter than Portland 2021–24.
+  - *Draws:* lognormal, as D-030 draws the ADU anchor. Median at the value; log-SD (ln high − ln low) / 3.29 =
+    0.787, so low and high are the 90% interval.
+- **Left outside the range, on purpose:**
+  - *California SB 9* (≈0.01–0.02 per 1,000, E028, E110) is a restricted rule: owner occupancy, lot-split and
+    utility fees. That is the "partial rule" case, not a by-right market response.
+  - *Auckland* (+45 dwellings per 1,000 upzoned parcels by 2022, E107) is a price-to-income-9 market with three
+    units by right on every parcel, greenfield included. The anchor is defined at Portland's market. A place as
+    profitable as Auckland reaches higher rates through the pro forma's feasible share F, not through a wider
+    anchor.
+- **Ramp:** half-way at 2.5 years (1.5–5), steepness 0.75 (as for ADUs). This gives 0.12, 0.34, 0.66, 0.88 and
+  0.97 of the mature hazard in years 1–5.
+  - Portland was near its plateau in year 2 (half-way ≈1.5).
+  - Auckland was still rising in year 6 (≈4).
+  - Houston took about 15 years.
+  - The five-year window makes this matter: at half-way 5, year 5 reaches only 0.5.
+- **Units per project:** 3.4. Portland's 2023 mix (fourplexes most common) gives 3.4; Houston gives 3.85
+  (median 4, most common 2); Arlington gives 4.0. The low of 2.5 is a duplex-heavy mix. When the scenario picks a
+  prototype per parcel from the pro forma, the prototype's unit count replaces this parameter. Net homes
+  subtract the demolished house.
+- **Held-out and test places:** none set a value.
+  - Minneapolis, Durham, Durham County and Raleigh are D-037 out-of-sample tests.
+  - Minneapolis (0.15–0.33 projects per 1,000 in 2023, from E021, already in the register) is shown for context
+    only. It sits at the low end, as expected where floor-area limits bind.
+  - Charlotte, Mecklenburg and St. Paul outcomes were not read.
+- **Deviation from D-037:** D-037 names `config/params/hazard.yaml` for the anchor. It goes in its own file,
+  `mm_hazard.yaml`, because `scenarios/adu.py` draws every `hazard.yaml` parameter from one random stream. A new
+  key there would shift every ADU draw, and the V5 ADU numbers with it.
+- **Open before the scenario is built:**
+  1. The reference market: Portland 2021–24 median rent and new-home sale price per sq ft, computed by a script
+     (as `scripts/dev/adu_reference.py` does for ADUs), so u = h_ref / F(Portland).
+  2. A missing-middle feasibility dispersion σ, the counterpart of `adu_feasibility_dispersion`, for the
+     lot-level spread of residual land value over existing-use value.
+  3. How the current-rules increment (D-019's c) applies to places that already allow 2–4 units.
+  4. Whether the triplex code step (C43) changes the prototype mix.
+- **Revisit when:**
+  - Portland's permit series by zone and year, or a second US eligible-lot denominator (Spokane, an Oregon HB
+    2001 city), is in hand;
+  - the D-037 out-of-sample tests on the test places fail.
+- **Decided by:** proposed 2026-11-03; for Ben to confirm in the PR.
