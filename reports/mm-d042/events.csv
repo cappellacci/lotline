@@ -1,0 +1,18 @@
+geoid,name,event_year,prior_cap,test_place
+2743000,Minneapolis city,2020,1,True
+2757220,St. Louis Park city,2025,1,False
+37063,Durham County Unincorporated Area,2020,1,True
+3709060,Burlington city,2020,1,False
+3719000,Durham city,2020,1,True
+3725480,Garner town,2023,1,False
+3744220,Mooresville town,2022,1,False
+3744520,Morrisville town,2014,1,False
+3759280,Sanford city,2019,1,False
+3770540,Wake Forest town,2014,1,False
+3774540,Wilson city,2013,1,False
+3925704,Euclid city,2025,1,False
+4805000,Austin city,2024,2,False
+4835000,Houston city,2024,2,False
+4841980,League City city,2021,1,False
+4842508,Lewisville city,2023,1,False
+4845000,Lubbock city,2024,1,False

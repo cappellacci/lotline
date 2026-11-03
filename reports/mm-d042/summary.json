@@ -1,0 +1,86 @@
+{
+  "main": {
+    "fit": "main",
+    "theta": 0.00017178949704039104,
+    "low": 5.60431984894744e-05,
+    "high": 0.0008916242286827732,
+    "per_1000": 0.17178949704039104,
+    "alpha": 6.172678363485077,
+    "alpha_low": 2.2441871737246637,
+    "alpha_high": 19.95935805480341,
+    "half": 0.5,
+    "half_low": 0.5,
+    "half_high": 1.0,
+    "b": -2.0,
+    "b_low": -2.0,
+    "b_high": 2.0,
+    "places": 13,
+    "place_years": 69,
+    "loglik": -115.06535085378493,
+    "note": ""
+  },
+  "realized": {
+    "mean_hazard": -0.00031240458738129547,
+    "age_p10": 0.5,
+    "age_p50": 1.5,
+    "age_p90": 7.5
+  },
+  "backtest": {
+    "fit": {
+      "scored": 10,
+      "coverage": 0.7,
+      "mae": 0.18473369606049764
+    },
+    "none": {
+      "scored": 10,
+      "coverage": 0.6,
+      "mae": 0.15280510727502314
+    },
+    "outside": {
+      "scored": 10,
+      "coverage": 0.5,
+      "mae": 0.16344576830636953
+    },
+    "d038": {
+      "scored": 10,
+      "coverage": 0.8,
+      "mae": 0.11887575532406842
+    },
+    "fit_index_held": {
+      "scored": 10,
+      "coverage": 0.7,
+      "mae": 0.17236336297553995
+    }
+  },
+  "reading_rule": {
+    "mae_10pct_below_none": false,
+    "coverage_at_least_60pct": true,
+    "alpha_below_d038_7.29": true,
+    "confounders_supported": false
+  },
+  "dropped_from_preregistered_list": [
+    "Cincinnati",
+    "Mooresville",
+    "Richfield"
+  ],
+  "no_cap_rise": {
+    "2754214": [
+      2023,
+      2,
+      2
+    ],
+    "3755000": [
+      2022,
+      1,
+      1
+    ],
+    "3915000": [
+      2024,
+      1,
+      1
+    ]
+  },
+  "margin": 0.15,
+  "sigma": 0.5,
+  "seconds": 8470
+}

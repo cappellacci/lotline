@@ -1670,6 +1670,197 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     the four-state data (D-019 fit 3 predates the NC and TX permit work), under its own dated entry.
   - **Decided by:** Ben, 2026-11-03 ("we need to be rolling our own"); written by WS-ENGINE.
 
+### D-038 · 2026-11-03 · Missing-middle uptake calibrated on our four states: method (pre-registered before the fit)
+- **Status:** method written and pushed before any fit was run. Required by the D-037 amendment (Ben, 2026-11-03:
+  "we need to be rolling our own"); Ben's instruction is the go-ahead to run it once. It replaces this entry's
+  first draft (an anchor taken from Portland and Houston), which becomes the plausibility check below. Only the
+  panel's structure was looked at before writing this: which places adopted, when, at what dose, with how many
+  eligible parcels. No outcome was tabulated.
+- **What it estimates (`config/params/mm_hazard.yaml`):** θ = `mm_mature_hazard_ref`, the yearly chance that an
+  eligible parcel (rule 1.1, D-014) gets a new 2–4 unit building once a full-dose rule has matured, at the
+  reference price-to-cost; α = `mm_place_effect_variance`; the ramp's half-way point; and the homes per
+  building. 5–6 unit buildings and townhouses are outside this count: BPS files them as 5+ and 1-unit.
+- **Data:** the D-024 four-state panel (`estimate_mm.build_panel`, BPS 2010–2025, holdout-filtered tables,
+  rule-date tags through `rule_tags`). Outcome `y_buildings` = BPS buildings with 2 units plus buildings with
+  3–4 units. Exposure `eligible` = rule 1.1 eligible parcels from the nearest roll. A place-year missing from
+  BPS is skipped, never set to 0.
+- **Fit set:** every place with an in-window adoption year 2013 ≤ T ≤ 2025 (at least three pre-reform panel
+  years), dose > 0, eligible parcels > 0. That is 16 places: Wilson, Morrisville, Wake Forest, Sanford,
+  Burlington, Mooresville, Garner (NC); League City, Lewisville, Austin, Houston, Lubbock (TX); Cincinnati,
+  Euclid (OH); Richfield, St. Louis Park (MN).
+  - **Left out, never read for this fit:**
+    - Minneapolis, Durham city, Durham County and Raleigh: the D-037 out-of-sample tests, predicted afterwards.
+    - St. Paul, Charlotte and Mecklenburg: holdout, excluded by `build_panel`.
+  - **Not used, because they have no pre-reform years in the panel:** places whose rule predates 2010 (Apex,
+    Asheboro, Goldsboro, New Bern, El Paso, Grove City, Dayton).
+- **Model.** Place i, year t ≥ T_i, event age a = t − T_i + 0.5 (a rule in force by 1 July of T was adopted on
+  average at the start of T):
+
+      y_it ~ Poisson(B_it + θ · u_i · k_it),   u_i ~ Gamma(mean 1, variance α)
+      B_it = β_i · g_it                         (building that would have happened anyway)
+      k_it = E_it · d_it · F_i / F_ref · ramp(a_it; half, slope)
+
+  - *Pre-reform baseline:* β_i = mean of y_buildings over T−3 … T−1 (years with data). It is plugged in, not
+    estimated jointly.
+  - *General growth:* g_it = m_it / m_i,pre. Here m is the place's homes permitted outside 2–4 unit buildings
+    (BPS units_1 + units_5p), as a centred 3-year mean (years with data); m_i,pre is its mean over T−3 … T−1.
+    g is capped to [0.25, 4]. This nets out the general growth that failed D-024's four-state placebo.
+  - *Exposure and dose:* E_it = eligible parcels; d_it = the panel's dose (units grade × approval × coverage,
+    D-024; Handbook-equivalent = 1).
+  - *Feasibility:* F_i = Φ((ln PCR_i − ln(1 + developer_margin)) / σ). PCR_i is the panel's `pcr` (a rental
+    duplex's price-to-cost at T−1). σ = `mm_feasibility_dispersion`, 0.5 (judgment, the ADU value, range
+    0.25–0.8). F_ref = F at PCR = 1, so θ is the mature hazard where a rental duplex's value equals its cost
+    before profit.
+  - *Ramp:* the logistic of `hazard.ramp`, with slope fixed at 0.75 (judgment, as for ADUs). The half-way point
+    is estimated on the grid 0.5, 1.0, …, 6.0 years.
+- **Estimation:** maximum likelihood. Each place's u is integrated out numerically (trapezoid on a log-u grid).
+  θ is on the log scale; α and the half-way point are profiled out. θ's 90% interval is its profile-likelihood
+  interval {θ : 2(ℓ̂ − ℓ_p(θ)) ≤ 2.706}; the same rule gives the half-way point's interval on its grid. Only
+  NumPy and the standard library are used (as `calibrate_adu`).
+- **What the data can and cannot identify (stated before the fit):**
+  - Post-periods are short: 6 of the 16 places have at most two post years, and only Wilson, Morrisville, Wake
+    Forest and Sanford have more than six.
+  - The early ramp and the average hazard over the observed ages are identified. The mature level beyond the
+    oldest well-observed age depends on the ramp.
+  - The result reports the exposure-weighted age distribution and the mean realized hazard over the observed
+    ages alongside θ.
+  - Where the half-way point's 90% interval reaches a grid edge, that side of its range is filled by the outside
+    evidence (1.5 years low, 5 years high: Portland, Auckland, Houston; first draft of this entry), and the
+    entry says so.
+- **Homes per building (`mm_units_per_project`):** (2–4 unit homes) / (2–4 unit buildings) from local permit
+  files with unit counts (Raleigh, Durham, Greensboro, Mecklenburg before 2023-06 through the holdout filter,
+  Met Council DTQ, the Texas city files). Each source's post-2015 ratio is reported. The central value is the
+  building-weighted mean; low and high are the lowest and highest source ratios. BPS's own ratio for the fit
+  places is the check.
+- **Checks reported (none changes the estimate):**
+  1. *Placebo date:* the same fit with T moved 3 years earlier, using pre-reform years only. Expected: θ near 0
+     (its interval covers 0 or sits far below the main estimate).
+  2. *Growth control:* g from units_5p alone; g from the comparison places' (status uncoded, same state)
+     2–4 unit buildings by year; and g = 1.
+  3. *Feasibility:* F ≡ 1 (no transport), and σ at 0.25 and 0.8.
+  4. *Baseline window:* T−5 … T−1.
+  5. *Tags:* dropping events tagged `earliest_known` or `unconfirmed` (`rule_tags.SENSITIVITIES`).
+  6. *On eligible lots:* where a fit place's local permits carry parcel numbers that match its roll, the share of
+     2–4 unit buildings on rule-1.1 eligible parcels, before and after T. A rise supports reading the excess as
+     the reform's. Descriptive; it is reported as not done where the join is not possible.
+  7. *Plausibility:* θ, and the implied rate per 1,000 eligible parcels at each place's own F and dose, against
+     the outside table (`docs/research/mm-uptake-evidence.md`: Portland 0.55–0.85 projects per 1,000 a year,
+     Houston 0.35). A gap of more than 3× either way is explained in the results.
+- **V4 backtest: leave one place out (D-037 amendment).**
+  - **Refit:** for each fit place j with T_j ≥ 2015, refit on the other fit places using calendar years ≤ T_j − 1
+    only.
+  - **Predict:** j's years T_j … T_j + 4 (to 2025) as a predictive distribution:
+    - θ lognormal from the refit's interval;
+    - the refit's half-way point;
+    - a new u ~ Gamma(α);
+    - Poisson counts on j's own baseline and its realized g.
+    - Sensitivity: g held at 1, a true forecast.
+  - **Score:**
+    - P10–P90 coverage of each place's observed total over its predicted years (V4's proposed pass: at least
+      60%; nominal 80%);
+    - mean absolute error of the median, in buildings per 1,000 eligible parcels a year.
+  - **Benchmarks:**
+    - no effect: B only;
+    - the outside rate unadjusted: B + 0.0005 × E × d × ramp(half 2.5).
+  - **Places with no refit:** if a refit has fewer than two places with post-reform years, j is not scored by
+    the fit and is reported as such.
+  - **Test places:** the D-037 out-of-sample tests (Minneapolis, Durham, Durham County, Raleigh) are predicted
+    with the full fit afterwards, under the same scores, and reported separately.
+- **Into `mm_hazard.yaml`:**
+  - θ: the estimate and its 90% interval.
+  - α: the estimate, with the interval from its profile.
+  - The half-way point: as above.
+  - Homes per building: as above.
+  - `mm_feasibility_dispersion`: judgment, 0.5 (0.25–0.8).
+  - Draws are lognormal for θ and α, as D-030.
+  - The fit runs once. A later change is a new dated entry.
+- **Code:** `src/lotline/model/calibrate_mm.py` (likelihood, profile, backtest; unit tests against hand-worked
+  examples in `tests/model/test_calibrate_mm.py`); `scripts/dev/calibrate_mm.py` (the run); results to
+  `reports/mm-d038/` (no outcome panel written to the repo).
+- **Results (2026-11-03, after the single run; `reports/mm-d038/`):**
+  - **Fit set as run: 15 places, 74 post-reform place-years.** Mooresville drops out under the stated rule: it
+    has no BPS rows before 2023, so no pre-reform baseline.
+  - **θ = 1.08 per 1,000 eligible parcels a year (90% interval 0.36–5.35).**
+    - α = 7.3 (3.2–19.8): the place multiplier varies widely, as it does for ADUs.
+    - Half-way point 2.0 years. No other grid point is inside the 90% set, so the range is the neighbouring
+      grid points, 1.5–2.5.
+    - The mean realized hazard over the observed ages is 0.95 per 1,000.
+    - Exposure-weighted ages run 0.5–2.5 (P10–P90). The ramp is identified only over the first three years.
+  - **Houston carries the estimate.** Its 2024–25 2–4 unit buildings were 1,642 against a baseline of 550; it
+    is the only large excess. Austin is next (251 against 133).
+    - Exploratory fits, not pre-registered and not used: without Houston 0.57 per 1,000 (0.17–3.36); without
+      Houston and Austin 0.24 (0.06–2.43).
+    - Lubbock fell below its baseline (25 against 191). Most small places had no excess.
+  - **Checks:**
+
+    | Check | θ per 1,000 (90% interval) | Reading |
+    |---|---|---|
+    | Main | 1.08 (0.36–5.35) | — |
+    | 1. Placebo date T − 3 (14 places) | 0.32 (0.10–1.84) | **Not passed as pre-registered.** About 0.3 of the main estimate, and its interval overlaps it. Part of the excess may be growth the control misses. |
+    | 2. Growth from units_5p | 1.15 (0.37–6.53) | Robust |
+    | 2. Growth from state comparisons | 1.19 (0.31–5.60) | Robust |
+    | 2. No growth control (g = 1) | 1.18 (0.41–5.88) | Robust |
+    | 3. F ≡ 1 (no feasibility) | 0.81 (0.28–4.02) | Robust |
+    | 3. σ = 0.25 | 2.71 (0.68–18.9) | The anchor moves with σ, because it is defined at PCR = 1 |
+    | 3. σ = 0.8 | 0.93 (0.32–4.54) | — |
+    | 4. Baseline T−5 … T−1 | 0.71 (0.23–3.67) | Somewhat lower |
+    | 5. Tag-sensitive events dropped (9 places) | 1.60 (0.35–26.2) | Wide |
+
+    - Check 6 (eligible lots) was **not done**. None of Cincinnati's or Austin's parcel-numbered permits matched
+      their rolls' `parcel_id` (formats differ). Fixing the join is a follow-up.
+    - Check 7 (plausibility): the implied mature rates at each place's own dose and PCR are 0.07–0.76 per
+      1,000. That is inside the outside table's 0.35–0.85 for full-dose rules (Portland 2021–24 average and
+      2023; Houston's 2007–20 average). No gap over 3×.
+  - **V4 backtest (12 places with T ≥ 2015):**
+    - The refits on data before each target's reform gave θ = 0.08–0.45 per 1,000, with half-way at 0.5.
+      Before the 2024 adopters, the fit set showed little excess.
+    - P10–P90 coverage: **8 of 12 (67%)** for the fit, against 7 of 12 for no effect and 5 of 12 for the
+      outside rate. That passes V4's proposed 60%, but through wide intervals.
+    - Mean absolute error of the median: 0.235 buildings per 1,000 eligible parcels a year, against 0.234 (no
+      effect) and 0.237 (outside rate). **No better than no effect.** Houston (−1.2) and Lubbock (+1.0)
+      dominate the error.
+    - With growth held at 1 (a true forecast): coverage 8 of 12; error 0.228 against 0.227 and 0.231.
+  - **D-037 out-of-sample tests (full fit, years 1–5):**
+    - P10–P90 covered **4 of 4**: Minneapolis, Durham city, Durham County and Raleigh.
+    - No effect covered 1 of 4; the outside rate covered 1 of 4.
+    - Every median is below the observed count, because the gamma's median sits far below its mean.
+    - Error of the median 0.089 per 1,000 a year, against 0.103 (no effect) and 0.066 (outside rate, which is
+      closest).
+  - **Homes per building:**
+    - The local permit files give 0.75–2.43 homes per 2–4 unit "building", which is impossible. They file one
+      permit per unit or per duplex side, so they can't count buildings.
+    - The pre-registered BPS check is used instead: 2.08 for the fit places, 2016–2025 (state ratios 2.04–4.0).
+      BPS 2–4 unit buildings are mostly duplexes.
+  - **Into `mm_hazard.yaml`:** θ 0.001076 (0.000362–0.005347); α 7.29 (3.18–19.78); half-way 2.0 (1.5–2.5);
+    homes per building 2.08 (2.04–4.0); slope and σ as judgment.
+  - **What this means for the scenario:**
+    - The anchor is usable, and its range is wide.
+    - A single place's result is very uncertain (α); state totals are tighter.
+    - The point estimate is mostly a Houston number.
+    - The placebo result and the backtest's lack of accuracy gain say the in-state signal is weak outside the
+      two large Texas cities.
+  - **For Ben to decide:**
+    1. Accept the fit as is.
+    2. Widen the ramp range to the outside series' 1.5–5 years.
+    3. Whether the placebo shortfall calls for a different growth control. That would be a new dated entry
+       and a new run.
+- **Decided by:** method by WS-ENGINE, 2026-11-03, on Ben's instruction (D-037 amendment); results for Ben to
+  confirm in PR #272.
+- **Coding change after the run (2026-11-03, Ben's decision).** `config/reforms/tx.csv` gains
+  TX-4805000-missing_middle-2010 and TX-4835000-missing_middle-2010. Both are tagged `[predates]` and capped
+  at 2 units:
+  - Austin SF-3 already allowed duplexes and two-family use before HOME;
+  - Houston already allowed duplexes on single-family lots before Livable Places.
+
+  Evidence is in causal diagram v0.2 §6.5–6.7 and `docs/research/ordinances/tx-corrections-2026-11-03.csv`.
+  - **Effect on the panel.** Both places now have a missing-middle rule in force before the window (T before
+    2013), so they leave the D-038 adopter set. Their 2023–24 reforms become dose increases.
+  - **Effect on the results above.** They were run on the old coding and are not rerun here. The exploratory
+    fit without Houston and Austin gave 0.24 per 1,000. A run on the new coding belongs to D-042.
+  - **Effect on D-022 blank shares.** These move slightly: P(by right) 0.842 → 0.846, units grade
+    0.298 → 0.299.
+  - **D-024 and D-025.** Not rerun.
+
 ### D-039 · 2026-11-03 · ADU anchor refit on the four states, with a leave-one-place-out backtest (written before the fit)
 - **Why:** D-037's amendment (Ben, 2026-11-03): uptake rates are calibrated on our own four states, and outside
   studies only check them. The ADU anchor `adu_mature_hazard_ref` comes from D-019 fit 3 on Minneapolis, 10 Twin
@@ -1972,3 +2163,204 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       is measured from Minneapolis. A suburban reporting rate would need suburban permit records.
   - **Config:** unchanged. θ in `hazard.yaml` is not adopted. If Ben adopts the D-041 main fit, it replaces
     D-039's 1.112 with 1.232 (0.809–2.106).
+
+### D-042 · 2026-11-03 · Missing-middle uptake, second pre-registered fit: newly allowed types, comparison-place baseline, builder capacity (method only, before any fit)
+- **Status:** fit run once on 2026-11-03 (results at the end of this entry; not taken into params). The method
+  was written after the v0.2 causal-diagram review (`docs/research/lotline-causal-diagram-mm.md` §6) and the
+  coding change noted under D-038.
+  - **What was looked at before writing:** the panel's structure (places, adoption years, status, eligible
+    parcels), parcel-value vintages, and national FRED series.
+  - **D-038's own outputs.** D-038's results were already known, including its exploratory fits. Those fits are
+    why Houston and Austin are examined here; this entry says so rather than hide it.
+  - **The run.** It needs Ben's go-ahead after the code and tests are pushed, and runs once.
+- **Why a second fit.** D-038's fit had three problems:
+  - its placebo was not passed (0.32 per 1,000);
+  - the leave-one-out error was no better than assuming no effect (0.235 against 0.234);
+  - most of its excess came from Houston and Austin building types the reforms did not newly allow (§6.5–6.7).
+
+  D-042 changes three things and keeps the rest of D-038.
+- **Change 1: count only what each reform newly allows.**
+  - **Event.** A place's event is its first rule in force on 1 July of a year 2013–2025 that raises the unit
+    cap on most of its eligible parcels. The prior cap is the cap in force the year before, from
+    `config/reforms/*.csv`:
+    - 1 where no rule was in force;
+    - otherwise the in-force rule's `unit_cap`, if its coverage holds at least half of the eligible parcels
+      (D-024 coverage shares), else 1.
+  - **Outcome y.** BPS buildings in the size classes above the prior cap:
+    - prior cap 1: 2-unit plus 3–4 unit buildings, as in D-038;
+    - prior cap 2: 3–4 unit buildings only.
+  - **Dose.** The dose is the increase: d(new rule) − d(prior rule), by D-024's formula.
+  - **What this means for each place.** Austin and Houston, the only places with an earlier rule followed by an
+    in-window increase, enter with prior cap 2.
+    - Austin's outcome excludes the 2-unit class, where post-HOME ADUs are filed (§6.6).
+    - Houston's excludes the duplexes it already allowed (§6.5).
+    - Every other fit place has prior cap 1.
+  - **Known undercounts, stated now:**
+    - Houston 5–8 unit buildings are inside BPS 5+ and are missed;
+    - Austin duplexes newly allowed in SF-1 and SF-2 are missed (BPS cannot separate zones);
+    - townhouses are 1-unit in BPS.
+- **Change 2: a baseline from comparison places, not from the place's own other homes.**
+  - **Formula.** B_it = β_i · c_s(i),t / c_s(i),pre.
+    - β_i: place i's mean outcome over T−3 … T−1, as D-038.
+    - c_st: the 3-year centred mean of the same size classes as i's outcome, summed over **comparison places**
+      in i's state. These are places with no missing-middle event 2010–2025: status `coded_not_treated` (a
+      coded rule that never allows 2+ units by right) or `uncoded`.
+    - c_s,pre: c_st's mean over T−3 … T−1.
+    - The ratio is capped to [0.25, 4].
+  - **Thin pools.** If a state's comparison sum averages under 20 buildings a year over i's T−3 … T−1, the
+    four-state comparison pool is used for i. The rule is fixed now, before any comparison outcome is
+    tabulated.
+  - **Why uncoded places are included.** Coded controls are too few outside Texas: the panel has 4 in MN, 2 in
+    NC, 0 in OH and 33 in TX (uncoded: 93, 40, 168 and 193). An uncoded place could hold an unrecorded reform
+    (C27). That would raise the comparison index and pull θ toward zero, so the bias is conservative.
+  - **Why.** The comparison index carries rates and the national 2–4 shift (C55), state cycles, costs and demand
+    (C01, C02, C04, C42). It uses no treated place's post-reform permits, which removes the bad-control problem
+    (C56).
+- **Change 3: one place-level modifier, builder capacity.**
+  - **Formula.** θ_i = θ · exp(b · z_i). Here z_i = ln(1 + h_i) − mean over the fit set, and h_i is the panel's
+    `pre_permits`: 2–4 unit homes per 1,000 eligible parcels, mean of T−3 … T−1 (C24, C48).
+  - **How b is estimated.** It is profiled on the grid −2, −1.75, …, 2, with its 90% profile interval. θ is the
+    hazard at the fit-set mean capacity.
+  - **Why only one.** About seven places carry information. Land value share (C46) is the other candidate, but
+    only 5 of the 14 fit places have a parcel-value vintage from before their reform:
+    - those with one: Richfield, St. Louis Park, Garner, Lewisville and Lubbock;
+    - none for Wilson, Wake Forest, Morrisville, Burlington, Sanford or League City, and Ohio has no values.
+
+    A post-reform vintage is partly the reform's effect (C17), so land share is a check (below), not a fitted
+    modifier.
+- **Unchanged from D-038:**
+  - the Poisson-gamma likelihood with u integrated out;
+  - exposure × dose × F(PCR)/F(1) × ramp, with σ = 0.5;
+  - the ramp half-way point on the grid 0.5–6.0, with slope 0.75;
+  - α profiled;
+  - θ's 90% profile interval;
+  - homes per building from BPS (the D-038 deviation, kept);
+  - the holdout filter and the left-out places.
+- **Fit set.** D-038's 2013–2025 adopters, plus Austin and Houston as cap-increase events (event year 2024 for
+  both).
+  - **Expected count: 15.** These are Wilson, Morrisville, Wake Forest, Sanford, Burlington, Mooresville,
+    Garner, League City, Lewisville, Lubbock, Cincinnati, Euclid, Richfield, St. Louis Park, Austin and Houston,
+    less any with no pre-reform BPS years. Mooresville had none in D-038.
+  - **Never read for the fit:** Minneapolis, Durham city, Durham County and Raleigh (the D-037 tests).
+  - **Never read at all:** St. Paul, Charlotte and Mecklenburg (holdouts).
+- **What the data can identify (stated before the fit):**
+  - The ramp is identified only over the observed ages. D-038's exposure ran 0.5–2.5 years.
+  - b rests on the spread of pre-reform capacity among the places with any outcome.
+  - With prior cap 2, Austin's and Houston's outcomes are small counts (3–4 unit buildings), so they add little
+    weight. That is intended.
+- **Checks reported (none changes the estimate):**
+  1. **Placebo date T − 3**, pre-reform years only. Pass if its 90% upper bound is below the main θ.
+  2. **Comparison set:** `coded_not_treated` only. This is Texas places only, since the other states have too
+     few.
+  3. **D-038's baseline** (own other homes), with changes 1 and 3 kept.
+  4. **A national baseline index:** the US 2–4 unit share of permits (FRED PERMIT24NSA over PERMITNSA, C55)
+     in place of c.
+  5. **Without Houston and Austin.**
+  6. **Land share as a second modifier.** The median land / (land + building) value over eligible
+     single-family parcels, from the parcel vintage nearest to T. It is flagged where that vintage is after T
+     (C17). It is also reported on the five places with a pre-reform vintage.
+  7. **σ at 0.25 and 0.8.**
+  8. **Dropping events tagged `earliest_known` or `unconfirmed`.**
+  9. **Plausibility against the outside table**, as D-038 check 7.
+- **V4 backtest: leave one place out, as in D-038.**
+  - **Refit and predict:** for each fit place j with T_j ≥ 2015, refit on calendar years ≤ T_j − 1 and predict
+    j's years T_j … T_j + 4. The comparison index is realized; a sensitivity holds it at 1.
+  - **Score:** P10–P90 coverage and the median's mean absolute error per 1,000 eligible parcels a year.
+  - **Benchmarks:**
+    - no effect: B only;
+    - the outside rate unadjusted;
+    - the D-038 specification refitted the same way.
+  - **Test places:** the D-037 tests are predicted afterwards with the full fit and reported separately.
+  - **Reading rule for Ben's question (do the confounders matter?), fixed now.** Supported if all three hold:
+    - the D-042 median error is at least 10% below the no-effect benchmark;
+    - coverage is at least 60%;
+    - α is below D-038's 7.3.
+
+    Otherwise the finding is that these inputs do not predict a place's uptake, and the scenario must carry
+    the wide place-to-place range.
+- **Not modelled:**
+  - a rate × θ interaction: every large place is exposed only at about 6.7% rates, so it is not identified
+    (§6.3 row 1);
+  - lot-split rule type (only two places);
+  - spillovers, infrastructure, HOAs and the code step.
+- **Into `config/params/mm_hazard.yaml`, if Ben accepts:**
+  - θ, α, the half-way point and b, with their intervals;
+  - a new key `mm_builder_capacity_slope` for b.
+  - Draws stay lognormal for θ and α, and b is drawn normal from its interval.
+  - The D-038 values are kept in the file's history.
+- **Code:**
+  - extend `src/lotline/model/calibrate_mm.py` (event and prior cap, outcome classes, comparison index,
+    modifier);
+  - unit tests against hand-worked cases in `tests/model/test_calibrate_mm.py`;
+  - the run in `scripts/dev/calibrate_mm_d042.py`, with results to `reports/mm-d042/`.
+- **Decided by:** method drafted by WS-ENGINE, 2026-11-03, on Ben's instruction ("Draft D-039"), for Ben to
+  approve before the run.
+  - **Renumbered D-042 on 2026-11-03.** D-039 to D-041 are the ADU entries (#274, #275, #277). The draft,
+    code and run are unchanged. Approved by Ben, 2026-11-03 ("Approve, build and run").
+- **Before the run (code pushed first; the dry run built the inputs, printed only their structure, fitted
+  nothing):**
+  - **Richfield has no event under the stated rule.** Its 2010 row already allowed two-family dwellings (by
+    conditional use, cap 2). Bill 2023-2 made them by right without raising the cap. The script requires the
+    cap in force at the event to exceed the prior cap, so Richfield leaves the fit set and is listed.
+  - **The prior cap counts any in-force cap, by right or not, as written above.** A by-right reading would
+    instead give Richfield prior cap 1 and an event. That reading is not used.
+  - **Mooresville** again has no pre-reform BPS year.
+  - **Fit set: 14 places.**
+  - **Land share** uses single-family detached parcels with land and building values above 0. The vintage
+    nearest the event is after it for 9 of 13 places.
+  - **Check 6 adds the land-share slope as a second modifier with b held at its main estimate.** A joint
+    two-slope grid was too costly. The check is labelled as such.
+- **Results (one run, 2026-11-03, `scripts/dev/calibrate_mm_d042.py`, outputs in `reports/mm-d042/`; about
+  2 h 20 min):**
+  - **Fit set: 13 places, 69 place-years.** Cincinnati also left at run time: Connected Communities covers
+    less than half of the eligible parcels, so the cap in force on most parcels stays 1 and, under the stated
+    rule, there is no cap rise. Raleigh (a test place) has no cap rise for the same reason. Dropped from the
+    pre-registered list: Cincinnati, Mooresville and Richfield.
+  - **Main fit.** θ = 0.17 per 1,000 eligible parcels (90%: 0.056–0.89). α = 6.2 (2.2–20). The ramp's
+    half-way point sits on the grid floor, 0.5 years (0.5–1.0). b = −2.0, the grid edge, and its 90% interval
+    is the whole grid (−2 to 2): the profile moves 1.2 log-likelihood units end to end, so builder capacity is
+    not identified.
+  - **Checks:**
+    1. Placebo date T − 3: θ = 0.095 per 1,000, but its upper bound (112 per 1,000) is far above the main θ.
+       **Not passed** under the stated test (the placebo is uninformative rather than positive).
+    2. Coded comparison places only: 0.086.
+    3. D-038's own-growth baseline: 0.095.
+    4. National 2–4 unit share index: 0.17.
+    5. Without Houston and Austin: 0.23 (11 places; half-way point 2.0).
+    6. Land share as a second modifier: 0.16 (nearest vintage), 0.17 (pre-event vintages only). The nearest
+       vintage is after the event for 9 of 12 places with values.
+    7. σ = 0.25: 0.43; σ = 0.8: 0.14.
+    8. Tagged events dropped: 0.004 (7 places).
+  - **V4 backtest (10 places scored).** Mean absolute error per 1,000 a year:
+
+    | Specification | MAE | P10–P90 coverage |
+    |---|---|---|
+    | D-042 fit | 0.185 | 70% |
+    | D-042, index held at 1 | 0.172 | 70% |
+    | No effect | 0.153 | 60% |
+    | Outside rate | 0.163 | 50% |
+    | D-038 specification | 0.119 | 80% |
+
+    Lubbock dominates every specification's error (about 1.0–1.4 per 1,000). Its pre-reform 2–4 unit pace
+    (115 buildings a year) collapsed to 25 in two years after the reform.
+  - **Test places (full fit).** Minneapolis observed 106 against a P10–P90 of 149–234. Durham city observed 100
+    against 32–96. Durham County observed 0, inside 0–22. Both city misses are also missed by no effect.
+  - **Reading rule.** The error is 21% above no effect, not 10% below; coverage is 70% (passes); α is 6.2,
+    below 7.3 (passes). **Confounders supported: no.** As pre-registered, the finding is that these inputs
+    (the comparison-place baseline and builder capacity) do not predict a place's uptake in our four states.
+    The scenario must carry the wide place-to-place range.
+  - **What this does and does not say.** The D-042 changes made θ smaller and its interval no narrower, and
+    they did not improve prediction. The D-038 specification on the corrected coding did better in the
+    backtest (0.119), but it was not the pre-registered main fit here, and choosing it after seeing this
+    table would be a new decision. The capacity slope's sign rests mostly on Lubbock (the highest-capacity
+    place, with a fall). With 13 places and α ≈ 6, the data cannot separate a modifier from place noise.
+  - **Not written to `config/params/mm_hazard.yaml`.** Ben decides whether to keep D-038's values, take the
+    D-042 θ with its range, or record a new entry. No b key is added.
+- **Decision (Ben, 2026-11-03): keep D-038's values** ("Keep D-038 values"). `config/params/mm_hazard.yaml`
+  keeps θ = 1.08 per 1,000 (0.36–5.35), α = 7.29 and the half-way point 2.0. D-042 is recorded as a run that
+  did not support the confounder model; its θ is not used. Known limits of the kept values, stated in the
+  params notes:
+  - D-038 was fitted before the Austin and Houston pre-reform rows were added, so it counts types those
+    places already allowed (§6.5–6.7);
+  - its placebo was not passed, and its own backtest was no better than no effect.
+
