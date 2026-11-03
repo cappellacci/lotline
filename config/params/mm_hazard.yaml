@@ -1,3 +1,6 @@
+# PENDING (2026-11-03): these values are the first draft from outside evidence. D-038 (pre-registered) replaces
+# them with a fit on the four states; until that fit lands they are not to be used.
+
 # Missing-middle uptake hazard (D-037 route 1; proposed in D-038, for Ben's review): the yearly chance that an
 # eligible single-family-zoned parcel (rule 1.1, D-014) gets a new 2-6 unit building, at the reference place's
 # market, phased in by a ramp. It plays the role adu_mature_hazard_ref plays for ADUs (hazard.yaml) and is
