@@ -1,0 +1,36 @@
+id: mm-d024
+title: Missing middle, October (Poisson-gamma main)
+model: D-024
+plan_entry: 'D-024: the run of 2026-10-20'
+status: completed
+started: '2026-10-20T20:35:49-04:00'
+finished: '2026-10-20T21:09:13-04:00'
+commit: ''
+command: uv run python scripts/dev/estimate_mm.py --full --workers 8 --out reports/mm-d024/
+method: 'Staggered difference-in-differences on Census BPS 2-4 unit permits, places of 10,000+. Main model as run:
+  Poisson-gamma (negative binomial with gamma place effects), effects by years since a by-right rule (0-1, 2-3,
+  4+) scaled by dose, modifiers and a rate term; wild cluster score bootstrap by place and randomization inference.'
+scope:
+  states:
+  - MN
+  - NC
+  - OH
+  - TX
+  years: 2010-2025
+  outcome: 2-4 unit homes permitted a year (Census BPS)
+  places: 560
+  place_years: 8763
+  treated: 7
+  sample: BPS places of 10,000+ people plus every coded place
+  holdouts: St. Paul entirely; Charlotte and Mecklenburg County from 2023-06-01
+config:
+  main estimator: Poisson-gamma (re)
+  bootstrap draws: 999
+  randomization reassignments: 999
+  dose: by right 1, by permit 1/3
+  rule tags: 'not read (before #264)'
+  workers: 8
+reading: 'No credible estimate: randomization inference p = 0.70, two placebo checks fail, Minneapolis drives the
+  result, Houston supplies about 91% of added homes, both out-of-sample tests fail.'
+manifest_note: Written by hand on 2026-11-03 from the run's log, CSVs and analysis-plan entry (the run predates
+  run.yaml).

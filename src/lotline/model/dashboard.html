@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lotline engine runs</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --good: #0ca30c; --good-ink: #006300; --bad: #d03b3b; --warn: #fab219;
+  --wash: rgba(11,11,11,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --good-ink: #0ca30c; --wash: rgba(255,255,255,0.05);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --good-ink: #0ca30c; --wash: rgba(255,255,255,0.05);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; margin: 0 0 2px; }
+h2 { font-size: 17px; margin: 0 0 4px; }
+h3 { font-size: 14px; margin: 0 0 6px; display: flex; gap: 8px; align-items: center; }
+.sub { color: var(--ink-2); margin: 0 0 16px; }
+.muted { color: var(--muted); }
+section.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px;
+  padding: 16px; margin: 16px 0; }
+.help { color: var(--ink-2); margin: 0 0 12px; max-width: 80ch; }
+.picker { display: flex; flex-direction: column; gap: 10px; }
+.group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.group > b { width: 100%; font-size: 13px; color: var(--ink-2); font-weight: 600; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px;
+  border: 1px solid var(--ring); background: var(--page); cursor: pointer; user-select: none; }
+.chip input { margin: 0; }
+.chip.disabled { opacity: .45; cursor: not-allowed; }
+.swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.badge { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--ring);
+  color: var(--ink-2); white-space: nowrap; }
+.badge.no_estimate, .badge.started { border-color: var(--bad); }
+.note { border-left: 3px solid var(--warn); padding: 6px 10px; background: var(--wash); margin: 12px 0 0; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.about { border: 1px solid var(--ring); border-radius: 8px; padding: 12px; background: var(--page); min-width: 0; }
+.about h3 { flex-wrap: wrap; }
+.about p { margin: 6px 0; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 6px 0 10px; }
+dt { color: var(--ink-2); }
+dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.reading { background: var(--wash); border-radius: 6px; padding: 8px 10px; }
+code { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-top: 10px; }
+.tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.tile { border: 1px solid var(--ring); border-radius: 8px; padding: 12px; background: var(--page); }
+.tile .big { font-size: 28px; font-weight: 600; line-height: 1.2; }
+.tile .row { color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; color: var(--ink-2); font-size: 13px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { fill: var(--ink-2); font-size: 12px; }
+svg .tick { fill: var(--muted); font-size: 11px; }
+svg .grid { stroke: var(--grid); stroke-width: 1; }
+svg .zero { stroke: var(--axis); stroke-width: 1.5; }
+.multiples { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.multiples > div { min-width: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; }
+.pass { color: var(--good-ink); font-weight: 600; }
+.fail { color: var(--bad); font-weight: 600; }
+.rep { color: var(--ink-2); }
+details { margin-top: 10px; }
+summary { cursor: pointer; color: var(--ink-2); }
+#tip { position: fixed; pointer-events: none; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--ring); border-radius: 6px; padding: 6px 8px; font-size: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.15); max-width: 300px; display: none; z-index: 10; white-space: pre-line; }
+.hit { fill: transparent; cursor: default; }
+.empty { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lotline engine runs</h1>
+  <p class="sub">Results of the D-024 (missing middle) and D-025 (ADU) estimation runs, read from each run folder's
+    CSVs and <code>run.yaml</code>. Generated __GENERATED__. Effects are on the log scale: an effect of 0.7 means about
+    e<sup>0.7</sup> ≈ 2 times the homes a place would otherwise have permitted. Intervals are 90% unless noted.</p>
+
+  <section class="card">
+    <h2>Pick runs to compare</h2>
+    <p class="help">Choose up to three. Each run keeps its colour on every chart below.</p>
+    <div class="picker" id="picker"></div>
+    <div id="mixnote"></div>
+  </section>
+
+  <section class="card">
+    <h2>About these runs</h2>
+    <p class="help">What each run estimated, on which data, with which settings, and how its results were read.
+      The full specification is the analysis-plan entry named on each card.</p>
+    <div class="grid" id="about"></div>
+  </section>
+
+  <section class="card">
+    <h2>Overall effect</h2>
+    <p class="help">The headline number, its interval, and randomization inference: how often reshuffled
+      adoption dates give an effect at least this large. A small p (under 0.1) means the effect stands out from chance timing.</p>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section class="card">
+    <h2>Effect estimates by term</h2>
+    <p class="help">Each dot is an estimate and its line the 90% interval. Terms to the right of 0 raise
+      permits; an interval that crosses 0 cannot tell the direction.</p>
+    <div id="terms"></div>
+  </section>
+
+  <section class="card">
+    <h2>Checks</h2>
+    <p class="help">The pre-registered checks and whether each passed. A failed check means the main estimate
+      may reflect something other than the rule.</p>
+    <div class="scroll" id="checks"></div>
+  </section>
+
+  <section class="card">
+    <h2>Robustness: the overall effect under other choices</h2>
+    <p class="help">The same question answered with other estimators, samples or definitions. Reported, never used to
+      choose. A result that holds only under one choice is fragile.</p>
+    <div id="robust"></div>
+  </section>
+
+  <section class="card">
+    <h2>Randomization inference</h2>
+    <p class="help">Bars: overall effects when the reform dates are reassigned to other places. Line: the real
+      estimate. If many bars sit at or beyond the line, the real effect is not unusual.</p>
+    <div class="multiples" id="ri"></div>
+  </section>
+
+  <section class="card">
+    <h2>Leave one treated place out</h2>
+    <p class="help">The overall effect re-estimated without each treated place in turn. A wide spread means one
+      place drives the result. Dashed line: the full estimate.</p>
+    <div class="multiples" id="loo"></div>
+  </section>
+
+  <section class="card">
+    <h2>Out-of-sample tests</h2>
+    <p class="help">Places left out of the fit and predicted. Bar: the 80% prediction interval for the total;
+      dot: what was observed. Pass rule as pre-registered (shown per test).</p>
+    <div class="multiples" id="oos"></div>
+  </section>
+
+  <section class="card">
+    <h2>Added homes by treated place</h2>
+    <p class="help">Homes the model attributes to the rule in each treated place's post-adoption years (missing-middle
+      runs). The ten largest, with intervals. Watch for one place supplying most of the total.</p>
+    <div class="multiples" id="added"></div>
+  </section>
+</main>
+<div id="tip"></div>
+<script id="runs-data" type="application/json">__RUNS_JSON__</script>
+<script>
+"use strict";
+const RUNS = JSON.parse(document.getElementById("runs-data").textContent);
+const SLOTS = ["--s1", "--s2", "--s3"];
+const MAX = 3;
+let selected = defaultSelection();
+const slotOf = {};   // run id -> colour slot; a run keeps its slot while it stays selected
+
+function defaultSelection() {
+  const last = RUNS[RUNS.length - 1];
+  const prev = RUNS.slice(0, -1).reverse().find(r => r.manifest.model === last.manifest.model);
+  return prev ? [prev.id, last.id] : [last.id];
+}
+function assignSlots() {
+  for (const id of Object.keys(slotOf)) if (!selected.includes(id)) delete slotOf[id];
+  for (const id of selected) {
+    if (slotOf[id] !== undefined) continue;
+    const used = new Set(Object.values(slotOf));
+    slotOf[id] = [0, 1, 2].find(i => !used.has(i));
+  }
+}
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const colour = id => `var(${SLOTS[slotOf[id]]})`;
+const byId = id => RUNS.find(r => r.id === id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const fmt = (v, d = 2) => v === null || v === undefined ? "–" : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString() : v.toFixed(d)).replace("-", "−");
+const fmtI = o => !o || o.estimate === null ? "–" : o.low === null || o.high === null ? fmt(o.estimate) : `${fmt(o.estimate)} (${fmt(o.low)} to ${fmt(o.high)})`;
+// A label cut to fit `px` of room (about 6.5 px a character), with the full text on hover.
+const clip = (s, px) => { const n = Math.max(6, Math.floor(px / 6.5)); return s.length > n ? `${esc(s.slice(0, n - 1))}…<title>${esc(s)}</title>` : esc(s); };
+const title = r => r.manifest.title || r.id;
+const sw = id => `<span class="swatch" style="background:${colour(id)}"></span>`;
+const STATUS = {completed: "Completed", no_estimate: "No estimate", started: "Did not finish"};
+
+/* ---------- picker ---------- */
+function renderPicker() {
+  const groups = {};
+  for (const r of RUNS) (groups[r.manifest.model || "Other"] ||= []).push(r);
+  const names = {"D-024": "D-024 · missing middle", "D-025": "D-025 · ADU"};
+  document.getElementById("picker").innerHTML = Object.entries(groups).map(([m, rs]) =>
+    `<div class="group"><b>${esc(names[m] || m)}</b>${rs.map(r => {
+      const on = selected.includes(r.id), dis = !on && selected.length >= MAX;
+      return `<label class="chip${dis ? " disabled" : ""}" title="${esc(r.id)}">
+        <input type="checkbox" value="${esc(r.id)}" ${on ? "checked" : ""} ${dis ? "disabled" : ""}>
+        ${on ? sw(r.id) : ""}<span>${esc(title(r))}</span>
+        <span class="badge ${esc(r.status)}">${esc(STATUS[r.status] || r.status)}</span></label>`;
+    }).join("")}</div>`).join("");
+  document.querySelectorAll("#picker input").forEach(el => el.addEventListener("change", e => {
+    const id = e.target.value;
+    selected = e.target.checked ? [...selected, id] : selected.filter(x => x !== id);
+    selected.sort((a, b) => RUNS.findIndex(r => r.id === a) - RUNS.findIndex(r => r.id === b));
+    renderAll();
+  }));
+  const models = new Set(selected.map(id => byId(id).manifest.model));
+  document.getElementById("mixnote").innerHTML = models.size > 1
+    ? `<p class="note">These runs estimate different outcomes (ADU permits and 2–4 unit permits). Compare how their checks
+       and robustness behave, not the size of their effects.</p>` : "";
+}
+
+/* ---------- about ---------- */
+function dl(obj) {
+  if (!obj || typeof obj !== "object") return "";
+  return `<dl>${Object.entries(obj).map(([k, v]) => `<dt>${esc(k.replace(/_/g, " "))}</dt><dd>${esc(
+    Array.isArray(v) ? v.join(", ") : (v && typeof v === "object") ? Object.entries(v).map(([a, b]) => `${a} ${b}`).join(", ") : v)}</dd>`).join("")}</dl>`;
+}
+function renderAbout() {
+  document.getElementById("about").innerHTML = selected.map(id => {
+    const r = byId(id), m = r.manifest;
+    const when = [m.started, m.finished].filter(Boolean).map(s => String(s).replace("T", " ").slice(0, 16)).join(" → ");
+    return `<div class="about">
+      <h3>${sw(id)}${esc(title(r))} <span class="badge ${esc(r.status)}">${esc(STATUS[r.status] || r.status)}</span></h3>
+      <div class="muted">${esc(m.plan_entry || "")}</div>
+      <div class="muted">${esc(when)}${m.commit ? ` · commit <code>${esc(String(m.commit).slice(0, 7))}</code>` : ""} · <code>${esc(r.id)}</code></div>
+      ${m.status_note ? `<p class="note">${esc(m.status_note)}</p>` : ""}
+      <div class="label">Reading</div><p class="reading">${esc(m.reading || "Not yet read.")}</p>
+      <div class="label">Method</div><p>${esc(m.method || "–")}</p>
+      <div class="label">Data scope</div>${dl(m.scope)}
+      <div class="label">Configuration</div>${dl(m.config)}
+      ${m.command ? `<details><summary>Command</summary><code>${esc(m.command)}</code></details>` : ""}
+      ${m.manifest_note ? `<p class="muted">${esc(m.manifest_note)}</p>` : ""}
+    </div>`;
+  }).join("");
+}
+
+/* ---------- tiles ---------- */
+function renderTiles() {
+  document.getElementById("tiles").innerHTML = selected.map(id => {
+    const r = byId(id), o = r.overall, ri = r.randomization;
+    if (!o) return `<div class="tile"><h3>${sw(id)}${esc(title(r))}</h3><div class="big">No estimate</div>
+      <div class="row">${esc(r.manifest.status_note || "The run produced no overall effect.")}</div></div>`;
+    const times = Math.exp(o.estimate);
+    return `<div class="tile"><h3>${sw(id)}${esc(title(r))}</h3>
+      <div class="big">${fmt(o.estimate)}</div>
+      <div class="row">90% interval ${fmt(o.low)} to ${fmt(o.high)}</div>
+      <div class="row">≈ ${times >= 10 ? Math.round(times) : times.toFixed(1)}× the homes at full dose (range ${fmt(Math.exp(o.low), 1)}× to ${fmt(Math.exp(o.high), 1)}×)</div>
+      <div class="row">Randomization inference: ${ri ? `p = ${fmt(ri.p)} <span class="${ri.p < 0.1 ? "pass" : "fail"}">${ri.p < 0.1 ? "✓ stands out" : "✗ not unusual"}</span>` : "not available"}</div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- shared chart helpers ---------- */
+function niceTicks(lo, hi, n = 6) {
+  const span = hi - lo || 1, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(x => x * mag).find(s => span / s <= n) || 10 * mag;
+  const out = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) out.push(+t.toFixed(10));
+  return out;
+}
+function domain(values, withZero = true) {
+  const v = values.filter(x => x !== null && x !== undefined && isFinite(x));
+  if (withZero) v.push(0);
+  let lo = Math.min(...v), hi = Math.max(...v);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const pad = (hi - lo) * 0.05;
+  return [lo - pad, hi + pad];
+}
+function legend(ids) {
+  return ids.length < 2 ? "" : `<div class="legend">${ids.map(id => `<span>${sw(id)}${esc(title(byId(id)))}</span>`).join("")}</div>`;
+}
+function width(el) { return Math.max(300, el.clientWidth || 600); }
+function axis(x, lo, hi, top, bottom, left, right) {
+  const n = Math.max(3, Math.min(6, Math.floor((x(hi) - x(lo)) / 70)));  // fewer ticks on narrow plots
+  return niceTicks(lo, hi, n).map(t => `<line class="${t === 0 ? "zero" : "grid"}" x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${bottom}"/>
+    <text class="tick" x="${x(t)}" y="${bottom + 14}" text-anchor="middle">${fmt(t, Math.abs(t) < 10 && t % 1 ? 1 : 0)}</text>`).join("");
+}
+function empty(msg) { return `<p class="empty">${esc(msg)}</p>`; }
+function table(head, rows, numCols = []) {
+  return `<details><summary>Table view</summary><div class="scroll"><table><thead><tr>${head.map((h, i) =>
+    `<th class="${numCols.includes(i) ? "num" : ""}">${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r =>
+    `<tr>${r.map((c, i) => `<td class="${numCols.includes(i) ? "num" : ""}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div></details>`;
+}
+
+/* ---------- forest (terms, robustness) ---------- */
+function forest(el, rowsOf, emptyMsg) {
+  const ids = selected.filter(id => rowsOf(byId(id)).length);
+  if (!ids.length) { el.innerHTML = empty(emptyMsg); return; }
+  const labels = [];
+  for (const id of ids) for (const row of rowsOf(byId(id))) if (!labels.includes(row.label)) labels.push(row.label);
+  const W = width(el), narrow = W < 560, left = narrow ? 130 : 230, right = 16, top = 8;
+  const band = 12 * ids.length + 16, H = top + band * labels.length + 26;
+  const vals = ids.flatMap(id => rowsOf(byId(id)).flatMap(r => [r.low, r.high, r.estimate]));
+  const [lo, hi] = domain(vals);
+  const x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+  let s = axis(x, lo, hi, top, top + band * labels.length, left, right);
+  labels.forEach((lab, i) => {
+    const y0 = top + band * i;
+    if (i % 2) s += `<rect x="0" y="${y0}" width="${W}" height="${band}" fill="var(--wash)"/>`;
+    s += `<text x="${left - 10}" y="${y0 + band / 2 + 4}" text-anchor="end">${clip(lab, left - 14)}</text>`;
+    ids.forEach((id, j) => {
+      const r = rowsOf(byId(id)).find(q => q.label === lab);
+      if (!r || r.estimate === null) return;
+      const y = y0 + 8 + 12 * j + 4, c = colour(id);
+      const tip = `${title(byId(id))}\n${lab}: ${fmtI(r)}`;
+      if (r.low !== null && r.high !== null)
+        s += `<line x1="${x(r.low)}" x2="${x(r.high)}" y1="${y}" y2="${y}" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`;
+      s += `<circle cx="${x(r.estimate)}" cy="${y}" r="4.5" fill="${c}" stroke="var(--surface)" stroke-width="2"/>`;
+      s += `<rect class="hit" x="${left}" y="${y - 6}" width="${W - left - right}" height="12" data-tip="${esc(tip)}"/>`;
+    });
+  });
+  el.innerHTML = legend(ids) + `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Estimates with intervals">${s}</svg>` +
+    table(["Run", "Row", "Estimate", "Low", "High"],
+      ids.flatMap(id => rowsOf(byId(id)).map(r => [esc(title(byId(id))), esc(r.label), fmt(r.estimate), fmt(r.low), fmt(r.high)])), [2, 3, 4]);
+}
+
+/* ---------- checks ---------- */
+function verdict(c) {
+  if (c === undefined) return `<span class="muted">not run</span>`;
+  const p = c.pass === true ? `<span class="pass">✓ Pass</span>` : c.pass === false ? `<span class="fail">✗ Fail</span>` : `<span class="rep">• Reported</span>`;
+  const detail = c.estimate !== null ? fmtI(c) : c.p !== null ? `p = ${fmt(c.p)}` : "";
+  return `${p}${detail ? `<div class="muted">${esc(detail)}</div>` : ""}${c.note && c.pass !== true ? `<div class="muted" style="max-width:40ch">${esc(c.note.slice(0, 220))}</div>` : ""}`;
+}
+function renderChecks() {
+  const el = document.getElementById("checks");
+  const ids = selected.filter(id => byId(id).checks.length);
+  const names = [];
+  for (const id of ids) for (const c of byId(id).checks) if (!names.includes(c.name)) names.push(c.name);
+  const oos = [];
+  for (const id of ids) for (const v of byId(id).transport_verdict) if (!oos.includes(v.test)) oos.push(v.test);
+  if (!ids.length) { el.innerHTML = empty("None of the selected runs has checks."); return; }
+  const rows = names.map(n => `<tr><td>${esc(n)}</td>${ids.map(id => `<td>${verdict(byId(id).checks.find(c => c.name === n))}</td>`).join("")}</tr>`);
+  for (const t of oos) rows.push(`<tr><td>Out-of-sample: ${esc(t)}</td>${ids.map(id => {
+    const v = byId(id).transport_verdict.find(q => q.test === t);
+    return `<td>${v ? verdict({pass: v.pass, estimate: null, p: null, note: ""}) + (v.coverage !== null ? `<div class="muted">yearly coverage ${Math.round(v.coverage * 100)}%</div>` : "") : `<span class="muted">not run</span>`}</td>`;
+  }).join("")}</tr>`);
+  el.innerHTML = `<table><thead><tr><th>Check</th>${ids.map(id => `<th>${sw(id)} ${esc(title(byId(id)))}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`;
+}
+
+/* ---------- histogram (randomization) ---------- */
+function renderRI() {
+  const el = document.getElementById("ri");
+  const ids = selected.filter(id => byId(id).randomization && byId(id).randomization.draws.length);
+  if (!ids.length) { el.innerHTML = empty("None of the selected runs has randomization draws."); return; }
+  el.innerHTML = ids.map(id => `<div data-id="${esc(id)}"></div>`).join("");
+  for (const id of ids) {
+    const box = el.querySelector(`[data-id="${CSS.escape(id)}"]`), ri = byId(id).randomization;
+    const W = width(box), H = 200, left = 36, right = 12, top = 24, bottom = H - 24;
+    const [lo, hi] = domain([...ri.draws, ri.observed], false);
+    const nb = 30, bw = (hi - lo) / nb, counts = new Array(nb).fill(0);
+    for (const d of ri.draws) counts[Math.min(nb - 1, Math.floor((d - lo) / bw))]++;
+    const ymax = Math.max(...counts), x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+    const y = c => bottom - c / ymax * (bottom - top);
+    let s = axis(x, lo, hi, top, bottom, left, right);
+    counts.forEach((c, i) => {
+      if (!c) return;
+      const x0 = x(lo + i * bw) + 1, x1 = x(lo + (i + 1) * bw) - 1;
+      s += `<rect x="${x0}" y="${y(c)}" width="${Math.max(1, x1 - x0)}" height="${bottom - y(c)}" rx="2" fill="${colour(id)}" opacity=".55"/>`;
+      s += `<rect class="hit" x="${x0 - 1}" y="${top}" width="${x1 - x0 + 2}" height="${bottom - top}" data-tip="${esc(`${fmt(lo + i * bw)} to ${fmt(lo + (i + 1) * bw)}: ${c} reassignments`)}"/>`;
+    });
+    const xo = x(ri.observed);
+    s += `<line x1="${xo}" x2="${xo}" y1="${top - 6}" y2="${bottom}" stroke="var(--ink)" stroke-width="2"/>`;
+    s += `<text x="${xo + (xo > W - 140 ? -6 : 6)}" y="${top + 4}" text-anchor="${xo > W - 140 ? "end" : "start"}" style="fill:var(--ink)">observed ${fmt(ri.observed)} · p = ${fmt(ri.p)}</text>`;
+    box.innerHTML = `<h3>${sw(id)}${esc(title(byId(id)))}</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Randomization distribution">${s}</svg>
+      <div class="muted">${ri.draws.length} reassignments fitted${ri.failed ? `, ${ri.failed} could not be fitted` : ""}</div>`;
+  }
+}
+
+/* ---------- strip (leave one out) ---------- */
+function renderLOO() {
+  const el = document.getElementById("loo");
+  const ids = selected.filter(id => byId(id).leave_one_out.length);
+  if (!ids.length) { el.innerHTML = empty("None of the selected runs has leave-one-out results."); return; }
+  el.innerHTML = ids.map(id => `<div data-id="${esc(id)}"></div>`).join("");
+  for (const id of ids) {
+    const box = el.querySelector(`[data-id="${CSS.escape(id)}"]`), r = byId(id), L = r.leave_one_out;
+    const main = r.overall ? r.overall.estimate : null;
+    const W = width(box), H = 110, left = 16, right = 16, top = 30, mid = 58, bottom = 84;
+    const [lo, hi] = domain([...L.map(d => d.estimate), main]);
+    const x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+    let s = axis(x, lo, hi, top - 10, bottom, left, right);
+    if (main !== null) s += `<line x1="${x(main)}" x2="${x(main)}" y1="${top - 10}" y2="${bottom}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    const sorted = [...L].filter(d => d.estimate !== null).sort((a, b) => a.estimate - b.estimate);
+    sorted.forEach((d, i) => {
+      const jitter = (i % 3 - 1) * 7;
+      s += `<circle cx="${x(d.estimate)}" cy="${mid + jitter}" r="4" fill="${colour(id)}" opacity=".8" stroke="var(--surface)" stroke-width="1.5"/>`;
+      s += `<circle class="hit" cx="${x(d.estimate)}" cy="${mid + jitter}" r="8" data-tip="${esc(`Without ${d.left_out}: ${fmt(d.estimate)}`)}"/>`;
+    });
+    const ends = [sorted[0], sorted[sorted.length - 1]];
+    s += `<text x="${x(ends[0].estimate)}" y="${top - 14}" text-anchor="start">without ${esc(ends[0].left_out)}: ${fmt(ends[0].estimate)}</text>`;
+    s += `<text x="${x(ends[1].estimate)}" y="${bottom + 26}" text-anchor="end">without ${esc(ends[1].left_out)}: ${fmt(ends[1].estimate)}</text>`;
+    box.innerHTML = `<h3>${sw(id)}${esc(title(r))}</h3><svg viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="Leave one out">${s}</svg>` +
+      table(["Left out", "Overall effect"], sorted.map(d => [esc(d.left_out), fmt(d.estimate)]), [1]);
+  }
+}
+
+/* ---------- out-of-sample ---------- */
+function renderOOS() {
+  const el = document.getElementById("oos");
+  const ids = selected.filter(id => byId(id).transport.length);
+  if (!ids.length) { el.innerHTML = empty("None of the selected runs has out-of-sample predictions."); return; }
+  el.innerHTML = ids.map(id => `<div data-id="${esc(id)}"></div>`).join("");
+  for (const id of ids) {
+    const box = el.querySelector(`[data-id="${CSS.escape(id)}"]`), r = byId(id);
+    const totals = r.transport.filter(t => t.year === "total");
+    const W = width(box), left = Math.min(190, W * 0.38), right = 16, row = 30, top = 8;
+    const tests = [...new Set(totals.map(t => t.test))];
+    const lines = tests.flatMap(t => [{head: t}, ...totals.filter(q => q.test === t)]);
+    const H = top + row * lines.length + 26;
+    const [lo, hi] = domain(totals.flatMap(t => [t.p10, t.p90, t.observed]));
+    const x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+    let s = axis(x, lo, hi, top, top + row * lines.length, left, right);
+    lines.forEach((l, i) => {
+      const y = top + row * i + row / 2;
+      if (l.head) {
+        const v = r.transport_verdict.find(q => q.test === l.head);
+        s += `<text x="0" y="${y + 4}" style="fill:var(--ink);font-weight:600">${esc(l.head)}${v ? (v.pass ? " · ✓ pass" : " · ✗ fail") : ""}</text>`;
+        return;
+      }
+      const inside = l.observed >= l.p10 && l.observed <= l.p90;
+      s += `<text x="${left - 10}" y="${y + 4}" text-anchor="end">${clip(l.name, left - 14)}</text>`;
+      s += `<rect x="${x(l.p10)}" y="${y - 5}" width="${Math.max(2, x(l.p90) - x(l.p10))}" height="10" rx="4" fill="${colour(id)}" opacity=".45"/>`;
+      s += `<line x1="${x(l.mean)}" x2="${x(l.mean)}" y1="${y - 7}" y2="${y + 7}" stroke="${colour(id)}" stroke-width="2"/>`;
+      s += `<circle cx="${x(l.observed)}" cy="${y}" r="5" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>`;
+      s += `<rect class="hit" x="${left}" y="${y - 10}" width="${W - left - right}" height="20" data-tip="${esc(`${l.name}\nobserved ${fmt(l.observed, 0)}\n80% interval ${fmt(l.p10, 0)} to ${fmt(l.p90, 0)} (mean ${fmt(l.mean, 0)})\n${inside ? "inside" : "outside"}`)}"/>`;
+    });
+    box.innerHTML = `<h3>${sw(id)}${esc(title(r))}</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Out-of-sample totals">${s}</svg>
+      <div class="muted">Bar: 80% interval · tick: predicted mean · dot: observed</div>` +
+      table(["Test", "Place", "Year", "Observed", "Mean", "P10", "P90"],
+        r.transport.map(t => [esc(t.test), esc(t.name), esc(t.year), fmt(t.observed, 0), fmt(t.mean, 1), fmt(t.p10, 0), fmt(t.p90, 0)]), [3, 4, 5, 6]);
+  }
+}
+
+/* ---------- added homes ---------- */
+function renderAdded() {
+  const el = document.getElementById("added");
+  const ids = selected.filter(id => byId(id).added_homes.length);
+  if (!ids.length) { el.innerHTML = empty("None of the selected runs reports added homes (ADU runs don't)."); return; }
+  el.innerHTML = ids.map(id => `<div data-id="${esc(id)}"></div>`).join("");
+  for (const id of ids) {
+    const box = el.querySelector(`[data-id="${CSS.escape(id)}"]`), r = byId(id), A = r.added_homes;
+    const total = A.reduce((a, d) => a + (d.added || 0), 0);
+    const top10 = [...A].sort((a, b) => Math.abs(b.added) - Math.abs(a.added)).slice(0, 10);
+    const W = width(box), left = Math.min(180, W * 0.36), right = 16, row = 22, top = 8;
+    const H = top + row * top10.length + 26;
+    const [lo, hi] = domain(top10.flatMap(d => [d.low, d.high, d.added]));
+    const x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+    let s = axis(x, lo, hi, top, top + row * top10.length, left, right);
+    top10.forEach((d, i) => {
+      const y = top + row * i + row / 2, x0 = x(Math.min(0, d.added)), x1 = x(Math.max(0, d.added));
+      s += `<text x="${left - 10}" y="${y + 4}" text-anchor="end">${clip(d.name, left - 14)}</text>`;
+      s += `<rect x="${x0}" y="${y - 6}" width="${Math.max(1, x1 - x0)}" height="12" rx="3" fill="${colour(id)}"/>`;
+      if (d.low !== null && d.high !== null) s += `<line x1="${x(d.low)}" x2="${x(d.high)}" y1="${y}" y2="${y}" stroke="var(--ink-2)" stroke-width="1.5"/>`;
+      s += `<rect class="hit" x="${left}" y="${y - 10}" width="${W - left - right}" height="20" data-tip="${esc(`${d.name}: ${fmt(d.added, 0)} homes (${fmt(d.low, 0)} to ${fmt(d.high, 0)})\n${d.years} post-adoption years · ${Math.round(100 * d.added / total)}% of the total`)}"/>`;
+    });
+    const lead = top10[0];
+    box.innerHTML = `<h3>${sw(id)}${esc(title(r))}</h3>
+      <div class="muted">Total ${fmt(total, 0)} homes; ${esc(lead.name)} supplies ${Math.round(100 * lead.added / total)}%</div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Added homes by place">${s}</svg>` +
+      table(["Place", "Years", "Added", "Low", "High"], [...A].sort((a, b) => b.added - a.added).map(d => [esc(d.name), fmt(d.years, 0), fmt(d.added, 0), fmt(d.low, 0), fmt(d.high, 0)]), [1, 2, 3, 4]);
+  }
+}
+
+/* ---------- tooltip ---------- */
+const tip = document.getElementById("tip");
+document.addEventListener("mousemove", e => {
+  const t = e.target.closest && e.target.closest("[data-tip]");
+  if (!t) { tip.style.display = "none"; return; }
+  tip.textContent = t.getAttribute("data-tip");
+  tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(window.innerWidth - w - 8, e.clientX + 12) + "px";
+  tip.style.top = (e.clientY + h + 16 > window.innerHeight ? e.clientY - h - 12 : e.clientY + 12) + "px";
+});
+
+function renderAll() {
+  assignSlots();
+  renderPicker(); renderAbout(); renderTiles();
+  forest(document.getElementById("terms"), r => r.terms, "None of the selected runs produced estimates.");
+  renderChecks();
+  forest(document.getElementById("robust"), r => r.robustness.map(q => ({...q, label: q.fit})), "None of the selected runs has robustness fits.");
+  renderRI(); renderLOO(); renderOOS(); renderAdded();
+}
+renderAll();
+let resize;
+window.addEventListener("resize", () => { clearTimeout(resize); resize = setTimeout(renderAll, 150); });
+</script>
+</body>
+</html>
