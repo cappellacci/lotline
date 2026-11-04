@@ -371,3 +371,17 @@ def test_bps_reads_region_and_fips_from_the_state_config():
     )
     out = bps.to_canonical(raw, "OR")
     assert out.geoid.tolist() == ["4159000"]
+
+
+def test_statewide_holdout_hides_rows_with_no_geoid():
+    # Found by WS-OR after #287: BPS rows Census filed without FIPS codes have a null GEOID and escaped the
+    # prefix match. In the state's own table they belong to the state, so they are hidden in the window.
+    bps = pd.DataFrame(
+        {"geoid": pd.array([None, None, "4159000"], dtype="string"), "year": [2017, 2018, 2019]}
+    )
+    hidden = holdout.held_out_mask(bps, [OREGON], geoid_col="geoid", year_col="year")
+    assert hidden.tolist() == [False, True, True]
+    out = holdout.apply(bps, "OR", holdouts=[OREGON], year_col="year")
+    assert out.year.tolist() == [2017]
+    # a place holdout still never hides a null-GEOID row
+    assert not holdout.held_out_mask(bps, [STPAUL], geoid_col="geoid", year_col="year").any()
