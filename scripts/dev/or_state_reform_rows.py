@@ -40,7 +40,15 @@ POP_NOTE = (
 )
 READ_NOTE = (
     "Statute read 2026-11-04 from an archived copy of the official text (oregonlegislature.gov did not "
-    "answer from our network); second coder pending."
+    "answer from our network)."
+)
+SECOND_NOTE = (
+    "Second coder (an independent Claude subagent that coded the laws from the texts without seeing these "
+    "rows, "
+    "2026-11-04): agreed on every threshold, date, unit cap and owner-occupancy value. Adjudicated: by_right "
+    "True (blank in the first pass): 'shall allow' plus SB 1051's clear and objective standards for all "
+    "housing (ORS 197.307(4)). lot_split stays blank on non-division rows (the second coder had False; the "
+    "laws are silent). Same model family as the first coder, so not fully independent."
 )
 
 COLUMNS = (
@@ -93,8 +101,10 @@ def _row(geoid: str, suffix: str, theme: str, **fields) -> dict:
         jurisdiction_geoid=geoid,
         theme=theme,
         status="in_force",
+        by_right="True",
         coder="claude",
-        coder_agreement="single_coder",
+        coder_2="claude-subagent",
+        coder_agreement="adjudicated",
     )
     row.update({k: v for k, v in fields.items() if v is not None})
     return row
@@ -136,7 +146,7 @@ def adu_rows(j: pd.DataFrame, county: bool) -> list[dict]:
                 "so adoption_date is blank. Owner occupancy and parking were left to local rules until 2020 "
                 "(blank here). The 'within the urban growth boundary' wording came from 2018 c.15 (not "
                 "read). "
-                f"{POP_NOTE} {READ_NOTE}"
+                f"{POP_NOTE} {READ_NOTE} {SECOND_NOTE}"
             ),
         )
         second = _row(
@@ -172,7 +182,7 @@ def adu_rows(j: pd.DataFrame, county: bool) -> list[dict]:
                 "2020-01-01. "
                 "Owner occupancy and parking may still be required for vacation occupancies (§7(6)). Other "
                 "fields "
-                f"inherit from {first['reform_id']}. {POP_NOTE} {READ_NOTE}"
+                f"inherit from {first['reform_id']}. {POP_NOTE} {READ_NOTE} {SECOND_NOTE}"
             ),
         )
         rows += [first, second]
@@ -279,7 +289,7 @@ def middle_rows(j: pd.DataFrame, tier: str, county: bool = False) -> list[dict]:
             source_url=spec["url"],
             source_section=spec["section"],
             source_quote=spec["quote"],
-            coding_notes=f"{GENERATED} {spec['note']} {POP_NOTE} {READ_NOTE}",
+            coding_notes=f"{GENERATED} {spec['note']} {POP_NOTE} {READ_NOTE} {SECOND_NOTE}",
         )
         division = _row(
             g,
@@ -293,6 +303,9 @@ def middle_rows(j: pd.DataFrame, tier: str, county: bool = False) -> list[dict]:
             effective_date=max(spec["effective"], "2022-07-01"),
             supersedes=base["reform_id"],
             lot_split="True",
+            parking=(
+                "no driveway, vehicle access, parking or street-frontage requirements as approval criteria"
+            ),
             coverage=cov,
             source_url=SB458,
             source_section="SB 458 (2021) §2(1)-(4), §2a (2021 c.103)",
@@ -306,7 +319,8 @@ def middle_rows(j: pd.DataFrame, tier: str, county: bool = False) -> list[dict]:
                 "the "
                 "place's middle-housing duty began if later. No emergency clause; signature date not in the "
                 "enrolled text, so adoption_date is blank. Cities need not allow an ADU on a resulting lot "
-                f"(§2(6)). Other fields inherit from {base['reform_id']}. {POP_NOTE} {READ_NOTE}"
+                f"(§2(6)). Other fields inherit from {base['reform_id']}. {POP_NOTE} {READ_NOTE} "
+                f"{SECOND_NOTE}"
             ),
         )
         rows += [base, division]
@@ -352,7 +366,7 @@ def hb2138_rows(j: pd.DataFrame, prior: dict[str, str]) -> list[dict]:
                     "covenanted "
                     "affordable unit. Not coded: HB 2138's extension to every county's urban unincorporated "
                     "land "
-                    f"outside Metro. {POP_NOTE} {READ_NOTE}"
+                    f"outside Metro. {POP_NOTE} {READ_NOTE} {SECOND_NOTE}"
                 ),
             )
         )
