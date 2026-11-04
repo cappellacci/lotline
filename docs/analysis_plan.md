@@ -2568,3 +2568,46 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - Places in MN, NC, OH and TX get a multiplier of exactly 1, so their runs are unchanged draw for draw
       (tested). The totals table flags affected places in `outside_fit_states`.
     - When a state joins the fit, re-run D-044 and regenerate the file; no code change.
+
+### D-045 · 2026-11-04 · Why the ADU fit misses: a residual audit (method only, before the run)
+
+- **Question:** the four-state fit (D-041 count rules) leaves a large place-to-place spread (α = 2.28) and
+  misses in opposite directions by state when one is held out: MN observed ÷ P50 = 0.48, TX 2.58. Are the misses
+  about how counts and denominators were built (measurement), about the transport's shape (model), or within
+  what the model's own noise allows? Ben asked for this before any new fit (2026-11-04).
+- **What this is not:** no parameter changes and no new fit. It reads the D-041 main fit (all four states) and
+  its leave-one-state-out fits, recomputed with the same code and settings. Holdouts are untouched: the
+  inputs are D-041's fit set and Raleigh and Durham (already used as tests); St. Paul (V5) is not read.
+- **Items (all on `cal.place_data` with `count_settings()`):**
+  1. **Place table**, one row per fit place and per test place:
+     - observed Y; expected E = θ̂ Σ_c w_c Σ_t k_ct at the full fit (in-sample) and at the fit without the
+       place's own state (out-of-state);
+     - log ratios ln((Y + 0.5) / (E + 0.5)), and the place effect's posterior mean (Y + r) / (r + E), r = 1/α̂;
+     - observed ADU permits per 1,000 eligible parcels a year;
+     - count source kept, survey share of years, share of ADU permits dropped as co-built;
+     - eligible parcels, `denominator_source`, `denominator_quality`, `data_tier`;
+     - rent, home value, price-to-cost at central values, h1, mean rule age, share of years under a partial
+       rule.
+  2. **Group ratios** ΣY / ΣE (in-sample and out-of-state) by state, count source, survey or not, denominator
+     source, rule-age band (< 2, 2–5, ≥ 5 years), price-to-cost tertile and calendar year.
+  3. **Shape check:** pooled weighted least squares of the place log ratio (in-sample) on one covariate at a
+     time with state fixed effects, weights E / (1 + α̂ E) (the negative binomial information). Covariates:
+     log rent, log home value, log price-to-cost, mean rule age, log eligible parcels. 90% interval from 2,000
+     place bootstraps within states. Effect reported as the ratio across the covariate's interquartile range.
+  4. **Count cross-check:** every place-year covered by two or more ADU-flagging sources, with each source's
+     count, and the share of the larger source.
+  5. **Noise floor:** from each leave-one-state-out fit's own predictive draws for the held-out state (as in
+     D-041), the share of draws within ×2 of their median, P(useful | model right), and the K1 a correct model
+     would give (RMS of log draw ÷ P50).
+- **How each item is read (fixed before the run):**
+  - **Measurement:** within a state, group ratios by count source or denominator source differ by more than
+    ×2 (with ≥ 10 expected in each group); or two sources covering the same place-years differ by more than
+    ×1.5 in total; or co-built exclusion removes more than 30% of a place's ADU permits.
+  - **Shape:** a covariate's effect across its interquartile range is at least ×1.5 (or at most ×0.67) and its
+    90% interval excludes 1.
+  - **Noise:** a state with P(useful | model right) below 0.5 cannot fail the ×2 bar by noise alone being
+    excluded; its "inside only" is not evidence of misfit. K1 = 0.79 is compared with the K1 a correct model
+    gives.
+  - **Outcome:** a short list of fixes. Measurement fixes go first (new count or denominator rules,
+    pre-registered as their own entry). Shape findings name the covariates for approach 2 (free shape terms)
+    and approach 3 (the empirical benchmark). Nothing in config changes from this entry.
