@@ -2686,3 +2686,42 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     0.95, TX 1.28. That is a level or shape question for approaches 2 and 3, not measurement.
   - **Proposed next entry (D-046, for Ben's approval):** give "no detached ADUs" its own multiplier, fitted
     as m_owner and m_other are, and refit with the leave-one-state-out backtest.
+
+### D-046 · 2026-11-04 · "No detached ADUs" gets its own rule multiplier (method only, before any fit)
+
+- **Why:** D-045's follow-up found that places whose rules allow attached ADUs only produce 7 ADU permits
+  against 87 expected (0.08), after the 0.3 multiplier the fit gives every "other" restriction. `type_of`
+  puts "no detached ADUs" in "other" with parking, conditional-use permits and size caps under 600 sq ft.
+  Ben approved this entry on 2026-11-04 ("Yes, D-046").
+- **Change, calibration only:**
+  - A rule's multiplier becomes c = m_o^[owner occupancy] × m_x^[other restrictions, without detached] ×
+    m_d^[no detached ADUs]. A rule with no restriction keeps c = 1.
+  - A blank detached field is integrated over its field probability, as every blank field is (D-022).
+  - Everything else is D-041's fit 3: counts (co-built excluded, survey ρ = 0.57), the 51 fit places, gamma
+    place effects, θ and α by profile likelihood, and Raleigh and Durham as the test set.
+- **Estimation:**
+  - Grids: m_o and m_x on D-019's grid 0.1, 0.2, …, 1.0; m_d on 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7,
+    1.0.
+  - Each share's 90% interval comes from its profile over the other two (2Δℓ ≤ 2.706). A share is
+    estimable when its interval is narrower than its range; m_o and m_x keep D-019's ranges and judgment
+    values, and m_d's range is 0.01–1.0 with judgment value 0.3, today's treatment.
+  - θ's 90% interval profiles over the grid points inside the joint 90% region of the estimable shares
+    (2Δℓ ≤ 6.251, χ² with 3 degrees of freedom); shares that are not estimable stay at their judgment value.
+    This replaces fit 3's profile over the whole grid, which would take hours with three shares. A test checks
+    that it gives fit 3's interval when m_d is fixed.
+  - The grid is evaluated in parallel; results do not depend on the number of workers.
+- **Reported:**
+  1. The full fit: θ, α, m_o, m_x, m_d with intervals, and the log-likelihood next to D-041's (−383.718).
+     The models are not nested (a detached-only rule moves from m_x to m_d), so the gain is reported against
+     one added parameter.
+  2. In-sample ΣY / ΣE for attached-only places (D-045: 0.08) and for the rest.
+  3. Leave one state out, as D-041: state totals with P10/P50/P90, verdicts, K1 (RMS of log observed ÷ P50
+     over the four states; D-041 0.791) and median P90/P10 (D-041 28.0). Test set from the full fit.
+- **Adoption rule, fixed now:** adopt if all three hold:
+  - m_d is estimable and its 90% interval excludes the fitted m_x;
+  - the log-likelihood improves by at least 1.353 (2Δℓ ≥ 2.706, one added parameter);
+  - leave one state out has no state missed and K1 no larger than 0.791.
+  - Otherwise report it and keep D-041.
+- **On adoption:** `adu.yaml` gets the m_d share with its source. The scenario's rule types (`TYPES`,
+  `type_of`, rule priors) are split to match, in their own PR with tests. Nothing in config changes in this
+  entry.
