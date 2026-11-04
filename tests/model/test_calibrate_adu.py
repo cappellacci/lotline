@@ -486,3 +486,64 @@ def test_unseen_state_draw_with_drawn_tau():
     fixed = cal.predict_unseen_state(pls, fit, draws=1_000, seed=1)
     drawn = cal.predict_unseen_state(pls, fit, draws=1_000, seed=1, taus=np.full(1_000, 0.5))
     assert np.array_equal(fixed["X"], drawn["X"])
+
+
+# D-046: "no detached ADUs" gets its own multiplier
+
+
+def _det_place(y, base, t, det):
+    n = len(y)
+    pl = _place(y, base, np.full((1, n, 1), t), np.ones((n, 1)), [1.0])
+    return dataclasses.replace(pl, detached=np.full((1, n, 1), det))
+
+
+def test_detached_multiplier_by_hand():
+    """base 1,000, one year. An attached-only rule with no other restriction (type 'handbook', detached):
+    c = m_d = 0.1, k = 100. With an owner requirement too (type 'owner'): c = m_o × m_d = 0.5 × 0.1, k = 50.
+    No `detached` array (fit 3): c ignores m_d."""
+    cv = cal._cvals(0.5, 0.3)
+    assert _det_place([0], [1000.0], 4, True).k(cv, 0.1)[0, 0] == pytest.approx(100)
+    assert _det_place([0], [1000.0], 1, True).k(cv, 0.1)[0, 0] == pytest.approx(50)
+    assert _det_place([0], [1000.0], 4, False).k(cv, 0.1)[0, 0] == pytest.approx(1000)
+    plain = _place([0], [1000.0], np.full((1, 1, 1), 4), np.ones((1, 1)), [1.0])
+    assert plain.k(cv, 0.1)[0, 0] == pytest.approx(1000)
+
+
+def _det_sim(seed, m_d=0.1, n=40):
+    rng = np.random.default_rng(seed)
+    out = []
+    for i in range(n):
+        base = np.full(6, rng.uniform(20_000, 60_000))
+        det = bool(i % 2)
+        u = rng.gamma(1 / 0.3, 0.3)
+        y = rng.poisson(0.002 * u * (m_d if det else 1.0) * base)
+        out.append(dataclasses.replace(_det_place(y, base, 4, det), geoid=f"P{i}"))
+    return out
+
+
+def test_fit_detached_recovers_m_d():
+    """40 simulated places × 6 years, half attached-only with m_d = 0.1, θ = 0.002, α = 0.3: m_d is estimated
+    at 0.1 with an interval excluding 0.3 and 1; θ's interval contains 0.002; m_o and m_x (no place has an
+    owner or other rule) are not estimable and stay at their judgment values."""
+    fit = cal.fit_detached(_det_sim(3), grid=(0.2, 0.5, 1.0), grid_d=(0.05, 0.1, 0.3, 1.0))
+    assert fit.detached_estimated and fit.m_detached == 0.1
+    assert fit.detached_interval[1] < 0.3
+    assert fit.low <= 0.002 <= fit.high
+    assert not fit.owner_estimated and fit.m_owner == 0.5
+
+
+def test_fit_detached_with_m_d_fixed_matches_fit3():
+    """m_d's grid is one point and no place carries `detached`: the fit is fit 3's, θ and its interval too
+    (the joint-region profile gives the same edges as profiling the whole grid)."""
+    rng = np.random.default_rng(5)
+    places = []
+    for i in range(30):
+        base = np.full(5, rng.uniform(20_000, 60_000))
+        t = 1 if i % 2 else 4
+        y = rng.poisson(0.002 * rng.gamma(1 / 0.3, 0.3) * (0.5 if t == 1 else 1.0) * base)
+        places.append(_place(y, base, np.full((1, 5, 1), t), np.ones((5, 1)), [1.0]))
+    f3 = cal.fit3(places, grid=(0.25, 0.5, 1.0))
+    fd = cal.fit_detached(places, grid=(0.25, 0.5, 1.0), grid_d=(1.0,))
+    assert not fd.detached_estimated
+    assert fd.m_owner == f3.m_owner and fd.alpha == pytest.approx(f3.alpha, rel=1e-3)
+    assert (fd.theta, fd.low, fd.high) == pytest.approx((f3.theta, f3.low, f3.high), rel=1e-3)

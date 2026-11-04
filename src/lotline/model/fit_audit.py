@@ -19,7 +19,7 @@ Z_90 = 1.6448536269514722  # two-sided 90%
 
 def expected_by_year(pl: cal.PlaceData, fit: cal.Fit3) -> np.ndarray:
     """E[y_t] = θ̂ Σ_c w_c k_ct (place effect at its mean 1, blank-field combinations by their weights)."""
-    ks = pl.k(cal._cvals(fit.m_owner, fit.m_other))
+    ks = pl.k(cal._cvals(fit.m_owner, fit.m_other), getattr(fit, "m_detached", 1.0))
     w = pl.w / pl.w.sum()
     return fit.theta * (w[:, None] * ks).sum(axis=0)
 

@@ -40,9 +40,12 @@ def detached_class(live: pd.DataFrame) -> str:
     return "detached allowed" if v.any() else "attached only" if len(v) else "blank"
 
 
-def by_detached(store, cs) -> pd.DataFrame:
-    places = run.four_state_places(store, cs) + run._test_set(store, cs)
-    full = cal.fit3(run.four_state_places(store, cs))
+def by_detached(store, cs, places=None, full=None) -> pd.DataFrame:
+    """Observed and expected by detached rule; `places` and `full` default to D-041's places and fit 3."""
+    if places is None:
+        places = run.four_state_places(store, cs) + run._test_set(store, cs)
+    if full is None:
+        full = cal.fit3([p for p in places if p.geoid not in (run.RALEIGH, run.DURHAM)])
     rows = []
     for pl in places:
         ref = adu.load_reforms(pl.state)

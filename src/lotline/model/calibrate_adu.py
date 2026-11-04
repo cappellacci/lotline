@@ -455,14 +455,21 @@ class PlaceData:
     types: np.ndarray
     cr: np.ndarray
     w: np.ndarray
+    detached: np.ndarray | None = None  # D-046: (C, T, R) True where the rule forbids detached ADUs
 
     @property
     def log_fact(self) -> float:
         return float(sum(math.lgamma(v + 1) for v in self.y))
 
-    def k(self, cvals: np.ndarray) -> np.ndarray:
-        """Expected counts at θ = 1 and u = 1 for each combination: (C, T) = base × max_r c(type) × cr."""
-        return self.base[None, :] * (cvals[self.types] * self.cr[None, :, :]).max(axis=2)
+    def k(self, cvals: np.ndarray, m_d: float = 1.0) -> np.ndarray:
+        """Expected counts at θ = 1 and u = 1 for each combination: (C, T) = base × max_r c(type) × cr.
+
+        With `detached` set (D-046), c also carries m_d where the rule forbids detached ADUs; `types` then
+        leave that restriction out."""
+        c = cvals[self.types]
+        if self.detached is not None:
+            c = c * np.where(self.detached, m_d, 1.0)
+        return self.base[None, :] * (c * self.cr[None, :, :]).max(axis=2)
 
 
 def frailty_loglik_place(y, k, theta: float, alpha: float, log_fact: float | None = None) -> float:
@@ -488,11 +495,13 @@ def frailty_loglik_place(y, k, theta: float, alpha: float, log_fact: float | Non
     )
 
 
-def frailty_loglik(places: list[PlaceData], theta: float, alpha: float, cvals: np.ndarray) -> float:
+def frailty_loglik(
+    places: list[PlaceData], theta: float, alpha: float, cvals: np.ndarray, m_d: float = 1.0
+) -> float:
     """Σ over places of log Σ_c w_c P(y | combination c): blank fields integrated per place (D-022)."""
     total = 0.0
     for pl in places:
-        ks = pl.k(cvals)
+        ks = pl.k(cvals, m_d)
         lf = pl.log_fact
         terms = [
             math.log(w) + frailty_loglik_place(pl.y, k, theta, alpha, lf)
@@ -661,7 +670,7 @@ def predict_place(pl: PlaceData, fit: Fit3, draws: int = 20_000, seed: int = 0) 
     rng = np.random.default_rng(seed)
     theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=draws))
     u = rng.gamma(1 / fit.alpha, fit.alpha, size=draws) if fit.alpha > 0 else np.ones(draws)
-    ks = pl.k(_cvals(fit.m_owner, fit.m_other))
+    ks = pl.k(_cvals(fit.m_owner, fit.m_other), getattr(fit, "m_detached", 1.0))
     combo = rng.choice(len(pl.w), size=draws, p=pl.w / pl.w.sum())
     return rng.poisson((theta * u)[:, None] * ks[combo])
 
@@ -681,7 +690,8 @@ def predict_places(places: list[PlaceData], fit: Fit3, draws: int = 20_000, seed
         rng = np.random.default_rng([seed, zlib.crc32(pl.geoid.encode())])
         u = rng.gamma(1 / fit.alpha, fit.alpha, size=draws) if fit.alpha > 0 else np.ones(draws)
         combo = rng.choice(len(pl.w), size=draws, p=pl.w / pl.w.sum())
-        out[pl.geoid] = rng.poisson((theta * u)[:, None] * pl.k(cv)[combo])
+        ks = pl.k(cv, getattr(fit, "m_detached", 1.0))
+        out[pl.geoid] = rng.poisson((theta * u)[:, None] * ks[combo])
     return out
 
 
@@ -936,12 +946,15 @@ def predict_unseen_state(
     return out
 
 
-def place_data(state: str, store, geoids, years, params=None, counts=None) -> list[PlaceData]:
+def place_data(
+    state: str, store, geoids, years, params=None, counts=None, split_detached: bool = False
+) -> list[PlaceData]:
     """`PlaceData` per place with checkable years (a coded rule in force by 1 July, ADU-flagging permits).
 
     Uses the scenario's rule reading: `restriction_fields` with citywide parking reforms filling a blank
     parking field (`with_parking`), coverage from `scenarios.adu.coverage_map`, field probabilities from every
-    state's coded rules (`field_probabilities`). Holdout-filtered tables only.
+    state's coded rules (`field_probabilities`). Holdout-filtered tables only. `split_detached` (D-046):
+    "no detached ADUs" leaves the rule type and is carried in `detached` for its own multiplier.
     """
     import itertools
 
@@ -991,13 +1004,18 @@ def place_data(state: str, store, geoids, years, params=None, counts=None) -> li
         )
         n_r = max(len(lv) for lv in per_year)
         types = np.zeros((len(combos), len(per_year), n_r), dtype=int)
+        det = np.zeros((len(combos), len(per_year), n_r), dtype=bool)
         cr = np.zeros((len(per_year), n_r))
         for t, live in enumerate(per_year):
             for r_i, (failed, unknown, a) in enumerate(live):
                 cr[t, r_i] = a
                 for c_i, c in enumerate(combos):
                     hit = {f for f, b in zip(unknown_all, c, strict=True) if b and f in unknown}
-                    types[c_i, t, r_i] = adu.TYPES.index(adu.type_of(failed | hit))
+                    fails = failed | hit
+                    if split_detached:
+                        det[c_i, t, r_i] = DETACHED in fails
+                        fails = fails - {DETACHED}
+                    types[c_i, t, r_i] = adu.TYPES.index(adu.type_of(fails))
         out.append(
             PlaceData(
                 state,
@@ -1009,6 +1027,7 @@ def place_data(state: str, store, geoids, years, params=None, counts=None) -> li
                 types,
                 cr,
                 w,
+                det if split_detached else None,
             )
         )
     return out
@@ -1018,3 +1037,121 @@ def hazard_ramp(age: float, params) -> float:
     from lotline.model import hazard
 
     return float(hazard.ramp(age, params["adu_ramp_half_years"], params["adu_ramp_slope_years"]))
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-046: "no detached ADUs" gets its own multiplier m_d
+# ---------------------------------------------------------------------------------------------------------
+
+DETACHED = "adu_detached_allowed"
+GRID_D = (0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0)  # m_d grid, pre-registered
+CHI2_90_3 = 6.251389  # 90% point of chi-square with 3 degrees of freedom
+
+
+@dataclass(frozen=True)
+class FitD(Fit3):
+    m_detached: float
+    detached_interval: tuple[float, float]
+    detached_estimated: bool
+
+
+def _best_at(places, lt: float, cv: np.ndarray, m_d: float) -> tuple[float, float]:
+    """(log α, log-likelihood) at log θ = lt, α profiled; log α = -inf where Poisson is better."""
+    la, ll = _golden_max(lambda la: frailty_loglik(places, math.exp(lt), math.exp(la), cv, m_d), *LOG_ALPHA)
+    ll0 = frailty_loglik(places, math.exp(lt), 0.0, cv, m_d)
+    return (la, ll) if ll > ll0 else (-math.inf, ll0)
+
+
+def _surface_point(args) -> tuple[float, float]:
+    """(log θ̂, profile log-likelihood) at fixed rule shares (m_o, m_x, m_d)."""
+    places, mo, mx, md, log_theta_range = args
+    cv = _cvals(mo, mx)
+    return _golden_max(lambda lt: _best_at(places, lt, cv, md)[1], *log_theta_range)
+
+
+def _cand_loglik(args) -> float:
+    places, lt, mo, mx, md = args
+    return _best_at(places, lt, _cvals(mo, mx), md)[1]
+
+
+def fit_detached(
+    places: list[PlaceData],
+    grid=GRID3,
+    grid_d=GRID_D,
+    judgment=(0.5, 0.3, 0.3),
+    ranges=((0.2, 1.0), (0.1, 0.6), (0.01, 1.0)),
+    log_theta_range=(-14.0, 0.0),
+    map_fn=map,
+) -> FitD:
+    """D-046: fit 3 with a third rule share m_d for "no detached ADUs" (places built with
+    `split_detached=True`).
+
+    The (m_o, m_x, m_d) grid is profiled in full (`map_fn` may be a process pool's map). Each share's 90%
+    interval is its profile over the other two (2Δℓ <= 2.706); a share with a one-point grid, or an interval
+    as wide as its range, is not estimable and stays at its judgment value. θ's interval profiles over the
+    grid points inside the joint 90% region of the estimable shares (2Δℓ <= 6.251).
+    """
+    axes = (tuple(grid), tuple(grid), tuple(grid_d))
+    pts = [(a, b, c) for a in axes[0] for b in axes[1] for c in axes[2]]
+    res = list(map_fn(_surface_point, [(places, *pt, log_theta_range) for pt in pts]))
+    lts = {pt: r[0] for pt, r in zip(pts, res, strict=True)}
+    lls = {pt: r[1] for pt, r in zip(pts, res, strict=True)}
+    top = max(lls.values())
+
+    est, hats, ints = [], [], []
+    for i in range(3):
+        prof = {v: max(ll for pt, ll in lls.items() if pt[i] == v) for v in axes[i]}
+        inside = [v for v in axes[i] if 2 * (top - prof[v]) <= CHI2_90]
+        hats.append(max(prof, key=prof.get))
+        ints.append((min(inside), max(inside)))
+        est.append(len(axes[i]) > 1 and (ints[i][1] - ints[i][0]) < (ranges[i][1] - ranges[i][0]))
+    chosen = tuple(hats[i] if est[i] else judgment[i] for i in range(3))
+    slice_axes = [axes[i] if est[i] else (chosen[i],) for i in range(3)]
+    need = [(a, b, c) for a in slice_axes[0] for b in slice_axes[1] for c in slice_axes[2]]
+    new = [pt for pt in need if pt not in lls]  # a judgment value off the grid
+    for pt, r in zip(
+        new, map_fn(_surface_point, [(places, *pt, log_theta_range) for pt in new]), strict=True
+    ):
+        lts[pt], lls[pt] = r
+    sub = {pt: lls[pt] for pt in need}
+    top_sub = max(sub.values())
+    cands = [pt for pt, ll in sub.items() if 2 * (top_sub - ll) <= CHI2_90_3]
+    lt_hat = lts[chosen]
+
+    def prof(lt):
+        return max(map_fn(_cand_loglik, [(places, lt, *pt) for pt in cands]))
+
+    ll_hat = prof(lt_hat)
+    la, _ = _best_at(places, lt_hat, _cvals(chosen[0], chosen[1]), chosen[2])
+    alpha = math.exp(la) if math.isfinite(la) else 0.0
+
+    def edge(lo, hi):
+        f_lo = 2 * (ll_hat - prof(lo)) - CHI2_90
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            f_mid = 2 * (ll_hat - prof(mid)) - CHI2_90
+            if (f_mid > 0) == (f_lo > 0):
+                lo, f_lo = mid, f_mid
+            else:
+                hi = mid
+        return (lo + hi) / 2
+
+    low, high = edge(log_theta_range[0], lt_hat), edge(log_theta_range[1], lt_hat)
+    return FitD(
+        math.exp(lt_hat),
+        math.exp(low),
+        math.exp(high),
+        alpha,
+        chosen[0],
+        chosen[1],
+        ints[0],
+        ints[1],
+        est[0],
+        est[1],
+        ll_hat,
+        len(places),
+        int(sum(len(p.y) for p in places)),
+        chosen[2],
+        ints[2],
+        est[2],
+    )
