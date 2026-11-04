@@ -488,3 +488,68 @@ def test_state_summary_sums_draws_over_places():
     assert five["p10"] <= five["p50"] <= five["p90"]
     # percentiles of the summed draws, not sums of the places' percentiles (either can be larger)
     assert five["p90"] != pytest.approx(totals["additional_homes_p90"].sum())
+
+
+def _tau_spec(probs: dict[float, float], fitted=("MN",)) -> dict:
+    spec = {f"adu_state_tau_prob__{t:.2f}".replace(".", "_"): q for t, q in probs.items()}
+    return spec | {f"adu_state_effect_fitted__{st}": 1 for st in fitted}
+
+
+def test_state_effect_reads_the_adopted_grid():
+    """config/params/adu_state_effect.yaml (D-044): τ on 0, 0.05, ..., 2.5, probabilities summing to 1, the
+    four fitted states listed; a spec parses its keys back to the grid."""
+    grid, probs, fitted = adu.state_effect()
+    assert grid == pytest.approx(np.arange(51) * 0.05)
+    assert probs.sum() == pytest.approx(1.0)
+    assert fitted == {"MN", "NC", "OH", "TX"}
+    g, q, f = adu.state_effect(_tau_spec({0.0: 1.0, 0.5: 3.0}))
+    assert list(g) == [0.0, 0.5] and list(q) == [0.25, 0.75] and f == {"MN"}
+
+
+def test_state_noise_is_shared_within_a_state_and_zero_in_fitted_states():
+    """τ fixed at 0.5: a fitted state (MN) and a place with no state get 0; WI's two places share one value
+    per draw, with standard deviation 0.5; IA draws its own. With τ 0 or 1 at even odds, about half the draws
+    are 0."""
+    grid, probs, fitted = adu.state_effect(_tau_spec({0.5: 1.0}))
+    s = adu.state_noise(["MN", "WI", "WI", "IA", None], fitted, grid, probs, 20_000, seed=7)
+    assert np.all(s[:, [0, 4]] == 0)
+    assert np.array_equal(s[:, 1], s[:, 2])
+    assert s[:, 1].std() == pytest.approx(0.5, rel=0.03)
+    assert abs(np.corrcoef(s[:, 1], s[:, 3])[0, 1]) < 0.03
+    grid, probs, fitted = adu.state_effect(_tau_spec({0.0: 1.0, 1.0: 1.0}))
+    s = adu.state_noise(["WI"], fitted, grid, probs, 20_000, seed=7)
+    assert (s[:, 0] == 0).mean() == pytest.approx(0.5, abs=0.02)
+
+
+def test_a_fitted_state_runs_exactly_as_before():
+    """Places in a fitted state get no state multiplier: the run equals one with no state column, draw for
+    draw, so the four calibration states' results do not move when D-044 is adopted."""
+    places = _places(rent=[900.0, 1500.0], geoid=["A", "B"])
+    _, before = adu.run(places, 2025, draws=200)
+    _, after = adu.run(places.assign(state="MN"), 2025, draws=200)
+    cols = [c for c in before if c.startswith("adu_permits_added")]
+    pd.testing.assert_frame_equal(before[cols], after[cols])
+    assert not after["outside_fit_states"].any()
+
+
+def test_an_unseen_state_widens_its_range_and_keeps_its_median():
+    """30 identical places, place effects off, τ fixed at 0.5: as Wisconsin (outside the fit) one multiplier
+    moves every place together, so the state's log-SD adds 0.5 in quadrature (D-043 rule "both"). By hand,
+    with the log-SD read from P90/P10 = exp(2 × 1.2816 × sd): Minnesota's ratio r gives sd_MN = ln r / 2.563,
+    and Wisconsin's should be exp(2.563 × √(sd_MN² + 0.25)). The median stays close (the multiplier's median
+    is 1) and the places are flagged."""
+    places = _places(geoid=[f"P{i}" for i in range(30)], rent=[1500.0] * 30)
+    fixed = adu.central_params() | {"adu_place_effect_variance": 0}
+    spec = _tau_spec({0.5: 1.0})
+    out = {}
+    for st in ("MN", "WI"):
+        _, totals, summ = adu.run(
+            places.assign(state=st), 2025, draws=600, summary_by="state", params=fixed, states_spec=spec
+        )
+        out[st] = summ[(summ["outcome"] == "adu_permits_added") & (summ["period"] == "2026-2030")].iloc[0]
+        assert totals["outside_fit_states"].all() == (st == "WI")
+    width = {k: v["p90"] / v["p10"] for k, v in out.items()}
+    sd_mn = math.log(width["MN"]) / (2 * 1.2816)
+    assert width["WI"] == pytest.approx(math.exp(2 * 1.2816 * math.sqrt(sd_mn**2 + 0.25)), rel=0.15)
+    assert width["WI"] > 1.2 * width["MN"]
+    assert out["WI"]["p50"] == pytest.approx(out["MN"]["p50"], rel=0.15)

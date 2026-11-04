@@ -2559,3 +2559,12 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Config:** unchanged. On adoption, the script writes `config/params/adu_state_effect.yaml` from
     `reports/adu-tau-draws/tau_profile.csv` (the full fit's grid and probabilities), and the scenario wires
     `hazard.widen_unseen_state` with τ drawn per draw for states outside the fit set.
+  - **Adopted (2026-11-04, Ben).**
+    - `scripts/dev/calibrate_adu.py --state-effect-config` wrote `config/params/adu_state_effect.yaml`: τ's
+      51 grid probabilities from the full fit, `adu_state_effect_sd` (0, interval 0–0.668, for T1), and the
+      four fitted states. No refit; the values are the D-044 run's.
+    - `scenarios.adu.run` applies `hazard.widen_unseen_state` (rule "both") to every place whose `state` is
+      not a fitted state: τ drawn per draw (`adu.state_noise`, seed + 4), one z per draw and state.
+    - Places in MN, NC, OH and TX get a multiplier of exactly 1, so their runs are unchanged draw for draw
+      (tested). The totals table flags affected places in `outside_fit_states`.
+    - When a state joins the fit, re-run D-044 and regenerate the file; no code change.

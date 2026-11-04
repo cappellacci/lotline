@@ -727,6 +727,46 @@ def extrapolation_noise(n: int, n_places: int, shared: float, seed: int) -> np.n
     return np.sqrt(shared) * common + np.sqrt(1.0 - shared) * own
 
 
+def state_effect(spec: Mapping[str, float] | None = None) -> tuple[np.ndarray, np.ndarray, frozenset[str]]:
+    """config/params/adu_state_effect.yaml (D-044): τ's grid, its probabilities, and the fitted states.
+
+    `spec` replaces the file (tests): keys adu_state_tau_prob__<τ, _ for .> and
+    adu_state_effect_fitted__<ST>.
+    Probabilities are renormalised (the file rounds them to 6 significant figures).
+    """
+    spec = spec if spec is not None else {k: s.value for k, s in load_params("adu_state_effect").items()}
+    pairs = sorted(
+        (float(k.removeprefix("adu_state_tau_prob__").replace("_", ".")), v)
+        for k, v in spec.items()
+        if k.startswith("adu_state_tau_prob__")
+    )
+    grid = np.array([t for t, _ in pairs])
+    probs = np.array([q for _, q in pairs], dtype=float)
+    fitted = frozenset(k.removeprefix("adu_state_effect_fitted__") for k, v in spec.items()
+                       if k.startswith("adu_state_effect_fitted__") and v == 1)  # fmt: skip
+    return grid, probs / probs.sum(), fitted
+
+
+def state_noise(states, fitted, grid, probs, n: int, seed: int) -> np.ndarray:
+    """τ_d · z_ds per draw and place (draws × places), the log state multiplier (D-043, D-044).
+
+    τ_d is drawn from the grid once per draw; z_ds is one standard normal per draw and state, shared by the
+    state's places. Places in a fitted state (or with no state) get 0: their spread is in the place effects.
+    """
+    states = pd.Series(states, dtype=object).reset_index(drop=True)
+    out = np.zeros((n, len(states)))
+    unseen = states.notna() & ~states.isin(fitted)
+    if not unseen.any():
+        return out
+    rng = np.random.default_rng(seed)
+    tau = rng.choice(grid, size=n, p=probs)
+    names = sorted(states[unseen].unique())
+    z = rng.standard_normal((n, len(names)))
+    col = states[unseen].map({st: i for i, st in enumerate(names)}).to_numpy()
+    out[:, unseen.to_numpy()] = tau[:, None] * z[:, col]
+    return out
+
+
 def run(
     places: pd.DataFrame,
     origin: int,
@@ -736,6 +776,7 @@ def run(
     summary_by: str | None = None,
     params: Mapping[str, float] | None = None,
     anchor: Mapping[str, float] | None = None,
+    states_spec: Mapping[str, float] | None = None,
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
@@ -746,7 +787,10 @@ def run(
     fitted in D-019 fit 3, with α_d that draw's place-effect variance (`draw_params`). The extrapolation
     noise is shared across places in a draw (`extrapolation_noise`). `params` holds parameters at given values
     in every draw (sensitivities, e.g. `mortgage_rate_forecast` at its low); `anchor` replaces
-    config/params/adu_anchor.yaml (tests).
+    config/params/adu_anchor.yaml (tests). With a `state` column, places in a state outside the fit that
+    estimated τ also get a state multiplier exp(τ_d z_ds), shared by the state's places, with τ_d drawn per
+    draw (`state_noise`, config/params/adu_state_effect.yaml, D-044); `states_spec` replaces that file
+    (tests).
 
     `places` columns: geoid, eligible_parcels, rent (median gross rent, 2025 dollars), home_value (2025
     dollars), optional mortgage_rate (a backtest passes the year's actual rate; where it is missing, each draw
@@ -764,6 +808,9 @@ def run(
     drawn = np.zeros((n, len(places)))
     horizon = int(load_params("baseline")["forecast_horizon_years"].value)
     z = extrapolation_noise(n, len(places), central["adu_extrapolation_shared_share"], seed + 1)
+    grid, probs, fitted = state_effect(states_spec)
+    st = places["state"] if "state" in places else pd.Series(np.nan, index=places.index)
+    z_state = state_noise(st, fitted, grid, probs, n, seed + 4)
     var_u = np.array([p["adu_place_effect_variance"] for p in sets])[:, None]
     gamma = np.random.default_rng(seed + 3).standard_gamma(
         1 / np.maximum(var_u, 1e-12), size=(n, len(places))
@@ -787,7 +834,8 @@ def run(
     for d, p in enumerate(sets):
         args = (places["rent"], places["home_value"], rates(p))
         hm = hazard.adu_mature_hazard(*args, p)
-        hm = hazard.widen(hm, hazard.calibration_distance(*args, p)["total"], z[d], p)
+        dist_d = hazard.calibration_distance(*args, p)["total"]
+        hm = hazard.widen_unseen_state(hm, dist_d, z[d], z_state[d], 1.0, "both", p)
         hm = np.clip(hm * u_all[d], 0.0, 1.0)
         c, idx, sampled = draw_rule_share(places, p, rule_rng)
         drawn[d] = idx
@@ -813,6 +861,7 @@ def run(
         price_to_cost_central=hazard.adu_price_to_cost(places["rent"], params=central),
         calibration_distance=dist["total"],
         outside_calibration=dist["total"] > 0,
+        outside_fit_states=(st.notna() & ~st.isin(fitted)).to_numpy(),
         draws_from_unknown_rule=np.where(sampled, 1.0, 0.0) if n else 0.0,
         drawn_none=(drawn == 0).mean(axis=0),
         drawn_partial=((drawn >= 1) & (drawn <= 3)).mean(axis=0),

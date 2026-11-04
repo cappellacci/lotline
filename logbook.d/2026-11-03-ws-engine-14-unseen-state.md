@@ -41,6 +41,12 @@
 - **Findings:**
   - τ's median draw is 0.30 and its P90 is 1.05. A new state's multiplier runs 0.58–1.71 (P10–P90).
   - Leave one state out: none missed. Median P90 ÷ P10 is 46.5; it was 28.7 with τ fixed.
-- **Decisions:** the rule says adopt for unseen states. Config is unchanged until Ben decides.
+- **Decisions:** the rule says adopt for unseen states. Ben adopted it on 2026-11-04 ("Adopt and wire it").
+  - `config/params/adu_state_effect.yaml` is written by `calibrate_adu.py --state-effect-config` from the
+    D-044 run's CSVs.
+  - `scenarios.adu.run` applies the state multiplier to places outside MN, NC, OH and TX.
+  - Tests show fitted-state runs are unchanged draw for draw, and an unseen state's log-SD adds τ in
+    quadrature (`tests/model/test_scenario_adu.py`).
+  - HANDOFF decision proposed in the PR: D-044 adopted for unseen states (V8 Wisconsin uses it).
 - **AI:** Claude Code (Opus 5.5) wrote the entry, code and tests, ran the run once and wrote up the results.
   Table values were read from the run's CSVs.
