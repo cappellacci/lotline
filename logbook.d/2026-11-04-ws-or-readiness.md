@@ -4,6 +4,6 @@
 - **Inputs:** processed OR tables; 2020 Census P.L. 94-171; validation plan V9; the WS-OR logbook fragments of 2026-11-04.
 - **Outputs:** `docs/build/or-readiness.md`.
 - **Findings:** 168 jurisdictions in the universe (136 of 241 cities, 32 county remainders), all tier 3 on the ACS fallback, with eligible lots held at the 2013–2017 vintage for 2018–2025. 105 cities have no BPS row in 2010–2017, including Klamath Falls, The Dalles and Gladstone (HB 2001-covered), so they can't be predicted or scored. Freeze targets: Portland and Bend ADUs; 2–4 unit permits for 58 HB 2001 jurisdictions and the state. OHNA housing need can't feed the freeze (built from post-2018 production). Ben's validation agent: all 21 local rows, the 50 rows from the 2023 duplex tier, and the 32 county SB 1051 rows.
-- **Decisions:** none. Open for Ben: Portland's fee baseline (schedule or the 2025–28 exemption); whether to add non-BPS cities to the universe.
+- **Decisions:** Ben, 2026-11-04: Portland's fee baseline is the regular SDC schedule (the 2025–28 exemption stays a dated reform row; noted in `config/fees/or.csv`); Eugene stays on the Handbook prior until his agent reads Admin Order 58-25-05-F; the 105 cities outside the BPS universe (172,147 people, 4.1% of Oregon) are an accepted gap. Proposed HANDOFF row: these three decisions.
 - **AI:** Claude Code wrote the report and ran the counts.
 - **Open / next:** WS-ENGINE runs the freeze; Ben's validation-agent pass; step 7 permit adapters on synthetic fixtures.
