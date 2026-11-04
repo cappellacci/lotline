@@ -7,3 +7,4 @@
 - **Decisions:** none for HANDOFF. Effective dates for HB 2001 tiers are the compliance deadlines (model code applied after); early local adopters (Portland RIP 2021) get local rows next.
 - **AI:** Claude Code and subagents read the texts and wrote the script, rows and tests. Every row is `single_coder`; the second coder is still to do.
 - **Open / next:** local rows (Portland ADU history and SDC waiver, RIP 2021, RIP2 2022; Bend; early or late Metro adopters); second coder; issue #283 (BPS West Region; ACS and state-total holdout gaps) must land before the freeze.
+- **Addendum (same day):** Ben decided the V9 freeze is a conditional forecast ("Yes, lets use them, and to say so in the V9 write-up"): FHFA, FRED, CBP and 2020 population feed 2018–2025; only production outcomes stay hidden. Recorded in validation plan V9 (Blinding) and on issue #283.
