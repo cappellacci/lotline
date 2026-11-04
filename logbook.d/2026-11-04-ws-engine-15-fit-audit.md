@@ -19,3 +19,21 @@
 - **AI:** Claude Code (Opus 5.5) wrote D-045, the code and tests, ran the audit once, drilled into
   co-built and source overlaps with throwaway queries, and wrote up the results. Values were read from the
   run's log and CSVs.
+
+### LB-NNN · 2026-11-04 · engine · Are the suburban zeros true zeros or reporting gaps?
+
+- **Question:** many large MN suburbs report no ADU permit in the Met Council survey. Is that a gap in the
+  survey or real? Ben chose to settle this before any new fit.
+- **Outputs:** `scripts/dev/fit_audit_zeros.py`; `reports/adu-fit-audit/zeros_by_detached.csv`,
+  `zeros_assessor.csv` and the run log; a dated follow-up and a correction under D-045 in
+  `docs/analysis_plan.md`.
+- **Findings:**
+  - The zeros are true zeros, caused by attached-only rules: 7 observed against 87 expected (0.08).
+  - Survey-counted suburbs that allow detached ADUs come in at 0.46, the same as Minneapolis's city records
+    (0.42).
+  - Assessor rolls agree: 1 of 21,255 Eagan parcels and none of 20,762 Lakeville parcels went from 1 to 2
+    units between 2021 and 2025.
+  - Correction: the earlier "city records 0.94" was Austin; without it, city records come in at 0.42.
+- **Decisions:** none. Proposed D-046: give "no detached ADUs" its own multiplier and refit.
+- **AI:** Claude Code (Opus 5.5) ran exploratory queries, then wrote them up as a script and ran it once.
+  Values were read from its log.

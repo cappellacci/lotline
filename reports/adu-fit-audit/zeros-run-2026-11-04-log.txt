@@ -1,0 +1,42 @@
+Observed and expected by whether detached ADUs are allowed
+        detached  places  observed  expected  ratio                          by state count_source
+   attached only      10       7.0     86.73   0.08                    detached   NaN          NaN
+           blank       6     242.0    197.49   1.23                    detached   NaN          NaN
+detached allowed      39    1607.0   1691.31   0.95                    detached   NaN          NaN
+   attached only      10       7.0     86.73   0.08              state+detached    MN          NaN
+           blank       4       3.0      7.31   0.41              state+detached    MN          NaN
+detached allowed      30     275.0    640.91   0.43              state+detached    MN          NaN
+           blank       2     239.0    190.18   1.26              state+detached    NC          NaN
+detached allowed       6     216.0    178.76   1.21              state+detached    NC          NaN
+detached allowed       1       8.0      8.42   0.95              state+detached    OH          NaN
+detached allowed       2    1108.0    863.23   1.28              state+detached    TX          NaN
+detached allowed       1     210.0    498.70   0.42 state+count_source+detached    MN city records
+   attached only      10       7.0     86.73   0.08 state+count_source+detached    MN       survey
+           blank       4       3.0      7.31   0.41 state+count_source+detached    MN       survey
+detached allowed      29      65.0    142.21   0.46 state+count_source+detached    MN       survey
+           blank       2     239.0    190.18   1.26 state+count_source+detached    NC city records
+detached allowed       6     216.0    178.76   1.21 state+count_source+detached    NC city records
+detached allowed       1       8.0      8.42   0.95 state+count_source+detached    OH city records
+detached allowed       2    1108.0    863.23   1.28 state+count_source+detached    TX city records
+
+Assessor unit changes 2021 -> 2025 (counties that record units)
+     geoid  units_1_to_2  single_family_known  survey_adus_2021_24                     name  per_1000
+   2717288           1.0              21255.0                  0.0               Eagan city      0.05
+   2735180           0.0              20762.0                  0.0           Lakeville city      0.00
+   2701900           0.0              17673.0                  0.0        Apple Valley city      0.00
+   2708794           1.0              17425.0                  1.0          Burnsville city      0.06
+   2713456           0.0              11973.0                  0.0       Cottage Grove city      0.00
+   2740382           6.0              11970.0                  0.0           Maplewood city      0.50
+   2755852           8.0              11069.0                  1.0           Roseville city      0.72
+   2731076           3.0              10603.0                  6.0 Inver Grove Heights city      0.28
+   2755726           1.0               8174.0                  0.0           Rosemount city      0.12
+   2762824           0.0               6999.0                  7.0          Stillwater city      0.00
+   2745430           1.0               6559.0                  0.0        New Brighton city      0.15
+   2721770           8.0               6451.0                  0.0         Forest Lake city      1.24
+   2730392           1.0               5700.0                  0.0                Hugo city      0.18
+   2766460           1.0               4594.0                  0.0     Vadnais Heights city      0.22
+   2744530           0.0               3725.0                  0.0         Mounds View city      0.00
+2716304132           0.0                728.0                  0.0         Baytown township      0.00
+2716315688           0.0                666.0                  1.0         Denmark township      0.00
+
+Total: 31 parcels 1 -> 2 units of 166,326; survey ADUs 2021-24 in the same places 16

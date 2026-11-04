@@ -2661,3 +2661,28 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       home-value elasticity, and possibly the size effect. Approach 3's empirical benchmark should include
       the same covariates.
     - Nothing in config changes from this entry.
+- **Follow-up, 2026-11-04: are the suburban zeros true zeros or reporting gaps?** (Ben: "zeros first".
+  Descriptive only, no fit: `scripts/dev/fit_audit_zeros.py`, `reports/adu-fit-audit/zeros_*.csv`, log
+  `zeros-run-2026-11-04-log.txt`.)
+  - **Correction to the results above:** "city-records places come in at 0.94" is driven by Austin (3.40).
+    Without Austin, city-records places come in at 0.42, about the same as the survey-counted suburbs. The
+    survey/city split is not the finding.
+  - **The zeros line up with one rule feature: no detached ADUs.**
+    - Places whose rules in force allow attached ADUs only: 7 observed against 87 expected (0.08). That is
+      after the 0.3 multiplier the fit already gives "other" restrictions. They include Lakeville (0 against
+      30), Eagan (0 against 25) and Bloomington before 2022 (0 against 20).
+    - MN survey-counted suburbs that allow detached ADUs: 0.46. Minneapolis (city records): 0.42. So where
+      the rules are alike, the survey counts like the city's own records.
+  - **An independent source agrees.** County assessor rolls (Dakota, Ramsey, Washington, Anoka; Hennepin
+    records no unit counts) show 31 of 166,326 older single-family parcels going from 1 to 2 units between
+    the 2021 and 2025 rolls. Eagan has 1 of 21,255; Lakeville and Apple Valley have none. The check misses
+    some ADUs (Stillwater: 7 in the survey, none in the rolls), so it confirms near-zeros but cannot size a
+    count.
+  - **Reading:** the zeros are true zeros. They are not a survey reporting gap. They come from the rule-type
+    structure: `type_of` puts "no detached ADUs" in "other" with parking, conditional-use permits and small
+    size caps, all sharing one multiplier (m_other = 0.3). Attached-only places produce about a twelfth of
+    what that multiplier allows. No count rule is needed.
+  - **What is left after this:** places that allow detached ADUs still differ by state: MN 0.43, NC 1.21, OH
+    0.95, TX 1.28. That is a level or shape question for approaches 2 and 3, not measurement.
+  - **Proposed next entry (D-046, for Ben's approval):** give "no detached ADUs" its own multiplier, fitted
+    as m_owner and m_other are, and refit with the leave-one-state-out backtest.
