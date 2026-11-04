@@ -121,6 +121,65 @@ def apply(
     return df.loc[~held_out_mask(df, still_blind, **cols)].copy()
 
 
+def drop_statewide(df: pd.DataFrame, *, geoid_col: str, year_col: str) -> pd.DataFrame:
+    """Drop rows of every state with a statewide holdout over its window, for national tables that hold all
+    states at once (BPS state totals). Place holdouts are handled where the table is used (V0 skips their
+    years)."""
+    from lotline.config import all_states
+
+    statewide = [h for st in all_states() for h in holdouts_for(st) if h.statewide]
+    if not statewide:
+        return df
+    return df.loc[~held_out_mask(df, statewide, geoid_col=geoid_col, year_col=year_col)].copy()
+
+
+# ACS tables that count the housing stock, so a vintage overlapping a holdout window carries its outcomes
+# (units by structure size, year built, occupied units). Rents and values are market inputs and stay: the V9
+# freeze is conditional on observed market data (Ben, 2026-11-04).
+ACS_STOCK_TABLES = ("B25024", "B25034", "B25003")
+ACS_YEARS = 5  # a 5-year vintage ending in E covers E-4 .. E
+
+
+def acs_held_out_mask(df: pd.DataFrame, holdouts: Iterable[Holdout]) -> pd.Series:
+    """True for `acs_geo_year` stock rows inside a statewide holdout's state whose 5-year window overlaps the
+    outcome window. `geo` is "<level>:<GEOID>", and every level's GEOID starts with the state FIPS.
+
+    Only statewide holdouts apply: a place holdout can't be matched to the tracts inside it, and the V5
+    places' ACS inputs are left as they were (issue #283)."""
+    mask = pd.Series(False, index=df.index)
+    if df.empty:
+        return mask
+    geoid = df["geo"].astype("string").str.split(":", n=1).str[1]
+    stock = df["table_id"].isin(ACS_STOCK_TABLES)
+    end = pd.to_numeric(df["end_year"])
+    for h in holdouts:
+        if not h.statewide:
+            continue
+        overlaps = (end >= h.outcome_from.year) & (end - (ACS_YEARS - 1) <= h.outcome_until.year)
+        mask |= geoid.str.startswith(h.geoid).fillna(False).astype(bool) & stock & overlaps
+    return mask
+
+
+def apply_acs(
+    df: pd.DataFrame,
+    state: str,
+    *,
+    unblind: Iterable[str] = (),
+    holdouts: Iterable[Holdout] | None = None,
+    repo: Path = REPO_ROOT,
+) -> pd.DataFrame:
+    """`apply` for `acs_geo_year`: drop held-out stock rows unless their test is unblinded (checked)."""
+    unblind = set(unblind)
+    registry = list(holdouts) if holdouts is not None else holdouts_for(state)
+    unknown = unblind - {h.test_id for h in registry}
+    if unknown:
+        raise UnblindError(f"unknown test ids for {state}: {sorted(unknown)}")
+    for test_id in unblind:
+        check_unblind(test_id, repo)
+    still_blind = [h for h in registry if h.test_id not in unblind]
+    return df.loc[~acs_held_out_mask(df, still_blind)].copy()
+
+
 # Outcome tables and the columns the filter needs. Checked centrally after every adapter run (lotline fetch),
 # so a state adapter that forgets to filter fails loudly instead of writing held-out rows.
 OUTCOME_COLUMNS = {
@@ -141,6 +200,11 @@ class HoldoutLeak(RuntimeError):
 
 
 def assert_no_leak(df: pd.DataFrame, table: str, state: str) -> None:
+    if table == "acs_geo_year":
+        leaked = int(acs_held_out_mask(df, holdouts_for(state)).sum())
+        if leaked:
+            raise HoldoutLeak(f"{state} acs_geo_year: {leaked} held-out stock rows reached the output")
+        return
     cols = OUTCOME_COLUMNS.get(table)
     if cols is None or df.empty:
         return

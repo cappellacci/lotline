@@ -14,6 +14,7 @@ from pathlib import Path
 import pandas as pd
 
 from lotline.io import DataStore, fetch
+from lotline.validation import holdout
 
 ADAPTER = "national.bps_state"
 VERSION = "1.0"
@@ -30,6 +31,8 @@ PROVENANCE = {
     "limitations": [
         "Used only to check that place files add up; never an input to the model",
         "Held-out state-years are not compared, so a held-out place can't be recovered by subtraction",
+        "A statewide holdout (V9, Oregon) removes that state's totals over its window before the table "
+        "is returned",
     ],
 }
 
@@ -62,4 +65,5 @@ def load(store: DataStore, years: range, *, refresh: bool = False) -> pd.DataFra
             refresh=refresh,
         )
         frames.append(parse(path.read_text(encoding="latin-1"), year))
-    return pd.concat(frames, ignore_index=True)
+    df = pd.concat(frames, ignore_index=True)
+    return holdout.drop_statewide(df, geoid_col="state_fips", year_col="year")
