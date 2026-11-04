@@ -1,0 +1,235 @@
+=== D-045 audit: 51 fit places, 2 test places, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+full fit: theta 1.232 per 1,000, alpha 2.284, rule shares 1.0, 0.3
+  without MN: theta 2.081, alpha 0.323
+  without NC: theta 1.306, alpha 2.984
+  without OH: theta 1.241, alpha 2.397
+  without TX: theta 1.159, alpha 2.386
+
+1. Places
+state                              name  years  observed  expected  expected_out  u_posterior  per_1000_parcels                              count_source  survey_share  cobuilt_share denominator_source  rule_age  price_to_cost
+   MN                      Andover city     10       0.0     14.91         10.08         0.03              0.00                  metc_residential_permits           1.0           1.00            parcels      4.53           1.47
+   MN                 Apple Valley city     10       0.0      0.49          0.33         0.47              0.00                  metc_residential_permits           1.0            NaN            parcels     17.51           1.22
+   MN                       Blaine city      4       0.0      8.85          5.98         0.05              0.00                  metc_residential_permits           1.0            NaN            parcels      2.03           1.27
+   MN                  Bloomington city     10       0.0     33.42         28.51         0.01              0.00                  metc_residential_permits           1.0           1.00            parcels     12.00           1.09
+   MN                   Burnsville city      8       2.0      0.63          0.54         2.28              0.02                  metc_residential_permits           1.0           0.00            parcels      3.61           1.12
+   MN                   Chanhassen city      1       1.0      0.15          0.13         2.43              0.10                  metc_residential_permits           1.0           0.00            parcels     39.50           1.35
+   MN                Cottage Grove city      3       0.0      2.02          3.41         0.18              0.00                  metc_residential_permits           1.0            NaN            parcels      1.50           1.29
+   MN               Cedar Lake township     10       2.0      1.03          0.69         1.66              0.20                  metc_residential_permits           1.0           0.00            parcels     10.94           1.13
+   MN                   Helena township     10       0.0      0.56          0.38         0.44              0.00                  metc_residential_permits           1.0            NaN            parcels     10.94           1.37
+   MN                  Jackson township      4       0.0      0.02          0.01         0.96              0.00                  metc_residential_permits           1.0            NaN            parcels      7.94           0.83
+   MN             St. Lawrence township      8       0.0      0.14          0.09         0.76              0.00                  metc_residential_permits           1.0            NaN            parcels     11.44           1.28
+   MN                      Crystal city      7       1.0      8.63          7.37         0.16              0.02                  metc_residential_permits           1.0           0.80            parcels      3.39           1.03
+   MN                       Dayton city      6       2.0      2.85          2.43         0.74              0.12                  metc_residential_permits           1.0           0.00            parcels      3.06           1.07
+   MN                  Baytown township      8       0.0      1.00          0.68         0.30              0.00                  metc_residential_permits           1.0            NaN            parcels      3.57           1.76
+   MN                  Denmark township      3       2.0      0.18          0.12         3.95              1.02                  metc_residential_permits           1.0           0.00            parcels      1.56           1.33
+   MN                        Eagan city     10       0.0     24.68         16.67         0.02              0.00                  metc_residential_permits           1.0            NaN            parcels      6.66           1.14
+   MN                        Edina city      2       5.0      2.56          4.32         1.81              0.20                  metc_residential_permits           1.0           0.00            parcels      0.71           1.36
+   MN                  Forest Lake city      3       0.0      1.10          0.94         0.29              0.00                  metc_residential_permits           1.0            NaN            parcels      1.44           1.05
+   MN                      Fridley city      3      10.0      1.38          0.93         5.76              0.41                  metc_residential_permits           1.0           0.00            parcels      1.83           0.97
+   MN                Golden Valley city      3       1.0      1.07          0.72         0.96              0.05                  metc_residential_permits           1.0           0.00            parcels      1.64           1.33
+   MN                      Hopkins city      3       0.0      0.82          0.56         0.35              0.00                  metc_residential_permits           1.0            NaN            parcels      1.93           1.06
+   MN                         Hugo city     10       0.0      8.78          5.93         0.05              0.00                  metc_residential_permits           1.0            NaN            parcels      9.24           1.35
+   MN          Inver Grove Heights city     10       9.0     13.19         11.25         0.69              0.12                  metc_residential_permits           1.0           0.00            parcels      5.16           1.03
+   MN                    Lakeville city     10       0.0     29.87         25.49         0.01              0.00                  metc_residential_permits           1.0            NaN            parcels      7.83           1.30
+   MN                    Maplewood city      2       0.0      0.63          1.07         0.41              0.00                  metc_residential_permits           1.0            NaN            parcels      1.06           1.04
+   MN                       Medina city     10       1.0      4.63          3.13         0.28              0.05                  metc_residential_permits           1.0           0.00            parcels      9.13           1.17
+   MN                  Minneapolis city     10     210.0    498.70        433.40         0.42              0.28 metc_residential_permits+mpls_ccs_permits           0.2           0.04            parcels      6.07           0.96
+   MN                   Minnetonka city      4       9.0      4.69          3.17         1.84              0.17                  metc_residential_permits           1.0           0.00            parcels      2.24           1.32
+   MN                        Mound city      1       0.0      0.03          0.02         0.94              0.00                  metc_residential_permits           1.0            NaN            parcels      0.66           0.81
+   MN                  Mounds View city      1       0.0      0.02          0.02         0.95              0.00                  metc_residential_permits           1.0            NaN            parcels      0.01           0.92
+   MN                 New Brighton city      1       0.0      0.20          0.13         0.69              0.00                  metc_residential_permits           1.0            NaN            parcels      0.77           1.03
+   MN                        Orono city      3       5.0      1.54          1.32         2.74              0.54                  metc_residential_permits           1.0           0.00            parcels      1.63           1.31
+   MN                     Plymouth city     10       3.0     12.60         10.65         0.26              0.02                  metc_residential_permits           1.0           0.00            parcels     18.52           1.24
+   MN                       Ramsey city      4       0.0      1.22          0.82         0.26              0.00                  metc_residential_permits           1.0            NaN            parcels      1.80           1.35
+   MN                    Richfield city     10       5.0      8.38          5.66         0.62              0.05                  metc_residential_permits           1.0           0.00            parcels      5.50           0.98
+   MN                       Rogers city      6       0.0      2.70          2.30         0.14              0.00                  metc_residential_permits           1.0            NaN            parcels      2.60           1.20
+   MN                    Rosemount city      2       0.0      0.32          0.27         0.58              0.00                  metc_residential_permits           1.0            NaN            parcels      0.57           1.21
+   MN                    Roseville city     10       5.0     13.62          9.20         0.39              0.06                  metc_residential_permits           1.0           0.00            parcels     11.00           0.97
+   MN               St. Louis Park city      5       0.0     21.87         14.78         0.02              0.00                  metc_residential_permits           1.0            NaN            parcels      2.63           1.20
+   MN                   Stillwater city      9      11.0      5.07          4.32         2.08              0.20                  metc_residential_permits           1.0           0.08            parcels      4.16           1.05
+   MN              Vadnais Heights city      1       0.0      0.12          0.10         0.78              0.00                  metc_residential_permits           1.0            NaN            parcels      0.96           1.07
+   MN                      Wayzata city      4       1.0      0.27          0.19         2.02              0.27                  metc_residential_permits           1.0           0.00            parcels      1.50           1.24
+   TX                       Austin city      8     868.0    254.97        239.93         3.40              0.72                            austin_permits           0.0           0.66            parcels     10.00           1.17
+   TX                  San Antonio city      5     240.0    608.26        572.38         0.40              0.13                                sa_permits           0.0           0.00            parcels     13.50           0.95
+   NC                    Mint Hill town     10       7.0     39.71         42.08         0.19              0.08                              meck_permits           0.0           0.22            parcels      9.50           1.04
+   NC                     Matthews town     10       7.0     17.68         18.74         0.41              0.08                              meck_permits           0.0           0.22            parcels      4.72           1.18
+   NC                    Cornelius town      3       4.0      2.63          2.79         1.44              0.15                              meck_permits           0.0           0.20            parcels      1.45           1.24
+   NC                 Huntersville town      1       2.0      1.45          1.53         1.29              0.10                              meck_permits           0.0           0.00            parcels      0.79           1.35
+   NC                   Greensboro city      2       8.0     12.66         13.42         0.64              0.06                        greensboro_permits           0.0           0.00            parcels      0.71           0.86
+   NC Durham County Unincorporated Area      6      17.0     20.63         21.86         0.83              0.23                            durham_permits           0.0           0.00            parcels      3.18           1.05
+   OH                   Cincinnati city      2       8.0      8.42          8.48         0.95              0.07                             cincy_permits           0.0           0.00 parcels_scaled_acs      1.25           0.74
+   NC                      Raleigh city      5     188.0    104.63        110.87         1.79              0.43                           raleigh_permits           0.0           0.18 parcels_scaled_acs      4.12           1.11
+   NC                       Durham city      5     222.0    169.56        179.68         1.31              0.68                            durham_permits           0.0           0.07            parcels      3.83           1.06
+
+2. Groups
+                by          fit within                                     group  places  observed  expected  ratio
+             state    in-sample    all                                        MN      42     285.0    734.95   0.39
+             state    in-sample    all                                        NC       6      45.0     94.76   0.47
+             state    in-sample    all                                        OH       1       8.0      8.42   0.95
+             state    in-sample    all                                        TX       2    1108.0    863.23   1.28
+             state    in-sample     MN                                        MN      42     285.0    734.95   0.39
+             state    in-sample     NC                                        NC       6      45.0     94.76   0.47
+             state    in-sample     OH                                        OH       1       8.0      8.42   0.95
+             state    in-sample     TX                                        TX       2    1108.0    863.23   1.28
+             state out-of-state    all                                        MN      42     285.0    618.12   0.46
+             state out-of-state    all                                        NC       6      45.0    100.42   0.45
+             state out-of-state    all                                        OH       1       8.0      8.48   0.94
+             state out-of-state    all                                        TX       2    1108.0    812.30   1.36
+             state out-of-state     MN                                        MN      42     285.0    618.12   0.46
+             state out-of-state     NC                                        NC       6      45.0    100.42   0.45
+             state out-of-state     OH                                        OH       1       8.0      8.48   0.94
+             state out-of-state     TX                                        TX       2    1108.0    812.30   1.36
+      count_source    in-sample    all                            austin_permits       1     868.0    254.97   3.40
+      count_source    in-sample    all                             cincy_permits       1       8.0      8.42   0.95
+      count_source    in-sample    all                            durham_permits       1      17.0     20.63   0.82
+      count_source    in-sample    all                        greensboro_permits       1       8.0     12.66   0.63
+      count_source    in-sample    all                              meck_permits       4      20.0     61.47   0.33
+      count_source    in-sample    all                  metc_residential_permits      41      75.0    236.25   0.32
+      count_source    in-sample    all metc_residential_permits+mpls_ccs_permits       1     210.0    498.70   0.42
+      count_source    in-sample    all                                sa_permits       1     240.0    608.26   0.39
+      count_source    in-sample     MN                  metc_residential_permits      41      75.0    236.25   0.32
+      count_source    in-sample     MN metc_residential_permits+mpls_ccs_permits       1     210.0    498.70   0.42
+      count_source    in-sample     NC                            durham_permits       1      17.0     20.63   0.82
+      count_source    in-sample     NC                        greensboro_permits       1       8.0     12.66   0.63
+      count_source    in-sample     NC                              meck_permits       4      20.0     61.47   0.33
+      count_source    in-sample     OH                             cincy_permits       1       8.0      8.42   0.95
+      count_source    in-sample     TX                            austin_permits       1     868.0    254.97   3.40
+      count_source    in-sample     TX                                sa_permits       1     240.0    608.26   0.39
+      count_source out-of-state    all                            austin_permits       1     868.0    239.93   3.62
+      count_source out-of-state    all                             cincy_permits       1       8.0      8.48   0.94
+      count_source out-of-state    all                            durham_permits       1      17.0     21.86   0.78
+      count_source out-of-state    all                        greensboro_permits       1       8.0     13.42   0.60
+      count_source out-of-state    all                              meck_permits       4      20.0     65.14   0.31
+      count_source out-of-state    all                  metc_residential_permits      41      75.0    184.72   0.41
+      count_source out-of-state    all metc_residential_permits+mpls_ccs_permits       1     210.0    433.40   0.48
+      count_source out-of-state    all                                sa_permits       1     240.0    572.38   0.42
+      count_source out-of-state     MN                  metc_residential_permits      41      75.0    184.72   0.41
+      count_source out-of-state     MN metc_residential_permits+mpls_ccs_permits       1     210.0    433.40   0.48
+      count_source out-of-state     NC                            durham_permits       1      17.0     21.86   0.78
+      count_source out-of-state     NC                        greensboro_permits       1       8.0     13.42   0.60
+      count_source out-of-state     NC                              meck_permits       4      20.0     65.14   0.31
+      count_source out-of-state     OH                             cincy_permits       1       8.0      8.48   0.94
+      count_source out-of-state     TX                            austin_permits       1     868.0    239.93   3.62
+      count_source out-of-state     TX                                sa_permits       1     240.0    572.38   0.42
+            survey    in-sample    all                              city records      10    1371.0   1465.10   0.94
+            survey    in-sample    all                                    survey      41      75.0    236.25   0.32
+            survey    in-sample     MN                              city records       1     210.0    498.70   0.42
+            survey    in-sample     MN                                    survey      41      75.0    236.25   0.32
+            survey    in-sample     NC                              city records       6      45.0     94.76   0.47
+            survey    in-sample     OH                              city records       1       8.0      8.42   0.95
+            survey    in-sample     TX                              city records       2    1108.0    863.23   1.28
+            survey out-of-state    all                              city records      10    1371.0   1354.60   1.01
+            survey out-of-state    all                                    survey      41      75.0    184.72   0.41
+            survey out-of-state     MN                              city records       1     210.0    433.40   0.48
+            survey out-of-state     MN                                    survey      41      75.0    184.72   0.41
+            survey out-of-state     NC                              city records       6      45.0    100.42   0.45
+            survey out-of-state     OH                              city records       1       8.0      8.48   0.94
+            survey out-of-state     TX                              city records       2    1108.0    812.30   1.36
+denominator_source    in-sample    all                                   parcels      50    1438.0   1692.93   0.85
+denominator_source    in-sample    all                        parcels_scaled_acs       1       8.0      8.42   0.95
+denominator_source    in-sample     MN                                   parcels      42     285.0    734.95   0.39
+denominator_source    in-sample     NC                                   parcels       6      45.0     94.76   0.47
+denominator_source    in-sample     OH                        parcels_scaled_acs       1       8.0      8.42   0.95
+denominator_source    in-sample     TX                                   parcels       2    1108.0    863.23   1.28
+denominator_source out-of-state    all                                   parcels      50    1438.0   1530.84   0.94
+denominator_source out-of-state    all                        parcels_scaled_acs       1       8.0      8.48   0.94
+denominator_source out-of-state     MN                                   parcels      42     285.0    618.12   0.46
+denominator_source out-of-state     NC                                   parcels       6      45.0    100.42   0.45
+denominator_source out-of-state     OH                        parcels_scaled_acs       1       8.0      8.48   0.94
+denominator_source out-of-state     TX                                   parcels       2    1108.0    812.30   1.36
+     rule_age_band    in-sample    all                                       2-5      12      49.0    109.52   0.45
+     rule_age_band    in-sample    all                                       < 2      20      46.0     38.63   1.19
+     rule_age_band    in-sample    all                                      >= 5      19    1351.0   1553.20   0.87
+     rule_age_band    in-sample     MN                                       2-5      10      25.0     71.21   0.35
+     rule_age_band    in-sample     MN                                       < 2      16      24.0     13.48   1.78
+     rule_age_band    in-sample     MN                                      >= 5      16     236.0    650.27   0.36
+     rule_age_band    in-sample     NC                                       2-5       2      24.0     38.31   0.63
+     rule_age_band    in-sample     NC                                       < 2       3      14.0     16.74   0.84
+     rule_age_band    in-sample     NC                                      >= 5       1       7.0     39.71   0.18
+     rule_age_band    in-sample     OH                                       < 2       1       8.0      8.42   0.95
+     rule_age_band    in-sample     TX                                      >= 5       2    1108.0    863.23   1.28
+     rule_age_band out-of-state    all                                       2-5      12      49.0     92.24   0.53
+     rule_age_band out-of-state    all                                       < 2      20      46.0     41.16   1.12
+     rule_age_band out-of-state    all                                      >= 5      19    1351.0   1405.93   0.96
+     rule_age_band out-of-state     MN                                       2-5      10      25.0     51.65   0.48
+     rule_age_band out-of-state     MN                                       < 2      16      24.0     14.93   1.61
+     rule_age_band out-of-state     MN                                      >= 5      16     236.0    551.54   0.43
+     rule_age_band out-of-state     NC                                       2-5       2      24.0     40.60   0.59
+     rule_age_band out-of-state     NC                                       < 2       3      14.0     17.74   0.79
+     rule_age_band out-of-state     NC                                      >= 5       1       7.0     42.08   0.17
+     rule_age_band out-of-state     OH                                       < 2       1       8.0      8.48   0.94
+     rule_age_band out-of-state     TX                                      >= 5       2    1108.0    812.30   1.36
+       pcr_tertile    in-sample    all                                      high      17      28.0     91.59   0.31
+       pcr_tertile    in-sample    all                                       low      17     520.0   1235.57   0.42
+       pcr_tertile    in-sample    all                                       mid      17     898.0    374.18   2.40
+       pcr_tertile    in-sample     MN                                      high      16      26.0     90.15   0.29
+       pcr_tertile    in-sample     MN                                       low      12     240.0    545.90   0.44
+       pcr_tertile    in-sample     MN                                       mid      14      19.0     98.90   0.19
+       pcr_tertile    in-sample     NC                                      high       1       2.0      1.45   1.38
+       pcr_tertile    in-sample     NC                                       low       3      32.0     72.99   0.44
+       pcr_tertile    in-sample     NC                                       mid       2      11.0     20.32   0.54
+       pcr_tertile    in-sample     OH                                       low       1       8.0      8.42   0.95
+       pcr_tertile    in-sample     TX                                       low       1     240.0    608.26   0.39
+       pcr_tertile    in-sample     TX                                       mid       1     868.0    254.97   3.40
+       pcr_tertile out-of-state    all                                      high      17      28.0     74.82   0.37
+       pcr_tertile out-of-state    all                                       low      17     520.0   1128.21   0.46
+       pcr_tertile out-of-state    all                                       mid      17     898.0    336.29   2.67
+       pcr_tertile out-of-state     MN                                      high      16      26.0     73.29   0.35
+       pcr_tertile out-of-state     MN                                       low      12     240.0    470.00   0.51
+       pcr_tertile out-of-state     MN                                       mid      14      19.0     74.83   0.25
+       pcr_tertile out-of-state     NC                                      high       1       2.0      1.53   1.30
+       pcr_tertile out-of-state     NC                                       low       3      32.0     77.35   0.41
+       pcr_tertile out-of-state     NC                                       mid       2      11.0     21.53   0.51
+       pcr_tertile out-of-state     OH                                       low       1       8.0      8.48   0.94
+       pcr_tertile out-of-state     TX                                       low       1     240.0    572.38   0.42
+       pcr_tertile out-of-state     TX                                       mid       1     868.0    239.93   3.62
+              year    in-sample    all                                      2016      19     131.0     44.82   2.92
+              year    in-sample    all                                      2017      19     156.0     74.39   2.10
+              year    in-sample    all                                      2018      23     145.0     89.68   1.62
+              year    in-sample    all                                      2019      23     152.0    110.85   1.37
+              year    in-sample    all                                      2020      24     123.0    134.08   0.92
+              year    in-sample    all                                      2021      27     186.0    279.20   0.67
+              year    in-sample    all                                      2022      31     165.0    253.37   0.65
+              year    in-sample    all                                      2023      39     171.0    247.11   0.69
+              year    in-sample    all                                      2024      43     104.0    234.70   0.44
+              year    in-sample    all                                      2025      48     113.0    233.15   0.48
+
+3. Shape
+           covariate  slope  slope_p5  slope_p95  iqr_effect  iqr_effect_p5  iqr_effect_p95  shape_signal
+            log rent -1.035    -3.645      1.160       0.794          0.443           1.296         False
+      log home value  1.732     0.747      2.605       1.864          1.308           2.552          True
+   log price-to-cost -1.035    -3.645      1.160       0.794          0.443           1.296         False
+            rule age -0.052    -0.166      0.009       0.693          0.312           1.069         False
+log eligible parcels -0.464    -0.815     -0.168       0.545          0.345           0.803          True
+
+4. Place-years with two or more ADU-flagging sources
+  geoid  year                   source  adu  cobuilt state  kept  survey
+2743000  2016 metc_residential_permits   28        0    MN    28    True
+2743000  2016         mpls_ccs_permits    2        0    MN     2   False
+2743000  2017 metc_residential_permits   22        0    MN    22    True
+2743000  2017         mpls_ccs_permits   30        2    MN    28   False
+2743000  2018 metc_residential_permits    9        0    MN     9    True
+2743000  2018         mpls_ccs_permits   25        0    MN    25   False
+2743000  2019 metc_residential_permits   18        0    MN    18    True
+2743000  2019         mpls_ccs_permits   35        3    MN    32   False
+2743000  2020 metc_residential_permits   10        0    MN    10    True
+2743000  2020         mpls_ccs_permits   28        1    MN    27   False
+2743000  2021 metc_residential_permits    8        0    MN     8    True
+2743000  2021         mpls_ccs_permits   16        2    MN    14   False
+2743000  2022 metc_residential_permits   12        0    MN    12    True
+2743000  2022         mpls_ccs_permits   17        2    MN    15   False
+2743000  2023 metc_residential_permits    8        0    MN     8    True
+2743000  2023         mpls_ccs_permits   14        1    MN    13   False
+2743000  2024 metc_residential_permits   11        0    MN    11    True
+2743000  2024         mpls_ccs_permits   16        1    MN    15   False
+2743000  2025 metc_residential_permits   13        0    MN    13    True
+2743000  2025         mpls_ccs_permits   13        1    MN    12   False
+
+5. Noise floor
+                     group  observed   p50  obs_over_p50  observed_log_error  p_useful_if_model_right  k1_if_model_right
+                        MN     285.0 570.0         0.500              -0.692                    0.798              0.544
+                        NC      45.0  68.0         0.662              -0.409                    0.508              1.071
+                        OH       8.0   3.0         2.667               0.887                    0.253              1.509
+                        TX    1108.0 432.0         2.565               0.941                    0.377              1.556
+NC with Raleigh and Durham     455.0 255.0         1.784               0.578                    0.488              1.056
+           four states: K1       NaN   NaN           NaN               0.762                      NaN              1.239

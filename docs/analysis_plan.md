@@ -2611,3 +2611,53 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Outcome:** a short list of fixes. Measurement fixes go first (new count or denominator rules,
     pre-registered as their own entry). Shape findings name the covariates for approach 2 (free shape terms)
     and approach 3 (the empirical benchmark). Nothing in config changes from this entry.
+- **Results (run 2026-11-04 on 992546d; `reports/adu-fit-audit/`, log `run-2026-11-04-log.txt`):**
+  - **The refits reproduce D-041.** Full fit θ 1.232 per 1,000, α 2.284, rule shares 1.0 and 0.3.
+  - **Noise floor (item 5): state misses are mostly within the model's own noise.**
+    - A correct model would be "useful" for MN 80% of the time, for NC 51%, for TX 38% and for OH 25%.
+    - So TX's and OH's "inside only" verdicts are not evidence of misfit. MN's (observed ÷ P50 exactly 0.50)
+      is the one state where a correct model should usually have done better.
+    - The four-state K1 a correct model gives is 1.24. The observed K1 is 0.76. At the state level the fit is
+      no worse than its own noise; the problem is that the noise (α) is large.
+  - **Where the place spread comes from (items 1 and 2):**
+    - City-records places (10) come in at ΣY/ΣE 0.94 in-sample and 1.01 out-of-state. The 41 survey-counted
+      MN suburbs come in at 0.32 (0.41 out-of-state), after the survey reporting rate ρ = 0.57.
+    - Many large suburbs report no ADU permit in any year, raw or after rules: Eagan (expected 25),
+      Lakeville (30), St. Louis Park (22), Bloomington (33; its 3 raw permits were all dropped as co-built).
+      The 15 suburbs in every year of the panel total 2 to 8 ADUs a year against 13 to 28 expected (ratio
+      about 0.15).
+    - Within TX the two cities differ ×8.7: Austin 3.40, San Antonio 0.39. Austin's count is after dropping
+      1,677 of its 2,545 secondary-apartment permits as co-built (66%).
+  - **Measurement flags (pre-registered readings):**
+    - Two sources differ by more than ×1.5: Minneapolis 2017–2025, city records 194 ADU permits against the
+      Met Council survey's 111 (×1.7). This is consistent with ρ = 0.57, which is already applied; it is the only
+      place-year overlap that checks ρ.
+    - Co-built exclusion removes more than 30%: Austin (66%), Andover (100%, 1 permit), Bloomington (100%,
+      3), Crystal (80%, 4 of 5).
+    - The Met Council file has 2.78 single-family permits per parcel ID, so its parcel ID is not lot-level.
+      Co-built matching there can flag ADUs wrongly; the numbers affected are small.
+    - Not flagged: no within-state count-source or denominator-source split met the ×2 rule with ≥ 10
+      expected in each group.
+  - **Shape (item 3):**
+    - Home value: places with higher home values have more ADUs than the model expects. Across the
+      interquartile range the effect is ×1.86 (90% interval 1.31–2.55). Flagged.
+    - Eligible parcels: places with more parcels have fewer ADUs per parcel than expected. Across the
+      interquartile range the effect is ×0.55 (0.35–0.80). Flagged. This may be the suburban zeros above,
+      not size itself.
+    - Rent and price-to-cost: ×0.79 (0.44–1.30). Rule age: ×0.69 (0.31–1.07). Neither is flagged.
+  - **Beyond the pre-registered readings (reported, not ruled on):** the in-sample ratio falls every
+    calendar year, from 2.92 in 2016 to 0.48 in 2025.
+    - On a fixed panel of the 16 places present in all ten years it falls from 1.30 to 0.32, so this is not
+      only places entering.
+    - Minneapolis: observed about 28 a year in 2016–20 and 14 a year in 2021–25. Expected rises from 10 to 71
+      over 2016–21.
+    - Austin: observed flat at 87–126 a year. Expected rises from 22 to 41.
+    - The ramp (uptake building for years after a reform) is not what these places show: their counts are
+      flat or falling.
+  - **WS-ENGINE's reading, for Ben:**
+    - **Measurement first:** decide whether a Met Council suburb that never reports an ADU is a true zero or
+      a reporting gap. This drives most of α and MN's low level.
+    - **Then shape**, with three candidate free terms for approach 2: the ramp (or no ramp), the
+      home-value elasticity, and possibly the size effect. Approach 3's empirical benchmark should include
+      the same covariates.
+    - Nothing in config changes from this entry.
