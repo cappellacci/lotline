@@ -224,3 +224,58 @@ def test_holdout_window_edges_are_inclusive_and_exact():
     )
     hidden = holdout.held_out_mask(permits, [STPAUL], geoid_col="jurisdiction_geoid", date_col="issue_date")
     assert hidden.tolist() == [False, True, True, False]
+
+
+OREGON = Holdout(
+    test_id="V9-OR-TRANSFER",
+    place="Oregon (statewide)",
+    geoid="41",
+    outcome_from="2018-01-01",
+    outcome_until="2099-12-31",
+    reason="test",
+)
+
+
+def test_statewide_holdout_hides_every_jurisdiction_in_the_state_only():
+    # place (7), township-style (10), county remainder (5) and state total (2) in Oregon; Ohio rows untouched
+    bps = pd.DataFrame(
+        {
+            "geoid": [
+                *["4159000", "4105800", "4100000001", "41051", "41"],
+                *["41051", "3918000", "39049", "4159000"],
+            ],
+            "year": [2018, 2025, 2019, 2020, 2021, 2017, 2020, 2020, 2017],
+        }
+    )
+    hidden = holdout.held_out_mask(bps, [OREGON], geoid_col="geoid", year_col="year")
+    assert hidden.tolist() == [True, True, True, True, True, False, False, False, False]
+
+
+def test_statewide_holdout_hides_every_oregon_roll_from_the_window_on():
+    rolls = pd.DataFrame(
+        {"jurisdiction_geoid": ["4159000", "4159000", "4105800"], "vintage": [2017, 2018, 2026]}
+    )
+    hidden = holdout.held_out_mask(
+        rolls, [OREGON], geoid_col="jurisdiction_geoid", year_col="vintage", snapshot=True
+    )
+    assert hidden.tolist() == [False, True, True]
+
+
+def test_holdout_geoid_must_be_a_state_place_or_township():
+    for bad in ["4", "411", "41051", "41590000"]:
+        with pytest.raises(ValueError):
+            Holdout(
+                test_id="V9-OR-TRANSFER",
+                place="x",
+                geoid=bad,
+                outcome_from="2018-01-01",
+                outcome_until="2099-12-31",
+                reason="test",
+            )
+    assert OREGON.statewide and not STPAUL.statewide
+
+
+def test_the_real_or_config_holds_out_all_of_oregon_from_2018():
+    (v9,) = holdout.holdouts_for("OR")
+    assert v9.test_id == "V9-OR-TRANSFER" and v9.statewide and v9.geoid == "41"
+    assert str(v9.outcome_from) == "2018-01-01"

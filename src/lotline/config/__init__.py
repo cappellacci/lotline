@@ -20,11 +20,16 @@ class _Model(BaseModel):
 
 
 class Holdout(_Model):
-    """A place whose post-reform outcomes stay hidden until a frozen prediction is on main."""
+    """A place whose post-reform outcomes stay hidden until a frozen prediction is on main.
+
+    `geoid` is a place (7 digits) or township (10 digits). A 2-digit state FIPS holds out the whole state:
+    every row whose GEOID starts with it (places, townships, county remainders and the state total), as for a
+    transfer test that predicts a state from the others before any of its outcomes are seen.
+    """
 
     test_id: str = Field(pattern=r"^V\d-[A-Z]{2}-[A-Z0-9_-]+$")
     place: str
-    geoid: str = Field(pattern=r"^\d{7}(\d{3})?$")
+    geoid: str = Field(pattern=r"^(\d{2}|\d{7}(\d{3})?)$")
     outcome_from: dt.date
     outcome_until: dt.date
     reason: str
@@ -32,6 +37,10 @@ class Holdout(_Model):
     # (Charlotte's are reported under Mecklenburg County, 37119). They are held out over the same window.
     reporting_geoids: list[str] = Field(default_factory=list)
     reporting_reason: str | None = None
+
+    @property
+    def statewide(self) -> bool:
+        return len(self.geoid) == 2
 
     @property
     def geoids(self) -> list[str]:

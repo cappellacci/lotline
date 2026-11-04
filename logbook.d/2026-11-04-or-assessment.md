@@ -1,0 +1,19 @@
+### LB-NNN · 2026-11-04 · Data: Oregon as a fifth state, assessment
+- **Question:** What would it take to bring Oregon in as a fifth state (office hours A6), and is it worth it?
+- **What I did:** Claude Code (main checkout) compared the data held for MN/NC/OH/TX (`docs/data_availability.md`, OH readiness report, `config/reforms/`, `config/fees/`) with the Oregon rows already scouted in `docs/research/lotline-data-catalog.csv`. Checked four Oregon endpoints for record counts only (no data downloaded): Bend permits 206,859 rows, RLIS taxlots 647,192, statewide zoning 114,823; Portland permits did not answer.
+- **Inputs:** office-hours notes (2026-11-03), HANDOFF purpose decision (2026-10-28), validation plan V5/V8, D-037 and D-019 notes in `config/params/hazard.yaml`.
+- **Outputs:** `docs/build/or-assessment.md`.
+- **Findings:** Oregon adds what the panels lack (many dated reform events, high ADU and middle-housing uptake, the high-demand end of the market range) and the best parcel data of the five in Portland Metro (sale prices). Method risks: few untreated controls under statewide mandates, UGB-based eligibility, Portland losing independence as an outside check, holdouts needing to be set before any Oregon outcome fetch. Recommended "transfer first, then pool": freeze a blind Oregon prediction from the four-state fit, then unblind and add Oregon to the calibration; WI stays V8. Lean scope ≈ 8–11 workstream days + 1–2 engine days.
+- **Decisions:** none; four proposed in the assessment §6.
+- **AI:** Claude Code wrote the assessment from repo docs and endpoint counts. Oregon legislative details (SB 1051, HB 2001 tiers, SB 458, OHNA) are from the catalog and model memory and still need to be checked against statute when rows are coded.
+- **Open / next:** Ben picks an option and scope; if C, send the DLCD HB 4006 data request now and write `config/states/or.yaml` holdouts before any outcome fetch.
+
+### LB-NNN · 2026-11-04 · Validation: Oregon transfer test (V9) set up before any Oregon data
+- **Question:** How do we bring Oregon in as "transfer first, then pool" without ever seeing its outcomes before the prediction is frozen?
+- **What I did:** Ben chose option C, lean scope, no DLCD request. Claude Code checked the data directory (no West Region BPS file, no Oregon permits or parcels on 2026-11-04). The holdout schema only allowed single places and townships, and county remainders (5-digit) couldn't be listed, so it added a statewide holdout: a 2-digit state FIPS hides every GEOID that starts with it. Wrote `config/states/or.yaml` with `V9-OR-TRANSFER` (all Oregon outcomes from 2018-01-01), V9 in the validation plan, and the WS-OR brief.
+- **Inputs:** `docs/build/or-assessment.md`, `src/lotline/validation/holdout.py`, `src/lotline/config/__init__.py`, validation plan V5/V8.
+- **Outputs:** `src/lotline/config/__init__.py` (`Holdout.geoid` accepts a state FIPS; `statewide`), `src/lotline/validation/holdout.py` (prefix match), `tests/core/test_holdout.py` (4 new tests), `tests/core/test_config.py`, `config/states/or.yaml`, `docs/research/lotline-validation-plan.md` (V9), `docs/build/workstreams/WS-OR.md`, `docs/build/or-assessment.md` (decision line).
+- **Findings:** A statewide holdout also hides every Oregon parcel roll from 2018 (snapshot rule), so the frozen prediction uses pre-2018 RLIS archives or the ACS fallback. `or` is a Python keyword, so the adapter package name needs settling first. `REFORM_STATES` must leave OR out until unblinding.
+- **Decisions:** proposed HANDOFF row: Oregon joins as a transfer-then-pool state (V9); WI stays V8. Shared-contract change (statewide holdout) flagged for Ben in the PR.
+- **AI:** Claude Code wrote the code, tests and docs; tests run in the project venv.
+- **Open / next:** Start WS-OR in its own worktree; WS-ENGINE owns the freeze run.
