@@ -33,6 +33,11 @@ in [`data_provenance.md`](data_provenance.md), which gives each dataset's licens
 
 The interactive tool's hosting service will be added here when it is deployed.
 
+**Data dashboard page (`reports/data_dashboard/index.html`).** The page loads three open-source files from
+the jsDelivr CDN (`cdn.jsdelivr.net`) when it is opened, unmodified and not copied into the repo: d3 7.9.0
+(ISC), topojson-client 3.1.0 (ISC) and us-atlas 3.0.1 `counties-10m.json` (ISC; county shapes derived from
+Census cartographic boundary files). Nothing is sent to the CDN except the file requests.
+
 ## Third-party code, dependencies and datasets
 - Dependencies: see the SBOM (`sbom.spdx.json`) and the license scan. Exceptions (non-permissive licenses) are listed here with a justification.
 
