@@ -28,3 +28,19 @@
   wrote up the results.
   - The full fit at τ = 0 reproduces D-041's θ and log-likelihood exactly.
   - Table values were read from the run's CSVs.
+
+### LB-NNN · 2026-11-04 · engine · Does drawing τ from its likelihood carry the state spread?
+
+- **Question:** under D-043's rule, a new state's central run had no state spread (τ̂ = 0). Ben chose to
+  draw τ from its interval instead.
+- **Outputs:**
+  - D-044 in `docs/analysis_plan.md`, pre-registered in ad3fba9 before the run.
+  - Code in 508d83c: `tau_profile`, `tau_probabilities`, `draw_tau` and `draw_tau_half_normal` in
+    `calibrate_adu.py`, and `--tau-draws` in the script, with tests.
+  - Run once: `reports/adu-tau-draws/`.
+- **Findings:**
+  - τ's median draw is 0.30 and its P90 is 1.05. A new state's multiplier runs 0.58–1.71 (P10–P90).
+  - Leave one state out: none missed. Median P90 ÷ P10 is 46.5; it was 28.7 with τ fixed.
+- **Decisions:** the rule says adopt for unseen states. Config is unchanged until Ben decides.
+- **AI:** Claude Code (Opus 5.5) wrote the entry, code and tests, ran the run once and wrote up the results.
+  Table values were read from the run's CSVs.

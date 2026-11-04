@@ -2518,3 +2518,44 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   for states outside the fit set, through `hazard.widen_unseen_state` with τ drawn per draw.
 - **Run once:** `uv run python scripts/dev/calibrate_adu.py --tau-draws --out reports/adu-tau-draws`.
 - **Decided by:** Ben, 2026-11-04 ("Draw τ from interval"); written by WS-ENGINE before the run.
+- **Results (2026-11-04, commit 508d83c; `reports/adu-tau-draws/`, log `run-2026-11-04-log.txt`):**
+  - **τ's distribution** (the profile with a flat prior on 0–2.5), and the multiplier exp(τ z) a new state
+    carries from it:
+
+    | Fit | τ̂ (90% interval) | τ median | τ P90 | Share at τ = 0 | Multiplier P10–P90 |
+    |---|---|---|---|---|---|
+    | All four states | 0 (0–0.67) | 0.30 | 1.05 | 9% | 0.58–1.71 |
+    | Without MN | 0.39 (0–1.16) | 0.55 | 1.70 | 4% | 0.41–2.41 |
+    | Without NC | 0 (0–0.94) | 0.45 | 1.55 | 7% | 0.45–2.18 |
+    | Without OH | 0 (0–0.72) | 0.35 | 1.25 | 8% | 0.55–1.87 |
+    | Without TX | 0 (0–0.72) | 0.35 | 1.25 | 8% | 0.54–1.91 |
+
+    The profile falls slowly above its 90% bound, so the flat prior puts about 10% of draws above 1.0.
+  - **Leave one state out, τ drawn:**
+
+    | State | Observed | Main P50 (P10–P90) | Main verdict | Main P90 ÷ P10 | T1 P90 ÷ P10 | D-043 P90 ÷ P10 |
+    |---|---|---|---|---|---|---|
+    | MN | 285 | 596 (200–1,784) | inside only (0.48) | 8.9 | 6.7 | 4.7 |
+    | NC | 45 | 67 (11–314) | useful | 28.6 | 21.5 | 15.5 |
+    | OH | 8 | 3 (0–29) | inside only | ∞ | ∞ | ∞ |
+    | TX | 1,108 | 426 (39–2,513) | inside only | 64.4 | 49.1 | 41.9 |
+    | NC with Raleigh and Durham | 455 | 252 (46–1,250) | useful | 27.2 | 21.4 | 15.3 |
+
+    - **Misses:** none, in the main or in T1. Verdicts match D-043 everywhere.
+    - **Median P90 ÷ P10 over the four states:** main 46.5, T1 35.3, D-043 28.7, D-041 28.0.
+    - **Means are pulled up by the large-τ draws.** MN's mean is 1,483 against a P50 of 596. Ranges and
+      medians are what the tool reports.
+  - **Reading by the rule written before the run:**
+    - No state is missed, so the method is adopted for states outside the fit set, subject to Ben's decision
+      on config.
+    - The wider range is the expected cost.
+  - **WS-ENGINE's notes, for Ben to confirm:**
+    - **The state spread is now carried.** For a new state, the median multiplier is 1 and its P10–P90 is
+      0.58–1.71, before θ's own uncertainty and place effects.
+    - **The tail is a choice.** The flat prior lets τ reach above 1.0 one draw in ten, which is what most
+      widens the backtest ranges. T1, the half-normal, is narrower. The main stays as pre-registered.
+    - **What would narrow this:** more states. Each new state's data, once it has ADU history, can join the
+      fit and sharpen τ.
+  - **Config:** unchanged. On adoption, the script writes `config/params/adu_state_effect.yaml` from
+    `reports/adu-tau-draws/tau_profile.csv` (the full fit's grid and probabilities), and the scenario wires
+    `hazard.widen_unseen_state` with τ drawn per draw for states outside the fit set.
