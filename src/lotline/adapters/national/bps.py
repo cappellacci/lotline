@@ -20,6 +20,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.config import load_state
 from lotline.io import DataStore, fetch
 from lotline.schemas import validate
 from lotline.validation import holdout
@@ -31,8 +32,8 @@ LICENSE = "Public domain (U.S. Government work, 17 U.S.C. §105)"
 BASE_URL = "https://www2.census.gov/econ/bps/Place"
 
 REGIONS = {"Northeast Region": "ne", "Midwest Region": "mw", "South Region": "so", "West Region": "we"}
-STATE_FIPS = {"MN": "27", "NC": "37", "OH": "39", "TX": "48"}
-STATE_REGION = {"MN": "Midwest Region", "NC": "South Region", "OH": "Midwest Region", "TX": "South Region"}
+# The BPS region file and state FIPS come from config/states/<st>.yaml (`bps_region`, `fips`), so a new state
+# needs no code change here (issue #283).
 
 SIZES = ["1", "2", "3_4", "5p"]
 NUMERIC = [f"{kind}_{s}" for s in SIZES for kind in ("bldgs", "units", "value")]
@@ -112,7 +113,7 @@ def parse(text: str, year: int) -> pd.DataFrame:
 
 def to_canonical(raw: pd.DataFrame, state: str) -> pd.DataFrame:
     """Filter one state's rows and map them to the `bps_place_year` table."""
-    fips = STATE_FIPS[state]
+    fips = load_state(state).fips
     df = raw[raw["state_fips"] == fips].copy()
     df["state"] = state
     df["bps_id"] = df["state_fips"] + df["id6"]
@@ -203,7 +204,9 @@ def load(
     Held-out place-years are removed before anything else sees the table (validation.holdout).
     The raw regional files on disk still contain them; never read those directly.
     """
-    region = STATE_REGION[state]
+    region = load_state(state).bps_region
+    if region not in REGIONS:
+        raise ValueError(f"{state}: bps_region {region!r} is not one of {sorted(REGIONS)}")
     frames = []
     for year in years:
         url = file_url(region, year)

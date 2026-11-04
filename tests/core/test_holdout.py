@@ -279,3 +279,95 @@ def test_the_real_or_config_holds_out_all_of_oregon_from_2018():
     (v9,) = holdout.holdouts_for("OR")
     assert v9.test_id == "V9-OR-TRANSFER" and v9.statewide and v9.geoid == "41"
     assert str(v9.outcome_from) == "2018-01-01"
+
+
+# Issue #283: gaps for a statewide holdout whose window is in the past (V9, Oregon)
+
+
+def _acs(rows):
+    return pd.DataFrame(rows, columns=["geo", "end_year", "table_id"])
+
+
+def test_acs_stock_vintages_overlapping_the_window_are_hidden_for_every_oregon_level():
+    df = _acs(
+        [
+            ("state:41", 2017, "B25024"),  # 2013-2017: before the window, kept
+            ("state:41", 2018, "B25024"),  # 2014-2018 overlaps 2018: hidden
+            ("county:41051", 2024, "B25034"),
+            ("place:4159000", 2020, "B25003"),
+            ("tract:41051000100", 2022, "B25024"),
+            ("place:4159000", 2022, "B25064"),  # rent: a market input, kept (Ben, 2026-11-04)
+            ("place:4159000", 2022, "B25077"),  # value: kept
+            ("place:3918000", 2022, "B25024"),  # Ohio: untouched
+        ]
+    )
+    hidden = holdout.acs_held_out_mask(df, [OREGON])
+    assert hidden.tolist() == [False, True, True, True, True, False, False, False]
+
+
+def test_acs_filter_ignores_place_holdouts():
+    # V5 places keep their ACS inputs as before; only statewide holdouts filter ACS
+    df = _acs([("place:2758000", 2024, "B25024")])
+    assert not holdout.acs_held_out_mask(df, [STPAUL]).any()
+
+
+def test_acs_apply_and_central_guard(monkeypatch):
+    df = _acs([("place:4159000", 2017, "B25024"), ("place:4159000", 2019, "B25024")])
+    out = holdout.apply_acs(df, "OR", holdouts=[OREGON])
+    assert out.end_year.tolist() == [2017]
+    monkeypatch.setattr(holdout, "holdouts_for", lambda state: [OREGON])
+    with pytest.raises(holdout.HoldoutLeak, match="acs_geo_year"):
+        holdout.assert_no_leak(df, "acs_geo_year", "OR")
+    holdout.assert_no_leak(out, "acs_geo_year", "OR")
+
+
+def test_state_bps_totals_drop_statewide_held_out_years(monkeypatch):
+    monkeypatch.setattr(holdout, "holdouts_for", lambda state: [OREGON] if state == "OR" else [STPAUL])
+    totals = pd.DataFrame({"state_fips": ["41", "41", "27", "27"], "year": [2017, 2018, 2018, 2025]})
+    out = holdout.drop_statewide(totals, geoid_col="state_fips", year_col="year")
+    # Oregon from 2018 goes; Minnesota's state total stays (place holdouts are skipped in V0 instead)
+    assert list(zip(out.state_fips, out.year, strict=True)) == [("41", 2017), ("27", 2018), ("27", 2025)]
+
+
+def test_bps_state_load_filters_oregon(monkeypatch, tmp_path):
+    from lotline.adapters.national import bps_state
+
+    def fake_fetch(url, dest, **kw):
+        dest.write_text("")
+        return dest
+
+    monkeypatch.setattr(bps_state, "fetch", fake_fetch)
+    monkeypatch.setattr(
+        bps_state,
+        "parse",
+        lambda text, year: pd.DataFrame({"state_fips": ["41", "39"], "year": [year, year]}),
+    )
+
+    class Store:
+        def raw(self, source, year):
+            return tmp_path
+
+    out = bps_state.load(Store(), range(2017, 2019))
+    assert list(zip(out.state_fips, out.year, strict=True)) == [("41", 2017), ("39", 2017), ("39", 2018)]
+
+
+def test_bps_reads_region_and_fips_from_the_state_config():
+    from lotline.adapters.national import bps
+    from lotline.config import load_state
+
+    assert load_state("OR").bps_region == "West Region"
+    assert bps.file_url("West Region", 2020).endswith("/West%20Region/we2020a.txt")
+    raw = pd.DataFrame(
+        {
+            "state_fips": ["41", "39"],
+            "id6": ["000001", "000002"],
+            "county": ["051", "049"],
+            "fips_place": ["59000", "18000"],
+            "fips_mcd": ["00000", "00000"],
+            "name": ["Portland", "Columbus"],
+            "months_reported": [12, 12],
+        }
+        | {f"units_{s}{r}": [1, 1] for s in ["1", "2", "3_4", "5p"] for r in ["", "_rep"]}
+    )
+    out = bps.to_canonical(raw, "OR")
+    assert out.geoid.tolist() == ["4159000"]

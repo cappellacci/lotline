@@ -23,6 +23,7 @@ import pandas as pd
 from lotline.io import DataStore, fetch
 from lotline.io.store import _dotenv_value
 from lotline.schemas import validate
+from lotline.validation import holdout
 
 ADAPTER = "national.acs"
 VERSION = "1.0"
@@ -62,6 +63,9 @@ PROVENANCE = {
         "Adjacent 5-year vintages share four years of sample: never difference them",
         "0.3-2% of estimates are suppressed, mostly small places and townships",
         "Requires a free Census API key (CENSUS_API_KEY); the key is never written to the manifest",
+        "Statewide holdouts (V9, Oregon): stock tables B25024, B25034 and B25003 are hidden for 5-year "
+        "vintages overlapping the window; rents and values (B25064, B25077) stay, as market inputs "
+        "(Ben, 2026-11-04)",
     ],
 }
 
@@ -169,8 +173,13 @@ def load(
     *,
     refresh: bool = False,
     levels: tuple[str, ...] | None = None,
+    unblind: tuple[str, ...] = (),
 ) -> pd.DataFrame:
-    """Download (cached) and build acs_geo_year for one state."""
+    """Download (cached) and build acs_geo_year for one state.
+
+    Housing-stock tables of a statewide holdout's state are removed for vintages that overlap its window
+    (validation.holdout.apply_acs); the raw API responses on disk still hold them.
+    """
     from lotline.config import load_state
 
     cfg = load_state(state)
@@ -190,4 +199,6 @@ def load(
                 url = f"{BASE_URL}/{year}/acs/acs5?get={get}&{geo_clause(level, cfg.fips)}"
                 payload = _fetch_json(url, raw / f"{state.lower()}_{level}_{i}.json", store, refresh, key)
                 frames.append(parse(payload, level, year, labels))
-    return validate(pd.concat(frames, ignore_index=True), "acs_geo_year")
+    df = pd.concat(frames, ignore_index=True)
+    df = holdout.apply_acs(df, state, unblind=unblind)
+    return validate(df.reset_index(drop=True), "acs_geo_year")
