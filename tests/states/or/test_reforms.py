@@ -145,5 +145,22 @@ def test_known_places_land_in_the_right_tier(reforms):
     assert "OR-4105800-missing_middle-2022" in tier["4105800"]  # Bend: 99,178 in 2020
     metro = set(pd.read_csv(gen.METRO, dtype=str)["geoid"])
     assert len(metro) == 24
-    mm = set(reforms.loc[reforms["reform_id"].str.endswith("-missing_middle-2021"), "jurisdiction_geoid"])
+    generated = reforms["coding_notes"].str.startswith(gen.GENERATED)
+    medium = generated & reforms["reform_id"].str.endswith("-missing_middle-2021")
+    mm = set(reforms.loc[medium, "jurisdiction_geoid"])
     assert not mm & metro  # the duplex-only tier is for cities outside Metro
+
+
+def test_local_rows_for_portland_bend_and_metro_adopters(reforms):
+    r = reforms.set_index("reform_id")
+    local = r[~r["coding_notes"].fillna("").str.startswith(gen.GENERATED)]
+    assert {
+        "OR-4159000-missing_middle-2021",
+        "OR-4159000-fees-2018",
+        "OR-4105800-missing_middle-2021",
+    } <= set(local.index)
+    # Portland's Residential Infill Project took effect before HB 2001's deadline for large cities
+    assert r.loc["OR-4159000-missing_middle-2021", "effective_date"] < pd.Timestamp("2022-06-30")
+    # Late Metro adopters replace the state row rather than standing beside it
+    for rid in ("OR-4173650-missing_middle-2022-local", "OR-4140550-missing_middle-2022-local"):
+        assert r.loc[rid, "supersedes"] == rid.removesuffix("-local")
