@@ -1,0 +1,45 @@
+=== D-046: 51 fit places, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+all four states: theta 1.337 per 1,000 (0.869-2.294), alpha 2.031, m_o 1.0 (0.8, 1.0), m_x 0.3 (0.2, 1.0), m_d 0.3 (0.1, 1.0) estimable True, loglik -382.464
+without MN: theta 2.081 per 1,000 (1.235-4.187), alpha 0.323, m_o 0.4 (0.2, 0.9), m_x 0.3 (0.2, 1.0), m_d 0.3 (0.01, 1.0) estimable False, loglik -152.846
+without NC: theta 1.441 per 1,000 (0.847-2.749), alpha 2.662, m_o 1.0 (0.8, 1.0), m_x 0.3 (0.2, 1.0), m_d 0.3 (0.1, 1.0) estimable True, loglik -330.483
+without OH: theta 1.351 per 1,000 (0.862-2.353), alpha 2.137, m_o 1.0 (0.8, 1.0), m_x 0.3 (0.2, 1.0), m_d 0.3 (0.1, 1.0) estimable True, loglik -375.495
+without TX: theta 1.268 per 1,000 (0.789-2.215), alpha 2.126, m_o 1.0 (0.8, 1.0), m_x 0.3 (0.2, 1.0), m_d 0.3 (0.1, 1.0) estimable True, loglik -283.562
+
+Log-likelihood -382.464 against D-041 -383.718: gain 1.254 (adopt needs >= 1.353)
+
+In-sample observed / expected by detached rule
+        detached  places  observed  expected  ratio                          by state count_source
+   attached only      10       7.0     32.57   0.21                    detached   NaN          NaN
+           blank       6     242.0    213.66   1.13                    detached   NaN          NaN
+detached allowed      39    1607.0   1833.67   0.88                    detached   NaN          NaN
+   attached only      10       7.0     32.57   0.21              state+detached    MN          NaN
+           blank       4       3.0      7.24   0.41              state+detached    MN          NaN
+detached allowed      30     275.0    693.64   0.40              state+detached    MN          NaN
+           blank       2     239.0    206.41   1.16              state+detached    NC          NaN
+detached allowed       6     216.0    194.01   1.11              state+detached    NC          NaN
+detached allowed       1       8.0      9.13   0.88              state+detached    OH          NaN
+detached allowed       2    1108.0    936.89   1.18              state+detached    TX          NaN
+detached allowed       1     210.0    541.26   0.39 state+count_source+detached    MN city records
+   attached only      10       7.0     32.57   0.21 state+count_source+detached    MN       survey
+           blank       4       3.0      7.24   0.41 state+count_source+detached    MN       survey
+detached allowed      29      65.0    152.38   0.43 state+count_source+detached    MN       survey
+           blank       2     239.0    206.41   1.16 state+count_source+detached    NC city records
+detached allowed       6     216.0    194.01   1.11 state+count_source+detached    NC city records
+detached allowed       1       8.0      9.13   0.88 state+count_source+detached    OH city records
+detached allowed       2    1108.0    936.89   1.18 state+count_source+detached    TX city records
+
+D-046: leave one state out
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 248.0 522.0 1073.0 609.82          0.55          4.33   6011.53      useful
+                        NC       6           32        45  19.0  77.0  255.0 117.06          0.58         13.42    990.73      useful
+                        OH       1            2         8   0.0   4.0   27.0   9.87          2.00           inf    131.01      useful
+                        TX       2           13      1108  66.0 512.0 2203.0 930.68          2.16         33.38  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  78.0 294.0 1014.0 458.21          1.55         13.00   3587.74      useful
+
+K1 0.658 (D-041 0.791); missed 0; median P90/P10 23.4 (D-041 28.0)
+
+D-046: test set from the full fit
+             group  places  place_years  observed  p10   p50   p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+Raleigh and Durham       2           10       410 25.0 181.0 746.0 309.68          2.27         29.84   2597.01 inside only
+
+Adoption rule: m_d estimable and excludes m_x False; gain False; none missed True; K1 <= 0.791 True -> keep D-041

@@ -37,3 +37,18 @@
 - **Decisions:** none. Proposed D-046: give "no detached ADUs" its own multiplier and refit.
 - **AI:** Claude Code (Opus 5.5) ran exploratory queries, then wrote them up as a script and ran it once.
   Values were read from its log.
+
+### LB-NNN · 2026-11-04 · engine · Does "no detached ADUs" need its own multiplier?
+
+- **Question:** D-045 found attached-only places far below expected. Does a separate multiplier m_d fit
+  better? Ben approved D-046.
+- **Outputs:** D-046 in `docs/analysis_plan.md`, pre-registered in 5f0109d. Code and tests in b1148ba
+  (`fit_detached`, the `detached` array on `PlaceData`, `--detached`). Run once into `reports/adu-detached/`.
+- **Findings:**
+  - m_d is 0.3 (0.1–1.0), the same as m_x. The log-likelihood gains 1.254; 1.353 was needed.
+  - Not adopted under the pre-registered rule.
+  - The backtest still improved: K1 0.658 against 0.791, median P90/P10 23.4 against 28.0, OH now useful.
+    The improvement comes from restrictions compounding (m_x × m_d), not from m_d itself.
+- **Decisions:** none adopted; D-041 stays. Any change to the structure needs a new entry.
+- **AI:** Claude Code (Opus 5.5) wrote D-046, the code and tests, ran it once, and wrote up the results
+  from the log.

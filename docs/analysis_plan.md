@@ -2725,3 +2725,27 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **On adoption:** `adu.yaml` gets the m_d share with its source. The scenario's rule types (`TYPES`,
   `type_of`, rule priors) are split to match, in their own PR with tests. Nothing in config changes in this
   entry.
+- **Results (run 2026-11-04 on b1148ba; `reports/adu-detached/`, log `run-2026-11-04-log.txt`):**
+  - **Full fit:** θ 1.337 per 1,000 (0.869–2.294), α 2.031.
+    - m_o is 1.0 (0.8–1.0) and m_x is 0.3 (0.2–1.0).
+    - m_d is 0.3, with a 90% interval of 0.1–1.0. It is estimable (narrower than 0.01–1.0), but the interval
+      includes m_x.
+    - Log-likelihood −382.464, a gain of 1.254 over D-041.
+  - **Folds:** without MN, m_d is not estimable (0.01–1.0); the other three folds match the full fit.
+  - **Attached-only places, in-sample:** 0.21 (D-041 0.08). The change comes from the structure, not from
+    m_d differing from m_x. A rule that is attached-only and has another restriction now gets m_x × m_d =
+    0.09, where it got 0.3.
+  - **Leave one state out:**
+    - MN useful (observed ÷ P50 0.55), NC useful (0.58), OH useful (2.00, on the boundary), TX inside only
+      (2.16). D-041 had OH and TX inside only.
+    - K1 0.658 (D-041 0.791). None missed. Median P90/P10 23.4 (D-041 28.0).
+    - Test set from the full fit: Raleigh and Durham inside only, observed ÷ P50 2.27.
+  - **Adoption rule:** m_d's interval does not exclude m_x, and the gain (1.254) is under 1.353. **D-046 is
+    not adopted; D-041 stays.**
+  - **WS-ENGINE's notes, for Ben:**
+    - The backtest is better on every pre-registered measure, but the likelihood does not separate m_d from
+      m_x. With α near 2, ten attached-only places with zeros are weak evidence: under the fitted spread,
+      a zero against 30 expected has a probability near 0.17.
+    - Any change to adopt the split structure anyway (m_d tied to m_x, so restrictions compound) would be a
+      new entry, written before it is fitted. It should not be read off this run.
+    - The large place spread (α) remains the main problem. Approaches 2 and 3 target it.
