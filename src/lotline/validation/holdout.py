@@ -67,6 +67,7 @@ def held_out_mask(
 
     A holdout's place includes its `reporting_geoids`: the GEOIDs its outcomes are filed under (BPS reports
     Charlotte's permits under Mecklenburg County), which are hidden over the same window.
+    A statewide holdout (2-digit `geoid`) covers every row whose GEOID starts with the state FIPS.
 
     Pass `date_col`, `year_col`, or both (permits: `issue_date` and `issue_year`). With both, a row's date is
     used when present and its year otherwise. A year counts as held out if any day of it is in the window.
@@ -80,7 +81,10 @@ def held_out_mask(
         raise ValueError("pass date_col, year_col or both")
     mask = pd.Series(False, index=df.index)
     for h in holdouts:
-        place = df[geoid_col].astype("string").isin(h.geoids).fillna(False).astype(bool)
+        geoids = df[geoid_col].astype("string")
+        place = geoids.isin(h.geoids).fillna(False).astype(bool)
+        if h.statewide:  # every jurisdiction in the state: its GEOIDs all start with the state FIPS
+            place |= geoids.str.startswith(h.geoid).fillna(False).astype(bool)
         dates = pd.to_datetime(df[date_col]) if date_col else pd.Series(pd.NaT, index=df.index)
         years = df[year_col] if year_col else pd.Series(pd.NA, index=df.index, dtype="Int64")
         until = pd.Timestamp.max if snapshot else pd.Timestamp(h.outcome_until)
