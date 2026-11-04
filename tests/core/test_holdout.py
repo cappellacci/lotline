@@ -240,7 +240,10 @@ def test_statewide_holdout_hides_every_jurisdiction_in_the_state_only():
     # place (7), township-style (10), county remainder (5) and state total (2) in Oregon; Ohio rows untouched
     bps = pd.DataFrame(
         {
-            "geoid": ["4159000", "4105800", "4100000001", "41051", "41", "41051", "3918000", "39049", "4159000"],
+            "geoid": [
+                *["4159000", "4105800", "4100000001", "41051", "41"],
+                *["41051", "3918000", "39049", "4159000"],
+            ],
             "year": [2018, 2025, 2019, 2020, 2021, 2017, 2020, 2020, 2017],
         }
     )
@@ -249,7 +252,9 @@ def test_statewide_holdout_hides_every_jurisdiction_in_the_state_only():
 
 
 def test_statewide_holdout_hides_every_oregon_roll_from_the_window_on():
-    rolls = pd.DataFrame({"jurisdiction_geoid": ["4159000", "4159000", "4105800"], "vintage": [2017, 2018, 2026]})
+    rolls = pd.DataFrame(
+        {"jurisdiction_geoid": ["4159000", "4159000", "4105800"], "vintage": [2017, 2018, 2026]}
+    )
     hidden = holdout.held_out_mask(
         rolls, [OREGON], geoid_col="jurisdiction_geoid", year_col="vintage", snapshot=True
     )

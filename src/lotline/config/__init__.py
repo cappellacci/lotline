@@ -22,8 +22,8 @@ class _Model(BaseModel):
 class Holdout(_Model):
     """A place whose post-reform outcomes stay hidden until a frozen prediction is on main.
 
-    `geoid` is a place (7 digits) or township (10 digits). A 2-digit state FIPS holds out the whole state: every
-    row whose GEOID starts with it (places, townships, county remainders and the state total), as for a
+    `geoid` is a place (7 digits) or township (10 digits). A 2-digit state FIPS holds out the whole state:
+    every row whose GEOID starts with it (places, townships, county remainders and the state total), as for a
     transfer test that predicts a state from the others before any of its outcomes are seen.
     """
 
