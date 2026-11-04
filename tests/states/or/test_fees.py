@@ -41,3 +41,14 @@ def test_per_unit_totals_match_the_hand_sums(totals, geoid, btype, expected):
 
 def test_every_coded_total_is_under_the_handbook_50k(totals):
     assert (totals < 50000).all()
+
+
+def test_eugene_stays_on_the_handbook_prior_until_its_bill_is_complete():
+    """Transportation (per trip) can't be priced per home from the order, so no Eugene row has a per-unit
+    amount and the fees scenario falls back to the national prior instead of a partial bill."""
+    from lotline.model.scenarios.fees import local_fees
+
+    f = load_fees("OR")
+    eugene = f[f["jurisdiction_geoid"] == EUGENE]
+    assert len(eugene) > 20 and eugene["amount_per_unit_usd"].isna().all()
+    assert EUGENE not in set(local_fees(f)["geoid"])
