@@ -811,6 +811,16 @@ def _best_alpha(f) -> tuple[float, float]:
     return (0.0, pois) if pois >= best else (math.exp(la), best)
 
 
+def _at_tau(terms: StateTerms, tau: float, log_theta_range=(-14.0, 0.0)) -> tuple[float, float, float]:
+    """max over θ and α at a given τ -> (log θ, α, loglik)."""
+
+    def f(lt):
+        return _best_alpha(lambda a: state_loglik(terms, math.exp(lt), a, tau))
+
+    lt, ll = _golden_max(lambda lt: f(lt)[1], *log_theta_range, tol=1e-5)
+    return lt, f(lt)[0], ll
+
+
 def fit_state_effect(
     places: list[PlaceData], m_owner: float, m_other: float, log_theta_range=(-14.0, 0.0)
 ) -> StateFit:
@@ -818,12 +828,8 @@ def fit_state_effect(
     intervals for θ (α, τ maximized) and τ (θ, α maximized), χ² 1 df."""
     terms = state_terms(places, _cvals(m_owner, m_other))
 
-    def at_tau(tau: float) -> tuple[float, float, float]:  # -> (log θ, α, loglik)
-        def f(lt):
-            return _best_alpha(lambda a: state_loglik(terms, math.exp(lt), a, tau))
-
-        lt, ll = _golden_max(lambda lt: f(lt)[1], *log_theta_range, tol=1e-5)
-        return lt, f(lt)[0], ll
+    def at_tau(tau: float) -> tuple[float, float, float]:
+        return _at_tau(terms, tau, log_theta_range)
 
     def at_theta(lt: float) -> float:
         return _golden_max(
@@ -879,15 +885,47 @@ def state_multipliers(places: list[PlaceData], fit: StateFit, grid: int = 801) -
     return out
 
 
-def predict_unseen_state(places: list[PlaceData], fit: StateFit, draws: int = 20_000, seed: int = 0) -> dict:
+TAU_GRID = tuple(round(0.05 * i, 2) for i in range(51))  # D-044: τ = 0, 0.05, ..., 2.5
+
+
+def tau_profile(places: list[PlaceData], m_owner: float, m_other: float, grid=TAU_GRID) -> np.ndarray:
+    """τ's profile log-likelihood on `grid` (θ and α maximized at each τ, rule shares held), D-044."""
+    terms = state_terms(places, _cvals(m_owner, m_other))
+    return np.array([_at_tau(terms, float(t))[2] for t in grid])
+
+
+def tau_probabilities(loglik) -> np.ndarray:
+    """Grid probabilities ∝ exp(profile log-likelihood): a flat prior over the grid (D-044).
+
+    By hand, log-likelihoods (0, −log 2, −log 4): probabilities (4, 2, 1) / 7."""
+    ll = np.asarray(loglik, dtype=float)
+    w = np.exp(ll - ll.max())
+    return w / w.sum()
+
+
+def draw_tau(grid, probs, n: int, rng) -> np.ndarray:
+    """n values of τ from the grid distribution (D-044 main)."""
+    return rng.choice(np.asarray(grid, dtype=float), size=n, p=np.asarray(probs, dtype=float))
+
+
+def draw_tau_half_normal(tau_high: float, n: int, rng) -> np.ndarray:
+    """D-044 sensitivity T1: |N(0, σ²)| with its 90th percentile at τ's upper bound, σ = upper / 1.645."""
+    return np.abs(rng.normal(0.0, tau_high / Z_95, size=n))
+
+
+def predict_unseen_state(
+    places: list[PlaceData], fit: StateFit, draws: int = 20_000, seed: int = 0, taus=None
+) -> dict:
     """Joint predictive counts for a state outside the fit set (D-043): {geoid: draws × years}. Per draw, θ
     from its interval and one state multiplier exp(τ z), z ~ N(0, 1), shared by every place (median kept at
-    θ); then each place's own u and blank-field combination as in `predict_places`."""
+    θ); then each place's own u and blank-field combination as in `predict_places`. `taus`, one per draw
+    (D-044), replaces the fixed τ̂."""
     import zlib
 
     rng = np.random.default_rng(seed)
     theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=draws))
-    v = np.exp(fit.tau * rng.standard_normal(draws))
+    tau = fit.tau if taus is None else np.asarray(taus, dtype=float)
+    v = np.exp(tau * rng.standard_normal(draws))
     cv = _cvals(fit.m_owner, fit.m_other)
     out = {}
     for pl in places:

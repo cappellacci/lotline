@@ -721,6 +721,91 @@ def state_effect_main(store, out: Path | None, workers: int) -> None:
         k1_rows.assign(k1=k1).to_csv(out / "k1.csv", index=False)
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-044: τ drawn from its profile likelihood in every draw
+# ---------------------------------------------------------------------------------------------------------
+
+D043 = Path(__file__).resolve().parents[2] / "reports" / "adu-state-effect" / "statewide.csv"
+TAU_DRAWS = 20_000
+
+
+def _tau_task(args):
+    """As `_state_fit_task`, plus τ's profile on `cal.TAU_GRID` with the same rule shares."""
+    st, places = args
+    st, f3, sf, err = _state_fit_task((st, places))
+    use = [p for p in places if p.state != st]
+    ll = None if sf is None else cal.tau_profile(use, sf.m_owner, sf.m_other)
+    return st, f3, sf, ll, err
+
+
+def _tau_summary(name: str, sf, probs, rng) -> dict:
+    grid = np.asarray(cal.TAU_GRID)
+    cdf = np.cumsum(probs)
+    t = cal.draw_tau(grid, probs, TAU_DRAWS, rng)
+    mult = np.exp(t * rng.standard_normal(TAU_DRAWS))
+    med, p90 = (float(grid[np.searchsorted(cdf, q)]) for q in (0.5, 0.9))
+    return dict(fit=name, tau_hat=sf.tau, tau_high=sf.tau_high, tau_median=med, tau_p90=p90,
+                share_at_0=float(probs[0]),
+                mult_p10=float(np.percentile(mult, 10)), mult_p50=float(np.percentile(mult, 50)),
+                mult_p90=float(np.percentile(mult, 90)))  # fmt: skip
+
+
+def tau_draws_main(store, out: Path | None, workers: int) -> None:
+    """D-044: τ's profile for the full fit and each leave-one-state-out fold, the unseen-state multiplier, and
+    leave one state out with τ drawn (main: the profile; T1: half-normal), next to D-041 and D-043."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    cs = cal.count_settings()
+    places, test = four_state_places(store, cs), _test_set(store, cs)
+    print(f"=== D-044: {len(places)} fit places, counts {cs} ===", flush=True)
+    with ProcessPoolExecutor(workers) as pool:
+        results = list(pool.map(_tau_task, [(st, places) for st in ("",) + STATES]))
+    profiles, summary, draws = [], [], {"main": {}, "T1 half-normal": {}}
+    for st, _, sf, ll, err in results:
+        name = "all four states" if st == "" else f"without {st}"
+        if sf is None:
+            print(f"{name}: not estimable ({err})")
+            continue
+        probs = cal.tau_probabilities(ll)
+        profiles += [
+            dict(fit=name, tau=t, loglik=v, prob=q) for t, v, q in zip(cal.TAU_GRID, ll, probs, strict=True)
+        ]
+        summary.append(_tau_summary(name, sf, probs, np.random.default_rng([SEED, 44, len(summary)])))
+        if st:
+            pred = [p for p in places + test if p.state == st]
+            rng = np.random.default_rng([SEED, 44, 100 + STATES.index(st)])
+            taus = {"main": cal.draw_tau(cal.TAU_GRID, probs, TAU_DRAWS, rng),
+                    "T1 half-normal": cal.draw_tau_half_normal(sf.tau_high, TAU_DRAWS, rng)}  # fmt: skip
+            for run, t in taus.items():
+                draws[run] |= cal.predict_unseen_state(pred, sf, draws=TAU_DRAWS, seed=SEED, taus=t)
+    summ = pd.DataFrame(summary)
+    print(summ.round(3).to_string(index=False), flush=True)
+    portland = _portland_paths(store, places + test, cs)
+    d041 = pd.read_csv(D041)
+    d041 = d041[d041["test"] == "main: leave one state out"][
+        ["group", "p50", "p10", "p90", "p90_over_p10", "verdict"]
+    ]
+    d043 = pd.read_csv(D043)[["group", "p10", "p50", "p90", "p90_over_p10", "verdict"]]
+    tables = []
+    for run, d in draws.items():
+        t = state_totals(
+            f"D-044 {run}: leave one state out, tau drawn", _groups(places, test, True), d, portland
+        )
+        t = t.merge(d043.add_suffix("_d043").rename(columns={"group_d043": "group"}), on="group")
+        t = t.merge(d041.add_suffix("_d041").rename(columns={"group_d041": "group"}), on="group")
+        tables.append(t.assign(run=run))
+        four = t[t["group"].isin(STATES)]
+        med = [four[c].median() for c in ("p90_over_p10", "p90_over_p10_d043", "p90_over_p10_d041")]
+        missed = int((t["verdict"] == "missed").sum())
+        print(f"{run}: missed {missed}; median P90/P10 {med[0]:.1f} (D-043 {med[1]:.1f}, D-041 {med[2]:.1f})")
+    if out is not None:
+        pd.DataFrame(profiles).to_csv(out / "tau_profile.csv", index=False)
+        summ.to_csv(out / "tau_summary.csv", index=False)
+        pd.concat(tables).to_csv(out / "statewide.csv", index=False)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -741,8 +826,12 @@ def main() -> None:
     ap.add_argument("--statewide", action="store_true", help="D-040: statewide backtest (state totals)")
     ap.add_argument("--counts", action="store_true", help="D-041: consistent counts, four-state comparison")
     ap.add_argument("--state-effect", action="store_true", help="D-043: τ, the spread between states")
+    ap.add_argument("--tau-draws", action="store_true", help="D-044: τ drawn from its profile likelihood")
     ap.add_argument("--out", type=Path, help="--four-state / --statewide: folder for the CSVs")
     a = ap.parse_args()
+    if a.tau_draws:
+        tau_draws_main(DataStore(), a.out, a.workers)
+        return
     if a.state_effect:
         state_effect_main(DataStore(), a.out, a.workers)
         return

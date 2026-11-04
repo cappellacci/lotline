@@ -444,3 +444,45 @@ def test_unseen_state_draw_is_shared_by_its_places():
     assert np.corrcoef(a, b)[0, 1] > 0.5
     flat = cal.predict_unseen_state(pls, dataclasses.replace(fit, tau=0.0), draws=200_000, seed=1)
     assert abs(np.corrcoef(flat["X"][:, 0], flat["Y"][:, 0])[0, 1]) < 0.01
+
+
+# D-044: τ drawn from its likelihood
+
+
+def test_tau_probabilities_by_hand():
+    """Log-likelihoods (0, −log 2, −log 4) on three grid points: probabilities (4, 2, 1) / 7."""
+    p = cal.tau_probabilities([0.0, -math.log(2), -math.log(4)])
+    assert p == pytest.approx(np.array([4, 2, 1]) / 7)
+    assert cal.tau_probabilities([-1000.0, -1001.0]) == pytest.approx(
+        [1 / (1 + math.exp(-1)), 1 / (1 + math.e)]
+    )
+
+
+def test_tau_draws_follow_the_grid_and_the_half_normal():
+    rng = np.random.default_rng(2)
+    t = cal.draw_tau([0.0, 0.5, 1.0], [0.5, 0.3, 0.2], 200_000, rng)
+    assert [np.mean(t == v) for v in (0.0, 0.5, 1.0)] == pytest.approx([0.5, 0.3, 0.2], abs=0.005)
+    h = cal.draw_tau_half_normal(0.67, 200_000, rng)
+    assert np.quantile(h, 0.9) == pytest.approx(0.67, rel=0.02) and h.min() >= 0
+
+
+def test_tau_profile_peaks_at_the_fitted_tau():
+    """The profile on a grid reaches its maximum next to the fitted τ̂, and at τ = 0 it equals the fit without
+    state spread (D-043's identity)."""
+    places = _states(10, 0.6, seed=7)
+    fit = cal.fit_state_effect(places, 1.0, 1.0)
+    grid = (0.0, 0.3, 0.6, 0.9, 1.2)
+    ll = cal.tau_profile(places, 1.0, 1.0, grid)
+    assert abs(grid[int(np.argmax(ll))] - fit.tau) <= 0.3
+    assert ll.max() <= fit.loglik + 1e-6
+
+
+def test_unseen_state_draw_with_drawn_tau():
+    """taus all 0 gives no shared spread (corr ≈ 0); taus all 0.5 match the fixed τ = 0.5 draw exactly."""
+    pls = [_state_place("WI", g, [0], [10_000.0]) for g in ("X", "Y")]
+    fit = cal.StateFit(0.001, 0.001, 0.001, 1e-9, 0.5, 0.3, 0.8, 0.0, 1.0, 1.0, ("MN",), 1, 1)
+    d0 = cal.predict_unseen_state(pls, fit, draws=100_000, seed=1, taus=np.zeros(100_000))
+    assert abs(np.corrcoef(d0["X"][:, 0], d0["Y"][:, 0])[0, 1]) < 0.02
+    fixed = cal.predict_unseen_state(pls, fit, draws=1_000, seed=1)
+    drawn = cal.predict_unseen_state(pls, fit, draws=1_000, seed=1, taus=np.full(1_000, 0.5))
+    assert np.array_equal(fixed["X"], drawn["X"])
