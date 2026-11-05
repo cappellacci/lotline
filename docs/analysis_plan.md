@@ -3082,8 +3082,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   draws' seed. It is committed and merged to `main` before `--unblind V9-OR-TRANSFER` is ever passed
   (`validation.holdout.check_unblind`).
 
-- **Results, missing middle (scored 2026-11-05, after the freeze; ADU targets wait for the Portland and Bend
-  permit adapters).** Ben said "unblind and score" on 2026-11-05. `scripts/dev/v9_or_score.py` regenerated the
+- **Results, missing middle (scored 2026-11-05, after the freeze; ADU results follow below).** Ben said "unblind and score" on 2026-11-05. `scripts/dev/v9_or_score.py` regenerated the
   frozen draws, checked them identical to the file, and unblinded Oregon BPS in memory only. Outputs are in
   `reports/v9-oregon/`. 2–4 unit buildings, observed against P10 / P50 / P90:
 
@@ -3105,6 +3104,30 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     2025, 38% are above P90 in 2018–2025, before any rule reached them. Their 2015–2017 baseline is too low
     (D-051's stated bias).
   - **Reported, not tuned** (D-051). Nothing in `config/params/` changes because of this score.
+
+- **Results, ADU (scored 2026-11-05, after the freeze).** Ben said "merge and commit" after #300 added the
+  Portland and Bend permit adapters. Counts follow D-041: ADU-flagged permits by issue year, with co-built
+  ADUs dropped (`calibrate_adu.adu_counts`, `count_settings()`). Outputs are in `reports/v9-oregon/adu_*.csv`.
+
+  | Target, 2018–2025 | Observed | P10 | P50 | P90 | Verdict |
+  |---|---|---|---|---|---|
+  | Portland, transfer | 1,930 | 3 | 151 | 1,418 | missed (under) |
+  | Portland, own history (D-052) | 1,930 | 4,070 | 8,580 | 17,832 | missed (over) |
+  | Bend, both variants | 414 | 0 | 22 | 206 | missed (under) |
+
+  The 2018–2022 subtotals miss the same way: Portland 1,446 observed against 1–703 (transfer) and 2,256–8,548
+  (own history); Bend 271 against 0–126.
+  - **V9's pass rule (D-051) fails.** Both ADU totals fall outside P10–P90. The 2–4 unit total is just inside.
+  - **Portland's permits fell after 2018:** 532 in 2018, then 276, 194, 203, 241, 191, 156 and 137 (D-041
+    counts). Its 2010–2017 history rose from 63 to 486. The model has no term that turns a rise into a fall.
+    D-052's stated limit applies: the own-history variant folded Portland's fee-waiver years into u_i and
+    assumed they carried on. The 2018 extension (`OR-4159000-fees-2018`) came with conditions.
+  - **Counting flagged permits without the co-built rule** (2,260 for Portland, 2018–2025) misses the same
+    way. So the townhouse co-built question WS-OR raised in #300 doesn't change any verdict.
+  - **POST-HOC, not pre-registered (a diagnostic only):** the own-history variant re-run on the adapters' own
+    D-041 counts (Portland 2010–2017, Bend 2013–2017) gives Portland 2,752–12,590 and Bend 533–1,890 (P10–P90).
+    Both still miss, so the mismatch between Ord. 189050's counts and D-041's isn't the cause.
+  - **Reported, not tuned.** Nothing in `config/params/` changes because of this score.
 
 ### D-052 · 2026-11-05 · V9: a second ADU variant updated on each place's own pre-2018 permits (method only, before any freeze)
 - **Status:** Ben chose this on 2026-11-05, after the D-051 dry run and before any freeze. It adds a variant;
@@ -3139,3 +3162,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   its effect into u_i and so assumes it carried on after 2018 (its 2018 extension is the `OR-4159000-fees-2018` row).
 - **Scoring.** As D-051 for each variant, plus the gain: the CRPS of the own-history variant against the
   transfer variant for each ADU total.
+- **Result (2026-11-05, after the freeze; full table under D-051).** The own-history variant did worse than
+  the transfer variant for Portland: CRPS 4,934 against 1,242 over 2018–2025. Bend had no count, so its two
+  variants are identical. Portland's pre-2018 history was a rise (the fee-waiver years) that ended in 2018.
+  Carrying it forward over-predicted about fourfold. A short local history helps only if what drove it
+  continues.
