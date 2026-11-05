@@ -2910,3 +2910,32 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   beats D-041 by more than 2 paired SE, is not worse than D-041 in more than one of the four states, and is
   not worse on the test set by more than 2 log units. Otherwise D-041 stays. Adoption itself is Ben's call
   and gets its own PR, as written under each model's entry.
+- **Results (run 2026-11-04 on f90cdb3; `reports/adu-model-scores/`, log `run-2026-11-04-log.txt`):**
+  - **Held-out log score over the 51 places (higher is better), change from D-041 with 2 × paired SE:**
+
+    | Model | Total | Δ vs D-041 | 2 × paired SE | Δ MN | Δ NC | Δ OH | Δ TX | Test Δ |
+    |---|---|---|---|---|---|---|---|---|
+    | D-041 | −432.4 | — | — | — | — | — | — | — |
+    | D-046 | −425.5 | +6.9 | 8.5 | +6.4 | +0.3 | +0.1 | +0.2 | +0.2 |
+    | D-047 approach 2 | −341.8 | +90.7 | 113.1 | +69.8 | −0.6 | +1.8 | +19.6 | −0.8 |
+    | D-047 approach 3 | −322.2 | +110.2 | 141.2 | +76.5 | +0.9 | +1.3 | +31.4 | −1.7 |
+    | D-048 | −379.9 | +52.5 | 52.2 | +27.6 | −0.2 | +1.8 | +23.3 | +0.5 |
+
+  - **Decision rule as written:** the top model, approach 3, gains 110.2, which is under its 2 SE (141.2).
+    **D-041 stays.**
+  - **What the rule did not weigh:**
+    - The rule looks only at the top model. D-048 alone clears every bar: +52.5 against 52.2 (2 SE), worse
+      only in NC (−0.2), and +0.5 on the test set. Its margin over 2 SE is 0.3, so it is not robust.
+    - Every alternative scores better than D-041 in total, and every one that drops the ramp gains in MN, OH
+      and TX.
+    - The gains concentrate in a few large places. Under D-048: Austin +23.2, Minneapolis +10.8, Orono +4.3,
+      and the attached-only suburbs (Lakeville, Bloomington, Eagan) about +2.2 each. The paired SE is
+      therefore large.
+  - **The two out-of-state yardsticks disagree on D-048.** On state totals TX is missed (D-048 results). On
+    places, TX scores better than under D-041 (+23.3), because D-041 also predicts Austin poorly at the place
+    level; its state total was inside only because the range was wide.
+  - **Note:** blank-field combinations with weight 0 give log 0 = −inf in the mixture; they drop out of the
+    sum as intended (the run log's warnings).
+  - **WS-ENGINE's reading, for Ben:** three yardsticks now favour no ramp: in-sample (+55.8), held-out place
+    scores (+52.5, three of four states plus the test set) and the audit's year pattern. Only the noisy
+    state-total test goes against it. Adopting D-048 is Ben's decision; the written rules did not trigger it.

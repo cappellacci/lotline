@@ -87,3 +87,22 @@
 - **Decisions:** none adopted. Proposed next: a held-out log score per place as the yardstick.
 - **AI:** Claude Code (Opus 5.5) wrote D-048, the code and test, ran it once, and wrote up the results from
   the log.
+
+### LB-NNN · 2026-11-04 · engine · Which model predicts held-out places best?
+
+- **Question:** state totals are too noisy to choose between models. Does a held-out log score per place
+  separate them? Ben approved D-049.
+- **Outputs:**
+  - D-049 in `docs/analysis_plan.md` (60d7c09).
+  - `src/lotline/model/score.py` with tests in `tests/model/test_score.py`, and `scripts/dev/score_models.py`
+    (f90cdb3).
+  - Scored once into `reports/adu-model-scores/`.
+- **Findings:**
+  - Every alternative beats D-041 in total; the gains are concentrated in Austin and Minneapolis, so paired
+    SEs are large.
+  - The written rule (top model only) keeps D-041.
+  - D-048 (no ramp) alone clears each bar, by a margin of 0.3 over 2 SE: +52.5, better in MN, OH, TX and the
+    test set.
+- **Decisions:** none adopted. Whether to adopt D-048 is put to Ben.
+- **AI:** Claude Code (Opus 5.5) wrote D-049, the scoring code and tests, ran it once, and wrote up the
+  results from the log.
