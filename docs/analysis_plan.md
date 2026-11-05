@@ -2879,6 +2879,25 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       San Antonio's rate) decides the TX verdict for every model tried.
     - Proposed next entry: a sharper model-comparison yardstick, held-out log score per place, before
       choosing between D-041 and D-048.
+- **Adopted 2026-11-05 (Ben: "Adopt D-048"), after D-049.** No pre-registered rule triggered it: Ben chose it
+  on D-049's evidence (three yardsticks favour no ramp; only the noisy state-total test opposes it).
+  - **Ramp:** `adu_ramp_half_years` and `adu_ramp_slope_years` are replaced by `adu_ramp_share` = 1 (fixed),
+    read through `hazard.adu_ramp`. The old logistic stays as `hazard.PRE_D048_RAMP`; the scripts behind
+    D-039 to D-049 now pass it (`calibrate_adu.pre_d048`) so their recorded runs still reproduce.
+  - **θ and α written to config** (`hazard.yaml`): θ 0.000659 (0.000443–0.001023), α 2.214 (1.406–3.486 from
+    the observed-information log-SE 0.276). These replace D-019 fit 3's 0.001038 and 4.735 (16 places, with
+    the ramp); D-041's θ was never written to config.
+  - **Anchor terms** (`adu_anchor.yaml`) regenerated with `--draw-terms` on the D-048 fit set (51 places, 296
+    place-years) instead of D-019's 16 places.
+  - **Deviation from "each in its own PR":** the ramp, θ/α and anchor terms are one PR. The ramp without the
+    refit would pair a no-ramp scenario with a θ fitted with the ramp.
+  - **Correction to "five-year totals will rise":** that held θ fixed. θ falls by 37%, so for a typical place
+    the five-year mean is about 7% lower than under the config it replaces (×0.929 = 0.659 × 5 / (1.038 ×
+    3.417), where 3.417 is the old ramp's sum over years 1–5). Year 1 is about 3× higher, year 2 ×1.27, years
+    3–5 about ×0.65–0.80. Against D-041's θ the five-year mean would be ×0.78.
+  - **Not redone here:** D-044's state effect (`adu_state_effect.yaml`) was estimated from D-041's folds,
+    which had the ramp. D-048's fold θs run from 0.56 (without TX) to 1.16 per 1,000 (without MN). The state
+    effect should be re-estimated under D-048; until then it is D-041's.
 
 ### D-049 · 2026-11-04 · A sharper yardstick: held-out log score per place (method only, before any scoring)
 

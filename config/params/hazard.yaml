@@ -8,12 +8,12 @@
 # ---- The evidence anchor ----
 
 adu_mature_hazard_ref:
-  value: 0.001038
-  low: 0.000453
-  high: 0.003173
+  value: 0.000659
+  low: 0.000443
+  high: 0.001023
   unit: ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate
-  source: "Estimated, D-019 fit 3 (pre-registered: graded rule shares, gamma place effects, blank fields integrated per place, rule coverage), scripts/dev/calibrate_adu.py: Poisson-gamma maximum likelihood over 16 places, 115 place-years (Minneapolis, Austin 2016-23, 14 Twin Cities suburbs; 2,799 ADU permits), 90% profile-likelihood interval; Raleigh and Durham 2021-25 held out as the test. Earlier fits: 0.000467 (fit 1), 0.000790 (fit 2). Research band: 4 per 1,000, Portland (E046, E047)"
-  notes: "About 0.26 of Portland's 4 per 1,000 (D-019 explains the gap). This is the anchor for a typical place; each place's own multiplier varies widely (adu_place_effect_variance). Re-run the script as more rules are coded; no code change needed. Drawn lognormal (D-030): median at the estimate, log-SD 0.592 from the 90% interval ((ln high - ln low) / 3.29, as the fit's own predictive check), then shifted with the judgment parameters it was fitted at (adu_anchor.yaml). Not triangular: triangular(low, value, high) put the median at 1.47e-3, 41% above the estimate."
+  source: "Estimated, D-048 (adopted 2026-11-05): D-041's fit 3 (graded rule shares, gamma place effects, blank fields integrated per place, rule coverage, D-041 count rules) with no ramp, scripts/dev/calibrate_adu.py: Poisson-gamma maximum likelihood over 51 places, 296 place-years in MN, NC, OH and TX (D-039 fit set), 90% profile-likelihood interval; Raleigh and Durham 2021-25 held out as the test. Earlier: 0.001038 (D-019 fit 3, 16 places, with the ramp), 0.001232 (D-041, with the ramp; never written here). Research band: 4 per 1,000, Portland (E046, E047)"
+  notes: "About 0.16 of Portland's 4 per 1,000. Lower than D-019's 0.001038 because with no ramp a young rule counts at full strength, so the same permits imply a lower rate. This is the anchor for a typical place; each place's own multiplier varies widely (adu_place_effect_variance). Drawn lognormal (D-030): median at the estimate, log-SD 0.254 from the 90% interval ((ln high - ln low) / 3.29), then shifted with the judgment parameters it was fitted at (adu_anchor.yaml)."
 
 adu_ref_rent_usd:
   value: 1573
@@ -129,7 +129,7 @@ adu_ramp_share:
   high: 1.0
   unit: share of the mature hazard a rule has reached in each year it is in force (1 = full strength from year 1)
   source: "Estimated choice, D-048 (adopted by Ben 2026-11-05): fitting D-041 with no ramp raised the log-likelihood by 55.8 with no added parameter, D-047 approach 2 chose no ramp in every fold, D-045 found counts flat or falling where the ramp expected a 3-5x rise, and D-049's held-out place scores favoured it (+52.5, 2 SE 52.2). Replaces adu_ramp_half_years 2.0 (1.0-3.5) and adu_ramp_slope_years 0.75 (0.5-1.5), the logistic ramp from adu-study-design.md (Seattle ~3 years to plateau, E044; Portland ~6, E046)"
-  notes: "Fixed, not drawn. Five-year totals are higher than under the old ramp, because a new rule reaches full strength in year 1. The old logistic is kept in code (hazard.PRE_D048_RAMP) so D-041 and earlier fits can be reproduced."
+  notes: "Fixed, not drawn. With the D-048 anchor (0.000659, down from 0.001038) a typical place's five-year mean is about 7% lower than before: year 1 about 3x higher, years 3-5 about a third lower. The old logistic is kept in code (hazard.PRE_D048_RAMP) so D-041 and earlier fits can be reproduced."
 
 # ---- Outside the calibration range ----
 
@@ -149,9 +149,9 @@ adu_extrapolation_widening:
   source: "Judgment. Statistical protocol §5.5 step 3 and two-prong design: don't extrapolate silently; flag and widen. At 1.0, a place with rent 40% below the reference range (log distance 0.5) gets an extra log-sd of 0.5 (P10-P90 about x0.5 to x1.9)"
 
 adu_place_effect_variance:
-  value: 4.735
-  low: 2.980
-  high: 7.523
+  value: 2.214
+  low: 1.406
+  high: 3.486
   unit: variance of a place's multiplier on the ADU hazard (gamma, mean 1)
-  source: "Estimated, D-019 fit 3 (alpha): fitted place multipliers range from ~0 (Eagan, Lakeville, St. Louis Park) to ~11 (Austin)"
-  notes: "Each simulation draw gives each place its own multiplier, so a single place's range is very wide (its median is far below its mean); state totals, summed over many independent places, are much tighter. Drawn lognormal around the estimate (D-030): low and high are the 90% interval from the observed-information log-SE 0.281 (adu_anchor.yaml, recomputed on the current fit set; correlation with log theta about 0, so the two are drawn nearly independently), then shifted with the judgment parameters it was fitted at. Before D-030 it was fixed (its uncertainty not propagated)."
+  source: "Estimated, D-048 (alpha, adopted 2026-11-05): same fit as adu_mature_hazard_ref, 51 places in four states. Earlier: 4.735 (D-019 fit 3, 16 places, with the ramp)"
+  notes: "Each simulation draw gives each place its own multiplier, so a single place's range is very wide (its median is far below its mean); state totals, summed over many independent places, are much tighter. Drawn lognormal around the estimate (D-030): low and high are the 90% interval from the observed-information log-SE 0.276 (adu_anchor.yaml; correlation with log theta 0.06), then shifted with the judgment parameters it was fitted at."

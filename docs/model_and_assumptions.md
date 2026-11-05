@@ -382,9 +382,8 @@ is thin; places far from any comparable will lean on the mechanism prong and say
 `model/hazard.py`, parameters in `config/params/hazard.yaml` (D-018). The hazard has one anchor: the mature
 ADU permits per eligible lot a year at the reference place's rent, home value and rates (Portland 2015–19).
 The research band puts Portland at about 4 per 1,000 (`docs/research/adu-study-design.md`); Lotline now
-**estimates the anchor from its own post-reform places: 1.04 per 1,000 (90% interval 0.45–3.17)** for a
-typical place, with large place-to-place differences, see
-"Estimating the anchor" below and D-019. The hazard carries that anchor to another place through what makes an ADU worth building there.
+**estimates the anchor from its own post-reform places: 0.66 per 1,000 (90% interval 0.44–1.02)** for a
+typical place, with large place-to-place differences, see "Estimating the anchor" below, D-041 and D-048. The hazard carries that anchor to another place through what makes an ADU worth building there.
 Since D-048 (adopted 2026-11-05) a rule is at full strength from its first year, with no ramp-in:
 
     hazard in year t = ramp(t) × mature hazard
@@ -394,7 +393,7 @@ Since D-048 (adopted 2026-11-05) a rule is at full strength from its first year,
 |---|---|---|
 | PCR | ADU price-to-cost ratio from the pro forma (rented out): value (a year's rent after vacancy and operating costs ÷ cap rate) over cost (hard + soft + fees + interest while building). Rent = the place's median gross rent (ACS) × `adu_rent_to_median_ratio`. | e.g. 1.13 Portland 2015–19, 0.79 at $1,100 a month |
 | F(PCR) | Share of lots where an ADU pencils. Lots differ (a garage to convert, slope, the owner's plans), so each lot's ratio is lognormal around the place's PCR; a lot pencils above 1 + the owner's margin. F = Φ((ln PCR − ln(1 + margin)) / σ). | σ 0.5 (0.25–0.8), judgment; margin 10% (0–20%) |
-| u | Uptake among lots that pencil, set so the reference place gets the anchor exactly. Reference and target use the same costs, so only local rent, home value and rates transport. | h_ref 0.001038 (0.000453–0.003173), estimated (D-019 fit 3) |
+| u | Uptake among lots that pencil, set so the reference place gets the anchor exactly. Reference and target use the same costs, so only local rent, home value and rates transport. | h_ref 0.000659 (0.000443–0.001023), estimated (D-048) |
 | Home equity (C22) | Owners pay for most ADUs (Portland 62% cash; ~40% used home equity, E045): median home value relative to Portland's. | β_equity 0.25 (0–0.5), judgment |
 | Rates (C01, C22) | 30-year mortgage rate relative to the 2015–19 mean (3.99%), beyond the construction loan already in the pro forma. | β_rate 0.07 per point (0–0.15), judgment |
 | ramp(t) | Share of the mature hazard reached t years after a rule took effect. 1 in every year (D-048): Lotline's own counts were flat or falling after reforms, not rising, and every fit that could choose dropped the ramp. Before D-048 it was a logistic, half 2 years, slope 0.75. | 1 (fixed) |
@@ -454,8 +453,9 @@ each year's actual rate from `market_geo_year`.
 **Worked example** (`test_one_jurisdiction_year_by_hand`): 2,000 eligible parcels, mature hazard 0.0014219 (the
 hazard example), no ADU rule today. Year 1, at full strength (D-048): 2,000 × 0.0014219 = **2.84 ADU permits added**, all of
 them extra because current rules give none; additional homes = 2.84 × 0.65 × 0.90 = **1.66**. Year 2:
-(2,000 − 2.84) × 0.0014219 = 2.84 permits added. **Five-year totals are higher than before D-048**: the old
-ramp gave 0.59 and 1.42 in years 1 and 2, because a new rule reached half strength only in year 2.
+(2,000 − 2.84) × 0.0014219 = 2.84 permits added. At this fixed hazard the old ramp gave 0.59 and 1.42 in
+years 1 and 2. But D-048 also lowered the fitted anchor (0.66 per 1,000, from 1.04), so for a typical place
+the five-year mean is about 7% lower than before D-048: year 1 about 3× higher, years 3–5 about a third lower.
 
 **Output.** Per place and year, and as five-year totals: P10/P50/P90 and mean (over 1,000 draws of every
 uncertain parameter) of Handbook ADU permits, current-rules ADU permits, permits added and additional homes,
@@ -464,7 +464,14 @@ rule class and note, and the calibration distance with an outside-the-range flag
 percentiles of each draw's sum. Places below 20 eligible parcels are not shown alone (D-015).
 
 **Estimating the anchor** (`model/calibrate_adu.py`, `scripts/dev/calibrate_adu.py`; each specification
-pre-registered in D-019 before it was run). Fit 3, the current one: ADU permit counts in place-years with a
+pre-registered before it was run). **Current (D-048, adopted 2026-11-05):** D-041's fit 3 with no ramp, over 51
+places and 296 place-years in Minnesota, North Carolina, Ohio and Texas (D-039), Raleigh and Durham held out.
+Anchor 0.66 per 1,000 (0.44–1.02), place-effect variance α 2.2 (1.4–3.5), m_o 1.0, m_x 0.3. Dropping the
+ramp raised the fit's log-likelihood by 55.8 with no added parameter and scored better on held-out places
+(D-049). Leaving each state out in turn, Minnesota, North Carolina and Ohio land in the useful band; Texas is
+missed (observed 1,108 against P10–P90 31–977); Raleigh and Durham are inside the range (observed 410, P50 120).
+
+*Earlier fit, kept for the record (D-019 fit 3, with the ramp):* ADU permit counts in place-years with a
 coded ADU rule in force and permits that flag ADUs, modelled as Poisson around the scenario's current-rules
 path (eligible parcels × anchor × hazard modifiers × the rule's c × coverage × ramp), with each year's actual
 rent, home value and mortgage rate; each place has its own multiplier u (gamma, mean 1, variance α) shared over
@@ -645,7 +652,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 <!-- params-table:start -->
 <!-- GENERATED by `uv run python scripts/dev/params_table.py` from config/params/*.yaml. Do not edit by hand. -->
 
-243 parameters in 19 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
+238 parameters in 19 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
 **`config/params/adu.yaml`** (19 parameters)
 
@@ -671,51 +678,47 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_estimation_permutations` | 999 | fixed | permutations | Choice: randomization inference permuting adoption years among treated places (D-023 asks for it, not its siz… |
 | `adu_transport_widening` | 1 | fixed | standard deviation of log(predicted mean) per unit distance outside the Minnesota modifier range | D-023: places outside the Minnesota modifier range are flagged and their intervals widened as in hazard.widen |
 
-**`config/params/adu_anchor.yaml`** (41 parameters)
+**`config/params/adu_anchor.yaml`** (37 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `adu_anchor_info_log_se_theta` | 0.327905 | fixed | log-SE of theta (observed information, alpha profiled jointly) | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `adu_anchor_info_log_se_alpha` | 0.281355 | fixed | log-SE of alpha (observed information) | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `adu_anchor_info_corr` | 0.00359983 | fixed | correlation of log theta and log alpha (observed information) | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_sqft` | -8.36878e-05 | fixed | change in log(theta) per unit of adu_sqft | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_sqft` | 3.99086e-05 | fixed | change in log(alpha) per unit of adu_sqft | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__hard_cost_per_sqft_usd` | -0.000405051 | fixed | change in log(theta) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__hard_cost_per_sqft_usd` | 0.000192952 | fixed | change in log(alpha) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_hard_cost_premium` | -0.0582388 | fixed | change in log(theta) per unit of adu_hard_cost_premium | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_hard_cost_premium` | 0.0277729 | fixed | change in log(alpha) per unit of adu_hard_cost_premium | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__soft_cost_share` | -0.0558336 | fixed | change in log(theta) per unit of soft_cost_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__soft_cost_share` | 0.0266214 | fixed | change in log(alpha) per unit of soft_cost_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__construction_loan_rate` | -0.024351 | fixed | change in log(theta) per unit of construction_loan_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__construction_loan_rate` | 0.0116262 | fixed | change in log(alpha) per unit of construction_loan_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__average_draw_share` | -0.00413448 | fixed | change in log(theta) per unit of average_draw_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__average_draw_share` | 0.00197177 | fixed | change in log(alpha) per unit of average_draw_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__construction_years_irc` | -0.00276323 | fixed | change in log(theta) per unit of construction_years_irc | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__construction_years_irc` | 0.00131498 | fixed | change in log(alpha) per unit of construction_years_irc | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__rental_vacancy_rate` | -0.0704784 | fixed | change in log(theta) per unit of rental_vacancy_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__rental_vacancy_rate` | 0.033569 | fixed | change in log(alpha) per unit of rental_vacancy_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__operating_expense_share` | -0.103135 | fixed | change in log(theta) per unit of operating_expense_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__operating_expense_share` | 0.0492648 | fixed | change in log(alpha) per unit of operating_expense_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__cap_rate` | -1.21703 | fixed | change in log(theta) per unit of cap_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__cap_rate` | 0.580177 | fixed | change in log(alpha) per unit of cap_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_margin` | -0.0609209 | fixed | change in log(theta) per unit of adu_margin | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_margin` | 0.0290513 | fixed | change in log(alpha) per unit of adu_margin | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_rent_to_median_ratio` | 0.0670603 | fixed | change in log(theta) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_rent_to_median_ratio` | -0.032068 | fixed | change in log(alpha) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_feasibility_dispersion` | 0.0139403 | fixed | change in log(theta) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_feasibility_dispersion` | -0.0133284 | fixed | change in log(alpha) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_equity_elasticity` | 0.112877 | fixed | change in log(theta) per unit of adu_equity_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_equity_elasticity` | -0.0562958 | fixed | change in log(alpha) per unit of adu_equity_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_rate_semi_elasticity` | 1.37257 | fixed | change in log(theta) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_rate_semi_elasticity` | -0.173496 | fixed | change in log(alpha) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_ramp_half_years` | 0.272572 | fixed | change in log(theta) per unit of adu_ramp_half_years | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_ramp_half_years` | -0.020025 | fixed | change in log(alpha) per unit of adu_ramp_half_years | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_ramp_slope_years` | -0.109115 | fixed | change in log(theta) per unit of adu_ramp_slope_years | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_ramp_slope_years` | 0.0392594 | fixed | change in log(alpha) per unit of adu_ramp_slope_years | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_partial_rule_share` | -3.04933 | fixed | change in log(theta) per unit of adu_partial_rule_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_partial_rule_share` | -0.209192 | fixed | change in log(alpha) per unit of adu_partial_rule_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_theta__adu_owner_occupancy_share` | -0.507588 | fixed | change in log(theta) per unit of adu_owner_occupancy_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
-| `anchor_slope_alpha__adu_owner_occupancy_share` | 0.215863 | fixed | change in log(alpha) per unit of adu_owner_occupancy_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-019 fit 3 likelihood |
+| `adu_anchor_info_log_se_theta` | 0.249469 | fixed | log-SE of theta (observed information, alpha profiled jointly) | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `adu_anchor_info_log_se_alpha` | 0.275699 | fixed | log-SE of alpha (observed information) | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `adu_anchor_info_corr` | 0.0594151 | fixed | correlation of log theta and log alpha (observed information) | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_sqft` | 3.22299e-05 | fixed | change in log(theta) per unit of adu_sqft | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_sqft` | 7.00019e-05 | fixed | change in log(alpha) per unit of adu_sqft | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__hard_cost_per_sqft_usd` | 0.000156509 | fixed | change in log(theta) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__hard_cost_per_sqft_usd` | 0.000338505 | fixed | change in log(alpha) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_hard_cost_premium` | 0.0224064 | fixed | change in log(theta) per unit of adu_hard_cost_premium | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_hard_cost_premium` | 0.0487268 | fixed | change in log(alpha) per unit of adu_hard_cost_premium | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__soft_cost_share` | 0.0214678 | fixed | change in log(theta) per unit of soft_cost_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__soft_cost_share` | 0.0467173 | fixed | change in log(alpha) per unit of soft_cost_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__construction_loan_rate` | 0.00934784 | fixed | change in log(theta) per unit of construction_loan_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__construction_loan_rate` | 0.0203751 | fixed | change in log(alpha) per unit of construction_loan_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__average_draw_share` | 0.0015896 | fixed | change in log(theta) per unit of average_draw_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__average_draw_share` | 0.00347096 | fixed | change in log(alpha) per unit of average_draw_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__construction_years_irc` | 0.0010608 | fixed | change in log(theta) per unit of construction_years_irc | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__construction_years_irc` | 0.00231013 | fixed | change in log(alpha) per unit of construction_years_irc | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__rental_vacancy_rate` | 0.0270674 | fixed | change in log(theta) per unit of rental_vacancy_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__rental_vacancy_rate` | 0.0590061 | fixed | change in log(alpha) per unit of rental_vacancy_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__operating_expense_share` | 0.0396807 | fixed | change in log(theta) per unit of operating_expense_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__operating_expense_share` | 0.086467 | fixed | change in log(alpha) per unit of operating_expense_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__cap_rate` | 0.468836 | fixed | change in log(theta) per unit of cap_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__cap_rate` | 1.01784 | fixed | change in log(alpha) per unit of cap_rate | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_margin` | 0.0234079 | fixed | change in log(theta) per unit of adu_margin | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_margin` | 0.0509752 | fixed | change in log(alpha) per unit of adu_margin | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_rent_to_median_ratio` | -0.0258256 | fixed | change in log(theta) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_rent_to_median_ratio` | -0.0562857 | fixed | change in log(alpha) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_feasibility_dispersion` | -0.115771 | fixed | change in log(theta) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_feasibility_dispersion` | -0.0324816 | fixed | change in log(alpha) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_equity_elasticity` | 0.187484 | fixed | change in log(theta) per unit of adu_equity_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_equity_elasticity` | -0.0723445 | fixed | change in log(alpha) per unit of adu_equity_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_rate_semi_elasticity` | 1.55673 | fixed | change in log(theta) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_rate_semi_elasticity` | -0.108831 | fixed | change in log(alpha) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_partial_rule_share` | -3.06772 | fixed | change in log(theta) per unit of adu_partial_rule_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_partial_rule_share` | -0.473446 | fixed | change in log(alpha) per unit of adu_partial_rule_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_theta__adu_owner_occupancy_share` | -0.708568 | fixed | change in log(theta) per unit of adu_owner_occupancy_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
+| `anchor_slope_alpha__adu_owner_occupancy_share` | 0.0789366 | fixed | change in log(alpha) per unit of adu_owner_occupancy_share | Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp |
 
 **`config/params/adu_counts.yaml`** (2 parameters)
 
@@ -869,11 +872,11 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `fee_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: same as adu_simulation_draws |
 | `fee_simulation_seed` | 20261021 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |
 
-**`config/params/hazard.yaml`** (20 parameters)
+**`config/params/hazard.yaml`** (19 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `adu_mature_hazard_ref` | 0.001038 | 0.000453–0.003173 | ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate | Estimated, D-019 fit 3 (pre-registered: graded rule shares, gamma place effects, blank fields integrated per… |
+| `adu_mature_hazard_ref` | 0.000659 | 0.000443–0.001023 | ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate | Estimated, D-048 (adopted 2026-11-05): D-041's fit 3 (graded rule shares, gamma place effects, blank fields i… |
 | `adu_ref_rent_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25064 median gross rent, Portland city OR (place 4159000), CPI-U… |
 | `adu_ref_home_value_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars |
 | `adu_ref_mortgage_rate` | 3.99 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-20… |
@@ -888,11 +891,10 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_equity_elasticity` | 0.25 | 0–0.5 | % change in hazard per % change in median home value | Judgment |
 | `adu_rate_semi_elasticity` | 0.07 | 0–0.15 | share change in hazard per percentage point of mortgage rate | Judgment |
 | `adu_fee_per_unit_usd` | 0 | fixed | USD per ADU (2025) | E073 (Terner 2019): many California cities waive ADU fees, others charge up to $50k |
-| `adu_ramp_half_years` | 2 | 1–3.5 | years after adoption to reach half the mature hazard | adu-study-design.md: immediate where conversions and pent-up demand exist (LA garages, E038) |
-| `adu_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, set so the ramp goes from ~20% to ~80% of mature uptake in about 2 years (Seattle's ~3 years to pla… |
+| `adu_ramp_share` | 1 | fixed | share of the mature hazard a rule has reached in each year it is in force (1 = full strength from year 1) | Estimated choice, D-048 (adopted by Ben 2026-11-05): fitting D-041 with no ramp raised the log-likelihood by… |
 | `adu_extrapolation_shared_share` | 1 | 0.5–1 | share of the extrapolation noise's variance common to every place in a draw | Choice (D-030) |
 | `adu_extrapolation_widening` | 1 | 0.5–2 | standard deviation of log(hazard) per unit of log distance outside the calibration range | Judgment |
-| `adu_place_effect_variance` | 4.735 | 2.98–7.523 | variance of a place's multiplier on the ADU hazard (gamma, mean 1) | Estimated, D-019 fit 3 (alpha): fitted place multipliers range from ~0 (Eagan, Lakeville, St |
+| `adu_place_effect_variance` | 2.214 | 1.406–3.486 | variance of a place's multiplier on the ADU hazard (gamma, mean 1) | Estimated, D-048 (alpha, adopted 2026-11-05): same fit as adu_mature_hazard_ref, 51 places in four states |
 
 **`config/params/market.yaml`** (1 parameter)
 

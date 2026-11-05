@@ -248,16 +248,18 @@ def _no_slopes(corr: float = 0.0) -> dict:
 
 
 def test_log_sd_from_the_90_percent_interval_by_hand():
-    """Anchor 90% interval 0.000453-0.003173: (ln 0.003173 − ln 0.000453) / (2 × 1.644854) = 0.5917."""
+    """Anchor 90% interval 0.000443-0.001023 (D-048): (ln 0.001023 − ln 0.000443) / (2 × 1.644854) =
+    0.8369 / 3.2897 = 0.2544."""
     s = adu.specs()["adu_mature_hazard_ref"]
-    assert adu.log_sd(s) == pytest.approx((math.log(0.003173) - math.log(0.000453)) / 3.289708, rel=1e-6)
-    assert adu.log_sd(s) == pytest.approx(0.5917, abs=1e-4)
+    assert adu.log_sd(s) == pytest.approx((math.log(0.001023) - math.log(0.000443)) / 3.289708, rel=1e-6)
+    assert adu.log_sd(s) == pytest.approx(0.2544, abs=1e-4)
 
 
 def test_anchor_draws_have_their_median_at_the_estimate():
     """D-030: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
-    the judgment shift), not triangular(low, central, high), whose median for the anchor is ~1.47e-3, 41%
-    above the estimate 1.038e-3."""
+    the judgment shift), not triangular(low, central, high). With D-048's anchor 0.659e-3 (0.443-1.023e-3) the
+    triangular median is 1.023e-3 − √(0.580e-3 × 0.364e-3 / 2) = 0.698e-3, 6% above the estimate (D-019's
+    interval gave 41%)."""
     spec = adu.specs()
     sets = adu.draw_params(20_000, 7, _no_slopes())
     theta = np.array([p["adu_mature_hazard_ref"] for p in sets])
@@ -268,7 +270,8 @@ def test_anchor_draws_have_their_median_at_the_estimate():
     assert np.median(alpha) == pytest.approx(a.value, rel=0.02)
     assert np.percentile(theta, 5) == pytest.approx(t.value * math.exp(-1.644854 * adu.log_sd(t)), rel=0.05)
     old = np.random.default_rng(7).triangular(t.low, t.value, t.high, 20_000)
-    assert np.median(old) > 1.4 * t.value  # the bias D-030 removes
+    assert np.median(old) == pytest.approx(0.698e-3, rel=0.01)  # the bias D-030 removes
+    assert np.median(old) > 1.05 * t.value
 
 
 def test_anchor_shifts_with_the_judgment_parameters_it_was_fitted_at_by_hand():
@@ -468,7 +471,8 @@ def test_a_blank_field_is_never_read_as_unrestrictive():
 
 
 def test_central_path_uses_the_expected_rule_share():
-    """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 -> c = 0.72 (rule long in force)."""
+    """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 -> c = 0.72. Added in year 1 =
+    2,000 × (1 − 0.72) × h_m (no ramp, D-048)."""
     p = _places(rule_class="unknown", rule_age=50.0).assign(
         p_none=0.0, p_owner=0.0, p_other=0.4, p_both=0.0, p_handbook=0.6
     )
@@ -476,7 +480,7 @@ def test_central_path_uses_the_expected_rule_share():
     hand = adu.central_path(_places(rule_class="handbook", rule_age=50.0))
     hm = mix["mature_hazard"][0]
     assert mix["current"][0, 0] == pytest.approx(2000 * 0.72 * hm, rel=1e-6)
-    assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm / (1 + math.exp(4 / 3)), rel=1e-6)
+    assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm, rel=1e-6)
     assert hand["added"].sum() == 0
 
 
