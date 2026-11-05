@@ -127,7 +127,7 @@ Also check, though not row-by-row:
 | Rows | What to check | Source |
 |---|---|---|
 | The 50 `OR-*-missing_middle-2025` and their `-landdiv` rows (2023 c.223 duplex tier, 2,500–10,000) | Read the 2023 session law (chapter 223, §§20–21) for the tier and the June 30, 2025 deadline; coded from the ORS 197A.420 text and note on oregon.public.law | https://www.oregonlegislature.gov/bills_laws/ors/ors197A.html |
-| The 32 county `OR-<county>-adu-2018` rows | Whether 2018 c.15 limited SB 1051's county ADU duty to land inside the UGB before 2018-07-01 (the coverage text says it did; the law wasn't read) | Oregon Laws 2018 chapter 15 (session law, not located); current text at https://www.oregonlegislature.gov/bills_laws/ors/ors197A.html (ORS 197A.425) |
+| The 28 county `OR-<county>-adu-2018` rows (36 counties less the 8 under 15,000: Gilliam, Grant, Harney, Lake, Morrow, Sherman, Wallowa, Wheeler; 26 are in the BPS universe) | Whether 2018 c.15 limited SB 1051's county ADU duty to land inside the UGB before 2018-07-01 (the coverage text says it did; the law wasn't read) | Oregon Laws 2018 chapter 15 (session law, not located); current text at https://www.oregonlegislature.gov/bills_laws/ors/ors197A.html (ORS 197A.425) |
 
 All statutes were read from Internet Archive copies of the official files, because oregonlegislature.gov refused
 connections from our network. A check against the live site would close that.
