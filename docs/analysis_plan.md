@@ -3167,3 +3167,34 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   variants are identical. Portland's pre-2018 history was a rise (the fee-waiver years) that ended in 2018.
   Carrying it forward over-predicted about fourfold. A short local history helps only if what drove it
   continues.
+
+### D-053 · 2026-11-05 · Oregon joins the ADU calibration (method only, before any run; DRAFT for Ben)
+
+- **Why:** V9 is frozen (#298) and scored (#299, #301). Ben chose option C, transfer first and then pool,
+  and on 2026-11-05 said "start it". The holdout was released in #302. Oregon is the high-uptake end of the
+  range that the four-state fit lacks. V9's miss showed this: Portland and Bend landed above the transfer
+  range.
+- **Change:**
+  - Oregon joins `adu.REFORM_STATES`. Field probabilities, rule priors and D-038's blank shares are then read
+    from five states' coded rules.
+  - V9 keeps the four states (`v9.FIT_STATES`), so the frozen draws still regenerate.
+  - The fit set gains Portland (4159000) and Bend (4105800), 2016–2025, the window MN and NC use. Bend's
+    building-use ADU flag starts in 2013 and Portland's IS_ADU covers every year.
+  - Place-years enter only under `calibrate_adu.place_years`' existing filter (a coded rule in force by
+    1 July and a permit source flagging ADUs), with D-041's count rules and co-built houses dropped.
+  - Eligible parcels come from the ACS fallback (D-017). There is no RLIS roll yet.
+- **Refit, each exactly as now adopted, with only the places changed:**
+  - θ and α under D-048 (no ramp);
+  - the D-030 draw terms (`adu_anchor.yaml`);
+  - D-050's τ grid (`adu_state_effect.yaml`).
+- **Reported:**
+  - θ, α and τ before and after;
+  - leave one state out over five states with τ drawn, using D-040's verdicts and the median P90 ÷ P10;
+  - Oregon's in-sample fit for Portland and Bend by year.
+- **Rule, written now:** the configs are regenerated from the five-state fit whatever the backtest shows. A
+  state missed in leave one state out is reported to Ben as a finding.
+- **Independence lost:** Portland is the hazard's reference place, so its published counts (E044, E046)
+  stop being an independent check once it is fitted. Benchmark (b) is reported as in-sample from now on,
+  and D-037 gets a note.
+- **Not in this entry:** the missing-middle panels (D-019, D-024, D-025) and Metro's current RLIS roll.
+  Each gets its own entry.

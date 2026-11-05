@@ -52,6 +52,9 @@ SUBTOTAL_LAST = 2022  # D-051: also scored on 2018-2022
 BASELINE_YEARS = (2015, 2016, 2017)
 ADU_TARGETS = {"4159000": "Portland", "4105800": "Bend"}
 TEST_ID = "V9-OR-TRANSFER"
+# The calibration states the freeze was made from. Pinned here so the frozen draws still regenerate after
+# Oregon joins the calibration states (D-053).
+FIT_STATES = ("MN", "NC", "OH", "TX")
 ROLL_LAST_YEAR = 2017  # newest eligible-parcel roll the freeze may use
 CLASS_CODE = {"handbook": 0, "partial": 1, "blank": 2}
 HISTORY_FILE = Path("config/validation/or_adu_history.csv")  # D-052, repo-relative
@@ -125,7 +128,7 @@ def adu_inputs(state: str, store, geoids: Sequence[str], years: Sequence[int] = 
     fips = load_state(state).fips
     all_reforms = adu.load_reforms(state)
     reforms = all_reforms[(all_reforms["theme"] == "adu") & (all_reforms["status"] == "in_force")]
-    every = pd.concat([adu.load_reforms(st).assign(state=st) for st in adu.REFORM_STATES], ignore_index=True)
+    every = pd.concat([adu.load_reforms(st).assign(state=st) for st in FIT_STATES], ignore_index=True)
     fcounts = adu.field_restrict_counts(every, pd.Timestamp.today().normalize())
     fp = adu.field_probabilities(fcounts, state, int(load_params("adu")["adu_rule_min_coded"].value))
 
@@ -345,7 +348,7 @@ def mm_inputs(state: str, store, years: Sequence[int] = YEARS) -> MmInputs:
     pm = {k: v.value for k, v in load_params("mm").items()}
     margin = load_params("proforma")["developer_margin"].value
     sigma = load_params("mm_hazard")["mm_feasibility_dispersion"].value
-    four = {st: rule_tags.apply(adu.load_reforms(st)) for st in adu.REFORM_STATES}
+    four = {st: rule_tags.apply(adu.load_reforms(st)) for st in FIT_STATES}
     every = pd.concat([r.assign(state=st) for st, r in four.items()], ignore_index=True)
     blanks = mm.blank_shares(every[every["status"] == "in_force"])  # D-038: from the four fitted states
     rows = rule_tags.apply(adu.load_reforms(state))
