@@ -1,6 +1,6 @@
 # Oregon data readiness for the V9 freeze (WS-OR, steps 1–6)
 
-*WS-OR, 2026-11-04. Brief: `docs/build/workstreams/WS-OR.md`; test: validation plan V9. No model runs: these are
+*WS-OR, 2026-11-04; rules updated 2026-11-05 with Ben's agent's checks of the state-law rows (§4). Brief: `docs/build/workstreams/WS-OR.md`; test: validation plan V9. No model runs: these are
 counts of the processed input tables in `~/lotline-data/processed/or`, built from `main` at b690097 (after #287
 and #288), plus `config/reforms/or.csv` (after #284 and #290) and `config/fees/or.csv` (#286). Counts of blind
 tables are row and year counts only; no Oregon outcome value from 2018 on was read.*
@@ -9,8 +9,9 @@ tables are row and year counts only; no Oregon outcome value from 2018 on was re
 `REFORM_STATES` (`model/scenarios/adu.py`).
 - **168 jurisdictions** (136 cities, 32 county remainders) have BPS permits through 2017, an eligible-lot count
   (ACS fallback, tier 3) and market inputs.
-- **Rules:** 548 rows. 526 are state-law rows (one per covered jurisdiction, read from the statutes and second
-  coded); 22 are local rows for Portland, Bend and Metro cities that adopted early or late.
+- **Rules:** 556 rows. 526 are state-law rows (one per covered jurisdiction, read from the statutes and second
+  coded); 30 are local rows for Portland, Bend, Metro cities that adopted early or late, five smaller cities and
+  two counties (§4).
 - **Fees:** Portland, Bend and Salem SDCs; Eugene water only.
 - **Everything from 2018 on is blind** (V9-OR-TRANSFER, statewide). The freeze is a conditional forecast: observed
   2018–2025 market inputs are used, production outcomes are not (Ben, 2026-11-04).
@@ -24,9 +25,9 @@ tables are row and year counts only; no Oregon outcome value from 2018 on was re
 | **Parcels (RLIS, Metro)** | — | Not used for the freeze | Metro publishes **no pre-2018 RLIS taxlot archive** (the hub lists only the current roll; the yearly "Vacant and Developed Land" layers hold no taxlot attributes). The current roll is blind (snapshot rule), so RLIS joins after unblinding (step 8). The RLIS Open Database license is attribution-only, compatible with CC BY 4.0 and ODC-By, with no share-alike on derived works |
 | Permits, all places | Census BPS (West Region place files) through **2017** | — | 2018 on: blind |
 | Permits with an ADU flag | — | — | Portland and Bend permit adapters (step 7) aren't written yet. They're needed to **score** V9 after unblinding, not to freeze it |
-| **ADU rules** | **State law for 118 universe jurisdictions** (92 places, 26 county remainders) (SB 1051: cities over 2,500, counties over 15,000, from 2018-07-01; HB 2001: no owner occupancy or added parking from 2020-01-01). **Local:** Portland (since 1998; RIP 2021, RIP2 2022), Bend (2016, 2025) | The rest draw a rule type (D-022) | 49 universe places (55,401 people) are under every state threshold and have no row |
-| **Missing-middle rules** | **HB 2001: 58 universe jurisdictions.** Large tier: 33 places (2.24 million people) plus the 3 Metro county remainders, all middle housing by 2022-06-30. Medium tier: 22 places, duplexes by 2021-06-30. **2023 c.223:** 38 more places, duplexes by 2025-06-30. **SB 458** land divisions from 2022-07-01. **Local:** Portland RIP (2021-08-01, early) and RIP2; Bend (2021-11-05, early; duplexes and triplexes already allowed); 6 early and 2 late Metro adopters | — | HB 2138 (2027) is coded but lies after the freeze window |
-| Rule tiers by population | 2020 Census (P.L. 94-171) | — | The statutes don't say how population is measured (DLCD uses PSU estimates). About 20 cities within 5% of a threshold could be in the wrong tier (listed in `logbook.d/2026-11-04-ws-or-state-law.md`) |
+| **ADU rules** | **State law for 118 universe jurisdictions** (92 places, 26 county remainders) (SB 1051: cities over 2,500, counties over 15,000, from 2018-07-01; HB 2001: no owner occupancy or added parking from 2020-01-01). **Local:** Portland (since 1998; RIP 2021, RIP2 2022), Bend (2016, 2025), Clackamas County (2014) and Marion County (2017) | The rest draw a rule type (D-022) | 49 universe places (55,401 people) are under every state threshold and have no row |
+| **Missing-middle rules** | **HB 2001: 61 universe jurisdictions.** Large tier: 33 places (2.24 million people) plus the 3 Metro county remainders, all middle housing by 2022-06-30. Medium tier: 25 places, duplexes by 2021-06-30, or a year after PSU certified them over 10,000 (Independence and Lincoln City 2022-12-15, Sweet Home 2023-12-15). **2023 c.223:** 35 more places, duplexes by 2025-06-30. **SB 458** land divisions from 2022-07-01. **Local:** Portland RIP (2021-08-01, early) and RIP2; Bend (2021-11-05, early; duplexes and triplexes already allowed); 6 early and 2 late Metro adopters; Independence, Lincoln City and Sweet Home (own codes, 2022); Florence (2023); Scappoose and Stayton (duplexes in some zones before 2010) | — | HB 2138 (2027) is coded but lies after the freeze window |
+| Rule tiers by population | 2020 Census (P.L. 94-171) | — | The statutes don't say how population is measured (DLCD uses PSU estimates). About 20 cities within 5% of a threshold could be in the wrong tier (listed in `logbook.d/2026-11-04-ws-or-state-law.md`). Ben's agent checked the 2,500–10,000 tier against PSU certified estimates: 3 cities moved to the medium tier (§4); the other 47 are confirmed |
 | **Fees** | **Portland** $35,885 per house, $0 per ADU (waiver since 2010), $27,439 per fourplex unit. **Bend** $34,598, $6,323, $25,610. **Salem** $23,798, $0 (exempt), $20,663. All are current FY25-26/26-27 schedules | The Handbook prior of $50,000 (D-034) elsewhere | **Eugene's city SDCs are missing** (eugene-or.gov sits behind a bot check). No 2017 vintage. Portland exempts all new housing permitted 2025-08-15 to 2028-09-30 (`OR-4159000-fees-2025`). **Decision (Ben, 2026-11-04):** the per-unit baseline is the regular schedule, and the exemption stays a dated reform row (recorded in the Portland rows' `notes`). **Eugene:** Admin Order 58-25-05-F (FY26, read by Ben's agent 2026-11-04) is coded: parks, local and regional wastewater, stormwater, and transportation per trip. Trips per home come from the methodology's Appendix F (Table B-9: house 1.00, ADU 0.52, apartment 0.62, condo/townhome 0.52). Lower bounds before stormwater: a house **$14,441.89**, an ADU **$7,958.95**. The ADU figure may be $1,954.84 too high: the city's Transportation SDC page gives new ADUs a 100% transportation reduction, not confirmed in the order. Stormwater (general vs LID capacity) is still unchecked, so every Eugene `amount_per_unit_usd` stays empty and **Eugene stays on the Handbook prior** for the fees scenario. **Bend reads $23,162, not $34,598,** in `local_fees` until #247 is fixed: the newest-year rule drops Bend's FY25-26 parks row beside the FY26-27 city rows |
 | Market (rent, value, rates, costs) | ACS rent and value (B25064, B25077) to 2024; FHFA; FRED; CBP | — | Used for 2018–2025 by decision (conditional forecast) |
 | Demand index | processed (from CBP, not BPS) | — | — |
@@ -70,9 +71,9 @@ From validation plan V9; WS-ENGINE commits `results/frozen/V9-OR-TRANSFER.json` 
     (two ADUs per lot) from 2021-08-01.
   - Bend: ADUs without a conditional use permit from 2016, then the same state rows, and two ADUs per lot from
     2025-07-18.
-- **2–4 unit permits (BPS) per year, 2018–2025, for every HB 2001 jurisdiction in the universe** (58: 33
-  large-tier places, 3 Metro county remainders and 22 medium-tier places), and the Oregon total, each P10–P90.
-  - The 38 cities newly covered in 2025 can be added to the total.
+- **2–4 unit permits (BPS) per year, 2018–2025, for every HB 2001 jurisdiction in the universe** (61: 33
+  large-tier places, 3 Metro county remainders and 25 medium-tier places), and the Oregon total, each P10–P90.
+  - The 35 cities newly covered in 2025 can be added to the total.
   - Gladstone (Metro) and Klamath Falls and The Dalles (medium tier) are covered by HB 2001 but not in the BPS
     universe, so they can't be predicted or scored.
 - **Conditioning:**
@@ -122,12 +123,17 @@ Also check, though not row-by-row:
   - Happy Valley may have been early.
 
 **State-law rows:** the two coders agreed on every threshold, date, unit cap and owner-occupancy value, and
-`by_right` was adjudicated. Two groups rest on secondary text:
+`by_right` was adjudicated. Two groups rested on secondary text, and Ben's agent checked both on 2026-11-05.
+Its verdicts, in WS-OR's words, are in `docs/research/ordinances/or-state-law-check-2026-11-05.csv`, and the
+generator adds each one to the row's notes and sets `verified_by`.
 
-| Rows | What to check | Source |
-|---|---|---|
-| The 50 `OR-*-missing_middle-2025` and their `-landdiv` rows (2023 c.223 duplex tier, 2,500–10,000) | Read the 2023 session law (chapter 223, §§20–21) for the tier and the June 30, 2025 deadline; coded from the ORS 197A.420 text and note on oregon.public.law | https://www.oregonlegislature.gov/bills_laws/ors/ors197A.html |
-| The 28 county `OR-<county>-adu-2018` rows (36 counties less the 8 under 15,000: Gilliam, Grant, Harney, Lake, Morrow, Sherman, Wallowa, Wheeler; 26 are in the BPS universe) | Whether 2018 c.15 limited SB 1051's county ADU duty to land inside the UGB before 2018-07-01 (the coverage text says it did; the law wasn't read) | Oregon Laws 2018 chapter 15 (session law, not located); current text at https://www.oregonlegislature.gov/bills_laws/ors/ors197A.html (ORS 197A.425) |
+| Rows | Result (Ben's agent, 2026-11-05) |
+|---|---|
+| The 50 `OR-*-missing_middle-2025` rows and their `-landdiv` rows (2023 c.223 duplex tier, 2,500–10,000) | **Tier and deadline confirmed** against 2023 c.223 §§20–21; a city that hadn't acted came under the model code on 2025-06-30 (§21(3)). Land divisions follow the duplex duty, because ORS 92.031 cross-refers to ORS 197.758(3). **3 cities were in the wrong tier:** PSU's certified estimates put Independence (10,081), Lincoln City (10,067) and Sweet Home (10,097) over 10,000 before 2023, which made them HB 2001 medium cities. Their state rows now start a year after certification (computed: 2022-12-15, 2022-12-15, 2023-12-15), and each city's own earlier code has a local row (Ord. 1598, Ord. 2022-10 and Ord. 1305; the first two are `DATE UNCONFIRMED`). **Own codes before the deadline:** Florence from 2023-08-17 (new local row, `[earliest-known]`). Hood River (2021) and Madras (2022) have no date in the source, so they stay at 2025-06-30 with a note. Dayton, Millersburg, Sublimity and Toledo adopted in the first half of 2025; they're noted, not coded, because rules are read on 1 July. **Duplexes in some zones before 2010:** Scappoose (R-1 outside the floodplain) and Stayton (LD and MD) get partial-coverage `[predates]` rows. Estacada (R-1) and Tillamook (R-7.5, R-5.0) had duplexes before 2023, date unknown: note only. **Winston** (first reading 2025-08-04) and **Sheridan** (treated as not adopted) stay at 2025-06-30 |
+| The 28 county `OR-<county>-adu-2018` rows | **Values confirmed** (date, at least one ADU per detached house, UGB-only coverage). **Citation corrected:** the UGB limit comes from Oregon Laws 2018 c.15 (HB 4031) §7, operative 2018-07-01 (§12), not from SB 1051. WS-OR read the session law (archived copy) and the 28 rows now cite it. **Earlier county rules:** Clackamas from 2014-10-13 (ZDO 839, Ord. ZDO-249; `DATE UNCONFIRMED`) and Marion from 2017-12-20 (Ord. 1382; changes nothing, since rules are read on 1 July 2018) get local rows. Washington had "long allowed" ADUs (no ordinance found): note only. **Local conditions noted:** Benton's owner-occupancy rule; inside UGBs Columbia applies the city's owner-occupancy rule (both barred by HB 2001 from 2020). **Not researched locally** (the agent's search budget ran out): Klamath, Lane, Lincoln, Linn, Malheur, Tillamook, Umatilla, Union, Wasco and Yamhill. Their rows stand as coded, with a note; Lane is the largest |
+
+Blind rule: the agent saw a post-2017 count on one Clackamas page and on one Florence page. WS-OR opened neither,
+records no count, and its notes don't cite either page.
 
 All statutes were read from Internet Archive copies of the official files, because oregonlegislature.gov refused
 connections from our network. A check against the live site would close that.
@@ -141,6 +147,9 @@ connections from our network. A check against the live site would close that.
 | Eugene stormwater (general vs LID) and the ADU transportation reduction | Eugene on the Handbook prior | Ben's agent checks the order and the Transportation SDC page; then fill `amount_per_unit_usd` |
 | Bend parks SDC dropped by the newest-year rule (#247) | Bend's fee read as $23,162 instead of $34,598 | Fix #247 (WS-ENGINE), or code Bend parks FY26-27 when the district publishes it |
 | Local rows single-coder | Dates may shift by weeks | Ben's validation agent (§4) |
+| `DATE UNCONFIRMED` rows: Independence and Lincoln City (effective dates computed as adoption + 30 days), Clackamas 2014, Marion 2017 | Up to a year earlier or later in two places | Each city's or county's signed ordinance |
+| County ADU rules not checked locally (10 counties, Lane the largest) | Earlier county rules, if any, are missed | Another pass of Ben's agent |
+| Stayton's zones (the table was misaligned in extraction) | The partial-coverage share may be on the wrong zones | Read Table 17.16.070.1 |
 | Portland and Bend permit adapters (step 7) | None for the freeze; needed to score | Write on synthetic fixtures, run after unblinding |
 
 ## 6. How these numbers were made
