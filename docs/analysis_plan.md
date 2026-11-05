@@ -2836,3 +2836,28 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       audit's year-by-year residuals pointed the same way. The equity and size terms are not robust.
   - **WS-ENGINE's proposal, for Ben (D-048, not yet written):** D-041 with the ramp removed and nothing
     else changed, scored on the same leave-one-state-out test. Nothing in config changes from this entry.
+- **Correction (2026-11-04):** the D-047 chart and PR comment said D-041's test set (Raleigh and Durham, from
+  the full fit) was useful. It was inside only: observed 410 against P50 159
+  (`reports/adu-counts/statewide.csv`). The group "NC with Raleigh and Durham" was useful.
+
+### D-048 · 2026-11-04 · D-041 without the ramp (method only, before any fit)
+
+- **Why:** D-047 approach 2 chose no ramp in every fold, and no other ramp value was inside its 90%
+  interval. The D-045 audit found counts flat or falling while the ramp expected them to rise 3–5×. Ben
+  approved this entry on 2026-11-04 ("Yes, D-048").
+- **Change:** a rule's ramp is 1 from its effective date (`calibrate_shape.shaped` with `NO_RAMP`, the
+  central equity elasticity and size 0). Nothing else changes: D-041's counts, fit places and test set, fit
+  3's rule-share grid and profile likelihood, and its gamma place effects.
+- **Reported:**
+  1. Full fit: θ, α, m_o, m_x with intervals, and the log-likelihood next to D-041's (−383.718). The ramp
+     was never fitted, so no parameter is added.
+  2. Leave one state out as D-041: verdicts, K1 (D-041 0.791), median P90/P10 (D-041 28.0).
+  3. Test set from the full fit (D-041: inside only, observed ÷ P50 2.58).
+- **Adoption rule, fixed now:** adopt if no state of the four is missed, K1 is below 0.791, and the test set
+  is not missed. Otherwise keep D-041.
+- **On adoption (each in its own PR, after Ben confirms):**
+  - The scenario's ramp becomes 1 from adoption: `adu_ramp_half_years` and `adu_ramp_slope_years` are
+    replaced by a documented no-ramp setting with this source.
+  - θ, α and the D-030 anchor terms (`adu_anchor.yaml`) are refitted under D-048 and written to config.
+  - Five-year totals will rise, because reforms reach full strength in year 1. The dashboard and the
+    scenario comparison must say so.
