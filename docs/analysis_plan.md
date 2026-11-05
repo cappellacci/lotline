@@ -3082,6 +3082,30 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   draws' seed. It is committed and merged to `main` before `--unblind V9-OR-TRANSFER` is ever passed
   (`validation.holdout.check_unblind`).
 
+- **Results, missing middle (scored 2026-11-05, after the freeze; ADU targets wait for the Portland and Bend
+  permit adapters).** Ben said "unblind and score" on 2026-11-05. `scripts/dev/v9_or_score.py` regenerated the
+  frozen draws, checked them identical to the file, and unblinded Oregon BPS in memory only. Outputs are in
+  `reports/v9-oregon/`. 2–4 unit buildings, observed against P10 / P50 / P90:
+
+  | Target | Observed | P10 | P50 | P90 | obs ÷ P50 | Verdict | CRPS model / no-reform |
+  |---|---|---|---|---|---|---|---|
+  | Headline, 62 places, 2018–2025 | 1,753 | 1,738 | 2,658 | 6,469 | 0.66 | useful (just inside) | 691 / 279 |
+  | Headline, 2018–2022 | 1,099 | 913 | 992 | 1,228 | 1.11 | useful | 62 / 174 |
+  | All 96 places, 2018–2025 | 1,942 | 1,889 | 2,813 | 6,622 | 0.69 | useful (just inside) | 662 / 318 |
+  | All 96 places, 2018–2022 | 1,207 | 1,006 | 1,085 | 1,321 | 1.11 | useful | 70 / 187 |
+
+  - **Pass rule (D-051) for the 2–4 unit total: met, barely.** The observed total sits 15 buildings above P10.
+  - **The model over-predicts HB 2001's response.** Observed building ran 165–268 a year, with no rise after
+    the 2021–2022 adoptions. The model's headline P50 climbs from 259 in 2022 to 712 in 2025. Over 8 years the
+    no-reform benchmark (each place's 2015–2017 mean, held flat) scores better (CRPS 279 against 691). To 2022,
+    before most rules took effect, the model is better (62 against 174), because its range is right while the
+    benchmark's is too narrow.
+  - **Places:** the 62 headline places have mean randomized coverage 0.57 (0.80 if calibrated), with 21% below
+    P10 and 18% above P90, so place ranges are too narrow on both sides. Among the 34 places first reached in
+    2025, 38% are above P90 in 2018–2025, before any rule reached them. Their 2015–2017 baseline is too low
+    (D-051's stated bias).
+  - **Reported, not tuned** (D-051). Nothing in `config/params/` changes because of this score.
+
 ### D-052 · 2026-11-05 · V9: a second ADU variant updated on each place's own pre-2018 permits (method only, before any freeze)
 - **Status:** Ben chose this on 2026-11-05, after the D-051 dry run and before any freeze. It adds a variant;
   D-051's transfer prediction is unchanged and is frozen too. Both go in `results/frozen/V9-OR-TRANSFER.json`,

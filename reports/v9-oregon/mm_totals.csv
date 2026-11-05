@@ -1,0 +1,5 @@
+target,observed,p10,p50,p90,mean,obs_over_p50,coverage_rand,verdict,crps_model,crps_no_reform,no_reform_p50
+"Oregon headline (62 places reached before 2025), 2018-2025",1753.0,1737.8,2658.0,6469.4,3717.873,0.66,1.0,useful,690.621,279.477,1454.0
+"Oregon headline (62 places reached before 2025), 2018-2022",1099.0,913.0,991.5,1228.1,1050.895,1.108,1.0,useful,61.803,173.513,908.5
+"Oregon, all places reached by 2025, 2018-2025",1942.0,1888.8,2812.5,6621.6,3869.199,0.69,1.0,useful,661.578,317.691,1603.0
+"Oregon, all places reached by 2025, 2018-2022",1207.0,1006.0,1085.0,1321.2,1144.061,1.112,1.0,useful,70.347,186.984,1003.0
