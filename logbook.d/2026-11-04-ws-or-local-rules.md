@@ -8,3 +8,4 @@
 - **Decisions:** none. All 21 rows are `single_coder`; they are listed for Ben's ordinance-validation agent in `docs/build/or-readiness.md`.
 - **AI:** Claude Code subagents researched and drafted; Claude reviewed, merged and tested.
 - **Open / next:** the validation-agent pass; Bend's 2016 ordinance; Portland's owner-occupancy removal date.
+- **Addendum (validation pass, same day):** Ben's ordinance-validation agent checked the Portland rows and Bend's 2016 and 2019 rows; Claude applied each verdict (`verified_by`, notes). Portland 1998: owner occupancy dropped in 1998, 800 sq ft cap. RIP2: scope corrected (attached houses and RM1 added, detached duplexes dropped). 2025 SDC exemption: ADUs excluded. Bend 2016 ADU row: sourced to Ord. 2260. New row `OR-4105800-missing_middle-2016` (Ord. 2271: duplexes and triplexes permitted rather than conditional in some zones; single source). Bend effective dates computed from the city's 30-day rule. 22 local rows in all.
