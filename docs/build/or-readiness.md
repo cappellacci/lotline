@@ -92,7 +92,7 @@ criteria:
 
 | reform_id | Place | What to check | Source |
 |---|---|---|---|
-| OR-4159000-adu-1998 | Portland | Size cap, owner occupancy and parking in the 1997 code text (Exhibit A not in the record); when owner occupancy was dropped (2016, 2017 or 2020 in secondary sources) | https://efiles.portlandoregon.gov/record/2455968/file/document |
+| OR-4159000-adu-1998 | Portland | **Partly verified (Ben's agent, 2026-11-04):** owner occupancy dropped in February 1998, cap 33% of the house up to 800 sq ft, detached allowed (city adopted report, pp. 95–96). Still to check: the ordinance itself (No. 171879, adoption 1997-12-17, effective day 1998-02-02, from the first reading of a record the agent couldn't load) | https://efiles.portlandoregon.gov/record/2455968/file/document; https://www.portland.gov/sites/default/files/2020-02/accessory_structures_adopted_report.pdf |
 | OR-4159000-adu-2021 | Portland | RIP ADU terms (2 ADUs, 800 sq ft / 75% cap, no added parking) and the 2021-08-01 date | https://www.portland.gov/bps/planning/rip/documents/exhibit-b-volume-2-code-and-commentary/download |
 | OR-4159000-adu-2022 | Portland | RIP2 ADU extension to R10/R20; effective 2022-06-30 | https://www.portland.gov/sites/default/files/code/205-acc-dwelling-unit.pdf |
 | OR-4159000-missing_middle-2021 | Portland | RIP unit caps (4; 6 if affordable) and zones | https://www.portland.gov/bps/planning/rip/documents/exhibit-b-volume-2-code-and-commentary/download |
