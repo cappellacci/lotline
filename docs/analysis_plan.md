@@ -2569,6 +2569,377 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       (tested). The totals table flags affected places in `outside_fit_states`.
     - When a state joins the fit, re-run D-044 and regenerate the file; no code change.
 
+### D-045 · 2026-11-04 · Why the ADU fit misses: a residual audit (method only, before the run)
+
+- **Question:** the four-state fit (D-041 count rules) leaves a large place-to-place spread (α = 2.28) and
+  misses in opposite directions by state when one is held out: MN observed ÷ P50 = 0.48, TX 2.58. Are the misses
+  about how counts and denominators were built (measurement), about the transport's shape (model), or within
+  what the model's own noise allows? Ben asked for this before any new fit (2026-11-04).
+- **What this is not:** no parameter changes and no new fit. It reads the D-041 main fit (all four states) and
+  its leave-one-state-out fits, recomputed with the same code and settings. Holdouts are untouched: the
+  inputs are D-041's fit set and Raleigh and Durham (already used as tests); St. Paul (V5) is not read.
+- **Items (all on `cal.place_data` with `count_settings()`):**
+  1. **Place table**, one row per fit place and per test place:
+     - observed Y; expected E = θ̂ Σ_c w_c Σ_t k_ct at the full fit (in-sample) and at the fit without the
+       place's own state (out-of-state);
+     - log ratios ln((Y + 0.5) / (E + 0.5)), and the place effect's posterior mean (Y + r) / (r + E), r = 1/α̂;
+     - observed ADU permits per 1,000 eligible parcels a year;
+     - count source kept, survey share of years, share of ADU permits dropped as co-built;
+     - eligible parcels, `denominator_source`, `denominator_quality`, `data_tier`;
+     - rent, home value, price-to-cost at central values, h1, mean rule age, share of years under a partial
+       rule.
+  2. **Group ratios** ΣY / ΣE (in-sample and out-of-state) by state, count source, survey or not, denominator
+     source, rule-age band (< 2, 2–5, ≥ 5 years), price-to-cost tertile and calendar year.
+  3. **Shape check:** pooled weighted least squares of the place log ratio (in-sample) on one covariate at a
+     time with state fixed effects, weights E / (1 + α̂ E) (the negative binomial information). Covariates:
+     log rent, log home value, log price-to-cost, mean rule age, log eligible parcels. 90% interval from 2,000
+     place bootstraps within states. Effect reported as the ratio across the covariate's interquartile range.
+  4. **Count cross-check:** every place-year covered by two or more ADU-flagging sources, with each source's
+     count, and the share of the larger source.
+  5. **Noise floor:** from each leave-one-state-out fit's own predictive draws for the held-out state (as in
+     D-041), the share of draws within ×2 of their median, P(useful | model right), and the K1 a correct model
+     would give (RMS of log draw ÷ P50).
+- **How each item is read (fixed before the run):**
+  - **Measurement:** within a state, group ratios by count source or denominator source differ by more than
+    ×2 (with ≥ 10 expected in each group); or two sources covering the same place-years differ by more than
+    ×1.5 in total; or co-built exclusion removes more than 30% of a place's ADU permits.
+  - **Shape:** a covariate's effect across its interquartile range is at least ×1.5 (or at most ×0.67) and its
+    90% interval excludes 1.
+  - **Noise:** a state with P(useful | model right) below 0.5 cannot fail the ×2 bar by noise alone being
+    excluded; its "inside only" is not evidence of misfit. K1 = 0.79 is compared with the K1 a correct model
+    gives.
+  - **Outcome:** a short list of fixes. Measurement fixes go first (new count or denominator rules,
+    pre-registered as their own entry). Shape findings name the covariates for approach 2 (free shape terms)
+    and approach 3 (the empirical benchmark). Nothing in config changes from this entry.
+- **Results (run 2026-11-04 on 992546d; `reports/adu-fit-audit/`, log `run-2026-11-04-log.txt`):**
+  - **The refits reproduce D-041.** Full fit θ 1.232 per 1,000, α 2.284, rule shares 1.0 and 0.3.
+  - **Noise floor (item 5): state misses are mostly within the model's own noise.**
+    - A correct model would be "useful" for MN 80% of the time, for NC 51%, for TX 38% and for OH 25%.
+    - So TX's and OH's "inside only" verdicts are not evidence of misfit. MN's (observed ÷ P50 exactly 0.50)
+      is the one state where a correct model should usually have done better.
+    - The four-state K1 a correct model gives is 1.24. The observed K1 is 0.76. At the state level the fit is
+      no worse than its own noise; the problem is that the noise (α) is large.
+  - **Where the place spread comes from (items 1 and 2):**
+    - City-records places (10) come in at ΣY/ΣE 0.94 in-sample and 1.01 out-of-state. The 41 survey-counted
+      MN suburbs come in at 0.32 (0.41 out-of-state), after the survey reporting rate ρ = 0.57.
+    - Many large suburbs report no ADU permit in any year, raw or after rules: Eagan (expected 25),
+      Lakeville (30), St. Louis Park (22), Bloomington (33; its 3 raw permits were all dropped as co-built).
+      The 15 suburbs in every year of the panel total 2 to 8 ADUs a year against 13 to 28 expected (ratio
+      about 0.15).
+    - Within TX the two cities differ ×8.7: Austin 3.40, San Antonio 0.39. Austin's count is after dropping
+      1,677 of its 2,545 secondary-apartment permits as co-built (66%).
+  - **Measurement flags (pre-registered readings):**
+    - Two sources differ by more than ×1.5: Minneapolis 2017–2025, city records 194 ADU permits against the
+      Met Council survey's 111 (×1.7). This is consistent with ρ = 0.57, which is already applied; it is the only
+      place-year overlap that checks ρ.
+    - Co-built exclusion removes more than 30%: Austin (66%), Andover (100%, 1 permit), Bloomington (100%,
+      3), Crystal (80%, 4 of 5).
+    - The Met Council file has 2.78 single-family permits per parcel ID, so its parcel ID is not lot-level.
+      Co-built matching there can flag ADUs wrongly; the numbers affected are small.
+    - Not flagged: no within-state count-source or denominator-source split met the ×2 rule with ≥ 10
+      expected in each group.
+  - **Shape (item 3):**
+    - Home value: places with higher home values have more ADUs than the model expects. Across the
+      interquartile range the effect is ×1.86 (90% interval 1.31–2.55). Flagged.
+    - Eligible parcels: places with more parcels have fewer ADUs per parcel than expected. Across the
+      interquartile range the effect is ×0.55 (0.35–0.80). Flagged. This may be the suburban zeros above,
+      not size itself.
+    - Rent and price-to-cost: ×0.79 (0.44–1.30). Rule age: ×0.69 (0.31–1.07). Neither is flagged.
+  - **Beyond the pre-registered readings (reported, not ruled on):** the in-sample ratio falls every
+    calendar year, from 2.92 in 2016 to 0.48 in 2025.
+    - On a fixed panel of the 16 places present in all ten years it falls from 1.30 to 0.32, so this is not
+      only places entering.
+    - Minneapolis: observed about 28 a year in 2016–20 and 14 a year in 2021–25. Expected rises from 10 to 71
+      over 2016–21.
+    - Austin: observed flat at 87–126 a year. Expected rises from 22 to 41.
+    - The ramp (uptake building for years after a reform) is not what these places show: their counts are
+      flat or falling.
+  - **WS-ENGINE's reading, for Ben:**
+    - **Measurement first:** decide whether a Met Council suburb that never reports an ADU is a true zero or
+      a reporting gap. This drives most of α and MN's low level.
+    - **Then shape**, with three candidate free terms for approach 2: the ramp (or no ramp), the
+      home-value elasticity, and possibly the size effect. Approach 3's empirical benchmark should include
+      the same covariates.
+    - Nothing in config changes from this entry.
+- **Follow-up, 2026-11-04: are the suburban zeros true zeros or reporting gaps?** (Ben: "zeros first".
+  Descriptive only, no fit: `scripts/dev/fit_audit_zeros.py`, `reports/adu-fit-audit/zeros_*.csv`, log
+  `zeros-run-2026-11-04-log.txt`.)
+  - **Correction to the results above:** "city-records places come in at 0.94" is driven by Austin (3.40).
+    Without Austin, city-records places come in at 0.42, about the same as the survey-counted suburbs. The
+    survey/city split is not the finding.
+  - **The zeros line up with one rule feature: no detached ADUs.**
+    - Places whose rules in force allow attached ADUs only: 7 observed against 87 expected (0.08). That is
+      after the 0.3 multiplier the fit already gives "other" restrictions. They include Lakeville (0 against
+      30), Eagan (0 against 25) and Bloomington before 2022 (0 against 20).
+    - MN survey-counted suburbs that allow detached ADUs: 0.46. Minneapolis (city records): 0.42. So where
+      the rules are alike, the survey counts like the city's own records.
+  - **An independent source agrees.** County assessor rolls (Dakota, Ramsey, Washington, Anoka; Hennepin
+    records no unit counts) show 31 of 166,326 older single-family parcels going from 1 to 2 units between
+    the 2021 and 2025 rolls. Eagan has 1 of 21,255; Lakeville and Apple Valley have none. The check misses
+    some ADUs (Stillwater: 7 in the survey, none in the rolls), so it confirms near-zeros but cannot size a
+    count.
+  - **Reading:** the zeros are true zeros. They are not a survey reporting gap. They come from the rule-type
+    structure: `type_of` puts "no detached ADUs" in "other" with parking, conditional-use permits and small
+    size caps, all sharing one multiplier (m_other = 0.3). Attached-only places produce about a twelfth of
+    what that multiplier allows. No count rule is needed.
+  - **What is left after this:** places that allow detached ADUs still differ by state: MN 0.43, NC 1.21, OH
+    0.95, TX 1.28. That is a level or shape question for approaches 2 and 3, not measurement.
+  - **Proposed next entry (D-046, for Ben's approval):** give "no detached ADUs" its own multiplier, fitted
+    as m_owner and m_other are, and refit with the leave-one-state-out backtest.
+
+### D-046 · 2026-11-04 · "No detached ADUs" gets its own rule multiplier (method only, before any fit)
+
+- **Why:** D-045's follow-up found that places whose rules allow attached ADUs only produce 7 ADU permits
+  against 87 expected (0.08), after the 0.3 multiplier the fit gives every "other" restriction. `type_of`
+  puts "no detached ADUs" in "other" with parking, conditional-use permits and size caps under 600 sq ft.
+  Ben approved this entry on 2026-11-04 ("Yes, D-046").
+- **Change, calibration only:**
+  - A rule's multiplier becomes c = m_o^[owner occupancy] × m_x^[other restrictions, without detached] ×
+    m_d^[no detached ADUs]. A rule with no restriction keeps c = 1.
+  - A blank detached field is integrated over its field probability, as every blank field is (D-022).
+  - Everything else is D-041's fit 3: counts (co-built excluded, survey ρ = 0.57), the 51 fit places, gamma
+    place effects, θ and α by profile likelihood, and Raleigh and Durham as the test set.
+- **Estimation:**
+  - Grids: m_o and m_x on D-019's grid 0.1, 0.2, …, 1.0; m_d on 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7,
+    1.0.
+  - Each share's 90% interval comes from its profile over the other two (2Δℓ ≤ 2.706). A share is
+    estimable when its interval is narrower than its range; m_o and m_x keep D-019's ranges and judgment
+    values, and m_d's range is 0.01–1.0 with judgment value 0.3, today's treatment.
+  - θ's 90% interval profiles over the grid points inside the joint 90% region of the estimable shares
+    (2Δℓ ≤ 6.251, χ² with 3 degrees of freedom); shares that are not estimable stay at their judgment value.
+    This replaces fit 3's profile over the whole grid, which would take hours with three shares. A test checks
+    that it gives fit 3's interval when m_d is fixed.
+  - The grid is evaluated in parallel; results do not depend on the number of workers.
+- **Reported:**
+  1. The full fit: θ, α, m_o, m_x, m_d with intervals, and the log-likelihood next to D-041's (−383.718).
+     The models are not nested (a detached-only rule moves from m_x to m_d), so the gain is reported against
+     one added parameter.
+  2. In-sample ΣY / ΣE for attached-only places (D-045: 0.08) and for the rest.
+  3. Leave one state out, as D-041: state totals with P10/P50/P90, verdicts, K1 (RMS of log observed ÷ P50
+     over the four states; D-041 0.791) and median P90/P10 (D-041 28.0). Test set from the full fit.
+- **Adoption rule, fixed now:** adopt if all three hold:
+  - m_d is estimable and its 90% interval excludes the fitted m_x;
+  - the log-likelihood improves by at least 1.353 (2Δℓ ≥ 2.706, one added parameter);
+  - leave one state out has no state missed and K1 no larger than 0.791.
+  - Otherwise report it and keep D-041.
+- **On adoption:** `adu.yaml` gets the m_d share with its source. The scenario's rule types (`TYPES`,
+  `type_of`, rule priors) are split to match, in their own PR with tests. Nothing in config changes in this
+  entry.
+- **Results (run 2026-11-04 on b1148ba; `reports/adu-detached/`, log `run-2026-11-04-log.txt`):**
+  - **Full fit:** θ 1.337 per 1,000 (0.869–2.294), α 2.031.
+    - m_o is 1.0 (0.8–1.0) and m_x is 0.3 (0.2–1.0).
+    - m_d is 0.3, with a 90% interval of 0.1–1.0. It is estimable (narrower than 0.01–1.0), but the interval
+      includes m_x.
+    - Log-likelihood −382.464, a gain of 1.254 over D-041.
+  - **Folds:** without MN, m_d is not estimable (0.01–1.0); the other three folds match the full fit.
+  - **Attached-only places, in-sample:** 0.21 (D-041 0.08). The change comes from the structure, not from
+    m_d differing from m_x. A rule that is attached-only and has another restriction now gets m_x × m_d =
+    0.09, where it got 0.3.
+  - **Leave one state out:**
+    - MN useful (observed ÷ P50 0.55), NC useful (0.58), OH useful (2.00, on the boundary), TX inside only
+      (2.16). D-041 had OH and TX inside only.
+    - K1 0.658 (D-041 0.791). None missed. Median P90/P10 23.4 (D-041 28.0).
+    - Test set from the full fit: Raleigh and Durham inside only, observed ÷ P50 2.27.
+  - **Adoption rule:** m_d's interval does not exclude m_x, and the gain (1.254) is under 1.353. **D-046 is
+    not adopted; D-041 stays.**
+  - **WS-ENGINE's notes, for Ben:**
+    - The backtest is better on every pre-registered measure, but the likelihood does not separate m_d from
+      m_x. With α near 2, ten attached-only places with zeros are weak evidence: under the fitted spread,
+      a zero against 30 expected has a probability near 0.17.
+    - Any change to adopt the split structure anyway (m_d tied to m_x, so restrictions compound) would be a
+      new entry, written before it is fitted. It should not be read off this run.
+    - The large place spread (α) remains the main problem. Approaches 2 and 3 target it.
+
+### D-047 · 2026-11-04 · Approaches 2 and 3: let the data set the shape, and race the mechanism against an empirical model (method only, before any fit)
+
+- **Why:** D-045 found the misfit is mostly place-to-place (α 2.28), with the ramp and home value the
+  clearest shape signals. D-046's detached multiplier did not separate from m_x. Ben chose to run
+  approaches 2 and 3 next (2026-11-04).
+- **Common to both:**
+  - D-041's data, count rules, 51 fit places, and Raleigh and Durham as the test set.
+  - Rule shares are held at D-041's fit (m_o 1.0, m_x 0.3), with the D-019 rule types; no detached split.
+    This keeps the comparison about shape only.
+  - Leave one state out as D-041: each fold refits everything without the state, then predicts its state
+    total with joint draws (one parameter draw per simulation draw shared by the state's places, an
+    independent place effect per place).
+  - Measures: verdicts, K1 (RMS log observed ÷ P50 over the four states; D-041 0.791), median P90/P10
+    (D-041 28.0), α, and the test set from the full fit.
+- **Approach 2: the mechanism with three shape terms set by the data.**
+  - The expected count keeps D-041's form, θ × parcels × h1 × reporting rate × max over rules of c ×
+    coverage × ramp, with three changes:
+    - The ramp's half-life is on the grid: no ramp (ramp = 1), 0.5, 1, 2 (today's central), 3.5, 6 years.
+      The slope stays 0.75.
+    - The equity elasticity β_e is on the grid 0, 0.25 (today's), 0.5, 0.75, 1, 1.5, 2. h1 is rescaled by
+      (V / V_ref)^(β_e − 0.25).
+    - A size elasticity β_s is on the grid −0.6, −0.4, −0.2, 0, 0.2. Expected counts are multiplied by
+      (mean eligible parcels / 10,000)^β_s.
+  - At each grid point, θ and α are fitted by maximum likelihood (α profiled, as fit 3). Each shape term's
+    90% interval comes from its profile over the other two (2Δℓ ≤ 2.706). θ's interval profiles over the
+    grid points inside the joint 90% region (2Δℓ ≤ 6.251), as D-046.
+  - Predictions use each fold's estimated shape, with θ drawn from its interval.
+  - **Adoption rule:** adopt if the log-likelihood gains at least 3.126 over D-041 (2Δℓ ≥ 6.251, three
+    added parameters), no state is missed, and K1 is below 0.791. On adoption, the shape values go to
+    `hazard.yaml` with this source, and the size term is wired in its own PR.
+- **Approach 3: an empirical benchmark with no Portland transport and no pro forma.**
+  - Poisson-gamma, log μ_t = log(eligible parcels_t × reporting rate_t) + b0 + b1 log(rent / 1,500) + b2
+    log(home value / 300,000) + b3 (mortgage rate − 5) + b4 log(eligible parcels / 10,000) + b5 restricted_t
+    + b6 attached-only_t + b7 log(1 + rule age_t), with a gamma place effect (variance α).
+  - Inputs, all from the fit's inputs:
+    - restricted_t: the probability, over blank-field combinations, that no rule in force is
+      Handbook-equivalent.
+    - attached-only_t: the same probability that every rule in force forbids detached ADUs.
+    - Rule age: years since the oldest rule in force.
+  - Maximum likelihood by Nelder–Mead (NumPy, written for this entry), best of five starts.
+  - Predictions draw the coefficients from a normal with the inverse observed information (numerical
+    Hessian), α at its estimate.
+  - **Reading rule:** a benchmark, never adopted into config. If its K1 is lower than approach 2's by more
+    than 0.10 with no state missed, the mechanism is not earning its keep. That would be reported to Ben as
+    a reason to revisit D-037. Otherwise the mechanism stays.
+- Nothing in config changes in this entry.
+- **Amendment, 2026-11-04, before any run:** in approach 3, a covariate with no variation in a fold's fit
+  set is not identified (for example attached-only without MN). It is held at 0 with no variance in that
+  fold. The intercept and α are always estimated. The covariance is symmetrized before drawing.
+- **Results (run 2026-11-04 on 5c667f1; `reports/adu-shape/`, log `run-2026-11-04-log.txt`):**
+  - **Approach 2, full fit:**
+    - The grid picks no ramp, equity elasticity 0 and size 0. No ramp is the only value inside its 90%
+      interval, and the same holds in every fold. Equity sits at the grid's lower edge (interval 0–0); size's
+      interval is −0.2 to 0.2.
+    - θ 0.630 per 1,000 (0.421–0.986). θ is lower than D-041's because early years now count at full
+      strength.
+    - α 2.259. Log-likelihood −324.259, a gain of 59.5 over D-041, almost all of it from dropping the ramp.
+  - **Approach 2, leave one state out:** MN, NC and OH useful; **TX missed**, observed ÷ P50 17.3.
+    - The fold without TX picks size −0.4, from MN-dominated data.
+    - Austin (151,000 eligible parcels) and San Antonio (362,000) are larger than any fit place in that
+      fold; the largest, Minneapolis, has 75,000. So the size term cuts their prediction by 3 to 4 times.
+    - K1 1.482; median P90/P10 18.8. Test set from the full fit: inside only, observed ÷ P50 3.3.
+  - **Approach 2 adoption rule:** the gain passes; missed 1 and K1 1.482 fail. **Not adopted.**
+  - **Approach 3, full fit:** log-likelihood −294.027, α 1.344.
+    - Coefficients: rent −5.33 (SE 1.38), home value +1.87 (0.63), restricted +0.49 (0.17), attached-only
+      −1.54 (0.70). Rate, size and rule age are near 0.
+    - The rent sign is the opposite of the pro forma's. Rent and home value move together, so the two are
+      partly trading off.
+  - **Approach 3, leave one state out:** MN and NC useful; OH (observed ÷ P50 0.20) and TX (2.95) inside
+    only; NC with Raleigh and Durham missed (2.66).
+    - K1 1.042; median P90/P10 15.0. Test set from the full fit: **missed**, observed ÷ P50 4.3.
+  - **Approach 3 reading rule:** its K1 (1.042) is more than 0.10 below approach 2's (1.482), with no state
+    of the four missed, so the rule as written says "revisit D-037".
+    - **The rule was mis-specified:** it compared approach 3 with approach 2 only, not with D-041. D-041's
+      K1 is 0.791, lower than both, and D-041 misses nothing, including the test set.
+    - WS-ENGINE reads this as: the mechanism transfers better than the empirical model. The written rule's
+      trigger is reported as fired; Ben decides.
+  - **What the two approaches show together:**
+    - In-sample, both fit far better than D-041: AIC 662.5 (approach 2) and 606.1 (approach 3) against
+      775.4.
+    - Out of state, both transfer worse. The shapes learned from 51 places, 42 of them MN, do not carry to
+      other states. Texas's cities are outside the fit's size range, and rent and home value trade off.
+    - **The one robust finding is the ramp.** No ramp wins in every fold with a tight interval, and the
+      audit's year-by-year residuals pointed the same way. The equity and size terms are not robust.
+  - **WS-ENGINE's proposal, for Ben (D-048, not yet written):** D-041 with the ramp removed and nothing
+    else changed, scored on the same leave-one-state-out test. Nothing in config changes from this entry.
+- **Correction (2026-11-04):** the D-047 chart and PR comment said D-041's test set (Raleigh and Durham, from
+  the full fit) was useful. It was inside only: observed 410 against P50 159
+  (`reports/adu-counts/statewide.csv`). The group "NC with Raleigh and Durham" was useful.
+
+### D-048 · 2026-11-04 · D-041 without the ramp (method only, before any fit)
+
+- **Why:** D-047 approach 2 chose no ramp in every fold, and no other ramp value was inside its 90%
+  interval. The D-045 audit found counts flat or falling while the ramp expected them to rise 3–5×. Ben
+  approved this entry on 2026-11-04 ("Yes, D-048").
+- **Change:** a rule's ramp is 1 from its effective date (`calibrate_shape.shaped` with `NO_RAMP`, the
+  central equity elasticity and size 0). Nothing else changes: D-041's counts, fit places and test set, fit
+  3's rule-share grid and profile likelihood, and its gamma place effects.
+- **Reported:**
+  1. Full fit: θ, α, m_o, m_x with intervals, and the log-likelihood next to D-041's (−383.718). The ramp
+     was never fitted, so no parameter is added.
+  2. Leave one state out as D-041: verdicts, K1 (D-041 0.791), median P90/P10 (D-041 28.0).
+  3. Test set from the full fit (D-041: inside only, observed ÷ P50 2.58).
+- **Adoption rule, fixed now:** adopt if no state of the four is missed, K1 is below 0.791, and the test set
+  is not missed. Otherwise keep D-041.
+- **On adoption (each in its own PR, after Ben confirms):**
+  - The scenario's ramp becomes 1 from adoption: `adu_ramp_half_years` and `adu_ramp_slope_years` are
+    replaced by a documented no-ramp setting with this source.
+  - θ, α and the D-030 anchor terms (`adu_anchor.yaml`) are refitted under D-048 and written to config.
+  - Five-year totals will rise, because reforms reach full strength in year 1. The dashboard and the
+    scenario comparison must say so.
+- **Results (run 2026-11-04 on 3c5228d; `reports/adu-no-ramp/`, log `run-2026-11-04-log.txt`):**
+  - **Full fit:** θ 0.659 per 1,000 (0.443–1.023), α 2.214, m_o 1.0, m_x 0.3. Log-likelihood −327.881, a
+    gain of 55.8 over D-041 with no added parameter. In-sample, no ramp is decisively better.
+  - **Leave one state out:** MN, NC and OH useful; **TX missed** (observed 1,108, P50 236, P90 977); NC with
+    Raleigh and Durham inside only (2.00). K1 0.870; median P90/P10 22.0.
+  - **Test set:** inside only, observed ÷ P50 3.42 (D-041 2.58).
+  - **Adoption rule:** TX missed and K1 not below 0.791. **Not adopted; D-041 stays.**
+  - **WS-ENGINE's notes, for Ben:**
+    - **D-041's better transfer is partly the ramp compensating.** In MN, many places' rules are young, so
+      the ramp shrinks their expected counts and the fit raises θ to match. Without TX, θ is 1.16 per 1,000
+      with the ramp and 0.56 without. TX's rules are old (ramp near 1), so its prediction scales with θ.
+      The ramp helped TX through θ, not through a better description of TX.
+    - **The yardstick is too noisy to choose between these models.** D-045's noise floor: a correct model
+      gives K1 about 1.24 on four state totals, and is useful for TX only 38% of the time. So K1 0.79 against
+      0.87, and TX inside or just missed, are within noise. Austin alone (3.4× expected under D-041, ×8.7
+      San Antonio's rate) decides the TX verdict for every model tried.
+    - Proposed next entry: a sharper model-comparison yardstick, held-out log score per place, before
+      choosing between D-041 and D-048.
+
+### D-049 · 2026-11-04 · A sharper yardstick: held-out log score per place (method only, before any scoring)
+
+- **Why:** D-040's yardstick scores four state totals. D-045's noise floor showed it cannot separate the
+  models tried since: a correct model would average K1 ≈ 1.24 and be useful for TX 38% of the time, and
+  Austin alone decides TX for every model. Ben approved this entry on 2026-11-04 ("Yes, sharper
+  yardstick").
+- **Score:** each fit place is scored by the fold that left its whole state out. Its held-out log score is
+  log P(y_i), the probability of its observed yearly counts:
+  - Mechanism models (D-041, D-046, D-047 approach 2, D-048):
+    P(y_i) = ∫ Σ_c w_c P_NB(y_i | θ k_ic, α) dN(log θ; log θ̂, se²).
+    - P_NB is `frailty_loglik_place`, the place effect integrated in closed form.
+    - c runs over blank-field combinations; k uses the fold's rule shares, m_d (D-046) or shape (D-047 2,
+      D-048).
+    - θ's uncertainty (se from its 90% interval) is integrated by 20-node Gauss–Hermite.
+  - Approach 3: the mean over 4,000 coefficient draws from N(β̂, Σ) of P_NB(y_i | μ_i(β), α).
+  - The test places (Raleigh and Durham) are scored the same way under each model's full fit and reported
+    separately.
+- **Fits used:** the fold fits already run.
+  - Taken from their CSVs: D-046 (`reports/adu-detached/fits.csv`), D-047 approach 2
+    (`reports/adu-shape/approach2_fits.csv`) and D-048 (`reports/adu-no-ramp/fits.csv`).
+  - Refitted with the same code and seeds: D-041's folds (its CSV omits m_x per fold; D-045 showed the
+    refit reproduces D-041) and approach 3 (its covariance was not saved).
+  - No new model is fitted.
+- **Reported:** per model, the total held-out log score over the 51 places, its sum by state, and the
+  average per place-year. Against D-041: ΣΔ_i and its paired SE, sd(Δ_i) × √51. Places in one state share a
+  fold, so the by-state sums are shown next to it. The test set's score is reported as well.
+- **Decision rule, fixed now:** the model with the highest total is proposed to Ben for adoption if it
+  beats D-041 by more than 2 paired SE, is not worse than D-041 in more than one of the four states, and is
+  not worse on the test set by more than 2 log units. Otherwise D-041 stays. Adoption itself is Ben's call
+  and gets its own PR, as written under each model's entry.
+- **Results (run 2026-11-04 on f90cdb3; `reports/adu-model-scores/`, log `run-2026-11-04-log.txt`):**
+  - **Held-out log score over the 51 places (higher is better), change from D-041 with 2 × paired SE:**
+
+    | Model | Total | Δ vs D-041 | 2 × paired SE | Δ MN | Δ NC | Δ OH | Δ TX | Test Δ |
+    |---|---|---|---|---|---|---|---|---|
+    | D-041 | −432.4 | — | — | — | — | — | — | — |
+    | D-046 | −425.5 | +6.9 | 8.5 | +6.4 | +0.3 | +0.1 | +0.2 | +0.2 |
+    | D-047 approach 2 | −341.8 | +90.7 | 113.1 | +69.8 | −0.6 | +1.8 | +19.6 | −0.8 |
+    | D-047 approach 3 | −322.2 | +110.2 | 141.2 | +76.5 | +0.9 | +1.3 | +31.4 | −1.7 |
+    | D-048 | −379.9 | +52.5 | 52.2 | +27.6 | −0.2 | +1.8 | +23.3 | +0.5 |
+
+  - **Decision rule as written:** the top model, approach 3, gains 110.2, which is under its 2 SE (141.2).
+    **D-041 stays.**
+  - **What the rule did not weigh:**
+    - The rule looks only at the top model. D-048 alone clears every bar: +52.5 against 52.2 (2 SE), worse
+      only in NC (−0.2), and +0.5 on the test set. Its margin over 2 SE is 0.3, so it is not robust.
+    - Every alternative scores better than D-041 in total, and every one that drops the ramp gains in MN, OH
+      and TX.
+    - The gains concentrate in a few large places. Under D-048: Austin +23.2, Minneapolis +10.8, Orono +4.3,
+      and the attached-only suburbs (Lakeville, Bloomington, Eagan) about +2.2 each. The paired SE is
+      therefore large.
+  - **The two out-of-state yardsticks disagree on D-048.** On state totals TX is missed (D-048 results). On
+    places, TX scores better than under D-041 (+23.3), because D-041 also predicts Austin poorly at the place
+    level; its state total was inside only because the range was wide.
+  - **Note:** blank-field combinations with weight 0 give log 0 = −inf in the mixture; they drop out of the
+    sum as intended (the run log's warnings).
+  - **WS-ENGINE's reading, for Ben:** three yardsticks now favour no ramp: in-sample (+55.8), held-out place
+    scores (+52.5, three of four states plus the test set) and the audit's year pattern. Only the noisy
+    state-total test goes against it. Adopting D-048 is Ben's decision; the written rules did not trigger it.
+
 ### D-051 · 2026-11-04 · V9 Oregon transfer prediction: what is frozen and how it is made (method only, before any run)
 - **Renumbered 2026-11-05:** written as D-046; renumbered D-051 (Ben) because #285's ADU fit entries also
   used D-046 to D-050.

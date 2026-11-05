@@ -303,11 +303,12 @@ FOUR_STATE = {
 P_BANDS = (10, 50, 90)
 
 
-def four_state_places(store, counts=None) -> list[cal.PlaceData]:
-    out = cal.place_data("MN", store, mn_places(), FIT_YEARS_MN, counts=counts)
+def four_state_places(store, counts=None, split_detached: bool = False) -> list[cal.PlaceData]:
+    kw = dict(counts=counts, split_detached=split_detached)
+    out = cal.place_data("MN", store, mn_places(), FIT_YEARS_MN, **kw)
     for st, places in FOUR_STATE.items():
         for g, yrs in places.items():
-            out += cal.place_data(st, store, [g], yrs, counts=counts)
+            out += cal.place_data(st, store, [g], yrs, **kw)
     return out
 
 
@@ -423,8 +424,10 @@ def four_state_main(store, out: Path | None, workers: int) -> None:
 SEED = 20261020
 
 
-def _test_set(store, counts=None) -> list[cal.PlaceData]:
-    test = cal.place_data("NC", store, [RALEIGH, DURHAM], TEST_YEARS, counts=counts)
+def _test_set(store, counts=None, split_detached: bool = False) -> list[cal.PlaceData]:
+    test = cal.place_data(
+        "NC", store, [RALEIGH, DURHAM], TEST_YEARS, counts=counts, split_detached=split_detached
+    )
     rows = cal.place_years("NC", store, [DURHAM], TEST_YEARS)
     if not (len(rows) and rows["eligible_parcels"].min() >= 1000):
         test = [p for p in test if p.geoid != DURHAM]
@@ -632,6 +635,7 @@ def counts_main(store, out: Path | None, workers: int) -> None:
 # ---------------------------------------------------------------------------------------------------------
 
 D041 = Path(__file__).resolve().parents[2] / "reports" / "adu-counts" / "statewide.csv"
+D041_LOGLIK = -383.718  # D-041 main, full four-state fit
 
 
 def _state_fit_task(args) -> tuple[str, cal.Fit3 | None, cal.StateFit | None, str]:
@@ -864,6 +868,71 @@ def state_effect_config_main(out: Path, reports: Path = D044) -> None:
     print(f"wrote {out}")
 
 
+def detached_main(store, out: Path | None, workers: int) -> None:
+    """D-046: fit 3 with its own multiplier for "no detached ADUs", leave one state out, next to D-041."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    import fit_audit_zeros as zeros
+
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    cs = cal.count_settings()
+    places, test = four_state_places(store, cs, True), _test_set(store, cs, True)
+    print(f"=== D-046: {len(places)} fit places, counts {cs} ===", flush=True)
+    fits = {}
+    with ProcessPoolExecutor(workers) as pool:
+        for st in ("",) + STATES:
+            sub = [p for p in places if p.state != st]
+            fits[st] = cal.fit_detached(sub, map_fn=lambda f, it: pool.map(f, it, chunksize=4))
+            f = fits[st]
+            name = "all four states" if st == "" else "without " + st
+            print(f"{name}: theta {f.theta * 1000:.3f} per 1,000 ({f.low * 1000:.3f}-{f.high * 1000:.3f}), "
+                  f"alpha {f.alpha:.3f}, m_o {f.m_owner} {f.owner_interval}, m_x {f.m_other} "
+                  f"{f.other_interval}, m_d {f.m_detached} {f.detached_interval} "
+                  f"estimable {f.detached_estimated}, loglik {f.loglik:.3f}", flush=True)  # fmt: skip
+    full = fits[""]
+    gain = full.loglik - D041_LOGLIK
+    print(f"\nLog-likelihood {full.loglik:.3f} against D-041 {D041_LOGLIK}: gain {gain:.3f} "
+          "(adopt needs >= 1.353)")  # fmt: skip
+    det = zeros.by_detached(store, cs, places + test, full)
+    print("\nIn-sample observed / expected by detached rule\n" + det.round(2).to_string(index=False))
+    draws = {}
+    for st in STATES:
+        draws |= cal.predict_places([p for p in places + test if p.state == st], fits[st], seed=SEED)
+    portland = _portland_paths(store, places + test, cs)
+    t = state_totals("D-046: leave one state out", _groups(places, test, True), draws, portland)
+    d041 = pd.read_csv(D041)
+    d041 = d041[d041["test"] == "main: leave one state out"][
+        ["group", "p10", "p50", "p90", "p90_over_p10", "verdict"]
+    ]
+    t = t.merge(d041.add_suffix("_d041").rename(columns={"group_d041": "group"}), on="group")
+    four = t[t["group"].isin(STATES)]
+    k1 = float(np.sqrt(np.mean(np.log(four["observed"] / four["p50"]) ** 2)))
+    missed = int((four["verdict"] == "missed").sum())
+    med = four["p90_over_p10"].median()
+    print(f"\nK1 {k1:.3f} (D-041 0.791); missed {missed}; median P90/P10 {med:.1f} (D-041 28.0)")
+    tt = state_totals("D-046: test set from the full fit", {"Raleigh and Durham": test},
+                      cal.predict_places(test, full, seed=SEED), portland)  # fmt: skip
+    md_ok = full.detached_estimated and not (
+        full.detached_interval[0] <= full.m_other <= full.detached_interval[1]
+    )
+    gain_ok, k1_ok = gain >= cal.CHI2_90 / 2, k1 <= 0.791
+    adopt = md_ok and gain_ok and missed == 0 and k1_ok
+    verdict_text = "ADOPT" if adopt else "keep D-041"
+    print(f"\nAdoption rule: m_d estimable and excludes m_x {md_ok}; gain {gain_ok}; "
+          f"none missed {missed == 0}; K1 <= 0.791 {k1_ok} -> {verdict_text}")  # fmt: skip
+    if out is not None:
+        rows = [dict(fit="all four states" if st == "" else f"without {st}", theta=f.theta, low=f.low,
+                     high=f.high, alpha=f.alpha, m_owner=f.m_owner, m_other=f.m_other,
+                     m_detached=f.m_detached,
+                     detached_low=f.detached_interval[0], detached_high=f.detached_interval[1],
+                     detached_estimated=f.detached_estimated, loglik=f.loglik, places=f.n_places,
+                     place_years=f.n_years) for st, f in fits.items()]  # fmt: skip
+        pd.DataFrame(rows).to_csv(out / "fits.csv", index=False)
+        det.to_csv(out / "by_detached.csv", index=False)
+        pd.concat([t, tt]).to_csv(out / "statewide.csv", index=False)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -885,6 +954,7 @@ def main() -> None:
     ap.add_argument("--counts", action="store_true", help="D-041: consistent counts, four-state comparison")
     ap.add_argument("--state-effect", action="store_true", help="D-043: τ, the spread between states")
     ap.add_argument("--tau-draws", action="store_true", help="D-044: τ drawn from its profile likelihood")
+    ap.add_argument("--detached", action="store_true", help="D-046: own multiplier for no detached ADUs")
     ap.add_argument(
         "--state-effect-config",
         type=Path,
@@ -894,6 +964,9 @@ def main() -> None:
     )
     ap.add_argument("--out", type=Path, help="--four-state / --statewide: folder for the CSVs")
     a = ap.parse_args()
+    if a.detached:
+        detached_main(DataStore(), a.out, a.workers)
+        return
     if a.state_effect_config:
         state_effect_config_main(a.state_effect_config)
         return

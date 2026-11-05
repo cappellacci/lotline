@@ -1,0 +1,36 @@
+=== D-049: 51 fit places, 2 test places ===
+/Users/bencappellacci/Engineering/lotline-audit/src/lotline/model/score.py:40: RuntimeWarning: divide by zero encountered in log
+  lw_c = np.log(pl.w / pl.w.sum())
+/Users/bencappellacci/Engineering/lotline-audit/src/lotline/model/score.py:40: RuntimeWarning: divide by zero encountered in log
+  lw_c = np.log(pl.w / pl.w.sum())
+/Users/bencappellacci/Engineering/lotline-audit/src/lotline/model/score.py:40: RuntimeWarning: divide by zero encountered in log
+  lw_c = np.log(pl.w / pl.w.sum())
+/Users/bencappellacci/Engineering/lotline-audit/src/lotline/model/score.py:40: RuntimeWarning: divide by zero encountered in log
+  lw_c = np.log(pl.w / pl.w.sum())
+
+Held-out log score (higher is better)
+           model   total  per_place_year  delta_vs_d041  paired_se  delta_MN  delta_NC  delta_OH  delta_TX  test_score  test_delta
+           D-041 -432.41           -1.46           0.00       0.00      0.00      0.00      0.00      0.00      -54.47        0.00
+           D-046 -425.51           -1.44           6.90       4.25      6.35      0.33      0.07      0.15      -54.31        0.16
+D-047 approach 2 -341.76           -1.15          90.65      56.55     69.84     -0.62      1.79     19.63      -55.23       -0.76
+D-047 approach 3 -322.23           -1.09         110.18      70.62     76.54      0.93      1.31     31.41      -56.15       -1.68
+           D-048 -379.91           -1.28          52.49      26.12     27.55     -0.16      1.84     23.27      -53.99        0.48
+
+Best other model: D-047 approach 3 (Δ 110.18, 2 SE 141.24, worse in 0 states, test Δ -1.68) -> D-041 stays
+
+Places where D-048 differs most from D-041
+model                     D-041  D-046  D-047 approach 2  D-047 approach 3  D-048  d048_minus_d041
+name                                                                                              
+Stillwater city          -13.08 -13.08            -15.19            -14.32 -14.91            -1.83
+Matthews town            -11.27 -11.23            -12.89            -13.15 -12.69            -1.42
+Richfield city            -9.97 -10.87            -11.13            -11.07 -10.92            -0.96
+Inver Grove Heights city -12.83 -12.97            -13.72            -14.06 -13.64            -0.81
+Burnsville city           -5.46  -5.46             -6.28             -5.65  -6.24            -0.78
+Golden Valley city        -1.78  -1.78             -2.47             -2.31  -2.45            -0.67
+name                                                        
+Eagan city         -5.33   -2.80  -3.08  -3.29  -3.13   2.21
+Bloomington city   -6.27   -5.04  -3.93  -4.12  -4.03   2.24
+Lakeville city     -5.98   -3.30  -3.28  -3.24  -3.42   2.57
+Orono city        -11.77  -11.77  -8.01  -8.54  -7.44   4.33
+Minneapolis city -101.01 -101.01 -48.40 -35.28 -90.21  10.80
+Austin city       -74.09  -73.98 -52.70 -48.19 -50.92  23.16

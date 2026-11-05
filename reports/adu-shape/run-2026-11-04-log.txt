@@ -1,0 +1,55 @@
+=== D-047: 51 fit places, 2 test places, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+[2] all four states: theta 0.630 per 1,000 (0.421-0.986), alpha 2.259, ramp no ramp (-1.0, -1.0), equity 0.0 (0.0, 0.0), size 0.0 (-0.2, 0.2), loglik -324.259
+[2] without MN: theta 0.581 per 1,000 (0.345-1.148), alpha 0.799, ramp no ramp (-1.0, -1.0), equity 0.0 (0.0, 0.0), size 0.2 (0.0, 0.2), loglik -127.791
+[2] without NC: theta 0.678 per 1,000 (0.421-1.167), alpha 2.926, ramp no ramp (-1.0, -1.0), equity 0.0 (0.0, 0.0), size 0.0 (-0.2, 0.2), loglik -271.303
+[2] without OH: theta 0.641 per 1,000 (0.424-1.018), alpha 2.354, ramp no ramp (-1.0, -1.0), equity 0.0 (0.0, 0.0), size 0.0 (-0.2, 0.2), loglik -319.002
+[2] without TX: theta 0.462 per 1,000 (0.314-0.705), alpha 1.957, ramp no ramp (-1.0, -1.0), equity 0.0 (0.0, 0.25), size -0.4 (-0.6, -0.2), loglik -249.819
+
+D-047 approach 2: leave one state out
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland verdict
+                        MN      42          249       285 205.0 495.0 1251.0 640.98          0.58          6.10   6011.53  useful
+                        NC       6           32        45  20.0  80.0  262.0 118.20          0.56         13.10    990.73  useful
+                        OH       1            2         8   0.0   7.0   56.0  19.73          1.14           inf    131.01  useful
+                        TX       2           13      1108  10.0  64.0  244.0 107.52         17.31         24.40  12069.03  missed
+NC with Raleigh and Durham       8           42       455  66.0 237.0  758.0 350.73          1.92         11.48   3587.74  useful
+
+Approach 2: test set from the full fit
+             group  places  place_years  observed  p10   p50   p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+Raleigh and Durham       2           10       410 14.0 123.0 521.0 215.57          3.33         37.21   2597.01 inside only
+[3] all four states: alpha 1.344, loglik -294.027
+[3] without MN: alpha 0.867, loglik -115.699
+[3] without NC: alpha 1.799, loglik -242.922
+[3] without OH: alpha 1.284, loglik -288.291
+[3] without TX: alpha 1.232, loglik -224.903
+
+Approach 3, full fit coefficients
+             term  estimate    se  ratio_per_unit
+        intercept    -9.788 0.362           0.000
+  log rent / 1500    -5.332 1.381           0.005
+ log value / 300k     1.874 0.627           6.517
+         rate - 5    -0.030 0.029           0.970
+log parcels / 10k     0.066 0.162           1.068
+       restricted     0.488 0.170           1.629
+    attached only    -1.544 0.702           0.214
+log(1 + rule age)     0.103 0.164           1.108
+
+D-047 approach 3: leave one state out
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 210.0 545.0 1651.1 1333.45          0.52          7.86   6011.53      useful
+                        NC       6           32        45  21.0  60.0  153.0   77.18          0.75          7.29    990.73      useful
+                        OH       1            2         8   4.0  41.0  191.0   76.88          0.20         47.75    131.01 inside only
+                        TX       2           13      1108  72.0 376.0 1591.1  685.08          2.95         22.10  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  62.0 171.0  437.0  221.30          2.66          7.05   3587.74      missed
+
+Approach 3: test set from the full fit
+             group  places  place_years  observed  p10  p50   p90   mean  obs_over_p50  p90_over_p10  portland verdict
+Raleigh and Durham       2           10       410 21.0 95.0 283.0 130.85          4.32         13.48   2597.01  missed
+
+Comparison (leave one state out over MN, NC, OH, TX)
+                  model  params   loglik  alpha    k1  missed  median_p90_p10     aic
+          D-041 (today)       4 -383.718  2.284 0.791       0          28.022 775.436
+Approach 2: shape terms       7 -324.259  2.259 1.482       1          18.750 662.518
+  Approach 3: empirical       9 -294.027  1.344 1.042       0          14.980 606.054
+
+Approach 2 adoption: gain 59.459 (needs >= 3.126), missed 1, K1 1.482 (needs < 0.791) -> not adopted
+Approach 3 reading: K1 1.042 vs approach 2 1.482; missed 0 -> mechanism not earning its keep: revisit D-037

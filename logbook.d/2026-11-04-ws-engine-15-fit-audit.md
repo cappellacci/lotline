@@ -1,0 +1,108 @@
+### LB-NNN · 2026-11-04 · engine · Why does the ADU fit miss: measurement, shape or noise?
+
+- **Question:** the four-state ADU fit misses in opposite directions by state (MN low, TX high) and has a
+  large place spread (α 2.28). Ben asked for an audit before any new fit.
+- **Outputs:**
+  - D-045 in `docs/analysis_plan.md`: method pre-registered in c5a7167, code in 992546d before the run,
+    results added after.
+  - `src/lotline/model/fit_audit.py` with hand-worked tests in `tests/model/test_fit_audit.py`.
+  - `scripts/dev/fit_audit.py`; run once into `reports/adu-fit-audit/`.
+- **Findings:**
+  - State-level misses are mostly within the model's own noise: a correct model is "useful" for TX only 38%
+    and OH 25% of the time. MN is the real miss.
+  - Survey-counted MN suburbs come in at 0.32 of expected. City-records places come in at 0.94. Many large
+    suburbs never report an ADU.
+  - Observed counts are flat or falling while the ramp expects them to rise 3–5×.
+  - Home value has a positive residual effect (×1.86 across its interquartile range).
+- **Decisions:** none. Next step proposed to Ben: settle the suburban zeros (true zero or reporting gap),
+  then free the ramp and home-value terms (approach 2) against an empirical benchmark (approach 3).
+- **AI:** Claude Code (Opus 5.5) wrote D-045, the code and tests, ran the audit once, drilled into
+  co-built and source overlaps with throwaway queries, and wrote up the results. Values were read from the
+  run's log and CSVs.
+
+### LB-NNN · 2026-11-04 · engine · Are the suburban zeros true zeros or reporting gaps?
+
+- **Question:** many large MN suburbs report no ADU permit in the Met Council survey. Is that a gap in the
+  survey or real? Ben chose to settle this before any new fit.
+- **Outputs:** `scripts/dev/fit_audit_zeros.py`; `reports/adu-fit-audit/zeros_by_detached.csv`,
+  `zeros_assessor.csv` and the run log; a dated follow-up and a correction under D-045 in
+  `docs/analysis_plan.md`.
+- **Findings:**
+  - The zeros are true zeros, caused by attached-only rules: 7 observed against 87 expected (0.08).
+  - Survey-counted suburbs that allow detached ADUs come in at 0.46, the same as Minneapolis's city records
+    (0.42).
+  - Assessor rolls agree: 1 of 21,255 Eagan parcels and none of 20,762 Lakeville parcels went from 1 to 2
+    units between 2021 and 2025.
+  - Correction: the earlier "city records 0.94" was Austin; without it, city records come in at 0.42.
+- **Decisions:** none. Proposed D-046: give "no detached ADUs" its own multiplier and refit.
+- **AI:** Claude Code (Opus 5.5) ran exploratory queries, then wrote them up as a script and ran it once.
+  Values were read from its log.
+
+### LB-NNN · 2026-11-04 · engine · Does "no detached ADUs" need its own multiplier?
+
+- **Question:** D-045 found attached-only places far below expected. Does a separate multiplier m_d fit
+  better? Ben approved D-046.
+- **Outputs:** D-046 in `docs/analysis_plan.md`, pre-registered in 5f0109d. Code and tests in b1148ba
+  (`fit_detached`, the `detached` array on `PlaceData`, `--detached`). Run once into `reports/adu-detached/`.
+- **Findings:**
+  - m_d is 0.3 (0.1–1.0), the same as m_x. The log-likelihood gains 1.254; 1.353 was needed.
+  - Not adopted under the pre-registered rule.
+  - The backtest still improved: K1 0.658 against 0.791, median P90/P10 23.4 against 28.0, OH now useful.
+    The improvement comes from restrictions compounding (m_x × m_d), not from m_d itself.
+- **Decisions:** none adopted; D-041 stays. Any change to the structure needs a new entry.
+- **AI:** Claude Code (Opus 5.5) wrote D-046, the code and tests, ran it once, and wrote up the results
+  from the log.
+
+### LB-NNN · 2026-11-04 · engine · Can the data set the model's shape (approach 2) or replace it (approach 3)?
+
+- **Question:** Ben chose approaches 2 and 3: free three shape terms on the mechanism, and race it against
+  an empirical model.
+- **Outputs:**
+  - D-047 in `docs/analysis_plan.md`: pre-registered in 9fd843c, with an amendment before the run.
+  - `src/lotline/model/calibrate_shape.py` and `tests/model/test_calibrate_shape.py`; `place_data` now keeps
+    each year's inputs (`extra`). Code in 5c667f1.
+  - `scripts/dev/calibrate_shape.py`, run once into `reports/adu-shape/`.
+- **Findings:**
+  - Both fit far better in-sample, but transfer worse than D-041 (K1 1.48 and 1.04 against 0.79).
+  - Approach 2 misses TX: a size term learned without TX extrapolates to cities larger than any fit place.
+  - Approach 3's rent coefficient has the wrong sign, and it misses the Raleigh/Durham test set.
+  - The ramp is rejected in every fold. That is the one robust finding.
+  - Approach 3's written reading rule fired ("revisit D-037"). It compared against approach 2 rather than
+    D-041, so it was mis-specified; this is flagged for Ben.
+- **Decisions:** none adopted. Proposed D-048: D-041 without the ramp, nothing else changed.
+- **AI:** Claude Code (Opus 5.5) wrote D-047, the code (including a NumPy Nelder-Mead) and tests, ran it
+  once, and wrote up the results from the log.
+
+### LB-NNN · 2026-11-04 · engine · Does dropping only the ramp improve the fit out of state?
+
+- **Question:** D-047 rejected the ramp in every fold. Does D-041 without the ramp, nothing else changed,
+  predict held-out states better? Ben approved D-048.
+- **Outputs:** D-048 in `docs/analysis_plan.md` (04f9fde, which also corrects D-047's test-set note); code
+  and test in 3c5228d; run once into `reports/adu-no-ramp/`.
+- **Findings:**
+  - In-sample the log-likelihood gains 55.8 with no added parameter.
+  - Out of state, TX is missed (P90 977 against 1,108) and K1 is 0.87. Not adopted; D-041 stays.
+  - D-041's TX result leaned on the ramp raising θ.
+  - Four state totals are too noisy a yardstick to separate these models; Austin decides TX for every one.
+- **Decisions:** none adopted. Proposed next: a held-out log score per place as the yardstick.
+- **AI:** Claude Code (Opus 5.5) wrote D-048, the code and test, ran it once, and wrote up the results from
+  the log.
+
+### LB-NNN · 2026-11-04 · engine · Which model predicts held-out places best?
+
+- **Question:** state totals are too noisy to choose between models. Does a held-out log score per place
+  separate them? Ben approved D-049.
+- **Outputs:**
+  - D-049 in `docs/analysis_plan.md` (60d7c09).
+  - `src/lotline/model/score.py` with tests in `tests/model/test_score.py`, and `scripts/dev/score_models.py`
+    (f90cdb3).
+  - Scored once into `reports/adu-model-scores/`.
+- **Findings:**
+  - Every alternative beats D-041 in total; the gains are concentrated in Austin and Minneapolis, so paired
+    SEs are large.
+  - The written rule (top model only) keeps D-041.
+  - D-048 (no ramp) alone clears each bar, by a margin of 0.3 over 2 SE: +52.5, better in MN, OH, TX and the
+    test set.
+- **Decisions:** none adopted. Whether to adopt D-048 is put to Ben.
+- **AI:** Claude Code (Opus 5.5) wrote D-049, the scoring code and tests, ran it once, and wrote up the
+  results from the log.

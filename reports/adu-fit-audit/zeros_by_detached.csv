@@ -1,0 +1,19 @@
+detached,places,observed,expected,ratio,by,state,count_source
+attached only,10,7.0,86.73432088595688,0.08070622941988548,detached,,
+blank,6,242.0,197.48987523153238,1.2253792743363934,detached,,
+detached allowed,39,1607.0,1691.3086011686785,0.9501518521750424,detached,,
+attached only,10,7.0,86.73432088595688,0.08070622941988548,state+detached,MN,
+blank,4,3.0,7.306261467344148,0.4106067122575221,state+detached,MN,
+detached allowed,30,275.0,640.9087639822127,0.4290782330566354,state+detached,MN,
+blank,2,239.0,190.1836137641882,1.2566802957921497,state+detached,NC,
+detached allowed,6,216.0,178.75690581863415,1.208344925253699,state+detached,NC,
+detached allowed,1,8.0,8.416665849306524,0.9504951418095261,state+detached,OH,
+detached allowed,2,1108.0,863.2262655185251,1.283556865979331,state+detached,TX,
+detached allowed,1,210.0,498.7029076807939,0.4210923914131563,state+count_source+detached,MN,city records
+attached only,10,7.0,86.73432088595688,0.08070622941988548,state+count_source+detached,MN,survey
+blank,4,3.0,7.306261467344148,0.4106067122575221,state+count_source+detached,MN,survey
+detached allowed,29,65.0,142.20585630141886,0.45708384795508217,state+count_source+detached,MN,survey
+blank,2,239.0,190.1836137641882,1.2566802957921497,state+count_source+detached,NC,city records
+detached allowed,6,216.0,178.75690581863415,1.208344925253699,state+count_source+detached,NC,city records
+detached allowed,1,8.0,8.416665849306524,0.9504951418095261,state+count_source+detached,OH,city records
+detached allowed,2,1108.0,863.2262655185251,1.283556865979331,state+count_source+detached,TX,city records
