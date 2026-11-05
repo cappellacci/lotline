@@ -1,0 +1,28 @@
+### LB-NNN · 2026-11-05 · WS-OR: Portland and Bend permit adapters (step 7)
+- **Question:** Can Portland's and Bend's own permit records count ADUs the way D-041 defines them (ADU-flagged permits by issue year, co-built excluded, report rate 1), so the frozen V9 ADU targets can be scored?
+- **What I did:** Claude Code (WS-OR worktree) wrote `states.or.portland_permits` and `states.or.bend_permits`. Both run every download through the IO layer, are wired through `holdout.apply` (blind by default, with an `unblind=` argument for scoring) and are registered in `config/states/or.yaml`.
+  - **Unblinding check:** before touching any data, I confirmed that `check_unblind("V9-OR-TRANSFER")` passes (the frozen file is on main, #298).
+  - **What I read:** while building the adapters, I read field values from 2010–2017 rows and server-side group counts. For Bend, I read shares of how `HB2001ADU` relates to the building use across all years. That was a field-meaning check and gave no ADU counts by year from 2018 on.
+  - **Counts run:** the 2010–2017 counts ran with the adapters in their default blind mode.
+  - **Not done:** I didn't compute or report any V9 score.
+- **Inputs:**
+  - Portland Residential Building Permits: the ArcGIS Hub CSV extract of PortlandMaps MapServer/89, dated 2026-09-12. PortlandMaps itself refused TCP connections from our network.
+  - Bend Permitting Table, FeatureServer/0.
+- **Outputs:**
+  - `src/lotline/adapters/states/or/portland_permits.py` and `bend_permits.py`.
+  - `tests/states/or/test_portland_permits.py` and `test_bend_permits.py` (synthetic fixtures).
+  - `config/states/or.yaml` (two sources).
+  - `docs/data_provenance.md`, regenerated.
+- **Findings:**
+  - **Portland:** `IS_ADU` is the city's flag. 203 permits in 2010–17 are a new house with an ADU on one permit. The adapter splits each into a house row and an ADU row, so `calibrate_adu.cobuilt` catches them.
+    - D-041's SFD-only rule doesn't flag the 72 ADUs on the same permit as a new townhouse or rowhouse; this is noted, not changed.
+    - 2010–2017 ADU-flagged permits: 71, 114, 146, 175, 221, 387, 549, 518. Co-built: 8, 12, 27, 33, 42, 56, 63, 60. D-041 counts: 63, 102, 119, 142, 179, 331, 486, 458.
+    - The Ord. 189050 history has 86 for 2010 and 615 for 2016. The flagged permits are 15% and 11% lower.
+  - **Bend:** the ADU flag is the building use `ADU`. `HB2001ADU` marks HB 2001 pathway permits, about a quarter of them duplexes, and is filled only from 2019–2021.
+    - No ADU use code exists before 2013, so 2010–2012 are unknown, not zero.
+    - 2013–2017 flagged: 13, 15, 24, 45, 47. Co-built: 7, 4, 5, 9, 8. D-041 counts: 6, 11, 19, 36, 39.
+- **Decisions:** none. Proposed for D-051 scoring (Ben or WS-ENGINE):
+  - whether the co-built rule should also cover townhouse and rowhouse primaries;
+  - that Bend's 2010–2012 must be read as missing, not zero.
+- **AI:** Claude Code wrote the adapters, tests and counts. Checks: Oregon suite 49 tests; full suite; `compliance_check.py` 0 FAIL; ruff clean.
+- **Open / next:** WS-OR's peer session scores V9's ADU targets with `unblind=("V9-OR-TRANSFER",)`. Step 8 (Oregon into the calibration) waits for Ben.
