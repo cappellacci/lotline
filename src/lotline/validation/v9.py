@@ -16,6 +16,11 @@ seen (holdout `V9-OR-TRANSFER`). Two kinds of target:
   `calibrate_adu.place_years` without its permit-coverage filter and observed-rate floor, which need the
   blind Oregon permits.
 
+  **Own-history variant (D-049).** Each place's published ADU permits before 2018 update u_i, draw by draw:
+  with M_i the expected pre-2018 permits at u_i = 1 under the same draw (same p_d, z_d, s_d and rule reading)
+  and Y_i the counts, u_i | history ~ Gamma(shape 1/α_d + Y_i, rate 1/α_d + M_i), the gamma-Poisson
+  posterior. Both variants are frozen.
+
 - **New 2-4 unit buildings** (BPS) per year for every jurisdiction a missing-middle rule reaches in
   2018-2025, and their sum. As D-038, y_it ~ Poisson(B_i + θ_d u_i k_it), with:
   - B_i: the mean of 2015-2017, held flat;
@@ -49,6 +54,7 @@ ADU_TARGETS = {"4159000": "Portland", "4105800": "Bend"}
 TEST_ID = "V9-OR-TRANSFER"
 ROLL_LAST_YEAR = 2017  # newest eligible-parcel roll the freeze may use
 CLASS_CODE = {"handbook": 0, "partial": 1, "blank": 2}
+HISTORY_FILE = Path("config/validation/or_adu_history.csv")  # D-049, repo-relative
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -164,8 +170,80 @@ def rule_factor(inp: AduInputs, partial_share: float, blank_partial: np.ndarray,
     return np.where(inp.cov > 0, f, 0.0).max(axis=2)
 
 
-def adu_draws(inp: AduInputs, draws: int | None = None, seed: int | None = None, params=None) -> np.ndarray:
-    """Predictive ADU permits, (draws, places, years)."""
+@dataclass
+class AduHistory:
+    """Pre-2018 ADU permits for the ADU targets (D-049). `inputs` covers the history years, in the same place
+    order as the prediction's inputs; `eligible` (places, years) is the newest roll at or before each year;
+    `counts` (places, years) is NaN where no count was published."""
+
+    inputs: AduInputs
+    eligible: np.ndarray
+    counts: np.ndarray
+
+
+def load_history(path: Path) -> pd.DataFrame:
+    """The coded counts: geoid, year, adu_permits, source_url, source_section, quote. Refuses any year in the
+    V9 window, so a blind outcome can't enter this way."""
+    h = pd.read_csv(path, dtype={"geoid": str})
+    need = {"geoid", "year", "adu_permits", "source_url", "source_section", "quote"}
+    if missing := need - set(h.columns):
+        raise ValueError(f"{path}: missing columns {sorted(missing)}")
+    if (h["year"] >= min(YEARS)).any():
+        raise ValueError(f"{path}: a count for {min(YEARS)} or later is a V9 outcome and must not be used")
+    if h["source_url"].isna().any() or (h["adu_permits"] < 0).any():
+        raise ValueError(f"{path}: every count needs a source and must be >= 0")
+    return h
+
+
+def adu_history(state: str, store, geoids: Sequence[str], counts: pd.DataFrame) -> AduHistory:
+    """History inputs for the years that have a count for some target and ACS inputs (the ACS series starts
+    in 2010, so an earlier count is not used)."""
+    from lotline.build import eligible as eligible_rule
+
+    first = int(store.read(state, "acs_geo_year")["end_year"].min())
+    c = counts[counts["geoid"].isin(geoids) & (counts["year"] >= first)]
+    years = sorted(int(y) for y in c["year"].unique())
+    if not years:
+        raise ValueError("no usable pre-2018 ADU counts for the targets")
+    inp = adu_inputs(state, store, geoids, years)
+    elig = store.read(state, "eligible_parcels")
+    elig = elig[(elig["theme"] == "adu") & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
+    eligible = np.zeros((len(geoids), len(years)))
+    y_obs = np.full((len(geoids), len(years)), np.nan)
+    for i, g in enumerate(geoids):
+        e = elig[elig["jurisdiction_geoid"] == g].sort_values("year")
+        for j, y in enumerate(years):
+            before = e[e["year"] <= y]
+            if before.empty:
+                raise ValueError(f"{g}: no eligible-parcel count at or before {y}")
+            eligible[i, j] = float(before["eligible_parcels"].iloc[-1])
+            hit = c[(c["geoid"] == g) & (c["year"] == y)]
+            if not hit.empty:
+                y_obs[i, j] = float(hit["adu_permits"].iloc[0])
+    return AduHistory(inp, eligible, y_obs)
+
+
+def posterior_u(a: float, observed: np.ndarray, expected: np.ndarray, rng) -> np.ndarray:
+    """One draw of u_i | history: Gamma(shape 1/a + Y_i, rate 1/a + M_i), summing over years with a count.
+    With a = 0 (no place variation) u_i = 1 whatever the history."""
+    have = ~np.isnan(observed)
+    y = np.where(have, observed, 0.0).sum(axis=1)
+    m = np.where(have, expected, 0.0).sum(axis=1)
+    if a <= 0:
+        return np.ones(len(y))
+    return rng.gamma(1 / a + y, 1 / (1 / a + m))
+
+
+def adu_draws(
+    inp: AduInputs,
+    draws: int | None = None,
+    seed: int | None = None,
+    params=None,
+    history: AduHistory | None = None,
+) -> np.ndarray:
+    """Predictive ADU permits, (draws, places, years). With `history`, u_i is drawn from its posterior given
+    the pre-2018 counts (D-049); otherwise from the prior. The random streams are the same either way, so the
+    two variants differ only through u_i."""
     from lotline.model import hazard
     from lotline.model.scenarios import adu
 
@@ -179,10 +257,20 @@ def adu_draws(inp: AduInputs, draws: int | None = None, seed: int | None = None,
     tau = float(central.get("adu_state_effect_sd", 0.0))
     state = np.exp(tau * rng.standard_normal(n) - tau**2 / 2)
     out = np.zeros((n, n_p, n_y))
+    hist_rng = [np.random.default_rng([seed + 7, d]) for d in range(n)] if history is not None else None
+    # Poisson noise has one stream per place, so a change in one place's mean never moves another's draws
+    noise = [np.random.default_rng([seed + 9, i]) for i in range(n_p)]
     for d, p in enumerate(sets):
         a = p["adu_place_effect_variance"]
         u = rng.gamma(1 / a, a, size=n_p) if a > 0 else np.ones(n_p)
-        blank_partial = rng.random(n_p) < inp.q.max(axis=(1, 2))
+        q = inp.q.max(axis=(1, 2))
+        if history is not None:
+            q = np.maximum(q, history.inputs.q.max(axis=(1, 2)))
+        blank_partial = rng.random(n_p) < q
+        if history is not None:
+            expected = history_expected(history, p, z[d], state[d], blank_partial)
+            known = ~np.isnan(history.counts).all(axis=1)  # a place with no count keeps its prior draw
+            u = np.where(known, posterior_u(a, history.counts, expected, hist_rng[d]), u)
         fac = rule_factor(
             inp,
             p["adu_partial_rule_share"],
@@ -197,8 +285,26 @@ def adu_draws(inp: AduInputs, draws: int | None = None, seed: int | None = None,
             dist = hazard.calibration_distance(inp.rent[:, j], inp.value[:, j], rate, p)["total"]
             hm = np.clip(hazard.widen(hm, dist, z[d], p) * u * state[d], 0.0, 1.0)
             mu = pool * hm * fac[:, j]
-            out[d, :, j] = rng.poisson(mu)
+            out[d, :, j] = [g.poisson(m) for g, m in zip(noise, mu, strict=True)]
             pool = np.maximum(pool - mu, 0.0)
+    return out
+
+
+def history_expected(h: AduHistory, p: Mapping, z, s: float, blank_partial: np.ndarray) -> np.ndarray:
+    """Expected pre-2018 permits at u_i = 1 under one draw: eligible_t × widened hazard × s × rule factor,
+    (places, years). No pool depletion: each year uses that year's roll."""
+    from lotline.model import hazard
+
+    inp = h.inputs
+    fac = rule_factor(
+        inp, p["adu_partial_rule_share"], blank_partial, p["adu_ramp_half_years"], p["adu_ramp_slope_years"]
+    )
+    out = np.zeros_like(h.eligible)
+    for j in range(len(inp.years)):
+        rate = np.full(len(inp.geoids), inp.rate[j])
+        hm = hazard.adu_mature_hazard(inp.rent[:, j], inp.value[:, j], rate, p)
+        dist = hazard.calibration_distance(inp.rent[:, j], inp.value[:, j], rate, p)["total"]
+        out[:, j] = h.eligible[:, j] * hazard.widen(hm, dist, z, p) * s * fac[:, j]
     return out
 
 
@@ -352,14 +458,25 @@ def summarize(draws: np.ndarray, years: np.ndarray, label: str) -> dict:
     return {"target": label, "by_period": out}
 
 
-def prediction(adu_in: AduInputs, adu_d: np.ndarray, mm_in: MmInputs, mm_d: np.ndarray) -> dict:
-    """Every V9 target's summary."""
+def prediction(
+    adu_in: AduInputs,
+    adu_d: np.ndarray,
+    mm_in: MmInputs,
+    mm_d: np.ndarray,
+    adu_hist_d: np.ndarray | None = None,
+) -> dict:
+    """Every V9 target's summary. ADU targets come in variant "transfer" and, with `adu_hist_d`, "own_history"
+    (D-049)."""
     targets = []
-    for i, g in enumerate(adu_in.geoids):
-        targets.append(
-            {"geoid": g, "name": adu_in.names[i], "outcome": "adu_permits"}
-            | summarize(adu_d[:, i, :], adu_in.years, f"ADU permits, {adu_in.names[i]}")
-        )
+    variants = [("transfer", adu_d, "")] + (
+        [("own_history", adu_hist_d, ", own pre-2018 history")] if adu_hist_d is not None else []
+    )
+    for variant, d_, tag in variants:
+        for i, g in enumerate(adu_in.geoids):
+            targets.append(
+                {"geoid": g, "name": adu_in.names[i], "outcome": "adu_permits", "variant": variant}
+                | summarize(d_[:, i, :], adu_in.years, f"ADU permits, {adu_in.names[i]}{tag}")
+            )
     for i, g in enumerate(mm_in.geoids):
         targets.append(
             {

@@ -116,3 +116,89 @@ def test_freeze_is_written_once(tmp_path):
     assert path == tmp_path / "results" / "frozen" / "V9-OR-TRANSFER.json"
     with pytest.raises(FileExistsError):
         v9.write_freeze(payload, tmp_path)
+
+
+# ---- own-history variant (D-049) ------------------------------------------------------------------------
+
+
+def test_posterior_u_by_hand():
+    # α = 0.5: prior Gamma(shape 2, rate 2). Counts 10 + 20 (one year unpublished) against 4 + 6 expected:
+    # posterior Gamma(shape 32, rate 12), mean 32/12, variance 32/144
+    rng = np.random.default_rng(0)
+    obs = np.array([[10.0, np.nan, 20.0]])
+    exp = np.array([[4.0, 99.0, 6.0]])  # the unpublished year's expectation is ignored
+    u = np.array([v9.posterior_u(0.5, obs, exp, rng)[0] for _ in range(20_000)])
+    assert u.mean() == pytest.approx(32 / 12, rel=0.02)
+    assert u.var() == pytest.approx(32 / 144, rel=0.06)
+    assert (v9.posterior_u(0.0, obs, exp, rng) == 1.0).all()
+
+
+def _history(counts, years=(2014, 2015, 2016, 2017), eligible=10_000.0):
+    inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(eligible,), years=years)
+    return v9.AduHistory(
+        inputs=inp,
+        eligible=np.full((1, len(years)), eligible),
+        counts=np.array([counts], dtype=float),
+    )
+
+
+def test_history_pulls_the_prediction_toward_the_place():
+    # reference place, θ = 0.002, ramp 0.5: 10 expected permits a year at u = 1. Four years of 20 published:
+    # Y = 80, M = 40, α = 0.5 -> E[u | history] = (2 + 80) / (2 + 40) = 1.952, so 2018's mean is 19.5,
+    # against 10 for the transfer variant
+    fixed = {
+        "adu_mature_hazard_ref": 0.002,
+        "adu_place_effect_variance": 0.5,
+        "adu_ramp_half_years": 2.0,
+        "adu_ramp_slope_years": 0.75,
+        "adu_state_effect_sd": 0.0,
+    }
+    inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0,))
+    plain = v9.adu_draws(inp, 6000, 3, fixed)
+    hist = v9.adu_draws(inp, 6000, 3, fixed, history=_history([20, 20, 20, 20]))
+    assert plain[:, 0, 0].mean() == pytest.approx(10.0, rel=0.05)
+    assert hist[:, 0, 0].mean() == pytest.approx(10.0 * 82 / 42, rel=0.04)
+    # and the history narrows the range: the prior's u has variance 0.5, the posterior's 82/42² = 0.046
+    assert np.percentile(hist[:, 0, 0], 90) - np.percentile(hist[:, 0, 0], 10) < np.percentile(
+        plain[:, 0, 0], 90
+    ) - np.percentile(plain[:, 0, 0], 10)
+
+
+def test_zero_history_pulls_down_and_missing_history_changes_nothing():
+    fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.5, "adu_state_effect_sd": 0.0}
+    inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0,))
+    plain = v9.adu_draws(inp, 3000, 4, fixed)
+    none = v9.adu_draws(inp, 3000, 4, fixed, history=_history([np.nan] * 4))
+    zero = v9.adu_draws(inp, 3000, 4, fixed, history=_history([0, 0, 0, 0]))
+    assert (none == plain).all()  # no counts: the prior draw is kept, so the variants are identical
+    assert zero.mean() < 0.2 * plain.mean()
+
+
+def test_history_file_refuses_window_years_and_unsourced_counts(tmp_path):
+    head = "geoid,year,adu_permits,source_url,source_section,quote\n"
+    ok = tmp_path / "ok.csv"
+    ok.write_text(head + "4159000,2016,10,https://x,p.1,q\n")
+    assert v9.load_history(ok)["geoid"].iloc[0] == "4159000"
+    late = tmp_path / "late.csv"
+    late.write_text(head + "4159000,2018,10,https://x,p.1,q\n")
+    with pytest.raises(ValueError, match="V9 outcome"):
+        v9.load_history(late)
+    bare = tmp_path / "bare.csv"
+    bare.write_text(head + "4159000,2016,10,,p.1,q\n")
+    with pytest.raises(ValueError, match="source"):
+        v9.load_history(bare)
+
+
+def test_history_for_one_place_leaves_the_others_draws_alone():
+    fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.5, "adu_state_effect_sd": 0.0}
+    inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0, 5_000.0))
+    years = (2014, 2015, 2016, 2017)
+    hist = v9.AduHistory(
+        inputs=_adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0, 5_000.0), years=years),
+        eligible=np.full((2, 4), 10_000.0),
+        counts=np.array([[40, 40, 40, 40], [np.nan] * 4]),
+    )
+    plain = v9.adu_draws(inp, 500, 6, fixed)
+    with_hist = v9.adu_draws(inp, 500, 6, fixed, history=hist)
+    assert (with_hist[:, 1, :] == plain[:, 1, :]).all()
+    assert with_hist[:, 0, :].mean() > 2 * plain[:, 0, :].mean()

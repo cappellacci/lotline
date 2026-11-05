@@ -2436,3 +2436,37 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   the input table versions (manifest hashes); per target and year P10/P50/P90/mean; the 8-year totals; the
   draws' seed. It is committed and merged to `main` before `--unblind V9-OR-TRANSFER` is ever passed
   (`validation.holdout.check_unblind`).
+
+### D-049 · 2026-11-05 · V9: a second ADU variant updated on each place's own pre-2018 permits (method only, before any freeze)
+- **Status:** Ben chose this on 2026-11-05, after the D-046 dry run and before any freeze. It adds a variant;
+  D-046's transfer prediction is unchanged and is frozen too. Both go in `results/frozen/V9-OR-TRANSFER.json`,
+  ADU targets tagged `variant: transfer` or `variant: own_history`. (Numbered D-049 because #285 holds D-047
+  and D-048.)
+- **Why.** In the D-046 dry run almost all of Portland's and Bend's ADU range comes from the unknown place
+  multiplier u_i, drawn from the four states' spread. A jurisdiction that wants to use Lotline usually has some
+  of its own history. Freezing both variants measures what that history is worth, which is the sparse-data
+  question the challenge asks.
+- **Data.** Published yearly ADU permits for Portland and Bend for years before 2018, from city ordinances,
+  staff reports or city reports, one row per place and year in `config/validation/or_adu_history.csv` with the
+  URL, section and a short quote. Years 2018 and later are refused by the loader (`v9.load_history`). Years
+  before the ACS series (2010) are kept in the file but not used. A missing year is skipped, not filled.
+  As coded on 2026-11-05: **Portland 2010 (86) and 2016 (615)**, from Ord. 189050's findings (2009's 24 is
+  kept but predates the ACS series). **No Bend count** was found in an official source, so Bend's
+  own-history variant equals its transfer prediction until one is coded before the freeze.
+- **Method.** For each draw d (same θ, judgment parameters, widening z_d, state multiplier s_d and blank-rule
+  reading as the transfer variant):
+  - M_i = Σ over history years with a count of eligible_t × widen(h_m) × s_d × max_r(rule share × ramp(age)),
+    the expected permits at u_i = 1, with that year's rent, value, mortgage rate, eligible count (newest roll
+    ≤ t) and rules in force on 1 July t; no pool depletion.
+  - Y_i = Σ of the published counts over the same years.
+  - u_i | history ~ Gamma(shape 1/α_d + Y_i, rate 1/α_d + M_i), the gamma-Poisson posterior; then the
+    prediction runs exactly as D-046.
+  - The random streams for everything except u_i are the transfer variant's, and Poisson noise has one stream
+    per place, so the two variants differ only through u_i and a place with no count is identical in both.
+    (The per-place streams changed the transfer dry run's draws, not its method.)
+- **Known limits, stated now.** Published counts may define an ADU permit differently from D-041's count rules
+  (for example, counting conversions or co-built units); the source row says what was counted. Portland's
+  2010–2017 counts include the years of its SDC waiver, which the model has no term for; the posterior folds
+  its effect into u_i and so assumes it carried on after 2018 (its 2018 extension is the `OR-4159000-fees-2018` row).
+- **Scoring.** As D-046 for each variant, plus the gain: the CRPS of the own-history variant against the
+  transfer variant for each ADU total.
