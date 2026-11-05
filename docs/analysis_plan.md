@@ -2958,3 +2958,20 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **WS-ENGINE's reading, for Ben:** three yardsticks now favour no ramp: in-sample (+55.8), held-out place
     scores (+52.5, three of four states plus the test set) and the audit's year pattern. Only the noisy
     state-total test goes against it. Adopting D-048 is Ben's decision; the written rules did not trigger it.
+
+### D-050 · 2026-11-05 · D-044's state effect re-estimated under D-048 (method only, before any run)
+
+- **Why:** D-048 was adopted on 2026-11-05, but `adu_state_effect.yaml` still holds D-044's τ grid, which was
+  estimated with the ramp. The scenario would then pair a no-ramp θ with a state spread from a ramped fit.
+  Ben approved this entry on 2026-11-05 ("Yes, redo state effect").
+- **Change:** D-044 exactly (τ grid 0–2.5 in steps of 0.05, a flat prior, θ and α maximized at each point, the
+  same seeds), run on D-048's places: the ramp is 1 from a rule's effective date (`adu_ramp_share`). Nothing
+  else changes.
+- **Reported:** as D-044: τ's distribution for the full fit and each fold, the unseen-state multiplier
+  exp(τ z) P10–P90, and leave one state out with τ drawn (main and T1), with D-040's verdicts and the median
+  P90 ÷ P10 over the four states. D-044's results are shown next to them.
+- **Rule, written now:** D-044's method and D-048 are both adopted, so the config is regenerated from this
+  full fit's grid and probabilities whatever the backtest shows. A state missed in leave one state out is
+  reported to Ben as a finding, not used to keep the ramped τ.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --tau-draws --no-ramp --out reports/adu-tau-draws-d048`,
+  then `--state-effect-config` from that folder.

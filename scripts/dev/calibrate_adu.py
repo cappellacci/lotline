@@ -770,16 +770,18 @@ def _tau_summary(name: str, sf, probs, rng) -> dict:
                 mult_p90=float(np.percentile(mult, 90)))  # fmt: skip
 
 
-def tau_draws_main(store, out: Path | None, workers: int) -> None:
+def tau_draws_main(store, out: Path | None, workers: int, no_ramp: bool = False) -> None:
     """D-044: τ's profile for the full fit and each leave-one-state-out fold, the unseen-state multiplier, and
-    leave one state out with τ drawn (main: the profile; T1: half-normal), next to D-041 and D-043."""
+    leave one state out with τ drawn (main: the profile; T1: half-normal), next to D-041 and D-043.
+    `no_ramp` (D-050): the same run on D-048's places (current config, no ramp) instead of D-044's."""
     from concurrent.futures import ProcessPoolExecutor
 
     if out is not None:
         out.mkdir(parents=True, exist_ok=True)
     cs = cal.count_settings()
-    places, test = four_state_places(store, cs, params=pre_d048()), _test_set(store, cs, params=pre_d048())
-    print(f"=== D-044: {len(places)} fit places, counts {cs} ===", flush=True)
+    params = None if no_ramp else pre_d048()
+    places, test = four_state_places(store, cs, params=params), _test_set(store, cs, params=params)
+    print(f"=== {'D-050' if no_ramp else 'D-044'}: {len(places)} fit places, counts {cs} ===", flush=True)
     with ProcessPoolExecutor(workers) as pool:
         results = list(pool.map(_tau_task, [(st, places) for st in ("",) + STATES]))
     profiles, summary, draws = [], [], {"main": {}, "T1 half-normal": {}}
@@ -827,9 +829,10 @@ def tau_draws_main(store, out: Path | None, workers: int) -> None:
 
 
 D044 = Path(__file__).resolve().parents[2] / "reports" / "adu-tau-draws"
+D050 = Path(__file__).resolve().parents[2] / "reports" / "adu-tau-draws-d048"
 
 
-def state_effect_config_main(out: Path, reports: Path = D044) -> None:
+def state_effect_config_main(out: Path, reports: Path = D044, how: str | None = None) -> None:
     """Write config/params/adu_state_effect.yaml from D-044's full-fit τ profile (adopted 2026-11-04).
 
     Reads `reports`/tau_profile.csv (the full fit's grid and probabilities) and tau_summary.csv (τ̂ and its 90%
@@ -839,7 +842,7 @@ def state_effect_config_main(out: Path, reports: Path = D044) -> None:
     prof = pd.read_csv(reports / "tau_profile.csv")
     prof = prof[prof["fit"] == "all four states"]
     full = pd.read_csv(reports / "tau_summary.csv").set_index("fit").loc["all four states"]
-    how = "D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04)"
+    how = how or "D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04)"
     src = f'"Estimated, scripts/dev/calibrate_adu.py --state-effect-config ({how})"'
     lines = [
         "# The spread between states in the ADU hazard (analysis plan D-043, D-044; adopted 2026-11-04).",
@@ -974,6 +977,9 @@ def main() -> None:
     ap.add_argument("--tau-draws", action="store_true", help="D-044: τ drawn from its profile likelihood")
     ap.add_argument("--detached", action="store_true", help="D-046: own multiplier for no detached ADUs")
     ap.add_argument(
+        "--no-ramp", action="store_true", help="D-050: --tau-draws / --state-effect-config, D-048"
+    )
+    ap.add_argument(
         "--state-effect-config",
         type=Path,
         nargs="?",
@@ -986,10 +992,17 @@ def main() -> None:
         detached_main(DataStore(), a.out, a.workers)
         return
     if a.state_effect_config:
-        state_effect_config_main(a.state_effect_config)
+        if a.no_ramp:
+            state_effect_config_main(
+                a.state_effect_config,
+                D050,
+                "D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048",
+            )
+        else:
+            state_effect_config_main(a.state_effect_config)
         return
     if a.tau_draws:
-        tau_draws_main(DataStore(), a.out, a.workers)
+        tau_draws_main(DataStore(), a.out, a.workers, a.no_ramp)
         return
     if a.state_effect:
         state_effect_main(DataStore(), a.out, a.workers)
