@@ -37,6 +37,11 @@ class Holdout(_Model):
     # (Charlotte's are reported under Mecklenburg County, 37119). They are held out over the same window.
     reporting_geoids: list[str] = Field(default_factory=list)
     reporting_reason: str | None = None
+    # Set by Ben once the test is scored: from this date the filter no longer hides the outcomes, so the full
+    # data can be built and pooled. The test stays in the registry (scoring still reruns with `unblind`), and
+    # a release is refused unless the frozen prediction is in the repo.
+    released_on: dt.date | None = None
+    released_note: str | None = None
 
     @property
     def statewide(self) -> bool:
@@ -53,6 +58,10 @@ class Holdout(_Model):
             raise ValueError(f"{self.test_id}: outcome_until is before outcome_from")
         if self.reporting_geoids and not self.reporting_reason:
             raise ValueError(f"{self.test_id}: reporting_geoids need a reporting_reason")
+        if self.released_on and not self.released_note:
+            raise ValueError(f"{self.test_id}: released_on needs a released_note")
+        if self.released_on and self.released_on < self.outcome_from:
+            raise ValueError(f"{self.test_id}: released before its outcome window opened")
         return self
 
 

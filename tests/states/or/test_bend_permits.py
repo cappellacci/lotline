@@ -115,6 +115,12 @@ def test_d041_counts_by_issue_year_without_cobuilt_adus(raw):
 
 def test_load_is_blind_by_default_and_unblinds_only_v9(raw, monkeypatch):
     monkeypatch.setattr(bp, "download", lambda store, refresh=False: raw)
+    released = bp.load("OR", store=None)  # the real V9 was released on 2026-11-05
+    assert released["issue_year"].max() >= 2018
+    # the blind V9 as it was before the release
+    (v9,) = holdout.holdouts_for("OR")
+    unreleased = v9.model_copy(update={"released_on": None, "released_note": None})
+    monkeypatch.setattr(holdout, "holdouts_for", lambda state: [unreleased])
     blind = bp.load("OR", store=None)
     assert_conforms(blind, "permits")
     assert blind["issue_year"].max() <= 2017
