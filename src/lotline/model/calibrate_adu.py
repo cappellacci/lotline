@@ -456,6 +456,7 @@ class PlaceData:
     cr: np.ndarray
     w: np.ndarray
     detached: np.ndarray | None = None  # D-046: (C, T, R) True where the rule forbids detached ADUs
+    extra: dict | None = None  # D-047: per-year inputs (rent, value, rate, parcels, report, cov, age)
 
     @property
     def log_fact(self) -> float:
@@ -991,8 +992,10 @@ def place_data(
                 if adu._no_adus(rubric):
                     continue
                 failed, unknown = adu.restriction_fields(rubric)
-                ramp = float(hazard_ramp((mid - r.effective_date).days / 365.25, p))
-                live.append((set(failed), list(unknown), cov.get(r.reform_id, 1.0) * ramp))
+                age = (mid - r.effective_date).days / 365.25
+                ramp = float(hazard_ramp(age, p))
+                live.append((set(failed), list(unknown), cov.get(r.reform_id, 1.0) * ramp,
+                             cov.get(r.reform_id, 1.0), age))  # fmt: skip
                 unknown_all += [u for u in unknown if u not in unknown_all]
             per_year.append(live)
         combos = list(itertools.product((False, True), repeat=len(unknown_all)))
@@ -1006,12 +1009,15 @@ def place_data(
         types = np.zeros((len(combos), len(per_year), n_r), dtype=int)
         det = np.zeros((len(combos), len(per_year), n_r), dtype=bool)
         cr = np.zeros((len(per_year), n_r))
+        covs, ages = np.zeros((len(per_year), n_r)), np.full((len(per_year), n_r), np.nan)
+        no_det = np.zeros((len(combos), len(per_year), n_r), dtype=bool)
         for t, live in enumerate(per_year):
-            for r_i, (failed, unknown, a) in enumerate(live):
-                cr[t, r_i] = a
+            for r_i, (failed, unknown, a, cv_, age) in enumerate(live):
+                cr[t, r_i], covs[t, r_i], ages[t, r_i] = a, cv_, age
                 for c_i, c in enumerate(combos):
                     hit = {f for f, b in zip(unknown_all, c, strict=True) if b and f in unknown}
                     fails = failed | hit
+                    no_det[c_i, t, r_i] = DETACHED in fails
                     if split_detached:
                         det[c_i, t, r_i] = DETACHED in fails
                         fails = fails - {DETACHED}
@@ -1028,6 +1034,16 @@ def place_data(
                 cr,
                 w,
                 det if split_detached else None,
+                {
+                    "rent": d["rent"].to_numpy(dtype=float),
+                    "home_value": d["home_value"].to_numpy(dtype=float),
+                    "rate": d["mortgage_rate"].to_numpy(dtype=float),
+                    "parcels": d["eligible_parcels"].to_numpy(dtype=float),
+                    "report": d["report_rate"].to_numpy(dtype=float),
+                    "cov": covs,
+                    "age": ages,
+                    "no_detached": no_det,
+                },
             )
         )
     return out

@@ -2796,3 +2796,6 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     than 0.10 with no state missed, the mechanism is not earning its keep. That would be reported to Ben as
     a reason to revisit D-037. Otherwise the mechanism stays.
 - Nothing in config changes in this entry.
+- **Amendment, 2026-11-04, before any run:** in approach 3, a covariate with no variation in a fold's fit
+  set is not identified (for example attached-only without MN). It is held at 0 with no variance in that
+  fold. The intercept and α are always estimated. The covariance is symmetrized before drawing.
