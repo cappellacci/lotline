@@ -1,4 +1,4 @@
-"""V9 Oregon transfer prediction (analysis plan D-046): the pieces do what the method says, on hand-worked and
+"""V9 Oregon transfer prediction (analysis plan D-051): the pieces do what the method says, on hand-worked and
 synthetic inputs. No real data."""
 
 import numpy as np
@@ -118,7 +118,7 @@ def test_freeze_is_written_once(tmp_path):
         v9.write_freeze(payload, tmp_path)
 
 
-# ---- own-history variant (D-049) ------------------------------------------------------------------------
+# ---- own-history variant (D-052) ------------------------------------------------------------------------
 
 
 def test_posterior_u_by_hand():

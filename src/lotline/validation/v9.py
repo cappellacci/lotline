@@ -1,4 +1,4 @@
-"""V9 Oregon transfer prediction (analysis plan D-046; validation plan V9).
+"""V9 Oregon transfer prediction (analysis plan D-051; validation plan V9).
 
 Predicts Oregon's 2018-2025 outcomes from the four-state calibration, before any Oregon outcome after 2017 is
 seen (holdout `V9-OR-TRANSFER`). Two kinds of target:
@@ -16,7 +16,7 @@ seen (holdout `V9-OR-TRANSFER`). Two kinds of target:
   `calibrate_adu.place_years` without its permit-coverage filter and observed-rate floor, which need the
   blind Oregon permits.
 
-  **Own-history variant (D-049).** Each place's published ADU permits before 2018 update u_i, draw by draw:
+  **Own-history variant (D-052).** Each place's published ADU permits before 2018 update u_i, draw by draw:
   with M_i the expected pre-2018 permits at u_i = 1 under the same draw (same p_d, z_d, s_d and rule reading)
   and Y_i the counts, u_i | history ~ Gamma(shape 1/α_d + Y_i, rate 1/α_d + M_i), the gamma-Poisson
   posterior. Both variants are frozen.
@@ -48,13 +48,13 @@ import numpy as np
 import pandas as pd
 
 YEARS = tuple(range(2018, 2026))
-SUBTOTAL_LAST = 2022  # D-046: also scored on 2018-2022
+SUBTOTAL_LAST = 2022  # D-051: also scored on 2018-2022
 BASELINE_YEARS = (2015, 2016, 2017)
 ADU_TARGETS = {"4159000": "Portland", "4105800": "Bend"}
 TEST_ID = "V9-OR-TRANSFER"
 ROLL_LAST_YEAR = 2017  # newest eligible-parcel roll the freeze may use
 CLASS_CODE = {"handbook": 0, "partial": 1, "blank": 2}
-HISTORY_FILE = Path("config/validation/or_adu_history.csv")  # D-049, repo-relative
+HISTORY_FILE = Path("config/validation/or_adu_history.csv")  # D-052, repo-relative
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ def rule_factor(inp: AduInputs, partial_share: float, blank_partial: np.ndarray,
 
 @dataclass
 class AduHistory:
-    """Pre-2018 ADU permits for the ADU targets (D-049). `inputs` covers the history years, in the same place
+    """Pre-2018 ADU permits for the ADU targets (D-052). `inputs` covers the history years, in the same place
     order as the prediction's inputs; `eligible` (places, years) is the newest roll at or before each year;
     `counts` (places, years) is NaN where no count was published."""
 
@@ -242,7 +242,7 @@ def adu_draws(
     history: AduHistory | None = None,
 ) -> np.ndarray:
     """Predictive ADU permits, (draws, places, years). With `history`, u_i is drawn from its posterior given
-    the pre-2018 counts (D-049); otherwise from the prior. The random streams are the same either way, so the
+    the pre-2018 counts (D-052); otherwise from the prior. The random streams are the same either way, so the
     two variants differ only through u_i."""
     from lotline.model import hazard
     from lotline.model.scenarios import adu
@@ -333,7 +333,7 @@ def mm_k(inp: MmInputs, half: float, slope: float) -> np.ndarray:
 
 def mm_inputs(state: str, store, years: Sequence[int] = YEARS) -> MmInputs:
     """Every jurisdiction in the BPS universe where a by-right rule raises the missing-middle dose above
-    2017's in a year of the window, with D-038's inputs as fixed by D-046."""
+    2017's in a year of the window, with D-038's inputs as fixed by D-051."""
     from lotline.build import eligible as eligible_rule
     from lotline.config import load_params
     from lotline.model import estimate_mm as mm
@@ -466,7 +466,7 @@ def prediction(
     adu_hist_d: np.ndarray | None = None,
 ) -> dict:
     """Every V9 target's summary. ADU targets come in variant "transfer" and, with `adu_hist_d`, "own_history"
-    (D-049)."""
+    (D-052)."""
     targets = []
     variants = [("transfer", adu_d, "")] + (
         [("own_history", adu_hist_d, ", own pre-2018 history")] if adu_hist_d is not None else []
@@ -521,7 +521,7 @@ def table_hashes(
 
 
 def freeze_payload(pred: dict, hashes: dict, draws: int, seed: int, repo: Path) -> dict:
-    """The JSON written to results/frozen/V9-OR-TRANSFER.json (D-046)."""
+    """The JSON written to results/frozen/V9-OR-TRANSFER.json (D-051)."""
     from lotline.config import load_params
 
     commit = subprocess.run(
@@ -533,7 +533,7 @@ def freeze_payload(pred: dict, hashes: dict, draws: int, seed: int, repo: Path) 
     }
     return {
         "test_id": TEST_ID,
-        "method": "analysis plan D-046",
+        "method": "analysis plan D-051",
         "commit": commit,
         "draws": draws,
         "seed": seed,

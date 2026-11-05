@@ -1,10 +1,10 @@
 ### LB-NNN · 2026-11-05 · validation · Can Portland's and Bend's own pre-2018 ADU permits sharpen the V9 prediction?
 
-- **Question:** the D-046 dry run gave Portland 0–1,864 ADU permits over 2018–2025, almost all of it from the
+- **Question:** the D-051 dry run gave Portland 0–1,864 ADU permits over 2018–2025, almost all of it from the
   unknown place multiplier. Ben asked (2026-11-05) to add a variant updated on each place's own pre-2018 counts
   and freeze both.
 - **Outputs:**
-  - `docs/analysis_plan.md` D-049 (method, before any freeze).
+  - `docs/analysis_plan.md` D-052 (method, before any freeze).
   - `src/lotline/validation/v9.py`: `AduHistory`, `load_history`, `adu_history`, `posterior_u`,
     `history_expected`; `adu_draws(history=)`; per-place Poisson streams; `prediction` tags ADU targets by variant.
   - `scripts/dev/v9_or_predict.py` runs both variants.
