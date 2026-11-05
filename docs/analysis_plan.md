@@ -2749,3 +2749,50 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - Any change to adopt the split structure anyway (m_d tied to m_x, so restrictions compound) would be a
       new entry, written before it is fitted. It should not be read off this run.
     - The large place spread (α) remains the main problem. Approaches 2 and 3 target it.
+
+### D-047 · 2026-11-04 · Approaches 2 and 3: let the data set the shape, and race the mechanism against an empirical model (method only, before any fit)
+
+- **Why:** D-045 found the misfit is mostly place-to-place (α 2.28), with the ramp and home value the
+  clearest shape signals. D-046's detached multiplier did not separate from m_x. Ben chose to run
+  approaches 2 and 3 next (2026-11-04).
+- **Common to both:**
+  - D-041's data, count rules, 51 fit places, and Raleigh and Durham as the test set.
+  - Rule shares are held at D-041's fit (m_o 1.0, m_x 0.3), with the D-019 rule types; no detached split.
+    This keeps the comparison about shape only.
+  - Leave one state out as D-041: each fold refits everything without the state, then predicts its state
+    total with joint draws (one parameter draw per simulation draw shared by the state's places, an
+    independent place effect per place).
+  - Measures: verdicts, K1 (RMS log observed ÷ P50 over the four states; D-041 0.791), median P90/P10
+    (D-041 28.0), α, and the test set from the full fit.
+- **Approach 2: the mechanism with three shape terms set by the data.**
+  - The expected count keeps D-041's form, θ × parcels × h1 × reporting rate × max over rules of c ×
+    coverage × ramp, with three changes:
+    - The ramp's half-life is on the grid: no ramp (ramp = 1), 0.5, 1, 2 (today's central), 3.5, 6 years.
+      The slope stays 0.75.
+    - The equity elasticity β_e is on the grid 0, 0.25 (today's), 0.5, 0.75, 1, 1.5, 2. h1 is rescaled by
+      (V / V_ref)^(β_e − 0.25).
+    - A size elasticity β_s is on the grid −0.6, −0.4, −0.2, 0, 0.2. Expected counts are multiplied by
+      (mean eligible parcels / 10,000)^β_s.
+  - At each grid point, θ and α are fitted by maximum likelihood (α profiled, as fit 3). Each shape term's
+    90% interval comes from its profile over the other two (2Δℓ ≤ 2.706). θ's interval profiles over the
+    grid points inside the joint 90% region (2Δℓ ≤ 6.251), as D-046.
+  - Predictions use each fold's estimated shape, with θ drawn from its interval.
+  - **Adoption rule:** adopt if the log-likelihood gains at least 3.126 over D-041 (2Δℓ ≥ 6.251, three
+    added parameters), no state is missed, and K1 is below 0.791. On adoption, the shape values go to
+    `hazard.yaml` with this source, and the size term is wired in its own PR.
+- **Approach 3: an empirical benchmark with no Portland transport and no pro forma.**
+  - Poisson-gamma, log μ_t = log(eligible parcels_t × reporting rate_t) + b0 + b1 log(rent / 1,500) + b2
+    log(home value / 300,000) + b3 (mortgage rate − 5) + b4 log(eligible parcels / 10,000) + b5 restricted_t
+    + b6 attached-only_t + b7 log(1 + rule age_t), with a gamma place effect (variance α).
+  - Inputs, all from the fit's inputs:
+    - restricted_t: the probability, over blank-field combinations, that no rule in force is
+      Handbook-equivalent.
+    - attached-only_t: the same probability that every rule in force forbids detached ADUs.
+    - Rule age: years since the oldest rule in force.
+  - Maximum likelihood by Nelder–Mead (NumPy, written for this entry), best of five starts.
+  - Predictions draw the coefficients from a normal with the inverse observed information (numerical
+    Hessian), α at its estimate.
+  - **Reading rule:** a benchmark, never adopted into config. If its K1 is lower than approach 2's by more
+    than 0.10 with no state missed, the mechanism is not earning its keep. That would be reported to Ben as
+    a reason to revisit D-037. Otherwise the mechanism stays.
+- Nothing in config changes in this entry.
