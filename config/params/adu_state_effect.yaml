@@ -8,9 +8,9 @@
 adu_state_effect_sd:
   value: 0
   low: 0
-  high: 0.66781
+  high: 0.890193
   unit: log-SD of the state multiplier (tau), maximum likelihood with its 90% profile interval
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
   notes: "For reference and the half-normal sensitivity (T1: sigma = high / 1.645). The run draws tau from the grid probabilities, not from this value."
 
 adu_state_effect_fitted__MN:
@@ -18,382 +18,382 @@ adu_state_effect_fitted__MN:
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_effect_fitted__NC:
   value: 1
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_effect_fitted__OH:
   value: 1
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_effect_fitted__TX:
   value: 1
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_00:
-  value: 0.0892511
-  low: 0.0892511
-  high: 0.0892511
+  value: 0.0696563
+  low: 0.0696563
+  high: 0.0696563
   unit: probability that tau = 0.00 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_05:
-  value: 0.0878163
-  low: 0.0878163
-  high: 0.0878163
+  value: 0.0688412
+  low: 0.0688412
+  high: 0.0688412
   unit: probability that tau = 0.05 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_10:
-  value: 0.0838074
-  low: 0.0838074
-  high: 0.0838074
+  value: 0.0665585
+  low: 0.0665585
+  high: 0.0665585
   unit: probability that tau = 0.10 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_15:
-  value: 0.077957
-  low: 0.077957
-  high: 0.077957
+  value: 0.0632081
+  low: 0.0632081
+  high: 0.0632081
   unit: probability that tau = 0.15 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_20:
-  value: 0.0711127
-  low: 0.0711127
-  high: 0.0711127
+  value: 0.0592455
+  low: 0.0592455
+  high: 0.0592455
   unit: probability that tau = 0.20 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_25:
-  value: 0.0639845
-  low: 0.0639845
-  high: 0.0639845
+  value: 0.0550443
+  low: 0.0550443
+  high: 0.0550443
   unit: probability that tau = 0.25 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_30:
-  value: 0.0570533
-  low: 0.0570533
-  high: 0.0570533
+  value: 0.0508533
+  low: 0.0508533
+  high: 0.0508533
   unit: probability that tau = 0.30 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_35:
-  value: 0.0505918
-  low: 0.0505918
-  high: 0.0505918
+  value: 0.046814
+  low: 0.046814
+  high: 0.046814
   unit: probability that tau = 0.35 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_40:
-  value: 0.0447242
-  low: 0.0447242
-  high: 0.0447242
+  value: 0.0429966
+  low: 0.0429966
+  high: 0.0429966
   unit: probability that tau = 0.40 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_45:
-  value: 0.0394826
-  low: 0.0394826
-  high: 0.0394826
+  value: 0.0394298
+  low: 0.0394298
+  high: 0.0394298
   unit: probability that tau = 0.45 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_50:
-  value: 0.0348475
-  low: 0.0348475
-  high: 0.0348475
+  value: 0.0361199
+  low: 0.0361199
+  high: 0.0361199
   unit: probability that tau = 0.50 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_55:
-  value: 0.0307737
-  low: 0.0307737
-  high: 0.0307737
+  value: 0.0330623
+  low: 0.0330623
+  high: 0.0330623
   unit: probability that tau = 0.55 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_60:
-  value: 0.0272059
-  low: 0.0272059
-  high: 0.0272059
+  value: 0.030247
+  low: 0.030247
+  high: 0.030247
   unit: probability that tau = 0.60 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_65:
-  value: 0.0240867
-  low: 0.0240867
-  high: 0.0240867
+  value: 0.0276613
+  low: 0.0276613
+  high: 0.0276613
   unit: probability that tau = 0.65 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_70:
-  value: 0.0213612
-  low: 0.0213612
-  high: 0.0213612
+  value: 0.0252915
+  low: 0.0252915
+  high: 0.0252915
   unit: probability that tau = 0.70 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_75:
-  value: 0.0189794
-  low: 0.0189794
-  high: 0.0189794
+  value: 0.0231234
+  low: 0.0231234
+  high: 0.0231234
   unit: probability that tau = 0.75 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_80:
-  value: 0.0168963
-  low: 0.0168963
-  high: 0.0168963
+  value: 0.0211434
+  low: 0.0211434
+  high: 0.0211434
   unit: probability that tau = 0.80 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_85:
-  value: 0.0150727
-  low: 0.0150727
-  high: 0.0150727
+  value: 0.0193389
+  low: 0.0193389
+  high: 0.0193389
   unit: probability that tau = 0.85 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_90:
-  value: 0.0134748
-  low: 0.0134748
-  high: 0.0134748
+  value: 0.0176984
+  low: 0.0176984
+  high: 0.0176984
   unit: probability that tau = 0.90 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__0_95:
-  value: 0.0120732
-  low: 0.0120732
-  high: 0.0120732
+  value: 0.0162116
+  low: 0.0162116
+  high: 0.0162116
   unit: probability that tau = 0.95 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_00:
-  value: 0.010843
-  low: 0.010843
-  high: 0.010843
+  value: 0.0148684
+  low: 0.0148684
+  high: 0.0148684
   unit: probability that tau = 1.00 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_05:
-  value: 0.00976262
-  low: 0.00976262
-  high: 0.00976262
+  value: 0.0136588
+  low: 0.0136588
+  high: 0.0136588
   unit: probability that tau = 1.05 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_10:
-  value: 0.00881337
-  low: 0.00881337
-  high: 0.00881337
+  value: 0.0125721
+  low: 0.0125721
+  high: 0.0125721
   unit: probability that tau = 1.10 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_15:
-  value: 0.0079789
-  low: 0.0079789
-  high: 0.0079789
+  value: 0.0115973
+  low: 0.0115973
+  high: 0.0115973
   unit: probability that tau = 1.15 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_20:
-  value: 0.00724483
-  low: 0.00724483
-  high: 0.00724483
+  value: 0.0107235
+  low: 0.0107235
+  high: 0.0107235
   unit: probability that tau = 1.20 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_25:
-  value: 0.00659851
-  low: 0.00659851
-  high: 0.00659851
+  value: 0.00994048
+  low: 0.00994048
+  high: 0.00994048
   unit: probability that tau = 1.25 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_30:
-  value: 0.00602877
-  low: 0.00602877
-  high: 0.00602877
+  value: 0.00923851
+  low: 0.00923851
+  high: 0.00923851
   unit: probability that tau = 1.30 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_35:
-  value: 0.00552583
-  low: 0.00552583
-  high: 0.00552583
+  value: 0.00860858
+  low: 0.00860858
+  high: 0.00860858
   unit: probability that tau = 1.35 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_40:
-  value: 0.00508108
-  low: 0.00508108
-  high: 0.00508108
+  value: 0.00804232
+  low: 0.00804232
+  high: 0.00804232
   unit: probability that tau = 1.40 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_45:
-  value: 0.00468694
-  low: 0.00468694
-  high: 0.00468694
+  value: 0.00753206
+  low: 0.00753206
+  high: 0.00753206
   unit: probability that tau = 1.45 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_50:
-  value: 0.00433676
-  low: 0.00433676
-  high: 0.00433676
+  value: 0.00707084
+  low: 0.00707084
+  high: 0.00707084
   unit: probability that tau = 1.50 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_55:
-  value: 0.00402473
-  low: 0.00402473
-  high: 0.00402473
+  value: 0.00665244
+  low: 0.00665244
+  high: 0.00665244
   unit: probability that tau = 1.55 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_60:
-  value: 0.00374578
-  low: 0.00374578
-  high: 0.00374578
+  value: 0.00627132
+  low: 0.00627132
+  high: 0.00627132
   unit: probability that tau = 1.60 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_65:
-  value: 0.0034955
-  low: 0.0034955
-  high: 0.0034955
+  value: 0.00437073
+  low: 0.00437073
+  high: 0.00437073
   unit: probability that tau = 1.65 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_70:
-  value: 0.00327007
-  low: 0.00327007
-  high: 0.00327007
+  value: 0.00413213
+  low: 0.00413213
+  high: 0.00413213
   unit: probability that tau = 1.70 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_75:
-  value: 0.00306625
-  low: 0.00306625
-  high: 0.00306625
+  value: 0.00391444
+  low: 0.00391444
+  high: 0.00391444
   unit: probability that tau = 1.75 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_80:
-  value: 0.00288122
-  low: 0.00288122
-  high: 0.00288122
+  value: 0.00333604
+  low: 0.00333604
+  high: 0.00333604
   unit: probability that tau = 1.80 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_85:
-  value: 0.0027126
-  low: 0.0027126
-  high: 0.0027126
+  value: 0.0031354
+  low: 0.0031354
+  high: 0.0031354
   unit: probability that tau = 1.85 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_90:
-  value: 0.00255837
-  low: 0.00255837
-  high: 0.00255837
+  value: 0.00295171
+  low: 0.00295171
+  high: 0.00295171
   unit: probability that tau = 1.90 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__1_95:
-  value: 0.00159901
-  low: 0.00159901
-  high: 0.00159901
+  value: 0.00278281
+  low: 0.00278281
+  high: 0.00278281
   unit: probability that tau = 1.95 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_00:
-  value: 0.00150004
-  low: 0.00150004
-  high: 0.00150004
+  value: 0.00410882
+  low: 0.00410882
+  high: 0.00410882
   unit: probability that tau = 2.00 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_05:
-  value: 0.00140995
-  low: 0.00140995
-  high: 0.00140995
+  value: 0.00391253
+  low: 0.00391253
+  high: 0.00391253
   unit: probability that tau = 2.05 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_10:
-  value: 0.00132761
-  low: 0.00132761
-  high: 0.00132761
+  value: 0.0037277
+  low: 0.0037277
+  high: 0.0037277
   unit: probability that tau = 2.10 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_15:
-  value: 0.00125211
-  low: 0.00125211
-  high: 0.00125211
+  value: 0.00355347
+  low: 0.00355347
+  high: 0.00355347
   unit: probability that tau = 2.15 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_20:
-  value: 0.00185521
-  low: 0.00185521
-  high: 0.00185521
+  value: 0.00338909
+  low: 0.00338909
+  high: 0.00338909
   unit: probability that tau = 2.20 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_25:
-  value: 0.00176575
-  low: 0.00176575
-  high: 0.00176575
+  value: 0.00323393
+  low: 0.00323393
+  high: 0.00323393
   unit: probability that tau = 2.25 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_30:
-  value: 0.00168235
-  low: 0.00168235
-  high: 0.00168235
+  value: 0.00308744
+  low: 0.00308744
+  high: 0.00308744
   unit: probability that tau = 2.30 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_35:
-  value: 0.00117639
-  low: 0.00117639
-  high: 0.00117639
+  value: 0.00294913
+  low: 0.00294913
+  high: 0.00294913
   unit: probability that tau = 2.35 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_40:
-  value: 0.00112322
-  low: 0.00112322
-  high: 0.00112322
+  value: 0.00281854
+  low: 0.00281854
+  high: 0.00281854
   unit: probability that tau = 2.40 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_45:
-  value: 0.00107358
-  low: 0.00107358
-  high: 0.00107358
+  value: 0.0026953
+  low: 0.0026953
+  high: 0.0026953
   unit: probability that tau = 2.45 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
 
 adu_state_tau_prob__2_50:
-  value: 0.00102721
-  low: 0.00102721
-  high: 0.00102721
+  value: 0.00257901
+  low: 0.00257901
+  high: 0.00257901
   unit: probability that tau = 2.50 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04))"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"

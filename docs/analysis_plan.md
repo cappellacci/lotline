@@ -2975,3 +2975,30 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   reported to Ben as a finding, not used to keep the ramped τ.
 - **Run once:** `uv run python scripts/dev/calibrate_adu.py --tau-draws --no-ramp --out reports/adu-tau-draws-d048`,
   then `--state-effect-config` from that folder.
+- **Results (run 2026-11-05 on 783528a; `reports/adu-tau-draws-d048/`, log `run-2026-11-05-log.txt`; the
+  log's table titles still say "D-044", the script's label):**
+  - **τ's distribution** and the multiplier exp(τ z) a new state carries (D-044's in brackets):
+
+    | Fit | τ̂ (90% interval) | τ median | τ P90 | Share at τ = 0 | Multiplier P10–P90 |
+    |---|---|---|---|---|---|
+    | All four states | 0 (0–0.89) [0–0.67] | 0.40 [0.30] | 1.35 [1.05] | 7% [9%] | 0.50–2.02 [0.58–1.71] |
+    | Without MN | 0.60 (0–1.76) | 0.80 | 1.80 | 2% | 0.31–3.17 |
+    | Without NC | 0 (0–1.21) | 0.55 | 1.80 | 5% | 0.38–2.58 |
+    | Without OH | 0 (0–0.95) | 0.45 | 1.50 | 7% | 0.47–2.23 |
+    | Without TX | 0 (0–0.71) | 0.35 | 1.30 | 8% | 0.54–1.92 |
+
+  - **Leave one state out, τ drawn (main):**
+
+    | State | Observed | P50 (P10–P90) | Verdict | P90 ÷ P10 |
+    |---|---|---|---|---|
+    | MN | 285 | 484 (107–2,268) | useful | 21.2 |
+    | NC | 45 | 74 (12–368) | useful | 30.7 |
+    | OH | 8 | 6 (0–58) | useful | ∞ |
+    | TX | 1,108 | 231 (25–1,221) | inside only | 48.8 |
+    | NC with Raleigh and Durham | 455 | 224 (39–1,108) | inside only | 28.4 |
+
+    - **No state missed in the main run.** TX, missed by D-048 without τ (P90 977), is inside with τ drawn.
+    - **T1 (half-normal) misses TX** (P90 1,094 against 1,108). T1 is reported, not chosen (D-044).
+    - Median P90 ÷ P10 over the four states: 39.8 (D-044 46.5, D-041 28.0).
+  - **Config:** `adu_state_effect.yaml` regenerated from this full fit, as the rule says. Without the ramp
+    the state spread is somewhat larger: a new state's multiplier P10–P90 is 0.50–2.02, up from 0.58–1.71.
