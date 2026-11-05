@@ -8,6 +8,7 @@ from lotline.model.scenarios import adu
 from lotline.validation import v9
 
 HB, PARTIAL, BLANK = v9.CLASS_CODE["handbook"], v9.CLASS_CODE["partial"], v9.CLASS_CODE["blank"]
+NO_SPREAD = {"adu_state_tau_prob__0": 1.0}  # τ = 0 in every draw: no state multiplier
 
 
 def _adu_inputs(cls, age, q, cov, eligible=(1000.0,), years=(2018, 2019)):
@@ -67,7 +68,7 @@ def test_adu_draws_mean_matches_the_hand_formula_at_the_reference_place():
         "adu_ramp_half_years": 2.0,
         "adu_ramp_slope_years": 0.75,
     }
-    d = v9.adu_draws(inp, draws=4000, seed=1, params=fixed)
+    d = v9.adu_draws(inp, draws=4000, seed=1, params=fixed, states_spec=NO_SPREAD)
     first = 10_000 * theta * 0.5
     second = (10_000 - first) * theta * 0.5
     assert d[:, 0, 0].mean() == pytest.approx(first, rel=0.03)
@@ -76,8 +77,11 @@ def test_adu_draws_mean_matches_the_hand_formula_at_the_reference_place():
 
 def test_no_rule_or_no_parcels_means_no_adus():
     fixed = {"adu_place_effect_variance": 0.0}
-    assert v9.adu_draws(_adu_inputs(HB, 2.0, 0, 0.0), 50, 1, fixed).sum() == 0
-    assert v9.adu_draws(_adu_inputs(HB, 2.0, 0, 1.0, eligible=(0.0,)), 50, 1, fixed).sum() == 0
+    assert v9.adu_draws(_adu_inputs(HB, 2.0, 0, 0.0), 50, 1, fixed, states_spec=NO_SPREAD).sum() == 0
+    assert (
+        v9.adu_draws(_adu_inputs(HB, 2.0, 0, 1.0, eligible=(0.0,)), 50, 1, fixed, states_spec=NO_SPREAD).sum()
+        == 0
+    )
 
 
 def _mm_inputs():
@@ -160,11 +164,10 @@ def test_history_pulls_the_prediction_toward_the_place():
         "adu_place_effect_variance": 0.5,
         "adu_ramp_half_years": 2.0,
         "adu_ramp_slope_years": 0.75,
-        "adu_state_effect_sd": 0.0,
     }
     inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0,))
-    plain = v9.adu_draws(inp, 6000, 3, fixed)
-    hist = v9.adu_draws(inp, 6000, 3, fixed, history=_history([20, 20, 20, 20]))
+    plain = v9.adu_draws(inp, 6000, 3, fixed, states_spec=NO_SPREAD)
+    hist = v9.adu_draws(inp, 6000, 3, fixed, history=_history([20, 20, 20, 20]), states_spec=NO_SPREAD)
     assert plain[:, 0, 0].mean() == pytest.approx(10.0, rel=0.05)
     assert hist[:, 0, 0].mean() == pytest.approx(10.0 * 82 / 42, rel=0.04)
     # and the history narrows the range: the prior's u has variance 0.5, the posterior's 82/42² = 0.046
@@ -174,11 +177,11 @@ def test_history_pulls_the_prediction_toward_the_place():
 
 
 def test_zero_history_pulls_down_and_missing_history_changes_nothing():
-    fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.5, "adu_state_effect_sd": 0.0}
+    fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.5}
     inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0,))
-    plain = v9.adu_draws(inp, 3000, 4, fixed)
-    none = v9.adu_draws(inp, 3000, 4, fixed, history=_history([np.nan] * 4))
-    zero = v9.adu_draws(inp, 3000, 4, fixed, history=_history([0, 0, 0, 0]))
+    plain = v9.adu_draws(inp, 3000, 4, fixed, states_spec=NO_SPREAD)
+    none = v9.adu_draws(inp, 3000, 4, fixed, history=_history([np.nan] * 4), states_spec=NO_SPREAD)
+    zero = v9.adu_draws(inp, 3000, 4, fixed, history=_history([0, 0, 0, 0]), states_spec=NO_SPREAD)
     assert (none == plain).all()  # no counts: the prior draw is kept, so the variants are identical
     assert zero.mean() < 0.2 * plain.mean()
 
@@ -200,7 +203,7 @@ def test_history_file_refuses_window_years_and_unsourced_counts(tmp_path):
 
 def test_history_for_one_place_leaves_the_others_draws_alone():
     # written with the pre-D-048 ramp (0.5 at age 2), which the "more than double" check assumes
-    fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.5, "adu_state_effect_sd": 0.0}
+    fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.5}
     fixed |= OLD_RAMP
     inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0, 5_000.0))
     years = (2014, 2015, 2016, 2017)
@@ -209,7 +212,25 @@ def test_history_for_one_place_leaves_the_others_draws_alone():
         eligible=np.full((2, 4), 10_000.0),
         counts=np.array([[40, 40, 40, 40], [np.nan] * 4]),
     )
-    plain = v9.adu_draws(inp, 500, 6, fixed)
-    with_hist = v9.adu_draws(inp, 500, 6, fixed, history=hist)
+    plain = v9.adu_draws(inp, 500, 6, fixed, states_spec=NO_SPREAD)
+    with_hist = v9.adu_draws(inp, 500, 6, fixed, history=hist, states_spec=NO_SPREAD)
     assert (with_hist[:, 1, :] == plain[:, 1, :]).all()
     assert with_hist[:, 0, :].mean() > 2 * plain[:, 0, :].mean()
+
+
+def test_oregon_gets_one_state_multiplier_per_draw_from_the_tau_grid():
+    # τ fixed at 0.5 (grid of one point): log s_d ~ N(0, 0.5²), the same for every Oregon place in a draw
+    # (D-044, as scenarios.adu.run). With α = 0, the reference place and no ramp (D-048), each draw's mean
+    # is s_d × 10,000 × 0.002 = s_d × 20.
+    fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.0}
+    inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0, 10_000.0), years=tuple(range(2018, 2026)))
+    d = v9.adu_draws(inp, 4000, 8, fixed, states_spec={"adu_state_tau_prob__0_5": 1.0})
+    per_draw = d.sum(axis=(1, 2)) / (2 * 8 * 20.0)  # ≈ s_d, Poisson noise averaged over 16 place-years
+    assert np.median(np.log(per_draw[per_draw > 0])) == pytest.approx(0.0, abs=0.04)
+    assert np.std(np.log(per_draw[per_draw > 0])) == pytest.approx(0.5, rel=0.12)
+    a, b = d[:, 0, :].sum(axis=1), d[:, 1, :].sum(axis=1)
+    assert np.corrcoef(a, b)[0, 1] > 0.8  # shared, not independent per place
+    # a fitted state gets no multiplier
+    spec = {"adu_state_tau_prob__0_5": 1.0, "adu_state_effect_fitted__OR": 1.0}
+    flat = v9.adu_draws(inp, 4000, 8, fixed, states_spec=spec)
+    assert np.std(flat.sum(axis=(1, 2)) / 320.0) < 0.1
