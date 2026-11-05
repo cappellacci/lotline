@@ -11,10 +11,10 @@ seen (holdout `V9-OR-TRANSFER`). Two kinds of target:
 
   c_r is 1 for a rule at the Handbook standard, `adu_partial_rule_share` for a restricted one, and for a rule
   whose blank fields may restrict (D-022) partial with probability q_r, drawn once per draw and place. u_i is
-  the place multiplier (gamma, mean 1, variance α_d) and s_d the unseen-state multiplier (D-043:
-  `adu_state_effect_sd`, 0 if absent). Parameters p_d come from `scenarios.adu.draw_params` (D-030). This is
-  `calibrate_adu.place_years` without its permit-coverage filter and observed-rate floor, which need the
-  blind Oregon permits.
+  the place multiplier (gamma, mean 1, variance α_d) and s_d = exp(τ_d z_d) the unseen-state multiplier,
+  τ_d drawn from config/params/adu_state_effect.yaml's grid each draw (D-044, D-050), as the scenario
+  does. Parameters p_d come from `scenarios.adu.draw_params` (D-030). This is `calibrate_adu.place_years`
+  without its permit-coverage filter and observed-rate floor, which need the blind Oregon permits.
 
   **Own-history variant (D-052).** Each place's published ADU permits before 2018 update u_i, draw by draw:
   with M_i the expected pre-2018 permits at u_i = 1 under the same draw (same p_d, z_d, s_d and rule reading)
@@ -241,6 +241,7 @@ def adu_draws(
     seed: int | None = None,
     params=None,
     history: AduHistory | None = None,
+    states_spec: Mapping[str, float] | None = None,
 ) -> np.ndarray:
     """Predictive ADU permits, (draws, places, years). With `history`, u_i is drawn from its posterior given
     the pre-2018 counts (D-052); otherwise from the prior. The random streams are the same either way, so the
@@ -255,8 +256,9 @@ def adu_draws(
     n_p, n_y = len(inp.geoids), len(inp.years)
     z = adu.extrapolation_noise(n, n_p, central["adu_extrapolation_shared_share"], seed + 1)
     rng = np.random.default_rng(seed + 5)
-    tau = float(central.get("adu_state_effect_sd", 0.0))
-    state = np.exp(tau * rng.standard_normal(n) - tau**2 / 2)
+    # D-044/D-050 as `scenarios.adu.run`: τ_d drawn from its grid each draw, one z_d shared by Oregon's places
+    grid, probs, fitted = adu.state_effect(states_spec)
+    state = np.exp(adu.state_noise(["OR"], fitted, grid, probs, n, seed + 4)[:, 0])
     out = np.zeros((n, n_p, n_y))
     hist_rng = [np.random.default_rng([seed + 7, d]) for d in range(n)] if history is not None else None
     # Poisson noise has one stream per place, so a change in one place's mean never moves another's draws

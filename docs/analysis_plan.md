@@ -3058,6 +3058,11 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Uncertainty (one set of draws, `adu_simulation_draws`, seed from config).**
   - **Shared across places and years:** θ (lognormal from its 90% interval, as D-030) and, if adopted, one
     state multiplier (D-043).
+  - **Amended 2026-11-05, before any freeze:** D-044 (adopted) and D-050 replaced a fixed
+    `adu_state_effect_sd` with τ drawn each draw from `adu_state_effect.yaml`'s grid; the file's
+    `adu_state_effect_sd` is now the maximum-likelihood value (0) and is for reference only. V9 follows the
+    scenario (`scenarios.adu.state_noise`): s_d = exp(τ_d z_d), one z_d per draw shared by Oregon's places,
+    median 1. The runner had read the reference value, which gave Oregon no state multiplier.
   - **Shared across years only:** one place multiplier u_i ~ Gamma(mean 1, variance α) per place.
   - **Independent:** Poisson noise per year.
   - **Held at their values:** the missing-middle ramp half-way point and σ (D-038 fitted them with θ).
