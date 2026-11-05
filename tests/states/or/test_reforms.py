@@ -145,5 +145,41 @@ def test_known_places_land_in_the_right_tier(reforms):
     assert "OR-4105800-missing_middle-2022" in tier["4105800"]  # Bend: 99,178 in 2020
     metro = set(pd.read_csv(gen.METRO, dtype=str)["geoid"])
     assert len(metro) == 24
-    mm = set(reforms.loc[reforms["reform_id"].str.endswith("-missing_middle-2021"), "jurisdiction_geoid"])
+    generated = reforms["coding_notes"].str.startswith(gen.GENERATED)
+    medium = generated & reforms["reform_id"].str.endswith("-missing_middle-2021")
+    mm = set(reforms.loc[medium, "jurisdiction_geoid"])
     assert not mm & metro  # the duplex-only tier is for cities outside Metro
+
+
+def test_local_rows_for_portland_bend_and_metro_adopters(reforms):
+    r = reforms.set_index("reform_id")
+    local = r[~r["coding_notes"].fillna("").str.startswith(gen.GENERATED)]
+    assert {
+        "OR-4159000-missing_middle-2021",
+        "OR-4159000-fees-2018",
+        "OR-4105800-missing_middle-2021",
+    } <= set(local.index)
+    # Portland's Residential Infill Project took effect before HB 2001's deadline for large cities
+    assert r.loc["OR-4159000-missing_middle-2021", "effective_date"] < pd.Timestamp("2022-06-30")
+    # Late Metro adopters replace the state row rather than standing beside it
+    for rid in ("OR-4173650-missing_middle-2022-local", "OR-4140550-missing_middle-2022-local"):
+        assert r.loc[rid, "supersedes"] == rid.removesuffix("-local")
+
+
+@pytest.mark.parametrize("geoid", ["4173650", "4140550"])  # Tigard, Lake Oswego: local code a week late
+def test_late_adopters_keep_state_coverage_until_their_own_code_takes_over(reforms, geoid):
+    """The supersede rule of `model/scenarios/adu._live`: a row drops out only when a row superseding it is
+    itself in force. The state chain (HB 2001 row, then its SB 458 land-division row from 07-01) covers the
+    place from 2022-06-30 with no gap; the local row adds itself from 07-07 and never before."""
+
+    def live(day):
+        r = reforms[(reforms["jurisdiction_geoid"] == geoid) & (reforms["theme"] == "missing_middle")]
+        r = r[(r["effective_date"] <= pd.Timestamp(day)) & (r["end_date"].isna() | (r["end_date"] > day))]
+        return set(r["reform_id"]) - set(r["supersedes"].dropna())
+
+    state = {f"OR-{geoid}-missing_middle-2022", f"OR-{geoid}-missing_middle-2022-landdiv"}
+    local = f"OR-{geoid}-missing_middle-2022-local"
+    assert live("2022-06-29") == set()
+    for day in ("2022-06-30", "2022-07-01", "2022-07-06"):
+        assert live(day) & state and local not in live(day), day
+    assert local in live("2022-07-07") and live("2022-07-07") & state
