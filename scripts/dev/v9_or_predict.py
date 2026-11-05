@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""V9: predict Oregon's 2018-2025 ADU permits and 2-4 unit buildings from the four-state fit (D-046), with
-the ADU targets also updated on their own pre-2018 permits (D-049, config/validation/or_adu_history.csv).
+"""V9: predict Oregon's 2018-2025 ADU permits and 2-4 unit buildings from the four-state fit (D-051), with
+the ADU targets also updated on their own pre-2018 permits (D-052, config/validation/or_adu_history.csv).
 
     uv run python scripts/dev/v9_or_predict.py --out <dir>   # dry run: a prediction, not committed
     uv run python scripts/dev/v9_or_predict.py --freeze      # results/frozen/V9-OR-TRANSFER.json, once

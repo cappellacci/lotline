@@ -2365,7 +2365,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - its placebo was not passed, and its own backtest was no better than no effect.
 
 
-### D-046 · 2026-11-04 · V9 Oregon transfer prediction: what is frozen and how it is made (method only, before any run)
+### D-051 · 2026-11-04 · V9 Oregon transfer prediction: what is frozen and how it is made (method only, before any run)
+- **Renumbered 2026-11-05:** written as D-046; renumbered D-051 (Ben) because #285's ADU fit entries also
+  used D-046 to D-050.
 - **Status:** method written before any Oregon prediction was made. Ben chose (2026-11-04) to build and test the
   runner now and **freeze later**, once the engine refresh (handoff 14) and D-043/D-045 (#279, #285) settle, and
   before 2026-11-20. Whatever ADU and missing-middle parameters are in `config/params/` on `main` at the freeze
@@ -2437,12 +2439,12 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   draws' seed. It is committed and merged to `main` before `--unblind V9-OR-TRANSFER` is ever passed
   (`validation.holdout.check_unblind`).
 
-### D-049 · 2026-11-05 · V9: a second ADU variant updated on each place's own pre-2018 permits (method only, before any freeze)
-- **Status:** Ben chose this on 2026-11-05, after the D-046 dry run and before any freeze. It adds a variant;
-  D-046's transfer prediction is unchanged and is frozen too. Both go in `results/frozen/V9-OR-TRANSFER.json`,
-  ADU targets tagged `variant: transfer` or `variant: own_history`. (Numbered D-049 because #285 holds D-047
-  and D-048.)
-- **Why.** In the D-046 dry run almost all of Portland's and Bend's ADU range comes from the unknown place
+### D-052 · 2026-11-05 · V9: a second ADU variant updated on each place's own pre-2018 permits (method only, before any freeze)
+- **Status:** Ben chose this on 2026-11-05, after the D-051 dry run and before any freeze. It adds a variant;
+  D-051's transfer prediction is unchanged and is frozen too. Both go in `results/frozen/V9-OR-TRANSFER.json`,
+  ADU targets tagged `variant: transfer` or `variant: own_history`. (Written as D-049; renumbered D-052 on
+  2026-11-05 because #285 took D-045 to D-050 for the ADU fit work. D-051 was D-046 for the same reason.)
+- **Why.** In the D-051 dry run almost all of Portland's and Bend's ADU range comes from the unknown place
   multiplier u_i, drawn from the four states' spread. A jurisdiction that wants to use Lotline usually has some
   of its own history. Freezing both variants measures what that history is worth, which is the sparse-data
   question the challenge asks.
@@ -2460,7 +2462,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     ≤ t) and rules in force on 1 July t; no pool depletion.
   - Y_i = Σ of the published counts over the same years.
   - u_i | history ~ Gamma(shape 1/α_d + Y_i, rate 1/α_d + M_i), the gamma-Poisson posterior; then the
-    prediction runs exactly as D-046.
+    prediction runs exactly as D-051.
   - The random streams for everything except u_i are the transfer variant's, and Poisson noise has one stream
     per place, so the two variants differ only through u_i and a place with no count is identical in both.
     (The per-place streams changed the transfer dry run's draws, not its method.)
@@ -2468,5 +2470,5 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (for example, counting conversions or co-built units); the source row says what was counted. Portland's
   2010–2017 counts include the years of its SDC waiver, which the model has no term for; the posterior folds
   its effect into u_i and so assumes it carried on after 2018 (its 2018 extension is the `OR-4159000-fees-2018` row).
-- **Scoring.** As D-046 for each variant, plus the gain: the CRPS of the own-history variant against the
+- **Scoring.** As D-051 for each variant, plus the gain: the CRPS of the own-history variant against the
   transfer variant for each ADU total.
