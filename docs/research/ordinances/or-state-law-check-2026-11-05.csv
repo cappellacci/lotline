@@ -1,0 +1,79 @@
+jurisdiction_geoid,theme,verdict,note
+41001,adu,corrected,"No county ordinance found; a 2015-2019 hearings draft suggests the county zoning code does not apply inside UGBs, so the duty may have had little to apply to."
+41003,adu,corrected,County code (BCC 91.050) dates from Ord. 2018-0285 (effective 2018-06-30) and 2018-0286 (2018-07-19). It has an owner-occupancy rule and a 900 sq ft cap; HB 2001 barred the owner-occupancy rule inside UGBs from 2020.
+41005,adu,corrected,"Earlier county rule coded as OR-41005-adu-2014-local (ZDO 839, Ord. ZDO-249). Ord. ZDO-269 (2018) moved from one ADU per lot of record to one per detached dwelling."
+41007,adu,corrected,No local ordinance found.
+41009,adu,corrected,"County Ord. 2019-1 took effect 2019-05-15, after the state duty. Inside UGBs an ADU must meet the city's owner-occupancy and size rules (CCZO 224.1.A), which HB 2001 barred from 2020."
+41011,adu,corrected,Current UR zones require a primary dwelling existing or approved by 2018-07-01; no ordinance history found.
+41013,adu,corrected,Lead only (a city document) that the county allows ADUs in UGBs without city services; no county source.
+41015,adu,corrected,Ord. 22-04 (2022) amended the UGB ADU section; the original date is not in the source.
+41017,adu,corrected,No 2018-2019 ordinance found; DCC 19.92.160 dates from Ord. 2023-014.
+41019,adu,corrected,No local ordinance found.
+41027,adu,corrected,No local ordinance found.
+41029,adu,corrected,No adopting ordinance found; ADUs were historically limited to the White City unincorporated community.
+41031,adu,corrected,No local ordinance found.
+4103250,missing_middle,confirmed,No local ordinance found.
+41033,adu,corrected,Who zones the unincorporated Grants Pass UGB was not established; the rural ADU ordinances don't cover it.
+41035,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+4103800,missing_middle,confirmed,"Own code Ord. 1671 (duplexes from conditional to outright), adopted 2025-06-09, effective about 2025-07-09 (computed from its 30-day clause): after the deadline, so the model code applied first."
+41039,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41041,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41043,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41045,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41047,adu,corrected,"Earlier county rule coded as OR-41047-adu-2017-local (Ord. 1382, MCC 16.26.100)."
+41051,adu,corrected,Minutes mention 2018 ADU rules inside the UGB; ordinance number not found.
+41053,adu,corrected,"LA 17-01 added PCZO Ch. 118 (one ADU per detached dwelling, no owner-occupancy or parking rule); ordinance date not in the source, so whether it predates 2018 is unclear."
+41057,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41059,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41061,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41065,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+41067,adu,corrected,ADUs had 'long been allowed' in the urban area (county issue paper; earlier ordinance not found). Ord. 835 took effect 2018-09-20; Ord. 859 (2019) allowed two ADUs.
+41071,adu,corrected,Not checked locally (the agent's search budget ran out): county ADU rules unverified.
+4107200,missing_middle,confirmed,No local ordinance found.
+4108650,missing_middle,confirmed,No local ordinance found.
+4109800,missing_middle,confirmed,No local ordinance found.
+4115350,missing_middle,confirmed,No local ordinance found.
+4116950,missing_middle,confirmed,No local ordinance found.
+4118250,missing_middle,confirmed,"Own code Ord. 665 adopted 2025-03-03, effective about 2025-04-02 (computed; signature date not found). Not coded as a local row: its R-1 text appears to keep a corner-lot condition and a larger duplex lot minimum, and both dates fall before 1 July 2025, when the model reads rules."
+4121050,missing_middle,confirmed,"Lead only (news report, June 2025) that the council made duplexes a permitted use (Ord. 591-2025); the ordinance was not reached."
+4121550,missing_middle,confirmed,No local ordinance found.
+4123800,missing_middle,confirmed,"Duplexes were already permitted outright in R-1 before 2023 (the old text amended by Ord. 2023-003); other zones and the first date are unknown, so no earlier row is coded."
+4126050,missing_middle,confirmed,"Own code earlier than the deadline: coded as OR-4126050-missing_middle-2023-local (Ord. 6, Series 2023)."
+4128650,missing_middle,confirmed,No local ordinance found.
+4132550,missing_middle,confirmed,No local ordinance found.
+4134900,missing_middle,confirmed,"Own code Ord. 2061 (2021, voluntary) made middle housing (duplex to quadplex, cottages) permitted in R-1, R-2, R-3 and C-1; adoption and effective dates are not in the source (signed copy filed 2021-04-05), so the state date is kept."
+4135450,missing_middle,confirmed,"Before 2025, R-1 allowed a duplex only on a corner lot or by Planning Commission approval; the 2025 adoption could not be read."
+4136150,missing_middle,corrected,"Wrong tier: PSU certified 10,081 (July 1 2021, certified 2021-12-15) made it an HB 2001 medium city; recoded with a computed duty date and a local row for Ord. 1598."
+4137000,missing_middle,confirmed,No local ordinance found.
+4137250,missing_middle,confirmed,No local ordinance found.
+4138000,missing_middle,confirmed,"Own code adopted 2025-06-10 (effective date not in the source); before it, R-1 duplexes only on corner lots. A 10,000 sq ft minimum for new R-1 duplexes was not checked against 'each lot'."
+4140300,missing_middle,confirmed,No local ordinance found.
+4141050,missing_middle,confirmed,"Lead only: Ord. 2024-02 (2024-12-11) may permit duplexes outright in RSF and RMF; not read. PSU estimates put La Pine under 2,500 in 2019-2020, but the 2020 Census count places it in the tier."
+4142600,missing_middle,corrected,"Wrong tier: PSU certified 10,067 (July 1 2021, certified 2021-12-15) made it an HB 2001 medium city; recoded with a computed duty date and a local row for Ord. 2022-10."
+4145250,missing_middle,confirmed,"Own code allows one to three units on lots of 5,000 sq ft or more (MMC 18.15.040), probably from Ord. 968 (enacted 2022-06-14); which ordinance added duplexes and its effective date are not in the source, so the state date is kept."
+4148300,missing_middle,confirmed,"Own code (file DC 24-02) adopted 2025-02-11, effective 2025-03-13 per the city's project page; before it, duplexes only on corner lots in one zone. Kept at the state date: both fall before 1 July 2025, when the model reads rules."
+4148600,missing_middle,confirmed,No local ordinance found.
+4150150,missing_middle,confirmed,No local ordinance found.
+4150950,missing_middle,confirmed,Own code Ord. 870 adopted 2025-01-07 (second reading); effective date not in the source.
+4153150,missing_middle,confirmed,"No own code found; the current code appears not to permit duplexes in R-7.5. If the city had not acted, the model code applied directly from 2025-06-30 (2023 c.223 §21(3))."
+4153750,missing_middle,confirmed,No local ordinance found.
+4154100,missing_middle,confirmed,No local ordinance found.
+4157450,missing_middle,confirmed,"No own code found (2024 drafts only); other R-1 duplexes need a conditional use permit. If the city had not acted, the model code applied directly from 2025-06-30 (2023 c.223 §21(3))."
+4157500,missing_middle,confirmed,No local ordinance found.
+4161300,missing_middle,confirmed,"No local ordinance found. If the city had not acted, the model code applied directly from 2025-06-30 (2023 c.223 §21(3))."
+4165500,missing_middle,confirmed,Duplexes permitted outright in R-1 outside the Scappoose Creek floodplain since at least 2004 (SMC 17.44.030): coded as OR-4165500-missing_middle-2004-local.
+4165950,missing_middle,confirmed,"No own code found; R-1 lists no two-family dwelling (R-2, R-3, R-R and R-C do). If the city had not acted, the model code applied directly from 2025-06-30 (2023 c.223 §21(3))."
+4166550,missing_middle,confirmed,"No local ordinance found. If the city had not acted, the model code applied directly from 2025-06-30 (2023 c.223 §21(3))."
+4167050,missing_middle,confirmed,"A 2025 draft ordinance conflicts with a 2026 staff memo saying R-1 still does not permit duplexes; treated as not adopted. If the city had not acted, the model code applied directly from 2025-06-30 (2023 c.223 §21(3))."
+4167950,missing_middle,confirmed,No local ordinance found.
+4170200,missing_middle,confirmed,Duplexes permitted outright in LD and MD since at least 2007 (Table 17.16.070.1): coded as OR-4170200-missing_middle-2007-local.
+4170700,missing_middle,confirmed,"Own code Ord. 773 adopted 2025-05-12, effective about 2025-06-11 (computed; signature date not verified). Kept at the state date: both fall before 1 July 2025, when the model reads rules."
+4171650,missing_middle,confirmed,No local ordinance found.
+4171950,missing_middle,corrected,"Wrong tier: PSU certified 10,097 (July 1 2022) made it an HB 2001 medium city before 2023 c.223; recoded with a computed duty date and local rows for Ord. 1305 and Ord. 1321."
+4172500,missing_middle,confirmed,No local ordinance found.
+4173700,missing_middle,confirmed,"Duplexes were already allowed in R-7.5 and R-5.0 (5,000 sq ft minimum) before 2023; first date unknown, so no earlier row is coded. Ord. 050525A (passed 2025-05-19) completed the duplex rules."
+4174000,missing_middle,confirmed,"Own code Ord. 1430 adopted 2025-05-07, effective about 2025-06-06 (computed from its 30-day clause). Kept at the state date: both fall before 1 July 2025, when the model reads rules."
+4175650,missing_middle,confirmed,In March 2022 R-1 listed no duplexes; a 2025 zone change (ZC-1-25) could not be confirmed.
+4177050,missing_middle,confirmed,No local ordinance found.
+4178900,missing_middle,confirmed,No local ordinance found.
+4183400,missing_middle,confirmed,"Own ordinance had its first reading on 2025-08-04, after the deadline, so the model code applied from 2025-06-30 (2023 c.223 §21(3))."
