@@ -9,8 +9,8 @@ tables are row and year counts only; no Oregon outcome value from 2018 on was re
 `REFORM_STATES` (`model/scenarios/adu.py`).
 - **168 jurisdictions** (136 cities, 32 county remainders) have BPS permits through 2017, an eligible-lot count
   (ACS fallback, tier 3) and market inputs.
-- **Rules:** 547 rows. 526 are state-law rows (one per covered jurisdiction, read from the statutes and second
-  coded); 21 are local rows for Portland, Bend and Metro cities that adopted early or late.
+- **Rules:** 548 rows. 526 are state-law rows (one per covered jurisdiction, read from the statutes and second
+  coded); 22 are local rows for Portland, Bend and Metro cities that adopted early or late.
 - **Fees:** Portland, Bend and Salem SDCs; Eugene water only.
 - **Everything from 2018 on is blind** (V9-OR-TRANSFER, statewide). The freeze is a conditional forecast: observed
   2018–2025 market inputs are used, production outcomes are not (Ben, 2026-11-04).
