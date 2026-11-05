@@ -1,0 +1,19 @@
+At central parameters: theta 0.000659, alpha 2.214 (51 places, 296 place-years); observed-information log-SE theta 0.249, alpha 0.276, correlation 0.059
+  adu_sqft                     refit at 760, 840: d log theta/dp +3.223e-05  d log alpha/dp +7.0002e-05
+  hard_cost_per_sqft_usd       refit at 151, 179: d log theta/dp +0.00015651  d log alpha/dp +0.00033851
+  adu_hard_cost_premium        refit at 0.11, 0.19: d log theta/dp +0.022406  d log alpha/dp +0.048727
+  soft_cost_share              refit at 0.18, 0.22: d log theta/dp +0.021468  d log alpha/dp +0.046717
+  average_draw_share           refit at 0.475, 0.525: d log theta/dp +0.0015896  d log alpha/dp +0.003471
+  construction_loan_rate       refit at 0.0805, 0.0895: d log theta/dp +0.0093478  d log alpha/dp +0.020375
+  construction_years_irc       refit at 0.675, 0.825: d log theta/dp +0.0010608  d log alpha/dp +0.0023101
+  rental_vacancy_rate          refit at 0.045, 0.055: d log theta/dp +0.027067  d log alpha/dp +0.059006
+  operating_expense_share      refit at 0.33, 0.37: d log theta/dp +0.039681  d log alpha/dp +0.086467
+  cap_rate                     refit at 0.052, 0.058: d log theta/dp +0.46884  d log alpha/dp +1.0178
+  adu_margin                   refit at 0.08, 0.12: d log theta/dp +0.023408  d log alpha/dp +0.050975
+  adu_rent_to_median_ratio     refit at 0.96, 1.04: d log theta/dp -0.025826  d log alpha/dp -0.056286
+  adu_feasibility_dispersion   refit at 0.445, 0.555: d log theta/dp -0.11577  d log alpha/dp -0.032482
+  adu_equity_elasticity        refit at 0.2, 0.3: d log theta/dp +0.18748  d log alpha/dp -0.072344
+  adu_rate_semi_elasticity     refit at 0.055, 0.085: d log theta/dp +1.5567  d log alpha/dp -0.10883
+  adu_partial_rule_share       refit at 0.25, 0.35: d log theta/dp -3.0677  d log alpha/dp -0.47345
+  adu_owner_occupancy_share    refit at 0.99, 1: d log theta/dp -0.70857  d log alpha/dp +0.078937
+wrote config/params/adu_anchor.yaml

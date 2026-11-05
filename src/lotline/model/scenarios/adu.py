@@ -12,10 +12,10 @@ For each jurisdiction and each of the five years after the origin, t = 1 … 5:
 - **c, how close current local rules already are to the Handbook** (`current_rules`): 1 when the coded ADU
   rule in force at the origin allows a detached ADU of 600+ sq ft by right with no owner-occupancy or parking
   requirement; `adu_partial_rule_share` when ADUs are allowed with any of those restrictions; 0 when no ADU
-  rule is coded. a = years since that rule took effect, so a recent reform is still ramping up under current
-  rules. A blank (uncoded) rubric field is unknown, never "not restrictive": it restricts with the share of
-  coded rules that restrict it, and a place with no coded rule draws its type from coded places like it
-  (D-022).
+  rule is coded. a = years since that rule took effect. Since D-048 the ramp is 1 in every year a rule is in
+  force (`hazard.adu_ramp`), so a, and a recent reform, no longer change the result. A blank (uncoded) rubric
+  field is unknown, never "not restrictive": it restricts with the share of coded rules that restrict it,
+  and a place with no coded rule draws its type from coded places like it (D-022).
 - **Observed ADU rate**: where local permits flag ADUs, ADU permits per eligible parcel per year over
   `adu_observed_first_year`–`adu_observed_last_year`. It is a floor on the current-rules hazard: ADUs a place
   already builds are in its baseline and are never counted as added (additionality, MS-10).
@@ -637,13 +637,12 @@ class Paths:
         return self.handbook - self.current
 
 
-def pool_paths(
-    eligible, h_mature, h_floor, rule_share, rule_age, ramp_half, ramp_slope, horizon, enabled=True
-):
+def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True):
     """Gross ADUs per year under current and Handbook rules, depleting the pool of parcels without an ADU.
 
-    `rule_age` is the current rule's age in years at the origin (NaN: no rule). With `enabled=False` the
-    Handbook path equals the current-rules path, so nothing is added.
+    `rule_age` is the current rule's age in years at the origin (NaN: no rule). `ramp_params` gives the ramp
+    (`hazard.adu_ramp`; D-048: 1 every year). With `enabled=False` the Handbook path equals the current-rules
+    path, so nothing is added.
     """
     e = np.asarray(eligible, dtype=float)
     hm = np.asarray(h_mature, dtype=float)
@@ -653,10 +652,10 @@ def pool_paths(
     r_hb, r_cur = e.copy(), e.copy()
     hb, cur = np.zeros((len(e), horizon)), np.zeros((len(e), horizon))
     for i, t in enumerate(range(1, horizon + 1)):
-        h_rule = c * hm * hazard.ramp(age + t, ramp_half, ramp_slope)
+        h_rule = c * hm * hazard.adu_ramp(age + t, ramp_params)
         h_cur = np.minimum(np.maximum(h_rule, floor), 1.0)
         if enabled:
-            h_new = h_rule + (1.0 - c) * hm * hazard.ramp(t, ramp_half, ramp_slope)
+            h_new = h_rule + (1.0 - c) * hm * hazard.adu_ramp(t, ramp_params)
             h_hb = np.minimum(np.maximum(h_new, floor), 1.0)
         else:
             h_hb = h_cur
@@ -699,8 +698,7 @@ def central_path(
         places["observed_rate"],
         c,
         places["rule_age"],
-        p["adu_ramp_half_years"],
-        p["adu_ramp_slope_years"],
+        p,
         horizon,
         enabled,
     )
@@ -845,8 +843,7 @@ def run(
             places["observed_rate"],
             c,
             places["rule_age"],
-            p["adu_ramp_half_years"],
-            p["adu_ramp_slope_years"],
+            p,
             horizon,
             enabled,
         )

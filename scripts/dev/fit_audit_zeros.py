@@ -43,7 +43,9 @@ def detached_class(live: pd.DataFrame) -> str:
 def by_detached(store, cs, places=None, full=None) -> pd.DataFrame:
     """Observed and expected by detached rule; `places` and `full` default to D-041's places and fit 3."""
     if places is None:
-        places = run.four_state_places(store, cs) + run._test_set(store, cs)
+        places = run.four_state_places(store, cs, params=run.pre_d048()) + run._test_set(
+            store, cs, params=run.pre_d048()
+        )
     if full is None:
         full = cal.fit3([p for p in places if p.geoid not in (run.RALEIGH, run.DURHAM)])
     rows = []

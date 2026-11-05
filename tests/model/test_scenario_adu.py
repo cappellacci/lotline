@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from lotline.model import hazard
 from lotline.model.scenarios import adu
 
 P = adu.central_params()
@@ -35,22 +36,27 @@ def _places(**cols):
 
 def test_one_jurisdiction_year_by_hand():
     """2,000 eligible parcels; rent $1,100, half the reference home value, rates +2 points; no ADU rule today.
-    Mature hazard 0.0014219 (test_hazard: worked by hand). Year 1: ramp(1) = 1 / (1 + e^(4/3)) = 0.20861, so
-    the
-    Handbook hazard is 0.0014219 × 0.20861 = 0.00029662 and gross ADU permits = 2,000 × 0.00029662 = 0.5933.
-    Current rules give none, so all 0.5933 are added. Homes = 0.5933 × 0.65 (net-new) × (1 − 0.10)
-    (formalization) = 0.3470. Year 2: pool 2,000 − 0.5933; ramp(2) = 0.5; 1,999.407 × 0.0014219 × 0.5 =
-    1.4215."""
+    Mature hazard 0.0014219 (test_hazard: worked by hand). No ramp (D-048), so year 1's Handbook hazard is the
+    mature hazard: gross ADU permits = 2,000 × 0.0014219 = 2.8438. Current rules give none, so all 2.8438 are
+    added. Homes = 2.8438 × 0.65 (net-new) × (1 − 0.10) (formalization) = 1.6636. Year 2: pool 2,000 − 2.8438
+    = 1,997.156; × 0.0014219 = 2.8398."""
     out = adu.central_path(_places(), params=A4)
-    ramp1 = 1 / (1 + math.exp(4 / 3))
-    year1 = 2000 * 0.0014219229 * ramp1
+    year1 = 2000 * 0.0014219229
     assert out["mature_hazard"][0] == pytest.approx(0.0014219229, rel=1e-6)
     assert out["handbook"][0, 0] == pytest.approx(year1, rel=1e-6)
     assert out["current"][0, 0] == 0.0
-    assert out["added"][0, 0] == pytest.approx(0.5933, abs=1e-4)
+    assert out["added"][0, 0] == pytest.approx(2.8438, abs=1e-4)
     assert out["homes"][0, 0] == pytest.approx(year1 * 0.65 * 0.9, rel=1e-6)
-    assert out["homes"][0, 0] == pytest.approx(0.3470, abs=1e-4)
-    assert out["added"][0, 1] == pytest.approx((2000 - year1) * 0.0014219229 * 0.5, rel=1e-6)
+    assert out["homes"][0, 0] == pytest.approx(1.6636, abs=1e-4)
+    assert out["added"][0, 1] == pytest.approx((2000 - year1) * 0.0014219229, rel=1e-6)
+    assert out["added"][0, 1] == pytest.approx(2.8398, abs=1e-4)
+
+
+def test_pre_d048_ramp_reproduces_the_old_hand_example():
+    """With the pre-D-048 logistic (half 2, slope 0.75), year 1 is ramp(1) = 0.20861 of the mature hazard:
+    2,000 × 0.0014219 × 0.20861 = 0.5933, and year 2 is (2,000 − 0.5933) × 0.0014219 × 0.5 = 1.4215."""
+    out = adu.central_path(_places(), params=A4 | hazard.PRE_D048_RAMP)
+    assert out["added"][0, 0] == pytest.approx(0.5933, abs=1e-4)
     assert out["added"][0, 1] == pytest.approx(1.4215, abs=1e-4)
 
 
@@ -67,11 +73,11 @@ def test_all_levers_off_equals_the_baseline():
 
 def test_at_most_one_adu_per_parcel():
     """Even with a 90% yearly hazard, cumulative ADUs never exceed the eligible parcels, under either rule."""
-    paths = adu.pool_paths([100.0], [0.9], [np.nan], [0.0], [np.nan], 0.5, 0.5, 5)
+    paths = adu.pool_paths([100.0], [0.9], [np.nan], [0.0], [np.nan], {"adu_ramp_share": 1.0}, 5)
     assert paths.handbook.sum() <= 100.0 + 1e-9
     assert paths.current.sum() <= 100.0 + 1e-9
     assert np.all(paths.handbook >= 0)
-    hm = adu.pool_paths([100.0], [1.0], [np.nan], [0.0], [np.nan], 0.5, 0.5, 5)
+    hm = adu.pool_paths([100.0], [1.0], [np.nan], [0.0], [np.nan], {"adu_ramp_share": 1.0}, 5)
     assert hm.handbook.sum() == pytest.approx(100.0, rel=1e-3)  # every parcel used once, never twice
 
 
@@ -85,16 +91,16 @@ def test_more_profit_never_lowers_uptake():
 def test_handbook_equivalent_rules_add_nothing():
     out = adu.central_path(_places(rule_class="handbook", rule_age=0.5))
     assert np.all(out["added"] == 0)
-    assert out["current"].sum() > 0  # the recent reform still ramps up under current rules
+    assert out["current"].sum() > 0  # the recent reform builds under current rules
 
 
 def test_partial_rules_get_the_increment_only_by_hand():
-    """A long-standing partial rule (age 50 years, ramp ≈ 1): current hazard = 0.3 × h_m. Handbook year 1:
-    0.3 h_m + 0.7 h_m × ramp(1). Added in year 1 = 2,000 × 0.7 × h_m × 0.20861 (same pool in year 1)."""
+    """A partial rule: current hazard = 0.3 × h_m. Handbook year 1: 0.3 h_m + 0.7 h_m (no ramp, D-048).
+    Added in year 1 = 2,000 × 0.7 × h_m (same pool in year 1)."""
     out = adu.central_path(_places(rule_class="partial", rule_age=50.0))
     hm = out["mature_hazard"][0]
     assert out["current"][0, 0] == pytest.approx(2000 * 0.3 * hm, rel=1e-6)
-    assert out["added"][0, 0] == pytest.approx(2000 * 0.7 * hm / (1 + math.exp(4 / 3)), rel=1e-6)
+    assert out["added"][0, 0] == pytest.approx(2000 * 0.7 * hm, rel=1e-6)
 
 
 def test_observed_adus_are_never_counted_as_added():
@@ -242,16 +248,18 @@ def _no_slopes(corr: float = 0.0) -> dict:
 
 
 def test_log_sd_from_the_90_percent_interval_by_hand():
-    """Anchor 90% interval 0.000453-0.003173: (ln 0.003173 − ln 0.000453) / (2 × 1.644854) = 0.5917."""
+    """Anchor 90% interval 0.000443-0.001023 (D-048): (ln 0.001023 − ln 0.000443) / (2 × 1.644854) =
+    0.8369 / 3.2897 = 0.2544."""
     s = adu.specs()["adu_mature_hazard_ref"]
-    assert adu.log_sd(s) == pytest.approx((math.log(0.003173) - math.log(0.000453)) / 3.289708, rel=1e-6)
-    assert adu.log_sd(s) == pytest.approx(0.5917, abs=1e-4)
+    assert adu.log_sd(s) == pytest.approx((math.log(0.001023) - math.log(0.000443)) / 3.289708, rel=1e-6)
+    assert adu.log_sd(s) == pytest.approx(0.2544, abs=1e-4)
 
 
 def test_anchor_draws_have_their_median_at_the_estimate():
     """D-030: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
-    the judgment shift), not triangular(low, central, high), whose median for the anchor is ~1.47e-3, 41%
-    above the estimate 1.038e-3."""
+    the judgment shift), not triangular(low, central, high). With D-048's anchor 0.659e-3 (0.443-1.023e-3) the
+    triangular median is 1.023e-3 − √(0.580e-3 × 0.364e-3 / 2) = 0.698e-3, 6% above the estimate (D-019's
+    interval gave 41%)."""
     spec = adu.specs()
     sets = adu.draw_params(20_000, 7, _no_slopes())
     theta = np.array([p["adu_mature_hazard_ref"] for p in sets])
@@ -262,7 +270,8 @@ def test_anchor_draws_have_their_median_at_the_estimate():
     assert np.median(alpha) == pytest.approx(a.value, rel=0.02)
     assert np.percentile(theta, 5) == pytest.approx(t.value * math.exp(-1.644854 * adu.log_sd(t)), rel=0.05)
     old = np.random.default_rng(7).triangular(t.low, t.value, t.high, 20_000)
-    assert np.median(old) > 1.4 * t.value  # the bias D-030 removes
+    assert np.median(old) == pytest.approx(0.698e-3, rel=0.01)  # the bias D-030 removes
+    assert np.median(old) > 1.05 * t.value
 
 
 def test_anchor_shifts_with_the_judgment_parameters_it_was_fitted_at_by_hand():
@@ -462,7 +471,8 @@ def test_a_blank_field_is_never_read_as_unrestrictive():
 
 
 def test_central_path_uses_the_expected_rule_share():
-    """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 -> c = 0.72 (rule long in force)."""
+    """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 -> c = 0.72. Added in year 1 =
+    2,000 × (1 − 0.72) × h_m (no ramp, D-048)."""
     p = _places(rule_class="unknown", rule_age=50.0).assign(
         p_none=0.0, p_owner=0.0, p_other=0.4, p_both=0.0, p_handbook=0.6
     )
@@ -470,7 +480,7 @@ def test_central_path_uses_the_expected_rule_share():
     hand = adu.central_path(_places(rule_class="handbook", rule_age=50.0))
     hm = mix["mature_hazard"][0]
     assert mix["current"][0, 0] == pytest.approx(2000 * 0.72 * hm, rel=1e-6)
-    assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm / (1 + math.exp(4 / 3)), rel=1e-6)
+    assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm, rel=1e-6)
     assert hand["added"].sum() == 0
 
 

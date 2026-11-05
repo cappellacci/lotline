@@ -2879,6 +2879,25 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       San Antonio's rate) decides the TX verdict for every model tried.
     - Proposed next entry: a sharper model-comparison yardstick, held-out log score per place, before
       choosing between D-041 and D-048.
+- **Adopted 2026-11-05 (Ben: "Adopt D-048"), after D-049.** No pre-registered rule triggered it: Ben chose it
+  on D-049's evidence (three yardsticks favour no ramp; only the noisy state-total test opposes it).
+  - **Ramp:** `adu_ramp_half_years` and `adu_ramp_slope_years` are replaced by `adu_ramp_share` = 1 (fixed),
+    read through `hazard.adu_ramp`. The old logistic stays as `hazard.PRE_D048_RAMP`; the scripts behind
+    D-039 to D-049 now pass it (`calibrate_adu.pre_d048`) so their recorded runs still reproduce.
+  - **θ and α written to config** (`hazard.yaml`): θ 0.000659 (0.000443–0.001023), α 2.214 (1.406–3.486 from
+    the observed-information log-SE 0.276). These replace D-019 fit 3's 0.001038 and 4.735 (16 places, with
+    the ramp); D-041's θ was never written to config.
+  - **Anchor terms** (`adu_anchor.yaml`) regenerated with `--draw-terms` on the D-048 fit set (51 places, 296
+    place-years) instead of D-019's 16 places.
+  - **Deviation from "each in its own PR":** the ramp, θ/α and anchor terms are one PR. The ramp without the
+    refit would pair a no-ramp scenario with a θ fitted with the ramp.
+  - **Correction to "five-year totals will rise":** that held θ fixed. θ falls by 37%, so for a typical place
+    the five-year mean is about 7% lower than under the config it replaces (×0.929 = 0.659 × 5 / (1.038 ×
+    3.417), where 3.417 is the old ramp's sum over years 1–5). Year 1 is about 3× higher, year 2 ×1.27, years
+    3–5 about ×0.65–0.80. Against D-041's θ the five-year mean would be ×0.78.
+  - **Not redone here:** D-044's state effect (`adu_state_effect.yaml`) was estimated from D-041's folds,
+    which had the ramp. D-048's fold θs run from 0.56 (without TX) to 1.16 per 1,000 (without MN). The state
+    effect should be re-estimated under D-048; until then it is D-041's.
 
 ### D-049 · 2026-11-04 · A sharper yardstick: held-out log score per place (method only, before any scoring)
 
@@ -2939,6 +2958,50 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **WS-ENGINE's reading, for Ben:** three yardsticks now favour no ramp: in-sample (+55.8), held-out place
     scores (+52.5, three of four states plus the test set) and the audit's year pattern. Only the noisy
     state-total test goes against it. Adopting D-048 is Ben's decision; the written rules did not trigger it.
+
+### D-050 · 2026-11-05 · D-044's state effect re-estimated under D-048 (method only, before any run)
+
+- **Why:** D-048 was adopted on 2026-11-05, but `adu_state_effect.yaml` still holds D-044's τ grid, which was
+  estimated with the ramp. The scenario would then pair a no-ramp θ with a state spread from a ramped fit.
+  Ben approved this entry on 2026-11-05 ("Yes, redo state effect").
+- **Change:** D-044 exactly (τ grid 0–2.5 in steps of 0.05, a flat prior, θ and α maximized at each point, the
+  same seeds), run on D-048's places: the ramp is 1 from a rule's effective date (`adu_ramp_share`). Nothing
+  else changes.
+- **Reported:** as D-044: τ's distribution for the full fit and each fold, the unseen-state multiplier
+  exp(τ z) P10–P90, and leave one state out with τ drawn (main and T1), with D-040's verdicts and the median
+  P90 ÷ P10 over the four states. D-044's results are shown next to them.
+- **Rule, written now:** D-044's method and D-048 are both adopted, so the config is regenerated from this
+  full fit's grid and probabilities whatever the backtest shows. A state missed in leave one state out is
+  reported to Ben as a finding, not used to keep the ramped τ.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --tau-draws --no-ramp --out reports/adu-tau-draws-d048`,
+  then `--state-effect-config` from that folder.
+- **Results (run 2026-11-05 on 783528a; `reports/adu-tau-draws-d048/`, log `run-2026-11-05-log.txt`; the
+  log's table titles still say "D-044", the script's label):**
+  - **τ's distribution** and the multiplier exp(τ z) a new state carries (D-044's in brackets):
+
+    | Fit | τ̂ (90% interval) | τ median | τ P90 | Share at τ = 0 | Multiplier P10–P90 |
+    |---|---|---|---|---|---|
+    | All four states | 0 (0–0.89) [0–0.67] | 0.40 [0.30] | 1.35 [1.05] | 7% [9%] | 0.50–2.02 [0.58–1.71] |
+    | Without MN | 0.60 (0–1.76) | 0.80 | 1.80 | 2% | 0.31–3.17 |
+    | Without NC | 0 (0–1.21) | 0.55 | 1.80 | 5% | 0.38–2.58 |
+    | Without OH | 0 (0–0.95) | 0.45 | 1.50 | 7% | 0.47–2.23 |
+    | Without TX | 0 (0–0.71) | 0.35 | 1.30 | 8% | 0.54–1.92 |
+
+  - **Leave one state out, τ drawn (main):**
+
+    | State | Observed | P50 (P10–P90) | Verdict | P90 ÷ P10 |
+    |---|---|---|---|---|
+    | MN | 285 | 484 (107–2,268) | useful | 21.2 |
+    | NC | 45 | 74 (12–368) | useful | 30.7 |
+    | OH | 8 | 6 (0–58) | useful | ∞ |
+    | TX | 1,108 | 231 (25–1,221) | inside only | 48.8 |
+    | NC with Raleigh and Durham | 455 | 224 (39–1,108) | inside only | 28.4 |
+
+    - **No state missed in the main run.** TX, missed by D-048 without τ (P90 977), is inside with τ drawn.
+    - **T1 (half-normal) misses TX** (P90 1,094 against 1,108). T1 is reported, not chosen (D-044).
+    - Median P90 ÷ P10 over the four states: 39.8 (D-044 46.5, D-041 28.0).
+  - **Config:** `adu_state_effect.yaml` regenerated from this full fit, as the rule says. Without the ramp
+    the state spread is somewhat larger: a new state's multiplier P10–P90 is 0.50–2.02, up from 0.58–1.71.
 
 ### D-051 · 2026-11-04 · V9 Oregon transfer prediction: what is frozen and how it is made (method only, before any run)
 - **Renumbered 2026-11-05:** written as D-046; renumbered D-051 (Ben) because #285's ADU fit entries also
