@@ -118,3 +118,25 @@ def test_cost_index_by_hand():
     lo = hazard.adu_mature_hazard(1400, 400_000, 6.0, P, cost_index=0.9)
     hi = hazard.adu_mature_hazard(1400, 400_000, 6.0, P, cost_index=1.1)
     assert float(hi) < float(lo)
+
+
+def test_widen_unseen_state_by_hand():
+    """D-043. Hazard 0.001, distance 0.5 at w = 1 (s = 0.5), z = 1, z_state = 1.
+    'both', τ = 0.4: exp(0.5 − 0.125 + 0.4) = exp(0.775). 'larger', τ = 0.4 < s: widening alone, exp(0.375);
+    τ = 0.6 > s: the state term alone, exp(0.6). τ = 0 is `widen`."""
+    p = dict(P, adu_extrapolation_widening=1.0)
+    assert hazard.widen_unseen_state(0.001, 0.5, 1.0, 1.0, 0.4, "both", p) == pytest.approx(
+        0.001 * math.exp(0.775)
+    )
+    assert hazard.widen_unseen_state(0.001, 0.5, 1.0, 1.0, 0.4, "larger", p) == pytest.approx(
+        0.001 * math.exp(0.375)
+    )
+    assert hazard.widen_unseen_state(0.001, 0.5, 1.0, 1.0, 0.6, "larger", p) == pytest.approx(
+        0.001 * math.exp(0.6)
+    )
+    z = np.array([-1.0, 0.3, 2.0])
+    assert hazard.widen_unseen_state(0.002, 0.7, z, 1.5, 0.0, "both", p) == pytest.approx(
+        hazard.widen(0.002, 0.7, z, p)
+    )
+    with pytest.raises(ValueError):
+        hazard.widen_unseen_state(0.001, 0.5, 1.0, 1.0, 0.4, "max", p)

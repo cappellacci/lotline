@@ -2365,6 +2365,210 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - its placebo was not passed, and its own backtest was no better than no effect.
 
 
+### D-043 · 2026-11-03 · A range for θ in a state the model was not fitted on (method only, before any fit)
+- **Why:** Lotline's purpose is transfer to any state (HANDOFF decision 2026-10-28, test V8). A state with no
+  ADU history needs no local ADU data: its rate is θ moved to its own rents, home values and mortgage rates
+  (`model/hazard.py`). But the range carried with θ, 0.81–2.11 per 1,000 in D-041, only measures how well θ
+  is pinned down across our four states pooled. It leaves out how much states differ from each other after
+  the transport, which is the main uncertainty for a new state. Fitted alone, the four states give 1.25 (MN),
+  1.27 (NC), 2.34 (OH) and 4.17 (TX). A new state's range has to carry that spread.
+- **What is known already, stated now:** this entry is written after D-041's results. The per-state values
+  above are seen, so pre-registering here fixes the method and the rule for reading it, not blindness to the
+  data. The state-to-state spread rests mostly on Texas, which has 2 places, and Ohio, which has 1.
+- **Model (main):**
+  - Each state s gets its own multiplier: θ_s = θ × v_s, with log v_s normal, mean 0 and standard
+    deviation τ (`adu_state_effect_sd`). θ is then the median state's rate, not the pooled rate.
+  - Everything else is D-041's main fit unchanged: the expected count, the count rules (co-built units
+    excluded, ρ = 0.57), the negative binomial with α, and the owner share.
+  - θ, α and τ are estimated together by maximum likelihood. Each state's multiplier is integrated out with
+    Gauss–Hermite quadrature (40 nodes) over its place-years. τ's 90% interval is its profile-likelihood
+    interval, as for θ (χ² 1 df, 2.706), searched on 0–2.5.
+  - **Unseen-state draw:** each simulation draw gives a state that is not in the fit set one multiplier,
+    exp(τ z) with z standard normal, shared by every place in that state. This keeps the median at θ.
+- **How it combines with the extrapolation widening (main: both, added in quadrature):**
+  - The existing widening (`adu_extrapolation_widening`, D-030) stands for error in the transport formula and
+    grows with a place's distance outside the reference cities' range. τ stands for what differs between
+    states after the transport.
+  - The two partly overlap: some of the four states' spread is itself transport error. The main run treats
+    them as independent, giving a shared log-sd of sqrt(τ² + (w·d)²). This is the cautious choice for a new
+    state.
+  - **Sensitivity C1:** the larger of the two, max(τ, w·d), with no overlap counted.
+- **Checks reported with the fit:**
+  1. **K1, empirical spread:** the root mean square of log(observed ÷ P50) over D-041's four
+     leave-one-state-out state totals. Written down now: MN 0.50, NC fit set 0.66, OH 2.67, TX 2.56.
+     These are D-041 numbers already seen, so they are a check on τ, not a second estimate.
+  2. **K2, without Texas:** τ refitted on MN, NC and OH, to show how much one state drives it.
+  3. **K3, state multipliers:** each fitted state's estimated v_s with its interval.
+- **Validation: leave one state out with τ.** For each state, refit θ, α and τ on the other three and predict
+  the left-out state's total with the unseen-state draw. That matches how a new state would be run.
+  - Bars: D-040's verdicts (useful, inside only, missed) and the ratio P90 ÷ P10, next to D-041's.
+  - With three states, τ is weaker still; a fit whose τ interval reaches 2.5 is reported "not estimable" for
+    that state.
+- **Reading rule (written now):**
+  - **Estimable:** τ's upper 90% bound is below 2.5. Then `adu_state_effect_sd` is τ̂, with low and high at
+    its 90% interval. A τ̂ of 0 is a valid result, not a failure. Its range still runs to the upper bound.
+  - **Not estimable:** the upper bound reaches 2.5. Then τ falls back to K1's value as judgment, with low
+    0.5 × K1 and high 1.5 × K1, and the source says so.
+  - **The range is wide enough** if the leave-one-state-out run has no state missed. It is useful for policy
+    if the median P90 ÷ P10 for a state total is under 10. If it is not under 10, the tool still reports that
+    range for a new state: a wide honest range is the correct answer with four states. The write-up says what
+    more states would do to it.
+  - Nothing in this entry is chosen by comparing backtest scores across runs.
+- **Scope:**
+  - **Changes:** the range for a state that is not in the fit set (V8's Wisconsin, any state a user brings).
+  - **Unchanged:** the four fitted states' own runs, which keep pooled θ. Whether they should use their own
+    v_s instead is a separate question, for a separate entry.
+  - **Order with V8:** V8 counts any parameter change made during the transfer test against it, so this entry
+    has to be run and decided before V8 starts.
+- **Code, when Ben approves the method:**
+  - `calibrate_adu.py`: the marginal likelihood, with a unit test on a hand-worked two-state example.
+  - `--state-effect` in `scripts/dev/calibrate_adu.py`, writing to `reports/adu-state-effect/`.
+  - The unseen-state draw in `scenarios/adu.py`.
+  - The parameter in `config/params/hazard.yaml`, only after Ben adopts the result.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --counts --state-effect --out
+  reports/adu-state-effect`.
+- **Decided by:** Ben, 2026-11-03 ("Its ok if it's a statewide theta as the goal is to calculate a number based
+  on the state", then "Yes, draft it"); written by WS-ENGINE before any fit. **Status:** method only, not run.
+- **Results (2026-11-03; code committed with these results, on 886885b; `reports/adu-state-effect/`, log
+  `run-2026-11-03-log.txt`):**
+  - **How it was run:**
+    - The rule shares were held at fit 3's values on the same places: owner 1.0, other 0.3 for the full fit;
+      owner 0.4 without MN. θ, α and τ were fitted with the shares fixed.
+    - With τ = 0, the full fit reproduces D-041 exactly: θ 1.232 and log-likelihood −383.718.
+    - Sensitivity C1 changes only the scenario draw (`hazard.widen_unseen_state`). The calibration backtest
+      has no extrapolation widening, so C1 can't be shown in it.
+  - **τ:**
+
+    | Fit | θ per 1,000 (90%) | α | τ (90%) |
+    |---|---|---|---|
+    | All four states | 1.23 (0.81–2.08) | 2.28 | 0 (0–0.67) |
+    | Without MN | 2.10 (1.16–4.02) | 0.15 | 0.39 (0–1.16) |
+    | Without NC | 1.31 (0.78–2.73) | 2.98 | 0 (0–0.94) |
+    | Without OH | 1.24 (0.80–2.15) | 2.40 | 0 (0–0.72) |
+    | Without TX (K2) | 1.16 (0.71–1.99) | 2.39 | 0 (0–0.72) |
+
+  - **K1 (empirical spread):** 0.79, from D-041's ratios 0.50, 0.66, 2.67 and 2.56. That sits above τ's upper
+    bound of 0.67.
+  - **K3 (state multipliers):** all 1, since τ̂ = 0.
+  - **Leave one state out with τ, next to D-041:**
+
+    | State | Observed | P50 | P10–P90 | Verdict | P90 ÷ P10 | D-041 verdict | D-041 P90 ÷ P10 |
+    |---|---|---|---|---|---|---|---|
+    | MN | 285 | 596 | 275–1,295 | inside only (0.48) | 4.7 | useful (0.50) | 4.0 |
+    | NC | 45 | 68 | 15–232 | useful | 15.5 | useful | 14.3 |
+    | OH | 8 | 3 | 0–26 | inside only | ∞ | inside only | ∞ |
+    | TX | 1,108 | 430 | 48–2,009 | inside only | 41.9 | inside only | 41.7 |
+    | NC with Raleigh and Durham | 455 | 255 | 62–949 | useful | 15.3 | useful | 14.8 |
+
+    None is missed. The median P90 ÷ P10 over the four states is 28.7; D-041's was 28.0. MN moves from useful
+    to inside only because its ratio moved from 0.50 to 0.48, across the bar's factor of 2.
+  - **Reading by the rule written before the fit:**
+    - **τ is estimable** (upper bound 0.67, below 2.5). So `adu_state_effect_sd` is 0, with a range of 0–0.67.
+    - **The range is wide enough:** no state is missed.
+    - **It is not useful for policy by the bar:** the median P90 ÷ P10 is 28.7, above 10. As stated, the tool
+      still reports it.
+  - **What this means (WS-ENGINE's reading, for Ben to confirm):**
+    - **τ = 0 does not mean the states are alike.** It means four states can't tell state differences apart
+      from place differences. The place effects are wide (α 2.3), and OH and TX have one and two places. So
+      Texas being high fits just as well as two high places.
+    - **The upper bound, 0.67, is the informative number.** It is close to K1's 0.79. A new state's total
+      could plausibly be about ×0.4 to ×2.4 of the central estimate from this source alone (P10–P90 at
+      τ = 0.67).
+    - **Under the rule, the central run adds no state spread.** A new state's central range would show only θ's
+      uncertainty and its own places' effects; the state spread appears only in the sensitivity at the high end.
+      That follows the rule, but it understates the uncertainty that motivated this entry.
+    - **Fixing that is a change of method and needs its own dated entry.** One option is to draw τ from its
+      profile interval in each simulation draw instead of fixing it at τ̂. Not done here.
+    - **Why the leave-one-state-out ranges are wide:** OH and TX are one or two places, so their ranges are
+      dominated by single places' effects. That is true with or without τ. A new state with many places, such
+      as Wisconsin, would average its place effects out, so its range would be set mostly by θ and τ.
+  - **Config:** unchanged. `adu_state_effect_sd` is not added to `hazard.yaml` until Ben decides. The scenario
+    function exists (`hazard.widen_unseen_state`, rules "both" and "larger") but is not wired into
+    `scenarios/adu.run` yet.
+
+### D-044 · 2026-11-04 · Draw τ from its likelihood in every simulation draw (method only, before any run)
+- **Why:** D-043 fitted the state multiplier's spread τ at 0, with a 90% interval of 0–0.67. Its rule set the
+  parameter to the estimate, so a new state's central run would carry no state spread. That understates what
+  four states can tell us: τ could be as large as 0.67, close to the 0.79 already seen in D-041 (K1).
+  Ben (2026-11-04): draw τ from its interval.
+- **Method (main):**
+  - Compute τ's profile log-likelihood ℓ_p(τ) on a grid, τ = 0, 0.05, …, 2.5 (51 points). At each point θ and
+    α are maximized, with the rule shares held as in D-043.
+  - Each grid point gets probability ∝ exp(ℓ_p(τ)), which is a flat prior on 0–2.5.
+  - Each simulation draw picks one τ from that distribution and one z ~ N(0, 1). The state's multiplier is
+    exp(τ z), shared by every place in the state.
+  - θ is drawn as now, from its interval, independently of τ.
+- **Sensitivity T1:** τ from a half-normal whose 90th percentile is τ's upper 90% bound (σ = upper ÷ 1.645).
+  This shape is simpler and leans less on the tail of the profile.
+- **Reported:**
+  1. The τ distribution: its median, 90th percentile and the share of draws at 0, for the full fit and each
+     leave-one-state-out fold.
+  2. The unseen-state multiplier exp(τ z) over all draws: P10, P50 and P90. This is what a new state's total
+     carries from the state spread alone.
+  3. Leave one state out with τ drawn, using each fold's own distribution and D-040's verdicts and P90 ÷ P10,
+     next to D-041 and D-043. Main and T1.
+- **Reading rule (written now):**
+  - **Adopt for unseen states** if no state is missed in item 3, main. If a state is missed, report it and
+    keep D-043's result.
+  - Report the median P90 ÷ P10 against D-043's 28.7. A wider range is the expected cost, not a reason to
+    reject the method.
+  - T1 is reported, not chosen between: the main is the profile.
+- **Config, when Ben adopts:** the full fit's grid and probabilities are written to a new
+  `config/params/adu_state_effect.yaml`, generated by the script with its source. The scenario uses it only
+  for states outside the fit set, through `hazard.widen_unseen_state` with τ drawn per draw.
+- **Run once:** `uv run python scripts/dev/calibrate_adu.py --tau-draws --out reports/adu-tau-draws`.
+- **Decided by:** Ben, 2026-11-04 ("Draw τ from interval"); written by WS-ENGINE before the run.
+- **Results (2026-11-04, commit 508d83c; `reports/adu-tau-draws/`, log `run-2026-11-04-log.txt`):**
+  - **τ's distribution** (the profile with a flat prior on 0–2.5), and the multiplier exp(τ z) a new state
+    carries from it:
+
+    | Fit | τ̂ (90% interval) | τ median | τ P90 | Share at τ = 0 | Multiplier P10–P90 |
+    |---|---|---|---|---|---|
+    | All four states | 0 (0–0.67) | 0.30 | 1.05 | 9% | 0.58–1.71 |
+    | Without MN | 0.39 (0–1.16) | 0.55 | 1.70 | 4% | 0.41–2.41 |
+    | Without NC | 0 (0–0.94) | 0.45 | 1.55 | 7% | 0.45–2.18 |
+    | Without OH | 0 (0–0.72) | 0.35 | 1.25 | 8% | 0.55–1.87 |
+    | Without TX | 0 (0–0.72) | 0.35 | 1.25 | 8% | 0.54–1.91 |
+
+    The profile falls slowly above its 90% bound, so the flat prior puts about 10% of draws above 1.0.
+  - **Leave one state out, τ drawn:**
+
+    | State | Observed | Main P50 (P10–P90) | Main verdict | Main P90 ÷ P10 | T1 P90 ÷ P10 | D-043 P90 ÷ P10 |
+    |---|---|---|---|---|---|---|
+    | MN | 285 | 596 (200–1,784) | inside only (0.48) | 8.9 | 6.7 | 4.7 |
+    | NC | 45 | 67 (11–314) | useful | 28.6 | 21.5 | 15.5 |
+    | OH | 8 | 3 (0–29) | inside only | ∞ | ∞ | ∞ |
+    | TX | 1,108 | 426 (39–2,513) | inside only | 64.4 | 49.1 | 41.9 |
+    | NC with Raleigh and Durham | 455 | 252 (46–1,250) | useful | 27.2 | 21.4 | 15.3 |
+
+    - **Misses:** none, in the main or in T1. Verdicts match D-043 everywhere.
+    - **Median P90 ÷ P10 over the four states:** main 46.5, T1 35.3, D-043 28.7, D-041 28.0.
+    - **Means are pulled up by the large-τ draws.** MN's mean is 1,483 against a P50 of 596. Ranges and
+      medians are what the tool reports.
+  - **Reading by the rule written before the run:**
+    - No state is missed, so the method is adopted for states outside the fit set, subject to Ben's decision
+      on config.
+    - The wider range is the expected cost.
+  - **WS-ENGINE's notes, for Ben to confirm:**
+    - **The state spread is now carried.** For a new state, the median multiplier is 1 and its P10–P90 is
+      0.58–1.71, before θ's own uncertainty and place effects.
+    - **The tail is a choice.** The flat prior lets τ reach above 1.0 one draw in ten, which is what most
+      widens the backtest ranges. T1, the half-normal, is narrower. The main stays as pre-registered.
+    - **What would narrow this:** more states. Each new state's data, once it has ADU history, can join the
+      fit and sharpen τ.
+  - **Config:** unchanged. On adoption, the script writes `config/params/adu_state_effect.yaml` from
+    `reports/adu-tau-draws/tau_profile.csv` (the full fit's grid and probabilities), and the scenario wires
+    `hazard.widen_unseen_state` with τ drawn per draw for states outside the fit set.
+  - **Adopted (2026-11-04, Ben).**
+    - `scripts/dev/calibrate_adu.py --state-effect-config` wrote `config/params/adu_state_effect.yaml`: τ's
+      51 grid probabilities from the full fit, `adu_state_effect_sd` (0, interval 0–0.668, for T1), and the
+      four fitted states. No refit; the values are the D-044 run's.
+    - `scenarios.adu.run` applies `hazard.widen_unseen_state` (rule "both") to every place whose `state` is
+      not a fitted state: τ drawn per draw (`adu.state_noise`, seed + 4), one z per draw and state.
+    - Places in MN, NC, OH and TX get a multiplier of exactly 1, so their runs are unchanged draw for draw
+      (tested). The totals table flags affected places in `outside_fit_states`.
+    - When a state joins the fit, re-run D-044 and regenerate the file; no code change.
+
 ### D-051 · 2026-11-04 · V9 Oregon transfer prediction: what is frozen and how it is made (method only, before any run)
 - **Renumbered 2026-11-05:** written as D-046; renumbered D-051 (Ben) because #285's ADU fit entries also
   used D-046 to D-050.

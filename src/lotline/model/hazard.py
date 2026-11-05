@@ -202,3 +202,24 @@ def widen(hazard, distance, z, params: Mapping[str, float] | None = None):
     p = central_params() if params is None else params
     s = p["adu_extrapolation_widening"] * np.asarray(distance, dtype=float)
     return np.clip(np.asarray(hazard, dtype=float) * np.exp(s * np.asarray(z) - s**2 / 2), 0.0, 1.0)
+
+
+def widen_unseen_state(hazard, distance, z, z_state, tau: float, rule: str = "both", params=None):
+    """`widen` for a place in a state outside the calibration's fit set (analysis plan D-043).
+
+    The state multiplier exp(τ z_state), z_state one standard normal per draw shared by the state's places,
+    keeps the median at the hazard. rule "both" (main) applies it on top of the widening, so the log-sds add
+    in quadrature: hazard × exp(s·z − s²/2 + τ·z_state), s = w × distance. rule "larger" (sensitivity C1)
+    uses whichever is bigger, τ or s, and not both. Capped at 1; τ = 0 gives `widen`.
+    """
+    p = central_params() if params is None else params
+    s = p["adu_extrapolation_widening"] * np.asarray(distance, dtype=float)
+    spread = s * np.asarray(z) - s**2 / 2
+    state = tau * np.asarray(z_state)
+    if rule == "both":
+        log = spread + state
+    elif rule == "larger":
+        log = np.where(tau >= s, state, spread)
+    else:
+        raise ValueError(f"rule must be 'both' or 'larger', not {rule!r}")
+    return np.clip(np.asarray(hazard, dtype=float) * np.exp(log), 0.0, 1.0)

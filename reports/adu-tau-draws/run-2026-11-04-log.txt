@@ -1,0 +1,25 @@
+=== D-044: 51 fit places, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+            fit  tau_hat  tau_high  tau_median  tau_p90  share_at_0  mult_p10  mult_p50  mult_p90
+all four states    0.000     0.668        0.30     1.05       0.089     0.583       1.0     1.712
+     without MN    0.386     1.156        0.55     1.70       0.038     0.412       1.0     2.410
+     without NC    0.000     0.936        0.45     1.55       0.066     0.452       1.0     2.184
+     without OH    0.000     0.715        0.35     1.25       0.083     0.553       1.0     1.866
+     without TX    0.000     0.724        0.35     1.25       0.081     0.541       1.0     1.911
+
+D-044 main: leave one state out, tau drawn
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 200.0 596.0 1784.1 1483.38          0.48          8.92   6011.53 inside only
+                        NC       6           32        45  11.0  67.0  314.0  192.08          0.67         28.55    990.73      useful
+                        OH       1            2         8   0.0   3.0   29.0   14.30          2.67           inf    131.01 inside only
+                        TX       2           13      1108  39.0 426.0 2513.1 1443.45          2.60         64.44  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  46.0 252.0 1250.0  738.24          1.81         27.17   3587.74      useful
+main: missed 0; median P90/P10 46.5 (D-043 28.7, D-041 28.0)
+
+D-044 T1 half-normal: leave one state out, tau drawn
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 229.0 597.0 1541.0 909.18          0.48          6.73   6011.53 inside only
+                        NC       6           32        45  13.0  67.0  280.0 127.17          0.67         21.54    990.73      useful
+                        OH       1            2         8   0.0   3.0   27.0  10.11          2.67           inf    131.01 inside only
+                        TX       2           13      1108  45.0 426.0 2208.2 947.15          2.60         49.07  12069.03 inside only
+NC with Raleigh and Durham       8           42       455  52.0 254.0 1114.0 495.52          1.79         21.42   3587.74      useful
+T1 half-normal: missed 0; median P90/P10 35.3 (D-043 28.7, D-041 28.0)

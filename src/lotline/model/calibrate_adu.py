@@ -685,6 +685,257 @@ def predict_places(places: list[PlaceData], fit: Fit3, draws: int = 20_000, seed
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-043: a state multiplier v_s, log v_s ~ N(0, τ²), for the range of θ in a state outside the fit set
+# ---------------------------------------------------------------------------------------------------------
+
+GH_NODES = 40  # Gauss-Hermite nodes for the state multiplier (pre-registered)
+TAU_RANGE = (0.0, 2.5)  # τ's search range; an interval reaching 2.5 is "not estimable"
+
+
+def gh_log_nodes(tau: float, n: int = GH_NODES) -> tuple[np.ndarray, np.ndarray]:
+    """Nodes x_j for log v and log weights, Σ exp(logw) = 1, so Σ_j w_j f(x_j) ≈ E f(X), X ~ N(0, τ²).
+
+    By hand, n = 2: Hermite nodes ±1/√2 with weights √π/2 each, so x = ±τ, w = 1/2: E X² = τ², exact."""
+    if tau <= 0:
+        return np.zeros(1), np.zeros(1)
+    z, w = np.polynomial.hermite.hermgauss(n)
+    return math.sqrt(2.0) * tau * z, np.log(w / math.sqrt(math.pi))
+
+
+@dataclass(frozen=True)
+class StateTerms:
+    """Every place's blank-field combinations as flat rows, sorted by state then place, with what the frailty
+    likelihood needs at any scale t = θ v: a = Σ_t y log k − log y! (−inf where k = 0 and y > 0), K = Σ_t k,
+    Y = Σ_t y, and the combination's log weight. `place_start` / `state_start` index the first row of each
+    place and the first place of each state (for reduceat)."""
+
+    states: tuple[str, ...]
+    a: np.ndarray
+    big_k: np.ndarray
+    big_y: np.ndarray
+    log_w: np.ndarray
+    place_start: np.ndarray
+    state_start: np.ndarray
+    place_y: np.ndarray
+
+
+def state_terms(places: list[PlaceData], cvals: np.ndarray) -> StateTerms:
+    order = sorted(range(len(places)), key=lambda i: places[i].state)  # stable: places keep their order
+    a, big_k, big_y, log_w, place_start, state_start, place_y, states = [], [], [], [], [], [], [], []
+    for i in order:
+        pl = places[i]
+        if not states or states[-1] != pl.state:
+            states.append(pl.state)
+            state_start.append(len(place_start))
+        place_start.append(len(a))
+        place_y.append(float(pl.y.sum()))
+        lf = pl.log_fact
+        for w, k in zip(pl.w, pl.k(cvals), strict=True):
+            if w <= 0:
+                continue
+            bad = np.any((k <= 0) & (pl.y > 0))
+            safe = np.where(k > 0, k, 1.0)
+            a.append(-math.inf if bad else float(np.sum(np.where(k > 0, pl.y * np.log(safe), 0.0))) - lf)
+            big_k.append(float(k.sum()))
+            big_y.append(float(pl.y.sum()))
+            log_w.append(math.log(w))
+    f = np.asarray
+    return StateTerms(tuple(states), f(a), f(big_k), f(big_y), f(log_w), f(place_start), f(state_start),
+                      f(place_y))  # fmt: skip
+
+
+def _reduce_logsumexp(x: np.ndarray, starts: np.ndarray) -> np.ndarray:
+    """log Σ exp over row groups (rows sorted, groups beginning at `starts`), for every column of x."""
+    top = np.maximum.reduceat(x, starts, axis=0)
+    safe = np.where(np.isfinite(top), top, 0.0)
+    idx = np.repeat(np.arange(len(starts)), np.diff(np.append(starts, len(x))))
+    with np.errstate(divide="ignore"):
+        return safe + np.log(np.add.reduceat(np.exp(x - safe[idx]), starts, axis=0))
+
+
+def state_loglik_curves(terms: StateTerms, scales: np.ndarray, alpha: float) -> np.ndarray:
+    """log P(state s's counts | θ v = scale_j), shape (states, len(scales)): place effects u ~ Gamma(1, α)
+    and blank-field combinations integrated as in `frailty_loglik`, places independent given the scale."""
+    t = np.asarray(scales, dtype=float)[None, :]
+    k, y = terms.big_k[:, None], terms.big_y[:, None]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        head = terms.a[:, None] + np.where(y > 0, y * np.log(t), 0.0)
+        if alpha <= 1e-8:
+            ll = head - t * k
+        else:
+            r = 1.0 / alpha
+            lg = _lgamma(terms.big_y + r)[:, None] - math.lgamma(r)
+            ll = head + lg + r * math.log(r) - (y + r) * np.log(r + t * k)
+    ll = np.where(np.isfinite(terms.a)[:, None], ll, -np.inf)
+    per_place = _reduce_logsumexp(ll + terms.log_w[:, None], terms.place_start)
+    return np.add.reduceat(per_place, terms.state_start, axis=0)
+
+
+def state_loglik(terms: StateTerms, theta: float, alpha: float, tau: float) -> float:
+    """Σ_s log ∫ P(y_s | θ v) φ(log v; 0, τ) d log v, Gauss-Hermite (D-043); τ = 0 is `frailty_loglik`."""
+    x, logw = gh_log_nodes(tau)
+    curves = state_loglik_curves(terms, theta * np.exp(x), alpha)
+    return float(np.sum(np.logaddexp.reduce(curves + logw[None, :], axis=1)))
+
+
+@dataclass(frozen=True)
+class StateFit:
+    theta: float  # the median state's rate
+    low: float
+    high: float
+    alpha: float
+    tau: float
+    tau_low: float
+    tau_high: float
+    loglik: float
+    m_owner: float
+    m_other: float
+    states: tuple[str, ...]
+    n_places: int
+    n_years: int
+
+    @property
+    def log_se(self) -> float:
+        return (math.log(self.high) - math.log(self.low)) / (2 * Z_95)
+
+    @property
+    def tau_estimable(self) -> bool:
+        return self.tau_high < TAU_RANGE[1] - 0.01
+
+
+def _best_alpha(f) -> tuple[float, float]:
+    """max over α of f(α), α = 0 (Poisson) included -> (alpha, value)."""
+    la, best = _golden_max(lambda la: f(math.exp(la)), *LOG_ALPHA, tol=1e-5)
+    pois = f(0.0)
+    return (0.0, pois) if pois >= best else (math.exp(la), best)
+
+
+def _at_tau(terms: StateTerms, tau: float, log_theta_range=(-14.0, 0.0)) -> tuple[float, float, float]:
+    """max over θ and α at a given τ -> (log θ, α, loglik)."""
+
+    def f(lt):
+        return _best_alpha(lambda a: state_loglik(terms, math.exp(lt), a, tau))
+
+    lt, ll = _golden_max(lambda lt: f(lt)[1], *log_theta_range, tol=1e-5)
+    return lt, f(lt)[0], ll
+
+
+def fit_state_effect(
+    places: list[PlaceData], m_owner: float, m_other: float, log_theta_range=(-14.0, 0.0)
+) -> StateFit:
+    """Maximum likelihood (θ, α, τ) with the rule shares held at (m_owner, m_other) (D-043); 90% profile
+    intervals for θ (α, τ maximized) and τ (θ, α maximized), χ² 1 df."""
+    terms = state_terms(places, _cvals(m_owner, m_other))
+
+    def at_tau(tau: float) -> tuple[float, float, float]:
+        return _at_tau(terms, tau, log_theta_range)
+
+    def at_theta(lt: float) -> float:
+        return _golden_max(
+            lambda tau: _best_alpha(lambda a: state_loglik(terms, math.exp(lt), a, tau))[1],
+            *TAU_RANGE,
+            tol=1e-4,
+        )[1]
+
+    tau_hat, _ = _golden_max(lambda tau: at_tau(tau)[2], *TAU_RANGE, tol=1e-4)
+    if at_tau(0.0)[2] >= at_tau(tau_hat)[2]:
+        tau_hat = 0.0
+    lt_hat, alpha, ll_hat = at_tau(tau_hat)
+
+    def edge(f, inside: float, outside: float, iters: int = 30) -> float:
+        """Bisection for 2(ll_hat − f) = χ² between `inside` (the estimate) and `outside` (a bound); returns
+        the bound if the profile never drops that far."""
+        if 2 * (ll_hat - f(outside)) <= CHI2_90:
+            return outside
+        lo, hi = inside, outside
+        for _ in range(iters):
+            mid = (lo + hi) / 2
+            if 2 * (ll_hat - f(mid)) > CHI2_90:
+                hi = mid
+            else:
+                lo = mid
+        return (lo + hi) / 2
+
+    def tau_prof(tau):
+        return at_tau(tau)[2]
+
+    tau_low = 0.0 if tau_hat == 0 else edge(tau_prof, tau_hat, TAU_RANGE[0])
+    tau_high = edge(tau_prof, tau_hat, TAU_RANGE[1])
+    low = edge(at_theta, lt_hat, log_theta_range[0])
+    high = edge(at_theta, lt_hat, log_theta_range[1])
+    n_years = int(sum(len(p.y) for p in places))
+    return StateFit(math.exp(lt_hat), math.exp(low), math.exp(high), alpha, tau_hat, tau_low, tau_high,
+                    ll_hat, m_owner, m_other, terms.states, len(places), n_years)  # fmt: skip
+
+
+def state_multipliers(places: list[PlaceData], fit: StateFit, grid: int = 801) -> dict[str, tuple]:
+    """Each fitted state's v_s given the fit (D-043 check K3): posterior median and 90% interval of v_s on a
+    fine grid of log v, prior N(0, τ̂²). With τ̂ = 0 every v_s is 1."""
+    terms = state_terms(places, _cvals(fit.m_owner, fit.m_other))
+    if fit.tau <= 0:
+        return {s: (1.0, 1.0, 1.0) for s in terms.states}
+    x = np.linspace(-5 * fit.tau, 5 * fit.tau, grid)
+    curves = state_loglik_curves(terms, fit.theta * np.exp(x), fit.alpha) - 0.5 * (x / fit.tau) ** 2
+    out = {}
+    for s, c in zip(terms.states, curves, strict=True):
+        p = np.exp(c - c.max())
+        cdf = np.cumsum(p) / p.sum()
+        out[s] = tuple(float(np.exp(np.interp(q, cdf, x))) for q in (0.5, 0.05, 0.95))
+    return out
+
+
+TAU_GRID = tuple(round(0.05 * i, 2) for i in range(51))  # D-044: τ = 0, 0.05, ..., 2.5
+
+
+def tau_profile(places: list[PlaceData], m_owner: float, m_other: float, grid=TAU_GRID) -> np.ndarray:
+    """τ's profile log-likelihood on `grid` (θ and α maximized at each τ, rule shares held), D-044."""
+    terms = state_terms(places, _cvals(m_owner, m_other))
+    return np.array([_at_tau(terms, float(t))[2] for t in grid])
+
+
+def tau_probabilities(loglik) -> np.ndarray:
+    """Grid probabilities ∝ exp(profile log-likelihood): a flat prior over the grid (D-044).
+
+    By hand, log-likelihoods (0, −log 2, −log 4): probabilities (4, 2, 1) / 7."""
+    ll = np.asarray(loglik, dtype=float)
+    w = np.exp(ll - ll.max())
+    return w / w.sum()
+
+
+def draw_tau(grid, probs, n: int, rng) -> np.ndarray:
+    """n values of τ from the grid distribution (D-044 main)."""
+    return rng.choice(np.asarray(grid, dtype=float), size=n, p=np.asarray(probs, dtype=float))
+
+
+def draw_tau_half_normal(tau_high: float, n: int, rng) -> np.ndarray:
+    """D-044 sensitivity T1: |N(0, σ²)| with its 90th percentile at τ's upper bound, σ = upper / 1.645."""
+    return np.abs(rng.normal(0.0, tau_high / Z_95, size=n))
+
+
+def predict_unseen_state(
+    places: list[PlaceData], fit: StateFit, draws: int = 20_000, seed: int = 0, taus=None
+) -> dict:
+    """Joint predictive counts for a state outside the fit set (D-043): {geoid: draws × years}. Per draw, θ
+    from its interval and one state multiplier exp(τ z), z ~ N(0, 1), shared by every place (median kept at
+    θ); then each place's own u and blank-field combination as in `predict_places`. `taus`, one per draw
+    (D-044), replaces the fixed τ̂."""
+    import zlib
+
+    rng = np.random.default_rng(seed)
+    theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=draws))
+    tau = fit.tau if taus is None else np.asarray(taus, dtype=float)
+    v = np.exp(tau * rng.standard_normal(draws))
+    cv = _cvals(fit.m_owner, fit.m_other)
+    out = {}
+    for pl in places:
+        rng = np.random.default_rng([seed, zlib.crc32(pl.geoid.encode())])
+        u = rng.gamma(1 / fit.alpha, fit.alpha, size=draws) if fit.alpha > 0 else np.ones(draws)
+        combo = rng.choice(len(pl.w), size=draws, p=pl.w / pl.w.sum())
+        out[pl.geoid] = rng.poisson((theta * v * u)[:, None] * pl.k(cv)[combo])
+    return out
+
+
 def place_data(state: str, store, geoids, years, params=None, counts=None) -> list[PlaceData]:
     """`PlaceData` per place with checkable years (a coded rule in force by 1 July, ADU-flagging permits).
 

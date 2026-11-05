@@ -3,6 +3,7 @@
 
     uv run python scripts/dev/calibrate_adu.py [--explore-austin]
     uv run python scripts/dev/calibrate_adu.py --draw-terms   # config/params/adu_anchor.yaml (D-030)
+    uv run python scripts/dev/calibrate_adu.py --state-effect-config   # config/params/adu_state_effect.yaml
 
 Fit 2 (D-022): a place-year whose rule class depends on blank rubric fields enters as a two-component mixture.
 
@@ -626,6 +627,243 @@ def counts_main(store, out: Path | None, workers: int) -> None:
         pd.DataFrame(counted).to_csv(out / "counts.csv", index=False)
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-043: the state multiplier τ, and leave one state out with it
+# ---------------------------------------------------------------------------------------------------------
+
+D041 = Path(__file__).resolve().parents[2] / "reports" / "adu-counts" / "statewide.csv"
+
+
+def _state_fit_task(args) -> tuple[str, cal.Fit3 | None, cal.StateFit | None, str]:
+    """'' fits every place; a state name leaves that state out. Rule shares come from fit 3 on the same
+    places (D-041's main fit), then θ, α and τ are fitted with the shares held there."""
+    st, places = args
+    use = [p for p in places if p.state != st]
+    try:
+        f3 = cal.fit3(use)
+        return st, f3, cal.fit_state_effect(use, f3.m_owner, f3.m_other), ""
+    except Exception as e:  # noqa: BLE001 - a failed fit is a reported result ("not estimable")
+        return st, None, None, f"{type(e).__name__}: {e}"
+
+
+def _state_fit_row(fit_name: str, f3, sf, err: str) -> dict:
+    if sf is None:
+        return dict(fit=fit_name, status=f"not estimable ({err})")
+    return dict(fit=fit_name, status="ok" if sf.tau_estimable else "tau not estimable (bound)",
+                theta_per_1000=sf.theta * 1000, low=sf.low * 1000, high=sf.high * 1000, alpha=sf.alpha,
+                tau=sf.tau, tau_low=sf.tau_low, tau_high=sf.tau_high, loglik=sf.loglik,
+                d041_theta_per_1000=f3.theta * 1000, d041_loglik=f3.loglik, m_owner=sf.m_owner,
+                m_other=sf.m_other, states=" ".join(sf.states), places=sf.n_places,
+                place_years=sf.n_years)  # fmt: skip
+
+
+def k1_spread() -> tuple[float, pd.DataFrame]:
+    """D-043 check K1: root mean square of log(observed / P50) over D-041's main leave-one-state-out rows."""
+    d = pd.read_csv(D041)
+    d = d[(d["test"] == "main: leave one state out") & d["group"].isin(STATES)]
+    return float(np.sqrt(np.mean(np.log(d["obs_over_p50"]) ** 2))), d[["group", "obs_over_p50"]]
+
+
+def state_effect_main(store, out: Path | None, workers: int) -> None:
+    """D-043: θ, α and τ on the four states (main counts), each state's multiplier, the K1 and K2 checks,
+    and leave one state out with the unseen-state draw, next to D-041's."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    cs = cal.count_settings()
+    places, test = four_state_places(store, cs), _test_set(store, cs)
+    print(f"=== D-043: {len(places)} fit places, counts {cs} ===", flush=True)
+    with ProcessPoolExecutor(workers) as pool:
+        results = list(pool.map(_state_fit_task, [(st, places) for st in ("",) + STATES]))
+    rows = [_state_fit_row("all four states" if st == "" else f"without {st}", f3, sf, e)
+            for st, f3, sf, e in results]  # fmt: skip
+    fits = pd.DataFrame(rows)
+    print(fits.round(3).to_string(index=False), flush=True)
+    full = results[0][2]
+    k1, k1_rows = k1_spread()
+    print(f"\nK1 (D-041 leave one state out, RMS of log obs/P50): {k1:.3f}")
+    print(k1_rows.to_string(index=False))
+    without_tx = next(sf for st, _, sf, _ in results if st == "TX")
+    if without_tx is not None:
+        print(
+            f"K2 (without TX): tau {without_tx.tau:.3f} ({without_tx.tau_low:.3f}-{without_tx.tau_high:.3f})"
+        )
+    mult = []
+    if full is not None:
+        for s, (mid, lo, hi) in cal.state_multipliers(places, full).items():
+            mult.append(
+                dict(state=s, v_median=mid, v_low=lo, v_high=hi, theta_s_per_1000=full.theta * mid * 1000)
+            )
+        print("\nK3 state multipliers (full fit)")
+        print(pd.DataFrame(mult).round(3).to_string(index=False))
+    draws = {}
+    for st, _, sf, _ in results:
+        if st and sf is not None:
+            draws |= cal.predict_unseen_state([p for p in places + test if p.state == st], sf, seed=SEED)
+    portland = _portland_paths(store, places + test, cs)
+    loso = state_totals("D-043: leave one state out with tau", _groups(places, test, True), draws, portland)
+    d041 = pd.read_csv(D041)
+    d041 = d041[d041["test"] == "main: leave one state out"][
+        ["group", "p10", "p50", "p90", "p90_over_p10", "verdict"]
+    ]
+    both = loso.merge(d041, on="group", suffixes=("", "_d041"))
+    print("\nNext to D-041")
+    cols = ["group", "observed", "p10", "p50", "p90", "verdict", "p90_over_p10", "p10_d041", "p50_d041",
+            "p90_d041", "verdict_d041", "p90_over_p10_d041"]  # fmt: skip
+    print(both[cols].round(2).to_string(index=False))
+    ratio = both[both["group"].isin(STATES)]["p90_over_p10"]
+    print(f"Median P90/P10 over the four states: {ratio.median():.1f}; "
+          f"missed: {int((both['verdict'] == 'missed').sum())}")  # fmt: skip
+    if out is not None:
+        fits.to_csv(out / "fits.csv", index=False)
+        both.to_csv(out / "statewide.csv", index=False)
+        pd.DataFrame(mult).to_csv(out / "multipliers.csv", index=False)
+        k1_rows.assign(k1=k1).to_csv(out / "k1.csv", index=False)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-044: τ drawn from its profile likelihood in every draw
+# ---------------------------------------------------------------------------------------------------------
+
+D043 = Path(__file__).resolve().parents[2] / "reports" / "adu-state-effect" / "statewide.csv"
+TAU_DRAWS = 20_000
+
+
+def _tau_task(args):
+    """As `_state_fit_task`, plus τ's profile on `cal.TAU_GRID` with the same rule shares."""
+    st, places = args
+    st, f3, sf, err = _state_fit_task((st, places))
+    use = [p for p in places if p.state != st]
+    ll = None if sf is None else cal.tau_profile(use, sf.m_owner, sf.m_other)
+    return st, f3, sf, ll, err
+
+
+def _tau_summary(name: str, sf, probs, rng) -> dict:
+    grid = np.asarray(cal.TAU_GRID)
+    cdf = np.cumsum(probs)
+    t = cal.draw_tau(grid, probs, TAU_DRAWS, rng)
+    mult = np.exp(t * rng.standard_normal(TAU_DRAWS))
+    med, p90 = (float(grid[np.searchsorted(cdf, q)]) for q in (0.5, 0.9))
+    return dict(fit=name, tau_hat=sf.tau, tau_high=sf.tau_high, tau_median=med, tau_p90=p90,
+                share_at_0=float(probs[0]),
+                mult_p10=float(np.percentile(mult, 10)), mult_p50=float(np.percentile(mult, 50)),
+                mult_p90=float(np.percentile(mult, 90)))  # fmt: skip
+
+
+def tau_draws_main(store, out: Path | None, workers: int) -> None:
+    """D-044: τ's profile for the full fit and each leave-one-state-out fold, the unseen-state multiplier, and
+    leave one state out with τ drawn (main: the profile; T1: half-normal), next to D-041 and D-043."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    cs = cal.count_settings()
+    places, test = four_state_places(store, cs), _test_set(store, cs)
+    print(f"=== D-044: {len(places)} fit places, counts {cs} ===", flush=True)
+    with ProcessPoolExecutor(workers) as pool:
+        results = list(pool.map(_tau_task, [(st, places) for st in ("",) + STATES]))
+    profiles, summary, draws = [], [], {"main": {}, "T1 half-normal": {}}
+    for st, _, sf, ll, err in results:
+        name = "all four states" if st == "" else f"without {st}"
+        if sf is None:
+            print(f"{name}: not estimable ({err})")
+            continue
+        probs = cal.tau_probabilities(ll)
+        profiles += [
+            dict(fit=name, tau=t, loglik=v, prob=q) for t, v, q in zip(cal.TAU_GRID, ll, probs, strict=True)
+        ]
+        summary.append(_tau_summary(name, sf, probs, np.random.default_rng([SEED, 44, len(summary)])))
+        if st:
+            pred = [p for p in places + test if p.state == st]
+            rng = np.random.default_rng([SEED, 44, 100 + STATES.index(st)])
+            taus = {"main": cal.draw_tau(cal.TAU_GRID, probs, TAU_DRAWS, rng),
+                    "T1 half-normal": cal.draw_tau_half_normal(sf.tau_high, TAU_DRAWS, rng)}  # fmt: skip
+            for run, t in taus.items():
+                draws[run] |= cal.predict_unseen_state(pred, sf, draws=TAU_DRAWS, seed=SEED, taus=t)
+    summ = pd.DataFrame(summary)
+    print(summ.round(3).to_string(index=False), flush=True)
+    portland = _portland_paths(store, places + test, cs)
+    d041 = pd.read_csv(D041)
+    d041 = d041[d041["test"] == "main: leave one state out"][
+        ["group", "p50", "p10", "p90", "p90_over_p10", "verdict"]
+    ]
+    d043 = pd.read_csv(D043)[["group", "p10", "p50", "p90", "p90_over_p10", "verdict"]]
+    tables = []
+    for run, d in draws.items():
+        t = state_totals(
+            f"D-044 {run}: leave one state out, tau drawn", _groups(places, test, True), d, portland
+        )
+        t = t.merge(d043.add_suffix("_d043").rename(columns={"group_d043": "group"}), on="group")
+        t = t.merge(d041.add_suffix("_d041").rename(columns={"group_d041": "group"}), on="group")
+        tables.append(t.assign(run=run))
+        four = t[t["group"].isin(STATES)]
+        med = [four[c].median() for c in ("p90_over_p10", "p90_over_p10_d043", "p90_over_p10_d041")]
+        missed = int((t["verdict"] == "missed").sum())
+        print(f"{run}: missed {missed}; median P90/P10 {med[0]:.1f} (D-043 {med[1]:.1f}, D-041 {med[2]:.1f})")
+    if out is not None:
+        pd.DataFrame(profiles).to_csv(out / "tau_profile.csv", index=False)
+        summ.to_csv(out / "tau_summary.csv", index=False)
+        pd.concat(tables).to_csv(out / "statewide.csv", index=False)
+
+
+D044 = Path(__file__).resolve().parents[2] / "reports" / "adu-tau-draws"
+
+
+def state_effect_config_main(out: Path, reports: Path = D044) -> None:
+    """Write config/params/adu_state_effect.yaml from D-044's full-fit τ profile (adopted 2026-11-04).
+
+    Reads `reports`/tau_profile.csv (the full fit's grid and probabilities) and tau_summary.csv (τ̂ and its 90%
+    upper bound). No refit: the probabilities are the ones the D-044 run reported. The scenario draws τ from
+    the grid for every state not listed as fitted (`adu.state_effect`).
+    """
+    prof = pd.read_csv(reports / "tau_profile.csv")
+    prof = prof[prof["fit"] == "all four states"]
+    full = pd.read_csv(reports / "tau_summary.csv").set_index("fit").loc["all four states"]
+    how = "D-044, full four-state fit, reports/adu-tau-draws (run 2026-11-04)"
+    src = f'"Estimated, scripts/dev/calibrate_adu.py --state-effect-config ({how})"'
+    lines = [
+        "# The spread between states in the ADU hazard (analysis plan D-043, D-044; adopted 2026-11-04).",
+        "# Generated by scripts/dev/calibrate_adu.py --state-effect-config; do not edit by hand.",
+        "# A state outside the fit gets one multiplier exp(tau z) per draw, shared by its places, z",
+        "# standard normal; tau is drawn per draw from the grid below, probabilities proportional to",
+        "# exp(profile log-likelihood) (a flat prior over 0-2.5). States listed as fitted get no multiplier:",
+        "# their spread is already in the place effects. A new fitted state: re-run D-044 and regenerate.",
+        "",
+        "adu_state_effect_sd:",
+        f"  value: {full['tau_hat']:.6g}",
+        "  low: 0",
+        f"  high: {full['tau_high']:.6g}",
+        "  unit: log-SD of the state multiplier (tau), maximum likelihood with its 90% profile interval",
+        f"  source: {src}",
+        '  notes: "For reference and the half-normal sensitivity (T1: sigma = high / 1.645). The run'
+        ' draws tau from the grid probabilities, not from this value."',
+        "",
+    ]
+    for st in STATES:
+        lines += [
+            f"adu_state_effect_fitted__{st}:",
+            "  value: 1",
+            "  low: 1",
+            "  high: 1",
+            "  unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier",
+            f"  source: {src}",
+            "",
+        ]
+    for t, q in zip(prof["tau"], prof["prob"], strict=True):
+        lines += [
+            f"adu_state_tau_prob__{t:.2f}".replace(".", "_") + ":",
+            f"  value: {q:.6g}",
+            f"  low: {q:.6g}",
+            f"  high: {q:.6g}",
+            f"  unit: probability that tau = {t:.2f} (grid step 0.05)",
+            f"  source: {src}",
+            "",
+        ]
+    out.write_text("\n".join(lines))
+    print(f"wrote {out}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -645,8 +883,26 @@ def main() -> None:
     )
     ap.add_argument("--statewide", action="store_true", help="D-040: statewide backtest (state totals)")
     ap.add_argument("--counts", action="store_true", help="D-041: consistent counts, four-state comparison")
+    ap.add_argument("--state-effect", action="store_true", help="D-043: τ, the spread between states")
+    ap.add_argument("--tau-draws", action="store_true", help="D-044: τ drawn from its profile likelihood")
+    ap.add_argument(
+        "--state-effect-config",
+        type=Path,
+        nargs="?",
+        const=CONFIG_DIR / "params" / "adu_state_effect.yaml",
+        help="D-044 adopted: write the tau grid for the scenario from reports/adu-tau-draws",
+    )
     ap.add_argument("--out", type=Path, help="--four-state / --statewide: folder for the CSVs")
     a = ap.parse_args()
+    if a.state_effect_config:
+        state_effect_config_main(a.state_effect_config)
+        return
+    if a.tau_draws:
+        tau_draws_main(DataStore(), a.out, a.workers)
+        return
+    if a.state_effect:
+        state_effect_main(DataStore(), a.out, a.workers)
+        return
     if a.counts:
         counts_main(DataStore(), a.out, a.workers)
         return

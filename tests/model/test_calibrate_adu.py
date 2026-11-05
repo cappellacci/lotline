@@ -1,5 +1,6 @@
 """ADU anchor estimation (model/calibrate_adu.py): likelihood by hand and recovery on synthetic counts."""
 
+import dataclasses
 import math
 
 import numpy as np
@@ -343,3 +344,145 @@ def test_thinning_scales_the_expected_count():
     pl = _place([0], [1_000.0 * 0.5], np.full((1, 1, 1), 4), np.ones((1, 1)), [1.0])
     d = cal.predict_places([pl], _fit3(0.01, 0.01, 0.01, 1e-9), draws=100_000, seed=2)
     assert d["X"].mean() == pytest.approx(5.0, rel=0.02)
+
+
+# D-043: the state multiplier
+
+
+def _state_place(state, geoid, y, base, w=(1.0,), types=None):
+    n = len(y)
+    types = np.full((len(w), n, 1), 4) if types is None else np.asarray(types)
+    return cal.PlaceData(state, geoid, geoid, np.arange(n), np.asarray(y, float), np.asarray(base, float),
+                         types, np.ones((n, 1)), np.asarray(w, float))  # fmt: skip
+
+
+def test_gauss_hermite_nodes_by_hand():
+    """n = 2: Hermite nodes ±1/√2, weights √π/2, so log v = ±τ with weight 1/2 each. τ = 0: one node at 0."""
+    x, logw = cal.gh_log_nodes(0.7, n=2)
+    assert sorted(x) == pytest.approx([-0.7, 0.7])
+    assert np.exp(logw) == pytest.approx([0.5, 0.5])
+    x, logw = cal.gh_log_nodes(0.0)
+    assert list(x) == [0.0] and list(logw) == [0.0]
+    x, logw = cal.gh_log_nodes(0.9)  # 40 nodes: E X² = τ² and E e^X = e^(τ²/2)
+    assert np.sum(np.exp(logw) * x**2) == pytest.approx(0.81)
+    assert np.sum(np.exp(logw) * np.exp(x)) == pytest.approx(math.exp(0.405))
+
+
+def test_state_loglik_without_spread_is_the_place_effect_loglik():
+    """τ = 0 leaves only the place effects: `state_loglik` equals `frailty_loglik`, with blank-field
+    combinations, several states and α > 0 or Poisson."""
+    pls = [
+        _state_place("MN", "A", [1, 0, 3], [800.0, 900.0, 1000.0]),
+        _state_place("TX", "B", [5, 7], [2000.0, 2500.0], w=(0.25, 0.75), types=[[[1], [1]], [[4], [4]]]),
+        _state_place("MN", "C", [0], [300.0]),
+    ]
+    cv = cal._cvals(0.5, 0.3)
+    terms = cal.state_terms(pls, cv)
+    assert terms.states == ("MN", "TX")
+    for alpha in (0.0, 0.4):
+        assert cal.state_loglik(terms, 0.002, alpha, 0.0) == pytest.approx(
+            cal.frailty_loglik(pls, 0.002, alpha, cv)
+        )
+
+
+def test_state_loglik_matches_direct_integration():
+    """Two states, Poisson within a place, α = 0.5, τ = 0.8: Gauss-Hermite against a fine trapezoid over log v
+    of P(y_s | θ e^x) φ(x; 0, τ), each state's place likelihoods from `frailty_loglik_place`."""
+    pls = [_state_place("MN", "A", [2, 4], [1000.0, 1200.0]), _state_place("MN", "B", [0], [500.0]),
+           _state_place("TX", "C", [9], [1500.0])]  # fmt: skip
+    theta, alpha, tau = 0.003, 0.5, 0.8
+    x = np.linspace(-8 * tau, 8 * tau, 20_001)
+    phi = np.exp(-0.5 * (x / tau) ** 2) / (tau * math.sqrt(2 * math.pi))
+    direct = 0.0
+    for st in ("MN", "TX"):
+        like = np.array([math.exp(sum(cal.frailty_loglik_place(p.y, p.base, theta * math.exp(v), alpha)
+                                      for p in pls if p.state == st)) for v in x])  # fmt: skip
+        direct += math.log(np.trapezoid(like * phi, x))
+    terms = cal.state_terms(pls, cal._cvals(0.5, 0.3))
+    assert cal.state_loglik(terms, theta, alpha, tau) == pytest.approx(direct, rel=1e-6)
+
+
+def _states(n_states, tau, seed, places=5, years=6, theta=0.002, alpha=0.2):
+    rng = np.random.default_rng(seed)
+    out = []
+    for s in range(n_states):
+        v = math.exp(tau * rng.standard_normal())
+        for p in range(places):
+            base = np.full(years, rng.uniform(5_000, 30_000))
+            u = rng.gamma(1 / alpha, alpha)
+            out.append(_state_place(f"S{s:02d}", f"S{s:02d}P{p}", rng.poisson(theta * v * u * base), base))
+    return out
+
+
+def test_fit_state_effect_recovers_tau():
+    """16 simulated states, τ = 0.7, θ = 0.002: both 90% intervals contain the truth, τ is estimable."""
+    fit = cal.fit_state_effect(_states(16, 0.7, seed=3), 1.0, 1.0)
+    assert fit.low <= 0.002 <= fit.high
+    assert fit.tau_low <= 0.7 <= fit.tau_high and fit.tau_estimable
+    assert len(fit.states) == 16
+
+
+def test_fit_state_effect_without_spread_keeps_tau_low_at_zero():
+    """No state multiplier in the data (τ = 0): the interval for τ starts at 0."""
+    fit = cal.fit_state_effect(_states(8, 0.0, seed=4), 1.0, 1.0)
+    assert fit.tau_low == 0.0 and fit.tau < 0.3
+    assert cal.state_multipliers(_states(8, 0.0, seed=4), dataclasses.replace(fit, tau=0.0))["S00"] == (
+        1,
+        1,
+        1,
+    )
+
+
+def test_unseen_state_draw_is_shared_by_its_places():
+    """θ fixed, α ≈ 0, τ = 0.5: two places of mean 10 each. The shared multiplier correlates them, and each
+    place's median stays near θk = 10 (median of exp(τ z) is 1)."""
+    pls = [_state_place("WI", g, [0], [10_000.0]) for g in ("X", "Y")]
+    fit = cal.StateFit(0.001, 0.001, 0.001, 1e-9, 0.5, 0.3, 0.8, 0.0, 1.0, 1.0, ("MN",), 1, 1)
+    d = cal.predict_unseen_state(pls, fit, draws=200_000, seed=1)
+    a, b = d["X"][:, 0], d["Y"][:, 0]
+    assert np.median(a) == pytest.approx(10, abs=1)
+    assert np.corrcoef(a, b)[0, 1] > 0.5
+    flat = cal.predict_unseen_state(pls, dataclasses.replace(fit, tau=0.0), draws=200_000, seed=1)
+    assert abs(np.corrcoef(flat["X"][:, 0], flat["Y"][:, 0])[0, 1]) < 0.01
+
+
+# D-044: τ drawn from its likelihood
+
+
+def test_tau_probabilities_by_hand():
+    """Log-likelihoods (0, −log 2, −log 4) on three grid points: probabilities (4, 2, 1) / 7."""
+    p = cal.tau_probabilities([0.0, -math.log(2), -math.log(4)])
+    assert p == pytest.approx(np.array([4, 2, 1]) / 7)
+    assert cal.tau_probabilities([-1000.0, -1001.0]) == pytest.approx(
+        [1 / (1 + math.exp(-1)), 1 / (1 + math.e)]
+    )
+
+
+def test_tau_draws_follow_the_grid_and_the_half_normal():
+    rng = np.random.default_rng(2)
+    t = cal.draw_tau([0.0, 0.5, 1.0], [0.5, 0.3, 0.2], 200_000, rng)
+    assert [np.mean(t == v) for v in (0.0, 0.5, 1.0)] == pytest.approx([0.5, 0.3, 0.2], abs=0.005)
+    h = cal.draw_tau_half_normal(0.67, 200_000, rng)
+    assert np.quantile(h, 0.9) == pytest.approx(0.67, rel=0.02) and h.min() >= 0
+
+
+def test_tau_profile_peaks_at_the_fitted_tau():
+    """The profile on a grid reaches its maximum next to the fitted τ̂, and at τ = 0 it equals the fit without
+    state spread (D-043's identity)."""
+    places = _states(10, 0.6, seed=7)
+    fit = cal.fit_state_effect(places, 1.0, 1.0)
+    grid = (0.0, 0.3, 0.6, 0.9, 1.2)
+    ll = cal.tau_profile(places, 1.0, 1.0, grid)
+    assert abs(grid[int(np.argmax(ll))] - fit.tau) <= 0.3
+    assert ll.max() <= fit.loglik + 1e-6
+
+
+def test_unseen_state_draw_with_drawn_tau():
+    """taus all 0 gives no shared spread (corr ≈ 0); taus all 0.5 match the fixed τ = 0.5 draw exactly."""
+    pls = [_state_place("WI", g, [0], [10_000.0]) for g in ("X", "Y")]
+    fit = cal.StateFit(0.001, 0.001, 0.001, 1e-9, 0.5, 0.3, 0.8, 0.0, 1.0, 1.0, ("MN",), 1, 1)
+    d0 = cal.predict_unseen_state(pls, fit, draws=100_000, seed=1, taus=np.zeros(100_000))
+    assert abs(np.corrcoef(d0["X"][:, 0], d0["Y"][:, 0])[0, 1]) < 0.02
+    fixed = cal.predict_unseen_state(pls, fit, draws=1_000, seed=1)
+    drawn = cal.predict_unseen_state(pls, fit, draws=1_000, seed=1, taus=np.full(1_000, 0.5))
+    assert np.array_equal(fixed["X"], drawn["X"])
