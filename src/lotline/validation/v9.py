@@ -158,15 +158,16 @@ def adu_inputs(state: str, store, geoids: Sequence[str], years: Sequence[int] = 
     return AduInputs(list(geoids), names, years, eligible, rent, value, rate, cls, age, q, cov)
 
 
-def rule_factor(inp: AduInputs, partial_share: float, blank_partial: np.ndarray, half: float, slope: float):
+def rule_factor(inp: AduInputs, partial_share: float, blank_partial: np.ndarray, ramp_params: Mapping):
     """max over rules of c × coverage × ramp(age): (places, years). `blank_partial` (places,) is True where
-    this draw reads a blank-field rule as restricted."""
+    this draw reads a blank-field rule as restricted. The ramp is `hazard.adu_ramp(age, ramp_params)`: 1 under
+    D-048 (`adu_ramp_share`), or the pre-D-048 logistic when `ramp_params` carries it."""
     from lotline.model import hazard
 
     c = np.where(inp.cls == CLASS_CODE["partial"], partial_share, 1.0)
     blank = inp.cls == CLASS_CODE["blank"]
     c = np.where(blank & blank_partial[:, None, None], partial_share, c)
-    f = c * inp.cov * hazard.ramp(inp.age, half, slope)
+    f = c * inp.cov * hazard.adu_ramp(inp.age, ramp_params)
     return np.where(inp.cov > 0, f, 0.0).max(axis=2)
 
 
@@ -275,8 +276,7 @@ def adu_draws(
             inp,
             p["adu_partial_rule_share"],
             blank_partial,
-            p["adu_ramp_half_years"],
-            p["adu_ramp_slope_years"],
+            p,
         )
         pool = inp.eligible.copy()
         for j in range(n_y):
@@ -296,9 +296,7 @@ def history_expected(h: AduHistory, p: Mapping, z, s: float, blank_partial: np.n
     from lotline.model import hazard
 
     inp = h.inputs
-    fac = rule_factor(
-        inp, p["adu_partial_rule_share"], blank_partial, p["adu_ramp_half_years"], p["adu_ramp_slope_years"]
-    )
+    fac = rule_factor(inp, p["adu_partial_rule_share"], blank_partial, p)
     out = np.zeros_like(h.eligible)
     for j in range(len(inp.years)):
         rate = np.full(len(inp.geoids), inp.rate[j])

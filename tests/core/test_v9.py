@@ -29,22 +29,31 @@ def _adu_inputs(cls, age, q, cov, eligible=(1000.0,), years=(2018, 2019)):
     )
 
 
+OLD_RAMP = {"adu_ramp_half_years": 2.0, "adu_ramp_slope_years": 0.75}  # hazard.PRE_D048_RAMP
+
+
+def test_rule_factor_with_no_ramp_d048():
+    # D-048: ramp 1, so a Handbook rule at full coverage gives 1 at any age; partial share 0.3 -> 0.3
+    flag, p = np.array([False]), {"adu_ramp_share": 1.0}
+    assert v9.rule_factor(_adu_inputs(HB, 0.5, 0, 1.0), 0.3, flag, p)[0, 0] == pytest.approx(1.0)
+    assert v9.rule_factor(_adu_inputs(PARTIAL, 0.5, 0, 1.0), 0.3, flag, p)[0, 0] == pytest.approx(0.3)
+
+
 def test_rule_factor_by_hand():
-    # half 2, slope 0.75: ramp(2) = 0.5. Handbook, full coverage -> 0.5; partial share 0.3 -> 0.15;
+    # pre-D-048 ramp, half 2, slope 0.75: ramp(2) = 0.5. Handbook, full coverage -> 0.5; partial share 0.3 ->
+    # 0.15;
     # coverage 0.75 scales it; no rule (coverage 0) -> 0
     flag = np.array([False])
-    assert v9.rule_factor(_adu_inputs(HB, 2.0, 0, 1.0), 0.3, flag, 2.0, 0.75)[0, 0] == pytest.approx(0.5)
-    assert v9.rule_factor(_adu_inputs(PARTIAL, 2.0, 0, 1.0), 0.3, flag, 2.0, 0.75)[0, 0] == pytest.approx(
-        0.15
-    )
-    assert v9.rule_factor(_adu_inputs(HB, 2.0, 0, 0.75), 0.3, flag, 2.0, 0.75)[0, 0] == pytest.approx(0.375)
-    assert v9.rule_factor(_adu_inputs(HB, 2.0, 0, 0.0), 0.3, flag, 2.0, 0.75)[0, 0] == 0.0
+    assert v9.rule_factor(_adu_inputs(HB, 2.0, 0, 1.0), 0.3, flag, OLD_RAMP)[0, 0] == pytest.approx(0.5)
+    assert v9.rule_factor(_adu_inputs(PARTIAL, 2.0, 0, 1.0), 0.3, flag, OLD_RAMP)[0, 0] == pytest.approx(0.15)
+    assert v9.rule_factor(_adu_inputs(HB, 2.0, 0, 0.75), 0.3, flag, OLD_RAMP)[0, 0] == pytest.approx(0.375)
+    assert v9.rule_factor(_adu_inputs(HB, 2.0, 0, 0.0), 0.3, flag, OLD_RAMP)[0, 0] == 0.0
 
 
 def test_blank_rule_is_partial_only_when_the_draw_says_so():
     inp = _adu_inputs(BLANK, 2.0, 0.6, 1.0)
-    assert v9.rule_factor(inp, 0.3, np.array([False]), 2.0, 0.75)[0, 0] == pytest.approx(0.5)
-    assert v9.rule_factor(inp, 0.3, np.array([True]), 2.0, 0.75)[0, 0] == pytest.approx(0.15)
+    assert v9.rule_factor(inp, 0.3, np.array([False]), OLD_RAMP)[0, 0] == pytest.approx(0.5)
+    assert v9.rule_factor(inp, 0.3, np.array([True]), OLD_RAMP)[0, 0] == pytest.approx(0.15)
 
 
 def test_adu_draws_mean_matches_the_hand_formula_at_the_reference_place():
@@ -190,7 +199,9 @@ def test_history_file_refuses_window_years_and_unsourced_counts(tmp_path):
 
 
 def test_history_for_one_place_leaves_the_others_draws_alone():
+    # written with the pre-D-048 ramp (0.5 at age 2), which the "more than double" check assumes
     fixed = {"adu_mature_hazard_ref": 0.002, "adu_place_effect_variance": 0.5, "adu_state_effect_sd": 0.0}
+    fixed |= OLD_RAMP
     inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0, 5_000.0))
     years = (2014, 2015, 2016, 2017)
     hist = v9.AduHistory(
