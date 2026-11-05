@@ -5,7 +5,7 @@ from lotline.config import Holdout, Parameter, all_states, load_state
 
 
 def test_four_states_configured_with_required_holdouts():
-    assert all_states() == ["MN", "NC", "OH", "TX"]
+    assert all_states() == ["MN", "NC", "OH", "OR", "TX"]
     assert [h.test_id for h in load_state("MN").holdouts] == ["V5-MN-STPAUL"]
     assert [h.test_id for h in load_state("NC").holdouts] == ["V5-NC-CHARLOTTE"]
     charlotte = load_state("NC").holdouts[0]

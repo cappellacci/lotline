@@ -183,6 +183,21 @@ Thresholds marked *(proposed)* are our judgment, to be confirmed when pre-regist
 - **Deliverables:** a "bring your own state" guide; a slide and a scorecard row; the per-state "data available vs. used" table.
 - **Themes:** all.
 
+### V9. Oregon transfer test, then pool (added 2026-11-04)
+
+- **Question:** Does a calibration built on MN, NC, OH and TX predict a high-demand state with statewide ADU and middle-housing laws? Office hours (2026-11-03, A5–A6) flagged that Oregon's uptake rides on demand; this tests whether the hazard's rent and value modifiers carry that.
+- **Why a separate test from V8:** Oregon was chosen *because* it has many reforms and high uptake, so it is a transfer test, not an unseen-state test. V8 (WI) stands as planned. Decision: Ben, 2026-11-04 (`docs/build/or-assessment.md`, option C).
+- **Blinding:** holdout `V9-OR-TRANSFER` in `config/states/or.yaml` hides every Oregon outcome from 2018-01-01 (statewide: places, county remainders, the state BPS total, and parcel rolls taken from 2018 on). Written before any Oregon outcome was fetched (the data directory held no West Region BPS file on 2026-11-04).
+  - Conditional on observed market inputs (Ben, 2026-11-04): FHFA, FRED, CBP and 2020 population are used for 2018–2025; only production outcomes are hidden. That includes ACS housing-stock vintages ending 2018 or later (B25024, B25034, B25003), which the holdout doesn't filter yet (issue #283).
+- **Design:**
+  - Onboard Oregon's inputs: jurisdictions, pre-2018 parcels or the ACS fallback, coded rules (SB 1051, HB 2001 by city size and compliance date, SB 458, local rows for Portland, Bend and Metro cities), fees, market data. Oregon is not in the calibration (`REFORM_STATES`).
+  - Freeze the prediction to `results/frozen/V9-OR-TRANSFER.json` and merge it to `main`: ADU permits per year 2018–2025 for Portland and Bend; 2–4 unit permits (BPS) per year 2018–2025 for every place HB 2001 covers, and the Oregon total; each as P10–P90.
+  - Unblind (Ben's OK), score, then add Oregon to the D-019 fit and the D-024/D-025 panels. The final scenario numbers use the pooled fit; the frozen comparison stays in the report.
+- **Measures:** share of place-series whose observed total falls in P10–P90; signed error of the Oregon totals; whether misses line up with rent and value (the demand caveat).
+- **Pass *(proposed)*:** the Oregon ADU and 2–4 unit totals fall in P10–P90; at least half the place-series do. A miss is reported, not tuned away: refitting on Oregon happens only after the comparison is written up.
+- **Caveats:** Portland's published ADU counts (E044, E046) stop being independent outside checks once Oregon is pooled; Seattle, Los Angeles and California APR remain. Statewide mandates leave few untreated Oregon controls, so Oregon mainly strengthens the mechanism fit, not the in-state difference-in-differences checks.
+- **Themes:** ADU, missing middle (fees: Oregon SDCs as a real-fee comparison, not a test).
+
 ---
 
 ## 4. What each theme gets from the ladder
@@ -197,6 +212,7 @@ Thresholds marked *(proposed)* are our judgment, to be confirmed when pre-regist
 | V5 blind forward | Greensboro (optional) | **Charlotte** | — |
 | V6 fee tests | (SB 13 bunching) | — | ✓ |
 | V7 transport, 2nd state | ✓ | ✓ | ✓ |
+| V9 Oregon transfer | ✓ (Portland, Bend) | ✓ (HB 2001 places, BPS) | — |
 
 Fees remain the weakest-validated theme. That is a finding to state, not hide.
 

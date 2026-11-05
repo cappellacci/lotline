@@ -1,0 +1,26 @@
+# Oregon. Transfer test first, then pooled into calibration (Ben, 2026-11-04; docs/build/or-assessment.md
+# option C). Lean scope: Portland Metro (RLIS taxlots), Portland and Bend permits, state-law rule rows, BPS.
+# Workstream brief: docs/build/workstreams/WS-OR.md.
+state: OR
+name: Oregon
+fips: "41"
+bps_region: West Region
+township_permits: false  # no townships; counties permit unincorporated land (county-remainder rows)
+# USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
+zip3_ranges: [[970, 979]]
+# V9 (validation plan): every Oregon outcome from 2018 on stays hidden until the frozen four-state prediction
+# of Oregon is on main. Written before any Oregon outcome was fetched: on 2026-11-04 the data directory held
+# no West Region BPS file and no Oregon permits or parcels. 2018 is the year SB 1051 (ADUs) took effect;
+# HB 2001 (middle housing, 2021-22) falls inside the same window. As a statewide holdout it also hides every
+# Oregon parcel roll taken from 2018 on (rolls are snapshots), so the frozen prediction uses pre-2018 rolls
+# or the ACS fallback.
+holdouts:
+  - test_id: V9-OR-TRANSFER
+    place: Oregon (statewide)
+    geoid: "41"
+    outcome_from: 2018-01-01
+    outcome_until: 2099-12-31
+    reason: >-
+      V9 transfer test: predict Oregon's ADU and middle-housing permits 2018 on from the MN/NC/OH/TX
+      calibration, freeze, then unblind and pool Oregon into the calibration (validation plan V9)
+sources: []  # added by WS-OR with each adapter

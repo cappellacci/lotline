@@ -1,0 +1,4 @@
+geoid,place,year,adu_permits,source_url,source_section,quote,notes
+4159000,Portland,2009,24,https://efiles.portlandoregon.gov/record/12080419/file/document,"Ord. 189050 (2018), Section 1 findings","24 permits were issued for accessory dwelling units in Portland in 2009","Data credited to the Bureau of Planning and Sustainability. Not used: before the ACS series (2010). A 2010 BDS slide deck shows 22 for a 'sample'."
+4159000,Portland,2010,86,https://efiles.portlandoregon.gov/record/12080419/file/document,"Ord. 189050 (2018), Section 1 findings","In 2010, 86 permits were issued for accessory dwelling units","Building permits issued; attached and detached not split."
+4159000,Portland,2016,615,https://efiles.portlandoregon.gov/record/12080419/file/document,"Ord. 189050 (2018), Section 1 findings","By 2016, 615 permits were issued for accessory dwelling units","The same finding counts conversions of existing structures to ADUs."
