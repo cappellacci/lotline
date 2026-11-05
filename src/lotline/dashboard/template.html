@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lotline Data Coverage</title>
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f4f3f0; --surface-1: #fcfcfb; --surface-2: #f0efec; --border: #e2e1dc;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #7a7974;
+  --grid: #e8e7e2; --nodata: #e4e3de; --accent: #2a78d6;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #6250d6; --other: #8d8c86;
+  --seq-0: #cde2fb; --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf; --seq-5: #184f95; --seq-6: #0d366b;
+  --div-neg: #d03b3b; --div-mid: #f0efec; --div-pos: #2a78d6;
+  --good: #0ca30c; --warning: #fab219; --critical: #d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-0: #111110; --surface-1: #1a1a19; --surface-2: #252523; --border: #34342f;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+    --grid: #2c2c29; --nodata: #2e2e2b; --accent: #3987e5;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #9085e9; --other: #8f8e86;
+    --seq-0: #0d366b; --seq-1: #104281; --seq-2: #184f95; --seq-3: #256abf; --seq-4: #3987e5; --seq-5: #6da7ec; --seq-6: #b7d3f6;
+    --div-neg: #e66767; --div-mid: #383835; --div-pos: #3987e5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #111110; --surface-1: #1a1a19; --surface-2: #252523; --border: #34342f;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+  --grid: #2c2c29; --nodata: #2e2e2b; --accent: #3987e5;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #9085e9; --other: #8f8e86;
+  --seq-0: #0d366b; --seq-1: #104281; --seq-2: #184f95; --seq-3: #256abf; --seq-4: #3987e5; --seq-5: #6da7ec; --seq-6: #b7d3f6;
+  --div-neg: #e66767; --div-mid: #383835; --div-pos: #3987e5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--surface-0); color: var(--text-primary);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); }
+header { padding: 20px 16px 8px; max-width: 1280px; margin: 0 auto; }
+h1 { font-size: 22px; margin: 0 0 4px; font-weight: 650; }
+h2 { font-size: 16px; margin: 0 0 2px; font-weight: 620; }
+.sub { color: var(--text-secondary); margin: 0; }
+.muted { color: var(--text-muted); font-size: 12px; }
+main { max-width: 1280px; margin: 0 auto; padding: 0 16px 48px; display: grid; gap: 16px; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--surface-0); padding: 10px 0;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-bottom: 1px solid var(--border); }
+.chip { border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary);
+  border-radius: 999px; padding: 5px 12px; font: inherit; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); border-color: var(--text-primary); }
+.chip .sw { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 16px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: flex-start; margin-bottom: 10px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.tile .k { color: var(--text-secondary); font-size: 12px; }
+.tile .v { font-size: 24px; font-weight: 650; margin: 2px 0; font-variant-numeric: tabular-nums; }
+.tile .d { color: var(--text-muted); font-size: 12px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+select, input[type=search] { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface-1); color: var(--text-primary); }
+svg text { fill: var(--text-secondary); font-size: 11px; }
+.axis path, .axis line { stroke: var(--grid); }
+.axis .domain { display: none; }
+#map svg { width: 100%; height: auto; display: block; }
+.county { stroke: var(--surface-1); stroke-width: 0.5; cursor: pointer; }
+.county:hover, .county.sel { stroke: var(--text-primary); stroke-width: 1.5; }
+.stateline { fill: none; stroke: var(--text-secondary); stroke-width: 1; pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+.legend .ramp { width: 180px; height: 10px; border-radius: 3px; }
+.legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; }
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 320px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none; }
+#tip b { font-weight: 620; }
+#tip .row { display: flex; justify-content: space-between; gap: 12px; }
+#tip .row span:last-child { font-variant-numeric: tabular-nums; }
+.hbar { display: grid; grid-template-columns: 150px 1fr 70px; gap: 6px; align-items: center; font-size: 12px; margin: 3px 0; }
+.hbar .track { height: 10px; background: var(--surface-2); border-radius: 0 4px 4px 0; }
+.hbar .fill { height: 10px; background: var(--s1); border-radius: 0 4px 4px 0; }
+.hbar .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+th { color: var(--text-secondary); font-weight: 600; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--surface-1); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll { overflow: auto; max-height: 520px; }
+.checks { display: grid; gap: 8px; }
+.check { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: start; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; }
+.check .icon { width: 18px; height: 18px; border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.check .val { font-weight: 650; font-variant-numeric: tabular-nums; }
+.check .det { color: var(--text-secondary); font-size: 12px; }
+.badge { display: inline-block; padding: 0 6px; border-radius: 4px; background: var(--surface-2); color: var(--text-secondary); font-size: 11px; }
+#timeline-wrap { overflow: auto; max-height: 640px; }
+.btn { font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary); cursor: pointer; }
+details summary { cursor: pointer; color: var(--text-secondary); }
+.defs dt { font-weight: 600; margin-top: 8px; }
+.defs dd { margin: 2px 0 0; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Lotline: what data we have collected</h1>
+  <p class="sub">Coverage, parcel rolls, coded reforms and housing growth for each state in the build. Counts are
+    aggregated to jurisdictions and counties; no parcel-level record is shown.</p>
+  <p class="muted" id="generated"></p>
+</header>
+<main>
+  <div class="bar" id="state-bar" role="group" aria-label="State filter"></div>
+
+  <section class="tiles" id="tiles" aria-label="Headline numbers"></section>
+
+  <section class="grid2">
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Coverage map</h2><p class="muted" id="map-note">Counties colored by the chosen measure. Dots are municipalities and townships (filled: parcels on file). Click a county to filter.</p></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label class="muted" for="metric">Measure</label>
+          <select id="metric">
+            <option value="pop_cov">Population covered by parcel data</option>
+            <option value="parcels">Parcels on file</option>
+            <option value="vintage">Latest parcel roll year</option>
+            <option value="reforms">Coded reforms</option>
+            <option value="growth_gap">Housing growth minus population growth</option>
+            <option value="tier">Best data tier</option>
+          </select>
+          <label class="muted"><input type="checkbox" id="dots" checked> dots</label>
+        </div>
+      </div>
+      <div id="map"></div>
+      <div class="legend" id="map-legend"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2 id="detail-title">Parcels by land use</h2>
+        <p class="muted" id="detail-sub">Latest roll per jurisdiction, one source each.</p></div>
+        <button class="btn" id="clear-county" hidden>Clear county</button></div>
+      <div id="landuse"></div>
+      <h2 style="margin-top:16px">Parcel sources</h2>
+      <p class="muted">Every processed parcel file. "Used" counts only jurisdictions where this is the chosen source.</p>
+      <div class="scroll" style="max-height:260px"><table id="sources"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div><h2>Ordinance timeline</h2>
+        <p class="muted">Each mark is one coded reform, dated by its effective date (adoption date where none was found). Hollow marks have not been checked by a second coder.</p></div>
+      <div id="theme-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div id="timeline-counts"></div>
+    <div id="timeline-wrap"><div id="timeline"></div></div>
+    <div class="legend" id="timeline-legend"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <div class="card-head"><div><h2>Housing growth vs population growth</h2>
+        <p class="muted" id="growth-note">Indexed to 2010 = 100.</p></div></div>
+      <div id="growth"></div>
+      <div class="legend" id="growth-legend"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2>Units permitted per year</h2>
+        <p class="muted">Census Building Permits Survey, units by building size (with Census imputation).</p></div></div>
+      <div id="permits"></div>
+      <div class="legend" id="permits-legend"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Data checks</h2><p class="muted">Automatic checks run when this page was built. Warnings are things to look at, not errors by themselves.</p></div></div>
+    <div class="checks" id="checks"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div><h2>Jurisdictions</h2><p class="muted" id="jur-note">Every permit-issuing government in the jurisdictions table.</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="search" id="jur-search" placeholder="Search by name" aria-label="Search jurisdictions">
+        <select id="jur-filter" aria-label="Coverage filter">
+          <option value="all">All</option><option value="covered">Parcels on file</option>
+          <option value="uncovered">No parcels</option><option value="reform">Has a coded reform</option>
+        </select>
+        <button class="btn" id="jur-csv">Download CSV</button>
+      </div>
+    </div>
+    <div class="scroll"><table id="jur"></table></div>
+    <p class="muted" id="jur-count"></p>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>How these numbers are made</summary>
+      <dl class="defs">
+        <dt>Population covered</dt><dd>Share of the 2020 population living in jurisdictions with at least one parcel on file. Unincorporated county areas take the county's 2020 estimate less the jurisdictions listed in it.</dd>
+        <dt>Parcels on file</dt><dd>Each jurisdiction's latest roll from one source. Where sources overlap, the source named in the state config wins; otherwise the largest. Counts are never added across sources.</dd>
+        <dt>Zoning code attached</dt><dd>Parcels whose record carries a zoning district. Where zoning is unknown the missing-middle rule assumes single-family-only zoning.</dd>
+        <dt>Eligible parcels</dt><dd>The model's denominators (eligible-parcel rule 1.1), latest year counted from a roll; ACS fallback where no roll exists.</dd>
+        <dt>Data tier</dt><dd>3 = national data only (BPS, ACS, FHFA); 2 = parcels with land use; 1 = parcels with land use and year built.</dd>
+        <dt>Housing units</dt><dd>ACS 5-year total housing units (B25024), labeled by the survey's end year, so each point averages five years and lags the permits line.</dd>
+        <dt>Population</dt><dd>Census Population Estimates (July 1). 2010–2019 from vintage 2020, 2020 on from vintage 2025; the 2020 seam changes the Census base.</dd>
+        <dt>2010 stock + permits</dt><dd>2010 ACS housing units plus every unit permitted since. It ignores demolitions and unbuilt permits, so it runs above the ACS line.</dd>
+        <dt>Holdouts</dt><dd>Built only from processed tables, which already exclude held-out outcomes (for example St. Paul permits from 2024 on).</dd>
+      </dl>
+      <p class="muted">Code: <code>src/lotline/dashboard/</code>. Method notes: <code>docs/data_dashboard.md</code>.</p>
+    </details>
+  </section>
+</main>
+<div id="tip" role="tooltip"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script id="lotline-data" type="application/json">/*__LOTLINE_DATA__*/</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("lotline-data").textContent);
+const ATLAS = "https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/counties-10m.json";
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = d3.format(",");
+const fmtK = v => v == null ? "–" : (Math.abs(v) >= 1e6 ? d3.format(".2~f")(v / 1e6) + "M" : Math.abs(v) >= 1e4 ? d3.format(".0f")(v / 1e3) + "k" : fmt(Math.round(v)));
+const pct = (v, d = 1) => v == null || !isFinite(v) ? "–" : (v * 100).toFixed(d) + "%";
+const THEMES = {
+  adu: { label: "ADU", color: "--s1", shape: d3.symbolCircle },
+  missing_middle: { label: "Missing middle", color: "--s2", shape: d3.symbolSquare },
+  fees: { label: "Fees", color: "--s3", shape: d3.symbolDiamond },
+  parking: { label: "Parking", color: "--s4", shape: d3.symbolTriangle },
+  other: { label: "Other", color: "--other", shape: d3.symbolCross },
+};
+const themeOf = t => THEMES[t] ? t : "other";
+const LAND = { SF_DETACHED: "Single-family detached", DUPLEX: "Duplex", TRI_QUAD: "3–4 units", MULTIFAMILY_5P: "5+ units",
+  CONDO_UNIT: "Condo unit", MOBILE_HOME: "Mobile home", VACANT_RESIDENTIAL: "Vacant residential", AGRICULTURAL: "Agricultural",
+  COMMERCIAL: "Commercial", INDUSTRIAL: "Industrial", INSTITUTIONAL: "Institutional", OTHER: "Other", UNKNOWN: "Unknown" };
+const KIND = { place: "Municipality", township: "Township", county_unincorporated: "Unincorporated county" };
+
+const state = { scope: "ALL", county: null, themes: new Set(Object.keys(THEMES)), sort: { key: "pop", dir: -1 } };
+let atlas = null;
+
+document.getElementById("generated").textContent =
+  `Built ${DATA.generated} from LOTLINE_DATA_DIR. States: ${DATA.states.map(s => s.name).join(", ")}.`;
+
+// ---------------------------------------------------------------- scope helpers
+function scoped() { return state.scope === "ALL" ? DATA.states : DATA.states.filter(s => s.state === state.scope); }
+function sumObj(objs) { const o = {}; objs.forEach(x => Object.entries(x || {}).forEach(([k, v]) => o[k] = (o[k] || 0) + v)); return o; }
+function counties() { return scoped().flatMap(s => s.counties.map(c => ({ ...c, st: s.state }))); }
+function jurisdictions() {
+  let js = scoped().flatMap(s => s.jurisdictions.map(j => ({ ...j, st: s.state })));
+  if (state.county) js = js.filter(j => j.county === state.county);
+  return js;
+}
+
+// ---------------------------------------------------------------- tooltip
+const tip = document.getElementById("tip");
+function showTip(ev, html) { tip.innerHTML = html; tip.style.display = "block"; moveTip(ev); }
+function moveTip(ev) {
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.style.display = "none"; }
+const row = (k, v) => `<div class="row"><span>${k}</span><span>${v}</span></div>`;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---------------------------------------------------------------- state bar
+function renderBar() {
+  const bar = document.getElementById("state-bar");
+  const opts = [{ id: "ALL", name: "All states" }, ...DATA.states.map(s => ({ id: s.state, name: s.name }))];
+  bar.innerHTML = "";
+  opts.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = o.name; b.setAttribute("aria-pressed", state.scope === o.id);
+    b.onclick = () => { state.scope = o.id; state.county = null; renderAll(); };
+    bar.appendChild(b);
+  });
+}
+
+// ---------------------------------------------------------------- tiles
+function renderTiles() {
+  const ss = scoped();
+  const t = k => d3.sum(ss, s => s.totals[k] || 0);
+  const agree = sumObj(ss.map(s => s.totals.coder_agreement));
+  const nRef = t("reforms"), single = agree.single_coder || 0;
+  const tiles = [
+    ["Population covered by parcel data", pct(t("population_covered") / t("population")), `${fmtK(t("population_covered"))} of ${fmtK(t("population"))} residents (2020)`],
+    ["Jurisdictions with parcels", `${fmt(t("jurisdictions_covered"))} / ${fmt(t("jurisdictions"))}`, `${fmt(t("counties_with_parcels"))} of ${fmt(t("counties_census") || t("counties"))} counties have a roll`],
+    ["Parcels on file", fmtK(t("parcels")), `${pct(t("parcels_zoned") / t("parcels"))} carry a zoning code`],
+    ["Eligible parcels", `${fmtK(t("eligible_adu"))} ADU`, `${fmtK(t("eligible_missing_middle"))} missing middle (model denominators)`],
+    ["Coded reforms", fmt(nRef), `${t("reform_places")} places · ${pct((nRef - single) / nRef, 0)} second-coded`],
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(([k, v, d]) =>
+    `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
+}
+
+// ---------------------------------------------------------------- map
+const METRICS = {
+  pop_cov: { label: "Population covered", kind: "seq", domain: () => [0, 1], value: c => c.pop && c.pop_covered ? c.pop_covered / c.pop : null, fmt: v => pct(v ?? 0, 0) },
+  parcels: { label: "Parcels on file", kind: "log", domain: cs => [100, d3.max(cs, c => c.parcels) || 1000], value: c => c.parcels || null, fmt: fmtK },
+  vintage: { label: "Latest roll year", kind: "seq", domain: cs => d3.extent(cs, c => vintageOf(c)), value: c => vintageOf(c), fmt: v => v == null ? "–" : String(Math.round(v)) },
+  reforms: { label: "Coded reforms", kind: "seq", domain: cs => [0, Math.max(1, d3.max(cs, c => c.reforms))], value: c => c.reforms || null, fmt: v => v == null ? "0" : fmt(v) },
+  growth_gap: { label: "Housing growth − population growth (points)", kind: "div", domain: () => [-0.15, 0.15], value: growthGap, fmt: v => v == null ? "–" : (v >= 0 ? "+" : "") + (v * 100).toFixed(1) },
+  tier: { label: "Best data tier (1 = richest)", kind: "tier", domain: () => [1, 3], value: c => c.tier_best, fmt: v => v == null ? "–" : "Tier " + v },
+};
+Object.entries(METRICS).forEach(([k, m]) => m.key = k);
+function vintageOf(c) { const v = Object.values(c.sources || {}).map(s => s.vintage); return v.length ? d3.max(v) : null; }
+function growthGap(c) {
+  if (!c.hu_start || !c.pop_start || c.hu_end == null || c.pop_end == null) return null;
+  return (c.hu_end / c.hu_start - 1) - (c.pop_end / c.pop_start - 1);
+}
+function colorScale(m, cs) {
+  const seq = [0, 1, 2, 3, 4, 5, 6].map(i => css(`--seq-${i}`));
+  const dom = m.domain(cs);
+  if (m.kind === "div") return d3.scaleLinear().domain([dom[0], 0, dom[1]]).range([css("--div-neg"), css("--div-mid"), css("--div-pos")]).clamp(true);
+  if (m.kind === "tier") return v => ({ 1: seq[5], 2: seq[3], 3: seq[1] })[v];
+  const interp = d3.interpolateRgbBasis(seq.slice(1));
+  if (m.kind === "log") return v => interp(Math.max(0, Math.min(1, (Math.log10(v) - Math.log10(dom[0])) / (Math.log10(dom[1]) - Math.log10(dom[0]) || 1))));
+  return v => interp(dom[1] === dom[0] ? 1 : Math.max(0, Math.min(1, (v - dom[0]) / (dom[1] - dom[0]))));
+}
+
+function renderMap() {
+  const el = document.getElementById("map");
+  if (!atlas) { el.innerHTML = `<p class="muted">Loading county boundaries…</p>`; return; }
+  const m = METRICS[document.getElementById("metric").value];
+  const cs = counties();
+  const byId = new Map(cs.map(c => [c.geoid, c]));
+  const fipsSet = new Set(scoped().map(s => s.fips));
+  const feats = topojson.feature(atlas, atlas.objects.counties).features.filter(f => fipsSet.has(f.id.slice(0, 2)));
+  const states = topojson.feature(atlas, atlas.objects.states).features.filter(f => fipsSet.has(f.id));
+  const W = el.clientWidth || 700, H = Math.round(W * (scoped().length > 1 ? 0.62 : 0.78));
+  const proj = d3.geoAlbersUsa().fitExtent([[8, 8], [W - 8, H - 8]], { type: "FeatureCollection", features: states });
+  const path = d3.geoPath(proj);
+  const color = colorScale(m, cs);
+  el.innerHTML = "";
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
+    .attr("aria-label", `Map of ${m.label} by county`);
+  svg.append("g").selectAll("path").data(feats).join("path")
+    .attr("class", f => "county" + (state.county === f.id ? " sel" : ""))
+    .attr("d", path)
+    .attr("fill", f => { const c = byId.get(f.id); const v = c ? m.value(c) : null; return v == null ? css("--nodata") : color(v); })
+    .on("mousemove", (ev, f) => { const c = byId.get(f.id); showTip(ev, countyTip(f, c, m)); })
+    .on("mouseleave", hideTip)
+    .on("click", (ev, f) => { state.county = state.county === f.id ? null : f.id; renderAll(); });
+  svg.append("g").selectAll("path").data(states).join("path").attr("class", "stateline").attr("d", path);
+  if (document.getElementById("dots").checked) {
+    const js = scoped().flatMap(s => s.jurisdictions.map(j => ({ ...j, st: s.state }))).filter(j => j.point && proj(j.point));
+    const many = scoped().length > 1;
+    const r = d3.scaleSqrt().domain([0, d3.max(js, j => j.pop) || 1]).range([many ? 0.6 : 1.2, many ? 7 : 14]);
+    svg.append("g").selectAll("circle").data(js.sort((a, b) => (b.pop || 0) - (a.pop || 0))).join("circle")
+      .attr("cx", j => proj(j.point)[0]).attr("cy", j => proj(j.point)[1]).attr("r", j => r(j.pop || 0))
+      .attr("fill", j => j.parcels > 0 ? css("--text-primary") : "none")
+      .attr("fill-opacity", many ? 0.3 : 0.5).attr("stroke", css("--text-primary")).attr("stroke-width", many ? 0.35 : 0.6).attr("stroke-opacity", many ? 0.5 : 0.8)
+      .style("cursor", "pointer").on("mousemove", (ev, j) => showTip(ev, jurTip(j))).on("mouseleave", hideTip)
+      .on("click", (ev, j) => { state.county = state.county === j.county ? null : j.county; renderAll(); });
+  }
+  renderMapLegend(m, cs, color);
+}
+function countyTip(f, c, m) {
+  if (!c) return `<b>${esc(f.properties.name)} County</b><div class="muted">No jurisdictions in the table</div>`;
+  const src = Object.entries(c.sources || {}).map(([s, v]) => `${s} (${v.vintage})`).join(", ") || "none";
+  return `<b>${esc(c.name)}</b> <span class="badge">${c.st}</span>` +
+    (["pop_cov", "parcels", "reforms"].includes(m.key) ? "" : row(m.label, m.fmt(m.value(c)))) + row("Population 2020", fmtK(c.pop)) +
+    row("Population covered", c.pop ? pct(c.pop_covered / c.pop, 0) : "–") +
+    row("Jurisdictions with parcels", `${c.jurisdictions_covered} / ${c.jurisdictions}`) +
+    row("Parcels on file", fmt(c.parcels)) + row("Coded reforms", c.reforms) +
+    (c.pop_start ? row(`Pop. growth ${(DATA.states.find(s => s.state === c.st).growth_window || []).join("–")}`, pct(c.pop_end / c.pop_start - 1)) +
+      row("Housing growth (ACS)", c.hu_start ? pct(c.hu_end / c.hu_start - 1) : "–") +
+      row("Units permitted", fmt(c.permits || 0)) : "") +
+    `<div class="muted" style="margin-top:4px">Sources: ${esc(src)}</div>`;
+}
+function jurTip(j) {
+  return `<b>${esc(j.name)}</b> <span class="badge">${j.st}</span>` + row("Type", KIND[j.kind] || j.kind) +
+    row("Population 2020", fmtK(j.pop) + (j.pop_estimated ? "*" : "")) + row("Parcels on file", fmt(j.parcels)) +
+    row("Roll", j.source ? `${j.source} (${j.vintage})` : "none") + row("Data tier", j.tier) +
+    row("Reforms coded", Object.entries(j.reforms || {}).map(([t, n]) => `${(THEMES[t] || THEMES.other).label} ${n}`).join(", ") || "none");
+}
+function renderMapLegend(m, cs, color) {
+  const el = document.getElementById("map-legend");
+  const dom = m.domain(cs);
+  let html = "";
+  if (m.kind === "tier") html = [1, 2, 3].map(t => `<span><span class="sw" style="background:${color(t)}"></span>Tier ${t}</span>`).join("");
+  else {
+    const stops = d3.range(0, 1.01, 0.1).map(t => m.kind === "div" ? color(dom[0] + t * (dom[1] - dom[0])) :
+      m.kind === "log" ? color(Math.pow(10, Math.log10(dom[0]) + t * (Math.log10(dom[1]) - Math.log10(dom[0])))) : color(dom[0] + t * (dom[1] - dom[0])));
+    const lo = m.kind === "div" ? "Housing lagged" : m.fmt(dom[0]), hi = m.kind === "div" ? "Housing outpaced" : m.fmt(dom[1]);
+    html = `<span>${lo}</span><span class="ramp" style="background:linear-gradient(90deg,${stops.join(",")})"></span><span>${hi}</span>`;
+    if (m.kind === "div") html += `<span class="muted">±15 points; ACS 5-year housing vs population estimates</span>`;
+  }
+  html += `<span><span class="sw" style="background:${css("--nodata")}"></span>${["pop_cov", "parcels", "vintage"].includes(m.key) ? "No parcels on file" : "No data"}</span>`;
+  if (document.getElementById("dots").checked) html += `<span>● parcels on file &nbsp;○ none &nbsp;(size = population)</span>`;
+  el.innerHTML = html;
+}
+
+// ---------------------------------------------------------------- land use + sources
+function renderLandUse() {
+  const cs = counties();
+  let land, title = "Parcels by land use", sub = "Latest roll per jurisdiction, one source each.";
+  if (state.county) {
+    const c = cs.find(c => c.geoid === state.county);
+    land = c ? c.land_use : {};
+    title = `${c ? c.name : state.county}: parcels by land use`;
+    sub = c ? `${fmt(c.parcels)} parcels; ${fmt(c.jurisdictions_covered)} of ${fmt(c.jurisdictions)} jurisdictions covered.` : "";
+  } else land = sumObj(scoped().map(s => s.land_use));
+  document.getElementById("detail-title").textContent = title;
+  document.getElementById("detail-sub").textContent = sub;
+  document.getElementById("clear-county").hidden = !state.county;
+  const total = d3.sum(Object.values(land));
+  const rows = Object.keys(LAND).filter(k => land[k]).map(k => [k, land[k]]);
+  const max = d3.max(rows, r => r[1]) || 1;
+  document.getElementById("landuse").innerHTML = total ? rows.map(([k, v]) =>
+    `<div class="hbar" title="${LAND[k]}: ${fmt(v)}"><span>${LAND[k]}</span><div class="track"><div class="fill" style="width:${(v / max * 100).toFixed(1)}%;${k === "UNKNOWN" ? "background:var(--other)" : ""}"></div></div><span class="n">${pct(v / total)}</span></div>`).join("")
+    : `<p class="muted">No parcel roll for this selection. Eligible counts here come from the ACS fallback.</p>`;
+  const src = scoped().flatMap(s => s.parcel_sources.map(p => ({ ...p, st: s.state })));
+  document.getElementById("sources").innerHTML = `<thead><tr><th>State</th><th>Source</th><th class="num">Parcels (latest)</th><th class="num">Used</th><th class="num">Counties</th><th>Roll years</th><th class="num">Zoning attached</th></tr></thead><tbody>` +
+    src.map(p => `<tr><td>${p.st}</td><td>${esc(p.source)}</td><td class="num">${fmt(p.parcels_latest)}</td><td class="num">${fmt(p.parcels_used)}</td><td class="num">${p.counties}</td><td>${p.vintages.join(", ")}</td><td class="num">${pct(p.zoned_share, 0)}</td></tr>`).join("") + "</tbody>";
+}
+
+// ---------------------------------------------------------------- timeline
+function renderThemeChips() {
+  const el = document.getElementById("theme-chips");
+  el.innerHTML = "";
+  Object.entries(THEMES).forEach(([k, t]) => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.setAttribute("aria-pressed", state.themes.has(k));
+    b.innerHTML = `<span class="sw" style="background:var(${t.color})"></span>${t.label}`;
+    b.onclick = () => { state.themes.has(k) ? state.themes.delete(k) : state.themes.add(k); renderThemeChips(); renderTimeline(); };
+    el.appendChild(b);
+  });
+}
+function renderTimeline() {
+  let ev = scoped().flatMap(s => s.reforms.map(r => ({ ...r, st: s.state, t: themeOf(r.theme) })))
+    .filter(r => r.date && state.themes.has(r.t));
+  if (state.county) {
+    const inCounty = new Set(jurisdictions().map(j => j.geoid));
+    ev = ev.filter(r => inCounty.has(r.geoid) || r.geoid === state.county);
+  }
+  ev.forEach(r => r.d = new Date(r.date + "T00:00:00"));
+  const el = document.getElementById("timeline"), cel = document.getElementById("timeline-counts");
+  if (!ev.length) { el.innerHTML = `<p class="muted">No coded reforms for this selection.</p>`; cel.innerHTML = ""; return; }
+  // lanes: one per place, ordered by first reform date, grouped by state
+  const lanes = d3.groups(ev, r => r.st + "|" + r.geoid).map(([k, rs]) => ({ k, st: rs[0].st, place: rs[0].place, first: d3.min(rs, r => r.d), rs }))
+    .sort((a, b) => d3.ascending(a.st, b.st) || d3.ascending(a.first, b.first));
+  const W = el.parentElement.clientWidth || 900, M = { l: 190, r: 16, t: 22, b: 8 }, LH = 16;
+  const H = M.t + lanes.length * LH + M.b;
+  const x = d3.scaleTime().domain([new Date(Math.min(2000, d3.min(ev, r => r.d).getFullYear()), 0, 1), new Date(new Date().getFullYear() + 1, 0, 1)]).range([M.l, W - M.r]);
+  // per-year counts strip (stacked by theme)
+  const years = d3.range(x.domain()[0].getFullYear(), x.domain()[1].getFullYear());
+  const keys = Object.keys(THEMES).filter(k => state.themes.has(k));
+  const cnt = years.map(y => { const o = { y }; keys.forEach(k => o[k] = ev.filter(r => r.t === k && r.d.getFullYear() === y).length); return o; });
+  const CH = 70, cs = d3.stack().keys(keys)(cnt);
+  const yc = d3.scaleLinear().domain([0, d3.max(cnt, o => d3.sum(keys, k => o[k])) || 1]).nice().range([CH - 14, 4]);
+  const bw = Math.max(2, (x(new Date(2001, 0, 1)) - x(new Date(2000, 0, 1))) - 2);
+  cel.innerHTML = "";
+  const csvg = d3.select(cel).append("svg").attr("viewBox", `0 0 ${W} ${CH}`).attr("width", "100%").attr("aria-label", "Reforms per year");
+  csvg.append("g").attr("class", "axis").attr("transform", `translate(${M.l},0)`).call(d3.axisLeft(yc).ticks(3).tickSize(-(W - M.l - M.r)))
+    .call(g => g.selectAll(".tick line").attr("stroke", css("--grid")));
+  csvg.append("text").attr("x", M.l - 30).attr("y", CH / 2).attr("text-anchor", "end").text("reforms per year");
+  cs.forEach(layer => csvg.append("g").selectAll("rect").data(layer).join("rect")
+    .attr("x", d => x(new Date(d.data.y, 0, 1)) + 1).attr("width", bw)
+    .attr("y", d => yc(d[1])).attr("height", d => Math.max(0, yc(d[0]) - yc(d[1]) - (d[1] > d[0] ? 1 : 0)))
+    .attr("fill", css(THEMES[layer.key].color))
+    .on("mousemove", (e, d) => showTip(e, `<b>${d.data.y}</b>` + keys.map(k => row(THEMES[k].label, d.data[k])).join("")))
+    .on("mouseleave", hideTip));
+  el.innerHTML = "";
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").attr("aria-label", "Reform timeline by place");
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${M.t - 4})`).call(d3.axisTop(x).ticks(W / 90).tickSize(-(H - M.t)))
+    .call(g => g.selectAll(".tick line").attr("stroke", css("--grid")));
+  const g = svg.append("g");
+  lanes.forEach((ln, i) => {
+    const y = M.t + i * LH + LH / 2;
+    const newState = i === 0 || lanes[i - 1].st !== ln.st;
+    if (newState && scoped().length > 1) svg.append("line").attr("x1", 0).attr("x2", W).attr("y1", y - LH / 2).attr("y2", y - LH / 2).attr("stroke", css("--border"));
+    g.append("text").attr("x", M.l - 8).attr("y", y + 4).attr("text-anchor", "end")
+      .text((scoped().length > 1 ? ln.st + " · " : "") + (ln.place.length > 28 ? ln.place.slice(0, 27) + "…" : ln.place));
+    g.append("line").attr("x1", x(ln.first)).attr("x2", W - M.r).attr("y1", y).attr("y2", y).attr("stroke", css("--grid"));
+  });
+  const laneIx = new Map(lanes.map((l, i) => [l.k, i]));
+  g.selectAll("path.mark").data(ev).join("path").attr("class", "mark")
+    .attr("transform", r => `translate(${x(r.d)},${M.t + laneIx.get(r.st + "|" + r.geoid) * LH + LH / 2})`)
+    .attr("d", r => d3.symbol(THEMES[r.t].shape, 64)())
+    .attr("fill", r => r.coder_agreement === "single_coder" ? css("--surface-1") : css(THEMES[r.t].color))
+    .attr("stroke", r => css(THEMES[r.t].color)).attr("stroke-width", 1.8)
+    .style("cursor", r => r.source_url ? "pointer" : "default")
+    .on("mousemove", (e, r) => showTip(e, `<b>${esc(r.place)}</b> <span class="badge">${r.st}</span><div>${esc(THEMES[r.t].label)}${r.t === "other" ? " (" + esc(r.theme) + ")" : ""} · ${esc(r.status)}</div>` +
+      row("Adopted", r.adopted || "–") + row("Effective", r.effective || "–") + row("Second coder", r.coder_agreement.replace("_", " ")) +
+      `<div class="muted" style="margin-top:4px">${esc(r.component)}</div><div class="muted">${esc(r.id)}${r.source_url ? " · click for source" : ""}</div>`))
+    .on("mouseleave", hideTip)
+    .on("click", (e, r) => { if (r.source_url) window.open(r.source_url, "_blank", "noopener"); });
+  document.getElementById("timeline-legend").innerHTML = Object.entries(THEMES).filter(([k]) => state.themes.has(k)).map(([k, t]) =>
+    `<span><svg width="14" height="14" viewBox="-7 -7 14 14"><path d="${d3.symbol(t.shape, 50)()}" fill="var(${t.color})"/></svg> ${t.label}</span>`).join("") +
+    `<span><svg width="14" height="14" viewBox="-7 -7 14 14"><circle r="4.5" fill="none" stroke="var(--text-secondary)" stroke-width="1.8"/></svg> single coder</span>` +
+    `<span class="muted">${ev.length} reforms in ${lanes.length} places</span>`;
+}
+
+// ---------------------------------------------------------------- growth
+function combinedGrowth() {
+  const ss = scoped();
+  const byYear = new Map();
+  ss.forEach(s => s.growth.forEach(g => {
+    const o = byYear.get(g.year) || { year: g.year, n: 0, population: 0, housing_units: 0, nPop: 0, nHu: 0, units_1: 0, units_2: 0, units_3_4: 0, units_5p: 0, imputed_units: 0 };
+    o.n++;
+    if (g.population != null) { o.population += g.population; o.nPop++; }
+    if (g.housing_units != null) { o.housing_units += g.housing_units; o.nHu++; }
+    ["units_1", "units_2", "units_3_4", "units_5p", "imputed_units"].forEach(k => o[k] += g[k] || 0);
+    byYear.set(g.year, o);
+  }));
+  return [...byYear.values()].sort((a, b) => a.year - b.year).map(o => ({
+    ...o, population: o.nPop === ss.length ? o.population : null, housing_units: o.nHu === ss.length ? o.housing_units : null,
+    permits: o.units_1 + o.units_2 + o.units_3_4 + o.units_5p,
+  }));
+}
+function renderGrowth() {
+  const all = combinedGrowth(), base = all.find(g => g.year === 2010);
+  const el = document.getElementById("growth");
+  if (!base || !base.population || !base.housing_units) { el.innerHTML = `<p class="muted">Population or housing data missing for 2010.</p>`; return; }
+  const rows = all.filter(g => g.year >= 2010);
+  let cum = base.housing_units;
+  rows.forEach(g => { if (g.year > 2010) cum += g.permits; g.stock = cum; });
+  const series = [
+    { key: "population", label: "Population", color: "--s1", dash: null },
+    { key: "housing_units", label: "Housing units (ACS)", color: "--s2", dash: null },
+    { key: "stock", label: "2010 stock + permits", color: "--s3", dash: "5 4" },
+  ].map(s => ({ ...s, pts: rows.filter(g => g[s.key] != null).map(g => ({ year: g.year, v: g[s.key] / base[s.key] * 100, raw: g[s.key] })) }));
+  const W = el.clientWidth || 600, H = Math.max(240, Math.min(340, Math.round(W * 0.6))), M = { l: 40, r: 120, t: 10, b: 26 };
+  const x = d3.scaleLinear().domain(d3.extent(rows, g => g.year)).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain([Math.min(98, d3.min(series, s => d3.min(s.pts, p => p.v))), d3.max(series, s => d3.max(s.pts, p => p.v))]).nice().range([H - M.b, M.t]);
+  el.innerHTML = "";
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").attr("role", "img").attr("aria-label", "Population and housing growth since 2010, indexed");
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - M.b})`).call(d3.axisBottom(x).ticks(8).tickFormat(d3.format("d")));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - M.l - M.r)))
+    .call(g => g.selectAll(".tick line").attr("stroke", css("--grid")));
+  svg.append("line").attr("x1", x(2020)).attr("x2", x(2020)).attr("y1", M.t).attr("y2", H - M.b).attr("stroke", css("--text-muted")).attr("stroke-dasharray", "2 3");
+  svg.append("text").attr("x", x(2020) + 4).attr("y", M.t + 10).text("2020 Census base");
+  const line = d3.line().x(p => x(p.year)).y(p => y(p.v));
+  const labels = series.map(s => { const last = s.pts[s.pts.length - 1]; return { s, last, y: y(last.v) + 4 }; }).sort((a, b) => a.y - b.y);
+  labels.forEach((l, i) => { if (i && l.y - labels[i - 1].y < 13) l.y = labels[i - 1].y + 13; });
+  series.forEach(s => svg.append("path").attr("d", line(s.pts)).attr("fill", "none").attr("stroke", css(s.color)).attr("stroke-width", 2).attr("stroke-dasharray", s.dash));
+  labels.forEach(l => svg.append("text").attr("x", x(l.last.year) + 6).attr("y", l.y).style("fill", css("--text-primary")).text(`${l.s.label.split(" (")[0]} ${l.last.v.toFixed(1)}`));
+  // crosshair
+  const hover = svg.append("g").style("display", "none");
+  hover.append("line").attr("y1", M.t).attr("y2", H - M.b).attr("stroke", css("--text-muted"));
+  const dots = series.map(s => hover.append("circle").attr("r", 4).attr("fill", css(s.color)).attr("stroke", css("--surface-1")).attr("stroke-width", 2));
+  svg.append("rect").attr("x", M.l).attr("y", M.t).attr("width", W - M.l - M.r).attr("height", H - M.t - M.b).attr("fill", "transparent")
+    .on("mousemove", ev => {
+      const [mx] = d3.pointer(ev); const yr = Math.round(x.invert(mx));
+      hover.style("display", null).select("line").attr("x1", x(yr)).attr("x2", x(yr));
+      series.forEach((s, i) => { const p = s.pts.find(p => p.year === yr); dots[i].style("display", p ? null : "none"); if (p) dots[i].attr("cx", x(yr)).attr("cy", y(p.v)); });
+      const g = rows.find(g => g.year === yr) || {};
+      showTip(ev, `<b>${yr}</b>` + series.map(s => { const p = s.pts.find(p => p.year === yr); return row(s.label, p ? `${p.v.toFixed(1)} (${fmtK(p.raw)})` : "–"); }).join("") + row("Units permitted that year", fmt(g.permits || 0)));
+    }).on("mouseleave", () => { hover.style("display", "none"); hideTip(); });
+  document.getElementById("growth-legend").innerHTML = series.map(s =>
+    `<span><svg width="22" height="10"><line x1="0" x2="22" y1="5" y2="5" stroke="var(${s.color})" stroke-width="2" ${s.dash ? `stroke-dasharray="${s.dash}"` : ""}/></svg> ${s.label}</span>`).join("");
+  const h = series[1].pts, hEnd = h[h.length - 1], pEnd = series[0].pts.find(p => p.year === hEnd?.year);
+  document.getElementById("growth-note").textContent = hEnd && pEnd
+    ? `Indexed to 2010 = 100. From 2010 to ${hEnd.year}, population grew ${(pEnd.v - 100).toFixed(1)}% and housing units (ACS 5-year) grew ${(hEnd.v - 100).toFixed(1)}%.`
+    : "Indexed to 2010 = 100.";
+}
+function renderPermits() {
+  const rows = combinedGrowth().filter(g => g.year >= 2000 && g.permits > 0);
+  const el = document.getElementById("permits");
+  const keys = [["units_1", "1 unit", "--seq-2"], ["units_2", "2 units", "--seq-3"], ["units_3_4", "3–4 units", "--seq-4"], ["units_5p", "5+ units", "--seq-6"]];
+  const W = el.clientWidth || 500, H = Math.max(240, Math.min(340, Math.round(W * 0.6))), M = { l: 46, r: 8, t: 10, b: 26 };
+  const x = d3.scaleBand().domain(rows.map(r => r.year)).range([M.l, W - M.r]).padding(0.15);
+  const y = d3.scaleLinear().domain([0, d3.max(rows, r => r.permits) || 1]).nice().range([H - M.b, M.t]);
+  const st = d3.stack().keys(keys.map(k => k[0]))(rows);
+  el.innerHTML = "";
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").attr("role", "img").attr("aria-label", "Units permitted per year by building size");
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - M.b})`).call(d3.axisBottom(x).tickValues(x.domain().filter(y => y % 5 === 0)));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(fmtK).tickSize(-(W - M.l - M.r)))
+    .call(g => g.selectAll(".tick line").attr("stroke", css("--grid")));
+  st.forEach((layer, i) => svg.append("g").selectAll("rect").data(layer).join("rect")
+    .attr("x", d => x(d.data.year)).attr("width", x.bandwidth())
+    .attr("y", d => y(d[1])).attr("height", d => Math.max(0, y(d[0]) - y(d[1]) - (i < 3 ? 1 : 0)))
+    .attr("fill", css(keys[i][2])));
+  svg.append("g").selectAll("rect").data(rows).join("rect").attr("x", d => x(d.year)).attr("width", x.bandwidth()).attr("y", M.t).attr("height", H - M.t - M.b).attr("fill", "transparent")
+    .on("mousemove", (e, d) => showTip(e, `<b>${d.year}</b>` + keys.map(k => row(k[1], fmt(d[k[0]]))).join("") + row("Total", fmt(d.permits)) + row("Imputed by Census", pct(d.imputed_units / d.permits))))
+    .on("mouseleave", hideTip);
+  document.getElementById("permits-legend").innerHTML = keys.map(k => `<span><span class="sw" style="background:var(${k[2]})"></span>${k[1]}</span>`).join("") +
+    (state.scope === "ALL" ? `<span class="muted">sum of ${scoped().length} states; held-out places excluded</span>` : `<span class="muted">held-out places excluded</span>`);
+}
+
+// ---------------------------------------------------------------- checks
+function renderChecks() {
+  const icon = { ok: ["✓", "--good"], note: ["i", "--text-muted"], warn: ["!", "--critical"] };
+  document.getElementById("checks").innerHTML = scoped().flatMap(s => s.checks.map(c => ({ ...c, st: s.state })))
+    .sort((a, b) => ["warn", "note", "ok"].indexOf(a.level) - ["warn", "note", "ok"].indexOf(b.level))
+    .map(c => `<div class="check"><span class="icon" style="background:var(${icon[c.level][1]})" aria-label="${c.level}">${icon[c.level][0]}</span>
+      <div><div><span class="badge">${c.st}</span> ${esc(c.title)}</div><div class="det">${esc(c.detail)}${c.items.length ? "<br>" + c.items.map(esc).join(", ") : ""}</div></div>
+      <span class="val">${esc(c.value)}</span></div>`).join("");
+}
+
+// ---------------------------------------------------------------- jurisdictions table
+const COLS = [
+  ["st", "State"], ["name", "Name"], ["kind", "Type"], ["county", "County"], ["pop", "Pop. 2020", 1], ["tier", "Tier", 1],
+  ["parcels", "Parcels", 1], ["vintage", "Roll", 1], ["source", "Source"], ["eligible_adu", "Eligible ADU", 1],
+  ["eligible_missing_middle", "Eligible MM", 1], ["nref", "Reforms", 1],
+];
+function jurRows() {
+  const q = document.getElementById("jur-search").value.trim().toLowerCase(), f = document.getElementById("jur-filter").value;
+  const cname = new Map(counties().map(c => [c.geoid, c.name]));
+  let js = jurisdictions().map(j => ({ ...j, nref: d3.sum(Object.values(j.reforms || {})), countyName: cname.get(j.county) || j.county }));
+  if (q) js = js.filter(j => j.name.toLowerCase().includes(q));
+  if (f === "covered") js = js.filter(j => j.parcels > 0);
+  if (f === "uncovered") js = js.filter(j => !j.parcels);
+  if (f === "reform") js = js.filter(j => j.nref > 0);
+  const { key, dir } = state.sort;
+  return js.sort((a, b) => dir * d3.ascending(a[key] ?? -Infinity, b[key] ?? -Infinity));
+}
+function renderJur() {
+  const js = jurRows(), shown = js.slice(0, 500);
+  const t = document.getElementById("jur");
+  t.innerHTML = `<thead><tr>${COLS.map(([k, l, n]) => `<th class="${n ? "num" : ""}" data-k="${k}">${l}${state.sort.key === k ? (state.sort.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>` +
+    shown.map(j => `<tr>${COLS.map(([k, , n]) => {
+      let v = j[k];
+      if (k === "kind") v = KIND[v] || v; if (k === "county") v = j.countyName;
+      if (k === "pop" && v != null) v = fmt(Math.round(v)) + (j.pop_estimated ? "*" : "");
+      else if (n && v != null && k !== "vintage" && k !== "tier") v = fmt(v);
+      if (k === "eligible_adu" && j.eligible_adu_basis === "acs") v += " (ACS)";
+      if (k === "eligible_missing_middle" && j.eligible_missing_middle_basis === "acs") v += " (ACS)";
+      return `<td class="${n ? "num" : ""}">${esc(v ?? "–")}</td>`;
+    }).join("")}</tr>`).join("") + "</tbody>";
+  t.querySelectorAll("th").forEach(th => th.onclick = () => {
+    const k = th.dataset.k; state.sort = { key: k, dir: state.sort.key === k ? -state.sort.dir : (["name", "st", "kind", "county", "source"].includes(k) ? 1 : -1) }; renderJur();
+  });
+  document.getElementById("jur-count").textContent = `${fmt(js.length)} jurisdictions${js.length > 500 ? " (first 500 shown; CSV has all)" : ""}. * population estimated from the county total.`;
+  document.getElementById("jur-note").textContent = state.county ? `Jurisdictions in ${counties().find(c => c.geoid === state.county)?.name || state.county}.` : "Every permit-issuing government in the jurisdictions table.";
+}
+function downloadCsv() {
+  const js = jurRows();
+  const head = ["state", "geoid", "name", "kind", "county_geoid", "pop_2020", "pop_estimated", "data_tier", "parcels", "zoned", "unknown_use", "roll_year", "source", "all_sources", "eligible_adu", "eligible_adu_basis", "eligible_mm", "eligible_mm_basis", "reforms"];
+  const q = v => v == null ? "" : /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
+  const lines = [head.join(",")].concat(js.map(j => [j.st, j.geoid, j.name, j.kind, j.county, j.pop, j.pop_estimated, j.tier, j.parcels, j.zoned, j.unknown_use, j.vintage, j.source, j.sources, j.eligible_adu, j.eligible_adu_basis, j.eligible_missing_middle, j.eligible_missing_middle_basis, j.nref].map(q).join(",")));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" }));
+  a.download = `lotline-jurisdictions-${state.scope.toLowerCase()}.csv`; a.click();
+}
+
+// ---------------------------------------------------------------- wiring
+function renderAll() { renderBar(); renderTiles(); renderMap(); renderLandUse(); renderTimeline(); renderGrowth(); renderPermits(); renderChecks(); renderJur(); }
+document.getElementById("metric").onchange = renderMap;
+document.getElementById("dots").onchange = renderMap;
+document.getElementById("clear-county").onclick = () => { state.county = null; renderAll(); };
+document.getElementById("jur-search").oninput = renderJur;
+document.getElementById("jur-filter").onchange = renderJur;
+document.getElementById("jur-csv").onclick = downloadCsv;
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(renderAll, 150); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderAll);
+renderThemeChips();
+renderAll();
+fetch(ATLAS).then(r => r.json()).then(t => { atlas = t; renderMap(); })
+  .catch(() => { document.getElementById("map").innerHTML = `<p class="muted">County boundaries could not be loaded (needs internet access to cdn.jsdelivr.net).</p>`; });
+</script>
+</body>
+</html>

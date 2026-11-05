@@ -64,9 +64,9 @@ def _national() -> list[Source]:
 def documented_only() -> list[ModuleType]:
     """Modules that download data (so need provenance) but aren't run by `lotline fetch` on their own."""
     from lotline.adapters.checks import houston_permits
-    from lotline.adapters.national import bps_state, cbp, cbsa, decennial, geoparts, tiger_boundaries
+    from lotline.adapters.national import bps_state, cbp, cbsa, decennial, geoparts, pep, tiger_boundaries
 
-    return [bps_state, cbp, cbsa, decennial, geoparts, tiger_boundaries, houston_permits]
+    return [bps_state, cbp, cbsa, decennial, geoparts, pep, tiger_boundaries, houston_permits]
 
 
 def check_module(module: ModuleType) -> None:
