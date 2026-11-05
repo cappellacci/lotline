@@ -103,3 +103,13 @@ def test_fit_empirical_recovers_a_home_value_coefficient():
     assert abs(f.beta[2] - 1.2) < 3 * se and se < 0.5
     d = cs.predict_empirical(places[:3], f, draws=4000, seed=1)
     assert set(d) == {"P0", "P1", "P2"} and d["P0"].shape == (4000, 4)
+
+
+def test_no_ramp_at_central_values_changes_only_the_ramp():
+    """D-048: NO_RAMP with the central equity elasticity and size 0 keeps base; cr becomes coverage (0.6)
+    where a rule is in force and 0 where none is (age NaN)."""
+    pl = _place([0, 0], [500.0, 700.0], 800_000.0, 40_000.0, [np.nan, 1.0])
+    pl.extra["cov"] = np.array([[0.6], [0.6]])
+    s = cs.shaped(pl, cs.NO_RAMP, P["adu_equity_elasticity"], 0.0, P)
+    assert np.array_equal(s.base, pl.base)
+    assert s.cr[:, 0] == pytest.approx([0.0, 0.6])

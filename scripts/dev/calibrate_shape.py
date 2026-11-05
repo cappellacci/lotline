@@ -36,12 +36,86 @@ def _half(v: float) -> str:
     return "no ramp" if v == shp.NO_RAMP else f"{v:g} years"
 
 
+def _d048_fold(args):
+    places, st, p = args
+    sub = [shp.shaped(pl, shp.NO_RAMP, p["adu_equity_elasticity"], 0.0, p) for pl in places if pl.state != st]
+    return st, cal.fit3(sub)
+
+
+def d048_main(out: Path, workers: int) -> None:
+    """D-048: D-041 (fit 3 with its rule-share grid) with the ramp set to 1, leave one state out."""
+    store, cs = DataStore(), cal.count_settings()
+    places, test = run.four_state_places(store, cs), run._test_set(store, cs)
+    p = adu.central_params()
+    print(f"=== D-048: {len(places)} fit places, {len(test)} test places, counts {cs} ===", flush=True)
+    with ProcessPoolExecutor(workers) as pool:
+        fits = dict(pool.map(_d048_fold, [(places, st, p) for st in ("",) + run.STATES]))
+    for st, f in fits.items():
+        name = "all four states" if st == "" else f"without {st}"
+        print(
+            f"{name}: theta {f.theta * 1000:.3f} per 1,000 ({f.low * 1000:.3f}-{f.high * 1000:.3f}), "
+            f"alpha {f.alpha:.3f}, m_o {f.m_owner} {f.owner_interval}, m_x {f.m_other} {f.other_interval}, "
+            f"loglik {f.loglik:.3f}",
+            flush=True,
+        )
+    full = fits[""]
+
+    def flat(pls):
+        return [shp.shaped(pl, shp.NO_RAMP, p["adu_equity_elasticity"], 0.0, p) for pl in pls]
+
+    portland = run._portland_paths(store, places + test, cs)
+    draws = {}
+    for st in run.STATES:
+        draws |= cal.predict_places(
+            flat([pl for pl in places + test if pl.state == st]), fits[st], seed=run.SEED
+        )
+    t = run.state_totals("D-048: leave one state out", run._groups(places, test, True), draws, portland)
+    tt = run.state_totals(
+        "D-048: test set from the full fit",
+        {"Raleigh and Durham": test},
+        cal.predict_places(flat(test), full, seed=run.SEED),
+        portland,
+    )
+    k1, missed, med = _k1(t)
+    gain = full.loglik - run.D041_LOGLIK
+    test_missed = bool((tt["verdict"] == "missed").any())
+    adopt = missed == 0 and k1 < K1_D041 and not test_missed
+    print(f"\nLog-likelihood {full.loglik:.3f} (D-041 {run.D041_LOGLIK}): gain {gain:.3f}")
+    print(
+        f"K1 {k1:.3f} (D-041 {K1_D041}); missed {missed}; median P90/P10 {med:.1f} (D-041 28.0); "
+        f"test set {tt['verdict'].iloc[0]}"
+    )
+    print(
+        f"Adoption rule: none missed {missed == 0}; K1 < {K1_D041} {k1 < K1_D041}; test set not missed "
+        f"{not test_missed} -> {'ADOPT' if adopt else 'keep D-041'}"
+    )
+    rows = [
+        dict(
+            fit="all four states" if st == "" else f"without {st}",
+            theta=f.theta,
+            low=f.low,
+            high=f.high,
+            alpha=f.alpha,
+            m_owner=f.m_owner,
+            m_other=f.m_other,
+            loglik=f.loglik,
+        )
+        for st, f in fits.items()
+    ]
+    pd.DataFrame(rows).to_csv(out / "fits.csv", index=False)
+    pd.concat([t, tt]).to_csv(out / "statewide.csv", index=False)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--d048", action="store_true", help="D-048: D-041 without the ramp")
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
+    if a.d048:
+        d048_main(a.out, a.workers)
+        return
     store, cs = DataStore(), cal.count_settings()
     places, test = run.four_state_places(store, cs), run._test_set(store, cs)
     p = adu.central_params()
