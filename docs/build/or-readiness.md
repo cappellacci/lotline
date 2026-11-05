@@ -96,7 +96,7 @@ criteria:
 | OR-4159000-adu-2021 | Portland | **Confirmed (Ben's agent, 2026-11-04):** 2 ADUs, the lesser of 75% or 800 sq ft, no added ADU parking; Ord. 190093 adopted 2020-08-12. Caveat: 2021-08-01 comes from the city's code-change record (directive h), not the exhibit | https://www.portland.gov/bps/planning/rip/documents/exhibit-b-volume-2-code-and-commentary/download |
 | OR-4159000-adu-2022 | Portland | **Confirmed (Ben's agent, 2026-11-04):** Ord. 190851, passed 2022-06-01, in effect after 11:59 p.m. on 2022-06-30 (coded 2022-06-30, as for HB 2001's deadline) | https://www.portland.gov/sites/default/files/code/205-acc-dwelling-unit.pdf |
 | OR-4159000-missing_middle-2021 | Portland | **Confirmed (Ben's agent, 2026-11-04):** 4 units (6 if half affordable) in R7, R5, R2.5; Ord. 190093 adopted 2020-08-12, effective 2021-08-01 (Ord. 190851 Finding 10) | https://www.portland.gov/bps/planning/rip/documents/exhibit-b-volume-2-code-and-commentary/download |
-| OR-4159000-parking-2021 | Portland | Parking minimums removed in single-dwelling zones from 2021-08-01 | same as above |
+| OR-4159000-parking-2021 | Portland | **Confirmed (Ben's agent, 2026-11-04):** no parking minimum for household living in single-dwelling zones from 2021-08-01 (Ord. 190093; packet #198) | same as above |
 | OR-4159000-missing_middle-2022-rip2 | Portland | RIP2 scope and date; quote came through a short fetch extract | https://www.portland.gov/council/documents/ordinance/passed/190851 |
 | OR-4159000-fees-2010 | Portland | Res. 36766 itself (coded from Ord. 189050's findings); extension dates | https://efiles.portlandoregon.gov/Record/12080419/File/Document |
 | OR-4159000-fees-2018 | Portland | Waiver terms; fee_change_usd −16,130 and its dollar year | same as above |
