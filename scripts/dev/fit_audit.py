@@ -189,7 +189,10 @@ def main() -> None:
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     store, cs = DataStore(), cal.count_settings()
-    places, test = run.four_state_places(store, cs), run._test_set(store, cs)
+    places, test = (
+        run.four_state_places(store, cs, params=run.pre_d048()),
+        run._test_set(store, cs, params=run.pre_d048()),
+    )
     print(f"=== D-045 audit: {len(places)} fit places, {len(test)} test places, counts {cs} ===", flush=True)
     with ProcessPoolExecutor(a.workers) as pool:
         res = list(pool.map(_fit_task, [(places, test, st) for st in ("",) + run.STATES]))

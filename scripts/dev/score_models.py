@@ -67,8 +67,14 @@ def main() -> None:
     a.out.mkdir(parents=True, exist_ok=True)
     store, cs = DataStore(), cal.count_settings()
     p = adu.central_params()
-    places, test = run.four_state_places(store, cs), run._test_set(store, cs)
-    places_d, test_d = run.four_state_places(store, cs, True), run._test_set(store, cs, True)
+    places, test = (
+        run.four_state_places(store, cs, params=run.pre_d048()),
+        run._test_set(store, cs, params=run.pre_d048()),
+    )
+    places_d, test_d = (
+        run.four_state_places(store, cs, True, params=run.pre_d048()),
+        run._test_set(store, cs, True, params=run.pre_d048()),
+    )
     print(f"=== D-049: {len(places)} fit places, {len(test)} test places ===", flush=True)
 
     with ProcessPoolExecutor(a.workers) as pool:

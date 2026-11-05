@@ -24,6 +24,15 @@ def test_ramp_by_hand():
     assert np.all(np.diff(hazard.ramp(np.arange(0, 10), 2.0, 0.75)) > 0)  # never falls
 
 
+def test_adu_ramp_is_one_from_year_one_under_d048():
+    """D-048: a rule is at full strength in every year it is in force; the pre-D-048 logistic is kept to
+    reproduce earlier fits (t = 1 -> 0.2086, as test_ramp_by_hand)."""
+    assert P["adu_ramp_share"] == 1.0
+    assert hazard.adu_ramp([0.5, 1, 2, 5, 40], P) == pytest.approx([1.0] * 5)
+    old = hazard.adu_ramp([1, 2], P | hazard.PRE_D048_RAMP)
+    assert old == pytest.approx([1 / (1 + math.exp(4 / 3)), 0.5])
+
+
 def test_feasible_share_by_hand():
     """PCR = 1 + margin -> exactly half the lots pencil; one σ above -> Φ(1) = 0.8413; PCR 0 -> none."""
     assert hazard.feasible_share(1.1, 0.10, 0.5) == pytest.approx(0.5)

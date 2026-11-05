@@ -1,5 +1,5 @@
 # ADU hazard (model/hazard.py): the yearly chance that an eligible single-family parcel adds an ADU, transported
-# from strong reforms in high-cost cities by price-to-cost, home equity and mortgage rates, phased in by a ramp.
+# from strong reforms in high-cost cities by price-to-cost, home equity and mortgage rates (no ramp-in, D-048).
 # Dollar amounts in 2025 dollars. Reference and calibration values are recomputed by scripts/dev/adu_reference.py
 # and are fixed (low = high): they describe the reference cities, they are not uncertain inputs.
 # "Judgment" marks values with no published estimate; their ranges are wide and include no effect where it is
@@ -121,21 +121,15 @@ adu_fee_per_unit_usd:
   source: "E073 (Terner 2019): many California cities waive ADU fees, others charge up to $50k; the Handbook ADU scenario does not change fees. No fee is assumed for the reference or the target alike"
   notes: "Fixed at 0 until local ADU fees are coded; a local fee would lower that place's price-to-cost."
 
-# ---- Ramp after adoption ----
+# ---- Ramp after adoption (D-048: none) ----
 
-adu_ramp_half_years:
-  value: 2.0
+adu_ramp_share:
+  value: 1.0
   low: 1.0
-  high: 3.5
-  unit: years after adoption to reach half the mature hazard
-  source: "adu-study-design.md: immediate where conversions and pent-up demand exist (LA garages, E038); 2-3 years to plateau for detached ADUs (Seattle ~3, E044); Portland kept rising ~6 years (E046); confounder C24 (builder learning)"
-
-adu_ramp_slope_years:
-  value: 0.75
-  low: 0.5
-  high: 1.5
-  unit: years (logistic scale)
-  source: "Judgment, set so the ramp goes from ~20% to ~80% of mature uptake in about 2 years (Seattle's ~3 years to plateau, E044); wider values give Portland's slower rise (E046)"
+  high: 1.0
+  unit: share of the mature hazard a rule has reached in each year it is in force (1 = full strength from year 1)
+  source: "Estimated choice, D-048 (adopted by Ben 2026-11-05): fitting D-041 with no ramp raised the log-likelihood by 55.8 with no added parameter, D-047 approach 2 chose no ramp in every fold, D-045 found counts flat or falling where the ramp expected a 3-5x rise, and D-049's held-out place scores favoured it (+52.5, 2 SE 52.2). Replaces adu_ramp_half_years 2.0 (1.0-3.5) and adu_ramp_slope_years 0.75 (0.5-1.5), the logistic ramp from adu-study-design.md (Seattle ~3 years to plateau, E044; Portland ~6, E046)"
+  notes: "Fixed, not drawn. Five-year totals are higher than under the old ramp, because a new rule reaches full strength in year 1. The old logistic is kept in code (hazard.PRE_D048_RAMP) so D-041 and earlier fits can be reproduced."
 
 # ---- Outside the calibration range ----
 

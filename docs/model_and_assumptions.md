@@ -384,8 +384,8 @@ ADU permits per eligible lot a year at the reference place's rent, home value an
 The research band puts Portland at about 4 per 1,000 (`docs/research/adu-study-design.md`); Lotline now
 **estimates the anchor from its own post-reform places: 1.04 per 1,000 (90% interval 0.45–3.17)** for a
 typical place, with large place-to-place differences, see
-"Estimating the anchor" below and D-019. The hazard carries that anchor to another place through what makes an ADU worth building there,
-and phases it in after adoption:
+"Estimating the anchor" below and D-019. The hazard carries that anchor to another place through what makes an ADU worth building there.
+Since D-048 (adopted 2026-11-05) a rule is at full strength from its first year, with no ramp-in:
 
     hazard in year t = ramp(t) × mature hazard
     mature hazard     = u × F(PCR) × (V / V_ref)^β_equity × exp(−β_rate × (r − r_ref)),  u = h_ref / F(PCR_ref)
@@ -397,7 +397,7 @@ and phases it in after adoption:
 | u | Uptake among lots that pencil, set so the reference place gets the anchor exactly. Reference and target use the same costs, so only local rent, home value and rates transport. | h_ref 0.001038 (0.000453–0.003173), estimated (D-019 fit 3) |
 | Home equity (C22) | Owners pay for most ADUs (Portland 62% cash; ~40% used home equity, E045): median home value relative to Portland's. | β_equity 0.25 (0–0.5), judgment |
 | Rates (C01, C22) | 30-year mortgage rate relative to the 2015–19 mean (3.99%), beyond the construction loan already in the pro forma. | β_rate 0.07 per point (0–0.15), judgment |
-| ramp(t) | Logistic over years since adoption: 1 / (1 + exp(−(t − half) / slope)). | half 2 years (1–3.5), slope 0.75 (0.5–1.5) |
+| ramp(t) | Share of the mature hazard reached t years after a rule took effect. 1 in every year (D-048): Lotline's own counts were flat or falling after reforms, not rising, and every fit that could choose dropped the ramp. Before D-048 it was a logistic, half 2 years, slope 0.75. | 1 (fixed) |
 
 The reference values (Portland's rent $1,573 and home value $519,222 in 2025 dollars, ACS 2015–19; the 2015–19
 mortgage rate) and the **calibration range** (rent $1,573–2,034 and home value $519k–836k across Portland,
@@ -408,7 +408,7 @@ arithmetic; the hazard scales in proportion to the anchor): rent $1,100, home va
 mortgage rate 2 points above 2015–19. PCR = 148,200 / 187,966 = 0.788; F = Φ((ln 0.788 − ln 1.1) / 0.5) =
 Φ(−0.666) = 0.253. Portland: PCR 1.127, F_ref = 0.520, so u = 0.004 / 0.520 = 0.0077. Equity 0.5^0.25 = 0.841;
 rates e^(−0.07 × 2) = 0.869. Mature hazard = 0.0077 × 0.253 × 0.841 × 0.869 = **0.00142**, 1.4 ADUs per 1,000
-eligible lots a year; in year 1 after adoption the ramp gives 21% of that.
+eligible lots a year, from year 1 after adoption (before D-048 the ramp gave 21% of that in year 1).
 
 **Outside the calibration range.** Most places Lotline covers have lower rents and home values than the
 reference cities. The formula still applies there, but it is extrapolation, so the tool says so: each place
@@ -452,9 +452,10 @@ a stress range, not a forecast), flat over 2026–2030. Backtests and validation
 each year's actual rate from `market_geo_year`.
 
 **Worked example** (`test_one_jurisdiction_year_by_hand`): 2,000 eligible parcels, mature hazard 0.0014219 (the
-hazard example), no ADU rule today. Year 1: ramp 0.2086, so 2,000 × 0.0014219 × 0.2086 = **0.593 ADU permits
-added**, all of them extra because current rules give none; additional homes = 0.593 × 0.65 × 0.90 = **0.347**.
-Year 2: (2,000 − 0.593) × 0.0014219 × 0.5 = 1.42 permits added.
+hazard example), no ADU rule today. Year 1, at full strength (D-048): 2,000 × 0.0014219 = **2.84 ADU permits added**, all of
+them extra because current rules give none; additional homes = 2.84 × 0.65 × 0.90 = **1.66**. Year 2:
+(2,000 − 2.84) × 0.0014219 = 2.84 permits added. **Five-year totals are higher than before D-048**: the old
+ramp gave 0.59 and 1.42 in years 1 and 2, because a new rule reached half strength only in year 2.
 
 **Output.** Per place and year, and as five-year totals: P10/P50/P90 and mean (over 1,000 draws of every
 uncertain parameter) of Handbook ADU permits, current-rules ADU permits, permits added and additional homes,

@@ -5,10 +5,10 @@ The anchor h_ref is the mature hazard of a typical place at the reference place'
 home value and mortgage rate, estimated from Lotline's own post-reform places (D-019 fit 3,
 `scripts/dev/calibrate_adu.py`: about 1.0 per 1,000 eligible parcels a year, 90% interval 0.45-3.2; the
 research band's Portland figure of about 4 per 1,000 is the comparison, not the anchor). The hazard
-**transports** it to another place through the things that make an ADU worth building there, then phases it
-in after adoption:
+**transports** it to another place through the things that make an ADU worth building there. A rule is at
+full strength from its first year (D-048, no ramp-in):
 
-    h(t) = ramp(t) × h_mature
+    h(t) = ramp(t) × h_mature,   ramp(t) = adu_ramp_share = 1
 
     h_mature = u × F(PCR) × (V / V_ref)^β_equity × exp(−β_rate × (r − r_ref)),   u = h_ref / F(PCR_ref)
 
@@ -29,9 +29,11 @@ in after adoption:
   the median home value V (ACS B25077) relative to the reference's, to the power β_equity. Rates: the 30-year
   mortgage rate r relative to the reference years' mean, with semi-elasticity β_rate. Both are judgment with
   ranges that include 0 (no effect).
-- **ramp(t)**, years since adoption t = 1, 2, …: a logistic with half-way point `adu_ramp_half_years` and
-  steepness `adu_ramp_slope_years`: ramp(t) = 1 / (1 + exp(−(t − half) / slope)). Detached ADUs took about
-  3 years to plateau in Seattle and kept rising about 6 years in Portland (adu-study-design.md).
+- **ramp(t)** (`adu_ramp`), years since adoption t: 1 in every year a rule is in force (D-048, adopted
+  2026-11-05). Before D-048 it was a logistic with half-way point 2 years and steepness 0.75
+  (`PRE_D048_RAMP`; ramp(t) = 1 / (1 + exp(−(t − half) / slope)), from Seattle's ~3 years to plateau and
+  Portland's ~6). Lotline's own counts were flat or falling after reforms, not rising 3-5×, and every fit
+  that could choose dropped the ramp (D-045, D-047, D-048, D-049).
 
 **Outside the calibration range.** The reference cities (Portland, Seattle, Los Angeles) are high-rent; most
 places Lotline covers are not. `calibration_distance` measures how far a place's rent, home value and mortgage
@@ -71,6 +73,23 @@ def normal_cdf(x):
     """Standard normal CDF Φ(x), elementwise (no SciPy: Φ(x) = (1 + erf(x / √2)) / 2)."""
     erf = np.vectorize(math.erf, otypes=[float])
     return 0.5 * (1.0 + erf(np.asarray(x, dtype=float) / math.sqrt(2.0)))
+
+
+PRE_D048_RAMP = {"adu_ramp_half_years": 2.0, "adu_ramp_slope_years": 0.75}
+"""The ADU ramp before D-048 (hazard.yaml until 2026-11-05), only to reproduce D-041 and earlier fits."""
+
+
+def adu_ramp(t, params: Mapping[str, float]):
+    """Share of the mature ADU hazard a rule has reached t years after it took effect.
+
+    D-048: `adu_ramp_share` (1.0) in every year. A `params` carrying `adu_ramp_half_years` and
+    `adu_ramp_slope_years` (`PRE_D048_RAMP`) gets the old logistic `ramp` instead, to reproduce earlier fits.
+    By hand: share 1 -> t = 1, 2, 5 all give 1; with PRE_D048_RAMP, t = 1 -> 0.2086 (as `ramp`).
+    """
+    t = np.asarray(t, dtype=float)
+    if "adu_ramp_half_years" in params:
+        return ramp(t, params["adu_ramp_half_years"], params["adu_ramp_slope_years"])
+    return np.full(t.shape, float(params["adu_ramp_share"]))
 
 
 def ramp(t, half_years: float, slope_years: float):

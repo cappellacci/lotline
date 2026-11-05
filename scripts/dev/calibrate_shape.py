@@ -45,7 +45,10 @@ def _d048_fold(args):
 def d048_main(out: Path, workers: int) -> None:
     """D-048: D-041 (fit 3 with its rule-share grid) with the ramp set to 1, leave one state out."""
     store, cs = DataStore(), cal.count_settings()
-    places, test = run.four_state_places(store, cs), run._test_set(store, cs)
+    places, test = (
+        run.four_state_places(store, cs, params=run.pre_d048()),
+        run._test_set(store, cs, params=run.pre_d048()),
+    )
     p = adu.central_params()
     print(f"=== D-048: {len(places)} fit places, {len(test)} test places, counts {cs} ===", flush=True)
     with ProcessPoolExecutor(workers) as pool:
@@ -117,7 +120,10 @@ def main() -> None:
         d048_main(a.out, a.workers)
         return
     store, cs = DataStore(), cal.count_settings()
-    places, test = run.four_state_places(store, cs), run._test_set(store, cs)
+    places, test = (
+        run.four_state_places(store, cs, params=run.pre_d048()),
+        run._test_set(store, cs, params=run.pre_d048()),
+    )
     p = adu.central_params()
     print(f"=== D-047: {len(places)} fit places, {len(test)} test places, counts {cs} ===", flush=True)
     portland = run._portland_paths(store, places + test, cs)

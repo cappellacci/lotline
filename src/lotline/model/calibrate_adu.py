@@ -399,11 +399,7 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
 
             def ramp_of(c, live=live):
                 return max(
-                    (
-                        float(hazard.ramp(a, p["adu_ramp_half_years"], p["adu_ramp_slope_years"]))
-                        for cc, a, _ in live
-                        if cc == c
-                    ),
+                    (float(hazard.adu_ramp(a, p)) for cc, a, _ in live if cc == c),
                     default=0.0,
                 )
 
@@ -1052,7 +1048,7 @@ def place_data(
 def hazard_ramp(age: float, params) -> float:
     from lotline.model import hazard
 
-    return float(hazard.ramp(age, params["adu_ramp_half_years"], params["adu_ramp_slope_years"]))
+    return float(hazard.adu_ramp(age, params))
 
 
 # ---------------------------------------------------------------------------------------------------------

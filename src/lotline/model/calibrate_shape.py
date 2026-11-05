@@ -20,6 +20,7 @@ from lotline.model import calibrate_adu as cal
 from lotline.model import hazard
 
 NO_RAMP = -1.0  # half-life code for "no ramp": ramp = 1 from the first year
+RAMP_SLOPE = 0.75  # D-047 held the slope at its then-central value (hazard.PRE_D048_RAMP)
 GRID_HALF = (NO_RAMP, 0.5, 1.0, 2.0, 3.5, 6.0)  # pre-registered
 GRID_EQUITY = (0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0)
 GRID_SIZE = (-0.6, -0.4, -0.2, 0.0, 0.2)
@@ -46,7 +47,7 @@ def shaped(pl: cal.PlaceData, half: float, equity: float, size: float, p) -> cal
     if half == NO_RAMP:
         ramp = np.where(live, 1.0, 0.0)
     else:
-        ramp = np.where(live, hazard.ramp(np.nan_to_num(age), half, p["adu_ramp_slope_years"]), 0.0)
+        ramp = np.where(live, hazard.ramp(np.nan_to_num(age), half, RAMP_SLOPE), 0.0)
     value = (ex["home_value"] / p["adu_ref_home_value_usd"]) ** (equity - p["adu_equity_elasticity"])
     scale = (float(np.mean(ex["parcels"])) / SIZE_REF) ** size
     return dataclasses.replace(pl, base=pl.base * value * scale, cr=ex["cov"] * ramp)
