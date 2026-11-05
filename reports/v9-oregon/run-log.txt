@@ -1,0 +1,3 @@
+V9 missing-middle score; freeze commit 64f617276cf67314ae07ae6d209ff7f2d822b612; place-years with no BPS row: 74
+places reached before 2025: n=62, mean randomized coverage 0.572, below P10 0.210, above P90 0.177, verdicts {'inside only': 20, 'useful': 18, 'missed (over)': 13, 'missed (under)': 11}
+places 2025 tier: n=34, mean randomized coverage 0.426, below P10 0.088, above P90 0.382, verdicts {'inside only': 15, 'missed (under)': 13, 'missed (over)': 3, 'useful': 3}
