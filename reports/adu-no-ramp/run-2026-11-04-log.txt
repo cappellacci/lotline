@@ -1,0 +1,22 @@
+=== D-048: 51 fit places, 2 test places, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+all four states: theta 0.659 per 1,000 (0.443-1.023), alpha 2.214, m_o 1.0 (1.0, 1.0), m_x 0.3 (0.4, 1.0), loglik -327.881
+without MN: theta 1.163 per 1,000 (0.695-2.044), alpha 0.715, m_o 0.5 (0.2, 1.0), m_x 0.3 (0.5, 1.0), loglik -129.836
+without NC: theta 0.706 per 1,000 (0.441-1.202), alpha 2.871, m_o 1.0 (1.0, 1.0), m_x 0.3 (0.3, 1.0), loglik -275.386
+without OH: theta 0.669 per 1,000 (0.445-1.053), alpha 2.311, m_o 1.0 (1.0, 1.0), m_x 0.3 (0.4, 1.0), loglik -322.668
+without TX: theta 0.560 per 1,000 (0.369-0.893), alpha 2.121, m_o 1.0 (1.0, 1.0), m_x 0.3 (0.3, 1.0), loglik -252.156
+
+D-048: leave one state out
+                     group  places  place_years  observed   p10   p50    p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 218.0 485.0 1118.0 599.70          0.59          5.13   6011.53      useful
+                        NC       6           32        45  19.0  75.0  239.0 109.12          0.60         12.58    990.73      useful
+                        OH       1            2         8   0.0   6.0   48.0  16.96          1.33           inf    131.01      useful
+                        TX       2           13      1108  31.0 235.5  977.0 422.72          4.70         31.52  12069.03      missed
+NC with Raleigh and Durham       8           42       455  63.0 227.0  717.0 335.04          2.00         11.38   3587.74 inside only
+
+D-048: test set from the full fit
+             group  places  place_years  observed  p10   p50   p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+Raleigh and Durham       2           10       410 14.0 120.0 496.0 207.64          3.42         35.43   2597.01 inside only
+
+Log-likelihood -327.881 (D-041 -383.718): gain 55.837
+K1 0.870 (D-041 0.791); missed 1; median P90/P10 22.0 (D-041 28.0); test set inside only
+Adoption rule: none missed False; K1 < 0.791 False; test set not missed True -> keep D-041

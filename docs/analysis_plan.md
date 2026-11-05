@@ -2861,3 +2861,21 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - θ, α and the D-030 anchor terms (`adu_anchor.yaml`) are refitted under D-048 and written to config.
   - Five-year totals will rise, because reforms reach full strength in year 1. The dashboard and the
     scenario comparison must say so.
+- **Results (run 2026-11-04 on 3c5228d; `reports/adu-no-ramp/`, log `run-2026-11-04-log.txt`):**
+  - **Full fit:** θ 0.659 per 1,000 (0.443–1.023), α 2.214, m_o 1.0, m_x 0.3. Log-likelihood −327.881, a
+    gain of 55.8 over D-041 with no added parameter. In-sample, no ramp is decisively better.
+  - **Leave one state out:** MN, NC and OH useful; **TX missed** (observed 1,108, P50 236, P90 977); NC with
+    Raleigh and Durham inside only (2.00). K1 0.870; median P90/P10 22.0.
+  - **Test set:** inside only, observed ÷ P50 3.42 (D-041 2.58).
+  - **Adoption rule:** TX missed and K1 not below 0.791. **Not adopted; D-041 stays.**
+  - **WS-ENGINE's notes, for Ben:**
+    - **D-041's better transfer is partly the ramp compensating.** In MN, many places' rules are young, so
+      the ramp shrinks their expected counts and the fit raises θ to match. Without TX, θ is 1.16 per 1,000
+      with the ramp and 0.56 without. TX's rules are old (ramp near 1), so its prediction scales with θ.
+      The ramp helped TX through θ, not through a better description of TX.
+    - **The yardstick is too noisy to choose between these models.** D-045's noise floor: a correct model
+      gives K1 about 1.24 on four state totals, and is useful for TX only 38% of the time. So K1 0.79 against
+      0.87, and TX inside or just missed, are within noise. Austin alone (3.4× expected under D-041, ×8.7
+      San Antonio's rate) decides the TX verdict for every model tried.
+    - Proposed next entry: a sharper model-comparison yardstick, held-out log score per place, before
+      choosing between D-041 and D-048.

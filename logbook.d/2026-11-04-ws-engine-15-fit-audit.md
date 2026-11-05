@@ -72,3 +72,18 @@
 - **Decisions:** none adopted. Proposed D-048: D-041 without the ramp, nothing else changed.
 - **AI:** Claude Code (Opus 5.5) wrote D-047, the code (including a NumPy Nelder-Mead) and tests, ran it
   once, and wrote up the results from the log.
+
+### LB-NNN · 2026-11-04 · engine · Does dropping only the ramp improve the fit out of state?
+
+- **Question:** D-047 rejected the ramp in every fold. Does D-041 without the ramp, nothing else changed,
+  predict held-out states better? Ben approved D-048.
+- **Outputs:** D-048 in `docs/analysis_plan.md` (04f9fde, which also corrects D-047's test-set note); code
+  and test in 3c5228d; run once into `reports/adu-no-ramp/`.
+- **Findings:**
+  - In-sample the log-likelihood gains 55.8 with no added parameter.
+  - Out of state, TX is missed (P90 977 against 1,108) and K1 is 0.87. Not adopted; D-041 stays.
+  - D-041's TX result leaned on the ramp raising θ.
+  - Four state totals are too noisy a yardstick to separate these models; Austin decides TX for every one.
+- **Decisions:** none adopted. Proposed next: a held-out log score per place as the yardstick.
+- **AI:** Claude Code (Opus 5.5) wrote D-048, the code and test, ran it once, and wrote up the results from
+  the log.
