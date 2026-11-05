@@ -2799,3 +2799,40 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Amendment, 2026-11-04, before any run:** in approach 3, a covariate with no variation in a fold's fit
   set is not identified (for example attached-only without MN). It is held at 0 with no variance in that
   fold. The intercept and α are always estimated. The covariance is symmetrized before drawing.
+- **Results (run 2026-11-04 on 5c667f1; `reports/adu-shape/`, log `run-2026-11-04-log.txt`):**
+  - **Approach 2, full fit:**
+    - The grid picks no ramp, equity elasticity 0 and size 0. No ramp is the only value inside its 90%
+      interval, and the same holds in every fold. Equity sits at the grid's lower edge (interval 0–0); size's
+      interval is −0.2 to 0.2.
+    - θ 0.630 per 1,000 (0.421–0.986). θ is lower than D-041's because early years now count at full
+      strength.
+    - α 2.259. Log-likelihood −324.259, a gain of 59.5 over D-041, almost all of it from dropping the ramp.
+  - **Approach 2, leave one state out:** MN, NC and OH useful; **TX missed**, observed ÷ P50 17.3.
+    - The fold without TX picks size −0.4, from MN-dominated data.
+    - Austin (151,000 eligible parcels) and San Antonio (362,000) are larger than any fit place in that
+      fold; the largest, Minneapolis, has 75,000. So the size term cuts their prediction by 3 to 4 times.
+    - K1 1.482; median P90/P10 18.8. Test set from the full fit: inside only, observed ÷ P50 3.3.
+  - **Approach 2 adoption rule:** the gain passes; missed 1 and K1 1.482 fail. **Not adopted.**
+  - **Approach 3, full fit:** log-likelihood −294.027, α 1.344.
+    - Coefficients: rent −5.33 (SE 1.38), home value +1.87 (0.63), restricted +0.49 (0.17), attached-only
+      −1.54 (0.70). Rate, size and rule age are near 0.
+    - The rent sign is the opposite of the pro forma's. Rent and home value move together, so the two are
+      partly trading off.
+  - **Approach 3, leave one state out:** MN and NC useful; OH (observed ÷ P50 0.20) and TX (2.95) inside
+    only; NC with Raleigh and Durham missed (2.66).
+    - K1 1.042; median P90/P10 15.0. Test set from the full fit: **missed**, observed ÷ P50 4.3.
+  - **Approach 3 reading rule:** its K1 (1.042) is more than 0.10 below approach 2's (1.482), with no state
+    of the four missed, so the rule as written says "revisit D-037".
+    - **The rule was mis-specified:** it compared approach 3 with approach 2 only, not with D-041. D-041's
+      K1 is 0.791, lower than both, and D-041 misses nothing, including the test set.
+    - WS-ENGINE reads this as: the mechanism transfers better than the empirical model. The written rule's
+      trigger is reported as fired; Ben decides.
+  - **What the two approaches show together:**
+    - In-sample, both fit far better than D-041: AIC 662.5 (approach 2) and 606.1 (approach 3) against
+      775.4.
+    - Out of state, both transfer worse. The shapes learned from 51 places, 42 of them MN, do not carry to
+      other states. Texas's cities are outside the fit's size range, and rent and home value trade off.
+    - **The one robust finding is the ramp.** No ramp wins in every fold with a tight interval, and the
+      audit's year-by-year residuals pointed the same way. The equity and size terms are not robust.
+  - **WS-ENGINE's proposal, for Ben (D-048, not yet written):** D-041 with the ramp removed and nothing
+    else changed, scored on the same leave-one-state-out test. Nothing in config changes from this entry.

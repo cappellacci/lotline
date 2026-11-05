@@ -52,3 +52,23 @@
 - **Decisions:** none adopted; D-041 stays. Any change to the structure needs a new entry.
 - **AI:** Claude Code (Opus 5.5) wrote D-046, the code and tests, ran it once, and wrote up the results
   from the log.
+
+### LB-NNN · 2026-11-04 · engine · Can the data set the model's shape (approach 2) or replace it (approach 3)?
+
+- **Question:** Ben chose approaches 2 and 3: free three shape terms on the mechanism, and race it against
+  an empirical model.
+- **Outputs:**
+  - D-047 in `docs/analysis_plan.md`: pre-registered in 9fd843c, with an amendment before the run.
+  - `src/lotline/model/calibrate_shape.py` and `tests/model/test_calibrate_shape.py`; `place_data` now keeps
+    each year's inputs (`extra`). Code in 5c667f1.
+  - `scripts/dev/calibrate_shape.py`, run once into `reports/adu-shape/`.
+- **Findings:**
+  - Both fit far better in-sample, but transfer worse than D-041 (K1 1.48 and 1.04 against 0.79).
+  - Approach 2 misses TX: a size term learned without TX extrapolates to cities larger than any fit place.
+  - Approach 3's rent coefficient has the wrong sign, and it misses the Raleigh/Durham test set.
+  - The ramp is rejected in every fold. That is the one robust finding.
+  - Approach 3's written reading rule fired ("revisit D-037"). It compared against approach 2 rather than
+    D-041, so it was mis-specified; this is flagged for Ben.
+- **Decisions:** none adopted. Proposed D-048: D-041 without the ramp, nothing else changed.
+- **AI:** Claude Code (Opus 5.5) wrote D-047, the code (including a NumPy Nelder-Mead) and tests, ran it
+  once, and wrote up the results from the log.
