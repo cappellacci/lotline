@@ -164,3 +164,22 @@ def test_local_rows_for_portland_bend_and_metro_adopters(reforms):
     # Late Metro adopters replace the state row rather than standing beside it
     for rid in ("OR-4173650-missing_middle-2022-local", "OR-4140550-missing_middle-2022-local"):
         assert r.loc[rid, "supersedes"] == rid.removesuffix("-local")
+
+
+@pytest.mark.parametrize("geoid", ["4173650", "4140550"])  # Tigard, Lake Oswego: local code a week late
+def test_late_adopters_keep_state_coverage_until_their_own_code_takes_over(reforms, geoid):
+    """The supersede rule of `model/scenarios/adu._live`: a row drops out only when a row superseding it is
+    itself in force. The state chain (HB 2001 row, then its SB 458 land-division row from 07-01) covers the
+    place from 2022-06-30 with no gap; the local row adds itself from 07-07 and never before."""
+
+    def live(day):
+        r = reforms[(reforms["jurisdiction_geoid"] == geoid) & (reforms["theme"] == "missing_middle")]
+        r = r[(r["effective_date"] <= pd.Timestamp(day)) & (r["end_date"].isna() | (r["end_date"] > day))]
+        return set(r["reform_id"]) - set(r["supersedes"].dropna())
+
+    state = {f"OR-{geoid}-missing_middle-2022", f"OR-{geoid}-missing_middle-2022-landdiv"}
+    local = f"OR-{geoid}-missing_middle-2022-local"
+    assert live("2022-06-29") == set()
+    for day in ("2022-06-30", "2022-07-01", "2022-07-06"):
+        assert live(day) & state and local not in live(day), day
+    assert local in live("2022-07-07") and live("2022-07-07") & state
