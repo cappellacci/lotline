@@ -1,0 +1,9 @@
+geoid,variant,period,target,observed,p10,p50,p90,mean,obs_over_p50,coverage_rand,verdict,crps_model,observed_flagged
+4159000,transfer,2018-2025,"ADU permits, Portland city",1930.0,3.0,150.5,1418.0,585.191,12.824,0.0,missed (under),1242.474,2260.0
+4159000,transfer,2018-2022,"ADU permits, Portland city",1446.0,1.0,79.5,703.4,304.488,18.189,0.0,missed (under),1052.599,1701.0
+4159000,own_history,2018-2025,"ADU permits, Portland city",1930.0,4069.5,8579.5,17832.4,10109.291,0.225,0.0,missed (over),4934.352,2260.0
+4159000,own_history,2018-2022,"ADU permits, Portland city",1446.0,2255.8,4400.5,8548.0,5061.894,0.329,0.0,missed (over),2135.595,1701.0
+4105800,transfer,2018-2025,"ADU permits, Bend city",414.0,0.0,22.0,206.0,108.533,18.818,0.0,missed (under),302.572,484.0
+4105800,transfer,2018-2022,"ADU permits, Bend city",271.0,0.0,13.0,126.2,69.569,20.846,0.0,missed (under),201.591,333.0
+4105800,own_history,2018-2025,"ADU permits, Bend city",414.0,0.0,22.0,206.0,108.533,18.818,0.0,missed (under),302.572,484.0
+4105800,own_history,2018-2022,"ADU permits, Bend city",271.0,0.0,13.0,126.2,69.569,20.846,0.0,missed (under),201.591,333.0

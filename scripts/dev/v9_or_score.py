@@ -12,11 +12,16 @@
    (useful: inside P10-P90 and P50 within ×2; inside only; missed), for 2018-2025 and 2018-2022; for the
    Oregon totals also the CRPS against a no-reform benchmark, Poisson(B_i) each year.
 
-ADU targets are scored once the Portland and Bend permit adapters exist (not yet).
+4. ADU targets (D-051, D-052): ADU permits from the Portland and Bend permit adapters (unblinded in memory),
+   counted as D-041 (`calibrate_adu.adu_counts` with `count_settings()`: co-built dropped, issue year), each
+   variant scored as above, plus D-052's gain (CRPS of own-history against transfer). Also written, and
+   labelled: flagged-permit counts (no co-built rule), and a POST-HOC re-run of the own-history variant on the
+   adapters' own 2010-2017 D-041 counts (not pre-registered; a diagnostic only).
 """
 
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 
@@ -25,6 +30,7 @@ import pandas as pd
 
 from lotline.adapters.national import bps
 from lotline.io import DataStore
+from lotline.model import calibrate_adu
 from lotline.model import estimate_mm as mm
 from lotline.model.baseline import crps_from_draws, randomized_coverage
 from lotline.validation import v9
@@ -32,6 +38,7 @@ from lotline.validation import v9
 REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "reports" / "v9-oregon"
 BENCH_SEED = 1
+ADU_SOURCES = {"4159000": "portland_permits", "4105800": "bend_permits"}
 
 
 def regenerate(store: DataStore, frozen: dict) -> dict:
@@ -79,6 +86,62 @@ def score(label: str, draws: np.ndarray, ob: float, bench: np.ndarray | None = N
         r["crps_no_reform"] = float(crps_from_draws(np.asarray(bench, float)[None, :], np.array([ob]))[0])
         r["no_reform_p50"] = float(np.percentile(bench, 50))
     return r
+
+
+def adu_counts(store: DataStore, geoid: str) -> tuple[pd.Series, pd.Series]:
+    """(D-041 counts, flagged permits) by issue year for one ADU target, outcomes unblinded in memory."""
+    from lotline.model.scenarios import adu
+
+    m = importlib.import_module(f"lotline.adapters.states.or.{ADU_SOURCES[geoid]}")
+    p = m.load("OR", store, unblind=(v9.TEST_ID,))
+    c = calibrate_adu.adu_counts(p, 2010, max(v9.YEARS), calibrate_adu.count_settings())
+    flagged = p[adu._is_adu(p) & (p["jurisdiction_geoid"] == geoid)].groupby("issue_year").size()
+    return c[c["geoid"] == geoid].set_index("year")["adu_permits"], flagged
+
+
+def score_adu(store: DataStore, g: dict, frozen: dict) -> list[str]:
+    adu_in, years = g["adu_in"], g["adu_in"].years
+    periods = {"2018-2025": np.ones(len(years), bool), "2018-2022": years <= v9.SUBTOTAL_LAST}
+    rows, yearly, pre = [], [], []
+    for i, geo in enumerate(adu_in.geoids):
+        d041, flagged = adu_counts(store, geo)
+        ob = np.array([float(d041.get(int(y), 0)) for y in years])
+        for j, y in enumerate(years):
+            yearly.append(
+                {"geoid": geo, "year": int(y), "d041": ob[j], "flagged": int(flagged.get(int(y), 0))}
+            )
+        pre += [
+            {"geoid": geo, "year": int(y), "adu_permits": int(v)} for y, v in d041.items() if y < min(years)
+        ]
+        for variant, key in (("transfer", "adu"), ("own_history", "adu_hist")):
+            for per, ym in periods.items():
+                x = g[key][:, i, ym].sum(axis=1)
+                r = {"geoid": geo, "variant": variant, "period": per}
+                r |= score(f"ADU permits, {adu_in.names[i]}", x, ob[ym].sum())
+                r["crps_model"] = float(crps_from_draws(x[None, :], np.array([ob[ym].sum()]))[0])
+                r["observed_flagged"] = float(sum(int(flagged.get(int(y), 0)) for y in years[ym]))
+                rows.append(r)
+    t = pd.DataFrame(rows)
+    t.round(3).to_csv(OUT / "adu_scores.csv", index=False)
+    pd.DataFrame(yearly).to_csv(OUT / "adu_by_year.csv", index=False)
+    # POST-HOC diagnostic (not pre-registered): own history from the adapters' 2010-2017 D-041 counts
+    pre = pd.DataFrame(pre)
+    ok = pre[(pre["geoid"] != "4105800") | (pre["year"] >= 2013)]  # Bend: no ADU code before 2013
+    h = v9.adu_history(
+        "OR", store, adu_in.geoids, ok.assign(source_url="adapter", source_section="", quote="")
+    )
+    x = v9.adu_draws(adu_in, frozen["draws"], frozen["seed"], history=h).sum(axis=2)
+    post = [
+        {"geoid": geo, "label": "POST-HOC: own history on adapter D-041 counts 2010-2017 (Bend 2013-2017)"}
+        | dict(zip(("p10", "p50", "p90"), np.percentile(x[:, i], [10, 50, 90]).round(1), strict=True))
+        for i, geo in enumerate(adu_in.geoids)
+    ]
+    pd.DataFrame(post).to_csv(OUT / "adu_posthoc_history.csv", index=False)
+    print(t.round(2).to_string(index=False))
+    return [
+        f"{r.target} {r.variant} {r.period}: obs {r.observed:.0f}, {r.p10:.0f}-{r.p90:.0f}, {r.verdict}"
+        for r in t.itertuples()
+    ]
 
 
 def main() -> None:
@@ -138,9 +201,10 @@ def main() -> None:
             f"above P90 {(q['observed'] > q['p90']).mean():.3f}, "
             f"verdicts {q['verdict'].value_counts().to_dict()}"
         )
+    print(pd.DataFrame(totals).round(2).to_string(index=False))
+    lines += score_adu(store, g, frozen)
     (OUT / "run-log.txt").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
-    print(pd.DataFrame(totals).round(2).to_string(index=False))
 
 
 if __name__ == "__main__":
