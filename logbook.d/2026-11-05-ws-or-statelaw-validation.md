@@ -1,0 +1,27 @@
+### LB-NNN · 2026-11-05 · WS-OR: apply the validation of Oregon's state-law rows
+- **Question:** Do the 2023 duplex-tier rows (50 cities) and the 28 county SB 1051 ADU rows in `config/reforms/or.csv` hold up against the session laws and local ordinances, and what changes before the V9 freeze?
+- **What I did:** Claude Code (WS-OR worktree) read Ben's ordinance-validation agent's two result sheets as plain text (downloaded files, not committed) and checked each change against the sheets' own source columns. It summarized the 78 verdicts in its own words in a committed sheet, taught the generator to apply them (notes, `verified_by`) and to move cities that PSU's certified estimates had put over 10,000 into HB 2001's medium tier, and switched the county ADU rows' citation to 2018 c.15. It also wrote 8 local rows and updated the readiness report. It read the 2018 c.15 session law (an Internet Archive copy of the official PDF) to confirm the §7 UGB wording, the operative date in §12 and the 2018-03-16 approval. It opened no city or county page; the values in the local rows are the agent's readings.
+- **Inputs:** `~/Downloads/or_duplex_tier_2025_check.csv` and `~/Downloads/or_county_adu_2018_check.csv` (Ben's agent, 2026-11-05); Oregon Laws 2018 c.15.
+- **Outputs:**
+  - `config/reforms/or.csv`: 556 rows, 526 generated and 30 local. 128 generated rows are now verified.
+  - `scripts/dev/or_state_reform_rows.py`: adds `PSU_MEDIUM`, `apply_checks` and the 2018 c.15 citation.
+  - `docs/research/ordinances/or-state-law-check-2026-11-05.csv`.
+  - `tests/states/or/test_reforms.py`: 4 new tests, 34 in the Oregon suite.
+  - `docs/build/or-readiness.md`: §1, §3, §4 and §5.
+- **Findings:**
+  - **Tier and deadline confirmed** for 47 of the 50 cities.
+  - **Wrong tier:** Independence, Lincoln City and Sweet Home were HB 2001 medium cities by PSU's certified estimate before 2023 c.223. Their duty dates are computed: 2022-12-15, 2022-12-15 and 2023-12-15. Each city's own earlier code now has a row: 2022-08-11 and 2022-04-27 (both computed, `DATE UNCONFIRMED`) and 2022-10-27. The HB 2001 universe count rises from 58 to 61.
+  - **Florence** adopted its own code from 2023-08-17.
+  - **Partial zones before 2010:** Scappoose and Stayton get `[predates]` rows.
+  - **County ADU rows:** values confirmed; the citation is now 2018 c.15 §§7 and 12. Clackamas (2014) and Marion (2017) get earlier local rows. 10 counties were not researched locally.
+  - **Blind:** the agent saw post-2017 counts on one Clackamas page and one Florence page. Neither was opened here or cited.
+- **Decisions:**
+  - Own codes whose dates fall in the same 1 July reading year as the state duty are noted, not coded: Dayton, Millersburg, Sublimity and Toledo in 2025, and Sweet Home's Ord. 1321 land divisions in 2023.
+  - Partial-zone rows are coded only where the source dates the rule before 2010.
+  - Proposed HANDOFF row: tiers near a threshold follow PSU certified estimates where a check found a difference (the statutes are silent; DLCD uses PSU).
+- **AI:** Claude Code wrote the sheet, the generator changes, the rows, the tests and the report edits. Checks: `--check` clean; full suite 1,436 passed; `compliance_check.py` 0 FAIL; ruff clean.
+- **Open / next:**
+  - Signed ordinances for the `DATE UNCONFIRMED` rows.
+  - Stayton's zone columns.
+  - The 10 counties not researched.
+  - Merge before WS-ENGINE runs the V9 freeze (target: before Nov 20).

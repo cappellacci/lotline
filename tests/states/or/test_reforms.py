@@ -88,6 +88,50 @@ def test_amendments_supersede_rows_that_exist(synthetic):
     assert set(sup) <= ids
 
 
+def test_a_city_over_10000_by_psu_estimate_moves_to_the_medium_tier_at_its_own_date():
+    """Tenk (10,000 by the Census) is in the 2,500-10,000 tier, unless a certified estimate already made it a
+    medium city: then its duplex and land-division rows start one year after certification, not 2025-06-30."""
+    places = pd.DataFrame([p[:3] for p in PLACES], columns=["geoid", "name", "pop"])
+    counties = pd.DataFrame(COUNTIES, columns=["geoid", "name", "pop"])
+    late = {"4100003": ("2022-12-15", "Tenk", "10,050 (synthetic)")}
+    df = gen.generate(places, counties, {p[0] for p in PLACES if p[3]}, late=late).set_index("reform_id")
+    assert "OR-4100003-missing_middle-2025" not in df.index
+    assert df.loc["OR-4100003-missing_middle-2022", "effective_date"] == "2022-12-15"
+    assert df.loc["OR-4100003-missing_middle-2022", "unit_cap"] == "2"
+    assert df.loc["OR-4100003-missing_middle-2022-landdiv", "effective_date"] == "2022-12-15"
+    assert "OR-4100005-missing_middle-2025" in df.index  # others in the tier are unchanged
+
+
+def test_validation_notes_reach_the_checked_rows_and_fail_loudly_when_they_miss(synthetic):
+    places = pd.DataFrame([p[:3] for p in PLACES], columns=["geoid", "name", "pop"])
+    counties = pd.DataFrame(COUNTIES, columns=["geoid", "name", "pop"])
+    metro = {p[0] for p in PLACES if p[3]}
+    checks = pd.DataFrame(
+        [("4100005", "missing_middle", "confirmed", "ok"), ("41001", "adu", "corrected", "UGB")],
+        columns=["jurisdiction_geoid", "theme", "verdict", "note"],
+    )
+    df = gen.generate(places, counties, metro, checks=checks).set_index("reform_id")
+    marked = set(df.index[df["verified_by"] != ""])
+    assert marked == {
+        "OR-4100005-missing_middle-2025",
+        "OR-4100005-missing_middle-2025-landdiv",
+        "OR-41001-adu-2018",  # the 2018 county row only, not its 2020 amendment
+    }
+    assert df.loc["OR-41001-adu-2018", "coding_notes"].endswith("(corrected): UGB")
+    bad = pd.concat(
+        [checks, pd.DataFrame([("4100001", "missing_middle", "confirmed", "x")], columns=checks.columns)]
+    )
+    with pytest.raises(ValueError, match="4100001"):  # a large-tier city was not in the checked set
+        gen.generate(places, counties, metro, checks=bad)
+
+
+def test_county_adu_rows_cite_2018_c15_for_the_ugb_limit_and_cities_cite_sb1051(synthetic):
+    s = synthetic.set_index("reform_id")
+    assert s.loc["OR-41001-adu-2018", "source_url"] == gen.C15
+    assert "urban growth boundary" in s.loc["OR-41001-adu-2018", "source_quote"]
+    assert s.loc["OR-4100001-adu-2018", "source_url"] == gen.SB1051
+
+
 def test_local_rows_survive_regeneration(tmp_path, synthetic):
     local = {c: "" for c in gen.COLUMNS} | {"reform_id": "OR-4159000-adu-2010", "coding_notes": "local row"}
     path = tmp_path / "or.csv"
@@ -164,6 +208,34 @@ def test_local_rows_for_portland_bend_and_metro_adopters(reforms):
     # Late Metro adopters replace the state row rather than standing beside it
     for rid in ("OR-4173650-missing_middle-2022-local", "OR-4140550-missing_middle-2022-local"):
         assert r.loc[rid, "supersedes"] == rid.removesuffix("-local")
+
+
+def test_validation_2026_11_05_is_applied_to_the_committed_file(reforms):
+    """Ben's validation agent checked the 2,500-10,000 duplex tier (50 cities) and the 28 county ADU rows."""
+    r = reforms.set_index("reform_id")
+    gen_rows = r[r["coding_notes"].str.startswith(gen.GENERATED)]
+    checked = gen_rows[gen_rows["verified_date"] == pd.Timestamp("2026-11-05")]
+    assert (checked["theme"] == "adu").sum() == 28
+    assert (checked["theme"] == "missing_middle").sum() == 100  # 50 cities: duplex row + land-division row
+    assert (gen_rows["source_url"] == gen.C15).sum() == 28
+    # Three cities were in the wrong tier: medium cities by PSU's certified estimate before 2023 c.223
+    for g, (day, _, _) in gen.PSU_MEDIUM.items():
+        assert f"OR-{g}-missing_middle-2025" not in r.index
+        mm = r[(r["jurisdiction_geoid"] == g) & r.index.str.startswith(f"OR-{g}-missing_middle-20")]
+        state = mm[mm["coding_notes"].str.startswith(gen.GENERATED)]
+        assert set(state["effective_date"]) == {pd.Timestamp(day)}
+        local = mm[~mm["coding_notes"].str.startswith(gen.GENERATED)]
+        assert len(local) == 1 and local["effective_date"].iloc[0] < pd.Timestamp(day)  # own code came first
+    # Florence's own code (2023) before the 2025 deadline; Winston's came after it, so the state date stands
+    assert r.loc["OR-4126050-missing_middle-2023-local", "effective_date"] == pd.Timestamp("2023-08-17")
+    assert r.loc["OR-4183400-missing_middle-2025", "effective_date"] == pd.Timestamp("2025-06-30")
+    assert not r.index.str.startswith("OR-4183400-missing_middle-2025-local").any()
+    # Partial zones before the window: in force from before 2010, covering only the listed zones
+    for rid, zones in (
+        ("OR-4165500-missing_middle-2004-local", "R-1"),
+        ("OR-4170200-missing_middle-2007-local", "LD;MD"),
+    ):
+        assert r.loc[rid, "coverage_zones"] == zones and r.loc[rid, "coding_notes"].startswith("[predates]")
 
 
 @pytest.mark.parametrize("geoid", ["4173650", "4140550"])  # Tigard, Lake Oswego: local code a week late
