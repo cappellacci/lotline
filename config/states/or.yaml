@@ -23,4 +23,23 @@ holdouts:
     reason: >-
       V9 transfer test: predict Oregon's ADU and middle-housing permits 2018 on from the MN/NC/OH/TX
       calibration, freeze, then unblind and pool Oregon into the calibration (validation plan V9)
-sources: []  # added by WS-OR with each adapter
+sources:  # added by WS-OR with each adapter
+  - name: portland_permits
+    url: https://opendata.arcgis.com/api/v3/datasets/02d99db039e0428da88262bff513056a_89/downloads/data?format=csv&spatialRefId=4326
+    license: No license stated (City of Portland open data, Bureau of Planning and Sustainability)
+    access: download
+    cadence: continual (Hub extract dated by Esri; 2026-09-12 on 2026-11-05)
+    notes: >-
+      Adapter src/lotline/adapters/states/or/portland_permits.py. Residential Building Permits (PortlandMaps
+      COP_OpenData_PlanningDevelopment/MapServer/89: every permit creating new units since 1995), read from the
+      ArcGIS Hub CSV extract because the PortlandMaps server refuses connections from our network. IS_ADU is the
+      city's ADU flag; a new house + ADU on one permit is split into two rows for D-041's co-built rule.
+  - name: bend_permits
+    url: https://services5.arcgis.com/JisFYcK2mIVg9ueP/arcgis/rest/services/Permitting_Table/FeatureServer/0
+    license: City of Bend GIS terms (as is, no warranty; no reuse restriction stated)
+    access: arcgis
+    cadence: weekly
+    notes: >-
+      Adapter src/lotline/adapters/states/or/bend_permits.py. Building applications NC, AD, RE, MA and DE only.
+      ADU = building use ADU (from 2013); HB2001ADU marks HB 2001 pathway permits (duplexes included) and is
+      kept as the raw reform flag, not the ADU flag.
