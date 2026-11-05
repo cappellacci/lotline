@@ -2879,3 +2879,34 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       San Antonio's rate) decides the TX verdict for every model tried.
     - Proposed next entry: a sharper model-comparison yardstick, held-out log score per place, before
       choosing between D-041 and D-048.
+
+### D-049 · 2026-11-04 · A sharper yardstick: held-out log score per place (method only, before any scoring)
+
+- **Why:** D-040's yardstick scores four state totals. D-045's noise floor showed it cannot separate the
+  models tried since: a correct model would average K1 ≈ 1.24 and be useful for TX 38% of the time, and
+  Austin alone decides TX for every model. Ben approved this entry on 2026-11-04 ("Yes, sharper
+  yardstick").
+- **Score:** each fit place is scored by the fold that left its whole state out. Its held-out log score is
+  log P(y_i), the probability of its observed yearly counts:
+  - Mechanism models (D-041, D-046, D-047 approach 2, D-048):
+    P(y_i) = ∫ Σ_c w_c P_NB(y_i | θ k_ic, α) dN(log θ; log θ̂, se²).
+    - P_NB is `frailty_loglik_place`, the place effect integrated in closed form.
+    - c runs over blank-field combinations; k uses the fold's rule shares, m_d (D-046) or shape (D-047 2,
+      D-048).
+    - θ's uncertainty (se from its 90% interval) is integrated by 20-node Gauss–Hermite.
+  - Approach 3: the mean over 4,000 coefficient draws from N(β̂, Σ) of P_NB(y_i | μ_i(β), α).
+  - The test places (Raleigh and Durham) are scored the same way under each model's full fit and reported
+    separately.
+- **Fits used:** the fold fits already run.
+  - Taken from their CSVs: D-046 (`reports/adu-detached/fits.csv`), D-047 approach 2
+    (`reports/adu-shape/approach2_fits.csv`) and D-048 (`reports/adu-no-ramp/fits.csv`).
+  - Refitted with the same code and seeds: D-041's folds (its CSV omits m_x per fold; D-045 showed the
+    refit reproduces D-041) and approach 3 (its covariance was not saved).
+  - No new model is fitted.
+- **Reported:** per model, the total held-out log score over the 51 places, its sum by state, and the
+  average per place-year. Against D-041: ΣΔ_i and its paired SE, sd(Δ_i) × √51. Places in one state share a
+  fold, so the by-state sums are shown next to it. The test set's score is reported as well.
+- **Decision rule, fixed now:** the model with the highest total is proposed to Ben for adoption if it
+  beats D-041 by more than 2 paired SE, is not worse than D-041 in more than one of the four states, and is
+  not worse on the test set by more than 2 log units. Otherwise D-041 stays. Adoption itself is Ben's call
+  and gets its own PR, as written under each model's entry.
