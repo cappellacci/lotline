@@ -2364,3 +2364,75 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     places already allowed (§6.5–6.7);
   - its placebo was not passed, and its own backtest was no better than no effect.
 
+
+### D-046 · 2026-11-04 · V9 Oregon transfer prediction: what is frozen and how it is made (method only, before any run)
+- **Status:** method written before any Oregon prediction was made. Ben chose (2026-11-04) to build and test the
+  runner now and **freeze later**, once the engine refresh (handoff 14) and D-043/D-045 (#279, #285) settle, and
+  before 2026-11-20. Whatever ADU and missing-middle parameters are in `config/params/` on `main` at the freeze
+  commit are the ones used; the freeze file records their values and the commit. A dry run before the freeze
+  is a prediction only (it reads no Oregon outcome) and is not committed to `results/frozen/`.
+- **What was looked at before writing:** Oregon's input tables, by row counts only
+  (`docs/build/or-readiness.md`); the coded Oregon rules; no Oregon outcome after 2017 (holdout
+  `V9-OR-TRANSFER`, #281, #287, #288). The V9 entry in the validation plan and Ben's conditional-forecast
+  decision (2026-11-04: observed market inputs for 2018–2025 are allowed).
+- **Targets (validation plan V9).** Every target is a count per calendar year 2018–2025 and an 8-year total,
+  each as P10/P50/P90 and the mean of the predictive draws:
+  1. **ADU permits, Portland (4159000) and Bend (4105800).** Scored against the D-041 count rules applied to
+     the Portland and Bend permit adapters after unblinding (ADU-flagged permits by issue year; co-built ADUs
+     excluded; city records, so report rate 1).
+  2. **New 2–4 unit buildings (Census BPS, 2-unit plus 3–4 unit buildings), per HB 2001 place** in the BPS
+     universe (58: 33 large-tier places, 3 Metro county remainders, 22 medium-tier places) **and their sum**,
+     the headline Oregon target. The 38 places first covered in 2025 are predicted too, and reported in a
+     second total.
+- **Fit used.** Oregon is not in any fit (`REFORM_STATES` unchanged). ADU: `adu_mature_hazard_ref`,
+  `adu_place_effect_variance`, the ramp and price-to-cost terms from `hazard.yaml` and `adu.yaml`; if D-043's
+  `adu_state_effect_sd` is on `main`, its value. Missing middle: `mm_hazard.yaml` (D-038 values unless replaced).
+- **ADU expected count.** For place i and year t, as `calibrate_adu.place_years`, with three differences
+  forced by the blind (no Oregon permits exist in the pipeline):
+  - every year 2018–2025 is predicted (no permit-coverage filter);
+  - no observed-rate floor;
+  - report rate 1.
+  
+  k_it = eligible parcels (newest roll ≤ 2017; Oregon uses the ACS fallback, held at 2013–2017) × h_m(θ = 1)
+  at the newest ACS rent and value ≤ t and the year's actual 30-year mortgage rate × max over the ADU rules in
+  force on 1 July t of (rule share × ramp(age)). The rules come from `config/reforms/or.csv`, state rows
+  (SB 1051, HB 2001, SB 458) and local rows alike, with D-022's blank-field shares from the four states' coded
+  rules. A year with no ADU rule in force has k = 0.
+- **Missing-middle expected count.** y_it ~ Poisson(B_i + θ u_i k_it), as D-038, with the baseline fixed
+  before the window because Oregon's 2018+ BPS is blind:
+  - B_i: the place's mean 2–4 unit buildings over 2015–2017, held flat (no growth index: the index uses
+    post-2017 homes). Known bias, stated now: if 2018–2025 building in other classes rose, B is low and the
+    excess is credited to the reform.
+  - **Amended 2026-11-04, after the first dry run and before any freeze** (a prediction only; no Oregon
+    outcome seen). The first dry run treated Bend, whose duplex/triplex rule predates 2018 (`[predates]`), as
+    mature from 1990 and added its full uptake on top of a baseline that already holds it. So k counts only
+    the dose a rule adds above 2017's (as D-042's "count only what each reform newly allows"), and T is the
+    first year a rule raises it:
+  - k_it = eligible parcels (theme `missing_middle`, newest roll ≤ 2017) × (dose_t − dose_2017) × F(PCR)/F(1) ×
+    ramp(t − T +
+    0.5). dose_t is D-024's dose of the strongest rule in force on 1 July t (`estimate_mm.rules_by_year`).
+    T is the first year from 2018 whose rule (P(by right) ≥ 0.5) raises the dose above 2017's. PCR is a rental duplex's
+    price-to-cost in year T − 1, as `estimate_mm.build_panel` computes it: the newest ACS rent ≤ T − 1 and
+    that year's construction cost index (`estimate_mm.plex_price_to_cost`; market inputs, allowed). Margin
+    and dispersion as D-038 (`developer_margin`, `mm_feasibility_dispersion`).
+- **Uncertainty (one set of draws, `adu_simulation_draws`, seed from config).**
+  - **Shared across places and years:** θ (lognormal from its 90% interval, as D-030) and, if adopted, one
+    state multiplier (D-043).
+  - **Shared across years only:** one place multiplier u_i ~ Gamma(mean 1, variance α) per place.
+  - **Independent:** Poisson noise per year.
+  - **Held at their values:** the missing-middle ramp half-way point and σ (D-038 fitted them with θ).
+  - **ADU judgment parameters:** drawn as the scenario draws them (`scenarios.adu.draw_params`, D-030).
+  - **ADU widening:** the ADU hazard is widened where a place lies outside the calibration range
+    (`hazard.widen`), as the scenario does.
+  - **Totals:** draws are summed place by place before percentiles are taken.
+- **Scoring (after unblinding, written now).**
+  - **Per target:** randomized P10–P90 coverage (D-003), obs ÷ P50, and D-040's verdict (useful / inside only /
+    missed), for each 8-year total and for the 2018–2022 subtotal.
+  - **Oregon 2–4 unit total:** also the CRPS against a no-reform benchmark (B only).
+  - **Pass (as V9):** both ADU totals and the 2–4 unit total fall inside P10–P90.
+  - **Reported, not tuned:** misses are reported with each place's rent and home value next to the four states'
+    range (Amy's demand point). No parameter changes before the write-up.
+- **The freeze file.** `results/frozen/V9-OR-TRANSFER.json` holds: the git commit; the parameter values used;
+  the input table versions (manifest hashes); per target and year P10/P50/P90/mean; the 8-year totals; the
+  draws' seed. It is committed and merged to `main` before `--unblind V9-OR-TRANSFER` is ever passed
+  (`validation.holdout.check_unblind`).

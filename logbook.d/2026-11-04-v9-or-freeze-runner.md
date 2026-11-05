@@ -1,0 +1,21 @@
+### LB-NNN · 2026-11-04 · Validation: V9 Oregon prediction runner, built and dry-run, not frozen
+- **Question:** How is Oregon's blind prediction made, and can it run on the blinded inputs now, before the freeze?
+- **What I did:** Ben chose "build now, freeze later" (2026-11-04): the ADU fit is being revised (#285, the engine refresh), and a freeze is made once. Claude Code wrote the method as D-046 in `docs/analysis_plan.md` before any prediction, then the runner and tests, then dry runs.
+  - **Targets:** ADU permits for Portland and Bend, and BPS 2–4 unit buildings for every place where a by-right rule raises the dose in 2018–2025, each per year for 2018–2025 as P10–P90.
+  - **Model:** the ADU and missing-middle models from the four-state fits.
+  - **Inputs:** only blinded Oregon inputs.
+- **Inputs:** `docs/build/or-readiness.md`, validation plan V9, `scenarios/adu.py`, `calibrate_adu.place_years`, `calibrate_mm` (D-038), `estimate_mm` (dose), `config/params/{hazard,adu,mm_hazard}.yaml`.
+- **Outputs:** `src/lotline/validation/v9.py`, `scripts/dev/v9_or_predict.py`, `tests/core/test_v9.py` (8 tests), D-046. The dry-run output stays in the scratchpad: it is not committed and not a freeze.
+- **Findings:**
+  - **Amended after the first dry run (prediction only, no Oregon outcome seen).** Bend's pre-2018 duplex/triplex rule made it "mature from 1990", double-counting uptake already in its 2015–2017 baseline. Missing-middle uptake now counts only the dose a rule adds above 2017's. D-046 records the change.
+  - **Places:** 96 missing-middle places: 58 reached before 2025 (22 in 2021, 36 in 2022), 38 in 2025. This matches WS-OR's count.
+  - **Dry run, 1,000 draws, 8-year totals:**
+    - Portland ADUs: P50 76, P90 1,864, mean about 1,300. The place-effect variance of 4.7 puts the median far below the mean.
+    - Bend ADUs: P50 6, P90 275.
+    - Oregon 2–4 unit buildings, places reached before 2025: P10 1,736, P50 2,584, P90 6,174.
+- **Decisions:** none new. The freeze waits for the engine refresh and #279/#285, and must come before 2026-11-20.
+- **AI:** Claude Code wrote the method, code and tests, and checked them with the unit tests, the full suite, ruff, `compliance_check.py` and dry runs on the real blinded inputs.
+- **Open / next:**
+  - Merge this PR.
+  - After the engine settles, run `scripts/dev/v9_or_predict.py --freeze` and merge the frozen file to `main`.
+  - Only then may anyone pass `--unblind V9-OR-TRANSFER`.
