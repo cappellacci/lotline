@@ -1,0 +1,188 @@
+<title>D-053 Oregon Refit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of findings, each with its chart; a decision panel at the end. Survey-ledger feel: permit counts, log scales, plain annotations. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --five: #2f6f5e; --four: #b0703a; --obs: #1d2420; --band5: rgba(47,111,94,.18); --band4: rgba(176,112,58,.18);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --five: #6cc3a8; --four: #e0a46c; --obs: #e4ebe7; --band5: rgba(108,195,168,.2); --band4: rgba(224,164,108,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --five: #6cc3a8; --four: #e0a46c; --obs: #e4ebe7; --band5: rgba(108,195,168,.2); --band4: rgba(224,164,108,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.in { color: var(--warn); border: 1px solid var(--warn); }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+.decision h2 { color: var(--fg); }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-053 · run 2026-11-05 · not yet adopted</div>
+    <h1>Adding Oregon to the ADU calibration</h1>
+    <p class="lede">Portland and Bend (2016–2025, 20 place-years) were added to the four-state fit. Oregon builds ADUs at several times the rate of any place in Minnesota, North Carolina, Ohio or Texas. Below: what that does to the fitted rate, the backtest, and the spread between states. One finding has to be settled before any config is written.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">1 · The fitted rate</div>
+    <h2>Adding Oregon halves θ</h2>
+    <p>θ is the ADU permit rate per 1,000 eligible single-family lots at the reference rent and home value. Each row refits without one state. Rows that include Oregon sit near 0.3; the fit without Oregon is exactly D-048's adopted value (0.659), which confirms the run reproduces it.</p>
+    <div class="chart" id="theta"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--five)"></span>fit includes Oregon</span><span><span class="sw" style="background:var(--four)"></span>four states only (D-048)</span><span>bar = 90% profile interval</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">2 · Leave one state out, state spread drawn</div>
+    <h2>Every state lands inside its range, Oregon just</h2>
+    <p>Each state is predicted from a fit to the other four, with the unknown state multiplier drawn. The dot is what was built; the bar is P10–P90. Without the state spread, Oregon is missed (P90 3,128 against 3,363 built).</p>
+    <div class="chart" id="loso"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--band5)"></span>P10–P90 (five-state D-053)</span><span><span class="sw" style="background:var(--band4)"></span>P10–P90 (D-050, four states)</span><span>● observed · | P50 · log scale</span></div>
+    <div class="wide"><table id="losotab"></table></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">3 · Spread between states</div>
+    <h2>A new state's uncertainty widens</h2>
+    <p>τ is the log-SD of the multiplier a state outside the fit gets. With Oregon in, τ̂ rises from 0 to 0.57, so a new state's range widens from roughly ×0.5–×2 to ×0.33–×3.</p>
+    <div class="chart" id="tau"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">4 · Portland and Bend by year</div>
+    <h2>Oregon sits far above both fits</h2>
+    <p>Yearly permits against each fit's predictive for a place like it (θ and the place effect drawn). Built counts run 5–25× the median. The fit absorbs this as a large place effect for each city, which is why it can't explain Oregon. The ADU bust after 2018 shows clearly in Portland.</p>
+    <div class="chart" id="portland"></div>
+    <div class="chart" id="bend"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--band5)"></span>five-state P10–P90</span><span><span class="sw" style="background:var(--band4)"></span>four-state P10–P90</span><span>● built</span></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">Needs a decision before configs are written</div>
+    <h2>The partial-rule share jumped from 0.3 to 1.0</h2>
+    <ul>
+      <li>The fit also estimates how much a <em>partial</em> ADU rule (parking required, conditional permit, attached only, small cap) does relative to a full one. Without Oregon, the data couldn't pin it down, so the judgment value 0.3 was used.</li>
+      <li>With Oregon in, it is estimated at 1.0 with a narrow interval. By fit 3's pre-registered rule an estimated value replaces the judgment: partial rules would count as full ones in every scenario.</li>
+      <li>The cause is coding, not behavior. Portland's 2016–2020 rule has blank fields (parking, size cap, owner occupancy). The model fills blanks from pooled odds and puts Portland 86% on "partial". Portland then built hundreds of ADUs a year under what the fit thinks is a partial rule.</li>
+      <li>Portland's rules are well documented (no owner occupancy or parking requirement since 2010, SDC waiver). Filling those fields in <span class="src">config/reforms/or.csv</span> and rerunning would test whether θ and the share move back.</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/adu-d053-fit/ (fits.csv, statewide.csv, or_insample.csv, run log), reports/adu-tau-draws-d053/ (run log). D-050 comparison from docs/analysis_plan.md. Branch ws/or-pool, draft PR #303.</p>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : (n < 10 && n % 1 ? n.toFixed(1) : String(Math.round(n)));
+
+// 1 · theta by fit (per 1,000)
+const thetas = [
+  ["All five states", 0.308, 0.213, 0.463, true], ["Without MN", 1.035, 0.608, 1.933, true], ["Without NC", 0.329, 0.213, 0.535, true],
+  ["Without OH", 0.307, 0.210, 0.468, true], ["Without TX", 0.289, 0.196, 0.445, true], ["Without OR (= D-048)", 0.659, 0.443, 1.023, false],
+];
+(function () {
+  const W = 760, rowH = 34, L = 170, R = 30, T = 10, H = T + rowH * thetas.length + 34; const s = svg("theta", W, H);
+  const x = v => L + (v / 2.0) * (W - L - R);
+  for (const t of [0, 0.5, 1, 1.5, 2]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 26, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 10, "text-anchor": "middle" }, s, t.toFixed(1)); }
+  el("text", { x: W - R, y: H - 10, "text-anchor": "end" }, s, "per 1,000");
+  thetas.forEach(([n, v, lo, hi, five], i) => {
+    const y = T + i * rowH + rowH / 2, c = five ? css("--five") : css("--four");
+    el("text", { x: 0, y: y + 4, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, s, n);
+    el("line", { x1: x(lo), x2: x(hi), y1: y, y2: y, stroke: c, "stroke-width": 4, "stroke-linecap": "round", opacity: .45 }, s);
+    el("circle", { cx: x(v), cy: y, r: 6, fill: c }, s);
+    el("text", { x: x(hi) + 8, y: y + 4 }, s, v.toFixed(3));
+  });
+})();
+
+// 2 · leave one state out (log scale)
+const loso = [
+  // state, observed, p10, p50, p90, verdict, d050 [p10,p50,p90]
+  ["MN", 285, 136, 454, 1525, "useful", [107, 484, 2268]],
+  ["NC", 45, 14, 100, 595, "inside only", [12, 74, 368]],
+  ["OH", 8, 0, 4, 42, "useful", [0, 6, 58]],
+  ["TX", 1108, 31, 364, 2690, "inside only", [25, 231, 1221]],
+  ["OR", 3363, 57, 650, 3925, "inside only", null],
+];
+(function () {
+  const W = 760, rowH = 46, L = 50, R = 20, T = 8, H = T + rowH * loso.length + 32; const s = svg("loso", W, H);
+  const lmin = 0, lmax = Math.log10(10000); const x = v => L + (Math.log10(Math.max(v, 1)) - lmin) / (lmax - lmin) * (W - L - R);
+  for (const t of [1, 10, 100, 1000, 10000]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 24, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 8, "text-anchor": "middle" }, s, t.toLocaleString("en-US")); }
+  loso.forEach(([st, obs, p10, p50, p90, , d], i) => {
+    const y = T + i * rowH + 14;
+    el("text", { x: 0, y: y + 10, style: "font-family:var(--body);font-size:13px;font-weight:600", fill: css("--fg") }, s, st);
+    el("rect", { x: x(p10), y: y, width: x(p90) - x(p10), height: 10, rx: 2, fill: css("--band5") }, s);
+    el("line", { x1: x(p50), x2: x(p50), y1: y - 2, y2: y + 12, stroke: css("--five"), "stroke-width": 2 }, s);
+    if (d) { el("rect", { x: x(d[0]), y: y + 16, width: x(d[2]) - x(d[0]), height: 6, rx: 2, fill: css("--band4") }, s); el("line", { x1: x(d[1]), x2: x(d[1]), y1: y + 14, y2: y + 24, stroke: css("--four"), "stroke-width": 2 }, s); }
+    el("circle", { cx: x(obs), cy: y + 5, r: 5.5, fill: css("--obs"), stroke: css("--panel"), "stroke-width": 1.5 }, s);
+  });
+  const tab = document.getElementById("losotab");
+  tab.innerHTML = "<tr><th>State left out</th><th>Built</th><th>P10</th><th>P50</th><th>P90</th><th>Verdict</th></tr>" +
+    loso.map(([st, o, a, b, c, v]) => `<tr><td>${st}</td><td>${fmt(o)}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td>${fmt(c)}</td><td><span class="pill ${v === "useful" ? "ok" : "in"}">${v}</span></td></tr>`).join("") +
+    `<tr><td>OR, no state spread</td><td>3,363</td><td>74</td><td>660</td><td>3,128</td><td><span class="pill miss">missed</span></td></tr>`;
+})();
+
+// 3 · tau / new-state multiplier
+(function () {
+  const rows = [["D-050 (four states)", 0.00, 0.49, 2.07, css("--four")], ["D-053 (five states)", 0.565, 0.33, 3.02, css("--five")]];
+  const W = 760, L = 170, R = 30, T = 10, rowH = 38, H = T + rowH * 2 + 34; const s = svg("tau", W, H);
+  const x = v => L + (Math.log(v) - Math.log(0.25)) / (Math.log(4) - Math.log(0.25)) * (W - L - R);
+  for (const t of [0.25, 0.5, 1, 2, 4]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 26, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 10, "text-anchor": "middle" }, s, "×" + t); }
+  rows.forEach(([n, tau, lo, hi, c], i) => {
+    const y = T + i * rowH + rowH / 2;
+    el("text", { x: 0, y: y + 4, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, s, n);
+    el("rect", { x: x(lo), y: y - 6, width: x(hi) - x(lo), height: 12, rx: 3, fill: c, opacity: .35 }, s);
+    el("line", { x1: x(1), x2: x(1), y1: y - 9, y2: y + 9, stroke: c, "stroke-width": 2 }, s);
+    el("text", { x: x(hi) + 8, y: y + 4 }, s, `×${lo}–×${hi}  τ̂ ${tau.toFixed(2)}`);
+  });
+})();
+
+// 4 · Portland and Bend by year
+const ins = {"Bend city": {"five states": [[2016.0, 37.0, 0.0, 2.0, 13.0], [2017.0, 39.0, 0.0, 2.0, 15.0], [2018.0, 51.0, 0.0, 3.0, 22.0], [2019.0, 55.0, 0.0, 3.0, 26.0], [2020.0, 41.0, 0.0, 4.0, 31.0], [2021.0, 59.0, 0.0, 5.0, 35.0], [2022.0, 65.0, 0.0, 4.0, 33.0], [2023.0, 60.0, 0.0, 4.0, 32.0], [2024.0, 34.0, 0.0, 5.0, 35.0], [2025.0, 49.0, 0.0, 5.0, 35.0]], "four states (D-048)": [[2016.0, 37.0, 0.0, 1.0, 9.0], [2017.0, 39.0, 0.0, 1.0, 10.0], [2018.0, 51.0, 0.0, 6.0, 45.0], [2019.0, 55.0, 0.0, 7.0, 53.0], [2020.0, 41.0, 0.0, 9.0, 64.0], [2021.0, 59.0, 0.0, 10.0, 72.0], [2022.0, 65.0, 0.0, 9.0, 67.0], [2023.0, 60.0, 0.0, 9.0, 66.0], [2024.0, 34.0, 0.0, 10.0, 71.0], [2025.0, 49.0, 0.0, 10.0, 72.0]]}, "Portland city": {"five states": [[2016.0, 487.0, 0.0, 14.0, 104.0], [2017.0, 456.0, 0.0, 16.0, 117.0], [2018.0, 532.0, 0.0, 17.0, 123.0], [2019.0, 276.0, 0.0, 19.0, 138.0], [2020.0, 194.0, 0.0, 23.0, 163.0], [2021.0, 203.0, 0.0, 24.0, 169.0], [2022.0, 241.0, 0.0, 20.0, 146.0], [2023.0, 191.0, 0.0, 18.0, 133.0], [2024.0, 156.0, 0.0, 19.0, 136.0], [2025.0, 137.0, 0.0, 19.0, 137.0]], "four states (D-048)": [[2016.0, 487.0, 1.0, 32.0, 221.0], [2017.0, 456.0, 1.0, 35.0, 249.0], [2018.0, 532.0, 1.0, 38.0, 263.0], [2019.0, 276.0, 1.0, 43.0, 296.1], [2020.0, 194.0, 1.0, 50.0, 351.0], [2021.0, 203.0, 1.0, 52.0, 361.1], [2022.0, 241.0, 1.0, 46.0, 313.0], [2023.0, 191.0, 1.0, 41.0, 286.0], [2024.0, 156.0, 1.0, 42.0, 291.0], [2025.0, 137.0, 1.0, 43.0, 294.0]]}};
+function yearly(id, place, label) {
+  const d5 = ins[place]["five states"], d4 = ins[place]["four states (D-048)"];
+  const W = 760, H = 230, L = 46, R = 16, T = 26, B = 28; const s = svg(id, W, H);
+  const ymax = Math.max(...d5.map(r => r[1]), ...d4.map(r => r[4])) * 1.1;
+  const yrs = d5.map(r => r[0]); const x = yr => L + (yr - yrs[0]) / (yrs.at(-1) - yrs[0]) * (W - L - R); const y = v => H - B - v / ymax * (H - T - B);
+  el("text", { x: L, y: 14, style: "font-family:var(--body);font-size:13px;font-weight:600", fill: css("--fg") }, s, label);
+  const step = ymax > 400 ? 100 : 20;
+  for (let t = 0; t <= ymax; t += step) { el("line", { x1: L, x2: W - R, y1: y(t), y2: y(t), stroke: css("--rule") }, s); el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, s, t); }
+  for (const yr of yrs) el("text", { x: x(yr), y: H - 8, "text-anchor": "middle" }, s, String(yr).slice(2) === "16" || yr % 2 === 0 ? yr : "");
+  const band = (d, fill) => { const pts = d.map(r => `${x(r[0])},${y(r[4])}`).concat(d.slice().reverse().map(r => `${x(r[0])},${y(r[2])}`)); el("polygon", { points: pts.join(" "), fill }, s); };
+  band(d4, css("--band4")); band(d5, css("--band5"));
+  el("polyline", { points: d5.map(r => `${x(r[0])},${y(r[3])}`).join(" "), fill: "none", stroke: css("--five"), "stroke-width": 1.5, "stroke-dasharray": "4 3" }, s);
+  el("polyline", { points: d5.map(r => `${x(r[0])},${y(r[1])}`).join(" "), fill: "none", stroke: css("--obs"), "stroke-width": 2 }, s);
+  d5.forEach(r => el("circle", { cx: x(r[0]), cy: y(r[1]), r: 4, fill: css("--obs") }, s));
+}
+yearly("portland", "Portland city", "Portland · ADU permits a year");
+yearly("bend", "Bend city", "Bend · ADU permits a year");
+</script>
