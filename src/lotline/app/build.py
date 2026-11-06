@@ -225,7 +225,7 @@ FOLD_CSS = """
 <style id="lotline-fold">
 body > header, #state-bar { display: none !important; }
 :root:not(#lotline-fold) {
-  --surface-0: var(--paper); --surface-1: var(--paper-raised); --surface-2: var(--paper-sunken);
+  --surface-0: var(--paper-raised); --surface-1: var(--paper); --surface-2: var(--paper-sunken);
   --border: var(--rule); --grid: var(--rule); --text-primary: var(--ink); --text-secondary: var(--ink-muted);
   --text-muted: var(--ink-faint); --accent: var(--survey);
 }
