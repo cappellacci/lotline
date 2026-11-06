@@ -1,0 +1,176 @@
+<title>D-058 Baseline Rule Backtest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the D-053 results page's system: one reading column of findings, each with its chart, then a decision panel. Survey-ledger feel: building counts, log scales, plain annotations. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --main: #2f6f5e; --alt: #b0703a; --ref: #6b6fa8; --obs: #1d2420;
+  --bandmain: rgba(47,111,94,.20); --bandalt: rgba(176,112,58,.20); --bandref: rgba(107,111,168,.18); --bandnone: rgba(93,106,99,.18);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.in { color: var(--warn); border: 1px solid var(--warn); }
+.post { font-size: 12px; color: var(--warn); font-weight: 600; letter-spacing: .04em; }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-058 · run 2026-11-06 · commit 3b77357 · results for Ben</div>
+    <h1>Does a steadier baseline fix Texas?</h1>
+    <p class="lede">D-054 missed Texas because Lubbock's last three pre-reform years predicted far more building than came. D-058 flags places whose pre-reform pace fails a Poisson dispersion test and gives them a six-year baseline. It also floors zero baselines, so "no effect" can be scored. D-054's leave-one-state-out backtest was then run again. Texas is still missed, and by the pre-registered rule the D-055 values stay.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Finding 1 · Texas</div>
+    <h2>Lubbock's whole pre-reform period was high, so no pre-reform baseline can catch the fall</h2>
+    <p>The test flagged Lubbock, and its baseline widened to six years. Its baseline falls from 115 to 90 buildings a year, so it still expects 160 over 2024–25, against 25 permitted, because the pace was high in every pre-reform year. Every specification and both benchmarks miss the Texas total. Lubbock's log score improves by 26 units, but not enough to bring Texas inside any range. What changed in Lubbock after 2023 needs checking in the data (permit system, BPS reporting, a local pause), not in the model.</p>
+    <div class="chart" id="tx"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandmain)"></span>(d) stability rule</span><span><span class="sw" style="background:var(--bandalt)"></span>(b′) D-054 + floor</span><span><span class="sw" style="background:var(--bandref)"></span>(e) six years everywhere</span><span><span class="sw" style="background:var(--bandnone)"></span>no effect, (d) baseline</span><span>● built · | P50</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 2 · The fitted rate</div>
+    <h2>The data can't tell a fast, small effect from a slow, larger one</h2>
+    <p>The likelihood has two peaks. At one, the effect arrives in year 1 and θ is about 0.12 per 1,000. At the other, it builds slowly (half-way at 6 years, the grid's end) toward a "mature" θ near 1.3. Dropping one place that built nothing, or adding the zero floor, moves a fit from one peak to the other. The dots below are each fit's θ; colour shows which peak it landed on.</p>
+    <div class="chart" id="theta"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--main)"></span>half-way 6.0 (slow peak)</span><span><span class="sw" style="background:var(--alt)"></span>half-way 0.5 (fast peak)</span><span>bar = 90% interval · log scale</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 3 · What the two peaks mean over five years</div>
+    <h2>The slow peak's bigger θ means fewer homes inside the scenario window</h2>
+    <p>The scenario reports five years. The realized hazard each year is θ times the ramp. On the slow peak, θ 1.28 reaches only 0.15 per 1,000 by year 5 and averages 0.04 over years 1–5. The adopted D-055 values average 0.10. So the main fit's headline θ is ten times larger, yet it implies less building over five years. A range for the scenario should be stated on this five-year rate.</p>
+    <div class="chart" id="ramp"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--main)"></span>(d) θ 1.277, half 6.0</span><span><span class="sw" style="background:var(--ref)"></span>D-055 adopted, θ 0.124, half 0.5</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 4 · Signal against no effect</div>
+    <h2>With the −∞ gap closed, the gain over no effect is under 2 SE</h2>
+    <p>The zero floor makes no effect's log score finite everywhere, so item 2 can now be scored. The main model gains 10.8 log units over no effect on the 13 fit places (paired SE 8.8); D-054's model with the floor gains 13.8 (9.4). Both fall short of the 2-SE bar. North Carolina's towns are now inside every range, no effect included. Almost all of the gain is Wake Forest (+7.7) and Burlington (+4.5).</p>
+    <div class="chart" id="sig"></div>
+    <div class="wide"><table id="tab"></table></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">Outcome by the rule · and what Ben could do next</div>
+    <h2>D-055's values stay. Nothing in config changes.</h2>
+    <ul>
+      <li><strong>Rule items:</strong> 1, transfer: not met (Texas missed). 2, signal: not met (+10.8 against a bar of 17.6). 3, not worse than (b′): met. So <code>mm_hazard.yaml</code> keeps θ 0.12, half-way 0.5, and Charlotte freezes on those.</li>
+      <li><strong>Check Lubbock's data:</strong> did something outside the reform cut its 2024–25 permits (a permit-system change, a BPS imputation, a moratorium)? If so, it should be coded or dropped under a new entry, not modelled.</li>
+      <li><strong>Carry the ramp problem into the scenario:</strong> state the missing-middle range on the five-year realized rate (about 0.04–0.10 per 1,000 a year across the two peaks), or hold the ramp at an outside value (1.5–5 years, D-038) and refit θ alone. Either is a new entry.</li>
+      <li><strong>Read the signal plainly:</strong> outside two North Carolina towns, the four states' 2–4 unit permits don't yet show a reform effect that beats each place's own trend at 2 SE.</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/mm-d058/ (fits.csv, loso.csv, lopo_state.csv, place_scores.csv, flags.csv, summary.json, run-2026-11-06-log.txt). Census BPS 2010–2025, holdout-filtered (St. Paul, Charlotte, Mecklenburg never read). Method and results: docs/analysis_plan.md D-058; D-054 for the design. Branch ws/mm-d056, PR #316.</p>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : String(Math.round(n));
+const lab = (s, x, y, t, opt = {}) => el("text", Object.assign({ x, y, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, opt), s, t);
+
+
+// 1 · Texas totals
+(function () {
+  const rows = [["(d)", 175, 194, 216, "--bandmain", "--main"], ["(b′)", 195, 215, 238, "--bandalt", "--alt"], ["(e)", 175, 194, 216, "--bandref", "--ref"], ["no effect (d)", 171, 188, 207, "--bandnone", "--muted"], ["outside rate", 227, 247, 267, "--bandnone", "--warn"]];
+  const W = 760, L = 120, R = 20, T = 6, rowH = 26, H = T + rowH * rows.length + 28; const s = svg("tx", W, H);
+  const x = v => L + v / 300 * (W - L - R);
+  for (const t of [0, 50, 100, 150, 200, 250, 300]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, t); }
+  rows.forEach(([n, a, b, c, bf, tk], i) => {
+    const y = T + i * rowH + 6; lab(s, 0, y + 10, n);
+    el("rect", { x: x(a), y, width: x(c) - x(a), height: 12, rx: 2, fill: css(bf) }, s);
+    el("line", { x1: x(b), x2: x(b), y1: y - 2, y2: y + 14, stroke: css(tk), "stroke-width": 2 }, s);
+  });
+  el("line", { x1: x(49), x2: x(49), y1: T, y2: H - 22, stroke: css("--obs"), "stroke-dasharray": "3 3" }, s);
+  el("circle", { cx: x(49), cy: T + 4, r: 5, fill: css("--obs") }, s);
+  el("text", { x: x(49) + 8, y: T + 8 }, s, "built 49");
+})();
+// 2 · θ by fit, coloured by peak
+const th = [
+  ["(d) four states", 1.277, 0.394, 4.966, 6], ["(d) without MN", 1.281, 0.088, 5.023, 6], ["(d) without NC", 0.010, 0.001, 0.439, 0.5], ["(d) without OH", 1.278, 0.395, 4.976, 6], ["(d) without TX", 1.549, 0.471, 7.297, 6],
+  ["(b′) four states", 0.117, 0.031, 0.921, 0.5], ["(b′) without TX", 1.548, 0.470, 7.367, 6],
+  ["(e) four states", 1.289, 0.031, 5.011, 6], ["(e) without MN", 0.126, 0.033, 4.518, 0.5], ["(e) without OH", 0.121, 0.031, 4.890, 0.5],
+  ["D-054 (b) without TX", 0.241, 0.060, 1.467, 1.0], ["D-055 adopted", 0.1235, 0.0325, 1.006, 0.5],
+];
+(function () {
+  const W = 760, rowH = 26, L = 170, R = 50, T = 6, H = T + rowH * th.length + 28; const s = svg("theta", W, H);
+  const x = v => L + (Math.log10(v) + 3) / 4 * (W - L - R);
+  for (const t of [0.001, 0.01, 0.1, 1, 10]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, String(t)); }
+  th.forEach(([n, v, lo, hi, half], i) => {
+    const y = T + i * rowH + rowH / 2; const c = half >= 5 ? "--main" : "--alt";
+    lab(s, 0, y + 4, n);
+    el("line", { x1: x(lo), x2: x(hi), y1: y, y2: y, stroke: css(c), "stroke-width": 4, "stroke-linecap": "round", opacity: .4 }, s);
+    el("circle", { cx: x(v), cy: y, r: 5.5, fill: css(c) }, s);
+    el("text", { x: x(hi) + 8, y: y + 4 }, s, v.toFixed(3));
+  });
+})();
+// 3 · realized hazard by year
+(function () {
+  const yrs = [1, 2, 3, 4, 5], d = [0.0008, 0.0032, 0.0119, 0.044, 0.1522], a = [0.0618, 0.0977, 0.1155, 0.1213, 0.1229];
+  const W = 760, H = 230, L = 52, R = 20, T = 14, B = 30; const s = svg("ramp", W, H);
+  const x = v => L + (v - 1) / 4 * (W - L - R), y = v => H - B - v / 0.16 * (H - T - B);
+  for (const t of [0, 0.04, 0.08, 0.12, 0.16]) { el("line", { x1: L, x2: W - R, y1: y(t), y2: y(t), stroke: css("--rule") }, s); el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, s, t.toFixed(2)); }
+  yrs.forEach(v => el("text", { x: x(v), y: H - 10, "text-anchor": "middle" }, s, "year " + v));
+  [[d, "--main", 0.042], [a, "--ref", 0.104]].forEach(([vals, c, mean]) => {
+    el("polyline", { points: vals.map((v, i) => `${x(yrs[i])},${y(v)}`).join(" "), fill: "none", stroke: css(c), "stroke-width": 2.5 }, s);
+    vals.forEach((v, i) => el("circle", { cx: x(yrs[i]), cy: y(v), r: 4, fill: css(c) }, s));
+    el("line", { x1: L, x2: W - R, y1: y(mean), y2: y(mean), stroke: css(c), "stroke-dasharray": "4 3", opacity: .7 }, s);
+    el("text", { x: W - R, y: y(mean) - 5, "text-anchor": "end" }, s, `5-year mean ${mean.toFixed(3)}`);
+  });
+  el("text", { x: L, y: 10 }, s, "realized hazard per 1,000 eligible lots a year");
+})();
+// 4 · Δ log score (d) − no effect (d)
+const ls = [["Houston", 0.46], ["Burlington", 4.46], ["Wake Forest", 7.68], ["Morrisville", -0.09], ["Sanford", -0.07], ["Garner", -0.11], ["Wilson", -0.13], ["Euclid", 0.0], ["St. Louis Park", -0.01], ["Lubbock", -0.15], ["Austin", -0.16], ["Lewisville", -0.13], ["League City", -0.97]];
+(function () {
+  const W = 760, L = 130, R = 60, T = 6, rowH = 22, H = T + rowH * ls.length + 26; const s = svg("sig", W, H);
+  const x = v => L + (v + 2) / 12 * (W - L - R);
+  for (const t of [-2, 0, 2, 4, 6, 8, 10]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css(t === 0 ? "--muted" : "--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, (t > 0 ? "+" : "") + t); }
+  ls.forEach(([n, d], i) => {
+    const y = T + i * rowH + 4; lab(s, 0, y + 11, n);
+    el("rect", { x: Math.min(x(0), x(d)), y, width: Math.max(Math.abs(x(d) - x(0)), 1.5), height: 14, rx: 2, fill: css(d >= 0 ? "--main" : "--miss"), opacity: .8 }, s);
+    el("text", { x: (d >= 0 ? x(d) : x(0)) + 6, y: y + 11 }, s, (d > 0 ? "+" : "") + d.toFixed(2));
+  });
+  document.getElementById("tab").innerHTML = "<tr><th>Comparison (13 fit places)</th><th>Δ log score</th><th>Paired SE</th><th>Bar</th></tr>" +
+    [["(d) − no effect (d)", "+10.8", "8.8", "not met (needs > 17.6)"], ["(b′) − no effect (b′)", "+13.8", "9.4", "not met (needs > 18.7)"], ["(d) − (b′)", "+25.9", "27.7", "met (not worse)"], ["(e) − (d)", "+0.7", "0.9", "no difference"]]
+      .map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");
+})();
+</script>

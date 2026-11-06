@@ -3663,3 +3663,134 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Values (onboarded states):** household growth 2025–30 MN 47,907; NC 209,033; TX 683,487 (590,246–841,601);
   OH −29,225 (headline falls back); OR 39,640. Shortage MN 98,383 (–129,979); NC 41,743 (–167,374);
   TX 319,524 (–518,032); OH 60,782 (no range); OR 78,468 (–154,047).
+
+### D-058 · 2026-11-06 · Missing middle: a baseline rule for places whose pre-reform pace is unstable, then D-054 again (method only, before any run)
+- **Number:** written and run as D-056 (PR #316, page title and run log say D-056); renumbered D-058 on
+  merge, because #307 and #309 took D-056 and D-057 first.
+- **Why:** D-054's transfer test failed on Texas for every model, and for both benchmarks. Lubbock's
+  baseline, its mean over T−3 … T−1, expected 191 buildings over 2024–25; it permitted 25 (D-054 post-hoc
+  diagnostic). The same three-year baseline ran low in Oregon over 2018–2021 (D-055). A baseline taken from
+  three years can catch a surge or a dip and project it forward. Ben chose this fix on 2026-11-06 (D-054
+  option 3, "Yes, send it").
+- **What is known before writing, stated now:** Lubbock's post-reform fall and D-054's and D-055's results are
+  known. No place's pre-reform yearly series was tabulated to write this rule. The test and its threshold are
+  conventional, not tuned. The dry run prints which places the rule flags, but no counts, before any fit.
+- **The stability test (pre-reform data only).**
+  - **Window:** the place's outcome counts y (the D-042 classes above its prior cap) in the six years
+    T−6 … T−1, using years with data inside the panel (2010 on). For a 2013 adopter that is 2010–2012.
+  - **Statistic:** the Poisson index-of-dispersion test, D = Σ (y_t − ȳ)² / ȳ over the window's n years. A
+    stable pace with Poisson noise gives D ~ χ²(n − 1).
+  - **Unstable** if the p-value P(χ²(n − 1) ≥ D) is below 0.05. The test catches trend breaks and
+    volatility alike.
+  - **Not testable** (treated as stable): fewer than 3 window years with data, or ȳ = 0.
+- **What replaces an unstable baseline.**
+  - **β_i:** the mean over the whole six-year window instead of T−3 … T−1.
+  - **Growth index:** its reference m_i,pre moves to the same six years, so g still compares like with like.
+  - **Stable places** keep D-054's baseline unchanged.
+- **The −∞ gap (D-054 item 2): a zero floor on every baseline.** If a place had no outcome in its baseline
+  years, β_i = 0.5 / n_pre instead of 0 (half a building over the window, a Jeffreys-style correction). This
+  applies to every specification and to the no-effect benchmark, so no model gives an observed count zero
+  probability, and the paired log-score SE exists.
+- **Specifications (all with the zero floor, on D-054's events, outcome classes, places and years):**
+  - **(d) Main:** D-054's (b) with the stability rule.
+  - **(b′):** D-054's (b) with the zero floor only. This isolates the floor's effect.
+  - **(e) Sensitivity:** the six-year window for every place, flagged or not. This shows whether the test
+    matters, or just a longer window.
+  - **Benchmarks:** no effect (B only) under each specification's own baseline, and the outside rate.
+  - **Fitting:** each specification is refitted exactly as D-054 fits (b) (`calibrate_mm.fit`, slope 0.75,
+    σ 0.5).
+- **Tests (D-054's, unchanged):**
+  - **Test 1:** leave one state out, with joint draws (20,000, seed 20261106);
+  - **Test 2:** leave one place out, summed by state, for (d) only;
+  - **Test places:** Minneapolis, Durham city and Durham County, reported in a second line. Raleigh is not
+    scored.
+  - **Scores:** D-040's verdicts and CRPS for each state total, and the held-out log score per place with
+    paired SEs.
+  - **No τ:** D-054 found it not estimable.
+- **Reading rule (written now):**
+  1. **Transfer:** neither the NC nor the TX fit-set total is missed under (d) in test 1. MN and OH are
+     reported but not read (one place each).
+  2. **Signal:** (d)'s held-out log score over the fit set beats no effect's, under (d)'s own baseline, by
+     more than 2 paired SE.
+  3. **Against the adopted fit:** (d) is not worse than (b′) by more than 2 paired SE.
+  4. **What follows:**
+     - **If 1, 2 and 3 all hold:** propose to Ben that (d)'s full four-state fit replaces θ, α and the
+       half-way point in `mm_hazard.yaml`, together with the stability rule. That goes in its own PR, and
+       only with Ben's approval.
+     - **If 1 holds but 2 or 3 does not:** report the results; Ben decides.
+     - **If 1 fails:** `mm_hazard.yaml` keeps D-055's values, and the miss is reported.
+  5. **V5:** Charlotte freezes on Nov 17 on whatever `main` holds. This run doesn't move that date, and it
+     never reads Charlotte, Mecklenburg or St. Paul.
+- **Oregon:** stays out of the fit and out of this entry. Joining needs its own dated entry (D-054).
+- **Code:**
+  - `calibrate_mm.py`:
+    - `chi2_sf` (regularized upper incomplete gamma, standard library only);
+    - `dispersion_test`;
+    - `place_inputs(..., baseline_rule=…, zero_floor=…)`.
+  - Unit tests against hand-worked cases in `tests/model/test_calibrate_mm.py`.
+  - The run script `scripts/dev/calibrate_mm_d058.py`, with `--dry`; results go to `reports/mm-d058/`.
+- **Run once:** `uv run python scripts/dev/calibrate_mm_d058.py --out reports/mm-d058`, after Ben's go-ahead.
+- **Decided by:** Ben, 2026-11-06 (D-054 option 3); written by the missing-middle test session before any run.
+- **Before the run (2026-11-06; code pushed; the dry run printed flags and structure only, no counts and no
+  fit).** The fit set and test places are D-054's: 13 and 3.
+  - **Flagged unstable:** 5 of the 13 fit places (Morrisville; Austin, Houston, Lewisville and Lubbock) and one
+    test place (Minneapolis).
+  - **Not flagged:** every other place, including Wake Forest, Burlington, Wilson and both Durham places.
+  - **Noted before the run, for Ben:** the dispersion test flags most of the large places (Austin, Houston,
+    Minneapolis), not just Lubbock. At large counts, any extra-Poisson year-to-year variation is significant.
+    So the rule widens the baseline wherever counts are large, whatever the direction of their trend. For a
+    place whose pace rose before its reform, the six-year mean is lower than the three-year one, and the excess
+    credited to the reform grows. Specification (e) shows the same widening applied everywhere. This is
+    reported and not changed, unless Ben amends the entry before the run.
+- **Results (one run, 2026-11-06, commit 3b77357 plus the logbook fragment, 32 min; `reports/mm-d058/`, log
+  `run-2026-11-06-log.txt`):**
+  - **Fits (per 1,000, 90% interval, half-way point):**
+    - (d) main: 1.28 (0.39–4.97), half 6.0;
+    - (b′): 0.117 (0.031–0.92), half 0.5;
+    - (e): 1.29 (0.03–5.01), half 6.0 with an interval of 0.5–6.0.
+  - **The likelihood has two peaks.** One sits at a fast ramp (half 0.5, θ ≈ 0.12), the other at the grid's
+    slow end (half 6.0, θ ≈ 1.3). Small changes move a fit from one to the other:
+    - dropping St. Louis Park, which built nothing, moves (e) to 0.13;
+    - the zero floor alone moves D-054's fold without Texas from 0.24 to 1.55.
+    
+    At half 6.0, years 1–5 carry 0.06–12% of the mature rate. So over the five scenario years, (d) implies a
+    mean hazard of 0.042 per 1,000 a year, against 0.104 for the adopted D-055 values. Its 1.28 is a
+    "mature" level beyond what any place's data reach.
+  - **Test 1, fit-set totals:**
+    - NC (observed 26): useful under every specification, and under no effect now that the floor applies.
+      (d) 17 / 24 / 33.
+    - TX (observed 49): missed by every specification and benchmark. (d) 175 / 194 / 216; no effect (d)
+      171 / 188 / 207.
+    - MN and OH: useful, and uninformative.
+  - **Test 1, with the test places:**
+    - MN with Minneapolis (106): (d) missed (36–77); (b′) useful (45–118).
+    - NC with Durham city and County (126): missed by every model; the outside rate is useful.
+  - **Test 2, (d):** NC fit set useful; TX missed (175–215); MN with Minneapolis and NC with the Durhams
+    missed.
+  - **Held-out log score, fit set, with paired SE:**
+    - (d) − no effect (d): +10.8 (8.8);
+    - (b′) − no effect (b′): +13.8 (9.4);
+    - (d) − (b′): +25.9 (27.7), almost all of it Lubbock's (+25.9). Its widened baseline is less wrong;
+    - (e) − (d): +0.7 (0.9).
+  - **Why the rule did not fix Texas.** Lubbock is flagged, but its six-year pre-reform mean is still 90
+    buildings a year (was 115), expecting 160 over 2024–25 against 25 built. Its pace was high across the whole pre-period
+    and fell only after the reform. No baseline built from pre-reform data could foresee that.
+  - **Reading rule, as written:**
+    1. **Transfer: not met** (TX missed).
+    2. **Signal: not met** (+10.8 against 2 × 8.8 = 17.6). The −∞ gap is closed, so item 2 can now be
+       evaluated, and it fails.
+    3. **Against (b′): met.**
+    4. **Outcome:** `mm_hazard.yaml` keeps D-055's values. Nothing in config changes.
+  - **Reading (for Ben):**
+    - **The baseline is not what fails in Texas.** Lubbock's fall after its reform is real in the counts, and
+      no pre-reform rule anticipates it. Whether something else happened in Lubbock in 2024–25 (a permit-system
+      change, a BPS reporting change, a local moratorium) is a data question, not a model one.
+    - **The four states cannot separate θ from the ramp.** The adopted fast-ramp fit (D-055) and a slow-ramp
+      fit with ten times the "mature" θ fit about equally well. Over five years they imply 0.10 and 0.04 per
+      1,000. A scenario should carry this as a range on the five-year realized hazard, or hold the ramp at an
+      outside value. Either would be a new entry.
+    - **"Better than no effect" fails at 2 SE** in both specifications that can now be scored (+10.8 and
+      +13.8, each about 1.2–1.5 SE). The in-state missing-middle signal stays weak: under (d), almost all of the gain
+      over no effect is Wake Forest (+7.7) and Burlington (+4.5).
+  - **Results page:** `reports/mm-d058/d058-results.html`, published at
+    https://claude.ai/artifact/XvRsYZGDB1vv1GE8Kzc5Kg.
