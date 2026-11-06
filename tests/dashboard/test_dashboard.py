@@ -269,3 +269,10 @@ def test_new_state_needs_only_config_and_processed_tables(tmp_path):
     assert s["reforms"][0]["place"] == "Alpha city" and t["reforms_by_theme"] == {"adu": 1}
     assert s["counties"][0]["name"] == "Alpha County"
     json.dumps(s)  # the page embeds it as JSON
+
+
+def test_lots_estimated_counts_census_fallback_jurisdictions():
+    """Three towns: two on the Census fallback, one on a parcel roll -> 2. No basis column -> 0."""
+    js = pd.DataFrame({"eligible_adu_basis": ["acs_sf_fallback", "parcels", "acs_sf_fallback", None]})
+    assert sm.lots_estimated(js) == 2
+    assert sm.lots_estimated(pd.DataFrame({"name": ["a"]})) == 0

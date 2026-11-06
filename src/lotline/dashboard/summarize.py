@@ -294,6 +294,14 @@ def county_growth(
 
 
 # -------------------------------------------------------------------------------------------- helpers
+def lots_estimated(js: pd.DataFrame) -> int:
+    """Jurisdictions whose eligible ADU lots come from the Census fallback (`acs_sf_fallback`, D-017), not a
+    parcel roll. The map shades a county with no parcels but such estimates as "estimated", not "no data"."""
+    if "eligible_adu_basis" not in js:
+        return 0
+    return int((js["eligible_adu_basis"] == "acs_sf_fallback").sum())
+
+
 def _num(v):
     if v is None:
         return None
@@ -488,6 +496,7 @@ def summarize_state(
             "eligible_adu": _num(js["eligible_adu"].sum(min_count=1)),
             "eligible_missing_middle": _num(js["eligible_missing_middle"].sum(min_count=1)),
             "tier_best": _num(js["tier"].min()) if len(js) else None,
+            "lots_estimated": lots_estimated(js),
         }
         if len(cg) and c in cg.index:
             row |= {k: _num(v) for k, v in cg.loc[c].items()}

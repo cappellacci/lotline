@@ -1,4 +1,4 @@
-"""D-055: the ACS-fallback proxy test and its per-draw scale step, against hand-worked examples."""
+"""D-056: the ACS-fallback proxy test and its per-draw scale step, against hand-worked examples."""
 
 import math
 
