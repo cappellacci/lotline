@@ -24,6 +24,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
 TEMPLATE = Path(__file__).with_name("template.html")
+AGGREGATE_JS = Path(__file__).with_name("aggregate.js")
+KNOBS = Path(__file__).with_name("knobs.yaml")
 IDENTITY = REPO / "docs" / "build" / "identity"
 RESULTS_DIR = REPO / "reports" / "results"
 OUT_DIR = REPO / "reports" / "app"
@@ -41,6 +43,44 @@ ROLES = {
     "transfer": "Unseen-state transfer runs",
     "national_only": "National data only",
 }
+
+
+# The Handbook's names for the reforms (STYLE_GUIDE "Voice"), in the fixed colour-slot order. Stacked pairs
+# share the neutral `ink-muted`; `combined` (all three) is full ink.
+SCENARIOS = {
+    "adu": ("ADUs", "--scenario-adu"),
+    "missing_middle": ("Missing middle", "--scenario-missing-middle"),
+    "fees": ("Fee reduction", "--scenario-fees"),
+    "adu+missing_middle": ("ADUs + missing middle", "--ink-muted"),
+    "adu+fees": ("ADUs + fee reduction", "--ink-muted"),
+    "missing_middle+fees": ("Missing middle + fee reduction", "--ink-muted"),
+    "combined": ("Combined (all three)", "--scenario-combined"),
+}
+
+
+def knobs(path: Path = KNOBS) -> list[dict]:
+    """The sliders: labels from knobs.yaml, every number and citation resolved from config/params/.
+
+    Each `params` entry `file:key` becomes {key, value, low, high, unit, source}; an unknown key raises, so a
+    renamed parameter can't silently drop a citation from the page.
+    """
+    import yaml
+
+    from lotline.config import load_params
+
+    spec = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    out = []
+    for column, k in spec.items():
+        params = {}
+        for scenario, refs in (k.get("params") or {}).items():
+            rows = []
+            for ref in refs:
+                file, key = ref.split(":")
+                p = load_params(file)[key]
+                rows.append({"file": file, "key": key, **p.model_dump()})
+            params[scenario] = rows
+        out.append({"column": column, **{f: k[f] for f in k if f != "params"}, "params": params})
+    return out
 
 
 def find_bundles(results_dir: Path = RESULTS_DIR) -> list[Path]:
@@ -74,7 +114,8 @@ def payload(bundles: Iterable[dict], generated: str | None = None) -> dict:
     if not states:
         raise ValueError("no results bundles to show: run `lotline results --state XX` first")
     stamp = generated or dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    return {"generated": stamp, "roles": ROLES, "states": states}
+    scenarios = {k: {"label": v[0], "color": v[1]} for k, v in SCENARIOS.items()}
+    return {"generated": stamp, "roles": ROLES, "scenarios": scenarios, "knobs": knobs(), "states": states}
 
 
 def _svg(name: str) -> str:
@@ -100,6 +141,7 @@ def render(data: dict, template: str | None = None) -> str:
         page.replace("/*__LOTLINE_TOKENS__*/", (IDENTITY / "tokens.css").read_text(encoding="utf-8"))
         .replace("<!--__WORDMARK_LIGHT__-->", _svg("lotline-wordmark-light.svg"))
         .replace("<!--__WORDMARK_DARK__-->", _svg("lotline-wordmark-dark.svg"))
+        .replace("/*__LOTLINE_AGGREGATE__*/", AGGREGATE_JS.read_text(encoding="utf-8"))
         .replace("/*__LOTLINE_DATA__*/", blob)
     )
 
