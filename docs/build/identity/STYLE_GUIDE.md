@@ -48,7 +48,7 @@ The name comes from the lot line, the boundary of a parcel on a plat map. The mo
 ## Wordmark and mark
 
 - Use `assets/Wordmark/lotline-wordmark-light.svg` on light paper and `lotline-wordmark-dark.svg` on dark; `lotline-wordmark-mono.svg` for one-colour print and stamps. Minimum height 16px (the rule stays legible). Clear space equals the height of the "L" on every side.
-- The compact mark (a square lot with a dimension line) is for favicons, the video corner bug and social avatars, never beside the wordmark on the same line. Minimum 16px.
+- The compact mark is a block of six lots drawn in the Mondrian manner: ink lot lines, paper lots, and two lots in `survey` on a diagonal, the infill. Use `lotline-mark-light.svg` / `-dark.svg` / `-mono.svg`; at 16px use `lotline-mark-favicon.svg`, whose lot lines are heavier. It stands alone (favicon, corner bug, avatar) or to the left of the wordmark at the wordmark's height with a gap of `space-3`.
 - Never recolour the wordmark outside `ink` + `survey`, never stretch it, never set it on a photograph.
 
 ## Iconography and imagery
