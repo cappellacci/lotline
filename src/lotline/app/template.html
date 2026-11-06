@@ -7,8 +7,7 @@
 <style>
 /*__LOTLINE_TOKENS__*/
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 body { margin: 0; font-size: 16px; line-height: 24px; }
 a { color: var(--survey); }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -37,7 +36,11 @@ select, button { font: inherit; color: var(--ink); background: var(--paper-raise
 nav.sections { position: sticky; top: 0; z-index: 2; background: var(--paper); border-bottom: var(--stroke-hair) solid var(--rule); }
 nav.sections .wrap { display: flex; gap: var(--space-5); overflow-x: auto; }
 nav.sections a { display: block; padding: var(--space-3) 0; color: var(--ink); text-decoration: none; white-space: nowrap; border-bottom: var(--stroke-line) solid transparent; }
-nav.sections a:hover { border-bottom-color: var(--survey); }
+nav.sections a:hover { border-bottom-color: var(--rule); }
+nav.sections a[aria-current="page"] { border-bottom-color: var(--survey); font-weight: 600; }
+.intro { padding: var(--space-5) 0 0; }
+.intro p { margin: 0; color: var(--ink-muted); }
+section.part[hidden] { display: none; }
 
 main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var(--stroke-hair) solid var(--rule); }
 .lead { color: var(--ink-muted); margin: var(--space-2) 0 var(--space-5); }
@@ -126,32 +129,30 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 <header class="mast">
   <div class="wrap">
     <a class="wordmark" href="#results" aria-label="Lotline"><span class="light"><!--__WORDMARK_LIGHT__--></span><span class="dark"><!--__WORDMARK_DARK__--></span></a>
-    <p class="tagline body-small">What state housing reforms would add over five years, as a range, with the data and the tests behind it.</p>
+    <p class="tagline h3">Housing Reform Model</p>
     <label class="picker body-small">State <select id="state" aria-label="State"></select></label>
   </div>
 </header>
 <nav class="sections" aria-label="Sections">
   <div class="wrap">
-    <a href="#results">1. Results</a>
-    <a href="#data">2. The data</a>
-    <a href="#trust">3. How well does it hold up?</a>
+    <a href="#results" data-page="results">1. Results</a>
+    <a href="#data" data-page="data">2. The data</a>
+    <a href="#trust" data-page="trust">3. How well does it hold up?</a>
   </div>
 </nav>
 <main class="wrap">
-  <section class="part" id="results" data-section="results">
-    <p class="eyebrow">Section 1</p>
+  <div class="intro"><p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p></div>
+  <section class="part" id="page-results" data-section="results">
     <h2 class="h1">Results</h2>
     <p class="lead" id="results-lead"></p>
     <div id="results-body"></div>
   </section>
-  <section class="part" id="data" data-section="data">
-    <p class="eyebrow">Section 2</p>
+  <section class="part" id="page-data" data-section="data" hidden>
     <h2 class="h1">The data</h2>
     <p class="lead">What the estimate is built on: which sources the state has, which the model used, and how complete they are.</p>
     <div id="data-body"></div>
   </section>
-  <section class="part" id="trust" data-section="trust">
-    <p class="eyebrow">Section 3</p>
+  <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">How well does it hold up?</h2>
     <p class="lead">Predictions frozen before the outcomes could be seen, then scored against what happened.</p>
     <div id="trust-body"></div>
@@ -184,10 +185,10 @@ function fillPicker() {
     for (const b of states) g.append(new Option(b.meta.state, b.meta.state));
     sel.append(g);
   }
-  const fromHash = new URLSearchParams(location.hash.split("?")[1] || "").get("state");
+  const fromHash = route().state;
   const pick = DATA.states.find((b) => b.meta.state === fromHash) || DATA.states[0];
   sel.value = pick.meta.state;
-  sel.addEventListener("change", () => show(sel.value));
+  sel.addEventListener("change", () => { show(sel.value); go(route().page, false); });
 }
 
 function bundleFor(state) { return DATA.states.find((b) => b.meta.state === state); }
@@ -506,8 +507,26 @@ function show(state) {
   document.title = `Lotline · ${b.meta.state}`;
 }
 
+// ---- pages: one section at a time, chosen by the URL hash (#results, #data, #trust; ?state=XX) -------------
+const PAGES = Object.keys(SECTIONS);
+function route() {
+  const [page, query] = location.hash.replace(/^#/, "").split("?");
+  return { page: PAGES.includes(page) ? page : PAGES[0], state: new URLSearchParams(query || "").get("state") };
+}
+function go(page, scroll = true) {
+  for (const p of PAGES) $(`page-${p}`).hidden = p !== page;
+  document.querySelectorAll("nav.sections a").forEach((a) => {
+    if (a.dataset.page === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  history.replaceState(null, "", `#${page}?state=${encodeURIComponent($("state").value)}`);
+  if (page === "trust") drawTornado();  // measured while visible
+  if (scroll) window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", () => go(route().page));
+
 fillPicker();
 show($("state").value);
+go(route().page, false);
 </script>
 </body>
 </html>

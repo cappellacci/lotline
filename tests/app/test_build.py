@@ -213,3 +213,13 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
     }
     # the fixture's scorecard row reaches the page as-is
     assert _embedded(html)["states"][0]["scorecard"][0]["check_id"] == "V1"
+
+
+def test_sections_are_separate_pages_with_the_intro_above_them(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    assert "Housing Reform Model" in html and "Lotline is a tool to help understand" in html
+    # one page shown at a time: results first, the other two hidden until their tab is chosen
+    assert '<section class="part" id="page-results" data-section="results">' in html
+    for page in ("data", "trust"):
+        assert f'id="page-{page}" data-section="{page}" hidden>' in html
+        assert f'href="#{page}" data-page="{page}"' in html
