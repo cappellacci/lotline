@@ -182,33 +182,54 @@ def _schemas(args: argparse.Namespace) -> int:
 def _results(args: argparse.Namespace) -> int:
     from pathlib import Path
 
+    from lotline.config import all_states
     from lotline.io import DataStore
     from lotline.model import results
 
-    if args.all:
-        # WS-APP owns the page build (scripts/build_app.py); --all is wired once that script exists (#310).
-        print(
-            "lotline results --all is not wired yet: it will write every state's bundle and then build the "
-            "page with scripts/build_app.py, which WS-APP has not written. Use --state XX for one bundle."
-        )
+    results_dir = Path("reports") / "results"
+    if args.all and (args.state or args.role or args.out):
+        print("--all writes every configured state with its default role and path; drop --state/--role/--out")
         return 2
-    if not args.state:
-        print("give --state XX (or --all once the page build exists)")
+    if not args.all and not args.state:
+        print("give --state XX, or --all for every state and the page")
         return 2
-    state = args.state.upper()
-    out = Path(args.out) if args.out else Path("reports") / "results" / state.lower() / "bundle.json"
     if not results.tree_is_clean():
         print(
             "warning: uncommitted changes; the bundle's commit_sha will not fully identify the code that ran"
         )
-    bundle = results.build_bundle(state, DataStore(), role=args.role, origin=args.origin, draws=args.draws)
-    path = results.write_bundle(bundle, out)
-    m = bundle["meta"].iloc[0]
-    print(
-        f"wrote {path} ({m['state_role']}, tier {m['data_tier']}, overlap {m['overlap_flag']}; "
-        f"pending: {m['scenarios_pending']})"
-    )
-    return 0
+
+    def one(state: str, role=None, out=None) -> Path:
+        out = Path(out) if out else results_dir / state.lower() / "bundle.json"
+        bundle = results.build_bundle(state, store, role=role, origin=args.origin, draws=args.draws)
+        path = results.write_bundle(bundle, out)
+        m = bundle["meta"].iloc[0]
+        print(
+            f"wrote {path} ({m['state_role']}, tier {m['data_tier']}, overlap {m['overlap_flag']}; "
+            f"pending: {m['scenarios_pending']})"
+        )
+        return path
+
+    store = DataStore()
+    if not args.all:
+        one(args.state.upper(), args.role, args.out)
+        return 0
+    try:  # the page build is WS-APP's (scripts/build_app.py, PR #313)
+        from lotline.app.build import build_app
+    except ImportError:
+        print(
+            "lotline results --all needs WS-APP's page build (lotline.app.build, PR #313); not on this branch"
+        )
+        return 2
+    failed = []
+    for state in all_states():
+        try:
+            one(state)
+        except Exception as exc:  # a state without built tables must not stop the others
+            failed.append(state)
+            print(f"{state}: no bundle ({type(exc).__name__}: {exc})")
+    page = build_app(results_dir=results_dir, out_dir=Path("reports") / "app")
+    print(f"built {page}" + (f"; no bundle for {', '.join(failed)}" if failed else ""))
+    return 1 if failed else 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -278,7 +299,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="run the engine for a state and write its results bundle for the app (reports/results/<st>/)",
     )
     res.add_argument("--state", help="two-letter state code, e.g. MN")
-    res.add_argument("--all", action="store_true", help="every state's bundle, then the page (not wired yet)")
+    res.add_argument(
+        "--all",
+        action="store_true",
+        help="every configured state's bundle, then the page (reports/app/index.html)",
+    )
     res.add_argument(
         "--role",
         choices=["benchmark", "development", "transfer", "national_only"],
