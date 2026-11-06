@@ -1,0 +1,3 @@
+state,line,model,observed,p10,p50,p90,mean,obs_over_p50,p90_over_p10,crps,verdict
+TX,fit set without Lubbock (POST-HOC),b,24.0,22.0,60.0,305.0,137.18665,0.4,13.863636363636363,31.249665647499995,inside only
+TX,fit set without Lubbock (POST-HOC),none,24.0,12.0,17.0,23.0,17.43405,1.411764705882353,1.9166666666666667,4.4789598025,missed

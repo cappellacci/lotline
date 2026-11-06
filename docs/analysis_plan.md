@@ -3402,3 +3402,76 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   Test places: Minneapolis (2020, 5 years), Durham city and Durham County (2020, 5 years). Raleigh is not
   scored. No holdout geoid is in the panel. The adopted values the script reads are θ 0.001076 (log-sd 0.819),
   α 7.29 and the half-way point 2.0.
+- **Results (one run, 2026-11-06, commit 22dea9b, 69 min; `reports/mm-d054/`, log `run-2026-11-06-log.txt`):**
+  - **Fits.** Main (b), all four states: θ = 0.12 per 1,000 eligible parcels a year (90%: 0.03–1.01).
+    - α = 8.4 (2.8–32). The half-way point sits on the grid floor, 0.5 years.
+    - This is about a ninth of the adopted 1.08.
+    - (c) reproduces D-042: 0.17 (0.06–0.88), b = −2.0 (grid edge).
+  - **θ in each fold.** Without MN 0.13, without NC 0.013, without OH 0.13, without TX 0.24 (b). For (c) the
+    same folds give 0.18, 0.004, 0.18 and 0.47. Most of the excess comes from North Carolina.
+  - **Test 1, leave one state out, fit-set totals** (observed against P10 / P50 / P90):
+
+    | State | Observed | (b) main | (c) D-042 | (a) adopted, in-sample | No effect | Outside rate |
+    |---|---|---|---|---|---|---|
+    | MN (St. Louis Park) | 0 | 0 / 0 / 2, useful | useful | useful | useful | useful |
+    | NC (6 places) | 26 | 15 / 21 / 31, **useful** | 8 / 13 / 19, missed | 20 / 41 / 171, useful | 14 / 19 / 25, missed | 29 / 37 / 45, missed |
+    | OH (Euclid) | 0 | useful | useful | useful | useful | useful |
+    | TX (5 places) | 49 | 211 / 262 / 527, **missed** | 283 / 333 / 534, missed | 211 / 288 / 865, missed | 190 / 208 / 227, missed | 246 / 267 / 288, missed |
+
+  - **With the test places added:**
+    - MN with Minneapolis, observed 106: (b) 45 / 57 / 123, useful. No effect missed (43–61), and (c)
+      missed (150–242).
+    - NC with Durham city and Durham County, observed 126: (b) 52 / 63 / 86, missed. (a) was useful
+      (66 / 121 / 510), and so was the outside rate (99 / 112 / 126).
+  - **Test 2, leave one place out, (b), summed by state:**
+    - MN with Minneapolis: 106 against 45 / 56 / 114, useful.
+    - NC fit set: 26 against 16 / 24 / 47, useful.
+    - NC with tests: 126 against 55 / 71 / 143, useful.
+    - TX: 49 against 200 / 230 / 400, missed.
+  - **Held-out log score, fit set (13 places).**
+    - Totals: (b) −90.9, (c) −153.8, (a) −94.4 (in-sample), outside rate −125.8.
+    - **No effect scores −∞.** Wake Forest permitted 9 buildings in the newly allowed classes on a pre-reform
+      baseline of 0, and no effect gives that zero probability.
+    - (c) − (b) = −62.9, paired SE 51.8.
+    - Test places: (b) 415.3, no effect 357.5, (a) 421.1, outside rate 412.7, (c) 406.6.
+  - **τ (report only): not estimable.** The profile falls only 0.8 log-likelihood units from τ = 0 to 2.5. The
+    flat-prior median is 1.05, and the unseen-state multiplier runs 0.23–4.2 (P10–P90). Nothing is written to
+    config.
+  - **Reading rule, as written:**
+    1. **Transfer: not met.** TX is missed by every specification, and by both benchmarks. NC is useful under
+       (b).
+    2. **Signal: cannot be evaluated as written.** The no-effect benchmark's log score is −∞ (Wake Forest), so
+       the paired SE is undefined. The rule did not foresee a benchmark that gives an observed count zero
+       probability. The script's `false` for this item is an artifact of comparing inf with NaN; it is not a
+       finding.
+    3. **(b) or (c): (b).** (c) is worse, not better.
+    4. **What follows, by item 1's outcome:** D-038's values stay in `mm_hazard.yaml` and the miss is reported.
+       Nothing in config changes in this PR.
+  - **POST-HOC diagnostics, not pre-registered** (`scripts/dev/d054_posthoc.py`, `reports/mm-d054/posthoc_*`):
+    - **Why TX is missed.** Lubbock's own-growth baseline expects 191 buildings over 2024–25. It permitted 25.
+      Every model inherits that baseline, so the TX miss is a baseline failure, not a reform-effect failure.
+      Without Lubbock, TX observed 24: (b) 22 / 60 / 305, inside only; no effect 12 / 17 / 23, missed.
+      Houston's 21 three-to-four unit buildings sit inside (b)'s 3–203 and well above no effect's 2–7.
+    - **Without Wake Forest:** (b) − no effect over the other 12 fit places is +9.8 log units, paired SE 11.1.
+      That is under 1 SE, so the fit set alone cannot tell (b) from no effect.
+    - **Leaving Wake Forest out of the fit** moves θ to 2.6 per 1,000, with the half-way point at the grid's
+      top (6.0). θ and the ramp trade off, and the estimate rests on a handful of NC towns.
+  - **Reading (for Ben):**
+    - **On today's coding, the in-state data point to a missing-middle hazard near 0.1 per 1,000, not 1.08.**
+      Every (b) refit sits at 0.01–0.24, except the one that drops Wake Forest.
+    - **The pre-registered transfer test fails**, but on a baseline that projected Lubbock's pre-reform pace.
+      No model of the reform effect could pass Texas with that baseline.
+    - **The adopted values are not better.** Their range is wide enough to cover NC and the test places, but
+      they still miss Texas. V9 found the same over-prediction in Oregon.
+  - **For Ben to decide** (results page `reports/mm-d054/d054-results.html`, published at
+    https://claude.ai/artifact/M24pZ4HRhhxvGxmTHrQNqv):
+    1. keep D-038's values, the rule's outcome;
+    2. adopt the (b) refit in a new entry, after re-scoring V9 Oregon with it (not blind);
+    3. first write a baseline rule for places whose pre-reform pace isn't stable (Lubbock), then rerun this
+       backtest.
+
+    The evidence is split:
+    - On the fit set, the refit scores about the same as the adopted values (−90.9 against −94.4 in-sample).
+    - The adopted values score better on the test places (421.1 against 415.3).
+    - V9 found the adopted values too high for Oregon.
+    - Charlotte's V5 freeze (Nov 17) uses whatever is on `main`.
