@@ -196,6 +196,30 @@ def _svg(name: str, height: int = 32) -> str:
     return f'<img src="{_data_uri(name)}" alt="Lotline" height="{height}">'
 
 
+# Folds the data dashboard into section 2 (Ben, 2026-11-06: part of the data tab, not a link): its own header
+# and state bar are hidden (the app's picker drives it), and its colours are mapped onto the identity tokens.
+FOLD_CSS = """
+<style id="lotline-fold">
+body > header, #state-bar { display: none !important; }
+:root:not(#lotline-fold) {
+  --surface-0: var(--paper); --surface-1: var(--paper-raised); --surface-2: var(--paper-sunken);
+  --border: var(--rule); --grid: var(--rule); --text-primary: var(--ink); --text-secondary: var(--ink-muted);
+  --text-muted: var(--ink-faint); --accent: var(--survey);
+}
+body { background: transparent !important; font-family: var(--font-sans) !important; }
+main { max-width: none !important; padding: 0 !important; }
+</style>
+"""
+
+
+def fold_dashboard(html: str) -> str:
+    """The data dashboard's page restyled to sit inside section 2 (tokens + FOLD_CSS before `</head>`)."""
+    if "</head>" not in html:
+        raise ValueError("dashboard page has no </head>")
+    tokens = (IDENTITY / "tokens.css").read_text(encoding="utf-8")
+    return html.replace("</head>", f"<style>{tokens}</style>{FOLD_CSS}</head>", 1)
+
+
 def _json(x) -> str:
     return json.dumps(x, separators=(",", ":"), ensure_ascii=False, allow_nan=False).replace("</", "<\\/")
 
@@ -244,7 +268,7 @@ def build_app(
     if summary is not None:
         from lotline.dashboard.render import render as render_dashboard
 
-        dashboard = render_dashboard(summary)
+        dashboard = fold_dashboard(render_dashboard(summary))
     html = render(payload((load_bundle(p) for p in paths), generated, summary), dashboard=dashboard)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)

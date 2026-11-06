@@ -118,7 +118,7 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .tiles { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin: var(--space-3) 0; }
 .tile .figure { display: block; }
 .tile .caption { color: var(--ink-muted); }
-iframe.dash { width: 100%; height: 80vh; border: var(--stroke-hair) solid var(--rule); background: var(--paper); }
+iframe.dash { width: 100%; height: 80vh; border: 0; display: block; background: transparent; }
 
 .verdict { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: 600; white-space: nowrap; }
 .verdict .glyph { width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; display: inline-block; }
@@ -166,6 +166,11 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
     <h2 class="h1">The data</h2>
     <p class="lead">What the estimate is built on: which sources the state has, which the model used, and how complete they are.</p>
     <div id="data-body"></div>
+    <div id="dash-host" hidden>
+      <h3 class="h3" style="margin-top:var(--space-6)">Coverage, ordinances and growth</h3>
+      <p class="body-small muted" id="dash-note"></p>
+      <iframe class="dash" id="dash-frame" title="Data coverage, ordinances and growth" scrolling="no"></iframe>
+    </div>
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
@@ -322,9 +327,7 @@ const SECTIONS = {
       const title = r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
       return `<tr><td>${title}<br><span class="caption muted">${esc(r.source)} · ${r.scope === "national" ? "national" : "state"}</span></td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
     }).join("");
-    const dash = DATA.data.summary_generated ? `<div class="card"><h3 class="h3">Data dashboard</h3>
-      <p class="body-small">Coverage map, sources, ordinance timeline, growth and data checks for every state in the build (summary built ${esc(DATA.data.summary_generated)}). The map needs internet access for its libraries (d3, topojson, us-atlas, all ISC).</p>
-      <button type="button" id="open-dash">Open the data dashboard</button><div id="dash-frame"></div></div>` : "";
+    const dash = "";  // the dashboard itself sits below, in #dash-host (kept across state changes)
     return `<div class="card"><p class="eyebrow">Data tier</p>
         <span class="tier"><span class="sw" style="background:var(--tier-${4 - Math.min(3, Math.max(1, b.meta.data_tier))})" aria-hidden="true"></span>${esc(tierWords[b.meta.data_tier] || `Tier ${b.meta.data_tier}`)}</span>
         <p class="body-small muted">The tier holding most of the state's eligible lots.${b.meta.eligible_proxy ? " Eligible lots are estimated from national data (ACS), scaled by the proxy test." : ""}</p>
@@ -462,17 +465,38 @@ function drawTornado() {
   }).join("") + `<div></div><div class="body-small muted">Engine midpoint: ${fmtN(t.base)} homes</div><div></div>`;
 }
 
-function wireData() {
-  const btn = $("open-dash");
-  if (!btn) return;
-  btn.onclick = () => {
-    const html = JSON.parse($("lotline-dashboard").textContent);
-    if (!html) return;
-    const f = document.createElement("iframe");
-    f.className = "dash"; f.title = "Lotline data dashboard"; f.srcdoc = html;
-    $("dash-frame").replaceChildren(f); btn.remove();
-  };
+// The data dashboard, folded into section 2: loaded the first time the data page opens, sized to its content,
+// and scoped to the picked state through its own state chips (matched by the state's name).
+const DASH = { loaded: false };
+function dashScope() {
+  const f = $("dash-frame"), d = f && f.contentDocument;
+  if (!DASH.loaded || !d) return;
+  const name = ((DATA.data.by_state || {})[$("state").value] || {}).name;
+  const chip = [...d.querySelectorAll("#state-bar .chip")].find((c) => c.textContent === name);
+  f.hidden = !chip;  // a state the data summary doesn't cover: say so rather than show another state
+  $("dash-note").textContent = chip ? DASH.note : `The data dashboard summary has no data for ${$("state").value} yet.`;
+  if (chip && chip.getAttribute("aria-pressed") !== "true") chip.click();
 }
+function ensureDashboard() {
+  const html = JSON.parse($("lotline-dashboard").textContent);
+  if (!html) return;
+  $("dash-host").hidden = false;
+  DASH.note = `From the data dashboard summary built ${DATA.data.summary_generated}. The map needs internet access for its libraries (d3, topojson, us-atlas; all ISC).`;
+  $("dash-note").textContent = DASH.note;
+  dashScope();
+  if (DASH.loaded || DASH.loading) return;
+  DASH.loading = true;
+  const f = $("dash-frame");
+  f.onload = () => {
+    DASH.loaded = true;
+    const doc = f.contentDocument;
+    const fit = () => { f.style.height = `${doc.documentElement.scrollHeight}px`; };
+    new ResizeObserver(fit).observe(doc.body);
+    dashScope(); fit();
+  };
+  f.srcdoc = html;
+}
+function wireData() { dashScope(); }
 
 function wireResults() {
   const body = $("results-body");
@@ -535,6 +559,7 @@ function go(page, scroll = true) {
   });
   history.replaceState(null, "", `#${page}?state=${encodeURIComponent($("state").value)}`);
   if (page === "trust") drawTornado();  // measured while visible
+  if (page === "data") ensureDashboard();
   if (scroll) window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", () => go(route().page));
