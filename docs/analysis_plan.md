@@ -3541,9 +3541,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     its docstring already says.
   - No code reads these values for a scenario yet: `scenarios/` has no missing-middle module.
 
-### D-058 · 2026-11-06 · ADU calibration range from the places the anchor is fitted on (method only, before any run)
+### D-060 · 2026-11-06 · ADU calibration range from the places the anchor is fitted on (method only, before any run)
 
-- **Approved by Ben on 2026-11-06** ("Approve D-058"). Nothing below had been run at approval.
+- **Approved by Ben on 2026-11-06** ("Approve D-058", the number this entry had then; renumbered D-060 on merge because main took D-056 to D-058 and open PR #323 took D-059). Nothing below had been run at approval.
 - **Why:**
   - Since D-037 the ADU anchor θ is fitted on our own states (D-048; Oregon pooled since D-053). The
     calibration range behind `hazard.calibration_distance`, however, still comes from the old West Coast
@@ -3653,8 +3653,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     with sources;
   - the weighted percentile and the fold-wise range in `model/calibrate_adu.py`, each with a hand-worked
     unit test;
-  - `--range-test` in `scripts/dev/calibrate_adu.py`, writing to `reports/adu-d058-range/`.
+  - `--range-test` in `scripts/dev/calibrate_adu.py`, writing to `reports/adu-d060-range/`.
 - **Run once:** `LOTLINE_FIT_WITH_OR=1 uv run python scripts/dev/calibrate_adu.py --range-test --out
-  reports/adu-d058-range`.
+  reports/adu-d060-range`.
 - **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry; approved as written,
-  "Approve D-058"). Written by WS-ENGINE before any run. **Status:** method approved, not run.
+  "Approve D-058", given under its first number). Written by WS-ENGINE before any run. **Status:** method approved, not run.
