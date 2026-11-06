@@ -282,3 +282,108 @@ def test_fit_capacity_recovers_a_known_slope():
 def test_scaled_folds_the_slope_into_exposure():
     p = replace(_place(), z=0.5)
     assert cal.scaled([p], 2.0)[0].kr[0] == pytest.approx(1000.0 * math.e)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-054: statewide backtest and the state spread
+# ---------------------------------------------------------------------------------------------------------
+
+
+def _simple(geoid, y=(1,), B=(0.0,), kr=(1.0,), z=0.0):
+    n = len(y)
+    return cal.Place(
+        geoid=geoid,
+        name=geoid,
+        T=2020,
+        beta=1.0,
+        years=np.arange(2020, 2020 + n),
+        y=np.array(y, float),
+        g=np.array(B, float),  # beta 1, so B = g
+        kr=np.array(kr, float),
+        age=np.full(n, 50.0),  # ramp ≈ 1
+        eligible=np.full(n, 1000.0),
+        z=z,
+    )
+
+
+def test_verdict_by_hand():
+    assert cal.verdict(50, 13, 57, 193) == "useful"
+    assert cal.verdict(519, 52, 213, 781) == "inside only"
+    assert cal.verdict(2785, 45, 319, 1420) == "missed"
+    assert cal.verdict(0, 0, 0, 3) == "useful"
+    assert cal.verdict(0, 0, 1, 3) == "inside only"
+
+
+def test_predict_places_shares_theta_and_keys_place_draws():
+    a, b = _simple("a", kr=(1000.0,)), _simple("b", kr=(1000.0,))
+    one = cal.predict_places([a], 0.002, 0.5, 1e-9, 2.0, draws=4000, seed=7)
+    two = cal.predict_places([a, b], 0.002, 0.5, 1e-9, 2.0, draws=4000, seed=7)
+    np.testing.assert_array_equal(one["a"], two["a"])  # a draws alike whichever places it is with
+    # θ is shared: the two places' totals are positively correlated through θ alone (u ≡ 1 here)
+    assert np.corrcoef(two["a"][:, 0], two["b"][:, 0])[0, 1] > 0.3
+    # no θ uncertainty, Poisson: mean θ k = 2
+    flat = cal.predict_places([a], 0.002, 0.0, 1e-9, 2.0, draws=20000, seed=1)["a"]
+    assert flat.mean() == pytest.approx(2.0, rel=0.03)
+
+
+def test_predict_places_capacity_scaling():
+    p = _simple("a", kr=(1000.0,), z=1.0)
+    d = cal.predict_places([p], 0.001, 0.0, 1e-9, 2.0, b=math.log(3.0), draws=20000, seed=2)["a"]
+    assert d.mean() == pytest.approx(3.0, rel=0.03)  # θ k exp(b z) = 1 × 3
+
+
+def test_state_total_and_benchmarks():
+    a, b = _simple("a", y=(1, 2), B=(2.0, 2.0), kr=(0.0, 0.0)), _simple("b", B=(1.0,))
+    none = cal.benchmark_places([a, b], 0.0, 2.5, draws=20000, seed=3)
+    assert cal.state_total(none, ["a", "b"]).mean() == pytest.approx(5.0, rel=0.03)
+
+
+def test_heldout_log_score_by_hand():
+    p = _simple("a", y=(1,), B=(0.0,), kr=(1.0,))
+    assert cal.heldout_log_score(p, 2.0, 0.0, 1e-9, 2.0) == pytest.approx(math.log(2.0) - 2.0, abs=1e-6)
+    # with θ uncertainty: E over ln θ ~ N(ln 2, 0.3²) of θ e^-θ, by brute-force quadrature
+    xs = np.linspace(-8, 8, 20001)
+    th = 2.0 * np.exp(0.3 * xs)
+    dens = np.exp(-(xs**2) / 2) / math.sqrt(2 * math.pi)
+    expected = math.log(np.trapezoid(th * np.exp(-th) * dens, xs))
+    assert cal.heldout_log_score(p, 2.0, 0.3, 1e-9, 2.0) == pytest.approx(expected, abs=1e-6)
+    assert cal.no_effect_log_score(_simple("b", y=(2,), B=(1.5,))) == pytest.approx(2 * math.log(1.5) - 1.5)
+
+
+def test_state_loglik_by_hand():
+    p = _simple("a", y=(0,), B=(0.0,), kr=(1.0,))
+    theta, tau = 0.7, 0.4
+    by_hand = math.log(0.5 * math.exp(-theta * math.exp(tau)) + 0.5 * math.exp(-theta * math.exp(-tau)))
+    assert cal.state_loglik([p], ["S"], theta, 1e-9, 2.0, tau, n=2) == pytest.approx(by_hand, abs=1e-6)
+    # τ = 0 is the ordinary likelihood; two states add
+    q = _simple("b", y=(3,), B=(1.0,), kr=(2.0,))
+    base = cal.loglik([p, q], theta, 0.5, 2.0)
+    assert cal.state_loglik([p, q], ["S", "T"], theta, 0.5, 2.0, 0.0) == pytest.approx(base)
+    two = cal.state_loglik([p], ["S"], theta, 0.5, 2.0, tau) + cal.state_loglik(
+        [q], ["T"], theta, 0.5, 2.0, tau
+    )
+    assert cal.state_loglik([p, q], ["S", "T"], theta, 0.5, 2.0, tau) == pytest.approx(two)
+
+
+def test_tau_profile_recovers_no_spread_and_summary():
+    rng = np.random.default_rng(0)
+    places, states = [], []
+    for s in "ABCD":  # four states, same θ, Poisson places: τ̂ should sit at or near 0
+        for j in range(4):
+            k = np.full(3, 2000.0)
+            places.append(_simple(f"{s}{j}", y=rng.poisson(0.001 * k), B=(0.0,) * 3, kr=k))
+            states.append(s)
+    prof = cal.tau_profile(places, states, 2.0, taus=(0.0, 0.5, 1.0, 2.5))
+    assert prof.loc[prof["ll"].idxmax(), "tau"] <= 0.5
+    s = cal.tau_summary(prof, draws=5000, seed=1)
+    assert s["tau_low"] == 0.0 and s["multiplier_p10"] <= 1 <= s["multiplier_p90"]
+
+
+def test_tau_summary_by_hand():
+    # equal profile at τ 0 and 1, far lower elsewhere: half the draws at 0, the 90% set is {0, 1}
+    prof = pd.DataFrame({"tau": [0.0, 1.0, 2.5], "ll": [0.0, 0.0, -50.0]})
+    s = cal.tau_summary(prof, draws=20000, seed=2)
+    assert (s["tau_hat"], s["tau_low"], s["tau_high"], s["estimable"]) == (0.0, 0.0, 1.0, True)
+    assert s["share_at_0"] == pytest.approx(0.5, abs=0.02)
+    # multiplier: 0.5 × point mass at 1 + 0.5 × lognormal(0, 1); P90 solves 0.5 + 0.5 Φ(ln m) = 0.9
+    assert s["multiplier_p90"] == pytest.approx(math.exp(0.8416), rel=0.05)
