@@ -3217,4 +3217,41 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   a hand-worked three-state example of k, q_s and σ; the draw step in the scenario modules behind a
   `denominator_source == "acs_sf_fallback"` condition, with a test that a parcel-based state is untouched.
 - **Decided by:** Ben, 2026-11-06 ("For 1 I think the middle option works"); drafted by Cowork; to be run by
-  WS-ENGINE. **Status:** method only, not run.
+  WS-ENGINE. **Status:** run 2026-11-06; **passed** (Result below).
+- **Result (run 2026-11-06 by WS-ENGINE, branch `ws/engine-d053-proxy-test`; read by the rule above, nothing
+  changed after seeing the numbers).** `uv run python scripts/dev/eligible_proxy_test.py` →
+  `reports/eligible-proxy/` (`ratios_adu.csv`, `ratios_missing_middle.csv`, `by_jurisdiction.csv`,
+  `summary.json`). Implementation choices fixed before the run: each parcel-counted jurisdiction enters at its
+  newest roll year (`denominator_source == "parcels"`, rule 1.1); its ACS homes are taken at the end year
+  `eligible._nearest_acs_year` pairs with that roll (nearest, later on a tie, within `scale_max_year_gap` = 3),
+  which is how the eligible-year rule (`scale_history`) anchors a roll; no jurisdiction fell outside that reach.
+  Rolls newer than ACS 2024 (MN, NC and OR 2026; TX 2025) are paired with 2024.
+
+  | state | jurisdictions | E_s (parcels, ADU) | A_s (ACS homes) | r_s | k_(−s) | **q_s** | rest-of-county share of E_s |
+  |---|---|---|---|---|---|---|---|
+  | MN | 539 | 1,283,395 | 1,235,289 | 1.039 | 0.987 | **1.052** | 9.0% |
+  | NC | 218 | 1,613,487 | 1,718,560 | 0.939 | 1.013 | **0.927** | 36.2% |
+  | TX | 478 | 4,908,752 | 4,658,585 | 1.054 | 0.984 | **1.071** | 25.5% |
+  | OH | 885 | 3,276,403 | 3,521,735 | 0.930 | 1.015 | **0.916** | 39.3% |
+  | OR | 27 | 468,769 | 453,705 | 1.033 | 0.989 | **1.045** | 25.8% |
+
+  - **ADU (the test): pass.** Every held-out q_s lies in [0.7, 1.4] (range 0.916–1.071). k = 0.998,
+    σ = 0.060, so `eligible_proxy_scale` = 0.998 (low 0.939, high 1.059) and `eligible_proxy_sd` = 0.060.
+  - **Missing middle (the check): also inside the band.** r_s = 1.083 (MN), 1.173 (NC), 1.198 (TX),
+    1.140 (OH), 1.090 (OR); k = 1.136, σ = 0.044; q_s 0.942–1.069.
+  - **Reading.** The entry expected the proxy to over-count (ratio below 1) by the share of single-family homes
+    not on single-family-only, lot-size-eligible parcels. For ADU it does not: the ADU rule (rule 1.1) needs an
+    existing single-family house but no single-family-only zoning, and the lot-size floor is 0, so eligible
+    ADU parcels and ACS one-unit detached homes count nearly the same thing (k ≈ 1). For missing middle the
+    parcel count is *higher* than the proxy (k = 1.14), because that rule adds vacant residential lots and
+    counts unknown zoning as single-family-only, which ACS cannot see. The proxy is therefore close to unbiased
+    for ADU and about 12% low for missing middle, and the five states agree within a few percent on both.
+  - **Flags.** TX (36.5% unknown land use) and NC (19.2%) have the most uncertain E_s; with OH they hold the
+    three ADU q_s furthest from 1 (TX 1.071, NC 0.927, OH 0.916). NC and OH hold more than a third of their
+    parcel-based count in "rest of county" jurisdictions, whose ACS homes are a remainder after subtracting
+    places; state totals are unaffected by how that remainder is split, but within-state views would be.
+    OR is 27 Portland-metro jurisdictions on 2026 rolls, the smallest set.
+  - **Open question for Ben (not acted on).** The rule names one scale k, and the test theme is ADU, so the
+    parameters carry ADU's k. Applied to missing middle in a tier-3 state, k = 0.998 would sit about 12%
+    below the missing-middle ratio (1.136). Whether missing middle gets its own scale is a new decision, to
+    be written as its own entry if wanted; until then the draw step applies the one k to every theme.

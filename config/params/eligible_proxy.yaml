@@ -1,0 +1,20 @@
+# ACS-fallback scale for national-data-only (tier 3) states (analysis plan D-053, model/eligible_proxy.py).
+# Fitted once on the five states with both denominators; reproduced by scripts/dev/eligible_proxy_test.py
+# (outputs in reports/eligible-proxy/). Used only for a state with no parcel denominator at all; a state with
+# any parcel-based jurisdiction is never scaled.
+
+eligible_proxy_scale:
+  value: 0.998
+  low: 0.939
+  high: 1.059
+  unit: eligible parcels per ACS one-unit detached home
+  source: "Analysis plan D-053 (run 2026-11-06): k = geometric mean of real/proxy state-total ratios, theme ADU, MN NC TX OH OR; low/high = k x exp(-/+ sigma); reports/eligible-proxy/summary.json"
+  notes: "Leave-one-state-out held-out ratios 0.916-1.071, all inside D-053's [0.7, 1.4] band. Missing middle's own k is 1.136 (check theme, not used here); a theme-specific scale would need its own analysis-plan entry."
+
+eligible_proxy_sd:
+  value: 0.060
+  low: 0.060
+  high: 0.060
+  unit: log-scale standard deviation
+  source: "Analysis plan D-053 (run 2026-11-06): sample sd (n - 1) of log real/proxy ratios over the five states, theme ADU; reports/eligible-proxy/summary.json"
+  notes: "Each simulation draw multiplies a tier-3 state's ACS homes by eligible_proxy_scale x exp(eligible_proxy_sd x z), z standard normal, one z per state per draw. Fixed (not itself drawn)."
