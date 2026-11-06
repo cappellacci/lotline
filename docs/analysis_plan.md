@@ -1670,6 +1670,10 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     the four-state data (D-019 fit 3 predates the NC and TX permit work), under its own dated entry.
   - **Decided by:** Ben, 2026-11-03 ("we need to be rolling our own"); written by WS-ENGINE.
 
+- **Note (2026-11-06, D-053):** Portland and Bend are now in the ADU fit. Portland's published counts (E044,
+  E046) and its 4 per 1,000 research band are no longer an independent check on the anchor. They are reported
+  as in-sample from D-053 on. Studies from other places stay outside checks.
+
 ### D-038 · 2026-11-03 · Missing-middle uptake calibrated on our four states: method (pre-registered before the fit)
 - **Status:** method written and pushed before any fit was run. Required by the D-037 amendment (Ben, 2026-11-03:
   "we need to be rolling our own"); Ben's instruction is the go-ahead to run it once. It replaces this entry's
@@ -3167,3 +3171,100 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   variants are identical. Portland's pre-2018 history was a rise (the fee-waiver years) that ended in 2018.
   Carrying it forward over-predicted about fourfold. A short local history helps only if what drove it
   continues.
+
+### D-053 · 2026-11-05 · Oregon joins the ADU calibration (method only, before any run)
+
+- **Approved by Ben on 2026-11-05** ("Yes, approve D-053").
+- **Why:** V9 is frozen (#298) and scored (#299, #301). Ben chose option C, transfer first and then pool,
+  and on 2026-11-05 said "start it". The holdout was released in #302. Oregon is the high-uptake end of the
+  range that the four-state fit lacks. V9's miss showed this: Portland and Bend landed above the transfer
+  range.
+- **Change:**
+  - Oregon joins `adu.REFORM_STATES`. Field probabilities, rule priors and D-038's blank shares are then read
+    from five states' coded rules.
+  - V9 keeps the four states (`v9.FIT_STATES`), so the frozen draws still regenerate.
+  - The fit set gains Portland (4159000) and Bend (4105800), 2016–2025, the window MN and NC use. Bend's
+    building-use ADU flag starts in 2013 and Portland's IS_ADU covers every year.
+  - Place-years enter only under `calibrate_adu.place_years`' existing filter (a coded rule in force by
+    1 July and a permit source flagging ADUs), with D-041's count rules and co-built houses dropped.
+  - Eligible parcels come from the ACS fallback (D-017). There is no RLIS roll yet.
+- **Refit, each exactly as now adopted, with only the places changed:**
+  - θ and α under D-048 (no ramp);
+  - the D-030 draw terms (`adu_anchor.yaml`);
+  - D-050's τ grid (`adu_state_effect.yaml`).
+- **Reported:**
+  - θ, α and τ before and after;
+  - leave one state out over five states with τ drawn, using D-040's verdicts and the median P90 ÷ P10;
+  - Oregon's in-sample fit for Portland and Bend by year.
+- **Rule, written now:** the configs are regenerated from the five-state fit whatever the backtest shows. A
+  state missed in leave one state out is reported to Ben as a finding.
+- **Independence lost:** Portland is the hazard's reference place, so its published counts (E044, E046)
+  stop being an independent check once it is fitted. Benchmark (b) is reported as in-sample from now on,
+  and D-037 gets a note.
+- **Not in this entry:** the missing-middle panels (D-019, D-024, D-025) and Metro's current RLIS roll.
+  Each gets its own entry.
+- **Amendment (2026-11-06, after the first run, before any config was written).**
+  - **What the first run showed:** the partial-rule share m_x was estimated at 1.0 with a narrow interval,
+    against the judgment 0.3 that applied before. Under fit 3's rule an estimated share replaces the judgment.
+  - **Cause:** blank rubric fields. Portland's rule in force 2016–2020 (the 1998 row) left `by_right` and
+    parking blank. The pooled field probabilities then put Portland 86% on "partial", so Portland's
+    high counts read as evidence that partial rules work.
+  - **Fix, approved by Ben on 2026-11-06 ("Code Portland's rules"):** two coders, working independently
+    from primary sources, coded Portland's rule as in force on 1 July 2016–2021. They agreed on every field:
+    - by right;
+    - no owner occupancy;
+    - detached allowed;
+    - 800 sq ft cap;
+    - no ADU parking;
+    - one ADU per lot.
+
+    New row `OR-4159000-adu-2016` (Ord. 187471, effective 2016-01-01) supersedes the 1998 row. Portland is
+    now Handbook-equivalent in every fit year.
+  - **Bend left as coded.** Its 2016 rule requires one parking space, so it is partial whatever its blank
+    owner-occupancy field holds.
+  - **Rerun:** the whole entry is rerun on the recoded rows. The first run is kept in
+    `reports/adu-d053-run1/` and reported next to the second; the configs come from the second.
+
+- **Results (2026-11-06; run 1 is the old Portland coding, run 2 is the recoded one).**
+  - **The recode changed nothing at the optimum.** Run 2 reproduces run 1 exactly: θ 0.308 per 1,000
+    (90% interval 0.213–0.463), α 2.317, m_o 1.0, m_x 1.0 (interval 1.0–1.0), log-likelihood −910.295.
+    At m_o = m_x = 1, every rule type that allows ADUs counts in full, so Portland's label no longer
+    matters. Without Oregon, the fit is exactly D-048's (θ 0.659, log-likelihood −327.881).
+  - **What sets m_x = 1.0 is Bend 2016–17.** Bend's own rule required one parking space, and the state law
+    did not reach it until 2018. It built 37 and 39 ADUs, about as many as under its later full rules. An
+    exploratory profile (m_o = 1, best θ and α at each point) shows this:
+
+    | Fit | m_x 0.1 | m_x 0.3 | m_x 0.6 | m_x 1.0 |
+    |---|---|---|---|---|
+    | Five states | −916.81 | −914.32 | −913.44 | −910.38 |
+    | Without Bend | −859.07 | −856.53 | −855.98 | −856.46 |
+    | Without Portland | −388.36 | −385.77 | −384.29 | −380.42 |
+
+    Without Bend the share is not identified (flat from 0.3 to 1.0).
+  - **Decision (Ben, 2026-11-06, "Follow the rule (1.0)"):** fit 3's pre-registered rule stands, and
+    `adu_partial_rule_share` = 1.0. The judgment value 0.3 is the sensitivity: the five-state fit at
+    m_x = 0.3 gives θ 0.806 per 1,000 (log-SE 0.241) and α 2.354. At 0.3, a Handbook rule's rate is about
+    2.6× the central one and a partial rule's about 0.8×.
+  - **What it means for the ADU scenario:** at m_x = 1.0, moving a place from a partial rule to a Handbook
+    rule adds nothing. The scenario's gain comes from places with no ADU rule, places where coverage is
+    partial, and the state multiplier. The 0.3 sensitivity carries the opposite case.
+  - **Leave one state out, τ drawn (D-044 main):**
+
+    | State | Built | P10–P90 | P50 | Verdict |
+    |---|---|---|---|---|
+    | MN | 285 | 136–1,525 | 454 | useful |
+    | NC | 45 | 14–595 | 100 | inside only |
+    | OH | 8 | 0–42 | 4 | useful |
+    | TX | 1,108 | 31–2,690 | 364 | inside only |
+    | OR | 3,363 | 58–3,936 | 653 | inside only |
+
+    None missed; median P90 ÷ P10 is 67.9 (D-043 28.7, D-041 28.0). Without τ, Oregon is missed
+    (P90 3,145 against 3,363 built).
+  - **State spread:** τ̂ 0.565 (interval 0–1.70), against 0 before. A state outside the fit now gets a
+    multiplier of ×0.33–×3.02 at P10–P90 (D-050: ×0.49–×2.07).
+  - **Oregon in sample:** Portland and Bend run 5–25× the five-state predictive median each year. Portland's
+    counts fall after 2018 while its rules loosen. The fit carries both cities as large place effects.
+  - **Written:** `hazard.yaml` (θ, α), `adu.yaml` (m_x), `adu_anchor.yaml` (draw terms, 53 places,
+    316 place-years; log-SE θ 0.232, α 0.254, correlation −0.010), `adu_state_effect.yaml` (with
+    `fitted__OR`). Logs and charts are in `reports/adu-d053-fit/` and `reports/adu-tau-draws-d053/`, and
+    run 1 is in `reports/adu-d053-run1/`.
