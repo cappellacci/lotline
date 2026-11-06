@@ -3359,3 +3359,35 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     parameters carry ADU's k. Applied to missing middle in a tier-3 state, k = 0.998 would sit about 12%
     below the missing-middle ratio (1.136). Whether missing middle gets its own scale is a new decision, to
     be written as its own entry if wanted; until then the draw step applies the one k to every theme.
+
+### D-056 · 2026-11-06 · Housing-need denominators: two deviations from the WS-ENGINE brief (sources that do not exist as specified)
+- **Why:** The WS-ENGINE brief (2026-11-06, office hours A2) asks for `household_growth_5y` from the state
+  demographers and a `shortage_stock` blended from Up for Growth and Zillow (low/high, geometric mean as the
+  value), with Freddie Mac 2020 in notes only. A source search on 2026-11-06 (WS-ENGINE) found: (1) none of the
+  five demographers (MN SDC, NC OSBM, TX TDC, Ohio DoD Office of Research, Oregon OEA) publishes a household
+  projection or a persons-per-household projection, only population; (2) Zillow publishes no state-level
+  deficit (national 4.7M for 2023 and a table of the 50 largest metros); (3) Up for Growth's 2025 report has no
+  state table, so the 2024 report (2022 data) is the newest state table.
+- **Decided by:** Ben, 2026-11-06, choosing between options put to him ("Pop × headship"; "Freddie % × ACS stock").
+- **Deviation 1, household growth (derived, not published):** `household_growth_5y` = the demographer's
+  population change 2025 → 2030 × households per person in ACS 2020–2024 (B11001_001 ÷ B01003_001), i.e.
+  constant headship. Texas's low/high come from its low and high migration scenarios; the other four publish
+  one series, so low = high. Where the result is ≤ 0 (Ohio: population −70,972, so −29,225 households), the
+  headline denominator falls back to `shortage_stock` (`aggregate.headline_kind`). Constant headship ignores
+  ageing and household formation; it is labelled "derived" wherever it is shown.
+- **Deviation 2, shortage (Freddie Mac replaces Zillow as the second estimate):** value = Up for Growth 2024
+  (2022 underproduction). The second estimate is Freddie Mac's Feb 2020 static state deficit (Exhibit 3, 2018
+  data, published only as % of stock) × ACS 2014–2018 housing units (B25001_001); low/high are the min and max
+  of the two. Where Freddie shows no deficit (share ≤ 0: 21 states, including Ohio, and Kansas at 0.00), Up for
+  Growth stands alone and low = high. Freddie is now a source, not notes-only. The value is UfG, not the
+  geometric mean, as Ben chose. Check: Freddie's California share × ACS stock gives 808,469 against the
+  Insight's "about 820,000" (the Insight used a different stock estimate).
+- **Unchanged from the brief:** two kinds, never mixed without a label; `denominator_kind` on every share;
+  the CRS comparison (IN12628, Dec 2025) recorded in the evidence register (E114) as the reason the shortage is
+  a range.
+- **Code:** `scripts/dev/housing_need.py` writes `config/params/housing_need.yaml` (published tables transcribed
+  with URLs; ACS through the `census_acs5` fetch); `model/aggregate.share_of_need`; tests in
+  `tests/model/test_aggregate_need.py`.
+- **Values (onboarded states):** household growth 2025–30 MN 47,907; NC 209,033; TX 683,487 (590,246–841,601);
+  OH −29,225 (headline falls back); OR 39,640. Shortage MN 98,383 (–129,979); NC 41,743 (–167,374);
+  TX 319,524 (–518,032); OH 60,782 (no range); OR 78,468 (–154,047).
