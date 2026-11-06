@@ -66,7 +66,7 @@ class Place:
     age: np.ndarray
     eligible: np.ndarray
     z: float = 0.0  # D-042: centred log builder capacity (0 = no modifier)
-    unstable: bool = False  # D-056: the pre-reform pace failed the dispersion test (baseline window widened)
+    unstable: bool = False  # D-058: the pre-reform pace failed the dispersion test (baseline window widened)
 
     @property
     def B(self) -> np.ndarray:
@@ -102,9 +102,9 @@ def growth_index(series: Mapping[int, float], t: int, pre_years: Sequence[int], 
     return float(np.clip(m_t / m_pre, *cap))
 
 
-LONG_YEARS = 6  # D-056: the stability test's window and the replacement baseline's
-DISPERSION_P = 0.05  # D-056: unstable if the dispersion test's p-value is below this
-ZERO_FLOOR = 0.5  # D-056: buildings spread over a baseline window that had none
+LONG_YEARS = 6  # D-058: the stability test's window and the replacement baseline's
+DISPERSION_P = 0.05  # D-058: unstable if the dispersion test's p-value is below this
+ZERO_FLOOR = 0.5  # D-058: buildings spread over a baseline window that had none
 
 
 def _gamma_q(a: float, x: float) -> float:
@@ -147,7 +147,7 @@ def chi2_sf(x: float, df: int) -> float:
 
 
 def dispersion_test(counts: Sequence[float], p_cut: float = DISPERSION_P) -> dict:
-    """Poisson index-of-dispersion test (D-056): D = Σ (y − ȳ)² / ȳ ~ χ²(n − 1) for a stable pace.
+    """Poisson index-of-dispersion test (D-058): D = Σ (y − ȳ)² / ȳ ~ χ²(n − 1) for a stable pace.
     Not testable (stable) with fewer than 3 years or ȳ = 0.
 
     By hand: (10, 10, 10) -> D 0, p 1, stable; (0, 0, 30) -> ȳ 10, D = (100 + 100 + 400) / 10 = 60 on 2 df,
@@ -191,7 +191,7 @@ def place_inputs(
     check). Places with no post-reform year or no pre-reform year with
     data are left out.
 
-    D-056: baseline_rule 'fixed' (the `baseline_years` window), 'stability' (the six-year window T − 6 … T − 1
+    D-058: baseline_rule 'fixed' (the `baseline_years` window), 'stability' (the six-year window T − 6 … T − 1
     when `dispersion_test` flags the place's counts there), or 'long' (six years always); the growth index's
     reference moves with the window. zero_floor: a baseline with no outcome becomes 0.5 / n_pre.
     """

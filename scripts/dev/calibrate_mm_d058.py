@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Missing middle: D-054's statewide backtest, with a baseline rule for unstable pre-reform pace (D-056).
+"""Missing middle: D-054's statewide backtest, with a baseline rule for unstable pre-reform pace (D-058).
 
-    uv run python scripts/dev/calibrate_mm_d056.py --out reports/mm-d056
-    uv run python scripts/dev/calibrate_mm_d056.py --out /tmp/x --dry   # inputs, flags and structure; no fit
+    uv run python scripts/dev/calibrate_mm_d058.py --out reports/mm-d058
+    uv run python scripts/dev/calibrate_mm_d058.py --out /tmp/x --dry   # inputs, flags and structure; no fit
 
 Specifications, all with the zero floor (a baseline with no outcome becomes 0.5 / n_pre), on D-054's events,
 outcome classes, places and years:
