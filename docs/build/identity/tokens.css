@@ -16,8 +16,8 @@
   --focus: #2f6fb0;
   --scenario-baseline: #8a867b;
   --scenario-adu: #2f6fb0;
-  --scenario-missing-middle: #d1561b;
-  --scenario-fees: #1a9e72;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
   --scenario-combined: #1c1b18;
   --confidence-inside: #1f8a5c;
   --confidence-edge: #b07a1a;
@@ -65,8 +65,8 @@
     --focus: #6ea3d6;
     --scenario-baseline: #7d7a71;
     --scenario-adu: #4d8fd6;
-    --scenario-missing-middle: #d9602d;
-    --scenario-fees: #22a877;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
     --scenario-combined: #ece8df;
     --confidence-inside: #35a070;
     --confidence-edge: #b8862e;
@@ -97,8 +97,8 @@
   --focus: #6ea3d6;
   --scenario-baseline: #7d7a71;
   --scenario-adu: #4d8fd6;
-  --scenario-missing-middle: #d9602d;
-  --scenario-fees: #22a877;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
   --scenario-combined: #ece8df;
   --confidence-inside: #35a070;
   --confidence-edge: #b8862e;
