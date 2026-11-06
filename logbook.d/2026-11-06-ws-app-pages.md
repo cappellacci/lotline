@@ -11,3 +11,5 @@
 - `tests/app/test_build.py`: the intro and masthead line are on the page; only Results is visible at load; each tab links to its page.
 
 **What Claude did and how it was checked:** Claude Code (Opus 5.5, WS-APP instance) made the change at Ben's request. Checked by `tests/app` (26 passed), `compliance_check.py`, and in a browser at desktop and 375 px width: tab clicks, the state switch keeping the page, a deep link opening on `#data?state=ZZ`, and the tornado drawing when its page opens.
+
+Follow-up the same day (Ben): tab 3 and its heading were renamed from "How well does it hold up?" to "The model".

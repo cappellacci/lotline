@@ -28,7 +28,7 @@ def test_page_builds_from_fixture_and_has_every_section(tmp_path):
     html = page.read_text(encoding="utf-8")
     for section in ("results", "data", "trust"):
         assert f'data-section="{section}"' in html
-    for heading in ("Results", "The data", "How well does it hold up?"):
+    for heading in ("Results", "The data", "The model"):
         assert heading in html
     # identity inlined from the one source, no placeholder left behind
     assert "--scenario-adu" in html and "/*__" not in html and "<!--__" not in html
