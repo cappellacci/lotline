@@ -441,7 +441,7 @@ def _pre_post_panel(pre, post, T=2020, place="p1"):
 
 
 def test_baseline_rule_widens_only_unstable_places():
-    surge = _pre_post_panel(pre=(10, 10, 10, 100, 110, 120), post=(20, 20))  # last three years 3x the first three
+    surge = _pre_post_panel(pre=(10, 10, 10, 100, 110, 120), post=(20, 20))  # recent years 11x the earlier
     steady = _pre_post_panel(pre=(9, 11, 10, 10, 9, 11), post=(20, 20), place="p2")
     panel = pd.concat([surge, steady], ignore_index=True)
     fixed = cal.place_inputs(panel, ["p1", "p2"], 0.15, 0.5)
