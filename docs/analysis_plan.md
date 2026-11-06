@@ -3540,3 +3540,121 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Because config changed, `v9_or_score.py` reproduces the freeze only when run from the freeze commit, as
     its docstring already says.
   - No code reads these values for a scenario yet: `scenarios/` has no missing-middle module.
+
+### D-058 · 2026-11-06 · ADU calibration range from the places the anchor is fitted on (method only, before any run)
+
+- **Approval:** waiting for Ben. Nothing below has been run.
+- **Why:**
+  - Since D-037 the ADU anchor θ is fitted on our own states (D-048; Oregon pooled since D-053). The
+    calibration range behind `hazard.calibration_distance`, however, still comes from the old West Coast
+    reference cities. Rent runs $1,573–$2,034 a month and home value $519k–$836k (Portland, Seattle and Los
+    Angeles, ACS 2015–19, 2025 dollars). Rates run 2.96–6.81% (2015–23).
+  - So the distance measures how far a place is from three cities the fit no longer uses, not from the data
+    it does use. On 2026-11-06 (`adu.places_from_store` at origin 2025), 96–99% of eligible parcels in MN,
+    NC, TX and OH were outside the range. Their eligible-weighted median log distances were MN 0.65, NC 0.94,
+    TX 0.69, OH 1.39 and OR 0.11.
+  - The widening keeps the mean, so it also lowers each place's median by exp(−s²/2), s = w·d: about ×0.81
+    at s = 0.65. The places the anchor was fitted on are therefore widened and pulled down as if they were
+    an extrapolation.
+  - **Ben's call (2026-11-06):** worth doing through a pre-registered entry. The benefits are a range tied
+    to where the data are, less median drag, and a distance that means transfer. The risk is intervals that
+    get too narrow, so the backtest must check coverage.
+- **What is known already, stated now:** the distances above and D-053's leave-one-state-out results
+  (computed with no widening) have been seen. This entry fixes the range rule and the adoption rule before
+  either range is used in a backtest with widening. No such run exists yet.
+- **Fit set (the places the range describes).** These are exactly the place-years in D-053's fit
+  (`four_state_places` in `scripts/dev/calibrate_adu.py` with `LOTLINE_FIT_WITH_OR=1`; 53 places,
+  316 place-years, `adu_anchor.yaml`):
+  - MN: every Twin Cities place with a coded ADU rule except St. Paul (the V5 blind test), 2016–2025;
+  - TX: Austin 2016–2023 and San Antonio 2021–2025;
+  - NC: the Mecklenburg towns, Greensboro and Durham County (3743480, 3741960, 3714700, 3733120, 3728000,
+    37063), 2016–2025;
+  - OH: Cincinnati 2024–2025;
+  - OR: Portland and Bend, 2016–2025.
+
+  Only place-years that pass `calibrate_adu.place_years`' filter count: a coded rule in force by 1 July, a
+  permit source flagging ADUs that year, and ACS rent and home value present. The test set (Raleigh, Durham
+  2021–25) is not in the fit, so it does not shape the range. The generator takes the place list from that
+  function, not from a copy, so a later change to the fit set changes the range with it.
+- **Range rule (main): eligible-weighted 5th to 95th percentiles over fit place-years.**
+  - **Rent and home value:** the median gross rent and median home value each fit place-year enters the fit
+    with (ACS, CPI-U to 2025 dollars, `adu.acs_values`, as `place_years` passes them to the hazard). Each
+    value is weighted by that place-year's eligible parcels. Low = weighted 5th percentile, high = weighted
+    95th percentile. Rent and value are computed separately, as now (a box, not a joint region).
+  - **Mortgage rate:** one national series (FRED MORTGAGE30US annual mean), the same for every place. Low and
+    high are its minimum and maximum over the fit years, 2016–2025. Percentiles of ten national values mean
+    nothing, so the rate keeps today's min/max rule, on the fit years instead of 2015–23.
+  - **Why percentiles, not min/max:**
+    - Min/max would let one place set each edge, however little it says about θ. A small suburb with a
+      handful of fit years, or a single year, could stretch the range.
+    - Weighting by eligible parcel-years puts the range where the fit's evidence sits: the expected count,
+      and so the information about θ, scales with eligible parcels.
+    - Percentiles give a narrower range than min/max. That widens more places, which leans against the
+      main risk Ben named (intervals too narrow).
+  - **Rejected alternative, reported once:** min/max over fit place-years (the direct analogue of today's
+    rule). It is printed next to the main range, but it is not tested or adopted.
+  - **Known limit:** Oregon's eligible parcels come from the ACS fallback (D-017), so Portland's and Bend's
+    weights are proxies. Portland has many parcels and will weigh heavily at the high end.
+- **Backtest.** V1 (baseline) and V2 (mechanism) do not use the ADU widening. D-043 noted that the
+  calibration backtests have none either. So the test is the one where a range matters: **leave one state
+  out**, five states, as in D-053's main run (θ, α and τ refitted on the other four states; τ drawn from that
+  fold's grid, D-044; the same seeds, draws and count rules).
+  - **Two arms, run with the same draws:**
+    - **(C) current:** distance from the West Coast range now in `hazard.yaml`.
+    - **(F) fit set:** distance from the range above, **recomputed in each fold from the other four states'
+      fit place-years only**, so the held-out state never shapes its own range.
+  - **Widening:** as the scenario applies it to a state outside the fit set, `hazard.widen_unseen_state`
+    (rule "both"). It multiplies each held-out place-year's expected count before the count noise, with
+    w = `adu_extrapolation_widening` (1.0). z_d is one standard normal per draw, shared by every place
+    (`adu_extrapolation_shared_share` 1.0). Distance uses that place-year's own rent, value and rate.
+  - **Scored:**
+    1. **State totals:** each held-out state's built total against P10–P90, with D-040's verdicts (useful,
+       inside only, missed), for MN, NC, OH, TX, OR, plus NC with Raleigh and Durham.
+    2. **Place totals:** randomized P10–P90 coverage (D-003) of each held-out place's total over its years,
+       over every place in every fold (the 53 fit places and Raleigh and Durham). Nominal 80%.
+    3. **Reported, not decisive:** place-year coverage; the median P90 ÷ P10 for states and places; the median
+       of observed ÷ P50 for places (the median-drag check); the share of held-out eligible parcels with
+       distance 0 under each arm.
+  - **No-widening run:** reproduced as a check. With w = 0, both arms must equal D-053's leave-one-state-out
+    table.
+- **Adoption rule (written now).** Arm F is adopted if both gates pass:
+  1. **No more states missed:** the number of states missed under F (of the five, plus NC with Raleigh and
+     Durham) is no larger than under C.
+  2. **Not too narrow:** place-total P10–P90 coverage under F is at least 70%, which is 10 points under
+     nominal.
+
+  If either gate fails, C stays in `hazard.yaml`, and the result is reported to Ben with which gate failed.
+  Coverage under F above 90% is reported as "wider than needed", not a failure (V1's reading, D-038). Nothing
+  else is tuned to pass: w, the percentiles and the fit set stay as written here. Any change is a new entry.
+- **If adopted:**
+  - `adu_calibration_*` in `hazard.yaml` take the full five-state fit set's range, with sources naming this
+    entry, the percentiles and the place-year count;
+  - `scripts/dev/params_table.py` regenerates the parameter table;
+  - the docstring of `hazard.py` and `docs/model_and_assumptions.md` say the range is the fit set's.
+  - **What follows for each kind of place:**
+    - places inside the fit set's range get no widening;
+    - places outside it, including those in fitted states, get the widening by their distance;
+    - an unseen state (V8 Wisconsin, any state a user brings) gets distance from the fit set, plus τ as
+      now.
+  - **Overlap flag (PR #311):** its notes are updated to say which range the distance uses.
+    `overlap_flag_medium_distance` and `overlap_flag_low_distance` are not retuned in that PR. If the new
+    distances make the thresholds read differently (for example most places land in "high"), that is
+    reported to Ben as a finding for a separate decision.
+- **Frozen predictions are never recomputed.**
+  - V9 Oregon (`results/frozen/V9-OR-TRANSFER.json`) keeps its West Coast range. `validation/v9.py` pins the
+    old `adu_calibration_*` values in code, as it pins `FIT_STATES` and the ramp (`hazard.PRE_D048_RAMP`),
+    so its draws still regenerate. A test checks this.
+  - V5 St. Paul and Charlotte are not frozen yet. Each is made on whatever is on `main` when it freezes, and
+    its freeze file records the calibration range used.
+- **Holdouts:** the generator and backtest read only fit-set place-years through the existing IO layer and
+  holdout filter. No holdout is loaded or unblinded.
+- **Code, when Ben approves the method:**
+  - `scripts/dev/adu_reference.py --fit-set`: prints both ranges and writes the main one into `hazard.yaml`
+    with sources;
+  - the weighted percentile and the fold-wise range in `model/calibrate_adu.py`, each with a hand-worked
+    unit test;
+  - `--range-test` in `scripts/dev/calibrate_adu.py`, writing to `reports/adu-d058-range/`.
+- **Run once:** `LOTLINE_FIT_WITH_OR=1 uv run python scripts/dev/calibrate_adu.py --range-test --out
+  reports/adu-d058-range`.
+- **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry). Written by WS-ENGINE
+  before any run. **Status:** method only, not run.
