@@ -95,12 +95,16 @@ def test_handbook_equivalent_rules_add_nothing():
 
 
 def test_partial_rules_get_the_increment_only_by_hand():
-    """A partial rule: current hazard = 0.3 × h_m. Handbook year 1: 0.3 h_m + 0.7 h_m (no ramp, D-048).
-    Added in year 1 = 2,000 × 0.7 × h_m (same pool in year 1)."""
-    out = adu.central_path(_places(rule_class="partial", rule_age=50.0))
+    """A partial rule at m_x = 0.3 (the D-053 sensitivity): current hazard = 0.3 × h_m. Handbook year 1:
+    0.3 h_m + 0.7 h_m (no ramp, D-048). Added in year 1 = 2,000 × 0.7 × h_m (same pool in year 1). At the
+    adopted m_x = 1.0 (D-053) a partial rule already counts in full, so nothing is added."""
+    old = {"adu_partial_rule_share": 0.3}
+    out = adu.central_path(_places(rule_class="partial", rule_age=50.0), params=old)
     hm = out["mature_hazard"][0]
     assert out["current"][0, 0] == pytest.approx(2000 * 0.3 * hm, rel=1e-6)
     assert out["added"][0, 0] == pytest.approx(2000 * 0.7 * hm, rel=1e-6)
+    assert adu.central_params()["adu_partial_rule_share"] == 1.0
+    assert adu.central_path(_places(rule_class="partial", rule_age=50.0))["added"].sum() == 0
 
 
 def test_observed_adus_are_never_counted_as_added():
@@ -248,17 +252,17 @@ def _no_slopes(corr: float = 0.0) -> dict:
 
 
 def test_log_sd_from_the_90_percent_interval_by_hand():
-    """Anchor 90% interval 0.000443-0.001023 (D-048): (ln 0.001023 − ln 0.000443) / (2 × 1.644854) =
-    0.8369 / 3.2897 = 0.2544."""
+    """Anchor 90% interval 0.000213-0.000463 (D-053): (ln 0.000463 − ln 0.000213) / (2 × 1.644854) =
+    0.7764 / 3.2897 = 0.2360."""
     s = adu.specs()["adu_mature_hazard_ref"]
-    assert adu.log_sd(s) == pytest.approx((math.log(0.001023) - math.log(0.000443)) / 3.289708, rel=1e-6)
-    assert adu.log_sd(s) == pytest.approx(0.2544, abs=1e-4)
+    assert adu.log_sd(s) == pytest.approx((math.log(0.000463) - math.log(0.000213)) / 3.289708, rel=1e-6)
+    assert adu.log_sd(s) == pytest.approx(0.2360, abs=1e-4)
 
 
 def test_anchor_draws_have_their_median_at_the_estimate():
     """D-030: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
-    the judgment shift), not triangular(low, central, high). With D-048's anchor 0.659e-3 (0.443-1.023e-3) the
-    triangular median is 1.023e-3 − √(0.580e-3 × 0.364e-3 / 2) = 0.698e-3, 6% above the estimate (D-019's
+    the judgment shift), not triangular(low, central, high). With D-053's anchor 0.308e-3 (0.213-0.463e-3) the
+    triangular median is 0.463e-3 − √(0.250e-3 × 0.155e-3 / 2) = 0.324e-3, 5% above the estimate (D-019's
     interval gave 41%)."""
     spec = adu.specs()
     sets = adu.draw_params(20_000, 7, _no_slopes())
@@ -270,7 +274,7 @@ def test_anchor_draws_have_their_median_at_the_estimate():
     assert np.median(alpha) == pytest.approx(a.value, rel=0.02)
     assert np.percentile(theta, 5) == pytest.approx(t.value * math.exp(-1.644854 * adu.log_sd(t)), rel=0.05)
     old = np.random.default_rng(7).triangular(t.low, t.value, t.high, 20_000)
-    assert np.median(old) == pytest.approx(0.698e-3, rel=0.01)  # the bias D-030 removes
+    assert np.median(old) == pytest.approx(0.324e-3, rel=0.01)  # the bias D-030 removes
     assert np.median(old) > 1.05 * t.value
 
 
@@ -471,12 +475,12 @@ def test_a_blank_field_is_never_read_as_unrestrictive():
 
 
 def test_central_path_uses_the_expected_rule_share():
-    """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 -> c = 0.72. Added in year 1 =
-    2,000 × (1 − 0.72) × h_m (no ramp, D-048)."""
+    """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 (the D-053 sensitivity) -> c = 0.72.
+    Added in year 1 = 2,000 × (1 − 0.72) × h_m (no ramp, D-048)."""
     p = _places(rule_class="unknown", rule_age=50.0).assign(
         p_none=0.0, p_owner=0.0, p_other=0.4, p_both=0.0, p_handbook=0.6
     )
-    mix = adu.central_path(p)
+    mix = adu.central_path(p, params={"adu_partial_rule_share": 0.3})
     hand = adu.central_path(_places(rule_class="handbook", rule_age=50.0))
     hm = mix["mature_hazard"][0]
     assert mix["current"][0, 0] == pytest.approx(2000 * 0.72 * hm, rel=1e-6)
@@ -507,11 +511,11 @@ def _tau_spec(probs: dict[float, float], fitted=("MN",)) -> dict:
 
 def test_state_effect_reads_the_adopted_grid():
     """config/params/adu_state_effect.yaml (D-044): τ on 0, 0.05, ..., 2.5, probabilities summing to 1, the
-    four fitted states listed; a spec parses its keys back to the grid."""
+    five fitted states listed (D-053); a spec parses its keys back to the grid."""
     grid, probs, fitted = adu.state_effect()
     assert grid == pytest.approx(np.arange(51) * 0.05)
     assert probs.sum() == pytest.approx(1.0)
-    assert fitted == {"MN", "NC", "OH", "TX"}
+    assert fitted == {"MN", "NC", "OH", "TX", "OR"}
     g, q, f = adu.state_effect(_tau_spec({0.0: 1.0, 0.5: 3.0}))
     assert list(g) == [0.0, 0.5] and list(q) == [0.25, 0.75] and f == {"MN"}
 
@@ -563,3 +567,26 @@ def test_an_unseen_state_widens_its_range_and_keeps_its_median():
     assert width["WI"] == pytest.approx(math.exp(2 * 1.2816 * math.sqrt(sd_mn**2 + 0.25)), rel=0.15)
     assert width["WI"] > 1.2 * width["MN"]
     assert out["WI"]["p50"] == pytest.approx(out["MN"]["p50"], rel=0.15)
+
+
+def test_coverage_map_without_a_parcel_table_takes_the_judgment_share():
+    # D-053: Oregon has no parcel table (ACS fallback); its zone-limited rules take the judgment share
+    from lotline.model.scenarios import adu as scen
+
+    class NoParcels:
+        def read(self, state, table):
+            return None
+
+    scen._PARCEL_CACHE.pop("ZZ", None)
+    reforms = pd.DataFrame(
+        {
+            "reform_id": ["zoned", "citywide"],
+            "jurisdiction_geoid": ["4159000", "4105800"],
+            "theme": ["adu", "adu"],
+            "coverage_zones": ["R7;R5", None],
+            "min_lot_sqft": [None, None],
+            "coverage": ["", ""],
+        }
+    )
+    cm = scen.coverage_map("ZZ", NoParcels(), reforms, {"adu_rule_zoned_coverage_share": 0.75})
+    assert dict(zip(cm.reform_id, cm.coverage, strict=True)) == {"zoned": 0.75, "citywide": 1.0}

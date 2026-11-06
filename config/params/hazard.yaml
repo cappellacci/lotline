@@ -8,12 +8,12 @@
 # ---- The evidence anchor ----
 
 adu_mature_hazard_ref:
-  value: 0.000659
-  low: 0.000443
-  high: 0.001023
+  value: 0.000308
+  low: 0.000213
+  high: 0.000463
   unit: ADU permits per eligible single-family parcel per year, at the reference place's rent, home value and rate
-  source: "Estimated, D-048 (adopted 2026-11-05): D-041's fit 3 (graded rule shares, gamma place effects, blank fields integrated per place, rule coverage, D-041 count rules) with no ramp, scripts/dev/calibrate_adu.py: Poisson-gamma maximum likelihood over 51 places, 296 place-years in MN, NC, OH and TX (D-039 fit set), 90% profile-likelihood interval; Raleigh and Durham 2021-25 held out as the test. Earlier: 0.001038 (D-019 fit 3, 16 places, with the ramp), 0.001232 (D-041, with the ramp; never written here). Research band: 4 per 1,000, Portland (E046, E047)"
-  notes: "About 0.16 of Portland's 4 per 1,000. Lower than D-019's 0.001038 because with no ramp a young rule counts at full strength, so the same permits imply a lower rate. This is the anchor for a typical place; each place's own multiplier varies widely (adu_place_effect_variance). Drawn lognormal (D-030): median at the estimate, log-SD 0.254 from the 90% interval ((ln high - ln low) / 3.29), then shifted with the judgment parameters it was fitted at (adu_anchor.yaml)."
+  source: "Estimated, D-053 (approved 2026-11-05, run 2026-11-06): D-048's fit (D-041 fit 3, graded rule shares, gamma place effects, blank fields integrated per place, rule coverage, D-041 count rules, no ramp; scripts/dev/calibrate_shape.py --d048 with LOTLINE_FIT_WITH_OR=1) over 53 places in MN, NC, OH, TX and OR (D-039 fit set plus Portland and Bend 2016-25), 90% profile-likelihood interval; Raleigh and Durham 2021-25 held out as the test. Earlier: 0.000659 (D-048, four states), 0.001038 (D-019 fit 3, 16 places, with the ramp). Research band: 4 per 1,000, Portland (E046, E047)"
+  notes: "Lower than D-048's 0.000659 because Oregon's places are in the fit at m_x = 1.0: partial rules elsewhere now count at full strength, so the same permits imply a lower rate, and Portland and Bend are carried by large place effects. Portland is therefore no longer an independent check on the anchor (D-037 note in D-053). This is the anchor for a typical place; each place's own multiplier varies widely (adu_place_effect_variance). Drawn lognormal (D-030): median at the estimate, log-SD from the 90% interval ((ln high - ln low) / 3.29), then shifted with the judgment parameters it was fitted at (adu_anchor.yaml)."
 
 adu_ref_rent_usd:
   value: 1573
@@ -149,9 +149,9 @@ adu_extrapolation_widening:
   source: "Judgment. Statistical protocol §5.5 step 3 and two-prong design: don't extrapolate silently; flag and widen. At 1.0, a place with rent 40% below the reference range (log distance 0.5) gets an extra log-sd of 0.5 (P10-P90 about x0.5 to x1.9)"
 
 adu_place_effect_variance:
-  value: 2.214
-  low: 1.406
-  high: 3.486
+  value: 2.317
+  low: 1.526
+  high: 3.519
   unit: variance of a place's multiplier on the ADU hazard (gamma, mean 1)
-  source: "Estimated, D-048 (alpha, adopted 2026-11-05): same fit as adu_mature_hazard_ref, 51 places in four states. Earlier: 4.735 (D-019 fit 3, 16 places, with the ramp)"
-  notes: "Each simulation draw gives each place its own multiplier, so a single place's range is very wide (its median is far below its mean); state totals, summed over many independent places, are much tighter. Drawn lognormal around the estimate (D-030): low and high are the 90% interval from the observed-information log-SE 0.276 (adu_anchor.yaml; correlation with log theta 0.06), then shifted with the judgment parameters it was fitted at."
+  source: "Estimated, D-053 (alpha, run 2026-11-06): same fit as adu_mature_hazard_ref, 53 places in five states. Earlier: 2.214 (D-048, four states), 4.735 (D-019 fit 3, 16 places, with the ramp)"
+  notes: "Each simulation draw gives each place its own multiplier, so a single place's range is very wide (its median is far below its mean); state totals, summed over many independent places, are much tighter. Drawn lognormal around the estimate (D-030): low and high are the 90% interval from the observed-information log-SE 0.254 (adu_anchor.yaml), then shifted with the judgment parameters it was fitted at."

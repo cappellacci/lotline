@@ -6,261 +6,247 @@
 # Parameters the fit does not depend on are left out (slope 0).
 
 adu_anchor_info_log_se_theta:
-  value: 0.249469
-  low: 0.249469
-  high: 0.249469
+  value: 0.232023
+  low: 0.232023
+  high: 0.232023
   unit: log-SE of theta (observed information, alpha profiled jointly)
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06)"
 
 adu_anchor_info_log_se_alpha:
-  value: 0.275699
-  low: 0.275699
-  high: 0.275699
+  value: 0.254281
+  low: 0.254281
+  high: 0.254281
   unit: log-SE of alpha (observed information)
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06)"
 
 adu_anchor_info_corr:
-  value: 0.0594151
-  low: 0.0594151
-  high: 0.0594151
+  value: -0.00989994
+  low: -0.00989994
+  high: -0.00989994
   unit: correlation of log theta and log alpha (observed information)
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06)"
 
 anchor_slope_theta__adu_sqft:
-  value: 3.22299e-05
-  low: 3.22299e-05
-  high: 3.22299e-05
+  value: -3.80655e-06
+  low: -3.80655e-06
+  high: -3.80655e-06
   unit: change in log(theta) per unit of adu_sqft
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_sqft range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_sqft range)"
 
 anchor_slope_alpha__adu_sqft:
-  value: 7.00019e-05
-  low: 7.00019e-05
-  high: 7.00019e-05
+  value: 3.87512e-05
+  low: 3.87512e-05
+  high: 3.87512e-05
   unit: change in log(alpha) per unit of adu_sqft
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_sqft range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_sqft range)"
 
 anchor_slope_theta__hard_cost_per_sqft_usd:
-  value: 0.000156509
-  low: 0.000156509
-  high: 0.000156509
+  value: -1.80345e-05
+  low: -1.80345e-05
+  high: -1.80345e-05
   unit: change in log(theta) per unit of hard_cost_per_sqft_usd
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
 
 anchor_slope_alpha__hard_cost_per_sqft_usd:
-  value: 0.000338505
-  low: 0.000338505
-  high: 0.000338505
+  value: 0.000187204
+  low: 0.000187204
+  high: 0.000187204
   unit: change in log(alpha) per unit of hard_cost_per_sqft_usd
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
 
 anchor_slope_theta__adu_hard_cost_premium:
-  value: 0.0224064
-  low: 0.0224064
-  high: 0.0224064
+  value: -0.00265715
+  low: -0.00265715
+  high: -0.00265715
   unit: change in log(theta) per unit of adu_hard_cost_premium
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_hard_cost_premium range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_hard_cost_premium range)"
 
 anchor_slope_alpha__adu_hard_cost_premium:
-  value: 0.0487268
-  low: 0.0487268
-  high: 0.0487268
+  value: 0.0269803
+  low: 0.0269803
+  high: 0.0269803
   unit: change in log(alpha) per unit of adu_hard_cost_premium
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_hard_cost_premium range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_hard_cost_premium range)"
 
 anchor_slope_theta__soft_cost_share:
-  value: 0.0214678
-  low: 0.0214678
-  high: 0.0214678
+  value: -0.00257175
+  low: -0.00257175
+  high: -0.00257175
   unit: change in log(theta) per unit of soft_cost_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the soft_cost_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the soft_cost_share range)"
 
 anchor_slope_alpha__soft_cost_share:
-  value: 0.0467173
-  low: 0.0467173
-  high: 0.0467173
+  value: 0.0258588
+  low: 0.0258588
+  high: 0.0258588
   unit: change in log(alpha) per unit of soft_cost_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the soft_cost_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the soft_cost_share range)"
 
 anchor_slope_theta__construction_loan_rate:
-  value: 0.00934784
-  low: 0.00934784
-  high: 0.00934784
+  value: -0.00108686
+  low: -0.00108686
+  high: -0.00108686
   unit: change in log(theta) per unit of construction_loan_rate
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the construction_loan_rate range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the construction_loan_rate range)"
 
 anchor_slope_alpha__construction_loan_rate:
-  value: 0.0203751
-  low: 0.0203751
-  high: 0.0203751
+  value: 0.0112612
+  low: 0.0112612
+  high: 0.0112612
   unit: change in log(alpha) per unit of construction_loan_rate
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the construction_loan_rate range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the construction_loan_rate range)"
 
 anchor_slope_theta__average_draw_share:
-  value: 0.0015896
-  low: 0.0015896
-  high: 0.0015896
+  value: -0.000198372
+  low: -0.000198372
+  high: -0.000198372
   unit: change in log(theta) per unit of average_draw_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the average_draw_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the average_draw_share range)"
 
 anchor_slope_alpha__average_draw_share:
-  value: 0.00347096
-  low: 0.00347096
-  high: 0.00347096
+  value: 0.00189596
+  low: 0.00189596
+  high: 0.00189596
   unit: change in log(alpha) per unit of average_draw_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the average_draw_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the average_draw_share range)"
 
 anchor_slope_theta__construction_years_irc:
-  value: 0.0010608
-  low: 0.0010608
-  high: 0.0010608
+  value: -0.000127064
+  low: -0.000127064
+  high: -0.000127064
   unit: change in log(theta) per unit of construction_years_irc
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the construction_years_irc range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the construction_years_irc range)"
 
 anchor_slope_alpha__construction_years_irc:
-  value: 0.00231013
-  low: 0.00231013
-  high: 0.00231013
+  value: 0.00127879
+  low: 0.00127879
+  high: 0.00127879
   unit: change in log(alpha) per unit of construction_years_irc
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the construction_years_irc range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the construction_years_irc range)"
 
 anchor_slope_theta__rental_vacancy_rate:
-  value: 0.0270674
-  low: 0.0270674
-  high: 0.0270674
+  value: -0.00322952
+  low: -0.00322952
+  high: -0.00322952
   unit: change in log(theta) per unit of rental_vacancy_rate
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the rental_vacancy_rate range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the rental_vacancy_rate range)"
 
 anchor_slope_alpha__rental_vacancy_rate:
-  value: 0.0590061
-  low: 0.0590061
-  high: 0.0590061
+  value: 0.0326611
+  low: 0.0326611
+  high: 0.0326611
   unit: change in log(alpha) per unit of rental_vacancy_rate
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the rental_vacancy_rate range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the rental_vacancy_rate range)"
 
 anchor_slope_theta__operating_expense_share:
-  value: 0.0396807
-  low: 0.0396807
-  high: 0.0396807
+  value: -0.00469656
+  low: -0.00469656
+  high: -0.00469656
   unit: change in log(theta) per unit of operating_expense_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the operating_expense_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the operating_expense_share range)"
 
 anchor_slope_alpha__operating_expense_share:
-  value: 0.086467
-  low: 0.086467
-  high: 0.086467
+  value: 0.0479699
+  low: 0.0479699
+  high: 0.0479699
   unit: change in log(alpha) per unit of operating_expense_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the operating_expense_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the operating_expense_share range)"
 
 anchor_slope_theta__cap_rate:
-  value: 0.468836
-  low: 0.468836
-  high: 0.468836
+  value: -0.055162
+  low: -0.055162
+  high: -0.055162
   unit: change in log(theta) per unit of cap_rate
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the cap_rate range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the cap_rate range)"
 
 anchor_slope_alpha__cap_rate:
-  value: 1.01784
-  low: 1.01784
-  high: 1.01784
+  value: 0.563387
+  low: 0.563387
+  high: 0.563387
   unit: change in log(alpha) per unit of cap_rate
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the cap_rate range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the cap_rate range)"
 
 anchor_slope_theta__adu_margin:
-  value: 0.0234079
-  low: 0.0234079
-  high: 0.0234079
+  value: -0.00280144
+  low: -0.00280144
+  high: -0.00280144
   unit: change in log(theta) per unit of adu_margin
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_margin range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_margin range)"
 
 anchor_slope_alpha__adu_margin:
-  value: 0.0509752
-  low: 0.0509752
-  high: 0.0509752
+  value: 0.0282135
+  low: 0.0282135
+  high: 0.0282135
   unit: change in log(alpha) per unit of adu_margin
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_margin range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_margin range)"
 
 anchor_slope_theta__adu_rent_to_median_ratio:
-  value: -0.0258256
-  low: -0.0258256
-  high: -0.0258256
+  value: 0.00302767
+  low: 0.00302767
+  high: 0.00302767
   unit: change in log(theta) per unit of adu_rent_to_median_ratio
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
 
 anchor_slope_alpha__adu_rent_to_median_ratio:
-  value: -0.0562857
-  low: -0.0562857
-  high: -0.0562857
+  value: -0.0312626
+  low: -0.0312626
+  high: -0.0312626
   unit: change in log(alpha) per unit of adu_rent_to_median_ratio
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
 
 anchor_slope_theta__adu_feasibility_dispersion:
-  value: -0.115771
-  low: -0.115771
-  high: -0.115771
+  value: -0.0904857
+  low: -0.0904857
+  high: -0.0904857
   unit: change in log(theta) per unit of adu_feasibility_dispersion
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_feasibility_dispersion range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_feasibility_dispersion range)"
 
 anchor_slope_alpha__adu_feasibility_dispersion:
-  value: -0.0324816
-  low: -0.0324816
-  high: -0.0324816
+  value: -0.0168947
+  low: -0.0168947
+  high: -0.0168947
   unit: change in log(alpha) per unit of adu_feasibility_dispersion
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_feasibility_dispersion range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_feasibility_dispersion range)"
 
 anchor_slope_theta__adu_equity_elasticity:
-  value: 0.187484
-  low: 0.187484
-  high: 0.187484
+  value: 0.11623
+  low: 0.11623
+  high: 0.11623
   unit: change in log(theta) per unit of adu_equity_elasticity
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_equity_elasticity range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_equity_elasticity range)"
 
 anchor_slope_alpha__adu_equity_elasticity:
-  value: -0.0723445
-  low: -0.0723445
-  high: -0.0723445
+  value: -0.129211
+  low: -0.129211
+  high: -0.129211
   unit: change in log(alpha) per unit of adu_equity_elasticity
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_equity_elasticity range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_equity_elasticity range)"
 
 anchor_slope_theta__adu_rate_semi_elasticity:
-  value: 1.55673
-  low: 1.55673
-  high: 1.55673
+  value: 1.44918
+  low: 1.44918
+  high: 1.44918
   unit: change in log(theta) per unit of adu_rate_semi_elasticity
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
 
 anchor_slope_alpha__adu_rate_semi_elasticity:
-  value: -0.108831
-  low: -0.108831
-  high: -0.108831
+  value: -0.185069
+  low: -0.185069
+  high: -0.185069
   unit: change in log(alpha) per unit of adu_rate_semi_elasticity
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
-
-anchor_slope_theta__adu_partial_rule_share:
-  value: -3.06772
-  low: -3.06772
-  high: -3.06772
-  unit: change in log(theta) per unit of adu_partial_rule_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_partial_rule_share range)"
-
-anchor_slope_alpha__adu_partial_rule_share:
-  value: -0.473446
-  low: -0.473446
-  high: -0.473446
-  unit: change in log(alpha) per unit of adu_partial_rule_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_partial_rule_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
 
 anchor_slope_theta__adu_owner_occupancy_share:
-  value: -0.708568
-  low: -0.708568
-  high: -0.708568
+  value: -0.540682
+  low: -0.540682
+  high: -0.540682
   unit: change in log(theta) per unit of adu_owner_occupancy_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_owner_occupancy_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_owner_occupancy_share range)"
 
 anchor_slope_alpha__adu_owner_occupancy_share:
-  value: 0.0789366
-  low: 0.0789366
-  high: 0.0789366
+  value: 0.247411
+  low: 0.247411
+  high: 0.247411
   unit: change in log(alpha) per unit of adu_owner_occupancy_share
-  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 51 places, 296 place-years, 2026-11-05; refit at central +/- 10% of the adu_owner_occupancy_share range)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --draw-terms (D-048: D-041 fit 3 likelihood, no ramp; 53 places, 316 place-years, 2026-11-06; refit at central +/- 10% of the adu_owner_occupancy_share range)"
 

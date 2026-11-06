@@ -6,11 +6,11 @@
 # their spread is already in the place effects. A new fitted state: re-run D-044 and regenerate.
 
 adu_state_effect_sd:
-  value: 0
+  value: 0.564911
   low: 0
-  high: 0.890193
+  high: 1.70361
   unit: log-SD of the state multiplier (tau), maximum likelihood with its 90% profile interval
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
   notes: "For reference and the half-normal sensitivity (T1: sigma = high / 1.645). The run draws tau from the grid probabilities, not from this value."
 
 adu_state_effect_fitted__MN:
@@ -18,382 +18,389 @@ adu_state_effect_fitted__MN:
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_effect_fitted__NC:
   value: 1
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_effect_fitted__OH:
   value: 1
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_effect_fitted__TX:
   value: 1
   low: 1
   high: 1
   unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
+
+adu_state_effect_fitted__OR:
+  value: 1
+  low: 1
+  high: 1
+  unit: 1 = the state is in the fit that estimated tau; it gets no state multiplier
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_00:
-  value: 0.0696563
-  low: 0.0696563
-  high: 0.0696563
+  value: 0.0213791
+  low: 0.0213791
+  high: 0.0213791
   unit: probability that tau = 0.00 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_05:
-  value: 0.0688412
-  low: 0.0688412
-  high: 0.0688412
+  value: 0.0217554
+  low: 0.0217554
+  high: 0.0217554
   unit: probability that tau = 0.05 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_10:
-  value: 0.0665585
-  low: 0.0665585
-  high: 0.0665585
+  value: 0.0228511
+  low: 0.0228511
+  high: 0.0228511
   unit: probability that tau = 0.10 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_15:
-  value: 0.0632081
-  low: 0.0632081
-  high: 0.0632081
+  value: 0.0245667
+  low: 0.0245667
+  high: 0.0245667
   unit: probability that tau = 0.15 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_20:
-  value: 0.0592455
-  low: 0.0592455
-  high: 0.0592455
+  value: 0.0267431
+  low: 0.0267431
+  high: 0.0267431
   unit: probability that tau = 0.20 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_25:
-  value: 0.0550443
-  low: 0.0550443
-  high: 0.0550443
+  value: 0.0291771
+  low: 0.0291771
+  high: 0.0291771
   unit: probability that tau = 0.25 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_30:
-  value: 0.0508533
-  low: 0.0508533
-  high: 0.0508533
+  value: 0.0316484
+  low: 0.0316484
+  high: 0.0316484
   unit: probability that tau = 0.30 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_35:
-  value: 0.046814
-  low: 0.046814
-  high: 0.046814
+  value: 0.0339487
+  low: 0.0339487
+  high: 0.0339487
   unit: probability that tau = 0.35 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_40:
-  value: 0.0429966
-  low: 0.0429966
-  high: 0.0429966
+  value: 0.0359065
+  low: 0.0359065
+  high: 0.0359065
   unit: probability that tau = 0.40 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_45:
-  value: 0.0394298
-  low: 0.0394298
-  high: 0.0394298
+  value: 0.0374013
+  low: 0.0374013
+  high: 0.0374013
   unit: probability that tau = 0.45 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_50:
-  value: 0.0361199
-  low: 0.0361199
-  high: 0.0361199
+  value: 0.0383672
+  low: 0.0383672
+  high: 0.0383672
   unit: probability that tau = 0.50 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_55:
-  value: 0.0330623
-  low: 0.0330623
-  high: 0.0330623
+  value: 0.0387884
+  low: 0.0387884
+  high: 0.0387884
   unit: probability that tau = 0.55 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_60:
-  value: 0.030247
-  low: 0.030247
-  high: 0.030247
+  value: 0.0386891
+  low: 0.0386891
+  high: 0.0386891
   unit: probability that tau = 0.60 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_65:
-  value: 0.0276613
-  low: 0.0276613
-  high: 0.0276613
+  value: 0.0381224
+  low: 0.0381224
+  high: 0.0381224
   unit: probability that tau = 0.65 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_70:
-  value: 0.0252915
-  low: 0.0252915
-  high: 0.0252915
+  value: 0.0371585
+  low: 0.0371585
+  high: 0.0371585
   unit: probability that tau = 0.70 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_75:
-  value: 0.0231234
-  low: 0.0231234
-  high: 0.0231234
+  value: 0.0358774
+  low: 0.0358774
+  high: 0.0358774
   unit: probability that tau = 0.75 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_80:
-  value: 0.0211434
-  low: 0.0211434
-  high: 0.0211434
+  value: 0.0343628
+  low: 0.0343628
+  high: 0.0343628
   unit: probability that tau = 0.80 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_85:
-  value: 0.0193389
-  low: 0.0193389
-  high: 0.0193389
+  value: 0.0326951
+  low: 0.0326951
+  high: 0.0326951
   unit: probability that tau = 0.85 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_90:
-  value: 0.0176984
-  low: 0.0176984
-  high: 0.0176984
+  value: 0.0309433
+  low: 0.0309433
+  high: 0.0309433
   unit: probability that tau = 0.90 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__0_95:
-  value: 0.0162116
-  low: 0.0162116
-  high: 0.0162116
+  value: 0.029159
+  low: 0.029159
+  high: 0.029159
   unit: probability that tau = 0.95 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_00:
-  value: 0.0148684
-  low: 0.0148684
-  high: 0.0148684
+  value: 0.0273781
+  low: 0.0273781
+  high: 0.0273781
   unit: probability that tau = 1.00 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_05:
-  value: 0.0136588
-  low: 0.0136588
-  high: 0.0136588
+  value: 0.0256269
+  low: 0.0256269
+  high: 0.0256269
   unit: probability that tau = 1.05 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_10:
-  value: 0.0125721
-  low: 0.0125721
-  high: 0.0125721
+  value: 0.0239276
+  low: 0.0239276
+  high: 0.0239276
   unit: probability that tau = 1.10 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_15:
-  value: 0.0115973
-  low: 0.0115973
-  high: 0.0115973
+  value: 0.0222988
+  low: 0.0222988
+  high: 0.0222988
   unit: probability that tau = 1.15 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_20:
-  value: 0.0107235
-  low: 0.0107235
-  high: 0.0107235
+  value: 0.0207551
+  low: 0.0207551
+  high: 0.0207551
   unit: probability that tau = 1.20 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_25:
-  value: 0.00994048
-  low: 0.00994048
-  high: 0.00994048
+  value: 0.0193057
+  low: 0.0193057
+  high: 0.0193057
   unit: probability that tau = 1.25 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_30:
-  value: 0.00923851
-  low: 0.00923851
-  high: 0.00923851
+  value: 0.0179543
+  low: 0.0179543
+  high: 0.0179543
   unit: probability that tau = 1.30 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_35:
-  value: 0.00860858
-  low: 0.00860858
-  high: 0.00860858
+  value: 0.0166998
+  low: 0.0166998
+  high: 0.0166998
   unit: probability that tau = 1.35 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_40:
-  value: 0.00804232
-  low: 0.00804232
-  high: 0.00804232
+  value: 0.0155383
+  low: 0.0155383
+  high: 0.0155383
   unit: probability that tau = 1.40 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_45:
-  value: 0.00753206
-  low: 0.00753206
-  high: 0.00753206
+  value: 0.014464
+  low: 0.014464
+  high: 0.014464
   unit: probability that tau = 1.45 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_50:
-  value: 0.00707084
-  low: 0.00707084
-  high: 0.00707084
+  value: 0.0134702
+  low: 0.0134702
+  high: 0.0134702
   unit: probability that tau = 1.50 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_55:
-  value: 0.00665244
-  low: 0.00665244
-  high: 0.00665244
+  value: 0.0125501
+  low: 0.0125501
+  high: 0.0125501
   unit: probability that tau = 1.55 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_60:
-  value: 0.00627132
-  low: 0.00627132
-  high: 0.00627132
+  value: 0.0116974
+  low: 0.0116974
+  high: 0.0116974
   unit: probability that tau = 1.60 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_65:
-  value: 0.00437073
-  low: 0.00437073
-  high: 0.00437073
+  value: 0.0106032
+  low: 0.0106032
+  high: 0.0106032
   unit: probability that tau = 1.65 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_70:
-  value: 0.00413213
-  low: 0.00413213
-  high: 0.00413213
+  value: 0.010071
+  low: 0.010071
+  high: 0.010071
   unit: probability that tau = 1.70 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_75:
-  value: 0.00391444
-  low: 0.00391444
-  high: 0.00391444
+  value: 0.00956396
+  low: 0.00956396
+  high: 0.00956396
   unit: probability that tau = 1.75 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_80:
-  value: 0.00333604
-  low: 0.00333604
-  high: 0.00333604
+  value: 0.00908017
+  low: 0.00908017
+  high: 0.00908017
   unit: probability that tau = 1.80 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_85:
-  value: 0.0031354
-  low: 0.0031354
-  high: 0.0031354
+  value: 0.00861824
+  low: 0.00861824
+  high: 0.00861824
   unit: probability that tau = 1.85 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_90:
-  value: 0.00295171
-  low: 0.00295171
-  high: 0.00295171
+  value: 0.00817725
+  low: 0.00817725
+  high: 0.00817725
   unit: probability that tau = 1.90 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__1_95:
-  value: 0.00278281
-  low: 0.00278281
-  high: 0.00278281
+  value: 0.00775657
+  low: 0.00775657
+  high: 0.00775657
   unit: probability that tau = 1.95 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_00:
-  value: 0.00410882
-  low: 0.00410882
-  high: 0.00410882
+  value: 0.00735576
+  low: 0.00735576
+  high: 0.00735576
   unit: probability that tau = 2.00 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_05:
-  value: 0.00391253
-  low: 0.00391253
-  high: 0.00391253
+  value: 0.0062852
+  low: 0.0062852
+  high: 0.0062852
   unit: probability that tau = 2.05 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_10:
-  value: 0.0037277
-  low: 0.0037277
-  high: 0.0037277
+  value: 0.00587529
+  low: 0.00587529
+  high: 0.00587529
   unit: probability that tau = 2.10 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_15:
-  value: 0.00355347
-  low: 0.00355347
-  high: 0.00355347
+  value: 0.00549488
+  low: 0.00549488
+  high: 0.00549488
   unit: probability that tau = 2.15 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_20:
-  value: 0.00338909
-  low: 0.00338909
-  high: 0.00338909
+  value: 0.00514207
+  low: 0.00514207
+  high: 0.00514207
   unit: probability that tau = 2.20 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_25:
-  value: 0.00323393
-  low: 0.00323393
-  high: 0.00323393
+  value: 0.00481503
+  low: 0.00481503
+  high: 0.00481503
   unit: probability that tau = 2.25 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_30:
-  value: 0.00308744
-  low: 0.00308744
-  high: 0.00308744
+  value: 0.00451202
+  low: 0.00451202
+  high: 0.00451202
   unit: probability that tau = 2.30 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_35:
-  value: 0.00294913
-  low: 0.00294913
-  high: 0.00294913
+  value: 0.0042314
+  low: 0.0042314
+  high: 0.0042314
   unit: probability that tau = 2.35 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_40:
-  value: 0.00281854
-  low: 0.00281854
-  high: 0.00281854
+  value: 0.00397158
+  low: 0.00397158
+  high: 0.00397158
   unit: probability that tau = 2.40 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_45:
-  value: 0.0026953
-  low: 0.0026953
-  high: 0.0026953
+  value: 0.00373106
+  low: 0.00373106
+  high: 0.00373106
   unit: probability that tau = 2.45 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
 
 adu_state_tau_prob__2_50:
-  value: 0.00257901
-  low: 0.00257901
-  high: 0.00257901
+  value: 0.00350841
+  low: 0.00350841
+  high: 0.00350841
   unit: probability that tau = 2.50 (grid step 0.05)
-  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-050: D-044 on D-048's places (no ramp), full four-state fit, reports/adu-tau-draws-d048)"
+  source: "Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053)"
