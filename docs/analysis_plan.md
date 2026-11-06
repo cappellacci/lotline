@@ -3514,3 +3514,29 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **V5 (Charlotte, St. Paul):** freezes on these values if they are on `main` by then (D-037 item 3).
 - **Code:** `scripts/dev/d055_v9_rescore.py`, with results to `reports/v9-oregon-d055/`.
 - **Decided by:** Ben, 2026-11-06; written by the missing-middle test session before the re-score.
+- **Results (re-score 2026-11-06 on 565756c, plus one fix: outcomes are read from the main data store, because
+  the blind copy's `raw/` is a link to it; `reports/v9-oregon-d055/`).** D-038's draws reproduced the freeze
+  exactly (an array check against `v9.mm_draws` and the frozen headline median, 2,658).
+
+  | Target (observed) | D-038, P10 / P50 / P90 | CRPS | D-054 refit, P10 / P50 / P90 | CRPS | No reform CRPS |
+  |---|---|---|---|---|---|
+  | Headline, 2018–2025 (1,753) | 1,738 / 2,658 / 6,469, useful | 690.6 | 1,487 / 1,673 / 2,474, useful | **84.8** | 279.5 |
+  | Headline, 2018–2022 (1,099) | 913 / 992 / 1,228, useful | 61.8 | 898 / 954 / 1,077, missed (under) | 98.0 | 173.5 |
+  | All places, 2018–2025 (1,942) | 1,889 / 2,813 / 6,622, useful | 661.6 | 1,633 / 1,823 / 2,623, useful | 94.2 | 317.7 |
+
+  - **The refit removes the over-prediction.** Its headline median runs 218–252 a year from 2022, against
+    observed 165–224. D-038's climbed to 712.
+  - **It is the first parameter set to beat the no-reform benchmark over 2018–2025.**
+  - **The 2018–2022 miss is the baseline.** Most of those years come before any rule, and the 2015–2017
+    baseline (182 a year) runs below observed (213–268). D-051 stated that bias. D-038 covered it only
+    through a wider 2022.
+  - **Place ranges are narrower and too low more often:** mean randomized coverage 0.43, against 0.57 for
+    D-038, with 34% of places above P90.
+  - **Stop rule:** not triggered (84.8 < 690.6).
+- **Written to config (this PR):**
+  - `mm_hazard.yaml`: θ 0.0001235 (0.0000325–0.001006), α 8.415 (2.80–32.4), half-way point 0.5 (0.5–1.0),
+    with sources and notes;
+  - the parameter table in `docs/model_and_assumptions.md`, regenerated.
+  - Because config changed, `v9_or_score.py` reproduces the freeze only when run from the freeze commit, as
+    its docstring already says.
+  - No code reads these values for a scenario yet: `scenarios/` has no missing-middle module.

@@ -1,0 +1,158 @@
+<title>D-055 Oregon Re-score</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the D-053 results page's system: one reading column of findings, each with its chart, then a decision panel. Survey-ledger feel: building counts, log scales, plain annotations. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --main: #2f6f5e; --alt: #b0703a; --ref: #6b6fa8; --obs: #1d2420;
+  --bandmain: rgba(47,111,94,.20); --bandalt: rgba(176,112,58,.20); --bandref: rgba(107,111,168,.18); --bandnone: rgba(93,106,99,.18);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.in { color: var(--warn); border: 1px solid var(--warn); }
+.post { font-size: 12px; color: var(--warn); font-weight: 600; letter-spacing: .04em; }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-055 · re-score 2026-11-06 · not blind · refit adopted</div>
+    <h1>Oregon with the refitted missing-middle rate</h1>
+    <p class="lede">Before writing D-054's refit into <code>mm_hazard.yaml</code>, V9's Oregon prediction was re-drawn with it. The inputs, code and seed were the freeze's; only the parameters changed. Oregon's 2018–2025 building was already known, so this compares two parameter sets on seen data. It is not a test. D-038's draws reproduced the freeze exactly.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Finding 1 · By year</div>
+    <h2>The refit stops the over-prediction after HB 2001</h2>
+    <p>New 2–4 unit buildings a year across the 62 places reached before 2025. D-038's median climbs to 712 by 2025. The refit's stays at 218–252. Built counts ran 165–268 with no rise. Both share the 2015–2017 baseline (182 a year), which sits below what was built in 2018–2021, before any rule.</p>
+    <div class="chart" id="yearly"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandref)"></span>D-038 P10–P90 (frozen)</span><span><span class="sw" style="background:var(--bandmain)"></span>D-054 refit P10–P90</span><span>● built · dashed: no-reform baseline</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 2 · Totals and scores</div>
+    <h2>The first parameter set to beat no reform over 2018–2025</h2>
+    <p>CRPS measures how far the whole predictive range sits from what was built; lower is better. Over eight years the refit scores 85, D-038 691 and no reform 279. For 2018–2022 the refit's range is too low (missed, under), because of the baseline.</p>
+    <div class="chart" id="crps"></div>
+    <div class="wide"><table id="tot"></table></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 3 · Single places</div>
+    <h2>Place ranges are now too narrow</h2>
+    <p>Across the 62 places, mean randomized P10–P90 coverage falls from 0.57 to 0.43; the nominal value is 0.80. With D-038, 21% of places built below P10 and 18% above P90. With the refit it is 21% and 34%. The state total is right, but single places vary more than the refit allows, mostly upward.</p>
+    <div class="chart" id="cov"></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">Written to config · this PR</div>
+    <h2>mm_hazard.yaml now holds D-054's refit</h2>
+    <ul>
+      <li><strong>θ</strong> 0.12 per 1,000 eligible lots a year (0.03–1.01), was 1.08. <strong>α</strong> 8.4 (2.8–32), was 7.3. <strong>Half-way point</strong> 0.5 years (0.5–1.0), was 2.0. Slope, σ and homes per building unchanged.</li>
+      <li><strong>Known limits, in the params notes:</strong> Texas missed in D-054 on Lubbock's baseline; Durham built more than the median; the state spread can't be estimated; the ramp sits on its grid floor.</li>
+      <li><strong>Charlotte's V5 freeze (Nov 17)</strong> uses these values once this PR is on <code>main</code>.</li>
+      <li><strong>Next, not in this PR:</strong> a baseline rule for places whose pre-reform pace isn't stable (Lubbock, Oregon 2018–21), and the missing-middle scenario module, which nothing yet reads these values into.</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/v9-oregon-d055/ (mm_totals.csv, mm_headline_by_year.csv, mm_places_summary.csv, run log); D-038 frozen numbers: results/frozen/V9-OR-TRANSFER.json, reports/v9-oregon/. Census BPS 2015–2025, Oregon. Method: docs/analysis_plan.md D-051, D-054, D-055. Branch ws/mm-d055.</p>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : String(Math.round(n));
+const lab = (s, x, y, t, opt = {}) => el("text", Object.assign({ x, y, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, opt), s, t);
+
+
+const yrs = [2018,2019,2020,2021,2022,2023,2024,2025];
+const built = [213,268,228,225,165,222,208,224];
+const d38 = [[164,182,198],[164,181,199],[165,181,199],[168,185,204],[198,260,488],[234,392,1035],[270,581,1816],[303,712,2361]];
+const d54 = [[164,182,200],[164,182,199],[164,182,200],[168,184,203],[183,218,338],[188,236,423],[188,246,473],[191,252,491]];
+(function () {
+  const W = 760, H = 280, L = 52, R = 16, T = 12, B = 28; const s = svg("yearly", W, H);
+  const x = yr => L + (yr - 2018) / 7 * (W - L - R);
+  const y = v => T + (Math.log10(3000) - Math.log10(v)) / (Math.log10(3000) - Math.log10(100)) * (H - T - B);
+  for (const t of [100, 200, 500, 1000, 2000]) { el("line", { x1: L, x2: W - R, y1: y(t), y2: y(t), stroke: css("--rule") }, s); el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, s, t.toLocaleString("en-US")); }
+  yrs.forEach(yr => el("text", { x: x(yr), y: H - 8, "text-anchor": "middle" }, s, yr));
+  const band = (d, f) => el("polygon", { points: d.map((r, i) => `${x(yrs[i])},${y(r[2])}`).concat(d.slice().reverse().map((r, i) => `${x(yrs[d.length - 1 - i])},${y(r[0])}`)).join(" "), fill: css(f) }, s);
+  band(d38, "--bandref"); band(d54, "--bandmain");
+  el("polyline", { points: d38.map((r, i) => `${x(yrs[i])},${y(r[1])}`).join(" "), fill: "none", stroke: css("--ref"), "stroke-width": 1.5, "stroke-dasharray": "5 3" }, s);
+  el("polyline", { points: d54.map((r, i) => `${x(yrs[i])},${y(r[1])}`).join(" "), fill: "none", stroke: css("--main"), "stroke-width": 1.5, "stroke-dasharray": "5 3" }, s);
+  el("line", { x1: L, x2: W - R, y1: y(181.7), y2: y(181.7), stroke: css("--muted"), "stroke-dasharray": "2 3" }, s);
+  el("polyline", { points: built.map((v, i) => `${x(yrs[i])},${y(v)}`).join(" "), fill: "none", stroke: css("--obs"), "stroke-width": 2 }, s);
+  built.forEach((v, i) => el("circle", { cx: x(yrs[i]), cy: y(v), r: 4, fill: css("--obs") }, s));
+  el("text", { x: x(2025) - 4, y: y(712) - 6, "text-anchor": "end" }, s, "D-038 median 712");
+  el("text", { x: x(2025) - 4, y: y(252) - 8, "text-anchor": "end" }, s, "refit median 252");
+})();
+const crps = [["Headline 2018–2025", 690.6, 84.8, 279.5], ["Headline 2018–2022", 61.8, 98.0, 173.5], ["All places 2018–2025", 661.6, 94.2, 317.7]];
+(function () {
+  const W = 760, L = 170, R = 60, T = 6, gH = 54, H = T + gH * crps.length + 24; const s = svg("crps", W, H);
+  const x = v => L + v / 750 * (W - L - R);
+  for (const t of [0, 250, 500, 750]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 20, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, t); }
+  crps.forEach(([n, a, b, c], i) => {
+    const y0 = T + i * gH + 4; lab(s, 0, y0 + 24, n);
+    [[a, "--ref", "D-038"], [b, "--main", "refit"], [c, "--muted", "no reform"]].forEach(([v, col, k], j) => {
+      const y = y0 + j * 15; el("rect", { x: x(0), y, width: x(v) - x(0), height: 11, rx: 2, fill: css(col), opacity: .75 }, s);
+      el("text", { x: x(v) + 6, y: y + 10 }, s, `${v.toFixed(1)} ${k}`);
+    });
+  });
+  const pill = v => `<span class="pill ${v === "useful" ? "ok" : "miss"}">${v}</span>`;
+  document.getElementById("tot").innerHTML = "<tr><th>Target</th><th>Built</th><th>D-038 P10 / P50 / P90</th><th></th><th>Refit P10 / P50 / P90</th><th></th></tr>" +
+    [["Headline 2018–2025", 1753, "1,738 / 2,658 / 6,469", "useful", "1,487 / 1,673 / 2,474", "useful"],
+     ["Headline 2018–2022", 1099, "913 / 992 / 1,228", "useful", "898 / 954 / 1,077", "missed (under)"],
+     ["All places 2018–2025", 1942, "1,889 / 2,813 / 6,622", "useful", "1,633 / 1,823 / 2,623", "useful"],
+     ["All places 2018–2022", 1207, "1,006 / 1,085 / 1,321", "useful", "990 / 1,048 / 1,174", "missed (under)"]]
+      .map(r => `<tr><td>${r[0]}</td><td>${r[1].toLocaleString("en-US")}</td><td>${r[2]}</td><td>${pill(r[3])}</td><td>${r[4]}</td><td>${pill(r[5])}</td></tr>`).join("");
+})();
+(function () {
+  const rows = [["D-038 (frozen)", 0.21, 0.613, 0.177, "--ref"], ["D-054 refit", 0.21, 0.451, 0.339, "--main"]];
+  const W = 760, L = 130, R = 20, T = 8, rowH = 36, H = T + rowH * rows.length + 26; const s = svg("cov", W, H);
+  const x = v => L + v * (W - L - R);
+  for (const t of [0, 0.25, 0.5, 0.75, 1]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 20, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, Math.round(t * 100) + "%"); }
+  rows.forEach(([n, lo, mid, hi, c], i) => {
+    const y = T + i * rowH + 6; lab(s, 0, y + 14, n);
+    el("rect", { x: x(0), y, width: x(lo) - x(0), height: 20, fill: css("--miss"), opacity: .55 }, s);
+    el("rect", { x: x(lo), y, width: x(lo + mid) - x(lo), height: 20, fill: css(c), opacity: .6 }, s);
+    el("rect", { x: x(lo + mid), y, width: x(1) - x(lo + mid), height: 20, fill: css("--warn"), opacity: .55 }, s);
+    el("text", { x: x(lo / 2), y: y + 14, "text-anchor": "middle", fill: css("--fg") }, s, `below ${Math.round(lo * 100)}%`);
+    el("text", { x: x(lo + mid / 2), y: y + 14, "text-anchor": "middle", fill: css("--fg") }, s, `inside ${Math.round(mid * 100)}%`);
+    el("text", { x: x(lo + mid + hi / 2), y: y + 14, "text-anchor": "middle", fill: css("--fg") }, s, `above ${Math.round(hi * 100)}%`);
+  });
+})();
+</script>

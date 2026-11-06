@@ -66,7 +66,10 @@ def main() -> None:
     n, seed = frozen["draws"], frozen["seed"]
     inp = v9.mm_inputs("OR", store)
     years = inp.years
-    counts = mm.bps_counts(bps.load("OR", store, unblind=(v9.TEST_ID,)))["y_buildings"]
+    obs_store = DataStore(
+        Path.home() / "lotline-data"
+    )  # outcomes: the main store (the blind copy's raw is a link)
+    counts = mm.bps_counts(bps.load("OR", obs_store, unblind=(v9.TEST_ID,)))["y_buildings"]
     obs = np.nan_to_num(np.array([[counts.get((p, int(y)), np.nan) for y in years] for p in inp.geoids]))
     bench = np.random.default_rng(v9s.BENCH_SEED).poisson(
         np.broadcast_to(inp.B[None, :, None], (n, len(inp.geoids), len(years)))
