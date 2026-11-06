@@ -1,0 +1,175 @@
+{
+  "band": [
+    0.7,
+    1.4
+  ],
+  "states": [
+    "MN",
+    "NC",
+    "TX",
+    "OH",
+    "OR"
+  ],
+  "main_theme": "adu",
+  "themes": {
+    "adu": {
+      "k": 0.9975785755265477,
+      "sigma": 0.06005686914303343,
+      "k_low": 0.9394306957566565,
+      "k_high": 1.0593256307726142,
+      "passed": true,
+      "rows": [
+        {
+          "state": "MN",
+          "parcels": 1283395,
+          "acs_homes": 1235289.0,
+          "ratio": 1.038943113716709,
+          "k_loo": 0.9874973744606294,
+          "held_out": 1.052097089659787,
+          "in_band": true,
+          "theme": "adu",
+          "jurisdictions": 539,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.08995204126554958,
+          "unknown_land_use_share": NaN
+        },
+        {
+          "state": "NC",
+          "parcels": 1613487,
+          "acs_homes": 1718560.0,
+          "ratio": 0.9388598594171865,
+          "k_loo": 1.0128233355514917,
+          "held_out": 0.9269729739253773,
+          "in_band": true,
+          "theme": "adu",
+          "jurisdictions": 218,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.36230164854132696,
+          "unknown_land_use_share": 0.192
+        },
+        {
+          "state": "TX",
+          "parcels": 4908752,
+          "acs_homes": 4658585.0,
+          "ratio": 1.0537002115449219,
+          "k_loo": 0.9840215850192282,
+          "held_out": 1.070810059033748,
+          "in_band": true,
+          "theme": "adu",
+          "jurisdictions": 478,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.25508010997499975,
+          "unknown_land_use_share": 0.365
+        },
+        {
+          "state": "OH",
+          "parcels": 3276403,
+          "acs_homes": 3521735.0,
+          "ratio": 0.9303377454578496,
+          "k_loo": 1.0151348357991525,
+          "held_out": 0.9164671653942923,
+          "in_band": true,
+          "theme": "adu",
+          "jurisdictions": 885,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.39269528199064646,
+          "unknown_land_use_share": NaN
+        },
+        {
+          "state": "OR",
+          "parcels": 468769,
+          "acs_homes": 453705.0,
+          "ratio": 1.0332021908508833,
+          "k_loo": 0.9888662671744259,
+          "held_out": 1.044835105765254,
+          "in_band": true,
+          "theme": "adu",
+          "jurisdictions": 27,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.2578220829449046,
+          "unknown_land_use_share": NaN
+        }
+      ]
+    },
+    "missing_middle": {
+      "k": 1.135963163241348,
+      "sigma": 0.044463787520409664,
+      "k_low": 1.08656039457921,
+      "k_high": 1.187612133369747,
+      "passed": true,
+      "rows": [
+        {
+          "state": "MN",
+          "parcels": 1337432,
+          "acs_homes": 1235289.0,
+          "ratio": 1.0826875330388273,
+          "k_loo": 1.1496867508077542,
+          "held_out": 0.9417239367837769,
+          "in_band": true,
+          "theme": "missing_middle",
+          "jurisdictions": 539,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.09189401778931565,
+          "unknown_land_use_share": NaN
+        },
+        {
+          "state": "NC",
+          "parcels": 2016552,
+          "acs_homes": 1718560.0,
+          "ratio": 1.1733963318126803,
+          "k_loo": 1.126792970417735,
+          "held_out": 1.0413592936932043,
+          "in_band": true,
+          "theme": "missing_middle",
+          "jurisdictions": 218,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.4130743962962522,
+          "unknown_land_use_share": 0.192
+        },
+        {
+          "state": "TX",
+          "parcels": 5581369,
+          "acs_homes": 4658585.0,
+          "ratio": 1.1980824649544872,
+          "k_loo": 1.120943266515783,
+          "held_out": 1.0688163270550481,
+          "in_band": true,
+          "theme": "missing_middle",
+          "jurisdictions": 478,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.26923018349082456,
+          "unknown_land_use_share": 0.365
+        },
+        {
+          "state": "OH",
+          "parcels": 4015090,
+          "acs_homes": 3521735.0,
+          "ratio": 1.1400886210915926,
+          "k_loo": 1.1349341334140808,
+          "held_out": 1.0045416623976284,
+          "in_band": true,
+          "theme": "missing_middle",
+          "jurisdictions": 885,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.4184200105103497,
+          "unknown_land_use_share": NaN
+        },
+        {
+          "state": "OR",
+          "parcels": 494563,
+          "acs_homes": 453705.0,
+          "ratio": 1.0900541100494814,
+          "k_loo": 1.1477394153262184,
+          "held_out": 0.9497400677310178,
+          "in_band": true,
+          "theme": "missing_middle",
+          "jurisdictions": 27,
+          "dropped_no_acs_year": 0,
+          "rest_of_county_share": 0.25860001658029413,
+          "unknown_land_use_share": NaN
+        }
+      ]
+    }
+  },
+  "verdict": "pass"
+}

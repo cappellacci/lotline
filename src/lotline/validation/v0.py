@@ -31,6 +31,7 @@ from lotline.adapters.national import bps_state
 from lotline.config import load_state
 from lotline.io import DataStore
 from lotline.schemas import SCHEMAS_VERSION
+from lotline.validation import holdout
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 UNITS = ["units_1", "units_2", "units_3_4", "units_5p"]
@@ -47,11 +48,11 @@ def state_sources(state: str) -> set[str]:
 
 
 def held_out_years(state: str) -> set[int]:
-    """Years in which any held-out place has outcomes, capped at the current year."""
+    """Years with outcomes at a held-out place, capped at the current year (released tests skipped)."""
     this_year = dt.date.today().year
     return {
         y
-        for h in load_state(state).holdouts
+        for h in holdout.still_blind(load_state(state).holdouts)
         for y in range(h.outcome_from.year, min(h.outcome_until.year, this_year) + 1)
     }
 

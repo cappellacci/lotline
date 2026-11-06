@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 from pathlib import Path
 
 import numpy as np
@@ -302,6 +303,14 @@ FOUR_STATE = {
     "NC": {g: range(2016, 2026) for g in ("3743480", "3741960", "3714700", "3733120", "3728000", "37063")},
     "OH": {"3915000": range(2024, 2026)},  # Cincinnati, the only complete OH ADU count
 }
+# D-053 (2026-11-05): Oregon joins the fit set. Opt-in through the environment, so the D-039 to D-050 runs
+# still reproduce on four states and parallel workers (which re-import this module) see the same set:
+#     LOTLINE_FIT_WITH_OR=1 uv run python scripts/dev/calibrate_adu.py ...
+# Run labels still say "four states"; with the variable set they mean the five.
+OREGON_FIT = {"4159000": range(2016, 2026), "4105800": range(2016, 2026)}  # Portland, Bend
+WITH_OR = os.environ.get("LOTLINE_FIT_WITH_OR") == "1"
+if WITH_OR:
+    FOUR_STATE = FOUR_STATE | {"OR": OREGON_FIT}
 P_BANDS = (10, 50, 90)
 
 
@@ -486,7 +495,7 @@ def state_totals(label: str, groups: dict, draws: dict, portland: dict) -> pd.Da
 
 
 def _groups(places, test, with_test: bool) -> dict:
-    g = {st: [pl for pl in places if pl.state == st] for st in ("MN", "NC", "OH", "TX")}
+    g = {st: [pl for pl in places if pl.state == st] for st in STATES}  # five with LOTLINE_FIT_WITH_OR
     if with_test:
         g["NC with Raleigh and Durham"] = g["NC"] + test
     return g
@@ -525,7 +534,7 @@ def statewide_main(store, out: Path | None, workers: int) -> None:
 # D-041: consistent counts (co-built units, survey reporting rate), then the four-state comparison
 # ---------------------------------------------------------------------------------------------------------
 
-STATES = ("MN", "NC", "OH", "TX")
+STATES = ("MN", "NC", "OH", "TX", "OR") if WITH_OR else ("MN", "NC", "OH", "TX")
 LOG_THETA_BOUNDS = (-14.0, 0.0)  # fit3's search range: an interval reaching it is "not estimable"
 
 
@@ -815,8 +824,8 @@ def tau_draws_main(store, out: Path | None, workers: int, no_ramp: bool = False)
         t = state_totals(
             f"D-044 {run}: leave one state out, tau drawn", _groups(places, test, True), d, portland
         )
-        t = t.merge(d043.add_suffix("_d043").rename(columns={"group_d043": "group"}), on="group")
-        t = t.merge(d041.add_suffix("_d041").rename(columns={"group_d041": "group"}), on="group")
+        t = t.merge(d043.add_suffix("_d043").rename(columns={"group_d043": "group"}), on="group", how="left")
+        t = t.merge(d041.add_suffix("_d041").rename(columns={"group_d041": "group"}), on="group", how="left")
         tables.append(t.assign(run=run))
         four = t[t["group"].isin(STATES)]
         med = [four[c].median() for c in ("p90_over_p10", "p90_over_p10_d043", "p90_over_p10_d041")]
@@ -830,6 +839,7 @@ def tau_draws_main(store, out: Path | None, workers: int, no_ramp: bool = False)
 
 D044 = Path(__file__).resolve().parents[2] / "reports" / "adu-tau-draws"
 D050 = Path(__file__).resolve().parents[2] / "reports" / "adu-tau-draws-d048"
+D053 = Path(__file__).resolve().parents[2] / "reports" / "adu-tau-draws-d053"
 
 
 def state_effect_config_main(out: Path, reports: Path = D044, how: str | None = None) -> None:
@@ -926,7 +936,7 @@ def detached_main(store, out: Path | None, workers: int) -> None:
     d041 = d041[d041["test"] == "main: leave one state out"][
         ["group", "p10", "p50", "p90", "p90_over_p10", "verdict"]
     ]
-    t = t.merge(d041.add_suffix("_d041").rename(columns={"group_d041": "group"}), on="group")
+    t = t.merge(d041.add_suffix("_d041").rename(columns={"group_d041": "group"}), on="group", how="left")
     four = t[t["group"].isin(STATES)]
     k1 = float(np.sqrt(np.mean(np.log(four["observed"] / four["p50"]) ** 2)))
     missed = int((four["verdict"] == "missed").sum())
@@ -992,7 +1002,13 @@ def main() -> None:
         detached_main(DataStore(), a.out, a.workers)
         return
     if a.state_effect_config:
-        if a.no_ramp:
+        if a.no_ramp and WITH_OR:
+            state_effect_config_main(
+                a.state_effect_config,
+                D053,
+                "D-053: D-050 with Portland and Bend in the fit, five states, reports/adu-tau-draws-d053",
+            )
+        elif a.no_ramp:
             state_effect_config_main(
                 a.state_effect_config,
                 D050,

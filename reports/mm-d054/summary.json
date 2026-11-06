@@ -1,0 +1,120 @@
+{
+  "fit_set": {
+    "MN": [
+      "St. Louis Park city"
+    ],
+    "NC": [
+      "Burlington city",
+      "Garner town",
+      "Morrisville town",
+      "Sanford city",
+      "Wake Forest town",
+      "Wilson city"
+    ],
+    "OH": [
+      "Euclid city"
+    ],
+    "TX": [
+      "Austin city",
+      "Houston city",
+      "League City city",
+      "Lewisville city",
+      "Lubbock city"
+    ]
+  },
+  "test_places": [
+    "Minneapolis",
+    "Durham County",
+    "Durham city"
+  ],
+  "not_scored_tests": [
+    "Raleigh"
+  ],
+  "adopted_values": {
+    "theta": 0.001076,
+    "log_se": 0.8185062999886192,
+    "alpha": 7.29,
+    "half": 2.0
+  },
+  "full_b": {
+    "fit": "b_full",
+    "per_1000": 0.1235375669422164,
+    "low_per_1000": 0.03253999207739683,
+    "high_per_1000": 1.0057575679341315,
+    "log_se": 1.04295775708688,
+    "alpha": 8.415384366538792,
+    "alpha_low": 2.8021512694571187,
+    "alpha_high": 32.42140906048658,
+    "half": 0.5,
+    "half_low": 0.5,
+    "half_high": 0.5,
+    "b": 0.0,
+    "places": 13,
+    "place_years": 69,
+    "loglik": -43.44590308695828,
+    "note": ""
+  },
+  "full_c": {
+    "fit": "c_full",
+    "per_1000": 0.17028131421812695,
+    "low_per_1000": 0.055554706020639145,
+    "high_per_1000": 0.8831084780940167,
+    "log_se": 0.8408283700153164,
+    "alpha": 6.168056293573749,
+    "alpha_low": 2.2428671065727332,
+    "alpha_high": 19.944112473639333,
+    "half": 0.5,
+    "half_low": 0.5,
+    "half_high": 1.0,
+    "b": -2.0,
+    "places": 13,
+    "place_years": 69,
+    "loglik": -115.06267039411918,
+    "note": ""
+  },
+  "paired_b_minus_none": {
+    "delta": Infinity,
+    "paired_se": NaN,
+    "n": 13
+  },
+  "paired_c_minus_b": {
+    "delta": -62.89611357282422,
+    "paired_se": 51.759829548791245,
+    "n": 13
+  },
+  "paired_a_insample_minus_none": {
+    "delta": Infinity,
+    "paired_se": NaN,
+    "n": 13
+  },
+  "paired_outside_minus_none": {
+    "delta": Infinity,
+    "paired_se": NaN,
+    "n": 13
+  },
+  "tau": {
+    "tau_hat": 0.0,
+    "tau_low": 0.0,
+    "tau_high": 2.5,
+    "estimable": false,
+    "tau_median": 1.05,
+    "tau_p90": 2.15,
+    "share_at_0": 0.02475,
+    "multiplier_p10": 0.23395198279692317,
+    "multiplier_p50": 1.0,
+    "multiplier_p90": 4.218016582346268,
+    "note": "half-way point held at the full (b) fit's value"
+  },
+  "reading_rule": {
+    "1_transfer_nc_tx_not_missed": false,
+    "2_signal_b_beats_none_by_2se": false,
+    "3_c_beats_b_by_2se": false,
+    "preferred": "b",
+    "next": "D-038 values stay; report the miss"
+  },
+  "draws": 20000,
+  "seed": 20261106,
+  "margin": 0.15,
+  "sigma": 0.5,
+  "seconds": 4157
+}

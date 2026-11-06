@@ -1,0 +1,187 @@
+D-054 run, commit 22dea9b, started 2026-11-06T12:26:07Z
+[   76s] fit set 13, tests ['Minneapolis', 'Durham County', 'Durham city']
+[  101s] full (b): 0.124 per 1,000
+[  383s] full (c): 0.170 per 1,000, b -2.0
+[  708s] fold MN: (b) 0.133, (c) 0.184
+[  832s] fold NC: (b) 0.013, (c) 0.004
+[ 1325s] fold OH: (b) 0.128, (c) 0.178
+[ 1698s] fold TX: (b) 0.241, (c) 0.467
+[ 1698s] test 1 done
+[ 1733s] lopo St. Louis Park city: 0.133
+[ 1760s] lopo Burlington city: 0.075
+[ 1796s] lopo Garner town: 0.134
+[ 1825s] lopo Morrisville town: 0.135
+[ 1854s] lopo Sanford city: 0.133
+[ 1882s] lopo Wake Forest town: 2.612
+[ 1910s] lopo Wilson city: 0.129
+[ 1942s] lopo Euclid city: 0.128
+[ 1971s] lopo Austin city: 0.137
+[ 1995s] lopo Houston city: 0.134
+[ 2030s] lopo League City city: 0.137
+[ 2065s] lopo Lewisville city: 0.135
+[ 2101s] lopo Lubbock city: 0.137
+[ 2101s] test 2 done
+[ 4157s] tau: {'tau_hat': 0.0, 'tau_low': 0.0, 'tau_high': 2.5, 'estimable': False, 'tau_median': 1.05, 'tau_p90': 2.15, 'share_at_0': 0.02475, 'multiplier_p10': 0.23395198279692317, 'multiplier_p50': 1.0, 'multiplier_p90': 4.218016582346268}
+<worktree>/.venv/lib/python3.12/site-packages/pandas/core/nanops.py:1028: RuntimeWarning: invalid value encountered in subtract
+  sqr = _ensure_numeric((avg - values) ** 2)
+<worktree>/.venv/lib/python3.12/site-packages/pandas/core/nanops.py:1028: RuntimeWarning: invalid value encountered in subtract
+  sqr = _ensure_numeric((avg - values) ** 2)
+{
+ "fit_set": {
+  "MN": [
+   "St. Louis Park city"
+  ],
+  "NC": [
+   "Burlington city",
+   "Garner town",
+   "Morrisville town",
+   "Sanford city",
+   "Wake Forest town",
+   "Wilson city"
+  ],
+  "OH": [
+   "Euclid city"
+  ],
+  "TX": [
+   "Austin city",
+   "Houston city",
+   "League City city",
+   "Lewisville city",
+   "Lubbock city"
+  ]
+ },
+ "test_places": [
+  "Minneapolis",
+  "Durham County",
+  "Durham city"
+ ],
+ "not_scored_tests": [
+  "Raleigh"
+ ],
+ "adopted_values": {
+  "theta": 0.001076,
+  "log_se": 0.8185062999886192,
+  "alpha": 7.29,
+  "half": 2.0
+ },
+ "full_b": {
+  "fit": "b_full",
+  "per_1000": 0.1235375669422164,
+  "low_per_1000": 0.03253999207739683,
+  "high_per_1000": 1.0057575679341315,
+  "log_se": 1.04295775708688,
+  "alpha": 8.415384366538792,
+  "alpha_low": 2.8021512694571187,
+  "alpha_high": 32.42140906048658,
+  "half": 0.5,
+  "half_low": 0.5,
+  "half_high": 0.5,
+  "b": 0.0,
+  "places": 13,
+  "place_years": 69,
+  "loglik": -43.44590308695828,
+  "note": ""
+ },
+ "full_c": {
+  "fit": "c_full",
+  "per_1000": 0.17028131421812695,
+  "low_per_1000": 0.055554706020639145,
+  "high_per_1000": 0.8831084780940167,
+  "log_se": 0.8408283700153164,
+  "alpha": 6.168056293573749,
+  "alpha_low": 2.2428671065727332,
+  "alpha_high": 19.944112473639333,
+  "half": 0.5,
+  "half_low": 0.5,
+  "half_high": 1.0,
+  "b": -2.0,
+  "places": 13,
+  "place_years": 69,
+  "loglik": -115.06267039411918,
+  "note": ""
+ },
+ "paired_b_minus_none": {
+  "delta": Infinity,
+  "paired_se": NaN,
+  "n": 13
+ },
+ "paired_c_minus_b": {
+  "delta": -62.89611357282422,
+  "paired_se": 51.759829548791245,
+  "n": 13
+ },
+ "paired_a_insample_minus_none": {
+  "delta": Infinity,
+  "paired_se": NaN,
+  "n": 13
+ },
+ "paired_outside_minus_none": {
+  "delta": Infinity,
+  "paired_se": NaN,
+  "n": 13
+ },
+ "tau": {
+  "tau_hat": 0.0,
+  "tau_low": 0.0,
+  "tau_high": 2.5,
+  "estimable": false,
+  "tau_median": 1.05,
+  "tau_p90": 2.15,
+  "share_at_0": 0.02475,
+  "multiplier_p10": 0.23395198279692317,
+  "multiplier_p50": 1.0,
+  "multiplier_p90": 4.218016582346268,
+  "note": "half-way point held at the full (b) fit's value"
+ },
+ "reading_rule": {
+  "1_transfer_nc_tx_not_missed": false,
+  "2_signal_b_beats_none_by_2se": false,
+  "3_c_beats_b_by_2se": false,
+  "preferred": "b",
+  "next": "D-038 values stay; report the miss"
+ },
+ "draws": 20000,
+ "seed": 20261106,
+ "margin": 0.15,
+ "sigma": 0.5,
+ "seconds": 4157
+}
+   state              line       model  observed    p10    p50    p90       mean  obs_over_p50  p90_over_p10        crps verdict
+0     MN           fit set           b       0.0    0.0    0.0    2.0    0.84070           NaN           inf    0.064147  useful
+1     MN           fit set           c       0.0    0.0    0.0    5.0    1.78130           NaN           inf    0.218106  useful
+2     MN           fit set  a_insample       0.0    0.0    0.0    3.0    1.31935           NaN           inf    0.130634  useful
+3     MN           fit set        none       0.0    0.0    0.0    0.0    0.00000           NaN           inf    0.000000  useful
+4     MN           fit set     outside       0.0    0.0    0.0    1.0    0.23630           NaN           inf    0.045065  useful
+5     MN  with test places           b     106.0   45.0   57.0  123.0   85.77885      1.859649      2.733333   33.605192  useful
+6     MN  with test places           c     106.0  150.0  170.0  242.1  195.07135      0.623529      1.614000   57.791664  missed
+7     MN  with test places  a_insample     106.0   47.0   62.0  420.1  210.04325      1.709677      8.938298   32.650958  useful
+8     MN  with test places        none     106.0   43.0   52.0   61.0   52.03845      2.038462      1.418605   49.901607  missed
+9     MN  with test places     outside     106.0   84.0   96.0  109.0   96.55540      1.104167      1.297619    5.734853  useful
+10    NC           fit set           b      26.0   15.0   21.0   31.0   25.10850      1.238095      2.066667    3.073664  useful
+11    NC           fit set           c      26.0    8.0   13.0   19.0   13.62370      2.000000      2.375000   10.354895  missed
+12    NC           fit set  a_insample      26.0   20.0   41.0  171.0   83.20575      0.634146      8.550000   14.258984  useful
+13    NC           fit set        none      26.0   14.0   19.0   25.0   19.35280      1.368421      1.785714    4.476851  missed
+14    NC           fit set     outside      26.0   29.0   37.0   45.0   36.87715      0.702703      1.551724    7.571488  missed
+15    NC  with test places           b     126.0   52.0   63.0   86.0   76.01060      2.000000      1.653846   50.335648  missed
+16    NC  with test places           c     126.0   42.0   52.0   64.0   54.01240      2.423077      1.523810   67.318632  missed
+17    NC  with test places  a_insample     126.0   66.0  121.0  510.0  250.55300      1.041322      7.727273   31.307232  useful
+18    NC  with test places        none     126.0   50.0   59.0   69.0   59.44405      2.135593      1.380000   62.221533  missed
+19    NC  with test places     outside     126.0   99.0  112.0  126.0  112.69450      1.125000      1.272727    8.460460  useful
+20    OH           fit set           b       0.0    0.0    0.0    0.0    0.13040           NaN           inf    0.005595  useful
+21    OH           fit set           c       0.0    0.0    0.0    1.0    0.28975           NaN           inf    0.022260  useful
+22    OH           fit set  a_insample       0.0    0.0    0.0    1.0    0.21325           NaN           inf    0.013736  useful
+23    OH           fit set        none       0.0    0.0    0.0    0.0    0.00000           NaN           inf    0.000000  useful
+24    OH           fit set     outside       0.0    0.0    0.0    0.0    0.03690           NaN           inf    0.001307  useful
+25    TX           fit set           b      49.0  211.0  262.0  527.0  341.62575      0.187023      2.497630  202.067917  missed
+26    TX           fit set           c      49.0  283.0  333.0  534.1  388.53530      0.147147      1.887279  269.965712  missed
+27    TX           fit set  a_insample      49.0  211.0  288.0  865.0  479.68650      0.170139      4.099526  230.377402  missed
+28    TX           fit set        none      49.0  190.0  208.0  227.0  208.07595      0.235577      1.194737  150.898706  missed
+29    TX           fit set     outside      49.0  246.0  267.0  288.0  266.85285      0.183521      1.170732  208.669262  missed
+  state              line   model  observed    p10    p50    p90       mean  obs_over_p50  p90_over_p10        crps verdict
+0    MN           fit set  b_lopo       0.0    0.0    0.0    2.0    0.84070           NaN           inf    0.064147  useful
+1    MN  with test places  b_lopo     106.0   45.0   56.0  114.0   84.43825      1.892857      2.533333   34.481758  useful
+2    NC           fit set  b_lopo      26.0   16.0   24.0   47.0   33.17910      1.083333      2.937500    2.544526  useful
+3    NC  with test places  b_lopo     126.0   55.0   71.0  143.0   99.20575      1.774648      2.600000   35.390979  useful
+4    OH           fit set  b_lopo       0.0    0.0    0.0    0.0    0.13040           NaN           inf    0.005595  useful
+5    TX           fit set  b_lopo      49.0  200.0  230.0  400.0  328.73285      0.213043      2.000000  174.953445  missed
+exit 0 2026-11-06T13:35:27Z

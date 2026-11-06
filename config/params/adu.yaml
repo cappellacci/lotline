@@ -10,12 +10,12 @@ adu_handbook_min_sqft:
   notes: "Fixed by the Handbook. A local rule capping ADUs below this size counts as a partial rule. The ADU prototype (proforma.yaml adu_sqft, 600-1,000) never goes below it."
 
 adu_partial_rule_share:
-  value: 0.3
-  low: 0.1
-  high: 0.6
+  value: 1.0
+  low: 1.0
+  high: 1.0
   unit: share of Handbook uptake reached under current local rules (m_x)
-  source: "Judgment. Applies where ADUs are allowed but with parking, a permit by conditional use (not by right), attached ADUs only or a cap under 600 sq ft (owner occupancy has its own share since D-019 fit 3). adu-study-design.md: partial reforms did little (DC <30/yr E046, New Hampshire 0.1-1.5 per 1,000 houses E056); E053 (local rules neutralized state mandates); C21 (approval process)"
-  notes: "A rule failing both owner occupancy and another condition gets m_o x m_x. Estimated in D-019 fit 3 only if the data identify it."
+  source: "Estimated, D-053 (fit 3's pre-registered rule, Ben 2026-11-06): five-state fit (MN, NC, OH, TX, OR; 53 places), profile maximum 1.0, 90% profile interval 1.0-1.0 (grid 0.1-1.0), narrower than the judgment range 0.1-0.6, so estimated. Set by Bend 2016-17 (its own rule required one parking space; 37 and 39 ADU permits, as many as under its later full rules); without Bend the share is flat between 0.3 and 1.0. Judgment before the fit: 0.3, low 0.1, high 0.6 (adu-study-design.md: DC <30/yr E046, New Hampshire 0.1-1.5 per 1,000 houses E056; E053; C21)"
+  notes: "Applies where ADUs are allowed but with parking, a permit by conditional use (not by right), attached ADUs only or a cap under 600 sq ft (owner occupancy has its own share). At 1.0 such a rule counts as a full one. It rests on two place-years in one city, so the judgment value 0.3 is reported as a sensitivity (D-053). A rule failing both owner occupancy and another condition gets m_o x m_x."
 
 adu_owner_occupancy_share:
   value: 1.0

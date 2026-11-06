@@ -43,7 +43,10 @@ ADU_SOURCES = {"4159000": "portland_permits", "4105800": "bend_permits"}
 
 def regenerate(store: DataStore, frozen: dict) -> dict:
     if v9.table_hashes("OR", store) != frozen["input_table_sha256"]:
-        raise SystemExit("input tables differ from the freeze's; rebuild them blind first")
+        raise SystemExit(
+            "input tables differ from the freeze's. Oregon was released on 2026-11-05, so run with "
+            "LOTLINE_DATA_DIR=~/lotline-data-v9-blind (the blind copy, checked against the freeze)"
+        )
     n, seed = frozen["draws"], frozen["seed"]
     adu_in = v9.adu_inputs("OR", store, list(v9.ADU_TARGETS))
     hist = v9.adu_history("OR", store, list(v9.ADU_TARGETS), v9.load_history(REPO / v9.HISTORY_FILE))
