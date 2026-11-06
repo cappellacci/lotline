@@ -13,3 +13,5 @@
 **What Claude did and how it was checked:** Claude Code (Opus 5.5, WS-APP instance) made the change at Ben's request. Checked by `tests/app` (26 passed), `compliance_check.py`, and in a browser at desktop and 375 px width: tab clicks, the state switch keeping the page, a deep link opening on `#data?state=ZZ`, and the tornado drawing when its page opens.
 
 Follow-up the same day (Ben): tab 3 and its heading were renamed from "How well does it hold up?" to "The model".
+
+Second follow-up (Ben approved, 2026-11-06): the page loads the brand fonts Public Sans and IBM Plex Mono (SIL OFL 1.1) from Google Fonts, with the tokens' system fallbacks when offline. Source Serif 4 is left out because the style guide uses it only in the written reports. Disclosed in `docs/disclosures.md`. Checked in a browser: all six weights load (`document.fonts`). The test now allows only the Google Fonts stylesheet as an external resource.
