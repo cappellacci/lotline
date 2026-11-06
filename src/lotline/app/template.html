@@ -160,7 +160,7 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
   </section>
   <section class="part" id="page-data" data-section="data" hidden>
     <h2 class="h1">The data</h2>
-    <p class="lead">What the estimate is built on: which sources the state has, which the model used, and how complete they are.</p>
+    <p class="lead" id="data-lead"></p>
     <div id="data-body"></div>
     <div id="dash-host" hidden>
       <h3 class="h3" style="margin-top:var(--space-6)">Coverage, ordinances and growth</h3>
@@ -305,6 +305,7 @@ const SECTIONS = {
         <div id="knobs"></div></div>`;
   },
   data(b) {
+    $("data-lead").textContent = dataLead();
     const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] }, t = d.totals;
     const tierWords = { 1: "Tier 1: local parcels with land use and year built", 2: "Tier 2: local parcels with land use", 3: "Tier 3: national data only" };
     const tiles = t ? [
@@ -519,6 +520,18 @@ function wireResults() {
     updateResults();
   };
   updateResults();
+}
+
+// The data tab's opening summary: what was gathered across every state, from the data dashboard summary.
+function dataLead() {
+  const o = DATA.data.overall;
+  const goal = "to measure and compare how housing reforms have actually performed";
+  if (!o) return `Lotline pulls in parcel records, building permits and coded local zoning rules for each state, ${goal}.`;
+  const n = o.states.length, words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+  const st = `${n < 10 ? words[n] : n} state${n === 1 ? "" : "s"}`;
+  const mill = o.parcels >= 1e6 ? `${(o.parcels / 1e6).toLocaleString("en-US", { maximumFractionDigits: 1 })} million` : fmtInt(o.parcels);
+  const permits = o.permit_first ? `, and read building permits from ${o.permit_first} to ${o.permit_last}` : "";
+  return `We pulled in data from ${st}, looked up and coded ${fmtInt(o.reforms)} local zoning and housing rules in ${fmtInt(o.reform_places)} cities and towns, assessed ${mill} parcels${permits}, ${goal}.`;
 }
 
 function footer(b) {

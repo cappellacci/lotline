@@ -247,3 +247,17 @@ def test_state_picker_and_mark_sit_in_the_menu_bar(tmp_path):
     assert 'id="state"' in nav and 'class="mark"' in nav and nav.count("data:image/svg+xml;base64,") == 2
     assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in html  # favicon cut
     assert 'id="state"' not in re.search(r'<header class="mast">.*?</header>', html, re.S).group(0)
+
+
+def test_overall_sums_every_state_in_the_summary():
+    two = json.loads(json.dumps(SUMMARY))
+    second = json.loads(json.dumps(SUMMARY["states"][0]))
+    second["state"] = "ZY"
+    second["totals"] = dict(second["totals"], parcels=700, reforms=4, permit_years=[1995, 2025])
+    two["states"].append(second)
+    o = build.overall(two)
+    assert o["states"] == ["ZZ", "ZY"] and o["parcels"] == 1000 and o["reforms"] == 5
+    assert (o["permit_first"], o["permit_last"]) == (1995, 2025)
+    assert build.overall(None) is None
+    html = build.render(build.payload([json.loads(FIXTURE.read_text())], "t", two))
+    assert _embedded(html)["data"]["overall"]["parcels"] == 1000 and 'id="data-lead"' in html
