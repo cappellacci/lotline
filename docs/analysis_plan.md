@@ -3167,3 +3167,54 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   variants are identical. Portland's pre-2018 history was a rise (the fee-waiver years) that ended in 2018.
   Carrying it forward over-predicted about fourfold. A short local history helps only if what drove it
   continues.
+
+### D-053 · 2026-11-06 · Does the ACS fallback denominator stand in for real eligible-parcel counts? (method only, before any run)
+- **Why:** The app will show every state in `config/states/` that has a results bundle (HANDOFF decision
+  2026-11-06). A state with no parcel data would use `build/eligible.from_acs` (one-unit detached homes,
+  B25024_002, allocated to permit-issuing jurisdictions; `denominator_source = acs_sf_fallback`, quality
+  `low`) in place of `from_parcels`. That fallback counts homes, not parcels, and cannot see zoning or lot
+  size, so it should over-count eligible parcels by roughly the share of single-family homes that are *not*
+  on single-family-only, lot-size-eligible parcels. Whether it is usable decides whether the tool shows
+  50 states or the onboarded ones only. Five states have both denominators, so the question can be tested
+  where the answer is known.
+- **What is known already, stated now:** the `from_acs` and `from_parcels` tables exist for MN, NC, TX, OH
+  and OR and have been looked at individually (V0 reports, data dashboard). No one has compared their state
+  totals. The pass rule below was chosen before that comparison (Ben, 2026-11-06, from three options:
+  within 2× in every state; this rule; or ranking the proxy's error against the tornado chart, which does not
+  exist yet).
+- **Method (main):**
+  - For each state s and theme (ADU first; MM as a check), the state total E_s = Σ `from_parcels` eligible
+    parcels over jurisdictions with a parcel-based denominator, and the proxy total A_s = Σ `from_acs`
+    homes over the same jurisdictions and the same 5-year end year (the newest roll's year, as the
+    eligible-year rule picks it). Jurisdictions without a parcel denominator are left out of both sums, so
+    the comparison is like for like.
+  - Ratio r_s = E_s ÷ A_s. The scale factor is the geometric mean of the ratios: k = exp(mean log r_s).
+  - **Leave one state out:** for each s, k_(−s) from the other four; the held-out ratio is
+    q_s = E_s ÷ (k_(−s) × A_s).
+  - Spread: σ = standard deviation of log r_s over the five states (n − 1).
+- **Reading rule (written now):**
+  - **Pass:** every q_s lies in [0.7, 1.4]. Then `eligible_proxy_scale` = k with low/high at
+    k × exp(∓σ), and `eligible_proxy_sd` = σ, both in `config/params/` with this entry as the source. For any
+    state with no parcel denominator, each simulation draw multiplies the ACS homes by k × exp(σ z),
+    z standard normal, once per state per draw, so the proxy's uncertainty is carried in the range.
+  - **Fail:** any q_s outside [0.7, 1.4]. The tier is not built; the app shows onboarded states only, the
+    rest grey with a "bring your own state" link; the ratios are reported as a finding in D4 (limitations)
+    and the data dashboard. A fail is a result, not a problem to fix by changing the proxy after seeing it.
+  - A systematic ratio (all five on one side of 1) is expected and is what k absorbs; it is not a fail.
+  - Nothing in this entry is chosen by comparing the ratios across alternative proxies. If a second proxy
+    (for example, owner-occupied one-unit detached, B25032) is to be tried, it gets its own entry first.
+- **Checks reported with the run:** the five r_s and q_s with E_s and A_s; the same by theme; the share of
+  each state's parcel-based eligible count that sits in jurisdictions the ACS allocation puts in "rest of
+  county"; TX and NC flagged for their unknown-land-use shares (36.5% and 19.2%, data dashboard), which make
+  E_s itself uncertain there.
+- **Known limits, stated now:** five states is a small set and OR is a transfer state whose parcel coverage
+  is newer; the rule says nothing about within-state allocation, only state totals, so tier-3 bundles carry
+  statewide results and the "in this place" view is off for them; the proxy is theme-blind, so the MM check
+  is expected to be worse than ADU.
+- **Scope:** changes nothing for the five onboarded states. Adds two parameters and one draw step for
+  tier-3 states only. Runs after the Oregon V9 freeze is recorded and before WS-APP builds the state map.
+- **Code, when run:** `scripts/dev/eligible_proxy_test.py` writing `reports/eligible-proxy/`; a unit test on
+  a hand-worked three-state example of k, q_s and σ; the draw step in the scenario modules behind a
+  `denominator_source == "acs_sf_fallback"` condition, with a test that a parcel-based state is untouched.
+- **Decided by:** Ben, 2026-11-06 ("For 1 I think the middle option works"); drafted by Cowork; to be run by
+  WS-ENGINE. **Status:** method only, not run.
