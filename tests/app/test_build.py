@@ -198,7 +198,8 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     dash = json.loads(m.group(1))
     assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
     assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
-    for part in ("Data available and data used", "Data tier", 'id="open-dash"'):
+    assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
+    for part in ("Data available and data used", "Data tier", 'id="dash-host"', 'id="dash-frame"'):
         assert part in html
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
