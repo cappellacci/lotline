@@ -3360,7 +3360,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     below the missing-middle ratio (1.136). Whether missing middle gets its own scale is a new decision, to
     be written as its own entry if wanted; until then the draw step applies the one k to every theme.
 
-### D-056 · 2026-11-06 · Housing-need denominators: two deviations from the WS-ENGINE brief (sources that do not exist as specified)
+### D-057 · 2026-11-06 · Housing-need denominators: two deviations from the WS-ENGINE brief (sources that do not exist as specified)
 - **Why:** The WS-ENGINE brief (2026-11-06, office hours A2) asks for `household_growth_5y` from the state
   demographers and a `shortage_stock` blended from Up for Growth and Zillow (low/high, geometric mean as the
   value), with Freddie Mac 2020 in notes only. A source search on 2026-11-06 (WS-ENGINE) found: (1) none of the

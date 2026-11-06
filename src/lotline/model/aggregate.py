@@ -1,4 +1,4 @@
-"""Statewide aggregation outputs. This module so far: the share of housing need (WS-ENGINE brief; D-056).
+"""Statewide aggregation outputs. This module so far: the share of housing need (WS-ENGINE brief; D-057).
 
 A scenario's five-year statewide homes are shown against one of two denominators from
 config/params/housing_need.yaml, which are **never mixed** without their label:
