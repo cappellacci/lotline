@@ -3882,3 +3882,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       entry, not edited.
   - **Results page:** `reports/mm-d059/d059-results.html`, published at
     https://claude.ai/artifact/A1xAvPmBvyp1MP4dCDGHQ6.
+- **Decision (Ben, 2026-11-06, "Keep D-055 values"):** `mm_hazard.yaml` keeps D-055's values (θ 0.1235 per
+  1,000, α 8.415, half-way point 0.5). The 12-place refit (0.130) is recorded here and not written to config.
+  Lubbock stays out of the missing-middle fit until a second coder reviews `TX-4845000-missing_middle-2023`
+  and the missing pre-UDC row. V5 freezes on D-055's values.
