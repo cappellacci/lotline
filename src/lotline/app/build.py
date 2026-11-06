@@ -129,7 +129,30 @@ def data_section(states: Iterable[str], summary: dict | None) -> dict:
             "totals": s.get("totals") if s else None,
             "sources": sources_table(st, s),
         }
-    return {"summary_generated": (summary or {}).get("generated"), "by_state": out}
+    generated = (summary or {}).get("generated")
+    return {"summary_generated": generated, "by_state": out, "overall": overall(summary)}
+
+
+def overall(summary: dict | None) -> dict | None:
+    """Totals across every state in the data dashboard summary, for the data tab's opening summary.
+
+    Sums per-state counts (states never overlap): coded reforms, places with a coded reform, parcels on file,
+    jurisdictions; permit years run from the earliest first year to the latest last year. None without one.
+    """
+    states = [s for s in (summary or {}).get("states", []) if s.get("totals")]
+    if not states:
+        return None
+    t = [s["totals"] for s in states]
+    years = [x["permit_years"] for x in t if x.get("permit_years")]
+    return {
+        "states": [s["state"] for s in states],
+        "reforms": sum(x.get("reforms") or 0 for x in t),
+        "reform_places": sum(x.get("reform_places") or 0 for x in t),
+        "parcels": sum(x.get("parcels") or 0 for x in t),
+        "jurisdictions": sum(x.get("jurisdictions") or 0 for x in t),
+        "permit_first": min(y[0] for y in years) if years else None,
+        "permit_last": max(y[1] for y in years) if years else None,
+    }
 
 
 def find_bundles(results_dir: Path = RESULTS_DIR) -> list[Path]:
@@ -196,6 +219,48 @@ def _svg(name: str, height: int = 32) -> str:
     return f'<img src="{_data_uri(name)}" alt="Lotline" height="{height}">'
 
 
+# Folds the data dashboard into section 2 (Ben, 2026-11-06: part of the data tab, not a link): its own header
+# and state bar are hidden (the app's picker drives it), and its colours are mapped onto the identity tokens.
+FOLD_CSS = """
+<style id="lotline-fold">
+body > header, #state-bar { display: none !important; }
+:root:not(#lotline-fold) {
+  --surface-0: var(--paper-raised); --surface-1: var(--paper); --surface-2: var(--paper-sunken);
+  --border: var(--rule); --grid: var(--rule); --text-primary: var(--ink); --text-secondary: var(--ink-muted);
+  --text-muted: var(--ink-faint); --accent: var(--survey);
+}
+body { background: transparent !important; font-family: var(--font-sans) !important; }
+main { max-width: none !important; padding: 0 !important; }
+</style>
+"""
+
+
+APP_FONT_FAMILIES = ("Public Sans", "IBM Plex Mono")  # Source Serif 4 is for the written reports only
+
+
+def font_faces(families: tuple[str, ...] = APP_FONT_FAMILIES) -> str:
+    """The `@font-face` rules from docs/build/identity/fonts/fonts.css for `families`, each file inlined as a
+    base64 data URI, so the page needs no font host. An unknown file raises."""
+    css = (IDENTITY / "fonts" / "fonts.css").read_text(encoding="utf-8")
+    out = []
+    for rule in re.findall(r"@font-face\s*\{[^}]*\}", css):
+        family = re.search(r'font-family:\s*"([^"]+)"', rule).group(1)
+        if family not in families:
+            continue
+        name = re.search(r'url\("([^"]+)"\)', rule).group(1)
+        data = base64.b64encode((IDENTITY / "fonts" / name).read_bytes()).decode()
+        out.append(rule.replace(f'url("{name}")', f'url("data:font/woff2;base64,{data}")'))
+    return "\n".join(out)
+
+
+def fold_dashboard(html: str) -> str:
+    """The data dashboard's page restyled to sit inside section 2 (tokens + FOLD_CSS before `</head>`)."""
+    if "</head>" not in html:
+        raise ValueError("dashboard page has no </head>")
+    tokens = (IDENTITY / "tokens.css").read_text(encoding="utf-8")
+    return html.replace("</head>", f"<style>{font_faces()}\n{tokens}</style>{FOLD_CSS}</head>", 1)
+
+
 def _json(x) -> str:
     return json.dumps(x, separators=(",", ":"), ensure_ascii=False, allow_nan=False).replace("</", "<\\/")
 
@@ -211,8 +276,9 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
     if missing:
         raise ValueError(f"template is missing {missing}")
     blob = _json(data)
+    styles = font_faces() + "\n" + (IDENTITY / "tokens.css").read_text(encoding="utf-8")
     return (
-        page.replace("/*__LOTLINE_TOKENS__*/", (IDENTITY / "tokens.css").read_text(encoding="utf-8"))
+        page.replace("/*__LOTLINE_TOKENS__*/", styles)
         .replace("<!--__WORDMARK_LIGHT__-->", _svg("lotline-wordmark-light.svg"))
         .replace("<!--__WORDMARK_DARK__-->", _svg("lotline-wordmark-dark.svg"))
         .replace("<!--__MARK_LIGHT__-->", _svg("lotline-mark-light.svg", 24))
@@ -244,7 +310,7 @@ def build_app(
     if summary is not None:
         from lotline.dashboard.render import render as render_dashboard
 
-        dashboard = render_dashboard(summary)
+        dashboard = fold_dashboard(render_dashboard(summary))
     html = render(payload((load_bundle(p) for p in paths), generated, summary), dashboard=dashboard)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)

@@ -3,6 +3,7 @@
 # every number (value, low, high, unit, source) is read from config/params/ at build time, never copied here.
 # `params` lists `file:key` in config/params/ per scenario; a scenario not listed shows "see the engine run".
 # A slider shifts its factor through that factor's own range in the engine's draws (src/lotline/app/aggregate.js).
+# The shift rule (each draw x P_q / P50) is provisional (Ben, 2026-11-06): revisit after feedback on the app.
 theta:
   label: How often owners build, once it pays
   why: The five-year chance that an owner of an eligible lot where the project pays actually builds.

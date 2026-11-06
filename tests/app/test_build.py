@@ -40,15 +40,25 @@ def test_page_builds_from_fixture_and_has_every_section(tmp_path):
     assert "uv run lotline results --all" in html
 
 
-def test_page_needs_no_server_and_loads_only_the_brand_fonts():
-    # no external script; the only external stylesheet is the brand fonts (OFL, docs/disclosures.md),
-    # and the page reads fine without it (tokens.css names system fallbacks)
+def test_page_needs_no_server_or_network_and_carries_its_fonts():
+    # no external script or stylesheet; the brand fonts are inlined from docs/build/identity/fonts (OFL)
     html = build.render(build.payload([json.loads(FIXTURE.read_text())], "t"))
-    assert not re.search(r'<script[^>]+src="https?://', html)
-    links = re.findall(r'<link[^>]+href="(https?://[^"]+)"', html)
-    assert all(u.startswith(("https://fonts.googleapis.com", "https://fonts.gstatic.com")) for u in links)
-    assert any("Public+Sans" in u and "IBM+Plex+Mono" in u for u in links)
-    assert '"Public Sans", "Helvetica Neue", Arial, sans-serif' in html  # fallback stack inlined
+    assert not re.search(r'<(script|link)[^>]+(src|href)="https?://', html)
+    assert "fonts.googleapis.com" not in html
+    for family in build.APP_FONT_FAMILIES:
+        assert f'font-family: "{family}"' in html
+    assert html.count('url("data:font/woff2;base64,') == 6  # Public Sans 400-700, Plex Mono 400 and 500
+    assert '"Source Serif 4"; font-style' not in html  # report-only face left out of the page
+
+
+def test_every_font_file_is_listed_and_licensed():
+    fonts = build.IDENTITY / "fonts"
+    css = (fonts / "fonts.css").read_text()
+    files = sorted(p.name for p in fonts.glob("*.woff2"))
+    assert files == sorted(re.findall(r'url\("([^"]+)"\)', css))
+    for family in ("PublicSans", "IBMPlexMono", "SourceSerif4"):
+        lic = next(fonts.glob(f"{family}-OFL.*")).read_text()
+        assert "SIL Open Font License, Version 1.1" in lic
 
 
 def test_every_bundle_under_results_dir_appears_in_role_order(tmp_path):
@@ -142,6 +152,7 @@ def test_a_slider_citing_an_unknown_parameter_is_refused(tmp_path):
 
 def test_results_section_parts_are_on_the_page(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    assert "<b>Provisional:</b> how the sliders move an assumption" in html  # Ben, 2026-11-06
     for part in ('id="headline"', 'id="ranges"', 'id="need"', 'id="funnel"', 'id="knobs"', "pencil out",
                  "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
         assert part in html, part
@@ -197,7 +208,8 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     dash = json.loads(m.group(1))
     assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
     assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
-    for part in ("Data available and data used", "Data tier", 'id="open-dash"'):
+    assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
+    for part in ("Data available and data used", "Data tier", 'id="dash-host"', 'id="dash-frame"'):
         assert part in html
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
@@ -236,3 +248,17 @@ def test_state_picker_and_mark_sit_in_the_menu_bar(tmp_path):
     assert 'id="state"' in nav and 'class="mark"' in nav and nav.count("data:image/svg+xml;base64,") == 2
     assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in html  # favicon cut
     assert 'id="state"' not in re.search(r'<header class="mast">.*?</header>', html, re.S).group(0)
+
+
+def test_overall_sums_every_state_in_the_summary():
+    two = json.loads(json.dumps(SUMMARY))
+    second = json.loads(json.dumps(SUMMARY["states"][0]))
+    second["state"] = "ZY"
+    second["totals"] = dict(second["totals"], parcels=700, reforms=4, permit_years=[1995, 2025])
+    two["states"].append(second)
+    o = build.overall(two)
+    assert o["states"] == ["ZZ", "ZY"] and o["parcels"] == 1000 and o["reforms"] == 5
+    assert (o["permit_first"], o["permit_last"]) == (1995, 2025)
+    assert build.overall(None) is None
+    html = build.render(build.payload([json.loads(FIXTURE.read_text())], "t", two))
+    assert _embedded(html)["data"]["overall"]["parcels"] == 1000 and 'id="data-lead"' in html

@@ -1,0 +1,94 @@
+{
+  "fit_set": {
+    "MN": [
+      "St. Louis Park city"
+    ],
+    "NC": [
+      "Burlington city",
+      "Garner town",
+      "Morrisville town",
+      "Sanford city",
+      "Wake Forest town",
+      "Wilson city"
+    ],
+    "OH": [
+      "Euclid city"
+    ],
+    "TX": [
+      "Austin city",
+      "Houston city",
+      "League City city",
+      "Lewisville city"
+    ]
+  },
+  "excluded": {
+    "4845000": "Lubbock"
+  },
+  "flagged_unstable": [],
+  "test_places": [
+    "Minneapolis",
+    "Durham County",
+    "Durham city"
+  ],
+  "full": {
+    "b1": {
+      "fit": "b1_full",
+      "per_1000": 0.1299970044525059,
+      "low_per_1000": 0.03606663400984209,
+      "high_per_1000": 0.876656633372529,
+      "log_se": 0.9699180654724916,
+      "alpha": 6.653538959405586,
+      "alpha_low": 2.130582792912579,
+      "alpha_high": 26.34766616624659,
+      "half": 0.5,
+      "half_low": 0.5,
+      "half_high": 0.5,
+      "b": 0.0,
+      "places": 12,
+      "place_years": 67,
+      "loglik": 28.08982261164713,
+      "note": ""
+    },
+    "d": {
+      "fit": "d_full",
+      "per_1000": 1.3332204741191458,
+      "low_per_1000": 0.071926814606677,
+      "high_per_1000": 5.5078425313719945,
+      "log_se": 1.3187429194609677,
+      "alpha": 2.899434032864884,
+      "alpha_low": 0.8246897737794096,
+      "alpha_high": 12.40998462996387,
+      "half": 6.0,
+      "half_low": 0.5,
+      "half_high": 6.0,
+      "b": 0.0,
+      "places": 12,
+      "place_years": 67,
+      "loglik": 24.754448383472326,
+      "note": ""
+    }
+  },
+  "paired_main_minus_none": {
+    "delta": 14.159073487374673,
+    "paired_se": 9.532867354814776,
+    "n": 12
+  },
+  "paired_d_minus_main": {
+    "delta": -0.08910829488524641,
+    "paired_se": 9.799811350704411,
+    "n": 12
+  },
+  "paired_d_minus_none_d": {
+    "delta": 11.038358600875691,
+    "paired_se": 8.87230105964372,
+    "n": 12
+  },
+  "reading_rule": {
+    "1_transfer_nc_tx_not_missed": true,
+    "2_signal_main_beats_none_by_2se": false,
+    "next": "report; Ben decides (D-055 values stay meanwhile)"
+  },
+  "draws": 20000,
+  "seed": 20261106,
+  "seconds": 2135
+}

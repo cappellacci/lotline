@@ -38,12 +38,13 @@ the jsDelivr CDN (`cdn.jsdelivr.net`) when it is opened, unmodified and not copi
 (ISC), topojson-client 3.1.0 (ISC) and us-atlas 3.0.1 `counties-10m.json` (ISC; county shapes derived from
 Census cartographic boundary files). Nothing is sent to the CDN except the file requests.
 
-**App page (`reports/app/index.html`, built by `scripts/build_app.py`).** The page loads the brand fonts from
-Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`) when it is opened: Public Sans and IBM Plex Mono, both
-under the SIL Open Font License 1.1, not copied into the repo. Without network access the page falls back to
-system fonts (`docs/build/identity/tokens.css`). Google receives the font requests (the reader's IP address and
-browser details), as with any web font; no Lotline data is sent. The embedded data dashboard loads the jsDelivr
-files listed above.
+**App page (`reports/app/index.html`, built by `scripts/build_app.py`).** The page carries its fonts inline and
+loads none from a font host. The brand fonts are committed in `docs/build/identity/fonts/`, unmodified:
+Public Sans v2.001 (github.com/uswds/public-sans), IBM Plex Mono 2.5.0 (github.com/IBM/plex) and Source Serif 4
+4.005R (github.com/adobe-fonts/source-serif; used by the written reports only). All three are under the SIL Open
+Font License 1.1; each family's licence file sits beside its fonts. The OFL is permissive for this use (fonts
+may be bundled and redistributed with software; the fonts themselves may not be sold on their own). The
+embedded data dashboard loads the jsDelivr files listed above.
 
 ## Third-party code, dependencies and datasets
 - Dependencies: see the SBOM (`sbom.spdx.json`) and the license scan. Exceptions (non-permissive licenses) are listed here with a justification.
