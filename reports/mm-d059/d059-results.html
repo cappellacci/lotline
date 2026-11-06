@@ -1,0 +1,139 @@
+<title>D-059 Backtest Without Lubbock</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the D-053 results page's system: one reading column of findings, each with its chart, then a decision panel. Survey-ledger feel: building counts, log scales, plain annotations. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --main: #2f6f5e; --alt: #b0703a; --ref: #6b6fa8; --obs: #1d2420;
+  --bandmain: rgba(47,111,94,.20); --bandalt: rgba(176,112,58,.20); --bandref: rgba(107,111,168,.18); --bandnone: rgba(93,106,99,.18);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.in { color: var(--warn); border: 1px solid var(--warn); }
+.post { font-size: 12px; color: var(--warn); font-weight: 600; letter-spacing: .04em; }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-059 · run 2026-11-06 · commit 48fb7db · results for Ben</div>
+    <h1>The missing-middle backtest with Lubbock set aside</h1>
+    <p class="lede">Lubbock's pre-UDC duplex rule was never coded, and the UDC may have tightened duplexes rather than freed them. So Ben had it taken out of the fit and the Texas targets as an unverified rule, and D-054's leave-one-state-out backtest was run again. The main model is the adopted D-055 specification with D-058's zero floor. This is a sensitivity run: Lubbock was dropped after its miss was seen.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Finding 1 · Leave one state out</div>
+    <h2>Without Lubbock, North Carolina and Texas both land inside their ranges</h2>
+    <p>Each state is predicted from a fit to the other three. The dot is what was built; the bar is P10–P90. Texas's four remaining places built 24 against a median of 23. North Carolina's six built 26 against 25. No effect also holds both, so state totals alone can't separate the model from no reform. The outside-evidence rate misses both.</p>
+    <div class="chart" id="loso"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandmain)"></span>(b′) main</span><span><span class="sw" style="background:var(--bandref)"></span>(d) stability rule</span><span><span class="sw" style="background:var(--bandnone)"></span>no effect</span><span><span class="sw" style="background:var(--warn);opacity:.45"></span>outside rate</span><span>● built · | P50</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 2 · The fitted rate</div>
+    <h2>The 12-place refit is the adopted value to within 5%</h2>
+    <p>(b′) gives θ 0.130 per 1,000 (0.036–0.88), with the half-way point at 0.5 years. D-055's adopted value is 0.124 (0.033–1.01). Replacing the config would change almost nothing before Charlotte freezes. The ridge D-058 found is still there: dropping Texas, Houston or Wake Forest moves a fit to the slow-ramp peak near 1.2–2.8.</p>
+    <div class="chart" id="theta"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--alt)"></span>fast ramp (half 0.5)</span><span><span class="sw" style="background:var(--main)"></span>slow ramp (half 5–6)</span><span><span class="sw" style="background:var(--ref)"></span>adopted D-055</span><span>bar = 90% interval · log scale</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 3 · Signal against no effect</div>
+    <h2>The test cities show a reform effect; the fit-set towns are too small to</h2>
+    <p>Held-out log score of (b′) minus no effect, by place. On the 12 fit places the gain is 14.2 (paired SE 9.5), under the 2-SE bar of 19.1. Minneapolis and Durham city, never in any fit, gain 26 and 32 each: both built about twice their own trend. Most fit-set places are small towns that built little or nothing.</p>
+    <div class="chart" id="sig"></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">For Ben to decide</div>
+    <h2>Transfer passes and signal doesn't. The rule leaves the choice to you.</h2>
+    <ul>
+      <li><strong>Rule items:</strong> 1, transfer: met (NC and TX useful). 2, signal: not met (+14.2 against 19.1). Outcome: report, and Ben decides. <code>mm_hazard.yaml</code> keeps D-055's values meanwhile.</li>
+      <li><strong>Keep D-055's values</strong> (suggested). The 12-place refit is within 5% of them, so a config PR before Nov 17 would add churn and change nothing material.</li>
+      <li><strong>Or adopt the 12-place refit</strong> (θ 0.130, α 6.65, half 0.5), in its own PR with your approval, so the config matches the set that transfers.</li>
+      <li><strong>Either way:</strong> Lubbock's <code>tx.csv</code> row goes to a second coder before it returns; the scenario carries the five-year-rate range from the two peaks (D-058).</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/mm-d059/ (fits.csv, loso.csv, lopo_state.csv, place_scores.csv, summary.json, run-2026-11-06-log.txt). Census BPS 2010–2025, holdout-filtered (St. Paul, Charlotte, Mecklenburg never read). Method and results: docs/analysis_plan.md D-059; D-054 and D-058 for the design. Branch ws/mm-d059.</p>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : String(Math.round(n));
+const lab = (s, x, y, t, opt = {}) => el("text", Object.assign({ x, y, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, opt), s, t);
+
+
+// 1 · totals NC and TX
+(function () {
+  const groups = [["NC", 26, [["b1", 18, 25, 35], ["d", 18, 24, 33], ["none", 17, 23, 30], ["outside", 33, 41, 49]]], ["TX", 24, [["b1", 16, 23, 36], ["d", 24, 32, 47], ["none", 13, 19, 24], ["outside", 62, 72, 84]]]];
+  const band = { b1: "--bandmain", d: "--bandref", none: "--bandnone", outside: "--warn" }, tk = { b1: "--main", d: "--ref", none: "--muted", outside: "--warn" };
+  const W = 760, L = 60, R = 20, T = 6, gH = 22 + 4 * 14, H = T + groups.length * gH + 28; const s = svg("loso", W, H);
+  const x = v => L + v / 100 * (W - L - R);
+  for (const t of [0, 20, 40, 60, 80, 100]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, t); }
+  groups.forEach(([n, obs, rows], gi) => {
+    const y0 = T + gi * gH + 6; lab(s, 0, y0 + 26, n, { style: "font-family:var(--body);font-size:13px;font-weight:600" });
+    rows.forEach(([k, a, b, c], i) => { const y = y0 + i * 14;
+      el("rect", { x: x(a), y, width: x(c) - x(a), height: 9, rx: 2, fill: css(band[k]), opacity: k === "outside" ? .45 : 1 }, s);
+      el("line", { x1: x(b), x2: x(b), y1: y - 1, y2: y + 10, stroke: css(tk[k]), "stroke-width": 2 }, s); });
+    el("line", { x1: x(obs), x2: x(obs), y1: y0 - 2, y2: y0 + 56, stroke: css("--obs"), "stroke-dasharray": "2 2" }, s);
+    el("circle", { cx: x(obs), cy: y0 + 26, r: 5.5, fill: css("--obs"), stroke: css("--panel"), "stroke-width": 1.5 }, s);
+  });
+})();
+// 2 · θ
+const th = [["(b′) 12 places", 0.130, 0.036, 0.877, "--alt"], ["(b′) without MN", 0.141, 0.039, 0.978, "--alt"], ["(b′) without NC", 0.017, 0.002, 0.728, "--alt"], ["(b′) without OH", 0.134, 0.037, 0.998, "--alt"], ["(b′) without TX", 1.548, 0.470, 7.367, "--main"], ["(b′) without Houston", 1.188, 0.366, 5.411, "--main"], ["(b′) without Wake Forest", 2.823, 0.419, 19.622, "--main"], ["(d) 12 places", 1.333, 0.072, 5.508, "--main"], ["Adopted (D-055)", 0.1235, 0.0325, 1.006, "--ref"]];
+(function () {
+  const W = 760, rowH = 28, L = 180, R = 50, T = 6, H = T + rowH * th.length + 28; const s = svg("theta", W, H);
+  const x = v => L + (Math.log10(v) + 3) / 4.5 * (W - L - R);
+  for (const t of [0.001, 0.01, 0.1, 1, 10]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, String(t)); }
+  th.forEach(([n, v, lo, hi, c], i) => { const y = T + i * rowH + rowH / 2; lab(s, 0, y + 4, n);
+    el("line", { x1: x(lo), x2: x(hi), y1: y, y2: y, stroke: css(c), "stroke-width": 4, "stroke-linecap": "round", opacity: .4 }, s);
+    el("circle", { cx: x(v), cy: y, r: 5.5, fill: css(c) }, s); el("text", { x: x(hi) + 8, y: y + 4 }, s, v.toFixed(3)); });
+})();
+// 3 · Δ log score
+const ls = [["Durham city (test)", 32.09, true], ["Minneapolis (test)", 26.25, true], ["Wake Forest", 8.01], ["Burlington", 4.75], ["Houston", 3.49], ["Euclid", -0.08], ["Sanford", -0.10], ["Morrisville", -0.12], ["Lewisville", -0.13], ["Garner", -0.15], ["Wilson", -0.16], ["Austin", -0.17], ["St. Louis Park", -0.23], ["Durham County (test)", -0.29, true], ["League City", -0.96]];
+(function () {
+  const W = 760, L = 160, R = 60, T = 6, rowH = 22, H = T + rowH * ls.length + 26; const s = svg("sig", W, H);
+  const x = v => L + (v + 2) / 36 * (W - L - R);
+  for (const t of [0, 10, 20, 30]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css(t === 0 ? "--muted" : "--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, (t > 0 ? "+" : "") + t); }
+  ls.forEach(([n, d, test], i) => { const y = T + i * rowH + 4; lab(s, 0, y + 11, n);
+    el("rect", { x: Math.min(x(0), x(d)), y, width: Math.max(Math.abs(x(d) - x(0)), 1.5), height: 14, rx: 2, fill: css(d < 0 ? "--miss" : test ? "--ref" : "--main"), opacity: .8 }, s);
+    el("text", { x: (d >= 0 ? x(d) : x(0)) + 6, y: y + 11 }, s, (d > 0 ? "+" : "") + d.toFixed(2)); });
+})();
+</script>

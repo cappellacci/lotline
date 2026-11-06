@@ -3841,3 +3841,44 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Decided by:** Ben, 2026-11-06; written by the missing-middle test session before the run.
 - **Before the run (dry run; structure only):** fit set 12 places (MN 1, NC 6, OH 1, TX 4), test places 3.
   Lubbock is absent. No holdout geoid is in the panel.
+- **Results (one run, 2026-11-06, commit 48fb7db, 36 min; `reports/mm-d059/`, log `run-2026-11-06-log.txt`):**
+  - **Full fit, 12 places:**
+    - (b′): θ 0.130 per 1,000 (0.036–0.88), α 6.65, half-way point 0.5. Within 5% of the adopted D-055 values
+      (0.1235; 0.0325–1.006; α 8.4).
+    - (d): 1.33, on the slow-ramp peak (half 6.0), as in D-058.
+  - **Folds, (b′):**
+    - without MN 0.14, without NC 0.017, without OH 0.13: the fast-ramp peak;
+    - without TX 1.55: the slow peak.
+    
+    Leave-one-place-out refits stay near 0.14, except without Wake Forest (2.8) and without Houston (1.19),
+    which jump to the slow peak. The ridge D-058 found is still there.
+  - **Test 1, fit-set totals (observed against P10 / P50 / P90):**
+    - NC (26): (b′) 18 / 25 / 35, useful.
+    - TX (24): (b′) 16 / 23 / 36, useful. (d) 24 / 32 / 47, useful.
+    - Both are useful under no effect too, and missed by the outside rate (NC 33–49; TX 62–84).
+  - **With the test places:**
+    - MN with Minneapolis (106): (b′) 46 / 58 / 127, useful; no effect missed (43–61).
+    - NC with Durham city and County (126): (b′) 57 / 69 / 94, missed; the outside rate useful.
+  - **Test 2, (b′):** every state useful. NC with the test places is 61 / 78 / 150; TX is 17 / 28 / 86.
+  - **Held-out log score, fit set (12 places):**
+    - (b′) − no effect: +14.2, paired SE 9.5. The 2-SE bar is 19.1.
+    - (d) − (b′): −0.1 (9.8).
+  - **Test places:** (b′) − no effect is +26.3 for Minneapolis and +32.1 for Durham city. Both built about
+    twice their own trend.
+  - **Reading rule, as written:**
+    1. **Transfer: met.** NC and TX are both useful.
+    2. **Signal: not met,** about 1.5 SE.
+    3. **Outcome:** report; Ben decides. D-055's values stay in `mm_hazard.yaml` meanwhile. Nothing in
+       config changes in this PR.
+  - **Reading (for Ben):**
+    - **With Lubbock set aside, the adopted specification transfers.** Its leave-one-state-out ranges hold the
+      NC and TX totals with medians close. Its 12-place refit is the adopted fit to within 5%, so replacing
+      `mm_hazard.yaml` would change almost nothing before V5.
+    - **The fit set still can't show a reform effect at 2 SE over each place's own trend.** The test places
+      show one plainly (+58 log units together). The fit-set places are mostly small towns with few buildings.
+    - **The θ–ramp ridge stays.** Dropping Houston, Wake Forest or Texas moves the fit to the slow peak. The
+      scenario should carry that as a range on the five-year rate (D-058).
+    - **Lubbock's coding needs a second coder** before it can come back. The `tx.csv` row is flagged in this
+      entry, not edited.
+  - **Results page:** `reports/mm-d059/d059-results.html`, published at
+    https://claude.ai/artifact/A1xAvPmBvyp1MP4dCDGHQ6.
