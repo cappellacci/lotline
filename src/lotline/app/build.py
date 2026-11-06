@@ -212,12 +212,30 @@ main { max-width: none !important; padding: 0 !important; }
 """
 
 
+APP_FONT_FAMILIES = ("Public Sans", "IBM Plex Mono")  # Source Serif 4 is for the written reports only
+
+
+def font_faces(families: tuple[str, ...] = APP_FONT_FAMILIES) -> str:
+    """The `@font-face` rules from docs/build/identity/fonts/fonts.css for `families`, each file inlined as a
+    base64 data URI, so the page needs no font host. An unknown file raises."""
+    css = (IDENTITY / "fonts" / "fonts.css").read_text(encoding="utf-8")
+    out = []
+    for rule in re.findall(r"@font-face\s*\{[^}]*\}", css):
+        family = re.search(r'font-family:\s*"([^"]+)"', rule).group(1)
+        if family not in families:
+            continue
+        name = re.search(r'url\("([^"]+)"\)', rule).group(1)
+        data = base64.b64encode((IDENTITY / "fonts" / name).read_bytes()).decode()
+        out.append(rule.replace(f'url("{name}")', f'url("data:font/woff2;base64,{data}")'))
+    return "\n".join(out)
+
+
 def fold_dashboard(html: str) -> str:
     """The data dashboard's page restyled to sit inside section 2 (tokens + FOLD_CSS before `</head>`)."""
     if "</head>" not in html:
         raise ValueError("dashboard page has no </head>")
     tokens = (IDENTITY / "tokens.css").read_text(encoding="utf-8")
-    return html.replace("</head>", f"<style>{tokens}</style>{FOLD_CSS}</head>", 1)
+    return html.replace("</head>", f"<style>{font_faces()}\n{tokens}</style>{FOLD_CSS}</head>", 1)
 
 
 def _json(x) -> str:
@@ -235,8 +253,9 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
     if missing:
         raise ValueError(f"template is missing {missing}")
     blob = _json(data)
+    styles = font_faces() + "\n" + (IDENTITY / "tokens.css").read_text(encoding="utf-8")
     return (
-        page.replace("/*__LOTLINE_TOKENS__*/", (IDENTITY / "tokens.css").read_text(encoding="utf-8"))
+        page.replace("/*__LOTLINE_TOKENS__*/", styles)
         .replace("<!--__WORDMARK_LIGHT__-->", _svg("lotline-wordmark-light.svg"))
         .replace("<!--__WORDMARK_DARK__-->", _svg("lotline-wordmark-dark.svg"))
         .replace("<!--__MARK_LIGHT__-->", _svg("lotline-mark-light.svg", 24))
