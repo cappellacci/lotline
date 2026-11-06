@@ -5,6 +5,7 @@ engine's draws, and it must give the same P10/P50/P90 as `aggregate.homes_from_d
 The JS runs under node. A slider shifts one factor to a point q in its own range (every draw times
 P_q / P50 of that factor, kept within [0, 1]); the Python side of that is three lines here (np.percentile,
 numpy's default linear method, then homes_from_draws), so both the shift and the product are checked.
+The shift rule is provisional (Ben, 2026-11-06); if it changes, these tests change with it.
 """
 
 import json
