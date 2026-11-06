@@ -49,3 +49,15 @@ sources:  # added by WS-OR with each adapter
       Adapter src/lotline/adapters/states/or/bend_permits.py. Building applications NC, AD, RE, MA and DE only.
       ADU = building use ADU (from 2013); HB2001ADU marks HB 2001 pathway permits (duplexes included) and is
       kept as the raw reform flag, not the ADU flag.
+  - name: rlis_parcels
+    url: https://services2.arcgis.com/McQ0OlIABe29rJJy/arcgis/rest/services/Taxlots_(Public)/FeatureServer/3
+    license: >-
+      RLIS Open Database End User License Agreement (Metro, Feb 2023): attribution only, compatible with
+      CC BY 4.0 and ODC-By; https://rlisdiscovery.oregonmetro.gov/pages/open-database-license
+    access: arcgis
+    cadence: quarterly (the November release carries the certified tax roll)
+    notes: >-
+      Adapter src/lotline/adapters/states/or/rlis_parcels.py. Multnomah, Washington and Clackamas tax lots
+      (current roll only: RLIS publishes no dated archives). Land use from the DOR property class
+      (config/crosswalks/or_rlis_land_use.csv); jurisdiction from Metro's JURIS_CITY. Every other Oregon
+      jurisdiction stays on the ACS fallback (D-017).
