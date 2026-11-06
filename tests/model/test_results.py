@@ -214,3 +214,61 @@ def test_invalid_bundle_is_refused():
 if __name__ == "__main__":
     print(results.write_bundle(make_fixture(), FIXTURE))
     print(json.loads(FIXTURE.read_text())["meta"]["state"])
+
+
+# ---- lotline results --all ---------------------------------------------------------------------------
+
+
+def _fake_cli(monkeypatch, tmp_path, states, fail=()):
+    import sys
+    import types
+
+    from lotline import cli, config
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(config, "all_states", lambda: list(states))
+
+    def fake_build(state, store, **kw):
+        if state in fail:
+            raise FileNotFoundError(f"no processed tables for {state}")
+        b = make_fixture()
+        return {k: v.assign(state=state) if "state" in v else v for k, v in b.items()}
+
+    monkeypatch.setattr(results, "build_bundle", fake_build)
+    monkeypatch.setattr(results, "tree_is_clean", lambda: True)
+    pages = []
+
+    def build_app(results_dir, out_dir):
+        pages.append(sorted(p.parent.name for p in Path(results_dir).glob("*/bundle.json")))
+        out = Path(out_dir) / "index.html"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text("<html></html>")
+        return out
+
+    monkeypatch.setitem(sys.modules, "lotline.app.build", types.SimpleNamespace(build_app=build_app))
+    return cli, pages
+
+
+def test_results_all_writes_every_bundle_then_the_page(monkeypatch, tmp_path):
+    cli, pages = _fake_cli(monkeypatch, tmp_path, ["AA", "BB"])
+    assert cli.main(["results", "--all"]) == 0
+    assert pages == [["aa", "bb"]]  # the page is built after every bundle is written
+    assert results.read_bundle(tmp_path / "reports/results/bb/bundle.json")["meta"]["state"].iloc[0] == "BB"
+    assert (tmp_path / "reports/app/index.html").exists()
+
+
+def test_results_all_keeps_going_past_a_failing_state(monkeypatch, tmp_path, capsys):
+    cli, pages = _fake_cli(monkeypatch, tmp_path, ["AA", "BB"], fail=("AA",))
+    assert cli.main(["results", "--all"]) == 1
+    assert pages == [["bb"]]
+    assert "no bundle for AA" in capsys.readouterr().out
+
+
+def test_results_all_says_when_the_page_build_is_missing(monkeypatch, tmp_path, capsys):
+    import sys
+
+    cli, _ = _fake_cli(monkeypatch, tmp_path, ["AA"])
+    monkeypatch.setitem(sys.modules, "lotline.app.build", None)  # import fails as if absent
+    assert cli.main(["results", "--all"]) == 2
+    assert "PR #313" in capsys.readouterr().out
+    assert cli.main(["results", "--all", "--state", "AA"]) == 2
