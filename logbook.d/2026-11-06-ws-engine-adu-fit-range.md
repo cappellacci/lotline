@@ -9,7 +9,7 @@
   rate at its min/max over 2016–25. The test is leave one state out over five states with widening, current
   range against the fit-set range recomputed per fold. The rule adopts it if no more states are missed and
   place-total P10–P90 coverage is at least 70%. Frozen V9 stays on the old range.
-- **Decisions:** proposed D-058; waiting for Ben's approval before any code or run.
+- **Decisions:** D-058 approved by Ben ("Approve D-058"), before any code or run.
 - **AI:** Claude Code (Opus 5.5) drafted the entry. The fit set was read from `scripts/dev/calibrate_adu.py`
   and `adu_anchor.yaml`, where the widening applies from `hazard.py`, `validation/v9.py` and D-043/D-053, and
   the D-number from every local and remote branch.

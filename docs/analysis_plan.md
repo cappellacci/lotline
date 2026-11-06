@@ -3543,7 +3543,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 
 ### D-058 · 2026-11-06 · ADU calibration range from the places the anchor is fitted on (method only, before any run)
 
-- **Approval:** waiting for Ben. Nothing below has been run.
+- **Approved by Ben on 2026-11-06** ("Approve D-058"). Nothing below had been run at approval.
 - **Why:**
   - Since D-037 the ADU anchor θ is fitted on our own states (D-048; Oregon pooled since D-053). The
     calibration range behind `hazard.calibration_distance`, however, still comes from the old West Coast
@@ -3656,5 +3656,5 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - `--range-test` in `scripts/dev/calibrate_adu.py`, writing to `reports/adu-d058-range/`.
 - **Run once:** `LOTLINE_FIT_WITH_OR=1 uv run python scripts/dev/calibrate_adu.py --range-test --out
   reports/adu-d058-range`.
-- **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry). Written by WS-ENGINE
-  before any run. **Status:** method only, not run.
+- **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry; approved as written,
+  "Approve D-058"). Written by WS-ENGINE before any run. **Status:** method approved, not run.
