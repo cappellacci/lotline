@@ -115,7 +115,7 @@ details summary { cursor: pointer; color: var(--text-secondary); }
   <section class="grid2">
     <div class="card">
       <div class="card-head">
-        <div><h2>Coverage map</h2><p class="muted" id="map-note">Counties colored by the chosen measure. Dots are municipalities and townships (filled: parcels on file). Click a county to filter.</p></div>
+        <div><h2>Coverage map</h2><p class="muted" id="map-note">Counties colored by the chosen measure. Hatched counties have no parcel roll; the model estimates their eligible lots from Census housing counts. Dots are municipalities and townships (filled: parcels on file). Click a county to filter.</p></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <label class="muted" for="metric">Measure</label>
           <select id="metric">
@@ -335,10 +335,15 @@ function renderMap() {
   el.innerHTML = "";
   const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
     .attr("aria-label", `Map of ${m.label} by county`);
+  const hatch = svg.append("defs").append("pattern").attr("id", "est-hatch").attr("patternUnits", "userSpaceOnUse")
+    .attr("width", 6).attr("height", 6).attr("patternTransform", "rotate(45)");
+  hatch.append("rect").attr("width", 6).attr("height", 6).attr("fill", css("--nodata"));
+  hatch.append("line").attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 6).attr("stroke", css("--seq-3")).attr("stroke-width", 2.2);
   svg.append("g").selectAll("path").data(feats).join("path")
     .attr("class", f => "county" + (state.county === f.id ? " sel" : ""))
     .attr("d", path)
-    .attr("fill", f => { const c = byId.get(f.id); const v = c ? m.value(c) : null; return v == null ? css("--nodata") : color(v); })
+    .attr("fill", f => { const c = byId.get(f.id); const v = c ? m.value(c) : null;
+      return v != null ? color(v) : estimated(m, c) ? "url(#est-hatch)" : css("--nodata"); })
     .on("mousemove", (ev, f) => { const c = byId.get(f.id); showTip(ev, countyTip(f, c, m)); })
     .on("mouseleave", hideTip)
     .on("click", (ev, f) => { state.county = state.county === f.id ? null : f.id; renderAll(); });
@@ -356,6 +361,10 @@ function renderMap() {
   }
   renderMapLegend(m, cs, color);
 }
+// A county with no parcel roll whose eligible lots are estimated from Census housing counts (D-017): shown as
+// "estimated" on the parcel measures rather than as missing.
+const PARCEL_METRICS = ["pop_cov", "parcels", "vintage"];
+function estimated(m, c) { return !!c && PARCEL_METRICS.includes(m.key) && !(c.parcels > 0) && c.lots_estimated > 0; }
 function countyTip(f, c, m) {
   if (!c) return `<b>${esc(f.properties.name)} County</b><div class="muted">No jurisdictions in the table</div>`;
   const src = Object.entries(c.sources || {}).map(([s, v]) => `${s} (${v.vintage})`).join(", ") || "none";
@@ -363,7 +372,9 @@ function countyTip(f, c, m) {
     (["pop_cov", "parcels", "reforms"].includes(m.key) ? "" : row(m.label, m.fmt(m.value(c)))) + row("Population 2020", fmtK(c.pop)) +
     row("Population covered", c.pop ? pct(c.pop_covered / c.pop, 0) : "–") +
     row("Jurisdictions with parcels", `${c.jurisdictions_covered} / ${c.jurisdictions}`) +
-    row("Parcels on file", fmt(c.parcels)) + row("Coded reforms", c.reforms) +
+    row("Parcels on file", fmt(c.parcels)) +
+    (!(c.parcels > 0) && c.lots_estimated > 0 ? row("Eligible lots", `${fmtK(c.eligible_adu)} estimated from Census housing counts`) : "") +
+    row("Coded reforms", c.reforms) +
     (c.pop_start ? row(`Pop. growth ${(DATA.states.find(s => s.state === c.st).growth_window || []).join("–")}`, pct(c.pop_end / c.pop_start - 1)) +
       row("Housing growth (ACS)", c.hu_start ? pct(c.hu_end / c.hu_start - 1) : "–") +
       row("Units permitted", fmt(c.permits || 0)) : "") +
@@ -387,7 +398,10 @@ function renderMapLegend(m, cs, color) {
     html = `<span>${lo}</span><span class="ramp" style="background:linear-gradient(90deg,${stops.join(",")})"></span><span>${hi}</span>`;
     if (m.kind === "div") html += `<span class="muted">±15 points; ACS 5-year housing vs population estimates</span>`;
   }
-  html += `<span><span class="sw" style="background:${css("--nodata")}"></span>${["pop_cov", "parcels", "vintage"].includes(m.key) ? "No parcels on file" : "No data"}</span>`;
+  if (PARCEL_METRICS.includes(m.key)) {
+    html += `<span><svg width="18" height="10"><rect width="18" height="10" rx="2" fill="url(#est-hatch)"/></svg> No parcel roll: lots estimated from Census housing counts</span>`;
+    html += `<span><span class="sw" style="background:${css("--nodata")}"></span>No parcels or estimate</span>`;
+  } else html += `<span><span class="sw" style="background:${css("--nodata")}"></span>No data</span>`;
   if (document.getElementById("dots").checked) html += `<span>● parcels on file &nbsp;○ none &nbsp;(size = population)</span>`;
   el.innerHTML = html;
 }
