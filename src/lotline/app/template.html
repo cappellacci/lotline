@@ -7,6 +7,9 @@
 <link rel="icon" type="image/svg+xml" href="__FAVICON__">
 <style>
 /*__LOTLINE_TOKENS__*/
+/* App surfaces (Ben, 2026-11-06): the page sits on paper-raised and cards on paper, warmer than the reverse. */
+:root { --app-page: var(--paper-raised); --app-card: var(--paper); }
+body { background: var(--app-page); }
 * { box-sizing: border-box; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 body { margin: 0; font-size: 16px; line-height: 24px; }
@@ -31,11 +34,11 @@ header.mast .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: va
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.wordmark, .mark) .light { display: none; } :root:not([data-theme="light"]) :is(.wordmark, .mark) .dark { display: block; } }
 :root[data-theme="dark"] :is(.wordmark, .mark) .light { display: none; }
 :root[data-theme="dark"] :is(.wordmark, .mark) .dark { display: block; }
-.tagline { flex: 1 1 280px; margin: 0; color: var(--ink-muted); background: var(--paper); padding: 0 var(--space-2); }
+.tagline { flex: 1 1 280px; margin: 0; color: var(--ink-muted); background: var(--app-page); padding: 0 var(--space-2); }
 .picker { display: flex; align-items: center; gap: var(--space-2); }
 select, button { font: inherit; color: var(--ink); background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); }
 
-nav.sections { position: sticky; top: 0; z-index: 2; background: var(--paper); border-bottom: var(--stroke-hair) solid var(--rule); }
+nav.sections { position: sticky; top: 0; z-index: 2; background: var(--app-page); border-bottom: var(--stroke-hair) solid var(--rule); }
 nav.sections .wrap { display: flex; align-items: center; gap: var(--space-4); }
 nav.sections .tabs-row { display: flex; gap: var(--space-5); overflow-x: auto; flex: 1 1 auto; min-width: 0; }
 nav.sections .nav-right { display: flex; align-items: center; gap: var(--space-3); flex: none; margin-left: auto; }
@@ -50,7 +53,7 @@ section.part[hidden] { display: none; }
 
 main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var(--stroke-hair) solid var(--rule); }
 .lead { color: var(--ink-muted); margin: var(--space-2) 0 var(--space-5); }
-.card { background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-0); padding: var(--space-5); margin: var(--space-4) 0; min-width: 0; }
+.card { background: var(--app-card); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-0); padding: var(--space-5); margin: var(--space-4) 0; min-width: 0; }
 .card > h3 { margin-bottom: var(--space-2); }
 .grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .source { font-size: 14px; line-height: 20px; color: var(--ink-muted); margin: var(--space-3) 0 0; }
@@ -59,7 +62,7 @@ main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var
   border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: 2px var(--space-2); white-space: nowrap; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 20px; }
 th, td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: var(--stroke-hair) solid var(--rule); vertical-align: top; }
-th { background: var(--paper-raised); font-weight: 600; }
+th { background: var(--app-card); font-weight: 600; }
 td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .scroll { overflow-x: auto; }
 
