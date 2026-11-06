@@ -244,3 +244,54 @@ def test_load_rejects_other_states():
 
 def test_chunks_cover_the_range():
     assert rp.chunks(5, 250_000) == [(0, 100_000), (100_000, 200_000), (200_000, 300_000)]
+
+
+# ---- zoning join ------------------------------------------------------------------------------------------
+
+# Two zoning polygons in lon/lat: R5 is the square (-122.70..-122.60, 45.50..45.60) with a hole
+# (-122.67..-122.63, 45.53..45.57) that is zoned CM2 (its own polygon); RMP lies further east.
+SQUARE = [[-122.70, 45.50], [-122.60, 45.50], [-122.60, 45.60], [-122.70, 45.60], [-122.70, 45.50]]
+HOLE = [[-122.67, 45.53], [-122.63, 45.53], [-122.63, 45.57], [-122.67, 45.57], [-122.67, 45.53]]
+EAST = [[-122.50, 45.50], [-122.40, 45.50], [-122.40, 45.60], [-122.50, 45.60], [-122.50, 45.50]]
+ZONING = pd.DataFrame(
+    {
+        "FID": [1, 2, 3],
+        "ZONE": ["R5", "CM2 ", "RMP"],
+        "ZONE_CLASS": ["SFR3", "MUR2", "MFR4"],
+        "rings": [[SQUARE, HOLE], [HOLE], [EAST]],
+    }
+)
+
+
+def test_zone_at_label_points_respects_holes():
+    """By hand: (-122.68, 45.51) is in the square, outside the hole → R5; (-122.65, 45.55) is inside the hole,
+    so not in R5 (even-odd rule) but in the CM2 polygon → 'CM2' (stripped); (-122.45, 45.55) → RMP;
+    (-122.55, 45.55) lies between the polygons → no zone; a missing point → no zone."""
+    lon = pd.Series([-122.68, -122.65, -122.45, -122.55, float("nan")])
+    lat = pd.Series([45.51, 45.55, 45.55, 45.55, float("nan")])
+    got = rp.zone_at(lon, lat, ZONING)
+    assert got[:3].tolist() == ["R5", "CM2", "RMP"]
+    assert got[3:].isna().all()
+
+
+def test_zoning_columns_filled_but_sf_only_left_unknown():
+    df = raw()
+    df.loc[df.FID == 1, ["lon", "lat"]] = [-122.68, 45.51]  # Portland house in R5
+    df.loc[df.FID == 2, ["lon", "lat"]] = [-122.55, 45.55]  # between polygons: no zone
+    table, _ = rp.to_parcels(df, ROLL, JURIS, zoning=ZONING)
+    t = table.set_index("parcel_id")
+    assert t.zoning_raw["410511S1E04AC04700"] == "R5"
+    assert t.zoning_source["410511S1E04AC04700"] == "Metro RLIS regional zoning"
+    assert pd.isna(t.zoning_raw["410511N1E03AC00500"])
+    assert pd.isna(t.zoning_source["410511N1E03AC00500"])
+    assert "sf_only_zoned" not in t or t["sf_only_zoned"].isna().all()
+    # the default fixture's points (-122.6, 45.5) sit on the square's corner edges: whatever they get, zoning
+    # never changes the eligible counts, because sf_only_zoned stays unknown
+    base = eligible.from_parcels(rp.to_parcels(df, ROLL, JURIS)[0], JURIS)
+    zoned = eligible.from_parcels(table, JURIS)
+    pd.testing.assert_frame_equal(base, zoned)
+
+
+def test_without_zoning_columns_stay_null(parcels):
+    assert parcels.zoning_raw.isna().all()
+    assert parcels.zoning_source.isna().all()

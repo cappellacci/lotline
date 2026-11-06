@@ -59,5 +59,6 @@ sources:  # added by WS-OR with each adapter
     notes: >-
       Adapter src/lotline/adapters/states/or/rlis_parcels.py. Multnomah, Washington and Clackamas tax lots
       (current roll only: RLIS publishes no dated archives). Land use from the DOR property class
-      (config/crosswalks/or_rlis_land_use.csv); jurisdiction from Metro's JURIS_CITY. Every other Oregon
+      (config/crosswalks/or_rlis_land_use.csv); jurisdiction from Metro's JURIS_CITY; zoning_raw from Metro's
+      regional Zoning layer (FeatureServer/1) by label point (sf_only_zoned left null). Every other Oregon
       jurisdiction stays on the ACS fallback (D-017).

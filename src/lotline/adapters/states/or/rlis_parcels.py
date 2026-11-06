@@ -28,9 +28,19 @@ condominium (2). Residential land, improved (1x1) and tract land, improved (4x1,
 `SF_DETACHED`; residential land, vacant (1x0) is `VACANT_RESIDENTIAL`. Metro's own `LANDUSE` is derived from
 the same code and is not read. No class (000), a blank or an unlisted code is `UNKNOWN`.
 
-**Not in the layer.** Unit counts, building type (detached vs attached), zoning, HOA, floodplain and historic
-district: those columns stay null (unknown), so `build/eligible.py` treats zoning as single-family-only and
-flags it as an assumption, as for every other roll without zoning.
+**Zoning.** Metro's regional `Zoning` layer (RLIS, same license; 17,585 polygons of the local zoning
+ordinances, updated with the tax lots) is downloaded once, polygons in WGS84, and each tax lot's label point
+is placed in it (`lotline.geo.assign`, even-odd rule; first polygon wins where two overlap). `zoning_raw` =
+the local district code (`ZONE`, e.g. Portland R5), `zoning_source` = "Metro RLIS regional zoning"; a lot
+outside every polygon (or without a label point) keeps null zoning. Metro's own classes (`ZONE_CLASS` such as
+SFR3, `ZONEGEN_CL` such as SFR) have no canonical column and are not stored. **`sf_only_zoned` stays null**:
+the layer is today's zoning, after HB 2001 let middle housing into every residential zone of Metro's cities,
+so a single-family class is not single-family-only in law, and setting the flag would change the
+missing-middle denominator (a model decision, not an adapter's). `build/eligible.py` therefore still treats
+zoning as unknown (assumed single-family-only, flagged).
+
+**Not in the layer.** Unit counts, building type (detached vs attached), HOA, floodplain and historic
+district: those columns stay null (unknown).
 
 **Personal data.** The layer has no owner names; site address, site city and ZIP (`SITEADDR`, `SITECITY`,
 `SITEZIP`) identify homes and are never requested: `FIELDS` lists exactly what is read.
@@ -54,7 +64,7 @@ from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.or.rlis_parcels"
-VERSION = "1.0"
+VERSION = "1.1"  # 1.1: zoning from Metro's regional zoning layer
 SOURCE = "rlis_parcels"
 TABLE = "parcels"
 LICENSE = (
@@ -73,6 +83,10 @@ METADATA_URL = "https://gis.oregonmetro.gov/rlis-metadata/#/details/3733"
 USE_CROSSWALK = CONFIG_DIR / "crosswalks" / "or_rlis_land_use.csv"
 SQFT_PER_ACRE = 43_560.0  # definition of the acre
 MIN_YEAR_BUILT = 1800  # 0 and earlier years are placeholders in the county rolls
+ZONING_URL = "https://services2.arcgis.com/McQ0OlIABe29rJJy/arcgis/rest/services/Zoning/FeatureServer/1"
+ZONING_LANDING_URL = "https://rlisdiscovery.oregonmetro.gov/datasets/f7eb5e81c0b947ca96d62af048a54b11"
+ZONING_FIELDS = ["FID", "ZONE", "ZONE_CLASS", "ZONEGEN_CL", "CITY"]
+ZONING_SOURCE = "Metro RLIS regional zoning"
 FID_CHUNK = 100_000  # FIDs per query: keeps paging offsets shallow (mechanics only)
 RETRIES = 5  # pager retries on ArcGIS error bodies (mechanics only)
 # RLIS county letter -> county GEOID (Census FIPS)
@@ -117,6 +131,10 @@ PROVENANCE = {
         "land_use_std: PROP_CODE (Oregon DOR property class, zero-padded to 3 digits) by the ordered "
         "rules of config/crosswalks/or_rlis_land_use.csv; 1x1 residential improved and 4x1 tract improved → "
         "SF_DETACHED, 1x0 → VACANT_RESIDENTIAL; 000, blank or unlisted → UNKNOWN; land_use_raw = PROP_CODE",
+        f"zoning_raw = ZONE (local district code) of the Metro RLIS Zoning polygon ({ZONING_URL}, "
+        f"{ZONING_LANDING_URL}; fields {', '.join(ZONING_FIELDS)}, polygons in WGS84) holding the tax lot's "
+        "label point (even-odd rule, first polygon wins); zoning_source = 'Metro RLIS regional zoning'; null "
+        "outside every polygon. sf_only_zoned is left null (post-HB 2001 zoning; a model decision)",
         "lot_sqft = A_T_ACRES (assessor) × 43,560 where > 0, else AREA (GIS polygon square feet), else null",
         "year_built = YEARBUILT from 1800 to the roll year + 1, else null; bldg_sqft = BLDGSQFT > 0",
         "land_value / bldg_value = LANDVAL / BLDGVAL (real market value, value_basis=market)",
@@ -128,7 +146,10 @@ PROVENANCE = {
         "(parcels_scaled_acs, #208)",
         "DOR class 1x1 (residential improved) does not tell a detached house from an attached townhouse on "
         "its own lot or a duplex: all are SF_DETACHED, so the count can exceed ACS one-unit-detached homes",
-        "No unit counts, zoning, HOA, floodplain or historic-district fields: those stay unknown",
+        "No unit counts, HOA, floodplain or historic-district fields: those stay unknown",
+        "Zoning is today's (the layer has no history) and is joined by label point, so a lot split by a "
+        "zone boundary takes the zone under its label point; sf_only_zoned stays null, so eligibility still "
+        "assumes single-family-only zoning",
         "RLIS warns land use and PROP_CODE suit generalized maps, not parcel-specific use; field "
         "verification has not been done",
         "Values are the assessor's real market value for the roll's tax year, not sale prices; sale dates "
@@ -203,6 +224,22 @@ def resolve(
     return geoid, how
 
 
+# ---- zoning ----------------------------------------------------------------------------------------------
+
+
+def zone_at(lon: pd.Series, lat: pd.Series, zoning: pd.DataFrame) -> pd.Series:
+    """The `ZONE` of the zoning polygon (a `rings` column) holding each point; <NA> outside every polygon."""
+    from lotline import geo
+
+    zones = zoning.reset_index(drop=True)
+    polygons = pd.DataFrame({"geoid": zones.index, "rings": zones["rings"]})
+    hit = pd.Series(geo.assign(lon, lat, polygons), index=lon.index, dtype=object)
+    code = zones["ZONE"].astype("string").str.strip().replace("", pd.NA)
+    return hit.map(lambda i: code.iloc[int(i)] if i is not None and not pd.isna(i) else pd.NA).astype(
+        "string"
+    )
+
+
 # ---- table -----------------------------------------------------------------------------------------------
 
 
@@ -233,9 +270,11 @@ def to_parcels(
     state: str = "OR",
     *,
     rules: list[Rule] | None = None,
+    zoning: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.Series]:
     """The roll's raw features (+ lon/lat) → validated `parcels` without held-out rows, and how each row was
-    placed (`juris_city` or `county_remainder`)."""
+    placed (`juris_city` or `county_remainder`). `zoning`: Metro's zoning polygons (`ZONE`, `rings`), or None
+    to leave zoning unknown."""
     raw = raw.drop(columns=[c for c in raw.columns if c in PERSONAL])
     account = raw["PRIMACCNUM"].astype("string").str.strip().replace("", pd.NA)
     county = raw["COUNTY"].astype("string").str.strip().str.upper().map(COUNTIES).astype("string")
@@ -268,6 +307,11 @@ def to_parcels(
     sale = price.notna() & sold.notna()
     lon = pd.to_numeric(df["lon"], errors="coerce") if "lon" in df else pd.Series(float("nan"), df.index)
     lat = pd.to_numeric(df["lat"], errors="coerce") if "lat" in df else pd.Series(float("nan"), df.index)
+    zone = (
+        zone_at(lon, lat, zoning)
+        if zoning is not None and len(zoning)
+        else pd.Series(pd.NA, df.index, "string")
+    )
 
     out = pd.DataFrame(
         {
@@ -287,6 +331,8 @@ def to_parcels(
             "value_basis": "market",
             "last_sale_price": price.where(sale),
             "last_sale_date": sold.where(sale),
+            "zoning_raw": zone,
+            "zoning_source": zone.notna().map({True: ZONING_SOURCE, False: pd.NA}).astype("string"),
             "lon": lon.where(lon.between(-180, 180)),
             "lat": lat.where(lat.between(-90, 90)),
             "source": SOURCE,
@@ -371,6 +417,23 @@ def download(store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=FIELDS)
 
 
+def download_zoning(store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
+    """Metro's regional zoning polygons (WGS84 rings), through the IO layer."""
+    return download_layer(
+        ZONING_URL,
+        store=store,
+        source=SOURCE,
+        license=LICENSE,
+        adapter=ADAPTER,
+        adapter_version=VERSION,
+        name="zoning",
+        out_fields=",".join(ZONING_FIELDS),
+        geometry="polygon",
+        retries=RETRIES,
+        refresh=refresh,
+    )
+
+
 def _jurisdictions(state: str, store: DataStore) -> pd.DataFrame:
     juris = store.read(state, "jurisdictions")
     if juris is None:
@@ -384,5 +447,7 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     if state.upper() != "OR":
         raise ValueError(f"{SOURCE} covers Oregon Metro's three counties only, not {state}")
     juris = _jurisdictions(state, store)
-    table, _ = to_parcels(download(store, refresh=refresh), roll_date(store, refresh=refresh), juris, state)
+    raw = download(store, refresh=refresh)
+    zoning = download_zoning(store, refresh=refresh)
+    table, _ = to_parcels(raw, roll_date(store, refresh=refresh), juris, state, zoning=zoning)
     return table
