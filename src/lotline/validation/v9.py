@@ -252,10 +252,11 @@ def adu_draws(
     from lotline.model import hazard
     from lotline.model.scenarios import adu
 
-    central = adu.central_params() | dict(params or {})
+    pin = hazard.PRE_D060_CALIBRATION  # the freeze's calibration range (D-060 keeps V9 on it)
+    central = adu.central_params() | pin | dict(params or {})
     n = int(draws or central["adu_simulation_draws"])
     seed = int(central["adu_simulation_seed"] if seed is None else seed)
-    sets = [p | dict(params or {}) for p in adu.draw_params(n, seed)]
+    sets = [p | pin | dict(params or {}) for p in adu.draw_params(n, seed)]
     n_p, n_y = len(inp.geoids), len(inp.years)
     z = adu.extrapolation_noise(n, n_p, central["adu_extrapolation_shared_share"], seed + 1)
     rng = np.random.default_rng(seed + 5)

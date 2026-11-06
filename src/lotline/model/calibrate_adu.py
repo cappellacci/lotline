@@ -921,12 +921,26 @@ def draw_tau_half_normal(tau_high: float, n: int, rng) -> np.ndarray:
 
 
 def predict_unseen_state(
-    places: list[PlaceData], fit: StateFit, draws: int = 20_000, seed: int = 0, taus=None
+    places: list[PlaceData],
+    fit: StateFit,
+    draws: int = 20_000,
+    seed: int = 0,
+    taus=None,
+    distances: dict | None = None,
+    z_widen=None,
+    widening: float = 1.0,
 ) -> dict:
     """Joint predictive counts for a state outside the fit set (D-043): {geoid: draws × years}. Per draw, θ
     from its interval and one state multiplier exp(τ z), z ~ N(0, 1), shared by every place (median kept at
     θ); then each place's own u and blank-field combination as in `predict_places`. `taus`, one per draw
-    (D-044), replaces the fixed τ̂."""
+    (D-044), replaces the fixed τ̂.
+
+    D-060: with `distances` ({geoid: log distance per year}) and `z_widen` (one standard normal per draw),
+    each place-year's expected count is also multiplied by exp(s z − s²/2), s = `widening` × distance, as
+    `hazard.widen_unseen_state` (rule "both") does in the scenario. The other random numbers are unchanged,
+    so the same seed gives the same θ, τ, u and blank-field draws with or without widening, and distance 0
+    reproduces the unwidened prediction exactly. (The scenario's cap at hazard 1 never binds at these
+    rates.)"""
     import zlib
 
     rng = np.random.default_rng(seed)
@@ -939,8 +953,85 @@ def predict_unseen_state(
         rng = np.random.default_rng([seed, zlib.crc32(pl.geoid.encode())])
         u = rng.gamma(1 / fit.alpha, fit.alpha, size=draws) if fit.alpha > 0 else np.ones(draws)
         combo = rng.choice(len(pl.w), size=draws, p=pl.w / pl.w.sum())
-        out[pl.geoid] = rng.poisson((theta * v * u)[:, None] * pl.k(cv)[combo])
+        mu = (theta * v * u)[:, None] * pl.k(cv)[combo]
+        if distances is not None:
+            sd = widening * np.asarray(distances[pl.geoid], dtype=float)[None, :]
+            mu = mu * np.exp(sd * np.asarray(z_widen, dtype=float)[:, None] - sd**2 / 2)
+        out[pl.geoid] = rng.poisson(mu)
     return out
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-060: the calibration range from the places the anchor is fitted on
+# ---------------------------------------------------------------------------------------------------------
+
+FIT_RANGE_PERCENTILES = (5.0, 95.0)  # D-060, pre-registered: eligible-weighted 5th to 95th percentile
+
+
+def weighted_percentile(x, w, q: float) -> float:
+    """The q-th weighted percentile: the smallest x whose cumulative weight share reaches q / 100 (the
+    inverted weighted CDF; D-060).
+
+    By hand, x = (4, 1, 3, 2), weights (1, 1, 1, 1): sorted 1, 2, 3, 4 with shares 0.25, 0.5, 0.75, 1, so
+    q = 5 -> 1, q = 50 -> 2, q = 95 -> 4. Weights (1, 7, 1, 1) on x = (1, 2, 3, 4): shares 0.1, 0.8, 0.9,
+    1, so q = 5 -> 1, q = 50 -> 2, q = 85 -> 3, q = 95 -> 4.
+    """
+    x, w = np.asarray(x, dtype=float).ravel(), np.asarray(w, dtype=float).ravel()
+    keep = np.isfinite(x) & np.isfinite(w) & (w > 0)
+    x, w = x[keep], w[keep]
+    if x.size == 0:
+        raise ValueError("no positive-weight values")
+    order = np.argsort(x, kind="stable")
+    share = np.cumsum(w[order]) / w.sum()
+    i = int(np.searchsorted(share, q / 100.0 - 1e-12, side="left"))
+    return float(x[order][min(i, x.size - 1)])
+
+
+def fit_set_range(places: list[PlaceData], percentiles=FIT_RANGE_PERCENTILES) -> dict:
+    """D-060's calibration range from fit place-years (each `PlaceData.extra`): rent and home value at the
+    eligible-parcel-weighted `percentiles`, the mortgage rate at its min and max. Keys match
+    `config/params/hazard.yaml` (`adu_calibration_*`); also returns the min/max alternative (reported, not
+    used), and the place and place-year counts.
+
+    By hand, three place-years, rent 1,000 (10 parcels), 1,500 (980) and 2,000 (10): cumulative shares 0.01,
+    0.99, 1, so both the 5th and the 95th percentile are 1,500; min/max would give 1,000-2,000. Small places
+    at the edges do not set the range.
+    """
+    rent = np.concatenate([pl.extra["rent"] for pl in places])
+    value = np.concatenate([pl.extra["home_value"] for pl in places])
+    rate = np.concatenate([pl.extra["rate"] for pl in places])
+    w = np.concatenate([pl.extra["parcels"] for pl in places])
+    lo, hi = percentiles
+    return {
+        "adu_calibration_rent_low_usd": weighted_percentile(rent, w, lo),
+        "adu_calibration_rent_high_usd": weighted_percentile(rent, w, hi),
+        "adu_calibration_value_low_usd": weighted_percentile(value, w, lo),
+        "adu_calibration_value_high_usd": weighted_percentile(value, w, hi),
+        "adu_calibration_rate_low": float(np.nanmin(rate)),
+        "adu_calibration_rate_high": float(np.nanmax(rate)),
+        "minmax": {
+            "rent": (float(np.nanmin(rent)), float(np.nanmax(rent))),
+            "home_value": (float(np.nanmin(value)), float(np.nanmax(value))),
+        },
+        "places": len(places),
+        "place_years": int(rent.size),
+        "years": (int(min(pl.years.min() for pl in places)), int(max(pl.years.max() for pl in places))),
+    }
+
+
+def place_distances(places: list[PlaceData], calibration: dict, params=None) -> dict:
+    """{geoid: total log distance per year} outside `calibration` (the six `adu_calibration_*` values), from
+    each place-year's own rent, home value and rate (`hazard.calibration_distance`; D-060)."""
+    from lotline.model import hazard
+
+    p = dict(hazard.central_params() if params is None else params)
+    p |= {k: v for k, v in calibration.items() if k.startswith("adu_calibration_")}
+    return {
+        pl.geoid: hazard.calibration_distance(pl.extra["rent"], pl.extra["home_value"], pl.extra["rate"], p)[
+            "total"
+        ]
+        for pl in places
+    }
 
 
 def place_data(

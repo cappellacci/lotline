@@ -117,7 +117,9 @@ def test_observed_adus_are_never_counted_as_added():
 
 
 def test_run_ranges_are_ordered_and_flag_extrapolation():
-    places = _places(rent=[1100.0, 1800.0], home_value=[260_000.0, 600_000.0], mortgage_rate=[5.0, 5.0])
+    # rent 1,100 is below the calibration range; the second place is inside it (D-060's fit-set range,
+    # rent 1,237-1,855, value 218k-597k)
+    places = _places(rent=[1100.0, 1800.0], home_value=[260_000.0, 500_000.0], mortgage_rate=[5.0, 5.0])
     yearly, totals = adu.run(places, 2025, draws=200)
     for t in (yearly, totals):
         assert (t["additional_homes_p10"] <= t["additional_homes_p50"]).all()

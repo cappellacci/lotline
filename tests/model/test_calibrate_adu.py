@@ -547,3 +547,67 @@ def test_fit_detached_with_m_d_fixed_matches_fit3():
     assert not fd.detached_estimated
     assert fd.m_owner == f3.m_owner and fd.alpha == pytest.approx(f3.alpha, rel=1e-3)
     assert (fd.theta, fd.low, fd.high) == pytest.approx((f3.theta, f3.low, f3.high), rel=1e-3)
+
+
+# D-060: the calibration range from the fit set
+
+
+def test_weighted_percentile_by_hand():
+    """The docstring's examples: equal weights on 4, 1, 3, 2 and weights (1, 7, 1, 1) on 1-4."""
+    x = [4.0, 1.0, 3.0, 2.0]
+    assert [cal.weighted_percentile(x, [1, 1, 1, 1], q) for q in (5, 50, 95)] == [1.0, 2.0, 4.0]
+    x = [1.0, 2.0, 3.0, 4.0]
+    w = [1, 7, 1, 1]
+    assert [cal.weighted_percentile(x, w, q) for q in (5, 50, 85, 95)] == [1.0, 2.0, 3.0, 4.0]
+    assert cal.weighted_percentile([5.0, np.nan, 7.0], [1, 1, 0], 95) == 5.0  # NaN and zero weight dropped
+    with pytest.raises(ValueError):
+        cal.weighted_percentile([1.0], [0.0], 50)
+
+
+def _range_place(geoid, rent, value, rate, parcels):
+    pl = _state_place("MN", geoid, [0] * len(rent), [1.0] * len(rent))
+    pl.extra = {"rent": np.asarray(rent, float), "home_value": np.asarray(value, float),
+                "rate": np.asarray(rate, float), "parcels": np.asarray(parcels, float)}  # fmt: skip
+    return pl
+
+
+def test_fit_set_range_by_hand():
+    """Rent 1,000 (10 parcels), 1,500 (980), 2,000 (10): both percentiles 1,500, min/max 1,000-2,000. The rate
+    keeps min/max (3.0-7.0). Counts: 2 places, 3 place-years."""
+    pls = [
+        _range_place("A", [1_000.0, 1_500.0], [200_000.0, 300_000.0], [3.0, 7.0], [10, 980]),
+        _range_place("B", [2_000.0], [400_000.0], [5.0], [10]),
+    ]
+    r = cal.fit_set_range(pls)
+    assert r["adu_calibration_rent_low_usd"] == r["adu_calibration_rent_high_usd"] == 1_500.0
+    assert r["adu_calibration_value_low_usd"] == r["adu_calibration_value_high_usd"] == 300_000.0
+    assert (r["adu_calibration_rate_low"], r["adu_calibration_rate_high"]) == (3.0, 7.0)
+    assert r["minmax"]["rent"] == (1_000.0, 2_000.0)
+    assert (r["places"], r["place_years"]) == (2, 3)
+
+
+def test_place_distances_by_hand():
+    """Range rent 1,500-1,500, value 300k-300k, rate 3-7: rent 1,000 -> log 1.5, value 200k -> log 1.5,
+    so 2 log 1.5; the 1,500 / 300k year is inside (0)."""
+    pl = _range_place("A", [1_000.0, 1_500.0], [200_000.0, 300_000.0], [3.0, 7.0], [10, 980])
+    cal_range = {"adu_calibration_rent_low_usd": 1_500.0, "adu_calibration_rent_high_usd": 1_500.0,
+                 "adu_calibration_value_low_usd": 300_000.0, "adu_calibration_value_high_usd": 300_000.0,
+                 "adu_calibration_rate_low": 3.0, "adu_calibration_rate_high": 7.0}  # fmt: skip
+    d = cal.place_distances([pl], cal_range)["A"]
+    assert d == pytest.approx([2 * math.log(1.5), 0.0])
+
+
+def test_unseen_state_widening_keeps_the_mean_and_reproduces_at_distance_zero():
+    """Distance 0 gives exactly the unwidened draws; distance 0.65 (w = 1) keeps the mean of θk = 10 and moves
+    the median to about 10 × exp(−0.65² / 2) = 8.1 (z shared, α ≈ 0, τ = 0)."""
+    pls = [_state_place("WI", "X", [0], [10_000.0])]
+    fit = cal.StateFit(0.001, 0.001, 0.001, 1e-9, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, ("MN",), 1, 1)
+    z = np.random.default_rng(3).standard_normal(200_000)
+    plain = cal.predict_unseen_state(pls, fit, draws=200_000, seed=1)
+    zero = cal.predict_unseen_state(pls, fit, draws=200_000, seed=1, distances={"X": [0.0]}, z_widen=z)
+    assert np.array_equal(plain["X"], zero["X"])
+    wide = cal.predict_unseen_state(pls, fit, draws=200_000, seed=1, distances={"X": [0.65]}, z_widen=z)
+    mu = 10 * np.exp(0.65 * z - 0.65**2 / 2)
+    assert wide["X"].mean() == pytest.approx(10, rel=0.02)
+    assert np.median(mu) == pytest.approx(10 * math.exp(-(0.65**2) / 2), rel=0.01)
+    assert np.percentile(wide["X"], 90) > np.percentile(plain["X"], 90)

@@ -1,7 +1,8 @@
 # ADU hazard (model/hazard.py): the yearly chance that an eligible single-family parcel adds an ADU, transported
 # from strong reforms in high-cost cities by price-to-cost, home equity and mortgage rates (no ramp-in, D-048).
 # Dollar amounts in 2025 dollars. Reference and calibration values are recomputed by scripts/dev/adu_reference.py
-# and are fixed (low = high): they describe the reference cities, they are not uncertain inputs.
+# and are fixed (low = high): they describe the reference city (Portland) and, since D-060, the range of the
+# places the ADU anchor is fitted on (--fit-set); they are not uncertain inputs.
 # "Judgment" marks values with no published estimate; their ranges are wide and include no effect where it is
 # plausible.
 
@@ -38,47 +39,47 @@ adu_ref_mortgage_rate:
   source: "scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-2019"
 
 adu_calibration_rent_low_usd:
-  value: 1573
-  low: 1573
-  high: 1573
+  value: 1237
+  low: 1237
+  high: 1237
   unit: USD per month (2025)
-  source: "scripts/dev/adu_reference.py: lowest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (2025 dollars): Portland 1,573 (1,248 nominal)"
-  notes: "Places below this rent are outside the calibration range: flagged, interval widened."
+  source: "scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 5th percentile of ACS median gross rent (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (53 places, 316 place-years, MN NC OH TX OR 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
+  notes: "Places outside the fit set's range are flagged and widened (hazard.widen); inside, none."
 
 adu_calibration_rent_high_usd:
-  value: 2034
-  low: 2034
-  high: 2034
+  value: 1855
+  low: 1855
+  high: 1855
   unit: USD per month (2025)
-  source: "scripts/dev/adu_reference.py: highest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (2025 dollars): Seattle 2,034 (1,614 nominal); Los Angeles 1,827"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 95th percentile of ACS median gross rent (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (53 places, 316 place-years, MN NC OH TX OR 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
 
 adu_calibration_value_low_usd:
-  value: 519222
-  low: 519222
-  high: 519222
+  value: 218001
+  low: 218001
+  high: 218001
   unit: USD (2025)
-  source: "scripts/dev/adu_reference.py: lowest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (2025 dollars): Portland (412,000 nominal)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 5th percentile of ACS median home value (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (53 places, 316 place-years, MN NC OH TX OR 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
 
 adu_calibration_value_high_usd:
-  value: 835671
-  low: 835671
-  high: 835671
+  value: 597233
+  low: 597233
+  high: 597233
   unit: USD (2025)
-  source: "scripts/dev/adu_reference.py: highest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (2025 dollars): Seattle (663,100 nominal); Los Angeles 802,652"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 95th percentile of ACS median home value (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (53 places, 316 place-years, MN NC OH TX OR 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
 
 adu_calibration_rate_low:
   value: 2.96
   low: 2.96
   high: 2.96
   unit: percent (30-year fixed)
-  source: "scripts/dev/adu_reference.py: lowest annual mean of FRED MORTGAGE30US over 2015-2023, the years the comparables' uptake covers (E044 to 2023)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060): lowest annual mean of FRED MORTGAGE30US over the anchor's fit place-years (53 places, 316 place-years, MN NC OH TX OR 2016-2025)"
 
 adu_calibration_rate_high:
   value: 6.81
   low: 6.81
   high: 6.81
   unit: percent (30-year fixed)
-  source: "scripts/dev/adu_reference.py: highest annual mean of FRED MORTGAGE30US over 2015-2023"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060): highest annual mean of FRED MORTGAGE30US over the anchor's fit place-years (53 places, 316 place-years, MN NC OH TX OR 2016-2025)"
 
 # ---- Transport: how uptake changes with local conditions ----
 

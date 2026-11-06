@@ -1,0 +1,50 @@
+=== D-060: 53 fit places, 316 place-years, years 2016-2025, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57}, widening w = 1 ===
+Calibration ranges (2025 dollars):
+  C current (Portland, Seattle, LA)  rent   1,573-2,034   value   519,222-835,671   rate 2.96-6.81
+  F fit set, five states (main)      rent   1,237-1,855   value   218,001-597,233   rate 2.96-6.81
+  min/max, five states (not tested)  rent     962-2,993   value   161,695-1,184,607
+  F without MN                       rent   1,296-1,750   value   199,394-597,233   rate 2.96-6.81
+  F without NC                       rent   1,268-1,855   value   218,001-597,233   rate 2.96-6.81
+  F without OH                       rent   1,266-1,855   value   218,001-597,233   rate 2.96-6.81
+  F without TX                       rent   1,204-1,886   value   251,423-597,233   rate 2.96-6.81
+  F without OR                       rent   1,205-1,855   value   199,394-508,118   rate 2.96-6.81
+
+D-060 no widening: leave one state out, tau drawn
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 141.0 453.0 1465.0  854.78          0.63         10.39   7137.04      useful
+                        NC       6           32        45  14.0 100.0  599.0  410.45          0.45         42.79   1783.06 inside only
+                        OH       1            2         8   0.0   4.0   42.0   26.22          2.00           inf    455.85      useful
+                        TX       2           13      1108  31.0 362.0 2675.0 2329.56          3.06         86.29  12070.98 inside only
+                        OR       2           20      3363  58.9 661.0 3988.1 2522.04          5.09         67.71   7652.60 inside only
+NC with Raleigh and Durham       8           42       455  44.0 288.0 1793.1 1215.41          1.58         40.75   4867.05      useful
+
+D-060 C current: leave one state out, tau drawn
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 112.9 410.0 1540.0  827.83          0.70         13.64   7137.04      useful
+                        NC       6           32        45  11.0  87.0  599.1  406.64          0.52         54.46   1783.06      useful
+                        OH       1            2         8   0.0   2.0   32.0   23.85          4.00           inf    455.85 inside only
+                        TX       2           13      1108  22.0 287.0 2529.0 2212.13          3.86        114.95  12070.98 inside only
+                        OR       2           20      3363  58.0 659.0 3979.3 2512.00          5.10         68.61   7652.60 inside only
+NC with Raleigh and Durham       8           42       455  37.0 266.0 1804.0 1243.79          1.71         48.76   4867.05      useful
+
+D-060 F fit set: leave one state out, tau drawn
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 141.0 454.0 1466.1  853.49          0.63         10.40   7137.04      useful
+                        NC       6           32        45  14.0 100.0  597.0  410.11          0.45         42.64   1783.06 inside only
+                        OH       1            2         8   0.0   4.0   42.0   25.89          2.00           inf    455.85      useful
+                        TX       2           13      1108  31.0 361.0 2662.1 2309.04          3.07         85.87  12070.98 inside only
+                        OR       2           20      3363  58.0 653.0 3993.1 2507.55          5.15         68.85   7652.60 inside only
+NC with Raleigh and Durham       8           42       455  44.0 289.0 1793.1 1215.07          1.57         40.75   4867.05      useful
+
+Check: no-widening arm reproduces D-053's leave-one-state-out table: False
+
+D-060 summary
+             states_missed  median_state_p90_over_p10  places  place_coverage  place_year_coverage  median_place_p90_over_p10  median_place_obs_over_p50  share_parcels_inside
+arm                                                                                                                                                                           
+no widening              0                     67.710      55           0.736                0.783                        inf                      1.250                 1.000
+C current                0                     68.609      55           0.741                0.795                        inf                      1.286                 0.134
+F fit set                0                     68.847      55           0.736                0.782                        inf                      1.250                 0.493
+
+Gate 1, no more states missed: F 0 vs C 0 -> pass
+Gate 2, place-total P10-P90 coverage >= 70%: F 73.6% -> pass
+D-060 rule: ADOPT F
