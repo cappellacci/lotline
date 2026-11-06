@@ -2,7 +2,8 @@
 
 Reads every `reports/results/<st>/bundle.json` (written by `lotline results --state XX`), validates each
 against the `results_*` schemas and writes one self-contained page, `reports/app/index.html` (gitignored),
-that opens from disk with no server. `--bundle` builds from named files instead, e.g. the synthetic fixture:
+that opens from disk with no server. Section 2 embeds the data dashboard when its summary exists
+(`scripts/build_data_dashboard.py`). `--bundle` builds from named files instead, e.g. the synthetic fixture:
 
     uv run python scripts/build_app.py --bundle tests/fixtures/results/zz/bundle.json
 """
@@ -12,7 +13,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from lotline.app.build import OUT_DIR, RESULTS_DIR, build_app
+from lotline.app.build import DATA_SUMMARY, OUT_DIR, RESULTS_DIR, build_app
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -20,8 +21,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--bundle", action="append", type=Path, help="bundle file(s) to use instead of --results")
     p.add_argument("--results", type=Path, default=RESULTS_DIR, help="folder of <st>/bundle.json")
     p.add_argument("--out", type=Path, default=OUT_DIR)
+    p.add_argument(
+        "--data-summary",
+        type=Path,
+        default=DATA_SUMMARY,
+        help="data dashboard summary.json for section 2 (build_data_dashboard.py; skipped if missing)",
+    )
+    p.add_argument("--no-data-summary", action="store_true", help="section 2 without the dashboard")
     a = p.parse_args(argv)
-    page = build_app(a.bundle, results_dir=a.results, out_dir=a.out)
+    summary = None if a.no_data_summary else a.data_summary
+    page = build_app(a.bundle, results_dir=a.results, out_dir=a.out, data_summary=summary)
     print(page)
     return 0
 

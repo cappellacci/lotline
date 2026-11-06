@@ -99,6 +99,13 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .tabs button { cursor: pointer; }
 .tabs button[aria-pressed="true"] { background: var(--survey); color: var(--on-survey); border-color: var(--survey); }
+
+.tier { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 600; }
+.tier .sw { width: 14px; height: 14px; display: inline-block; }
+.tiles { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin: var(--space-3) 0; }
+.tile .figure { display: block; }
+.tile .caption { color: var(--ink-muted); }
+iframe.dash { width: 100%; height: 80vh; border: var(--stroke-hair) solid var(--rule); background: var(--paper); }
 </style>
 </head>
 <body>
@@ -144,6 +151,7 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 </footer>
 
 <script id="lotline-data" type="application/json">/*__LOTLINE_DATA__*/</script>
+<script id="lotline-dashboard" type="application/json">/*__LOTLINE_DASHBOARD__*/</script>
 <script>/*__LOTLINE_AGGREGATE__*/</script>
 <script>
 "use strict";
@@ -177,6 +185,7 @@ const fmtN = (x) => {
   const r = a >= 10000 ? Math.round(x / 100) * 100 : a >= 1000 ? Math.round(x / 10) * 10 : Math.round(x);
   return r.toLocaleString("en-US");
 };
+const fmtInt = (x) => (Number.isFinite(x) ? Math.round(x).toLocaleString("en-US") : "–");  // exact counts
 const fmtPct = (x) => !Number.isFinite(x) ? "–" : (x * 100).toLocaleString("en-US", { maximumFractionDigits: x < 0.01 ? 2 : 1, minimumFractionDigits: x < 0.01 ? 2 : 1 }) + "%";
 const fmtFactor = (x, f) => !Number.isFinite(x) ? "–" : f === "rate" ? x.toPrecision(3) : fmtPct(x);
 const scenLabel = (k) => (DATA.scenarios[k] || { label: k }).label;
@@ -264,7 +273,37 @@ const SECTIONS = {
         <p class="body-small muted">Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
         <div id="knobs"></div></div>`;
   },
-  data(b) { return `<p class="pending">The data dashboard and the sources used for ${esc(b.meta.state)} are shown here.</p>`; },
+  data(b) {
+    const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] }, t = d.totals;
+    const tierWords = { 1: "Tier 1: local parcels with land use and year built", 2: "Tier 2: local parcels with land use", 3: "Tier 3: national data only" };
+    const tiles = t ? [
+      [fmtPct(t.population_covered_share), "of the population lives where local parcel data are on file"],
+      [`${fmtInt(t.jurisdictions_covered)} of ${fmtInt(t.jurisdictions)}`, "jurisdictions with parcels"],
+      [fmtInt(t.parcels), "parcels on file (one source per place)"],
+      [fmtInt(t.reforms), "coded local reforms"],
+      [t.permit_years ? `${t.permit_years[0]}–${t.permit_years[1]}` : "–", "years of permit data"],
+    ].map(([v, c]) => `<div class="tile"><span class="figure">${esc(v)}</span><span class="caption">${esc(c)}</span></div>`).join("")
+      : `<p class="pending">Coverage counts appear here once the data dashboard is built (<code>python scripts/build_data_dashboard.py</code>) and the page is rebuilt.</p>`;
+    const tierMix = t && t.tiers ? `<p class="body-small muted">Jurisdictions by tier: ${Object.entries(t.tiers).map(([k, v]) => `${fmtInt(v)} in tier ${esc(k)}`).join(", ")}.</p>` : "";
+    const rows = d.sources.map((r) => {
+      const used = r.parcels_on_file == null ? `<span class="muted">Available</span>`
+        : r.parcels_used > 0 ? `Used: ${fmtInt(r.parcels_used)} of ${fmtInt(r.parcels_on_file)} parcels`
+        : `<span class="muted">On file, not used: another source covers these places</span>`;
+      const title = r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
+      return `<tr><td>${title}<br><span class="caption muted">${esc(r.source)} · ${r.scope === "national" ? "national" : "state"}</span></td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
+    }).join("");
+    const dash = DATA.data.summary_generated ? `<div class="card"><h3 class="h3">Data dashboard</h3>
+      <p class="body-small">Coverage map, sources, ordinance timeline, growth and data checks for every state in the build (summary built ${esc(DATA.data.summary_generated)}). The map needs internet access for its libraries (d3, topojson, us-atlas, all ISC).</p>
+      <button type="button" id="open-dash">Open the data dashboard</button><div id="dash-frame"></div></div>` : "";
+    return `<div class="card"><p class="eyebrow">Data tier</p>
+        <span class="tier"><span class="sw" style="background:var(--tier-${4 - Math.min(3, Math.max(1, b.meta.data_tier))})" aria-hidden="true"></span>${esc(tierWords[b.meta.data_tier] || `Tier ${b.meta.data_tier}`)}</span>
+        <p class="body-small muted">The tier holding most of the state's eligible lots.${b.meta.eligible_proxy ? " Eligible lots are estimated from national data (ACS), scaled by the proxy test." : ""}</p>
+        <div class="tiles">${tiles}</div>${tierMix}</div>
+      <div class="card"><h3 class="h3">Data available and data used</h3>
+        <div class="scroll"><table><thead><tr><th>Source</th><th>Builds table</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>
+      ${dash}`;
+  },
   trust(b) { return `<p class="pending">The validation scorecard for ${esc(b.meta.state)} is shown here.</p>`; },
 };
 
@@ -344,6 +383,18 @@ function updateResults() {
   }
 }
 
+function wireData() {
+  const btn = $("open-dash");
+  if (!btn) return;
+  btn.onclick = () => {
+    const html = JSON.parse($("lotline-dashboard").textContent);
+    if (!html) return;
+    const f = document.createElement("iframe");
+    f.className = "dash"; f.title = "Lotline data dashboard"; f.srcdoc = html;
+    $("dash-frame").replaceChildren(f); btn.remove();
+  };
+}
+
 function wireResults() {
   const body = $("results-body");
   const kn = $("knobs");
@@ -385,6 +436,7 @@ function show(state) {
   const b = bundleFor(state);
   for (const [id, fill] of Object.entries(SECTIONS)) $(`${id}-body`).innerHTML = fill(b);
   wireResults();
+  wireData();
   footer(b);
   document.title = `Lotline · ${b.meta.state}`;
 }

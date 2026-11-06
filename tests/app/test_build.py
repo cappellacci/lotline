@@ -24,7 +24,7 @@ def _embedded(html: str) -> dict:
 
 
 def test_page_builds_from_fixture_and_has_every_section(tmp_path):
-    page = build.build_app([FIXTURE], out_dir=tmp_path, generated="2026-11-06T00:00:00Z")
+    page = build.build_app([FIXTURE], out_dir=tmp_path, generated="2026-11-06T00:00:00Z", data_summary=None)
     html = page.read_text(encoding="utf-8")
     for section in ("results", "data", "trust"):
         assert f'data-section="{section}"' in html
@@ -57,7 +57,7 @@ def test_every_bundle_under_results_dir_appears_in_role_order(tmp_path):
         d = tmp_path / "results" / st.lower()
         d.mkdir(parents=True)
         (d / "bundle.json").write_text(json.dumps(b))
-    page = build.build_app(results_dir=tmp_path / "results", out_dir=tmp_path / "app")
+    page = build.build_app(results_dir=tmp_path / "results", out_dir=tmp_path / "app", data_summary=None)
     states = [b["meta"]["state"] for b in _embedded(page.read_text())["states"]]
     assert states == ["ZX", "ZZ", "ZY"]  # benchmark, development, transfer
 
@@ -92,7 +92,7 @@ def test_script_builds_the_page(tmp_path):
     spec = spec_from_file_location("build_app", REPO / "scripts" / "build_app.py")
     mod = module_from_spec(spec)
     spec.loader.exec_module(mod)
-    assert mod.main(["--bundle", str(FIXTURE), "--out", str(tmp_path)]) == 0
+    assert mod.main(["--bundle", str(FIXTURE), "--out", str(tmp_path), "--no-data-summary"]) == 0
     assert (tmp_path / "index.html").exists()
 
 
@@ -136,7 +136,64 @@ def test_a_slider_citing_an_unknown_parameter_is_refused(tmp_path):
 
 
 def test_results_section_parts_are_on_the_page(tmp_path):
-    html = build.build_app([FIXTURE], out_dir=tmp_path).read_text()
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     for part in ('id="headline"', 'id="ranges"', 'id="need"', 'id="funnel"', 'id="knobs"', "pencil out",
                  "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
         assert part in html, part
+
+
+# ------------------------------------------------------------------------------- section 2: the data
+SUMMARY = {
+    "generated": "2026-11-05T00:00:00Z",
+    "population_source": None,
+    "states": [
+        {
+            "state": "ZZ",
+            "name": "Zedland",
+            "totals": {
+                "population_covered_share": 0.5,
+                "jurisdictions": 4,
+                "jurisdictions_covered": 2,
+                "parcels": 300,
+                "reforms": 1,
+                "permit_years": [2000, 2024],
+                "tiers": {"1": 2, "3": 2},
+            },
+            "parcel_sources": [
+                {"source": "bps", "parcels_latest": 300, "parcels_used": 250, "vintages": [2026]}
+            ],
+        }  # fmt: skip
+    ],
+}
+
+
+def test_available_vs_used_lists_every_registry_source_and_parcels_used():
+    from lotline.registry import sources_for
+
+    d = build.data_section(["ZZ"], SUMMARY)
+    rows = d["by_state"]["ZZ"]["sources"]
+    assert [r["source"] for r in rows] == list(sources_for("ZZ"))  # available = the registry, nothing else
+    by = {r["source"]: r for r in rows}
+    assert (by["bps"]["parcels_on_file"], by["bps"]["parcels_used"]) == (300, 250)  # used, from the summary
+    assert all(r["parcels_used"] is None for r in rows if r["source"] != "bps")
+    assert d["by_state"]["ZZ"]["totals"]["parcels"] == 300 and d["summary_generated"] == SUMMARY["generated"]
+
+
+def test_without_a_data_summary_sources_are_still_listed():
+    d = build.data_section(["ZZ"], None)
+    assert d["by_state"]["ZZ"]["totals"] is None and d["by_state"]["ZZ"]["sources"]
+
+
+def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
+    summary = tmp_path / "summary.json"
+    summary.write_text(json.dumps(SUMMARY))
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=summary).read_text()
+    m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', html, re.S)
+    dash = json.loads(m.group(1))
+    assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
+    assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
+    for part in ("Data available and data used", "Data tier", 'id="open-dash"'):
+        assert part in html
+    without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
+    m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
+    assert json.loads(m.group(1)) is None
