@@ -26,3 +26,9 @@ reports/adu-d0*/**/panel.csv
 docs/research/ordinances/*.pdf
 # Data dashboard build output (aggregates of downloaded data)
 reports/data_dashboard/
+
+# results bundles (lotline results --state XX); regenerated, never committed
+reports/results/
+
+# App page (scripts/build_app.py); rebuilt from results bundles, never committed
+reports/app/

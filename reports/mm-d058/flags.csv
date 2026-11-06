@@ -1,0 +1,17 @@
+name,state,test_place,T,unstable
+St. Louis Park city,MN,False,2025,False
+Burlington city,NC,False,2020,False
+Garner town,NC,False,2023,False
+Morrisville town,NC,False,2014,True
+Sanford city,NC,False,2019,False
+Wake Forest town,NC,False,2014,False
+Wilson city,NC,False,2013,False
+Euclid city,OH,False,2025,False
+Austin city,TX,False,2024,True
+Houston city,TX,False,2024,True
+League City city,TX,False,2021,False
+Lewisville city,TX,False,2023,True
+Lubbock city,TX,False,2024,True
+Minneapolis city,MN,True,2020,True
+Durham County Unincorporated Area,NC,True,2020,False
+Durham city,NC,True,2020,False

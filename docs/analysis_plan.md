@@ -3541,6 +3541,260 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     its docstring already says.
   - No code reads these values for a scenario yet: `scenarios/` has no missing-middle module.
 
+### D-056 · 2026-11-06 · Does the ACS fallback denominator stand in for real eligible-parcel counts? (method only, before any run)
+- **Number:** drafted as D-053 in the 2026-11-06 docs (HANDOFF row, WS-ENGINE brief); renumbered D-056 when
+  merged, because D-053 (Oregon joins the ADU calibration), D-054 (missing-middle statewide backtest) and D-056
+  (adopt D-054's missing-middle refit) were already taken. Those "D-053" references mean this entry.
+- **Why:** The app will show every state in `config/states/` that has a results bundle (HANDOFF decision
+  2026-11-06). A state with no parcel data would use `build/eligible.from_acs` (one-unit detached homes,
+  B25024_002, allocated to permit-issuing jurisdictions; `denominator_source = acs_sf_fallback`, quality
+  `low`) in place of `from_parcels`. That fallback counts homes, not parcels, and cannot see zoning or lot
+  size, so it should over-count eligible parcels by roughly the share of single-family homes that are *not*
+  on single-family-only, lot-size-eligible parcels. Whether it is usable decides whether the tool shows
+  50 states or the onboarded ones only. Five states have both denominators, so the question can be tested
+  where the answer is known.
+- **What is known already, stated now:** the `from_acs` and `from_parcels` tables exist for MN, NC, TX, OH
+  and OR and have been looked at individually (V0 reports, data dashboard). No one has compared their state
+  totals. The pass rule below was chosen before that comparison (Ben, 2026-11-06, from three options:
+  within 2× in every state; this rule; or ranking the proxy's error against the tornado chart, which does not
+  exist yet).
+- **Method (main):**
+  - For each state s and theme (ADU first; MM as a check), the state total E_s = Σ `from_parcels` eligible
+    parcels over jurisdictions with a parcel-based denominator, and the proxy total A_s = Σ `from_acs`
+    homes over the same jurisdictions and the same 5-year end year (the newest roll's year, as the
+    eligible-year rule picks it). Jurisdictions without a parcel denominator are left out of both sums, so
+    the comparison is like for like.
+  - Ratio r_s = E_s ÷ A_s. The scale factor is the geometric mean of the ratios: k = exp(mean log r_s).
+  - **Leave one state out:** for each s, k_(−s) from the other four; the held-out ratio is
+    q_s = E_s ÷ (k_(−s) × A_s).
+  - Spread: σ = standard deviation of log r_s over the five states (n − 1).
+- **Reading rule (written now):**
+  - **Pass:** every q_s lies in [0.7, 1.4]. Then `eligible_proxy_scale` = k with low/high at
+    k × exp(∓σ), and `eligible_proxy_sd` = σ, both in `config/params/` with this entry as the source. For any
+    state with no parcel denominator, each simulation draw multiplies the ACS homes by k × exp(σ z),
+    z standard normal, once per state per draw, so the proxy's uncertainty is carried in the range.
+  - **Fail:** any q_s outside [0.7, 1.4]. The tier is not built; the app shows onboarded states only, the
+    rest grey with a "bring your own state" link; the ratios are reported as a finding in D4 (limitations)
+    and the data dashboard. A fail is a result, not a problem to fix by changing the proxy after seeing it.
+  - A systematic ratio (all five on one side of 1) is expected and is what k absorbs; it is not a fail.
+  - Nothing in this entry is chosen by comparing the ratios across alternative proxies. If a second proxy
+    (for example, owner-occupied one-unit detached, B25032) is to be tried, it gets its own entry first.
+- **Checks reported with the run:** the five r_s and q_s with E_s and A_s; the same by theme; the share of
+  each state's parcel-based eligible count that sits in jurisdictions the ACS allocation puts in "rest of
+  county"; TX and NC flagged for their unknown-land-use shares (36.5% and 19.2%, data dashboard), which make
+  E_s itself uncertain there.
+- **Known limits, stated now:** five states is a small set and OR is a transfer state whose parcel coverage
+  is newer; the rule says nothing about within-state allocation, only state totals, so tier-3 bundles carry
+  statewide results and the "in this place" view is off for them; the proxy is theme-blind, so the MM check
+  is expected to be worse than ADU.
+- **Scope:** changes nothing for the five onboarded states. Adds two parameters and one draw step for
+  tier-3 states only. Runs after the Oregon V9 freeze is recorded and before WS-APP builds the state map.
+- **Code, when run:** `scripts/dev/eligible_proxy_test.py` writing `reports/eligible-proxy/`; a unit test on
+  a hand-worked three-state example of k, q_s and σ; the draw step in the scenario modules behind a
+  `denominator_source == "acs_sf_fallback"` condition, with a test that a parcel-based state is untouched.
+- **Decided by:** Ben, 2026-11-06 ("For 1 I think the middle option works"); drafted by Cowork; to be run by
+  WS-ENGINE. **Status:** run 2026-11-06; **passed** (Result below).
+- **Result (run 2026-11-06 by WS-ENGINE, branch `ws/engine-d053-proxy-test`; read by the rule above, nothing
+  changed after seeing the numbers).** `uv run python scripts/dev/eligible_proxy_test.py` →
+  `reports/eligible-proxy/` (`ratios_adu.csv`, `ratios_missing_middle.csv`, `by_jurisdiction.csv`,
+  `summary.json`). Implementation choices fixed before the run: each parcel-counted jurisdiction enters at its
+  newest roll year (`denominator_source == "parcels"`, rule 1.1); its ACS homes are taken at the end year
+  `eligible._nearest_acs_year` pairs with that roll (nearest, later on a tie, within `scale_max_year_gap` = 3),
+  which is how the eligible-year rule (`scale_history`) anchors a roll; no jurisdiction fell outside that reach.
+  Rolls newer than ACS 2024 (MN, NC and OR 2026; TX 2025) are paired with 2024.
+
+  | state | jurisdictions | E_s (parcels, ADU) | A_s (ACS homes) | r_s | k_(−s) | **q_s** | rest-of-county share of E_s |
+  |---|---|---|---|---|---|---|---|
+  | MN | 539 | 1,283,395 | 1,235,289 | 1.039 | 0.987 | **1.052** | 9.0% |
+  | NC | 218 | 1,613,487 | 1,718,560 | 0.939 | 1.013 | **0.927** | 36.2% |
+  | TX | 478 | 4,908,752 | 4,658,585 | 1.054 | 0.984 | **1.071** | 25.5% |
+  | OH | 885 | 3,276,403 | 3,521,735 | 0.930 | 1.015 | **0.916** | 39.3% |
+  | OR | 27 | 468,769 | 453,705 | 1.033 | 0.989 | **1.045** | 25.8% |
+
+  - **ADU (the test): pass.** Every held-out q_s lies in [0.7, 1.4] (range 0.916–1.071). k = 0.998,
+    σ = 0.060, so `eligible_proxy_scale` = 0.998 (low 0.939, high 1.059) and `eligible_proxy_sd` = 0.060.
+  - **Missing middle (the check): also inside the band.** r_s = 1.083 (MN), 1.173 (NC), 1.198 (TX),
+    1.140 (OH), 1.090 (OR); k = 1.136, σ = 0.044; q_s 0.942–1.069.
+  - **Reading.** The entry expected the proxy to over-count (ratio below 1) by the share of single-family homes
+    not on single-family-only, lot-size-eligible parcels. For ADU it does not: the ADU rule (rule 1.1) needs an
+    existing single-family house but no single-family-only zoning, and the lot-size floor is 0, so eligible
+    ADU parcels and ACS one-unit detached homes count nearly the same thing (k ≈ 1). For missing middle the
+    parcel count is *higher* than the proxy (k = 1.14), because that rule adds vacant residential lots and
+    counts unknown zoning as single-family-only, which ACS cannot see. The proxy is therefore close to unbiased
+    for ADU and about 12% low for missing middle, and the five states agree within a few percent on both.
+  - **Flags.** TX (36.5% unknown land use) and NC (19.2%) have the most uncertain E_s; with OH they hold the
+    three ADU q_s furthest from 1 (TX 1.071, NC 0.927, OH 0.916). NC and OH hold more than a third of their
+    parcel-based count in "rest of county" jurisdictions, whose ACS homes are a remainder after subtracting
+    places; state totals are unaffected by how that remainder is split, but within-state views would be.
+    OR is 27 Portland-metro jurisdictions on 2026 rolls, the smallest set.
+  - **Open question for Ben (not acted on).** The rule names one scale k, and the test theme is ADU, so the
+    parameters carry ADU's k. Applied to missing middle in a tier-3 state, k = 0.998 would sit about 12%
+    below the missing-middle ratio (1.136). Whether missing middle gets its own scale is a new decision, to
+    be written as its own entry if wanted; until then the draw step applies the one k to every theme.
+
+### D-057 · 2026-11-06 · Housing-need denominators: two deviations from the WS-ENGINE brief (sources that do not exist as specified)
+- **Why:** The WS-ENGINE brief (2026-11-06, office hours A2) asks for `household_growth_5y` from the state
+  demographers and a `shortage_stock` blended from Up for Growth and Zillow (low/high, geometric mean as the
+  value), with Freddie Mac 2020 in notes only. A source search on 2026-11-06 (WS-ENGINE) found: (1) none of the
+  five demographers (MN SDC, NC OSBM, TX TDC, Ohio DoD Office of Research, Oregon OEA) publishes a household
+  projection or a persons-per-household projection, only population; (2) Zillow publishes no state-level
+  deficit (national 4.7M for 2023 and a table of the 50 largest metros); (3) Up for Growth's 2025 report has no
+  state table, so the 2024 report (2022 data) is the newest state table.
+- **Decided by:** Ben, 2026-11-06, choosing between options put to him ("Pop × headship"; "Freddie % × ACS stock").
+- **Deviation 1, household growth (derived, not published):** `household_growth_5y` = the demographer's
+  population change 2025 → 2030 × households per person in ACS 2020–2024 (B11001_001 ÷ B01003_001), i.e.
+  constant headship. Texas's low/high come from its low and high migration scenarios; the other four publish
+  one series, so low = high. Where the result is ≤ 0 (Ohio: population −70,972, so −29,225 households), the
+  headline denominator falls back to `shortage_stock` (`aggregate.headline_kind`). Constant headship ignores
+  ageing and household formation; it is labelled "derived" wherever it is shown.
+- **Deviation 2, shortage (Freddie Mac replaces Zillow as the second estimate):** value = Up for Growth 2024
+  (2022 underproduction). The second estimate is Freddie Mac's Feb 2020 static state deficit (Exhibit 3, 2018
+  data, published only as % of stock) × ACS 2014–2018 housing units (B25001_001); low/high are the min and max
+  of the two. Where Freddie shows no deficit (share ≤ 0: 21 states, including Ohio, and Kansas at 0.00), Up for
+  Growth stands alone and low = high. Freddie is now a source, not notes-only. The value is UfG, not the
+  geometric mean, as Ben chose. Check: Freddie's California share × ACS stock gives 808,469 against the
+  Insight's "about 820,000" (the Insight used a different stock estimate).
+- **Unchanged from the brief:** two kinds, never mixed without a label; `denominator_kind` on every share;
+  the CRS comparison (IN12628, Dec 2025) recorded in the evidence register (E114) as the reason the shortage is
+  a range.
+- **Code:** `scripts/dev/housing_need.py` writes `config/params/housing_need.yaml` (published tables transcribed
+  with URLs; ACS through the `census_acs5` fetch); `model/aggregate.share_of_need`; tests in
+  `tests/model/test_aggregate_need.py`.
+- **Values (onboarded states):** household growth 2025–30 MN 47,907; NC 209,033; TX 683,487 (590,246–841,601);
+  OH −29,225 (headline falls back); OR 39,640. Shortage MN 98,383 (–129,979); NC 41,743 (–167,374);
+  TX 319,524 (–518,032); OH 60,782 (no range); OR 78,468 (–154,047).
+
+### D-058 · 2026-11-06 · Missing middle: a baseline rule for places whose pre-reform pace is unstable, then D-054 again (method only, before any run)
+- **Number:** written and run as D-056 (PR #316, page title and run log say D-056); renumbered D-058 on
+  merge, because #307 and #309 took D-056 and D-057 first.
+- **Why:** D-054's transfer test failed on Texas for every model, and for both benchmarks. Lubbock's
+  baseline, its mean over T−3 … T−1, expected 191 buildings over 2024–25; it permitted 25 (D-054 post-hoc
+  diagnostic). The same three-year baseline ran low in Oregon over 2018–2021 (D-055). A baseline taken from
+  three years can catch a surge or a dip and project it forward. Ben chose this fix on 2026-11-06 (D-054
+  option 3, "Yes, send it").
+- **What is known before writing, stated now:** Lubbock's post-reform fall and D-054's and D-055's results are
+  known. No place's pre-reform yearly series was tabulated to write this rule. The test and its threshold are
+  conventional, not tuned. The dry run prints which places the rule flags, but no counts, before any fit.
+- **The stability test (pre-reform data only).**
+  - **Window:** the place's outcome counts y (the D-042 classes above its prior cap) in the six years
+    T−6 … T−1, using years with data inside the panel (2010 on). For a 2013 adopter that is 2010–2012.
+  - **Statistic:** the Poisson index-of-dispersion test, D = Σ (y_t − ȳ)² / ȳ over the window's n years. A
+    stable pace with Poisson noise gives D ~ χ²(n − 1).
+  - **Unstable** if the p-value P(χ²(n − 1) ≥ D) is below 0.05. The test catches trend breaks and
+    volatility alike.
+  - **Not testable** (treated as stable): fewer than 3 window years with data, or ȳ = 0.
+- **What replaces an unstable baseline.**
+  - **β_i:** the mean over the whole six-year window instead of T−3 … T−1.
+  - **Growth index:** its reference m_i,pre moves to the same six years, so g still compares like with like.
+  - **Stable places** keep D-054's baseline unchanged.
+- **The −∞ gap (D-054 item 2): a zero floor on every baseline.** If a place had no outcome in its baseline
+  years, β_i = 0.5 / n_pre instead of 0 (half a building over the window, a Jeffreys-style correction). This
+  applies to every specification and to the no-effect benchmark, so no model gives an observed count zero
+  probability, and the paired log-score SE exists.
+- **Specifications (all with the zero floor, on D-054's events, outcome classes, places and years):**
+  - **(d) Main:** D-054's (b) with the stability rule.
+  - **(b′):** D-054's (b) with the zero floor only. This isolates the floor's effect.
+  - **(e) Sensitivity:** the six-year window for every place, flagged or not. This shows whether the test
+    matters, or just a longer window.
+  - **Benchmarks:** no effect (B only) under each specification's own baseline, and the outside rate.
+  - **Fitting:** each specification is refitted exactly as D-054 fits (b) (`calibrate_mm.fit`, slope 0.75,
+    σ 0.5).
+- **Tests (D-054's, unchanged):**
+  - **Test 1:** leave one state out, with joint draws (20,000, seed 20261106);
+  - **Test 2:** leave one place out, summed by state, for (d) only;
+  - **Test places:** Minneapolis, Durham city and Durham County, reported in a second line. Raleigh is not
+    scored.
+  - **Scores:** D-040's verdicts and CRPS for each state total, and the held-out log score per place with
+    paired SEs.
+  - **No τ:** D-054 found it not estimable.
+- **Reading rule (written now):**
+  1. **Transfer:** neither the NC nor the TX fit-set total is missed under (d) in test 1. MN and OH are
+     reported but not read (one place each).
+  2. **Signal:** (d)'s held-out log score over the fit set beats no effect's, under (d)'s own baseline, by
+     more than 2 paired SE.
+  3. **Against the adopted fit:** (d) is not worse than (b′) by more than 2 paired SE.
+  4. **What follows:**
+     - **If 1, 2 and 3 all hold:** propose to Ben that (d)'s full four-state fit replaces θ, α and the
+       half-way point in `mm_hazard.yaml`, together with the stability rule. That goes in its own PR, and
+       only with Ben's approval.
+     - **If 1 holds but 2 or 3 does not:** report the results; Ben decides.
+     - **If 1 fails:** `mm_hazard.yaml` keeps D-055's values, and the miss is reported.
+  5. **V5:** Charlotte freezes on Nov 17 on whatever `main` holds. This run doesn't move that date, and it
+     never reads Charlotte, Mecklenburg or St. Paul.
+- **Oregon:** stays out of the fit and out of this entry. Joining needs its own dated entry (D-054).
+- **Code:**
+  - `calibrate_mm.py`:
+    - `chi2_sf` (regularized upper incomplete gamma, standard library only);
+    - `dispersion_test`;
+    - `place_inputs(..., baseline_rule=…, zero_floor=…)`.
+  - Unit tests against hand-worked cases in `tests/model/test_calibrate_mm.py`.
+  - The run script `scripts/dev/calibrate_mm_d058.py`, with `--dry`; results go to `reports/mm-d058/`.
+- **Run once:** `uv run python scripts/dev/calibrate_mm_d058.py --out reports/mm-d058`, after Ben's go-ahead.
+- **Decided by:** Ben, 2026-11-06 (D-054 option 3); written by the missing-middle test session before any run.
+- **Before the run (2026-11-06; code pushed; the dry run printed flags and structure only, no counts and no
+  fit).** The fit set and test places are D-054's: 13 and 3.
+  - **Flagged unstable:** 5 of the 13 fit places (Morrisville; Austin, Houston, Lewisville and Lubbock) and one
+    test place (Minneapolis).
+  - **Not flagged:** every other place, including Wake Forest, Burlington, Wilson and both Durham places.
+  - **Noted before the run, for Ben:** the dispersion test flags most of the large places (Austin, Houston,
+    Minneapolis), not just Lubbock. At large counts, any extra-Poisson year-to-year variation is significant.
+    So the rule widens the baseline wherever counts are large, whatever the direction of their trend. For a
+    place whose pace rose before its reform, the six-year mean is lower than the three-year one, and the excess
+    credited to the reform grows. Specification (e) shows the same widening applied everywhere. This is
+    reported and not changed, unless Ben amends the entry before the run.
+- **Results (one run, 2026-11-06, commit 3b77357 plus the logbook fragment, 32 min; `reports/mm-d058/`, log
+  `run-2026-11-06-log.txt`):**
+  - **Fits (per 1,000, 90% interval, half-way point):**
+    - (d) main: 1.28 (0.39–4.97), half 6.0;
+    - (b′): 0.117 (0.031–0.92), half 0.5;
+    - (e): 1.29 (0.03–5.01), half 6.0 with an interval of 0.5–6.0.
+  - **The likelihood has two peaks.** One sits at a fast ramp (half 0.5, θ ≈ 0.12), the other at the grid's
+    slow end (half 6.0, θ ≈ 1.3). Small changes move a fit from one to the other:
+    - dropping St. Louis Park, which built nothing, moves (e) to 0.13;
+    - the zero floor alone moves D-054's fold without Texas from 0.24 to 1.55.
+    
+    At half 6.0, years 1–5 carry 0.06–12% of the mature rate. So over the five scenario years, (d) implies a
+    mean hazard of 0.042 per 1,000 a year, against 0.104 for the adopted D-055 values. Its 1.28 is a
+    "mature" level beyond what any place's data reach.
+  - **Test 1, fit-set totals:**
+    - NC (observed 26): useful under every specification, and under no effect now that the floor applies.
+      (d) 17 / 24 / 33.
+    - TX (observed 49): missed by every specification and benchmark. (d) 175 / 194 / 216; no effect (d)
+      171 / 188 / 207.
+    - MN and OH: useful, and uninformative.
+  - **Test 1, with the test places:**
+    - MN with Minneapolis (106): (d) missed (36–77); (b′) useful (45–118).
+    - NC with Durham city and County (126): missed by every model; the outside rate is useful.
+  - **Test 2, (d):** NC fit set useful; TX missed (175–215); MN with Minneapolis and NC with the Durhams
+    missed.
+  - **Held-out log score, fit set, with paired SE:**
+    - (d) − no effect (d): +10.8 (8.8);
+    - (b′) − no effect (b′): +13.8 (9.4);
+    - (d) − (b′): +25.9 (27.7), almost all of it Lubbock's (+25.9). Its widened baseline is less wrong;
+    - (e) − (d): +0.7 (0.9).
+  - **Why the rule did not fix Texas.** Lubbock is flagged, but its six-year pre-reform mean is still 90
+    buildings a year (was 115), expecting 160 over 2024–25 against 25 built. Its pace was high across the whole pre-period
+    and fell only after the reform. No baseline built from pre-reform data could foresee that.
+  - **Reading rule, as written:**
+    1. **Transfer: not met** (TX missed).
+    2. **Signal: not met** (+10.8 against 2 × 8.8 = 17.6). The −∞ gap is closed, so item 2 can now be
+       evaluated, and it fails.
+    3. **Against (b′): met.**
+    4. **Outcome:** `mm_hazard.yaml` keeps D-055's values. Nothing in config changes.
+  - **Reading (for Ben):**
+    - **The baseline is not what fails in Texas.** Lubbock's fall after its reform is real in the counts, and
+      no pre-reform rule anticipates it. Whether something else happened in Lubbock in 2024–25 (a permit-system
+      change, a BPS reporting change, a local moratorium) is a data question, not a model one.
+    - **The four states cannot separate θ from the ramp.** The adopted fast-ramp fit (D-055) and a slow-ramp
+      fit with ten times the "mature" θ fit about equally well. Over five years they imply 0.10 and 0.04 per
+      1,000. A scenario should carry this as a range on the five-year realized hazard, or hold the ramp at an
+      outside value. Either would be a new entry.
+    - **"Better than no effect" fails at 2 SE** in both specifications that can now be scored (+10.8 and
+      +13.8, each about 1.2–1.5 SE). The in-state missing-middle signal stays weak: under (d), almost all of the gain
+      over no effect is Wake Forest (+7.7) and Burlington (+4.5).
+  - **Results page:** `reports/mm-d058/d058-results.html`, published at
+    https://claude.ai/artifact/XvRsYZGDB1vv1GE8Kzc5Kg.
+
 ### D-060 · 2026-11-06 · ADU calibration range from the places the anchor is fitted on (method only, before any run)
 
 - **Approved by Ben on 2026-11-06** ("Approve D-058", the number this entry had then; renumbered D-060 on merge because main took D-056 to D-058 and open PR #323 took D-059). Nothing below had been run at approval.

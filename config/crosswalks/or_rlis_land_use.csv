@@ -1,0 +1,15 @@
+pattern,land_use_std,note,source_url
+^000$,UNKNOWN,"No class (000): counties leave it on lots they have not classified",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(100|140|160|170|190)$,VACANT_RESIDENTIAL,"DOR class 1x0: residential land, vacant (plain, unzoned farm land, misc, lakefront, potential development)",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(101|121|131|132|141|151|161|171|181|191)$,SF_DETACHED,"DOR class 1x1: residential land, improved (also in a commercial or industrial zone, rural homesite, EFU in a water district, lakefront, potential development). Can't tell detached from attached houses or small plexes on one lot: see the adapter's limitations",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(102|122|192|092)$,CONDO_UNIT,"DOR residential condominium (102, 122 commercial zone, 192 potential development, 092 misc potential development)",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(401|431|441|451|461|471|491)$,SF_DETACHED,"DOR class 4x1: tract land, improved (an acreage homesite; Metro's LANDUSE groups it as RUR). Counted as a house like the ACS one-unit-detached fallback counts rural homes",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(400|440|450|460|470|490|492|479)$,OTHER,"DOR class 4: tract land, vacant, condominium or manufactured structure",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(707|677|779)$,MOBILE_HOME,"DOR manufactured structure park (707) and manufactured-structure classes (677, 779)",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^7\d[1]$,MULTIFAMILY_5P,"DOR class 7x1: multiple housing, improved (any zone). The class does not record the unit count; assessors use it for apartment properties",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^7\d\d$,OTHER,"DOR class 7: multiple-housing land, vacant, condominium or other (not a single-family lot)",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(2\d\d|021|024|025)$,COMMERCIAL,DOR class 2: commercial land (vacant or improved) and misc commercial-zone codes,https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(3\d\d|031|033)$,INDUSTRIAL,DOR class 3: industrial land and misc industrial-zone codes,https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(5\d\d|6\d\d)$,AGRICULTURAL,DOR classes 5 (farm land) and 6 (forest land),https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^9\d\d$,INSTITUTIONAL,"DOR class 9: exempt (student housing, church, school, cemetery, city, county, state, federal, fraternal, port)",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733
+^(8\d\d|0[1-9]\d|00[1-9]|106|109|128|150|172)$,OTHER,"Remaining DOR codes: recreation (8xx), misc (0xx, incl. 081 recreation summer-home sites) and residential codes that are neither vacant land nor an improved lot (106 waterfront, 109 exempt, 128, 150, 172)",https://gis.oregonmetro.gov/rlis-metadata/#/details/3733

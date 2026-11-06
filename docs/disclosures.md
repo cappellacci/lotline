@@ -38,6 +38,13 @@ the jsDelivr CDN (`cdn.jsdelivr.net`) when it is opened, unmodified and not copi
 (ISC), topojson-client 3.1.0 (ISC) and us-atlas 3.0.1 `counties-10m.json` (ISC; county shapes derived from
 Census cartographic boundary files). Nothing is sent to the CDN except the file requests.
 
+**App page (`reports/app/index.html`, built by `scripts/build_app.py`).** The page loads the brand fonts from
+Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`) when it is opened: Public Sans and IBM Plex Mono, both
+under the SIL Open Font License 1.1, not copied into the repo. Without network access the page falls back to
+system fonts (`docs/build/identity/tokens.css`). Google receives the font requests (the reader's IP address and
+browser details), as with any web font; no Lotline data is sent. The embedded data dashboard loads the jsDelivr
+files listed above.
+
 ## Third-party code, dependencies and datasets
 - Dependencies: see the SBOM (`sbom.spdx.json`) and the license scan. Exceptions (non-permissive licenses) are listed here with a justification.
 

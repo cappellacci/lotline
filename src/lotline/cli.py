@@ -179,6 +179,59 @@ def _schemas(args: argparse.Namespace) -> int:
     return 0 if current else 1
 
 
+def _results(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from lotline.config import all_states
+    from lotline.io import DataStore
+    from lotline.model import results
+
+    results_dir = Path("reports") / "results"
+    if args.all and (args.state or args.role or args.out):
+        print("--all writes every configured state with its default role and path; drop --state/--role/--out")
+        return 2
+    if not args.all and not args.state:
+        print("give --state XX, or --all for every state and the page")
+        return 2
+    if not results.tree_is_clean():
+        print(
+            "warning: uncommitted changes; the bundle's commit_sha will not fully identify the code that ran"
+        )
+
+    def one(state: str, role=None, out=None) -> Path:
+        out = Path(out) if out else results_dir / state.lower() / "bundle.json"
+        bundle = results.build_bundle(state, store, role=role, origin=args.origin, draws=args.draws)
+        path = results.write_bundle(bundle, out)
+        m = bundle["meta"].iloc[0]
+        print(
+            f"wrote {path} ({m['state_role']}, tier {m['data_tier']}, overlap {m['overlap_flag']}; "
+            f"pending: {m['scenarios_pending']})"
+        )
+        return path
+
+    store = DataStore()
+    if not args.all:
+        one(args.state.upper(), args.role, args.out)
+        return 0
+    try:  # the page build is WS-APP's (scripts/build_app.py, PR #313)
+        from lotline.app.build import build_app
+    except ImportError:
+        print(
+            "lotline results --all needs WS-APP's page build (lotline.app.build, PR #313); not on this branch"
+        )
+        return 2
+    failed = []
+    for state in all_states():
+        try:
+            one(state)
+        except Exception as exc:  # a state without built tables must not stop the others
+            failed.append(state)
+            print(f"{state}: no bundle ({type(exc).__name__}: {exc})")
+    page = build_app(results_dir=results_dir, out_dir=Path("reports") / "app")
+    print(f"built {page}" + (f"; no bundle for {', '.join(failed)}" if failed else ""))
+    return 1 if failed else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lotline", description="Lotline housing reform simulator.")
     parser.add_argument("--version", action="version", version=f"lotline {__version__}")
@@ -240,6 +293,27 @@ def build_parser() -> argparse.ArgumentParser:
     val.add_argument("--state", help="two-letter state code (default: every configured state)")
     val.add_argument("--step", default="V0", help="ladder step (V0 so far)")
     val.set_defaults(func=_validate)
+
+    res = sub.add_parser(
+        "results",
+        help="run the engine for a state and write its results bundle for the app (reports/results/<st>/)",
+    )
+    res.add_argument("--state", help="two-letter state code, e.g. MN")
+    res.add_argument(
+        "--all",
+        action="store_true",
+        help="every configured state's bundle, then the page (reports/app/index.html)",
+    )
+    res.add_argument(
+        "--role",
+        choices=["benchmark", "development", "transfer", "national_only"],
+        help="how the app labels the state (default: national_only for a state with no parcel data, "
+        "else development)",
+    )
+    res.add_argument("--origin", type=int, help="forecast origin year (default: config results_origin_year)")
+    res.add_argument("--draws", type=int, help="draws per scenario (default: config results_draws)")
+    res.add_argument("--out", help="output path (default: reports/results/<st>/bundle.json)")
+    res.set_defaults(func=_results)
 
     sch = sub.add_parser("schemas", help="generate or check the data dictionary docs/schemas.md")
     sch.add_argument("--write", action="store_true", help="regenerate docs/schemas.md")
