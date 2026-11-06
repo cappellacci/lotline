@@ -9,7 +9,7 @@ A running record of **how** the Lotline entry was built: what question each step
 - Entries LB-001 to LB-009 were **reconstructed on 2026-09-30** from the docs and artifacts they produced; later entries are written as the work happens.
 - Entries are added two ways: by the Claude session doing the work (rule in `CLAUDE.md`), and by a nightly review that scans the repo, project docs and artifacts for anything new since the last scan. Nightly entries are marked *(auto-review)*.
 
-**Last scan:** 2026-10-20T00:58Z
+**Last scan:** 2026-11-06T03:17Z
 
 ---
 
@@ -34,6 +34,14 @@ A running record of **how** the Lotline entry was built: what question each step
 | 14. Coding Period opens | Oct 14 | Is the repo aligned with the official rules, template and judging rubric, and does every state have a sound denominator? | Rules-PDF review; starter-template alignment; `/judge` panel; eligible-parcel rule with rest-of-county denominators; first MN/NC/engine workstreams; CBSA crosswalk; measured completion factors; permit-text parser | LB-041 – LB-056 |
 | 15. City permits and the V1 baseline | Oct 14–15 | Do city permit records line up with Census counts, and does a simple baseline beat naive forecasts out of sample? | Minneapolis, Durham and Raleigh permit adapters; V1 baseline (spec B) and backtest harness; spec C tried and not adopted (D-007) | LB-057 – LB-063 |
 | 16. Texas and Ohio start; shared tooling | Oct 15–19 | Can the pipeline take Texas and Ohio sources, and parcels without leaking holdouts? | TX and OH reform CSVs (second-coded sample), Columbus, Cincinnati and Austin permits, Travis CAD 2026 roll, Ohio statewide parcels; Socrata pager, parcel holdout rule, manual-download registry, pager geometry modes, place/township assignment, repeated project totals counted once (D-008); one copy of every doc (the repo) | LB-064 – LB-082 |
+| 17. Effect estimation and parallel threads | Oct 20 | Can each reform's effect be estimated from real adoptions, pre-registered before any run, and what is needed to combine them statewide? | ADU estimators (D-019 fits, D-023, D-025, D-026), missing-middle panel and estimator (D-024), city fee table and fee scenario, demand index, handoff briefs 01–09 | LB-087, LB-088; most of the day's work is in `logbook.d/` fragments awaiting the fold |
+| 18. North Carolina end to end | Oct 21 | What does North Carolina still need for every engine to run end to end, and can it be gathered without broad web research? | Handoff 10; NC data plan; OneMap parcels beyond 10 counties, Greensboro and Mecklenburg permits, Durham annexation rule, NC rule and fee rows, Charlotte V5 inputs | LB-089; the thread's work is in `logbook.d/` fragments on the `ws/nc-*` branches awaiting the fold |
+| 19. Ohio and Texas end to end | Oct 23 | Can Ohio and Texas get the same end-to-end data as North Carolina, above all adding places to the multi-state ADU and missing-middle estimation panels? | Handoffs 11 and 12; OH and TX data plans (approved by Ben); Fort Worth, San Antonio, Dallas and Franklin County permit adapters; TX rule rows for places 21–40 | LB-090; the threads' work is in `logbook.d/` fragments on the `ws/oh-*` and `ws/tx-*` branches awaiting the fold |
+| 20. Data threads close | Nov 1 | Are the Texas, Ohio and North Carolina data complete and handed off for the engine week, with reform dates that are real events? | TX and OH handoffs, OH and NC readiness reports, NC second-coder review, `[predates]` rule, D-035 interpolation between rolls, handoff 13 (NC and MN wrap-up), MN data plan approved | LB-095 – LB-097; most of the day's work is in `logbook.d/` fragments awaiting the fold |
+| 21. Engine week begins | Nov 2 | Do the four states' data support the D-024 and D-025 estimators, and does the pooled ADU model fit on all four? | Minnesota and North Carolina data threads merged; handoff 14; four-state panel counts; D-025 four-state run (did not converge) | LB-098, LB-099; the threads' work is in `logbook.d/` fragments awaiting the fold |
+| 22. Calibration on our own four states | Nov 3 | Once the in-state estimators give no credible four-state estimate, can scenario effects come from uptake rates calibrated on the four states and checked by backtests? | D-024 four-state run (no credible estimate); D-037 mechanism route (Ben); D-038 missing-middle anchor (kept over D-042); D-039 ADU anchor refit; D-040 statewide backtest; D-041 consistent ADU counts; Houston and Austin checks; results dashboard; D-043 unseen-state range (branch) | LB-100; the day's work is in `logbook.d/` fragments awaiting the fold |
+| 23. Oregon as a fifth state; auditing the ADU fit | Nov 4 | Can Oregon serve as an unseen-state transfer test (V9) frozen before its outcomes are seen, and why does the four-state ADU fit miss? | Oregon assessment, statewide holdout and V9 setup; OR package, state-law, fee and local rule rows with readiness report; data dashboard; D-044 adopted (branch); D-045 to D-047 fit audit, D-048 no-ramp method | LB-101, LB-102; most of the day's work is in `logbook.d/` fragments awaiting the fold |
+| 24. Oregon transfer test scored; no-ramp ADU model adopted | Nov 5 | Does the four-state model, frozen blind, predict Oregon, and what changes once Oregon joins the fit? | D-048 adopted (Ben) and D-050 state effect refit; V9 frozen (D-051, D-052), unblinded and scored: missing middle inside by 15 buildings, every ADU target missed, so V9 fails; Portland and Bend permit adapters; V9 holdout released; D-053 Oregon refit run (draft, not adopted) | LB-103, LB-104; most of the day's work is in `logbook.d/` fragments awaiting the fold |
 
 ---
 
@@ -1213,3 +1221,221 @@ Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `L
 - **Decisions:** Recorded in code: vintage naming and dating rule (Ben, 2026-10-19).
 - **AI:** Claude Code (WS-MN) wrote the WIP adapters and tests; whether tests pass on the branch was not checked by this review.
 - **Open / next:** finish and run the adapters, open PRs with logbook fragments; the `mn.yaml` diff on the branch replaces the `stpaul_permits` source entry, which needs reconciling with `main` at merge.
+
+### LB-087 · 2026-10-20 · Admin: Handoff briefs 08 (Minnesota data complete) and 09 (combine scenarios, statewide aggregation) (auto-review)
+- **Question:** What should the next two parallel threads do: finish Minnesota's inputs for a statewide end-to-end run, and turn per-place scenario results into combined, statewide numbers?
+- **What I did:** (from the briefs; added after the 01–07 briefs, whose fragment is `logbook.d/2026-10-20-docs-handoffs.md`)
+  - Thread 8 (WS-MN): every input the baseline and the three scenarios need for all 1,053 MN jurisdictions (763 places, 218 townships, 72 county remainders), ending with a readiness report and a baseline + ADU integration run; states what is on `main` (metro-only parcels, 98 ADU rule rows, 2 missing-middle rows, no fees) and the lanes of threads 1–3 to stay out of.
+  - Thread 9 (WS-ENGINE-AGG): D-026 entry before code; a common scenario output contract (place × year × draw) with `adu.run()` retrofitted and stub MM/fee scenarios; `model/combine.py` (one project per parcel, the more profitable of ADU vs 2–4 units; fees applied inside the pro forma); aggregation to county and state with ranges, gross-to-net, and a local demand cap (judging finding MS-04).
+- **Inputs:** `docs/build/handoffs/README.md`, WS-MN brief, D-014 to D-025, LB-083 judging reports.
+- **Outputs:** `docs/build/handoffs/08-minnesota-data-complete.md`, `docs/build/handoffs/09-combine-and-aggregate.md`, `docs/build/handoffs/README.md` (PRs #185, #190, merged to `main`).
+- **Findings:** none (briefs only).
+- **Decisions:** none recorded. Note: the brief reserves "D-026" for thread 9, but D-026 was used the same day on other branches (ADU imputation estimator; baseline calibration fixes), so the number needs reconciling at merge.
+- **AI:** Claude Code wrote both briefs (co-authored commits); no fragment found, so logged by the nightly review.
+- **Open / next:** Ben starts threads 8 and 9.
+
+### LB-088 · 2026-10-20 · Validation: D-024 missing-middle estimator built; first real run aborted; rerun fixes (WS-ENGINE-MM, branch) (auto-review)
+- **Question:** Estimate the D-024 pre-registered missing-middle effect (extra 2–4 unit homes after a missing-middle rule) on the pooled four-state panel.
+- **What I did:** (from commits on `ws/engine-mm-estimate`; the branch's fragment covers only the panel and D-024 approval)
+  - Wrote the estimator: PPML with place and state × year fixed effects, Poisson-gamma random-effects fallback, randomization inference, checks, transport and imputation of added homes; run script `--full`, `--dry-run`, `--coverage`; D-024 run parameters added to the parameter table.
+  - First real run (17:06) aborted: PPML diverged, the pre-specified fallback ran, then randomization inference crashed on a diverging refit. Log kept.
+  - Then switched the fallback to D-025's estimator (D-024 names it) via a relabelled panel (20:13), and at 20:35 made mechanical fixes stated as independent of results (divergence and overflow raise `EstimationError`, damped Newton steps, RI counts failed reassignments) with the fallback back on the 17:06 Poisson-gamma spec and PPML, RE and D-025's NB all reported as robustness. Whether Ben approved that fallback change is not recorded.
+- **Inputs:** D-024 (approved by Ben 2026-10-20), D-025 `pooled_adu`; panel of 560 places, 8,763 place-years.
+- **Outputs:** `src/lotline/model/estimate_mm.py`, `scripts/dev/estimate_mm.py`, `tests/model/test_estimate_mm_fit.py`, `config/params/mm.yaml`, `docs/model_and_assumptions.md`, `reports/mm-d024/aborted-2026-10-20-log.txt` (commits eecb39c, 4df1203, 5e676ab, e43aaa2, 42fd9f8; not merged, no PR yet).
+- **Findings:** Not a result (run aborted before inference, nothing written). The aborted log printed fallback main estimates: ATT 0.77 on the log scale (90% 0.07–1.54); added 2–4 unit homes dominated by Houston (2,422) with Austin negative (−131), which the checks were meant to examine. 16 pipeline-flagged comparison places were dropped by check 7b. Two NB tests are skipped until `pooled_adu`'s mode search is safeguarded.
+- **Decisions:** none recorded; the fallback choice (Poisson-gamma RE vs D-025's NB) may need a dated D-024 note.
+- **AI:** Claude Code (WS-ENGINE-MM) wrote the code and ran it; logged by the nightly review from commits and the log, without rerunning tests.
+- **Open / next:** rerun once with the fixes; update the branch fragment and open a PR.
+
+### LB-089 · 2026-10-21 · Admin: Handoff brief 10 (North Carolina end-to-end data collection) (auto-review)
+- **Question:** What should a parallel WS-NC thread do to get North Carolina's inputs good enough for the baseline, the three scenarios and thread 9's combining and aggregation, following the Minnesota pattern (thread 8)?
+- **What I did:** (from the brief)
+  - Snapshot of `main` on 2026-10-21: 322 NC jurisdictions; parcels for the 10 largest counties plus the Wake Dec 2023 roll; permits for Raleigh and Durham only (Mecklenburg coded but blocked); 31 ADU rule rows, 5 missing-middle rows, 11 fee rows; Charlotte V5 holdout, whose prediction must be frozen by Nov 17.
+  - Step 1: verify the snapshot and write `docs/build/nc-data-plan.md` (one subtask per gap, with what it feeds, source, cost, priority and owner; at least 8 named gaps) and get Ben's approval before heavy work. Step 2: small PRs, with no broad web-search sweeps (fill-in lookup tables for Ben instead). Step 3: `docs/build/nc-readiness.md` and a statewide integration run.
+  - Stay out of `model/*`, the demand index, and Charlotte or Mecklenburg outcomes from 2023-06-01.
+- **Inputs:** `docs/build/handoffs/README.md`, brief 08, WS-NC brief, D-012, D-014 to D-025.
+- **Outputs:** `docs/build/handoffs/10-north-carolina-data-complete.md`, `docs/build/handoffs/README.md` (commit fb4810f, PR #197, merged to `main`).
+- **Findings:** none (brief only).
+- **Decisions:** none.
+- **AI:** Claude Code wrote the brief (co-authored commit); no fragment found, so logged by the nightly review. The thread's own work the same day (data plan, decisions 1–4 and 6 approved by Ben, issue #208; OneMap, Greensboro, Mecklenburg, Wake, Durham, rules/fees and Charlotte V5 PRs) has fragments on its `ws/nc-*` branches and is not repeated here.
+- **Open / next:** merge the thread 10 PRs; readiness report.
+
+### LB-090 · 2026-10-23 · Admin: Handoff briefs 11 (Ohio) and 12 (Texas) end-to-end data collection (auto-review)
+- **Question:** What should parallel WS-OH and WS-TX threads do to get Ohio and Texas data good enough for the engines statewide and, above all, to add places to the multi-state ADU and missing-middle estimation panels?
+- **What I did:** (from the briefs)
+  - Both follow the North Carolina pattern (brief 10, `nc-data-plan.md`, PRs #199–#214): verify a snapshot of `main`, write a subtask plan (`docs/build/oh-data-plan.md`, `tx-data-plan.md`) for Ben's approval, then small PRs, then a readiness report (`oh-readiness.md`, `tx-readiness.md`) with no model runs. New rule for data threads: don't run engine, scenario or dev-run scripts unless Ben asks. Target: week of 2026-10-26.
+  - Ohio snapshot: 952 jurisdictions, no tier 1 (statewide roll lacks year built); 6.09M parcels from one 2023 roll (needs a second roll year for eligible history, D-035); permits for Columbus and Cincinnati only (ADU flags 0 and 26); 20 ADU rule rows, 1 missing-middle row, no fees.
+  - Texas snapshot: 1,006 jurisdictions, only Austin tier 1; parcels from the Travis 2026 roll only; Austin permits only (3,166 ADU, 8,790 2–4 unit); 23 ADU rule rows, 2 missing-middle rows, 2 fee rows; no sale-price disclosure. Top priority in both: permit sources with ADU and units-per-building fields, watching D-008 and annexation dates.
+- **Inputs:** `docs/build/handoffs/README.md`, brief 10, WS-OH and WS-TX briefs, D-008, D-014 to D-035.
+- **Outputs:** `docs/build/handoffs/11-ohio-data-complete.md`, `docs/build/handoffs/12-texas-data-complete.md`, `docs/build/handoffs/README.md` (commit f27f277, PR #216, merged to `main`).
+- **Findings:** none (briefs only).
+- **Decisions:** none.
+- **AI:** Claude Code wrote both briefs (co-authored commit); no fragment found, so logged by the nightly review. The threads' own work the same day (OH and TX data plans with Ben's 2026-10-23 approval; Fort Worth, San Antonio and Dallas permit adapters; Texas rules for places 21–40; Franklin County Auditor ADU flags) and NC rules pass 2 have fragments on their branches and are not repeated here.
+- **Open / next:** Ben reviews the thread PRs; readiness reports.
+
+### LB-091 · 2026-10-23 · Deliverables: "NC Model Run, Oct 22" dashboard artifact (auto-review)
+- **Question:** Present the first North Carolina development run (fragment `logbook.d/2026-10-22-ws-nc-dev-run-2026-10-22.md` on `ws/nc-dev-run-2026-10-22`) as a page Ben can open and share. Intent inferred from the artifact; not stated elsewhere.
+- **What I did:** Built a dashboard artifact from fixed copies of the run's tables (written 2026-10-23 14:40Z): ADU scenario statewide, by place, sensitivity and diagnostics; baseline by place and by housing class; the V1 backtest; and the Raleigh fee scenario.
+- **Inputs:** `reports/nc/dev-run-2026-10-22.md` (PR #213, branch, DEVELOPMENT RUN).
+- **Outputs:** https://claude.ai/artifact/JvYXyFA3YuDQwRMG4UvRMw (private).
+- **Findings:** none new; numbers are the dev run's (e.g. 2,065 added ADU permits at P50 over five years, mostly extrapolation).
+- **Decisions:** none.
+- **AI:** Claude built the page; datasets are marked as copied from the report. This review did not check the figures against the report.
+- **Open / next:** label it as a development run if shared; refresh after the next NC run.
+
+### LB-092 · 2026-10-27 · Admin: Ohio data plan, Ben's manual list for 2026-10-27 and his Montgomery County answer (WS-OH, branch) (auto-review)
+- **Question:** What does Ben need to do by hand (decisions, reviews, browser lookups, emails) to unblock thread 11's Ohio data, ranked by payoff?
+- **What I did:** (from commits on `ws/oh-5-data-plan`; the branch's fragment covers only the plan and its 2026-10-23 approval)
+  - Added §8 to the Ohio data plan: 15 items. Decisions on PR #232 (Cuyahoga exempt code 6411 → INSTITUTIONAL; one roll per jurisdiction for multi-county cities), the D-017 10% unknown-land-use cutoff (Hamilton at 10.4%), Dayton/Montgomery options (CAMA extract, a tax-class proxy, or stay on ACS), and whether Columbus joins the D-025 ADU panel; PR reviews #217, #224, #226, #232; four Dependabot alerts; ADU and missing-middle lookup tables (47 places each; Euclid flagged as a likely second Ohio missing-middle event); Columbus ADU counts request; Warren County parcel search; OGRIP email for a 2022 statewide roll; `uv` 0.13.5 note; fold fragments after merging.
+  - Recorded Ben's 2026-10-27 answer on Montgomery County: no reuse restrictions but no explicit licence ("no reuse terms stated"), and a CAMA download with parcel land-use codes exists, so option (a) is open (download in a browser, register with `lotline manifest register`).
+- **Inputs:** S5 probe results (commit 6ccc676), PR #232, Montgomery Auditor GIS Downloads page (checked by Ben).
+- **Outputs:** `docs/build/oh-data-plan.md` §8 (commits f751287, b5b950c, 7bbc975, 7cb5cee on `ws/oh-5-data-plan`; PR #217, not merged).
+- **Findings:** Montgomery's weekly geodatabase has no parcel land-use code, so pyogrio was not added; Columbus auditor descriptions find about 1 in 4 of the city's ADUs (14 vs 57, 2019 to Sep 2025).
+- **Decisions:** none recorded in `HANDOFF.md`; items 1–3 and 5 await Ben.
+- **AI:** Claude Code (WS-OH) wrote the list; Ben supplied the Montgomery finding. No fragment found for these commits, so logged by the nightly review. The day's other OH and TX work (Franklin yearly rolls and history check, OH readiness draft, OH rules tracker, StratMap file-geodatabase reader and completeness check, TX readiness after StratMap, Texas loose ends merged as PR #233, StratMap merged as PR #238) has fragments on its branches and is not repeated here.
+- **Open / next:** Ben answers items 1–5 and downloads the Montgomery CAMA extract; merge #217.
+
+### LB-093 · 2026-10-28 · Admin: Ben merges four Ohio thread PRs (#217, #224, #232, #239) to `main` (auto-review)
+- **Question:** Bring thread 11's reviewed Ohio work onto `main`. Intent inferred from the merges; Ben left no note.
+- **What I did:** (from merge commits, 19:43–19:59 ET)
+  - Merged #217 (Ohio data plan, incl. §8 manual list; docs only), #224 (ADU flags from the Franklin County Auditor permit file, Columbus and suburbs), #232 (Summit, Lucas and Cuyahoga county land use; one roll per jurisdiction for multi-county cities) and #239 (yearly eligible-lot rolls for Franklin County places, 2016–2025). Two branches were updated from `main` first to clear conflicts.
+- **Inputs:** PRs #217, #224, #232, #239 on `ws/oh-5-data-plan`, `ws/oh-6-franklin-permits`, `ws/oh-8-summit-land-use`, `ws/oh-11-franklin-yearly`.
+- **Outputs:** `main` at c503301 (merges 616f600, 8a40ccf, 90b9bea, c503301).
+- **Findings:** none new; the PRs' work has its own fragments (`logbook.d/2026-10-26-ws-oh-8-summit-land-use.md`, `2026-10-27-ws-oh-11-franklin-yearly.md`, and the branches' others) now on `main` awaiting the fold.
+- **Decisions:** Merging #232 adopts its mapping of Cuyahoga exempt code 6411 to INSTITUTIONAL and the one-roll-per-jurisdiction rule (items in Ohio plan §8, LB-092); no dated row in `HANDOFF.md` records this.
+- **AI:** Claude Code wrote the merged PRs (logged in their fragments); the merges are Ben's. Logged by the nightly review from git history, without rerunning tests.
+- **Open / next:** fold the `logbook.d/` fragments; remaining Ohio §8 items (D-017 cutoff for Hamilton, Montgomery CAMA download, Columbus in the D-025 panel). Not merged yet: `ws/oh-7-rules` (Euclid missing-middle row) and `ws/tx-research-tracker`, both with fragments.
+
+### LB-094 · 2026-10-30 · Admin: Ben merges five Texas and Ohio thread PRs (#241–#245) to `main` (auto-review)
+- **Question:** Bring the reviewed Texas rules/fees work and the Columbus ADU recall work onto `main`. Intent inferred from the merges; Ben left no note.
+- **What I did:** (from merge commits, 17:51–20:49 ET)
+  - Merged #241 (`ws/tx-research-tracker`: rule and fee rows from Ben's second research workbook, 35 proposed corrections listed), #242 (`ws/tx-corrections`: Ben's decisions on those 35 corrections applied), #244 (`ws/tx-ben-lookups`: rule and fee rows from Ben's own lookups, incl. Austin, SAWS, Houston, Fort Worth and Dallas fee answers), #243 (`ws/oh-12-columbus-adu-recall`: Columbus Council variance approvals and recall rules for auditor ADU descriptions) and #245 (`ws/tx-wrapup`: county land-use codes, jurisdiction fix, second-coder review sheet, Ben's second lookup batch, readiness refresh).
+- **Inputs:** PRs #241–#245 and their branches.
+- **Outputs:** `origin/main` at 59f3daa (merges a74d681, 6b1301e, bc30a7f, c8906bd, 59f3daa). The local checkout's `main` is at c8906bd (before #245).
+- **Findings:** none new; each PR's work has its own fragment (`logbook.d/2026-10-30-ws-tx-research-workbook-2.md`, `-ws-tx-corrections.md`, `-ws-tx-ben-lookups.md`, `-ws-oh-12-columbus-adu-recall.md`, `-ws-tx-wrapup.md`), now on `main` awaiting the fold. Per #245's commit, Texas is pooled into the ADU estimate (Ben, 2026-10-30); readiness now 478 jurisdictions from parcels, tiers 125/176/705.
+- **Decisions:** Texas joining the pooled ADU estimate (Ben, 2026-10-30) has no dated row in `HANDOFF.md`.
+- **AI:** Claude Code wrote the merged PRs (logged in their fragments); the merges are Ben's. Logged by the nightly review from git history, without rerunning tests.
+- **Open / next:** fold the `logbook.d/` fragments; pull `main` locally. Not merged yet, both with fragments: `ws/oh-7-rules` (Franklin suburbs, Lancaster, Cleveland Heights, Findlay, Dayton rows, 2026-10-30) and `ws/oh-13-montgomery-cama` (Montgomery CAMA, Dayton off ACS, Warren County land use).
+
+### LB-095 · 2026-11-01 · Admin: Ben merges ten Texas, Ohio, North Carolina and core PRs to `main` (auto-review)
+- **Question:** Bring the closing work of the Texas, Ohio and North Carolina data threads, the D-035 interpolation and the transfer-purpose decision onto `main` before the engine week. Intent inferred from the merges; Ben left no note.
+- **What I did:** (from merge commits, 10:40–20:15 ET)
+  - Merged #249 (`ws/tx-carrollton`: Carrollton ADU rule, Dallas utility fees), #250 (`ws/tx-handoff`: Texas thread 12 closed), #246 (`ws/oh-13-montgomery-cama`: Montgomery CAMA, Dayton tier 1, ADU-panel coverage rule), #226 (`ws/oh-7-rules`: Ohio rule rows incl. Ben's 2026-11-01 lookups, Grove City pre-window row, second-coder agreement on 21 "no ADUs" rows), #234 (`ws/oh-9-readiness`: Ohio readiness report rewritten), #252 (`ws/core-interpolate-roll-years`: D-035 addendum, `parcels_interpolated`, schemas 1.9), #253 (`ws/oh-handoff`: Ohio thread handoff), #215 (`ws/nc-rules-pass2`), #257 (`ws/handoff-transfer-purpose`: HANDOFF purpose row and V8 unseen-state test) and #254 (`ws/nc-second-coder`: NC second-coder review and Ben's decisions).
+- **Inputs:** PRs #215, #226, #234, #246, #249, #250, #252, #253, #254, #257 and their branches.
+- **Outputs:** `main` at 7fc54e5 (merges 8972692, 29016b5, c17eead, 6a70f9d, d095d62, 63a273a, 8b95d30, f9d9624, 4cbe440, 7fc54e5); local checkout matches `origin/main`.
+- **Findings:** none new; each PR's work has its own fragment in `logbook.d/` (e.g. `2026-11-01-ws-tx-carrollton.md`, `-ws-tx-handoff.md`, `-ws-core-interpolate-roll-years.md`, `-ws-oh-handoff.md`, `-ws-nc-second-coder.md`, `2026-10-28-cowork-transfer-purpose.md`), now on `main` awaiting the fold. The Texas and Ohio data threads are closed with handoffs for the engine week.
+- **Decisions:** the merges bring onto `main` the HANDOFF rows dated 2026-10-28 (general-purpose transfer) and 2026-11-01 (`[predates]`, LB-097), and the D-035 addendum in `docs/analysis_plan.md` (Ben, 2026-11-01).
+- **AI:** Claude Code wrote the merged PRs (logged in their fragments); the merges are Ben's. Logged by the nightly review from git history, without rerunning tests.
+- **Open / next:** fold the `logbook.d/` fragments. Not merged yet, all with fragments: `ws/nc-13-readiness`, `ws/mn-13-data-plan`, `ws/mn-13-v5-stpaul`, `ws/mn-13-mm-rules`; `ws/handoff-13` (handoff brief 13) has a fragment but no merge found.
+
+### LB-096 · 2026-11-01 · Policy analysis: Ohio research brief for the remaining ordinance lookups (auto-review)
+- **Question:** What exactly should a research agent find to finish dating Ohio's ADU and missing-middle rules, so each finding can become a dated row in `config/reforms/oh.csv`?
+- **What I did:** (from the brief)
+  - Set answer rules: effective date beats adoption date (charter rule or Ohio R.C. 731.29's 30 days; emergency ordinances on passage); "first allowed" is the earliest enacted ordinance, not an amendment; a dated "no ADUs" finding needs a code edition and section; official publishers and ordinance records first, news only as leads; unresolved stays unresolved.
+  - Fixed a one-row-per-place return table and listed the open lookups with what is known and where to start (e.g. Westerville §1175.06, amended by Ord. 2023-15 so ADUs predate it; Reynoldsburg §1105.05, amended 2020 and 2021).
+- **Inputs:** `config/reforms/oh.csv`, Ohio data plan §8 (LB-092), the Ohio rules work on `ws/oh-7-rules`.
+- **Outputs:** `docs/research/ordinances/oh-lookups-brief-2026-11-01.md` (commit ba7243c).
+- **Findings:** none (brief only). Results of Ben's lookups the same day were coded on `ws/oh-7-rules` (commits 36c3fd7, 4ea2b2c; covered by that branch's fragment).
+- **Decisions:** none.
+- **AI:** Claude Code wrote the brief (co-authored commit); no fragment found, so logged by the nightly review. Which branch it sits on was not checked.
+- **Open / next:** the lookups still unresolved after Ben's pass.
+
+### LB-097 · 2026-11-01 · Study design: `[predates]` rule recorded in HANDOFF; Minnesota data plan approved and aligned (auto-review)
+- **Question:** How should reform rows whose date is only a code rewrite be treated by the engines, and does the Minnesota plan follow the rule?
+- **What I did:** (from commits e33c4da, 31d57f4, c694bcb, fb52bdd)
+  - Added a 2026-11-01 row to the `HANDOFF.md` decisions log: a rule row dated only by a rewrite or recodification carries `[predates]` in `coding_notes`, and D-024/D-025 panels, rule age and event studies must not treat its date as a reform event; applies to every state until WS-CORE adds a `date_basis` field. Then corrected the count in the rationale (10 of 31 `[earliest-known]` NC rows dated 2010+ were rewrites; 8 tagged, 2 redated).
+  - Added the rule to the Minnesota data plan (M4 coding, M5 event counts, in-window `[earliest-known]` rows first on the MN second-coder sheet) and marked the plan approved by Ben on 2026-11-01 (§5 decisions 1–2, the plan and the MnGeo download; 3–4 as recommended).
+- **Inputs:** NC second-coder review and decisions (fragment `logbook.d/2026-11-01-ws-nc-second-coder.md`), `docs/build/mn-data-plan.md` (fragment `logbook.d/2026-11-01-ws-mn-13-data-plan.md`).
+- **Outputs:** `HANDOFF.md` (on `main` via #254), `docs/build/mn-data-plan.md` on `ws/mn-13-data-plan` (not merged).
+- **Findings:** none new beyond the NC review.
+- **Decisions:** HANDOFF 2026-11-01 `[predates]` rule; MN data plan approved (Ben, 2026-11-01; no dated HANDOFF row).
+- **AI:** Claude Code made the edits (co-authored commits); the NC fragment called the tag "proposed", so the decision and the MN approval are logged here by the nightly review.
+- **Open / next:** WS-CORE `date_basis` field; MN M1 and M4 are under way on their branches (with fragments).
+
+### LB-098 · 2026-11-02 · Admin: Ben merges seven Minnesota, North Carolina and handoff PRs (#255, #256, #259–#263) to `main` (auto-review)
+- **Question:** Close the Minnesota (thread 13) and North Carolina data work and start the engine thread before the four-state runs. Intent inferred from the merges; Ben left no note.
+- **What I did:** (from merge commits, 19:04–19:26 ET)
+  - Merged #255 (`ws/nc-13-readiness`: NC readiness with an engine kickoff section), #256 (`ws/mn-13-data-plan`), #259 (`ws/mn-13-v5-stpaul`), #260 (`ws/mn-13-mm-rules`), #261 (`ws/mn-13-mngeo`: Greater Minnesota parcels from MnGeo's opt-in compilation, statewide eligible rebuilt), #262 (`ws/mn-13-readiness`: MN readiness report, second-coder return and Ben's acceptance of all 62 recommendations, about 30 MN ADU dates confirmed or re-dated from ordinance lookups during the day) and #263 (`ws/handoff-14-engine`: handoff brief 14, engine refresh on all four states). `ws/mn-13-readiness` was updated from `main` first.
+- **Inputs:** PRs #255, #256, #259–#263 and their branches.
+- **Outputs:** `origin/main` at fa3994a (merges 1f7ecf6, 8c32102, f5a4a3b, cc6f341, e1589fc, 4e01c59, fa3994a); `docs/build/handoffs/14-engine-four-state-refresh.md`. The local checkout's `main` is still at 7fc54e5.
+- **Findings:** none new; each PR's work has its own fragment (`logbook.d/2026-11-01-ws-nc-13-readiness.md`, `-ws-mn-13-data-plan.md`, `-ws-mn-13-v5-stpaul.md`, `2026-11-02-ws-mn-13-mm-rules.md`, `-ws-mn-13-mngeo.md`, `-ws-mn-13-readiness.md`, `-ws-handoff-14-engine.md`), now on `main` awaiting the fold. With these merges all four state data threads are closed.
+- **Decisions:** the MN fragment records Ben's 2026-11-02 decision that `DATE UNCONFIRMED` rows count as events, with runs with and without them (commit 24e7c00), and his decision to keep seasonal cabins out of eligibility (54e9727); neither has a dated row in `HANDOFF.md`.
+- **AI:** Claude Code wrote the merged PRs (logged in their fragments); the merges are Ben's. Logged by the nightly review from git history, without rerunning tests.
+- **Open / next:** fold the `logbook.d/` fragments; pull `main` locally; add HANDOFF rows for the two MN decisions if Ben wants them there. Not merged yet, with fragments: `ws/engine-14-rule-tags` (#264, rule date tags in both panel builders, placeholder-date fix) and `ws/engine-14-counts` (four-state panel counts and the D-024/D-025 2026-11-02 amendment entries).
+
+### LB-099 · 2026-11-02 · Validation: D-025 pooled ADU model on four states does not converge; no estimate (auto-review)
+- **Question:** Does the pre-registered D-025 pooled ADU model, now with Texas pooled in (80 places: MN 76, TX 4; 3,192 ADU permits), produce an estimate on the four-state data?
+- **What I did:** (from commit bd93178 and its log)
+  - Ran `scripts/dev/estimate_pooled_adu.py --full` once at 19:56 ET on commit 0ca15cc, as the amendment entry written before the run required. BFGS hit its 500-iteration limit (19,445 likelihood evaluations, 27 s), the convergence guard raised `EstimationError`, and no later stage ran (no bootstrap, checks, sensitivity, transport or CSV). Not re-run.
+  - Diagnosed with convergence information only (no coefficient read): 19 columns, none dropped, no separated rows, no coefficient near ±20, neither variance parameter at its bound, so slow convergence rather than an identification failure; likely cause is scale (Austin's ~2,500 ADU permits beside Minnesota places with a few each).
+  - Appended the result to the D-025 entry in `docs/analysis_plan.md`.
+- **Inputs:** panel and amendment entries from `ws/engine-14-counts` (fragment `logbook.d/2026-11-02-ws-engine-14-counts.md`), handoff 14.
+- **Outputs:** `docs/analysis_plan.md` (D-025, 2026-11-02 run note), `reports/adu-d025-4state/run-2026-11-02-log.txt` (commit bd93178 on local branch `ws/engine-14-results`, not pushed, no PR).
+- **Findings:** no four-state D-025 estimate; the October Minnesota-only D-025 estimate stays the one on record.
+- **Decisions:** none yet. Needed from Ben (new dated entry): e.g. apply the October refit rule to the main model (higher iteration limit, or start from the Minnesota-only fit) or pool Texas differently.
+- **AI:** Claude Code (WS-ENGINE, co-authored commit) ran the script and wrote the note; the run log is the script's own output. No fragment found for this commit, so logged by the nightly review; figures copied from the commit, not re-checked.
+- **Open / next:** Ben's decision on the refit; push `ws/engine-14-results`; the D-024 four-state run.
+
+### LB-100 · 2026-11-03 · Admin: Ben merges thirteen engine-week PRs (#264–#266, #270–#278) to `main` (auto-review)
+- **Question:** Bring the day's engine-thread work (four-state runs, the D-037 mechanism route and the D-038 to D-041 calibration runs, the results dashboard) and a dependency bump onto `main`. Intent inferred from the merges; Ben left no note.
+- **What I did:** (from merge commits, 13:14 and 17:51–18:08 ET)
+  - Merged #276 (`ws/engine-14-austin-adu`: Austin and Houston checks, pre-reform missing-middle rows tagged `[predates]`, Ben 2026-11-03) at 13:14, then #264 (`ws/engine-14-rule-tags`), #265 (`ws/engine-14-counts`), #266 (`ws/engine-14-results`: D-025 non-convergence, D-024 four-state run with no credible estimate, V5 freeze proposal), #270 (`ws/engine-14-dashboard`), #271 (`ws/engine-14-route1`: D-037, scenario effects from the mechanism route, calibrated on our own four states), #274 (`ws/engine-14-adu-refit`: D-039 four-state ADU anchor 1.11/1,000, 0.74–1.74), #275 (`ws/engine-14-statewide`: D-040 statewide backtest, 1 of 4 state totals useful; ADU anchor diagnosis), #277 (`ws/engine-14-adu-counts`: D-041 consistent counts), #278 (`ws/engine-14-dashboard-calib`), #272 (`ws/engine-14-mm-anchor`: D-038 missing-middle anchor, D-042 refit, Ben's decision to keep the D-038 values) and #273 (`ws/deps-security-bump`: Pillow 13.0.0, certifi 2026.10.23).
+- **Inputs:** PRs #264–#266, #270–#278 and their branches.
+- **Outputs:** `origin/main` at bb968ec; `docs/analysis_plan.md` (D-037 to D-042 entries); `reports/mm-d042/` and the other run folders named in the fragments. The local checkout's `main` is still at 7fc54e5.
+- **Findings:** none new; each PR's work has its own fragment (`logbook.d/2026-11-03-ws-engine-14-results.md`, `-route1.md`, `-mm-anchor.md`, `-adu-refit.md`, `-statewide.md`, `-diagnosis.md`, `-adu-counts.md`, `-austin-adu.md`, `-dashboard.md`, `-dashboard-calibration.md`, `-ws-deps-security-bump.md`), now on `main` awaiting the fold.
+- **Decisions:** the fragments record D-037 (Ben, 2026-11-03), the Austin/Houston pre-reform rows (Ben, 2026-11-03) and keeping the D-038 missing-middle values over the D-042 refit (Ben, 2026-11-03, commit 145c7f0); D-038, D-039 and D-041 readings are marked for Ben to confirm. None has a dated row in `HANDOFF.md`.
+- **AI:** Claude Code wrote the merged PRs (logged in their fragments); the merges are Ben's. Logged by the nightly review from git history, without rerunning tests or re-checking figures.
+- **Open / next:** fold the `logbook.d/` fragments; pull `main` locally; add HANDOFF rows for D-037 and the kept D-038 values if Ben wants them there. Not merged yet, with fragments: `ws/engine-14-unseen-state` (D-043, a range for θ in an unseen state; method approved by Ben, run once into `reports/adu-state-effect/`) and the uncommitted office-hours notes in the main checkout (`logbook.d/2026-11-03-cowork-office-hours.md`, `docs/research/office-hours-2026-11-03-tomasso-notes.md`). Three Dependabot branches (pandera, pytest, ruff) are open.
+
+### LB-101 · 2026-11-04 · Admin: Ben merges eight Oregon, holdout and dashboard PRs (#280–#282, #284, #286–#289) to `main` (auto-review)
+- **Question:** Bring the Oregon setup (fifth state, run as the V9 transfer test), the statewide-holdout fixes and the data dashboard onto `main`. Intent inferred from the merges; Ben left no note.
+- **What I did:** (from merge commits, 14:40–18:34 ET)
+  - Merged #280 (`ws/data-dashboard`: coverage, parcels, reforms and growth by state) and #281 (`ws/or-transfer-setup`: statewide holdout by state FIPS, `config/states/or.yaml`, V9 in the validation plan, WS-OR brief) at 14:40, then #282 (`ws/or-package`: Oregon adapter package kept as `or`), #287 (`ws/core-v9-holdout-gaps`: BPS region from config, ACS stock filter, state totals; Ben's note that the Oregon freeze is conditional on observed market inputs), #288 (`ws/core-v9-null-geoid`: statewide holdout also hides rows with no GEOID, a V9 leak found by WS-OR), #286 (`ws/or-fees`: Portland, Bend, Salem SDC rows; Eugene water only), #289 (`ws/or-config`) and #284 (`ws/or-state-law`: SB 1051, HB 2001, SB 458, 2023 c.223, HB 2138 rows with a second-coder pass).
+- **Inputs:** PRs #280–#282, #284, #286–#289 and their branches.
+- **Outputs:** `origin/main` at cb60a5c (local `main` pulled to the same commit).
+- **Findings:** none new; each PR's work has its own fragment (`logbook.d/2026-11-04-or-assessment.md`, `-ws-data-dashboard.md`, `-ws-or-package.md`, `-core-v9-holdout-gaps.md`, `-ws-or-fees.md`, `-ws-or-config.md`, `-ws-or-state-law.md`), now on `main` awaiting the fold.
+- **Decisions:** the fragments record Ben's 2026-11-04 decisions (V9 freeze conditional on observed market inputs; Portland fee baseline, Eugene kept on the Handbook prior, accepted non-BPS gap). None has a dated row in `HANDOFF.md`.
+- **AI:** Claude Code wrote the merged PRs (logged in their fragments); the merges are Ben's. Logged by the nightly review from git history, without rerunning tests.
+- **Open / next:** fold the `logbook.d/` fragments. Pushed but not merged, with fragments: `ws/or-local-rules` (Portland, Bend and Metro rule rows, checked row by row in the evening by Ben's validation agent), `ws/or-readiness` (Oregon readiness report for the V9 freeze, 22 local rows, 28 county SB 1051 rows), `ws/engine-14-unseen-state` (D-043, then D-044 adopted: τ drawn from its profile, `adu_state_effect.yaml`). Office-hours notes (`logbook.d/2026-11-03-cowork-office-hours.md`, `docs/research/office-hours-2026-11-03-tomasso-notes.md`) are still uncommitted in the main checkout.
+
+### LB-102 · 2026-11-04 · Study design: D-048, the D-041 ADU model without the ramp, pre-registered (auto-review)
+- **Question:** D-047 chose no ramp in every fold and the D-045 audit found counts flat where the ramp expected 3–5× growth. Does D-041 do better with the ramp removed and nothing else changed?
+- **What I did:** (from commits 04f9fde, 3c5228d, 20:50–20:51 ET)
+  - Wrote D-048 in `docs/analysis_plan.md` before any fit (approved by Ben, 2026-11-04): ramp = 1 from the effective date; D-041 counts, fit places, test set, rule-share grid and gamma place effects unchanged. Reports: full fit beside D-041's log-likelihood (−383.718), leave-one-state-out (K1 vs 0.791, P90/P10 vs 28.0), test set.
+  - Fixed the adoption rule in advance: adopt only if no state is missed, K1 < 0.791 and the test set is not missed; else keep D-041. On adoption, the scenario ramp, θ, α and `adu_anchor.yaml` are refitted in separate PRs, and five-year totals will rise.
+  - Added a correction to D-047: its chart and PR comment called D-041's Raleigh–Durham test set useful; it was inside only (observed 410 vs P50 159).
+  - Added the no-ramp run to `scripts/dev/calibrate_shape.py` with a test in `tests/model/test_calibrate_shape.py`.
+- **Inputs:** D-041, D-045–D-047 (fragment `logbook.d/2026-11-04-ws-engine-15-fit-audit.md`).
+- **Outputs:** `docs/analysis_plan.md` (D-048 and the D-047 correction), `scripts/dev/calibrate_shape.py`, `tests/model/test_calibrate_shape.py` on local branch `ws/engine-15-fit-audit` (two commits ahead of `origin`, no PR).
+- **Findings:** none yet; the run had not been made at scan time.
+- **Decisions:** D-048 method approved by Ben (2026-11-04); no HANDOFF row.
+- **AI:** Claude Code wrote the entry, script and test (co-authored commits); the fragment ends at proposing D-048, so this step is logged by the nightly review. Not re-run.
+- **Open / next:** run D-048 once and apply the fixed adoption rule; push the branch.
+
+### LB-103 · 2026-11-05 · Admin: Ben merges fifteen ADU-fit, V9 and Oregon PRs (#279, #285, #290–#302) to `main` (auto-review)
+- **Question:** Bring the ADU fit audit and the D-048 adoption, the V9 Oregon transfer test (runner, freeze, scoring, release) and the remaining Oregon data work onto `main`. Intent inferred from the merges and the fragments' quotes of Ben ("Adopt D-048", "unblind and score", "start it"); Ben left no merge note.
+- **What I did:** (from first-parent merge commits on `origin/main`, Nov 4 21:04 to Nov 5 17:16 ET)
+  - Nov 4 evening: #290 (`ws/or-local-rules`), #291 (`ws/or-readiness`).
+  - Overnight: #292 (`ws/v9-or-freeze-runner`, D-046 runner, later renumbered), #294 (`ws/v9-adu-history`: own-history ADU variant, Portland pre-2018 counts), #293 (`ws/or-statelaw-validation`: 2023 duplex tier and county ADU rows), #296 (`ws/renumber-v9-decisions`: V9's D-046 → D-051 and D-049 → D-052, clashing with #285's numbers), then #279 (`ws/engine-14-unseen-state`, D-043/D-044), #285 (`ws/engine-15-fit-audit`: D-045 to D-049, including D-048's not-adopted result and the D-049 held-out log score) and #295 (`ws/engine-16-adopt-d048`: D-048 adopted, θ 0.000659 and α 2.214 refitted, `adu_anchor.yaml` regenerated, D-050 state effect re-estimated, `adu_state_effect.yaml` regenerated).
+  - Morning: #297 (`ws/v9-state-effect`: V9 draws τ as the scenario does), #298 (`ws/v9-or-freeze`: `results/frozen/V9-OR-TRANSFER.json`), #299 (`ws/v9-or-score`: missing-middle scores), #300 (`ws/or-permit-adapters`: Portland and Bend), #301 (`ws/v9-or-score-adu`: ADU scores). Afternoon: #302 (`ws/or-release`: `Holdout.released_on`, V9-OR-TRANSFER released 2026-11-05).
+- **Inputs:** the PRs above and their branches.
+- **Outputs:** `origin/main` at 583b94c. The local checkout's `main` is at de54d9c (#301), one merge behind.
+- **Findings:** from the fragments, not re-checked: the V9 missing-middle headline (1,753 built, P10 1,738) is inside its range by 15 buildings but the model over-predicts HB 2001's response; every ADU target missed (Portland 1,930 against 3–1,418; Bend 414 against 0–206), so V9 fails its pass rule. Each PR's work has its own fragment (`logbook.d/2026-11-04-ws-or-local-rules.md`, `-ws-or-readiness.md`, `-v9-or-freeze-runner.md`, `-ws-engine-15-fit-audit.md`, `2026-11-05-v9-adu-own-history.md`, `-ws-or-statelaw-validation.md`, `-ws-engine-16-adopt-d048.md`, `-v9-state-effect.md`, `-v9-or-freeze.md`, `-v9-or-score-mm.md`, `-ws-or-permit-adapters.md`, `-v9-or-score-adu.md`, `-or-release.md`), now on `main` awaiting the fold.
+- **Decisions:** the fragments record Ben's 2026-11-05 decisions: adopt D-048; unblind and score V9; release the V9 holdout with a dated field rather than delete it; the `released_on` shared-contract change. None has a dated row in `HANDOFF.md` (unchanged since the last scan).
+- **AI:** Claude Code wrote the merged PRs (logged in their fragments); the merges are Ben's. Logged by the nightly review from git history, without rerunning tests or re-checking figures.
+- **Open / next:** fold the `logbook.d/` fragments; pull `main` locally; add HANDOFF rows for D-048's adoption and the V9 release if Ben wants them there. Pushed but not merged, with a fragment: `ws/or-pool` (Oregon's full data rebuilt, `v9.FIT_STATES` pins V9 to the four fit states, D-053 drafted; see LB-104). Office-hours notes from Nov 3 are still uncommitted in the main checkout.
+
+### LB-104 · 2026-11-05 · Validation: D-053 run, Oregon added to the ADU calibration; not adopted, a coding question first (auto-review)
+- **Question:** What happens to the ADU fit when Portland and Bend (2016–2025, 20 place-years) join the four-state D-048 fit, as drafted in D-053?
+- **What I did:** (from the "D-053 Oregon Refit" artifact, dated run 2026-11-05; the run itself is not in any commit or fragment the review could see)
+  - Refit θ with all five states and leaving each state out; reran leave-one-state-out with the state spread drawn; re-estimated τ (D-050 method) with Oregon in; compared Portland's and Bend's yearly permits against both fits.
+  - Published the results as a dashboard with a decision panel.
+- **Inputs:** D-048, D-050, the Oregon data rebuilt on `ws/or-pool` (fragment `logbook.d/2026-11-05-or-pool.md`).
+- **Outputs:** [D-053 Oregon Refit](https://claude.ai/artifact/LimqtUsaCT4MiPmTCjtoTg); per the artifact, `reports/adu-d053-fit/` and `reports/adu-tau-draws-d053/` on branch `ws/or-pool`, draft PR #303. The branch's latest visible commit (ebb02b4) only drafts D-053, so the run outputs may be uncommitted or gitignored.
+- **Findings:**
+  - Adding Oregon halves θ (0.308 per 1,000, 0.213–0.463, against D-048's 0.659); the fit without Oregon reproduces D-048 exactly.
+  - Leave-one-state-out with the state spread: every state inside its range, Oregon only just (3,363 built, P90 3,925); without the spread Oregon is missed. τ̂ rises from 0 to 0.57, widening a new state's range from about ×0.5–×2 to ×0.33–×3.
+  - The partial-rule share jumps from the judgment value 0.3 to an estimated 1.0, which the artifact traces to blank fields in Portland's 2016–2020 rule row (parking, size cap, owner occupancy) rather than behaviour; it proposes filling them in `config/reforms/or.csv` and rerunning.
+- **Decisions:** none. The artifact marks D-053 "not yet adopted" and the partial-rule share as needing Ben's decision before any config is written. Whether Ben approved the run itself (the fragment said D-053 waited for approval) was not found.
+- **AI:** Claude ran the fit and built the artifact (session not identified); no fragment found, so logged by the nightly review from the artifact. Figures copied from the artifact, not re-checked.
+- **Open / next:** Ben's call on Portland's rule coding and the partial-rule share; commit the D-053 run outputs and a fragment on `ws/or-pool`; then decide on adopting D-053.
