@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.9"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.10"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -400,12 +400,159 @@ TABLES: dict[str, type[pa.DataFrameModel]] = {
 }
 
 
+# ---- results bundle (engine -> app; #310) -----------------------------------------------------------------
+# Not canonical input tables: what `lotline results --state XX` writes to reports/results/<st>/bundle.json and
+# the static app reads. Kept apart from TABLES (which adapters build); `validate` accepts both.
+
+SCENARIOS = [
+    "adu",
+    "missing_middle",
+    "fees",
+    "adu+missing_middle",
+    "adu+fees",
+    "missing_middle+fees",
+    "combined",  # all three, one parcel allocation (C47)
+]
+STATE_ROLES = ["benchmark", "development", "transfer", "national_only"]
+OVERLAP_FLAGS = ["high", "medium", "low"]
+FUNNEL_STAGES = ["legal", "pencils", "built"]
+RESULT_OUTCOMES = ["permits_added", "homes_in_place", "homes_net_statewide"]
+NEED_KINDS = ["household_growth_5y", "shortage_stock"]
+VERDICTS = ["pass", "partial", "fail", "not_run"]
+_SHARE = {"ge": 0, "le": 1}
+
+
+class ResultsMeta(_Strict):
+    """One row per bundle: what was run, from which commit and config, and how to label the state.
+
+    `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`).
+    `eligible_proxy` is true where the D-055 per-draw scale was applied (a state with no parcel denominator).
+    `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so.
+    """
+
+    state: Series[str] = pa.Field(**_STATE)
+    state_role: Series[str] = pa.Field(isin=STATE_ROLES)
+    data_tier: Series[pd.Int64Dtype] = pa.Field(isin=DATA_TIERS)
+    commit_sha: Series[str] = pa.Field(str_matches=r"^[0-9a-f]{7,40}$")
+    run_at: Series[str] = pa.Field(str_matches=r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
+    engine_version: Series[str]
+    schemas_version: Series[str]
+    config_hash: Series[str] = pa.Field(str_matches=r"^[0-9a-f]{64}$")
+    origin_year: Series[pd.Int64Dtype] = pa.Field(ge=2000, le=2100)
+    horizon_years: Series[pd.Int64Dtype] = pa.Field(ge=1)
+    n_draws: Series[pd.Int64Dtype] = pa.Field(ge=1)
+    seed: Series[pd.Int64Dtype]
+    eligible_proxy: Series[pd.BooleanDtype]
+    overlap_flag: Series[str] = pa.Field(isin=OVERLAP_FLAGS)
+    overlap_note: Series[str]
+    caveats: Optional[Series[str]] = pa.Field(nullable=True)
+    scenarios_pending: Optional[Series[str]] = pa.Field(nullable=True)
+
+
+class ResultsDraws(_Strict):
+    """The slider inputs: one row per scenario and draw, each column one parameter in config/params/.
+
+    homes = (eligible_tier1 + eligible_tier2 + eligible_tier3) x theta x pencil_out_share x completion_factor
+    x net_new_share x (1 - overlap_share); net statewide = homes x (1 - displacement_share). `theta` is the
+    draw's five-year uptake per pencil-out eligible parcel, back-solved from the engine's own additions so the
+    product reproduces each draw at default sliders (#310). `overlap_share` is null for a single scenario.
+    """
+
+    state: Series[str] = pa.Field(**_STATE)
+    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    draw: Series[pd.Int64Dtype] = pa.Field(ge=0)
+    eligible_tier1: Series[float] = pa.Field(ge=0)
+    eligible_tier2: Series[float] = pa.Field(ge=0)
+    eligible_tier3: Series[float] = pa.Field(ge=0)
+    theta: Series[float] = pa.Field(ge=0)
+    pencil_out_share: Series[float] = pa.Field(**_SHARE)
+    completion_factor: Series[float] = pa.Field(ge=0)  # completions per permit; can exceed 1
+    net_new_share: Series[float] = pa.Field(**_SHARE)
+    displacement_share: Series[float] = pa.Field(**_SHARE)
+    overlap_share: Series[float] = pa.Field(nullable=True, **_SHARE)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "scenario", "draw"]).any()
+
+
+class ResultsFunnel(_Strict):
+    """Legal -> Pencils -> Built for each scenario: parcels for `legal` and `pencils`, homes for `built`."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    stage: Series[str] = pa.Field(isin=FUNNEL_STAGES)
+    unit: Series[str] = pa.Field(isin=["parcels", "homes"])
+    p10: Series[float] = pa.Field(ge=0)
+    p50: Series[float] = pa.Field(ge=0)
+    p90: Series[float] = pa.Field(ge=0)
+
+
+class ResultsTotals(_Strict):
+    """The parity target: statewide P10/P50/P90 and mean per scenario, outcome and period, computed in Python
+    (`model/aggregate.py`) from the same draws the page re-aggregates. `period` is the five-year window
+    (e.g. 2026-2030) or a single year."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    outcome: Series[str] = pa.Field(isin=RESULT_OUTCOMES)
+    period: Series[str] = pa.Field(str_matches=r"^\d{4}(-\d{4})?$")
+    p10: Series[float]
+    p50: Series[float]
+    p90: Series[float]
+    mean: Series[float]
+
+
+class ResultsNeed(_Strict):
+    """Share of housing need (D-056): one row per scenario and denominator kind the state has. The two kinds
+    are never shown side by side without `label`; `is_headline` marks the one the page leads with."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    denominator_kind: Series[str] = pa.Field(isin=NEED_KINDS)
+    label: Series[str]
+    denominator: Series[float]
+    denominator_low: Series[float]
+    denominator_high: Series[float]
+    share_p10: Series[float]
+    share_p50: Series[float]
+    share_p90: Series[float]
+    share_p50_at_need_low: Series[float]
+    share_p50_at_need_high: Series[float]
+    is_headline: Series[pd.BooleanDtype]
+    source: Series[str]
+
+
+class ResultsScorecard(_Strict):
+    """Validation scorecard rows for the state (validation plan §5): one row per check."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    check_id: Series[str]
+    label: Series[str]
+    metric: Optional[Series[str]] = pa.Field(nullable=True)
+    value: Optional[Series[float]] = pa.Field(nullable=True)
+    target: Optional[Series[str]] = pa.Field(nullable=True)
+    verdict: Series[str] = pa.Field(isin=VERDICTS)
+    report_path: Optional[Series[str]] = pa.Field(nullable=True)
+
+
+RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
+    "results_meta": ResultsMeta,
+    "results_draws": ResultsDraws,
+    "results_funnel": ResultsFunnel,
+    "results_totals": ResultsTotals,
+    "results_need": ResultsNeed,
+    "results_scorecard": ResultsScorecard,
+}
+_ALL_TABLES = {**TABLES, **RESULTS_TABLES}
+
+
 class ContractError(ValueError):
     """An adapter's output looks like a canonical table but has a misspelled column."""
 
 
 def columns(table: str) -> list[str]:
-    return list(TABLES[table].to_schema().columns)
+    return list(_ALL_TABLES[table].to_schema().columns)
 
 
 def validate(df: pd.DataFrame, table: str) -> pd.DataFrame:
@@ -415,14 +562,14 @@ def validate(df: pd.DataFrame, table: str) -> pd.DataFrame:
     canonical column (e.g. `final_dat`): those raise ContractError, so an optional field is never lost
     silently. Raises pandera.errors.SchemaErrors listing every failing check (lazy validation).
     """
-    if table not in TABLES:
-        raise KeyError(f"unknown table {table!r}; expected one of {sorted(TABLES)}")
+    if table not in _ALL_TABLES:
+        raise KeyError(f"unknown table {table!r}; expected one of {sorted(_ALL_TABLES)}")
     canonical = columns(table)
     for extra in set(df.columns) - set(canonical):
         close = difflib.get_close_matches(str(extra), canonical, n=1, cutoff=0.85)
         if close:
             raise ContractError(f"{table}: column {extra!r} looks like a misspelling of {close[0]!r}")
-    return TABLES[table].validate(df, lazy=True)
+    return _ALL_TABLES[table].validate(df, lazy=True)
 
 
 def assert_conforms(df: pd.DataFrame, table: str) -> None:
@@ -464,6 +611,11 @@ HISTORY = [
         "1.9",
         "eligible_parcels: denominator_source value parcels_interpolated (years between two real parcel "
         "rolls, D-035 addendum)",
+    ),
+    (
+        "1.10",
+        "results bundle tables (results_meta, results_draws, results_funnel, results_totals, results_need, "
+        "results_scorecard): the engine-to-app contract, kept apart from the canonical input tables (#310)",
     ),
 ]
 
@@ -507,7 +659,15 @@ def data_dictionary() -> str:
         "*Required* means the column must be present; *nullable* means its values may be empty.",
         "",
     ]
-    for name, model in TABLES.items():
+    for name, model in _ALL_TABLES.items():
+        if name == next(iter(RESULTS_TABLES)):
+            lines += [
+                "# Results bundle (engine to app)",
+                "",
+                "Written by `lotline results --state XX` to `reports/results/<st>/bundle.json`; not adapter "
+                "inputs. See issue #310.",
+                "",
+            ]
         schema = model.to_schema()
         doc = " ".join((model.__doc__ or "").split())
         lines += [f"## `{name}`", "", doc or "", ""]

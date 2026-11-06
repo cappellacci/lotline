@@ -86,3 +86,35 @@ def share_of_need(
         "share_p50_at_need_low": p50 / d.low,
         "denominator_source": d.source,
     }
+
+
+# ---- the headline from exported draws (the browser's arithmetic; parity target, #310) ----------------------
+
+TIER_COLUMNS = ("eligible_tier1", "eligible_tier2", "eligible_tier3")
+
+
+def homes_from_draws(draws) -> dict[str, np.ndarray]:
+    """Per-draw statewide homes from a `results_draws` table: the only model arithmetic the app repeats.
+
+    eligible = Σ tiers; pencils = eligible × pencil_out_share; permits = pencils × theta × (1 − overlap);
+    homes in place = permits × completion_factor × net_new_share; net statewide = homes in place ×
+    (1 − displacement_share). A null overlap_share (a single scenario) counts as 0.
+
+    By hand: 1,000 eligible, pencil-out 0.5, θ 0.04, overlap 0, completion 1.0, net-new 0.6, displacement 0.25
+    -> 500 pencil out, 20 permits, 12 homes in place, 9 net statewide.
+    """
+    eligible = sum(np.asarray(draws[c], dtype=float) for c in TIER_COLUMNS)
+    pencils = eligible * np.asarray(draws["pencil_out_share"], dtype=float)
+    overlap = np.nan_to_num(np.asarray(draws["overlap_share"], dtype=float), nan=0.0)
+    permits = pencils * np.asarray(draws["theta"], dtype=float) * (1 - overlap)
+    in_place = (
+        permits * np.asarray(draws["completion_factor"], dtype=float) * np.asarray(draws["net_new_share"])
+    )
+    net = in_place * (1 - np.asarray(draws["displacement_share"], dtype=float))
+    return {
+        "legal": eligible,
+        "pencils": pencils,
+        "permits_added": permits,
+        "homes_in_place": in_place,
+        "homes_net_statewide": net,
+    }

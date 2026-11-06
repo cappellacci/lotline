@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.9** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.10** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -255,6 +255,120 @@ Table checks: `one_row_per_key`
 | `verified_date` | date | no | yes |  |
 | `notes` | text | no | yes |  |
 
+# Results bundle (engine to app)
+
+Written by `lotline results --state XX` to `reports/results/<st>/bundle.json`; not adapter inputs. See issue #310.
+
+## `results_meta`
+
+One row per bundle: what was run, from which commit and config, and how to label the state. `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`). `eligible_proxy` is true where the D-055 per-draw scale was applied (a state with no parcel denominator). `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so.
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `state_role` | text | yes | no | one of `benchmark`, `development`, `transfer`, `national_only` |
+| `data_tier` | integer | yes | no | one of `1`, `2`, `3` |
+| `commit_sha` | text | yes | no | matches `^[0-9a-f]{7,40}$` |
+| `run_at` | text | yes | no | matches `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}` |
+| `engine_version` | text | yes | no |  |
+| `schemas_version` | text | yes | no |  |
+| `config_hash` | text | yes | no | matches `^[0-9a-f]{64}$` |
+| `origin_year` | integer | yes | no | ≥ 2000; ≤ 2100 |
+| `horizon_years` | integer | yes | no | ≥ 1 |
+| `n_draws` | integer | yes | no | ≥ 1 |
+| `seed` | integer | yes | no |  |
+| `eligible_proxy` | true/false | yes | no |  |
+| `overlap_flag` | text | yes | no | one of `high`, `medium`, `low` |
+| `overlap_note` | text | yes | no |  |
+| `caveats` | text | no | yes |  |
+| `scenarios_pending` | text | no | yes |  |
+
+## `results_draws`
+
+The slider inputs: one row per scenario and draw, each column one parameter in config/params/. homes = (eligible_tier1 + eligible_tier2 + eligible_tier3) x theta x pencil_out_share x completion_factor x net_new_share x (1 - overlap_share); net statewide = homes x (1 - displacement_share). `theta` is the draw's five-year uptake per pencil-out eligible parcel, back-solved from the engine's own additions so the product reproduces each draw at default sliders (#310). `overlap_share` is null for a single scenario.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `draw` | integer | yes | no | ≥ 0 |
+| `eligible_tier1` | number | yes | no | ≥ 0 |
+| `eligible_tier2` | number | yes | no | ≥ 0 |
+| `eligible_tier3` | number | yes | no | ≥ 0 |
+| `theta` | number | yes | no | ≥ 0 |
+| `pencil_out_share` | number | yes | no | ≥ 0; ≤ 1 |
+| `completion_factor` | number | yes | no | ≥ 0 |
+| `net_new_share` | number | yes | no | ≥ 0; ≤ 1 |
+| `displacement_share` | number | yes | no | ≥ 0; ≤ 1 |
+| `overlap_share` | number | yes | yes | ≥ 0; ≤ 1 |
+
+## `results_funnel`
+
+Legal -> Pencils -> Built for each scenario: parcels for `legal` and `pencils`, homes for `built`.
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `stage` | text | yes | no | one of `legal`, `pencils`, `built` |
+| `unit` | text | yes | no | one of `parcels`, `homes` |
+| `p10` | number | yes | no | ≥ 0 |
+| `p50` | number | yes | no | ≥ 0 |
+| `p90` | number | yes | no | ≥ 0 |
+
+## `results_totals`
+
+The parity target: statewide P10/P50/P90 and mean per scenario, outcome and period, computed in Python (`model/aggregate.py`) from the same draws the page re-aggregates. `period` is the five-year window (e.g. 2026-2030) or a single year.
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `outcome` | text | yes | no | one of `permits_added`, `homes_in_place`, `homes_net_statewide` |
+| `period` | text | yes | no | matches `^\d{4}(-\d{4})?$` |
+| `p10` | number | yes | no |  |
+| `p50` | number | yes | no |  |
+| `p90` | number | yes | no |  |
+| `mean` | number | yes | no |  |
+
+## `results_need`
+
+Share of housing need (D-056): one row per scenario and denominator kind the state has. The two kinds are never shown side by side without `label`; `is_headline` marks the one the page leads with.
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `denominator_kind` | text | yes | no | one of `household_growth_5y`, `shortage_stock` |
+| `label` | text | yes | no |  |
+| `denominator` | number | yes | no |  |
+| `denominator_low` | number | yes | no |  |
+| `denominator_high` | number | yes | no |  |
+| `share_p10` | number | yes | no |  |
+| `share_p50` | number | yes | no |  |
+| `share_p90` | number | yes | no |  |
+| `share_p50_at_need_low` | number | yes | no |  |
+| `share_p50_at_need_high` | number | yes | no |  |
+| `is_headline` | true/false | yes | no |  |
+| `source` | text | yes | no |  |
+
+## `results_scorecard`
+
+Validation scorecard rows for the state (validation plan §5): one row per check.
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `check_id` | text | yes | no |  |
+| `label` | text | yes | no |  |
+| `metric` | text | no | yes |  |
+| `value` | number | no | yes |  |
+| `target` | text | no | yes |  |
+| `verdict` | text | yes | no | one of `pass`, `partial`, `fail`, `not_run` |
+| `report_path` | text | no | yes |  |
+
 ## Version history
 
 | Version | Change |
@@ -269,3 +383,4 @@ Table checks: `one_row_per_key`
 | 1.7 | reforms and fees: optional citation fields (source_section, source_quote, verified_by, verified_date); fees: optional notes; hand-coded fees live in config/fees/<st>.csv |
 | 1.8 | market_geo_year: optional demand_bartik, demand_bartik_loo, demand_imputed_share (shift-share local demand index, C04); eligible_parcels: denominator_source value parcels_scaled_acs (#208) |
 | 1.9 | eligible_parcels: denominator_source value parcels_interpolated (years between two real parcel rolls, D-035 addendum) |
+| 1.10 | results bundle tables (results_meta, results_draws, results_funnel, results_totals, results_need, results_scorecard): the engine-to-app contract, kept apart from the canonical input tables (#310) |

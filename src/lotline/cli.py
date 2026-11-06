@@ -179,6 +179,38 @@ def _schemas(args: argparse.Namespace) -> int:
     return 0 if current else 1
 
 
+def _results(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from lotline.io import DataStore
+    from lotline.model import results
+
+    if args.all:
+        # WS-APP owns the page build (scripts/build_app.py); --all is wired once that script exists (#310).
+        print(
+            "lotline results --all is not wired yet: it will write every state's bundle and then build the "
+            "page with scripts/build_app.py, which WS-APP has not written. Use --state XX for one bundle."
+        )
+        return 2
+    if not args.state:
+        print("give --state XX (or --all once the page build exists)")
+        return 2
+    state = args.state.upper()
+    out = Path(args.out) if args.out else Path("reports") / "results" / state.lower() / "bundle.json"
+    if not results.tree_is_clean():
+        print(
+            "warning: uncommitted changes; the bundle's commit_sha will not fully identify the code that ran"
+        )
+    bundle = results.build_bundle(state, DataStore(), role=args.role, origin=args.origin, draws=args.draws)
+    path = results.write_bundle(bundle, out)
+    m = bundle["meta"].iloc[0]
+    print(
+        f"wrote {path} ({m['state_role']}, tier {m['data_tier']}, overlap {m['overlap_flag']}; "
+        f"pending: {m['scenarios_pending']})"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="lotline", description="Lotline housing reform simulator.")
     parser.add_argument("--version", action="version", version=f"lotline {__version__}")
@@ -240,6 +272,23 @@ def build_parser() -> argparse.ArgumentParser:
     val.add_argument("--state", help="two-letter state code (default: every configured state)")
     val.add_argument("--step", default="V0", help="ladder step (V0 so far)")
     val.set_defaults(func=_validate)
+
+    res = sub.add_parser(
+        "results",
+        help="run the engine for a state and write its results bundle for the app (reports/results/<st>/)",
+    )
+    res.add_argument("--state", help="two-letter state code, e.g. MN")
+    res.add_argument("--all", action="store_true", help="every state's bundle, then the page (not wired yet)")
+    res.add_argument(
+        "--role",
+        choices=["benchmark", "development", "transfer", "national_only"],
+        help="how the app labels the state (default: national_only for a state with no parcel data, "
+        "else development)",
+    )
+    res.add_argument("--origin", type=int, help="forecast origin year (default: config results_origin_year)")
+    res.add_argument("--draws", type=int, help="draws per scenario (default: config results_draws)")
+    res.add_argument("--out", help="output path (default: reports/results/<st>/bundle.json)")
+    res.set_defaults(func=_results)
 
     sch = sub.add_parser("schemas", help="generate or check the data dictionary docs/schemas.md")
     sch.add_argument("--write", action="store_true", help="regenerate docs/schemas.md")

@@ -64,3 +64,43 @@ min_eligible_parcels_publish:
   unit: eligible parcels
   source: "Analysis plan D-015 (Ben, 2026-10-19), matching the V1 scoring floor (D-005, config/params/baseline.yaml v1_min_eligible_parcels); judging finding TR-07"
   notes: "Places with fewer eligible parcels than this are not shown on their own in the tool or reports: their results are folded into the county or region. Small places have rates too noisy to read and few enough parcels that a result could point at individual properties."
+
+results_draws:
+  value: 1000
+  low: 1000
+  high: 1000
+  unit: draws per scenario
+  source: "Results bundle contract, issue #310 (Ben accepted 2026-11-06: 1,000 draws per scenario)"
+  notes: "Draws exported per state and scenario for the app's live sliders (model/results.py). About 1 MB of JSON per state with every scenario."
+
+results_seed:
+  value: 20261106
+  low: 20261106
+  high: 20261106
+  unit: random seed
+  source: "Lotline convention: fixed seed for the bundle's own draws (completion, displacement), so a bundle is reproducible from config alone"
+  notes: "Scenario draws keep their own seeds (adu_simulation_seed etc.); this seeds only the aggregation factors drawn in model/results.py."
+
+overlap_flag_medium_share:
+  value: 0.10
+  low: 0.05
+  high: 0.25
+  unit: share of eligible parcels outside the calibration range
+  source: "Lotline convention (proposed in the results-bundle PR, to confirm with Ben): validation plan V7 and protocol §5.5 give places outside the calibration range a low-confidence flag; this rolls that up to a state"
+  notes: "State overlap flag: high when fewer than this share of the state's eligible parcels sit in places outside the calibration range (hazard.calibration_distance > 0)."
+
+overlap_flag_low_share:
+  value: 0.50
+  low: 0.25
+  high: 0.75
+  unit: share of eligible parcels outside the calibration range
+  source: "Lotline convention (proposed in the results-bundle PR, to confirm with Ben): validation plan V7 and protocol §5.5, rolled up to a state"
+  notes: "State overlap flag: low when at least this share of eligible parcels sit outside the calibration range; medium in between."
+
+results_origin_year:
+  value: 2025
+  low: 2025
+  high: 2025
+  unit: year
+  source: "Lotline convention, as in every forward development run (scripts/dev/adu_dev_run.py --origin 2025): the last complete permit year; the five-year window is 2026-2030"
+  notes: "The bundle's forecast origin; `lotline results --origin` overrides it."

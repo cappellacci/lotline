@@ -777,6 +777,7 @@ def run(
     anchor: Mapping[str, float] | None = None,
     states_spec: Mapping[str, float] | None = None,
     eligible_proxy: bool = False,
+    return_draws: bool = False,
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
@@ -794,6 +795,9 @@ def run(
     "acs_sf_fallback"` has its eligible parcels multiplied in each draw by eligible_proxy_scale ×
     exp(eligible_proxy_sd × z), one z per state per draw (`eligible_proxy.multipliers`, its own random
     stream); any state with a parcel-based place is untouched, and with the flag off nothing changes.
+    With `return_draws`, a last element is added: per-draw arrays for the results bundle (`model/results.py`):
+    `eligible` and `pencil` (draws x places; pencil = the pro forma's feasible share F(PCR) the hazard uses),
+    `added` and `homes` (draws x places x years) and `params` (each draw's parameter set).
 
     `places` columns: geoid, eligible_parcels, rent (median gross rent, 2025 dollars), home_value (2025
     dollars), optional mortgage_rate (a backtest passes the year's actual rate; where it is missing, each draw
@@ -832,6 +836,7 @@ def run(
         "homes": "additional_homes",
     }
     out = {k: np.zeros((n, len(places), horizon)) for k in keys}
+    pencil = np.zeros((n, len(places)))
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
 
     def rates(
@@ -859,6 +864,9 @@ def run(
         )
         out["handbook"][d], out["current"][d], out["added"][d] = paths.handbook, paths.current, paths.added
         out["homes"][d] = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
+        if return_draws:
+            ptc = hazard.adu_price_to_cost(places["rent"], params=p)
+            pencil[d] = hazard.feasible_share(ptc, p["adu_margin"], p["adu_feasibility_dispersion"])
 
     args = (places["rent"], places["home_value"], rates(central))
     dist = hazard.calibration_distance(*args, central)
@@ -883,8 +891,21 @@ def run(
             table[f"{name}_mean"] = a.mean(axis=0)
             for q in (10, 50, 90):
                 table[f"{name}_p{q}"] = np.percentile(a, q, axis=0)
+    extra = (
+        (
+            {
+                "eligible": e * e_mult,
+                "pencil": pencil,
+                "added": out["added"],
+                "homes": out["homes"],
+                "params": sets,
+            },
+        )
+        if return_draws
+        else ()
+    )
     if summary_by is None:
-        return yearly, totals
+        return (yearly, totals, *extra)
     rows = []
     for group, idx in pd.Series(range(len(places)), index=places[summary_by].to_numpy()).groupby(level=0):
         cols = idx.to_numpy()
@@ -905,7 +926,7 @@ def run(
                         "mean": a.mean(),
                     }
                 )
-    return yearly, totals, pd.DataFrame(rows)
+    return (yearly, totals, pd.DataFrame(rows), *extra)
 
 
 # ---------------------------------------------------------------------------------------------------------
