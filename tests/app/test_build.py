@@ -142,6 +142,7 @@ def test_a_slider_citing_an_unknown_parameter_is_refused(tmp_path):
 
 def test_results_section_parts_are_on_the_page(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    assert "<b>Provisional:</b> how the sliders move an assumption" in html  # Ben, 2026-11-06
     for part in ('id="headline"', 'id="ranges"', 'id="need"', 'id="funnel"', 'id="knobs"', "pencil out",
                  "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
         assert part in html, part
