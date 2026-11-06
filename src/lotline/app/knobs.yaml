@@ -1,0 +1,45 @@
+# The page's assumption sliders: one per factor in `results_draws` (#310) that the browser re-multiplies.
+# This file holds only plain-language labels for the page and pointers to the parameters behind each factor;
+# every number (value, low, high, unit, source) is read from config/params/ at build time, never copied here.
+# `params` lists `file:key` in config/params/ per scenario; a scenario not listed shows "see the engine run".
+# A slider shifts its factor through that factor's own range in the engine's draws (src/lotline/app/aggregate.js).
+theta:
+  label: How often owners build, once it pays
+  why: The five-year chance that an owner of an eligible lot where the project pays actually builds.
+  low_word: Fewer owners build
+  high_word: More owners build
+  format: share
+  params:
+    adu: [hazard:adu_mature_hazard_ref]
+pencil_out_share:
+  label: Share of legal lots where building pays
+  why: Of the lots the reform makes legal, the share where expected rent or sale value covers land, construction, fees and a fair return.
+  low_word: Pays on fewer lots
+  high_word: Pays on more lots
+  format: share
+  params:
+    adu: [proforma:adu_margin, proforma:hard_cost_per_sqft_usd, proforma:adu_hard_cost_premium]
+completion_factor:
+  label: Permits that become finished homes
+  why: Some permitted homes are never finished or are finished late. This turns permits into completed homes.
+  low_word: Fewer finished
+  high_word: All finished
+  format: share
+  params:
+    adu: [aggregate:completion_factor_single_family]
+net_new_share:
+  label: Finished units that add a home
+  why: Some new units become offices, guest rooms or short-term rentals, or legalize a unit that already existed. Only the rest add a home.
+  low_word: Fewer add a home
+  high_word: More add a home
+  format: share
+  params:
+    adu: [aggregate:adu_net_new_share, aggregate:adu_formalization_share]
+displacement_share:
+  label: Homes pulled from nearby places
+  why: Part of a place's gain would have been built in a neighbouring place anyway. It counts in this place but not in the statewide total.
+  low_word: Little pulled in
+  high_word: Much pulled in
+  format: share
+  params:
+    adu: [aggregate:displacement_share]

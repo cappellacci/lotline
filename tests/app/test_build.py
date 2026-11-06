@@ -103,3 +103,40 @@ def test_no_state_names_in_app_code():
         text = f.read_text(encoding="utf-8")
         for st in configured:
             assert not re.search(rf'["\']{st}["\']', text), f"{st} hard-coded in {f.name}"
+
+
+def test_scenario_labels_cover_the_schema_in_order():
+    from lotline.schemas import SCENARIOS
+
+    assert list(build.SCENARIOS) == list(SCENARIOS)
+    assert build.SCENARIOS["adu"][0] == "ADUs" and build.SCENARIOS["fees"][0] == "Fee reduction"  # Handbook
+
+
+def test_every_slider_is_a_draws_factor_with_its_citation_from_config():
+    from lotline.config import load_params
+    from lotline.schemas import columns
+
+    ks = build.knobs()
+    assert {k["column"] for k in ks} <= set(columns("results_draws"))
+    for k in ks:
+        assert k["label"] and k["why"] and k["low_word"] and k["high_word"]
+        for rows in k["params"].values():
+            for r in rows:
+                p = load_params(r["file"])[r["key"]]
+                assert (r["value"], r["low"], r["high"], r["source"]) == (p.value, p.low, p.high, p.source)
+
+
+def test_a_slider_citing_an_unknown_parameter_is_refused(tmp_path):
+    bad = tmp_path / "knobs.yaml"
+    bad.write_text(
+        "theta:\n  label: x\n  why: y\n  low_word: a\n  high_word: b\n  params:\n    adu: [hazard:nope]\n"
+    )
+    with pytest.raises(KeyError):
+        build.knobs(bad)
+
+
+def test_results_section_parts_are_on_the_page(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path).read_text()
+    for part in ('id="headline"', 'id="ranges"', 'id="need"', 'id="funnel"', 'id="knobs"', "pencil out",
+                 "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
+        assert part in html, part

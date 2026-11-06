@@ -58,6 +58,47 @@ footer { padding: var(--space-6) 0 var(--space-8); color: var(--ink-muted); font
 footer dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: var(--space-3) 0; }
 footer dd { margin: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 13px; }
 pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x: auto; margin: var(--space-2) 0; }
+
+/* range bars (STYLE_GUIDE "Charts"): band, rule in the scenario colour, midpoint tick */
+.ranges { display: grid; grid-template-columns: minmax(120px, 200px) 1fr minmax(150px, auto); gap: var(--space-2) var(--space-4); align-items: center; }
+.ranges .lab { font-weight: 600; font-size: 14px; line-height: 20px; }
+.ranges .nums { font-family: var(--font-mono); font-size: 14px; line-height: 20px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.track { position: relative; height: 28px; }
+.track .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.track .band, .track .line, .track .mid { position: absolute; transition: left 200ms ease-out, width 200ms ease-out; }
+.track .band { top: 4px; bottom: 4px; background: var(--survey-band); }
+.track .line { top: 13px; height: var(--stroke-line); }
+.track .mid { top: 6px; bottom: 6px; width: var(--stroke-mark); margin-left: -1px; }
+.track .zero { position: absolute; top: 2px; bottom: 2px; left: 0; width: var(--stroke-line); background: var(--scenario-baseline); }
+.axis { position: relative; height: 20px; font-size: 12px; line-height: 16px; color: var(--ink-muted); font-family: var(--font-mono); }
+.axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.row-pending { color: var(--ink-muted); font-size: 14px; line-height: 20px; font-style: italic; }
+@media (max-width: 640px) { .ranges { grid-template-columns: 1fr; } .ranges .nums { text-align: left; } }
+.headline { margin: 0 0 var(--space-4); }
+.headline .figure-large { display: block; color: var(--ink); }
+.toggle { display: inline-flex; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
+.toggle button { border: 0; border-radius: 0; background: var(--paper-raised); padding: var(--space-1) var(--space-3); cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--survey); color: var(--on-survey); }
+.controls { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; margin: var(--space-2) 0 var(--space-4); font-size: 14px; }
+.flag { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 600; }
+.flag .glyph { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; display: inline-block; }
+.flag.high { color: var(--confidence-inside); } .flag.high .glyph { background: currentColor; }
+.flag.medium { color: var(--confidence-edge); } .flag.medium .glyph { background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.flag.low { color: var(--confidence-outside); }
+.funnel { display: grid; grid-template-columns: minmax(120px, 180px) 1fr minmax(150px, auto); gap: var(--space-2) var(--space-4); align-items: center; }
+.funnel .bar { height: 20px; transition: width 200ms ease-out; }
+.knob { border-top: var(--stroke-hair) solid var(--rule); padding: var(--space-4) 0; }
+.knob:first-child { border-top: 0; padding-top: 0; }
+.knob .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); align-items: baseline; }
+.knob .val { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+.knob input[type=range] { width: 100%; accent-color: var(--survey); margin: var(--space-2) 0 0; }
+.knob .ends { display: flex; justify-content: space-between; font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+.knob details { font-size: 14px; line-height: 20px; color: var(--ink-muted); margin-top: var(--space-2); }
+.knob details li { margin: var(--space-1) 0; }
+.linkish { background: none; border: 0; padding: 0; color: var(--survey); text-decoration: underline; cursor: pointer; font-size: 14px; }
+.tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.tabs button { cursor: pointer; }
+.tabs button[aria-pressed="true"] { background: var(--survey); color: var(--on-survey); border-color: var(--survey); }
 </style>
 </head>
 <body>
@@ -103,6 +144,7 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 </footer>
 
 <script id="lotline-data" type="application/json">/*__LOTLINE_DATA__*/</script>
+<script>/*__LOTLINE_AGGREGATE__*/</script>
 <script>
 "use strict";
 const DATA = JSON.parse(document.getElementById("lotline-data").textContent);
@@ -128,15 +170,205 @@ function fillPicker() {
 
 function bundleFor(state) { return DATA.states.find((b) => b.meta.state === state); }
 
-// ---- sections (each fills its own body from the bundle) --------------------------------------------------
+// ---- formatting -------------------------------------------------------------------------------------------
+const fmtN = (x) => {
+  if (!Number.isFinite(x)) return "–";
+  const a = Math.abs(x);
+  const r = a >= 10000 ? Math.round(x / 100) * 100 : a >= 1000 ? Math.round(x / 10) * 10 : Math.round(x);
+  return r.toLocaleString("en-US");
+};
+const fmtPct = (x) => !Number.isFinite(x) ? "–" : (x * 100).toLocaleString("en-US", { maximumFractionDigits: x < 0.01 ? 2 : 1, minimumFractionDigits: x < 0.01 ? 2 : 1 }) + "%";
+const fmtFactor = (x, f) => !Number.isFinite(x) ? "–" : f === "rate" ? x.toPrecision(3) : fmtPct(x);
+const scenLabel = (k) => (DATA.scenarios[k] || { label: k }).label;
+const scenColor = (k) => `var(${(DATA.scenarios[k] || { color: "--ink" }).color})`;
+const AGG = globalThis.LotlineAggregate;
+
+function niceTicks(max, n = 4) {
+  if (!(max > 0)) return [0];
+  const step0 = max / n, mag = 10 ** Math.floor(Math.log10(step0));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= step0);
+  const out = [];
+  for (let t = 0; t <= max + 1e-9; t += step) out.push(t);
+  return out;
+}
+
+// ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
+const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null };
+const OUTCOME_WORDS = {
+  homes_net_statewide: ["Net statewide", "Homes added to the state, after taking out homes pulled in from nearby places."],
+  homes_in_place: ["In the places that build", "Homes built where the reform applies, before taking out homes pulled in from nearby places."],
+};
+
+function scenariosIn(b) {
+  const have = new Set(b.draws.map((d) => d.scenario));
+  return Object.keys(DATA.scenarios).filter((k) => have.has(k));
+}
+function pendingIn(b) {
+  return (b.meta.scenarios_pending || "").split(",").map((s) => s.trim()).filter((s) => s && !scenariosIn(b).includes(s));
+}
+const drawsFor = (b, s) => b.draws.filter((d) => d.scenario === s);
+const results = (b) => Object.fromEntries(scenariosIn(b).map((s) => [s, AGG.summarize(drawsFor(b, s), UI.pins)]));
+
+function flagHtml(m) {
+  const word = { high: "Inside the evidence", medium: "Near the edge of the evidence", low: "Outside the evidence" }[m.overlap_flag];
+  const say = {
+    high: "Most of this state's eligible lots look like the places the model learned from.",
+    medium: "Many of this state's eligible lots differ from the places the model learned from; read the range as approximate.",
+    low: "The model has not seen places like most of this state's; treat the range as wide.",
+  }[m.overlap_flag];
+  return `<div class="card"><p class="eyebrow">How far the model is reaching</p>
+    <span class="flag ${esc(m.overlap_flag)}"><span class="glyph" aria-hidden="true"></span>${esc(word)}</span>
+    <p class="body-small">${esc(say)}</p>
+    <p class="source">Overlap check: ${esc(m.overlap_note || "")}.${m.caveats ? " " + esc(m.caveats) : ""}</p></div>`;
+}
+
 const SECTIONS = {
   results(b) {
-    $("results-lead").textContent = `Net new homes over ${b.meta.horizon_years} years compared with no policy change, for ${b.meta.state}. Every result is a range.`;
-    return `<p class="pending">Results for this state are drawn here.</p>`;
+    UI.b = b; UI.pins = {};
+    const scen = scenariosIn(b);
+    UI.detail = scen.includes(UI.detail) ? UI.detail : scen[0];
+    const yrs = `${b.meta.origin_year + 1}–${b.meta.origin_year + b.meta.horizon_years}`;
+    $("results-lead").textContent = `Net new homes in ${b.meta.state} over ${b.meta.horizon_years} years (${yrs}) compared with no policy change (baseline). Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
+    if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
+    const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
+      `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
+    const rows = [`<div class="lab" style="color:var(--scenario-baseline)">Baseline</div>
+      <div class="track" aria-hidden="true"><span class="zero"></span></div>
+      <div class="nums muted">0 by definition</div>`];
+    for (const s of scen) rows.push(`<div class="lab" style="color:${scenColor(s)}">${esc(scenLabel(s))}</div>
+      <div class="track" data-track="${esc(s)}"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
+      <div class="nums" data-nums="${esc(s)}"></div>`);
+    const pend = pendingIn(b);
+    const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
+    const tabs = scen.map((s) => `<button type="button" data-detail="${esc(s)}" aria-pressed="${s === UI.detail}">${esc(scenLabel(s))}</button>`).join("");
+    return `${flagHtml(b.meta)}
+      <div class="card" id="headline-card">
+        <p class="eyebrow">Five-year total, ${yrs}</p>
+        <div class="headline" id="headline"></div>
+        <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
+          <span class="muted" id="outcome-note"></span></div>
+        <div class="ranges" id="ranges">${rows.join("")}</div>
+        <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
+        ${pendNote}
+        <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
+      </div>
+      <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
+      <div class="card"><h3 class="h3">From legal lots to built homes</h3>
+        <div class="tabs" role="group" aria-label="Scenario">${tabs}</div>
+        <div id="funnel" style="margin-top:var(--space-4)"></div>
+        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are homes in the places that build.</p></div>
+      <div class="card"><h3 class="h3">What it takes to pencil out</h3>
+        <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
+      <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
+        <h3 class="h3">Try different assumptions</h3><button type="button" class="linkish" id="reset-all">Reset all to the engine</button></div>
+        <p class="body-small muted">Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
+        <div id="knobs"></div></div>`;
   },
   data(b) { return `<p class="pending">The data dashboard and the sources used for ${esc(b.meta.state)} are shown here.</p>`; },
   trust(b) { return `<p class="pending">The validation scorecard for ${esc(b.meta.state)} is shown here.</p>`; },
 };
+
+function knobsHtml(b) {
+  const s = UI.detail;
+  return DATA.knobs.map((k) => {
+    const vals = b.draws.filter((d) => d.scenario === s).map((d) => Number(d[k.column]));
+    const fixed = AGG.percentile(vals, 0) === AGG.percentile(vals, 100);
+    const params = (k.params[s] || []).map((p) => `<li><b>${esc(p.key)}</b> (config/params/${esc(p.file)}.yaml): ${esc(p.value)} (range ${esc(p.low)} to ${esc(p.high)}) ${esc(p.unit)}. ${esc(p.source)}</li>`).join("");
+    return `<div class="knob" data-knob="${esc(k.column)}">
+      <div class="head"><label class="h3" for="k-${esc(k.column)}" style="font-size:16px">${esc(k.label)}</label><span class="val" data-val="${esc(k.column)}"></span></div>
+      <p class="body-small" style="margin:var(--space-1) 0">${esc(k.why)}</p>
+      ${fixed ? `<p class="body-small muted">Held fixed by the engine for this scenario at ${fmtFactor(vals[0], k.format)}.</p>` :
+      `<input type="range" id="k-${esc(k.column)}" min="0" max="100" step="5" value="50" data-pin="${esc(k.column)}" aria-describedby="v-${esc(k.column)}">
+      <div class="ends"><span>${esc(k.low_word)}</span><button type="button" class="linkish" data-reset="${esc(k.column)}">Reset</button><span>${esc(k.high_word)}</span></div>`}
+      <details><summary>Source and range</summary><ul>${params || "<li>Set by the engine run for this scenario.</li>"}</ul>
+        <p>In the engine's draws: P10 ${fmtFactor(AGG.percentile(vals, 10), k.format)}, P50 ${fmtFactor(AGG.percentile(vals, 50), k.format)}, P90 ${fmtFactor(AGG.percentile(vals, 90), k.format)}.</p></details>
+    </div>`;
+  }).join("");
+}
+
+function updateResults() {
+  const b = UI.b;
+  if (!b || !scenariosIn(b).length) return;
+  const R = results(b);
+  const o = UI.outcome;
+  const max = Math.max(...Object.values(R).map((r) => r[o].p90), 1) * 1.08;
+  const ticks = niceTicks(max);
+  const top = ticks[ticks.length - 1] >= max ? ticks[ticks.length - 1] : max;
+  const pct = (x) => `${Math.max(0, Math.min(100, (x / top) * 100))}%`;
+  for (const [s, r] of Object.entries(R)) {
+    const t = document.querySelector(`[data-track="${CSS.escape(s)}"]`);
+    if (!t) continue;
+    t.querySelectorAll(".grid-line").forEach((g) => g.remove());
+    for (const v of ticks) { const g = document.createElement("span"); g.className = "grid-line"; g.style.left = pct(v); t.prepend(g); }
+    const { p10, p50, p90 } = r[o];
+    for (const el of t.querySelectorAll(".band, .line")) { el.style.left = pct(p10); el.style.width = `calc(${pct(p90)} - ${pct(p10)})`; }
+    t.querySelector(".mid").style.left = pct(p50);
+    t.setAttribute("aria-label", `${scenLabel(s)}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
+    document.querySelector(`[data-nums="${CSS.escape(s)}"]`).innerHTML = `${fmtN(p10)} – ${fmtN(p90)} <span class="muted">(mid ${fmtN(p50)})</span>`;
+  }
+  $("axis").innerHTML = ticks.map((v) => `<span style="left:${pct(v)}">${fmtN(v)}</span>`).join("");
+  $("outcome-note").textContent = OUTCOME_WORDS[o][1];
+  const d = UI.detail, rd = R[d][o];
+  const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
+  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, ${o === "homes_net_statewide" ? "net statewide" : "in the places that build"}:</p>
+    <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
+    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>`;
+  // share of need: net statewide only (aggregate.share_of_need), the headline kind first
+  const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
+  $("need").innerHTML = needs.length ? needs.map((n) => {
+    const sh = AGG.shareOfNeed(R[d].homes_net_statewide, n);
+    return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-2) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
+      <span class="body">${esc(n.label)}</span></p>
+      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Net statewide homes. Source: ${esc(n.source)}.</p>`;
+  }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
+  // funnel (log widths)
+  const f = R[d], stages = [
+    ["Legally allowed", f.legal, "lots", "var(--survey)", 1],
+    ["Building pays", f.pencils, "lots", "var(--survey)", 0.6],
+    ["Built", f.homes_in_place, "homes", scenColor(d), 1],
+  ];
+  const lmax = Math.log10(Math.max(f.legal.p90, 10));
+  const w = (x) => `${Math.max(1, (Math.log10(Math.max(x, 1)) / lmax) * 100)}%`;
+  $("funnel").innerHTML = `<div class="funnel">${stages.map(([lab, r, unit, col, op]) => `<div class="lab body-small" style="font-weight:600">${lab}</div>
+    <div><div class="bar" style="width:${w(r.p50)};background:${col};opacity:${op}"></div></div>
+    <div class="nums body-small" style="font-family:var(--font-mono);text-align:right">${r.p10 === r.p90 ? fmtN(r.p50) : `${fmtN(r.p10)} – ${fmtN(r.p90)}`} ${unit}</div>`).join("")}</div>`;
+  for (const k of DATA.knobs) {
+    const el = document.querySelector(`[data-val="${CSS.escape(k.column)}"]`);
+    if (!el) continue;
+    const vals = drawsFor(b, d).map((x) => Number(x[k.column]));
+    const q = UI.pins[k.column];
+    el.textContent = q === undefined || q === 50 ? `Engine estimate: ${fmtFactor(AGG.percentile(vals, 50), k.format)} (P10–P90 ${fmtFactor(AGG.percentile(vals, 10), k.format)} to ${fmtFactor(AGG.percentile(vals, 90), k.format)})`
+      : `Shifted to its P${q}: ${fmtFactor(AGG.percentile(vals, q), k.format)} at the midpoint (×${AGG.shiftScale(drawsFor(b, d), k.column, q).toFixed(2)})`;
+    const input = document.querySelector(`[data-pin="${CSS.escape(k.column)}"]`);
+    if (input && q === undefined) input.value = 50;
+  }
+}
+
+function wireResults() {
+  const body = $("results-body");
+  const kn = $("knobs");
+  if (kn) kn.innerHTML = knobsHtml(UI.b);
+  body.onclick = (e) => {
+    const t = e.target.closest("button");
+    if (!t) return;
+    if (t.dataset.outcome) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
+    if (t.dataset.detail) {
+      UI.detail = t.dataset.detail; UI.pins = {};
+      body.querySelectorAll("[data-detail]").forEach((x) => x.setAttribute("aria-pressed", x === t));
+      $("knobs").innerHTML = knobsHtml(UI.b);
+    }
+    if (t.dataset.reset) delete UI.pins[t.dataset.reset];
+    if (t.id === "reset-all") UI.pins = {};
+    updateResults();
+  };
+  body.oninput = (e) => {
+    const col = e.target.dataset && e.target.dataset.pin;
+    if (!col) return;
+    UI.pins[col] = Number(e.target.value);
+    updateResults();
+  };
+  updateResults();
+}
 
 function footer(b) {
   const m = b.meta;
@@ -152,6 +384,7 @@ function footer(b) {
 function show(state) {
   const b = bundleFor(state);
   for (const [id, fill] of Object.entries(SECTIONS)) $(`${id}-body`).innerHTML = fill(b);
+  wireResults();
   footer(b);
   document.title = `Lotline · ${b.meta.state}`;
 }
