@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lotline</title>
+<style>
+/*__LOTLINE_TOKENS__*/
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body { margin: 0; font-size: 16px; line-height: 24px; }
+a { color: var(--survey); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--space-4); }
+.num, .figure, .figure-large, .code { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-muted); }
+.eyebrow { color: var(--brass); margin: 0 0 var(--space-1); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { max-width: 70ch; }
+
+/* masthead: plat grid behind the wordmark only */
+header.mast { border-bottom: var(--stroke-hair) solid var(--rule);
+  background-image: linear-gradient(var(--rule) 1px, transparent 1px), linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 48px 48px; background-position: -1px -1px; }
+header.mast .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); padding-top: var(--space-5); padding-bottom: var(--space-5); }
+.wordmark { height: 32px; display: block; }
+.wordmark img { height: 32px; width: auto; display: block; }
+.wordmark .dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wordmark .light { display: none; } :root:not([data-theme="light"]) .wordmark .dark { display: block; } }
+:root[data-theme="dark"] .wordmark .light { display: none; }
+:root[data-theme="dark"] .wordmark .dark { display: block; }
+.tagline { flex: 1 1 280px; margin: 0; color: var(--ink-muted); background: var(--paper); padding: 0 var(--space-2); }
+.picker { display: flex; align-items: center; gap: var(--space-2); background: var(--paper); padding: var(--space-1) var(--space-2); }
+select, button { font: inherit; color: var(--ink); background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); }
+
+nav.sections { position: sticky; top: 0; z-index: 2; background: var(--paper); border-bottom: var(--stroke-hair) solid var(--rule); }
+nav.sections .wrap { display: flex; gap: var(--space-5); overflow-x: auto; }
+nav.sections a { display: block; padding: var(--space-3) 0; color: var(--ink); text-decoration: none; white-space: nowrap; border-bottom: var(--stroke-line) solid transparent; }
+nav.sections a:hover { border-bottom-color: var(--survey); }
+
+main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var(--stroke-hair) solid var(--rule); }
+.lead { color: var(--ink-muted); margin: var(--space-2) 0 var(--space-5); }
+.card { background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-0); padding: var(--space-5); margin: var(--space-4) 0; min-width: 0; }
+.card > h3 { margin-bottom: var(--space-2); }
+.grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.source { font-size: 14px; line-height: 20px; color: var(--ink-muted); margin: var(--space-3) 0 0; }
+.pending { border-left: var(--stroke-line) solid var(--rule); padding: var(--space-2) var(--space-3); color: var(--ink-muted); background: var(--paper-sunken); }
+.chip { display: inline-flex; align-items: center; gap: var(--space-1); font-size: 12px; line-height: 16px; font-weight: 500;
+  border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: 2px var(--space-2); white-space: nowrap; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 20px; }
+th, td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: var(--stroke-hair) solid var(--rule); vertical-align: top; }
+th { background: var(--paper-raised); font-weight: 600; }
+td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; }
+
+footer { padding: var(--space-6) 0 var(--space-8); color: var(--ink-muted); font-size: 14px; line-height: 20px; }
+footer dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: var(--space-3) 0; }
+footer dd { margin: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 13px; }
+pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x: auto; margin: var(--space-2) 0; }
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <a class="wordmark" href="#results" aria-label="Lotline"><span class="light"><!--__WORDMARK_LIGHT__--></span><span class="dark"><!--__WORDMARK_DARK__--></span></a>
+    <p class="tagline body-small">What state housing reforms would add over five years, as a range, with the data and the tests behind it.</p>
+    <label class="picker body-small">State <select id="state" aria-label="State"></select></label>
+  </div>
+</header>
+<nav class="sections" aria-label="Sections">
+  <div class="wrap">
+    <a href="#results">1. Results</a>
+    <a href="#data">2. The data</a>
+    <a href="#trust">3. How well does it hold up?</a>
+  </div>
+</nav>
+<main class="wrap">
+  <section class="part" id="results" data-section="results">
+    <p class="eyebrow">Section 1</p>
+    <h2 class="h1">Results</h2>
+    <p class="lead" id="results-lead"></p>
+    <div id="results-body"></div>
+  </section>
+  <section class="part" id="data" data-section="data">
+    <p class="eyebrow">Section 2</p>
+    <h2 class="h1">The data</h2>
+    <p class="lead">What the estimate is built on: which sources the state has, which the model used, and how complete they are.</p>
+    <div id="data-body"></div>
+  </section>
+  <section class="part" id="trust" data-section="trust">
+    <p class="eyebrow">Section 3</p>
+    <h2 class="h1">How well does it hold up?</h2>
+    <p class="lead">Predictions frozen before the outcomes could be seen, then scored against what happened.</p>
+    <div id="trust-body"></div>
+  </section>
+</main>
+<footer class="wrap" id="provenance">
+  <h3 class="h3">Where these numbers come from</h3>
+  <p>Every number on this page was computed by the Lotline engine and exported to a results bundle; the page only re-adds the engine's draws when a slider moves. Regenerate every bundle and this page with one command:</p>
+  <pre class="code">uv run lotline results --all</pre>
+  <dl id="meta"></dl>
+</footer>
+
+<script id="lotline-data" type="application/json">/*__LOTLINE_DATA__*/</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("lotline-data").textContent);
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+
+// ---- state picker: grouped by role, no state names in code ----------------------------------------------
+function fillPicker() {
+  const sel = $("state");
+  for (const [role, label] of Object.entries(DATA.roles)) {
+    const states = DATA.states.filter((b) => b.meta.state_role === role);
+    if (!states.length) continue;
+    const g = document.createElement("optgroup");
+    g.label = label;
+    for (const b of states) g.append(new Option(b.meta.state, b.meta.state));
+    sel.append(g);
+  }
+  const fromHash = new URLSearchParams(location.hash.split("?")[1] || "").get("state");
+  const pick = DATA.states.find((b) => b.meta.state === fromHash) || DATA.states[0];
+  sel.value = pick.meta.state;
+  sel.addEventListener("change", () => show(sel.value));
+}
+
+function bundleFor(state) { return DATA.states.find((b) => b.meta.state === state); }
+
+// ---- sections (each fills its own body from the bundle) --------------------------------------------------
+const SECTIONS = {
+  results(b) {
+    $("results-lead").textContent = `Net new homes over ${b.meta.horizon_years} years compared with no policy change, for ${b.meta.state}. Every result is a range.`;
+    return `<p class="pending">Results for this state are drawn here.</p>`;
+  },
+  data(b) { return `<p class="pending">The data dashboard and the sources used for ${esc(b.meta.state)} are shown here.</p>`; },
+  trust(b) { return `<p class="pending">The validation scorecard for ${esc(b.meta.state)} is shown here.</p>`; },
+};
+
+function footer(b) {
+  const m = b.meta;
+  const rows = [
+    ["State", `${m.state} (${DATA.roles[m.state_role] || m.state_role}; data tier ${m.data_tier})`],
+    ["Commit", m.commit_sha], ["Run at", m.run_at], ["Engine version", m.engine_version],
+    ["Schemas version", m.schemas_version], ["Config hash", m.config_hash],
+    ["Draws", `${m.n_draws} per scenario, seed ${m.seed}`], ["Page built", DATA.generated],
+  ];
+  $("meta").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+}
+
+function show(state) {
+  const b = bundleFor(state);
+  for (const [id, fill] of Object.entries(SECTIONS)) $(`${id}-body`).innerHTML = fill(b);
+  footer(b);
+  document.title = `Lotline · ${b.meta.state}`;
+}
+
+fillPicker();
+show($("state").value);
+</script>
+</body>
+</html>
