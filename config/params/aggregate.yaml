@@ -87,7 +87,7 @@ overlap_flag_medium_distance:
   high: 0.75
   unit: log distance outside the calibration range (eligible-weighted median over the state's places)
   source: "Ben, 2026-11-06 (results-bundle PR #311): state overlap flag on the median of hazard.calibration_distance; 0.5 is where adu_extrapolation_widening (1.0) adds a log-sd of 0.5, P10-P90 about x0.5 to x1.9 (the parameter's own example). Validation plan V7 and protocol §5.5: flag places outside the calibration range"
-  notes: "High at or below this median distance. Chosen after seeing the five states' distances (MN 0.65, NC 0.94, TX 0.69, OH 1.39, OR 0.11): a display flag, not a pre-registered test. The calibration range is the West Coast reference cities (hazard.yaml); re-basing it on the fit set would be its own analysis-plan entry."
+  notes: "High at or below this median distance. Chosen after seeing the five states' distances under the West Coast range (MN 0.65, NC 0.94, TX 0.69, OH 1.39, OR 0.11): a display flag, not a pre-registered test. D-060 re-based the range on the ADU anchor's fit places; the medians are now MN 0.03, NC 0.08, OH 0.31, TX 0, OR 0 (origin 2025), so all five fit states read high. The thresholds were not retuned (D-060); whether they should be is Ben's call."
 
 overlap_flag_low_distance:
   value: 1.0

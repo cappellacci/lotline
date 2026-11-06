@@ -35,9 +35,11 @@ full strength from its first year (D-048, no ramp-in):
   Portland's ~6). Lotline's own counts were flat or falling after reforms, not rising 3-5×, and every fit
   that could choose dropped the ramp (D-045, D-047, D-048, D-049).
 
-**Outside the calibration range.** The reference cities (Portland, Seattle, Los Angeles) are high-rent; most
-places Lotline covers are not. `calibration_distance` measures how far a place's rent, home value and mortgage
-rate lie outside the range the reference cities span (in logs, 0 inside). The model still uses the formula
+**Outside the calibration range.** Since D-060 the range is where the ADU anchor's fit places sit: the
+eligible-parcel-weighted 5th to 95th percentiles of rent and home value over its 316 place-years (MN, NC, OH,
+TX, OR) and the mortgage rates of those years; before, it was the West Coast reference cities' range
+(`PRE_D060_CALIBRATION`). `calibration_distance` measures how far a place's rent, home value and mortgage
+rate lie outside that range (in logs, 0 inside). The model still uses the formula
 there, but `widen` multiplies each draw's hazard by exp(w·d·z − (w·d)²/2), z standard normal, which keeps
 the mean and widens the range the further out the place is (`adu_extrapolation_widening` = w). z is a
 transport (model) error, so the scenario shares it across places in a draw
@@ -77,6 +79,18 @@ def normal_cdf(x):
 
 PRE_D048_RAMP = {"adu_ramp_half_years": 2.0, "adu_ramp_slope_years": 0.75}
 """The ADU ramp before D-048 (hazard.yaml until 2026-11-05), only to reproduce D-041 and earlier fits."""
+
+PRE_D060_CALIBRATION = {
+    "adu_calibration_rent_low_usd": 1573.0,
+    "adu_calibration_rent_high_usd": 2034.0,
+    "adu_calibration_value_low_usd": 519222.0,
+    "adu_calibration_value_high_usd": 835671.0,
+    "adu_calibration_rate_low": 2.96,
+    "adu_calibration_rate_high": 6.81,
+}
+"""The calibration range before D-060: Portland, Seattle and Los Angeles (ACS 2015-19, 2025 dollars) and
+the 2015-23 mortgage rate. Kept so predictions frozen with it (V9 Oregon) regenerate whatever hazard.yaml
+holds."""
 
 
 def adu_ramp(t, params: Mapping[str, float]):
@@ -188,7 +202,8 @@ def _outside(x, low: float, high: float):
 
 
 def calibration_distance(monthly_rent, home_value, mortgage_rate, params: Mapping[str, float] | None = None):
-    """Log distance outside the reference cities' range, per modifier and in total (0 = inside on all three).
+    """Log distance outside the calibration range (D-060: the fit places'), per modifier and in total
+    (0 = inside on all three).
 
     By hand, rent range 1,500-2,000: rent 1,000 -> log(1,500 / 1,000) = 0.405; rent 1,800 -> 0.
     """

@@ -4003,4 +4003,67 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Run once:** `LOTLINE_FIT_WITH_OR=1 uv run python scripts/dev/calibrate_adu.py --range-test --out
   reports/adu-d060-range`.
 - **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry; approved as written,
-  "Approve D-058", given under its first number). Written by WS-ENGINE before any run. **Status:** method approved, not run.
+  "Approve D-058", given under its first number). Written by WS-ENGINE before any run. **Status:** method approved; run and adopted, see Results.
+- **Results (run 2026-11-06 on c7f8d2e plus this PR's code; `reports/adu-d060-range/`, log
+  `run-2026-11-06-log.txt`).** Read by the rule above, unchanged.
+  - **Ranges (2025 dollars):**
+
+    | Range | Rent | Home value | Rate |
+    |---|---|---|---|
+    | C, current (Portland, Seattle, Los Angeles) | 1,573–2,034 | 519,222–835,671 | 2.96–6.81 |
+    | F, fit set, five states | 1,237–1,855 | 218,001–597,233 | 2.96–6.81 |
+    | min/max, five states (reported, not used) | 962–2,993 | 161,695–1,184,607 | |
+
+    The folds' F ranges (each without the held-out state) are in `ranges.csv`. Rent runs 1,204–1,296 at the
+    low end and 1,750–1,886 at the high end; value runs 199,394–251,423 low and 508,118–597,233 high.
+  - **Deviation (2026-11-06, written after the run): the reproduction check.** The entry asked the
+    no-widening arm to equal D-053's leave-one-state-out table. It doesn't: MN 141–1,465 (P50 453) against
+    D-053's published 136–1,525 (454), with OR, TX and NC off by similar small amounts, and OR's Portland
+    reference 7,653 against 7,541. D-053's own command (`--tau-draws --no-ramp`, LOTLINE_FIT_WITH_OR=1),
+    rerun on the same tree, gives exactly the no-widening arm, bands and means alike
+    (`d053-rerun-2026-11-06-log.txt`). So the new code adds nothing but the widening, and D-053's published
+    table no longer reproduces on today's main. The likely cause, not traced, is the configs D-053 committed
+    after its run (`adu.yaml`, `adu_anchor.yaml`, `adu_state_effect.yaml`, `hazard.yaml`, and the Oregon row
+    in `config/reforms/or.csv`). The check is therefore read against that rerun. The gates are untouched:
+    they compare C and F on the same draws, and those draws equal the rerun.
+  - **States, leave one state out, τ drawn (P10–P90, P50 in brackets):**
+
+    | State | Built | No widening | C current | F fit set |
+    |---|---|---|---|---|
+    | MN | 285 | 141–1,465 (453) useful | 113–1,540 (410) useful | 141–1,466 (454) useful |
+    | NC | 45 | 14–599 (100) inside only | 11–599 (87) useful | 14–597 (100) inside only |
+    | OH | 8 | 0–42 (4) useful | 0–32 (2) inside only | 0–42 (4) useful |
+    | TX | 1,108 | 31–2,675 (362) inside only | 22–2,529 (287) inside only | 31–2,662 (361) inside only |
+    | OR | 3,363 | 59–3,988 (661) inside only | 58–3,979 (659) inside only | 58–3,993 (653) inside only |
+    | NC with Raleigh and Durham | 455 | 44–1,793 (288) useful | 37–1,804 (266) useful | 44–1,793 (289) useful |
+
+  - **Summary:**
+
+    | Arm | States missed | Place coverage (P10–P90) | Place-year coverage | Median place observed ÷ P50 | Held-out parcels inside the range |
+    |---|---|---|---|---|---|
+    | No widening | 0 | 73.6% | 78.3% | 1.25 | 100% |
+    | C current | 0 | 74.1% | 79.5% | 1.29 | 13% |
+    | F fit set | 0 | 73.6% | 78.2% | 1.25 | 49% |
+
+    Place coverage is randomized (D-003), over 55 places. The median state P90 ÷ P10 is 67.7, 68.6 and 68.8.
+  - **Rule:** gate 1, states missed F 0 against C 0, passes. Gate 2, place coverage under F 73.6% ≥ 70%,
+    passes. Coverage is under 90%, so it is not "wider than needed". **F is adopted.**
+  - **Reading:** under F, half the held-out eligible parcels sit inside the range against an eighth under C.
+    The rest sit close to it, so F's bands are almost the no-widening bands. C pulled the lower bands and
+    medians down (MN P10 113 against 141, TX P50 287 against 361) and cost almost nothing in coverage.
+    Two verdicts swap between C and F: NC is useful under C and inside only under F, and OH the reverse.
+    Neither is a gate, and both states stay covered under both arms.
+  - **Applied:**
+    - `hazard.yaml` now holds F (`scripts/dev/adu_reference.py --fit-set --write`; whole dollars, within
+      $0.50 of the values tested);
+    - the parameter table is regenerated;
+    - the `hazard.py` docstring, the `hazard.yaml` header and `docs/model_and_assumptions.md` are updated;
+    - `v9.adu_draws` pins `hazard.PRE_D060_CALIBRATION`, with a test, so the frozen V9 prediction keeps the
+      range it was frozen with. No frozen prediction was recomputed.
+  - **Overlap flags (for Ben, not retuned):** each state's eligible-weighted median distance at origin 2025
+    falls from MN 0.65, NC 0.94, OH 1.39, TX 0.69 and OR 0.11 to MN 0.03, NC 0.08, OH 0.31, TX 0 and OR 0.
+    Every fit state now reads high ("Inside the evidence"), where before MN, NC and TX read medium and OH
+    low. The thresholds (0.5, 1.0) were picked after seeing the old distances. Whether they stay is Ben's
+    call; the `aggregate.yaml` notes say so. A state outside the fit set is still measured against the fit
+    places' range.
+  - **Status:** method approved, run 2026-11-06, F adopted.

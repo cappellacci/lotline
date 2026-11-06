@@ -399,8 +399,11 @@ Since D-048 (adopted 2026-11-05) a rule is at full strength from its first year,
 | ramp(t) | Share of the mature hazard reached t years after a rule took effect. 1 in every year (D-048): Lotline's own counts were flat or falling after reforms, not rising, and every fit that could choose dropped the ramp. Before D-048 it was a logistic, half 2 years, slope 0.75. | 1 (fixed) |
 
 The reference values (Portland's rent $1,573 and home value $519,222 in 2025 dollars, ACS 2015–19; the 2015–19
-mortgage rate) and the **calibration range** (rent $1,573–2,034 and home value $519k–836k across Portland,
-Seattle and Los Angeles; rates 2.96–6.81% over 2015–23) are recomputed by `scripts/dev/adu_reference.py`.
+mortgage rate) and the **calibration range** are recomputed by `scripts/dev/adu_reference.py`. Since D-060 the
+range is where the anchor is fitted: rent $1,237–1,855 and home value $218k–597k (the eligible-parcel-weighted
+5th to 95th percentiles over the 53 fit places' 316 place-years in MN, NC, OH, TX and OR, 2016–25) and rates
+2.96–6.81% (those years). Before D-060 it was the West Coast reference cities' range (rent $1,573–2,034, home
+value $519k–836k across Portland, Seattle and Los Angeles), which the frozen V9 prediction keeps.
 
 **Worked example** (the test `test_mature_hazard_one_place_by_hand`, with the earlier anchor 0.004 for round
 arithmetic; the hazard scales in proportion to the anchor): rent $1,100, home value half Portland's,
@@ -409,8 +412,8 @@ mortgage rate 2 points above 2015–19. PCR = 148,200 / 187,966 = 0.788; F = Φ(
 rates e^(−0.07 × 2) = 0.869. Mature hazard = 0.0077 × 0.253 × 0.841 × 0.869 = **0.00142**, 1.4 ADUs per 1,000
 eligible lots a year, from year 1 after adoption (before D-048 the ramp gave 21% of that in year 1).
 
-**Outside the calibration range.** Most places Lotline covers have lower rents and home values than the
-reference cities. The formula still applies there, but it is extrapolation, so the tool says so: each place
+**Outside the calibration range.** A place whose rent, home value or rate lies outside the range the anchor
+was fitted on is an extrapolation. The formula still applies there, so the tool says so: each place
 gets its log distance outside the range (rent, home value and rate added up; 0 inside), a flag, and a wider
 interval. Each simulation draw multiplies the hazard by exp(s·z − s²/2), s = `adu_extrapolation_widening`
 (1.0, range 0.5–2) × distance, z standard normal; the mean stays put and P10–P90 widens with distance.
@@ -891,12 +894,12 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_ref_rent_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25064 median gross rent, Portland city OR (place 4159000), CPI-U… |
 | `adu_ref_home_value_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars |
 | `adu_ref_mortgage_rate` | 3.99 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-20… |
-| `adu_calibration_rent_low_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: lowest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (20… |
-| `adu_calibration_rent_high_usd` | 2,034 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: highest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (2… |
-| `adu_calibration_value_low_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: lowest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (20… |
-| `adu_calibration_value_high_usd` | 835,671 | fixed | USD (2025) | scripts/dev/adu_reference.py: highest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (2… |
-| `adu_calibration_rate_low` | 2.96 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: lowest annual mean of FRED MORTGAGE30US over 2015-2023, the years the comparabl… |
-| `adu_calibration_rate_high` | 6.81 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: highest annual mean of FRED MORTGAGE30US over 2015-2023 |
+| `adu_calibration_rent_low_usd` | 1,237 | fixed | USD per month (2025) | scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 5th percentile of ACS median gross r… |
+| `adu_calibration_rent_high_usd` | 1,855 | fixed | USD per month (2025) | scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 95th percentile of ACS median gross… |
+| `adu_calibration_value_low_usd` | 218,001 | fixed | USD (2025) | scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 5th percentile of ACS median home va… |
+| `adu_calibration_value_high_usd` | 597,233 | fixed | USD (2025) | scripts/dev/adu_reference.py --fit-set (D-060): eligible-parcel-weighted 95th percentile of ACS median home v… |
+| `adu_calibration_rate_low` | 2.96 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py --fit-set (D-060): lowest annual mean of FRED MORTGAGE30US over the anchor's fit… |
+| `adu_calibration_rate_high` | 6.81 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py --fit-set (D-060): highest annual mean of FRED MORTGAGE30US over the anchor's fi… |
 | `adu_rent_to_median_ratio` | 1 | 0.8–1.2 | ADU rent / place median gross rent | Judgment |
 | `adu_feasibility_dispersion` | 0.5 | 0.25–0.8 | standard deviation of log(lot's own price-to-cost) | Judgment |
 | `adu_equity_elasticity` | 0.25 | 0–0.5 | % change in hazard per % change in median home value | Judgment |

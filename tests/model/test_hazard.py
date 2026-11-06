@@ -98,8 +98,10 @@ def test_hazard_is_a_probability():
 
 def test_calibration_distance_by_hand():
     """Rent range 1,573-2,034: rent 1,100 -> log(1,573 / 1,100) = 0.3577; rent 1,800 -> 0; rent 2,500 ->
-    log(2,500 / 2,034). Value and rate inside -> total = rent part."""
-    d = hazard.calibration_distance([1100, 1800, 2500], 600_000, 5.0)
+    log(2,500 / 2,034). Value and rate inside -> total = rent part. (The West Coast range, passed explicitly:
+    the config's range is the fit set's since D-060.)"""
+    params = hazard.central_params() | hazard.PRE_D060_CALIBRATION
+    d = hazard.calibration_distance([1100, 1800, 2500], 600_000, 5.0, params)
     assert d["rent"] == pytest.approx([math.log(1573 / 1100), 0.0, math.log(2500 / 2034)])
     assert d["home_value"] == pytest.approx([0, 0, 0]) and d["total"] == pytest.approx(d["rent"])
 
@@ -149,3 +151,18 @@ def test_widen_unseen_state_by_hand():
     )
     with pytest.raises(ValueError):
         hazard.widen_unseen_state(0.001, 0.5, 1.0, 1.0, 0.4, "max", p)
+
+
+def test_pre_d060_calibration_is_the_west_coast_range():
+    """D-060: the range V9 was frozen with is kept in code, equal to Portland/Seattle/LA's ACS 2015-19 values
+    (adu_reference.py) and the 2015-23 rate span."""
+    from lotline.model import hazard
+
+    assert hazard.PRE_D060_CALIBRATION == {
+        "adu_calibration_rent_low_usd": 1573.0,
+        "adu_calibration_rent_high_usd": 2034.0,
+        "adu_calibration_value_low_usd": 519222.0,
+        "adu_calibration_value_high_usd": 835671.0,
+        "adu_calibration_rate_low": 2.96,
+        "adu_calibration_rate_high": 6.81,
+    }
