@@ -3268,3 +3268,210 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     316 place-years; log-SE θ 0.232, α 0.254, correlation −0.010), `adu_state_effect.yaml` (with
     `fitted__OR`). Logs and charts are in `reports/adu-d053-fit/` and `reports/adu-tau-draws-d053/`, and
     run 1 is in `reports/adu-d053-run1/`.
+
+### D-054 · 2026-11-06 · Missing middle: statewide backtest, leave one state out (method only, before any run)
+- **Why:** the missing-middle anchor has only been scored place by place: D-038's and D-042's leave-one-place-out
+  backtests, and the D-037 test places. The tool reports state totals. For ADUs, D-040 and D-044 test that with
+  leave-one-state-out backtests, but missing middle has no such test. Two more reasons:
+  - **The adopted values can't be rebuilt from `main`.** `config/params/mm_hazard.yaml` holds D-038's values
+    (θ 1.08 per 1,000, 0.36–5.35; α 7.29; half-way point 2.0). They were fitted before Austin and Houston gained
+    their `[predates]` rows (coding change under D-038). On the current coding, the same likelihood gave
+    0.10–0.23 per 1,000 (D-042 main and checks 3 and 5).
+  - **The V9 Oregon test over-predicted.** That test was D-038's values applied to a state outside the fit: the
+    headline 2–4 unit total was just inside P10–P90, but the model's yearly median rose while the observed count
+    stayed flat, and the no-reform benchmark scored better over 2018–2025 (D-051 results).
+  
+  Ben chose this test on 2026-11-06 ("Write D-054 as proposed").
+- **What was looked at before writing:** D-038's and D-042's published results and place tables
+  (`reports/mm-d038/`, `reports/mm-d042/`), V9's scored results, and the code. No new outcome was tabulated.
+  Because those results are known, this entry fixes the method and the reading rule. It cannot be blind to them.
+- **Specifications compared (all on the same targets):**
+  - **(b) Main: D-038's likelihood on today's coding.**
+    - **Events and outcome:** D-042 change 1 (`calibrate_mm.event_year`, `prior_cap`, `retarget`). Each event is
+      a place's first in-window rise in the unit cap. Only the building classes above the prior cap count, and
+      the dose is the increase.
+    - **Baseline:** D-038's, `growth = "own"`: the place's pre-reform mean × its growth in units_1 + units_5p.
+    - **No capacity modifier.**
+    - This is the "D-038 specification" column of D-042's backtest. **Disclosed:** it is chosen as main after
+      that column was seen (MAE 0.119 against 0.153 for no effect). The reason given here is consistency: it is
+      D-038's model applied to the coding now on `main`, and V9 already predicts this way ("count only what each
+      reform newly allows").
+  - **(c) D-042 as pre-registered:** comparison-place baseline plus the builder-capacity slope b
+    (`fit_capacity`).
+  - **(a) The adopted values, held fixed:** θ, its log-sd (ln high − ln low) / 3.29, α and the half-way point
+    from `mm_hazard.yaml`, predicted on (b)'s targets and baseline.
+    - This is no backtest: D-038 was fitted on most of these places. It is shown as a reference line, labelled
+      in-sample, and never used to choose between models.
+  - **Held as judgment, as in D-038:** slope 0.75, σ = `mm_feasibility_dispersion`, margin =
+    `developer_margin`.
+- **Places:**
+  - **Fit set:** the D-042 event places outside the test set, built by `scripts/dev/calibrate_mm_d042.py`'s
+    `events_for` on the current panel. On `main`'s data that is 13 places:
+    - MN: St. Louis Park;
+    - NC: Wilson, Morrisville, Wake Forest, Sanford, Burlington, Garner;
+    - OH: Euclid;
+    - TX: League City, Lewisville, Lubbock, Austin, Houston.
+  - **Test places:** Minneapolis (MN), Durham city and Durham County (NC). They are added to their state's total
+    in a second line, as D-040 did. Raleigh has no cap rise under the event rule, so it is not scored (as in
+    D-042). These places were predicted and scored in D-038 and D-042, so they are not blind.
+  - **Never read:** St. Paul, Charlotte and Mecklenburg. The script asserts that their geoids are absent from
+    the panel.
+  - **Stated now: the MN and OH folds carry almost no information.** Each has one fit place with one post year.
+    Their verdicts are reported, but the reading rule below uses NC and TX only.
+- **Years:** each place's years T … T + 4, to 2025, as D-038's backtest. Every fit uses each training place's
+  post-reform years up to 2025 (as D-040; the refits are not cut at the target's reform year).
+- **Test 1, main: leave one state out.**
+  - For each of MN, NC, OH and TX, refit (b) and (c) on the other three states' fit-set places.
+  - Predict every place of the held-out state jointly (new `calibrate_mm.predict_places`):
+    - one θ per draw, from N(ln θ̂, se²), shared by every place predicted from that fit;
+    - an independent u ~ Gamma(mean 1, variance α) per place, from a stream keyed by (seed, geoid);
+    - Poisson counts per place-year on the place's own baseline and its realized growth index;
+    - for (c), the place's θ is scaled by exp(b̂ z_i).
+  - 20,000 draws, seed 20261106. The state total sums places and years within each draw.
+- **Test 2: leave one place out, summed by state, (b) only.** Each fit place is predicted from a refit on every
+  other fit place, using all their years. θ's normal draws share the seed across refits, so they stay aligned;
+  place effects are independent. Draws are summed within each state. This asks whether the statewide sum is
+  right when the state's other places are in the fit. (c) is left out of this test because of its run time (a
+  17-point slope grid per refit).
+- **Benchmarks, on the same places and draws:**
+  - **No effect:** Poisson on B alone;
+  - **The outside rate:** B + 0.0005 × k × ramp(half 2.5), as in D-038.
+- **Scores:**
+  - **Per state total, per specification and benchmark:**
+    - observed, P10, P50 and P90;
+    - observed ÷ P50 and P90 ÷ P10;
+    - CRPS (`baseline.crps_from_draws`);
+    - D-040's verdict. **Useful** means inside P10–P90 with P50 / 2 ≤ observed ≤ 2 × P50; when the observed
+      total and P50 are both 0, the factor test counts as met. **Inside only** means inside P10–P90 but failing
+      the factor test. **Missed** means outside P10–P90.
+  - **Per place: the held-out log score (D-049),** from the fold that left the place's state out:
+    - log ∫ P(y_i | B, θ k, α) dN(ln θ; ln θ̂, se²), computed by 20-node Gauss–Hermite. P is `place_loglik`,
+      with the place effect integrated out and Σ log y! dropped; the dropped term is the same for every model
+      on the same y.
+    - Totals are reported over the fit set and by state.
+    - Paired differences, model minus no effect and (c) minus (b), with paired SE sd(Δ_i) × √n.
+    - The test places are scored the same way and reported separately.
+- **State spread τ (report only).**
+  - On the full four-state fit of (b): θ_s = θ v_s with ln v_s ~ N(0, τ²), as in D-043. v_s is integrated by
+    40-node Gauss–Hermite (`calibrate_adu.gh_log_nodes`).
+  - Profile on τ = 0, 0.05, …, 2.5, maximizing θ and α at each point, with the half-way point held at the full
+    fit's value.
+  - Reported:
+    - τ̂ and its 90% profile interval;
+    - D-044's flat-prior distribution: median, P90 and the share of draws at 0;
+    - the unseen-state multiplier exp(τ z), P10–P90.
+  - **Nothing is written to config.** Two states carry one place each, so τ is expected to be poorly
+    identified. Whether a missing-middle state spread joins the scenario is a later entry.
+- **Reading rule (written now):**
+  1. **Transfer.** (b) transfers within the four states if neither the NC nor the TX fit-set total is missed in
+     test 1.
+  2. **Signal.** (b) predicts better than no effect if its held-out log score over the fit set beats no
+     effect's by more than 2 paired SE. If it does not, the finding is that the four states' 2–4 unit permits
+     show no reform effect that predicts better than each place's own trend. This is one of D-037's revisit
+     triggers for the in-state side, reported as such.
+  3. **(b) or (c).** (c) is preferred over (b) only if its held-out log score beats (b)'s by more than 2 paired
+     SE.
+  4. **What follows:**
+     - If 1 and 2 hold, WS-ENGINE proposes to Ben that the preferred specification's full four-state fit
+       replaces θ, α and the half-way point in `mm_hazard.yaml`, in its own PR.
+     - If 1 holds but 2 does not, the run is reported with the options (keep D-038's values, take the refit
+       with its range, or another entry), and Ben decides.
+     - If 1 fails, D-038's values stay, and the miss is reported.
+     - No parameter changes inside this PR.
+  5. **V5 (Charlotte, St. Paul).** These freeze on whatever `mm_hazard.yaml` holds on `main` at the freeze
+     (D-037 item 3). This run does not move that date, and it never reads Charlotte, Mecklenburg or St. Paul.
+- **Oregon:** not in this entry. D-053 left the missing-middle panels out on purpose, and V9 already is the
+  leave-Oregon-out case for D-038's values. Oregon joining the missing-middle fit needs its own dated entry,
+  approved by Ben before any run.
+- **Code:**
+  - `src/lotline/model/calibrate_mm.py`: `predict_places`, `verdict`, `heldout_log_score` and the τ likelihood
+    (`state_loglik`, `tau_profile`). Each has a unit test against a hand-worked case in
+    `tests/model/test_calibrate_mm.py`.
+  - The run: `scripts/dev/calibrate_mm_d054.py`, results to `reports/mm-d054/` (no outcome panel written).
+- **Run once:** `uv run python scripts/dev/calibrate_mm_d054.py --out reports/mm-d054`, after Ben's go-ahead on
+  the pushed code. `--dry` builds the inputs and prints only their structure.
+- **Decided by:** Ben, 2026-11-06 ("Write D-054 as proposed"); written by the missing-middle test session
+  before any run.
+- **Before the run (2026-11-06; code pushed; the dry run built the inputs and printed only their structure,
+  fitting nothing):** the fit set is the 13 places listed above:
+  - MN: St. Louis Park, event 2025, 1 year;
+  - NC: Burlington, Garner, Morrisville, Sanford, Wake Forest and Wilson, 3–5 years each;
+  - OH: Euclid, 2025, 1 year;
+  - TX: Austin, Houston, League City, Lewisville and Lubbock, 2–5 years.
+
+  Test places: Minneapolis (2020, 5 years), Durham city and Durham County (2020, 5 years). Raleigh is not
+  scored. No holdout geoid is in the panel. The adopted values the script reads are θ 0.001076 (log-sd 0.819),
+  α 7.29 and the half-way point 2.0.
+- **Results (one run, 2026-11-06, commit 22dea9b, 69 min; `reports/mm-d054/`, log `run-2026-11-06-log.txt`):**
+  - **Fits.** Main (b), all four states: θ = 0.12 per 1,000 eligible parcels a year (90%: 0.03–1.01).
+    - α = 8.4 (2.8–32). The half-way point sits on the grid floor, 0.5 years.
+    - This is about a ninth of the adopted 1.08.
+    - (c) reproduces D-042: 0.17 (0.06–0.88), b = −2.0 (grid edge).
+  - **θ in each fold.** Without MN 0.13, without NC 0.013, without OH 0.13, without TX 0.24 (b). For (c) the
+    same folds give 0.18, 0.004, 0.18 and 0.47. Most of the excess comes from North Carolina.
+  - **Test 1, leave one state out, fit-set totals** (observed against P10 / P50 / P90):
+
+    | State | Observed | (b) main | (c) D-042 | (a) adopted, in-sample | No effect | Outside rate |
+    |---|---|---|---|---|---|---|
+    | MN (St. Louis Park) | 0 | 0 / 0 / 2, useful | useful | useful | useful | useful |
+    | NC (6 places) | 26 | 15 / 21 / 31, **useful** | 8 / 13 / 19, missed | 20 / 41 / 171, useful | 14 / 19 / 25, missed | 29 / 37 / 45, missed |
+    | OH (Euclid) | 0 | useful | useful | useful | useful | useful |
+    | TX (5 places) | 49 | 211 / 262 / 527, **missed** | 283 / 333 / 534, missed | 211 / 288 / 865, missed | 190 / 208 / 227, missed | 246 / 267 / 288, missed |
+
+  - **With the test places added:**
+    - MN with Minneapolis, observed 106: (b) 45 / 57 / 123, useful. No effect missed (43–61), and (c)
+      missed (150–242).
+    - NC with Durham city and Durham County, observed 126: (b) 52 / 63 / 86, missed. (a) was useful
+      (66 / 121 / 510), and so was the outside rate (99 / 112 / 126).
+  - **Test 2, leave one place out, (b), summed by state:**
+    - MN with Minneapolis: 106 against 45 / 56 / 114, useful.
+    - NC fit set: 26 against 16 / 24 / 47, useful.
+    - NC with tests: 126 against 55 / 71 / 143, useful.
+    - TX: 49 against 200 / 230 / 400, missed.
+  - **Held-out log score, fit set (13 places).**
+    - Totals: (b) −90.9, (c) −153.8, (a) −94.4 (in-sample), outside rate −125.8.
+    - **No effect scores −∞.** Wake Forest permitted 9 buildings in the newly allowed classes on a pre-reform
+      baseline of 0, and no effect gives that zero probability.
+    - (c) − (b) = −62.9, paired SE 51.8.
+    - Test places: (b) 415.3, no effect 357.5, (a) 421.1, outside rate 412.7, (c) 406.6.
+  - **τ (report only): not estimable.** The profile falls only 0.8 log-likelihood units from τ = 0 to 2.5. The
+    flat-prior median is 1.05, and the unseen-state multiplier runs 0.23–4.2 (P10–P90). Nothing is written to
+    config.
+  - **Reading rule, as written:**
+    1. **Transfer: not met.** TX is missed by every specification, and by both benchmarks. NC is useful under
+       (b).
+    2. **Signal: cannot be evaluated as written.** The no-effect benchmark's log score is −∞ (Wake Forest), so
+       the paired SE is undefined. The rule did not foresee a benchmark that gives an observed count zero
+       probability. The script's `false` for this item is an artifact of comparing inf with NaN; it is not a
+       finding.
+    3. **(b) or (c): (b).** (c) is worse, not better.
+    4. **What follows, by item 1's outcome:** D-038's values stay in `mm_hazard.yaml` and the miss is reported.
+       Nothing in config changes in this PR.
+  - **POST-HOC diagnostics, not pre-registered** (`scripts/dev/d054_posthoc.py`, `reports/mm-d054/posthoc_*`):
+    - **Why TX is missed.** Lubbock's own-growth baseline expects 191 buildings over 2024–25. It permitted 25.
+      Every model inherits that baseline, so the TX miss is a baseline failure, not a reform-effect failure.
+      Without Lubbock, TX observed 24: (b) 22 / 60 / 305, inside only; no effect 12 / 17 / 23, missed.
+      Houston's 21 three-to-four unit buildings sit inside (b)'s 3–203 and well above no effect's 2–7.
+    - **Without Wake Forest:** (b) − no effect over the other 12 fit places is +9.8 log units, paired SE 11.1.
+      That is under 1 SE, so the fit set alone cannot tell (b) from no effect.
+    - **Leaving Wake Forest out of the fit** moves θ to 2.6 per 1,000, with the half-way point at the grid's
+      top (6.0). θ and the ramp trade off, and the estimate rests on a handful of NC towns.
+  - **Reading (for Ben):**
+    - **On today's coding, the in-state data point to a missing-middle hazard near 0.1 per 1,000, not 1.08.**
+      Every (b) refit sits at 0.01–0.24, except the one that drops Wake Forest.
+    - **The pre-registered transfer test fails**, but on a baseline that projected Lubbock's pre-reform pace.
+      No model of the reform effect could pass Texas with that baseline.
+    - **The adopted values are not better.** Their range is wide enough to cover NC and the test places, but
+      they still miss Texas. V9 found the same over-prediction in Oregon.
+  - **For Ben to decide** (results page `reports/mm-d054/d054-results.html`, published at
+    https://claude.ai/artifact/M24pZ4HRhhxvGxmTHrQNqv):
+    1. keep D-038's values, the rule's outcome;
+    2. adopt the (b) refit in a new entry, after re-scoring V9 Oregon with it (not blind);
+    3. first write a baseline rule for places whose pre-reform pace isn't stable (Lubbock), then rerun this
+       backtest.
+
+    The evidence is split:
+    - On the fit set, the refit scores about the same as the adopted values (−90.9 against −94.4 in-sample).
+    - The adopted values score better on the test places (421.1 against 415.3).
+    - V9 found the adopted values too high for Oregon.
+    - Charlotte's V5 freeze (Nov 17) uses whatever is on `main`.

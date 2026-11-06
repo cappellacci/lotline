@@ -1,0 +1,20 @@
+   state                               name  test_place  years  observed  baseline_expected  b_p10  b_p50  b_p90  none_p10  none_p50  none_p90
+0     MN                   Minneapolis city        True      5     106.0               52.1   45.0   56.0  121.0      43.0      52.0      61.0
+1     MN                St. Louis Park city       False      1       0.0                0.0    0.0    0.0    2.0       0.0       0.0       0.0
+2     NC  Durham County Unincorporated Area        True      5       0.0                0.0    0.0    0.0    2.0       0.0       0.0       0.0
+3     NC                    Burlington city       False      5      15.0                4.6    2.0    5.0    9.0       2.0       4.0       8.0
+4     NC                        Durham city        True      5     100.0               40.1   33.0   41.0   54.0      32.0      40.0      48.0
+5     NC                        Garner town       False      3       0.0                0.0    0.0    0.0    1.0       0.0       0.0       0.0
+6     NC                   Morrisville town       False      5       0.0                5.8    3.0    6.0    9.0       3.0       6.0       9.0
+7     NC                       Sanford city       False      5       0.0                0.0    0.0    0.0    0.0       0.0       0.0       0.0
+8     NC                   Wake Forest town       False      5       9.0                0.0    0.0    0.0    1.0       0.0       0.0       0.0
+9     NC                        Wilson city       False      5       2.0                8.9    5.0    9.0   14.0       5.0       9.0      13.0
+10    OH                        Euclid city       False      1       0.0                0.0    0.0    0.0    0.0       0.0       0.0       0.0
+11    TX                        Austin city       False      2       3.0               13.5   11.0   17.0   53.0       9.0      13.0      18.0
+12    TX                       Houston city       False      2      21.0                3.9    3.0   16.0  203.0       2.0       4.0       7.0
+13    TX                   League City city       False      5       0.0                0.0    0.0    3.0   50.0       0.0       0.0       0.0
+14    TX                    Lewisville city       False      3       0.0                0.0    0.0    1.0   11.0       0.0       0.0       0.0
+15    TX                       Lubbock city       False      2      25.0              190.6  177.0  197.0  230.0     173.0     191.0     209.0
+  state                                line model  observed   p10   p50    p90       mean  obs_over_p50  p90_over_p10       crps      verdict
+0    TX  fit set without Lubbock (POST-HOC)     b      24.0  22.0  60.0  305.0  137.18665      0.400000     13.863636  31.249666  inside only
+1    TX  fit set without Lubbock (POST-HOC)  none      24.0  12.0  17.0   23.0   17.43405      1.411765      1.916667   4.478960       missed
