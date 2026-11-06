@@ -1,0 +1,24 @@
+=== D-048: 53 fit places, 2 test places, counts {'exclude_cobuilt': True, 'window': 1, 'report_rate': 0.57} ===
+all four states: theta 0.308 per 1,000 (0.213-0.463), alpha 2.317, m_o 1.0 (1.0, 1.0), m_x 1.0 (1.0, 1.0), loglik -910.295
+without MN: theta 1.035 per 1,000 (0.608-1.933), alpha 0.427, m_o 0.2 (0.1, 0.4), m_x 1.0 (1.0, 1.0), loglik -708.664
+without NC: theta 0.329 per 1,000 (0.213-0.535), alpha 2.904, m_o 1.0 (1.0, 1.0), m_x 1.0 (1.0, 1.0), loglik -857.788
+without OH: theta 0.307 per 1,000 (0.210-0.468), alpha 2.414, m_o 1.0 (1.0, 1.0), m_x 1.0 (1.0, 1.0), loglik -905.132
+without TX: theta 0.289 per 1,000 (0.196-0.445), alpha 2.426, m_o 1.0 (1.0, 1.0), m_x 1.0 (1.0, 1.0), loglik -835.444
+without OR: theta 0.659 per 1,000 (0.443-1.023), alpha 2.214, m_o 1.0 (1.0, 1.0), m_x 0.3 (0.4, 1.0), loglik -327.881
+
+D-048: leave one state out
+                     group  places  place_years  observed   p10   p50    p90    mean  obs_over_p50  p90_over_p10  portland     verdict
+                        MN      42          249       285 236.0 456.0  903.0  524.87          0.62          3.83   7137.04      useful
+                        NC       6           32        45  20.9  73.0  198.0   95.54          0.62          9.47   1783.06      useful
+                        OH       1            2         8   0.0   3.0   22.0    7.76          2.67           inf    455.85 inside only
+                        TX       2           13      1108  35.0 318.0 1264.0  519.65          3.48         36.11  12070.98 inside only
+                        OR       2           20      3363  73.0 661.5 3145.1 1250.68          5.08         43.08   7541.01      missed
+NC with Raleigh and Durham       8           42       455  62.0 208.0  603.0  287.10          2.19          9.73   4867.05 inside only
+
+D-048: test set from the full fit
+             group  places  place_years  observed  p10   p50   p90   mean  obs_over_p50  p90_over_p10  portland     verdict
+Raleigh and Durham       2           10       410 13.0 111.0 424.0 178.55          3.69         32.62   3083.99 inside only
+
+Log-likelihood -910.295 (D-041 -383.718): gain -526.577
+K1 1.060 (D-041 0.791); missed 1; median P90/P10 36.1 (D-041 28.0); test set inside only
+Adoption rule: none missed False; K1 < 0.791 False; test set not missed True -> keep D-041

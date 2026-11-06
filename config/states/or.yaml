@@ -23,6 +23,12 @@ holdouts:
     reason: >-
       V9 transfer test: predict Oregon's ADU and middle-housing permits 2018 on from the MN/NC/OH/TX
       calibration, freeze, then unblind and pool Oregon into the calibration (validation plan V9)
+    # Released by Ben on 2026-11-05 after scoring: frozen in #298 (results/frozen/V9-OR-TRANSFER.json),
+    # scored in #299 and #301 (reports/v9-oregon/, D-051 and D-052 results in docs/analysis_plan.md).
+    released_on: 2026-11-05
+    released_note: >-
+      Frozen and scored (#298, #299, #301). Oregon's full data is now built and pooled into the calibration
+      for the five-state comparison (Ben, 2026-11-05; docs/build/workstreams/WS-OR.md step 8)
 sources:  # added by WS-OR with each adapter
   - name: portland_permits
     url: https://opendata.arcgis.com/api/v3/datasets/02d99db039e0428da88262bff513056a_89/downloads/data?format=csv&spatialRefId=4326

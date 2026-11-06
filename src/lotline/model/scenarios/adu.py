@@ -790,7 +790,7 @@ def run(
     config/params/adu_anchor.yaml (tests). With a `state` column, places in a state outside the fit that
     estimated τ also get a state multiplier exp(τ_d z_ds), shared by the state's places, with τ_d drawn per
     draw (`state_noise`, config/params/adu_state_effect.yaml, D-044); `states_spec` replaces that file
-    (tests). With `eligible_proxy` (D-053), a state whose every place has `denominator_source ==
+    (tests). With `eligible_proxy` (D-055), a state whose every place has `denominator_source ==
     "acs_sf_fallback"` has its eligible parcels multiplied in each draw by eligible_proxy_scale ×
     exp(eligible_proxy_sd × z), one z per state per draw (`eligible_proxy.multipliers`, its own random
     stream); any state with a parcel-based place is untouched, and with the flag off nothing changes.
@@ -989,17 +989,23 @@ def _county_shares(state: str, store, places: pd.DataFrame) -> pd.DataFrame:
     return geoparts.county_shares(load_state(state).fips, sorted(local), store)
 
 
-REFORM_STATES = ("MN", "NC", "OH", "TX")
+# States whose coded rules feed field probabilities, rule priors and blank shares. Oregon joined on
+# 2026-11-05 (D-055), after V9 was scored; V9 itself keeps the four states it was frozen from.
+REFORM_STATES = ("MN", "NC", "OH", "TX", "OR")
 
 
 _PARCEL_CACHE: dict[str, pd.DataFrame] = {}
 
 
-def _sf_parcels(state: str, store) -> pd.DataFrame:
-    """Single-family detached parcels of each jurisdiction's latest roll (zoning and lot size), cached."""
+def _sf_parcels(state: str, store) -> pd.DataFrame | None:
+    """Single-family detached parcels of each jurisdiction's latest roll (zoning and lot size), cached. None
+    for a state with no parcel table (Oregon on the ACS fallback): its zone-limited rules then take the
+    judgment share, as `rule_coverage` does for any place without parcels (D-021)."""
     if state not in _PARCEL_CACHE:
         cols = ["jurisdiction_geoid", "vintage", "land_use_std", "lot_sqft", "zoning_raw"]
         p = store.read(state, "parcels")
+        if p is None:
+            return None
         p = p[[c for c in cols if c in p]]
         p = p[p["land_use_std"] == "SF_DETACHED"]
         latest = p.groupby("jurisdiction_geoid")["vintage"].transform("max")

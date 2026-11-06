@@ -4,6 +4,10 @@ Held-out outcomes are removed from every table **by default**. A test can be unb
 prediction, `results/frozen/<test_id>.json`, has been committed and that commit is on `main`. So the
 prediction provably existed before anyone looked at the outcome.
 
+A test that has been scored can be **released** (`released_on` in the state config, set by Ben): the filter
+stops hiding its outcomes so the full data can be built, while the test stays in the registry. A release is
+refused unless the frozen prediction file exists, so a test can't be released before it was frozen.
+
 Annual tables are filtered conservatively: a year is held out if any day of it falls in the outcome window.
 """
 
@@ -51,7 +55,25 @@ def _git(repo: Path, *args: str) -> str:
 
 
 def holdouts_for(state: str) -> list[Holdout]:
+    """Every holdout of `state`, released ones included (the registry)."""
     return load_state(state).holdouts
+
+
+def check_release(h: Holdout, repo: Path = REPO_ROOT) -> None:
+    """A released test must have its frozen prediction in the repo. Only the file is checked, not its git
+    history: CI and judges' clones are shallow, and the release itself is a reviewed config change on main."""
+    if h.released_on and not frozen_path(h.test_id, repo).exists():
+        raise UnblindError(f"{h.test_id}: released on {h.released_on} but has no frozen prediction")
+
+
+def still_blind(holdouts: Iterable[Holdout], repo: Path = REPO_ROOT) -> list[Holdout]:
+    """The holdouts the filter still applies: all but the released ones (each checked by check_release)."""
+    out = []
+    for h in holdouts:
+        check_release(h, repo)
+        if not h.released_on:
+            out.append(h)
+    return out
 
 
 def held_out_mask(
@@ -120,8 +142,8 @@ def apply(
         raise UnblindError(f"unknown test ids for {state}: {sorted(unknown)}")
     for test_id in unblind:
         check_unblind(test_id, repo)
-    still_blind = [h for h in registry if h.test_id not in unblind]
-    return df.loc[~held_out_mask(df, still_blind, **cols)].copy()
+    blind = [h for h in still_blind(registry, repo) if h.test_id not in unblind]
+    return df.loc[~held_out_mask(df, blind, **cols)].copy()
 
 
 def drop_statewide(df: pd.DataFrame, *, geoid_col: str, year_col: str) -> pd.DataFrame:
@@ -130,7 +152,7 @@ def drop_statewide(df: pd.DataFrame, *, geoid_col: str, year_col: str) -> pd.Dat
     years)."""
     from lotline.config import all_states
 
-    statewide = [h for st in all_states() for h in holdouts_for(st) if h.statewide]
+    statewide = [h for st in all_states() for h in still_blind(holdouts_for(st)) if h.statewide]
     if not statewide:
         return df
     return df.loc[~held_out_mask(df, statewide, geoid_col=geoid_col, year_col=year_col)].copy()
@@ -179,8 +201,8 @@ def apply_acs(
         raise UnblindError(f"unknown test ids for {state}: {sorted(unknown)}")
     for test_id in unblind:
         check_unblind(test_id, repo)
-    still_blind = [h for h in registry if h.test_id not in unblind]
-    return df.loc[~acs_held_out_mask(df, still_blind)].copy()
+    blind = [h for h in still_blind(registry, repo) if h.test_id not in unblind]
+    return df.loc[~acs_held_out_mask(df, blind)].copy()
 
 
 # Outcome tables and the columns the filter needs. Checked centrally after every adapter run (lotline fetch),
@@ -204,7 +226,7 @@ class HoldoutLeak(RuntimeError):
 
 def assert_no_leak(df: pd.DataFrame, table: str, state: str) -> None:
     if table == "acs_geo_year":
-        leaked = int(acs_held_out_mask(df, holdouts_for(state)).sum())
+        leaked = int(acs_held_out_mask(df, still_blind(holdouts_for(state))).sum())
         if leaked:
             raise HoldoutLeak(f"{state} acs_geo_year: {leaked} held-out stock rows reached the output")
         return
@@ -215,7 +237,7 @@ def assert_no_leak(df: pd.DataFrame, table: str, state: str) -> None:
         cols.get("date_col") not in df.columns
     ):  # optional date column (e.g. vintage_date) absent: use the year
         cols = {k: v for k, v in cols.items() if k != "date_col"}
-    leaked = int(held_out_mask(df, holdouts_for(state), **cols).sum())
+    leaked = int(held_out_mask(df, still_blind(holdouts_for(state)), **cols).sum())
     if leaked:
         raise HoldoutLeak(
             f"{state} {table}: {leaked} held-out rows reached the output; the adapter must call holdout.apply"

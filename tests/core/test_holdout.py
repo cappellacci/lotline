@@ -337,6 +337,8 @@ def test_bps_state_load_filters_oregon(monkeypatch, tmp_path):
         return dest
 
     monkeypatch.setattr(bps_state, "fetch", fake_fetch)
+    # the blind V9 holdout (the real one was released on 2026-11-05)
+    monkeypatch.setattr(holdout, "holdouts_for", lambda state: [OREGON] if state == "OR" else [])
     monkeypatch.setattr(
         bps_state,
         "parse",
@@ -385,3 +387,50 @@ def test_statewide_holdout_hides_rows_with_no_geoid():
     assert out.year.tolist() == [2017]
     # a place holdout still never hides a null-GEOID row
     assert not holdout.held_out_mask(bps, [STPAUL], geoid_col="geoid", year_col="year").any()
+
+
+# Releasing a scored test (V9, Oregon, 2026-11-05): the filter stops, the registry keeps the test
+
+
+def test_a_released_holdout_no_longer_filters_once_its_freeze_exists(tmp_path):
+    frozen = holdout.frozen_path(OREGON.test_id, tmp_path)
+    frozen.parent.mkdir(parents=True)
+    frozen.write_text("{}")
+    df = pd.DataFrame({"geoid": ["4159000", "4159000"], "year": [2017, 2018]})
+    blind = holdout.apply(df, "OR", holdouts=[OREGON], repo=tmp_path, year_col="year")
+    assert blind.year.tolist() == [2017]
+    rel = Holdout(**{**OREGON.model_dump(), "released_on": "2026-11-05", "released_note": "scored"})
+    out = holdout.apply(df, "OR", holdouts=[rel], repo=tmp_path, year_col="year")
+    assert out.year.tolist() == [2017, 2018]
+    acs = _acs([("place:4159000", 2022, "B25024")])
+    assert len(holdout.apply_acs(acs, "OR", holdouts=[rel], repo=tmp_path)) == 1
+
+
+def test_a_release_without_a_frozen_prediction_is_refused(tmp_path):
+    rel = Holdout(**{**OREGON.model_dump(), "released_on": "2026-11-05", "released_note": "scored"})
+    df = pd.DataFrame({"geoid": ["4159000"], "year": [2018]})
+    with pytest.raises(holdout.UnblindError, match="no frozen prediction"):
+        holdout.apply(df, "OR", holdouts=[rel], repo=tmp_path, year_col="year")
+
+
+def test_a_release_needs_a_note_and_a_date_inside_the_window():
+    base = OREGON.model_dump()
+    with pytest.raises(ValueError, match="released_note"):
+        Holdout(**{**base, "released_on": "2026-11-05"})
+    with pytest.raises(ValueError, match="before its outcome window"):
+        Holdout(**{**base, "released_on": "2017-06-01", "released_note": "x"})
+
+
+def test_released_tests_stop_the_central_guard_and_state_totals(monkeypatch):
+    rel = Holdout(**{**OREGON.model_dump(), "released_on": "2026-11-05", "released_note": "scored"})
+    monkeypatch.setattr(holdout, "holdouts_for", lambda state: [rel] if state == "OR" else [])
+    holdout.assert_no_leak(pd.DataFrame({"geoid": ["4159000"], "year": [2020]}), "bps_place_year", "OR")
+    totals = pd.DataFrame({"state_fips": ["41"], "year": [2020]})
+    assert len(holdout.drop_statewide(totals, geoid_col="state_fips", year_col="year")) == 1
+
+
+def test_the_real_or_config_released_v9_and_its_freeze_is_in_the_repo():
+    (v9,) = holdout.holdouts_for("OR")
+    assert str(v9.released_on) == "2026-11-05"
+    assert holdout.frozen_path(v9.test_id).exists()
+    assert holdout.still_blind([v9]) == []

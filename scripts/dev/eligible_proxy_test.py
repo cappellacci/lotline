@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run analysis plan D-053: does the ACS fallback stand in for real eligible-parcel counts?
+"""Run analysis plan D-055: does the ACS fallback stand in for real eligible-parcel counts?
 
     uv run python scripts/dev/eligible_proxy_test.py         # writes reports/eligible-proxy/
 
@@ -13,9 +13,9 @@ check):
    jurisdiction tables exactly as `eligible.load` builds it) for the same jurisdictions, at the ACS end year
    the eligible-year rule pairs with that roll (`eligible._nearest_acs_year`: the nearest end year, the later
    on a tie, within `scale_max_year_gap`). A jurisdiction with no ACS year in reach is left out of both sums.
-3. `model.eligible_proxy.proxy_test`: r_s, k, leave-one-out k_(-s) and q_s, σ, and D-053's verdict.
+3. `model.eligible_proxy.proxy_test`: r_s, k, leave-one-out k_(-s) and q_s, σ, and D-055's verdict.
 
-Also written (D-053 "checks reported with the run"): per-jurisdiction pairs, the share of each state's
+Also written (D-055 "checks reported with the run"): per-jurisdiction pairs, the share of each state's
 parcel-based count in "rest of county" (`county_unincorporated`) jurisdictions.
 """
 
@@ -37,7 +37,7 @@ REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "reports" / "eligible-proxy"
 STATES = ("MN", "NC", "TX", "OH", "OR")
 MAIN_THEME = "adu"
-# data dashboard: share of parcels with unknown land use, which makes E_s itself uncertain (D-053)
+# data dashboard: share of parcels with unknown land use, which makes E_s itself uncertain (D-055)
 UNKNOWN_LAND_USE = {"TX": 0.365, "NC": 0.192}
 
 
@@ -126,7 +126,7 @@ def main() -> None:
     for theme, v in summary["themes"].items():
         print(f"\n{theme}: k={v['k']:.3f}  sigma={v['sigma']:.3f}  passed={v['passed']}")
         print(pd.DataFrame(v["rows"]).round(3).to_string(index=False))
-    print(f"\nD-053 verdict (theme {MAIN_THEME}): {summary['verdict'].upper()}")
+    print(f"\nD-055 verdict (theme {MAIN_THEME}): {summary['verdict'].upper()}")
 
 
 if __name__ == "__main__":

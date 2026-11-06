@@ -1,0 +1,41 @@
+fit,place,geoid,year,observed,p10,p50,p90
+five states,Portland city,4159000,2016,487.0,0.0,14.0,104.0
+five states,Portland city,4159000,2017,456.0,0.0,16.0,117.0
+five states,Portland city,4159000,2018,532.0,0.0,17.0,123.0
+five states,Portland city,4159000,2019,276.0,0.0,19.0,138.0
+five states,Portland city,4159000,2020,194.0,0.0,23.0,163.0
+five states,Portland city,4159000,2021,203.0,0.0,24.0,169.0
+five states,Portland city,4159000,2022,241.0,0.0,20.0,146.0
+five states,Portland city,4159000,2023,191.0,0.0,18.0,133.0
+five states,Portland city,4159000,2024,156.0,0.0,19.0,136.0
+five states,Portland city,4159000,2025,137.0,0.0,19.0,137.0
+five states,Bend city,4105800,2016,37.0,0.0,2.0,13.0
+five states,Bend city,4105800,2017,39.0,0.0,2.0,15.0
+five states,Bend city,4105800,2018,51.0,0.0,3.0,22.0
+five states,Bend city,4105800,2019,55.0,0.0,3.0,26.0
+five states,Bend city,4105800,2020,41.0,0.0,4.0,31.0
+five states,Bend city,4105800,2021,59.0,0.0,5.0,35.0
+five states,Bend city,4105800,2022,65.0,0.0,4.0,33.0
+five states,Bend city,4105800,2023,60.0,0.0,4.0,32.0
+five states,Bend city,4105800,2024,34.0,0.0,5.0,35.0
+five states,Bend city,4105800,2025,49.0,0.0,5.0,35.0
+four states (D-048),Portland city,4159000,2016,487.0,1.0,32.0,221.0
+four states (D-048),Portland city,4159000,2017,456.0,1.0,35.0,249.0
+four states (D-048),Portland city,4159000,2018,532.0,1.0,38.0,263.0
+four states (D-048),Portland city,4159000,2019,276.0,1.0,43.0,296.1000000000022
+four states (D-048),Portland city,4159000,2020,194.0,1.0,50.0,351.0
+four states (D-048),Portland city,4159000,2021,203.0,1.0,52.0,361.1000000000022
+four states (D-048),Portland city,4159000,2022,241.0,1.0,46.0,313.0
+four states (D-048),Portland city,4159000,2023,191.0,1.0,41.0,286.0
+four states (D-048),Portland city,4159000,2024,156.0,1.0,42.0,291.0
+four states (D-048),Portland city,4159000,2025,137.0,1.0,43.0,294.0
+four states (D-048),Bend city,4105800,2016,37.0,0.0,1.0,9.0
+four states (D-048),Bend city,4105800,2017,39.0,0.0,1.0,10.0
+four states (D-048),Bend city,4105800,2018,51.0,0.0,6.0,45.0
+four states (D-048),Bend city,4105800,2019,55.0,0.0,7.0,53.0
+four states (D-048),Bend city,4105800,2020,41.0,0.0,9.0,64.0
+four states (D-048),Bend city,4105800,2021,59.0,0.0,10.0,72.0
+four states (D-048),Bend city,4105800,2022,65.0,0.0,9.0,67.0
+four states (D-048),Bend city,4105800,2023,60.0,0.0,9.0,66.0
+four states (D-048),Bend city,4105800,2024,34.0,0.0,10.0,71.0
+four states (D-048),Bend city,4105800,2025,49.0,0.0,10.0,72.0
