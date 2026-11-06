@@ -9,7 +9,7 @@
   product is exactly the engine's draw (#310 Q1).
 - `funnel`: Legal -> Pencils -> Built, P10/P50/P90.
 - `totals`: the parity target, computed here from the same draws by `aggregate.homes_from_draws`.
-- `need`: share of housing need for each denominator kind the state has (D-056), the headline marked.
+- `need`: share of housing need for each denominator kind the state has (D-057), the headline marked.
 - `scorecard`: validation rows (none wired yet; the page shows "not yet scored").
 
 Which scenarios: today the engine runs the ADU scenario statewide. Fees (a statewide baseline forecast for
@@ -109,7 +109,7 @@ def triangular(name: str, n: int, rng: np.random.Generator, file: str = "aggrega
 def adu_draws(places: pd.DataFrame, run_draws: Mapping, rng: np.random.Generator) -> pd.DataFrame:
     """`results_draws` rows for the ADU scenario from `adu.run(..., return_draws=True)`'s last element.
 
-    Per draw d: eligible by data tier (after the D-055 scale where applied); pencil-out share = the eligible-
+    Per draw d: eligible by data tier (after the D-056 scale where applied); pencil-out share = the eligible-
     weighted mean of the pro forma's feasible share; θ = five-year permits added ÷ (eligible × pencil-out);
     net-new share = adu_net_new_share × (1 − adu_formalization_share) of that draw; completion and
     displacement drawn here.
@@ -191,7 +191,7 @@ def summarize(
         headline = aggregate.headline_kind(state, need_params) if have else None
         for kind, d in have.items():
             if d.low <= 0:
-                continue  # a falling projection has no share (D-056)
+                continue  # a falling projection has no share (D-057)
             s = aggregate.share_of_need(h["homes_net_statewide"], state, kind, need_params)
             need.append(
                 {
@@ -293,7 +293,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     caveats = []
     if tier3:
         caveats.append(
-            "National data only: eligible parcels are ACS single-family homes scaled by D-055 (zoning not "
+            "National data only: eligible parcels are ACS single-family homes scaled by D-056 (zoning not "
             "observed); statewide results only."
         )
     meta = pd.DataFrame(

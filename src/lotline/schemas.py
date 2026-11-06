@@ -426,7 +426,7 @@ class ResultsMeta(_Strict):
     """One row per bundle: what was run, from which commit and config, and how to label the state.
 
     `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`).
-    `eligible_proxy` is true where the D-055 per-draw scale was applied (a state with no parcel denominator).
+    `eligible_proxy` is true where the D-056 per-draw scale was applied (a state with no parcel denominator).
     `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so.
     """
 
@@ -504,7 +504,7 @@ class ResultsTotals(_Strict):
 
 
 class ResultsNeed(_Strict):
-    """Share of housing need (D-056): one row per scenario and denominator kind the state has. The two kinds
+    """Share of housing need (D-057): one row per scenario and denominator kind the state has. The two kinds
     are never shown side by side without `label`; `is_headline` marks the one the page leads with."""
 
     state: Series[str] = pa.Field(**_STATE)
