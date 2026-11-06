@@ -129,7 +129,30 @@ def data_section(states: Iterable[str], summary: dict | None) -> dict:
             "totals": s.get("totals") if s else None,
             "sources": sources_table(st, s),
         }
-    return {"summary_generated": (summary or {}).get("generated"), "by_state": out}
+    generated = (summary or {}).get("generated")
+    return {"summary_generated": generated, "by_state": out, "overall": overall(summary)}
+
+
+def overall(summary: dict | None) -> dict | None:
+    """Totals across every state in the data dashboard summary, for the data tab's opening summary.
+
+    Sums per-state counts (states never overlap): coded reforms, places with a coded reform, parcels on file,
+    jurisdictions; permit years run from the earliest first year to the latest last year. None without one.
+    """
+    states = [s for s in (summary or {}).get("states", []) if s.get("totals")]
+    if not states:
+        return None
+    t = [s["totals"] for s in states]
+    years = [x["permit_years"] for x in t if x.get("permit_years")]
+    return {
+        "states": [s["state"] for s in states],
+        "reforms": sum(x.get("reforms") or 0 for x in t),
+        "reform_places": sum(x.get("reform_places") or 0 for x in t),
+        "parcels": sum(x.get("parcels") or 0 for x in t),
+        "jurisdictions": sum(x.get("jurisdictions") or 0 for x in t),
+        "permit_first": min(y[0] for y in years) if years else None,
+        "permit_last": max(y[1] for y in years) if years else None,
+    }
 
 
 def find_bundles(results_dir: Path = RESULTS_DIR) -> list[Path]:
