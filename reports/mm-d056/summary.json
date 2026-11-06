@@ -1,0 +1,123 @@
+{
+  "fit_set": {
+    "MN": [
+      "St. Louis Park city"
+    ],
+    "NC": [
+      "Burlington city",
+      "Garner town",
+      "Morrisville town",
+      "Sanford city",
+      "Wake Forest town",
+      "Wilson city"
+    ],
+    "OH": [
+      "Euclid city"
+    ],
+    "TX": [
+      "Austin city",
+      "Houston city",
+      "League City city",
+      "Lewisville city",
+      "Lubbock city"
+    ]
+  },
+  "flagged_unstable": [
+    "Morrisville town",
+    "Austin city",
+    "Houston city",
+    "Lewisville city",
+    "Lubbock city",
+    "Minneapolis city"
+  ],
+  "test_places": [
+    "Minneapolis",
+    "Durham County",
+    "Durham city"
+  ],
+  "full": {
+    "d": {
+      "fit": "d_full",
+      "per_1000": 1.277119665650906,
+      "low_per_1000": 0.39441260556240243,
+      "high_per_1000": 4.966139841190525,
+      "log_se": 0.7699773176868645,
+      "alpha": 2.93810971725507,
+      "alpha_low": 0.8310139795248994,
+      "alpha_high": 12.230986618619324,
+      "half": 6.0,
+      "half_low": 5.0,
+      "half_high": 6.0,
+      "b": 0.0,
+      "places": 13,
+      "place_years": 69,
+      "loglik": -26.059192658649547,
+      "note": ""
+    },
+    "b1": {
+      "fit": "b1_full",
+      "per_1000": 0.11735759898391349,
+      "low_per_1000": 0.031165502994643053,
+      "high_per_1000": 0.9206998758420359,
+      "log_se": 1.0292166677355186,
+      "alpha": 8.163394534674783,
+      "alpha_low": 2.695643193302393,
+      "alpha_high": 31.614514966947635,
+      "half": 0.5,
+      "half_low": 0.5,
+      "half_high": 0.5,
+      "b": 0.0,
+      "places": 13,
+      "place_years": 69,
+      "loglik": -49.01735510713391,
+      "note": ""
+    },
+    "e": {
+      "fit": "e_full",
+      "per_1000": 1.2887126512849834,
+      "low_per_1000": 0.030883351689311545,
+      "high_per_1000": 5.010988677801077,
+      "log_se": 1.5469978663942054,
+      "alpha": 2.951129605956347,
+      "alpha_low": 0.8373594817088147,
+      "alpha_high": 33.120266937726456,
+      "half": 6.0,
+      "half_low": 0.5,
+      "half_high": 6.0,
+      "b": 0.0,
+      "places": 13,
+      "place_years": 69,
+      "loglik": -25.676409575899932,
+      "note": ""
+    }
+  },
+  "paired_d_minus_none_d": {
+    "delta": 10.763476442565638,
+    "paired_se": 8.780791305755344,
+    "n": 13
+  },
+  "paired_d_minus_b1": {
+    "delta": 25.91413047422085,
+    "paired_se": 27.689251928514928,
+    "n": 13
+  },
+  "paired_e_minus_d": {
+    "delta": 0.7170992665770007,
+    "paired_se": 0.9483349519495208,
+    "n": 13
+  },
+  "paired_b1_minus_none_b1": {
+    "delta": 13.789997777868791,
+    "paired_se": 9.3735195561547,
+    "n": 13
+  },
+  "reading_rule": {
+    "1_transfer_nc_tx_not_missed": false,
+    "2_signal_d_beats_none_by_2se": false,
+    "3_d_not_worse_than_b1_by_2se": true,
+    "next": "D-055 values stay; report the miss"
+  },
+  "draws": 20000,
+  "seed": 20261106,
+  "seconds": 1913
+}

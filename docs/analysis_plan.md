@@ -3617,3 +3617,55 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     place whose pace rose before its reform, the six-year mean is lower than the three-year one, and the excess
     credited to the reform grows. Specification (e) shows the same widening applied everywhere. This is
     reported and not changed, unless Ben amends the entry before the run.
+- **Results (one run, 2026-11-06, commit 3b77357 plus the logbook fragment, 32 min; `reports/mm-d056/`, log
+  `run-2026-11-06-log.txt`):**
+  - **Fits (per 1,000, 90% interval, half-way point):**
+    - (d) main: 1.28 (0.39–4.97), half 6.0;
+    - (b′): 0.117 (0.031–0.92), half 0.5;
+    - (e): 1.29 (0.03–5.01), half 6.0 with an interval of 0.5–6.0.
+  - **The likelihood has two peaks.** One sits at a fast ramp (half 0.5, θ ≈ 0.12), the other at the grid's
+    slow end (half 6.0, θ ≈ 1.3). Small changes move a fit from one to the other:
+    - dropping St. Louis Park, which built nothing, moves (e) to 0.13;
+    - the zero floor alone moves D-054's fold without Texas from 0.24 to 1.55.
+    
+    At half 6.0, years 1–5 carry 0.06–12% of the mature rate. So over the five scenario years, (d) implies a
+    mean hazard of 0.042 per 1,000 a year, against 0.104 for the adopted D-055 values. Its 1.28 is a
+    "mature" level beyond what any place's data reach.
+  - **Test 1, fit-set totals:**
+    - NC (observed 26): useful under every specification, and under no effect now that the floor applies.
+      (d) 17 / 24 / 33.
+    - TX (observed 49): missed by every specification and benchmark. (d) 175 / 194 / 216; no effect (d)
+      171 / 188 / 207.
+    - MN and OH: useful, and uninformative.
+  - **Test 1, with the test places:**
+    - MN with Minneapolis (106): (d) missed (36–77); (b′) useful (45–118).
+    - NC with Durham city and County (126): missed by every model; the outside rate is useful.
+  - **Test 2, (d):** NC fit set useful; TX missed (175–215); MN with Minneapolis and NC with the Durhams
+    missed.
+  - **Held-out log score, fit set, with paired SE:**
+    - (d) − no effect (d): +10.8 (8.8);
+    - (b′) − no effect (b′): +13.8 (9.4);
+    - (d) − (b′): +25.9 (27.7), almost all of it Lubbock's (+25.9). Its widened baseline is less wrong;
+    - (e) − (d): +0.7 (0.9).
+  - **Why the rule did not fix Texas.** Lubbock is flagged, but its six-year pre-reform mean is still 90
+    buildings a year (was 115), expecting 160 over 2024–25 against 25 built. Its pace was high across the whole pre-period
+    and fell only after the reform. No baseline built from pre-reform data could foresee that.
+  - **Reading rule, as written:**
+    1. **Transfer: not met** (TX missed).
+    2. **Signal: not met** (+10.8 against 2 × 8.8 = 17.6). The −∞ gap is closed, so item 2 can now be
+       evaluated, and it fails.
+    3. **Against (b′): met.**
+    4. **Outcome:** `mm_hazard.yaml` keeps D-055's values. Nothing in config changes.
+  - **Reading (for Ben):**
+    - **The baseline is not what fails in Texas.** Lubbock's fall after its reform is real in the counts, and
+      no pre-reform rule anticipates it. Whether something else happened in Lubbock in 2024–25 (a permit-system
+      change, a BPS reporting change, a local moratorium) is a data question, not a model one.
+    - **The four states cannot separate θ from the ramp.** The adopted fast-ramp fit (D-055) and a slow-ramp
+      fit with ten times the "mature" θ fit about equally well. Over five years they imply 0.10 and 0.04 per
+      1,000. A scenario should carry this as a range on the five-year realized hazard, or hold the ramp at an
+      outside value. Either would be a new entry.
+    - **"Better than no effect" fails at 2 SE** in both specifications that can now be scored (+10.8 and
+      +13.8, each about 1.2–1.5 SE). The in-state missing-middle signal stays weak: under (d), almost all of the gain
+      over no effect is Wake Forest (+7.7) and Burlington (+4.5).
+  - **Results page:** `reports/mm-d056/d056-results.html`, published at
+    https://claude.ai/artifact/XvRsYZGDB1vv1GE8Kzc5Kg.
