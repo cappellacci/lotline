@@ -28,7 +28,7 @@ def test_page_builds_from_fixture_and_has_every_section(tmp_path):
     html = page.read_text(encoding="utf-8")
     for section in ("results", "data", "trust"):
         assert f'data-section="{section}"' in html
-    for heading in ("Results", "The data", "How well does it hold up?"):
+    for heading in ("Results", "The data", "The model"):
         assert heading in html
     # identity inlined from the one source, no placeholder left behind
     assert "--scenario-adu" in html and "/*__" not in html and "<!--__" not in html
@@ -40,10 +40,15 @@ def test_page_builds_from_fixture_and_has_every_section(tmp_path):
     assert "uv run lotline results --all" in html
 
 
-def test_page_needs_no_server_or_network():
-    # the shell loads nothing from the network: no external script, stylesheet or font yet
+def test_page_needs_no_server_and_loads_only_the_brand_fonts():
+    # no external script; the only external stylesheet is the brand fonts (OFL, docs/disclosures.md),
+    # and the page reads fine without it (tokens.css names system fallbacks)
     html = build.render(build.payload([json.loads(FIXTURE.read_text())], "t"))
-    assert not re.search(r'<(script|link)[^>]+(src|href)="https?://', html)
+    assert not re.search(r'<script[^>]+src="https?://', html)
+    links = re.findall(r'<link[^>]+href="(https?://[^"]+)"', html)
+    assert all(u.startswith(("https://fonts.googleapis.com", "https://fonts.gstatic.com")) for u in links)
+    assert any("Public+Sans" in u and "IBM+Plex+Mono" in u for u in links)
+    assert '"Public Sans", "Helvetica Neue", Arial, sans-serif' in html  # fallback stack inlined
 
 
 def test_every_bundle_under_results_dir_appears_in_role_order(tmp_path):
@@ -213,3 +218,21 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
     }
     # the fixture's scorecard row reaches the page as-is
     assert _embedded(html)["states"][0]["scorecard"][0]["check_id"] == "V1"
+
+
+def test_sections_are_separate_pages_with_the_intro_above_them(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    assert "Housing Reform Model" in html and "Lotline is a tool to help understand" in html
+    # one page shown at a time: results first, the other two hidden until their tab is chosen
+    assert '<section class="part" id="page-results" data-section="results">' in html
+    for page in ("data", "trust"):
+        assert f'id="page-{page}" data-section="{page}" hidden>' in html
+        assert f'href="#{page}" data-page="{page}"' in html
+
+
+def test_state_picker_and_mark_sit_in_the_menu_bar(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    nav = re.search(r'<nav class="sections".*?</nav>', html, re.S).group(0)
+    assert 'id="state"' in nav and 'class="mark"' in nav and nav.count("data:image/svg+xml;base64,") == 2
+    assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in html  # favicon cut
+    assert 'id="state"' not in re.search(r'<header class="mast">.*?</header>', html, re.S).group(0)
