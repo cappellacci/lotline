@@ -234,4 +234,5 @@ def test_state_picker_and_mark_sit_in_the_menu_bar(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     nav = re.search(r'<nav class="sections".*?</nav>', html, re.S).group(0)
     assert 'id="state"' in nav and 'class="mark"' in nav and nav.count("data:image/svg+xml;base64,") == 2
+    assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in html  # favicon cut
     assert 'id="state"' not in re.search(r'<header class="mast">.*?</header>', html, re.S).group(0)
