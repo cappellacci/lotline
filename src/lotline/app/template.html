@@ -29,16 +29,21 @@ header.mast { border-bottom: var(--stroke-hair) solid var(--rule);
 header.mast .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); padding-top: var(--space-5); padding-bottom: var(--space-5); }
 .wordmark { height: 32px; display: block; }
 .wordmark img { height: 32px; width: auto; display: block; }
-.wordmark .dark { display: none; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wordmark .light { display: none; } :root:not([data-theme="light"]) .wordmark .dark { display: block; } }
-:root[data-theme="dark"] .wordmark .light { display: none; }
-:root[data-theme="dark"] .wordmark .dark { display: block; }
+.mark img { height: 24px; width: 24px; display: block; }
+.wordmark .dark, .mark .dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.wordmark, .mark) .light { display: none; } :root:not([data-theme="light"]) :is(.wordmark, .mark) .dark { display: block; } }
+:root[data-theme="dark"] :is(.wordmark, .mark) .light { display: none; }
+:root[data-theme="dark"] :is(.wordmark, .mark) .dark { display: block; }
 .tagline { flex: 1 1 280px; margin: 0; color: var(--ink-muted); background: var(--paper); padding: 0 var(--space-2); }
-.picker { display: flex; align-items: center; gap: var(--space-2); background: var(--paper); padding: var(--space-1) var(--space-2); }
+.picker { display: flex; align-items: center; gap: var(--space-2); }
 select, button { font: inherit; color: var(--ink); background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); }
 
 nav.sections { position: sticky; top: 0; z-index: 2; background: var(--paper); border-bottom: var(--stroke-hair) solid var(--rule); }
-nav.sections .wrap { display: flex; gap: var(--space-5); overflow-x: auto; }
+nav.sections .wrap { display: flex; align-items: center; gap: var(--space-4); }
+nav.sections .tabs-row { display: flex; gap: var(--space-5); overflow-x: auto; flex: 1 1 auto; min-width: 0; }
+nav.sections .nav-right { display: flex; align-items: center; gap: var(--space-3); flex: none; margin-left: auto; }
+nav.sections .mark { padding: 0; border: 0; }
+@media (max-width: 640px) { nav.sections .wrap { flex-wrap: wrap; gap: 0; } nav.sections .nav-right { order: -1; width: 100%; justify-content: flex-end; padding-top: var(--space-2); } nav.sections .tabs-row { flex-basis: 100%; } }
 nav.sections a { display: block; padding: var(--space-3) 0; color: var(--ink); text-decoration: none; white-space: nowrap; border-bottom: var(--stroke-line) solid transparent; }
 nav.sections a:hover { border-bottom-color: var(--rule); }
 nav.sections a[aria-current="page"] { border-bottom-color: var(--survey); font-weight: 600; }
@@ -134,14 +139,19 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
   <div class="wrap">
     <a class="wordmark" href="#results" aria-label="Lotline"><span class="light"><!--__WORDMARK_LIGHT__--></span><span class="dark"><!--__WORDMARK_DARK__--></span></a>
     <p class="tagline h3">Housing Reform Model</p>
-    <label class="picker body-small">State <select id="state" aria-label="State"></select></label>
   </div>
 </header>
 <nav class="sections" aria-label="Sections">
   <div class="wrap">
-    <a href="#results" data-page="results">1. Results</a>
-    <a href="#data" data-page="data">2. The data</a>
-    <a href="#trust" data-page="trust">3. The model</a>
+    <div class="tabs-row">
+      <a href="#results" data-page="results">1. Results</a>
+      <a href="#data" data-page="data">2. The data</a>
+      <a href="#trust" data-page="trust">3. The model</a>
+    </div>
+    <div class="nav-right">
+      <label class="picker body-small">State <select id="state" aria-label="State"></select></label>
+      <a class="mark" href="#results" aria-label="Lotline: back to results"><span class="light"><!--__MARK_LIGHT__--></span><span class="dark"><!--__MARK_DARK__--></span></a>
+    </div>
   </div>
 </nav>
 <main class="wrap">
@@ -519,7 +529,7 @@ function route() {
 }
 function go(page, scroll = true) {
   for (const p of PAGES) $(`page-${p}`).hidden = p !== page;
-  document.querySelectorAll("nav.sections a").forEach((a) => {
+  document.querySelectorAll("nav.sections a[data-page]").forEach((a) => {
     if (a.dataset.page === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
   history.replaceState(null, "", `#${page}?state=${encodeURIComponent($("state").value)}`);

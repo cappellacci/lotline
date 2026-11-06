@@ -15,3 +15,5 @@
 Follow-up the same day (Ben): tab 3 and its heading were renamed from "How well does it hold up?" to "The model".
 
 Second follow-up (Ben approved, 2026-11-06): the page loads the brand fonts Public Sans and IBM Plex Mono (SIL OFL 1.1) from Google Fonts, with the tokens' system fallbacks when offline. Source Serif 4 is left out because the style guide uses it only in the written reports. Disclosed in `docs/disclosures.md`. Checked in a browser: all six weights load (`document.fonts`). The test now allows only the Google Fonts stylesheet as an external resource.
+
+Third follow-up (Ben, 2026-11-06): the state picker moved from the masthead to the right end of the menu bar, followed by the compact Lotline mark (`docs/build/identity/wordmark/lotline-mark-{light,dark}.svg`, 24 px, linking back to Results). The style guide allows the mark on a different line from the wordmark. Below 640 px the picker and mark sit on their own row above the tabs. Checked in a browser: desktop, 375 px, light and dark (the mark swaps), and the state switch from its new place.

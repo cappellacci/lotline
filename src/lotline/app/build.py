@@ -35,6 +35,8 @@ PLACEHOLDERS = (
     "/*__LOTLINE_DATA__*/",
     "<!--__WORDMARK_LIGHT__-->",
     "<!--__WORDMARK_DARK__-->",
+    "<!--__MARK_LIGHT__-->",
+    "<!--__MARK_DARK__-->",
 )
 
 # Picker order and plain-language group labels for `results_meta.state_role` (#310 Q4).
@@ -177,8 +179,8 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
     }
 
 
-def _svg(name: str) -> str:
-    """A wordmark as an `<img>` with a data URI, without its embedded provenance metadata.
+def _svg(name: str, height: int = 32) -> str:
+    """A wordmark or mark as an `<img>` with a data URI, without its embedded provenance metadata.
 
     An `<img>` rather than inline SVG: each wordmark file carries a `<style>` with the same class names, and
     inline styles are page-global, so the dark copy would recolour the light one.
@@ -186,7 +188,7 @@ def _svg(name: str) -> str:
     text = (IDENTITY / "wordmark" / name).read_text(encoding="utf-8")
     text = re.sub(r"<metadata>.*?</metadata>", "", text, flags=re.S).strip()
     uri = "data:image/svg+xml;base64," + base64.b64encode(text.encode()).decode()
-    return f'<img src="{uri}" alt="Lotline" height="32">'
+    return f'<img src="{uri}" alt="Lotline" height="{height}">'
 
 
 def _json(x) -> str:
@@ -208,6 +210,8 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
         page.replace("/*__LOTLINE_TOKENS__*/", (IDENTITY / "tokens.css").read_text(encoding="utf-8"))
         .replace("<!--__WORDMARK_LIGHT__-->", _svg("lotline-wordmark-light.svg"))
         .replace("<!--__WORDMARK_DARK__-->", _svg("lotline-wordmark-dark.svg"))
+        .replace("<!--__MARK_LIGHT__-->", _svg("lotline-mark-light.svg", 24))
+        .replace("<!--__MARK_DARK__-->", _svg("lotline-mark-dark.svg", 24))
         .replace("/*__LOTLINE_AGGREGATE__*/", AGGREGATE_JS.read_text(encoding="utf-8"))
         .replace("/*__LOTLINE_DASHBOARD__*/", _json(dashboard))
         .replace("/*__LOTLINE_DATA__*/", blob)
