@@ -162,7 +162,12 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
     stamp = generated or dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     scenarios = {k: {"label": v[0], "color": v[1]} for k, v in SCENARIOS.items()}
     data = data_section([b["meta"]["state"] for b in states], summary)
+    from lotline.config import load_params
+
+    agg = load_params("aggregate")
+    overlap = {k: agg[f"overlap_flag_{k}_distance"].value for k in ("medium", "low")}
     return {
+        "overlap_thresholds": overlap,
         "generated": stamp,
         "roles": ROLES,
         "scenarios": scenarios,

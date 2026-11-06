@@ -87,7 +87,22 @@
     };
   }
 
-  const api = { TIERS, FACTORS, percentile, shiftScale, homesFromDraws, summarize, shareOfNeed };
+  // Tornado (section 3): the outcome's P50 with each factor shifted to its own low (q = 10) and high (q = 90)
+  // while the others stay at the engine, sorted by the size of the swing. Only `summarize` is used.
+  function tornado(draws, outcome, factors, lo, hi) {
+    lo = lo === undefined ? 10 : lo;
+    hi = hi === undefined ? 90 : hi;
+    const base = summarize(draws)[outcome].p50;
+    const rows = (factors || FACTORS).map((f) => ({
+      factor: f,
+      low: summarize(draws, { [f]: lo })[outcome].p50,
+      high: summarize(draws, { [f]: hi })[outcome].p50,
+    }));
+    rows.sort((a, b) => Math.abs(b.high - b.low) - Math.abs(a.high - a.low));
+    return { base, rows };
+  }
+
+  const api = { TIERS, FACTORS, percentile, shiftScale, homesFromDraws, summarize, shareOfNeed, tornado };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.LotlineAggregate = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
