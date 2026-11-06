@@ -801,8 +801,8 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `min_eligible_parcels_publish` | 20 | 10–50 | eligible parcels | Analysis plan D-015 (Ben, 2026-10-19), matching the V1 scoring floor (D-005, config/params/baseline.yaml v1_m… |
 | `results_draws` | 1,000 | fixed | draws per scenario | Results bundle contract, issue #310 (Ben accepted 2026-11-06: 1,000 draws per scenario) |
 | `results_seed` | 20261106 | fixed | random seed | Lotline convention: fixed seed for the bundle's own draws (completion, displacement), so a bundle is reproduc… |
-| `overlap_flag_medium_share` | 0.1 | 0.05–0.25 | share of eligible parcels outside the calibration range | Lotline convention (proposed in the results-bundle PR, to confirm with Ben): validation plan V7 and protocol… |
-| `overlap_flag_low_share` | 0.5 | 0.25–0.75 | share of eligible parcels outside the calibration range | Lotline convention (proposed in the results-bundle PR, to confirm with Ben): validation plan V7 and protocol… |
+| `overlap_flag_medium_distance` | 0.5 | 0.25–0.75 | log distance outside the calibration range (eligible-weighted median over the state's places) | Ben, 2026-11-06 (results-bundle PR #311): state overlap flag on the median of hazard.calibration_distance |
+| `overlap_flag_low_distance` | 1 | 0.75–1.5 | log distance outside the calibration range (eligible-weighted median over the state's places) | Ben, 2026-11-06 (results-bundle PR #311): a log distance of 1 is about 2.7x outside the range on one modifier… |
 | `results_origin_year` | 2025 | fixed | year | Lotline convention, as in every forward development run (scripts/dev/adu_dev_run.py --origin 2025): the last… |
 
 **`config/params/baseline.yaml`** (29 parameters)

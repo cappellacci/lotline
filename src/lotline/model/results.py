@@ -70,19 +70,32 @@ def tree_is_clean(repo: Path = REPO) -> bool:
     return out.returncode == 0 and not out.stdout.strip()
 
 
-def overlap_flag(eligible: np.ndarray, outside: np.ndarray, params=None) -> tuple[str, float]:
-    """State overlap flag from the share of eligible parcels in places outside the calibration range.
+def weighted_median(x, w) -> float:
+    """The smallest x at which the cumulative weight reaches half the total (weights >= 0, total > 0)."""
+    x, w = np.asarray(x, dtype=float), np.asarray(w, dtype=float)
+    order = np.argsort(x, kind="stable")
+    cum = np.cumsum(w[order])
+    return float(x[order][np.searchsorted(cum, 0.5 * cum[-1])])
 
-    high below `overlap_flag_medium_share`, low at or above `overlap_flag_low_share`, medium between.
+
+def overlap_flag(eligible: np.ndarray, distance: np.ndarray, params=None) -> tuple[str, float]:
+    """State overlap flag from the eligible-weighted median calibration distance of its places.
+
+    `distance` is `hazard.calibration_distance(...)["total"]` per place (log distance outside the calibration
+    range, 0 inside). high at or below `overlap_flag_medium_distance` (0.5: the widening adds a log-sd of 0.5,
+    P10-P90 about x0.5-x1.9 at the central widening), low above `overlap_flag_low_distance` (1.0), medium
+    between. By hand: places with 60 and 40 eligible parcels at distances 0.3 and 2.0 -> median 0.3, high.
     """
     p = params or load_params("aggregate")
     e = np.asarray(eligible, dtype=float)
-    share = float(e[np.asarray(outside, dtype=bool)].sum() / e.sum()) if e.sum() > 0 else 1.0
-    if share >= p["overlap_flag_low_share"].value:
-        return "low", share
-    if share >= p["overlap_flag_medium_share"].value:
-        return "medium", share
-    return "high", share
+    if not e.sum() > 0:
+        return "low", float("nan")
+    median = weighted_median(distance, e)
+    if median > p["overlap_flag_low_distance"].value:
+        return "low", median
+    if median > p["overlap_flag_medium_distance"].value:
+        return "medium", median
+    return "high", median
 
 
 # ---- draws -> tables ------------------------------------------------------------------------------------
@@ -275,7 +288,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     d = adu_draws(places, run_draws, rng).assign(state=st)
     parts = summarize(st, d, origin, {"adu": year_shares(run_draws)})
 
-    flag, outside = overlap_flag(places["eligible_parcels"], totals_adu["outside_calibration"])
+    flag, median_distance = overlap_flag(places["eligible_parcels"], totals_adu["calibration_distance"])
     tier_parcels = places.groupby("data_tier")["eligible_parcels"].sum() if "data_tier" in places else None
     caveats = []
     if tier3:
@@ -302,7 +315,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "seed": seed,
                 "eligible_proxy": tier3,
                 "overlap_flag": flag,
-                "overlap_note": f"{outside:.0%} of eligible parcels are outside the calibration range",
+                "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
                 "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS),
             }

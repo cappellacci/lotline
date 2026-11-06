@@ -81,21 +81,21 @@ results_seed:
   source: "Lotline convention: fixed seed for the bundle's own draws (completion, displacement), so a bundle is reproducible from config alone"
   notes: "Scenario draws keep their own seeds (adu_simulation_seed etc.); this seeds only the aggregation factors drawn in model/results.py."
 
-overlap_flag_medium_share:
-  value: 0.10
-  low: 0.05
-  high: 0.25
-  unit: share of eligible parcels outside the calibration range
-  source: "Lotline convention (proposed in the results-bundle PR, to confirm with Ben): validation plan V7 and protocol §5.5 give places outside the calibration range a low-confidence flag; this rolls that up to a state"
-  notes: "State overlap flag: high when fewer than this share of the state's eligible parcels sit in places outside the calibration range (hazard.calibration_distance > 0)."
-
-overlap_flag_low_share:
-  value: 0.50
+overlap_flag_medium_distance:
+  value: 0.5
   low: 0.25
   high: 0.75
-  unit: share of eligible parcels outside the calibration range
-  source: "Lotline convention (proposed in the results-bundle PR, to confirm with Ben): validation plan V7 and protocol §5.5, rolled up to a state"
-  notes: "State overlap flag: low when at least this share of eligible parcels sit outside the calibration range; medium in between."
+  unit: log distance outside the calibration range (eligible-weighted median over the state's places)
+  source: "Ben, 2026-11-06 (results-bundle PR #311): state overlap flag on the median of hazard.calibration_distance; 0.5 is where adu_extrapolation_widening (1.0) adds a log-sd of 0.5, P10-P90 about x0.5 to x1.9 (the parameter's own example). Validation plan V7 and protocol §5.5: flag places outside the calibration range"
+  notes: "High at or below this median distance. Chosen after seeing the five states' distances (MN 0.65, NC 0.94, TX 0.69, OH 1.39, OR 0.11): a display flag, not a pre-registered test. The calibration range is the West Coast reference cities (hazard.yaml); re-basing it on the fit set would be its own analysis-plan entry."
+
+overlap_flag_low_distance:
+  value: 1.0
+  low: 0.75
+  high: 1.5
+  unit: log distance outside the calibration range (eligible-weighted median over the state's places)
+  source: "Ben, 2026-11-06 (results-bundle PR #311): a log distance of 1 is about 2.7x outside the range on one modifier and doubles the widening at 0.5 (extra log-sd 1.0 at the central widening)"
+  notes: "Low above this median distance; medium between this and overlap_flag_medium_distance."
 
 results_origin_year:
   value: 2025

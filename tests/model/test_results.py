@@ -111,11 +111,13 @@ def test_adu_run_return_draws_matches_its_own_totals():
     assert ((rd["pencil"] > 0) & (rd["pencil"] <= 1)).all()
 
 
-def test_overlap_flag_thresholds():
-    e = np.array([90.0, 10.0])
-    assert results.overlap_flag(e, [False, False])[0] == "high"
-    assert results.overlap_flag(e, [False, True]) == ("medium", pytest.approx(0.10))
-    assert results.overlap_flag(e, [True, False])[0] == "low"
+def test_overlap_flag_on_the_weighted_median_distance():
+    # 60 parcels at 0.3, 40 at 2.0 -> median 0.3 -> high; swap the weights -> median 2.0 -> low
+    assert results.overlap_flag([60.0, 40.0], [0.3, 2.0]) == ("high", pytest.approx(0.3))
+    assert results.overlap_flag([40.0, 60.0], [0.3, 2.0]) == ("low", pytest.approx(2.0))
+    assert results.overlap_flag([10.0, 90.0], [0.0, 0.8])[0] == "medium"
+    assert results.overlap_flag([50.0, 50.0], [0.5, 0.9])[0] == "high"  # boundary 0.5 is high
+    assert results.weighted_median([3.0, 1.0, 2.0], [1.0, 1.0, 1.0]) == 2.0
 
 
 def make_fixture() -> dict[str, pd.DataFrame]:
