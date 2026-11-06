@@ -791,7 +791,7 @@ def run(
     config/params/adu_anchor.yaml (tests). With a `state` column, places in a state outside the fit that
     estimated τ also get a state multiplier exp(τ_d z_ds), shared by the state's places, with τ_d drawn per
     draw (`state_noise`, config/params/adu_state_effect.yaml, D-044); `states_spec` replaces that file
-    (tests). With `eligible_proxy` (D-055), a state whose every place has `denominator_source ==
+    (tests). With `eligible_proxy` (D-056), a state whose every place has `denominator_source ==
     "acs_sf_fallback"` has its eligible parcels multiplied in each draw by eligible_proxy_scale ×
     exp(eligible_proxy_sd × z), one z per state per draw (`eligible_proxy.multipliers`, its own random
     stream); any state with a parcel-based place is untouched, and with the flag off nothing changes.
@@ -1011,7 +1011,7 @@ def _county_shares(state: str, store, places: pd.DataFrame) -> pd.DataFrame:
 
 
 # States whose coded rules feed field probabilities, rule priors and blank shares. Oregon joined on
-# 2026-11-05 (D-055), after V9 was scored; V9 itself keeps the four states it was frozen from.
+# 2026-11-05 (D-053), after V9 was scored; V9 itself keeps the four states it was frozen from.
 REFORM_STATES = ("MN", "NC", "OH", "TX", "OR")
 
 

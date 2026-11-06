@@ -1,0 +1,267 @@
+<title>D-054 Missing-Middle Backtest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the D-053 results page's system: one reading column of findings, each with its chart, then a decision panel. Survey-ledger feel: building counts, log scales, plain annotations. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --main: #2f6f5e; --alt: #b0703a; --ref: #6b6fa8; --obs: #1d2420;
+  --bandmain: rgba(47,111,94,.20); --bandalt: rgba(176,112,58,.20); --bandref: rgba(107,111,168,.18); --bandnone: rgba(93,106,99,.18);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.in { color: var(--warn); border: 1px solid var(--warn); }
+.post { font-size: 12px; color: var(--warn); font-weight: 600; letter-spacing: .04em; }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-054 · run 2026-11-06 · commit 22dea9b · results for Ben</div>
+    <h1>Testing the missing-middle rate on state totals</h1>
+    <p class="lede">Each state's new 2–4 unit buildings were predicted from a fit to the other three states, then compared with what BPS recorded. The main model is D-038's, refitted on today's coding, so only building types each reform newly allows are counted. It is compared with D-042, with the values now in <code>mm_hazard.yaml</code>, and with two benchmarks. The pre-registered reading rule says the adopted values stay. The reason is a Texas baseline failure that every model shares.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Finding 1 · The fitted rate</div>
+    <h2>On today's coding the rate is about a ninth of the adopted one</h2>
+    <p>θ is the yearly chance, per 1,000 eligible single-family lots, of a new 2–4 unit building once a full rule has matured. The four-state refit gives 0.12; the adopted D-038 value is 1.08. It was fitted before Austin and Houston's earlier duplex rules were coded. Dropping one state at a time keeps θ between 0.01 and 0.24, and North Carolina carries most of it.</p>
+    <div class="chart" id="theta"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--main)"></span>(b) main refit</span><span><span class="sw" style="background:var(--alt)"></span>(c) D-042</span><span><span class="sw" style="background:var(--ref)"></span>adopted (D-038)</span><span>bar = 90% profile interval · log scale</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 2 · Leave one state out</div>
+    <h2>North Carolina passes, Texas fails for every model</h2>
+    <p>The dot is what was built; the bar is P10–P90. North Carolina's six towns land inside the main model's range with the median close. No effect and D-042 both miss them. Texas is missed by every model and both benchmarks. Minnesota and Ohio have one place each, with one year and no buildings, so they show nothing.</p>
+    <div class="chart" id="loso"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandmain)"></span>(b) main</span><span><span class="sw" style="background:var(--bandalt)"></span>(c) D-042</span><span><span class="sw" style="background:var(--bandref)"></span>adopted, in-sample</span><span><span class="sw" style="background:var(--bandnone)"></span>no effect</span><span>● built · | P50 · log scale</span></div>
+    <div class="wide"><table id="losotab"></table></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 3 · Why Texas misses <span class="post">· post-hoc diagnostic</span></div>
+    <h2>Lubbock's pre-reform pace stopped, and every model assumed it would continue</h2>
+    <p>Each model adds the reform's effect on top of a place's own pre-reform pace. Lubbock built about 115 two-to-four unit buildings a year before its 2024 rule and 25 in the two years after. That one baseline puts 191 expected buildings into the Texas total before any reform effect. Without Lubbock, Texas built 24. That is inside the main model's range and above anything no effect allows; Houston's 21 three-to-four unit buildings are most of it.</p>
+    <div class="chart" id="tx"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandmain)"></span>(b) P10–P90, fold without Texas</span><span><span class="sw" style="background:var(--bandnone)"></span>no effect P10–P90</span><span>● built · ◇ baseline expected · log scale</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 4 · The test places</div>
+    <h2>Minneapolis and Durham built twice what their own trends implied</h2>
+    <p>Minneapolis, Durham city and Durham County were never in any fit. Adding them to their state's total, the main model holds Minnesota but falls short in North Carolina: Durham city built 100 against a median of 41. The wide adopted range and the outside-evidence rate hold both. No effect misses both, so these places show a real reform response that the refit's low θ understates.</p>
+    <div class="chart" id="tests"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandmain)"></span>(b) main</span><span><span class="sw" style="background:var(--bandalt)"></span>(c) D-042</span><span><span class="sw" style="background:var(--bandref)"></span>adopted</span><span><span class="sw" style="background:var(--bandnone)"></span>no effect</span><span><span class="sw" style="background:var(--warn);opacity:.45"></span>outside rate</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 5 · Held-out log score by place</div>
+    <h2>Against no effect, the gain is two places</h2>
+    <p>Each bar is how much more probable the main model made a place's observed years than no effect did, in log units. Wake Forest built 9 buildings on a zero baseline, which no effect calls impossible. That makes the pre-registered comparison infinite, so its 2-SE rule can't be evaluated as written. Leaving Wake Forest out <span class="post">(post-hoc)</span>, the main model gains 9.8 with a paired SE of 11.1, almost all from Houston and Burlington. D-042 does worse than the main model (−62.9, SE 51.8).</p>
+    <div class="chart" id="ls"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 6 · Spread between states (report only)</div>
+    <h2>Four states can't measure how much states differ</h2>
+    <p>τ is the log-SD of a state's multiplier on θ. Its profile falls 0.8 log-likelihood units from 0 to 2.5, far less than the 1.35 needed to bound it. So τ is not estimable. Drawn from the flat profile, a new state's multiplier would run ×0.23–×4.2. Nothing goes to config.</p>
+    <div class="chart" id="tau"></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">For Ben to decide</div>
+    <h2>The rule keeps D-038's values. Is that what you want before Charlotte freezes on Nov 17?</h2>
+    <ul>
+      <li><strong>The rule as written:</strong> transfer fails (Texas missed), so the values in <code>mm_hazard.yaml</code> stay at D-038's 1.08 per 1,000. Nothing in config changes in this PR.</li>
+      <li><strong>What the rule did not weigh:</strong> the adopted values miss Texas too, and they over-predicted Oregon in V9. They also can't be rebuilt from <code>main</code>. The Texas miss is a baseline problem that every option shares.</li>
+    </ul>
+    <ol>
+      <li><strong>Keep D-038's values</strong> (the rule's outcome). Charlotte freezes on 1.08 with its wide range, and the known limits are noted.</li>
+      <li><strong>Adopt the refit in a new entry:</strong> θ 0.12 per 1,000 (0.03–1.01), α 8.4, half-way 0.5. Before the freeze, re-score V9 Oregon with it, labelled not blind. Its range already reaches the adopted value at the top.</li>
+      <li><strong>Fix the baseline first, in a new entry:</strong> a pre-registered rule for places whose pre-reform pace isn't stable (Lubbock), then a rerun of this backtest. This may not land before Nov 17.</li>
+    </ol>
+    <p>The evidence is split. On the fit-set places the refit scores about the same as the adopted values (log score −90.9 against −94.4, and the adopted figure is in-sample). The adopted values score better on the test places (421.1 against 415.3). V9 found them too high in Oregon. WS-ENGINE's suggestion: option 2, with the V9 re-score as the tie-break, and a short entry naming the Lubbock-type baseline problem as the next fix.</p>
+  </section>
+
+  <p class="src">Sources: reports/mm-d054/ (fits.csv, loso.csv, lopo_state.csv, place_scores.csv, log_scores.csv, tau_profile.csv, summary.json, run-2026-11-06-log.txt); post-hoc: posthoc_places.csv, posthoc_tx_without_lubbock.csv (scripts/dev/d054_posthoc.py). Census BPS 2010–2025, holdout-filtered (St. Paul, Charlotte, Mecklenburg never read). Method: docs/analysis_plan.md D-054. Branch ws/mm-d054, PR #306.</p>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : String(Math.round(n));
+const lab = (s, x, y, t, opt = {}) => el("text", Object.assign({ x, y, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, opt), s, t);
+
+// 1 · θ per 1,000 by fit, log scale 0.001–10
+const thetas = [
+  ["(b) all four states", 0.124, 0.033, 1.006, "--main"], ["(b) without MN", 0.133, 0.035, 1.122, "--main"],
+  ["(b) without NC", 0.013, 0.001, 0.986, "--main"], ["(b) without OH", 0.128, 0.033, 1.151, "--main"],
+  ["(b) without TX", 0.241, 0.060, 1.467, "--main"], ["(c) D-042, four states", 0.170, 0.056, 0.883, "--alt"],
+  ["Adopted (D-038)", 1.076, 0.362, 5.347, "--ref"],
+];
+(function () {
+  const W = 760, rowH = 32, L = 170, R = 50, T = 8, H = T + rowH * thetas.length + 30; const s = svg("theta", W, H);
+  const x = v => L + (Math.log10(v) + 3) / 4 * (W - L - R);
+  for (const t of [0.001, 0.01, 0.1, 1, 10]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 24, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 8, "text-anchor": "middle" }, s, String(t)); }
+  thetas.forEach(([n, v, lo, hi, c], i) => {
+    const y = T + i * rowH + rowH / 2;
+    lab(s, 0, y + 4, n);
+    el("line", { x1: x(lo), x2: x(hi), y1: y, y2: y, stroke: css(c), "stroke-width": 4, "stroke-linecap": "round", opacity: .45 }, s);
+    el("circle", { cx: x(v), cy: y, r: 6, fill: css(c) }, s);
+    el("text", { x: x(hi) + 8, y: y + 4 }, s, v.toFixed(3));
+  });
+})();
+
+// 2 · leave one state out, NC and TX fit sets (log scale 1–1,000)
+const loso = {
+  NC: { obs: 26, rows: [["b", 15, 21, 31, "useful"], ["c", 8, 13, 19, "missed"], ["a", 20, 41, 171, "useful"], ["none", 14, 19, 25, "missed"], ["outside", 29, 37, 45, "missed"]] },
+  TX: { obs: 49, rows: [["b", 211, 262, 527, "missed"], ["c", 283, 333, 534, "missed"], ["a", 211, 288, 865, "missed"], ["none", 190, 208, 227, "missed"], ["outside", 246, 267, 288, "missed"]] },
+};
+const band = { b: "--bandmain", c: "--bandalt", a: "--bandref", none: "--bandnone" };
+const tick = { b: "--main", c: "--alt", a: "--ref", none: "--muted" };
+const names = { b: "(b) main", c: "(c) D-042", a: "adopted, in-sample", none: "no effect", outside: "outside rate" };
+function rangeChart(id, groups, lmax) {
+  const keys = ["b", "c", "a", "none"]; const W = 760, L = 60, R = 20, T = 6, gH = 22 + keys.length * 14;
+  const H = T + groups.length * gH + 28; const s = svg(id, W, H);
+  const x = v => L + Math.log10(Math.max(v, 1)) / lmax * (W - L - R);
+  for (let e = 0; e <= lmax; e++) { const t = 10 ** e; el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, t.toLocaleString("en-US")); }
+  groups.forEach(([name, g], gi) => {
+    const y0 = T + gi * gH + 6;
+    lab(s, 0, y0 + 26, name, { style: "font-family:var(--body);font-size:13px;font-weight:600" });
+    keys.forEach((k, i) => {
+      const r = g.rows.find(r => r[0] === k); if (!r) return; const y = y0 + i * 14;
+      el("rect", { x: x(r[1]), y, width: Math.max(2, x(r[3]) - x(r[1])), height: 9, rx: 2, fill: css(band[k]) }, s);
+      el("line", { x1: x(r[2]), x2: x(r[2]), y1: y - 1, y2: y + 10, stroke: css(tick[k]), "stroke-width": 2 }, s);
+    });
+    el("line", { x1: x(g.obs), x2: x(g.obs), y1: y0 - 2, y2: y0 + keys.length * 14, stroke: css("--obs"), "stroke-width": 1, "stroke-dasharray": "2 2" }, s);
+    el("circle", { cx: x(g.obs), cy: y0 + keys.length * 7 - 2, r: 5.5, fill: css("--obs"), stroke: css("--panel"), "stroke-width": 1.5 }, s);
+  });
+}
+rangeChart("loso", [["NC", loso.NC], ["TX", loso.TX]], 3);
+(function () {
+  const pill = v => `<span class="pill ${v === "useful" ? "ok" : v === "missed" ? "miss" : "in"}">${v}</span>`;
+  let h = "<tr><th>State · model</th><th>Built</th><th>P10</th><th>P50</th><th>P90</th><th>Verdict</th></tr>";
+  for (const st of ["NC", "TX"]) for (const r of loso[st].rows) h += `<tr><td>${st} · ${names[r[0]]}</td><td>${loso[st].obs}</td><td>${fmt(r[1])}</td><td>${fmt(r[2])}</td><td>${fmt(r[3])}</td><td>${pill(r[4])}</td></tr>`;
+  h += `<tr><td>MN, OH · every model</td><td>0</td><td>0</td><td>0</td><td>0–5</td><td>${pill("useful")}</td></tr>`;
+  h += `<tr><td>Leave one place out, (b) · NC</td><td>26</td><td>16</td><td>24</td><td>47</td><td>${pill("useful")}</td></tr>`;
+  h += `<tr><td>Leave one place out, (b) · TX</td><td>49</td><td>200</td><td>230</td><td>400</td><td>${pill("missed")}</td></tr>`;
+  document.getElementById("losotab").innerHTML = h;
+})();
+
+// 3 · Texas by place (fold without TX), log scale 1–1,000
+const tx = [
+  // name, built, baseline expected, b p10/p50/p90, none p10/p50/p90
+  ["Lubbock", 25, 190.6, 177, 197, 230, 173, 191, 209],
+  ["Houston", 21, 3.9, 3, 16, 203, 2, 4, 7],
+  ["Austin", 3, 13.5, 11, 17, 53, 9, 13, 18],
+  ["League City", 0, 0, 0, 0, 50, 0, 0, 0],
+  ["Lewisville", 0, 0, 0, 1, 11, 0, 0, 0],
+  ["TX without Lubbock", 24, 17.4, 22, 60, 305, 12, 17, 23],
+];
+(function () {
+  const W = 760, L = 150, R = 20, T = 6, rowH = 34, H = T + rowH * tx.length + 28; const s = svg("tx", W, H);
+  const x = v => L + Math.log10(v + 1) / Math.log10(1001) * (W - L - R);
+  for (const t of [0, 10, 100, 1000]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, t.toLocaleString("en-US")); }
+  tx.forEach(([n, obs, base, b1, b5, b9, n1, n5, n9], i) => {
+    const y = T + i * rowH + 8; const last = i === tx.length - 1;
+    if (last) el("line", { x1: 0, x2: W - R, y1: y - 6, y2: y - 6, stroke: css("--rule") }, s);
+    lab(s, 0, y + 12, n, last ? { style: "font-family:var(--body);font-size:12px;font-weight:600" } : {});
+    el("rect", { x: x(b1), y, width: Math.max(2, x(b9) - x(b1)), height: 8, rx: 2, fill: css("--bandmain") }, s);
+    el("line", { x1: x(b5), x2: x(b5), y1: y - 1, y2: y + 9, stroke: css("--main"), "stroke-width": 2 }, s);
+    el("rect", { x: x(n1), y: y + 11, width: Math.max(2, x(n9) - x(n1)), height: 6, rx: 2, fill: css("--bandnone") }, s);
+    const bx = x(base), by = y + 9; el("path", { d: `M${bx} ${by - 5} L${bx + 5} ${by} L${bx} ${by + 5} L${bx - 5} ${by} Z`, fill: "none", stroke: css("--muted"), "stroke-width": 1.5 }, s);
+    el("circle", { cx: x(obs), cy: y + 9, r: 5, fill: css("--obs"), stroke: css("--panel"), "stroke-width": 1.5 }, s);
+  });
+})();
+
+// 4 · with test places
+const tests = [
+  ["MN + Minneapolis", { obs: 106, rows: [["b", 45, 57, 123], ["c", 150, 170, 242], ["a", 47, 62, 420], ["none", 43, 52, 61], ["outside", 84, 96, 109]] }],
+  ["NC + Durham city, County", { obs: 126, rows: [["b", 52, 63, 86], ["c", 42, 52, 64], ["a", 66, 121, 510], ["none", 50, 59, 69], ["outside", 99, 112, 126]] }],
+];
+(function () {
+  const keys = ["b", "c", "a", "none", "outside"]; const W = 760, L = 190, R = 20, T = 6, gH = 22 + keys.length * 14;
+  const H = T + tests.length * gH + 28; const s = svg("tests", W, H);
+  const x = v => L + Math.log10(v / 20) / Math.log10(30) * (W - L - R);
+  for (const t of [20, 50, 100, 200, 600]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, t); }
+  const bnd = Object.assign({}, band, { outside: "--warn" }), tk = Object.assign({}, tick, { outside: "--warn" });
+  tests.forEach(([name, g], gi) => {
+    const y0 = T + gi * gH + 6;
+    lab(s, 0, y0 + 34, name, { style: "font-family:var(--body);font-size:13px;font-weight:600" });
+    keys.forEach((k, i) => {
+      const r = g.rows.find(r => r[0] === k); const y = y0 + i * 14;
+      el("rect", { x: x(r[1]), y, width: x(r[3]) - x(r[1]), height: 9, rx: 2, fill: css(bnd[k]), opacity: k === "outside" ? .45 : 1 }, s);
+      el("line", { x1: x(r[2]), x2: x(r[2]), y1: y - 1, y2: y + 10, stroke: css(tk[k]), "stroke-width": 2 }, s);
+    });
+    el("line", { x1: x(g.obs), x2: x(g.obs), y1: y0 - 2, y2: y0 + keys.length * 14, stroke: css("--obs"), "stroke-width": 1, "stroke-dasharray": "2 2" }, s);
+    el("circle", { cx: x(g.obs), cy: y0 + keys.length * 7 - 2, r: 5.5, fill: css("--obs"), stroke: css("--panel"), "stroke-width": 1.5 }, s);
+  });
+})();
+
+// 5 · Δ log score (b) − no effect, per fit place
+const ls = [["Houston", 9.81], ["Burlington", 4.55], ["Sanford", -0.08], ["Euclid", -0.07], ["Morrisville", -0.10], ["Garner", -0.12], ["Wilson", -0.13], ["St. Louis Park", -0.20], ["Lewisville", -0.71], ["Lubbock", -0.98], ["Austin", -1.00], ["League City", -1.13], ["Wake Forest", Infinity]];
+(function () {
+  const W = 760, L = 130, R = 60, T = 6, rowH = 22, H = T + rowH * ls.length + 26; const s = svg("ls", W, H);
+  const x = v => L + (v + 2) / 14 * (W - L - R);
+  for (const t of [-2, 0, 2, 4, 6, 8, 10, 12]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css(t === 0 ? "--muted" : "--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, (t > 0 ? "+" : "") + t); }
+  ls.forEach(([n, d], i) => {
+    const y = T + i * rowH + 4; lab(s, 0, y + 11, n);
+    if (!isFinite(d)) {
+      el("rect", { x: x(0), y, width: x(12) - x(0), height: 14, rx: 2, fill: css("--bandmain") }, s);
+      el("text", { x: x(12) + 6, y: y + 11 }, s, "+∞ (no effect: impossible)"); return;
+    }
+    const a = Math.min(x(0), x(d)), w = Math.abs(x(d) - x(0));
+    el("rect", { x: a, y, width: Math.max(w, 1.5), height: 14, rx: 2, fill: css(d >= 0 ? "--main" : "--miss"), opacity: .8 }, s);
+    el("text", { x: d >= 0 ? x(d) + 6 : x(0) + 6, y: y + 11 }, s, (d > 0 ? "+" : "") + d.toFixed(2));
+  });
+})();
+
+// 6 · τ profile (drop from the maximum)
+const tau = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5], tauLL = [0, -0.021, -0.068, -0.119, -0.169, -0.232, -0.316, -0.417, -0.531, -0.65, -0.771];
+(function () {
+  const W = 760, H = 220, L = 46, R = 24, T = 14, B = 30; const s = svg("tau", W, H);
+  const x = v => L + v / 2.5 * (W - L - R), y = v => T + (-v) / 2 * (H - T - B);
+  for (const t of [0, -0.5, -1, -1.5, -2]) { el("line", { x1: L, x2: W - R, y1: y(t), y2: y(t), stroke: css("--rule") }, s); el("text", { x: L - 8, y: y(t) + 4, "text-anchor": "end" }, s, t); }
+  el("line", { x1: L, x2: W - R, y1: y(-1.353), y2: y(-1.353), stroke: css("--miss"), "stroke-dasharray": "4 3" }, s);
+  el("text", { x: W - R, y: y(-1.353) - 6, "text-anchor": "end" }, s, "90% cut-off (−1.35): never reached");
+  for (const v of [0, 0.5, 1, 1.5, 2, 2.5]) el("text", { x: x(v), y: H - 10, "text-anchor": "middle" }, s, v);
+  el("text", { x: L, y: H - 10, "text-anchor": "start", dx: -40 }, s, "τ");
+  el("polyline", { points: tau.map((t, i) => `${x(t)},${y(tauLL[i])}`).join(" "), fill: "none", stroke: css("--main"), "stroke-width": 2.5 }, s);
+  tau.forEach((t, i) => el("circle", { cx: x(t), cy: y(tauLL[i]), r: 3.5, fill: css("--main") }, s));
+})();
+</script>

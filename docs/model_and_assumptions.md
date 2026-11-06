@@ -865,8 +865,8 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `eligible_proxy_scale` | 0.998 | 0.939–1.059 | eligible parcels per ACS one-unit detached home | Analysis plan D-055 (run 2026-11-06): k = geometric mean of real/proxy state-total ratios, theme ADU, MN NC T… |
-| `eligible_proxy_sd` | 0.06 | fixed | log-scale standard deviation | Analysis plan D-055 (run 2026-11-06): sample sd (n - 1) of log real/proxy ratios over the five states, theme… |
+| `eligible_proxy_scale` | 0.998 | 0.939–1.059 | eligible parcels per ACS one-unit detached home | Analysis plan D-056 (run 2026-11-06): k = geometric mean of real/proxy state-total ratios, theme ADU, MN NC T… |
+| `eligible_proxy_sd` | 0.06 | fixed | log-scale standard deviation | Analysis plan D-056 (run 2026-11-06): sample sd (n - 1) of log real/proxy ratios over the five states, theme… |
 
 **`config/params/fees.yaml`** (10 parameters)
 
@@ -990,10 +990,10 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `mm_mature_hazard_ref` | 0.001076 | 0.000362–0.005347 | new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1) | Estimated, D-038 (pre-registered), scripts/dev/calibrate_mm.py: Poisson-gamma maximum likelihood over 15 plac… |
-| `mm_place_effect_variance` | 7.29 | 3.18–19.78 | variance of a place's multiplier on the missing-middle hazard (gamma, mean 1) | Estimated, D-038 (alpha, 90% profile-likelihood interval) |
+| `mm_mature_hazard_ref` | 0.0001235 | 3.25e-05–0.001006 | new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1) | Estimated, D-054 main fit (b), adopted by D-055 (Ben, 2026-11-06): D-038's Poisson-gamma likelihood and own-g… |
+| `mm_place_effect_variance` | 8.415 | 2.8–32.4 | variance of a place's multiplier on the missing-middle hazard (gamma, mean 1) | Estimated, D-054 main fit (alpha, 90% profile-likelihood interval), adopted by D-055 |
 | `mm_units_per_project` | 2.08 | 2.04–4 | homes per new 2-4 unit building (gross, before any demolished house) | Census BPS, the 15 fit places 2016-2025: 10,210 homes in 4,912 buildings (D-038) |
-| `mm_ramp_half_years` | 2 | 1.5–2.5 | years after adoption to reach half the mature hazard | Estimated, D-038: profile likelihood on the grid 0.5-6.0 |
+| `mm_ramp_half_years` | 0.5 | 0.5–1 | years after adoption to reach half the mature hazard | Estimated, D-054 main fit (profile likelihood on the grid 0.5-6.0), adopted by D-055: 0.5 is the grid floor a… |
 | `mm_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature… |
 | `mm_feasibility_dispersion` | 0.5 | 0.25–0.8 | standard deviation of log(lot's own price-to-cost) for a rental duplex | Judgment (D-038), the ADU value (adu_feasibility_dispersion): lots differ in what a 2-4 unit building costs a… |
 
