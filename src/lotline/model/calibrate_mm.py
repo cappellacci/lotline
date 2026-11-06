@@ -66,6 +66,7 @@ class Place:
     age: np.ndarray
     eligible: np.ndarray
     z: float = 0.0  # D-042: centred log builder capacity (0 = no modifier)
+    unstable: bool = False  # D-056: the pre-reform pace failed the dispersion test (baseline window widened)
 
     @property
     def B(self) -> np.ndarray:
@@ -101,6 +102,64 @@ def growth_index(series: Mapping[int, float], t: int, pre_years: Sequence[int], 
     return float(np.clip(m_t / m_pre, *cap))
 
 
+LONG_YEARS = 6  # D-056: the stability test's window and the replacement baseline's
+DISPERSION_P = 0.05  # D-056: unstable if the dispersion test's p-value is below this
+ZERO_FLOOR = 0.5  # D-056: buildings spread over a baseline window that had none
+
+
+def _gamma_q(a: float, x: float) -> float:
+    """Regularized upper incomplete gamma Q(a, x): the series for P below x = a + 1, else Lentz's continued
+    fraction for Q (standard library only)."""
+    if x <= 0:
+        return 1.0
+    lg = math.lgamma(a)
+    if x < a + 1:
+        term = total = 1.0 / a
+        n = a
+        for _ in range(500):
+            n += 1
+            term *= x / n
+            total += term
+            if abs(term) < abs(total) * 1e-15:
+                break
+        return max(0.0, 1.0 - total * math.exp(-x + a * math.log(x) - lg))
+    tiny = 1e-300
+    b = x + 1 - a
+    c, d = 1 / tiny, 1 / b
+    h = d
+    for i in range(1, 500):
+        an = -i * (i - a)
+        b += 2
+        d = an * d + b
+        d = tiny if abs(d) < tiny else d
+        c = b + an / c
+        c = tiny if abs(c) < tiny else c
+        d = 1 / d
+        h *= d * c
+        if abs(d * c - 1) < 1e-15:
+            break
+    return min(1.0, math.exp(-x + a * math.log(x) - lg) * h)
+
+
+def chi2_sf(x: float, df: int) -> float:
+    """P(χ²(df) >= x). By hand: 3.841 on 1 df, 5.991 on 2 and 11.070 on 5 each give 0.05; x = 0 gives 1."""
+    return _gamma_q(df / 2, x / 2)
+
+
+def dispersion_test(counts: Sequence[float], p_cut: float = DISPERSION_P) -> dict:
+    """Poisson index-of-dispersion test (D-056): D = Σ (y − ȳ)² / ȳ ~ χ²(n − 1) for a stable pace.
+    Not testable (stable) with fewer than 3 years or ȳ = 0.
+
+    By hand: (10, 10, 10) -> D 0, p 1, stable; (0, 0, 30) -> ȳ 10, D = (100 + 100 + 400) / 10 = 60 on 2 df,
+    p = e^-30, unstable; (4, 6) -> not testable."""
+    y = np.asarray(counts, float)
+    if len(y) < 3 or not y.mean() > 0:
+        return {"n": len(y), "stat": np.nan, "p": np.nan, "testable": False, "unstable": False}
+    stat = float(((y - y.mean()) ** 2).sum() / y.mean())
+    p = chi2_sf(stat, len(y) - 1)
+    return {"n": len(y), "stat": stat, "p": p, "testable": True, "unstable": bool(p < p_cut)}
+
+
 def feasibility_ratio(pcr: float, margin: float, sigma: float) -> float:
     """F(PCR) / F(1): feasible share relative to a place where a rental duplex's value equals its cost.
 
@@ -121,6 +180,8 @@ def place_inputs(
     shift: int = 0,
     feasibility: bool = True,
     series_by_place: Mapping[str, Mapping[int, float]] | None = None,
+    baseline_rule: str = "fixed",
+    zero_floor: bool = False,
 ) -> list[Place]:
     """`Place` per geoid from the D-024 panel (`estimate_mm.build_panel(...).data`).
 
@@ -129,6 +190,10 @@ def place_inputs(
     'none'. shift: move T that many years earlier and keep only years before the real T (the placebo-date
     check). Places with no post-reform year or no pre-reform year with
     data are left out.
+
+    D-056: baseline_rule 'fixed' (the `baseline_years` window), 'stability' (the six-year window T − 6 … T − 1
+    when `dispersion_test` flags the place's counts there), or 'long' (six years always); the growth index's
+    reference moves with the window. zero_floor: a baseline with no outcome becomes 0.5 / n_pre.
     """
     d = panel
     state_series: dict[str, dict[int, float]] = {}
@@ -145,11 +210,18 @@ def place_inputs(
         T = T_real - shift
         pre = list(range(T - baseline_years, T))
         yb = rows.set_index("year")["y_buildings"]
+        long_pre = list(range(T - LONG_YEARS, T))
+        long_vals = [float(yb[s]) for s in long_pre if s in yb.index and pd.notna(yb[s])]
+        flagged = baseline_rule == "stability" and dispersion_test(long_vals)["unstable"]
+        if baseline_rule == "long" or flagged:
+            pre = long_pre
         base_vals = [yb.get(s, np.nan) for s in pre]
         base_vals = [v for v in base_vals if pd.notna(v)]
         if not base_vals:
             continue
         beta = float(np.mean(base_vals))
+        if zero_floor and beta == 0:
+            beta = ZERO_FLOOR / len(base_vals)
         if growth in ("own", "own_5p"):
             other = rows.set_index("year")["units_5p"].astype(float)
             if growth == "own":
@@ -186,6 +258,7 @@ def place_inputs(
                 kr=E * dose * fr,
                 age=years - T + 0.5,
                 eligible=E,
+                unstable=bool(flagged),
             )
         )
     return out

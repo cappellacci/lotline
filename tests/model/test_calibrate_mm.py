@@ -387,3 +387,77 @@ def test_tau_summary_by_hand():
     assert s["share_at_0"] == pytest.approx(0.5, abs=0.02)
     # multiplier: 0.5 × point mass at 1 + 0.5 × lognormal(0, 1); P90 solves 0.5 + 0.5 Φ(ln m) = 0.9
     assert s["multiplier_p90"] == pytest.approx(math.exp(0.8416), rel=0.05)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-056: stability test, widened baseline, zero floor
+# ---------------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(("x", "df"), [(3.841, 1), (5.991, 2), (11.070, 5), (18.307, 10)])
+def test_chi2_sf_at_the_5pct_critical_values(x, df):
+    assert cal.chi2_sf(x, df) == pytest.approx(0.05, abs=2e-4)
+
+
+def test_chi2_sf_by_hand():
+    assert cal.chi2_sf(0.0, 3) == 1.0
+    assert cal.chi2_sf(2.0, 2) == pytest.approx(math.exp(-1.0))  # 2 df: P(χ² >= x) = e^(-x/2)
+    assert cal.chi2_sf(60.0, 2) == pytest.approx(math.exp(-30.0), rel=1e-6)
+
+
+def test_dispersion_test_by_hand():
+    assert cal.dispersion_test([10, 10, 10]) | {} == {
+        "n": 3, "stat": 0.0, "p": 1.0, "testable": True, "unstable": False
+    }  # fmt: skip
+    t = cal.dispersion_test([0, 0, 30])
+    assert t["stat"] == pytest.approx(60.0) and t["unstable"]
+    assert not cal.dispersion_test([4, 6])["testable"]  # fewer than 3 years
+    assert not cal.dispersion_test([0, 0, 0, 0])["testable"]  # mean 0
+    # a Poisson-like pace: (8, 12, 10, 9, 11, 10) -> D = (4 + 4 + 0 + 1 + 1 + 0) / 10 = 1.0 on 5 df: stable
+    assert cal.dispersion_test([8, 12, 10, 9, 11, 10])["stat"] == pytest.approx(1.0)
+    assert not cal.dispersion_test([8, 12, 10, 9, 11, 10])["unstable"]
+
+
+def _pre_post_panel(pre, post, T=2020, place="p1"):
+    """One place: outcome `pre` over the years before T (ending T − 1) and `post` from T; other homes flat."""
+    years = list(range(T - len(pre), T + len(post)))
+    y = list(pre) + list(post)
+    return pd.DataFrame(
+        {
+            "place": place,
+            "name": "P",
+            "state": "TX",
+            "status": "coded",
+            "year": years,
+            "T": float(T),
+            "y_buildings": [float(v) for v in y],
+            "units_1": 100.0,
+            "units_5p": 0.0,
+            "eligible": 1000.0,
+            "dose": [0.0] * len(pre) + [1.0] * len(post),
+            "pcr": 1.0,
+        }
+    )
+
+
+def test_baseline_rule_widens_only_unstable_places():
+    surge = _pre_post_panel(pre=(10, 10, 10, 100, 110, 120), post=(20, 20))  # last three years 3x the first three
+    steady = _pre_post_panel(pre=(9, 11, 10, 10, 9, 11), post=(20, 20), place="p2")
+    panel = pd.concat([surge, steady], ignore_index=True)
+    fixed = cal.place_inputs(panel, ["p1", "p2"], 0.15, 0.5)
+    stab = cal.place_inputs(panel, ["p1", "p2"], 0.15, 0.5, baseline_rule="stability")
+    long = cal.place_inputs(panel, ["p1", "p2"], 0.15, 0.5, baseline_rule="long")
+    assert fixed[0].beta == pytest.approx(110.0) and not fixed[0].unstable
+    assert stab[0].beta == pytest.approx(60.0) and stab[0].unstable  # mean of all six years
+    assert stab[1].beta == pytest.approx(10.0) and not stab[1].unstable  # steady place unchanged
+    assert long[1].beta == pytest.approx(10.0) and long[0].beta == pytest.approx(60.0)
+    assert list(stab[0].g) == [1.0, 1.0]  # other homes flat: the growth index stays 1 on either window
+
+
+def test_zero_floor():
+    p = _pre_post_panel(pre=(0, 0, 0), post=(3,))
+    assert cal.place_inputs(p, ["p1"], 0.15, 0.5)[0].beta == 0.0
+    assert cal.place_inputs(p, ["p1"], 0.15, 0.5, zero_floor=True)[0].beta == pytest.approx(0.5 / 3)
+    # the floor makes no effect's log score finite: log Poisson(3; 1/6)
+    q = cal.place_inputs(p, ["p1"], 0.15, 0.5, zero_floor=True)[0]
+    assert cal.no_effect_log_score(q) == pytest.approx(3 * math.log(0.5 / 3) - 0.5 / 3)
