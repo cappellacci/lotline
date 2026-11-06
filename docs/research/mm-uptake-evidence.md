@@ -1,8 +1,8 @@
 # Missing-middle uptake after by-right reforms: outside evidence, a plausibility check for D-038 (2026-11-03)
 
 **Status:** plausibility check only (D-037 amendment, Ben 2026-11-03: "we need to be rolling our own"). The
-values in `config/params/mm_hazard.yaml` are fitted on our four states (D-038, `reports/mm-d038/`). This table
-is what the fit is compared against: the implied mature rates, 0.07–0.76 per 1,000 at each fit place's own dose
+values in `config/params/mm_hazard.yaml` are fitted on our four states (D-038, `reports/mm-d038/`; replaced on 2026-11-06
+by D-054's refit, adopted under D-055, `reports/mm-d054/`). This table is what D-038's fit was compared against: the implied mature rates, 0.07–0.76 per 1,000 at each fit place's own dose
 and price-to-cost, fall inside it. The table was compiled before any missing-middle fit or scenario number.
 Sources are rows of `lotline-evidence-register.csv` (E-numbers).
 

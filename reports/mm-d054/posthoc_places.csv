@@ -1,0 +1,17 @@
+state,name,test_place,years,observed,baseline_expected,b_p10,b_p50,b_p90,none_p10,none_p50,none_p90
+MN,Minneapolis city,True,5,106.0,52.115902285263985,45.0,56.0,121.0,43.0,52.0,61.0
+MN,St. Louis Park city,False,1,0.0,0.0,0.0,0.0,2.0,0.0,0.0,0.0
+NC,Durham County Unincorporated Area,True,5,0.0,0.0,0.0,0.0,2.0,0.0,0.0,0.0
+NC,Burlington city,False,5,15.0,4.648261758691206,2.0,5.0,9.0,2.0,4.0,8.0
+NC,Durham city,True,5,100.0,40.07175112895133,33.0,41.0,54.0,32.0,40.0,48.0
+NC,Garner town,False,3,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0
+NC,Morrisville town,False,5,0.0,5.839855072463768,3.0,6.0,9.0,3.0,6.0,9.0
+NC,Sanford city,False,5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+NC,Wake Forest town,False,5,9.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0
+NC,Wilson city,False,5,2.0,8.909090909090908,5.0,9.0,14.0,5.0,9.0,13.0
+OH,Euclid city,False,1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+TX,Austin city,False,2,3.0,13.533761801161653,11.0,17.0,53.0,9.0,13.0,18.0
+TX,Houston city,False,2,21.0,3.9293911015667087,3.0,16.0,203.0,2.0,4.0,7.0
+TX,League City city,False,5,0.0,0.0,0.0,3.0,50.0,0.0,0.0,0.0
+TX,Lewisville city,False,3,0.0,0.0,0.0,1.0,11.0,0.0,0.0,0.0
+TX,Lubbock city,False,2,25.0,190.57170491514992,177.0,197.0,230.0,173.0,191.0,209.0

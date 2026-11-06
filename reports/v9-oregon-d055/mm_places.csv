@@ -1,0 +1,125 @@
+params,geoid,target,observed,p10,p50,p90,mean,obs_over_p50,coverage_rand,verdict
+D-038 (frozen),41005,Clackamas County Unincorporated Area,46.0,55.0,73.0,661.8,305.959,0.63,0.0,missed (over)
+D-038 (frozen),4101000,Albany city,8.0,6.0,11.0,70.1,44.063,0.727,1.0,useful
+D-038 (frozen),4103050,Ashland city,19.0,1.0,4.0,23.0,11.34,4.75,1.0,inside only
+D-038 (frozen),4103150,Astoria city,5.0,1.0,3.0,10.0,5.683,1.667,1.0,useful
+D-038 (frozen),4103650,Baker City city,13.0,0.0,0.0,3.1,1.536,inf,0.0,missed (under)
+D-038 (frozen),41051,Multnomah County Part 2 Unincorporated Area,4.0,0.0,0.0,57.1,24.293,inf,1.0,inside only
+D-038 (frozen),4105350,Beaverton city,1.0,12.0,20.0,164.0,80.705,0.05,0.0,missed (over)
+D-038 (frozen),4105800,Bend city,299.0,223.9,248.0,319.0,277.392,1.206,1.0,useful
+D-038 (frozen),41067,Washington County Unincorporated Area,1.0,0.0,3.0,614.0,327.061,0.333,1.0,inside only
+D-038 (frozen),4110750,Canby city,0.0,0.0,0.0,16.0,8.4,inf,0.831,inside only
+D-038 (frozen),4112400,Central Point city,8.0,28.0,37.0,54.0,43.144,0.216,0.0,missed (over)
+D-038 (frozen),4115250,Coos Bay city,7.0,7.0,12.0,22.0,15.781,0.583,0.214,useful
+D-038 (frozen),4115550,Cornelius city,9.0,0.0,0.0,21.0,11.109,inf,1.0,inside only
+D-038 (frozen),4115800,Corvallis city,34.0,21.0,30.0,101.0,59.074,1.133,1.0,useful
+D-038 (frozen),4115950,Cottage Grove city,5.0,0.0,0.0,4.0,2.194,inf,0.0,missed (under)
+D-038 (frozen),4117700,Dallas city,14.0,16.9,23.0,34.0,26.146,0.609,0.0,missed (over)
+D-038 (frozen),4121250,Durham city,0.0,0.0,0.0,3.0,1.34,inf,0.864,inside only
+D-038 (frozen),4123850,Eugene city,93.0,79.0,96.0,297.9,188.299,0.969,1.0,useful
+D-038 (frozen),4124250,Fairview city,2.0,5.0,9.0,23.0,13.799,0.222,0.0,missed (over)
+D-038 (frozen),4126050,Florence city,3.0,1.0,3.0,5.0,3.02,1.0,1.0,useful
+D-038 (frozen),4126200,Forest Grove city,25.0,12.0,18.0,40.0,28.367,1.389,1.0,useful
+D-038 (frozen),4130550,Grants Pass city,129.0,46.0,57.0,92.1,74.286,2.263,0.0,missed (under)
+D-038 (frozen),4131250,Gresham city,38.0,0.0,1.0,139.3,66.422,38.0,1.0,inside only
+D-038 (frozen),4132050,Happy Valley city,0.0,24.0,32.0,90.0,53.721,0.0,0.0,missed (over)
+D-038 (frozen),4133700,Hermiston city,14.0,0.0,0.0,7.0,2.868,inf,0.0,missed (under)
+D-038 (frozen),4134100,Hillsboro city,12.0,15.0,24.0,197.6,104.838,0.5,0.0,missed (over)
+D-038 (frozen),4136150,Independence city,21.0,5.0,8.0,13.0,9.192,2.625,0.0,missed (under)
+D-038 (frozen),4138500,Keizer city,54.0,2.0,4.0,55.1,30.542,13.5,1.0,inside only
+D-038 (frozen),4139150,King City city,6.0,19.0,25.0,37.1,28.899,0.24,0.0,missed (over)
+D-038 (frozen),4140350,La Grande city,15.0,9.0,14.0,22.0,16.434,1.071,1.0,useful
+D-038 (frozen),4140550,Lake Oswego city,4.0,0.0,1.0,114.0,57.426,4.0,1.0,inside only
+D-038 (frozen),4141650,Lebanon city,70.0,0.0,0.0,10.1,5.652,inf,0.0,missed (under)
+D-038 (frozen),4142600,Lincoln City city,16.0,14.0,20.0,29.0,22.191,0.8,1.0,useful
+D-038 (frozen),4145000,McMinnville city,18.0,7.0,13.0,48.1,28.368,1.385,1.0,useful
+D-038 (frozen),4147000,Medford city,41.0,24.0,34.0,124.1,71.312,1.206,1.0,useful
+D-038 (frozen),4148650,Milwaukie city,10.0,3.0,7.0,49.2,21.846,1.429,1.0,useful
+D-038 (frozen),4149450,Molalla city,0.0,0.0,0.0,9.0,4.11,inf,0.844,inside only
+D-038 (frozen),4149550,Monmouth city,20.0,33.0,42.0,52.0,42.73,0.476,0.0,missed (over)
+D-038 (frozen),4152100,Newberg city,19.0,0.0,0.0,51.0,22.554,inf,1.0,inside only
+D-038 (frozen),4152450,Newport city,25.0,1.0,3.0,11.1,6.465,8.333,0.0,missed (under)
+D-038 (frozen),4153000,North Bend city,7.0,0.0,0.0,5.0,2.605,inf,0.0,missed (under)
+D-038 (frozen),4154900,Ontario city,15.0,0.0,0.0,3.0,1.409,inf,0.0,missed (under)
+D-038 (frozen),4155200,Oregon City city,13.0,0.0,1.0,78.0,41.531,13.0,1.0,inside only
+D-038 (frozen),4157150,Pendleton city,8.0,30.0,39.0,50.0,40.457,0.205,0.0,missed (over)
+D-038 (frozen),4159000,Portland city,333.0,449.0,494.5,1812.6,985.053,0.673,0.0,missed (over)
+D-038 (frozen),4159850,Prineville city,6.0,0.0,0.0,8.0,2.961,inf,1.0,inside only
+D-038 (frozen),4161200,Redmond city,73.0,8.0,13.0,61.0,33.769,5.615,0.0,missed (under)
+D-038 (frozen),4163650,Roseburg city,0.0,0.0,0.0,17.0,8.591,inf,0.832,inside only
+D-038 (frozen),4164600,St. Helens city,9.0,1.0,3.0,12.0,6.773,3.0,1.0,inside only
+D-038 (frozen),4164900,Salem city,77.0,61.0,76.0,270.8,156.83,1.013,1.0,useful
+D-038 (frozen),4165250,Sandy city,21.0,10.0,15.0,27.0,19.203,1.4,1.0,useful
+D-038 (frozen),4167100,Sherwood city,6.0,1.0,4.0,72.1,31.443,1.5,1.0,useful
+D-038 (frozen),4167650,Silverton city,7.0,7.0,12.0,21.0,14.351,0.583,0.189,useful
+D-038 (frozen),4169600,Springfield city,43.0,1.0,5.0,75.0,31.9,8.6,1.0,inside only
+D-038 (frozen),4171950,Sweet Home city,16.0,0.0,0.0,2.0,0.902,inf,0.0,missed (under)
+D-038 (frozen),4173650,Tigard city,3.0,0.0,1.0,91.1,47.294,3.0,1.0,inside only
+D-038 (frozen),4174850,Troutdale city,3.0,0.0,0.0,29.1,13.292,inf,1.0,inside only
+D-038 (frozen),4174950,Tualatin city,0.0,29.0,38.0,87.1,54.452,0.0,0.0,missed (over)
+D-038 (frozen),4180150,West Linn city,0.0,3.0,7.0,89.1,43.289,0.0,0.0,missed (over)
+D-038 (frozen),4182800,Wilsonville city,0.0,0.0,0.0,32.0,15.841,inf,0.817,inside only
+D-038 (frozen),4183750,Woodburn city,5.0,1.0,4.0,36.0,16.131,1.25,1.0,useful
+D-038 (frozen),4183950,Wood Village city,0.0,0.0,0.0,3.0,1.235,inf,0.872,inside only
+D-054 refit,41005,Clackamas County Unincorporated Area,46.0,54.0,66.0,161.1,126.773,0.697,0.0,missed (over)
+D-054 refit,4101000,Albany city,8.0,5.0,9.0,24.1,16.177,0.889,1.0,useful
+D-054 refit,4103050,Ashland city,19.0,1.0,3.0,7.0,4.172,6.333,0.0,missed (under)
+D-054 refit,4103150,Astoria city,5.0,1.0,3.0,6.0,3.909,1.667,1.0,useful
+D-054 refit,4103650,Baker City city,13.0,0.0,0.0,0.0,0.325,inf,0.0,missed (under)
+D-054 refit,41051,Multnomah County Part 2 Unincorporated Area,4.0,0.0,0.0,11.0,6.666,inf,1.0,inside only
+D-054 refit,4105350,Beaverton city,1.0,12.0,18.0,45.1,34.133,0.056,0.0,missed (over)
+D-054 refit,4105800,Bend city,299.0,222.0,243.5,270.0,248.728,1.228,0.0,missed (under)
+D-054 refit,41067,Washington County Unincorporated Area,1.0,0.0,1.0,103.0,54.312,1.0,1.0,useful
+D-054 refit,4110750,Canby city,0.0,0.0,0.0,2.0,1.558,inf,0.873,inside only
+D-054 refit,4112400,Central Point city,8.0,27.0,35.0,45.0,36.639,0.229,0.0,missed (over)
+D-054 refit,4115250,Coos Bay city,7.0,6.0,11.0,16.0,11.36,0.636,1.0,useful
+D-054 refit,4115550,Cornelius city,9.0,0.0,0.0,4.0,1.779,inf,0.0,missed (under)
+D-054 refit,4115800,Corvallis city,34.0,21.0,28.0,41.0,37.241,1.214,1.0,useful
+D-054 refit,4115950,Cottage Grove city,5.0,0.0,0.0,1.0,0.582,inf,0.0,missed (under)
+D-054 refit,4117700,Dallas city,14.0,16.0,22.0,28.0,22.053,0.636,0.0,missed (over)
+D-054 refit,4121250,Durham city,0.0,0.0,0.0,0.0,0.258,inf,0.885,inside only
+D-054 refit,4123850,Eugene city,93.0,78.0,92.0,137.2,111.418,1.011,1.0,useful
+D-054 refit,4124250,Fairview city,2.0,5.0,8.0,14.0,9.702,0.25,0.0,missed (over)
+D-054 refit,4126050,Florence city,3.0,1.0,3.0,5.0,2.763,1.0,1.0,useful
+D-054 refit,4126200,Forest Grove city,25.0,12.0,17.0,26.0,19.279,1.471,1.0,useful
+D-054 refit,4130550,Grants Pass city,129.0,46.0,55.0,67.0,57.445,2.345,0.0,missed (under)
+D-054 refit,4131250,Gresham city,38.0,0.0,0.0,27.0,17.116,inf,0.0,missed (under)
+D-054 refit,4132050,Happy Valley city,0.0,23.0,31.0,44.0,35.839,0.0,0.0,missed (over)
+D-054 refit,4133700,Hermiston city,14.0,0.0,0.0,1.0,0.575,inf,0.0,missed (under)
+D-054 refit,4134100,Hillsboro city,12.0,14.0,21.0,52.0,39.384,0.571,0.0,missed (over)
+D-054 refit,4136150,Independence city,21.0,5.0,8.0,12.0,8.279,2.625,0.0,missed (under)
+D-054 refit,4138500,Keizer city,54.0,1.0,3.0,14.0,7.817,18.0,0.0,missed (under)
+D-054 refit,4139150,King City city,6.0,18.0,24.0,32.0,24.916,0.25,0.0,missed (over)
+D-054 refit,4140350,La Grande city,15.0,9.0,14.0,18.0,13.822,1.071,1.0,useful
+D-054 refit,4140550,Lake Oswego city,4.0,0.0,0.0,22.0,10.526,inf,1.0,inside only
+D-054 refit,4141650,Lebanon city,70.0,0.0,0.0,2.0,1.393,inf,0.0,missed (under)
+D-054 refit,4142600,Lincoln City city,16.0,13.0,19.0,25.0,19.238,0.842,1.0,useful
+D-054 refit,4145000,McMinnville city,18.0,7.0,12.0,20.0,16.548,1.5,1.0,useful
+D-054 refit,4147000,Medford city,41.0,23.0,31.0,51.0,39.496,1.323,1.0,useful
+D-054 refit,4148650,Milwaukie city,10.0,3.0,6.0,15.0,11.751,1.667,1.0,useful
+D-054 refit,4149450,Molalla city,0.0,0.0,0.0,1.0,0.468,inf,0.882,inside only
+D-054 refit,4149550,Monmouth city,20.0,33.0,41.0,49.0,40.64,0.488,0.0,missed (over)
+D-054 refit,4152100,Newberg city,19.0,0.0,0.0,8.0,3.91,inf,0.0,missed (under)
+D-054 refit,4152450,Newport city,25.0,1.0,3.0,6.0,3.375,8.333,0.0,missed (under)
+D-054 refit,4153000,North Bend city,7.0,0.0,0.0,1.0,0.476,inf,0.0,missed (under)
+D-054 refit,4154900,Ontario city,15.0,0.0,0.0,0.0,0.245,inf,0.0,missed (under)
+D-054 refit,4155200,Oregon City city,13.0,0.0,0.0,14.0,6.597,inf,1.0,inside only
+D-054 refit,4157150,Pendleton city,8.0,30.0,37.0,46.0,37.977,0.216,0.0,missed (over)
+D-054 refit,4159000,Portland city,333.0,444.9,481.0,689.3,551.878,0.692,0.0,missed (over)
+D-054 refit,4159850,Prineville city,6.0,0.0,0.0,1.0,0.635,inf,0.0,missed (under)
+D-054 refit,4161200,Redmond city,73.0,7.0,12.0,21.0,16.563,6.083,0.0,missed (under)
+D-054 refit,4163650,Roseburg city,0.0,0.0,0.0,2.0,1.404,inf,0.869,inside only
+D-054 refit,4164600,St. Helens city,9.0,1.0,3.0,6.0,3.44,3.0,0.0,missed (under)
+D-054 refit,4164900,Salem city,77.0,61.0,73.0,101.0,85.188,1.055,1.0,useful
+D-054 refit,4165250,Sandy city,21.0,9.0,14.0,20.0,14.692,1.5,0.0,missed (under)
+D-054 refit,4167100,Sherwood city,6.0,1.0,3.0,14.1,10.769,2.0,1.0,useful
+D-054 refit,4167650,Silverton city,7.0,7.0,11.0,16.0,11.236,0.636,0.592,useful
+D-054 refit,4169600,Springfield city,43.0,1.0,4.0,14.1,8.246,10.75,0.0,missed (under)
+D-054 refit,4171950,Sweet Home city,16.0,0.0,0.0,1.0,0.223,inf,0.0,missed (under)
+D-054 refit,4173650,Tigard city,3.0,0.0,0.0,16.0,9.073,inf,1.0,inside only
+D-054 refit,4174850,Troutdale city,3.0,0.0,0.0,6.0,2.364,inf,1.0,inside only
+D-054 refit,4174950,Tualatin city,0.0,29.0,36.0,48.0,39.893,0.0,0.0,missed (over)
+D-054 refit,4180150,West Linn city,0.0,3.0,6.0,24.0,15.222,0.0,0.0,missed (over)
+D-054 refit,4182800,Wilsonville city,0.0,0.0,0.0,7.0,4.196,inf,0.86,inside only
+D-054 refit,4183750,Woodburn city,5.0,1.0,3.0,9.0,5.397,1.667,1.0,useful
+D-054 refit,4183950,Wood Village city,0.0,0.0,0.0,1.0,0.328,inf,0.888,inside only
