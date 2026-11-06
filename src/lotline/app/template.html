@@ -106,6 +106,20 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .tile .figure { display: block; }
 .tile .caption { color: var(--ink-muted); }
 iframe.dash { width: 100%; height: 80vh; border: var(--stroke-hair) solid var(--rule); background: var(--paper); }
+
+.verdict { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: 600; white-space: nowrap; }
+.verdict .glyph { width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; display: inline-block; }
+.verdict.pass { color: var(--confidence-inside); } .verdict.pass .glyph { background: currentColor; }
+.verdict.partial { color: var(--confidence-edge); } .verdict.partial .glyph { background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.verdict.fail { color: var(--confidence-outside); }
+.verdict.not_run { color: var(--ink-muted); } .verdict.not_run .glyph { border-style: dashed; }
+.tornado { display: grid; grid-template-columns: minmax(140px, 240px) 1fr minmax(140px, auto); gap: var(--space-2) var(--space-4); align-items: center; }
+.tornado .track { height: 20px; }
+.tornado .seg { position: absolute; top: 4px; bottom: 4px; background: var(--survey); opacity: .75; }
+.tornado .base { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--ink); }
+@media (max-width: 640px) { .tornado { grid-template-columns: 1fr; } }
+details.fold { background: var(--paper-sunken); border: var(--stroke-hair) solid var(--rule); padding: var(--space-4); margin: var(--space-4) 0; }
+details.fold > summary { cursor: pointer; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -304,7 +318,39 @@ const SECTIONS = {
         <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>
       ${dash}`;
   },
-  trust(b) { return `<p class="pending">The validation scorecard for ${esc(b.meta.state)} is shown here.</p>`; },
+  trust(b) {
+    const V = { pass: "Pass", partial: "Partial", fail: "Fail", not_run: "Not yet run" };
+    const sc = b.scorecard.map((r) => `<tr><td><b>${esc(r.check_id)}</b><br>${esc(r.label)}</td><td>${esc(r.metric)}</td>
+      <td class="n">${r.value == null ? "–" : esc(Number(r.value).toLocaleString("en-US", { maximumSignificantDigits: 3 }))}</td><td>${esc(r.target)}</td>
+      <td><span class="verdict ${esc(r.verdict)}"><span class="glyph" aria-hidden="true"></span>${esc(V[r.verdict] || r.verdict)}</span></td>
+      <td>${r.report_path ? `<span class="code">${esc(r.report_path)}</span>` : ""}</td></tr>`).join("");
+    const scen = scenariosIn(b);
+    const facts = scen.map((s) => {
+      const ds = drawsFor(b, s);
+      const cols = [...AGG.TIERS, ...AGG.FACTORS, "overlap_share"];
+      return `<h4 class="h3" style="margin-top:var(--space-4)">${esc(scenLabel(s))}</h4><div class="scroll"><table>
+        <thead><tr><th>Factor in the draws</th><th class="n">P10</th><th class="n">P50</th><th class="n">P90</th></tr></thead><tbody>
+        ${cols.map((c) => { const v = ds.map((d) => d[c]).filter((x) => x != null).map(Number);
+          return v.length ? `<tr><td class="code">${esc(c)}</td>${[10, 50, 90].map((q) => `<td class="n">${Number(AGG.percentile(v, q).toPrecision(4)).toLocaleString("en-US")}</td>`).join("")}</tr>`
+            : `<tr><td class="code">${esc(c)}</td><td class="n muted" colspan="3">not used (single scenario)</td></tr>`; }).join("")}
+        </tbody></table></div>`;
+    }).join("");
+    return `<div class="card"><h3 class="h3">Validation scorecard</h3>
+        ${sc ? `<div class="scroll"><table><thead><tr><th>Check</th><th>Measure</th><th class="n">Result</th><th>Target</th><th>Verdict</th><th>Report</th></tr></thead><tbody>${sc}</tbody></table></div>`
+          : `<p class="pending">No validation checks have been scored into this state's results bundle yet. They come from the validation reports (validation plan §5).</p>`}
+        <p class="source">Each check was set before its result was seen (validation plan §5). Verdicts use a glyph and a word, not colour alone.</p></div>
+      <div class="card"><h3 class="h3">Blind tests: predicted before the outcome could be seen</h3>
+        <p class="pending">Frozen forward predictions are drawn here as the predicted range against what was observed, once each test's outcomes are unblinded and its frozen range is in the results bundle.</p></div>
+      <div class="card"><h3 class="h3">Overlap check</h3>
+        <p class="body-small">Does this state look like the places the model learned from? Each place is measured by how far its rent, home value and mortgage rate sit outside the range of the reference places behind the uptake rate (a log distance; 0 means inside on all three). The state is read from the middle of that distance, weighted by eligible lots: inside up to ${esc(DATA.overlap_thresholds.medium)}, near the edge up to ${esc(DATA.overlap_thresholds.low)}, outside beyond (config/params/aggregate.yaml).</p>
+        ${flagHtml(b.meta).replace('<div class="card">', '<div>')}</div>
+      <div class="card"><h3 class="h3">Which assumptions move the answer most</h3>
+        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net statewide homes when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders.</p>
+        <div class="tornado" id="tornado"></div></div>
+      <details class="fold"><summary>Technical detail</summary>
+        <p class="body-small">The engine's draws behind every number above: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/dev/results_dashboard.py</span>).</p>
+        ${facts}</details>`;
+  },
 };
 
 function knobsHtml(b) {
@@ -383,6 +429,23 @@ function updateResults() {
   }
 }
 
+function drawTornado() {
+  const el = $("tornado"), b = UI.b;
+  if (!el || !b || !scenariosIn(b).length) return;
+  const s = UI.detail || scenariosIn(b)[0];
+  const t = AGG.tornado(drawsFor(b, s), "homes_net_statewide");
+  const label = Object.fromEntries(DATA.knobs.map((k) => [k.column, k.label]));
+  const vals = t.rows.flatMap((r) => [r.low, r.high]).concat([t.base]);
+  const lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo) * 0.05 || 1;
+  const x = (v) => `${((v - (lo - pad)) / (hi - lo + 2 * pad)) * 100}%`;
+  el.innerHTML = t.rows.map((r) => {
+    const a = Math.min(r.low, r.high), z = Math.max(r.low, r.high);
+    return `<div class="lab body-small" style="font-weight:600">${esc(label[r.factor] || r.factor)}</div>
+      <div class="track" aria-label="${esc(label[r.factor] || r.factor)}: ${fmtN(r.low)} at its low, ${fmtN(r.high)} at its high"><span class="seg" style="left:${x(a)};width:calc(${x(z)} - ${x(a)})"></span><span class="base" style="left:${x(t.base)}"></span></div>
+      <div class="nums body-small" style="font-family:var(--font-mono);text-align:right">${fmtN(r.low)} → ${fmtN(r.high)}</div>`;
+  }).join("") + `<div></div><div class="body-small muted">Engine midpoint: ${fmtN(t.base)} homes</div><div></div>`;
+}
+
 function wireData() {
   const btn = $("open-dash");
   if (!btn) return;
@@ -407,6 +470,7 @@ function wireResults() {
       UI.detail = t.dataset.detail; UI.pins = {};
       body.querySelectorAll("[data-detail]").forEach((x) => x.setAttribute("aria-pressed", x === t));
       $("knobs").innerHTML = knobsHtml(UI.b);
+      drawTornado();
     }
     if (t.dataset.reset) delete UI.pins[t.dataset.reset];
     if (t.id === "reset-all") UI.pins = {};
@@ -437,6 +501,7 @@ function show(state) {
   for (const [id, fill] of Object.entries(SECTIONS)) $(`${id}-body`).innerHTML = fill(b);
   wireResults();
   wireData();
+  drawTornado();
   footer(b);
   document.title = `Lotline · ${b.meta.state}`;
 }

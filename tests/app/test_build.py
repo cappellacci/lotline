@@ -197,3 +197,19 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
     assert json.loads(m.group(1)) is None
+
+
+# ---------------------------------------------------------------------- section 3: how well it holds up
+def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
+    from lotline.config import load_params
+
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    for part in ("Validation scorecard", "Blind tests", "Overlap check", 'id="tornado"', "Technical detail"):
+        assert part in html, part
+    agg = load_params("aggregate")
+    assert _embedded(html)["overlap_thresholds"] == {
+        "medium": agg["overlap_flag_medium_distance"].value,
+        "low": agg["overlap_flag_low_distance"].value,
+    }
+    # the fixture's scorecard row reaches the page as-is
+    assert _embedded(html)["states"][0]["scorecard"][0]["check_id"] == "V1"

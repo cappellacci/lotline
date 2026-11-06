@@ -123,6 +123,30 @@ def test_centre_of_every_slider_is_the_engine():
     assert got == centred
 
 
+def test_tornado_matches_python():
+    script = """
+const agg = require(process.argv[1]);
+let s = ""; process.stdin.on("data", (c) => (s += c)).on("end", () => {
+  process.stdout.write(JSON.stringify(agg.tornado(JSON.parse(s), "homes_net_statewide")));
+});
+"""
+    draws = _draws()
+    got = _node(script, _records(draws))
+    assert got["base"] == pytest.approx(_python(draws, {})["homes_net_statewide"]["p50"], rel=1e-12)
+    want = {
+        f: (
+            _python(draws, {f: 10})["homes_net_statewide"]["p50"],
+            _python(draws, {f: 90})["homes_net_statewide"]["p50"],
+        )
+        for f in FACTORS
+    }
+    assert {r["factor"] for r in got["rows"]} == set(FACTORS)
+    for r in got["rows"]:
+        assert (r["low"], r["high"]) == pytest.approx(want[r["factor"]], rel=1e-12)
+    swings = [abs(r["high"] - r["low"]) for r in got["rows"]]
+    assert swings == sorted(swings, reverse=True)
+
+
 def test_hand_worked_shift():
     # the docstring example in aggregate.js: theta 0.02 / 0.04, shifted to q=100 -> x 4/3
     base = dict(
