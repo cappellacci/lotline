@@ -150,7 +150,7 @@ def test_window_caps_at_last_outcome_year():
 
 
 def test_window_uses_its_own_registered_lead():
-    """D-059: the forward run skips a year (forecast_lead_years = 1) but the backtest keeps its registered
+    """D-061: the forward run skips a year (forecast_lead_years = 1) but the backtest keeps its registered
     lead (v1_lead_years = 0) and scores the years right after the fit end. v1_lead_years = 1 is the
     supplementary check: fit to 2016, skip 2017, score 2018-2022; `horizon` counts years after the fit end."""
 

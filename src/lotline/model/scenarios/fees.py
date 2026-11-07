@@ -224,7 +224,7 @@ def run(
 ):
     """The fee scenario per place: (per-year table, five-year totals[, summary]), with P10/P50/P90 and mean.
 
-    `origin` is the last year of data; the years reported are the window `baseline.window(origin)` (D-059),
+    `origin` is the last year of data; the years reported are the window `baseline.window(origin)` (D-061),
     and the fee cut takes effect at its start, so ramp year 1 is the window's first year. baseline_y1..y5 are
     the baseline's window years (`baseline_forecast`'s horizon 1..5), not the years right after the origin.
 

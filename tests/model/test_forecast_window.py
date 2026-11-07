@@ -1,4 +1,4 @@
-"""D-059: the five-year window starts `forecast_lead_years` after the data origin.
+"""D-061: the five-year window starts `forecast_lead_years` after the data origin.
 
 Origin 2025 (the last full BPS year) with lead 1 gives 2027-2031. The lead year is simulated as baseline only
 and is not reported; the backtest keeps its own pre-registered lead (`v1_lead_years` = 0).

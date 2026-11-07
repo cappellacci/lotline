@@ -3,7 +3,7 @@
 For each fit end (2016, 2018, 2020 from config/params/baseline.yaml), every method sees only rows with
 year <= fit end, forecasts `forecast_horizon_years` starting `v1_lead_years` after it (capped at
 `v1_last_outcome_year`), and is scored against what BPS recorded. The registered lead is 0 (the years right
-after the fit end); the forward run skips a year (`forecast_lead_years`, D-059), so `v1_lead_years` = 1 is the
+after the fit end); the forward run skips a year (`forecast_lead_years`, D-061), so `v1_lead_years` = 1 is the
 supplementary check that scores the same gap. Its `horizon` column counts years after the fit end.
 
 - **Error:** mean absolute error in units per 1,000 eligible parcels, each place-year counting once. Counts
@@ -161,7 +161,7 @@ def _window(
     value = baseline.outcome_column(size_class, reported_only)
     if excluded:
         panel = panel[~panel[KEY].isin(excluded)]
-    # The backtest's lead is its own pre-registered parameter, not the forward run's (D-059).
+    # The backtest's lead is its own pre-registered parameter, not the forward run's (D-061).
     p = p | {"forecast_lead_years": p["v1_lead_years"]}
     lead, horizon, first = baseline.window(fit_end, p)
     last = min(fit_end + lead + horizon, int(p["v1_last_outcome_year"].value))

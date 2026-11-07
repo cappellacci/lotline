@@ -95,7 +95,7 @@ def test_handbook_equivalent_rules_add_nothing():
 
 
 def test_partial_rules_get_the_increment_only_by_hand():
-    """A partial rule at m_x = 0.3 (the D-053 sensitivity): current hazard = 0.3 × h_m. The lead year (D-059)
+    """A partial rule at m_x = 0.3 (the D-053 sensitivity): current hazard = 0.3 × h_m. The lead year (D-061)
     runs under current rules only, leaving R = 2,000 × (1 − 0.3 h_m) parcels. Handbook year 1:
     0.3 h_m + 0.7 h_m (no ramp, D-048). Added in year 1 = R × 0.7 × h_m (same pool in year 1). At the
     adopted m_x = 1.0 (D-053) a partial rule already counts in full, so nothing is added."""
@@ -478,7 +478,7 @@ def test_a_blank_field_is_never_read_as_unrestrictive():
 
 def test_central_path_uses_the_expected_rule_share():
     """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 (the D-053 sensitivity) -> c = 0.72.
-    The lead year (D-059) leaves R = 2,000 × (1 − 0.72 h_m) parcels; added in year 1 = R × (1 − 0.72) × h_m
+    The lead year (D-061) leaves R = 2,000 × (1 − 0.72 h_m) parcels; added in year 1 = R × (1 − 0.72) × h_m
     (no ramp, D-048)."""
     p = _places(rule_class="unknown", rule_age=50.0).assign(
         p_none=0.0, p_owner=0.0, p_other=0.4, p_both=0.0, p_handbook=0.6

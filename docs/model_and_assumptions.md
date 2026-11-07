@@ -447,7 +447,7 @@ so its units go on top of the baseline without counting those ADUs twice.
 
 **Mortgage rates.** A forward run draws one 30-year rate per simulation draw from `mortgage_rate_forecast`
 (`market.yaml`): central 6.60% (FRED annual mean for 2025), range 2.96–6.81% (the 2015–2025 annual low and high,
-a stress range, not a forecast), flat over the forecast window (2027–2031 since D-059). Backtests and validation checks never use it: they use
+a stress range, not a forecast), flat over the forecast window (2027–2031 since D-061). Backtests and validation checks never use it: they use
 each year's actual rate from `market_geo_year`.
 
 **Worked example** (`test_one_jurisdiction_year_by_hand`): 2,000 eligible parcels, mature hazard 0.0014219 (the
@@ -810,7 +810,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
 | `forecast_horizon_years` | 5 | fixed | years | Challenge brief (CLAUDE.md): housing production over 5 years compared with a baseline |
-| `forecast_lead_years` | 1 | 0–2 | years | D-059 (proposed 2026-11-06): the Handbook fixes a five-year horizon but no start year ('Teams should assume a… |
+| `forecast_lead_years` | 1 | 0–2 | years | D-061 (proposed 2026-11-06): the Handbook fixes a five-year horizon but no start year ('Teams should assume a… |
 | `benchmark_mean_years` | 3 | fixed | years | Validation plan V1: benchmark (a) 'last-3-year average' |
 | `benchmark_trend_years` | 10 | 5–10 | years | Validation plan V1: benchmark (b) 'a simple trend' |
 | `level_years` | 5 | 3–7 | years | Chosen a priori (WS-ENGINE round 2, 2026-10-14), not tuned on the V1 windows: one more cycle-length than the… |
@@ -825,7 +825,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `v1_fit_end_years_last` | 2020 | fixed | year | Validation plan V1 |
 | `v1_fit_end_step` | 2 | fixed | years | Validation plan V1 (2016, 2018, 2020) |
 | `v1_last_outcome_year` | 2025 | fixed | year | Validation plan V1: 'Forecast 2019-2025' |
-| `v1_lead_years` | 0 | 0–1 | years | Validation plan V1 as pre-registered: forecast the years right after the fit end (D-059 keeps it, so register… |
+| `v1_lead_years` | 0 | 0–1 | years | Validation plan V1 as pre-registered: forecast the years right after the fit end (D-061 keeps it, so register… |
 | `v1_bias_first_year` | 2023 | fixed | year | Validation plan V1: 'no systematic bias in the post-2022 window' |
 | `v1_bias_tolerance` | 0.25 | 0.1–0.5 | share of MAE | Proposed (WS-ENGINE round 2, 2026-10-14) to make V1's 'no systematic bias' testable |
 | `v1_coverage_low` | 0.7 | fixed | share | Validation plan V1 pass (proposed): coverage 70-90% |
@@ -974,7 +974,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `mortgage_rate_forecast` | 6.6 | 2.96–6.81 | percent (30-year fixed), held flat over the 5-year forecast window (2027-2031 since D-059; the lead year 2026 too) | Central: FRED MORTGAGE30US annual mean for 2025, 6.595% (market_geo_year.mortgage_rate, national:US) |
+| `mortgage_rate_forecast` | 6.6 | 2.96–6.81 | percent (30-year fixed), held flat over the 5-year forecast window (2027-2031 since D-061; the lead year 2026 too) | Central: FRED MORTGAGE30US annual mean for 2025, 6.595% (market_geo_year.mortgage_rate, national:US) |
 
 **`config/params/mm.yaml`** (7 parameters)
 

@@ -9,7 +9,7 @@ from lotline.config import load_params
 from lotline.model import baseline
 
 # The hand-worked examples here check the mechanics with the forecast starting right after the origin (lead 0,
-# the V1 registration). The forward run's one-year lead (D-059) is tested in test_forecast_window.py.
+# the V1 registration). The forward run's one-year lead (D-061) is tested in test_forecast_window.py.
 _P = load_params("baseline")
 PARAMS = _P | {"forecast_lead_years": _P["forecast_lead_years"].model_copy(update={"value": 0})}
 K = int(PARAMS["benchmark_mean_years"].value)

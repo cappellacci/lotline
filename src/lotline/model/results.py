@@ -177,7 +177,7 @@ def summarize(
         ):
             funnel.append({"stage": stage, "unit": unit, "scenario": scenario, **_pct(h[key])})
         shares = (years or {}).get(scenario)
-        _, window_years, first = baseline.window(origin)  # D-059: origin 2025 -> 2027-2031
+        _, window_years, first = baseline.window(origin)  # D-061: origin 2025 -> 2027-2031
         horizon = shares.shape[1] if shares is not None else window_years
         for outcome in ("permits_added", "homes_in_place", "homes_net_statewide"):
             a = h[outcome]

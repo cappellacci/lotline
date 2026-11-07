@@ -529,7 +529,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   4. **Excluding 2020–21:** effects within their 90% intervals.
   5. **Leave-one-treated-place-out:** no single place moves the pooled effect by more than its 90% interval.
 - **Out-of-sample test (transport, protocol §5.5, §5.8):** with the Minnesota estimates and each place's own pre-reform modifiers, predict ADU permits for Austin (2016–2023, coded rules), Raleigh (2021–2025) and Durham (2019–2025). The test passes if each place's observed total lies in its 80% prediction interval, and the coverage of yearly 80% intervals across the three is between 60% and 95%. Places outside the Minnesota modifier range are flagged, and their intervals widened as in `hazard.widen`.
-- **Forecast use:** for a target place, the scenario's added ADUs = Eligible × [exp(η_with rule) − exp(η_without)] summed over the forecast window (2026–2030 when written; 2027–2031 since D-059). η uses the place's α (or, for places without ADU data, a hierarchical prior by state, size band and modifiers; protocol §5.7), the event-time β, its own modifiers, ρ at the stated rate path (`mortgage_rate_forecast`) and γ_2026–2030 held at the 2025 level with the rate effect added. Uncertainty comes from bootstrap draws of all coefficients plus Poisson-gamma noise. The net-new and formalization shares (D-019) then apply as before.
+- **Forecast use:** for a target place, the scenario's added ADUs = Eligible × [exp(η_with rule) − exp(η_without)] summed over the forecast window (2026–2030 when written; 2027–2031 since D-061). η uses the place's α (or, for places without ADU data, a hierarchical prior by state, size band and modifiers; protocol §5.7), the event-time β, its own modifiers, ρ at the stated rate path (`mortgage_rate_forecast`) and γ_2026–2030 held at the 2025 level with the rate effect added. Uncertainty comes from bootstrap draws of all coefficients plus Poisson-gamma noise. The net-new and formalization shares (D-019) then apply as before.
 - **Robustness (reported, not used to choose):** negative-binomial with place random effects (protocol §5.7); the Borusyak imputation estimator; the dose as a binary by-right indicator.
 - **What would change the plan:** if the pre-trend check fails, report it and use HonestDiD bounds; there is no re-specification without a new dated entry. If too few places have dated rules after the adoption-date run, report the estimates as underpowered rather than adding assumptions.
 - **Code:** `src/lotline/model/estimate_adu.py`, tested by recovering known β, θ and ρ from simulated staggered-adoption panels before any real run.
@@ -695,7 +695,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Either way, the later bins (2–3, 4+) then rest on one or two cities. This is stated with the results.
     Places outside the fitted modifier range are flagged and their intervals widened as in `hazard.widen`.
 - **Forecast use:** for a target place, the scenario's added 2–4 unit homes = Eligible × [exp(η with the
-  Handbook rule) − exp(η without)], summed over the forecast window (2027–2031 since D-059). The Handbook rule is 4+ units by right citywide
+  Handbook rule) − exp(η without)], summed over the forecast window (2027–2031 since D-061). The Handbook rule is 4+ units by right citywide
   (dose 1). Observed doses run 0.2–1 (only Houston is at 1), so dose 1 leans on the dose scaling; the binary
   dose check below shows how much. η uses the place's α where it is in the panel, otherwise a draw from places
   in the same state and size band. It also uses the bins' β, the place's modifiers, ρ under
@@ -3795,7 +3795,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Results page:** `reports/mm-d058/d058-results.html`, published at
     https://claude.ai/artifact/XvRsYZGDB1vv1GE8Kzc5Kg.
 
-### D-059 · 2026-11-06 · The five-year window starts in 2027, one year after the data origin (proposed)
+### D-061 · 2026-11-06 · The five-year window starts in 2027, one year after the data origin (proposed)
 - **Why:** The Handbook fixes the horizon but not its start ("Teams should assume a five year time horizon",
   Benchmark Policy Scenarios; checked 2026-11-06, and the Rules give no projection year either). Until now every
   forward run reported the five years right after the origin: origin 2025, the last full BPS annual year, so
@@ -3803,7 +3803,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   year 1 gives credit for a year that is already over. By the January demo, 2026 is also mostly observed
   (monthly BPS).
 - **Decided by:** Ben asked for this draft on 2026-11-06. It is **proposed** until he adopts it. Number
-  provisional: renumber if another D-059 lands first.
+  provisional: renumber if another D-061 lands first.
 - **What changes:** new parameter `forecast_lead_years` = 1 (`config/params/baseline.yaml`). The window is
   origin + lead + 1 … origin + lead + 5: **2027–2031** from origin 2025 (`baseline.window`, `window_label`).
   - *Baseline:* simulates lead + 5 years and reports the last 5. The regional cycle keeps walking through 2026,

@@ -13,7 +13,7 @@ backtest can never see a year after the origin.
 Both forecast counts (the numerator); rates per 1,000 eligible parcels are formed only at evaluation, from the
 panel's separate denominator. The horizon comes from `forecast_horizon_years` (config/params/baseline.yaml).
 
-**The window** (D-059, `window`): the forecast covers `forecast_horizon_years` years starting
+**The window** (D-061, `window`): the forecast covers `forecast_horizon_years` years starting
 `forecast_lead_years` after the origin, i.e. years origin + lead + 1 … origin + lead + horizon. With origin
 2025 (the last full BPS year) and lead 1 that is 2027-2031. The lead years are simulated (the cycle keeps
 walking through them, so the band is as wide as a forecast that far out should be) but not reported. Columns
@@ -88,7 +88,7 @@ def _years(origin: int, horizon: int, lead: int = 0) -> pd.Index:
 
 
 def window(origin: int, params: dict[str, Parameter] | None = None) -> tuple[int, int, int]:
-    """(lead, horizon, first year) of the forecast window for a data origin (D-059).
+    """(lead, horizon, first year) of the forecast window for a data origin (D-061).
 
     By hand: origin 2025, lead 1, horizon 5 -> (1, 5, 2027), so the window is 2027-2031.
     """
@@ -428,7 +428,7 @@ def forecast_draws(
     """
     p = params or load_params("baseline")
     lead, horizon, _ = window(origin, p)
-    steps = lead + horizon  # simulated years: the lead years walk the cycle but are not reported (D-059)
+    steps = lead + horizon  # simulated years: the lead years walk the cycle but are not reported (D-061)
     n = int(p["simulation_draws"].value)
     low, high = p["interval_low_quantile"].value, p["interval_high_quantile"].value
     seed = int(p["simulation_seed"].value)

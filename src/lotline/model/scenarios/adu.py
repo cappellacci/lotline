@@ -2,7 +2,7 @@
 right,
 with no parking requirement (Handbook benchmark; BUILD_PLAN §5; judging finding MS-01).
 
-For each jurisdiction and each of the five years of the window, t = 1 … 5 (D-059: the window starts
+For each jurisdiction and each of the five years of the window, t = 1 … 5 (D-061: the window starts
 `forecast_lead_years` after the data origin, so origin 2025 gives 2027-2031, and the reform takes effect at
 the start of year 1; `baseline.window`):
 
@@ -25,7 +25,7 @@ the start of year 1; `baseline.window`):
 Each year the pool of parcels without an ADU shrinks, separately under each set of rules:
 gross ADUs(t) = R(t − 1) × h(t), R(t) = R(t − 1) − gross ADUs(t), R(0) = eligible parcels. So a parcel gets at
 most one ADU, and cumulative ADUs never exceed eligible parcels. In the lead years between the origin and the
-window (D-059) only current rules apply: the pool shrinks by current-rules ADUs, the rule ages, and nothing is
+window (D-061) only current rules apply: the pool shrinks by current-rules ADUs, the rule ages, and nothing is
 added or reported.
 
     ADU permits added (t) = Handbook gross ADUs(t) − current-rules gross ADUs(t)
@@ -647,7 +647,7 @@ def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, h
 
     `rule_age` is the current rule's age in years at the origin (NaN: no rule). `ramp_params` gives the ramp
     (`hazard.adu_ramp`; D-048: 1 every year). With `enabled=False` the Handbook path equals the current-rules
-    path, so nothing is added. `lead` years (D-059) run first under current rules only, on one shared pool,
+    path, so nothing is added. `lead` years (D-061) run first under current rules only, on one shared pool,
     and are not returned: the window's year t has rule age a + lead + t and Handbook ramp(t).
     """
     e = np.asarray(eligible, dtype=float)
@@ -656,7 +656,7 @@ def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, h
     c = np.asarray(rule_share, dtype=float)
     age = np.nan_to_num(np.asarray(rule_age, dtype=float), nan=0.0)
     r = e.copy()
-    for s in range(1, int(lead) + 1):  # lead years: current rules only, nothing reported (D-059)
+    for s in range(1, int(lead) + 1):  # lead years: current rules only, nothing reported (D-061)
         h_lead = np.minimum(np.maximum(c * hm * hazard.adu_ramp(age + s, ramp_params), floor), 1.0)
         r = r - r * h_lead
     age = age + int(lead)
@@ -793,7 +793,7 @@ def run(
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
-    `origin` is the last year of data; the years reported are the window `baseline.window(origin)` (D-059).
+    `origin` is the last year of data; the years reported are the window `baseline.window(origin)` (D-061).
 
     With `summary_by` (a column, e.g. 'state'), also returns a third table: for each group, year and the
     five-year total, P10/P50/P90 and mean of the **sum of draws** over the group's places (places must be
