@@ -234,3 +234,20 @@ def test_oregon_gets_one_state_multiplier_per_draw_from_the_tau_grid():
     spec = {"adu_state_tau_prob__0_5": 1.0, "adu_state_effect_fitted__OR": 1.0}
     flat = v9.adu_draws(inp, 4000, 8, fixed, states_spec=spec)
     assert np.std(flat.sum(axis=(1, 2)) / 320.0) < 0.1
+
+
+def test_adu_draws_keep_the_frozen_calibration_range(monkeypatch):
+    """D-060: V9 is frozen on the West Coast calibration range, so changing hazard.yaml's range (here to the
+    fit set's, mocked) leaves the draws unchanged. A place at rent 1,000 is outside the old range and
+    widened."""
+    inp = _adu_inputs(HB, 2.0, 0, 1.0, eligible=(10_000.0,))
+    inp.rent[:] = 1000.0
+    fixed = {"adu_place_effect_variance": 0.0}
+    before = v9.adu_draws(inp, 300, 2, fixed, states_spec=NO_SPREAD)
+    moved = {"adu_calibration_rent_low_usd": 900.0, "adu_calibration_value_low_usd": 100_000.0}
+    real = adu.draw_params
+    monkeypatch.setattr(adu, "draw_params", lambda n, seed: [p | moved for p in real(n, seed)])
+    real_central = adu.central_params
+    monkeypatch.setattr(adu, "central_params", lambda: real_central() | moved)
+    after = v9.adu_draws(inp, 300, 2, fixed, states_spec=NO_SPREAD)
+    assert np.array_equal(before, after)

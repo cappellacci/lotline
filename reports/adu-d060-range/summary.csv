@@ -1,0 +1,4 @@
+arm,states_missed,state_verdicts,median_state_p90_over_p10,places,place_coverage,place_year_coverage,median_place_p90_over_p10,median_place_obs_over_p50,share_parcels_inside
+no widening,0,MN useful; NC inside only; OH useful; TX inside only; OR inside only; NC with Raleigh and Durham useful,67.70967741935478,55,0.7362275500861812,0.7827713412551591,inf,1.25,1.0
+C current,0,MN useful; NC useful; OH inside only; TX inside only; OR inside only; NC with Raleigh and Durham useful,68.60862068965528,55,0.7411231226642524,0.7950619671756574,inf,1.2857142857142858,0.13429884482341162
+F fit set,0,MN useful; NC inside only; OH useful; TX inside only; OR inside only; NC with Raleigh and Durham useful,68.84655172413797,55,0.7363512024452034,0.7823387188348192,inf,1.25,0.49276565682514634

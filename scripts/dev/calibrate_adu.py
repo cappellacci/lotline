@@ -964,6 +964,151 @@ def detached_main(store, out: Path | None, workers: int) -> None:
         pd.concat([t, tt]).to_csv(out / "statewide.csv", index=False)
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-060: the calibration range from the fit set, tested by leave one state out with widening
+# ---------------------------------------------------------------------------------------------------------
+
+D060_ARMS = ("no widening", "C current", "F fit set")
+
+
+def current_range() -> dict:
+    """Arm C: the West Coast range that was in config/params/hazard.yaml when D-060 ran. Since F was adopted
+    the config holds F, so the run reads the range from `hazard.PRE_D060_CALIBRATION` (the same values)."""
+    from lotline.model import hazard
+
+    return {k: float(v) for k, v in hazard.PRE_D060_CALIBRATION.items()}
+
+
+def _range_line(name: str, r: dict) -> str:
+    rent = (r["adu_calibration_rent_low_usd"], r["adu_calibration_rent_high_usd"])
+    return (f"  {name:34s} rent {rent[0]:>7,.0f}-{rent[1]:<7,.0f}"
+            f" value {r['adu_calibration_value_low_usd']:>9,.0f}-{r['adu_calibration_value_high_usd']:<9,.0f}"
+            f" rate {r['adu_calibration_rate_low']:.2f}-{r['adu_calibration_rate_high']:.2f}")  # fmt: skip
+
+
+def _place_scores(arm: str, fold: str, pls, draws: dict, dist: dict) -> list[dict]:
+    from lotline.model.baseline import pit_step, randomized_coverage, step_share
+
+    recs = []
+    for pl in pls:
+        d = draws[pl.geoid]
+        tot = d.sum(axis=1)
+        obs = float(pl.y.sum())
+        lo, mid, hi = np.percentile(tot, P_BANDS)
+        cov = float(randomized_coverage(tot[None, :], np.array([obs]), 0.1, 0.9)[0])
+        fm, f = pit_step(d.T, pl.y)
+        parcels = pl.extra["parcels"]
+        recs.append(dict(arm=arm, fold=fold, state=pl.state, geoid=pl.geoid, name=pl.name, years=len(pl.y),
+                         observed=obs, p10=lo, p50=mid, p90=hi, coverage=cov,
+                         year_coverage=float(step_share(fm, f, 0.1, 0.9).mean()),
+                         obs_over_p50=obs / mid if mid > 0 else float("inf"),
+                         p90_over_p10=hi / lo if lo > 0 else float("inf"),
+                         distance_mean=float(np.mean(dist[pl.geoid])) if dist else 0.0,
+                         parcel_years=float(parcels.sum()),
+                         parcel_years_inside=float(parcels[np.asarray(dist[pl.geoid]) == 0].sum()) if dist
+                         else float(parcels.sum())))  # fmt: skip
+    return recs
+
+
+def range_test_main(store, out: Path | None, workers: int) -> None:
+    """D-060: leave one state out over five states (D-053 main: τ drawn per fold), with the extrapolation
+    widening under the current range (C) and the fit-set range recomputed per fold (F), same draws."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    from lotline.model import hazard
+
+    if not WITH_OR:
+        raise SystemExit("D-060 runs on five states: set LOTLINE_FIT_WITH_OR=1")
+    if out is not None:
+        out.mkdir(parents=True, exist_ok=True)
+    cs = cal.count_settings()
+    places, test = four_state_places(store, cs), _test_set(store, cs)
+    w = float(hazard.central_params()["adu_extrapolation_widening"])
+    full = cal.fit_set_range(places)
+    cur = current_range()
+    print(f"=== D-060: {full['places']} fit places, {full['place_years']} place-years, "
+          f"years {full['years'][0]}-{full['years'][1]}, counts {cs}, widening w = {w:g} ===")  # fmt: skip
+    print("Calibration ranges (2025 dollars):")
+    print(_range_line("C current (Portland, Seattle, LA)", cur))
+    print(_range_line("F fit set, five states (main)", full))
+    mm = full["minmax"]
+    print(f"  {'min/max, five states (not tested)':34s} rent {mm['rent'][0]:>7,.0f}-{mm['rent'][1]:<7,.0f}"
+          f" value {mm['home_value'][0]:>9,.0f}-{mm['home_value'][1]:<9,.0f}", flush=True)  # fmt: skip
+    with ProcessPoolExecutor(workers) as pool:
+        results = list(pool.map(_tau_task, [(st, places) for st in STATES]))
+    draws = {a: {} for a in D060_ARMS}
+    place_recs, ranges = [], [dict(range="C current", **{k: v for k, v in cur.items()}),
+                              dict(range="F five states", **{k: v for k, v in full.items()
+                                                             if k.startswith("adu_")})]  # fmt: skip
+    for st, _, sf, ll, err in results:
+        if sf is None:
+            print(f"without {st}: not estimable ({err})")
+            continue
+        probs = cal.tau_probabilities(ll)
+        rng = np.random.default_rng([SEED, 44, 100 + STATES.index(st)])
+        taus = cal.draw_tau(cal.TAU_GRID, probs, TAU_DRAWS, rng)  # the same τ draws as D-053's main run
+        z = np.random.default_rng([SEED, 58, STATES.index(st)]).standard_normal(TAU_DRAWS)
+        pred = [p for p in places + test if p.state == st]
+        fold_range = cal.fit_set_range([p for p in places if p.state != st])
+        ranges.append(
+            dict(range=f"F without {st}", **{k: v for k, v in fold_range.items() if k.startswith("adu_")})
+        )
+        print(_range_line(f"F without {st}", fold_range), flush=True)
+        dists = {"no widening": None, "C current": cal.place_distances(pred, cur),
+                 "F fit set": cal.place_distances(pred, fold_range)}  # fmt: skip
+        for arm, dist in dists.items():
+            d = cal.predict_unseen_state(pred, sf, draws=TAU_DRAWS, seed=SEED, taus=taus, distances=dist,
+                                         z_widen=z, widening=w)  # fmt: skip
+            draws[arm] |= d
+            place_recs += _place_scores(arm, st, pred, d, dist)
+    portland = _portland_paths(store, places + test, cs)
+    ref = pd.read_csv(D053 / "statewide.csv")
+    ref = ref[ref["test"] == "D-044 main: leave one state out, tau drawn"].set_index("group")
+    tables = []
+    for arm in D060_ARMS:
+        t = state_totals(f"D-060 {arm}: leave one state out, tau drawn", _groups(places, test, True),
+                         draws[arm], portland)  # fmt: skip
+        tables.append(t.assign(arm=arm))
+    t0 = tables[0].set_index("group")
+    bands = ["p10", "p50", "p90"]
+    same = all(np.allclose(t0.loc[g, bands].astype(float), ref.loc[g, bands].astype(float)) for g in t0.index)
+    print(f"\nCheck: no-widening arm reproduces D-053's leave-one-state-out table: {same}")
+    pl = pd.DataFrame(place_recs)
+    summ = []
+    for arm, t in zip(D060_ARMS, tables, strict=True):
+        a = pl[pl["arm"] == arm]
+        verdicts = "; ".join(f"{g} {v}" for g, v in zip(t["group"], t["verdict"], strict=True))
+        yc = float((a["year_coverage"] * a["years"]).sum() / a["years"].sum())
+        inside = float(a["parcel_years_inside"].sum() / a["parcel_years"].sum())
+        missed = int((t["verdict"] == "missed").sum())
+        summ.append(dict(arm=arm, states_missed=missed, state_verdicts=verdicts,
+                         median_state_p90_over_p10=float(t[t["group"].isin(STATES)]["p90_over_p10"].median()),
+                         places=len(a), place_coverage=float(a["coverage"].mean()), place_year_coverage=yc,
+                         median_place_p90_over_p10=float(a["p90_over_p10"].median()),
+                         median_place_obs_over_p50=float(a["obs_over_p50"].median()),
+                         share_parcels_inside=inside))  # fmt: skip
+    summ = pd.DataFrame(summ).set_index("arm")
+    print("\nD-060 summary")
+    print(summ.drop(columns=["state_verdicts"]).round(3).to_string())
+    c, f = summ.loc["C current"], summ.loc["F fit set"]
+    gate1 = f["states_missed"] <= c["states_missed"]
+    gate2 = f["place_coverage"] >= 0.70
+    ok = {True: "pass", False: "FAIL"}
+    print(
+        f"\nGate 1, no more states missed: F {f['states_missed']} vs C {c['states_missed']}"
+        f" -> {ok[bool(gate1)]}"
+    )
+    print(f"Gate 2, place-total P10-P90 coverage >= 70%: F {f['place_coverage']:.1%} -> {ok[bool(gate2)]}")
+    if f["place_coverage"] > 0.90:
+        print("  (F coverage above 90%: wider than needed, not a failure)")
+    print(f"D-060 rule: {'ADOPT F' if gate1 and gate2 else 'KEEP C'}")
+    if out is not None:
+        pd.concat(tables).to_csv(out / "statewide.csv", index=False)
+        pl.to_csv(out / "places.csv", index=False)
+        summ.to_csv(out / "summary.csv")
+        pd.DataFrame(ranges).to_csv(out / "ranges.csv", index=False)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -986,6 +1131,7 @@ def main() -> None:
     ap.add_argument("--state-effect", action="store_true", help="D-043: τ, the spread between states")
     ap.add_argument("--tau-draws", action="store_true", help="D-044: τ drawn from its profile likelihood")
     ap.add_argument("--detached", action="store_true", help="D-046: own multiplier for no detached ADUs")
+    ap.add_argument("--range-test", action="store_true", help="D-060: fit-set calibration range vs current")
     ap.add_argument(
         "--no-ramp", action="store_true", help="D-050: --tau-draws / --state-effect-config, D-048"
     )
@@ -998,6 +1144,9 @@ def main() -> None:
     )
     ap.add_argument("--out", type=Path, help="--four-state / --statewide: folder for the CSVs")
     a = ap.parse_args()
+    if a.range_test:
+        range_test_main(DataStore(), a.out, a.workers)
+        return
     if a.detached:
         detached_main(DataStore(), a.out, a.workers)
         return
