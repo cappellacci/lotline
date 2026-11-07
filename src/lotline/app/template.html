@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lotline</title>
 <link rel="icon" type="image/svg+xml" href="__FAVICON__">
-<!-- Brand fonts (STYLE_GUIDE "Typography"; SIL OFL 1.1, disclosed in docs/disclosures.md). Offline, the tokens' system fallbacks apply. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
 /*__LOTLINE_TOKENS__*/
+/* App surfaces (Ben, 2026-11-06): the page sits on paper-raised and cards on paper, warmer than the reverse. */
+:root { --app-page: var(--paper-raised); --app-card: var(--paper); }
+body { background: var(--app-page); }
 * { box-sizing: border-box; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 body { margin: 0; font-size: 16px; line-height: 24px; }
@@ -35,11 +34,11 @@ header.mast .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: va
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.wordmark, .mark) .light { display: none; } :root:not([data-theme="light"]) :is(.wordmark, .mark) .dark { display: block; } }
 :root[data-theme="dark"] :is(.wordmark, .mark) .light { display: none; }
 :root[data-theme="dark"] :is(.wordmark, .mark) .dark { display: block; }
-.tagline { flex: 1 1 280px; margin: 0; color: var(--ink-muted); background: var(--paper); padding: 0 var(--space-2); }
+.tagline { flex: 1 1 280px; margin: 0; color: var(--ink-muted); background: var(--app-page); padding: 0 var(--space-2); }
 .picker { display: flex; align-items: center; gap: var(--space-2); }
 select, button { font: inherit; color: var(--ink); background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); }
 
-nav.sections { position: sticky; top: 0; z-index: 2; background: var(--paper); border-bottom: var(--stroke-hair) solid var(--rule); }
+nav.sections { position: sticky; top: 0; z-index: 2; background: var(--app-page); border-bottom: var(--stroke-hair) solid var(--rule); }
 nav.sections .wrap { display: flex; align-items: center; gap: var(--space-4); }
 nav.sections .tabs-row { display: flex; gap: var(--space-5); overflow-x: auto; flex: 1 1 auto; min-width: 0; }
 nav.sections .nav-right { display: flex; align-items: center; gap: var(--space-3); flex: none; margin-left: auto; }
@@ -54,7 +53,7 @@ section.part[hidden] { display: none; }
 
 main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var(--stroke-hair) solid var(--rule); }
 .lead { color: var(--ink-muted); margin: var(--space-2) 0 var(--space-5); }
-.card { background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-0); padding: var(--space-5); margin: var(--space-4) 0; min-width: 0; }
+.card { background: var(--app-card); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-0); padding: var(--space-5); margin: var(--space-4) 0; min-width: 0; }
 .card > h3 { margin-bottom: var(--space-2); }
 .grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .source { font-size: 14px; line-height: 20px; color: var(--ink-muted); margin: var(--space-3) 0 0; }
@@ -63,7 +62,7 @@ main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var
   border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: 2px var(--space-2); white-space: nowrap; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 20px; }
 th, td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: var(--stroke-hair) solid var(--rule); vertical-align: top; }
-th { background: var(--paper-raised); font-weight: 600; }
+th { background: var(--app-card); font-weight: 600; }
 td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .scroll { overflow-x: auto; }
 
@@ -118,7 +117,7 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .tiles { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin: var(--space-3) 0; }
 .tile .figure { display: block; }
 .tile .caption { color: var(--ink-muted); }
-iframe.dash { width: 100%; height: 80vh; border: var(--stroke-hair) solid var(--rule); background: var(--paper); }
+iframe.dash { width: 100%; height: 80vh; border: 0; display: block; background: transparent; }
 
 .verdict { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: 600; white-space: nowrap; }
 .verdict .glyph { width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; display: inline-block; }
@@ -164,8 +163,13 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
   </section>
   <section class="part" id="page-data" data-section="data" hidden>
     <h2 class="h1">The data</h2>
-    <p class="lead">What the estimate is built on: which sources the state has, which the model used, and how complete they are.</p>
+    <p class="lead" id="data-lead"></p>
     <div id="data-body"></div>
+    <div id="dash-host" hidden>
+      <h3 class="h3" style="margin-top:var(--space-6)">Coverage, ordinances and growth</h3>
+      <p class="body-small muted" id="dash-note"></p>
+      <iframe class="dash" id="dash-frame" title="Data coverage, ordinances and growth" scrolling="no"></iframe>
+    </div>
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
@@ -300,10 +304,11 @@ const SECTIONS = {
         <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
       <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
         <h3 class="h3">Try different assumptions</h3><button type="button" class="linkish" id="reset-all">Reset all to the engine</button></div>
-        <p class="body-small muted">Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
+        <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
         <div id="knobs"></div></div>`;
   },
   data(b) {
+    $("data-lead").textContent = dataLead();
     const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] }, t = d.totals;
     const tierWords = { 1: "Tier 1: local parcels with land use and year built", 2: "Tier 2: local parcels with land use", 3: "Tier 3: national data only" };
     const tiles = t ? [
@@ -322,9 +327,7 @@ const SECTIONS = {
       const title = r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
       return `<tr><td>${title}<br><span class="caption muted">${esc(r.source)} · ${r.scope === "national" ? "national" : "state"}</span></td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
     }).join("");
-    const dash = DATA.data.summary_generated ? `<div class="card"><h3 class="h3">Data dashboard</h3>
-      <p class="body-small">Coverage map, sources, ordinance timeline, growth and data checks for every state in the build (summary built ${esc(DATA.data.summary_generated)}). The map needs internet access for its libraries (d3, topojson, us-atlas, all ISC).</p>
-      <button type="button" id="open-dash">Open the data dashboard</button><div id="dash-frame"></div></div>` : "";
+    const dash = "";  // the dashboard itself sits below, in #dash-host (kept across state changes)
     return `<div class="card"><p class="eyebrow">Data tier</p>
         <span class="tier"><span class="sw" style="background:var(--tier-${4 - Math.min(3, Math.max(1, b.meta.data_tier))})" aria-hidden="true"></span>${esc(tierWords[b.meta.data_tier] || `Tier ${b.meta.data_tier}`)}</span>
         <p class="body-small muted">The tier holding most of the state's eligible lots.${b.meta.eligible_proxy ? " Eligible lots are estimated from national data (ACS), scaled by the proxy test." : ""}</p>
@@ -462,17 +465,38 @@ function drawTornado() {
   }).join("") + `<div></div><div class="body-small muted">Engine midpoint: ${fmtN(t.base)} homes</div><div></div>`;
 }
 
-function wireData() {
-  const btn = $("open-dash");
-  if (!btn) return;
-  btn.onclick = () => {
-    const html = JSON.parse($("lotline-dashboard").textContent);
-    if (!html) return;
-    const f = document.createElement("iframe");
-    f.className = "dash"; f.title = "Lotline data dashboard"; f.srcdoc = html;
-    $("dash-frame").replaceChildren(f); btn.remove();
-  };
+// The data dashboard, folded into section 2: loaded the first time the data page opens, sized to its content,
+// and scoped to the picked state through its own state chips (matched by the state's name).
+const DASH = { loaded: false };
+function dashScope() {
+  const f = $("dash-frame"), d = f && f.contentDocument;
+  if (!DASH.loaded || !d) return;
+  const name = ((DATA.data.by_state || {})[$("state").value] || {}).name;
+  const chip = [...d.querySelectorAll("#state-bar .chip")].find((c) => c.textContent === name);
+  f.hidden = !chip;  // a state the data summary doesn't cover: say so rather than show another state
+  $("dash-note").textContent = chip ? DASH.note : `The data dashboard summary has no data for ${$("state").value} yet.`;
+  if (chip && chip.getAttribute("aria-pressed") !== "true") chip.click();
 }
+function ensureDashboard() {
+  const html = JSON.parse($("lotline-dashboard").textContent);
+  if (!html) return;
+  $("dash-host").hidden = false;
+  DASH.note = `From the data dashboard summary built ${DATA.data.summary_generated}. The map needs internet access for its libraries (d3, topojson, us-atlas; all ISC).`;
+  $("dash-note").textContent = DASH.note;
+  dashScope();
+  if (DASH.loaded || DASH.loading) return;
+  DASH.loading = true;
+  const f = $("dash-frame");
+  f.onload = () => {
+    DASH.loaded = true;
+    const doc = f.contentDocument;
+    const fit = () => { f.style.height = `${doc.documentElement.scrollHeight}px`; };
+    new ResizeObserver(fit).observe(doc.body);
+    dashScope(); fit();
+  };
+  f.srcdoc = html;
+}
+function wireData() { dashScope(); }
 
 function wireResults() {
   const body = $("results-body");
@@ -499,6 +523,18 @@ function wireResults() {
     updateResults();
   };
   updateResults();
+}
+
+// The data tab's opening summary: what was gathered across every state, from the data dashboard summary.
+function dataLead() {
+  const o = DATA.data.overall;
+  const goal = "to measure and compare how housing reforms have actually performed";
+  if (!o) return `Lotline pulls in parcel records, building permits and coded local zoning rules for each state, ${goal}.`;
+  const n = o.states.length, words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+  const st = `${n < 10 ? words[n] : n} state${n === 1 ? "" : "s"}`;
+  const mill = o.parcels >= 1e6 ? `${(o.parcels / 1e6).toLocaleString("en-US", { maximumFractionDigits: 1 })} million` : fmtInt(o.parcels);
+  const permits = o.permit_first ? `, and read building permits from ${o.permit_first} to ${o.permit_last}` : "";
+  return `We pulled in data from ${st}, looked up and coded ${fmtInt(o.reforms)} local zoning and housing rules in ${fmtInt(o.reform_places)} cities and towns, assessed ${mill} parcels${permits}, ${goal}.`;
 }
 
 function footer(b) {
@@ -535,6 +571,7 @@ function go(page, scroll = true) {
   });
   history.replaceState(null, "", `#${page}?state=${encodeURIComponent($("state").value)}`);
   if (page === "trust") drawTornado();  // measured while visible
+  if (page === "data") ensureDashboard();
   if (scroll) window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", () => go(route().page));

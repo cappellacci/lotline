@@ -7,6 +7,8 @@
 //   homes in place = permits × completion_factor × net_new_share;
 //   net statewide = homes in place × (1 − displacement_share). A null overlap_share counts as 0.
 //
+// PROVISIONAL (Ben, 2026-11-06): how a slider moves an assumption is a working choice, to be revisited after
+// feedback on the app; the parity test holds whatever rule is here to model/aggregate.py.
 // A slider "shifts" one factor to a point q in its own range: every draw's value is multiplied by
 // P_q / P50 of that factor across the draws, then kept within [0, 1] (every factor is a share or a five-year
 // probability). Scaling, rather than setting every draw to one value, keeps the engine's joint structure:

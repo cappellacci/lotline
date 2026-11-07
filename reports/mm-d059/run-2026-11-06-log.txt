@@ -1,0 +1,155 @@
+D-059 run, commit 48fb7db, started 2026-11-06T18:58:03Z
+[  174s] fit set 12, tests ['Minneapolis', 'Durham County', 'Durham city']
+[  222s] full (b1): 0.130 per 1,000
+[  268s] full (d): 1.333 per 1,000
+[  493s] fold MN: (b1) 0.141, (d) 1.337
+[  534s] fold NC: (b1) 0.017, (d) 0.013
+[  645s] fold OH: (b1) 0.134, (d) 1.334
+[  791s] fold TX: (b1) 1.548, (d) 1.549
+[  791s] test 1 done
+[  929s] lopo St. Louis Park city: 0.141
+[ 1138s] lopo Burlington city: 0.076
+[ 1259s] lopo Garner town: 0.142
+[ 1340s] lopo Morrisville town: 0.143
+[ 1395s] lopo Sanford city: 0.141
+[ 1464s] lopo Wake Forest town: 2.823
+[ 1542s] lopo Wilson city: 0.136
+[ 1659s] lopo Euclid city: 0.134
+[ 1792s] lopo Austin city: 0.147
+[ 1925s] lopo Houston city: 1.188
+[ 2007s] lopo League City city: 0.147
+[ 2135s] lopo Lewisville city: 0.144
+[ 2135s] test 2 done
+{
+ "fit_set": {
+  "MN": [
+   "St. Louis Park city"
+  ],
+  "NC": [
+   "Burlington city",
+   "Garner town",
+   "Morrisville town",
+   "Sanford city",
+   "Wake Forest town",
+   "Wilson city"
+  ],
+  "OH": [
+   "Euclid city"
+  ],
+  "TX": [
+   "Austin city",
+   "Houston city",
+   "League City city",
+   "Lewisville city"
+  ]
+ },
+ "excluded": {
+  "4845000": "Lubbock"
+ },
+ "flagged_unstable": [],
+ "test_places": [
+  "Minneapolis",
+  "Durham County",
+  "Durham city"
+ ],
+ "full": {
+  "b1": {
+   "fit": "b1_full",
+   "per_1000": 0.1299970044525059,
+   "low_per_1000": 0.03606663400984209,
+   "high_per_1000": 0.876656633372529,
+   "log_se": 0.9699180654724916,
+   "alpha": 6.653538959405586,
+   "alpha_low": 2.130582792912579,
+   "alpha_high": 26.34766616624659,
+   "half": 0.5,
+   "half_low": 0.5,
+   "half_high": 0.5,
+   "b": 0.0,
+   "places": 12,
+   "place_years": 67,
+   "loglik": 28.08982261164713,
+   "note": ""
+  },
+  "d": {
+   "fit": "d_full",
+   "per_1000": 1.3332204741191458,
+   "low_per_1000": 0.071926814606677,
+   "high_per_1000": 5.5078425313719945,
+   "log_se": 1.3187429194609677,
+   "alpha": 2.899434032864884,
+   "alpha_low": 0.8246897737794096,
+   "alpha_high": 12.40998462996387,
+   "half": 6.0,
+   "half_low": 0.5,
+   "half_high": 6.0,
+   "b": 0.0,
+   "places": 12,
+   "place_years": 67,
+   "loglik": 24.754448383472326,
+   "note": ""
+  }
+ },
+ "paired_main_minus_none": {
+  "delta": 14.159073487374673,
+  "paired_se": 9.532867354814776,
+  "n": 12
+ },
+ "paired_d_minus_main": {
+  "delta": -0.08910829488524641,
+  "paired_se": 9.799811350704411,
+  "n": 12
+ },
+ "paired_d_minus_none_d": {
+  "delta": 11.038358600875691,
+  "paired_se": 8.87230105964372,
+  "n": 12
+ },
+ "reading_rule": {
+  "1_transfer_nc_tx_not_missed": true,
+  "2_signal_main_beats_none_by_2se": false,
+  "next": "report; Ben decides (D-055 values stay meanwhile)"
+ },
+ "draws": 20000,
+ "seed": 20261106,
+ "seconds": 2135
+}
+   state              line    model  observed    p10    p50    p90       mean  obs_over_p50  p90_over_p10       crps verdict
+0     MN           fit set       b1       0.0    0.0    0.0    2.0    0.92975           NaN           inf   0.108951  useful
+1     MN           fit set  none_b1       0.0    0.0    0.0    0.0    0.08000           NaN           inf   0.005893  useful
+2     MN           fit set        d       0.0    0.0    0.0    0.0    0.09345           NaN           inf   0.007819  useful
+3     MN           fit set   none_d       0.0    0.0    0.0    0.0    0.08000           NaN           inf   0.005893  useful
+4     MN           fit set  outside       0.0    0.0    0.0    1.0    0.31300           NaN           inf   0.073954  useful
+5     MN  with test places       b1     106.0   46.0   58.0  127.0   87.23400      1.827586      2.760870  31.989963  useful
+6     MN  with test places  none_b1     106.0   43.0   52.0   61.0   52.11845      2.038462      1.418605  49.816555  missed
+7     MN  with test places        d     106.0   36.0   46.0   82.0   60.21760      2.304348      2.277778  44.437673  missed
+8     MN  with test places   none_d     106.0   34.0   42.0   50.0   41.98265      2.523810      1.470588  60.381045  missed
+9     MN  with test places  outside     106.0   84.0   97.0  109.0   96.63210      1.092784      1.297619   5.686857  useful
+10    NC           fit set       b1      26.0   18.0   25.0   35.0   28.85180      1.040000      1.944444   1.544438  useful
+11    NC           fit set  none_b1      26.0   17.0   23.0   30.0   23.29085      1.130435      1.764706   1.789354  useful
+12    NC           fit set        d      26.0   18.0   24.0   33.0   25.81945      1.083333      1.833333   1.636275  useful
+13    NC           fit set   none_d      26.0   17.0   22.0   29.0   22.49845      1.181818      1.705882   2.159786  useful
+14    NC           fit set  outside      26.0   33.0   41.0   49.0   40.83625      0.634146      1.484848  11.264204  missed
+15    NC  with test places       b1     126.0   57.0   69.0   94.0   80.72150      1.826087      1.649123  44.016151  missed
+16    NC  with test places  none_b1     126.0   55.0   65.0   76.0   65.03545      1.938462      1.381818  56.428595  missed
+17    NC  with test places        d     126.0   57.0   68.0   87.0   74.27770      1.852941      1.526316  47.352486  missed
+18    NC  with test places   none_d     126.0   54.0   64.0   75.0   64.24305      1.968750      1.388889  57.234522  missed
+19    NC  with test places  outside     126.0  105.0  118.0  132.0  118.30785      1.067797      1.257143   4.723351  useful
+20    OH           fit set       b1       0.0    0.0    0.0    1.0    0.24240           NaN           inf   0.029722  useful
+21    OH           fit set  none_b1       0.0    0.0    0.0    0.0    0.10405           NaN           inf   0.009872  useful
+22    OH           fit set        d       0.0    0.0    0.0    1.0    0.10870           NaN           inf   0.010513  useful
+23    OH           fit set   none_d       0.0    0.0    0.0    0.0    0.10405           NaN           inf   0.009872  useful
+24    OH           fit set  outside       0.0    0.0    0.0    1.0    0.14510           NaN           inf   0.018345  useful
+25    TX           fit set       b1      24.0   16.0   23.0   36.0   25.32890      1.043478      2.250000   1.781464  useful
+26    TX           fit set  none_b1      24.0   13.0   19.0   24.0   18.69190      1.263158      1.846154   3.396448  useful
+27    TX           fit set        d      24.0   24.0   32.0   47.0   34.93015      0.750000      1.958333   5.541151  useful
+28    TX           fit set   none_d      24.0   21.0   28.0   35.0   28.21205      0.857143      1.666667   2.423389  useful
+29    TX           fit set  outside      24.0   62.0   72.0   84.0   72.63810      0.333333      1.354839  43.839973  missed
+  state              line    model  observed   p10   p50    p90       mean  obs_over_p50  p90_over_p10       crps verdict
+0    MN           fit set  b1_lopo       0.0   0.0   0.0    2.0    0.92975           NaN           inf   0.108951  useful
+1    MN  with test places  b1_lopo     106.0  46.0  58.0  122.0   85.32455      1.827586      2.652174  32.544383  useful
+2    NC           fit set  b1_lopo      26.0  20.0  28.0   51.0   35.93325      0.928571      2.550000   2.635304  useful
+3    NC  with test places  b1_lopo     126.0  61.0  78.0  150.0  102.36045      1.615385      2.459016  29.717612  useful
+4    OH           fit set  b1_lopo       0.0   0.0   0.0    1.0    0.24240           NaN           inf   0.029722  useful
+5    TX           fit set  b1_lopo      24.0  17.0  28.0   86.0   46.78795      0.857143      5.058824   5.525144  useful
+exit 0 2026-11-06T19:33:41Z
