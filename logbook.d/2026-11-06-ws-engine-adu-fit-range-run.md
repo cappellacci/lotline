@@ -19,8 +19,9 @@
   not retuned and are left to Ben.
 - **Deviation:** the no-widening check doesn't match D-053's published table, but it equals D-053's own
   command rerun on the same tree. D-053's table no longer reproduces on today's main (recorded in D-060).
-- **Decisions:** D-060 adopted by its pre-registered rule; nothing new proposed for HANDOFF. Open for
-  Ben: whether to retune the overlap-flag thresholds, and whether D-053's table should be regenerated.
+- **Decisions:** D-060 adopted by its pre-registered rule; nothing new proposed for HANDOFF. Ben kept the
+  overlap-flag thresholds (2026-11-07, "Keep thresholds"). Still open: whether D-053's table should be
+  regenerated.
 - **AI:** Claude Code (Opus 5.5) wrote the code, tests, run and write-up. Checks:
   - hand-worked unit tests for the weighted percentile, the fold range, place distances, mean-keeping
     widening (and exact reproduction at distance 0) and the V9 pin, which a mutation check showed catches

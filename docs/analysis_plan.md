@@ -4063,7 +4063,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Overlap flags (for Ben, not retuned):** each state's eligible-weighted median distance at origin 2025
     falls from MN 0.65, NC 0.94, OH 1.39, TX 0.69 and OR 0.11 to MN 0.03, NC 0.08, OH 0.31, TX 0 and OR 0.
     Every fit state now reads high ("Inside the evidence"), where before MN, NC and TX read medium and OH
-    low. The thresholds (0.5, 1.0) were picked after seeing the old distances. Whether they stay is Ben's
-    call; the `aggregate.yaml` notes say so. A state outside the fit set is still measured against the fit
+    low. The thresholds (0.5, 1.0) were picked after seeing the old distances. Ben kept them
+    (2026-11-07, "Keep thresholds"), and the `aggregate.yaml` notes say so. A state outside the fit set is still measured against the fit
     places' range.
   - **Status:** method approved, run 2026-11-06, F adopted.
