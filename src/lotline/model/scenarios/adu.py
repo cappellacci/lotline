@@ -2,7 +2,9 @@
 right,
 with no parking requirement (Handbook benchmark; BUILD_PLAN §5; judging finding MS-01).
 
-For each jurisdiction and each of the five years after the origin, t = 1 … 5:
+For each jurisdiction and each of the five years of the window, t = 1 … 5 (D-059: the window starts
+`forecast_lead_years` after the data origin, so origin 2025 gives 2027-2031, and the reform takes effect at
+the start of year 1; `baseline.window`):
 
     current rules   h_cur(t) = max(c × h_m × ramp(a + t), observed ADU rate)
     Handbook rules  h_hb(t)  = max(c × h_m × ramp(a + t) + (1 − c) × h_m × ramp(t), observed ADU rate)
@@ -22,7 +24,9 @@ For each jurisdiction and each of the five years after the origin, t = 1 … 5:
 
 Each year the pool of parcels without an ADU shrinks, separately under each set of rules:
 gross ADUs(t) = R(t − 1) × h(t), R(t) = R(t − 1) − gross ADUs(t), R(0) = eligible parcels. So a parcel gets at
-most one ADU, and cumulative ADUs never exceed eligible parcels.
+most one ADU, and cumulative ADUs never exceed eligible parcels. In the lead years between the origin and the
+window (D-059) only current rules apply: the pool shrinks by current-rules ADUs, the rule ages, and nothing is
+added or reported.
 
     ADU permits added (t) = Handbook gross ADUs(t) − current-rules gross ADUs(t)
     additional homes (t)  = ADU permits added (t) × adu_net_new_share × (1 − adu_formalization_share)
@@ -48,8 +52,8 @@ import pandas as pd
 
 from lotline.build.eligible import PARCEL_SOURCES
 from lotline.config import CONFIG_DIR, load_params
+from lotline.model import baseline, hazard, proforma
 from lotline.model import eligible_proxy as eligible_proxy_step
-from lotline.model import hazard, proforma
 
 PARAM_FILES = ("proforma", "hazard", "adu", "market")
 AGGREGATE_KEYS = ("adu_net_new_share", "adu_formalization_share")
@@ -638,19 +642,25 @@ class Paths:
         return self.handbook - self.current
 
 
-def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True):
+def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True, lead=0):
     """Gross ADUs per year under current and Handbook rules, depleting the pool of parcels without an ADU.
 
     `rule_age` is the current rule's age in years at the origin (NaN: no rule). `ramp_params` gives the ramp
     (`hazard.adu_ramp`; D-048: 1 every year). With `enabled=False` the Handbook path equals the current-rules
-    path, so nothing is added.
+    path, so nothing is added. `lead` years (D-059) run first under current rules only, on one shared pool,
+    and are not returned: the window's year t has rule age a + lead + t and Handbook ramp(t).
     """
     e = np.asarray(eligible, dtype=float)
     hm = np.asarray(h_mature, dtype=float)
     floor = np.nan_to_num(np.asarray(h_floor, dtype=float), nan=0.0)
     c = np.asarray(rule_share, dtype=float)
     age = np.nan_to_num(np.asarray(rule_age, dtype=float), nan=0.0)
-    r_hb, r_cur = e.copy(), e.copy()
+    r = e.copy()
+    for s in range(1, int(lead) + 1):  # lead years: current rules only, nothing reported (D-059)
+        h_lead = np.minimum(np.maximum(c * hm * hazard.adu_ramp(age + s, ramp_params), floor), 1.0)
+        r = r - r * h_lead
+    age = age + int(lead)
+    r_hb, r_cur = r.copy(), r.copy()
     hb, cur = np.zeros((len(e), horizon)), np.zeros((len(e), horizon))
     for i, t in enumerate(range(1, horizon + 1)):
         h_rule = c * hm * hazard.adu_ramp(age + t, ramp_params)
@@ -688,7 +698,8 @@ def central_path(
     """
     p = central_params() | (params or {})
     places = with_rule_probs(places, p)
-    horizon = horizon or int(load_params("baseline")["forecast_horizon_years"].value)
+    lead, window_years, _ = baseline.window(0)
+    horizon = horizon or window_years
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
     rate = given.fillna(p["mortgage_rate_forecast"]).to_numpy(dtype=float)
     hm = hazard.adu_mature_hazard(places["rent"], places["home_value"], rate, p)
@@ -702,6 +713,7 @@ def central_path(
         p,
         horizon,
         enabled,
+        lead,
     )
     homes = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
     return {
@@ -781,6 +793,8 @@ def run(
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
+    `origin` is the last year of data; the years reported are the window `baseline.window(origin)` (D-059).
+
     With `summary_by` (a column, e.g. 'state'), also returns a third table: for each group, year and the
     five-year total, P10/P50/P90 and mean of the **sum of draws** over the group's places (places must be
     non-overlapping units, D-020), so shared draws (rates, costs, the anchor) add up correctly.
@@ -813,7 +827,7 @@ def run(
     sets = [p | dict(params or {}) for p in draw_params(n, seed, anchor)]
     rule_rng = np.random.default_rng(seed + 2)
     drawn = np.zeros((n, len(places)))
-    horizon = int(load_params("baseline")["forecast_horizon_years"].value)
+    lead, horizon, first = baseline.window(origin)
     z = extrapolation_noise(n, len(places), central["adu_extrapolation_shared_share"], seed + 1)
     grid, probs, fitted = state_effect(states_spec)
     st = places["state"] if "state" in places else pd.Series(np.nan, index=places.index)
@@ -861,6 +875,7 @@ def run(
             p,
             horizon,
             enabled,
+            lead,
         )
         out["handbook"][d], out["current"][d], out["added"][d] = paths.handbook, paths.current, paths.added
         out["homes"][d] = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
@@ -884,7 +899,7 @@ def run(
     ).reset_index(drop=True)
     yearly = info.loc[info.index.repeat(horizon)].reset_index(drop=True)
     yearly["horizon"] = np.tile(np.arange(1, horizon + 1), len(places))
-    yearly["year"] = origin + yearly["horizon"]
+    yearly["year"] = first - 1 + yearly["horizon"]
     totals = info.copy()
     for key, name in keys.items():
         for table, a in ((yearly, out[key].reshape(n, -1)), (totals, out[key].sum(axis=2))):
@@ -913,7 +928,7 @@ def run(
             sums = out[key][:, cols, :].sum(axis=1)  # (draws, years)
             for h in range(horizon + 1):
                 a = sums.sum(axis=1) if h == horizon else sums[:, h]
-                label = f"{origin + 1}-{origin + horizon}" if h == horizon else str(origin + 1 + h)
+                label = f"{first}-{first + horizon - 1}" if h == horizon else str(first + h)
                 p10, p50, p90 = np.percentile(a, [10, 50, 90])
                 rows.append(
                     {

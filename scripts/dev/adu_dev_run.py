@@ -21,6 +21,7 @@ import pandas as pd
 
 from lotline.config import load_params
 from lotline.io import DataStore
+from lotline.model import baseline
 from lotline.model.scenarios import adu
 
 NAMED = {"2743000", "2758000", "2706616", "3918000", "3915000", "3755000", "3712000", "4805000", "4865000"}
@@ -118,7 +119,7 @@ def print_sensitivities(inputs: dict, origin: int, central: pd.DataFrame) -> Non
         f"mortgage rate {rate.high:g}% (2015-25 high)": {"mortgage_rate_forecast": rate.high},
         f"extrapolation noise {shared.low:g} shared": {"adu_extrapolation_shared_share": shared.low},
     }
-    period = f"{origin + 1}-{origin + 5}"
+    period = baseline.window_label(origin)
     print(f"\nSensitivities, state five-year totals {period} (P10 / P50 / P90, mean)")
     for outcome in ("adu_permits_added", "additional_homes"):
         print(f"  {outcome}")

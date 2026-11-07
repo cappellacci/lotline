@@ -149,6 +149,24 @@ def test_window_caps_at_last_outcome_year():
     assert w["year"].max() == 2022  # no outcomes after 2022
 
 
+def test_window_uses_its_own_registered_lead():
+    """D-059: the forward run skips a year (forecast_lead_years = 1) but the backtest keeps its registered
+    lead (v1_lead_years = 0) and scores the years right after the fit end. v1_lead_years = 1 is the
+    supplementary check: fit to 2016, skip 2017, score 2018-2022; `horizon` counts years after the fit end."""
+
+    def lead(forward, v1):
+        p = dict(PARAMS)
+        p["forecast_lead_years"] = PARAMS["forecast_lead_years"].model_copy(update={"value": forward})
+        p["v1_lead_years"] = PARAMS["v1_lead_years"].model_copy(update={"value": v1})
+        return p
+
+    reg = backtest.window(_panel(), "1", 2016, params=lead(1, 0), excluded=set())
+    gap = backtest.window(_panel(), "1", 2016, params=lead(0, 1), excluded=set())
+    assert sorted(reg["year"].unique()) == [2017, 2018, 2019, 2020, 2021]
+    assert sorted(gap["year"].unique()) == [2018, 2019, 2020, 2021, 2022]
+    assert sorted(gap["horizon"].unique()) == [2, 3, 4, 5, 6]
+
+
 def test_window_forecasts_never_see_outcomes():
     """Changing every outcome after the fit end changes `actual`, never a forecast."""
     p = _panel()

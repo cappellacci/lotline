@@ -13,6 +13,12 @@ backtest can never see a year after the origin.
 Both forecast counts (the numerator); rates per 1,000 eligible parcels are formed only at evaluation, from the
 panel's separate denominator. The horizon comes from `forecast_horizon_years` (config/params/baseline.yaml).
 
+**The window** (D-059, `window`): the forecast covers `forecast_horizon_years` years starting
+`forecast_lead_years` after the origin, i.e. years origin + lead + 1 … origin + lead + horizon. With origin
+2025 (the last full BPS year) and lead 1 that is 2027-2031. The lead years are simulated (the cycle keeps
+walking through them, so the band is as wide as a forecast that far out should be) but not reported. Columns
+named `horizon` count years within the window (1 … horizon); `year` is the calendar year.
+
 **The baseline model** (`baseline_forecast`), in plain words: each place keeps building at its own recent
 pace, pulled toward its neighbours' pace when its own record is too short or too small to trust, and the range
 around that reflects lumpy years and the regional building cycle. Per place and size class, with r a rate per
@@ -77,21 +83,40 @@ def _history(series: pd.Series, origin: int, first_year: int | None = None) -> p
     return s[keep].astype(float).sort_index()
 
 
-def _years(origin: int, horizon: int) -> pd.Index:
-    return pd.Index(range(origin + 1, origin + horizon + 1), name="year")
+def _years(origin: int, horizon: int, lead: int = 0) -> pd.Index:
+    return pd.Index(range(origin + lead + 1, origin + lead + horizon + 1), name="year")
 
 
-def last_k_mean(series: pd.Series, origin: int, k: int, horizon: int) -> pd.Series:
-    """Mean of the k years ending at `origin`, repeated for each of the next `horizon` years."""
+def window(origin: int, params: dict[str, Parameter] | None = None) -> tuple[int, int, int]:
+    """(lead, horizon, first year) of the forecast window for a data origin (D-059).
+
+    By hand: origin 2025, lead 1, horizon 5 -> (1, 5, 2027), so the window is 2027-2031.
+    """
+    p = params or load_params("baseline")
+    lead = int(p["forecast_lead_years"].value)
+    horizon = int(p["forecast_horizon_years"].value)
+    return lead, horizon, origin + lead + 1
+
+
+def window_label(origin: int, params: dict[str, Parameter] | None = None) -> str:
+    """The window as text, e.g. '2027-2031' for origin 2025 with lead 1."""
+    _, horizon, first = window(origin, params)
+    return f"{first}-{first + horizon - 1}"
+
+
+def last_k_mean(series: pd.Series, origin: int, k: int, horizon: int, lead: int = 0) -> pd.Series:
+    """Mean of the k years ending at `origin`, repeated for each of the `horizon` years after `lead`."""
     hist = _history(series, origin, first_year=origin - k + 1)
     value = hist.mean() if len(hist) == k else float("nan")
-    return pd.Series(value, index=_years(origin, horizon), dtype=float)
+    return pd.Series(value, index=_years(origin, horizon, lead), dtype=float)
 
 
-def linear_trend(series: pd.Series, origin: int, horizon: int, first_year: int | None = None) -> pd.Series:
+def linear_trend(
+    series: pd.Series, origin: int, horizon: int, first_year: int | None = None, lead: int = 0
+) -> pd.Series:
     """OLS line of value on year over [first_year, origin] (all history if None), floored at 0."""
     hist = _history(series, origin, first_year)
-    years = _years(origin, horizon)
+    years = _years(origin, horizon, lead)
     if len(hist) < 2:
         return pd.Series(float("nan"), index=years, dtype=float)
     t = hist.index.to_series().astype(float)
@@ -116,13 +141,13 @@ def benchmark_forecasts(
     """
     p = params or load_params("baseline")
     k = int(p["benchmark_mean_years"].value)
-    horizon = int(p["forecast_horizon_years"].value)
+    lead, horizon, _ = window(origin, p)
     out = []
     for geoid, g in panel[panel["year"] <= origin].groupby(key, sort=True):
         series = g.set_index("year")[value]
         for name, fc in (
-            ("last_k_mean", last_k_mean(series, origin, k, horizon)),
-            ("linear_trend", linear_trend(series, origin, horizon, trend_first_year)),
+            ("last_k_mean", last_k_mean(series, origin, k, horizon, lead)),
+            ("linear_trend", linear_trend(series, origin, horizon, trend_first_year, lead)),
         ):
             out.append(pd.DataFrame({key: geoid, "year": fc.index, "benchmark": name, "forecast": fc.values}))
     columns = [key, "year", "benchmark", "forecast"]
@@ -402,7 +427,8 @@ def forecast_draws(
     place's level, and its variance by the square, like a known constant; places not in it keep 1.
     """
     p = params or load_params("baseline")
-    horizon = int(p["forecast_horizon_years"].value)
+    lead, horizon, _ = window(origin, p)
+    steps = lead + horizon  # simulated years: the lead years walk the cycle but are not reported (D-059)
     n = int(p["simulation_draws"].value)
     low, high = p["interval_low_quantile"].value, p["interval_high_quantile"].value
     seed = int(p["simulation_seed"].value)
@@ -443,20 +469,20 @@ def forecast_draws(
             demand = ps[key].map(multiplier).fillna(1.0).to_numpy(dtype=float)
         ps = ps.assign(demand=demand, level=ps["level"] * demand, level_var=ps["level_var"] * demand**2)
         shocks = cycle_shock_series(hist[hist["state"] == state], value, origin, history, key)
-        years, fallback = cycle_years(seed, str(state), origin, history, horizon, n)
+        years, fallback = cycle_years(seed, str(state), origin, history, steps, n)
         cycle = cycle_factor(shocks, years, fallback)
         # Own generator per state, size class and origin (D-029): no accidental sharing between classes.
         rng = np.random.default_rng(
             [seed, zlib.crc32(value.encode()), zlib.crc32(str(state).encode()), origin]
         )
-        draws = _simulate(ps, cycle, horizon, n, rng)  # (places, horizon, n)
+        draws = _simulate(ps, cycle, steps, n, rng)[:, lead:, :]  # (places, horizon, n)
         lo, mid, hi, mean = interval_from_draws(draws, low, high)
         rows = ps.loc[ps.index.repeat(horizon), [key, "state", "parcels_origin", "level", "direct"]]
         rows = rows.assign(group_rate=np.repeat(ps["group_rate"].to_numpy(), horizon))
         rows = rows.assign(b=np.repeat(ps["b"].to_numpy(), horizon), momentum=factor)
         rows = rows.assign(demand=np.repeat(ps["demand"].to_numpy(), horizon))
         rows["horizon"] = np.tile(np.arange(1, horizon + 1), len(ps))
-        rows["year"] = origin + rows["horizon"]
+        rows["year"] = origin + lead + rows["horizon"]
         for name, q in (("mean", mean), ("p10", lo), ("p50", mid), ("p90", hi)):
             rows[name] = q.reshape(-1)
         tables.append(rows[columns])
