@@ -15,8 +15,8 @@
   - `hazard.PRE_D060_CALIBRATION`, pinned in `validation/v9.py` so the frozen V9 prediction keeps its range.
 - **Result:** no state missed under either range. Place P10–P90 coverage is 73.6% under the fit set
   against 74.1% under the West Coast range. **F adopted.** Half the held-out eligible parcels now sit
-  inside the range, against 13% before. Every fit state's overlap flag now reads high; the thresholds were
-  not retuned and are left to Ben.
+  inside the range, against 13% before. Every fit state's overlap flag now reads high; Ben kept the thresholds
+  as they were.
 - **Deviation:** the no-widening check doesn't match D-053's published table, but it equals D-053's own
   command rerun on the same tree. D-053's table no longer reproduces on today's main (recorded in D-060).
 - **Decisions:** D-060 adopted by its pre-registered rule; nothing new proposed for HANDOFF. Ben kept the
