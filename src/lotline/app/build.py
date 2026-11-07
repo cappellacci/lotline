@@ -26,6 +26,9 @@ REPO = Path(__file__).resolve().parents[3]
 TEMPLATE = Path(__file__).with_name("template.html")
 AGGREGATE_JS = Path(__file__).with_name("aggregate.js")
 KNOBS = Path(__file__).with_name("knobs.yaml")
+TILES = Path(__file__).with_name("us_tiles.yaml")
+CHALLENGE = REPO / "challenge.toml"
+BYOS_ANCHOR = "#bring-your-own-state"  # README section the grey states link to
 IDENTITY = REPO / "docs" / "build" / "identity"
 RESULTS_DIR = REPO / "reports" / "results"
 DATA_SUMMARY = REPO / "reports" / "data_dashboard" / "summary.json"
@@ -60,6 +63,34 @@ SCENARIOS = {
     "missing_middle+fees": ("Missing middle + fee reduction", "--ink-muted"),
     "combined": ("Combined (all three)", "--scenario-combined"),
 }
+
+
+# Data tier (1 = parcels with year built and use codes, 3 = national data only) onto the map's single-hue ramp
+# (STYLE_GUIDE "Colour"): richer data is the stronger step, in both themes. Tiers 2 and 4 of the ramp are
+# left unused so the three steps stay far apart.
+TIER_TOKENS = {1: "--tier-5", 2: "--tier-3", 3: "--tier-1"}
+
+
+def tile_map(path: Path = TILES, challenge: Path = CHALLENGE) -> dict:
+    """The state map: every tile [code, name, row, col], the tier colours and the "bring your own state" link.
+
+    Raises if a code or a grid position repeats, so a layout edit can't hide a state under another.
+    """
+    import tomllib
+
+    import yaml
+
+    tiles = yaml.safe_load(Path(path).read_text(encoding="utf-8"))["tiles"]
+    codes = [t[0] for t in tiles]
+    cells = [(t[2], t[3]) for t in tiles]
+    if len(set(codes)) != len(codes) or len(set(cells)) != len(cells):
+        raise ValueError(f"{path}: a state code or grid cell appears twice")
+    repo = tomllib.loads(Path(challenge).read_text(encoding="utf-8")).get("links", {}).get("repo_url", "")
+    return {
+        "tiles": [{"code": c, "name": n, "row": r, "col": k} for c, n, r, k in tiles],
+        "tier_tokens": {str(k): v for k, v in TIER_TOKENS.items()},
+        "byos_url": (repo.rstrip("/") if repo else "README.md") + BYOS_ANCHOR,
+    }
 
 
 def knobs(path: Path = KNOBS) -> list[dict]:
@@ -198,6 +229,7 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
         "roles": ROLES,
         "scenarios": scenarios,
         "knobs": knobs(),
+        "map": tile_map(),
         "data": data,
         "states": states,
     }
