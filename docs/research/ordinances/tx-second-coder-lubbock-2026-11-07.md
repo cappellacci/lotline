@@ -1,0 +1,27 @@
+# Lubbock (4845000) missing-middle: second-coder report
+
+**Verdict: the row is partly right.** The 2023 use-matrix cells are confirmed. The row overstates the change, though, and misses the pre-2023 baseline.
+
+- **What the UDC's own table says.** Table 39.02.003-1 maps old **R-1, R-1A and T to SF-2**, and old **R-2 (Two-Family) and A-1 to MDR**. Lubbock's existing duplex district carried over into MDR, so it was renamed, not widened.
+- **The SF-2 widening is mostly on paper.** Duplex and multiplex became "L" in SF-2 (old R-1 land). But §39.02.018.c.1.A says a block face holding only single-family housing types "shall only contain single-family housing." Duplexes, multiplexes and apartments also can't go across the street from facing single-family homes. So existing built-out single-family blocks gained essentially nothing. The new allowance mainly reaches vacant or new-subdivision block faces.
+- **Reading (a) is largely right on duplexes.** Duplexes were already allowed in old R-2. That fits the high pre-2023 2–4-unit counts.
+- **Suggested recode:**
+  - Pre-2023: duplex allowed in R-2 (now MDR); single-family districts single-family only.
+  - 2023: SF-2 gains 2–4 units as "L", but only on block faces that aren't all single-family (new or mixed blocks, not existing SF blocks).
+  - Effective increase on existing single-family lots: about zero. Treat it as a small or uncertain increase, or `by_right=partial`.
+
+| # | Answer | Source | Section | Conf. | Type |
+|---|---|---|---|---|---|
+| 1 | **Old R-1 (single-family):** single-family only. Its intent is to promote single-family units and protect them from "inharmonious" uses. **Old R-2:** labelled "Two-Family District" in city agendas; I couldn't find its permitted-use list. **3+ units:** R-3 = same uses as A-2 High-Density Apartment; A-1 was "Family Apartment". No evidence that any single-family district allowed 2+ units. | Staff report ZC 3471-A (Oct 2022): https://www.techterraceunit.org/uploads/1/1/4/2/114267223/case_3471-a_october_6_2022.pdf ; 2021 council packet (ZC 2538-W, R-1→R-2), search snippet: https://public.destinyhosted.com/lubbodocs/2021/REGCCM/20211101_943/AGENDApacket__11-01-21_0139_942.pdf | Ch. 40 (Ord. 7084, 1975, as amended 2019); section numbers not found | R-1: high. R-2 allows duplex by right: medium (inferred from the name, not the text) | Primary for R-1 and R-3; secondary (snippet) for R-2 |
+| 2 | **Confirmed.** In Table 39.02.016-1, Duplex is — in RE and SF-1, L in SF-2/MDR/HDR, P in MU-1/2/3. Multiplex (3–4 du) is — in RE and SF-1, L in SF-2/MDR/HDR, P in MU-1/2/3/5. Note that single-family detached is also "L" in SF-2, so "L" is the normal path there. Amendments: the mirror shows the 2024 staff-amendment text (SF-2 cottage lot of 3,500 sq ft, revised block-face rule), but I couldn't tie the cells to specific ordinances. | Zoneomics mirror of Art. 39.02 (read 2026-11-07): https://www.zoneomics.com/code/lubbock-TX/chapter_2 | §39.02.016, Table 39.02.016-1; Table 39.02.004.c-1 | High for the cells; low for the amendment history | Secondary mirror of primary text |
+| 3 | **Administrative, yes.** The Director of Planning approves a Use Verification Form against the §39.02.018 criteria; there's no P&Z or Council hearing (that applies only to "S" uses). **But not effectively by right everywhere:** the block-face and across-the-street rule in §39.02.018.c.1.A bars duplexes and multiplexes on all-single-family block faces. | Same Zoneomics page | §39.02.016 (approval of limited uses); §39.07.017; §39.02.018.c.1.A | High | Secondary mirror |
+| 4 | **Crosswalk:** RR → RE; SF-1 is a new district; R-1, R-1A, T → SF-2; R-2, A-1 → MDR; A-2, R-3, A-M → HDR; A-3, CA → HDR mixed-use. One staff report confirms an R-1 → SF-2 conversion under Ord. 2023-O0054. | Zoneomics, Table 39.02.003-1; ZC 788-B staff report: https://public.destinyhosted.com/lubbodocs/2026/REGCCM/20260113_1249/14000_December_Staff_Report_-788-B_-_City_Council_-_Jamie_-_updated.pdf | §39.02.003, Table 39.02.003-1 "Former Zoning District" column | High | Secondary mirror; primary for 788-B |
+| 5 | **Partly agree.** Correct: the RE, SF-1 and SF-2 cells, administrative "L", unit cap 4. Wrong or incomplete: (i) the pre-2023 baseline already had duplexes in R-2 (now MDR), so MDR isn't new land; (ii) the SF-2 gain is limited by the block-face rule to block faces that aren't all single-family. The land newly gaining 2–4 units is old R-1, R-1A and T (SF-2), net of all-single-family block faces. That probably means little existing land; most of it is greenfield subdivisions. | As above | — | Medium | Mix |
+
+## Could not verify
+
+- The text of old Ch. 40 for R-2 (permitted uses, whether 3–4 units were allowed, section numbers). ecode360 and mylubbock.us returned 403 or a bot check, and the Wayback Machine was offline. The R-2 = duplex conclusion rests on the district name and the R-2 → MDR crosswalk.
+- Whether old R-1 allowed garage apartments or accessory units.
+- Which ordinance (2023-O0132, 2024-O0110 or 2025-O0095) changed §39.02.018.c.1.A. The 2024 staff proposal (search snippet) says the as-adopted 2023 text was stricter: one housing type per block face. The Zoneomics version date is unknown.
+- How much SF-2 land sits on all-single-family block faces (needs GIS).
+- One search snippet described "NC-R2" neighborhood-conservation subdistricts tied to old R-2. Its section numbering (3.202) suggests a different city's code, so I didn't rely on it.

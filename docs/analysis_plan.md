@@ -4004,3 +4004,104 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   reports/adu-d060-range`.
 - **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry; approved as written,
   "Approve D-058", given under its first number). Written by WS-ENGINE before any run. **Status:** method approved, not run.
+
+### D-062 · 2026-11-07 · Missing middle: the scenario's range on the five-year rate, not on θ alone (method only, before any run)
+- **Number:** D-061 is left for the forecast-window entry in PR #328, which was written as D-059 and needs a new
+  number.
+- **The problem.** The fitted θ and ramp half-way point trade off along a ridge with two peaks (D-058, D-059):
+  a fast ramp (half 0.5, θ ≈ 0.12 per 1,000) and a slow one (half 6.0, θ ≈ 1.3).
+  - **θ's 90% interval in `mm_hazard.yaml` (0.0325–1.006 per 1,000) is profiled over every half-way point**
+    (`calibrate_mm.profile_theta` maximizes over the grid). Its top end belongs with a slow ramp.
+  - **V9 and the planned scenario draw θ from that interval with the half-way point held at 0.5.** A draw
+    near the top then gives a five-year mean hazard of about 0.85 per 1,000 a year (1.006 × 0.841). The slow
+    peak itself implies about 0.04 over the same five years, and the fast peak 0.10. So the top of the range
+    pairs a θ and a ramp that the data never support together, and the range is too wide upward.
+  - **What the data pin down is the rate over the years they cover** (`calibrate_mm.realized_hazard`), and
+    what the scenario reports is a five-year total. So the range belongs on the five-year rate.
+- **Definition.** r5 = θ × m(half), where m(half) is the mean ramp share over the scenario's five years, ages
+  0.5, 1.5, …, 4.5 (the reform takes effect at the start of the window, so this holds whichever window
+  PR #328 settles). Slope 0.75 as fitted. By hand: m(0.5) = 0.841, m(2) = 0.593, m(6) = 0.033.
+- **Estimate.** The profile likelihood of r5: ℓ_p(r5) = max over the half-way grid and α of ℓ(r5 / m(half),
+  α, half), with D-038's likelihood, its 90% interval by the same χ² cut as θ's. This only reparameterizes
+  the fit already adopted: the maximum is D-055's (r5 = 0.1235 × 0.841 = 0.104 per 1,000 a year).
+  - **Main:** D-055's adopted specification and fit set (D-054 (b), 13 places), so it matches the values in
+    config.
+  - **Beside it:** D-059's (b′) on 12 places, without Lubbock.
+  - Also reported: the profile at each half-way point (θ̂, α̂, ℓ), so the two peaks and the ridge are shown,
+    not described.
+- **How the scenario would use it (proposal, for a separate PR with Ben's approval):**
+  - a new key `mm_five_year_hazard` in `mm_hazard.yaml` (value and 90% interval, source this entry), drawn
+    lognormal with log-SD (ln high − ln low) / 3.29, as θ is now;
+  - year t of the five gets r5 × ramp(t − 0.5; 0.5) / m(0.5): the fitted fast ramp sets the shape within the
+    window, the drawn r5 its level;
+  - α keeps its interval. `mm_mature_hazard_ref` and `mm_ramp_half_years` stay, as the fitted values and
+    for V9.
+  - **Disclosed simplification:** a slow ramp would put more of the five years' homes in years 4–5. The
+    total is ranged correctly; the year shape is the fast peak's.
+- **Not chosen:** drawing (half, θ, α) jointly with weights exp(ℓ_h) on the grid. It keeps the year shape of
+  both peaks, but needs a 12-row table in config and is harder to explain; its five-year totals should match
+  the main proposal's, which the run can check by comparing the two ranges.
+- **Frozen and pending predictions:**
+  - V9 Oregon is frozen and is not recomputed.
+  - **V5 St. Paul and Charlotte freeze on Nov 17 on whatever `main` holds.** If they draw θ with the half-way
+    point held, they carry the inflated top end. Whether V5 uses r5 is Ben's call before the freeze.
+- **Holdouts:** the run reads only D-054's fit-set place-years through the existing IO layer and holdout
+  filter. Minneapolis, Durham, Durham County, St. Paul and Charlotte are not read.
+- **Code, when Ben approves:**
+  - `calibrate_mm.ramp_mean(half, ages)` and `calibrate_mm.five_year_profile(places, halves)`, each with a
+    hand-worked unit test (the m values above; a two-place profile by hand);
+  - `scripts/dev/calibrate_mm_d062.py`, writing to `reports/mm-d062/`.
+- **Run once:** `uv run python scripts/dev/calibrate_mm_d062.py`. Minutes, not hours: two fits, no folds.
+- **Reading rule:** none needed to adopt or reject; this is a reparameterization. Ben decides on the config
+  PR with the r5 interval and the per-half profile in front of him.
+- **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** proposed,
+  not run.
+
+### D-063 · 2026-11-07 · Missing middle: the Handbook scenario module, `model/scenarios/mm.py` (method only, before any code)
+- **What it answers:** how many more homes a state gets over five years if every single-family-zoned parcel may
+  hold 2–6 units in three stories by right (Handbook benchmark; setbacks and coverage do not bind), compared
+  with the rules each place has now. Same shape as `scenarios/adu.py`; the fitted D-038 model supplies the
+  rate, nothing is refitted here.
+- **Per place i and scenario year t = 1 … 5:**
+
+      added buildings_it ~ Poisson(h_t × u_i × E_i × (1 − d_i) × F(PCR_i) / F(1))
+      added homes_it     = added buildings_it × mm_units_per_project × (1 − teardown share)
+
+  - **h_t:** the hazard in year t, from D-062's r5 if Ben adopts it (else θ × ramp(t − 0.5; half), as V9).
+  - **u_i:** a place multiplier, gamma with mean 1 and variance α, drawn fresh per draw (as V9; fit-set
+    places do not keep their fitted multipliers, so every place is treated alike).
+  - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the parcel roll nearest the origin;
+    the ACS fallback (`build/eligible.from_acs`) where no roll exists, as D-056 decides.
+  - **d_i, the dose of the rules in force now** (`estimate_mm.rule_dose`, D-024): units grade × approval
+    grade × coverage. The Handbook rule has dose 1 (four or more units by right on every single-family zone:
+    `units_grade` already treats the fourplex as the full dose). The model's dose is the increase, as in
+    D-042, so the scenario adds 1 − d_i. A place already at dose 1 adds nothing.
+  - **Places with no coded rule** take d from coded places in their state and size band (D-022), as the ADU
+    scenario does; the draw carries the uncertainty.
+  - **F(PCR_i)/F(1):** the rental-duplex price-to-cost at the origin (`estimate_mm.plex_price_to_cost`),
+    with σ from `mm_feasibility_dispersion`, as in the fit.
+- **Baseline:** not needed for the added homes (it cancels). The statewide no-reform path stays the baseline
+  module's.
+- **Draws and seed:** one shared parameter draw per simulation draw (r5 or θ, α, units per project, σ held as
+  in the fit), one u per place keyed by crc32(geoid), Poisson per place-year; P10/P50/P90 and mean of the
+  statewide sum. Draw count and seed in `config/params/mm.yaml`.
+- **Choices for Ben (my proposal first):**
+  1. **5–6 unit buildings.** The fit counts only 2–4 unit buildings (BPS `units_2 + units_3_4`); 5–6 unit
+     buildings are in BPS's 5+ class with apartments, so the data say nothing about them. Proposal: count
+     2–4 unit buildings only and say so; homes per building keep their range (2.04–4.0). Alternative: a
+     judgment uplift for 5–6 units, shown as a sensitivity.
+  2. **Teardowns.** A 2–4 unit building on a lot with a house replaces that house. Proposal: a new
+     `mm_teardown_share` (share of new buildings that replace a home), from the roll's vacant share of
+     eligible parcels, so net homes = gross − teardowns. Alternative: report gross, with net as a sensitivity.
+  3. **Three stories / FAR.** The fit's rules mostly allow two to three stories already; the Handbook's FAR
+     assumption is stated, not modelled (no FAR term in the hazard).
+  4. **Holdouts.** St. Paul and Charlotte enter their state totals through roll and rule inputs only; no
+     post-holdout permits are read (the scenario reads no permits).
+- **Results export:** the `mm` part of the results bundle (WS-ENGINE brief, results export): per-draw state
+  totals, the funnel (eligible → dose gap → feasible → built), year shares.
+- **Tests (synthetic, hand-worked):** one place by hand (E, d, F, h, u fixed → expected buildings and homes);
+  dose 1 adds zero; uncoded places take the band share; the Poisson sum over places equals the statewide
+  draw; the r5 path sums to 5 × r5 over the window.
+- **Not in scope here:** stacking with ADUs (`model/combine.py`) and the fee scenario's pro forma link.
+- **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** proposed,
+  no code.
