@@ -102,5 +102,5 @@ results_origin_year:
   low: 2025
   high: 2025
   unit: year
-  source: "Lotline convention, as in every forward development run (scripts/dev/adu_dev_run.py --origin 2025): the last complete permit year; the five-year window is 2026-2030"
+  source: "Lotline convention, as in every forward development run (scripts/dev/adu_dev_run.py --origin 2025): the last complete permit year; with forecast_lead_years = 1 (baseline.yaml, D-061) the five-year window is 2027-2031"
   notes: "The bundle's forecast origin; `lotline results --origin` overrides it."

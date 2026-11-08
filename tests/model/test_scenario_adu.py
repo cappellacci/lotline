@@ -95,14 +95,16 @@ def test_handbook_equivalent_rules_add_nothing():
 
 
 def test_partial_rules_get_the_increment_only_by_hand():
-    """A partial rule at m_x = 0.3 (the D-053 sensitivity): current hazard = 0.3 × h_m. Handbook year 1:
-    0.3 h_m + 0.7 h_m (no ramp, D-048). Added in year 1 = 2,000 × 0.7 × h_m (same pool in year 1). At the
+    """A partial rule at m_x = 0.3 (the D-053 sensitivity): current hazard = 0.3 × h_m. The lead year (D-061)
+    runs under current rules only, leaving R = 2,000 × (1 − 0.3 h_m) parcels. Handbook year 1:
+    0.3 h_m + 0.7 h_m (no ramp, D-048). Added in year 1 = R × 0.7 × h_m (same pool in year 1). At the
     adopted m_x = 1.0 (D-053) a partial rule already counts in full, so nothing is added."""
     old = {"adu_partial_rule_share": 0.3}
     out = adu.central_path(_places(rule_class="partial", rule_age=50.0), params=old)
     hm = out["mature_hazard"][0]
-    assert out["current"][0, 0] == pytest.approx(2000 * 0.3 * hm, rel=1e-6)
-    assert out["added"][0, 0] == pytest.approx(2000 * 0.7 * hm, rel=1e-6)
+    pool = 2000 * (1 - 0.3 * hm)
+    assert out["current"][0, 0] == pytest.approx(pool * 0.3 * hm, rel=1e-6)
+    assert out["added"][0, 0] == pytest.approx(pool * 0.7 * hm, rel=1e-6)
     assert adu.central_params()["adu_partial_rule_share"] == 1.0
     assert adu.central_path(_places(rule_class="partial", rule_age=50.0))["added"].sum() == 0
 
@@ -123,7 +125,7 @@ def test_run_ranges_are_ordered_and_flag_extrapolation():
         assert (t["additional_homes_p10"] <= t["additional_homes_p50"]).all()
         assert (t["additional_homes_p50"] <= t["additional_homes_p90"]).all()
     assert totals["outside_calibration"].tolist() == [True, False]
-    assert len(yearly) == 2 * 5 and set(yearly["year"]) == set(range(2026, 2031))
+    assert len(yearly) == 2 * 5 and set(yearly["year"]) == set(range(2027, 2032))
     assert "eligible_parcels" in yearly  # denominator kept beside the units
 
 
@@ -327,7 +329,7 @@ def test_shared_extrapolation_noise_widens_state_intervals():
             "adu_place_effect_variance": 0,
         }
         _, _, summ = adu.run(places, 2025, draws=600, summary_by="state", params=fixed)
-        out[share] = summ[(summ["outcome"] == "adu_permits_added") & (summ["period"] == "2026-2030")].iloc[0]
+        out[share] = summ[(summ["outcome"] == "adu_permits_added") & (summ["period"] == "2027-2031")].iloc[0]
     width = {k: v["p90"] - v["p10"] for k, v in out.items()}
     assert width[1.0] > 1.5 * width[0.0]
     assert out[1.0]["mean"] == pytest.approx(out[0.0]["mean"], rel=0.15)
@@ -476,15 +478,17 @@ def test_a_blank_field_is_never_read_as_unrestrictive():
 
 def test_central_path_uses_the_expected_rule_share():
     """E[c] = Σ P(type) c(type): other 0.4, Handbook 0.6, m_x = 0.3 (the D-053 sensitivity) -> c = 0.72.
-    Added in year 1 = 2,000 × (1 − 0.72) × h_m (no ramp, D-048)."""
+    The lead year (D-061) leaves R = 2,000 × (1 − 0.72 h_m) parcels; added in year 1 = R × (1 − 0.72) × h_m
+    (no ramp, D-048)."""
     p = _places(rule_class="unknown", rule_age=50.0).assign(
         p_none=0.0, p_owner=0.0, p_other=0.4, p_both=0.0, p_handbook=0.6
     )
     mix = adu.central_path(p, params={"adu_partial_rule_share": 0.3})
     hand = adu.central_path(_places(rule_class="handbook", rule_age=50.0))
     hm = mix["mature_hazard"][0]
-    assert mix["current"][0, 0] == pytest.approx(2000 * 0.72 * hm, rel=1e-6)
-    assert mix["added"][0, 0] == pytest.approx(2000 * 0.28 * hm, rel=1e-6)
+    pool = 2000 * (1 - 0.72 * hm)
+    assert mix["current"][0, 0] == pytest.approx(pool * 0.72 * hm, rel=1e-6)
+    assert mix["added"][0, 0] == pytest.approx(pool * 0.28 * hm, rel=1e-6)
     assert hand["added"].sum() == 0
 
 
@@ -495,10 +499,10 @@ def test_state_summary_sums_draws_over_places():
         state="MN"
     )
     yearly, totals, summary = adu.run(places, 2025, draws=300, summary_by="state")
-    five = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2026-2030")].iloc[0]
+    five = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2027-2031")].iloc[0]
     assert five["mean"] == pytest.approx(totals["additional_homes_mean"].sum())
-    y1 = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2026")].iloc[0]
-    assert y1["mean"] == pytest.approx(yearly.loc[yearly["year"] == 2026, "additional_homes_mean"].sum())
+    y1 = summary[(summary["outcome"] == "additional_homes") & (summary["period"] == "2027")].iloc[0]
+    assert y1["mean"] == pytest.approx(yearly.loc[yearly["year"] == 2027, "additional_homes_mean"].sum())
     assert five["p10"] <= five["p50"] <= five["p90"]
     # percentiles of the summed draws, not sums of the places' percentiles (either can be larger)
     assert five["p90"] != pytest.approx(totals["additional_homes_p90"].sum())
@@ -560,7 +564,7 @@ def test_an_unseen_state_widens_its_range_and_keeps_its_median():
         _, totals, summ = adu.run(
             places.assign(state=st), 2025, draws=600, summary_by="state", params=fixed, states_spec=spec
         )
-        out[st] = summ[(summ["outcome"] == "adu_permits_added") & (summ["period"] == "2026-2030")].iloc[0]
+        out[st] = summ[(summ["outcome"] == "adu_permits_added") & (summ["period"] == "2027-2031")].iloc[0]
         assert totals["outside_fit_states"].all() == (st == "WI")
     width = {k: v["p90"] / v["p10"] for k, v in out.items()}
     sd_mn = math.log(width["MN"]) / (2 * 1.2816)

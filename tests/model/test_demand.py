@@ -7,7 +7,10 @@ import pytest
 from lotline.config import load_params
 from lotline.model import backtest, baseline, demand
 
-PARAMS = load_params("baseline")
+# The hand-worked examples here check the mechanics with the forecast starting right after the origin (lead 0,
+# the V1 registration). The forward run's one-year lead (D-061) is tested in test_forecast_window.py.
+_P = load_params("baseline")
+PARAMS = _P | {"forecast_lead_years": _P["forecast_lead_years"].model_copy(update={"value": 0})}
 
 
 def _households(values):

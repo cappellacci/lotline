@@ -155,12 +155,12 @@ def test_channel_choice():
 def test_run_ranges_and_state_sum():
     places = places_frame(True)
     yearly, totals, summary = fees.run(places, 2025, draws=200, summary_by="state")
-    assert len(yearly) == 2 * 5 and list(yearly["year"].unique()) == [2026, 2027, 2028, 2029, 2030]
+    assert len(yearly) == 2 * 5 and list(yearly["year"].unique()) == [2027, 2028, 2029, 2030, 2031]
     for t in (yearly, totals):
         assert (t["units_added_p10"] <= t["units_added_p50"]).all()
         assert (t["units_added_p50"] <= t["units_added_p90"]).all()
         assert (t["units_added_p10"] >= 0).all()  # ε low is 0, never negative
-    five = summary[summary["period"] == "2026-2030"].iloc[0]
+    five = summary[summary["period"] == "2027-2031"].iloc[0]
     # Means add up across non-overlapping places; percentiles are of each draw's sum.
     assert five["mean"] == pytest.approx(totals["units_added_mean"].sum())
     assert "lot_values" not in totals

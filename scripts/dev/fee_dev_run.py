@@ -28,7 +28,7 @@ HOLDOUT_PLACES = {"2758000", "3712000"}  # St. Paul, Charlotte: never in a devel
 
 
 def baseline_units(state: str, store, origin: int, geoids) -> pd.DataFrame:
-    """Mean baseline units a year (all BPS size classes) for years 1..5 after the origin, per place."""
+    """Mean baseline units a year (all BPS size classes) for each year of the forecast window (D-061), per place."""
     p = load_params("baseline")
     panel = panels.load(state, store, theme="adu", rule_version=eligible.RULE_VERSION)
     panel = panel[panel["geoid"].isin(geoids)]
