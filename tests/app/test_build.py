@@ -262,3 +262,45 @@ def test_overall_sums_every_state_in_the_summary():
     assert build.overall(None) is None
     html = build.render(build.payload([json.loads(FIXTURE.read_text())], "t", two))
     assert _embedded(html)["data"]["overall"]["parcels"] == 1000 and 'id="data-lead"' in html
+
+
+def test_state_map_has_every_state_once_and_every_configured_state():
+    m = build.tile_map()
+    codes = [t["code"] for t in m["tiles"]]
+    assert len(codes) == len(set(codes)) == 51  # 50 states and DC
+    assert len({(t["row"], t["col"]) for t in m["tiles"]}) == 51
+    configured = {p.stem.upper() for p in (REPO / "config" / "states").glob("*.yaml")}
+    assert configured <= set(codes)
+
+
+def test_state_map_refuses_a_repeated_tile(tmp_path):
+    bad = tmp_path / "tiles.yaml"
+    bad.write_text("tiles:\n  - [AA, A, 0, 0]\n  - [BB, B, 0, 0]\n")
+    with pytest.raises(ValueError, match="twice"):
+        build.tile_map(bad)
+
+
+def test_state_map_colours_every_tier_and_links_grey_states_to_the_readme():
+    import tomllib
+
+    from lotline.schemas import DATA_TIERS
+
+    m = build.tile_map()
+    tokens = (build.IDENTITY / "tokens.css").read_text(encoding="utf-8")
+    assert sorted(int(k) for k in m["tier_tokens"]) == DATA_TIERS
+    for tok in m["tier_tokens"].values():
+        assert f"{tok}:" in tokens  # a real identity token, light and dark
+    # richer data is the stronger step of the ramp
+    steps = [int(m["tier_tokens"][str(t)].rsplit("-", 1)[1]) for t in DATA_TIERS]
+    assert steps == sorted(steps, reverse=True)
+    repo = tomllib.loads((REPO / "challenge.toml").read_text(encoding="utf-8"))["links"]["repo_url"]
+    assert m["byos_url"] == repo.rstrip("/") + build.BYOS_ANCHOR
+    assert "\n## Bring your own state\n" in (REPO / "README.md").read_text(encoding="utf-8")
+
+
+def test_state_map_is_on_the_results_page(tmp_path):
+    page = build.build_app([FIXTURE], out_dir=tmp_path, generated="t", data_summary=None)
+    html = page.read_text(encoding="utf-8")
+    assert 'id="state-map"' in html and 'id="map-legend"' in html and "Choose a state" in html
+    assert html.index('id="map-card"') < html.index('id="page-data"')  # on page 1
+    assert _embedded(html)["map"] == build.tile_map()

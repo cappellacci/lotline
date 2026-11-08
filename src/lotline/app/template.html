@@ -66,6 +66,28 @@ th { background: var(--app-card); font-weight: 600; }
 td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .scroll { overflow-x: auto; }
 
+/* state map: a tile grid coloured by data tier (STYLE_GUIDE "Colour": tier ramp, tier-none for no bundle) */
+.map-card { display: flex; flex-wrap: wrap; gap: var(--space-5); align-items: flex-start; }
+.map-wrap { flex: 1 1 320px; max-width: 420px; }
+.map-wrap svg { width: 100%; height: auto; display: block; }
+.map-key { flex: 1 1 240px; min-width: 0; }
+.map-key h3 { margin: 0 0 var(--space-2); }
+.map-key p { margin: 0 0 var(--space-3); }
+.map-legend { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: var(--space-1); font-size: 14px; line-height: 20px; }
+.map-legend li { display: flex; align-items: center; gap: var(--space-2); }
+.swatch { width: 14px; height: 14px; flex: none; border-radius: var(--radius-sm); }
+.tile rect { stroke: none; }
+.tile text { font-family: var(--font-sans); font-size: 10px; font-weight: 600; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.tile.txt-paper text { fill: var(--paper); }
+.tile.txt-ink text { fill: var(--ink); }
+.tile.none text { fill: var(--ink-muted); font-weight: 500; }
+.tile.on { cursor: pointer; }
+.tile.on:hover rect, .tile:focus-visible rect { stroke: var(--survey); stroke-width: 2; }
+.tile.sel rect { stroke: var(--paper); stroke-width: 1.5; }
+.tile .ring { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.tile:focus { outline: none; }
+.map-off button { margin: 0 var(--space-1) var(--space-1) 0; }
+
 footer { padding: var(--space-6) 0 var(--space-8); color: var(--ink-muted); font-size: 14px; line-height: 20px; }
 footer dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: var(--space-3) 0; }
 footer dd { margin: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 13px; }
@@ -158,6 +180,15 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
   <div class="intro"><p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p></div>
   <section class="part" id="page-results" data-section="results">
     <h2 class="h1">Results</h2>
+    <div class="card map-card" id="map-card">
+      <div class="map-wrap"><svg id="state-map" role="group" aria-label="Map of US states: choose one to see its results"></svg></div>
+      <div class="map-key">
+        <h3 class="h3">Choose a state</h3>
+        <p class="body-small muted">Coloured states have Lotline results; click one to see them. The darker the colour, the more of the estimate rests on the state's own local records rather than national data.</p>
+        <ul class="map-legend" id="map-legend"></ul>
+        <p class="body-small muted map-off" id="map-off" hidden></p>
+      </div>
+    </div>
     <p class="lead" id="results-lead"></p>
     <div id="results-body"></div>
   </section>
@@ -211,6 +242,59 @@ function fillPicker() {
 }
 
 function bundleFor(state) { return DATA.states.find((b) => b.meta.state === state); }
+
+// ---- state map: tile grid from us_tiles.yaml, coloured by each bundle's data tier -----------------------
+// Grey tiles have no bundle and link to the README's "bring your own state" steps. Bundles whose code is not
+// on the grid (e.g. a test fixture) are listed under the key so they stay reachable.
+const TIER_WORDS = { 1: "Most detailed local records", 2: "Some local records", 3: "Mostly national data" };
+const TILE = 30, GAP = 3;
+function pickState(code) {
+  $("state").value = code;
+  show(code);
+  go(route().page, false);
+}
+function drawMap() {
+  const M = DATA.map, cur = $("state").value;
+  const rows = Math.max(...M.tiles.map((t) => t.row)) + 1, cols = Math.max(...M.tiles.map((t) => t.col)) + 1;
+  const svg = $("state-map");
+  svg.setAttribute("viewBox", `-2 -2 ${cols * (TILE + GAP) - GAP + 4} ${rows * (TILE + GAP) - GAP + 4}`);
+  svg.innerHTML = M.tiles.map((t) => {
+    const b = bundleFor(t.code), x = t.col * (TILE + GAP), y = t.row * (TILE + GAP);
+    const square = (fill, sel = false) => `<rect x="${x}" y="${y}" width="${TILE}" height="${TILE}" rx="2" fill="${fill}"></rect>` +
+      (sel ? `<rect class="ring" x="${x - 2}" y="${y - 2}" width="${TILE + 4}" height="${TILE + 4}" rx="3"></rect>` : "") +
+      `<text x="${x + TILE / 2}" y="${y + TILE / 2}">${esc(t.code)}</text>`;
+    if (!b) {
+      const say = `${t.name}: no results yet. Bring your own state`;
+      return `<a class="tile none" href="${esc(M.byos_url)}" target="_blank" rel="noopener" aria-label="${esc(say)}"><title>${esc(say)}</title>${square("var(--tier-none)")}</a>`;
+    }
+    const tier = b.meta.data_tier, sel = t.code === cur;
+    const say = `${t.name}: ${DATA.roles[b.meta.state_role] || b.meta.state_role}, data tier ${tier} (${TIER_WORDS[tier] || ""})`;
+    return `<a class="tile on ${tier === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
+  }).join("");
+  // The call to action sits where it applies: a national-data-only state can be sharpened with local records,
+  // and a grey state (only if any is left) can be added. Both point at the README's "bring your own state".
+  const used = new Set(DATA.states.map((b) => b.meta.data_tier));
+  const byos = (words) => `<a href="${esc(M.byos_url)}" target="_blank" rel="noopener">${words}</a>`;
+  const grey = M.tiles.some((t) => !bundleFor(t.code));
+  $("map-legend").innerHTML = Object.entries(TIER_WORDS).filter(([k]) => used.has(Number(k))).map(([k, w]) =>
+    `<li><span class="swatch" style="background:var(${M.tier_tokens[k]})"></span><span>Tier ${k}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
+    (grey ? `<li><span class="swatch" style="background:var(--tier-none)"></span><span>No results yet: ${byos("bring your own state")}</span></li>` : "");
+  const onMap = new Set(M.tiles.map((t) => t.code));
+  const off = DATA.states.filter((b) => !onMap.has(b.meta.state));
+  $("map-off").hidden = !off.length;
+  $("map-off").innerHTML = off.length ? "Also run, not on the map: " + off.map((b) =>
+    `<button type="button" data-state="${esc(b.meta.state)}"${b.meta.state === cur ? ' aria-pressed="true"' : ""}>${esc(b.meta.state)}</button>`).join("") : "";
+}
+function wireMap() {
+  const onPick = (e) => {
+    const el = e.target.closest("[data-state]");
+    if (!el) return;
+    e.preventDefault();
+    pickState(el.dataset.state);
+  };
+  $("state-map").addEventListener("click", onPick);
+  $("map-off").addEventListener("click", onPick);
+}
 
 // ---- formatting -------------------------------------------------------------------------------------------
 const fmtN = (x) => {
@@ -554,6 +638,7 @@ function show(state) {
   wireResults();
   wireData();
   drawTornado();
+  drawMap();
   footer(b);
   document.title = `Lotline · ${b.meta.state}`;
 }
@@ -574,9 +659,14 @@ function go(page, scroll = true) {
   if (page === "data") ensureDashboard();
   if (scroll) window.scrollTo(0, 0);
 }
-window.addEventListener("hashchange", () => go(route().page));
+window.addEventListener("hashchange", () => {
+  const r = route();
+  if (r.state && r.state !== $("state").value && bundleFor(r.state)) { $("state").value = r.state; show(r.state); }
+  go(r.page);
+});
 
 fillPicker();
+wireMap();
 show($("state").value);
 go(route().page, false);
 </script>
