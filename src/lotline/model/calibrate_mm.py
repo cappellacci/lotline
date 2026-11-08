@@ -450,6 +450,51 @@ def fit(places: Sequence[Place], halves=HALF_GRID) -> Fit:
     )
 
 
+SCENARIO_AGES = (0.5, 1.5, 2.5, 3.5, 4.5)  # D-062: mid-year ages of the five scenario years
+
+
+def ramp_mean(half: float, ages: Sequence[float] = SCENARIO_AGES, slope: float = SLOPE) -> float:
+    """m(half): the mean ramp share over the scenario's five years (D-062).
+
+    By hand, slope 0.75: half 0.5 -> (0.5 + 0.7914 + 0.9350 + 0.9820 + 0.9952) / 5 = 0.8407;
+    half 6.0 -> (0.00065 + 0.00248 + 0.00932 + 0.03445 + 0.11920) / 5 = 0.0332.
+    """
+    return float(np.mean(ramp(np.asarray(ages, dtype=float), half, slope)))
+
+
+@dataclass(frozen=True)
+class FiveYearFit:
+    r5: float  # θ × m(half) at the maximum: mean hazard per eligible parcel per year over the five years
+    low: float  # 90% profile-likelihood interval
+    high: float
+    loglik: float
+    by_half: pd.DataFrame  # half, m, theta, alpha, loglik, r5: the best fit at each half-way point
+
+
+def five_year_profile(places, halves=HALF_GRID, ages: Sequence[float] = SCENARIO_AGES) -> FiveYearFit:
+    """Profile likelihood of r5 = θ × m(half) (D-062): ℓ_p(r5) = max over half and α of ℓ(r5 / m(half), α,
+    half), with its 90% interval by the χ² cut used for θ. Only a reparameterization: the maximum is the
+    fit's, r5̂ = θ̂ × m(half̂)."""
+    st = Stack.of(places)
+    m = {h: ramp_mean(h, ages) for h in halves}
+    rows = []
+    for h in halves:
+        theta, alpha, ll = _best_at_half(st, h)
+        rows.append({"half": float(h), "m": m[h], "theta": theta, "alpha": alpha, "loglik": ll,
+                     "r5": theta * m[h]})  # fmt: skip
+    by_half = pd.DataFrame(rows)
+    best = by_half.loc[by_half["loglik"].idxmax()]
+
+    def prof(lr):
+        r5 = math.exp(lr)
+        return max(_best_alpha(st, r5 / m[h], h)[1] for h in halves)
+
+    lo_b = LOG_THETA[0] + math.log(min(m.values()))
+    hi_b = LOG_THETA[1] + math.log(max(m.values()))
+    lo, hi = _interval(prof, math.log(best["r5"]), float(best["loglik"]), lo_b, hi_b)
+    return FiveYearFit(float(best["r5"]), math.exp(lo), math.exp(hi), float(best["loglik"]), by_half)
+
+
 # ---------------------------------------------------------------------------------------------------------
 # Prediction and the V4 backtest
 # ---------------------------------------------------------------------------------------------------------
