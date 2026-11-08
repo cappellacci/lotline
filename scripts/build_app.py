@@ -1,8 +1,9 @@
 """Build the Lotline app page from results bundles: `python scripts/build_app.py [--bundle PATH ...]`.
 
 Reads every `reports/results/<st>/bundle.json` (written by `lotline results --state XX`), validates each
-against the `results_*` schemas and writes one self-contained page, `reports/app/index.html` (gitignored),
-that opens from disk with no server. Section 2 embeds the data dashboard when its summary exists
+against the `results_*` schemas and writes the page, `reports/app/index.html`, plus one file per state,
+`reports/app/states/<st>.js`, loaded when that state is picked (all gitignored). Keep the folder together;
+the page opens from disk with no server. Section 2 embeds the data dashboard when its summary exists
 (`scripts/build_data_dashboard.py`). `--bundle` builds from named files instead, e.g. the synthetic fixture:
 
     uv run python scripts/build_app.py --bundle tests/fixtures/results/zz/bundle.json
