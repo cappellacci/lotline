@@ -4054,8 +4054,28 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Run once:** `uv run python scripts/dev/calibrate_mm_d062.py`. Minutes, not hours: two fits, no folds.
 - **Reading rule:** none needed to adopt or reject; this is a reparameterization. Ben decides on the config
   PR with the r5 interval and the per-half profile in front of him.
-- **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** proposed,
-  not run.
+- **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** run on
+  2026-11-08 ("Run D-062"); results below.
+- **Results (one run, 2026-11-08, commit 84986bc, about 2 minutes; `reports/mm-d062/`, log
+  `run-2026-11-08-log.txt`). Code as written above; main fit reproduces D-055 (θ 0.1235 per 1,000, half 0.5).**
+  - **r5 (per 1,000 eligible parcels a year, 90% profile interval):**
+    - main, D-055 (b), 13 places: 0.104 (0.027–0.85);
+    - beside it, D-059 (b′), 12 places: 0.109 (0.030–0.74);
+    - current config, θ's interval × m(0.5): 0.104 (0.027–0.85), the same as the main r5 interval;
+    - not-chosen joint draw over the grid (main): P5 0.019, P50 0.104, P95 0.56.
+  - **The best r5 at each half-way point is 0.08–0.11** (main: 0.104 at half 0.5, 0.101 at 2.0, 0.082 at
+    6.0), while the best θ rises from 0.12 to 2.46. Half-way points 0.5–1.0 carry 97% of the likelihood weight
+    in the main fit (79% and 18%).
+  - **The premise was wrong.** With the half-way point held at 0.5, θ's own 90% interval is 0.033–1.006: its
+    top end is the place-to-place spread (α ≈ 8.4), not a slow ramp. In this specification, a slow ramp gives
+    r5 ≈ 0.08, not 0.04. The 0.04 in this entry came from D-058's (d), whose baseline differs. That
+    specification was not adopted.
+  - **Reading:** the scenario's current range on the five-year rate (θ from its interval, half held at 0.5)
+    is already the r5 profile interval. The proposed key `mm_five_year_hazard` is not needed, and V5 can
+    freeze on the current values. The ridge changes when the homes come within and beyond the window, not
+    how many come in five years. D-063 uses θ × ramp(t − 0.5; 0.5), as V9 does.
+  - **Results page:** `reports/mm-d062/d062-results.html`, published at
+    https://claude.ai/artifact/UJooP3X5oNfwCZ2vFvmJW7.
 
 ### D-063 · 2026-11-07 · Missing middle: the Handbook scenario module, `model/scenarios/mm.py` (method only, before any code)
 - **What it answers:** how many more homes a state gets over five years if every single-family-zoned parcel may
@@ -4067,7 +4087,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       added buildings_it ~ Poisson(h_t × u_i × E_i × (1 − d_i) × F(PCR_i) / F(1))
       added homes_it     = added buildings_it × mm_units_per_project × (1 − teardown share)
 
-  - **h_t:** the hazard in year t, from D-062's r5 if Ben adopts it (else θ × ramp(t − 0.5; half), as V9).
+  - **h_t:** θ × ramp(t − 0.5; 0.5), as V9: D-062's run showed this already carries the five-year range.
   - **u_i:** a place multiplier, gamma with mean 1 and variance α, drawn fresh per draw (as V9; fit-set
     places do not keep their fitted multipliers, so every place is treated alike).
   - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the parcel roll nearest the origin;
@@ -4082,7 +4102,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     with σ from `mm_feasibility_dispersion`, as in the fit.
 - **Baseline:** not needed for the added homes (it cancels). The statewide no-reform path stays the baseline
   module's.
-- **Draws and seed:** one shared parameter draw per simulation draw (r5 or θ, α, units per project, σ held as
+- **Draws and seed:** one shared parameter draw per simulation draw (θ, α, units per project, σ held as
   in the fit), one u per place keyed by crc32(geoid), Poisson per place-year; P10/P50/P90 and mean of the
   statewide sum. Draw count and seed in `config/params/mm.yaml`.
 - **Choices for Ben (my proposal first):**
@@ -4101,7 +4121,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   totals, the funnel (eligible → dose gap → feasible → built), year shares.
 - **Tests (synthetic, hand-worked):** one place by hand (E, d, F, h, u fixed → expected buildings and homes);
   dose 1 adds zero; uncoded places take the band share; the Poisson sum over places equals the statewide
-  draw; the r5 path sums to 5 × r5 over the window.
+  draw; the year shares follow ramp(t − 0.5; 0.5).
 - **Not in scope here:** stacking with ADUs (`model/combine.py`) and the fee scenario's pro forma link.
 - **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** proposed,
   no code.

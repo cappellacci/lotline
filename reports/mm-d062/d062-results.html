@@ -1,0 +1,141 @@
+<title>D-062 Five-Year Rate</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the D-053 results page's system: one reading column of findings, each with its chart, then a decision panel. Survey-ledger feel: building counts, log scales, plain annotations. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --main: #2f6f5e; --alt: #b0703a; --ref: #6b6fa8; --obs: #1d2420;
+  --bandmain: rgba(47,111,94,.20); --bandalt: rgba(176,112,58,.20); --bandref: rgba(107,111,168,.18); --bandnone: rgba(93,106,99,.18);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.in { color: var(--warn); border: 1px solid var(--warn); }
+.post { font-size: 12px; color: var(--warn); font-weight: 600; letter-spacing: .04em; }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-062 · run 2026-11-08 · commit 84986bc · results for Ben</div>
+    <h1>The five-year missing-middle rate doesn't depend on the ramp</h1>
+    <p class="lede">D-062 asked whether the scenario's range was too wide at the top. The fitted rate θ and the ramp's speed trade off, and the scenario holds the ramp at its fastest. The run fitted the quantity the scenario reports instead: the mean yearly rate over the five scenario years, r5 = θ × mean ramp share. It used two fits on the fit-set places only. The premise turned out to be wrong, and no config change is needed.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Finding 1 · Ramp speed</div>
+    <h2>Slow or fast ramp, the five years come out at about 0.1 buildings per 1,000 lots a year</h2>
+    <p>For each ramp half-way point from 0.5 to 6 years, the best θ (orange) rises 20-fold, from 0.12 to 2.5 per 1,000. But θ times the ramp's five-year mean share (green) stays between 0.08 and 0.11. The data pin down the five-year rate and leave the split between θ and ramp speed open. That split doesn't matter for a five-year total. Bars show each fit's 90% interval with the ramp held. Under the adopted fit, ramps of 0.5–1 year carry 97% of the likelihood.</p>
+    <div class="chart" id="half"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--alt)"></span>θ at that ramp</span><span><span class="sw" style="background:var(--main)"></span>five-year rate r5</span><span>D-055 (b), 13 places · log scale · per 1,000 eligible parcels a year</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 2 · The range</div>
+    <h2>θ's wide top end comes from the fast ramp itself, so the range in config is already right</h2>
+    <p>D-062 assumed θ's upper bound (1.006 per 1,000) belonged to a slow ramp. It doesn't: with the ramp held at 0.5, θ's own interval is 0.033–1.006. The width comes from how much places differ (α ≈ 8), not from the ridge. So the five-year range the scenario draws now (0.027–0.85) is exactly the r5 profile interval. Without Lubbock it is a little narrower at the top (0.030–0.74). Drawing ramp speeds jointly by their likelihood gives a similar centre with a thinner top (P95 0.56).</p>
+    <div class="chart" id="ranges"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 3 · The profile</div>
+    <h2>One peak in r5, with a long tail upward</h2>
+    <p>The likelihood-ratio statistic of r5, maximized over ramp speed and place spread. Values under the dashed line (2.71) are inside the 90% interval. Both fits peak near 0.10–0.11. The curve is flatter to the right: high rates stay plausible because a few places could be very responsive.</p>
+    <div class="chart" id="prof"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--main)"></span>D-055 (b), 13 places</span><span><span class="sw" style="background:var(--alt)"></span>D-059 (b′), 12 places</span><span>log scale</span></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">For Ben to decide</div>
+    <h2>Keep the config as it is. D-062's proposed new key isn't needed.</h2>
+    <ul>
+      <li><strong>No change to <code>mm_hazard.yaml</code></strong> (suggested). Drawing θ from its interval with the ramp at 0.5 already gives the right five-year range. The <code>mm_five_year_hazard</code> key D-062 proposed would duplicate it.</li>
+      <li><strong>V5 (Nov 17)</strong> can freeze on the current values. The worry D-062 raised for V5 doesn't apply.</li>
+      <li><strong>D-063's scenario</strong> uses θ × ramp(half 0.5), as V9 does. The ridge is reported as a finding: it changes when the homes come, not how many come in five years.</li>
+      <li><strong>Caveat:</strong> under D-058's stability rule (d), the fit sat at the slow ramp with r5 ≈ 0.04. That specification wasn't adopted, and this run doesn't revisit it.</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/mm-d062/ (summary.json, by_half.csv, profile_curve.csv, run-2026-11-08-log.txt). Census BPS 2010–2025 for D-054's fit-set places only; test places and holdouts (St. Paul, Charlotte, Mecklenburg) not read. Method: docs/analysis_plan.md D-062; D-054, D-055, D-059. Code: src/lotline/model/calibrate_mm.py (ramp_mean, five_year_profile), scripts/dev/calibrate_mm_d062.py.</p>
+</main>
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : String(Math.round(n));
+const lab = (s, x, y, t, opt = {}) => el("text", Object.assign({ x, y, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, opt), s, t);
+
+
+
+const D = {"main": [[0.5, 0.12354, 0.03254, 1.00576, 0.10386, 0.027357232825799997, 0.8455688533152, 0.78973036], [1.0, 0.13353, 0.036000000000000004, 0.9875400000000001, 0.10247, 0.02762665848, 0.7578452865372001, 0.17654763], [1.5, 0.14815, 0.04125, 0.9682799999999999, 0.10124999999999999, 0.028190617949999996, 0.6617311890575999, 0.0285971], [2.0, 0.16976, 0.04932, 0.9560000000000001, 0.10069, 0.0292522325472, 0.5670140777599999, 0.00431374], [2.5, 0.20265, 0.062169999999999996, 0.96426, 0.10132, 0.031084999999999998, 0.48213, 0.00068502], [3.0, 0.25394, 0.08317000000000001, 1.01713, 0.10332, 0.033840961456799996, 0.4138590492552, 0.00010936], [3.5, 0.33412, 0.11695, 1.15651, 0.10578, 0.037025326806, 0.36614074993080004, 1.52e-05], [4.0, 0.45776999999999995, 0.16837, 1.45247, 0.10647000000000001, 0.0391616531034, 0.3378340932654, 1.51e-06], [4.5, 0.64895, 0.24317, 2.03376, 0.10336, 0.0387305929241, 0.32392454112479996, 9e-08], [5.0, 0.95699, 0.35285, 3.1690400000000003, 0.0966, 0.035615292299499994, 0.3198704432728, 0.0], [5.5, 1.48831, 0.52281, 5.45319, 0.0886, 0.031121802311399997, 0.3246171671286, 0.0], [6.0, 2.46408, 0.80562, 10.20191, 0.08184999999999999, 0.026761028766599998, 0.33888633224629994, 0.0]], "beside": [[0.5, 0.12999999999999998, 0.03607, 0.87666, 0.10929000000000001, 0.0303249965589, 0.7370310918582, 0.71723348], [1.0, 0.14093999999999998, 0.03998, 0.86983, 0.10815999999999999, 0.0306809390564, 0.6675137873793999, 0.17715457], [1.5, 0.15674, 0.04584, 0.86444, 0.10712, 0.0313274648928, 0.5907660068048, 0.03596417], [2.0, 0.17961, 0.05469, 0.8671300000000001, 0.10653, 0.032437238402399995, 0.5143043067448, 0.00853923], [2.5, 0.21358, 0.06846000000000001, 0.8905799999999999, 0.10679, 0.034230000000000003, 0.44528999999999996, 0.00310634], [3.0, 0.26532999999999995, 0.09032, 0.95977, 0.10796, 0.0367502180928, 0.3905198939208, 0.00196501], [3.5, 0.34480999999999995, 0.12423, 1.12049, 0.10916000000000001, 0.0393301098684, 0.3547371392292, 0.00213706], [4.0, 0.46654, 0.17425000000000002, 1.45231, 0.10851000000000001, 0.040529298885, 0.33779687841420003, 0.00337106], [4.5, 0.65677, 0.24620000000000003, 2.10493, 0.10461000000000001, 0.039213192326000006, 0.33526005248890006, 0.00596131], [5.0, 0.9708800000000001, 0.3529, 3.39644, 0.098, 0.035620339103, 0.34282330559080004, 0.00978433], [5.5, 1.52563, 0.52182, 6.0366100000000005, 0.09082, 0.031062869650800004, 0.3593469578834, 0.01442747], [6.0, 2.5595399999999997, 0.8085100000000001, 11.60102, 0.08502, 0.0268570285843, 0.38536187028860003, 0.02035597]], "curve": {"main": [[0.006839, 9.34744], [0.007987, 8.510429], [0.009327, 7.69129], [0.010891, 6.890529], [0.012718, 6.111094], [0.014852, 5.356366], [0.017344, 4.630201], [0.020253, 3.93696], [0.023651, 3.281532], [0.027619, 2.669319], [0.032252, 2.106179], [0.037663, 1.598293], [0.043982, 1.151932], [0.05136, 0.773087], [0.059976, 0.466942], [0.070038, 0.237215], [0.081788, 0.085415], [0.095509, 0.010214], [0.111532, 0.00712], [0.130243, 0.068679], [0.152093, 0.18524], [0.177609, 0.346076], [0.207405, 0.540555], [0.2422, 0.759035], [0.282833, 0.99336], [0.330282, 1.236998], [0.385691, 1.484941], [0.450396, 1.733482], [0.525956, 1.979965], [0.614192, 2.222546], [0.717231, 2.459995], [0.837556, 2.691536], [0.978067, 2.916717], [1.142151, 3.135326], [1.333763, 3.347312], [1.557519, 3.552742], [1.818814, 3.751758], [2.123945, 3.944554], [2.480265, 4.131353], [2.896363, 4.312399], [3.382267, 4.487939]], "beside": [[0.007581, 9.428186], [0.008799, 8.619577], [0.010214, 7.824762], [0.011856, 7.045942], [0.013762, 6.285659], [0.015975, 5.546844], [0.018543, 4.832858], [0.021524, 4.147545], [0.024984, 3.495268], [0.029001, 2.880936], [0.033664, 2.310003], [0.039076, 1.788412], [0.045358, 1.322474], [0.05265, 0.918619], [0.061115, 0.583009], [0.07094, 0.320956], [0.082345, 0.136174], [0.095584, 0.029939], [0.110951, 0.000367], [0.128788, 0.042085], [0.149493, 0.146552], [0.173527, 0.303041], [0.201425, 0.500001], [0.233809, 0.72636], [0.271398, 0.972427], [0.315031, 1.230292], [0.365678, 1.493843], [0.424468, 1.758561], [0.49271, 2.021224], [0.571922, 2.279619], [0.66387, 2.532287], [0.7706, 2.778323], [0.89449, 3.017217], [1.038297, 3.248736], [1.205223, 3.472845], [1.398987, 3.689637], [1.623902, 3.899294], [1.884976, 4.102052], [2.188023, 4.29818], [2.539791, 4.487965], [2.948113, 4.6717]]}, "ranges": [["Current config: \u03b8 range \u00d7 m(0.5)", 0.02732360371452426, 0.10382969411519219, 0.8457706257480433, "ref"], ["r5 profile, D-055 (b), 13 places", 0.027357231028255796, 0.1038612776303272, 0.8455668067420291, "main"], ["r5 profile, D-059 (b\u2032), 12 places", 0.030322165564379874, 0.10929189642263129, 0.7370282598147676, "alt"], ["Joint draw over ramp speeds (P5\u2013P95), D-055", 0.018942238307822455, 0.10385690039722958, 0.5636287625006651, "none"]]};
+// 1 · by half
+(function () {
+  const rows = D.main, W = 760, L = 60, R = 20, T = 10, H = 300, B = 36; const s = svg("half", W, H);
+  const lo = Math.log10(0.02), hi = Math.log10(12);
+  const x = h => L + (h - 0.25) / 6 * (W - L - R), y = v => T + (hi - Math.log10(v)) / (hi - lo) * (H - T - B);
+  for (const t of [0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10]) { el("line", { x1: L, x2: W - R, y1: y(t), y2: y(t), stroke: css("--rule") }, s); el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, s, t); }
+  for (const h of [0.5, 1, 2, 3, 4, 5, 6]) el("text", { x: x(h), y: H - 18, "text-anchor": "middle" }, s, h);
+  el("text", { x: (L + W - R) / 2, y: H - 2, "text-anchor": "middle" }, s, "ramp half-way point (years)");
+  for (const [k, c, lo_i, hi_i, d] of [["θ", "--alt", 2, 3, -5], ["r5", "--main", 5, 6, 5]]) {
+    const vi = k === "θ" ? 1 : 4; let p = "";
+    rows.forEach((r, i) => { el("line", { x1: x(r[0]) + d, x2: x(r[0]) + d, y1: y(r[lo_i]), y2: y(r[hi_i]), stroke: css(c), "stroke-width": 3, opacity: .35 }, s); p += (i ? "L" : "M") + x(r[0]) + " " + y(r[vi]); });
+    el("path", { d: p, fill: "none", stroke: css(c), "stroke-width": 2 }, s);
+    rows.forEach(r => el("circle", { cx: x(r[0]), cy: y(r[vi]), r: 3.5 + 6 * Math.sqrt(r[7]), fill: css(c), stroke: css("--panel"), "stroke-width": 1 }, s));
+  }
+  lab(s, x(6) - 4, y(D.main[11][1]) - 10, "θ 2.46", { "text-anchor": "end" }); lab(s, x(6) - 4, y(D.main[11][4]) + 18, "r5 0.08", { "text-anchor": "end" });
+})();
+// 2 · ranges
+(function () {
+  const rows = D.ranges, W = 760, L = 300, R = 20, T = 6, rh = 30, H = T + rows.length * rh + 28; const s = svg("ranges", W, H);
+  const lo = Math.log10(0.015), hi = Math.log10(1.2); const x = v => L + (Math.log10(v) - lo) / (hi - lo) * (W - L - R);
+  const col = { ref: "--ref", main: "--main", alt: "--alt", none: "--muted" };
+  for (const t of [0.02, 0.05, 0.1, 0.2, 0.5, 1]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, t); }
+  rows.forEach(([n, a, m, b, k], i) => { const yy = T + i * rh + 8;
+    lab(s, 0, yy + 9, n); el("rect", { x: x(a), y: yy, width: x(b) - x(a), height: 12, rx: 2, fill: css(col[k]), opacity: .3 }, s);
+    el("line", { x1: x(m), x2: x(m), y1: yy - 2, y2: yy + 14, stroke: css(col[k]), "stroke-width": 2.5 }, s);
+    el("text", { x: x(b) + 4, y: yy + 10 }, s, a.toFixed(3) + "–" + b.toFixed(2)); });
+})();
+// 3 · profile
+(function () {
+  const W = 760, L = 60, R = 20, T = 10, H = 260, B = 36; const s = svg("prof", W, H);
+  const lo = Math.log10(0.006), hi = Math.log10(3.5), ymax = 8;
+  const x = v => L + (Math.log10(v) - lo) / (hi - lo) * (W - L - R), y = v => T + (1 - Math.min(v, ymax) / ymax) * (H - T - B);
+  for (const t of [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - B, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 18, "text-anchor": "middle" }, s, t); }
+  for (const t of [0, 2, 4, 6, 8]) el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, s, t);
+  el("text", { x: (L + W - R) / 2, y: H - 2, "text-anchor": "middle" }, s, "five-year rate r5, per 1,000 eligible parcels a year");
+  el("line", { x1: L, x2: W - R, y1: y(2.71), y2: y(2.71), stroke: css("--muted"), "stroke-dasharray": "4 3" }, s);
+  for (const [k, c] of [["main", "--main"], ["beside", "--alt"]]) { let p = ""; D.curve[k].forEach(([r, v], i) => p += (i ? "L" : "M") + x(r) + " " + y(v)); el("path", { d: p, fill: "none", stroke: css(c), "stroke-width": 2 }, s); }
+})();
+</script>

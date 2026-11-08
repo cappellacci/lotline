@@ -15,3 +15,9 @@
   sources (Zoneomics mirror of Ch. 39, Lubbock staff reports); the first coder was also Claude, so this is not
   a human second coder; sources and unverified points are listed. The m(half) values in D-062 were computed by
   hand from `hazard.ramp`. No model run, no data read, no holdout touched.
+- **2026-11-08, D-062 run ("Run D-062"):** `calibrate_mm.ramp_mean` and `five_year_profile` (hand-worked tests
+  in `tests/model/test_calibrate_mm.py`), `scripts/dev/calibrate_mm_d062.py`, results in `reports/mm-d062/`,
+  page https://claude.ai/artifact/UJooP3X5oNfwCZ2vFvmJW7. The five-year rate is 0.104 per 1,000 a year
+  (0.027–0.85), 0.08–0.11 at every ramp speed. θ's top end is place spread at the fast ramp, not the slow
+  peak, so D-062's premise was wrong and the config range already matches. No config change proposed. The
+  main fit reproduced D-055's θ (asserted). Only fit-set place-years were read.
