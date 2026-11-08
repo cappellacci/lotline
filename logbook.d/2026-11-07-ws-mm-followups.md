@@ -21,3 +21,8 @@
   (0.027–0.85), 0.08–0.11 at every ramp speed. θ's top end is place spread at the fast ramp, not the slow
   peak, so D-062's premise was wrong and the config range already matches. No config change proposed. The
   main fit reproduced D-055's θ (asserted). Only fit-set place-years were read.
+- **2026-11-08, D-063 approved ("Approve D-063"); scenario module written:** `src/lotline/model/scenarios/mm.py`,
+  `tests/model/test_scenario_mm.py` (12 hand-worked tests: one place by hand, full dose adds nothing,
+  teardowns ≤ buildings, band dose draws, state total = sum of places run alone, current dose, house share),
+  four keys in `config/params/mm.yaml`. Two deviations recorded in D-063 (teardown formula; house share
+  from rolls). Loader checked on NC and MN inputs; no scenario output computed yet.

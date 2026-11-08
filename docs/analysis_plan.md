@@ -4123,5 +4123,20 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   dose 1 adds zero; uncoded places take the band share; the Poisson sum over places equals the statewide
   draw; the year shares follow ramp(t − 0.5; 0.5).
 - **Not in scope here:** stacking with ADUs (`model/combine.py`) and the fee scenario's pro forma link.
-- **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** proposed,
-  no code.
+- **Decided by:** written by the missing-middle test session on 2026-11-07; **approved by Ben 2026-11-08
+  ("Approve D-063")**, with each choice taken as proposed (first option).
+- **Code (2026-11-08):** `src/lotline/model/scenarios/mm.py` (`simulate`, `summarize`, `places_from_store`,
+  `run`); tests `tests/model/test_scenario_mm.py` (12, hand-worked); new keys in `config/params/mm.yaml`
+  (`mm_scenario_draws` 4,000, `mm_scenario_seed`, `mm_rule_min_coded` 5, `mm_teardown_share_scale` 0.5–1.0).
+  - **Deviation 1, teardowns:** net homes = buildings × homes per building − teardowns, with teardowns
+    ~ Binomial(buildings, s × house share). The formula above (homes × (1 − teardown share)) would remove a
+    share of every new home rather than one house per replaced lot.
+  - **Deviation 2, house share:** taken directly from each place's latest roll (eligible houses over
+    eligible houses and vacant lots, `mm.house_share`); ACS-fallback places count houses only, so theirs is
+    1. Scaled by `mm_teardown_share_scale` (judgment 0.5–1.0: builders may favour vacant lots).
+  - **Homes per building** is drawn triangular over `mm_units_per_project` (2.04, 2.08, 4.0). Its high end is
+    Minnesota's ratio on 10 buildings, so the draw's mean (about 2.7) sits above the pooled 2.08; reported
+    as a finding when the scenario first runs.
+  - **Not yet:** the results-bundle `mm` part (`model/results.py`, WS-APP contract) and the first state
+    runs, each with Ben's go-ahead. Loader checked on NC and MN inputs only (places 453 and 1,051; coded
+    rules 22 and 8); no scenario output computed.
