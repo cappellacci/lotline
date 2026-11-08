@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""First run of the Handbook missing-middle scenario (D-063), five states, approved by Ben 2026-11-08..
+"""First run of the Handbook missing-middle scenario (D-063), five states, approved by Ben 2026-11-08.
 
     uv run python scripts/dev/mm_scenario_run.py --out reports/mm-scenario-2026-11-08
 

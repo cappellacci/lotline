@@ -26,3 +26,8 @@
   teardowns ≤ buildings, band dose draws, state total = sum of places run alone, current dose, house share),
   four keys in `config/params/mm.yaml`. Two deviations recorded in D-063 (teardown formula; house share
   from rolls). Loader checked on NC and MN inputs; no scenario output computed yet.
+- **2026-11-08, first scenario run ("Run five states"):** `scripts/dev/mm_scenario_run.py`, results in
+  `reports/mm-scenario-2026-11-08/`, page https://claude.ai/artifact/T7fwy1ke9B62Jm1Ea9FVNS. Net added homes
+  over five years, P50 (P10–P90): TX 5,968 (1,412–26,698), NC 1,478, OH 1,345, MN 884, OR 119. Checked:
+  page numbers against `summary.csv` and `inputs.json`; homes per building held at 2.08 run as a
+  sensitivity (about 30% lower). Results recorded in D-063.

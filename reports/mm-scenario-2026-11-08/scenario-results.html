@@ -1,0 +1,152 @@
+<title>Missing-Middle Scenario Run</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the D-053 results page's system: one reading column of findings, each with its chart, then a decision panel. Survey-ledger feel: building counts, log scales, plain annotations. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --main: #2f6f5e; --alt: #b0703a; --ref: #6b6fa8; --obs: #1d2420;
+  --bandmain: rgba(47,111,94,.20); --bandalt: rgba(176,112,58,.20); --bandref: rgba(107,111,168,.18); --bandnone: rgba(93,106,99,.18);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --main: #6cc3a8; --alt: #e0a46c; --ref: #a4a8e6; --obs: #e4ebe7;
+  --bandmain: rgba(108,195,168,.22); --bandalt: rgba(224,164,108,.22); --bandref: rgba(164,168,230,.2); --bandnone: rgba(154,168,160,.2);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.in { color: var(--warn); border: 1px solid var(--warn); }
+.post { font-size: 12px; color: var(--warn); font-weight: 600; letter-spacing: .04em; }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-063 · first scenario run 2026-11-08 · commit 7c9a717 · results for Ben</div>
+    <h1>Five states under the Handbook missing-middle rule</h1>
+    <p class="lede">This is the first run of the new scenario module. Every single-family-zoned lot may hold 2–6 homes by right, compared with each place's rules at the end of 2025. Rates come from the fitted model (D-055 values), with 4,000 draws per state. These are added homes over five years, net of the houses torn down to make room. No permits were read.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Finding 1 · The headline</div>
+    <h2>Texas adds about 6,000 homes in five years; the other states between 100 and 1,500</h2>
+    <p>Median net added homes over five years, with the P10–P90 bar. The mean (◆) sits about twice the median, because a few draws have a high statewide rate. Texas leads on sheer lot count: 8.1 million eligible parcels, nearly all without a missing-middle rule today. Oregon adds least, because HB 2001 already allows most of what the Handbook would in its 96 coded cities.</p>
+    <div class="chart" id="ranges"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandmain)"></span>P10–P90, main</span><span><span class="sw" style="background:var(--bandalt)"></span>homes per building held at 2.08</span><span>| median · ◆ mean · log scale</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 2 · The range</div>
+    <h2>The range spans a factor of about 19. Most of that is one uncertain statewide rate.</h2>
+    <p>Every place in a draw shares the same θ, and θ's 90% interval spans a factor of 31 (0.033–1.01 per 1,000). Place-to-place spread (α ≈ 8.4) mostly averages out across hundreds of places, so the statewide P90 is about 4.5× the median. These are wide ranges by design. The fit set is 13 places, and transfer passed while the signal over no effect stayed under 2 SE (D-059).</p>
+    <div class="wide"><table><thead><tr><th>State</th><th>Places</th><th>Eligible lots</th><th>Coded rules</th><th>Dose gap</th><th>Feasibility F/F(1)</th><th>House share</th><th>P10</th><th>P50</th><th>P90</th></tr></thead><tbody><tr><td>TX</td><td>1,003</td><td>8.09M</td><td>39</td><td>0.92</td><td>0.93</td><td>0.94</td><td>1,412</td><td>5,968</td><td>26,698</td></tr><tr><td>NC</td><td>453</td><td>3.63M</td><td>22</td><td>0.93</td><td>0.66</td><td>0.89</td><td>368</td><td>1,478</td><td>6,720</td></tr><tr><td>OH</td><td>947</td><td>4.16M</td><td>4</td><td>0.99</td><td>0.42</td><td>0.82</td><td>328</td><td>1,344</td><td>5,489</td></tr><tr><td>MN</td><td>1,051</td><td>1.75M</td><td>8</td><td>0.95</td><td>0.75</td><td>0.97</td><td>215</td><td>884</td><td>3,828</td></tr><tr><td>OR</td><td>168</td><td>1.19M</td><td>96</td><td>0.33</td><td>1.02</td><td>0.98</td><td>24</td><td>119</td><td>557</td></tr></tbody></table></div>
+    <p class="src">Dose gap, feasibility and house share are weighted by eligible lots. Places with no coded rule count as 0 dose here; in the run they draw a dose from coded places their size.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 3 · From buildings to homes</div>
+    <h2>Teardowns take back about a third of the new homes</h2>
+    <p>Median buildings, the homes in them, the houses they replace, and the net. Most eligible lots hold a house (82–98%), so most new 2–4 unit buildings replace one. Each building averages 2.7 homes here, because the draw's range runs up to Minnesota's 4.0 (on 10 buildings). Holding it at the pooled 2.08 cuts net homes by about 30% (Finding 1, orange).</p>
+    <div class="chart" id="funnel"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--ref)"></span>buildings</span><span><span class="sw" style="background:var(--main)"></span>homes in them</span><span><span class="sw" style="background:var(--miss)"></span>houses torn down</span><span><span class="sw" style="background:var(--alt)"></span>net added homes</span><span>medians · log scale</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Finding 4 · Where and when</div>
+    <h2>Big cities and growing suburban counties lead, and year 1 is half of year 5</h2>
+    <p>Share of each state's mean added homes in its top five places. Unincorporated suburban counties (Harris, Montgomery, Wake, Hamilton) rank next to the big cities because they hold huge numbers of eligible lots and have no coded rule. The top five carry 18–25% in these states. Over the five years, yearly medians ramp from about 50% of the mature rate in year 1 to the full rate by year 4. That is the fast ramp D-055 fitted.</p>
+    <div class="chart" id="top"></div>
+    <div class="chart" id="years"></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">For Ben to decide</div>
+    <h2>The module runs. One input choice moves the result by a third.</h2>
+    <ul>
+      <li><strong>Homes per building</strong> (suggested: narrow it). Its high end, 4.0, is Minnesota on 10 buildings, and it raises net homes 40–50% over the pooled 2.08. Option: set the high to the largest state ratio on 100+ buildings (Ohio 2.75), in a small config PR with a source.</li>
+      <li><strong>Next: wire the <code>mm</code> part into the results bundle</strong> (<code>model/results.py</code>, the WS-APP contract), so the app can show missing middle next to ADUs.</li>
+      <li><strong>Noted:</strong> Charlotte's and St. Paul's rolls and rules are in their state totals, as D-063 allowed (no permits read). Oregon's small number is a finding: HB 2001 already covers most of the gap.</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/mm-scenario-2026-11-08/ (summary.csv, places.csv, inputs.json, params.json, draws_*.npz, run-log.txt). Parcel rolls and ACS fallback (rule 1.1), coded rules in config/reforms/*.csv as of 2025-12-31, ACS 5-year rent, market series. Model: config/params/mm_hazard.yaml (D-055), config/params/mm.yaml (D-063). Code: src/lotline/model/scenarios/mm.py, scripts/dev/mm_scenario_run.py. Method: docs/analysis_plan.md D-063, D-062.</p>
+</main>
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : String(Math.round(n));
+const lab = (s, x, y, t, opt = {}) => el("text", Object.assign({ x, y, style: "font-family:var(--body);font-size:12px", fill: css("--fg") }, opt), s, t);
+
+
+
+const D = {"ranges": [["TX", 1412.48, 5968.49, 26697.94, 11581.17, 999.36, 4069.84, 17411.44], ["NC", 367.8, 1478.27, 6720.16, 2989.54, 262.23, 1052.94, 4544.88], ["OH", 327.72, 1344.5, 5489.13, 2500.97, 231.15, 922.64, 3716.08], ["MN", 215.43, 883.77, 3828.28, 1685.25, 152.6, 607.46, 2491.92], ["OR", 23.88, 118.78, 557.36, 245.43, 17.2, 82.32, 367.42]], "funnel": [["TX", 3202.5, 8510.85, 2527.5, 5968.49], ["NC", 784.0, 2078.94, 562.5, 1478.27], ["OH", 676.0, 1859.58, 480.5, 1344.5], ["MN", 481.0, 1280.02, 384.0, 883.77], ["OR", 65.0, 174.32, 53.0, 118.78]], "years": [["TX", 714.22, 1125.47, 1323.63, 1393.97, 1426.61], ["NC", 178.78, 278.64, 329.73, 348.66, 352.73], ["OH", 161.12, 253.93, 299.96, 313.41, 317.04], ["MN", 104.72, 164.53, 196.43, 206.46, 209.2], ["OR", 14.48, 22.18, 26.23, 27.63, 28.41]], "top": [["TX", [["Harris County (uninc.)", 0.07922909115007153], ["Fort Worth city", 0.04911625654225265], ["San Antonio city", 0.043748043952317864], ["Dallas city", 0.037779510105778395], ["Montgomery County (uninc.)", 0.03648504025085717]]], ["NC", [["Charlotte city", 0.07569924062097351], ["Raleigh city", 0.03862451007744048], ["Wake County (uninc.)", 0.038266900038027574], ["Durham city", 0.03112291790177112], ["Brunswick County (uninc.)", 0.025924016739223225]]], ["OH", [["Columbus city", 0.07872758911816208], ["Hamilton County (uninc.)", 0.02997538707126452], ["Delaware County (uninc.)", 0.029844837944170567], ["Warren County (uninc.)", 0.02113813080863397], ["Butler County (uninc.)", 0.0189979528017604]]]]};
+const logx = (lo, hi, L, W, R) => v => L + (Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (W - L - R);
+// 1 · ranges
+(function () {
+  const W = 760, L = 50, R = 20, T = 6, rh = 34, H = T + D.ranges.length * rh + 26; const s = svg("ranges", W, H);
+  const x = logx(10, 40000, L, W, R);
+  for (const t of [10, 30, 100, 300, 1000, 3000, 10000, 30000]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, fmt(t)); }
+  D.ranges.forEach(([st, a, m, b, mean, ha, hm, hb], i) => { const y = T + i * rh + 4;
+    lab(s, 0, y + 14, st, { style: "font-family:var(--body);font-size:13px;font-weight:600" });
+    el("rect", { x: x(a), y, width: x(b) - x(a), height: 11, rx: 2, fill: css("--bandmain") }, s);
+    el("line", { x1: x(m), x2: x(m), y1: y - 2, y2: y + 13, stroke: css("--main"), "stroke-width": 2.5 }, s);
+    el("path", { d: `M${x(mean)} ${y + 1}l4 4.5l-4 4.5l-4 -4.5z`, fill: css("--fg") }, s);
+    el("rect", { x: x(ha), y: y + 15, width: x(hb) - x(ha), height: 7, rx: 2, fill: css("--bandalt") }, s);
+    el("line", { x1: x(hm), x2: x(hm), y1: y + 14, y2: y + 23, stroke: css("--alt"), "stroke-width": 2 }, s);
+    el("text", { x: x(b) + 6, y: y + 10 }, s, fmt(m) + " (" + fmt(a) + "–" + fmt(b) + ")"); });
+})();
+// 3 · funnel
+(function () {
+  const W = 760, L = 50, R = 20, T = 6, rh = 46, H = T + D.funnel.length * rh + 26; const s = svg("funnel", W, H);
+  const x = logx(10, 12000, L, W, R), cols = ["--ref", "--main", "--miss", "--alt"];
+  for (const t of [10, 30, 100, 300, 1000, 3000, 10000]) { el("line", { x1: x(t), x2: x(t), y1: T, y2: H - 22, stroke: css("--rule") }, s); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, s, fmt(t)); }
+  D.funnel.forEach(([st, ...v], i) => { const y = T + i * rh + 2; lab(s, 0, y + 22, st, { style: "font-family:var(--body);font-size:13px;font-weight:600" });
+    v.forEach((val, j) => { el("rect", { x: L, y: y + j * 10, width: x(val) - L, height: 8, rx: 1.5, fill: css(cols[j]) }, s); el("text", { x: x(val) + 4, y: y + j * 10 + 8 }, s, fmt(val)); }); });
+})();
+// 4 · top places
+(function () {
+  const W = 760, L = 290, R = 60, T = 4, rh = 17; let n = 0; D.top.forEach(([, r]) => n += r.length + 1);
+  const H = T + n * rh + 8; const s = svg("top", W, H); const x = v => L + v / 0.12 * (W - L - R); let y = T + 12;
+  D.top.forEach(([st, rows]) => { lab(s, 0, y, st, { style: "font-family:var(--body);font-size:13px;font-weight:600" }); y += rh;
+    rows.forEach(([n, sh]) => { lab(s, 12, y, n, { style: "font-family:var(--body);font-size:12px" }); el("rect", { x: L, y: y - 10, width: x(sh) - L, height: 11, rx: 2, fill: css("--main"), opacity: .75 }, s); el("text", { x: x(sh) + 4, y }, s, (sh * 100).toFixed(1) + "%"); y += rh; }); });
+})();
+// years
+(function () {
+  const W = 760, L = 50, R = 70, T = 10, H = 220, B = 30; const s = svg("years", W, H);
+  const x = j => L + j / 4 * (W - L - R), y = v => T + (1 - v) * (H - T - B);
+  for (const t of [0, 0.25, 0.5, 0.75, 1]) { el("line", { x1: L, x2: W - R, y1: y(t), y2: y(t), stroke: css("--rule") }, s); el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, s, Math.round(t * 100) + "%"); }
+  for (let j = 0; j < 5; j++) el("text", { x: x(j), y: H - 10, "text-anchor": "middle" }, s, "year " + (j + 1));
+  const cols = { TX: "--main", NC: "--alt", OH: "--ref", MN: "--warn", OR: "--muted" };
+  D.years.forEach(([st, ...v]) => { const mx = v[4]; let p = ""; v.forEach((val, j) => p += (j ? "L" : "M") + x(j) + " " + y(val / mx));
+    el("path", { d: p, fill: "none", stroke: css(cols[st]), "stroke-width": 2 }, s); el("text", { x: x(4) + 6, y: y(1) + 4 + Object.keys(cols).indexOf(st) * 12 - 24 }, s, st); });
+  lab(s, L, T + 2, "median net homes each year, as a share of year 5", { style: "font-family:var(--body);font-size:11px", fill: css("--muted") });
+})();
+</script>

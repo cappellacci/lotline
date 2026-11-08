@@ -4140,3 +4140,21 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Not yet:** the results-bundle `mm` part (`model/results.py`, WS-APP contract) and the first state
     runs, each with Ben's go-ahead. Loader checked on NC and MN inputs only (places 453 and 1,051; coded
     rules 22 and 8); no scenario output computed.
+- **First run (Ben, 2026-11-08, "Run five states"; commit 7c9a717, about 1 minute;
+  `reports/mm-scenario-2026-11-08/`, `scripts/dev/mm_scenario_run.py`).** Origin 2025, 4,000 draws, seed
+  20261108, D-055 hazard values. Net added homes over five years, P10 / P50 / P90 (mean):
+  - TX 1,412 / 5,968 / 26,698 (11,581), on 8.1 million eligible parcels;
+  - NC 368 / 1,478 / 6,720 (2,990); OH 328 / 1,345 / 5,489 (2,501); MN 215 / 884 / 3,828 (1,685);
+  - OR 24 / 119 / 557 (245): HB 2001 already gives its 96 coded cities most of the Handbook dose
+    (eligible-weighted gap 0.33).
+  - **The range is wide and skewed** (P90 / P10 about 19, mean about 2 × median): one θ per draw is shared
+    by every place, and θ's interval spans a factor of 31.
+  - **Teardowns** take back about 30% of gross homes (house share 0.82–0.98 of eligible parcels).
+  - **Homes per building:** holding it at the pooled 2.08 lowers net homes by about 30% (TX P50 4,070). The
+    triangular draw's high end (4.0, Minnesota on 10 buildings) raises the mean to about 2.7; proposed for a
+    separate config decision.
+  - **Where:** big cities and unincorporated suburban counties (Harris, Montgomery, Wake, Hamilton) lead; the
+    top five places hold 18–25% in TX, NC and OH. Year 1 is about half of year 5 (fast ramp).
+  - Charlotte's and St. Paul's rolls and rules are in their state totals, as allowed above; no permits read.
+  - **Results page:** `reports/mm-scenario-2026-11-08/scenario-results.html`, published at
+    https://claude.ai/artifact/T7fwy1ke9B62Jm1Ea9FVNS.
