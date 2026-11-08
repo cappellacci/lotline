@@ -271,10 +271,14 @@ function drawMap() {
     const say = `${t.name}: ${DATA.roles[b.meta.state_role] || b.meta.state_role}, data tier ${tier} (${TIER_WORDS[tier] || ""})`;
     return `<a class="tile on ${tier === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
   }).join("");
+  // The call to action sits where it applies: a national-data-only state can be sharpened with local records,
+  // and a grey state (only if any is left) can be added. Both point at the README's "bring your own state".
   const used = new Set(DATA.states.map((b) => b.meta.data_tier));
+  const byos = (words) => `<a href="${esc(M.byos_url)}" target="_blank" rel="noopener">${words}</a>`;
+  const grey = M.tiles.some((t) => !bundleFor(t.code));
   $("map-legend").innerHTML = Object.entries(TIER_WORDS).filter(([k]) => used.has(Number(k))).map(([k, w]) =>
-    `<li><span class="swatch" style="background:var(${M.tier_tokens[k]})"></span>Tier ${k}: ${esc(w)}</li>`).join("") +
-    `<li><span class="swatch" style="background:var(--tier-none)"></span><span>No results yet: <a href="${esc(M.byos_url)}" target="_blank" rel="noopener">bring your own state</a></span></li>`;
+    `<li><span class="swatch" style="background:var(${M.tier_tokens[k]})"></span><span>Tier ${k}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
+    (grey ? `<li><span class="swatch" style="background:var(--tier-none)"></span><span>No results yet: ${byos("bring your own state")}</span></li>` : "");
   const onMap = new Set(M.tiles.map((t) => t.code));
   const off = DATA.states.filter((b) => !onMap.has(b.meta.state));
   $("map-off").hidden = !off.length;
