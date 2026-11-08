@@ -1,0 +1,54 @@
+# Deploy the app to GitHub Pages from a results release (made by scripts/publish_app.py).
+# Results are never committed: the release's assets are the state bundles, and this builds the page from them
+# with the code at the release's tag, so the published page always matches the commit that made the results.
+name: pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag whose assets hold the results (from scripts/publish_app.py)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync --frozen
+      - name: Download the results release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir release --pattern '*.json'
+      - name: Build the page
+        run: uv run python scripts/build_app.py --from-release release --out site
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

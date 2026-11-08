@@ -71,6 +71,30 @@ https://api.census.gov/data/key_signup.html, click the activation link Census em
 uv run lotline provenance --write
 ```
 
+## The app
+
+The app is one static page. Build it from the results under `reports/results/` (made by
+`uv run lotline results --state XX`):
+
+```bash
+uv run python scripts/build_app.py
+```
+
+It writes `reports/app/index.html` and one `reports/app/states/<st>.js` per state. Open `index.html` straight
+from disk in any browser; it needs no server or internet connection. Keep the `states/` folder next to it,
+because the page loads a state's file when you pick that state. To try the page without data, build it from the
+synthetic test bundle: `uv run python scripts/build_app.py --bundle tests/fixtures/results/zz/bundle.json`.
+
+The published copy lives on GitHub Pages. No results are committed: `scripts/publish_app.py` checks that every
+bundle renders, then with `--go` uploads the bundles as assets of a GitHub release tagged at the current
+commit. It also starts `.github/workflows/pages.yml`, which rebuilds the page from that release with the code at
+that tag and deploys it. Each release keeps the exact results behind one version of the published page.
+
+```bash
+uv run python scripts/publish_app.py
+uv run python scripts/publish_app.py --go --tag app-2026-11-20
+```
+
 ## Bring your own state
 
 On the app's map, a grey state has no results yet and a light one rests mostly on national data. Adding a state,

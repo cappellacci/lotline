@@ -339,3 +339,59 @@ def test_state_script_cannot_close_a_script_tag():
     doc = json.loads(FIXTURE.read_text())
     doc["meta"]["overlap_note"] = "</script><script>alert(1)</script>"
     assert "</script>" not in build.state_script(doc)
+
+
+# --- Publishing: scripts/publish_app.py -> GitHub release -> .github/workflows/pages.yml
+
+
+def _results_dir(tmp_path: Path) -> Path:
+    """A results folder holding the fixture under a folder name that is not its state code."""
+    d = tmp_path / "results" / "somewhere"
+    d.mkdir(parents=True)
+    (d / "bundle.json").write_bytes(FIXTURE.read_bytes())
+    return tmp_path / "results"
+
+
+def test_staged_release_holds_each_bundle_unchanged_under_its_own_state_code(tmp_path):
+    summary = tmp_path / "summary.json"
+    summary.write_text("{}", encoding="utf-8")
+    stage = tmp_path / "stage"
+    stage.mkdir()
+    (stage / "old.bundle.json").write_text("stale", encoding="utf-8")
+    files = build.stage_release(stage, results_dir=_results_dir(tmp_path), data_summary=summary)
+    assert [f.name for f in files] == ["zz.bundle.json", "data-summary.json"]
+    assert (stage / "zz.bundle.json").read_bytes() == FIXTURE.read_bytes()
+    assert not (stage / "old.bundle.json").exists(), "a stale asset would be uploaded"
+    bundles, found = build.release_inputs(stage)
+    assert bundles == [stage / "zz.bundle.json"] and found == stage / "data-summary.json"
+
+
+def test_the_page_builds_from_a_staged_release(tmp_path):
+    stage = tmp_path / "stage"
+    build.stage_release(stage, results_dir=_results_dir(tmp_path), data_summary=None)
+    bundles, summary = build.release_inputs(stage)
+    assert summary is None
+    page = build.build_app(bundles, out_dir=tmp_path / "site", data_summary=summary)
+    assert [s["meta"]["state"] for s in _embedded(page.read_text(encoding="utf-8"))["states"]] == ["ZZ"]
+    assert _state_file(tmp_path / "site", "ZZ") == json.loads(FIXTURE.read_text(encoding="utf-8"))
+
+
+def test_nothing_is_staged_without_a_bundle(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        build.stage_release(tmp_path / "stage", results_dir=tmp_path, data_summary=None)
+    with pytest.raises(FileNotFoundError):
+        build.release_inputs(tmp_path)
+
+
+def test_pages_workflow_builds_from_what_publish_app_uploads():
+    from fnmatch import fnmatch
+
+    wf = (REPO / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
+    pattern = re.search(r"--pattern '([^']+)'", wf).group(1)
+    for name in (build.BUNDLE_ASSET.format(state="mn"), build.SUMMARY_ASSET):
+        assert fnmatch(name, pattern), f"the workflow would not download {name}"
+    assert "--dir release" in wf and "build_app.py --from-release release --out site" in wf
+    assert "path: site" in wf and "actions/deploy-pages@" in wf
+    # the page must be built with the code that made the results
+    assert "ref: refs/tags/${{ inputs.tag }}" in wf
+    assert 'WORKFLOW = "pages.yml"' in (REPO / "scripts" / "publish_app.py").read_text(encoding="utf-8")
