@@ -13,7 +13,7 @@ forecast_lead_years:
   low: 0
   high: 2
   unit: years
-  source: "D-061 (proposed 2026-11-06): the Handbook fixes a five-year horizon but no start year ('Teams should assume a five year time horizon', Benchmark Policy Scenarios); the entry is read in 2027, so the window is the five years a 2027 reform could act in"
+  source: "D-061 (adopted 2026-11-08): the Handbook fixes a five-year horizon but no start year ('Teams should assume a five year time horizon', Benchmark Policy Scenarios); the entry is read in 2027, so the window is the five years a 2027 reform could act in"
   notes: "Years between the forecast origin (the last full year of data: BPS annual 2025) and the first year of the five-year window. Origin 2025 with lead 1 gives a 2027-2031 window; 2026 is simulated as baseline only (the cycle runs through it, so the band is one year wider) and is not reported. Reforms take effect at the start of the window, so reform year 1 is 2027. 0 = the old 2026-2030 window. Backtests use v1_lead_years, not this."
 
 benchmark_mean_years:

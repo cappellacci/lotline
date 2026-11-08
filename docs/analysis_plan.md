@@ -4005,15 +4005,15 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry; approved as written,
   "Approve D-058", given under its first number). Written by WS-ENGINE before any run. **Status:** method approved, not run.
 
-### D-061 · 2026-11-06 · The five-year window starts in 2027, one year after the data origin (proposed)
+### D-061 · 2026-11-06 · The five-year window starts in 2027, one year after the data origin (adopted 2026-11-08)
 - **Why:** The Handbook fixes the horizon but not its start ("Teams should assume a five year time horizon",
   Benchmark Policy Scenarios; checked 2026-11-06, and the Rules give no projection year either). Until now every
   forward run reported the five years right after the origin: origin 2025, the last full BPS annual year, so
   2026–2030. The entry is judged and read in 2027, and no reform can act in 2026, so counting 2026 as reform
   year 1 gives credit for a year that is already over. By the January demo, 2026 is also mostly observed
   (monthly BPS).
-- **Decided by:** Ben asked for this draft on 2026-11-06. It is **proposed** until he adopts it. Number
-  provisional: renumber if another D-061 lands first.
+- **Decided by:** Ben asked for this draft on 2026-11-06 and **adopted it as written on 2026-11-08** ("Adopt as
+  written"). It was drafted as D-059 and renumbered before merging, because main had taken D-059 and D-060.
 - **What changes:** new parameter `forecast_lead_years` = 1 (`config/params/baseline.yaml`). The window is
   origin + lead + 1 … origin + lead + 5: **2027–2031** from origin 2025 (`baseline.window`, `window_label`).
   - *Baseline:* simulates lead + 5 years and reports the last 5. The regional cycle keeps walking through 2026,
