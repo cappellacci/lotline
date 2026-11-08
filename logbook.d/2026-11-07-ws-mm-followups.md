@@ -31,3 +31,7 @@
   over five years, P50 (P10–P90): TX 5,968 (1,412–26,698), NC 1,478, OH 1,345, MN 884, OR 119. Checked:
   page numbers against `summary.csv` and `inputs.json`; homes per building held at 2.08 run as a
   sensitivity (about 30% lower). Results recorded in D-063.
+- **2026-11-08, homes per building narrowed ("Yes, narrow it"):** `config/params/mm_hazard.yaml`
+  `mm_units_per_project` high 4.0 → 2.75 (commit 40ba649), parameter table regenerated, scenario rerun into
+  the same folder; page version 2 at the same link. TX P50 4,747 (1,152–20,518), NC 1,193, OH 1,071,
+  MN 704, OR 94. Recorded in D-063. V9's frozen record holds only the central 2.08 (checked); its tests pass.

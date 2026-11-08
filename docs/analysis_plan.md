@@ -4158,3 +4158,10 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Charlotte's and St. Paul's rolls and rules are in their state totals, as allowed above; no permits read.
   - **Results page:** `reports/mm-scenario-2026-11-08/scenario-results.html`, published at
     https://claude.ai/artifact/T7fwy1ke9B62Jm1Ea9FVNS.
+- **Decision (Ben, 2026-11-08, "Yes, narrow it"):** `mm_units_per_project` high 4.0 → 2.75, the largest state
+  ratio on 100+ buildings (Ohio); Minnesota's 4.0 rests on 10 buildings. Only the scenario draws this range
+  (V9's freeze records the central 2.08). Rerun the same day (commit 40ba649), replacing the files above; the
+  page is version 2 at the same link. Net added homes over five years, P10 / P50 / P90 (mean):
+  - TX 1,152 / 4,747 / 20,518 (9,101); NC 299 / 1,193 / 5,263 (2,362); OH 266 / 1,071 / 4,271 (1,980);
+    MN 180 / 704 / 2,928 (1,317); OR 20 / 94 / 435 (192).
+  - Teardowns now take back about a third of gross homes; homes per building held at 2.08 is about 14% lower.
