@@ -275,7 +275,7 @@ function drawMap() {
   svg.setAttribute("viewBox", `-2 -2 ${cols * (TILE + GAP) - GAP + 4} ${rows * (TILE + GAP) - GAP + 4}`);
   svg.innerHTML = M.tiles.map((t) => {
     const b = entryFor(t.code), x = t.col * (TILE + GAP), y = t.row * (TILE + GAP);
-    const square = (fill, sel = false) => `<rect x="${x}" y="${y}" width="${TILE}" height="${TILE}" rx="2" fill="${fill}"></rect>` +
+    const square = (fill, sel = false) => `<rect x="${x}" y="${y}" width="${TILE}" height="${TILE}" rx="2" fill="${esc(fill)}"></rect>` +
       (sel ? `<rect class="ring" x="${x - 2}" y="${y - 2}" width="${TILE + 4}" height="${TILE + 4}" rx="3"></rect>` : "") +
       `<text x="${x + TILE / 2}" y="${y + TILE / 2}">${esc(t.code)}</text>`;
     if (!b) {
@@ -284,7 +284,7 @@ function drawMap() {
     }
     const tier = b.meta.data_tier, sel = t.code === cur;
     const say = `${t.name}: ${DATA.roles[b.meta.state_role] || b.meta.state_role}, data tier ${tier} (${TIER_WORDS[tier] || ""})`;
-    return `<a class="tile on ${tier === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
+    return `<a class="tile on ${Number(tier) === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
   }).join("");
   // The call to action sits where it applies: a national-data-only state can be sharpened with local records,
   // and a grey state (only if any is left) can be added. Both point at the README's "bring your own state".
@@ -292,7 +292,7 @@ function drawMap() {
   const byos = (words) => `<a href="${esc(M.byos_url)}" target="_blank" rel="noopener">${words}</a>`;
   const grey = M.tiles.some((t) => !entryFor(t.code));
   $("map-legend").innerHTML = Object.entries(TIER_WORDS).filter(([k]) => used.has(Number(k))).map(([k, w]) =>
-    `<li><span class="swatch" style="background:var(${M.tier_tokens[k]})"></span><span>Tier ${k}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
+    `<li><span class="swatch" style="background:var(${esc(M.tier_tokens[k])})"></span><span>Tier ${esc(k)}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
     (grey ? `<li><span class="swatch" style="background:var(--tier-none)"></span><span>No results yet: ${byos("bring your own state")}</span></li>` : "");
   const onMap = new Set(M.tiles.map((t) => t.code));
   const off = DATA.states.filter((b) => !onMap.has(b.meta.state));
@@ -449,7 +449,7 @@ const SECTIONS = {
       return `<h4 class="h3" style="margin-top:var(--space-4)">${esc(scenLabel(s))}</h4><div class="scroll"><table>
         <thead><tr><th>Factor in the draws</th><th class="n">P10</th><th class="n">P50</th><th class="n">P90</th></tr></thead><tbody>
         ${cols.map((c) => { const v = ds.map((d) => d[c]).filter((x) => x != null).map(Number);
-          return v.length ? `<tr><td class="code">${esc(c)}</td>${[10, 50, 90].map((q) => `<td class="n">${Number(AGG.percentile(v, q).toPrecision(4)).toLocaleString("en-US")}</td>`).join("")}</tr>`
+          return v.length ? `<tr><td class="code">${esc(c)}</td>${[10, 50, 90].map((q) => `<td class="n">${esc(Number(AGG.percentile(v, q).toPrecision(4)).toLocaleString("en-US"))}</td>`).join("")}</tr>`
             : `<tr><td class="code">${esc(c)}</td><td class="n muted" colspan="3">not used (single scenario)</td></tr>`; }).join("")}
         </tbody></table></div>`;
     }).join("");
