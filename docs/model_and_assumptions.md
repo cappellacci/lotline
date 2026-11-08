@@ -810,7 +810,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
 | `forecast_horizon_years` | 5 | fixed | years | Challenge brief (CLAUDE.md): housing production over 5 years compared with a baseline |
-| `forecast_lead_years` | 1 | 0–2 | years | D-061 (proposed 2026-11-06): the Handbook fixes a five-year horizon but no start year ('Teams should assume a… |
+| `forecast_lead_years` | 1 | 0–2 | years | D-061 (adopted 2026-11-08): the Handbook fixes a five-year horizon but no start year ('Teams should assume a… |
 | `benchmark_mean_years` | 3 | fixed | years | Validation plan V1: benchmark (a) 'last-3-year average' |
 | `benchmark_trend_years` | 10 | 5–10 | years | Validation plan V1: benchmark (b) 'a simple trend' |
 | `level_years` | 5 | 3–7 | years | Chosen a priori (WS-ENGINE round 2, 2026-10-14), not tuned on the V1 windows: one more cycle-length than the… |
