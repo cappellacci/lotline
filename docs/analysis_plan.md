@@ -4043,12 +4043,74 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   1. *Which rules count as "current".* `adu.places_from_store` reads the coded rules in force on 31 December of
      the origin year (2025). With a 2027 window, rules taking effect in 2026 or at the start of 2027 arguably
      belong in the baseline. One example is NC S.L. 2026-59 (2027-01-15), which round 3 already said belongs in
-     the baseline. This changes results, so it needs its own decision.
+     the baseline. This changes results, so it needs its own decision. **Settled by D-062** (2026-11-08).
   2. *Housing-need denominator.* `household_growth_5y` (D-057) is the demographers' 2025 → 2030 change; the
      window is now 2027–2031. Matching it needs interpolation, using the 2035 projections where states publish
      them. Until then the share compares slightly offset five-year periods.
   3. *Bundle metadata.* `meta` records `origin_year` and `horizon_years` but not the window's first year. Adding
-     that column is a schema change, which belongs to WS-CORE (a `contract-change` issue). The same issue
+     that column is a schema change, which belongs to WS-CORE (a `contract-change` issue, opened as #333). The same issue
      should update the example period in `schemas.py` ("e.g. 2026-2030", which generates `docs/schemas.md`).
   4. *Earlier results.* Results already published for 2026–2030 (for example, the development-run tables in
      `docs/model_and_assumptions.md`) stay as they are, labelled with their own window, until the next run.
+
+### D-062 · 2026-11-08 · "Current rules" are the rules in force by the end of the window's first year (method only, before any run)
+- **Decision (Ben, 2026-11-08, "Rules in force by window start"):** the baseline counts every coded rule that
+  is in force on 31 December of the window's first year as current. With D-061 that is **2027-12-31**. Until
+  now it was 31 December of the origin year (2025). This settles D-061's first open item. The NC handoff had
+  proposed the same treatment for S.L. 2026-59 on 2026-10-19.
+- **Why:** with a 2027–2031 window, a rule that is already law and takes effect in 2026 or 2027 is part of
+  what happens without the reform. If it is left out, the reform gets credit for homes the existing law will
+  produce anyway. The clearest case is NC S.L. 2026-59 (Sec. 44, new G.S. 160D-917), in force 2027-01-15 in
+  19 cities. Its rules are close to the Handbook's (one ADU per detached house, no parking minimum, size cap of
+  800–1,000 sq ft). The rule is in principle, whatever the size of the effect (see the expected direction
+  below).
+- **What enters the baseline** (ADU rows with `status` in_force and an effective date after 2025-12-31 and on
+  or before 2027-12-31; counted from `config/reforms/*.csv` on 2026-11-08):
+  - **NC:** 21 rows: 19 S.L. 2026-59 city rows (2027-01-15; the two pending rows stay out) and two local rows
+    (3728080, 2026-03-01; 3702140, 2026-08-25).
+  - **TX:** 5 local rows (4819972, 4845384, 4841980, 4842508, 4839148; January to October 2026).
+  - **MN:** 2 local rows (2706382, 2758738; March and June 2026).
+  - **OH, OR:** none. No ADU rule ends in the period. Oregon's 34 missing-middle rows effective 2027-01-01
+    would count under the same rule once a forward missing-middle scenario reads current rules. Nothing is read
+    for Oregon now, and its holdouts are untouched.
+- **Mechanics:** the date is a parameter, `current_rules_window_years` = 1 (`config/params/baseline.yaml`).
+  The cutoff is 31 December of (the window's first year − 1 + that value). `baseline.rules_as_of(origin)`
+  computes it, and `adu.places_from_store` uses it in place of 31 December of the origin.
+  - The low value, 0, gives 2026-12-31, the rules in force on the window's first day. That leaves out
+    S.L. 2026-59 (15 January). The high value is also 1. Setting the low value is a one-line sensitivity
+    showing what the state law changes.
+  - The same date reaches everything `rule_inputs` derives from it: the field probabilities, the priors for
+    places with no coded rule (by state and size band, D-022), the coverage map and the "scheduled after"
+    notes.
+  - The priors are the one indirect effect. The 19 S.L. 2026-59 cities join NC's coded places, so uncoded NC
+    places in their size bands lean further toward Handbook-like rules.
+  - With D-048's flat ramp, rule age has no effect.
+  - The observed ADU rate is a floor on the current hazard, not divided by the rule share, so pairing
+    2015–2025 permits with a 2027 rule does not distort the calibration.
+- **An accepted approximation:** the lead year (2026, D-061) runs under the same current rules, so places
+  whose rule starts during 2026 or 2027 lose slightly more parcels from the pool in the lead year than they
+  would. This lowers added homes a little. The effect is limited to one year of the difference in current
+  hazard. Running the lead year under 2025 rules would need two rule sets per place, which costs more than
+  the effect is worth.
+- **What does not change:** the origin, every equation, the V1 and V9 backtests and frozen predictions (they
+  read rules as of their own dates in `estimate_adu`, `estimate_mm` and `calibrate_*`), and the fee scenario,
+  which reads no rules.
+- **Expected size, written before any run: small.** D-053 fixed `adu_partial_rule_share` at 1.0, so a
+  partial or 'uncertain' rule (blank fields) already counts the same as a Handbook rule. A new rule changes
+  the scenario only where it replaces 'no ADUs allowed' or an uncoded place's prior, which puts some weight
+  on 'none'. Rule classes for the 26 affected places (config only, `current_rules` without the coverage
+  map, 2026-11-08):
+  - **NC (19 places):** 15 stay 'uncertain', 2 go from partial to 'uncertain' (the same c), and 2 go from
+    uncoded to 'uncertain'. Most S.L. 2026-59 cities already had a local rule that allows ADUs, so the law
+    changes little in the model.
+  - **TX (5):** 1 goes from 'no ADUs allowed' to 'uncertain' (the largest single change: c goes from 0 to
+    about 1), 3 go from uncoded to partial, and 1 stays 'uncertain'.
+  - **MN (2):** 1 stays partial and 1 goes from uncoded to 'uncertain'.
+  - **Every state:** priors move a little toward allowed rules for uncoded places.
+  So added ADUs fall slightly in NC, TX and MN (most in the one TX place), and OH does not change. No number
+  is predicted. The S.L. 2026-59 coverage (its zones) could still move some cities, through the coverage
+  map, which needs the store.
+- **Not done here:** Ben has approved the method. The run that shows the effect waits for a go-ahead, as
+  every model run does. The 2026-10-19 sensitivity that adds Wake Forest and Holly Springs is not included.
+- **Decided by:** Ben, 2026-11-08 ("Rules in force by window start"). Written by Claude Code before any run.
+  **Status:** method approved, not run.

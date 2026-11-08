@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import hazard
+from lotline.model import baseline, hazard
 from lotline.model.scenarios import adu
 
 P = adu.central_params()
@@ -594,3 +594,26 @@ def test_coverage_map_without_a_parcel_table_takes_the_judgment_share():
     )
     cm = scen.coverage_map("ZZ", NoParcels(), reforms, {"adu_rule_zoned_coverage_share": 0.75})
     assert dict(zip(cm.reform_id, cm.coverage, strict=True)) == {"zoned": 0.75, "citywide": 1.0}
+
+
+def test_a_law_starting_early_in_the_window_is_current():
+    """D-062. Place 100: a 2010 local code that allows no ADUs (c = 0); a state law in force 2027-01-15 with
+    the Handbook conditions (c = 1); a later state rule in 2030. By 2027-12-31 (`baseline.rules_as_of(2025)`)
+    the state law is current, so the place is 'handbook' and the ADU scenario adds nothing there; by
+    2026-12-31 (the parameter's low value) it is not yet, so the place stays 'none' and the law is only noted.
+    (A partial local rule would not show the change: D-053 counts partial rules as Handbook, c = 1.)"""
+    reforms = _reforms(
+        [
+            ("N1", "100", "adu", "in_force", "2010-01-01", None, None, True, False, True, 800, "none", 0, 0),
+            ("S1", "37", "adu", "in_force", "2027-01-15", None, None, True, False, True, 800, "none", 0, 1),
+            ("S2", "37", "adu", "in_force", "2030-01-01", None, None, True, False, True, 1000, "none", 0, 1),
+        ]
+    )
+    assert baseline.rules_as_of(2025) == pd.Timestamp("2027-12-31")
+    now = adu.current_rules(reforms, ["100"], "37", baseline.rules_as_of(2025)).set_index("geoid")
+    assert now.loc["100", "rule_class"] == "handbook" and now.loc["100", "rule_id"] == "S1"
+    assert "scheduled after the rules date: S2" in now.loc["100", "rule_note"]
+    low = pd.Timestamp("2026-12-31")  # the low value of current_rules_window_years
+    before = adu.current_rules(reforms, ["100"], "37", low).set_index("geoid")
+    assert before.loc["100", "rule_class"] == "none" and before.loc["100", "rule_id"] == "N1"
+    assert "S1, S2" in before.loc["100", "rule_note"]
