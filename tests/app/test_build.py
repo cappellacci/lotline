@@ -23,6 +23,14 @@ def _embedded(html: str) -> dict:
     return json.loads(m.group(1))
 
 
+def _state_file(out: Path, state: str) -> dict:
+    """A state's bundle as the page loads it: states/<st>.js calling LotlineState(<json>)."""
+    text = (out / "states" / f"{state.lower()}.js").read_text(encoding="utf-8")
+    m = re.fullmatch(r"LotlineState\((.*)\);\n", text, re.S)
+    assert m, "state file is not a single LotlineState(...) call"
+    return json.loads(m.group(1))
+
+
 def test_page_builds_from_fixture_and_has_every_section(tmp_path):
     page = build.build_app([FIXTURE], out_dir=tmp_path, generated="2026-11-06T00:00:00Z", data_summary=None)
     html = page.read_text(encoding="utf-8")
@@ -36,7 +44,9 @@ def test_page_builds_from_fixture_and_has_every_section(tmp_path):
     data = _embedded(html)
     assert [b["meta"]["state"] for b in data["states"]] == ["ZZ"]
     assert data["generated"] == "2026-11-06T00:00:00Z"
-    assert data["states"][0] == json.loads(FIXTURE.read_text())  # embedded as-is
+    fixture = json.loads(FIXTURE.read_text())
+    assert data["states"][0] == {"meta": fixture["meta"], "file": "states/zz.js"}  # the page embeds meta only
+    assert _state_file(tmp_path, "ZZ") == fixture  # the full bundle, as-is, in its own file
     assert "uv run lotline results --all" in html
 
 
@@ -229,7 +239,7 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
         "low": agg["overlap_flag_low_distance"].value,
     }
     # the fixture's scorecard row reaches the page as-is
-    assert _embedded(html)["states"][0]["scorecard"][0]["check_id"] == "V1"
+    assert _state_file(tmp_path, "ZZ")["scorecard"][0]["check_id"] == "V1"
 
 
 def test_sections_are_separate_pages_with_the_intro_above_them(tmp_path):
@@ -262,3 +272,70 @@ def test_overall_sums_every_state_in_the_summary():
     assert build.overall(None) is None
     html = build.render(build.payload([json.loads(FIXTURE.read_text())], "t", two))
     assert _embedded(html)["data"]["overall"]["parcels"] == 1000 and 'id="data-lead"' in html
+
+
+def test_state_map_has_every_state_once_and_every_configured_state():
+    m = build.tile_map()
+    codes = [t["code"] for t in m["tiles"]]
+    assert len(codes) == len(set(codes)) == 51  # 50 states and DC
+    assert len({(t["row"], t["col"]) for t in m["tiles"]}) == 51
+    configured = {p.stem.upper() for p in (REPO / "config" / "states").glob("*.yaml")}
+    assert configured <= set(codes)
+
+
+def test_state_map_refuses_a_repeated_tile(tmp_path):
+    bad = tmp_path / "tiles.yaml"
+    bad.write_text("tiles:\n  - [AA, A, 0, 0]\n  - [BB, B, 0, 0]\n")
+    with pytest.raises(ValueError, match="twice"):
+        build.tile_map(bad)
+
+
+def test_state_map_colours_every_tier_and_links_grey_states_to_the_readme():
+    import tomllib
+
+    from lotline.schemas import DATA_TIERS
+
+    m = build.tile_map()
+    tokens = (build.IDENTITY / "tokens.css").read_text(encoding="utf-8")
+    assert sorted(int(k) for k in m["tier_tokens"]) == DATA_TIERS
+    for tok in m["tier_tokens"].values():
+        assert f"{tok}:" in tokens  # a real identity token, light and dark
+    # richer data is the stronger step of the ramp
+    steps = [int(m["tier_tokens"][str(t)].rsplit("-", 1)[1]) for t in DATA_TIERS]
+    assert steps == sorted(steps, reverse=True)
+    repo = tomllib.loads((REPO / "challenge.toml").read_text(encoding="utf-8"))["links"]["repo_url"]
+    assert m["byos_url"] == repo.rstrip("/") + build.BYOS_ANCHOR
+    assert "\n## Bring your own state\n" in (REPO / "README.md").read_text(encoding="utf-8")
+
+
+def test_state_map_is_on_the_results_page(tmp_path):
+    page = build.build_app([FIXTURE], out_dir=tmp_path, generated="t", data_summary=None)
+    html = page.read_text(encoding="utf-8")
+    assert 'id="state-map"' in html and 'id="map-legend"' in html and "Choose a state" in html
+    assert html.index('id="map-card"') < html.index('id="page-data"')  # on page 1
+    assert _embedded(html)["map"] == build.tile_map()
+
+
+def test_each_state_gets_its_own_file_and_stale_files_are_removed(tmp_path):
+    # The page stays small with every state run: it carries meta only; each bundle loads when picked.
+    stale = tmp_path / "states" / "qq.js"
+    stale.parent.mkdir(parents=True)
+    stale.write_text("old")
+    page = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None)
+    assert sorted(p.name for p in (tmp_path / "states").iterdir()) == ["zz.js"]
+    assert '"draws"' not in page.read_text(encoding="utf-8")
+
+
+def test_state_file_names_only_take_two_letter_codes():
+    assert build.state_file("ZZ") == "states/zz.js"
+    # the page rebuilds the same path from the checked code rather than reading it from the data
+    assert "`states/${state.toLowerCase()}.js`" in build.TEMPLATE.read_text(encoding="utf-8")
+    for bad in ("../x", "Z", "zz", "Z/"):
+        with pytest.raises(ValueError):
+            build.state_file(bad)
+
+
+def test_state_script_cannot_close_a_script_tag():
+    doc = json.loads(FIXTURE.read_text())
+    doc["meta"]["overlap_note"] = "</script><script>alert(1)</script>"
+    assert "</script>" not in build.state_script(doc)

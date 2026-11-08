@@ -71,6 +71,25 @@ https://api.census.gov/data/key_signup.html, click the activation link Census em
 uv run lotline provenance --write
 ```
 
+## Bring your own state
+
+On the app's map, a grey state has no results yet and a light one rests mostly on national data. Adding a state,
+or sharpening one with its own records, takes no change to the model code: the engine reads a state through its
+config and adapters, and national sources (building permits, the ACS) cover every state.
+
+1. Add `config/states/<st>.yaml` with the state's code, name, FIPS code and Census region; copy an existing file
+   such as `config/states/or.yaml` as a template.
+2. Fetch the national sources: `uv run python scripts/fetch_data.py --state XX`.
+3. Optional, for a tighter range: add the state's own parcel, zoning or permit data as adapters in
+   `src/lotline/adapters/states/<st>/`, with a land-use crosswalk in `config/crosswalks/`. Each source gets a
+   row in `docs/data_provenance.md`.
+4. Run the engine and rebuild the page: `uv run lotline results --state XX`, then
+   `uv run python scripts/build_app.py`.
+
+With national data only, the engine estimates eligible lots from the ACS and the page labels the state
+"National data only" (data tier 3), so its range is wider. Local parcel data, with the places it covers given
+a better tier under `data_tiers` in the state's config, narrows the range and darkens the state on the map.
+
 ## Tests
 
 ```bash

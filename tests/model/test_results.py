@@ -187,14 +187,14 @@ def test_fixture_totals_are_the_draws_reaggregated():
     """Parity contract: the bundle's totals = homes_from_draws over its own draws (what the page does)."""
     b = results.read_bundle(FIXTURE)
     h = aggregate.homes_from_draws(b["draws"])
-    five = b["totals"][b["totals"]["period"] == "2026-2030"].set_index("outcome")
+    five = b["totals"][b["totals"]["period"] == "2027-2031"].set_index("outcome")
     for outcome in ("permits_added", "homes_in_place", "homes_net_statewide"):
         p10, p50, p90 = np.percentile(h[outcome], [10, 50, 90])
         assert five.loc[outcome, ["p10", "p50", "p90"]].to_numpy(dtype=float) == pytest.approx(
             [p10, p50, p90]
         )
-    yearly = b["totals"][(b["totals"]["outcome"] == "permits_added") & (b["totals"]["period"] != "2026-2030")]
-    assert sorted(yearly["period"]) == ["2026", "2027", "2028", "2029", "2030"]
+    yearly = b["totals"][(b["totals"]["outcome"] == "permits_added") & (b["totals"]["period"] != "2027-2031")]
+    assert sorted(yearly["period"]) == ["2027", "2028", "2029", "2030", "2031"]
     need = b["need"].set_index("denominator_kind")
     assert need.loc["household_growth_5y", "is_headline"] and not need.loc["shortage_stock", "is_headline"]
     assert need.loc["shortage_stock", "share_p50"] == pytest.approx(

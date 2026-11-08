@@ -37,6 +37,7 @@ import numpy as np
 import pandas as pd
 
 from lotline.config import load_params
+from lotline.model import baseline as baseline_model
 from lotline.model import hazard, proforma
 
 PARAM_FILES = ("fees", "proforma")
@@ -200,7 +201,7 @@ def _baseline(places: pd.DataFrame, horizon: int) -> np.ndarray:
 def central_path(places: pd.DataFrame, mode: str = "local", params: dict | None = None) -> dict:
     """Central values (hand checks): fee, saving, %Δ, channel and added units (places × years)."""
     p = central_params() | (params or {})
-    horizon = int(load_params("baseline")["forecast_horizon_years"].value)
+    _, horizon, _ = baseline_model.window(0)
     fee, source = fee_levels(places, mode, p)
     pct, channel = pct_change(places, fee, p)
     return {
@@ -223,6 +224,10 @@ def run(
 ):
     """The fee scenario per place: (per-year table, five-year totals[, summary]), with P10/P50/P90 and mean.
 
+    `origin` is the last year of data; the years reported are the window `baseline.window(origin)` (D-061),
+    and the fee cut takes effect at its start, so ramp year 1 is the window's first year. baseline_y1..y5 are
+    the baseline's window years (`baseline_forecast`'s horizon 1..5), not the years right after the origin.
+
     `places` columns: geoid; baseline_units (mean baseline units a year) or baseline_y1..baseline_y5;
     home_value (median home value, 2025 dollars: TDC for the elasticity route); optional local_fee_per_unit
     and fee_components (`local_fees`); optional new_home_value (2025 dollars) and lot_values (an array of
@@ -232,7 +237,7 @@ def run(
     central = central_params()
     n = int(draws or central["fee_simulation_draws"])
     sets = draw_params(n, int(central["fee_simulation_seed"]))
-    horizon = int(load_params("baseline")["forecast_horizon_years"].value)
+    _, horizon, first = baseline_model.window(origin)
     base = _baseline(places, horizon)
     fee, source = fee_levels(places, mode, central)
     out = np.zeros((n, len(places), horizon))
@@ -259,7 +264,7 @@ def run(
     )
     yearly = info.loc[info.index.repeat(horizon)].reset_index(drop=True)
     yearly["horizon"] = np.tile(np.arange(1, horizon + 1), len(places))
-    yearly["year"] = origin + yearly["horizon"]
+    yearly["year"] = first - 1 + yearly["horizon"]
     yearly["baseline_units_year"] = base.reshape(-1)
     totals = info.copy()
     for table, a in ((yearly, out.reshape(n, -1)), (totals, out.sum(axis=2))):
@@ -273,7 +278,7 @@ def run(
         sums = out[:, idx.to_numpy(), :].sum(axis=1)  # (draws, years)
         for h in range(horizon + 1):
             a = sums.sum(axis=1) if h == horizon else sums[:, h]
-            label = f"{origin + 1}-{origin + horizon}" if h == horizon else str(origin + 1 + h)
+            label = f"{first}-{first + horizon - 1}" if h == horizon else str(first + h)
             p10, p50, p90 = np.percentile(a, [10, 50, 90])
             rows.append(
                 {summary_by: group, "period": label, "p10": p10, "p50": p50, "p90": p90, "mean": a.mean()}

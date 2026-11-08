@@ -1,8 +1,10 @@
 """V1 backtest: does the baseline beat the benchmarks out of sample? (validation plan V1)
 
 For each fit end (2016, 2018, 2020 from config/params/baseline.yaml), every method sees only rows with
-year <= fit end, forecasts the next `forecast_horizon_years` (capped at `v1_last_outcome_year`), and is
-scored against what BPS recorded:
+year <= fit end, forecasts `forecast_horizon_years` starting `v1_lead_years` after it (capped at
+`v1_last_outcome_year`), and is scored against what BPS recorded. The registered lead is 0 (the years right
+after the fit end); the forward run skips a year (`forecast_lead_years`, D-061), so `v1_lead_years` = 1 is the
+supplementary check that scores the same gap. Its `horizon` column counts years after the fit end.
 
 - **Error:** mean absolute error in units per 1,000 eligible parcels, each place-year counting once. Counts
   become rates with the target year's denominator (carried forward from the newest ACS estimate, as the panel
@@ -159,8 +161,10 @@ def _window(
     value = baseline.outcome_column(size_class, reported_only)
     if excluded:
         panel = panel[~panel[KEY].isin(excluded)]
-    horizon = int(p["forecast_horizon_years"].value)
-    last = min(fit_end + horizon, int(p["v1_last_outcome_year"].value))
+    # The backtest's lead is its own pre-registered parameter, not the forward run's (D-061).
+    p = p | {"forecast_lead_years": p["v1_lead_years"]}
+    lead, horizon, first = baseline.window(fit_end, p)
+    last = min(fit_end + lead + horizon, int(p["v1_last_outcome_year"].value))
     fit = panel[panel["year"] <= fit_end]
 
     mult, fits = None, {}
@@ -181,9 +185,9 @@ def _window(
     bench = baseline.benchmark_forecasts(fit, value, fit_end, trend_first_year=trend_first, params=p)
     bench = bench.rename(columns={"benchmark": "method"})
     fc = pd.concat([model, bench], ignore_index=True)
-    fc = fc[(fc["year"] > fit_end) & (fc["year"] <= last)]
+    fc = fc[(fc["year"] >= first) & (fc["year"] <= last)]
 
-    target = panel[(panel["year"] > fit_end) & (panel["year"] <= last)][
+    target = panel[(panel["year"] >= first) & (panel["year"] <= last)][
         [KEY, "state", "year", value, "eligible_parcels"]
     ]
     target = target.rename(columns={value: "actual_count", "eligible_parcels": "parcels"})
