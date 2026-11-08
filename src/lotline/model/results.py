@@ -34,7 +34,7 @@ import pandas as pd
 
 import lotline
 from lotline.config import CONFIG_DIR, load_params
-from lotline.model import aggregate
+from lotline.model import aggregate, baseline
 from lotline.model import eligible_proxy as proxy
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
@@ -177,12 +177,13 @@ def summarize(
         ):
             funnel.append({"stage": stage, "unit": unit, "scenario": scenario, **_pct(h[key])})
         shares = (years or {}).get(scenario)
-        horizon = shares.shape[1] if shares is not None else 5
+        _, window_years, first = baseline.window(origin)  # D-061: origin 2025 -> 2027-2031
+        horizon = shares.shape[1] if shares is not None else window_years
         for outcome in ("permits_added", "homes_in_place", "homes_net_statewide"):
             a = h[outcome]
-            periods = [(f"{origin + 1}-{origin + horizon}", a)]
+            periods = [(f"{first}-{first + horizon - 1}", a)]
             if shares is not None:
-                periods += [(str(origin + 1 + y), a * shares[:, y]) for y in range(horizon)]
+                periods += [(str(first + y), a * shares[:, y]) for y in range(horizon)]
             for period, x in periods:
                 totals.append(
                     {"scenario": scenario, "outcome": outcome, "period": period, **_pct(x), "mean": x.mean()}

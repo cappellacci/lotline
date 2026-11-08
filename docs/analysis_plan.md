@@ -529,7 +529,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   4. **Excluding 2020–21:** effects within their 90% intervals.
   5. **Leave-one-treated-place-out:** no single place moves the pooled effect by more than its 90% interval.
 - **Out-of-sample test (transport, protocol §5.5, §5.8):** with the Minnesota estimates and each place's own pre-reform modifiers, predict ADU permits for Austin (2016–2023, coded rules), Raleigh (2021–2025) and Durham (2019–2025). The test passes if each place's observed total lies in its 80% prediction interval, and the coverage of yearly 80% intervals across the three is between 60% and 95%. Places outside the Minnesota modifier range are flagged, and their intervals widened as in `hazard.widen`.
-- **Forecast use:** for a target place, the scenario's added ADUs = Eligible × [exp(η_with rule) − exp(η_without)] summed over 2026–2030. η uses the place's α (or, for places without ADU data, a hierarchical prior by state, size band and modifiers; protocol §5.7), the event-time β, its own modifiers, ρ at the stated rate path (`mortgage_rate_forecast`) and γ_2026–2030 held at the 2025 level with the rate effect added. Uncertainty comes from bootstrap draws of all coefficients plus Poisson-gamma noise. The net-new and formalization shares (D-019) then apply as before.
+- **Forecast use:** for a target place, the scenario's added ADUs = Eligible × [exp(η_with rule) − exp(η_without)] summed over the forecast window (2026–2030 when written; 2027–2031 since D-061). η uses the place's α (or, for places without ADU data, a hierarchical prior by state, size band and modifiers; protocol §5.7), the event-time β, its own modifiers, ρ at the stated rate path (`mortgage_rate_forecast`) and γ_2026–2030 held at the 2025 level with the rate effect added. Uncertainty comes from bootstrap draws of all coefficients plus Poisson-gamma noise. The net-new and formalization shares (D-019) then apply as before.
 - **Robustness (reported, not used to choose):** negative-binomial with place random effects (protocol §5.7); the Borusyak imputation estimator; the dose as a binary by-right indicator.
 - **What would change the plan:** if the pre-trend check fails, report it and use HonestDiD bounds; there is no re-specification without a new dated entry. If too few places have dated rules after the adoption-date run, report the estimates as underpowered rather than adding assumptions.
 - **Code:** `src/lotline/model/estimate_adu.py`, tested by recovering known β, θ and ρ from simulated staggered-adoption panels before any real run.
@@ -695,7 +695,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Either way, the later bins (2–3, 4+) then rest on one or two cities. This is stated with the results.
     Places outside the fitted modifier range are flagged and their intervals widened as in `hazard.widen`.
 - **Forecast use:** for a target place, the scenario's added 2–4 unit homes = Eligible × [exp(η with the
-  Handbook rule) − exp(η without)], summed over 2026–2030. The Handbook rule is 4+ units by right citywide
+  Handbook rule) − exp(η without)], summed over the forecast window (2027–2031 since D-061). The Handbook rule is 4+ units by right citywide
   (dose 1). Observed doses run 0.2–1 (only Houston is at 1), so dose 1 leans on the dose scaling; the binary
   dose check below shows how much. η uses the place's α where it is in the panel, otherwise a draw from places
   in the same state and size band. It also uses the bins' β, the place's modifiers, ρ under
@@ -4004,3 +4004,51 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   reports/adu-d060-range`.
 - **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry; approved as written,
   "Approve D-058", given under its first number). Written by WS-ENGINE before any run. **Status:** method approved, not run.
+
+### D-061 · 2026-11-06 · The five-year window starts in 2027, one year after the data origin (proposed)
+- **Why:** The Handbook fixes the horizon but not its start ("Teams should assume a five year time horizon",
+  Benchmark Policy Scenarios; checked 2026-11-06, and the Rules give no projection year either). Until now every
+  forward run reported the five years right after the origin: origin 2025, the last full BPS annual year, so
+  2026–2030. The entry is judged and read in 2027, and no reform can act in 2026, so counting 2026 as reform
+  year 1 gives credit for a year that is already over. By the January demo, 2026 is also mostly observed
+  (monthly BPS).
+- **Decided by:** Ben asked for this draft on 2026-11-06. It is **proposed** until he adopts it. Number
+  provisional: renumber if another D-061 lands first.
+- **What changes:** new parameter `forecast_lead_years` = 1 (`config/params/baseline.yaml`). The window is
+  origin + lead + 1 … origin + lead + 5: **2027–2031** from origin 2025 (`baseline.window`, `window_label`).
+  - *Baseline:* simulates lead + 5 years and reports the last 5. The regional cycle keeps walking through 2026,
+    so the band is that of a forecast two to six years out, a little wider than before. That is honest: we
+    don't see 2026's data. The benchmarks extend to the same years.
+  - *Scenarios:* the reform takes effect at the start of the window, so the ADU and fee ramps' year 1 is 2027.
+    In the ADU scenario the lead year runs under current rules only: the pool of parcels without an ADU shrinks
+    by that year's current-rules ADUs, and nothing is added or reported (`pool_paths(lead=)`). With D-048's
+    flat ramp, rule age has no effect, so the only change is the slightly smaller pool. The fee scenario is
+    unchanged except for its years, because its baseline input is the baseline's window years.
+  - *Labels:* scenario summaries and results bundles report periods 2027 … 2031 and "2027-2031".
+- **What does not change:** the origin (2025), the inputs read "as of" the origin, and every equation.
+  - **The V1 backtest keeps its registered lead of 0** through its own parameter, `v1_lead_years` = 0. So the
+    registered V1 results, and every frozen prediction, reproduce. V9 does not use the window.
+  - `v1_lead_years` = 1 is the **supplementary check** this decision calls for: fit to year T, skip T+1, score
+    T+2 … T+6. That is the same gap the forward run has. It is reported next to the registered run and never
+    replaces it. Not run yet.
+- **Tests:** `tests/model/test_forecast_window.py` covers four checks:
+  - the window by hand;
+  - the benchmarks with a lead, by hand;
+  - the lead-1 baseline draws equal years 2–6 of a lead-0, six-year run (same random streams);
+  - the ADU pool after a lead year, by hand.
+  
+  `test_backtest.py::test_window_uses_its_own_registered_lead` covers the backtest. The hand-worked baseline
+  tests pin lead 0 and still check the original mechanics.
+- **Open, not done here:**
+  1. *Which rules count as "current".* `adu.places_from_store` reads the coded rules in force on 31 December of
+     the origin year (2025). With a 2027 window, rules taking effect in 2026 or at the start of 2027 arguably
+     belong in the baseline. One example is NC S.L. 2026-59 (2027-01-15), which round 3 already said belongs in
+     the baseline. This changes results, so it needs its own decision.
+  2. *Housing-need denominator.* `household_growth_5y` (D-057) is the demographers' 2025 → 2030 change; the
+     window is now 2027–2031. Matching it needs interpolation, using the 2035 projections where states publish
+     them. Until then the share compares slightly offset five-year periods.
+  3. *Bundle metadata.* `meta` records `origin_year` and `horizon_years` but not the window's first year. Adding
+     that column is a schema change, which belongs to WS-CORE (a `contract-change` issue). The same issue
+     should update the example period in `schemas.py` ("e.g. 2026-2030", which generates `docs/schemas.md`).
+  4. *Earlier results.* Results already published for 2026–2030 (for example, the development-run tables in
+     `docs/model_and_assumptions.md`) stay as they are, labelled with their own window, until the next run.
