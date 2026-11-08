@@ -996,7 +996,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 |---|---|---|---|---|
 | `mm_mature_hazard_ref` | 0.0001235 | 3.25e-05–0.001006 | new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1) | Estimated, D-054 main fit (b), adopted by D-055 (Ben, 2026-11-06): D-038's Poisson-gamma likelihood and own-g… |
 | `mm_place_effect_variance` | 8.415 | 2.8–32.4 | variance of a place's multiplier on the missing-middle hazard (gamma, mean 1) | Estimated, D-054 main fit (alpha, 90% profile-likelihood interval), adopted by D-055 |
-| `mm_units_per_project` | 2.08 | 2.04–4 | homes per new 2-4 unit building (gross, before any demolished house) | Census BPS, the 15 fit places 2016-2025: 10,210 homes in 4,912 buildings (D-038) |
+| `mm_units_per_project` | 2.08 | 2.04–2.75 | homes per new 2-4 unit building (gross, before any demolished house) | Census BPS, the 15 fit places 2016-2025: 10,210 homes in 4,912 buildings (D-038) |
 | `mm_ramp_half_years` | 0.5 | 0.5–1 | years after adoption to reach half the mature hazard | Estimated, D-054 main fit (profile likelihood on the grid 0.5-6.0), adopted by D-055: 0.5 is the grid floor a… |
 | `mm_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature… |
 | `mm_feasibility_dispersion` | 0.5 | 0.25–0.8 | standard deviation of log(lot's own price-to-cost) for a rental duplex | Judgment (D-038), the ADU value (adu_feasibility_dispersion): lots differ in what a 2-4 unit building costs a… |
