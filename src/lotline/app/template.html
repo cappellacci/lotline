@@ -248,12 +248,14 @@ window.LotlineState = (b) => { LOADED[b.meta.state] = b; };
 function entryFor(state) { return DATA.states.find((e) => e.meta.state === state); }
 function loadState(state) {
   if (LOADED[state]) return Promise.resolve(LOADED[state]);
-  const e = entryFor(state);
+  // The path is rebuilt from a checked two-letter code (same rule as build.state_file), never taken from data.
+  if (!entryFor(state) || !/^[A-Z]{2}$/.test(state)) return Promise.reject(new Error(`no results for ${state}`));
+  const file = `states/${state.toLowerCase()}.js`;
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = e.file;
-    s.onload = () => (LOADED[state] ? resolve(LOADED[state]) : reject(new Error(`${e.file} did not define ${state}`)));
-    s.onerror = () => { s.remove(); reject(new Error(`could not load ${e.file}`)); };
+    s.src = file;
+    s.onload = () => (LOADED[state] ? resolve(LOADED[state]) : reject(new Error(`${file} did not define ${state}`)));
+    s.onerror = () => { s.remove(); reject(new Error(`could not load ${file}`)); };
     document.head.append(s);
   });
 }

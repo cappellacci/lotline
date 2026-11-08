@@ -328,6 +328,8 @@ def test_each_state_gets_its_own_file_and_stale_files_are_removed(tmp_path):
 
 def test_state_file_names_only_take_two_letter_codes():
     assert build.state_file("ZZ") == "states/zz.js"
+    # the page rebuilds the same path from the checked code rather than reading it from the data
+    assert "`states/${state.toLowerCase()}.js`" in build.TEMPLATE.read_text(encoding="utf-8")
     for bad in ("../x", "Z", "zz", "Z/"):
         with pytest.raises(ValueError):
             build.state_file(bad)
