@@ -4052,3 +4052,165 @@ Dated, append-only. Each entry says what changed from the research documents, wh
      should update the example period in `schemas.py` ("e.g. 2026-2030", which generates `docs/schemas.md`).
   4. *Earlier results.* Results already published for 2026–2030 (for example, the development-run tables in
      `docs/model_and_assumptions.md`) stay as they are, labelled with their own window, until the next run.
+
+### D-062 · 2026-11-07 · Missing middle: the scenario's range on the five-year rate, not on θ alone (method only, before any run)
+- **Number:** D-061 is the forecast-window entry (PR #328, adopted 2026-11-08).
+- **The problem.** The fitted θ and ramp half-way point trade off along a ridge with two peaks (D-058, D-059):
+  a fast ramp (half 0.5, θ ≈ 0.12 per 1,000) and a slow one (half 6.0, θ ≈ 1.3).
+  - **θ's 90% interval in `mm_hazard.yaml` (0.0325–1.006 per 1,000) is profiled over every half-way point**
+    (`calibrate_mm.profile_theta` maximizes over the grid). Its top end belongs with a slow ramp.
+  - **V9 and the planned scenario draw θ from that interval with the half-way point held at 0.5.** A draw
+    near the top then gives a five-year mean hazard of about 0.85 per 1,000 a year (1.006 × 0.841). The slow
+    peak itself implies about 0.04 over the same five years, and the fast peak 0.10. So the top of the range
+    pairs a θ and a ramp that the data never support together, and the range is too wide upward.
+  - **What the data pin down is the rate over the years they cover** (`calibrate_mm.realized_hazard`), and
+    what the scenario reports is a five-year total. So the range belongs on the five-year rate.
+- **Definition.** r5 = θ × m(half), where m(half) is the mean ramp share over the scenario's five years, ages
+  0.5, 1.5, …, 4.5 (the reform takes effect at the start of the window, so this holds whichever window
+  PR #328 settles). Slope 0.75 as fitted. By hand: m(0.5) = 0.841, m(2) = 0.593, m(6) = 0.033.
+- **Estimate.** The profile likelihood of r5: ℓ_p(r5) = max over the half-way grid and α of ℓ(r5 / m(half),
+  α, half), with D-038's likelihood, its 90% interval by the same χ² cut as θ's. This only reparameterizes
+  the fit already adopted: the maximum is D-055's (r5 = 0.1235 × 0.841 = 0.104 per 1,000 a year).
+  - **Main:** D-055's adopted specification and fit set (D-054 (b), 13 places), so it matches the values in
+    config.
+  - **Beside it:** D-059's (b′) on 12 places, without Lubbock.
+  - Also reported: the profile at each half-way point (θ̂, α̂, ℓ), so the two peaks and the ridge are shown,
+    not described.
+- **How the scenario would use it (proposal, for a separate PR with Ben's approval):**
+  - a new key `mm_five_year_hazard` in `mm_hazard.yaml` (value and 90% interval, source this entry), drawn
+    lognormal with log-SD (ln high − ln low) / 3.29, as θ is now;
+  - year t of the five gets r5 × ramp(t − 0.5; 0.5) / m(0.5): the fitted fast ramp sets the shape within the
+    window, the drawn r5 its level;
+  - α keeps its interval. `mm_mature_hazard_ref` and `mm_ramp_half_years` stay, as the fitted values and
+    for V9.
+  - **Disclosed simplification:** a slow ramp would put more of the five years' homes in years 4–5. The
+    total is ranged correctly; the year shape is the fast peak's.
+- **Not chosen:** drawing (half, θ, α) jointly with weights exp(ℓ_h) on the grid. It keeps the year shape of
+  both peaks, but needs a 12-row table in config and is harder to explain; its five-year totals should match
+  the main proposal's, which the run can check by comparing the two ranges.
+- **Frozen and pending predictions:**
+  - V9 Oregon is frozen and is not recomputed.
+  - **V5 St. Paul and Charlotte freeze on Nov 17 on whatever `main` holds.** If they draw θ with the half-way
+    point held, they carry the inflated top end. Whether V5 uses r5 is Ben's call before the freeze.
+- **Holdouts:** the run reads only D-054's fit-set place-years through the existing IO layer and holdout
+  filter. Minneapolis, Durham, Durham County, St. Paul and Charlotte are not read.
+- **Code, when Ben approves:**
+  - `calibrate_mm.ramp_mean(half, ages)` and `calibrate_mm.five_year_profile(places, halves)`, each with a
+    hand-worked unit test (the m values above; a two-place profile by hand);
+  - `scripts/dev/calibrate_mm_d062.py`, writing to `reports/mm-d062/`.
+- **Run once:** `uv run python scripts/dev/calibrate_mm_d062.py`. Minutes, not hours: two fits, no folds.
+- **Reading rule:** none needed to adopt or reject; this is a reparameterization. Ben decides on the config
+  PR with the r5 interval and the per-half profile in front of him.
+- **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** run on
+  2026-11-08 ("Run D-062"); results below.
+- **Results (one run, 2026-11-08, commit 84986bc, about 2 minutes; `reports/mm-d062/`, log
+  `run-2026-11-08-log.txt`). Code as written above; main fit reproduces D-055 (θ 0.1235 per 1,000, half 0.5).**
+  - **r5 (per 1,000 eligible parcels a year, 90% profile interval):**
+    - main, D-055 (b), 13 places: 0.104 (0.027–0.85);
+    - beside it, D-059 (b′), 12 places: 0.109 (0.030–0.74);
+    - current config, θ's interval × m(0.5): 0.104 (0.027–0.85), the same as the main r5 interval;
+    - not-chosen joint draw over the grid (main): P5 0.019, P50 0.104, P95 0.56.
+  - **The best r5 at each half-way point is 0.08–0.11** (main: 0.104 at half 0.5, 0.101 at 2.0, 0.082 at
+    6.0), while the best θ rises from 0.12 to 2.46. Half-way points 0.5–1.0 carry 97% of the likelihood weight
+    in the main fit (79% and 18%).
+  - **The premise was wrong.** With the half-way point held at 0.5, θ's own 90% interval is 0.033–1.006: its
+    top end is the place-to-place spread (α ≈ 8.4), not a slow ramp. In this specification, a slow ramp gives
+    r5 ≈ 0.08, not 0.04. The 0.04 in this entry came from D-058's (d), whose baseline differs. That
+    specification was not adopted.
+  - **Reading:** the scenario's current range on the five-year rate (θ from its interval, half held at 0.5)
+    is already the r5 profile interval. The proposed key `mm_five_year_hazard` is not needed, and V5 can
+    freeze on the current values. The ridge changes when the homes come within and beyond the window, not
+    how many come in five years. D-063 uses θ × ramp(t − 0.5; 0.5), as V9 does.
+  - **Results page:** `reports/mm-d062/d062-results.html`, published at
+    https://claude.ai/artifact/UJooP3X5oNfwCZ2vFvmJW7.
+
+### D-063 · 2026-11-07 · Missing middle: the Handbook scenario module, `model/scenarios/mm.py` (method only, before any code)
+- **What it answers:** how many more homes a state gets over five years if every single-family-zoned parcel may
+  hold 2–6 units in three stories by right (Handbook benchmark; setbacks and coverage do not bind), compared
+  with the rules each place has now. Same shape as `scenarios/adu.py`; the fitted D-038 model supplies the
+  rate, nothing is refitted here.
+- **Per place i and scenario year t = 1 … 5:**
+
+      added buildings_it ~ Poisson(h_t × u_i × E_i × (1 − d_i) × F(PCR_i) / F(1))
+      added homes_it     = added buildings_it × mm_units_per_project × (1 − teardown share)
+
+  - **h_t:** θ × ramp(t − 0.5; 0.5), as V9: D-062's run showed this already carries the five-year range.
+  - **u_i:** a place multiplier, gamma with mean 1 and variance α, drawn fresh per draw (as V9; fit-set
+    places do not keep their fitted multipliers, so every place is treated alike).
+  - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the parcel roll nearest the origin;
+    the ACS fallback (`build/eligible.from_acs`) where no roll exists, as D-056 decides.
+  - **d_i, the dose of the rules in force now** (`estimate_mm.rule_dose`, D-024): units grade × approval
+    grade × coverage. The Handbook rule has dose 1 (four or more units by right on every single-family zone:
+    `units_grade` already treats the fourplex as the full dose). The model's dose is the increase, as in
+    D-042, so the scenario adds 1 − d_i. A place already at dose 1 adds nothing.
+  - **Places with no coded rule** take d from coded places in their state and size band (D-022), as the ADU
+    scenario does; the draw carries the uncertainty.
+  - **F(PCR_i)/F(1):** the rental-duplex price-to-cost at the origin (`estimate_mm.plex_price_to_cost`),
+    with σ from `mm_feasibility_dispersion`, as in the fit.
+- **Baseline:** not needed for the added homes (it cancels). The statewide no-reform path stays the baseline
+  module's.
+- **Draws and seed:** one shared parameter draw per simulation draw (θ, α, units per project, σ held as
+  in the fit), one u per place keyed by crc32(geoid), Poisson per place-year; P10/P50/P90 and mean of the
+  statewide sum. Draw count and seed in `config/params/mm.yaml`.
+- **Choices for Ben (my proposal first):**
+  1. **5–6 unit buildings.** The fit counts only 2–4 unit buildings (BPS `units_2 + units_3_4`); 5–6 unit
+     buildings are in BPS's 5+ class with apartments, so the data say nothing about them. Proposal: count
+     2–4 unit buildings only and say so; homes per building keep their range (2.04–4.0). Alternative: a
+     judgment uplift for 5–6 units, shown as a sensitivity.
+  2. **Teardowns.** A 2–4 unit building on a lot with a house replaces that house. Proposal: a new
+     `mm_teardown_share` (share of new buildings that replace a home), from the roll's vacant share of
+     eligible parcels, so net homes = gross − teardowns. Alternative: report gross, with net as a sensitivity.
+  3. **Three stories / FAR.** The fit's rules mostly allow two to three stories already; the Handbook's FAR
+     assumption is stated, not modelled (no FAR term in the hazard).
+  4. **Holdouts.** St. Paul and Charlotte enter their state totals through roll and rule inputs only; no
+     post-holdout permits are read (the scenario reads no permits).
+- **Results export:** the `mm` part of the results bundle (WS-ENGINE brief, results export): per-draw state
+  totals, the funnel (eligible → dose gap → feasible → built), year shares.
+- **Tests (synthetic, hand-worked):** one place by hand (E, d, F, h, u fixed → expected buildings and homes);
+  dose 1 adds zero; uncoded places take the band share; the Poisson sum over places equals the statewide
+  draw; the year shares follow ramp(t − 0.5; 0.5).
+- **Window (D-061):** the five scenario years are 2027–2031, the reform taking effect at the start of 2027.
+  The missing-middle hazard has no shrinking pool, so the 2026 lead year changes no count, only the labels.
+- **Not in scope here:** stacking with ADUs (`model/combine.py`) and the fee scenario's pro forma link.
+- **Decided by:** written by the missing-middle test session on 2026-11-07; **approved by Ben 2026-11-08
+  ("Approve D-063")**, with each choice taken as proposed (first option).
+- **Code (2026-11-08):** `src/lotline/model/scenarios/mm.py` (`simulate`, `summarize`, `places_from_store`,
+  `run`); tests `tests/model/test_scenario_mm.py` (12, hand-worked); new keys in `config/params/mm.yaml`
+  (`mm_scenario_draws` 4,000, `mm_scenario_seed`, `mm_rule_min_coded` 5, `mm_teardown_share_scale` 0.5–1.0).
+  - **Deviation 1, teardowns:** net homes = buildings × homes per building − teardowns, with teardowns
+    ~ Binomial(buildings, s × house share). The formula above (homes × (1 − teardown share)) would remove a
+    share of every new home rather than one house per replaced lot.
+  - **Deviation 2, house share:** taken directly from each place's latest roll (eligible houses over
+    eligible houses and vacant lots, `mm.house_share`); ACS-fallback places count houses only, so theirs is
+    1. Scaled by `mm_teardown_share_scale` (judgment 0.5–1.0: builders may favour vacant lots).
+  - **Homes per building** is drawn triangular over `mm_units_per_project` (2.04, 2.08, 4.0). Its high end is
+    Minnesota's ratio on 10 buildings, so the draw's mean (about 2.7) sits above the pooled 2.08; reported
+    as a finding when the scenario first runs.
+  - **Not yet:** the results-bundle `mm` part (`model/results.py`, WS-APP contract) and the first state
+    runs, each with Ben's go-ahead. Loader checked on NC and MN inputs only (places 453 and 1,051; coded
+    rules 22 and 8); no scenario output computed.
+- **First run (Ben, 2026-11-08, "Run five states"; commit 7c9a717, about 1 minute;
+  `reports/mm-scenario-2026-11-08/`, `scripts/dev/mm_scenario_run.py`).** Origin 2025, 4,000 draws, seed
+  20261108, D-055 hazard values. Net added homes over five years, P10 / P50 / P90 (mean):
+  - TX 1,412 / 5,968 / 26,698 (11,581), on 8.1 million eligible parcels;
+  - NC 368 / 1,478 / 6,720 (2,990); OH 328 / 1,345 / 5,489 (2,501); MN 215 / 884 / 3,828 (1,685);
+  - OR 24 / 119 / 557 (245): HB 2001 already gives its 96 coded cities most of the Handbook dose
+    (eligible-weighted gap 0.33).
+  - **The range is wide and skewed** (P90 / P10 about 19, mean about 2 × median): one θ per draw is shared
+    by every place, and θ's interval spans a factor of 31.
+  - **Teardowns** take back about 30% of gross homes (house share 0.82–0.98 of eligible parcels).
+  - **Homes per building:** holding it at the pooled 2.08 lowers net homes by about 30% (TX P50 4,070). The
+    triangular draw's high end (4.0, Minnesota on 10 buildings) raises the mean to about 2.7; proposed for a
+    separate config decision.
+  - **Where:** big cities and unincorporated suburban counties (Harris, Montgomery, Wake, Hamilton) lead; the
+    top five places hold 18–25% in TX, NC and OH. Year 1 is about half of year 5 (fast ramp).
+  - Charlotte's and St. Paul's rolls and rules are in their state totals, as allowed above; no permits read.
+  - **Results page:** `reports/mm-scenario-2026-11-08/scenario-results.html`, published at
+    https://claude.ai/artifact/T7fwy1ke9B62Jm1Ea9FVNS.
+- **Decision (Ben, 2026-11-08, "Yes, narrow it"):** `mm_units_per_project` high 4.0 → 2.75, the largest state
+  ratio on 100+ buildings (Ohio); Minnesota's 4.0 rests on 10 buildings. Only the scenario draws this range
+  (V9's freeze records the central 2.08). Rerun the same day (commit 40ba649), replacing the files above; the
+  page is version 2 at the same link. Net added homes over five years, P10 / P50 / P90 (mean):
+  - TX 1,152 / 4,747 / 20,518 (9,101); NC 299 / 1,193 / 5,263 (2,362); OH 266 / 1,071 / 4,271 (1,980);
+    MN 180 / 704 / 2,928 (1,317); OR 20 / 94 / 435 (192).
+  - Teardowns now take back about a third of gross homes; homes per building held at 2.08 is about 14% lower.

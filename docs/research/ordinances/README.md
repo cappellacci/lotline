@@ -52,6 +52,10 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
     high elevation, Houston 2021 (`config/fees/tx.csv`); official sources from the updated workbook.
   - League City RSF-5 has no duplexes.
   - Pasadena stays pending.
+- `tx-second-coder-lubbock-2026-11-07.csv` and `.md`: the second coder for `TX-4845000-missing_middle-2023`,
+  flagged by D-059 (`docs/analysis_plan.md`). Verdict partly: the 2023 use-matrix cells hold, but old R-2
+  (two-family) already allowed duplexes and became MDR, and the SF-2 gain is limited by the block-face rule
+  (§39.02.018.c.1.A). Not applied to `config/reforms/tx.csv` (Texas coding closed); a recode needs Ben.
 - `tx-second-coder-2026-10-30.csv`: **the second-coder worksheet**, one line per Texas rule row flagged
   "FLAG for second coder" (80 on 2026-10-30).
   - Priority 1: dated reforms inside the window, which become D-024/D-025 events.

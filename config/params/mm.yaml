@@ -50,3 +50,34 @@ mm_transport_widening:
   high: 1.0
   unit: standard deviation of log(predicted mean) per unit log distance outside the fitted modifier range
   source: "D-024: places outside the fitted modifier range are flagged and their intervals widened as in hazard.widen; same scale as adu_transport_widening (1.0, judgment)"
+
+# ---- Handbook missing-middle scenario (model/scenarios/mm.py, D-063, approved by Ben 2026-11-08) ----
+
+mm_scenario_draws:
+  value: 4000
+  low: 4000
+  high: 4000
+  unit: draws
+  source: "Choice (D-063): Monte Carlo draws for the statewide P10/P50/P90, as many as the ADU scenario's order of magnitude"
+
+mm_scenario_seed:
+  value: 20261108
+  low: 20261108
+  high: 20261108
+  unit: seed
+  source: "Choice (D-063): fixed so a run regenerates"
+
+mm_rule_min_coded:
+  value: 5
+  low: 5
+  high: 5
+  unit: coded places
+  source: "Choice (D-063), as adu_rule_min_coded (D-022): a size band needs at least 5 coded places to supply the dose of places with no coded rule; otherwise every coded place in the state"
+
+mm_teardown_share_scale:
+  value: 1.0
+  low: 0.5
+  high: 1.0
+  unit: share of a place's house share of eligible parcels
+  source: "Judgment (D-063 choice 2): new 2-4 unit buildings replace a house in proportion to the share of eligible parcels that hold one (ADU-eligible over missing-middle eligible parcels, from the same rolls); 1.0 = builders pick lots at random, 0.5 = they favour vacant lots twice as much"
+  notes: "No local split of new 2-4 unit buildings by prior use is coded; Portland's RIP monitoring is the outside check (docs/research/mm-uptake-evidence.md)."

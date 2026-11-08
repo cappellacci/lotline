@@ -461,3 +461,50 @@ def test_zero_floor():
     # the floor makes no effect's log score finite: log Poisson(3; 1/6)
     q = cal.place_inputs(p, ["p1"], 0.15, 0.5, zero_floor=True)[0]
     assert cal.no_effect_log_score(q) == pytest.approx(3 * math.log(0.5 / 3) - 0.5 / 3)
+
+
+# ---- D-062: the five-year rate ----
+
+
+def test_ramp_mean_by_hand():
+    # slope 0.75, ages 0.5 ... 4.5: half 0.5 -> (0.5 + 0.7914 + 0.9350 + 0.9820 + 0.9952) / 5
+    assert cal.ramp_mean(0.5) == pytest.approx(0.8407, abs=1e-4)
+    # half 6.0 -> (0.00065 + 0.00248 + 0.00932 + 0.03445 + 0.11920) / 5
+    assert cal.ramp_mean(6.0) == pytest.approx(0.0332, abs=1e-4)
+    assert cal.ramp_mean(2.0, ages=(2.0,)) == pytest.approx(0.5)
+
+
+def _synthetic_places(seed=7, n=30, theta=0.002, alpha=0.3, half=2.0):
+    rng = np.random.default_rng(seed)
+    places = []
+    for i in range(n):
+        years = np.arange(2018, 2018 + rng.integers(2, 8))
+        kr = np.full(len(years), float(rng.integers(2000, 20000)))
+        p = cal.Place(str(i), str(i), 2018, 2.0, years, np.zeros(len(years)), np.ones(len(years)), kr,
+                      years - 2018 + 0.5, kr)  # fmt: skip
+        y = rng.poisson(p.B + theta * rng.gamma(1 / alpha, alpha) * p.k(half))
+        places.append(replace(p, y=y.astype(float)))
+    return places
+
+
+def test_five_year_profile_with_one_half_is_theta_times_m():
+    places = _synthetic_places()
+    f = cal.fit(places, halves=(2.0,))
+    p = cal.five_year_profile(places, halves=(2.0,))
+    m = cal.ramp_mean(2.0)
+    assert p.r5 == pytest.approx(f.theta * m, rel=1e-3)
+    assert p.low == pytest.approx(f.low * m, rel=1e-2)
+    assert p.high == pytest.approx(f.high * m, rel=1e-2)
+    assert p.loglik == pytest.approx(f.loglik, abs=1e-6)
+
+
+def test_five_year_profile_maximum_is_the_fit():
+    places = _synthetic_places()
+    halves = (1.0, 2.0, 3.0)
+    f = cal.fit(places, halves=halves)
+    p = cal.five_year_profile(places, halves=halves)
+    assert p.r5 == pytest.approx(f.theta * cal.ramp_mean(f.half), rel=1e-3)
+    assert p.low < p.r5 < p.high
+    assert list(p.by_half["half"]) == list(halves)
+    for h, ll in f.profile_half.items():
+        assert p.by_half.set_index("half").loc[h, "loglik"] == pytest.approx(ll, abs=1e-6)
