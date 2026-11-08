@@ -1,10 +1,13 @@
-"""Build the Lotline app: one static, self-contained page from per-state results bundles (HANDOFF 2026-11-06).
+"""Build the Lotline app: one static page plus one file per state, from results bundles (HANDOFF 2026-11-06).
 
 Every `reports/results/<st>/bundle.json` (written by `lotline results --state XX`, schema `results_*`,
-#310) is read back and validated with `model.results.read_bundle`, then embedded as JSON in
-`template.html` next to this file. The page draws everything in the browser with plain SVG; it needs no
-server and can be opened from disk. The build is state-agnostic: whatever bundles exist appear in the picker,
-grouped by `meta.state_role`, with no state names in this code or the template.
+#310) is read back and validated with `model.results.read_bundle`. The page (`index.html`, from
+`template.html` next to this file) embeds only each state's `meta`; the full bundle goes to
+`states/<st>.js` and is loaded when the reader picks that state, so the page stays small when every state
+has a run (1,000 draws in each of seven scenarios is about 2 MB a state). The state files are scripts, not
+JSON, because a `<script src>` loads from disk where `fetch` does not: the page still needs no server.
+It draws everything in the browser with plain SVG. The build is state-agnostic: whatever bundles exist
+appear in the picker, grouped by `meta.state_role`, with no state names in this code or the template.
 
 The identity (docs/build/identity/tokens.css and the wordmark SVGs) is inlined at build time, so the page
 and the style guide share one source.
@@ -211,8 +214,26 @@ def order_states(bundles: Iterable[dict]) -> list[dict]:
     return sorted(bundles, key=lambda b: (rank.get(b["meta"]["state_role"], len(rank)), b["meta"]["state"]))
 
 
+STATE_DIR = "states"  # under the page's folder: one script per state, loaded on demand
+
+
+def state_file(state: str) -> str:
+    """The page-relative path of a state's bundle script. The code is checked so it can't leave the folder."""
+    if not re.fullmatch(r"[A-Z]{2}", state):
+        raise ValueError(f"not a two-letter state code: {state!r}")
+    return f"{STATE_DIR}/{state.lower()}.js"
+
+
+def state_script(bundle: dict) -> str:
+    """A state's bundle as a script that hands it to the page (`LotlineState`), loadable from disk."""
+    return f"LotlineState({_json(bundle)});\n"
+
+
 def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict | None = None) -> dict:
-    """What the page embeds: the ordered bundles, role labels, sliders, section 2's tables and build time."""
+    """What the page embeds: each state's meta and file, role labels, sliders, section 2's tables, build time.
+
+    The full bundles are not embedded; `build_app` writes each to `state_file(...)` as `state_script(...)`.
+    """
     states = order_states(bundles)
     if not states:
         raise ValueError("no results bundles to show: run `lotline results --state XX` first")
@@ -231,7 +252,7 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
         "knobs": knobs(),
         "map": tile_map(),
         "data": data,
-        "states": states,
+        "states": [{"meta": b["meta"], "file": state_file(b["meta"]["state"])} for b in states],
     }
 
 
@@ -329,7 +350,8 @@ def build_app(
     generated: str | None = None,
     data_summary: Path | None = DATA_SUMMARY,
 ) -> Path:
-    """Validate the bundles (default: every one under `results_dir`), write `<out_dir>/index.html`.
+    """Validate the bundles (default: every one under `results_dir`); write `<out_dir>/index.html` and one
+    `<out_dir>/states/<st>.js` per bundle (any other script in `states/` is removed).
 
     `data_summary` is the data dashboard's summary.json (scripts/build_data_dashboard.py); when it is missing
     section 2 lists sources without coverage counts and says how to build it.
@@ -343,9 +365,15 @@ def build_app(
         from lotline.dashboard.render import render as render_dashboard
 
         dashboard = fold_dashboard(render_dashboard(summary))
-    html = render(payload((load_bundle(p) for p in paths), generated, summary), dashboard=dashboard)
+    bundles = [load_bundle(p) for p in paths]
+    html = render(payload(bundles, generated, summary), dashboard=dashboard)
     out = Path(out_dir)
-    out.mkdir(parents=True, exist_ok=True)
+    folder = out / STATE_DIR
+    folder.mkdir(parents=True, exist_ok=True)
+    for old in folder.glob("*.js"):  # a state dropped since the last build must not linger
+        old.unlink()
+    for b in bundles:
+        (out / state_file(b["meta"]["state"])).write_text(state_script(b), encoding="utf-8")
     page = out / "index.html"
     page.write_text(html, encoding="utf-8")
     return page

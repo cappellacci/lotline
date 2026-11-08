@@ -238,10 +238,25 @@ function fillPicker() {
   const fromHash = route().state;
   const pick = DATA.states.find((b) => b.meta.state === fromHash) || DATA.states[0];
   sel.value = pick.meta.state;
-  sel.addEventListener("change", () => { show(sel.value); go(route().page, false); });
+  sel.addEventListener("change", () => pickState(sel.value));
 }
 
-function bundleFor(state) { return DATA.states.find((b) => b.meta.state === state); }
+// ---- state files: the page embeds each state's meta; its full bundle (draws, funnel, totals...) is
+// states/<st>.js, loaded the first time the state is picked. A script, not fetch, so it works from disk. ----
+const LOADED = {};
+window.LotlineState = (b) => { LOADED[b.meta.state] = b; };
+function entryFor(state) { return DATA.states.find((e) => e.meta.state === state); }
+function loadState(state) {
+  if (LOADED[state]) return Promise.resolve(LOADED[state]);
+  const e = entryFor(state);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = e.file;
+    s.onload = () => (LOADED[state] ? resolve(LOADED[state]) : reject(new Error(`${e.file} did not define ${state}`)));
+    s.onerror = () => { s.remove(); reject(new Error(`could not load ${e.file}`)); };
+    document.head.append(s);
+  });
+}
 
 // ---- state map: tile grid from us_tiles.yaml, coloured by each bundle's data tier -----------------------
 // Grey tiles have no bundle and link to the README's "bring your own state" steps. Bundles whose code is not
@@ -250,8 +265,8 @@ const TIER_WORDS = { 1: "Most detailed local records", 2: "Some local records", 
 const TILE = 30, GAP = 3;
 function pickState(code) {
   $("state").value = code;
-  show(code);
   go(route().page, false);
+  return show(code);
 }
 function drawMap() {
   const M = DATA.map, cur = $("state").value;
@@ -259,7 +274,7 @@ function drawMap() {
   const svg = $("state-map");
   svg.setAttribute("viewBox", `-2 -2 ${cols * (TILE + GAP) - GAP + 4} ${rows * (TILE + GAP) - GAP + 4}`);
   svg.innerHTML = M.tiles.map((t) => {
-    const b = bundleFor(t.code), x = t.col * (TILE + GAP), y = t.row * (TILE + GAP);
+    const b = entryFor(t.code), x = t.col * (TILE + GAP), y = t.row * (TILE + GAP);
     const square = (fill, sel = false) => `<rect x="${x}" y="${y}" width="${TILE}" height="${TILE}" rx="2" fill="${fill}"></rect>` +
       (sel ? `<rect class="ring" x="${x - 2}" y="${y - 2}" width="${TILE + 4}" height="${TILE + 4}" rx="3"></rect>` : "") +
       `<text x="${x + TILE / 2}" y="${y + TILE / 2}">${esc(t.code)}</text>`;
@@ -275,7 +290,7 @@ function drawMap() {
   // and a grey state (only if any is left) can be added. Both point at the README's "bring your own state".
   const used = new Set(DATA.states.map((b) => b.meta.data_tier));
   const byos = (words) => `<a href="${esc(M.byos_url)}" target="_blank" rel="noopener">${words}</a>`;
-  const grey = M.tiles.some((t) => !bundleFor(t.code));
+  const grey = M.tiles.some((t) => !entryFor(t.code));
   $("map-legend").innerHTML = Object.entries(TIER_WORDS).filter(([k]) => used.has(Number(k))).map(([k, w]) =>
     `<li><span class="swatch" style="background:var(${M.tier_tokens[k]})"></span><span>Tier ${k}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
     (grey ? `<li><span class="swatch" style="background:var(--tier-none)"></span><span>No results yet: ${byos("bring your own state")}</span></li>` : "");
@@ -632,13 +647,23 @@ function footer(b) {
   $("meta").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
 }
 
-function show(state) {
-  const b = bundleFor(state);
+let SHOWING = 0;  // the latest pick wins if an earlier state's file arrives after it
+async function show(state) {
+  const ticket = ++SHOWING;
+  drawMap();
+  let b;
+  try {
+    b = await loadState(state);
+  } catch (err) {
+    if (ticket !== SHOWING) return;
+    for (const id of Object.keys(SECTIONS)) $(`${id}-body`).innerHTML = `<p class="pending">This state's results could not be loaded (${esc(err.message)}). Rebuild the page with <code>uv run python scripts/build_app.py</code> and open it from the folder it was written to.</p>`;
+    return;
+  }
+  if (ticket !== SHOWING) return;
   for (const [id, fill] of Object.entries(SECTIONS)) $(`${id}-body`).innerHTML = fill(b);
   wireResults();
   wireData();
   drawTornado();
-  drawMap();
   footer(b);
   document.title = `Lotline · ${b.meta.state}`;
 }
@@ -661,7 +686,7 @@ function go(page, scroll = true) {
 }
 window.addEventListener("hashchange", () => {
   const r = route();
-  if (r.state && r.state !== $("state").value && bundleFor(r.state)) { $("state").value = r.state; show(r.state); }
+  if (r.state && r.state !== $("state").value && entryFor(r.state)) { $("state").value = r.state; show(r.state); }
   go(r.page);
 });
 
