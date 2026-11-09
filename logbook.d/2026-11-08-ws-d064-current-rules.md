@@ -15,3 +15,8 @@
   hand-worked tests cover the date (2027-12-31; 2026-12-31 at the low value or with no lead) and a local
   "no ADUs" code being replaced by a state law in force 2027-01-15. The related test modules (532 tests),
   ruff and `compliance_check.py` (0 FAIL) pass. No model or scenario run was made.
+- **Follow-up (2026-11-09):** Ben asked for the same date in the missing-middle scenario ("Yes, draft it").
+  `scenarios/mm.py` now reads its current dose on `baseline.rules_as_of`. 38 rows enter: OR 34 (2027-01-01),
+  MN 1, NC 2 and TX 1. The D-064 entry gives the expected direction, and a hand-worked test covers a 2026
+  rule raising a place's dose from 1/3 to 1. D-063's published results predate this change, and the rerun
+  waits for a go-ahead.

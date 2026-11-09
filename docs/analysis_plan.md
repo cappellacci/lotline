@@ -4234,10 +4234,23 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **MN:** 2 local rows (2706382, 2758738; March and June 2026).
   - **OH, OR:** none. No ADU rule ends in the period. Oregon's 34 missing-middle rows effective 2027-01-01
     would count under the same rule in a forward missing-middle run. Its holdouts are untouched.
-  - **Not applied yet to missing middle:** the D-063 scenario (`scenarios/mm.py`, merged 2026-11-09 alongside
-    this entry) still reads rules on 31 December of the origin (`places_from_store`). Moving it to
-    `baseline.rules_as_of` would change D-063's published results and bring in those Oregon rows. It needs
-    its own go-ahead and a rerun.
+  - **Missing middle (added 2026-11-09, Ben: "Yes, draft it"):** the D-063 scenario (`scenarios/mm.py`)
+    reads its current dose on the same date, `baseline.rules_as_of`, in place of 31 December of the origin.
+    38 missing-middle rows enter (config only, 2026-11-09):
+    - **OR:** 34 rows effective 2027-01-01, all in places that already had an earlier missing-middle rule.
+      The strongest live rule sets the dose (`current_dose`), so a place's dose rises where the 2027 rule is
+      stronger.
+    - **MN:** 1 row (2717000, 2026-08-31).
+    - **NC:** 2 rows (3764740, 2026-06-01; 3702140, 2026-08-25).
+    - **TX:** 1 row (4845384, 2026-02-09).
+    - These 4 places had a coded row but none in force at the end of 2025, so their dose was 0. It now
+      becomes the rule's dose.
+    - Uncoded places draw from their band's coded doses (D-022), so those pools move up a little too.
+    - **Expected direction, before any run:** the missing-middle added homes fall in OR, and in the 4
+      MN/NC/TX places. Coded places' doses are rule_dose × coverage, so the size depends on the coverage
+      map. No number is predicted.
+    - **D-063's published results** (the five-state run and its page v2) used rules as of 2025-12-31. They
+      stay labelled as such until the rerun, which waits for Ben's go-ahead.
 - **Mechanics:** the date is a parameter, `current_rules_window_years` = 1 (`config/params/baseline.yaml`).
   The cutoff is 31 December of (the window's first year − 1 + that value). `baseline.rules_as_of(origin)`
   computes it, and `adu.places_from_store` uses it in place of 31 December of the origin.
@@ -4260,7 +4273,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **What does not change:** the origin, every equation, the V1 and V9 backtests and frozen predictions (they
   read rules as of their own dates in `estimate_adu`, `estimate_mm` and `calibrate_*`), and the fee scenario,
   which reads no rules.
-- **Expected size, written before any run: small.** D-053 fixed `adu_partial_rule_share` at 1.0, so a
+- **Expected size for ADUs, written before any run: small.** D-053 fixed `adu_partial_rule_share` at 1.0, so a
   partial or 'uncertain' rule (blank fields) already counts the same as a Handbook rule. A new rule changes
   the scenario only where it replaces 'no ADUs allowed' or an uncoded place's prior, which puts some weight
   on 'none'. Rule classes for the 26 affected places (config only, `current_rules` without the coverage

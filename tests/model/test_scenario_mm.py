@@ -93,6 +93,23 @@ def test_current_dose_takes_the_strongest_live_rule():
     assert mm.current_dose(rows.iloc[:0], pd.Timestamp("2025-12-31"), {}, (0.5, 1 / 3), 1 / 3) == 0.0
 
 
+def test_current_dose_on_the_d064_date_counts_a_2026_rule():
+    """D-064: forward runs read the dose on `baseline.rules_as_of(2025)` = 2027-12-31. r3 (four units, by
+    right, coverage 1) is in force from 2026-06-01: dose 1 × (1 + 0) × 1 = 1, the strongest, so the place's
+    dose is 1 and the Handbook scenario adds 1 − 1 = 0 there. On 2025-12-31 it was 1/3."""
+    from lotline.model import baseline
+
+    rows = pd.DataFrame(
+        {"reform_id": ["r1", "r3"], "unit_cap": [2, 4], "by_right": ["True", "True"],
+         "effective_date": pd.to_datetime(["2020-01-01", "2026-06-01"]),
+         "end_date": pd.to_datetime([None, None])}
+    )  # fmt: skip
+    as_of = baseline.rules_as_of(2025)
+    assert as_of == pd.Timestamp("2027-12-31")
+    assert mm.current_dose(rows, as_of, {}, (0.5, 1 / 3), 1 / 3) == pytest.approx(1.0)
+    assert mm.current_dose(rows, pd.Timestamp("2025-12-31"), {}, (0.5, 1 / 3), 1 / 3) == pytest.approx(1 / 3)
+
+
 def test_summarize_has_every_measure_and_period():
     res = mm.simulate(pd.DataFrame([_place()]), _draws(200), HALF, SLOPE, seed=1)
     s = mm.summarize(res)

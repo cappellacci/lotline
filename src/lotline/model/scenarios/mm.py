@@ -13,10 +13,11 @@ For each place i and scenario year t = 1 … 5, with the fitted D-038 model (`mm
   backtests (`calibrate_mm.predict_places`).
 - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the roll nearest the origin, made
   non-overlapping as the ADU scenario does (D-020).
-- **d_i:** the dose of the rules in force at the origin (`estimate_mm.rule_dose`: units grade × approval
-  grade × coverage). The Handbook rule has dose 1 (four or more units by right on every single-family zone);
-  the fitted effect is per unit of dose increase (D-042), so the scenario adds 1 − d_i. A place with no
-  coded rule draws d from coded places in its state and size band (D-022), per draw.
+- **d_i:** the dose of the rules in force on `baseline.rules_as_of` (31 December of the window's first
+  year, D-064) (`estimate_mm.rule_dose`: units grade × approval grade × coverage). The Handbook rule has
+  dose 1 (four or more units by right on every single-family zone); the fitted effect is per unit of dose
+  increase (D-042), so the scenario adds 1 − d_i. A place with no coded rule draws d from coded places in
+  its state and size band (D-022), per draw.
 - **F(PCR)/F(1):** the rental-duplex price-to-cost at the origin's ACS rent, relative to PCR = 1, with σ
   and the developer margin of the fit. A place without a rent takes the state median.
 - **Homes per building:** `mm_units_per_project`, triangular. Only 2-4 unit buildings are counted (D-063
@@ -219,9 +220,9 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     and the market series. No permits are read (D-063 choice 4).
     """
     from lotline.config import load_state
+    from lotline.model import baseline, hazard, money, rule_tags
     from lotline.model import calibrate_mm as cal
     from lotline.model import estimate_mm as emm
-    from lotline.model import hazard, money, rule_tags
     from lotline.model.scenarios import adu
 
     sp = specs()
@@ -254,7 +255,7 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     ref = reforms[state.upper()]
     mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]
     cov = emm._mm_coverage(state.upper(), store, mm_rows, pa)
-    as_of = pd.Timestamp(f"{origin}-12-31")
+    as_of = baseline.rules_as_of(origin)  # D-064: rules already law by the end of the first window year
     coded = set(mm_rows["jurisdiction_geoid"])
     places["dose"] = [
         current_dose(mm_rows[mm_rows["jurisdiction_geoid"] == g], as_of, cov, blanks, permit_grade)
