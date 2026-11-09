@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (coding data: long notes)
 """Fee coverage for the six largest uncoded Texas places (manual-fee-lookups.md, priority 4) -> config/fees/tx.csv.
 Rerunning it is safe.
 
