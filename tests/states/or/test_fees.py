@@ -15,6 +15,9 @@ PORTLAND, BEND, EUGENE, SALEM = "4159000", "4105800", "4123850", "4164900"
 @pytest.fixture(scope="module")
 def totals():
     f = load_fees("OR")
+    f = f[
+        ~f["notes"].str.contains("Permit lookup 2026-11-09", na=False)
+    ]  # hand sums predate the permit lookup
     return f.groupby(["jurisdiction_geoid", "building_type_std"])["amount_per_unit_usd"].sum()
 
 
