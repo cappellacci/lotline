@@ -210,7 +210,10 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
     </div>
     <div id="data-body"></div>
     <div id="dash-host" hidden>
-      <h3 class="h3" style="margin-top:var(--space-6)">Coverage, ordinances and growth</h3>
+      <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--space-2);margin-top:var(--space-6)">
+        <h3 class="h3" id="dash-title">Coverage, ordinances and growth</h3>
+        <label class="picker body-small">Showing <select id="dash-state" aria-label="State shown in the data dashboard"></select></label>
+      </div>
       <p class="body-small muted" id="dash-note"></p>
       <iframe class="dash" id="dash-frame" title="Data coverage, ordinances and growth" scrolling="no"></iframe>
     </div>
@@ -521,17 +524,7 @@ const SECTIONS = {
   },
   data(b) {
     $("data-lead").textContent = dataLead();
-    const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] }, t = d.totals;
-    const tierWords = { 1: "Tier 1: local parcels with land use and year built", 2: "Tier 2: local parcels with land use", 3: "Tier 3: national data only" };
-    const tiles = t ? [
-      [fmtPct(t.population_covered_share), "of the population lives where local parcel data are on file"],
-      [`${fmtInt(t.jurisdictions_covered)} of ${fmtInt(t.jurisdictions)}`, "jurisdictions with parcels"],
-      [fmtInt(t.parcels), "parcels on file (one source per place)"],
-      [fmtInt(t.reforms), "coded local reforms"],
-      [t.permit_years ? `${t.permit_years[0]}–${t.permit_years[1]}` : "–", "years of permit data"],
-    ].map(([v, c]) => `<div class="tile"><span class="figure">${esc(v)}</span><span class="caption">${esc(c)}</span></div>`).join("")
-      : `<p class="pending">Coverage counts appear here once the data dashboard is built (<code>python scripts/build_data_dashboard.py</code>) and the page is rebuilt.</p>`;
-    const tierMix = t && t.tiers ? `<p class="body-small muted">Jurisdictions by tier: ${Object.entries(t.tiers).map(([k, v]) => `${fmtInt(v)} in tier ${esc(k)}`).join(", ")}.</p>` : "";
+    const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] };
     const rows = d.sources.map((r) => {
       const used = r.parcels_on_file == null ? `<span class="muted">Available</span>`
         : r.parcels_used > 0 ? `Used: ${fmtInt(r.parcels_used)} of ${fmtInt(r.parcels_on_file)} parcels`
@@ -539,15 +532,12 @@ const SECTIONS = {
       const title = r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
       return `<tr><td>${title}<br><span class="caption muted">${esc(r.source)} · ${r.scope === "national" ? "national" : "state"}</span></td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
     }).join("");
-    // The dashboard sits below this card, in #dash-host (kept across state changes); the full source list
+    // The dashboard sits in #dash-host (kept across state changes); the full source list for the picked state
     // goes at the very bottom, in #data-sources.
     $("data-sources").innerHTML = `<div class="card"><h3 class="h3">Data available and data used</h3>
         <div class="scroll"><table><thead><tr><th>Source</th><th>Builds table</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
         <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>`;
-    return `<div class="card"><p class="eyebrow">Data tier</p>
-        <span class="tier"><span class="sw" style="background:var(--tier-${4 - Math.min(3, Math.max(1, b.meta.data_tier))})" aria-hidden="true"></span>${esc(tierWords[b.meta.data_tier] || `Tier ${b.meta.data_tier}`)}</span>
-        <p class="body-small muted">The tier holding most of the state's eligible lots.${b.meta.eligible_proxy ? " Eligible lots are estimated from national data (ACS), scaled by the proxy test." : ""}</p>
-        <div class="tiles">${tiles}</div>${tierMix}</div>`;
+    return "";  // the state data tier card was dropped (Ben, 2026-11-09): the dashboard below carries coverage
   },
   trust(b) {
     const V = { pass: "Pass", partial: "Partial", fail: "Fail", not_run: "Not yet run" };
@@ -681,14 +671,21 @@ function drawTornado() {
 
 // The data dashboard, folded into section 2: loaded the first time the data page opens, sized to its content,
 // and scoped to the picked state through its own state chips (matched by the state's name).
-const DASH = { loaded: false };
+const DASH = { loaded: false, scope: "ALL" };  // starts nationwide (Ben, 2026-11-09); its own dropdown picks a state
+function dashOptions() {
+  const sel = $("dash-state");
+  if (sel.options.length) return;
+  const states = Object.entries(DATA.data.by_state || {}).filter(([, v]) => v.totals).map(([k, v]) => [k, v.name || k]);
+  sel.innerHTML = [["ALL", `All ${states.length} states`], ...states].map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join("");
+  sel.onchange = () => { DASH.scope = sel.value; dashScope(); };
+}
 function dashScope() {
+  const sel = $("dash-state");
+  const name = DASH.scope === "ALL" ? "All states" : ((DATA.data.by_state || {})[DASH.scope] || {}).name;
+  $("dash-title").textContent = `Coverage, ordinances and growth: ${sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "all states"}`;
   const f = $("dash-frame"), d = f && f.contentDocument;
   if (!DASH.loaded || !d) return;
-  const name = ((DATA.data.by_state || {})[$("state").value] || {}).name;
   const chip = [...d.querySelectorAll("#state-bar .chip")].find((c) => c.textContent === name);
-  f.hidden = !chip;  // a state the data summary doesn't cover: say so rather than show another state
-  $("dash-note").textContent = chip ? DASH.note : `The data dashboard summary has no data for ${$("state").value} yet.`;
   if (chip && chip.getAttribute("aria-pressed") !== "true") chip.click();
 }
 function ensureDashboard() {
@@ -697,6 +694,7 @@ function ensureDashboard() {
   $("dash-host").hidden = false;
   DASH.note = `From the data dashboard summary built ${DATA.data.summary_generated}. The map needs internet access for its libraries (d3, topojson, us-atlas; all ISC).`;
   $("dash-note").textContent = DASH.note;
+  dashOptions();
   dashScope();
   if (DASH.loaded || DASH.loading) return;
   DASH.loading = true;
@@ -710,7 +708,7 @@ function ensureDashboard() {
   };
   f.srcdoc = html;
 }
-function wireData() { dashScope(); }
+function wireData() {}  // the dashboard keeps its own state choice
 
 function wireResults() {
   const body = $("results-body");
