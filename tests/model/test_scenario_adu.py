@@ -617,3 +617,47 @@ def test_a_law_starting_early_in_the_window_is_current():
     before = adu.current_rules(reforms, ["100"], "37", low).set_index("geoid")
     assert before.loc["100", "rule_class"] == "none" and before.loc["100", "rule_id"] == "N1"
     assert "S1, S2" in before.loc["100", "rule_note"]
+
+
+def test_borrowers_use_the_origin_mix_and_own_rules_the_d064_date(monkeypatch):
+    """D-067 by hand. Five coded places of 20,000 people (one size band, `adu_rule_min_coded` = 5): K1-K4
+    Handbook-equivalent since 2015; N allowed no ADUs (2010) and adopts a Handbook rule on 2026-06-01. U has
+    no rule. With own rules on 2027-12-31 and the borrowed mix on 2025-12-31: N is 'handbook' (its own 2026
+    rule), and U borrows the end-2025 mix, 1 'none' in 5 -> p_none = 0.2, p_handbook = 0.8. With one date
+    (2027-12-31) for both, U would borrow p_none = 0."""
+    import types
+
+    import lotline.config
+
+    hb = (True, False, True, 800, "none", 0, 1)
+    rows = [(f"K{i}", f"990000{i}", "adu", "in_force", "2015-01-01", None, None, *hb) for i in range(1, 5)]
+    rows += [
+        ("N1", "9900005", "adu", "in_force", "2010-01-01", None, None, True, False, True, 800, "none", 0, 0),
+        ("N2", "9900005", "adu", "in_force", "2026-06-01", None, None, *hb),
+    ]
+    reforms = _reforms(rows)
+
+    class Store:
+        def read(self, state, table):
+            geoids = [f"990000{i}" for i in range(1, 7)]
+            return pd.DataFrame({"geoid": geoids, "pop_2020": [20_000] * 6})
+
+    monkeypatch.setattr(adu, "REFORM_STATES", ("ZZ",))
+    monkeypatch.setattr(adu, "load_reforms", lambda st: reforms.copy())
+    monkeypatch.setattr(
+        adu,
+        "coverage_map",
+        lambda st, store, r, c: pd.DataFrame({"reform_id": r["reform_id"], "coverage": 1.0}),
+    )
+    monkeypatch.setattr(lotline.config, "load_state", lambda st: types.SimpleNamespace(fips="99"))
+    targets = ["9900005", "9900006"]
+    rules, info = adu.rule_inputs(
+        "ZZ", Store(), targets, pd.Timestamp("2027-12-31"), pd.Timestamp("2025-12-31")
+    )
+    r = rules.set_index("geoid")
+    assert r.loc["9900005", "rule_class"] == "handbook"  # its own 2026 rule counts (D-064)
+    assert (r.loc["9900006", "p_none"], r.loc["9900006", "p_handbook"]) == pytest.approx((0.2, 0.8))
+    assert set(info["coded"]["rule_class"]) == {"handbook"}  # own rules on 2027-12-31 (county_mix)
+    assert sorted(info["coded_prior"]["rule_class"]) == ["handbook"] * 4 + ["none"]
+    one, _ = adu.rule_inputs("ZZ", Store(), targets, pd.Timestamp("2027-12-31"))
+    assert one.set_index("geoid").loc["9900006", "p_none"] == pytest.approx(0.0)

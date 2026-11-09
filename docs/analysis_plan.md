@@ -4316,3 +4316,70 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   every model run does. The 2026-10-19 sensitivity that adds Wake Forest and Holly Springs is not included.
 - **Decided by:** Ben, 2026-11-08 ("Rules in force by window start"). Written by Claude Code before any run.
   **Status:** method approved, not run.
+- **Results (run 2026-11-09, Ben: "Yes, rerun"; commit 5b86238, 1,000 draws):** each state ran three ways: A, the
+  old setup; B, the 2027–2031 window with end-2025 rules; C, the window with end-2027 rules (the official
+  bundles). Results page: `reports/results-2026-11-09/results-2027-window.html`, published at
+  https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs.
+  - **The window (D-061) changes labels, not homes:** A and B agree to the home in every state and scenario.
+    Only the housing-need shares move, with the new denominators.
+  - **D-064 (B → C), median net homes over five years:**
+    - ADUs: NC 126 → 79 (−37%), TX 1,371 → 1,302 (−5%), MN 209 → 206 (−1%); OH unchanged.
+    - Missing middle: MN 462 → 410 (−11%), NC 791 → 740 (−6%); OH, OR and TX unchanged.
+    - OR's 34 rows from 2027-01-01 repeat the 2022 rules (four units, by right). McAllen's row caps at one unit.
+  - **Against the expectations written above:** the ADU "small" was wrong for NC. Coverage (the caveat
+    named above) moves the S.L. 2026-59 cities from E[c] 0.75 to 1.0.
+  - **Borrowing carries most of each change:** 70% (NC ADUs), 75% (TX ADUs), 86–88% (missing middle in MN
+    and NC). These come from places with no coded rule that borrow their rules (D-022 priors and the dose
+    pool), not from the places whose law changed.
+  - **Open decision for Ben:** should borrowers see the 2027 mix (as now), or the end-2025 mix, with
+    D-064's date applied only to a place's own rules? Recommended: end-2025. Either way it is a new entry
+    before the next run.
+  - **Decided 2026-11-09:** end-2025 mix (Ben, "End-2025 mix"). See D-067.
+
+### D-067 · 2026-11-09 · Places that borrow their rules borrow the end-2025 mix (method only, before the run)
+- **Decision (Ben, 2026-11-09, "End-2025 mix"):** D-064's date (31 December of the window's first year,
+  2027-12-31) applies only to **a place's own coded rules**. Everything a place without its own rule borrows
+  is built from the rules in force on **31 December of the origin year (2025-12-31)**, the date the rules
+  were coded and checked.
+- **Why:** the D-064 run (2026-11-09) showed that 70–88% of each change came from borrowers, not from the
+  places whose law changed. The mix rests on few coded places (8 in Minnesota for missing middle), so a
+  single 2026 rule moved about 144,000 borrowed parcels. And a law such as NC S.L. 2026-59 covers only its
+  named cities, not the unincorporated areas that borrowed from them.
+- **What uses which date:**
+  - **ADUs (`adu.rule_inputs`):**
+    - At the origin date: the field probabilities that fill blank rule fields, the coded places behind the
+      size-band priors (D-022), and so the priors themselves.
+    - At the D-064 date: each place's own rules, and the coded places that `county_mix` blends into county
+      rows, since those are places' own rules.
+  - **Missing middle (`mm.places_from_store`, `mm.dose_pools`):** each coded place's own dose uses the D-064
+    date. The pool that uncoded places draw from uses each coded place's dose at the origin date (new
+    column `pool_dose`).
+  - Backtests are unchanged.
+- **Expected, written before the run:** results move back toward run B (end-2025 rules) wherever borrowers
+  drove the D-064 change. Rough estimates from the D-064 split (central values, not draws): NC ADUs about
+  112 (C 79, B 126), TX ADUs about 1,354 (C 1,302, B 1,371), MN missing middle about 455 (C 410, B 462), NC
+  missing middle about 785 (C 740, B 791). Places whose own law changed keep their D-064 effect. OH and OR
+  do not move.
+- **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code change or run. **Status:** method
+  approved, not run.
+- **Order of work:** this entry was pushed as bf563eb, then the code as 96a5de2 (hand-worked tests:
+  `test_borrowers_use_the_origin_mix_and_own_rules_the_d064_date` and
+  `test_dose_pool_holds_origin_doses_by_hand`), then the run.
+- **Results (run D, 2026-11-09, `lotline results --all` at 96a5de2, 1,000 draws):** median net homes over
+  five years, against the estimates written above:
+
+  | | Run B | Run C | Run D | Estimated |
+  |---|---|---|---|---|
+  | NC ADUs | 126 | 79 | 105 | about 112 |
+  | TX ADUs | 1,371 | 1,302 | 1,356 | about 1,354 |
+  | MN ADUs | 209 | 206 | 207 | |
+  | MN missing middle | 462 | 410 | 460 | about 455 |
+  | NC missing middle | 791 | 740 | 773 | about 785 |
+
+  - OH, OR and TX missing middle do not move, as expected.
+  - D-064 keeps 46% of its effect on NC ADUs and 36% on NC missing middle; elsewhere it keeps 21% or less.
+  - The NC estimates came from central values and were too high by 7–12 homes. In the draws, the S.L.
+    2026-59 cities carry a larger share of the change.
+  - Page: `reports/results-2026-11-09/results-2027-window.html` (version 2) at
+    https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs. **Status:** adopted and run; the official bundles
+    are run D.
