@@ -4312,4 +4312,18 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Not done here:** Ben has approved the method. The run that shows the effect waits for a go-ahead, as
   every model run does. The 2026-10-19 sensitivity that adds Wake Forest and Holly Springs is not included.
 - **Decided by:** Ben, 2026-11-08 ("Rules in force by window start"). Written by Claude Code before any run.
-  **Status:** method approved, not run.
+  **Status:** method approved; run 2026-11-09 (results below).
+- **Results (run 2026-11-09, Ben: "Yes, build bundles"; commit 458241a on `ws/baseline-export`;
+  `reports/results-run-2026-11-09/`, `scripts/dev/d064_sensitivity.py`).** The five state bundles were built
+  under D-064, and a same-seed sensitivity moved only the rules date: 2025-12-31 (before D-064), 2026-12-31
+  (the low value) and 2027-12-31 (adopted). Five-year midpoints (ADU permits added, 1,000 draws; missing-middle
+  homes permitted minus teardowns, 4,000 draws):
+  - **ADU:** NC 318 → 306 → 201 (−37%; S.L. 2026-59 alone takes 306 → 201); TX 3,530 → 3,381 (−4%);
+    MN 534 → 527 (−1%); OH 435 and OR 0 unchanged.
+  - **Missing middle:** MN 704 → 617 (−12%); NC 1,193 → 1,125 (−6%); TX 4,747, OH 1,071 and OR 94 unchanged.
+    The 2025-12-31 arm reproduces D-063's published run exactly in all five states.
+  - **Against the expected direction:** every change is a fall, as expected, but **Oregon did not fall:** its 34
+    missing-middle rows dated 2027-01-01 are no stronger than the rules already in force in the same places, so
+    `current_dose` does not change.
+  - Results page: `reports/results-run-2026-11-09/run-results.html`, published at
+    https://claude.ai/artifact/4ArC6Uxh1TJKFpCfPLQvz2.

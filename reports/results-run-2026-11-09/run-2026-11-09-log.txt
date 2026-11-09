@@ -1,0 +1,47 @@
+== MN start 06:36:10
+wrote reports/results/mn/bundle.json (development, tier 1, overlap medium; pending: fees, adu+missing_middle, adu+fees, missing_middle+fees, combined)
+== MN exit 0 06:36:46
+== NC start 06:36:46
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/.venv/bin/lotline", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/cli.py", line 330, in main
+    return args.func(args)
+           ^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/cli.py", line 214, in _results
+    one(args.state.upper(), args.role, args.out)
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/cli.py", line 203, in one
+    bundle = results.build_bundle(state, store, role=role, origin=args.origin, draws=args.draws)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/model/results.py", line 380, in build_bundle
+    places = adu.places_from_store(st, store, origin)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/model/scenarios/adu.py", line 1180, in places_from_store
+    places = non_overlapping(places, store.read(state, "jurisdictions"), _county_shares(state, store, places))
+                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/model/scenarios/adu.py", line 1025, in _county_shares
+    return geoparts.county_shares(load_state(state).fips, sorted(local), store)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/adapters/national/geoparts.py", line 106, in county_shares
+    key = api_key() if (n > 1).any() else None
+          ^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/ws-baseline-export/src/lotline/adapters/national/acs.py", line 76, in api_key
+    raise CensusKeyError("CENSUS_API_KEY is not set (add it to .env; see README)")
+lotline.adapters.national.acs.CensusKeyError: CENSUS_API_KEY is not set (add it to .env; see README)
+== NC exit 1 06:36:48
+== OH start 06:36:48
+wrote reports/results/oh/bundle.json (development, tier 2, overlap low; pending: fees, adu+missing_middle, adu+fees, missing_middle+fees, combined)
+== OH exit 0 06:37:47
+== TX start 06:37:47
+wrote reports/results/tx/bundle.json (development, tier 3, overlap medium; pending: fees, adu+missing_middle, adu+fees, missing_middle+fees, combined)
+== TX exit 0 06:38:47
+== OR start 06:38:47
+wrote reports/results/or/bundle.json (transfer, tier 3, overlap high; pending: fees, adu+missing_middle, adu+fees, missing_middle+fees, combined)
+== OR exit 0 06:39:16
+ALLDONE
+
+# NC rerun after linking the main checkout's .env (CENSUS_API_KEY) into the worktree:
+== NC start ~06:39:30
+wrote reports/results/nc/bundle.json (development, tier 3, overlap medium; pending: fees, adu+missing_middle, adu+fees, missing_middle+fees, combined)
+== NC exit 0 06:39:50
