@@ -259,6 +259,13 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
     for part in ("Data available and data used", "Data tier", 'id="dash-host"', 'id="dash-frame"'):
         assert part in html
+    # Ben, 2026-11-09: the data page opens with what the model needs and from which years, then the
+    # dashboard, and lists every source last.
+    order = [html.index(p) for p in ('id="data-method"', 'id="data-body"', 'id="dash-host"', 'id="data-sources"')]
+    assert order == sorted(order)
+    method = html[html.index('id="data-method"'):html.index('id="data-body"')]
+    for kind in ("Parcels", "Zoning", "Building permits", "Prices and rents", "Development fees", "2027–2031"):
+        assert kind in method, kind
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
     assert json.loads(m.group(1)) is None

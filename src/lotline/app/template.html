@@ -195,12 +195,26 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
   <section class="part" id="page-data" data-section="data" hidden>
     <h2 class="h1">The data</h2>
     <p class="lead" id="data-lead"></p>
+    <div class="card" id="data-method"><h3 class="h3">What the model needs, and from which years</h3>
+      <p class="body-small">Every estimate starts from the same question: how many lots could take an extra home under the reform, and how often have owners actually built on lots like them? Answering it takes seven kinds of data.</p>
+      <div class="scroll"><table><thead><tr><th>Data</th><th>What it tells the model</th><th>Where it comes from</th><th>Years</th></tr></thead><tbody>
+        <tr><td><b>Parcels (lots)</b></td><td>How many lots could take an ADU or a 2–4 unit building: land use, lot size, year built and units on each lot.</td><td>County and state parcel rolls. Where a place has none, Census counts of single-family homes stand in.</td><td>The latest roll on file</td></tr>
+        <tr><td><b>Zoning and local rules</b></td><td>Which cities already allow ADUs or missing middle, and since when.</td><td>Each city's ordinances, looked up and coded by hand.</td><td>Adoption dates over the past decade or so; rules in force by the end of 2027 count as current</td></tr>
+        <tr><td><b>Building permits</b></td><td>How many homes get permitted each year, by building size (1, 2, 3–4, 5+ units), and how many ADUs where cities mark them.</td><td>Census Building Permits Survey for every place; city permit files for ADUs and local detail.</td><td>2001–2025 for the ups and downs of the building cycle; 2021–2025 for each place's current pace</td></tr>
+        <tr><td><b>Prices and rents</b></td><td>Whether a new home would sell or rent for enough to cover its cost.</td><td>Census American Community Survey (home values, rents); FHFA house price index.</td><td>Latest five-year survey; price index through 2025</td></tr>
+        <tr><td><b>Building costs and interest rates</b></td><td>What it costs to build and finance each kind of home.</td><td>The home builders' national construction cost survey (NAHB), brought to 2025 prices; mortgage rates and construction price indexes from FRED.</td><td>Current costs; rates 2015–2025</td></tr>
+        <tr><td><b>Development fees</b></td><td>What a city charges per new home, for the fee reform.</td><td>Each city's official fee schedule, copied and checked by hand.</td><td>Current schedules</td></tr>
+        <tr><td><b>Households and the shortage</b></td><td>How many homes the state needs, to put the results in proportion.</td><td>Each state demographer's population projections, turned into households with Census survey data; published estimates of the existing shortage (Up for Growth, Freddie Mac).</td><td>Growth from mid-2026 to mid-2031; shortage as last estimated</td></tr>
+      </tbody></table></div>
+      <p class="body-small"><b>The time line.</b> The model learns from permits through <b>2025</b>, the last full year of data, and forecasts the five years <b>2027–2031</b>, when a reform passed in 2027 could act. 2026 falls in between and is not reported. A few places' most recent years are hidden from the model so its forecasts for them can be tested blind.</p>
+    </div>
     <div id="data-body"></div>
     <div id="dash-host" hidden>
       <h3 class="h3" style="margin-top:var(--space-6)">Coverage, ordinances and growth</h3>
       <p class="body-small muted" id="dash-note"></p>
       <iframe class="dash" id="dash-frame" title="Data coverage, ordinances and growth" scrolling="no"></iframe>
     </div>
+    <div id="data-sources"></div>
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
@@ -525,15 +539,15 @@ const SECTIONS = {
       const title = r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
       return `<tr><td>${title}<br><span class="caption muted">${esc(r.source)} · ${r.scope === "national" ? "national" : "state"}</span></td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
     }).join("");
-    const dash = "";  // the dashboard itself sits below, in #dash-host (kept across state changes)
+    // The dashboard sits below this card, in #dash-host (kept across state changes); the full source list
+    // goes at the very bottom, in #data-sources.
+    $("data-sources").innerHTML = `<div class="card"><h3 class="h3">Data available and data used</h3>
+        <div class="scroll"><table><thead><tr><th>Source</th><th>Builds table</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>`;
     return `<div class="card"><p class="eyebrow">Data tier</p>
         <span class="tier"><span class="sw" style="background:var(--tier-${4 - Math.min(3, Math.max(1, b.meta.data_tier))})" aria-hidden="true"></span>${esc(tierWords[b.meta.data_tier] || `Tier ${b.meta.data_tier}`)}</span>
         <p class="body-small muted">The tier holding most of the state's eligible lots.${b.meta.eligible_proxy ? " Eligible lots are estimated from national data (ACS), scaled by the proxy test." : ""}</p>
-        <div class="tiles">${tiles}</div>${tierMix}</div>
-      <div class="card"><h3 class="h3">Data available and data used</h3>
-        <div class="scroll"><table><thead><tr><th>Source</th><th>Builds table</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>
-      ${dash}`;
+        <div class="tiles">${tiles}</div>${tierMix}</div>`;
   },
   trust(b) {
     const V = { pass: "Pass", partial: "Partial", fail: "Fail", not_run: "Not yet run" };
@@ -757,6 +771,7 @@ async function show(state) {
     b = await loadState(state);
   } catch (err) {
     if (ticket !== SHOWING) return;
+    $("data-sources").innerHTML = "";
     for (const id of Object.keys(SECTIONS)) $(`${id}-body`).innerHTML = `<p class="pending">This state's results could not be loaded (${esc(err.message)}). Rebuild the page with <code>uv run python scripts/build_app.py</code> and open it from the folder it was written to.</p>`;
     return;
   }
