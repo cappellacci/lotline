@@ -56,6 +56,6 @@ def test_generated_config_uses_the_window():
     p = load_params("housing_need")
     for st in ("mn", "nc", "tx", "oh", "or"):
         assert p[f"household_growth_5y_{st}"].unit == "households, mid-2026 to mid-2031"
-    # Minnesota and Oregon publish every year: no interpolation
-    assert "2026 published, 2031 published" in p["household_growth_5y_mn"].notes
-    assert "2026 published, 2031 published" in p["household_growth_5y_or"].notes
+    # Minnesota, Oregon and Texas publish every year: no interpolation
+    for st in ("mn", "or", "tx"):
+        assert "2026 published, 2031 published" in p[f"household_growth_5y_{st}"].notes

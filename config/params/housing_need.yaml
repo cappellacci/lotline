@@ -23,16 +23,17 @@ household_growth_5y_nc:
   notes: 'kind: household_growth_5y; vintage: Vintage 2025B (based on Vintage 2024 estimates; page updated 2026-05-26); ACS 2020-2024. Population 11,276,282 (July 2026) -> 11,790,587 (July 2031) (change
     +514,305; 2026 interpolated 2025-2030, 2031 interpolated 2030-2035) x 0.3991 households per person (constant headship: no state demographer publishes households). one series: low = high.'
 household_growth_5y_tx:
-  value: 675323
-  low: 578694
-  high: 835119
+  value: 681001
+  low: 583510
+  high: 837656
   unit: households, mid-2026 to mid-2031
-  source: 'Texas Demographic Center, Vintage 2024 population projections, state totals by migration scenario (mid = value, low and high scenarios = range); 2040 = the sum of the 254 counties in the Center''s
-    projections table (api/Tpepp/Projections/Totals/<scenario>, 2026-11-09): https://www.demographics.texas.gov/Projections/2024/ ; times households per person, ACS 2020-2024 B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html);
-    derived, analysis plan D-057'
-  notes: 'kind: household_growth_5y; vintage: Vintage 2024 (state released 2025-03); ACS 2020-2024. Population 32,044,905 (July 2026) -> 33,899,473 (July 2031) (change +1,854,568; 2026 interpolated 2025-2030,
-    2031 interpolated 2030-2040) x 0.3641 households per person (constant headship: no state demographer publishes households). low/high from the low and high migration scenarios. The projections table''s
-    2030 equals 33,546,497 (mid) exactly; its low and high 2030 (33,231,860 and 34,057,438) differ from the state-total file''s by about 9,000 (0.03%), so the low and high 2031 carry that much uncertainty.'
+  source: 'Texas Demographic Center, Vintage 2024 population projections, state totals by migration scenario (mid = value, low and high scenarios = range; annual, from the Projections Download Tool: all
+    years, total only, area State; downloaded by Ben 2026-11-09 and registered in the manifest): https://www.demographics.texas.gov/Projections/Download ; times households per person, ACS 2020-2024 B11001_001
+    / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html); derived, analysis plan D-057'
+  notes: 'kind: household_growth_5y; vintage: Vintage 2024 (state released 2025-03); ACS 2020-2024. Population 32,046,803 (July 2026) -> 33,916,964 (July 2031) (change +1,870,161; 2026 published, 2031 published)
+    x 0.3641 households per person (constant headship: no state demographer publishes households). low/high from the low and high migration scenarios. The low and high 2025 and 2030 transcribed earlier
+    (D-057: 31,620,140 / 33,241,070 and 31,754,955 / 34,066,155) differ from the Center''s current file by 1,456 to 9,210; the file''s values agree with the Center''s projections table and are used. Mid
+    matches exactly.'
 household_growth_5y_oh:
   value: -33316
   low: -33316
