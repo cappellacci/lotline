@@ -390,8 +390,10 @@ const SIZE_WORDS = { "1": "Single-family (1 unit)", "2": "Duplexes (2 units)", "
 // engine's central assumptions, so the sliders don't move them; for missing middle a grey whisker is the
 // no-change forecast of homes in 2-4 unit buildings. Permits against permits, one linear scale.
 const RECORD = {
-  adu: { measure: "adu_permits", what: "ADU permits", base: null },
-  missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", base: "2_4" },
+  adu: { measure: "adu_permits", what: "ADU permits", base: null, reform: "the ADU reform",
+    pace: "The forecast is a range for each year." },
+  missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", base: "2_4", reform: "the missing-middle reform",
+    pace: "The forecast is a range for each year; the reform's homes build up over the first years." },
 };
 function recordHtml(b, d) {
   const spec = RECORD[d];
@@ -425,7 +427,7 @@ function recordHtml(b, d) {
   for (const r of base) parts.push(whisker(x(r.year) - off, r, "var(--scenario-baseline)", `${spec.what} with no change`));
   for (const r of fut) parts.push(whisker(x(r.year) + off, r, color, "added by the reform"));
   const gap = obs.length && fut.length && fut[0].year - obs[obs.length - 1].year > 1 ? obs[obs.length - 1].year + 1 : null;
-  if (gap !== null) parts.push(`<text x="${x(gap)}" y="${T + 12}" text-anchor="middle">not modelled</text>`);
+  if (gap !== null) parts.push(`<line x1="${x(gap)}" x2="${x(gap)}" y1="${T}" y2="${y(0)}" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="3 3"></line>`);
   const svg = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${name}: ${spec.what} permitted each year, and the reform's added permits each year`)}" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>`;
   const a = obs.length ? obs[0] : null;
   const cover = d === "adu" && a ? (Number.isFinite(a.population_share)
@@ -436,9 +438,9 @@ function recordHtml(b, d) {
     ${base.length ? `<span><span style="display:inline-block;width:12px;height:3px;background:var(--scenario-baseline);margin-right:6px;vertical-align:middle"></span>Expected with no change (P10–P90)</span>` : ""}
     <span><span style="display:inline-block;width:12px;height:3px;background:${color};margin-right:6px;vertical-align:middle"></span>Added by the reform (P10–P90, bar at the midpoint)</span></div>`;
   return `${title}
-    <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(scenLabel(d))} would add each year from ${fut.length ? fut[0].year : "the window's start"}. The forecast is a range for each year; the reform's homes build up over the first years.</p>
+    <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
-    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. Whiskers: added permits at the engine's central assumptions; the sliders above do not move this chart.</p>`;
+    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Whiskers: added permits at the engine's central assumptions; the sliders above do not move this chart.</p>`;
 }
 
 function baselineHtml(b) {
@@ -483,10 +485,10 @@ const SECTIONS = {
         <div class="headline" id="headline"></div>
         <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
           <span class="muted" id="outcome-note"></span></div>
-        <div id="two-numbers" style="margin-top:var(--space-3)"></div>
         <div class="ranges" id="ranges">${rows.join("")}</div>
         <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
         ${pendNote}
+        <div id="two-numbers" style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:var(--stroke-hair) solid var(--rule)"></div>
         <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
       </div>
       <div class="card" id="record-card"></div>
