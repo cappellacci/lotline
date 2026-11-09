@@ -259,14 +259,17 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
     for part in ("Data available and data used", 'id="dash-host"', 'id="dash-frame"', 'id="dash-state"'):
         assert part in html
-    assert "<p class=\"eyebrow\">Data tier</p>" not in html  # dropped (Ben, 2026-11-09): the dashboard carries coverage
+    # The tier card was dropped (Ben, 2026-11-09): the dashboard carries coverage.
+    assert '<p class="eyebrow">Data tier</p>' not in html
     assert 'scope: "ALL"' in html  # the dashboard opens on every state, with its own dropdown
     # Ben, 2026-11-09: the data page opens with what the model needs and from which years, then the
     # dashboard, and lists every source last.
-    order = [html.index(p) for p in ('id="data-method"', 'id="data-body"', 'id="dash-host"', 'id="data-sources"')]
+    slots = ('id="data-method"', 'id="data-body"', 'id="dash-host"', 'id="data-sources"')
+    order = [html.index(p) for p in slots]
     assert order == sorted(order)
     method = html[html.index('id="data-method"'):html.index('id="data-body"')]
-    for kind in ("Parcels", "Zoning", "Building permits", "Prices and rents", "Development fees", "2027–2031"):
+    kinds = ("Parcels", "Zoning", "Building permits", "Prices and rents", "Development fees", "2027–2031")
+    for kind in kinds:
         assert kind in method, kind
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
@@ -278,8 +281,17 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
     from lotline.config import load_params
 
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    for part in ("Validation scorecard", "Blind tests", "Overlap check", 'id="tornado"', "Technical detail"):
+    parts = ("Overlap check", 'id="tornado"', "Technical detail", 'id="dag"', 'id="conf-table"',
+             'id="checks"')
+    for part in parts:
         assert part in html, part
+    # Ben, 2026-11-09: the model page runs in order: goal, data, model and range, other states, then limits.
+    steps = ["step-goal", "step-data", "step-model", "step-states", "step-limits"]
+    assert [html.index(f'id="{s}"') for s in steps] == sorted(html.index(f'id="{s}"') for s in steps)
+    register = (REPO / "docs/research/lotline-confounder-register.csv").read_text().splitlines()[1:]
+    ids = [line.split(",", 1)[0] for line in register if line.strip()]
+    for cid in ids:  # every factor in the register is on the page with what was done about it
+        assert f'["{cid}", ' in html, cid
     agg = load_params("aggregate")
     assert _embedded(html)["overlap_thresholds"] == {
         "medium": agg["overlap_flag_medium_distance"].value,
