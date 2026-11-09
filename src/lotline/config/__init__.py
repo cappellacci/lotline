@@ -138,8 +138,9 @@ def load_fees(state: str, config_dir: Path = CONFIG_DIR):
     for col in ("effective_date", "verified_date"):
         if col in df:
             df[col] = pd.to_datetime(df[col])
-    for col in ("year", "dollar_year"):
-        df[col] = df[col].astype("Int64")
+    for col in ("year", "dollar_year", "in_force_through"):
+        if col in df:
+            df[col] = df[col].astype("Int64")
     return validate(df, "fees")
 
 

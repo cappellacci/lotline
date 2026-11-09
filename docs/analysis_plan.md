@@ -1462,6 +1462,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **No revenue toggle yet:** the "revenue not replaced" offset (fees causal diagram, C51) has no sourced size.
   It stays open.
 - **Decided by:** proposed by thread 02 in the fee-scenario PR; for Ben to confirm.
+- **Status 2026-11-09:** adopted with amendments by D-065 (revenue toggle default; single-family dose is
+  interim until doses by building type are built).
 
 ### D-033 · 2026-10-20 · Proposed: feasibility-channel inputs from parcel rolls
 - Candidate lots are VACANT_RESIDENTIAL parcels with a land value in the newest roll ≤ origin + 1.
@@ -1471,6 +1473,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - In the MN development run only Minneapolis qualifies. Dakota and Anoka County rolls code no vacant
   residential parcels, and several places lack year built or building sq ft.
 - **Decided by:** proposed by thread 02; for Ben to confirm.
+- **Status 2026-11-09:** adopted unchanged by D-065.
 
 ### D-034 · 2026-10-20 · Proposed: when a coded local fee is complete enough to use
 - A place's coded fee is used only if it includes a water/sewer fee. Utility fees are usually the largest
@@ -1480,6 +1483,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   from too low to too high, so the output lists `fee_source` and `fee_components` for every place.
 - **Decided by:** proposed by thread 02; for Ben to confirm. An alternative is a component-wise prior
   (fill only the missing components).
+- **Status 2026-11-09:** not adopted. Replaced by the component-wise fill in D-065.
 
 ### D-035 · 2026-10-22 · Eligible-parcel history for places counted from a parcel roll: ACS scaled to the roll (#208)
 - **Found:** a jurisdiction counted from a parcel roll had a denominator only in its roll year(s), while ACS-fallback
@@ -4336,6 +4340,106 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     before the next run.
   - **Decided 2026-11-09:** end-2025 mix (Ben, "End-2025 mix"). See D-067.
 
+### D-065 · 2026-11-09 · Fee scenario, Phase 0: D-032 to D-034 settled, three fee scenarios, fill rule for missing fees (method only, before any run)
+- **Why now:** office hours on 2026-11-03 (`docs/research/office-hours-2026-11-03-tomasso-notes.md`, A4, A5,
+  A8) asked for the Handbook benchmark plus a clearly labeled real-fee scenario, a supply-side comparison
+  across single-family, duplex and fourplex, and stated limits. D-032 to D-034 had been proposed since
+  2026-10-20 and never confirmed. This entry settles them before the fee build continues. No model was run.
+- **D-032 adopted, with two amendments.**
+  - *Revenue toggle:* the default is "revenue replaced": a fee cut has no offsetting effect through lost
+    infrastructure money (fees causal diagram, C51). No size is put on the other case, because no source
+    gives one. It is listed as a limitation (below), not modeled.
+  - *Dose by building type:* using the single-family dose for every census size class is interim. It is
+    replaced when per-type fee levels and the duplex/fourplex pro formas exist (fee plan Phase 2), with a
+    new entry at that point.
+- **D-033 adopted unchanged.**
+- **D-034 replaced by a component-wise fill.** A place keeps every fee component it has coded. Only what is
+  missing is filled:
+  - *Places with some coded rows:* a missing `water_sewer` or `permit` component (every new home pays for a
+    building permit and a utility connection) is filled with the median of that component across the
+    state's coded places. Missing `impact`, `planning` or `other` components are not filled: many places
+    charge none (Dallas has no impact fee, confirmed), so filling them would invent fees. They count as zero.
+  - *Places with no coded rows:* the median coded total of the state's places.
+  - *States with fewer than 5 coded places* (the minimum D-022 uses for priors; Ohio today has none): the
+    medians are pooled across all coded states. The Handbook's $50,000 is no longer a fallback in the local
+    scenarios; it is used only in the benchmark.
+  - Every place reports `fee_source` (`local`, `local + filled: <components>`, `state median`,
+    `pooled median`) and `fee_components`, so a reader sees what was coded and what was filled.
+  - Medians are taken per building type once per-type fee levels exist (fee plan Phase 1); until then, on
+    the single-family rows.
+- **Three fee scenarios, each labeled in plain language:**
+  - `fees` (benchmark, Handbook definition): "Benchmark: a $50,000 fee cut in half." Every place's fee is
+    $50,000 per unit and the cut is $25,000. It is the comparable scenario across entries.
+  - `fees_local_half`: "Real local fees cut in half." The cut is 50% of each place's local fee level.
+  - `fees_local_25k`: "Real local fees cut by up to $25,000." The cut is the smaller of $25,000 and the
+    place's local fee, so in most coded places fees fall to zero.
+  - All three keep the same channels, λ, ε and ramp (D-032), so they differ only in the size of the cut.
+    The output shows each place's local fee level next to $50,000 (A4's caveat: observed fees in MN, NC and
+    TX are mostly well below $50,000; Portland's and Bend's come closest).
+- **Dollar year:** the Handbook's $50,000 and $25,000 are read as 2025 dollars (`money.yaml`
+  `real_dollar_year`). The Handbook does not state a year; 2025 is the protocol's real-dollar year (§5.9).
+  Coded local fees are in each schedule's own dollars (`dollar_year`) and are deflated to 2025 with CPI-U
+  before use. `local_fees` does not deflate yet: that is a fee plan Phase 1 task.
+- **Fee-increase sensitivity:** the same machinery run with a fee rise (negative cut) is reported as a
+  sensitivity, not a scenario, for the policy point that higher impact fees cost homes (A4).
+- **Fee-structure scenario (stretch):** utility connection fees scaled by home size instead of charged per
+  unit. Planned after Phase 2 (pencil-out table and per-type doses) works; not built before then.
+- **Limitations to state in D4 ("what the model can't tell"):** no effect on prices or rents (developers
+  still charge market rate; office hours point 7 and A8); no effect of fees on approval time; revenue replacement assumed; the
+  Handbook's $50,000 is high for the states modeled, so the benchmark result is not a forecast of a
+  realistic local fee cut.
+- **Decided by:** Ben, 2026-11-09 (Phase 0 of the fee plan: "both, labeled" for the real-fee cut; fill only
+  the missing part; fee-structure scenario as a stretch). Component-level details (which components are
+  filled, the 5-place minimum, the pooled median as the last fallback) were written by Claude Code to carry
+  out that choice, for Ben to confirm in the PR. **Status:** method approved, not built, not run.
+
+### D-066 · 2026-11-09 · Fee levels by building type, in 2025 dollars, with ranges and still-in-force rows (#247; fee plan Phase 1)
+- **What it builds:** `src/lotline/model/fee_levels.py` carries out D-065's fill and adds four rules.
+  `scenarios/fees.py` now has the three D-065 scenarios (`handbook`, `local_half`, `local_25k`; `local` is
+  accepted as the old name of `local_half`). No model was run.
+- **Schema 1.13 (numbered 1.11 when written; renumbered at merge after main took 1.11-1.12; #247; Ben approved both columns on 2026-11-09):**
+  - `in_force_through`: an older fee row still in force. Per place and component the newest schedule year
+    counts, plus older rows whose `in_force_through` reaches it. Keying on `fee_type` was rejected because the
+    wording of the same fee changes between years (Burnsville's SAC, Coon Rapids' permit table), so it would
+    count one fee twice. Set for Austin's 2023 water and wastewater impact fees and Bend Park & Recreation
+    District's FY 2025-26 park SDC. Austin's house fee goes from $6,763 to $14,463; Bend's from $23,162 to
+    $34,598.
+  - `amount_per_unit_low_usd` and `amount_per_unit_high_usd`: the range of a fee that varies by area, basin,
+    tier or plat date. Filled for the Texas groups under Ben's 2026-10-30 rule (SAWS, Austin, Fort Worth)
+    from the amounts already in their notes. The local scenarios draw each place's fee as triangular(low,
+    central, high) in every simulation draw.
+- **Building types (Claude Code's rule, for Ben to confirm):** for a duplex, 3–4 unit building or ADU, each
+  component uses the type's own rows if coded, else the place's `OTHER` rows, else the place's house amount for
+  that component ("from SFD"). The last step reads a fee coded for houses as charged per unit to the other
+  types unless the schedule says otherwise. That matches the per-unit connection fees Amy named as the problem
+  for missing middle, but it overstates fees where a plex shares one meter.
+- **Real dollars:** each row is converted from its `dollar_year` to 2025 dollars with CPI-U. Schedule years
+  after the index's last year (2026) are taken at 2025: no adjustment, a small overstatement (about 3%).
+- **Fill details (D-065 confirmed in code):** a filled component's range is the 25th–75th percentile of the
+  places it came from, so a filled fee carries their spread. NC, OR and TX code no or almost no building-permit
+  fees, so 23 of 39 coded places get a permit fee from the pooled median: about $4,000 nominal (25th–75th
+  percentile $2,600–$5,700), from 12 Minnesota places and 1 Texas place. In effect, Minnesota's permit and
+  plan-review costs stand in for NC, OR and TX. Coding one or two permit schedules per state would replace
+  that. For building types with fewer than 5 coded places, the house prior is used.
+- **Result on coded places** (`docs/research/fee-levels-vs-handbook.md`; 2025 dollars, house): median $9,148
+  MN, $9,632 NC, $9,461 TX, $33,553 OR. No coded place reaches $50,000. That is the D4 caveat (office hours A4).
+- **Conflict to settle: Eugene.** On 2026-11-04 Ben kept Eugene on the Handbook prior, because its stormwater
+  SDC is unchecked and its `amount_per_unit_usd` is blank (lower bound for a house $14,441.89). D-065 removes
+  the $50,000 fallback, so Eugene now takes the pooled median (house $6,981), well below its known lower bound.
+  Options: (a) code Eugene's known components and treat stormwater as the missing part (range from the lower
+  bound up); (b) keep a place-level override to the Handbook figure for Eugene only.
+  **Settled 2026-11-09: option (a).** `scripts/dev/eugene_fees_2026_11_09.py` prices six rows for a 2,000 sq ft
+  house: EWEB water $2,276 (upper pressure zones $3,063 as the high), local wastewater $811.97, MWMC $1,990,
+  parks $7,880.61, transportation $3,759.31, and stormwater general capacity $789.99, with the LID capacity
+  charge added for the high ($7,860.28). House: $17,507.88 central and low, $25,365.17 high (nominal; test in
+  `tests/states/or/test_fees.py`). Eugene still has no permit row, so its permit is filled like any other
+  place's. Limit: the duplex, fourplex and ADU rows stay blank, so for water/sewer those types get only the
+  general local wastewater row ($811.97) and run about $4,300 per unit low. Phase 2 codes them.
+- **Decided by:** Ben, 2026-11-09 (schema columns; start of Phase 1). Ben confirmed on 2026-11-09 the details
+  Claude Code wrote: the building-type fallbacks (own rows, then OTHER, then the place's SFD amount), the CPI
+  cap, the P25–P75 range for filled fees and the 5-place minimum for a state prior. Eugene, option (a): Ben,
+  2026-11-09. **Status:** built and tested; not run.
+
 ### D-067 · 2026-11-09 · Places that borrow their rules borrow the end-2025 mix (method only, before the run)
 - **Decision (Ben, 2026-11-09, "End-2025 mix"):** D-064's date (31 December of the window's first year,
   2027-12-31) applies only to **a place's own coded rules**. Everything a place without its own rule borrows
@@ -4435,6 +4539,22 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Run E is also the first official run with the baseline part (schemas 1.11).
   - Page: Finding 7 of https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs (version 3), with the permits
     actually issued in 2021–2025 (`scripts/dev/observed_permits.py`, `reports/results-2026-11-09/observed.json`).
+
+### D-069 · 2026-11-09 · Duplex and fourplex utility fees: one meter per unit is the central case (method only, before any run)
+- **Question:** where a place charges water/sewer fees by meter and lets the builder choose between one meter per
+  dwelling unit and one shared (master) meter, which case is the central fee for a duplex or fourplex?
+- **Chosen:** one meter per dwelling unit is the central value (`amount_per_unit_usd`). The master-meter case
+  goes in `amount_per_unit_low_usd` / `amount_per_unit_high_usd`, so it is part of every local scenario's
+  range (D-066 draws the fee within it).
+- **Why:** it is the utilities' default where the rules say anything (e.g. WSFCU Part A §14(A), "Each water
+  Customer shall be required to have a separate meter"; Austin and Dallas take one tap application per unit), and
+  separate ownership (condo or townhouse units) requires it. A master meter is common for a rental fourplex
+  and makes it much cheaper per unit (WSFCU $919–$2,298 against $3,677 for a house; SAWS half an EDU per unit),
+  so the central case is conservative for the density argument.
+- **Consequence for reporting:** the SFD / duplex / fourplex pencil-out (fee plan Phase 2) shows the
+  master-meter case as a named sensitivity, so a reader sees how much a shared meter changes whether a fourplex
+  pencils. Fee lookups (PR #346 and the priority 4 coverage lookups) follow this rule.
+- **Decided by:** Ben, 2026-11-09 (proposed in PR #346). **Status:** method only; no run.
 
 ### D-070 · 2026-11-09 · ADUs: the observed floor trails the data origin; a `historical_floor` scorecard check (deviation from D-019; written after the diagnosis, before the re-run)
 - **Why:** office hours 2026-11-09 (Greg Miller): NC's ADU result read as below NC's own history. WS-NC-GUTCHECK

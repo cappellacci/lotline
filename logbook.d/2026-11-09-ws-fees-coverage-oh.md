@@ -1,0 +1,11 @@
+### LB-NNN · 2026-11-09 · Build: Ohio fee coverage for the six largest places (fee lookups, priority 4)
+- **Question:** what do Columbus, Cleveland, Cincinnati, Toledo, Akron and Dayton charge a new house, duplex and fourplex in water/sewer, permit and impact fees, so Ohio stops borrowing other states' median?
+- **What I did:**
+  - Found who issues permits and which utility connects each place; read the official schedules (Columbus DOW/DOSD and BZS 2026, Cleveland Water 2025-29 and Building & Housing, GCWW and MSD 2026, Cincinnati B&I 2026, Toledo Municipal Code Ch. 1307 and DPU fee sheet, Dayton building application 4/2026, ORC 3781.102 for the state surcharge).
+  - Coded 110 rows into a new `config/fees/oh.csv` (SFD, U2 and U3_4 rows for every item; one meter per unit central, master meter as the low end, D-069) with the dated idempotent script.
+- **Inputs:** official city/utility schedules listed in each row's `source`; prototypes from the task.
+- **Outputs:** `scripts/dev/coverage_fees_oh_2026_11_09.py`, `scripts/dev/coverage_fees_oh_2026_11_09_rows.json`, `config/fees/oh.csv`, `docs/research/fee-levels-vs-handbook.md` (regenerated; OH now has a "By state" row, 5 places).
+- **Findings:** coded house fees run $2,958 (Toledo) to $15,826 (Cincinnati, driven by the $5,900 MSD tap permit and the $4,063 GCWW branch); OH median $7,194, 14% of the Handbook's $50,000. No Ohio place found has impact fees. Akron is blocked (robots.txt 403); Dayton water/sewer and Toledo system development charges were not found.
+- **Decisions:** none proposed.
+- **AI:** Claude found and read the sources through the web-fetch tool (direct downloads were refused by the session proxy), so every `source_quote` is blank and notes say so; amounts and arithmetic are in each row's notes; checked with `load_fees`, the fee tests, `fee_levels_table.py` and `compliance_check.py` (0 FAIL). Plumbing fixture counts are assumptions, stated in notes.
+- **Open / next:** a person should open akronohio.gov (Akron building and water/sewer fees), Dayton water/sewer tap fees, Toledo's current SDC schedule, and re-read the Columbus water schedule columns and quotes from local PDF copies.

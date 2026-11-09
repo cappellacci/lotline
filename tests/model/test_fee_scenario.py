@@ -46,20 +46,47 @@ def test_local_fees_newest_year_per_component():
     assert out.at["2", "local_fee_per_unit"] == 700
 
 
-def test_fee_levels_local_needs_water_sewer_else_prior():
+def test_fee_levels_local_never_falls_back_to_the_handbook_fee():
     places = pd.DataFrame(
         {
-            "local_fee_per_unit": [5500.0, 700.0, np.nan],
-            "fee_components": ["permit,water_sewer", "permit", None],
+            "local_fee_per_unit": [5500.0, 700.0],
+            "fee_source": ["local", "local + filled: water_sewer (state median)"],
         }
     )
-    level, source = fees.fee_levels(places, "local", HAND)
-    assert list(level) == [5500, 50000, 50000]
-    assert list(source) == ["local", "national prior", "national prior"]
+    level, source = fees.fee_levels(places, "local_half", HAND)
+    assert list(level) == [5500, 700] and source[1].startswith("local + filled")
+    assert list(fees.fee_levels(places, "local", HAND)[0]) == [5500, 700]  # old name of local_half
     level, source = fees.fee_levels(places, "handbook", HAND)
-    assert list(level) == [50000] * 3 and set(source) == {"handbook"}
+    assert list(level) == [50000] * 2 and set(source) == {"handbook"}
     with pytest.raises(ValueError):
         fees.fee_levels(places, "other", HAND)
+    with pytest.raises(ValueError, match="not a fallback"):
+        fees.fee_levels(places.assign(local_fee_per_unit=[5500.0, np.nan]), "local_25k", HAND)
+
+
+def test_fee_cut_by_scenario_by_hand():
+    fee = np.array([6000.0, 80000.0])
+    # Half of the local fee: 3,000 and 40,000. Up to $25,000: all of 6,000; 25,000 of 80,000.
+    assert list(fees.fee_cut(fee, HAND, "local_half")) == [3000, 40000]
+    assert list(fees.fee_cut(fee, HAND, "local_25k")) == [6000, 25000]
+    # Builders keep half: 3,000 and 12,500.
+    assert list(fees.builder_saving(fee, HAND, "local_25k")) == [3000, 12500]
+
+
+def test_fee_draws_stay_in_range_and_center_on_the_central_value():
+    places = pd.DataFrame(
+        {
+            "local_fee_per_unit": [5000.0, 8000.0],
+            "local_fee_low": [4000.0, np.nan],
+            "local_fee_high": [7000.0, np.nan],
+        }
+    )
+    d = fees.fee_draws(places, "local_half", HAND, 4000, 1)
+    assert d[:, 0].min() >= 4000 and d[:, 0].max() <= 7000
+    # triangular(4,000, 5,000, 7,000) has mean 16,000 / 3 = 5,333.
+    assert d[:, 0].mean() == pytest.approx(16000 / 3, rel=0.02)
+    assert np.all(d[:, 1] == 8000)  # no range: held at the central value
+    assert np.all(fees.fee_draws(places, "handbook", HAND, 10, 1) == 50000)
 
 
 def test_builder_saving_and_elasticity_by_hand():
@@ -117,8 +144,10 @@ def places_frame(with_parcels: bool):
             "state": ["MN", "MN"],
             "baseline_units": [100.0, 40.0],
             "home_value": [300000.0, 250000.0],
-            "local_fee_per_unit": [8000.0, np.nan],
-            "fee_components": ["permit,water_sewer", None],
+            "local_fee_per_unit": [8000.0, 6000.0],
+            "local_fee_low": [8000.0, 4500.0],
+            "local_fee_high": [8000.0, 9000.0],
+            "fee_source": ["local", "state median"],
         }
     )
     if with_parcels:
@@ -148,13 +177,15 @@ def test_bigger_cut_never_lowers_output(with_parcels, mode):
 def test_channel_choice():
     c = fees.central_path(places_frame(True))
     assert list(c["channel"]) == ["feasibility", "elasticity"]
-    assert list(c["fee_source"]) == ["local", "national prior"]
+    assert list(c["fee_source"]) == ["local", "state median"]
     assert list(fees.central_path(places_frame(False))["channel"]) == ["elasticity", "elasticity"]
 
 
-def test_run_ranges_and_state_sum():
+@pytest.mark.parametrize("mode", fees.MODES)
+def test_run_ranges_and_state_sum(mode):
     places = places_frame(True)
-    yearly, totals, summary = fees.run(places, 2025, draws=200, summary_by="state")
+    yearly, totals, summary = fees.run(places, 2025, mode=mode, draws=200, summary_by="state")
+    assert set(totals["scenario_label"]) == {fees.LABELS[mode]}
     assert len(yearly) == 2 * 5 and list(yearly["year"].unique()) == [2027, 2028, 2029, 2030, 2031]
     for t in (yearly, totals):
         assert (t["units_added_p10"] <= t["units_added_p50"]).all()

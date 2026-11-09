@@ -519,8 +519,12 @@ these totals will move as more rules are coded.
   missing, the fallback is the elasticity form (D-010):
   %Δ permits = ε × (1 − λ) × Δfee / TDC × ramp(t), with TDC the total development cost. At an illustrative TDC
   of $350,000 (the $25,000 cut is about 7%): central 0.3 × 0.5 × 7% ≈ +1%; high 1.75 × 0.75 × 7% ≈ +9%
-  single-family permits over five years (`fees.yaml` notes). Real local fees will be shown next to the
-  Handbook's $50,000, because real fees are far lower in most places checked.
+  single-family permits over five years (`fees.yaml` notes). Three labeled fee scenarios (D-065): the
+  benchmark ($50,000 cut to $25,000 everywhere), "real local fees cut in half", and "real local fees cut by
+  up to $25,000". Local fees come from `model/fee_levels.py` (D-066): per place and building type, in 2025
+  dollars, with a range, and with missing permit and water/sewer charges filled from the median of coded
+  places. Coded fees for a house have a median of about $9,000 to $10,000 in MN, NC and TX and about $34,000
+  in Oregon, against the Handbook's $50,000 (`docs/research/fee-levels-vs-handbook.md`).
 - **Combined runs:** one allocation step so the same lot is never counted for both ADU and missing middle; the
   combined result is at most the sum of the parts.
 

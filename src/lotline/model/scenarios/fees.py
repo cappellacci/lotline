@@ -1,16 +1,21 @@
 """Handbook fee scenario: cut development fees by half (Handbook benchmark; fees causal diagram; methods
 review §3c).
 
-**How big is the cut?** Each place's fee level F per unit is either:
+**How big is the cut?** Three labeled scenarios (D-065):
 
-- `local` (default): the place's coded single-family fee per unit from config/fees (`local_fees`): SFD and
-  OTHER rows' `amount_per_unit_usd`, each fee component at its newest coded year, summed. It is used only
-  where a water/sewer fee is coded (the largest component, and the one most often missing); elsewhere F is the
-  national prior, `handbook_fee_per_unit_usd` ($50,000). `fee_source` says which.
-- `handbook`: $50,000 everywhere (the Rules' benchmark).
+- `handbook` ("Benchmark: a $50,000 fee cut in half"): F = `handbook_fee_per_unit_usd` ($50,000, 2025
+  dollars) everywhere; Δ = `handbook_fee_cut_share` × F = $25,000. The Rules' benchmark.
+- `local_half` ("Real local fees cut in half"; `local` is accepted as its old name): F = the place's local
+  single-family fee per unit (`local_fee_per_unit`, from `lotline.model.fee_levels.place_fees`: coded rows in
+  2025 dollars, missing permit and water/sewer parts filled from a prior, D-065); Δ = cut share × F.
+- `local_25k` ("Real local fees cut by up to $25,000"): the same F; Δ = min(cut share × $50,000, F).
 
-The cut is Δ = `handbook_fee_cut_share` × F. Builders keep (1 − λ) × Δ; the rest ends up in land prices
-(λ = `land_capture_share`, C18). That builder saving s moves permits through one of two channels:
+In the local scenarios F is drawn in each simulation draw within the place's range (`local_fee_low`,
+`local_fee_high`: fees that vary by area, basin or plat date, and the spread of a filled prior; #247), as a
+triangular(low, central, high). The $50,000 is never a fallback there: a place with no local fee is an error.
+
+Builders keep (1 − λ) × Δ; the rest ends up in land prices (λ = `land_capture_share`, C18). That builder
+saving s moves permits through one of two channels:
 
 - **(a) Feasibility** (places with parcel data): the single-family pro forma at the place's new-home value
   gives the residual land value before the cut (fee F) and after it (fee F − s). A candidate lot is feasible
@@ -24,27 +29,33 @@ Either way the change phases in:  added units(t) = baseline units(t) × %Δ × r
 ramp(t) = 1 / (1 + exp(−(t − half) / slope)) (`fee_ramp_half_years`, `fee_ramp_slope_years`).
 A zero cut adds nothing, and a bigger cut never adds less (both channels are monotone in s).
 
-Every result is a range: P10/P50/P90 and the mean over `fee_simulation_draws` draws of ε, λ, the ramp and the
-pro forma parameters (each triangular over low, central, high). The baseline enters as its mean per year, so
+Every result is a range: P10/P50/P90 and the mean over `fee_simulation_draws` draws of ε, λ, the ramp, the
+pro forma parameters and, in the local scenarios, the local fee (each triangular over low, central, high).
+The baseline enters as its mean per year, so
 the range is the scenario's, not the baseline's. Places must be non-overlapping units to be summed (D-020).
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 
 import numpy as np
 import pandas as pd
 
 from lotline.config import load_params
 from lotline.model import baseline as baseline_model
+from lotline.model import fee_levels as fee_level_rules
 from lotline.model import hazard, proforma
 
 PARAM_FILES = ("fees", "proforma")
 FIXED = proforma.NOT_SAMPLED | {"fee_simulation_draws", "fee_simulation_seed", "fee_feasibility_min_lots"}
-MODES = ("local", "handbook")
-SFD_TYPES = ("SFD", "OTHER")  # OTHER rows apply to any building type and are priced at the SFD prototype
-REQUIRED_COMPONENT = "water_sewer"  # a local fee total without it is too incomplete to use (D-034)
+MODES = ("handbook", "local_half", "local_25k")
+ALIASES = {"local": "local_half"}  # the name before D-065
+LABELS = {
+    "handbook": "Benchmark: a $50,000 fee cut in half",
+    "local_half": "Real local fees cut in half",
+    "local_25k": "Real local fees cut by up to $25,000",
+}
 
 
 def specs() -> dict:
@@ -73,55 +84,67 @@ def draw_params(n: int, seed: int) -> list[dict[str, float]]:
 # ---------------------------------------------------------------------------------------------------------
 
 
-def local_fees(fees: pd.DataFrame, types: Sequence[str] = SFD_TYPES) -> pd.DataFrame:
-    """Coded fee per unit for a new single-family home, per place (config/fees rows).
+def _mode(mode: str) -> str:
+    mode = ALIASES.get(mode, mode)
+    if mode not in MODES:
+        raise ValueError(f"mode must be one of {MODES}, not {mode!r}")
+    return mode
 
-    For each place and fee component, the newest year with any per-unit amount; those rows summed.
-    Returns geoid, local_fee_per_unit, fee_components (sorted, comma-separated), fee_years ('component:year').
+
+def local_fees(fees: pd.DataFrame, index: pd.Series | None = None) -> pd.DataFrame:
+    """Coded fee per unit for a new single-family home, per coded place, before any fill.
+
+    A thin wrapper over `lotline.model.fee_levels.coded_fees` (building type SFD), kept for callers of the
+    pre-D-065 API. Per component, the newest year with a per-unit amount, plus older rows still in force
+    (#247).
     By hand: permit 2023 $3,000 and 2026 $3,500; water_sewer 2025 $2,000 -> $5,500 (permit 2026 + w/s 2025).
     """
-    cols = ["geoid", "local_fee_per_unit", "fee_components", "fee_years"]
-    f = fees[fees["building_type_std"].isin(types) & fees["amount_per_unit_usd"].notna()]
-    if f.empty:
-        return pd.DataFrame(columns=cols)
-    newest = f.groupby(["jurisdiction_geoid", "fee_component"])["year"].transform("max")
-    f = f[f["year"] == newest]
-    by = f.groupby(["jurisdiction_geoid", "fee_component"]).agg(
-        amount=("amount_per_unit_usd", "sum"), year=("year", "max")
-    )
-    rows = []
-    for geoid, g in by.groupby(level=0):
-        comps = g.index.get_level_values(1)
-        rows.append(
-            {
-                "geoid": geoid,
-                "local_fee_per_unit": float(g["amount"].sum()),
-                "fee_components": ",".join(sorted(comps)),
-                "fee_years": ",".join(f"{c}:{int(y)}" for c, y in zip(comps, g["year"], strict=True)),
-            }
-        )
-    return pd.DataFrame(rows, columns=cols)
+    return fee_level_rules.coded_fees(fees, "SFD", index=index)
 
 
 def fee_levels(places: pd.DataFrame, mode: str, params: Mapping[str, float]) -> tuple[np.ndarray, np.ndarray]:
-    """Fee per unit before the cut, and where it came from ('local' or 'national prior')."""
-    if mode not in MODES:
-        raise ValueError(f"mode must be one of {MODES}, not {mode!r}")
-    prior = params["handbook_fee_per_unit_usd"]
+    """Central fee per unit before the cut, and where it came from (`fee_source`, or 'handbook')."""
+    mode = _mode(mode)
     n = len(places)
     if mode == "handbook":
-        return np.full(n, prior), np.full(n, "handbook", dtype=object)
-    local = places.get("local_fee_per_unit", pd.Series(np.nan, index=places.index)).astype(float)
-    comps = places.get("fee_components", pd.Series("", index=places.index)).fillna("").astype(str)
-    usable = local.notna() & comps.str.split(",").apply(lambda c: REQUIRED_COMPONENT in c)
-    level = np.where(usable, local, prior)
-    return level.astype(float), np.where(usable, "local", "national prior").astype(object)
+        return np.full(n, float(params["handbook_fee_per_unit_usd"])), np.full(n, "handbook", dtype=object)
+    if "local_fee_per_unit" not in places:
+        raise ValueError("local fee scenarios need local_fee_per_unit (fee_levels.place_fees)")
+    level = places["local_fee_per_unit"].to_numpy(dtype=float)
+    if np.isnan(level).any():
+        raise ValueError("a place has no local fee; the $50,000 is not a fallback (D-065)")
+    source = places.get("fee_source", pd.Series("local", index=places.index)).fillna("local")
+    return level, source.to_numpy(dtype=object)
 
 
-def builder_saving(fee: np.ndarray, params: Mapping[str, float]) -> np.ndarray:
-    """(1 − λ) × cut share × fee: the part of the cut that reaches builders."""
-    cut = params["handbook_fee_cut_share"] * np.asarray(fee, dtype=float)
-    return proforma.builder_fee_saving(cut, params["land_capture_share"])
+def fee_draws(places: pd.DataFrame, mode: str, params: Mapping[str, float], n: int, seed: int) -> np.ndarray:
+    """(draws × places) fee per unit: the central value in the benchmark; triangular(low, central, high) in
+    the local scenarios where a range is given (`local_fee_low`, `local_fee_high`), else the central value."""
+    central, _ = fee_levels(places, mode, params)
+    out = np.repeat(central[None, :], n, axis=0)
+    if _mode(mode) == "handbook" or "local_fee_low" not in places or "local_fee_high" not in places:
+        return out
+    low = places["local_fee_low"].fillna(places["local_fee_per_unit"]).to_numpy(dtype=float)
+    high = places["local_fee_high"].fillna(places["local_fee_per_unit"]).to_numpy(dtype=float)
+    low, high = np.minimum(low, central), np.maximum(high, central)
+    rng = np.random.default_rng(seed)
+    for i in np.flatnonzero(high > low):
+        out[:, i] = rng.triangular(low[i], central[i], high[i], n)
+    return out
+
+
+def fee_cut(fee: np.ndarray, params: Mapping[str, float], mode: str = "handbook") -> np.ndarray:
+    """Δ per unit: cut share × fee; in `local_25k`, the Handbook's dollar cut capped at the fee."""
+    fee = np.asarray(fee, dtype=float)
+    share = params["handbook_fee_cut_share"]
+    if _mode(mode) == "local_25k":
+        return np.minimum(share * params["handbook_fee_per_unit_usd"], fee)
+    return share * fee
+
+
+def builder_saving(fee: np.ndarray, params: Mapping[str, float], mode: str = "handbook") -> np.ndarray:
+    """(1 − λ) × Δ: the part of the cut that reaches builders."""
+    return proforma.builder_fee_saving(fee_cut(fee, params, mode), params["land_capture_share"])
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -158,9 +181,9 @@ def feasibility_change(
     return after / before - 1.0, before, after
 
 
-def pct_change(places: pd.DataFrame, fee: np.ndarray, params: Mapping[str, float]):
+def pct_change(places: pd.DataFrame, fee: np.ndarray, params: Mapping[str, float], mode: str = "handbook"):
     """%Δ permits per place for one parameter set, and the channel used ('feasibility' or 'elasticity')."""
-    saving = builder_saving(fee, params)
+    saving = builder_saving(fee, params, mode)
     pct = elasticity_change(saving, places["home_value"].to_numpy(dtype=float), params)
     channel = np.full(len(places), "elasticity", dtype=object)
     if "lot_values" in places and "new_home_value" in places:
@@ -198,16 +221,17 @@ def _baseline(places: pd.DataFrame, horizon: int) -> np.ndarray:
     return np.repeat(places["baseline_units"].to_numpy(dtype=float)[:, None], horizon, axis=1)
 
 
-def central_path(places: pd.DataFrame, mode: str = "local", params: dict | None = None) -> dict:
+def central_path(places: pd.DataFrame, mode: str = "local_half", params: dict | None = None) -> dict:
     """Central values (hand checks): fee, saving, %Δ, channel and added units (places × years)."""
     p = central_params() | (params or {})
     _, horizon, _ = baseline_model.window(0)
     fee, source = fee_levels(places, mode, p)
-    pct, channel = pct_change(places, fee, p)
+    pct, channel = pct_change(places, fee, p, mode)
     return {
         "fee": fee,
         "fee_source": source,
-        "saving": builder_saving(fee, p),
+        "cut": fee_cut(fee, p, mode),
+        "saving": builder_saving(fee, p, mode),
         "pct": pct,
         "channel": channel,
         "added": added_units(_baseline(places, horizon), pct, p),
@@ -218,7 +242,7 @@ def run(
     places: pd.DataFrame,
     origin: int,
     *,
-    mode: str = "local",
+    mode: str = "local_half",
     draws: int | None = None,
     summary_by: str | None = None,
 ):
@@ -229,8 +253,9 @@ def run(
     the baseline's window years (`baseline_forecast`'s horizon 1..5), not the years right after the origin.
 
     `places` columns: geoid; baseline_units (mean baseline units a year) or baseline_y1..baseline_y5;
-    home_value (median home value, 2025 dollars: TDC for the elasticity route); optional local_fee_per_unit
-    and fee_components (`local_fees`); optional new_home_value (2025 dollars) and lot_values (an array of
+    home_value (median home value, 2025 dollars: TDC for the elasticity route); for the local scenarios
+    local_fee_per_unit, optional local_fee_low/local_fee_high and fee_source (`fee_levels.place_fees`);
+    optional new_home_value (2025 dollars) and lot_values (an array of
     candidate lots' land values, 2025 dollars) for the feasibility channel. Extra columns are carried through.
     With `summary_by`, a third table sums each draw over the group's places (non-overlapping units, D-020).
     """
@@ -239,11 +264,13 @@ def run(
     sets = draw_params(n, int(central["fee_simulation_seed"]))
     _, horizon, first = baseline_model.window(origin)
     base = _baseline(places, horizon)
+    mode = _mode(mode)
     fee, source = fee_levels(places, mode, central)
+    fees_d = fee_draws(places, mode, central, n, int(central["fee_simulation_seed"]) + 1)
     out = np.zeros((n, len(places), horizon))
     used = np.zeros((n, len(places)), dtype=bool)  # feasibility channel used in this draw
     for d, p in enumerate(sets):
-        pct, channel = pct_change(places, fee, p)
+        pct, channel = pct_change(places, fees_d[d], p, mode)
         out[d] = added_units(base, pct, p)
         used[d] = channel == "feasibility"
     c = central_path(places, mode)
@@ -251,9 +278,10 @@ def run(
         places.drop(columns=["lot_values"], errors="ignore")
         .assign(
             mode=mode,
+            scenario_label=LABELS[mode],
             fee_per_unit=fee,
             fee_source=source,
-            fee_cut_per_unit=central["handbook_fee_cut_share"] * fee,
+            fee_cut_per_unit=c["cut"],
             builder_saving_central=c["saving"],
             pct_change_central=c["pct"],
             channel_central=c["channel"],
