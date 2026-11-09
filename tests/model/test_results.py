@@ -272,3 +272,46 @@ def test_results_all_says_when_the_page_build_is_missing(monkeypatch, tmp_path, 
     assert cli.main(["results", "--all"]) == 2
     assert "PR #313" in capsys.readouterr().out
     assert cli.main(["results", "--all", "--state", "AA"]) == 2
+
+
+# ---- missing middle (D-063) ----
+
+
+def test_mm_draws_by_hand():
+    from lotline.model.scenarios.mm import Result
+
+    # one draw: legal 1,000 (tier 1), pencils 400, 20 homes in 8 buildings that replace 6 houses
+    res = Result(
+        buildings=np.array([[8.0, 0, 0, 0, 0]]), homes_gross=np.array([[20.0, 0, 0, 0, 0]]),
+        teardowns=np.array([[6.0, 0, 0, 0, 0]]), places=pd.DataFrame(),
+        legal=np.array([[1000.0, 0.0, 0.0]]), pencils=np.array([400.0]),
+    )  # fmt: skip
+    d = results.mm_draws(res, np.random.default_rng(1)).iloc[0]
+    assert d["scenario"] == "missing_middle"
+    assert d["theta"] == pytest.approx(0.05)  # 20 / 400
+    assert d["pencil_out_share"] == pytest.approx(0.4)
+    assert d["net_new_share"] == pytest.approx(0.7)  # (20 − 6) / 20
+    assert 0.74 <= d["completion_factor"] <= 0.88  # completion_factor_multifamily
+
+
+def test_mm_draws_reproduce_the_scenario():
+    from lotline.model.scenarios import mm
+
+    places = pd.DataFrame(
+        {"geoid": ["a", "b", "c"], "eligible": [5000.0, 20000.0, 800.0], "dose": [0.0, 0.5, np.nan],
+         "band": [2, 2, 1], "f_ratio": [1.2, 0.8, 1.0], "f_share": [0.47, 0.31, 0.39],
+         "house_share": [0.9, 0.7, 1.0], "data_tier": [1, 1, 3]}
+    )  # fmt: skip
+    draws = pd.DataFrame({"theta": np.full(300, 0.002), "alpha": np.full(300, 2.0),
+                          "units": np.full(300, 2.2), "teardown_scale": np.full(300, 0.8)})  # fmt: skip
+    res = mm.simulate(places, draws, 0.5, 0.75, seed=4)
+    d = results.mm_draws(res, np.random.default_rng(2))
+    h = aggregate.homes_from_draws(d)
+    assert h["permits_added"] == pytest.approx(res.homes_gross.sum(axis=1))
+    net = res.homes_net.sum(axis=1)
+    assert h["homes_in_place"] == pytest.approx(net * d["completion_factor"].to_numpy())
+    # legal by tier: a 5,000 + b 20,000 × 0.5 in tier 1; c 800 × (1 − its band draw) in tier 3
+    assert d["eligible_tier1"].to_numpy() == pytest.approx(np.full(300, 15000.0))
+    assert (d["eligible_tier2"] == 0).all()
+    shares = results.mm_year_shares(res)
+    assert shares.sum(axis=1)[res.homes_gross.sum(axis=1) > 0] == pytest.approx(1.0)
