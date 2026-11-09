@@ -38,3 +38,6 @@
   - BPS's own Durham rows are broken or imputed in several years.
   - No independent count is possible yet: Durham parcels in the store have no year built.
   - Decision for Ben (combined-office test, or a new Durham parcel source) recorded in D-072.
+- **Decision (Ben):** combined-office test. Durham County unincorporated enters the metro unincorporated cell
+  at 0.22 ADUs per 10,000 lots a year (office total 1.20x BPS). The split risk is stated (up to about 0.32).
+  The cell now has 43 places, 24 ADUs.

@@ -4592,6 +4592,11 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   same years, its new units for that jurisdiction are at least 0.8 of BPS's reported units. A source above
   BPS passes: BPS is the floor, not the truth. A source that fails is left out until fixed, and its place
   counts as unsampled.
+  - **Combined-office exception (Ben, 2026-11-09, before any run):** where one permit office covers several
+    jurisdictions, and BPS's rows for them are themselves imputed or broken (months missing, zero years), the
+    test applies to the office's combined area. A split between those jurisdictions by location (with dated
+    annexations) is accepted when the combined count passes. Every place admitted this way is listed here
+    with its combined ratio.
 - **Data checks, 2026-11-09 (results; no model run):**
   - **Blank `cbsa_type` means outside any CBSA.** Every jurisdiction in all five states was checked against
     the OMB 2023 delineation file (`raw/census_cbsa_delineation/2023/list1_2023.xlsx`). Every blank one
@@ -4620,14 +4625,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - **An independent count isn't available yet.** Durham's parcels in the store (NC OneMap) have
       `year_built` on 0.25% of rows, against 60–85% in most counties, so new homes on the ground can't be
       counted to arbitrate.
-    - **Open, for Ben:** either (a) apply the coverage rule to the issuing office's combined area where BPS
-      itself is imputed or broken (Durham passes at 1.20x; county ADU rate 0.22), or (b) keep Durham County
-      out until an independent count (Durham County's own parcel layer with year built, a new source)
-      settles the split. Until decided it stays out.
-  - **So, today:** the metro unincorporated cell rests on the MN townships alone (42 places, 10 ADUs; exactly
-    at the proposed minimum). No NC county area passes. Micropolitan and non-CBSA cells have no sampled place
-    in any state. Before the cell levels can carry NC's county areas, the cheapest evidence to add is
-    Durham County, by fixing its adapter, and then more county permit sources.
+    - **Decided (Ben, 2026-11-09): combined-office test.** Durham City-County Inspections passes at 1.20x for
+      2021–25, so Durham County unincorporated enters the metro unincorporated cell: 14 ADUs on 12,500 lots,
+      0.22 per 10,000 lots a year. The remaining risk is the city/county split, and it is stated as a limit:
+      if county permits are under-placed as BPS suggests (0.69), the county's true rate could be up to about
+      1.45x higher (about 0.32). An independent count (Durham County's own parcel layer with year built)
+      would settle it; that is optional, not a condition.
+  - **So, today:** the metro unincorporated cell holds 43 places: the 42 MN townships (Met Council) and Durham
+    County (combined-office test), 24 ADUs in all. Their rates span 0.22 (Durham County) to 0.75 (the
+    townships), below the model's 0.84 for NC's county areas. Bexar stays out. Micropolitan and non-CBSA cells
+    have no sampled place in any state. Mecklenburg County unincorporated can be tested the same way once V5's
+    release (#355) is merged and NC's processed data is rebuilt.
 - **Display:** the results page shows the zone table. It gives the measured total, its range and the share of
   eligible lots in measured cells, then the unmeasured bound. This feeds the stat cards planned after
   #348/#350 (schema fields to be added then).
