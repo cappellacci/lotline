@@ -1,0 +1,11 @@
+### LB-NNN · 2026-11-09 · Build: TX fee coverage for the six largest uncoded places (priority 4)
+- **Question:** what do El Paso, Arlington, Plano, Lubbock, Irving and Laredo charge a new house, duplex and fourplex in water/sewer, permit and impact fees?
+- **What I did:**
+  - Looked up official schedules (El Paso Water Rules No. 7; Arlington Res. 26-151 fee schedule; Irving Inspections schedule; Lubbock Appendix A; Laredo residential permit manual).
+  - Coded 34 rows in `config/fees/tx.csv` via `scripts/dev/coverage_fees_tx_2026_11_09.py` (+ `_rows.json`), following #345/#346 (SFD/U2/U3_4 per component, or OTHER only).
+- **Inputs:** official sources listed in each row's `source`; read through a web-fetch tool (direct downloads refused by the session proxy).
+- **Outputs:** `config/fees/tx.csv`, `scripts/dev/coverage_fees_tx_2026_11_09.py`, `scripts/dev/coverage_fees_tx_2026_11_09_rows.json`.
+- **Findings:** El Paso water+sewer connection $5,270 per unit (one meter per unit; master meter low $2,190-$2,684). Arlington's fourplex falls on the commercial valuation table and pays more permit fee per unit ($1,600) than the duplex ($1,078). Plano and all impact fees not coded.
+- **Decisions:** none proposed.
+- **AI:** Claude found sources, computed per-unit amounts (hand arithmetic in `notes`) and ran the fee tests and compliance check; every `source_quote` is blank because no source was read word for word. Needs a second coder.
+- **Open / next:** Plano (all components); impact fees for El Paso (growth areas only), Arlington, Lubbock; water/sewer for five places; El Paso permit; regenerate `docs/research/fee-levels-vs-handbook.md` where the data store exists.
