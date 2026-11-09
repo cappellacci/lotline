@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.10** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.11** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -369,6 +369,25 @@ Validation scorecard rows for the state (validation plan §5): one row per check
 | `verdict` | text | yes | no | one of `pass`, `partial`, `fail`, `not_run` |
 | `report_path` | text | no | yes |  |
 
+## `results_baseline`
+
+The baseline (no policy change): homes permitted statewide, P10/P50/P90 and mean, per BPS building size and period (the five-year window, e.g. 2027-2031, or a single year). Each draw sums every modelled place; "all" sums the four sizes within a draw, so its percentiles are not the sums of theirs. `places` is how many places the baseline forecasts; `coverage_share` is their share of the units in every BPS place in the state's panel in the origin year (null when that year has none). `basis` says whether the counts are as reported to Census or include its imputation (`use_reported_only`).
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `size_class` | text | yes | no | one of `all`, `1`, `2`, `3_4`, `5p` |
+| `period` | text | yes | no | matches `^\d{4}(-\d{4})?$` |
+| `p10` | number | yes | no | ≥ 0 |
+| `p50` | number | yes | no | ≥ 0 |
+| `p90` | number | yes | no | ≥ 0 |
+| `mean` | number | yes | no | ≥ 0 |
+| `places` | integer | yes | no | ≥ 0 |
+| `coverage_share` | number | yes | yes | ≥ 0; ≤ 1 |
+| `basis` | text | yes | no | one of `reported`, `with_imputation` |
+
 ## Version history
 
 | Version | Change |
@@ -384,3 +403,4 @@ Validation scorecard rows for the state (validation plan §5): one row per check
 | 1.8 | market_geo_year: optional demand_bartik, demand_bartik_loo, demand_imputed_share (shift-share local demand index, C04); eligible_parcels: denominator_source value parcels_scaled_acs (#208) |
 | 1.9 | eligible_parcels: denominator_source value parcels_interpolated (years between two real parcel rolls, D-035 addendum) |
 | 1.10 | results bundle tables (results_meta, results_draws, results_funnel, results_totals, results_need, results_scorecard): the engine-to-app contract, kept apart from the canonical input tables (#310) |
+| 1.11 | results_baseline: the no-policy-change forecast in the results bundle (homes permitted statewide by building size and period), so the app can show the level reforms add to |

@@ -1,6 +1,6 @@
 """The results bundle: what `lotline results --state XX` writes for the static app (#310; WS-ENGINE brief).
 
-`reports/results/<st>/bundle.json` holds six tables (schemas `results_*`, schemas.py 1.10):
+`reports/results/<st>/bundle.json` holds seven tables (schemas `results_*`, schemas.py 1.11):
 
 - `meta`: one row: commit, run time, engine and schema versions, config hash, origin, draws, seed, the state's
   role, data tier, overlap flag and caveats, and which scenarios the engine cannot run yet.
@@ -11,6 +11,8 @@
 - `totals`: the parity target, computed here from the same draws by `aggregate.homes_from_draws`.
 - `need`: share of housing need for each denominator kind the state has (D-057), the headline marked.
 - `scorecard`: validation rows (none wired yet; the page shows "not yet scored").
+- `baseline`: the no-policy-change forecast (`model/baseline.py`), homes permitted statewide per BPS building
+  size and period, so the page can show the level the scenarios add to (`baseline_table`).
 
 Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide. Fees (a statewide
 baseline forecast for every place) and the stacked combinations (`model/combine.py` not yet written) are
@@ -34,12 +36,13 @@ import numpy as np
 import pandas as pd
 
 import lotline
+from lotline.build import eligible, panels
 from lotline.config import CONFIG_DIR, load_params
 from lotline.model import aggregate, baseline
 from lotline.model import eligible_proxy as proxy
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
-PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard")
+PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard", "baseline")
 TABLE = {part: f"results_{part}" for part in PARTS}
 ENGINE_SCENARIOS = ("adu", "missing_middle")  # scenarios `build_bundle` can fill today
 REPO = Path(__file__).resolve().parents[3]
@@ -267,6 +270,57 @@ def _columns(part: str) -> list[str]:
     return [c for c in columns(TABLE[part]) if c != "state"]
 
 
+# ---- the baseline ---------------------------------------------------------------------------------------
+
+
+def baseline_table(panel: pd.DataFrame, state: str, origin: int, params=None) -> pd.DataFrame:
+    """The `baseline` part: statewide homes permitted with no policy change, per size class and period.
+
+    For each BPS size class, `baseline.forecast_draws` gives every place's simulated counts over the window
+    (D-061: origin 2025 -> 2027-2031); a draw's statewide count for a year is the sum over places. Places in
+    one state share the cycle path within a draw, and every size class samples the same cycle years
+    (`baseline.cycle_years` is seeded by state and origin, not by class), so draws line up across classes and
+    "all" is their sum within each draw. P10/P50/P90 are taken from those sums, never by adding percentiles.
+
+    `coverage_share`: the origin-year units of the places forecast over the units of every place in the
+    panel that year, on the same basis (reported or with imputation). Null when the origin year has none.
+    """
+    p = params or load_params("baseline")
+    reported = bool(p["use_reported_only"].value)
+    _, horizon, first = baseline.window(origin, p)
+    st = state.upper()
+    panel = panel[panel["state"] == st]
+    by_class, modelled = {}, set()
+    for size in baseline.SIZE_CLASSES:
+        table, draws = baseline.forecast_draws(
+            panel, baseline.outcome_column(size, reported), origin, params=p
+        )
+        h = table["horizon"].to_numpy()
+        by_class[size] = np.stack([draws[h == k].sum(axis=0) for k in range(1, horizon + 1)]).astype(float)
+        modelled |= set(table["geoid"])
+    by_class = {"all": sum(by_class.values()), **by_class}
+
+    cols = [baseline.outcome_column(s, reported) for s in baseline.SIZE_CLASSES]
+    at_origin = panel[panel["year"] == origin]
+    units = at_origin[cols].sum(axis=1, min_count=1).fillna(0)
+    total = float(units.sum())
+    covered = float(units[at_origin["geoid"].isin(modelled)].sum())
+    coverage = covered / total if total > 0 else None
+
+    rows = []
+    for size, a in by_class.items():  # a: (horizon, draws)
+        periods = [(f"{first}-{first + horizon - 1}", a.sum(axis=0))]
+        periods += [(str(first + k), a[k]) for k in range(horizon)]
+        for period, x in periods:
+            rows.append({"size_class": size, "period": period, **_pct(x), "mean": float(x.mean())})
+    return pd.DataFrame(rows).assign(
+        places=len(modelled),
+        coverage_share=coverage,
+        basis="reported" if reported else "with_imputation",
+        state=st,
+    )
+
+
 # ---- the bundle -----------------------------------------------------------------------------------------
 
 
@@ -300,7 +354,7 @@ def write_bundle(bundle: Mapping[str, pd.DataFrame], path: Path) -> Path:
 
 
 def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
-    """Read and validate a `bundle.json` back into the six tables."""
+    """Read and validate a `bundle.json` back into the seven tables."""
     from lotline.schemas import columns
 
     doc = json.loads(Path(path).read_text())
@@ -313,7 +367,7 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
 
 
 def build_bundle(state: str, store, *, role: str | None = None, origin: int | None = None, draws=None):
-    """Run every scenario the engine supports for one state and assemble the six tables (not yet written)."""
+    """Run every scenario the engine supports for one state and assemble the seven tables (unwritten)."""
     from lotline.model.scenarios import adu, mm
 
     st = state.upper()
@@ -369,4 +423,6 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
         ]
     )
     scorecard = pd.DataFrame(columns=_columns("scorecard")).assign(state=pd.Series(dtype=str))
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard}
+    panel = panels.load(st, store, theme="adu", rule_version=eligible.RULE_VERSION)
+    base = baseline_table(panel, st, origin)
+    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base}
