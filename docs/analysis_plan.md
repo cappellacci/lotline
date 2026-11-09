@@ -4410,3 +4410,19 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Decided by:** Ben, 2026-11-09 (schema columns; start of Phase 1). Building-type fallbacks, the CPI cap and
   the P25–P75 range for filled fees were written by Claude Code, for Ben to confirm in the PR.
   **Status:** built and tested; not run.
+
+### D-069 · 2026-11-09 · Duplex and fourplex utility fees: one meter per unit is the central case (method only, before any run)
+- **Question:** where a place charges water/sewer fees by meter and lets the builder choose between one meter per
+  dwelling unit and one shared (master) meter, which case is the central fee for a duplex or fourplex?
+- **Chosen:** one meter per dwelling unit is the central value (`amount_per_unit_usd`). The master-meter case
+  goes in `amount_per_unit_low_usd` / `amount_per_unit_high_usd`, so it is part of every local scenario's
+  range (D-066 draws the fee within it).
+- **Why:** it is the utilities' default where the rules say anything (e.g. WSFCU Part A §14(A), "Each water
+  Customer shall be required to have a separate meter"; Austin and Dallas take one tap application per unit), and
+  separate ownership (condo or townhouse units) requires it. A master meter is common for a rental fourplex
+  and makes it much cheaper per unit (WSFCU $919–$2,298 against $3,677 for a house; SAWS half an EDU per unit),
+  so the central case is conservative for the density argument.
+- **Consequence for reporting:** the SFD / duplex / fourplex pencil-out (fee plan Phase 2) shows the
+  master-meter case as a named sensitivity, so a reader sees how much a shared meter changes whether a fourplex
+  pencils. Fee lookups (PR #346 and the priority 4 coverage lookups) follow this rule.
+- **Decided by:** Ben, 2026-11-09 (proposed in PR #346). **Status:** method only; no run.
