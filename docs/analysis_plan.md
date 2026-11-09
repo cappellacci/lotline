@@ -4043,7 +4043,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   1. *Which rules count as "current".* `adu.places_from_store` reads the coded rules in force on 31 December of
      the origin year (2025). With a 2027 window, rules taking effect in 2026 or at the start of 2027 arguably
      belong in the baseline. One example is NC S.L. 2026-59 (2027-01-15), which round 3 already said belongs in
-     the baseline. This changes results, so it needs its own decision. **Settled by D-062** (2026-11-08).
+     the baseline. This changes results, so it needs its own decision. **Settled by D-064** (2026-11-08).
   2. *Housing-need denominator.* `household_growth_5y` (D-057) is the demographers' 2025 → 2030 change; the
      window is now 2027–2031. Matching it needs interpolation, using the 2035 projections where states publish
      them. Until then the share compares slightly offset five-year periods.
@@ -4053,7 +4053,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   4. *Earlier results.* Results already published for 2026–2030 (for example, the development-run tables in
      `docs/model_and_assumptions.md`) stay as they are, labelled with their own window, until the next run.
 
-### D-062 · 2026-11-08 · "Current rules" are the rules in force by the end of the window's first year (method only, before any run)
+### D-064 · 2026-11-08 · "Current rules" are the rules in force by the end of the window's first year (method only, before any run)
 - **Decision (Ben, 2026-11-08, "Rules in force by window start"):** the baseline counts every coded rule that
   is in force on 31 December of the window's first year as current. With D-061 that is **2027-12-31**. Until
   now it was 31 December of the origin year (2025). This settles D-061's first open item. The NC handoff had

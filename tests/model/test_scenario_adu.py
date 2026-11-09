@@ -597,7 +597,7 @@ def test_coverage_map_without_a_parcel_table_takes_the_judgment_share():
 
 
 def test_a_law_starting_early_in_the_window_is_current():
-    """D-062. Place 100: a 2010 local code that allows no ADUs (c = 0); a state law in force 2027-01-15 with
+    """D-064. Place 100: a 2010 local code that allows no ADUs (c = 0); a state law in force 2027-01-15 with
     the Handbook conditions (c = 1); a later state rule in 2030. By 2027-12-31 (`baseline.rules_as_of(2025)`)
     the state law is current, so the place is 'handbook' and the ADU scenario adds nothing there; by
     2026-12-31 (the parameter's low value) it is not yet, so the place stays 'none' and the law is only noted.

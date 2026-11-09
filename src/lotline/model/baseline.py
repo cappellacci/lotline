@@ -105,7 +105,7 @@ def window_label(origin: int, params: dict[str, Parameter] | None = None) -> str
 
 
 def rules_as_of(origin: int, params: dict[str, Parameter] | None = None) -> pd.Timestamp:
-    """The date whose in-force rules count as current in a forward run (D-062).
+    """The date whose in-force rules count as current in a forward run (D-064).
 
     31 December of (first window year - 1 + `current_rules_window_years`). By hand: origin 2025, lead 1 ->
     first year 2027; value 1 -> 2027-12-31; value 0 -> 2026-12-31.

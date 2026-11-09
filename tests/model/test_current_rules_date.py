@@ -1,4 +1,4 @@
-"""D-062: forward runs count as current every coded rule in force on 31 December of the window's first year.
+"""D-064: forward runs count as current every coded rule in force on 31 December of the window's first year.
 
 With D-061's window (origin 2025, lead 1 -> 2027-2031) that is 2027-12-31, so a state law in force on
 2027-01-15 (like NC S.L. 2026-59) is part of the baseline, not of the reform.

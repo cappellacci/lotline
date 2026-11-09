@@ -21,7 +21,7 @@ current_rules_window_years:
   low: 0
   high: 1
   unit: years
-  source: "D-062 (Ben, 2026-11-08): rules already law that take effect by the end of the window's first year are part of the baseline, so a reform is not credited with homes existing law will produce (e.g. NC S.L. 2026-59, in force 2027-01-15)"
+  source: "D-064 (Ben, 2026-11-08): rules already law that take effect by the end of the window's first year are part of the baseline, so a reform is not credited with homes existing law will produce (e.g. NC S.L. 2026-59, in force 2027-01-15)"
   notes: "Coded rules in force on 31 December of (window's first year - 1 + this value) count as current. 1 gives 2027-12-31 for origin 2025 (D-061 window 2027-2031); 0 gives 2026-12-31, the rules in force on the window's first day, which leaves out S.L. 2026-59 (a one-line sensitivity). Forward runs only; backtests read rules at their own dates."
 
 benchmark_mean_years:

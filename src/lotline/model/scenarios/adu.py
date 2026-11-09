@@ -1157,7 +1157,7 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     Eligible parcels (theme 'adu', current rule version) from the newest year <= origin (else the earliest
     later roll, flagged `parcels_after_origin`); ACS rent and value from the newest vintage <= origin; no
     mortgage rate (forward runs use `mortgage_rate_forecast`); coded ADU rules in force on
-    `baseline.rules_as_of` (31 December of the window's first year, D-062); observed ADU permits per parcel
+    `baseline.rules_as_of` (31 December of the window's first year, D-064); observed ADU permits per parcel
     where local permits flag ADUs.
     Reads only holdout-filtered tables (DataStore); no outcome after the origin is used.
     """
@@ -1186,7 +1186,7 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     places = places.merge(acs, left_on="acs_geo", right_index=True, how="left")
     places["mortgage_rate"] = np.nan  # forward run: the rate path is a drawn parameter (market.yaml)
 
-    as_of = baseline.rules_as_of(origin)  # D-062: rules already law by the end of the first window year
+    as_of = baseline.rules_as_of(origin)  # D-064: rules already law by the end of the first window year
     rules, info = rule_inputs(state, store, places["geoid"], as_of)
     places = places.merge(rules, on="geoid", how="left")
     places = county_mix(places, state, store, origin, info["coded"])
