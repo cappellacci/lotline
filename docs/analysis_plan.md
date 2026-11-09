@@ -4383,3 +4383,55 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Page: `reports/results-2026-11-09/results-2027-window.html` (version 2) at
     https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs. **Status:** adopted and run; the official bundles
     are run D.
+
+### D-068 · 2026-11-09 · ADUs: places outside a state ADU law take a "no state rule" prior (method only, before any run)
+- **Why:** Oregon's ADU scenario adds 0 homes in every draw (run D, D-067). Oregon has 168 ADU places. All 118
+  with a coded rule have 2,500 people or more, because SB 1051 and HB 2001 bind cities from 2,500 people (and
+  larger counties within urban growth boundaries), and `scripts/dev/or_state_reform_rows.py` generated one
+  state-law row for every place they cover. The other 50 places, 44 cities under 2,500 people (Idanha to
+  Turner) and 6 rural county remainders (Gilliam, Grant, Harney, Lake, Morrow, Wallowa), have no row. That is
+  3.3% of Oregon's eligible parcels. Under D-022 they borrow Oregon's coded places in their size band
+  (P(Handbook-equivalent) 0.97), that is, the rule of the cities the law covers, so the model treats them as
+  already allowing ADUs. They are exactly the places the law exempts.
+- **What was looked at before writing:** the 50 places and their priors (rules on 2027-12-31, central values)
+  and the reform rows. No scenario was run with any alternative.
+- **Decision (Ben, 2026-11-09, "No-state-rule prior"):** for a state whose ADU law is coded row by row for every
+  place it covers, a place with no ADU row is outside the law. Its prior comes from coded places in the states
+  without such a law, by size band, instead of from its own state's coded places.
+- **Mechanics:**
+  - A new optional state setting `adu_state_law_rows_complete` (default false; `config/states/<st>.yaml`,
+    `StateConfig`) marks such a state. Only Oregon sets it. This is an additive change to the state config
+    contract (WS-CORE).
+  - `adu.no_state_rule_priors(coded, edges, min_count, law_states)`: for each size band, the mean P(type) of
+    the coded places in states not in `law_states`, if at least `adu_rule_min_coded` (5) are coded in that
+    band; else those states' pooled mean. `source` says "states without a coded state ADU law, band" or
+    "..., all bands".
+  - In `rule_inputs`, a flagged state's prior rows are replaced by those rows, and only its 'unknown' places
+    read them. Coded places, field probabilities and coverage are unchanged. D-067's dates are kept: the
+    coded places behind the prior are read on `prior_as_of` (2025-12-31).
+  - Missing middle is not changed. HB 2001's middle-housing rows have their own thresholds, and no
+    missing-middle zero has been found.
+- **Expected direction, before any run:** Oregon's ADU homes rise from 0 to a small positive range. Only the
+  50 uncoded places (3.3% of eligible parcels) can add, and they are small towns and rural counties. The other
+  four states do not change.
+- **Known limits:** the no-law pool includes North Carolina's 19 S.L. 2026-59 rows from 2027 on, but D-067
+  reads the borrowed mix on 2025-12-31, before they take effect. Pooling small places from other states
+  assumes Oregon's exempt towns would regulate ADUs like small towns elsewhere. The 6 county remainders have
+  no 2020 population in `jurisdictions`, so they fall in the smallest band, as they do today.
+- **Tests (hand-worked):** `no_state_rule_priors` on synthetic coded places (by band, the fallback to all
+  bands, flagged states left out); `rule_inputs` with a flagged state leaves coded places unchanged and moves
+  only the unknown places' p_*; an unflagged state is unchanged.
+- **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code or run. **Status:** adopted and run
+  (results below).
+- **Code (commit c599ada):** `StateConfig.adu_state_law_rows_complete`, `adu.no_state_rule_priors`, the
+  replacement in `rule_inputs`, and Oregon's flag. Tests by hand in `tests/model/test_scenario_adu.py`. At
+  central values Oregon's 50 uncoded places now borrow P(no ADUs) 0.67 and P(Handbook-equivalent) 0.003, from
+  the small coded places of MN, NC, OH and TX. Before, they borrowed 0 and 0.97.
+- **Results (run E, 2026-11-09, `lotline results --state XX` at da8793a, 1,000 draws; Oregon with role
+  transfer; `reports/results-2026-11-09/run-e.json`):**
+  - **Oregon ADUs:** 0 → 5 net homes over 2027–2031 (P10–P90 2–12). That is small, as expected: the exempt
+    places hold 3.3% of eligible parcels and are towns of under 2,500 people.
+  - **MN, NC, OH, TX and Oregon missing middle:** identical to run D, to the home.
+  - Run E is also the first official run with the baseline part (schemas 1.11).
+  - Page: Finding 7 of https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs (version 3), with the permits
+    actually issued in 2021–2025 (`scripts/dev/observed_permits.py`, `reports/results-2026-11-09/observed.json`).

@@ -546,6 +546,34 @@ def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
     return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
 
 
+def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states, state: str) -> pd.DataFrame:
+    """D-068: priors for the places a state ADU law leaves out, from the coded places of the states without
+    such a law (`law_states` are those whose law is coded row by row, `adu_state_law_rows_complete`).
+
+    For each size band: the mean P(type) of those states' coded places in the band if at least `min_count`
+    are coded there; else their pooled mean. Rows are labelled `state` so `apply_priors` reads them for it.
+    By hand: no-law places in band 0, 3 Handbook-equivalent and 2 'none', min_count 5 -> p_handbook 0.6,
+    p_none 0.4; flagged states' places never count.
+    """
+    pool = coded[~coded["state"].isin(set(law_states))]
+    pool = pool.assign(band=size_band(pool["population"], edges))
+    rows = []
+    for band in range(len(edges) + 1):
+        own = pool[pool["band"] == band]
+        use, src = (own, "band") if len(own) >= min_count else (pool, "all bands")
+        rows.append(
+            {
+                "state": state,
+                "band": band,
+                "n_coded": len(own),
+                "source": f"states without a coded state ADU law, {src}",
+                **use[list(P_COLS)].mean().to_dict(),
+            }
+        )
+    out = pd.DataFrame(rows)
+    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+
+
 def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFrame:
     """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`."""
     out = places.assign(band=size_band(places["population"].fillna(0), edges))
@@ -1078,6 +1106,9 @@ def rule_inputs(
     Dates (D-067): each place's own rules are read on `as_of`; what a place borrows (field probabilities and
     the coded places behind the priors) on `prior_as_of` (default `as_of`). `info["coded"]` holds the coded
     places on `as_of` (their own rules, used by `county_mix`); `info["coded_prior"]` those behind the priors.
+
+    D-068: in a state flagged `adu_state_law_rows_complete`, a place with no ADU row is outside the state law,
+    so it takes `no_state_rule_priors` (coded places of the unflagged states, by size band).
     Returns (table: geoid, rule_class, p_* over TYPES, coverage, rule_age, …, prior_source; info dict).
     """
     from lotline.config import load_state
@@ -1110,6 +1141,12 @@ def rule_inputs(
     coded_prior = coded_on(prior_as_of)
     coded = coded_prior if prior_as_of == as_of else coded_on(as_of)
     priors = rule_priors(coded_prior.dropna(subset=["population"]), edges, min_count)
+    law_states = {st for st in REFORM_STATES if load_state(st).adu_state_law_rows_complete}
+    if state in law_states:  # D-068: an uncoded place is outside the state law
+        outside = no_state_rule_priors(
+            coded_prior.dropna(subset=["population"]), edges, min_count, law_states, state
+        )
+        priors = pd.concat([priors[priors["state"] != state], outside], ignore_index=True)
     fp = field_probabilities(counts, state, min_count)
     cm = covs[state]
     rules = current_rules(

@@ -649,7 +649,8 @@ def test_borrowers_use_the_origin_mix_and_own_rules_the_d064_date(monkeypatch):
         "coverage_map",
         lambda st, store, r, c: pd.DataFrame({"reform_id": r["reform_id"], "coverage": 1.0}),
     )
-    monkeypatch.setattr(lotline.config, "load_state", lambda st: types.SimpleNamespace(fips="99"))
+    state_cfg = types.SimpleNamespace(fips="99", adu_state_law_rows_complete=False)
+    monkeypatch.setattr(lotline.config, "load_state", lambda st: state_cfg)
     targets = ["9900005", "9900006"]
     rules, info = adu.rule_inputs(
         "ZZ", Store(), targets, pd.Timestamp("2027-12-31"), pd.Timestamp("2025-12-31")
@@ -661,3 +662,89 @@ def test_borrowers_use_the_origin_mix_and_own_rules_the_d064_date(monkeypatch):
     assert sorted(info["coded_prior"]["rule_class"]) == ["handbook"] * 4 + ["none"]
     one, _ = adu.rule_inputs("ZZ", Store(), targets, pd.Timestamp("2027-12-31"))
     assert one.set_index("geoid").loc["9900006", "p_none"] == pytest.approx(0.0)
+
+
+def _coded(state, population, p_none, p_handbook):
+    n = len(population)
+    zeros = [0.0] * n
+    return pd.DataFrame(
+        {
+            "state": [state] * n,
+            "population": population,
+            "p_none": p_none,
+            "p_owner": zeros,
+            "p_other": zeros,
+            "p_both": zeros,
+            "p_handbook": p_handbook,
+        }
+    )
+
+
+def test_no_state_rule_priors_by_hand():
+    """D-068. Band 0 (< 10,000): five no-law places, 3 Handbook-equivalent and 2 'none' -> p_handbook 0.6,
+    p_none 0.4. Band 1 has only two no-law places (< 5), so it takes their pooled mean over all bands:
+    (3 + 2) Handbook of 7 -> 5/7. The law state's places (all Handbook) never count."""
+    coded = pd.concat(
+        [
+            _coded("AA", [1_000] * 5, [0, 0, 0, 1, 1.0], [1, 1, 1, 0, 0.0]),
+            _coded("BB", [20_000] * 2, [0, 0.0], [1, 1.0]),
+            _coded("OR", [3_000] * 6 + [20_000] * 6, [0.0] * 12, [1.0] * 12),
+        ],
+        ignore_index=True,
+    )
+    pr = adu.no_state_rule_priors(coded, (10_000, 50_000), 5, {"OR"}, "OR").set_index("band")
+    assert (pr.loc[0, "p_none"], pr.loc[0, "p_handbook"]) == pytest.approx((0.4, 0.6))
+    assert pr.loc[0, "source"] == "states without a coded state ADU law, band" and pr.loc[0, "n_coded"] == 5
+    assert pr.loc[1, "p_handbook"] == pytest.approx(5 / 7) and pr.loc[1, "source"].endswith("all bands")
+    assert (pr["state"] == "OR").all() and pr["p_partial"].eq(0).all()
+
+
+def test_flagged_state_borrows_the_no_law_prior_and_keeps_its_coded_places(monkeypatch):
+    """D-068 through `rule_inputs`. State LL (flagged) has five coded Handbook-equivalent places of 3,000
+    people and one uncoded place U of 1,000. State NN (not flagged) has five coded places of 1,000 people, 2
+    allowing no ADUs. U borrows NN's band: p_none 0.4 (it would borrow LL's p_none 0 without the flag); LL's
+    coded places keep their own rule; and with the flag off U is back to LL's own prior."""
+    import types
+
+    import lotline.config
+
+    hb = (True, False, True, 800, "none", 0, 1)
+    no = (True, False, True, 800, "none", 0, 0)
+    ll = [(f"L{i}", f"110000{i}", "adu", "in_force", "2015-01-01", None, None, *hb) for i in range(1, 6)]
+    nn = [(f"N{i}", f"220000{i}", "adu", "in_force", "2015-01-01", None, None, *hb) for i in range(1, 4)]
+    nn += [(f"N{i}", f"220000{i}", "adu", "in_force", "2015-01-01", None, None, *no) for i in range(4, 6)]
+    reforms = {"LL": _reforms(ll), "NN": _reforms(nn)}
+    pops = {
+        "LL": ([f"110000{i}" for i in range(1, 7)], [3_000] * 5 + [1_000]),
+        "NN": ([f"220000{i}" for i in range(1, 6)], [1_000] * 5),
+    }
+
+    class Store:
+        def read(self, state, table):
+            g, p = pops[state]
+            return pd.DataFrame({"geoid": g, "pop_2020": p})
+
+    flags = {"LL": True, "NN": False}
+    fips = {"LL": "11", "NN": "22"}
+    monkeypatch.setattr(adu, "REFORM_STATES", ("LL", "NN"))
+    monkeypatch.setattr(adu, "load_reforms", lambda st: reforms[st].copy())
+    monkeypatch.setattr(
+        adu,
+        "coverage_map",
+        lambda st, store, r, c: pd.DataFrame({"reform_id": r["reform_id"], "coverage": 1.0}),
+    )
+    monkeypatch.setattr(
+        lotline.config,
+        "load_state",
+        lambda st: types.SimpleNamespace(fips=fips[st], adu_state_law_rows_complete=flags[st]),
+    )
+    targets = ["1100001", "1100006"]
+    date = pd.Timestamp("2027-12-31")
+    r = adu.rule_inputs("LL", Store(), targets, date)[0].set_index("geoid")
+    assert r.loc["1100001", "rule_class"] == "handbook" and r.loc["1100001", "p_none"] == pytest.approx(0)
+    assert (r.loc["1100006", "p_none"], r.loc["1100006", "p_handbook"]) == pytest.approx((0.4, 0.6))
+    assert r.loc["1100006", "prior_source"] == "states without a coded state ADU law, band"
+    flags["LL"] = False
+    off = adu.rule_inputs("LL", Store(), targets, date)[0].set_index("geoid")
+    assert off.loc["1100006", "p_none"] == pytest.approx(0)
+    assert not off.loc["1100006", "prior_source"].startswith("states without")
