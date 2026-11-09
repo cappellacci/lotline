@@ -19,7 +19,7 @@ setup = "uv sync --frozen"      # single documented setup command (needs uv: htt
 test = "uv run pytest -q"
 
 [links]
-tool_url = ""                   # deployed tool or notebook link
+tool_url = "https://cappellacci.github.io/lotline/"  # deployed tool (Pages, from release app-2026-11-09)
 video_url = ""                  # demo video, no account required, <= 5 min
 repo_url = "https://github.com/cappellacci/lotline"   # public GitHub repo (personal account cappellacci)
 
