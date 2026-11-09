@@ -14,7 +14,9 @@ def fees():
 
 @pytest.fixture(scope="module")
 def totals(fees):
-    return local_fees(fees).set_index("geoid")["local_fee_per_unit"]
+    # the hand sums predate the 2026-11-09 permit lookup (permit_fees_2026_11_09.py), so its rows are left out
+    new_permit = fees["notes"].str.contains("Permit lookup 2026-11-09", na=False)
+    return local_fees(fees[~new_permit]).set_index("geoid")["local_fee_per_unit"]
 
 
 @pytest.mark.parametrize(

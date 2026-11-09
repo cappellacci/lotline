@@ -9,9 +9,9 @@ Fee per new unit in **2025 dollars**, from `config/fees/<st>.csv` under the rule
 | State | Coded places | Lowest | Median | Highest | Median as share of $50,000 | Places at or above $50,000 |
 |---|---|---|---|---|---|---|
 | MN | 13 | $3,385 | $9,148 | $17,839 | 18% | 0 |
-| NC | 16 | $7,146 | $9,632 | $18,425 | 19% | 0 |
-| OR | 4 | $6,981 | $33,553 | $40,240 | 67% | 0 |
-| TX | 6 | $5,286 | $9,461 | $14,905 | 19% | 0 |
+| NC | 16 | $3,725 | $6,356 | $14,989 | 13% | 0 |
+| OR | 4 | $7,234 | $34,454 | $42,811 | 69% | 0 |
+| TX | 6 | $2,610 | $7,074 | $14,905 | 14% | 0 |
 
 ## By place and building type
 
@@ -27,10 +27,10 @@ Fee per new unit in **2025 dollars**, from `config/fees/<st>.csv` under the rule
 | Bloomington city | House | $7,083 ($7,083–$7,083) | $7,083 ($7,083–$7,083) | local | permit:2018, water_sewer:2025 |
 | Bloomington city | Duplex (per unit) | $7,083 ($7,083–$7,083) | $7,083 ($7,083–$7,083) | local | permit:2018, water_sewer:2025 |
 | Bloomington city | 3-4 units (per unit) | $7,083 ($7,083–$7,083) | $7,083 ($7,083–$7,083) | local | permit:2018, water_sewer:2025 |
-| Brooklyn Park city | ADU | $9,975 ($9,975–$9,975) | $13,842 ($12,495–$15,710) | local + filled: permit (state median) | impact:2026 (from SFD), water_sewer:2026 |
-| Brooklyn Park city | House | $9,975 ($9,975–$9,975) | $14,681 ($12,629–$15,798) | local + filled: permit (state median) | impact:2026, water_sewer:2026 |
-| Brooklyn Park city | Duplex (per unit) | $9,975 ($9,975–$9,975) | $13,842 ($12,495–$15,710) | local + filled: permit (state median) | impact:2026 (from SFD), water_sewer:2026 |
-| Brooklyn Park city | 3-4 units (per unit) | $9,975 ($9,975–$9,975) | $12,540 ($11,777–$15,083) | local + filled: permit (state median) | impact:2026 (from SFD), water_sewer:2026 |
+| Brooklyn Park city | ADU | $14,776 ($14,677–$14,776) | $14,776 ($14,677–$14,776) | local | impact:2026 (from SFD), permit:2026 (from SFD), water_sewer:2026 |
+| Brooklyn Park city | House | $14,776 ($14,677–$14,776) | $14,776 ($14,677–$14,776) | local | impact:2026, permit:2026, water_sewer:2026 |
+| Brooklyn Park city | Duplex (per unit) | $12,238 ($12,189–$12,238) | $12,238 ($12,189–$12,238) | local | impact:2026 (from SFD), permit:2026, water_sewer:2026 |
+| Brooklyn Park city | 3-4 units (per unit) | $11,924 ($11,860–$11,924) | $11,924 ($11,860–$11,924) | local | impact:2026 (from SFD), permit:2026, water_sewer:2026 |
 | Burnsville city | ADU | $6,099 ($6,099–$6,099) | $6,099 ($6,099–$6,099) | local | other:2026 (from SFD), permit:2026, water_sewer:2026 |
 | Burnsville city | House | $9,427 ($9,427–$9,427) | $9,427 ($9,427–$9,427) | local | other:2026, permit:2026, water_sewer:2026 |
 | Burnsville city | Duplex (per unit) | $8,735 ($8,735–$8,735) | $8,735 ($8,735–$8,735) | local | other:2026 (from SFD), permit:2026, water_sewer:2026 |
@@ -76,91 +76,91 @@ Fee per new unit in **2025 dollars**, from `config/fees/<st>.csv` under the rule
 
 | Place | Type | Coded fee (low–high) | After fill (low–high) | What was filled | Components (year) |
 |---|---|---|---|---|---|
-| Apex town | ADU | $10,373 ($10,373–$10,373) | $13,050 ($12,821–$16,080) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Apex town | House | $10,373 ($10,373–$10,373) | $14,728 ($12,958–$16,080) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Apex town | Duplex (per unit) | $10,373 ($10,373–$10,373) | $13,050 ($12,821–$16,080) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Apex town | 3-4 units (per unit) | $10,373 ($10,373–$10,373) | $12,918 ($11,964–$15,430) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Brunswick County Unincorporated Area | ADU | $9,846 ($9,846–$9,846) | $12,523 ($12,293–$15,553) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Brunswick County Unincorporated Area | House | $9,846 ($9,846–$9,846) | $14,201 ($12,431–$15,553) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Brunswick County Unincorporated Area | Duplex (per unit) | $9,846 ($9,846–$9,846) | $12,523 ($12,293–$15,553) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Brunswick County Unincorporated Area | 3-4 units (per unit) | $9,846 ($9,846–$9,846) | $12,390 ($11,437–$14,903) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Buncombe County Unincorporated Area | ADU | $3,568 ($3,568–$3,568) | $6,245 ($6,015–$9,275) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Buncombe County Unincorporated Area | House | $3,568 ($3,568–$3,568) | $7,923 ($6,153–$9,275) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Buncombe County Unincorporated Area | Duplex (per unit) | $2,390 ($2,390–$2,390) | $5,067 ($4,837–$8,097) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Buncombe County Unincorporated Area | 3-4 units (per unit) | $2,390 ($2,390–$2,390) | $4,934 ($3,981–$7,447) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Asheville city | ADU | $4,968 ($4,968–$4,968) | $7,645 ($7,415–$10,675) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Asheville city | House | $4,968 ($4,968–$4,968) | $9,323 ($7,553–$10,675) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Asheville city | Duplex (per unit) | $2,390 ($2,390–$2,390) | $5,067 ($4,837–$8,097) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Asheville city | 3-4 units (per unit) | $2,390 ($2,390–$2,390) | $4,934 ($3,981–$7,447) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Cabarrus County | ADU | $2,968 ($2,968–$2,968) | $5,645 ($5,415–$8,675) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Cabarrus County | House | $2,968 ($2,968–$2,968) | $7,323 ($5,553–$8,675) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Cabarrus County | Duplex (per unit) | $2,968 ($2,968–$2,968) | $5,645 ($5,415–$8,675) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Cabarrus County | 3-4 units (per unit) | $2,968 ($2,968–$2,968) | $5,512 ($4,559–$8,025) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Forsyth County Unincorporated Area | ADU | $3,677 ($3,677–$3,677) | $6,354 ($6,124–$9,384) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Forsyth County Unincorporated Area | House | $3,677 ($3,677–$3,677) | $8,032 ($6,262–$9,384) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Forsyth County Unincorporated Area | Duplex (per unit) | $3,677 ($3,677–$3,677) | $6,354 ($6,124–$9,384) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Forsyth County Unincorporated Area | 3-4 units (per unit) | $3,677 ($3,677–$3,677) | $6,221 ($5,268–$8,734) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Johnston County Unincorporated Area | ADU | $14,070 ($14,070–$14,070) | $16,747 ($16,517–$19,777) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Johnston County Unincorporated Area | House | $14,070 ($14,070–$14,070) | $18,425 ($16,655–$19,777) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Johnston County Unincorporated Area | Duplex (per unit) | $14,070 ($14,070–$14,070) | $16,747 ($16,517–$19,777) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Johnston County Unincorporated Area | 3-4 units (per unit) | $14,070 ($14,070–$14,070) | $16,614 ($15,661–$19,127) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| New Hanover County Unincorporated Area | ADU | $5,735 ($5,735–$5,735) | $8,412 ($8,182–$11,442) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| New Hanover County Unincorporated Area | House | $5,735 ($5,735–$5,735) | $10,090 ($8,320–$11,442) | local + filled: permit (pooled median) | water_sewer:2026 |
-| New Hanover County Unincorporated Area | Duplex (per unit) | $5,735 ($5,735–$5,735) | $8,412 ($8,182–$11,442) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| New Hanover County Unincorporated Area | 3-4 units (per unit) | $5,735 ($5,735–$5,735) | $8,279 ($7,326–$10,792) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Concord city | ADU | $2,791 ($2,791–$2,791) | $5,468 ($5,238–$8,498) | local + filled: permit (pooled median) | water_sewer:2025 (from SFD) |
-| Concord city | House | $2,791 ($2,791–$2,791) | $7,146 ($5,376–$8,498) | local + filled: permit (pooled median) | water_sewer:2025 |
-| Concord city | Duplex (per unit) | $1,750 ($1,750–$1,750) | $4,427 ($4,197–$7,457) | local + filled: permit (pooled median) | water_sewer:2025 |
-| Concord city | 3-4 units (per unit) | $1,750 ($1,750–$1,750) | $4,294 ($3,341–$6,807) | local + filled: permit (pooled median) | water_sewer:2025 |
-| Durham city | ADU | $5,771 ($5,771–$5,771) | $8,448 ($8,218–$11,478) | local + filled: permit (pooled median) | water_sewer:2024 (from SFD) |
-| Durham city | House | $5,771 ($5,771–$5,771) | $10,126 ($8,356–$11,478) | local + filled: permit (pooled median) | water_sewer:2024 |
-| Durham city | Duplex (per unit) | $5,771 ($5,771–$5,771) | $8,448 ($8,218–$11,478) | local + filled: permit (pooled median) | water_sewer:2024 (from SFD) |
-| Durham city | 3-4 units (per unit) | $5,771 ($5,771–$5,771) | $8,315 ($7,362–$10,828) | local + filled: permit (pooled median) | water_sewer:2024 (from SFD) |
-| Fuquay-Varina town | ADU | $10,037 ($10,037–$10,037) | $12,714 ($12,484–$15,744) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Fuquay-Varina town | House | $10,037 ($10,037–$10,037) | $14,392 ($12,622–$15,744) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Fuquay-Varina town | Duplex (per unit) | $10,037 ($10,037–$10,037) | $12,714 ($12,484–$15,744) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Fuquay-Varina town | 3-4 units (per unit) | $10,037 ($10,037–$10,037) | $12,581 ($11,628–$15,094) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Greensboro city | ADU | $3,165 ($3,165–$3,165) | $5,842 ($5,612–$8,872) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Greensboro city | House | $3,165 ($3,165–$3,165) | $7,520 ($5,750–$8,872) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Greensboro city | Duplex (per unit) | $3,165 ($3,165–$3,165) | $5,842 ($5,612–$8,872) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Greensboro city | 3-4 units (per unit) | $1,582 ($1,582–$1,582) | $4,127 ($3,174–$6,640) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Raleigh city | ADU | $5,586 ($5,586–$5,586) | $8,263 ($8,033–$11,293) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Raleigh city | House | $5,586 ($5,586–$5,586) | $9,941 ($8,171–$11,293) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Raleigh city | Duplex (per unit) | $6,677 ($6,677–$6,677) | $9,354 ($9,124–$12,384) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 (from SFD) |
-| Raleigh city | 3-4 units (per unit) | $6,677 ($6,677–$6,677) | $9,221 ($8,268–$11,734) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 (from SFD) |
-| Wilmington city | ADU | $5,735 ($5,735–$5,735) | $8,412 ($8,182–$11,442) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Wilmington city | House | $5,735 ($5,735–$5,735) | $10,090 ($8,320–$11,442) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Wilmington city | Duplex (per unit) | $5,735 ($5,735–$5,735) | $8,412 ($8,182–$11,442) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Wilmington city | 3-4 units (per unit) | $5,735 ($5,735–$5,735) | $8,279 ($7,326–$10,792) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Wilson city | ADU | $3,832 ($3,832–$3,832) | $6,509 ($6,279–$9,539) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Wilson city | House | $3,832 ($3,832–$3,832) | $8,187 ($6,417–$9,539) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Wilson city | Duplex (per unit) | $3,832 ($3,832–$3,832) | $6,509 ($6,279–$9,539) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Wilson city | 3-4 units (per unit) | $3,832 ($3,832–$3,832) | $6,376 ($5,423–$8,889) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Winston-Salem city | ADU | $3,677 ($3,677–$3,677) | $6,354 ($6,124–$9,384) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Winston-Salem city | House | $3,677 ($3,677–$3,677) | $8,032 ($6,262–$9,384) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Winston-Salem city | Duplex (per unit) | $3,677 ($3,677–$3,677) | $6,354 ($6,124–$9,384) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Winston-Salem city | 3-4 units (per unit) | $3,677 ($3,677–$3,677) | $6,221 ($5,268–$8,734) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
+| Apex town | ADU | $11,236 ($11,236–$11,236) | $11,236 ($11,236–$11,236) | local | impact:2026 (from SFD), permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Apex town | House | $11,236 ($11,236–$11,236) | $11,236 ($11,236–$11,236) | local | impact:2026, permit:2026, water_sewer:2026 |
+| Apex town | Duplex (per unit) | $10,773 ($10,773–$10,778) | $10,773 ($10,773–$10,778) | local | impact:2026 (from SFD), permit:2026, water_sewer:2026 (from SFD) |
+| Apex town | 3-4 units (per unit) | $11,023 ($10,948–$11,023) | $11,023 ($10,948–$11,023) | local | impact:2026 (from SFD), permit:2026, water_sewer:2026 (from SFD) |
+| Brunswick County Unincorporated Area | ADU | $11,565 ($11,565–$11,680) | $11,565 ($11,565–$11,680) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Brunswick County Unincorporated Area | House | $11,565 ($11,565–$11,680) | $11,565 ($11,565–$11,680) | local | permit:2026, water_sewer:2026 |
+| Brunswick County Unincorporated Area | Duplex (per unit) | $10,645 ($10,645–$10,699) | $10,645 ($10,645–$10,699) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Brunswick County Unincorporated Area | 3-4 units (per unit) | $10,916 ($10,916–$10,952) | $10,916 ($10,916–$10,952) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Buncombe County Unincorporated Area | ADU | $3,568 ($3,568–$3,568) | $4,502 ($4,473–$4,762) | local + filled: permit (state median) | water_sewer:2026 (from SFD) |
+| Buncombe County Unincorporated Area | House | $3,568 ($3,568–$3,568) | $4,502 ($4,473–$4,762) | local + filled: permit (state median) | water_sewer:2026 |
+| Buncombe County Unincorporated Area | Duplex (per unit) | $2,390 ($2,390–$2,390) | $2,868 ($2,810–$3,052) | local + filled: permit (state median) | water_sewer:2026 |
+| Buncombe County Unincorporated Area | 3-4 units (per unit) | $2,390 ($2,390–$2,390) | $3,034 ($2,886–$3,667) | local + filled: permit (state median) | water_sewer:2026 |
+| Asheville city | ADU | $6,059 ($5,811–$6,059) | $6,059 ($5,811–$6,059) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Asheville city | House | $6,059 ($5,811–$6,059) | $6,059 ($5,811–$6,059) | local | permit:2026, water_sewer:2026 |
+| Asheville city | Duplex (per unit) | $9,948 ($5,814–$9,948) | $9,948 ($5,814–$9,948) | local | permit:2026, water_sewer:2026 |
+| Asheville city | 3-4 units (per unit) | $9,630 ($5,257–$9,630) | $9,630 ($5,257–$9,630) | local | permit:2026, water_sewer:2026 |
+| Cabarrus County | ADU | $2,968 ($2,968–$2,968) | $3,902 ($3,873–$4,162) | local + filled: permit (state median) | water_sewer:2026 (from SFD) |
+| Cabarrus County | House | $2,968 ($2,968–$2,968) | $3,902 ($3,873–$4,162) | local + filled: permit (state median) | water_sewer:2026 |
+| Cabarrus County | Duplex (per unit) | $2,968 ($2,968–$2,968) | $3,446 ($3,388–$3,630) | local + filled: permit (state median) | water_sewer:2026 |
+| Cabarrus County | 3-4 units (per unit) | $2,968 ($2,968–$2,968) | $3,612 ($3,464–$4,245) | local + filled: permit (state median) | water_sewer:2026 |
+| Forsyth County Unincorporated Area | ADU | $4,590 ($4,580–$4,590) | $4,590 ($4,580–$4,590) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Forsyth County Unincorporated Area | House | $4,590 ($4,580–$4,590) | $4,590 ($4,580–$4,590) | local | permit:2026, water_sewer:2026 |
+| Forsyth County Unincorporated Area | Duplex (per unit) | $4,097 ($4,097–$4,107) | $4,097 ($4,097–$4,107) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Forsyth County Unincorporated Area | 3-4 units (per unit) | $4,047 ($4,047–$4,054) | $4,047 ($4,047–$4,054) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Johnston County Unincorporated Area | ADU | $14,989 ($14,989–$14,989) | $14,989 ($14,989–$14,989) | local | impact:2026 (from SFD), permit:2024 (from SFD), water_sewer:2026 (from SFD) |
+| Johnston County Unincorporated Area | House | $14,989 ($14,989–$14,989) | $14,989 ($14,989–$14,989) | local | impact:2026, permit:2024, water_sewer:2026 |
+| Johnston County Unincorporated Area | Duplex (per unit) | $14,686 ($14,501–$15,814) | $14,686 ($14,501–$15,814) | local | impact:2026 (from SFD), permit:2024, water_sewer:2026 (from SFD) |
+| Johnston County Unincorporated Area | 3-4 units (per unit) | $15,629 ($15,629–$15,957) | $15,629 ($15,629–$15,957) | local | impact:2026 (from SFD), permit:2024, water_sewer:2026 (from SFD) |
+| New Hanover County Unincorporated Area | ADU | $6,683 ($6,683–$6,683) | $6,683 ($6,683–$6,683) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| New Hanover County Unincorporated Area | House | $6,683 ($6,683–$6,683) | $6,683 ($6,683–$6,683) | local | permit:2026, water_sewer:2026 |
+| New Hanover County Unincorporated Area | Duplex (per unit) | $6,176 ($6,176–$6,176) | $6,176 ($6,176–$6,176) | local | permit:2026, water_sewer:2026 (from SFD) |
+| New Hanover County Unincorporated Area | 3-4 units (per unit) | $6,374 ($6,374–$6,404) | $6,374 ($6,374–$6,404) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Concord city | ADU | $2,791 ($2,791–$2,791) | $3,725 ($3,696–$3,985) | local + filled: permit (state median) | water_sewer:2025 (from SFD) |
+| Concord city | House | $2,791 ($2,791–$2,791) | $3,725 ($3,696–$3,985) | local + filled: permit (state median) | water_sewer:2025 |
+| Concord city | Duplex (per unit) | $1,750 ($1,750–$1,750) | $2,228 ($2,170–$2,412) | local + filled: permit (state median) | water_sewer:2025 |
+| Concord city | 3-4 units (per unit) | $1,750 ($1,750–$1,750) | $2,394 ($2,246–$3,027) | local + filled: permit (state median) | water_sewer:2025 |
+| Durham city | ADU | $6,653 ($6,643–$6,684) | $6,653 ($6,643–$6,684) | local | permit:2026 (from SFD), water_sewer:2024 (from SFD) |
+| Durham city | House | $6,653 ($6,643–$6,684) | $6,653 ($6,643–$6,684) | local | permit:2026, water_sewer:2024 |
+| Durham city | Duplex (per unit) | $6,285 ($6,153–$6,443) | $6,285 ($6,153–$6,443) | local | permit:2026, water_sewer:2024 (from SFD) |
+| Durham city | 3-4 units (per unit) | $6,271 ($6,264–$6,283) | $6,271 ($6,264–$6,283) | local | permit:2026, water_sewer:2024 (from SFD) |
+| Fuquay-Varina town | ADU | $10,874 ($10,874–$10,874) | $10,874 ($10,874–$10,874) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Fuquay-Varina town | House | $10,874 ($10,874–$10,874) | $10,874 ($10,874–$10,874) | local | permit:2026, water_sewer:2026 |
+| Fuquay-Varina town | Duplex (per unit) | $10,437 ($10,437–$10,637) | $10,437 ($10,437–$10,637) | local | permit:2026, water_sewer:2026 |
+| Fuquay-Varina town | 3-4 units (per unit) | $11,787 ($11,287–$12,412) | $11,787 ($11,287–$12,412) | local | permit:2026, water_sewer:2026 |
+| Greensboro city | ADU | $4,666 ($4,629–$4,696) | $4,666 ($4,629–$4,696) | local | permit:2024 (from SFD), water_sewer:2026 (from SFD) |
+| Greensboro city | House | $4,666 ($4,629–$4,696) | $4,666 ($4,629–$4,696) | local | permit:2024, water_sewer:2026 |
+| Greensboro city | Duplex (per unit) | $3,768 ($3,768–$3,768) | $3,768 ($3,768–$3,768) | local | permit:2024, water_sewer:2026 (from SFD) |
+| Greensboro city | 3-4 units (per unit) | $2,067 ($2,067–$2,067) | $2,067 ($2,067–$2,067) | local | permit:2024, water_sewer:2026 |
+| Raleigh city | ADU | $9,343 ($9,343–$9,343) | $9,343 ($9,343–$9,343) | local | impact:2026 (from SFD), permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Raleigh city | House | $9,343 ($9,343–$9,343) | $9,343 ($9,343–$9,343) | local | impact:2026, permit:2026, water_sewer:2026 |
+| Raleigh city | Duplex (per unit) | $8,425 ($8,425–$8,425) | $8,425 ($8,425–$8,425) | local | impact:2026, permit:2026, water_sewer:2026 (from SFD) |
+| Raleigh city | 3-4 units (per unit) | $7,860 ($7,860–$8,170) | $7,860 ($7,860–$8,170) | local | impact:2026, permit:2026, water_sewer:2026 (from SFD) |
+| Wilmington city | ADU | $6,683 ($6,683–$6,683) | $6,683 ($6,683–$6,683) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Wilmington city | House | $6,683 ($6,683–$6,683) | $6,683 ($6,683–$6,683) | local | permit:2026, water_sewer:2026 |
+| Wilmington city | Duplex (per unit) | $6,176 ($6,176–$6,176) | $6,176 ($6,176–$6,176) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Wilmington city | 3-4 units (per unit) | $6,374 ($6,374–$6,404) | $6,374 ($6,374–$6,404) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Wilson city | ADU | $3,832 ($3,832–$3,832) | $4,766 ($4,737–$5,026) | local + filled: permit (state median) | water_sewer:2026 (from SFD) |
+| Wilson city | House | $3,832 ($3,832–$3,832) | $4,766 ($4,737–$5,026) | local + filled: permit (state median) | water_sewer:2026 |
+| Wilson city | Duplex (per unit) | $3,832 ($3,832–$3,832) | $4,310 ($4,252–$4,494) | local + filled: permit (state median) | water_sewer:2026 (from SFD) |
+| Wilson city | 3-4 units (per unit) | $3,832 ($3,832–$3,832) | $4,476 ($4,328–$5,109) | local + filled: permit (state median) | water_sewer:2026 (from SFD) |
+| Winston-Salem city | ADU | $4,590 ($4,580–$4,590) | $4,590 ($4,580–$4,590) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Winston-Salem city | House | $4,590 ($4,580–$4,590) | $4,590 ($4,580–$4,590) | local | permit:2026, water_sewer:2026 |
+| Winston-Salem city | Duplex (per unit) | $4,097 ($4,097–$4,107) | $4,097 ($4,097–$4,107) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Winston-Salem city | 3-4 units (per unit) | $4,047 ($4,047–$4,054) | $4,047 ($4,047–$4,054) | local | permit:2026, water_sewer:2026 (from SFD) |
 
 ### OR
 
 | Place | Type | Coded fee (low–high) | After fill (low–high) | What was filled | Components (year) |
 |---|---|---|---|---|---|
-| Bend city | ADU | $19,255 ($19,255–$19,255) | $21,932 ($21,702–$24,962) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 (from SFD) |
-| Bend city | House | $34,598 ($34,598–$34,598) | $38,953 ($37,183–$40,305) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Bend city | Duplex (per unit) | $34,598 ($34,598–$34,598) | $37,275 ($37,045–$40,305) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Bend city | 3-4 units (per unit) | $25,610 ($25,610–$25,610) | $28,154 ($27,201–$30,667) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Eugene city | ADU | none coded | $6,099 ($3,677–$9,975) | pooled median |  |
-| Eugene city | House | none coded | $6,981 ($4,383–$10,037) | pooled median |  |
-| Eugene city | Duplex (per unit) | none coded | $6,824 ($3,832–$10,037) | pooled median |  |
-| Eugene city | 3-4 units (per unit) | none coded | $6,250 ($3,677–$9,975) | pooled median |  |
-| Portland city | ADU | $0 ($0–$0) | $2,677 ($2,447–$5,707) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Portland city | House | $35,885 ($35,885–$35,885) | $40,240 ($38,470–$41,591) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Portland city | Duplex (per unit) | $35,885 ($35,885–$35,885) | $38,562 ($38,332–$41,591) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Portland city | 3-4 units (per unit) | $27,439 ($27,439–$27,439) | $29,983 ($29,030–$32,496) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Salem city | ADU | $23,798 ($23,798–$23,798) | $26,474 ($26,245–$29,504) | local + filled: permit (pooled median) | impact:2026 (from SFD), other:2026, water_sewer:2026 (from SFD) |
-| Salem city | House | $23,798 ($23,798–$23,798) | $28,153 ($26,383–$29,504) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Salem city | Duplex (per unit) | $23,798 ($23,798–$23,798) | $26,474 ($26,245–$29,504) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 (from SFD) |
-| Salem city | 3-4 units (per unit) | $20,663 ($20,663–$20,663) | $23,208 ($22,255–$25,720) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
+| Bend city | ADU | $27,468 ($25,968–$27,468) | $27,468 ($25,968–$27,468) | local | impact:2026, permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Bend city | House | $42,811 ($41,311–$42,811) | $42,811 ($41,311–$42,811) | local | impact:2026, permit:2026, water_sewer:2026 |
+| Bend city | Duplex (per unit) | $38,695 ($38,082–$38,695) | $38,695 ($38,082–$38,695) | local | impact:2026 (from SFD), permit:2026, water_sewer:2026 (from SFD) |
+| Bend city | 3-4 units (per unit) | $28,533 ($28,048–$28,533) | $28,533 ($28,048–$28,533) | local | impact:2026, permit:2026, water_sewer:2026 |
+| Eugene city | ADU | none coded | $6,824 ($4,666–$10,874) | pooled median |  |
+| Eugene city | House | none coded | $7,234 ($6,059–$11,236) | pooled median |  |
+| Eugene city | Duplex (per unit) | none coded | $7,557 ($5,199–$10,645) | pooled median |  |
+| Eugene city | 3-4 units (per unit) | none coded | $6,757 ($4,047–$11,023) | pooled median |  |
+| Portland city | ADU | $5,883 ($5,622–$5,883) | $5,883 ($5,622–$5,883) | local | impact:2026, permit:2026 (from SFD), water_sewer:2026 |
+| Portland city | House | $41,768 ($41,507–$41,768) | $41,768 ($41,507–$41,768) | local | impact:2026, permit:2026, water_sewer:2026 |
+| Portland city | Duplex (per unit) | $38,744 ($38,624–$38,744) | $38,744 ($38,624–$38,744) | local | impact:2026 (from SFD), permit:2026, water_sewer:2026 (from SFD) |
+| Portland city | 3-4 units (per unit) | $29,980 ($29,700–$29,980) | $29,980 ($29,700–$29,980) | local | impact:2026, permit:2026, water_sewer:2026 |
+| Salem city | ADU | $27,141 ($26,907–$27,141) | $27,141 ($26,907–$27,141) | local | impact:2026 (from SFD), other:2026, permit:2025 (from SFD), water_sewer:2026 (from SFD) |
+| Salem city | House | $27,141 ($26,907–$27,141) | $27,141 ($26,907–$27,141) | local | impact:2026, permit:2025, water_sewer:2026 |
+| Salem city | Duplex (per unit) | $25,446 ($25,374–$25,446) | $25,446 ($25,374–$25,446) | local | impact:2026 (from SFD), permit:2025, water_sewer:2026 (from SFD) |
+| Salem city | 3-4 units (per unit) | $22,130 ($22,075–$22,130) | $22,130 ($22,075–$22,130) | local | impact:2026, permit:2025, water_sewer:2026 |
 
 ### TX
 
@@ -170,23 +170,23 @@ Fee per new unit in **2025 dollars**, from `config/fees/<st>.csv` under the rule
 | Austin city | House | $14,905 ($6,455–$17,178) | $14,905 ($6,455–$17,178) | local | impact:2022, other:2026, permit:2025, water_sewer:2026 |
 | Austin city | Duplex (per unit) | $14,905 ($6,455–$17,178) | $14,905 ($6,455–$17,178) | local | impact:2022, other:2026 (from SFD), permit:2025 (from SFD), water_sewer:2026 (from SFD) |
 | Austin city | 3-4 units (per unit) | $14,631 ($6,181–$16,905) | $14,631 ($6,181–$16,905) | local | impact:2022, other:2026 (from SFD), permit:2024, water_sewer:2026 (from SFD) |
-| Corpus Christi city | ADU | none coded | $5,828 ($4,383–$6,981) | state median |  |
-| Corpus Christi city | House | none coded | $5,828 ($4,383–$6,981) | state median |  |
-| Corpus Christi city | Duplex (per unit) | none coded | $5,828 ($4,383–$6,981) | state median |  |
-| Corpus Christi city | 3-4 units (per unit) | none coded | $5,828 ($4,383–$6,981) | state median |  |
-| Dallas city | ADU | $931 ($931–$931) | $3,608 ($3,378–$6,638) | local + filled: permit (pooled median) | water_sewer:2025 (from SFD) |
-| Dallas city | House | $931 ($931–$931) | $5,286 ($3,516–$6,638) | local + filled: permit (pooled median) | water_sewer:2025 |
-| Dallas city | Duplex (per unit) | $931 ($931–$931) | $3,608 ($3,378–$6,638) | local + filled: permit (pooled median) | water_sewer:2025 (from SFD) |
-| Dallas city | 3-4 units (per unit) | $931 ($931–$931) | $3,475 ($2,522–$5,988) | local + filled: permit (pooled median) | water_sewer:2025 (from SFD) |
-| Fort Worth city | ADU | $5,828 ($921–$5,828) | $8,505 ($3,368–$11,535) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Fort Worth city | House | $5,828 ($921–$5,828) | $10,183 ($3,506–$11,535) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Fort Worth city | Duplex (per unit) | $5,828 ($921–$5,828) | $8,505 ($3,368–$11,535) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Fort Worth city | 3-4 units (per unit) | $5,828 ($921–$5,828) | $8,372 ($2,512–$10,885) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Houston city | ADU | $4,383 ($4,383–$4,383) | $7,060 ($6,831–$10,090) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Houston city | House | $4,383 ($4,383–$4,383) | $8,738 ($6,968–$10,090) | local + filled: permit (pooled median) | water_sewer:2026 |
-| Houston city | Duplex (per unit) | $4,383 ($4,383–$4,383) | $7,060 ($6,831–$10,090) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| Houston city | 3-4 units (per unit) | $4,383 ($4,383–$4,383) | $6,928 ($5,974–$9,440) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| San Antonio city | ADU | $6,981 ($5,920–$8,548) | $9,658 ($8,367–$14,255) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| San Antonio city | House | $6,981 ($5,920–$8,548) | $11,336 ($8,505–$14,255) | local + filled: permit (pooled median) | water_sewer:2026 |
-| San Antonio city | Duplex (per unit) | $6,981 ($5,920–$8,548) | $9,658 ($8,367–$14,255) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
-| San Antonio city | 3-4 units (per unit) | $6,981 ($5,920–$8,548) | $9,525 ($7,511–$13,605) | local + filled: permit (pooled median) | water_sewer:2026 (from SFD) |
+| Corpus Christi city | ADU | none coded | $7,074 ($6,126–$8,782) | state median |  |
+| Corpus Christi city | House | none coded | $7,074 ($6,126–$8,782) | state median |  |
+| Corpus Christi city | Duplex (per unit) | none coded | $6,422 ($5,199–$7,880) | state median |  |
+| Corpus Christi city | 3-4 units (per unit) | none coded | $6,307 ($5,346–$8,022) | state median |  |
+| Dallas city | ADU | $2,610 ($2,610–$2,657) | $2,610 ($2,610–$2,657) | local | permit:2024 (from SFD), water_sewer:2025 (from SFD) |
+| Dallas city | House | $2,610 ($2,610–$2,657) | $2,610 ($2,610–$2,657) | local | permit:2024, water_sewer:2025 |
+| Dallas city | Duplex (per unit) | $1,744 ($1,744–$1,767) | $1,744 ($1,744–$1,767) | local | permit:2024, water_sewer:2025 (from SFD) |
+| Dallas city | 3-4 units (per unit) | $1,753 ($1,753–$1,764) | $1,753 ($1,753–$1,764) | local | permit:2024, water_sewer:2025 (from SFD) |
+| Fort Worth city | ADU | $7,074 ($2,167–$7,125) | $7,074 ($2,167–$7,125) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Fort Worth city | House | $7,074 ($2,167–$7,125) | $7,074 ($2,167–$7,125) | local | permit:2026, water_sewer:2026 |
+| Fort Worth city | Duplex (per unit) | $6,422 ($1,515–$6,447) | $6,422 ($1,515–$6,447) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Fort Worth city | 3-4 units (per unit) | $6,307 ($1,400–$6,320) | $6,307 ($1,400–$6,320) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Houston city | ADU | $6,126 ($6,126–$6,126) | $6,126 ($6,126–$6,126) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| Houston city | House | $6,126 ($6,126–$6,126) | $6,126 ($6,126–$6,126) | local | permit:2026, water_sewer:2026 |
+| Houston city | Duplex (per unit) | $5,199 ($5,199–$5,199) | $5,199 ($5,199–$5,199) | local | permit:2026, water_sewer:2026 (from SFD) |
+| Houston city | 3-4 units (per unit) | $5,346 ($5,346–$5,346) | $5,346 ($5,346–$5,346) | local | permit:2026, water_sewer:2026 (from SFD) |
+| San Antonio city | ADU | $8,782 ($7,721–$10,349) | $8,782 ($7,721–$10,349) | local | permit:2026 (from SFD), water_sewer:2026 (from SFD) |
+| San Antonio city | House | $8,782 ($7,721–$10,349) | $8,782 ($7,721–$10,349) | local | permit:2026, water_sewer:2026 |
+| San Antonio city | Duplex (per unit) | $7,880 ($6,819–$9,447) | $7,880 ($6,819–$9,447) | local | permit:2026, water_sewer:2026 (from SFD) |
+| San Antonio city | 3-4 units (per unit) | $8,022 ($6,961–$9,933) | $8,022 ($6,961–$9,933) | local | permit:2026, water_sewer:2026 (from SFD) |
