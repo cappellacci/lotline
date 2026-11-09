@@ -163,7 +163,8 @@ def test_a_slider_citing_an_unknown_parameter_is_refused(tmp_path):
 def test_results_section_parts_are_on_the_page(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     assert "<b>Provisional:</b> how the sliders move an assumption" in html  # Ben, 2026-11-06
-    for part in ('id="headline"', 'id="ranges"', 'id="need"', 'id="funnel"', 'id="knobs"', "pencil out",
+    # Section 1 is the WS-RESULTS-SIMPLE story (tests/app/test_results_simple.py); the detail sits in a fold.
+    for part in ('id="worlds"', 'id="headline-sentence"', 'id="need"', 'id="funnel"', 'id="knobs"',
                  "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
         assert part in html, part
 
@@ -171,7 +172,7 @@ def test_results_section_parts_are_on_the_page(tmp_path):
 def test_baseline_card_reads_the_bundle_baseline(tmp_path):
     """Schemas 1.11: the page shows the no-change forecast from the bundle's `baseline` part."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    parts = ("function baselineHtml", "With no policy change", "${baselineHtml(b)}", "0 added, by definition")
+    parts = ("function baselineHtml", "With no policy change", "${baselineHtml(b)}", "Without the reform")
     for part in (*parts, "The baseline forecast is not in this state's results yet."):
         assert part in html, part
     state_file = (tmp_path / "states" / "zz.js").read_text()

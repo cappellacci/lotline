@@ -154,6 +154,29 @@ iframe.dash { width: 100%; height: 80vh; border: 0; display: block; background: 
 @media (max-width: 640px) { .tornado { grid-template-columns: 1fr; } }
 details.fold { background: var(--paper-sunken); border: var(--stroke-hair) solid var(--rule); padding: var(--space-4); margin: var(--space-4) 0; }
 details.fold > summary { cursor: pointer; font-weight: 600; }
+
+/* Section 1, the data story (WS-RESULTS-SIMPLE): policy tabs, two worlds, the difference enlarged */
+.policy-tabs { margin: 0 0 var(--space-4); }
+.policy-tabs button { font-size: 16px; padding: var(--space-2) var(--space-4); }
+.policy-tabs button.not-run { opacity: .7; }
+.story .h2 { margin: 0 0 var(--space-3); }
+.worlds { margin: 0; }
+.worlds svg, .diff svg { width: 100%; height: auto; display: block; max-width: 640px; }
+.worlds .base-rule { stroke: var(--ink-muted); stroke-width: 1; }
+.worlds .whisker { stroke: var(--ink); stroke-width: 2; }
+.worlds text { font-family: var(--font-sans); text-anchor: middle; fill: var(--ink); }
+.worlds text.val { font-size: 18px; font-weight: 600; font-family: var(--font-mono); }
+.worlds text.lab { font-size: 15px; font-weight: 600; }
+.diff { margin-top: var(--space-3); max-width: 640px; }
+.diff .eyebrow { margin: 0 0 var(--space-1); }
+.diff .grid { stroke: var(--rule); stroke-width: 1; }
+.diff .tick { font-size: 12px; fill: var(--ink-muted); font-family: var(--font-mono); text-anchor: middle; }
+.diff .band { fill: var(--survey-band); }
+.lede { font-size: 20px; line-height: 30px; margin: var(--space-4) 0 var(--space-2); }
+.trust-line { color: var(--ink-muted); margin: 0; }
+.funnel-words li, .limits li { margin: var(--space-2) 0; }
+.more-links { display: flex; gap: var(--space-5); margin: var(--space-4) 0; }
+details.fold .card { margin: var(--space-3) 0; }
 </style>
 </head>
 <body>
@@ -180,6 +203,8 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
   <div class="intro"><p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p></div>
   <section class="part" id="page-results" data-section="results">
     <h2 class="h1">Results</h2>
+    <p class="lead" id="results-lead"></p>
+    <div id="results-body"></div>
     <div class="card map-card" id="map-card">
       <div class="map-wrap"><svg id="state-map" role="group" aria-label="Map of US states: choose one to see its results"></svg></div>
       <div class="map-key">
@@ -189,8 +214,6 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
         <p class="body-small muted map-off" id="map-off" hidden></p>
       </div>
     </div>
-    <p class="lead" id="results-lead"></p>
-    <div id="results-body"></div>
   </section>
   <section class="part" id="page-data" data-section="data" hidden>
     <h2 class="h1">The data</h2>
@@ -337,11 +360,7 @@ function niceTicks(max, n = 4) {
 }
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
-const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null };
-const OUTCOME_WORDS = {
-  homes_net_statewide: ["Net statewide", "Homes added to the state, after taking out homes pulled in from nearby places."],
-  homes_in_place: ["In the places that build", "Homes built where the reform applies, before taking out homes pulled in from nearby places."],
-};
+const UI = { pins: {}, detail: null, b: null };
 
 function scenariosIn(b) {
   const have = new Set(b.draws.map((d) => d.scenario));
@@ -387,47 +406,48 @@ function baselineHtml(b) {
 }
 
 const SECTIONS = {
+  // Section 1 (WS-RESULTS-SIMPLE; copy in src/lotline/app/copy/results.md): one tab per policy, never stacked
+  // (Ben, 2026-11-09). For the chosen policy: two worlds (without / with the reform), one sentence, one reason to
+  // believe it, the funnel as sentences, what it can't tell you, then the assumptions and the detail behind folds.
   results(b) {
     UI.b = b; UI.pins = {};
-    const scen = scenariosIn(b);
-    UI.detail = scen.includes(UI.detail) ? UI.detail : scen[0];
-    const yrs = AGG.windowLabel(b);  // from the bundle's totals (D-061: 2027–2031 for origin 2025)
-    $("results-lead").textContent = `Net new homes in ${b.meta.state} over ${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""} compared with no policy change (baseline). Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
-    if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
-    const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
-      `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
-    const rows = [`<div class="lab" style="color:var(--scenario-baseline)">Baseline</div>
-      <div class="track" aria-hidden="true"><span class="zero"></span></div>
-      <div class="nums muted">0 added, by definition</div>`];
-    for (const s of scen) rows.push(`<div class="lab" style="color:${scenColor(s)}">${esc(scenLabel(s))}</div>
-      <div class="track" data-track="${esc(s)}"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
-      <div class="nums" data-nums="${esc(s)}"></div>`);
-    const pend = pendingIn(b);
-    const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
-    const tabs = scen.map((s) => `<button type="button" data-detail="${esc(s)}" aria-pressed="${s === UI.detail}">${esc(scenLabel(s))}</button>`).join("");
-    return `${flagHtml(b.meta)}
-      <div class="card" id="headline-card">
-        <p class="eyebrow">Five-year total${yrs ? `, ${yrs}` : ""}</p>
-        <div class="headline" id="headline"></div>
-        <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
-          <span class="muted" id="outcome-note"></span></div>
-        <div class="ranges" id="ranges">${rows.join("")}</div>
-        <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
-        ${pendNote}
-        <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
+    const run = scenariosIn(b), tabsFor = policiesIn();
+    if (!tabsFor.includes(UI.detail)) UI.detail = tabsFor.find((s) => run.includes(s)) || tabsFor[0];
+    const yrs = AGG.windowLabel(b);
+    $("results-lead").textContent = `What each reform would add in ${stateName(b)} over ${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""}, compared with no change in the law. Pick a reform.`;
+    const tabs = tabsFor.map((s) => {
+      const on = run.includes(s);
+      return `<button type="button" role="tab" data-detail="${esc(s)}" aria-selected="${s === UI.detail}" aria-pressed="${s === UI.detail}"${on ? "" : ' class="not-run"'}>${esc(scenLabel(s))}${on ? "" : ` <span class="muted">· not run yet</span>`}</button>`;
+    }).join("");
+    const head = `<div class="tabs policy-tabs" role="tablist" aria-label="Reform">${tabs}</div>`;
+    const d = UI.detail;
+    if (!run.includes(d)) return `${head}<div class="card"><p class="pending">Not run yet for ${esc(stateName(b))}. The engine has not run ${esc(scenLabel(d))} for this state, so no number is shown.</p></div>`;
+    const P = DATA.policies[d];
+    const limits = P.limits.map(([h, t]) => `<li><b>${esc(h)}</b> ${esc(t)}</li>`).join("");
+    return `${head}
+      <div class="card story" id="worlds-card">
+        <h3 class="h2" id="story-title">What ${esc(scenLabel(d).replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase()))} would add in ${esc(stateName(b))}${yrs ? `, ${esc(yrs)}` : ""}</h3>
+        <figure class="worlds"><svg id="worlds" role="img" aria-labelledby="worlds-desc"></svg>
+          <figcaption id="worlds-desc" class="body-small muted"></figcaption></figure>
+        <div class="diff"><p class="eyebrow">The difference, enlarged: homes added by the reform</p><svg id="diff" role="img"></svg></div>
+        <p class="lede" id="headline-sentence"></p>
+        <p class="trust-line" id="trust-line"></p>
       </div>
-      ${baselineHtml(b)}
-      <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
-      <div class="card"><h3 class="h3">From legal lots to built homes</h3>
-        <div class="tabs" role="group" aria-label="Scenario">${tabs}</div>
-        <div id="funnel" style="margin-top:var(--space-4)"></div>
-        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are homes in the places that build.</p></div>
-      <div class="card"><h3 class="h3">What it takes to pencil out</h3>
-        <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
-      <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
-        <h3 class="h3">Try different assumptions</h3><button type="button" class="linkish" id="reset-all">Reset all to the engine</button></div>
-        <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
-        <div id="knobs"></div></div>`;
+      <div class="card story"><h3 class="h3">How we get there</h3><ol class="funnel-words" id="funnel-words"></ol></div>
+      <div class="card story"><h3 class="h3">What this can't tell you</h3><ul class="limits">${limits}</ul></div>
+      <details class="fold" id="knobs-card"><summary>Change the assumptions</summary>
+        <div style="display:flex;justify-content:flex-end"><button type="button" class="linkish" id="reset-all">Back to our estimate</button></div>
+        <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it; the centre is our estimate. Moving a slider changes nothing but this page.</p>
+        <div id="knobs"></div></details>
+      <details class="fold"><summary>More detail</summary>
+        ${flagHtml(b.meta)}
+        ${baselineHtml(b)}
+        <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
+        <div class="card"><h3 class="h3">From legal lots to built homes</h3><div id="funnel"></div>
+          <p class="source">Bar lengths on a log scale. Legal and pays-off counts are lots; built counts are homes in the places that build.</p></div>
+        <p class="source">Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}; ${b.meta.n_draws.toLocaleString("en-US")} model runs. "Likely range" is the middle 80% of those runs (P10 to P90).</p>
+      </details>
+      <p class="more-links"><a href="#trust">Full methodology →</a> <a href="#data">The data →</a></p>`;
   },
   data(b) {
     $("data-lead").textContent = dataLead();
@@ -486,7 +506,7 @@ const SECTIONS = {
         <p class="body-small">Does this state look like the places the model learned from? Each place is measured by how far its rent, home value and mortgage rate sit outside the range of the reference places behind the uptake rate (a log distance; 0 means inside on all three). The state is read from the middle of that distance, weighted by eligible lots: inside up to ${esc(DATA.overlap_thresholds.medium)}, near the edge up to ${esc(DATA.overlap_thresholds.low)}, outside beyond (config/params/aggregate.yaml).</p>
         ${flagHtml(b.meta).replace('<div class="card">', '<div>')}</div>
       <div class="card"><h3 class="h3">Which assumptions move the answer most</h3>
-        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net statewide homes when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders.</p>
+        <p class="body-small muted">The midpoint of ${esc(scenLabel(scen.includes(UI.detail) ? UI.detail : scen[0] || ""))} net statewide homes when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders.</p>
         <div class="tornado" id="tornado"></div></div>
       <details class="fold"><summary>Technical detail</summary>
         <p class="body-small">The engine's draws behind every number above: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/dev/results_dashboard.py</span>).</p>
@@ -512,59 +532,93 @@ function knobsHtml(b) {
   }).join("");
 }
 
-function updateResults() {
-  const b = UI.b;
-  if (!b || !scenariosIn(b).length) return;
-  const R = results(b);
-  const o = UI.outcome;
-  const max = Math.max(...Object.values(R).map((r) => r[o].p90), 1) * 1.08;
-  const ticks = niceTicks(max);
-  const top = ticks[ticks.length - 1] >= max ? ticks[ticks.length - 1] : max;
-  const pct = (x) => `${Math.max(0, Math.min(100, (x / top) * 100))}%`;
-  for (const [s, r] of Object.entries(R)) {
-    const t = document.querySelector(`[data-track="${CSS.escape(s)}"]`);
-    if (!t) continue;
-    t.querySelectorAll(".grid-line").forEach((g) => g.remove());
-    for (const v of ticks) { const g = document.createElement("span"); g.className = "grid-line"; g.style.left = pct(v); t.prepend(g); }
-    const { p10, p50, p90 } = r[o];
-    for (const el of t.querySelectorAll(".band, .line")) { el.style.left = pct(p10); el.style.width = `calc(${pct(p90)} - ${pct(p10)})`; }
-    t.querySelector(".mid").style.left = pct(p50);
-    t.setAttribute("aria-label", `${scenLabel(s)}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
-    document.querySelector(`[data-nums="${CSS.escape(s)}"]`).innerHTML = `${fmtN(p10)} – ${fmtN(p90)} <span class="muted">(mid ${fmtN(p50)})</span>`;
-  }
-  $("axis").innerHTML = ticks.map((v) => `<span style="left:${pct(v)}">${fmtN(v)}</span>`).join("");
-  $("outcome-note").textContent = OUTCOME_WORDS[o][1];
-  const d = UI.detail, rd = R[d][o];
-  const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
-  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, ${o === "homes_net_statewide" ? "net statewide" : "in the places that build"}:</p>
-    <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
-    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>`;
-  // share of need: net statewide only (aggregate.share_of_need), the headline kind first
-  const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
-  $("need").innerHTML = needs.length ? needs.map((n) => {
-    const sh = AGG.shareOfNeed(R[d].homes_net_statewide, n);
-    return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-2) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
-      <span class="body">${esc(n.label)}</span></p>
-      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Net statewide homes. Source: ${esc(n.source)}.</p>`;
-  }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
-  // funnel (log widths)
-  const f = R[d], stages = [
-    ["Legally allowed", f.legal, "lots", "var(--survey)", 1],
-    ["Building pays", f.pencils, "lots", "var(--survey)", 0.6],
-    ["Built", f.homes_in_place, "homes", scenColor(d), 1],
+// The policy tabs: single-policy scenarios with copy, in copy order (never a stacked pair or "combined").
+const policiesIn = () => Object.keys(DATA.policies).filter((s) => DATA.scenarios[s]);
+const stateName = (b) => ((DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name) || b.meta.state;
+const rangeWords = (r) => `${fmtN(r.p10)}–${fmtN(r.p90)}`;
+// One sentence's number: the midpoint with its likely range, or the count alone when every run agrees (S6).
+const withRange = (r) => (fmtN(r.p10) === fmtN(r.p90) ? fmtN(r.p50) : `${fmtN(r.p50)} (likely range ${rangeWords(r)})`);
+// "Reason to believe it": the blind backtest row, when the bundle has one (copy Q3). Never a hand-written number.
+const BACKTEST_METRIC = "abs_pct_error_5y";
+function trustLine(b) {
+  const r = (b.scorecard || []).find((x) => x.metric === BACKTEST_METRIC && Number.isFinite(Number(x.value)));
+  if (!r) return `We have not yet checked this model against past years in ${esc(stateName(b))}.`;
+  return `When we ran this model on ${esc(r.label)} without seeing the answer, it landed within ${fmtN(Number(r.value) * 100)}% of what was actually built.`;
+}
+
+// Two worlds: total homes permitted statewide over the window without the reform (the bundle's baseline) and with
+// it (baseline + permits added). Bars at the median, whiskers over the likely range. The with-reform whisker is
+// the baseline's range moved by the median added (copy Q1: the bundle has no per-draw baseline yet).
+function drawWorlds(b, add, d) {
+  const base = (b.baseline || []).find((r) => r.size_class === "all" && r.period.includes("-"));
+  const svg = $("worlds");
+  if (!base) { svg.outerHTML = `<p class="pending">The no-change forecast is not in this state's results yet.</p>`; return; }
+  const W = 560, H = 230, L = 8, T = 30, B = 36, bw = 150;
+  const top = Math.max(base.p90 + add.p50, 1) * 1.05;
+  const y = (v) => T + (H - T - B) * (1 - v / top);
+  const bars = [
+    ["Without the reform", base, "var(--scenario-baseline)"],
+    ["With the reform", { p10: base.p10 + add.p50, p50: base.p50 + add.p50, p90: base.p90 + add.p50 }, scenColor(d)],
   ];
-  const lmax = Math.log10(Math.max(f.legal.p90, 10));
-  const w = (x) => `${Math.max(1, (Math.log10(Math.max(x, 1)) / lmax) * 100)}%`;
-  $("funnel").innerHTML = `<div class="funnel">${stages.map(([lab, r, unit, col, op]) => `<div class="lab body-small" style="font-weight:600">${lab}</div>
-    <div><div class="bar" style="width:${w(r.p50)};background:${col};opacity:${op}"></div></div>
-    <div class="nums body-small" style="font-family:var(--font-mono);text-align:right">${r.p10 === r.p90 ? fmtN(r.p50) : `${fmtN(r.p10)} – ${fmtN(r.p90)}`} ${unit}</div>`).join("")}</div>`;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = `<line x1="${L}" x2="${W - L}" y1="${y(0)}" y2="${y(0)}" class="base-rule"/>` + bars.map(([lab, r, col], i) => {
+    const cx = W * (i ? 0.7 : 0.3), x = cx - bw / 2;
+    return `<rect x="${x}" y="${y(r.p50)}" width="${bw}" height="${y(0) - y(r.p50)}" fill="${col}" opacity="${i ? 1 : 0.55}"/>
+      <line class="whisker" x1="${cx}" x2="${cx}" y1="${y(r.p90)}" y2="${y(r.p10)}"/>
+      <line class="whisker" x1="${cx - 14}" x2="${cx + 14}" y1="${y(r.p90)}" y2="${y(r.p90)}"/>
+      <line class="whisker" x1="${cx - 14}" x2="${cx + 14}" y1="${y(r.p10)}" y2="${y(r.p10)}"/>
+      <text class="val" x="${cx}" y="${y(r.p90) - 8}">${fmtN(r.p50)}</text>
+      <text class="lab" x="${cx}" y="${H - 12}">${esc(lab)}</text>`;
+  }).join("");
+  $("worlds-desc").textContent = `Homes permitted statewide over ${b.meta.horizon_years} years: ${fmtN(base.p50)} without the reform (likely range ${rangeWords(base)}), ${fmtN(base.p50 + add.p50)} with it. Bars show our estimate; the line shows the likely range.`;
+  // The difference, enlarged: the permits added on their own scale.
+  const ds = $("diff"), DW = 560, DH = 54, pad = 8;
+  const ticks = niceTicks(Math.max(add.p90, 1) * 1.05), dtop = ticks[ticks.length - 1] >= add.p90 ? ticks[ticks.length - 1] : add.p90;
+  const x = (v) => pad + (DW - 2 * pad) * Math.max(0, v) / dtop;
+  ds.setAttribute("viewBox", `0 0 ${DW} ${DH}`);
+  ds.setAttribute("aria-label", `Added by the reform: ${fmtN(add.p50)} homes permitted, likely range ${rangeWords(add)}`);
+  ds.innerHTML = ticks.map((t) => `<line class="grid" x1="${x(t)}" x2="${x(t)}" y1="4" y2="32"/><text class="tick" x="${x(t)}" y="48">${fmtN(t)}</text>`).join("") +
+    `<rect x="${x(add.p10)}" y="10" width="${Math.max(1, x(add.p90) - x(add.p10))}" height="16" class="band"/>
+     <rect x="${x(add.p50) - 1.5}" y="6" width="3" height="24" fill="${scenColor(d)}"/>`;
+}
+
+function updateResults() {
+  const b = UI.b, d = UI.detail;
+  if (!b || !scenariosIn(b).includes(d)) return;
+  const r = AGG.summarize(drawsFor(b, d), UI.pins);
+  drawWorlds(b, r.permits_added, d);
+  const need = (b.need || []).filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
+  const sh = need.length ? AGG.shareOfNeed(r.homes_net_statewide, need[0]) : null;
+  const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
+  $("headline-sentence").innerHTML = `<b>+${fmtN(r.permits_added.p50)} homes over ${b.meta.horizon_years} years</b> (likely range ${rangeWords(r.permits_added)}).
+    Counting only homes that are new to the state, about ${withRange(r.homes_net_statewide)}${sh ? `: ${fmtPct(sh.share_p50)} (likely range ${fmtPct(sh.share_p10)}–${fmtPct(sh.share_p90)}) ${esc(need[0].label)}` : ""}.${pinned ? ` <span class="muted">With ${pinned} assumption${pinned > 1 ? "s" : ""} changed by you.</span>` : ""}`;
+  $("trust-line").innerHTML = trustLine(b);
+  const legal = DATA.policies[d].legal.split("{legal}").map(esc).join(`<b>${withRange(r.legal)}</b>`);
+  $("funnel-words").innerHTML = [
+    legal,
+    `On about <b>${withRange(r.pencils)}</b> of them, it pays: the rent or sale value covers land, building and fees.`,
+    `Most owners still don't build within ${b.meta.horizon_years} years. We expect about <b>${withRange(r.permits_added)}</b> to get a building permit.`,
+    `Some won't be finished, some won't house anyone, and some would have been built elsewhere in the state anyway. Without those, ${esc(stateName(b))} gains about <b>${withRange(r.homes_net_statewide)}</b> homes.`,
+  ].map((s) => `<li>${s}</li>`).join("");
+  // More detail: share of need for every denominator, and the funnel bars.
+  $("need").innerHTML = need.length ? need.map((n) => {
+    const s = AGG.shareOfNeed(r.homes_net_statewide, n);
+    return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-2) 0 0">${fmtPct(s.share_p10)} to ${fmtPct(s.share_p90)} <span class="body">${esc(n.label)}</span></p>
+      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(s.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(s.share_p50_at_need_high)} to ${fmtPct(s.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Net statewide homes. Source: ${esc(n.source)}.</p>`;
+  }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
+  const stages = [["Legally allowed", r.legal, "lots", "var(--survey)", 1], ["Building pays", r.pencils, "lots", "var(--survey)", 0.6], ["Built", r.homes_in_place, "homes", scenColor(d), 1]];
+  const lmax = Math.log10(Math.max(r.legal.p90, 10));
+  const w = (v) => `${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%`;
+  $("funnel").innerHTML = `<div class="funnel">${stages.map(([lab, s, unit, col, op]) => `<div class="lab body-small" style="font-weight:600">${lab}</div>
+    <div><div class="bar" style="width:${w(s.p50)};background:${col};opacity:${op}"></div></div>
+    <div class="nums body-small" style="font-family:var(--font-mono);text-align:right">${s.p10 === s.p90 ? fmtN(s.p50) : `${fmtN(s.p10)} – ${fmtN(s.p90)}`} ${unit}</div>`).join("")}</div>`;
   for (const k of DATA.knobs) {
     const el = document.querySelector(`[data-val="${CSS.escape(k.column)}"]`);
     if (!el) continue;
     const vals = drawsFor(b, d).map((x) => Number(x[k.column]));
     const q = UI.pins[k.column];
-    el.textContent = q === undefined || q === 50 ? `Engine estimate: ${fmtFactor(AGG.percentile(vals, 50), k.format)} (P10–P90 ${fmtFactor(AGG.percentile(vals, 10), k.format)} to ${fmtFactor(AGG.percentile(vals, 90), k.format)})`
-      : `Shifted to its P${q}: ${fmtFactor(AGG.percentile(vals, q), k.format)} at the midpoint (×${AGG.shiftScale(drawsFor(b, d), k.column, q).toFixed(2)})`;
+    el.textContent = q === undefined || q === 50 ? `Our estimate: ${fmtFactor(AGG.percentile(vals, 50), k.format)} (likely range ${fmtFactor(AGG.percentile(vals, 10), k.format)} to ${fmtFactor(AGG.percentile(vals, 90), k.format)})`
+      : `Changed to ${fmtFactor(AGG.percentile(vals, q), k.format)}`;
     const input = document.querySelector(`[data-pin="${CSS.escape(k.column)}"]`);
     if (input && q === undefined) input.value = 50;
   }
@@ -573,7 +627,7 @@ function updateResults() {
 function drawTornado() {
   const el = $("tornado"), b = UI.b;
   if (!el || !b || !scenariosIn(b).length) return;
-  const s = UI.detail || scenariosIn(b)[0];
+  const s = scenariosIn(b).includes(UI.detail) ? UI.detail : scenariosIn(b)[0];  // a not-run tab: first run
   const t = AGG.tornado(drawsFor(b, s), "homes_net_statewide");
   const label = Object.fromEntries(DATA.knobs.map((k) => [k.column, k.label]));
   const vals = t.rows.flatMap((r) => [r.low, r.high]).concat([t.base]);
@@ -627,12 +681,16 @@ function wireResults() {
   body.onclick = (e) => {
     const t = e.target.closest("button");
     if (!t) return;
-    if (t.dataset.outcome) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
     if (t.dataset.detail) {
-      UI.detail = t.dataset.detail; UI.pins = {};
-      body.querySelectorAll("[data-detail]").forEach((x) => x.setAttribute("aria-pressed", x === t));
-      $("knobs").innerHTML = knobsHtml(UI.b);
+      if (t.dataset.detail === UI.detail) return;
+      const keep = UI.b;
+      UI.detail = t.dataset.detail;
+      body.innerHTML = SECTIONS.results(keep);  // each policy is its own page: redraw the section for it
+      UI.detail = t.dataset.detail;
+      wireResults();
       drawTornado();
+      body.querySelector(`[data-detail="${CSS.escape(UI.detail)}"]`).focus();
+      return;
     }
     if (t.dataset.reset) delete UI.pins[t.dataset.reset];
     if (t.id === "reset-all") UI.pins = {};

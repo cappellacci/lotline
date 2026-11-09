@@ -1,0 +1,22 @@
+# Per-policy wording for the Results page (WS-RESULTS-SIMPLE; copy draft in copy/results.md).
+# One entry per policy tab, in tab order. Words only: every number on the page comes from the results bundle.
+# `legal` is funnel sentence 1; {legal} is replaced by the bundle's legal-lots count (with its range if it has one).
+# `limits` are the three "What this can't tell you" points (S9). Their long-term home is open (copy Q5).
+adu:
+  legal: "The reform makes it legal to add a backyard cottage or basement apartment on {legal} lots."
+  limits:
+    - ["Where the homes go.", "It gives a statewide total, not which streets will build."]
+    - ["Rents and prices.", "It counts homes, not what they will cost."]
+    - ["What cities do next.", "New local rules that slow the reform would make these numbers too high."]
+missing_middle:
+  legal: "The reform makes it legal to build a duplex, triplex or fourplex on {legal} lots."
+  limits:
+    - ["Where the homes go.", "It gives a statewide total, not which blocks will change."]
+    - ["Rents and prices.", "It counts homes, not what they will cost."]
+    - ["Teardowns after five years.", "It counts houses replaced inside the five years only."]
+fees:
+  legal: "Lower fees change the math on {legal} lots where building is already legal."
+  limits:
+    - ["Who pays instead.", "Lower fees mean less money for pipes and roads; it does not say how cities make that up."]
+    - ["Rents and prices.", "It counts homes, not what they will cost."]
+    - ["Builders' other costs.", "If land or labor costs rise, the gain shrinks."]
