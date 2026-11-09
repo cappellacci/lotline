@@ -4588,6 +4588,28 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Collect non-metro evidence: county or small-town permit systems in NC (then MN, OH, TX) that flag ADUs or
     accessory dwellings. Until then non-metro cells stay unmeasured.
   - Charlotte's counts after V5 is scored and released (D-071).
+- **Coverage rule (added 2026-11-09, before any run):** a source's ADU counts enter a cell only if, over the
+  same years, its new units for that jurisdiction are at least 0.8 of BPS's reported units. A source above
+  BPS passes: BPS is the floor, not the truth. A source that fails is left out until fixed, and its place
+  counts as unsampled.
+- **Data checks, 2026-11-09 (results; no model run):**
+  - **Blank `cbsa_type` means outside any CBSA.** Every jurisdiction in all five states was checked against
+    the OMB 2023 delineation file (`raw/census_cbsa_delineation/2023/list1_2023.xlsx`). Every blank one
+    belongs to a county in no CBSA, and every filled one to a county in a CBSA, with 0 mismatches (NC 58
+    blank of 454; MN 358; OH 139; TX 201; OR 14). No download is needed.
+  - **Bexar County unincorporated (TX): fails.** San Antonio's permits record 2,173 new units there over
+    2021–25 against BPS's 7,304 (0.30; 0.12–1.41 by year). The city permits only the part of the county it
+    regulates, so the 0.14 rate is understated. Left out.
+  - **Durham County unincorporated (NC): fails for now.** Durham's permits record 0.69 of BPS units over
+    2021–25, and 0.30–0.51 a year before 2023. A likely cause: the adapter places permits by the city's
+    *current* limits, so permits in areas annexed since then count as the city's. Left out until the
+    adapter uses limits as of each permit's date, or the gap is otherwise explained.
+  - **42 Twin Cities metro townships (MN, Met Council): pass.** 3.0x BPS over 2021–25 (2.0–5.9x by
+    year): Met Council's count is fuller than BPS here. 10 ADUs on 26,700 lots, 0.75 per 10,000 lots a year.
+  - **So, today:** the metro unincorporated cell rests on the MN townships alone (42 places, 10 ADUs; exactly
+    at the proposed minimum). No NC county area passes. Micropolitan and non-CBSA cells have no sampled place
+    in any state. Before the cell levels can carry NC's county areas, the cheapest evidence to add is
+    Durham County, by fixing its adapter, and then more county permit sources.
 - **Display:** the results page shows the zone table. It gives the measured total, its range and the share of
   eligible lots in measured cells, then the unmeasured bound. This feeds the stat cards planned after
   #348/#350 (schema fields to be added then).

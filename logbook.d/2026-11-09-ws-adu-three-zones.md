@@ -24,3 +24,11 @@
   - Ben reviews D-072.
   - Then the data tasks: Bexar coverage, non-metro permit sources, Charlotte after V5.
   - Then code, tests and the pre-registered checks.
+- **Data checks (same day, appended to D-072):**
+  - Blank `cbsa_type` = outside any CBSA: 0 mismatches against OMB 2023, all five states.
+  - Coverage against BPS, new units 2021–25:
+    - Bexar unincorporated 0.30: fails, left out.
+    - Durham County unincorporated 0.69: fails for now; probably current-limits geocoding of annexed areas.
+    - MN metro townships (Met Council) 3.0x BPS: pass.
+  - Added a coverage rule (at least 0.8 of BPS) before any run. The metro unincorporated cell now rests on
+    the MN townships alone.
