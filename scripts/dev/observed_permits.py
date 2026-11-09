@@ -76,7 +76,8 @@ def main() -> None:
     store = DataStore()
     doc = {st: observed(st, store, a.first, a.last) for st in a.states}
     for st, d in doc.items():
-        adu_part = f"ADUs {d['adu_total']:,} in {d['adu_places']} places ({d['adu_population_share']:.0%} of pop)"
+        share = d["adu_population_share"]
+        adu_part = f"ADUs {d['adu_total']:,} in {d['adu_places']} places ({share:.0%} of pop)"
         mm_part = f"2-4 unit homes {d['mm_total']:,} {d['mm_homes']}"
         print(f"{st}: {adu_part} {d['adu']}; {mm_part}; holdouts {d['holdouts_in_window']}")
     if a.out:
