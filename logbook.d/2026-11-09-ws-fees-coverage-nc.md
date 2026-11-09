@@ -1,0 +1,12 @@
+### LB-NNN · 2026-11-09 · Build: NC fee coverage for the largest uncoded places (priority 4)
+- **Question:** What do Charlotte, Fayetteville, Cary, High Point, Greenville and Gastonia charge a new house, duplex and fourplex for water/sewer, building permits and impact fees, so they stop borrowing NC's median?
+- **What I did:**
+  - Looked up official schedules (Charlotte Water FY27 rates page, Town of Cary FY2026 budget fee schedule, GUC water/sewer terms 07-01-26, City of Gastonia FY27 adopted fee schedule) and coded 54 rows into `config/fees/nc.csv` with `scripts/dev/coverage_fees_nc_2026_11_09.py` (+ rows JSON), following #345/#346 (one meter per unit central, master meter low; per-type rows for every item).
+  - Charlotte: fee inputs only; no Charlotte permit or outcome data was opened.
+  - Regenerated `docs/research/fee-levels-vs-handbook.md`.
+- **Inputs:** official fee pages/PDFs listed in each row's `source`; D-065, D-066, #345, #346.
+- **Outputs:** `scripts/dev/coverage_fees_nc_2026_11_09.py`, `scripts/dev/coverage_fees_nc_2026_11_09_rows.json`, `config/fees/nc.csv` (+54 rows), `docs/research/fee-levels-vs-handbook.md`.
+- **Findings:** Coded house fees: Charlotte $17,370 (water/sewer only; tap fees where Charlotte Water installs the service), Gastonia $11,900, Greenville $10,883, Cary $7,692 (all components). NC coded places 16 -> 20; NC house median $9,632 -> $9,592. Fayetteville and High Point remain uncoded; Charlotte, Greenville and Gastonia permits are still filled from the median.
+- **Decisions:** none proposed beyond the PR notes.
+- **AI:** Claude found and read the sources with a web-fetch summariser (direct downloads were blocked by the session proxy), so every `source_quote` is blank with a note; amounts were cross-checked by re-asking for exact table rows. Checked with the fee config/model/state tests, the fee-levels table and `compliance_check.py` (0 FAIL).
+- **Open / next:** a person should open the blocked/unread sources (see PR) and fill quotes; Cary FY2027 fee appendix; Mecklenburg LUESA fee ordinance for Charlotte permits.

@@ -1,0 +1,12 @@
+### LB-NNN · 2026-11-09 · Build: MN fee coverage for the six largest uncoded places
+- **Question:** What do Plymouth, Woodbury, Blaine, Eagan, Eden Prairie and Minnetonka charge a new house, duplex and fourplex in water/sewer, permit and impact fees (manual-fee-lookups.md, priority 4)?
+- **What I did:**
+  - Found each city's 2026 fee schedule or permit-fee handout and read it through a web-fetch tool (direct downloads blocked by the session proxy).
+  - Coded 62 rows in `config/fees/mn.csv`: building permit, 65% plan review and state surcharge (SFD/U2/U3_4) for Plymouth, Woodbury, Blaine and Minnetonka, plus Woodbury plumbing/HVAC/electrical; city water/sewer connection charges (OTHER); Met Council SAC (OTHER) for all six; Plymouth park fee ($8,000/unit) and Woodbury park dedication (subdivision only, no per-unit amount).
+  - Regenerated `docs/research/fee-levels-vs-handbook.md`.
+- **Inputs:** city fee schedules for Plymouth, Woodbury, Blaine and Minnetonka; Met Council 2026 SAC Procedure Manual; Minn. Stat. 326B.148.
+- **Outputs:** `scripts/dev/coverage_fees_mn_2026_11_09.py`, `scripts/dev/coverage_fees_mn_2026_11_09_rows.json`, `config/fees/mn.csv`, `docs/research/fee-levels-vs-handbook.md`.
+- **Findings:** House totals: Plymouth $17,133, Woodbury $12,186, Minnetonka $11,432, Blaine $9,168 (the old MN median was $9,148). Eagan's schedules are robots-disallowed and Eden Prairie has no adopted schedule online, so they carry SAC only. Their water_sewer is now "coded", so the engine stops filling it and their totals fall to $6,931, which understates them.
+- **Decisions:** Proposed: when a place has only a regional charge (SAC) for a component, should the engine still fill local connection charges from the median? (See the PR.)
+- **AI:** Claude found the sources, coded the rows and worked out the conversions. It checked them with `load_fees`, the fee tests, an idempotent rerun and compliance_check (0 FAIL). Quotes are blank because no text could be matched word for word.
+- **Open / next:** A person should open Eagan's PDFs and an Eden Prairie schedule. Match quotes against local PDF copies. Code Plymouth and Blaine plumbing/mechanical and Minnetonka trade permits.
