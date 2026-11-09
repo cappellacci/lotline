@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.12"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.13"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -364,12 +364,20 @@ class Fees(_Strict):
     jurisdiction_geoid: Series[str]  # may be a region (e.g. Met Council SAC) via jurisdictions.kind = region
     year: Series[pd.Int64Dtype] = pa.Field(ge=1970, le=2100)
     effective_date: Optional[Series[pd.Timestamp]] = pa.Field(nullable=True)
+    # Last year the row is known to be in force when a newer schedule year exists for the same component
+    # (an older agency schedule or impact-fee ordinance still current; #247). Blank: superseded by any newer
+    # year.
+    in_force_through: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True, ge=1970, le=2100)
     fee_component: Series[str] = pa.Field(isin=FEE_COMPONENTS)
     fee_type: Series[str]  # the source's own name for the fee
     building_type_std: Series[str] = pa.Field(isin=BUILDING_TYPES)
     basis: Series[str] = pa.Field(isin=FEE_BASIS)
     amount_usd: Series[float] = pa.Field(nullable=True, ge=0)  # per the basis (per unit, per LUE, ...)
     amount_per_unit_usd: Series[float] = pa.Field(nullable=True, ge=0)  # converted to one dwelling unit
+    # Range of the per-unit amount when the fee varies by area, basin, tier or plat date (#247); the central
+    # value stays in amount_per_unit_usd. Blank: no range coded (low = high = central).
+    amount_per_unit_low_usd: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    amount_per_unit_high_usd: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
     pct_of_value: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=100)
     dollar_year: Series[pd.Int64Dtype] = pa.Field(ge=1970, le=2100)
     payment_timing: Optional[Series[str]] = pa.Field(nullable=True)  # e.g. "at permit", "at CO" (C54)
@@ -385,6 +393,21 @@ class Fees(_Strict):
     def one_row_per_key(cls, df: pd.DataFrame) -> bool:
         key = ["jurisdiction_geoid", "year", "fee_component", "fee_type", "building_type_std", "basis"]
         return not df.duplicated(key).any()
+
+    @pa.dataframe_check
+    def range_brackets_central(cls, df: pd.DataFrame) -> bool:
+        """low <= amount_per_unit_usd <= high wherever both are given; in_force_through >= year."""
+        ok = pd.Series(True, index=df.index)
+        mid = df["amount_per_unit_usd"]
+        if "amount_per_unit_low_usd" in df:
+            low = df["amount_per_unit_low_usd"]
+            ok &= ~(low.notna() & (mid.isna() | (low > mid)))
+        if "amount_per_unit_high_usd" in df:
+            high = df["amount_per_unit_high_usd"]
+            ok &= ~(high.notna() & (mid.isna() | (high < mid)))
+        if "in_force_through" in df:
+            ok &= ~(df["in_force_through"].notna() & (df["in_force_through"] < df["year"]))
+        return bool(ok.all())
 
 
 TABLES: dict[str, type[pa.DataFrameModel]] = {
@@ -677,6 +700,11 @@ HISTORY = [
         "1.12",
         "results_observed: permits actually issued in the years before the window (ADU permits where local "
         "data flag them; homes in 2-4 unit buildings from BPS); results_baseline size_class 2_4",
+    ),
+    (
+        "1.13",
+        "fees: optional amount_per_unit_low_usd and amount_per_unit_high_usd (range of a fee that varies by "
+        "area, basin, tier or plat date) and in_force_through (an older row still in force; #247, D-066)",
     ),
 ]
 

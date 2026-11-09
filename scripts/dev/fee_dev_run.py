@@ -8,7 +8,7 @@ For each state: places with rows in config/fees (St. Paul is left out: its outco
 baseline units per year = the baseline model's mean (`baseline.baseline_forecast`) summed over the four BPS
 size classes, from the holdout-filtered panel; median home value from the newest ACS 5-year vintage <= origin
 (2025 dollars); parcel inputs (`scenarios.fees.parcel_inputs`) where the state has a parcel table. Runs the
-scenario in `local` and `handbook` modes and prints five-year totals (P10/P50/P90 and mean of added units).
+scenario in each mode (`fees.MODES`: the benchmark and the two real-fee scenarios, D-065) and prints five-year totals (P10/P50/P90 and mean of added units).
 """
 
 from __future__ import annotations
@@ -19,9 +19,9 @@ from pathlib import Path
 import pandas as pd
 
 from lotline.build import eligible, panels
-from lotline.config import load_fees, load_params
+from lotline.config import CONFIG_DIR, load_fees, load_params
 from lotline.io import DataStore
-from lotline.model import baseline, money
+from lotline.model import baseline, fee_levels, money
 from lotline.model.scenarios import adu, fees
 
 HOLDOUT_PLACES = {"2758000", "3712000"}  # St. Paul, Charlotte: never in a development run
@@ -43,16 +43,24 @@ def baseline_units(state: str, store, origin: int, geoids) -> pd.DataFrame:
     return t.rename_axis(columns=None).reset_index()
 
 
+def all_coded_fees() -> pd.DataFrame:
+    """Every state's coded fees, so the D-065 fill can fall back to pooled medians."""
+    states = sorted(p.stem for p in (CONFIG_DIR / "fees").glob("*.csv"))
+    return pd.concat([load_fees(s) for s in states], ignore_index=True)
+
+
 def places_for(state: str, store, origin: int) -> pd.DataFrame | None:
     coded = load_fees(state)
     if coded is None:
         return None
-    local = fees.local_fees(coded)
-    local = local[~local["geoid"].isin(HOLDOUT_PLACES)]
+    cpi = money.index_by_year(store.read(state, "market_geo_year"), "cpi_u")
+    geoids = coded[["jurisdiction_geoid", "state"]].drop_duplicates()
+    geoids = geoids.rename(columns={"jurisdiction_geoid": "geoid"})
+    local = fee_levels.place_fees(geoids, all_coded_fees(), "SFD", index=cpi)
+    local = local[~local["geoid"].isin(HOLDOUT_PLACES)].drop(columns="state")
     juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "state"]]
     places = local.merge(juris, on="geoid", how="left")
     places = places.merge(baseline_units(state, store, origin, places["geoid"]), on="geoid", how="left")
-    cpi = money.index_by_year(store.read(state, "market_geo_year"), "cpi_u")
     places["acs_geo"] = places["kind"].map(adu.ACS_PREFIX) + ":" + places["geoid"]
     acs = adu.acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
     places = places.merge(acs[["home_value"]], left_on="acs_geo", right_index=True, how="left")
