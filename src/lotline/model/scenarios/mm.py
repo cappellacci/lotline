@@ -43,7 +43,7 @@ import numpy as np
 import pandas as pd
 
 from lotline.config import load_params
-from lotline.model.hazard import ramp
+from lotline.model.hazard import feasible_share, ramp
 
 Z_90 = 1.644854
 HORIZON = 5
@@ -100,6 +100,8 @@ class Result:
     homes_gross: np.ndarray  # draws × years, homes in them
     teardowns: np.ndarray  # draws × years, houses replaced
     places: pd.DataFrame  # per place: mean added buildings and net homes over the five years, inputs
+    legal: np.ndarray | None = None  # draws × 3: newly legal parcels E × (1 − d), by data tier 1, 2, 3
+    pencils: np.ndarray | None = None  # draws: newly legal parcels × the lot's feasible share F(PCR)
 
     @property
     def homes_net(self) -> np.ndarray:
@@ -117,7 +119,8 @@ def simulate(
 ) -> Result:
     """Joint draws of the added buildings, homes and teardowns (module docstring).
 
-    `places`: geoid, eligible, dose (NaN = no coded rule), band, f_ratio, house_share. `draws`: one row per
+    `places`: geoid, eligible, dose (NaN = no coded rule), band, f_ratio, house_share; optional data_tier
+    (default 3) and f_share (F(PCR), for the funnel's pencil-out stage; default f_ratio). `draws`: one row per
     draw (theta, alpha, units, teardown_scale; `draw_params`). Every place shares a draw's parameters; its u,
     its drawn dose (if uncoded) and its counts come from its own keyed stream, so a place draws alike
     whichever places it is run with.
@@ -128,6 +131,8 @@ def simulate(
     units, scale = draws["units"].to_numpy(), draws["teardown_scale"].to_numpy()
     pools = dose_pools(places, min_coded)
     bld, hom, tdn = (np.zeros((n, horizon)) for _ in range(3))
+    legal, pencils = np.zeros((n, 3)), np.zeros(n)
+    has_share = "f_share" in places
     rows = []
     for p in places.itertuples(index=False):
         r = _place_stream(seed, p.geoid)
@@ -144,6 +149,10 @@ def simulate(
         t = r.binomial(b.astype(np.int64), share[:, None]).astype(float)
         h = b * units[:, None]
         bld += b
+        newly = float(p.eligible) * gap
+        tier = int(getattr(p, "data_tier", 3)) if pd.notna(getattr(p, "data_tier", 3)) else 3
+        legal[:, min(max(tier, 1), 3) - 1] += newly
+        pencils += newly * float(p.f_share if has_share else p.f_ratio)
         hom += h
         tdn += t
         rows.append(
@@ -151,7 +160,7 @@ def simulate(
              "added_homes_net_mean": (h - t).sum(1).mean(), "dose_gap_mean": gap.mean()}
         )  # fmt: skip
     per_place = places.merge(pd.DataFrame(rows), on="geoid", how="left") if rows else places.copy()
-    return Result(bld, hom, tdn, per_place)
+    return Result(bld, hom, tdn, per_place, legal, pencils)
 
 
 def summarize(res: Result) -> pd.DataFrame:
@@ -219,7 +228,6 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     and the market series. No permits are read (D-063 choice 4).
     """
     from lotline.config import load_state
-    from lotline.model import calibrate_mm as cal
     from lotline.model import estimate_mm as emm
     from lotline.model import hazard, money, rule_tags
     from lotline.model.scenarios import adu
@@ -272,8 +280,10 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     places = places.merge(acs[["rent"]], left_on="acs_geo", right_index=True, how="left")
     pcr = emm.plex_price_to_cost(places["rent"], cost_index=ci.get(origin, ci[max(ci)]))
     places["pcr"] = pcr
-    f = pd.Series([cal.feasibility_ratio(x, margin, sigma) if np.isfinite(x) else np.nan for x in pcr])
-    places["f_ratio"] = f.fillna(f.median()).fillna(1.0).to_numpy()
+    f = pd.Series(np.where(np.isfinite(pcr), feasible_share(np.nan_to_num(pcr), margin, sigma), np.nan))
+    f1 = float(feasible_share(1.0, margin, sigma))
+    places["f_share"] = f.fillna(f.median()).fillna(f1).to_numpy()  # F(PCR): share of lots that pencil
+    places["f_ratio"] = places["f_share"] / f1  # F(PCR) / F(1), the fit's feasibility term
     _ = load_state(state)  # validates the state code
     return places
 
