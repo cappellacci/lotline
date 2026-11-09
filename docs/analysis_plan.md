@@ -4421,5 +4421,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Tests (hand-worked):** `no_state_rule_priors` on synthetic coded places (by band, the fallback to all
   bands, flagged states left out); `rule_inputs` with a flagged state leaves coded places unchanged and moves
   only the unknown places' p_*; an unflagged state is unchanged.
-- **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code or run. **Status:** method decided,
-  not run.
+- **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code or run. **Status:** adopted and run
+  (results below).
+- **Code (commit c599ada):** `StateConfig.adu_state_law_rows_complete`, `adu.no_state_rule_priors`, the
+  replacement in `rule_inputs`, and Oregon's flag. Tests by hand in `tests/model/test_scenario_adu.py`. At
+  central values Oregon's 50 uncoded places now borrow P(no ADUs) 0.67 and P(Handbook-equivalent) 0.003, from
+  the small coded places of MN, NC, OH and TX. Before, they borrowed 0 and 0.97.
+- **Results (run E, 2026-11-09, `lotline results --state XX` at da8793a, 1,000 draws; Oregon with role
+  transfer; `reports/results-2026-11-09/run-e.json`):**
+  - **Oregon ADUs:** 0 → 5 net homes over 2027–2031 (P10–P90 2–12). That is small, as expected: the exempt
+    places hold 3.3% of eligible parcels and are towns of under 2,500 people.
+  - **MN, NC, OH, TX and Oregon missing middle:** identical to run D, to the home.
+  - Run E is also the first official run with the baseline part (schemas 1.11).
+  - Page: Finding 7 of https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs (version 3), with the permits
+    actually issued in 2021–2025 (`scripts/dev/observed_permits.py`, `reports/results-2026-11-09/observed.json`).

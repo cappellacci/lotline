@@ -1,0 +1,151 @@
+{
+ "MN": {
+  "years": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "adu": [
+   37,
+   39,
+   45,
+   41,
+   53
+  ],
+  "adu_total": 215,
+  "adu_places": 177,
+  "adu_population_share": 0.6405,
+  "mm_homes": [
+   623,
+   532,
+   461,
+   580,
+   542
+  ],
+  "mm_total": 2738,
+  "mm_basis": "reported",
+  "holdouts_in_window": [
+   "St. Paul (2024-)"
+  ]
+ },
+ "NC": {
+  "years": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "adu": [
+   85,
+   137,
+   166,
+   109,
+   123
+  ],
+  "adu_total": 620,
+  "adu_places": 13,
+  "adu_population_share": 0.3769,
+  "mm_homes": [
+   760,
+   814,
+   901,
+   871,
+   1140
+  ],
+  "mm_total": 4486,
+  "mm_basis": "reported",
+  "holdouts_in_window": [
+   "Charlotte (2023-)"
+  ]
+ },
+ "OH": {
+  "years": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "adu": [
+   16,
+   22,
+   19,
+   27,
+   31
+  ],
+  "adu_total": 115,
+  "adu_places": 12,
+  "adu_population_share": 0.2079,
+  "mm_homes": [
+   911,
+   1657,
+   1560,
+   1516,
+   1673
+  ],
+  "mm_total": 7317,
+  "mm_basis": "reported",
+  "holdouts_in_window": []
+ },
+ "OR": {
+  "years": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "adu": [
+   319,
+   359,
+   284,
+   215,
+   211
+  ],
+  "adu_total": 1388,
+  "adu_places": 2,
+  "adu_population_share": 0.2668,
+  "mm_homes": [
+   671,
+   621,
+   707,
+   611,
+   673
+  ],
+  "mm_total": 3283,
+  "mm_basis": "reported",
+  "holdouts_in_window": []
+ },
+ "TX": {
+  "years": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "adu": [
+   389,
+   376,
+   309,
+   164,
+   79
+  ],
+  "adu_total": 1317,
+  "adu_places": 5,
+  "adu_population_share": 0.2211,
+  "mm_homes": [
+   6373,
+   7308,
+   7711,
+   7434,
+   8269
+  ],
+  "mm_total": 37095,
+  "mm_basis": "reported",
+  "holdouts_in_window": []
+ }
+}
