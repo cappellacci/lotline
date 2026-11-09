@@ -168,6 +168,18 @@ def test_results_section_parts_are_on_the_page(tmp_path):
         assert part in html, part
 
 
+def test_baseline_card_reads_the_bundle_baseline(tmp_path):
+    """Schemas 1.11: the page shows the no-change forecast from the bundle's `baseline` part."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    parts = ("function baselineHtml", "With no policy change", "${baselineHtml(b)}", "0 added, by definition")
+    for part in (*parts, "The baseline forecast is not in this state's results yet."):
+        assert part in html, part
+    state_file = (tmp_path / "states" / "zz.js").read_text()
+    doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])
+    window = [r for r in doc["baseline"] if r["size_class"] == "all" and r["period"] == "2027-2031"]
+    assert len(window) == 1 and window[0]["p10"] <= window[0]["p50"] <= window[0]["p90"]
+
+
 # ------------------------------------------------------------------------------- section 2: the data
 SUMMARY = {
     "generated": "2026-11-05T00:00:00Z",

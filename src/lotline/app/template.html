@@ -366,6 +366,26 @@ function flagHtml(m) {
     <p class="source">Overlap check: ${esc(m.overlap_note || "")}.${m.caveats ? " " + esc(m.caveats) : ""}</p></div>`;
 }
 
+// The baseline (results_baseline, schemas 1.11): homes permitted with no policy change. Read as is from the
+// bundle; the sliders do not move it. "all" is summed within each draw, so it is not the sum of the size rows.
+const SIZE_WORDS = { "1": "Single-family (1 unit)", "2": "Duplexes (2 units)", "3_4": "3–4 unit buildings", "5p": "5 or more units" };
+function baselineHtml(b) {
+  const rows = b.baseline || [];
+  const win = rows.find((r) => r.size_class === "all" && r.period.includes("-"));
+  if (!win) return `<div class="card"><h3 class="h3">With no policy change</h3><p class="pending">The baseline forecast is not in this state's results yet.</p></div>`;
+  const yrs = win.period.replace("-", "–");
+  const sizes = Object.keys(SIZE_WORDS).map((k) => rows.find((r) => r.size_class === k && r.period === win.period)).filter(Boolean);
+  const basis = win.basis === "reported" ? "permits as reported to the Census Bureau (not counting its estimates for places that did not report)" : "permits including the Census Bureau's estimates for places that did not report";
+  const cover = Number.isFinite(win.coverage_share) ? `, which issued ${fmtPct(win.coverage_share)} of the state's ${esc(String(b.meta.origin_year))} permits` : "";
+  return `<div class="card" id="baseline-card"><h3 class="h3">With no policy change</h3>
+    <p class="body" style="margin:0 0 var(--space-2)">If nothing changes, the places Lotline forecasts are expected to permit</p>
+    <span class="figure">${fmtN(win.p10)} to ${fmtN(win.p90)} homes</span>
+    <span class="body muted">over ${esc(yrs)}, midpoint ${fmtN(win.p50)} (about ${fmtN(win.p50 / b.meta.horizon_years)} a year).</span>
+    <div class="scroll" style="margin-top:var(--space-3)"><table><thead><tr><th>Building size</th><th class="n">P10 – P90</th><th class="n">Midpoint</th></tr></thead>
+      <tbody>${sizes.map((r) => `<tr><td>${esc(SIZE_WORDS[r.size_class])}</td><td class="n">${fmtN(r.p10)} – ${fmtN(r.p90)}</td><td class="n">${fmtN(r.p50)}</td></tr>`).join("")}</tbody></table></div>
+    <p class="source">The scenarios above count homes added on top of this. Baseline: each place keeps its own recent pace, pulled toward its county's when its record is thin, with a regional building cycle around it (model/baseline.py). ${fmtInt(win.places)} places${cover}. Counts are ${basis}. The size rows are separate ranges; they do not add up to the total range.</p></div>`;
+}
+
 const SECTIONS = {
   results(b) {
     UI.b = b; UI.pins = {};
@@ -378,7 +398,7 @@ const SECTIONS = {
       `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
     const rows = [`<div class="lab" style="color:var(--scenario-baseline)">Baseline</div>
       <div class="track" aria-hidden="true"><span class="zero"></span></div>
-      <div class="nums muted">0 by definition</div>`];
+      <div class="nums muted">0 added, by definition</div>`];
     for (const s of scen) rows.push(`<div class="lab" style="color:${scenColor(s)}">${esc(scenLabel(s))}</div>
       <div class="track" data-track="${esc(s)}"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
       <div class="nums" data-nums="${esc(s)}"></div>`);
@@ -396,6 +416,7 @@ const SECTIONS = {
         ${pendNote}
         <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
       </div>
+      ${baselineHtml(b)}
       <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
       <div class="card"><h3 class="h3">From legal lots to built homes</h3>
         <div class="tabs" role="group" aria-label="Scenario">${tabs}</div>
