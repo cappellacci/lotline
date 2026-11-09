@@ -4214,3 +4214,13 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - TX 1,152 / 4,747 / 20,518 (9,101); NC 299 / 1,193 / 5,263 (2,362); OH 266 / 1,071 / 4,271 (1,980);
     MN 180 / 704 / 2,928 (1,317); OR 20 / 94 / 435 (192).
   - Teardowns now take back about a third of gross homes; homes per building held at 2.08 is about 14% lower.
+- **Results bundle (Ben, 2026-11-09, "Wire the bundle"):** `model/results.py` now fills the `missing_middle`
+  scenario (`mm_draws`, `mm_year_shares`) in the existing `results_draws` columns, so no schema change:
+  - legal = parcels the Handbook rule newly opens, E × (1 − current dose), by data tier;
+  - pencil-out share = their mean feasible share F(PCR);
+  - θ = five-year homes permitted in the added 2–4 unit buildings ÷ pencil-out parcels (back-solved, so
+    `aggregate.homes_from_draws` reproduces the scenario's draws at default sliders);
+  - net-new share = 1 − teardowns ÷ homes permitted, per draw;
+  - completion = `completion_factor_multifamily` (0.74–0.88) and displacement, drawn in `results.py` as for
+    ADUs. So the bundle's homes are after completion and displacement, unlike the scenario run above.
+  - NC bundle checked (1,000 draws): homes in place 244 / 1,045 / 3,959; net statewide 177 / 791 / 2,998.

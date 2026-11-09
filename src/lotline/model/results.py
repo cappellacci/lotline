@@ -12,12 +12,13 @@
 - `need`: share of housing need for each denominator kind the state has (D-057), the headline marked.
 - `scorecard`: validation rows (none wired yet; the page shows "not yet scored").
 
-Which scenarios: today the engine runs the ADU scenario statewide. Fees (a statewide baseline forecast for
-every place), missing middle (no scenario module yet) and the stacked combinations (`model/combine.py` not yet
-written) are listed in `meta.scenarios_pending`, never filled with stand-ins.
+Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide. Fees (a statewide
+baseline forecast for every place) and the stacked combinations (`model/combine.py` not yet written) are
+listed in `meta.scenarios_pending`, never filled with stand-ins.
 
 Factors the scenario module does not draw itself are drawn here, triangular over config/params/aggregate.yaml
-(low, value, high), from `results_seed`: `completion_factor_single_family` and `displacement_share`.
+(low, value, high), from `results_seed`: `completion_factor_single_family` (ADU),
+`completion_factor_multifamily` (missing middle) and `displacement_share`.
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
 PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard")
 TABLE = {part: f"results_{part}" for part in PARTS}
-ENGINE_SCENARIOS = ("adu",)  # scenarios `build_bundle` can fill today
+ENGINE_SCENARIOS = ("adu", "missing_middle")  # scenarios `build_bundle` can fill today
 REPO = Path(__file__).resolve().parents[3]
 
 
@@ -140,6 +141,47 @@ def adu_draws(places: pd.DataFrame, run_draws: Mapping, rng: np.random.Generator
             "overlap_share": np.nan,
         }
     )
+
+
+def mm_draws(res, rng: np.random.Generator) -> pd.DataFrame:
+    """`results_draws` rows for the missing-middle scenario from `scenarios.mm.simulate`'s `Result` (D-063).
+
+    Per draw d: legal = parcels the Handbook rule newly opens, E × (1 − current dose), by data tier;
+    pencil-out share = their feasible-share-weighted mean F(PCR); θ = five-year homes permitted (gross, in
+    the added 2-4 unit buildings) ÷ pencil-out parcels; net-new share = 1 − houses torn down ÷ homes
+    permitted, that draw's; completion (2+ unit buildings) and displacement drawn here.
+
+    By hand: legal 1,000 in tier 1, pencils 400, 20 homes in 8 buildings that replace 6 houses -> θ 0.05,
+    pencil-out 0.4, net-new 0.7; `aggregate.homes_from_draws` then gives 20 permits and 14 × completion homes.
+    """
+    legal = np.asarray(res.legal, dtype=float)
+    n = legal.shape[0]
+    total = legal.sum(axis=1)
+    pencils = np.asarray(res.pencils, dtype=float)
+    gross = res.homes_gross.sum(axis=1)
+    torn = res.teardowns.sum(axis=1)
+    return pd.DataFrame(
+        {
+            "scenario": "missing_middle",
+            "draw": np.arange(n),
+            "eligible_tier1": legal[:, 0],
+            "eligible_tier2": legal[:, 1],
+            "eligible_tier3": legal[:, 2],
+            "theta": np.divide(gross, pencils, out=np.zeros(n), where=pencils > 0),
+            "pencil_out_share": np.divide(pencils, total, out=np.zeros(n), where=total > 0),
+            "completion_factor": triangular("completion_factor_multifamily", n, rng),
+            "net_new_share": np.divide(gross - torn, gross, out=np.ones(n), where=gross > 0),
+            "displacement_share": triangular("displacement_share", n, rng),
+            "overlap_share": np.nan,
+        }
+    )
+
+
+def mm_year_shares(res) -> np.ndarray:
+    """Each draw's gross missing-middle homes by year as a share of its five-year total (draws x years)."""
+    by_year = np.asarray(res.homes_gross, dtype=float)
+    tot = by_year.sum(axis=1, keepdims=True)
+    return np.divide(by_year, tot, out=np.zeros_like(by_year), where=tot > 0)
 
 
 def year_shares(run_draws: Mapping) -> np.ndarray:
@@ -272,7 +314,7 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
 
 def build_bundle(state: str, store, *, role: str | None = None, origin: int | None = None, draws=None):
     """Run every scenario the engine supports for one state and assemble the six tables (not yet written)."""
-    from lotline.model.scenarios import adu
+    from lotline.model.scenarios import adu, mm
 
     st = state.upper()
     agg = load_params("aggregate")
@@ -286,8 +328,12 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     places["state"] = st
     tier3 = bool(proxy.proxy_states(places))
     _, totals_adu, run_draws = adu.run(places, origin, draws=n, eligible_proxy=tier3, return_draws=True)
-    d = adu_draws(places, run_draws, rng).assign(state=st)
-    parts = summarize(st, d, origin, {"adu": year_shares(run_draws)})
+    d_adu = adu_draws(places, run_draws, rng)
+    _, res_mm, _ = mm.run(st, store, origin, n=n)
+    d = pd.concat([d_adu, mm_draws(res_mm, rng)], ignore_index=True).assign(state=st)
+    parts = summarize(
+        st, d, origin, {"adu": year_shares(run_draws), "missing_middle": mm_year_shares(res_mm)}
+    )
 
     flag, median_distance = overlap_flag(places["eligible_parcels"], totals_adu["calibration_distance"])
     tier_parcels = places.groupby("data_tier")["eligible_parcels"].sum() if "data_tier" in places else None
