@@ -117,6 +117,7 @@ def test_year_built_lot_size_and_vintage(parcels):
     assert (parcels.vintage == 2026).all()
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_place_kept_outside_bps_and_charlotte_held_out(parcels):
     from lotline.validation import holdout
 

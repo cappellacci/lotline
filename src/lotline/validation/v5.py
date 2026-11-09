@@ -312,3 +312,52 @@ def write_freeze(payload: dict, repo: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, default=str) + "\n")
     return path
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Scoring (D-071; only after the freeze is on main and the holdout is released)
+# ---------------------------------------------------------------------------------------------------------
+
+
+def verdict(ob: float, p10: float, p50: float, p90: float) -> str:
+    """D-040: 'useful' if inside P10-P90 and P50 / 2 <= observed <= 2 P50; 'inside only'; else missed."""
+    if not p10 <= ob <= p90:
+        return "missed (over)" if ob < p10 else "missed (under)"
+    ratio = ob / p50 if p50 > 0 else (1.0 if ob == 0 else np.inf)
+    return "useful" if 0.5 <= ratio <= 2 else "inside only"
+
+
+def score(draws_: np.ndarray, observed: float, bench: np.ndarray | None = None) -> dict:
+    """Pass rule (observed within P10-P90 of the draws), D-040's verdict, randomized coverage (D-003), the
+    observed value's predictive percentile, and CRPS against a benchmark's draws if given."""
+    from lotline.model.baseline import crps_from_draws, randomized_coverage
+
+    x = np.asarray(draws_, float)
+    s = stats(x)
+    out = s | {
+        "observed": float(observed),
+        "pass": bool(s["p10"] <= observed <= s["p90"]),
+        "verdict": verdict(observed, s["p10"], s["p50"], s["p90"]),
+        "obs_over_p50": float(observed / s["p50"]) if s["p50"] > 0 else None,
+        "percentile": float(100 * ((x < observed).mean() + 0.5 * (x == observed).mean())),
+        "coverage_rand": float(randomized_coverage(x[None, :], np.array([observed]), 0.1, 0.9)[0]),
+        "crps_model": float(crps_from_draws(x[None, :], np.array([observed]))[0]),
+    }
+    if bench is not None:
+        out["crps_no_reform"] = float(
+            crps_from_draws(np.asarray(bench, float)[None, :], np.array([observed]))[0]
+        )
+    return out
+
+
+def observed(bps: pd.DataFrame, geoid: str = MECKLENBURG, years=YEARS) -> tuple[dict, dict]:
+    """({year: 2-4 unit buildings}, {year: homes}) observed in BPS for the window years (unblinded rows)."""
+    b = bps[(bps["geoid"] == geoid) & bps["year"].isin(years)]
+    b = b.groupby("year")[["bldgs_2", "bldgs_3_4", "units_2", "units_3_4"]].sum()
+    missing = set(years) - set(b.index.astype(int))
+    if missing:
+        raise ValueError(f"BPS {geoid} has no rows for {sorted(missing)}: is the holdout still applied?")
+    return (
+        {int(y): float(r.bldgs_2 + r.bldgs_3_4) for y, r in b.iterrows()},
+        {int(y): float(r.units_2 + r.units_3_4) for y, r in b.iterrows()},
+    )

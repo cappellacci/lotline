@@ -18,6 +18,13 @@ holdouts:
       BPS has no Charlotte place row: Charlotte-Mecklenburg Code Enforcement reports Charlotte's permits (and
       the Mecklenburg towns') under Mecklenburg County (37119), so 37119 rows carry Charlotte's outcomes and
       are held out over the same window (found 2026-10-19, #123).
+    # Released on Ben's go-ahead on 2026-11-09 after the freeze reached main: frozen in #353
+    # (results/frozen/V5-NC-CHARLOTTE.json, D-071), scored by scripts/dev/v5_clt_score.py (reports/v5-charlotte/).
+    released_on: 2026-11-09
+    released_note: >-
+      Frozen (#353, D-071) and scored on BPS 37119 2023-2025. Charlotte's and Mecklenburg's full data can now be
+      built for the results page, the ADU observed floor (D-070) and the historical_floor guardrail (Ben,
+      2026-11-09).
 # One parcels source per jurisdiction (build/eligible.single_source), so no place switches rolls between
 # years. Wake places and the Wake remainder: the county's pre-revaluation December 2023 roll (V2 baseline;
 # its Design Style separates townhouses, which NC OneMap codes as detached). Charlotte: the pre-UDO

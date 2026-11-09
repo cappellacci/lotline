@@ -109,6 +109,7 @@ def test_demolition(raw):
     assert row.units_new == 0 and row.units_removed == 1 and row.units_confidence == "derived"
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_load_applies_holdout_filter(raw, monkeypatch):
     """Pretend the rows are Charlotte's: everything from 2023-06-01 on must be removed."""
     monkeypatch.setattr(rp, "download", lambda store, refresh=False: raw)

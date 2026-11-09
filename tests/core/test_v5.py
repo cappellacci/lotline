@@ -125,3 +125,27 @@ def test_config_files_named_in_the_freeze_exist():
 
     for p in v5.CONFIG_FILES:
         assert (REPO_ROOT / p).exists(), p
+
+
+def test_verdict_by_hand():
+    assert v5.verdict(100, 80, 100, 170) == "useful"
+    assert v5.verdict(79, 80, 100, 170) == "missed (over)"
+    assert v5.verdict(171, 80, 100, 170) == "missed (under)"
+    assert v5.verdict(30, 10, 14, 40) == "inside only"  # 30 / 14 > 2
+
+
+def test_score_pass_rule_and_percentile():
+    draws = np.arange(1, 101, dtype=float)  # P10 10.9, P90 90.1
+    s = v5.score(draws, 50.0, bench=np.full(100, 50.0))
+    assert s["pass"] and s["percentile"] == pytest.approx(49.5)  # 49 below, 1 tie
+    assert s["crps_no_reform"] == 0.0
+    assert not v5.score(draws, 95.0)["pass"]
+
+
+def test_observed_needs_every_window_year():
+    bps = pd.DataFrame({"geoid": ["37119"] * 2, "year": [2023, 2024], "bldgs_2": [5, 6], "bldgs_3_4": [1, 0],
+                        "units_2": [10, 12], "units_3_4": [3, 0]})  # fmt: skip
+    with pytest.raises(ValueError, match="2025"):
+        v5.observed(bps)
+    bld, hom = v5.observed(bps, years=(2023, 2024))
+    assert bld == {2023: 6.0, 2024: 6.0} and hom == {2023: 13.0, 2024: 12.0}

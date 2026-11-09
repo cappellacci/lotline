@@ -4507,3 +4507,15 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   **BPS 37119 2-4 unit buildings, 2023-2025: P10 89, P50 104, P90 172 (mean 137).** Added buildings on N1
   lots: P50 0, P90 72, mean 38.6. Homes in 2-4 unit buildings: P10 213, P50 249, P90 402. No outcome has
   been read; scoring waits for this file on `main` and Ben's go-ahead.
+- **Scored (2026-11-09, on Ben's go-ahead after #353 reached `main`; holdout released in
+  `config/states/nc.yaml`; `scripts/dev/v5_clt_score.py`, `reports/v5-charlotte/`).** The regenerated draws
+  equal the freeze.
+  - **Primary: pass.** BPS 37119 had 119 new 2-4 unit buildings in 2023-2025, against P10 89, P50 104 and
+    P90 172. That is the 77th percentile, and D-040's verdict is useful.
+  - Against no reform, CRPS 10.1 against 14.5. Each year is inside its range (27, 48, 44; percentiles 11, 85,
+    78). In 2023, no reform scores better, because that BPS year includes the five months before the UDO.
+  - **Secondary (homes): inside.** 256 homes against P10 213, P50 249 and P90 402. 2023 falls below P10, and
+    no reform's CRPS on the total is better (11.4 against 13.0). 2024-2025 building was mostly duplexes.
+  - Caveats: this is one case; the count is county-wide (the towns' building is in the baseline); one-unit
+    building fell by almost half from 2023 to 2025, which the flat baseline did not foresee.
+  - No model change follows from this result.
