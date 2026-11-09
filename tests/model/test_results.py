@@ -158,7 +158,7 @@ def make_fixture() -> dict[str, pd.DataFrame]:
                 "commit_sha": "0" * 40,
                 "run_at": "2026-11-06T00:00:00Z",
                 "engine_version": "0.0.1",
-                "schemas_version": "1.11",
+                "schemas_version": "1.12",
                 "config_hash": "0" * 64,
                 "origin_year": 2025,
                 "horizon_years": 5,
@@ -187,7 +187,18 @@ def make_fixture() -> dict[str, pd.DataFrame]:
         ]
     )
     base = results.baseline_table(_baseline_panel(), "ZZ", 2025)
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base}
+    permits = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["Z1"] * 6 + ["Z2"] * 2,
+            "issue_year": [2020, 2021, 2023, 2024, 2025, 2025, 2022, 2025],
+            "source": "zz_permits",
+            "building_type_std": ["ADU"] * 7 + ["SFD"],
+            "adu_type": None,
+        }
+    )
+    juris = pd.DataFrame({"geoid": ["Z1", "Z2", "Z3"], "pop_2020": [6000, 2000, 2000]})
+    seen = results.observed_table(_baseline_panel(), permits, juris, "ZZ", 2025)
+    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}
 
 
 def test_bundle_round_trips(tmp_path):

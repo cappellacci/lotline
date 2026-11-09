@@ -154,6 +154,43 @@ iframe.dash { width: 100%; height: 80vh; border: 0; display: block; background: 
 @media (max-width: 640px) { .tornado { grid-template-columns: 1fr; } }
 details.fold { background: var(--paper-sunken); border: var(--stroke-hair) solid var(--rule); padding: var(--space-4); margin: var(--space-4) 0; }
 details.fold > summary { cursor: pointer; font-weight: 600; }
+
+/* The model page, told in steps (Ben, 2026-11-09) */
+.step { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: var(--space-4); padding: var(--space-6) 0; border-top: var(--stroke-hair) solid var(--rule); }
+.step-n { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; color: var(--brass); margin: 0; }
+.step-body { min-width: 0; }
+.step-body > h3 { margin-bottom: var(--space-3); }
+.step-body h4 { margin: var(--space-6) 0 var(--space-2); }
+.steps-list { padding-left: 1.2em; max-width: 75ch; }
+.steps-list li { margin: var(--space-2) 0; }
+.steps-list ul { padding-left: 1.2em; margin: var(--space-1) 0; }
+.steps-list ul li { margin: var(--space-1) 0; }
+.formula { font-family: var(--font-mono); font-size: 15px; background: var(--paper-sunken); border-left: var(--stroke-line) solid var(--survey); padding: var(--space-3) var(--space-4); max-width: none; }
+svg.dag { width: 100%; min-width: 760px; height: auto; display: block; margin: var(--space-3) 0; }
+svg.dag text { font-family: var(--font-sans); font-size: 13px; fill: var(--ink); text-anchor: middle; }
+svg.dag text.col { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; fill: var(--ink-muted); }
+svg.dag text.elab { font-size: 11px; fill: var(--ink-muted); text-anchor: start; }
+svg.dag .e { stroke: var(--ink-muted); stroke-width: 1.4; fill: none; }
+svg.dag .e.conf { stroke: var(--brass); }
+svg.dag .e.bad { stroke-dasharray: 5 4; }
+svg.dag .ah { fill: var(--ink-muted); }
+.n rect { fill: var(--paper); stroke: var(--ink-muted); stroke-width: 1.4; }
+.n.treat rect { fill: var(--paper-sunken); stroke: var(--ink); stroke-width: 2; }
+.n.input rect { stroke: var(--survey); }
+.n.conf rect { stroke: var(--brass); stroke-width: 2; }
+.n.base rect { fill: var(--paper-sunken); }
+.n.range rect { stroke-dasharray: 2 3; }
+.n.bad rect { stroke-dasharray: 6 4; }
+.n.out rect { stroke: var(--survey); stroke-width: 2.5; }
+.dag-key { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-2) var(--space-4); }
+.dag-key .k { display: flex; gap: var(--space-2); align-items: flex-start; }
+.dag-key svg { flex: none; margin-top: 3px; }
+.ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-3); margin: var(--space-3) 0; }
+.way { font-size: 14px; line-height: 20px; display: flex; gap: var(--space-3); align-items: flex-start; background: var(--app-card); border: var(--stroke-hair) solid var(--rule); padding: var(--space-3); min-width: 0; }
+.way .figure { font-size: 28px; line-height: 32px; font-weight: 700; color: var(--brass); min-width: 2ch; }
+table.checks td { vertical-align: top; }
+table.checks td:last-child { min-width: 260px; }
+@media (max-width: 640px) { .step { grid-template-columns: 1fr; gap: var(--space-1); } }
 </style>
 </head>
 <body>
@@ -195,17 +232,181 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
   <section class="part" id="page-data" data-section="data" hidden>
     <h2 class="h1">The data</h2>
     <p class="lead" id="data-lead"></p>
+    <div class="card" id="data-method"><h3 class="h3">What the model needs, and from which years</h3>
+      <p class="body-small">Every estimate starts from the same question: how many lots could take an extra home under the reform, and how often have owners actually built on lots like them? Answering it takes seven kinds of data.</p>
+      <div class="scroll"><table><thead><tr><th>Data</th><th>What it tells the model</th><th>Where it comes from</th><th>Years</th></tr></thead><tbody>
+        <tr><td><b>Parcels (lots)</b></td><td>How many lots could take an ADU or a 2–4 unit building: land use, lot size, year built and units on each lot.</td><td>County and state parcel rolls. Where a place has none, Census counts of single-family homes stand in.</td><td>The latest roll on file</td></tr>
+        <tr><td><b>Zoning and local rules</b></td><td>Which cities already allow ADUs or missing middle, and since when.</td><td>Each city's ordinances, looked up and coded by hand.</td><td>Adoption dates over the past decade or so; rules in force by the end of 2027 count as current</td></tr>
+        <tr><td><b>Building permits</b></td><td>How many homes get permitted each year, by building size (1, 2, 3–4, 5+ units), and how many ADUs where cities mark them.</td><td>Census Building Permits Survey for every place; city permit files for ADUs and local detail.</td><td>2001–2025 for the ups and downs of the building cycle; 2021–2025 for each place's current pace</td></tr>
+        <tr><td><b>Prices and rents</b></td><td>Whether a new home would sell or rent for enough to cover its cost.</td><td>Census American Community Survey (home values, rents); FHFA house price index.</td><td>Latest five-year survey; price index through 2025</td></tr>
+        <tr><td><b>Building costs and interest rates</b></td><td>What it costs to build and finance each kind of home.</td><td>The home builders' national construction cost survey (NAHB), brought to 2025 prices; mortgage rates and construction price indexes from FRED.</td><td>Current costs; rates 2015–2025</td></tr>
+        <tr><td><b>Development fees</b></td><td>What a city charges per new home, for the fee reform.</td><td>Each city's official fee schedule, copied and checked by hand.</td><td>Current schedules</td></tr>
+        <tr><td><b>Households and the shortage</b></td><td>How many homes the state needs, to put the results in proportion.</td><td>Each state demographer's population projections, turned into households with Census survey data; published estimates of the existing shortage (Up for Growth, Freddie Mac).</td><td>Growth from mid-2026 to mid-2031; shortage as last estimated</td></tr>
+      </tbody></table></div>
+      <p class="body-small"><b>The time line.</b> The model learns from permits through <b>2025</b>, the last full year of data, and forecasts the five years <b>2027–2031</b>, when a reform passed in 2027 could act. 2026 falls in between and is not reported. A few places' most recent years are hidden from the model so its forecasts for them can be tested blind.</p>
+    </div>
     <div id="data-body"></div>
     <div id="dash-host" hidden>
-      <h3 class="h3" style="margin-top:var(--space-6)">Coverage, ordinances and growth</h3>
+      <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--space-2);margin-top:var(--space-6)">
+        <h3 class="h3" id="dash-title">Coverage, ordinances and growth</h3>
+        <label class="picker body-small">Showing <select id="dash-state" aria-label="State shown in the data dashboard"></select></label>
+      </div>
       <p class="body-small muted" id="dash-note"></p>
       <iframe class="dash" id="dash-frame" title="Data coverage, ordinances and growth" scrolling="no"></iframe>
     </div>
+    <div id="data-sources"></div>
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
-    <p class="lead">Predictions frozen before the outcomes could be seen, then scored against what happened.</p>
-    <div id="trust-body"></div>
+    <p class="lead">How we got from the question to the numbers, one step at a time: what we measure, how the data were prepared, how the model builds its range and what we ruled out, how we tested it, and how it carries over to a new state.</p>
+
+    <div class="step" id="step-goal"><p class="step-n" aria-hidden="true">1</p><div class="step-body">
+      <h3 class="h2">The goal: exactly what we measure</h3>
+      <p><b>The question.</b> If a state passed one of three reforms, how many more homes would be permitted over the five years <b>2027–2031</b> than under the rules already in place?</p>
+      <ul class="body-small steps-list">
+        <li><b>The three reforms</b> follow the challenge Handbook to the letter.
+          <ul>
+            <li><b>ADUs:</b> one backyard home per house, at least 600 sq ft, with no parking required.</li>
+            <li><b>Missing middle:</b> 2–6 homes allowed on lots now zoned for one house, up to three stories.</li>
+            <li><b>Fees:</b> development fees cut by half. Fee results are not in this app yet.</li>
+          </ul>
+        </li>
+        <li><b>The comparison</b> is always reform against no reform. "No reform" keeps every city's own rules, including laws already passed that take effect by the end of 2027. A reform is never credited with homes that current law will produce anyway.</li>
+        <li><b>The unit</b> is homes in building permits, added up place by place to a state total. That total becomes two numbers:
+          <ul>
+            <li><b>all new homes:</b> permits that get finished and add a home someone can live in;</li>
+            <li><b>net new housing:</b> all new homes minus those that would have been built elsewhere in the state anyway. That share is a quarter by default, anywhere from none to half.</li>
+          </ul>
+        </li>
+        <li><b>Every answer is a range.</b> The model runs 1,000 times, each with different plausible values for everything it is unsure about. The page shows the middle 80% of those runs (P10 to P90) and the midpoint.</li>
+      </ul>
+    </div></div>
+
+    <div class="step" id="step-data"><p class="step-n" aria-hidden="true">2</p><div class="step-body">
+      <h3 class="h2">Preparing the data</h3>
+      <p>For every city, town and township in every year, the model needs two counts: how many lots a reform could touch, and how many homes were permitted. The Data page lists every source. These are the rules we applied to them.</p>
+      <ul class="body-small steps-list">
+        <li><b>Lots the reform could touch.</b> One written rule, applied the same way in every state.
+          <ul>
+            <li>For ADUs: a lot with one single-family house.</li>
+            <li>For missing middle: a lot zoned for single-family homes only, holding one house or vacant.</li>
+          </ul>
+          Where a place has no parcel records, Census counts of single-family homes stand in. We tested that stand-in against real parcel counts in all five states, and it came within 8% everywhere (0.92 to 1.07 times the parcel count). For missing middle it runs about 12% low, a known gap.</li>
+        <li><b>Homes permitted.</b> Census permit counts by building size (1, 2, 3–4 and 5+ homes) for every place since 1992, plus city permit files that mark ADUs. A project total repeated on several permits is counted once.</li>
+        <li><b>Local rules, with dates.</b> For each city we looked up when it allowed ADUs or missing middle, and how strict the rule is: by right or not, whether the owner must live there, parking, size. Places nobody has coded borrow the rules of similar coded places of the same size.</li>
+        <li><b>Unknown is never zero.</b> A missing year stays missing; it does not count as a year with no building. An unknown zoning code counts the lot as eligible, flagged as an assumption.</li>
+        <li><b>Hidden years for blind tests.</b> Two places' recent records are locked away from the model so we can predict them first and look later:
+          <ul>
+            <li>St. Paul from 2024;</li>
+            <li>Charlotte from mid-2023, including the county figures Charlotte's permits are filed under.</li>
+          </ul>
+        </li>
+        <li><b>Data tiers.</b> Each state is labelled by what its data rests on:
+          <ul>
+            <li>tier 1: local parcels with year built;</li>
+            <li>tier 2: local parcels with land use;</li>
+            <li>tier 3: national data only.</li>
+          </ul>
+        </li>
+      </ul>
+    </div></div>
+
+    <div class="step" id="step-model"><p class="step-n" aria-hidden="true">3</p><div class="step-body">
+      <h3 class="h2">What the model does, and where the range comes from</h3>
+
+      <h4 class="h3">3a. What gets built anyway</h4>
+      <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over 2021–2025. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
+
+      <h4 class="h3">3b. Why we built the effect from its parts</h4>
+      <p class="body-small">Our first plan was to compare reformed cities with similar cities that did not reform. In our four states those comparisons could not tell a real effect from noise: they could only have detected effects many times larger than any plausible one. So the model builds each reform's effect from its working parts, measuring each part separately:</p>
+      <p class="formula">extra homes = lots the reform opens up × share where building pays × how often owners build, once it pays</p>
+      <ul class="body-small steps-list">
+        <li><b>Lots the reform opens up</b> counts only what the reform adds beyond a city's current rule. A city that already allows ADUs gains little.</li>
+        <li><b>Share where building pays</b> compares, lot by lot, what a new home would sell or rent for with what it costs to build, finance and sell.</li>
+        <li><b>How often owners build</b> is measured from our own reformed places, not borrowed from other studies. Outside studies are used only as a check.
+          <ul>
+            <li>ADUs: 53 places in Minnesota, North Carolina, Ohio, Texas and Oregon. A typical place sees about 0.31 ADUs per 1,000 lots a year (0.21 to 0.46).</li>
+            <li>Missing middle: 13 places in four states.</li>
+          </ul>
+        </li>
+        <li><b>Mortgage rates and home equity</b> enter for ADUs, because most ADUs are built by homeowners who borrow against their house.</li>
+        <li><b>What is already being built is never credited to the reform.</b>
+          <ul>
+            <li>For ADUs, a place's observed rate is a floor.</li>
+            <li>For missing middle, the houses a project replaces are subtracted.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h4 class="h3">3c. The causal diagram</h4>
+      <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
+      <div class="scroll"><svg class="dag" id="dag" role="img" aria-label="Causal diagram: what drives the extra homes a reform adds, and how each other factor is handled" viewBox="0 0 960 400"></svg></div>
+      <div class="dag-key body-small" id="dag-key"></div>
+
+      <h4 class="h3">3d. Every factor we considered, and what we did with it</h4>
+      <p class="body-small">We kept a register of every factor that could bias the answer or change its size: <span id="conf-count"></span>. Each one was handled in one of the ways below. The ones we could not handle are listed as limits, not hidden.</p>
+      <div id="conf-summary"></div>
+      <details class="fold"><summary>The full register</summary><div class="scroll" id="conf-table"></div>
+        <p class="source">From docs/research/lotline-confounder-register.csv and the causal diagrams in docs/research/. The decisions are in docs/analysis_plan.md.</p></details>
+
+      <h4 class="h3">3e. Where the range comes from</h4>
+      <ul class="body-small steps-list">
+        <li><b>The building cycle:</b> each run replays a different stretch of the state's past booms and busts.</li>
+        <li><b>The measured rates:</b> how often owners build, and how fast, are drawn from their fitted ranges, not fixed at one value.</li>
+        <li><b>Place-to-place differences we cannot measure:</b> each place gets its own multiplier, drawn to match how much real places differ. A state the model was not fitted on gets a wider spread still.</li>
+        <li><b>Judgment calls</b> are drawn from stated low-to-high ranges, each with a source in config/params:
+          <ul>
+            <li>finished homes per permit;</li>
+            <li>homes that would have been built elsewhere;</li>
+            <li>conversions of existing units.</li>
+          </ul>
+        </li>
+        <li><b>Year-to-year chance:</b> even at a known rate, the count in any one year varies.</li>
+      </ul>
+      <div id="trust-body"></div>
+
+      <h4 class="h3">3f. How we tested it</h4>
+      <p class="body-small">Each test was set up before its result was seen. Where a test failed we say so; several failures changed the model.</p>
+      <div class="scroll"><table class="checks"><thead><tr><th>Test</th><th>What it asks</th><th>Result</th></tr></thead><tbody id="checks"></tbody></table></div>
+    </div></div>
+
+    <div class="step" id="step-states"><p class="step-n" aria-hidden="true">4</p><div class="step-body">
+      <h3 class="h2">Carrying it to another state</h3>
+      <p>Nothing in the model is written for one state. A new state is one settings file plus whatever data it has.</p>
+      <ul class="body-small steps-list">
+        <li><b>What a state supplies:</b> its Census code and any local data it has (parcel rolls, city permit files, coded local rules, fee schedules). Everything national (Census permits, housing counts, prices, rates) is fetched automatically.</li>
+        <li><b>With little local data:</b>
+          <ul>
+            <li>lots come from Census housing counts, adjusted using the stand-in test above;</li>
+            <li>uncoded places borrow rules from similar coded places;</li>
+            <li>the state's unknown character gets the widest spread the model has, anywhere from a third of a typical state to three times one.</li>
+          </ul>
+        </li>
+        <li><b>Places outside a state ADU law</b> borrow the rules of small towns in states without one, not those of big cities that have reformed.</li>
+        <li><b>The test case is Oregon.</b> It was predicted from the other four states before its own results were looked at, and the app shows it as the "transfer" state. Its missing-middle results were not used to fit the model. Since 2026-11-06, Portland and Bend are part of the ADU fit.</li>
+      </ul>
+      <div id="trust-overlap"></div>
+    </div></div>
+
+    <div class="step" id="step-limits"><p class="step-n" aria-hidden="true">!</p><div class="step-body">
+      <h3 class="h2">What the model cannot tell you</h3>
+      <ul class="body-small steps-list">
+        <li><b>Single cities are very uncertain.</b> The state total is the number to rely on; one city's range can be very wide.</li>
+        <li><b>Missing middle rests on few places:</b> 13 reformed places in four states. Its edge over "no effect" is about 1.5 standard errors, short of the 2 we set as the bar.</li>
+        <li><b>High-uptake ADU markets can be under-predicted,</b> as Portland and Bend were in the blind test.</li>
+        <li><b>Not modelled:</b>
+          <ul>
+            <li>two reforms combined on the same lots;</li>
+            <li>5–6 unit buildings, which Census permits lump with larger ones;</li>
+            <li>height and floor-area limits;</li>
+            <li>approval times;</li>
+            <li>what happens to prices, rents, or who lives in the new homes.</li>
+          </ul>
+        </li>
+        <li><b>Fees:</b> the fee model is built but not yet tested or added to this app.</li>
+      </ul>
+      <details class="fold"><summary>Technical detail</summary><div id="trust-facts"></div></details>
+    </div></div>
   </section>
 </main>
 <footer class="wrap" id="provenance">
@@ -338,10 +539,26 @@ function niceTicks(max, n = 4) {
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
 const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null };
+// Gross vs net (aggregate.homes_from_draws): "all new homes" = homes_in_place; "net new housing" = that × (1 − displacement_share).
 const OUTCOME_WORDS = {
-  homes_net_statewide: ["Net statewide", "Homes added to the state, after taking out homes pulled in from nearby places."],
-  homes_in_place: ["In the places that build", "Homes built where the reform applies, before taking out homes pulled in from nearby places."],
+  homes_in_place: ["All new homes", "Every new home the reform leads to."],
+  homes_net_statewide: ["Net new housing", "What the state gains: all new homes minus those that would have been built elsewhere in the state anyway."],
 };
+const KIND_OF_HOME = { adu: "backyard cottage or basement apartment", missing_middle: "duplex or fourplex" };
+
+// "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
+function twoNumbersHtml(b, d, r) {
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const gross = r.homes_in_place.p50, net = r.homes_net_statewide.p50;
+  const share = gross > 0 ? 1 - net / gross : null;
+  const kind = KIND_OF_HOME[d] || "new home";
+  return `<p class="body-small" style="margin:0"><b>Why two numbers?</b> A new home doesn't always mean one more home for the state. Some of the people who move into a new ${esc(kind)} would otherwise have moved into a home built somewhere else in ${esc(name)}, and that home now won't be built. So the page counts two ways:</p>
+    <ul class="body-small" style="margin:var(--space-2) 0 0">
+      <li><b>All new homes: about ${fmtN(gross)}.</b> Every new home the reform leads to.</li>
+      <li><b>Net new housing: about ${fmtN(net)}.</b> What's left after taking out the homes that would have been built elsewhere in ${esc(name)} anyway${share === null ? "" : `, about ${Math.round(share * 100)}% of them`}. This is the honest answer to "how many more homes does the state get?"</li>
+    </ul>
+    <p class="body-small muted" style="margin:var(--space-1) 0 0">That share is an assumption, from none to half (studies of zoning reforms in Auckland and Lower Hutt, New Zealand), not something measured in ${esc(name)}. The slider "Homes that would have been built elsewhere in the state anyway" below shows how much it matters.</p>`;
+}
 
 function scenariosIn(b) {
   const have = new Set(b.draws.map((d) => d.scenario));
@@ -369,6 +586,64 @@ function flagHtml(m) {
 // The baseline (results_baseline, schemas 1.11): homes permitted with no policy change. Read as is from the
 // bundle; the sliders do not move it. "all" is summed within each draw, so it is not the sum of the size rows.
 const SIZE_WORDS = { "1": "Single-family (1 unit)", "2": "Duplexes (2 units)", "3_4": "3–4 unit buildings", "5p": "5 or more units" };
+// The state's own record next to the forecast (results_observed, schemas 1.12): bars = what was actually
+// permitted each year; whiskers = the reform's added permits each year (P10-P90, tick at the midpoint) at the
+// engine's central assumptions, so the sliders don't move them; for missing middle a grey whisker is the
+// no-change forecast of homes in 2-4 unit buildings. Permits against permits, one linear scale.
+const RECORD = {
+  adu: { measure: "adu_permits", what: "ADU permits", base: null, reform: "the ADU reform",
+    pace: "The forecast is a range for each year." },
+  missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", base: "2_4", reform: "the missing-middle reform",
+    pace: "The forecast is a range for each year; the reform's homes build up over the first years." },
+};
+function recordHtml(b, d) {
+  if (!Object.hasOwn(RECORD, d)) return "";  // d comes from a button's data attribute: known scenarios only
+  const spec = RECORD[d];
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const obs = (b.observed || []).filter((r) => r.measure === spec.measure).sort((x, y) => x.year - y.year);
+  const fut = (b.totals || []).filter((r) => r.scenario === d && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
+    .map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year);
+  const base = spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base && /^\d{4}$/.test(r.period))
+    .map((r) => ({ ...r, year: Number(r.period) })) : [];
+  const title = `<h3 class="h3">What gets built now, and what the reform would add</h3>`;
+  if (!obs.length && !fut.length) return `${title}<p class="pending">No permit record or yearly forecast for this state yet.</p>`;
+  const years = [...obs.map((r) => r.year), ...fut.map((r) => r.year)];
+  const y0 = Math.min(...years), y1 = Math.max(...years);
+  const top = Math.max(1, ...obs.map((r) => r.value), ...fut.map((r) => r.p90), ...base.map((r) => r.p90));
+  const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
+  const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
+  const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
+  const color = esc(scenColor(d)), parts = [];
+  for (const t of ticks) parts.push(`<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)" stroke-width="1"></line>
+    <text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmtN(t)}</text>`);
+  for (let yr = y0; yr <= y1; yr++) parts.push(`<text x="${x(yr)}" y="${H - 8}" text-anchor="middle">${yr}</text>`);
+  const bw = Math.min(28, slot * 0.6);
+  for (const r of obs) parts.push(`<rect x="${x(r.year) - bw / 2}" y="${y(r.value)}" width="${bw}" height="${Math.max(0, y(0) - y(r.value))}" fill="var(--ink-muted)" opacity="0.55"><title>${r.year}: ${fmtN(r.value)} ${esc(spec.what)}</title></rect>`);
+  const whisker = (xc, r, stroke, label) => `<g><line x1="${xc}" x2="${xc}" y1="${y(r.p10)}" y2="${y(r.p90)}" stroke="${stroke}" stroke-width="2"></line>
+    <line x1="${xc - 6}" x2="${xc + 6}" y1="${y(r.p10)}" y2="${y(r.p10)}" stroke="${stroke}" stroke-width="2"></line>
+    <line x1="${xc - 6}" x2="${xc + 6}" y1="${y(r.p90)}" y2="${y(r.p90)}" stroke="${stroke}" stroke-width="2"></line>
+    <rect x="${xc - 5}" y="${y(r.p50) - 2}" width="10" height="4" fill="${stroke}"></rect>
+    <title>${r.year}: ${esc(label)} ${fmtN(r.p10)} to ${fmtN(r.p90)}, midpoint ${fmtN(r.p50)}</title></g>`;
+  const off = base.length ? Math.min(10, slot * 0.18) : 0;
+  for (const r of base) parts.push(whisker(x(r.year) - off, r, "var(--scenario-baseline)", `${spec.what} with no change`));
+  for (const r of fut) parts.push(whisker(x(r.year) + off, r, color, "added by the reform"));
+  const gap = obs.length && fut.length && fut[0].year - obs[obs.length - 1].year > 1 ? obs[obs.length - 1].year + 1 : null;
+  if (gap !== null) parts.push(`<line x1="${x(gap)}" x2="${x(gap)}" y1="${T}" y2="${y(0)}" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="3 3"></line>`);
+  const svg = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${name}: ${spec.what} permitted each year, and the reform's added permits each year`)}" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>`;
+  const a = obs.length ? obs[0] : null;
+  const cover = d === "adu" && a ? (Number.isFinite(a.population_share)
+    ? ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, home to about ${Math.round(a.population_share * 100)}% of ${esc(name)}'s people, so they understate the state.`
+    : ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, so they understate the state.`) : "";
+  const legend = `<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
+    <span><span style="display:inline-block;width:12px;height:10px;background:var(--ink-muted);opacity:.55;margin-right:6px"></span>Actually permitted</span>
+    ${base.length ? `<span><span style="display:inline-block;width:12px;height:3px;background:var(--scenario-baseline);margin-right:6px;vertical-align:middle"></span>Expected with no change (P10–P90)</span>` : ""}
+    <span><span style="display:inline-block;width:12px;height:3px;background:${color};margin-right:6px;vertical-align:middle"></span>Added by the reform (P10–P90, bar at the midpoint)</span></div>`;
+  return `${title}
+    <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
+    ${legend}${svg}
+    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Whiskers: added permits at the engine's central assumptions; the sliders above do not move this chart.</p>`;
+}
+
 function baselineHtml(b) {
   const rows = b.baseline || [];
   const win = rows.find((r) => r.size_class === "all" && r.period.includes("-"));
@@ -414,14 +689,16 @@ const SECTIONS = {
         <div class="ranges" id="ranges">${rows.join("")}</div>
         <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
         ${pendNote}
+        <div id="two-numbers" style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:var(--stroke-hair) solid var(--rule)"></div>
         <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
       </div>
+      <div class="card" id="record-card"></div>
       ${baselineHtml(b)}
       <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
       <div class="card"><h3 class="h3">From legal lots to built homes</h3>
         <div class="tabs" role="group" aria-label="Scenario">${tabs}</div>
         <div id="funnel" style="margin-top:var(--space-4)"></div>
-        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are homes in the places that build.</p></div>
+        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are all new homes.</p></div>
       <div class="card"><h3 class="h3">What it takes to pencil out</h3>
         <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
       <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
@@ -431,17 +708,7 @@ const SECTIONS = {
   },
   data(b) {
     $("data-lead").textContent = dataLead();
-    const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] }, t = d.totals;
-    const tierWords = { 1: "Tier 1: local parcels with land use and year built", 2: "Tier 2: local parcels with land use", 3: "Tier 3: national data only" };
-    const tiles = t ? [
-      [fmtPct(t.population_covered_share), "of the population lives where local parcel data are on file"],
-      [`${fmtInt(t.jurisdictions_covered)} of ${fmtInt(t.jurisdictions)}`, "jurisdictions with parcels"],
-      [fmtInt(t.parcels), "parcels on file (one source per place)"],
-      [fmtInt(t.reforms), "coded local reforms"],
-      [t.permit_years ? `${t.permit_years[0]}–${t.permit_years[1]}` : "–", "years of permit data"],
-    ].map(([v, c]) => `<div class="tile"><span class="figure">${esc(v)}</span><span class="caption">${esc(c)}</span></div>`).join("")
-      : `<p class="pending">Coverage counts appear here once the data dashboard is built (<code>python scripts/build_data_dashboard.py</code>) and the page is rebuilt.</p>`;
-    const tierMix = t && t.tiers ? `<p class="body-small muted">Jurisdictions by tier: ${Object.entries(t.tiers).map(([k, v]) => `${fmtInt(v)} in tier ${esc(k)}`).join(", ")}.</p>` : "";
+    const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] };
     const rows = d.sources.map((r) => {
       const used = r.parcels_on_file == null ? `<span class="muted">Available</span>`
         : r.parcels_used > 0 ? `Used: ${fmtInt(r.parcels_used)} of ${fmtInt(r.parcels_on_file)} parcels`
@@ -449,15 +716,12 @@ const SECTIONS = {
       const title = r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
       return `<tr><td>${title}<br><span class="caption muted">${esc(r.source)} · ${r.scope === "national" ? "national" : "state"}</span></td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
     }).join("");
-    const dash = "";  // the dashboard itself sits below, in #dash-host (kept across state changes)
-    return `<div class="card"><p class="eyebrow">Data tier</p>
-        <span class="tier"><span class="sw" style="background:var(--tier-${4 - Math.min(3, Math.max(1, b.meta.data_tier))})" aria-hidden="true"></span>${esc(tierWords[b.meta.data_tier] || `Tier ${b.meta.data_tier}`)}</span>
-        <p class="body-small muted">The tier holding most of the state's eligible lots.${b.meta.eligible_proxy ? " Eligible lots are estimated from national data (ACS), scaled by the proxy test." : ""}</p>
-        <div class="tiles">${tiles}</div>${tierMix}</div>
-      <div class="card"><h3 class="h3">Data available and data used</h3>
+    // The dashboard sits in #dash-host (kept across state changes); the full source list for the picked state
+    // goes at the very bottom, in #data-sources.
+    $("data-sources").innerHTML = `<div class="card"><h3 class="h3">Data available and data used</h3>
         <div class="scroll"><table><thead><tr><th>Source</th><th>Builds table</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>
-      ${dash}`;
+        <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>`;
+    return "";  // the state data tier card was dropped (Ben, 2026-11-09): the dashboard below carries coverage
   },
   trust(b) {
     const V = { pass: "Pass", partial: "Partial", fail: "Fail", not_run: "Not yet run" };
@@ -476,21 +740,14 @@ const SECTIONS = {
             : `<tr><td class="code">${esc(c)}</td><td class="n muted" colspan="3">not used (single scenario)</td></tr>`; }).join("")}
         </tbody></table></div>`;
     }).join("");
-    return `<div class="card"><h3 class="h3">Validation scorecard</h3>
-        ${sc ? `<div class="scroll"><table><thead><tr><th>Check</th><th>Measure</th><th class="n">Result</th><th>Target</th><th>Verdict</th><th>Report</th></tr></thead><tbody>${sc}</tbody></table></div>`
-          : `<p class="pending">No validation checks have been scored into this state's results bundle yet. They come from the validation reports (validation plan §5).</p>`}
-        <p class="source">Each check was set before its result was seen (validation plan §5). Verdicts use a glyph and a word, not colour alone.</p></div>
-      <div class="card"><h3 class="h3">Blind tests: predicted before the outcome could be seen</h3>
-        <p class="pending">Frozen forward predictions are drawn here as the predicted range against what was observed, once each test's outcomes are unblinded and its frozen range is in the results bundle.</p></div>
-      <div class="card"><h3 class="h3">Overlap check</h3>
+    $("trust-overlap").innerHTML = `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-2)">Overlap check for ${esc(b.meta.state)}</h4>
         <p class="body-small">Does this state look like the places the model learned from? Each place is measured by how far its rent, home value and mortgage rate sit outside the range of the reference places behind the uptake rate (a log distance; 0 means inside on all three). The state is read from the middle of that distance, weighted by eligible lots: inside up to ${esc(DATA.overlap_thresholds.medium)}, near the edge up to ${esc(DATA.overlap_thresholds.low)}, outside beyond (config/params/aggregate.yaml).</p>
-        ${flagHtml(b.meta).replace('<div class="card">', '<div>')}</div>
-      <div class="card"><h3 class="h3">Which assumptions move the answer most</h3>
-        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net statewide homes when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders.</p>
+        ${flagHtml(b.meta).replace('<div class="card">', '<div>')}</div>`;
+    $("trust-facts").innerHTML = `<p class="body-small">The engine's draws behind every number: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/dev/results_dashboard.py</span>).</p>${facts}`;
+    return `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-2)">Which assumptions move the answer most, in ${esc(b.meta.state)}</h4>
+        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net new housing when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders on the Results page.</p>
         <div class="tornado" id="tornado"></div></div>
-      <details class="fold"><summary>Technical detail</summary>
-        <p class="body-small">The engine's draws behind every number above: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/dev/results_dashboard.py</span>).</p>
-        ${facts}</details>`;
+      ${sc ? `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-2)">Checks scored for ${esc(b.meta.state)}</h4><div class="scroll"><table><thead><tr><th>Check</th><th>Measure</th><th class="n">Result</th><th>Target</th><th>Verdict</th><th>Report</th></tr></thead><tbody>${sc}</tbody></table></div></div>` : ""}`;
   },
 };
 
@@ -536,7 +793,9 @@ function updateResults() {
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
   const d = UI.detail, rd = R[d][o];
   const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
-  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, ${o === "homes_net_statewide" ? "net statewide" : "in the places that build"}:</p>
+  $("two-numbers").innerHTML = twoNumbersHtml(b, d, R[d]);
+  $("record-card").innerHTML = recordHtml(b, d);
+  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}:</p>
     <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
     <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>`;
   // share of need: net statewide only (aggregate.share_of_need), the headline kind first
@@ -545,7 +804,7 @@ function updateResults() {
     const sh = AGG.shareOfNeed(R[d].homes_net_statewide, n);
     return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-2) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
       <span class="body">${esc(n.label)}</span></p>
-      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Net statewide homes. Source: ${esc(n.source)}.</p>`;
+      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Counts net new housing. Source: ${esc(n.source)}.</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
   // funnel (log widths)
   const f = R[d], stages = [
@@ -570,6 +829,159 @@ function updateResults() {
   }
 }
 
+// ---- section 3: the model, told in order (Ben, 2026-11-09) -------------------------------------------------
+// The causal diagram the model uses today (docs/research/lotline-causal-diagram*.md, v0.2 review). Columns:
+// what could confound, the reform and what it changes, what is fed in, and the outcome.
+const DAG = {
+  nodes: {
+    why:   { x: 10,  y: 30,  w: 190, kind: "conf",  t: ["Why places reform:", "price pressure, momentum,", "local politics"] },
+    econ:  { x: 10,  y: 290, w: 190, kind: "conf",  t: ["Economy, interest rates", "and the building cycle"] },
+    ref:   { x: 250, y: 20,  w: 200, kind: "treat", t: ["The reform", "(the Handbook rule)"] },
+    gap:   { x: 250, y: 110, w: 200, kind: "input", t: ["How far today's local", "rules fall short of it"] },
+    land:  { x: 250, y: 200, w: 200, kind: "bad",   t: ["Land prices rise", "after the reform"] },
+    base:  { x: 250, y: 290, w: 200, kind: "base",  t: ["Building that would", "happen anyway (baseline)"] },
+    lots:  { x: 500, y: 20,  w: 210, kind: "input", t: ["Eligible lots"] },
+    pays:  { x: 500, y: 95,  w: 210, kind: "input", t: ["Does building pay?", "prices and rents vs costs"] },
+    rate:  { x: 500, y: 180, w: 210, kind: "input", t: ["Mortgage rates and", "home equity (ADUs)"] },
+    local: { x: 500, y: 265, w: 210, kind: "range", t: ["Local differences we", "cannot measure"] },
+    out:   { x: 760, y: 150, w: 190, kind: "out",   t: ["Extra permits", "→ all new homes", "→ net new housing"] },
+  },
+  edges: [["why", "ref"], ["why", "base", "conf"], ["econ", "base", "conf"], ["ref", "gap"], ["gap", "out"],
+    ["gap", "land", "bad"], ["land", "pays", "bad"], ["lots", "out"], ["pays", "out"], ["rate", "out"], ["local", "out"],
+    ["base", "out", "minus"]],
+  key: [
+    ["treat", "The reform", "What is switched on."],
+    ["input", "Fed in", "Measured for every place and fed into the model."],
+    ["conf", "Could confound", "Could make reformed places look different for other reasons. Handled through the baseline: the model counts only building above a place's own pace."],
+    ["base", "Baseline", "Subtracted, so only the extra homes are credited to the reform."],
+    ["range", "Carried in the range", "Cannot be measured, so each run draws it differently."],
+    ["bad", "Left alone on purpose", "Caused by the reform itself. Adjusting for it would hide part of the effect, so it is not controlled for (dashed)."],
+  ],
+};
+const NODE_H = (n) => 22 + 18 * n.t.length;
+function dagSvg() {
+  const N = DAG.nodes, mid = (n) => [n.x + n.w / 2, n.y + NODE_H(n) / 2];
+  const port = (a, b) => {  // leave a's side facing b, enter b's side facing a
+    if (a.x === b.x) return a.y < b.y ? [[a.x + a.w / 2, a.y + NODE_H(a)], [b.x + b.w / 2, b.y]] : [[a.x + a.w / 2, a.y], [b.x + b.w / 2, b.y + NODE_H(b)]];
+    return a.x < b.x ? [[a.x + a.w, mid(a)[1]], [b.x, mid(b)[1]]] : [[a.x, mid(a)[1]], [b.x + b.w, mid(b)[1]]];
+  };
+  const edges = DAG.edges.map(([f, t, k]) => {
+    const [[x1, y1], [x2, y2]] = port(N[f], N[t]);
+    const lab = k === "minus" ? `<text class="elab" x="${x1 + 8}" y="${y1 + 18}">subtracted</text>` : "";
+    return `<line class="e ${k || ""}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#arr)"/>${lab}`;
+  }).join("");
+  const nodes = Object.values(N).map((n) => `<g class="n ${n.kind}"><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NODE_H(n)}" rx="4"/>
+    ${n.t.map((s, i) => `<text x="${n.x + n.w / 2}" y="${n.y + 20 + 18 * i}">${esc(s)}</text>`).join("")}</g>`).join("");
+  const heads = ["Could confound", "The reform and what it changes", "Fed in, place by place", "The outcome"]
+    .map((h, i) => `<text class="col" x="${[105, 350, 605, 855][i]}" y="12">${h}</text>`).join("");
+  return `<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>${heads}${edges}${nodes}`;
+}
+function dagKey() {
+  return DAG.key.map(([k, name, say]) => `<div class="k"><svg width="28" height="18" aria-hidden="true"><g class="n ${k}"><rect x="1" y="1" width="26" height="16" rx="3"/></g></svg><span><b>${esc(name)}.</b> ${esc(say)}</span></div>`).join("");
+}
+
+// Every factor in the confounder register (docs/research/lotline-confounder-register.csv, C01-C56), with what
+// the model does about it today. Statuses are read from docs/analysis_plan.md (D-numbers in the register notes).
+const CONF_WAYS = {
+  design: ["Handled by how the effect is measured", "The effect is measured so that this cannot pass for it."],
+  input: ["Fed into the model", "Measured and used place by place."],
+  base: ["Absorbed by the baseline", "It moves building with or without the reform, so the baseline carries it."],
+  range: ["Carried in the range", "Cannot be pinned down, so each run draws a different value."],
+  test: ["Tested, not adopted", "Checked against the data; adding it did not improve the model."],
+  bad: ["Left alone on purpose", "Caused by the reform itself; adjusting for it would hide part of the effect."],
+  limit: ["Not modelled: a stated limit", "No data or method to handle it yet; listed so readers know."],
+};
+const CONF = [
+  ["C01", "Mortgage and construction-loan rates", "input", "In the ADU uptake rate and the cost of building; the baseline's cycle carries their swings."],
+  ["C02", "Construction costs", "input", "In the price-to-cost test, in 2025 dollars."],
+  ["C03", "National shocks (COVID, remote work, the 2022 rate spike)", "base", "The state building cycle replays such swings."],
+  ["C04", "Local jobs, migration and income growth", "base", "Each place keeps its own recent pace. A demand-index version was tested and not adopted."],
+  ["C05", "Places reform because prices are already high", "design", "Partly: only building above the place's own pre-reform pace counts. A placebo check failed, so some of this may remain."],
+  ["C06", "Building was already speeding up before the reform", "design", "Partly, as above: the observed pace is a floor, never credited to the reform."],
+  ["C07", "Local politics and pro-housing climate", "limit", "Cannot be measured; the effect is read as the reform plus whatever usually comes with it."],
+  ["C08", "Other reforms or investment at the same time", "test", "Checked by dropping places with other reforms; the answer barely moved."],
+  ["C09", "Reforms recorded with the wrong date", "design", "Effective dates are coded; only what is newly allowed counts."],
+  ["C10", "How strict the rule is (owner must live there, parking, size)", "input", "Coded rule by rule; it sets how much a reform adds."],
+  ["C11", "Rules on paper vs in practice; local opt-outs", "input", "Partly: rule coverage is coded where known; uncoded places borrow from similar ones."],
+  ["C12", "HOA covenants", "input", "Lots excluded where known; few data."],
+  ["C13", "Whether the old rule actually held building back", "design", "Only the gap between today's rule and the Handbook rule is added."],
+  ["C14", "Kind of lots: size, house value, age, garage or alley", "test", "A land-share term was tested; not adopted."],
+  ["C15", "Owners living on site; household make-up", "input", "Owner-occupancy rules are coded; the data showed no effect."],
+  ["C16", "Location and access to jobs and transit", "limit", "Not modelled."],
+  ["C17", "Land prices rising because of the reform", "bad", "Never used as a control."],
+  ["C18", "How much of a fee cut landowners keep", "input", "Fees: a land-capture share of 0.25 to 0.75."],
+  ["C19", "What fees pay for (water, sewer, other)", "limit", "Not modelled."],
+  ["C20", "Sewer and water capacity", "limit", "Not modelled; excluded only where a moratorium is known."],
+  ["C21", "Approval time and pre-approved plans", "limit", "Not modelled."],
+  ["C22", "Homeowners' access to financing", "input", "Home equity enters the ADU rate."],
+  ["C23", "Uncertainty about prices (waiting to build)", "limit", "Not modelled."],
+  ["C24", "Builder capacity and learning", "test", "A builder-capacity term was tested; it could not be pinned down."],
+  ["C25", "Land available elsewhere (greenfield)", "range", "Part of the share of homes that would have been built elsewhere."],
+  ["C26", "Homes that would have been built elsewhere in the state", "range", "A quarter by default, from none to half: the net-new housing slider."],
+  ["C27", "Comparison places that quietly reformed too", "design", "Comparison places are used only in tests, where this biases toward no effect."],
+  ["C28", "Places unlike any the model learned from", "range", "The overlap check flags them and their range is widened."],
+  ["C29", "Building held back before a reform, or a slow start after", "test", "A start-up ramp for ADUs was tested and dropped; missing middle keeps a short one."],
+  ["C30", "A duplex replacing a house that would have been rebuilt", "design", "The houses a project replaces are subtracted."],
+  ["C31", "Existing unpermitted units being legalised", "range", "10% of new ADU permits, from none to 30%."],
+  ["C32", "A change in how permits are recorded at the reform", "test", "Houston and Austin were checked; the outcome was redefined to newly allowed building types."],
+  ["C33", "Census estimates for places that do not report", "design", "Backtests score reported counts only."],
+  ["C34", "Permits that are never finished, and delays", "range", "A completion share for each reform."],
+  ["C35", "Demolitions", "design", "Subtracted for missing middle."],
+  ["C36", "What the new unit is used for (rental, office, family)", "range", "65% of ADUs add a home (45% to 80%)."],
+  ["C37", "Property tax and assessment rules", "limit", "Not modelled."],
+  ["C38", "Floods, insurance and disaster rebuilds", "limit", "Excluded only where known."],
+  ["C39", "General strictness of local regulation", "limit", "Not modelled beyond the coded rules."],
+  ["C40", "Prices compared with building costs", "input", "The central test of whether building pays, for ADUs and missing middle."],
+  ["C41", "Neighbour backlash and repeal", "limit", "Stated as a risk."],
+  ["C42", "Where the market cycle was at adoption", "base", "The cycle starts from the latest year's level."],
+  ["C43", "Building-code step at 3+ homes", "input", "Partly: in the cost of building; the missing-middle test uses duplex economics."],
+  ["C44", "Lot-split and subdivision rules", "limit", "Cannot be separated in Houston and Austin."],
+  ["C45", "Developer financing", "input", "In the cost of building."],
+  ["C46", "Value of the existing house (teardown economics)", "test", "A land-share term was tested; not adopted."],
+  ["C47", "ADUs and missing middle competing for the same lot", "limit", "Each reform is run alone; combining them is not built."],
+  ["C48", "Builder type and profit hurdle", "input", "A profit margin in the price-to-cost test."],
+  ["C49", "Height and floor-area limits that come with the reform", "limit", "Not modelled."],
+  ["C50", "Fees set high because a place is growing", "design", "The fee effect comes from cost arithmetic, not from comparing places with different fees."],
+  ["C51", "Fee revenue that pays for infrastructure", "limit", "Not modelled."],
+  ["C52", "Flat fees vs fees scaled by size", "input", "Fees are flat per home."],
+  ["C53", "Fees as a share of total cost", "input", "The fee saving is divided by the home's value."],
+  ["C54", "When the fee is paid", "input", "Interest on fees paid at permit is in the cost of building."],
+  ["C55", "The national swing in 2–4 unit building", "test", "A comparison baseline was tested and fit worse."],
+  ["C56", "A growth index built partly from places' own post-reform permits", "limit", "A known flaw in the missing-middle fit, stated here; the fix tested did not fit better."],
+];
+function confHtml() {
+  const by = {};
+  for (const r of CONF) (by[r[2]] = by[r[2]] || []).push(r);
+  $("conf-count").textContent = `${CONF.length} factors`;
+  $("conf-summary").innerHTML = `<div class="ways">${Object.entries(CONF_WAYS).map(([k, [name, say]]) =>
+    `<div class="way"><span class="figure">${(by[k] || []).length}</span><div><b>${esc(name)}</b><br><span class="muted">${esc(say)}</span><br><span class="caption">${(by[k] || []).map((r) => esc(r[1].split(/[,(;]/)[0].trim())).join(" · ")}</span></div></div>`).join("")}</div>`;
+  $("conf-table").innerHTML = `<table><thead><tr><th>ID</th><th>Factor</th><th>How it is handled</th><th>What we did</th></tr></thead><tbody>${CONF.map(([id, f, k, did]) =>
+    `<tr><td class="code">${id}</td><td>${esc(f)}</td><td>${esc(CONF_WAYS[k][0])}</td><td>${esc(did)}</td></tr>`).join("")}</tbody></table>`;
+}
+
+// The tests, in the order they were run (validation plan; docs/analysis_plan.md D-numbers).
+const CHECKS = [
+  ["Data match Census", "Do our place-by-place permit sums match Census state totals?", "pass", "Within 1% in most years (Ohio 34 of 34, Minnesota 30 of 32, North Carolina 29 of 31), but only 21 of 34 in Texas. Austin's own permit file matches Census at 0.98."],
+  ["Baseline backtest", "Starting from past years, does the baseline predict the next five years better than simple rules of thumb?", "partial", "Beat both rules of thumb (the last 3 years' average and a 10-year trend) in 41 of 48 tests. Passed every preset target in 19 of 48. Its ranges held the actual state total 83% of the time, running about 14% low on average."],
+  ["Reformed vs similar places", "Can comparisons with places that did not reform measure the effect directly?", "fail", "Too weak to tell an effect from noise, and a placebo check failed. This is why effects are built from their parts (step 3b)."],
+  ["Placebo date (missing middle)", "Does the model find an 'effect' at a fake date years before a real reform?", "fail", "The first missing-middle fit did (0.32 per 1,000 lots). Most of it came from building types in Houston and Austin that the reforms did not newly allow, so the outcome was redefined to newly allowed types. The refit's placebo was inconclusive, neither passed nor failed."],
+  ["Leave a state out (ADUs)", "Fit on four states, predict the fifth: does the range hold what happened?", "pass", "No state missed in all five tests, but the ranges are very wide (the high end is often dozens of times the low)."],
+  ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "Texas missed at first because Lubbock's permits fell after its reform. Lubbock's coding was later questioned; without it every state passed. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set."],
+  ["Oregon, blind", "Predicted before Oregon's results were looked at, then compared.", "partial", "Missing middle: actual 1,753 homes inside the predicted 1,738–6,469, near the bottom. ADUs missed low: Portland had 1,930 against a range of 3–1,418, Bend 414 against 0–206. Oregon was then added to the ADU fit."],
+  ["St. Paul and Charlotte, blind", "Predictions frozen before the hidden years are opened.", "not_run", "Predictions are due to be frozen on 17 November; results come after."],
+];
+function checksHtml() {
+  const V = { pass: "Pass", partial: "Partial", fail: "Fail", not_run: "Not yet run" };
+  $("checks").innerHTML = CHECKS.map(([t, ask, v, said]) => `<tr><td><b>${esc(t)}</b></td><td>${esc(ask)}</td>
+    <td><span class="verdict ${v}"><span class="glyph" aria-hidden="true"></span>${V[v]}</span><br><span class="body-small">${esc(said)}</span></td></tr>`).join("");
+}
+function staticTrust() {
+  $("dag").innerHTML = dagSvg();
+  $("dag-key").innerHTML = dagKey();
+  confHtml();
+  checksHtml();
+}
+
 function drawTornado() {
   const el = $("tornado"), b = UI.b;
   if (!el || !b || !scenariosIn(b).length) return;
@@ -589,14 +1001,21 @@ function drawTornado() {
 
 // The data dashboard, folded into section 2: loaded the first time the data page opens, sized to its content,
 // and scoped to the picked state through its own state chips (matched by the state's name).
-const DASH = { loaded: false };
+const DASH = { loaded: false, scope: "ALL" };  // starts nationwide (Ben, 2026-11-09); its own dropdown picks a state
+function dashOptions() {
+  const sel = $("dash-state");
+  if (sel.options.length) return;
+  const states = Object.entries(DATA.data.by_state || {}).filter(([, v]) => v.totals).map(([k, v]) => [k, v.name || k]);
+  sel.innerHTML = [["ALL", `All ${states.length} states`], ...states].map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join("");
+  sel.onchange = () => { DASH.scope = sel.value; dashScope(); };
+}
 function dashScope() {
+  const sel = $("dash-state");
+  const name = DASH.scope === "ALL" ? "All states" : ((DATA.data.by_state || {})[DASH.scope] || {}).name;
+  $("dash-title").textContent = `Coverage, ordinances and growth: ${sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "all states"}`;
   const f = $("dash-frame"), d = f && f.contentDocument;
   if (!DASH.loaded || !d) return;
-  const name = ((DATA.data.by_state || {})[$("state").value] || {}).name;
   const chip = [...d.querySelectorAll("#state-bar .chip")].find((c) => c.textContent === name);
-  f.hidden = !chip;  // a state the data summary doesn't cover: say so rather than show another state
-  $("dash-note").textContent = chip ? DASH.note : `The data dashboard summary has no data for ${$("state").value} yet.`;
   if (chip && chip.getAttribute("aria-pressed") !== "true") chip.click();
 }
 function ensureDashboard() {
@@ -605,6 +1024,7 @@ function ensureDashboard() {
   $("dash-host").hidden = false;
   DASH.note = `From the data dashboard summary built ${DATA.data.summary_generated}. The map needs internet access for its libraries (d3, topojson, us-atlas; all ISC).`;
   $("dash-note").textContent = DASH.note;
+  dashOptions();
   dashScope();
   if (DASH.loaded || DASH.loading) return;
   DASH.loading = true;
@@ -618,7 +1038,7 @@ function ensureDashboard() {
   };
   f.srcdoc = html;
 }
-function wireData() { dashScope(); }
+function wireData() {}  // the dashboard keeps its own state choice
 
 function wireResults() {
   const body = $("results-body");
@@ -679,6 +1099,7 @@ async function show(state) {
     b = await loadState(state);
   } catch (err) {
     if (ticket !== SHOWING) return;
+    $("data-sources").innerHTML = "";
     for (const id of Object.keys(SECTIONS)) $(`${id}-body`).innerHTML = `<p class="pending">This state's results could not be loaded (${esc(err.message)}). Rebuild the page with <code>uv run python scripts/build_app.py</code> and open it from the folder it was written to.</p>`;
     return;
   }
@@ -715,6 +1136,7 @@ window.addEventListener("hashchange", () => {
 
 fillPicker();
 wireMap();
+staticTrust();
 show($("state").value);
 go(route().page, false);
 </script>
