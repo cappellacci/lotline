@@ -1,4 +1,4 @@
-"""WS-NC-GUTCHECK: the trailing observed-ADU window (`adu.observed_per_year`) and the `historical_floor` check.
+"""WS-NC-GUTCHECK: the trailing observed-ADU window (`adu.observed_per_year`) and `historical_floor`.
 
 Synthetic fixtures only; each expected value is worked by hand in the docstrings of the functions tested.
 """
