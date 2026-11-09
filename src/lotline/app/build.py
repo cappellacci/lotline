@@ -30,6 +30,7 @@ TEMPLATE = Path(__file__).with_name("template.html")
 AGGREGATE_JS = Path(__file__).with_name("aggregate.js")
 KNOBS = Path(__file__).with_name("knobs.yaml")
 TILES = Path(__file__).with_name("us_tiles.yaml")
+POLICY_COPY = Path(__file__).with_name("copy") / "scenarios.yaml"
 CHALLENGE = REPO / "challenge.toml"
 BYOS_ANCHOR = "#bring-your-own-state"  # README section the grey states link to
 IDENTITY = REPO / "docs" / "build" / "identity"
@@ -118,6 +119,27 @@ def knobs(path: Path = KNOBS) -> list[dict]:
                 rows.append({"file": file, "key": key, **p.model_dump()})
             params[scenario] = rows
         out.append({"column": column, **{f: k[f] for f in k if f != "params"}, "params": params})
+    return out
+
+
+def policy_copy(path: Path = POLICY_COPY) -> dict:
+    """Section 1's per-policy words (copy/scenarios.yaml): the policy tabs, in order, with funnel sentence 1
+    and the three "What this can't tell you" points. Raises on a policy the schema doesn't know, on anything
+    but three points, or on a sentence carrying a digit (every number on the page comes from the bundle).
+    """
+    import yaml
+
+    spec = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    out = {}
+    for key, v in spec.items():
+        if key not in SCENARIOS or "+" in key or key == "combined":
+            raise ValueError(f"{path}: {key!r} is not a single-policy scenario")
+        if "{legal}" not in v["legal"] or len(v["limits"]) != 3:
+            raise ValueError(f"{path}: {key} needs a {{legal}} slot and exactly three limits")
+        words = [v["legal"], *(w for pair in v["limits"] for w in pair)]
+        if any(re.search(r"\d", w) for w in words):
+            raise ValueError(f"{path}: {key} has a number written into its copy")
+        out[key] = {"legal": v["legal"], "limits": [list(pair) for pair in v["limits"]]}
     return out
 
 
@@ -297,6 +319,7 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
         "roles": ROLES,
         "scenarios": scenarios,
         "knobs": knobs(),
+        "policies": policy_copy(),
         "map": tile_map(),
         "data": data,
         "states": [{"meta": b["meta"], "file": state_file(b["meta"]["state"])} for b in states],

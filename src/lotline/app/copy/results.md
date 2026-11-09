@@ -14,6 +14,17 @@ How to read this file:
 
 ---
 
+## 0. Policy tabs
+
+> One tab per policy at the top of the section, under the state picker. Each tab is a self-contained page:
+> everything below (sections 1–5) describes the selected policy only. Policies are never stacked or combined
+> (Ben, 2026-11-09: overlap adds too much complexity). First tab selected by default.
+
+Tabs: **ADUs** · **Missing middle** · **Fee reduction**
+
+> Policy not run for this state: the tab stays visible, greyed, and its page reads
+> "Not run yet for {state_name}." No chart, no stand-in.
+
 ## 1. Headline chart: two worlds
 
 **What {scenario_name} would add in {state_name}, {years}**
@@ -25,12 +36,17 @@ Bar labels:
 - **Without the reform**
 - **With the reform**
 
-Whisker key: *Line shows the likely range.*
+Whisker key: *Bars show our estimate; the line shows the likely range.*
+
+> Built 2026-11-09: the reform's homes are a small slice of all building (NC ADUs: about 260 on a baseline of
+> about 348,000), so the two bars look alike. Under them, a strip on its own scale: **The difference, enlarged:
+> homes added by the reform** (the added homes' likely range, midpoint marked).
 
 Sentence under the chart:
 
-> **+{added_mid} homes over 5 years** (likely range {added_low}–{added_high}), about {need_mid}% of the homes
-> {state_name} is expected to need.
+> **+{added_mid} homes over 5 years** (likely range {added_low}–{added_high}). Counting only homes that are new
+> to the state, about {net_mid} (likely range {net_low}–{net_high}): {need_mid}% (likely range
+> {need_low}–{need_high}) of the homes the state expects to need over five years.
 
 Reason to believe it, one line:
 
@@ -42,33 +58,26 @@ Reason to believe it, one line:
 
 ## 2. How we get there
 
-> The funnel as four sentences. The ADU wording is shown; missing middle and fees swap the nouns (see Slots).
+> The funnel as four sentences. Step 3 is the headline's +N and step 4 is the net figure, so the sentence
+> and the funnel agree. The ADU wording is shown; sentence 1 per policy lives in `copy/scenarios.yaml`.
 
 1. The reform makes it legal to add {unit_noun} on **{legal_mid} lots**.
 2. On about **{pencils_mid}** of them (likely range {pencils_low}–{pencils_high}), it pays: rent or sale value
    covers land, building and fees.
-3. Most owners still don't build in five years. We expect **{built_mid} new homes** (likely range
-   {built_low}–{built_high}).
-4. Some would have been built elsewhere anyway, or won't house anyone. Without those, {state_name} gains
-   about **{net_mid} homes**.
+3. Most owners still don't build within five years. We expect about **{added_mid}** (likely range
+   {added_low}–{added_high}) to get a building permit.
+4. Some won't be finished, some won't house anyone, and some would have been built elsewhere in the state anyway.
+   Without those, {state_name} gains about **{net_mid}** (likely range {net_low}–{net_high}) homes.
 
-## 3. Compare the reforms
+## 3. What this can't tell you
 
-> Small bars, one per scenario: ADUs, Missing middle, Fee reduction, Combined (all three). Same scale.
-
-Caption: *Combined counts each lot once, so it is less than the three added up.*
-
-> Scenario not run for this state: "Not run yet for {state_name}." No bar, no stand-in.
-
-## 4. What this can't tell you
-
-> Three bullets per scenario, from config (S9). ADU set shown; the other sets are drafted at the end of this file.
+> Three bullets per policy, from config (S9). ADU set shown; the other sets are drafted at the end of this file.
 
 - **Where the homes go.** It gives a statewide total, not which streets will build.
 - **Rents and prices.** It counts homes, not what they will cost.
 - **What cities do next.** New local rules that slow the reform would make these numbers too high.
 
-## 5. Change the assumptions (collapsed)
+## 4. Change the assumptions (collapsed)
 
 Panel title: **Change the assumptions**
 
@@ -82,13 +91,13 @@ Panel title: **Change the assumptions**
 Under each slider: *Source: {param_source}. Range we tested: {param_low}–{param_high}.*
 Reset link: **Back to our estimate**
 
-## 6. Link out
+## 5. Link out
 
 **Full methodology →** (goes to "The data" and "The model")
 
 ---
 
-## Other "can't tell you" sets (one shows per scenario)
+## Other "can't tell you" sets (one shows per policy tab)
 
 **Missing middle**
 
@@ -101,12 +110,6 @@ Reset link: **Back to our estimate**
 - **Who pays instead.** Lower fees mean less money for pipes and roads; it does not say how cities make that up.
 - **What happens to rents and prices.** It counts homes, not what they will cost.
 - **Builders' other costs.** If land or labor costs rise, the gain shrinks.
-
-**Combined (all three)**
-
-- **Where the homes go.** It adds up a statewide total, not which streets or lots will build.
-- **Which reform did it.** On lots where two reforms apply, it counts the home once and does not split credit.
-- **What cities do next.** New local rules that slow any of the reforms would make these numbers too high.
 
 ---
 
@@ -132,29 +135,43 @@ Every slot comes from the state's results bundle (`reports/results/<st>/bundle.j
 | `unit_noun` | ADU: "a backyard cottage or basement apartment"; missing middle: "a duplex, triplex or fourplex"; fees: n/a (fees sentence 1 reads "Lower fees change the math on {legal_mid} lots where building is already legal.") |
 | `param_*` | `build.knobs()`, resolved from `config/params/` |
 
-## Open questions for Ben (before the build)
+## Open questions for Ben
+
+> The first build (2026-11-09, Ben asked for it to QC on Pages) takes the leaning answer to each question below
+> and marks it **Built as**. Any of them can change.
 
 **Q1. The "with reform" range needs per-draw baseline.** The bundle has the baseline as P10/P50/P90 only. Adding
 the scenario's P10 to the baseline's P10 overstates the spread. Proposed contract change (WS-CORE/WS-ENGINE):
 either per-draw baseline totals, or a `totals` outcome `with_reform` computed in the engine. Until then the page
 can draw the with-reform bar as baseline median + added range and say so.
+**Built as:** with-reform bar = baseline shifted by the median added homes; the added homes' own range is the
+enlarged strip.
 
 **Q2. Which count is the headline: permits or net homes?** The baseline counts *permits* (Census BPS). To keep
 the two bars comparable, the headline should be `permits_added`. The funnel then ends on net homes (step 4), so
 the sentence number and step 4 will differ. Alternative: headline in net homes and the bars shift by the net
 gain. I lean permits for the bars and sentence, with step 4 explaining the gap.
+**Built as:** permits in the bars and the bold +N; the same sentence then gives net homes and share of need.
 
 **Q3. Backtest line needs a scorecard row.** No bundle has a "within X% on 2019–23" row yet. Proposed: a
 `scorecard` row `check_id` for the blind backtest, `metric` = absolute percent error of the 5-yr total,
 `label` naming the years. Until it lands the page uses the fallback line.
+**Built as:** the page reads a scorecard row with `metric: abs_pct_error_5y` (value a share, label the years);
+no bundle has one yet, so every state shows the fallback.
 
 **Q4. Sliders.** The brief asks for uptake, construction cost, rents/values and interest rate. Only uptake is a
 factor the browser can move today; the other three feed the pro forma, which the brief's "no model arithmetic in
 the browser" rule keeps server-side. Options: (a) pre-computed low/mid/high grid for those three in the bundle,
 (b) one "Share of lots where it pays" slider standing in for all three. I lean (a).
+**Built as:** the existing five engine-factor sliders, unchanged, inside the collapsed panel.
 
 **Q5. Where the "can't tell you" bullets live.** The brief says config. Proposed home:
 `config/scenarios/limits.yaml` (owned by WS-CORE? or by this workstream). The drafts above move there once agreed.
+**Built as:** `src/lotline/app/copy/scenarios.yaml` (app-owned), with funnel sentence 1 per policy; the build
+refuses a number written into it.
 
-**Q6. Combined.** `combined` and fees are still in `meta.scenarios_pending`, so the compare row will show
-"Not run yet" for them until the engine fills them.
+**Q6. Policy tabs, no combined view (decided, Ben 2026-11-09).** Each policy gets its own tab; the page never
+stacks or combines policies, so there is no overlap correction on this page. This drops the brief's "scenario
+comparison small multiples, combined scenario with the overlap correction" task. Fees are still in
+`meta.scenarios_pending`, so its tab shows "Not run yet" until the engine fills it. The pair and `combined`
+scenarios stay in the bundle contract but Section 1 does not show them.

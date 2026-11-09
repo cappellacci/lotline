@@ -1,24 +1,31 @@
-### LB-NNN · 2026-11-09 · Deliverables: Results page copy, first draft (WS-RESULTS-SIMPLE)
-- **Question:** What should Section 1 say, in plain words, so a non-technical reader can answer "how many more
-  homes, compared with what, how sure" from the first screen? (Office hours 2026-11-09, action items 5–7.)
+### LB-NNN · 2026-11-09 · Deliverables: Results page as a simple data story, one tab per policy (WS-RESULTS-SIMPLE)
+- **Question:** Can a non-technical reader answer "how many more homes, compared with what, how sure" from the
+  first screen of Section 1? (Office hours 2026-11-09, action items 5–7.) Ben then asked for each policy on its
+  own tab (overlap adds too much complexity) and for the page built and published to Pages for QC.
 - **What I did:**
-  - Wrote the Section 1 copy in page order: two-worlds headline chart, one-sentence result, one backtest line,
-    four funnel sentences, scenario comparison, three "can't tell you" bullets per scenario, a collapsed
-    assumptions panel, the methodology link. About 285 words of page text against the 300-word cap.
-  - Mapped every number slot to a results-bundle field (schemas 1.11), so no number is written by hand.
-  - Wrote the 60-second usability check script and results table for Ben to run.
+  - Wrote the Section 1 copy (`src/lotline/app/copy/results.md`, about 285 words of page text against a 300-word
+    cap), every number a slot mapped to a results-bundle field, with open questions Q1–Q6.
+  - Rebuilt Section 1 of `src/lotline/app/template.html`: policy tabs (ADUs, missing middle, fee reduction; no
+    stacked or combined view), a two-worlds bar chart with an enlarged strip for the added homes, the headline
+    sentence, the backtest line (fallback until a scorecard row exists), four funnel sentences, "What this can't
+    tell you", the sliders and the old detail cards behind folds, the state map moved below the story.
+  - Per-policy words in `src/lotline/app/copy/scenarios.yaml`, loaded by `build.policy_copy()`, which refuses a
+    number written into the copy. Wrote the 60-second usability check (`docs/build/usability-check.md`).
 - **Inputs:** `docs/build/workstreams/WS-RESULTS-SIMPLE.md`; `docs/research/office-hours-2026-11-09-greg-miller-notes.md`;
-  `src/lotline/model/results.py`; `tests/fixtures/results/zz/bundle.json`; `src/lotline/app/template.html`, `knobs.yaml`.
-- **Outputs:** `src/lotline/app/copy/results.md`; `docs/build/usability-check.md`.
+  `src/lotline/model/results.py`; the fixture bundle; release `app-2026-11-09` bundles (MN, NC, OH, OR, TX).
+- **Outputs:** `src/lotline/app/copy/results.md`, `src/lotline/app/copy/scenarios.yaml`, `src/lotline/app/template.html`,
+  `src/lotline/app/build.py` (`policy_copy`), `tests/app/test_results_simple.py`, `tests/app/test_build.py` (two
+  assertions), `docs/build/usability-check.md`; a QC release and Pages deploy from branch `ws/results-simple`.
 - **Findings:**
-  - The bundle can't yet draw an honest "with the reform" range: the baseline has only P10/P50/P90, not draws
-    (Q1). The baseline counts permits, so the headline should be `permits_added` to keep the bars comparable (Q2).
-  - No scorecard row gives the "within X% on 2019–23" backtest number yet (Q3); the page will use a fallback line.
-  - Three of the four sliders the brief asks for (cost, rents/values, interest rate) feed the pro forma, which
-    the browser may not recompute; they need a pre-computed grid in the bundle (Q4).
-- **Decisions:** none recorded; Q1–Q6 in the copy file are proposed for Ben (Q1, Q3, Q4 are contract changes for
-  WS-ENGINE/WS-CORE).
-- **AI:** Claude drafted the copy and the check and checked every slot against the fixture bundle's fields and the
-  current template. Word count measured with `wc -w` on the page-text lines. No code, no model runs.
-- **Open / next:** Ben reviews the copy and answers Q1–Q6; then build the chart, funnel sentences, comparison and
-  tests against the fixture bundle; numbers wire up when WS-NC-GUTCHECK lands.
+  - The reform's homes are a small slice of all building (NC ADUs: about 260 on about 348,000), so the two bars
+    look alike; the enlarged strip carries the difference. A same-type baseline (e.g. 2–4 unit permits for
+    missing middle) would show the change better: a design call for Ben.
+  - The bundle can't yet give an honest with-reform range (no per-draw baseline, Q1) or the backtest number (no
+    scorecard row, Q3); three of the four sliders the brief asks for need a pre-computed grid (Q4).
+  - The headline +N at default sliders equals the bundle's `permits_added` P50 (tested on the fixture).
+- **Decisions:** Ben, 2026-11-09: one tab per policy, no combined view on the results page (drops the brief's
+  combined small multiples). Proposed for HANDOFF. Q1, Q3 and Q4 are contract changes for WS-ENGINE/WS-CORE.
+- **AI:** Claude drafted the copy and built and tested the page. Checks: app tests (55 pass), a mutation check
+  that a number written into a sentence fails its test, and a browser check of NC (all three tabs; a slider moves
+  the headline and resets).
+- **Open / next:** Ben QCs the Pages build and answers Q1–Q5; run the 60-second test on the published page.
