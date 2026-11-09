@@ -1462,6 +1462,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **No revenue toggle yet:** the "revenue not replaced" offset (fees causal diagram, C51) has no sourced size.
   It stays open.
 - **Decided by:** proposed by thread 02 in the fee-scenario PR; for Ben to confirm.
+- **Status 2026-11-09:** adopted with amendments by D-065 (revenue toggle default; single-family dose is
+  interim until doses by building type are built).
 
 ### D-033 · 2026-10-20 · Proposed: feasibility-channel inputs from parcel rolls
 - Candidate lots are VACANT_RESIDENTIAL parcels with a land value in the newest roll ≤ origin + 1.
@@ -1471,6 +1473,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - In the MN development run only Minneapolis qualifies. Dakota and Anoka County rolls code no vacant
   residential parcels, and several places lack year built or building sq ft.
 - **Decided by:** proposed by thread 02; for Ben to confirm.
+- **Status 2026-11-09:** adopted unchanged by D-065.
 
 ### D-034 · 2026-10-20 · Proposed: when a coded local fee is complete enough to use
 - A place's coded fee is used only if it includes a water/sewer fee. Utility fees are usually the largest
@@ -1480,6 +1483,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   from too low to too high, so the output lists `fee_source` and `fee_components` for every place.
 - **Decided by:** proposed by thread 02; for Ben to confirm. An alternative is a component-wise prior
   (fill only the missing components).
+- **Status 2026-11-09:** not adopted. Replaced by the component-wise fill in D-065.
 
 ### D-035 · 2026-10-22 · Eligible-parcel history for places counted from a parcel roll: ACS scaled to the roll (#208)
 - **Found:** a jurisdiction counted from a parcel roll had a denominator only in its roll year(s), while ACS-fallback
@@ -4313,3 +4317,56 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   every model run does. The 2026-10-19 sensitivity that adds Wake Forest and Holly Springs is not included.
 - **Decided by:** Ben, 2026-11-08 ("Rules in force by window start"). Written by Claude Code before any run.
   **Status:** method approved, not run.
+
+### D-065 · 2026-11-09 · Fee scenario, Phase 0: D-032 to D-034 settled, three fee scenarios, fill rule for missing fees (method only, before any run)
+- **Why now:** office hours on 2026-11-03 (`docs/research/office-hours-2026-11-03-tomasso-notes.md`, A4, A5,
+  A8) asked for the Handbook benchmark plus a clearly labeled real-fee scenario, a supply-side comparison
+  across single-family, duplex and fourplex, and stated limits. D-032 to D-034 had been proposed since
+  2026-10-20 and never confirmed. This entry settles them before the fee build continues. No model was run.
+- **D-032 adopted, with two amendments.**
+  - *Revenue toggle:* the default is "revenue replaced": a fee cut has no offsetting effect through lost
+    infrastructure money (fees causal diagram, C51). No size is put on the other case, because no source
+    gives one. It is listed as a limitation (below), not modeled.
+  - *Dose by building type:* using the single-family dose for every census size class is interim. It is
+    replaced when per-type fee levels and the duplex/fourplex pro formas exist (fee plan Phase 2), with a
+    new entry at that point.
+- **D-033 adopted unchanged.**
+- **D-034 replaced by a component-wise fill.** A place keeps every fee component it has coded. Only what is
+  missing is filled:
+  - *Places with some coded rows:* a missing `water_sewer` or `permit` component (every new home pays for a
+    building permit and a utility connection) is filled with the median of that component across the
+    state's coded places. Missing `impact`, `planning` or `other` components are not filled: many places
+    charge none (Dallas has no impact fee, confirmed), so filling them would invent fees. They count as zero.
+  - *Places with no coded rows:* the median coded total of the state's places.
+  - *States with fewer than 5 coded places* (the minimum D-022 uses for priors; Ohio today has none): the
+    medians are pooled across all coded states. The Handbook's $50,000 is no longer a fallback in the local
+    scenarios; it is used only in the benchmark.
+  - Every place reports `fee_source` (`local`, `local + filled: <components>`, `state median`,
+    `pooled median`) and `fee_components`, so a reader sees what was coded and what was filled.
+  - Medians are taken per building type once per-type fee levels exist (fee plan Phase 1); until then, on
+    the single-family rows.
+- **Three fee scenarios, each labeled in plain language:**
+  - `fees` (benchmark, Handbook definition): "Benchmark: a $50,000 fee cut in half." Every place's fee is
+    $50,000 per unit and the cut is $25,000. It is the comparable scenario across entries.
+  - `fees_local_half`: "Real local fees cut in half." The cut is 50% of each place's local fee level.
+  - `fees_local_25k`: "Real local fees cut by up to $25,000." The cut is the smaller of $25,000 and the
+    place's local fee, so in most coded places fees fall to zero.
+  - All three keep the same channels, λ, ε and ramp (D-032), so they differ only in the size of the cut.
+    The output shows each place's local fee level next to $50,000 (A4's caveat: observed fees in MN, NC and
+    TX are mostly well below $50,000; Portland's and Bend's come closest).
+- **Dollar year:** the Handbook's $50,000 and $25,000 are read as 2025 dollars (`money.yaml`
+  `real_dollar_year`). The Handbook does not state a year; 2025 is the protocol's real-dollar year (§5.9).
+  Coded local fees are in each schedule's own dollars (`dollar_year`) and are deflated to 2025 with CPI-U
+  before use. `local_fees` does not deflate yet: that is a fee plan Phase 1 task.
+- **Fee-increase sensitivity:** the same machinery run with a fee rise (negative cut) is reported as a
+  sensitivity, not a scenario, for the policy point that higher impact fees cost homes (A4).
+- **Fee-structure scenario (stretch):** utility connection fees scaled by home size instead of charged per
+  unit. Planned after Phase 2 (pencil-out table and per-type doses) works; not built before then.
+- **Limitations to state in D4 ("what the model can't tell"):** no effect on prices or rents (developers
+  still charge market rate; office hours point 7 and A8); no effect of fees on approval time; revenue replacement assumed; the
+  Handbook's $50,000 is high for the states modeled, so the benchmark result is not a forecast of a
+  realistic local fee cut.
+- **Decided by:** Ben, 2026-11-09 (Phase 0 of the fee plan: "both, labeled" for the real-fee cut; fill only
+  the missing part; fee-structure scenario as a stretch). Component-level details (which components are
+  filled, the 5-place minimum, the pooled median as the last fallback) were written by Claude Code to carry
+  out that choice, for Ben to confirm in the PR. **Status:** method approved, not built, not run.

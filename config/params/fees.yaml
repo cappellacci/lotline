@@ -7,7 +7,7 @@ handbook_fee_per_unit_usd:
   high: 50000
   unit: USD per unit
   source: "Handbook benchmark fees scenario: total development fees assumed $50,000 per unit (fees causal diagram, scenario line)"
-  notes: "Fixed by the Handbook. Real local fees are far lower in most places checked (fees causal diagram §2; data availability §0 and R8) and are shown side by side. Dollar year not stated by the Handbook: see PR."
+  notes: "Fixed by the Handbook. Real local fees are far lower in most places checked (fees causal diagram §2; data availability §0 and R8) and are shown side by side. The Handbook states no dollar year; read as 2025 dollars, the protocol's real-dollar year (D-065). Used only in the benchmark scenario; the local scenarios no longer fall back to it (D-065)."
 
 handbook_fee_cut_share:
   value: 0.5
