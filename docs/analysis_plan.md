@@ -4501,3 +4501,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   years) and a long right tail from u, because α is large (8.4) and Charlotte is one place.
 - **Decided by:** Ben (V5 design, validation plan; option (b) prior, 2026-10-21; freeze now, 2026-11-09).
   Written by Claude Code before any code or run.
+- **Frozen (2026-11-09, code at 77e8710, `results/frozen/V5-NC-CHARLOTTE.json`, 4,000 draws, seed 20261108).**
+  Inputs: 169,314 N1 lots, eligible share 0.582-0.851-0.961, dose gap 0.598 (UDO cap 3, blank `by_right` at
+  the four-state share), F(PCR)/F(1) 0.903 (PCR 0.951), B 33.0 buildings a year (2020-2022: 31, 22, 46).
+  **BPS 37119 2-4 unit buildings, 2023-2025: P10 89, P50 104, P90 172 (mean 137).** Added buildings on N1
+  lots: P50 0, P90 72, mean 38.6. Homes in 2-4 unit buildings: P10 213, P50 249, P90 402. No outcome has
+  been read; scoring waits for this file on `main` and Ben's go-ahead.
