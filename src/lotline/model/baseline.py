@@ -104,6 +104,17 @@ def window_label(origin: int, params: dict[str, Parameter] | None = None) -> str
     return f"{first}-{first + horizon - 1}"
 
 
+def rules_as_of(origin: int, params: dict[str, Parameter] | None = None) -> pd.Timestamp:
+    """The date whose in-force rules count as current in a forward run (D-064).
+
+    31 December of (first window year - 1 + `current_rules_window_years`). By hand: origin 2025, lead 1 ->
+    first year 2027; value 1 -> 2027-12-31; value 0 -> 2026-12-31.
+    """
+    p = params or load_params("baseline")
+    _, _, first = window(origin, p)
+    return pd.Timestamp(f"{first - 1 + int(p['current_rules_window_years'].value)}-12-31")
+
+
 def last_k_mean(series: pd.Series, origin: int, k: int, horizon: int, lead: int = 0) -> pd.Series:
     """Mean of the k years ending at `origin`, repeated for each of the `horizon` years after `lead`."""
     hist = _history(series, origin, first_year=origin - k + 1)
