@@ -45,7 +45,8 @@ def test_attribution_shares():
 
 def test_held_out_years_from_config():
     assert {2024, 2025, 2026} <= v0.held_out_years("MN")
-    assert 2023 in v0.held_out_years("NC") and v0.held_out_years("OH") == set()
+    # NC's V5 holdout was released after scoring (D-071), so V0 judges every NC year again
+    assert v0.held_out_years("NC") == set() and v0.held_out_years("OH") == set()
 
 
 def test_pass_rule_allows_gaps_within_one_percent_only():

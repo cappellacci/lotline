@@ -56,6 +56,7 @@ def test_server_filter_reads_window_and_towns_from_config():
     assert mp.held_out_geoids() >= {"3712000", "37119"}
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_holdout_drops_charlotte_and_county_after_window():
     raw, place = raw_frame()
     out = holdout.apply(mp.build(raw, place), "NC", geoid_col="jurisdiction_geoid", date_col="issue_date",
@@ -98,6 +99,7 @@ def test_check_town_rows_stops_on_missing_towns():
         mp.check_town_rows(out[out.issue_date < pd.Timestamp("2023-06-01")])
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_load_applies_holdout_before_returning(tmp_path, monkeypatch):
     raw, place = raw_frame()
     monkeypatch.setattr(mp, "download", lambda store, state="NC", refresh=False: raw)
