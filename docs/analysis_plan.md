@@ -4050,13 +4050,16 @@ Dated, append-only. Each entry says what changed from the research documents, wh
      2026-11-08, "Interpolate to 2026→2031"):
      - The growth now runs from July 1, 2026 to July 1, 2031. The years come from the same window
        (`housing_need.window_years`).
-     - A year the demographer publishes is used as is: MN and OR publish every year.
+     - A year the demographer publishes is used as is: MN, OR and TX publish every year. Texas's annual
+       state totals (all three scenarios) were downloaded by Ben from the Center's Projections Download Tool
+       on 2026-11-09 and registered with `lotline manifest register`.
      - Other years are read on the straight line between the nearest published years
-       (`housing_need.population_at`, never beyond them): NC and OH to 2035, TX to 2040.
+       (`housing_need.population_at`, never beyond them): NC and OH to 2035.
      - Each source's 2025 and 2030 were checked against its file, downloaded through `lotline.io.http.fetch`.
-       All match, except that Texas's low and high 2030 in its projections table differ from the state-total
-       file's by about 0.03%. The entries' notes say this.
-     - New central values: MN 45,989 (was 47,907); NC 205,251 (209,033); TX 675,323, range 578,694–835,119
+       All match, except Texas's low and high scenarios. The figures transcribed earlier (D-057) differ from
+       the Center's current file by 1,456 to 9,210 people. The file agrees with the Center's projections
+       table, so it is used, and the Texas entry's notes record the old values.
+     - New central values: MN 45,989 (was 47,907); NC 205,251 (209,033); TX 681,001, range 583,510–837,656
        (683,487, range 590,246–841,601); OH −33,316 (−29,225); OR 42,291 (39,640).
   3. *Bundle metadata.* `meta` records `origin_year` and `horizon_years` but not the window's first year. Adding
      that column is a schema change, which belongs to WS-CORE (a `contract-change` issue, opened as #333). The same issue
