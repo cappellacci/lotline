@@ -597,8 +597,8 @@ const RECORD = {
     pace: "The forecast is a range for each year; the reform's homes build up over the first years." },
 };
 function recordHtml(b, d) {
+  if (!Object.hasOwn(RECORD, d)) return "";  // d comes from a button's data attribute: known scenarios only
   const spec = RECORD[d];
-  if (!spec) return "";
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const obs = (b.observed || []).filter((r) => r.measure === spec.measure).sort((x, y) => x.year - y.year);
   const fut = (b.totals || []).filter((r) => r.scenario === d && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
@@ -613,7 +613,7 @@ function recordHtml(b, d) {
   const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
   const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
   const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
-  const color = scenColor(d), parts = [];
+  const color = esc(scenColor(d)), parts = [];
   for (const t of ticks) parts.push(`<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)" stroke-width="1"></line>
     <text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmtN(t)}</text>`);
   for (let yr = y0; yr <= y1; yr++) parts.push(`<text x="${x(yr)}" y="${H - 8}" text-anchor="middle">${yr}</text>`);
