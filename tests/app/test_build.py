@@ -168,6 +168,18 @@ def test_results_section_parts_are_on_the_page(tmp_path):
         assert part in html, part
 
 
+def test_gross_and_net_are_explained_in_plain_words(tmp_path):
+    """Ben, 2026-11-09: the toggle reads "All new homes" / "Net new housing", a "Why two numbers?" note uses
+    the state's own figures, and the displacement slider says what it means. The old wording is gone."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    for part in ('"All new homes"', '"Net new housing"', "Why two numbers?", 'id="two-numbers"',
+                 "Homes that would have been built elsewhere in the state anyway"):  # fmt: skip
+        assert part in html, part
+    for gone in ("In the places that build", "places that build", "Net statewide", "pulled in from nearby",
+                 "Homes pulled from nearby places"):  # fmt: skip
+        assert gone not in html, gone
+
+
 def test_baseline_card_reads_the_bundle_baseline(tmp_path):
     """Schemas 1.11: the page shows the no-change forecast from the bundle's `baseline` part."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()

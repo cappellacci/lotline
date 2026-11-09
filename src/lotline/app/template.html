@@ -338,10 +338,26 @@ function niceTicks(max, n = 4) {
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
 const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null };
+// Gross vs net (aggregate.homes_from_draws): "all new homes" = homes_in_place; "net new housing" = that × (1 − displacement_share).
 const OUTCOME_WORDS = {
-  homes_net_statewide: ["Net statewide", "Homes added to the state, after taking out homes pulled in from nearby places."],
-  homes_in_place: ["In the places that build", "Homes built where the reform applies, before taking out homes pulled in from nearby places."],
+  homes_in_place: ["All new homes", "Every new home the reform leads to."],
+  homes_net_statewide: ["Net new housing", "What the state gains: all new homes minus those that would have been built elsewhere in the state anyway."],
 };
+const KIND_OF_HOME = { adu: "backyard cottage or basement apartment", missing_middle: "duplex or fourplex" };
+
+// "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
+function twoNumbersHtml(b, d, r) {
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const gross = r.homes_in_place.p50, net = r.homes_net_statewide.p50;
+  const share = gross > 0 ? 1 - net / gross : null;
+  const kind = KIND_OF_HOME[d] || "new home";
+  return `<p class="body-small" style="margin:0"><b>Why two numbers?</b> A new home doesn't always mean one more home for the state. Some of the people who move into a new ${esc(kind)} would otherwise have moved into a home built somewhere else in ${esc(name)}, and that home now won't be built. So the page counts two ways:</p>
+    <ul class="body-small" style="margin:var(--space-2) 0 0">
+      <li><b>All new homes: about ${fmtN(gross)}.</b> Every new home the reform leads to.</li>
+      <li><b>Net new housing: about ${fmtN(net)}.</b> What's left after taking out the homes that would have been built elsewhere in ${esc(name)} anyway${share === null ? "" : `, about ${Math.round(share * 100)}% of them`}. This is the honest answer to "how many more homes does the state get?"</li>
+    </ul>
+    <p class="body-small muted" style="margin:var(--space-1) 0 0">That share is an assumption, from none to half (studies of zoning reforms in Auckland and Lower Hutt, New Zealand), not something measured in ${esc(name)}. The slider "Homes that would have been built elsewhere in the state anyway" below shows how much it matters.</p>`;
+}
 
 function scenariosIn(b) {
   const have = new Set(b.draws.map((d) => d.scenario));
@@ -411,6 +427,7 @@ const SECTIONS = {
         <div class="headline" id="headline"></div>
         <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
           <span class="muted" id="outcome-note"></span></div>
+        <div id="two-numbers" style="margin-top:var(--space-3)"></div>
         <div class="ranges" id="ranges">${rows.join("")}</div>
         <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
         ${pendNote}
@@ -421,7 +438,7 @@ const SECTIONS = {
       <div class="card"><h3 class="h3">From legal lots to built homes</h3>
         <div class="tabs" role="group" aria-label="Scenario">${tabs}</div>
         <div id="funnel" style="margin-top:var(--space-4)"></div>
-        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are homes in the places that build.</p></div>
+        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are all new homes.</p></div>
       <div class="card"><h3 class="h3">What it takes to pencil out</h3>
         <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
       <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
@@ -486,7 +503,7 @@ const SECTIONS = {
         <p class="body-small">Does this state look like the places the model learned from? Each place is measured by how far its rent, home value and mortgage rate sit outside the range of the reference places behind the uptake rate (a log distance; 0 means inside on all three). The state is read from the middle of that distance, weighted by eligible lots: inside up to ${esc(DATA.overlap_thresholds.medium)}, near the edge up to ${esc(DATA.overlap_thresholds.low)}, outside beyond (config/params/aggregate.yaml).</p>
         ${flagHtml(b.meta).replace('<div class="card">', '<div>')}</div>
       <div class="card"><h3 class="h3">Which assumptions move the answer most</h3>
-        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net statewide homes when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders.</p>
+        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net new housing when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders.</p>
         <div class="tornado" id="tornado"></div></div>
       <details class="fold"><summary>Technical detail</summary>
         <p class="body-small">The engine's draws behind every number above: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/dev/results_dashboard.py</span>).</p>
@@ -536,7 +553,8 @@ function updateResults() {
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
   const d = UI.detail, rd = R[d][o];
   const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
-  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, ${o === "homes_net_statewide" ? "net statewide" : "in the places that build"}:</p>
+  $("two-numbers").innerHTML = twoNumbersHtml(b, d, R[d]);
+  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}:</p>
     <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
     <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>`;
   // share of need: net statewide only (aggregate.share_of_need), the headline kind first
@@ -545,7 +563,7 @@ function updateResults() {
     const sh = AGG.shareOfNeed(R[d].homes_net_statewide, n);
     return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-2) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
       <span class="body">${esc(n.label)}</span></p>
-      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Net statewide homes. Source: ${esc(n.source)}.</p>`;
+      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Counts net new housing. Source: ${esc(n.source)}.</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
   // funnel (log widths)
   const f = R[d], stages = [
