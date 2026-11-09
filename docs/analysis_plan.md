@@ -4435,3 +4435,31 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Run E is also the first official run with the baseline part (schemas 1.11).
   - Page: Finding 7 of https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs (version 3), with the permits
     actually issued in 2021–2025 (`scripts/dev/observed_permits.py`, `reports/results-2026-11-09/observed.json`).
+
+### D-070 · 2026-11-09 · ADUs: the observed floor trails the data origin; a `historical_floor` scorecard check (deviation from D-019; written after the diagnosis, before the re-run)
+- **Why:** office hours 2026-11-09 (Greg Miller): NC's ADU result read as below NC's own history. WS-NC-GUTCHECK
+  found two things (`reports/diagnostics/nc/README.md`). First, a units mismatch: the headline is 5-year,
+  added-over-baseline, net statewide homes, while history is gross permits a year in 11–13 cities. Second, a
+  real calibration gap: on the same 11 ADU-flagging places (holdouts out of both sides), the no-reform forecast
+  was 78 ADU permits a year (P10–P90 58–156) against 126 observed in 2023–25.
+- **Cause:** the floor on each place's current-rules hazard is its observed ADU permits a year over a fixed
+  2019–2022 (`adu_observed_first_year`/`_last_year`, D-019). NC's ADU-flagging places permitted 25, 24, 61 and
+  100 then, and 146, 109 and 123 in 2023–25.
+- **Deviation:** the floor is the mean over the `adu_observed_years` (4, D-019's length) years **ending at the
+  data origin** (`adu.observed_per_year`). A still-blind holdout place's window ends the year before its
+  holdout starts (`adu.holdout_stops`: Charlotte and 37119 2019–2022). A released holdout (Oregon) no longer
+  stops anything. For origin 2022 the window is D-019's own, so the backtests are unchanged. D-019 stopped at
+  2022 to stay before the 2023 rate shock; a forward run forecasts the post-shock market.
+- **Results (1,000 draws, origin 2025, `scripts/dev/gutcheck_diagnostics.py`):** NC no-reform ADUs on the 11
+  places 135 a year (122–191), with reform 137 (123–196). Statewide 2,023 without, 2,292 with, over 2027–2031.
+  Net added homes statewide (the headline) 40 / 104 / 301, against 40 / 105 / 301 before. Net added barely
+  moves: MN 203 (was 207), OH 173 (173), TX 1,351 (1,356). **TX caveat:** Austin's 2024–25 ADUs recorded as
+  duplexes (HOME) lower its trailing floor, so TX's no-reform ADU baseline in Austin falls (232 a year vs
+  about 371). The fix is a WS-TX adapter rule, not this entry.
+- **Guardrail:** `historical_floor` scorecard rows per scenario (`model/gutcheck.py`, wired in
+  `results.historical_floor_rows`): with-reform gross permits a year (median) ÷ the trailing
+  `historical_floor_years` (3) observed average, on the same places and unit. Below 1 is flagged (`partial`)
+  unless `config/historical_floor_reasons.yaml` states a reason. NC after the fix: ADU 1.09, missing middle
+  1.30. Before the fix the NC ADU row would have read 0.64, flagged.
+- **Tests (hand-worked, synthetic):** `tests/model/test_nc_gutcheck.py`.
+- **Decided by:** proposed by Claude Code (WS-NC-GUTCHECK) for Ben's review in the PR. **Status:** proposed.

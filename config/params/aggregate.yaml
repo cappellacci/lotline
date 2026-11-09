@@ -104,3 +104,11 @@ results_origin_year:
   unit: year
   source: "Lotline convention, as in every forward development run (scripts/dev/adu_dev_run.py --origin 2025): the last complete permit year; with forecast_lead_years = 1 (baseline.yaml, D-061) the five-year window is 2027-2031"
   notes: "The bundle's forecast origin; `lotline results --origin` overrides it."
+
+historical_floor_years:
+  value: 3
+  low: 3
+  high: 3
+  unit: years of observed permits ending at the data origin
+  source: "WS-NC-GUTCHECK brief task 6 (Ben, 2026-11-09), from office hours 2026-11-09 action item 3 (docs/research/office-hours-2026-11-09-greg-miller-notes.md): flag a with-reform median below the trailing 3-year observed average"
+  notes: "Used only by the historical_floor scorecard check (model/gutcheck.py): a display flag, not a model input. Reasons that excuse a flag live in config/historical_floor_reasons.yaml."

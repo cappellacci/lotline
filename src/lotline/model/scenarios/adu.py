@@ -18,8 +18,9 @@ the start of year 1; `baseline.window`):
   force (`hazard.adu_ramp`), so a, and a recent reform, no longer change the result. A blank (uncoded) rubric
   field is unknown, never "not restrictive": it restricts with the share of coded rules that restrict it,
   and a place with no coded rule draws its type from coded places like it (D-022).
-- **Observed ADU rate**: where local permits flag ADUs, ADU permits per eligible parcel per year over
-  `adu_observed_first_year`–`adu_observed_last_year`. It is a floor on the current-rules hazard: ADUs a place
+- **Observed ADU rate**: where local permits flag ADUs, ADU permits per eligible parcel per year over the
+  `adu_observed_years` years ending at the data origin (`observed_per_year`; a held-out place's years end
+  before its holdout). It is a floor on the current-rules hazard: ADUs a place
   already builds are in its baseline and are never counted as added (additionality, MS-10).
 
 Each year the pool of parcels without an ADU shrinks, separately under each set of rules:
@@ -838,8 +839,10 @@ def run(
     exp(eligible_proxy_sd × z), one z per state per draw (`eligible_proxy.multipliers`, its own random
     stream); any state with a parcel-based place is untouched, and with the flag off nothing changes.
     With `return_draws`, a last element is added: per-draw arrays for the results bundle (`model/results.py`):
-    `eligible` and `pencil` (draws x places; pencil = the pro forma's feasible share F(PCR) the hazard uses),
-    `added` and `homes` (draws x places x years) and `params` (each draw's parameter set).
+    `eligible`, `pencil` and `rule_share` (draws x places; pencil = the pro forma's feasible share F(PCR) the
+    hazard uses; rule_share = c, how close that draw's current rules are to the Handbook),
+    `added`, `current` (current-rules gross ADUs, the no-reform world) and `homes` (draws x places x years)
+    and `params` (each draw's parameter set).
 
     `places` columns: geoid, eligible_parcels, rent (median gross rent, 2025 dollars), home_value (2025
     dollars), optional mortgage_rate (a backtest passes the year's actual rate; where it is missing, each draw
@@ -879,6 +882,7 @@ def run(
     }
     out = {k: np.zeros((n, len(places), horizon)) for k in keys}
     pencil = np.zeros((n, len(places)))
+    share = np.zeros((n, len(places)))
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
 
     def rates(
@@ -894,6 +898,7 @@ def run(
         hm = np.clip(hm * u_all[d], 0.0, 1.0)
         c, idx, sampled = draw_rule_share(places, p, rule_rng)
         drawn[d] = idx
+        share[d] = c
         paths = pool_paths(
             e * e_mult[d],
             hm,
@@ -939,7 +944,9 @@ def run(
             {
                 "eligible": e * e_mult,
                 "pencil": pencil,
+                "rule_share": share,
                 "added": out["added"],
+                "current": out["current"],
                 "homes": out["homes"],
                 "params": sets,
             },
@@ -1248,11 +1255,42 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     places = places.merge(rules, on="geoid", how="left")
     places = county_mix(places, state, store, origin, info["coded"])
 
-    p = load_params("adu")
-    first, last = int(p["adu_observed_first_year"].value), int(p["adu_observed_last_year"].value)
-    last = min(last, origin)
-    counts = observed_adu_counts(store.read(state, "permits"), first, last)
-    per_year = counts.groupby("geoid")["adu_permits"].sum() / (last - first + 1)
+    from lotline.config import load_state
+
+    n_years = int(load_params("adu")["adu_observed_years"].value)
+    counts = observed_adu_counts(store.read(state, "permits"), 1900, origin)
+    per_year = observed_per_year(counts, origin, n_years, holdout_stops(load_state(state).holdouts))
     places["observed_adu_per_year"] = places["geoid"].map(per_year)
     places["observed_rate"] = places["observed_adu_per_year"] / places["eligible_parcels"]
     return places
+
+
+def holdout_stops(holdouts) -> dict[str, int]:
+    """First year a held-out place's outcomes are missing from the store: GEOID -> year of `outcome_from`
+    (for the place and every GEOID its outcomes are reported under). A statewide holdout is keyed "*". A
+    released holdout (`released_on`, `validation.holdout.still_blind`) no longer hides anything: skipped."""
+    out: dict[str, int] = {}
+    for h in holdouts:
+        if h.released_on:
+            continue
+        for g in ["*"] if h.statewide else h.geoids:
+            out[g] = min(out.get(g, 9999), h.outcome_from.year)
+    return out
+
+
+def observed_per_year(counts: pd.DataFrame, origin: int, n_years: int, stops: Mapping[str, int]) -> pd.Series:
+    """Mean ADU permits a year per place over the `n_years` years ending at `origin` (WS-NC-GUTCHECK).
+
+    A held-out place's years end the year before its holdout starts (`stops`), so a partly held-out year is
+    never read as a low count and no held-out outcome is used; its window keeps `n_years` years. Years with
+    no row count as 0, as in `observed_adu_counts`. `counts`: geoid, year, adu_permits.
+
+    By hand: origin 2025, 4 years, place A 2022-25 = 1, 2, 3, 6 -> 3.0; place B held out from 2023 with
+    2019-22 = 2, 2, 4, 0 -> 2.0.
+    """
+    rows = {}
+    for g, grp in counts.groupby("geoid"):
+        last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
+        by_year = grp.set_index("year")["adu_permits"]
+        rows[g] = sum(float(by_year.get(y, 0)) for y in range(last - n_years + 1, last + 1)) / n_years
+    return pd.Series(rows, dtype=float, name="adu_permits_per_year")
