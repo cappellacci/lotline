@@ -135,3 +135,16 @@ def test_house_share_by_hand():
     # 3 houses and 1 vacant lot are eligible; the commercial parcel is not -> 0.75
     assert mm.house_share(parcels) == pytest.approx(0.75)
     assert np.isnan(mm.house_share(parcels.iloc[4:]))
+
+
+def test_dose_pool_holds_origin_doses_by_hand():
+    """D-067: five coded places in band 2 with doses on the D-064 date 0.75, 0.25, 0.25, 0.25, 0.25; the first
+    had dose 0 at the origin (its rule starts in 2026). The pool uncoded places draw from holds the origin
+    doses, mean (0 + 4 × 0.25) / 5 = 0.2, not 0.35; without `pool_dose` it holds the D-064 doses."""
+    places = pd.DataFrame(
+        {"geoid": list("ABCDEU"), "band": [2] * 6, "dose": [0.75, 0.25, 0.25, 0.25, 0.25, np.nan],
+         "pool_dose": [0.0, 0.25, 0.25, 0.25, 0.25, np.nan]}
+    )  # fmt: skip
+    pools = mm.dose_pools(places, min_coded=5)
+    assert pools[2].mean() == pytest.approx(0.2)
+    assert mm.dose_pools(places.drop(columns="pool_dose"), min_coded=5)[2].mean() == pytest.approx(0.35)
