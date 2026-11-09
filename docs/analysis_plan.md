@@ -4334,3 +4334,31 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Open decision for Ben:** should borrowers see the 2027 mix (as now), or the end-2025 mix, with
     D-064's date applied only to a place's own rules? Recommended: end-2025. Either way it is a new entry
     before the next run.
+  - **Decided 2026-11-09:** end-2025 mix (Ben, "End-2025 mix"). See D-067.
+
+### D-067 · 2026-11-09 · Places that borrow their rules borrow the end-2025 mix (method only, before the run)
+- **Decision (Ben, 2026-11-09, "End-2025 mix"):** D-064's date (31 December of the window's first year,
+  2027-12-31) applies only to **a place's own coded rules**. Everything a place without its own rule borrows
+  is built from the rules in force on **31 December of the origin year (2025-12-31)**, the date the rules
+  were coded and checked.
+- **Why:** the D-064 run (2026-11-09) showed that 70–88% of each change came from borrowers, not from the
+  places whose law changed. The mix rests on few coded places (8 in Minnesota for missing middle), so a
+  single 2026 rule moved about 144,000 borrowed parcels. And a law such as NC S.L. 2026-59 covers only its
+  named cities, not the unincorporated areas that borrowed from them.
+- **What uses which date:**
+  - **ADUs (`adu.rule_inputs`):**
+    - At the origin date: the field probabilities that fill blank rule fields, the coded places behind the
+      size-band priors (D-022), and so the priors themselves.
+    - At the D-064 date: each place's own rules, and the coded places that `county_mix` blends into county
+      rows, since those are places' own rules.
+  - **Missing middle (`mm.places_from_store`, `mm.dose_pools`):** each coded place's own dose uses the D-064
+    date. The pool that uncoded places draw from uses each coded place's dose at the origin date (new
+    column `pool_dose`).
+  - Backtests are unchanged.
+- **Expected, written before the run:** results move back toward run B (end-2025 rules) wherever borrowers
+  drove the D-064 change. Rough estimates from the D-064 split (central values, not draws): NC ADUs about
+  112 (C 79, B 126), TX ADUs about 1,354 (C 1,302, B 1,371), MN missing middle about 455 (C 410, B 462), NC
+  missing middle about 785 (C 740, B 791). Places whose own law changed keep their D-064 effect. OH and OR
+  do not move.
+- **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code change or run. **Status:** method
+  approved, not run.
