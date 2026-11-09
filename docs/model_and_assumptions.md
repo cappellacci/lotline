@@ -913,11 +913,11 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `household_growth_5y_mn` | 47,907 | fixed | households, 2025-2030 | Minnesota State Demographic Center, Long-Term Population Projections (May 2024 |
-| `household_growth_5y_nc` | 209,033 | fixed | households, 2025-2030 | NC Office of State Budget and Management, county/state population projections, Vintage 2025B (state row 37000… |
-| `household_growth_5y_tx` | 683,487 | 590,246–841,601 | households, 2025-2030 | Texas Demographic Center, Vintage 2024 population projections, state totals by migration scenario (mid = valu… |
-| `household_growth_5y_oh` | -29,225 | fixed | households, 2025-2030 | Ohio Department of Development, Office of Research, 2020-2050 population projections (Projections-by-County.x… |
-| `household_growth_5y_or` | 39,640 | fixed | households, 2025-2030 | Oregon Office of Economic Analysis, state population forecast, Appendix C (July 1 population): https://www.or… |
+| `household_growth_5y_mn` | 45,989 | fixed | households, mid-2026 to mid-2031 | Minnesota State Demographic Center, Long-Term Population Projections (May 2024 |
+| `household_growth_5y_nc` | 205,251 | fixed | households, mid-2026 to mid-2031 | NC Office of State Budget and Management, county/state population projections, Vintage 2025B (Population Summ… |
+| `household_growth_5y_tx` | 675,323 | 578,694–835,119 | households, mid-2026 to mid-2031 | Texas Demographic Center, Vintage 2024 population projections, state totals by migration scenario (mid = valu… |
+| `household_growth_5y_oh` | -33,316 | fixed | households, mid-2026 to mid-2031 | Ohio Department of Development, Office of Research, 2020-2050 population projections (Projections-by-County.x… |
+| `household_growth_5y_or` | 42,291 | fixed | households, mid-2026 to mid-2031 | Oregon Office of Economic Analysis, state population forecast, Appendix C (July 1 population, annual): https:… |
 | `shortage_stock_ak` | 4,205 | 4,205–9,462 | homes (estimated shortage of the housing stock) | Up for Growth, Housing Underproduction in the U.S. 2024, state table, 2022 underproduction: https://upforgrow… |
 | `shortage_stock_al` | 16,130 | fixed | homes (estimated shortage of the housing stock) | Up for Growth, Housing Underproduction in the U.S. 2024, state table, 2022 underproduction: https://upforgrow… |
 | `shortage_stock_ar` | 4,327 | fixed | homes (estimated shortage of the housing stock) | Up for Growth, Housing Underproduction in the U.S. 2024, state table, 2022 underproduction: https://upforgrow… |
