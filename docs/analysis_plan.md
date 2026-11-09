@@ -4362,3 +4362,24 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   do not move.
 - **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code change or run. **Status:** method
   approved, not run.
+- **Order of work:** this entry was pushed as bf563eb, then the code as 96a5de2 (hand-worked tests:
+  `test_borrowers_use_the_origin_mix_and_own_rules_the_d064_date` and
+  `test_dose_pool_holds_origin_doses_by_hand`), then the run.
+- **Results (run D, 2026-11-09, `lotline results --all` at 96a5de2, 1,000 draws):** median net homes over
+  five years, against the estimates written above:
+
+  | | Run B | Run C | Run D | Estimated |
+  |---|---|---|---|---|
+  | NC ADUs | 126 | 79 | 105 | about 112 |
+  | TX ADUs | 1,371 | 1,302 | 1,356 | about 1,354 |
+  | MN ADUs | 209 | 206 | 207 | |
+  | MN missing middle | 462 | 410 | 460 | about 455 |
+  | NC missing middle | 791 | 740 | 773 | about 785 |
+
+  - OH, OR and TX missing middle do not move, as expected.
+  - D-064 keeps 46% of its effect on NC ADUs and 36% on NC missing middle; elsewhere it keeps 21% or less.
+  - The NC estimates came from central values and were too high by 7–12 homes. In the draws, the S.L.
+    2026-59 cities carry a larger share of the change.
+  - Page: `reports/results-2026-11-09/results-2027-window.html` (version 2) at
+    https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs. **Status:** adopted and run; the official bundles
+    are run D.

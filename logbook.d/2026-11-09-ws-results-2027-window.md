@@ -23,3 +23,11 @@
     approximation of the draw-based change.
   - The page's estimate for the recommended option is derived from that split, not run.
   - The page was checked once in the browser before publishing. No code changed.
+- **Follow-up, D-067 (2026-11-09):** Ben chose the end-2025 mix for places that borrow their rules. Claude
+  wrote and pushed D-067 before any code (bf563eb). The code change followed (96a5de2): `adu.rule_inputs`
+  gained `prior_as_of`, and missing middle gained `pool_dose`, each with a hand-worked test. Then Claude
+  reran the official bundles (run D) and republished the page as version 2, with a "Decided" panel and
+  Finding 6.
+  - NC ADUs 105, TX 1,356, MN missing middle 460, NC missing middle 773.
+  - The estimates were close, except NC, where they ran 7–12 homes high.
+  - The scenario tests (61), ruff and `compliance_check.py` (0 FAIL) pass.
