@@ -259,7 +259,7 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
     for part in ("Data available and data used", 'id="dash-host"', 'id="dash-frame"', 'id="dash-state"'):
         assert part in html
-    assert "Data tier" not in html  # dropped (Ben, 2026-11-09): the dashboard carries coverage
+    assert "<p class=\"eyebrow\">Data tier</p>" not in html  # dropped (Ben, 2026-11-09): the dashboard carries coverage
     assert 'scope: "ALL"' in html  # the dashboard opens on every state, with its own dropdown
     # Ben, 2026-11-09: the data page opens with what the model needs and from which years, then the
     # dashboard, and lists every source last.
