@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.11** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.12** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -378,7 +378,7 @@ Table checks: `one_row_per_key`
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `size_class` | text | yes | no | one of `all`, `1`, `2`, `3_4`, `5p` |
+| `size_class` | text | yes | no | one of `all`, `1`, `2`, `3_4`, `5p`, `2_4` |
 | `period` | text | yes | no | matches `^\d{4}(-\d{4})?$` |
 | `p10` | number | yes | no | ≥ 0 |
 | `p50` | number | yes | no | ≥ 0 |
@@ -387,6 +387,22 @@ Table checks: `one_row_per_key`
 | `places` | integer | yes | no | ≥ 0 |
 | `coverage_share` | number | yes | yes | ≥ 0; ≤ 1 |
 | `basis` | text | yes | no | one of `reported`, `with_imputation` |
+
+## `results_observed`
+
+What was actually permitted in the years before the window, so the page can set the forecasts beside the state's own record. `adu_permits`: permits flagged as ADUs in local permit sources that flag them at all (`adu.observed_adu_counts`), so a floor on the state; `places` and `population_share` say how much of the state those sources cover. `homes_2_4`: homes in 2-4 unit buildings in every BPS place (`basis`). Both come from the holdout-filtered data, so held-out places and years are missing.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `measure` | text | yes | no | one of `adu_permits`, `homes_2_4` |
+| `year` | integer | yes | no | ≥ 1990; ≤ 2100 |
+| `value` | number | yes | no | ≥ 0 |
+| `places` | integer | yes | no | ≥ 0 |
+| `population_share` | number | yes | yes | ≥ 0; ≤ 1 |
+| `basis` | text | yes | no | one of `reported`, `with_imputation`, `flagged_permits` |
 
 ## Version history
 
@@ -404,3 +420,4 @@ Table checks: `one_row_per_key`
 | 1.9 | eligible_parcels: denominator_source value parcels_interpolated (years between two real parcel rolls, D-035 addendum) |
 | 1.10 | results bundle tables (results_meta, results_draws, results_funnel, results_totals, results_need, results_scorecard): the engine-to-app contract, kept apart from the canonical input tables (#310) |
 | 1.11 | results_baseline: the no-policy-change forecast in the results bundle (homes permitted statewide by building size and period), so the app can show the level reforms add to |
+| 1.12 | results_observed: permits actually issued in the years before the window (ADU permits where local data flag them; homes in 2-4 unit buildings from BPS); results_baseline size_class 2_4 |

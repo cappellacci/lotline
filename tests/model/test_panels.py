@@ -161,6 +161,7 @@ def test_load_reads_every_market_file(tmp_path):
     assert p.loc[("3700001", 2024), "hpi"] == pytest.approx(410.0)
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_load_refuses_held_out_outcomes(tmp_path):
     """Charlotte (3712000) 2024 is a V5 holdout in config/states/nc.yaml: a leaked row stops the build."""
     leaked = pd.concat([BPS, _bps([("37120000", "3712000", "37119", 2024, 1, 0, False)])], ignore_index=True)

@@ -1,0 +1,134 @@
+{
+  "test_id": "V5-NC-CHARLOTTE",
+  "method": "analysis plan D-071",
+  "frozen_commit": "77e87104208a2fd66aa1cd806d8c0ebe9eeba4ef",
+  "observed": {
+    "buildings": {
+      "2023": 27.0,
+      "2024": 48.0,
+      "2025": 44.0
+    },
+    "homes": {
+      "2023": 62.0,
+      "2024": 96.0,
+      "2025": 98.0
+    }
+  },
+  "baseline_per_year": 33.0,
+  "primary": {
+    "2023-2025": {
+      "p10": 89.0,
+      "p50": 104.0,
+      "p90": 172.0,
+      "mean": 137.40575,
+      "observed": 119.0,
+      "pass": true,
+      "verdict": "useful",
+      "obs_over_p50": 1.1442307692307692,
+      "percentile": 76.6625,
+      "coverage_rand": 1.0,
+      "crps_model": 10.1412719375,
+      "crps_no_reform": 14.536912125
+    },
+    "2023": {
+      "p10": 27.0,
+      "p50": 35.0,
+      "p90": 52.0,
+      "mean": 41.64225,
+      "observed": 27.0,
+      "pass": true,
+      "verdict": "useful",
+      "obs_over_p50": 0.7714285714285715,
+      "percentile": 11.0125,
+      "coverage_rand": 0.8403361344537814,
+      "crps_model": 5.3269149375,
+      "crps_no_reform": 3.5459351875000005
+    },
+    "2024": {
+      "p10": 27.0,
+      "p50": 35.0,
+      "p90": 60.0,
+      "mean": 46.6285,
+      "observed": 48.0,
+      "pass": true,
+      "verdict": "useful",
+      "obs_over_p50": 1.3714285714285714,
+      "percentile": 84.925,
+      "coverage_rand": 1.0,
+      "crps_model": 8.154701000000001,
+      "crps_no_reform": 11.902259
+    },
+    "2025": {
+      "p10": 27.0,
+      "p50": 35.0,
+      "p90": 64.0,
+      "mean": 49.135,
+      "observed": 44.0,
+      "pass": true,
+      "verdict": "useful",
+      "obs_over_p50": 1.2571428571428571,
+      "percentile": 78.3625,
+      "coverage_rand": 1.0,
+      "crps_model": 5.446888125000001,
+      "crps_no_reform": 7.8878696875
+    }
+  },
+  "secondary_homes": {
+    "2023-2025": {
+      "p10": 213.06060606060606,
+      "p50": 248.81159908335894,
+      "p90": 402.42223077748736,
+      "mean": 324.7981374623107,
+      "observed": 256.0,
+      "pass": true,
+      "verdict": "useful",
+      "obs_over_p50": 1.02889093974366,
+      "percentile": 57.725,
+      "coverage_rand": 1.0,
+      "crps_model": 12.9796249345453,
+      "crps_no_reform": 11.376077511363627
+    },
+    "2023": {
+      "p10": 64.63636363636364,
+      "p50": 83.7878787878788,
+      "p90": 122.39829314504972,
+      "mean": 98.76384095096275,
+      "observed": 62.0,
+      "pass": false,
+      "verdict": "missed (over)",
+      "obs_over_p50": 0.7399638336347196,
+      "percentile": 7.000000000000001,
+      "coverage_rand": 0.0,
+      "crps_model": 14.774968124178674,
+      "crps_no_reform": 10.474375145833335
+    },
+    "2024": {
+      "p10": 64.63636363636364,
+      "p50": 83.7878787878788,
+      "p90": 139.32137348237666,
+      "mean": 110.14325986459188,
+      "observed": 96.0,
+      "pass": true,
+      "verdict": "useful",
+      "obs_over_p50": 1.1457504520795658,
+      "percentile": 72.25,
+      "coverage_rand": 1.0,
+      "crps_model": 8.274137316090375,
+      "crps_no_reform": 11.10113518181818
+    },
+    "2025": {
+      "p10": 64.63636363636364,
+      "p50": 83.7878787878788,
+      "p90": 149.7363563040868,
+      "mean": 115.89103664675608,
+      "observed": 98.0,
+      "pass": true,
+      "verdict": "useful",
+      "obs_over_p50": 1.1696202531645568,
+      "percentile": 71.35000000000001,
+      "coverage_rand": 1.0,
+      "crps_model": 9.257233689668425,
+      "crps_no_reform": 12.343703191287878
+    }
+  }
+}
