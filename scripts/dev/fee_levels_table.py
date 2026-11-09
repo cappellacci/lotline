@@ -21,7 +21,10 @@ from lotline.config import CONFIG_DIR, load_fees, load_params
 from lotline.model import fee_levels, money
 
 TYPES = {"SFD": "House", "U2": "Duplex (per unit)", "U3_4": "3-4 units (per unit)", "ADU": "ADU"}
-HOLDOUT_PLACES = {"2758000", "3712000"}  # St. Paul, Charlotte: shown, but flagged (their outcomes are holdouts)
+HOLDOUT_PLACES = {
+    "2758000",
+    "3712000",
+}  # St. Paul, Charlotte: shown, but flagged (their outcomes are holdouts)
 
 
 def context():
@@ -54,7 +57,11 @@ def main() -> None:
     fees = pd.concat([load_fees(s) for s in states], ignore_index=True)
     index, names = context()
     handbook = load_params("fees")["handbook_fee_per_unit_usd"].value
-    places = fees[["jurisdiction_geoid", "state"]].drop_duplicates().rename(columns={"jurisdiction_geoid": "geoid"})
+    places = (
+        fees[["jurisdiction_geoid", "state"]]
+        .drop_duplicates()
+        .rename(columns={"jurisdiction_geoid": "geoid"})
+    )
     out = fee_levels.all_types(places, fees, tuple(TYPES), index=index)
     coded = pd.concat(
         [fee_levels.coded_fees(fees, t, index=index) for t in TYPES], ignore_index=True
@@ -94,7 +101,11 @@ def main() -> None:
         ]
         for _, r in g.sort_values(["geoid", "building_type"]).iterrows():
             name = names.get(r["geoid"], r["geoid"]) + (" †" if r["geoid"] in HOLDOUT_PLACES else "")
-            c = coded.loc[(r["geoid"], r["building_type"])] if (r["geoid"], r["building_type"]) in coded.index else None
+            c = (
+                coded.loc[(r["geoid"], r["building_type"])]
+                if (r["geoid"], r["building_type"]) in coded.index
+                else None
+            )
             coded_txt = (
                 "none coded"
                 if c is None
