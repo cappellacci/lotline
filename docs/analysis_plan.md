@@ -4370,3 +4370,43 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   the missing part; fee-structure scenario as a stretch). Component-level details (which components are
   filled, the 5-place minimum, the pooled median as the last fallback) were written by Claude Code to carry
   out that choice, for Ben to confirm in the PR. **Status:** method approved, not built, not run.
+
+### D-066 · 2026-11-09 · Fee levels by building type, in 2025 dollars, with ranges and still-in-force rows (#247; fee plan Phase 1)
+- **What it builds:** `src/lotline/model/fee_levels.py` carries out D-065's fill and adds four rules.
+  `scenarios/fees.py` now has the three D-065 scenarios (`handbook`, `local_half`, `local_25k`; `local` is
+  accepted as the old name of `local_half`). No model was run.
+- **Schema 1.11 (#247; Ben approved both columns on 2026-11-09):**
+  - `in_force_through`: an older fee row still in force. Per place and component the newest schedule year
+    counts, plus older rows whose `in_force_through` reaches it. Keying on `fee_type` was rejected because the
+    wording of the same fee changes between years (Burnsville's SAC, Coon Rapids' permit table), so it would
+    count one fee twice. Set for Austin's 2023 water and wastewater impact fees and Bend Park & Recreation
+    District's FY 2025-26 park SDC. Austin's house fee goes from $6,763 to $14,463; Bend's from $23,162 to
+    $34,598.
+  - `amount_per_unit_low_usd` and `amount_per_unit_high_usd`: the range of a fee that varies by area, basin,
+    tier or plat date. Filled for the Texas groups under Ben's 2026-10-30 rule (SAWS, Austin, Fort Worth)
+    from the amounts already in their notes. The local scenarios draw each place's fee as triangular(low,
+    central, high) in every simulation draw.
+- **Building types (Claude Code's rule, for Ben to confirm):** for a duplex, 3–4 unit building or ADU, each
+  component uses the type's own rows if coded, else the place's `OTHER` rows, else the place's house amount for
+  that component ("from SFD"). The last step reads a fee coded for houses as charged per unit to the other
+  types unless the schedule says otherwise. That matches the per-unit connection fees Amy named as the problem
+  for missing middle, but it overstates fees where a plex shares one meter.
+- **Real dollars:** each row is converted from its `dollar_year` to 2025 dollars with CPI-U. Schedule years
+  after the index's last year (2026) are taken at 2025: no adjustment, a small overstatement (about 3%).
+- **Fill details (D-065 confirmed in code):** a filled component's range is the 25th–75th percentile of the
+  places it came from, so a filled fee carries their spread. NC, OR and TX code no or almost no building-permit
+  fees, so 23 of 39 coded places get a permit fee from the pooled median: about $4,000 nominal (25th–75th
+  percentile $2,600–$5,700), from 12 Minnesota places and 1 Texas place. In effect, Minnesota's permit and
+  plan-review costs stand in for NC, OR and TX. Coding one or two permit schedules per state would replace
+  that. For building types with fewer than 5 coded places, the house prior is used.
+- **Result on coded places** (`docs/research/fee-levels-vs-handbook.md`; 2025 dollars, house): median $9,148
+  MN, $9,632 NC, $9,461 TX, $33,553 OR. No coded place reaches $50,000. That is the D4 caveat (office hours A4).
+- **Conflict to settle: Eugene.** On 2026-11-04 Ben kept Eugene on the Handbook prior, because its stormwater
+  SDC is unchecked and its `amount_per_unit_usd` is blank (lower bound for a house $14,441.89). D-065 removes
+  the $50,000 fallback, so Eugene now takes the pooled median (house $6,981), well below its known lower bound.
+  Options: (a) code Eugene's known components and treat stormwater as the missing part (range from the lower
+  bound up); (b) keep a place-level override to the Handbook figure for Eugene only. Until Ben decides, Eugene
+  is a transfer-state place outside the development run, and no published number uses it.
+- **Decided by:** Ben, 2026-11-09 (schema columns; start of Phase 1). Building-type fallbacks, the CPI cap and
+  the P25–P75 range for filled fees were written by Claude Code, for Ben to confirm in the PR.
+  **Status:** built and tested; not run.

@@ -46,3 +46,29 @@ def test_long_quotes_and_bad_components_are_rejected(tmp_path):
     )
     with pytest.raises((pandera.errors.SchemaError, pandera.errors.SchemaErrors)):
         load_fees("zz", tmp_path)
+
+
+def test_range_and_in_force_columns_are_checked(tmp_path):
+    ok = {
+        **ROW,
+        "amount_per_unit_low_usd": 1200.0,
+        "amount_per_unit_high_usd": 1800.0,
+        "in_force_through": 2027,
+    }
+    _write(tmp_path, [ok])
+    df = load_fees("zz", tmp_path)
+    assert df.loc[0, "amount_per_unit_high_usd"] == 1800.0 and df.loc[0, "in_force_through"] == 2027
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"amount_per_unit_low_usd": 1600.0},  # low above the central 1,500
+        {"amount_per_unit_high_usd": 1400.0},  # high below it
+        {"in_force_through": 2025},  # in force through a year before the row's own year (2026)
+    ],
+)
+def test_bad_ranges_and_in_force_years_are_rejected(tmp_path, bad):
+    _write(tmp_path, [{**ROW, **bad}])
+    with pytest.raises((pandera.errors.SchemaError, pandera.errors.SchemaErrors)):
+        load_fees("zz", tmp_path)

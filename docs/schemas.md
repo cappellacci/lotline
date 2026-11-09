@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.10** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.11** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -231,7 +231,7 @@ One row per reform component, coded with the protocol §5.4 rubric (a vector, no
 
 Development fees by jurisdiction, year, component and building type (protocol §5.9). Water/sewer is its own component. A fee charged as a percent of value goes in `pct_of_value` with `basis = "pct_of_value"`; a mixed fee is two rows (e.g. Raleigh: a per-unit amount plus a percent).
 
-Table checks: `one_row_per_key`
+Table checks: `one_row_per_key`, `range_brackets_central`
 
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
@@ -239,12 +239,15 @@ Table checks: `one_row_per_key`
 | `jurisdiction_geoid` | text | yes | no |  |
 | `year` | integer | yes | no | ≥ 1970; ≤ 2100 |
 | `effective_date` | date | no | yes |  |
+| `in_force_through` | integer | no | yes | ≥ 1970; ≤ 2100 |
 | `fee_component` | text | yes | no | one of `water_sewer`, `impact`, `permit`, `planning`, `other` |
 | `fee_type` | text | yes | no |  |
 | `building_type_std` | text | yes | no | one of `SFD`, `ADU`, `TH`, `U2`, `U3_4`, `U5_6`, `U7P`, `DTQ`, `MF5`, `OTHER`, `UNKNOWN` |
 | `basis` | text | yes | no | one of `per_unit`, `per_sqft`, `per_lue`, `pct_of_value`, `flat`, `other` |
 | `amount_usd` | number | yes | yes | ≥ 0 |
 | `amount_per_unit_usd` | number | yes | yes | ≥ 0 |
+| `amount_per_unit_low_usd` | number | no | yes | ≥ 0 |
+| `amount_per_unit_high_usd` | number | no | yes | ≥ 0 |
 | `pct_of_value` | number | no | yes | ≥ 0; ≤ 100 |
 | `dollar_year` | integer | yes | no | ≥ 1970; ≤ 2100 |
 | `payment_timing` | text | no | yes |  |
@@ -384,3 +387,4 @@ Validation scorecard rows for the state (validation plan §5): one row per check
 | 1.8 | market_geo_year: optional demand_bartik, demand_bartik_loo, demand_imputed_share (shift-share local demand index, C04); eligible_parcels: denominator_source value parcels_scaled_acs (#208) |
 | 1.9 | eligible_parcels: denominator_source value parcels_interpolated (years between two real parcel rolls, D-035 addendum) |
 | 1.10 | results bundle tables (results_meta, results_draws, results_funnel, results_totals, results_need, results_scorecard): the engine-to-app contract, kept apart from the canonical input tables (#310) |
+| 1.11 | fees: optional amount_per_unit_low_usd and amount_per_unit_high_usd (range of a fee that varies by area, basin, tier or plat date) and in_force_through (an older row still in force; #247, D-066) |

@@ -27,8 +27,20 @@ central row's `notes` give the group's low and high as the range.
 - **Texas cases** (`scripts/dev/tx_fee_rule_2026_10_30.py`): SAWS water by elevation area and wastewater by
   basin; Austin parkland by density tier; Austin water and wastewater impact fees by plat date; Fort Worth by
   plat cohort.
-- The fee scenario sums `amount_per_unit_usd`, so it uses the central value; using the range needs an engine
-  change (WS-CORE).
+- The central row also carries the group's range in `amount_per_unit_low_usd` and `amount_per_unit_high_usd`
+  (schema 1.11, #247; written by `scripts/dev/fee_ranges_2026_11_09.py`). The fee scenario uses the central
+  value as its central fee and draws within the range in each simulation draw (D-066).
+
+**Older rows still in force (`in_force_through`, schema 1.11, #247).** For each place and fee component the
+engine counts the newest schedule year. A row from an older year counts too when its `in_force_through` reaches
+that newest year: set it when a schedule from another agency, or an impact-fee ordinance, is still current next
+to newer rows of the same component (Austin's 2023 water and wastewater impact fees; Bend Park & Recreation
+District's FY 2025-26 park SDC). Leave it blank when a newer schedule replaced the row.
+
+**How the engine reads these files.** `src/lotline/model/fee_levels.py` (D-065, D-066): per building type (a
+duplex or fourplex uses its own rows, then `OTHER` rows, then the place's house rows), in 2025 dollars, and with
+missing permit and water/sewer charges filled from the median of coded places. The result for every coded place
+is in `docs/research/fee-levels-vs-handbook.md` (`scripts/dev/fee_levels_table.py`).
 
 **Batch 1 (2026-10-20).** `mn.csv`, `nc.csv` and `tx.csv` come from `docs/research/ordinances/batch1-2026-10-20.json`
 (15 of 23 cities have usable rows). Rebuild with `uv run python scripts/dev/ordinance_records.py`. No row is

@@ -40,8 +40,10 @@ def test_central_values_by_hand(totals):
     assert totals["4865000"] == pytest.approx(4908 + 2073)
     # Fort Worth: newest plat cohort, collected from 2026-10-01, 5/8 x 3/4-inch meter
     assert totals["4827000"] == pytest.approx(2990 + 2838)
-    # Austin: one parkland tier (medium density, $6,009.04), not all three
-    assert totals["4805000"] < 10_000
+    # Austin: one parkland tier (medium density, $6,009.04), not all three; the 2023 impact fees of the newest
+    # plat cohort ($4,800 + $2,900) are in force through 2026, so they count next to the 2026 meter, tap and
+    # inspection charges ($111.30 + $200.22 + $107.90; #247); building permit $334.74
+    assert totals["4805000"] == pytest.approx(6009.04 + 4800 + 2900 + 111.30 + 200.22 + 107.90 + 334.74)
 
 
 def test_dallas_has_no_utility_impact_fee(fees, totals):
