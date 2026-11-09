@@ -194,6 +194,53 @@ def find_bundles(results_dir: Path = RESULTS_DIR) -> list[Path]:
     return sorted(Path(results_dir).glob("*/bundle.json"))
 
 
+# The published app is built in CI from a GitHub release (no data is committed): scripts/publish_app.py
+# stages these files and uploads them, and .github/workflows/pages.yml downloads them and builds the page.
+BUNDLE_ASSET = "{state}.bundle.json"
+SUMMARY_ASSET = "data-summary.json"
+
+
+def stage_release(
+    out: Path, results_dir: Path = RESULTS_DIR, data_summary: Path | None = DATA_SUMMARY
+) -> list[Path]:
+    """Copy every valid bundle under `results_dir` to `<out>/<st>.bundle.json`, named by the bundle's own
+    state code, plus the dashboard summary as `data-summary.json` when it exists. Returns the staged files.
+    Raises if there is no bundle or any bundle fails validation, so a bad run is never uploaded."""
+    paths = find_bundles(results_dir)
+    if not paths:
+        raise FileNotFoundError(f"no bundles under {results_dir}; run `lotline results --state XX` first")
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    for old in out.iterdir():
+        if old.is_file():
+            old.unlink()
+    states = {p: load_bundle(p)["meta"]["state"] for p in paths}
+    dupes = sorted({s for s in states.values() if list(states.values()).count(s) > 1})
+    if dupes:
+        raise ValueError(f"more than one bundle for {dupes}")
+    staged = []
+    for p, state in states.items():
+        state_file(state)  # checks the code before it becomes a file name
+        f = out / BUNDLE_ASSET.format(state=state.lower())
+        f.write_bytes(p.read_bytes())  # byte-for-byte, so the release holds exactly what the run wrote
+        staged.append(f)
+    if data_summary is not None and Path(data_summary).exists():
+        f = out / SUMMARY_ASSET
+        f.write_bytes(Path(data_summary).read_bytes())
+        staged.append(f)
+    return staged
+
+
+def release_inputs(folder: Path) -> tuple[list[Path], Path | None]:
+    """The bundles and dashboard summary in a downloaded release folder, as `build_app` takes them."""
+    folder = Path(folder)
+    bundles = sorted(folder.glob(BUNDLE_ASSET.format(state="*")))
+    if not bundles:
+        raise FileNotFoundError(f"no *.bundle.json in {folder}")
+    summary = folder / SUMMARY_ASSET
+    return bundles, summary if summary.exists() else None
+
+
 def load_bundle(path: Path) -> dict:
     """A bundle as the page embeds it: the JSON document, after `read_bundle` has validated every table."""
     from lotline.model.results import read_bundle

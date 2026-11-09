@@ -83,11 +83,15 @@ def year_shape(half: float, slope: float, horizon: int = HORIZON) -> np.ndarray:
 
 def dose_pools(places: pd.DataFrame, min_coded: int) -> dict:
     """Doses of coded places by size band, for places with no coded rule (D-022): the band's coded doses if
-    it has at least `min_coded`, else every coded place in the state; empty if none is coded (then d = 0)."""
-    coded = places[places["dose"].notna()]
-    every = coded["dose"].to_numpy(float)
+    it has at least `min_coded`, else every coded place in the state; empty if none is coded (then d = 0).
+
+    D-067: the pool holds each coded place's `pool_dose` (its dose at the origin) where that column is
+    given, so a place's own 2026-27 rule changes its own dose but not what uncoded places draw."""
+    col = "pool_dose" if "pool_dose" in places else "dose"
+    coded = places[places[col].notna()]
+    every = coded[col].to_numpy(float)
     return {
-        b: (g["dose"].to_numpy(float) if len(g) >= min_coded else every) for b, g in coded.groupby("band")
+        b: (g[col].to_numpy(float) if len(g) >= min_coded else every) for b, g in coded.groupby("band")
     } | {"all": every}
 
 
@@ -267,6 +271,13 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     coded = set(mm_rows["jurisdiction_geoid"])
     places["dose"] = [
         current_dose(mm_rows[mm_rows["jurisdiction_geoid"] == g], as_of, cov, blanks, permit_grade)
+        if g in coded else np.nan
+        for g in places["geoid"]
+    ]  # fmt: skip
+    # D-067: the pool uncoded places draw from holds the coded places' doses at the origin
+    at_origin = pd.Timestamp(f"{origin}-12-31")
+    places["pool_dose"] = [
+        current_dose(mm_rows[mm_rows["jurisdiction_geoid"] == g], at_origin, cov, blanks, permit_grade)
         if g in coded else np.nan
         for g in places["geoid"]
     ]  # fmt: skip

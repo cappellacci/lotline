@@ -120,8 +120,31 @@ def test_overlap_flag_on_the_weighted_median_distance():
     assert results.weighted_median([3.0, 1.0, 2.0], [1.0, 1.0, 1.0]) == 2.0
 
 
+def _baseline_panel() -> pd.DataFrame:
+    """Two synthetic places, 2010-2025, fixed counts per size class (for the fixture's `baseline` part)."""
+    rows = []
+    for geoid, county, parcels, units in (
+        ("Z1", "C1", 4000, (30, 4, 6, 40)),
+        ("Z2", "C1", 1500, (9, 0, 2, 0)),
+    ):
+        for year in range(2010, 2026):
+            row = {
+                "state": "ZZ",
+                "geoid": geoid,
+                "county_geoid": county,
+                "year": year,
+                "eligible_parcels": parcels,
+            }
+            for s, u in zip(("1", "2", "3_4", "5p"), units, strict=True):
+                u = u + (year % 3)  # some year-to-year spread
+                row[f"units_{s}"] = u
+                row[f"units_{s}_rep"] = u
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
 def make_fixture() -> dict[str, pd.DataFrame]:
-    """A small synthetic bundle for state ZZ (20 draws, ADU), with both housing-need kinds."""
+    """A small synthetic bundle for state ZZ (20 draws, ADU), with both housing-need kinds and a baseline."""
     n = 20
     rd = _run_draws(n=n, seed=7)
     d = results.adu_draws(_places(), rd, np.random.default_rng(11)).assign(state="ZZ")
@@ -135,7 +158,7 @@ def make_fixture() -> dict[str, pd.DataFrame]:
                 "commit_sha": "0" * 40,
                 "run_at": "2026-11-06T00:00:00Z",
                 "engine_version": "0.0.1",
-                "schemas_version": "1.10",
+                "schemas_version": "1.12",
                 "config_hash": "0" * 64,
                 "origin_year": 2025,
                 "horizon_years": 5,
@@ -163,7 +186,19 @@ def make_fixture() -> dict[str, pd.DataFrame]:
             }
         ]
     )
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard}
+    base = results.baseline_table(_baseline_panel(), "ZZ", 2025)
+    permits = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["Z1"] * 6 + ["Z2"] * 2,
+            "issue_year": [2020, 2021, 2023, 2024, 2025, 2025, 2022, 2025],
+            "source": "zz_permits",
+            "building_type_std": ["ADU"] * 7 + ["SFD"],
+            "adu_type": None,
+        }
+    )
+    juris = pd.DataFrame({"geoid": ["Z1", "Z2", "Z3"], "pop_2020": [6000, 2000, 2000]})
+    seen = results.observed_table(_baseline_panel(), permits, juris, "ZZ", 2025)
+    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}
 
 
 def test_bundle_round_trips(tmp_path):

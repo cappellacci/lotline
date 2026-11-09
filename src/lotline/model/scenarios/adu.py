@@ -546,6 +546,34 @@ def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
     return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
 
 
+def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states, state: str) -> pd.DataFrame:
+    """D-068: priors for the places a state ADU law leaves out, from the coded places of the states without
+    such a law (`law_states` are those whose law is coded row by row, `adu_state_law_rows_complete`).
+
+    For each size band: the mean P(type) of those states' coded places in the band if at least `min_count`
+    are coded there; else their pooled mean. Rows are labelled `state` so `apply_priors` reads them for it.
+    By hand: no-law places in band 0, 3 Handbook-equivalent and 2 'none', min_count 5 -> p_handbook 0.6,
+    p_none 0.4; flagged states' places never count.
+    """
+    pool = coded[~coded["state"].isin(set(law_states))]
+    pool = pool.assign(band=size_band(pool["population"], edges))
+    rows = []
+    for band in range(len(edges) + 1):
+        own = pool[pool["band"] == band]
+        use, src = (own, "band") if len(own) >= min_count else (pool, "all bands")
+        rows.append(
+            {
+                "state": state,
+                "band": band,
+                "n_coded": len(own),
+                "source": f"states without a coded state ADU law, {src}",
+                **use[list(P_COLS)].mean().to_dict(),
+            }
+        )
+    out = pd.DataFrame(rows)
+    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+
+
 def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFrame:
     """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`."""
     out = places.assign(band=size_band(places["population"].fillna(0), edges))
@@ -1065,39 +1093,60 @@ def coverage_map(state: str, store, reforms: pd.DataFrame, params: Mapping[str, 
     return pd.DataFrame(rows, columns=["reform_id", "geoid", "coverage", "how"])
 
 
-def rule_inputs(state: str, store, geoids, as_of: pd.Timestamp) -> tuple[pd.DataFrame, dict]:
+def rule_inputs(
+    state: str, store, geoids, as_of: pd.Timestamp, prior_as_of: pd.Timestamp | None = None
+) -> tuple[pd.DataFrame, dict]:
     """Rule-type probabilities for `geoids` in `state` (D-021, D-022), and the counts behind them.
 
     Field probabilities come from every state's coded rules in force (`field_restrict_counts`); coverage from
     each rule's zones and lot minimum on the place's parcels (`coverage_map`); priors for places with no ADU
     row from the coded places of every state, by state and size band (`rule_priors`). Reads
     config/reforms/*.csv at run time, so newly coded rules shrink the unknowns with no code change.
+
+    Dates (D-067): each place's own rules are read on `as_of`; what a place borrows (field probabilities and
+    the coded places behind the priors) on `prior_as_of` (default `as_of`). `info["coded"]` holds the coded
+    places on `as_of` (their own rules, used by `county_mix`); `info["coded_prior"]` those behind the priors.
+
+    D-068: in a state flagged `adu_state_law_rows_complete`, a place with no ADU row is outside the state law,
+    so it takes `no_state_rule_priors` (coded places of the unflagged states, by size band).
     Returns (table: geoid, rule_class, p_* over TYPES, coverage, rule_age, …, prior_source; info dict).
     """
     from lotline.config import load_state
 
+    prior_as_of = as_of if prior_as_of is None else prior_as_of
     p = load_params("adu")
     central = {k: v.value for k, v in p.items()}
     min_count = int(central["adu_rule_min_coded"])
     edges = (central["adu_rule_band_small_max_pop"], central["adu_rule_band_mid_max_pop"])
     reforms = {st: load_reforms(st).assign(state=st) for st in REFORM_STATES}
-    counts = field_restrict_counts(pd.concat(reforms.values(), ignore_index=True), as_of)
-    coded, covs = [], {}
-    for st, r in reforms.items():
-        cm = coverage_map(st, store, r, central)
-        covs[st] = cm
-        local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
-        if not local:
-            continue
-        fp = field_probabilities(counts, st, min_count)
-        cr = current_rules(
-            r, local, load_state(st).fips, as_of, fp, dict(zip(cm.reform_id, cm.coverage, strict=True))
+    counts = field_restrict_counts(pd.concat(reforms.values(), ignore_index=True), prior_as_of)
+    covs = {st: coverage_map(st, store, r, central) for st, r in reforms.items()}
+
+    def coded_on(date: pd.Timestamp) -> pd.DataFrame:
+        out = []
+        for st, r in reforms.items():
+            local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
+            if not local:
+                continue
+            cm = covs[st]
+            fp_st = field_probabilities(counts, st, min_count)
+            cr = current_rules(
+                r, local, load_state(st).fips, date, fp_st, dict(zip(cm.reform_id, cm.coverage, strict=True))
+            )
+            cr = cr[cr["rule_class"] != "unknown"]
+            pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
+            out.append(cr.assign(state=st, population=cr["geoid"].map(pop).astype(float)))
+        return pd.concat(out, ignore_index=True)
+
+    coded_prior = coded_on(prior_as_of)
+    coded = coded_prior if prior_as_of == as_of else coded_on(as_of)
+    priors = rule_priors(coded_prior.dropna(subset=["population"]), edges, min_count)
+    law_states = {st for st in REFORM_STATES if load_state(st).adu_state_law_rows_complete}
+    if state in law_states:  # D-068: an uncoded place is outside the state law
+        outside = no_state_rule_priors(
+            coded_prior.dropna(subset=["population"]), edges, min_count, law_states, state
         )
-        cr = cr[cr["rule_class"] != "unknown"]
-        pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
-        coded.append(cr.assign(state=st, population=cr["geoid"].map(pop).astype(float)))
-    coded = pd.concat(coded, ignore_index=True)
-    priors = rule_priors(coded.dropna(subset=["population"]), edges, min_count)
+        priors = pd.concat([priors[priors["state"] != state], outside], ignore_index=True)
     fp = field_probabilities(counts, state, min_count)
     cm = covs[state]
     rules = current_rules(
@@ -1111,7 +1160,14 @@ def rule_inputs(state: str, store, geoids, as_of: pd.Timestamp) -> tuple[pd.Data
     pop = store.read(state, "jurisdictions").set_index("geoid")["pop_2020"]
     rules = rules.assign(state=state, population=rules["geoid"].map(pop).astype(float))
     rules = apply_priors(rules, priors, edges).drop(columns=["state", "band"])
-    info = {"field_counts": counts, "field_probs": fp, "priors": priors, "coded": coded, "coverage": covs}
+    info = {
+        "field_counts": counts,
+        "field_probs": fp,
+        "priors": priors,
+        "coded": coded,
+        "coded_prior": coded_prior,
+        "coverage": covs,
+    }
     return rules, info
 
 
@@ -1187,7 +1243,8 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     places["mortgage_rate"] = np.nan  # forward run: the rate path is a drawn parameter (market.yaml)
 
     as_of = baseline.rules_as_of(origin)  # D-064: rules already law by the end of the first window year
-    rules, info = rule_inputs(state, store, places["geoid"], as_of)
+    # D-067: what places without their own rule borrow comes from the rules at the origin
+    rules, info = rule_inputs(state, store, places["geoid"], as_of, pd.Timestamp(f"{origin}-12-31"))
     places = places.merge(rules, on="geoid", how="left")
     places = county_mix(places, state, store, origin, info["coded"])
 

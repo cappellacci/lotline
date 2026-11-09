@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.10"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.12"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -418,6 +418,10 @@ OVERLAP_FLAGS = ["high", "medium", "low"]
 FUNNEL_STAGES = ["legal", "pencils", "built"]
 RESULT_OUTCOMES = ["permits_added", "homes_in_place", "homes_net_statewide"]
 NEED_KINDS = ["household_growth_5y", "shortage_stock"]
+# BPS building sizes; "all" and "2_4" (missing middle: 2 and 3-4 units) are sums within each draw
+BASELINE_SIZE_CLASSES = ["all", "1", "2", "3_4", "5p", "2_4"]
+BASELINE_BASES = ["reported", "with_imputation"]
+OBSERVED_MEASURES = ["adu_permits", "homes_2_4"]
 VERDICTS = ["pass", "partial", "fail", "not_run"]
 _SHARE = {"ge": 0, "le": 1}
 
@@ -523,6 +527,51 @@ class ResultsNeed(_Strict):
     source: Series[str]
 
 
+class ResultsBaseline(_Strict):
+    """The baseline (no policy change): homes permitted statewide, P10/P50/P90 and mean, per BPS building size
+    and period (the five-year window, e.g. 2027-2031, or a single year). Each draw sums every modelled place;
+    "all" sums the four sizes within a draw, so its percentiles are not the sums of theirs.
+
+    `places` is how many places the baseline forecasts; `coverage_share` is their share of the units in every
+    BPS place in the state's panel in the origin year (null when that year has none). `basis` says whether
+    the counts are as reported to Census or include its imputation (`use_reported_only`)."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    size_class: Series[str] = pa.Field(isin=BASELINE_SIZE_CLASSES)
+    period: Series[str] = pa.Field(str_matches=r"^\d{4}(-\d{4})?$")
+    p10: Series[float] = pa.Field(ge=0)
+    p50: Series[float] = pa.Field(ge=0)
+    p90: Series[float] = pa.Field(ge=0)
+    mean: Series[float] = pa.Field(ge=0)
+    places: Series[pd.Int64Dtype] = pa.Field(ge=0)
+    coverage_share: Series[float] = pa.Field(nullable=True, **_SHARE)
+    basis: Series[str] = pa.Field(isin=BASELINE_BASES)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "size_class", "period"]).any()
+
+
+class ResultsObserved(_Strict):
+    """What was actually permitted in the years before the window, so the page can set the forecasts beside
+    the state's own record. `adu_permits`: permits flagged as ADUs in local permit sources that flag them at
+    all (`adu.observed_adu_counts`), so a floor on the state; `places` and `population_share` say how much of
+    the state those sources cover. `homes_2_4`: homes in 2-4 unit buildings in every BPS place (`basis`).
+    Both come from the holdout-filtered data, so held-out places and years are missing."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    measure: Series[str] = pa.Field(isin=OBSERVED_MEASURES)
+    year: Series[pd.Int64Dtype] = pa.Field(ge=1990, le=2100)
+    value: Series[float] = pa.Field(ge=0)
+    places: Series[pd.Int64Dtype] = pa.Field(ge=0)
+    population_share: Series[float] = pa.Field(nullable=True, **_SHARE)
+    basis: Series[str] = pa.Field(isin=[*BASELINE_BASES, "flagged_permits"])
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "measure", "year"]).any()
+
+
 class ResultsScorecard(_Strict):
     """Validation scorecard rows for the state (validation plan §5): one row per check."""
 
@@ -543,6 +592,8 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_totals": ResultsTotals,
     "results_need": ResultsNeed,
     "results_scorecard": ResultsScorecard,
+    "results_baseline": ResultsBaseline,
+    "results_observed": ResultsObserved,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -616,6 +667,16 @@ HISTORY = [
         "1.10",
         "results bundle tables (results_meta, results_draws, results_funnel, results_totals, results_need, "
         "results_scorecard): the engine-to-app contract, kept apart from the canonical input tables (#310)",
+    ),
+    (
+        "1.11",
+        "results_baseline: the no-policy-change forecast in the results bundle (homes permitted statewide by "
+        "building size and period), so the app can show the level reforms add to",
+    ),
+    (
+        "1.12",
+        "results_observed: permits actually issued in the years before the window (ADU permits where local "
+        "data flag them; homes in 2-4 unit buildings from BPS); results_baseline size_class 2_4",
     ),
 ]
 
