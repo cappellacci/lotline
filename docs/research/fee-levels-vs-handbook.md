@@ -10,7 +10,7 @@ Fee per new unit in **2025 dollars**, from `config/fees/<st>.csv` under the rule
 |---|---|---|---|---|---|---|
 | MN | 13 | $3,385 | $9,148 | $17,839 | 18% | 0 |
 | NC | 16 | $7,146 | $9,632 | $18,425 | 19% | 0 |
-| OR | 4 | $6,981 | $33,553 | $40,240 | 67% | 0 |
+| OR | 4 | $21,863 | $33,553 | $40,240 | 67% | 0 |
 | TX | 6 | $5,286 | $9,461 | $14,905 | 19% | 0 |
 
 ## By place and building type
@@ -149,10 +149,10 @@ Fee per new unit in **2025 dollars**, from `config/fees/<st>.csv` under the rule
 | Bend city | House | $34,598 ($34,598–$34,598) | $38,953 ($37,183–$40,305) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
 | Bend city | Duplex (per unit) | $31,688 ($27,781–$33,623) | $34,365 ($30,228–$39,330) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 |
 | Bend city | 3-4 units (per unit) | $25,610 ($25,610–$25,610) | $28,154 ($27,201–$30,667) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
-| Eugene city | ADU | none coded | $6,099 ($3,677–$9,975) | pooled median |  |
-| Eugene city | House | none coded | $6,981 ($4,383–$10,037) | pooled median |  |
-| Eugene city | Duplex (per unit) | none coded | $6,677 ($3,832–$10,037) | pooled median |  |
-| Eugene city | 3-4 units (per unit) | none coded | $5,834 ($3,677–$9,975) | pooled median |  |
+| Eugene city | ADU | $13,242 ($13,242–$20,312) | $15,919 ($15,689–$26,019) | local + filled: permit (pooled median) | impact:2025 (from SFD), water_sewer:2025 |
+| Eugene city | House | $17,508 ($17,508–$25,365) | $21,863 ($20,093–$31,072) | local + filled: permit (pooled median) | impact:2025, water_sewer:2026 |
+| Eugene city | Duplex (per unit) | $13,242 ($13,242–$20,312) | $15,919 ($15,689–$26,019) | local + filled: permit (pooled median) | impact:2025 (from SFD), water_sewer:2025 |
+| Eugene city | 3-4 units (per unit) | $13,242 ($13,242–$20,312) | $15,786 ($14,833–$25,369) | local + filled: permit (pooled median) | impact:2025 (from SFD), water_sewer:2025 |
 | Portland city | ADU | $0 ($0–$0) | $2,677 ($2,447–$5,707) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
 | Portland city | House | $35,885 ($35,885–$35,885) | $40,240 ($38,470–$41,591) | local + filled: permit (pooled median) | impact:2026, water_sewer:2026 |
 | Portland city | Duplex (per unit) | $35,885 ($34,514–$37,255) | $38,562 ($36,961–$42,962) | local + filled: permit (pooled median) | impact:2026 (from SFD), water_sewer:2026 |
