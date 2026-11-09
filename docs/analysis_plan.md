@@ -4046,7 +4046,18 @@ Dated, append-only. Each entry says what changed from the research documents, wh
      the baseline. This changes results, so it needs its own decision. **Settled by D-064** (2026-11-08).
   2. *Housing-need denominator.* `household_growth_5y` (D-057) is the demographers' 2025 → 2030 change; the
      window is now 2027–2031. Matching it needs interpolation, using the 2035 projections where states publish
-     them. Until then the share compares slightly offset five-year periods.
+     them. Until then the share compares slightly offset five-year periods. **Settled 2026-11-09** (Ben,
+     2026-11-08, "Interpolate to 2026→2031"):
+     - The growth now runs from July 1, 2026 to July 1, 2031. The years come from the same window
+       (`housing_need.window_years`).
+     - A year the demographer publishes is used as is: MN and OR publish every year.
+     - Other years are read on the straight line between the nearest published years
+       (`housing_need.population_at`, never beyond them): NC and OH to 2035, TX to 2040.
+     - Each source's 2025 and 2030 were checked against its file, downloaded through `lotline.io.http.fetch`.
+       All match, except that Texas's low and high 2030 in its projections table differ from the state-total
+       file's by about 0.03%. The entries' notes say this.
+     - New central values: MN 45,989 (was 47,907); NC 205,251 (209,033); TX 675,323, range 578,694–835,119
+       (683,487, range 590,246–841,601); OH −33,316 (−29,225); OR 42,291 (39,640).
   3. *Bundle metadata.* `meta` records `origin_year` and `horizon_years` but not the window's first year. Adding
      that column is a schema change, which belongs to WS-CORE (a `contract-change` issue, opened as #333). The same issue
      should update the example period in `schemas.py` ("e.g. 2026-2030", which generates `docs/schemas.md`).

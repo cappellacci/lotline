@@ -5,50 +5,53 @@
 # vintage open each entry's notes.
 
 household_growth_5y_mn:
-  value: 47907
-  low: 47907
-  high: 47907
-  unit: households, 2025-2030
-  source: 'Minnesota State Demographic Center, Long-Term Population Projections (May 2024; statewide tab corrected 2024-07-01), sheet ''statewide total & components'', TotPop: https://mn.gov/admin/demography/data-by-topic/population-data/our-projections/
+  value: 45989
+  low: 45989
+  high: 45989
+  unit: households, mid-2026 to mid-2031
+  source: 'Minnesota State Demographic Center, Long-Term Population Projections (May 2024; statewide tab corrected 2024-07-01), sheet ''statewide total & components'', TotPop (annual): https://mn.gov/admin/assets/2024-Minnesota-Long-Term-Population-Projections%20v3_tcm36-626199_tcm36-626199.xlsx
     ; times households per person, ACS 2020-2024 B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html); derived, analysis plan D-057'
-  notes: 'kind: household_growth_5y; vintage: 2024-05 (base 2020 Census); ACS 2020-2024. Population 5,804,400 -> 5,923,535 (change +119,135) x 0.4021 households per person (constant headship: no state demographer
-    publishes households). one series: low = high.'
+  notes: 'kind: household_growth_5y; vintage: 2024-05 (base 2020 Census); ACS 2020-2024. Population 5,830,008 (July 2026) -> 5,944,374 (July 2031) (change +114,366; 2026 published, 2031 published) x 0.4021
+    households per person (constant headship: no state demographer publishes households). one series: low = high.'
 household_growth_5y_nc:
-  value: 209033
-  low: 209033
-  high: 209033
-  unit: households, 2025-2030
-  source: 'NC Office of State Budget and Management, county/state population projections, Vintage 2025B (state row 37000, total): https://www.osbm.nc.gov/facts-figures/population-demographics/state-demographer/countystate-population-projections
+  value: 205251
+  low: 205251
+  high: 205251
+  unit: households, mid-2026 to mid-2031
+  source: 'NC Office of State Budget and Management, county/state population projections, Vintage 2025B (Population Summary, row STATE; July 1, five-year steps): https://www.osbm.nc.gov/facts-figures/population-demographics/state-demographer/countystate-population-projections
     ; times households per person, ACS 2020-2024 B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html); derived, analysis plan D-057'
-  notes: 'kind: household_growth_5y; vintage: Vintage 2025B (based on Vintage 2024 estimates; page updated 2026-05-26); ACS 2020-2024. Population 11,171,526 -> 11,695,306 (change +523,780) x 0.3991 households
-    per person (constant headship: no state demographer publishes households). one series: low = high.'
+  notes: 'kind: household_growth_5y; vintage: Vintage 2025B (based on Vintage 2024 estimates; page updated 2026-05-26); ACS 2020-2024. Population 11,276,282 (July 2026) -> 11,790,587 (July 2031) (change
+    +514,305; 2026 interpolated 2025-2030, 2031 interpolated 2030-2035) x 0.3991 households per person (constant headship: no state demographer publishes households). one series: low = high.'
 household_growth_5y_tx:
-  value: 683487
-  low: 590246
-  high: 841601
-  unit: households, 2025-2030
-  source: 'Texas Demographic Center, Vintage 2024 population projections, state totals by migration scenario (mid = value, low and high scenarios = range): https://www.demographics.texas.gov/Projections/2024/
-    ; times households per person, ACS 2020-2024 B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html); derived, analysis plan D-057'
-  notes: 'kind: household_growth_5y; vintage: Vintage 2024 (state released 2025-03); ACS 2020-2024. Population 31,669,507 -> 33,546,497 (change +1,876,990) x 0.3641 households per person (constant headship:
-    no state demographer publishes households). low/high from the low and high migration scenarios.'
+  value: 675323
+  low: 578694
+  high: 835119
+  unit: households, mid-2026 to mid-2031
+  source: 'Texas Demographic Center, Vintage 2024 population projections, state totals by migration scenario (mid = value, low and high scenarios = range); 2040 = the sum of the 254 counties in the Center''s
+    projections table (api/Tpepp/Projections/Totals/<scenario>, 2026-11-09): https://www.demographics.texas.gov/Projections/2024/ ; times households per person, ACS 2020-2024 B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html);
+    derived, analysis plan D-057'
+  notes: 'kind: household_growth_5y; vintage: Vintage 2024 (state released 2025-03); ACS 2020-2024. Population 32,044,905 (July 2026) -> 33,899,473 (July 2031) (change +1,854,568; 2026 interpolated 2025-2030,
+    2031 interpolated 2030-2040) x 0.3641 households per person (constant headship: no state demographer publishes households). low/high from the low and high migration scenarios. The projections table''s
+    2030 equals 33,546,497 (mid) exactly; its low and high 2030 (33,231,860 and 34,057,438) differ from the state-total file''s by about 9,000 (0.03%), so the low and high 2031 carry that much uncertainty.'
 household_growth_5y_oh:
-  value: -29225
-  low: -29225
-  high: -29225
-  unit: households, 2025-2030
-  source: 'Ohio Department of Development, Office of Research, 2020-2050 population projections (Projections-by-County.xlsx, row Ohio, Total_TOT): https://dam.assets.ohio.gov/raw/upload/development.ohio.gov/research/pop1/Projections-by-County.xlsx
+  value: -33316
+  low: -33316
+  high: -33316
+  unit: households, mid-2026 to mid-2031
+  source: 'Ohio Department of Development, Office of Research, 2020-2050 population projections (Projections-by-County.xlsx, row Ohio, Total_TOT; five-year steps): https://dam.assets.ohio.gov/raw/upload/development.ohio.gov/research/pop1/Projections-by-County.xlsx
     ; times households per person, ACS 2020-2024 B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html); derived, analysis plan D-057'
-  notes: 'kind: household_growth_5y; vintage: 2020-2050 series (2023 report; base 2020 Census); ACS 2020-2024. Population 11,765,739 -> 11,694,767 (change -70,972) x 0.4118 households per person (constant
-    headship: no state demographer publishes households). one series: low = high. Negative: the projection falls, so the headline uses the shortage.'
+  notes: 'kind: household_growth_5y; vintage: 2020-2050 series (2023 report; base 2020 Census); ACS 2020-2024. Population 11,751,545 (July 2026) -> 11,670,637 (July 2031) (change -80,907; 2026 interpolated
+    2025-2030, 2031 interpolated 2030-2035) x 0.4118 households per person (constant headship: no state demographer publishes households). one series: low = high. Negative: the projection falls, so the
+    headline uses the shortage.'
 household_growth_5y_or:
-  value: 39640
-  low: 39640
-  high: 39640
-  unit: households, 2025-2030
-  source: 'Oregon Office of Economic Analysis, state population forecast, Appendix C (July 1 population): https://www.oregon.gov/das/oea/Documents/appendixc.pdf ; times households per person, ACS 2020-2024
-    B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html); derived, analysis plan D-057'
-  notes: 'kind: household_growth_5y; vintage: OEA forecast file of 2026-08 (2025 is an estimate, 2030 a forecast); ACS 2020-2024. Population 4,301,164 -> 4,399,300 (change +98,136) x 0.4039 households per
-    person (constant headship: no state demographer publishes households). one series: low = high.'
+  value: 42291
+  low: 42291
+  high: 42291
+  unit: households, mid-2026 to mid-2031
+  source: 'Oregon Office of Economic Analysis, state population forecast, Appendix C (July 1 population, annual): https://www.oregon.gov/das/oea/Documents/appendixc.pdf ; times households per person, ACS
+    2020-2024 B11001_001 / B01003_001 (https://www.census.gov/data/developers/data-sets/acs-5year.html); derived, analysis plan D-057'
+  notes: 'kind: household_growth_5y; vintage: OEA forecast file of 2026-08 (2025 is an estimate, later years a forecast); ACS 2020-2024. Population 4,314,400 (July 2026) -> 4,419,100 (July 2031) (change
+    +104,700; 2026 published, 2031 published) x 0.4039 households per person (constant headship: no state demographer publishes households). one series: low = high.'
 shortage_stock_ak:
   value: 4205
   low: 4205
