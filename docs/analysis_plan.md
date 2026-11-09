@@ -4435,3 +4435,69 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Run E is also the first official run with the baseline part (schemas 1.11).
   - Page: Finding 7 of https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs (version 3), with the permits
     actually issued in 2021–2025 (`scripts/dev/observed_permits.py`, `reports/results-2026-11-09/observed.json`).
+
+### D-071 · 2026-11-09 · V5 Charlotte blind forward test: what is frozen and how it is made (method only, before any run)
+- **Status:** method written before any Charlotte prediction was made (issue #45; validation plan V5). The
+  freeze uses the missing-middle fit on `main` at the freeze commit (`mm_hazard.yaml`, D-054 values adopted
+  by D-055) and records the values, the commit and a hash of every config file read.
+- **What was looked at before writing (all before the window or not Charlotte outcomes):** the pre-UDO roll
+  (169,314 N1 lots, `reports/nc/V5-charlotte-inputs.md`); the six-town prior in `config/params/v5_charlotte.yaml`;
+  BPS Mecklenburg County (37119) 2-4 unit buildings 2011-2022 through the holdout filter (2020: 31, 2021: 22,
+  2022: 46); Charlotte's pre-window permits by type and year to 2023-05-31; Charlotte's ACS 2022 rent; the
+  coded Mecklenburg missing-middle rules (Charlotte UDO 2023; Cornelius 2018, before the baseline years). No
+  Charlotte or Mecklenburg outcome from 2023-06-01 was read.
+- **Fit used, and Charlotte's place in it.** `estimate_mm.build_panel` drops Charlotte, Mecklenburg County and
+  every place in it (`_excluded_holdout`), so the D-054/D-055 fit that set θ, α and the ramp never saw
+  Charlotte. Nothing is refitted for V5.
+- **Target (primary; the pass rule applies to it).** New 2-4 unit buildings in Census BPS for Mecklenburg
+  County (37119, `bldgs_2 + bldgs_3_4`), the sum over calendar years 2023, 2024 and 2025, as P10/P50/P90 and
+  the mean of the predictive draws; each year also reported. BPS is the outcome the fit was estimated on, and
+  BPS has no Charlotte row: Charlotte-Mecklenburg Code Enforcement files Charlotte's, the six towns' and the
+  unincorporated county's permits under 37119 (D-012, #123). So the target is county-level, and the towns'
+  and county's building sits in the baseline. BPS is annual: January-May 2023 (before the UDO) is in the
+  2023 count, and the model treats 2023 as the first event year as the fit does (rule in force on 1 July).
+- **Secondary targets (reported, not the pass rule).** (a) Homes in those buildings (`units_2 + units_3_4`),
+  2023-2025. (b) The added buildings on Charlotte's N1 lots alone (the reform part of the draw), for a
+  descriptive comparison with Charlotte permits on N1 lots if a post-window permit file with a zoning field
+  is obtained (the legacy Mecklenburg file thins out in 2025 with the move to Accela); any such comparison is
+  labelled exploratory.
+- **Model (as D-038/D-042 and V9's missing-middle part, D-051).** For year t = 2023, 2024, 2025:
+
+      buildings_t = Poisson(B) + Poisson(θ u E (d_UDO − d_pre) F(PCR)/F(1) ramp(t − 2023 + 0.5))
+
+  - **B:** 37119's mean 2-4 unit buildings over 2020-2022 (T − 3 … T − 1, the fit's β), held flat. D-054's
+    own-growth index needs 37119's 2023+ one-unit and 5+ unit permits, which are blind, so it is not used
+    (as V9). Known bias, stated now: if other building in Mecklenburg rose or fell after 2022, B misses it.
+  - **E (N1 lots that could take a duplex or triplex):** 169,314 N1 lots (`clt_v5.n1_lots` on the pre-UDO
+    roll, vintage 2023-05-31) × s, s ~ triangular(low, value, high) with low = `n1_sf_share.low +
+    n1_vacant_share.low` (0.582), value = the sum of the pooled values (0.851), high = the sum of the highs
+    (0.961). Summing the ends is wider than any single town (0.650-0.933): the conservative reading of the
+    prior, which the inputs report says may overstate Charlotte's vacant lots.
+  - **Dose:** D-024's dose of the UDO row (`NC-3712000-missing_middle-2023`, cap 3 → units grade 2/3,
+    `by_right` blank → D-022's coded share from the four fit states, `mm_dose_grade_permit`), coverage 1
+    because E already counts only N1 lots. d_pre = the dose in force on 1 July 2022 (0: no Charlotte
+    missing-middle rule before the UDO). The 2024 proposal to limit triplexes to corner lots (text amendment
+    2024-067) is not coded and is not modelled.
+  - **F(PCR)/F(1):** a rental duplex's price-to-cost from Charlotte's newest ACS 5-year median rent ending
+    ≤ 2022 and the 2022 construction cost index (`estimate_mm.plex_price_to_cost`,
+    `calibrate_mm.feasibility_ratio`, `developer_margin`, `mm_feasibility_dispersion`), as V9.
+  - **No annual input after 2022** (the holdout's annual rule; ACS 2023+ counts homes built in the window).
+- **Uncertainty.** `mm_scenario_draws` draws, seed `mm_scenario_seed`. Per draw: θ and α lognormal from their
+  90% intervals (median at the estimate, as V9's `mm_draws`); one Charlotte multiplier u ~ Gamma(mean 1,
+  variance α) shared across the three years; s triangular as above; independent Poisson noise per year and
+  component. Held at their values: the ramp half-way point and slope, σ (D-038 fitted them with θ).
+- **Freeze.** `scripts/dev/v5_clt_predict.py --freeze` writes `results/frozen/V5-NC-CHARLOTTE.json` once
+  (refuses to overwrite), with the commit, draws, seed, inputs, parameter values, sha256 of the processed
+  input tables and of the config files read. A dry run (`--out`) is a prediction only and is not committed.
+- **Scoring (after the freeze is on `main` and Ben asks to unblind).** Release the holdout in
+  `config/states/nc.yaml` (`released_on`, `released_note`), read BPS 37119 for 2023-2025 and compute:
+  - **Pass rule:** the observed 2023-2025 sum lies within P10-P90 of the frozen draws. With one case this is a
+    demonstration, not proof, and is presented that way.
+  - Also: D-040's verdict (useful: inside and P50 within ×2), randomized PIT coverage (D-003), CRPS against a
+    no-reform benchmark (Poisson(B) each year), and each year's position. Secondary (a) is scored the same
+    way. The failed or passed result stays in the report whatever happens next; any change to the model
+    after unblinding is a new dated entry.
+- **Expected direction, before any run:** the median close to the baseline (about 100 buildings over three
+  years) and a long right tail from u, because α is large (8.4) and Charlotte is one place.
+- **Decided by:** Ben (V5 design, validation plan; option (b) prior, 2026-10-21; freeze now, 2026-11-09).
+  Written by Claude Code before any code or run.
