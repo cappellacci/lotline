@@ -435,7 +435,7 @@ def write(df: pd.DataFrame, out_dir: Path = OUT_DIR) -> list[Path]:
     for state, g in df.groupby("state"):
         g = g.sort_values(["jurisdiction_geoid", "year", "fee_component", "fee_type", "building_type_std"])
         path = out_dir / f"{state.lower()}.csv"
-        g[cols].to_csv(path, index=False)
+        g.reindex(columns=cols).to_csv(path, index=False)  # optional columns absent from records stay blank
         load_fees(state, out_dir.parent)
         paths.append(path)
     return paths
