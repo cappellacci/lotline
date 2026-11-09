@@ -4606,6 +4606,24 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     adapter uses limits as of each permit's date, or the gap is otherwise explained.
   - **42 Twin Cities metro townships (MN, Met Council): pass.** 3.0x BPS over 2021–25 (2.0–5.9x by
     year): Met Council's count is fuller than BPS here. 10 ADUs on 26,700 lots, 0.75 per 10,000 lots a year.
+  - **Durham County, followed up (same day):**
+    - **No permits look missing.** City and county together, Durham's permits are 1.20x BPS for 2021–25: city
+      1.23x, county 0.69x. City-County Inspections permits both, and the layer covers both.
+    - **BPS is a weak benchmark here.** Its Durham city row is 703 units in 2017 and 0 in 2018. Its county
+      rows for 2023–25 are imputed (6, 11 and 9 months reported).
+    - **The split looks like the issue, not coverage.** County single-family permits match BPS in 2023–24
+      (65 vs 64, 95 vs 81) but run about 45% of it in 2019–22.
+    - **The adapter already re-dates annexations from 2013 on** (#94), so permits in 2021–25 are placed by the
+      limits in force when issued, as far as the approved-annexation layer allows. The layer has no
+      jurisdiction field (fields checked: TYPE is RESI/NON_RESI/MULTI_FAMILY; permit numbers carry no
+      jurisdiction), so the split can't be read from the permits.
+    - **An independent count isn't available yet.** Durham's parcels in the store (NC OneMap) have
+      `year_built` on 0.25% of rows, against 60–85% in most counties, so new homes on the ground can't be
+      counted to arbitrate.
+    - **Open, for Ben:** either (a) apply the coverage rule to the issuing office's combined area where BPS
+      itself is imputed or broken (Durham passes at 1.20x; county ADU rate 0.22), or (b) keep Durham County
+      out until an independent count (Durham County's own parcel layer with year built, a new source)
+      settles the split. Until decided it stays out.
   - **So, today:** the metro unincorporated cell rests on the MN townships alone (42 places, 10 ADUs; exactly
     at the proposed minimum). No NC county area passes. Micropolitan and non-CBSA cells have no sampled place
     in any state. Before the cell levels can carry NC's county areas, the cheapest evidence to add is

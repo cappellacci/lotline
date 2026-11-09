@@ -32,3 +32,9 @@
     - MN metro townships (Met Council) 3.0x BPS: pass.
   - Added a coverage rule (at least 0.8 of BPS) before any run. The metro unincorporated cell now rests on
     the MN townships alone.
+- **Durham County follow-up:**
+  - City and county permits together are 1.20x BPS (2021–25); no permits look missing. The county's 0.69 is
+    a city/county split question.
+  - BPS's own Durham rows are broken or imputed in several years.
+  - No independent count is possible yet: Durham parcels in the store have no year built.
+  - Decision for Ben (combined-office test, or a new Durham parcel source) recorded in D-072.
