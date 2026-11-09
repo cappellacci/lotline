@@ -1,0 +1,37 @@
+### LB-NNN · 2026-11-07 · `missing-middle` · Lubbock second coder, the five-year-rate range, the scenario module's definition
+
+- **Question:** after D-059, what was Lubbock's missing-middle rule really; how should the scenario carry the
+  θ–ramp ridge; and what should `model/scenarios/mm.py` compute?
+- **Outputs:**
+  - `docs/research/ordinances/tx-second-coder-lubbock-2026-11-07.csv` and `.md`: second-coder row for
+    `TX-4845000-missing_middle-2023`. Partly agrees: the 2023 cells hold; old R-2 (two-family) already allowed
+    duplexes and maps to MDR; the SF-2 gain is limited by the block-face rule. `tx.csv` not edited.
+  - `docs/analysis_plan.md` **D-062** (proposed, not run): put the scenario's range on the five-year rate
+    r5 = θ × mean ramp share, because θ's interval is profiled over every half-way point while V9 and the
+    scenario hold the ramp at 0.5 (top draws give ~0.85 per 1,000 a year against 0.04–0.10 at either peak).
+  - `docs/analysis_plan.md` **D-063** (proposed, no code): the Handbook missing-middle scenario: added
+    buildings ~ Poisson(h_t × u × E × (1 − current dose) × F(PCR)/F(1)), with four choices for Ben.
+- **What Claude did and how it was checked:** a fresh-context Claude subagent did the second coding from web
+  sources (Zoneomics mirror of Ch. 39, Lubbock staff reports); the first coder was also Claude, so this is not
+  a human second coder; sources and unverified points are listed. The m(half) values in D-062 were computed by
+  hand from `hazard.ramp`. No model run, no data read, no holdout touched.
+- **2026-11-08, D-062 run ("Run D-062"):** `calibrate_mm.ramp_mean` and `five_year_profile` (hand-worked tests
+  in `tests/model/test_calibrate_mm.py`), `scripts/dev/calibrate_mm_d062.py`, results in `reports/mm-d062/`,
+  page https://claude.ai/artifact/UJooP3X5oNfwCZ2vFvmJW7. The five-year rate is 0.104 per 1,000 a year
+  (0.027–0.85), 0.08–0.11 at every ramp speed. θ's top end is place spread at the fast ramp, not the slow
+  peak, so D-062's premise was wrong and the config range already matches. No config change proposed. The
+  main fit reproduced D-055's θ (asserted). Only fit-set place-years were read.
+- **2026-11-08, D-063 approved ("Approve D-063"); scenario module written:** `src/lotline/model/scenarios/mm.py`,
+  `tests/model/test_scenario_mm.py` (12 hand-worked tests: one place by hand, full dose adds nothing,
+  teardowns ≤ buildings, band dose draws, state total = sum of places run alone, current dose, house share),
+  four keys in `config/params/mm.yaml`. Two deviations recorded in D-063 (teardown formula; house share
+  from rolls). Loader checked on NC and MN inputs; no scenario output computed yet.
+- **2026-11-08, first scenario run ("Run five states"):** `scripts/dev/mm_scenario_run.py`, results in
+  `reports/mm-scenario-2026-11-08/`, page https://claude.ai/artifact/T7fwy1ke9B62Jm1Ea9FVNS. Net added homes
+  over five years, P50 (P10–P90): TX 5,968 (1,412–26,698), NC 1,478, OH 1,345, MN 884, OR 119. Checked:
+  page numbers against `summary.csv` and `inputs.json`; homes per building held at 2.08 run as a
+  sensitivity (about 30% lower). Results recorded in D-063.
+- **2026-11-08, homes per building narrowed ("Yes, narrow it"):** `config/params/mm_hazard.yaml`
+  `mm_units_per_project` high 4.0 → 2.75 (commit 40ba649), parameter table regenerated, scenario rerun into
+  the same folder; page version 2 at the same link. TX P50 4,747 (1,152–20,518), NC 1,193, OH 1,071,
+  MN 704, OR 94. Recorded in D-063. V9's frozen record holds only the central 2.08 (checked); its tests pass.

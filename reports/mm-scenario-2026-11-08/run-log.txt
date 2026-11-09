@@ -1,0 +1,103 @@
+[   11s] MN: 1051 places
+[   17s] NC: 453 places
+[   26s] OH: 947 places
+[   46s] TX: 1003 places
+[   48s] OR: 168 places
+measure                buildings  homes_gross  homes_net  teardowns
+state variant                                                      
+MN    main                 481.0       1093.0      704.0      384.0
+      units_held_2.08      481.0       1000.0      607.0      384.0
+NC    main                 784.0       1779.0     1193.0      562.0
+      units_held_2.08      784.0       1631.0     1053.0      562.0
+OH    main                 676.0       1563.0     1071.0      480.0
+      units_held_2.08      676.0       1406.0      923.0      480.0
+OR    main                  65.0        149.0       94.0       53.0
+      units_held_2.08       65.0        135.0       82.0       53.0
+TX    main                3202.0       7314.0     4747.0     2528.0
+      units_held_2.08     3202.0       6661.0     4070.0     2528.0
+state         variant    p10    p50     p90   mean
+   MN            main  180.0  704.0  2928.0 1317.0
+   MN units_held_2.08  153.0  607.0  2492.0 1132.0
+   NC            main  299.0 1193.0  5263.0 2362.0
+   NC units_held_2.08  262.0 1053.0  4545.0 2047.0
+   OH            main  266.0 1071.0  4271.0 1980.0
+   OH units_held_2.08  231.0  923.0  3716.0 1717.0
+   TX            main 1152.0 4747.0 20518.0 9101.0
+   TX units_held_2.08  999.0 4070.0 17411.0 7855.0
+   OR            main   20.0   94.0   435.0  192.0
+   OR units_held_2.08   17.0   82.0   367.0  165.0
+[
+ {
+  "state": "MN",
+  "places": 1051,
+  "eligible": 1746824.0,
+  "coded": 8,
+  "coded_dose_gt0": 4,
+  "eligible_weighted_gap_if_coded": 0.9475110257244004,
+  "house_share_weighted": 0.968929390130899,
+  "f_ratio_weighted": 0.7474960921491336,
+  "denominator_sources": {
+   "acs_sf_fallback": 512,
+   "parcels_scaled_acs": 358,
+   "parcels": 181
+  }
+ },
+ {
+  "state": "NC",
+  "places": 453,
+  "eligible": 3633434.416332714,
+  "coded": 22,
+  "coded_dose_gt0": 20,
+  "eligible_weighted_gap_if_coded": 0.9313412618321169,
+  "house_share_weighted": 0.8859538688338344,
+  "f_ratio_weighted": 0.6557961697181476,
+  "denominator_sources": {
+   "acs_sf_fallback": 235,
+   "parcels_scaled_acs": 218
+  }
+ },
+ {
+  "state": "OH",
+  "places": 947,
+  "eligible": 4157574.0,
+  "coded": 4,
+  "coded_dose_gt0": 4,
+  "eligible_weighted_gap_if_coded": 0.9918850059255481,
+  "house_share_weighted": 0.8159434740528921,
+  "f_ratio_weighted": 0.419687522949337,
+  "denominator_sources": {
+   "parcels_scaled_acs": 852,
+   "acs_sf_fallback": 64,
+   "parcels": 31
+  }
+ },
+ {
+  "state": "TX",
+  "places": 1003,
+  "eligible": 8093305.0,
+  "coded": 39,
+  "coded_dose_gt0": 10,
+  "eligible_weighted_gap_if_coded": 0.9172110623569538,
+  "house_share_weighted": 0.9408535802281632,
+  "f_ratio_weighted": 0.9253774274105541,
+  "denominator_sources": {
+   "acs_sf_fallback": 525,
+   "parcels": 299,
+   "parcels_scaled_acs": 179
+  }
+ },
+ {
+  "state": "OR",
+  "places": 168,
+  "eligible": 1190565.0,
+  "coded": 96,
+  "coded_dose_gt0": 96,
+  "eligible_weighted_gap_if_coded": 0.3332061507879562,
+  "house_share_weighted": 0.9783346562346449,
+  "f_ratio_weighted": 1.0242426973453085,
+  "denominator_sources": {
+   "acs_sf_fallback": 141,
+   "parcels_scaled_acs": 27
+  }
+ }
+]
