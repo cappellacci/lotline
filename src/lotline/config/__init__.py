@@ -89,6 +89,9 @@ class StateConfig(_Model):
     parcel_sources: dict[str, str] = {}
     township_permits: bool = False  # townships (county subdivisions) issue permits and get their own rows
     zip3_ranges: list[tuple[int, int]] = []  # USPS 3-digit ZIP prefixes (inclusive) that belong to the state
+    # D-068: the state's ADU law is coded row by row for every place it covers (config/reforms/<st>.csv), so a
+    # place with no ADU row is outside the law and takes the prior of states without such a law.
+    adu_state_law_rows_complete: bool = False
 
 
 class Parameter(_Model):

@@ -4054,13 +4054,16 @@ Dated, append-only. Each entry says what changed from the research documents, wh
      2026-11-08, "Interpolate to 2026→2031"):
      - The growth now runs from July 1, 2026 to July 1, 2031. The years come from the same window
        (`housing_need.window_years`).
-     - A year the demographer publishes is used as is: MN and OR publish every year.
+     - A year the demographer publishes is used as is: MN, OR and TX publish every year. Texas's annual
+       state totals (all three scenarios) were downloaded by Ben from the Center's Projections Download Tool
+       on 2026-11-09 and registered with `lotline manifest register`.
      - Other years are read on the straight line between the nearest published years
-       (`housing_need.population_at`, never beyond them): NC and OH to 2035, TX to 2040.
+       (`housing_need.population_at`, never beyond them): NC and OH to 2035.
      - Each source's 2025 and 2030 were checked against its file, downloaded through `lotline.io.http.fetch`.
-       All match, except that Texas's low and high 2030 in its projections table differ from the state-total
-       file's by about 0.03%. The entries' notes say this.
-     - New central values: MN 45,989 (was 47,907); NC 205,251 (209,033); TX 675,323, range 578,694–835,119
+       All match, except Texas's low and high scenarios. The figures transcribed earlier (D-057) differ from
+       the Center's current file by 1,456 to 9,210 people. The file agrees with the Center's projections
+       table, so it is used, and the Texas entry's notes record the old values.
+     - New central values: MN 45,989 (was 47,907); NC 205,251 (209,033); TX 681,001, range 583,510–837,656
        (683,487, range 590,246–841,601); OH −33,316 (−29,225); OR 42,291 (39,640).
   3. *Bundle metadata.* `meta` records `origin_year` and `horizon_years` but not the window's first year. Adding
      that column is a schema change, which belongs to WS-CORE (a `contract-change` issue, opened as #333). The same issue
@@ -4317,6 +4320,25 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   every model run does. The 2026-10-19 sensitivity that adds Wake Forest and Holly Springs is not included.
 - **Decided by:** Ben, 2026-11-08 ("Rules in force by window start"). Written by Claude Code before any run.
   **Status:** method approved, not run.
+- **Results (run 2026-11-09, Ben: "Yes, rerun"; commit 5b86238, 1,000 draws):** each state ran three ways: A, the
+  old setup; B, the 2027–2031 window with end-2025 rules; C, the window with end-2027 rules (the official
+  bundles). Results page: `reports/results-2026-11-09/results-2027-window.html`, published at
+  https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs.
+  - **The window (D-061) changes labels, not homes:** A and B agree to the home in every state and scenario.
+    Only the housing-need shares move, with the new denominators.
+  - **D-064 (B → C), median net homes over five years:**
+    - ADUs: NC 126 → 79 (−37%), TX 1,371 → 1,302 (−5%), MN 209 → 206 (−1%); OH unchanged.
+    - Missing middle: MN 462 → 410 (−11%), NC 791 → 740 (−6%); OH, OR and TX unchanged.
+    - OR's 34 rows from 2027-01-01 repeat the 2022 rules (four units, by right). McAllen's row caps at one unit.
+  - **Against the expectations written above:** the ADU "small" was wrong for NC. Coverage (the caveat
+    named above) moves the S.L. 2026-59 cities from E[c] 0.75 to 1.0.
+  - **Borrowing carries most of each change:** 70% (NC ADUs), 75% (TX ADUs), 86–88% (missing middle in MN
+    and NC). These come from places with no coded rule that borrow their rules (D-022 priors and the dose
+    pool), not from the places whose law changed.
+  - **Open decision for Ben:** should borrowers see the 2027 mix (as now), or the end-2025 mix, with
+    D-064's date applied only to a place's own rules? Recommended: end-2025. Either way it is a new entry
+    before the next run.
+  - **Decided 2026-11-09:** end-2025 mix (Ben, "End-2025 mix"). See D-067.
 
 ### D-065 · 2026-11-09 · Fee scenario, Phase 0: D-032 to D-034 settled, three fee scenarios, fill rule for missing fees (method only, before any run)
 - **Why now:** office hours on 2026-11-03 (`docs/research/office-hours-2026-11-03-tomasso-notes.md`, A4, A5,
@@ -4375,7 +4397,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **What it builds:** `src/lotline/model/fee_levels.py` carries out D-065's fill and adds four rules.
   `scenarios/fees.py` now has the three D-065 scenarios (`handbook`, `local_half`, `local_25k`; `local` is
   accepted as the old name of `local_half`). No model was run.
-- **Schema 1.11 (#247; Ben approved both columns on 2026-11-09):**
+- **Schema 1.13 (numbered 1.11 when written; renumbered at merge after main took 1.11-1.12; #247; Ben approved both columns on 2026-11-09):**
   - `in_force_through`: an older fee row still in force. Per place and component the newest schedule year
     counts, plus older rows whose `in_force_through` reaches it. Keying on `fee_type` was rejected because the
     wording of the same fee changes between years (Burnsville's SAC, Coon Rapids' permit table), so it would
@@ -4418,6 +4440,106 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   cap, the P25–P75 range for filled fees and the 5-place minimum for a state prior. Eugene, option (a): Ben,
   2026-11-09. **Status:** built and tested; not run.
 
+### D-067 · 2026-11-09 · Places that borrow their rules borrow the end-2025 mix (method only, before the run)
+- **Decision (Ben, 2026-11-09, "End-2025 mix"):** D-064's date (31 December of the window's first year,
+  2027-12-31) applies only to **a place's own coded rules**. Everything a place without its own rule borrows
+  is built from the rules in force on **31 December of the origin year (2025-12-31)**, the date the rules
+  were coded and checked.
+- **Why:** the D-064 run (2026-11-09) showed that 70–88% of each change came from borrowers, not from the
+  places whose law changed. The mix rests on few coded places (8 in Minnesota for missing middle), so a
+  single 2026 rule moved about 144,000 borrowed parcels. And a law such as NC S.L. 2026-59 covers only its
+  named cities, not the unincorporated areas that borrowed from them.
+- **What uses which date:**
+  - **ADUs (`adu.rule_inputs`):**
+    - At the origin date: the field probabilities that fill blank rule fields, the coded places behind the
+      size-band priors (D-022), and so the priors themselves.
+    - At the D-064 date: each place's own rules, and the coded places that `county_mix` blends into county
+      rows, since those are places' own rules.
+  - **Missing middle (`mm.places_from_store`, `mm.dose_pools`):** each coded place's own dose uses the D-064
+    date. The pool that uncoded places draw from uses each coded place's dose at the origin date (new
+    column `pool_dose`).
+  - Backtests are unchanged.
+- **Expected, written before the run:** results move back toward run B (end-2025 rules) wherever borrowers
+  drove the D-064 change. Rough estimates from the D-064 split (central values, not draws): NC ADUs about
+  112 (C 79, B 126), TX ADUs about 1,354 (C 1,302, B 1,371), MN missing middle about 455 (C 410, B 462), NC
+  missing middle about 785 (C 740, B 791). Places whose own law changed keep their D-064 effect. OH and OR
+  do not move.
+- **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code change or run. **Status:** method
+  approved, not run.
+- **Order of work:** this entry was pushed as bf563eb, then the code as 96a5de2 (hand-worked tests:
+  `test_borrowers_use_the_origin_mix_and_own_rules_the_d064_date` and
+  `test_dose_pool_holds_origin_doses_by_hand`), then the run.
+- **Results (run D, 2026-11-09, `lotline results --all` at 96a5de2, 1,000 draws):** median net homes over
+  five years, against the estimates written above:
+
+  | | Run B | Run C | Run D | Estimated |
+  |---|---|---|---|---|
+  | NC ADUs | 126 | 79 | 105 | about 112 |
+  | TX ADUs | 1,371 | 1,302 | 1,356 | about 1,354 |
+  | MN ADUs | 209 | 206 | 207 | |
+  | MN missing middle | 462 | 410 | 460 | about 455 |
+  | NC missing middle | 791 | 740 | 773 | about 785 |
+
+  - OH, OR and TX missing middle do not move, as expected.
+  - D-064 keeps 46% of its effect on NC ADUs and 36% on NC missing middle; elsewhere it keeps 21% or less.
+  - The NC estimates came from central values and were too high by 7–12 homes. In the draws, the S.L.
+    2026-59 cities carry a larger share of the change.
+  - Page: `reports/results-2026-11-09/results-2027-window.html` (version 2) at
+    https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs. **Status:** adopted and run; the official bundles
+    are run D.
+
+### D-068 · 2026-11-09 · ADUs: places outside a state ADU law take a "no state rule" prior (method only, before any run)
+- **Why:** Oregon's ADU scenario adds 0 homes in every draw (run D, D-067). Oregon has 168 ADU places. All 118
+  with a coded rule have 2,500 people or more, because SB 1051 and HB 2001 bind cities from 2,500 people (and
+  larger counties within urban growth boundaries), and `scripts/dev/or_state_reform_rows.py` generated one
+  state-law row for every place they cover. The other 50 places, 44 cities under 2,500 people (Idanha to
+  Turner) and 6 rural county remainders (Gilliam, Grant, Harney, Lake, Morrow, Wallowa), have no row. That is
+  3.3% of Oregon's eligible parcels. Under D-022 they borrow Oregon's coded places in their size band
+  (P(Handbook-equivalent) 0.97), that is, the rule of the cities the law covers, so the model treats them as
+  already allowing ADUs. They are exactly the places the law exempts.
+- **What was looked at before writing:** the 50 places and their priors (rules on 2027-12-31, central values)
+  and the reform rows. No scenario was run with any alternative.
+- **Decision (Ben, 2026-11-09, "No-state-rule prior"):** for a state whose ADU law is coded row by row for every
+  place it covers, a place with no ADU row is outside the law. Its prior comes from coded places in the states
+  without such a law, by size band, instead of from its own state's coded places.
+- **Mechanics:**
+  - A new optional state setting `adu_state_law_rows_complete` (default false; `config/states/<st>.yaml`,
+    `StateConfig`) marks such a state. Only Oregon sets it. This is an additive change to the state config
+    contract (WS-CORE).
+  - `adu.no_state_rule_priors(coded, edges, min_count, law_states)`: for each size band, the mean P(type) of
+    the coded places in states not in `law_states`, if at least `adu_rule_min_coded` (5) are coded in that
+    band; else those states' pooled mean. `source` says "states without a coded state ADU law, band" or
+    "..., all bands".
+  - In `rule_inputs`, a flagged state's prior rows are replaced by those rows, and only its 'unknown' places
+    read them. Coded places, field probabilities and coverage are unchanged. D-067's dates are kept: the
+    coded places behind the prior are read on `prior_as_of` (2025-12-31).
+  - Missing middle is not changed. HB 2001's middle-housing rows have their own thresholds, and no
+    missing-middle zero has been found.
+- **Expected direction, before any run:** Oregon's ADU homes rise from 0 to a small positive range. Only the
+  50 uncoded places (3.3% of eligible parcels) can add, and they are small towns and rural counties. The other
+  four states do not change.
+- **Known limits:** the no-law pool includes North Carolina's 19 S.L. 2026-59 rows from 2027 on, but D-067
+  reads the borrowed mix on 2025-12-31, before they take effect. Pooling small places from other states
+  assumes Oregon's exempt towns would regulate ADUs like small towns elsewhere. The 6 county remainders have
+  no 2020 population in `jurisdictions`, so they fall in the smallest band, as they do today.
+- **Tests (hand-worked):** `no_state_rule_priors` on synthetic coded places (by band, the fallback to all
+  bands, flagged states left out); `rule_inputs` with a flagged state leaves coded places unchanged and moves
+  only the unknown places' p_*; an unflagged state is unchanged.
+- **Decided by:** Ben, 2026-11-09. Written by Claude Code before any code or run. **Status:** adopted and run
+  (results below).
+- **Code (commit c599ada):** `StateConfig.adu_state_law_rows_complete`, `adu.no_state_rule_priors`, the
+  replacement in `rule_inputs`, and Oregon's flag. Tests by hand in `tests/model/test_scenario_adu.py`. At
+  central values Oregon's 50 uncoded places now borrow P(no ADUs) 0.67 and P(Handbook-equivalent) 0.003, from
+  the small coded places of MN, NC, OH and TX. Before, they borrowed 0 and 0.97.
+- **Results (run E, 2026-11-09, `lotline results --state XX` at da8793a, 1,000 draws; Oregon with role
+  transfer; `reports/results-2026-11-09/run-e.json`):**
+  - **Oregon ADUs:** 0 → 5 net homes over 2027–2031 (P10–P90 2–12). That is small, as expected: the exempt
+    places hold 3.3% of eligible parcels and are towns of under 2,500 people.
+  - **MN, NC, OH, TX and Oregon missing middle:** identical to run D, to the home.
+  - Run E is also the first official run with the baseline part (schemas 1.11).
+  - Page: Finding 7 of https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs (version 3), with the permits
+    actually issued in 2021–2025 (`scripts/dev/observed_permits.py`, `reports/results-2026-11-09/observed.json`).
+
 ### D-069 · 2026-11-09 · Duplex and fourplex utility fees: one meter per unit is the central case (method only, before any run)
 - **Question:** where a place charges water/sewer fees by meter and lets the builder choose between one meter per
   dwelling unit and one shared (master) meter, which case is the central fee for a duplex or fourplex?
@@ -4433,3 +4555,75 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   master-meter case as a named sensitivity, so a reader sees how much a shared meter changes whether a fourplex
   pencils. Fee lookups (PR #346 and the priority 4 coverage lookups) follow this rule.
 - **Decided by:** Ben, 2026-11-09 (proposed in PR #346). **Status:** method only; no run.
+
+### D-071 · 2026-11-09 · V5 Charlotte blind forward test: what is frozen and how it is made (method only, before any run)
+- **Status:** method written before any Charlotte prediction was made (issue #45; validation plan V5). The
+  freeze uses the missing-middle fit on `main` at the freeze commit (`mm_hazard.yaml`, D-054 values adopted
+  by D-055) and records the values, the commit and a hash of every config file read.
+- **What was looked at before writing (all before the window or not Charlotte outcomes):** the pre-UDO roll
+  (169,314 N1 lots, `reports/nc/V5-charlotte-inputs.md`); the six-town prior in `config/params/v5_charlotte.yaml`;
+  BPS Mecklenburg County (37119) 2-4 unit buildings 2011-2022 through the holdout filter (2020: 31, 2021: 22,
+  2022: 46); Charlotte's pre-window permits by type and year to 2023-05-31; Charlotte's ACS 2022 rent; the
+  coded Mecklenburg missing-middle rules (Charlotte UDO 2023; Cornelius 2018, before the baseline years). No
+  Charlotte or Mecklenburg outcome from 2023-06-01 was read.
+- **Fit used, and Charlotte's place in it.** `estimate_mm.build_panel` drops Charlotte, Mecklenburg County and
+  every place in it (`_excluded_holdout`), so the D-054/D-055 fit that set θ, α and the ramp never saw
+  Charlotte. Nothing is refitted for V5.
+- **Target (primary; the pass rule applies to it).** New 2-4 unit buildings in Census BPS for Mecklenburg
+  County (37119, `bldgs_2 + bldgs_3_4`), the sum over calendar years 2023, 2024 and 2025, as P10/P50/P90 and
+  the mean of the predictive draws; each year also reported. BPS is the outcome the fit was estimated on, and
+  BPS has no Charlotte row: Charlotte-Mecklenburg Code Enforcement files Charlotte's, the six towns' and the
+  unincorporated county's permits under 37119 (D-012, #123). So the target is county-level, and the towns'
+  and county's building sits in the baseline. BPS is annual: January-May 2023 (before the UDO) is in the
+  2023 count, and the model treats 2023 as the first event year as the fit does (rule in force on 1 July).
+- **Secondary targets (reported, not the pass rule).** (a) Homes in those buildings (`units_2 + units_3_4`),
+  2023-2025. (b) The added buildings on Charlotte's N1 lots alone (the reform part of the draw), for a
+  descriptive comparison with Charlotte permits on N1 lots if a post-window permit file with a zoning field
+  is obtained (the legacy Mecklenburg file thins out in 2025 with the move to Accela); any such comparison is
+  labelled exploratory.
+- **Model (as D-038/D-042 and V9's missing-middle part, D-051).** For year t = 2023, 2024, 2025:
+
+      buildings_t = Poisson(B) + Poisson(θ u E (d_UDO − d_pre) F(PCR)/F(1) ramp(t − 2023 + 0.5))
+
+  - **B:** 37119's mean 2-4 unit buildings over 2020-2022 (T − 3 … T − 1, the fit's β), held flat. D-054's
+    own-growth index needs 37119's 2023+ one-unit and 5+ unit permits, which are blind, so it is not used
+    (as V9). Known bias, stated now: if other building in Mecklenburg rose or fell after 2022, B misses it.
+  - **E (N1 lots that could take a duplex or triplex):** 169,314 N1 lots (`clt_v5.n1_lots` on the pre-UDO
+    roll, vintage 2023-05-31) × s, s ~ triangular(low, value, high) with low = `n1_sf_share.low +
+    n1_vacant_share.low` (0.582), value = the sum of the pooled values (0.851), high = the sum of the highs
+    (0.961). Summing the ends is wider than any single town (0.650-0.933): the conservative reading of the
+    prior, which the inputs report says may overstate Charlotte's vacant lots.
+  - **Dose:** D-024's dose of the UDO row (`NC-3712000-missing_middle-2023`, cap 3 → units grade 2/3,
+    `by_right` blank → D-022's coded share from the four fit states, `mm_dose_grade_permit`), coverage 1
+    because E already counts only N1 lots. d_pre = the dose in force on 1 July 2022 (0: no Charlotte
+    missing-middle rule before the UDO). The 2024 proposal to limit triplexes to corner lots (text amendment
+    2024-067) is not coded and is not modelled.
+  - **F(PCR)/F(1):** a rental duplex's price-to-cost from Charlotte's newest ACS 5-year median rent ending
+    ≤ 2022 and the 2022 construction cost index (`estimate_mm.plex_price_to_cost`,
+    `calibrate_mm.feasibility_ratio`, `developer_margin`, `mm_feasibility_dispersion`), as V9.
+  - **No annual input after 2022** (the holdout's annual rule; ACS 2023+ counts homes built in the window).
+- **Uncertainty.** `mm_scenario_draws` draws, seed `mm_scenario_seed`. Per draw: θ and α lognormal from their
+  90% intervals (median at the estimate, as V9's `mm_draws`); one Charlotte multiplier u ~ Gamma(mean 1,
+  variance α) shared across the three years; s triangular as above; independent Poisson noise per year and
+  component. Held at their values: the ramp half-way point and slope, σ (D-038 fitted them with θ).
+- **Freeze.** `scripts/dev/v5_clt_predict.py --freeze` writes `results/frozen/V5-NC-CHARLOTTE.json` once
+  (refuses to overwrite), with the commit, draws, seed, inputs, parameter values, sha256 of the processed
+  input tables and of the config files read. A dry run (`--out`) is a prediction only and is not committed.
+- **Scoring (after the freeze is on `main` and Ben asks to unblind).** Release the holdout in
+  `config/states/nc.yaml` (`released_on`, `released_note`), read BPS 37119 for 2023-2025 and compute:
+  - **Pass rule:** the observed 2023-2025 sum lies within P10-P90 of the frozen draws. With one case this is a
+    demonstration, not proof, and is presented that way.
+  - Also: D-040's verdict (useful: inside and P50 within ×2), randomized PIT coverage (D-003), CRPS against a
+    no-reform benchmark (Poisson(B) each year), and each year's position. Secondary (a) is scored the same
+    way. The failed or passed result stays in the report whatever happens next; any change to the model
+    after unblinding is a new dated entry.
+- **Expected direction, before any run:** the median close to the baseline (about 100 buildings over three
+  years) and a long right tail from u, because α is large (8.4) and Charlotte is one place.
+- **Decided by:** Ben (V5 design, validation plan; option (b) prior, 2026-10-21; freeze now, 2026-11-09).
+  Written by Claude Code before any code or run.
+- **Frozen (2026-11-09, code at 77e8710, `results/frozen/V5-NC-CHARLOTTE.json`, 4,000 draws, seed 20261108).**
+  Inputs: 169,314 N1 lots, eligible share 0.582-0.851-0.961, dose gap 0.598 (UDO cap 3, blank `by_right` at
+  the four-state share), F(PCR)/F(1) 0.903 (PCR 0.951), B 33.0 buildings a year (2020-2022: 31, 22, 46).
+  **BPS 37119 2-4 unit buildings, 2023-2025: P10 89, P50 104, P90 172 (mean 137).** Added buildings on N1
+  lots: P50 0, P90 72, mean 38.6. Homes in 2-4 unit buildings: P10 213, P50 249, P90 402. No outcome has
+  been read; scoring waits for this file on `main` and Ben's go-ahead.

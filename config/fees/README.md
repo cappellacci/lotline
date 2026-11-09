@@ -28,10 +28,10 @@ central row's `notes` give the group's low and high as the range.
   basin; Austin parkland by density tier; Austin water and wastewater impact fees by plat date; Fort Worth by
   plat cohort.
 - The central row also carries the group's range in `amount_per_unit_low_usd` and `amount_per_unit_high_usd`
-  (schema 1.11, #247; written by `scripts/dev/fee_ranges_2026_11_09.py`). The fee scenario uses the central
+  (schema 1.13, #247; written by `scripts/dev/fee_ranges_2026_11_09.py`). The fee scenario uses the central
   value as its central fee and draws within the range in each simulation draw (D-066).
 
-**Older rows still in force (`in_force_through`, schema 1.11, #247).** For each place and fee component the
+**Older rows still in force (`in_force_through`, schema 1.13, #247).** For each place and fee component the
 engine counts the newest schedule year. A row from an older year counts too when its `in_force_through` reaches
 that newest year: set it when a schedule from another agency, or an impact-fee ordinance, is still current next
 to newer rows of the same component (Austin's 2023 water and wastewater impact fees; Bend Park & Recreation

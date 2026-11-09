@@ -6,7 +6,7 @@
     component plus older rows still in force; converts to 2025 dollars with CPI-U; carries low and high
     ranges; and fills missing permit and water/sewer charges from the median of coded places (state, then
     pooled), with the 25th–75th percentile as the range.
-  - Schema 1.11 (Ben approved): `fees.in_force_through`, `amount_per_unit_low_usd` and
+  - Schema 1.11, renumbered 1.13 at merge (Ben approved): `fees.in_force_through`, `amount_per_unit_low_usd` and
     `amount_per_unit_high_usd`, with a check that low ≤ central ≤ high. `scripts/dev/fee_ranges_2026_11_09.py`
     added the columns to every fee file and filled the Texas ranges and the Austin and Bend still-in-force rows.
   - `scenarios/fees.py`: the three D-065 scenarios (`handbook`, `local_half`, `local_25k`); the local fee is
@@ -17,7 +17,7 @@
 - **Inputs:** `config/fees/*.csv`; CPI-U from the local data store (index only); #247; D-065; office-hours
   notes A4/A5.
 - **Outputs:** `src/lotline/model/fee_levels.py`, `src/lotline/model/scenarios/fees.py`,
-  `src/lotline/schemas.py` (1.11), `docs/schemas.md`, `config/fees/*.csv`, `config/fees/README.md`,
+  `src/lotline/schemas.py` (1.11, now 1.13), `docs/schemas.md`, `config/fees/*.csv`, `config/fees/README.md`,
   `scripts/dev/fee_ranges_2026_11_09.py`, `scripts/dev/fee_levels_table.py`, `scripts/dev/fee_dev_run.py`,
   `docs/research/fee-levels-vs-handbook.md`, `docs/model_and_assumptions.md` (fees paragraph),
   `docs/analysis_plan.md` D-066; tests `tests/model/test_fee_levels.py`, `tests/model/test_fee_scenario.py`,

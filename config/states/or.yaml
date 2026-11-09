@@ -6,6 +6,10 @@ name: Oregon
 fips: "41"
 bps_region: West Region
 township_permits: false  # no townships; counties permit unincorporated land (county-remainder rows)
+# D-068 (Ben, 2026-11-09): SB 1051 / HB 2001 ADU rows are generated for every city of 2,500+ people and every
+# covered county (scripts/dev/or_state_reform_rows.py), so a place with no ADU row is outside the law. Those
+# places (44 small cities, 6 rural county remainders) take the prior of states without a coded state ADU law.
+adu_state_law_rows_complete: true
 # USPS 3-digit ZIP prefixes (inclusive ranges); source: USPS ZIP Code prefix assignments
 zip3_ranges: [[970, 979]]
 # V9 (validation plan): every Oregon outcome from 2018 on stays hidden until the frozen four-state prediction

@@ -168,6 +168,44 @@ def test_results_section_parts_are_on_the_page(tmp_path):
         assert part in html, part
 
 
+def test_gross_and_net_are_explained_in_plain_words(tmp_path):
+    """Ben, 2026-11-09: the toggle reads "All new homes" / "Net new housing", a "Why two numbers?" note uses
+    the state's own figures, and the displacement slider says what it means. The old wording is gone."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    for part in ('"All new homes"', '"Net new housing"', "Why two numbers?", 'id="two-numbers"',
+                 "Homes that would have been built elsewhere in the state anyway"):  # fmt: skip
+        assert part in html, part
+    for gone in ("In the places that build", "places that build", "Net statewide", "pulled in from nearby",
+                 "Homes pulled from nearby places"):  # fmt: skip
+        assert gone not in html, gone
+
+
+def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
+    """Schemas 1.12 (Ben, 2026-11-09): actual yearly permits as bars beside the reform's yearly additions."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    parts = ('id="record-card"', "function recordHtml", "What gets built now, and what the reform would add")
+    for part in (*parts, "Actually permitted", "Added by the reform (P10–P90"):
+        assert part in html, part
+    state_file = (tmp_path / "states" / "zz.js").read_text()
+    doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])
+    measures = {r["measure"] for r in doc["observed"]}
+    assert measures == {"adu_permits", "homes_2_4"}
+    yearly = [r for r in doc["totals"] if r["outcome"] == "permits_added" and len(r["period"]) == 4]
+    assert len(yearly) == 5  # one per window year, the whiskers
+
+
+def test_baseline_card_reads_the_bundle_baseline(tmp_path):
+    """Schemas 1.11: the page shows the no-change forecast from the bundle's `baseline` part."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    parts = ("function baselineHtml", "With no policy change", "${baselineHtml(b)}", "0 added, by definition")
+    for part in (*parts, "The baseline forecast is not in this state's results yet."):
+        assert part in html, part
+    state_file = (tmp_path / "states" / "zz.js").read_text()
+    doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])
+    window = [r for r in doc["baseline"] if r["size_class"] == "all" and r["period"] == "2027-2031"]
+    assert len(window) == 1 and window[0]["p10"] <= window[0]["p50"] <= window[0]["p90"]
+
+
 # ------------------------------------------------------------------------------- section 2: the data
 SUMMARY = {
     "generated": "2026-11-05T00:00:00Z",
@@ -219,8 +257,20 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
     assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
-    for part in ("Data available and data used", "Data tier", 'id="dash-host"', 'id="dash-frame"'):
+    for part in ("Data available and data used", 'id="dash-host"', 'id="dash-frame"', 'id="dash-state"'):
         assert part in html
+    # The tier card was dropped (Ben, 2026-11-09): the dashboard carries coverage.
+    assert '<p class="eyebrow">Data tier</p>' not in html
+    assert 'scope: "ALL"' in html  # the dashboard opens on every state, with its own dropdown
+    # Ben, 2026-11-09: the data page opens with what the model needs and from which years, then the
+    # dashboard, and lists every source last.
+    slots = ('id="data-method"', 'id="data-body"', 'id="dash-host"', 'id="data-sources"')
+    order = [html.index(p) for p in slots]
+    assert order == sorted(order)
+    method = html[html.index('id="data-method"') : html.index('id="data-body"')]
+    kinds = ("Parcels", "Zoning", "Building permits", "Prices and rents", "Development fees", "2027–2031")
+    for kind in kinds:
+        assert kind in method, kind
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
     assert json.loads(m.group(1)) is None
@@ -231,8 +281,23 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
     from lotline.config import load_params
 
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    for part in ("Validation scorecard", "Blind tests", "Overlap check", 'id="tornado"', "Technical detail"):
+    parts = (
+        "Overlap check",
+        'id="tornado"',
+        "Technical detail",
+        'id="dag"',
+        'id="conf-table"',
+        'id="checks"',
+    )
+    for part in parts:
         assert part in html, part
+    # Ben, 2026-11-09: the model page runs in order: goal, data, model and range, other states, then limits.
+    steps = ["step-goal", "step-data", "step-model", "step-states", "step-limits"]
+    assert [html.index(f'id="{s}"') for s in steps] == sorted(html.index(f'id="{s}"') for s in steps)
+    register = (REPO / "docs/research/lotline-confounder-register.csv").read_text().splitlines()[1:]
+    ids = [line.split(",", 1)[0] for line in register if line.strip()]
+    for cid in ids:  # every factor in the register is on the page with what was done about it
+        assert f'["{cid}", ' in html, cid
     agg = load_params("aggregate")
     assert _embedded(html)["overlap_thresholds"] == {
         "medium": agg["overlap_flag_medium_distance"].value,
@@ -339,3 +404,59 @@ def test_state_script_cannot_close_a_script_tag():
     doc = json.loads(FIXTURE.read_text())
     doc["meta"]["overlap_note"] = "</script><script>alert(1)</script>"
     assert "</script>" not in build.state_script(doc)
+
+
+# --- Publishing: scripts/publish_app.py -> GitHub release -> .github/workflows/pages.yml
+
+
+def _results_dir(tmp_path: Path) -> Path:
+    """A results folder holding the fixture under a folder name that is not its state code."""
+    d = tmp_path / "results" / "somewhere"
+    d.mkdir(parents=True)
+    (d / "bundle.json").write_bytes(FIXTURE.read_bytes())
+    return tmp_path / "results"
+
+
+def test_staged_release_holds_each_bundle_unchanged_under_its_own_state_code(tmp_path):
+    summary = tmp_path / "summary.json"
+    summary.write_text("{}", encoding="utf-8")
+    stage = tmp_path / "stage"
+    stage.mkdir()
+    (stage / "old.bundle.json").write_text("stale", encoding="utf-8")
+    files = build.stage_release(stage, results_dir=_results_dir(tmp_path), data_summary=summary)
+    assert [f.name for f in files] == ["zz.bundle.json", "data-summary.json"]
+    assert (stage / "zz.bundle.json").read_bytes() == FIXTURE.read_bytes()
+    assert not (stage / "old.bundle.json").exists(), "a stale asset would be uploaded"
+    bundles, found = build.release_inputs(stage)
+    assert bundles == [stage / "zz.bundle.json"] and found == stage / "data-summary.json"
+
+
+def test_the_page_builds_from_a_staged_release(tmp_path):
+    stage = tmp_path / "stage"
+    build.stage_release(stage, results_dir=_results_dir(tmp_path), data_summary=None)
+    bundles, summary = build.release_inputs(stage)
+    assert summary is None
+    page = build.build_app(bundles, out_dir=tmp_path / "site", data_summary=summary)
+    assert [s["meta"]["state"] for s in _embedded(page.read_text(encoding="utf-8"))["states"]] == ["ZZ"]
+    assert _state_file(tmp_path / "site", "ZZ") == json.loads(FIXTURE.read_text(encoding="utf-8"))
+
+
+def test_nothing_is_staged_without_a_bundle(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        build.stage_release(tmp_path / "stage", results_dir=tmp_path, data_summary=None)
+    with pytest.raises(FileNotFoundError):
+        build.release_inputs(tmp_path)
+
+
+def test_pages_workflow_builds_from_what_publish_app_uploads():
+    from fnmatch import fnmatch
+
+    wf = (REPO / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
+    pattern = re.search(r"--pattern '([^']+)'", wf).group(1)
+    for name in (build.BUNDLE_ASSET.format(state="mn"), build.SUMMARY_ASSET):
+        assert fnmatch(name, pattern), f"the workflow would not download {name}"
+    assert "--dir release" in wf and "build_app.py --from-release release --out site" in wf
+    assert "path: site" in wf and "actions/deploy-pages@" in wf
+    # the page must be built with the code that made the results
+    assert "ref: refs/tags/${{ inputs.tag }}" in wf
+    assert 'WORKFLOW = "pages.yml"' in (REPO / "scripts" / "publish_app.py").read_text(encoding="utf-8")

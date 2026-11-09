@@ -98,16 +98,16 @@ POPULATION = {
     },
     "TX": {
         "source": "Texas Demographic Center, Vintage 2024 population projections, state totals by migration "
-        "scenario (mid = value, low and high scenarios = range); 2040 = the sum of the 254 counties in the "
-        "Center's projections table (api/Tpepp/Projections/Totals/<scenario>, 2026-11-09)",
-        "url": "https://www.demographics.texas.gov/Projections/2024/",
+        "scenario (mid = value, low and high scenarios = range; annual, from the Projections Download Tool: "
+        "all years, total only, area State; downloaded by Ben 2026-11-09 and registered in the manifest)",
+        "url": "https://www.demographics.texas.gov/Projections/Download",
         "vintage": "Vintage 2024 (state released 2025-03)",
-        "mid": {2025: 31_669_507, 2030: 33_546_497, 2040: 37_076_260},
-        "low": {2025: 31_620_140, 2030: 33_241_070, 2040: 36_165_691},
-        "high": {2025: 31_754_955, 2030: 34_066_155, 2040: 38_510_570},
-        "check": "The projections table's 2030 equals 33,546,497 (mid) exactly; its low and high 2030 "
-        "(33,231,860 and 34,057,438) differ from the state-total file's by about 9,000 (0.03%), so the low and "
-        "high 2031 carry that much uncertainty",
+        "mid": {2025: 31_669_507, 2026: 32_046_803, 2030: 33_546_497, 2031: 33_916_964},
+        "low": {2025: 31_618_649, 2026: 31_944_645, 2030: 33_231_860, 2031: 33_547_078},
+        "high": {2025: 31_753_499, 2026: 32_215_048, 2030: 34_057_438, 2031: 34_515_416},
+        "check": "The low and high 2025 and 2030 transcribed earlier (D-057: 31,620,140 / 33,241,070 and "
+        "31,754,955 / 34,066,155) differ from the Center's current file by 1,456 to 9,210; the file's values "
+        "agree with the Center's projections table and are used. Mid matches exactly",
     },
     "OH": {
         "source": "Ohio Department of Development, Office of Research, 2020-2050 population projections "

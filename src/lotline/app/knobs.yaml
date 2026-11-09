@@ -37,10 +37,10 @@ net_new_share:
   params:
     adu: [aggregate:adu_net_new_share, aggregate:adu_formalization_share]
 displacement_share:
-  label: Homes pulled from nearby places
-  why: Part of a place's gain would have been built in a neighbouring place anyway. It counts in this place but not in the statewide total.
-  low_word: Little pulled in
-  high_word: Much pulled in
+  label: Homes that would have been built elsewhere in the state anyway
+  why: Some new homes replace homes that would otherwise have been built in another town in the state. They count in "All new homes" but not in "Net new housing".
+  low_word: Almost none
+  high_word: About half
   format: share
   params:
     adu: [aggregate:displacement_share]
