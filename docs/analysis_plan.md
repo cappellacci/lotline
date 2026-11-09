@@ -4507,3 +4507,90 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   **BPS 37119 2-4 unit buildings, 2023-2025: P10 89, P50 104, P90 172 (mean 137).** Added buildings on N1
   lots: P50 0, P90 72, mean 38.6. Homes in 2-4 unit buildings: P10 213, P50 249, P90 402. No outcome has
   been read; scoring waits for this file on `main` and Ben's go-ahead.
+
+### D-072 · 2026-11-09 · ADUs in two steps: a statewide estimate from the places we can count, by zone, then the forecast (method only, before any code or run)
+- **Why:** Ben, 2026-11-09, after WS-NC-GUTCHECK (PR #352): the ADU model must answer two questions in order.
+  (1) How many ADUs does the state build today, estimated from the places whose permits we can confirm?
+  (2) How many will it build over the window, given growth and that statewide level? **Any inference must rest
+  on collected evidence, never on an assumed rate.** Today neither step is explicit:
+  - Observed counts enter only as a per-place floor (D-019; D-070 in PR #352 moves its window). Every other
+    place runs on the pooled mature hazard h_m × c, never checked against the state's own counts.
+  - On NC's 11 confirmed places, h_m × c gives 66 ADUs a year against 126 observed in 2023–25 (ratio 1.9). The
+    misses go both ways: Durham city 3.6x under, Greensboro 2.5x over.
+  - Three reasonable ways to scale NC's sample to the state disagree: about 410 a year (model as is), about 770
+    (model × 1.9) and about 330 (sample ÷ its 38% population share).
+  - The sample is almost all incorporated places. Unincorporated county areas hold 51% of NC's eligible lots,
+    and only one of them (Durham County's) is sampled.
+- **What was looked at before writing** (WS-NC-GUTCHECK diagnostics, central values, no scenario run with any
+  alternative), ADU permits a year per 10,000 eligible lots, 2021–25:
+  - Incorporated places: NC sample cities about 2.4, TX's four cities 2.6, MN's 133 metro places 0.53.
+  - Unincorporated or township: Durham County unincorporated 0.22 (14 ADUs, 12,500 lots; City-County
+    Inspections covers the whole county); Bexar County unincorporated 0.14 (12 ADUs, 175,600 lots; from San
+    Antonio's permits, so coverage of the unincorporated county is **unverified**); 42 Twin Cities metro
+    townships 0.75 (10 ADUs, 26,700 lots; Met Council).
+  - No place in any state's sample lies outside a metropolitan area, so micropolitan and non-CBSA cells
+    start unmeasured.
+  - h_m × c for NC's 100 unincorporated county areas is 0.84, above the two county-area samples.
+- **Zones** (rule-based, from fields every state has; each place belongs to one):
+  - **Zone 1, large places:** incorporated places with a 2020 population of 100,000 or more.
+  - **Zone 2, other places:** every other incorporated place.
+  - **Zone 3, unincorporated:** county remainders and minor civil divisions that are not places (MN
+    townships).
+  - **Metro or not:** each zone splits by `jurisdictions.cbsa_type`: metro, micro, or blank (outside any
+    CBSA). That gives nine cells. A cell is **measured** only if it holds at least
+    `adu_zone_min_places` sampled places with at least `adu_zone_min_adus` observed ADUs. Values are set and
+    sourced in config before any run; proposed 3 and 10.
+- **Step 1: ADUs today, statewide.**
+  - Sampled place i: observed rate r_i = ADU permits a year over the `adu_observed_years` years ending at the
+    origin ÷ eligible lots. Still-blind holdouts are left out until released (Charlotte joins after V5 is
+    scored).
+  - Shape s_i = c_i × h_m,i: the current engine's current-rules hazard, unchanged. It only orders places
+    within a cell; it never sets a cell's level.
+  - Cell level k_z = Σ observed ADUs ÷ Σ s_i E_i over the cell's sampled places, **pooled across our states**.
+    Uncertainty: resample the cell's sampled places (bootstrap by place), plus Poisson noise on counts.
+  - Place estimate: sampled places use their own observed rate; others use k_z s_i E_i.
+  - Statewide today = Σ over places in measured cells. **Unmeasured cells get no point estimate.** They are
+    reported as "not measured" with an evidence bound: from 0 to the same zone's metro-cell P90 rate, labeled
+    as a bound and never folded into the headline.
+  - Cross-checks printed beside it, not used: the population-share and lot-share scale-ups of the sample.
+- **Step 2: the forecast, 2027–2031.**
+  - No reform: each place's step-1 rate applied to its pool of eligible lots without an ADU. The pool shrinks
+    as lots get an ADU (as now) and grows by new single-family lots: the baseline's 1-unit permits for the
+    place (`baseline.forecast_draws`) × the place's eligible share of single-family parcels.
+  - Rents and home values: held at the origin, with a sensitivity at the 2019–2025 ACS change observed in each
+    state. Evidence, not an assumed trend. Mortgage rates as now.
+  - With the reform: newly legal lots E(1 − c) get the same calibrated rate, k_z h_m,i. Lots already legal
+    keep their step-1 rate. Added = with − without, as now.
+  - Unmeasured cells: their forecast is reported only as the bound, both worlds alike, and is outside the
+    headline.
+  - Replaces the observed floor (D-019 and D-070): a sampled place's own rate now enters directly, and every
+    other place's level is set from evidence in its cell.
+- **Tests before adoption** (pre-registered here; results appended below, whatever they are):
+  - **Leave one place out:** predict each sampled place's 2021–25 ADUs from its cell's other places. Report
+    the share inside its P10–P90; adopt if at least 70% of sampled places are (nominal 80%).
+  - **Leave one state out:** k_z from the other states only, then predict each state's sampled places. Report
+    the hit rate. A low hit rate would mean state differences matter; it is reported, not used to tune.
+  - **Time:** fit k_z on 2019–22, predict 2023–25 for the sampled places, and report the error.
+  - Hand-worked unit tests for k_z, the bootstrap, the pool with new lots, and the measured/unmeasured rule.
+- **Expected direction, written before any run:**
+  - NC zone 1 (Durham, Raleigh, Greensboro) gets a higher level than the model's.
+  - NC metro unincorporated areas get a lower level, near the 0.14–0.75 evidence rather than the model's 0.84.
+  - Most of NC's added homes today come from unincorporated areas, so the NC ADU added effect is more likely
+    to fall than rise. Micropolitan and non-CBSA areas move out of the headline into the "not measured" bound until evidence is
+    collected.
+  - TX moves for the same reasons. MN, OH and OR are expected to change less (their samples dominate their
+    own cells).
+- **Data tasks this needs** (through the IO layer, each with a `docs/data_provenance.md` row):
+  - Confirm that a blank `cbsa_type` means "outside any CBSA" and not missing data. It is blank for 29 of
+    NC's 100 county areas and 29 of its 354 places. If it is missing data, fill it from the Census
+    delineation file.
+  - Verify Bexar's unincorporated coverage in San Antonio's permits; drop it from zone 3 if partial.
+  - Collect non-metro evidence: county or small-town permit systems in NC (then MN, OH, TX) that flag ADUs or
+    accessory dwellings. Until then non-metro cells stay unmeasured.
+  - Charlotte's counts after V5 is scored and released (D-071).
+- **Display:** the results page shows the zone table. It gives the measured total, its range and the share of
+  eligible lots in measured cells, then the unmeasured bound. This feeds the stat cards planned after
+  #348/#350 (schema fields to be added then).
+- **Decided by:** Ben asked for the two steps and three zones (2026-11-09). Written by Claude Code before any
+  code or run. **Status:** proposed. It supersedes D-070's floor once adopted; D-070 stays the stopgap until
+  then.
