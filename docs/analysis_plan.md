@@ -4405,11 +4405,18 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   SDC is unchecked and its `amount_per_unit_usd` is blank (lower bound for a house $14,441.89). D-065 removes
   the $50,000 fallback, so Eugene now takes the pooled median (house $6,981), well below its known lower bound.
   Options: (a) code Eugene's known components and treat stormwater as the missing part (range from the lower
-  bound up); (b) keep a place-level override to the Handbook figure for Eugene only. Until Ben decides, Eugene
-  is a transfer-state place outside the development run, and no published number uses it.
-- **Decided by:** Ben, 2026-11-09 (schema columns; start of Phase 1). Building-type fallbacks, the CPI cap and
-  the P25–P75 range for filled fees were written by Claude Code, for Ben to confirm in the PR.
-  **Status:** built and tested; not run.
+  bound up); (b) keep a place-level override to the Handbook figure for Eugene only.
+  **Settled 2026-11-09: option (a).** `scripts/dev/eugene_fees_2026_11_09.py` prices six rows for a 2,000 sq ft
+  house: EWEB water $2,276 (upper pressure zones $3,063 as the high), local wastewater $811.97, MWMC $1,990,
+  parks $7,880.61, transportation $3,759.31, and stormwater general capacity $789.99, with the LID capacity
+  charge added for the high ($7,860.28). House: $17,507.88 central and low, $25,365.17 high (nominal; test in
+  `tests/states/or/test_fees.py`). Eugene still has no permit row, so its permit is filled like any other
+  place's. Limit: the duplex, fourplex and ADU rows stay blank, so for water/sewer those types get only the
+  general local wastewater row ($811.97) and run about $4,300 per unit low. Phase 2 codes them.
+- **Decided by:** Ben, 2026-11-09 (schema columns; start of Phase 1). Ben confirmed on 2026-11-09 the details
+  Claude Code wrote: the building-type fallbacks (own rows, then OTHER, then the place's SFD amount), the CPI
+  cap, the P25–P75 range for filled fees and the 5-place minimum for a state prior. Eugene, option (a): Ben,
+  2026-11-09. **Status:** built and tested; not run.
 
 ### D-069 · 2026-11-09 · Duplex and fourplex utility fees: one meter per unit is the central case (method only, before any run)
 - **Question:** where a place charges water/sewer fees by meter and lets the builder choose between one meter per

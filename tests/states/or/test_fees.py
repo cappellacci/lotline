@@ -46,12 +46,17 @@ def test_every_coded_total_is_under_the_handbook_50k(totals):
     assert (totals < 50000).all()
 
 
-def test_eugene_stays_on_the_handbook_prior_until_its_bill_is_complete():
-    """Transportation (per trip) can't be priced per home from the order, so no Eugene row has a per-unit
-    amount and the fees scenario falls back to the national prior instead of a partial bill."""
-    from lotline.model.scenarios.fees import local_fees
+def test_eugene_house_is_its_known_sdcs_with_stormwater_in_the_range():
+    """D-066 option (a): the known SDCs for a 2,000 sq ft house; the LID stormwater charge is the high end."""
+    from lotline.model import fee_levels
 
-    f = load_fees("OR")
-    eugene = f[f["jurisdiction_geoid"] == EUGENE]
-    assert len(eugene) > 20 and eugene["amount_per_unit_usd"].isna().all()
-    assert EUGENE not in set(local_fees(f)["geoid"])
+    r = fee_levels.coded_fees(load_fees("OR")).set_index("geoid").loc[EUGENE]
+    # water 2,276 + local wastewater 546.97 + 0.1325 x 2,000 + MWMC 1,990 + parks 7,880.61
+    # + transportation 3,759.31 + stormwater general 789.99
+    central = 2276 + (546.97 + 0.1325 * 2000) + 1990 + 7880.61 + 3759.31 + 789.99
+    # high: upper-zone water 3,063 and stormwater general + LID (789.99 + 7,070.29)
+    high = central - 2276 + 3063 - 789.99 + (789.99 + 7070.29)
+    assert r["local_fee_per_unit"] == pytest.approx(central) == pytest.approx(17507.88)
+    assert r["local_fee_low"] == pytest.approx(central)
+    assert r["local_fee_high"] == pytest.approx(high) == pytest.approx(25365.17)
+    assert r["local_fee_low"] > 14441.89  # above the 2026-11-04 partial lower bound

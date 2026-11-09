@@ -36,6 +36,11 @@
   one hand value in a test (a P25) was wrong at first and corrected against numpy's linear percentile.
   Before and after comparison: no fee CSV value changed except the new columns and notes. No model was run.
 - **Open / next:**
-  - Eugene (D-066 options a/b).
+  - ~~Eugene (D-066 options a/b)~~ settled, see below.
   - Permit schedules for NC/OR/TX would replace the Minnesota-heavy prior.
   - Phase 2: SFD/duplex/fourplex pencil-out table and dose by building type.
+- **Addendum (same day):** Ben chose D-066 option (a) for Eugene and confirmed the D-066 details (type fallbacks,
+  CPI cap, P25–P75 fill range, 5-place minimum). `scripts/dev/eugene_fees_2026_11_09.py` prices six Eugene
+  rows for a house: $17,507.88 central, $25,365.17 high (LID stormwater and upper-zone water). Checked by a
+  hand-sum test in `tests/states/or/test_fees.py` (replaces the "stays on the Handbook prior" test), the OR and fee
+  tests (117 passed), and `compliance_check.py` (0 FAIL). `docs/research/fee-levels-vs-handbook.md` regenerated.
