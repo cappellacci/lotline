@@ -371,8 +371,8 @@ const SECTIONS = {
     UI.b = b; UI.pins = {};
     const scen = scenariosIn(b);
     UI.detail = scen.includes(UI.detail) ? UI.detail : scen[0];
-    const yrs = `${b.meta.origin_year + 1}–${b.meta.origin_year + b.meta.horizon_years}`;
-    $("results-lead").textContent = `Net new homes in ${b.meta.state} over ${b.meta.horizon_years} years (${yrs}) compared with no policy change (baseline). Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
+    const yrs = AGG.windowLabel(b);  // from the bundle's totals (D-061: 2027–2031 for origin 2025)
+    $("results-lead").textContent = `Net new homes in ${b.meta.state} over ${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""} compared with no policy change (baseline). Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
     if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
     const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
       `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
@@ -387,7 +387,7 @@ const SECTIONS = {
     const tabs = scen.map((s) => `<button type="button" data-detail="${esc(s)}" aria-pressed="${s === UI.detail}">${esc(scenLabel(s))}</button>`).join("");
     return `${flagHtml(b.meta)}
       <div class="card" id="headline-card">
-        <p class="eyebrow">Five-year total, ${yrs}</p>
+        <p class="eyebrow">Five-year total${yrs ? `, ${yrs}` : ""}</p>
         <div class="headline" id="headline"></div>
         <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
           <span class="muted" id="outcome-note"></span></div>

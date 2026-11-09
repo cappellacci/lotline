@@ -104,7 +104,16 @@
     return { base, rows };
   }
 
-  const api = { TIERS, FACTORS, percentile, shiftScale, homesFromDraws, summarize, shareOfNeed, tornado };
+  // The five-year window's label, read from the bundle rather than worked out from meta (D-061): the
+  // projection starts after a baseline-only lead year, so origin 2025 gives 2027-2031, not 2026-2030, and
+  // `totals` already carries that window as its multi-year `period` ("2027-2031"). Returns "2027–2031"
+  // (en dash), or null when no multi-year row is present, so the page never prints a window it cannot see.
+  function windowLabel(bundle) {
+    const row = ((bundle && bundle.totals) || []).find((r) => /^\d{4}-\d{4}$/.test(String(r.period)));
+    return row ? String(row.period).replace("-", "\u2013") : null;
+  }
+
+  const api = { TIERS, FACTORS, percentile, shiftScale, homesFromDraws, summarize, shareOfNeed, tornado, windowLabel };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.LotlineAggregate = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
