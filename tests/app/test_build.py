@@ -180,6 +180,20 @@ def test_gross_and_net_are_explained_in_plain_words(tmp_path):
         assert gone not in html, gone
 
 
+def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
+    """Schemas 1.12 (Ben, 2026-11-09): actual yearly permits as bars beside the reform's yearly additions."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    parts = ('id="record-card"', "function recordHtml", "What gets built now, and what the reform would add")
+    for part in (*parts, "Actually permitted", "Added by the reform (P10–P90"):
+        assert part in html, part
+    state_file = (tmp_path / "states" / "zz.js").read_text()
+    doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])
+    measures = {r["measure"] for r in doc["observed"]}
+    assert measures == {"adu_permits", "homes_2_4"}
+    yearly = [r for r in doc["totals"] if r["outcome"] == "permits_added" and len(r["period"]) == 4]
+    assert len(yearly) == 5  # one per window year, the whiskers
+
+
 def test_baseline_card_reads_the_bundle_baseline(tmp_path):
     """Schemas 1.11: the page shows the no-change forecast from the bundle's `baseline` part."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()

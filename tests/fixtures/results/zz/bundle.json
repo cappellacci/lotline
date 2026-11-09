@@ -6,7 +6,7 @@
   "commit_sha": "0000000000000000000000000000000000000000",
   "run_at": "2026-11-06T00:00:00Z",
   "engine_version": "0.0.1",
-  "schemas_version": "1.11",
+  "schemas_version": "1.12",
   "config_hash": "0000000000000000000000000000000000000000000000000000000000000000",
   "origin_year": 2025,
   "horizon_years": 5,
@@ -916,6 +916,206 @@
    "places": 2,
    "coverage_share": 1.0,
    "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "size_class": "2_4",
+   "period": "2027-2031",
+   "p10": 22.0,
+   "p50": 52.0,
+   "p90": 115.0,
+   "mean": 59.5455,
+   "places": 2,
+   "coverage_share": 1.0,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "size_class": "2_4",
+   "period": "2027",
+   "p10": 4.0,
+   "p50": 11.0,
+   "p90": 21.0,
+   "mean": 12.03275,
+   "places": 2,
+   "coverage_share": 1.0,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "size_class": "2_4",
+   "period": "2028",
+   "p10": 3.0,
+   "p50": 10.0,
+   "p90": 23.0,
+   "mean": 11.9385,
+   "places": 2,
+   "coverage_share": 1.0,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "size_class": "2_4",
+   "period": "2029",
+   "p10": 3.0,
+   "p50": 10.0,
+   "p90": 25.0,
+   "mean": 11.8595,
+   "places": 2,
+   "coverage_share": 1.0,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "size_class": "2_4",
+   "period": "2030",
+   "p10": 3.0,
+   "p50": 9.0,
+   "p90": 26.0,
+   "mean": 11.83275,
+   "places": 2,
+   "coverage_share": 1.0,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "size_class": "2_4",
+   "period": "2031",
+   "p10": 2.0,
+   "p50": 9.0,
+   "p90": 24.0,
+   "mean": 11.882,
+   "places": 2,
+   "coverage_share": 1.0,
+   "basis": "reported",
+   "state": "ZZ"
+  }
+ ],
+ "observed": [
+  {
+   "measure": "homes_2_4",
+   "year": 2019,
+   "value": 12.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "measure": "homes_2_4",
+   "year": 2020,
+   "value": 16.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "measure": "homes_2_4",
+   "year": 2021,
+   "value": 20.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "measure": "homes_2_4",
+   "year": 2022,
+   "value": 12.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "measure": "homes_2_4",
+   "year": 2023,
+   "value": 16.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "measure": "homes_2_4",
+   "year": 2024,
+   "value": 20.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "measure": "homes_2_4",
+   "year": 2025,
+   "value": 12.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "reported",
+   "state": "ZZ"
+  },
+  {
+   "measure": "adu_permits",
+   "year": 2019,
+   "value": 0.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "flagged_permits",
+   "state": "ZZ"
+  },
+  {
+   "measure": "adu_permits",
+   "year": 2020,
+   "value": 1.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "flagged_permits",
+   "state": "ZZ"
+  },
+  {
+   "measure": "adu_permits",
+   "year": 2021,
+   "value": 1.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "flagged_permits",
+   "state": "ZZ"
+  },
+  {
+   "measure": "adu_permits",
+   "year": 2022,
+   "value": 1.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "flagged_permits",
+   "state": "ZZ"
+  },
+  {
+   "measure": "adu_permits",
+   "year": 2023,
+   "value": 1.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "flagged_permits",
+   "state": "ZZ"
+  },
+  {
+   "measure": "adu_permits",
+   "year": 2024,
+   "value": 1.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "flagged_permits",
+   "state": "ZZ"
+  },
+  {
+   "measure": "adu_permits",
+   "year": 2025,
+   "value": 2.0,
+   "places": 2,
+   "population_share": null,
+   "basis": "flagged_permits",
    "state": "ZZ"
   }
  ]

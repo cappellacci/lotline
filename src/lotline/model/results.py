@@ -1,6 +1,6 @@
 """The results bundle: what `lotline results --state XX` writes for the static app (#310; WS-ENGINE brief).
 
-`reports/results/<st>/bundle.json` holds seven tables (schemas `results_*`, schemas.py 1.11):
+`reports/results/<st>/bundle.json` holds eight tables (schemas `results_*`, schemas.py 1.12):
 
 - `meta`: one row: commit, run time, engine and schema versions, config hash, origin, draws, seed, the state's
   role, data tier, overlap flag and caveats, and which scenarios the engine cannot run yet.
@@ -13,6 +13,8 @@
 - `scorecard`: validation rows (none wired yet; the page shows "not yet scored").
 - `baseline`: the no-policy-change forecast (`model/baseline.py`), homes permitted statewide per BPS building
   size and period, so the page can show the level the scenarios add to (`baseline_table`).
+- `observed`: what was actually permitted in the years before the window (`observed_table`): ADU permits where
+  local data flag them, and homes in 2-4 unit buildings from BPS.
 
 Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide. Fees (a statewide
 baseline forecast for every place) and the stacked combinations (`model/combine.py` not yet written) are
@@ -42,7 +44,7 @@ from lotline.model import aggregate, baseline
 from lotline.model import eligible_proxy as proxy
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
-PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard", "baseline")
+PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard", "baseline", "observed")
 TABLE = {part: f"results_{part}" for part in PARTS}
 ENGINE_SCENARIOS = ("adu", "missing_middle")  # scenarios `build_bundle` can fill today
 REPO = Path(__file__).resolve().parents[3]
@@ -298,7 +300,7 @@ def baseline_table(panel: pd.DataFrame, state: str, origin: int, params=None) ->
         h = table["horizon"].to_numpy()
         by_class[size] = np.stack([draws[h == k].sum(axis=0) for k in range(1, horizon + 1)]).astype(float)
         modelled |= set(table["geoid"])
-    by_class = {"all": sum(by_class.values()), **by_class}
+    by_class = {"all": sum(by_class.values()), **by_class, "2_4": by_class["2"] + by_class["3_4"]}
 
     cols = [baseline.outcome_column(s, reported) for s in baseline.SIZE_CLASSES]
     at_origin = panel[panel["year"] == origin]
@@ -319,6 +321,66 @@ def baseline_table(panel: pd.DataFrame, state: str, origin: int, params=None) ->
         basis="reported" if reported else "with_imputation",
         state=st,
     )
+
+
+def observed_table(
+    panel: pd.DataFrame, permits, jurisdictions, state: str, origin: int, years: int = 7, params=None
+) -> pd.DataFrame:
+    """The `observed` part: what was actually permitted in the `years` years ending at the origin.
+
+    - `homes_2_4`: units in 2-unit and 3-4 unit buildings, summed over every BPS place in the
+      (holdout-filtered) panel, on the baseline's basis (`use_reported_only`); `places` counts the places
+      with a row that year.
+    - `adu_permits`: `adu.observed_adu_counts` (sources that flag ADUs; the larger count where two cover one
+      place), summed over places; `places` = every place in those sources over the years, and
+      `population_share` the covered places' share of the 2020 population of the state's places (GEOIDs
+      longer than 5 characters on both sides, so county remainders are left out). Without permits, or none
+      flagged, there are no ADU rows.
+    By hand: 2-unit 4 + 3-4 unit 6 in one place and 2 in another in 2025 -> homes_2_4 = 12 from 2 places.
+    """
+    from lotline.model.scenarios import adu
+
+    p = params or load_params("baseline")
+    reported = bool(p["use_reported_only"].value)
+    first = origin - years + 1
+    st = state.upper()
+    w = panel[(panel["state"] == st) & panel["year"].between(first, origin)]
+    cols = [baseline.outcome_column(s, reported) for s in ("2", "3_4")]
+    rows = []
+    for year in range(first, origin + 1):
+        y = w[w["year"] == year]
+        rows.append(
+            {
+                "measure": "homes_2_4",
+                "year": year,
+                "value": float(y[cols].sum().sum()),
+                "places": int(y["geoid"].nunique()),
+                "population_share": None,
+                "basis": "reported" if reported else "with_imputation",
+            }
+        )
+    if permits is not None and len(permits) and adu._is_adu(permits).any():
+        counts = adu.observed_adu_counts(permits, first, origin)
+        by_year = counts.groupby("year")["adu_permits"].sum()
+        covered = set(counts["geoid"])
+        share = None
+        if jurisdictions is not None and "pop_2020" in jurisdictions:
+            pop = jurisdictions.set_index("geoid")["pop_2020"].astype(float)
+            places_pop = pop[pop.index.str.len() > 5].sum()
+            in_places = pop.reindex(sorted(g for g in covered if len(g) > 5)).sum()
+            share = min(1.0, float(in_places / places_pop)) if places_pop > 0 else None
+        for year in range(first, origin + 1):
+            rows.append(
+                {
+                    "measure": "adu_permits",
+                    "year": year,
+                    "value": float(by_year.get(year, 0)),
+                    "places": len(covered),
+                    "population_share": share,
+                    "basis": "flagged_permits",
+                }
+            )
+    return pd.DataFrame(rows).assign(state=st)
 
 
 # ---- the bundle -----------------------------------------------------------------------------------------
@@ -354,7 +416,7 @@ def write_bundle(bundle: Mapping[str, pd.DataFrame], path: Path) -> Path:
 
 
 def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
-    """Read and validate a `bundle.json` back into the seven tables."""
+    """Read and validate a `bundle.json` back into the eight tables."""
     from lotline.schemas import columns
 
     doc = json.loads(Path(path).read_text())
@@ -367,7 +429,7 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
 
 
 def build_bundle(state: str, store, *, role: str | None = None, origin: int | None = None, draws=None):
-    """Run every scenario the engine supports for one state and assemble the seven tables (unwritten)."""
+    """Run every scenario the engine supports for one state and assemble the eight tables (unwritten)."""
     from lotline.model.scenarios import adu, mm
 
     st = state.upper()
@@ -425,4 +487,5 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     scorecard = pd.DataFrame(columns=_columns("scorecard")).assign(state=pd.Series(dtype=str))
     panel = panels.load(st, store, theme="adu", rule_version=eligible.RULE_VERSION)
     base = baseline_table(panel, st, origin)
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base}
+    seen = observed_table(panel, store.read(st, "permits"), store.read(st, "jurisdictions"), st, origin)
+    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}

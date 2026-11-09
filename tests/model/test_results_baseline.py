@@ -71,9 +71,11 @@ def test_statewide_sums_by_hand(monkeypatch):
     # One year: all = (11, 2, 8) -> P50 8, mean 7.
     assert t.loc[("all", "2027"), ["p50", "mean"]].tolist() == pytest.approx([8, 7])
     assert t.loc[("2", "2031"), ["p10", "p50", "p90", "mean"]].tolist() == [0, 0, 0, 0]
-    # Window and rows: 5 size classes x (1 window + 5 years).
+    # 2-4 units (schemas 1.12) = 2-unit + 3-4 unit within each draw: (50, 0, 25) here, P50 25.
+    assert t.loc[("2_4", "2027-2031"), "p50"] == pytest.approx(25)
+    # Window and rows: 6 size classes x (1 window + 5 years).
     assert sorted({p for _, p in t.index}) == ["2027", "2027-2031", "2028", "2029", "2030", "2031"]
-    assert len(t) == 30
+    assert len(t) == 36
     assert (t["places"] == 2).all() and (t["coverage_share"] == 1.0).all()
     assert (t["basis"] == "reported").all() and (t["state"] == "ZZ").all()
     validate(t.reset_index(), "results_baseline")
@@ -152,3 +154,60 @@ def test_other_states_rows_are_ignored(monkeypatch):
     assert seen["states"] == {"ZZ"}
     assert (t[["p10", "p50", "p90", "mean"]] == 0).all().all() and (t["places"] == 0).all()
     assert (t["coverage_share"] == 0.0).all()
+
+
+def _permit(geoid, year, source, adu):
+    return {
+        "jurisdiction_geoid": geoid,
+        "issue_year": year,
+        "source": source,
+        "building_type_std": "ADU" if adu else "SFD",
+        "adu_type": None,
+    }
+
+
+def test_observed_table_by_hand():
+    """Schemas 1.12. Two years (2024-2025). 2-4 unit homes: 2025 place A 2-unit 4 + 3-4 unit 6, place B 3-4
+    unit 2 -> 12 from 2 places; 2024 A only, 2-unit 2 -> 2 from 1 place. A YY row never counts.
+    ADUs: source 'city' flags ADUs in place A (3 in 2025, 1 in 2024); source 'metro' also covers A (1 in 2025,
+    larger count kept: 3) and place C (2 in 2024). Source 'other' flags none, so its place D is not covered.
+    Covered places A (1,000 people) and C (3,000) of places A-D (10,000) -> population share 0.4."""
+    rows = []
+    for geoid, year, u2, u34, state in (("A", 2025, 4, 6, "ZZ"), ("B", 2025, 0, 2, "ZZ"),
+                                        ("A", 2024, 2, 0, "ZZ"), ("X", 2025, 50, 50, "YY")):  # fmt: skip
+        row = {"state": state, "geoid": geoid, "year": year}
+        for s in SIZES:
+            v = {"2": u2, "3_4": u34}.get(s, 0)
+            row[f"units_{s}"] = v
+            row[f"units_{s}_rep"] = v
+        rows.append(row)
+    panel = pd.DataFrame(rows)
+    geo = {"A": "9900001", "C": "9900003", "D": "9900004"}
+    permits = pd.DataFrame(
+        [_permit(geo["A"], 2025, "city", True)] * 3
+        + [_permit(geo["A"], 2024, "city", True)]
+        + [_permit(geo["A"], 2025, "metro", True)]
+        + [_permit(geo["C"], 2024, "metro", True)] * 2
+        + [_permit(geo["D"], 2025, "other", False)]
+    )
+    juris = pd.DataFrame(
+        {
+            "geoid": [geo["A"], "9900002", geo["C"], geo["D"], "99001"],
+            "pop_2020": [1000, 2000, 3000, 4000, 50000],
+        }
+    )
+    t = results.observed_table(panel, permits, juris, "zz", 2025, years=2, params=P).set_index(
+        ["measure", "year"]
+    )
+    assert t.loc[("homes_2_4", 2025), ["value", "places"]].tolist() == [12, 2]
+    assert t.loc[("homes_2_4", 2024), ["value", "places"]].tolist() == [2, 1]
+    assert t.loc[("adu_permits", 2025), "value"] == 3 and t.loc[("adu_permits", 2024), "value"] == 3
+    assert (t.xs("adu_permits")["places"] == 2).all()
+    assert t.xs("adu_permits")["population_share"].tolist() == pytest.approx([0.4, 0.4])
+    assert (t.xs("adu_permits")["basis"] == "flagged_permits").all() and t.xs("homes_2_4")["basis"].eq(
+        "reported"
+    ).all()
+    validate(t.reset_index(), "results_observed")
+    # No ADU-flagging source: no ADU rows at all (a missing count is not a zero).
+    none = results.observed_table(panel, permits[permits["source"] == "other"], juris, "ZZ", 2025, 2, P)
+    assert set(none["measure"]) == {"homes_2_4"}

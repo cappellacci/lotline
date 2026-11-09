@@ -385,6 +385,62 @@ function flagHtml(m) {
 // The baseline (results_baseline, schemas 1.11): homes permitted with no policy change. Read as is from the
 // bundle; the sliders do not move it. "all" is summed within each draw, so it is not the sum of the size rows.
 const SIZE_WORDS = { "1": "Single-family (1 unit)", "2": "Duplexes (2 units)", "3_4": "3–4 unit buildings", "5p": "5 or more units" };
+// The state's own record next to the forecast (results_observed, schemas 1.12): bars = what was actually
+// permitted each year; whiskers = the reform's added permits each year (P10-P90, tick at the midpoint) at the
+// engine's central assumptions, so the sliders don't move them; for missing middle a grey whisker is the
+// no-change forecast of homes in 2-4 unit buildings. Permits against permits, one linear scale.
+const RECORD = {
+  adu: { measure: "adu_permits", what: "ADU permits", base: null },
+  missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", base: "2_4" },
+};
+function recordHtml(b, d) {
+  const spec = RECORD[d];
+  if (!spec) return "";
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const obs = (b.observed || []).filter((r) => r.measure === spec.measure).sort((x, y) => x.year - y.year);
+  const fut = (b.totals || []).filter((r) => r.scenario === d && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
+    .map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year);
+  const base = spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base && /^\d{4}$/.test(r.period))
+    .map((r) => ({ ...r, year: Number(r.period) })) : [];
+  const title = `<h3 class="h3">What gets built now, and what the reform would add</h3>`;
+  if (!obs.length && !fut.length) return `${title}<p class="pending">No permit record or yearly forecast for this state yet.</p>`;
+  const years = [...obs.map((r) => r.year), ...fut.map((r) => r.year)];
+  const y0 = Math.min(...years), y1 = Math.max(...years);
+  const top = Math.max(1, ...obs.map((r) => r.value), ...fut.map((r) => r.p90), ...base.map((r) => r.p90));
+  const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
+  const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
+  const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
+  const color = scenColor(d), parts = [];
+  for (const t of ticks) parts.push(`<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)" stroke-width="1"></line>
+    <text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmtN(t)}</text>`);
+  for (let yr = y0; yr <= y1; yr++) parts.push(`<text x="${x(yr)}" y="${H - 8}" text-anchor="middle">${yr}</text>`);
+  const bw = Math.min(28, slot * 0.6);
+  for (const r of obs) parts.push(`<rect x="${x(r.year) - bw / 2}" y="${y(r.value)}" width="${bw}" height="${Math.max(0, y(0) - y(r.value))}" fill="var(--ink-muted)" opacity="0.55"><title>${r.year}: ${fmtN(r.value)} ${esc(spec.what)}</title></rect>`);
+  const whisker = (xc, r, stroke, label) => `<g><line x1="${xc}" x2="${xc}" y1="${y(r.p10)}" y2="${y(r.p90)}" stroke="${stroke}" stroke-width="2"></line>
+    <line x1="${xc - 6}" x2="${xc + 6}" y1="${y(r.p10)}" y2="${y(r.p10)}" stroke="${stroke}" stroke-width="2"></line>
+    <line x1="${xc - 6}" x2="${xc + 6}" y1="${y(r.p90)}" y2="${y(r.p90)}" stroke="${stroke}" stroke-width="2"></line>
+    <rect x="${xc - 5}" y="${y(r.p50) - 2}" width="10" height="4" fill="${stroke}"></rect>
+    <title>${r.year}: ${esc(label)} ${fmtN(r.p10)} to ${fmtN(r.p90)}, midpoint ${fmtN(r.p50)}</title></g>`;
+  const off = base.length ? Math.min(10, slot * 0.18) : 0;
+  for (const r of base) parts.push(whisker(x(r.year) - off, r, "var(--scenario-baseline)", `${spec.what} with no change`));
+  for (const r of fut) parts.push(whisker(x(r.year) + off, r, color, "added by the reform"));
+  const gap = obs.length && fut.length && fut[0].year - obs[obs.length - 1].year > 1 ? obs[obs.length - 1].year + 1 : null;
+  if (gap !== null) parts.push(`<text x="${x(gap)}" y="${T + 12}" text-anchor="middle">not modelled</text>`);
+  const svg = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${name}: ${spec.what} permitted each year, and the reform's added permits each year`)}" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>`;
+  const a = obs.length ? obs[0] : null;
+  const cover = d === "adu" && a ? (Number.isFinite(a.population_share)
+    ? ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, home to about ${Math.round(a.population_share * 100)}% of ${esc(name)}'s people, so they understate the state.`
+    : ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, so they understate the state.`) : "";
+  const legend = `<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
+    <span><span style="display:inline-block;width:12px;height:10px;background:var(--ink-muted);opacity:.55;margin-right:6px"></span>Actually permitted</span>
+    ${base.length ? `<span><span style="display:inline-block;width:12px;height:3px;background:var(--scenario-baseline);margin-right:6px;vertical-align:middle"></span>Expected with no change (P10–P90)</span>` : ""}
+    <span><span style="display:inline-block;width:12px;height:3px;background:${color};margin-right:6px;vertical-align:middle"></span>Added by the reform (P10–P90, bar at the midpoint)</span></div>`;
+  return `${title}
+    <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(scenLabel(d))} would add each year from ${fut.length ? fut[0].year : "the window's start"}. The forecast is a range for each year; the reform's homes build up over the first years.</p>
+    ${legend}${svg}
+    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. Whiskers: added permits at the engine's central assumptions; the sliders above do not move this chart.</p>`;
+}
+
 function baselineHtml(b) {
   const rows = b.baseline || [];
   const win = rows.find((r) => r.size_class === "all" && r.period.includes("-"));
@@ -433,6 +489,7 @@ const SECTIONS = {
         ${pendNote}
         <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
       </div>
+      <div class="card" id="record-card"></div>
       ${baselineHtml(b)}
       <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
       <div class="card"><h3 class="h3">From legal lots to built homes</h3>
@@ -554,6 +611,7 @@ function updateResults() {
   const d = UI.detail, rd = R[d][o];
   const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
   $("two-numbers").innerHTML = twoNumbersHtml(b, d, R[d]);
+  $("record-card").innerHTML = recordHtml(b, d);
   $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}:</p>
     <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
     <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>`;
