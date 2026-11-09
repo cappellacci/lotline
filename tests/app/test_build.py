@@ -267,7 +267,7 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     slots = ('id="data-method"', 'id="data-body"', 'id="dash-host"', 'id="data-sources"')
     order = [html.index(p) for p in slots]
     assert order == sorted(order)
-    method = html[html.index('id="data-method"'):html.index('id="data-body"')]
+    method = html[html.index('id="data-method"') : html.index('id="data-body"')]
     kinds = ("Parcels", "Zoning", "Building permits", "Prices and rents", "Development fees", "2027–2031")
     for kind in kinds:
         assert kind in method, kind
@@ -281,8 +281,14 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
     from lotline.config import load_params
 
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    parts = ("Overlap check", 'id="tornado"', "Technical detail", 'id="dag"', 'id="conf-table"',
-             'id="checks"')
+    parts = (
+        "Overlap check",
+        'id="tornado"',
+        "Technical detail",
+        'id="dag"',
+        'id="conf-table"',
+        'id="checks"',
+    )
     for part in parts:
         assert part in html, part
     # Ben, 2026-11-09: the model page runs in order: goal, data, model and range, other states, then limits.
