@@ -83,6 +83,17 @@ sources:
       2026-10-21. gis.greensboro-nc.gov/robots.txt does not exist (404). Units from OccupancyDesc and
       NumUnits; ADUs from the description parser. Missing from the catalog until 2026-10-21 (it listed only
       the current-year ArcGIS experience).
+  - name: wilmington_permits
+    url: https://gis.nhcgov.com/server/rest/services/Thematic/BuildingPermits/FeatureServer/0
+    license: New Hanover County public records (no license stated; county open-data disclaimer, as is)
+    access: arcgis
+    cadence: monthly (EnerGov permits 2019 on, converted OneSolution records 2014-2018)
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/wilmington_permits.py. New Hanover County issues every building
+      permit in Wilmington (3774440, no BPS row of its own) and the unincorporated county. Building permit
+      types only; 48,930 permits kept on 2026-11-10. No unit field; ADUs from the description (291 in
+      Wilmington 2014-2026). gis.nhcgov.com/robots.txt does not exist (404). See
+      reports/nc/wilmington-adu-scout.md.
   - name: asheville_permits
     url: https://gis.ashevillenc.gov/server/rest/services/Permits/AccelaPermitsView/FeatureServer/2
     license: Open Data Commons PDDL 1.0 (City of Asheville Hub item b8fdb63db30b42d0875afb617e1551f4)
