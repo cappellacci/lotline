@@ -25,5 +25,7 @@
   event reads as special-use to by-right; correct the 2022 row's coding note.
 - **AI:** Claude Code did the scouting, document reading and report. Checked by reading the ordinance text and
   Legistar action histories directly; network failures were re-tried by two routes.
-- **Open / next:** Ben checks the layer from another network, or sends the records request or the short ADU-list
+- **Update (same day):** the host came back. "Permits Issued" holds only 3,059 residential permits from 2021,
+  with no ADU code or description (report §2a). Verdict unchanged.
+- **Open / next:** Ben sends the records request or the short ADU-list
   request in the report's §4.

@@ -3,13 +3,13 @@
 *Data thread, 2026-11-10 (branch `claude/nc-winston-salem-permits-51b037`). Place 3775000, Forsyth County 37067.
 No engine, scenario or calibration runs. Nothing was downloaded into `LOTLINE_DATA_DIR`.*
 
-**Verdict: no usable source today, so no adapter was built.** Winston-Salem has an open bulk layer of permits
-since 2013, published by the joint City-County office: MapForsyth's `Development_And_Permits` FeatureServer,
-layer 0 "Permits Issued". But its host, `maps.co.forsyth.nc.us`, refuses connections from this network and from
-the web-fetch proxy (TCP timeout or `ECONNREFUSED`, checked six times on 2026-11-10). So the layer's fields, its
-license text and its record count could not be read, and Stage 2 (adapter, tests, counts) can't start. Two
-cheap ways forward are in §4: Ben checks the layer from another network, or sends the records request drafted
-there.
+**Verdict: no usable source, so no adapter.** Winston-Salem's only open bulk permit layer is MapForsyth's
+`Development_And_Permits` FeatureServer, layer 0 "Permits Issued", published by the joint City-County office.
+Its service description says "since January 1, 2013", but it holds **3,059 residential permits issued
+2021-01-04 to 2021-12-30 only** (`Permit_Yea` = 2021 on every row). It has no ADU code and no free-text
+description, and 2021 is before by-right ADUs (2022-02-07). So it can't give ADU permits by year. The host
+refused this network for most of 2026-11-10 and answered later the same day, after Ben read the layer from
+another network (§2a). The records request and the ADU-list request in §4 are now the way forward.
 
 The rule history *is* settled, from primary documents on the city's Legistar API, and it changes how NC's ADU
 panel should read Winston-Salem (§3). The city also published its own count: **10 ADUs permitted from
@@ -29,7 +29,7 @@ to be placed by corporate limits, as `durham_permits` does. MapForsyth publishes
 
 | # | Source | URL | Format | Years | Rows = permits? | ADU flag | Parcel ID | Units | License / terms | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | **MapForsyth "Permits Issued"** (City-County Planning and Development Services) | `https://maps.co.forsyth.nc.us/arcgis/rest/services/Planning_Inspection/Development_And_Permits/FeatureServer/0` | ArcGIS FeatureServer (JSON, paged) | "since 2013" (service description, as indexed by a search engine) | Probably (layer name; layer 1 is "Residential Development Approvals") | Unknown: fields not readable | Unknown | Unknown | Unknown. The copyright text credits City-County Planning and Development Services and MapForsyth; no license seen | **Blocked: host unreachable** from this network and the fetch proxy (2026-11-10). No Wayback copy of this service |
+| 1 | **MapForsyth "Permits Issued"** (City-County Planning and Development Services) | `https://maps.co.forsyth.nc.us/arcgis/rest/services/Planning_Inspection/Development_And_Permits/FeatureServer/0` | ArcGIS FeatureServer (JSON, paged) | "since 2013" per the description; **only 2021 in the data** | Yes (3,059 residential permits) | No: no ADU type or use code, no description | `PIN` | `NUMBER_UNI` (mostly 0/blank) | Unknown. The copyright text credits City-County Planning and Development Services and MapForsyth; no license seen | **Not usable for ADUs**: read later on 2026-11-10 (§2a). Only 2021, residential, no ADU code, no description |
 | 2 | City-County BuildIT portal | `https://buildit.cityofws.org/wsfcpermit` | Web search, one record at a time | Unknown | Yes, one at a time | Permit type, maybe | Probably | Unknown | No bulk export. robots.txt doesn't exist (404) | **Not usable**: rebuilding a dataset from one-record lookups is scraping. Not attempted |
 | 3 | `CityofWS/TEST_Accela/FeatureServer` on the same host | `https://maps.co.forsyth.nc.us/arcgis/rest/services/CityofWS/TEST_Accela/FeatureServer` | ArcGIS | Unknown | Unknown | Unknown | Unknown | Unknown | Labelled TEST | Blocked (same host); a test service shouldn't be a source anyway |
 | 4 | City of Winston-Salem ArcGIS Online org (`services.arcgis.com/XAnuVx6VEMybNvyd`, 357 services; `services1.arcgis.com/5Yf8nIJWE7cxpd3N`, 134) | listed on 2026-11-10 | ArcGIS | — | — | — | — | — | — | **No permit layer.** Nearest: `Development` (Rezonings, Planning Board Reviews, Major Subdivisions) |
@@ -51,6 +51,36 @@ What was tried on 2026-11-10:
   March 2026), so the server is normally up. None of the permits service.
 - `www.cityofws.org` (UDO amendment PDFs) answers with a Cloudflare browser check (HTTP 403). It was **not**
   bypassed. Legistar (`webapi.legistar.com/v1/winston-salem`) is open and holds the same ordinance documents.
+
+## 2a. What "Permits Issued" holds (read 2026-11-10, after the host came back)
+
+- **3,059 rows, all issued in 2021.** `IssueDate` runs 2021-01-04 to 2021-12-30, and `Permit_Yea` is 2021 on
+  every row. The layer is a one-year snapshot, despite its "since 2013" description. No archive of other
+  years exists on the server: of 335 services, none other holds permits.
+- **Residential only:** `CASE_GROUP` is Single-Family (2,775) or Multi-Family (284).
+- **`CASE_TYPE_` values:**
+  - Single-Family: New Building 1,126; Alteration 1,115; Addition 445; Manufactured Home 75; Modular Home 13;
+    **Accessory Building 1**.
+  - Multi-Family: Alteration/Repair 140; Townhouse/Twin/UR 135; Apartments 7; Duplex 2.
+- **`PROPERTY_U` has no accessory-dwelling use code.** The one accessory-building permit is in the
+  unincorporated county (`MUNJUR` = FC) and is 1,654 sq ft, so probably not an ADU.
+- **Other fields:**
+  - `PIN` (parcel), so a permit could be joined to a parcel.
+  - `MUNJUR` jurisdiction: WS 1,758; FC 700; LE (Lewisville) 210; CL (Clemmons) 109; Kernersville 51;
+    others. This is how the city's rows would be split out.
+  - `NUMBER_UNI` (mostly 0 or blank), `SQFT`, `AMOUNT`, `ISSUED`, `CO_DATE`, `STATUS_COD`.
+  - Personal fields (`INSPECTOR`, street address, X and Y) would never be requested.
+- **No description field,** so ADUs inside alteration or addition permits (conversions, attached units)
+  can't be found.
+- **Terms:** `copyrightText` and `description` are empty. The service credits "City-County Planning and
+  Development Services, MapForsyth". No license was found.
+- **Layer 1,** "Residential Development Approvals", has 75 rows: subdivision approvals, not permits.
+- **Not used:**
+  - `TaxReappraisal/PERMITS`: internal appraiser assignment lists, about 1,850 rows, with staff names.
+  - `EnvironmentalHealth/EnvHealth_ResidentialDevelopment`: linework and 2018-2021 parcels, not permits.
+
+An adapter on this layer would give one pre-reform year of new-home counts, which Census BPS already gives.
+For ADUs it gives nothing, so it wasn't built.
 
 ## 3. ADU rule history (primary sources)
 
@@ -109,7 +139,8 @@ series, until §4 delivers the permits.
 
 ## 4. Ways forward (for Ben)
 
-1. **Two-minute check from another network** (phone hotspot, or a browser at home):
+1. ~~Two-minute check from another network~~ **Done on 2026-11-10 (§2a): the layer is 2021 only, with no ADU
+   code.** Original step, kept for the record:
    `https://maps.co.forsyth.nc.us/arcgis/rest/services/Planning_Inspection/Development_And_Permits/FeatureServer/0?f=json`.
    - If it loads, save the JSON (fields, description, copyright, `maxRecordCount`) to the shared notes folder
      or an issue, and look for a license or terms link on `www.mapforsyth.org`.
@@ -130,7 +161,8 @@ series, until §4 delivers the permits.
    > status, application, issue and final or certificate-of-occupancy dates, parcel number (PIN), jurisdiction
    > (city or county), zoning district, number of dwelling units, and valuation. I don't need owner or
    > contractor names, phone numbers or emails. If it is easier, the attribute table of the "Permits Issued"
-   > layer (Planning_Inspection/Development_And_Permits/FeatureServer/0) is enough. Please also say under
+   > layer (Planning_Inspection/Development_And_Permits/FeatureServer/0) for every year since 2013 is enough
+   > (the published layer holds only 2021). Please also say under
    > what terms the data may be reused and republished. The data is for a non-commercial research model of
    > housing production; it will not be redistributed as is.
 
@@ -141,8 +173,9 @@ series, until §4 delivers the permits.
 
 ## 5. What was not done
 
-- No adapter, tests, `nc.yaml` entry or `docs/data_provenance.md` row: no data was fetched, so there is nothing
-  to cite. They go in with the adapter.
+- No adapter, tests, `nc.yaml` entry or `docs/data_provenance.md` row: the open layer has no ADU signal (§2a),
+  and only aggregate queries were run against it (counts and distinct values, nothing saved), so there is
+  no dataset to cite. They go in with whatever the records request returns.
 - No precision/recall sample: there is no parser output to check.
 - The 10 permitted ADUs are not linked to parcels. The memo lists street addresses; they are left out of this
   report on purpose.
