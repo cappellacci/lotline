@@ -93,6 +93,17 @@ sources:
       record since the November 2013 launch (66,521 on 2026-11-10). No issue date (years are application
       years) and no county PIN. ADUs from the city's "ADU Detached" / "ADU Attached" categories (2022 on),
       else from the description parser; scout and hand check in reports/nc/asheville-adu-scout.md.
+  - name: chapel_hill_permits
+    url: https://www.arcgis.com/sharing/rest/content/items/f336a911f4fc424bbe1a53a5e7abb529/data
+    license: Town of Chapel Hill open data hub (public record, NCGS 132; no license stated on the item)
+    access: download
+    cadence: closed (legacy extract uploaded 2024-09-16; not updated)
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/chapel_hill_permits.py. "LAMA Legacy Permit Data Production"
+      zipped File Geodatabase on the town's open-data hub: 18,350 permit records created 2015-05-11 to
+      2021-05-10 (5,747 issued building permits kept on 2026-11-10, 30 ADUs). Read with the standard-library
+      reader filegdb.py. Permits since mid-2021 are in the town's OpenGov portal, which has no public export
+      and blocks automated access; no records request (Ben, 2026-11-10). See reports/nc/chapel-hill-adu-scout.md.
   - name: cary_permits
     url: https://data.townofcary.org/explore/dataset/permit-applications/
     license: CC0 1.0 (dataset page); portal terms of service ODbL 1.0 with attribution to the Town of Cary
