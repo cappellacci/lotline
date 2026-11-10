@@ -94,6 +94,17 @@ sources:
       2021-05-10 (5,747 issued building permits kept on 2026-11-10, 30 ADUs). Read with the standard-library
       reader filegdb.py. Permits since mid-2021 are in the town's OpenGov portal, which has no public export
       and blocks automated access; no records request (Ben, 2026-11-10). See reports/nc/chapel-hill-adu-scout.md.
+  - name: cary_permits
+    url: https://data.townofcary.org/explore/dataset/permit-applications/
+    license: CC0 1.0 (dataset page); portal terms of service ODbL 1.0 with attribution to the Town of Cary
+    access: manual
+    cadence: daily (portal); registered export per download
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/cary_permits.py. "Building Permit Applications" (BLDS layout):
+      88,219 applications from 2019-01-02 on 2026-11-10, with Wake PIN, housing units and BPS-style permit
+      types. data.townofcary.org/robots.txt disallows /api/ and dataset downloads for every user agent, so
+      the CSV export is downloaded in a browser and registered (`lotline manifest register --source
+      cary_permits`). ADUs from the adapter's own description rule; see reports/nc/cary-adu-scout.md.
   - name: durham_active_permits
     url: https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Permits/FeatureServer/13
     license: City of Durham open data (Privacy Notice and Terms of Service on the Hub item)
