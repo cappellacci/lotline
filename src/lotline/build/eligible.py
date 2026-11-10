@@ -24,6 +24,12 @@ A jurisdiction counted from parcels has a real count only in its roll year(s). `
 ACS years from its own ACS series scaled to the roll(s), flagged `parcels_scaled_acs` (#208), or, between two
 rolls, by interpolating the real counts (`parcels_interpolated`, D-035 addendum), so engines that
 need the 2010-2024 level window have a denominator in every year.
+
+County remainders come in two kinds (D-074 step 2). The stored table is the **BPS** kind: the remainder keeps
+the homes of local-only places and townships (`in_bps` False), because BPS files their permits in the county
+row. A rate measured from **record-level permits** counts those places on their own, so `permit_level`
+rebuilds the ACS-fallback remainders without them (unincorporated Mecklenburg, 37119, holds Charlotte and six
+towns in the BPS kind).
 """
 
 from __future__ import annotations
@@ -40,6 +46,9 @@ THEMES = ("adu", "missing_middle")
 # counted from a roll, interpolated between two rolls, or scaled to one (#208)
 PARCEL_SOURCES = ("parcels", "parcels_interpolated", "parcels_scaled_acs")
 ACS_SF_DETACHED = "B25024_002"  # units in structure: 1, detached
+# what a county remainder leaves out: BPS-universe jurisdictions only ("bps"), or every jurisdiction counted
+# on its own, local-only places and townships too ("permits": record-level permit rates, D-074 step 2)
+REMAINDERS = ("bps", "permits")
 EXCLUSIONS = {
     "hoa": "exclude_hoa",
     "in_floodplain": "exclude_floodplain",
@@ -152,6 +161,7 @@ def allocate_homes(
     jurisdictions: pd.DataFrame,
     county_shares: pd.DataFrame,
     township_shares: pd.DataFrame,
+    remainder: str = "bps",
 ) -> pd.DataFrame:
     """Homes per permit-issuing jurisdiction and ACS year, with nothing counted twice.
 
@@ -161,6 +171,8 @@ def allocate_homes(
     - **county_unincorporated** ("rest of county"): the county's ACS total minus every permit-issuing place's
       homes in that county (split by 2020 housing-unit shares when a place spans counties) and every
       township's net homes. A negative remainder (sampling noise) is set to 0 and flagged `clipped`.
+      With `remainder="bps"` (the default, for BPS outcomes) only BPS-universe places and townships are
+      subtracted; with `remainder="permits"` (for rates from record-level permits) local-only ones are too.
 
     `acs_sf`: rows of B25024_002 with `geo` (`county:`, `place:`, `cousub:`), `end_year`, `estimate`.
     `county_shares`: place_geoid, county_geoid, share (each place's shares sum to 1).
@@ -172,9 +184,14 @@ def allocate_homes(
     places = j.index[j["kind"] == "place"]
     townships = j.index[j["kind"] == "township"]
     counties = j.index[j["kind"] == "county_unincorporated"]
-    # County remainders subtract only BPS-universe jurisdictions: BPS files a local-only township's permits in
-    # its county's row, so its homes must stay in that county's denominator too.
+    if remainder not in REMAINDERS:
+        raise ValueError(f"remainder must be one of {REMAINDERS}, not {remainder!r}")
+    # For BPS outcomes, county remainders subtract only BPS-universe jurisdictions: BPS files a local-only
+    # place's or township's permits in its county's row, so its homes must stay in that county's denominator
+    # too. For permit-level rates every jurisdiction is counted on its own, so all are subtracted.
     in_bps = j["in_bps"].fillna(True).astype(bool) if "in_bps" in j else pd.Series(True, index=j.index)
+    if remainder == "permits":
+        in_bps = pd.Series(True, index=j.index)
     bps_members = set(j.index[in_bps])
     shares_c = county_shares[county_shares["place_geoid"].isin(places)]
     shares_t = township_shares[
@@ -214,6 +231,7 @@ def from_acs(
     themes: tuple[str, ...] = THEMES,
     county_shares: pd.DataFrame | None = None,
     township_shares: pd.DataFrame | None = None,
+    remainder: str = "bps",
 ) -> pd.DataFrame:
     """Fallback denominator: ACS one-unit detached homes per permit-issuing jurisdiction, by 5-year end year,
     including unincorporated county areas ("rest of county"). See `allocate_homes`.
@@ -231,7 +249,7 @@ def from_acs(
         )
     if township_shares is None:
         township_shares = pd.DataFrame(columns=["place_geoid", "township_geoid", "share"])
-    homes = allocate_homes(sf, jurisdictions, county_shares, township_shares)
+    homes = allocate_homes(sf, jurisdictions, county_shares, township_shares, remainder)
     rows = [
         {
             "state": j.loc[r.jurisdiction_geoid, "state"],
@@ -384,8 +402,37 @@ def combine(parcel_rows: pd.DataFrame | None, acs_rows: pd.DataFrame) -> pd.Data
     return validate(pd.concat(parts, ignore_index=True), "eligible_parcels")
 
 
-def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
-    """Build `eligible_parcels` for one state from processed tables (building any that are missing)."""
+def permit_level(stored: pd.DataFrame, acs_rows: pd.DataFrame, jurisdictions: pd.DataFrame) -> pd.DataFrame:
+    """`eligible_parcels` for rates measured from record-level permits (D-074 step 2).
+
+    `stored` is the BPS-kind table (`load`). `acs_rows` is `from_acs(..., remainder="permits")` for the same
+    state. Only rows that are both an ACS-fallback count and a county remainder are replaced; they change only
+    in counties holding a local-only place or township (`in_bps` False). Every other row is kept as stored. A
+    remainder counted from a parcel roll, or scaled or interpolated from one, never overlaps a place (each
+    parcel has one jurisdiction), so it is left alone.
+
+    Do not pass the result through `adu.non_overlapping`: it would take the local-only places out twice.
+    By hand (tests): county 37119 has 1,000 ACS homes; Charlotte (local-only) 600; Town T (local-only, one
+    half in 37119, one half in 37025) 200 -> stored remainder 1,000, permit-level 1,000 - 600 - 100 = 300.
+    """
+    kind = stored["jurisdiction_geoid"].map(jurisdictions.set_index("geoid")["kind"])
+    # permit mode differs from the stored one only where a county holds a local-only member, so every
+    # ACS-fallback remainder row can be taken from it
+    swap = (stored["denominator_source"] == "acs_sf_fallback") & (kind == "county_unincorporated")
+    key = ["jurisdiction_geoid", "year", "theme", "rule_version"]
+    new = stored[swap][key].merge(acs_rows[key + ["eligible_parcels"]], on=key, how="left")
+    out = stored.copy()
+    out.loc[swap, "eligible_parcels"] = new["eligible_parcels"].to_numpy()
+    if out["eligible_parcels"].isna().any():
+        raise ValueError("permit-level ACS rows are missing for some stored remainder rows")
+    return validate(out, "eligible_parcels")
+
+
+def load(state: str, store: DataStore, *, refresh: bool = False, remainder: str = "bps") -> pd.DataFrame:
+    """Build `eligible_parcels` for one state from processed tables (building any that are missing).
+
+    `remainder="permits"` gives the denominators for rates measured from record-level permits (see
+    `permit_level`); the default is the stored, BPS-kind table."""
     from lotline.adapters.national import acs
     from lotline.build import jurisdictions as jur
 
@@ -408,4 +455,10 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     c_shares = geoparts.county_shares(cfg.fips, places, store, refresh)
     t_shares = geoparts.township_shares(cfg.fips, places, townships, store, refresh)
     acs_rows = from_acs(acs_table, juris, county_shares=c_shares, township_shares=t_shares)
-    return combine(parcel_rows, acs_rows)
+    out = combine(parcel_rows, acs_rows)
+    if remainder == "bps":
+        return out
+    permit_rows = from_acs(
+        acs_table, juris, county_shares=c_shares, township_shares=t_shares, remainder=remainder
+    )
+    return permit_level(out, permit_rows, juris)
