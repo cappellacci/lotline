@@ -40,7 +40,7 @@
   - Montgomery's CAMA second test was not run, because the county has only 7 flags in all.
 - **Decisions:** none made. Proposed in the PR:
   - a k_parser of about 1.0–1.07 for Cleveland;
-  - shared roll-diff helpers;
+  - shared roll-diff helpers.
   No rule rows are proposed: Cleveland's existing row covers it, and the FBC/HID ADU question stays open.
 - **AI:** Claude Code wrote the rule, code, tests and report; a subagent did the source scouting.
   - Every count was produced by the committed scripts.
