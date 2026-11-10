@@ -34,5 +34,5 @@
   - Ben's acceptance of College Station's rule rows, and the check of a pre-2018 row.
   - Denton needs Ben's browser download, then an adapter.
   - An older TCAD export would allow a two-roll k.
-  - Proposed HANDOFF decision: Austin k = 1.13 (1.09–1.18) is the second measured field-flag source under
-    D-075 §2, beside Raleigh's 1.07.
+- **HANDOFF decision (Ben accepted, 2026-11-10):** Austin k = 1.13 (1.09–1.18) is the second measured
+  field-flag source under D-075 §2, beside Raleigh's 1.07.
