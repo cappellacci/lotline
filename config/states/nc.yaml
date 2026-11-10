@@ -83,6 +83,16 @@ sources:
       2026-10-21. gis.greensboro-nc.gov/robots.txt does not exist (404). Units from OccupancyDesc and
       NumUnits; ADUs from the description parser. Missing from the catalog until 2026-10-21 (it listed only
       the current-year ArcGIS experience).
+  - name: asheville_permits
+    url: https://gis.ashevillenc.gov/server/rest/services/Permits/AccelaPermitsView/FeatureServer/2
+    license: Open Data Commons PDDL 1.0 (City of Asheville Hub item b8fdb63db30b42d0875afb617e1551f4)
+    access: arcgis
+    cadence: nightly
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/asheville_permits.py. "Accela Permits View": every Accela
+      record since the November 2013 launch (66,521 on 2026-11-10). No issue date (years are application
+      years) and no county PIN. ADUs from the city's "ADU Detached" / "ADU Attached" categories (2022 on),
+      else from the description parser; scout and hand check in reports/nc/asheville-adu-scout.md.
   - name: durham_active_permits
     url: https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Permits/FeatureServer/13
     license: City of Durham open data (Privacy Notice and Terms of Service on the Hub item)
