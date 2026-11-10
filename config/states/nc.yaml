@@ -93,7 +93,7 @@ sources:
       zipped File Geodatabase on the town's open-data hub: 18,350 permit records created 2015-05-11 to
       2021-05-10 (5,747 issued building permits kept on 2026-11-10, 30 ADUs). Read with the standard-library
       reader filegdb.py. Permits since mid-2021 are in the town's OpenGov portal, which has no public export
-      and blocks automated access; see reports/nc/chapel-hill-adu-scout.md (records request draft).
+      and blocks automated access; no records request (Ben, 2026-11-10). See reports/nc/chapel-hill-adu-scout.md.
   - name: durham_active_permits
     url: https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Permits/FeatureServer/13
     license: City of Durham open data (Privacy Notice and Terms of Service on the Hub item)

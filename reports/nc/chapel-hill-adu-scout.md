@@ -7,8 +7,8 @@ for **May 2015 to May 2021** (the town's former permit system, LAMA), as an open
 That is enough to count ADUs under the town's long-standing accessory-apartment rule: **30 ADU permits in
 2015-2021, about 0.5 per 1,000 eligible lots a year**. Permits from mid-2021 on, which cover the 2023
 Housing Choices amendments and the 2026 omnibus, sit in an OpenGov portal that has no public export and
-blocks automated access. Getting them needs a public-records request (draft below). The town routinely
-fills requests like it.
+blocks automated access. Only a public-records request could get them, and **Ben decided on 2026-11-10 not to
+send one**: Chapel Hill stays a 2015-2021 source. The draft in §5 is kept in case that changes.
 
 The adapter `src/lotline/adapters/states/nc/chapel_hill_permits.py` is built and tested. The file is read
 with a new standard-library reader (`filegdb.py`), so no new dependency is needed.
@@ -116,7 +116,7 @@ allowed by right for 20 years first, so 2015-2021 is a long-run, under-cap regim
 rate. The 2023 change is a size increase and the 2026 change removes parking minimums. Neither can be
 observed until §5 brings in post-2021 permits.
 
-## 5. Records request for 2021-2026 (draft for Ben to send)
+## 5. Records request for 2021-2026 (draft; not sent, Ben's decision 2026-11-10)
 
 Portal: https://chapelhillnc.justfoia.com/publicportal/home/newrequest (Clerk's Office;
 allclerk@chapelhillnc.gov). The town's own log of past requests (open-data layer

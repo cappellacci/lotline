@@ -25,13 +25,13 @@
     2016-2020: about 3× Durham's rate over the same years. Chapel Hill's denominator is the ACS fallback (low).
   - Accessory apartments have been allowed by right since the LUMO (2003-01-27, 750 sq ft cap). 2023 raised
     the cap to 1,000 sq ft; 2026 dropped the small-house 75% rule and parking minimums. None of the post-2021
-    permits are public: a records request draft is in the report.
+    permits are public; Ben decided not to send a records request, so Chapel Hill stays 2015-2021 (draft kept in the report).
   - Hand check: 30/30 matches are new ADUs (2 probable); 60 random non-matches held no missed ADU; a full read
     of every ADU-noun description found about 3 likely misses (recall about 90% for named ADUs).
 - **Decisions:** proposed for HANDOFF (PR description): Chapel Hill LAMA permits as an NC ADU source for
-  2015-2021; send the records request for 2021-2026; add the three proposed Chapel Hill rows to `nc.csv`.
+  2015-2021 only (no records request for 2021-2026, Ben 2026-11-10); add the three proposed Chapel Hill rows to `nc.csv`.
 - **AI:** Claude Code (Opus 5.5) scouted the sources, wrote the reader, adapter, tests and report, and did the
   hand check by reading every match and the random samples. Checked by the GDAL comparison, `pytest`, `ruff`
   and `compliance_check.py`.
-- **Open / next:** Ben to send the records request; WS-CORE may move `filegdb.py` into `lotline.io`;
+- **Open / next:** WS-CORE may move `filegdb.py` into `lotline.io`;
   Carrboro scout (own permits; start from its GIS download page); rule rows into `nc.csv` once siblings merge.
