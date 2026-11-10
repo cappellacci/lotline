@@ -4761,3 +4761,68 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     to the as-written upper bound (1.02–1.41).
   - k applies to detached, field-flagged ADUs, measured in Raleigh only. Whether it transfers to Durham's
     flags is assumed, not tested. Parser sources keep k_parser from their hand checks, as step 1 says.
+
+### D-075 · 2026-11-10 · ADUs in five states: one counting protocol, one joint refit, and a data-tier test for new states (method only, before any count or run)
+- **Why:** Ben (2026-11-10): NC is the test bed for a method that must be validated in all five states and
+  then generalized, including to a state with no ADU history. D-074 as written would put Raleigh's undercount
+  k into one global parameter and refit with only NC expanded. That would tune the model to NC. This entry
+  holds back D-074 steps 3–4 (the parameter and the refit) until the other states have run the same counting
+  steps. Sessions for MN, OH, TX and OR started on 2026-11-10.
+- **What was looked at before writing:** NC's new counts (#360–#365: Asheville 1.0–2.7, Wilmington 0.2 before
+  its 2021 code and 1.5–2.2 after, Durham 0.73, Raleigh 0.47, Chapel Hill 0.52, Charlotte 0.20, Cary
+  0.08–0.33, Greensboro 0.03 ADU permits per 1,000 eligible lots a year) and Raleigh's k (#361). Also which
+  parcel rolls and permit files each other state holds. No count from MN, OH, TX or OR under this protocol
+  had been made.
+- **1. The same counting steps in every state** (D-074 steps 1–2):
+  - a coverage audit over non-overlapping units;
+  - k where two rolls with building detail exist (MN: Minneapolis; OH: Columbus; TX: Austin if StratMap
+    carries building detail; OR: Portland if an open older list exists);
+  - new places from openly licensed permit sources, each with a 30 + 30 hand check;
+  - rule rows proposed in each report and accepted by Ben before a place enters.
+- **2. Undercount by source.** k is kept per source and never pooled into one global constant.
+  - **Measured sources** use their own k. Duplex and other non-ADU rebuilds are left out, with the
+    as-written value kept as a sensitivity.
+  - **Unmeasured field-flagged sources** draw k from the measured ones: lognormal, centred on the mean of
+    their log k, with a 90% range from 1.0 to the largest measured upper bound.
+  - **Parser sources** use 1 / recall from their own hand checks (D-074).
+  - `adu_flag_undercount` becomes a table keyed by source. Wiring it is a WS-CORE contract change, made in its
+    own PR.
+- **3. One joint refit.** It runs once every state's counts and rule rows are on `main`. The model form is
+  chosen in its own entry before the refit, written before any fit is run. The candidates are D-048, and
+  D-047's approach 3 with rule-change terms. Rule-change terms are identified from in-window events across
+  the five states. Wilmington 2021 and Winston-Salem 2022 are such events in NC.
+- **4. The same tests in every state:**
+  - **A**, each new place out of sample;
+  - **B**, the roll check where two rolls exist;
+  - **C**, the no-reform floor (D-074 §3).
+  - Pass bars as in D-074, applied state by state.
+- **5. Data-tier test (leave one state out).** Each state in turn is held out, the model is refitted on the
+  other four, and the held-out state is predicted at three data tiers:
+  - **Tier 0, national data only.** ACS eligible lots (`eligible.from_acs`); ACS rent and value, FHFA and
+    FRED; USDA rural–urban class (RUCA/RUCC); Census BPS for the baseline; the state's ADU law rows if it has
+    one. Every local rule is borrowed by size band from the other four states' coded places (as D-068). The
+    state effect is drawn from its prior, the 90% profile interval of τ from the four-state fit. No ADU count
+    from the held-out state is used.
+  - **Tier 1:** tier 0 plus the held-out state's coded local ADU rules for its 20 largest places by eligible
+    lots.
+  - **Tier 2:** tier 1 plus the ADU counts (k applied) of the state's single largest measured city. They
+    update the state effect and that city's own effect.
+  - **Target:** ADU permits a year over 2021–2024 in the held-out state's measured places, **leaving out the
+    tier-2 city at every tier**, so the three tiers are scored on the same places.
+  - **Reported per state and tier:** whether the observed total lies within P10–P90, observed ÷ P50, CRPS,
+    and the log score. Also each tier's gain over the tier below.
+  - **Claim rule, fixed now:** a tier is "enough for a new state" if, in at least 4 of the 5 held-out states,
+    the observed total lies within P10–P90 and observed ÷ P50 is within ×2. The tool's guidance for a sixth
+    state names the lowest tier that passes. If none passes, the tool says so and shows the tier-2 ranges.
+    Five states is a small sample, and the claim is presented that way.
+- **6. Generalizing afterwards.** A coefficient for each type of place (RUCA class) is tried only after
+  step 5. It is kept only if it raises the tier-0 and tier-1 log scores in leave-one-state-out by more than
+  2 paired SE.
+- **Expected direction, before any count:**
+  - Tier 0 is widest and may be biased by the state effect.
+  - Tier 1 mostly fixes the rule gap.
+  - Tier 2 gives the largest gain, because one measured city pins down the state's level.
+  - Oregon is the hardest to hold out: its statewide law reaches small cities, and the other states have
+    few such places.
+- **Decided by:** Ben, 2026-11-10 ("a good plan"; it extends D-074). Written by Claude Code before any count
+  or run. **Status:** method only.
