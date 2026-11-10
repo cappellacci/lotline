@@ -10,7 +10,7 @@ import pytest
 
 from lotline.parse import PermitTextFacts, parse_description
 
-N, R, T, A, D, C, B = (
+N, R, T, A, D, C, B, X = (
     "units_new",
     "units_removed",
     "building_type_std",
@@ -18,6 +18,7 @@ N, R, T, A, D, C, B = (
     "is_demolition",
     "is_conversion",
     "building_units",
+    "adu_removed",
 )
 
 CASES = [
@@ -101,6 +102,51 @@ CASES = [
     ("Convert basement into apartment", {N: 1, R: 0, T: "ADU", A: "internal_conversion", C: True}),
     ("Conversion of office building to 30 units", {N: 30, R: 0, T: "MF5", C: True}),
     ("Converting existing bedroom into a bathroom", {}),  # not a change in dwellings
+    # --- ADU misreads fixed 2026-11-10 (Ben approved the parser change) -----------------------------------
+    # (1) a second home on the lot called an "additional dwelling unit"; fee language is not one
+    ("Additional dwelling unit behind existing house", {N: 1, T: "ADU", A: "unknown"}),
+    ("New additional dwelling unit in rear yard", {N: 1, T: "ADU", A: "unknown"}),
+    ("Second dwelling unit on lot, 1 bed 1 bath", {N: 1, T: "ADU", A: "unknown"}),
+    ("Impact fee per additional dwelling unit", {}),
+    ("Water tap charge of $1,200 for each additional dwelling unit", {}),
+    ("New 12 unit apartment building, SDC assessed per additional dwelling unit", {N: 12, T: "MF5"}),
+    ("Additional living quarters for pool house", {}),  # TX "ALQ": mostly pool houses, not an ADU
+    # (2) Cary's utility dwelling unit (UDU), its name for an attached or internal ADU before 2025
+    ("Utility dwelling unit over attached garage", {N: 1, T: "ADU", A: "unknown"}),
+    ("New UDU with kitchenette and outside entrance", {N: 1, T: "ADU", A: "unknown"}),
+    ("Accessory use permit - utility dwelling", {N: 1, T: "ADU", A: "unknown"}),
+    ("Finish utilitydwelling unit on 2nd floor", {N: 1, T: "ADU", A: "unknown"}),
+    ("Addition - UDU, screened porch and deck", {N: 1, R: 0, T: "ADU", A: "attached"}),
+    ("Bonus room over garage, NOT A UDU", {}),
+    # (3) an ADU created by an addition or a conversion of existing space
+    ("ADU addition w/ porch", {N: 1, R: 0, T: "ADU", A: "attached"}),
+    ("Addition - ADU", {N: 1, R: 0, T: "ADU", A: "attached"}),
+    ("Rear ADU addition, expand footprint", {N: 1, R: 0, T: "ADU", A: "attached"}),
+    ("Remodel lower level for ADU", {N: 1, R: 0, T: "ADU", A: "internal_conversion", C: True}),
+    ("Basement conversion to ADU", {N: 1, R: 0, T: "ADU", A: "internal_conversion", C: True}),
+    ("Converting detached garage to ADU", {N: 1, R: 0, T: "ADU", A: "detached", C: True}),
+    ("Upfit unfinished space into ADU", {N: 1, R: 0, T: "ADU", A: "unknown", C: True}),
+    ("Attic remodel (ADU) and porch addition", {N: 1, R: 0, T: "ADU", A: "internal_conversion", C: True}),
+    ("Addition to existing ADU, new bedroom", {N: 0}),  # the ADU is already there
+    ("Remodel of ADU kitchen", {}),  # work on an ADU: unit change unclear, not a new one
+    ("ADU addition, repair rot at sill plate", {}),  # repair work: unclear
+    ("Upfit suite 200 for ADU Inc. offices", {}),  # a company name, not a unit
+    ("New SFD with ADU addition planned", {}),  # a new house and an ADU: no guess
+    ("New single family home, future ADU", {}),  # a new house that mentions an ADU is not an ADU
+    # (4) an ADU taken out of use is a removal, never a new ADU
+    ("Removing kitchen, no longer using as ADU", {N: 0, R: 1, X: True}),
+    ("Remove existing ADU and restore garage", {N: 0, R: 1, X: True}),
+    ("ADU abandonment, cap plumbing", {N: 0, R: 1, X: True}),
+    ("Convert ADU back to single family dwelling", {N: 0, R: 1, C: True, X: True}),
+    ("Change of use from a permitted ADU to home office", {N: 0, R: 1, X: True}),
+    ("Remove ADU kitchen, convert back to single family", {N: 0, R: 1, C: True, X: True}),
+    ("Remove ADU deck and repair stairs", {}),  # a part of the ADU, not the ADU: no removal
+    ("Garage where the ADU was, new slab", {}),  # a former ADU is context, not a new one
+    ("Not to be used as an accessory dwelling unit or have cooking appliances", {}),
+    ("Detached garage, not approved for use as an ADU", {}),
+    ("New SFD; remove existing ADU", {N: 1, T: "SFD"}),  # the new house still counts
+    ("Demolish ADU", {N: 0, R: 1, T: "ADU", A: "unknown", D: True}),  # a demolition stays Rule 7
+    ("NEW ADU_New construction", {N: 1, T: "ADU", A: "unknown"}),  # an underscore no longer hides ADU
     # --- traps: never read as unit counts ----------------------------------------------------------------
     ("New 2 story 4 bedroom single family dwelling", {N: 1, T: "SFD"}),
     ("3 bedroom units", {}),
