@@ -279,3 +279,54 @@ The roll column is the January table in which a parcel first carries an ADU labe
    those classes and gives k = 1.10.
 5. **One city, a parser source.** k is Minneapolis's k_parser. Whether it transfers to Met Council's field is
    doubtful (§3.3).
+
+---
+
+## 4. More places: outstate permit sources (scouted 2026-11-10; no adapter built)
+
+The brief asked for adapters for the 3 largest uncovered places with an **openly licensed, record-level** permit
+source. **None of the uncovered places has one that can mark an ADU**, so no adapter was built and no new place
+enters D-074 step 2 from Minnesota. What was checked: the publisher's metadata, record counts and robots.txt,
+plus count-only text queries. At most a handful of sample rows were read. Nothing was downloaded through the
+IO layer, and nothing was written to `LOTLINE_DATA_DIR`.
+
+| Place (eligible lots) | What exists | Record-level? | ADU marking | License / access | Verdict |
+|---|---|---|---|---|---|
+| **Rochester** (39,177) | Monthly "Detail Report Spreadsheet" files (.xls 2011–, .xlsx to 2026-10) in the city's public Laserfiche archive (`lf.rochestermn.gov`, linked from rochestermn.gov's building permit reports archive) | Yes (per permit: number, type, construction code 101/102/997, work description, valuation) | None; the description could be parsed | **No license stated**; robots.txt allows; one file per month (about 180 files) | Best candidate. Needs Ben's call on terms (§5) |
+| **Duluth** (28,251) | ePlace per-address lookup (account needed for detail) | No open extract | — | Login | None |
+| **St. Cloud** (15,237) | ArcGIS server `sws.stcloudcity.com` (Accela/TRAKiT folders) | Unknown | — | **robots.txt disallows all paths**: not queried | Blocked; the city takes data requests |
+| **Moorhead** (11,801) | Assessor CAMA permit table, `gis.moorheadmn.gov/.../Assessor_Permit_Review/MapServer/1`, 95,293 rows (repeated per parcel), 2019-07 to 2026-11 | Yes (date, number, reason, scope comment, parcel) | None. **The text names no ADU**: the 6 "ADU" hits are "Adult Day Care", the one "carriage" hit is a deck's carriage bolts | Disclaimer only ("reference purposes only, as-is") | Not useful for ADUs (0 found) |
+| **Olmsted County** (unincorporated and contract towns) | Accela layer `services7.arcgis.com/tC18nF87RnYBtzwI/.../Olmsted_County_Permits_Planner_Map_View/FeatureServer/0`, 19,430 records, 1964–2026 | Yes (record type, subtype, opened date, 12-digit PIN) | None (no type or subtype names an ADU or accessory dwelling); no scope text, no issue date, no units | Disclaimer only | Not useful for ADUs |
+| Mankato (Blue Earth Co.) | Nothing found | — | — | — | None |
+| St. Louis County unincorporated (17,689) | `gis.stlouiscountymn.gov` land-use service | — | — | Token required | None |
+| Crow Wing County unincorporated (16,631) | County CRM permit field layer (land use, septic, shoreland), 2022–2026 | Yes | None; no scope text | No license; exposes owner names and edit operations: an internal layer, not open data | Not used |
+| Sherburne County unincorporated (12,985) | County GIS permit services | — | — | **robots.txt disallows all paths** (names ClaudeBot) | Blocked |
+| Cass, Itasca counties | Department pages and PDF forms only | — | — | — | None |
+
+**What would add a Minnesota place.**
+1. **Rochester**, if Ben accepts a public-records source with no stated license (Greensboro and Portland are
+   already in the repo on that footing). An adapter would fetch the monthly spreadsheets through the IO layer,
+   using the Laserfiche folder listing (`WebLink/FolderListingService.aspx/GetFolderListing2`, folder ids per
+   year) and one download per file. It would parse the work description for ADUs, Charlotte-style, with a
+   30 + 30 hand check. It holds far more than 1,000 permits. Rochester already has an ADU rule row
+   (`MN-2754880-adu-2023`, effective 2023-01-01), so it would meet all of D-074 step 2's tests. Open question
+   before building: whether the sheets carry a parcel ID (the guide lists the address only). Without one there
+   is no parcel match, but counts per year still work.
+2. **St. Cloud and Duluth** only through a records request, which Ben has ruled out (2026-11 memory: no records
+   requests). Close as no usable source.
+
+## 5. Rule rows
+
+No new place qualified, so **no ADU rule rows are proposed**. The three largest uncovered cities already have
+rows in `config/reforms/mn.csv`: Duluth (`MN-2717000-adu-2010`), Rochester (`MN-2754880-adu-2023`) and St.
+Cloud (`MN-2756896-adu-2024`). Moorhead has no ADU row. It is not proposed, since its permits show no ADUs to
+fit.
+
+## 6. What this means for the joint refit
+
+- **Minnesota's counted ADUs stay metro-only.** 47% of eligible lots are covered, all by Met Council, with
+  Minneapolis's parser on top. 53% (outstate cities, townships and county remainders) has no ADU outcome. In a
+  leave-one-state-out test, Minnesota's outstate share is the "no permit data" tier.
+- **k for Minnesota.** Minneapolis's parser k is 1.04 (1.02–1.10), close to Raleigh's 1.07. The Met Council
+  field, which carries every other covered place, records about 58% as many Minneapolis ADUs as the parser does
+  (§3.3). That gap is larger than k, and it is the bigger question for Minnesota's ADU rate.
