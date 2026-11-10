@@ -18,7 +18,13 @@
   - Hand-worked tests: `tests/model/test_pencil_out.py` (7; duplex and fourplex pro formas line by line,
     cut = fee change + interest) and `tests/model/test_fee_scenario.py` (30; per-size dose, 5+ adds
     nothing, the rise mirrors the cut, the house seed unchanged).
-  - The table script was smoke-tested on synthetic places.
-  - No model was run and no real data was read.
-- **Open / next:** run the pencil-out table and the development run on real data (needs Ben's go-ahead).
-  Stacking and the fee-structure stretch come later.
+  - The table script was smoke-tested on synthetic places. Full suite: 1,712 passed.
+- **Development run (Ben: "Yes, run it"):** `scripts/dev/fee_dev_run.py --origin 2025 --state MN NC OH TX`
+  -> `reports/fees-phase2-run/` (log, totals, summary). Pencil-out table on real data ->
+  `docs/research/fee-pencil-out.md`. Results page published at
+  https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. The benchmark adds +0.8% to +1.4% of the baseline;
+  real fees halved add +0.1% to +0.2%; the rise mirrors the cut. Numbers in D-073. Checked: state sums
+  against the per-place totals; the page's statements against `totals.csv`; the page rendered once with no
+  console errors. No outcome was read.
+- **Open / next:** a better new-home value for NC, OH and TX (the pencil-out land values rest on the ACS
+  median); stacking and the fee-structure stretch.

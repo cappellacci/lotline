@@ -1,0 +1,123 @@
+<title>Fee Cut Results, Phase 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline, a short paragraph and its chart (Lotline identity tokens). */
+:root{color-scheme:light;--paper:#f7f4ee;--paper-raised:#fffdf9;--paper-sunken:#ede9e0;--rule:#d3cfc4;--ink:#1c1b18;--ink-muted:#5c5a53;--ink-faint:#8a867b;--survey:#2f6fb0;--brass:#b07a1a;--fees:#d1561b;--outside:#9a3b6e;--t2:#6f97bf;--t3:#5280ad;--t5:#214a73;--band:#2f6fb026;
+--font-sans:"Public Sans","Helvetica Neue",Arial,sans-serif;--font-serif:"Source Serif 4",Georgia,serif;--font-mono:"IBM Plex Mono","SF Mono",Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--paper:#1b1a17;--paper-raised:#24221e;--paper-sunken:#141311;--rule:#3a3832;--ink:#ece8df;--ink-muted:#b3afa4;--ink-faint:#7d7a71;--survey:#6ea3d6;--brass:#d7a74a;--fees:#d9602d;--outside:#b8669c;--t2:#466b8f;--t3:#5e8ab1;--t5:#b3d0ea;--band:#6ea3d633}}
+:root[data-theme="dark"]{color-scheme:dark;--paper:#1b1a17;--paper-raised:#24221e;--paper-sunken:#141311;--rule:#3a3832;--ink:#ece8df;--ink-muted:#b3afa4;--ink-faint:#7d7a71;--survey:#6ea3d6;--brass:#d7a74a;--fees:#d9602d;--outside:#b8669c;--t2:#466b8f;--t3:#5e8ab1;--t5:#b3d0ea;--band:#6ea3d633}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-sans);font-size:16px;line-height:1.6}
+main{max-width:760px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:40px}
+h1{font-family:var(--font-serif);font-weight:600;font-size:2rem;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-family:var(--font-serif);font-weight:600;font-size:1.3rem;line-height:1.3;margin:0;text-wrap:balance}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 6px}
+p{margin:0;max-width:66ch}.muted{color:var(--ink-muted)}
+section{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--rule);padding-top:24px}
+.num{font-family:var(--font-mono);color:var(--fees);font-size:14px}
+.chart{position:relative;width:100%;height:260px}.chart.tall{height:300px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-muted)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:1px;display:inline-block}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.tile{background:var(--paper-raised);border:1px solid var(--rule);padding:12px 14px}.tile b{display:block;font-family:var(--font-mono);font-weight:500;font-size:1.4rem;font-variant-numeric:tabular-nums}.tile small{color:var(--ink-muted);font-size:13px}
+.panel{background:var(--band);border:1px solid var(--survey);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.panel ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.tbl{overflow-x:auto}table{border-collapse:collapse;font-size:14px;width:100%;font-variant-numeric:tabular-nums}th,td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{font-weight:500;color:var(--ink-muted)}td{font-family:var(--font-mono);font-size:13px}td:first-child{font-family:var(--font-sans)}
+.sources{font-size:13px;color:var(--ink-muted)}code{font-family:var(--font-mono);font-size:.9em}
+</style>
+<main>
+<header>
+<p class="eyebrow">Development run · 2026-11-09 · origin 2025 · window 2027–2031 · not published</p>
+<h1>Cutting fees adds few homes because fees are a small share of the cost of building</h1>
+<p class="muted" style="margin-top:10px">The fee scenario after fee plan Phase 2 (D-073): each building size takes its own dose, and a sensitivity raises fees instead of cutting them. 50 places with coded fees in Minnesota, North Carolina, Ohio and Texas; 1,000 draws each. Oregon and the holdout places are not in this run.</p>
+</header>
+
+<div class="tiles">
+<div class="tile"><small>Handbook benchmark, $50,000 cut to $25,000</small><b>+0.8 to +1.4%</b><small>of baseline homes over five years</small></div>
+<div class="tile"><small>Real local fees cut in half</small><b>+0.1 to +0.2%</b><small>of baseline homes</small></div>
+<div class="tile"><small>Real local fees raised by half</small><b>−0.1 to −0.3%</b><small>of baseline homes</small></div>
+</div>
+
+<section>
+<p class="num">1</p>
+<h2>The Handbook's cut adds about 1% to the baseline; a realistic local cut adds about a fifth of a percent</h2>
+<p>Coded fees for a new house are about $6,500 to $9,200 a unit (2025 dollars), far below the Handbook's $50,000. Cutting them in half gives builders about $1,600 to $2,300 a home once landowners take their share. Each bar runs from the 10th to the 90th percentile of the five-year total (log scale); the table gives the medians.</p>
+<div class="legend"><span><i style="background:var(--fees)"></i>Benchmark: $50,000 cut in half</span><span><i style="background:var(--brass)"></i>Real fees cut by up to $25,000</span><span><i style="background:var(--survey)"></i>Real fees cut in half</span></div>
+<div class="chart tall"><canvas id="c1" role="img" aria-label="Five-year homes added by state and scenario, 10th to 90th percentile">MN benchmark 74–404, real half 16–94; NC 540–3,414 and 91–569; OH 123–768 and 17–105; TX 1,052–6,546 and 134–838.</canvas></div>
+<div class="tbl"><table id="t1"><thead><tr><th>State</th><th>Places</th><th>Baseline, 5 yrs</th><th>Benchmark P50 (P10–P90)</th><th>Real fees halved P50 (P10–P90)</th><th>Up to $25k P50</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+<p class="num">2</p>
+<h2>Raising fees by half costs about as many homes as cutting them by half adds</h2>
+<p>The rise runs through the same land-price share, elasticity and phase-in as the cut. Where only the elasticity route is used (North Carolina, Ohio, Texas) it is the exact mirror. In Minnesota one place uses lots that pencil, and there a rise costs more homes (71) than the cut adds (57): lots near the threshold drop out faster than new ones cross it.</p>
+<div class="legend"><span><i style="background:var(--survey)"></i>Real fees cut in half (mean)</span><span><i style="background:var(--outside)"></i>Real fees raised by half (mean)</span></div>
+<div class="chart"><canvas id="c2" role="img" aria-label="Mean five-year homes added by a cut and lost by a rise, by state">MN +57 / −71; NC +298 / −298; OH +54 / −54; TX +438 / −438.</canvas></div>
+</section>
+
+<section>
+<p class="num">3</p>
+<h2>Per unit, duplexes and fourplexes respond about twice as much as houses, but few are built</h2>
+<p>The same fee per unit is a bigger share of a 1,000 sq ft unit's cost than of a 2,150 sq ft house's, so the plex dose is about 2.1 times the house dose. Plexes are a small part of the baseline (1 to 6%), and 5+ unit buildings, 34 to 83% of it, take no dose because no fees are coded for them. So houses still give most of the added homes everywhere; plexes add a visible share only in Ohio (39%) and Texas (22%, mostly Houston's duplexes).</p>
+<div class="legend"><span><i style="background:var(--t2)"></i>House (1 unit)</span><span><i style="background:var(--t3)"></i>Duplex (2 units)</span><span><i style="background:var(--t5)"></i>3–4 units</span></div>
+<div class="chart"><canvas id="c3" role="img" aria-label="Median percent change in permits under the benchmark by size class and state">MN 1.0/2.1/2.1; NC 1.0/2.1/2.1; OH 3.2/6.9/6.9; TX 1.3/2.8/2.8 percent.</canvas></div>
+<div class="chart"><canvas id="c4" role="img" aria-label="Benchmark homes added by size class and state, mean">MN 205/6/15; NC 1,725/43/19; OH 242/70/86; TX 2,672/657/87.</canvas></div>
+</section>
+
+<section>
+<p class="num">4</p>
+<h2>A fourplex lot pays three to four times a house's fees, and gains the most from a cut</h2>
+<p>From the pencil-out table (<code>docs/research/fee-pencil-out.md</code>, 57 places including Oregon): fees per lot today and the extra a builder could pay for the lot when the local fee is halved (the full change, before landowners take their share).</p>
+<div class="legend"><span><i style="background:var(--t2)"></i>House</span><span><i style="background:var(--t3)"></i>Duplex</span><span><i style="background:var(--t5)"></i>Fourplex</span></div>
+<div class="chart"><canvas id="c5" role="img" aria-label="Median fees per lot today by state and type">MN 9.2k/15.2k/27.8k; NC 6.7k/12.4k/25.5k; OH 7.2k/12.0k/23.1k; OR 34.5k/61.2k/101.3k; TX 6.5k/12.3k/24.8k.</canvas></div>
+<div class="chart"><canvas id="c6" role="img" aria-label="Median gain in land budget per lot when the local fee is halved">MN 4.9k/8.1k/15.4k; NC 3.6k/6.6k/14.1k; OH 3.8k/6.4k/12.8k; OR 18.3k/32.6k/56.0k; TX 3.5k/6.6k/13.7k.</canvas></div>
+</section>
+
+<section>
+<p class="num">5</p>
+<h2>Outside Oregon, fees are 1.5 to 3.6% of the cost of building</h2>
+<p>Fees over construction, fees and interest while building, median over places. Oregon's system development charges make it the exception (7 to 13%). This is why a fee cut moves feasibility so little: in most places the gap between what new homes sell for and what they cost is far larger than any fee. The land-value side of that comparison is weak for now: only 10 of 57 places have a new-home value from a parcel roll, and the rest use the ACS median home value, which covers older homes and understates new construction.</p>
+<div class="legend"><span><i style="background:var(--t2)"></i>House</span><span><i style="background:var(--t3)"></i>Duplex</span><span><i style="background:var(--t5)"></i>Fourplex</span></div>
+<div class="chart"><canvas id="c7" role="img" aria-label="Median fee share of cost by state and type">MN 2.0/3.6/2.9; NC 1.5/2.9/2.7; OH 1.6/2.8/2.5; OR 7.2/12.9/9.8; TX 1.5/2.9/2.6 percent.</canvas></div>
+</section>
+
+<section>
+<h2>For Ben to confirm</h2>
+<div class="panel">
+<ul>
+<li>Cost per plex unit = the place's home value × 1,000 / 2,150 sq ft. It is what doubles the plex dose.</li>
+<li>A fee rise passes through the same land-price share (λ) as a cut.</li>
+<li>The pencil-out table's market value: parcel-roll new homes first, ACS median otherwise. North Carolina, Ohio and Texas need a better new-home value (a sale-price source or a new-construction premium) before its land-value numbers mean much.</li>
+<li>Three NC places were skipped for a missing baseline or ACS value: Wilmington, Concord, Gastonia.</li>
+</ul>
+</div>
+</section>
+
+<p class="sources">Sources: <code>reports/fees-phase2-run/</code> (<code>run.log</code>, <code>totals.csv</code>, <code>summary.json</code>), <code>scripts/dev/fee_dev_run.py --origin 2025 --state MN NC OH TX</code> at commit ba05152, branch <code>ws/fees-phase2</code>; pencil-out from <code>scripts/dev/fee_pencil_out_table.py</code>. Method: D-065, D-066, D-073 in <code>docs/analysis_plan.md</code>. A development run: no outcome was read, nothing is published.</p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const S=["MN","NC","OH","TX"],S5=["MN","NC","OH","OR","TX"];
+const R={MN:{handbook:[74,189,404],local_half:[16,44,94],local_25k:[32,88,189],rise:-71,cut:57,base:26230,n:18},NC:{handbook:[540,1533,3414],local_half:[91,256,569],local_25k:[181,511,1139],rise:-298,cut:298,base:130749,n:16},OH:{handbook:[123,344,768],local_half:[17,47,105],local_25k:[34,94,210],rise:-54,cut:54,base:52723,n:5},TX:{handbook:[1052,2929,6546],local_half:[134,379,838],local_25k:[268,758,1676],rise:-438,cut:438,base:239385,n:11}};
+const f=v=>(v<0?"−":"")+Math.round(Math.abs(v)).toLocaleString();
+const usd=v=>(v<0?"−$":"$")+Math.round(Math.abs(v)).toLocaleString();
+const tb=document.querySelector("#t1 tbody");
+S.forEach(s=>{const r=R[s];tb.insertAdjacentHTML("beforeend",`<tr><td>${s}</td><td>${r.n}</td><td>${f(r.base)}</td><td>${f(r.handbook[1])} (${f(r.handbook[0])}–${f(r.handbook[2])})</td><td>${f(r.local_half[1])} (${f(r.local_half[0])}–${f(r.local_half[2])})</td><td>${f(r.local_25k[1])}</td></tr>`)});
+function base(){const ink=css("--ink-muted"),grid=css("--rule");return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:ink},border:{color:grid}},y:{grid:{color:grid},ticks:{color:ink},border:{display:false}}}}}
+const charts=[];
+function draw(){charts.forEach(c=>c.destroy());charts.length=0;
+const ty=[css("--t2"),css("--t3"),css("--t5")];
+const bar=(id,labels,sets,fmt,opts={})=>{const o=base();o.plugins.tooltip={callbacks:{label:c=>c.dataset.label+": "+fmt(c.raw)}};o.scales.y.ticks.callback=fmt;if(opts.stacked){o.scales.x.stacked=o.scales.y.stacked=true}if(opts.log){o.scales.y.type="logarithmic"}charts.push(new Chart(document.getElementById(id),{type:"bar",data:{labels,datasets:sets.map(d=>({borderRadius:1,maxBarThickness:22,categoryPercentage:.72,barPercentage:.9,...d}))},options:o}))};
+{const modes=[["handbook","Benchmark",css("--fees")],["local_25k","Up to $25,000",css("--brass")],["local_half","Real fees halved",css("--survey")]];
+const o=base();o.indexAxis="y";o.scales.x.type="logarithmic";o.scales.x.grid={color:css("--rule")};o.scales.y.grid={display:false};o.scales.x.ticks.callback=v=>[10,30,100,300,1000,3000,10000].includes(v)?v.toLocaleString():"";o.plugins.tooltip={callbacks:{label:c=>{const d=c.dataset.src[c.dataIndex];return c.dataset.label+": P50 "+f(d[1])+" (P10 "+f(d[0])+" to P90 "+f(d[2])+")"}}};
+const sets=modes.map(([k,l,col])=>({label:l,src:S.map(s=>R[s][k]),data:S.map(s=>[R[s][k][0],R[s][k][2]]),backgroundColor:col+"55",borderColor:col,borderWidth:{left:0,right:0,top:0,bottom:0},maxBarThickness:16,categoryPercentage:.8,barPercentage:.9}));
+charts.push(new Chart(document.getElementById("c1"),{type:"bar",data:{labels:S,datasets:sets},options:o}))}
+bar("c2",S,[{label:"Cut in half",data:S.map(s=>R[s].cut),backgroundColor:css("--survey")},{label:"Raised by half",data:S.map(s=>R[s].rise),backgroundColor:css("--outside")}],f);
+bar("c3",S,[["House",[1.0,0.99,3.19,1.31]],["Duplex",[2.14,2.12,6.86,2.83]],["3–4 units",[2.14,2.12,6.86,2.83]]].map(([l,d],i)=>({label:l,data:d,backgroundColor:ty[i]})),v=>(+v).toFixed(1)+"%");
+bar("c4",S,[["House",[204.5,1724.5,242.2,2672.4]],["Duplex",[5.5,43.1,69.8,657.4]],["3–4 units",[14.6,18.5,85.7,87.2]]].map(([l,d],i)=>({label:l,data:d,backgroundColor:ty[i]})),f,{stacked:true});
+bar("c5",S5,[["House",[9158,6683,7194,34454,6516]],["Duplex",[15207,12352,11974,61231,12331]],["Fourplex",[27814,25495,23116,101326,24833]]].map(([l,d],i)=>({label:l,data:d,backgroundColor:ty[i]})),usd);
+bar("c6",S5,[["House",[4871,3555,3826,18325,3466]],["Duplex",[8088,6570,6369,32567,6559]],["Fourplex",[15385,14102,12786,56046,13736]]].map(([l,d],i)=>({label:l,data:d,backgroundColor:ty[i]})),usd);
+bar("c7",S5,[["House",[2.0,1.5,1.6,7.2,1.5]],["Duplex",[3.6,2.9,2.8,12.9,2.9]],["Fourplex",[2.9,2.7,2.5,9.8,2.6]]].map(([l,d],i)=>({label:l,data:d,backgroundColor:ty[i]})),v=>(+v).toFixed(1)+"%");}
+draw();
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",draw);new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}
+</script>

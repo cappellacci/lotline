@@ -4682,5 +4682,25 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   mirror, hand-worked) and `tests/model/test_pencil_out.py` (duplex and fourplex pro formas by hand).
 - **Decided by:** Ben, 2026-11-09 (per-type elasticity; no 5+ effect; stacking deferred; +50% rise). Details
   (cost per unit scaled by size, the value source for the pencil-out table, seeds) were written by Claude
-  Code, for Ben to confirm in the PR. **Status:** built and tested; not run. The development run and the
-  pencil-out table on real data wait for Ben's go-ahead.
+  Code, for Ben to confirm in the PR. **Status:** built and tested; development run done 2026-11-09 (below).
+- **Development run (2026-11-09, Ben: "Yes, run it"; commit ba05152; origin 2025, window 2027–2031; 1,000
+  draws).** MN, NC, OH, TX, 50 places with coded fees; Oregon and holdouts left out; three NC places
+  (Wilmington, Concord, Gastonia) skipped for a missing baseline or ACS value. Five-year homes added, P50
+  (P10–P90), and the mean as a share of the baseline:
+  - Benchmark: MN 189 (74–404), NC 1,533 (540–3,414), OH 344 (123–768), TX 2,929 (1,052–6,546); +0.8% to
+    +1.4% of the baseline.
+  - Real local fees cut in half: MN 44 (16–94), NC 256 (91–569), OH 47 (17–105), TX 379 (134–838); +0.1%
+    to +0.2%.
+  - Real fees cut by up to $25,000: about twice the half cut, since most fees are under $25,000.
+  - Fee rise by half: the mirror of the half cut, except in MN, where the one feasibility-channel place
+    makes the rise cost more homes (mean −71) than the cut adds (+57).
+  - By size: plex doses are about 2.1 times the house dose per unit, but plexes are 1–6% of the baseline,
+    and 5+ unit buildings (34–83%) take none. Houses give most of the added homes everywhere; plexes give
+    39% in Ohio and 22% in Texas.
+  - Pencil-out table (`docs/research/fee-pencil-out.md`, 57 places with Oregon): fees are 1.5–3.6% of
+    building cost outside Oregon (7–13% there). A fourplex lot pays about three to four times a house's
+    fees and gains the most from a cut. Only 10 places have a parcel-roll new-home value; the others use
+    the ACS median, which understates new construction, so the land-value columns are weak in NC, OH and TX.
+  - Results page: `reports/fees-phase2-run/fees-phase2-results.html`, published at
+    https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. Files: `reports/fees-phase2-run/` (`run.log`,
+    `totals.csv`, `summary.json`). No outcome was read.
