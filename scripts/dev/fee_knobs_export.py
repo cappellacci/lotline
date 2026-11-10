@@ -57,10 +57,8 @@ def main() -> None:
         ok = places["home_value"].notna() & places.filter(like="baseline_y").notna().all(axis=1)
         places = places[ok].reset_index(drop=True)
         grid = fees.change_grid(places, a.origin, SHARES)
-        central = {
-            s: fees.central_path(places, "local_half", {"handbook_fee_cut_share": s})["added_by_size"]
-            for s in SHARES
-        }
+        paths = {s: fees.central_path(places, "local_half", {"handbook_fee_cut_share": s}) for s in SHARES}
+        central = {s: c["added_by_size"] for s, c in paths.items()}
         _, horizon, _ = fees.baseline_model.window(a.origin)
         by = fees._by_size(places, horizon)
         rec = {
@@ -69,6 +67,9 @@ def main() -> None:
             "baseline": {c: round(float(v.sum())) for c, v in by.items()},
             "draws": {},
             "central": {},
+            "revenue_draws_k": {},  # change in fee revenue, thousands of 2025 dollars (a test, D-077)
+            "revenue_central_k": {},
+            "revenue_today_k": {},
         }
         for c in SIZES:
             g = grid[grid["size"] == c]
@@ -76,6 +77,16 @@ def main() -> None:
                 np.round(g.loc[g["share"] == s, "units_added"].to_numpy(), 1).tolist() for s in SHARES
             ]
             rec["central"][c] = [round(float(central[s][c].sum()), 1) for s in SHARES]
+            rec["revenue_draws_k"][c] = [
+                np.round(g.loc[g["share"] == s, "revenue_change"].to_numpy() / 1e3).astype(int).tolist()
+                for s in SHARES
+            ]
+            fee = paths[0.5]["fee_by_type"][fees.SIZE_TYPES[c]]
+            b = by[c].sum(axis=1)
+            rec["revenue_today_k"][c] = round(float(fee @ b) / 1e3)
+            rec["revenue_central_k"][c] = [
+                round(float(-s * fee @ b + (1 - s) * fee @ central[s][c].sum(axis=1)) / 1e3) for s in SHARES
+            ]
         out["states"][state] = rec
         half = SHARES.index(0.5)
         tot = sum(np.array(rec["draws"][c][half]) for c in SIZES)
@@ -83,6 +94,7 @@ def main() -> None:
             f"{state}: {len(places)} places, {time.time() - t0:.0f}s; at a cut of half: central "
             f"{sum(rec['central'][c][half] for c in SIZES):,.0f}, P10/P50/P90 "
             + " / ".join(f"{np.percentile(tot, q):,.0f}" for q in (10, 50, 90))
+            + f"; revenue change central ${sum(rec['revenue_central_k'][c][half] for c in SIZES) / 1e3:,.0f}M"
         )
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(out, separators=(",", ":")))

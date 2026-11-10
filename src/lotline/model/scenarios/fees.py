@@ -479,7 +479,13 @@ def change_grid(
     local_half scenario, s −0.5 the local_rise sensitivity, s 1 abolishes fees. The draws are `run`'s (same
     parameter sets, same fee draws, same seeds), so one draw is one world seen at every slider stop, and
     `run`'s results are the grid's rows at 0.5 and −0.5. Columns: group, share, draw, size (BPS class '1',
-    '2', '3_4'; 'all' without a baseline by size), units_added. 5+ unit buildings take no dose (D-073).
+    '2', '3_4'; 'all' without a baseline by size), units_added, revenue_change. 5+ unit buildings take no
+    dose (D-073).
+
+    revenue_change (2025 dollars, five years; a test, D-077) is the change in fee revenue from the type's
+    homes: (1 − s) × fee × (baseline + added) − fee × baseline = −s × fee × baseline + (1 − s) × fee × added,
+    with the draw's fee per unit. By hand: fee $10,000, 50 baseline homes, s 0.5, 0.2 homes added ->
+    −250,000 + 1,000 = −$249,000.
     """
     central = central_params()
     n = int(draws or central["fee_simulation_draws"])
@@ -496,6 +502,9 @@ def change_grid(
     member = np.zeros((len(places), len(groups)))
     member[np.arange(len(places)), codes] = 1.0
     out = np.zeros((len(shares), n, len(classes), len(groups)))
+    rev = np.zeros_like(out)
+    base_by = {"all": base.sum(axis=1)} if by_size is None else {c: by_size[c].sum(axis=1) for c in classes}
+    fee_type = {c: SIZE_TYPES.get(c, "SFD") for c in classes}
     for i, s in enumerate(shares):
         for d, p in enumerate(sets):
             q = p | {"handbook_fee_cut_share": float(s)}
@@ -504,11 +513,16 @@ def change_grid(
             )
             parts = parts or {"all": added}
             for k, cls in enumerate(classes):
-                out[i, d, k] = parts[cls].sum(axis=1) @ member
+                a = parts[cls].sum(axis=1)
+                f = fees_d[fee_type[cls]][d]
+                out[i, d, k] = a @ member
+                rev[i, d, k] = (-s * f * base_by[cls] + (1 - s) * f * a) @ member
     idx = pd.MultiIndex.from_product(
         [list(shares), range(n), classes, groups], names=["share", "draw", "size", group_by]
     )
-    return pd.DataFrame({"units_added": out.reshape(-1)}, index=idx).reset_index()
+    return pd.DataFrame(
+        {"units_added": out.reshape(-1), "revenue_change": rev.reshape(-1)}, index=idx
+    ).reset_index()
 
 
 # ---------------------------------------------------------------------------------------------------------

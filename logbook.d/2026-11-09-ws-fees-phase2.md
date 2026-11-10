@@ -61,3 +61,12 @@
   targeted type's own % change, with the no-substitution limit stated (D-077 revision note).
 - Checked in a browser at desktop and phone widths: duplexes only at −50% gives +95; abolished +191;
   up 50% −95; every home at −50% still matches the scenario above.
+
+### Addendum 2026-11-10: fee revenue test (page v7)
+
+- Ben asked whether the page could show the money forgone as the slider moves, as a test. `change_grid`
+  now returns the change in fee revenue per draw (hand-worked test). The export carries it, and page v7
+  shows it in a box marked "Test", with clearer wording elsewhere (D-077 note).
+- Checked: the grid rerun (`reports/fees-knobs/run.log`) gives −$3.14 billion at a cut of half, matching
+  the rough estimate from the statewide totals ($6.3 billion today). The browser shows each choice and the
+  no-change state.

@@ -4988,3 +4988,15 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     when only duplex fees fall, so a targeted cut shows added duplexes, not a shift. Modelling substitution
     would need a cross-price response, and no source for one is in `docs/research/`.
   - No engine change: the grid already holds each type's draws.
+- **Fee revenue, a test (2026-11-10; Ben: "let's do a test of the revenue slider", likely not kept).**
+  - `change_grid` adds `revenue_change` per draw: −s × fee × baseline + (1 − s) × fee × added, by type,
+    with the draw's fee (hand test `test_change_grid_revenue_by_hand`). The page shows it in a box marked
+    "Test".
+  - Every home, fees halved: about −$3.1 billion over five years (MN −$289M, NC −$1,119M, OH −$209M,
+    TX −$1,527M), against about $6.3 billion at today's fees. That is about $2.1 million per extra home
+    (likely $0.6–7.7 million).
+  - Duplexes only, halved: −$91 million.
+  - Not discounted. 70–88% of the dollars come from places using their state's median fee. What replaces
+    the revenue is not modelled.
+  - The page wording was also revised: "Explore other fee changes", "Fees unchanged: no homes added or
+    lost".

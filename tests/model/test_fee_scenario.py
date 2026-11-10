@@ -356,3 +356,17 @@ def test_change_grid_with_parcels_never_falls_as_the_cut_grows():
     w = grid.pivot_table(index=["draw", "state"], columns="share", values="units_added")
     assert (w.diff(axis=1).iloc[:, 1:] >= -1e-9).all().all()
     assert set(grid["size"]) == {"all"}
+
+
+def test_change_grid_revenue_by_hand():
+    # D-077 test: revenue change = -s × fee × baseline + (1 - s) × fee × added, per type, fees fixed here.
+    places = by_size_frame(U2=10_000.0, U3_4=6_000.0)
+    grid = fees.change_grid(places, 2025, [0.0, 0.5, -0.5], draws=20).set_index(["share", "draw", "size"])
+    fee = {"1": 10_000.0, "2": 10_000.0, "3_4": 6_000.0}
+    base = {"1": 50.0, "2": 20.0, "3_4": 40.0}  # five-year baseline homes per class
+    for s in (0.5, -0.5):
+        for cls in ("1", "2", "3_4"):
+            g = grid.xs((s, cls), level=("share", "size"))
+            want = -s * fee[cls] * base[cls] + (1 - s) * fee[cls] * g["units_added"]
+            assert np.allclose(g["revenue_change"], want)
+    assert (grid.xs(0.0, level="share")["revenue_change"] == 0).all()
