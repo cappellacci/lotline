@@ -5046,3 +5046,100 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   before any fit is run.
 - **Decided by:** Ben, 2026-11-10 (accepted all six proposals). The proposals were written by Claude Code.
   **Status:** decided, not yet wired.
+
+### D-079 · 2026-11-10 · ADUs: the model form for the D-075 joint refit (Proposed, for Ben's review; method only, before any fit)
+- **Status: Proposed, for Ben's review.** Claude Code wrote this overnight on 2026-11-10 while Ben was asleep.
+  Nothing is decided until Ben accepts it. No fit, engine, scenario or dev run was made, and no count was read
+  beyond what the entries cited below already report.
+- **Why:** D-075 step 3 says the joint refit's model form "is chosen in its own entry before the refit,
+  written before any fit is run", with two candidates: D-048, and D-047's approach 3 with rule-change terms
+  identified from in-window events. D-078 left the form open. This entry names the two forms exactly, says how
+  the D-075 tests score each, and proposes one.
+- **What was looked at before writing:** D-047 (approach 3's form and results), D-048 and its adoption, D-049
+  (held-out log score per place), D-053 (the five-state fit: m_x = 1.0, set by Bend 2016–17; τ̂ 0.565),
+  D-074, D-075 and D-078. Also the in-window rule changes that the merged NC reports name (Wilmington 2021,
+  Winston-Salem 2022, Asheville's 2022 permit types, Greensboro 2024) and the coded rows in
+  `config/reforms/*.csv`. No fit output newer than D-053 was read.
+- **What both forms share** (so the comparison is about form only):
+  - **Data.** Every state's counts and accepted rule rows on `main` when the refit runs. Counts are each
+    source's counted ADU permits × its central k (`adu_flag_undercount`, D-078). County remainders counted
+    from local permit files use the permit-level eligible lots (`eligible.permit_level`, #375). D-041's count
+    rules apply (co-built houses dropped, survey report rate).
+  - **Window.** 2016–2025, the years MN, NC and OR use. A held-out place's years stop before its holdout
+    (St. Paul, V5) as now.
+  - **Place effects.** Gamma, variance α, integrated in closed form (`frailty_loglik_place`).
+  - **Undercount uncertainty.** Each form is fitted at the central k. It is refitted at the field rows' 5th
+    and 95th percentiles (one shared z, D-078 §5), with parser rows at their medians, and the change in the
+    tier scores is reported. The low-recall rows (Asheville before 2022, Austin's inferred rule) are reported
+    with and without them (D-078 §3).
+- **Form A: D-048, as adopted.**
+  - E[y_it] = θ × parcels_it × h1_it × ρ_it × max over rules in force of (c_r × coverage_r), with ramp = 1
+    from a rule's effective date. h1 is the pro forma's mature hazard at θ = 1; c_r is 1 for a Handbook rule,
+    m_o for owner occupancy only, m_x for other partial rules (D-019, D-022).
+  - Fitted: θ and α by maximum likelihood over fit 3's (m_o, m_x) grid, with profile intervals (D-048, D-053).
+    A state effect τ is estimated as in D-050 / D-053 for draws outside the fit's states.
+  - A rule change moves the expected count through c_r and coverage. The size of a change is set by m_o and
+    m_x, which D-053 found are identified mostly by one city (Bend 2016–17).
+- **Form B: D-047 approach 3 plus rule-change terms.**
+  - log E[y_it] = log(parcels_it × ρ_it) + b0 + b1 log(rent / 1,500) + b2 log(home value / 300,000)
+    + b3 (mortgage rate − 5) + b4 log(parcels / 10,000) + b5 restricted_it + b6 attached-only_it
+    + b7 log(1 + rule age_it) + **g d_it + g_m d̄_i**.
+  - d_it is the dose of the strongest rule in force on 1 July (D-023 grades: none 0, permit or conditional
+    use 1/3, by right with owner occupancy 2/3, by right without it 1). d̄_i is the place's mean dose over its
+    fit years. With d̄_i in the model (a correlated random effect), g is identified only from changes inside
+    a place: the in-window events. g_m absorbs the cross-place difference between places that have generous
+    rules and places that do not.
+  - **In-window events** are built by code from the coded rows, not chosen by hand: every fit place whose d_it
+    changes between two fit years, with at least two fit years on each side. Expected examples: Wilmington
+    2021, Winston-Salem 2022 (if its counts enter), Greensboro 2024, Minneapolis 2021, San Antonio 2023, Bend
+    2018. The event list is written to the report before the fit is run.
+  - **Identification rule, fixed now:** g is estimated only if there are at least 8 events in at least 3
+    states. Otherwise g and g_m are held at 0 (D-047's amendment for unidentified terms), Form B is approach 3
+    as run in D-047, and the report says so.
+  - Fitted by maximum likelihood (Nelder–Mead, best of five starts, as D-047), coefficients drawn from
+    N(β̂, Σ) with Σ from the observed information.
+  - The Handbook scenario raises a place's dose to 1: its effect is exp(g × (1 − d_it)) on the current-rules
+    rate, plus the change in restricted and attached-only to 0.
+- **How each form is scored.** Both forms run every test, each with its own fit:
+  1. **The D-075 data-tier test** (leave one state out; tiers 0, 1 and 2; target: ADU permits a year
+     2021–2024 in the held-out state's measured places, leaving out the tier-2 city at every tier). For
+     Form A, tier 0 uses the D-068 rule priors and τ from its prior; tier 2 updates the state effect and the
+     city's place effect. For Form B, tier 0 uses the same borrowed rules and draws a state intercept from
+     N(0, s²), with s the spread of the four fitted states' intercept shifts (the analogue of τ); tier 2
+     updates that intercept and the city's place effect. Reported per state and tier: inside P10–P90,
+     observed ÷ P50, CRPS and log score, and each tier's gain over the tier below.
+  2. **Tests A–C** (D-074 §3, applied state by state as D-075 §4 says) with the pass bars as written.
+  3. **The held-out log score per place** (D-049), at tier 1, as the tie-breaker.
+- **Decision rule, fixed now:**
+  - For each form, find the lowest tier that passes D-075's claim rule (in at least 4 of 5 held-out states,
+    the observed total inside P10–P90 and observed ÷ P50 within ×2).
+  - **Form A is kept unless Form B passes at a lower tier than Form A, or both pass at the same tier and B's
+    tier-1 held-out log score beats A's by more than 2 paired SE, while B passes at least as many of tests A–C
+    (counted state by state) as A.**
+  - If neither form passes any tier, Form A is kept, the tool shows the tier-2 ranges (D-075 §5), and both
+    forms' scores are reported.
+  - A change after any score is read is a new dated entry, as D-074 says.
+- **Proposed pick: Form A (D-048), with Form B as the pre-registered challenger under the rule above.**
+  - **Tier 0 is the point of the data-tier test, and Form A carries more to a state with no counts.** Its
+    level comes from a pro forma that reads rent, value and the mortgage rate the same way in every state.
+    Form B learns those slopes from the fit places. In D-047 its rent sign came out opposite to the pro
+    forma's, and rent and value traded off. D-047 approach 2's TX fold also showed what happens when cities
+    are larger than any fit place: a size term cut the prediction 3–4×.
+  - **D-037 route one** (mechanism route; uptake calibrated on our own states, outside studies only as checks)
+    is the adopted route. Replacing the mechanism needs the evidence the rule asks for, not a closer in-sample
+    fit. Approach 3 fits better in sample (log-likelihood −294.0 against D-048's −327.9 on D-041's places),
+    but its held-out gain over D-041 (+110.2) did not clear 2 paired SE (141.2; D-049), while D-048's did
+    (+52.5 against 52.2).
+  - **What Form B adds is real and is kept as the test.** D-053's m_x rests on Bend's two years. The
+    within-place events give a second, independent read of how much a rule change moves permits. If g is
+    identified and B wins under the rule, that is the evidence to switch, and it is known before any fit.
+  - **The rule-change events also check Form A.** Without changing Form A, the report shows, for each event,
+    A's predicted step (the ratio of expected counts after and before) against the observed step, with the
+    place effect cancelling. This is reported, not used to choose.
+- **Expected direction, before any fit:** with k applied and the new places in, θ rises a little (most k are
+  1.04–1.13). τ may fall as the NC places fill in the gap between MN and OR. Form B's g is expected positive
+  but imprecise (few events per state). Oregon is the hardest state to hold out under both forms (D-075).
+- **Not decided here:** a coefficient by type of place (RUCA class), which waits for the data-tier test
+  (D-075 §6), and D-072's two-step zone model (#354, proposed), which is a separate proposal. If D-072 is
+  accepted first, this entry's tests apply to it as a third form, with the same rule.
+- **Decided by:** not yet. Proposed by Claude Code for Ben's review in the PR.
