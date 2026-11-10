@@ -70,3 +70,12 @@
 - Checked: the grid rerun (`reports/fees-knobs/run.log`) gives −$3.14 billion at a cut of half, matching
   the rough estimate from the statewide totals ($6.3 billion today). The browser shows each choice and the
   no-change state.
+
+### Addendum 2026-11-10: what gets built today (page v8)
+
+- Ben asked for a visual putting the duplex numbers in perspective. Page v8 adds a section before the
+  knobs: a waffle of 1,000 new homes (houses 669, duplexes 23, triplexes and fourplexes 11, apartments
+  297) and a stacked bar per state, from the baseline by building size already in the grid.
+- Checked against recent permits: in 2025, 7,840 homes in 2-unit buildings across the four states; the
+  forecast is 7,249 a year. Correction to a chat answer: duplexes are 2.3% of the four states' new homes,
+  not 0.5%.

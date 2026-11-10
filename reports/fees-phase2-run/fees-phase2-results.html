@@ -65,6 +65,12 @@ input[type=range]:focus-visible,.tog input:focus-visible+span{outline:2px solid 
 .rev[hidden]{display:none}
 .rev b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
 .rev .tag{color:var(--faint)}
+.waffle-fig{margin:0;display:flex;flex-direction:column;gap:10px}
+.waffle{display:grid;grid-template-columns:repeat(40,1fr);gap:1px;max-width:400px}
+.waffle i{display:block;aspect-ratio:1;border-radius:1px}
+.stack{display:flex;height:16px;border-radius:2px;overflow:hidden;gap:1px}
+.stack div{min-width:1px}
+.mixnum{font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.35}
 .result{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direction:column;gap:4px}
 .big{font-family:var(--serif);font-size:1.6rem;line-height:1.25}.big b{color:var(--fees);font-weight:600}.big b.neg{color:var(--rise)}
 .rng{position:relative;height:20px;flex:1 1 auto;min-width:0}
@@ -94,6 +100,18 @@ input[type=range]:focus-visible,.tog input:focus-visible+span{outline:2px solid 
 <h2>So the story is the difference</h2>
 <p>Homes added statewide by the cut: the middle estimate, with the likely range from 1,000 runs that vary every assumption (10th to 90th percentile).</p>
 <div class="bars" id="added"></div>
+</section>
+
+<section aria-labelledby="mix-h">
+<h2 id="mix-h">What gets built today: almost all houses and apartments</h2>
+<p id="mix-lede">Before any change in fees, the forecast for 2027–2031 follows recent building permits. Duplexes, triplexes and fourplexes are a sliver of it, so even a large response in them adds few homes.</p>
+<figure class="waffle-fig">
+<div class="waffle" id="waffle" role="img"></div>
+<figcaption class="key" id="mix-key"></figcaption>
+<p class="small muted">Out of every 1,000 new homes expected in Minnesota, North Carolina, Ohio and Texas together (one square is one home).</p>
+</figure>
+<div class="bars" id="mix-states"></div>
+<p class="small muted">Homes expected over 2027–2031 by building size: the baseline forecast of Census building-permit units, which matches recent permits (2025: about 7,800 homes in 2-unit buildings across the four states). Homes, not buildings: a duplex is two homes.</p>
 </section>
 
 <section class="knobs" aria-labelledby="knobs-h">
@@ -287,6 +305,24 @@ function revenue(si,on,s){
   <p>Local governments collect <b>${usd(c)} ${lost?"less":"more"}</b> in fees over five years (likely ${usd(Math.min(Math.abs(pq(d,10)),Math.abs(pq(d,90))))} to ${usd(Math.max(Math.abs(pq(d,10)),Math.abs(pq(d,90))))}), against about ${usd(today)} at today's fees.</p>
   <p>That is about <b>${m(per)} million ${lost?"per extra home":"per home lost"}</b> (likely ${m(pq(ratio,10))} to ${m(pq(ratio,90))} million): most of the ${lost?"cut goes to homes that would be built anyway":"rise is paid on homes that would be built anyway"}.</p>
   <p class="small muted">Permit, impact and water/sewer fees on houses, duplexes and fourplexes, in 2025 dollars, not discounted. 70–88% of the dollars come from places using their state's median fee. What replaces the money (other taxes, or less infrastructure) is not modelled.</p>`}
+// What gets built today: the baseline by building size (D-077 grid's baseline)
+(function(){
+  const K=["1","2","3_4","5p"],NM={"1":"Houses","2":"Duplexes","3_4":"Triplexes and fourplexes","5p":"Apartments (5+ units)"};
+  const COL={"1":"var(--base)","2":"var(--fees)","3_4":"var(--survey)","5p":"var(--faint)"};
+  const tot=Object.fromEntries(K.map(k=>[k,ST.reduce((a,s)=>a+G.states[s].baseline[k],0)])),all=K.reduce((a,k)=>a+tot[k],0);
+  // 1,000 squares by largest remainder
+  const raw=K.map(k=>1000*tot[k]/all),n=raw.map(Math.floor);let left=1000-n.reduce((a,b)=>a+b,0);
+  raw.map((v,i)=>[v-n[i],i]).sort((a,b)=>b[0]-a[0]).slice(0,left).forEach(([,i])=>n[i]++);
+  const order=["2","3_4","1","5p"];let cells="";
+  for(const k of order){const c=n[K.indexOf(k)];for(let i=0;i<c;i++)cells+=`<i style="background:${COL[k]}"></i>`}
+  const w=el("waffle");w.innerHTML=cells;
+  w.setAttribute("aria-label","Of 1,000 new homes: "+K.map((k,i)=>NM[k]+" "+n[i]).join(", "));
+  el("mix-key").innerHTML=order.map(k=>`<span><i style="background:${COL[k]}"></i>${NM[k]}: ${n[K.indexOf(k)]}</span>`).join("");
+  el("mix-states").innerHTML=ST.map(st=>{const b=G.states[st].baseline,t=K.reduce((a,k)=>a+b[k],0);
+    const seg=K.map(k=>`<div style="flex:${b[k]};background:${COL[k]}" title="${NM[k]}: ${b[k].toLocaleString()}"></div>`).join("");
+    const pc=k=>(100*b[k]/t).toFixed(1)+"%";
+    return`<div class="row"><div class="lab">${NAMES[st]||st}</div><div class="track"><div class="stack" aria-hidden="true">${seg}</div><span class="mixnum">${Math.round(t).toLocaleString()} homes · duplexes ${b["2"].toLocaleString()} (${pc("2")}) · 3–4 units ${b["3_4"].toLocaleString()} (${pc("3_4")})</span></div></div>`}).join("");
+})();
 slider.addEventListener("input",draw);document.querySelectorAll('input[name="target"]').forEach(i=>i.addEventListener("change",draw));draw();
 })();
 </script>
