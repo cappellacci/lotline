@@ -4670,3 +4670,75 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Caveats: this is one case; the count is county-wide (the towns' building is in the baseline); one-unit
     building fell by almost half from 2023 to 2025, which the flat baseline did not foresee.
   - No model change follows from this result.
+
+### D-072 · 2026-11-10 · NC ADUs from counted homes: the flag undercount, more places, and the accuracy tests (method only, before any count)
+- **Why:** Ben (2026-11-10): the goal is an accurate number, and NC's ADU rate rests on too little of the state.
+  The places with ADU-flagged permits (Raleigh, Durham city and county, Greensboro, the six Mecklenburg towns)
+  hold about 295,000 of NC's roughly 3.2 million eligible lots (about 9%). Greensboro and the towns come from
+  the description parser, so their counts are lower bounds. Charlotte's holdout is released (D-071, 2026-11-09),
+  but its ADUs are not yet in the processed tables. D-070's headline is 104 net added homes over 2027–2031
+  (P10–P90 40–301). Six data sessions started on 2026-11-10: a comparison of the 2019 and 2023 Wake rolls
+  (`ws/nc-wake-roll-adu`) and permit sources for Asheville, Winston-Salem, Cary, Wilmington and Chapel Hill.
+  This entry fixes how their counts enter the model and how accuracy is judged, before any count is read.
+- **What was looked at before writing:** flagged ADU permits a year in Raleigh, Durham city and county and
+  Greensboro, 2016–2025, from the processed permit tables, against 2024 eligible lots (2021–24: Durham 0.73,
+  Raleigh 0.47, Durham County remainder 0.20, Greensboro 0.03 per 1,000 lots a year). Also the D-048 and
+  D-070 results. No Wake-roll count, no count from the five new cities, and no Charlotte ADU count after
+  2023-05-31 had been read.
+- **1. The flag undercount, k.** It is measured in Raleigh, the only place with both a flagged permit file and
+  two parcel rolls.
+  - R = the Raleigh parcels that the Wake comparison finds gained a second home between the November 2019
+    and December 2023 rolls, using that session's detection rule (fixed in its report before it counted).
+  - P = Raleigh permits flagged as ADUs, issued 2019-01-01 to 2023-06-30 (six months of completion lag),
+    matched to R by parcel.
+  - Every parcel in R but not in P falls in one of two groups: (a) it has a Raleigh permit for new residential
+    building at that parcel in the same window that is not flagged as an ADU (**permitted but unflagged**); or
+    (b) it has no such permit (**unpermitted or not found**).
+  - **k = (|P ∩ R| + |a|) / |P ∩ R|**, with a 90% interval from the binomial on |a| / (|P ∩ R| + |a|). k
+    corrects only for ADU permits that our flags miss. Group (b) is reported, not added: the model's outcome
+    stays ADU *permits*, and the formalization and net-new shares (A12) already cover unpermitted units. If a
+    group-(b) count is large, that goes into a separate entry.
+  - Two checks are reported beside k, not used: the two-list (Chapman) total
+    (|R| + 1)(|P| + 1) / (|P ∩ R| + 1) − 1, a lower bound because permitted ADUs are more likely to show in
+    the roll; and P \ R (flagged permits that the roll does not show: not yet finished, or the detection rule
+    misses them).
+  - **Field flags vs parser.** k applies as measured to field-flagged sources (Raleigh, Durham, any new city
+    with an ADU field). Parser sources (Greensboro, the Mecklenburg towns, any new parser source) take
+    k_parser = 1 / recall from the hand check of 30 matches and 30 non-matches in each new parser session,
+    pooled, with its binomial interval. If Cary's source is parsed, its Wake-roll match replaces the hand
+    check for Cary.
+- **2. More places.** A new place enters the ADU fit (D-048's panel), the observed floor (D-070) and the
+  `historical_floor` check if it has: a record-level permit source holding 1,000 or more of its permits (as in
+  `nc_readiness_counts.py`); an ADU rule row Ben has accepted (the sessions propose rows; they do not edit
+  `config/reforms/nc.csv`); and eligible lots. **Charlotte** enters for every year once NC's processed
+  permits are rebuilt without the holdout filter. The Mecklenburg legacy file's 2025 counts as partial and
+  2026 is dropped, as for the towns.
+- **3. Accuracy tests. The pass bars are fixed now.**
+  - **A. New places, out of sample.** Each new place (the five cities if they qualify, plus Charlotte) is
+    predicted for 2021–2024 from a fit that leaves it out, with its own observed floor removed and k applied.
+    Report the observed count's percentile in the P10–P90 range and D-040's verdict (useful: inside, and P50
+    within ×2). **Pass:** at least 60% of the new places are inside, and the median of the observed ÷ P50
+    ratios is within ×2. With 4 to 6 places this is a demonstration, and it is presented that way.
+  - **B. Wake towns from the roll.** For each Wake jurisdiction with an accepted ADU rule, the model's
+    current-rules ADUs for 2020–2023 (eligible lots × hazard, origin 2019, k applied) against the roll
+    count, both summed over the towns and each town's percentile. **Pass:** the Wake total (Raleigh left out,
+    because it sets k) lies within P10–P90.
+  - **C. No-reform floor.** NC's no-reform ADU permits a year (median) are at least the counted ADUs a year
+    (k applied) in every counted place, 2023–2025. This extends `historical_floor` to the new places.
+- **4. What a result changes.**
+  - If k's lower 90% bound is above 1, `adu_flag_undercount` (field) and `adu_parser_undercount` go into
+    `config/params/adu.yaml` with this entry as the source. They scale the observed counts in the fit and the
+    floor, never the eligible lots.
+  - New places and Charlotte enter as in step 2.
+  - The fit is rerun once with everything in, then tests A–C are scored.
+  - A failed test stays in the report. Any model change after a test is scored is a new dated entry.
+- **Not decided here:** a coefficient for each type of place across the five states. It waits for these
+  counts and gets its own entry, tested by leaving one state out against D-048 and D-047's approach 3. Ben's
+  three-question checklist from 2026-11-10 (legal change, physical fit, owner uptake) is dropped as a data
+  collection.
+- **Expected direction, before any count:** k ≥ 1, and the observed NC rates and the no-reform ADU baseline
+  rise. The net added homes under a statewide law (the headline) rise by less, because a higher rate lifts
+  both arms. The extra homes come only where the new law changes current rules, and S.L. 2026-59 already
+  legalizes ADUs in the largest cities from 2027.
+- **Decided by:** proposed by Claude Code for Ben's review in the PR. **Status:** proposed, method only. No
+  count was read and nothing was run.
