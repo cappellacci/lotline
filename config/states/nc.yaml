@@ -83,6 +83,17 @@ sources:
       2026-10-21. gis.greensboro-nc.gov/robots.txt does not exist (404). Units from OccupancyDesc and
       NumUnits; ADUs from the description parser. Missing from the catalog until 2026-10-21 (it listed only
       the current-year ArcGIS experience).
+  - name: chapel_hill_permits
+    url: https://www.arcgis.com/sharing/rest/content/items/f336a911f4fc424bbe1a53a5e7abb529/data
+    license: Town of Chapel Hill open data hub (public record, NCGS 132; no license stated on the item)
+    access: download
+    cadence: closed (legacy extract uploaded 2024-09-16; not updated)
+    notes: >-
+      Adapter src/lotline/adapters/states/nc/chapel_hill_permits.py. "LAMA Legacy Permit Data Production"
+      zipped File Geodatabase on the town's open-data hub: 18,350 permit records created 2015-05-11 to
+      2021-05-10 (5,747 issued building permits kept on 2026-11-10, 30 ADUs). Read with the standard-library
+      reader filegdb.py. Permits since mid-2021 are in the town's OpenGov portal, which has no public export
+      and blocks automated access; see reports/nc/chapel-hill-adu-scout.md (records request draft).
   - name: durham_active_permits
     url: https://services2.arcgis.com/G5vR3cOjh6g2Ed8E/arcgis/rest/services/Permits/FeatureServer/13
     license: City of Durham open data (Privacy Notice and Terms of Service on the Hub item)
