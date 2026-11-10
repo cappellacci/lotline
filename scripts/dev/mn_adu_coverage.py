@@ -1,11 +1,11 @@
-"""Coverage audit behind `reports/mn/adu-coverage-and-undercount.md` §1: what share of Minnesota's ADU-eligible
-lots sit in places whose permits carry an ADU flag.
+"""Coverage audit behind `reports/mn/adu-coverage-and-undercount.md` §1: what share of Minnesota's
+ADU-eligible lots sit in places whose permits carry an ADU flag.
 
     uv run python scripts/dev/mn_adu_coverage.py [--year 2024]
 
 Descriptive counts only (data thread): no engine, scenario or calibration run. Reads the processed
-`eligible_parcels` (theme `adu`, current rule version), `jurisdictions` and `permits` tables. Eligible lots are
-summed over non-overlapping units with `lotline.model.scenarios.adu.non_overlapping` (a raw sum counts the
+`eligible_parcels` (theme `adu`, current rule version), `jurisdictions` and `permits` tables. Eligible lots
+are summed over non-overlapping units with `lotline.model.scenarios.adu.non_overlapping` (a raw sum counts the
 local-only places twice, once on their own and once in their county's ACS-fallback remainder), using each
 jurisdiction's newest roll at or before `--year` (the earliest later one where none is earlier), as the ADU
 scenario does. Permits are read through `holdout.apply`; a jurisdiction is **covered** when a permit source
@@ -29,7 +29,10 @@ from lotline.validation import holdout
 STATE = "MN"
 OUT_JSON = Path(__file__).resolve().parents[2] / "reports" / "mn" / "adu-coverage.json"
 # Sources whose permit rows can carry building_type_std == "ADU" (a field or a parser).
-FLAG_SOURCES = {"metc_residential_permits": "Met Council (field)", "mpls_ccs_permits": "Minneapolis CCS (parser)"}
+FLAG_SOURCES = {
+    "metc_residential_permits": "Met Council (field)",
+    "mpls_ccs_permits": "Minneapolis CCS (parser)",
+}
 
 
 def eligible_units(store: DataStore, year: int) -> pd.DataFrame:
@@ -107,7 +110,10 @@ def main() -> None:
         ],
         "top_uncovered": [
             {"geoid": r.geoid, "name": r["name"], "eligible_lots": float(r.eligible_parcels)}
-            for _, r in units[~units["covered"]].sort_values("eligible_parcels", ascending=False).head(15).iterrows()
+            for _, r in units[~units["covered"]]
+            .sort_values("eligible_parcels", ascending=False)
+            .head(15)
+            .iterrows()
         ],
     }
     OUT_JSON.parent.mkdir(parents=True, exist_ok=True)

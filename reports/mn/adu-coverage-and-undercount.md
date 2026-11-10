@@ -164,3 +164,118 @@ Versions, all fixed now:
 2. P \ R by status: cancelled, expired or withdrawn permits are expected not to show on the roll.
 3. Met Council's Minneapolis ADU rows by year beside the CCS ADU-typed permits by year, and the roll's first
    ADU appearance by roll year (consecutive rolls), as a count check of the field flag against the parser.
+
+---
+
+## 3. Flag undercount k in Minneapolis: results
+
+*Rule committed in 9e4b5390 before the first count. Counts from `uv run python
+scripts/dev/mn_mpls_roll_adu_diff.py` (aggregates in `reports/mn/mpls-roll-adu-diff.json`; no parcel-level table
+is written). Functions and tests: `src/lotline/adapters/states/mn/mpls_roll_diff.py`,
+`tests/states/mn/test_mpls_roll_diff.py` (k and Chapman are NC's functions, imported).*
+
+### Bottom line
+
+- **k = 1.04 (90%: 1.02–1.10)** with duplexes removed (|P∩R| 94, |a| 4). **As written: 1.06 (1.03–1.12)**
+  (|a| 6). The lower bound is above 1 in every version, so D-074 step 4's trigger holds for Minneapolis too.
+- Minneapolis's ADU type comes from our scope-text parser, so this is Minneapolis's **k_parser**, measured on the
+  roll (as D-074 allows for Cary). It is close to Raleigh's field-flag k (1.07, 1.02–1.21).
+- **79% of the ADUs the assessor coded on 2017 single-family lots carry an ADU-typed permit** (94 of 119; 95%
+  Wilson 71–85%), against Raleigh's 73%. That is **1.27 real ADUs per typed one**, the analogue of Raleigh's
+  1.38. The Chapman total gives the same ratio, **1.27 × the typed permits** (95%: 1.20–1.33).
+- **Met Council's field undercounts Minneapolis much more than the parser does.** Over 2017–2025, Met Council's
+  Minneapolis ADU rows add up to 110 units; the parser types ADUs on 191 parcels (1.7×). Met Council's field is
+  the only ADU source for the other 183 covered metro jurisdictions (§3.3).
+
+### 3.1 Groups on the main pair (2017 → 2026 rolls)
+
+75,264 single-family parcels on the 2017 roll; 173 are gone by 2026 (split, merged or retired), so 75,091 are
+compared.
+
+| Group | Parcels | In R |
+|---|---:|---|
+| ADU added (strict) | 111 | Yes |
+| Rebuild with an ADU | 8 | Yes |
+| Duplex with an ADU | 3 | Yes as written; removed in the central version |
+| Possible merge | 1 | No |
+| Duplex, no ADU | 183 | No (missing middle) |
+| No ADU | 74,785 | No |
+
+R is 122 as written and 119 with duplexes removed: **0.18 ADUs per 1,000 single-family lots a year** over 9.0
+years. Raleigh's roll gave 0.13 for a narrower signal (detached only).
+
+### 3.2 D-074 quantities
+
+P = Minneapolis CCS permits typed ADU, issued 2017-01-01 to 2025-06-30: 175 parcels, 137 of them on 2017
+single-family parcels (the only ones R can contain).
+
+| | As written | **Duplexes removed (central)** | Wide (a) | Strict R | 2017 → 2024 rolls (central) |
+|---|---:|---:|---:|---:|---:|
+| \|R\| | 122 | **119** | 119 | 111 | 41 |
+| \|P\| (parcels) | 175 | **175** | 175 | 175 | 145 |
+| …on a 2017 single-family parcel | 137 | **137** | 137 | 137 | 111 |
+| **\|P ∩ R\|** | 95 | **94** | 94 | 89 | 28 |
+| **\|a\| permitted but unflagged** | 6 | **4** | 9 | 2 | 2 |
+| **\|b\| unpermitted or not found** | 21 | **21** | 16 | 20 | 11 |
+| **\|P \ R\|** | 80 | **81** | 81 | 86 | 117 |
+| …on a 2017 single-family parcel | 42 | **43** | 43 | 48 | 83 |
+| …outside the denominator | 38 | **38** | 38 | 38 | 34 |
+| **k** (90%) | 1.06 (1.03–1.12) | **1.04 (1.02–1.10)** | 1.10 (1.05–1.17) | 1.02 (1.01–1.07) | 1.07 (1.02–1.22) |
+| Chapman total (95%) | 175.8 (167–185) | **173.3 (164–182)** | 173.3 | 170.7 (162–180) | 161.2 (133–189) |
+| Chapman ÷ P on single-family parcels | 1.28 | **1.27** | 1.27 | 1.25 | 1.45 |
+
+Checks (§2, reported, not used):
+1. **Parser seen, text silent.** 19 of the 25 R \ P parcels (central) have a non-ADU permit whose work type the
+   parser reads (remodel, addition, accessory, conversion). That is weak evidence, since nearly every house has
+   such a permit in nine years; it says the parser could at most have caught these from the text.
+2. **P \ R by status.** 165 of the 175 P parcels have a live permit (not cancelled, expired, void, withdrawn or
+   denied); 74 of the live ones are not in R. So most of P \ R is not dead permits: the ADU is unfinished,
+   coded by the assessor on a parcel outside the denominator, or not coded at all.
+3. **Outside the window.** 24 P-type parcels have their ADU-typed permit issued outside the window (Dec 2016, or
+   after 2025-06-30); 1 of them is in R \ P. They are not added (rule §2).
+
+### 3.3 Field flag against parser, by year (count check)
+
+| Year | Roll: first ADU label (2017 SF parcels) | CCS ADU-typed parcels | Met Council ADU units (Minneapolis) |
+|---|---:|---:|---:|
+| 2017 | — | 30 | 22 |
+| 2018 | 13 | 25 | 9 |
+| 2019 | 12 | 34 | 18 |
+| 2020 | 28 | 27 | 10 |
+| 2021 | 20 | 16 | 7 |
+| 2022 | 8 | 17 | 12 |
+| 2023 | 5 | 13 | 8 |
+| 2024 | 5 | 16 | 11 |
+| 2025 | 36 | 13 | 13 |
+| 2026 | 9 | 14 (partial) | — |
+| **2017–2025** | | **191** | **110** |
+
+The roll column is the January table in which a parcel first carries an ADU label. It is not an issue year.
+- **Met Council records about 58% of the parser's Minneapolis ADUs.** Met Council's rows come from the city's
+  annual survey response. They carry no PIN, so they cannot be matched by parcel and no k can be measured for
+  them here. LB-057 had already noted that Met Council misses Minneapolis's internal ADUs.
+- **What this means for the suburbs.** D-074 applies k "as measured" to field-flagged sources. In Minnesota the
+  field source is Met Council, and in its one checkable city it records 1.7× fewer ADUs than the parser.
+  Applying k = 1.04 to the Met Council suburbs would assume their reporting is as complete as Minneapolis's CCS
+  text, which this check says it is not. **Ben to decide (proposed, not applied):** a Met Council k of
+  **1.04 × 1.74 ≈ 1.8** as a sensitivity for Met-Council-only places, or keep 1.04 and say the suburbs are a
+  floor. The suburbs' survey reporting may differ from Minneapolis's, so 1.8 is a guess for them, not a
+  measurement.
+
+### 3.4 Caveats
+
+1. **The roll's ADU label is not stable from year to year.** About 65 parcels labelled ADU in 2021 lose the
+   label in the 2022–2024 tables (back to `SINGLE FAMILY HOUSE`) and get it back in 2025, when the city moved to
+   one row per building. This was found after the count, while reading the by-year column. The main pair ends
+   on 2026, after the labels came back, so it is not affected. The 2017 → 2024 sensitivity is: its R (41) is far
+   too low, and its P \ R (117) far too high. Its k (1.07) is still close, because the dropped labels thin out
+   P∩R and (a) alike.
+2. **Carriage houses are not counted.** The 2026 table lists 32 `CARRIAGE HOUSE` buildings on 2017
+   single-family parcels without an ADU label. 29 were built before 1960 and 2 in 2017 or later. Most are old
+   outbuildings that show up once the tables list each building, not new ADUs. The rule does not count them, as written.
+3. **Lower bound.** Same as NC: a permitted ADU is more likely to be coded, so the Chapman total is a floor.
+4. **Group (b) is reported, not added** (D-074): 21 roll ADUs with no new-residential permit. Some were
+   permitted under a remodel or conversion whose text did not say "ADU" (check 1). The wide version counts
+   those classes and gives k = 1.10.
+5. **One city, a parser source.** k is Minneapolis's k_parser. Whether it transfers to Met Council's field is
+   doubtful (§3.3).
