@@ -238,6 +238,17 @@ sources:
       St. Paul DSI building permits from 2015-06-30. No unit counts, no ADU flag: secondary to Met Council for
       St. Paul outcomes. V5 holdout: rows from 2024 on are filtered before any processing. Street address and
       contractor name/address are never requested.
+  - name: rochester_permits
+    url: https://lf.rochestermn.gov/WebLink/Browse.aspx?id=3001428&dbid=0&repo=ROCHESTER
+    license: City of Rochester public records (Laserfiche public archive; no license stated)
+    access: file
+    cadence: monthly Detail Report Spreadsheet, posted early in the following month
+    notes: >-
+      Adapter src/lotline/adapters/states/mn/rochester_permits.py. One .xlsx per month from 2017-04 (earlier
+      months are .xls, not read: no reader dependency). Found through the archive's folder-listing JSON service
+      and downloaded one file per month through lotline.io.http.fetch. lf.rochestermn.gov/robots.txt does not
+      exist (404). Address, contractor and owner columns never read. No ADU field: ADUs from the work
+      description (mpls_permits patterns). Accepted by Ben on 2026-11-10 as a public-records source.
   - name: mngeo_parcels
     url: https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_mngeo/plan_parcels_open/FeatureServer/1
     license: MnGeo compilation of opt-in county open data; item license "None" (provided as is)

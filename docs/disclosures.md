@@ -26,6 +26,7 @@ in [`data_provenance.md`](data_provenance.md), which gives each dataset's licens
 | Socrata (Tyler Technologies) open-data APIs | `data.austintexas.gov`, `data.cincinnati-oh.gov` | Austin and Cincinnati building permits | None (optional `SOCRATA_APP_TOKEN`, never logged) |
 | Agency download pages | `traviscad.org`, Wake County (`services.wake.gov`), Montgomery County Treasurer (`go.mcohio.org`), Warren County GIS (`warrencountyohio.gov`) | Appraisal rolls, downloaded by hand in a browser because the site blocks automated access or its `robots.txt` disallows it, then registered with `lotline manifest register` | None |
 | Franklin County Auditor | `apps.franklincountyauditor.com` | Appraisal files: permit descriptions (ADU flags), dwelling year built and yearly parcel rolls (Franklin County, Ohio) | None |
+| City of Rochester (MN) Laserfiche WebLink | `lf.rochestermn.gov` | Monthly building permit detail spreadsheets (2005-09 on), found through the archive's folder-listing service and downloaded one file per month | None |
 | Legistar Web API (Granicus) | `webapi.legistar.com` | City of Columbus Council variance ordinances (ADU approvals before 2026) | None |
 | GitHub | `github.com` | Code hosting, Actions CI, CodeQL code scanning, Dependabot, secret scanning | Project account |
 

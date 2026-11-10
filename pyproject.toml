@@ -15,6 +15,7 @@ dependencies = [
     "pyarrow",
     "pydantic>=2",
     "pyyaml",
+    "xlrd>=2.0.2",
 ]
 
 [project.scripts]

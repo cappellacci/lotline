@@ -51,3 +51,69 @@
   - A Rochester adapter if Ben accepts its terms.
   - Whether Met Council's suburban ADU reporting can be checked against any city's own permits (Bloomington,
     Minnetonka and Edina have open data portals; not scouted here, since they are already covered).
+
+### LB-NNN · 2026-11-10 · Data: Rochester (MN) permit adapter; suburbs as a floor; shared undercount code
+- **Question:** Ben's replies on PR #367: can Rochester's public permit spreadsheets be added? He decided the
+  Met Council suburbs are a floor and approved moving the undercount functions to shared code.
+- **What I did:**
+  - Built `rochester_permits`:
+    - folder-listing walk of the city's public Laserfiche archive;
+    - one `lotline.io.http.fetch` per monthly .xlsx sheet (113 files, 2017-04 to 2026-10; the 139 .xls sheets
+      before that are skipped, since no dependency reads them);
+    - header labels matched by pattern, with personal columns (address, contractor, owner) unmatchable;
+    - Census construction codes for type and units;
+    - an ADU rule reusing `mpls_permits`' patterns. A new house built with an attached ADU, which Rochester
+      files as two-family, becomes a house row plus an ADU row.
+  - Ran `lotline fetch --state MN --source rochester_permits` (24,813 rows) and added the provenance row and the
+    `config/states/mn.yaml` source entry.
+  - Hand-checked every ADU text hit (13) and two draws of 30 non-matches.
+  - Moved `wilson`, `chapman`, `flag_share`, `k_undercount` and `Z90` to `lotline.validation.undercount`, with
+    `nc.wake_roll_diff` re-exporting them. The sibling OH/TX/OR branches import them through it, so they keep
+    working.
+- **Inputs:** `lf.rochestermn.gov` archive (public; robots.txt 404; no license stated; Ben accepted it
+  2026-11-10); Census BPS for Rochester (sanity check only).
+- **Outputs:** `src/lotline/adapters/states/mn/rochester_permits.py`, `tests/states/mn/test_rochester_permits.py`,
+  `src/lotline/validation/undercount.py`, `tests/core/test_undercount.py`, `config/states/mn.yaml`,
+  `docs/data_provenance.md` (Rochester rows only), report §3.3, §4.1, §5 and §6.
+- **Findings:**
+  - Rochester has 5 ADU permits since 2017, all after the 2023 UDC (3 in 2023, 2 in 2024, 0 in 2025): 0.04 per
+    1,000 eligible lots a year.
+  - Hand check: precision 5/5; no clear miss in either draw of 30; 5 ambiguous cases. All 4 trade permits that
+    name a new ADU sit on a flagged parcel.
+  - New SFD/TH permits track BPS single-family units within about 10% in most years.
+  - Coverage of MN eligible lots rises from 47% to 50%.
+- **Decisions:**
+  - Met Council suburbs are a floor (Ben, 2026-11-10); proposed for HANDOFF in the PR.
+  - Rochester accepted as a public-records source (Ben, 2026-11-10).
+- **AI:** Claude Code wrote the adapter, tests, shared module and report. Checks:
+  - synthetic-sheet tests (13 Rochester, 3 shared, 1,178 in the states and core suites);
+  - the BPS comparison;
+  - the hand check;
+  - a scan of the sibling branches' imports before the move.
+- **Open / next:**
+  - `xlrd` (BSD-3) would add 2005–2017-03 for Rochester; ask Ben before adding it.
+  - The parcel number is the city's own, so there is no roll match and no Rochester k.
+
+### LB-NNN · 2026-11-10 · Data: Rochester's pre-2017 sheets (xlrd)
+- **Question:** Ben approved adding `xlrd` (BSD-3-Clause), confirmed in this session. With it, can Rochester's
+  139 `.xls` sheets (2005-09 to 2017-03) be read?
+- **What I did:**
+  - Ran `uv add xlrd` (2.0.2). The license scan (`compliance_check.py --deps`) passes. BSD needs no exception
+    entry; `docs/disclosures.md` gained the `lf.rochestermn.gov` service row.
+  - `rochester_permits` now downloads every sheet (252) through `lotline.io.http.fetch` and reads `.xls` with
+    `xlrd`.
+  - Two more header patterns ("WorkDescription", "Occupancy Type").
+  - A `read_legacy` reader for the 2005-09 to 2007-10 extract from the old permit system (field names, read by
+    position; address, subdivision, owner and contractor never read).
+  - The report month stands in where a sheet's issue dates are blank (2014-11, 127 permits).
+  - Fixed a date-parsing bug found on the rebuild: mixed date formats across sheets had coerced most dates to
+    missing. Fixed with `format="mixed"` and a test.
+  - Rebuilt with `lotline fetch` (51,040 rows) and updated report §4.1.
+- **Findings:**
+  - New SFD/TH permits track BPS 1-unit counts from 2006 on (within about 10% in most years).
+  - The `.xls` years add no ADU (10 word hits, all hotels or trade work). Rochester stays at 5 ADU permits, all
+    in 2023–2024.
+- **AI:** Claude Code wrote the reader, tests (18 Rochester: synthetic legacy grid, `.xls` dispatch with a
+  stubbed reader, blank-date fallback, mixed formats) and report changes.
+  - Nothing in the project writes `.xls`, so the `.xls` test stubs `pandas.read_excel`. The real files were
+    checked by reading all 252 and comparing against BPS.
