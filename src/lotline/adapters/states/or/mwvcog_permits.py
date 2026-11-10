@@ -109,8 +109,10 @@ PROVENANCE = {
         "Holdout filter applied (Oregon's V9 holdout, released 2026-11-05)",
     ],
     "limitations": [
-        "No license stated; the City of Salem's own permit data bars copying, so only derived counts are "
-        "published and the records stay in LOTLINE_DATA_DIR",
+        "No license and no restriction (terms checked 2026-11-10: the ArcGIS Online item "
+        "a790b37ed6554a78957df0084f04b45b has an empty licenseInfo; Ben checked mwvcog.org by hand and found "
+        "no terms of use); treated like Portland and Medford. Salem's counts are attributed to MWVCOG "
+        "wherever they are shown",
         "Year and quarter only; no tax lot, so no parcel match",
         "Only Salem is kept: Keizer, Turner and the county remainders are partial in the file",
         "About 170 rows of 2024 have no city, office or permit number and are dropped: 2024 is incomplete",

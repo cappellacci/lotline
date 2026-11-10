@@ -75,7 +75,12 @@ sources:  # added by WS-OR with each adapter
       Adapter src/lotline/adapters/states/or/mwvcog_permits.py. Residential building permits since 1998 for
       Salem, Keizer, Turner and unincorporated Marion and Polk; Type ADU is the COG's ADU category (from
       2018). Jurisdiction from the permit's City, else the self-permitting office. The City of Salem's own
-      permit layer bars copying and covers one rolling year, so it is not used.
+      permit layer bars copying and covers one rolling year, so it is not used. Terms (checked 2026-11-10):
+      the ArcGIS Online item a790b37ed6554a78957df0084f04b45b (owner ksapunar_MWVCOG, public) has an empty
+      licenseInfo and accessInformation "www.mwvcog.org"; mwvcog.org shows a Cloudflare bot check, so Claude
+      did not read it, and Ben checked the site by hand the same day and found no terms of use. No license,
+      no restriction: treated like Portland and Medford (Ben, 2026-11-10). Salem's counts carry attribution
+      to MWVCOG wherever they are shown.
   - name: medford_permits
     url: https://maps.medfordmaps.org/arcgis/rest/services/TRAKiTExport/TRAKiTPermits_service/FeatureServer/1
     license: No license stated (City of Medford public ArcGIS service; open data hub no-warranty disclaimer)

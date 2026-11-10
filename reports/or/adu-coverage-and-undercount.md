@@ -219,7 +219,7 @@ below). For each of the uncovered places in §1's top 25:
 
 | Place (rank) | Source | Verdict |
 |---|---|---|
-| **Salem (4)** | **MWVCOG "Residential Building Permits since 1998"** (`Permits_online/FeatureServer/0`): 19,332 permits for Salem, Keizer, Turner and unincorporated Marion and Polk, with the COG's own ADU type from 2018 | **Adapter built** (`mwvcog_permits`). No license stated |
+| **Salem (4)** | **MWVCOG "Residential Building Permits since 1998"** (source: Mid-Willamette Valley Council of Governments) (`Permits_online/FeatureServer/0`): 19,332 permits for Salem, Keizer, Turner and unincorporated Marion and Polk, with the COG's own ADU type from 2018 | **Adapter built** (`mwvcog_permits`). No license stated |
 | Salem (4) | City of Salem "Structure Permits" (`Structure_Permits/FeatureServer/0`) | **Blocked by its terms**: "copying and selling the data is prohibited". It also holds only a rolling year (669 rows from 2025-11-25). Not used |
 | **Medford (13)** | **City of Medford TRAKiT export** (`TRAKiTPermits_service/FeatureServer/1`): 28,063 permits since 2020, ADU subtypes, tax lot | **Adapter built** (`medford_permits`). No license stated; hub disclaimer only |
 | Medford (13) | City of Medford "Housing Production" layer (2,428 rows, `HOUSING_TYPE` ADU) | City-derived count; used as a check below |
@@ -232,8 +232,15 @@ below). For each of the uncovered places in §1's top 25:
 **A note on terms.** Neither new source states a license; neither restricts reuse. That is the same footing
 as Portland's permits (`config/states/or.yaml`). The records stay in `LOTLINE_DATA_DIR`; only counts are
 published. MWVCOG's file holds Salem's permits, whose own city layer bars copying; the COG is a different
-publisher and states no such term, but **Ben may want to treat Salem's counts as provisional until MWVCOG's
-terms are confirmed.**
+publisher and states no such term.
+
+**MWVCOG terms, checked 2026-11-10 (Ben's decision: keep Salem's counts).** The ArcGIS Online item
+(`a790b37ed6554a78957df0084f04b45b`, owner `ksapunar_MWVCOG`, public) has an empty `licenseInfo`, and its
+`accessInformation` is only "www.mwvcog.org". mwvcog.org shows a Cloudflare bot check, so Claude did not read
+it; Ben checked the site by hand the same day and found no terms of use. **Status: no license and no
+restriction, the same footing as Portland's and Medford's permits.** Salem's numbers carry attribution to the
+Mid-Willamette Valley Council of Governments wherever they are shown. Salem's ADU rule date (§4) stays DATE
+UNCONFIRMED.
 
 ### 3.2 Checks of the new sources
 
@@ -328,5 +335,5 @@ Medford's ADU zoning rules (MMC 10.821) and Keizer's own ADU code were not resea
   sibling sessions.
 - **Coverage.** With Salem and Medford, ADU-flagged permits cover 261,963 of 1,164,771 eligible lots
   (**22.5%**, up from 16.9%). Every new place is outside Portland and under the statewide rule.
-- **Open:** MWVCOG's terms (Salem), Salem's ADU rule dates, Jackson County (needs a city assignment), the OHCS
+- **Open:** Salem's ADU rule dates, Jackson County (needs a city assignment), the OHCS
   production layer's survey period, and Eugene (no open source).
