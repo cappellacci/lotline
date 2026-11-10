@@ -40,8 +40,7 @@
   - Montgomery's CAMA second test was not run, because the county has only 7 flags in all.
 - **Decisions:** none made. Proposed in the PR:
   - a k_parser of about 1.0–1.07 for Cleveland;
-  - shared roll-diff helpers;
-  - confirming the Cleveland ODbL approval.
+  - shared roll-diff helpers.
   No rule rows are proposed: Cleveland's existing row covers it, and the FBC/HID ADU question stays open.
 - **AI:** Claude Code wrote the rule, code, tests and report; a subagent did the source scouting.
   - Every count was produced by the committed scripts.
@@ -50,6 +49,6 @@
   - All 15 Cleveland matches and 60 non-matches were read by hand.
   - Cleveland's new houses were checked against Census BPS (1,115 against 1,231 over 2017–25).
 - **Open / next:**
-  - Ben: confirm ODbL for `cle_permits` (`oh-readiness.md` still lists it as open).
+  - Ben confirmed the Cleveland ODbL run-time fetch on 2026-11-10 (`oh-readiness.md` updated).
   - Answer whether Cleveland's FBC districts allow ADUs.
   - WS-CORE: consider moving the roll-diff interval helpers to a shared module.
