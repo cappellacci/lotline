@@ -58,6 +58,17 @@ sources:
       2024-12-10). Building permits for new construction and additions on residential land uses only. Ends
       2024-11-12: 2025 is not covered. The Socrata set e7gq-4sah (2018-2025, no unit field, no license) is not
       used. Lead from Ben's notes on public Dallas sources (docs/disclosures.md).
+  - name: cstx_permits
+    url: https://data.cstx.gov/Business-and-Economic-Development/Permits-Master-Dataset/hrbn-znt6
+    license: City of College Station open data portal (no license stated)
+    access: socrata
+    cadence: daily
+    notes: >-
+      Adapter src/lotline/adapters/states/tx/cstx_permits.py. "Permits - Master Dataset" (1989 on; 203,521
+      rows of every type on 2026-11-10). Residential, multifamily, accessory, addition and demolition permits
+      only. ADUs from the city's "Living Quarters" accessory subtype, plus the description parser on accessory
+      and addition permits. robots.txt allows /resource (crawl delay 1 s). Added 2026-11-10 for D-075
+      (reports/tx/adu-coverage-and-undercount.md §4).
   - name: stratmap_parcels
     url: https://data.geographic.texas.gov/collection/?c=1d33dafb-6e9c-40ac-887d-f4577909ed9b
     license: CC0 1.0 (TxGIO StratMap Land Parcels)
