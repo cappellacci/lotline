@@ -1,0 +1,13 @@
+### LB-NNN · 2026-11-10 · WS-FEES → WS-APP: hand-off note for the app's fee section
+- **Question:** what does the app workstream need to rebuild the fee prototype page (results page v9) with a state picker and a new story order, without changing a number?
+- **What I did:**
+  - Wrote `docs/build/handoffs/15-fee-section-for-app.md`. It covers: the grid format (`reports/fees-knobs/grid.json`); the rule that totals are built run by run; the browser arithmetic; parity numbers to test against; Ben's design calls of 2026-11-10; the limits to state; and the choices still open.
+  - Added the thread to the handoffs README.
+- **Inputs:** D-073, D-076, D-077 (`docs/analysis_plan.md`); `fees.change_grid`; `scripts/dev/fee_knobs_export.py`; the prototype page; this session's review with Ben.
+- **Outputs:** `docs/build/handoffs/15-fee-section-for-app.md`; `docs/build/handoffs/README.md`.
+- **Findings:**
+  - The grid's `coded_places` undercounts (an exact match on `fee_source == "local"`; MN 15 vs 18). The note says not to display it.
+  - The statewide run log's "baseline 0 homes" line is stale: the current `fee_dev_run.py` prints the right total.
+- **Decisions:** none new. The open choices are listed for Ben (slider range, %-of-baseline headline, whether the revenue box stays).
+- **AI:** Claude Code wrote the note from the merged code and this session. Its parity numbers were read from `grid.json` and the D-076 run, not retyped from memory.
+- **Open / next:** fees into `lotline results` (WS-ENGINE), so the app reads the grid from the bundle.
