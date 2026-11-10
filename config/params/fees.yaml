@@ -75,3 +75,11 @@ fee_simulation_seed:
   high: 4294967295
   unit: random seed
   source: "Choice: a fixed seed makes every run reproducible"
+
+fee_rise_share:
+  value: 0.5
+  low: 0.5
+  high: 0.5
+  unit: share of fees
+  source: "Ben, 2026-11-09 (fee plan Phase 2, D-073): the fee-increase sensitivity is the mirror of the real-fee cut, a rise of 50% of each place's local fee (D-065 fee-increase sensitivity; office hours 2026-11-03, A4)"
+  notes: "Fixed (a definition, not an estimate). Used only by the local_rise sensitivity. Entered as a negative cut, so the same lambda, elasticity and ramp apply: builders bear (1 - lambda) of the rise and land prices absorb the rest, the symmetric assumption."

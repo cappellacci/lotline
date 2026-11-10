@@ -9,6 +9,9 @@ review §3c).
   single-family fee per unit (`local_fee_per_unit`, from `lotline.model.fee_levels.place_fees`: coded rows in
   2025 dollars, missing permit and water/sewer parts filled from a prior, D-065); Δ = cut share × F.
 - `local_25k` ("Real local fees cut by up to $25,000"): the same F; Δ = min(cut share × $50,000, F).
+- `local_rise` ("Sensitivity: real local fees raised by half", D-073): the same F; Δ = −`fee_rise_share` × F,
+  a negative cut through the same λ, ε and ramp. It shows what a fee increase costs in homes (A4); it is a
+  sensitivity, not one of the Handbook's scenarios.
 
 In the local scenarios F is drawn in each simulation draw within the place's range (`local_fee_low`,
 `local_fee_high`: fees that vary by area, basin or plat date, and the spread of a filled prior; #247), as a
@@ -24,6 +27,15 @@ saving s moves permits through one of two channels:
   `fee_feasibility_min_lots` lots were feasible before the cut.
 - **(b) Elasticity** (everywhere else, D-010):  %Δ = ε × s / TDC, where TDC, the total development cost of a
   home at the margin of feasibility, is taken as its price: the place's median home value (2025 dollars).
+
+**Dose by building size (D-073).** When `places` carries the baseline by BPS size class
+(`baseline_y<h>_1`, `_2`, `_3_4`, `_5p`), each class takes its own %Δ: 1-unit buildings the house's (either
+channel above, with the house fee); 2-unit and 3-4 unit buildings the elasticity route with their own fee per
+unit (`local_fee_per_unit_U2`, `_U3_4`, from `fee_levels.place_fees`; the Handbook's $50,000 in the benchmark)
+and their own cost per unit, the place's home value scaled to the unit's size (`plex_unit_sqft` /
+`single_family_sqft`). The same fee per unit is a bigger share of a smaller unit's cost, which is the density
+point of office hours A5. 5+ unit buildings have no coded fees and take no dose (a stated limit). Without the
+size split, the house's %Δ applies to every unit (D-032's interim rule).
 
 Either way the change phases in:  added units(t) = baseline units(t) × %Δ × ramp(t), with
 ramp(t) = 1 / (1 + exp(−(t − half) / slope)) (`fee_ramp_half_years`, `fee_ramp_slope_years`).
@@ -49,13 +61,23 @@ from lotline.model import hazard, proforma
 
 PARAM_FILES = ("fees", "proforma")
 FIXED = proforma.NOT_SAMPLED | {"fee_simulation_draws", "fee_simulation_seed", "fee_feasibility_min_lots"}
-MODES = ("handbook", "local_half", "local_25k")
+MODES = ("handbook", "local_half", "local_25k", "local_rise")
 ALIASES = {"local": "local_half"}  # the name before D-065
 LABELS = {
     "handbook": "Benchmark: a $50,000 fee cut in half",
     "local_half": "Real local fees cut in half",
     "local_25k": "Real local fees cut by up to $25,000",
+    "local_rise": "Sensitivity: real local fees raised by half",
 }
+# BPS size class -> fee building type (D-073). 5+ unit buildings have no coded fees and no dose: unchanged.
+SIZE_TYPES = {"1": "SFD", "2": "U2", "3_4": "U3_4"}
+SIZE_CLASSES = ("1", "2", "3_4", "5p")
+TYPE_SQFT = {"SFD": "single_family_sqft", "U2": "plex_unit_sqft", "U3_4": "plex_unit_sqft"}
+
+
+def _suffix(building_type: str) -> str:
+    """Column suffix for a building type's local fee: '' for SFD (the original columns), else '_U2' etc."""
+    return "" if building_type == "SFD" else f"_{building_type}"
 
 
 def specs() -> dict:
@@ -102,30 +124,55 @@ def local_fees(fees: pd.DataFrame, index: pd.Series | None = None) -> pd.DataFra
     return fee_level_rules.coded_fees(fees, "SFD", index=index)
 
 
-def fee_levels(places: pd.DataFrame, mode: str, params: Mapping[str, float]) -> tuple[np.ndarray, np.ndarray]:
-    """Central fee per unit before the cut, and where it came from (`fee_source`, or 'handbook')."""
+def _type_columns(places: pd.DataFrame, building_type: str) -> tuple[str, str]:
+    """(column suffix, note) for a building type's local fee: its own columns, else the house's (D-073)."""
+    s = _suffix(building_type)
+    if f"local_fee_per_unit{s}" in places:
+        return s, ""
+    if building_type == "SFD":
+        raise ValueError("local fee scenarios need local_fee_per_unit (fee_levels.place_fees)")
+    return "", f" (house fee: no {building_type} level given)"
+
+
+def fee_levels(
+    places: pd.DataFrame, mode: str, params: Mapping[str, float], building_type: str = "SFD"
+) -> tuple[np.ndarray, np.ndarray]:
+    """Central fee per unit before the cut, and where it came from (`fee_source`, or 'handbook').
+
+    `building_type` 'U2' or 'U3_4' reads `local_fee_per_unit_U2` etc. (`fee_levels.place_fees` for that
+    type); without those columns it uses the house's fee and says so in the source."""
     mode = _mode(mode)
     n = len(places)
     if mode == "handbook":
         return np.full(n, float(params["handbook_fee_per_unit_usd"])), np.full(n, "handbook", dtype=object)
-    if "local_fee_per_unit" not in places:
-        raise ValueError("local fee scenarios need local_fee_per_unit (fee_levels.place_fees)")
-    level = places["local_fee_per_unit"].to_numpy(dtype=float)
+    s, note = _type_columns(places, building_type)
+    level = places[f"local_fee_per_unit{s}"].to_numpy(dtype=float)
     if np.isnan(level).any():
         raise ValueError("a place has no local fee; the $50,000 is not a fallback (D-065)")
-    source = places.get("fee_source", pd.Series("local", index=places.index)).fillna("local")
-    return level, source.to_numpy(dtype=object)
+    source = places.get(f"fee_source{s}", pd.Series("local", index=places.index)).fillna("local")
+    return level, (source.astype(str) + note).to_numpy(dtype=object)
 
 
-def fee_draws(places: pd.DataFrame, mode: str, params: Mapping[str, float], n: int, seed: int) -> np.ndarray:
+def fee_draws(
+    places: pd.DataFrame,
+    mode: str,
+    params: Mapping[str, float],
+    n: int,
+    seed: int,
+    building_type: str = "SFD",
+) -> np.ndarray:
     """(draws × places) fee per unit: the central value in the benchmark; triangular(low, central, high) in
-    the local scenarios where a range is given (`local_fee_low`, `local_fee_high`), else the central value."""
-    central, _ = fee_levels(places, mode, params)
+    the local scenarios where a range is given (`local_fee_low`, `local_fee_high`, with the type's suffix),
+    else the central value."""
+    central, _ = fee_levels(places, mode, params, building_type)
     out = np.repeat(central[None, :], n, axis=0)
-    if _mode(mode) == "handbook" or "local_fee_low" not in places or "local_fee_high" not in places:
+    if _mode(mode) == "handbook":
         return out
-    low = places["local_fee_low"].fillna(places["local_fee_per_unit"]).to_numpy(dtype=float)
-    high = places["local_fee_high"].fillna(places["local_fee_per_unit"]).to_numpy(dtype=float)
+    s, _ = _type_columns(places, building_type)
+    if f"local_fee_low{s}" not in places or f"local_fee_high{s}" not in places:
+        return out
+    low = places[f"local_fee_low{s}"].fillna(places[f"local_fee_per_unit{s}"]).to_numpy(dtype=float)
+    high = places[f"local_fee_high{s}"].fillna(places[f"local_fee_per_unit{s}"]).to_numpy(dtype=float)
     low, high = np.minimum(low, central), np.maximum(high, central)
     rng = np.random.default_rng(seed)
     for i in np.flatnonzero(high > low):
@@ -134,9 +181,12 @@ def fee_draws(places: pd.DataFrame, mode: str, params: Mapping[str, float], n: i
 
 
 def fee_cut(fee: np.ndarray, params: Mapping[str, float], mode: str = "handbook") -> np.ndarray:
-    """Δ per unit: cut share × fee; in `local_25k`, the Handbook's dollar cut capped at the fee."""
+    """Δ per unit: cut share × fee; in `local_25k`, the Handbook's dollar cut capped at the fee; in
+    `local_rise`, a rise of `fee_rise_share` × fee, entered as a negative cut (D-073)."""
     fee = np.asarray(fee, dtype=float)
     share = params["handbook_fee_cut_share"]
+    if _mode(mode) == "local_rise":
+        return -params["fee_rise_share"] * fee
     if _mode(mode) == "local_25k":
         return np.minimum(share * params["handbook_fee_per_unit_usd"], fee)
     return share * fee
@@ -197,6 +247,21 @@ def pct_change(places: pd.DataFrame, fee: np.ndarray, params: Mapping[str, float
     return pct, channel
 
 
+def type_pct_change(
+    places: pd.DataFrame, fee: np.ndarray, params: Mapping[str, float], mode: str, building_type: str
+) -> np.ndarray:
+    """%Δ permits of one building type by elasticity (D-073): ε × saving per unit / cost per unit, where the
+    cost per unit is the place's home value scaled to the type's unit size (`TYPE_SQFT`).
+
+    By hand: ε 0.3, λ 0.5, duplex fee $10,000 cut in half -> saving $2,500; home value $430,000 for 2,150 sq
+    ft -> $200 a sq ft, a 1,000 sq ft unit $200,000 -> 0.3 × 2,500 / 200,000 = 0.00375.
+    """
+    saving = builder_saving(fee, params, mode)
+    scale = params[TYPE_SQFT[building_type]] / params["single_family_sqft"]
+    tdc = places["home_value"].to_numpy(dtype=float) * scale
+    return elasticity_change(saving, tdc, params)
+
+
 def ramp(horizon: int, params: Mapping[str, float]) -> np.ndarray:
     """Share of the full response reached in years 1..horizon after the cut."""
     t = np.arange(1, horizon + 1)
@@ -221,12 +286,55 @@ def _baseline(places: pd.DataFrame, horizon: int) -> np.ndarray:
     return np.repeat(places["baseline_units"].to_numpy(dtype=float)[:, None], horizon, axis=1)
 
 
+def _by_size(places: pd.DataFrame, horizon: int) -> dict[str, np.ndarray] | None:
+    """Baseline by BPS size class (`baseline_y<h>_<class>` for every year and class), or None (D-073)."""
+    cols = {c: [f"baseline_y{t}_{c}" for t in range(1, horizon + 1)] for c in SIZE_CLASSES}
+    if not all(all(k in places for k in v) for v in cols.values()):
+        return None
+    return {c: places[v].to_numpy(dtype=float) for c, v in cols.items()}
+
+
+def _added(
+    places: pd.DataFrame,
+    fees: Mapping[str, np.ndarray],
+    params: Mapping[str, float],
+    mode: str,
+    base: np.ndarray,
+    by_size: dict[str, np.ndarray] | None,
+):
+    """Added units (places × years), per-class added units, house %Δ, its channel and per-type %Δ.
+
+    Without a baseline by size, the house's %Δ applies to all units (the interim rule of D-032). With one
+    (D-073): 1-unit buildings take the house's %Δ (feasibility or elasticity), 2-unit and 3-4 unit buildings
+    their own type's elasticity %Δ, and 5+ unit buildings none.
+    """
+    pct, channel = pct_change(places, fees["SFD"], params, mode)
+    if by_size is None:
+        return added_units(base, pct, params), {}, pct, channel, {}
+    parts = {"1": added_units(by_size["1"], pct, params)}
+    pcts = {"1": pct}
+    for cls in ("2", "3_4"):
+        t = SIZE_TYPES[cls]
+        pcts[cls] = type_pct_change(places, fees[t], params, mode, t)
+        parts[cls] = added_units(by_size[cls], pcts[cls], params)
+    return sum(parts.values()), parts, pct, channel, pcts
+
+
+def _types(by_size) -> tuple[str, ...]:
+    return ("SFD",) if by_size is None else ("SFD", "U2", "U3_4")
+
+
 def central_path(places: pd.DataFrame, mode: str = "local_half", params: dict | None = None) -> dict:
-    """Central values (hand checks): fee, saving, %Δ, channel and added units (places × years)."""
+    """Central values (hand checks): fee, saving, %Δ, channel and added units (places × years); with a
+    baseline by size class, also each type's fee and %Δ and each class's added units."""
     p = central_params() | (params or {})
     _, horizon, _ = baseline_model.window(0)
-    fee, source = fee_levels(places, mode, p)
-    pct, channel = pct_change(places, fee, p, mode)
+    by_size = _by_size(places, horizon)
+    base = _baseline(places, horizon) if by_size is None else sum(by_size.values())
+    levels = {t: fee_levels(places, mode, p, t) for t in _types(by_size)}
+    fees = {t: v[0] for t, v in levels.items()}
+    added, parts, pct, channel, pcts = _added(places, fees, p, mode, base, by_size)
+    fee, source = levels["SFD"]
     return {
         "fee": fee,
         "fee_source": source,
@@ -234,7 +342,11 @@ def central_path(places: pd.DataFrame, mode: str = "local_half", params: dict | 
         "saving": builder_saving(fee, p, mode),
         "pct": pct,
         "channel": channel,
-        "added": added_units(_baseline(places, horizon), pct, p),
+        "added": added,
+        "fee_by_type": fees,
+        "source_by_type": {t: v[1] for t, v in levels.items()},
+        "pct_by_size": pcts,
+        "added_by_size": parts,
     }
 
 
@@ -263,15 +375,23 @@ def run(
     n = int(draws or central["fee_simulation_draws"])
     sets = draw_params(n, int(central["fee_simulation_seed"]))
     _, horizon, first = baseline_model.window(origin)
-    base = _baseline(places, horizon)
+    by_size = _by_size(places, horizon)
+    base = _baseline(places, horizon) if by_size is None else sum(by_size.values())
     mode = _mode(mode)
     fee, source = fee_levels(places, mode, central)
-    fees_d = fee_draws(places, mode, central, n, int(central["fee_simulation_seed"]) + 1)
+    seed = int(central["fee_simulation_seed"])
+    # the house fee keeps seed + 1 (results without a size split are unchanged); duplex + 2, fourplex + 3
+    fees_d = {t: fee_draws(places, mode, central, n, seed + 1 + k, t) for k, t in enumerate(_types(by_size))}
     out = np.zeros((n, len(places), horizon))
+    out_size = {c: np.zeros((n, len(places))) for c in (SIZE_TYPES if by_size is not None else ())}
     used = np.zeros((n, len(places)), dtype=bool)  # feasibility channel used in this draw
     for d, p in enumerate(sets):
-        pct, channel = pct_change(places, fees_d[d], p, mode)
-        out[d] = added_units(base, pct, p)
+        added, parts, _, channel, _ = _added(
+            places, {t: v[d] for t, v in fees_d.items()}, p, mode, base, by_size
+        )
+        out[d] = added
+        for c, a in parts.items():
+            out_size[c][d] = a.sum(axis=1)
         used[d] = channel == "feasibility"
     c = central_path(places, mode)
     info = (
@@ -290,6 +410,14 @@ def run(
         )
         .reset_index(drop=True)
     )
+    if by_size is not None:
+        for t in ("U2", "U3_4"):
+            info[f"fee_per_unit_{t}"] = c["fee_by_type"][t]
+            info[f"fee_source_{t}"] = c["source_by_type"][t]
+        for cls in SIZE_CLASSES:
+            info[f"baseline_five_year_{cls}"] = by_size[cls].sum(axis=1)
+        for cls in SIZE_TYPES:
+            info[f"pct_change_central_{cls}"] = c["pct_by_size"][cls]
     yearly = info.loc[info.index.repeat(horizon)].reset_index(drop=True)
     yearly["horizon"] = np.tile(np.arange(1, horizon + 1), len(places))
     yearly["year"] = first - 1 + yearly["horizon"]
@@ -299,6 +427,10 @@ def run(
         table["units_added_mean"] = a.mean(axis=0)
         for q in (10, 50, 90):
             table[f"units_added_p{q}"] = np.percentile(a, q, axis=0)
+    for cls, a in out_size.items():  # five-year units added in each size class
+        totals[f"units_added_mean_{cls}"] = a.mean(axis=0)
+        for q in (10, 50, 90):
+            totals[f"units_added_p{q}_{cls}"] = np.percentile(a, q, axis=0)
     if summary_by is None:
         return yearly, totals
     rows = []

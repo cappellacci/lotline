@@ -1463,7 +1463,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   It stays open.
 - **Decided by:** proposed by thread 02 in the fee-scenario PR; for Ben to confirm.
 - **Status 2026-11-09:** adopted with amendments by D-065 (revenue toggle default; single-family dose is
-  interim until doses by building type are built).
+  interim until doses by building type are built). The dose by building type is D-073 (2026-11-09).
 
 ### D-033 · 2026-10-20 · Proposed: feasibility-channel inputs from parcel rolls
 - Candidate lots are VACANT_RESIDENTIAL parcels with a land value in the newest roll ≤ origin + 1.
@@ -4639,3 +4639,48 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Caveats: this is one case; the count is county-wide (the towns' building is in the baseline); one-unit
     building fell by almost half from 2023 to 2025, which the flat baseline did not foresee.
   - No model change follows from this result.
+
+### D-073 · 2026-11-09 · Fee plan Phase 2: a dose per building size, the fee-rise sensitivity and the pencil-out table (method only, before any run)
+- **Why now:** D-065 kept the single-family dose as interim until per-type fee levels (D-066) and the duplex
+  and fourplex pro formas could replace it. Office hours on 2026-11-03 (A4, A5) asked for the house, duplex
+  and fourplex comparison with per-unit connection fees as the named driver, and for the case against raising
+  impact fees. No model was run.
+- **Dose by BPS size class** (Ben: "per-type elasticity"). With the baseline split by size class, 1-unit
+  buildings keep the house's %Δ (feasibility on parcels where there are enough feasible lots, else
+  elasticity). 2-unit and 3-4 unit buildings use the elasticity route with their own fee per unit (duplex
+  `U2`, fourplex `U3_4` levels from D-066; $50,000 in the benchmark) and their own cost per unit: the place's
+  home value scaled by `plex_unit_sqft` / `single_family_sqft` (1,000 / 2,150). By hand: a $10,000 duplex fee
+  cut in half, λ 0.5, ε 0.3, home value $430,000 -> 0.3 × 2,500 / 200,000 = +0.375%.
+  - The same dollar cut per unit is a larger share of a smaller unit's cost, so plexes respond more per unit
+    than houses at the same fee. That is the density point (A5), now a number in the run.
+  - Lots-based feasibility for plexes was not chosen (Ben: it would need plex sale values per place, which
+    most places lack).
+- **5+ unit buildings take no dose** (Ben: "no effect, stated"). No 5+ fees are coded and missing middle
+  (D-063) also stops at 4 units. Stated as a limit in D4.
+- **Fee-rise sensitivity** (Ben: "+50% of local fee"): `local_rise`, Δ = −`fee_rise_share` × F with
+  `fee_rise_share` 0.5, through the same λ, ε and ramp. With elasticity only, it is the exact mirror of the
+  real-fee cut. It is reported as a sensitivity, labeled "Sensitivity: real local fees raised by half", not
+  as a scenario. Assumption stated: landowners absorb λ of a rise as they capture λ of a cut.
+- **Pencil-out table** (`src/lotline/model/pencil_out.py`, `scripts/dev/fee_pencil_out_table.py` ->
+  `docs/research/fee-pencil-out.md`). For each coded place it runs the house, duplex and fourplex pro formas,
+  for sale and for rent, at four fee levels: today's local fee, that fee cut in half, $50,000 and $25,000.
+  - Each row reports the fee per unit and per lot, the fee's share of cost (construction + fees + interest),
+    and the residual land value per lot and per unit.
+  - Where a parcel roll gives a median vacant lot value, the row also says whether the project pencils
+    (lot value plus the 10% existing-use margin).
+  - Market inputs: new homes' value per sq ft from the parcel roll where there is one, else the ACS median
+    home value; ACS median gross rent. Both ACS values cover older homes, so they understate new
+    construction (stated in the table).
+  - The table shows the full fee change. λ belongs to the scenario, not the table.
+- **Stacking deferred** (Ben). Feeding the cut fee into the ADU and missing-middle scenarios waits until the
+  fee-structure stretch. The missing-middle fit's price-to-cost leaves fees out, so stacking there needs its
+  own entry.
+- **Code:** `scenarios/fees.py` (`SIZE_TYPES`, `type_pct_change`, per-type `fee_levels` and `fee_draws`,
+  `local_rise`), `config/params/fees.yaml` (`fee_rise_share`), `scripts/dev/fee_dev_run.py` (baseline by
+  size class, per-type fees). The house fee keeps its random stream (seed + 1), so a run without the size
+  split gives the same numbers as before. Tests: `tests/model/test_fee_scenario.py` (per-size dose, rise and
+  mirror, hand-worked) and `tests/model/test_pencil_out.py` (duplex and fourplex pro formas by hand).
+- **Decided by:** Ben, 2026-11-09 (per-type elasticity; no 5+ effect; stacking deferred; +50% rise). Details
+  (cost per unit scaled by size, the value source for the pencil-out table, seeds) were written by Claude
+  Code, for Ben to confirm in the PR. **Status:** built and tested; not run. The development run and the
+  pencil-out table on real data wait for Ben's go-ahead.

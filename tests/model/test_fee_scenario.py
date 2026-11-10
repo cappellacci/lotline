@@ -163,8 +163,11 @@ def test_zero_cut_equals_baseline(with_parcels):
     assert np.all(c["added"] == 0)
 
 
+CUTS = [m for m in fees.MODES if m != "local_rise"]
+
+
 @pytest.mark.parametrize("with_parcels", [False, True])
-@pytest.mark.parametrize("mode", fees.MODES)
+@pytest.mark.parametrize("mode", CUTS)
 def test_bigger_cut_never_lowers_output(with_parcels, mode):
     places = places_frame(with_parcels)
     totals = [
@@ -190,7 +193,10 @@ def test_run_ranges_and_state_sum(mode):
     for t in (yearly, totals):
         assert (t["units_added_p10"] <= t["units_added_p50"]).all()
         assert (t["units_added_p50"] <= t["units_added_p90"]).all()
-        assert (t["units_added_p10"] >= 0).all()  # ε low is 0, never negative
+        if mode == "local_rise":  # a fee rise never adds homes
+            assert (t["units_added_p90"] <= 0).all()
+        else:
+            assert (t["units_added_p10"] >= 0).all()  # ε low is 0, never negative
     five = summary[summary["period"] == "2027-2031"].iloc[0]
     # Means add up across non-overlapping places; percentiles are of each draw's sum.
     assert five["mean"] == pytest.approx(totals["units_added_mean"].sum())
@@ -220,3 +226,85 @@ def test_parcel_inputs():
     assert out.at["a", "new_home_value"] == pytest.approx(245 * P["single_family_sqft"])
     assert list(out.at["a", "lot_values"]) == [60000.0, 70000.0]
     assert out.at["a", "new_homes_seen"] == 2
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-073: fee rise and a dose per building size
+# ---------------------------------------------------------------------------------------------------------
+
+
+def test_fee_rise_is_a_negative_cut_by_hand():
+    # Half of 6,000 added: −3,000; builders bear (1 − 0.5) of it: −1,500.
+    fee = np.array([6000.0])
+    assert fees.fee_cut(fee, HAND | {"fee_rise_share": 0.5}, "local_rise")[0] == -3000
+    assert fees.builder_saving(fee, HAND | {"fee_rise_share": 0.5}, "local_rise")[0] == -1500
+
+
+@pytest.mark.parametrize("with_parcels", [False, True])
+def test_bigger_rise_never_adds_and_mirrors_the_cut(with_parcels):
+    places = places_frame(with_parcels)
+    totals = [
+        fees.central_path(places, "local_rise", {"fee_rise_share": s})["added"].sum()
+        for s in (0.0, 0.25, 0.5, 1.0)
+    ]
+    assert totals[0] == 0 and all(b <= a + 1e-9 for a, b in zip(totals, totals[1:], strict=False))
+    if not with_parcels:  # elasticity is linear in the fee change: the rise is the cut's mirror image
+        cut = fees.central_path(places, "local_half")["added"].sum()
+        assert totals[2] == pytest.approx(-cut)
+
+
+def test_type_pct_change_by_hand():
+    # Duplex fee 10,000 cut in half, builders keep half: 2,500. Home value 430,000 over 2,150 sq ft is $200 a
+    # sq ft, so a 1,000 sq ft unit costs 200,000: 0.3 × 2,500 / 200,000 = 0.00375.
+    places = pd.DataFrame({"home_value": [430_000.0]})
+    p = HAND | {"single_family_sqft": 2150.0, "plex_unit_sqft": 1000.0}
+    pct = fees.type_pct_change(places, np.array([10_000.0]), p, "local_half", "U2")
+    assert pct[0] == pytest.approx(0.00375)
+
+
+def by_size_frame(**fees_by_type):
+    """One place, baseline by size class: 1-unit 10 a year, 2-unit 4, 3-4 unit 8, 5+ 50."""
+    df = pd.DataFrame(
+        {"geoid": ["a"], "state": ["MN"], "home_value": [430_000.0], "local_fee_per_unit": [10_000.0]}
+    )
+    for cls, n in (("1", 10.0), ("2", 4.0), ("3_4", 8.0), ("5p", 50.0)):
+        for h in range(1, 6):
+            df[f"baseline_y{h}_{cls}"] = n
+    for t, v in fees_by_type.items():
+        df[f"local_fee_per_unit_{t}"] = v
+    return df
+
+
+def test_each_size_class_takes_its_own_dose_and_5plus_none():
+    p = HAND | {"single_family_sqft": 2150.0, "plex_unit_sqft": 1000.0}
+    c = fees.central_path(by_size_frame(U2=10_000.0, U3_4=6_000.0), "local_half", p)
+    r = fees.ramp(5, p)
+    # Houses: 0.3 × 2,500 / 430,000; duplex 0.3 × 2,500 / 200,000; fourplex unit 0.3 × 1,500 / 200,000.
+    pct = {"1": 0.3 * 2500 / 430_000, "2": 0.3 * 2500 / 200_000, "3_4": 0.3 * 1500 / 200_000}
+    assert c["pct_by_size"]["2"][0] == pytest.approx(pct["2"])
+    assert c["pct_by_size"]["3_4"][0] == pytest.approx(pct["3_4"])
+    expected = (10 * pct["1"] + 4 * pct["2"] + 8 * pct["3_4"]) * r  # 5+ (50 a year) adds nothing
+    assert c["added"][0] == pytest.approx(expected)
+    assert set(c["added_by_size"]) == {"1", "2", "3_4"}
+
+
+def test_same_fee_per_unit_moves_plexes_more_than_houses():
+    # The Handbook's $50,000 on every unit: a plex unit costs less than a house, so the same cut is a bigger
+    # share of its cost (the density point of office hours A5).
+    c = fees.central_path(by_size_frame(), "handbook")
+    assert c["pct_by_size"]["2"][0] > c["pct_by_size"]["1"][0]
+    assert c["pct_by_size"]["3_4"][0] == pytest.approx(c["pct_by_size"]["2"][0])
+
+
+def test_missing_type_fee_uses_the_house_fee_and_says_so():
+    level, source = fees.fee_levels(by_size_frame(), "local_half", HAND, "U2")
+    assert level[0] == 10_000 and source[0] == "local (house fee: no U2 level given)"
+
+
+def test_run_by_size_reports_each_class_and_adds_up():
+    _, totals = fees.run(by_size_frame(U2=10_000.0, U3_4=6_000.0), 2025, mode="local_half", draws=100)
+    r = totals.iloc[0]
+    assert r["baseline_five_year"] == 5 * (10 + 4 + 8 + 50)
+    parts = sum(r[f"units_added_mean_{c}"] for c in ("1", "2", "3_4"))
+    assert parts == pytest.approx(r["units_added_mean"])
+    assert "units_added_mean_5p" not in totals
