@@ -4671,7 +4671,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     building fell by almost half from 2023 to 2025, which the flat baseline did not foresee.
   - No model change follows from this result.
 
-### D-072 · 2026-11-10 · NC ADUs from counted homes: the flag undercount, more places, and the accuracy tests (method only, before any count)
+### D-074 · 2026-11-10 · NC ADUs from counted homes: the flag undercount, more places, and the accuracy tests (method only, before any count)
 - **Why:** Ben (2026-11-10): the goal is an accurate number, and NC's ADU rate rests on too little of the state.
   The places with ADU-flagged permits (Raleigh, Durham city and county, Greensboro, the six Mecklenburg towns)
   hold about 295,000 of NC's roughly 3.2 million eligible lots (about 9%). Greensboro and the towns come from
@@ -4742,3 +4742,22 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   legalizes ADUs in the largest cities from 2027.
 - **Decided by:** proposed by Claude Code for Ben's review in the PR. **Status:** proposed, method only. No
   count was read and nothing was run.
+- **Renumbered (2026-11-10):** first written as D-072, which PR #354 had already used. The session reports in
+  #360 and #361 call it "D-072"; they mean this entry.
+- **Deviation (2026-11-10, written after the Raleigh counts in #361 were read; Ben's go-ahead):** k counts
+  only ADUs that our flags miss.
+  - The four group-(a) parcels whose unflagged permit is a duplex (Raleigh code 103) are rebuilds into two
+    units, not ADUs, so they are left out of group (a).
+  - Why: step 1 meant group (a) to be "ADU permits that our flags miss". The rule as written let any
+    non-flagged permit for new residential building count, and the duplexes showed that it was too loose.
+    The change was made after seeing the counts, so it is recorded here and the as-written value stays
+    visible.
+  - **k central 1.07 (90%: 1.02–1.21)** (|P∩R| 30, |a| 2).
+  - **As written: 1.20 (1.10–1.41)**, kept as a named sensitivity.
+  - **Upper sensitivity 1.4 (1.2–1.7)**: every ADU found only in the roll counted, as #361's ADU-only
+    adjustment does.
+  - Step 4 still triggers: the lower bound is above 1 in every version.
+  - Step 4's `adu_flag_undercount` takes the central value, and its range runs from the central lower bound
+    to the as-written upper bound (1.02–1.41).
+  - k applies to detached, field-flagged ADUs, measured in Raleigh only. Whether it transfers to Durham's
+    flags is assumed, not tested. Parser sources keep k_parser from their hand checks, as step 1 says.
