@@ -351,6 +351,73 @@
    "chapman_over_flagged": 1.3694083694083694,
    "chapman_over_flagged_lo": 1.2020567815668493,
    "chapman_over_flagged_hi": 1.5367599572498893
+  },
+  "d072": {
+   "window": [
+    "2019-01-01",
+    "2023-06-30"
+   ],
+   "as_committed": {
+    "R": 48,
+    "P_parcels": 105,
+    "P_permits": 105,
+    "P_in_denominator": 76,
+    "P_and_R": 30,
+    "a_permitted_unflagged": 6,
+    "b_unpermitted_or_not_found": 12,
+    "b_with_other_permit_class": 5,
+    "b_other_permit_classes": {
+     "434|Change of Use": 1,
+     "434|Alteration/Repairs": 1,
+     "328|Accessory Structure": 1,
+     "434|Deck/Porch": 1,
+     "434|Addition": 1
+    },
+    "P_minus_R": 75,
+    "P_minus_R_in_denominator": 46,
+    "P_minus_R_outside_denominator": 29,
+    "a_permit_types": {
+     "U2": 4,
+     "SFD": 2
+    },
+    "k": 1.2,
+    "k_lo90": 1.0973533242601659,
+    "k_hi90": 1.4108745161398342,
+    "chapman_total": 120.70967741935483,
+    "chapman_lo95": 100.95463532794692,
+    "chapman_hi95": 140.46471951076276,
+    "chapman_over_P_in_denominator": 1.5882852292020373
+   },
+   "duplex_removed": {
+    "R": 44,
+    "P_parcels": 105,
+    "P_permits": 105,
+    "P_in_denominator": 76,
+    "P_and_R": 30,
+    "a_permitted_unflagged": 2,
+    "b_unpermitted_or_not_found": 12,
+    "b_with_other_permit_class": 5,
+    "b_other_permit_classes": {
+     "434|Change of Use": 1,
+     "434|Alteration/Repairs": 1,
+     "328|Accessory Structure": 1,
+     "434|Deck/Porch": 1,
+     "434|Addition": 1
+    },
+    "P_minus_R": 75,
+    "P_minus_R_in_denominator": 46,
+    "P_minus_R_outside_denominator": 29,
+    "a_permit_types": {
+     "SFD": 2
+    },
+    "k": 1.0666666666666667,
+    "k_lo90": 1.0213482678715682,
+    "k_hi90": 1.208187590261765,
+    "chapman_total": 110.7741935483871,
+    "chapman_lo95": 94.07813567249276,
+    "chapman_hi95": 127.47025142428144,
+    "chapman_over_P_in_denominator": 1.4575551782682514
+   }
   }
  }
 }

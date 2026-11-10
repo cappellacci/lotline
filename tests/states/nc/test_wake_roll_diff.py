@@ -160,3 +160,13 @@ def test_flag_share_hand_worked():
     assert share == pytest.approx(0.6)
     assert (lo, hi) == pytest.approx(wd.wilson(3, 5))  # 0.2307-0.8824: 1.13-4.33 real ADUs per flagged one
     assert math.isnan(wd.flag_share(0, 0)[0])
+
+
+def test_k_undercount_hand_worked():
+    # |P∩R| = 20, |a| = 5: k = 25/20 = 1.25.
+    # Wilson 90% on 20/25 (z = 1.6449): centre 0.7707, half 0.1284, so 0.6423-0.8991
+    k, lo, hi = wd.k_undercount(both=20, unflagged=5)
+    assert k == pytest.approx(1.25)
+    assert lo == pytest.approx(1 / 0.8991, abs=1e-3) and hi == pytest.approx(1 / 0.6423, abs=1e-3)
+    assert wd.k_undercount(20, 0)[0] == 1.0
+    assert math.isnan(wd.k_undercount(0, 3)[0])

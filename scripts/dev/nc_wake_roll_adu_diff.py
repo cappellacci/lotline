@@ -128,7 +128,67 @@ def raleigh_check(diff: pd.DataFrame, store: DataStore) -> dict:
         "permits_only": len(flag_set - roll_adu),
         **ratios(both, len(roll_adu), len(flag_set)),
     }
+    out["d072"] = d072(ral, p, duplex)
     return out
+
+
+D072_START, D072_END = "2019-01-01", "2023-06-30"
+
+
+def d072(ral: pd.DataFrame, p: pd.DataFrame, duplex: set) -> dict:
+    """D-072 (PR #358) quantities: P = flagged ADU permits issued 2019-01-01..2023-06-30, R = roll finds.
+
+    R \\ P splits into (a) a non-flagged Raleigh permit for a new residential building at the parcel in the
+    same window ("permitted but unflagged") and (b) none ("unpermitted or not found")."""
+    window = p.loc[p["issue_date"].between(D072_START, f"{D072_END} 23:59:59")]
+    flagged = window.loc[window["adu_type"].notna()]
+    new_res = window.loc[
+        window["adu_type"].isna()
+        & window["permit_class_raw"].astype("string").str.contains("New Residential", na=False)
+    ]
+    denom = set(ral["pin10"].dropna())
+    res: dict = {"window": [D072_START, D072_END]}
+    for name, r_set in (
+        ("as_committed", set(ral.loc[ral["gained"], "pin10"].dropna())),
+        ("duplex_removed", set(ral.loc[ral["gained"], "pin10"].dropna()) - duplex),
+    ):
+        p_all = set(flagged["parcel_id"].dropna())
+        p_in = p_all & denom
+        both = r_set & p_all
+        r_only = r_set - p_all
+        a = r_only & set(new_res["parcel_id"])
+        b = r_only - a
+        k, k_lo, k_hi = wd.k_undercount(len(both), len(a))
+        ch, ch_lo, ch_hi = wd.chapman(len(r_set), len(p_in), len(both))
+        res[name] = {
+            "R": len(r_set),
+            "P_parcels": len(p_all),
+            "P_permits": int(len(flagged)),
+            "P_in_denominator": len(p_in),
+            "P_and_R": len(both),
+            "a_permitted_unflagged": len(a),
+            "b_unpermitted_or_not_found": len(b),
+            "b_with_other_permit_class": len(b & set(window.loc[window["adu_type"].isna(), "parcel_id"])),
+            "b_other_permit_classes": window.loc[window["adu_type"].isna() & window["parcel_id"].isin(b)]
+            .drop_duplicates("parcel_id")["permit_class_raw"]
+            .value_counts()
+            .to_dict(),
+            "P_minus_R": len(p_all - r_set),
+            "P_minus_R_in_denominator": len(p_in - r_set),
+            "P_minus_R_outside_denominator": len(p_all - denom),
+            "a_permit_types": new_res.loc[new_res["parcel_id"].isin(a)]
+            .drop_duplicates("parcel_id")["building_type_std"]
+            .value_counts()
+            .to_dict(),
+            "k": k,
+            "k_lo90": k_lo,
+            "k_hi90": k_hi,
+            "chapman_total": ch,
+            "chapman_lo95": ch_lo,
+            "chapman_hi95": ch_hi,
+            "chapman_over_P_in_denominator": ch / len(p_in),
+        }
+    return res
 
 
 def ratios(both: int, roll: int, flagged: int) -> dict:

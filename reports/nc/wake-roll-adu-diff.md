@@ -126,6 +126,8 @@ table is written). Function and tests: `src/lotline/adapters/states/nc/wake_roll
   (32 of 44; 95% interval 58–84%). So there are about **1.4 real ADUs per flagged one (1.2–1.7)**. A
   capture–recapture estimate that also counts flagged ADUs the roll hasn't carded gives the same ratio,
   **1.37 (1.20–1.54)**. These are lower bounds (see caveats).
+- **D-072's k (only roll finds with a non-flagged new-residential permit count) is 1.20 (90%: 1.10–1.41)
+  as D-072 is written, and 1.07 (1.02–1.21) once 4 duplexes are removed** (§2.4).
 - **The roll undercounts too, and by more than the flags:** about half of Raleigh's flagged permits issued
   2019–2022 (31 of 63) show no second home on the Dec 2023 roll. A roll count elsewhere in Wake is therefore a
   floor, not a measure. The roll can't replace the permit flags; it is a check on them.
@@ -239,7 +241,48 @@ cannot see attached or internal ADUs**.
    cohort (37 flags) was not looked at first; its match rate (21 of 37, 57%) is higher than the learned-on
    cohort's (6 of 21), so the rule was not tuned to fit.
 
-### 2.4 What this means for the NC ADU rate
+### 2.4 D-072 quantities (PR #358)
+
+D-072 fixes how these numbers enter the model. It was sent to this session after the §1 rule was committed
+and after §2.1–2.3 were counted. It uses a different window and splits the roll-only parcels differently, so its
+k answers a narrower question than §2.2's ratio. **R** = Raleigh parcels flagged by the §1 rule (48). **P** =
+Raleigh ADU-flagged permits issued 2019-01-01 to 2023-06-30 (105 permits, 105 parcels), matched by 10-digit PIN.
+**(a)** = R \ P parcels with a non-flagged Raleigh "New Residential Dwelling" permit issued in the same window;
+**(b)** = R \ P parcels without one.
+
+| | D-072 as written | Duplexes removed from R |
+|---|---:|---:|
+| \|R\| | 48 | 44 |
+| \|P\| (parcels) | 105 | 105 |
+| …of which on a 2019 single-family parcel (the only ones R can contain) | 76 | 76 |
+| **\|P ∩ R\|** | **30** | **30** |
+| **\|a\| permitted but unflagged** | **6** (4 duplex, 2 single-family) | **2** (single-family) |
+| **\|b\| unpermitted or not found** | **12** | **12** |
+| …with a non-flagged permit of another class in the window | 5 | 5 |
+| **\|P \ R\|** | **75** | **75** |
+| …on a 2019 single-family parcel (not yet built or carded, or missed by the rule) | 46 | 46 |
+| …on a parcel outside the denominator (vacant, duplex or other in 2019) | 29 | 29 |
+| **k = (\|P∩R\| + \|a\|) / \|P∩R\|** (binomial 90%, Wilson) | **1.20 (1.10–1.41)** | **1.07 (1.02–1.21)** |
+| Chapman total, (\|R\|+1)(\|P\|+1)/(\|P∩R\|+1) − 1, with P on single-family parcels (95%) | 120.7 (101–140) | 110.8 (94–127) |
+| Chapman total ÷ \|P\| on single-family parcels | 1.59 | 1.46 |
+
+**Three things the D-072 author should see before k goes into `config/params/adu.yaml`:**
+1. **Four of the six group-(a) parcels are duplexes.** Their non-flagged "New Residential Dwelling" permits are
+   Raleigh's code 103 (two-family), mostly teardowns rebuilt as two homes. As written, D-072 counts them as ADU
+   permits our flags miss, so they push k up. With them removed, k is **1.07 (1.02–1.21)**. Both versions keep
+   the lower 90% bound above 1, so D-072 step 4 (put k in config) is triggered either way. The duplex-removed
+   value is the better reading.
+2. **Group (b) holds ADUs with other permit classes.** 5 of the 12 had a non-flagged permit in the window that
+   isn't "New Residential Dwelling": change of use, accessory structure, addition, alteration, deck/porch.
+   Raleigh's own flagged ADUs often use the first two classes (§2.2: 6 change of use, 1 accessory structure
+   among the permits-only). If change-of-use and accessory-structure permits count as (a), the duplex-removed k
+   is **1.13 (1.06–1.31)**.
+3. **D-072's k is smaller than §2.2's ratio (1.38) by design.** §2.2 counts every roll-only ADU as real. D-072
+   counts only those with a new-residential permit and leaves group (b) out (the formalization and net-new
+   shares cover unpermitted units). The Chapman total (1.46–1.59 × flagged) also counts flagged ADUs the roll
+   doesn't see, so it is the widest of the three.
+
+### 2.5 What this means for the NC ADU rate
 
 - Raleigh's flagged-permit ADU count is an undercount of about **1.4× (1.2–1.7×)** for detached ADUs; the true
   factor for all ADUs is at least that.

@@ -190,3 +190,18 @@ def flag_share(both: int, roll: int) -> tuple[float, float, float]:
     Its inverse is the number of real (built and carded) ADUs per flagged one."""
     lo, hi = wilson(both, roll)
     return (both / roll if roll else math.nan, lo, hi)
+
+
+Z90 = 1.6449  # two-sided 90%
+
+
+def k_undercount(both: int, unflagged: int, z: float = Z90) -> tuple[float, float, float]:
+    """D-072 flag undercount k = (|P∩R| + |a|) / |P∩R|, with a binomial (Wilson) 90% interval.
+
+    The interval is the Wilson interval on the flagged share |P∩R| / (|P∩R| + |a|), inverted, so
+    k's lower bound is 1 / (upper bound of the share)."""
+    n = both + unflagged
+    if both == 0:
+        return (math.nan, math.nan, math.nan)
+    lo, hi = wilson(both, n, z=z)
+    return (n / both, 1 / hi, 1 / lo)
