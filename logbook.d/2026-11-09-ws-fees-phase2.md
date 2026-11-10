@@ -39,3 +39,17 @@
   page's numbers against `summary.json`; the page rendered with no console errors. Results page v4 at
   the same link.
 
+
+### Addendum 2026-11-10: fee knobs (D-077)
+
+- **Question:** can a user change the size of the fee change and which home types a bill covers, and still
+  see a range?
+- **Outputs:** `fees.change_grid` (`src/lotline/model/scenarios/fees.py`); three tests in
+  `tests/model/test_fee_scenario.py` (it reproduces `run` at ±0.5, is linear by elasticity, never falls as
+  the cut grows); `scripts/dev/fee_knobs_export.py`; `reports/fees-knobs/` (grid.json, run.log); results
+  page v5 (https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs, with a slider and toggles); D-077 in
+  `docs/analysis_plan.md`.
+- **What Claude did and how it was checked:** Claude Code wrote the grid function, the export and the page
+  script. The grid's 0.5 stop matches the D-076 run per state exactly. The page was checked in a browser at
+  desktop and phone widths (slider at −50%, houses toggled off, and so on). The page does no model
+  arithmetic: it only adds draws and reads percentiles.

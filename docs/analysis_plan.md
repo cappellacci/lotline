@@ -4938,3 +4938,42 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Results page v4: https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. No outcome was read.
 - **Decided by:** Ben, 2026-11-10 ("fix and rerun"; statewide scope). The lognormal form and its
   parameters were written by Claude Code, for Ben to confirm in the PR. **Status:** built, tested, run.
+
+### D-077 · 2026-11-10 · Fees: a slider for the size of the fee change, and toggles for the home types a bill covers
+- **Why:** Ben, 2026-11-10: "some 'knobs' for this model", a fee-change slider and toggles for cutting
+  missing-middle fees. This follows his 2026-11-05 toggle design: a bill's provisions are knobs, preset to the
+  bill, while estimated quantities (ε, λ, the ramp) are never sliders and show as ranges.
+- **Knobs.**
+  - The size of the change in each place's own local fee per unit, from a rise of half (−0.5) to abolishing
+    fees (1.0), in steps of 0.1. 0.5 is the D-065 real-fee scenario and −0.5 the D-073 rise sensitivity.
+  - Which home types the bill covers: houses (BPS 1-unit), duplexes (2-unit), triplexes and fourplexes
+    (3–4 unit). Duplexes plus fourplexes on their own is "cut missing-middle fees". Buildings of 5 or more
+    units are never covered (D-073).
+  - ADU fees are a provision of the ADU bill, not this scenario (no ADU type in the fee model). That toggle
+    belongs with the ADU scenario's provisions.
+- **How, without a server** (the precomputed-grid route of the WS-APP brief).
+  - `fees.change_grid` runs every slider stop in every draw, with `run`'s parameter sets, fee draws and
+    seeds. So one draw is one world seen at every stop, and the grid's rows at 0.5 and −0.5 are `run`'s
+    results exactly (tested).
+  - It returns five-year units added per draw, size class and state.
+  - The feasibility channel is not linear in the cut, so the grid is computed, not scaled. The elasticity
+    channel is linear (tested).
+  - The page adds the switched-on classes and the states draw by draw, then reads P10/P50/P90. Adding up
+    percentiles would overstate the range.
+  - Its headline is the central path (all parameters central), the same lead as D-073's page.
+  - `scripts/dev/fee_knobs_export.py --page <html>` writes `reports/fees-knobs/grid.json` and puts it in the
+    page.
+- **Headline unit.** % of the baseline's five-year homes. The share of projected household growth (office
+  hours A2) waits for the household projection to be in the results bundle.
+- **Results (2026-11-10, origin 2025, window 2027–2031, 1,000 draws; `reports/fees-knobs/`).** The grid's
+  0.5 stop reproduces the D-076 run per state (e.g. MN P10/P50/P90 53 / 173 / 546). Central path, four
+  states, with the P10–P90 of the summed draws:
+  - All types: halved +1,482 (416–5,762); abolished +2,969 (838–11,331); raised by half −1,450
+    (−5,678 to −420). Nearly a straight line in the cut: the feasibility channel covers few places.
+  - Missing middle only (duplexes, triplexes and fourplexes): halved +142 (34–555); abolished +283
+    (69–1,111). Per unit the dose is about twice a house's, but these types are about 3% of the baseline.
+  - Houses only, halved: +1,340.
+  - Results page v5 (knobs): https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. No outcome was read.
+- **Decided by:** Ben, 2026-11-10 ("Yes, prototype it"). The grid's stops, the toggles' grouping and the
+  page's design were chosen by Claude Code. **Status:** prototype on the development results page. Building
+  it into the app is a WS-APP step, reading the grid from the results bundle once fees are in `lotline results`.

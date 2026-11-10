@@ -1,0 +1,6 @@
+MN: 944 places, 53s; at a cut of half: central 162, P10/P50/P90 53 / 173 / 546
+NC: 221 places, 11s; at a cut of half: central 483, P10/P50/P90 125 / 486 / 1,982
+OH: 832 places, 21s; at a cut of half: central 122, P10/P50/P90 31 / 118 / 479
+TX: 940 places, 32s; at a cut of half: central 715, P10/P50/P90 174 / 672 / 2,738
+wrote reports/fees-knobs/grid.json (1.0 MB)
+uv run python scripts/dev/fee_knobs_export.py  101.63s user 16.75s system 99% cpu 1:59.43 total

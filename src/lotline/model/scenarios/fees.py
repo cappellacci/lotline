@@ -464,6 +464,53 @@ def run(
     return yearly, totals, pd.DataFrame(rows)
 
 
+def change_grid(
+    places: pd.DataFrame,
+    origin: int,
+    shares,
+    *,
+    draws: int | None = None,
+    group_by: str = "state",
+) -> pd.DataFrame:
+    """Five-year units added in every draw, for each fee change and size class, summed over each group's
+    places (non-overlapping units, D-020): the table behind the results page's fee slider (D-077).
+
+    A share s changes every place's real local fee per unit by −s × fee (each type its own fee): s 0.5 is the
+    local_half scenario, s −0.5 the local_rise sensitivity, s 1 abolishes fees. The draws are `run`'s (same
+    parameter sets, same fee draws, same seeds), so one draw is one world seen at every slider stop, and
+    `run`'s results are the grid's rows at 0.5 and −0.5. Columns: group, share, draw, size (BPS class '1',
+    '2', '3_4'; 'all' without a baseline by size), units_added. 5+ unit buildings take no dose (D-073).
+    """
+    central = central_params()
+    n = int(draws or central["fee_simulation_draws"])
+    seed = int(central["fee_simulation_seed"])
+    sets = draw_params(n, seed)
+    _, horizon, _ = baseline_model.window(origin)
+    by_size = _by_size(places, horizon)
+    base = _baseline(places, horizon) if by_size is None else sum(by_size.values())
+    fees_d = {
+        t: fee_draws(places, "local_half", central, n, seed + 1 + k, t) for k, t in enumerate(_types(by_size))
+    }
+    classes = tuple(SIZE_TYPES) if by_size is not None else ("all",)
+    codes, groups = pd.factorize(places[group_by])
+    member = np.zeros((len(places), len(groups)))
+    member[np.arange(len(places)), codes] = 1.0
+    out = np.zeros((len(shares), n, len(classes), len(groups)))
+    for i, s in enumerate(shares):
+        for d, p in enumerate(sets):
+            q = p | {"handbook_fee_cut_share": float(s)}
+            added, parts, *_ = _added(
+                places, {t: v[d] for t, v in fees_d.items()}, q, "local_half", base, by_size
+            )
+            parts = parts or {"all": added}
+            for k, cls in enumerate(classes):
+                out[i, d, k] = parts[cls].sum(axis=1) @ member
+    idx = pd.MultiIndex.from_product(
+        [list(shares), range(n), classes, groups], names=["share", "draw", "size", group_by]
+    )
+    return pd.DataFrame({"units_added": out.reshape(-1)}, index=idx).reset_index()
+
+
 # ---------------------------------------------------------------------------------------------------------
 # Inputs from a state's processed tables (real data; the development run)
 # ---------------------------------------------------------------------------------------------------------

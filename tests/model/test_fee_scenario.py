@@ -319,3 +319,40 @@ def test_elasticity_draw_is_centred_on_its_central_value():
     assert np.percentile(d, 5) == pytest.approx(0.3 / (1.75 / 0.3), rel=0.03)  # 0.0514
     e = np.array([s["fee_permit_elasticity"] for s in fees.draw_params(4000, 1)])
     assert np.median(e) == pytest.approx(P["fee_permit_elasticity"], rel=0.1) and (e > 0).all()
+
+
+def _grid_class_means(grid, share):
+    g = grid[grid["share"] == share]
+    return g.groupby("size")["units_added"].mean()
+
+
+@pytest.mark.parametrize("share,mode", [(0.5, "local_half"), (-0.5, "local_rise")])
+def test_change_grid_reproduces_the_run_at_its_stops(share, mode):
+    # D-077: the slider's grid uses run's draws, so its 0.5 and -0.5 stops are run's results exactly.
+    places = by_size_frame(U2=10_000.0, U3_4=6_000.0)
+    grid = fees.change_grid(places, 2025, [0.0, share], draws=100)
+    _, totals = fees.run(places, 2025, mode=mode, draws=100)
+    means = _grid_class_means(grid, share)
+    for cls in ("1", "2", "3_4"):
+        assert means[cls] == pytest.approx(totals[f"units_added_mean_{cls}"].sum())
+    assert (grid.loc[grid["share"] == 0.0, "units_added"] == 0).all()
+
+
+def test_change_grid_is_a_straight_line_by_elasticity_and_sums_groups():
+    # Elasticity only (no parcels): units added are proportional to the fee change, draw by draw.
+    places = by_size_frame(U2=10_000.0, U3_4=6_000.0)
+    places = pd.concat([places, places.assign(geoid="b", state="NC")], ignore_index=True)
+    grid = fees.change_grid(places, 2025, [0.25, 0.5, 1.0, -0.5], draws=50)
+    w = grid.pivot_table(index=["draw", "size", "state"], columns="share", values="units_added")
+    assert np.allclose(w[1.0], 2 * w[0.5]) and np.allclose(w[0.25], 0.5 * w[0.5])
+    assert np.allclose(w[-0.5], -w[0.5])
+    assert set(grid["state"]) == {"MN", "NC"}  # one total per group, the same place twice -> equal
+    assert np.allclose(w.xs("MN", level="state"), w.xs("NC", level="state"))
+
+
+def test_change_grid_with_parcels_never_falls_as_the_cut_grows():
+    places = places_frame(True)
+    grid = fees.change_grid(places, 2025, [-0.5, 0.0, 0.5, 1.0], draws=50)
+    w = grid.pivot_table(index=["draw", "state"], columns="share", values="units_added")
+    assert (w.diff(axis=1).iloc[:, 1:] >= -1e-9).all().all()
+    assert set(grid["size"]) == {"all"}
