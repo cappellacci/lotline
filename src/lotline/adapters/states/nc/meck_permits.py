@@ -155,14 +155,20 @@ def tax_jurisdictions(path: Path = JURIS_CSV) -> dict[str, str]:
     return {r["taxjuris"].strip().upper(): r["geoid"] for r in _read_csv(path)}
 
 
+def _blind(state: str) -> list:
+    """The holdouts still hiding outcomes: a released test (`released_on`) no longer filters anything."""
+    return holdout.still_blind(holdout.holdouts_for(state))
+
+
 def held_out_geoids(state: str = "NC") -> set[str]:
-    return {g for h in holdout.holdouts_for(state) for g in h.geoids}
+    return {g for h in _blind(state) for g in h.geoids}
 
 
-def window_opens(state: str = "NC") -> pd.Timestamp:
-    """The earliest outcome date of any holdout covering Charlotte or the county."""
-    hs = [h for h in holdout.holdouts_for(state) if set(h.geoids) & {CHARLOTTE, COUNTY}]
-    return min(pd.Timestamp(h.outcome_from) for h in hs)
+def window_opens(state: str = "NC") -> pd.Timestamp | None:
+    """The earliest outcome date of any still-blind holdout covering Charlotte or the county; None once
+    every such holdout is released (V5: 2026-11-09, D-071), when nothing is filtered."""
+    hs = [h for h in _blind(state) if set(h.geoids) & {CHARLOTTE, COUNTY}]
+    return min(pd.Timestamp(h.outcome_from) for h in hs) if hs else None
 
 
 def open_towns(state: str = "NC") -> list[str]:
@@ -173,6 +179,8 @@ def open_towns(state: str = "NC") -> list[str]:
 
 def server_where(state: str = "NC") -> str:
     """Query filter that leaves out held-out rows: before the window, or a non-held-out town after it."""
+    if window_opens(state) is None:
+        return "1=1"
     opens = window_opens(state).date().isoformat()
     towns = ",".join("'" + t.replace("'", "''") + "'" for t in open_towns(state))
     return f"issuedate < DATE '{opens}' OR (issuedate >= DATE '{opens}' AND UPPER(taxjuris) IN ({towns}))"
@@ -284,6 +292,8 @@ def build(raw: pd.DataFrame, place: pd.Series, state: str = "NC") -> pd.DataFram
 def check_town_rows(df: pd.DataFrame, state: str = "NC") -> None:
     """Stop when no non-held-out town has a permit from the window on: the town spellings are wrong."""
     opens = window_opens(state)
+    if opens is None:
+        return  # nothing held out: there is no window to check town spellings against
     towns = set(tax_jurisdictions().values()) - held_out_geoids(state)
     later = df.loc[df["issue_date"] >= opens, "jurisdiction_geoid"]
     if not later.isin(towns).any():
@@ -341,6 +351,8 @@ FILE_PERSONAL = {"ownname", "ownphone", "ownaddr", "owncity", "ownstate", "ownem
 
 def file_where(state: str = "NC") -> str:
     """SQLite version of `server_where`: issue dates are ISO text ('2023-05-31T12:00:00.0Z')."""
+    if window_opens(state) is None:
+        return "1=1"
     opens = window_opens(state).date().isoformat()
     towns = ",".join("'" + t.replace("'", "''") + "'" for t in open_towns(state))
     return f"issuedate < '{opens}' OR (issuedate >= '{opens}' AND UPPER(TRIM(taxjuris)) IN ({towns}))"
