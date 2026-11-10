@@ -48,12 +48,21 @@ def raw_frame() -> tuple[pd.DataFrame, pd.Series]:
     return df, place
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_server_filter_reads_window_and_towns_from_config():
     where = mp.server_where()
     assert "issuedate < DATE '2023-06-01'" in where
     assert "'HUNTERSVILLE'" in where and "'MINT HILL'" in where
     assert "CHARLOTTE" not in where  # never asks for Charlotte after the window
     assert mp.held_out_geoids() >= {"3712000", "37119"}
+
+
+def test_released_holdout_filters_nothing():
+    # V5 was released on 2026-11-09 (D-071): the live registry hides nothing, so every permit is read
+    assert mp.held_out_geoids() == set()
+    assert mp.window_opens() is None
+    assert mp.server_where() == "1=1" and mp.file_where() == "1=1"
+    mp.check_town_rows(pd.DataFrame({"issue_date": [], "jurisdiction_geoid": []}))  # no window: no check
 
 
 @pytest.mark.usefixtures("v5_blind")
@@ -90,6 +99,7 @@ def test_units_and_types():
     assert p.loc["P6", "jurisdiction_geoid"] == "37119"  # no point, no taxjuris → county
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_check_town_rows_stops_on_missing_towns():
     raw, place = raw_frame()
     out = holdout.apply(mp.build(raw, place), "NC", geoid_col="jurisdiction_geoid", date_col="issue_date",
@@ -158,6 +168,7 @@ FILE_ROWS = [  # permitnum, taxjuris, issuedate (the file's ISO text), usdcdesc
 ]  # fmt: skip
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_file_query_never_reads_held_out_rows(tmp_path):
     raw = mp.read_file(_gpkg_zip(tmp_path, FILE_ROWS))
     assert set(raw["permitnum"]) == {
@@ -177,6 +188,7 @@ def test_file_columns_renamed_dates_in_ms_and_no_personal_fields(tmp_path):
     assert pd.isna(raw.loc["F4", "lon"])  # no coordinates
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_load_reads_the_registered_file(tmp_path, monkeypatch):
     store = DataStore(tmp_path / "data")
     z = _gpkg_zip(tmp_path, FILE_ROWS)
