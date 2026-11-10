@@ -5000,3 +5000,49 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     the revenue is not modelled.
   - The page wording was also revised: "Explore other fee changes", "Fees unchanged: no homes added or
     lost".
+
+### D-078 · 2026-11-10 · ADUs: the undercount table by source, and the choices D-074 and D-075 left open (method only, before any refit)
+- **Why:** D-075 step 2 makes `adu_flag_undercount` a table keyed by source, but it left six choices open.
+  Claude Code proposed one answer for each on 2026-11-10, and Ben accepted all of them ("Yes, use your picks").
+  This entry records them before the table is wired and before the joint refit.
+- **What k does** (unchanged from D-074 step 4). For each source, k scales the counted ADU permits in the fit,
+  the observed floor (D-070) and tests A–C. It never scales eligible lots.
+- **The measured values** (from the state reports on `main`):
+  - Field flags: Raleigh 1.07 (1.02–1.21) (`reports/nc/wake-roll-adu-diff.md`); Austin 1.13 (1.09–1.18)
+    (`reports/tx/adu-coverage-and-undercount.md`); Portland 1.06 (1.05–1.07)
+    (`reports/or/adu-coverage-and-undercount.md`).
+  - Parser sources:
+    - Minneapolis 1.04 (1.02–1.10), measured on the roll (`reports/mn/adu-coverage-and-undercount.md`).
+    - Charlotte 1.04 (up to 1.27–1.43), from its hand check (`reports/nc/charlotte-adu-counts.md`).
+    - Cleveland about 1.0–1.07, from its hand check (`reports/oh/adu-coverage-and-undercount.md`).
+    - Asheville before 2022: recall 0.63 (`reports/nc/asheville-adu-scout.md`).
+    - The Texas inferred-ADU rule: recall 0.434 (95%: 0.34–0.53), in the Texas report.
+- **1. Prior for unmeasured field-flag sources** (Durham and any new field source). The prior is lognormal. Its
+  centre is the mean log k of the three field-flag sources only (Raleigh, Austin, Portland): exp(mean ln k) ≈
+  1.09. Minneapolis is a parser and stays out. The 90% range runs from 1.0 to 1.21. That upper end is the
+  largest central upper bound, Raleigh's; the as-written bound (1.41) is not used. The prior is recomputed
+  whenever a new field-flag k is measured.
+- **2. Parser k per source, not pooled.** Each parser source uses its own 1 / recall and its own interval,
+  as D-075 says. This replaces D-074 step 1's pooled k_parser. A new parser source without its own hand check
+  does not enter the fit until it has one.
+- **3. Low-recall parsers are applied, with their own range, and flagged.** Asheville before 2022 (1/0.63 ≈
+  1.59) and the Texas inferred rule (1/0.434 ≈ 2.3, with the range from recall's interval) keep their k.
+  - Each is marked on the results page.
+  - The test: each place's result is reported with and without that row, and the claim holds only if both
+    agree with the test outcome.
+  - When the shared-parser fix raises a source's measured recall, the new hand check replaces the old k.
+- **4. Columbus: no k.** The panel keeps taking whichever is larger each year: flagged permits or approved
+  Council variances. The variance ratio (about 3.9) is not applied on top, which would count the same homes
+  twice.
+- **5. How k is drawn.** In each simulation draw, all field-flag sources share one draw (the same percentile),
+  because they share one detection method. Each parser source is drawn on its own. Independent draws for
+  every source would understate the statewide range.
+- **6. Floor sources.** The Met Council suburbs (Ben, 2026-11-10) take k = 1 with `floor: true`, so they
+  appear in the table rather than being left out of it.
+- **Wiring.** A WS-CORE-style PR adds the table to `config/params/adu.yaml`, with a source citation per row
+  and this entry as the method source. It loads the table through the config loader and draws k as above,
+  with unit tests against a hand-worked example. It is a contract change and gets its own PR.
+- **Not decided here:** the model form for the joint refit (D-075 step 3). It gets its own entry, written
+  before any fit is run.
+- **Decided by:** Ben, 2026-11-10 (accepted all six proposals). The proposals were written by Claude Code.
+  **Status:** decided, not yet wired.
