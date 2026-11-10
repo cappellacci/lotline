@@ -11,8 +11,6 @@ ADU-flagged permits per year (Portland, Bend) are read through `holdout.apply`. 
 
 from __future__ import annotations
 
-import pandas as pd
-
 from lotline.io import DataStore
 from lotline.model.scenarios import adu
 from lotline.validation import holdout
@@ -25,7 +23,15 @@ FLAGGED = {"4159000": "portland_permits", "4105800": "bend_permits"}
 def main() -> None:
     store = DataStore()
     places = adu.places_from_store(STATE, store, ORIGIN)[
-        ["geoid", "name", "kind", "parcels_year", "denominator_source", "eligible_parcels_reported", "eligible_parcels"]
+        [
+            "geoid",
+            "name",
+            "kind",
+            "parcels_year",
+            "denominator_source",
+            "eligible_parcels_reported",
+            "eligible_parcels",
+        ]
     ]
     total = places["eligible_parcels"].sum()
     raw = places["eligible_parcels_reported"].sum()
@@ -43,12 +49,17 @@ def main() -> None:
     for i, r in top.iterrows():
         src = f"{r.denominator_source} {r.parcels_year}"
         print(
-            f"| {i + 1} | {r['name']} | {r.geoid} | {r.eligible_parcels:,.0f} | {r.share:.1%} | {r.cum:.1%} | {src} |"
+            f"| {i + 1} | {r['name']} | {r.geoid} | {r.eligible_parcels:,.0f} | {r.share:.1%} | {r.cum:.1%} |"
+            f" {src} |"
             f" {'yes' if r.covered else 'no'} |"
         )
     # ADU-flagged permits by year in the two covered places
     permits = store.read(STATE, "permits")
-    permits = holdout.apply(permits, STATE, geoid_col="jurisdiction_geoid", date_col="issue_date") if "issue_date" in permits else permits
+    permits = (
+        holdout.apply(permits, STATE, geoid_col="jurisdiction_geoid", date_col="issue_date")
+        if "issue_date" in permits
+        else permits
+    )
     flagged = permits[permits["adu_type"].notna() & permits["jurisdiction_geoid"].isin(FLAGGED)]
     counts = flagged.groupby(["jurisdiction_geoid", "issue_year"]).size().unstack(0).fillna(0).astype(int)
     lots = places.set_index("geoid")["eligible_parcels"]
