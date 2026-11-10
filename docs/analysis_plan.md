@@ -4631,11 +4631,20 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       if county permits are under-placed as BPS suggests (0.69), the county's true rate could be up to about
       1.45x higher (about 0.32). An independent count (Durham County's own parcel layer with year built)
       would settle it; that is optional, not a condition.
-  - **So, today:** the metro unincorporated cell holds 43 places: the 42 MN townships (Met Council) and Durham
-    County (combined-office test), 24 ADUs in all. Their rates span 0.22 (Durham County) to 0.75 (the
-    townships), below the model's 0.84 for NC's county areas. Bexar stays out. Micropolitan and non-CBSA cells
-    have no sampled place in any state. Mecklenburg County unincorporated can be tested the same way once V5's
-    release (#355) is merged and NC's processed data is rebuilt.
+  - **Mecklenburg County (NC), after V5's release (2026-11-10):** BPS files Charlotte's and unincorporated
+    Mecklenburg's permits under one county row (37119), so the office's combined area is the natural unit.
+    - Mecklenburg's permits for both are 1.08x BPS for 2021–25 (0.89–1.28 by year; 2025 is 1.07). BPS
+      reported all 12 months every year, nothing imputed. **Pass.**
+    - The 2025 drop (8,020 permit units; BPS 7,496) appears in both, so it isn't a gap in the legacy layer.
+    - Charlotte (zone 1, metro): 208 ADUs in 2021–25 (23, 34, 50, 58, 43) on 203,927 lots, 2.04 per 10,000
+      lots a year.
+    - Mecklenburg unincorporated (zone 3, metro): 8 ADUs on 18,760 lots (after `non_overlapping`), 0.85.
+    - Read from the store rebuilt after the release, with the adapter fix in #357.
+  - **So, today:** the metro unincorporated cell holds 44 places: the 42 MN townships (Met Council), Durham
+    County and Mecklenburg County (both combined-office), 32 ADUs in all. Their rates are 0.22 (Durham
+    County), 0.75 (the townships) and 0.85 (Mecklenburg County), against the model's 0.84 for NC's county
+    areas: the spread is wide and the model sits at its top. Bexar stays out. Micropolitan and non-CBSA cells
+    have no sampled place in any state.
 - **Display:** the results page shows the zone table. It gives the measured total, its range and the share of
   eligible lots in measured cells, then the unmeasured bound. This feeds the stat cards planned after
   #348/#350 (schema fields to be added then).

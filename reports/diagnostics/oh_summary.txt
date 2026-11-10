@@ -1,0 +1,9 @@
+bundle homes_net_statewide: {'p10': 60, 'p50': 173, 'p90': 689, 'mean': 358}
+       statewide current_rules 2027-2031 208.0 422.8 1556.6  828.1
+       statewide   with_reform 2027-2031 386.1 879.7 3120.8 1738.9
+       statewide         added 2027-2031 155.0 433.0 1666.0  910.8
+reporting_places current_rules 2027-2031 126.7 158.5  484.9  297.0
+reporting_places   with_reform 2027-2031 149.4 223.5  633.6  386.7
+reporting_places         added 2027-2031  10.6  43.3  161.6   89.8
+observed ADU permits, reporting places: {2019: 18, 2020: 35, 2021: 16, 2022: 22, 2023: 19, 2024: 27, 2025: 31} places: 14
+       net new statewide (x (1 - displacement))   homes      59.7469     173.0532     689.2847     357.9050                        0.5552

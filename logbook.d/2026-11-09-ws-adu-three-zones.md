@@ -41,3 +41,7 @@
 - **Decision (Ben):** combined-office test. Durham County unincorporated enters the metro unincorporated cell
   at 0.22 ADUs per 10,000 lots a year (office total 1.20x BPS). The split risk is stated (up to about 0.32).
   The cell now has 43 places, 24 ADUs.
+- **Mecklenburg (2026-11-10, after V5's release and the #357 adapter fix):**
+  - Combined-office test passes: 1.08x BPS 37119 for 2021–25, all months reported.
+  - Charlotte: 2.04 ADUs per 10,000 lots a year (208 ADUs). Mecklenburg unincorporated: 0.85 (8 ADUs).
+  - The metro unincorporated cell now has 44 places and 32 ADUs, with rates 0.22–0.85.
