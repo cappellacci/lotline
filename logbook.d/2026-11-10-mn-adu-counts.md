@@ -51,3 +51,45 @@
   - A Rochester adapter if Ben accepts its terms.
   - Whether Met Council's suburban ADU reporting can be checked against any city's own permits (Bloomington,
     Minnetonka and Edina have open data portals; not scouted here, since they are already covered).
+
+### LB-NNN · 2026-11-10 · Data: Rochester (MN) permit adapter; suburbs as a floor; shared undercount code
+- **Question:** Ben's replies on PR #367: can Rochester's public permit spreadsheets be added? He decided the
+  Met Council suburbs are a floor and approved moving the undercount functions to shared code.
+- **What I did:**
+  - Built `rochester_permits`:
+    - folder-listing walk of the city's public Laserfiche archive;
+    - one `lotline.io.http.fetch` per monthly .xlsx sheet (113 files, 2017-04 to 2026-10; the 139 .xls sheets
+      before that are skipped, since no dependency reads them);
+    - header labels matched by pattern, with personal columns (address, contractor, owner) unmatchable;
+    - Census construction codes for type and units;
+    - an ADU rule reusing `mpls_permits`' patterns. A new house built with an attached ADU, which Rochester
+      files as two-family, becomes a house row plus an ADU row.
+  - Ran `lotline fetch --state MN --source rochester_permits` (24,813 rows) and added the provenance row and the
+    `config/states/mn.yaml` source entry.
+  - Hand-checked every ADU text hit (13) and two draws of 30 non-matches.
+  - Moved `wilson`, `chapman`, `flag_share`, `k_undercount` and `Z90` to `lotline.validation.undercount`, with
+    `nc.wake_roll_diff` re-exporting them. The sibling OH/TX/OR branches import them through it, so they keep
+    working.
+- **Inputs:** `lf.rochestermn.gov` archive (public; robots.txt 404; no license stated; Ben accepted it
+  2026-11-10); Census BPS for Rochester (sanity check only).
+- **Outputs:** `src/lotline/adapters/states/mn/rochester_permits.py`, `tests/states/mn/test_rochester_permits.py`,
+  `src/lotline/validation/undercount.py`, `tests/core/test_undercount.py`, `config/states/mn.yaml`,
+  `docs/data_provenance.md` (Rochester rows only), report §3.3, §4.1, §5 and §6.
+- **Findings:**
+  - Rochester has 5 ADU permits since 2017, all after the 2023 UDC (3 in 2023, 2 in 2024, 0 in 2025): 0.04 per
+    1,000 eligible lots a year.
+  - Hand check: precision 5/5; no clear miss in either draw of 30; 5 ambiguous cases. All 4 trade permits that
+    name a new ADU sit on a flagged parcel.
+  - New SFD/TH permits track BPS single-family units within about 10% in most years.
+  - Coverage of MN eligible lots rises from 47% to 50%.
+- **Decisions:**
+  - Met Council suburbs are a floor (Ben, 2026-11-10); proposed for HANDOFF in the PR.
+  - Rochester accepted as a public-records source (Ben, 2026-11-10).
+- **AI:** Claude Code wrote the adapter, tests, shared module and report. Checks:
+  - synthetic-sheet tests (13 Rochester, 3 shared, 1,178 in the states and core suites);
+  - the BPS comparison;
+  - the hand check;
+  - a scan of the sibling branches' imports before the move.
+- **Open / next:**
+  - `xlrd` (BSD-3) would add 2005–2017-03 for Rochester; ask Ben before adding it.
+  - The parcel number is the city's own, so there is no roll match and no Rochester k.

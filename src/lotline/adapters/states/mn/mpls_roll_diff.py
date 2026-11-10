@@ -12,16 +12,16 @@ any count), D-074 step 1 for Minnesota:
   candidates for each version of the rule (as written, duplexes removed, wide).
 - `undercount`: |P∩R|, (a), (b), P \\ R, k with its 90% interval and the Chapman total.
 
-The interval and capture–recapture formulas are NC's (`lotline.adapters.states.nc.wake_roll_diff`),
-reused, not copied. No data is read here: `scripts/dev/mn_mpls_roll_adu_diff.py` reads the rolls and
-permits through `DataStore` and `holdout.apply`.
+The interval and capture–recapture formulas are the shared ones in `lotline.validation.undercount` (first
+written for NC's Wake roll check). No data is read here: `scripts/dev/mn_mpls_roll_adu_diff.py` reads the
+rolls and permits through `DataStore` and `holdout.apply`.
 """
 
 from __future__ import annotations
 
 import pandas as pd
 
-from lotline.adapters.states.nc.wake_roll_diff import chapman, k_undercount
+from lotline.validation.undercount import chapman, k_undercount
 
 HENNEPIN = "27053"
 FIRST_NEW_YEAR = 2017  # the earlier roll's year: a main building built in or after it replaced the house

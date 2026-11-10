@@ -257,10 +257,11 @@ The roll column is the January table in which a parcel first carries an ADU labe
 - **What this means for the suburbs.** D-074 applies k "as measured" to field-flagged sources. In Minnesota the
   field source is Met Council, and in its one checkable city it records 1.7× fewer ADUs than the parser.
   Applying k = 1.04 to the Met Council suburbs would assume their reporting is as complete as Minneapolis's CCS
-  text, which this check says it is not. **Ben to decide (proposed, not applied):** a Met Council k of
-  **1.04 × 1.74 ≈ 1.8** as a sensitivity for Met-Council-only places, or keep 1.04 and say the suburbs are a
-  floor. The suburbs' survey reporting may differ from Minneapolis's, so 1.8 is a guess for them, not a
-  measurement.
+  text, which this check says it is not.
+- **Decided (Ben, 2026-11-10): the Met Council suburbs are a floor.** k = 1.04 applies to Minneapolis's parsed
+  CCS permits. Met-Council-only places keep their counts as reported, described as a lower bound on their ADUs.
+  The 1.74 ratio is recorded here as the reason, not applied as a factor. That is a proposed HANDOFF decision;
+  no config is changed in this PR.
 
 ### 3.4 Caveats
 
@@ -282,17 +283,17 @@ The roll column is the January table in which a parcel first carries an ADU labe
 
 ---
 
-## 4. More places: outstate permit sources (scouted 2026-11-10; no adapter built)
+## 4. More places: outstate permit sources (scouted 2026-11-10; Rochester adapter built)
 
 The brief asked for adapters for the 3 largest uncovered places with an **openly licensed, record-level** permit
-source. **None of the uncovered places has one that can mark an ADU**, so no adapter was built and no new place
-enters D-074 step 2 from Minnesota. What was checked: the publisher's metadata, record counts and robots.txt,
-plus count-only text queries. At most a handful of sample rows were read. Nothing was downloaded through the
-IO layer, and nothing was written to `LOTLINE_DATA_DIR`.
+source. **None of the uncovered places has an openly licensed one that can mark an ADU.** The scouting checked
+the publisher's metadata, record counts and robots.txt, plus count-only text queries, and read at most a
+handful of sample rows. Rochester is the exception that was built (§4.1): Ben accepted its public-records
+spreadsheets on 2026-11-10 (no license is stated, as for Greensboro and Portland).
 
 | Place (eligible lots) | What exists | Record-level? | ADU marking | License / access | Verdict |
 |---|---|---|---|---|---|
-| **Rochester** (39,177) | Monthly "Detail Report Spreadsheet" files (.xls 2011–, .xlsx to 2026-10) in the city's public Laserfiche archive (`lf.rochestermn.gov`, linked from rochestermn.gov's building permit reports archive) | Yes (per permit: number, type, construction code 101/102/997, work description, valuation) | None; the description could be parsed | **No license stated**; robots.txt allows; one file per month (about 180 files) | Best candidate. Needs Ben's call on terms (§5) |
+| **Rochester** (39,177) | Monthly "Detail Report Spreadsheet" files (.xls 2011–, .xlsx to 2026-10) in the city's public Laserfiche archive (`lf.rochestermn.gov`, linked from rochestermn.gov's building permit reports archive) | Yes (per permit: number, type, construction code 101/102/997, work description, valuation) | None; the description could be parsed | **No license stated**; robots.txt allows; one file per month (252 sheets, 113 of them .xlsx) | **Adapter built** (§4.1) |
 | **Duluth** (28,251) | ePlace per-address lookup (account needed for detail) | No open extract | — | Login | None |
 | **St. Cloud** (15,237) | ArcGIS server `sws.stcloudcity.com` (Accela/TRAKiT folders) | Unknown | — | **robots.txt disallows all paths**: not queried | Blocked; the city takes data requests |
 | **Moorhead** (11,801) | Assessor CAMA permit table, `gis.moorheadmn.gov/.../Assessor_Permit_Review/MapServer/1`, 95,293 rows (repeated per parcel), 2019-07 to 2026-11 | Yes (date, number, reason, scope comment, parcel) | None. **The text names no ADU**: the 6 "ADU" hits are "Adult Day Care", the one "carriage" hit is a deck's carriage bolts | Disclaimer only ("reference purposes only, as-is") | Not useful for ADUs (0 found) |
@@ -303,30 +304,108 @@ IO layer, and nothing was written to `LOTLINE_DATA_DIR`.
 | Sherburne County unincorporated (12,985) | County GIS permit services | — | — | **robots.txt disallows all paths** (names ClaudeBot) | Blocked |
 | Cass, Itasca counties | Department pages and PDF forms only | — | — | — | None |
 
-**What would add a Minnesota place.**
-1. **Rochester**, if Ben accepts a public-records source with no stated license (Greensboro and Portland are
-   already in the repo on that footing). An adapter would fetch the monthly spreadsheets through the IO layer,
-   using the Laserfiche folder listing (`WebLink/FolderListingService.aspx/GetFolderListing2`, folder ids per
-   year) and one download per file. It would parse the work description for ADUs, Charlotte-style, with a
-   30 + 30 hand check. It holds far more than 1,000 permits. Rochester already has an ADU rule row
-   (`MN-2754880-adu-2023`, effective 2023-01-01), so it would meet all of D-074 step 2's tests. Open question
-   before building: whether the sheets carry a parcel ID (the guide lists the address only). Without one there
-   is no parcel match, but counts per year still work.
-2. **St. Cloud and Duluth** only through a records request, which Ben has ruled out (2026-11 memory: no records
-   requests). Close as no usable source.
+### 4.1 Rochester (`rochester_permits`)
+
+**Source and adapter.** `src/lotline/adapters/states/mn/rochester_permits.py`, tests in
+`tests/states/mn/test_rochester_permits.py` (13, synthetic sheets), provenance row in `docs/data_provenance.md`,
+source entry in `config/states/mn.yaml`.
+- The archive's folder-listing service (the JSON POST the web viewer uses) lists 252 monthly "Detail Report
+  Spreadsheet" files, 2005-09 to 2026-10.
+- 113 are `.xlsx`, 2017-04 on, and were downloaded through `lotline.io.http.fetch`: 113 files, 18.9 MB, each in
+  the manifest. The other 139 are `.xls` (Excel 97). No dependency reads them (`xlrd`, BSD-3, would), so
+  2005–2017-03 is left out.
+- Built with `lotline fetch --state MN --source rochester_permits`: 24,813 permit rows.
+- Address, contractor and owner columns are never read. The header labels change from month to month, so each
+  column is matched by pattern, and the personal labels can never match.
+- One parcel number per permit, but it is the city's 6-digit number, not the Olmsted County PIN. So there is no
+  roll match, and **no k is measured here**.
+
+**New homes vs Census BPS (sanity check).** New SFD and townhouse permits run close to BPS single-family units:
+2018 371 vs 347, 2020 279 vs 296, 2022 218 vs 234, 2024 195 vs 193. Apartments have no unit count (code 105).
+
+**ADU permits per 1,000 eligible lots** (39,177 eligible lots, 2024):
+
+| Issue year | Building permits | New SFD/TH | ADU permits | Per 1,000 lots |
+|---|---:|---:|---:|---:|
+| 2017 (Apr–Dec) | 2,393 | 394 | 0 | 0.00 |
+| 2018 | 2,419 | 371 | 0 | 0.00 |
+| 2019 | 2,448 | 310 | 0 | 0.00 |
+| 2020 | 2,029 | 279 | 0 | 0.00 |
+| 2021 | 2,248 | 257 | 0 | 0.00 |
+| 2022 | 2,045 | 218 | 0 | 0.00 |
+| 2023 | 2,026 | 207 | 3 | 0.08 |
+| 2024 | 2,318 | 195 | 2 | 0.05 |
+| 2025 | 3,735 | 241 | 0 | 0.00 |
+| 2026 (Jan–Oct) | 3,152 | 221 | 0 | 0.00 |
+
+- **Five ADU permits in nine and a half years, all after the 2023 UDC** (`MN-2754880-adu-2023`, effective
+  2023-01-01). That is 0.04 per 1,000 lots a year for 2023–2025, close to Greensboro (0.03) and far below
+  Minneapolis.
+- Two of the five are new houses built with an attached ADU. Rochester files these as **two-family** permits
+  (code 103, "Two-family dwelling (SFD with attached ADU)"), and BPS counts them as two-unit buildings. The
+  adapter writes each as a house row and an ADU row, so the city's two units are still counted once each.
+- The 2025–2026 jump in building permits comes from reroof, window and residing permits, which first appear
+  as building permits in 2025. They are not new homes.
+
+**Hand check of the ADU rule.** Rochester's descriptions name an ADU too rarely for a draw of 30 matches, so
+every match was read. Descriptions were read in memory from the registered files; none is stored in the repo.
+- **Every text hit (13).** The pattern was broad: ADU, accessory dwelling, in-law, carriage house, guest house,
+  across all permit types.
+  - **Flagged and correct, 5 of 5:** an attached-ADU addition, a one-bedroom ADU with a garage, an ADU in a
+    detached garage's upper level, and two new houses with an attached ADU. Precision 5/5 (90% Wilson
+    0.65–1.00).
+  - **Correctly not flagged, 8:**
+    - a garage with a "future ADU" (finished later as a flagged ADU on the same parcel);
+    - a basement "mother-in-law suite [non-rental]" (ambiguous; left out by rule);
+    - commercial boilers for a "Carriage House";
+    - a hospital "Guest House";
+    - four electrical and HVAC trade permits for new ADUs. Every one sits on a parcel whose building permit is
+      flagged, which is direct evidence that the rule catches the ADUs the city files.
+- **Non-matches, two draws of 30 (seed 20261110) from residential building permits not flagged:**
+  - **Draw 1, from a pool of 1,021 descriptions with an ADU-like word including "kitchen":** 30/30 are not
+    ADUs, almost all kitchen remodels. As in Charlotte, "kitchen" alone finds nothing, so it was dropped from
+    the pool.
+  - **Draw 2, from a pool of 214** (living quarter, apartment, suite, kitchenette, second unit, dwelling unit,
+    studio, in-law, guest, carriage, cottage, above/over garage, rental unit, two-family, duplex): **no clear
+    miss** (0/30; 90% upper bound 8%, about 18 of 214).
+    - 4 are ambiguous basement finishes with a kitchenette, one with a "non-rental duplex" agreement. The agreement
+      suggests the owner promised not to rent the space, so these are probably not ADUs.
+    - The rest are suites, guest baths, duplex repairs, a 55-unit apartment building, and egress windows in
+      existing rental units.
+  - A full pass over every code-103 or "two-family" permit found 1 more ambiguous case: a 2022 "Two family
+    home, 1 unit above 3 car garage ... (duplex)", filed before the UDC allowed ADUs, so read as a duplex.
+- **Recall** = true flagged ADUs / (true flagged + missed):
+
+| Case | TP | FN | Recall |
+|---|---:|---:|---:|
+| Central: no clear miss found | 5 | 0 | 1.00 |
+| 90% upper bound on clear misses in pool 2 (0/30 → 8% of 214 ≈ 18) | 5 | 18 | 0.22 |
+| The 5 ambiguous cases are all ADUs (4 kitchenette basements, the 2022 two-family) | 5 | 5 | 0.50 |
+
+  With TP this small, the worst cases mostly show how little five ADUs can tell us. For D-074's pooled
+  k_parser, Rochester adds **5 matches and 0 clear misses**. It should be pooled with the other parser
+  sessions' counts, not given a ratio of its own.
+
+**What enters D-074 step 2.** Rochester has a record-level source with far more than 1,000 permits, an ADU rule
+row and eligible lots, so it qualifies. Its 2017–2022 zeros are pre-UDC years, and it gives the fit a
+"rule change, few takers" case.
+
+**Still not usable.** St. Cloud and Duluth could be added only through a records request, which Ben has ruled
+out, so they close as no usable source. Moorhead and Olmsted have no ADU signal.
 
 ## 5. Rule rows
 
-No new place qualified, so **no ADU rule rows are proposed**. The three largest uncovered cities already have
-rows in `config/reforms/mn.csv`: Duluth (`MN-2717000-adu-2010`), Rochester (`MN-2754880-adu-2023`) and St.
-Cloud (`MN-2756896-adu-2024`). Moorhead has no ADU row. It is not proposed, since its permits show no ADUs to
-fit.
+**No new ADU rule rows are proposed.** Rochester, the one new place, already has `MN-2754880-adu-2023` (UDC
+§60.300.020G.5, adopted 2022-09-07, effective 2023-01-01, by right, owner-occupied, up to 1,000 sq ft). Its
+counts fit that row: the first ADU permit is 2023-04-14. Duluth (`MN-2717000-adu-2010`) and St. Cloud
+(`MN-2756896-adu-2024`) have rows but no permit source. Moorhead has no ADU row. None is proposed, since its
+permits show no ADUs to fit.
 
 ## 6. What this means for the joint refit
 
-- **Minnesota's counted ADUs stay metro-only.** 47% of eligible lots are covered, all by Met Council, with
-  Minneapolis's parser on top. 53% (outstate cities, townships and county remainders) has no ADU outcome. In a
-  leave-one-state-out test, Minnesota's outstate share is the "no permit data" tier.
+- **Coverage rises from 47% to 50%** with Rochester (838,477 of 1,688,996 lots). The rest, outstate cities
+  other than Rochester plus townships and county remainders, has no ADU outcome. In a leave-one-state-out
+  test, that share is the "no permit data" tier.
 - **k for Minnesota.** Minneapolis's parser k is 1.04 (1.02–1.10), close to Raleigh's 1.07. The Met Council
   field, which carries every other covered place, records about 58% as many Minneapolis ADUs as the parser does
-  (§3.3). That gap is larger than k, and it is the bigger question for Minnesota's ADU rate.
+  (§3.3). That gap is larger than k. Ben's call (2026-11-10): the suburbs are reported as a floor, not scaled.
