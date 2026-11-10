@@ -899,6 +899,7 @@ def build_panel(
     source: str | None = None,
     hh_growth: str = "corrected",
     drop_tags: Sequence[str] = (),
+    remainder: str = "permits",
 ) -> Panel:
     """The D-023 estimation panel for one state from processed, holdout-filtered tables.
 
@@ -912,6 +913,9 @@ def build_panel(
     (default) or "as_run" (`household_growth`). Date tags are read by `rule_tags` (`[predates]` rules are in
     force before the panel); `drop_tags` ('earliest_known', 'unconfirmed') leaves out places whose in-panel
     ADU event carries that flag (listed in `excluded_by_tags`).
+    `remainder` (D-074 step 2): "permits" puts county remainders whose ADU counts come from local permit
+    files on permit-level eligible lots (`adu_panel_eligible`); "bps" keeps the stored, BPS-kind lots. BPS
+    outcomes (units_5p) are never affected.
     """
     from lotline.build import eligible as eligible_rule
     from lotline.config import load_params, load_state
@@ -946,6 +950,8 @@ def build_panel(
     juris = store.read(state, "jurisdictions").set_index("geoid")
     elig = store.read(state, "eligible_parcels")
     elig = elig[(elig["theme"] == "adu") & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
+    counted = set(counts.index.get_level_values("geoid"))
+    elig = adu_panel_eligible(state, store, elig, juris, counted, remainder)
     bps = store.read(state, "bps_place_year")
     bps = bps[bps["geoid"].notna()].groupby(["geoid", "year"])[["units_1", "units_5p"]].sum()
     market = store.read(state, "market_geo_year")
@@ -1246,3 +1252,89 @@ def transport_verdict(pred: pd.DataFrame) -> dict:
         "yearly_coverage_80": cov,
         "pass": bool(totals_ok and 0.60 <= cov <= 0.95),
     }
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Denominators for ADU rates counted from local permit files (D-074 step 2, #375)
+# ---------------------------------------------------------------------------------------------------------
+
+
+def permit_level_eligible(elig, jurisdictions, counted, permit_rows):
+    """`elig` with the county remainders whose ADU counts come from local permit files on permit-level lots.
+
+    `elig` is the stored, BPS-kind `eligible_parcels` table (one theme and rule version). `counted` holds the
+    GEOIDs whose ADU counts the panel reads (`observed_adu_counts`: record-level permit sources only, never
+    BPS). `permit_rows` is `eligible.from_acs(..., remainder="permits")` for the same state. Only rows that
+    are a county remainder, in `counted`, and an ACS-fallback count change (`eligible.permit_level`); every
+    other row, and every BPS-outcome path, keeps the stored count. Never pass the result through
+    `adu.non_overlapping` as well: that subtracts the local-only places twice.
+
+    By hand (tests): 37119 stored 1,000, permit-level 300, counted -> 300; 37025 stored 400, permit-level 300,
+    not counted -> 400; a parcel-roll remainder and every place keep their stored counts.
+    """
+    import pandas as pd
+
+    from lotline.build import eligible as eligible_rule
+
+    j = jurisdictions.set_index("geoid") if "geoid" in jurisdictions else jurisdictions
+    target = _swap_rows(elig, j, counted)
+    if not target.any():
+        return elig
+    swapped = eligible_rule.permit_level(elig, permit_rows, j.reset_index())
+    out = elig.copy()
+    out.loc[target, "eligible_parcels"] = swapped.loc[target, "eligible_parcels"]
+    return out.assign(remainder_kind=pd.Series("bps", index=out.index).where(~target, "permits"))
+
+
+def needs_permit_level(elig, jurisdictions, counted) -> bool:
+    """True when some ACS-fallback county remainder has ADU counts from local permit files."""
+    j = jurisdictions.set_index("geoid") if "geoid" in jurisdictions else jurisdictions
+    return bool(_swap_rows(elig, j, counted).any())
+
+
+def _swap_rows(elig, j, counted):
+    """Rows that are a county remainder, counted from permit files, and an ACS-fallback count. A table with
+    no `denominator_source` column (an old or hand-made one) has no ACS-fallback rows to swap."""
+    import pandas as pd
+
+    if "denominator_source" not in elig:
+        return pd.Series(False, index=elig.index)
+    kind = elig["jurisdiction_geoid"].map(j["kind"])
+    return (
+        (kind == "county_unincorporated")
+        & elig["jurisdiction_geoid"].isin(set(counted))
+        & (elig["denominator_source"] == "acs_sf_fallback")
+    )
+
+
+def permit_acs_rows(state: str, store, jurisdictions):
+    """`eligible.from_acs(..., remainder="permits")` for one state, with the state's place and township
+    shares (the same inputs `eligible.load` uses). Reads cached Census shares through the store."""
+    from lotline.adapters.national import geoparts
+    from lotline.build import eligible as eligible_rule
+    from lotline.config import load_state
+
+    j = jurisdictions.reset_index() if "geoid" not in jurisdictions else jurisdictions
+    fips = load_state(state).fips
+    places = j.loc[j["kind"] == "place", "geoid"].tolist()
+    townships = j.loc[j["kind"] == "township", "geoid"].tolist()
+    c_shares = geoparts.county_shares(fips, places, store)
+    t_shares = geoparts.township_shares(fips, places, townships, store)
+    return eligible_rule.from_acs(
+        store.read(state, "acs_geo_year"),
+        j,
+        county_shares=c_shares,
+        township_shares=t_shares,
+        remainder="permits",
+    )
+
+
+def adu_panel_eligible(state: str, store, elig, jurisdictions, counted, remainder: str = "permits"):
+    """The ADU fit panels' eligible lots: `remainder="permits"` (the default, D-074 step 2) puts county
+    remainders whose ADU counts come from local permit files on permit-level lots
+    (`permit_level_eligible`); "bps" keeps the stored table."""
+    if remainder not in ("permits", "bps"):
+        raise ValueError(f"remainder must be 'permits' or 'bps', not {remainder!r}")
+    if remainder == "bps" or not needs_permit_level(elig, jurisdictions, counted):
+        return elig
+    return permit_level_eligible(elig, jurisdictions, counted, permit_acs_rows(state, store, jurisdictions))

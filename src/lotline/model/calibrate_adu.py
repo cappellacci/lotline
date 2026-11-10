@@ -313,7 +313,16 @@ def adu_counts(permits, first: int, last: int, settings: dict):
     ]
 
 
-def place_years(state: str, store, geoids, years, params=None, assume_rules=None, counts=None):
+def place_years(
+    state: str,
+    store,
+    geoids,
+    years,
+    params=None,
+    assume_rules=None,
+    counts=None,
+    remainder: str = "permits",
+):
     """One row per place-year that can be checked: a coded ADU rule in force by 1 July, and a permit source
     covering the place that flags ADUs that year. Columns: geoid, name, year, adu_permits (observed),
     eligible_parcels, rent, home_value, mortgage_rate (actual), h1 (mature hazard at θ = 1),
@@ -325,6 +334,9 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
 
     `counts` (`count_settings()`, D-041) applies the count rules; `report_rate` is then ρ for a survey-counted
     place-year and 1 otherwise, and k is multiplied by it. Without it, counts are as D-039 and the rate is 1.
+
+    `remainder` (D-074 step 2): "permits" puts county remainders whose ADU counts come from local permit files
+    on permit-level eligible lots (`estimate_adu.adu_panel_eligible`); "bps" keeps the stored lots.
     """
     import pandas as pd
 
@@ -357,6 +369,10 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
         rho, counts = counts["report_rate"], adu_counts(permits, min(years), max(years), counts)
     survey = counts.set_index(["geoid", "year"])["survey"]
     counts = counts.set_index(["geoid", "year"])["adu_permits"]
+    from lotline.model import estimate_adu
+
+    counted = set(counts.index.get_level_values("geoid"))
+    elig = estimate_adu.adu_panel_eligible(state, store, elig, juris, counted, remainder)
     from lotline.config import load_params, load_state
 
     fips = load_state(state).fips
