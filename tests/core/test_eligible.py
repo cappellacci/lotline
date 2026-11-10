@@ -347,6 +347,99 @@ def test_local_only_township_stays_in_its_county_remainder():
     assert homes["27139"] == 1000 and homes["2713919036"] == 100
 
 
+def _mecklenburg_like():
+    """By hand (D-074 step 2): county 37119 has 1,000 ACS one-unit detached homes and county 37025 has 400.
+    Charlotte (local-only: BPS files its permits under 37119) has 600, all in 37119. Town T (local-only) has
+    200, half in each county. County 27139 has 1,000 and its local-only township E has 100.
+    - BPS kind: no local-only home is subtracted -> 37119 1,000, 37025 400, 27139 1,000.
+    - Permit kind: 37119 = 1,000 - 600 - 100 = 300; 37025 = 400 - 100 = 300; 27139 = 1,000 - 100 = 900.
+    Places and townships keep their own totals either way."""
+    acs = pd.DataFrame(
+        {
+            "geo": [
+                "county:37119",
+                "county:37025",
+                "place:3712000",
+                "place:3799990",
+                "county:27139",
+                "cousub:2713919036",
+            ],
+            "end_year": [2024] * 6,
+            "estimate": [1000.0, 400.0, 600.0, 200.0, 1000.0, 100.0],
+        }
+    )
+    juris = pd.DataFrame(
+        {
+            "geoid": ["37119", "37025", "3712000", "3799990", "27139", "2713919036"],
+            "state": ["NC", "NC", "NC", "NC", "MN", "MN"],
+            "kind": [
+                "county_unincorporated",
+                "county_unincorporated",
+                "place",
+                "place",
+                "county_unincorporated",
+                "township",
+            ],
+            "county_geoid": ["37119", "37025", "37119", "37119", "27139", "27139"],
+            "data_tier": [3] * 6,
+            "in_bps": [True, True, False, False, True, False],
+        }
+    )
+    county_shares = pd.DataFrame(
+        {
+            "place_geoid": ["3712000", "3799990", "3799990"],
+            "county_geoid": ["37119", "37119", "37025"],
+            "share": [1.0, 0.5, 0.5],
+        }
+    )
+    township_shares = pd.DataFrame(columns=["place_geoid", "township_geoid", "share"])
+    return acs, juris, county_shares, township_shares
+
+
+def test_permit_level_remainder_leaves_out_local_only_places():
+    acs, juris, c_shares, t_shares = _mecklenburg_like()
+    bps = eligible.allocate_homes(acs, juris, c_shares, t_shares).set_index("jurisdiction_geoid")["homes"]
+    permits = eligible.allocate_homes(acs, juris, c_shares, t_shares, remainder="permits").set_index(
+        "jurisdiction_geoid"
+    )["homes"]
+    assert bps[["37119", "37025", "27139"]].tolist() == [1000, 400, 1000]  # BPS outcomes: unchanged
+    assert permits[["37119", "37025", "27139"]].tolist() == [300, 300, 900]
+    for g in ("3712000", "3799990", "2713919036"):
+        assert permits[g] == bps[g]
+    # nothing counted twice at permit level: units add back up to the three county totals
+    assert permits.sum() == pytest.approx(1000 + 400 + 1000)
+    with pytest.raises(ValueError, match="remainder"):
+        eligible.allocate_homes(acs, juris, c_shares, t_shares, remainder="county")
+
+
+def test_permit_level_swaps_only_acs_fallback_remainders():
+    acs, juris, c_shares, t_shares = _mecklenburg_like()
+    stored = eligible.from_acs(
+        acs.assign(variable=eligible.ACS_SF_DETACHED),
+        juris,
+        themes=("adu",),
+        county_shares=c_shares,
+        township_shares=t_shares,
+    )
+    # 27139's remainder is counted from a parcel roll in this example: it never overlaps, so it is kept
+    roll = stored["jurisdiction_geoid"] == "27139"
+    stored.loc[roll, ["eligible_parcels", "denominator_source"]] = [950, "parcels"]
+    permit_rows = eligible.from_acs(
+        acs.assign(variable=eligible.ACS_SF_DETACHED),
+        juris,
+        themes=("adu",),
+        county_shares=c_shares,
+        township_shares=t_shares,
+        remainder="permits",
+    )
+    out = eligible.permit_level(stored, permit_rows, juris)
+    assert_conforms(out, "eligible_parcels")
+    got = out.set_index("jurisdiction_geoid")["eligible_parcels"]
+    assert got[["37119", "37025", "27139"]].tolist() == [300, 300, 950]
+    assert got[["3712000", "3799990", "2713919036"]].tolist() == [600, 200, 100]
+    assert stored.set_index("jurisdiction_geoid").at["37119", "eligible_parcels"] == 1000  # input untouched
+
+
 @pytest.mark.parametrize("theme", ["adu", "missing_middle"])
 def test_lot_size_floor_is_inclusive(theme):
     # with a 5,000 sq ft floor, a lot of exactly 5,000 qualifies and one of 4,999 does not
