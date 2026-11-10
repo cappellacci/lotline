@@ -28,3 +28,7 @@
   console errors. No outcome was read.
 - **Open / next:** a better new-home value for NC, OH and TX (the pencil-out land values rest on the ACS
   median); stacking and the fee-structure stretch.
+- **Addendum (2026-11-10):** results page rebuilt after Ben's review and the 2026-11-09 office hours (two
+  worlds side by side, plain bars, method folded; then a "why believe it" part). Found that the headline
+  mean (848) implied ε ≈ 0.7 because the triangular elasticity draw is lopsided; Ben chose to lead with the
+  central estimate (about 418) and the range. Recorded in D-073. Page republished (v3) at the same link.

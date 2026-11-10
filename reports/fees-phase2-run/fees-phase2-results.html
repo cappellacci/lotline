@@ -2,22 +2,23 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
 <style>
-/* Layout: a short scrolling story, one answer per section, plain bars drawn in HTML; method folded at the end. Lotline identity tokens. */
-:root{color-scheme:light;--paper:#f7f4ee;--raised:#fffdf9;--rule:#d3cfc4;--ink:#1c1b18;--muted:#5c5a53;--faint:#8a867b;--base:#b9b4a8;--fees:#d1561b;--fees-soft:#d1561b33;--rise:#9a3b6e;--survey:#2f6fb0;
+/* Layout: a short scrolling story (answer, two worlds, why so small, why believe it), plain bars drawn in HTML; method folded at the end. Lotline identity tokens. */
+:root{color-scheme:light;--paper:#f7f4ee;--raised:#fffdf9;--rule:#d3cfc4;--ink:#1c1b18;--muted:#5c5a53;--faint:#8a867b;--base:#b9b4a8;--fees:#d1561b;--rise:#9a3b6e;--survey:#2f6fb0;--good:#1f8a5c;--band:#2f6fb01f;
 --sans:"Public Sans","Helvetica Neue",Arial,sans-serif;--serif:"Source Serif 4",Georgia,serif;--mono:"IBM Plex Mono","SF Mono",Menlo,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--fees-soft:#d9602d40;--rise:#b8669c;--survey:#6ea3d6}}
-:root[data-theme="dark"]{color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--fees-soft:#d9602d40;--rise:#b8669c;--survey:#6ea3d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--rise:#b8669c;--survey:#6ea3d6;--good:#35a070;--band:#6ea3d62a}}
+:root[data-theme="dark"]{color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--rise:#b8669c;--survey:#6ea3d6;--good:#35a070;--band:#6ea3d62a}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6}
 main{max-width:680px;margin:0 auto;padding-block:48px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
 h1{font-family:var(--serif);font-weight:600;font-size:2.1rem;line-height:1.15;margin:0;text-wrap:balance}
 h2{font-family:var(--serif);font-weight:600;font-size:1.45rem;line-height:1.25;margin:0;text-wrap:balance}
+h3{font-size:1rem;font-weight:600;margin:0}
 p{margin:0;max-width:62ch}.muted{color:var(--muted)}.small{font-size:14px}
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
-section,header{display:flex;flex-direction:column;gap:16px}
-.answer{font-family:var(--serif);font-size:1.35rem;line-height:1.4}
-.answer b{color:var(--fees);font-weight:600}
+section,header,.part{display:flex;flex-direction:column;gap:16px}
+section.trust{gap:36px}
+.answer{font-family:var(--serif);font-size:1.35rem;line-height:1.4}.answer b{color:var(--fees);font-weight:600}
 .bars{display:flex;flex-direction:column;gap:14px}
-.row{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:10px;align-items:center}
+.row{display:grid;grid-template-columns:8rem minmax(0,1fr);gap:10px;align-items:center}
 .row .lab{font-size:14px;color:var(--muted);line-height:1.25}
 .track{display:flex;flex-direction:column;gap:4px;min-width:0}
 .line{display:flex;align-items:center;gap:8px;min-width:0}
@@ -27,7 +28,16 @@ section,header{display:flex;flex-direction:column;gap:16px}
 .key{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted)}.key i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
 .split{display:flex;height:34px;border-radius:2px;overflow:hidden}
 .split div{display:flex;align-items:center;padding:0 10px;font-family:var(--mono);font-size:13px;white-space:nowrap}
-.delta{font-family:var(--mono);font-size:13px;color:var(--fees);font-variant-numeric:tabular-nums}
+.delta{font-family:var(--mono);font-size:13px;color:var(--fees)}
+.chain{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.step p{font-size:15px}.step small{display:block;color:var(--faint);font-size:13px;line-height:1.4;margin-top:2px}
+.step b{font-family:var(--mono);font-weight:500;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.step.total b{color:var(--fees)}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.check{background:var(--raised);border:1px solid var(--rule);padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.tag.yes{color:var(--good)}.tag.no{color:var(--rise)}
 details{border-top:1px solid var(--rule);padding-top:20px}
 summary{cursor:pointer;font-family:var(--serif);font-weight:600;font-size:1.2rem}
 summary:focus-visible{outline:2px solid var(--survey);outline-offset:3px}
@@ -38,8 +48,8 @@ code{font-family:var(--mono);font-size:.88em}
 <header>
 <p class="kicker">Lotline · fee scenario · development run, 2026-11-09 · not published</p>
 <h1>What happens if local governments cut their development fees in half?</h1>
-<p class="answer">About <b>850 more homes</b> over 2027–2031 in the 50 places we have fees for, on top of about 449,000 that would be built anyway. That is <b>0.2% more</b>.</p>
-<p class="muted small">Minnesota, North Carolina, Ohio and Texas. Likely range by state is shown below; the method is at the end.</p>
+<p class="answer">About <b>420 more homes</b> over 2027–2031 in the 50 places we have fees for, on top of about 449,000 that would be built anyway: <b>0.1% more</b>. Even under the most generous assumptions it stays under 1%.</p>
+<p class="muted small">Minnesota, North Carolina, Ohio and Texas. Below: the two worlds, why the effect is small, and why to believe it. The method is at the end.</p>
 </header>
 
 <section>
@@ -51,13 +61,13 @@ code{font-family:var(--mono);font-size:.88em}
 
 <section>
 <h2>So the story is the difference</h2>
-<p>Homes added by the cut, with the likely range (10th to 90th percentile of 1,000 runs).</p>
+<p>Homes added by the cut at the central assumptions, with the likely range from 1,000 runs that vary every assumption.</p>
 <div class="bars" id="added"></div>
 </section>
 
 <section>
 <h2>Why so few: fees are a sliver of what a home costs to build</h2>
-<p>For a typical new house in these four states, coded fees are about $7,300, roughly 1.6% of the cost of building it. Halving them saves the builder about $1,800 after landowners take their share through land prices.</p>
+<p>For a typical new house in these places, coded fees are about $7,300, roughly 1.6% of the cost of building it. Halving them saves the builder about $1,800 once landowners take their share through land prices.</p>
 <div class="split" role="img" aria-label="Cost of building a typical new house: fees 1.6 percent, everything else 98.4 percent">
 <div style="background:var(--base);flex:98.4;color:var(--ink)">Construction, design, interest: 98.4%</div>
 <div style="background:var(--fees);flex:1.6"></div>
@@ -65,15 +75,51 @@ code{font-family:var(--mono);font-size:.88em}
 <p class="small muted">Fees: <span class="delta">1.6%</span>. In Oregon, where system development charges are high, fees are about 7% of the cost of a house.</p>
 </section>
 
+<section class="trust">
+<h2>Why believe these numbers</h2>
+
+<div class="part">
+<h3>1. You can follow one place by hand</h3>
+<p>Raleigh, North Carolina, houses only. Every number comes from a file you can open.</p>
+<div class="chain">
+<div class="step"><p>Raleigh's fees for a new house<small>Impact, permit and water/sewer fees from Raleigh's schedules (<code>config/fees/nc.csv</code>), 2025 dollars</small></p><b>$9,343</b></div>
+<div class="step"><p>Cut in half<small>The scenario</small></p><b>$4,672</b></div>
+<div class="step"><p>The builder keeps half of that<small>Landowners take the rest through land prices; studies put their share at 25–75%</small></p><b>$2,336</b></div>
+<div class="step"><p>As a share of what a new house costs<small>$2,336 / $427,050, Raleigh's median home value (Census ACS)</small></p><b>0.55%</b></div>
+<div class="step"><p>Building responds 0.3% for each 1%<small>A neighborhood-level supply response (Baum-Snow and Han, 2024)</small></p><b>+0.16%</b></div>
+<div class="step"><p>Houses Raleigh would permit anyway, 2027–2031<small>The baseline forecast, the same one every scenario uses</small></p><b>7,756</b></div>
+<div class="step"><p>Phased in over about two years<small>Projects already in design were priced at the old fee</small></p><b>× 0.87</b></div>
+<div class="step total"><p>More houses in Raleigh over five years<small>7,756 × 0.16% × 0.87. Duplexes and fourplexes add about 1 more.</small></p><b>about 11</b></div>
+</div>
+</div>
+
+<div class="part">
+<h3>2. The answer is small under every assumption we can defend</h3>
+<p>The two numbers that matter most are how strongly builders respond and how much of the saving they keep. Pushing both to the edge of the published evidence:</p>
+<div class="bars" id="stress"></div>
+<p class="small muted">"Most generous" takes the strongest response in the literature (1.75, a metro-wide figure), lets builders keep three-quarters of the saving, and phases the cut in twice as fast. "No response" is what several studies of impact fees find (Mayer and Somerville 2000; Campbell and Alm 2006).</p>
+</div>
+
+<div class="part">
+<h3>3. What has been checked, and what has not</h3>
+<div class="checks">
+<div class="check"><span class="tag yes">Checked</span>The arithmetic. Each step above is a unit test worked by hand, for houses, duplexes, fourplexes and the fee rise (37 tests).</div>
+<div class="check"><span class="tag yes">Checked</span>The fees. 928 fee rows from 59 places' published schedules, each with its source, converted to 2025 dollars.</div>
+<div class="check"><span class="tag yes">Checked</span>Against the challenge's test. The benchmark raises single-family building by 1–3% per place, inside the 0 to +12% band set for it (V6).</div>
+<div class="check"><span class="tag no">Not yet</span>Against a real fee cut. None of our four states has one we can measure, so the 0.3 response comes from outside studies, not our own data. Two tests are open: V6b (lots that newly pencil) and the Carthage, NC comparison.</div>
+</div>
+</div>
+</section>
+
 <section>
 <h2>The Handbook assumes fees seven times higher than these places charge</h2>
-<p>The challenge's benchmark starts from $50,000 a home and cuts $25,000. Real fees here are about $7,300. That is why the benchmark adds about seven times as many homes as a realistic cut.</p>
+<p>The challenge's benchmark starts from $50,000 a home and cuts $25,000. Real fees here are about $7,300. That is why the benchmark adds about six times as many homes as a realistic cut.</p>
 <div class="bars" id="bench"></div>
 </section>
 
 <section>
 <h2>Raising fees by half would cost about as many homes</h2>
-<p>The same arithmetic runs in reverse. A rise of half the local fee loses about 860 homes over five years in these places.</p>
+<p>The same arithmetic runs in reverse: a rise of half the local fee loses about 410 homes over five years in these places.</p>
 <div class="bars" id="rise"></div>
 </section>
 
@@ -88,24 +134,25 @@ code{font-family:var(--mono);font-size:.88em}
 <summary>How this was estimated</summary>
 <ul>
 <li><b>Fees.</b> Each place's coded fees for a house, a duplex and a fourplex (<code>config/fees/</code>), in 2025 dollars. Missing building-permit and water/sewer charges are filled from the median of coded places (D-065, D-066).</li>
-<li><b>Homes without the cut.</b> The baseline forecast for 2027–2031 by building size (the same one every scenario uses).</li>
-<li><b>Effect of a cut.</b> Builders keep half the saving (landowners take the rest, range 25–75%). Building rises by 0.3% for each 1% cut in cost (range 0 to 1.75), phased in over about two years. Each building size uses its own fee and its own cost per unit; one Minnesota place with enough parcel data counts lots that newly pencil instead (D-032, D-073).</li>
+<li><b>Homes without the cut.</b> The baseline forecast for 2027–2031 by building size.</li>
+<li><b>Effect of a cut.</b> Central assumptions: builders keep half the saving (range 25–75%); building rises 0.3% for each 1% cut in cost (range 0 to 1.75); half the response shows within a year. Each building size uses its own fee and its own cost per unit. One Minnesota place with enough parcel data counts lots that newly pencil instead (D-032, D-073).</li>
+<li><b>Which number leads.</b> The headline uses the central assumptions. The likely range comes from 1,000 runs that draw every assumption. The range for the builder response is lopsided (0 to 1.75, peaking at 0.3), so the average run assumes a response of about 0.7 and adds about 850 homes; the page leads with the central value instead (D-073).</li>
 <li><b>Not counted.</b> Buildings of 5 or more units (no fees are coded for them), effects on prices or rents, approval times, and what governments do without the fee revenue.</li>
-<li><b>Ranges.</b> 1,000 runs drawing every uncertain input. The four-state total of 850 is the sum of the state means.</li>
 <li><b>Left out.</b> Oregon (the transfer state) and the holdout places. Wilmington, Concord and Gastonia (NC) had no baseline or ACS value.</li>
-<li><b>Files.</b> <code>reports/fees-phase2-run/</code> (run log, totals, summary) and the pencil-out table <code>docs/research/fee-pencil-out.md</code>; method in D-073, branch <code>ws/fees-phase2</code>, PR #356. No outcome was read.</li>
+<li><b>Files.</b> <code>reports/fees-phase2-run/</code> and <code>docs/research/fee-pencil-out.md</code>; method in D-073, branch <code>ws/fees-phase2</code>, PR #356. No outcome was read.</li>
 </ul>
 </details>
 </main>
 <script>
-const R={MN:{base:26230,half:[16,44,94],mean:57,hb:225,rise:-71},NC:{base:130749,half:[91,256,569],mean:298,hb:1786,rise:-298},OH:{base:52723,half:[17,47,105],mean:54,hb:398,rise:-54},TX:{base:239385,half:[134,379,838],mean:438,hb:3417,rise:-438}};
+const R={MN:{base:26230,c:38,r:[16,94]},NC:{base:130749,c:138,r:[91,569]},OH:{base:52723,c:26,r:[17,105]},TX:{base:239385,c:215,r:[134,838]}};
 const NAME={MN:"Minnesota",NC:"North Carolina",OH:"Ohio",TX:"Texas"};
 const f=v=>Math.round(v).toLocaleString();
-function rows(id,items,max,room=62){const el=document.getElementById(id);el.innerHTML=items.map(it=>`<div class="row"><div class="lab">${it.lab}</div><div class="track">${it.bars.map(b=>{const w=Math.max(.4,room*Math.abs(b.v)/max);return`<div class="line"><div class="bar ${b.c}" style="width:${w}%"></div><span>${b.t}</span></div>`}).join("")}</div></div>`).join("")}
+function rows(id,items,max,room=62){document.getElementById(id).innerHTML=items.map(it=>`<div class="row"><div class="lab">${it.lab}</div><div class="track">${it.bars.map(b=>{const w=Math.max(.4,room*Math.abs(b.v)/max);return`<div class="line"><div class="bar ${b.c}" style="width:${w}%"></div><span>${b.t}</span></div>`}).join("")}</div></div>`).join("")}
 const S=Object.keys(R);
-rows("worlds",S.map(s=>({lab:NAME[s],bars:[{v:R[s].base,c:"b-base",t:f(R[s].base)},{v:R[s].base+R[s].mean,c:"b-fee",t:f(R[s].base+R[s].mean)+" (+"+f(R[s].mean)+")"}]})),250000);
-rows("added",S.map(s=>({lab:NAME[s],bars:[{v:R[s].half[1],c:"b-fee",t:"+"+f(R[s].half[1])+" (likely "+f(R[s].half[0])+"–"+f(R[s].half[2])+")"}]})),900);
-rows("bench",[{lab:"Fee assumed",bars:[{v:50000,c:"b-base",t:"$50,000 benchmark"},{v:7260,c:"b-fee",t:"$7,260 real fee"}]},{lab:"Homes added",bars:[{v:5825,c:"b-base",t:"+5,825 benchmark"},{v:848,c:"b-fee",t:"+848 real fees halved"}]}].map(r=>({...r,bars:r.bars.map(b=>({...b,v:r.lab==="Fee assumed"?b.v/50000*100:b.v/5825*100}))})),100);
-rows("rise",[{lab:"Fees cut in half",bars:[{v:848,c:"b-fee",t:"+848 homes"}]},{lab:"Fees raised by half",bars:[{v:861,c:"b-rise",t:"−861 homes"}]}],1000);
+rows("worlds",S.map(s=>({lab:NAME[s],bars:[{v:R[s].base,c:"b-base",t:f(R[s].base)},{v:R[s].base+R[s].c,c:"b-fee",t:f(R[s].base+R[s].c)+" (+"+f(R[s].c)+")"}]})),250000);
+rows("added",S.map(s=>({lab:NAME[s],bars:[{v:R[s].c,c:"b-fee",t:"+"+f(R[s].c)+" (likely "+f(R[s].r[0])+"–"+f(R[s].r[1])+")"}]})),900);
+rows("stress",[{lab:"No response",bars:[{v:0,c:"b-base",t:"0 homes"}]},{lab:"Central",bars:[{v:418,c:"b-fee",t:"+418 homes (0.1%)"}]},{lab:"Most generous",bars:[{v:4091,c:"b-base",t:"+4,091 homes (0.9%)"}]}],4100);
+rows("bench",[{lab:"Fee assumed",bars:[{v:100,c:"b-base",t:"$50,000 benchmark"},{v:14.5,c:"b-fee",t:"$7,260 real fee"}]},{lab:"Homes added",bars:[{v:100,c:"b-base",t:"+2,674 benchmark"},{v:15.6,c:"b-fee",t:"+418 real fees halved"}]}],100);
+rows("rise",[{lab:"Fees cut in half",bars:[{v:418,c:"b-fee",t:"+418 homes"}]},{lab:"Fees raised by half",bars:[{v:414,c:"b-rise",t:"−414 homes"}]}],450);
 rows("lot",[{lab:"House",bars:[{v:7234,c:"b-fee",t:"$7,200"}]},{lab:"Duplex",bars:[{v:12844,c:"b-fee",t:"$12,800"}]},{lab:"Fourplex",bars:[{v:25495,c:"b-fee",t:"$25,500"}]}],30000);
 </script>

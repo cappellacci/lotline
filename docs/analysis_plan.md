@@ -4735,6 +4735,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Results page: `reports/fees-phase2-run/fees-phase2-results.html`, published at
     https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. Files: `reports/fees-phase2-run/` (`run.log`,
     `totals.csv`, `summary.json`). No outcome was read.
+- **Which number leads (Ben, 2026-11-10: "central estimate + range").** The run's summaries are means and
+  percentiles of 1,000 draws, and the elasticity draw is lopsided: triangular(0, 0.3, 1.75) has median about
+  0.62 and mean about 0.68, so the mean of draws (848 homes for real fees halved) implies a response about
+  twice the documented central 0.3. The results page now leads with the central-assumption path (ε 0.3,
+  λ 0.5, central ramp): about 418 homes for real fees halved (0.09% of the baseline) and about 2,674 for
+  the benchmark, computed as Σ baseline by size × central %Δ × mean ramp (0.872) from `totals.csv`. The
+  draws' P10–P90 is the likely range. A most-generous case (ε 1.75, λ 0.25, ramp half 0.5 / slope 0.25)
+  gives about 4,091 (0.91%). The draw distribution itself is unchanged; whether ε should be drawn so its
+  median is 0.3 (for example a lognormal) is open for a later entry. Page v3 also adds a worked example
+  (Raleigh: $9,343 fee, $2,336 to builders, 0.55% of $427,050, +0.16%, 7,756 houses × 0.87 ≈ 11) and
+  states what is not yet tested (no measured fee cut in our states; V6b and the Carthage comparison open).
 
 ### D-074 · 2026-11-10 · NC ADUs from counted homes: the flag undercount, more places, and the accuracy tests (method only, before any count)
 - **Why:** Ben (2026-11-10): the goal is an accurate number, and NC's ADU rate rests on too little of the state.
