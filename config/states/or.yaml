@@ -66,3 +66,26 @@ sources:  # added by WS-OR with each adapter
       (config/crosswalks/or_rlis_land_use.csv); jurisdiction from Metro's JURIS_CITY; zoning_raw from Metro's
       regional Zoning layer (FeatureServer/1) by label point (sf_only_zoned left null). Every other Oregon
       jurisdiction stays on the ACS fallback (D-017).
+  - name: mwvcog_permits
+    url: https://services2.arcgis.com/89BLPQl3PdPQE7iy/arcgis/rest/services/Permits_online/FeatureServer/0
+    license: No license stated (Mid-Willamette Valley Council of Governments public ArcGIS Online layer)
+    access: arcgis
+    cadence: quarterly (rows carry year and quarter)
+    notes: >-
+      Adapter src/lotline/adapters/states/or/mwvcog_permits.py. Residential building permits since 1998 for
+      Salem, Keizer, Turner and unincorporated Marion and Polk; Type ADU is the COG's ADU category (from
+      2018). Jurisdiction from the permit's City, else the self-permitting office. The City of Salem's own
+      permit layer bars copying and covers one rolling year, so it is not used. Terms (checked 2026-11-10):
+      the ArcGIS Online item a790b37ed6554a78957df0084f04b45b (owner ksapunar_MWVCOG, public) has an empty
+      licenseInfo and accessInformation "www.mwvcog.org"; mwvcog.org shows a Cloudflare bot check, so Claude
+      did not read it, and Ben checked the site by hand the same day and found no terms of use. No license,
+      no restriction: treated like Portland and Medford (Ben, 2026-11-10). Salem's counts carry attribution
+      to MWVCOG wherever they are shown.
+  - name: medford_permits
+    url: https://maps.medfordmaps.org/arcgis/rest/services/TRAKiTExport/TRAKiTPermits_service/FeatureServer/1
+    license: No license stated (City of Medford public ArcGIS service; open data hub no-warranty disclaimer)
+    access: arcgis
+    cadence: continual (TRAKiT export, permits from 2020)
+    notes: >-
+      Adapter src/lotline/adapters/states/or/medford_permits.py. ADU = Medford's ADU permit subtypes on new
+      construction; a house + ADU permit is split into two rows for D-041's co-built rule.
