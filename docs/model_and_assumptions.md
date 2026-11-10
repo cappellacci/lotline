@@ -664,15 +664,14 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 308 parameters in 21 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
-**`config/params/adu.yaml`** (19 parameters)
+**`config/params/adu.yaml`** (18 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
 | `adu_handbook_min_sqft` | 600 | fixed | sq ft | Handbook benchmark ADU scenario: one ADU per eligible single-family parcel, at least 600 sq ft, no parking re… |
 | `adu_partial_rule_share` | 1 | fixed | share of Handbook uptake reached under current local rules (m_x) | Estimated, D-053 (fit 3's pre-registered rule, Ben 2026-11-06): five-state fit (MN, NC, OH, TX, OR |
 | `adu_owner_occupancy_share` | 1 | 0.9–1 | share of Handbook uptake reached when owner occupancy is the only restriction (m_o) | Estimated, D-019 fit 3 (pre-registered): profile maximum 1.0, 90% profile interval 0.9-1.0 (grid 0.1-1.0), na… |
-| `adu_observed_first_year` | 2019 | fixed | calendar year | Choice (D-019): observed ADU permits from 2019, after the main Twin Cities and Austin ADU rules took effect |
-| `adu_observed_last_year` | 2022 | fixed | calendar year | Choice (D-019): observed ADU permits to 2022, before the 2023 rate shock and outside every holdout window (St |
+| `adu_observed_years` | 4 | fixed | years (ending at the data origin) | WS-NC-GUTCHECK (2026-11-09 |
 | `adu_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: P10/P90 of 1,000 draws move by under 2% between seeds on the development run |
 | `adu_simulation_seed` | 20261020 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |
 | `adu_rule_band_small_max_pop` | 10,000 | fixed | 2020 population (upper edge of the small-place band) | Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+ for the rule priors of places with no cod… |
@@ -797,7 +796,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_state_tau_prob__2_45` | 0.00373106 | fixed | probability that tau = 2.45 (grid step 0.05) | Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit… |
 | `adu_state_tau_prob__2_50` | 0.00350841 | fixed | probability that tau = 2.50 (grid step 0.05) | Estimated, scripts/dev/calibrate_adu.py --state-effect-config (D-053: D-050 with Portland and Bend in the fit… |
 
-**`config/params/aggregate.yaml`** (13 parameters)
+**`config/params/aggregate.yaml`** (14 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
@@ -814,6 +813,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `overlap_flag_medium_distance` | 0.5 | 0.25–0.75 | log distance outside the calibration range (eligible-weighted median over the state's places) | Ben, 2026-11-06 (results-bundle PR #311): state overlap flag on the median of hazard.calibration_distance |
 | `overlap_flag_low_distance` | 1 | 0.75–1.5 | log distance outside the calibration range (eligible-weighted median over the state's places) | Ben, 2026-11-06 (results-bundle PR #311): a log distance of 1 is about 2.7x outside the range on one modifier… |
 | `results_origin_year` | 2025 | fixed | year | Lotline convention, as in every forward development run (scripts/dev/adu_dev_run.py --origin 2025): the last… |
+| `historical_floor_years` | 3 | fixed | years of observed permits ending at the data origin | WS-NC-GUTCHECK brief task 6 (Ben, 2026-11-09), from office hours 2026-11-09 action item 3 (docs/research/offi… |
 
 **`config/params/baseline.yaml`** (32 parameters)
 

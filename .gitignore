@@ -32,3 +32,6 @@ reports/results/
 
 # App page (scripts/build_app.py); rebuilt from results bundles, never committed
 reports/app/
+# WS-NC-GUTCHECK diagnostics: derived from the local data store; READMEs and plots are committed
+reports/diagnostics/**/*.csv
+reports/diagnostics/**/*.txt

@@ -1,0 +1,8 @@
+# Stated reasons a scenario's with-reform median may sit below the trailing observed average
+# (scorecard check `historical_floor`, src/lotline/model/gutcheck.py; WS-NC-GUTCHECK task 6).
+# A state/scenario listed here passes the check with its reason shown; anything else below history is flagged.
+# Format:
+#   NC:
+#     adu: "plain-language reason, with a source or decision number"
+# None stated yet (2026-11-09).
+{}

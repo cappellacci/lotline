@@ -10,7 +10,8 @@
 - `funnel`: Legal -> Pencils -> Built, P10/P50/P90.
 - `totals`: the parity target, computed here from the same draws by `aggregate.homes_from_draws`.
 - `need`: share of housing need for each denominator kind the state has (D-057), the headline marked.
-- `scorecard`: validation rows (none wired yet; the page shows "not yet scored").
+- `scorecard`: validation rows. So far the `historical_floor` gut check per scenario (`model/gutcheck.py`,
+  `historical_floor_rows`): with-reform permits a year against the trailing observed average.
 - `baseline`: the no-policy-change forecast (`model/baseline.py`), homes permitted statewide per BPS building
   size and period, so the page can show the level the scenarios add to (`baseline_table`).
 - `observed`: what was actually permitted in the years before the window (`observed_table`): ADU permits where
@@ -40,7 +41,7 @@ import pandas as pd
 import lotline
 from lotline.build import eligible, panels
 from lotline.config import CONFIG_DIR, load_params
-from lotline.model import aggregate, baseline
+from lotline.model import aggregate, baseline, gutcheck
 from lotline.model import eligible_proxy as proxy
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
@@ -275,7 +276,27 @@ def _columns(part: str) -> list[str]:
 # ---- the baseline ---------------------------------------------------------------------------------------
 
 
-def baseline_table(panel: pd.DataFrame, state: str, origin: int, params=None) -> pd.DataFrame:
+def baseline_class_draws(panel: pd.DataFrame, state: str, origin: int, params=None):
+    """Statewide baseline draws per BPS size class, {size: (window years x draws)} with "all" their sum per
+    draw, and the set of places forecast (`baseline_table`)."""
+    p = params or load_params("baseline")
+    reported = bool(p["use_reported_only"].value)
+    _, horizon, _ = baseline.window(origin, p)
+    panel = panel[panel["state"] == state.upper()]
+    by_class, modelled = {}, set()
+    for size in baseline.SIZE_CLASSES:
+        table, draws = baseline.forecast_draws(
+            panel, baseline.outcome_column(size, reported), origin, params=p
+        )
+        h = table["horizon"].to_numpy()
+        by_class[size] = np.stack([draws[h == k].sum(axis=0) for k in range(1, horizon + 1)]).astype(float)
+        modelled |= set(table["geoid"])
+    return {"all": sum(by_class.values()), **by_class}, modelled
+
+
+def baseline_table(
+    panel: pd.DataFrame, state: str, origin: int, params=None, class_draws=None
+) -> pd.DataFrame:
     """The `baseline` part: statewide homes permitted with no policy change, per size class and period.
 
     For each BPS size class, `baseline.forecast_draws` gives every place's simulated counts over the window
@@ -292,15 +313,8 @@ def baseline_table(panel: pd.DataFrame, state: str, origin: int, params=None) ->
     _, horizon, first = baseline.window(origin, p)
     st = state.upper()
     panel = panel[panel["state"] == st]
-    by_class, modelled = {}, set()
-    for size in baseline.SIZE_CLASSES:
-        table, draws = baseline.forecast_draws(
-            panel, baseline.outcome_column(size, reported), origin, params=p
-        )
-        h = table["horizon"].to_numpy()
-        by_class[size] = np.stack([draws[h == k].sum(axis=0) for k in range(1, horizon + 1)]).astype(float)
-        modelled |= set(table["geoid"])
-    by_class = {"all": sum(by_class.values()), **by_class, "2_4": by_class["2"] + by_class["3_4"]}
+    by_class, modelled = class_draws or baseline_class_draws(panel, st, origin, p)
+    by_class = {**by_class, "2_4": by_class["2"] + by_class["3_4"]}
 
     cols = [baseline.outcome_column(s, reported) for s in baseline.SIZE_CLASSES]
     at_origin = panel[panel["year"] == origin]
@@ -321,6 +335,69 @@ def baseline_table(panel: pd.DataFrame, state: str, origin: int, params=None) ->
         basis="reported" if reported else "with_imputation",
         state=st,
     )
+
+
+# ---- the scorecard ---------------------------------------------------------------------------------------
+
+
+def historical_floor_rows(
+    state: str,
+    places: pd.DataFrame,
+    run_draws: Mapping,
+    adu_counts: pd.DataFrame,
+    panel: pd.DataFrame,
+    draws: pd.DataFrame,
+    origin: int,
+    class_draws=None,
+) -> list[dict]:
+    """`historical_floor` rows (`gutcheck.historical_floor`) for the ADU and missing-middle scenarios.
+
+    - ADUs: places whose local permits flag ADUs, less any still-blind holdout place. With reform = current-
+      rules gross ADUs + added, per draw and window year, on those places; observed = their ADU permits.
+    - Missing middle: every BPS place. With reform = the baseline's 2-unit and 3-4 unit homes (per draw) +
+      the scenario's gross permits added (window total spread evenly); observed = BPS 2-4 unit homes on the
+      baseline's basis. Baseline and scenario draws are paired by index (they are independent).
+    `class_draws`: `baseline_class_draws`' result, if already computed.
+    """
+    from lotline.config import load_state
+    from lotline.model.scenarios import adu
+
+    st = state.upper()
+    why = gutcheck.reasons().get(st, {})
+    rows = []
+    blind = adu.holdout_stops(load_state(st).holdouts)
+    counts = adu_counts[~adu_counts["geoid"].isin(blind)]
+    if "*" not in blind and len(counts):
+        on = places["geoid"].isin(set(counts["geoid"])).to_numpy()
+        cur = np.asarray(run_draws["current"], dtype=float)[:, on, :].sum(axis=1)
+        add = np.asarray(run_draws["added"], dtype=float)[:, on, :].sum(axis=1)
+        observed = counts.groupby("year")["adu_permits"].sum()
+        observed = observed.reindex(range(int(observed.index.min()), origin + 1), fill_value=0)  # floor years
+        scope = f"{int(on.sum())} places whose permits flag ADUs"
+        rows.append(
+            gutcheck.historical_floor("adu", cur + add, observed, origin, scope=scope, reason=why.get("adu"))
+        )
+    mm = draws[draws["scenario"] == "missing_middle"].sort_values("draw")
+    if len(mm):
+        reported = bool(load_params("baseline")["use_reported_only"].value)
+        by_class, _ = class_draws or baseline_class_draws(panel, st, origin)
+        base = (by_class["2"] + by_class["3_4"]).T  # draws x years
+        added = aggregate.homes_from_draws(mm)["permits_added"]
+        with_reform = base[np.arange(len(added)) % len(base)] + added[:, None] / base.shape[1]
+        cols = [baseline.outcome_column(s, reported) for s in ("2", "3_4")]
+        p = panel[panel["state"] == st]
+        observed = p.groupby("year")[cols].sum().sum(axis=1)
+        rows.append(
+            gutcheck.historical_floor(
+                "missing_middle",
+                with_reform,
+                observed,
+                origin,
+                scope="BPS 2-4 unit homes, every place",
+                reason=why.get("missing_middle"),
+            )
+        )
+    return rows
 
 
 def observed_table(
@@ -484,8 +561,12 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
             }
         ]
     )
-    scorecard = pd.DataFrame(columns=_columns("scorecard")).assign(state=pd.Series(dtype=str))
     panel = panels.load(st, store, theme="adu", rule_version=eligible.RULE_VERSION)
-    base = baseline_table(panel, st, origin)
+    class_draws = baseline_class_draws(panel, st, origin)
+    base = baseline_table(panel, st, origin, class_draws=class_draws)
+    k = int(agg["historical_floor_years"].value)
+    adu_counts = adu.observed_adu_counts(store.read(st, "permits"), origin - k + 1, origin)
+    rows = historical_floor_rows(st, places, run_draws, adu_counts, panel, d, origin, class_draws)
+    scorecard = pd.DataFrame(rows, columns=_columns("scorecard")).assign(state=st)
     seen = observed_table(panel, store.read(st, "permits"), store.read(st, "jurisdictions"), st, origin)
     return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}
