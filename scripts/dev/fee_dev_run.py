@@ -158,7 +158,7 @@ def main() -> None:
                     print(
                         f"{state}: {len(places)} places; fee source {src}; home value filled "
                         f"{int(places['home_value_filled'].sum())}; baseline "
-                        f"{places.filter(regex=r'^baseline_y\\d$').sum().sum():,.0f} homes in 5 yrs"
+                        f"{places.filter(regex=r'^baseline_y\d$').sum().sum():,.0f} homes in 5 yrs"
                     )
                 continue
             for _, r in totals.iterrows():

@@ -319,4 +319,3 @@ def test_elasticity_draw_is_centred_on_its_central_value():
     assert np.percentile(d, 5) == pytest.approx(0.3 / (1.75 / 0.3), rel=0.03)  # 0.0514
     e = np.array([s["fee_permit_elasticity"] for s in fees.draw_params(4000, 1)])
     assert np.median(e) == pytest.approx(P["fee_permit_elasticity"], rel=0.1) and (e > 0).all()
-

@@ -3,10 +3,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
 <style>
 /* Layout: a short scrolling story (answer, two worlds, why so small, why believe it), plain bars drawn in HTML; method folded at the end. Lotline identity tokens. */
-:root{color-scheme:light;--paper:#f7f4ee;--raised:#fffdf9;--rule:#d3cfc4;--ink:#1c1b18;--muted:#5c5a53;--faint:#8a867b;--base:#b9b4a8;--fees:#d1561b;--rise:#9a3b6e;--survey:#2f6fb0;--good:#1f8a5c;--band:#2f6fb01f;
+:root{color-scheme:light;--paper:#f7f4ee;--raised:#fffdf9;--rule:#d3cfc4;--ink:#1c1b18;--muted:#5c5a53;--faint:#8a867b;--base:#b9b4a8;--fees:#d1561b;--rise:#9a3b6e;--survey:#2f6fb0;--good:#1f8a5c;
 --sans:"Public Sans","Helvetica Neue",Arial,sans-serif;--serif:"Source Serif 4",Georgia,serif;--mono:"IBM Plex Mono","SF Mono",Menlo,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--rise:#b8669c;--survey:#6ea3d6;--good:#35a070;--band:#6ea3d62a}}
-:root[data-theme="dark"]{color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--rise:#b8669c;--survey:#6ea3d6;--good:#35a070;--band:#6ea3d62a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--rise:#b8669c;--survey:#6ea3d6;--good:#35a070}}
+:root[data-theme="dark"]{color-scheme:dark;--paper:#1b1a17;--raised:#24221e;--rule:#3a3832;--ink:#ece8df;--muted:#b3afa4;--faint:#7d7a71;--base:#5a574f;--fees:#d9602d;--rise:#b8669c;--survey:#6ea3d6;--good:#35a070}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6}
 main{max-width:680px;margin:0 auto;padding-block:48px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
 h1{font-family:var(--serif);font-weight:600;font-size:2.1rem;line-height:1.15;margin:0;text-wrap:balance}
@@ -46,28 +46,28 @@ code{font-family:var(--mono);font-size:.88em}
 </style>
 <main>
 <header>
-<p class="kicker">Lotline · fee scenario · development run, 2026-11-09 · not published</p>
+<p class="kicker">Lotline · fee scenario · statewide development run, 2026-11-10 · not published</p>
 <h1>What happens if local governments cut their development fees in half?</h1>
-<p class="answer">About <b>420 more homes</b> over 2027–2031 in the 50 places we have fees for, on top of about 449,000 that would be built anyway: <b>0.1% more</b>. Even under the most generous assumptions it stays under 1%.</p>
-<p class="muted small">Minnesota, North Carolina, Ohio and Texas. Below: the two worlds, why the effect is small, and why to believe it. The method is at the end.</p>
+<p class="answer">About <b>1,500 more homes</b> over 2027–2031 across Minnesota, North Carolina, Ohio and Texas, on top of about 1.6 million that would be built anyway: <b>0.1% more</b>. Even under the most generous assumptions it stays under 1%.</p>
+<p class="muted small">Every place in each state, 2,937 in all. Below: the two worlds, why the effect is small, and why to believe it. The method is at the end.</p>
 </header>
 
 <section>
 <h2>The two worlds are almost the same</h2>
-<p>Homes permitted over five years in each state's coded places, with today's fees and with fees cut in half. The difference is too small to see at this scale.</p>
+<p>Homes permitted statewide over five years, with today's fees and with fees cut in half. The difference is too small to see at this scale.</p>
 <div class="key"><span><i style="background:var(--base)"></i>Fees as they are</span><span><i style="background:var(--fees)"></i>Fees cut in half</span></div>
 <div class="bars" id="worlds"></div>
 </section>
 
 <section>
 <h2>So the story is the difference</h2>
-<p>Homes added by the cut at the central assumptions, with the likely range from 1,000 runs that vary every assumption.</p>
+<p>Homes added statewide by the cut: the middle estimate, with the likely range from 1,000 runs that vary every assumption (10th to 90th percentile).</p>
 <div class="bars" id="added"></div>
 </section>
 
 <section>
 <h2>Why so few: fees are a sliver of what a home costs to build</h2>
-<p>For a typical new house in these places, coded fees are about $7,300, roughly 1.6% of the cost of building it. Halving them saves the builder about $1,800 once landowners take their share through land prices.</p>
+<p>Where we have read the schedules, fees for a typical new house are about $7,300, roughly 1.6% of the cost of building it. Halving them saves the builder about $1,800 once landowners take their share through land prices.</p>
 <div class="split" role="img" aria-label="Cost of building a typical new house: fees 1.6 percent, everything else 98.4 percent">
 <div style="background:var(--base);flex:98.4;color:var(--ink)">Construction, design, interest: 98.4%</div>
 <div style="background:var(--fees);flex:1.6"></div>
@@ -80,7 +80,7 @@ code{font-family:var(--mono);font-size:.88em}
 
 <div class="part">
 <h3>1. You can follow one place by hand</h3>
-<p>Raleigh, North Carolina, houses only. Every number comes from a file you can open.</p>
+<p>Raleigh, North Carolina, houses only. Every number comes from a file you can open; each place in the state goes through the same steps.</p>
 <div class="chain">
 <div class="step"><p>Raleigh's fees for a new house<small>Impact, permit and water/sewer fees from Raleigh's schedules (<code>config/fees/nc.csv</code>), 2025 dollars</small></p><b>$9,343</b></div>
 <div class="step"><p>Cut in half<small>The scenario</small></p><b>$4,672</b></div>
@@ -95,7 +95,7 @@ code{font-family:var(--mono);font-size:.88em}
 
 <div class="part">
 <h3>2. The answer is small under every assumption we can defend</h3>
-<p>The two numbers that matter most are how strongly builders respond and how much of the saving they keep. Pushing both to the edge of the published evidence:</p>
+<p>The two numbers that matter most are how strongly builders respond and how much of the saving they keep. Pushing both to the edge of the published evidence, all four states together:</p>
 <div class="bars" id="stress"></div>
 <p class="small muted">"Most generous" takes the strongest response in the literature (1.75, a metro-wide figure), lets builders keep three-quarters of the saving, and phases the cut in twice as fast. "No response" is what several studies of impact fees find (Mayer and Somerville 2000; Campbell and Alm 2006).</p>
 </div>
@@ -103,56 +103,57 @@ code{font-family:var(--mono);font-size:.88em}
 <div class="part">
 <h3>3. What has been checked, and what has not</h3>
 <div class="checks">
-<div class="check"><span class="tag yes">Checked</span>The arithmetic. Each step above is a unit test worked by hand, for houses, duplexes, fourplexes and the fee rise (37 tests).</div>
-<div class="check"><span class="tag yes">Checked</span>The fees. 928 fee rows from 59 places' published schedules, each with its source, converted to 2025 dollars.</div>
+<div class="check"><span class="tag yes">Checked</span>The arithmetic. Each step above is a unit test worked by hand, for houses, duplexes, fourplexes and the fee rise (38 tests).</div>
+<div class="check"><span class="tag yes">Checked</span>The fees where we read them. 928 fee rows from 59 places' published schedules, each with its source, in 2025 dollars. Those places hold 28–33% of each state's expected new homes.</div>
 <div class="check"><span class="tag yes">Checked</span>Against the challenge's test. The benchmark raises single-family building by 1–3% per place, inside the 0 to +12% band set for it (V6).</div>
+<div class="check"><span class="tag no">Not yet</span>The other two-thirds of places. They use their state's median fee ($3,900 in Texas to $9,100 in Minnesota), not their own schedules.</div>
 <div class="check"><span class="tag no">Not yet</span>Against a real fee cut. None of our four states has one we can measure, so the 0.3 response comes from outside studies, not our own data. Two tests are open: V6b (lots that newly pencil) and the Carthage, NC comparison.</div>
 </div>
 </div>
 </section>
 
 <section>
-<h2>The Handbook assumes fees seven times higher than these places charge</h2>
-<p>The challenge's benchmark starts from $50,000 a home and cuts $25,000. Real fees here are about $7,300. That is why the benchmark adds about six times as many homes as a realistic cut.</p>
+<h2>The Handbook assumes fees far higher than these places charge</h2>
+<p>The challenge's benchmark starts from $50,000 a home and cuts $25,000. Real fees here are a few thousand dollars, so the benchmark adds about nine times as many homes as a realistic cut, and still under 1%.</p>
 <div class="bars" id="bench"></div>
 </section>
 
 <section>
 <h2>Raising fees by half would cost about as many homes</h2>
-<p>The same arithmetic runs in reverse: a rise of half the local fee loses about 410 homes over five years in these places.</p>
+<p>The same arithmetic runs in reverse: a rise of half the local fee loses about 1,450 homes statewide over five years.</p>
 <div class="bars" id="rise"></div>
 </section>
 
 <section>
 <h2>Fees charged per unit weigh most on fourplexes</h2>
-<p>Most places charge water, sewer and impact fees for each dwelling, so a fourplex lot pays about three and a half times a house's fees. Per unit, that makes a cut matter about twice as much for duplexes and fourplexes as for houses. They are a small share of what gets built, so they add few homes in total.</p>
+<p>Most places charge water, sewer and impact fees for each dwelling, so a fourplex lot pays about three and a half times a house's fees. Per unit, that makes a cut matter about twice as much for duplexes and fourplexes as for houses. They are about 3% of what gets built, so they add few homes in total.</p>
 <div class="bars" id="lot"></div>
-<p class="small muted">Median fees per lot, MN, NC, OH and TX. Oregon's are four to five times higher: $34,000 for a house and $101,000 for a fourplex.</p>
+<p class="small muted">Median fees per lot where we read the schedules, MN, NC, OH and TX. Oregon's are four to five times higher: $34,000 for a house and $101,000 for a fourplex.</p>
 </section>
 
 <details>
 <summary>How this was estimated</summary>
 <ul>
-<li><b>Fees.</b> Each place's coded fees for a house, a duplex and a fourplex (<code>config/fees/</code>), in 2025 dollars. Missing building-permit and water/sewer charges are filled from the median of coded places (D-065, D-066).</li>
+<li><b>Places.</b> Every place the baseline forecasts in each state (the Census building-permit reporting units, which do not overlap): MN 944, NC 221, OH 832, TX 940. They are the units the statewide baseline is summed over. Holdout places are inputs here: their later outcomes are filtered out and none is read.</li>
+<li><b>Fees.</b> Coded fees for a house, a duplex and a fourplex where we read the schedules (<code>config/fees/</code>), in 2025 dollars, with missing permit and water/sewer charges filled from coded places (D-065, D-066). Other places take their state's median coded fee.</li>
 <li><b>Homes without the cut.</b> The baseline forecast for 2027–2031 by building size.</li>
-<li><b>Effect of a cut.</b> Central assumptions: builders keep half the saving (range 25–75%); building rises 0.3% for each 1% cut in cost (range 0 to 1.75); half the response shows within a year. Each building size uses its own fee and its own cost per unit. One Minnesota place with enough parcel data counts lots that newly pencil instead (D-032, D-073).</li>
-<li><b>Which number leads.</b> The headline uses the central assumptions. The likely range comes from 1,000 runs that draw every assumption. The range for the builder response is lopsided (0 to 1.75, peaking at 0.3), so the average run assumes a response of about 0.7 and adds about 850 homes; the page leads with the central value instead (D-073).</li>
-<li><b>Not counted.</b> Buildings of 5 or more units (no fees are coded for them), effects on prices or rents, approval times, and what governments do without the fee revenue.</li>
-<li><b>Left out.</b> Oregon (the transfer state) and the holdout places. Wilmington, Concord and Gastonia (NC) had no baseline or ACS value.</li>
-<li><b>Files.</b> <code>reports/fees-phase2-run/</code> and <code>docs/research/fee-pencil-out.md</code>; method in D-073, branch <code>ws/fees-phase2</code>, PR #356. No outcome was read.</li>
+<li><b>Effect of a cut.</b> Builders keep half the saving (range 25–75%); building rises 0.3% for each 1% cut in cost; half the response shows within a year. Each building size uses its own fee and its own cost per unit. Places with enough parcel data count lots that newly pencil instead (22 in Minnesota) (D-032, D-073).</li>
+<li><b>The range.</b> 1,000 runs draw every assumption. The builder response is drawn so its middle is 0.3, with a 1-in-20 chance above 1.75 (D-076); the earlier draw was lopsided and centred near 0.6. The middle estimate per state now matches the central-assumption calculation within a few percent.</li>
+<li><b>Not counted.</b> Buildings of 5 or more units (about 30% of expected homes; no fees are coded for them), effects on prices or rents, approval times, and what governments do without the fee revenue. Oregon (the transfer state) is not in this run.</li>
+<li><b>Files.</b> <code>reports/fees-statewide-run/</code> (run log, totals, summary); <code>scripts/dev/fee_dev_run.py --statewide</code>; method in D-073 and D-076, branch <code>ws/fees-phase2</code>, PR #356.</li>
 </ul>
 </details>
 </main>
 <script>
-const R={MN:{base:26230,c:38,r:[16,94]},NC:{base:130749,c:138,r:[91,569]},OH:{base:52723,c:26,r:[17,105]},TX:{base:239385,c:215,r:[134,838]}};
+const R={MN:{base:94974,m:173,r:[53,546]},NC:{base:393604,m:486,r:[125,1982]},OH:{base:146668,m:118,r:[31,479]},TX:{base:953445,m:672,r:[174,2738]}};
 const NAME={MN:"Minnesota",NC:"North Carolina",OH:"Ohio",TX:"Texas"};
 const f=v=>Math.round(v).toLocaleString();
 function rows(id,items,max,room=62){document.getElementById(id).innerHTML=items.map(it=>`<div class="row"><div class="lab">${it.lab}</div><div class="track">${it.bars.map(b=>{const w=Math.max(.4,room*Math.abs(b.v)/max);return`<div class="line"><div class="bar ${b.c}" style="width:${w}%"></div><span>${b.t}</span></div>`}).join("")}</div></div>`).join("")}
 const S=Object.keys(R);
-rows("worlds",S.map(s=>({lab:NAME[s],bars:[{v:R[s].base,c:"b-base",t:f(R[s].base)},{v:R[s].base+R[s].c,c:"b-fee",t:f(R[s].base+R[s].c)+" (+"+f(R[s].c)+")"}]})),250000);
-rows("added",S.map(s=>({lab:NAME[s],bars:[{v:R[s].c,c:"b-fee",t:"+"+f(R[s].c)+" (likely "+f(R[s].r[0])+"–"+f(R[s].r[1])+")"}]})),900);
-rows("stress",[{lab:"No response",bars:[{v:0,c:"b-base",t:"0 homes"}]},{lab:"Central",bars:[{v:418,c:"b-fee",t:"+418 homes (0.1%)"}]},{lab:"Most generous",bars:[{v:4091,c:"b-base",t:"+4,091 homes (0.9%)"}]}],4100);
-rows("bench",[{lab:"Fee assumed",bars:[{v:100,c:"b-base",t:"$50,000 benchmark"},{v:14.5,c:"b-fee",t:"$7,260 real fee"}]},{lab:"Homes added",bars:[{v:100,c:"b-base",t:"+2,674 benchmark"},{v:15.6,c:"b-fee",t:"+418 real fees halved"}]}],100);
-rows("rise",[{lab:"Fees cut in half",bars:[{v:418,c:"b-fee",t:"+418 homes"}]},{lab:"Fees raised by half",bars:[{v:414,c:"b-rise",t:"−414 homes"}]}],450);
+rows("worlds",S.map(s=>({lab:NAME[s],bars:[{v:R[s].base,c:"b-base",t:f(R[s].base)},{v:R[s].base+R[s].m,c:"b-fee",t:f(R[s].base+R[s].m)+" (+"+f(R[s].m)+")"}]})),1000000);
+rows("added",S.map(s=>({lab:NAME[s],bars:[{v:R[s].m,c:"b-fee",t:"+"+f(R[s].m)+" (likely "+f(R[s].r[0])+"–"+f(R[s].r[1])+")"}]})),2800);
+rows("stress",[{lab:"No response",bars:[{v:0,c:"b-base",t:"0 homes"}]},{lab:"Central",bars:[{v:1482,c:"b-fee",t:"+1,482 homes (0.09%)"}]},{lab:"Most generous",bars:[{v:14507,c:"b-base",t:"+14,507 homes (0.9%)"}]}],14600);
+rows("bench",[{lab:"Fee assumed",bars:[{v:100,c:"b-base",t:"$50,000 benchmark"},{v:12.5,c:"b-fee",t:"$3,900–$9,100 real median"}]},{lab:"Homes added",bars:[{v:100,c:"b-base",t:"+13,193 benchmark (0.8%)"},{v:11.2,c:"b-fee",t:"+1,482 real fees halved"}]}],100);
+rows("rise",[{lab:"Fees cut in half",bars:[{v:1482,c:"b-fee",t:"+1,482 homes"}]},{lab:"Fees raised by half",bars:[{v:1451,c:"b-rise",t:"−1,451 homes"}]}],1550);
 rows("lot",[{lab:"House",bars:[{v:7234,c:"b-fee",t:"$7,200"}]},{lab:"Duplex",bars:[{v:12844,c:"b-fee",t:"$12,800"}]},{lab:"Fourplex",bars:[{v:25495,c:"b-fee",t:"$25,500"}]}],30000);
 </script>

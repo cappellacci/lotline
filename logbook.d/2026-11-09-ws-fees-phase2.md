@@ -32,3 +32,10 @@
   worlds side by side, plain bars, method folded; then a "why believe it" part). Found that the headline
   mean (848) implied ε ≈ 0.7 because the triangular elasticity draw is lopsided; Ben chose to lead with the
   central estimate (about 418) and the range. Recorded in D-073. Page republished (v3) at the same link.
+- **Addendum 2 (2026-11-10), D-076:** elasticity drawn lognormal (median 0.3, p95 1.75); statewide fee
+  run over every baseline place in MN, NC, OH, TX (2,937 places) -> `reports/fees-statewide-run/`.
+  Halving real fees adds about 1,480 homes statewide (0.09%); the benchmark about 13,200 (0.8%). Checked:
+  the draw's median and p95 by test (31 fee tests pass); each state's P50 against its central path; the
+  page's numbers against `summary.json`; the page rendered with no console errors. Results page v4 at
+  the same link.
+

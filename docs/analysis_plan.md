@@ -4902,3 +4902,39 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     few such places.
 - **Decided by:** Ben, 2026-11-10 ("a good plan"; it extends D-074). Written by Claude Code before any count
   or run. **Status:** method only.
+
+### D-076 · 2026-11-10 · Fees: the elasticity draw centred on 0.3, and the fee scenario run statewide
+- **Why:** Ben's review of the D-073 results page (2026-11-10). (a) The headline rested on a draw whose
+  middle was about twice the stated central elasticity (D-073 note). (b) The run covered only the 50 places
+  with coded fees. The Handbook asks for a statewide effect, and Lotline's results are statewide totals.
+- **Elasticity draw** (Ben: "fix and rerun"). `fee_permit_elasticity` is drawn lognormal with median 0.3
+  (`value`) and 95th percentile 1.75 (`high`): log-SD (ln 1.75 − ln 0.3) / 1.645 = 1.072, so the 5th
+  percentile is 0.051. It was triangular(0, 0.3, 1.75), with median 0.62 and mean 0.68.
+  - `low` (0, the null findings) stays in the yaml as the evidence's lower end, but the draw does not use it.
+  - Other parameters keep their triangular draws (`scenarios/fees.py` `LOGNORMAL`).
+  - Test: `test_elasticity_draw_is_centred_on_its_central_value`.
+- **Statewide run** (Ben: the model "needs to scale state wide").
+  - `scripts/dev/fee_dev_run.py --statewide` runs every place the baseline forecasts in the state. These are
+    the non-overlapping BPS units that `results.baseline_table` sums (MN 944, NC 221, OH 832, TX 940).
+  - Fees per type are coded where read; elsewhere they take the D-065 fill (state median, else pooled).
+  - Home values are ACS; none needed filling. Parcel inputs are used where a roll exists.
+  - Holdout places are included as inputs only: the panel is holdout-filtered and no outcome after the
+    origin is read.
+  - Oregon is not in the run.
+  - This is a development run. Wiring fees into `lotline results` (`ENGINE_SCENARIOS`) is a WS-ENGINE step
+    for later.
+- **Results (2026-11-10, commit 4aabece, origin 2025, window 2027–2031, 1,000 draws;
+  `reports/fees-statewide-run/`).** Five-year homes added, P50 (P10–P90):
+  - Real local fees halved: MN 173 (53–546), NC 486 (125–1,982), OH 118 (31–479), TX 672 (174–2,738).
+    The central-assumption path is about 1,482, 0.09% of a baseline of 1,588,691.
+  - Benchmark: MN 760, NC 3,197, OH 1,170, TX 7,387 (central path about 13,193, 0.83%).
+  - Fee rise by half: the mirror (central about −1,451). Minnesota is asymmetric through its 22
+    feasibility places.
+  - Most generous case (ε 1.75, λ 0.25, fast ramp): about 14,507 (0.91%).
+  - Each state's P50 is now within a few percent of its central path, which the triangular draw was not.
+  - Coded places hold 28–33% of each state's baseline homes; the rest use the state's median fee ($3,900
+    TX to $9,100 MN).
+  - 5+ unit buildings (30% of the baseline) take no dose.
+  - Results page v4: https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. No outcome was read.
+- **Decided by:** Ben, 2026-11-10 ("fix and rerun"; statewide scope). The lognormal form and its
+  parameters were written by Claude Code, for Ben to confirm in the PR. **Status:** built, tested, run.
