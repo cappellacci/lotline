@@ -1,0 +1,356 @@
+{
+ "rule": "reports/nc/wake-roll-adu-diff.md \u00a71",
+ "years": 4.084873374401095,
+ "sf_2019": 256899,
+ "sf_2019_reid_gone_by_2023": 367,
+ "groups": {
+  "none": 256440,
+  "new_card_new": 47,
+  "rebuild": 19,
+  "new_card_old": 13,
+  "unit_change": 9,
+  "merge": 4
+ },
+ "strict_new_card_year_built": {
+  "2019": 6,
+  "2020": 6,
+  "2021": 5,
+  "2022": 18,
+  "2023": 12
+ },
+ "vacant_2019_two_homes_2023": 8,
+ "by_jurisdiction": {
+  "Raleigh": {
+   "sf_parcels": 85376,
+   "gained": 48,
+   "strict": 29,
+   "new_card_new": 29,
+   "new_card_old": 5,
+   "unit_change": 3,
+   "rebuild": 11,
+   "merge": 0,
+   "rate": 0.1376,
+   "rate_strict": 0.0832,
+   "rate_lo": 0.1038,
+   "rate_hi": 0.1824
+  },
+  "Cary": {
+   "sf_parcels": 37797,
+   "gained": 1,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 1,
+   "rebuild": 0,
+   "merge": 1,
+   "rate": 0.0065,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0011,
+   "rate_hi": 0.0367
+  },
+  "Apex": {
+   "sf_parcels": 14488,
+   "gained": 2,
+   "strict": 2,
+   "new_card_new": 2,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 0,
+   "merge": 0,
+   "rate": 0.0338,
+   "rate_strict": 0.0338,
+   "rate_lo": 0.0093,
+   "rate_hi": 0.1232
+  },
+  "Wake Forest": {
+   "sf_parcels": 11515,
+   "gained": 2,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 1,
+   "rebuild": 1,
+   "merge": 0,
+   "rate": 0.0425,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0117,
+   "rate_hi": 0.155
+  },
+  "Fuquay-Varina": {
+   "sf_parcels": 10258,
+   "gained": 0,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 0,
+   "merge": 0,
+   "rate": 0.0,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0,
+   "rate_hi": 0.0916
+  },
+  "Holly Springs": {
+   "sf_parcels": 10645,
+   "gained": 0,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 0,
+   "merge": 0,
+   "rate": 0.0,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0,
+   "rate_hi": 0.0883
+  },
+  "Garner": {
+   "sf_parcels": 8429,
+   "gained": 0,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 0,
+   "merge": 1,
+   "rate": 0.0,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0,
+   "rate_hi": 0.1115
+  },
+  "Morrisville": {
+   "sf_parcels": 3828,
+   "gained": 0,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 0,
+   "merge": 0,
+   "rate": 0.0,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0,
+   "rate_hi": 0.2454
+  },
+  "Knightdale": {
+   "sf_parcels": 4744,
+   "gained": 0,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 0,
+   "merge": 0,
+   "rate": 0.0,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0,
+   "rate_hi": 0.1981
+  },
+  "Wendell": {
+   "sf_parcels": 3034,
+   "gained": 1,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 1,
+   "rebuild": 0,
+   "merge": 0,
+   "rate": 0.0807,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0142,
+   "rate_hi": 0.4565
+  },
+  "Zebulon": {
+   "sf_parcels": 1814,
+   "gained": 2,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 2,
+   "merge": 0,
+   "rate": 0.2699,
+   "rate_strict": 0.0,
+   "rate_lo": 0.074,
+   "rate_hi": 0.982
+  },
+  "Rolesville": {
+   "sf_parcels": 2664,
+   "gained": 0,
+   "strict": 0,
+   "new_card_new": 0,
+   "new_card_old": 0,
+   "unit_change": 0,
+   "rebuild": 0,
+   "merge": 0,
+   "rate": 0.0,
+   "rate_strict": 0.0,
+   "rate_lo": 0.0,
+   "rate_hi": 0.3525
+  },
+  "Unincorporated Wake": {
+   "sf_parcels": 61940,
+   "gained": 32,
+   "strict": 16,
+   "new_card_new": 16,
+   "new_card_old": 8,
+   "unit_change": 3,
+   "rebuild": 5,
+   "merge": 2,
+   "rate": 0.1265,
+   "rate_strict": 0.0632,
+   "rate_lo": 0.0896,
+   "rate_hi": 0.1785
+  },
+  "Wake County": {
+   "sf_parcels": 256532,
+   "gained": 88,
+   "strict": 47,
+   "new_card_new": 47,
+   "new_card_old": 13,
+   "unit_change": 9,
+   "rebuild": 19,
+   "merge": 4,
+   "rate": 0.084,
+   "rate_strict": 0.0449,
+   "rate_lo": 0.0682,
+   "rate_hi": 0.1034
+  }
+ },
+ "raleigh_check": {
+  "flagged_permits_2019_2023": 135,
+  "issued_2019_2022": {
+   "both": 27,
+   "roll_only": 21,
+   "permits_only": 31,
+   "permits_outside": 23,
+   "permits_in_denominator": 58,
+   "permits": 81,
+   "permit_parcels": 81,
+   "by_adu_type_found": {
+    "detached": 27
+   },
+   "by_adu_type_all": {
+    "detached": 74,
+    "attached": 5,
+    "internal_conversion": 2
+   },
+   "strict": {
+    "both": 21,
+    "roll_only": 8,
+    "permits_only": 37,
+    "permits_outside": 23,
+    "permits_in_denominator": 58
+   }
+  },
+  "issued_2019_2021_rule_learned_on": {
+   "both": 6,
+   "roll_only": 42,
+   "permits_only": 15,
+   "permits_outside": 5,
+   "permits_in_denominator": 21,
+   "permits": 26,
+   "permit_parcels": 26,
+   "by_adu_type_found": {
+    "detached": 6
+   },
+   "by_adu_type_all": {
+    "detached": 23,
+    "internal_conversion": 2,
+    "attached": 1
+   },
+   "strict": {
+    "both": 5,
+    "roll_only": 24,
+    "permits_only": 16,
+    "permits_outside": 5,
+    "permits_in_denominator": 21
+   }
+  },
+  "issued_2022_unseen": {
+   "both": 21,
+   "roll_only": 27,
+   "permits_only": 16,
+   "permits_outside": 18,
+   "permits_in_denominator": 37,
+   "permits": 55,
+   "permit_parcels": 55,
+   "by_adu_type_found": {
+    "detached": 21
+   },
+   "by_adu_type_all": {
+    "detached": 51,
+    "attached": 4
+   },
+   "strict": {
+    "both": 16,
+    "roll_only": 13,
+    "permits_only": 21,
+    "permits_outside": 18,
+    "permits_in_denominator": 37
+   }
+  },
+  "issued_2023_lag": {
+   "both": 4,
+   "roll_only": 44,
+   "permits_only": 37,
+   "permits_outside": 13,
+   "permits_in_denominator": 41,
+   "permits": 54,
+   "permit_parcels": 54,
+   "by_adu_type_found": {
+    "detached": 4
+   },
+   "by_adu_type_all": {
+    "detached": 53,
+    "attached": 1
+   },
+   "strict": {
+    "both": 3,
+    "roll_only": 26,
+    "permits_only": 38,
+    "permits_outside": 13,
+    "permits_in_denominator": 41
+   }
+  },
+  "roll_only_any_year_flag": 1,
+  "roll_only_any_permit_2018_2023": 11,
+  "roll_only_new_residential_permit_2018_2023": 6,
+  "roll_only_total": 17,
+  "ratio_as_committed": {
+   "flag_share_of_roll": 0.5625,
+   "flag_share_lo": 0.4227477150100165,
+   "flag_share_hi": 0.6929894535958907,
+   "real_per_flagged": 1.7777777777777777,
+   "real_per_flagged_lo": 1.4430234036189808,
+   "real_per_flagged_hi": 2.3654770079036527,
+   "seen_over_flagged": 1.3620689655172413,
+   "roll_over_flagged": 0.8275862068965517,
+   "chapman_total": 102.25,
+   "chapman_over_flagged": 1.7629310344827587,
+   "chapman_over_flagged_lo": 1.4554731832708503,
+   "chapman_over_flagged_hi": 2.070388885694667
+  },
+  "adu_only": {
+   "roll_parcels_dropped_as_duplex": 4,
+   "roll": 44,
+   "flagged": 63,
+   "flagged_added_other_issue_year": 5,
+   "both": 32,
+   "roll_only": 12,
+   "permits_only": 31,
+   "flag_share_of_roll": 0.7272727272727273,
+   "flag_share_lo": 0.581508453144907,
+   "flag_share_hi": 0.8365377660450867,
+   "real_per_flagged": 1.375,
+   "real_per_flagged_lo": 1.1954032927021532,
+   "real_per_flagged_hi": 1.719665457297847,
+   "seen_over_flagged": 1.1904761904761905,
+   "roll_over_flagged": 0.6984126984126984,
+   "chapman_total": 86.27272727272727,
+   "chapman_over_flagged": 1.3694083694083694,
+   "chapman_over_flagged_lo": 1.2020567815668493,
+   "chapman_over_flagged_hi": 1.5367599572498893
+  }
+ }
+}
