@@ -90,7 +90,7 @@ def test_header_map_never_reads_personal_columns():
 def test_read_sheet_keeps_only_listed_columns(sheets):
     for path in sheets:
         df = rp.read_sheet(path)
-        assert set(df.columns) == set(rp.COLUMNS)
+        assert set(df.columns) == set(rp.COLUMNS) | {"report_month"}
         assert not df.isin(["JANE DOE", "OWNER NAME", "1 A ST", "BUILDER CO"]).any().any()
 
 
@@ -177,3 +177,79 @@ def test_sheet_entries_walks_folders_and_keeps_one_per_month():
         ("2024.02", 103, "xlsx"),
         ("2026.01", 201, "xlsx"),
     ]
+
+
+# The old permit system's extract (2005-09 to 2007-10): system field names, one row per permit. Positions
+# 9-13, 15, 17 and 18 hold the street address, subdivision, owner and contractor.
+LEGACY_HEAD = ["BPWTYP", "BPWTCD", "BPWVAL", "BPWIYY", "BPWIMM", "BPWIDD", "BPWYER", "BPWCNB", "BPWBLD",
+               "LMWSNO", "LMWSTQ", "LMWSNM", "LMWDIR", "LMWAPT", "BPWATD", "LMWSBN", "BPWUNT", "BPWOWN",
+               "BPWCNT"]  # fmt: skip
+LEGACY_ROWS = [
+    ["R101", "RBPR", "150000", "5", "9", "15", "5", "4450", None, "5777", None, "DOGWOOD CT", "NW", None,
+     "SINGLE FAMILY DWELLING", "CRIMSON RIDGE", "1", "JANE DOE", "BUILDER CO"],
+    ["R100", "RBPR", "120000", "6", "2", "3", "6", "0538", None, "12", None, "OAK ST", "NE", None,
+     "SINGLE FAMILY DWELLING (ATTACHED DWELLINGS)", "SUB", "1", "JOHN ROE", "X"],
+    ["R105", "RBPC", "9000000", "6", "5", "1", "6", "2307", None, "1", None, "ELM AVE", "SE", None,
+     "MULTI-FAMILY BUILDING (5 OR MORE UNITS)", "SUB", "48", "OWNER LLC", "X"],
+    ["R645", "RXDR", "5000", "7", "1", "9", "7", "0100", None, "3", None, "PINE ST", "SW", None,
+     "DEMOLITION (SINGLE FAMILY DWELLING)", "SUB", "0", "X", "X"],
+    ["R501", "RXSG", "2000", "7", "1", "10", "7", "0101", None, "4", None, "MAIN ST", "SW", None,
+     "SIGN (BUSINESS)", "SUB", "0", "X", "X"],
+]  # fmt: skip
+
+
+@pytest.fixture
+def legacy_grid() -> pd.DataFrame:
+    return pd.DataFrame([LEGACY_HEAD, *LEGACY_ROWS], dtype="object")
+
+
+def test_read_legacy_reads_only_listed_fields(legacy_grid):
+    df = rp.read_legacy(legacy_grid)
+    assert set(df.columns) == set(rp.COLUMNS) | {"units_reported"}
+    assert not df.isin(["JANE DOE", "BUILDER CO", "DOGWOOD CT", "5777", "CRIMSON RIDGE"]).any().any()
+    assert df["permit_id"].tolist() == ["L05-4450", "L06-0538", "L06-2307", "L07-0100", "L07-0101"]
+    assert df["issue_date"].tolist()[:2] == ["2005-09-15", "2006-02-03"]
+    assert df["code"].tolist() == ["101", "102", "105", "645", "501"]  # R100 (attached) read as 102
+
+
+def test_legacy_rows_build(legacy_grid):
+    out = rp.build(rp.read_legacy(legacy_grid)).set_index("permit_id")
+    assert "rst-L07-0101" not in out.index  # sign permit: dropped
+    assert out.loc["rst-L05-4450", "building_type_std"] == "SFD"
+    assert out.loc["rst-L06-0538", "building_type_std"] == "TH"
+    mf = out.loc["rst-L06-2307"]
+    assert (mf["building_type_std"], mf["units_new"], mf["units_confidence"]) == ("MF5", 48, "reported")
+    assert bool(out.loc["rst-L07-0100", "is_demolition"])
+    assert out["parcel_id"].isna().all()
+    assert not (out["building_type_std"] == "ADU").any()
+
+
+def test_xls_sheets_are_read_with_xlrd_and_dispatch_legacy(monkeypatch, tmp_path, legacy_grid):
+    seen = {}
+
+    def fake_read_excel(path, **kw):
+        seen["engine"] = kw["engine"]
+        return legacy_grid
+
+    monkeypatch.setattr(rp.pd, "read_excel", fake_read_excel)
+    folder = tmp_path / "2006.02"
+    folder.mkdir()
+    df = rp.read_sheet(folder / "detail_report.xls")
+    assert seen["engine"] == "xlrd"
+    assert (df["report_month"] == "2006.02").all() and len(df) == 5
+
+
+def test_blank_issue_dates_take_the_report_month(sheets):
+    raw = rp.read_sheet(sheets[0]).assign(report_month="2024.03")
+    raw.loc[raw["permit_id"] == "R24-0003RB", "issue_date"] = pd.NA
+    out = rp.build(raw).set_index("permit_id")
+    row = out.loc["rst-R24-0003RB"]
+    assert row["issue_date"] == pd.Timestamp("2024-03-01") and row["date_precision"] == "month"
+    assert out.loc["rst-R24-0001RB", "date_precision"] == "day"
+
+
+def test_mixed_date_formats_across_sheets(sheets, legacy_grid):
+    # legacy rows ("2005-09-15") stacked with later sheets ("2024-03-05 00:00:00") keep their day dates
+    raw = pd.concat([rp.read_legacy(legacy_grid), rp.read_sheet(sheets[0])], ignore_index=True)
+    out = rp.build(raw)
+    assert (out["date_precision"] == "day").all()

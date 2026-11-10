@@ -93,3 +93,27 @@
 - **Open / next:**
   - `xlrd` (BSD-3) would add 2005–2017-03 for Rochester; ask Ben before adding it.
   - The parcel number is the city's own, so there is no roll match and no Rochester k.
+
+### LB-NNN · 2026-11-10 · Data: Rochester's pre-2017 sheets (xlrd)
+- **Question:** Ben approved adding `xlrd` (BSD-3-Clause), confirmed in this session. With it, can Rochester's
+  139 `.xls` sheets (2005-09 to 2017-03) be read?
+- **What I did:**
+  - Ran `uv add xlrd` (2.0.2). The license scan (`compliance_check.py --deps`) passes. BSD needs no exception
+    entry; `docs/disclosures.md` gained the `lf.rochestermn.gov` service row.
+  - `rochester_permits` now downloads every sheet (252) through `lotline.io.http.fetch` and reads `.xls` with
+    `xlrd`.
+  - Two more header patterns ("WorkDescription", "Occupancy Type").
+  - A `read_legacy` reader for the 2005-09 to 2007-10 extract from the old permit system (field names, read by
+    position; address, subdivision, owner and contractor never read).
+  - The report month stands in where a sheet's issue dates are blank (2014-11, 127 permits).
+  - Fixed a date-parsing bug found on the rebuild: mixed date formats across sheets had coerced most dates to
+    missing. Fixed with `format="mixed"` and a test.
+  - Rebuilt with `lotline fetch` (51,040 rows) and updated report §4.1.
+- **Findings:**
+  - New SFD/TH permits track BPS 1-unit counts from 2006 on (within about 10% in most years).
+  - The `.xls` years add no ADU (10 word hits, all hotels or trade work). Rochester stays at 5 ADU permits, all
+    in 2023–2024.
+- **AI:** Claude Code wrote the reader, tests (18 Rochester: synthetic legacy grid, `.xls` dispatch with a
+  stubbed reader, blank-date fallback, mixed formats) and report changes.
+  - Nothing in the project writes `.xls`, so the `.xls` test stubs `pandas.read_excel`. The real files were
+    checked by reading all 252 and comparing against BPS.

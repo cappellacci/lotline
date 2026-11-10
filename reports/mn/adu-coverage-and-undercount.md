@@ -307,38 +307,57 @@ spreadsheets on 2026-11-10 (no license is stated, as for Greensboro and Portland
 ### 4.1 Rochester (`rochester_permits`)
 
 **Source and adapter.** `src/lotline/adapters/states/mn/rochester_permits.py`, tests in
-`tests/states/mn/test_rochester_permits.py` (13, synthetic sheets), provenance row in `docs/data_provenance.md`,
-source entry in `config/states/mn.yaml`.
+`tests/states/mn/test_rochester_permits.py` (18, synthetic sheets and grids), provenance row in
+`docs/data_provenance.md`, source entry in `config/states/mn.yaml`.
 - The archive's folder-listing service (the JSON POST the web viewer uses) lists 252 monthly "Detail Report
-  Spreadsheet" files, 2005-09 to 2026-10.
-- 113 are `.xlsx`, 2017-04 on, and were downloaded through `lotline.io.http.fetch`: 113 files, 18.9 MB, each in
-  the manifest. The other 139 are `.xls` (Excel 97). No dependency reads them (`xlrd`, BSD-3, would), so
-  2005–2017-03 is left out.
-- Built with `lotline fetch --state MN --source rochester_permits`: 24,813 permit rows.
-- Address, contractor and owner columns are never read. The header labels change from month to month, so each
-  column is matched by pattern, and the personal labels can never match.
-- One parcel number per permit, but it is the city's 6-digit number, not the Olmsted County PIN. So there is no
-  roll match, and **no k is measured here**.
+  Spreadsheet" files, 2005-09 to 2026-10. All 252 were downloaded through `lotline.io.http.fetch` (61.6 MB,
+  each in the manifest).
+- **Formats.** The 139 sheets to 2017-03 are `.xls` (Excel 97), read with `xlrd` (BSD-3-Clause; Ben approved the
+  dependency on 2026-11-10). The 113 later sheets are `.xlsx`.
+  - 2007-11 to 2026-10 share one layout with labels that change from month to month, so each column is matched
+    by pattern, and the personal labels (address, contractor, owner) can never match.
+  - 2005-09 to 2007-10 (26 sheets) are an extract from the city's old permit system (`read_legacy`), read by
+    field position: type code (`R101` …, a Census code), permit class, issue date, units and a type
+    description. There is no parcel and no free-text description, so these months add new homes but no ADU
+    signal. Rochester's first coded ADU rule is the 2023 UDC (`MN-2754880-adu-2023`).
+  - The 2014-11 sheet leaves every issue date blank. Its 127 building permits take the report month
+    (`date_precision = month`).
+- Built with `lotline fetch --state MN --source rochester_permits`: 51,040 permit rows.
+- One parcel number per permit from 2007-11 on, but it is the city's 6-digit number, not the Olmsted County PIN.
+  So there is no roll match, and **no k is measured here**.
 
-**New homes vs Census BPS (sanity check).** New SFD and townhouse permits run close to BPS single-family units:
-2018 371 vs 347, 2020 279 vs 296, 2022 218 vs 234, 2024 195 vs 193. Apartments have no unit count (code 105).
+**New homes vs Census BPS (sanity check).** From 2006 on, new SFD and townhouse permits are within about 10% of
+BPS single-family units in most years. The exceptions are 2007 (383 vs 420) and 2023 (207 vs 241). Apartments' units are reported only in the
+2005–2007 extract (code 105).
 
 **ADU permits per 1,000 eligible lots** (39,177 eligible lots, 2024):
 
-| Issue year | Building permits | New SFD/TH | ADU permits | Per 1,000 lots |
-|---|---:|---:|---:|---:|
-| 2017 (Apr–Dec) | 2,393 | 394 | 0 | 0.00 |
-| 2018 | 2,419 | 371 | 0 | 0.00 |
-| 2019 | 2,448 | 310 | 0 | 0.00 |
-| 2020 | 2,029 | 279 | 0 | 0.00 |
-| 2021 | 2,248 | 257 | 0 | 0.00 |
-| 2022 | 2,045 | 218 | 0 | 0.00 |
-| 2023 | 2,026 | 207 | 3 | 0.08 |
-| 2024 | 2,318 | 195 | 2 | 0.05 |
-| 2025 | 3,735 | 241 | 0 | 0.00 |
-| 2026 (Jan–Oct) | 3,152 | 221 | 0 | 0.00 |
+| Issue year | Building permits | New SFD/TH | BPS 1-unit | ADU permits | Per 1,000 lots |
+|---|---:|---:|---:|---:|---:|
+| 2005 (Sep–Dec) | 1,023 | 237 | 702 | 0 | 0.00 |
+| 2006 | 2,936 | 512 | 507 | 0 | 0.00 |
+| 2007 | 2,633 | 383 | 420 | 0 | 0.00 |
+| 2008 | 2,397 | 284 | 287 | 0 | 0.00 |
+| 2009 | 1,944 | 270 | 265 | 0 | 0.00 |
+| 2010 | 1,983 | 200 | 200 | 0 | 0.00 |
+| 2011 | 1,822 | 204 | 195 | 0 | 0.00 |
+| 2012 | 2,028 | 310 | 299 | 0 | 0.00 |
+| 2013 | 2,107 | 340 | 323 | 0 | 0.00 |
+| 2014 | 2,199 | 365 | 352 | 0 | 0.00 |
+| 2015 | 2,260 | 373 | 359 | 0 | 0.00 |
+| 2016 | 2,339 | 423 | 403 | 0 | 0.00 |
+| 2017 | 2,875 | 473 | 437 | 0 | 0.00 |
+| 2018 | 2,419 | 371 | 347 | 0 | 0.00 |
+| 2019 | 2,447 | 310 | 296 | 0 | 0.00 |
+| 2020 | 2,029 | 279 | 296 | 0 | 0.00 |
+| 2021 | 2,325 | 257 | 251 | 0 | 0.00 |
+| 2022 | 2,044 | 218 | 234 | 0 | 0.00 |
+| 2023 | 2,026 | 207 | 241 | 3 | 0.08 |
+| 2024 | 2,317 | 194 | 193 | 2 | 0.05 |
+| 2025 | 3,735 | 241 | 240 | 0 | 0.00 |
+| 2026 (Jan–Oct) | 3,152 | 221 | — | 0 | 0.00 |
 
-- **Five ADU permits in nine and a half years, all after the 2023 UDC** (`MN-2754880-adu-2023`, effective
+- **Five ADU permits in 21 years of sheets, all after the 2023 UDC** (`MN-2754880-adu-2023`, effective
   2023-01-01). That is 0.04 per 1,000 lots a year for 2023–2025, close to Greensboro (0.03) and far below
   Minneapolis.
 - Two of the five are new houses built with an attached ADU. Rochester files these as **two-family** permits
@@ -349,6 +368,9 @@ source entry in `config/states/mn.yaml`.
 
 **Hand check of the ADU rule.** Rochester's descriptions name an ADU too rarely for a draw of 30 matches, so
 every match was read. Descriptions were read in memory from the registered files; none is stored in the repo.
+- **The `.xls` years (2007-11 to 2017-03) add no ADU.** The same broad pattern finds 10 hits there, all non-ADUs:
+  hotels ("Guest House Inn & Suites", "Millies Guest House") and trade work on a carriage house. The hand check
+  below was done on the 2017-04 on sheets, before the `.xls` sheets were added.
 - **Every text hit (13).** The pattern was broad: ADU, accessory dwelling, in-law, carriage house, guest house,
   across all permit types.
   - **Flagged and correct, 5 of 5:** an attached-ADU addition, a one-bedroom ADU with a garage, an ADU in a

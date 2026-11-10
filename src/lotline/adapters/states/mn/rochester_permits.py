@@ -1,4 +1,4 @@
-"""City of Rochester (MN) monthly building permit detail reports → canonical `permits` (2017 on).
+"""City of Rochester (MN) monthly building permit detail reports → canonical `permits` (2005-09 on).
 
 Rochester's Building Safety department posts a **Monthly Detail Report Spreadsheet** for every month in the
 city's public Laserfiche archive ("Building Permit Reports", linked from rochestermn.gov's building permit
@@ -9,11 +9,13 @@ residential alteration ...), principal building use, occupancy, valuation, a fre
 the contractor and owner (name and mailing address).
 
 **Fetch.** The archive's folder listing (`FolderListingService.aspx/GetFolderListing2`, a JSON POST the web
-viewer itself uses) gives each year folder's entries; every `.xlsx` "Detail Report Spreadsheet" is then
-downloaded through `lotline.io.http.fetch` (`ElectronicFile.aspx?docid=...`), one file per month, so each
-lands in the manifest with its sha256. robots.txt on `lf.rochestermn.gov` does not exist (404) and the
-www host's disallows only CMS paths. Sheets before mid-2017 are `.xls` (Excel 97), which no dependency of this
-project reads, so they are listed and skipped (2005-09 to 2017).
+viewer itself uses) gives each year folder's entries; every "Detail Report Spreadsheet" is then downloaded
+through `lotline.io.http.fetch` (`ElectronicFile.aspx?docid=...`), one file per month, so each lands in the
+manifest with its sha256. robots.txt on `lf.rochestermn.gov` does not exist (404) and the www host's
+disallows only CMS paths. Sheets to 2017-03 are `.xls` (Excel 97, read with `xlrd`, BSD-3-Clause; Ben approved
+the dependency on 2026-11-10), later ones `.xlsx`. 2005-09 to 2007-10 are an extract from the city's old
+permit system with its own field names (`read_legacy`): type code, permit class, issue date, units and a type
+description, but no parcel and no free-text description, so they add new homes and no ADU signal.
 
 **Privacy.** The contractor, owner and address columns are never read (`COLUMNS` lists exactly what is read;
 `PERSONAL` is checked against it). The work description can name people or businesses, so it is read only by
@@ -63,6 +65,7 @@ LISTING_URL = f"{WEBLINK}/FolderListingService.aspx/GetFolderListing2"
 LANDING_URL = f"{WEBLINK}/Browse.aspx?id=3001428&dbid=0&repo={REPO}"
 ROOT_FOLDER = 3001428  # "Building Permit Reports": the year folders and "*Archive"
 ROCHESTER = "2754880"
+MONTH = re.compile(r"\d{4}\.\d{2}")  # a sheet's folder: raw/rochester_permits/YYYY.MM/
 SHEET = re.compile(r"^(\d{4})\.(\d{2}) Detail Report Spreadsheet$")
 
 # Header label (lower case, whitespace collapsed) → canonical name. The labels change from month to month
@@ -79,20 +82,20 @@ COLUMNS = {
     "parcel": r"^parcel(?: #| all)?$",
     "code": r"^(?:const|constr?uction|contruction) ?type ?(?:code)?$|^consttypecode$",
     "use": r"^prin\w*[ _]b\w*[ _]use$",
-    "occupancy": r"^occupancy(?: desc)?$",
+    "occupancy": r"^occupancy(?: desc| type)?$",
     "valuation": r"^(?:valuation|ep val con)$",
-    "description": r"^work description$",  # ADU rule input only, never kept
+    "description": r"^work ?description$",  # ADU rule input only, never kept
 }
 PERSONAL = re.compile(r"address|contractor|owner|lic prof|^construction$|street", re.I)
 
 PROVENANCE = {
-    "title": "City of Rochester (MN) monthly building permit detail reports (2017 on)",
+    "title": "City of Rochester (MN) monthly building permit detail reports (2005 on)",
     "landing_url": LANDING_URL,
     "table": TABLE,
     "attribution": "City of Rochester, Minnesota, Building Safety (public Laserfiche archive)",
     "cleaning": [
-        "Each month's .xlsx 'Detail Report Spreadsheet' is found through the archive's folder listing and "
-        "downloaded one file per month; .xls sheets (before mid-2017) are skipped (no reader dependency)",
+        "Each month's 'Detail Report Spreadsheet' (.xls to 2017-03 read with xlrd, .xlsx after) is found "
+        "through the archive's folder listing and downloaded one file per month",
         "Only the permit type, category, alteration and addition descriptions, permit ID, date of issue, "
         "parcel, construction type code, principal building use, occupancy, valuation and work description "
         "are read; address, contractor and owner columns never are; the work description is read only by "
@@ -109,9 +112,16 @@ PROVENANCE = {
         "house permit that names an ADU becomes a house row (SFD, 1 unit) and an ADU row "
         "(permit_id + '-ADU')",
         "parcel_id = 'rst-' + the city's 6-digit parcel number; jurisdiction_geoid = Rochester (2754880)",
+        "2005-09 to 2007-10 sheets are the old permit system's extract: type code (R + Census code; R100 "
+        "attached single-family read as 102), permit class (building, demolition and manufactured-home "
+        "classes kept), issue date, permit year and number (permit_id 'L' + year + '-' + number) and "
+        "units (reported, where they fit the code); no parcel and no description, so no ADU can be read",
+        "Where a sheet's issue dates are blank (2014-11), the report month is the issue date, "
+        "date_precision=month",
     ],
     "limitations": [
-        "Starts mid-2017: earlier months are .xls files this project cannot read without a new dependency",
+        "Starts 2005-09; 2005-09 to 2007-10 come from the old permit system's extract, with no parcel and no "
+        "work description (no ADU signal)",
         "No unit count: units come from the construction type code; 3-4 and 5+ unit buildings have no count",
         "The parcel number is the city's own, not the Olmsted County PIN, so permits are not joined to rolls",
         "ADUs only where the work description names one; no ADU field",
@@ -131,6 +141,16 @@ ZERO_UNIT_CODES = {"434", "437", "438", "990", "997", "998", "999"}
 BUILDING_PTYPES = re.compile(r"Bldg|Combo|^Demolition$|^Manufactured Home$|^Building Permit$")
 RESIDENTIAL_PTYPES = re.compile(r"^(?:Residential (?:Bldg|Combo)|Building Permit)$")
 NEW_HOUSE_CODES = {"101", "103"}
+# Legacy extract (2005-09 to 2007-10): field position → name. Positions 9-13, 15, 17 and 18 (street number,
+# qualifier, name, direction, apartment, subdivision, owner, contractor) are never read.
+LEGACY_FIELDS = {0: "type", 1: "class", 2: "valuation", 3: "yy", 4: "mm", 5: "dd", 6: "permit_year",
+                 7: "number", 14: "type_desc", 16: "units"}  # fmt: skip
+# Permit classes kept (building, demolition, manufactured home); signs (RXSG), grading (RXGP) and RXSW
+# (sidewalk and site work) are dropped like the later sheets' trade and grading permits.
+LEGACY_CLASSES = {"RBPR": "Residential Bldg", "RBPC": "Commercial Bldg", "RXDR": "Demolition",
+                  "RXDC": "Demolition", "RXMH": "Manufactured Home"}  # fmt: skip
+LEGACY_NEW = {"100", "101", "102", "103", "104", "105"}
+LEGACY_CODE_ALIASES = {"100": "102"}  # "SINGLE FAMILY DWELLING (ATTACHED DWELLINGS)": a townhouse
 
 
 def _norm(label: object) -> str:
@@ -173,13 +193,13 @@ def file_url(docid: int) -> str:
 
 
 def download(store: DataStore, *, refresh: bool = False) -> list[Path]:
-    """Download every .xlsx monthly sheet (cached); returns their paths."""
+    """Download every monthly sheet, .xlsx and .xls (cached); returns their paths."""
     paths = []
     with client() as http:
         for e in sheet_entries(http):
-            if e["extension"] != "xlsx":
+            if e["extension"] not in ("xlsx", "xls"):
                 continue
-            dest = store.raw(SOURCE, e["month"]) / "detail_report.xlsx"
+            dest = store.raw(SOURCE, e["month"]) / f"detail_report.{e['extension']}"
             paths.append(
                 fetch(
                     file_url(e["docid"]),
@@ -210,9 +230,56 @@ def header_map(labels: list[object]) -> dict[int, str]:
     return out
 
 
+def read_legacy(grid: pd.DataFrame) -> pd.DataFrame:
+    """A 2005-09 to 2007-10 sheet (the old permit system's extract) → the `COLUMNS`, plus `units_reported`.
+
+    The extract is one row per permit with system field names (`BPWTYP` type code, `BPWTCD` permit class,
+    `BPWATD` type description, `BPWIYY/MM/DD` issue date, `BPWYER`/`BPWCNB` permit year and number,
+    `BPWUNT` units); the first month labels some of them in words. Only those fields are read, by position;
+    the street address, subdivision, owner and contractor fields never are. There is no parcel number and no
+    free-text description (the type description stands in for it, so no ADU can be read)."""
+    head = [_norm(v).upper() for v in grid.iloc[0]]
+    if (
+        len(head) < len(LEGACY_FIELDS)
+        or head[0] not in ("BPWTYP", "TYPE")
+        or head[7] not in ("BPWCNB", "PERMIT #")
+    ):
+        raise ValueError("not a legacy sheet")
+    body = grid.iloc[1:, list(LEGACY_FIELDS)].set_axis(list(LEGACY_FIELDS.values()), axis=1)
+    body = body.dropna(subset=["number"])
+    code = body["type"].astype("string").str.extract(r"^R(\d{3})$", expand=False)
+    yy = pd.to_numeric(body["yy"], errors="coerce") + 2000
+    date = pd.to_datetime(
+        {"year": yy, "month": pd.to_numeric(body["mm"], errors="coerce"),
+         "day": pd.to_numeric(body["dd"], errors="coerce")}, errors="coerce")  # fmt: skip
+    pyr = pd.to_numeric(body["permit_year"], errors="coerce").astype("Int64").astype("string").str.zfill(2)
+    out = pd.DataFrame(
+        {
+            "ptype": body["class"].map(LEGACY_CLASSES),
+            "category": code.map(lambda c: "New" if c in LEGACY_NEW else "Alteration"),
+            "alteration": pd.NA,
+            "addition": pd.NA,
+            "permit_id": "L" + pyr + "-" + body["number"].astype("string").str.strip(),
+            "issue_date": date.dt.strftime("%Y-%m-%d"),
+            "parcel": pd.NA,
+            "code": code.replace(LEGACY_CODE_ALIASES),
+            "use": pd.NA,
+            "occupancy": pd.NA,
+            "valuation": body["valuation"],
+            "description": body["type_desc"],
+            "units_reported": body["units"],
+        }
+    )
+    return out.reset_index(drop=True)
+
+
 def read_sheet(path: Path) -> pd.DataFrame:
     """One monthly sheet → the `COLUMNS` (canonical names), as text; personal columns never kept."""
-    grid = pd.read_excel(path, header=None, dtype=str, engine="openpyxl")
+    engine = "xlrd" if Path(path).suffix.lower() == ".xls" else "openpyxl"
+    grid = pd.read_excel(path, header=None, dtype=str, engine=engine)
+    month = Path(path).parent.name if MONTH.fullmatch(Path(path).parent.name) else pd.NA
+    if engine == "xlrd" and _norm(grid.iloc[0, 0]).upper() in ("BPWTYP", "TYPE"):
+        return read_legacy(grid).assign(report_month=month)
     for row in range(min(len(grid), 40)):
         labels = [_norm(v).lower() for v in grid.iloc[row]]
         if any(v.startswith("parcel") for v in labels) and any("owner" in v for v in labels):
@@ -226,7 +293,7 @@ def read_sheet(path: Path) -> pd.DataFrame:
     body = grid.iloc[row + 1 :, list(keep)].rename(columns=keep)
     for col in missing:
         body[col] = pd.NA
-    return body.dropna(subset=["permit_id"]).reset_index(drop=True)
+    return body.dropna(subset=["permit_id"]).assign(report_month=month).reset_index(drop=True)
 
 
 def adu_named(text: str) -> str | None:
@@ -270,6 +337,10 @@ def classify(row: pd.Series) -> list[dict]:
         ]
     if code in CODE_TYPES and cat == "New":
         btype, n = CODE_TYPES[code]
+        reported = pd.to_numeric(row.get("units_reported"), errors="coerce")
+        if pd.notna(reported) and reported > 0 and (n is None or reported == n):
+            return [dict(base, building_type_std=btype, type_confidence="high", units_new=int(reported),
+                         units_removed=0, units_confidence="reported")]  # fmt: skip
         return [dict(base, building_type_std=btype, type_confidence="high", units_new=n, units_removed=0,
                      units_confidence="derived" if n is not None else "unknown")]  # fmt: skip
     if code in ZERO_UNIT_CODES or cat in (
@@ -295,12 +366,19 @@ def _text(s: pd.Series) -> pd.Series:
 def build(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
     """Sheet rows (`read_sheet` columns, all months stacked) → validated `permits`."""
     df = raw.copy()
-    for col in COLUMNS:
+    for col in [*COLUMNS, "units_reported"]:
         df[col] = _text(df[col]) if col in df else pd.Series(pd.NA, index=df.index, dtype="string")
     occ_code = df["occupancy"].str.fullmatch(r"\d{3}").fillna(False)
     df["code"] = df["code"].where(df["code"].notna(), df["occupancy"].where(occ_code))
     df["code"] = df["code"].str.extract(r"^(\d{3})", expand=False)
-    df["issue_date"] = pd.to_datetime(df["issue_date"], errors="coerce").dt.normalize()
+    df["issue_date"] = pd.to_datetime(df["issue_date"], errors="coerce", format="mixed").dt.normalize()
+    # A sheet lists the permits issued in its month; where a sheet leaves the date blank (2014-11), the
+    # report month stands in, at month precision.
+    month = df["report_month"] if "report_month" in df else pd.Series(pd.NA, index=df.index)
+    month = pd.to_datetime(month.astype("string").str.replace(".", "-") + "-01", errors="coerce")
+    df["precision"] = "day"
+    df.loc[df["issue_date"].isna() & month.notna(), "precision"] = "month"
+    df["issue_date"] = df["issue_date"].fillna(month)
     df = df[df["issue_date"].notna() & df["ptype"].str.contains(BUILDING_PTYPES).fillna(False)]
     df = df.drop_duplicates("permit_id", keep="first")
     df[["ptype", "category", "description", "code"]] = df[
@@ -321,7 +399,7 @@ def build(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
             "jurisdiction_geoid": ROCHESTER,
             "issue_year": src["issue_date"].dt.year.astype("Int64"),
             "issue_date": src["issue_date"],
-            "date_precision": "day",
+            "date_precision": src["precision"],
             "building_type_std": facts["building_type_std"].astype("string"),
             "type_confidence": facts["type_confidence"].astype("string"),
             "adu_type": facts["adu_type"].astype("string"),
