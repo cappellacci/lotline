@@ -25,19 +25,13 @@ adu_owner_occupancy_share:
   source: "Estimated, D-019 fit 3 (pre-registered): profile maximum 1.0, 90% profile interval 0.9-1.0 (grid 0.1-1.0), narrower than the judgment range 0.2-1.0, so estimated. Minneapolis built more ADUs under its owner-occupancy rule (2016-20) than after dropping it. Judgment before the fit: 0.5"
   notes: "Owner-occupancy rules show no measurable effect on permitted ADUs in these places (most ADUs are built by owner-occupants: Portland 62% cash, C22, E045)."
 
-adu_observed_first_year:
-  value: 2019
-  low: 2019
-  high: 2019
-  unit: calendar year
-  source: "Choice (D-019): observed ADU permits from 2019, after the main Twin Cities and Austin ADU rules took effect"
-
-adu_observed_last_year:
-  value: 2022
-  low: 2022
-  high: 2022
-  unit: calendar year
-  source: "Choice (D-019): observed ADU permits to 2022, before the 2023 rate shock and outside every holdout window (St. Paul, Charlotte)"
+adu_observed_years:
+  value: 4
+  low: 4
+  high: 4
+  unit: years (ending at the data origin)
+  source: "WS-NC-GUTCHECK (2026-11-09; analysis plan deviation of that date): the observed ADU floor is the mean of the 4 years ending at the data origin, replacing the fixed 2019-2022 window of D-019. NC's ADU-flagging places (holdouts left out) permitted 25, 24, 61, 100 ADUs in 2019-22 and 146, 109, 123 in 2023-25, so the fixed window put the no-reform forecast at 78 a year against 126 observed (reports/diagnostics/nc/README.md). For origin 2022 the window is 2019-2022, D-019's own."
+  notes: "Four years, D-019's length. A held-out place's window ends the year before its holdout starts (Charlotte and Mecklenburg County 37119: 2019-2022; St. Paul: 2020-2023), so no held-out outcome is read and a partly held-out year never reads as a low count. D-019 stopped at 2022 to stay before the 2023 rate shock; a forward run forecasts the post-shock market, so the post-shock years are the relevant floor."
 
 adu_simulation_draws:
   value: 1000
