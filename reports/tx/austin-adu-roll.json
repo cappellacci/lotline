@@ -1,0 +1,477 @@
+{
+ "austin_tcad_parcels": 239626,
+ "parcels_with_improvements": 225873,
+ "universe": 157588,
+ "groups_2019_2023": {
+  "none": 156666,
+  "alq": 591,
+  "house": 327,
+  "multi": 3,
+  "moho": 1
+ },
+ "roll_by_year": {
+  "2015": {
+   "none": 157383,
+   "alq": 133,
+   "house": 72
+  },
+  "2016": {
+   "none": 157400,
+   "alq": 122,
+   "house": 66
+  },
+  "2017": {
+   "none": 157384,
+   "alq": 121,
+   "house": 83
+  },
+  "2018": {
+   "none": 157369,
+   "alq": 140,
+   "house": 78,
+   "multi": 1
+  },
+  "2019": {
+   "none": 157407,
+   "alq": 113,
+   "house": 68
+  },
+  "2020": {
+   "none": 157438,
+   "alq": 117,
+   "house": 32,
+   "moho": 1
+  },
+  "2021": {
+   "none": 157421,
+   "alq": 96,
+   "house": 71
+  },
+  "2022": {
+   "none": 157363,
+   "alq": 141,
+   "house": 84
+  },
+  "2023": {
+   "none": 157385,
+   "alq": 126,
+   "house": 74,
+   "multi": 3
+  },
+  "2024": {
+   "none": 157455,
+   "alq": 84,
+   "house": 47,
+   "multi": 2
+  },
+  "2025": {
+   "none": 157331,
+   "house": 134,
+   "alq": 116,
+   "multi": 7
+  }
+ },
+ "match_main": {
+  "universe": 157588,
+  "R": 918,
+  "P": 305,
+  "P_outside_universe": 1300,
+  "both": 242,
+  "a": 31,
+  "a_as_written": 31,
+  "b": 645,
+  "P_not_R": 63,
+  "k": [
+   1.128099173553719,
+   1.0937182496882518,
+   1.1750928801992218
+  ],
+  "k_as_written": [
+   1.128099173553719,
+   1.0937182496882518,
+   1.1750928801992218
+  ],
+  "chapman": [
+   1156.2592592592594,
+   1099.7503432810504,
+   1212.7681752374683
+  ],
+  "flag_share_of_R": [
+   0.2636165577342048,
+   0.23614218519949604,
+   0.2930610965790654
+  ]
+ },
+ "match_main_strict": {
+  "universe": 157588,
+  "R": 591,
+  "P": 305,
+  "P_outside_universe": 1300,
+  "both": 82,
+  "a": 6,
+  "a_as_written": 6,
+  "b": 503,
+  "P_not_R": 223,
+  "k": [
+   1.0731707317073171,
+   1.0369826256175183,
+   1.1447694934901558
+  ]
+ },
+ "match_d074_window": {
+  "universe": 157588,
+  "R": 918,
+  "P": 265,
+  "P_outside_universe": 1177,
+  "both": 237,
+  "a": 29,
+  "a_as_written": 29,
+  "b": 652,
+  "P_not_R": 28,
+  "k": [
+   1.1223628691983123,
+   1.088658111393347,
+   1.1688810140790669
+  ],
+  "k_as_written": [
+   1.1223628691983123,
+   1.088658111393347,
+   1.1688810140790669
+  ],
+  "chapman": [
+   1026.1176470588234,
+   989.7486512811298,
+   1062.486642836517
+  ],
+  "flag_share_of_R": [
+   0.2581699346405229,
+   0.2309088020333321,
+   0.2874466290949659
+  ]
+ },
+ "match_d074_window_strict": {
+  "universe": 157588,
+  "R": 591,
+  "P": 265,
+  "P_outside_universe": 1177,
+  "both": 82,
+  "a": 5,
+  "a_as_written": 5,
+  "b": 504,
+  "P_not_R": 183,
+  "k": [
+   1.0609756097560976,
+   1.0290728108729368,
+   1.1278866705176047
+  ]
+ },
+ "b_check": {
+  "b": 645,
+  "b_with_addition_permit": 262,
+  "b_with_adu_named_addition": 19,
+  "b_by_group": {
+   "alq": 503,
+   "house": 142
+  },
+  "universe_share_with_addition_permit": 0.10227936137269335,
+  "addition_permits_in_window": 22806,
+  "adu_named_addition_permits": 65
+ },
+ "k_with_adu_additions": [
+  1.2066115702479339,
+  1.1601326990356151,
+  1.266581036961243
+ ],
+ "a_permit_classes": {
+  "R- 101 Single Family Houses|New": 31
+ },
+ "a_reform_flag": {
+  "NaN": 31
+ },
+ "permits_by_year": {
+  "2015": {
+   "r102_flagged": 151,
+   "home_rule_permits": 75,
+   "home_rule_homes": 75.0,
+   "home_rule_by_class": {
+    "102": 45,
+    "101": 30
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 2771,
+   "r102_id_on_roll": 74,
+   "r102_pass_rule": 45
+  },
+  "2016": {
+   "r102_flagged": 234,
+   "home_rule_permits": 165,
+   "home_rule_homes": 169.0,
+   "home_rule_by_class": {
+    "101": 96,
+    "102": 65,
+    "103": 4
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 3667,
+   "r102_id_on_roll": 92,
+   "r102_pass_rule": 65
+  },
+  "2017": {
+   "r102_flagged": 357,
+   "home_rule_permits": 92,
+   "home_rule_homes": 93.0,
+   "home_rule_by_class": {
+    "102": 76,
+    "101": 15,
+    "103": 1
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 3871,
+   "r102_id_on_roll": 121,
+   "r102_pass_rule": 76
+  },
+  "2018": {
+   "r102_flagged": 340,
+   "home_rule_permits": 84,
+   "home_rule_homes": 85.0,
+   "home_rule_by_class": {
+    "102": 67,
+    "101": 16,
+    "103": 1
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 3780,
+   "r102_id_on_roll": 115,
+   "r102_pass_rule": 67
+  },
+  "2019": {
+   "r102_flagged": 375,
+   "home_rule_permits": 92,
+   "home_rule_homes": 92.0,
+   "home_rule_by_class": {
+    "102": 50,
+    "101": 42
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 4011,
+   "r102_id_on_roll": 93,
+   "r102_pass_rule": 50
+  },
+  "2020": {
+   "r102_flagged": 330,
+   "home_rule_permits": 97,
+   "home_rule_homes": 97.0,
+   "home_rule_by_class": {
+    "101": 53,
+    "102": 44
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 3681,
+   "r102_id_on_roll": 85,
+   "r102_pass_rule": 44
+  },
+  "2021": {
+   "r102_flagged": 341,
+   "home_rule_permits": 113,
+   "home_rule_homes": 113.0,
+   "home_rule_by_class": {
+    "102": 69,
+    "101": 44
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 3793,
+   "r102_id_on_roll": 123,
+   "r102_pass_rule": 69
+  },
+  "2022": {
+   "r102_flagged": 325,
+   "home_rule_permits": 108,
+   "home_rule_homes": 109.0,
+   "home_rule_by_class": {
+    "102": 68,
+    "101": 39,
+    "103": 1
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 2934,
+   "r102_id_on_roll": 134,
+   "r102_pass_rule": 68
+  },
+  "2023": {
+   "r102_flagged": 243,
+   "home_rule_permits": 122,
+   "home_rule_homes": 123.0,
+   "home_rule_by_class": {
+    "101": 61,
+    "102": 60,
+    "103": 1
+   },
+   "home_rule_post_home_permits": 0,
+   "home_phrase_permits": 0,
+   "home_phrase_and_rule": 0,
+   "new_101_103": 1637,
+   "r102_id_on_roll": 121,
+   "r102_pass_rule": 60
+  },
+  "2024": {
+   "r102_flagged": 90,
+   "home_rule_permits": 106,
+   "home_rule_homes": 112.0,
+   "home_rule_by_class": {
+    "101": 63,
+    "102": 37,
+    "103": 6
+   },
+   "home_rule_post_home_permits": 90,
+   "home_phrase_permits": 37,
+   "home_phrase_and_rule": 2,
+   "new_101_103": 1882,
+   "r102_id_on_roll": 58,
+   "r102_pass_rule": 37
+  },
+  "2025": {
+   "r102_flagged": 9,
+   "home_rule_permits": 151,
+   "home_rule_homes": 155.0,
+   "home_rule_by_class": {
+    "101": 132,
+    "103": 13,
+    "102": 6
+   },
+   "home_rule_post_home_permits": 151,
+   "home_phrase_permits": 149,
+   "home_phrase_and_rule": 11,
+   "new_101_103": 2337,
+   "r102_id_on_roll": 8,
+   "r102_pass_rule": 6
+  }
+ },
+ "home_rule_estimate": {
+  "2015": {
+   "recall": [
+    0.2980132450331126,
+    0.23080698365624436,
+    0.3752420367620411
+   ],
+   "adu_estimate": 251.66666666666666,
+   "adu_estimate_lo": 199.87099698950064,
+   "adu_estimate_hi": 324.94684004753645
+  },
+  "2016": {
+   "recall": [
+    0.2777777777777778,
+    0.22432992452528508,
+    0.3384042649520813
+   ],
+   "adu_estimate": 594.0,
+   "adu_estimate_lo": 487.5825073403384,
+   "adu_estimate_hi": 735.5238065058156
+  },
+  "2017": {
+   "recall": [
+    0.21288515406162464,
+    0.17359472547532645,
+    0.2582889597760415
+   ],
+   "adu_estimate": 432.15789473684214,
+   "adu_estimate_lo": 356.19021455571243,
+   "adu_estimate_hi": 529.9700192393013
+  },
+  "2018": {
+   "recall": [
+    0.19705882352941176,
+    0.1582622246350808,
+    0.24262469538855794
+   ],
+   "adu_estimate": 426.2686567164179,
+   "adu_estimate_lo": 346.21372678274116,
+   "adu_estimate_hi": 530.764686226838
+  },
+  "2019": {
+   "recall": [
+    0.13333333333333333,
+    0.10261889581314194,
+    0.1714840538101307
+   ],
+   "adu_estimate": 690.0,
+   "adu_estimate_lo": 536.493032185159,
+   "adu_estimate_hi": 896.5210478148408
+  },
+  "2020": {
+   "recall": [
+    0.13333333333333333,
+    0.10084394392998683,
+    0.17426137547897833
+   ],
+   "adu_estimate": 727.5,
+   "adu_estimate_lo": 556.6351105251169,
+   "adu_estimate_hi": 961.8822531112471
+  },
+  "2021": {
+   "recall": [
+    0.20234604105571846,
+    0.16312909013358462,
+    0.24819483366215228
+   ],
+   "adu_estimate": 558.4492753623189,
+   "adu_estimate_lo": 455.28747852107927,
+   "adu_estimate_hi": 692.7029379460496
+  },
+  "2022": {
+   "recall": [
+    0.20923076923076922,
+    0.16853225029058966,
+    0.25672294856502953
+   ],
+   "adu_estimate": 516.1764705882354,
+   "adu_estimate_lo": 420.6869724879423,
+   "adu_estimate_hi": 640.8269029445838
+  },
+  "2023": {
+   "recall": [
+    0.24691358024691357,
+    0.19691338005351028,
+    0.3047913569114096
+   ],
+   "adu_estimate": 494.1,
+   "adu_estimate_lo": 400.2738175920796,
+   "adu_estimate_hi": 619.5617584079207
+  },
+  "2024": {
+   "recall": [
+    0.43434343434343436,
+    0.340964792974754,
+    0.5326272164844532
+   ],
+   "adu_estimate": 244.04651162790697,
+   "adu_estimate_lo": 199.01348770654496,
+   "adu_estimate_hi": 310.88253738810073
+  },
+  "2025": {
+   "recall": [
+    0.43434343434343436,
+    0.340964792974754,
+    0.5326272164844532
+   ],
+   "adu_estimate": 347.65116279069764,
+   "adu_estimate_lo": 283.50034569517254,
+   "adu_estimate_hi": 442.86097307172844
+  }
+ }
+}
