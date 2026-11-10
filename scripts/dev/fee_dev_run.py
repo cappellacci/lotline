@@ -34,7 +34,8 @@ def baseline_units(state: str, store, origin: int, geoids) -> pd.DataFrame:
     class (`baseline_y<h>_<class>`) and their sum (`baseline_y<h>`)."""
     p = load_params("baseline")
     panel = panels.load(state, store, theme="adu", rule_version=eligible.RULE_VERSION)
-    panel = panel[panel["geoid"].isin(geoids)]
+    if geoids is not None:
+        panel = panel[panel["geoid"].isin(geoids)]
     reported = bool(p["use_reported_only"].value)
     horizons = range(1, int(p["forecast_horizon_years"].value) + 1)
     parts = []
@@ -89,16 +90,44 @@ def places_for(state: str, store, origin: int) -> pd.DataFrame | None:
     return places
 
 
+def statewide_places(state: str, store, origin: int) -> pd.DataFrame:
+    """Every place the baseline forecasts in the state (the BPS units `results.baseline_table` sums), with
+    fees per type (coded, or the D-065 fill: the state's or the pooled median), ACS home value (places without
+    one take the state's median, flagged `home_value_filled`) and parcel inputs where the state has a roll.
+    Holdout places are included as inputs: the panel's outcomes are holdout-filtered, and no outcome after the
+    origin is read (D-076)."""
+    cpi = money.index_by_year(store.read(state, "market_geo_year"), "cpi_u")
+    base = baseline_units(state, store, origin, None)
+    juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "state"]]
+    places = base.merge(juris, on="geoid", how="left")
+    places["state"] = state.upper()
+    local = type_fees(places[["geoid", "state"]], all_coded_fees(), cpi).drop(columns="state")
+    places = places.merge(local, on="geoid", how="left")
+    places["acs_geo"] = places["kind"].map(adu.ACS_PREFIX) + ":" + places["geoid"]
+    acs = adu.acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
+    places = places.merge(acs[["home_value", "rent"]], left_on="acs_geo", right_index=True, how="left")
+    places["home_value_filled"] = places["home_value"].isna()
+    places["home_value"] = places["home_value"].fillna(places["home_value"].median())
+    parcels = store.read(state, "parcels")
+    if parcels is not None:
+        parcels = parcels[parcels["jurisdiction_geoid"].isin(places["geoid"])]
+        places = places.merge(
+            fees.parcel_inputs(parcels, origin, fees.central_params()), on="geoid", how="left"
+        )
+    return places
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--origin", type=int, default=2025)
     ap.add_argument("--state", nargs="+", default=["MN", "NC", "TX"])
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--statewide", action="store_true", help="every place the baseline forecasts (D-076)")
     a = ap.parse_args()
     store = DataStore()
     frames = []
     for state in a.state:
-        places = places_for(state, store, a.origin)
+        places = (statewide_places if a.statewide else places_for)(state, store, a.origin)
         if places is None or places.empty:
             continue
         ok = places["home_value"].notna() & places.filter(like="baseline_y").notna().all(axis=1)
@@ -123,6 +152,15 @@ def main() -> None:
                 f"P10 {five.p10:,.0f} / P50 {five.p50:,.0f} / P90 {five.p90:,.0f} (mean {five['mean']:,.0f})"
                 + (f"; by size ({by}; 5+ unchanged)" if by else "")
             )
+            if a.statewide:
+                if mode == fees.MODES[0]:
+                    src = places["fee_source"].str.split(" ").str[0].value_counts().to_dict()
+                    print(
+                        f"{state}: {len(places)} places; fee source {src}; home value filled "
+                        f"{int(places['home_value_filled'].sum())}; baseline "
+                        f"{places.filter(regex=r'^baseline_y\\d$').sum().sum():,.0f} homes in 5 yrs"
+                    )
+                continue
             for _, r in totals.iterrows():
                 print(
                     f"- {r['name']}: fee ${r['fee_per_unit']:,.0f} ({r['fee_source']}; {r['fee_components']}), "

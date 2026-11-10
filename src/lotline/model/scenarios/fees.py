@@ -91,13 +91,31 @@ def central_params() -> dict[str, float]:
     return {k: s.value for k, s in specs().items()}
 
 
+# Drawn lognormal with median = value and 95th percentile = high (D-076): the elasticity's range (0 to 1.75,
+# central 0.3) is so lopsided that a triangular draw has median 0.62 and mean 0.68, twice the central value.
+LOGNORMAL = frozenset({"fee_permit_elasticity"})
+Z_95 = 1.644854
+
+
+def lognormal_draw(median: float, p95: float, n: int, rng: np.random.Generator) -> np.ndarray:
+    """Lognormal with the given median and 95th percentile. By hand, median 0.3 and p95 1.75: log-SD =
+    (ln 1.75 − ln 0.3) / 1.6449 = 1.7636 / 1.6449 = 1.0722, so the 5th percentile is 0.3 / 5.833 = 0.0514."""
+    sd = (np.log(p95) - np.log(median)) / Z_95
+    return median * np.exp(sd * rng.standard_normal(n))
+
+
 def draw_params(n: int, seed: int) -> list[dict[str, float]]:
-    """n parameter sets: each uncertain parameter triangular(low, central, high); fixed ones held."""
+    """n parameter sets: each uncertain parameter triangular(low, central, high), except `LOGNORMAL` ones
+    (median central, 95th percentile high); fixed ones held."""
     rng = np.random.default_rng(seed)
-    cols = {
-        k: np.full(n, s.value) if k in FIXED or s.low == s.high else rng.triangular(s.low, s.value, s.high, n)
-        for k, s in specs().items()
-    }
+    cols = {}
+    for k, s in specs().items():
+        if k in FIXED or s.low == s.high:
+            cols[k] = np.full(n, s.value)
+        elif k in LOGNORMAL:
+            cols[k] = lognormal_draw(s.value, s.high, n, rng)
+        else:
+            cols[k] = rng.triangular(s.low, s.value, s.high, n)
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
 
 

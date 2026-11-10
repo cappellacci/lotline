@@ -308,3 +308,15 @@ def test_run_by_size_reports_each_class_and_adds_up():
     parts = sum(r[f"units_added_mean_{c}"] for c in ("1", "2", "3_4"))
     assert parts == pytest.approx(r["units_added_mean"])
     assert "units_added_mean_5p" not in totals
+
+
+def test_elasticity_draw_is_centred_on_its_central_value():
+    # D-076: lognormal with median 0.3 and 95th percentile 1.75; a triangular draw had median ~0.62.
+    rng = np.random.default_rng(7)
+    d = fees.lognormal_draw(0.3, 1.75, 200_000, rng)
+    assert np.median(d) == pytest.approx(0.3, rel=0.02)
+    assert np.percentile(d, 95) == pytest.approx(1.75, rel=0.03)
+    assert np.percentile(d, 5) == pytest.approx(0.3 / (1.75 / 0.3), rel=0.03)  # 0.0514
+    e = np.array([s["fee_permit_elasticity"] for s in fees.draw_params(4000, 1)])
+    assert np.median(e) == pytest.approx(P["fee_permit_elasticity"], rel=0.1) and (e > 0).all()
+
