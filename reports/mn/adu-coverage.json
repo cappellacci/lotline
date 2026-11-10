@@ -1,0 +1,406 @@
+{
+  "year": 2024,
+  "rule_version": "1.1",
+  "units": 1051,
+  "eligible_lots_non_overlapping": 1688996.0,
+  "eligible_lots_raw_sum": 1699352.0,
+  "covered_lots": 799300.0,
+  "covered_share": 0.47323972348069504,
+  "covered_units": 184,
+  "lots_in_places_with_an_adu_permit": 345983.0,
+  "share_in_places_with_an_adu_permit": 0.2048453637545619,
+  "places_with_an_adu_permit": 53,
+  "by_kind": {
+    "county_unincorporated": {
+      "False": 297234.0,
+      "True": 0.0
+    },
+    "place": {
+      "False": 526379.0,
+      "True": 771952.0
+    },
+    "township": {
+      "False": 66083.0,
+      "True": 27348.0
+    }
+  },
+  "top25": [
+    {
+      "geoid": "2743000",
+      "name": "Minneapolis city",
+      "kind": "place",
+      "eligible_lots": 75128.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field); Minneapolis CCS (parser)",
+      "adu_permits": 350,
+      "years": "2009-2026"
+    },
+    {
+      "geoid": "2758000",
+      "name": "St. Paul city",
+      "kind": "place",
+      "eligible_lots": 58019.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels_scaled_acs",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 25,
+      "years": "2009-2023"
+    },
+    {
+      "geoid": "2754880",
+      "name": "Rochester city",
+      "kind": "place",
+      "eligible_lots": 39177.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels_scaled_acs",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2717000",
+      "name": "Duluth city",
+      "kind": "place",
+      "eligible_lots": 28251.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels_scaled_acs",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2706382",
+      "name": "Blaine city",
+      "kind": "place",
+      "eligible_lots": 24137.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2706616",
+      "name": "Bloomington city",
+      "kind": "place",
+      "eligible_lots": 21295.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 3,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2713114",
+      "name": "Coon Rapids city",
+      "kind": "place",
+      "eligible_lots": 20749.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2735180",
+      "name": "Lakeville city",
+      "kind": "place",
+      "eligible_lots": 19575.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2751730",
+      "name": "Plymouth city",
+      "kind": "place",
+      "eligible_lots": 17987.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 3,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "27137",
+      "name": "St. Louis County Part Unincorporated Area",
+      "kind": "county_unincorporated",
+      "eligible_lots": 17689.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels_scaled_acs",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2771428",
+      "name": "Woodbury city",
+      "kind": "place",
+      "eligible_lots": 17477.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2707966",
+      "name": "Brooklyn Park city",
+      "kind": "place",
+      "eligible_lots": 17445.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "27021",
+      "name": "Cass County Part Unincorporated Area",
+      "kind": "county_unincorporated",
+      "eligible_lots": 17369.0,
+      "parcels_year": 2024,
+      "denominator_source": "acs_sf_fallback",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2740166",
+      "name": "Maple Grove city",
+      "kind": "place",
+      "eligible_lots": 17268.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "27035",
+      "name": "Crow Wing County Part Unincorporated Area",
+      "kind": "county_unincorporated",
+      "eligible_lots": 16631.0,
+      "parcels_year": 2024,
+      "denominator_source": "acs_sf_fallback",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2756896",
+      "name": "St. Cloud city",
+      "kind": "place",
+      "eligible_lots": 15237.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels_scaled_acs",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2717288",
+      "name": "Eagan city",
+      "kind": "place",
+      "eligible_lots": 14450.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "27061",
+      "name": "Itasca County Unincorporated Area",
+      "kind": "county_unincorporated",
+      "eligible_lots": 13925.0,
+      "parcels_year": 2024,
+      "denominator_source": "acs_sf_fallback",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2718116",
+      "name": "Eden Prairie city",
+      "kind": "place",
+      "eligible_lots": 13469.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2743252",
+      "name": "Minnetonka city",
+      "kind": "place",
+      "eligible_lots": 13338.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 15,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2759350",
+      "name": "Shakopee city",
+      "kind": "place",
+      "eligible_lots": 13218.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "27141",
+      "name": "Sherburne County Part Unincorporated Area",
+      "kind": "county_unincorporated",
+      "eligible_lots": 12985.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels_scaled_acs",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    },
+    {
+      "geoid": "2718188",
+      "name": "Edina city",
+      "kind": "place",
+      "eligible_lots": 12682.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 5,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2713456",
+      "name": "Cottage Grove city",
+      "kind": "place",
+      "eligible_lots": 12043.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels",
+      "covered": true,
+      "sources": "Met Council (field)",
+      "adu_permits": 0,
+      "years": "2009-2025"
+    },
+    {
+      "geoid": "2743864",
+      "name": "Moorhead city",
+      "kind": "place",
+      "eligible_lots": 11801.0,
+      "parcels_year": 2024,
+      "denominator_source": "parcels_scaled_acs",
+      "covered": false,
+      "sources": null,
+      "adu_permits": null,
+      "years": null
+    }
+  ],
+  "top_uncovered": [
+    {
+      "geoid": "2754880",
+      "name": "Rochester city",
+      "eligible_lots": 39177.0
+    },
+    {
+      "geoid": "2717000",
+      "name": "Duluth city",
+      "eligible_lots": 28251.0
+    },
+    {
+      "geoid": "27137",
+      "name": "St. Louis County Part Unincorporated Area",
+      "eligible_lots": 17689.0
+    },
+    {
+      "geoid": "27021",
+      "name": "Cass County Part Unincorporated Area",
+      "eligible_lots": 17369.0
+    },
+    {
+      "geoid": "27035",
+      "name": "Crow Wing County Part Unincorporated Area",
+      "eligible_lots": 16631.0
+    },
+    {
+      "geoid": "2756896",
+      "name": "St. Cloud city",
+      "eligible_lots": 15237.0
+    },
+    {
+      "geoid": "27061",
+      "name": "Itasca County Unincorporated Area",
+      "eligible_lots": 13925.0
+    },
+    {
+      "geoid": "27141",
+      "name": "Sherburne County Part Unincorporated Area",
+      "eligible_lots": 12985.0
+    },
+    {
+      "geoid": "2743864",
+      "name": "Moorhead city",
+      "eligible_lots": 11801.0
+    },
+    {
+      "geoid": "27001",
+      "name": "Aitkin County Unincorporated Area",
+      "eligible_lots": 10895.0
+    },
+    {
+      "geoid": "27041",
+      "name": "Douglas County Part Unincorporated Area",
+      "eligible_lots": 10431.0
+    },
+    {
+      "geoid": "27171",
+      "name": "Wright County Part Unincorporated Area",
+      "eligible_lots": 10011.0
+    },
+    {
+      "geoid": "2702908",
+      "name": "Austin city",
+      "eligible_lots": 9307.0
+    },
+    {
+      "geoid": "27005",
+      "name": "Becker County Unincorporated Area",
+      "eligible_lots": 8938.0
+    },
+    {
+      "geoid": "2739878",
+      "name": "Mankato city",
+      "eligible_lots": 8550.0
+    }
+  ]
+}
