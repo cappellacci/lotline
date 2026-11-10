@@ -4977,3 +4977,14 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Decided by:** Ben, 2026-11-10 ("Yes, prototype it"). The grid's stops, the toggles' grouping and the
   page's design were chosen by Claude Code. **Status:** prototype on the development results page. Building
   it into the app is a WS-APP step, reading the grid from the results bundle once fees are in `lotline results`.
+- **Revised 2026-11-10 (Ben's review of page v5).**
+  - The slider runs from abolishing fees (left) to raising them by half (right).
+  - The home-type toggles become one choice of which homes a bill targets: every home, duplexes only,
+    duplexes to fourplexes, or houses only. Other homes keep today's fees. The point is a bill that cuts
+    fees for one kind of home to encourage more of it.
+  - The page now shows the targeted type's own change: duplexes only, halved, gives +95 duplex homes, 0.3%
+    above the 36,250 expected.
+  - Stated limit: each type responds only to its own fee. There is no substitution from houses to duplexes
+    when only duplex fees fall, so a targeted cut shows added duplexes, not a shift. Modelling substitution
+    would need a cross-price response, and no source for one is in `docs/research/`.
+  - No engine change: the grid already holds each type's draws.

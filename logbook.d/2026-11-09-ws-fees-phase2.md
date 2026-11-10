@@ -53,3 +53,11 @@
   script. The grid's 0.5 stop matches the D-076 run per state exactly. The page was checked in a browser at
   desktop and phone widths (slider at −50%, houses toggled off, and so on). The page does no model
   arithmetic: it only adds draws and reads percentiles.
+
+### Addendum 2026-11-10: knobs revised (page v6)
+
+- Ben: the slider was backwards, and the toggles didn't say what a policy does. Now the slider puts cuts
+  to the left and rises to the right. The toggles became targeted-bill choices, and the page shows the
+  targeted type's own % change, with the no-substitution limit stated (D-077 revision note).
+- Checked in a browser at desktop and phone widths: duplexes only at −50% gives +95; abolished +191;
+  up 50% −95; every home at −50% still matches the scenario above.

@@ -57,6 +57,10 @@ input[type=range]:focus-visible,.tog input:focus-visible+span{outline:2px solid 
 .tog input{position:absolute;opacity:0;width:1px;height:1px}
 .tog span{display:inline-block;padding:6px 12px;border:1px solid var(--rule);border-radius:999px;font-size:14px;color:var(--muted);background:var(--paper)}
 .tog input:checked+span{background:var(--fees);border-color:var(--fees);color:#fff}
+.target{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.tline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:15px}
+.tline b{font-family:var(--mono);font-weight:500;color:var(--fees);font-variant-numeric:tabular-nums}.tline b.neg{color:var(--rise)}
+.tline small{grid-column:1/-1;color:var(--muted);font-size:13px}
 .result{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direction:column;gap:4px}
 .big{font-family:var(--serif);font-size:1.6rem;line-height:1.25}.big b{color:var(--fees);font-weight:600}.big b.neg{color:var(--rise)}
 .rng{position:relative;height:20px;flex:1 1 auto;min-width:0}
@@ -90,27 +94,29 @@ input[type=range]:focus-visible,.tog input:focus-visible+span{outline:2px solid 
 
 <section class="knobs" aria-labelledby="knobs-h">
 <h2 id="knobs-h">Try a different fee bill</h2>
-<p>Change how much fees move and which homes the bill covers. The page recomputes all 1,000 runs as you go, so the range always comes with the answer. What we estimate (how strongly builders respond, how much of the saving they keep) is not a knob: it is the range.</p>
+<p>Pick which homes the bill cuts fees for, and by how much. A bill can target one kind of home, such as duplexes, to encourage more of them. The page recomputes all 1,000 runs as you go, so the range always comes with the answer. What we estimate (how strongly builders respond, how much of the saving they keep) is not a knob: it is the range.</p>
 <div class="panel">
 <div class="ctl">
 <label for="share" class="ctl-h">Change in each place's own fees <output id="share-out" for="share"></output></label>
-<input type="range" id="share" min="-0.5" max="1" step="0.1" value="0.5" aria-describedby="share-ends">
-<div class="ends" id="share-ends"><span style="left:0">Up 50%</span><span style="left:calc(8px + (100% - 16px) / 3)">No change</span><span>Abolish</span></div>
+<input type="range" id="share" min="-100" max="50" step="10" value="-50" aria-describedby="share-ends">
+<div class="ends" id="share-ends"><span style="left:0">Abolish</span><span style="left:calc(8px + (100% - 16px) * 2 / 3)">No change</span><span>Up 50%</span></div>
 </div>
 <fieldset class="ctl">
-<legend class="ctl-h">The bill covers fees on</legend>
-<div class="toggles">
-<label class="tog"><input type="checkbox" id="t-1" checked><span>Houses</span></label>
-<label class="tog"><input type="checkbox" id="t-2" checked><span>Duplexes</span></label>
-<label class="tog"><input type="checkbox" id="t-3_4" checked><span>Triplexes and fourplexes</span></label>
+<legend class="ctl-h">Which homes get the change</legend>
+<div class="toggles" role="radiogroup">
+<label class="tog"><input type="radio" name="target" value="1,2,3_4" checked><span>Every home</span></label>
+<label class="tog"><input type="radio" name="target" value="2"><span>Duplexes only</span></label>
+<label class="tog"><input type="radio" name="target" value="2,3_4"><span>Duplexes to fourplexes</span></label>
+<label class="tog"><input type="radio" name="target" value="1"><span>Houses only</span></label>
 </div>
-<p class="small muted">Buildings of 5 or more units are never covered: no fees are coded for them yet.</p>
+<p class="small muted">Other homes keep today's fees. Buildings of 5 or more units are never included: no fees are coded for them yet.</p>
 </fieldset>
 <div class="result" aria-live="polite">
 <p class="big" id="k-big"></p>
 <p class="small muted" id="k-sub"></p>
 </div>
 <div class="bars" id="k-states"></div>
+<div class="target" id="k-target"></div>
 <p class="small muted" id="k-mix"></p>
 </div>
 </section>
@@ -189,7 +195,7 @@ input[type=range]:focus-visible,.tog input:focus-visible+span{outline:2px solid 
 <li><b>Homes without the cut.</b> The baseline forecast for 2027–2031 by building size.</li>
 <li><b>Effect of a cut.</b> Builders keep half the saving (range 25–75%); building rises 0.3% for each 1% cut in cost; half the response shows within a year. Each building size uses its own fee and its own cost per unit. Places with enough parcel data count lots that newly pencil instead (22 in Minnesota) (D-032, D-073).</li>
 <li><b>The range.</b> 1,000 runs draw every assumption. The builder response is drawn so its middle is 0.3, with a 1-in-20 chance above 1.75 (D-076); the earlier draw was lopsided and centred near 0.6. The middle estimate per state now matches the central-assumption calculation within a few percent.</li>
-<li><b>The knobs.</b> The engine ran every slider stop (a change of −50% to +100% of each place's own fee, in steps of 10%) in all 1,000 runs, with the same draws as the scenario, for each home type (<code>fees.change_grid</code>, D-077). The page only adds the switched-on types and states run by run and reads off the range; it does no model arithmetic. <code>scripts/dev/fee_knobs_export.py --page</code> rebuilds it.</li>
+<li><b>The knobs.</b> The engine ran every slider stop (from abolishing each place's own fees to raising them by half, in steps of 10%) in all 1,000 runs, with the same draws as the scenario, for each home type, so a bill can cut fees for one kind of home and leave the rest (<code>fees.change_grid</code>, D-077). The page only adds the switched-on types and states run by run and reads off the range; it does no model arithmetic. <code>scripts/dev/fee_knobs_export.py --page</code> rebuilds it.</li>
 <li><b>Not counted.</b> Buildings of 5 or more units (about 30% of expected homes; no fees are coded for them), effects on prices or rents, approval times, and what governments do without the fee revenue. Oregon (the transfer state) is not in this run.</li>
 <li><b>Files.</b> <code>reports/fees-statewide-run/</code> (run log, totals, summary); <code>scripts/dev/fee_dev_run.py --statewide</code>; method in D-073 and D-076, branch <code>ws/fees-phase2</code>, PR #356.</li>
 </ul>
@@ -233,28 +239,34 @@ function calc(si,on){
     per[s]={c,lo:pq(d,10),hi:pq(d,90)};tot=tot?add(tot,d):d;cen+=c}
   return{per,c:cen,lo:pq(tot,10),hi:pq(tot,90),mix}}
 // a fixed scale: from the biggest loss (fees raised by half) to the biggest gain (fees abolished), all types
-const ext=[calc(0,CL),calc(SH.length-1,CL)];
-const lo=Math.min(0,...ext.flatMap(e=>ST.map(s=>e.per[s].lo))),hi=Math.max(...ext.flatMap(e=>ST.map(s=>e.per[s].hi)));
+// a fixed scale for each choice of homes: from the biggest loss (fees up by half) to the biggest gain (abolished)
+let lo=0,hi=1;
+function scale(on){const ext=[calc(0,on),calc(SH.length-1,on)];lo=Math.min(0,...ext.flatMap(e=>ST.map(s=>e.per[s].lo)));hi=Math.max(1,...ext.flatMap(e=>ST.map(s=>e.per[s].hi)))}
 const X=v=>100*(v-lo)/(hi-lo);
+const BASE_BY=Object.fromEntries(CL.map(k=>[k,ST.reduce((a,s)=>a+G.states[s].baseline[k],0)]));
+const TNAME={"1":"Houses","2":"Duplexes","3_4":"Triplexes and fourplexes"};
+let lastOn="";
 const el=id=>document.getElementById(id),slider=el("share");
 const NAMES={MN:"Minnesota",NC:"North Carolina",OH:"Ohio",TX:"Texas"};
 function label(s){if(s===0)return"no change";if(s>=1)return"abolished";return(s>0?"cut by ":"raised by ")+Math.round(Math.abs(s)*100)+"%"}
 function draw(){
-  const si=Math.round((+slider.value-SH[0])*10),s=SH[si];
-  const on=CL.filter(k=>el("t-"+k).checked);
+  const s=-(+slider.value)/100,si=SH.findIndex(v=>Math.abs(v-s)<1e-9);
+  const on=document.querySelector('input[name="target"]:checked').value.split(",");
+  if(on.join()!==lastOn){scale(on);lastOn=on.join()}
   el("share-out").textContent=label(s);
   slider.setAttribute("aria-valuetext","Fees "+label(s));
   const r=calc(si,on);
-  if(!on.length||s===0){el("k-big").innerHTML="No change: the bill does nothing";el("k-sub").textContent=on.length?"Move the slider to change fees.":"Switch on at least one home type.";}
+  if(!on.length||s===0){el("k-big").innerHTML="No change: the bill does nothing";el("k-sub").textContent="Drag left to cut fees, right to raise them.";}
   else{const neg=r.c<0;
     el("k-big").innerHTML=`About <b class="${neg?"neg":""}">${sg(r.c)} homes</b> over 2027–2031`;
     el("k-sub").textContent=`Likely range ${sg(r.lo)} to ${sg(r.hi)} (10th to 90th percentile of 1,000 runs). That is ${(100*r.c/baseAll).toFixed(2).replace("-","−")}% of the ${(baseAll/1e6).toFixed(1)} million homes expected anyway in the four states.`+(s===0.5&&on.length===CL.length?" This is the scenario above.":"")}
+  el("k-target").innerHTML=on.length&&s!==0?on.map(k=>{const c=r.mix[k],b=BASE_BY[k];return`<div class="tline"><span>${TNAME[k]}</span><b class="${c<0?"neg":""}">${sg(c)}</b><small>${(100*c/b).toFixed(1).replace("-","−")}% ${c<0?"fewer":"more"} than the ${fmt(b)} expected</small></div>`}).join(""):"";
   const z=X(0);
   el("k-states").innerHTML=ST.map(st=>{const p=per(r,st),a=X(Math.min(p.lo,p.hi)),b=X(Math.max(p.lo,p.hi)),col=p.c<0?"var(--rise)":"var(--fees)";
     return`<div class="row"><div class="lab">${NAMES[st]||st}</div><div class="kline"><div class="rng" aria-hidden="true"><div class="zero" style="left:${z}%"></div><div class="span" style="left:${a}%;width:${Math.max(.4,b-a)}%;background:${col}"></div><div class="mid" style="left:${X(p.c)}%;background:${col}"></div></div><span>${on.length&&s!==0?sg(p.c)+" ("+sg(p.lo)+" to "+sg(p.hi)+")":"0"}</span></div></div>`}).join("");
-  el("k-mix").textContent=on.length&&s!==0?"Of the central estimate: "+on.map(k=>TYPE[k]+" "+sg(r.mix[k])).join(", ")+". Line: central estimate (every assumption at its central value, within a few percent of the middle run); band: likely range.":"";
+  el("k-mix").textContent="Line: central estimate (every assumption at its central value, within a few percent of the middle run); band: likely range. Each kind of home responds only to its own fees: the model does not yet move builders from houses to duplexes when only duplex fees fall, so a targeted cut shows only the extra duplexes, not a shift.";
 }
 const per=(r,st)=>r.per[st];
-slider.addEventListener("input",draw);CL.forEach(k=>el("t-"+k).addEventListener("change",draw));draw();
+slider.addEventListener("input",draw);document.querySelectorAll('input[name="target"]').forEach(i=>i.addEventListener("change",draw));draw();
 })();
 </script>
