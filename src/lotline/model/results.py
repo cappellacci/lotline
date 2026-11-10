@@ -565,7 +565,10 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     class_draws = baseline_class_draws(panel, st, origin)
     base = baseline_table(panel, st, origin, class_draws=class_draws)
     k = int(agg["historical_floor_years"].value)
-    adu_counts = adu.observed_adu_counts(store.read(st, "permits"), origin - k + 1, origin)
+    from lotline.model import undercount as uc
+
+    # D-078: the trailing observed average scales each source's ADU permits by its central undercount k
+    adu_counts = adu.observed_adu_counts(store.read(st, "permits"), origin - k + 1, origin, uc.central())
     rows = historical_floor_rows(st, places, run_draws, adu_counts, panel, d, origin, class_draws)
     scorecard = pd.DataFrame(rows, columns=_columns("scorecard")).assign(state=st)
     seen = observed_table(panel, store.read(st, "permits"), store.read(st, "jurisdictions"), st, origin)

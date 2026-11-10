@@ -1076,6 +1076,39 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 |---|---|---|---|---|
 | `n1_sf_share` | 0.732 | 0.515–0.812 | share of Charlotte N1 lots holding a single-family detached house before 2023-06-01 | Lotline calculation (clt_v5.town_prior, 2026-10-21) on NC OneMap parcels for Cornelius, Davidson, Huntersvill… |
 | `n1_vacant_share` | 0.119 | 0.067–0.149 | share of Charlotte N1 lots that were vacant residential lots before 2023-06-01 | Same calculation as n1_sf_share |
+
+**`config/params/adu.yaml` `adu_flag_undercount`** (a table, 28 sources; D-078). Unmeasured field-flag sources take the prior: centre 1.086, 90% range 1–1.21.
+
+| Source | Place | Kind | Years | k | Range | Source report |
+|---|---|---|---|---|---|---|
+| `raleigh_permits` | Raleigh (NC) | field | all | 1.07 | 1.02–1.21 (90%) | `reports/nc/wake-roll-adu-diff.md` |
+| `austin_permits` | Austin (TX) | field | all | 1.13 | 1.09–1.18 (90%) | `reports/tx/adu-coverage-and-undercount.md` |
+| `portland_permits` | Portland (OR) | field | all | 1.06 | 1.05–1.07 (90%) | `reports/or/adu-coverage-and-undercount.md` |
+| `durham_permits` | Durham city and county (NC) | field | all | prior | prior | `src/lotline/adapters/states/nc/durham_permits.py` |
+| `asheville_permits` | Asheville (NC), 2022 on | field | 2022– | prior | prior | `reports/nc/asheville-adu-scout.md` |
+| `bend_permits` | Bend (OR) | field | all | prior | prior | `src/lotline/adapters/states/or/bend_permits.py` |
+| `medford_permits` | Medford (OR) | field | all | prior | prior | `src/lotline/adapters/states/or/medford_permits.py` |
+| `mwvcog_permits` | Mid-Willamette Valley COG members (OR) | field | all | prior | prior | `src/lotline/adapters/states/or/mwvcog_permits.py` |
+| `cstx_permits` | College Station (TX) | field | all | prior | prior | `src/lotline/adapters/states/tx/cstx_permits.py` |
+| `sa_permits` | San Antonio (TX) | field | all | prior | prior | `src/lotline/adapters/states/tx/sa_permits.py` |
+| `mpls_ccs_permits` | Minneapolis (MN) | parser | all | 1.04 | 1.02–1.1 (90%) | `reports/mn/adu-coverage-and-undercount.md` |
+| `meck_permits` | Charlotte and the Mecklenburg towns (NC) | parser | all | 1.04 | 1–1.27 (90%) | `reports/nc/charlotte-adu-counts.md` |
+| `cle_permits` | Cleveland (OH) | parser | all | 1.07 | 1–1.07 (90%) | `reports/oh/adu-coverage-and-undercount.md` |
+| `asheville_permits` | Asheville (NC), before 2022 | parser | –2021 | 1.59 | 1.43–1.79 (90%) | `reports/nc/asheville-adu-scout.md` |
+| `austin_inferred_adu` | Austin (TX), inferred-ADU rule, 2024 on | parser | 2024– | 2.3 | 1.89–2.94 (95%) | `reports/tx/adu-coverage-and-undercount.md` |
+| `greensboro_permits` | Greensboro (NC) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/nc/greensboro_permits.py` |
+| `wilmington_permits` | Wilmington (NC) | parser | all | 1 | fixed (no hand check yet) | `reports/nc/wilmington-adu-scout.md` |
+| `chapel_hill_permits` | Chapel Hill (NC) | parser | all | 1 | fixed (no hand check yet) | `reports/nc/chapel-hill-adu-scout.md` |
+| `cary_permits` | Cary (NC) | parser | all | 1 | fixed (no hand check yet) | `reports/nc/cary-adu-scout.md` |
+| `rochester_permits` | Rochester (MN) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/mn/rochester_permits.py` |
+| `cincy_permits` | Cincinnati (OH) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/oh/cincy_permits.py` |
+| `montgomery_permits` | Dayton and Montgomery County (OH) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/oh/montgomery_permits.py` |
+| `dallas_permits` | Dallas (TX) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/tx/dallas_permits.py` |
+| `fw_permits` | Fort Worth (TX) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/tx/fw_permits.py` |
+| `metc_residential_permits` | Met Council suburbs (MN) | floor | all | 1 | fixed (floor) | `reports/mn/adu-coverage-and-undercount.md` |
+| `columbus_permits` | Columbus (OH) | none | all | 1 | fixed | `reports/oh/adu-coverage-and-undercount.md` |
+| `columbus_legistar` | Columbus (OH), Council variances | none | all | 1 | fixed | `reports/oh/adu-coverage-and-undercount.md` |
+| `franklin_auditor` | Franklin County Auditor permit file (OH) | none | all | 1 | fixed | `reports/oh/adu-coverage-and-undercount.md` |
 <!-- params-table:end -->
 
 ## Intended users and use cases
