@@ -1,0 +1,251 @@
+{
+  "rule_commit": "9e4b5390",
+  "pairs": {
+    "main": {
+      "rolls": [
+        2017,
+        2026
+      ],
+      "permit_window": [
+        "2017-01-01",
+        "2025-06-30"
+      ],
+      "years": 8.999315537303216,
+      "sf_before": 75264,
+      "sf_before_dropped": 173,
+      "compared": 75091,
+      "groups": {
+        "none": 74785,
+        "duplex_only": 183,
+        "adu_added": 111,
+        "rebuild": 8,
+        "duplex_adu": 3,
+        "merge": 1
+      },
+      "rate_per_1000_yr_R": 0.17609604170081972,
+      "versions": {
+        "as_written": {
+          "R": 122,
+          "P": 175,
+          "P_in_denominator": 137,
+          "P_and_R": 95,
+          "a": 6,
+          "b": 21,
+          "P_not_R": 80,
+          "P_not_R_in_denominator": 42,
+          "P_not_R_outside": 38,
+          "k": 1.063157894736842,
+          "k_lo90": 1.0320200964904158,
+          "k_hi90": 1.1245755042863157,
+          "chapman": 175.8125,
+          "chapman_lo95": 166.71760692963682,
+          "chapman_hi95": 184.90739307036318,
+          "chapman_over_P": 1.2833029197080292
+        },
+        "duplexes_removed": {
+          "R": 119,
+          "P": 175,
+          "P_in_denominator": 137,
+          "P_and_R": 94,
+          "a": 4,
+          "b": 21,
+          "P_not_R": 81,
+          "P_not_R_in_denominator": 43,
+          "P_not_R_outside": 38,
+          "k": 1.0425531914893618,
+          "k_lo90": 1.0188006154174007,
+          "k_hi90": 1.0963146187360624,
+          "chapman": 173.31578947368422,
+          "chapman_lo95": 164.43132514705252,
+          "chapman_hi95": 182.20025380031592,
+          "chapman_over_P": 1.2650787552823666
+        },
+        "wide": {
+          "R": 119,
+          "P": 175,
+          "P_in_denominator": 137,
+          "P_and_R": 94,
+          "a": 9,
+          "b": 16,
+          "P_not_R": 81,
+          "P_not_R_in_denominator": 43,
+          "P_not_R_outside": 38,
+          "k": 1.0957446808510638,
+          "k_lo90": 1.0543440982464785,
+          "k_hi90": 1.1686851784658348,
+          "chapman": 173.31578947368422,
+          "chapman_lo95": 164.43132514705252,
+          "chapman_hi95": 182.20025380031592,
+          "chapman_over_P": 1.2650787552823666
+        },
+        "strict_r": {
+          "R": 111,
+          "P": 175,
+          "P_in_denominator": 137,
+          "P_and_R": 89,
+          "a": 2,
+          "b": 20,
+          "P_not_R": 86,
+          "P_not_R_in_denominator": 48,
+          "P_not_R_outside": 38,
+          "k": 1.0224719101123596,
+          "k_lo90": 1.0073533091814264,
+          "k_hi90": 1.068674760116642,
+          "chapman": 170.73333333333332,
+          "chapman_lo95": 161.5103084703108,
+          "chapman_hi95": 179.95635819635584,
+          "chapman_over_P": 1.2462287104622871
+        }
+      },
+      "checks": {
+        "R_not_P_seen_by_parser": 19,
+        "R_not_P_with_adu_permit_outside_window": 1,
+        "P_live": 165,
+        "P_not_R_live": 74,
+        "P_outside_window": 24
+      }
+    },
+    "short": {
+      "rolls": [
+        2017,
+        2024
+      ],
+      "permit_window": [
+        "2017-01-01",
+        "2023-06-30"
+      ],
+      "years": 6.997946611909651,
+      "sf_before": 75264,
+      "sf_before_dropped": 134,
+      "compared": 75130,
+      "groups": {
+        "none": 74815,
+        "duplex_only": 271,
+        "adu_added": 40,
+        "duplex_adu": 3,
+        "rebuild": 1
+      },
+      "rate_per_1000_yr_R": 0.0779829828610065,
+      "versions": {
+        "as_written": {
+          "R": 44,
+          "P": 145,
+          "P_in_denominator": 111,
+          "P_and_R": 29,
+          "a": 3,
+          "b": 12,
+          "P_not_R": 116,
+          "P_not_R_in_denominator": 82,
+          "P_not_R_outside": 34,
+          "k": 1.103448275862069,
+          "k_lo90": 1.0395987863253233,
+          "k_hi90": 1.2702493377174828,
+          "chapman": 167.0,
+          "chapman_lo95": 137.78393018416284,
+          "chapman_hi95": 196.21606981583716,
+          "chapman_over_P": 1.5045045045045045
+        },
+        "duplexes_removed": {
+          "R": 41,
+          "P": 145,
+          "P_in_denominator": 111,
+          "P_and_R": 28,
+          "a": 2,
+          "b": 11,
+          "P_not_R": 117,
+          "P_not_R_in_denominator": 83,
+          "P_not_R_outside": 34,
+          "k": 1.0714285714285714,
+          "k_lo90": 1.0228207014051511,
+          "k_hi90": 1.2235707275489307,
+          "chapman": 161.20689655172413,
+          "chapman_lo95": 133.4070867267987,
+          "chapman_hi95": 189.00670637664956,
+          "chapman_over_P": 1.452314383348866
+        },
+        "wide": {
+          "R": 41,
+          "P": 145,
+          "P_in_denominator": 111,
+          "P_and_R": 28,
+          "a": 2,
+          "b": 11,
+          "P_not_R": 117,
+          "P_not_R_in_denominator": 83,
+          "P_not_R_outside": 34,
+          "k": 1.0714285714285714,
+          "k_lo90": 1.0228207014051511,
+          "k_hi90": 1.2235707275489307,
+          "chapman": 161.20689655172413,
+          "chapman_lo95": 133.4070867267987,
+          "chapman_hi95": 189.00670637664956,
+          "chapman_over_P": 1.452314383348866
+        },
+        "strict_r": {
+          "R": 40,
+          "P": 145,
+          "P_in_denominator": 111,
+          "P_and_R": 28,
+          "a": 1,
+          "b": 11,
+          "P_not_R": 117,
+          "P_not_R_in_denominator": 83,
+          "P_not_R_outside": 34,
+          "k": 1.0357142857142858,
+          "k_lo90": 1.0077907570460427,
+          "k_hi90": 1.163720957609569,
+          "chapman": 157.3448275862069,
+          "chapman_lo95": 130.95551636409186,
+          "chapman_hi95": 183.73413880832192,
+          "chapman_over_P": 1.4175209692451072
+        }
+      },
+      "checks": {
+        "R_not_P_seen_by_parser": 10,
+        "R_not_P_with_adu_permit_outside_window": 2,
+        "P_live": 136,
+        "P_not_R_live": 109,
+        "P_outside_window": 57
+      }
+    }
+  },
+  "by_year": {
+    "roll_first_adu_label": {
+      "2018": 13,
+      "2019": 12,
+      "2020": 28,
+      "2021": 20,
+      "2022": 8,
+      "2023": 5,
+      "2024": 5,
+      "2025": 36,
+      "2026": 9
+    },
+    "ccs_adu_typed_parcels": {
+      "2016": 2,
+      "2017": 30,
+      "2018": 25,
+      "2019": 34,
+      "2020": 27,
+      "2021": 16,
+      "2022": 17,
+      "2023": 13,
+      "2024": 16,
+      "2025": 13,
+      "2026": 14
+    },
+    "metc_adu_units": {
+      "2016": 28,
+      "2017": 22,
+      "2018": 9,
+      "2019": 18,
+      "2020": 10,
+      "2021": 7,
+      "2022": 12,
+      "2023": 8,
+      "2024": 11,
+      "2025": 13
+    }
+  },
+  "base_compared": 75091
+}
