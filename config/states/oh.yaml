@@ -70,6 +70,16 @@ sources:
       permits, new-construction and demolition work classes only) plus combo permits thvx-5mem (only rows whose
       work description names an ADU or townhouse). 8,190 permits kept on 2026-10-18. No Census code: type from
       the building-code use group and units.
+  - name: cle_permits
+    url: https://services3.arcgis.com/dty2kHktVXHrqO8i/arcgis/rest/services/Building_Permits/FeatureServer/0
+    license: ODbL-1.0 (City of Cleveland open data; fetched at run time, derived tables never redistributed)
+    access: arcgis
+    cadence: weekly
+    notes: >-
+      Adapter src/lotline/adapters/states/oh/cle_permits.py (S7, approved 2026-10-23 under ODbL). Building
+      permits only (PERMIT_CATEGORY 'New' and 2025-26 Construction Project building records), 2015-present.
+      Type and units from JOB_DESCRIPTION and USE_GROUP_1 (no unit field). ADUs from the work description
+      ('in-law suite', 'carriage house', 'ADU'); see reports/oh/adu-coverage-and-undercount.md section 3.
   - name: franklin_permits
     url: https://apps.franklincountyauditor.com/Outside_User_Files/
     license: Franklin County Auditor public records (disclaimer 'as is'; no reuse terms stated)
