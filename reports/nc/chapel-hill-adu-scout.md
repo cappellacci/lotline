@@ -135,7 +135,7 @@ Development Services in 2025-2026 (request IDs 307, 2870 and 46), so a CSV expor
 > this scope is not available, a report of the permits for the Housing Choices housing types that staff
 > monitor (accessory apartments, cottages, two- to four-family) would also help.
 
-When it arrives: register it with `lotline register` (manual file) and add a second reader to the adapter (or
+When it arrives: register it with `lotline manifest register` (a file downloaded by hand) and add a second reader to the adapter (or
 a sibling `chapel_hill_opengov_permits` adapter). The ADU rule above can be reused if the export has free-text
 descriptions.
 
