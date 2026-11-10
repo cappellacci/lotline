@@ -27,5 +27,5 @@
   Legistar action histories directly; network failures were re-tried by two routes.
 - **Update (same day):** the host came back. "Permits Issued" holds only 3,059 residential permits from 2021,
   with no ADU code or description (report §2a). Verdict unchanged.
-- **Open / next:** Ben sends the records request or the short ADU-list
-  request in the report's §4.
+- **Open / next:** none. Ben decided not to send records requests or emails for ADU permits
+  (2026-11-10). Winston-Salem is closed; its 10-ADU first-year count is a check only.

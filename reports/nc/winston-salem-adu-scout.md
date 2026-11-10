@@ -9,7 +9,8 @@ Its service description says "since January 1, 2013", but it holds **3,059 resid
 2021-01-04 to 2021-12-30 only** (`Permit_Yea` = 2021 on every row). It has no ADU code and no free-text
 description, and 2021 is before by-right ADUs (2022-02-07). So it can't give ADU permits by year. The host
 refused this network for most of 2026-11-10 and answered later the same day, after Ben read the layer from
-another network (§2a). The records request and the ADU-list request in §4 are now the way forward.
+another network (§2a). **Closed (Ben, 2026-11-10): no records request or emails to staff.** Winston-Salem stays on the city's own
+first-year count (10 ADUs) as a check only.
 
 The rule history *is* settled, from primary documents on the city's Legistar API, and it changes how NC's ADU
 panel should read Winston-Salem (§3). The city also published its own count: **10 ADUs permitted from
@@ -137,7 +138,7 @@ a year). The city had 62,798 ADU-eligible lots in 2022 (`eligible.parquet`, them
 10,000 a year before. These are official counts, not a permit file. Treat them as a check on the panel, not a
 series, until §4 delivers the permits.
 
-## 4. Ways forward (for Ben)
+## 4. Ways forward (not pursued: Ben decided on 2026-11-10 not to send requests; kept for the record)
 
 1. ~~Two-minute check from another network~~ **Done on 2026-11-10 (§2a): the layer is 2021 only, with no ADU
    code.** Original step, kept for the record:
