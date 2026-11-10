@@ -56,7 +56,7 @@ panel's caller, because a year with no ADUs has no permit row.
 | Unresolved ADU rules (7 places) | Fewer ADU-panel places; more D-022 draws | The tracker's `next_step` for each place | Ben's research agent |
 | ADU undercounts (Franklin, Montgomery) | Counts are lower bounds | A measurement note in D-025 | WS-ENGINE |
 | Fees | Handbook prior everywhere | S8: Columbus, Cincinnati, Cleveland water and sewer fees | WS-OH (not started) |
-| Cleveland permits | Cleveland not in the ADU panel | S7: the `cle_permits` adapter. The ODbL license question is still open | Ben, then WS-OH |
+| Cleveland permits | Cleveland not in the ADU panel | S7: the `cle_permits` adapter. **Closed 2026-11-10:** ODbL run-time fetch confirmed by Ben; adapter built in `ws/oh-adu-counts` | Done |
 | Zoning | Denominator quality stays `low` | Columbus base zoning (CC0), Montgomery `MC_ZONING.gdb` | Not planned |
 | Statewide second roll (OGRIP 2022) | — | Dropped (2026-11-01) | — |
 

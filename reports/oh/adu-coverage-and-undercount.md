@@ -295,7 +295,7 @@ are proposed.
   Cleveland row was added).
 - **License:** ODbL 1.0. Ben approved fetching it at run time on 2026-10-23 (`docs/build/oh-data-plan.md`,
   S7). The raw snapshot and `processed/oh/permits/cle_permits.parquet` stay in `LOTLINE_DATA_DIR`. Note that
-  `docs/build/oh-readiness.md` (2026-11-01) still calls the ODbL question open; the PR asks Ben to confirm.
+  `docs/build/oh-readiness.md` (2026-11-01) still called it open; Ben reconfirmed on 2026-11-10.
 - **Fetched** with `lotline fetch --state OH --source cle_permits`: 79,906 building permits (2015-01 to
   2026-11). 96% have a parcel number that maps to the Cuyahoga roll ID.
 - **New one-family houses compared with Census BPS (units_1):**
