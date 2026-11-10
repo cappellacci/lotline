@@ -79,3 +79,5 @@
 - Checked against recent permits: in 2025, 7,840 homes in 2-unit buildings across the four states; the
   forecast is 7,249 a year. Correction to a chat answer: duplexes are 2.3% of the four states' new homes,
   not 0.5%.
+
+- Page v9: the Raleigh step for the 0.3 response now explains it in plain language (what it measures, why neighborhood scale, the 0 to 1.75 range), from `config/params/fees.yaml` and `docs/research/lotline-methods-review.md`.
