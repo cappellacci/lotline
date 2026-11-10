@@ -57,7 +57,7 @@ def lots(store: DataStore, origin: int) -> pd.DataFrame:
 
 
 def franklin_share(store: DataStore) -> pd.Series:
-    """Share of each jurisdiction's SF_DETACHED parcels that lie in Franklin County (only those reaching it)."""
+    """Share of each jurisdiction's SF_DETACHED parcels in Franklin County (jurisdictions reaching it)."""
     p = store.read(STATE, "parcels")
     houses = p.loc[p["land_use_std"] == "SF_DETACHED", ["jurisdiction_geoid", "county_geoid"]]
     reach = houses.loc[houses["county_geoid"] == FRANKLIN, "jurisdiction_geoid"].unique()
@@ -88,7 +88,9 @@ def main() -> None:
     cov = coverage(lots(store, args.origin), franklin_share(store))
     total, covered = float(cov["eligible_parcels"].sum()), float(cov["covered_lots"].sum())
     by_source = cov.groupby("source")["covered_lots"].sum().drop("", errors="ignore")
-    print(f"eligible ADU lots (non-overlapping): {total:,.0f}; covered {covered:,.0f} ({covered / total:.1%})")
+    print(
+        f"eligible ADU lots (non-overlapping): {total:,.0f}; covered {covered:,.0f} ({covered / total:.1%})"
+    )
     print(by_source.round(0).to_string())
     top = cov.head(25)
     print(top[["name", "kind", "parcels_year", "eligible_parcels", "covered_share", "source"]].to_string())

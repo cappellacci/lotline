@@ -189,3 +189,207 @@ reported as the result.
 **Montgomery (second test).** Montgomery's CAMA files do carry dwelling cards (`DWELL.DAT`, with registered
 extracts for 2011, 2012, 2014, 2018, 2021, 2022, 2024, 2025 and 2026). But Montgomery has **7 ADU-flagged
 permits in all** (2020–2026), so |P∩R| can't be more than a handful. The test is not run here; §2.3 says why.
+
+### 2.2 Results
+
+*The rule was committed in c38920b before the first count. Counts come from `uv run python
+scripts/dev/oh_franklin_roll_adu_diff.py`; the aggregates are in `reports/oh/franklin-roll-adu-diff.json`,
+and no parcel-level table is written. Functions and tests: `src/lotline/adapters/states/oh/franklin_roll_diff.py`
+and `tests/states/oh/test_franklin_roll_diff.py`.*
+
+**Bottom line: the Franklin roll can't measure k.**
+- **The Auditor cards almost no ADU as a dwelling.** Of 13 Columbus flagged permits on 2019 single-family
+  parcels, **1** shows a second home on the 2024 roll. **7** show only a new detached garage, and 6 show
+  living area added to the house.
+- **So |P∩R| = 1, and k = 2.0 (90%: 1.14–8.27) means nothing.** It doesn't change between the as-written,
+  ADU-only and accessory-structure (434) versions: the one group-(a) parcel has a single-family (101) permit.
+  The Chapman total, **377 (95%: 65–766)**, is just as uninformative.
+- **D-074's k stays Raleigh's (1.07, 1.02–1.21).** Ohio adds no evidence for or against it. Columbus's flags
+  are a parser source, so they would take k_parser from a hand check (§3.3), not from k.
+
+**Franklin County, Dec 2019 → Dec 2024 (5.03 years)**
+- Single-family parcels in the 2019 roll: **287,374**. Another 608 are gone by 2024 and not compared.
+- **Gained a second home: 70**, or **0.048 per 1,000 lots a year** (95%: 0.038–0.061). Of these:
+  - 6 new cards built 2020–24 (the strict count);
+  - 21 new cards for older buildings;
+  - 42 unit or use changes;
+  - 1 teardown rebuilt with two homes.
+  - No possible merges were counted.
+- **Columbus: 53 of 166,038 gained.** By group: 2 strict, 11 older-building cards, 39 unit or use changes and
+  1 rebuild.
+- **Unincorporated Franklin: 11 of 32,909.** The 15 suburbs together have 6.
+- **Envelope, not counted:**
+  - 1,076 parcels gained a detached garage built 2020–24 (703 of them in Columbus);
+  - 3,485 parcels added 200 sq ft or more of living area to the house.
+  - Most are just garages and additions.
+
+**Columbus undercount table** (P = flagged permits issued 2020-01-01 to 2024-06-30: 23 parcels; by issue
+year 5, 8, 5, 2, 3)
+
+| | As written | ADU-only (no 103) | With 434 |
+|---|---:|---:|---:|
+| \|R\| | 53 | 53 | 53 |
+| \|P\| (parcels) | 23 | 23 | 23 |
+| …on a 2019 single-family parcel | 13 | 13 | 13 |
+| **\|P ∩ R\|** | **1** | **1** | **1** |
+| **\|a\| permitted but unflagged** | **1** | **1** | **1** |
+| **\|b\| unpermitted or not found** | **51** | **51** | **51** |
+| **\|P \ R\|** | **22** (12 on single-family parcels) | 22 | 22 |
+| **k** (90% Wilson) | **2.0 (1.14–8.27)**, not usable | same | same |
+| Chapman total (95%) | 377 (65–766) | same | same |
+
+**Why group (b) is large and means little.** 39 of Columbus's 53 roll gains are unit or use changes (LUC 510
+→ 520, or `LIVUNITS` 2). In this city those are mostly duplex conversions and recodes, not ADUs. The roll's
+own signal can't tell them apart, and Columbus's layer has no alteration permits to check them against.
+
+**A better Ohio undercount signal.** Columbus's Council use variances for ADUs number **90** for 2020–2024
+(`columbus_variances`), against **23** flagged permits in the same years. So the parser finds about **1 in 4**
+approved ADUs, the same ratio `docs/build/oh-franklin-history-check.md` cites. Approvals are an upper bound,
+since not every approved ADU is built. The panel already keeps the larger of the two counts each year. This
+ratio (about 3.9) is the closest Ohio comes to a k for a parser source. It isn't a D-074 k, so it is reported
+here only as a check.
+
+### 2.3 Montgomery (second test): not run
+
+Montgomery's CAMA extracts carry dwelling cards (`DWELL.DAT`), with registered files for Nov 2018 and Nov
+2024, so the roll comparison could be built. It wasn't, for three reasons:
+- **There are too few flags.** `montgomery_permits` flags **7** ADUs in all (2020–2026), so |P∩R| can't be
+  more than a handful.
+- **The rolls likely card ADUs the same way.** Franklin's Auditor cards carriage houses as garages, and
+  Montgomery runs the same iasWorld-style CAMA (`DWELL`/`OBY` tables), so it probably does too.
+- If it is wanted for a roll-based ADU count (not k), the Franklin script's `summarize` can take `DWELL.DAT`
+  rows once `oh_parcels`' fixed-width reader exposes card, units and living area. That needs WS-CORE / WS-OH;
+  see the PR.
+
+---
+
+## 3. More places
+
+### 3.1 Scouting the largest uncovered places
+
+A research subagent and Claude checked the largest uncovered places (2026-11-10). The checks were metadata
+and counts only: ArcGIS Online searches, crawls of the city and county GIS service directories, the open-data
+hubs, and one or two web searches per place. No permit portal was scraped.
+
+| Place (eligible lots) | What exists | Usable? |
+|---|---|---|
+| **Cleveland (80,693)** | City ArcGIS layer `Building_Permits` (202,884 permits since 2015, work descriptions, parcel numbers), ODbL 1.0 | **Yes: adapter built (§3.2)** |
+| Toledo (81,585) | City Data Hub (41 items) and `gis.toledo.oh.gov` (138 services) have a demolition layer, no permits. The Lucas Auditor has yearly cadastre layers 2000–2025, which are parcels, not permits | No |
+| Akron (59,904) / Summit County | Summit County Building Standards issues Akron's permits in a Cityworks lookup portal with no export; `scgis.summitoh.net` has no permit layer | No |
+| Parma (27,537), Euclid, Lakewood, Cleveland Heights, Strongsville, Mentor | Each city files its own permits (portals such as Citizenserve); Cuyahoga County has no countywide permit layer | No |
+| Youngstown (21,992) / Mahoning | Mahoning County Building Inspection lookup portal only | No |
+| Canton (21,780) / Stark | The "Building and Development" item is a 2013 property-cleanup map. The "Stark County Permits" layer belongs to Stark County, **Illinois** | No |
+| Lorain, Elyria / Lorain County | No permit layer; the county hub's terms bar redistribution | No |
+| Hamilton, Springfield, Cuyahoga Falls, Middletown | No open portal or permit layer found | No |
+
+**Cleveland is the only record-level open permit source in Ohio beyond the four already covered.** Because
+only one open source exists, §3 has one new place, not three. The Census BPS has place-level unit counts for
+all of these cities but no ADU flag. Ben's standing rule is no records requests (memory, 2026-11), so none
+are proposed.
+
+### 3.2 Cleveland (`cle_permits`)
+
+- **Adapter:** `src/lotline/adapters/states/oh/cle_permits.py`. Tests: `tests/states/oh/test_cle_permits.py`
+  (16, synthetic rows).
+- **Registered in:** `config/states/oh.yaml`. Provenance row and section in `docs/data_provenance.md` (only the
+  Cleveland row was added).
+- **License:** ODbL 1.0. Ben approved fetching it at run time on 2026-10-23 (`docs/build/oh-data-plan.md`,
+  S7). The raw snapshot and `processed/oh/permits/cle_permits.parquet` stay in `LOTLINE_DATA_DIR`. Note that
+  `docs/build/oh-readiness.md` (2026-11-01) still calls the ODbL question open; the PR asks Ben to confirm.
+- **Fetched** with `lotline fetch --state OH --source cle_permits`: 79,906 building permits (2015-01 to
+  2026-11). 96% have a parcel number that maps to the Cuyahoga roll ID.
+- **New one-family houses compared with Census BPS (units_1):**
+
+  | Year | cle_permits | BPS units_1 |
+  |---|---:|---:|
+  | 2015 | 42 | 130 |
+  | 2016 | 43 | 137 |
+  | 2017 | 101 | 144 |
+  | 2018 | 98 | 114 |
+  | 2019 | 119 | 78 |
+  | 2020 | 158 | 95 |
+  | 2021 | 151 | 104 |
+  | 2022 | 127 | 158 |
+  | 2023 | 109 | 161 |
+  | 2024 | 141 | 234 |
+  | 2025 | 111 | 143 |
+
+  The totals over 2017–2025 are close (1,115 against 1,231). Single years differ, because BPS counts by
+  month reported and townhouse rows may be filed differently. 2015–2016 are low, likely because the permit
+  system began then.
+- **The ADU rule** (`adu_from_text`): the description names "in-law suite / apartment / unit", "carriage
+  house", "ADU", "accessory dwelling", "granny flat" or "garage apartment" on a one-family, two-family,
+  accessory-use or unlabelled permit. It is vetoed when:
+  - the unit is existing, historic, being removed or only being altered;
+  - the text says "not for in-law suite";
+  - the work is a roof, porch or window on the unit.
+
+  "Adult" never matches. When the permit also builds the main house, the row stays an SFD (1 unit) and
+  carries `adu_type`, so the ADU is counted without being counted as a house.
+
+**ADU permits by year** (eligible lots: 80,693)
+
+| Year | ADU-only permits | House + ADU permits | All ADUs | Per 1,000 eligible lots |
+|---|---:|---:|---:|---:|
+| 2015 | 0 | 1 | 1 | 0.012 |
+| 2016 | 2 | 0 | 2 | 0.025 |
+| 2017–2019 | 0 | 0 | 0 | 0 |
+| 2020 | 3 | 5 | 8 | 0.099 |
+| 2021 | 1 | 1 | 2 | 0.025 |
+| 2022 | 0 | 1 | 1 | 0.012 |
+| 2023 | 0 | 0 | 0 | 0 |
+| 2024 | 1 | 0 | 1 | 0.012 |
+| 2025 | 0 | 0 | 0 | 0 |
+| **2015–2025** | **7** | **8** | **15** | **0.017 a year** |
+
+- 14 of the 15 are detached (over or behind a garage, or a carriage house); 1 is attached.
+- Nearly all cite a Board of Zoning Appeals (BOZA) approval, as expected under a "no ADU use" rule.
+- 2020 stands out: 8 ADUs, 5 of them with a new house. These are infill new builds in a few neighbourhoods
+  (BOZA 20-xxx).
+
+### 3.3 Hand check of the description rule
+
+Every match was read, plus 30 random non-matches and 30 targeted near-misses. There are only 15 matches, so
+the "30 matches" sample is all of them.
+
+| Sample | Read | ADUs | Verdict |
+|---|---:|---:|---|
+| Matches | 15 (all) | 15 | **Precision 15/15** |
+| Random non-matches: residential, non-demolition | 30 | 0 | Roofs, windows, fences, one addition |
+| Targeted near-misses: non-matches naming a suite, apartment, living space, dwelling unit, guest, cottage or kitchenette (30 of 77) | 30 | 0–1 | One possible miss: "finishing the 2nd floor loft apartment" in a one-family house (2025). The others were master suites, attic bedrooms, apartment buildings, a third unit in a two-family house (missing middle) and care-facility changes of use |
+
+- **Recall:** at least 15/16 among the permits the near-miss net reaches, so k_parser is about 1.0–1.07 for
+  Cleveland. ADUs filed with no telltale words can't be seen this way, so this is an upper bound on recall.
+- **Fixed during the check:** the house + ADU test first missed abbreviations ("2 STY. 3,708 S.F. SINGLE
+  FAMILY RESIDENCE", "SINGLE FAM RES"). That put 5 house + ADU permits in the ADU-only column. The pattern
+  now allows periods and "FAM"; the counts above are after the fix. The ADU total (15) did not change.
+
+## 4. Proposed ADU rule rows (not written to `config/reforms/oh.csv`)
+
+**Cleveland (3916000) already has a row:** `OH-3916000-adu-2010-none` ("No ADU use: One-Family District
+§337.02 permits one dwelling house per lot", effective 2010-01-01). The 15 permits are consistent with it:
+each needed a BOZA variance. So **Cleveland joins the ADU panel now**, as an untreated large city. It has:
+- a record-level source with far more than 1,000 permits;
+- an accepted "none" row; and
+- eligible lots.
+
+**No new rows are proposed.** One open question carries over from `docs/research/ordinances/oh-rules-tracker.csv`
+and was not researched here: do the Neighborhood Form-Based Code districts (Ord. 347-2024, effective
+2024-07-01, four pilot areas) or the 2026 Housing Innovation District (Ord. 626-2026, effective 2026-07-01)
+allow an ADU on a house lot? If either does, Cleveland needs a partial-coverage `adu` row with that date and
+`coverage` set to the mapped areas. Until then, the 2010 "none" row stands for the whole city.
+
+## 5. What this means for the joint refit
+
+- **Coverage:** Ohio's flagged-permit places hold 15.4% of eligible lots, or about **17.8% with Cleveland**
+  (+80,693).
+- **k:** Ohio can't measure a field-flag k. The Franklin Auditor cards carriage houses as garages, so the roll
+  sees about 1 in 13 flagged ADUs as a dwelling. Raleigh's k (1.07, 1.02–1.21) stays the only measured value.
+  Applying it to Ohio's field flags is an assumption, and Ohio has none: all of Ohio's ADU sources are parsers.
+- **k_parser:**
+  - **Cleveland:** about 1.0–1.07, from the hand check above.
+  - **Columbus:** the closest evidence is the Council variance ratio. That is about 3.9 approved ADUs per
+    flagged permit for 2020–2024, an upper bound, since not every approved ADU is built. The panel already
+    takes the larger count each year, so the ratio is not applied again.
+- **Cleveland's rate:** 0.017 ADUs per 1,000 lots a year under a no-ADU rule. That is near Greensboro's 0.03,
+  well below Raleigh (0.47) or Durham (0.73), and a useful zero-ish untreated control.
