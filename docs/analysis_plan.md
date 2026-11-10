@@ -1463,7 +1463,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   It stays open.
 - **Decided by:** proposed by thread 02 in the fee-scenario PR; for Ben to confirm.
 - **Status 2026-11-09:** adopted with amendments by D-065 (revenue toggle default; single-family dose is
-  interim until doses by building type are built).
+  interim until doses by building type are built). The dose by building type is D-073 (2026-11-09).
 
 ### D-033 · 2026-10-20 · Proposed: feasibility-channel inputs from parcel rolls
 - Candidate lots are VACANT_RESIDENTIAL parcels with a land value in the newest roll ≤ origin + 1.
@@ -4671,6 +4671,82 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     building fell by almost half from 2023 to 2025, which the flat baseline did not foresee.
   - No model change follows from this result.
 
+### D-073 · 2026-11-09 · Fee plan Phase 2: a dose per building size, the fee-rise sensitivity and the pencil-out table (method only, before any run)
+- **Why now:** D-065 kept the single-family dose as interim until per-type fee levels (D-066) and the duplex
+  and fourplex pro formas could replace it. Office hours on 2026-11-03 (A4, A5) asked for the house, duplex
+  and fourplex comparison with per-unit connection fees as the named driver, and for the case against raising
+  impact fees. No model was run.
+- **Dose by BPS size class** (Ben: "per-type elasticity"). With the baseline split by size class, 1-unit
+  buildings keep the house's %Δ (feasibility on parcels where there are enough feasible lots, else
+  elasticity). 2-unit and 3-4 unit buildings use the elasticity route with their own fee per unit (duplex
+  `U2`, fourplex `U3_4` levels from D-066; $50,000 in the benchmark) and their own cost per unit: the place's
+  home value scaled by `plex_unit_sqft` / `single_family_sqft` (1,000 / 2,150). By hand: a $10,000 duplex fee
+  cut in half, λ 0.5, ε 0.3, home value $430,000 -> 0.3 × 2,500 / 200,000 = +0.375%.
+  - The same dollar cut per unit is a larger share of a smaller unit's cost, so plexes respond more per unit
+    than houses at the same fee. That is the density point (A5), now a number in the run.
+  - Lots-based feasibility for plexes was not chosen (Ben: it would need plex sale values per place, which
+    most places lack).
+- **5+ unit buildings take no dose** (Ben: "no effect, stated"). No 5+ fees are coded and missing middle
+  (D-063) also stops at 4 units. Stated as a limit in D4.
+- **Fee-rise sensitivity** (Ben: "+50% of local fee"): `local_rise`, Δ = −`fee_rise_share` × F with
+  `fee_rise_share` 0.5, through the same λ, ε and ramp. With elasticity only, it is the exact mirror of the
+  real-fee cut. It is reported as a sensitivity, labeled "Sensitivity: real local fees raised by half", not
+  as a scenario. Assumption stated: landowners absorb λ of a rise as they capture λ of a cut.
+- **Pencil-out table** (`src/lotline/model/pencil_out.py`, `scripts/dev/fee_pencil_out_table.py` ->
+  `docs/research/fee-pencil-out.md`). For each coded place it runs the house, duplex and fourplex pro formas,
+  for sale and for rent, at four fee levels: today's local fee, that fee cut in half, $50,000 and $25,000.
+  - Each row reports the fee per unit and per lot, the fee's share of cost (construction + fees + interest),
+    and the residual land value per lot and per unit.
+  - Where a parcel roll gives a median vacant lot value, the row also says whether the project pencils
+    (lot value plus the 10% existing-use margin).
+  - Market inputs: new homes' value per sq ft from the parcel roll where there is one, else the ACS median
+    home value; ACS median gross rent. Both ACS values cover older homes, so they understate new
+    construction (stated in the table).
+  - The table shows the full fee change. λ belongs to the scenario, not the table.
+- **Stacking deferred** (Ben). Feeding the cut fee into the ADU and missing-middle scenarios waits until the
+  fee-structure stretch. The missing-middle fit's price-to-cost leaves fees out, so stacking there needs its
+  own entry.
+- **Code:** `scenarios/fees.py` (`SIZE_TYPES`, `type_pct_change`, per-type `fee_levels` and `fee_draws`,
+  `local_rise`), `config/params/fees.yaml` (`fee_rise_share`), `scripts/dev/fee_dev_run.py` (baseline by
+  size class, per-type fees). The house fee keeps its random stream (seed + 1), so a run without the size
+  split gives the same numbers as before. Tests: `tests/model/test_fee_scenario.py` (per-size dose, rise and
+  mirror, hand-worked) and `tests/model/test_pencil_out.py` (duplex and fourplex pro formas by hand).
+- **Decided by:** Ben, 2026-11-09 (per-type elasticity; no 5+ effect; stacking deferred; +50% rise). Details
+  (cost per unit scaled by size, the value source for the pencil-out table, seeds) were written by Claude
+  Code, for Ben to confirm in the PR. **Status:** built and tested; development run done 2026-11-09 (below).
+- **Development run (2026-11-09, Ben: "Yes, run it"; commit ba05152; origin 2025, window 2027–2031; 1,000
+  draws).** MN, NC, OH, TX, 50 places with coded fees; Oregon and holdouts left out; three NC places
+  (Wilmington, Concord, Gastonia) skipped for a missing baseline or ACS value. Five-year homes added, P50
+  (P10–P90), and the mean as a share of the baseline:
+  - Benchmark: MN 189 (74–404), NC 1,533 (540–3,414), OH 344 (123–768), TX 2,929 (1,052–6,546); +0.8% to
+    +1.4% of the baseline.
+  - Real local fees cut in half: MN 44 (16–94), NC 256 (91–569), OH 47 (17–105), TX 379 (134–838); +0.1%
+    to +0.2%.
+  - Real fees cut by up to $25,000: about twice the half cut, since most fees are under $25,000.
+  - Fee rise by half: the mirror of the half cut, except in MN, where the one feasibility-channel place
+    makes the rise cost more homes (mean −71) than the cut adds (+57).
+  - By size: plex doses are about 2.1 times the house dose per unit, but plexes are 1–6% of the baseline,
+    and 5+ unit buildings (34–83%) take none. Houses give most of the added homes everywhere; plexes give
+    39% in Ohio and 22% in Texas.
+  - Pencil-out table (`docs/research/fee-pencil-out.md`, 57 places with Oregon): fees are 1.5–3.6% of
+    building cost outside Oregon (7–13% there). A fourplex lot pays about three to four times a house's
+    fees and gains the most from a cut. Only 10 places have a parcel-roll new-home value; the others use
+    the ACS median, which understates new construction, so the land-value columns are weak in NC, OH and TX.
+  - Results page: `reports/fees-phase2-run/fees-phase2-results.html`, published at
+    https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. Files: `reports/fees-phase2-run/` (`run.log`,
+    `totals.csv`, `summary.json`). No outcome was read.
+- **Which number leads (Ben, 2026-11-10: "central estimate + range").** The run's summaries are means and
+  percentiles of 1,000 draws, and the elasticity draw is lopsided: triangular(0, 0.3, 1.75) has median about
+  0.62 and mean about 0.68, so the mean of draws (848 homes for real fees halved) implies a response about
+  twice the documented central 0.3. The results page now leads with the central-assumption path (ε 0.3,
+  λ 0.5, central ramp): about 418 homes for real fees halved (0.09% of the baseline) and about 2,674 for
+  the benchmark, computed as Σ baseline by size × central %Δ × mean ramp (0.872) from `totals.csv`. The
+  draws' P10–P90 is the likely range. A most-generous case (ε 1.75, λ 0.25, ramp half 0.5 / slope 0.25)
+  gives about 4,091 (0.91%). The draw distribution itself is unchanged; whether ε should be drawn so its
+  median is 0.3 (for example a lognormal) is open for a later entry. Page v3 also adds a worked example
+  (Raleigh: $9,343 fee, $2,336 to builders, 0.55% of $427,050, +0.16%, 7,756 houses × 0.87 ≈ 11) and
+  states what is not yet tested (no measured fee cut in our states; V6b and the Carthage comparison open).
+
 ### D-074 · 2026-11-10 · NC ADUs from counted homes: the flag undercount, more places, and the accuracy tests (method only, before any count)
 - **Why:** Ben (2026-11-10): the goal is an accurate number, and NC's ADU rate rests on too little of the state.
   The places with ADU-flagged permits (Raleigh, Durham city and county, Greensboro, the six Mecklenburg towns)
@@ -4826,3 +4902,101 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     few such places.
 - **Decided by:** Ben, 2026-11-10 ("a good plan"; it extends D-074). Written by Claude Code before any count
   or run. **Status:** method only.
+
+### D-076 · 2026-11-10 · Fees: the elasticity draw centred on 0.3, and the fee scenario run statewide
+- **Why:** Ben's review of the D-073 results page (2026-11-10). (a) The headline rested on a draw whose
+  middle was about twice the stated central elasticity (D-073 note). (b) The run covered only the 50 places
+  with coded fees. The Handbook asks for a statewide effect, and Lotline's results are statewide totals.
+- **Elasticity draw** (Ben: "fix and rerun"). `fee_permit_elasticity` is drawn lognormal with median 0.3
+  (`value`) and 95th percentile 1.75 (`high`): log-SD (ln 1.75 − ln 0.3) / 1.645 = 1.072, so the 5th
+  percentile is 0.051. It was triangular(0, 0.3, 1.75), with median 0.62 and mean 0.68.
+  - `low` (0, the null findings) stays in the yaml as the evidence's lower end, but the draw does not use it.
+  - Other parameters keep their triangular draws (`scenarios/fees.py` `LOGNORMAL`).
+  - Test: `test_elasticity_draw_is_centred_on_its_central_value`.
+- **Statewide run** (Ben: the model "needs to scale state wide").
+  - `scripts/dev/fee_dev_run.py --statewide` runs every place the baseline forecasts in the state. These are
+    the non-overlapping BPS units that `results.baseline_table` sums (MN 944, NC 221, OH 832, TX 940).
+  - Fees per type are coded where read; elsewhere they take the D-065 fill (state median, else pooled).
+  - Home values are ACS; none needed filling. Parcel inputs are used where a roll exists.
+  - Holdout places are included as inputs only: the panel is holdout-filtered and no outcome after the
+    origin is read.
+  - Oregon is not in the run.
+  - This is a development run. Wiring fees into `lotline results` (`ENGINE_SCENARIOS`) is a WS-ENGINE step
+    for later.
+- **Results (2026-11-10, commit 4aabece, origin 2025, window 2027–2031, 1,000 draws;
+  `reports/fees-statewide-run/`).** Five-year homes added, P50 (P10–P90):
+  - Real local fees halved: MN 173 (53–546), NC 486 (125–1,982), OH 118 (31–479), TX 672 (174–2,738).
+    The central-assumption path is about 1,482, 0.09% of a baseline of 1,588,691.
+  - Benchmark: MN 760, NC 3,197, OH 1,170, TX 7,387 (central path about 13,193, 0.83%).
+  - Fee rise by half: the mirror (central about −1,451). Minnesota is asymmetric through its 22
+    feasibility places.
+  - Most generous case (ε 1.75, λ 0.25, fast ramp): about 14,507 (0.91%).
+  - Each state's P50 is now within a few percent of its central path, which the triangular draw was not.
+  - Coded places hold 28–33% of each state's baseline homes; the rest use the state's median fee ($3,900
+    TX to $9,100 MN).
+  - 5+ unit buildings (30% of the baseline) take no dose.
+  - Results page v4: https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. No outcome was read.
+- **Decided by:** Ben, 2026-11-10 ("fix and rerun"; statewide scope). The lognormal form and its
+  parameters were written by Claude Code, for Ben to confirm in the PR. **Status:** built, tested, run.
+
+### D-077 · 2026-11-10 · Fees: a slider for the size of the fee change, and toggles for the home types a bill covers
+- **Why:** Ben, 2026-11-10: "some 'knobs' for this model", a fee-change slider and toggles for cutting
+  missing-middle fees. This follows his 2026-11-05 toggle design: a bill's provisions are knobs, preset to the
+  bill, while estimated quantities (ε, λ, the ramp) are never sliders and show as ranges.
+- **Knobs.**
+  - The size of the change in each place's own local fee per unit, from a rise of half (−0.5) to abolishing
+    fees (1.0), in steps of 0.1. 0.5 is the D-065 real-fee scenario and −0.5 the D-073 rise sensitivity.
+  - Which home types the bill covers: houses (BPS 1-unit), duplexes (2-unit), triplexes and fourplexes
+    (3–4 unit). Duplexes plus fourplexes on their own is "cut missing-middle fees". Buildings of 5 or more
+    units are never covered (D-073).
+  - ADU fees are a provision of the ADU bill, not this scenario (no ADU type in the fee model). That toggle
+    belongs with the ADU scenario's provisions.
+- **How, without a server** (the precomputed-grid route of the WS-APP brief).
+  - `fees.change_grid` runs every slider stop in every draw, with `run`'s parameter sets, fee draws and
+    seeds. So one draw is one world seen at every stop, and the grid's rows at 0.5 and −0.5 are `run`'s
+    results exactly (tested).
+  - It returns five-year units added per draw, size class and state.
+  - The feasibility channel is not linear in the cut, so the grid is computed, not scaled. The elasticity
+    channel is linear (tested).
+  - The page adds the switched-on classes and the states draw by draw, then reads P10/P50/P90. Adding up
+    percentiles would overstate the range.
+  - Its headline is the central path (all parameters central), the same lead as D-073's page.
+  - `scripts/dev/fee_knobs_export.py --page <html>` writes `reports/fees-knobs/grid.json` and puts it in the
+    page.
+- **Headline unit.** % of the baseline's five-year homes. The share of projected household growth (office
+  hours A2) waits for the household projection to be in the results bundle.
+- **Results (2026-11-10, origin 2025, window 2027–2031, 1,000 draws; `reports/fees-knobs/`).** The grid's
+  0.5 stop reproduces the D-076 run per state (e.g. MN P10/P50/P90 53 / 173 / 546). Central path, four
+  states, with the P10–P90 of the summed draws:
+  - All types: halved +1,482 (416–5,762); abolished +2,969 (838–11,331); raised by half −1,450
+    (−5,678 to −420). Nearly a straight line in the cut: the feasibility channel covers few places.
+  - Missing middle only (duplexes, triplexes and fourplexes): halved +142 (34–555); abolished +283
+    (69–1,111). Per unit the dose is about twice a house's, but these types are about 3% of the baseline.
+  - Houses only, halved: +1,340.
+  - Results page v5 (knobs): https://claude.ai/artifact/LN5G4rajXAxVi3uhEXtwDs. No outcome was read.
+- **Decided by:** Ben, 2026-11-10 ("Yes, prototype it"). The grid's stops, the toggles' grouping and the
+  page's design were chosen by Claude Code. **Status:** prototype on the development results page. Building
+  it into the app is a WS-APP step, reading the grid from the results bundle once fees are in `lotline results`.
+- **Revised 2026-11-10 (Ben's review of page v5).**
+  - The slider runs from abolishing fees (left) to raising them by half (right).
+  - The home-type toggles become one choice of which homes a bill targets: every home, duplexes only,
+    duplexes to fourplexes, or houses only. Other homes keep today's fees. The point is a bill that cuts
+    fees for one kind of home to encourage more of it.
+  - The page now shows the targeted type's own change: duplexes only, halved, gives +95 duplex homes, 0.3%
+    above the 36,250 expected.
+  - Stated limit: each type responds only to its own fee. There is no substitution from houses to duplexes
+    when only duplex fees fall, so a targeted cut shows added duplexes, not a shift. Modelling substitution
+    would need a cross-price response, and no source for one is in `docs/research/`.
+  - No engine change: the grid already holds each type's draws.
+- **Fee revenue, a test (2026-11-10; Ben: "let's do a test of the revenue slider", likely not kept).**
+  - `change_grid` adds `revenue_change` per draw: −s × fee × baseline + (1 − s) × fee × added, by type,
+    with the draw's fee (hand test `test_change_grid_revenue_by_hand`). The page shows it in a box marked
+    "Test".
+  - Every home, fees halved: about −$3.1 billion over five years (MN −$289M, NC −$1,119M, OH −$209M,
+    TX −$1,527M), against about $6.3 billion at today's fees. That is about $2.1 million per extra home
+    (likely $0.6–7.7 million).
+  - Duplexes only, halved: −$91 million.
+  - Not discounted. 70–88% of the dollars come from places using their state's median fee. What replaces
+    the revenue is not modelled.
+  - The page wording was also revised: "Explore other fee changes", "Fees unchanged: no homes added or
+    lost".

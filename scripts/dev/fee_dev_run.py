@@ -5,10 +5,12 @@
     uv run python scripts/dev/fee_dev_run.py [--origin 2025] [--state MN NC TX] [--out results.csv]
 
 For each state: places with rows in config/fees (St. Paul is left out: its outcomes from 2024 on are a holdout);
-baseline units per year = the baseline model's mean (`baseline.baseline_forecast`) summed over the four BPS
-size classes, from the holdout-filtered panel; median home value from the newest ACS 5-year vintage <= origin
+baseline units per year = the baseline model's mean (`baseline.baseline_forecast`) for each of the four BPS
+size classes and their sum, from the holdout-filtered panel (each size class takes its own dose, D-073); fee
+levels for houses, duplexes and fourplexes (`fee_levels.place_fees`, 2025 dollars); median home value from the newest ACS 5-year vintage <= origin
 (2025 dollars); parcel inputs (`scenarios.fees.parcel_inputs`) where the state has a parcel table. Runs the
-scenario in each mode (`fees.MODES`: the benchmark and the two real-fee scenarios, D-065) and prints five-year totals (P10/P50/P90 and mean of added units).
+scenario in each mode (`fees.MODES`: the benchmark, the two real-fee scenarios (D-065) and the fee-rise
+sensitivity (D-073)) and prints five-year totals (P10/P50/P90 and mean of added units), with each size class's.
 """
 
 from __future__ import annotations
@@ -28,19 +30,34 @@ HOLDOUT_PLACES = {"2758000", "3712000"}  # St. Paul, Charlotte: never in a devel
 
 
 def baseline_units(state: str, store, origin: int, geoids) -> pd.DataFrame:
-    """Mean baseline units a year (all BPS size classes) for each year of the forecast window (D-061), per place."""
+    """Mean baseline units a year for each year of the forecast window (D-061), per place: each BPS size
+    class (`baseline_y<h>_<class>`) and their sum (`baseline_y<h>`)."""
     p = load_params("baseline")
     panel = panels.load(state, store, theme="adu", rule_version=eligible.RULE_VERSION)
-    panel = panel[panel["geoid"].isin(geoids)]
+    if geoids is not None:
+        panel = panel[panel["geoid"].isin(geoids)]
     reported = bool(p["use_reported_only"].value)
+    horizons = range(1, int(p["forecast_horizon_years"].value) + 1)
     parts = []
     for size in baseline.SIZE_CLASSES:
         t = baseline.baseline_forecast(panel, baseline.outcome_column(size, reported), origin, params=p)
-        parts.append(t[["geoid", "horizon", "mean"]])
-    t = pd.concat(parts).groupby(["geoid", "horizon"])["mean"].sum().unstack("horizon")
-    t = t.reindex(columns=range(1, int(p["forecast_horizon_years"].value) + 1))
-    t.columns = [f"baseline_y{h}" for h in t.columns]
-    return t.rename_axis(columns=None).reset_index()
+        parts.append(t[["geoid", "horizon", "mean"]].assign(size=size))
+    long = pd.concat(parts)
+    total = long.groupby(["geoid", "horizon"])["mean"].sum().unstack("horizon").reindex(columns=horizons)
+    total.columns = [f"baseline_y{h}" for h in total.columns]
+    by = long.set_index(["geoid", "size", "horizon"])["mean"].unstack(["horizon", "size"])
+    by.columns = [f"baseline_y{h}_{s}" for h, s in by.columns]
+    return total.join(by).rename_axis(columns=None).reset_index()
+
+
+def type_fees(geoids: pd.DataFrame, coded: pd.DataFrame, cpi) -> pd.DataFrame:
+    """Fee per unit for houses (unsuffixed columns) and duplexes and fourplexes (`_U2`, `_U3_4`), D-073."""
+    keep = ["local_fee_per_unit", "local_fee_low", "local_fee_high", "fee_source"]
+    out = fee_levels.place_fees(geoids, coded, "SFD", index=cpi)
+    for t in ("U2", "U3_4"):
+        f = fee_levels.place_fees(geoids, coded, t, index=cpi)[["geoid", *keep]]
+        out = out.merge(f.rename(columns={k: f"{k}_{t}" for k in keep}), on="geoid", how="left")
+    return out
 
 
 def all_coded_fees() -> pd.DataFrame:
@@ -56,14 +73,41 @@ def places_for(state: str, store, origin: int) -> pd.DataFrame | None:
     cpi = money.index_by_year(store.read(state, "market_geo_year"), "cpi_u")
     geoids = coded[["jurisdiction_geoid", "state"]].drop_duplicates()
     geoids = geoids.rename(columns={"jurisdiction_geoid": "geoid"})
-    local = fee_levels.place_fees(geoids, all_coded_fees(), "SFD", index=cpi)
+    local = type_fees(geoids, all_coded_fees(), cpi)
     local = local[~local["geoid"].isin(HOLDOUT_PLACES)].drop(columns="state")
     juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "state"]]
     places = local.merge(juris, on="geoid", how="left")
     places = places.merge(baseline_units(state, store, origin, places["geoid"]), on="geoid", how="left")
     places["acs_geo"] = places["kind"].map(adu.ACS_PREFIX) + ":" + places["geoid"]
     acs = adu.acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
-    places = places.merge(acs[["home_value"]], left_on="acs_geo", right_index=True, how="left")
+    places = places.merge(acs[["home_value", "rent"]], left_on="acs_geo", right_index=True, how="left")
+    parcels = store.read(state, "parcels")
+    if parcels is not None:
+        parcels = parcels[parcels["jurisdiction_geoid"].isin(places["geoid"])]
+        places = places.merge(
+            fees.parcel_inputs(parcels, origin, fees.central_params()), on="geoid", how="left"
+        )
+    return places
+
+
+def statewide_places(state: str, store, origin: int) -> pd.DataFrame:
+    """Every place the baseline forecasts in the state (the BPS units `results.baseline_table` sums), with
+    fees per type (coded, or the D-065 fill: the state's or the pooled median), ACS home value (places without
+    one take the state's median, flagged `home_value_filled`) and parcel inputs where the state has a roll.
+    Holdout places are included as inputs: the panel's outcomes are holdout-filtered, and no outcome after the
+    origin is read (D-076)."""
+    cpi = money.index_by_year(store.read(state, "market_geo_year"), "cpi_u")
+    base = baseline_units(state, store, origin, None)
+    juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "state"]]
+    places = base.merge(juris, on="geoid", how="left")
+    places["state"] = state.upper()
+    local = type_fees(places[["geoid", "state"]], all_coded_fees(), cpi).drop(columns="state")
+    places = places.merge(local, on="geoid", how="left")
+    places["acs_geo"] = places["kind"].map(adu.ACS_PREFIX) + ":" + places["geoid"]
+    acs = adu.acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
+    places = places.merge(acs[["home_value", "rent"]], left_on="acs_geo", right_index=True, how="left")
+    places["home_value_filled"] = places["home_value"].isna()
+    places["home_value"] = places["home_value"].fillna(places["home_value"].median())
     parcels = store.read(state, "parcels")
     if parcels is not None:
         parcels = parcels[parcels["jurisdiction_geoid"].isin(places["geoid"])]
@@ -78,11 +122,12 @@ def main() -> None:
     ap.add_argument("--origin", type=int, default=2025)
     ap.add_argument("--state", nargs="+", default=["MN", "NC", "TX"])
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--statewide", action="store_true", help="every place the baseline forecasts (D-076)")
     a = ap.parse_args()
     store = DataStore()
     frames = []
     for state in a.state:
-        places = places_for(state, store, a.origin)
+        places = (statewide_places if a.statewide else places_for)(state, store, a.origin)
         if places is None or places.empty:
             continue
         ok = places["home_value"].notna() & places.filter(like="baseline_y").notna().all(axis=1)
@@ -97,10 +142,25 @@ def main() -> None:
             _, totals, summary = fees.run(places, a.origin, mode=mode, summary_by="state")
             frames.append(totals.assign(state=state))
             five = summary.iloc[-1]
+            by = ", ".join(
+                f"{c} unit: mean {totals[f'units_added_mean_{c}'].sum():,.1f}"
+                for c in fees.SIZE_TYPES
+                if f"units_added_mean_{c}" in totals
+            )
             print(
                 f"\n{state}, mode {mode}: {len(places)} places; sum of draws, five years: units added "
                 f"P10 {five.p10:,.0f} / P50 {five.p50:,.0f} / P90 {five.p90:,.0f} (mean {five['mean']:,.0f})"
+                + (f"; by size ({by}; 5+ unchanged)" if by else "")
             )
+            if a.statewide:
+                if mode == fees.MODES[0]:
+                    src = places["fee_source"].str.split(" ").str[0].value_counts().to_dict()
+                    print(
+                        f"{state}: {len(places)} places; fee source {src}; home value filled "
+                        f"{int(places['home_value_filled'].sum())}; baseline "
+                        f"{places.filter(regex=r'^baseline_y\d$').sum().sum():,.0f} homes in 5 yrs"
+                    )
+                continue
             for _, r in totals.iterrows():
                 print(
                     f"- {r['name']}: fee ${r['fee_per_unit']:,.0f} ({r['fee_source']}; {r['fee_components']}), "

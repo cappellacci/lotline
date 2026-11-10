@@ -1,0 +1,36 @@
+
+MN, mode handbook: 944 places; sum of draws, five years: units added P10 230 / P50 760 / P90 2,523 (mean 1,233); by size (1 unit: mean 1,129.5, 2 unit: mean 64.9, 3_4 unit: mean 38.7; 5+ unchanged)
+MN: 944 places; fee source {'state': 926, 'local': 18}; home value filled 0; baseline 0 homes in 5 yrs
+
+MN, mode local_half: 944 places; sum of draws, five years: units added P10 53 / P50 173 / P90 546 (mean 270); by size (1 unit: mean 253.8, 2 unit: mean 10.5, 3_4 unit: mean 5.2; 5+ unchanged)
+
+MN, mode local_25k: 944 places; sum of draws, five years: units added P10 110 / P50 340 / P90 1,075 (mean 528); by size (1 unit: mean 496.8, 2 unit: mean 21.0, 3_4 unit: mean 10.4; 5+ unchanged)
+
+MN, mode local_rise: 944 places; sum of draws, five years: units added P10 -683 / P50 -184 / P90 -54 (mean -311); by size (1 unit: mean -295.2, 2 unit: mean -10.5, 3_4 unit: mean -5.2; 5+ unchanged)
+
+NC, mode handbook: 221 places; sum of draws, five years: units added P10 824 / P50 3,197 / P90 12,980 (mean 5,933); by size (1 unit: mean 5,648.5, 2 unit: mean 252.5, 3_4 unit: mean 31.9; 5+ unchanged)
+NC: 221 places; fee source {'state': 205, 'local': 16}; home value filled 0; baseline 0 homes in 5 yrs
+
+NC, mode local_half: 221 places; sum of draws, five years: units added P10 125 / P50 486 / P90 1,982 (mean 907); by size (1 unit: mean 867.9, 2 unit: mean 34.6, 3_4 unit: mean 4.4; 5+ unchanged)
+
+NC, mode local_25k: 221 places; sum of draws, five years: units added P10 249 / P50 972 / P90 3,964 (mean 1,814); by size (1 unit: mean 1,735.7, 2 unit: mean 69.1, 3_4 unit: mean 8.9; 5+ unchanged)
+
+NC, mode local_rise: 221 places; sum of draws, five years: units added P10 -1,982 / P50 -486 / P90 -125 (mean -907); by size (1 unit: mean -867.9, 2 unit: mean -34.6, 3_4 unit: mean -4.4; 5+ unchanged)
+
+OH, mode handbook: 832 places; sum of draws, five years: units added P10 301 / P50 1,170 / P90 4,729 (mean 2,170); by size (1 unit: mean 1,754.8, 2 unit: mean 202.8, 3_4 unit: mean 212.5; 5+ unchanged)
+OH: 832 places; fee source {'state': 827, 'local': 5}; home value filled 0; baseline 0 homes in 5 yrs
+
+OH, mode local_half: 832 places; sum of draws, five years: units added P10 31 / P50 118 / P90 479 (mean 220); by size (1 unit: mean 184.5, 2 unit: mean 17.5, 3_4 unit: mean 18.0; 5+ unchanged)
+
+OH, mode local_25k: 832 places; sum of draws, five years: units added P10 61 / P50 236 / P90 958 (mean 440); by size (1 unit: mean 369.1, 2 unit: mean 34.9, 3_4 unit: mean 36.0; 5+ unchanged)
+
+OH, mode local_rise: 832 places; sum of draws, five years: units added P10 -479 / P50 -118 / P90 -31 (mean -220); by size (1 unit: mean -184.5, 2 unit: mean -17.5, 3_4 unit: mean -18.0; 5+ unchanged)
+
+TX, mode handbook: 940 places; sum of draws, five years: units added P10 1,911 / P50 7,387 / P90 30,231 (mean 13,764); by size (1 unit: mean 11,837.0, 2 unit: mean 1,221.4, 3_4 unit: mean 706.0; 5+ unchanged)
+TX: 940 places; fee source {'state': 930, 'local': 10}; home value filled 0; baseline 0 homes in 5 yrs
+
+TX, mode local_half: 940 places; sum of draws, five years: units added P10 174 / P50 672 / P90 2,738 (mean 1,247); by size (1 unit: mean 1,089.2, 2 unit: mean 104.8, 3_4 unit: mean 53.1; 5+ unchanged)
+
+TX, mode local_25k: 940 places; sum of draws, five years: units added P10 348 / P50 1,345 / P90 5,476 (mean 2,494); by size (1 unit: mean 2,178.5, 2 unit: mean 209.6, 3_4 unit: mean 106.3; 5+ unchanged)
+
+TX, mode local_rise: 940 places; sum of draws, five years: units added P10 -2,738 / P50 -672 / P90 -174 (mean -1,247); by size (1 unit: mean -1,089.2, 2 unit: mean -104.8, 3_4 unit: mean -53.1; 5+ unchanged)

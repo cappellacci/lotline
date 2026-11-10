@@ -1,0 +1,6 @@
+MN: 944 places, 67s; at a cut of half: central 162, P10/P50/P90 53 / 173 / 546; revenue change central $-289M
+NC: 221 places, 12s; at a cut of half: central 483, P10/P50/P90 125 / 486 / 1,982; revenue change central $-1,119M
+OH: 832 places, 36s; at a cut of half: central 122, P10/P50/P90 31 / 118 / 479; revenue change central $-209M
+TX: 940 places, 60s; at a cut of half: central 715, P10/P50/P90 174 / 672 / 2,738; revenue change central $-1,527M
+wrote reports/fees-knobs/grid.json (2.2 MB)
+uv run python scripts/dev/fee_knobs_export.py  140.67s user 25.61s system 93% cpu 2:57.17 total

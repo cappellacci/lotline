@@ -1,0 +1,302 @@
+{
+ "summary": {
+  "MN": {
+   "handbook": {
+    "places": 18,
+    "p10": 74,
+    "p50": 189,
+    "p90": 404,
+    "mean": 225
+   },
+   "local_half": {
+    "places": 18,
+    "p10": 16,
+    "p50": 44,
+    "p90": 94,
+    "mean": 57
+   },
+   "local_25k": {
+    "places": 18,
+    "p10": 32,
+    "p50": 88,
+    "p90": 189,
+    "mean": 113
+   },
+   "local_rise": {
+    "places": 18,
+    "p10": -99,
+    "p50": -45,
+    "p90": -16,
+    "mean": -71
+   }
+  },
+  "NC": {
+   "handbook": {
+    "places": 16,
+    "p10": 540,
+    "p50": 1533,
+    "p90": 3414,
+    "mean": 1786
+   },
+   "local_half": {
+    "places": 16,
+    "p10": 91,
+    "p50": 256,
+    "p90": 569,
+    "mean": 298
+   },
+   "local_25k": {
+    "places": 16,
+    "p10": 181,
+    "p50": 511,
+    "p90": 1139,
+    "mean": 597
+   },
+   "local_rise": {
+    "places": 16,
+    "p10": -569,
+    "p50": -256,
+    "p90": -91,
+    "mean": -298
+   }
+  },
+  "OH": {
+   "handbook": {
+    "places": 5,
+    "p10": 123,
+    "p50": 344,
+    "p90": 768,
+    "mean": 398
+   },
+   "local_half": {
+    "places": 5,
+    "p10": 17,
+    "p50": 47,
+    "p90": 105,
+    "mean": 54
+   },
+   "local_25k": {
+    "places": 5,
+    "p10": 34,
+    "p50": 94,
+    "p90": 210,
+    "mean": 109
+   },
+   "local_rise": {
+    "places": 5,
+    "p10": -105,
+    "p50": -47,
+    "p90": -17,
+    "mean": -54
+   }
+  },
+  "TX": {
+   "handbook": {
+    "places": 11,
+    "p10": 1052,
+    "p50": 2929,
+    "p90": 6546,
+    "mean": 3417
+   },
+   "local_half": {
+    "places": 11,
+    "p10": 134,
+    "p50": 379,
+    "p90": 838,
+    "mean": 438
+   },
+   "local_25k": {
+    "places": 11,
+    "p10": 268,
+    "p50": 758,
+    "p90": 1676,
+    "mean": 875
+   },
+   "local_rise": {
+    "places": 11,
+    "p10": -838,
+    "p50": -379,
+    "p90": -134,
+    "mean": -438
+   }
+  }
+ },
+ "baseline": {
+  "MN": {
+   "baseline_five_year": 26230.0,
+   "baseline_five_year_1": 9876.0,
+   "baseline_five_year_2": 130.0,
+   "baseline_five_year_3_4": 344.0,
+   "baseline_five_year_5p": 15880.0
+  },
+  "NC": {
+   "baseline_five_year": 130749.0,
+   "baseline_five_year_1": 85086.0,
+   "baseline_five_year_2": 952.0,
+   "baseline_five_year_3_4": 417.0,
+   "baseline_five_year_5p": 44294.0
+  },
+  "OH": {
+   "baseline_five_year": 52723.0,
+   "baseline_five_year_1": 6850.0,
+   "baseline_five_year_2": 1034.0,
+   "baseline_five_year_3_4": 1315.0,
+   "baseline_five_year_5p": 43524.0
+  },
+  "TX": {
+   "baseline_five_year": 239385.0,
+   "baseline_five_year_1": 107827.0,
+   "baseline_five_year_2": 12883.0,
+   "baseline_five_year_3_4": 1640.0,
+   "baseline_five_year_5p": 117035.0
+  }
+ },
+ "bysize": {
+  "MN|handbook": {
+   "units_added_mean_1": 204.5,
+   "units_added_mean_2": 5.5,
+   "units_added_mean_3_4": 14.6
+  },
+  "MN|local_25k": {
+   "units_added_mean_1": 106.7,
+   "units_added_mean_2": 2.2,
+   "units_added_mean_3_4": 4.1
+  },
+  "MN|local_half": {
+   "units_added_mean_1": 54.3,
+   "units_added_mean_2": 1.1,
+   "units_added_mean_3_4": 2.0
+  },
+  "MN|local_rise": {
+   "units_added_mean_1": -68.0,
+   "units_added_mean_2": -1.1,
+   "units_added_mean_3_4": -2.0
+  },
+  "NC|handbook": {
+   "units_added_mean_1": 1724.5,
+   "units_added_mean_2": 43.1,
+   "units_added_mean_3_4": 18.5
+  },
+  "NC|local_25k": {
+   "units_added_mean_1": 580.9,
+   "units_added_mean_2": 11.1,
+   "units_added_mean_3_4": 4.6
+  },
+  "NC|local_half": {
+   "units_added_mean_1": 290.4,
+   "units_added_mean_2": 5.6,
+   "units_added_mean_3_4": 2.3
+  },
+  "NC|local_rise": {
+   "units_added_mean_1": -290.4,
+   "units_added_mean_2": -5.6,
+   "units_added_mean_3_4": -2.3
+  },
+  "OH|handbook": {
+   "units_added_mean_1": 242.2,
+   "units_added_mean_2": 69.8,
+   "units_added_mean_3_4": 85.7
+  },
+  "OH|local_25k": {
+   "units_added_mean_1": 72.3,
+   "units_added_mean_2": 17.4,
+   "units_added_mean_3_4": 19.1
+  },
+  "OH|local_half": {
+   "units_added_mean_1": 36.1,
+   "units_added_mean_2": 8.7,
+   "units_added_mean_3_4": 9.5
+  },
+  "OH|local_rise": {
+   "units_added_mean_1": -36.1,
+   "units_added_mean_2": -8.7,
+   "units_added_mean_3_4": -9.5
+  },
+  "TX|handbook": {
+   "units_added_mean_1": 2672.4,
+   "units_added_mean_2": 657.4,
+   "units_added_mean_3_4": 87.2
+  },
+  "TX|local_25k": {
+   "units_added_mean_1": 710.6,
+   "units_added_mean_2": 144.3,
+   "units_added_mean_3_4": 20.4
+  },
+  "TX|local_half": {
+   "units_added_mean_1": 355.3,
+   "units_added_mean_2": 72.2,
+   "units_added_mean_3_4": 10.2
+  },
+  "TX|local_rise": {
+   "units_added_mean_1": -355.3,
+   "units_added_mean_2": -72.2,
+   "units_added_mean_3_4": -10.2
+  }
+ },
+ "pct_handbook": {
+  "MN": {
+   "pct_change_central_1": 1.0,
+   "pct_change_central_2": 2.14,
+   "pct_change_central_3_4": 2.14
+  },
+  "NC": {
+   "pct_change_central_1": 0.99,
+   "pct_change_central_2": 2.12,
+   "pct_change_central_3_4": 2.12
+  },
+  "OH": {
+   "pct_change_central_1": 3.19,
+   "pct_change_central_2": 6.86,
+   "pct_change_central_3_4": 6.86
+  },
+  "TX": {
+   "pct_change_central_1": 1.31,
+   "pct_change_central_2": 2.83,
+   "pct_change_central_3_4": 2.83
+  }
+ },
+ "pct_local": {
+  "MN": {
+   "pct_change_central_1": 0.196,
+   "pct_change_central_2": 0.358,
+   "pct_change_central_3_4": 0.322
+  },
+  "NC": {
+   "pct_change_central_1": 0.141,
+   "pct_change_central_2": 0.284,
+   "pct_change_central_3_4": 0.284
+  },
+  "OH": {
+   "pct_change_central_1": 0.354,
+   "pct_change_central_2": 0.44,
+   "pct_change_central_3_4": 0.498
+  },
+  "TX": {
+   "pct_change_central_1": 0.187,
+   "pct_change_central_2": 0.341,
+   "pct_change_central_3_4": 0.368
+  }
+ },
+ "fee": {
+  "MN": {
+   "fee_per_unit": 9158.0,
+   "fee_per_unit_U2": 7604.0,
+   "fee_per_unit_U3_4": 6953.0
+  },
+  "NC": {
+   "fee_per_unit": 6668.0,
+   "fee_per_unit_U2": 6231.0,
+   "fee_per_unit_U3_4": 7004.0
+  },
+  "OH": {
+   "fee_per_unit": 7194.0,
+   "fee_per_unit_U2": 5987.0,
+   "fee_per_unit_U3_4": 5779.0
+  },
+  "TX": {
+   "fee_per_unit": 6516.0,
+   "fee_per_unit_U2": 6166.0,
+   "fee_per_unit_U3_4": 6208.0
+  }
+ }
+}
