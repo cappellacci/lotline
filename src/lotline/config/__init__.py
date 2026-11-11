@@ -163,8 +163,8 @@ UNDERCOUNT_KINDS = ("field", "parser", "floor", "none")
 class UndercountRow(_Model):
     """One permit source's ADU flag undercount k (D-078). `value` is the median, `low`-`high` the two-sided
     `interval`. A field row with `prior: true` takes the table's prior; a parser row with no value has no hand
-    check yet (k = 1); floor and none rows are k = 1. Field k >= 1; a parser k is precision / recall (D-081) and
-    may be below 1."""
+    check yet (k = 1); floor and none rows are k = 1. Field k >= 1; a parser k is precision / recall
+    (D-081) and may be below 1."""
 
     source: str
     place: str
