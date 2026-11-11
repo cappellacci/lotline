@@ -26,9 +26,8 @@ Free disk went from 27 GB to 15 GB during the run (StratMap and the NC/MN parcel
 
 ## ADU permits per source per year, before → after
 
-Unchanged cells show one number. "Other yrs" covers issue years before 2015. "Reclassified" counts permits that
-were already in the old table but changed type; "new rows" counts permits newly published by the source. 2026 is a
-partial year.
+Unchanged cells show one number. "Other yrs" covers issue years before 2015. 2026 is a partial year. These cells mix
+the parser fix with new data. The next section separates the two and labels each changed cell.
 
 #### MN
 
@@ -84,28 +83,56 @@ St. Paul has no ADU rows in either build (V5 holdout still active; the filter st
 | mwvcog | 0 | 0 | 0 | 8 | 12 | 67 | 24 | 28 | 56 | 21 | 46 | 0 | 0 | 262 | 0% |
 | portland | 387 | 549 | 518 | 593 | 341 | 241 | 251 | 275 | 221 | 178 | 160 | 78 | 1,104 | 4,896 | 0% |
 
-## What the parser fix changed
+## What the parser fix changed, separated from new data
 
-Gains and losses are matched by `permit_id`. "Reclassified" permits were in the old table with another type, so
-the parser or adapter changed them. "New rows" were newly published by the source.
+Most sources were re-downloaded today as new 2026-11-11 snapshots (ArcGIS and Socrata). Cached files were reused
+for Greensboro (2026-11-09), StratMap, Census and the other static files. A before → after diff therefore mixes
+two things, so every `permits` table was rebuilt a second time from **today's raw files with the pre-#376
+parser**. That build ran on `main` with only `src/lotline/parse/permit_text.py` taken from `909e7f4e^1`, and no
+adapter reads `adu_removed`. It wrote to scratch only, ran the same holdout check, and added nothing to the
+manifest. The difference between the old and new parser runs gives two effects:
 
-| Source | Newly counted (reclassified) | Newly counted (new rows) | No longer counted | Of those, removals (`adu_removed`) |
-|---|---:|---:|---:|---:|
-| NC meck | 28 | 0 | 2 | 0 (both negations) |
-| NC asheville | 13 | 0 | 2 | **2** |
-| NC greensboro | 9 | 0 | 1 | 0 (a negation) |
-| TX fw | 4 | 2 | 2 | 0 (both "already built") |
-| OH cincy | 3 | 0 | 0 | - |
-| TX dallas | 1 | 0 | 0 | - (the one gain is a false positive, fixed in #380) |
-| MN mpls | 1 | 1 | 0 | - |
-| TX sa, OR bend, NC wilmington, NC raleigh | 0 | 4, 2, 2, 1 | 0 | - |
-| every other source | 0 | 0 | 0 | - |
+- **data effect** = old parser on today's raw − the old table (new or edited source records);
+- **parser effect** = new parser − old parser, both on today's raw (the #376 fix alone).
 
-In all: 59 permits reclassified as new ADUs, 7 no longer counted, and 2 of the 7 are explicit ADU removals.
+| Source | Before | Old parser, today's data | New parser, today's data (after) | Data effect | Parser effect (+new / −dropped) |
+|---|---:|---:|---:|---:|---:|
+| NC meck | 415 | 415 | 441 | 0 | **+26** (+28 / −2) |
+| NC asheville | 361 | 361 | 372 | 0 | **+11** (+13 / −2) |
+| NC greensboro | 36 | 36 | 44 | 0 | **+8** (+9 / −1) |
+| OH cincy | 26 | 26 | 29 | 0 | **+3** (+3 / −0) |
+| TX fw | 113 | 115 | 117 | +2 | **+2** (+4 / −2) |
+| TX dallas | 1 | 1 | 2 | 0 | **+1** (+1 / −0, a false positive, #380) |
+| TX sa | 295 | 299 | 299 | +4 | 0 |
+| MN mpls | 211 | 213 | 213 | +2 | 0 |
+| NC wilmington | 357 | 359 | 359 | +2 | 0 |
+| OR bend | 655 | 657 | 657 | +2 | 0 |
+| NC raleigh | 300 | 301 | 301 | +1 | 0 |
+| every other source | = | = | = | 0 | 0 |
+
+**Which year cells are which.** Every data-effect change falls in 2026 (new 2026 permits): Minneapolis 15→17,
+Raleigh 67→68, Wilmington 79→81, Fort Worth 9→11, San Antonio 41→45, Bend 27→29. Every other changed cell in the
+per-year tables above is parser effect:
+
+- Mecklenburg: 2007 0→1, 2009 3→6, 2012 2→3, 2016 8→9, 2017 9→10, 2018 22→23, 2019 28→31, 2020 41→44, 2021 29→31,
+  2022 45→47, 2024 73→79, 2025 53→55
+- Asheville: 2015 14→15, 2016 36→37, 2017 49→50, 2018 34→36, 2020 20→22, 2022 26→28, 2023 38→39, 2024 30→29,
+  2026 24→26
+- Greensboro: 2002 1→2, 2016 0→1, 2017 0→1, 2019 1→2, 2021 0→1, 2023 3→4, 2024 3→4, 2025 5→6
+- Cincinnati: 2020 11→12, 2025 3→4, 2026 3→4
+- Fort Worth: 2005 0→1, 2012 1→2, 2015 1→2, 2016 5→4, 2017 4→3, 2025 8→9 (its 2026 change is data)
+- Dallas: 2011 0→1 (the false positive)
+
+In all, the parser fix newly counts **58** ADUs and drops **7**; 2 of the 7 are explicit ADU removals (Asheville).
+The other drops are negations (Meck 2, Greensboro 1) and "already built" legalizations (Fort Worth 2).
 `adu_removed` is a parser field, not a `permits` column. It was found by re-running `parse_description` on the
-raw descriptions of the permits that dropped out.
+raw descriptions of the dropped permits.
 
-Examples of reclassified permits (raw descriptions, shortened; names and phone numbers left out):
+*Correction to the first version of this report.* A `permit_id` match had counted one Minneapolis permit as
+"reclassified". The old-parser run shows it is a source edit (data effect), not the parser. Minneapolis is
+unaffected by the parser fix.
+
+Examples of permits the parser fix reclassified (raw descriptions, shortened; names and phone numbers left out):
 
 - **Mecklenburg, gained** (code-434 alteration permits naming an ADU): "ADU Upfit (interior renovation)",
   "Accessory Dwelling Upfit (interior completion)", "Mother-in-law suite Upfit (interior renovation)", "Garage
@@ -136,7 +163,7 @@ Cincinnati's 3 gains were not pulled from raw. Their `permit_class_raw` values a
 ## Sources moving by more than 25%
 
 - **TX dallas: 1 → 2 (+100%).** One permit, a false positive (above; fixed in #380).
-- No other source moved by more than 25%. The largest were Greensboro +22% (36 → 44, 9 additions now read as ADUs),
+- No other source moved by more than 25%. The largest were Greensboro +22% (36 → 44, all parser effect),
   Cincinnati +12% and Mecklenburg +6%.
 
 ## County remainders and other permit-level lot counts
@@ -193,15 +220,16 @@ refreshed Met Council parcels) and 126 NC rows in 8 jurisdictions (37119 and Arc
 
 ## Input to the next step (parser hand checks)
 
-These parser sources' ADU counts changed through reclassification, so they need a new 1/recall check: **NC meck
-(+28/−2), NC asheville (+13/−2), NC greensboro (+9/−1), TX fw (+4/−2), OH cincy (+3), TX dallas (+1, false
-positive, #380), MN mpls (+1).** Precision checks worth adding: Meck "ADU upfit (interior renovation)" and
+These sources' ADU counts changed through the parser fix itself (old vs new parser on the same raw), so they
+need a new 1/recall check: **NC meck (+28/−2), NC asheville (+13/−2), NC greensboro (+9/−1), TX fw (+4/−2), OH
+cincy (+3), TX dallas (+1, false positive, #380).** Precision checks worth adding: Meck "ADU upfit (interior renovation)" and
 Asheville main-house remodels that mention an ADU only as context. Fort Worth "already built" legalizations need
-a methods call. Every other source's ADU count moved only by newly published rows, or not at all.
+a methods call. The parser fix changed no other source's ADU count; any changes there are new 2026 data.
 
 ## How this was made
 
-Claude Code ran the fetches and wrote throwaway comparison scripts, kept outside the repo. They read the
+Claude Code ran the fetches, a second scratch-only build of every `permits` table with the pre-#376 parser, and
+throwaway comparison scripts, all kept outside the repo. They read the
 before-copy and the rebuilt tables and count ADU rows by source and year. They also match gained and lost
 `permit_id`s, pull those permits' raw descriptions, and call `eligible.load` with both remainder kinds. Only
 aggregates and short shortened descriptions appear here. No downloaded data is committed.
