@@ -5276,6 +5276,12 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   before its coded date takes `[predates]` and leaves the event set; it is never re-dated by judgment. A place
   closed as "no usable source" keeps its `[earliest-known]` tag and is in the main fit. The tag sensitivity
   (`rule_tags.SENSITIVITIES`) is reported with the main result, not as a footnote.
+- **A tag counts only on the row that sets the event.** For this sensitivity, a place is dropped only if the
+  row that creates its event (the first cap rise) carries `[earliest-known]`, `DATE UNCONFIRMED` or a blank
+  adoption date. Today a blank date anywhere drops the place. Oregon's SB 458 land-division rows set no unit cap
+  and have blank adoption dates, so the current reading would drop all of Oregon
+  (`reports/or/mm-rule-checks-2026-11.md`, #397). The change goes in `rule_tags.py` with a synthetic-fixture
+  test before any run.
 - **Oregon joins** (the dated entry D-054 requires). Its places are those with a first cap rise in 2016–2025
   under the accepted `or.csv` rows. **Disclosed:** Oregon's BPS outcomes were seen in V9, so Oregon is fitted
   data here, not a test.
