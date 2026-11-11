@@ -29,3 +29,12 @@
   - The method-only D-entry decides whether League City and Houston leave the cap-rise set, and whether
     "standards" reforms get their own class.
   - Optional: OCR of the Lubbock R-2 zone-case staff reports, which needs a local OCR install.
+- **Ben's decisions (2026-11-11, in chat, recorded in the report):**
+  1. Keep League City and Houston. The aim is the state's 2–4 unit production; always-allowed places show what a
+     healthy market builds.
+  2. Include standards reforms (Houston MUR) to show they work.
+  3. Drop the League City RSF-5 recheck.
+
+  The method-only D-entry has to say:
+  - how always-allowed (`[predates]`) places enter the fit;
+  - how the standards class is fitted and judged.

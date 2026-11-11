@@ -10,6 +10,18 @@ before it.
 touches St. Paul. `config/reforms/tx.csv` is **not edited**, because Texas coding closed on 2026-11-01. The rows
 below are proposals for Ben. No records requests were filed and no staff were emailed. No bot check was bypassed.
 
+## Ben's decisions (2026-11-11, in chat)
+
+1. **Keep League City and Houston.** The aim is to count and estimate how many 2–4 unit buildings the state
+   produces, so these places stay in play whether a period falls before or after a rule. Places where duplexes
+   have long been legal show what gets built in a healthy market.
+2. **Include standards reforms like Houston's MUR.** Don't exclude them. The value is in showing that making a
+   housing type feasible works, not only making it legal.
+3. **Drop the League City RSF-5 recheck.** It is a special-use cell and doesn't change the by-right dose.
+
+The recommendations below to drop League City and Houston from the event set are **superseded**. The proposals
+and the fit-set section have been revised to match.
+
 ## Plain-language summary
 
 | Place | What we coded | What the check found | Effect on the fit set |
@@ -20,7 +32,9 @@ below are proposals for Ben. No records requests were filed and no staff were em
 | **Lubbock** | 2023 UDC: duplex and 3–4 units "L" in SF-2 (dose 4); pre-UDC row missing | **Partly right** (as found on 2026-11-07). The cells are confirmed, but the block-face rule keeps duplexes off all-single-family block faces, so the gain on built-out lots is about zero. **Ch. 40 text: no usable source.** | **Stay out** (D-059 stands). Close the Ch. 40 row as "no usable source"; an inferred prior row is offered for reference only. |
 
 Net result: **of the four Texas fit-set places checked, one is confirmed (Lewisville). League City and Houston are
-not cap-rise events as coded, and Lubbock stays out.**
+not cap-rise events as coded, and Lubbock stays out.** Per Ben's decisions above, League City and Houston stay in
+anyway: League City as an always-allowed place, Houston as a standards event. The "Effect on the fit set" column
+shows the second coder's original recommendation.
 
 ## Check table
 
@@ -54,8 +68,8 @@ mirror, or a consistent indirect source; **L** = inference or search snippet onl
   has Duplex **S** in RSF-5. I checked the cell order against the header row: RSF-20, -10, -7 blank, RSF-5 S, RSF-2
   P. The 2011 draft also has S in RSF-5. That matches the reading withdrawn on 2026-10-30 (#32). Ben's lookup that
   day, on the official Article 3 PDF, found no duplex by right or by SUP in RSF-5. The mirror's version date is
-  unknown. **Flag for Ben:** recheck Table 3.13.1 on the official PDF (DocumentCenter 45962). An SUP isn't by
-  right, so the fit's dose doesn't depend on it either way.
+  unknown. An SUP isn't by right, so the fit's dose doesn't depend on it. **Closed by Ben (2026-11-11): not
+  rechecked.**
 - **Proposed recode:** the 2020 row stays as a rule row (it is what's in force) but is not a reform event. Add a
   prior row giving RSF-2 duplexes P, with start date not found. The earliest evidence that it was in force is
   2015, and it probably reaches back to 2011 or 2005. With an `[earliest-known]` date of 2015 the place would
@@ -129,22 +143,31 @@ Column names follow `config/reforms/tx.csv`. Only the fields that change or matt
 
 | # | reform_id | Change | Key fields | Note text (start) |
 |---|---|---|---|---|
-| 1 | `TX-4841980-missing_middle-2020` | edit | `supersedes` = `TX-4841980-missing_middle-2010`; `coder_2` = claude-second-coder-2026-11-11; `coder_agreement` = partly | "Recodification (§125-1.1, Ord. 2020-25 'amended and recodified' Ord. 99-52); duplex P in RSF-2 unchanged from pre-2020 code; not a reform event. RSF-5 duplex S on zoneomics vs none on official PDF (2026-10-30): recheck." |
+| 1 | `TX-4841980-missing_middle-2020` | edit | `supersedes` = `TX-4841980-missing_middle-2010`; `coder_2` = claude-second-coder-2026-11-11; `coder_agreement` = partly | "Recodification (§125-1.1, Ord. 2020-25 'amended and recodified' Ord. 99-52); duplex P in RSF-2 unchanged from pre-2020 code; not a new permission in 2020. Kept as an always-allowed place for healthy-market production (Ben 2026-11-11)." |
 | 2 | `TX-4841980-missing_middle-2010` | **new** | `status` in_force; `effective_date` 2010-01-01; `unit_cap` 2; `coverage_zones` RSF-2; `by_right` True; `source_url` DocumentCenter 3690, 12892, 12579 | "[predates] Duplex P in RSF-2 (2011 draft Schedule 125-70.B 'Duplex — — — S P'; RSF-2 in force by 2015 under Ord. 2005-24, Ord. 2015-15). First enactment not found; rule age a lower bound." (Alternative if Ben prefers: `[earliest-known]` at 2015, which makes it a 2015 event.) |
 | 3 | `TX-4842508-missing_middle-2010` | **new** | `unit_cap` 1; `effective_date` 2010-01-01; `coverage_zones` R-7.5;R-6;R-5 | "[earliest-known] No missing-middle rule before the 2022 UDC: R-7.5, R-6, R-5 single-family (old Ch. 17 §§17-10, 17-11 titles); 2022 staff overview slide 22 'Allow duplexes by right in the R-7.5, R-6 and R-5'; written responses Oct 2022. Old Ch. 17 text not read (Municode blocked)." |
 | 4 | `TX-4842508-missing_middle-2022` | edit | `supersedes` = row 3; `coder_2` = claude-second-coder-2026-11-11; `coder_agreement` = agree | "Second coder: 2022 adopted UDC p. 197 Exhibit VII.2-3-2 duplex A in R-7.5/R-6/R-5; effective 2022-12-01 (adopting ordinance, item 22-2559); CHECK resolved." |
-| 5 | `TX-4835000-missing_middle-2023` | edit | `unit_cap` 8 → **4** (local street; 8 off local streets in `coverage`); `min_lot_sqft` 3500; `max_stories` blank (30 ft cap in notes); `coder_agreement` = partly | "Second coder: MUR (§42-237) is an optional standards route, not a new permission: §42-1 multi-family (3+, no cap) was already allowed on unrestricted land. Max 4 units on local streets, 8 elsewhere; site ≥3,500 sq ft, ≥50 ft frontage, ≤150 ft deep, 30 ft height. Not a D-024 cap-rise event." |
+| 5 | `TX-4835000-missing_middle-2023` | edit | `unit_cap` 8 → **4** (local street; 8 off local streets in `coverage`); `min_lot_sqft` 3500; `max_stories` blank (30 ft cap in notes); `coder_agreement` = partly | "Second coder: MUR (§42-237) is an optional standards route, not a new permission: §42-1 multi-family (3+, no cap) was already allowed on unrestricted land. Max 4 units on local streets, 8 elsewhere; site ≥3,500 sq ft, ≥50 ft frontage, ≤150 ft deep, 30 ft height. A standards (feasibility) event, not a legal cap rise; kept as an event in its own class (Ben 2026-11-11)." |
 | 6 | `TX-4835000-missing_middle-2010` | edit (notes only) | — | Add: "3+ units were legal before 2023 as §42-1 multi-family under heavier standards (60 ft ROW, §42-122; building lines; parking); unit_cap 2 is the single-family definition, not a legal cap." |
 | 7 | `TX-4845000-missing_middle-2010` | **new, for record only** | `unit_cap` 1; `coverage_zones` R-1;R-1A;T | "No usable source for Ch. 40 text. Inferred: R-1 single-family only (ZC 3471-A); R-2 'Two-Family District' (1983 Code §29-8(n)) presumably duplex by right; crosswalk R-1/R-1A/T → SF-2. Not for use as an event baseline (D-059)." |
 
-## Effect on the fit set (for the D-entry, not decided here)
+## Effect on the fit set (Ben's direction, 2026-11-11; the method-only D-entry writes it down)
 
-- **League City and Houston** leave the D-024 cap-rise event set if Ben accepts proposals 1–2 and 5. Lubbock is
-  already out (D-059).
-- **Lewisville** stays, now second-coded.
+- **Lewisville** stays as a cap-rise event (1 → 2 by right, 2022-12-01), now second-coded.
+- **League City** stays, but as an **always-allowed place**, not a 2020 event. Its duplex production in RSF-2 is
+  a reading of what a market builds when duplexes are legal, which is the level the statewide count needs.
+  - **Method gap:** under `rule_tags.py`, a `[predates]` row is never an event and is moved before the panel, so
+    today's fit would carry League City as "treated throughout" with no before period.
+  - **For the D-entry:** say how always-allowed places enter, for example as a level or steady-state rate rather
+    than a before/after jump. That choice belongs in the method entry, not in this rule check.
+- **Houston** stays as an event (2023-11-27), coded as a **standards / feasibility class** with dose 4 on local
+  streets, 8 elsewhere. Ben wants to show that such reforms work.
+  - **For the D-entry:** the class needs its own effect (or a class indicator) and a pass rule written before any
+    count. A standards dose isn't on the same scale as "duplexes newly legal".
+- **Lubbock** stays out (D-059). The Ch. 40 rule has no usable source.
 - **Austin** (HOME, already "agree") wasn't in scope.
-- This shrinks the Texas share of the 13-place fit to Austin and Lewisville. It is the kind of result the review
-  anticipated: the honest evidence base is smaller.
+
+The Lubbock decision is unchanged.
 
 ## How this was checked
 
