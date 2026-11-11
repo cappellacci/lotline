@@ -67,3 +67,14 @@ earlier; a 434 upfit on such a parcel is `EXISTING` unless the text says a secon
   permits (2022 on), the share the description rule alone would flag, re-run with the current parser. Before
   2022 every Asheville ADU comes from the description, so this benchmark, not the pool, is the main recall
   measure for that stratum; the pool check is reported beside it.
+
+**Amendment to §2 (2026-11-11, after counting pool sizes, before any sampled description was read).** With every
+ADU-like word in one pool, Mecklenburg's pool holds 59,454 permits, 39,291 of them only because code-101 house
+permits carry the work type "Single Family Dwelling", and 10,185 for "kitchen" alone. Thirty draws cannot bound
+misses in a pool that size. The pool is therefore split, the same way in all three sources:
+- **Pool A (the near-miss pool, central estimate):** the brief's words plus the 2026-11-10 Charlotte words:
+  accessory, dwelling (not "single/one/two family dwelling" or "multi-family dwelling"), guest, in-law / inlaw,
+  granny, second unit, cottage, carriage, studio, pool house, living space / quarters, tiny house. 30 draws.
+- **Pool B (broad words, sensitivity only):** suite, apartment / apt, kitchen(ette), plus for Asheville its
+  2026-11-10 words garage, basement, rental. 30 draws (seed + 200). Its extrapolated misses are shown as a
+  sensitivity row, not in the central k or its range, as the Charlotte check also kept "kitchen" out.
