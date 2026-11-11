@@ -214,3 +214,14 @@ def test_county_codes_for_townhouses_condos_and_mobile_homes():
     assert mp.classify(row("114", 4), codes)["building_type_std"] == "U3_4"
     mh = mp.classify(row("112", None), codes)
     assert (mh["building_type_std"], mh["units_new"], mh["units_confidence"]) == ("OTHER", 1, "derived")
+
+
+def test_adu_on_a_437_permit():
+    """Code 437 holds garages built with an ADU (reports/nc/parser-handcheck-2026-11-11.md §4)."""
+    codes = mp.usdc_codes()
+    row = lambda code, text: pd.Series({"usdc": code, "numunits": 0, "permitdesc": text, "workdesc": None})  # noqa: E731
+    adu = mp.classify(row("437", "New. Accessory Dwelling Unit. Detached 1-car garage"), codes)
+    assert (adu["building_type_std"], adu["units_new"], adu["units_confidence"]) == ("ADU", 1, "inferred")
+    garage = mp.classify(row("437", "DETACHED GARAGE ONLY, NO ADU"), codes)
+    assert garage["building_type_std"] == "OTHER" and garage["units_new"] == 0
+    assert mp.classify(row("328", "New. Accessory Dwelling Unit."), codes)["building_type_std"] != "ADU"

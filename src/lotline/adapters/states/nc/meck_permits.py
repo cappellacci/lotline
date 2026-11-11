@@ -30,7 +30,7 @@ kept even though BPS has no row for these places (#123); no point → the `taxju
   else 1 for a single-family code → `derived`; else unknown (null, never 0);
 - 101 covers attached houses too, so it is `SFD` with `type_confidence="inferred"` unless the description
   names a townhouse (`TH`) or an accessory dwelling (`ADU`);
-- an ADU named in the description of a 101, 434 or 438 permit (or one with no code) → `ADU`, 1 unit,
+- an ADU named in the description of a 101, 434, 437 or 438 permit (or one with no code) → `ADU`, 1 unit,
   `inferred`;
 - demolitions: `units_new` 0 and `units_removed` from `numunits` when it fits, else the code's count;
 - residential alterations (434): units from the description where it states them, else unknown;
@@ -215,7 +215,9 @@ def classify(row: pd.Series, codes: dict[str, dict[str, str]]) -> dict:
     out = dict(adu_type=None, units_new=None, units_removed=None, units_confidence="unknown",
                is_demolition=activity == "demolition" if activity else None,
                is_conversion=facts.is_conversion)  # fmt: skip
-    adu_ok = not isinstance(code, str) or code in ("101", "434", "438")  # no code (None or NA) is fine
+    # 437 (nonresidential alterations) holds garages built with an ADU in them; the 2026-11-10 and 2026-11-11
+    # hand checks found ADU permits filed under it (reports/nc/parser-handcheck-2026-11-11.md §1, §4)
+    adu_ok = not isinstance(code, str) or code in ("101", "434", "437", "438")  # no code (None or NA) is fine
     if facts.building_type_std == "ADU" and adu_ok and not facts.is_demolition:
         out.update(adu_type=facts.adu_type or "unknown", units_new=1, units_confidence="inferred")
         return dict(out, building_type_std="ADU", type_confidence="inferred")
