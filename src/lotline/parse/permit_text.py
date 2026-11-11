@@ -326,10 +326,11 @@ ADU_KIND: list[tuple[str, re.Pattern[str]]] = [
 
 # "not an ADU" / "no ADU" anywhere: the reviewer has said the space is not a dwelling unit.
 # "not to be used as an ADU", "Not approved as an accessory dwelling unit", "nor approved as an ADU".
+# "can not be used as second dwelling unit": "be" without "to", and the Rule 3b names, are negated too.
 _ADU_NEGATED = re.compile(
     r"\b(?:not|no|non|nor)[- ](?:an?\s+)?(?:adu|udu|accessory\s+dwelling|utility\s*dwelling)\b"
-    r"|\b(?:not|nor)\s+(?:to\s+be\s+)?(?:used|approved|permitted|allowed|intended|proposed|for\s+use)\b"
-    rf"[^.;]{{0,30}}?\b{_ADU_NAME}",
+    r"|\b(?:not|nor|cannot)\s+(?:(?:to\s+)?be\s+)?(?:used|approved|permitted|allowed|intended|proposed|for\s+use)\b"
+    rf"[^.;]{{0,30}}?\b(?:{_ADU_NAME}|(?:additional|second)\s+(?:dwelling|living|residential)\s+unit)",
     re.I,
 )
 # An ADU that already was ("garage where the ADU was", "ADU is already in place"): context, not new.
