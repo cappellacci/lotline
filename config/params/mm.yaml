@@ -81,3 +81,34 @@ mm_teardown_share_scale:
   unit: share of a place's house share of eligible parcels
   source: "Judgment (D-063 choice 2): new 2-4 unit buildings replace a house in proportion to the share of eligible parcels that hold one (ADU-eligible over missing-middle eligible parcels, from the same rolls); 1.0 = builders pick lots at random, 0.5 = they favour vacant lots twice as much"
   notes: "No local split of new 2-4 unit buildings by prior use is coded; Portland's RIP monitoring is the outside check (docs/research/mm-uptake-evidence.md)."
+
+# ---- D-082 (proposed, not approved): method constants for the code only; no fitted value is written here ----
+
+mm_standards_dose_increase:
+  value: 0.3333
+  low: 0.3333
+  high: 1.0
+  unit: dose increase of a standards event (dose class S)
+  source: "D-082 (proposed) §1b: a standards event (the cap doesn't rise; the by-right route gets cheaper, e.g. Houston's 2023 MUR route) counts the approval-grade step of D-024 (permit or conditional -> by right), 1/3. High is the 'S dose 1' sensitivity"
+  notes: "Used by calibrate_mm.retarget_events and scripts/dev/calibrate_mm_d082.py. Not drawn; the sensitivities are 'S excluded' and 'S dose 1'."
+
+mm_level_pool_min_places:
+  value: 3
+  low: 3
+  high: 3
+  unit: coded "none" places in a state and size band
+  source: "D-082 (proposed) §1b, D-042's thin-pool rule: the no-rule level b for an always-allowed place comes from coded 'none' places (unit_cap 1) of the same state and D-022 size band, or from the band pooled over the states if there are fewer than this many"
+
+mm_level_prior_widening:
+  value: 2.0
+  low: 2.0
+  high: 2.0
+  unit: multiplier on θ_L's profile log-SE
+  source: "D-082 (proposed) §5, challenger C4: θ_L enters as a lognormal prior on M's mature level with its log-SD from θ_L's profile interval, doubled for selection (always-allowed places chose to allow duplexes)"
+
+mm_challenger_se_margin:
+  value: 2.0
+  low: 2.0
+  high: 2.0
+  unit: paired standard errors of the held-out log score
+  source: "D-082 (proposed) §5: a challenger replaces M only if its leave-one-state-out held-out log score beats M's by more than this many paired SE and it passes no fewer of tests A-C"
