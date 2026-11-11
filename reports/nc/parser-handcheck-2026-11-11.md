@@ -78,3 +78,9 @@ misses in a pool that size. The pool is therefore split, the same way in all thr
 - **Pool B (broad words, sensitivity only):** suite, apartment / apt, kitchen(ette), plus for Asheville its
   2026-11-10 words garage, basement, rental. 30 draws (seed + 200). Its extrapolated misses are shown as a
   sensitivity row, not in the central k or its range, as the Charlotte check also kept "kitchen" out.
+
+**Second amendment (2026-11-11, after the first 30 pool-A draws were judged, before any further draw).** With 0 misses
+in 30, the 90% Wilson upper bound on the miss rate is 8.3%, which on Greensboro's 1,381-permit pool A allows more
+misses than it has flags. As the brief allows, 70 more pool-A permits are drawn (seed + 300, excluding those already
+drawn) for Mecklenburg, Greensboro and Asheville before 2022, so pool A has 100 judged draws in those strata. The
+judging rule is unchanged.
