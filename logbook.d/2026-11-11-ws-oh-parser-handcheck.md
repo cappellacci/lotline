@@ -1,0 +1,15 @@
+### LB-NNN · 2026-11-11 · Validation: Ohio parser hand check after the shared parser fix (Cincinnati, Cleveland)
+- **Question:** what is k_parser = 1 / recall for Cincinnati (`cincy_permits`) after #376/#380 added 3 ADUs there, and does Cleveland's 1.07 still hold?
+- **What I did:**
+  - Wrote and committed the judging rule first. It labels ADU, HOUSE+ADU, HOUSE, LEGAL, WORK, OTHER and UNCLEAR; legalizations are not new ADUs, and a new house that names an ADU stays one SFD.
+  - Read every flagged permit (Cincinnati 29, Cleveland 15) and seeded near-miss draws (seed 20261111).
+  - Cincinnati has only 59 near-misses, so all of them were read. Cleveland got 30 broad near-misses plus 30 residential ones (seed 20261112).
+  - Wilson 90% intervals, D-074 step 1 as amended by D-078 §2–3, per source.
+- **Inputs:** the processed OH permits and the 2026-11-11 raw snapshots in `LOTLINE_DATA_DIR` (read-only; Ohio has no holdouts); `reports/adu-rebuild-2026-11-11.md`; `reports/oh/adu-coverage-and-undercount.md` §3.3.
+- **Outputs:** `reports/oh/parser-handcheck-2026-11-11.md`.
+- **Findings:**
+  - **Cincinnati:** recall 15/16, so k = 1.07 (90% range 1.01–1.54), but precision is only 15/29. Eleven 2020 "carriage houses" in a 36-building apartment development and one negated shed are false positives. One ADU was missed because the "existing" veto reads across sentences.
+  - **Cleveland:** precision 15/15, no new misses in 60 more read; k stays 1.07, with an honest range of 1.00–1.31.
+- **Decisions:** proposed undercount-table rows (report §5), for Ben to accept. Proposed: fix the Cincinnati false positives in the adapter before the refit uses its counts.
+- **AI:** Claude Code (Opus 5.5) drew the samples, judged each description by hand against the pre-committed rule, and computed the intervals. No engine, fit or scenario was run; nothing was downloaded; `config/params/adu.yaml` is unchanged.
+- **Open / next:** the Cincinnati adapter fixes (report §4); whether to widen Cincinnati's combo download words (a new fetch).
