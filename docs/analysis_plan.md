@@ -5315,8 +5315,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     healthy market;
   - (2) include standards reforms like Houston's MUR: making a type feasible counts, not only making it legal.
 
-  This entry applies (1) to every place that turns out `[predates]` in step 1, not to League City alone. Ben
-  confirms or narrows that when he reviews this entry.
+  Ben confirmed on 2026-11-11 ("Every such place") that (1) applies to every place that turns out `[predates]`
+  in step 1, not to League City alone.
 - **How always-allowed places enter: a new level component (L).** They carry no event and no ramp. They inform
   the **mature** rate.
   - **Model.** For place i in year t:
