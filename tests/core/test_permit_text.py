@@ -144,6 +144,9 @@ CASES = [
     ("Garage where the ADU was, new slab", {}),  # a former ADU is context, not a new one
     ("Not to be used as an accessory dwelling unit or have cooking appliances", {}),
     ("Detached garage, not approved for use as an ADU", {}),
+    ("Detached storage shed- can not be used as second dwelling unit", {}),  # Dallas, 2026-11-11 rebuild
+    ("Accessory building, cannot be used as an additional dwelling unit", {}),
+    ("Garage, not to be used as a second living unit", {}),
     ("New SFD; remove existing ADU", {N: 1, T: "SFD"}),  # the new house still counts
     ("Demolish ADU", {N: 0, R: 1, T: "ADU", A: "unknown", D: True}),  # a demolition stays Rule 7
     ("NEW ADU_New construction", {N: 1, T: "ADU", A: "unknown"}),  # an underscore no longer hides ADU
