@@ -1,6 +1,8 @@
 """The ADU flag undercount k by permit source (D-074 step 1, D-075 step 2, D-078).
 
-A source's counted ADU permits are multiplied by its k: k = true ADU permits / counted ADU permits, so k >= 1.
+A source's counted ADU permits are multiplied by its k: k = true ADU permits / counted ADU permits.
+For a field flag k >= 1 (roll-confirmed ADUs the flag missed). For a parser source k = precision / recall
+from its own hand check (D-081), which is below 1 when the parser's false positives outnumber its misses.
 k scales counted ADU permits only (fit inputs, the D-070 observed floor, the `historical_floor` check and
 tests A-C), never eligible lots. The table lives in `config/params/adu.yaml` (`adu_flag_undercount`) and is
 loaded by `lotline.config.load_undercount`.
