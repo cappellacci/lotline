@@ -232,7 +232,8 @@ def test_validation_2026_11_05_is_applied_to_the_committed_file(reforms):
     assert not r.index.str.startswith("OR-4183400-missing_middle-2025-local").any()
     # Partial zones before the window: in force from before 2010, covering only the listed zones
     for rid, zones in (
-        # zones corrected by the second coder, accepted by Ben 2026-11-11 (reports/or/mm-rule-checks-2026-11.md, #397)
+        # zones corrected by the second coder, accepted by Ben 2026-11-11
+        # (reports/or/mm-rule-checks-2026-11.md, #397)
         ("OR-4165500-missing_middle-2004-local", "R-1;R-4;A-1"),
         ("OR-4170200-missing_middle-2007-local", "MD;DMD"),
     ):
