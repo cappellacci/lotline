@@ -12,7 +12,7 @@
   `docs/research/mm-uptake-evidence.md`, `docs/build/nc-readiness.md`, `config/params/mm_hazard.yaml`,
   `config/reforms/*.csv`, `reports/mm-d0*/`, `reports/v9-oregon-d055/`, `reports/v5-charlotte/`, the ADU rebuild
   reports, and `docs/data_provenance.md`.
-- **Outputs:** `docs/research/mm-methodology-review-2026-11.md`.
+- **Outputs:** `docs/research/mm-methodology-review-2026-11.md`; D-082 (Proposed) in `docs/analysis_plan.md`; summary page https://claude.ai/artifact/Ah44XwT3nYkvQJzf4bAMGm.
 - **Findings:**
   - The fit's signal rests on six NC towns whose events are `[earliest-known]` code-rewrite dates. The NC
     readiness doc warned not to use them until predecessor codes are compared. Without NC, θ falls from 0.12 to
