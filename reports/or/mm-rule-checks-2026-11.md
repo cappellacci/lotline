@@ -58,7 +58,7 @@ council/commission agendas (summaries); Sweet Home ordinance index (sweethomeor.
 zoneomics.com/code/sweet-home-OR; Florence Ch. 10 (DocumentCenter/View/190) and Ordinance Index (View/756);
 Scappoose via zoneomics.com/code/scappoose-OR; Stayton `17.16 Zoning.pdf` (staytonoregon.gov).
 
-**State-law dates, re-checked (they drive 94 of the events):** compliance deadlines are June 30, 2021 (cities over
+**State-law dates, re-checked (they set most of the events):** compliance deadlines are June 30, 2021 (cities over
 10,000 outside Metro, duplex), June 30, 2022 (over 25,000 and Metro cities, all middle housing), June 30, 2025
 (other cities under ORS 197A.420(3), duplex) and Jan 1, 2027 (HB 2138), from the enrolled HB 2138 §4 restating
 2019 c.639 §3 and the ORS 197A.420 note. Confirmed against the statute text. The statute does not define population; OAR 660-046-0020 uses
