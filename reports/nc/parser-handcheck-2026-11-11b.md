@@ -61,9 +61,10 @@ What changed since the #386 interim values:
   BUILD STRUCTURE … TO BE ATTACHED ADU" and "TWO STORY RESIDENTIAL DWELLING AND ADU". There are none in the
   other sources.
 
-**k below 1.** Mecklenburg's central k (0.98) is under 1. That is allowed under D-081 (precision ÷ recall), but
-`adu_flag_undercount` still says `k >= 1` in its `unit` line. Ben should decide whether the table accepts k < 1 or
-floors it at 1.
+**k below 1.** Mecklenburg's central k (0.98) is under 1. Ben decided on 2026-11-11 that parser rows may have
+k < 1, because text rules make false flags as well as misses. Field rows and the field prior keep k ≥ 1. The table's
+`unit` line and the loader check (`src/lotline/config/__init__.py`, `1 <= low`) still say `k >= 1`; that
+shared-contract change is issue #402.
 
 ## 1. Results by source
 
@@ -212,7 +213,7 @@ For the session that collects `adu_flag_undercount` rows (D-081 item 6: all k va
 
 | Source | Place | kind | value | low | high | interval | report | notes |
 |---|---|---|---:|---:|---:|---|---|---|
-| `meck_permits` | Charlotte and the Mecklenburg towns (NC) | parser | 0.98 | 0.86 | 1.13 | 0.90 | `reports/nc/parser-handcheck-2026-11-11b.md` | k = p ÷ r (D-081). p 27/30, r 0.92. As pre-registered 1.02 (0.88–1.19); no-kitchen 1.00 (0.86–1.19). Replaces 1.04 (1.0–1.27). Needs k < 1 allowed in the table (§ Summary) |
+| `meck_permits` | Charlotte and the Mecklenburg towns (NC) | parser | 0.98 | 0.86 | 1.13 | 0.90 | `reports/nc/parser-handcheck-2026-11-11b.md` | k = p ÷ r (D-081). p 27/30, r 0.92. As pre-registered 1.02 (0.88–1.19); no-kitchen 1.00 (0.86–1.19). Replaces 1.04 (1.0–1.27). Parser k < 1 allowed (Ben, 2026-11-11); needs the loader change in #402 |
 | `asheville_permits`, before 2022 (`last_year: 2021`) | Asheville (NC), before 2022 | parser | 1.47 | 1.33 | 1.61 | 0.90 | same | p 28/30, r 0.63. Keep `low_recall: true` (D-078 §3). No-kitchen 1.44 (1.30–1.57). Replaces 1.59 (1.43–1.79) |
 | `asheville_permits`, 2022 on (`first_year: 2022`) | Asheville (NC), 2022 on | field (unchanged) | – | – | – | – | same | Keep the field prior (D-081 item 1: field rows unchanged). The hand check gives 1.00 (0.87–1.16), inside the prior's range; recorded as a check only |
 | `greensboro_permits` | Greensboro (NC) | parser | 1.39 | 1.10 | 2.33 | 0.90 | same | p 40/41 (census), r 0.70. Wide range from the 1,380-permit near-miss pool. No-kitchen 1.43 (1.03–2.36). Replaces the k = 1 placeholder |
