@@ -8,8 +8,8 @@
 - **Inputs:** one permit description seen in the rebuild report (`reports/adu-rebuild-2026-11-11.md`); the tests
   use hand-written strings, no data.
 - **Outputs:** `src/lotline/parse/permit_text.py`, `tests/core/test_permit_text.py`.
-- **Findings:** Dallas ADU permits go back from 2 to 1 on the next rebuild (no other rebuilt ADU permit's
-  description matched the old miss, from the gained/lost examples checked).
+- **Findings:** Dallas ADU permits should go back from 2 to 1 on the next rebuild. Only the gained/lost examples
+  in the rebuild report were read; other sources were not searched for the same phrasing.
 - **AI:** Claude Code found the miss, wrote the fix and tests, and ran pytest (1,976 passed), ruff and
   `compliance_check.py` (0 FAIL).
 - **Open / next:** not merged; Ben to review. A rebuild of TX `dallas_permits` after merge picks it up.
