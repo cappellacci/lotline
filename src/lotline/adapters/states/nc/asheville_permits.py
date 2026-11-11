@@ -107,9 +107,19 @@ ADU_TEXT_CATEGORIES = {
     ("Existing Building", "Alterations w Addition"), ("Existing Building", "Addition"), ("Remodel", "NA"),
     ("Addition", "NA"),
 }  # fmt: skip
-# The text of a house permit that also builds the house itself (not an ADU behind an existing one).
+# The text of a house permit that also builds the house itself (not an ADU behind an existing one). Before
+# 2022 house permits also say "new stick built house", "residence" or "new build structure"
+# (reports/nc/parser-handcheck-2026-11-11.md, behaviour (b)). Houses that are ADUs by name ("guest house",
+# "carriage house", "pool house", "tiny house") are not the main house.
+# The words between "new" and "house" may not name the ADU or place it beside the house ("NEW ADU NEXT TO
+# HOUSE"); a bare "residence" counts only as the text's subject (in its first three words).
+_NOT_MAIN_HOUSE = r"(?<!GUEST\s)(?<!CARRIAGE\s)(?<!POOL\s)(?<!TINY\s)(?<!COACH\s)"
+_HOUSE_WORDS = r"(?:(?!(?:ADU|ACCESSORY|APARTMENT|BEHIND|NEXT|TO|FOR|BESIDE|NEAR|AT|ON|WITH|AND)\b)[\w-]+\s+)"
 NEW_HOUSE = re.compile(
-    r"\b(?:NEW\s+)?(?:SINGLE[\s-]+FAMILY\s+(?:RESIDENCE|HOME|DWELLING|HOUSE|CONSTRUCTION)|SFR|SFD)\b", re.I
+    r"\b(?:NEW\s+)?(?:SINGLE[\s-]+FAMILY\s+(?:RESIDENCE|HOME|DWELLING|HOUSE|CONSTRUCTION)|SFR|SFD)\b"
+    rf"|\bNEW\s+{_HOUSE_WORDS}{{0,3}}?{_NOT_MAIN_HOUSE}(?:HOUSE|HOME|RESIDENCE)\b"
+    rf"|^\W*{_HOUSE_WORDS}{{0,2}}?RESIDENCE\b|\bNEW\s+BUILD\s+STRUCTURE\b",
+    re.I,
 )
 EXISTING_HOUSE = re.compile(
     r"\b(?:EXISTING|BEHIND|PRIMARY)\b[^.]{0,25}\b(?:SINGLE|SFR|SFD|HOUSE|HOME|RESIDENCE)", re.I

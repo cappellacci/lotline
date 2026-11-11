@@ -9,6 +9,7 @@ import dataclasses
 import pytest
 
 from lotline.parse import PermitTextFacts, parse_description
+from lotline.parse.permit_text import LEGALIZATION_TAG, NO_KITCHEN_TAG
 
 N, R, T, A, D, C, B, X = (
     "units_new",
@@ -64,7 +65,8 @@ CASES = [
     ("Attached ADU off kitchen wing", {N: 1, T: "ADU", A: "attached"}),
     ("Garage apartment", {N: 1, T: "ADU", A: "unknown"}),
     ("New backyard cottage", {N: 1, T: "ADU", A: "detached"}),
-    ("Mother-in-law suite", {N: 1, T: "ADU", A: "unknown"}),
+    ("Mother-in-law suite", {}),  # no kitchen named: not a dwelling unit (D-081 item 2)
+    ("Mother-in-law suite with kitchenette", {N: 1, T: "ADU", A: "unknown"}),
     ("Basement apartment with separate entrance", {N: 1, T: "ADU", A: "internal_conversion"}),
     ("ADU behind existing single family home", {N: 1, T: "ADU", A: "unknown"}),
     ("ADU - duplex permitted separately", {N: 1, T: "ADU", A: "unknown"}),
@@ -206,3 +208,137 @@ def test_result_is_frozen():
 def test_wrecking_is_demolition_not_new_construction(text, removed):
     facts = parse_description(text)
     assert facts.is_demolition is True and facts.units_new == 0 and facts.units_removed == removed
+
+
+# --- Second parser round (D-081 item 6): the misses the 2026-11-11 hand checks listed, and their guards.
+# Written for this test after the phrasings quoted in reports/{tx,nc,oh}/parser-handcheck-2026-11-11.md.
+ROUND2 = [
+    # new ADU names
+    ("DETACHED GARAGE APT", {N: 1, T: "ADU", A: "unknown"}),
+    ("garage apt over new 2 car garage", {N: 1, T: "ADU", A: "unknown"}),
+    ("new garage with upstairs apartment", {N: 1, T: "ADU", A: "unknown"}),
+    ("2ND DWELLING UNIT", {N: 1, T: "ADU", A: "unknown"}),
+    ("CONSTRUCT DETACHED GARAGE WITH SECOND DWELLING", {N: 1, T: "ADU", A: "unknown"}),
+    ("ADDITION OF 450 SF ACCESSORY DWELLING UNIT (BOARD CASE)", {N: 1, R: 0, T: "ADU", A: "unknown"}),
+    ("garage w/ mother-in-law apt", {N: 1, T: "ADU", A: "unknown"}),
+    # living quarters only where the text marks a second home
+    ("DETACHED LIVING QUARTERS", {N: 1, T: "ADU", A: "detached"}),
+    (
+        "garage below, living quarters on 2nd floor; separate building from house",
+        {N: 1, T: "ADU", A: "unknown"},
+    ),
+    ("new garage with living quarters above", {N: 1, T: "ADU", A: "unknown"}),
+    ("Addition of living quarters to house", {N: 0}),
+    ("additional living quarters", {}),
+    ("Remodel existing detached living quarters", {N: 0}),
+    # in-law suites: a kitchen must be named (D-081 item 2)
+    ("NEW DETACHED MOTHER IN LAW SUITE", {}),
+    ("NEW DETACHED MOTHER IN LAW SUITE WITH KITCHEN", {N: 1, T: "ADU", A: "detached"}),
+    ("garage addition to create a mother-in-law suite, no stove", {}),
+    (
+        "garage addition to create a mother-in-law suite with full kitchen",
+        {N: 1, R: 0, T: "ADU", A: "unknown", C: True},
+    ),
+    ("in-law suite with kitchenette, no oven", {}),  # a named kitchen that the text then says is not one
+    ("FW/ DETACHED IN-LAW SUITE, separate service not allowed, kitchenette", {N: 1, T: "ADU", A: "detached"}),
+    # an ADU's own permit that cites the house's permit (Asheville behaviour (a))
+    ("garage apartment, ref. new house permit 15-00123", {N: 1, T: "ADU", A: "unknown"}),
+    ("accessory dwelling unit (SFR 17-00456)", {N: 1, T: "ADU", A: "unknown"}),
+    ("SFR/ NEW DETACHED ADU", {N: 1, T: "ADU", A: "detached"}),
+    ("NEW SFR/ DETACHED ADU", {}),  # a new house and an ADU: still a conflict
+    ("SFR permit 17-00456 with ADU in basement, new", {}),  # the house permit itself: no ADU-only read
+    # administrative notes do not decide the work (Asheville behaviour (a), second half)
+    ("Detached ADU over garage. RECD AMENDMENT TO CHANGE HVAC CONTRACTOR", {N: 1, T: "ADU", A: "detached"}),
+    ("New ADU. Revision 2 - change electrical contractor", {N: 1, T: "ADU", A: "unknown"}),
+    ("Renovate ADU. RECD AMENDMENT TO CHANGE HVAC CONTRACTOR", {}),  # the work is still a renovation
+    # new house wording (Asheville behaviour (b))
+    ("new stick built house with ADU in basement", {}),
+    ("NEW SITE-BUILT HOME", {N: 1, T: "SFD"}),
+    # Ohio: negation and separately permitted houses
+    ("POOL SHED - NOT A DWELLING UNIT/ADU", {}),
+    ("storage shed, not for use as a dwelling unit or ADU", {}),
+    ("STORAGE BUILDING MAY NOT BE USED AS A 2ND DWELLING", {}),
+    (
+        "GARAGE WITH ACCESSORY DWELLING UNIT ABOVE. THE SINGLE-FAMILY DWELLING (EXISTING OR PROPOSED) IS "
+        "PERMITTED SEPARATELY",
+        {N: 1, T: "ADU", A: "unknown"},
+    ),
+    (
+        "NEW ADU ABOVE GARAGE. EXISTING OR PROPOSED SINGLE FAMILY HOME TO REMAIN",
+        {N: 1, T: "ADU", A: "unknown"},
+    ),
+    # conversions of non-dwelling space to a dwelling unit
+    ("Change of Use - Garage to Dwelling Unit 600 SF", {N: 1, R: 0, T: "ADU", A: "unknown", C: True}),
+    # precision guards: fees, new houses that name an ADU, repairs
+    ("2ND DWELLING UNIT ALREADY BUILT WITHOUT PERMIT", {}),  # "already": the unit is context
+    ("IMPACT FEE PER 2ND DWELLING UNIT", {}),
+    ("SECOND DWELLING UNIT FEE", {}),
+    ("New single family home with second dwelling unit", {}),
+    ("NEW SFD WITH GARAGE APT", {}),
+    ("GARAGE APARTMENT/REPLACE 1 EXTERIOR DOOR", {}),
+    ("upgrade existing studio/apartment above detached garage", {N: 0}),
+    ("new pool house", {}),
+]
+
+
+@pytest.mark.parametrize(("text", "expected"), ROUND2, ids=[repr(c[0])[:50] for c in ROUND2])
+def test_round2_adu_misses_and_guards(text, expected):
+    test_parse_description(text, expected)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Accessory dwelling 900 sq ft, already built without permit",
+        "CONVERTING GARAGE INTO APARTMENT (WORK HAS BEEN DONE)",
+        "garage apartment built without a permit",
+        "bring basement ADU into compliance",
+        "legalize detached ADU",
+    ],
+)
+def test_legalized_adu_is_not_new(text):
+    """D-080 item 2: a permit for an ADU already built is not new production; the tag says why."""
+    facts = parse_description(text)
+    assert facts.building_type_std is None and facts.units_new == 0
+    assert LEGALIZATION_TAG in facts.evidence
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Convert existing garage, already on site, to ADU",  # "already" alone is not a legalization
+        "New ADU; permit for the house is separate",
+    ],
+)
+def test_new_adu_is_not_read_as_a_legalization(text):
+    facts = parse_description(text)
+    assert facts.building_type_std == "ADU" and facts.units_new == 1
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "ADDITION - MOTHER-IN-LAW SUITE",
+        "NEW DETACHED MOTHER IN LAW SUITE",
+        "turning basement into in-law suite",
+    ],
+)
+def test_kitchenless_in_law_suite_sensitivity(text):
+    """D-081 item 2: no ADU in the central case, with a tag; an ADU when the sensitivity counts them."""
+    central = parse_description(text)
+    assert central.building_type_std is None and NO_KITCHEN_TAG in central.evidence
+    sens = parse_description(text, in_law_suite_needs_kitchen=False)
+    assert sens.building_type_std == "ADU" and sens.units_new == 1
+    assert NO_KITCHEN_TAG not in sens.evidence
+
+
+def test_no_kitchen_tag_only_where_an_adu_was_read():
+    """The tag marks only permits that would be ADUs, so counting tags gives the sensitivity's extra ADUs."""
+    for text in ["Remodel of existing mother-in-law suite", "New single family home with in-law suite"]:
+        assert NO_KITCHEN_TAG not in parse_description(text).evidence
+        assert parse_description(text, in_law_suite_needs_kitchen=False).building_type_std is None
+
+
+def test_admin_note_is_traced():
+    facts = parse_description("Detached ADU. RECD AMENDMENT TO CHANGE HVAC CONTRACTOR")
+    assert facts.evidence[-1] == "administrative note ignored: 'RECD AMENDMENT TO CHANGE HVAC CONTRACTOR'"

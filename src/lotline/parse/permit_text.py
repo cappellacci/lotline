@@ -39,6 +39,18 @@ Rules, in the order `parse_description` applies them (each is a named pattern be
    describe an existing or separately permitted building ("ADU behind existing house", "SFD - BLDR-001")
    are context and ignored.
 
+After the rules, two readings of a result that names an ADU (both leave a tag in `evidence`):
+
+9. an ADU that the text says was already built ("already built without permit", "work has been done",
+   "bring existing ADU into compliance") is a legalization, not new production (D-080 item 2): no type,
+   `units_new` 0, tag `LEGALIZATION_TAG`;
+10. an in-law or mother-in-law *suite* (or quarters) with no kitchen named is not a dwelling unit (D-081
+    item 2): no type, no count, tag `NO_KITCHEN_TAG`. The no-kitchen sensitivity counts them:
+    `parse_description(text, in_law_suite_needs_kitchen=False)`.
+
+Administrative notes appended to a description ("RECD AMENDMENT TO CHANGE HVAC CONTRACTOR") are dropped
+before the rules run, so their alteration words do not decide what the permit builds.
+
 The result's `evidence` lists each rule that fired with the phrase it matched, so any inferred value can
 be traced back to the words that produced it. Standard library only (`re`); no models, no data.
 """
@@ -48,7 +60,11 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, replace
 
-__all__ = ["PermitTextFacts", "parse_description"]
+__all__ = ["LEGALIZATION_TAG", "NO_KITCHEN_TAG", "PermitTextFacts", "parse_description"]
+
+# Evidence tags for the two readings applied after the rules (see the module docstring, items 9 and 10).
+LEGALIZATION_TAG = "ADU already built, legalized: not new (D-080 item 2)"
+NO_KITCHEN_TAG = "in-law suite with no kitchen named: not an ADU (D-081 item 2)"
 
 
 @dataclass(frozen=True)
@@ -241,7 +257,7 @@ TYPE_RULES: list[tuple[str, re.Pattern[str], str, int | None]] = [
         re.compile(
             r"\bsingle[- ]?family(?![- ]attached)(?:\s+(?:detached|dwelling|residence|home|house))*\b"
             r"|\bn?sfd\b|\bs\.f\.d\b|\bsfr\b|\bnsf\b|\bnew\s+sf\b(?!\s+(?:of|addition))"
-            r"|\bnew\s+(?:custom\s+)?(?:house|home|residence)\b",
+            r"|\bnew\s+(?:custom\s+|(?:stick|site)[- ]?built\s+)?(?:house|home|residence)\b",
             re.I,
         ),
         "SFD",
@@ -263,9 +279,13 @@ TYPE_RULES: list[tuple[str, re.Pattern[str], str, int | None]] = [
 ADU = re.compile(
     r"(?<!\bno\s)(?<!\bnon-)(?<!\bnot\s)(?<!\bnot\san\s)\b(?:adus?|a\.d\.u\.?|dadu|aadu)\b"
     r"|\baccessory\s+(?:dwelling|apartment|residential\s+unit)"
-    r"|\bgarage\s+apartment\b|\bapartment\s+(?:above|over)\s+(?:the\s+|a\s+)?(?:new\s+)?(?:detached\s+)?garage"
+    # "GARAGE APT"; "garage with (upstairs) apartment" (a garage built with a unit in it)
+    r"|\bgarage\s+(?:apartment|apt)\b"
+    r"|\bgarage\s+(?:with|w/)\s*(?:an?\s+)?(?:upstairs\s+|upper\s+|(?:2nd|second)[- ]floor\s+)?"
+    r"(?:apartment|apt)\b"
+    r"|\bapartment\s+(?:above|over)\s+(?:the\s+|a\s+)?(?:new\s+)?(?:detached\s+)?garage"
     r"|\bbackyard\s+cottage\b|\bcarriage\s+house\b|\bgranny\s+(?:flat|unit|pod)\b"
-    r"|\b(?:mother|father)?[- ]?in[- ]law\s+(?:suite|apartment|unit|quarters)\b"
+    r"|\b(?:mother|father)?[- ]?in[- ]law\s+(?:suite|apartment|apt|unit|quarters)\b"
     r"|\bbasement\s+(?:apartment|unit)\b|\bsecondary\s+(?:dwelling|suite)\b"
     # Cary's name before ACT 32 (2025) for an ADU inside or attached to the house: the utility dwelling unit
     # (UDU); Cary also writes "accessory use dwelling" ("ACCESSORY USE PERMIT - UTILITY DWELLING")
@@ -276,9 +296,24 @@ ADU = re.compile(
 # Rule 3b. A second home on the lot called an "additional" or "second" dwelling unit ("additional dwelling
 # unit behind house"). Fee schedules use the same words for each extra unit of any building ("impact fee per
 # additional dwelling unit"), so the phrase is not read when the text talks about fees or "per/each" units.
+# "2ND DWELLING UNIT" and "second dwelling" (without "unit") are the same name (Dallas, Fort Worth).
 ADDITIONAL_UNIT = re.compile(
-    r"\b(?:additional|second)\s+(?:dwelling|living|residential)\s+unit\b"
+    r"\b(?:additional|second|2nd)\s+(?:dwelling|living|residential)\s+unit\b"
+    r"|\b(?:second|2nd)\s+dwelling\b"
     r"|\badditional\s+unit\s+(?:on|behind|in\s+(?:the\s+)?(?:rear|back))\b",
+    re.I,
+)
+# Rule 3d. "Living quarters" is an ADU only where the text marks it as a second home in its own building or
+# over a garage (Fort Worth: "DETACHED LIVING QUARTER", "garage on 1st floor/Living quarters on 2nd floor;
+# separate building from residence"). Living quarters added to a house, or "additional living quarters" alone,
+# are not read.
+LIVING_QUARTERS = re.compile(
+    r"\bdetached\s+(?:\w+\s+)?living\s+quarters?\b"
+    r"|\bliving\s+quarters?\b(?=[^.]{0,60}\bseparate\s+(?:building|structure)\b)"
+    r"|\bgarage\s+(?:with|w/|and|&)\s*(?:\w+\s+)?living\s+quarters?\b"
+    r"|\bliving\s+quarters?\s+(?:above|over)\s+(?:the\s+|a\s+)?(?:\w+\s+)?garage\b"
+    r"|\bgarage\b[^.;]{0,40}\bliving\s+quarters?\s+(?:on|in)\s+(?:the\s+)?(?:2nd|second|upper)\s+"
+    r"(?:floor|level|stor(?:y|ey))\b",
     re.I,
 )
 _FEE_CONTEXT = re.compile(
@@ -289,8 +324,12 @@ _FEE_CONTEXT = re.compile(
 # The ADU names Rules 0 and 3 look for next to a removal or creation word.
 _ADU_NAME = (
     r"(?:adus?|a\.d\.u\.?|udus?|u\.d\.u\.?|accessory\s+(?:dwelling|apartment)|utility\s*dwelling"
-    r"|garage\s+apartment|basement\s+apartment|(?:mother|father)?[- ]?in[- ]law\s+(?:suite|apartment|unit))"
+    r"|garage\s+(?:apartment|apt)|basement\s+apartment"
+    r"|(?:mother|father)?[- ]?in[- ]law\s+(?:suite|apartment|apt|unit)"
+    r"|(?:additional|second|2nd)\s+(?:dwelling|living|residential)\s+unit|(?:second|2nd)\s+dwelling)"
 )
+# A floor area between the verb and the ADU name: "ADDITION OF 400SF ACCESSORY DWELLING UNIT".
+_AREA = r"(?:\d[\d,]*\s*-?\s*(?:sf|s\.f\.|sq\.?\s*f(?:ee)?t\.?|square\s+f(?:ee|oo)t)\s+)?"
 ADU_KIND: list[tuple[str, re.Pattern[str]]] = [
     (
         "internal_conversion",
@@ -306,7 +345,8 @@ ADU_KIND: list[tuple[str, re.Pattern[str]]] = [
     (
         "detached",
         re.compile(
-            r"\bdetached\s+(?:adu|accessory|garage\s+apartment|apartment|unit|dwelling)|\bdadu\b"
+            r"\bdetached\s+(?:adu|accessory|garage\s+apartment|apartment|unit|dwelling|living\s+quarters?"
+            r"|(?:mother[- ]|father[- ])?in[- ]law\s+(?:suite|apartment|apt|unit|quarters))|\bdadu\b"
             r"|\badu\s*[(,-]?\s*detached\b|\bbackyard\s+cottage\b|\bcarriage\s+house\b"
             r"|\b(?:apartment|adu)\s+(?:above|over)\s+(?:the\s+|a\s+)?(?:new\s+)?detached\s+garage"
             r"|\bconver\w*\s+(?:the\s+|an?\s+)?(?:existing\s+)?detached\s+garage\b",
@@ -327,10 +367,12 @@ ADU_KIND: list[tuple[str, re.Pattern[str]]] = [
 # "not an ADU" / "no ADU" anywhere: the reviewer has said the space is not a dwelling unit.
 # "not to be used as an ADU", "Not approved as an accessory dwelling unit", "nor approved as an ADU".
 # "can not be used as second dwelling unit": "be" without "to", and the Rule 3b names, are negated too.
+# "NOT A DWELLING UNIT/ADU", "not for use as a dwelling unit": the space is not a home at all.
 _ADU_NEGATED = re.compile(
     r"\b(?:not|no|non|nor)[- ](?:an?\s+)?(?:adu|udu|accessory\s+dwelling|utility\s*dwelling)\b"
     r"|\b(?:not|nor|cannot)\s+(?:(?:to\s+)?be\s+)?(?:used|approved|permitted|allowed|intended|proposed|for\s+use)\b"
-    rf"[^.;]{{0,30}}?\b(?:{_ADU_NAME}|(?:additional|second)\s+(?:dwelling|living|residential)\s+unit)",
+    rf"[^.;]{{0,30}}?\b(?:{_ADU_NAME}|living\s+quarters?)"
+    r"|\b(?:not|no)\s+(?:an?\s+|for\s+(?:use\s+as\s+)?(?:an?\s+)?)?(?:dwelling|living|residential)\s+units?\b",
     re.I,
 )
 # An ADU that already was ("garage where the ADU was", "ADU is already in place"): context, not new.
@@ -367,7 +409,9 @@ _BACK_TO_HOUSE = re.compile(
 ADU_CREATED_BY_WORK = re.compile(
     rf"\b(?:for|into|as)\s+(?:an?\s+|the\s+)?(?:new\s+)?(?:(?:de|at)tached\s+|internal\s+)?{_ADU_NAME}\b"
     rf"|\b{_ADU_NAME}\s*[-/]?\s*(?:addition|upfit|up-fit|conversion|build-?out)\b"
-    rf"|\b(?:addition|upfit|up-fit|conversion)\s*(?:[-:/]|for|of|with)?\s*(?:an?\s+)?(?:new\s+)?{_ADU_NAME}\b"
+    rf"|\b(?:addition|upfit|up-fit|conversion)\s*(?:[-:/]|for|of|with)?\s*(?:an?\s+)?(?:new\s+)?{_AREA}['\"]?{_ADU_NAME}\b"
+    # "addition to existing garage to create a mother-in-law suite"
+    rf"|\bto\s+create\s+(?:an?\s+)?(?:new\s+)?{_AREA}(?:(?:de|at)tached\s+)?{_ADU_NAME}\b"
     rf"|\b(?:remodel\w*|finish\w*|renovat\w*)\s*\(\s*{_ADU_NAME}\s*\)",
     re.I,
 )
@@ -383,8 +427,9 @@ _REPAIR_WORK = re.compile(
 # Rule 4. A type word right after one of these describes something that already exists (the house an ADU
 # sits behind, the building being demolished or replaced), not what the permit builds.
 _CONTEXT_BEFORE = re.compile(
-    r"\b(?:existing|former|old|current|primary|principal|main|replac\w*|behind|to\s+serve|same\s+time\s+as)\s+"
-    r"(?:the\s+|an?\s+)?(?:\w+\s+)?$"
+    r"\b(?:existing|former|old|current|primary|principal|main|replac\w*|behind|to\s+serve|same\s+time\s+as)"
+    r"(?:\s*(?:or|and|/)\s*(?:proposed|new|future|planned))?[\s/]+"  # "existing or proposed single-family"
+    r"(?:the\s+|an?\s+)?(?:\w+[\s/]+)?$"
     # work done on/in a building: "solar on a single family home", "deck add on SFD"
     r"|\b(?:on|in|onto|inside|within|at)\s+(?:the\s+|an?\s+)?(?:existing\s+)?(?:\w+\s+)?$"
     # a building named inside a reference to a demolition permit: "DEMO-008872-2022 (SFD)"
@@ -394,7 +439,8 @@ _CONTEXT_BEFORE = re.compile(
 # ... or a building on another permit right after it: "SFD - BLDR-001152-2023", "duplex permitted separately",
 # "single family on separate case", "the single family dwelling is under Ref", "Duplex Issued 6-16-2023".
 _OTHER_PERMIT_AFTER = re.compile(
-    r"^\W{0,4}(?:(?:to\s+be\s+|is\s+)?(?:permitted|applied\s+for)\s+(?:separately|separate|under|on)"
+    r"^\W{0,4}(?:\([^)]{0,30}\)\W{0,3})?"  # "SINGLE-FAMILY DWELLING (EXISTING OR PROPOSED) IS PERMITTED ..."
+    r"(?:(?:(?:to|will|shall)\s+be\s+|is\s+|being\s+)?(?:permitted|applied\s+for)\s+(?:separately|separate|under|on)"
     r"|(?:is\s+)?(?:on|under)\s+(?:a\s+)?(?:separate|ref\b)|separate\s+permit|also\s+in\s+review)",
     re.I,
 )
@@ -428,7 +474,8 @@ _NSFD = re.compile(r"\bnsfd\b", re.I)
 # Rule 6. Work on an existing building: alteration, repair, remodel, reroof, HVAC, addition.
 ALTERATION = re.compile(
     r"\b(?:alter(?:ation)?s?|remodel\w*|renovat\w*|repair\w*|re-?roof\w*|roof(?:ing)?\s+replace\w*"
-    r"|replace\w*\s+(?:the\s+)?(?:existing\s+)?(?:roof\w*|windows?|siding|deck|hvac|water\s+heater|furnace)"
+    r"|replace\w*\s+(?:the\s+|an?\s+|\d+\s+)?(?:existing\s+)?(?:exterior\s+|interior\s+|front\s+|back\s+|rear\s+)?"
+    r"(?:roof\w*|windows?|doors?|siding|deck|hvac|water\s+heater|furnace)|upgrad\w*"
     r"|hvac|heat\s+pump|change[- ]?out|additions?|upfit|up-fit|fit-?up|interior\s+(?:finish|demo\w*)"
     r"|damage\w*|reinforce\w*|tenant\s+finish|int\.?\s+alt)\b",
     re.I,
@@ -563,6 +610,7 @@ def _types(text: str) -> list[_Match]:
     adu_hits = [] if negated else [("accessory dwelling", m) for m in ADU.finditer(text)]
     if not negated and not _FEE_CONTEXT.search(text):
         adu_hits += [("additional dwelling unit", m) for m in ADDITIONAL_UNIT.finditer(text)]
+        adu_hits += [("living quarters as a second home", m) for m in LIVING_QUARTERS.finditer(text)]
     for rule, m in adu_hits:
         hit = _Match(rule, m.group(0), m.start(), m.end(), "ADU", 1)
         hit.context = _is_context(text, hit) or bool(_ADU_PAST_AFTER.match(text[m.end() :]))
@@ -600,7 +648,8 @@ def _units_of(fragment: str) -> tuple[int | None, str | None, str | None]:
     for name, pattern, btype, units in TYPE_RULES:
         if pattern.search(fragment):
             return units, btype, name
-    if ADU.search(fragment) or (ADDITIONAL_UNIT.search(fragment) and not _FEE_CONTEXT.search(fragment)):
+    second = ADDITIONAL_UNIT.search(fragment) or LIVING_QUARTERS.search(fragment)
+    if ADU.search(fragment) or (second and not _FEE_CONTEXT.search(fragment)):
         return 1, "ADU", "accessory dwelling"
     if _HOUSE.search(fragment):
         return 1, "SFD", "house"
@@ -617,8 +666,8 @@ def _conversion(text: str) -> PermitTextFacts | None:
     src_units, _, src_rule = _units_of(m.group("src"))
     dst_text = m.group("dst")
     dst_units, dst_type, dst_rule = _units_of(dst_text)
-    if (
-        dst_rule in (None, "non-dwelling space")
+    if (  # "garage to apartment", "Garage to Dwelling Unit 828 SF": a unit in former non-dwelling space
+        dst_rule in (None, "non-dwelling space", "house")
         and src_rule == "non-dwelling space"
         and _APARTMENT.match(dst_text)
     ):
@@ -730,16 +779,93 @@ def _adu_created_by_work(text: str, building: list[_Match]) -> PermitTextFacts |
     )
 
 
-def parse_description(text: str | None) -> PermitTextFacts:
+# Administrative notes appended to a description: "RECD AMENDMENT TO CHANGE HVAC CONTRACTOR", "Revision
+# #2 - change contractor". They run to the end of the sentence. A note that names a dwelling is kept.
+_ADMIN_NOTE = re.compile(
+    r"\b(?:rec'?v?'?d|received|submitted)\s+(?:an?\s+)?(?:amendment|revision)s?\b[^.;]*"
+    r"|\b(?:amendment|revision|rev)\s*#?\s*\d*\s*[-:]?\s*(?:to\s+)?(?:change|add|remove|update|revise|switch)\s+"
+    r"(?:the\s+|of\s+)?(?:\w+\s+){0,2}?(?:contractor|sub-?contractor|owner|applicant|contact|address|engineer"
+    r"|architect)s?\b[^.;]*"
+    r"|\bchange\s+(?:of\s+)?(?:the\s+)?(?:\w+\s+)?(?:contractor|sub-?contractor)s?\b[^.;]*",
+    re.I,
+)
+
+
+def _strip_admin(text: str) -> tuple[str, list[str]]:
+    notes = []
+    for m in _ADMIN_NOTE.finditer(text):
+        frag = m.group(0)
+        if (
+            ADU.search(frag)
+            or ADDITIONAL_UNIT.search(frag)
+            or any(p.search(frag) for _, p, _, _ in TYPE_RULES)
+        ):
+            continue
+        notes.append(_ev("administrative note ignored", frag))
+        text = text.replace(frag, " ", 1)
+    return _clean(text), notes
+
+
+# Rule 9. A permit that legalizes an ADU already built (D-080 item 2). "Already" alone is not enough
+# ("existing garage already on site, convert to ADU" builds one); the text must say the unit was built.
+_LEGALIZE = re.compile(
+    r"\balready\s+(?:been\s+)?(?:built|buil|constructed|converted|completed|finished|done)\b"
+    r"|\b(?:built|buil|constructed|converted|done|finished|made|created|installed|completed)\b[^.;]{0,30}?"
+    r"\b(?:without|w/o|with\s+no|no)\s+(?:an?\s+|the\s+|prior\s+)*permits?\b"
+    r"|\bwork\s+(?:has\s+been|was|already)\s+(?:done|completed|performed)\b"
+    r"|\bpermit(?:ting)?\s+(?:an?\s+|the\s+)?existing\b|\b(?:in)?to\s+compliance\b|\blegaliz\w*"
+    r"|\bafter[- ]the[- ]fact\b|\bunpermitted\b",
+    re.I,
+)
+# Rule 10. In-law suites and quarters need a kitchen to be a dwelling unit (D-081 item 2). "Kitchenette" is
+# a kitchen; "no stove", "without kitchen" say there is none.
+_IN_LAW_SUITE = re.compile(r"^(?:(?:mother|father)?[- ]?in[- ]law\s+(?:suite|quarters))$", re.I)
+_KITCHEN = re.compile(r"\b(?:kitchen\w*|stove|oven|cook(?:ing|top)|cooktop)\b", re.I)
+_NO_KITCHEN = re.compile(
+    r"\b(?:no|without|w/o|not|non)\b[^.;,]{0,20}?\b(?:kitchen\w*|stove|oven|cook\w*)\b", re.I
+)
+
+
+def _kitchenless_in_law_suite(text: str) -> bool:
+    """Are the ADU names in the text only in-law suites or quarters, with no kitchen named?"""
+    names = [m.group(0) for m in ADU.finditer(text)]
+    if not names or not all(_IN_LAW_SUITE.match(n.strip(" -")) for n in names):
+        return False
+    if ADDITIONAL_UNIT.search(text) or LIVING_QUARTERS.search(text):
+        return False
+    return bool(_NO_KITCHEN.search(text)) or not _KITCHEN.search(text)
+
+
+def parse_description(text: str | None, *, in_law_suite_needs_kitchen: bool = True) -> PermitTextFacts:
     """Read units, building type, ADU kind, demolition and conversion from a permit description.
 
     Returns a `PermitTextFacts` whose fields are `None` wherever the text does not say. Every value is an
     inference: callers mark it `inferred` and use it only to fill a missing structured value.
+
+    `in_law_suite_needs_kitchen=False` is the D-081 item 2 sensitivity: it counts in-law suites that name
+    no kitchen as ADUs.
     """
     if text is None or not str(text).strip():
         return PermitTextFacts()
-    text = _clean(str(text))
+    text, notes = _strip_admin(_clean(str(text)))
+    if not text:
+        return PermitTextFacts(evidence=tuple(notes))
+    facts = _parse(text)
+    if facts.building_type_std == "ADU" and facts.units_new and not facts.is_demolition:
+        legal = _LEGALIZE.search(text)
+        if legal:
+            facts = PermitTextFacts(
+                units_new=0,
+                units_removed=0,
+                evidence=(*facts.evidence, _ev("legalization", legal.group(0)), LEGALIZATION_TAG),
+            )
+        elif in_law_suite_needs_kitchen and _kitchenless_in_law_suite(text):
+            facts = PermitTextFacts(evidence=(*facts.evidence, NO_KITCHEN_TAG))
+    return replace(facts, evidence=(*facts.evidence, *notes)) if notes else facts
 
+
+def _parse(text: str) -> PermitTextFacts:
+    """The rules, in order, on cleaned text."""
     removed = _adu_removal(text)
     if removed is not None:
         return removed
@@ -797,6 +923,33 @@ def parse_description(text: str | None) -> PermitTextFacts:
     return replace(facts, evidence=(*facts.evidence, *notes)) if notes else facts
 
 
+# Rule 4b. A house named with a permit number ("SFR 16-04567", "new house permit 14-01234", "SFD permit
+# #B123456") or introduced as a reference ("ref. new house permit"): another permit's building.
+_CITE_BEFORE = re.compile(r"\b(?:ref(?:erence[sd]?)?|see|cites?|under)\b\.?:?\s*(?:the\s+|an?\s+)?$", re.I)
+_CITE_AFTER = re.compile(
+    r"^\W{0,3}(?:permit\s*)?(?:#|no\.?)?\s*:?\s*(?:[a-z]{1,6}-?)?\d{2,4}-\d{2,}"
+    r"|^\W{0,3}(?:permit\s*)?#\s*[a-z]{0,3}\d{4,}",
+    re.I,
+)
+
+
+def _cites_other_permit(text: str, hit: _Match, first_adu: int) -> bool:
+    """Is this building word a reference to another permit: after "ref.", or with a permit number when the
+    ADU is named first ("ADU (SFR 16-...)"; a house permit's own "SFR permit 16-... with ADU" is not)?"""
+    if _CITE_BEFORE.search(text[max(0, hit.start - 15) : hit.start]):
+        return True
+    return first_adu < hit.start and bool(_CITE_AFTER.match(text[hit.end :]))
+
+
+# Rule 4c. "SFR/ NEW DETACHED MOTHER IN LAW SUITE", "SFR - 1BR 1BA - ADU": a house word that opens the text
+# followed by a separator labels the property's use (Fort Worth), when it is not itself called new.
+_USE_LABEL_AFTER = re.compile(r"^\s*[/:-]\s", re.I)
+
+
+def _use_label(text: str, hit: _Match) -> bool:
+    return hit.start == 0 and bool(_USE_LABEL_AFTER.match(text[hit.end :])) and not _is_new(text, hit)
+
+
 def _new_building(
     text: str, building: list[_Match], demo: re.Match[str] | None, is_new: bool
 ) -> PermitTextFacts:
@@ -813,6 +966,19 @@ def _new_building(
     word_types = {h.btype for h in words} | count_types
 
     if "ADU" in word_types and len(word_types) > 1:
+        first_adu = min(h.start for h in building if h.btype == "ADU")
+        cited = [
+            h
+            for h in words
+            if h.btype != "ADU" and (_cites_other_permit(text, h, first_adu) or _use_label(text, h))
+        ]
+        rest = [h for h in building if h not in cited]
+        if cited and {h.btype for h in rest} == {"ADU"} and not count_types - {"ADU"}:
+            # Rule 4b: an ADU's own permit that cites the house's permit ("garage apartment, ref. new house
+            # permit 14-...", "accessory dwelling unit (SFR 16-...)"): the house is context
+            facts = _new_building(text, rest, demo, is_new)
+            note = _ev("house cited by permit number or named as the property's use, context", cited[0].text)
+            return replace(facts, evidence=(*facts.evidence, note))
         return PermitTextFacts(evidence=(*ev, "conflict: an ADU and another dwelling type"))
     if len(word_types) > 1:
         return PermitTextFacts(evidence=(*ev, "conflict: several building types"))

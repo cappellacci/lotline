@@ -118,6 +118,37 @@ def test_existing_adu_and_new_house_with_adu():
     assert p.loc["A9", "reform_flag_raw"] == "adu_text_with_new_house"
 
 
+def test_new_house_pattern():
+    """Behaviour (b) in reports/nc/parser-handcheck-2026-11-11.md: pre-2022 house permits' own wording."""
+    hit = ap.NEW_HOUSE.search
+    for text in ["NEW STICK BUILT HOUSE WITH ADU IN BASEMENT", "NEW 2 STORY HOME, ADU ON LOWER LEVEL",
+                 "RESIDENCE WITH ACCESSORY APARTMENT", "TWO STORY RESIDENCE W/ BASEMENT ADU",
+                 "NEW BUILD STRUCTURE WITH ADU", "NEW SINGLE FAMILY RESIDENCE"]:  # fmt: skip
+        assert hit(text), text
+    for text in ["NEW ADU NEXT TO HOUSE", "NEW DETACHED GUEST HOUSE", "NEW CARRIAGE HOUSE",
+                 "NEW ACCESSORY DWELLING UNIT FOR A. OWNER", "NEW ADU BEHIND EXISTING RESIDENCE",
+                 "DETACHED ADU, SEPARATE FROM RESIDENCE"]:  # fmt: skip
+        assert not hit(text), text
+
+
+def test_new_house_wording_keeps_the_house():
+    raw = raw_frame().iloc[:1].copy()
+    raw["record_id"], raw["record_type_category"] = "B1", "SFD"
+    raw["description"] = "NEW STICK BUILT HOUSE WITH ADU IN BASEMENT"
+    raw["record_type"] = "Res: SFD"
+    p = ap.build(raw).set_index("permit_id")
+    assert p.loc["B1", "building_type_std"] == "SFD" and p.loc["B1", "units_new"] == 1
+
+
+def test_adu_permit_citing_the_house_permit_is_an_adu():
+    """Behaviour (a): an ADU's own permit that cites the house's permit number."""
+    raw = raw_frame().iloc[[4]].copy()  # an Accessory Structure / Other permit
+    raw["record_id"] = "B2"
+    raw["description"] = "GARAGE APARTMENT, REF. NEW HOUSE PERMIT 14-01234"
+    p = ap.build(raw).set_index("permit_id")
+    assert row(p, "B2") == ("ADU", 1, "inferred")
+
+
 def test_existing_adu_pattern():
     hit = ap.EXISTING_ADU.search
     assert hit("GARAGE WHERE THE ADU WAS BEFORE") and hit("CHANGE OF USE FROM A PERMITTED ADU TO STORAGE")
