@@ -5167,3 +5167,27 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (D-075 §6), and D-072's two-step zone model (#354, proposed), which is a separate proposal. If D-072 is
   accepted first, this entry's tests apply to it as a third form, with the same rule.
 - **Decided by:** Ben, 2026-11-11 ("Accept as made"). Proposed by Claude Code.
+
+### D-080 · 2026-11-11 · ADUs: the 37119 lot count from the parcel roll, and legalized existing units left out of fitted counts
+- **Why:** the five-state rebuild (`reports/adu-rebuild-2026-11-11.md`, #381) raised two questions for Ben
+  before the joint refit. Claude Code proposed an answer to each, and Ben accepted both on 2026-11-11 ("Yes,
+  go ahead").
+- **1. 37119 (unincorporated Mecklenburg) counts its eligible lots from the NC OneMap parcel roll.**
+  - In the rebuild, the stored ADU count changed from the ACS fallback for the whole county (275,566 in 2024),
+    which still held Charlotte and the six towns, to the parcel roll: 21,812 in 2024 (`parcels`), with
+    earlier years scaled from ACS.
+  - This agrees with #375's permit-level estimate (20,086) and with the count from the roll (about 21,812
+    single-family detached parcels). It is accepted as the denominator for the D-074/D-075 ADU rates.
+  - Charlotte (3712000) stays on its ACS fallback (203,927 in 2024) until a roll with land use covers it.
+  - Check: no BPS-outcome rate may divide 37119's BPS units (which include Charlotte's and the towns') by this
+    roll count. Where one would, it must use the whole-county figure.
+- **2. A permit that legalizes an ADU already built is not new production.**
+  - Examples are Fort Worth's "MOTHER-IN-LAW SUITE ALREADY BUILT" and "... WAS BUILD W/OUT A PERMIT".
+  - These stay out of the counted ADU permits used in the fit, the D-070 floor and tests A–C. The parser has
+    read them as context since #376.
+  - The formalization share (0.10, A12) already stands for unpermitted units being formalized. Counting
+    these permits as well would count the same homes twice.
+  - The hand checks label them separately and report how many there are. The results page may show them as a
+    line of their own, not as homes added.
+- **Decided by:** Ben, 2026-11-11 (accepted both proposals). The proposals were written by Claude Code.
+  **Status:** decided. Item 1 is in the rebuilt tables; item 2 is the parser's behaviour since #376.
