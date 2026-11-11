@@ -137,3 +137,174 @@ adu_transport_widening:
   high: 1.0
   unit: standard deviation of log(predicted mean) per unit distance outside the Minnesota modifier range
   source: "D-023: places outside the Minnesota modifier range are flagged and their intervals widened as in hazard.widen; same scale as adu_extrapolation_widening (1.0, judgment)"
+
+# ---- Flag undercount k by permit source (D-074, D-075 step 2, D-078) ----
+# k scales the counted ADU permits of a source (fit inputs, the D-070 observed floor, the historical_floor
+# check and tests A-C), never eligible lots. A table, not a single parameter: loaded by
+# lotline.config.load_undercount and drawn by lotline.model.undercount. `low`-`high` is the row's `interval`
+# (two-sided); the draw is a split lognormal with the median at `value` and those ends at the interval's
+# quantiles. kind: field (a city's own ADU field; one shared draw for every field row), parser (text rules;
+# its own draw), floor (k = 1, the count is a lower bound), none (no k is applied; D-078 §4). A field row with
+# `prior: true` takes the prior below; a parser row with no value has no hand check yet and keeps k = 1.
+adu_flag_undercount:
+  table: true
+  unit: ratio of true ADU permits to counted ADU permits (k >= 1)
+  source: "D-078 (Ben, 2026-11-10: accepted all six proposals), from D-074 step 1 and D-075 step 2"
+  prior:
+    low: 1.0
+    interval: 0.90
+    source: "D-078 §1: lognormal, centre exp(mean ln k) of the measured field-flag rows (Raleigh, Austin, Portland: 1.086), 90% range from 1.0 to the largest measured central upper bound (Raleigh 1.21); recomputed from the table, so a new measured field row moves it"
+  rows:
+    # -- field flags, measured on two parcel rolls --
+    - source: raleigh_permits
+      place: Raleigh (NC)
+      kind: field
+      value: 1.07
+      low: 1.02
+      high: 1.21
+      interval: 0.90
+      report: reports/nc/wake-roll-adu-diff.md
+      notes: "D-074 deviation: |P∩R| 30, |a| 2 with the 4 duplex rebuilds left out. As written 1.20 (1.10-1.41); upper sensitivity 1.4 (1.2-1.7)"
+    - source: austin_permits
+      place: Austin (TX)
+      kind: field
+      value: 1.13
+      low: 1.09
+      high: 1.18
+      interval: 0.90
+      report: reports/tx/adu-coverage-and-undercount.md
+      notes: "k = (242 + 31) / 242, R-102 Secondary Apartment flags against the TCAD rolls"
+    - source: portland_permits
+      place: Portland (OR)
+      kind: field
+      value: 1.06
+      low: 1.05
+      high: 1.07
+      interval: 0.90
+      report: reports/or/adu-coverage-and-undercount.md
+      notes: "IS_ADU flag against the RLIS rolls; as written 1.07 (1.06-1.08)"
+    # -- field flags with no measured k: the prior (D-078 §1) --
+    - source: durham_permits
+      place: Durham city and county (NC)
+      kind: field
+      prior: true
+      report: src/lotline/adapters/states/nc/durham_permits.py
+      notes: "'Accessory Dwelling' permit type, a field flag (D-074 step 1); no second roll to measure k"
+    - source: asheville_permits
+      place: Asheville (NC), 2022 on
+      kind: field
+      first_year: 2022
+      prior: true
+      report: reports/nc/asheville-adu-scout.md
+      notes: "City-typed ADU Detached / ADU Attached record types from 2022"
+    - source: bend_permits
+      place: Bend (OR)
+      kind: field
+      prior: true
+      report: src/lotline/adapters/states/or/bend_permits.py
+      notes: "BldgUse = ADU, the city's own code"
+    - source: medford_permits
+      place: Medford (OR)
+      kind: field
+      prior: true
+      report: src/lotline/adapters/states/or/medford_permits.py
+      notes: "PermitSubType ADU (and the reduced-SDC ADU subtypes)"
+    - source: mwvcog_permits
+      place: Mid-Willamette Valley COG members (OR)
+      kind: field
+      prior: true
+      report: src/lotline/adapters/states/or/mwvcog_permits.py
+      notes: "Type code ADU"
+    - source: cstx_permits
+      place: College Station (TX)
+      kind: field
+      prior: true
+      report: src/lotline/adapters/states/tx/cstx_permits.py
+      notes: "Residential Accessory 'Living Quarters' subtype"
+    - source: sa_permits
+      place: San Antonio (TX)
+      kind: field
+      prior: true
+      report: src/lotline/adapters/states/tx/sa_permits.py
+      notes: "'Res Accessory Dwelling Permit' type; the parser adds a few from accessory-building descriptions, but the city's type carries the count"
+    # -- parser sources: k = 1 / recall from each source's own check (D-078 §2-3) --
+    - source: mpls_ccs_permits
+      place: Minneapolis (MN)
+      kind: parser
+      value: 1.04
+      low: 1.02
+      high: 1.10
+      interval: 0.90
+      report: reports/mn/adu-coverage-and-undercount.md
+      notes: "Measured on the 2019/2023 Minneapolis rolls with duplexes removed (|P∩R| 94, |a| 4); as written 1.06 (1.03-1.12)"
+    - source: meck_permits
+      place: Charlotte and the Mecklenburg towns (NC)
+      kind: parser
+      value: 1.04
+      low: 1.0
+      high: 1.27
+      interval: 0.90
+      report: reports/nc/charlotte-adu-counts.md
+      notes: "Charlotte's hand check: central recall 0.96 (1.04); strict precision 0.79 (1.27) taken as the upper end; worst case 0.70 (1.43) kept as a sensitivity. The towns share the file and the parser, so they take Charlotte's k"
+    - source: cle_permits
+      place: Cleveland (OH)
+      kind: parser
+      value: 1.07
+      low: 1.0
+      high: 1.07
+      interval: 0.90
+      report: reports/oh/adu-coverage-and-undercount.md
+      notes: "Hand check: recall at least 15/16 among near-miss permits, k about 1.0-1.07 (D-078); central at 1 / (15/16)"
+    - source: asheville_permits
+      place: Asheville (NC), before 2022
+      kind: parser
+      last_year: 2021
+      value: 1.59
+      low: 1.43
+      high: 1.79
+      interval: 0.90
+      low_recall: true
+      report: reports/nc/asheville-adu-scout.md
+      notes: "Description rule recall 82/130 = 0.63 on the city-typed 2022-26 ADUs; range from the 90% Wilson interval on that share (0.56-0.70). Low-recall row: reported with and without it (D-078 §3)"
+    - source: austin_inferred_adu
+      place: Austin (TX), inferred-ADU rule, 2024 on
+      kind: parser
+      first_year: 2024
+      value: 2.30
+      low: 1.89
+      high: 2.94
+      interval: 0.95
+      low_recall: true
+      report: reports/tx/adu-coverage-and-undercount.md
+      notes: "Recall 0.434 (95%: 0.34-0.53) of the post-HOME inferred rule. Keyed to the inferred rule's own source name: its counts are not yet in the permits table, and austin_permits' R-102 flags keep the field k. Low-recall row (D-078 §3)"
+    # parser sources with no hand-check k yet: k = 1 (their counts stay lower bounds)
+    - {source: greensboro_permits, place: Greensboro (NC), kind: parser, report: src/lotline/adapters/states/nc/greensboro_permits.py, notes: "No measured recall in D-078"}
+    - {source: wilmington_permits, place: Wilmington (NC), kind: parser, report: reports/nc/wilmington-adu-scout.md, notes: "No measured recall in D-078"}
+    - {source: chapel_hill_permits, place: Chapel Hill (NC), kind: parser, report: reports/nc/chapel-hill-adu-scout.md, notes: "No measured recall in D-078"}
+    - {source: cary_permits, place: Cary (NC), kind: parser, report: reports/nc/cary-adu-scout.md, notes: "Most ADUs named only in the description; D-074 lets the Wake-roll match set Cary's k later"}
+    - {source: rochester_permits, place: Rochester (MN), kind: parser, report: src/lotline/adapters/states/mn/rochester_permits.py, notes: "No measured recall in D-078"}
+    - {source: cincy_permits, place: Cincinnati (OH), kind: parser, report: src/lotline/adapters/states/oh/cincy_permits.py, notes: "No measured recall in D-078"}
+    - {source: montgomery_permits, place: Dayton and Montgomery County (OH), kind: parser, report: src/lotline/adapters/states/oh/montgomery_permits.py, notes: "No measured recall in D-078"}
+    - {source: dallas_permits, place: Dallas (TX), kind: parser, report: src/lotline/adapters/states/tx/dallas_permits.py, notes: "No measured recall in D-078"}
+    - {source: fw_permits, place: Fort Worth (TX), kind: parser, report: src/lotline/adapters/states/tx/fw_permits.py, notes: "No measured recall in D-078"}
+    # -- floor and no-k sources --
+    - source: metc_residential_permits
+      place: Met Council suburbs (MN)
+      kind: floor
+      report: reports/mn/adu-coverage-and-undercount.md
+      notes: "Ben, 2026-11-10: the suburbs' counts are a floor; k = 1 (D-078 §6)"
+    - source: columbus_permits
+      place: Columbus (OH)
+      kind: none
+      report: reports/oh/adu-coverage-and-undercount.md
+      notes: "D-078 §4: the panel keeps the larger of flagged permits and Council variances each year; the variance ratio (about 3.9) is not applied on top"
+    - source: columbus_legistar
+      place: Columbus (OH), Council variances
+      kind: none
+      report: reports/oh/adu-coverage-and-undercount.md
+      notes: "D-078 §4, as columbus_permits"
+    - source: franklin_auditor
+      place: Franklin County Auditor permit file (OH)
+      kind: none
+      report: reports/oh/adu-coverage-and-undercount.md
+      notes: "Columbus's ADU flags come from this file (D-078 §4: no k). Other Franklin County places in it also take no k until a check measures one"

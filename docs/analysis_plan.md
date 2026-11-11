@@ -5046,3 +5046,27 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   before any fit is run.
 - **Decided by:** Ben, 2026-11-10 (accepted all six proposals). The proposals were written by Claude Code.
   **Status:** decided, not yet wired.
+- **Wired (2026-11-10, PR `ws/adu-undercount-table`; no fit or run).** The table is `adu_flag_undercount` in
+  `config/params/adu.yaml`, loaded by `lotline.config.load_undercount` and drawn by `lotline.model.undercount`.
+  Choices made in wiring, for Ben to confirm:
+  - **Shape of each row's draw.** A split lognormal: the median at the row's value, and its low and high at the
+    interval's quantiles (90% unless the source gives 95%). A single lognormal cannot be centred on 1.086 and
+    reach both 1.0 and 1.21 (the prior is asymmetric in logs), and the measured rows are asymmetric too.
+  - **Which count is kept** where two sources cover one place-year: the larger count *after* each is scaled by
+    its central k. In each simulation draw the floor is redrawn with that draw's k on the kept source; the
+    choice of source is not redrawn.
+  - **The fit uses the central k** (`estimate_adu` panel, `calibrate_adu.place_years`), as does the
+    `historical_floor` check. Only the scenario's observed floor (D-070) is redrawn per draw, on its own
+    random stream (seed + 6), so no other draw changes.
+  - **Parser sources without a hand check in D-078** (Greensboro, Wilmington, Chapel Hill, Cary, Rochester,
+    Cincinnati, Montgomery County, Dallas, Fort Worth) are in the table with k = 1 and stay in the fit. D-078 §2
+    says such a source does not enter the fit until it has its own check; removing them is left to the
+    refit's entry.
+  - **Austin's inferred-ADU rule** (k 2.30) has its own source name, `austin_inferred_adu`: its counts are not
+    in the permits table yet, so no Austin count is scaled by it. Austin's R-102 flags keep the field k 1.13.
+  - **Charlotte** takes 1.04 (1.0–1.27), its strict-precision case as the upper end; the worst case (1.43) is a
+    sensitivity. The Mecklenburg towns share the file and parser, so they take Charlotte's k.
+  - **Cleveland** takes 1.07 (1.0–1.07): D-078's range, with the hand check's 1 / (15/16) as the centre.
+  - **Asheville before 2022** takes 1.59 (1.43–1.79), the range from the 90% Wilson interval on 82 of 130.
+  - **Franklin County Auditor rows outside Columbus** take no k, as Columbus does (D-078 §4).
+  - The counted ADUs shown on the results page (`results.observed_table`) stay raw counts.

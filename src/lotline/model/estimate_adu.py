@@ -899,6 +899,7 @@ def build_panel(
     source: str | None = None,
     hh_growth: str = "corrected",
     drop_tags: Sequence[str] = (),
+    undercount="table",
     remainder: str = "permits",
 ) -> Panel:
     """The D-023 estimation panel for one state from processed, holdout-filtered tables.
@@ -912,7 +913,8 @@ def build_panel(
     T − 1) and units_5p (BPS units in 5+ unit buildings, the placebo outcome). `hh_growth`: "corrected"
     (default) or "as_run" (`household_growth`). Date tags are read by `rule_tags` (`[predates]` rules are in
     force before the panel); `drop_tags` ('earliest_known', 'unconfirmed') leaves out places whose in-panel
-    ADU event carries that flag (listed in `excluded_by_tags`).
+    ADU event carries that flag (listed in `excluded_by_tags`). `undercount` (D-078): y is each source's
+    counted ADU permits times its flag undercount k (`model.undercount`; "table" = central k, None = none).
     `remainder` (D-074 step 2): "permits" puts county remainders whose ADU counts come from local permit
     files on permit-level eligible lots (`adu_panel_eligible`); "bps" keeps the stored, BPS-kind lots. BPS
     outcomes (units_5p) are never affected.
@@ -944,7 +946,10 @@ def build_panel(
         geoids = sorted(permits.loc[permits["source"] == source, "jurisdiction_geoid"].dropna().unique())
     held = [g for g in geoids if g == ST_PAUL]
     geoids = [g for g in geoids if g != ST_PAUL]
-    counts = adu.observed_adu_counts(permits, min(years), max(years)).set_index(["geoid", "year"])[
+    from lotline.model import undercount as uc
+
+    k_adj = uc.factors_arg(undercount)
+    counts = adu.observed_adu_counts(permits, min(years), max(years), k_adj).set_index(["geoid", "year"])[
         "adu_permits"
     ]
     juris = store.read(state, "jurisdictions").set_index("geoid")
