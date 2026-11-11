@@ -20,7 +20,7 @@ import re
 import sys
 from pathlib import Path
 
-from lotline.config import CONFIG_DIR, Parameter, load_params
+from lotline.config import CONFIG_DIR, Parameter, load_params, load_undercount
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "model_and_assumptions.md"
@@ -68,6 +68,49 @@ def file_table(name: str, params: dict[str, Parameter]) -> str:
     return "\n".join(lines)
 
 
+def undercount_table(config_dir: Path = CONFIG_DIR) -> str:
+    """The ADU flag undercount table by source (`adu_flag_undercount`, D-078), or "" when there is none."""
+    import yaml
+
+    path = config_dir / "params" / "adu.yaml"
+    if not path.exists() or "adu_flag_undercount" not in (yaml.safe_load(path.read_text()) or {}):
+        return ""
+    t = load_undercount(config_dir)
+    measured = [r for r in t.rows if r.kind == "field" and r.value is not None]
+    import math
+
+    centre = math.exp(sum(math.log(r.value) for r in measured) / len(measured)) if measured else float("nan")
+    top = max((r.high for r in measured), default=float("nan"))
+    lines = [
+        f"**`config/params/adu.yaml` `adu_flag_undercount`** (a table, {len(t.rows)} sources; D-078). "
+        f"Unmeasured field-flag sources take the prior: centre {centre:.3f}, "
+        f"{t.prior.interval:.0%} range {t.prior.low:g}–{top:g}.",
+        "",
+        "| Source | Place | Kind | Years | k | Range | Source report |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for r in t.rows:
+        years = (
+            "all"
+            if r.first_year is None and r.last_year is None
+            else f"{r.first_year or ''}–{r.last_year or ''}"
+        )
+        if r.value is not None:
+            k, rng = f"{r.value:g}", f"{r.low:g}–{r.high:g} ({r.interval:.0%})"
+        elif r.prior:
+            k, rng = "prior", "prior"
+        else:
+            k, rng = (
+                "1",
+                "fixed"
+                + (" (floor)" if r.kind == "floor" else " (no hand check yet)" if r.kind == "parser" else ""),
+            )
+        lines.append(
+            f"| `{r.source}` | {cell(r.place)} | {r.kind} | {years} | {k} | {rng} | `{cell(r.report)}` |"
+        )
+    return "\n".join(lines)
+
+
 def render(config_dir: Path = CONFIG_DIR) -> str:
     """Every params file, alphabetically, as Markdown (no markers)."""
     names = sorted(p.stem for p in (config_dir / "params").glob("*.yaml"))
@@ -80,7 +123,9 @@ def render(config_dir: Path = CONFIG_DIR) -> str:
         '"Fixed" means the value is set by the Handbook, the validation plan or a definition '
         "and is not varied."
     )
-    return head + "\n\n" + "\n\n".join(file_table(n, t) for n, t in tables.items())
+    under = undercount_table(config_dir)
+    body = "\n\n".join(file_table(n, t) for n, t in tables.items())
+    return head + "\n\n" + body + (f"\n\n{under}" if under else "")
 
 
 def splice(doc: str, table: str) -> str:

@@ -639,17 +639,30 @@ def adu_share_of_one_unit(permits: pd.DataFrame, first: int, last: int) -> tuple
     return adu, adu + int((w["building_type_std"] == "SFD").sum())
 
 
-def observed_adu_counts(permits: pd.DataFrame, first: int, last: int) -> pd.DataFrame:
+def observed_adu_counts(permits: pd.DataFrame, first: int, last: int, undercount=None) -> pd.DataFrame:
     """ADU permits per jurisdiction and year in [first, last], from sources that flag ADUs at all.
 
     Where two sources cover one jurisdiction (Met Council and Minneapolis's own permits), the larger count
     each year is kept, never the sum. Jurisdictions in a flagging source with no ADU get 0, not missing.
+
+    With `undercount` (`model.undercount.Factors`, D-078), each source's count is first multiplied by its k
+    and the larger scaled count is kept; the output then also has the kept `source`, its raw count
+    (`counted`) and its table row (`k_row`, -1 for k = 1).
     """
+    from lotline.model import undercount as uc
+
     flagging = permits.loc[_is_adu(permits), "source"].unique()
     p = permits[permits["source"].isin(flagging) & permits["jurisdiction_geoid"].notna()]
     p = p[(p["issue_year"] >= first) & (p["issue_year"] <= last)].assign(adu=_is_adu)
     by = p.groupby(["jurisdiction_geoid", "source", "issue_year"])["adu"].sum().reset_index()
-    out = by.groupby(["jurisdiction_geoid", "issue_year"])["adu"].max().reset_index()
+    if undercount is None:
+        out = by.groupby(["jurisdiction_geoid", "issue_year"])["adu"].max().reset_index()
+    else:
+        by = uc.scale(by.assign(adu=by["adu"].astype(float)), undercount)
+        by = by.sort_values(["adu", "source"], ascending=[False, True], kind="stable")
+        out = by.groupby(["jurisdiction_geoid", "issue_year"]).head(1)
+        out = out[["jurisdiction_geoid", "issue_year", "adu", "source", "counted", "k_row"]]
+        out = out.sort_values(["jurisdiction_geoid", "issue_year"]).reset_index(drop=True)
     return out.rename(columns={"jurisdiction_geoid": "geoid", "issue_year": "year", "adu": "adu_permits"})
 
 
@@ -848,7 +861,9 @@ def run(
     dollars), optional mortgage_rate (a backtest passes the year's actual rate; where it is missing, each draw
     uses `mortgage_rate_forecast` from market.yaml, flat over the horizon), rule_class ('none', 'partial',
     'handbook'), rule_age (years, NaN without a rule), observed_rate (ADU permits per parcel a year; NaN
-    where not observed). Extra columns are carried through.
+    where not observed). Extra columns are carried through. With `observed_adu_by_k_row` (from
+    `places_from_store`, D-078), each draw's observed rate uses that draw's flag undercount k
+    (`observed_rate_draws`, its own random stream); `observed_rate` itself is the central-k rate.
     Totals are percentiles of each draw's five-year sum, not sums of percentiles.
     """
     central = central_params() | dict(params or {})
@@ -868,6 +883,7 @@ def run(
         1 / np.maximum(var_u, 1e-12), size=(n, len(places))
     )
     u_all = np.where(var_u > 0, gamma * var_u, 1.0)
+    obs_d = observed_rate_draws(places, n, seed + 6)  # D-078: each draw's flag undercount k, own stream
     e = places["eligible_parcels"].to_numpy(dtype=float)
     e_mult = (
         eligible_proxy_step.multipliers(places, n, np.random.default_rng(seed + 5))
@@ -902,7 +918,7 @@ def run(
         paths = pool_paths(
             e * e_mult[d],
             hm,
-            places["observed_rate"],
+            places["observed_rate"] if obs_d is None else obs_d[d],
             c,
             places["rule_age"],
             p,
@@ -918,18 +934,22 @@ def run(
 
     args = (places["rent"], places["home_value"], rates(central))
     dist = hazard.calibration_distance(*args, central)
-    info = places.assign(
-        mortgage_rate_central=args[2],
-        mature_hazard_central=hazard.adu_mature_hazard(*args, central),
-        price_to_cost_central=hazard.adu_price_to_cost(places["rent"], params=central),
-        calibration_distance=dist["total"],
-        outside_calibration=dist["total"] > 0,
-        outside_fit_states=(st.notna() & ~st.isin(fitted)).to_numpy(),
-        draws_from_unknown_rule=np.where(sampled, 1.0, 0.0) if n else 0.0,
-        drawn_none=(drawn == 0).mean(axis=0),
-        drawn_partial=((drawn >= 1) & (drawn <= 3)).mean(axis=0),
-        drawn_handbook=(drawn == 4).mean(axis=0),
-    ).reset_index(drop=True)
+    info = (
+        places.drop(columns=["observed_adu_by_k_row"], errors="ignore")
+        .assign(
+            mortgage_rate_central=args[2],
+            mature_hazard_central=hazard.adu_mature_hazard(*args, central),
+            price_to_cost_central=hazard.adu_price_to_cost(places["rent"], params=central),
+            calibration_distance=dist["total"],
+            outside_calibration=dist["total"] > 0,
+            outside_fit_states=(st.notna() & ~st.isin(fitted)).to_numpy(),
+            draws_from_unknown_rule=np.where(sampled, 1.0, 0.0) if n else 0.0,
+            drawn_none=(drawn == 0).mean(axis=0),
+            drawn_partial=((drawn >= 1) & (drawn <= 3)).mean(axis=0),
+            drawn_handbook=(drawn == 4).mean(axis=0),
+        )
+        .reset_index(drop=True)
+    )
     yearly = info.loc[info.index.repeat(horizon)].reset_index(drop=True)
     yearly["horizon"] = np.tile(np.arange(1, horizon + 1), len(places))
     yearly["year"] = first - 1 + yearly["horizon"]
@@ -1214,14 +1234,16 @@ def county_mix(places: pd.DataFrame, state: str, store, origin: int, coded: pd.D
     return out
 
 
-def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
+def places_from_store(state: str, store, origin: int, undercount="table") -> pd.DataFrame:
     """One row per jurisdiction with ADU-eligible parcels: every input `run` needs, from processed tables.
 
     Eligible parcels (theme 'adu', current rule version) from the newest year <= origin (else the earliest
     later roll, flagged `parcels_after_origin`); ACS rent and value from the newest vintage <= origin; no
     mortgage rate (forward runs use `mortgage_rate_forecast`); coded ADU rules in force on
     `baseline.rules_as_of` (31 December of the window's first year, D-064); observed ADU permits per parcel
-    where local permits flag ADUs.
+    where local permits flag ADUs, each source's count times its flag undercount k (D-078; `undercount`:
+    "table" = the table's central k, None = no correction). The per-row split of the observed floor goes in
+    `observed_adu_by_k_row` so `run` can redraw k in every draw.
     Reads only holdout-filtered tables (DataStore); no outcome after the origin is used.
     """
     from lotline.build import eligible as eligible_rule
@@ -1258,11 +1280,59 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     from lotline.config import load_state
 
     n_years = int(load_params("adu")["adu_observed_years"].value)
-    counts = observed_adu_counts(store.read(state, "permits"), 1900, origin)
-    per_year = observed_per_year(counts, origin, n_years, holdout_stops(load_state(state).holdouts))
+    from lotline.model import undercount as uc
+
+    k_adj = uc.factors_arg(undercount)
+    counts = observed_adu_counts(store.read(state, "permits"), 1900, origin, k_adj)
+    stops = holdout_stops(load_state(state).holdouts)
+    per_year = observed_per_year(counts, origin, n_years, stops)
     places["observed_adu_per_year"] = places["geoid"].map(per_year)
     places["observed_rate"] = places["observed_adu_per_year"] / places["eligible_parcels"]
+    if k_adj is not None:
+        terms = observed_terms_by_k_row(counts, origin, n_years, stops)
+        places["observed_adu_by_k_row"] = places["geoid"].map(terms)
     return places
+
+
+def observed_terms_by_k_row(
+    counts: pd.DataFrame, origin: int, n_years: int, stops: Mapping[str, int]
+) -> dict[str, dict[int, float]]:
+    """The observed floor per place split by undercount row: GEOID -> {k_row: raw ADU permits a year}.
+
+    Same window as `observed_per_year`; `counts` from `observed_adu_counts(..., undercount)` (columns
+    `counted`, `k_row`). Summing raw x k over the rows gives `observed_per_year`, so `run` can redraw k.
+    By hand: 4 years, raw 1, 2, 3, 6 all from row 0 -> {0: 3.0}; 2 from row 0 and 2 from row -1 -> {0: 0.5,
+    -1: 0.5}.
+    """
+    out: dict[str, dict[int, float]] = {}
+    for g, grp in counts.groupby("geoid"):
+        last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
+        w = grp[grp["year"].between(last - n_years + 1, last)]
+        out[g] = {int(r): float(v) / n_years for r, v in w.groupby("k_row")["counted"].sum().items()}
+    return out
+
+
+def observed_rate_draws(places: pd.DataFrame, n: int, seed: int, table=None) -> np.ndarray | None:
+    """Observed ADU permits per parcel a year in each draw (draws x places), with each draw's k (D-078 §5:
+    one shared z for field rows, its own for each parser row), or None when `places` has no per-row split.
+
+    A place with no observed floor (NaN) stays NaN. Rows index `undercount.resolve(table)` (the config table
+    by default, as `places_from_store` used); -1 is k = 1.
+    """
+    from lotline.model import undercount as uc
+
+    if "observed_adu_by_k_row" not in places:
+        return None
+    rows = uc.resolve(table)
+    k = np.hstack([uc.draw_matrix(rows, n, np.random.default_rng(seed)), np.ones((n, 1))])  # last: k = 1
+    m = np.zeros((len(places), len(rows) + 1))
+    for i, terms in enumerate(places["observed_adu_by_k_row"]):
+        if isinstance(terms, dict):
+            for r, v in terms.items():
+                m[i, r] += v  # r = -1 lands in the last column
+    e = places["eligible_parcels"].to_numpy(dtype=float)
+    rate = (k @ m.T) / np.where(e > 0, e, np.nan)
+    return np.where(places["observed_rate"].isna().to_numpy()[None, :], np.nan, rate)
 
 
 def holdout_stops(holdouts) -> dict[str, int]:

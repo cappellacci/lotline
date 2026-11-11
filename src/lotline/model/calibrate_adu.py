@@ -292,10 +292,12 @@ def cobuilt(permits, window: int):
     return adu._is_adu(permits) & pd.Series(hit, index=permits.index) & permits["parcel_id"].notna()
 
 
-def adu_counts(permits, first: int, last: int, settings: dict):
+def adu_counts(permits, first: int, last: int, settings: dict, undercount=None):
     """As `scenarios.adu.observed_adu_counts` (the larger source each year, never the sum), with D-041's
     rules: co-built ADUs dropped if `settings['exclude_cobuilt']`, and a `survey` flag where the count kept
-    comes from a survey source (ties go to the city's own records)."""
+    comes from a survey source (ties go to the city's own records). With `undercount`
+    (`model.undercount.Factors`, D-078) each source's count is scaled by its k before the larger is kept."""
+    from lotline.model import undercount as uc
     from lotline.model.scenarios import adu
 
     flagging = permits.loc[adu._is_adu(permits), "source"].unique()
@@ -306,6 +308,8 @@ def adu_counts(permits, first: int, last: int, settings: dict):
         keep = keep & ~cobuilt(p, settings["window"])
     p = p.assign(adu=keep, survey=p["source"].isin(SURVEY_SOURCES))
     by = p.groupby(["jurisdiction_geoid", "issue_year", "source", "survey"])["adu"].sum().reset_index()
+    if undercount is not None:
+        by = uc.scale(by.assign(adu=by["adu"].astype(float)), undercount)
     by = by.sort_values(["adu", "survey"], ascending=[False, True])  # the larger; on a tie, the city's own
     out = by.groupby(["jurisdiction_geoid", "issue_year"]).head(1)
     return out.rename(columns={"jurisdiction_geoid": "geoid", "issue_year": "year", "adu": "adu_permits"})[
@@ -313,7 +317,9 @@ def adu_counts(permits, first: int, last: int, settings: dict):
     ]
 
 
-def place_years(state: str, store, geoids, years, params=None, assume_rules=None, counts=None):
+def place_years(
+    state: str, store, geoids, years, params=None, assume_rules=None, counts=None, undercount="table"
+):
     """One row per place-year that can be checked: a coded ADU rule in force by 1 July, and a permit source
     covering the place that flags ADUs that year. Columns: geoid, name, year, adu_permits (observed),
     eligible_parcels, rent, home_value, mortgage_rate (actual), h1 (mature hazard at θ = 1),
@@ -325,12 +331,17 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
 
     `counts` (`count_settings()`, D-041) applies the count rules; `report_rate` is then ρ for a survey-counted
     place-year and 1 otherwise, and k is multiplied by it. Without it, counts are as D-039 and the rate is 1.
+
+    `undercount` (D-078): each source's counted ADU permits are multiplied by its flag undercount k
+    (`model.undercount`; "table" = the table's central k, None = no correction). Eligible lots are not scaled.
     """
     import pandas as pd
 
     from lotline.model import hazard, money
+    from lotline.model import undercount as uc
     from lotline.model.scenarios import adu
 
+    k_adj = uc.factors_arg(undercount)
     p = dict(adu.central_params() if params is None else params)
     unit = 1e-3  # h_m is linear in θ below the cap of 1: evaluate at a small θ and rescale
     p["adu_mature_hazard_ref"] = unit
@@ -352,9 +363,11 @@ def place_years(state: str, store, geoids, years, params=None, assume_rules=None
     ]
     covered = set(zip(covered["jurisdiction_geoid"], covered["issue_year"], strict=True))
     if counts is None:
-        rho, counts = 1.0, adu.observed_adu_counts(permits, min(years), max(years)).assign(survey=False)
+        rho = 1.0
+        counts = adu.observed_adu_counts(permits, min(years), max(years), k_adj)
+        counts = counts[["geoid", "year", "adu_permits"]].assign(survey=False)
     else:
-        rho, counts = counts["report_rate"], adu_counts(permits, min(years), max(years), counts)
+        rho, counts = counts["report_rate"], adu_counts(permits, min(years), max(years), counts, k_adj)
     survey = counts.set_index(["geoid", "year"])["survey"]
     counts = counts.set_index(["geoid", "year"])["adu_permits"]
     from lotline.config import load_params, load_state
