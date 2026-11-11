@@ -145,6 +145,105 @@ def load_fees(state: str, config_dir: Path = CONFIG_DIR):
 
 
 def load_params(name: str, config_dir: Path = CONFIG_DIR) -> dict[str, Parameter]:
-    """Load config/params/<name>.yaml: parameter name -> {value, low, high, unit, source, notes}."""
+    """Load config/params/<name>.yaml: parameter name -> {value, low, high, unit, source, notes}.
+
+    An entry marked `table: true` (e.g. `adu_flag_undercount`) is a table with its own loader and is left out.
+    """
     raw = yaml.safe_load((config_dir / "params" / f"{name}.yaml").read_text()) or {}
-    return {key: Parameter.model_validate(spec) for key, spec in raw.items()}
+    return {
+        key: Parameter.model_validate(spec)
+        for key, spec in raw.items()
+        if not (isinstance(spec, dict) and spec.get("table"))
+    }
+
+
+UNDERCOUNT_KINDS = ("field", "parser", "floor", "none")
+
+
+class UndercountRow(_Model):
+    """One permit source's ADU flag undercount k (D-078). `value` is the median, `low`-`high` the two-sided
+    `interval`. A field row with `prior: true` takes the table's prior; a parser row with no value has no hand
+    check yet (k = 1); floor and none rows are k = 1."""
+
+    source: str
+    place: str
+    kind: str
+    value: float | None = None
+    low: float | None = None
+    high: float | None = None
+    interval: float | None = None
+    prior: bool = False
+    first_year: int | None = None
+    last_year: int | None = None
+    low_recall: bool = False
+    report: str
+    notes: str = ""
+
+    @model_validator(mode="after")
+    def _check(self) -> UndercountRow:
+        if self.kind not in UNDERCOUNT_KINDS:
+            raise ValueError(f"{self.source}: kind {self.kind!r} not in {UNDERCOUNT_KINDS}")
+        given = [x is not None for x in (self.value, self.low, self.high, self.interval)]
+        if any(given) and not all(given):
+            raise ValueError(f"{self.source}: value, low, high and interval go together")
+        if self.prior and (self.kind != "field" or any(given)):
+            raise ValueError(f"{self.source}: only a field row without its own k takes the prior")
+        if self.kind == "field" and not (self.prior or all(given)):
+            raise ValueError(f"{self.source}: a field row needs its own k or prior: true")
+        if self.kind in ("floor", "none") and any(given):
+            raise ValueError(f"{self.source}: a {self.kind} row has no k (it is 1)")
+        if all(given):
+            if not 1.0 <= self.low <= self.value <= self.high:
+                raise ValueError(f"{self.source}: need 1 <= low <= value <= high")
+            if not 0.0 < self.interval < 1.0:
+                raise ValueError(f"{self.source}: interval must be in (0, 1)")
+        if self.first_year and self.last_year and self.first_year > self.last_year:
+            raise ValueError(f"{self.source}: first_year after last_year")
+        return self
+
+    @property
+    def measured(self) -> bool:
+        return self.value is not None
+
+    @property
+    def floor(self) -> bool:
+        return self.kind == "floor"
+
+    def covers(self, year: int) -> bool:
+        return (self.first_year is None or year >= self.first_year) and (
+            self.last_year is None or year <= self.last_year
+        )
+
+
+class UndercountPrior(_Model):
+    low: float
+    interval: float
+    source: str
+
+
+class UndercountTable(_Model):
+    table: bool
+    unit: str
+    source: str
+    prior: UndercountPrior
+    rows: list[UndercountRow]
+
+    @model_validator(mode="after")
+    def _no_overlap(self) -> UndercountTable:
+        by: dict[str, list[UndercountRow]] = {}
+        for r in self.rows:
+            by.setdefault(r.source, []).append(r)
+        for src, rows in by.items():
+            for i, a in enumerate(rows):
+                for b in rows[i + 1 :]:
+                    lo = max(a.first_year or -9999, b.first_year or -9999)
+                    hi = min(a.last_year or 9999, b.last_year or 9999)
+                    if lo <= hi:
+                        raise ValueError(f"{src}: two rows cover {lo}")
+        return self
+
+
+def load_undercount(config_dir: Path = CONFIG_DIR, key: str = "adu_flag_undercount") -> UndercountTable:
+    """The ADU flag undercount table by permit source (params/adu.yaml `adu_flag_undercount`, D-078)."""
+    raw = yaml.safe_load((config_dir / "params" / "adu.yaml").read_text()) or {}
+    return UndercountTable.model_validate(raw[key])
