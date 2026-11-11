@@ -122,3 +122,135 @@ def test_load_applies_holdout_and_registers(raw, combo, monkeypatch):
     assert_conforms(out, "permits")
     assert calls and calls[0]["geoid_col"] == "jurisdiction_geoid"
     assert "cincy_permits" in registry.sources_for("OH")
+
+
+# --- Adapter rules from the 2026-11-11 hand check
+# (reports/oh/parser-handcheck-2026-11-11.md §2, D-081 item 3).
+# Synthetic permits that mirror each case; none is a real record.
+R3, R2 = '"R-3"', '"R-2"'
+COACH = "Two-story carriage house with 2 private garages at first floor and one-bedroom apartment unit above."
+# permitnum, workclass, proposeduse, units, issueddate, pin
+RULE_ROWS = [
+    # a development: apartments and a coach unit on one parcel in one year
+    ("D-APT", "CNEW", R2, "6", "2020-08-19", "PDEV"),
+    ("D-COACH", "CNEW", R3, "1", "2020-08-19", "PDEV"),
+    # the same coach unit text on a parcel where the apartments came another year: an ADU
+    ("Y-APT", "CNEW", R2, "6", "2019-03-01", "PYEAR"),
+    ("Y-COACH", "CNEW", R3, "1", "2020-08-19", "PYEAR"),
+    # three carriage houses on one parcel in one year, nothing else: a development
+    ("M-1", "CNEW", R3, "1", "2021-05-01", "PMANY"),
+    ("M-2", "CNEW", R3, "1", "2021-05-01", "PMANY"),
+    ("M-3", "CNEW", R3, "1", "2021-05-02", "PMANY"),
+    # two on one parcel in one year: under the threshold, both stay ADUs
+    ("T-1", "RNEW", FM, "1", "2021-05-01", "PTWO"),
+    ("T-2", "RNEW", FM, "1", "2021-06-01", "PTWO"),
+    # the text names the master plan; the parcel has nothing else
+    ("N-COACH", "CNEW", R3, "1", "2020-08-19", "PNAMED"),
+    # an alteration permit that reports 3 units on its own row is not its own multifamily neighbour
+    ("A-ALT", "RALT", FM, "3", "2022-09-08", "PALT"),
+    # a true ADU beside its new house, same parcel and year
+    ("H-HOUSE", "RNEW", FM, "1", "2024-04-01", "PHOUSE"),
+    ("H-ADU", "RACCESS", FM, "0", "2024-05-01", "PHOUSE"),
+    # a pool shed, negated
+    ("S-SHED", "RALT", FM, "1", "2025-01-29", "PSHED"),
+    # garage with an ADU above; the house is permitted separately on the same lot
+    ("G-HOUSE", "RNEW", FM, "1", "2026-06-01", "PGAR"),
+    ("G-ADU", "RNEW", FM, "1", "2026-06-23", "PGAR"),
+    # an ADU and a house named together, nothing said about a separate permit: still no type from the text
+    ("C-BOTH", "RNEW", FM, "1", "2026-07-01", "PBOTH"),
+]
+RULE_COMBO = [
+    ("D-COACH", COACH),
+    ("Y-COACH", COACH),
+    ("M-1", COACH),
+    ("M-2", COACH),
+    ("M-3", COACH),
+    ("T-1", "NEW DETACHED GARAGE WITH ADU ON SECOND FLOOR"),
+    ("T-2", "NEW DETACHED GARAGE WITH ADU ON SECOND FLOOR"),
+    ("N-COACH", COACH[:-1] + ", within a 36 residential building masterplan."),
+    ("A-ALT", "REBUILD CARRIAGE HOUSE FROM EXISTING SHELL"),
+    ("H-ADU", "985SF ADU AT BASEMENT LEVEL"),
+    (
+        "S-SHED",
+        "BUILDING AN ANCILLARY SHED FOR STORAGE AND PLUMBING. POOL INCLUDED.\n\nNOT A DWELLING UNIT/ADU",
+    ),
+    (
+        "G-ADU",
+        "New construction of a detached accessory structure consisting of a garage with accessory dwelling "
+        "unit above. To be permitted as an accessory dwelling unit on a lot with an existing or proposed "
+        "single-family dwelling that is being permitted separately under #G-HOUSE",
+    ),
+    (
+        "C-BOTH",
+        "New single-family dwelling with accessory dwelling unit on a lot with a single-family dwelling",
+    ),
+]
+
+
+@pytest.fixture
+def ruled() -> pd.DataFrame:
+    raw = pd.DataFrame(
+        RULE_ROWS, columns=["permitnum", "workclass", "proposeduse", "units", "issueddate", "pin"]
+    )
+    raw["permittypemapped"] = "Building"
+    raw["statuscurrentmapped"] = "Permit Issued"
+    raw["coissueddate"] = None
+    raw["applieddate"] = "2019-01-01"
+    raw["permitclass"] = "RCO"
+    raw["totalsqft"] = None
+    raw["estprojectcostdec"] = "100000"
+    raw["pin"] = '"' + raw["pin"] + '"'
+    combo = pd.DataFrame(RULE_COMBO, columns=["number_key", "desc_of_work"])
+    combo["sub_type_desc"] = "x"
+    return cp.build(raw, combo).set_index("permit_id")
+
+
+def _adus(df: pd.DataFrame) -> set[str]:
+    return set(df.index[df["building_type_std"].eq("ADU")])
+
+
+def test_development_buildings_are_not_adus(ruled):
+    # beside new apartments the same year, three on one parcel, or named in a master plan
+    assert not {"D-COACH", "M-1", "M-2", "M-3", "N-COACH"} & _adus(ruled)
+    # they keep the type their use group and units give: one-unit R-3 is a house, inferred
+    assert (ruled.loc["D-COACH", "building_type_std"], ruled.loc["D-COACH", "units_new"]) == ("SFD", 1)
+    assert pd.isna(ruled.loc["M-1", "adu_type"])
+    assert ruled.loc["D-APT", "building_type_std"] == "MF5"
+
+
+def test_lone_adus_survive_the_development_rule(ruled):
+    # apartments another year, two on a parcel (under the threshold), a 3-unit alteration on its own row,
+    # and an ADU beside its new house
+    assert {"Y-COACH", "T-1", "T-2", "A-ALT", "H-ADU"} <= _adus(ruled)
+    assert ruled.loc["H-HOUSE", "building_type_std"] == "SFD"
+
+
+def test_development_rule_counts_distinct_permits():
+    pid = pd.Series(["X", "X", "X", "Y"])
+    parcel = pd.Series(["P"] * 4, dtype="string")
+    year = pd.Series([2020] * 4)
+    is_adu = pd.Series([True] * 4)
+    base = pd.Series(["SFD"] * 4)
+    new = pd.Series([True] * 4)
+    named = pd.Series([False] * 4)
+    # one permit repeated three times plus one more is 2 permits, under DEVELOPMENT_ADU_MIN = 3
+    assert not cp.development_adus(pid, parcel, year, is_adu, base, new, named).any()
+
+
+def test_not_a_dwelling_unit_negates(ruled):
+    assert "S-SHED" not in _adus(ruled)
+    assert ruled.loc["S-SHED", "building_type_std"] == "OTHER"  # an alteration permit with no unit
+    facts, _ = cp.read_text("POOL HOUSE. NOT A DWELLING UNIT/ADU")
+    assert facts.building_type_std is None and "negated" in facts.evidence[-1]
+
+
+def test_house_permitted_separately_leaves_the_adu(ruled):
+    adu = ruled.loc["G-ADU"]
+    assert (adu.building_type_std, adu.units_new, adu.adu_type) == ("ADU", 1, "detached")
+    assert ruled.loc["G-HOUSE", "building_type_std"] == "SFD"  # the house is counted once, on its own permit
+
+
+def test_adu_and_house_conflict_stands_without_a_separate_permit(ruled):
+    assert ruled.loc["C-BOTH", "building_type_std"] == "SFD"  # use group; the text gives no type
+    facts, _ = cp.read_text(RULE_COMBO[-1][1])
+    assert facts.building_type_std is None

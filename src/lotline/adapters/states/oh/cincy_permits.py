@@ -30,6 +30,18 @@ apartment or townhouse are downloaded (server-side `WHERE`); the text is parsed 
 (1 unit, inferred), and permits named there are downloaded from the main dataset even when their work class is
 not RNEW (e.g. a new garage with an ADU above).
 
+Three adapter rules correct the parser's reading of Cincinnati's text
+(`reports/oh/parser-handcheck-2026-11-11.md` §2, D-081 item 3):
+
+- **A development's coach units are not ADUs** (`development_adus`). An "ADU" or "carriage house" permit is
+  not a homeowner's second unit when its parcel has, in the same issue year, another permit for new
+  multifamily construction (3+ units) or at least `DEVELOPMENT_ADU_MIN` ADU-flagged permits, or when its text
+  places it in a master plan. Such a permit keeps the type its use group and unit count give it.
+- **"Not a dwelling unit" negates** (`NOT_A_UNIT`): "NOT A DWELLING UNIT/ADU" on a pool shed is not an ADU.
+- **A house permitted separately is context** (`_separate_house_adu`): when the parser finds an ADU and a
+  house in conflict, and the text says the house is permitted separately, the sentence that names the ADU
+  alone decides. So a garage-with-ADU permit is not filed as a second house.
+
 **Demolitions.** Wrecking permits: `units_new` 0, `units_removed` from `units` for dwelling use groups
 (reported; 0 or blank → unknown), unknown otherwise.
 
@@ -42,16 +54,18 @@ names and plan-review comments are never requested.
 
 from __future__ import annotations
 
+import re
+
 import pandas as pd
 
 from lotline.io import DataStore
 from lotline.io.socrata import download_dataset
-from lotline.parse.permit_text import parse_description
+from lotline.parse.permit_text import PermitTextFacts, parse_description
 from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.oh.cincy_permits"
-VERSION = "1.0"
+VERSION = "1.1"
 SOURCE = "cincy_permits"
 TABLE = "permits"
 DOMAIN = "data.cincinnati-oh.gov"
@@ -100,6 +114,21 @@ COMBO_WORDS = ["ADU", "ACCESSORY DWELLING", "CARRIAGE", "GARAGE APARTMENT", "IN-
 COMBO_WHERE = " OR ".join(f"upper(desc_of_work) like '%{w}%'" for w in COMBO_WORDS)
 DWELLING_USES = {"1-2-3 FM", "1-2-3", "1-2-3 FA", "R-3", "R-5", "R-2"}
 DROP_STATUS = {"Permit Withdrawn", "VOIDED", "REVOKED", "DENIED", "W/REFUND"}
+# A parcel with this many ADU-flagged permits in one issue year (each counted with the others) is a
+# development's buildings, not homeowners' ADUs. Cincinnati's 2020 masterplan had 11; every true ADU found by
+# the 2026-11-11 hand check was alone on its parcel that year.
+DEVELOPMENT_ADU_MIN = 3
+# Text that places a permit inside a larger development ("within a 36 residential building masterplan").
+DEVELOPMENT_TEXT = re.compile(
+    r"\bmaster\s*-?\s*plan\w*|\bwithin\s+an?\s+\d+\s+(?:\w+\s+){0,2}buildings?\b", re.I
+)
+# "NOT A DWELLING UNIT/ADU", "not a dwelling unit": the reviewer has said the space is not a unit.
+NOT_A_UNIT = re.compile(r"\bnot\s+(?:an?\s+)?(?:accessory\s+|separate\s+)?dwelling\s+units?\b", re.I)
+# The house on the lot is on another permit: "single-family dwelling that is being permitted separately".
+SEPARATE_HOUSE = re.compile(
+    r"\b(?:being\s+|to\s+be\s+|is\s+)?permitted\s+separately\b|\bseparate\s+permit\b", re.I
+)
+_SENTENCE = re.compile(r"(?<=[.;!?])\s+|\s+\.\s+|\n+")
 
 PROVENANCE = {
     "title": "City of Cincinnati Building Permits (BLDS, 2010 to present) and combo permits with plan review",
@@ -113,6 +142,10 @@ PROVENANCE = {
         "Combo permits: only rows whose work description names an ADU, carriage house, garage apartment, "
         "in-law suite or townhouse; parsed with lotline.parse.permit_text, text never stored; those permit "
         "numbers are also downloaded from the main dataset whatever their work class",
+        "Adapter rules on the parsed text (reports/oh/parser-handcheck-2026-11-11.md §2, D-081 item 3): an "
+        "ADU on a parcel that has, the same year, a new 3+ unit permit or 3 or more ADU-flagged permits, or "
+        "whose text names a master plan, is a development's building and keeps its use-group type; 'not a "
+        "dwelling unit' negates an ADU; when the house is 'permitted separately', the ADU sentence decides",
         "Permits never issued, withdrawn, voided, revoked, denied or refunded are dropped",
         "building_type_std from the building-code use group and units: 1-2-3 family/R-3/R-5/R-2 by units "
         "(1 SFD inferred, 2 U2, 3-4 U3_4, 5+ MF5); other use groups OTHER with unknown units; 0 or blank "
@@ -171,20 +204,83 @@ def classify(use, units, demo: bool) -> tuple[str, str, object, object, str]:
     return btype, conf_t, n, pd.NA, conf_u
 
 
+def _separate_house_adu(text: str, facts: PermitTextFacts) -> PermitTextFacts:
+    """An ADU-vs-house conflict where the house is permitted separately: the ADU sentence decides.
+
+    "Garage with accessory dwelling unit above. To be permitted as an ADU on a lot with an existing or
+    proposed single-family dwelling that is being permitted separately under #..." The shared parser reads the
+    house as a second dwelling built here and returns no type. If one sentence on its own parses as an ADU and
+    no sentence parses as another dwelling type, the permit is that ADU.
+    """
+    if facts.building_type_std is not None or not SEPARATE_HOUSE.search(text):
+        return facts
+    if not any("an ADU and another dwelling type" in e for e in facts.evidence):
+        return facts
+    parsed = [parse_description(s) for s in _SENTENCE.split(text) if s.strip()]
+    types = {f.building_type_std for f in parsed if f.building_type_std is not None}
+    if types != {"ADU"}:
+        return facts
+    adu = next(f for f in parsed if f.building_type_std == "ADU")
+    return PermitTextFacts(
+        units_new=1,
+        building_type_std="ADU",
+        adu_type=adu.adu_type,
+        evidence=(*adu.evidence, "house permitted separately: the ADU sentence decides"),
+    )
+
+
+def read_text(text: str) -> tuple[PermitTextFacts, bool]:
+    """Parse one permit's joined combo text with the adapter rules; also say if it names a development."""
+    facts = parse_description(text)
+    if facts.building_type_std == "ADU" and NOT_A_UNIT.search(text):
+        facts = PermitTextFacts(evidence=(*facts.evidence, "negated: 'not a dwelling unit'"))
+    facts = _separate_house_adu(text, facts)
+    return facts, bool(DEVELOPMENT_TEXT.search(text))
+
+
 def combo_facts(combo: pd.DataFrame) -> pd.DataFrame:
     """Per permit number: building type and ADU kind parsed from the combo descriptions (text not kept)."""
+    cols = ["text_type", "text_adu_type", "text_development"]
     if combo.empty:
-        return pd.DataFrame(columns=["text_type", "text_adu_type"])
+        return pd.DataFrame(columns=cols)
     text = combo.dropna(subset=["desc_of_work"]).drop_duplicates(["number_key", "desc_of_work"])
     joined = text.groupby("number_key")["desc_of_work"].agg(" . ".join)
-    facts = joined.map(parse_description)
+    read = joined.map(read_text)
     return pd.DataFrame(
         {
-            "text_type": facts.map(lambda f: f.building_type_std),
-            "text_adu_type": facts.map(lambda f: f.adu_type),
+            "text_type": read.map(lambda r: r[0].building_type_std),
+            "text_adu_type": read.map(lambda r: r[0].adu_type),
+            "text_development": read.map(lambda r: r[1]),
         },
         index=joined.index,
     )
+
+
+def development_adus(
+    pid: pd.Series,
+    parcel: pd.Series,
+    year: pd.Series,
+    is_adu: pd.Series,
+    base_type: pd.Series,
+    new: pd.Series,
+    named: pd.Series,
+) -> pd.Series:
+    """ADU flags that are a development's buildings, not a homeowner's second unit.
+
+    True where the permit's text names a development (`named`), or where its parcel has, in the same issue
+    year, another permit that is new multifamily construction (work class RNEW/CNEW, U3_4 or MF5 by use group
+    and units) or at least `DEVELOPMENT_ADU_MIN` ADU-flagged permits (distinct permit numbers; the city
+    repeats some rows). Permits without a parcel are judged by their text alone.
+    """
+    key = parcel.astype("string") + "|" + year.astype("string")
+    has_key = parcel.notna() & year.notna()
+    mf = base_type.isin(["U3_4", "MF5"]) & new.fillna(False).astype(bool) & ~is_adu & has_key
+    mf_keys = set(key[mf])
+    flagged = pd.DataFrame({"key": key, "pid": pid})[is_adu & has_key]
+    flags = flagged.drop_duplicates()["key"].value_counts()
+    many = set(flags.index[flags >= DEVELOPMENT_ADU_MIN])
+    in_group = key.isin(mf_keys | many).fillna(False).astype(bool) & has_key
+    return is_adu & (in_group | named.fillna(False).astype(bool))
 
 
 def build(raw: pd.DataFrame, combo: pd.DataFrame | None = None, state: str = "OH") -> pd.DataFrame:
@@ -208,7 +304,12 @@ def build(raw: pd.DataFrame, combo: pd.DataFrame | None = None, state: str = "OH
     pid = df["permitnum"].astype("string").str.strip()
     text_type = pid.map(facts["text_type"]) if len(facts) else pd.Series(pd.NA, index=df.index)
     text_adu = pid.map(facts["text_adu_type"]) if len(facts) else pd.Series(pd.NA, index=df.index)
+    named = pid.map(facts["text_development"]) if len(facts) else pd.Series(False, index=df.index)
     is_adu = text_type.eq("ADU").fillna(False).astype(bool) & ~demo
+    parcel = df["pin"].astype("string").str.strip().str.strip('"').replace("", pd.NA)
+    year = df["issue_date"].dt.year
+    new = wc.isin(NEW_CLASSES)
+    is_adu &= ~development_adus(pid, parcel, year, is_adu, parts["building_type_std"], new, named)
     parts.loc[is_adu, ["building_type_std", "type_confidence", "units_new", "units_confidence"]] = [
         "ADU",
         "inferred",
@@ -231,7 +332,7 @@ def build(raw: pd.DataFrame, combo: pd.DataFrame | None = None, state: str = "OH
         {
             "state": state,
             "permit_id": pid,
-            "parcel_id": df["pin"].astype("string").str.strip().str.strip('"').replace("", pd.NA),
+            "parcel_id": parcel,
             "jurisdiction_geoid": CINCINNATI_GEOID,
             "issue_year": df["issue_date"].dt.year.astype("Int64"),
             "issue_date": df["issue_date"],
