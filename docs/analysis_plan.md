@@ -5292,6 +5292,58 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - every Met Council table goes through `holdout.apply`;
   - Charlotte is released and may be scored, but is not fitted in this entry.
 
+#### 1b. After the step 1 rule checks (2026-11-11; amends §1, still before any count)
+- **What the checks found:**
+  - **MN and OH** (#395): St. Louis Park (effective 2025-03-28) and Euclid (effective 2024-11-06) are confirmed.
+    For Richfield the adoption date is confirmed, but the effective date and the 2010 start are not found.
+  - **NC** (#401): Garner (2022-07-05) and Wilson are real events, but Wilson's covers SR6 only.
+    Wake Forest, Morrisville, Sanford and Burlington allowed duplexes before their coded dates: `[predates]`.
+    Durham city took effect 2019-10-01. Durham County has no usable source, so it keeps 2019-10-28. EHC2 doesn't
+    exist.
+  - **TX** (#398): Lewisville is confirmed (2022-12-01). League City's 2020 UDC is a recodification of an older
+    rule that already allowed duplexes, so it is `[predates]`. Houston's 2023 rule did not raise a cap (3+ units
+    were already legal as multifamily). It added an optional standards route, at most 4 units on local streets.
+    Lubbock's Ch. 40 has no usable source, so Lubbock stays out (D-059).
+  - **OR** (#397): 4 of the 9 rows checked are not as coded (Stayton, Sweet Home, Florence, Scappoose). 108 of
+    111 places have an event under `calibrate_mm.event_year`.
+- **Of the 13 D-054 fit places, 7 remain cap-rise events:** St. Louis Park, Garner, Wilson (SR6 coverage),
+  Euclid, Austin, Lewisville, and Houston as a standards event (below). Five move to always-allowed: Wake Forest,
+  Morrisville, Sanford, Burlington and League City. Lubbock stays out. The NC fold now holds 2 places, and most
+  of the fit's information will come from Oregon.
+- **Ben's decisions** (2026-11-11, in the TX session; `reports/tx/mm-rule-checks-2026-11.md`):
+  - (1) "Keep League City and Houston": places where duplexes have long been legal show what gets built in a
+    healthy market;
+  - (2) include standards reforms like Houston's MUR: making a type feasible counts, not only making it legal.
+
+  This entry applies (1) to every place that turns out `[predates]` in step 1, not to League City alone. Ben
+  confirms or narrows that when he reviews this entry.
+- **How always-allowed places enter: a new level component (L).** They carry no event and no ramp. They inform
+  the **mature** rate.
+  - **Model.** For place i in year t:
+
+        y_it ~ Poisson(b_it + θ_L · u_i · E_it · d_i · F_i/F(1))
+
+    - d_i is the place's long-standing dose (D-024 formula).
+    - b_it is the no-rule level: the 2–4 rate per eligible parcel in coded "none" places of the same state and
+      size band (D-022 bands), × E_it.
+  - **Comparison pool.** If a state has fewer than 3 such places in a band, the four-state pool is used (D-042's
+    thin-pool rule). The comparison set is fixed from rule rows before any count.
+  - **How it relates to θ.** θ_L is reported beside θ from the event fit (M), with r5 for M. The scenario's θ is
+    M's θ. Joining them, with θ_L as a prior on M's mature level, is challenger C4, under §5's rule.
+  - **Why separate.** A long-allowed place's level mixes the rule's effect with why the place allowed duplexes
+    in the first place. Selection like that biases θ_L upward. It is reported as an upper check, not fitted into
+    the main θ unless C4 wins.
+- **How standards events enter: dose class "S".** A standards event (Houston MUR) is an event whose cap does
+  not rise but whose by-right route gets cheaper or simpler.
+  - Its dose increase is 1/3, the approval-grade step of D-024 (permit or conditional → by right): the closest
+    coded analogue to "made feasible".
+  - Its outcome classes are those the standards route covers (Houston: 3–4 unit buildings, since MUR's local-
+    street cap is 4).
+  - Sensitivities: S events left out, and S dose 1.
+- **Durham city** uses 2019-10-01. **Richfield** stays out (no cap rise, and its effective date is unresolved).
+- **The tag sensitivity** (above) is re-run on the corrected rows. Rows Ben accepts go into `config/reforms/*.csv`
+  in their own PR before any count.
+
 #### 2. Outcomes: BPS everywhere, permit counts where strong
 - **BPS stays the outcome for every place** (`units_2 + units_3_4` buildings, D-038).
 - **Permit counts, the main addition.** A source becomes "strong" if all four hold:
@@ -5369,6 +5421,8 @@ the uplift. The headline stays "2–4 only" unless Ben adopts the uplift in a se
 - **Challenger 3 (C3), conditional place effect:** u_i's gamma prior is shifted by the place's own pre-reform
   2–4 pace from BPS, ln E[u_i] = c × z_i with z_i as in D-042. That uses tier-0 data every state has, and its
   target is V9's too-narrow place ranges.
+- **Challenger 4 (C4), level prior:** M with θ_L from §1b as a lognormal prior on M's mature level (its log-SD
+  from θ_L's profile interval, doubled for selection).
 - **Choosing.** A challenger replaces M only if both hold:
   - its held-out log score beats M's by more than 2 paired SE (leave one state out, as D-054);
   - it passes no fewer of tests A–C (§7).
