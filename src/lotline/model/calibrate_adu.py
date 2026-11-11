@@ -317,6 +317,22 @@ def adu_counts(permits, first: int, last: int, settings: dict, undercount=None):
     ]
 
 
+def drop_sources(permits, drop):
+    """`permits` without the rows of each (source, first_year, last_year) in `drop` (None = open end).
+
+    By hand: drop [("a", None, 2021)] removes source a's rows issued 2021 or earlier and keeps a's 2022 rows
+    and every other source's rows."""
+    keep = np.ones(len(permits), dtype=bool)
+    for source, first, last in drop:
+        hit = (permits["source"] == source).to_numpy().copy()
+        if first is not None:
+            hit &= (permits["issue_year"] >= first).to_numpy()
+        if last is not None:
+            hit &= (permits["issue_year"] <= last).to_numpy()
+        keep &= ~hit
+    return permits[keep]
+
+
 def place_years(
     state: str,
     store,
@@ -327,6 +343,8 @@ def place_years(
     counts=None,
     undercount="table",
     remainder: str = "permits",
+    drop=(),
+    require_counts: bool = True,
 ):
     """One row per place-year that can be checked: a coded ADU rule in force by 1 July, and a permit source
     covering the place that flags ADUs that year. Columns: geoid, name, year, adu_permits (observed),
@@ -345,6 +363,13 @@ def place_years(
 
     `remainder` (D-074 step 2): "permits" puts county remainders whose ADU counts come from local permit files
     on permit-level eligible lots (`estimate_adu.adu_panel_eligible`); "bps" keeps the stored lots.
+
+    Sources marked `fit: false` in the undercount table (Dallas, D-081 item 4) are dropped before counting, so
+    they neither count nor make a place-year checkable. `drop` lists more (source, first_year, last_year) to
+    drop the same way (None = open end): the D-078 §3 "without the low-recall rows" runs. Counts stay floats:
+    a source's k (D-078) scales its count, and rounding it away would undo k on small counts.
+    `require_counts=False` keeps place-years with no permit source flagging ADUs (adu_permits NaN): the inputs
+    for predicting places from a roll count (D-074 test B), never for a fit.
     """
     import pandas as pd
 
@@ -366,12 +391,17 @@ def place_years(
     from lotline.build import eligible as eligible_rule
 
     elig = elig[(elig["theme"] == "adu") & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
-    permits = store.read(state, "permits")
+    permits = drop_sources(
+        store.read(state, "permits"), [(s, None, None) for s in uc.out_of_fit()] + list(drop)
+    )
     flags = permits[adu._is_adu(permits)].groupby(["source", "issue_year"]).size()
     covered = permits.groupby(["jurisdiction_geoid", "source", "issue_year"]).size().reset_index()
     covered = covered[
-        [(s, y) in flags.index for s, y in zip(covered["source"], covered["issue_year"], strict=True)]
-    ]
+        np.array(
+            [(s, y) in flags.index for s, y in zip(covered["source"], covered["issue_year"], strict=True)],
+            dtype=bool,
+        )
+    ]  # a boolean array, so no flagging row selects no rows (an empty list would select no columns)
     covered = set(zip(covered["jurisdiction_geoid"], covered["issue_year"], strict=True))
     if counts is None:
         rho = 1.0
@@ -415,7 +445,8 @@ def place_years(
                 live.append((cls, (mid - r.effective_date).days / 365.25, q))
             if not live and assume_rules and g in assume_rules:
                 live = [(c, (mid - eff).days / 365.25, 0.0) for c, eff in assume_rules[g] if eff <= mid]
-            if not live or (g, y) not in covered or e.empty:
+            checkable = (g, y) in covered
+            if not live or e.empty or (require_counts and not checkable):
                 continue
             ey = e.assign(after=e["year"] > y, gap=(e["year"] - y).abs()).sort_values(["after", "gap"])
             parcels = float(ey["eligible_parcels"].iloc[0])
@@ -439,7 +470,7 @@ def place_years(
                     "geoid": g,
                     "name": juris["name"].get(g, g),
                     "year": y,
-                    "adu_permits": int(counts.get((g, y), 0)),
+                    "adu_permits": float(counts.get((g, y), 0.0)) if checkable else np.nan,
                     "eligible_parcels": parcels,
                     "rent": v["rent"],
                     "home_value": v["home_value"],
@@ -972,7 +1003,16 @@ def predict_unseen_state(
 
 
 def place_data(
-    state: str, store, geoids, years, params=None, counts=None, split_detached: bool = False
+    state: str,
+    store,
+    geoids,
+    years,
+    params=None,
+    counts=None,
+    split_detached: bool = False,
+    undercount="table",
+    drop=(),
+    require_counts: bool = True,
 ) -> list[PlaceData]:
     """`PlaceData` per place with checkable years (a coded rule in force by 1 July, ADU-flagging permits).
 
@@ -980,6 +1020,8 @@ def place_data(
     parking field (`with_parking`), coverage from `scenarios.adu.coverage_map`, field probabilities from every
     state's coded rules (`field_probabilities`). Holdout-filtered tables only. `split_detached` (D-046):
     "no detached ADUs" leaves the rule type and is carried in `detached` for its own multiplier.
+    `undercount`, `drop` and `require_counts` pass to `place_years`. `extra["no_by_right"]` and
+    `extra["owner"]` (C, T, R) mark rules that are not by right or need owner occupancy (D-079 Form B's dose).
     """
     import itertools
 
@@ -988,7 +1030,10 @@ def place_data(
     from lotline.config import load_params, load_state
     from lotline.model.scenarios import adu
 
-    rows = place_years(state, store, geoids, years, params, counts=counts)
+    rows = place_years(
+        state, store, geoids, years, params, counts=counts, undercount=undercount, drop=drop,
+        require_counts=require_counts,
+    )  # fmt: skip
     if rows.empty:
         return []
     central = {k: v.value for k, v in load_params("adu").items()}
@@ -1035,6 +1080,8 @@ def place_data(
         cr = np.zeros((len(per_year), n_r))
         covs, ages = np.zeros((len(per_year), n_r)), np.full((len(per_year), n_r), np.nan)
         no_det = np.zeros((len(combos), len(per_year), n_r), dtype=bool)
+        no_br = np.zeros((len(combos), len(per_year), n_r), dtype=bool)
+        owner = np.zeros((len(combos), len(per_year), n_r), dtype=bool)
         for t, live in enumerate(per_year):
             for r_i, (failed, unknown, a, cv_, age) in enumerate(live):
                 cr[t, r_i], covs[t, r_i], ages[t, r_i] = a, cv_, age
@@ -1042,6 +1089,8 @@ def place_data(
                     hit = {f for f, b in zip(unknown_all, c, strict=True) if b and f in unknown}
                     fails = failed | hit
                     no_det[c_i, t, r_i] = DETACHED in fails
+                    no_br[c_i, t, r_i] = "by_right" in fails
+                    owner[c_i, t, r_i] = adu.OWNER in fails
                     if split_detached:
                         det[c_i, t, r_i] = DETACHED in fails
                         fails = fails - {DETACHED}
@@ -1067,6 +1116,8 @@ def place_data(
                     "cov": covs,
                     "age": ages,
                     "no_detached": no_det,
+                    "no_by_right": no_br,
+                    "owner": owner,
                 },
             )
         )
