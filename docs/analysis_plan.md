@@ -5191,3 +5191,52 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     line of their own, not as homes added.
 - **Decided by:** Ben, 2026-11-11 (accepted both proposals). The proposals were written by Claude Code.
   **Status:** decided. Item 1 is in the rebuilt tables; item 2 is the parser's behaviour since #376.
+
+### D-081 · 2026-11-11 · ADUs: parser sources take precision ÷ recall, and the decisions from the 2026-11-11 hand checks
+- **Why:** the three parser hand checks (`reports/nc/parser-handcheck-2026-11-11.md` #386,
+  `reports/tx/parser-handcheck-2026-11-11.md` #385, `reports/oh/parser-handcheck-2026-11-11.md` #384) found
+  that parser flags include false positives. Precision was 0.52 in Cincinnati, 0.75 in Greensboro and 0.77 in
+  Fort Worth.
+  - D-074 step 1 set k_parser = 1 / recall, which assumes every flag is a real ADU.
+  - Claude Code proposed six decisions, and Ben accepted them all on 2026-11-11 ("Yes, use your picks").
+- **1. Parser sources take k_parser = precision / recall.** This replaces D-074 step 1's 1 / recall and
+  D-078 §2's wording.
+  - Precision and recall come from the same hand check, and each has its own 90% Wilson interval.
+  - The 90% range for k is drawn by simulation from both intervals (independent beta draws), not by dividing
+    their bounds.
+  - Field-flag sources (Raleigh, Austin, Portland, and the prior for unmeasured field sources) are unchanged.
+    Their roll-comparison k already counts only flagged permits that the roll confirms.
+- **2. In-law and mother-in-law suites with no kitchen named are not ADUs.** A unit without a kitchen is not
+  a dwelling unit. Counting them is a named sensitivity: Greensboro's k would become 2.06 and Mecklenburg's
+  1.57 under the old 1 / recall form; both are recomputed under item 1.
+- **3. Cincinnati's adapter is fixed before the refit uses its counts.** Eleven of its 14 false positives are
+  2020 "carriage houses" in one 36-building apartment development. After the fix, Cincinnati is checked again
+  and takes precision / recall from that check.
+- **4. Dallas stays out of the fit** (D-078 §2). Its table holds 6 true ADUs and the parser finds 1, so its
+  recall can't be estimated.
+- **5. Asheville before 2022 takes the new hand check under item 1.** That is about 1.31 before the parser
+  round in item 6. The 1.59 benchmark is not used: it assumed every flag was real.
+- **6. One more shared-parser round before the refit.** It targets the misses the checks listed:
+  - "GARAGE APT", "2ND DWELLING UNIT" and "SECOND DWELLING", "living quarters" in context, and "NEW DETACHED
+    MOTHER IN LAW SUITE" (the last only where a kitchen is named, per item 2);
+  - the Asheville permit-citation and new-house behaviours, (a) and (b) in #386;
+  - `meck_permits.classify` code 437.
+  - Then every state is rebuilt offline from the 2026-11-11 raw snapshots (`lotline fetch --offline`, #382).
+    No new download is made, so the before and after differ only by code.
+  - Only the sources whose counts move get a fresh hand check, with the same protocol and new seeds.
+  - All k values then go into `adu_flag_undercount` in one PR.
+- **Interim values** (recorded, not wired; they are superseded by item 6's checks), as precision / recall:
+
+  | Source | Value |
+  |---|---|
+  | Mecklenburg | 0.93 |
+  | Asheville before 2022 | 1.31 |
+  | Asheville 2022 on | 0.99 |
+  | Greensboro | 0.84 |
+  | Fort Worth | 1.91 (marked low-recall) |
+  | Cleveland | 1.07 (1.00–1.31) |
+  | Cincinnati | pending item 3 |
+  | Dallas | out of the fit |
+
+- **Decided by:** Ben, 2026-11-11 (accepted all six). The proposals were written by Claude Code.
+  **Status:** decided. Items 3 and 6 are in progress; nothing is wired yet.
