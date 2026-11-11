@@ -17,6 +17,9 @@ what defines the query (filter, fields, geometry, page size, paging strategy), s
 reuses its cached pages, while a different query the same day (another field list, say) becomes a new
 snapshot instead of overwriting the first. With the default vintage (today's date) every fetch of a rolling
 window is a dated snapshot.
+
+During an offline build (`lotline fetch --offline`, see `lotline.io.offline`) nothing is requested: the newest
+complete cached snapshot of the same query is read instead, and incomplete ones are skipped with a note.
 """
 
 from __future__ import annotations
@@ -31,6 +34,7 @@ from urllib.parse import urlencode
 import httpx
 import pandas as pd
 
+from lotline.io import offline
 from lotline.io.http import client, fetch
 from lotline.io.store import DataStore, query_folder
 
@@ -79,14 +83,17 @@ class _Ctx:
     adapter: str
     adapter_version: str
     raw_dir: Path
-    http: httpx.Client
+    http: httpx.Client | None  # None only when cache_only
     pause: float
     refresh: bool
     retries: int = 3
     backoff: float = 2.0
+    cache_only: bool = False  # offline: read pages from raw_dir, never request them
 
     def get(self, url: str, name: str) -> dict:
         """Fetch one page; an ArcGIS error body (HTTP 200) is retried with backoff, then raised."""
+        if self.cache_only:
+            return offline.read_cached(self.raw_dir / name)  # type: ignore[return-value]
         for attempt in range(self.retries + 1):
             cached = (self.raw_dir / name).exists() and not self.refresh
             path = fetch(
@@ -164,6 +171,8 @@ def download_layer(
     mode = {False: "none", True: "point"}.get(geometry, geometry)  # type: ignore[arg-type]
     if mode not in GEOMETRY_MODES:
         raise ValueError(f"geometry must be one of False, True, {sorted(GEOMETRY_MODES - {'none'})}")
+    if offline.is_offline():
+        return _from_cache(layer_url, store, source, name, vintage, mode, where, out_fields, page_size)
     vintage = vintage or dt.date.today().isoformat()
     own = http is None
     ctx = _Ctx(
@@ -180,39 +189,80 @@ def download_layer(
         retry_backoff,
     )
     try:
-        info = layer_info(ctx.get(f"{layer_url.rstrip('/')}?f=json", "layer.json"))
-        size = min(page_size or info.max_records, info.max_records)
-        polygon_layer = info.geometry_type == "esriGeometryPolygon"
-        if mode in ("centroid", "polygon") and not polygon_layer:
-            raise ArcGISError(f"geometry={mode!r} needs a polygon layer, not {info.geometry_type}")
-        if mode == "centroid" and not info.supports_centroid:  # such servers ignore returnCentroid silently
-            raise ArcGISError("this server can't compute centroids (returnCentroid); use geometry='polygon'")
-        fields = [f.strip() for f in out_fields.split(",")]
-        if (
-            "*" not in fields and info.object_id_field not in fields
-        ):  # needed for paging and the overlap check
-            out_fields = ",".join([info.object_id_field, *fields])
-        downloads = mode in ("point", "polygon")
-        base = {
-            "where": where,
-            "outFields": out_fields,
-            "f": "json",
-            "returnGeometry": str(downloads).lower(),
-        }
-        if mode != "none":
-            base |= {"outSR": "4326"}
-        if (mode == "point" and polygon_layer) or mode == "centroid":  # point layers reject returnCentroid
-            base |= {"returnCentroid": "true"}
-        by_offset = info.supports_pagination and info.supports_order_by
-        strategy = "offset" if by_offset else "object_ids"
-        ctx.raw_dir = ctx.raw_dir / query_folder(base, size, strategy)
-        if by_offset:
-            features = _by_offset(ctx, layer_url, base, info, size)
-        else:
-            features = _by_object_ids(ctx, layer_url, base, info, size)
+        return _run(ctx, layer_url, mode, where, out_fields, page_size)
     finally:
         if own:
             ctx.http.close()
+
+
+def _from_cache(
+    layer_url: str,
+    store: DataStore,
+    source: str,
+    name: str,
+    vintage: str | None,
+    mode: str,
+    where: str,
+    out_fields: str,
+    page_size: int | None,
+) -> pd.DataFrame:
+    """Offline: the newest complete cached snapshot of this query (see `lotline.io.offline`)."""
+    sess = offline.session()
+    meta_url = f"{layer_url.rstrip('/')}?f=json"
+    skipped = []
+    for folder in offline.candidate_dirs(store, source, name, vintage, "layer.json", meta_url):
+        ctx = _Ctx(store, source, "", "", "", folder, http=None, pause=0, refresh=False, cache_only=True)
+        try:
+            df = _run(ctx, layer_url, mode, where, out_fields, page_size)
+        except offline.SnapshotIncomplete as exc:
+            rel = ctx.raw_dir.relative_to(store.root)
+            skipped.append(f"{rel}: incomplete ({exc})")
+            if sess:
+                sess.note(skipped[-1])
+            continue
+        if sess:
+            sess.used_path(ctx.raw_dir)
+        return df
+    detail = "; ".join(skipped) or "no cached snapshot of this layer"
+    raise offline.OfflineError(
+        f"offline build: no complete cached snapshot of {source}/{name} for {layer_url} ({detail}); "
+        "run `lotline fetch` online to download it"
+    )
+
+
+def _run(
+    ctx: _Ctx, layer_url: str, mode: str, where: str, out_fields: str, page_size: int | None
+) -> pd.DataFrame:
+    info = layer_info(ctx.get(f"{layer_url.rstrip('/')}?f=json", "layer.json"))
+    size = min(page_size or info.max_records, info.max_records)
+    polygon_layer = info.geometry_type == "esriGeometryPolygon"
+    if mode in ("centroid", "polygon") and not polygon_layer:
+        raise ArcGISError(f"geometry={mode!r} needs a polygon layer, not {info.geometry_type}")
+    if mode == "centroid" and not info.supports_centroid:  # such servers ignore returnCentroid silently
+        raise ArcGISError("this server can't compute centroids (returnCentroid); use geometry='polygon'")
+    fields = [f.strip() for f in out_fields.split(",")]
+    if "*" not in fields and info.object_id_field not in fields:  # needed for paging and the overlap check
+        out_fields = ",".join([info.object_id_field, *fields])
+    downloads = mode in ("point", "polygon")
+    base = {
+        "where": where,
+        "outFields": out_fields,
+        "f": "json",
+        "returnGeometry": str(downloads).lower(),
+    }
+    if mode != "none":
+        base |= {"outSR": "4326"}
+    if (mode == "point" and polygon_layer) or mode == "centroid":  # point layers reject returnCentroid
+        base |= {"returnCentroid": "true"}
+    by_offset = info.supports_pagination and info.supports_order_by
+    strategy = "offset" if by_offset else "object_ids"
+    ctx.raw_dir = ctx.raw_dir / query_folder(base, size, strategy)
+    if ctx.cache_only and not ctx.raw_dir.is_dir():
+        raise offline.SnapshotIncomplete(f"no pages for this query ({ctx.raw_dir.name})")
+    if by_offset:
+        features = _by_offset(ctx, layer_url, base, info, size)
+    else:
+        features = _by_object_ids(ctx, layer_url, base, info, size)
     return _to_frame(features, info.object_id_field, mode)
 
 

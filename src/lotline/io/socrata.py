@@ -14,6 +14,9 @@ query's pages in their own folder, `q-<hash>/page_NNNN.json` (see `query_folder`
 
 An optional app token (`SOCRATA_APP_TOKEN` in the environment or `.env`) raises Socrata's rate limits; it is
 sent with each request but never written to the manifest, cache key or error messages.
+
+During an offline build (`lotline fetch --offline`, see `lotline.io.offline`) nothing is requested: the newest
+complete cached snapshot of the same query is read instead, and incomplete ones are skipped with a note.
 """
 
 from __future__ import annotations
@@ -27,6 +30,7 @@ from pathlib import Path
 import httpx
 import pandas as pd
 
+from lotline.io import offline
 from lotline.io.http import client, fetch
 from lotline.io.store import DataStore, _dotenv_value, query_folder
 
@@ -74,6 +78,14 @@ def download_dataset(
     """
     if not select:
         raise SocrataError("select is required: name the (non-personal) fields to download")
+    params = {"$select": ",".join([":id", *select]), "$order": ":id"}
+    if where:
+        params["$where"] = where
+    folder = query_folder(params, page_size, "soda_offset")
+    if offline.is_offline():
+        return _from_cache(
+            domain, dataset_id, store, source, name, vintage, params, folder, page_size, select
+        )
     vintage = vintage or dt.date.today().isoformat()
     raw_dir = store.raw(source, vintage) / name
     own = http is None
@@ -102,33 +114,72 @@ def download_dataset(
 
     try:
         get(f"https://{domain}/api/views/{dataset_id}.json", raw_dir / "dataset.json")
-        params = {"$select": ",".join([":id", *select]), "$order": ":id"}
-        if where:
-            params["$where"] = where
-        pages = raw_dir / query_folder(params, page_size, "soda_offset")
-        rows: list[dict] = []
-        seen: set[str] = set()
-        page = 1
-        while True:
-            url = resource_url(domain, dataset_id, **params, **{"$limit": page_size, "$offset": len(rows)})
-            got = get(url, pages / f"page_{page:04d}.json")
-            if not isinstance(got, list):
-                raise SocrataError(f"expected a list of rows from {url}")
-            ids = [r.get(":id") for r in got]
-            if None in ids or seen.intersection(ids) or len(set(ids)) < len(ids):
-                # checked page by page: a server repeating full pages would otherwise never end the loop
-                raise SocrataError(
-                    "duplicate or missing row ids: paging overlapped (did the dataset change mid-download?)"
-                )
-            seen.update(ids)
-            rows += got
-            if len(got) < page_size:
-                break
-            page += 1
+        rows = _pages(get, domain, dataset_id, params, raw_dir / folder, page_size)
     finally:
         if own:
             http.close()
     return _to_frame(rows, select)
+
+
+def _pages(get, domain: str, dataset_id: str, params: dict, pages: Path, page_size: int) -> list[dict]:
+    rows: list[dict] = []
+    seen: set[str] = set()
+    page = 1
+    while True:
+        url = resource_url(domain, dataset_id, **params, **{"$limit": page_size, "$offset": len(rows)})
+        got = get(url, pages / f"page_{page:04d}.json")
+        if not isinstance(got, list):
+            raise SocrataError(f"expected a list of rows from {url}")
+        ids = [r.get(":id") for r in got]
+        if None in ids or seen.intersection(ids) or len(set(ids)) < len(ids):
+            # checked page by page: a server repeating full pages would otherwise never end the loop
+            raise SocrataError(
+                "duplicate or missing row ids: paging overlapped (did the dataset change mid-download?)"
+            )
+        seen.update(ids)
+        rows += got
+        if len(got) < page_size:
+            return rows
+        page += 1
+
+
+def _from_cache(
+    domain: str,
+    dataset_id: str,
+    store: DataStore,
+    source: str,
+    name: str,
+    vintage: str | None,
+    params: dict,
+    folder: str,
+    page_size: int,
+    select: list[str],
+) -> pd.DataFrame:
+    """Offline: the newest complete cached snapshot of this query (see `lotline.io.offline`)."""
+    sess = offline.session()
+    meta_url = f"https://{domain}/api/views/{dataset_id}.json"
+    skipped = []
+    for raw_dir in offline.candidate_dirs(store, source, name, vintage, "dataset.json", meta_url):
+        pages = raw_dir / folder
+        try:
+            if not pages.is_dir():
+                raise offline.SnapshotIncomplete(f"no pages for this query ({folder})")
+            rows = _pages(
+                lambda _url, dest: offline.read_cached(dest), domain, dataset_id, params, pages, page_size
+            )
+        except offline.SnapshotIncomplete as exc:
+            skipped.append(f"{pages.relative_to(store.root)}: incomplete ({exc})")
+            if sess:
+                sess.note(skipped[-1])
+            continue
+        if sess:
+            sess.used_path(pages)
+        return _to_frame(rows, select)
+    detail = "; ".join(skipped) or "no cached snapshot of this dataset"
+    raise offline.OfflineError(
+        f"offline build: no complete cached snapshot of {source}/{name} for {domain}/{dataset_id} "
+        f"({detail}); run `lotline fetch` online to download it"
+    )
 
 
 def _message(resp: httpx.Response | None) -> str:

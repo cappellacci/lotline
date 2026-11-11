@@ -9,6 +9,7 @@ from pathlib import Path
 import httpx
 
 from lotline import __version__
+from lotline.io import offline
 from lotline.io.store import DataStore, ManifestEntry, sha256_file, utc_now
 
 USER_AGENT = f"lotline/{__version__} (+https://github.com/cappellacci/lotline; open-source housing research)"
@@ -23,7 +24,15 @@ class RawOverwriteError(RuntimeError):
 
 
 def client(timeout: float = 60.0) -> httpx.Client:
-    return httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=timeout, follow_redirects=True)
+    """An HTTP client for downloads. During an offline build its transport refuses every request."""
+    transport = httpx.MockTransport(_refuse) if offline.is_offline() else None
+    return httpx.Client(
+        headers={"User-Agent": USER_AGENT}, timeout=timeout, follow_redirects=True, transport=transport
+    )
+
+
+def _refuse(request: httpx.Request) -> httpx.Response:
+    raise offline.OfflineError(f"offline build: refused a network request to {request.url.host}")
 
 
 def fetch(
@@ -53,6 +62,8 @@ def fetch(
     Raw files are kept exactly as downloaded, so a file already on disk that was downloaded from a different
     URL is never overwritten (or returned as this URL's cached copy): `RawOverwriteError` asks the caller to
     write to another path. Refreshing the same URL may update its file (the manifest keeps each hash).
+
+    During an offline build (`lotline.io.offline.offline_build`) no request is ever sent: see `_cached`.
     """
     dest = Path(dest)
     rel = str(dest.resolve().relative_to(store.root))
@@ -62,6 +73,8 @@ def fetch(
             f"{rel} holds a download from a different URL ({owner.url}); write {url} to another path "
             "(a new vintage or name) so the earlier raw file is kept"
         )
+    if offline.is_offline():
+        return _cached(url, dest, rel, store)
     prior = store.latest(url)
     if dest.exists() and prior and not refresh:
         return dest
@@ -108,6 +121,25 @@ def fetch(
         )
     )
     return dest
+
+
+def _cached(url: str, dest: Path, rel: str, store: DataStore) -> Path:
+    """Offline: `dest` if it holds this URL's download, else the newest current copy of the URL on disk
+    (e.g. yesterday's dated folder when `dest` is under today's). Never sends a request."""
+    sess = offline.session()
+    path = None
+    if dest.exists() and store.latest(url) is not None:
+        path = dest
+    else:
+        for e in reversed(store.manifest(include_superseded=False)):
+            if e.url == url and (store.root / e.path).is_file():
+                path = store.root / e.path
+                break
+    if path is None:
+        raise offline.OfflineError(f"offline build: no cached copy of {url} (would have written {rel})")
+    if sess:
+        sess.used_path(path)
+    return path
 
 
 def _wait_turn(store: DataStore, url: str) -> None:

@@ -65,6 +65,12 @@ uv run python scripts/fetch_data.py --state MN --source bps
 https://api.census.gov/data/key_signup.html, click the activation link Census emails you, and put the key in
 `.env` as `CENSUS_API_KEY=...`. The key is sent with each request but never written to the download manifest.
 
+To rebuild the processed tables after a code change without downloading anything, add `--offline`
+(`uv run lotline fetch --state NC --offline`). Each source then reads the newest complete raw snapshot already
+in `LOTLINE_DATA_DIR`, sends no request, and fails with a clear message if nothing usable is cached; a newer
+snapshot with missing pages is skipped with a note. What each offline build read is appended to
+`manifest.builds.jsonl`. Without `--offline`, ArcGIS and Socrata sources take a new dated snapshot each day.
+
 `docs/data_provenance.md` is generated from the download manifest; regenerate it after fetching:
 
 ```bash
