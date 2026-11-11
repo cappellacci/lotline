@@ -6,6 +6,7 @@ $LOTLINE_DATA_DIR/
   processed/{state}/{table}.parquet   canonical tables
   manifest.jsonl                      one line per download
   manifest.superseded.jsonl           one line per download entry marked as no longer current
+  manifest.builds.jsonl               one line per offline build (`lotline fetch --offline`): snapshots read
   manual/...                          (optional) files saved by hand before `lotline manifest register`
 
 Both files are append-only: nothing is ever deleted from them. An entry that no longer describes the file

@@ -9,30 +9,55 @@ from lotline import __version__
 
 
 def _fetch(args: argparse.Namespace) -> int:
+    from contextlib import nullcontext
+
     from lotline import registry
     from lotline.config import all_states
     from lotline.io import DataStore
+    from lotline.io.offline import OfflineError, offline_build
     from lotline.validation.holdout import assert_no_leak
 
+    if args.offline and args.refresh:
+        print("--offline reads only the cache; it can't be combined with --refresh")
+        return 2
     states = [args.state.upper()] if args.state else all_states()
     store = DataStore()
-    for state in states:
-        available = registry.sources_for(state)
-        names = [args.source] if args.source else sorted(available)
-        unknown = [n for n in names if n not in available]
-        if unknown:
-            print(
-                f"{state}: unknown source(s) {', '.join(unknown)}; available: {', '.join(sorted(available))}"
-            )
-            return 2
-        for name in names:
-            src = available[name]
-            df = src.module.load(state, store, refresh=args.refresh)
-            assert_no_leak(df, src.table, state)
-            out = store.processed(state, src.table, name)
-            out.parent.mkdir(parents=True, exist_ok=True)
-            df.to_parquet(out, index=False)
-            print(f"{state} {name}: {len(df):,} rows -> {out}")
+    failed = []
+    with offline_build(store) if args.offline else nullcontext() as sess:
+        for state in states:
+            available = registry.sources_for(state)
+            names = [args.source] if args.source else sorted(available)
+            unknown = [n for n in names if n not in available]
+            if unknown:
+                print(
+                    f"{state}: unknown source(s) {', '.join(unknown)}; "
+                    f"available: {', '.join(sorted(available))}"
+                )
+                return 2
+            for name in names:
+                src = available[name]
+                try:
+                    df = src.module.load(state, store, refresh=args.refresh)
+                except OfflineError as exc:  # never falls back to the network: report and go on
+                    failed.append(f"{state} {name}")
+                    print(f"{state} {name}: FAILED offline: {exc}")
+                    if sess:
+                        sess.used.clear()
+                        sess.notes.clear()
+                    continue
+                assert_no_leak(df, src.table, state)
+                out = store.processed(state, src.table, name)
+                out.parent.mkdir(parents=True, exist_ok=True)
+                df.to_parquet(out, index=False)
+                print(f"{state} {name}: {len(df):,} rows -> {out}")
+                if sess:
+                    for note in sess.notes:
+                        print(f"  note: {note}")
+                    rec = sess.record(state=state, source=name)
+                    print(f"  offline build from {len(rec.snapshots)} cached snapshot(s)/file(s)")
+    if failed:
+        print(f"offline: {len(failed)} source(s) had no complete cached snapshot: {', '.join(failed)}")
+        return 1
     return 0
 
 
@@ -118,6 +143,18 @@ def _supersede(args: argparse.Namespace) -> int:
         return 0
     written = store.supersede(picked, args.reason)
     print(f"recorded {len(written)} in {store.superseded_path}; run `lotline provenance --write` next")
+    return 0
+
+
+def _prune_candidates(args: argparse.Namespace) -> int:
+    from lotline.io import DataStore
+    from lotline.io.offline import prune_candidates
+
+    rows = prune_candidates(DataStore())
+    for folder, size, newer in rows:
+        print(f"{size / 1e6:9.1f} MB  {folder}  (repeated by {newer})")
+    total = sum(size for _, size, _ in rows)
+    print(f"{len(rows)} older snapshot folder(s), {total / 1e9:.2f} GB; dry run: nothing deleted")
     return 0
 
 
@@ -243,6 +280,12 @@ def build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("--state", help="two-letter state code, e.g. MN (default: every configured state)")
     fetch.add_argument("--source", help="source id, e.g. bps (default: every registered source)")
     fetch.add_argument("--refresh", action="store_true", help="re-check sources for newer files")
+    fetch.add_argument(
+        "--offline",
+        action="store_true",
+        help="rebuild tables from the newest complete raw snapshot already in LOTLINE_DATA_DIR; sends no "
+        "request and fails if a source isn't cached (recorded in manifest.builds.jsonl)",
+    )
     fetch.set_defaults(func=_fetch)
 
     srcs = sub.add_parser("sources", help="list the data sources available for each state")
@@ -275,6 +318,11 @@ def build_parser() -> argparse.ArgumentParser:
     sup.add_argument("--reason", required=True, help="why these entries are no longer current")
     sup.add_argument("--apply", action="store_true", help="write the records (default: dry run)")
     sup.set_defaults(func=_supersede)
+    pc = man_sub.add_parser(
+        "prune-candidates",
+        help="list older raw snapshot folders that a newer vintage repeats (dry run; deletes nothing)",
+    )
+    pc.set_defaults(func=_prune_candidates)
     reg = man_sub.add_parser(
         "register",
         help="record a file downloaded by hand (e.g. in a browser) as a raw download",
