@@ -66,7 +66,7 @@ def test_pipeline_and_ben_rows(reforms):
     other = reforms[reforms["coder"] != "claude"]
     reviewed = other["coder_agreement"].isin(["agree", "adjudicated"])
     assert (other.loc[~reviewed, "coder_agreement"] == "single_coder").all()
-    # Second coders: the 2026-11-02 review, and the missing-middle rule checks (#395, accepted by Ben 2026-11-11)
+    # Second coders: the 2026-11-02 review and the MM rule checks (#395, accepted 2026-11-11)
     second_coders = ["codex-2026-11-02", "claude-second-coder-2026-11-11"]
     assert other.loc[reviewed, "coder_2"].isin(second_coders).all()
     r = reforms.set_index("reform_id")
