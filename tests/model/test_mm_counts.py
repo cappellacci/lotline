@@ -167,6 +167,30 @@ def test_coverage_screen_uses_years_before_the_event_and_the_area():
     assert r["years"] == "2016-2018"
 
 
+def test_area_coverage_sums_each_place_over_its_own_years():
+    b = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["G1", "G1", "G1", "G2", "G2", "G2"],
+            "issue_year": pd.array([2016, 2017, 2018, 2017, 2018, 2018], dtype="Int64"),
+            "status": ["ok", "ok", "ok", "ok", "ok", "units_missing"],
+        }
+    )
+    bps = pd.DataFrame(
+        {
+            "geoid": ["G1", "G1", "G1", "G2", "G2"],
+            "year": [2016, 2017, 2018, 2017, 2018],
+            "bldgs_2": [1, 1, 5, 7, 2],
+            "bldgs_3_4": [0, 1, 5, 7, 0],
+        }
+    )
+    # G1 2016-2017: permits 2, BPS 1 + 2 = 3. G2 2018 only: permits 1 (the units_missing one is out), BPS 2.
+    # Totals 3 / 5 = 0.6 -> below 0.8, does not enter.
+    r = mc.area_coverage(b, bps, {"G1": (2016, 2017), "G2": (2018, 2018)})
+    assert (r["permit_buildings"], r["bps_buildings"]) == (3, 5)
+    assert r["k"] == pytest.approx(0.6) and not r["enters"]
+    assert r["years"] == "G1 2016-2017; G2 2018-2018"
+
+
 def test_strong_source_four_tests():
     rows = [{"parcel_id": f"p{i}", "issue_year": 2014 + i % 4, "units_new": 2} for i in range(17)]
     rows += [{"issue_year": 2020, "units_new": 2} for _ in range(3)]  # 3 of 20 rows without a parcel ID

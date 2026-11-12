@@ -307,6 +307,30 @@ def coverage_screen(
     return out
 
 
+def area_coverage(
+    buildings: pd.DataFrame,
+    bps: pd.DataFrame,
+    windows: Mapping[str, tuple[int, int]],
+    *,
+    z: float | None = None,
+) -> dict[str, float | bool | str]:
+    """k_src for a source whose places have different events: `windows` maps each place GEOID to its own
+    pre-event years (first, last), inclusive. Permit buildings (`ok`, conversions included) and BPS 2–4 unit
+    buildings are summed over every place's own years, then `coverage_k` is applied once to the totals, so
+    the source still gets a single k (D-082 §2: one k per source, never pooled across sources).
+
+    By hand: G1 years 2016–2017 and G2 year 2018 → only those place-years count."""
+    b = ok(buildings)
+    a = n = 0
+    for g, (y0, y1) in windows.items():
+        years = list(range(int(y0), int(y1) + 1))
+        a += int((b["jurisdiction_geoid"].isin([g]) & b["issue_year"].isin(years)).sum())
+        n += bps_buildings_24(bps, [g], years)
+    out = coverage_k(a, n, z=z)
+    out["years"] = "; ".join(f"{g} {y0}-{y1}" for g, (y0, y1) in windows.items() if y1 >= y0)
+    return out
+
+
 def strong_source(
     permits: pd.DataFrame,
     coverage: Mapping[str, float | bool],
