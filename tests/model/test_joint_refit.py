@@ -471,6 +471,13 @@ def test_test_b_and_c_by_hand():
     assert jr.test_c_pass([1.0, 1.4]) and not jr.test_c_pass([1.2, 0.9]) and jr.test_c_pass([]) is None
 
 
+def test_test_c_tolerance_d082():
+    # D-082: a shortfall under 1% passes (Tonka Bay 0.991 in the refit), a larger one fails
+    assert jr.test_c_pass([0.991, 1.2]) and jr.test_c_pass([0.99, 1.0])
+    assert not jr.test_c_pass([0.989, 1.2])
+    assert not jr.test_c_pass([0.991], tolerance=0.0)
+
+
 def test_tests_passed_counts_state_by_state():
     assert jr.tests_passed({"A": {"MN": True, "NC": False, "OH": None}, "B": {"NC": True}}) == 2
 

@@ -497,11 +497,16 @@ def test_b_pass(observed_total: float, draws) -> bool:
     return bool(lo <= observed_total <= hi)
 
 
-def test_c_pass(ratios: Sequence[float]) -> bool | None:
+TEST_C_TOLERANCE = 0.01  # D-082: a shortfall under 1% is the floor's pool shrinkage and k draws, not a miss
+
+
+def test_c_pass(ratios: Sequence[float], tolerance: float = TEST_C_TOLERANCE) -> bool | None:
     """D-074 test C: the no-reform median a year is at least the counted ADUs a year (k applied) in every
-    counted place: every ratio (median / counted) >= 1. None with no counted place."""
+    counted place: every ratio (median / counted) >= 1 - tolerance. D-082 sets the tolerance at 1%: the floor
+    is a rate on a pool of lots that shrinks each year, so the median sits a fraction below it by design.
+    None with no counted place."""
     r = [float(v) for v in ratios if v is not None and math.isfinite(float(v))]
-    return None if not r else bool(min(r) >= 1.0)
+    return None if not r else bool(min(r) >= 1.0 - tolerance)
 
 
 def tests_passed(passes: Mapping[str, Mapping[str, bool | None]]) -> int:

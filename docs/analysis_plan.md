@@ -5330,7 +5330,12 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     0.993). The no-reform median now tracks the floor; the remaining gap comes from the floor being a rate
     on a pool of lots that shrinks each year, and from the undercount k draws.
   - Under D-074's strict rule (every ratio ≥ 1) test C passes in Texas only and still fails in MN, NC, OH and
-    OR. How to treat the sub-1% gap is put to Ben in the PR; this entry does not change the pass rule.
+    OR. How to treat the sub-1% gap is settled below.
+- **Pass rule clarified (Ben, 2026-11-12, "Yes, count as pass"; decided after the re-score was read):** a
+  ratio of at least 0.99 counts as passing (`joint_refit.TEST_C_TOLERANCE`). A shortfall under 1% is the floor's
+  pool shrinkage and the k draws, not a baseline below what places build. Under it, test C **passes in all five
+  states** (lowest ratio: MN 0.991, NC 0.995, OH 1.000, OR 0.993, TX 1.006). This is a post-hoc clarification
+  and is reported as one; the strict-rule result (TX only) stays in the record above.
 - **What this does not change:** the D-079 refit and its decision (Form A kept, no tier passes). The floor
   enters only the scenario engine, not the fit or the data-tier scores.
 - **Finding, reported:** in nearly every counted place the baseline is set by the floor, not by the model's
