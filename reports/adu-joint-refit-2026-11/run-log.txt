@@ -1,0 +1,125 @@
+main commit: 1c7ad001c414273237c76058fcfc106e9305ea87
+started: 2026-11-12T10:02:16Z
+[05:02:18] undercount table: 28 rows; out of the fit: ['dallas_permits']
+[05:03:01] fit set: 64 places, 395 place-years, 11 new since D-053
+[05:03:01] events: 5 in 2 states -> g held at 0
+[05:03:01] === variant central: 64 places, 395 place-years ===
+[06:11:27]   Form B all: loglik -1136.30, alpha 1.264 (1s)
+[06:11:27]   Form B without MN: loglik -900.57, alpha 1.048 (1s)
+[06:11:28]   Form B without NC: loglik -576.15, alpha 3.619 (1s)
+[06:11:29]   Form B without OH: loglik -1130.15, alpha 1.155 (1s)
+[06:11:29]   Form B without TX: loglik -1054.73, alpha 1.251 (1s)
+[06:11:30]   Form B without OR: loglik -670.55, alpha 4.689 (1s)
+[06:11:30]   Form B without place 2754880: loglik -1132.27, alpha 1.244 (1s)
+[06:11:31]   Form B without place 3702140: loglik -1053.23, alpha 0.997 (1s)
+[06:11:32]   Form B without place 3710740: loglik -1112.32, alpha 1.205 (1s)
+[06:11:33]   Form B without place 3711800: loglik -1121.77, alpha 1.307 (1s)
+[06:11:33]   Form B without place 3712000: loglik -1043.25, alpha 1.462 (1s)
+[06:11:34]   Form B without place 3719000: loglik -1082.70, alpha 1.301 (1s)
+[06:11:35]   Form B without place 3755000: loglik -1045.01, alpha 1.382 (1s)
+[06:11:35]   Form B without place 3774440: loglik -1018.41, alpha 1.296 (1s)
+[06:11:36]   Form B without place 4147000: loglik -1097.60, alpha 1.312 (1s)
+[06:11:36]   Form B without place 4164900: loglik -1034.41, alpha 1.414 (1s)
+[06:11:37]   Form B without place 4815976: loglik -1123.31, alpha 1.238 (1s)
+[06:11:37]   Form A all: theta 0.7563/1,000 (0.5541-1.1119), alpha 1.918, m_o 1.0, m_x 0.4, loglik -1347.71 (2154s)
+[06:11:37]   Form A without MN: theta 1.5672/1,000 (1.1512-2.2169), alpha 0.677, m_o 0.6, m_x 0.3, loglik -1133.99 (845s)
+[06:11:37]   Form A without NC: theta 0.7234/1,000 (0.4851-1.3994), alpha 2.616, m_o 1.0, m_x 0.4, loglik -1012.07 (1681s)
+[06:11:37]   Form A without OH: theta 0.7666/1,000 (0.5586-1.1480), alpha 1.958, m_o 1.0, m_x 0.4, loglik -1342.88 (2133s)
+[06:11:37]   Form A without TX: theta 0.7168/1,000 (0.5165-1.0902), alpha 1.993, m_o 1.0, m_x 0.4, loglik -1256.04 (2086s)
+[06:11:37]   Form A without OR: theta 0.6088/1,000 (0.4393-0.8768), alpha 1.860, m_o 1.0, m_x 0.4, loglik -631.99 (1992s)
+[06:11:37]   Form A without place 2754880: theta 0.7699/1,000 (0.5634-1.1560), alpha 1.901, m_o 1.0, m_x 0.4, loglik -1343.33 (2036s)
+[06:11:37]   Form A without place 3702140: theta 0.6956/1,000 (0.5121-0.9786), alpha 1.845, m_o 1.0, m_x 0.4, loglik -1263.12 (2031s)
+[06:11:37]   Form A without place 3710740: theta 0.7669/1,000 (0.5587-1.1221), alpha 1.960, m_o 1.0, m_x 0.4, loglik -1324.90 (1998s)
+[06:11:37]   Form A without place 3711800: theta 0.7510/1,000 (0.5466-1.1145), alpha 1.972, m_o 1.0, m_x 0.4, loglik -1332.72 (1971s)
+[06:11:37]   Form A without place 3712000: theta 0.9269/1,000 (0.6743-1.3204), alpha 1.938, m_o 1.0, m_x 0.3, loglik -1304.24 (1934s)
+[06:11:37]   Form A without place 3719000: theta 0.7493/1,000 (0.5455-1.1111), alpha 1.970, m_o 1.0, m_x 0.4, loglik -1299.12 (1948s)
+[06:22:02]   Form A without place 3755000: theta 0.7601/1,000 (0.5528-1.0803), alpha 1.979, m_o 1.0, m_x 0.4, loglik -1317.88 (1858s)
+[06:32:25]   Form A without place 3774440: theta 0.7412/1,000 (0.5394-1.0532), alpha 1.962, m_o 1.0, m_x 0.4, loglik -1303.71 (1650s)
+[06:35:44]   Form A without place 4147000: theta 0.7332/1,000 (0.5341-1.0581), alpha 1.945, m_o 1.0, m_x 0.4, loglik -1306.42 (1569s)
+[06:36:24]   Form A without place 4164900: theta 0.7401/1,000 (0.5386-1.0515), alpha 1.960, m_o 1.0, m_x 0.4, loglik -1291.40 (1543s)
+[06:36:37]   Form A without place 4815976: theta 0.7641/1,000 (0.5562-1.1205), alpha 1.971, m_o 1.0, m_x 0.4, loglik -1335.25 (1546s)
+[06:38:42]   MN: tier-2 city 2743000, s_B 1.796, top-20 20
+[06:39:02]   NC: tier-2 city 3712000, s_B 2.002, top-20 20
+[06:39:08]   OH: tier-2 city 3915000, s_B 0.435, top-20 20
+[06:39:18]   TX: tier-2 city 4865000, s_B 1.787, top-20 20
+[06:39:25]   OR: tier-2 city 4159000, s_B 0.982, top-20 20
+[06:39:31] decision: {'form': 'A', 'reason': 'neither form passes any tier: Form A is kept and the tool shows tier-2 ranges'}
+[06:40:00] === variant field k 5th pct: 64 places, 395 place-years ===
+[06:52:36]   Form B all: loglik -1118.87, alpha 1.266 (1s)
+[06:52:37]   Form B without MN: loglik -882.84, alpha 1.062 (1s)
+[06:52:37]   Form B without NC: loglik -566.08, alpha 3.538 (1s)
+[06:52:38]   Form B without OH: loglik -1112.75, alpha 1.158 (1s)
+[06:52:39]   Form B without TX: loglik -1039.41, alpha 1.252 (1s)
+[06:52:40]   Form B without OR: loglik -666.37, alpha 4.769 (1s)
+[07:09:37]   Form A all: theta 0.7353/1,000 (0.5398-1.0618), alpha 1.881, m_o 1.0, m_x 0.4, loglik -1332.10 (1777s)
+[07:09:37]   Form A without MN: theta 1.4977/1,000 (1.1045-2.3827), alpha 0.655, m_o 0.6, m_x 0.3, loglik -1118.52 (755s)
+[07:09:37]   Form A without NC: theta 0.7036/1,000 (0.4726-1.3525), alpha 2.570, m_o 1.0, m_x 0.4, loglik -997.69 (1433s)
+[07:09:39]   Form A without OH: theta 0.7453/1,000 (0.5440-1.0970), alpha 1.921, m_o 1.0, m_x 0.4, loglik -1327.29 (1779s)
+[07:09:39]   Form A without TX: theta 0.6982/1,000 (0.5042-1.0440), alpha 1.952, m_o 1.0, m_x 0.4, loglik -1242.73 (1749s)
+[07:09:39]   Form A without OR: theta 0.5994/1,000 (0.4328-0.8626), alpha 1.843, m_o 1.0, m_x 0.4, loglik -628.43 (1687s)
+[07:11:34]   MN: tier-2 city 2743000, s_B 1.780, top-20 20
+[07:11:52]   NC: tier-2 city 3712000, s_B 1.971, top-20 20
+[07:11:57]   OH: tier-2 city 3915000, s_B 0.426, top-20 20
+[07:12:07]   TX: tier-2 city 4865000, s_B 1.771, top-20 20
+[07:12:14]   OR: tier-2 city 4159000, s_B 0.976, top-20 20
+[07:12:42] === variant field k 95th pct: 64 places, 395 place-years ===
+[07:54:41]   Form B all: loglik -1165.01, alpha 1.266 (1s)
+[07:54:42]   Form B without MN: loglik -929.22, alpha 1.036 (1s)
+[07:54:43]   Form B without NC: loglik -589.77, alpha 3.723 (1s)
+[07:54:44]   Form B without OH: loglik -1158.83, alpha 1.155 (1s)
+[07:54:44]   Form B without TX: loglik -1080.37, alpha 1.255 (1s)
+[07:54:45]   Form B without OR: loglik -681.05, alpha 4.577 (1s)
+[08:16:10]   Form A all: theta 0.7863/1,000 (0.5746-1.2007), alpha 1.970, m_o 1.0, m_x 0.4, loglik -1369.33 (3808s)
+[08:16:10]   Form A without MN: theta 1.6667/1,000 (1.2180-2.3770), alpha 0.704, m_o 0.6, m_x 0.3, loglik -1155.26 (2519s)
+[08:16:10]   Form A without NC: theta 0.7507/1,000 (0.5022-1.4652), alpha 2.679, m_o 1.0, m_x 0.4, loglik -1030.16 (3368s)
+[08:16:24]   Form A without OH: theta 0.7971/1,000 (0.5793-1.2383), alpha 2.010, m_o 1.0, m_x 0.4, loglik -1364.48 (3822s)
+[08:16:24]   Form A without TX: theta 0.7439/1,000 (0.5344-1.1730), alpha 2.052, m_o 1.0, m_x 0.4, loglik -1274.59 (3757s)
+[08:16:24]   Form A without OR: theta 0.6226/1,000 (0.4488-0.9088), alpha 1.884, m_o 1.0, m_x 0.4, loglik -638.62 (3680s)
+[08:18:36]   MN: tier-2 city 2743000, s_B 1.817, top-20 20
+[08:18:55]   NC: tier-2 city 3712000, s_B 2.042, top-20 20
+[08:19:02]   OH: tier-2 city 3915000, s_B 0.448, top-20 20
+[08:19:11]   TX: tier-2 city 4865000, s_B 1.811, top-20 20
+[08:19:18]   OR: tier-2 city 4159000, s_B 0.988, top-20 20
+[08:19:48] === variant without low-recall rows: 64 places, 389 place-years ===
+[10:11:01]   Form B all: loglik -1070.34, alpha 1.048 (1s)
+[10:11:01]   Form B without MN: loglik -842.72, alpha 0.817 (1s)
+[10:11:02]   Form B without NC: loglik -576.15, alpha 3.619 (1s)
+[10:11:03]   Form B without OH: loglik -1063.77, alpha 0.925 (1s)
+[10:11:04]   Form B without TX: loglik -976.44, alpha 1.172 (1s)
+[10:11:05]   Form B without OR: loglik -616.19, alpha 2.677 (1s)
+[10:11:06]   Form B without place 2754880: loglik -1066.40, alpha 1.032 (1s)
+[10:11:06]   Form B without place 3702140: loglik -1053.23, alpha 0.997 (1s)
+[10:11:07]   Form B without place 3710740: loglik -1047.17, alpha 1.007 (1s)
+[10:11:08]   Form B without place 3711800: loglik -1055.55, alpha 1.088 (1s)
+[10:11:09]   Form B without place 3712000: loglik -997.11, alpha 1.127 (1s)
+[10:11:10]   Form B without place 3719000: loglik -1016.50, alpha 1.089 (1s)
+[10:11:10]   Form B without place 3755000: loglik -981.08, alpha 1.126 (1s)
+[10:11:11]   Form B without place 3774440: loglik -954.19, alpha 1.145 (1s)
+[10:11:12]   Form B without place 4147000: loglik -1032.08, alpha 1.088 (1s)
+[10:11:13]   Form B without place 4164900: loglik -972.08, alpha 1.152 (1s)
+[10:11:14]   Form B without place 4815976: loglik -1057.12, alpha 1.009 (1s)
+[10:11:14]   Form A all: theta 0.7472/1,000 (0.5480-1.0727), alpha 1.896, m_o 1.0, m_x 0.4, loglik -1281.27 (2444s)
+[10:11:14]   Form A without MN: theta 1.5411/1,000 (1.1325-2.1856), alpha 0.664, m_o 0.6, m_x 0.3, loglik -1067.63 (840s)
+[10:11:14]   Form A without NC: theta 0.7234/1,000 (0.4851-1.3994), alpha 2.616, m_o 1.0, m_x 0.4, loglik -1012.07 (1803s)
+[10:11:14]   Form A without OH: theta 0.7572/1,000 (0.5524-1.1103), alpha 1.935, m_o 1.0, m_x 0.4, loglik -1276.45 (2372s)
+[10:11:14]   Form A without TX: theta 0.7069/1,000 (0.5099-1.0536), alpha 1.966, m_o 1.0, m_x 0.4, loglik -1189.58 (2317s)
+[10:11:14]   Form A without OR: theta 0.5973/1,000 (0.4309-0.8587), alpha 1.821, m_o 1.0, m_x 0.4, loglik -565.46 (2221s)
+[10:11:14]   Form A without place 2754880: theta 0.7607/1,000 (0.5572-1.1187), alpha 1.877, m_o 1.0, m_x 0.4, loglik -1276.88 (4292s)
+[10:11:14]   Form A without place 3702140: theta 0.6956/1,000 (0.5121-0.9786), alpha 1.845, m_o 1.0, m_x 0.4, loglik -1263.12 (4219s)
+[10:11:14]   Form A without place 3710740: theta 0.7576/1,000 (0.5526-1.0818), alpha 1.936, m_o 1.0, m_x 0.4, loglik -1258.47 (4262s)
+[10:11:14]   Form A without place 3711800: theta 0.7417/1,000 (0.5404-1.0762), alpha 1.948, m_o 1.0, m_x 0.4, loglik -1266.28 (4199s)
+[10:11:14]   Form A without place 3712000: theta 0.9209/1,000 (0.6689-1.3108), alpha 1.928, m_o 1.0, m_x 0.3, loglik -1237.92 (4167s)
+[10:11:14]   Form A without place 3719000: theta 0.7400/1,000 (0.5393-1.0718), alpha 1.947, m_o 1.0, m_x 0.4, loglik -1232.68 (4229s)
+[10:22:14]   Form A without place 3755000: theta 0.7507/1,000 (0.5467-1.0628), alpha 1.956, m_o 1.0, m_x 0.4, loglik -1251.44 (2214s)
+[10:34:08]   Form A without place 3774440: theta 0.7318/1,000 (0.5331-1.0360), alpha 1.938, m_o 1.0, m_x 0.4, loglik -1237.27 (2039s)
+[10:54:09]   Form A without place 4147000: theta 0.7239/1,000 (0.5278-1.0237), alpha 1.921, m_o 1.0, m_x 0.4, loglik -1239.97 (2778s)
+[10:54:24]   Form A without place 4164900: theta 0.7307/1,000 (0.5323-1.0344), alpha 1.936, m_o 1.0, m_x 0.4, loglik -1224.95 (2761s)
+[10:54:48]   Form A without place 4815976: theta 0.7548/1,000 (0.5500-1.0805), alpha 1.948, m_o 1.0, m_x 0.4, loglik -1268.81 (2761s)
+[10:56:54]   MN: tier-2 city 2743000, s_B 1.743, top-20 20
+[10:57:13]   NC: tier-2 city 3712000, s_B 2.002, top-20 20
+[10:57:18]   OH: tier-2 city 3915000, s_B 0.231, top-20 20
+[10:57:28]   TX: tier-2 city 4865000, s_B 1.808, top-20 20
+[10:57:35]   OR: tier-2 city 4159000, s_B 0.813, top-20 20
+[10:57:41] test C: the scenario engine with Form A's refit values
+[10:59:27] done
+exit: 0 finished: 2026-11-12T15:59:28Z
