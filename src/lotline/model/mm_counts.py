@@ -154,6 +154,7 @@ def collapse_buildings(
     max_units: float | None = None,
     check_units: bool = True,
     address_col: str = "address",
+    split_merged: bool = False,
 ) -> pd.DataFrame:
     """Permit rows → one row per building (D-082 §2).
 
@@ -171,8 +172,14 @@ def collapse_buildings(
       no unit count; `units_out_of_range` otherwise. Only `ok` buildings are counted anywhere. With
       `check_units=False` (townhouses, which have no unit bound in D-082) every building with units is `ok`.
 
+    - **Per-permit split** (`split_merged=True`; D-082 deviation 2026-11-12, chosen by Ben after run 1): when
+      a group's units sum above `max_units` and **every** permit in it has a unit count inside
+      `min_units … max_units`, each permit is its own building (`split` True). Without an address, this
+      separates several 2–4 buildings permitted on one parcel in one year. Groups with a permit below
+      `min_units` (one permit per duplex side) stay merged.
+
     Columns: source, jurisdiction_geoid, parcel_id, issue_year, address_key, units, n_permits, is_conversion
-    (any permit flagged), parcel_missing, address_used, status.
+    (any permit flagged), parcel_missing, address_used, split, status.
     """
     refuse_never_read(permits, "collapse_buildings")
     lo = _p("mm_collapse_min_units") if min_units is None else min_units
@@ -207,6 +214,15 @@ def collapse_buildings(
     # A permit with no parcel ID is its own building: give it a key no other row can share.
     df["group_key"] = df["parcel_id"].where(~missing, "permit:" + rows["permit_id"].astype("string"))
     keys = ["source", "group_key", "issue_year", "address_key"]
+    df["split"] = False
+    if split_merged:
+        grp = df.groupby(keys, sort=False, dropna=False)["units"]
+        total = grp.transform(lambda u: u.sum() if u.notna().all() else pd.NA).astype("Float64")
+        inside = ((df["units"] >= lo) & (df["units"] <= hi)).fillna(False).astype(bool)
+        all_inside = inside.groupby([df[k] for k in keys], dropna=False).transform("all")
+        cut = (total > hi).fillna(False).astype(bool) & all_inside
+        df.loc[cut, "address_key"] = "permit:" + rows.loc[cut, "permit_id"].astype("string")
+        df.loc[cut, "split"] = True
     g = df.groupby(keys, sort=True, dropna=False)
     out = g.agg(
         jurisdiction_geoid=("jurisdiction_geoid", "first"),
@@ -215,6 +231,7 @@ def collapse_buildings(
         n_permits=("units", "size"),
         is_conversion=("is_conversion", "any"),
         parcel_missing=("parcel_missing", "first"),
+        split=("split", "first"),
     ).reset_index()
     out = out.drop(columns="group_key")
     out["units"] = out["units"].astype("Float64")
@@ -235,6 +252,7 @@ def collapse_report(buildings: pd.DataFrame) -> dict[str, int | bool]:
         "buildings": int(len(buildings)),
         **{f"buildings_{s}": int(st.get(s, 0)) for s in COLLAPSE_STATUS},
         "buildings_parcel_missing": int(buildings["parcel_missing"].sum()),
+        "buildings_split": int(buildings["split"].sum()) if "split" in buildings else 0,
         "address_used": bool(buildings["address_used"].all()) if len(buildings) else False,
         "aggregate_rows_dropped": int(buildings.attrs.get("aggregate_rows", 0)),
     }

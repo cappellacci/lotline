@@ -97,6 +97,7 @@ def test_collapse_by_parcel_year_address():
         "buildings_units_missing": 1,
         "buildings_units_out_of_range": 1,
         "buildings_parcel_missing": 2,
+        "buildings_split": 0,
         "address_used": True,
         "aggregate_rows_dropped": 1,
     }
@@ -113,6 +114,22 @@ def test_collapse_without_address_merges_a_parcel_year():
     assert len(a) == 1 and a["units"].iloc[0] == 5 and a["status"].iloc[0] == "units_out_of_range"
     assert not b["address_used"].any()
     assert len(b) == 5  # A, B, C and the two parcel-less permits
+
+
+def test_per_permit_split_separates_merged_buildings():
+    # No address. Parcel B 2021: 4 + 2 = 6 > 4 and both permits are 2-4 on their own -> two buildings (4, 2).
+    # Parcel A 2020: 1 + 1 + 3 = 5 but the 1-unit half-permits are below 2 -> stays merged, out of range.
+    b = mc.collapse_buildings(permits(COLLAPSE_ROWS, address=False), split_merged=True)
+    bb = b[b["parcel_id"] == "B"]
+    assert sorted(bb["units"].tolist()) == [2, 4] and bb["split"].all() and (bb["status"] == "ok").all()
+    a = b[b["parcel_id"] == "A"]
+    assert len(a) == 1 and a["units"].iloc[0] == 5 and not a["split"].iloc[0]
+    assert a["status"].iloc[0] == "units_out_of_range"
+    rep = mc.collapse_report(b)
+    assert rep["buildings_split"] == 2 and rep["buildings"] == 6
+    # Without the flag the pre-registered rule is unchanged: B is one 6-unit building.
+    old = mc.collapse_buildings(permits(COLLAPSE_ROWS, address=False))
+    assert old.loc[old["parcel_id"] == "B", "units"].tolist() == [6] and not old["split"].any()
 
 
 def test_collapse_refuses_st_paul():

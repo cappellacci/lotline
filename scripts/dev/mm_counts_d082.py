@@ -6,11 +6,12 @@
 `--dry` reads each candidate permit source, parcel roll and BPS table through `mm_counts.blind` (St. Paul and
 Ramsey County dropped outright, then `holdout.apply`) and prints **structure only**.
 
-`--coverage` is D-082 §9 run 1 (approved by Ben 2026-11-12; go-ahead "Yes, start run 1"): for each candidate
-permit source, the building collapse report, k_src against BPS over each place's own pre-event years, its 90%
-interval, and the four strong-source tests. It writes `coverage.csv`, `coverage_by_year.csv` and
-`README.md` to `--out`. Nothing is fitted and nothing is written to config. Runs 2–6 are not here: each needs
-its own go-ahead.
+`--coverage` is D-082 §9 run 1 (approved by Ben 2026-11-12; go-ahead "Yes, start run 1"). Since the
+2026-11-12 deviation ("Per-permit split rule") the main collapse is the per-permit split; the pre-registered
+collapse is kept as `prereg_*`. For each candidate permit source it reports the building collapse, k_src
+against BPS over each place's own pre-event years, its 90% interval, and the four strong-source tests. It
+writes `coverage.csv` and `coverage_by_year.csv` to `--out`. Nothing is fitted and nothing is written to
+config. Runs 2-6 are not here: each needs its own go-ahead.
 
 Run-1 choices (stated in the report):
 - Event years: D-082's event rule (`calibrate_mm_d082.events_d082`, the accepted rule rows). A place with no
@@ -177,7 +178,9 @@ def coverage(store: DataStore, out) -> pd.DataFrame:
             df = mc.blind(raw, state, date_col="issue_date", year_col="issue_year")
             y0, y1 = full_years(df)
             df = df.loc[pd.to_numeric(df["issue_year"]).between(y0, y1)]
-            bld = mc.collapse_buildings(df)
+            # Main: the per-permit split (D-082 deviation 2026-11-12). Pre-registered rule kept as `prereg_*`.
+            bld = mc.collapse_buildings(df, split_merged=True)
+            bld0 = mc.collapse_buildings(df)
             rep = mc.collapse_report(bld)
             geoids = sorted(set(df["jurisdiction_geoid"].astype(str)))
             area = [g for g in geoids if g in bps_geoids]
@@ -185,12 +188,13 @@ def coverage(store: DataStore, out) -> pd.DataFrame:
             ev = {g: events[g].year for g in area if g in events}
             first_event = min(ev.values()) if ev else None
             res = {}
-            for label, start in (("", WINDOW_FIRST), ("long_", BPS_FIRST)):
+            for label, start, b in (("", WINDOW_FIRST, bld), ("long_", BPS_FIRST, bld),
+                                    ("prereg_", WINDOW_FIRST, bld0)):  # fmt: skip
                 win = {g: (max(y0, start), min(y1, ev[g] - 1) if g in ev else y1) for g in area}
-                k = mc.area_coverage(bld, bps, win)
+                k = mc.area_coverage(b, bps, win)
                 cols = ("permit_buildings", "bps_buildings", "k", "k_lo", "k_hi", "enters", "years")
                 res |= {f"{label}{c}": k[c] for c in cols}
-                if not label:
+                if label == "":
                     okb = mc.ok(bld)
                     for g, (a, b_) in win.items():
                         for yr in range(a, b_ + 1):
@@ -198,18 +202,19 @@ def coverage(store: DataStore, out) -> pd.DataFrame:
                             n_b = mc.bps_buildings_24(bps, [g], [yr])
                             by_year.append({"state": state, "source": place, "geoid": g, "year": yr,
                                             "permit_buildings": n_p, "bps_buildings": n_b})  # fmt: skip
-            # Sensitivity, not the entry rule: a collapsed "building" summing to 5+ units is likely several
-            # 2-4 buildings on one parcel in one year (no address to tell them apart, #406). Count it as
+            # Sensitivity (run 1's bound): under the pre-registered collapse, a "building" summing to 5+ units
+            # is likely several 2-4 buildings on one parcel in one year (no address, #406). Count it as
             # ceil(u / 4) (fewest) to floor(u / 2) (most) buildings and recompute k.
-            multi = bld.loc[(bld["status"] == "units_out_of_range") & (bld["units"] >= 5)]
+            multi = bld0.loc[(bld0["status"] == "units_out_of_range") & (bld0["units"] >= 5).fillna(False)]
             for side, f in (("lo", lambda u: -(-u // 4)), ("hi", lambda u: u // 2)):
                 extra = 0
                 for g, (a, b_) in {g: (max(y0, WINDOW_FIRST), min(y1, ev[g] - 1) if g in ev else y1)
                                    for g in area}.items():  # fmt: skip
                     m = multi.loc[(multi["jurisdiction_geoid"] == g) & multi["issue_year"].between(a, b_)]
                     extra += int(sum(f(int(u)) for u in m["units"]))
-                n_b = res["bps_buildings"]
-                res[f"split_{side}_k"] = (res["permit_buildings"] + extra) / n_b if n_b else float("nan")
+                n_b = res["prereg_bps_buildings"]
+                k_b = (res["prereg_permit_buildings"] + extra) / n_b if n_b else float("nan")
+                res[f"split_{side}_k"] = k_b
             strong = mc.strong_source(df, {"enters": res["enters"]}, first_event_year=first_event or (y1 + 1))
             rows.append(
                 base
