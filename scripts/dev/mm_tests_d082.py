@@ -23,8 +23,10 @@ What it scores, for M and challengers C1, C3 and C4:
 - **Placebo:** M's places with events moved 3 years early and pre-years only (`place_inputs(shift=3)`). One
   r5 profile is fitted, and its 90% upper bound must be below run 4's main r5.
 - **Place coverage:** randomized P10–P90 coverage over every place scored above (`mm_tests.randomized_pit`).
-- **Test B (roll check):** needs run 3's roll diffs. It is scored with `--run3` when they exist, and reported
-  as pending otherwise.
+- **Test B (roll check):** with `--run3`, each roll area's places (panel places only) are predicted over the
+  permit years matched to the roll pair (`B_AREAS`) from each model's full fit: post-event years from the
+  place's own Place, every other year from a no-effect baseline. The prediction is 2-4 unit buildings and the
+  observation is lots gaining one; pass if Wake, Franklin and Minneapolis are each inside P10-P90.
 - **Data tier:** not run here (see the README).
 - **Selection (§5):** `calibrate_mm.select_model` on run 4's `place_scores.csv`, with the A–C pass counts.
 
@@ -60,6 +62,16 @@ MODELS = ("M", "C1", "C3", "C4")
 DRAWS, SEED = 20_000, 20261112
 FRANKLIN = "39049"
 D059_SCORES = Path("reports/mm-d059/place_scores.csv")
+# Test B: permit years matched to each roll pair (a building permitted in year t is on the roll about a year
+# later): Wake 2019-11 -> 2023-12, Franklin 2016-12 -> 2024-12, Minneapolis 2017 -> 2024,
+# Met Council 2021 -> 2025.
+B_AREAS = {
+    "Wake": (2019, 2022),
+    "Franklin": (2016, 2023),
+    "Minneapolis": (2017, 2023),
+    "Met Council": (2021, 2024),
+}
+B_PASS_AREAS = ("Wake", "Franklin", "Minneapolis")  # D-082 §7 test B; Met Council is reported only
 
 
 def fold_fits(run4: Path) -> dict[str, dict]:
@@ -198,10 +210,83 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
                                                "placebo_places": len(plac)}  # fmt: skip
     tick(f"placebo r5 {pr5.r5:.5f} ({pr5.low:.5f}-{pr5.high:.5f}) vs main {main_r5:.5f}")
 
-    # ---- test B (needs run 3) ----
-    test_b = {"pass": None, "status": "pending: run 3's roll diffs are not in"}
-    if run3 is not None and (run3 / "test_b_inputs.csv").exists():
-        test_b = {"pass": None, "status": "run 3 present; scoring is in the run-3/5 follow-up"}
+    # ---- test B (roll check; run 3's lots gaining a 2-4 building) ----
+    test_b = {k: {"pass": None, "status": "pending: no run-3 roll gains"} for k in MODELS}
+    b_rows = []
+    gains_path = run3 / "roll_gains_by_place.csv" if run3 is not None else None
+    if gains_path is not None and gains_path.exists():
+        gains = pd.read_csv(gains_path, dtype={"jurisdiction_geoid": str})
+        gains = gains[gains["read"] == "main"]
+        m_test, _ = d082.build_m(panel, classes, test_events, p, p["s_dose"])
+        all_places = {q.geoid: q for q in m_fit + m_test}
+        z_full = cal.conditional_z(pace, fit_ids)
+        for area, (y0, y1) in B_AREAS.items():
+            g_area = gains[gains["area"] == area]
+            ids = [g for g in g_area["jurisdiction_geoid"] if g in set(panel["place"])]
+            obs_all = int(g_area["gained_24"].sum())
+            obs = int(g_area.loc[g_area["jurisdiction_geoid"].isin(ids), "gained_24"].sum())
+            years = list(range(y0, y1 + 1))
+            # Baseline for every place-year not covered by a post-event Place: a no-effect place with T = y0.
+            base = panel[panel["place"].isin(ids)].copy()
+            base["T"], base["dose"] = float(y0), 0.0
+            base["eligible"] = base["eligible"].where(base["eligible"] > 0, 1.0)
+            bq = {q.geoid: q for q in cal.place_inputs(base, ids, p["margin"], p["sigma"], growth="own",
+                                                       zero_floor=True)}  # fmt: skip
+            for k in MODELS:
+                f = fits.get(f"{k}_full")
+                if f is None:
+                    continue
+                tot = np.zeros(DRAWS)
+                for g in ids:
+                    q = all_places.get(g)
+                    post = [] if q is None else [y for y in years if y in set(q.years)]
+                    if post:
+                        # the full post-event Place (all years, not the 5-year horizon); C1 differs from M
+                        # only in Oregon, so these non-Oregon areas use M's Place for every model.
+                        qq = replace(q, z=float(z_full.get(g, 0.0))) if k == "C3" else q
+                        dr = cal.predict_places(
+                            [qq],
+                            f["theta"],
+                            f["log_se"],
+                            f["alpha"],
+                            f["half"],
+                            b=f["b"] if k == "C3" else 0.0,
+                            draws=DRAWS,
+                            seed=SEED,
+                        )[g]
+                        cols = [i for i, y in enumerate(qq.years) if y in post]
+                        tot += dr[:, cols].sum(axis=1)
+                    pre = [y for y in years if y not in post]
+                    if pre and g in bq:
+                        b = bq[g]
+                        cols = [i for i, y in enumerate(b.years) if y in pre]
+                        if cols:
+                            tot += cal.benchmark_places([b], 0.0, 1.0, draws=DRAWS, seed=SEED)[g][
+                                :, cols
+                            ].sum(axis=1)
+                b_rows.append({"model": k, "area": area, "permit_years": f"{y0}-{y1}", "places": len(ids),
+                               "observed_all_places": obs_all} | summarize(tot, obs))  # fmt: skip
+        b_df = pd.DataFrame(b_rows)
+        for k in MODELS:
+            r = b_df[(b_df["model"] == k) & b_df["area"].isin(B_PASS_AREAS)]
+            cols = zip(r["area"], r["observed"], r["p10"], r["p90"], strict=True)
+            ins = {a: mt.inside(o, lo, hi) for a, o, lo, hi in cols}
+            test_b[k] = {"areas_inside": ins, "pass": bool(ins) and all(ins.values())}
+        out.mkdir(parents=True, exist_ok=True)
+        b_df.to_csv(out / "test_b_areas.csv", index=False)
+        tick(
+            "test B: "
+            + ", ".join(
+                f"{a} obs {o} P10-P90 {lo:.0f}-{hi:.0f}"
+                for a, o, lo, hi in zip(
+                    b_df[b_df["model"] == "M"]["area"],
+                    b_df[b_df["model"] == "M"]["observed"],
+                    b_df[b_df["model"] == "M"]["p10"],
+                    b_df[b_df["model"] == "M"]["p90"],
+                    strict=True,
+                )
+            )
+        )
 
     # ---- per model ----
     res = {}
@@ -209,8 +294,8 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
         a = mt.test_a(a_df[a_df["model"] == k]) if len(a_df) else mt.test_a(pd.DataFrame())
         lo = mt.loso(loso_df[loso_df["model"] == k]) if len(loso_df) else {"pass": None}
         cov = mt.place_coverage(pits[k] + c_pits)
-        passed = sum(bool(x) for x in (a["pass"], test_b["pass"], test_c["pass"]))
-        res[k] = {"test_a": a, "test_c": test_c, "test_b": test_b, "loso": lo, "place_coverage": cov,
+        passed = sum(bool(x) for x in (a["pass"], test_b[k]["pass"], test_c["pass"]))
+        res[k] = {"test_a": a, "test_c": test_c, "test_b": test_b[k], "loso": lo, "place_coverage": cov,
                   "tests_a_c_passed": passed}  # fmt: skip
     passed = {k: v["tests_a_c_passed"] for k, v in res.items()}
     scores = pd.read_csv(run4 / "place_scores.csv", dtype={"geoid": str})
