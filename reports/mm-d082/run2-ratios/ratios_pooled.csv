@@ -1,0 +1,9 @@
+ratio,sources,sources_in_range,numerator,denominator,pooled,low,high,source_set,collapse
+r56,0,0,0,0,,,,split_strong,split
+rTH,0,0,0,0,,,,split_strong,split
+rCV,5,5,37,1614,0.02292441140024783,0.0,0.08545034642032333,split_strong,split
+s_td,5,5,317,1586,0.19987389659520807,0.10526315789473684,0.4336917562724014,split_strong,split
+r56,0,0,0,0,,,,prereg_strong,prereg
+rTH,0,0,0,0,,,,prereg_strong,prereg
+rCV,3,3,37,1258,0.029411764705882353,0.0,0.11455108359133127,prereg_strong,prereg
+s_td,3,3,473,1229,0.38486574450772987,0.08668730650154799,0.535904255319149,prereg_strong,prereg

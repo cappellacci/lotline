@@ -46,7 +46,12 @@ from lotline.validation.undercount import wilson
 MM_TYPES = ("U2", "U3_4")  # D-082 §2: the 2–4 unit classes
 HOUSE_USES = frozenset({"SF_DETACHED"})  # "held a house" in the prior roll (s_td)
 VACANT_USES = frozenset({"VACANT_RESIDENTIAL"})
-ONE_BUILDING_24_USES = frozenset({"DUPLEX", "TRI_QUAD"})  # roll land uses read as one 2–4 unit building
+ONE_BUILDING_24_USES = frozenset({"DUPLEX", "TRI_QUAD"})
+IMPUTED_UNITS = {
+    "SF_DETACHED": 1,
+    "DUPLEX": 2,
+    "TRI_QUAD": 3,
+}  # roll_from_parcels(impute_units=True)  # roll land uses read as one 2–4 unit building
 
 # D-082 §1: St. Paul and Ramsey County are never read (V5 blind test). Not parameters: fixed identifiers.
 NEVER_READ_PLACES = frozenset({"2758000"})  # St. Paul city
@@ -652,7 +657,7 @@ ROLL_COLUMNS = ("jurisdiction_geoid", "units", "buildings", "lot_sqft")
 ROLL_GROUPS = ("gained_24", "merge", "split", "none")
 
 
-def roll_from_parcels(parcels: pd.DataFrame) -> pd.DataFrame:
+def roll_from_parcels(parcels: pd.DataFrame, *, impute_units: bool = False) -> pd.DataFrame:
     """Processed `parcels` rows of one vintage → the roll interface `diff_rolls_24` reads: indexed by
     `parcel_id`, columns `jurisdiction_geoid`, `units`, `buildings` (dwelling buildings), `lot_sqft`.
 
@@ -676,6 +681,10 @@ def roll_from_parcels(parcels: pd.DataFrame) -> pd.DataFrame:
     # A house-coded parcel with 2+ units (house plus ADU, or a duplex coded as a house) is ambiguous: it is
     # neither a single dwelling nor surely one 2-4 building, so its building count is NA (run 3 choice).
     sf_multi = lu.isin(list(HOUSE_USES)) & (units > 1).fillna(False)
+    if impute_units:
+        # Run 3 choice for rolls with sparse unit counts (Met Council): a missing count is read from the land
+        # use, house 1, duplex 2, triplex/fourplex 3 (any 3-4 is inside 2-4). Reported beside the plain read.
+        units = units.fillna(lu.map(IMPUTED_UNITS).astype("Float64"))
     one = lu.isin(list(HOUSE_USES | ONE_BUILDING_24_USES)) & (units > 0).fillna(False) & ~sf_multi
     vacant = lu.isin(list(VACANT_USES))
     buildings = pd.Series(pd.NA, index=p.index, dtype="Float64")

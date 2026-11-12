@@ -1,0 +1,5 @@
+area,result,roll_1,roll_2,units_fill_roll_2,blinded_rows,jurisdiction_matched
+Wake,diffed,2019,2023,1.0,0.0,
+Minneapolis,diffed,2017,2024,0.9968548177779135,0.0,
+Met Council,diffed,2021,2025,0.2925248851356817,754645.0,
+Franklin,diffed,2016-12-22,2024-12-30,,,0.9909722287222591

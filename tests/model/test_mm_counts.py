@@ -610,3 +610,19 @@ def test_conversion_buildings_counts_any_type_adding_one_to_three_homes():
     )
     themes = pd.Series(["conversion", "conversion", "conversion", "conversion", "mm_2_4"], index=df.index)
     assert mc.conversion_buildings(df, themes, 2016, 2025) == 2
+
+
+def test_roll_from_parcels_imputes_units_from_land_use_only_when_asked():
+    parcels = pd.DataFrame(
+        {
+            "parcel_id": ["A", "B", "C"],
+            "jurisdiction_geoid": ["G"] * 3,
+            "land_use_std": ["SF_DETACHED", "DUPLEX", "TRI_QUAD"],
+            "units": pd.array([pd.NA, pd.NA, pd.NA], dtype="Int64"),
+            "lot_sqft": [5000.0] * 3,
+        }
+    )
+    plain = mc.roll_from_parcels(parcels)
+    assert plain["buildings"].isna().all()
+    r = mc.roll_from_parcels(parcels, impute_units=True)
+    assert r["units"].tolist() == [1, 2, 3] and r["buildings"].tolist() == [1, 1, 1]

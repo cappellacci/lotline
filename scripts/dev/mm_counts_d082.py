@@ -32,6 +32,7 @@ import pandas as pd
 
 from lotline.io import DataStore
 from lotline.model import mm_counts as mc
+from lotline.validation.undercount import wilson
 
 # D-082 §2: the strong permit candidates (review §2), by state and processed file name
 # (processed/<st>/permits/<name>.parquet).
@@ -355,12 +356,8 @@ def ratios(store: DataStore, out) -> dict:
     for set_name, members, collapse in sets:
         r = per.loc[per["source"].isin(members) & (per["collapse"] == collapse)]
         pooled.append(mc.pool_ratios(r).assign(source_set=set_name, collapse=collapse))
-        # Broad rCV pooled the same way (Σ numerators ÷ Σ denominators; range over sources >= 50 buildings).
-        cv = r.loc[r["ratio"] == "rCV"].assign(
-            ratio="rCV_broad", numerator=lambda x: x["rCV_broad_numerator"], value=lambda x: x["rCV_broad"]
-        )
-        b = mc.pool_ratios(cv.assign(ratio="rCV")).query("ratio == 'rCV'").assign(ratio="rCV_broad")
-        pooled.append(b.assign(source_set=set_name, collapse=collapse))
+        # Broad rCV is kept per source as a diagnostic only, never pooled: Bend flags remodels of houses as
+        # conversions (thousands of 1-unit 'RE|SFD' rows), so the broad count is not comparable.
     pooled = pd.concat(pooled, ignore_index=True)
     per.to_csv(out / "ratios_by_source.csv", index=False)
     pooled.to_csv(out / "ratios_pooled.csv", index=False)
@@ -375,9 +372,11 @@ FRANKLIN_BEFORE, FRANKLIN_AFTER = "2016-12-22", "2024-12-30"  # the cached pair 
 FRANKLIN_VACANT = ("500",)  # LUC 500 residential vacant land
 ROLL_PAIRS = (  # area, state, processed source, roll 1 vintage, roll 2 vintage
     ("Wake", "NC", "wake_realestate", 2019, 2023),
-    ("Minneapolis", "MN", "mpls_assessor_parcels", 2017, 2026),
+    # Minneapolis: 2017 -> 2024, the last vintage with unit counts (2025-26 have them on about 1% of houses).
+    ("Minneapolis", "MN", "mpls_assessor_parcels", 2017, 2024),
     ("Met Council", "MN", "metc_parcels", 2021, 2025),
 )
+IMPUTE = {"Met Council"}  # units on about a third of parcels: read missing counts from land use (main)
 
 
 def _franklin_cards(store: DataStore, date: str) -> pd.DataFrame:
@@ -412,11 +411,14 @@ def rolls(store: DataStore, out) -> pd.DataFrame:
             continue
         date_col = "vintage_date" if "vintage_date" in raw else None
         df = mc.blind(raw, state, date_col=date_col, year_col="vintage", snapshot=True)
-        r1 = mc.roll_from_parcels(df.loc[pd.to_numeric(df["vintage"]) == v1])
-        r2 = mc.roll_from_parcels(df.loc[pd.to_numeric(df["vintage"]) == v2])
-        d = mc.diff_rolls_24(r1, r2)
-        s = mc.roll_diff_summary(d).assign(area=area, roll_1=v1, roll_2=v2)
-        sums.append(s)
+        p1 = df.loc[pd.to_numeric(df["vintage"]) == v1]
+        p2 = df.loc[pd.to_numeric(df["vintage"]) == v2]
+        reads = [("main", area in IMPUTE)] + ([("units_as_coded", False)] if area in IMPUTE else [])
+        for read, imp in reads:
+            d = mc.diff_rolls_24(
+                mc.roll_from_parcels(p1, impute_units=imp), mc.roll_from_parcels(p2, impute_units=imp)
+            )
+            sums.append(mc.roll_diff_summary(d).assign(area=area, roll_1=v1, roll_2=v2, read=read))
         u2 = df.loc[pd.to_numeric(df["vintage"]) == v2, "units"] if "units" in df else pd.Series(dtype=float)
         fill = float(pd.to_numeric(u2).notna().mean()) if len(u2) else float("nan")
         meta.append({"area": area, "result": "diffed", "roll_1": v1, "roll_2": v2, "units_fill_roll_2": fill,
@@ -427,14 +429,20 @@ def rolls(store: DataStore, out) -> pd.DataFrame:
         a = _franklin_cards(store, FRANKLIN_AFTER)
         oh = _read(store, "OH", "parcels", "oh_parcels")
         oh = mc.blind(oh, "OH", date_col="vintage_date", year_col="vintage", snapshot=True)
-        oh = oh.loc[(oh["county_geoid"] == "39049") & (pd.to_numeric(oh["vintage"]) == 2016)]
-        geo = oh.drop_duplicates("parcel_id").set_index("parcel_id")["jurisdiction_geoid"]
+        # Place of each Franklin parcel from every vintage of the Ohio roll (only 2023 carries Columbus); a
+        # place GEOID (7 digits) wins over the county code.
+        oh = oh.loc[oh["county_geoid"] == "39049", ["parcel_id", "jurisdiction_geoid"]].drop_duplicates()
+        oh = oh.assign(place=oh["jurisdiction_geoid"].astype("string").str.len() == 7)
+        geo = oh.sort_values("place").drop_duplicates("parcel_id", keep="last").set_index("parcel_id")
+        geo = geo["jurisdiction_geoid"]
         for x in (b, a):
             key = "39049" + x.index.astype("string").str[:10]
             x["jurisdiction_geoid"] = pd.Series(key, index=x.index).map(geo).fillna("39049").values
         d = mc.diff_rolls_24(mc.roll_from_cards(b, vacant_uses=FRANKLIN_VACANT),
                              mc.roll_from_cards(a, vacant_uses=FRANKLIN_VACANT))  # fmt: skip
-        s = mc.roll_diff_summary(d).assign(area="Franklin", roll_1=FRANKLIN_BEFORE, roll_2=FRANKLIN_AFTER)
+        s = mc.roll_diff_summary(d).assign(
+            area="Franklin", roll_1=FRANKLIN_BEFORE, roll_2=FRANKLIN_AFTER, read="main"
+        )
         sums.append(s)
         matched = float(pd.Series("39049" + b.index.astype("string").str[:10]).isin(geo.index).mean())
         meta.append({"area": "Franklin", "result": "diffed", "roll_1": FRANKLIN_BEFORE,
@@ -442,12 +450,23 @@ def rolls(store: DataStore, out) -> pd.DataFrame:
     except FileNotFoundError as e:
         meta.append({"area": "Franklin", "result": f"not built: {e}"})
     table = pd.concat(sums, ignore_index=True) if sums else pd.DataFrame()
-    cols = ["area", "roll_1", "roll_2"] + [c for c in table.columns if c not in ("area", "roll_1", "roll_2")]
-    table = table[cols]
-    totals = (
-        table.groupby("area", sort=False)[["lots", "single", "vacant", "gained_24", "merge", "split", "none",
-                                           "merge_looked_gained", "counted"]].sum().reset_index()
-    )  # fmt: skip
+    lead = ["area", "read", "roll_1", "roll_2"]
+    table = table[lead + [c for c in table.columns if c not in lead]]
+    count_cols = [
+        "lots",
+        "single",
+        "vacant",
+        "gained_24",
+        "merge",
+        "split",
+        "none",
+        "merge_looked_gained",
+        "counted",
+    ]
+    totals = table.groupby(["area", "read"], sort=False)[count_cols].sum().reset_index()
+    totals["share"] = totals["gained_24"] / totals["counted"]
+    w = [wilson(int(k), int(n), 1.96) for k, n in zip(totals["gained_24"], totals["counted"], strict=True)]
+    totals["share_lo"], totals["share_hi"] = [x[0] for x in w], [x[1] for x in w]
     table.to_csv(out / "roll_gains_by_place.csv", index=False)
     totals.to_csv(out / "roll_gains_by_area.csv", index=False)
     pd.DataFrame(meta).to_csv(out / "rolls_meta.csv", index=False)
