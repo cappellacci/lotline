@@ -5251,6 +5251,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Run 1 done (2026-11-12):** `reports/mm-d082/run1-coverage/` (branch `ws/mm-run1-coverage`). As
     pre-registered, Raleigh, Austin and Bend are strong. The run-1 choices (window from 2013, full years only,
     per-place windows, Mecklenburg not screened) are listed there for Ben to confirm.
+  - **Deviation (2026-11-12, written after run 1's first pass was read; Ben chose "Per-permit split rule"):**
+    the processed permit tables carry no address, because every adapter excludes it as a personal field, and
+    re-downloading is ruled out. So the §2 collapse key falls back to parcel × issue year. In that fallback,
+    a parcel-year whose units sum above 4, and whose permits are each 2–4 units, now counts each permit as
+    its own building (`mm_counts.collapse_buildings(split_merged=True)`). The pre-registered collapse is still
+    reported as `prereg_k`.
+    - Under the split, the strong sources are Raleigh, Durham, Columbus, College Station and Bend.
+    - Under the pre-registered collapse, they were Raleigh, Austin and Bend.
+    - Runs 2–5 report both source sets.
+  - **Overnight go-ahead (2026-11-12):** Ben asked to "get close to having a finalized model" overnight. Runs
+    2–6 were run in order on that go-ahead. Config values still go in their own PR, only with Ben's approval.
   - Ben approved the review's sequence on 2026-11-11 ("Let's follow your order";
     `docs/research/mm-methodology-review-2026-11.md`, #392). This entry is its step 2.
   - Step 1 runs in parallel. It is second-coder rule checks: `reports/{nc,tx,mn,or}/mm-rule-checks-2026-11.md`.
