@@ -5244,6 +5244,13 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 ### D-082 · 2026-11-11 · Missing middle: one counting protocol, Oregon in the fit, and accuracy tests (method only, before any count)
 - **Status: Approved by Ben, 2026-11-12 ("Approve D-082"), as written, with the amendments below.** Method only:
   nothing below has been run or counted. Each run in §9 still needs its own go-ahead.
+  - **Counting choices accepted (2026-11-12, "Yes, start run 1"):** the 13 choices in PR #408 (address
+    fallback to parcel × issue year, missing parcel ID as its own building, unknown units left out, aggregate
+    rows dropped, Wilson 90% interval on k, conversions, townhouses and 5–6, prior roll, s_td, r56 only in
+    Minneapolis, pooling, the roll interface, Ramsey dropped outright).
+  - **Run 1 done (2026-11-12):** `reports/mm-d082/run1-coverage/` (branch `ws/mm-run1-coverage`). As
+    pre-registered, Raleigh, Austin and Bend are strong. The run-1 choices (window from 2013, full years only,
+    per-place windows, Mecklenburg not screened) are listed there for Ben to confirm.
   - Ben approved the review's sequence on 2026-11-11 ("Let's follow your order";
     `docs/research/mm-methodology-review-2026-11.md`, #392). This entry is its step 2.
   - Step 1 runs in parallel. It is second-coder rule checks: `reports/{nc,tx,mn,or}/mm-rule-checks-2026-11.md`.
