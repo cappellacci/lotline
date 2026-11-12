@@ -452,3 +452,161 @@ def test_blind_uses_the_real_registry_for_st_paul():
     )
     out = mc.blind(df, "MN", date_col="issue_date", year_col="issue_year")
     assert out["jurisdiction_geoid"].tolist() == ["2743000"]
+
+
+def test_apply_themes_recodes_non_mm_rows_and_keeps_demolitions():
+    df = permits(
+        [
+            {"parcel_id": "A", "issue_year": 2020, "units_new": 1},  # U2 themed adu
+            {"parcel_id": "B", "issue_year": 2020, "units_new": 2},  # U2 themed mm_2_4
+            {
+                "parcel_id": "C",
+                "issue_year": 2020,
+                "building_type_std": "U3_4",
+                "units_new": 0,
+                "is_demolition": True,
+            },  # fmt: skip
+            {"parcel_id": "D", "issue_year": 2020, "building_type_std": "SFD", "units_new": 1},
+        ]
+    )
+    themes = pd.Series(["adu", "mm_2_4", "other", "other"], index=df.index)
+    out = mc.apply_themes(df, themes)
+    assert out["building_type_std"].tolist() == ["OTHER", "U2", "OTHER", "SFD"]
+    assert out["theme_recoded"].tolist() == [True, False, True, False]
+    assert bool(out["is_demolition"].iloc[2])
+    # Only parcel B is left as a 2-4 building after the collapse.
+    assert mc.ok(mc.collapse_buildings(out))["parcel_id"].tolist() == ["B"]
+
+
+def test_two_unit_adu_share_hand_worked():
+    df = permits(
+        [
+            {"parcel_id": "A", "issue_year": 2020, "units_new": 1},
+            {"parcel_id": "B", "issue_year": 2020, "units_new": 2},
+            {"parcel_id": "C", "issue_year": 2021, "units_new": 2},
+            {"parcel_id": "D", "issue_year": 2021, "units_new": 0},
+            {"parcel_id": "E", "issue_year": 2010, "units_new": 1},  # outside the years
+        ]
+    )
+    themes = pd.Series(["adu", "mm_2_4", "mm_2_4", "other", "adu"], index=df.index)
+    r = mc.two_unit_adu_share(df, themes, 2016, 2025)
+    # adding U2 rows in 2016-2025: A (adu), B, C (mm_2_4) = 3; ADUs 1 -> 1/3
+    assert (r["u2_adding_rows"], r["u2_adu_rows"]) == (3, 1)
+    assert r["adu_share"] == pytest.approx(1 / 3)
+
+
+def test_source_ratios_split_passthrough():
+    # Parcel P 2020: two 2-unit permits, no address -> one 4-unit building either way (sum 4 is in range).
+    # Parcel Q 2020: 4 + 3 = 7 -> dropped by the pre-registered collapse, two buildings with the split.
+    df = permits(
+        [
+            {"parcel_id": "P", "issue_year": 2020, "units_new": 2},
+            {"parcel_id": "P", "issue_year": 2020, "units_new": 2},
+            {"parcel_id": "Q", "issue_year": 2020, "building_type_std": "U3_4", "units_new": 4},
+            {"parcel_id": "Q", "issue_year": 2020, "building_type_std": "U3_4", "units_new": 3},
+        ],
+        address=False,
+    )
+    den = lambda r: int(r.loc[r["ratio"] == "rCV", "denominator"].iloc[0])  # noqa: E731
+    assert den(mc.source_ratios(df, None)) == 1
+    assert den(mc.source_ratios(df, None, split_merged=True)) == 3
+
+
+def test_ratios_without_zoning_on_the_roll_leave_r56_and_rth_unmeasured():
+    # The roll has land use (for s_td) but no sf_only_zoned: r56 and rTH are "not measured", s_td still reads
+    # the house. Parcel H held a house on the 2019 roll; its 2021 duplex counts as a teardown -> s_td 1/1.
+    df = permits(
+        [
+            {"parcel_id": "H", "issue_year": 2021, "units_new": 2},
+            {"parcel_id": "T", "issue_year": 2021, "building_type_std": "TH", "units_new": 1},
+        ]
+    )
+    roll = pd.DataFrame({"parcel_id": ["H"], "vintage": [2019], "land_use_std": ["SF_DETACHED"]})
+    r = mc.source_ratios(df, roll, r56_measured=True).set_index("ratio")
+    assert not r.at["r56", "measured"] and not r.at["rTH", "measured"]
+    assert math.isnan(r.at["rTH", "value"])
+    assert r.at["s_td", "value"] == 1.0
+
+
+def test_roll_from_cards_hand_worked_and_diff():
+    before = pd.DataFrame(
+        {
+            "dwelling_cards": [1, 0, 0, 1],
+            "dwelling_units": [1, 0, 0, 1],
+            "acres": [0.5, 0.25, 1.0, 0.2],
+            "luc": ["510", "500", "400", "510"],
+            "jurisdiction_geoid": ["3918000"] * 4,
+        },
+        index=pd.Index(["S", "V", "C", "K"]),
+    )
+    after = before.copy()
+    after.loc["S", ["dwelling_units"]] = 2  # the house lot now holds one 2-unit building: a gain
+    after.loc["V", ["dwelling_cards", "dwelling_units"]] = [1, 3]  # vacant lot -> one triplex: a gain
+    after.loc["K", ["dwelling_cards", "dwelling_units"]] = [2, 2]  # two cards: not one 2-4 building
+    r1 = mc.roll_from_cards(before, vacant_uses=["500"])
+    assert r1.at["S", "lot_sqft"] == pytest.approx(21_780)
+    assert (r1.at["V", "buildings"], r1.at["V", "units"]) == (0, 0)
+    assert pd.isna(r1.at["C", "buildings"])  # no dwelling, not residential vacant land
+    d = mc.diff_rolls_24(r1, mc.roll_from_cards(after, vacant_uses=["500"]))
+    # Denominator: S, V, K (C is NA). Gains: S, V. K has two cards -> none.
+    assert sorted(d.index) == ["K", "S", "V"]
+    assert d["gained"].to_dict() == {"S": True, "V": True, "K": False}
+
+
+def test_roll_from_parcels_house_with_two_units_is_ambiguous():
+    # SF_DETACHED with 2 units (house + ADU, or a miscoded duplex) is neither single nor one 2-4 building.
+    parcels = pd.DataFrame(
+        {
+            "parcel_id": ["A", "B", "C"],
+            "jurisdiction_geoid": ["G"] * 3,
+            "land_use_std": ["SF_DETACHED", "SF_DETACHED", "DUPLEX"],
+            "units": [1, 2, 2],
+            "lot_sqft": [5000.0] * 3,
+        }
+    )
+    r = mc.roll_from_parcels(parcels)
+    assert r.at["A", "buildings"] == 1 and pd.isna(r.at["B", "buildings"]) and r.at["C", "buildings"] == 1
+
+
+def _script():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[2] / "scripts" / "dev" / "mm_counts_d082.py"
+    spec = importlib.util.spec_from_file_location("mm_counts_d082", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_franklin_key_maps_columbus_permit_parcels_to_the_ohio_roll():
+    f = _script().franklin_key
+    ids = pd.Series(["010052628", "010-052628", "010-052628-00", "5453005", None])
+    # 9 digits -> 39049 + DDD-DDDDDD; anything else -> missing
+    assert f(ids).tolist()[:3] == ["39049010-052628"] * 3
+    assert f(ids).isna().tolist()[3:] == [True, True]
+
+
+def test_wake_crosswalk_maps_pin10_to_the_reid_parcel_id():
+    cards = pd.DataFrame(
+        {
+            "REAL_ESTATE_ID": ["0046821", "0046821", "0001234"],
+            "Parcel_Identification": ["1714.09 05 9993 000", "1714.09 05 9993 000", "0778.11 88 4160 000"],
+        }
+    )
+    xw = _script().wake_crosswalk([cards])
+    assert xw.to_dict() == {"371830046821": "1714059993", "371830001234": "0778884160"}
+
+
+def test_conversion_buildings_counts_any_type_adding_one_to_three_homes():
+    df = permits(
+        [
+            {"parcel_id": "A", "issue_year": 2020, "building_type_std": "OTHER", "units_new": 1},
+            {"parcel_id": "A", "issue_year": 2020, "building_type_std": "OTHER", "units_new": 1},
+            {"parcel_id": "B", "issue_year": 2021, "units_new": 2},
+            {"parcel_id": "C", "issue_year": 2021, "building_type_std": "OTHER", "units_new": 5},
+            {"parcel_id": "D", "issue_year": 2021, "units_new": 1},
+        ]
+    )
+    themes = pd.Series(["conversion", "conversion", "conversion", "conversion", "mm_2_4"], index=df.index)
+    assert mc.conversion_buildings(df, themes, 2016, 2025) == 2

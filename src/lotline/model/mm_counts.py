@@ -402,7 +402,7 @@ def prior_roll(buildings: pd.DataFrame, rolls: pd.DataFrame, column: str) -> pd.
     vintage).
     """
     out = pd.Series(pd.NA, index=buildings.index, dtype="object")
-    if rolls is None or rolls.empty:
+    if rolls is None or rolls.empty or column not in rolls:
         return out
     refuse_never_read(rolls, "prior_roll")
     r = rolls[["parcel_id", "vintage", column]].copy()
@@ -436,6 +436,7 @@ def source_ratios(
     last_year: int = 2025,
     r56_measured: bool = False,
     window: int | None = None,
+    split_merged: bool = False,
 ) -> pd.DataFrame:
     """D-082 §3 ratios for one source over `first_year` … `last_year`: one row per ratio with its numerator,
     denominator and value (NaN when not measured).
@@ -459,28 +460,41 @@ def source_ratios(
     """
     refuse_never_read(permits, "source_ratios")
     window = int(_p("mm_teardown_demolition_window") if window is None else window)
-    b24 = _in_years(ok(collapse_buildings(permits)), first_year, last_year)
+    b24 = _in_years(ok(collapse_buildings(permits, split_merged=split_merged)), first_year, last_year)
     new = b24.loc[~b24["is_conversion"]]
     cv = b24.loc[b24["is_conversion"]]
     n24 = len(new)
     have_roll = rolls is not None and not rolls.empty
+    # r56 and rTH need single-family zoning on the prior roll; without it they are "not measured" (NaN).
+    have_zoning = have_roll and "sf_only_zoned" in rolls
     rows: list[dict] = []
 
     # r56
     if r56_measured:
         b56 = _in_years(
-            ok(collapse_buildings(permits, types=("U5_6",), min_units=5, max_units=6)), first_year, last_year
+            ok(
+                collapse_buildings(
+                    permits, types=("U5_6",), min_units=5, max_units=6, split_merged=split_merged
+                )
+            ),
+            first_year,
+            last_year,
         )
-        sf = prior_roll(b56, rolls, "sf_only_zoned") if have_roll else pd.Series(pd.NA, index=b56.index)
-        hit = sf.astype("boolean").fillna(False).astype(bool)
-        rows.append(_ratio("r56", int(hit.sum()), n24, unmatched=int(sf.isna().sum())))
+        if have_zoning:
+            sf = prior_roll(b56, rolls, "sf_only_zoned")
+            hit = sf.astype("boolean").fillna(False).astype(bool)
+            rows.append(_ratio("r56", int(hit.sum()), n24, unmatched=int(sf.isna().sum())))
+        else:
+            rows.append(_ratio("r56", None, n24, u56_buildings=int(len(b56))))
     else:
         rows.append(_ratio("r56", None, n24))
 
     # rTH
-    if have_roll:
+    if have_zoning:
         bth = _in_years(
-            ok(collapse_buildings(permits, types=("TH",), check_units=False)), first_year, last_year
+            ok(collapse_buildings(permits, types=("TH",), check_units=False)),
+            first_year,
+            last_year,
         )
         sf = prior_roll(bth, rolls, "sf_only_zoned")
         hit = sf.astype("boolean").fillna(False).astype(bool)
@@ -513,6 +527,60 @@ def source_ratios(
     out = pd.DataFrame(rows)
     out.insert(0, "source", ",".join(sorted(permits["source"].astype(str).unique())) if len(permits) else "")
     return out
+
+
+KEEP_THEMES = frozenset({"mm_2_4", "conversion"})  # D-082 §6: what a 2–4 or conversion count may hold
+
+
+def apply_themes(permits: pd.DataFrame, themes: pd.Series) -> pd.DataFrame:
+    """D-082 §6: a U2/U3_4 row whose shared theme (`build.permit_theme`) is not `mm_2_4` or `conversion`
+    (an ADU filed in a 2-unit class, an alteration adding no home, a demolition) is recoded to
+    `building_type_std` "OTHER", so no 2–4 collapse counts it. Rows are kept, not dropped: a recoded
+    demolition still marks a teardown for s_td. `theme_recoded` says which rows changed.
+
+    By hand: U2 themed adu → OTHER; U2 themed mm_2_4 → U2; U3_4 demolition themed other → OTHER, still
+    `is_demolition`; SFD themed other → SFD (not a 2–4 type, untouched)."""
+    out = permits.copy()
+    mm = out["building_type_std"].isin(list(MM_TYPES))
+    drop = mm & ~themes.reindex(out.index).astype("string").isin(list(KEEP_THEMES)).fillna(False).astype(bool)
+    out.loc[drop, "building_type_std"] = "OTHER"
+    out["theme_recoded"] = drop
+    return out
+
+
+def conversion_buildings(
+    permits: pd.DataFrame, themes: pd.Series, first_year: int, last_year: int, *, max_added: int = 3
+) -> int:
+    """D-082 §3 rCV's broad numerator: permits the shared classifier calls `conversion` (an existing building
+    gaining homes, of **any** `building_type_std`, e.g. Austin class 436 typed OTHER) that add 1 to
+    `max_added` homes, so the result can be a 2–4 unit building. One per parcel × issue year; a permit with
+    no parcel ID is its own.
+
+    By hand: conversion rows on parcel A 2020 (+1) and A 2020 (+1) → 1; B 2021 (+2) → 1; C 2021 (+5) → not
+    counted (too many added); D 2021 (+1) themed mm_2_4 → not a conversion. Total 2."""
+    t = themes.reindex(permits.index).astype("string")
+    yr = pd.to_numeric(permits["issue_year"])
+    add = pd.to_numeric(permits["units_new"])
+    keep = (t == "conversion").fillna(False).astype(bool) & yr.between(first_year, last_year)
+    keep &= add.between(1, max_added).fillna(False).astype(bool)
+    r = permits.loc[keep]
+    pid = r["parcel_id"].astype("string").str.strip().replace("", pd.NA) if "parcel_id" in r else None
+    key = pid.fillna("permit:" + r["permit_id"].astype("string")) if pid is not None else r["permit_id"]
+    return int(pd.DataFrame({"k": key, "y": yr.loc[r.index]}).drop_duplicates().shape[0])
+
+
+def two_unit_adu_share(permits: pd.DataFrame, themes: pd.Series, first_year: int, last_year: int) -> dict:
+    """D-082 §6: among U2 permit rows in the years that add homes (theme `adu` or `mm_2_4`), the share the
+    shared classifier calls ADUs: the part of a BPS-style "2-unit" count that is ADUs in this source.
+
+    By hand: U2 rows themed adu, mm_2_4, mm_2_4, other (alteration) → 1 / 3."""
+    yr = pd.to_numeric(permits["issue_year"])
+    t = themes.reindex(permits.index).astype("string")
+    u2 = (permits["building_type_std"] == "U2") & yr.between(first_year, last_year)
+    adds = u2 & t.isin(["adu", "mm_2_4"]).fillna(False).astype(bool)
+    n_adu = int((adds & (t == "adu").fillna(False).astype(bool)).sum())
+    n = int(adds.sum())
+    return {"u2_adding_rows": n, "u2_adu_rows": n_adu, "adu_share": n_adu / n if n else math.nan}
 
 
 def _ratio(name: str, num: int | None, den: int, **extra: int) -> dict:
@@ -605,7 +673,10 @@ def roll_from_parcels(parcels: pd.DataFrame) -> pd.DataFrame:
         if "units" in p
         else pd.Series(pd.NA, index=p.index, dtype="Float64")
     )
-    one = lu.isin(list(HOUSE_USES | ONE_BUILDING_24_USES)) & (units > 0).fillna(False)
+    # A house-coded parcel with 2+ units (house plus ADU, or a duplex coded as a house) is ambiguous: it is
+    # neither a single dwelling nor surely one 2-4 building, so its building count is NA (run 3 choice).
+    sf_multi = lu.isin(list(HOUSE_USES)) & (units > 1).fillna(False)
+    one = lu.isin(list(HOUSE_USES | ONE_BUILDING_24_USES)) & (units > 0).fillna(False) & ~sf_multi
     vacant = lu.isin(list(VACANT_USES))
     buildings = pd.Series(pd.NA, index=p.index, dtype="Float64")
     buildings[one.astype(bool)] = 1
@@ -619,6 +690,42 @@ def roll_from_parcels(parcels: pd.DataFrame) -> pd.DataFrame:
             "lot_sqft": pd.to_numeric(p["lot_sqft"]).astype("Float64").values,
         },
         index=pd.Index(p["parcel_id"].values, name="parcel_id"),
+    )
+    return out
+
+
+def roll_from_cards(
+    summary: pd.DataFrame,
+    *,
+    vacant_uses: Iterable[str],
+    sqft_per_acre: float = 43_560.0,
+) -> pd.DataFrame:
+    """A dwelling-card roll summary (one row per parcel, indexed by parcel ID: `dwelling_cards`,
+    `dwelling_units`, `acres`, `luc`, `jurisdiction_geoid`; e.g. `franklin_roll_diff.summarize`) → the roll
+    interface `diff_rolls_24` reads.
+
+    - `buildings` = dwelling cards, `units` = dwelling units, `lot_sqft` = acres × 43,560.
+    - A parcel with **no** dwelling card is vacant (0 buildings, 0 units) only if its land-use code is in
+      `vacant_uses` (residential vacant land); otherwise both are NA, so a commercial or exempt parcel with no
+      dwelling is never in the denominator.
+
+    By hand: (1 card, 1 unit, LUC 510) → single; (0 cards, LUC 500, vacant use) → vacant; (0 cards, LUC 400)
+    → NA; (1 card, 2 units) → one 2-unit building; 0.5 acres → 21,780 sq ft."""
+    refuse_never_read(summary.reset_index(names="parcel_id"), "roll_from_cards")
+    cards = pd.to_numeric(summary["dwelling_cards"]).astype("Float64")
+    units = pd.to_numeric(summary["dwelling_units"]).astype("Float64")
+    none = (cards == 0).fillna(False).astype(bool)
+    vacant = none & summary["luc"].astype("string").isin(list(vacant_uses)).fillna(False).astype(bool)
+    cards = cards.mask(none & ~vacant)
+    units = units.mask(none & ~vacant)
+    out = pd.DataFrame(
+        {
+            "jurisdiction_geoid": summary["jurisdiction_geoid"].astype("string"),
+            "units": units,
+            "buildings": cards,
+            "lot_sqft": pd.to_numeric(summary["acres"]).astype("Float64") * sqft_per_acre,
+        },
+        index=pd.Index(summary.index.astype("string"), name="parcel_id"),
     )
     return out
 
