@@ -5307,3 +5307,250 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 
 - **Decided by:** Ben, 2026-11-11 (accepted all six). The proposals were written by Claude Code.
   **Status:** decided. Items 3 and 6 are in progress; nothing is wired yet.
+
+### D-082 · 2026-11-11 · Missing middle: one counting protocol, Oregon in the fit, and accuracy tests (method only, before any count)
+- **Status: Approved by Ben, 2026-11-12 ("Approve D-082"), as written, with the amendments below.** Method only:
+  nothing below has been run or counted. Each run in §9 still needs its own go-ahead.
+  - **Counting choices accepted (2026-11-12, "Yes, start run 1"):** the 13 choices in PR #408 (address
+    fallback to parcel × issue year, missing parcel ID as its own building, unknown units left out, aggregate
+    rows dropped, Wilson 90% interval on k, conversions, townhouses and 5–6, prior roll, s_td, r56 only in
+    Minneapolis, pooling, the roll interface, Ramsey dropped outright).
+  - **Run 1 done (2026-11-12):** `reports/mm-d082/run1-coverage/` (branch `ws/mm-run1-coverage`). As
+    pre-registered, Raleigh, Austin and Bend are strong. The run-1 choices (window from 2013, full years only,
+    per-place windows, Mecklenburg not screened) are listed there for Ben to confirm.
+  - Ben approved the review's sequence on 2026-11-11 ("Let's follow your order";
+    `docs/research/mm-methodology-review-2026-11.md`, #392). This entry is its step 2.
+  - Step 1 runs in parallel. It is second-coder rule checks: `reports/{nc,tx,mn,or}/mm-rule-checks-2026-11.md`.
+    Its outcome decides which events enter, under the rules below; it does not change them.
+  - **Number:** provisional. If another entry takes D-082 first, this one is renumbered on merge, as before.
+- **Why.** Missing middle has not had the November ADU rebuild (D-074 to D-081). The review found five problems:
+  - the adopted fit (D-054 (b), adopted by D-055) rests on six NC events with unverified dates (fold without NC:
+    θ 0.013 against 0.12 per 1,000);
+  - only 13 places and 69 place-years;
+  - a BPS-only outcome that misses 5–6 unit buildings, townhouses and conversions;
+  - a judgment teardown share;
+  - no ADU overlap rule.
+- **What was already looked at, stated now:**
+  - every fit place's BPS series (D-038 to D-059);
+  - Minneapolis, Durham city and Durham County (D-038 to D-059);
+  - Charlotte (V5, released 2026-11-09);
+  - Oregon 2018–2025 BPS 2–4 counts (V9, D-051 and D-055).
+
+  **Not seen:**
+  - any record-level permit count of 2–4 unit buildings;
+  - any roll diff for 2–4 units;
+  - the outcomes of any place that would newly enter;
+  - St. Paul, which stays blind (V5) and is never read.
+
+  The review read the permit and roll tables' column names and vocabularies only.
+
+#### 1. Events and the treated set
+- **Event rule unchanged:** D-042 change 1 (`calibrate_mm.event_year`, `prior_cap`, `retarget`). Each event
+  counts the building classes above the prior cap, and the dose is the increase.
+- **Rows that enter:** only rule rows Ben has accepted after step 1. A place found to have allowed duplexes
+  before its coded date takes `[predates]` and leaves the event set; it is never re-dated by judgment. A place
+  closed as "no usable source" keeps its `[earliest-known]` tag and is in the main fit. The tag sensitivity
+  (`rule_tags.SENSITIVITIES`) is reported with the main result, not as a footnote.
+- **A tag counts only on the row that sets the event.** For this sensitivity, a place is dropped only if the
+  row that creates its event (the first cap rise) carries `[earliest-known]`, `DATE UNCONFIRMED` or a blank
+  adoption date. Today a blank date anywhere drops the place. Oregon's SB 458 land-division rows set no unit cap
+  and have blank adoption dates, so the current reading would drop all of Oregon
+  (`reports/or/mm-rule-checks-2026-11.md`, #397). The change goes in `rule_tags.py` with a synthetic-fixture
+  test before any run.
+- **Oregon joins** (the dated entry D-054 requires). Its places are those with a first cap rise in 2016–2025
+  under the accepted `or.csv` rows. **Disclosed:** Oregon's BPS outcomes were seen in V9, so Oregon is fitted
+  data here, not a test.
+- **Test places** (Minneapolis, Durham city, Durham County) **stay out of the fit**. They are scored as before,
+  so the scores compare with D-054 to D-059.
+- **Holdouts:**
+  - St. Paul and Ramsey are never read;
+  - every Met Council table goes through `holdout.apply`;
+  - Charlotte is released and may be scored, but is not fitted in this entry.
+
+#### 1b. After the step 1 rule checks (2026-11-11; amends §1, still before any count)
+- **What the checks found:**
+  - **MN and OH** (#395): St. Louis Park (effective 2025-03-28) and Euclid (effective 2024-11-06) are confirmed.
+    For Richfield the adoption date is confirmed, but the effective date and the 2010 start are not found.
+  - **NC** (#401): Garner (2022-07-05) and Wilson are real events, but Wilson's covers SR6 only.
+    Wake Forest, Morrisville, Sanford and Burlington allowed duplexes before their coded dates: `[predates]`.
+    Durham city took effect 2019-10-01. Durham County has no usable source, so it keeps 2019-10-28. EHC2 doesn't
+    exist.
+  - **TX** (#398): Lewisville is confirmed (2022-12-01). League City's 2020 UDC is a recodification of an older
+    rule that already allowed duplexes, so it is `[predates]`. Houston's 2023 rule did not raise a cap (3+ units
+    were already legal as multifamily). It added an optional standards route, at most 4 units on local streets.
+    Lubbock's Ch. 40 has no usable source, so Lubbock stays out (D-059).
+  - **OR** (#397): 4 of the 9 rows checked are not as coded (Stayton, Sweet Home, Florence, Scappoose). 108 of
+    111 places have an event under `calibrate_mm.event_year`.
+- **Of the 13 D-054 fit places, 7 remain cap-rise events:** St. Louis Park, Garner, Wilson (SR6 coverage),
+  Euclid, Austin, Lewisville, and Houston as a standards event (below). Five move to always-allowed: Wake Forest,
+  Morrisville, Sanford, Burlington and League City. Lubbock stays out. The NC fold now holds 2 places, and most
+  of the fit's information will come from Oregon.
+- **Ben's decisions** (2026-11-11, in the TX session; `reports/tx/mm-rule-checks-2026-11.md`):
+  - (1) "Keep League City and Houston": places where duplexes have long been legal show what gets built in a
+    healthy market;
+  - (2) include standards reforms like Houston's MUR: making a type feasible counts, not only making it legal.
+
+  Ben confirmed on 2026-11-11 ("Every such place") that (1) applies to every place that turns out `[predates]`
+  in step 1, not to League City alone.
+- **How always-allowed places enter: a new level component (L).** They carry no event and no ramp. They inform
+  the **mature** rate.
+  - **Model.** For place i in year t:
+
+        y_it ~ Poisson(b_it + θ_L · u_i · E_it · d_i · F_i/F(1))
+
+    - d_i is the place's long-standing dose (D-024 formula).
+    - b_it is the no-rule level: the 2–4 rate per eligible parcel in coded "none" places of the same state and
+      size band (D-022 bands), × E_it.
+  - **Comparison pool.** If a state has fewer than 3 such places in a band, the four-state pool is used (D-042's
+    thin-pool rule). The comparison set is fixed from rule rows before any count.
+  - **How it relates to θ.** θ_L is reported beside θ from the event fit (M), with r5 for M. The scenario's θ is
+    M's θ. Joining them, with θ_L as a prior on M's mature level, is challenger C4, under §5's rule.
+  - **Why separate.** A long-allowed place's level mixes the rule's effect with why the place allowed duplexes
+    in the first place. Selection like that biases θ_L upward. It is reported as an upper check, not fitted into
+    the main θ unless C4 wins.
+- **How standards events enter: dose class "S".** A standards event (Houston MUR) is an event whose cap does
+  not rise but whose by-right route gets cheaper or simpler.
+  - Its dose increase is 1/3, the approval-grade step of D-024 (permit or conditional → by right): the closest
+    coded analogue to "made feasible".
+  - Its outcome classes are those the standards route covers (Houston: 3–4 unit buildings, since MUR's local-
+    street cap is 4).
+  - Sensitivities: S events left out, and S dose 1.
+- **Durham city** uses 2019-10-01. **Richfield** stays out (no cap rise, and its effective date is unresolved).
+- **The tag sensitivity** (above) is re-run on the corrected rows. Rows Ben accepts go into `config/reforms/*.csv`
+  in their own PR before any count.
+
+#### 2. Outcomes: BPS everywhere, permit counts where strong
+- **BPS stays the outcome for every place** (`units_2 + units_3_4` buildings, D-038).
+- **Permit counts, the main addition.** A source becomes "strong" if all four hold:
+  - it has a numeric unit count;
+  - a parcel ID is filled on at least 85% of rows;
+  - it covers at least 3 years before the place's event;
+  - it passes the coverage screen below.
+
+  The candidates are Minneapolis, Mecklenburg, Raleigh, Durham, Columbus, Cincinnati, Austin, College Station,
+  Portland, Bend and Medford (review §2).
+  - **Building collapse:** one building = one parcel × one issue year × one street address with
+    `building_type_std` in {U2, U3_4}, units summed across the permits. A unit sum outside 2–4 after collapsing is
+    reported and left out. A hand check of 30 collapsed buildings per source, on a pre-committed seed, gives the
+    collapse error.
+  - **Coverage screen and k:** k_src = permit buildings ÷ BPS buildings, over the same area and the years before
+    the source's events. The source enters if 0.8 ≤ k_src ≤ 1.25 (D-072's screen with an upper bound, since
+    permits can include conversions). k_src is kept per source and never pooled (D-078).
+  - **Use in the fit.** A permit place is fitted on its BPS outcome, as everywhere else. The permit counts are
+    used for three things:
+    - (a) the measured ratios (§3);
+    - (b) test B;
+    - (c) challenger 2 (§5).
+
+    No place switches outcome inside the main fit, so its baseline and outcome stay in one measurement.
+- **Rolls for test B:**
+  - Wake (2019-11 → 2023-12);
+  - Franklin (2016 → 2025);
+  - Minneapolis (2017 → 2026);
+  - Met Council (2021 → 2025, holdout-filtered).
+
+  A lot "gains a 2–4 building" if it was a single dwelling (or vacant) in the first roll and holds 2–4 units in
+  one building in the second. Merges (acreage up more than 20%) and splits (a parcel ID retired) are reported
+  and left out, as in `wake_roll_diff.py` §1. The rule is committed in code with a synthetic-fixture test before
+  any diff is run.
+- **Parser sources** (Wilmington, Asheville, Cleveland, San Antonio) are not used.
+- **Rochester** is used only if its offline rebuild works (`rochester_permits.py:168-200`).
+
+#### 3. Target: measured ratios for what BPS can't see
+In the strong permit places, over 2016–2025, each ratio is measured against new 2–4 unit buildings (the
+denominator):
+- **r56** = 5–6 unit buildings on single-family-zoned parcels (U5_6, Minneapolis only; elsewhere not measured,
+  stated);
+- **rTH** = townhouse buildings on parcels that were single-family-zoned in the prior roll (TH plus the parcel
+  join);
+- **rCV** = conversions to 2–4 units (`is_conversion`, Austin class 436);
+- **s_td** = the share of new 2–4 unit buildings whose parcel held a house in the prior roll, or had a
+  demolition permit within ±2 years. It replaces the judgment `mm_teardown_share_scale` × house share.
+
+Each ratio is pooled across sources as a building-weighted mean. Its range is the lowest and highest source ratio
+on at least 50 buildings. The scenario uses them as `homes = buildings × homes per building × (1 + r56·h56/h24
++ rTH + rCV) − teardowns`, with the h ratios measured the same way. All four are reported with and without
+the uplift. The headline stays "2–4 only" unless Ben adopts the uplift in a separate config PR.
+
+#### 4. Denominator
+- Places whose ratios come from permits take `eligible.permit_level` (#375, D-080 §1). BPS-fitted places keep
+  the BPS remainder.
+- 37119 and the 23 changed remainders are checked for missing-middle lots, as D-080 did. The scenario's lot
+  levels are reported before and after.
+- **Vacant and built lots:** in the parcel-joined places, the hazard on vacant and built eligible lots is
+  estimated separately (the D-038 check 6 never done). A weight enters the scenario only if the two differ by
+  more than 2 SE.
+- **Lot size:** the same comparison by eligible-lot-size tercile is reported. A `min_lot_sqft_missing_middle`
+  range sourced from the coded rules' own minimum lots is a sensitivity, not a draw.
+
+#### 5. Model and challengers
+- **Main (M):** D-054 (b), with D-058's zero floor (the D-059 (b′) specification) on the five-state fit set of
+  §1. Likelihood, ramp grid, slope 0.75, σ 0.5 and margin are unchanged, and r5 is reported (D-062).
+- **Challenger 1 (C1), Oregon tiers:** for Oregon places, the growth index g comes from Oregon places with no
+  cap rise yet in that year (not-yet-treated medium and large cities, and places under the threshold), as D-042's
+  comparison baseline but restricted to one state and one law. Other states keep M's baseline.
+- **Challenger 2 (C2), within-city lots:** in parcel-joined permit cities with zoning on the roll (Raleigh R-1
+  against other zones; Durham urban against suburban tier; Austin SF-1/2 against SF-3; Mecklenburg, Portland,
+  Bend), the counterfactual is the city's own ineligible single-family lots in the same year (a triple
+  difference). Its estimate is reported beside θ as a check on the mechanism. It replaces nothing on its own.
+- **Challenger 3 (C3), conditional place effect:** u_i's gamma prior is shifted by the place's own pre-reform
+  2–4 pace from BPS, ln E[u_i] = c × z_i with z_i as in D-042. That uses tier-0 data every state has, and its
+  target is V9's too-narrow place ranges.
+- **Challenger 4 (C4), level prior:** M with θ_L from §1b as a lognormal prior on M's mature level (its log-SD
+  from θ_L's profile interval, doubled for selection).
+- **Choosing.** A challenger replaces M only if both hold:
+  - its held-out log score beats M's by more than 2 paired SE (leave one state out, as D-054);
+  - it passes no fewer of tests A–C (§7).
+
+  Otherwise M stays, and the challengers are reported.
+
+#### 6. ADU overlap in the counts
+Before any permit count, one shared permit-to-theme classifier assigns each permit to exactly one of ADU, 2–4
+building, conversion or other. It has synthetic-fixture tests covering Austin's post-HOME two-family ADUs and
+Rochester's code 103. Both the ADU and the MM counts use it. Where it touches the shared permit schema, a
+`contract-change` issue goes to WS-CORE first. The measured share of "2-unit" BPS buildings that the classifier
+calls ADUs in permit places is reported as a correction for BPS places, not applied in the main fit. Stacking in
+`combine.py` is not in this entry.
+
+#### 7. Accuracy tests (pass rules fixed now)
+| Test | What | Pass |
+|---|---|---|
+| A, new places | Each newly entering non-Oregon place (from step 1 or method changes), predicted from a fit that leaves it out, over its post-years | ≥ 60% of places inside P10–P90; median observed ÷ P50 within ×2 |
+| B, roll check | Wake towns (Raleigh shown separately), Franklin and Minneapolis: predicted lots gaining a 2–4 building against the §2 roll diff | each area's total inside P10–P90 |
+| C, no-reform floor | Coded "none" places (MN 3, TX about 30) and Franklin County: M's no-reform forecast against observed 2–4 buildings, 2021–25 | ≥ 70% of places inside P10–P90; no state total missed |
+| Placebo | events moved 3 years early, pre-years only | 90% upper bound of r5 below the main r5 |
+| Leave one state out | five states, D-054's scores and D-040 verdicts | no state with 3 or more fit places missed |
+| Data tier | tier 0 (BPS history + ACS + θ), tier 1 (+ coded rules), tier 2 (+ one city's permit counts, left out of the target) | passes in ≥ 4 of 5 held-out states at the tier claimed |
+| Place coverage | randomized P10–P90 coverage of place totals in every test | reported; 0.6–0.95 is the target, and outside it is flagged before any freeze |
+
+#### 8. Uncertainty carried into the scenario
+- **Drawn:**
+  - r5 (θ at the fitted ramp);
+  - α, or C3's c if adopted;
+  - homes per building;
+  - s_td;
+  - r56, rTH and rCV, if adopted;
+  - k_src where permit counts enter a result.
+- **Sensitivities only:** σ, a slow ramp for years 6 and later, the vacant weight, the lot-size floor, and
+  2–4 only against the uplift.
+
+#### 9. Code, runs and what follows
+- **Code** (with hand-worked tests on synthetic fixtures):
+  - building collapse and the roll-diff rule in `src/lotline/build/` or a new `model/mm_counts.py`;
+  - challengers in `calibrate_mm.py`;
+  - the classifier where WS-CORE places it.
+- **Each run** needs Ben's go-ahead after its code is pushed. Order:
+  1. coverage screen and k;
+  2. ratios;
+  3. roll diffs;
+  4. the joint refit with challengers;
+  5. the tests;
+  6. a results page.
+- **Config:** nothing is written to `mm_hazard.yaml` or `mm.yaml` here. The values go in their own PR, only with
+  Ben's approval.
+- **Offline:** every count is rebuilt with `lotline fetch --offline` from the cached snapshots. No new download
+  is made.
+- **Decided by:** Ben, 2026-11-12 ("Approve D-082"). Proposed by the WS-MM-REVIEW session, 2026-11-11.
+- **Deviation from the review:** the review suggested Oregon's tiers (C1) as the main design. Here M stays main,
+  because the main model must apply to every place, BPS-only ones included. C1 is the first challenger and can
+  replace M under §5's rule.
