@@ -184,8 +184,10 @@ class EmpData:
     lfact: float
 
     @classmethod
-    def of(cls, places: list[cal.PlaceData]) -> EmpData:
-        xs, offs = zip(*(design(pl) for pl in places), strict=True)
+    def of(cls, places: list[cal.PlaceData], design_fn=None) -> EmpData:
+        """`design_fn` (default `design`) maps a place to (X, offset); D-079's Form B adds dose columns."""
+        design_fn = design if design_fn is None else design_fn
+        xs, offs = zip(*(design_fn(pl) for pl in places), strict=True)
         y = np.concatenate([pl.y for pl in places])
         starts = np.cumsum([0] + [len(pl.y) for pl in places[:-1]])
         return cls(y, np.vstack(xs), np.concatenate(offs), starts, float(cal._lgamma(y + 1).sum()))
@@ -265,13 +267,13 @@ class EmpFit:
     n_places: int
 
 
-def fit_empirical(places: list[cal.PlaceData], starts: int = 5, seed: int = 47) -> EmpFit:
+def fit_empirical(places: list[cal.PlaceData], starts: int = 5, seed: int = 47, design_fn=None) -> EmpFit:
     """Maximum likelihood by Nelder-Mead, best of `starts` starts (the first at the overall rate, α = 1; the
     rest perturbed, sd 0.5), each run three times from its own end; covariance from the observed information.
 
     A covariate with no variation in `places` (other than the intercept) is not identified: it is held at 0
-    with no variance (D-047 amendment, before the run)."""
-    d = EmpData.of(places)
+    with no variance (D-047 amendment, before the run). `design_fn` as `EmpData.of`."""
+    d = EmpData.of(places, design_fn)
     k = d.x.shape[1]
     free = np.r_[True, d.x[:, 1:].std(axis=0) > 1e-9, True]  # coefficients, then log α
     rate = math.log(d.y.sum() / np.exp(d.off).sum())
@@ -305,7 +307,9 @@ def fit_empirical(places: list[cal.PlaceData], starts: int = 5, seed: int = 47) 
     return EmpFit(z[:-1], math.exp(z[-1]), cov, -v, len(places))
 
 
-def predict_empirical(places: list[cal.PlaceData], fit: EmpFit, draws: int = 20_000, seed: int = 0) -> dict:
+def predict_empirical(
+    places: list[cal.PlaceData], fit: EmpFit, draws: int = 20_000, seed: int = 0, design_fn=None
+) -> dict:
     """Joint predictive counts {geoid: draws × years}: coefficients drawn once per draw from N(β̂, cov) and
     shared by every place; a gamma place effect per place from a stream keyed by (seed, geoid), as
     `cal.predict_places`."""
@@ -314,7 +318,7 @@ def predict_empirical(places: list[cal.PlaceData], fit: EmpFit, draws: int = 20_
     betas = rng.multivariate_normal(fit.beta, fit.cov[:k, :k], size=draws)
     out = {}
     for pl in places:
-        x, off = design(pl)
+        x, off = (design if design_fn is None else design_fn)(pl)
         r = np.random.default_rng([seed, zlib.crc32(pl.geoid.encode())])
         u = r.gamma(1 / fit.alpha, fit.alpha, size=draws) if fit.alpha > 0 else np.ones(draws)
         eta = np.clip(off[None, :] + betas @ x.T, None, 30)

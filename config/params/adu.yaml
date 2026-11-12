@@ -146,6 +146,7 @@ adu_transport_widening:
 # quantiles. kind: field (a city's own ADU field; one shared draw for every field row), parser (text rules;
 # its own draw), floor (k = 1, the count is a lower bound), none (no k is applied; D-078 §4). A field row with
 # `prior: true` takes the prior below; a parser row with no value has no hand check yet and keeps k = 1.
+# `fit: false` keeps a source's counts out of the ADU fit and its tests (calibrate_adu.place_years); its k is 1.
 adu_flag_undercount:
   table: true
   unit: ratio of true ADU permits to counted ADU permits (field rows k >= 1; parser rows k = precision / recall, D-081)
@@ -310,7 +311,7 @@ adu_flag_undercount:
     - {source: cary_permits, place: Cary (NC), kind: parser, report: reports/nc/cary-adu-scout.md, notes: "Most ADUs named only in the description; D-074 lets the Wake-roll match set Cary's k later"}
     - {source: rochester_permits, place: Rochester (MN), kind: parser, report: src/lotline/adapters/states/mn/rochester_permits.py, notes: "No measured recall in D-078"}
     - {source: montgomery_permits, place: Dayton and Montgomery County (OH), kind: parser, report: src/lotline/adapters/states/oh/montgomery_permits.py, notes: "No measured recall in D-078"}
-    - {source: dallas_permits, place: Dallas (TX), kind: parser, report: reports/tx/parser-handcheck-2026-11-11b.md, notes: "D-081 item 4: no k and out of the fit. Only 6 true ADUs in the table (parser finds 5), too few for a recall estimate. The joint refit's entry removes it from the fit set; until then it is k = 1"}
+    - {source: dallas_permits, place: Dallas (TX), kind: parser, fit: false, report: reports/tx/parser-handcheck-2026-11-11b.md, notes: "D-081 item 4: no k and out of the fit (fit: false keeps its counts out of calibrate_adu.place_years, so out of the joint refit and its tests). Only 6 true ADUs in the table (parser finds 5), too few for a recall estimate. It still counts toward the scenario's observed floor at k = 1"}
     # -- floor and no-k sources --
     - source: metc_residential_permits
       place: Met Council suburbs (MN)

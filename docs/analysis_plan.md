@@ -5167,6 +5167,73 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (D-075 §6), and D-072's two-step zone model (#354, proposed), which is a separate proposal. If D-072 is
   accepted first, this entry's tests apply to it as a third form, with the same rule.
 - **Decided by:** Ben, 2026-11-11 ("Accept as made"). Proposed by Claude Code.
+- **Built (2026-11-11, PR `ws/adu-joint-refit-prep`, before any fit).** Code: `lotline.model.joint_refit` and
+  `scripts/dev/adu_joint_refit.py`. Nothing was fitted or scored. The fit set and the event list below come from
+  `--inputs-only`, which fits nothing. Choices made in building, for Ben to confirm in the PR:
+  - **Fit set: 64 places, 395 place-years** (MN 43, NC 13, OH 1, TX 3, OR 4). That is D-053's 53 places plus 11
+    new ones: Rochester, Asheville, Cary, Chapel Hill, Charlotte, Durham, Raleigh, Wilmington, College Station,
+    Medford and Salem. Each new place has 1,000+ permits in one record-level source (D-074 step 2).
+    - Austin keeps 2016-2023 and San Antonio 2021-2025, the years their permit files cover, as in D-039 to D-053.
+    - Fort Worth, Dallas, Columbus and Cleveland have only "no ADUs" rules in the window, so Form A has no
+      expected count for them and they cannot enter. Dayton's and the Franklin County towns' permit files hold
+      fewer than 1,000 permits each.
+    - Written to `reports/adu-joint-refit-2026-11/fit_set.csv`.
+  - **Events: 5 in 2 states**, so under the rule above **g and g_m are held at 0**, and Form B is approach 3.
+    - Inver Grove Heights 2019, Minneapolis 2021, Charlotte 2023, Raleigh 2021 and Wilmington 2024.
+    - Built by code from the coded rows. They are written to `reports/adu-joint-refit-2026-11/events.csv`
+      before any fit.
+    - Of D-079's other expected examples, none qualify. Winston-Salem has no counts, and Greensboro has no fit
+      year before 2024. Bend's dose is 1 from 2016, so the 2018 state law does not change it. San Antonio's
+      2023 change and Wilmington's 2021 change leave the D-023 grade where it was (2/3 and 0.82 averaged over
+      blank fields). Wilmington's step comes in 2024 instead.
+  - **Inputs checked against D-074 to D-081.**
+    - Central k in the fit (#400's table) and k redrawn in the scenario floor (`observed_rate_draws`).
+    - Permit-level county remainders (#375).
+    - 37119 on its parcel roll (D-080 item 1; `_swap_rows` leaves a roll-based remainder alone).
+    - Legalizations out of the counts (D-080 item 2; the parser since #376).
+  - **Two fixes.**
+    - (1) **Dallas leaves the fit.** `adu_flag_undercount` rows take `fit: false`, and `place_years` drops those
+      sources (D-081 item 4).
+    - (2) **`place_years` stored `int(count)`.** That cut each k-scaled count down (a count of 1 at
+      Cincinnati's k 0.78 became 0; 3 at k 1.07 became 3), which undid k on small counts. Counts now stay
+      fractional, as D-078 says.
+  - **Tiers.**
+    - **Tier 0.**
+      - Local rules are borrowed each year from the other four states' coded local rules (D-068's band
+        means). They enter as 40 equally weighted rule combinations whose mix matches the band.
+      - The held-out state's own ADU law rows are kept: Oregon's SB 1051 and HB 2001 rows city by city. NC's
+        S.L. 2026-59 starts in 2027, after the window.
+      - Eligible lots come from ACS (`eligible.from_acs`).
+      - Form A's τ is drawn from the four-state profile likelihood, D-044's method.
+      - Form B's s is the SD of the four fitted states' intercept shifts. Each shift is the one-dimensional
+        maximum with the other coefficients held.
+      - A borrowed rule carries only its type, so Form B reads its dose from the type: owner 2/3, other 1/3,
+        Handbook 1.
+    - **Tier 1** uses the place's own coded local rules if it is among the state's 20 largest by eligible lots.
+    - **Tier 2.** The city is the state's largest fit place by eligible lots: Minneapolis, Charlotte, Cincinnati,
+      San Antonio and Portland. Its counts through 2024 reweight the shared draws (θ and v, or β and δ), which
+      are then resampled.
+  - **Ohio cannot be scored in the data-tier test.** Its one fit place, Cincinnati, is the tier-2 city.
+    - It counts as not passing.
+    - So the claim rule (4 of 5) needs all four other states. This follows the rule as written and is stated
+      before any score.
+  - **Test B** reads `config/validation/adu_roll_counts.csv`, copied from the Wake and Franklin roll reports.
+    - It covers the Wake towns other than Raleigh, 2020-2023, and the Franklin County towns, 2020-2024.
+    - Only places with an accepted ADU rule in force count. Each is predicted with a new place effect.
+    - Cary is also a fit place, and the table marks it.
+  - **Test C** runs the scenario engine with Form A's refit θ, α, m_o and m_x, held in every draw, at origin
+    2025. Form B has no scenario engine. So C is reported for Form A and left out of both forms' counts in the
+    decision rule.
+  - **Scores.**
+    - The log score of a total is the smoothed share of draws at the rounded observed total. k-scaled counts
+      are not whole numbers.
+    - The held-out log score per place averages over the shared draws.
+    - 20,000 draws, seed 20261111.
+  - **Sensitivities.**
+    - Field k at its 5th and 95th percentiles (tiers only).
+    - Without the low-recall rows (Asheville before 2022; Austin's inferred rule has no counts in the table):
+      tiers and tests A and B.
+    - Fort Worth's no-kitchen count, reported beside its central count. It is not in the fit.
 
 ### D-080 · 2026-11-11 · ADUs: the 37119 lot count from the parcel roll, and legalized existing units left out of fitted counts
 - **Why:** the five-state rebuild (`reports/adu-rebuild-2026-11-11.md`, #381) raised two questions for Ben
