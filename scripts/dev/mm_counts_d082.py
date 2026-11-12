@@ -198,6 +198,18 @@ def coverage(store: DataStore, out) -> pd.DataFrame:
                             n_b = mc.bps_buildings_24(bps, [g], [yr])
                             by_year.append({"state": state, "source": place, "geoid": g, "year": yr,
                                             "permit_buildings": n_p, "bps_buildings": n_b})  # fmt: skip
+            # Sensitivity, not the entry rule: a collapsed "building" summing to 5+ units is likely several
+            # 2-4 buildings on one parcel in one year (no address to tell them apart, #406). Count it as
+            # ceil(u / 4) (fewest) to floor(u / 2) (most) buildings and recompute k.
+            multi = bld.loc[(bld["status"] == "units_out_of_range") & (bld["units"] >= 5)]
+            for side, f in (("lo", lambda u: -(-u // 4)), ("hi", lambda u: u // 2)):
+                extra = 0
+                for g, (a, b_) in {g: (max(y0, WINDOW_FIRST), min(y1, ev[g] - 1) if g in ev else y1)
+                                   for g in area}.items():  # fmt: skip
+                    m = multi.loc[(multi["jurisdiction_geoid"] == g) & multi["issue_year"].between(a, b_)]
+                    extra += int(sum(f(int(u)) for u in m["units"]))
+                n_b = res["bps_buildings"]
+                res[f"split_{side}_k"] = (res["permit_buildings"] + extra) / n_b if n_b else float("nan")
             strong = mc.strong_source(df, {"enters": res["enters"]}, first_event_year=first_event or (y1 + 1))
             rows.append(
                 base
