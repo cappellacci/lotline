@@ -5242,7 +5242,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   **Status:** decided. Items 3 and 6 are in progress; nothing is wired yet.
 
 ### D-082 · 2026-11-11 · Missing middle: one counting protocol, Oregon in the fit, and accuracy tests (method only, before any count)
-- **Status: Proposed, for Ben's review.** Nothing below has been run or counted.
+- **Status: Approved by Ben, 2026-11-12 ("Approve D-082"), as written, with the amendments below.** Method only:
+  nothing below has been run or counted. Each run in §9 still needs its own go-ahead.
   - Ben approved the review's sequence on 2026-11-11 ("Let's follow your order";
     `docs/research/mm-methodology-review-2026-11.md`, #392). This entry is its step 2.
   - Step 1 runs in parallel. It is second-coder rule checks: `reports/{nc,tx,mn,or}/mm-rule-checks-2026-11.md`.
@@ -5475,7 +5476,7 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   Ben's approval.
 - **Offline:** every count is rebuilt with `lotline fetch --offline` from the cached snapshots. No new download
   is made.
-- **Decided by:** proposed by the WS-MM-REVIEW session, 2026-11-11, for Ben.
+- **Decided by:** Ben, 2026-11-12 ("Approve D-082"). Proposed by the WS-MM-REVIEW session, 2026-11-11.
 - **Deviation from the review:** the review suggested Oregon's tiers (C1) as the main design. Here M stays main,
   because the main model must apply to every place, BPS-only ones included. C1 is the first challenger and can
   replace M under §5's rule.
