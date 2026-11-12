@@ -257,3 +257,81 @@ def test_adu_panel_tag_sensitivities(adu_rules):
     assert p.excluded_by_tags == [EK] and EK not in set(p.data["place"])
     p = estimate_adu.build_panel("MN", store(), years=PANEL, geoids=PLACES, drop_tags=["unconfirmed"])
     assert p.excluded_by_tags == [UNCONF] and set(p.data["place"]) == set(PLACES) - {UNCONF}
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-082 §1 (proposed): tags count only on the event-setting row
+# ---------------------------------------------------------------------------------------------------------
+
+EVENTS = range(2013, 2026)  # D-042's event window
+
+
+def _oregon_city(geoid, cap_row_adopted="2021-07-01", cap_notes=""):
+    """A dated (or not) cap-4 row and a blank-dated, capless SB 458 land-division row (as or.csv)."""
+    return [
+        row(geoid, "missing_middle", "2021-08-01", cap_notes, adopted=cap_row_adopted, unit_cap=4),
+        row(geoid, "missing_middle", "2022-06-30", adopted=None, lot_split=True,
+            reform_id=f"OR-{geoid}-missing_middle-2022-landdiv"),
+    ]  # fmt: skip
+
+
+def test_cap_in_force_and_event_setting_rows_by_hand():
+    r = reforms(
+        row("1", "missing_middle", "2010-01-01", "[predates]", unit_cap=2),
+        row("1", "missing_middle", "2021-08-01", unit_cap=4, reform_id="cap4"),
+        row("1", "missing_middle", "2022-06-30", adopted=None, reform_id="landdiv"),
+    )
+    r = rule_tags.apply(r)
+    assert rule_tags.cap_in_force(r, 2021) == 2  # the cap-4 row starts after 1 July 2021
+    assert rule_tags.cap_in_force(r, 2022) == 4
+    assert rule_tags.event_setting_rows(r, EVENTS) == [1]  # the cap-4 row, never the capless one
+    assert rule_tags.cap_in_force(r, 2022, {"cap4": 0.3}) == 1  # under half the parcels: not counted
+    assert rule_tags.event_setting_rows(r.iloc[[0, 2]], EVENTS) == []  # the cap never rises
+
+
+def test_event_setting_row_rule_keeps_oregon_land_division_places():
+    r = reforms(
+        *_oregon_city("1"),  # dated cap row, blank-dated land division -> kept under D-082
+        *_oregon_city("2", cap_row_adopted=None),  # the cap row itself is blank-dated -> dropped
+        *_oregon_city("3", cap_notes="DATE UNCONFIRMED"),
+        *_oregon_city("4", cap_notes="[earliest-known] earliest source"),
+    )
+    old = rule_tags.dropped_places(r, PANEL, ["earliest_known"])
+    assert old == {"1", "2", "3", "4"}  # the D-024 reading: a blank date anywhere drops every place
+    new = rule_tags.dropped_places(r, EVENTS, ["earliest_known"], rule="event_setting_row")
+    assert new == {"2", "4"}
+    assert rule_tags.dropped_places(r, EVENTS, ["unconfirmed"], rule="event_setting_row") == {"3"}
+    assert rule_tags.dropped_places(r, EVENTS, [], rule="event_setting_row") == set()
+    with pytest.raises(ValueError, match="unknown drop rule"):
+        rule_tags.dropped_places(r, EVENTS, ["unconfirmed"], rule="first")
+
+
+def test_event_setting_row_ignores_tags_on_the_prior_rule():
+    # A tag on the row in force before the event doesn't drop the place; on the event row it does
+    r = reforms(
+        row("1", "missing_middle", "2016-03-01", "[earliest-known]", unit_cap=2, reform_id="a"),
+        row("1", "missing_middle", "2021-08-01", unit_cap=4, reform_id="b"),
+    )
+    # first rise is 2016 (1 -> 2), set by the tagged row, so the place is dropped
+    assert rule_tags.dropped_places(r, EVENTS, ["earliest_known"], rule="event_setting_row") == {"1"}
+    # with the cap-2 row before the window, the first in-window rise is 2022, set by the firm row
+    assert (
+        rule_tags.dropped_places(r, range(2017, 2026), ["earliest_known"], rule="event_setting_row") == set()
+    )
+
+
+def test_standards_flag_always_allowed_and_none_places():
+    r = reforms(
+        row("1", "missing_middle", "2023-11-27", "[standards] MUR route", unit_cap=4),
+        row("2", "missing_middle", "2021-03-01", "[predates] older code", unit_cap=2),
+        row("3", "missing_middle", "2010-01-01", "[earliest-known] placeholder", unit_cap=3),
+        row("4", "missing_middle", "2010-01-01", "[predates]", unit_cap=1),
+        row("5", "missing_middle", "2021-03-01", unit_cap=4),
+        row("6", "missing_middle", "2015-01-01", unit_cap=1),
+        row("7", "missing_middle", "2015-01-01", unit_cap=1),
+        row("7", "missing_middle", "2022-01-01", unit_cap=2),
+        row("8", "missing_middle", "2015-01-01"),  # blank cap
+    )
+    assert rule_tags.flags(r)["standards"].tolist() == [True] + [False] * 8
+    assert rule_tags.always_allowed_places(r) == {"2", "3"}
+    assert rule_tags.none_places(r) == {"4", "6"}
