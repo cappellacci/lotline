@@ -12,7 +12,8 @@ What it scores, for M and challengers C1, C3 and C4:
 - **Leave one state out:** each held-out state's fit places are predicted from run 4's
   `<model>_without_<state>` fit (`fits.csv`), with joint draws (`calibrate_mm.predict_places`), and get
   D-040's verdict.
-- **Test A, new places:** non-Oregon fit places that were not in D-059's fit set, each predicted over its
+- **Test A, new places:** non-Oregon fit places that were not in D-059's fit set or whose event changed
+  (year, or the standards class S), each predicted over its
   post-years (5-year horizon) from the fit that leaves its whole state out. That is stricter than leaving out
   one place, and it needs no new fit.
 - **Test C, no-reform floor:** coded "none" places and Franklin County places with no event and zero dose
@@ -58,7 +59,7 @@ d054, d042 = d082.d054, d082.d042
 MODELS = ("M", "C1", "C3", "C4")
 DRAWS, SEED = 20_000, 20261112
 FRANKLIN = "39049"
-D059_FIT = Path("reports/mm-d059/summary.json")
+D059_SCORES = Path("reports/mm-d059/place_scores.csv")
 
 
 def fold_fits(run4: Path) -> dict[str, dict]:
@@ -112,9 +113,24 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
 
     pits = {k: [] for k in MODELS}
     # ---- leave one state out + test A (fold = without the place's state) ----
-    d059 = json.loads(D059_FIT.read_text())["fit_set"]
-    d059_names = {n for v in d059.values() for n in v}
-    new_ids = [g for g in fit_ids if state_of[g] != "OR" and name_of[g] not in d059_names]
+    # "Newly entering" (§7 A: from step 1 or method changes): a non-Oregon fit place that was not in D-059's
+    # fit set, or whose D-082 event differs from D-059's (another year, or the standards class S).
+    d059 = pd.read_csv(D059_SCORES, dtype={"geoid": str})
+    d059_T = dict(
+        zip(d059.loc[~d059["test_place"], "geoid"], d059.loc[~d059["test_place"], "T"], strict=True)
+    )
+    new_ids = [g for g in fit_ids if state_of[g] != "OR"
+               and (g not in d059_T or int(d059_T[g]) != int(fit_events[g].year)
+                    or fit_events[g].dose_class == "S")]  # fmt: skip
+
+    def why(g):
+        if g not in d059_T:
+            return "not in D-059"
+        e = fit_events[g]
+        return f"D-059 T {int(d059_T[g])} -> D-082 {e.year} {e.dose_class}"
+
+    new_why = {name_of[g]: why(g) for g in new_ids}
+    same = {name_of[g]: fit_events[g].year for g in fit_ids if state_of[g] != "OR" and g not in new_ids}
     loso_rows, a_rows = [], []
     for s in d082.STATES:
         held = [g for g in fit_ids if state_of[g] == s]
@@ -211,7 +227,8 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
         "placebo": placebo,
         "tests_passed": passed,
         "selection": {"chosen": sel["chosen"], "table": sel["table"].to_dict("records")},
-        "new_places_test_a": [name_of[g] for g in new_ids],
+        "new_places_test_a": new_why,
+        "unchanged_non_oregon_places": same,
         "test_c_places": len(c_df),
         "data_tier": "not run (see README)",
         "seed": SEED,
