@@ -5307,3 +5307,34 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 
 - **Decided by:** Ben, 2026-11-11 (accepted all six). The proposals were written by Claude Code.
   **Status:** decided. Items 3 and 6 are in progress; nothing is wired yet.
+
+### D-082 · 2026-11-12 · ADUs: the observed floor uses 3 years, the same window as test C (deviation from D-070; written after the D-079 refit's test C was read)
+- **Why:** the D-079 refit (`reports/adu-joint-refit-2026-11`, PR #411) failed D-074 test C in all five states,
+  with 43 of 73 counted places below 1. The engine's floor and the test compared different windows:
+  - the floor was the mean of the **4** years ending at the origin (`adu_observed_years`, D-070), 2022–2025;
+  - test C, and the `historical_floor` check (`historical_floor_years`), use the **3** years 2023–2025.
+  - Wherever 2022 was a slow year, the 4-year mean sat below the 3-year mean. Places with no ADUs in 2022 read
+    exactly 0.75.
+  - With the windows matched (a read of the counts, no model run), 41 of the 43 failures go away; the
+    engine's no-reform median equals its floor in nearly every counted place.
+- **Change:** `adu_observed_years` 4 → 3. The floor is now the mean of the 3 years ending at the data origin.
+  Held-out windows end the year before the holdout as before (Charlotte and 37119: 2020–2022; St. Paul:
+  2021–2023). Nothing else changes.
+- **Side effects, stated before any rerun:**
+  - Origin-2022 backtests read 2020–2022 rather than D-019's 2019–2022.
+  - Austin's floor falls further (2023–25: 275, 102, 10 a year counted) because HOME moved ADUs to other
+    permit types (D-070's TX caveat). The fix is loading the inferred HOME counts, a separate follow-up.
+- **Test C re-scored** with the refit's Form A values (θ 0.756 per 1,000, α 1.92, m_o 1.0, m_x 0.4), 2,000
+  draws, offline:
+  - 42 of 73 places are still below 1, but every shortfall is under 1% (worst: Tonka Bay 0.991, Medford
+    0.993). The no-reform median now tracks the floor; the remaining gap comes from the floor being a rate
+    on a pool of lots that shrinks each year, and from the undercount k draws.
+  - Under D-074's strict rule (every ratio ≥ 1) test C passes in Texas only and still fails in MN, NC, OH and
+    OR. How to treat the sub-1% gap is put to Ben in the PR; this entry does not change the pass rule.
+- **What this does not change:** the D-079 refit and its decision (Form A kept, no tier passes). The floor
+  enters only the scenario engine, not the fit or the data-tier scores.
+- **Finding, reported:** in nearly every counted place the baseline is set by the floor, not by the model's
+  own rate (c × h_m), which sits below what these places build. That is the same under-prediction the data-tier
+  test found.
+- **Decided by:** Ben, 2026-11-12 ("Yes, use 3 years"), from options proposed by Claude Code.
+  **Status:** decided; wired in this entry's PR.

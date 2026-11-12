@@ -26,12 +26,12 @@ adu_owner_occupancy_share:
   notes: "Owner-occupancy rules show no measurable effect on permitted ADUs in these places (most ADUs are built by owner-occupants: Portland 62% cash, C22, E045)."
 
 adu_observed_years:
-  value: 4
-  low: 4
-  high: 4
+  value: 3
+  low: 3
+  high: 3
   unit: years (ending at the data origin)
-  source: "WS-NC-GUTCHECK (2026-11-09; analysis plan deviation of that date): the observed ADU floor is the mean of the 4 years ending at the data origin, replacing the fixed 2019-2022 window of D-019. NC's ADU-flagging places (holdouts left out) permitted 25, 24, 61, 100 ADUs in 2019-22 and 146, 109, 123 in 2023-25, so the fixed window put the no-reform forecast at 78 a year against 126 observed (reports/diagnostics/nc/README.md). For origin 2022 the window is 2019-2022, D-019's own."
-  notes: "Four years, D-019's length. A held-out place's window ends the year before its holdout starts (Charlotte and Mecklenburg County 37119: 2019-2022; St. Paul: 2020-2023), so no held-out outcome is read and a partly held-out year never reads as a low count. D-019 stopped at 2022 to stay before the 2023 rate shock; a forward run forecasts the post-shock market, so the post-shock years are the relevant floor."
+  source: "D-082 (2026-11-12, Ben): the observed ADU floor is the mean of the 3 years ending at the data origin, the same window as D-074 test C and the historical_floor check (historical_floor_years, 3). Before D-082 it was 4 years (WS-NC-GUTCHECK, 2026-11-09, D-070), which replaced D-019's fixed 2019-2022 window. With 4 years the floor (2022-2025) sat below test C's 2023-2025 average wherever 2022 was a slow year; 41 of test C's 43 failures in the D-079 refit came from that mismatch alone (reports/adu-joint-refit-2026-11, test_c.csv)."
+  notes: "Three years, matching the test and the historical_floor check, and closer to the current market where uptake is rising (Wilmington 23, 44, 45, 59 in 2022-25). A held-out place's window ends the year before its holdout starts (Charlotte and Mecklenburg County 37119: 2020-2022; St. Paul: 2021-2023), so no held-out outcome is read. Origin-2022 backtests now read 2020-2022 rather than D-019's 2019-2022. Austin's 2024-25 counts are low because HOME moved ADUs to other permit types (D-070 TX caveat), so its floor falls further until the inferred HOME counts are loaded."
 
 adu_simulation_draws:
   value: 1000

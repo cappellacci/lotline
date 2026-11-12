@@ -671,7 +671,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_handbook_min_sqft` | 600 | fixed | sq ft | Handbook benchmark ADU scenario: one ADU per eligible single-family parcel, at least 600 sq ft, no parking re… |
 | `adu_partial_rule_share` | 1 | fixed | share of Handbook uptake reached under current local rules (m_x) | Estimated, D-053 (fit 3's pre-registered rule, Ben 2026-11-06): five-state fit (MN, NC, OH, TX, OR |
 | `adu_owner_occupancy_share` | 1 | 0.9–1 | share of Handbook uptake reached when owner occupancy is the only restriction (m_o) | Estimated, D-019 fit 3 (pre-registered): profile maximum 1.0, 90% profile interval 0.9-1.0 (grid 0.1-1.0), na… |
-| `adu_observed_years` | 4 | fixed | years (ending at the data origin) | WS-NC-GUTCHECK (2026-11-09 |
+| `adu_observed_years` | 3 | fixed | years (ending at the data origin) | D-082 (2026-11-12, Ben): the observed ADU floor is the mean of the 3 years ending at the data origin, the sam… |
 | `adu_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: P10/P90 of 1,000 draws move by under 2% between seeds on the development run |
 | `adu_simulation_seed` | 20261020 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |
 | `adu_rule_band_small_max_pop` | 10,000 | fixed | 2020 population (upper edge of the small-place band) | Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+ for the rule priors of places with no cod… |
