@@ -5575,7 +5575,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
 
 ### D-086 · 2026-11-13 · ADUs: coding each fit place's rule history, so the rule-change term can be tested (method only, before any coding)
-- **Status: proposed.** Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
+- **Status: accepted by Ben, 2026-11-13 ("Accept both").** Proposed by Claude Code the same day. Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
   - No row has been coded and no fit has been run for this entry. The only data read was an inputs count:
     which fit places have permit files covering years before their first coded ADU rule. No ADU count was
     read.
