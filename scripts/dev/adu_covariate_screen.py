@@ -141,6 +141,7 @@ def parcel_factors(store, st: str, geoids: set[str], fill_min: float) -> tuple[p
 
 
 def main() -> None:
+    global M_OWNER, M_OTHER
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument(
@@ -149,7 +150,6 @@ def main() -> None:
     ap.add_argument("--m-owner", type=float, default=M_OWNER, help="Form A owner multiplier (default D-079)")
     ap.add_argument("--m-other", type=float, default=M_OTHER, help="Form A other-rule multiplier (default D-079)")
     a = ap.parse_args()
-    global M_OWNER, M_OTHER
     M_OWNER, M_OTHER = a.m_owner, a.m_other
     a.out.mkdir(parents=True, exist_ok=True)
     store = DataStore()
