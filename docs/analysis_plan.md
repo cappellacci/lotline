@@ -5561,3 +5561,15 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - Within states: at A′'s chosen cell.
     - The pre-1960 outlook: at A′'s chosen cell, with D-083's X2 standardized over its screened places. The 7
       places without X2 get z = 0.
+- **Result, 2026-11-13** (`reports/adu-owner-share/`):
+  - **The rule picks Form A′.**
+    - Neither form passes any tier: A′ has 1 useful state per tier, A has 0.
+    - A′'s tier-1 held-out log score beats A's by 5.0, against 2 paired SE of 4.1, over 52 places.
+    - Each form passes 1 of tests A–B.
+  - **Fit:** β_o −0.546 (−0.877 to −0.221). α falls from 1.918 to 1.558. θ is 0.654 per 1,000 at z = 0.
+    m_o 1.0, m_x 0.4.
+  - **States:** every held-out state moves toward its observed count. Tier 1, observed ÷ P50, Form A to A′:
+    MN 0.30 to 0.48; NC 2.7 to 1.8; TX 5.9 to 2.4; OR 3.6 to 2.6.
+  - **β_o is smaller than the screen's −0.81,** because the six Minnesota townships enter here. Without them
+    it is −0.76. This check is descriptive and came after the run.
+  - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
