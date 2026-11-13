@@ -1,0 +1,43 @@
+{
+ "X2": {
+  "beta_full": 0.9276957434174976,
+  "beta_min": 0.7943078632867532,
+  "beta_max": 1.0320372900181216,
+  "sign_kept": 57,
+  "p_below": 57,
+  "drops": 57,
+  "largest_shifts": [
+   {
+    "name": "Asheville city",
+    "state": "NC",
+    "beta": 0.7943078632867532,
+    "p": 0.0007941866415314905
+   },
+   {
+    "name": "Orono city",
+    "state": "MN",
+    "beta": 0.814749445100154,
+    "p": 0.0002588260442563868
+   },
+   {
+    "name": "Inver Grove Heights city",
+    "state": "MN",
+    "beta": 1.0320372900181216,
+    "p": 1.8610392159256176e-05
+   },
+   {
+    "name": "Minneapolis city",
+    "state": "MN",
+    "beta": 1.0189225288707047,
+    "p": 7.593188333030361e-05
+   },
+   {
+    "name": "Portland city",
+    "state": "OR",
+    "beta": 1.0137882899734083,
+    "p": 3.910054537717286e-05
+   }
+  ],
+  "reading": "robust"
+ }
+}

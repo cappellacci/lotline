@@ -1,0 +1,23 @@
+[11:11:52] fit set: 64 places, 491 place-years
+[11:12:12] MN: factors for 43 places
+[11:12:20] NC: factors for 13 places
+[11:12:24] OH: factors for 1 places
+[11:12:25] OR: factors for 4 places
+[11:12:39] TX: factors for 3 places
+[11:12:39] availability: X1 57, X2 57, X3 57, X4 51, X5 53, X6 0, X7 42, R1 57, R2 57
+[11:13:41] within X1: beta -0.718 (-1.20, -0.22), p 0.0196, alpha 1.773 -> 1.443
+[11:14:37] within X2: beta +0.928 (+0.55, +1.35), p 0.0001, alpha 1.773 -> 1.271
+[11:15:32] within X3: beta -0.114 (-0.51, +0.29), p 0.6364, alpha 1.773 -> 1.738
+[11:16:25] within X4: beta -0.092 (-0.47, +0.34), p 0.7006, alpha 1.739 -> 1.721
+[11:17:04] within X5: beta +0.256 (-0.15, +0.68), p 0.2946, alpha 1.996 -> 1.972
+[11:17:58] within R1: beta -0.209 (-0.62, +0.24), p 0.4313, alpha 1.773 -> 1.768
+[11:18:54] within R2: beta +0.329 (+0.01, +0.67), p 0.0941, alpha 1.773 -> 1.711
+[11:19:15] pooled X1: beta -0.953 (-1.32, -0.59), p 0.0001, alpha 2.635 -> 1.723
+[11:19:35] pooled X2: beta +0.606 (+0.17, +1.08), p 0.0229, alpha 2.635 -> 2.387
+[11:19:56] pooled X3: beta -0.292 (-0.70, +0.14), p 0.2606, alpha 2.635 -> 2.543
+[11:20:15] pooled X4: beta +0.263 (-0.27, +0.89), p 0.4345, alpha 2.888 -> 2.851
+[11:20:30] pooled X5: beta -0.017 (-0.41, +0.39), p 0.9413, alpha 2.508 -> 2.505
+[11:20:50] pooled R1: beta +0.435 (+0.05, +0.85), p 0.0640, alpha 2.635 -> 2.436
+[11:21:11] pooled R2: beta +0.151 (-0.22, +0.56), p 0.5093, alpha 2.635 -> 2.618
+[11:21:11] done: candidates ['X2']
+[11:27:42] X2: robust; beta +0.794 to +1.032
