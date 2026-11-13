@@ -1,0 +1,79 @@
+{
+  "A\u2032": {
+    "claim_tier": {
+      "A": null,
+      "B": null
+    },
+    "test_a": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": true,
+        "OR": false
+      },
+      "B": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": false,
+        "OR": true
+      }
+    },
+    "test_b": {
+      "A": {
+        "NC": false,
+        "OH": true
+      },
+      "B": {
+        "NC": false,
+        "OH": true
+      }
+    },
+    "test_c": {
+      "MN": true,
+      "NC": true,
+      "OH": true,
+      "TX": true,
+      "OR": true
+    }
+  },
+  "C": {
+    "claim_tier": {
+      "C": null,
+      "B": null
+    },
+    "test_a": {
+      "C": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": true,
+        "OR": false
+      },
+      "B": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": false,
+        "OR": true
+      }
+    },
+    "test_b": {
+      "C": {
+        "NC": false,
+        "OH": true
+      },
+      "B": {
+        "NC": false,
+        "OH": true
+      }
+    }
+  },
+  "C, detached-conditional not by right": {
+    "claim_tier": {
+      "C": null,
+      "B": null
+    }
+  }
+}

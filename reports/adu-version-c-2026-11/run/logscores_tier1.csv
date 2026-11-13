@@ -1,0 +1,337 @@
+held_out,form,geoid,name,log_score_tier1,variant
+MN,A,2701486,Andover city,-0.6968820838004852,A′
+MN,A,2701900,Apple Valley city,-0.6535596500808403,A′
+MN,A,2706382,Blaine city,-2.1463595254623504,A′
+MN,A,2706616,Bloomington city,-2.6602409177593858,A′
+MN,A,2708794,Burnsville city,-4.867372603162539,A′
+MN,A,2710918,Chanhassen city,-6.2735097453682895,A′
+MN,A,2713456,Cottage Grove city,-0.6932792492042683,A′
+MN,A,2713910450,Cedar Lake township,-5.081300049805648,A′
+MN,A,2713928322,Helena township,-0.27140955397358724,A′
+MN,A,2713957184,St. Lawrence township,-0.15387242923731925,A′
+MN,A,2714158,Crystal city,-0.6122324401003922,A′
+MN,A,2715022,Dayton city,-5.653251092507746,A′
+MN,A,2716304132,Baytown township,-0.34440971291488687,A′
+MN,A,2716315688,Denmark township,-3.2237876778388292,A′
+MN,A,2717288,Eagan city,-2.25645837883075,A′
+MN,A,2718188,Edina city,-2.901944847654933,A′
+MN,A,2721770,Forest Lake city,-0.5714042186507697,A′
+MN,A,2722814,Fridley city,-5.599329305337481,A′
+MN,A,2724308,Golden Valley city,-0.5663995576210983,A′
+MN,A,2730140,Hopkins city,-0.3737755958822131,A′
+MN,A,2730392,Hugo city,-0.5894450165163079,A′
+MN,A,2731076,Inver Grove Heights city,-8.533172562231943,A′
+MN,A,2735180,Lakeville city,-3.1418851303153055,A′
+MN,A,2740382,Maplewood city,-0.63715881706967,A′
+MN,A,2741480,Medina city,-4.228382302806206,A′
+MN,A,2743252,Minnetonka city,-8.360850305955331,A′
+MN,A,2744530,Mounds View city,-0.3069587472305617,A′
+MN,A,2748580,Orono city,-6.201763416104789,A′
+MN,A,2751730,Plymouth city,-1.6953166879084414,A′
+MN,A,2753026,Ramsey city,-0.6359939794206504,A′
+MN,A,2754214,Richfield city,-7.736711946494596,A′
+MN,A,2754880,Rochester city,-4.077548079561913,A′
+MN,A,2755186,Rogers city,-0.551406110368525,A′
+MN,A,2755726,Rosemount city,-0.6341315511976706,A′
+MN,A,2755852,Roseville city,-3.945577170529136,A′
+MN,A,2757220,St. Louis Park city,-0.6547784616702383,A′
+MN,A,2762824,Stillwater city,-8.881650371733647,A′
+MN,A,2766460,Vadnais Heights city,-0.46611675588947676,A′
+MN,A,2768818,Wayzata city,-3.400196046623586,A′
+MN,B,2701486,Andover city,-0.11859834165699112,A′
+MN,B,2701900,Apple Valley city,-0.19494983723617665,A′
+MN,B,2706382,Blaine city,-0.5139684587010542,A′
+MN,B,2706616,Bloomington city,-0.9495204348700153,A′
+MN,B,2708794,Burnsville city,-3.995633056684378,A′
+MN,B,2710918,Chanhassen city,-8.157783763086046,A′
+MN,B,2713456,Cottage Grove city,-0.15752827414622317,A′
+MN,B,2713910450,Cedar Lake township,-6.155239481925801,A′
+MN,B,2713928322,Helena township,-0.21247238822304126,A′
+MN,B,2713957184,St. Lawrence township,-0.09603801028641001,A′
+MN,B,2714158,Crystal city,-0.1955250332491083,A′
+MN,B,2715022,Dayton city,-5.794304739502134,A′
+MN,B,2716304132,Baytown township,-0.09841800511758869,A′
+MN,B,2716315688,Denmark township,-8.127014287534957,A′
+MN,B,2717288,Eagan city,-0.5681821612683802,A′
+MN,B,2718188,Edina city,-3.690205516117092,A′
+MN,B,2721770,Forest Lake city,-0.24472362915825308,A′
+MN,B,2722814,Fridley city,-6.839903223159887,A′
+MN,B,2724308,Golden Valley city,-0.09836778731847673,A′
+MN,B,2730140,Hopkins city,-0.1475683964881398,A′
+MN,B,2730392,Hugo city,-0.07235732981000176,A′
+MN,B,2731076,Inver Grove Heights city,-10.701363973990112,A′
+MN,B,2735180,Lakeville city,-0.8941022738761504,A′
+MN,B,2740382,Maplewood city,-0.26862830520793857,A′
+MN,B,2741480,Medina city,-3.2375391521067893,A′
+MN,B,2743252,Minnetonka city,-11.23643798827036,A′
+MN,B,2744530,Mounds View city,-0.1775978524482884,A′
+MN,B,2748580,Orono city,-7.049155586922426,A′
+MN,B,2751730,Plymouth city,-0.765337974067128,A′
+MN,B,2753026,Ramsey city,-0.09802998558095055,A′
+MN,B,2754214,Richfield city,-8.092344654919692,A′
+MN,B,2754880,Rochester city,-4.0428653345861765,A′
+MN,B,2755186,Rogers city,-0.17664744692488554,A′
+MN,B,2755726,Rosemount city,-0.17295544286654518,A′
+MN,B,2755852,Roseville city,-3.7044086606299027,A′
+MN,B,2757220,St. Louis Park city,-0.2589627089334332,A′
+MN,B,2762824,Stillwater city,-10.33851069132227,A′
+MN,B,2766460,Vadnais Heights city,-0.20478854645801903,A′
+MN,B,2768818,Wayzata city,-4.042746265330206,A′
+NC,A,3702140,Asheville city,-18.521664026866404,A′
+NC,A,37063,Durham County Unincorporated Area,-12.756178285286163,A′
+NC,A,3710740,Cary town,-14.523030442343172,A′
+NC,A,3711800,Chapel Hill town,-4.049190400863264,A′
+NC,A,3714700,Cornelius town,-4.379951178849241,A′
+NC,A,3719000,Durham city,-28.334546003770946,A′
+NC,A,3728000,Greensboro city,-8.676055834357058,A′
+NC,A,3733120,Huntersville town,-7.5100834633353495,A′
+NC,A,3741960,Matthews town,-8.023136268369939,A′
+NC,A,3743480,Mint Hill town,-7.09024137788267,A′
+NC,A,3755000,Raleigh city,-19.375359345502602,A′
+NC,A,3774440,Wilmington city,-26.020555537136616,A′
+NC,B,3702140,Asheville city,-15.54893472795242,A′
+NC,B,37063,Durham County Unincorporated Area,-12.924774171521813,A′
+NC,B,3710740,Cary town,-15.695647341507547,A′
+NC,B,3711800,Chapel Hill town,-3.2096702269097035,A′
+NC,B,3714700,Cornelius town,-3.495640583404942,A′
+NC,B,3719000,Durham city,-37.47130791177864,A′
+NC,B,3728000,Greensboro city,-9.820014975269071,A′
+NC,B,3733120,Huntersville town,-8.088018069423779,A′
+NC,B,3741960,Matthews town,-7.271884082933976,A′
+NC,B,3743480,Mint Hill town,-5.7155876483227335,A′
+NC,B,3755000,Raleigh city,-19.799128943907515,A′
+NC,B,3774440,Wilmington city,-29.7628737434559,A′
+TX,A,4805000,Austin city,-15.759667939768688,A′
+TX,A,4815976,College Station city,-7.999621876703063,A′
+TX,B,4805000,Austin city,-24.023442884872047,A′
+TX,B,4815976,College Station city,-7.048017490478823,A′
+OR,A,4105800,Bend city,-23.488308316301726,A′
+OR,A,4147000,Medford city,-16.767351347555742,A′
+OR,A,4164900,Salem city,-28.141701151037168,A′
+OR,B,4105800,Bend city,-25.306945701655568,A′
+OR,B,4147000,Medford city,-15.020628594676479,A′
+OR,B,4164900,Salem city,-23.9274341096224,A′
+MN,C,2701486,Andover city,-0.6988007245296775,C
+MN,C,2701900,Apple Valley city,-0.6520870231421139,C
+MN,C,2706382,Blaine city,-2.5626058153197944,C
+MN,C,2706616,Bloomington city,-3.0731992746484407,C
+MN,C,2708794,Burnsville city,-4.922085569601509,C
+MN,C,2710918,Chanhassen city,-6.416189518965064,C
+MN,C,2713456,Cottage Grove city,-0.6958434879976885,C
+MN,C,2713910450,Cedar Lake township,-5.110493976897845,C
+MN,C,2713928322,Helena township,-0.28260190766020443,C
+MN,C,2713957184,St. Lawrence township,-0.16249997091826884,C
+MN,C,2714158,Crystal city,-0.6236088699311235,C
+MN,C,2715022,Dayton city,-5.583749593884184,C
+MN,C,2716304132,Baytown township,-0.35495257755940557,C
+MN,C,2716315688,Denmark township,-3.2243302993286758,C
+MN,C,2717288,Eagan city,-2.6876190496043604,C
+MN,C,2718188,Edina city,-3.021844833855811,C
+MN,C,2721770,Forest Lake city,-0.5866898221531471,C
+MN,C,2722814,Fridley city,-5.777443017549743,C
+MN,C,2724308,Golden Valley city,-0.5810772386106837,C
+MN,C,2730140,Hopkins city,-0.4019197818642066,C
+MN,C,2730392,Hugo city,-0.6014126528136945,C
+MN,C,2731076,Inver Grove Heights city,-8.579752499555774,C
+MN,C,2735180,Lakeville city,-2.731976606772448,C
+MN,C,2740382,Maplewood city,-0.6464290226669718,C
+MN,C,2741480,Medina city,-4.268504275114486,C
+MN,C,2743252,Minnetonka city,-9.155706169443786,C
+MN,C,2744530,Mounds View city,-0.3383176836597066,C
+MN,C,2748580,Orono city,-6.421344173287051,C
+MN,C,2751730,Plymouth city,-2.149259966137297,C
+MN,C,2753026,Ramsey city,-0.6434856609407937,C
+MN,C,2754214,Richfield city,-7.87465739635195,C
+MN,C,2754880,Rochester city,-4.595907911727582,C
+MN,C,2755186,Rogers city,-0.5672509980840097,C
+MN,C,2755726,Rosemount city,-0.6424392532546896,C
+MN,C,2755852,Roseville city,-4.101056589032831,C
+MN,C,2757220,St. Louis Park city,-0.6532965391841916,C
+MN,C,2762824,Stillwater city,-9.068029953585103,C
+MN,C,2766460,Vadnais Heights city,-0.489427925364021,C
+MN,C,2768818,Wayzata city,-3.4498034014287793,C
+MN,B,2701486,Andover city,-0.11859834165699112,C
+MN,B,2701900,Apple Valley city,-0.19494983723617665,C
+MN,B,2706382,Blaine city,-0.5139684587010542,C
+MN,B,2706616,Bloomington city,-0.9495204348700153,C
+MN,B,2708794,Burnsville city,-3.995633056684378,C
+MN,B,2710918,Chanhassen city,-8.157783763086046,C
+MN,B,2713456,Cottage Grove city,-0.15752827414622317,C
+MN,B,2713910450,Cedar Lake township,-6.155239481925801,C
+MN,B,2713928322,Helena township,-0.21247238822304126,C
+MN,B,2713957184,St. Lawrence township,-0.09603801028641001,C
+MN,B,2714158,Crystal city,-0.1955250332491083,C
+MN,B,2715022,Dayton city,-5.794304739502134,C
+MN,B,2716304132,Baytown township,-0.09841800511758869,C
+MN,B,2716315688,Denmark township,-8.127014287534957,C
+MN,B,2717288,Eagan city,-0.5681821612683802,C
+MN,B,2718188,Edina city,-3.690205516117092,C
+MN,B,2721770,Forest Lake city,-0.24472362915825308,C
+MN,B,2722814,Fridley city,-6.839903223159887,C
+MN,B,2724308,Golden Valley city,-0.09836778731847673,C
+MN,B,2730140,Hopkins city,-0.1475683964881398,C
+MN,B,2730392,Hugo city,-0.07235732981000176,C
+MN,B,2731076,Inver Grove Heights city,-10.701363973990112,C
+MN,B,2735180,Lakeville city,-0.8941022738761504,C
+MN,B,2740382,Maplewood city,-0.26862830520793857,C
+MN,B,2741480,Medina city,-3.2375391521067893,C
+MN,B,2743252,Minnetonka city,-11.23643798827036,C
+MN,B,2744530,Mounds View city,-0.1775978524482884,C
+MN,B,2748580,Orono city,-7.049155586922426,C
+MN,B,2751730,Plymouth city,-0.765337974067128,C
+MN,B,2753026,Ramsey city,-0.09802998558095055,C
+MN,B,2754214,Richfield city,-8.092344654919692,C
+MN,B,2754880,Rochester city,-4.0428653345861765,C
+MN,B,2755186,Rogers city,-0.17664744692488554,C
+MN,B,2755726,Rosemount city,-0.17295544286654518,C
+MN,B,2755852,Roseville city,-3.7044086606299027,C
+MN,B,2757220,St. Louis Park city,-0.2589627089334332,C
+MN,B,2762824,Stillwater city,-10.33851069132227,C
+MN,B,2766460,Vadnais Heights city,-0.20478854645801903,C
+MN,B,2768818,Wayzata city,-4.042746265330206,C
+NC,C,3702140,Asheville city,-18.704170504721915,C
+NC,C,37063,Durham County Unincorporated Area,-12.528610716706478,C
+NC,C,3710740,Cary town,-14.727931853016806,C
+NC,C,3711800,Chapel Hill town,-3.8326788348222998,C
+NC,C,3714700,Cornelius town,-4.166694318577818,C
+NC,C,3719000,Durham city,-27.947280411324627,C
+NC,C,3728000,Greensboro city,-8.514403878141225,C
+NC,C,3733120,Huntersville town,-7.502327723756232,C
+NC,C,3741960,Matthews town,-7.822719449306124,C
+NC,C,3743480,Mint Hill town,-6.923707543275193,C
+NC,C,3755000,Raleigh city,-19.04076724328284,C
+NC,C,3774440,Wilmington city,-26.02715437047594,C
+NC,B,3702140,Asheville city,-15.54893472795242,C
+NC,B,37063,Durham County Unincorporated Area,-12.924774171521813,C
+NC,B,3710740,Cary town,-15.695647341507547,C
+NC,B,3711800,Chapel Hill town,-3.2096702269097035,C
+NC,B,3714700,Cornelius town,-3.495640583404942,C
+NC,B,3719000,Durham city,-37.47130791177864,C
+NC,B,3728000,Greensboro city,-9.820014975269071,C
+NC,B,3733120,Huntersville town,-8.088018069423779,C
+NC,B,3741960,Matthews town,-7.271884082933976,C
+NC,B,3743480,Mint Hill town,-5.7155876483227335,C
+NC,B,3755000,Raleigh city,-19.799128943907515,C
+NC,B,3774440,Wilmington city,-29.7628737434559,C
+TX,C,4805000,Austin city,-15.401928822596991,C
+TX,C,4815976,College Station city,-7.970189667041456,C
+TX,B,4805000,Austin city,-24.023442884872047,C
+TX,B,4815976,College Station city,-7.048017490478823,C
+OR,C,4105800,Bend city,-23.283903509944395,C
+OR,C,4147000,Medford city,-16.592036785923582,C
+OR,C,4164900,Salem city,-27.96873428114107,C
+OR,B,4105800,Bend city,-25.306945701655568,C
+OR,B,4147000,Medford city,-15.020628594676479,C
+OR,B,4164900,Salem city,-23.9274341096224,C
+MN,C,2701486,Andover city,-0.6988007245296775,"C, detached-conditional not by right"
+MN,C,2701900,Apple Valley city,-0.6520870231421139,"C, detached-conditional not by right"
+MN,C,2706382,Blaine city,-1.1505788603708158,"C, detached-conditional not by right"
+MN,C,2706616,Bloomington city,-3.0731992746484407,"C, detached-conditional not by right"
+MN,C,2708794,Burnsville city,-4.922085569601509,"C, detached-conditional not by right"
+MN,C,2710918,Chanhassen city,-6.416189518965064,"C, detached-conditional not by right"
+MN,C,2713456,Cottage Grove city,-0.6958434879976885,"C, detached-conditional not by right"
+MN,C,2713910450,Cedar Lake township,-5.110493976897845,"C, detached-conditional not by right"
+MN,C,2713928322,Helena township,-0.28260190766020443,"C, detached-conditional not by right"
+MN,C,2713957184,St. Lawrence township,-0.16249997091826884,"C, detached-conditional not by right"
+MN,C,2714158,Crystal city,-0.6236088699311235,"C, detached-conditional not by right"
+MN,C,2715022,Dayton city,-5.583749593884184,"C, detached-conditional not by right"
+MN,C,2716304132,Baytown township,-0.35495257755940557,"C, detached-conditional not by right"
+MN,C,2716315688,Denmark township,-3.2243302993286758,"C, detached-conditional not by right"
+MN,C,2717288,Eagan city,-2.6876190496043604,"C, detached-conditional not by right"
+MN,C,2718188,Edina city,-3.021844833855811,"C, detached-conditional not by right"
+MN,C,2721770,Forest Lake city,-0.5866898221531471,"C, detached-conditional not by right"
+MN,C,2722814,Fridley city,-5.777443017549743,"C, detached-conditional not by right"
+MN,C,2724308,Golden Valley city,-0.5810772386106837,"C, detached-conditional not by right"
+MN,C,2730140,Hopkins city,-0.4019197818642066,"C, detached-conditional not by right"
+MN,C,2730392,Hugo city,-0.6014126528136945,"C, detached-conditional not by right"
+MN,C,2731076,Inver Grove Heights city,-8.579752499555774,"C, detached-conditional not by right"
+MN,C,2735180,Lakeville city,-2.731976606772448,"C, detached-conditional not by right"
+MN,C,2740382,Maplewood city,-0.6464290226669718,"C, detached-conditional not by right"
+MN,C,2741480,Medina city,-4.268504275114486,"C, detached-conditional not by right"
+MN,C,2743252,Minnetonka city,-9.155706169443786,"C, detached-conditional not by right"
+MN,C,2744530,Mounds View city,-0.3383176836597066,"C, detached-conditional not by right"
+MN,C,2748580,Orono city,-6.421344173287051,"C, detached-conditional not by right"
+MN,C,2751730,Plymouth city,-2.149259966137297,"C, detached-conditional not by right"
+MN,C,2753026,Ramsey city,-0.6434856609407937,"C, detached-conditional not by right"
+MN,C,2754214,Richfield city,-7.87465739635195,"C, detached-conditional not by right"
+MN,C,2754880,Rochester city,-4.595907911727582,"C, detached-conditional not by right"
+MN,C,2755186,Rogers city,-0.5672509980840097,"C, detached-conditional not by right"
+MN,C,2755726,Rosemount city,-0.6424392532546896,"C, detached-conditional not by right"
+MN,C,2755852,Roseville city,-4.101056589032831,"C, detached-conditional not by right"
+MN,C,2757220,St. Louis Park city,-0.6532965391841916,"C, detached-conditional not by right"
+MN,C,2762824,Stillwater city,-9.068029953585103,"C, detached-conditional not by right"
+MN,C,2766460,Vadnais Heights city,-0.489427925364021,"C, detached-conditional not by right"
+MN,C,2768818,Wayzata city,-3.4498034014287793,"C, detached-conditional not by right"
+MN,B,2701486,Andover city,-0.11859834165699112,"C, detached-conditional not by right"
+MN,B,2701900,Apple Valley city,-0.19494983723617665,"C, detached-conditional not by right"
+MN,B,2706382,Blaine city,-0.28018304145537165,"C, detached-conditional not by right"
+MN,B,2706616,Bloomington city,-0.9495204348700153,"C, detached-conditional not by right"
+MN,B,2708794,Burnsville city,-3.995633056684378,"C, detached-conditional not by right"
+MN,B,2710918,Chanhassen city,-8.157783763086046,"C, detached-conditional not by right"
+MN,B,2713456,Cottage Grove city,-0.15752827414622317,"C, detached-conditional not by right"
+MN,B,2713910450,Cedar Lake township,-6.155239481925801,"C, detached-conditional not by right"
+MN,B,2713928322,Helena township,-0.21247238822304126,"C, detached-conditional not by right"
+MN,B,2713957184,St. Lawrence township,-0.09603801028641001,"C, detached-conditional not by right"
+MN,B,2714158,Crystal city,-0.1955250332491083,"C, detached-conditional not by right"
+MN,B,2715022,Dayton city,-5.794304739502134,"C, detached-conditional not by right"
+MN,B,2716304132,Baytown township,-0.09841800511758869,"C, detached-conditional not by right"
+MN,B,2716315688,Denmark township,-8.127014287534957,"C, detached-conditional not by right"
+MN,B,2717288,Eagan city,-0.5681821612683802,"C, detached-conditional not by right"
+MN,B,2718188,Edina city,-3.690205516117092,"C, detached-conditional not by right"
+MN,B,2721770,Forest Lake city,-0.24472362915825308,"C, detached-conditional not by right"
+MN,B,2722814,Fridley city,-6.839903223159887,"C, detached-conditional not by right"
+MN,B,2724308,Golden Valley city,-0.09836778731847673,"C, detached-conditional not by right"
+MN,B,2730140,Hopkins city,-0.1475683964881398,"C, detached-conditional not by right"
+MN,B,2730392,Hugo city,-0.07235732981000176,"C, detached-conditional not by right"
+MN,B,2731076,Inver Grove Heights city,-10.701363973990112,"C, detached-conditional not by right"
+MN,B,2735180,Lakeville city,-0.8941022738761504,"C, detached-conditional not by right"
+MN,B,2740382,Maplewood city,-0.26862830520793857,"C, detached-conditional not by right"
+MN,B,2741480,Medina city,-3.2375391521067893,"C, detached-conditional not by right"
+MN,B,2743252,Minnetonka city,-11.23643798827036,"C, detached-conditional not by right"
+MN,B,2744530,Mounds View city,-0.1775978524482884,"C, detached-conditional not by right"
+MN,B,2748580,Orono city,-7.049155586922426,"C, detached-conditional not by right"
+MN,B,2751730,Plymouth city,-0.765337974067128,"C, detached-conditional not by right"
+MN,B,2753026,Ramsey city,-0.09802998558095055,"C, detached-conditional not by right"
+MN,B,2754214,Richfield city,-8.092344654919692,"C, detached-conditional not by right"
+MN,B,2754880,Rochester city,-4.0428653345861765,"C, detached-conditional not by right"
+MN,B,2755186,Rogers city,-0.17664744692488554,"C, detached-conditional not by right"
+MN,B,2755726,Rosemount city,-0.17295544286654518,"C, detached-conditional not by right"
+MN,B,2755852,Roseville city,-3.7044086606299027,"C, detached-conditional not by right"
+MN,B,2757220,St. Louis Park city,-0.2589627089334332,"C, detached-conditional not by right"
+MN,B,2762824,Stillwater city,-10.33851069132227,"C, detached-conditional not by right"
+MN,B,2766460,Vadnais Heights city,-0.20478854645801903,"C, detached-conditional not by right"
+MN,B,2768818,Wayzata city,-4.042746265330206,"C, detached-conditional not by right"
+NC,C,3702140,Asheville city,-18.762859474644586,"C, detached-conditional not by right"
+NC,C,37063,Durham County Unincorporated Area,-12.537034956975617,"C, detached-conditional not by right"
+NC,C,3710740,Cary town,-14.759424624553866,"C, detached-conditional not by right"
+NC,C,3711800,Chapel Hill town,-3.840152835222712,"C, detached-conditional not by right"
+NC,C,3714700,Cornelius town,-4.1730405781820075,"C, detached-conditional not by right"
+NC,C,3719000,Durham city,-27.950082297257744,"C, detached-conditional not by right"
+NC,C,3728000,Greensboro city,-8.520761784671878,"C, detached-conditional not by right"
+NC,C,3733120,Huntersville town,-7.587307531298138,"C, detached-conditional not by right"
+NC,C,3741960,Matthews town,-7.855506421927032,"C, detached-conditional not by right"
+NC,C,3743480,Mint Hill town,-6.926621765669344,"C, detached-conditional not by right"
+NC,C,3755000,Raleigh city,-19.047053128989475,"C, detached-conditional not by right"
+NC,C,3774440,Wilmington city,-26.11181846485959,"C, detached-conditional not by right"
+NC,B,3702140,Asheville city,-15.534598272447486,"C, detached-conditional not by right"
+NC,B,37063,Durham County Unincorporated Area,-12.912712973735054,"C, detached-conditional not by right"
+NC,B,3710740,Cary town,-15.68310378020152,"C, detached-conditional not by right"
+NC,B,3711800,Chapel Hill town,-3.1969263243927264,"C, detached-conditional not by right"
+NC,B,3714700,Cornelius town,-3.483017135070601,"C, detached-conditional not by right"
+NC,B,3719000,Durham city,-37.480101800483894,"C, detached-conditional not by right"
+NC,B,3728000,Greensboro city,-9.833126860796146,"C, detached-conditional not by right"
+NC,B,3733120,Huntersville town,-8.07519547899102,"C, detached-conditional not by right"
+NC,B,3741960,Matthews town,-7.250732127142483,"C, detached-conditional not by right"
+NC,B,3743480,Mint Hill town,-5.716528860069377,"C, detached-conditional not by right"
+NC,B,3755000,Raleigh city,-19.793464502192663,"C, detached-conditional not by right"
+NC,B,3774440,Wilmington city,-29.778367545060895,"C, detached-conditional not by right"
+TX,C,4805000,Austin city,-15.430779997607324,"C, detached-conditional not by right"
+TX,C,4815976,College Station city,-7.99749655101039,"C, detached-conditional not by right"
+TX,B,4805000,Austin city,-24.057813714116445,"C, detached-conditional not by right"
+TX,B,4815976,College Station city,-7.05465970041033,"C, detached-conditional not by right"
+OR,C,4105800,Bend city,-23.265880273002725,"C, detached-conditional not by right"
+OR,C,4147000,Medford city,-16.549816217065704,"C, detached-conditional not by right"
+OR,C,4164900,Salem city,-27.96729141688253,"C, detached-conditional not by right"
+OR,B,4105800,Bend city,-25.288340472821567,"C, detached-conditional not by right"
+OR,B,4147000,Medford city,-15.057579573828512,"C, detached-conditional not by right"
+OR,B,4164900,Salem city,-23.927039948391947,"C, detached-conditional not by right"

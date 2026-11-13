@@ -1,0 +1,212 @@
+<title>ADU Version C Test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same ledger page as the D-079 results: one reading column, a chart per finding. A′ (Form A on the new rows) green, version C blue. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --a: #2f6f5e; --c: #2f5f8f; --obs: #1d2420; --bandA: rgba(47,111,94,.22); --bandC: rgba(47,95,143,.22);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --a: #6cc3a8; --c: #7fb0e0; --obs: #e4ebe7; --bandA: rgba(108,195,168,.24); --bandC: rgba(127,176,224,.24);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --a: #6cc3a8; --c: #7fb0e0; --obs: #e4ebe7; --bandA: rgba(108,195,168,.24); --bandC: rgba(127,176,224,.24);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+svg text.lab { fill: var(--fg); font-family: var(--body); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.stat { border-top: 2px solid var(--rule); padding-top: 8px; display: grid; gap: 2px; }
+.stat .v { font-family: var(--display); font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 12px; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · exploratory, not adopted · run 2026-11-13 · branch ws/adu-version-c</div>
+    <h1>Rule details fit the past a little better but don't predict new states any better</h1>
+    <p class="lede">Version C gives each ADU rule detail its own effect: whether a hearing is needed (not by right), 1 or 2+ extra parking spaces, other restrictions, and city size. It ran against A′, today's model (Form A) refit on the same newly coded rules from PR #417, so the only difference is the structure. The plan was written before the fit (PLAN.md). Neither model predicts a held-out state well enough at any data tier. St. Paul stayed blind.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Headline</div>
+    <div class="stats">
+      <div class="stat"><span class="v">0 of 4</span><span class="k">states predicted usefully by A′ or C at any tier (4 needed)</span></div>
+      <div class="stat"><span class="v">+8.7</span><span class="k">log-likelihood gain for C on the fitted years (AIC 11 better)</span></div>
+      <div class="stat"><span class="v">−1.7</span><span class="k">C's held-out log score against A′'s over 56 places (slightly worse)</span></div>
+      <div class="stat"><span class="v">×0.26</span><span class="k">"not by right" effect, but it shrinks to ×0.72 when North Carolina is left out</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">1 · The rule-detail effects</div>
+    <h2>The effects lean on North Carolina: leave it out and they move to "other restrictions"</h2>
+    <p>Each row is the effect fitted with every state, then with one state left out, as a multiplier on uptake (1 = no effect; the line is ±1 SE). With all five states, needing a hearing cuts uptake to about a quarter, and one parking space cuts it by about 30%. Leaving out North Carolina, where Raleigh's 2021 change sits, removes both parking effects and most of the hearing effect, and "other restrictions" takes their place. The plan said a slope that only one state identifies counts as not identified, and that is what this shows.</p>
+    <div class="chart" id="slopes"></div>
+    <div class="legend"><span>● all five states</span><span>◦ one state left out (label)</span><span>multiplier, log scale</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">2 · A state with its own rules (tier 1)</div>
+    <h2>C raises the medians for NC, TX and OR a little, and overshoots Minnesota more</h2>
+    <p>Each state is predicted by a fit to the other four, using its own coded rules. The bar is P10–P90, the tick is the median and the dot is what was built in 2021–2024. Useful means the dot is inside the bar and within ×2 of the tick. C closes part of the gap in North Carolina (built ÷ median 3.6 → 2.4) and Texas (6.1 → 2.7), but Minnesota goes from 3.6× too high to 5.2× too high. No state is useful for either model at tier 0, 1 or 2.</p>
+    <div class="chart" id="tier1"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandA)"></span>A′ P10–P90</span><span><span class="sw" style="background:var(--bandC)"></span>C P10–P90</span><span>| median · ● built · log scale</span></div>
+    <div class="wide"><table id="tiertab"></table></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">3 · Tests A–C and the rule-change events</div>
+    <h2>Same test results as A′; C gets closer on Raleigh's jump but still halves it</h2>
+    <table>
+      <tr><th>Test</th><th>A′</th><th>C</th></tr>
+      <tr><td>A · new places (pass per state)</td><td>TX only</td><td>TX only</td></tr>
+      <tr><td>B · roll counts, Wake towns (5 built)</td><td>21–64–158 <span class="pill miss">fail</span></td><td>24–72–176 <span class="pill miss">fail</span></td></tr>
+      <tr><td>B · roll counts, Franklin towns (1 built)</td><td>1–12–79 <span class="pill ok">pass</span></td><td>0–11–80 <span class="pill ok">pass</span></td></tr>
+      <tr><td>C · no-reform floor</td><td><span class="pill ok">pass, all 5</span></td><td>not run (no engine)</td></tr>
+      <tr><td>Raleigh 2021 step (built ×37.6)</td><td>×5.6</td><td>×19.2</td></tr>
+      <tr><td>Minneapolis 2021 step (built ×0.5)</td><td>×1.07</td><td>×1.07</td></tr>
+    </table>
+    <p>The new rule rows give 10 rule-change events in 3 states, so D-079's bar is met for the first time. Five Minnesota events are in places that built nothing before or after, so they say nothing. Form B, now fitted with its rule-change term, is useful in 2 states (MN at tier 2, NC at tier 1), still short of 4.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">4 · What the new rule rows did on their own</div>
+    <h2>A′ against the D-079 refit: lower θ, test C now passes, predictions no better</h2>
+    <p>Same model, new rows. θ falls from 0.76 to 0.54 per 1,000 lots (90% range 0.39–0.78), the "other restriction" share rises from 0.4 to 0.7, and the fit set grows from 395 to 491 place-years, because the rows now go back before the old start dates. Test C passes in all five states (lowest ratios 0.99–1.00, within D-082's 1%), and the Franklin County roll check now passes. The tier medians are no closer: North Carolina's tier-1 built ÷ median moves from 2.7 to 3.6.</p>
+    <div class="chart" id="theta"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">5 · Sensitivity</div>
+    <h2>Reading the 18 "detached-conditional" rows as not by right changes nothing that matters</h2>
+    <p>The hearing effect becomes ×0.30 (−1.20), the parking effects are unchanged, and no tier passes. The held-out log score moves by 1.1.</p>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">For Ben · nothing adopted, nothing on main</div>
+    <h2>What this says, and the choices it leaves</h2>
+    <ul>
+      <li><strong>Read:</strong> rule details are not why the model misses whole states. C fits the past slightly better, but it predicts held-out places no better, and its effects come mostly from North Carolina.</li>
+      <li><strong>The gap is still at the state and city level:</strong> Minnesota builds far less per lot than any rule detail explains, and the active cities in NC, OR and TX build 3 to 5 times the median.</li>
+      <li><strong>Open 1:</strong> whether to accept PR #417's rows anyway. They help on their own: test C now passes everywhere, and the 10 events let D-079's rule-change term be fitted.</li>
+      <li><strong>Open 2:</strong> whether to keep version C as a candidate for a dated method entry, or drop it. My pick is to drop it as a predictor and keep the code on the branch.</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/adu-version-c-2026-11/ (PLAN.md written before the fit; run/ fits.csv, tiers.csv, logscores_tier1.csv, test_a.csv, test_b.csv, test_c_a_prime.csv, event_check.csv, events.csv, run-log.txt). Code: scripts/dev/adu_version_c.py, scripts/dev/apply_adu_rules_proposed_2026_11.py. Branch ws/adu-version-c, unmerged.</p>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? Math.round(n).toLocaleString("en-US") : (n < 10 && n % 1 ? n.toFixed(1) : String(Math.round(n)));
+function logAxis(s, x0, x1, lo, hi, yTop, yBot, ticks, f = fmt) {
+  const X = v => x0 + (Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (x1 - x0);
+  for (const t of ticks) { el("line", { x1: X(t), x2: X(t), y1: yTop, y2: yBot, stroke: "var(--rule)", "stroke-width": 1 }, s); el("text", { x: X(t), y: yBot + 14, "text-anchor": "middle" }, s, f(t)); }
+  return X;
+}
+function range(s, X, y, p10, p50, p90, obs, band, line, h = 10) {
+  el("rect", { x: X(p10), y: y - h / 2, width: Math.max(2, X(p90) - X(p10)), height: h, fill: band, rx: 2 }, s);
+  el("line", { x1: X(p50), x2: X(p50), y1: y - h / 2 - 2, y2: y + h / 2 + 2, stroke: line, "stroke-width": 2 }, s);
+  el("circle", { cx: X(obs), cy: y, r: 4, fill: "var(--obs)" }, s);
+}
+
+// 1 · slopes by fold: [fold, b, se]
+const slopes = {
+  "Not by right": [["all",-1.358,0.379],["−MN",-2.027,0.712],["−NC",-0.324,0.644],["−OH",-1.364,0.381],["−TX",-1.372,0.384],["−OR",-1.077,0.432]],
+  "1 parking space": [["all",-0.358,0.069],["−MN",-0.358,0.069],["−NC",0,0],["−OH",-0.358,0.069],["−TX",-0.357,0.069],["−OR",-0.831,0.104]],
+  "2+ parking spaces": [["all",-0.285,0.164],["−MN",-0.324,0.177],["−NC",0,0],["−OH",-0.287,0.165],["−TX",-0.296,0.167],["−OR",-0.347,0.169]],
+  "Other restriction": [["all",0,0],["−MN",0,0],["−NC",-1.288,0.45],["−OH",0,0],["−TX",0,0],["−OR",0,0]],
+  "Size, per doubling of lots": [["all",0.239,0.16],["−MN",0.027,0.272],["−NC",0.239,0.168],["−OH",0.248,0.163],["−TX",0.248,0.178],["−OR",0.158,0.175]],
+};
+{
+  const rows = Object.keys(slopes), h = 40 + rows.length * 62;
+  const s = svg("slopes", 760, h), X = logAxis(s, 200, 740, 0.05, 2, 8, h - 24, [0.05, 0.1, 0.25, 0.5, 1, 2], v => "×" + v);
+  el("line", { x1: X(1), x2: X(1), y1: 8, y2: h - 24, stroke: "var(--fg)", "stroke-width": 1 }, s);
+  rows.forEach((nm, i) => {
+    const y0 = 22 + i * 62;
+    el("text", { x: 0, y: y0 + 18, class: "lab" }, s, nm);
+    slopes[nm].forEach(([f, b, se], j) => {
+      const k = nm.startsWith("Size") ? Math.LN2 : 1;  // size: per doubling
+      const y = y0 + j * 8, m = Math.exp(b * k), lo = Math.exp((b - se) * k), hi = Math.exp((b + se) * k);
+      el("line", { x1: X(lo), x2: X(hi), y1: y, y2: y, stroke: "var(--c)", "stroke-width": 1.5, opacity: 0.5 }, s);
+      el("circle", { cx: X(m), cy: y, r: j === 0 ? 4 : 3, fill: j === 0 ? "var(--c)" : "var(--panel)", stroke: "var(--c)", "stroke-width": 1.5 }, s);
+      if (f === "−NC") el("text", { x: X(m) + 8, y: y + 4, style: "fill:var(--miss)" }, s, "without NC");
+    });
+  });
+}
+
+// 2 · tier 1 (and tier table)
+const tier = {
+  MN: { obs: 53, A: [[75,184,411],[89,192,399],[93,183,342]], C: [[77,219,586],[105,276,701],[103,243,551]] },
+  NC: { obs: 620.6, A: [[7,93,842],[21,173,1271],[28,169,939]], C: [[14,115,714],[46,259,1218],[43,223,935]] },
+  OR: { obs: 526.8, A: [[0,19,226],[12,113,622],[28,187,933]], C: [[0,25,244],[20,145,657],[30,181,744]] },
+  TX: { obs: 363.6, A: [[0,19,666],[1,60,707],[2,63,591]], C: [[0,34,1086],[5,133,1183],[5,123,1002]] },
+};
+const names = { MN: "Minnesota", NC: "North Carolina", OR: "Oregon", TX: "Texas" };
+{
+  const s = svg("tier1", 760, 260), X = logAxis(s, 160, 740, 0.5, 10000, 10, 230, [1, 10, 100, 1000, 10000]);
+  let y = 30;
+  for (const st of ["MN", "NC", "OR", "TX"]) {
+    const d = tier[st];
+    el("text", { x: 0, y: y + 14, class: "lab" }, s, names[st]);
+    range(s, X, y, ...d.A[1], d.obs, "var(--bandA)", "var(--a)");
+    range(s, X, y + 22, ...d.C[1], d.obs, "var(--bandC)", "var(--c)");
+    y += 52;
+  }
+}
+{
+  const t = document.getElementById("tiertab");
+  let h = "<tr><th>State</th><th>Built</th><th>A′ tier 0</th><th>A′ tier 1</th><th>A′ tier 2</th><th>C tier 0</th><th>C tier 1</th><th>C tier 2</th></tr>";
+  const c = r => `${fmt(r[0])}–<strong>${fmt(r[1])}</strong>–${fmt(r[2])}`;
+  for (const st of ["MN", "NC", "OR", "TX"]) { const d = tier[st]; h += `<tr><td>${st}</td><td>${fmt(d.obs)}</td>${d.A.map(r => `<td>${c(r)}</td>`).join("")}${d.C.map(r => `<td>${c(r)}</td>`).join("")}</tr>`; }
+  h += '<tr><td>OH</td><td>–</td><td colspan="6" style="text-align:left">no place to score besides the tier-2 city</td></tr>';
+  t.innerHTML = h;
+}
+
+// 4 · theta: D-079 vs A′ by fold
+const th = [["All five", [0.756,0.554,1.112], [0.544,0.390,0.783]], ["Without MN", [1.567,1.151,2.217], [1.135,0.80,1.68]], ["Without NC", [0.723,0.485,1.399], [0.354,0.23,0.57]], ["Without OH", [0.767,0.559,1.148], [0.548,0.39,0.80]], ["Without TX", [0.717,0.517,1.090], [0.528,0.37,0.78]], ["Without OR", [0.609,0.439,0.877], [0.579,0.41,0.96]]];
+{
+  const s = svg("theta", 760, 50 + th.length * 34), x0 = 160, x1 = 740, X = v => x0 + v / 2.4 * (x1 - x0);
+  for (const t of [0, 0.5, 1, 1.5, 2]) { el("line", { x1: X(t), x2: X(t), y1: 8, y2: 16 + th.length * 34, stroke: "var(--rule)" }, s); el("text", { x: X(t), y: 30 + th.length * 34, "text-anchor": "middle" }, s, t.toFixed(1)); }
+  th.forEach(([nm, old, neu], i) => {
+    const y = 20 + i * 34;
+    el("text", { x: 0, y: y + 8, class: "lab" }, s, nm);
+    [[old, "var(--muted)", 0], [neu, "var(--a)", 12]].forEach(([[v, lo, hi], c, dy]) => {
+      el("line", { x1: X(lo), x2: X(hi), y1: y + dy, y2: y + dy, stroke: c, "stroke-width": 3, opacity: 0.5 }, s);
+      el("circle", { cx: X(v), cy: y + dy, r: 4.5, fill: c }, s);
+      el("text", { x: X(hi) + 8, y: y + dy + 4 }, s, v.toFixed(2));
+    });
+  });
+  el("text", { x: x1, y: 46 + th.length * 34, "text-anchor": "end" }, s, "θ per 1,000 lots · grey D-079 · green A′ (new rows)");
+}
+</script>
