@@ -45,11 +45,14 @@ OVERRIDES = [
     ("MN-2754880-adu-2023", "parking_min_per_unit", "0", "source check unresolved (legend 'No Requirement' vs Director sets); config value kept"),
     ("NC-3712000-adu-2023", "supersedes", None, "the UDO replaced the 2012 ordinance outright; no field inherits from it (config rule, tests/states/nc)"),
     ("OR-4105800-adu-2016b", "effective_date", "2016-03-18", "Ord. NS-2260 adopted 2016-02-17 with no effective clause; city rule: effective 30 days later"),
-    # Ben's 2026-11-02 adjudications, kept until he rules on the research reading
-    ("MN-2754214-adu-2015", "adu_detached_allowed", "False", "Ben 2026-11-02 kept pending his ruling (research: detached as part of a garage)"),
-    ("MN-2731076-adu-2018", "min_lot_sqft", "43560", "Ben 2026-11-02 kept pending his ruling (research: 0)"),
-    ("MN-2710918-adu-2025", "by_right", "False", "Ben 2026-11-02 kept pending his ruling (research: Ord. 744 made attached ADUs permit-only)"),
-    ("MN-2755852-adu-2011", "adu_max_sqft", "600", "Ben 2026-11-02 kept pending his ruling (research: 650 in the enacted draft)"),
+]  # fmt: skip
+
+# Ben ruled on 2026-11-13 ("Take research"): the research reading replaces four of his 2026-11-02 adjudications.
+RULED = [
+    ("MN-2754214-adu-2015", "adu_detached_allowed: research reading (detached as part of a garage) replaces Ben's 2026-11-02 False"),
+    ("MN-2731076-adu-2018", "min_lot_sqft: research reading (no lot minimum) replaces Ben's 2026-11-02 43560"),
+    ("MN-2710918-adu-2025", "by_right: research reading (Ord. 744, attached ADUs need only a building permit) replaces Ben's 2026-11-02 False"),
+    ("MN-2755852-adu-2011", "adu_max_sqft: research reading (650 enacted) replaces Ben's 2026-11-02 600"),
 ]  # fmt: skip
 
 
@@ -77,6 +80,10 @@ def override(prop: pd.DataFrame) -> pd.DataFrame:
         assert len(i) == 1, rid
         prop.loc[i, field] = pd.NA if value is None else value
         prop.loc[i, "coding_notes"] = _note(prop.loc[i[0], "coding_notes"], f"[source check 2026-11-13] {field} = {value}: {why}.")
+    for rid, why in RULED:
+        i = prop.index[prop["reform_id"] == rid]
+        assert len(i) == 1, rid
+        prop.loc[i, "coding_notes"] = _note(prop.loc[i[0], "coding_notes"], f"[Ben ruled 2026-11-13] {why}.")
     return prop
 
 
