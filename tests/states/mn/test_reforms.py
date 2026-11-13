@@ -54,7 +54,7 @@ def test_no_duplicate_reform_ids():
 
 def test_pipeline_and_ben_rows(reforms):
     pipe = reforms[reforms["coder"] == "pipeline+ben"]
-    assert len(pipe) > 30
+    assert len(pipe) > 15  # 31 before WS-ADU-RULES replaced 14 of them (2026-11-13)
     assert pipe["source_quote"].notna().all() and (pipe["source_quote"].str.len() <= 300).all()
     assert (pipe["verified_by"] == "pipeline-checker").all()
     assert (pipe["verified_date"] == pd.Timestamp("2026-10-20")).all()
@@ -88,7 +88,12 @@ def test_supersedes_points_to_an_earlier_row(reforms):
 def test_windows_end_after_they_start(reforms):
     w = reforms[reforms["end_date"].notna()]
     assert (w["end_date"] > w["effective_date"]).all()
-    assert set(w["status"]) == {"suspended"}
+    # An end date marks a suspension, or (WS-ADU-RULES rows, 2026-11-13) a version that a later row supersedes:
+    # it then ends on its successor's effective date, so the fit never counts both versions in one year.
+    succ = reforms.dropna(subset=["supersedes"]).set_index("supersedes")["effective_date"]
+    superseded = w["reform_id"].isin(succ.index)
+    assert set(w.loc[~superseded, "status"]) <= {"suspended"}
+    assert (w.loc[superseded, "end_date"] == w.loc[superseded, "reform_id"].map(succ)).all()
 
 
 def test_single_coder_rows_have_no_second_coder(reforms):
