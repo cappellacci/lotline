@@ -5352,6 +5352,22 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Pre-1960 housing share:** β +0.59, Holm p 0.095, α falls 11%.
   - Nothing else passes. HOA share and homestead share were not screened, under the availability rule.
   - Any model change needs its own method entry.
+- **Addition, 2026-11-13: leave-one-place-out check.** Ben asked for it ("Run the check") after reading the
+  run above. It was written before the check was run.
+  - **Which factors:** the two candidates, X1 and X2, in the within-state version.
+  - **How:** each of the 57 screened places is dropped in turn, and β is refitted (θ_s, α and β, as above).
+  - z keeps its standardization over the 57 places, so every β is on the same scale.
+  - **Reported for each candidate:**
+    - the range of β over the 57 drops;
+    - the five places whose drop moves β most;
+    - how many drops keep β's sign;
+    - how many keep the unadjusted likelihood-ratio p below 0.10. This is the same as the 90% profile interval
+      excluding 0.
+  - **Reading rule:**
+    - **"Carried by one place"** if any single drop flips β's sign or lifts p to 0.10 or above.
+    - **"Robust"** if no drop does.
+    - **"Leaning on"** if the sign holds every time but p crosses 0.10 for 1–3 places. Those places are named.
+  - The check changes no verdict above. It decides whether a method entry for the factor is worth writing.
   - Ben asked for it: "Draft the screen", after a methodology review in chat.
   - No screen has been run. No covariate has been read against any count or fit output.
   - **Number:** provisional. #392's missing-middle entry also carries a provisional D-082; whichever merges
