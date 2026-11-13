@@ -5464,3 +5464,68 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Built and run** only after Ben accepts this entry. The code is a small module with a hand-worked
   synthetic test of the scaled likelihood, plus a dev script. It reads cached tables only, with no download.
   The output goes to `reports/adu-covariate-screen/`, with a results page.
+
+### D-084 · 2026-11-13 · ADUs: owner-occupied share as a place term in Form A (method only, before any fit)
+- **Status: proposed by Claude Code, 2026-11-13, for Ben.**
+  - Ben asked for it: "Draft owner share", after D-083's screen and its leave-one-place-out check.
+  - No fit, score, engine or scenario run has been made with this term.
+  - **Number:** provisional, like D-083.
+- **Why:**
+  - **The D-083 screen.** Owner-occupied share (ACS 2011–15) is the stronger of its two robust candidates:
+    - within states: β −0.71 per SD (−1.17 to −0.25), and α falls 16%;
+    - pooled: β −0.81, and α falls 26%;
+    - the sign holds when each state is left out, and when each of the 57 places is left out.
+  - **It is the only screened factor that lines up with the D-079 misses.** Minnesota's places are the most
+    owner-occupied (mean 0.74) and are over-predicted about 2.7×. NC, OR and TX are less owner-occupied
+    (0.45–0.59) and are under-predicted 2.7–15×.
+  - **Housing age is left out here.** It was also robust, but it explains nothing between states and only just
+    passes with Asheville out. A later entry can add it on its own evidence.
+- **What owner share stands for:** most likely how urban a place is and how much rental demand an added unit
+  meets. It is not a policy lever. The term is a modifier (C15/C16 in the confounder register): it changes
+  where the same rule yields more or fewer ADUs. It does not change any reform's effect relative to the
+  current rules, because the scenario multiplies both by the same exp(β z).
+- **Form A′, the challenger:**
+  - E[y_it | u_i] = θ · exp(β_o z_i) · u_i · parcels_it · h1_it · ρ_it · max over rules of (c_r × coverage_r).
+    This is Form A (D-079, D-048) with one place term.
+  - **z_i = (o_i − 0.6727) / 0.1544.** Here o_i is the place's owner-occupied share, and the center and scale
+    are the mean and SD over D-083's 57 screened places. Both are fixed now and go to config with this source
+    when the entry is built, so β is in D-083's units.
+  - **Fitted:** θ, α and β_o by maximum likelihood over fit 3's (m_o, m_x) grid, with profile intervals, as in
+    Form A. τ is estimated as in D-050 / D-053.
+  - **Not fixed from the screen:** β_o is refitted. D-083's −0.81 (pooled) is the expected value, not an input.
+- **Which owner share a place gets:**
+  - **In the fit:** ACS 5-year 2011–15 (B25003_002 / B25003_001), from before the 2016 window, as in D-083.
+  - **In the scenario:** the latest 5-year vintage ending at or before the data origin. The build PR reports the
+    correlation between the 2011–15 and latest vintages before any fit.
+  - **No place row** (Minnesota townships, the unincorporated county areas): use the county subdivision's
+    B25003 rows, or else the county's rows less its places. If neither exists, z = 0 and the place is
+    flagged.
+  - **Hidden by a holdout** (the V9 Oregon rule on B25003): use the latest vintage the filter lets through for
+    that use. If none, z = 0 and the place is flagged. The filter is never bypassed.
+  - **Tier 0, a state with no counts:** the same ACS read, which every state has. The term needs no local data.
+- **Scoring:** D-079's tests, unchanged, with Form A′ in place of Form B:
+  - the D-075 data-tier test (leave one state out; tiers 0, 1 and 2);
+  - tests A–C state by state, at D-074's bars and D-082's 0.99 tolerance on test C;
+  - the tier-1 held-out log score per place (D-049).
+- **Decision rule, fixed now.** It is D-079's rule with A′ as the challenger:
+  - **A′ replaces Form A if it passes D-075's claim rule at a lower tier than A.**
+  - **Or, if both pass at the same tier, or both pass none:** if A′'s tier-1 held-out log score beats A's by
+    more than 2 paired SE **and** A′ passes at least as many of tests A–C, counted state by state.
+  - The second branch differs from D-079. There, when neither form passed any tier, A was kept outright. Here
+    the score comparison still applies, because the D-079 refit showed no tier passing for either form. With
+    no way to tell apart, A′ could otherwise never replace A.
+  - Otherwise Form A is kept, and both forms' scores are reported.
+- **Expected direction, before any fit:**
+  - β_o is negative, about −0.7 to −0.8.
+  - Minnesota's held-out median falls and NC, OR and TX's rise.
+  - θ (at z = 0, a place with 67% owners) changes little.
+  - Whether any state moves inside ×2 is the open question.
+- **Sensitivities, reported and not used to choose:**
+  - owner share from the 2016–20 vintage;
+  - β_o fitted within states only (one θ per state, as D-083's main read);
+  - Form A′ with D-083's pre-1960 share added, reported as an outlook for a later entry.
+- **What it will not do:** write to config before Ben approves a result; change counts, k or the fit set; or
+  touch the holdouts. It runs offline from cached tables. If the latest ACS vintage is not cached for a
+  scenario state, fetching it goes to Ben first.
+- **Built and run** only after Ben accepts this entry. The code adds the place term to the joint-refit path
+  (`calibrate_adu` / `joint_refit`) with a hand-worked test, plus a dev run like `adu_joint_refit.py`'s.
