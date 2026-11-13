@@ -54,7 +54,7 @@ def test_no_duplicate_reform_ids():
 
 def test_pipeline_and_ben_rows(reforms):
     pipe = reforms[reforms["coder"] == "pipeline+ben"]
-    assert len(pipe) > 30
+    assert len(pipe) > 15  # 31 before WS-ADU-RULES replaced 14 of them (2026-11-13)
     assert pipe["source_quote"].notna().all() and (pipe["source_quote"].str.len() <= 300).all()
     assert (pipe["verified_by"] == "pipeline-checker").all()
     assert (pipe["verified_date"] == pd.Timestamp("2026-10-20")).all()
@@ -88,7 +88,12 @@ def test_supersedes_points_to_an_earlier_row(reforms):
 def test_windows_end_after_they_start(reforms):
     w = reforms[reforms["end_date"].notna()]
     assert (w["end_date"] > w["effective_date"]).all()
-    assert set(w["status"]) == {"suspended"}
+    # An end date marks a suspension, or (WS-ADU-RULES rows, 2026-11-13) a version that a later row supersedes:
+    # it then ends on its successor's effective date, so the fit never counts both versions in one year.
+    succ = reforms.dropna(subset=["supersedes"]).set_index("supersedes")["effective_date"]
+    superseded = w["reform_id"].isin(succ.index)
+    assert set(w.loc[~superseded, "status"]) <= {"suspended"}
+    assert (w.loc[superseded, "end_date"] == w.loc[superseded, "reform_id"].map(succ)).all()
 
 
 def test_single_coder_rows_have_no_second_coder(reforms):
@@ -101,7 +106,9 @@ def test_hand_checked_values(reforms):
     # Minneapolis three-unit amendment: adopted 2019-11-08, "scheduled to take effect Jan. 1, 2020"
     tri = r.loc["MN-2743000-missing_middle-2020"]
     assert tri["effective_date"] == pd.Timestamp("2020-01-01") and tri["unit_cap"] == 3
-    # Minneapolis ADUs: 2014 owner-occupied only; 2021 amendment drops it for attached/detached ADUs
+    # Minneapolis ADUs: 2014 owner-occupied only; 2021 amendment drops it for attached/detached ADUs.
+    # WS-ADU-RULES (2026-11-13 source check): the 2014 ordinance took effect 2014-12-13, row MN-2743000-adu-2014
+    assert r.at["MN-2743000-adu-2014", "effective_date"] == pd.Timestamp("2014-12-13")
     assert bool(r.at["MN-2743000-adu-2014", "owner_occ"])
     assert not bool(r.at["MN-2743000-adu-2021", "owner_occ"])
     assert r.at["MN-2743000-adu-2021", "supersedes"] == "MN-2743000-adu-2016"
