@@ -5575,7 +5575,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
 
 ### D-085 · 2026-11-13 · ADUs: a calendar-year trend, and a test that forecasts 2021–2025 from 2016–2020 (method only, before any fit)
-- **Status: proposed.** Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
+- **Status: accepted by Ben, 2026-11-13 ("Accept both").** Proposed by Claude Code the same day. Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
   - No fit, score, residual by year, engine or scenario run has been made for this entry.
   - **Number:** provisional, like D-083 and D-084.
 - **Why:**
