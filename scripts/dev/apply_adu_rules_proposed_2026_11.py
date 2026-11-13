@@ -35,6 +35,51 @@ def _https(s) -> bool:
     return isinstance(s, str) and all(u.strip().startswith("https://") for u in s.split(";"))
 
 
+# Source check of every overturned value and moved date, 2026-11-13 (reports in the PR). Each entry: id, field,
+# value, why. Applied to the research rows before anything else.
+OVERRIDES = [
+    ("MN-2706616-adu-2016", "adu_max_sqft", "960", "'less than 960 square feet' coded 960, as Ben coded the same wording for Chanhassen"),
+    ("MN-2706616-adu-2019", "adu_max_sqft", "960", "'less than 960 square feet' coded 960, as Ben coded the same wording for Chanhassen"),
+    ("MN-2706616-adu-2022", "adu_max_sqft", "960", "'less than 960 square feet' coded 960 (source check kept the config value)"),
+    ("MN-2735180-adu-2013", "parking_min_per_unit", "1", "3 garage stalls for the home with an ADU less the 2 a single-family home needs (§11-19-13.A)"),
+    ("MN-2754880-adu-2023", "parking_min_per_unit", "0", "source check unresolved (legend 'No Requirement' vs Director sets); config value kept"),
+    ("NC-3712000-adu-2023", "supersedes", None, "the UDO replaced the 2012 ordinance outright; no field inherits from it (config rule, tests/states/nc)"),
+    ("OR-4105800-adu-2016b", "effective_date", "2016-03-18", "Ord. NS-2260 adopted 2016-02-17 with no effective clause; city rule: effective 30 days later"),
+    # Ben's 2026-11-02 adjudications, kept until he rules on the research reading
+    ("MN-2754214-adu-2015", "adu_detached_allowed", "False", "Ben 2026-11-02 kept pending his ruling (research: detached as part of a garage)"),
+    ("MN-2731076-adu-2018", "min_lot_sqft", "43560", "Ben 2026-11-02 kept pending his ruling (research: 0)"),
+    ("MN-2710918-adu-2025", "by_right", "False", "Ben 2026-11-02 kept pending his ruling (research: Ord. 744 made attached ADUs permit-only)"),
+    ("MN-2755852-adu-2011", "adu_max_sqft", "600", "Ben 2026-11-02 kept pending his ruling (research: 650 in the enacted draft)"),
+]  # fmt: skip
+
+
+# Research rows that describe the same ordinance as a replaced config row keep that row's id (source check of the
+# dates, 2026-11-13), so references and tests stay stable.
+RENAMES = {
+    "MN-2743000-adu-2014a": "MN-2743000-adu-2014",
+    "MN-2757220-adu-2020a": "MN-2757220-adu-2020",
+    "MN-2722814-adu-2022a": "MN-2722814-adu-2022",
+    "MN-2745430-adu-2024a": "MN-2745430-adu-2024",
+    "MN-2710918-adu-1986": "MN-2710918-adu-none",
+    "NC-3719000-adu-2019a": "NC-3719000-adu-2019",
+    "NC-3719000-adu-2024": "NC-3719000-adu-2023",
+    "NC-3755000-adu-2020a": "NC-3755000-adu-2020",
+    "OR-4105800-adu-2016b": "OR-4105800-adu-2016",
+    "TX-4805000-adu-2023a": "TX-4805000-adu-2023",
+    "TX-4815976-adu-2023a": "TX-4815976-adu-2023",
+}
+
+
+def override(prop: pd.DataFrame) -> pd.DataFrame:
+    prop = prop.copy()
+    for rid, field, value, why in OVERRIDES:
+        i = prop.index[prop["reform_id"] == rid]
+        assert len(i) == 1, rid
+        prop.loc[i, field] = pd.NA if value is None else value
+        prop.loc[i, "coding_notes"] = _note(prop.loc[i[0], "coding_notes"], f"[source check 2026-11-13] {field} = {value}: {why}.")
+    return prop
+
+
 MODEL_FIELDS = ["effective_date", "status", "supersedes", "by_right", "owner_occ", "min_lot_sqft", "adu_max_sqft",
                 "adu_detached_allowed", "adus_per_lot", "parking_min_per_unit"]  # fmt: skip
 
@@ -62,12 +107,17 @@ def conform(mine: pd.DataFrame, old: pd.DataFrame, todo: pd.DataFrame) -> pd.Dat
       the source field itself, the replaced config row with the same id, the place's replaced ADU rows, the row's
       own notes, then the worklist; the notes say which.
     - single_coder rows carry no coder_2: the second coder's name moves into the notes.
+    - a blank announced or adoption date keeps the replaced row's (same id).
     - coder is "claude" (the workstream is named in the notes, "WS-ADU-RULES proposed").
     - a no-ADU row (adus_per_lot 0) is not by right and its notes start "NO ADU RULE".
     """
     mine = mine.copy()
     mine["coder"] = "claude"
     for i, r in mine.iterrows():
+        same = old[old["reform_id"] == r["reform_id"]]
+        for c in ("announced_date", "adoption_date"):  # the research did not code these; keep the config's
+            if pd.isna(r[c]) and len(same) and pd.notna(same[c].iloc[0]):
+                mine.at[i, c] = same[c].iloc[0]
         src = r["source_url"]
         if not _https(src):
             src_txt = "" if pd.isna(src) else str(src)
@@ -103,6 +153,8 @@ def conform(mine: pd.DataFrame, old: pd.DataFrame, todo: pd.DataFrame) -> pd.Dat
 def main() -> None:
     prop = pd.read_csv(PROPOSED, dtype=str, keep_default_na=False).replace("", pd.NA)
     todo = pd.read_csv(TODO, dtype=str, keep_default_na=False)
+    prop = override(prop)
+    prop[["reform_id", "supersedes"]] = prop[["reform_id", "supersedes"]].replace(RENAMES)
     succ = prop.dropna(subset=["supersedes"]).set_index("supersedes")["effective_date"]
     for st, fn in FILES.items():
         path = ROOT / "config/reforms" / fn
@@ -131,7 +183,8 @@ def main() -> None:
                 z = o["coverage_zones"].dropna().iloc[0] if o["coverage_zones"].notna().any() else pd.NA
             zones.append(z)
         mine["coverage_zones"] = zones
-        mine["end_date"] = mine["reform_id"].map(succ)
+        prior_end = mine["reform_id"].map(old.set_index("reform_id")["end_date"]) if len(old) else pd.NA
+        mine["end_date"] = mine["reform_id"].map(succ).fillna(mine["end_date"]).fillna(prior_end)
         mine = conform(mine, old, todo)
         mine = keep_unchanged(mine, old)
         out = pd.concat([cur[~own], mine[cols]], ignore_index=True)

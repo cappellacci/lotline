@@ -79,8 +79,10 @@ def test_hand_checked_values(reforms):
     assert sl["effective_date"] == pd.Timestamp("2027-01-15")
     assert sl["parking_min_per_unit"] == 0
     assert sl["adu_max_sqft"] == 800
-    # Durham EHC: 800 sq ft ADUs, voted 2019-09-03 (city) and 2019-10-28 (county)
+    # Durham EHC: 800 sq ft ADUs, voted 2019-09-03 (city) and 2019-10-28 (county); city rule effective 2019-10-01
+    # (WS-ADU-RULES, source check 2026-11-13), row NC-3719000-adu-2019
     assert r.at["NC-3719000-adu-2019", "adu_max_sqft"] == 800
+    assert r.at["NC-3719000-adu-2019", "effective_date"] == pd.Timestamp("2019-10-01")
     assert r.at["NC-37063-adu-2019", "adoption_date"] == pd.Timestamp("2019-10-28")
 
 
@@ -112,11 +114,13 @@ def test_adu_rules_round_4(reforms):
     r = reforms.set_index("reform_id")
     # Raleigh's 2019 overlay: not by right; TC-16-19 supersedes it
     assert r.at["NC-3755000-adu-2019", "by_right"] == False  # noqa: E712
+    # TC-16-19 effective 2020-07-22 (WS-ADU-RULES, source check 2026-11-13), row NC-3755000-adu-2020
     assert r.at["NC-3755000-adu-2020", "supersedes"] == "NC-3755000-adu-2019"
-    # Wilmington LDC-7-424: adopted and effective 2024-05-21; owner occupancy unknown
+    assert r.at["NC-3755000-adu-2020", "effective_date"] == pd.Timestamp("2020-07-22")
+    # Wilmington LDC-7-424: adopted and effective 2024-05-21; no owner occupancy (WS-ADU-RULES, 2026-11-13)
     w = r.loc["NC-3774440-adu-2024"]
     assert w["effective_date"] == pd.Timestamp("2024-05-21") and w["adu_max_sqft"] == 1200
-    assert pd.isna(w["owner_occ"])
+    assert w["owner_occ"] == False  # noqa: E712
     # Charlotte 2012-067A ends when the UDO replaces the ordinance (no inheritance into the UDO row)
     c = r.loc["NC-3712000-adu-2012"]
     assert c["end_date"] == pd.Timestamp("2023-06-01") and c["parking_min_per_unit"] == 1
