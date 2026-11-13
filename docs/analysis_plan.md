@@ -5639,3 +5639,29 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Built and run** only after Ben accepts this entry. The code adds the trend to `adu_owner.fit3_term` (or a
   sibling) with a hand-worked test, `joint_refit` carries γ per draw, and a dev run like
   `adu_owner_refit.py`'s adds test D.
+- **Built, 2026-11-13, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_trend.py`: the trend, the fitter, test D's forecast and log score, the persistence
+      benchmark and the decision rules;
+    - `joint_refit.GlobalsA` carries γ per draw, with an optional year after which the trend is held flat;
+    - `scripts/dev/adu_trend_refit.py` runs everything;
+    - the hand-worked tests are in `tests/model/test_adu_trend.py`;
+    - the reference year (2020) and the split (2016–2020 against 2021–2025) are in
+      `config/params/adu_trend.yaml`.
+  - **Two fitters.** A and A′ use D-084's fitter, so their numbers are D-084's. The trend forms use
+    `adu_trend.fit3_trend`: fit 3's grid and rules, with θ, α, β_o and γ found together on each cell by
+    Nelder–Mead from two starts (nested golden sections over four numbers would take about 17 minutes a fit).
+    With γ held at 0 it reproduces D-084's fitter on synthetic data (the cell, θ, α, β_o, the log-likelihood and
+    the intervals), and it recovers a planted γ.
+  - **Test D's set (an inputs count):** the 2016–2020 fit has 38 places and 149 place-years. 37 places, with
+    178 place-years in 2021–2025, are forecast: MN 21, NC 10, OR 4, TX 2.
+  - **The forecast.** Per draw, the blank-field combination and the place effect come from their posterior
+    given the place's 2016–2020 counts. The draws are not reweighted per place, because the 2016–2020 fit
+    already used every early count. The log score is of the place's 2021–2025 counts year by year, as D-049's
+    is.
+  - **The benchmark** draws each place's rate per eligible lot (times the survey report rate) from
+    Gamma(early count + 0.5, early lot-years).
+  - **τ for the trend forms** is profiled on the places with exp(β̂ z) and exp(γ̂ (t − 2020)) folded in.
+  - **The rule-age outlook** uses the age of the oldest rule in force, capped at 10 years, with Form A′ as the
+    base. Only its fit and likelihood ratios are reported.
+  - **Seed** 20261111, 20,000 draws, as D-084.

@@ -1,0 +1,17 @@
+# ADU Form T: a calendar-year trend (analysis plan D-085, accepted by Ben 2026-11-13).
+# Only the trend's reference year and test D's split are fixed here. γ is fitted; no fitted value goes to
+# config until Ben approves a result.
+
+adu_trend_ref_year:
+  value: 2020
+  low: 2020
+  high: 2020
+  unit: calendar year
+  source: "D-085: the trend is exp(γ (t − 2020)), centered on 2020 so θ is the 2020 rate and θ and γ are close to independent; fixed before any fit"
+
+adu_trend_split_last_early_year:
+  value: 2020
+  low: 2020
+  high: 2020
+  unit: calendar year
+  source: "D-085 test D: refit on 2016-2020 and forecast 2021-2025 for the same places; fixed before any fit"
