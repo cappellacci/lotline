@@ -106,7 +106,9 @@ def test_hand_checked_values(reforms):
     # Minneapolis three-unit amendment: adopted 2019-11-08, "scheduled to take effect Jan. 1, 2020"
     tri = r.loc["MN-2743000-missing_middle-2020"]
     assert tri["effective_date"] == pd.Timestamp("2020-01-01") and tri["unit_cap"] == 3
-    # Minneapolis ADUs: 2014 owner-occupied only; 2021 amendment drops it for attached/detached ADUs
+    # Minneapolis ADUs: 2014 owner-occupied only; 2021 amendment drops it for attached/detached ADUs.
+    # WS-ADU-RULES (2026-11-13 source check): the 2014 ordinance took effect 2014-12-13, row MN-2743000-adu-2014
+    assert r.at["MN-2743000-adu-2014", "effective_date"] == pd.Timestamp("2014-12-13")
     assert bool(r.at["MN-2743000-adu-2014", "owner_occ"])
     assert not bool(r.at["MN-2743000-adu-2021", "owner_occ"])
     assert r.at["MN-2743000-adu-2021", "supersedes"] == "MN-2743000-adu-2016"

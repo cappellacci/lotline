@@ -138,7 +138,7 @@ def test_ended_rules_hand_over_to_their_successor(reforms):
         ("3918000", "2024-12-31", "none"),  # Columbus before Ord. 2526-2025
         ("3918000", "2026-01-31", "handbook"),
         ("3915000", "2022-12-31", "none"),
-        ("3915000", "2024-12-31", "partial"),  # owner occupancy
+        ("3915000", "2024-12-31", "uncertain"),  # no owner occupancy (Ben 2026-11-13); size cap relative, so blank
         ("3916000", "2025-12-31", "none"),
         ("3921000", "2024-12-31", "partial"),  # conditional use
         ("3954040", "2025-12-31", "none"),
