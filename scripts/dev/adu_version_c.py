@@ -96,6 +96,105 @@ def _k(self, cvals, m_d: float = 1.0):
 cal._cvals = _cvals
 cal.PlaceData.k = _k
 
+_orig_frailty_loglik = cal.frailty_loglik
+
+
+def frailty_loglik(places, theta: float, alpha: float, cvals, m_d: float = 1.0) -> float:
+    """`cal.frailty_loglik` with the blank-field combinations done in one numpy call per place
+    (`joint_refit._marginal`, the same formula): the new rows give 305 combinations, too slow one by one.
+    Checked equal to the original on the fit set before the run (`--check`)."""
+    total = 0.0
+    for pl in places:
+        ks = pl.k(cvals, m_d)
+        keep = pl.w > 0
+        per = np.log(pl.w[keep]) + jr._marginal(pl.y, theta * ks[keep], alpha, pl.log_fact)
+        total += float(np.logaddexp.reduce(per))
+    return total
+
+
+cal.frailty_loglik = frailty_loglik
+
+
+def fit3(places, grid=cal.GRID3, judgment=(0.5, 0.3), ranges=((0.2, 1.0), (0.1, 0.6)),
+         log_theta_range=(-14.0, 0.0)):  # fmt: skip
+    """`cal.fit3`, line for line, with one exact shortcut in θ's interval: the profile there is the max over
+    candidate shares, and only the crossing of ℓ̂ − χ²/2 matters, so a candidate whose own maximum (its
+    surface value) lies below that line can never move the crossing and is skipped. Same θ̂, α, m_o, m_x
+    and interval as `cal.fit3` (checked against it with `--check`)."""
+    gm, fl, lam = cal._golden_max, frailty_loglik, cal.LOG_ALPHA
+
+    def best_alpha(lt, cv):
+        return gm(lambda la: fl(places, math.exp(lt), math.exp(la), cv), *lam)
+
+    def prof_theta(cv):
+        return gm(lambda lt: max(best_alpha(lt, cv)[1], fl(places, math.exp(lt), 0.0, cv)), *log_theta_range)
+
+    surface = {(mo, mx): prof_theta(cal._cvals(mo, mx)) for mo in grid for mx in grid}
+    lls = {key: v[1] for key, v in surface.items()}
+    top = max(lls.values())
+
+    def interval(axis: int):
+        vals = sorted({key[axis] for key in lls})
+        prof = {v: max(ll for key, ll in lls.items() if key[axis] == v) for v in vals}
+        inside = [v for v in vals if 2 * (top - prof[v]) <= cal.CHI2_90]
+        hat = max(prof, key=prof.get)
+        return hat, (min(inside), max(inside))
+
+    (mo_hat, mo_int), (mx_hat, mx_int) = interval(0), interval(1)
+    mo_est = (mo_int[1] - mo_int[0]) < (ranges[0][1] - ranges[0][0])
+    mx_est = (mx_int[1] - mx_int[0]) < (ranges[1][1] - ranges[1][0])
+    mos = [mo_hat] if mo_est else [judgment[0]]
+    mxs = [mx_hat] if mx_est else [judgment[1]]
+    if mo_est and mx_est:
+        mos, mxs = list(grid), list(grid)
+    elif mo_est:
+        mos = list(grid)
+    elif mx_est:
+        mxs = list(grid)
+    m_o = mo_hat if mo_est else judgment[0]
+    m_x = mx_hat if mx_est else judgment[1]
+    lt_hat, _ = prof_theta(cal._cvals(m_o, m_x))
+    cand_keys = [(a, b) for a in mos for b in mxs]
+    for key in cand_keys:  # judgment values off the grid
+        if key not in lls:
+            lls[key] = prof_theta(cal._cvals(*key))[1]
+
+    def prof_over(keys, lt):
+        out = -math.inf
+        for key in keys:
+            cv = cal._cvals(*key)
+            out = max(out, best_alpha(lt, cv)[1], fl(places, math.exp(lt), 0.0, cv))
+        return out
+
+    ll_hat = prof_over(cand_keys, lt_hat)
+    line = ll_hat - cal.CHI2_90 / 2
+    live = [k for k in cand_keys if lls[k] >= line - 1e-6] or cand_keys
+
+    def prof(lt):
+        return prof_over(live, lt)
+
+    la, ll_a = best_alpha(lt_hat, cal._cvals(m_o, m_x))
+    alpha = math.exp(la) if ll_a > fl(places, math.exp(lt_hat), 0.0, cal._cvals(m_o, m_x)) else 0.0
+
+    def edge(lo, hi):
+        f_lo = 2 * (ll_hat - prof(lo)) - cal.CHI2_90
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            f_mid = 2 * (ll_hat - prof(mid)) - cal.CHI2_90
+            if (f_mid > 0) == (f_lo > 0):
+                lo, f_lo = mid, f_mid
+            else:
+                hi = mid
+        return (lo + hi) / 2
+
+    low, high = edge(log_theta_range[0], lt_hat), edge(log_theta_range[1], lt_hat)
+    return cal.Fit3(math.exp(lt_hat), math.exp(low), math.exp(high), alpha, m_o, m_x, mo_int, mx_int, mo_est,
+                    mx_est, ll_hat, len(places), int(sum(len(p.y) for p in places)))  # fmt: skip
+
+
+_orig_fit3 = cal.fit3
+cal.fit3 = fit3
+
 # ---------------------------------------------------------------------------------------------------------
 # place_data with the parking level and "other restriction" per rule (cal.place_data plus two arrays)
 # ---------------------------------------------------------------------------------------------------------
