@@ -5262,6 +5262,20 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - Runs 2–5 report both source sets.
   - **Overnight go-ahead (2026-11-12):** Ben asked to "get close to having a finalized model" overnight. Runs
     2–6 were run in order on that go-ahead. Config values still go in their own PR, only with Ben's approval.
+  - **Results of runs 2–5 (2026-11-12), with no value adopted:**
+    - **Run 2** (#414): s_td is 0.20 (0.11–0.43) and rCV is 0.023. r56 and rTH are not measurable without
+      `sf_only_zoned`.
+    - **Run 3** (#414): lots gaining a 2–4 unit building are 0.013% (Wake) to 0.36% (Minneapolis) of house
+      lots.
+    - **Run 4** (#415): M's θ is 0.63 per 1,000 eligible parcels a year (0.36–1.32). Without Oregon it is
+      0.034; Oregon is 86 of the 93 fit places.
+    - **Run 5** (#415): **M, C1, C3 and C4 each pass 0 of tests A–C.** Each also fails leave-one-state-out
+      (Oregon), and place coverage is about 0.44. M fails the placebo.
+    - The main cause is that the no-reform baseline is treated as known. Only 37% of no-reform places land
+      inside their P10–P90.
+    - §5's rule mechanically picks C4, which ties on tests and beats M by 2.9 SE, with the same θ. Because
+      every model fails, the choice is left to Ben.
+    - Run 6 is the results page: https://claude.ai/artifact/DVyYJNJjwPRXu3a28Ue5Dp.
   - Ben approved the review's sequence on 2026-11-11 ("Let's follow your order";
     `docs/research/mm-methodology-review-2026-11.md`, #392). This entry is its step 2.
   - Step 1 runs in parallel. It is second-coder rule checks: `reports/{nc,tx,mn,or}/mm-rule-checks-2026-11.md`.
