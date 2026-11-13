@@ -146,7 +146,11 @@ def main() -> None:
     ap.add_argument(
         "--influence", action="store_true", help="D-083 addition: leave-one-place-out on candidates"
     )
+    ap.add_argument("--m-owner", type=float, default=M_OWNER, help="Form A owner multiplier (default D-079)")
+    ap.add_argument("--m-other", type=float, default=M_OTHER, help="Form A other-rule multiplier (default D-079)")
     a = ap.parse_args()
+    global M_OWNER, M_OTHER
+    M_OWNER, M_OTHER = a.m_owner, a.m_other
     a.out.mkdir(parents=True, exist_ok=True)
     store = DataStore()
     with offline.offline_build(store):
@@ -272,7 +276,7 @@ def run(out: Path, store) -> None:
                  "correlations": fac.loc[keep, cands].corr().round(3).to_dict()}  # fmt: skip
     summary = {
         "entry": "D-083 (accepted by Ben 2026-11-13)",
-        "model": {"form": "D-079 Form A", "m_owner": M_OWNER, "m_other": M_OTHER},
+        "model": {"form": "Form A", "m_owner": M_OWNER, "m_other": M_OTHER},
         "fit_set": {"places": n_fit, "place_years": int(sum(len(pl.y) for pl in places))},
         "availability": avail,
         "notes": notes,
