@@ -5573,3 +5573,73 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **β_o is smaller than the screen's −0.81,** because the six Minnesota townships enter here. Without them
     it is −0.76. This check is descriptive and came after the run.
   - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
+
+### D-086 · 2026-11-13 · ADUs: coding each fit place's rule history, so the rule-change term can be tested (method only, before any coding)
+- **Status: proposed.** Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
+  - No row has been coded and no fit has been run for this entry. The only data read was an inputs count:
+    which fit places have permit files covering years before their first coded ADU rule. No ADU count was
+    read.
+  - **Number:** provisional, like D-083 to D-085.
+- **Why:**
+  - **The rule-change term is still unidentified.** D-079's g needs 8 events in 3 states. The D-079 build found
+    5 in 2 states: Inver Grove Heights 2019, Minneapolis 2021, Charlotte 2023, Raleigh 2021 and Wilmington 2024.
+    So g and g_m were held at 0.
+  - **How much a rule change moves uptake rests on one city.** m_x is set by Bend's 2016–17 years (D-053).
+    The D-079 event check put Raleigh's 2021 step at 6.6× predicted against 37.6× observed. If the model
+    under-reacts to reforms, every scenario's effect is too small.
+  - **Most fit places carry one coded row: the ordinance now in force.** The inputs count found 26 fit places
+    with permit files that cover years before that row (MN 20, NC 4, OH 1, TX 1). In those years the place
+    either allowed no ADUs or ran an older ordinance that nobody coded. If older, coding it adds fit years,
+    and, where the older rule had a different D-023 grade, an event.
+- **What counts as an event: unchanged from D-079.** A change in the D-023 dose (none 0, permit or conditional
+  use 1/3, by right with owner occupancy 2/3, by right without it 1) between two fit years, with at least two
+  fit years on each side. Built by code (`joint_refit.events`) from the coded rows, never chosen by hand.
+  - **An adoption (no ADUs to a rule) is coded but is not an event.** Form A has no expected count without a
+    rule. In Form B, years at dose 0 would measure "legal or not", which is not the question g asks: how much
+    a looser rule adds where ADUs are already legal.
+  - **Changes that leave the dose alone** (size caps, parking, detached allowed) are coded too, because Form A
+    reads them through c_r and coverage. They are not events. A finer dose would be its own entry.
+- **The coding, fixed now:**
+  - **Scope:** the 64 fit places of D-079, 2014-01-01 to 2025-12-31. Two years before the window, so a rule's
+    age is known at its start. St. Paul is not coded.
+  - **Sources, public only:** a code publisher's history pages (Municode, American Legal, eCode360, Code
+    Publishing), adopted ordinances, council and planning-commission minutes and staff reports posted online,
+    and archived snapshots of the code. No records requests and no emails to staff.
+  - **Rows:** every ordinance version that changed a field our rubric reads (`by_right`, `owner_occ`,
+    `adu_detached_allowed`, `adus_per_lot`, `adu_max_sqft`, `min_lot_sqft`, `parking`, `coverage`) gets its own
+    row, with `source_url`, `source_section`, `source_quote` and its effective date. The row it replaces gets an
+    `end_date`, and the new row names it in `supersedes`. Where the sources show no ADUs were allowed before a
+    place's first rule, that is a "no ADUs" row (#164's convention). Where the sources cannot settle a date or
+    a field, the field is left blank, which the model already treats as uncertain.
+  - **Coded blind to counts.** Coders work from ordinance sources and do not open permit counts.
+  - **Second coder.** Every new row that creates or moves an event is coded again by a second coder working
+    without the first row. A random 20% of the other new rows are too. Agreement goes in `coder_agreement`.
+    Disagreements are settled by a third read and listed for Ben in the PR.
+  - **One PR per state,** each with its rows, the sources and a list of the places searched where nothing older
+    was found.
+- **A check after coding, not used to choose rows:** the place-years with counted ADU permits but no coded rule
+  in force. These may point to a missed older rule. Each such place gets a second search, and the report lists
+  what that found, either way.
+- **Then, before any fit:** the events are rebuilt by code and the list is put in the PR, with the count by
+  state.
+- **If there are at least 8 events in at least 3 states:**
+  - Form B is fitted with g and g_m estimated, as D-079 wrote it, and scored against the base form (the form
+    in use after D-084 and D-085) by D-079's tests and D-084's decision rule.
+  - The D-079 event check is reported for every event: the base form's predicted step against the observed
+    step, with the place effect cancelling.
+- **If there are fewer:** g stays at 0. The event check is still reported. The bar is not lowered after the
+  count.
+- **The new rows change every form's inputs.** Earlier rules add fit years, and changed fields move c_r and
+  coverage. So before any comparison:
+  - the base form is refitted on the revised rows and rescored on the D-075 data-tier test and tests A–B;
+  - that refit becomes the reference, and its change from D-084's numbers is reported as a data revision.
+- **Expected yield, before coding:** unknown, and may fall short.
+  - Many of the 20 Minnesota places whose rule dates from 2020–2024 are likely first adoptions, which are not
+    events.
+  - The NC places (Durham city and county, Cornelius, Greensboro) and Cincinnati are more likely to have had
+    an older rule.
+  - Places already in the fit before 2016 (Austin, Portland, Bend, Minneapolis) may have amendments that
+    nobody coded.
+- **What it will not do:** change the event definition, the dose grades or D-079's bar; touch counts, k or the
+  holdouts; or write fitted values to config before Ben approves a result. It runs offline.
+- **Built and run** only after Ben accepts this entry: the state coding PRs first, then one run PR.
