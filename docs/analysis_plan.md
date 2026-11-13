@@ -5573,3 +5573,69 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **β_o is smaller than the screen's −0.81,** because the six Minnesota townships enter here. Without them
     it is −0.76. This check is descriptive and came after the run.
   - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
+
+### D-085 · 2026-11-13 · ADUs: a calendar-year trend, and a test that forecasts 2021–2025 from 2016–2020 (method only, before any fit)
+- **Status: proposed.** Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
+  - No fit, score, residual by year, engine or scenario run has been made for this entry.
+  - **Number:** provisional, like D-083 and D-084.
+- **Why:**
+  - **The model has no year term.** Form A and Form A′ say a place's uptake under the same rules, lots and
+    market is the same in 2016 and in 2025. Nothing has tested that since D-048 set the ramp to 1.
+  - **The D-045 audit's year pattern was large, but it was read under the old ramp.** Observed ÷ expected fell
+    from 2.92 in 2016 to 0.48 in 2025: early years under-predicted, late years over-predicted. The logistic
+    ramp made expected counts rise with rule age, and D-048 then dropped it. How much of the pattern is left
+    under the flat ramp has not been read, and is not read before this entry is accepted. So the trend's sign
+    is not assumed here.
+  - **No test so far asks the scenario's own question.** The scenario forecasts five years ahead for places
+    it has seen. Leave-one-state-out (D-075) asks about places it has not seen. Tests A and B are about new
+    places, and test C is a one-year floor. None fits on early years and scores later years.
+- **Form T, the challenger:** the base form × exp(γ (t − 2020)).
+  - t is the calendar year of the place-year. γ is one number shared by every place and state.
+  - Centered on 2020, θ stays the rate in 2020, so θ and γ are close to independent.
+  - **The base form** is the one D-084 leaves in use: Form A′ if Ben adopts it, else Form A. Both pairs (A
+    against A + T, A′ against A′ + T) are fitted and scored, so the result does not wait for that call. The
+    decision below applies to the pair whose base is in use.
+  - **Fitted:** θ, α, γ (and β_o for A′) by maximum likelihood over fit 3's (m_o, m_x) grid, with profile
+    intervals, by `adu_owner.fit3_term`'s procedure. γ has its own profile interval, and the draws carry
+    γ ~ N(γ̂, se) as β_o's do.
+- **Test D, new: forecast 2021–2025 from 2016–2020.**
+  - **Places:** every fit place with at least one fit year in 2016–2020 and one in 2021–2025. From the D-079
+    fit set (an inputs count, no outcomes): 37 places, 323 place-years. MN 21, NC 10, OR 4, TX 2 (Austin to
+    2023, College Station). OH has no fit year before 2024 and is not scored.
+  - **Fit:** every form is refitted by its full procedure on 2016–2020 place-years only, all states pooled.
+    Places with no year before 2021 are not in this fit.
+  - **Forecast:** each place's 2021–2025 count, with its place effect updated from its own 2016–2020 counts
+    (the Gamma posterior), and θ, α, β_o and γ drawn from the 2016–2020 fit. Rules, lots, rent, value and
+    the mortgage rate are the actual ones in 2021–2025. That makes this a forecast given the market, not a
+    forecast of the market. The scenario has the same form: it fixes the rules and projects the market.
+  - **Extrapolating the trend.** Form T is scored two ways: γ continued through 2025, and γ held at its 2020
+    level. The way that scores better here is the way the scenario uses, fixed now. A tie (within 2 paired
+    SE) goes to holding it flat, the smaller assumption.
+  - **Scores:**
+    - per place: the log score of the 2021–2025 total, summed over places, with paired SE between forms;
+    - per state: observed ÷ P50 and inside P10–P90 on the state's total, CRPS;
+    - "useful" as in D-075: inside P10–P90 and within ×2.
+  - **A benchmark, reported and not used to choose:** each place's own 2016–2020 rate per eligible lot,
+    carried forward with a Gamma spread from its counts. If the model loses to this, the write-up says so.
+- **Decision rule, fixed now.** Form T replaces its base only if all three hold:
+  - **Test D:** T's summed log score beats the base's by more than 2 paired SE.
+  - **The full fit:** γ's 90% interval excludes 0.
+  - **No loss elsewhere:** on the D-075 data-tier test, T has at least as many useful states at each tier as
+    the base, and it passes at least as many of tests A–B, state by state.
+  - Otherwise the base is kept with no trend, and every score is reported.
+- **Expected direction, before any fit:** none on γ's sign, for the reason above. If γ is negative, the main
+  suspects are the Met Council survey's report rate drifting and the 2023–24 rate shock beyond what h1 carries.
+  If positive, it is uptake spreading as ADUs become familiar.
+- **Sensitivities, reported and not used to choose:**
+  - γ leaving out each state (as for β_o in D-084);
+  - **a rule-age term instead of the calendar trend**, exp(δ × min(rule age, 10)). The two can be told apart
+    only because places adopted in different years. Reported as an outlook;
+  - test D for the base forms with no trend is the first read of how well Lotline forecasts the places it has
+    seen. It is reported in full whatever the decision.
+- **What it will not do:** write to config before Ben approves a result; change counts, k or the fit set; or
+  touch the holdouts (St. Paul stays out of every fit and score; ACS through `holdout.apply_acs`). It runs
+  offline from cached tables, with seed 20261111 and 20,000 draws. Test C is not run for T, as for A′: the
+  engine has no trend term, and D-079 leaves C out of the count.
+- **Built and run** only after Ben accepts this entry. The code adds the trend to `adu_owner.fit3_term` (or a
+  sibling) with a hand-worked test, `joint_refit` carries γ per draw, and a dev run like
+  `adu_owner_refit.py`'s adds test D.
