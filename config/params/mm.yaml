@@ -81,3 +81,165 @@ mm_teardown_share_scale:
   unit: share of a place's house share of eligible parcels
   source: "Judgment (D-063 choice 2): new 2-4 unit buildings replace a house in proportion to the share of eligible parcels that hold one (ADU-eligible over missing-middle eligible parcels, from the same rolls); 1.0 = builders pick lots at random, 0.5 = they favour vacant lots twice as much"
   notes: "No local split of new 2-4 unit buildings by prior use is coded; Portland's RIP monitoring is the outside check (docs/research/mm-uptake-evidence.md)."
+
+# ---- D-082 counting protocol (model/mm_counts.py; D-082 (proposed) §2-§3, not yet approved by Ben) ----
+# Code only: no count has been run with these values.
+
+mm_strong_parcel_fill:
+  value: 0.85
+  low: 0.85
+  high: 0.85
+  unit: share of permit rows with a parcel ID
+  source: "D-082 (proposed) §2: a permit source is strong only if a parcel ID is filled on at least 85% of rows"
+
+mm_strong_min_pre_years:
+  value: 3
+  low: 3
+  high: 3
+  unit: years before the place's event
+  source: "D-082 (proposed) §2: a strong source covers at least 3 years before the place's event"
+
+mm_coverage_k_low:
+  value: 0.8
+  low: 0.8
+  high: 0.8
+  unit: permit buildings / BPS 2-4 unit buildings
+  source: "D-082 (proposed) §2: the source enters if 0.8 <= k_src (D-072's coverage screen)"
+
+mm_coverage_k_high:
+  value: 1.25
+  low: 1.25
+  high: 1.25
+  unit: permit buildings / BPS 2-4 unit buildings
+  source: "D-082 (proposed) §2: upper bound k_src <= 1.25, since permits can include conversions"
+
+mm_collapse_min_units:
+  value: 2
+  low: 2
+  high: 2
+  unit: units per collapsed building
+  source: "D-082 (proposed) §2: a collapsed building whose summed units fall outside 2-4 is reported and left out"
+
+mm_collapse_max_units:
+  value: 4
+  low: 4
+  high: 4
+  unit: units per collapsed building
+  source: "D-082 (proposed) §2: a collapsed building whose summed units fall outside 2-4 is reported and left out"
+
+mm_ratio_min_buildings:
+  value: 50
+  low: 50
+  high: 50
+  unit: new 2-4 unit buildings in a source
+  source: "D-082 (proposed) §3: a ratio's range is the lowest and highest source ratio on at least 50 buildings"
+
+mm_teardown_demolition_window:
+  value: 2
+  low: 2
+  high: 2
+  unit: years either side of the 2-4 building's issue year
+  source: "D-082 (proposed) §3: s_td counts a demolition permit on the same parcel within +/-2 years"
+
+mm_roll_merge_growth:
+  value: 0.20
+  low: 0.20
+  high: 0.20
+  unit: share increase in lot area between rolls
+  source: "D-082 (proposed) §2, as wake_roll_diff.MERGE_ACRE_GROWTH: lot area up more than 20% is a possible merge, reported and left out"
+
+mm_coverage_interval_z:
+  value: 1.6449
+  low: 1.6449
+  high: 1.6449
+  unit: standard normal quantile
+  source: "Choice (mm-counts code PR, D-082 (proposed)): 90% two-sided interval on k_src, as the D-074 k interval (validation.undercount.Z90)"
+
+# ---- D-082 (proposed, not approved): method constants for the code only; no fitted value is written here ----
+
+mm_standards_dose_increase:
+  value: 0.3333
+  low: 0.3333
+  high: 1.0
+  unit: dose increase of a standards event (dose class S)
+  source: "D-082 (proposed) §1b: a standards event (the cap doesn't rise; the by-right route gets cheaper, e.g. Houston's 2023 MUR route) counts the approval-grade step of D-024 (permit or conditional -> by right), 1/3. High is the 'S dose 1' sensitivity"
+  notes: "Used by calibrate_mm.retarget_events and scripts/dev/calibrate_mm_d082.py. Not drawn; the sensitivities are 'S excluded' and 'S dose 1'."
+
+mm_level_pool_min_places:
+  value: 3
+  low: 3
+  high: 3
+  unit: coded "none" places in a state and size band
+  source: "D-082 (proposed) §1b, D-042's thin-pool rule: the no-rule level b for an always-allowed place comes from coded 'none' places (unit_cap 1) of the same state and D-022 size band, or from the band pooled over the states if there are fewer than this many"
+
+mm_level_prior_widening:
+  value: 2.0
+  low: 2.0
+  high: 2.0
+  unit: multiplier on θ_L's profile log-SE
+  source: "D-082 (proposed) §5, challenger C4: θ_L enters as a lognormal prior on M's mature level with its log-SD from θ_L's profile interval, doubled for selection (always-allowed places chose to allow duplexes)"
+
+mm_challenger_se_margin:
+  value: 2.0
+  low: 2.0
+  high: 2.0
+  unit: paired standard errors of the held-out log score
+  source: "D-082 (proposed) §5: a challenger replaces M only if its leave-one-state-out held-out log score beats M's by more than this many paired SE and it passes no fewer of tests A-C"
+
+# ---- D-082 §7 accuracy-test pass rules (model/mm_tests.py; fixed before any test was run) ----
+
+mm_test_a_coverage:
+  value: 0.6
+  low: 0.6
+  high: 0.6
+  unit: share of new places with the observed total inside P10-P90
+  source: "D-082 §7 test A (new places): pass if at least this share of newly entering non-Oregon places is inside P10-P90"
+
+mm_test_a_ratio:
+  value: 2.0
+  low: 2.0
+  high: 2.0
+  unit: factor
+  source: "D-082 §7 test A: the median of observed / P50 over new places must lie within this factor of 1"
+
+mm_test_c_coverage:
+  value: 0.7
+  low: 0.7
+  high: 0.7
+  unit: share of no-reform places with the observed total inside P10-P90
+  source: "D-082 §7 test C (no-reform floor): pass if at least this share of coded 'none' places and Franklin County places is inside P10-P90, 2021-25, and no state total is missed"
+
+mm_test_c_first_year:
+  value: 2021
+  low: 2021
+  high: 2021
+  unit: year
+  source: "D-082 §7 test C: the no-reform forecast covers 2021-25"
+
+mm_loso_min_places:
+  value: 3
+  low: 3
+  high: 3
+  unit: fit places in a held-out state
+  source: "D-082 §7 leave one state out: fail if any state with at least this many fit places is missed (D-040 verdict)"
+
+mm_placebo_shift_years:
+  value: 3
+  low: 3
+  high: 3
+  unit: years
+  source: "D-082 §7 placebo: events moved this many years early, pre-years only; pass if the placebo r5's 90% upper bound is below the main r5"
+
+mm_place_coverage_low:
+  value: 0.6
+  low: 0.6
+  high: 0.6
+  unit: share inside P10-P90 (randomized)
+  source: "D-082 §7 place coverage: randomized P10-P90 coverage of place totals; target 0.6-0.95, outside it is flagged before any freeze"
+
+mm_place_coverage_high:
+  value: 0.95
+  low: 0.95
+  high: 0.95
+  unit: share inside P10-P90 (randomized)
+  source: "D-082 §7 place coverage: upper end of the 0.6-0.95 target"

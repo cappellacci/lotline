@@ -1,0 +1,262 @@
+<title>Missing-middle model check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · D-082 runs 4–5 · 12 Nov 2026</div>
+  <h1>The missing-middle model fails its own accuracy tests</h1>
+  <p class="lede">We refit the missing-middle uptake model and three challengers, then held each one to the six checks set out before any number was seen. None of the four passes any of the three selection tests (A–C). The cause is mostly one thing: the model treats the no-reform baseline as known.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>0.63</b><span>θ for M, per 1,000 parcels a year (0.36–1.32)</span></div>
+  <div class="tile"><b>0.034</b><span>θ without Oregon, about 1/20 as large</span></div>
+  <div class="tile"><b>0 / 3</b><span>tests A–C passed, every model</span></div>
+  <div class="tile"><b>37%</b><span>of no-reform places inside their P10–P90 (bar: 70%)</span></div>
+</div>
+
+<div class="decision">
+  <span class="tag">Needs Ben's call</span>
+  <h2>Which way to take the model</h2>
+  <p>The rule in D-082 §5 picks C4, because every model ties at zero tests passed and C4 scores 2.9 paired SE better than M. C4's θ is the same as M's (0.633 against 0.632). With every model failing, that pick carries no weight. Options:</p>
+  <ol>
+    <li><b>Recommended: give the baseline its own uncertainty.</b> Fit a place-level spread on the no-reform level from the no-reform places, then rerun runs 4–5. This is a method change to D-059 (b′), so it needs a dated deviation entry.</li>
+    <li><b>Use the four-state θ (0.034) as the main value</b>, with Oregon as an outside check, in line with D-037's route one.</li>
+    <li><b>Adopt M (or C4) as it stands</b> and disclose the test failures.</li>
+  </ol>
+  <p class="note">No value has been written to config. Any adopted value goes in its own PR.</p>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Oregon sets the rate. Without it, the rate drops about twentyfold.</h2>
+  <p>86 of the 93 fit places are Oregon cities with an HB 2001 event. The challengers land close to M, except the always-allowed level L, which is too thin to pin down. With Oregon left out, θ is 0.034, below the 0.12 adopted for D-059.</p>
+  <svg viewBox="0 0 640 238" role="img" class="chart"><line x1="218.8" x2="218.8" y1="16" y2="208" class="grid"/><text x="218.8" y="224" class="tick" text-anchor="middle">0.01</text><line x1="312.1" x2="312.1" y1="16" y2="208" class="grid"/><text x="312.1" y="224" class="tick" text-anchor="middle">0.1</text><line x1="405.3" x2="405.3" y1="16" y2="208" class="grid"/><text x="405.3" y="224" class="tick" text-anchor="middle">1</text><line x1="498.6" x2="498.6" y1="16" y2="208" class="grid"/><text x="498.6" y="224" class="tick" text-anchor="middle">10</text><line x1="591.9" x2="591.9" y1="16" y2="208" class="grid"/><text x="591.9" y="224" class="tick" text-anchor="middle">100</text><line x1="319.4" x2="319.4" y1="16" y2="208" class="ref"/><text x="323.4" y="14" class="reftxt">D-059 adopted 0.12</text><text x="160" y="43.0" class="lab" text-anchor="end">M (main)</text><rect x="363.4" y="33.0" width="53.3" height="12" class="band m"/><line x1="386.7" x2="386.7" y1="31.0" y2="47.0" class="mid"/><text x="160" y="73.0" class="lab" text-anchor="end">C1 not-yet-treated</text><rect x="348.4" y="63.0" width="77.6" height="12" class="band "/><line x1="382.8" x2="382.8" y1="61.0" y2="77.0" class="mid"/><text x="160" y="103.0" class="lab" text-anchor="end">C3 conditional z</text><rect x="370.9" y="93.0" width="55.8" height="12" class="band "/><line x1="398.1" x2="398.1" y1="91.0" y2="107.0" class="mid"/><text x="160" y="133.0" class="lab" text-anchor="end">C4 level prior</text><rect x="363.6" y="123.0" width="53.1" height="12" class="band "/><line x1="386.8" x2="386.8" y1="121.0" y2="137.0" class="mid"/><text x="160" y="163.0" class="lab" text-anchor="end">L always-allowed level</text><rect x="314.3" y="153.0" width="289.8" height="12" class="band "/><line x1="399.6" x2="399.6" y1="151.0" y2="167.0" class="mid"/><text x="160" y="193.0" class="lab" text-anchor="end">M without Oregon</text><rect x="178.3" y="183.0" width="215.2" height="12" class="band warn"/><line x1="267.8" x2="267.8" y1="181.0" y2="197.0" class="mid"/><text x="620" y="236" class="tick" text-anchor="end">new 2–4 unit buildings per 1,000 eligible parcels per year (log)</text></svg>
+  <div class="legend"><span><i class="sw"></i>90% range</span><span>black tick: fitted θ</span></div>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>The baseline is too narrow, so places with no reform land outside their ranges.</h2>
+  <p>Test C predicts 2021–25 for places that never changed their rules. The prediction is the place's own pre-period level and trend, with only Poisson noise around it. Real places move far more than that, in both directions. Reynoldsburg is predicted 144–176 and saw 5. Abilene is predicted 100–127 and saw 307.</p>
+  <svg viewBox="0 0 640 598" role="img" class="chart"><line x1="205.9" x2="205.9" y1="16" y2="568" class="grid"/><text x="205.9" y="584" class="tick" text-anchor="middle">1</text><line x1="325.0" x2="325.0" y1="16" y2="568" class="grid"/><text x="325.0" y="584" class="tick" text-anchor="middle">10</text><line x1="444.1" x2="444.1" y1="16" y2="568" class="grid"/><text x="444.1" y="584" class="tick" text-anchor="middle">100</text><line x1="563.2" x2="563.2" y1="16" y2="568" class="grid"/><text x="563.2" y="584" class="tick" text-anchor="middle">1000</text><text x="160" y="43.0" class="lab" text-anchor="end">Edinburg TX</text><rect x="559.9" y="33.0" width="4.2" height="12" class="band "/><line x1="562.0" x2="562.0" y1="31.0" y2="47.0" class="mid"/><circle cx="536.1" cy="39.0" r="5" class="obs out"/><text x="160" y="73.0" class="lab" text-anchor="end">Dallas TX</text><rect x="546.5" y="63.0" width="4.8" height="12" class="band "/><line x1="549.0" x2="549.0" y1="61.0" y2="77.0" class="mid"/><circle cx="531.8" cy="69.0" r="5" class="obs out"/><text x="160" y="103.0" class="lab" text-anchor="end">Killeen TX</text><rect x="514.5" y="93.0" width="6.6" height="12" class="band "/><line x1="517.9" x2="517.9" y1="91.0" y2="107.0" class="mid"/><circle cx="501.1" cy="99.0" r="5" class="obs out"/><text x="160" y="133.0" class="lab" text-anchor="end">Columbus OH</text><rect x="504.6" y="123.0" width="7.2" height="12" class="band "/><line x1="508.3" x2="508.3" y1="121.0" y2="137.0" class="mid"/><circle cx="509.6" cy="129.0" r="5" class="obs in"/><text x="160" y="163.0" class="lab" text-anchor="end">Fort Worth TX</text><rect x="503.4" y="153.0" width="7.2" height="12" class="band "/><line x1="507.1" x2="507.1" y1="151.0" y2="167.0" class="mid"/><circle cx="561.0" cy="159.0" r="5" class="obs out"/><text x="160" y="193.0" class="lab" text-anchor="end">San Antonio TX</text><rect x="492.5" y="183.0" width="7.9" height="12" class="band "/><line x1="496.4" x2="496.4" y1="181.0" y2="197.0" class="mid"/><circle cx="504.7" cy="189.0" r="5" class="obs out"/><text x="160" y="223.0" class="lab" text-anchor="end">Laredo TX</text><rect x="479.7" y="213.0" width="9.3" height="12" class="band "/><line x1="484.4" x2="484.4" y1="211.0" y2="227.0" class="mid"/><circle cx="449.0" cy="219.0" r="5" class="obs out"/><text x="160" y="253.0" class="lab" text-anchor="end">Waco TX</text><rect x="468.1" y="243.0" width="10.0" height="12" class="band "/><line x1="473.0" x2="473.0" y1="241.0" y2="257.0" class="mid"/><circle cx="472.4" cy="249.0" r="5" class="obs in"/><text x="160" y="283.0" class="lab" text-anchor="end">Brownsville TX</text><rect x="464.3" y="273.0" width="10.1" height="12" class="band "/><line x1="469.7" x2="469.7" y1="271.0" y2="287.0" class="mid"/><circle cx="399.2" cy="279.0" r="5" class="obs out"/><text x="160" y="313.0" class="lab" text-anchor="end">Reynoldsburg OH</text><rect x="462.9" y="303.0" width="10.4" height="12" class="band "/><line x1="468.1" x2="468.1" y1="301.0" y2="317.0" class="mid"/><circle cx="289.1" cy="309.0" r="5" class="obs out"/><text x="160" y="343.0" class="lab" text-anchor="end">McKinney TX</text><rect x="451.3" y="333.0" width="11.6" height="12" class="band "/><line x1="457.2" x2="457.2" y1="331.0" y2="347.0" class="mid"/><circle cx="289.1" cy="339.0" r="5" class="obs out"/><text x="160" y="373.0" class="lab" text-anchor="end">McAllen TX</text><rect x="448.5" y="363.0" width="11.8" height="12" class="band "/><line x1="454.8" x2="454.8" y1="361.0" y2="377.0" class="mid"/><circle cx="541.8" cy="369.0" r="5" class="obs out"/><text x="160" y="403.0" class="lab" text-anchor="end">Abilene TX</text><rect x="444.1" y="393.0" width="12.4" height="12" class="band "/><line x1="450.4" x2="450.4" y1="391.0" y2="407.0" class="mid"/><circle cx="502.1" cy="399.0" r="5" class="obs out"/><text x="160" y="433.0" class="lab" text-anchor="end">Round Rock TX</text><rect x="440.3" y="423.0" width="13.2" height="12" class="band "/><line x1="447.1" x2="447.1" y1="421.0" y2="437.0" class="mid"/><circle cx="345.9" cy="429.0" r="5" class="obs out"/><text x="160" y="463.0" class="lab" text-anchor="end">Tyler TX</text><rect x="438.0" y="453.0" width="13.3" height="12" class="band "/><line x1="444.6" x2="444.6" y1="451.0" y2="467.0" class="mid"/><circle cx="481.9" cy="459.0" r="5" class="obs out"/><text x="160" y="493.0" class="lab" text-anchor="end">College Station TX</text><rect x="435.0" y="483.0" width="13.5" height="12" class="band "/><line x1="442.0" x2="442.0" y1="481.0" y2="497.0" class="mid"/><circle cx="414.1" cy="489.0" r="5" class="obs out"/><text x="160" y="523.0" class="lab" text-anchor="end">Amarillo TX</text><rect x="383.5" y="513.0" width="22.6" height="12" class="band "/><line x1="395.4" x2="395.4" y1="511.0" y2="527.0" class="mid"/><circle cx="409.2" cy="519.0" r="5" class="obs out"/><text x="160" y="553.0" class="lab" text-anchor="end">Odessa TX</text><rect x="342.4" y="543.0" width="32.0" height="12" class="band "/><line x1="360.8" x2="360.8" y1="541.0" y2="557.0" class="mid"/><circle cx="205.9" cy="549.0" r="5" class="obs out"/><text x="620" y="596" class="tick" text-anchor="end">2–4 unit buildings 2021–25, no reform (log; 0 drawn at 0.5)</text></svg>
+  <p class="note">The 18 no-reform places with the largest predictions are shown. All 43 are in <code>test_c_places.csv</code>.</p>
+  <svg viewBox="0 0 640 148" role="img" class="chart"><line x1="255.0" x2="255.0" y1="16" y2="118" class="grid"/><text x="255.0" y="134" class="tick" text-anchor="middle">10</text><line x1="376.7" x2="376.7" y1="16" y2="118" class="grid"/><text x="376.7" y="134" class="tick" text-anchor="middle">100</text><line x1="498.3" x2="498.3" y1="16" y2="118" class="grid"/><text x="498.3" y="134" class="tick" text-anchor="middle">1000</text><line x1="620.0" x2="620.0" y1="16" y2="118" class="grid"/><text x="620.0" y="134" class="tick" text-anchor="middle">10000</text><text x="160" y="43.0" class="lab" text-anchor="end">MN total (3 places)</text><rect x="191.4" y="33.0" width="51.8" height="12" class="band "/><line x1="218.4" x2="218.4" y1="31.0" y2="47.0" class="mid"/><circle cx="316.5" cy="39.0" r="5" class="obs out"/><text x="160" y="73.0" class="lab" text-anchor="end">OH total (11 places)</text><rect x="461.1" y="63.0" width="6.0" height="12" class="band "/><line x1="464.1" x2="464.1" y1="61.0" y2="77.0" class="mid"/><circle cx="448.7" cy="69.0" r="5" class="obs out"/><text x="160" y="103.0" class="lab" text-anchor="end">TX total (29 places)</text><rect x="571.7" y="93.0" width="2.1" height="12" class="band "/><line x1="572.7" x2="572.7" y1="91.0" y2="107.0" class="mid"/><circle cx="578.0" cy="99.0" r="5" class="obs out"/><text x="620" y="146" class="tick" text-anchor="end">2–4 unit buildings 2021–25 (log)</text></svg>
+  <div class="legend"><span><i style="background:var(--confidence-inside)"></i>observed, inside P10–P90</span><span><i style="background:var(--confidence-outside)"></i>observed, outside</span><span><i class="sw"></i>P10–P90</span></div>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>Leaving out one state, the model misses Oregon and North Carolina.</h2>
+  <p>Each state is predicted from a fit to the other four. Oregon is over-predicted: the P10 is 803 against 703 observed, and with θ from four states that prediction is almost all baseline. North Carolina, 2 observed against 7–36, is also missed, but has only 2 fit places, so the test does not count it.</p>
+  <svg viewBox="0 0 640 208" role="img" class="chart"><line x1="205.9" x2="205.9" y1="16" y2="178" class="grid"/><text x="205.9" y="194" class="tick" text-anchor="middle">1</text><line x1="325.0" x2="325.0" y1="16" y2="178" class="grid"/><text x="325.0" y="194" class="tick" text-anchor="middle">10</text><line x1="444.1" x2="444.1" y1="16" y2="178" class="grid"/><text x="444.1" y="194" class="tick" text-anchor="middle">100</text><line x1="563.2" x2="563.2" y1="16" y2="178" class="grid"/><text x="563.2" y="194" class="tick" text-anchor="middle">1000</text><text x="160" y="43.0" class="lab" text-anchor="end">MN (1 fit places)</text><rect x="170.0" y="33.0" width="119.1" height="12" class="band "/><line x1="170.0" x2="170.0" y1="31.0" y2="47.0" class="mid"/><circle cx="170.0" cy="39.0" r="5" class="obs in"/><text x="160" y="73.0" class="lab" text-anchor="end">NC (2 fit places)</text><rect x="306.5" y="63.0" width="84.7" height="12" class="band "/><line x1="338.5" x2="338.5" y1="61.0" y2="77.0" class="mid"/><circle cx="241.7" cy="69.0" r="5" class="obs out"/><text x="160" y="103.0" class="lab" text-anchor="end">OH (1 fit places)</text><rect x="170.0" y="93.0" width="35.9" height="12" class="band "/><line x1="170.0" x2="170.0" y1="91.0" y2="107.0" class="mid"/><circle cx="170.0" cy="99.0" r="5" class="obs in"/><text x="160" y="133.0" class="lab" text-anchor="end">TX (3 fit places)</text><rect x="352.4" y="123.0" width="143.6" height="12" class="band "/><line x1="399.2" x2="399.2" y1="121.0" y2="137.0" class="mid"/><circle cx="370.2" cy="129.0" r="5" class="obs in"/><text x="160" y="163.0" class="lab" text-anchor="end">OR (86 fit places)</text><rect x="551.8" y="153.0" width="32.5" height="12" class="band "/><line x1="557.0" x2="557.0" y1="151.0" y2="167.0" class="mid"/><circle cx="544.9" cy="159.0" r="5" class="obs out"/><text x="620" y="206" class="tick" text-anchor="end">2–4 unit buildings, 5 years after the event, state total (log; 0 drawn at 0.5)</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 4</div>
+  <h2>A fake reform three years early still shows two thirds of the effect.</h2>
+  <p>Part of what M calls a reform effect was already under way before the reform. This fits Finding 2: when the baseline misses a place's upward drift, the reform term picks it up.</p>
+  <svg viewBox="0 0 640 118" role="img" class="chart"><line x1="170.0" x2="170.0" y1="16" y2="88" class="grid"/><text x="170.0" y="104" class="tick" text-anchor="middle">0.1</text><line x1="274.1" x2="274.1" y1="16" y2="88" class="grid"/><text x="274.1" y="104" class="tick" text-anchor="middle">0.2</text><line x1="411.8" x2="411.8" y1="16" y2="88" class="grid"/><text x="411.8" y="104" class="tick" text-anchor="middle">0.5</text><line x1="515.9" x2="515.9" y1="16" y2="88" class="grid"/><text x="515.9" y="104" class="tick" text-anchor="middle">1</text><line x1="620.0" x2="620.0" y1="16" y2="88" class="grid"/><text x="620.0" y="104" class="tick" text-anchor="middle">2</text><text x="160" y="43.0" class="lab" text-anchor="end">Main event year</text><rect x="320.7" y="33.0" width="193.6" height="12" class="band m"/><line x1="407.1" x2="407.1" y1="31.0" y2="47.0" class="mid"/><text x="160" y="73.0" class="lab" text-anchor="end">Event moved 3 yrs early</text><rect x="243.6" y="63.0" width="224.6" height="12" class="band warn"/><line x1="346.1" x2="346.1" y1="61.0" y2="77.0" class="mid"/><text x="620" y="116" class="tick" text-anchor="end">five-year rate r5, per 1,000 eligible parcels (log)</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 5</div>
+  <h2>The roll check compares two different counts.</h2>
+  <p>Test B sets predicted new 2–4 unit buildings (BPS) against lots that gained a 2–4 unit building between two tax rolls. Franklin's 785 predicted buildings against 142 lots says most BPS buildings in Columbus are not lots changing class in the roll. Minneapolis goes the other way: conversions show in the roll, not in BPS. Until the two counts are lined up, this test cannot separate model error from the mismatch.</p>
+  <svg viewBox="0 0 640 178" role="img" class="chart"><line x1="170.0" x2="170.0" y1="16" y2="148" class="grid"/><text x="170.0" y="164" class="tick" text-anchor="middle">10</text><line x1="365.6" x2="365.6" y1="16" y2="148" class="grid"/><text x="365.6" y="164" class="tick" text-anchor="middle">100</text><line x1="561.1" x2="561.1" y1="16" y2="148" class="grid"/><text x="561.1" y="164" class="tick" text-anchor="middle">1000</text><text x="160" y="43.0" class="lab" text-anchor="end">Wake 2019-2022</text><rect x="303.2" y="33.0" width="28.3" height="12" class="band "/><line x1="317.8" x2="317.8" y1="31.0" y2="47.0" class="mid"/><circle cx="257.4" cy="39.0" r="5" class="obs out"/><text x="160" y="73.0" class="lab" text-anchor="end">Franklin 2016-2023</text><rect x="536.7" y="63.0" width="7.7" height="12" class="band "/><line x1="540.6" x2="540.6" y1="61.0" y2="77.0" class="mid"/><circle cx="395.3" cy="69.0" r="5" class="obs out"/><text x="160" y="103.0" class="lab" text-anchor="end">Minneapolis 2017-2023</text><rect x="325.0" y="93.0" width="123.4" height="12" class="band "/><line x1="343.4" x2="343.4" y1="91.0" y2="107.0" class="mid"/><circle cx="451.5" cy="99.0" r="5" class="obs out"/><text x="160" y="133.0" class="lab" text-anchor="end">Met Council 2021-2024</text><rect x="419.6" y="123.0" width="71.8" height="12" class="band "/><line x1="429.8" x2="429.8" y1="121.0" y2="137.0" class="mid"/><circle cx="464.6" cy="129.0" r="5" class="obs in"/><text x="620" y="176" class="tick" text-anchor="end">predicted 2–4 buildings (bar) vs lots that gained one in the rolls (dot), log</text></svg>
+  <p class="note">Test A had a single new place, Houston, now class S: 21 observed against P10–P90 of 2–175. That is inside, but 3× the P50 of 7. One place cannot carry the test.</p>
+</section>
+
+<section>
+  <div class="num-tag">Scorecard</div>
+  <h2>Every test, every model</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Model</th><th>A new places</th><th>B roll check</th><th>C no-reform</th><th>A–C passed</th><th>Leave one state out</th><th>Placebo</th><th>Place coverage (0.60–0.95)</th><th>Score vs M (SE)</th></tr></thead>
+    <tbody><tr><th>M</th><td class="f">fail</td><td class="f">fail</td><td class="f">fail</td><td class='num'>0</td><td class="f">fail</td><td class="f">fail</td><td class='num'>0.44</td><td class='num'>—</td></tr><tr><th>C1</th><td class="f">fail</td><td class="f">fail</td><td class="f">fail</td><td class='num'>0</td><td class="f">fail</td><td>—</td><td class='num'>0.44</td><td class='num'>-422.2 (210.1)</td></tr><tr><th>C3</th><td class="f">fail</td><td class="f">fail</td><td class="f">fail</td><td class='num'>0</td><td class="f">fail</td><td>—</td><td class='num'>0.43</td><td class='num'>-20.8 (8.1)</td></tr><tr><th>C4</th><td class="f">fail</td><td class="f">fail</td><td class="f">fail</td><td class='num'>0</td><td class="f">fail</td><td>—</td><td class='num'>0.46</td><td class='num'>+4.1 (1.4)</td></tr></tbody>
+  </table></div>
+  <p class="note">Not run: the data-tier test (too few strong permit sources with post-event years) and challenger C2 (needs addresses, which the adapters drop). The 30-building hand check from run 1 is still open.</p>
+</section>
+
+<footer>
+  <div>Sources: <code>reports/mm-d082/run4-refit/</code> and <code>reports/mm-d082/run5-tests/</code> on branch <code>ws/mm-run5</code> (PR #415, stacked on #414 → #410 → #392). Pass rules: <code>src/lotline/model/mm_tests.py</code>.</div>
+  <div>Holdouts: St. Paul and Ramsey County stay blind, with no unblinding. Everything was run from cached data, with nothing downloaded.</div>
+</footer>
+</main>
