@@ -1,0 +1,65 @@
+state,geoid,name,first,last,place_years,adu_permits_k,lots_max,new_since_d053,tier2_city
+MN,2701486,Andover city,2016,2025,10,0.0,11571.0,False,False
+MN,2701900,Apple Valley city,2016,2025,10,0.0,11022.0,False,False
+MN,2706382,Blaine city,2022,2024,3,0.0,24137.0,False,False
+MN,2706616,Bloomington city,2016,2025,10,0.0,21817.0,False,False
+MN,2708794,Burnsville city,2016,2025,10,2.0,11331.0,False,False
+MN,2710918,Chanhassen city,2016,2025,10,4.0,9611.0,False,False
+MN,2713456,Cottage Grove city,2016,2025,10,0.0,12276.0,False,False
+MN,2713910450,Cedar Lake township,2016,2025,10,2.0,1025.0,False,False
+MN,2713928322,Helena township,2016,2025,10,0.0,590.0,False,False
+MN,2713931580,Jackson township,2016,2019,4,0.0,219.0,False,False
+MN,2713957184,St. Lawrence township,2016,2025,8,0.0,163.0,False,False
+MN,2714158,Crystal city,2018,2024,7,1.0,7651.0,False,False
+MN,2715022,Dayton city,2020,2025,6,2.0,3425.0,False,False
+MN,2716304132,Baytown township,2018,2025,8,0.0,822.0,False,False
+MN,2716315688,Denmark township,2020,2025,6,2.0,662.0,False,False
+MN,2717288,Eagan city,2016,2025,10,0.0,14461.0,False,False
+MN,2718188,Edina city,2024,2025,2,5.0,12682.0,False,False
+MN,2721770,Forest Lake city,2016,2025,10,0.0,6119.0,False,False
+MN,2722814,Fridley city,2022,2025,4,10.0,8532.0,False,False
+MN,2724308,Golden Valley city,2023,2025,3,1.0,6375.0,False,False
+MN,2730140,Hopkins city,2023,2025,3,0.0,2377.0,False,False
+MN,2730392,Hugo city,2016,2025,10,0.0,4392.0,False,False
+MN,2731076,Inver Grove Heights city,2016,2025,10,9.0,8035.0,False,False
+MN,2735180,Lakeville city,2016,2025,10,0.0,19592.0,False,False
+MN,2740382,Maplewood city,2016,2025,10,0.0,9614.0,False,False
+MN,2741480,Medina city,2016,2025,10,1.0,2194.0,False,False
+MN,2743000,Minneapolis city,2016,2025,10,216.76000000000002,75362.0,False,True
+MN,2743252,Minnetonka city,2016,2025,10,15.0,13368.0,False,False
+MN,2744476,Mound city,2025,2025,1,0.0,3374.0,False,False
+MN,2744530,Mounds View city,2016,2025,8,0.0,3463.0,False,False
+MN,2745430,New Brighton city,2025,2025,1,0.0,5436.0,False,False
+MN,2748580,Orono city,2023,2025,3,5.0,3071.0,False,False
+MN,2751730,Plymouth city,2016,2025,10,3.0,18122.0,False,False
+MN,2753026,Ramsey city,2022,2025,4,0.0,10452.0,False,False
+MN,2754214,Richfield city,2016,2025,10,5.0,9748.0,False,False
+MN,2754880,Rochester city,2023,2024,2,3.0,39177.0,True,False
+MN,2755186,Rogers city,2020,2025,6,0.0,3987.0,False,False
+MN,2755726,Rosemount city,2016,2025,10,0.0,7725.0,False,False
+MN,2755852,Roseville city,2016,2025,10,5.0,8647.0,False,False
+MN,2757220,St. Louis Park city,2021,2025,5,0.0,11624.0,False,False
+MN,2762824,Stillwater city,2016,2025,10,11.0,6032.0,False,False
+MN,2766460,Vadnais Heights city,2016,2025,10,0.0,3349.0,False,False
+MN,2768818,Wayzata city,2022,2025,4,1.0,911.0,False,False
+NC,3702140,Asheville city,2016,2025,10,416.100193384653,21263.0,True,False
+NC,37063,Durham County Unincorporated Area,2016,2025,10,21.724645136100452,12920.0,False,False
+NC,3710740,Cary town,2019,2025,7,29.0,39762.0,True,False
+NC,3711800,Chapel Hill town,2016,2021,6,28.0,10242.0,True,False
+NC,3712000,Charlotte city,2016,2025,10,241.08000000000004,203927.0,True,True
+NC,3714700,Cornelius town,2016,2025,8,5.88,8835.0,False,False
+NC,3719000,Durham city,2016,2025,10,287.851548053331,67180.0,True,False
+NC,3728000,Greensboro city,2018,2025,7,30.58,71813.0,False,False
+NC,3733120,Huntersville town,2016,2025,10,6.86,19871.0,False,False
+NC,3741960,Matthews town,2016,2025,10,6.859999999999999,9570.0,False,False
+NC,3743480,Mint Hill town,2016,2025,10,5.88,9855.0,False,False
+NC,3755000,Raleigh city,2019,2025,7,203.3,90215.0,True,False
+NC,3774440,Wilmington city,2016,2025,10,173.0,29808.0,True,False
+OH,3915000,Cincinnati city,2024,2025,2,6.24,56981.0,False,True
+TX,4805000,Austin city,2016,2023,8,979.7099999999998,161226.0,False,False
+TX,4815976,College Station city,2016,2025,9,16.293483852075344,22450.0,True,False
+TX,4865000,San Antonio city,2021,2025,5,260.69574163320544,368060.0,False,True
+OR,4105800,Bend city,2016,2025,10,532.2538058344612,33499.0,False,False
+OR,4147000,Medford city,2020,2025,6,172.71092883199861,23399.0,True,False
+OR,4159000,Portland city,2016,2025,10,3045.38,164135.0,False,True
+OR,4164900,Salem city,2018,2025,8,284.59285128291594,41427.0,True,False
