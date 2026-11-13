@@ -14,6 +14,8 @@ root, out = Path(sys.argv[1]), Path(sys.argv[2])
 rep = root / "reports/adu-covariate-screen"
 res = pd.read_csv(rep / "screen.csv")
 summ = json.loads((rep / "summary.json").read_text())
+infl_path = rep / "influence.csv"
+infl = pd.read_csv(infl_path) if infl_path.exists() else None
 tokens = (root / "docs/build/identity/tokens.css").read_text()
 SHORT = {
     "X1": "Owner-occupied share",
@@ -92,6 +94,36 @@ def alpha_chart():
     return "".join(g)
 
 
+def influence_chart():
+    lo, hi = -1.0, 1.0
+    top, rh = 18, 46
+    facs = list(infl["factor"].unique())
+    h = top + rh * len(facs) + 34
+
+    def sx(v):
+        return LW + (v - lo) / (hi - lo) * (W - LW - 20)
+
+    g = [f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="beta with each place left out">']
+    for t in (-1, -0.5, 0, 0.5, 1):
+        g.append(
+            f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 8}" y2="{h - 30}" class="{"zero" if t == 0 else "grid"}"/>'
+        )
+        g.append(f'<text x="{sx(t):.1f}" y="{h - 14}" class="tick" text-anchor="middle">{t:+g}</text>')
+    for i, f in enumerate(facs):
+        y = top + rh * i + rh / 2
+        d = infl[infl.factor == f]
+        full = float(res[(res.version == "within") & (res.factor == f)]["beta"].iloc[0])
+        g.append(f'<text x="{LW - 10}" y="{y + 4}" class="lab cand" text-anchor="end">{esc(SHORT[f])}</text>')
+        for b in d["beta"]:
+            g.append(f'<line x1="{sx(b):.1f}" x2="{sx(b):.1f}" y1="{y - 9}" y2="{y + 9}" class="drop"/>')
+        g.append(f'<circle cx="{sx(full):.1f}" cy="{y}" r="5" class="pt cand"/>')
+    g.append(
+        f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">β with each of the 57 places left out (ticks); full fit (dot)</text>'
+    )
+    g.append("</svg>")
+    return "".join(g)
+
+
 rows = []
 for r in res[res.version == "within"].itertuples():
     v = {"candidate": "Candidate", "weak": "Weak", "no": "No"}[r.verdict]
@@ -101,6 +133,17 @@ for r in res[res.version == "within"].itertuples():
         f"<td class='v {r.verdict}'>{v}</td></tr>"
     )
 av = summ["availability"]
+
+influence_section = (
+    f"""<section>
+  <div class="num-tag">Finding 4</div>
+  <h2>No single place carries either effect</h2>
+  <p>We dropped each of the 57 places in turn and refitted. Every drop kept both effects' direction, with p below 0.10. Owner share ranges from {infl[infl.factor == "X1"]["beta"].min():+.2f} to {infl[infl.factor == "X1"]["beta"].max():+.2f}, and housing age from {infl[infl.factor == "X2"]["beta"].min():+.2f} to {infl[infl.factor == "X2"]["beta"].max():+.2f}. Leaving out Minneapolis, Durham, Portland or Bend barely moves either one. Housing age is the weaker of the two: with Asheville out, its p is 0.075.</p>
+  {influence_chart()}
+</section>"""
+    if infl is not None
+    else ""
+)
 
 html = f"""<title>ADU place-factor screen</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -134,6 +177,7 @@ p {{ margin: 0; max-width: 65ch; }}
 .chart .pt {{ fill: var(--ink-faint); }}
 .chart .pt.cand {{ fill: var(--scenario-adu); }}
 .chart .bar {{ fill: var(--rule); }}
+.chart .drop {{ stroke: var(--scenario-adu); stroke-opacity: .45; stroke-width: 1.5; }}
 .chart .bar.cand {{ fill: var(--scenario-adu); }}
 .scroll {{ overflow-x: auto; }}
 table {{ border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }}
@@ -156,8 +200,8 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
   <span class="tag">Needs Ben's call</span>
   <h2>Take owner share into the model?</h2>
   <ol>
-    <li><b>Recommended:</b> first run a leave-one-place-out check, so we know no single city carries the owner-share effect. Then write a method entry that adds owner share, and maybe housing age, and score it on D-075's tests before any fit.</li>
-    <li>Write the method entry now and skip the influence check.</li>
+    <li><b>Recommended:</b> write a method entry that adds owner share to Form A and score it on D-075's tests. The leave-one-place-out check found no single place carrying it (Finding 4).</li>
+    <li>Add housing age as well. It is robust too, but weaker: it falls to p 0.075 with Asheville out.</li>
     <li>Leave the model as it is and report the screen as a finding.</li>
   </ol>
 </div>
@@ -185,6 +229,7 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
   {alpha_chart()}
 </section>
 
+{influence_section}
 <section>
   <div class="num-tag">Scorecard</div>
   <h2>Every factor screened</h2>

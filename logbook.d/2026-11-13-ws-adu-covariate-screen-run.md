@@ -29,3 +29,11 @@
   - `params_table.py --check` and `compliance_check.py` were run.
 - **AI disclosure:** Claude Code wrote the code, ran the screen and wrote the report and page. Ben decides the
   next step.
+- **Leave-one-place-out check:** Ben asked for it ("Run the check"), and it was pre-registered as a dated
+  addition to D-083 before it ran.
+  - Each of the 57 places was dropped and β refitted. Both candidates are robust: β kept its sign and p stayed
+    below 0.10 in all 57 drops.
+  - Owner share ranges from −0.83 to −0.55. Housing age ranges from +0.43 to +0.70, weakest with Asheville
+    out (p 0.075).
+  - Outputs are `influence.csv` and `influence.json`; the page gained Finding 4.
+  - The code is `adu_screen.drop_one` and `influence_reading`, with 2 new tests.

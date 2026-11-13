@@ -5368,6 +5368,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - **"Robust"** if no drop does.
     - **"Leaning on"** if the sign holds every time but p crosses 0.10 for 1–3 places. Those places are named.
   - The check changes no verdict above. It decides whether a method entry for the factor is worth writing.
+  - **Result (2026-11-13): both candidates are robust.** Every one of the 57 drops kept β's sign and p below 0.10.
+    - Owner share: β ranges from −0.83 to −0.55.
+    - Housing age: β ranges from +0.43 to +0.70. Its weakest drop is Asheville, at p 0.075.
   - Ben asked for it: "Draft the screen", after a methodology review in chat.
   - No screen has been run. No covariate has been read against any count or fit output.
   - **Number:** provisional. #392's missing-middle entry also carries a provisional D-082; whichever merges

@@ -92,3 +92,31 @@ def test_verdict_rules():
     assert scr.verdict(base | {"alpha_drop": 0.05}) == "weak"
     assert scr.verdict(base | {"sign_stable": False}) == "weak"
     assert scr.verdict(base | {"p_holm": 0.2}) == "no"
+
+
+def test_influence_reading_rules():
+    import pandas as pd
+
+    d = pd.DataFrame({"beta": [-0.5, -0.6, -0.4], "p": [0.01, 0.02, 0.03]})
+    assert scr.influence_reading(-0.7, d) == "robust"
+    assert scr.influence_reading(-0.7, d.assign(p=[0.01, 0.2, 0.03])) == "leaning on"
+    assert scr.influence_reading(-0.7, d.assign(beta=[-0.5, 0.1, -0.4])) == "carried by one place"
+    assert (
+        scr.influence_reading(
+            -0.7,
+            d.assign(
+                p=[
+                    0.2,
+                    0.2,
+                    0.2,
+                ][:3]
+            ).iloc[:3],
+        )
+        == "leaning on"
+    )
+
+
+def test_drop_one_has_a_row_per_place():
+    p, z = _synthetic(beta=0.7, n=12, seed=3)
+    d = scr.drop_one(p, z)
+    assert len(d) == 12 and set(d["dropped"]) == set(p.geoids)

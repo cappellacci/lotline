@@ -143,11 +143,54 @@ def parcel_factors(store, st: str, geoids: set[str], fill_min: float) -> tuple[p
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument(
+        "--influence", action="store_true", help="D-083 addition: leave-one-place-out on candidates"
+    )
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     store = DataStore()
     with offline.offline_build(store):
-        run(a.out, store)
+        if a.influence:
+            influence(a.out, store)
+        else:
+            run(a.out, store)
+
+
+def influence(out: Path, store) -> None:
+    """D-083 addition: drop each screened place in turn and refit β for the within-state candidates."""
+    pm = {k: v.value for k, v in load_params("adu_screen").items()}
+    res = pd.read_csv(out / "screen.csv")
+    cands = res[(res["version"] == "within") & (res["verdict"] == "candidate")]
+    fac = pd.read_csv(out / "factors.csv", dtype={"geoid": str}).set_index("geoid")
+    jr = load_refit()
+    places, _ = jr.all_places(store)
+    prep = scr.prepare(places, cal._cvals(M_OWNER, M_OTHER))
+    name_of = {pl.geoid: pl.name for pl in places}
+    fac = fac.reindex(list(prep.geoids))
+    summary, frames = {}, []
+    for r in cands.itertuples():
+        keep = fac[r.factor].notna().to_numpy()
+        sub = prep.subset(keep)
+        z = scr.standardize(fac.loc[keep, r.factor]).to_numpy()
+        d = scr.drop_one(sub, z, within=True).assign(factor=r.factor)
+        d["name"] = d["dropped"].map(name_of)
+        d["shift"] = d["beta"] - r.beta
+        frames.append(d)
+        top = d.reindex(d["shift"].abs().sort_values(ascending=False).index).head(5)
+        summary[r.factor] = {
+            "beta_full": r.beta,
+            "beta_min": float(d["beta"].min()),
+            "beta_max": float(d["beta"].max()),
+            "sign_kept": int((np.sign(d["beta"]) == np.sign(r.beta)).sum()),
+            "p_below": int((d["p"] < pm["adu_screen_p_max"]).sum()),
+            "drops": len(d),
+            "largest_shifts": top[["name", "state", "beta", "p"]].to_dict("records"),
+            "reading": scr.influence_reading(r.beta, d, pm["adu_screen_p_max"]),
+        }
+        lo, hi = d["beta"].min(), d["beta"].max()
+        log(f"{r.factor}: {summary[r.factor]['reading']}; beta {lo:+.3f} to {hi:+.3f}")
+    pd.concat(frames).to_csv(out / "influence.csv", index=False)
+    (out / "influence.json").write_text(json.dumps(summary, indent=1, default=str))
 
 
 def run(out: Path, store) -> None:

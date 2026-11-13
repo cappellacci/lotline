@@ -275,3 +275,30 @@ def verdict(row: Mapping, alpha_drop_min: float = 0.10, p_max: float = 0.10) -> 
     if row["alpha_drop"] >= alpha_drop_min and row["sign_stable"] is not False:
         return "candidate"
     return "weak"
+
+
+def drop_one(p: Prepared, z: np.ndarray, within: bool = True) -> pd.DataFrame:
+    """D-083 addition: refit β with each place left out in turn (z keeps its standardization). One row per
+    dropped place: β, the likelihood-ratio statistic against β = 0 and its p."""
+    rows = []
+    z = np.asarray(z, dtype=float)
+    for i, g in enumerate(p.geoids):
+        keep = np.arange(len(p.Y)) != i
+        sub, zk = p.subset(keep), z[keep]
+        best = fit(sub, zk, within)
+        null = fit(sub, zk, within, beta=0.0)
+        stat = 2 * (best.loglik - null.loglik)
+        rows.append({"dropped": g, "state": p.states[i], "beta": best.beta, "lr": stat, "p": lr_p(stat)})
+    return pd.DataFrame(rows)
+
+
+def influence_reading(beta_full: float, drops: pd.DataFrame, p_max: float = 0.10) -> str:
+    """D-083 addition's reading rule: 'robust' if no drop flips β's sign or lifts p to p_max or above;
+    'leaning on' if the sign always holds but 1-3 drops lift p; 'carried by one place' otherwise."""
+    flips = int((np.sign(drops["beta"]) != np.sign(beta_full)).sum())
+    lifts = int((drops["p"] >= p_max).sum())
+    if flips == 0 and lifts == 0:
+        return "robust"
+    if flips == 0 and lifts <= 3:
+        return "leaning on"
+    return "carried by one place"

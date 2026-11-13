@@ -72,13 +72,34 @@ them as county subdivisions); the seventh is unincorporated Durham County.
 5. **Both candidates pass narrowly.** Holm-adjusted p is 0.083 and 0.095 against a 0.10 bar. They are
    candidates, not findings.
 
+## Leave-one-place-out check (D-083 addition, 2026-11-13)
+
+This check was asked for by Ben ("Run the check") and pre-registered in D-083 before it ran. Command:
+
+```bash
+uv run python scripts/dev/adu_covariate_screen.py --out reports/adu-covariate-screen --influence
+```
+
+Each of the 57 places was dropped in turn and β refitted, within-state. Outputs are `influence.csv` and
+`influence.json`.
+
+| Candidate | Full β | β over 57 drops | Sign kept | p < 0.10 | Reading | Largest moves |
+|---|---:|---|---:|---:|---|---|
+| Owner-occupied share | −0.71 | −0.83 to −0.55 | 57 / 57 | 57 / 57 | **robust** | Fridley −0.55; Hopkins and Orono −0.83 |
+| Pre-1960 housing | +0.59 | +0.43 to +0.70 | 57 / 57 | 57 / 57 | **robust** | Asheville +0.43 (p 0.075); Burnsville +0.70 |
+
+**What it shows:**
+- **No single place carries either effect.** Dropping Minneapolis, Durham, Portland or Bend barely moves β.
+- **The largest moves come from small Minnesota suburbs, and from Asheville for housing age.**
+- **One caveat:** the bar is the unadjusted p, as pre-registered. With Asheville out, housing age's p is 0.075.
+  With the screen's Holm factor applied, that would no longer pass. Housing age is the weaker of the two.
+
 ## What would come next (needs Ben)
 
 - **A method entry that adds owner share to the model**, and perhaps housing age, written before any fit and
   scored on D-075's tests and the data-tier test. It would say how owner share enters for a place without ACS
   place rows: townships would take their county subdivision's rows.
-- **Before that, one robustness read:** a leave-one-place-out check, so that no single city (Minneapolis,
-  Durham) carries the owner-share effect. It is not in D-083, so it would be a dated addition.
+- **Done (see above):** the leave-one-place-out check. Both candidates are robust.
 - **HOAs and homestead remain untested.** No roll carries an HOA field. Homestead is Minnesota only.
 
 ## Deviations
