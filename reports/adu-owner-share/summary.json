@@ -1,0 +1,169 @@
+{
+  "fit_set": {
+    "places": 64,
+    "new": [
+      "2754880",
+      "3702140",
+      "3710740",
+      "3711800",
+      "3712000",
+      "3719000",
+      "3755000",
+      "3774440",
+      "4147000",
+      "4164900",
+      "4815976"
+    ]
+  },
+  "vintage_check": {
+    "places": 64,
+    "pearson": 0.9821198433234852,
+    "spearman": 0.9727106227106225,
+    "mean_change_points": 0.3314868657221793,
+    "max_abs_change_points": 10.99836901134278,
+    "by_source": {
+      "place": 57,
+      "county subdivision": 6,
+      "county less its places": 1
+    },
+    "flagged": []
+  },
+  "z": {
+    "center": 0.6727,
+    "scale": 0.1544,
+    "fit_end_year": 2015
+  },
+  "central": {
+    "claim_tier": {
+      "A": null,
+      "A\u2032": null
+    },
+    "useful_states_by_tier": {
+      "A": {
+        "0": 0,
+        "1": 0,
+        "2": 0
+      },
+      "A\u2032": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      }
+    },
+    "tests": {
+      "A": {
+        "A": {
+          "MN": false,
+          "NC": false,
+          "OH": null,
+          "TX": true,
+          "OR": false
+        },
+        "B": {
+          "MN": null,
+          "NC": false,
+          "OH": false,
+          "TX": null,
+          "OR": null
+        }
+      },
+      "A\u2032": {
+        "A": {
+          "MN": false,
+          "NC": true,
+          "OH": null,
+          "TX": false,
+          "OR": false
+        },
+        "B": {
+          "MN": null,
+          "NC": false,
+          "OH": false,
+          "TX": null,
+          "OR": null
+        }
+      }
+    },
+    "tests_passed": {
+      "A": 1,
+      "A\u2032": 1
+    },
+    "log_gain_a_prime_over_a": 4.995210209760805,
+    "log_gain_se": 2.044066377521196,
+    "places_scored": 52,
+    "decision": {
+      "form": "A\u2032",
+      "reason": "A\u2032's held-out log score beats A's by > 2 SE (tier-1 log score gain 5.0, 2 SE 4.1), and A\u2032 passes at least as many of tests A-C (1 vs 1)"
+    }
+  },
+  "sensitivity_2016_20": {
+    "fit": {
+      "variant": "2016-20 vintage",
+      "fold": "all",
+      "form": "A\u2032",
+      "theta": 0.0006897307569098926,
+      "low": 0.000507079505777451,
+      "high": 0.000969866643367463,
+      "alpha": 1.6443939794312092,
+      "m_owner": 1.0,
+      "m_other": 0.4,
+      "owner_estimated": true,
+      "other_estimated": true,
+      "loglik": -1345.0766177977557,
+      "n_places": 64,
+      "n_years": 395,
+      "beta": -0.4468347445004676,
+      "beta_low": -0.7678899158949514,
+      "beta_high": -0.12913816579223938,
+      "beta_estimated": true
+    },
+    "claim_tier": null,
+    "useful_states_by_tier": {
+      "0": 1,
+      "1": 1,
+      "2": 1
+    }
+  },
+  "sensitivity_within_state": {
+    "beta": -0.37471266557485594,
+    "beta_low": -0.7728873224214957,
+    "beta_high": 0.025371441689078185,
+    "alpha": 1.2890873025444936,
+    "alpha_beta0": 1.4146127368676162,
+    "theta_by_state": {
+      "MN": 0.00048781169011032614,
+      "NC": 0.0006450111628783764,
+      "OH": 0.00013090859221197269,
+      "OR": 0.0018001224025988678,
+      "TX": 0.0008257710663424508
+    }
+  },
+  "outlook_pre1960": {
+    "beta_owner": -0.5273448341852839,
+    "beta_pre1960": 0.17556371086704936,
+    "alpha": 1.5636185267942766,
+    "theta": 0.0006517115934303193,
+    "loglik": -1343.7141038047598,
+    "lr_vs_a_prime": 0.5633650193194626,
+    "p": 0.4529075936439833,
+    "x2_center": 0.20453211728923343,
+    "x2_scale": 0.16689928379256902,
+    "places_without_x2": 7
+  },
+  "form_a_check_vs_d079": {
+    "d079": {
+      "theta": 0.000756299362297198,
+      "alpha": 1.918380315170198,
+      "m_owner": 1.0,
+      "m_other": 0.4,
+      "loglik": -1347.7126927902486
+    },
+    "here": {
+      "theta": 0.0007562989321754987,
+      "alpha": 1.9183845907457209,
+      "m_owner": 1.0,
+      "m_other": 0.4,
+      "loglik": -1347.7126927902923
+    }
+  }
+}

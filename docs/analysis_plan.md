@@ -5343,3 +5343,233 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   test found.
 - **Decided by:** Ben, 2026-11-12 ("Yes, use 3 years"), from options proposed by Claude Code.
   **Status:** decided; wired in this entry's PR.
+
+### D-083 · 2026-11-13 · ADUs: a screen of the place effects against unused place factors (method only, before any run)
+- **Status: accepted by Ben, 2026-11-13 ("Accept D-083"), as written. Proposed by Claude Code the same day.**
+- **Run 2026-11-13** (`reports/adu-covariate-screen/`, as written, no deviation). Two candidates pass the bar,
+  both narrowly:
+  - **Owner-occupied share:** β −0.71 per SD, Holm p 0.083, α falls 16%.
+  - **Pre-1960 housing share:** β +0.59, Holm p 0.095, α falls 11%.
+  - Nothing else passes. HOA share and homestead share were not screened, under the availability rule.
+  - Any model change needs its own method entry.
+- **Addition, 2026-11-13: leave-one-place-out check.** Ben asked for it ("Run the check") after reading the
+  run above. It was written before the check was run.
+  - **Which factors:** the two candidates, X1 and X2, in the within-state version.
+  - **How:** each of the 57 screened places is dropped in turn, and β is refitted (θ_s, α and β, as above).
+  - z keeps its standardization over the 57 places, so every β is on the same scale.
+  - **Reported for each candidate:**
+    - the range of β over the 57 drops;
+    - the five places whose drop moves β most;
+    - how many drops keep β's sign;
+    - how many keep the unadjusted likelihood-ratio p below 0.10. This is the same as the 90% profile interval
+      excluding 0.
+  - **Reading rule:**
+    - **"Carried by one place"** if any single drop flips β's sign or lifts p to 0.10 or above.
+    - **"Robust"** if no drop does.
+    - **"Leaning on"** if the sign holds every time but p crosses 0.10 for 1–3 places. Those places are named.
+  - The check changes no verdict above. It decides whether a method entry for the factor is worth writing.
+  - **Result (2026-11-13): both candidates are robust.** Every one of the 57 drops kept β's sign and p below 0.10.
+    - Owner share: β ranges from −0.83 to −0.55.
+    - Housing age: β ranges from +0.43 to +0.70. Its weakest drop is Asheville, at p 0.075.
+  - Ben asked for it: "Draft the screen", after a methodology review in chat.
+  - No screen has been run. No covariate has been read against any count or fit output.
+  - **Number:** provisional. #392's missing-middle entry also carries a provisional D-082; whichever merges
+    second is renumbered.
+- **Why:**
+  - **The place effect is large.** α is 1.92 in the D-079 refit: two places with the same rules and market
+    can differ several-fold. That spread is where omitted factors sit.
+  - **Two size-and-value effects were flagged.** D-045's audit flagged home value (×1.86 across the
+    interquartile range) and place size (×0.55).
+  - **The market term points the wrong way.** h1 is negatively correlated with the observed rate (D-041:
+    −0.11 pooled).
+  - **The modifiers were never testable.** D-025's modifier tests had 31 treated places and were weakly
+    identified, so they rule nothing out.
+  - **The register factors were never tested.** `docs/research/lotline-confounder-register.csv` lists these
+    as modifiers or confounders, and no ADU fit has tested them, though the data adapters already hold most
+    of them:
+    - owner-occupancy (C15);
+    - parcel stock (C14);
+    - HOAs (C12);
+    - housing age;
+    - new-house building (C25, the co-built channel D-041 can only remove where permits carry parcel IDs;
+      Met Council has none).
+- **What the screen answers:** which pre-window place factors explain the place effects and the state misses
+  of the adopted model. It does not change the model. A factor that passes the bar below becomes a candidate
+  for its own method entry, scored on D-075's tests like any other form change.
+- **Model screened:** the D-079 refit's Form A, as kept. That means its place set (64 places, 395 place-years,
+  2016–2025), counts, k paths, m_o = 1.0 and m_x = 0.4. If Ben adopts a different ADU form before the screen
+  runs, the screen uses that form instead, and the entry is amended before the run.
+- **Factors, all measured before the 2016 window.** Post-window values could be the reform's own effect: land
+  value capitalizes the reform (C17, a mediator).
+
+  | # | Factor | Measure | Source |
+  |---|---|---|---|
+  | X1 | Owner-occupied share | B25003_002 / B25003_001 | ACS 5-year 2011–15, place |
+  | X2 | Older housing | share of units built before 1960 | ACS B25034, 2011–15 |
+  | X3 | Detached single-family share | 1-unit detached / all units | ACS B25024, 2011–15 |
+  | X4 | New-house building | BPS 1-unit buildings per 1,000 eligible lots, mean 2013–15 | BPS place |
+  | X5 | Lot size | median `lot_sqft` of eligible lots | parcel rolls (earliest roll on file) |
+  | X6 | HOAs | share of eligible lots with `hoa` true | parcel rolls |
+  | X7 | Owner-occupied lots | share of eligible lots with `homestead` true | parcel rolls |
+  | R1 | Place size (reference) | log eligible lots | as in the fit |
+  | R2 | Home value (reference) | log B25077 | ACS 2011–15 |
+
+  - R1 and R2 are already in the model or D-045's audit. They are screened as references, so the new factors
+    can be read against known effects. R2's residual effect says whether h1's judgment equity elasticity
+    (0.25) is too high or too low.
+  - **Availability rule:** a factor is screened only if it is available for at least 75% of the fit places,
+    and at least 30 of them. Parcel factors also need the field filled on at least 80% of a place's eligible
+    lots, or that place counts as missing.
+  - The places screened and the places dropped are reported for each factor.
+  - **Vintages:** if the ACS 2011–15 vintage is not cached, the latest cached vintage ending in 2015 or earlier
+    is used. If there is none, fetching it goes to Ben first; nothing is downloaded on this entry alone.
+  - **Holdouts:** where the ACS adapter hides a table for a holdout (the V9 Oregon rule on B25003, B25024 and
+    B25034), that place is dropped from that factor's screen. The hide is never bypassed. St. Paul stays out
+    of everything, and no `--unblind` is passed.
+- **Not screened, because each needs something new.** Each item below needs its own go-ahead:
+  - **Household income:** the ACS adapter has no income table. B19013 would need adding and a fetch.
+  - **ADU fees and pre-approved-plan programs** (C18, C21): not coded for the fit places.
+  - **Short-term-rental demand** (C36): no source.
+  - **Mandate versus a place's own choice** (C05–C07, C11): this is collinear with state (Oregon is the only
+    mandated state), so it needs a design of its own.
+- **Method, one factor at a time:**
+  - z_i is the factor standardized over the screened places.
+  - E[y_it | u_i] = θ · exp(β z_i) · u_i · k_it, where:
+    - k_it is Form A's per-year exposure at the refit's m_o and m_x;
+    - u_i ~ Gamma(mean 1, variance α).
+  - The likelihood is `calibrate_adu.frailty_loglik_place` with k scaled by exp(β z_i). θ, α and β are fitted
+    by maximum likelihood, and β gets a 90% profile interval.
+  - The comparison fit sets β = 0 on the same places. It is refitted, because the screened places can differ
+    from the full 64.
+  - **Two versions:**
+    - **Within-state (main read):** one θ per state, so β is identified only from differences between places
+      in the same state.
+    - **Pooled:** one θ, so β can also absorb differences between states. Its read is whether the factor
+      moves the D-079 leave-one-state-out medians toward the observed totals (MN over-predicted about 2.7×;
+      NC, OR and TX under-predicted 2.7–15×). That read is descriptive only.
+  - **Also reported:** the Spearman correlation of each place's posterior mean effect,
+    (1 + α Y_i) / (1 + α θ K_i), with z_i.
+- **Bar for a candidate, all of the following in the within-state version:**
+  1. The likelihood-ratio p is below 0.10 after a Holm correction over the factors actually screened.
+  2. α falls by at least 10% against the β = 0 fit.
+  3. β keeps its sign in every leave-one-state-out refit for states with at least 3 screened places.
+  - **A factor that meets 1 but not 2 or 3** is reported as "weak", not as a candidate.
+  - **Joint fit:** if 2 or more factors are candidates, one joint fit of the candidates is reported,
+    descriptively, with their pairwise correlations.
+- **What it will not do:**
+  - write to config;
+  - change the counts, the k table or the fit set;
+  - count as a causal estimate. The screen finds factors that predict where ADUs get built. Whether a factor
+    causes uptake is a question for the method entry it leads to.
+- **Built and run** only after Ben accepts this entry. The code is a small module with a hand-worked
+  synthetic test of the scaled likelihood, plus a dev script. It reads cached tables only, with no download.
+  The output goes to `reports/adu-covariate-screen/`, with a results page.
+
+### D-084 · 2026-11-13 · ADUs: owner-occupied share as a place term in Form A
+- **Status: accepted by Ben, 2026-11-13 ("Accept D-084").** Proposed by Claude Code the same day.
+  - Ben asked for it: "Draft owner share", after D-083's screen and its leave-one-place-out check.
+  - No fit, score, engine or scenario run has been made with this term.
+  - **Number:** provisional, like D-083.
+- **Why:**
+  - **The D-083 screen.** Owner-occupied share (ACS 2011–15) is the stronger of its two robust candidates:
+    - within states: β −0.71 per SD (−1.17 to −0.25), and α falls 16%;
+    - pooled: β −0.81, and α falls 26%;
+    - the sign holds when each state is left out, and when each of the 57 places is left out.
+  - **It is the only screened factor that lines up with the D-079 misses.** Minnesota's places are the most
+    owner-occupied (mean 0.74) and are over-predicted about 2.7×. NC, OR and TX are less owner-occupied
+    (0.45–0.59) and are under-predicted 2.7–15×.
+  - **Housing age is left out here.** It was also robust, but it explains nothing between states and only just
+    passes with Asheville out. A later entry can add it on its own evidence.
+- **What owner share stands for:** most likely how urban a place is and how much rental demand an added unit
+  meets. It is not a policy lever. The term is a modifier (C15/C16 in the confounder register): it changes
+  where the same rule yields more or fewer ADUs. It does not change any reform's effect relative to the
+  current rules, because the scenario multiplies both by the same exp(β z).
+- **Form A′, the challenger:**
+  - E[y_it | u_i] = θ · exp(β_o z_i) · u_i · parcels_it · h1_it · ρ_it · max over rules of (c_r × coverage_r).
+    This is Form A (D-079, D-048) with one place term.
+  - **z_i = (o_i − 0.6727) / 0.1544.** Here o_i is the place's owner-occupied share, and the center and scale
+    are the mean and SD over D-083's 57 screened places. Both are fixed now and go to config with this source
+    when the entry is built, so β is in D-083's units.
+  - **Fitted:** θ, α and β_o by maximum likelihood over fit 3's (m_o, m_x) grid, with profile intervals, as in
+    Form A. τ is estimated as in D-050 / D-053.
+  - **Not fixed from the screen:** β_o is refitted. D-083's −0.81 (pooled) is the expected value, not an input.
+- **Which owner share a place gets:**
+  - **In the fit:** ACS 5-year 2011–15 (B25003_002 / B25003_001), from before the 2016 window, as in D-083.
+  - **In the scenario:** the latest 5-year vintage ending at or before the data origin. The build PR reports the
+    correlation between the 2011–15 and latest vintages before any fit.
+  - **No place row** (Minnesota townships, the unincorporated county areas): use the county subdivision's
+    B25003 rows, or else the county's rows less its places. If neither exists, z = 0 and the place is
+    flagged.
+  - **Hidden by a holdout** (the V9 Oregon rule on B25003): use the latest vintage the filter lets through for
+    that use. If none, z = 0 and the place is flagged. The filter is never bypassed.
+  - **Tier 0, a state with no counts:** the same ACS read, which every state has. The term needs no local data.
+- **Scoring:** D-079's tests, unchanged, with Form A′ in place of Form B:
+  - the D-075 data-tier test (leave one state out; tiers 0, 1 and 2);
+  - tests A–C state by state, at D-074's bars and D-082's 0.99 tolerance on test C;
+  - the tier-1 held-out log score per place (D-049).
+- **Decision rule, fixed now.** It is D-079's rule with A′ as the challenger:
+  - **A′ replaces Form A if it passes D-075's claim rule at a lower tier than A.**
+  - **Or, if both pass at the same tier, or both pass none:** if A′'s tier-1 held-out log score beats A's by
+    more than 2 paired SE **and** A′ passes at least as many of tests A–C, counted state by state.
+  - The second branch differs from D-079. There, when neither form passed any tier, A was kept outright. Here
+    the score comparison still applies, because the D-079 refit showed no tier passing for either form. With
+    no way to tell apart, A′ could otherwise never replace A.
+  - Otherwise Form A is kept, and both forms' scores are reported.
+- **Expected direction, before any fit:**
+  - β_o is negative, about −0.7 to −0.8.
+  - Minnesota's held-out median falls and NC, OR and TX's rise.
+  - θ (at z = 0, a place with 67% owners) changes little.
+  - Whether any state moves inside ×2 is the open question.
+- **Sensitivities, reported and not used to choose:**
+  - owner share from the 2016–20 vintage;
+  - β_o fitted within states only (one θ per state, as D-083's main read);
+  - Form A′ with D-083's pre-1960 share added, reported as an outlook for a later entry.
+- **What it will not do:** write to config before Ben approves a result; change counts, k or the fit set; or
+  touch the holdouts. It runs offline from cached tables. If the latest ACS vintage is not cached for a
+  scenario state, fetching it goes to Ben first.
+- **Built and run** only after Ben accepts this entry. The code adds the place term to the joint-refit path
+  (`calibrate_adu` / `joint_refit`) with a hand-worked test, plus a dev run like `adu_joint_refit.py`'s.
+- **Built, 2026-11-13, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_owner.py`: the term, the fitter and the decision rule;
+    - `joint_refit.GlobalsA` carries β_o per draw;
+    - `scripts/dev/adu_owner_refit.py` runs everything;
+    - the hand-worked tests are in `tests/model/test_adu_owner.py`;
+    - the center, the scale and the fit vintage are in `config/params/adu_owner.yaml`.
+  - **One fitter for both forms.** `calibrate_adu.fit3` takes about 35 minutes per fit, too slow to profile β_o
+    as well. So both forms use `adu_owner.fit3_term`: fit 3's grid and rules, with the likelihood vectorized
+    over places.
+    - Form A is that fitter with β_o held at 0.
+    - On synthetic data it reproduces `fit3` (the cell, θ, α, the log-likelihood and θ's interval).
+    - The run also reports its Form A against D-079's values.
+  - **Uncertainty in the draws.**
+    - θ's interval is profiled with β_o held at its estimate. With z centered, the two are close to
+      independent.
+    - β_o is drawn on its own, N(β̂, se), with se from its 90% profile interval.
+    - τ, the tier-0 state effect, is profiled on the places with exp(β̂ z) folded in.
+  - **Test C is not run for A′.** The scenario engine has no place term, and D-079 leaves test C out of the count
+    in the decision rule. Form A's D-079 result stands: it fails in all five states.
+  - **Owner share sources.** For the 64 fit places:
+    - 57 read their own place rows;
+    - 6 Minnesota townships read their county subdivision's rows;
+    - Durham County unincorporated reads the county less the places whose county it is;
+    - none is flagged.
+  - **Vintage check.** Between 2011–15 and 2020–24 over the 64 places, the Pearson correlation is 0.982 and the
+    Spearman 0.973, and the mean change is +0.3 points.
+  - **Sensitivities:**
+    - 2016–20: A′ is refitted on all places and leaving each state out, and its tiers are scored.
+    - Within states: at A′'s chosen cell.
+    - The pre-1960 outlook: at A′'s chosen cell, with D-083's X2 standardized over its screened places. The 7
+      places without X2 get z = 0.
+- **Result, 2026-11-13** (`reports/adu-owner-share/`):
+  - **The rule picks Form A′.**
+    - Neither form passes any tier: A′ has 1 useful state per tier, A has 0.
+    - A′'s tier-1 held-out log score beats A's by 5.0, against 2 paired SE of 4.1, over 52 places.
+    - Each form passes 1 of tests A–B.
+  - **Fit:** β_o −0.546 (−0.877 to −0.221). α falls from 1.918 to 1.558. θ is 0.654 per 1,000 at z = 0.
+    m_o 1.0, m_x 0.4.
+  - **States:** every held-out state moves toward its observed count. Tier 1, observed ÷ P50, Form A to A′:
+    MN 0.30 to 0.48; NC 2.7 to 1.8; TX 5.9 to 2.4; OR 3.6 to 2.6.
+  - **β_o is smaller than the screen's −0.81,** because the six Minnesota townships enter here. Without them
+    it is −0.76. This check is descriptive and came after the run.
+  - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
