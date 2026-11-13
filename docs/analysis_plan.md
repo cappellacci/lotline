@@ -5345,7 +5345,13 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   **Status:** decided; wired in this entry's PR.
 
 ### D-083 · 2026-11-13 · ADUs: a screen of the place effects against unused place factors (method only, before any run)
-- **Status: proposed by Claude Code, 2026-11-13, for Ben.**
+- **Status: accepted by Ben, 2026-11-13 ("Accept D-083"), as written. Proposed by Claude Code the same day.**
+- **Run 2026-11-13** (`reports/adu-covariate-screen/`, as written, no deviation). Two candidates pass the bar,
+  both narrowly:
+  - **Owner-occupied share:** β −0.71 per SD, Holm p 0.083, α falls 16%.
+  - **Pre-1960 housing share:** β +0.59, Holm p 0.095, α falls 11%.
+  - Nothing else passes. HOA share and homestead share were not screened, under the availability rule.
+  - Any model change needs its own method entry.
   - Ben asked for it: "Draft the screen", after a methodology review in chat.
   - No screen has been run. No covariate has been read against any count or fit output.
   - **Number:** provisional. #392's missing-middle entry also carries a provisional D-082; whichever merges

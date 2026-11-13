@@ -1,0 +1,44 @@
+# ADU place-effect covariate screen (analysis plan D-083, accepted by Ben 2026-11-13). Test bars only: the screen
+# fits nothing that the scenario uses.
+
+adu_screen_p_max:
+  value: 0.10
+  low: 0.10
+  high: 0.10
+  unit: Holm-adjusted likelihood-ratio p
+  source: "D-083 bar 1: a candidate's within-state likelihood-ratio p is below this after a Holm correction over the factors screened"
+
+adu_screen_alpha_drop:
+  value: 0.10
+  low: 0.10
+  high: 0.10
+  unit: share fall in the place-effect variance α
+  source: "D-083 bar 2: α falls by at least this share against the β = 0 fit on the same places"
+
+adu_screen_loso_min_places:
+  value: 3
+  low: 3
+  high: 3
+  unit: screened places in a state
+  source: "D-083 bar 3: β keeps its sign in every leave-one-state-out refit for states with at least this many screened places"
+
+adu_screen_min_share:
+  value: 0.75
+  low: 0.75
+  high: 0.75
+  unit: share of the fit places
+  source: "D-083 availability rule: a factor is screened only if available for at least this share of the fit places"
+
+adu_screen_min_places:
+  value: 30
+  low: 30
+  high: 30
+  unit: places
+  source: "D-083 availability rule: and for at least this many places"
+
+adu_screen_min_field_fill:
+  value: 0.80
+  low: 0.80
+  high: 0.80
+  unit: share of a place's eligible lots with the field filled
+  source: "D-083 availability rule: a parcel factor counts as missing for a place where the field is filled on fewer of its eligible lots"
