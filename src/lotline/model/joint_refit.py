@@ -174,11 +174,22 @@ def shift_spread(shifts: Sequence[float]) -> float:
 
 @dataclass(frozen=True)
 class GlobalsA:
-    """Form A's shared draws: scale = θ × v (θ from its interval, v = exp(τ z) the state multiplier)."""
+    """Form A's shared draws: scale = θ × v (θ from its interval, v = exp(τ z) the state multiplier).
+
+    `beta` (D-084, Form A′): β_o per draw; a place carrying z (`adu_owner.with_z`) is then scaled by
+    exp(β_o z) in that draw. None is Form A."""
 
     scale: np.ndarray
     alpha: float
     cvals: np.ndarray
+    beta: np.ndarray | None = None
+
+    def place_scale(self, pl: cal.PlaceData) -> np.ndarray:
+        """scale × exp(β_o z_i) per draw (scale alone for Form A or a place without z)."""
+        z = float((pl.extra or {}).get("place_z", 0.0))
+        if self.beta is None or z == 0.0:
+            return self.scale
+        return self.scale * np.exp(self.beta * z)
 
 
 @dataclass(frozen=True)
@@ -191,14 +202,15 @@ class GlobalsB:
     form: FormB
 
 
-def globals_a(fit: cal.Fit3, taus, n: int, seed: int) -> GlobalsA:
+def globals_a(fit: cal.Fit3, taus, n: int, seed: int, beta: np.ndarray | None = None) -> GlobalsA:
     """θ ~ lognormal from its profile interval; τ per draw (`taus`: scalar or n values; 0 = no state effect);
-    z ~ N(0, 1)."""
+    z ~ N(0, 1). `beta`: Form A′'s β_o per draw (D-084), drawn by the caller so Form A's draws are
+    unchanged."""
     rng = np.random.default_rng(seed)
     theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=n))
     tau = np.broadcast_to(np.asarray(taus, dtype=float), (n,))
     v = np.exp(tau * rng.standard_normal(n))
-    return GlobalsA(theta * v, fit.alpha, cal._cvals(fit.m_owner, fit.m_other))
+    return GlobalsA(theta * v, fit.alpha, cal._cvals(fit.m_owner, fit.m_other), beta)
 
 
 def globals_b(b: FormB, s: float, n: int, seed: int) -> GlobalsB:
@@ -216,7 +228,7 @@ def _n(g) -> int:
 
 def _take(g, idx: np.ndarray):
     if isinstance(g, GlobalsA):
-        return replace(g, scale=g.scale[idx])
+        return replace(g, scale=g.scale[idx], beta=None if g.beta is None else g.beta[idx])
     return replace(g, betas=g.betas[idx], delta=g.delta[idx])
 
 
@@ -254,7 +266,7 @@ def place_loglik(pl: cal.PlaceData, g) -> np.ndarray:
         lw = np.log(np.where(share > 0, share, 1.0))  # zero-weight combinations are skipped below
         per = np.stack(
             [
-                lw[c] + _marginal(y, g.scale[:, None] * ks[c][None, :], g.alpha, lf)
+                lw[c] + _marginal(y, g.place_scale(pl)[:, None] * ks[c][None, :], g.alpha, lf)
                 for c in range(len(ks))
                 if pl.w[c] > 0
             ],
@@ -293,7 +305,7 @@ def predict(places: Sequence[cal.PlaceData], g, seed: int) -> dict[str, np.ndarr
         u = rng.gamma(1 / g.alpha, g.alpha, size=n) if g.alpha > 0 else np.ones(n)
         if isinstance(g, GlobalsA):
             combo = rng.choice(len(pl.w), size=n, p=pl.w / pl.w.sum())
-            mu = (g.scale * u)[:, None] * pl.k(g.cvals)[combo]
+            mu = (g.place_scale(pl) * u)[:, None] * pl.k(g.cvals)[combo]
         else:
             x, off = g.form.design(pl)
             mu = u[:, None] * np.exp(np.clip(off[None, :] + g.betas @ x.T + g.delta[:, None], None, 30))

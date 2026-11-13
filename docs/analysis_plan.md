@@ -5465,8 +5465,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   synthetic test of the scaled likelihood, plus a dev script. It reads cached tables only, with no download.
   The output goes to `reports/adu-covariate-screen/`, with a results page.
 
-### D-084 · 2026-11-13 · ADUs: owner-occupied share as a place term in Form A (method only, before any fit)
-- **Status: proposed by Claude Code, 2026-11-13, for Ben.**
+### D-084 · 2026-11-13 · ADUs: owner-occupied share as a place term in Form A
+- **Status: accepted by Ben, 2026-11-13 ("Accept D-084").** Proposed by Claude Code the same day.
   - Ben asked for it: "Draft owner share", after D-083's screen and its leave-one-place-out check.
   - No fit, score, engine or scenario run has been made with this term.
   - **Number:** provisional, like D-083.
@@ -5529,3 +5529,35 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   scenario state, fetching it goes to Ben first.
 - **Built and run** only after Ben accepts this entry. The code adds the place term to the joint-refit path
   (`calibrate_adu` / `joint_refit`) with a hand-worked test, plus a dev run like `adu_joint_refit.py`'s.
+- **Built, 2026-11-13, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_owner.py`: the term, the fitter and the decision rule;
+    - `joint_refit.GlobalsA` carries β_o per draw;
+    - `scripts/dev/adu_owner_refit.py` runs everything;
+    - the hand-worked tests are in `tests/model/test_adu_owner.py`;
+    - the center, the scale and the fit vintage are in `config/params/adu_owner.yaml`.
+  - **One fitter for both forms.** `calibrate_adu.fit3` takes about 35 minutes per fit, too slow to profile β_o
+    as well. So both forms use `adu_owner.fit3_term`: fit 3's grid and rules, with the likelihood vectorized
+    over places.
+    - Form A is that fitter with β_o held at 0.
+    - On synthetic data it reproduces `fit3` (the cell, θ, α, the log-likelihood and θ's interval).
+    - The run also reports its Form A against D-079's values.
+  - **Uncertainty in the draws.**
+    - θ's interval is profiled with β_o held at its estimate. With z centered, the two are close to
+      independent.
+    - β_o is drawn on its own, N(β̂, se), with se from its 90% profile interval.
+    - τ, the tier-0 state effect, is profiled on the places with exp(β̂ z) folded in.
+  - **Test C is not run for A′.** The scenario engine has no place term, and D-079 leaves test C out of the count
+    in the decision rule. Form A's D-079 result stands: it fails in all five states.
+  - **Owner share sources.** For the 64 fit places:
+    - 57 read their own place rows;
+    - 6 Minnesota townships read their county subdivision's rows;
+    - Durham County unincorporated reads the county less the places whose county it is;
+    - none is flagged.
+  - **Vintage check.** Between 2011–15 and 2020–24 over the 64 places, the Pearson correlation is 0.982 and the
+    Spearman 0.973, and the mean change is +0.3 points.
+  - **Sensitivities:**
+    - 2016–20: A′ is refitted on all places and leaving each state out, and its tiers are scored.
+    - Within states: at A′'s chosen cell.
+    - The pre-1960 outlook: at A′'s chosen cell, with D-083's X2 standardized over its screened places. The 7
+      places without X2 get z = 0.

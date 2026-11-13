@@ -1,0 +1,36 @@
+{
+  "fit_set": {
+    "places": 64,
+    "new": [
+      "2754880",
+      "3702140",
+      "3710740",
+      "3711800",
+      "3712000",
+      "3719000",
+      "3755000",
+      "3774440",
+      "4147000",
+      "4164900",
+      "4815976"
+    ]
+  },
+  "vintage_check": {
+    "places": 64,
+    "pearson": 0.9821198433234852,
+    "spearman": 0.9727106227106225,
+    "mean_change_points": 0.3314868657221793,
+    "max_abs_change_points": 10.99836901134278,
+    "by_source": {
+      "place": 57,
+      "county subdivision": 6,
+      "county less its places": 1
+    },
+    "flagged": []
+  },
+  "z": {
+    "center": 0.6727,
+    "scale": 0.1544,
+    "fit_end_year": 2015
+  }
+}
