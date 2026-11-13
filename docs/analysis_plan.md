@@ -5343,3 +5343,124 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   test found.
 - **Decided by:** Ben, 2026-11-12 ("Yes, use 3 years"), from options proposed by Claude Code.
   **Status:** decided; wired in this entry's PR.
+
+### D-083 · 2026-11-13 · ADUs: a screen of the place effects against unused place factors (method only, before any run)
+- **Status: accepted by Ben, 2026-11-13 ("Accept D-083"), as written. Proposed by Claude Code the same day.**
+- **Run 2026-11-13** (`reports/adu-covariate-screen/`, as written, no deviation). Two candidates pass the bar,
+  both narrowly:
+  - **Owner-occupied share:** β −0.71 per SD, Holm p 0.083, α falls 16%.
+  - **Pre-1960 housing share:** β +0.59, Holm p 0.095, α falls 11%.
+  - Nothing else passes. HOA share and homestead share were not screened, under the availability rule.
+  - Any model change needs its own method entry.
+- **Addition, 2026-11-13: leave-one-place-out check.** Ben asked for it ("Run the check") after reading the
+  run above. It was written before the check was run.
+  - **Which factors:** the two candidates, X1 and X2, in the within-state version.
+  - **How:** each of the 57 screened places is dropped in turn, and β is refitted (θ_s, α and β, as above).
+  - z keeps its standardization over the 57 places, so every β is on the same scale.
+  - **Reported for each candidate:**
+    - the range of β over the 57 drops;
+    - the five places whose drop moves β most;
+    - how many drops keep β's sign;
+    - how many keep the unadjusted likelihood-ratio p below 0.10. This is the same as the 90% profile interval
+      excluding 0.
+  - **Reading rule:**
+    - **"Carried by one place"** if any single drop flips β's sign or lifts p to 0.10 or above.
+    - **"Robust"** if no drop does.
+    - **"Leaning on"** if the sign holds every time but p crosses 0.10 for 1–3 places. Those places are named.
+  - The check changes no verdict above. It decides whether a method entry for the factor is worth writing.
+  - **Result (2026-11-13): both candidates are robust.** Every one of the 57 drops kept β's sign and p below 0.10.
+    - Owner share: β ranges from −0.83 to −0.55.
+    - Housing age: β ranges from +0.43 to +0.70. Its weakest drop is Asheville, at p 0.075.
+  - Ben asked for it: "Draft the screen", after a methodology review in chat.
+  - No screen has been run. No covariate has been read against any count or fit output.
+  - **Number:** provisional. #392's missing-middle entry also carries a provisional D-082; whichever merges
+    second is renumbered.
+- **Why:**
+  - **The place effect is large.** α is 1.92 in the D-079 refit: two places with the same rules and market
+    can differ several-fold. That spread is where omitted factors sit.
+  - **Two size-and-value effects were flagged.** D-045's audit flagged home value (×1.86 across the
+    interquartile range) and place size (×0.55).
+  - **The market term points the wrong way.** h1 is negatively correlated with the observed rate (D-041:
+    −0.11 pooled).
+  - **The modifiers were never testable.** D-025's modifier tests had 31 treated places and were weakly
+    identified, so they rule nothing out.
+  - **The register factors were never tested.** `docs/research/lotline-confounder-register.csv` lists these
+    as modifiers or confounders, and no ADU fit has tested them, though the data adapters already hold most
+    of them:
+    - owner-occupancy (C15);
+    - parcel stock (C14);
+    - HOAs (C12);
+    - housing age;
+    - new-house building (C25, the co-built channel D-041 can only remove where permits carry parcel IDs;
+      Met Council has none).
+- **What the screen answers:** which pre-window place factors explain the place effects and the state misses
+  of the adopted model. It does not change the model. A factor that passes the bar below becomes a candidate
+  for its own method entry, scored on D-075's tests like any other form change.
+- **Model screened:** the D-079 refit's Form A, as kept. That means its place set (64 places, 395 place-years,
+  2016–2025), counts, k paths, m_o = 1.0 and m_x = 0.4. If Ben adopts a different ADU form before the screen
+  runs, the screen uses that form instead, and the entry is amended before the run.
+- **Factors, all measured before the 2016 window.** Post-window values could be the reform's own effect: land
+  value capitalizes the reform (C17, a mediator).
+
+  | # | Factor | Measure | Source |
+  |---|---|---|---|
+  | X1 | Owner-occupied share | B25003_002 / B25003_001 | ACS 5-year 2011–15, place |
+  | X2 | Older housing | share of units built before 1960 | ACS B25034, 2011–15 |
+  | X3 | Detached single-family share | 1-unit detached / all units | ACS B25024, 2011–15 |
+  | X4 | New-house building | BPS 1-unit buildings per 1,000 eligible lots, mean 2013–15 | BPS place |
+  | X5 | Lot size | median `lot_sqft` of eligible lots | parcel rolls (earliest roll on file) |
+  | X6 | HOAs | share of eligible lots with `hoa` true | parcel rolls |
+  | X7 | Owner-occupied lots | share of eligible lots with `homestead` true | parcel rolls |
+  | R1 | Place size (reference) | log eligible lots | as in the fit |
+  | R2 | Home value (reference) | log B25077 | ACS 2011–15 |
+
+  - R1 and R2 are already in the model or D-045's audit. They are screened as references, so the new factors
+    can be read against known effects. R2's residual effect says whether h1's judgment equity elasticity
+    (0.25) is too high or too low.
+  - **Availability rule:** a factor is screened only if it is available for at least 75% of the fit places,
+    and at least 30 of them. Parcel factors also need the field filled on at least 80% of a place's eligible
+    lots, or that place counts as missing.
+  - The places screened and the places dropped are reported for each factor.
+  - **Vintages:** if the ACS 2011–15 vintage is not cached, the latest cached vintage ending in 2015 or earlier
+    is used. If there is none, fetching it goes to Ben first; nothing is downloaded on this entry alone.
+  - **Holdouts:** where the ACS adapter hides a table for a holdout (the V9 Oregon rule on B25003, B25024 and
+    B25034), that place is dropped from that factor's screen. The hide is never bypassed. St. Paul stays out
+    of everything, and no `--unblind` is passed.
+- **Not screened, because each needs something new.** Each item below needs its own go-ahead:
+  - **Household income:** the ACS adapter has no income table. B19013 would need adding and a fetch.
+  - **ADU fees and pre-approved-plan programs** (C18, C21): not coded for the fit places.
+  - **Short-term-rental demand** (C36): no source.
+  - **Mandate versus a place's own choice** (C05–C07, C11): this is collinear with state (Oregon is the only
+    mandated state), so it needs a design of its own.
+- **Method, one factor at a time:**
+  - z_i is the factor standardized over the screened places.
+  - E[y_it | u_i] = θ · exp(β z_i) · u_i · k_it, where:
+    - k_it is Form A's per-year exposure at the refit's m_o and m_x;
+    - u_i ~ Gamma(mean 1, variance α).
+  - The likelihood is `calibrate_adu.frailty_loglik_place` with k scaled by exp(β z_i). θ, α and β are fitted
+    by maximum likelihood, and β gets a 90% profile interval.
+  - The comparison fit sets β = 0 on the same places. It is refitted, because the screened places can differ
+    from the full 64.
+  - **Two versions:**
+    - **Within-state (main read):** one θ per state, so β is identified only from differences between places
+      in the same state.
+    - **Pooled:** one θ, so β can also absorb differences between states. Its read is whether the factor
+      moves the D-079 leave-one-state-out medians toward the observed totals (MN over-predicted about 2.7×;
+      NC, OR and TX under-predicted 2.7–15×). That read is descriptive only.
+  - **Also reported:** the Spearman correlation of each place's posterior mean effect,
+    (1 + α Y_i) / (1 + α θ K_i), with z_i.
+- **Bar for a candidate, all of the following in the within-state version:**
+  1. The likelihood-ratio p is below 0.10 after a Holm correction over the factors actually screened.
+  2. α falls by at least 10% against the β = 0 fit.
+  3. β keeps its sign in every leave-one-state-out refit for states with at least 3 screened places.
+  - **A factor that meets 1 but not 2 or 3** is reported as "weak", not as a candidate.
+  - **Joint fit:** if 2 or more factors are candidates, one joint fit of the candidates is reported,
+    descriptively, with their pairwise correlations.
+- **What it will not do:**
+  - write to config;
+  - change the counts, the k table or the fit set;
+  - count as a causal estimate. The screen finds factors that predict where ADUs get built. Whether a factor
+    causes uptake is a question for the method entry it leads to.
+- **Built and run** only after Ben accepts this entry. The code is a small module with a hand-worked
+  synthetic test of the scaled likelihood, plus a dev script. It reads cached tables only, with no download.
+  The output goes to `reports/adu-covariate-screen/`, with a results page.
