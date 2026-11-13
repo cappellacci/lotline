@@ -183,6 +183,9 @@ class GlobalsA:
     alpha: float
     cvals: np.ndarray
     beta: np.ndarray | None = None
+    gamma: np.ndarray | None = None  # D-085, Form T: γ per draw; None is no trend
+    trend_ref: int = 2020
+    trend_cap: int | None = None  # the trend is held flat after this year (None: continued)
 
     def place_scale(self, pl: cal.PlaceData) -> np.ndarray:
         """scale × exp(β_o z_i) per draw (scale alone for Form A or a place without z)."""
@@ -190,6 +193,17 @@ class GlobalsA:
         if self.beta is None or z == 0.0:
             return self.scale
         return self.scale * np.exp(self.beta * z)
+
+    def year_scale(self, pl: cal.PlaceData) -> np.ndarray:
+        """Draws × the place's years: `place_scale` × exp(γ (min(t, cap) − ref)) (D-085); without γ, the
+        place scale repeated over the years."""
+        ps = self.place_scale(pl)[:, None]
+        t = np.asarray(pl.years, dtype=float)
+        if self.gamma is None:
+            return np.broadcast_to(ps, (len(ps), len(t)))
+        if self.trend_cap is not None:
+            t = np.minimum(t, self.trend_cap)
+        return ps * np.exp(self.gamma[:, None] * (t[None, :] - self.trend_ref))
 
 
 @dataclass(frozen=True)
@@ -202,15 +216,26 @@ class GlobalsB:
     form: FormB
 
 
-def globals_a(fit: cal.Fit3, taus, n: int, seed: int, beta: np.ndarray | None = None) -> GlobalsA:
+def globals_a(
+    fit: cal.Fit3,
+    taus,
+    n: int,
+    seed: int,
+    beta: np.ndarray | None = None,
+    gamma: np.ndarray | None = None,
+    trend_ref: int = 2020,
+    trend_cap: int | None = None,
+) -> GlobalsA:
     """θ ~ lognormal from its profile interval; τ per draw (`taus`: scalar or n values; 0 = no state effect);
     z ~ N(0, 1). `beta`: Form A′'s β_o per draw (D-084), drawn by the caller so Form A's draws are
-    unchanged."""
+    unchanged. `gamma` (D-085, Form T): γ per draw, likewise drawn by the caller; `trend_cap` holds the trend
+    flat after that year."""
     rng = np.random.default_rng(seed)
     theta = np.exp(rng.normal(math.log(fit.theta), fit.log_se, size=n))
     tau = np.broadcast_to(np.asarray(taus, dtype=float), (n,))
     v = np.exp(tau * rng.standard_normal(n))
-    return GlobalsA(theta * v, fit.alpha, cal._cvals(fit.m_owner, fit.m_other), beta)
+    cv = cal._cvals(fit.m_owner, fit.m_other)
+    return GlobalsA(theta * v, fit.alpha, cv, beta, gamma, trend_ref, trend_cap)
 
 
 def globals_b(b: FormB, s: float, n: int, seed: int) -> GlobalsB:
@@ -228,7 +253,12 @@ def _n(g) -> int:
 
 def _take(g, idx: np.ndarray):
     if isinstance(g, GlobalsA):
-        return replace(g, scale=g.scale[idx], beta=None if g.beta is None else g.beta[idx])
+        return replace(
+            g,
+            scale=g.scale[idx],
+            beta=None if g.beta is None else g.beta[idx],
+            gamma=None if g.gamma is None else g.gamma[idx],
+        )
     return replace(g, betas=g.betas[idx], delta=g.delta[idx])
 
 
@@ -266,7 +296,7 @@ def place_loglik(pl: cal.PlaceData, g) -> np.ndarray:
         lw = np.log(np.where(share > 0, share, 1.0))  # zero-weight combinations are skipped below
         per = np.stack(
             [
-                lw[c] + _marginal(y, g.place_scale(pl)[:, None] * ks[c][None, :], g.alpha, lf)
+                lw[c] + _marginal(y, g.year_scale(pl) * ks[c][None, :], g.alpha, lf)
                 for c in range(len(ks))
                 if pl.w[c] > 0
             ],
@@ -305,7 +335,7 @@ def predict(places: Sequence[cal.PlaceData], g, seed: int) -> dict[str, np.ndarr
         u = rng.gamma(1 / g.alpha, g.alpha, size=n) if g.alpha > 0 else np.ones(n)
         if isinstance(g, GlobalsA):
             combo = rng.choice(len(pl.w), size=n, p=pl.w / pl.w.sum())
-            mu = (g.place_scale(pl) * u)[:, None] * pl.k(g.cvals)[combo]
+            mu = g.year_scale(pl) * u[:, None] * pl.k(g.cvals)[combo]
         else:
             x, off = g.form.design(pl)
             mu = u[:, None] * np.exp(np.clip(off[None, :] + g.betas @ x.T + g.delta[:, None], None, 30))
