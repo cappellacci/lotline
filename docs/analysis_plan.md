@@ -5665,3 +5665,15 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **The rule-age outlook** uses the age of the oldest rule in force, capped at 10 years, with Form A′ as the
     base. Only its fit and likelihood ratios are reported.
   - **Seed** 20261111, 20,000 draws, as D-084.
+- **Result, 2026-11-13** (`reports/adu-time-trend/`):
+  - **The rule keeps no trend, for either base.** Test D gains: A + T over A 4.2 (2 SE 16.3); A′ + T over A′ 0.7
+    (2 SE 15.3), and A′ + T passes fewer of tests A–B (0 vs 1). Holding the trend flat after 2020 beat
+    continuing it by 32 (SE 11), so "flat" was the version scored.
+  - **In sample the trend is large but mostly Oregon:** γ −0.128 a year (−0.136 to −0.120), likelihood ratio
+    664; without Oregon −0.044 (−0.057 to −0.030), likelihood ratio 26.
+  - **Test D, the first forecast test of places the model has seen:** no form is reliable. Every form
+    over-forecasts Minnesota 5–15×, mostly Minneapolis: fitted on 2016–20, m_o is 0.1, so the 2021 removal of its
+    owner rule is forecast as a ~10× step (1,583 forecast, 72 counted). The carry-forward benchmark scores
+    −146.2 against Form A's −151.0 (SE 11).
+  - **Rule-age outlook:** δ −0.051 a year of rule age, likelihood ratio 23 against A′.
+  - Nothing is written to config.
