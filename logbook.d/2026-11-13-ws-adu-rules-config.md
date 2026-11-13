@@ -10,7 +10,7 @@
   (43, in 30 rows) and every moved date (35 replaced rows): `docs/research/ordinances/adu-rules-source-check-*.csv`.
   Values: 40 research, 1 config (Bloomington 960), 1 other (Lakeville parking 1), 1 unresolved (Rochester parking,
   config 0 kept). Dates: 9 research, 1 config (Bend 2016-03-18), 1 unresolved (St. Louis Park), 24 restructured.
-  Four research values that reverse Ben's 2026-11-02 adjudications are held at Ben's value until he rules.
+  Four research values reversed Ben's 2026-11-02 adjudications. Ben ruled the same day ("Take research"): Richfield 2015 detached allowed, Inver Grove Heights 2018 no lot minimum, Chanhassen 2025 by right, Roseville 2011 cap 650. Each row notes the ruling.
 - **Config conventions:** https sources (local copies named in the notes), single-coder rows without coder_2,
   NO ADU RULE rows, unchanged hand-checked rows kept, same-ordinance rows keep their old ids, superseded versions
   end on the successor's date (MN test updated to allow it). Pinned tests updated with dated comments.
