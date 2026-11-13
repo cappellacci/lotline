@@ -1,5 +1,8 @@
 # ADU version C (exploratory, not adopted), run 2026-11-13
 
+**Decision (Ben, 2026-11-13): version C is dropped as a predictor.** The code and run stay on this branch for
+the record; nothing goes to `main`. PR #417's rows are a separate decision.
+
 Plan: `PLAN.md`, committed before any fit (c1315a72). Run: `run/` (branch `ws/adu-version-c`, ba9c17c3), offline,
 seed 20261111, 20,000 draws, 31 minutes. St. Paul blind; no `--unblind`. Results page: `results.html`.
 
