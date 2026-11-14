@@ -53,5 +53,205 @@
     },
     "fit_end_year": 2015,
     "corr_owner_age_fit_places": -0.3933976268374195
-  }
+  },
+  "central": {
+    "claim_tier": {
+      "A": null,
+      "A\u2032": null,
+      "A\u2033": null
+    },
+    "useful_states_by_tier": {
+      "A": {
+        "0": 0,
+        "1": 0,
+        "2": 0
+      },
+      "A\u2032": {
+        "0": 1,
+        "1": 2,
+        "2": 2
+      },
+      "A\u2033": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      }
+    },
+    "tests": {
+      "A": {
+        "A": {
+          "MN": false,
+          "NC": false,
+          "OH": null,
+          "TX": true,
+          "OR": false
+        },
+        "B": {
+          "MN": null,
+          "NC": false,
+          "OH": true,
+          "TX": null,
+          "OR": null
+        }
+      },
+      "A\u2032": {
+        "A": {
+          "MN": false,
+          "NC": false,
+          "OH": null,
+          "TX": false,
+          "OR": false
+        },
+        "B": {
+          "MN": null,
+          "NC": false,
+          "OH": true,
+          "TX": null,
+          "OR": null
+        }
+      },
+      "A\u2033": {
+        "A": {
+          "MN": false,
+          "NC": false,
+          "OH": null,
+          "TX": false,
+          "OR": false
+        },
+        "B": {
+          "MN": null,
+          "NC": false,
+          "OH": true,
+          "TX": null,
+          "OR": null
+        }
+      }
+    },
+    "tests_passed": {
+      "A": 2,
+      "A\u2032": 1,
+      "A\u2033": 1
+    },
+    "step1": {
+      "form": "A",
+      "reason": "A\u2032 scores better but passes fewer of tests A-C (1 vs 2) [in this reason, A = A, A\u2032 = A\u2032]",
+      "log_gain": 7.73956503485857,
+      "log_gain_se": 3.6837501778847876
+    },
+    "base_for_step2": "A",
+    "step2": {
+      "form": "A",
+      "reason": "A\u2032 scores better but passes fewer of tests A-C (1 vs 2) [in this reason, A = A, A\u2032 = A\u2033]",
+      "log_gain": 7.88833641307666,
+      "log_gain_se": 2.8080789527599537
+    },
+    "log_gain_a2_over_a": [
+      7.88833641307666,
+      2.8080789527599537
+    ],
+    "places_scored": 56
+  },
+  "test_c_form_a": {
+    "MN": true,
+    "NC": true,
+    "OH": true,
+    "TX": true,
+    "OR": true
+  },
+  "sensitivity_within_state": {
+    "betas": [
+      -0.09426716818489365,
+      0.8686605659932648
+    ],
+    "beta_se": [
+      0.2759111338768555,
+      0.2640180349118053
+    ],
+    "alpha": 1.264521081606099,
+    "alpha_betas0": 1.7963396948654797,
+    "loglik": -1402.3446778449447,
+    "theta_by_state": {
+      "MN": 0.00015444451401231234,
+      "NC": 0.0007258399226157036,
+      "OH": 2.323273556197181e-05,
+      "OR": 0.0017139492207692774,
+      "TX": 0.0009785475161169922
+    }
+  },
+  "sensitivity_age_only": {
+    "variant": "sensitivity",
+    "fold": "all",
+    "form": "A + age",
+    "theta": 0.000460095395076455,
+    "low": 0.00033324764983444613,
+    "high": 0.000704627746433,
+    "alpha": 2.3949222437806212,
+    "m_owner": 1.0,
+    "m_other": 0.8,
+    "owner_estimated": true,
+    "other_estimated": true,
+    "loglik": -1415.867179397002,
+    "n_places": 64,
+    "n_years": 491,
+    "n_terms": 2,
+    "beta_age": 0.6127952294822298,
+    "beta_age_low": 0.16817214474566478,
+    "beta_age_high": 1.0574183142187947,
+    "beta_age_se": 0.2703116419912801,
+    "lr_vs_a": 5.522238705972995
+  },
+  "sensitivity_mx_0_4": {
+    "A\u2033 at m_x 0.4": {
+      "variant": "sensitivity",
+      "fold": "all",
+      "form": "A\u2033 at m_x 0.4",
+      "theta": 0.0005994221544510531,
+      "low": 0.0004407302534456717,
+      "high": 0.0008414999052602035,
+      "alpha": 1.7992644682207712,
+      "m_owner": 1.0,
+      "m_other": 0.4,
+      "owner_estimated": false,
+      "other_estimated": false,
+      "loglik": -1455.0616850523888,
+      "n_places": 64,
+      "n_years": 491,
+      "n_terms": 2,
+      "beta_owner": -0.5935812827979806,
+      "beta_owner_low": -0.9120728143263115,
+      "beta_owner_high": -0.2750897512696497,
+      "beta_owner_se": 0.1936291024986914,
+      "beta_age": 0.46121534888294735,
+      "beta_age_low": 0.05440678813281086,
+      "beta_age_high": 0.8680239096330838,
+      "beta_age_se": 0.24732204378823947,
+      "beta_corr": 0.21042552195759895
+    },
+    "A\u2032 at m_x 0.4": {
+      "variant": "sensitivity",
+      "fold": "all",
+      "form": "A\u2032 at m_x 0.4",
+      "theta": 0.0006210576764482799,
+      "low": 0.00045260547323238857,
+      "high": 0.0008842480454040331,
+      "alpha": 1.8782831360174008,
+      "m_owner": 1.0,
+      "m_other": 0.4,
+      "owner_estimated": false,
+      "other_estimated": false,
+      "loglik": -1456.867126070549,
+      "n_places": 64,
+      "n_years": 491,
+      "n_terms": 2,
+      "beta_owner": -0.6776469498275316,
+      "beta_owner_low": -1.0007769770442525,
+      "beta_owner_high": -0.35451692261081075,
+      "beta_owner_se": 0.19644910764224136
+    }
+  },
+  "lr": {
+    "A\u2032 vs A": 14.252091228182508,
+    "A\u2033 vs A\u2032": 3.3413667802096825
+  },
+  "rows": "PR #419 head ef37063f merged into ws/adu-age-term (not yet on main)"
 }

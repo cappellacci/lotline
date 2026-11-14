@@ -6171,3 +6171,22 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     2. **Test D is not run.** D-085's code is on an unmerged branch (#420) that also edits `joint_refit`. It is
        reported once #420 merges.
     3. **The base for step 2 is step 1's winner,** because A′ is not adopted on `main` (#418 is open).
+- **Result, 2026-11-14** (`reports/adu-age-term/`, run at `52d4ef2a`; a `--smoke` code-path run on a 2 × 2 grid
+  came first and its two decision lines were seen before the full run; nothing changed between them):
+  - **The rule keeps Form A in both steps.**
+    - No form passes any tier. Useful states at tiers 0–1–2: A 0–0–0, A′ 1–2–2, A″ 1–1–1.
+    - Step 1: A′'s tier-1 held-out log score beats A's by 7.74 against 2 paired SE of 7.37 (56 places), but A′
+      passes 1 of tests A–B and A passes 2.
+    - Step 2 (base A): A″ beats A by 7.89 against 5.62, but passes 1 of tests A–B against A's 2.
+    - A's extra pass is test A in Texas, which is one place, College Station (observed 5.4; medians A 6,
+      A′ 37, A″ 21). Without it the counts tie and step 1 would pick A′ (+8.07 against 7.31). That check was
+      run after the result and does not change the decision.
+  - **Fits** (64 places, 491 place-years, m_o 1.0, m_x 0.8 for all three):
+    - A: θ 0.503 per 1,000, α 2.648.
+    - A′: θ 0.379, α 1.844, β_o −0.78 (−1.10 to −0.46).
+    - A″: θ 0.367, α 1.769, β_o −0.70 (−1.02 to −0.38), β_a +0.44 (+0.03 to +0.84), corr(β_o, β_a) 0.22.
+  - **Age adds nothing held-out on top of owner share:** A″ against A′ is +0.15 against 2 SE of 3.57; in-sample
+    LR 3.3.
+  - **Within states the roles swap:** with one θ per state, β_o −0.09 (SE 0.28) and β_a +0.87 (SE 0.26).
+  - **Test C** (Form A only) passes in all five states. Test D waits for #420.
+  - Nothing is written to config. Whether to accept the rule's outcome is Ben's call.
