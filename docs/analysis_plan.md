@@ -5833,3 +5833,45 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     inside MN (Minneapolis and Rochester against 41 suburbs) and NC (6 cores against 7 suburbs). Part 1 cannot
     separate state from type well, and the write-up will say so.
   - Test B's roll towns are 32 suburbs and 1 core city.
+- **Run, 2026-11-14** (`reports/adu-place-types/`). The decision step stopped on a variable-name error after
+  every table was written. It was rerun from the saved tables (`--finish`), with no refit and no other change.
+  - **Part 1, under Form A: "types matter".** State, place type and counting source each explain about a
+    quarter of the spread in the place effects (23%, 26% and 23%), and all three together 29%:
+    - type explains slightly more than state, and core cities stay above suburbs with each state left out;
+    - a core city's mean effect is ×1.7, a suburb's ×0.30;
+    - the three groupings largely coincide in this fit set (above), so they cannot be cleanly separated.
+  - **Part 1, under Form A′: "mixed"** (state 12%, type 9.5%, source 10%, together 14%). Owner share has
+    absorbed most of it.
+  - **About 70% of the spread is between places of the same state, type and counting source.**
+  - **Part 2: the rule adopts types over Form A, and not over Form A′.**
+    - **A + P against A:**
+      - tier-1 held-out log score +7.2 (2 SE 6.1);
+      - tests A–B 1 each;
+      - test D −3.4 (SE 2.6), inside the 2 SE allowance;
+      - core-city term +1.20 (+0.55 to +1.90), ×3.3;
+      - useful states by tier: A 0/0/0, A + P 2/3/3.
+    - **A′ + P against A′:**
+      - tier-1 log score −0.6 (2 SE 4.4), so not adopted;
+      - core-city term +0.85 (−0.08 to +1.79);
+      - owner share and core city correlate at −0.68.
+    - **No form passes D-075's claim rule at any tier.** Minnesota stays outside ×2.
+    - **Which result counts depends on D-084, still open.** Keep Form A, and A + P is the form; adopt A′, and
+      it stays as is.
+    - A + P and A′ score nearly the same on the tier-1 log score (+7.2 and +6.8 over A), and A + P has more
+      useful states (3 against 1). That comparison is descriptive and not part of any rule.
+  - **Held-out states at tier 1, observed ÷ P50, A to A + P:**
+
+    | State | A | A + P |
+    |---|---:|---:|
+    | MN | 0.30 | 0.50 |
+    | NC | 2.68 | 1.57 |
+    | TX | 5.87 | 2.42 |
+    | OR | 3.63 | 1.95 |
+
+  - **Test D:** types change nothing. Minnesota is still forecast 8× too high, and carry-forward still scores
+    best.
+  - **Sensitivities:**
+    - core city alone, with each state left out: +0.91 to +1.26;
+    - core city next to owner share, without Oregon: +0.37 (−0.74 to +1.52);
+    - the 4-type split, with older suburbs +0.71: worse on tiers (2 useful at tier 1).
+  - Nothing is written to config.

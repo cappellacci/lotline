@@ -280,6 +280,11 @@ def fit_row(variant, fold, form, f) -> dict:
 def part1(places, fit, info: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     e = ty.effects(places, fit).merge(info, on="geoid")
     e = e[e["years"] >= MIN_YEARS].reset_index(drop=True)
+    return e, part1_summary(e)
+
+
+def part1_summary(e: pd.DataFrame) -> dict:
+    """Part 1's shares, leave-one-state-out reads, group means and reading, from the effects table."""
     w = e["years"].to_numpy(dtype=float)
     y = e["log_effect"].to_numpy()
 
@@ -328,7 +333,7 @@ def part1(places, fit, info: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
         "state_by_source": xs,
         "reading": ty.reading(shares, holds),
     }
-    return e, out
+    return out
 
 
 def _order(frame: pd.DataFrame) -> list[str]:
@@ -347,6 +352,11 @@ def main() -> None:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--inputs-only", action="store_true")
+    ap.add_argument(
+        "--finish",
+        action="store_true",
+        help="only the decision and summary, from the tables already in --out",
+    )
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     store = DataStore()
@@ -462,12 +472,15 @@ def run(a, store) -> None:
         },
     }
     log(json.dumps(summary, indent=1, default=str))
-    (a.out / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
     if a.inputs_only:
+        (a.out / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
         return
 
     base = [ao.with_z(p, z_fit[p.geoid]) for p in places]
     pz = attach(base, types)
+    if a.finish:
+        finish(a.out, summary, pz)
+        return
     pz4 = attach(base, types4, TERMS4)
     by_form = {f: pz for f in FORMS} | {f: pz4 for f in SENS_FORMS}
     early, pairs = TR.split(pz)
@@ -540,16 +553,48 @@ def run(a, store) -> None:
     ta.to_csv(a.out / "test_a.csv", index=False)
     tb = pd.DataFrame(test_b_rows(store, fits, z_fit, types, R.SEED, FORMS))
     tb.to_csv(a.out / "test_b.csv", index=False)
+    finish(a.out, summary, pz)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Decision and summary, from the saved tables only (so a failure here never needs a refit)
+# ---------------------------------------------------------------------------------------------------------
+
+
+def _fit(fits: pd.DataFrame, variant: str, fold: str, form: str) -> pd.Series:
+    r = fits[(fits["variant"] == variant) & (fits["fold"] == fold) & (fits["form"] == form)]
+    return r.iloc[0]
+
+
+def _terms(row: pd.Series, terms) -> dict:
+    return {t: [row[f"b_{t}"], row[f"b_{t}_low"], row[f"b_{t}_high"]] for t in terms}
+
+
+def finish(out: Path, summary: dict, pz) -> None:
+    fits = pd.read_csv(out / "fits.csv")
+    tiers = pd.read_csv(out / "tiers.csv")
+    tiers4 = pd.read_csv(out / "tiers_sensitivity.csv")
+    ls = pd.read_csv(out / "heldout_log_scores.csv", dtype={"geoid": str})
+    d_places = pd.read_csv(out / "test_d_places_scores.csv", dtype={"geoid": str})
+    ta = pd.read_csv(out / "test_a.csv", dtype={"geoid": str})
+    tb = pd.read_csv(out / "test_b.csv")
+    eff = pd.read_csv(out / "part1_effects.csv", dtype={"geoid": str})
+
+    summary["part1"] = {f: part1_summary(eff[eff["form"] == f].reset_index(drop=True)) for f in ("A", "A′")}
+    for f, p1 in summary["part1"].items():
+        log(f"  part 1 {f}: {p1['shares']} -> {p1['reading']}")
+
+    TR.FORMS = FORMS
     passes = TR.tests_by_form(ta, tb)
     n_tests = {f: jr.tests_passed(passes[f]) for f in FORMS}
     claim = {f: jr.claim_tier(tiers[tiers["form"] == f]) for f in FORMS}
-    useful = {
-        f: {
-            int(t): int(tiers[(tiers["form"] == f) & (tiers["tier"] == t)]["useful"].sum()) for t in (0, 1, 2)
+
+    def useful_of(frame: pd.DataFrame, f: str) -> dict:
+        return {
+            int(t): int(frame[(frame["form"] == f) & (frame["tier"] == t)]["useful"].sum()) for t in (0, 1, 2)
         }
-        for f in FORMS + SENS_FORMS
-        for tiers in [tiers if f in FORMS else tiers4]
-    }
+
+    useful = {f: useful_of(tiers, f) for f in FORMS} | {f: useful_of(tiers4, f) for f in SENS_FORMS}
 
     decisions = {}
     for b, p in PAIRS:
@@ -557,7 +602,7 @@ def run(a, store) -> None:
         gd, sed, nd = TR.gain(d_places, b, p)
         gp, sep, _ = TR.gain(d_places, "persistence", p)
         dec = ty.decide(claim[b], claim[p], gl, sel_, n_tests[b], n_tests[p], gd, sed)
-        full = fits[("all", p)]
+        full, base = _fit(fits, "central", "all", p), _fit(fits, "central", "all", b)
         decisions[f"{b} vs {p}"] = {
             "claim_tier": {"base": claim[b], "P": claim[p]},
             "tier1_log_score_gain": {"gain": gl, "se": sel_, "places": nl},
@@ -565,10 +610,8 @@ def run(a, store) -> None:
             "p_over_persistence_test_d": {"gain": gp, "se": sep},
             "useful_states_by_tier": {"base": useful[b], "P": useful[p]},
             "tests_passed": {"base": n_tests[b], "P": n_tests[p]},
-            "type_terms_full": {
-                t: [full.type_beta[i], full.type_low[i], full.type_high[i]] for i, t in enumerate(full.terms)
-            },
-            "lr_full": 2 * (full.loglik - fits[("all", b)].loglik),
+            "type_terms_full": _terms(full, ty.TERMS),
+            "lr_full": 2 * (full["loglik"] - base["loglik"]),
             "decision": dataclasses.asdict(dec),
         }
         log(f"{b} vs {p}: {decisions[f'{b} vs {p}']['decision']}")
@@ -577,26 +620,13 @@ def run(a, store) -> None:
     summary["useful"] = useful
     summary["tests"] = passes
     summary["type_terms_without_state"] = {
-        f: {
-            st: {
-                t: fits[(f"without {st}", f)].type_beta[i]
-                for i, t in enumerate(fits[(f"without {st}", f)].terms)
-            }
-            for st in R.STATES
-        }
+        f: {st: _terms(_fit(fits, "central", f"without {st}", f), ("core",)) for st in R.STATES}
         for f in ("A+P", "A′+P")
     }
     summary["sensitivity_four_types"] = {
         f: {
-            "terms": {
-                t: [
-                    fits4[("all", f)].type_beta[i],
-                    fits4[("all", f)].type_low[i],
-                    fits4[("all", f)].type_high[i],
-                ]
-                for i, t in enumerate(fits4[("all", f)].terms)
-            },
-            "loglik": fits4[("all", f)].loglik,
+            "terms": _terms(_fit(fits, "sensitivity", "all", f), TERMS4),
+            "loglik": float(_fit(fits, "sensitivity", "all", f)["loglik"]),
             "useful": useful[f],
             "claim_tier": jr.claim_tier(tiers4[tiers4["form"] == f]),
         }
@@ -604,16 +634,12 @@ def run(a, store) -> None:
     }
     owner = np.array([ao.place_z(p) for p in pz])
     core = np.array([ty.type_d(p)[0] for p in pz])
-    town = np.array([ty.type_d(p)[1] for p in pz])
-    summary["owner_vs_type_correlation"] = {
-        "core": float(np.corrcoef(owner, core)[0, 1]) if core.std() > 0 else None,
-        "town": float(np.corrcoef(owner, town)[0, 1]) if town.std() > 0 else None,
-    }
+    summary["owner_vs_core_correlation"] = float(np.corrcoef(owner, core)[0, 1]) if core.std() > 0 else None
     summary["base_check_vs_d084"] = {
-        f: {k: getattr(fits[("all", f)], k) for k in ("theta", "alpha", "beta", "loglik")}
+        f: {k: float(_fit(fits, "central", "all", f)[k]) for k in ("theta", "alpha", "beta", "loglik")}
         for f in ("A", "A′")
     }
-    (a.out / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
+    (out / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
     log("done")
 
 
