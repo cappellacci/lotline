@@ -6059,7 +6059,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     (`reports/adu-types-slopes/`, page https://claude.ai/artifact/FiiNrCDR2gxt3q8FBjtRnZ). This closes the approximation the engine note listed.
 
 ### D-087 · 2026-11-14 · ADUs: housing age as a second place term, and Forms A and A′ scored again on the checked rule rows (method only, before any fit)
-- **Status: proposed by Claude Code, 2026-11-14. Not accepted.**
+- **Status: accepted by Ben, 2026-11-14 ("Let's try D-087"), as written. Proposed by Claude Code the same day.**
   - Ben asked for it ("Draft it"), after the D-083 screen was rerun on the source-checked rule rows
     (`reports/adu-covariate-screen-final-rows/`, branch `ws/adu-screen-new-rows`).
   - No fit or score has been made with the age term in Form A′. The screen and D-084's outlook below are the only
@@ -6145,3 +6145,29 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Built and run** only after Ben accepts this entry, and after #419 merges. The code extends
   `adu_owner.fit3_term` and `joint_refit.GlobalsA` to a vector of place terms, with a hand-worked synthetic test
   of the two-term likelihood, plus a run script like `adu_owner_refit.py`.
+- **Built, 2026-11-14, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_terms.py`: the fitter for any set of place terms (`fit3_terms`), the joint
+      β draws and the within-state sensitivity;
+    - `joint_refit.GlobalsA` takes β as (draws, terms) for a place carrying a vector of terms; D-084's
+      one-term path is unchanged;
+    - `scripts/dev/adu_age_refit.py` runs everything, and reuses D-084's owner-share reader;
+    - hand-worked tests in `tests/model/test_adu_terms.py`, including that `fit3_terms` reproduces
+      `adu_owner.fit3_term` for Form A and Form A′;
+    - the center and scale in `config/params/adu_age.yaml`.
+  - **One fitter for all three forms**, so they are compared on the same inputs. The β's are found by
+    coordinate ascent (a golden search on each β in turn), on the same vectorized likelihood as D-084.
+  - **β intervals** are Wald 90% intervals from Σ (the inverse of minus the Hessian of the profile
+    log-likelihood), not profile intervals. The draws use the same Σ. For one term the test checks the two
+    agree within 0.05.
+  - **Inputs (`--inputs-only`, no fit):** 64 places, 491 place-years, 11 new. Housing age: 57 places read
+    their own rows, 6 Minnesota townships their county subdivision's, Durham County unincorporated the county
+    less its places; none flagged. The 57 match D-083's X2 exactly. Vintage check, 2011–15 against 2020–24:
+    r 0.982, Spearman 0.963, mean change −2.4 points. Owner share and age correlate −0.39 over the 64 places.
+  - **Three deviations from the entry as written:**
+    1. **The rows are #419's head (ef37063f), merged into this branch,** because #413, #417 and #419 are not
+       yet on `main`. Ben asked to run now ("Let's try D-087"). If #419 changes before it merges, the run is
+       repeated.
+    2. **Test D is not run.** D-085's code is on an unmerged branch (#420) that also edits `joint_refit`. It is
+       reported once #420 merges.
+    3. **The base for step 2 is step 1's winner,** because A′ is not adopted on `main` (#418 is open).

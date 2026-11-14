@@ -1,0 +1,57 @@
+{
+  "fit_set": {
+    "places": 64,
+    "place_years": 491,
+    "new": [
+      "2754880",
+      "3702140",
+      "3710740",
+      "3711800",
+      "3712000",
+      "3719000",
+      "3755000",
+      "3774440",
+      "4147000",
+      "4164900",
+      "4815976"
+    ]
+  },
+  "vintage_check_owner": {
+    "places": 64,
+    "pearson": 0.9821198433234852,
+    "spearman": 0.9727106227106225,
+    "mean_change_points": 0.3314868657221793,
+    "max_abs_change_points": 10.99836901134278,
+    "by_source": {
+      "place": 57,
+      "county subdivision": 6,
+      "county less its places": 1
+    },
+    "flagged": []
+  },
+  "vintage_check_age": {
+    "places": 64,
+    "pearson": 0.9818168715449603,
+    "spearman": 0.9630952380952379,
+    "mean_change_points": -2.447501401030732,
+    "max_abs_change_points": 16.177947100025794,
+    "by_source": {
+      "place": 57,
+      "county subdivision": 6,
+      "county less its places": 1
+    },
+    "flagged": []
+  },
+  "z": {
+    "owner": {
+      "center": 0.6727,
+      "scale": 0.1544
+    },
+    "age": {
+      "center": 0.2045,
+      "scale": 0.1669
+    },
+    "fit_end_year": 2015,
+    "corr_owner_age_fit_places": -0.3933976268374195
+  }
+}

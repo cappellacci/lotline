@@ -177,7 +177,8 @@ class GlobalsA:
     """Form A's shared draws: scale = θ × v (θ from its interval, v = exp(τ z) the state multiplier).
 
     `beta` (D-084, Form A′): β_o per draw; a place carrying z (`adu_owner.with_z`) is then scaled by
-    exp(β_o z) in that draw. None is Form A."""
+    exp(β_o z) in that draw. None is Form A. D-087: `beta` may be (draws, terms), β over a vector of place
+    terms (`adu_terms`); the place is then scaled by exp(β · z_vector)."""
 
     scale: np.ndarray
     alpha: float
@@ -190,11 +191,17 @@ class GlobalsA:
 
     def place_scale(self, pl: cal.PlaceData) -> np.ndarray:
         """scale × exp(β_o z_i) × exp(Σ_j β_j d_ij) per draw (scale alone for Form A, a place without z, or a
-        place of the reference type)."""
+        place of the reference type). D-087: with β per draw over a vector of terms (2-D), the place carries
+        its vector (`adu_terms.with_zv`) and the factor is exp(β · zv)."""
         out = self.scale
-        z = float((pl.extra or {}).get("place_z", 0.0))
-        if self.beta is not None and z != 0.0:
-            out = out * np.exp(self.beta * z)
+        if self.beta is not None and self.beta.ndim == 2:
+            zv = (pl.extra or {}).get("place_zv")
+            if zv is not None and any(zv):
+                out = out * np.exp(self.beta @ np.asarray(zv, dtype=float)[: self.beta.shape[1]])
+        else:
+            z = float((pl.extra or {}).get("place_z", 0.0))
+            if self.beta is not None and z != 0.0:
+                out = out * np.exp(self.beta * z)
         d = (pl.extra or {}).get("type_d")
         if self.type_beta is not None and d is not None and any(d):
             out = out * np.exp(self.type_beta @ np.asarray(d, dtype=float))
