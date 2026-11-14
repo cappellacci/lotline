@@ -119,10 +119,13 @@ def age_table(store, items: list[tuple[str, str, str]]) -> pd.DataFrame:
 # ---------------------------------------------------------------------------------------------------------
 
 
+GRID = cal.GRID3  # --smoke replaces it with a 2 x 2 grid to check the code path end to end
+
+
 def fit_task(args):
-    key, form, places, use, cell = args
+    key, form, places, use, cell, grid = args
     t0 = time.time()
-    return key, form, at.fit3_terms(places, use=use, cell=cell), time.time() - t0
+    return key, form, at.fit3_terms(places, use=use, cell=cell, grid=grid), time.time() - t0
 
 
 def tau_task(args):
@@ -152,7 +155,9 @@ def fit_row(variant, fold, form, f) -> dict:
 
 
 def run_fits(pool, jobs: dict, forms: dict, tau_for=(), cell=None) -> tuple[dict, dict]:
-    futs = [pool.submit(fit_task, (k, f, v, use, cell)) for k, v in jobs.items() for f, use in forms.items()]
+    futs = [
+        pool.submit(fit_task, (k, f, v, use, cell, GRID)) for k, v in jobs.items() for f, use in forms.items()
+    ]
     fits = {}
     for fu in futs:
         k, f, fit, sec = fu.result()
@@ -321,7 +326,12 @@ def main() -> None:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--inputs-only", action="store_true")
+    ap.add_argument("--smoke", action="store_true", help="code-path check only: 2 x 2 grid, 500 draws")
     a = ap.parse_args()
+    if a.smoke:
+        global GRID
+        GRID = (0.4, 1.0)
+        R.DRAWS = 500
     a.out.mkdir(parents=True, exist_ok=True)
     store = DataStore()
     with offline.offline_build(store):
