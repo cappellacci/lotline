@@ -5875,3 +5875,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - core city next to owner share, without Oregon: +0.37 (−0.74 to +1.52);
     - the 4-type split, with older suburbs +0.71: worse on tiers (2 useful at tier 1).
   - Nothing is written to config.
+- **Ben's call, 2026-11-14: Form A + place types (A + P).** Ben: "I agree that plan A + place types makes the
+  most sense."
+  - This settles D-084's open call: Form A′ is not adopted, and D-088's rule picks A + P over Form A.
+  - The fitted values (θ, α, the core-city term, m_o 1.0, m_x 0.4) go to config in their own PR.
