@@ -6197,8 +6197,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - The result is read again once test D runs (#420), under the same rule.
 
 ### D-090 · 2026-11-14 · ADUs: a within-state forecast test — fit on each state's own years to 2019, forecast 2021–2025 (method only, before any run)
-- **Status: proposed.** Ben asked for this draft on 2026-11-14 ("Draft it D-90"). D-088 and D-089 are taken
-  by other threads. No fit, forecast or score for this entry has been run.
+- **Status: accepted 2026-11-14** ("Accept D-090"), with rule 1's bar at 3 of 4 states as written. Ben asked
+  for this draft the same day ("Draft it D-90"). D-088 and D-089 are taken by other threads. No fit, forecast
+  or score for this entry had been run when it was accepted.
 - **Why.** Every ADU form so far fails D-075's claim rule, because leave one state out asks the model to
   predict a state it has never seen. The states' base rates are far apart: one θ per state (D-087's
   within-state sensitivity) gives, per 1,000 eligible lots, OH 0.02, MN 0.15, NC 0.73, TX 0.98 and OR 1.71.
@@ -6257,7 +6258,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Decision rule, fixed now:**
   1. **Own history is enough** if F1 is useful (observed total inside P10–P90 and observed ÷ P50 within ×2) in
      **at least 3 of the 4** scored states. This is the bar D-075 uses for a new state, which is 4 of 5,
-     scaled to 4 states. Ben to confirm the bar before the run.
+     scaled to 4 states. Ben confirmed the bar on 2026-11-14.
   2. **The mechanism earns its place over persistence** if F1's summed per-place log score beats F0's by more
      than 2 paired SE. If it does not, the report says F1 forecasts no better than persistence, and that its
      value is in pricing rule changes, a claim that rests on the rule-change places only.
@@ -6278,3 +6279,36 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   fit set; bypass the holdout filter or pass `--unblind`. It runs offline from cached data.
 - **Built and run** only after Ben accepts this entry. The code adds a year cut to the fit places, the u
   posterior, and F0, each with a hand-worked test, plus a dev run script like `adu_age_refit.py`'s.
+- **Built, 2026-11-14, before any fit.** `src/lotline/model/adu_forecast.py` (the split, place classes, rule
+  changes, F0, the within-state fit, the own-history update, the trend, the rule), 16 hand-worked tests in
+  `tests/model/test_adu_forecast.py`, and `scripts/dev/adu_time_split.py`. Its `--inputs-only` step wrote
+  `reports/adu-time-split/places.csv` (class, fit and window years, rule changes, z_age per place) before any
+  fit. What it found and what the build settles that the entry left open:
+  1. **Places with history: 43** (MN 27, NC 11, TX 2, OR 3). New places in a known state: MN 15, TX 1 (San
+     Antonio), OR 1 (Medford). Ohio's one place (Cincinnati) is new and not scored. Austin's window is
+     2021–2023 (its R-102 flag stops, as in every fit).
+  2. **A third class, "thin history".** Raleigh and Cary have only 2019 before the window: one fit year, so
+     neither "with history" nor "new". They stay in the fit, are forecast with their one year's update, and
+     are scored on their own line, not in rule 1 or rule 2. So NC's rule-1 verdict is on 11 places without its
+     two largest cities. Jackson township (MN) has no window year and is not scored.
+  3. **Rule changes in 2021–2025, by code: 21 places** (`places.csv`, column `rule_change_years`; a change is
+     any year whose coded rules differ from the year before, counting from the lead year). Minneapolis 2021
+     and 2023; Wilmington 2022 and 2024. The entry's example said Wilmington 2021; the coded rows put it in
+     force on 1 July 2022.
+  4. **No separate undercount draw.** The entry said the draws carry the undercount draws. The joint refit's
+     draw code has none: counts carry the table's central k, as in every fit since D-078.
+  5. **The lead year changes no draw.** In this draw code the years are independent given u and the shared
+     draws (no stock of lots is used up), so 2020 is left out rather than simulated.
+  6. **θ_s's 90% interval** is profiled over α and the other states' θ at the chosen (m_o, m_x) cell, with β
+     held, not over every candidate cell as fit 3 does. The draws use the chosen cell, as every Form A draw
+     does.
+  7. **The u update** is drawn jointly with the place's blank-field combination: in each draw the combination
+     is weighted by how well it explains the fit counts, then u ~ Gamma(r + Y, r + θ_s K) on that combination.
+  8. **The trend sensitivity** fits γ_s and θ_s per state with α and the cell held at F1's. Its θ spread is
+     F1's interval, moved to the trend's θ_s.
+  9. **The (m_o, m_x) cells are fitted in parallel**, each starting from β = 0 (D-087 warm-started each cell
+     from the last). Only the speed changes.
+  10. **A smoke run** (`--smoke`: 2 × 2 grid, 500 draws) checked the code path; its outputs went to a scratch
+      folder. I saw its per-state history lines (on the toy grid) before the full run. Nothing in the method
+      or the rule changed after it; the only change was running the cells in parallel, since F2 on the full
+      grid would have taken about 3½ hours.
