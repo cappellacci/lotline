@@ -5679,7 +5679,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Nothing is written to config.
 
 ### D-088 · 2026-11-14 · ADUs: what the differences between places come from, and place types shared across states (method only, before any count or fit)
-- **Status: proposed by Claude Code, 2026-11-14. Not yet accepted.**
+- **Status: accepted by Ben, 2026-11-14 ("Accept D-088"). Proposed by Claude Code the same day.**
   - Ben asked for it on 2026-11-14, after D-085's result and the D-086 event count. He read the results this
     way: "we still don't have a model that explains or accounts for the variability across 5 states". He then
     asked: "Is there a way for us to characterize/segment the data in a different way".
