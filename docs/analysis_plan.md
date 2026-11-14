@@ -6195,3 +6195,86 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - A′ (#418) and A″ are not adopted, and nothing goes to config.
     - Both terms are on record as carrying held-out signal.
     - The result is read again once test D runs (#420), under the same rule.
+
+### D-090 · 2026-11-14 · ADUs: a within-state forecast test — fit on each state's own years to 2019, forecast 2021–2025 (method only, before any run)
+- **Status: proposed.** Ben asked for this draft on 2026-11-14 ("Draft it D-90"). D-088 and D-089 are taken
+  by other threads. No fit, forecast or score for this entry has been run.
+- **Why.** Every ADU form so far fails D-075's claim rule, because leave one state out asks the model to
+  predict a state it has never seen. The states' base rates are far apart: one θ per state (D-087's
+  within-state sensitivity) gives, per 1,000 eligible lots, OH 0.02, MN 0.15, NC 0.73, TX 0.98 and OR 1.71.
+  No place term closes a gap like that, and five states are too few to fit a state-level driver.
+  - The tool's main use is different. A state that has its own permit history wants its next five years under
+    a bill. This entry tests that use directly: fit on a state's own years up to an origin, then forecast the
+    years after it.
+  - Leave one state out stays, reported as the no-local-data case.
+- **What was looked at before writing.**
+  - D-087's results.
+  - D-048 (the ramp was dropped because counts were flat or falling) and D-052. In D-052, Portland's own
+    pre-2018 history, a rise in the fee-waiver years, over-predicted 2018–2025 about fourfold.
+  - D-061 (one lead year before the window).
+  - **Observed ADU totals by state and year, 2016–2025, over D-087's 64 fit places**, next to Form A's
+    expected counts. They show no common calendar trend:
+    - MN is flat at about 30 a year;
+    - NC rises from about 88 a year in 2016–2020 to 230–260 in 2023–2025;
+    - TX and OR fall: OR from 526–628 in 2016–2018 to about 264 in 2024–2025.
+    These are the same counts every fit uses. No forecast was made from them.
+- **The split, fixed now:**
+  - Origin 2019: fit on 2016–2019.
+  - 2020 is the lead year. It is simulated, not scored, as D-061 does for the tool.
+  - The forecast window is **2021–2025**, five years, the tool's horizon.
+- **Places scored.**
+  - **Places with history:** fit places with at least 2 years in 2016–2019 and at least 1 year in 2021–2025.
+  - **Places entering after 2019** are scored as a second line, "new places in a known state". They use their
+    state's θ and draw u from its prior.
+  - **States:** MN, NC, TX and OR. Ohio has no ADU counts before 2024 and is not scored. The report says so.
+  - **Known limit.** TX has 2 places with history and OR has 3. Their totals are dominated by Austin and
+    Portland, so each of those state verdicts is close to a one-city verdict.
+- **Rules in the window are the rules as they actually were** (rules in force on 1 July of each year, from
+  the coded rows). The test is the tool's job: a forecast given the rules. Rule changes inside 2021–2025 are
+  listed by code before the run, for example Minneapolis 2021 and Wilmington 2021.
+- **Forecasters, fixed now:**
+  - **F0, persistence (the benchmark).** Each place's own 2016–2019 ADU rate per eligible lot, carried forward
+    with no rules and no state term. rate_i ~ Gamma(Y_i + 0.5, E_i), where Y_i is the count and E_i the
+    eligible lot-years. Each year is then Poisson. A place with no history has no F0 forecast and is left out
+    of the F0–F1 comparison.
+  - **F1, Form A with one θ per state and each place's own history.**
+    - Form A's mechanism (D-079), with α, m_o and m_x fitted jointly on all states' 2016–2019 years, and one θ
+      per state, as in D-087's within-state fit.
+    - Each place's u is updated on its own 2016–2019 counts by the gamma–Poisson posterior, as D-052 does.
+    - Draws carry each state's θ from its own 90% profile interval (lognormal), α, the u posterior, Poisson
+      noise and the undercount draws, using the joint refit's draw code.
+  - **F2, F1 plus housing age within states** (β_a fitted with state θs on 2016–2019). This is option 3 from
+    D-087's decision.
+  - **Sensitivity, reported and not used to choose:** F1 with a log-linear calendar trend per state, fitted on
+    2016–2019. The table above already shows trends that reverse, and D-052 shows a local rise that did not
+    continue. It is reported so that the cost of extrapolating a trend is visible.
+- **Scored per state and per forecaster:**
+  - the 2021–2025 total over the places with history: inside P10–P90, observed ÷ P50, CRPS and log score;
+  - D-049's held-out log score per place, summed over the window;
+  - the same for places with a rule change inside the window, on their own line, since only F1 and F2 can move
+    with a rule;
+  - the "new places in a known state" line for F1 and F2.
+- **Decision rule, fixed now:**
+  1. **Own history is enough** if F1 is useful (observed total inside P10–P90 and observed ÷ P50 within ×2) in
+     **at least 3 of the 4** scored states. This is the bar D-075 uses for a new state, which is 4 of 5,
+     scaled to 4 states. Ben to confirm the bar before the run.
+  2. **The mechanism earns its place over persistence** if F1's summed per-place log score beats F0's by more
+     than 2 paired SE. If it does not, the report says F1 forecasts no better than persistence, and that its
+     value is in pricing rule changes, a claim that rests on the rule-change places only.
+  3. **Housing age (F2)** replaces F1 only if its per-place log score beats F1's by more than 2 paired SE
+     **and** it is useful in at least as many states.
+- **What it means for the tool**, decided now:
+  - **If rule 1 passes:** the tool's guidance is that a state with at least 4 years of its own ADU counts uses
+    the own-history forecast, and the leave-one-state-out ranges are shown as the no-data case.
+  - **If rule 1 fails:** the tool shows the ranges and says plainly that ADU uptake cannot yet be forecast
+    within ×2, even with local history.
+- **What this cannot settle.**
+  - Four states, and in two of them one dominant city.
+  - The window starts in 2021, so the post-2020 changes (rates, remote work, NC's surge) are inside what is
+    being forecast. That is a harder test than a quiet period would give, and the right one for a forward
+    tool.
+  - The frozen holdouts (St. Paul V5, V9 Oregon) are untouched.
+- **What it will not do:** write to config before Ben approves a result; change counts, k, rule rows or the
+  fit set; bypass the holdout filter or pass `--unblind`. It runs offline from cached data.
+- **Built and run** only after Ben accepts this entry. The code adds a year cut to the fit places, the u
+  posterior, and F0, each with a hand-worked test, plus a dev run script like `adu_age_refit.py`'s.
