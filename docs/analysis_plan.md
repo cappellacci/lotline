@@ -6331,3 +6331,77 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       first.
     - The per-state trend falls in every state over 2016–2019. It helps MN and OR and doubles NC's miss.
   - **Status:** Ben to accept the outcome. Nothing written to config.
+
+### D-091 · 2026-11-14 · ADUs: a drift term for the forecast window, its spread learned leaving one state out (method only, before any run)
+- **Status: proposed.** Ben chose this approach on 2026-11-14 ("Let's try the leave out one state method").
+  No fit, forecast or score for this entry has been run.
+- **Why.** D-090's ranges were far too narrow. P10–P90 averaged about ±9% of the median, and 1 of 16 state ×
+  forecaster pairs held the observed total.
+  - Four years of a place's own counts pin its rate. Nothing in the model lets that rate move between the fit
+    period and the forecast window.
+  - This entry adds that movement. It does not change any forecaster's median, so it tests the range
+    separately from the centre.
+- **What was looked at before writing** (disclosed because it bears on the choices below):
+  - D-090's results, all four states.
+  - One diagnostic computed after D-090, on the window counts of all four states. Over the 9 places that
+    persistence expected to have at least 20 ADUs, log(observed ÷ F0's median) has a median ratio of 0.99
+    and an SD of 1.07 (about ×2.9).
+    - That figure came from the windows that will be scored. It is the reason this entry learns the spread
+      leaving one state out: no state's own window sets its own spread.
+    - The pooled figure has nonetheless been seen. The report repeats this.
+- **The term.** In the window, each place's expected count is multiplied by d_i = exp(σ z_i), z_i ~ N(0, 1),
+  one draw per place shared by all its window years (a period shift, not year-to-year noise).
+  - The median of d is 1, so each forecaster's per-place median is unchanged. The mean rises by exp(σ²/2).
+    The median-1 choice is fixed now, as the design that isolates the range. A sensitivity with the
+    log-mean also learned leaving one state out is reported, not used to choose.
+  - Each d_i is independent across places (main read). Places in a state may move together, as NC's did.
+    So a sensitivity with one d shared by every place in a state, the fully correlated bound, is reported
+    alongside. The truth lies between the two.
+- **Forecasters:** D-090's F0 (persistence) and F1 (Form A, state θs, own-history u). Each gets its own σ,
+  because each has its own errors. F1's errors include how it prices rule changes. F2 and the trend are
+  dropped: D-090's rule 3 kept F1, and the trend was a sensitivity.
+- **Learning σ, leaving one state out.**
+  - For held-out state s, σ_F,−s maximizes the window likelihood of the other scored states' places with
+    history (D-090's classes and fits; MN, NC, TX, OR; Ohio has none).
+  - The likelihood is F's predictive with d integrated by Gauss–Hermite quadrature (40 nodes). For F1, u is
+    integrated as in D-090's score and d scales its window exposure.
+  - The grid for σ runs from 0 to 3 in steps of 0.025.
+  - D-090's 2016–2019 fits are reused unchanged; only σ uses window counts, and never the held-out state's.
+  - The four σ_F,−s values are reported per forecaster. If they differ by more than a factor of 2, the report
+    says the spread is not stable across states.
+- **Scored, as D-090, per state, on the places with history:**
+  - the window total: inside P10–P90, observed ÷ P50, CRPS, log score;
+  - the per-place log score summed;
+  - the share of places inside their own P10–P90 (calibration; about 80% expected), and its PIT histogram;
+  - D-090's other lines (rule change, no rule change, new, thin) reported, not used to choose. New places
+    get the drift term with their state's σ_F,−s.
+- **Decision rule, fixed now:**
+  1. **F1 with drift is enough** if it is useful in at least 3 of the 4 states (D-090's bar).
+  2. **The mechanism earns its place** if F1+d's summed per-place log score beats F0+d's by more than 2 paired
+     SE.
+  3. **The ranges are honest** if, for the forecaster used, the share of places inside their own P10–P90 lies
+     between 65% and 95%, pooled over the four held-out folds. Outside that, the report says the bands are
+     too narrow or too wide.
+- **What it means for the tool**, decided now, Ben to confirm:
+  - **F1+d passes rule 1:** the tool forecasts a state with history by F1 with the drift band.
+  - **Only F0+d passes rule 1:** the tool's no-reform range for a state with history is persistence with the
+    drift band.
+    - A bill's effect is the mechanism's ratio: F1 with the bill ÷ F1 without, draw by draw.
+    - It is applied to that range and labelled as a ratio the backtest has not checked within ×2.
+  - **Neither passes:** D-090's plain statement stands. The tool shows the drift-widened ranges as the honest
+    uncertainty and says the centre cannot yet be forecast within ×2.
+  - **In every case,** a state with no ADU history keeps the leave-one-state-out ranges (D-075's tiers),
+    shown as the no-data case.
+- **What this cannot settle.**
+  - Four states; σ for each fold is learned from three, two of which (TX, OR) have 2–3 places with history.
+  - One window, 2021–2025, which includes the post-2020 shifts. Drift in a quieter period may be smaller.
+  - A place-level d cannot say which places will move or which way. It only widens the range honestly.
+- **What it will not do:**
+  - write to config before Ben approves a result;
+  - change counts, k, rule rows, the fit set or D-090's fits;
+  - bypass the holdout filter or pass `--unblind`. St. Paul (V5) stays blind and out.
+  - It runs offline from cached data.
+- **Built and run** only after Ben accepts this entry.
+  - The code adds the drift term to `adu_forecast` (draws and the quadrature log score), the σ fit, and the
+    calibration share, each with a hand-worked test.
+  - It extends `scripts/dev/adu_time_split.py` with a `--drift` step that reads D-090's outputs.
