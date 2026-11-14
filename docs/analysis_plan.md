@@ -5879,3 +5879,89 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   most sense."
   - This settles D-084's open call: Form A′ is not adopted, and D-088's rule picks A + P over Form A.
   - The fitted values (θ, α, the core-city term, m_o 1.0, m_x 0.4) go to config in their own PR.
+
+### D-089 · 2026-11-14 · ADUs: a profile of each state's places, how much of each state lies outside the fit's evidence, and a prior for towns (method only, before any count)
+- **Status: proposed by Claude Code, 2026-11-14. Not yet accepted.**
+  - Ben asked for it on 2026-11-14 ("Draft D-089"), after choosing Form A + place types (D-088). He asked: "Is
+    there a way to characterize each state to look at the proportion, of suburb, city, population, price etc to
+    come up with a coefficient or modifier".
+  - No state profile has been tabulated. The type of every jurisdiction was computed in D-088's run
+    (`adu_types_refit.type_table`), but only the 64 fit places were read.
+  - **Number:** provisional, like D-083 to D-088.
+- **Why there is no state-level coefficient:**
+  - **The model already adds a state up place by place.** A statewide total sums, over every place:
+    - its type multiplier;
+    - its eligible lots;
+    - its rules;
+    - its rent and home value, through h1.
+  - So a state with more core cities already gets a larger total. A coefficient built from the same mix would
+    count it twice.
+  - **Five states, four of them scorable, cannot support it.** A modifier fitted on state-level mix, size and
+    price would rest on four points. It would reproduce those four and say little about a sixth.
+  - **Price is already in the model.** D-083 found home value adds nothing beyond h1 (β +0.17, −0.16 to +0.50).
+  - **What is left between states stays as τ,** the state effect, and it widens every tier-0 range as now.
+- **What this entry does instead:**
+  - describe each state's mix;
+  - measure how much of each state's total rests on places unlike any the model was fitted on;
+  - give the one unmeasured type, towns, a prior written down before any run.
+- **Part 1: a profile of each state (descriptive).**
+  - **For each of the five states, by type** (core city, suburb, town, by D-088's rule):
+    - the number of jurisdictions;
+    - population (2020 census, `jurisdictions.pop_2020`);
+    - eligible lots, from ACS one-unit detached homes (`eligible.from_acs`, 2011–15), the same national
+      measure for every state;
+    - each type's share of the state's eligible lots;
+    - the lot-weighted median home value (B25077), median rent (B25064) and owner share (B25003), 2011–15.
+  - **The same table for the 64 fit places,** so each state can be read against the evidence.
+  - **Holdouts:** ACS goes through `holdout.apply_acs`. A hidden place uses the latest vintage the filter lets
+    through, flagged. St. Paul's row is included, since profiles use no outcome, and stays out of every fit and
+    score. No permit or ADU count is read.
+- **Part 2: how much of each state is outside the evidence.** For each state, the share of its eligible lots
+  in places that are:
+  - **towns:** a type with no fit place;
+  - **beyond the fit's range for their type:** home value, rent, owner share or eligible-lot count outside the
+    5th–95th percentile of the fit places of the same type;
+  - **outside the evidence:** either of the above.
+  - **Reporting rule, fixed now:** if more than 25% of a state's eligible lots are outside the evidence, the
+    tool and the write-up label that state's range "mostly outside the places the model was fitted on". This
+    is a label, not a change to the numbers.
+- **Part 3: a prior for towns.**
+  - **The prior:** a town's multiplier, relative to a suburb, is exp(β_town) with β_town ~ N(0, s²). It is
+    drawn once per draw and shared by every town in every state.
+  - **s = |β̂_core| / 1.645 = 1.199 / 1.645 = 0.729,** from D-088's A + P fit. The 90% range is ×0.30 to ×3.3.
+  - **Why this width:** the one place-type gap we measured, core city against suburb, is ×3.3. A town could
+    differ from a suburb by as much, either way.
+    - Fewer renters and bigger lots point in opposite directions, so the center is a suburb, which is what the
+      D-088 merge already assumed.
+  - **Where it lives:** `config/params/` with this source. It is not fitted, because no fit place is a town.
+  - **Outside studies:** used only to check the range, never to set it (D-037). The write-up reports any town or
+    rural ADU rate found in published reports, next to the prior.
+- **Part 4: what it does to the ranges (one sensitivity run, reported and not used to choose).**
+  - Each state's 5-year ADU total under its current rules, under Form A + P:
+    - with towns treated as suburbs (D-088 as fitted);
+    - with the town prior.
+  - Reported:
+    - P10, P50 and P90;
+    - the share of the P50 from towns;
+    - the share from places outside the evidence.
+  - This is the first look at how much the unmeasured types widen a statewide range. It changes no form and
+    no rule.
+- **Expected direction, before any count:**
+  - Towns are a large share of eligible lots in OH, NC and TX, and a smaller one in MN (the Twin Cities) and OR
+    (its four metros).
+  - Every state has more than 25% of its lots outside the evidence: the fit set is mostly large cities and
+    Twin Cities suburbs.
+  - The town prior widens the statewide P10–P90 most in OH and NC, and moves P50 little.
+- **What it will not do:**
+  - fit a state-level coefficient;
+  - write the town prior or any fitted value to config before Ben approves them;
+  - read any ADU count, or St. Paul's or Oregon's outcomes;
+  - download anything.
+  - Profiles and Part 4 run offline from cached tables, with seed 20261111 and 20,000 draws.
+- **Wiring:** carrying the type term and the town prior into the scenario engine is a change to its ADU path.
+  It goes in its own PR after Ben approves the values, as a contract-change issue if it touches shared
+  schemas.
+- **Built and run** only after Ben accepts this entry:
+  - a small module for the profile and the evidence shares, with hand-worked tests;
+  - a dev script;
+  - output to `reports/adu-state-profiles/`, with a results page.
