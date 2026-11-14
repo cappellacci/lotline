@@ -5881,7 +5881,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - The fitted values (θ, α, the core-city term, m_o 1.0, m_x 0.4) go to config in their own PR.
 
 ### D-089 · 2026-11-14 · ADUs: a profile of each state's places, how much of each state lies outside the fit's evidence, and a prior for towns (method only, before any count)
-- **Status: proposed by Claude Code, 2026-11-14. Not yet accepted.**
+- **Status: accepted by Ben, 2026-11-14 ("Accept D-089"). Proposed by Claude Code the same day.**
   - Ben asked for it on 2026-11-14 ("Draft D-089"), after choosing Form A + place types (D-088). He asked: "Is
     there a way to characterize each state to look at the proportion, of suburb, city, population, price etc to
     come up with a coefficient or modifier".
