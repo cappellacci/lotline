@@ -30,3 +30,5 @@
   - Wrote the README and the results page from the run's own CSVs.
   - Checked: the decision lines and log-score gains were recomputed by hand from `logscores_tier1.csv`. The
     College Station check was run after the result and is labeled so.
+- **Decision:** Ben accepted the rule's outcome on 2026-11-14 ("Accept, keep A"). Form A stays, and #418 and A″
+  are not adopted. This is recorded in D-087.

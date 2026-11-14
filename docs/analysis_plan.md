@@ -6190,3 +6190,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Within states the roles swap:** with one θ per state, β_o −0.09 (SE 0.28) and β_a +0.87 (SE 0.26).
   - **Test C** (Form A only) passes in all five states. Test D waits for #420.
   - Nothing is written to config. Whether to accept the rule's outcome is Ben's call.
+  - **Ben accepted the outcome, 2026-11-14 ("Accept, keep A").**
+    - Form A stays the working ADU form.
+    - A′ (#418) and A″ are not adopted, and nothing goes to config.
+    - Both terms are on record as carrying held-out signal.
+    - The result is read again once test D runs (#420), under the same rule.
