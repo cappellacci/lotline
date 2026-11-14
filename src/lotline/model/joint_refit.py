@@ -186,13 +186,19 @@ class GlobalsA:
     gamma: np.ndarray | None = None  # D-085, Form T: γ per draw; None is no trend
     trend_ref: int = 2020
     trend_cap: int | None = None  # the trend is held flat after this year (None: continued)
+    type_beta: np.ndarray | None = None  # D-088, Form P: draws × type terms; None is no type terms
 
     def place_scale(self, pl: cal.PlaceData) -> np.ndarray:
-        """scale × exp(β_o z_i) per draw (scale alone for Form A or a place without z)."""
+        """scale × exp(β_o z_i) × exp(Σ_j β_j d_ij) per draw (scale alone for Form A, a place without z, or a
+        place of the reference type)."""
+        out = self.scale
         z = float((pl.extra or {}).get("place_z", 0.0))
-        if self.beta is None or z == 0.0:
-            return self.scale
-        return self.scale * np.exp(self.beta * z)
+        if self.beta is not None and z != 0.0:
+            out = out * np.exp(self.beta * z)
+        d = (pl.extra or {}).get("type_d")
+        if self.type_beta is not None and d is not None and any(d):
+            out = out * np.exp(self.type_beta @ np.asarray(d, dtype=float))
+        return out
 
     def year_scale(self, pl: cal.PlaceData) -> np.ndarray:
         """Draws × the place's years: `place_scale` × exp(γ (min(t, cap) − ref)) (D-085); without γ, the
@@ -225,6 +231,7 @@ def globals_a(
     gamma: np.ndarray | None = None,
     trend_ref: int = 2020,
     trend_cap: int | None = None,
+    type_beta: np.ndarray | None = None,
 ) -> GlobalsA:
     """θ ~ lognormal from its profile interval; τ per draw (`taus`: scalar or n values; 0 = no state effect);
     z ~ N(0, 1). `beta`: Form A′'s β_o per draw (D-084), drawn by the caller so Form A's draws are
@@ -235,7 +242,7 @@ def globals_a(
     tau = np.broadcast_to(np.asarray(taus, dtype=float), (n,))
     v = np.exp(tau * rng.standard_normal(n))
     cv = cal._cvals(fit.m_owner, fit.m_other)
-    return GlobalsA(theta * v, fit.alpha, cv, beta, gamma, trend_ref, trend_cap)
+    return GlobalsA(theta * v, fit.alpha, cv, beta, gamma, trend_ref, trend_cap, type_beta)
 
 
 def globals_b(b: FormB, s: float, n: int, seed: int) -> GlobalsB:
@@ -258,6 +265,7 @@ def _take(g, idx: np.ndarray):
             scale=g.scale[idx],
             beta=None if g.beta is None else g.beta[idx],
             gamma=None if g.gamma is None else g.gamma[idx],
+            type_beta=None if g.type_beta is None else g.type_beta[idx],
         )
     return replace(g, betas=g.betas[idx], delta=g.delta[idx])
 

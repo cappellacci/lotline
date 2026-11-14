@@ -1,0 +1,113 @@
+{
+  "fit_set": {
+    "places": 64,
+    "place_years": 395
+  },
+  "types": {
+    "merge": {
+      "core": "core",
+      "suburb": "suburb",
+      "town": "suburb"
+    },
+    "merge_notes": [
+      "town has fewer than 8 fit places in 3 states: merged into suburb"
+    ],
+    "fit_places_by_type": {
+      "core": 16,
+      "suburb": 48
+    },
+    "fit_places_by_raw_type": {
+      "core": 16,
+      "suburb": 48
+    },
+    "fit_states_by_type": {
+      "core": 5,
+      "suburb": 2
+    },
+    "state_by_type": {
+      "core": {
+        "MN": 2,
+        "NC": 6,
+        "OH": 1,
+        "OR": 4,
+        "TX": 3
+      },
+      "suburb": {
+        "MN": 41,
+        "NC": 7,
+        "OH": 0,
+        "OR": 0,
+        "TX": 0
+      }
+    },
+    "units_sources": {
+      "acs 2011-15": 64
+    },
+    "roll_towns_by_type": {
+      "suburb": 32,
+      "core": 1
+    },
+    "core_cities": [
+      "Minneapolis city",
+      "Rochester city",
+      "Asheville city",
+      "Charlotte city",
+      "Durham city",
+      "Greensboro city",
+      "Raleigh city",
+      "Wilmington city",
+      "Cincinnati city",
+      "Austin city",
+      "College Station city",
+      "San Antonio city",
+      "Bend city",
+      "Medford city",
+      "Portland city",
+      "Salem city"
+    ],
+    "sens_suburb_split_x2_median": 0.1180667023363652,
+    "sens_fit_places_by_type4": {
+      "suburb": 28,
+      "suburb_old": 20,
+      "core": 16
+    }
+  },
+  "sources": {
+    "fit_places_by_kind": {
+      "none": 21,
+      "survey": 20,
+      "parser": 13,
+      "field": 10
+    },
+    "state_by_kind": {
+      "field": {
+        "MN": 0,
+        "NC": 3,
+        "OH": 0,
+        "OR": 4,
+        "TX": 3
+      },
+      "none": {
+        "MN": 21,
+        "NC": 0,
+        "OH": 0,
+        "OR": 0,
+        "TX": 0
+      },
+      "parser": {
+        "MN": 2,
+        "NC": 10,
+        "OH": 1,
+        "OR": 0,
+        "TX": 0
+      },
+      "survey": {
+        "MN": 20,
+        "NC": 0,
+        "OH": 0,
+        "OR": 0,
+        "TX": 0
+      }
+    }
+  }
+}

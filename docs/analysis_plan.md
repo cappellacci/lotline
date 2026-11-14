@@ -5799,3 +5799,37 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - the code adds a type table builder and a multi-term version of `fit3_term`, with hand-worked tests;
   - the dev run is like `adu_owner_refit.py`'s;
   - the output goes to `reports/adu-place-types/`, with a results page.
+- **Built, 2026-11-14, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_types.py`: the type rule, the merge rule, the fitter (`fit3_types`), Part 1's
+      variance shares and reading rule, and the decision rule;
+    - `joint_refit.GlobalsA` carries the type terms per draw;
+    - `scripts/dev/adu_types_refit.py` runs everything;
+    - the hand-worked tests are in `tests/model/test_adu_types.py`.
+  - **The fitter.** It is fit 3's grid with θ, α, β_o and the type terms found together on each cell by
+    Nelder–Mead, as D-085's. With no type terms it reproduces D-084's fitter on synthetic data, and it recovers
+    planted terms. A and A′ keep D-084's fitter, so their numbers are D-084's.
+  - **Housing units:** ACS B25024_001 (all housing units, the same universe as B25001, which is not cached),
+    2011–15. All 64 fit places read it; none needed the eligible-lot fallback.
+  - **Only Census places can be core cities.** Townships and unincorporated county areas in a metro are
+    suburbs; elsewhere they are towns. A metro is ranked within the state, since only the fit states are cached.
+  - **Counting source:** among the sources that flag ADUs, the one with the most permit rows of any kind for
+    the place in its fit years. That is coverage, not ADU counts, so a place with no ADU counted still gets
+    the source that covers it. Its kind (survey, field, parser) comes from the undercount table.
+  - **"Its pattern holds with each state left out"** (Part 1's reading rule): the order of the types'
+    weighted mean effects is the same with each state left out as with all states.
+  - **The 4-type sensitivity** splits suburbs at their median D-083 X2 (pre-1960 share), over fit suburbs.
+  - **Seed** 20261111, 20,000 draws.
+- **Inputs count, 2026-11-14, before any fit** (`reports/adu-place-types/place_types.csv`). This was made before
+  any fit and changes nothing in the rule:
+  - **The 64 fit places split into 16 core cities, in all 5 states, and 48 suburbs, in MN (41) and NC (7). There
+    are no towns.**
+    - The core cities are Minneapolis, Rochester, Asheville, Charlotte, Durham, Greensboro, Raleigh,
+      Wilmington, Cincinnati, Austin, College Station, San Antonio, Bend, Medford, Portland and Salem.
+    - Town is merged into suburb under the size rule, so Form P has one term: core city against suburb.
+    - Suburb itself falls short of the 3-state bar. The rule only merges town and core, so it stands.
+  - **What this means before any fit:** in the fit set, place type and state nearly coincide. TX, OR and OH
+    contribute only core cities, and MN is 41 suburbs and 2 core cities. The core term is identified mainly
+    inside MN (Minneapolis and Rochester against 41 suburbs) and NC (6 cores against 7 suburbs). Part 1 cannot
+    separate state from type well, and the write-up will say so.
+  - Test B's roll towns are 32 suburbs and 1 core city.
