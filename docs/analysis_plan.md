@@ -5677,3 +5677,125 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     −146.2 against Form A's −151.0 (SE 11).
   - **Rule-age outlook:** δ −0.051 a year of rule age, likelihood ratio 23 against A′.
   - Nothing is written to config.
+
+### D-088 · 2026-11-14 · ADUs: what the differences between places come from, and place types shared across states (method only, before any count or fit)
+- **Status: proposed by Claude Code, 2026-11-14. Not yet accepted.**
+  - Ben asked for it on 2026-11-14, after D-085's result and the D-086 event count. He read the results this
+    way: "we still don't have a model that explains or accounts for the variability across 5 states". He then
+    asked: "Is there a way for us to characterize/segment the data in a different way".
+  - **D-086 stops at the first coding.** Ben: "I dont think a second coder will realistically change the
+    results". The count stays at 6 events in 2 states, below D-079's bar of 8 events in 3 states, so g stays 0.
+  - No place type, decomposition, fit or score has been made for this entry.
+  - **Number:** D-088, because Ben has a D-087 running in another session. It is provisional, like D-083 to
+    D-086.
+- **What was looked at before writing:**
+  - D-083's screen, including X4 (new houses per lot) and R1 (place size);
+  - D-084's and D-085's results, including the state-by-state misses and test D's carry-forward benchmark;
+  - D-086's event count;
+  - that `jurisdictions` carries OMB's 2023 metro/micro area (`cbsa_code`, `cbsa_type`).
+  - No count, place effect or score has been tabulated by place type or by counting source.
+- **Why:**
+  - **No form so far passes any data tier.** At best 1 useful state per tier (A′).
+  - **The spread between places is still large.** α is 1.56 under A′. Two places with the same rules and
+    market can differ several-fold.
+  - **The misses go in one direction by state.** Minnesota is over-predicted, NC, TX and OR under-predicted
+    (D-084 tier 1, observed ÷ P50: MN 0.48, NC 1.8, TX 2.4, OR 2.6).
+  - **Test D's carry-forward benchmark beat every model form.** A place's own past rate predicts better than
+    anything the model knows about it.
+  - **What is missing is a description of where the differences sit.** Are they between states, between kinds
+    of place, or between ways of counting? Each answer leads somewhere different:
+    - between kinds of place: a typology that works in any state;
+    - between ways of counting: the k table, not behaviour;
+    - between states, with neither of the others: the honest answer is a wide tier-0 range.
+- **Considered and not used: measuring ADUs per new home built instead of per lot.** D-083's X4, new houses
+  per 1,000 lots in 2013–15, showed nothing:
+  - within states: β −0.19 per SD (−0.57 to +0.21);
+  - pooled: +0.15 (−0.28 to +0.64).
+  - A per-new-home yardstick forces that effect to be large and positive, which the screen already argues
+    against. It is not run here, and Ben can override this.
+- **Part 1: where the differences sit (descriptive; reading rule fixed now).**
+  - **What is decomposed:** each fit place's log place effect under the base form, as a posterior mean,
+    log((1 + α Y_i) / (1 + α θ K_i)), from the full-data fit. Places with less than 3 fit years are left out,
+    because their effect is mostly prior.
+  - **The groupings, each tried alone and then all together:**
+    - state;
+    - **place type** (below);
+    - **counting source:**
+      - Met Council survey;
+      - city permit records with a field flag;
+      - parser;
+      - by the place's main source in `adu_counts`.
+  - **Reported:**
+    - the share of the effects' variance each grouping explains (weighted by the place's fit years);
+    - the same with each state left out;
+    - a table of group means.
+  - **Reading rule:**
+    - **"Types matter"** if type explains more variance than state does, and its pattern holds with each state
+      left out.
+    - **"Counting matters"** if source explains more than both. This finding goes back to the k table.
+    - **"States differ"** if state explains the most and neither of the others comes close.
+  - Part 1 informs Part 2's write-up. It does not change Part 2's decision rule.
+- **Place types, from national data only, so they work in a state with no ADU data (tier 0):**
+  - **Core city:**
+    - the place with the most housing units in its metropolitan area (ACS 2011–15 B25001), or any place in that
+      metro with at least one third of the largest's units;
+    - this makes a twin core, such as Minneapolis–St. Paul, both core cities.
+  - **Suburb:** every other place in a metropolitan area. Minnesota townships and Durham County unincorporated
+    go here.
+  - **Town:** places in a micropolitan area or outside any area.
+  - **The area:** OMB's 2023 delineation, the vintage already in `jurisdictions`. Metro boundaries move little,
+    and a 2013 vintage would need a download, which goes to Ben first.
+  - **The minimum size rule, fixed now:**
+    - a type needs at least 8 fit places in at least 3 states;
+    - a type short of that is merged into the next one: town into suburb, then core city into suburb;
+    - the build PR reports the counts (an inputs count, no outcomes) before any fit.
+  - **Holdouts:** B25001 goes through `holdout.apply_acs`. A hidden place uses the latest vintage the filter
+    lets through, and otherwise its eligible-lot count as the size measure, flagged. St. Paul is typed, because
+    the type uses no outcome, but stays out of every fit and score.
+- **Part 2: Form P, the challenger.**
+  - **Form P** is the base form × exp(Σ_j β_j · 1[type_i = j]):
+    - suburb is the reference type, so at most 2 numbers;
+    - they are shared by every state.
+  - **The base:** Form A′ if Ben adopts D-084, else Form A. Both pairs (A against A + P, A′ against A′ + P)
+    are fitted and scored, as in D-085, so the result does not wait for that call.
+  - **Fitted:** θ, α, β_o (for A′) and the type terms by maximum likelihood over fit 3's (m_o, m_x) grid, with
+    profile intervals, by `adu_owner.fit3_term`'s procedure extended to several place terms.
+    - τ is profiled on the places with the terms folded in.
+    - The draws carry the type terms as N(β̂, se), as β_o.
+  - **Scoring, unchanged from D-084 and D-085:**
+    - the D-075 data-tier test (leave one state out; tiers 0, 1 and 2);
+    - tests A–B, state by state;
+    - the tier-1 held-out log score per place (D-049);
+    - test D (D-085), with no trend.
+- **Decision rule, fixed now.** P replaces its base only if all three hold:
+  - **Tiers:** P passes D-075's claim rule at a lower tier than the base. If both pass at the same tier, or
+    neither passes, P's tier-1 held-out log score must beat the base's by more than 2 paired SE.
+  - **No loss elsewhere:** P passes at least as many of tests A–B, state by state.
+  - **Test D:** P's log score is not worse than the base's by more than 2 paired SE.
+  - Otherwise the base is kept, and every score is reported.
+- **If nothing passes a tier, which is likely:**
+  - D-075 already fixes what the tool says: no tier is enough for a new state, and it shows the tier-2 ranges.
+  - This entry adds one line to that write-up: Part 1's answer to **where** the differences sit. For a
+    legislator, "places differ by type, and a state's mix of types drives its total" is a different finding
+    from "states differ in ways the data can't explain".
+  - That second case is also a finding: the same bill yields very different results by state.
+- **Expected direction, before any count or fit:**
+  - Core cities above suburbs, and towns below.
+  - Under A′ the type terms add little, because owner share already separates core cities from suburbs. Their
+    pairwise correlation is reported.
+  - Part 1: state explains more than type, with counting source a close second. This is a guess, not a prior
+    in the model.
+- **Sensitivities, reported and not used to choose:**
+  - types with a fourth class splitting suburbs by the D-083 pre-1960 share (median split);
+  - Part 1 on Form A's place effects if A′ is the base, and the other way round.
+- **What it will not do:**
+  - write to config before Ben approves a result;
+  - change counts, k, the rule rows or the fit set;
+  - download anything;
+  - touch the holdouts. St. Paul stays out of every fit and score, ACS goes through `holdout.apply_acs`, and no
+    `--unblind` is passed.
+  - It runs offline from cached tables, with seed 20261111 and 20,000 draws.
+- **Built and run** only after Ben accepts this entry:
+  - the code adds a type table builder and a multi-term version of `fit3_term`, with hand-worked tests;
+  - the dev run is like `adu_owner_refit.py`'s;
+  - the output goes to `reports/adu-place-types/`, with a results page.
