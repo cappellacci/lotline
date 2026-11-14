@@ -6312,3 +6312,22 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       folder. I saw its per-state history lines (on the toy grid) before the full run. Nothing in the method
       or the rule changed after it; the only change was running the cells in parallel, since F2 on the full
       grid would have taken about 3½ hours.
+- **Result, 2026-11-14** (`reports/adu-time-split/`, results page
+  https://claude.ai/artifact/Bfz5915ng524v1tJu1mW1o). **All three rules read against the model.**
+  1. **F1 is useful in 1 of 4 states** (North Carolina, observed ÷ P50 0.95), against a bar of 3, so own
+     history is not enough. Medians: MN 0.35, TX 0.75, OR 0.42. The tool's guidance is the pre-set one: show
+     the ranges and say plainly that ADU uptake cannot yet be forecast within ×2, even with local history.
+  2. **F1 − F0 summed log score is −5.5, against 2 SE = 204,** so F1 forecasts no better than persistence. By
+     state: MN −48, NC +108, TX −3, OR −62. Where F1 has value, it is in pricing rule changes, and only in NC:
+     Wilmington and Charlotte. It over-priced Minneapolis's 2021 change and Bend's move to its full rule
+     during the fit years.
+  3. **F2 − F1 is −41.9 (2 SE 88), and F2 is useful in 0 states,** so F1 stays. Housing age's in-sample β
+     (+1.31, SE 0.32) does not carry forward.
+  - **Not part of the rule:**
+    - Persistence's median is within ×2 in all 4 states.
+    - Every forecaster's P10–P90 is far too narrow (half-width about 9% of the median). Of 16 state ×
+      forecaster pairs, 1 holds the observed total.
+    - The model has no term for a place's rate drifting between periods. That, not the median, is what fails
+      first.
+    - The per-state trend falls in every state over 2016–2019. It helps MN and OR and doubles NC's miss.
+  - **Status:** Ben to accept the outcome. Nothing written to config.
