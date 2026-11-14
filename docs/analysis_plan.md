@@ -5965,3 +5965,52 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - a small module for the profile and the evidence shares, with hand-worked tests;
   - a dev script;
   - output to `reports/adu-state-profiles/`, with a results page.
+- **Built and run, 2026-11-14** (`reports/adu-state-profiles/`, page
+  https://claude.ai/artifact/GoxSAAjVEv2szddSuRSJEb):
+  - **Code:**
+    - `src/lotline/model/adu_profiles.py`: the profile, the evidence flags, the label rule, the town prior's
+      width, and the statewide current-rules totals;
+    - hand-worked tests in `tests/model/test_adu_profiles.py`, including a check that the totals match
+      `scenarios.adu.pool_paths` draw by draw;
+    - `scripts/dev/adu_state_profiles.py` and `scripts/dev/adu_profiles_page.py`.
+  - **Build choices, made before reading any total:**
+    - The profiles use D-088's raw types: towns stay towns, with no merge.
+    - The 2011–15 ACS medians are in 2025 dollars.
+    - Unincorporated county areas read their county's value and rent (346 of 3,633 jurisdictions).
+    - Owner share is left missing where a county remainder's places lack ACS rows. A missing measure never
+      counts as out of range.
+    - Part 4 builds each state's scenario inputs (`places_from_store`, origin 2025, window 2027–2031), at
+      m_o 1.0 and m_x 0.4.
+    - Part 4's draws are θ, the core-city term, the town term (in the prior variant) and each place's
+      effect. There is no state effect (every state is in the fit) and no market-path draw.
+    - St. Paul is left out of the totals.
+    - The first Part 4 attempt stopped on a state-code case error before any total; it was fixed and rerun.
+  - **Result:**
+    - **Every state is labeled.** The share of each state's eligible lots outside the evidence:
+
+      | | MN | NC | OH | OR | TX |
+      |---|---:|---:|---:|---:|---:|
+      | All outside | 63% | 74% | 89% | 77% | 93% |
+      | of which towns | 30% | 26% | 20% | 18% | 9% |
+
+      - The rest is beyond the fit's range, mainly on price and size.
+      - The fitted suburbs all have home values of $228k or more and rents of $1,114 or more (2025 dollars).
+        Many OH and TX suburbs are cheaper, and TX's biggest places are bigger than any fitted place.
+      - The 64 fit places' lots are 79% in core cities. Each state's lots are 15–39% in core cities.
+    - **Towns yield 1–5% of each state's expected ADUs.** So the town prior moves P90 by under 3% everywhere.
+    - **Places outside the evidence yield** 42% of MN's expected ADUs, 25% of NC's, 47% of OH's, 65% of OR's
+      and 96% of TX's.
+    - **Statewide ADU permits, 2027–2031, current rules, A + P with the town prior** (P10–P50–P90):
+
+      | State | P10 | P50 | P90 |
+      |---|---:|---:|---:|
+      | MN | 644 | 1,000 | 1,951 |
+      | NC | 2,898 | 4,269 | 7,681 |
+      | OH | 759 | 1,278 | 2,881 |
+      | TX | 3,244 | 5,482 | 11,459 |
+      | OR | 3,031 | 4,021 | 6,846 |
+
+  - **My expectation was partly wrong.** Towns are the largest share of lots in MN, not the smallest, and the
+    smallest in TX. The town prior barely widens any range: towns add few ADUs.
+  - Nothing is written to config. The town prior (sd 0.729) and the A + P values wait for Ben's approval in
+    their own PR.
