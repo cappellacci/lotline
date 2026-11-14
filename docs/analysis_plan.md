@@ -5573,3 +5573,91 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **β_o is smaller than the screen's −0.81,** because the six Minnesota townships enter here. Without them
     it is −0.76. This check is descriptive and came after the run.
   - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
+
+### D-087 · 2026-11-14 · ADUs: housing age as a second place term, and Forms A and A′ scored again on the checked rule rows (method only, before any fit)
+- **Status: proposed by Claude Code, 2026-11-14. Not accepted.**
+  - Ben asked for it ("Draft it"), after the D-083 screen was rerun on the source-checked rule rows
+    (`reports/adu-covariate-screen-final-rows/`, branch `ws/adu-screen-new-rows`).
+  - No fit or score has been made with the age term in Form A′. The screen and D-084's outlook below are the only
+    reads of it so far.
+  - **Number:** provisional. D-085 (#420) and D-086 (#421) are taken on other branches.
+- **Why:**
+  - **The rule rows changed after every accepted ADU run.** D-079, D-083's first run, D-084 and D-085 all read
+    the rows on `main` before PR #419. #419 replaces the 65 fit places' local ADU rows with the WS-ADU-RULES
+    rows (#417), after a source check and Ben's ruling of 2026-11-13.
+    - On those rows the fit set grows from 395 to 491 place-years.
+    - Form A's refit moves m_x from 0.4 to 0.8.
+    - The events reach D-079's bar (10 in 3 states).
+    - D-084's pick of A′ (log score +5.0 against a bar of 4.1) was narrow enough that it needs reading
+      again on these rows.
+  - **Housing age is the strongest place factor within states on the checked rows.** Share of homes built
+    before 1960 (ACS 2011–15):
+    - Holm p 0.0004, and α falls 30%;
+    - all 57 leave-one-place-out drops keep its sign and p < 0.10, with β from +0.84 to +1.06;
+    - it passes at m_x 0.7 too (Holm p 0.0005).
+  - **The evidence against, stated first:**
+    - D-084's outlook, on the old rows and pooled at A′'s cell, gave β_age +0.18 with LR p 0.45: once owner
+      share was in, age added nothing.
+    - In the pooled screen on the checked rows, age misses (Holm p 0.15; α falls 9%).
+    - Age is a within-state signal: it sorts places inside a state, not states from each other. The tier test
+      scores state totals, so age may improve the held-out log score per place and leave the tiers unchanged.
+- **What age stands for:** most likely older, denser neighbourhoods with garages, alleys and existing secondary
+  structures, where an ADU is cheaper to add. It is not a policy lever. Like owner share, it is a modifier: it
+  changes where the same rule yields more or fewer ADUs. It does not change a reform's effect relative to current
+  rules, because the scenario multiplies both by the same exp(β z).
+- **Form A″, the challenger:** Form A′ (D-084) × exp(β_a z_a,i).
+  - **z_a = (a_i − 0.2045) / 0.1669.** a_i is the place's share of housing units built before 1960 (ACS B25034,
+    2011–15). The center and scale are the mean and population SD over D-083's 57 screened places
+    (`reports/adu-covariate-screen/factors.csv`), D-084's convention. Both are fixed now and go to
+    `config/params/` with that source when the entry is built.
+  - **Fitted:** θ, α, β_o and β_a by maximum likelihood over fit 3's (m_o, m_x) grid, with `adu_owner.fit3_term`
+    extended to more than one place term. Owner share keeps D-084's center and scale.
+  - **Draws:** β_o and β_a are drawn jointly, N(β̂, Σ), with Σ from the observed information at the chosen cell.
+    The two factors are correlated (r −0.40 over the 57 places), so independent draws would overstate the spread.
+    If the fitter cannot give Σ, the build note says so and the draws are independent, a stated limit.
+  - **Not fixed from the screen:** β_a is refitted. The screen's +0.95 (within states) and +0.60 (pooled) are
+    expectations, not inputs.
+- **Which housing age a place gets:** D-084's rules for owner share, applied to B25034.
+  - **Townships and unincorporated areas:** the county subdivision's rows, or the county less its places.
+    Otherwise z = 0 and the place is flagged.
+  - **Holdouts:** a table hidden by a holdout (the V9 Oregon rule on B25034) gets the latest vintage the filter
+    lets through for that use, or z = 0 and a flag. The filter is never bypassed.
+  - **Scenario and tier 0:** the latest 5-year vintage ending at or before the data origin, which every state
+    has. The build reports the correlation between that vintage and 2011–15 before any fit.
+- **Data:** the rule rows on `main` once #413, #417 and #419 have merged. The fit set and events are rebuilt by
+  `adu_joint_refit` (expected: 64 places, 491 place-years) and written before any fit. If the rows change again
+  before the run, the run uses `main` as it then is, and the build note records the commit.
+- **Forms scored, all refitted on those rows:** Form A, Form A′ and Form A″.
+- **Scoring:** D-084's tests, unchanged:
+  - the D-075 data-tier test (leave one state out; tiers 0, 1 and 2);
+  - tests A and B, state by state;
+  - the tier-1 held-out log score per place (D-049).
+  - **Test C** is run for Form A only. The scenario engine has no place terms, as in D-084.
+  - **Test D** (D-085, forecast 2021–2025 from 2016–2020) is reported for all three forms and not used to choose.
+- **Decision rule, fixed now.** It is applied in two steps:
+  1. **A′ against A on the checked rows.** D-084's rule, unchanged. This repeats D-084 on the new rows. If Ben
+     has adopted A′ by then and A′ loses here, the result goes to Ben; it does not reverse the adoption by
+     itself.
+  2. **A″ against the base in use.** The base is A′ if Ben has adopted it, else the winner of step 1.
+     - A″ replaces the base if it passes D-075's claim rule at a lower tier.
+     - If both pass at the same tier, or neither passes: A″ replaces the base only if its tier-1 held-out log
+       score beats the base's by more than 2 paired SE **and** A″ passes at least as many of tests A–B, counted
+       state by state.
+     - Otherwise the base is kept and both forms' scores are reported.
+- **Expected direction, before any fit:**
+  - β_a is positive, below the screen's within-state +0.95 because owner share is also in and the fit is pooled.
+  - The log-score gain from age is uncertain: it may fall short of 2 paired SE, as D-084's outlook suggests.
+  - Tier results change little from A′, because age explains little between states.
+- **Sensitivities, reported and not used to choose:**
+  - **Within states:** A″ with one θ per state, as D-083's main read.
+  - **Age without owner share:** Form A × exp(β_a z_a).
+  - **m_x held at 0.4,** D-079's value, for A″, so the change in rows and the change in m_x can be told apart.
+- **What this cannot settle:** both factors were picked by screening the same five states that the tier test
+  leaves out one at a time, so the tier test is not blind to the choice. The frozen holdouts (St. Paul V5, V9
+  Oregon) are the clean check and are not touched here.
+- **What it will not do:** write fitted values to config before Ben approves a result; change counts, k or the
+  fit set; touch the holdouts or pass `--unblind`. It runs offline from cached tables. If a B25034 vintage is not
+  cached for a scenario state, fetching it goes to Ben first.
+- **Built and run** only after Ben accepts this entry, and after #419 merges. The code extends
+  `adu_owner.fit3_term` and `joint_refit.GlobalsA` to a vector of place terms, with a hand-worked synthetic test
+  of the two-term likelihood, plus a run script like `adu_owner_refit.py`.
