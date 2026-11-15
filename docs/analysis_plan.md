@@ -6755,3 +6755,45 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Open for Ben:** m_x is fixed in a run (low = high = 0.7). Its leave-one-state-out values span 0.4 to
     1.0, so the reported ranges leave out the uncertainty that matters most for the bill. Drawing m_x over
     its leave-one-state-out range, or reporting it as a sensitivity, would be a separate entry.
+
+### D-097 · 2026-11-15 · ADUs: carrying the partial-rule share's uncertainty into the engine's ranges (method only, before any fit or run)
+- **Status: drafted on Ben's request ("Draft that entry", 2026-11-15). Not yet accepted.** No fit, run or
+  score for this entry has been made. Provisional number.
+- **Why.** The bill's effect on a place with a partial rule is the ratio 1 ÷ m_x, so m_x sets most of the
+  Handbook result. D-096 fixed m_x at 0.7 in every draw (`adu_partial_rule_share` low = high). The full-data
+  profile interval is narrow (0.7–0.8 on the 0.1 grid), but leaving one state out gives 0.4 (without OR), 0.7
+  (without OH, without TX), 0.8 (without MN) and 1.0 (without NC). Moving m_x from 0.4 to 0.7 halved the
+  added homes (D-096's engine runs), so the reported P10–P90 understates the uncertainty that matters most.
+- **What was looked at before writing:** D-096's fits on every fold and its engine runs at m_x 0.4 (today's
+  config at the time) and 0.7. Nothing at any other m_x was run.
+- **The proposal (main): m_x drawn per simulation draw, with θ, α and the core term refitted at it.**
+  1. **Grid fits.** For each m_x on the pre-registered 0.1 grid (`GRID3`), refit A + P on all states (the
+     D-096 rows and exclusions) with m_x held there and m_o at 1.0. Each fit gives θ̂(m_x), α̂(m_x),
+     β̂_core(m_x) and the log-likelihood.
+  2. **Weights.** w(m_x) is the average over the five leave-one-state-out folds of each fold's normalized
+     profile likelihood exp(ℓ_f(m_x) − max ℓ_f). This is the spread a new state's m_x would have, not just
+     the in-sample precision. Uniform weights over the five fold maxima {0.4, 0.7, 0.7, 0.8, 1.0} is the
+     sensitivity.
+  3. **Engine.** In each draw, m_x is drawn from w, shared by every place and state in the draw (one model,
+     one share). θ, α and β_core take that grid point's fitted values; their own lognormal and normal spread
+     and the judgment slopes stay as configured (the slopes were fitted at 0.7, an approximation the report
+     states).
+  4. **Config.** The grid table (m_x, weight, θ̂, α̂, β̂_core, log-likelihood, source) goes in
+     `config/params/adu_partial_share_grid.csv`, like `v1_excluded_places.csv`. `adu_partial_rule_share`
+     keeps 0.7 as its central value for single-number reads. If the shared loaders can't read a CSV in
+     params, that is a contract change for WS-CORE, raised first.
+- **Not chosen: drawing m_x alone** (triangular 0.4–1.0 in `adu_partial_rule_share`, θ unchanged). The counts
+  pin θ × m_x for partial-rule places, so moving m_x without θ would contradict the data the fit matched.
+- **Checks, fixed now:**
+  - **Consistency.** Under the grid draws, the engine's no-reform ADUs for the fit places must stay within 10%
+    of D-096's at P50 (own counts set them, D-093), so the widening falls on the bill, not the baseline.
+  - **Report.** Additional homes 2027–31 for each state at P10, P50 and P90: (a) D-096, m_x fixed at 0.7;
+    (b) the main grid draws; (c) the uniform-over-fold-maxima sensitivity; (d) m_x fixed at 0.4 and at 1.0.
+  - **Held-out.** The tier-1 log score and the D-075 claim tier, refitted with m_x drawn rather than fixed.
+    This is reported only: D-097 changes how uncertainty is carried, not the central fit, so no score decides
+    whether it is adopted.
+- **Decision for Ben after the report:** adopt the grid draws (main), the sensitivity weights, or keep m_x
+  fixed and report (d) beside the headline. Nothing goes to config before that.
+- **What it cannot say:** five folds are a small sample of how m_x varies between states. The 0.1 grid is
+  coarse. A different m_x per state might be closer to the truth, but four states with counts can't
+  estimate one each.
