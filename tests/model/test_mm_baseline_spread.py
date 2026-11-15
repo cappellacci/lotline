@@ -301,3 +301,36 @@ def test_phi_zero_draws_are_unchanged():
     before = cal.predict_places([a], 0.01, 0.3, 0.5, 2.0, draws=500, seed=9)["a"]
     after = cal.predict_places(cal.with_phi([a], 0.0), 0.01, 0.3, 0.5, 2.0, draws=500, seed=9)["a"]
     assert np.array_equal(before, after)
+
+
+# ---- D-092 deviation (c): φ by place type ----
+
+
+@pytest.mark.parametrize("alpha", [1e-9, 0.6, 3.0])
+def test_stacked_loglik_phi_by_place_is_the_sum_of_places(alpha):
+    ps = cal.with_phi_by(
+        [
+            _place("a", (3, 5), (4.0, 4.0), (500.0, 600.0)),
+            _place("b", (0, 1, 9), (2.0, 2.5, 3.0), (0, 300, 900)),
+            _place("c", (2,), (1.0,), (100.0,)),
+        ],
+        {"a": 0.9, "b": 4.0, "c": 0.9},
+    )
+    total = sum(cal.place_loglik(p.y, p.B, p.k(2.0), 0.004, alpha, phi=p.phi) for p in ps)
+    assert cal.loglik(ps, 0.004, alpha, 2.0) == pytest.approx(total, rel=1e-9)
+
+
+def test_stack_phi_by_place_lays_out_per_year():
+    ps = cal.with_phi_by([_place("a", (3, 5)), _place("b", (0, 1, 9), (2.0, 2.5, 3.0), (0, 0, 0))],
+                         {"a": 0.5, "b": 2.0})  # fmt: skip
+    assert cal.Stack.of(ps).phi.tolist() == [0.5, 0.5, 2.0, 2.0, 2.0]
+
+
+def test_stack_refuses_phi_mixed_with_poisson():
+    with pytest.raises(ValueError):
+        cal.Stack.of(cal.with_phi([_place("a")], 0.5) + [_place("b")])
+
+
+def test_lg_by_hand_per_element():
+    # φ = 1 (r = 1): lnΓ(3) − lnΓ(1) = ln 2; φ = 0.5 (r = 2): lnΓ(2) − lnΓ(2) = 0
+    assert cal._lg(np.array([2.0, 0.0]), np.array([1.0, 0.5])) == pytest.approx([math.log(2), 0.0])

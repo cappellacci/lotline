@@ -380,18 +380,21 @@ class Stack:
     starts: np.ndarray
     n_places: int
     kappa: float = 0.0
-    phi: float = 0.0
+    phi: float | np.ndarray = 0.0  # one φ, or one per year-row when places carry φ by type (deviation (c))
 
     @classmethod
     def of(cls, places: Sequence[Place]) -> Stack:
         if isinstance(places, Stack):
             return places
         kappas, phis = {p.kappa for p in places}, {p.phi for p in places}
-        if len(kappas) > 1 or len(phis) > 1:
+        mixed_phi = len(phis) > 1 and min(phis) >= KAPPA_NONE and max(kappas, default=0.0) < KAPPA_NONE
+        if len(kappas) > 1 or (len(phis) > 1 and not mixed_phi):
             raise ValueError(
                 f"places carry different noise values: kappa {sorted(kappas)}, phi {sorted(phis)}"
             )
         lens = [len(p.years) for p in places]
+        if mixed_phi:  # D-092 deviation (c): every place has its own φ > 0 (its type's)
+            phi_rows = np.concatenate([np.full(len(p.years), p.phi) for p in places])
         return cls(
             y=np.concatenate([p.y for p in places]),
             B=np.concatenate([p.B for p in places]),
@@ -400,7 +403,7 @@ class Stack:
             starts=np.concatenate([[0], np.cumsum(lens)[:-1]]).astype(int),
             n_places=len(places),
             kappa=kappas.pop() if kappas else 0.0,
-            phi=phis.pop() if phis else 0.0,
+            phi=phi_rows if mixed_phi else (phis.pop() if phis else 0.0),
         )
 
 
@@ -408,11 +411,11 @@ def loglik(places, theta: float, alpha: float, half: float, slope: float = SLOPE
     """Σ over places of `place_loglik`, computed on the stacked years."""
     st = Stack.of(places)
     k = st.kr * ramp(st.age, half, slope)
-    if st.kappa >= KAPPA_NONE and st.phi >= KAPPA_NONE:
+    if st.kappa >= KAPPA_NONE and _phi_on(st.phi):
         raise ValueError("use one noise form: kappa (per place) or phi (per year), not both")
     if st.kappa >= KAPPA_NONE:
         return _loglik_w(st, k, theta, alpha)
-    if st.phi >= KAPPA_NONE:
+    if _phi_on(st.phi):
         return _loglik_y(st, k, theta, alpha)
     if alpha < ALPHA_POISSON:
         return float(np.sum(_log_pois(st.y, st.B + theta * k)))
@@ -456,7 +459,12 @@ def _loglik_w(st: Stack, k: np.ndarray, theta: float, alpha: float) -> float:
     return float(np.logaddexp.reduce(terms, axis=0).sum())
 
 
-def _nb_core(y, mu, phi: float, lg):
+def _phi_on(phi) -> bool:
+    """True when φ (a number, or one per year-row) is in use; `Stack.of` refuses a mix of on and off."""
+    return bool(np.all(np.asarray(phi) >= KAPPA_NONE))
+
+
+def _nb_core(y, mu, phi, lg):
     """`nb_year_terms` with the μ-free part lg = lnΓ(y + r) − lnΓ(r) passed in (it is fixed for a fit, so it
     is computed once per call, not once per u node)."""
     r = 1.0 / phi
@@ -466,9 +474,11 @@ def _nb_core(y, mu, phi: float, lg):
     return lg + r * np.log(r / (r + mu)) + ymu
 
 
-def _lg(y, phi: float):
-    r = 1.0 / phi
-    return np.vectorize(math.lgamma, otypes=[float])(np.asarray(y, dtype=float) + r) - math.lgamma(r)
+def _lg(y, phi):
+    """lnΓ(y + r) − lnΓ(r), r = 1/φ; φ a number or one per element of y."""
+    r = 1.0 / np.asarray(phi, dtype=float)
+    lgam = np.vectorize(math.lgamma, otypes=[float])
+    return lgam(np.asarray(y, dtype=float) + r) - lgam(r)
 
 
 def _place_loglik_y(y, B, k, theta: float, alpha: float, phi: float) -> float:
@@ -504,6 +514,12 @@ def _loglik_y(st: Stack, k: np.ndarray, theta: float, alpha: float) -> float:
 def with_phi(places: Sequence[Place], phi: float) -> list[Place]:
     """The places with the per-year NB overdispersion φ set (D-092 deviation (b)); κ is cleared."""
     return [replace(p, phi=float(phi), kappa=0.0) for p in places]
+
+
+def with_phi_by(places: Sequence[Place], phi_of: Mapping[str, float]) -> list[Place]:
+    """The places each with their own φ (D-092 deviation (c): φ by place type), keyed by geoid; κ is cleared.
+    Every place must be in `phi_of`."""
+    return [replace(p, phi=float(phi_of[p.geoid]), kappa=0.0) for p in places]
 
 
 def with_kappa(places: Sequence[Place], kappa: float) -> list[Place]:

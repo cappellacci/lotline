@@ -319,6 +319,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
         "data_tier": "not run (see README)",
         "kappa": d092.KAPPA,
         "phi": d092.PHI,
+        "phi_by_type": d092.PHI_TYPES,
         "seed": SEED,
         "draws": DRAWS,
         "seconds": round(time.time() - t0),
@@ -337,10 +338,13 @@ if __name__ == "__main__":
     ap.add_argument(
         "--phi", type=float, default=0.0, help="per-year NB overdispersion φ; > 0: scores M, C4 only"
     )
+    ap.add_argument("--phi-by-type", type=Path, help="JSON with phi_by_type (run 12): scores M, C4 only")
     a = ap.parse_args()
-    if a.kappa > 0 and a.phi > 0:
-        ap.error("use --kappa or --phi, not both")
-    if a.kappa > 0 or a.phi > 0:
+    if sum([a.kappa > 0, a.phi > 0, a.phi_by_type is not None]) > 1:
+        ap.error("use one of --kappa, --phi, --phi-by-type")
+    if a.phi_by_type:
+        d092.set_phi_by_type(a.phi_by_type)
+    if a.kappa > 0 or a.phi > 0 or d092.PHI_BY:
         d092.KAPPA, d092.PHI, d092.ACTIVE = a.kappa, a.phi, {"C4"}
         MODELS = ("M", "C4")
     main(a.run4, a.out, a.run3)

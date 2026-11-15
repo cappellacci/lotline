@@ -41,7 +41,7 @@ from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import calibrate_mm as cal
 from lotline.model import estimate_mm as mm
-from lotline.model import rule_tags
+from lotline.model import place_types, rule_tags
 from lotline.model.scenarios import adu
 
 _spec = importlib.util.spec_from_file_location("d054", Path(__file__).with_name("calibrate_mm_d054.py"))
@@ -71,10 +71,23 @@ CHALLENGERS = ("C1", "C3", "C4")
 KAPPA = 0.0
 PHI = 0.0  # D-092 deviation (b): per-year NB overdispersion φ, set by --phi (run 8 chose this form)
 ACTIVE = set(CHALLENGERS)
+PHI_BY: dict[str, float] = {}  # D-092 deviation (c): φ per place from its type, set by --phi-by-type
+PHI_TYPES: dict[str, float] = {}
+
+
+def set_phi_by_type(path: Path) -> None:
+    """Read {type: φ} (run 12's `phi_by_type.json`) and give every jurisdiction of STATES its type's φ."""
+    global PHI_BY, PHI_TYPES
+    PHI_TYPES = {k: float(v) for k, v in json.loads(Path(path).read_text())["phi_by_type"].items()}
+    types = place_types.type_table(DataStore(), STATES)
+    PHI_BY = {g: PHI_TYPES[t] for g, t in zip(types["geoid"].astype(str), types["type_raw"], strict=True)}
 
 
 def kap(places):
-    """The places with the run's noise: φ (`with_phi`) or κ (`with_kappa`); unchanged when both are 0."""
+    """The places with the run's noise: φ by type (`with_phi_by`), one φ (`with_phi`) or κ (`with_kappa`);
+    unchanged when none is set."""
+    if PHI_BY:
+        return cal.with_phi_by(places, PHI_BY)
     if PHI > 0:
         return cal.with_phi(places, PHI)
     return cal.with_kappa(places, KAPPA) if KAPPA > 0 else list(places)
@@ -366,6 +379,7 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
         "c3_slope": {"c": c3.b, "low": c3.b_low, "high": c3.b_high} if c3 is not None else None,
         "kappa": KAPPA,
         "phi": PHI,
+        "phi_by_type": PHI_TYPES,
         "c4_prior": dict(zip(("log_mean", "log_sd"), cal.level_prior(full["L"], p["widening"]), strict=True)),
         "paired_vs_M": {c: cal.paired_delta(fs, f"ls_{c}", "ls_M") for c in CHALLENGERS if c in ACTIVE},
         "paired_M_vs_none": cal.paired_delta(fs, "ls_M", "ls_none"),
@@ -388,10 +402,13 @@ if __name__ == "__main__":
     ap.add_argument(
         "--phi", type=float, default=0.0, help="per-year NB overdispersion φ; > 0: refits M, C4 only"
     )
+    ap.add_argument("--phi-by-type", type=Path, help="JSON with phi_by_type (run 12): refits M, C4 only")
     args = ap.parse_args()
-    if args.kappa > 0 and args.phi > 0:
-        ap.error("use --kappa or --phi, not both")
+    if sum([args.kappa > 0, args.phi > 0, args.phi_by_type is not None]) > 1:
+        ap.error("use one of --kappa, --phi, --phi-by-type")
     KAPPA, PHI = args.kappa, args.phi
-    if KAPPA > 0 or PHI > 0:
+    if args.phi_by_type:
+        set_phi_by_type(args.phi_by_type)
+    if KAPPA > 0 or PHI > 0 or PHI_BY:
         ACTIVE = {"C4"}
     main(args.out, args.dry, args.tests_passed)

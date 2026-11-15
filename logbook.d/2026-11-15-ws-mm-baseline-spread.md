@@ -98,3 +98,16 @@
   - **Next, for Ben:** place types (already decided), and counting projects rather than buildings.
   - **Outputs:** `reports/mm-d092/run9-phi/`, `run10-refit-phi/` and `run11-tests-phi/` (README and page script).
     Page: https://claude.ai/artifact/Nc9Y2HZMAgmZbdb4sHPEEf
+- **Deviation (c), place types: pre-registered and coded, not run.** Ben said "Yes, place types".
+  - **Types:** ADU D-088's rule, in a new shared module, `src/lotline/model/place_types.py`, with 12 hand-worked
+    tests. The ADU copy (PR #432) is to be merged into one later.
+  - **Inputs count** (`scripts/dev/mm_types_d092.py --dry`): housing units and areas only, no permit count.
+    - The 93 fit places are 86 Oregon places plus 7 elsewhere. Core cities and towns each come from 2 states, so
+      D-088's size rule merges both. No type term on the reform rate.
+    - The 483 unused places have every type in all 4 states, so φ by type can be tested there.
+  - **Pre-registered:**
+    - One φ against φ by type, trained on 2016 and scored on 2021, with a 2-SE rule.
+    - If φ by type wins, refit and rerun §7, with the added criterion that ranges get narrower.
+  - **Code:** a `Stack` can carry one φ per place (`with_phi_by`); 4 more tests. The `--phi-by-type` option is in
+    the refit and test scripts.
+  - **How it was checked:** the full CI set (ruff on the whole repo, params table, compliance, full pytest).

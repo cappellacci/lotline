@@ -5618,3 +5618,72 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     - The refit and §7 run as the first deviation states, after Ben's go-ahead.
   - **Stop rule:** if the chosen candidate still has a 2021 coverage under 0.5, the refit is not run. The finding
     goes back to Ben instead.
+- **Deviation 2026-11-15 (c): place types.** This is method only, written after runs 9–11 and before any count by
+  type. Ben: "Yes, place types" (2026-11-15). Earlier he asked that types be done whatever the result: "I think the
+  place types will end up being an important aspect of this being generalizable".
+  - **Why:**
+    - Run 11's ranges are calibrated (coverage 0.84), but wide. θ's 90% interval spans ×180, and the reform
+      effect is barely detected (+5.0, SE 3.4).
+    - The width comes from one φ (13.6) shared by every place. Run 9's φ differed by state (MN 7.4 to TX at
+      the search's edge), so places differ in how lumpy their years are.
+    - A type works in a state with no permit data (tier 0), which a state term does not.
+  - **Types:** ADU D-088's rule, unchanged (`lotline.model.place_types`):
+    - **core city:** the Census place with the most housing units in its metropolitan area, or any place there
+      with at least a third of the largest's units;
+    - **suburb:** every other place in a metro, including townships and unincorporated areas;
+    - **town:** places in a micropolitan area or outside any area;
+    - **units:** ACS B25024_001, latest vintage ending ≤ 2015, through `holdout.apply_acs`; areas are OMB 2023
+      from `jurisdictions`;
+    - **minimum size:** a type needs ≥ 8 places in ≥ 3 states, else it is merged into suburb (town first).
+  - **Inputs count, before any fit** (`mm_types_d092.py --dry`; housing units and areas only, no permit count):
+    - **The 93 fit places:**
+      - Oregon has 86: 10 core cities, 58 suburbs and 18 towns.
+      - The other states have 7: Austin and Houston (core cities), 4 suburbs and 1 town.
+      - Core cities (12) and towns (19) each come from only 2 states, so the minimum size rule merges both into
+        suburb.
+      - **A type term on the reform rate (ADU's Form P) is therefore not fitted.** It would be Oregon's alone.
+    - **The 483 uncoded places** that φ is learned from:
+      - core 42, suburb 340, town 101;
+      - every type is present in all four states (MN, NC, OH, TX), so nothing is merged;
+      - every place has ACS 2011–15 units.
+  - **Candidates:** both use the C0 construction (run 8's choice) and the per-year NB form.
+    - **Y1:** one φ for every place, as runs 9–11.
+    - **YT:** one φ per type: core, suburb and town.
+  - **Data and split, as run 8:**
+    - each φ is fitted on the 2016 origin (scored 2016–2020);
+    - scored, held out, on the 2021 origin (2021–2025);
+    - the places are run 7's uncoded places, which no fit or §7 test uses.
+  - **Rule:**
+    - YT is adopted only if its held-out log score beats Y1's by more than 2 paired SE.
+    - Otherwise Y1 is kept, and the refit is not rerun.
+  - **Reported, never selected:**
+    - each type's 2021 P10–P90 coverage under both candidates (20,000 draws, seed 20261115);
+    - φ by state and type on both origins.
+  - **If YT is adopted:**
+    - Each type's φ is re-estimated on both origins (as run 9) and fixed.
+    - Every place takes its type's φ, in the fit and in §7: M's places (Oregon's too), test C, test B, the
+      placebo and leave one state out (`calibrate_mm_d092.py --phi-by-type`, `mm_tests_d092.py
+      --phi-by-type`).
+    - M and C4 are refitted, and §7 reruns unchanged: the same bars, draws (20,000) and seed (20261112).
+    - **Also reported:**
+      - each place's P90 ÷ P10 against run 11's (median, and by type);
+      - Oregon's left-out range against run 11's 459–9,968;
+      - M against "no reform effect".
+    - **Success criteria, as before:**
+      - coverage in 0.60–0.95;
+      - test C passes;
+      - and now: the median place's P90 ÷ P10 is narrower than in run 11.
+  - **Expected, before any count or fit (a guess, not a prior):**
+    - core cities have the smallest φ, because many small projects a year average out;
+    - towns have the largest;
+    - YT beats Y1, but by less than the state differences in run 9 suggest, since Texas's suburbs carry much
+      of that.
+  - **What it will not do:**
+    - fit a type term on the reform rate (merged by the minimum size rule above);
+    - use a state term, because it would not carry to a new state;
+    - write to config;
+    - download anything;
+    - touch the holdouts: St. Paul and Ramsey stay out of the panel, ACS goes through `holdout.apply_acs`, and no
+      `--unblind` is passed.
+  - **The code** (`place_types.py`, `Stack` with one φ per place, `with_phi_by`) comes with hand-worked tests.
+    The ADU stack has the same rule (PR #432). Once both are on main, one copy goes.
