@@ -1,0 +1,193 @@
+form,state,geoid,name,years,observed,p10,p50,p90,inside,pit,zero_share,inside_50,inside_80,inside_90,type
+A+P,MN,2701486,Andover city,10,0.0,0.0,1.0,18.0,True,0.026096501718989893,0.49285,True,True,True,suburb
+A+P,MN,2701900,Apple Valley city,10,0.0,0.0,0.0,17.0,True,0.09207590237800063,0.5195,True,True,True,suburb
+A+P,MN,2706382,Blaine city,3,0.0,0.0,2.0,7.0,True,0.12495684332899687,0.2461,False,True,True,suburb
+A+P,MN,2706616,Bloomington city,10,0.0,1.0,7.0,28.0,False,0.0049962454554188535,0.0622,False,False,True,suburb
+A+P,MN,2708794,Burnsville city,10,2.0,0.0,0.0,16.0,True,0.5761599134927782,0.5281,True,True,True,suburb
+A+P,MN,2710918,Chanhassen city,10,4.0,0.0,0.0,12.0,True,0.7084766761104192,0.52395,True,True,True,suburb
+A+P,MN,2713456,Cottage Grove city,10,0.0,0.0,0.0,15.0,True,0.36064870632348955,0.5039,True,True,True,suburb
+A+P,MN,2713910450,Cedar Lake township,10,2.0,0.0,0.0,2.0,True,0.9085622120316947,0.7501,False,True,True,suburb
+A+P,MN,2713928322,Helena township,10,0.0,0.0,0.0,1.0,True,0.06134155328285581,0.80085,True,True,True,suburb
+A+P,MN,2713931580,Jackson township,4,0.0,0.0,0.0,0.0,True,0.5916459820328388,0.98325,True,True,True,suburb
+A+P,MN,2713957184,St. Lawrence township,8,0.0,0.0,0.0,0.0,True,0.695565416525252,0.92695,True,True,True,suburb
+A+P,MN,2714158,Crystal city,7,1.0,0.0,0.0,6.0,True,0.6525050943344085,0.5925,True,True,True,suburb
+A+P,MN,2715022,Dayton city,6,2.0,0.0,0.0,2.0,True,0.8461412683017332,0.7093,False,True,True,suburb
+A+P,MN,2716304132,Baytown township,8,0.0,0.0,0.0,2.0,True,0.003027297893722767,0.7666,True,True,True,suburb
+A+P,MN,2716315688,Denmark township,6,2.0,0.0,0.0,1.0,False,0.9693862057791269,0.8627,False,False,False,suburb
+A+P,MN,2717288,Eagan city,10,0.0,1.0,5.0,17.0,False,0.021972847886951977,0.0909,False,False,True,suburb
+A+P,MN,2718188,Edina city,2,5.0,0.0,0.0,6.0,True,0.8576331067626558,0.58825,False,True,True,suburb
+A+P,MN,2721770,Forest Lake city,10,0.0,0.0,0.0,6.0,True,0.027510270544431906,0.58995,True,True,True,suburb
+A+P,MN,2722814,Fridley city,4,10.0,0.0,0.0,3.0,False,0.9897114305776492,0.66835,False,False,False,suburb
+A+P,MN,2724308,Golden Valley city,3,1.0,0.0,0.0,4.0,True,0.6578417378079973,0.63615,True,True,True,suburb
+A+P,MN,2730140,Hopkins city,3,0.0,0.0,0.0,1.0,True,0.06243467060514778,0.78425,True,True,True,suburb
+A+P,MN,2730392,Hugo city,10,0.0,0.0,0.0,6.0,True,0.5451621517828855,0.57255,True,True,True,suburb
+A+P,MN,2731076,Inver Grove Heights city,10,9.0,0.0,0.0,8.0,False,0.9078629748034234,0.5504,False,False,True,suburb
+A+P,MN,2735180,Lakeville city,10,0.0,2.0,14.0,44.0,False,0.02916859565880033,0.0297,False,False,False,suburb
+A+P,MN,2740382,Maplewood city,10,0.0,0.0,0.0,10.0,True,0.4564942244315103,0.54345,True,True,True,suburb
+A+P,MN,2741480,Medina city,10,1.0,0.0,0.0,4.0,True,0.7037066733511416,0.6677,True,True,True,suburb
+A+P,MN,2743000,Minneapolis city,10,216.76000000000002,74.0,373.0,1372.0,True,0.31775,0.00035,True,True,True,core
+A+P,MN,2743252,Minnetonka city,10,15.0,1.0,6.0,22.0,True,0.8158335676644081,0.076,False,True,True,suburb
+A+P,MN,2744476,Mound city,1,0.0,0.0,0.0,0.0,True,0.13027115017526938,0.9291,True,True,True,suburb
+A+P,MN,2744530,Mounds View city,8,0.0,0.0,0.0,2.0,True,0.1975022837972769,0.7359,True,True,True,suburb
+A+P,MN,2745430,New Brighton city,1,0.0,0.0,0.0,1.0,True,0.12882926018872376,0.86835,True,True,True,suburb
+A+P,MN,2748580,Orono city,3,5.0,0.0,0.0,2.0,False,0.974990518658857,0.7116,False,False,False,suburb
+A+P,MN,2751730,Plymouth city,10,3.0,0.0,2.0,8.0,True,0.5524634284887974,0.2016,True,True,True,suburb
+A+P,MN,2753026,Ramsey city,4,0.0,0.0,0.0,5.0,True,0.2697632778341738,0.5893,True,True,True,suburb
+A+P,MN,2754214,Richfield city,10,5.0,0.0,0.0,10.0,True,0.8030259628616876,0.54335,False,True,True,suburb
+A+P,MN,2754880,Rochester city,2,3.0,3.0,17.0,64.0,True,0.08765684208062179,0.02215,False,True,True,core
+A+P,MN,2755186,Rogers city,6,0.0,0.0,0.0,4.0,True,0.06367439745157108,0.6359,True,True,True,suburb
+A+P,MN,2755726,Rosemount city,10,0.0,0.0,0.0,9.0,True,0.1782098620485973,0.54975,True,True,True,suburb
+A+P,MN,2755852,Roseville city,10,5.0,0.0,0.0,9.0,True,0.7912517496524951,0.5443,False,True,True,suburb
+A+P,MN,2757220,St. Louis Park city,5,0.0,0.0,0.0,10.0,True,0.47772549865965086,0.54745,True,True,True,suburb
+A+P,MN,2762824,Stillwater city,10,11.0,0.0,0.0,6.0,False,0.9545057442273751,0.57125,False,False,False,suburb
+A+P,MN,2766460,Vadnais Heights city,10,0.0,0.0,0.0,3.0,True,0.49490149857134336,0.65895,True,True,True,suburb
+A+P,MN,2768818,Wayzata city,4,1.0,0.0,0.0,1.0,True,0.8560437663487717,0.82915,False,True,True,suburb
+A+P+S,MN,2701486,Andover city,10,0.0,0.0,1.0,18.0,True,0.025315486399206794,0.4781,True,True,True,suburb
+A+P+S,MN,2701900,Apple Valley city,10,0.0,0.0,0.0,17.0,True,0.09000220063050766,0.5078,True,True,True,suburb
+A+P+S,MN,2706382,Blaine city,3,0.0,0.0,2.0,6.0,True,0.10842963792323153,0.21355,False,True,True,suburb
+A+P+S,MN,2706616,Bloomington city,10,0.0,2.0,8.0,27.0,False,0.0032210521344420585,0.0401,False,False,False,suburb
+A+P+S,MN,2708794,Burnsville city,10,2.0,0.0,0.0,16.0,True,0.5567416349760904,0.51315,True,True,True,suburb
+A+P+S,MN,2710918,Chanhassen city,10,4.0,0.0,0.0,12.0,True,0.68851420913967,0.51285,True,True,True,suburb
+A+P+S,MN,2713456,Cottage Grove city,10,0.0,0.0,1.0,16.0,True,0.35270427163368856,0.4928,True,True,True,suburb
+A+P+S,MN,2713910450,Cedar Lake township,10,2.0,0.0,0.0,2.0,True,0.9119013326977348,0.74535,False,True,True,suburb
+A+P+S,MN,2713928322,Helena township,10,0.0,0.0,0.0,1.0,True,0.06113091549609444,0.7981,True,True,True,suburb
+A+P+S,MN,2713931580,Jackson township,4,0.0,0.0,0.0,0.0,True,0.5914052920833721,0.98285,True,True,True,suburb
+A+P+S,MN,2713957184,St. Lawrence township,8,0.0,0.0,0.0,0.0,True,0.6918135128814457,0.92195,True,True,True,suburb
+A+P+S,MN,2714158,Crystal city,7,1.0,0.0,0.0,6.0,True,0.6344777527497218,0.572,True,True,True,suburb
+A+P+S,MN,2715022,Dayton city,6,2.0,0.0,0.0,2.0,True,0.8442751240101998,0.6947,False,True,True,suburb
+A+P+S,MN,2716304132,Baytown township,8,0.0,0.0,0.0,2.0,True,0.002972604343203513,0.75275,True,True,True,suburb
+A+P+S,MN,2716315688,Denmark township,6,2.0,0.0,0.0,1.0,False,0.969989663932747,0.859,False,False,False,suburb
+A+P+S,MN,2717288,Eagan city,10,0.0,1.0,5.0,16.0,False,0.016159349628633003,0.06685,False,False,True,suburb
+A+P+S,MN,2718188,Edina city,2,5.0,0.0,0.0,6.0,True,0.8538622123340729,0.5706,False,True,True,suburb
+A+P+S,MN,2721770,Forest Lake city,10,0.0,0.0,0.0,6.0,True,0.026540334740848243,0.56915,True,True,True,suburb
+A+P+S,MN,2722814,Fridley city,4,10.0,0.0,0.0,3.0,False,0.9892072159910018,0.6505,False,False,False,suburb
+A+P+S,MN,2724308,Golden Valley city,3,1.0,0.0,0.0,4.0,True,0.6414014553587054,0.61795,True,True,True,suburb
+A+P+S,MN,2730140,Hopkins city,3,0.0,0.0,0.0,1.0,True,0.06165050547226833,0.7744,True,True,True,suburb
+A+P+S,MN,2730392,Hugo city,10,0.0,0.0,0.0,6.0,True,0.533640953570375,0.56045,True,True,True,suburb
+A+P+S,MN,2731076,Inver Grove Heights city,10,9.0,0.0,0.0,9.0,True,0.9091248998428699,0.5291,False,True,True,suburb
+A+P+S,MN,2735180,Lakeville city,10,0.0,3.0,15.0,42.0,False,0.015762826946927447,0.01605,False,False,False,suburb
+A+P+S,MN,2740382,Maplewood city,10,0.0,0.0,0.0,10.0,True,0.44292833663213793,0.5273,True,True,True,suburb
+A+P+S,MN,2741480,Medina city,10,1.0,0.0,0.0,4.0,True,0.6891933492674547,0.652,True,True,True,suburb
+A+P+S,MN,2743000,Minneapolis city,10,216.76000000000002,65.0,363.0,1355.0,True,0.3301,0.0005,True,True,True,core
+A+P+S,MN,2743252,Minnetonka city,10,15.0,1.0,6.0,21.0,True,0.8198520678780498,0.05355,False,True,True,suburb
+A+P+S,MN,2744476,Mound city,1,0.0,0.0,0.0,0.0,True,0.12992061968830546,0.9266,True,True,True,suburb
+A+P+S,MN,2744530,Mounds View city,8,0.0,0.0,0.0,2.0,True,0.19514052255605385,0.7271,True,True,True,suburb
+A+P+S,MN,2745430,New Brighton city,1,0.0,0.0,0.0,1.0,True,0.1277239708602203,0.8609,True,True,True,suburb
+A+P+S,MN,2748580,Orono city,3,5.0,0.0,0.0,2.0,False,0.9762394585288617,0.69925,False,False,False,suburb
+A+P+S,MN,2751730,Plymouth city,10,3.0,0.0,2.0,8.0,True,0.5335198917091509,0.1644,True,True,True,suburb
+A+P+S,MN,2753026,Ramsey city,4,0.0,0.0,0.0,5.0,True,0.25941769819892463,0.5667,True,True,True,suburb
+A+P+S,MN,2754214,Richfield city,10,5.0,0.0,0.0,10.0,True,0.7978404229717525,0.5288,False,True,True,suburb
+A+P+S,MN,2754880,Rochester city,2,3.0,3.0,17.0,64.0,True,0.10168732394078762,0.0288,False,True,True,core
+A+P+S,MN,2755186,Rogers city,6,0.0,0.0,0.0,4.0,True,0.06276318968807164,0.6268,True,True,True,suburb
+A+P+S,MN,2755726,Rosemount city,10,0.0,0.0,0.0,9.0,True,0.17349325724130837,0.5352,True,True,True,suburb
+A+P+S,MN,2755852,Roseville city,10,5.0,0.0,0.0,9.0,True,0.7822893711561406,0.5316,False,True,True,suburb
+A+P+S,MN,2757220,St. Louis Park city,5,0.0,0.0,0.0,10.0,True,0.4631960812650337,0.5308,True,True,True,suburb
+A+P+S,MN,2762824,Stillwater city,10,11.0,0.0,0.0,6.0,False,0.9601468574218255,0.55595,False,False,False,suburb
+A+P+S,MN,2766460,Vadnais Heights city,10,0.0,0.0,0.0,3.0,True,0.48164554371925405,0.6413,True,True,True,suburb
+A+P+S,MN,2768818,Wayzata city,4,1.0,0.0,0.0,1.0,True,0.8509997212579805,0.8222,False,True,True,suburb
+A+S,MN,2701486,Andover city,10,0.0,0.0,1.0,82.0,True,0.026125624324134348,0.4934,True,True,True,suburb
+A+S,MN,2701900,Apple Valley city,10,0.0,0.0,0.0,79.0,True,0.09181890515288399,0.51805,True,True,True,suburb
+A+S,MN,2706382,Blaine city,3,0.0,0.0,6.0,33.0,True,0.0868249500579377,0.171,False,True,True,suburb
+A+S,MN,2706616,Bloomington city,10,0.0,1.0,23.0,144.0,False,0.005747288783524421,0.07155,False,False,True,suburb
+A+S,MN,2708794,Burnsville city,10,2.0,0.0,0.0,70.0,True,0.5517443051303307,0.522,True,True,True,suburb
+A+S,MN,2710918,Chanhassen city,10,4.0,0.0,0.0,51.0,True,0.6074891512971271,0.5168,True,True,True,suburb
+A+S,MN,2713456,Cottage Grove city,10,0.0,0.0,0.0,69.0,True,0.3603624203887219,0.5035,True,True,True,suburb
+A+S,MN,2713910450,Cedar Lake township,10,2.0,0.0,0.0,8.0,True,0.7610310983214754,0.6491,True,True,True,suburb
+A+S,MN,2713928322,Helena township,10,0.0,0.0,0.0,5.0,True,0.05309987115357407,0.69325,True,True,True,suburb
+A+S,MN,2713931580,Jackson township,4,0.0,0.0,0.0,0.0,True,0.5683592294219353,0.94455,True,True,True,suburb
+A+S,MN,2713957184,St. Lawrence township,8,0.0,0.0,0.0,1.0,True,0.6123857127420661,0.8161,True,True,True,suburb
+A+S,MN,2714158,Crystal city,7,1.0,0.0,0.0,24.0,True,0.5767071883417716,0.54255,True,True,True,suburb
+A+S,MN,2715022,Dayton city,6,2.0,0.0,0.0,10.0,True,0.6951173691397308,0.6173,True,True,True,suburb
+A+S,MN,2716304132,Baytown township,8,0.0,0.0,0.0,7.0,True,0.0026041633133517855,0.65945,True,True,True,suburb
+A+S,MN,2716315688,Denmark township,6,2.0,0.0,0.0,3.0,True,0.8515209467896641,0.72925,False,True,True,suburb
+A+S,MN,2717288,Eagan city,10,0.0,1.0,15.0,86.0,False,0.022758455759697788,0.09415,False,False,True,suburb
+A+S,MN,2718188,Edina city,2,5.0,0.0,0.0,25.0,True,0.6986861853207817,0.55845,True,True,True,suburb
+A+S,MN,2721770,Forest Lake city,10,0.0,0.0,0.0,27.0,True,0.025281283457350215,0.54215,True,True,True,suburb
+A+S,MN,2722814,Fridley city,4,10.0,0.0,0.0,12.0,True,0.8790541199325137,0.5846,False,True,True,suburb
+A+S,MN,2724308,Golden Valley city,3,1.0,0.0,0.0,15.0,True,0.5845767920258379,0.5731,True,True,True,suburb
+A+S,MN,2730140,Hopkins city,3,0.0,0.0,0.0,5.0,True,0.05245149216219524,0.65885,True,True,True,suburb
+A+S,MN,2730392,Hugo city,10,0.0,0.0,0.0,26.0,True,0.5128837534850254,0.53865,True,True,True,suburb
+A+S,MN,2731076,Inver Grove Heights city,10,9.0,0.0,0.0,38.0,True,0.7291351051971015,0.52615,True,True,True,suburb
+A+S,MN,2735180,Lakeville city,10,0.0,2.0,40.0,235.0,False,0.05224812421037634,0.0532,False,False,True,suburb
+A+S,MN,2740382,Maplewood city,10,0.0,0.0,0.0,42.0,True,0.44036635782173017,0.52425,True,True,True,suburb
+A+S,MN,2741480,Medina city,10,1.0,0.0,0.0,15.0,True,0.6214811189356623,0.60095,True,True,True,suburb
+A+S,MN,2743000,Minneapolis city,10,216.76000000000002,56.0,308.0,1104.0,True,0.37985,0.00095,True,True,True,core
+A+S,MN,2743252,Minnetonka city,10,15.0,1.0,18.0,110.0,True,0.4601177829776372,0.08615,True,True,True,suburb
+A+S,MN,2744476,Mound city,1,0.0,0.0,0.0,1.0,True,0.11546474240591362,0.8235,True,True,True,suburb
+A+S,MN,2744530,Mounds View city,8,0.0,0.0,0.0,8.0,True,0.16976500831086763,0.63255,True,True,True,suburb
+A+S,MN,2745430,New Brighton city,1,0.0,0.0,0.0,3.0,True,0.11035831771910196,0.74385,True,True,True,suburb
+A+S,MN,2748580,Orono city,3,5.0,0.0,0.0,9.0,True,0.8397461726854984,0.61825,False,True,True,suburb
+A+S,MN,2751730,Plymouth city,10,3.0,0.0,7.0,42.0,True,0.3176329466598511,0.152,True,True,True,suburb
+A+S,MN,2753026,Ramsey city,4,0.0,0.0,0.0,24.0,True,0.2505369793969851,0.5473,True,True,True,suburb
+A+S,MN,2754214,Richfield city,10,5.0,0.0,0.0,41.0,True,0.6622687726071786,0.52845,True,True,True,suburb
+A+S,MN,2754880,Rochester city,2,3.0,2.0,14.0,52.0,True,0.11828010951967649,0.03355,False,True,True,core
+A+S,MN,2755186,Rogers city,6,0.0,0.0,0.0,15.0,True,0.05717077720549537,0.57095,True,True,True,suburb
+A+S,MN,2755726,Rosemount city,10,0.0,0.0,0.0,37.0,True,0.17164551515185497,0.5295,True,True,True,suburb
+A+S,MN,2755852,Roseville city,10,5.0,0.0,0.0,39.0,True,0.6522633505255185,0.5228,True,True,True,suburb
+A+S,MN,2757220,St. Louis Park city,5,0.0,0.0,0.0,45.0,True,0.4652467798162259,0.53315,True,True,True,suburb
+A+S,MN,2762824,Stillwater city,10,11.0,0.0,0.0,28.0,True,0.7856759412325516,0.5344,False,True,True,suburb
+A+S,MN,2766460,Vadnais Heights city,10,0.0,0.0,0.0,14.0,True,0.4381600034395959,0.5834,True,True,True,suburb
+A+S,MN,2768818,Wayzata city,4,1.0,0.0,0.0,4.0,True,0.7238744363651105,0.70005,True,True,True,suburb
+A+P,NC,3702140,Asheville city,10,416.100193384653,0.0,0.0,228.0,False,0.93845,0.56645,False,False,True,core
+A+P,NC,37063,Durham County Unincorporated Area,10,21.724645136100452,0.0,0.0,14.0,False,0.92965,0.72705,False,False,True,suburb
+A+P,NC,3710740,Cary town,7,29.0,0.0,6.0,52.0,True,0.8053565621954558,0.21285,False,True,True,suburb
+A+P,NC,3711800,Chapel Hill town,6,28.0,0.0,0.0,9.0,False,0.9668423743130825,0.7428,False,False,False,suburb
+A+P,NC,3712000,Charlotte city,10,241.08000000000004,9.0,462.0,4864.200000000004,True,0.3933,0.0334,True,True,True,core
+A+P,NC,3714700,Cornelius town,8,5.88,0.0,0.0,14.0,True,0.82315,0.67775,False,True,True,suburb
+A+P,NC,3719000,Durham city,10,287.851548053331,3.0,163.0,1652.2000000000044,True,0.6043,0.05285,True,True,True,core
+A+P,NC,3728000,Greensboro city,7,30.58,1.0,66.0,680.0,True,0.375,0.07535,True,True,True,core
+A+P,NC,3733120,Huntersville town,10,6.86,0.0,0.0,34.0,True,0.7529,0.61955,False,True,True,suburb
+A+P,NC,3741960,Matthews town,10,6.859999999999999,0.0,0.0,16.0,True,0.8251,0.6719,False,True,True,suburb
+A+P,NC,3743480,Mint Hill town,10,5.88,0.0,0.0,15.0,True,0.81855,0.6734,False,True,True,suburb
+A+P,NC,3755000,Raleigh city,7,203.3,2.0,117.0,1214.2000000000044,True,0.6021,0.06285,True,True,True,core
+A+P,NC,3774440,Wilmington city,10,173.0,0.0,0.0,241.0,True,0.8728164365649269,0.57195,False,True,True,core
+A+P+S,NC,3702140,Asheville city,10,416.100193384653,0.0,0.0,257.1000000000022,False,0.94365,0.52805,False,False,True,core
+A+P+S,NC,37063,Durham County Unincorporated Area,10,21.724645136100452,0.0,0.0,11.0,False,0.935,0.76425,False,False,True,suburb
+A+P+S,NC,3710740,Cary town,7,29.0,0.0,3.0,56.0,True,0.8163887412297642,0.319,False,True,True,suburb
+A+P+S,NC,3711800,Chapel Hill town,6,28.0,0.0,0.0,7.0,False,0.964304423136528,0.77725,False,False,False,suburb
+A+P+S,NC,3712000,Charlotte city,10,241.08000000000004,118.0,868.0,4131.100000000002,True,0.18885,0.00075,False,True,True,core
+A+P+S,NC,3714700,Cornelius town,8,5.88,0.0,0.0,12.0,True,0.84575,0.7244,False,True,True,suburb
+A+P+S,NC,3719000,Durham city,10,287.851548053331,39.0,301.0,1443.1000000000022,True,0.48505,0.00255,True,True,True,core
+A+P+S,NC,3728000,Greensboro city,7,30.58,16.0,125.0,592.0,True,0.17995,0.0063,False,True,True,core
+A+P+S,NC,3733120,Huntersville town,10,6.86,0.0,0.0,32.0,True,0.7882,0.6654,False,True,True,suburb
+A+P+S,NC,3741960,Matthews town,10,6.859999999999999,0.0,0.0,14.0,True,0.8496,0.7191,False,True,True,suburb
+A+P+S,NC,3743480,Mint Hill town,10,5.88,0.0,0.0,14.0,True,0.8433,0.72065,False,True,True,suburb
+A+P+S,NC,3755000,Raleigh city,7,203.3,29.0,220.0,1048.0,True,0.4749,0.0034,True,True,True,core
+A+P+S,NC,3774440,Wilmington city,10,173.0,0.0,0.0,258.0,True,0.8555771641731384,0.53455,False,True,True,core
+A+S,NC,3702140,Asheville city,10,416.100193384653,0.0,0.0,193.10000000000218,False,0.9483,0.5414,False,False,True,core
+A+S,NC,37063,Durham County Unincorporated Area,10,21.724645136100452,0.0,0.0,30.0,True,0.8879,0.7693,False,True,True,suburb
+A+S,NC,3710740,Cary town,7,29.0,0.0,5.0,270.0,True,0.6811840922821926,0.3507,True,True,True,suburb
+A+S,NC,3711800,Chapel Hill town,6,28.0,0.0,0.0,21.0,False,0.9097745045089373,0.7779,False,False,True,suburb
+A+S,NC,3712000,Charlotte city,10,241.08000000000004,35.0,511.0,4319.100000000002,True,0.34075,0.00485,True,True,True,core
+A+S,NC,3714700,Cornelius town,8,5.88,0.0,0.0,38.0,True,0.8108,0.7267,False,True,True,suburb
+A+S,NC,3719000,Durham city,10,287.851548053331,13.0,173.0,1451.0,True,0.61695,0.0135,True,True,True,core
+A+S,NC,3728000,Greensboro city,7,30.58,5.0,70.0,597.0,True,0.3278,0.02585,True,True,True,core
+A+S,NC,3733120,Huntersville town,10,6.86,0.0,0.0,102.0,True,0.76705,0.68435,False,True,True,suburb
+A+S,NC,3741960,Matthews town,10,6.859999999999999,0.0,0.0,42.0,True,0.8142,0.7258,False,True,True,suburb
+A+S,NC,3743480,Mint Hill town,10,5.88,0.0,0.0,41.0,True,0.8118,0.73,False,True,True,suburb
+A+S,NC,3755000,Raleigh city,7,203.3,9.0,124.5,1050.1000000000022,True,0.6137,0.01745,True,True,True,core
+A+S,NC,3774440,Wilmington city,10,173.0,0.0,0.0,204.0,True,0.8856107276082115,0.5471,False,True,True,core
+A+P,OH,3915000,Cincinnati city,2,6.24,1.0,17.0,104.0,True,0.32015,0.09885,True,True,True,core
+A+P+S,OH,3915000,Cincinnati city,2,6.24,3.0,22.0,98.0,True,0.20515,0.03385,False,True,True,core
+A+S,OH,3915000,Cincinnati city,2,6.24,0.0,12.0,92.0,True,0.3699,0.1012,True,True,True,core
+A+P,TX,4805000,Austin city,8,979.7099999999998,23.0,514.0,3467.2000000000044,True,0.647,0.01525,True,True,True,core
+A+P,TX,4815976,College Station city,9,16.293483852075344,0.0,8.0,231.0,True,0.56695,0.392,True,True,True,core
+A+P,TX,4865000,San Antonio city,5,260.69574163320544,19.0,506.0,3472.0,True,0.36945,0.01765,True,True,True,core
+A+P+S,TX,4805000,Austin city,8,979.7099999999998,92.0,721.0,3121.0,True,0.5963,0.0016,True,True,True,core
+A+P+S,TX,4815976,College Station city,9,16.293483852075344,0.0,18.0,226.0,True,0.48995,0.3589,True,True,True,core
+A+P+S,TX,4865000,San Antonio city,5,260.69574163320544,84.0,723.5,3247.0,True,0.2486,0.0019,False,True,True,core
+A+S,TX,4805000,Austin city,8,979.7099999999998,18.0,325.0,2964.0,True,0.7372,0.0131,True,True,True,core
+A+S,TX,4815976,College Station city,9,16.293483852075344,0.0,5.0,164.0,True,0.61555,0.3967,True,True,True,core
+A+S,TX,4865000,San Antonio city,5,260.69574163320544,17.0,322.0,2864.100000000002,True,0.45765,0.01415,True,True,True,core
+A+P,OR,4105800,Bend city,10,532.2538058344612,4.0,128.0,1000.1000000000022,True,0.79725,0.0447,False,True,True,core
+A+P,OR,4147000,Medford city,6,172.71092883199861,1.0,55.0,448.1000000000022,True,0.7361,0.0695,True,True,True,core
+A+P,OR,4159000,Portland city,10,3045.38,25.0,860.0,7052.200000000004,True,0.7599,0.01725,False,True,True,core
+A+P,OR,4164900,Salem city,8,284.59285128291594,4.0,124.0,993.1000000000022,True,0.6743,0.045,True,True,True,core
+A+P+S,OR,4105800,Bend city,10,532.2538058344612,11.0,166.0,966.1000000000022,True,0.7896,0.0161,False,True,True,core
+A+P+S,OR,4147000,Medford city,6,172.71092883199861,5.0,72.0,426.0,True,0.71925,0.03245,True,True,True,core
+A+P+S,OR,4159000,Portland city,10,3045.38,81.0,1134.0,6585.700000000015,True,0.74745,0.00445,True,True,True,core
+A+P+S,OR,4164900,Salem city,8,284.59285128291594,11.0,163.0,943.1000000000022,True,0.64525,0.01675,True,True,True,core
+A+S,OR,4105800,Bend city,10,532.2538058344612,2.0,60.0,575.0,True,0.8915,0.06425,False,True,True,core
+A+S,OR,4147000,Medford city,6,172.71092883199861,1.0,27.0,254.0,True,0.85095,0.0999,False,True,True,core
+A+S,OR,4159000,Portland city,10,3045.38,12.0,414.0,3913.100000000002,True,0.8693,0.02515,False,True,True,core
+A+S,OR,4164900,Salem city,8,284.59285128291594,2.0,59.0,565.0,True,0.80235,0.065,False,True,True,core

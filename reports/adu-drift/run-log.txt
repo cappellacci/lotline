@@ -1,0 +1,16 @@
+[19:39:15] places scored: {'history': 43, 'new': 17, 'thin': 2}
+[19:40:41] grids: 62 places x 801 drift values
+[19:40:41] rollback check: largest gap to D-090's log scores at d = 1: 3.55e-15
+[19:40:43]   sigma F0 without MN: 1.000; (mu, sigma) (0.55, 0.875)
+[19:40:44]   sigma F1 without MN: 0.725; (mu, sigma) (0.0, 0.725)
+[19:40:48]   sigma F0 without NC: 0.850; (mu, sigma) (0.1, 0.85)
+[19:40:51]   sigma F1 without NC: 1.425; (mu, sigma) (0.4, 1.35)
+[19:40:55]   sigma F0 without TX: 1.100; (mu, sigma) (0.45, 0.925)
+[19:40:59]   sigma F1 without TX: 1.150; (mu, sigma) (0.35, 1.125)
+[19:41:03]   sigma F0 without OR: 1.075; (mu, sigma) (0.45, 0.9)
+[19:41:07]   sigma F1 without OR: 1.075; (mu, sigma) (0.45, 1.025)
+[19:41:07]   sigma on all four states (reported only, not used): {'F0': 1.025, 'F1': 1.075}
+[19:41:11] F0: log-score gain with drift +428.6 (2 SE 551.3); coverage 0.58 -> 0.81; useful states 0 -> 3
+[19:41:11] F1: log-score gain with drift +441.8 (2 SE 570.7); coverage 0.58 -> 0.77; useful states 1 -> 2
+[19:41:11] verdict: {'rule1_F1d_useful_states': 2, 'rule1_F0d_useful_states': 3, 'rule1_pass_F1d': False, 'rule1_pass_F0d': True, 'rule2_F1d_minus_F0d': [7.648689430495093, 15.57770748342188], 'rule2_pass': False, 'rule3_coverage': {'F0': 0.813953488372093, 'F1': 0.7674418604651163}, 'rule3_pass': {'F0': True, 'F1': True}, 'improves': {'F0': False, 'F1': False}}
+[19:41:11] done
