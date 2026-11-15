@@ -167,3 +167,15 @@
     year 5 carries 57% of the total. Page: https://claude.ai/artifact/1BzpK5S9isRk9eptDaBKDR
   - Decision recorded in `docs/analysis_plan.md`; proposed for HANDOFF in the PR description.
   - **How it was checked:** the 57 config-dependent tests (scenario, V5, V9, results) and the full CI set.
+- **Accuracy report:** Ben asked how accurate the missing-middle model is at three jobs: a place's count, a
+  statewide total, and a new state.
+  - Built from results already on file; nothing rerun, no permits read: run 11's §7 tests for C4, run 12's
+    held-out baseline coverage, V5 Charlotte (blind, D-055 values) and V9 Oregon (frozen D-038).
+  - **Findings:** 78% of 136 places inside their P10–P90 (target 60–95%); the baseline alone 79% of 468 held-out
+    places. Single places miss by up to 3–6× at the median (Franklin County, Minneapolis), still inside. State
+    totals inside for TX and OH, missed for MN (small numbers). New state: Oregon held out, 703 built against a
+    median of 915 (457–4,789). The reform effect itself isn't clearly detected (+5.0, SE 3.4; placebo fails).
+  - **Outputs:** `scripts/dev/mm_accuracy_page.py`, `reports/mm-d092/accuracy/results.html`. Page:
+    https://claude.ai/artifact/72uydyJJNJduLuErr9uQXw
+  - **How it was checked:** every number read from the result files by the script; the page was viewed in the
+    browser.
