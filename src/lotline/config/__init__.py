@@ -163,7 +163,10 @@ UNDERCOUNT_KINDS = ("field", "parser", "floor", "none")
 class UndercountRow(_Model):
     """One permit source's ADU flag undercount k (D-078). `value` is the median, `low`-`high` the two-sided
     `interval`. A field row with `prior: true` takes the table's prior; a parser row with no value has no hand
-    check yet (k = 1); floor and none rows are k = 1."""
+    check yet (k = 1); floor and none rows are k = 1. Field k >= 1; a parser k is precision / recall
+    (D-081) and may be below 1. `fit: false` keeps a source's counts out of the ADU fit and its tests
+    (D-078 §2, D-081 item 4: Dallas); its k is then 1; the scenario's observed floor still counts it.
+    """
 
     source: str
     place: str
@@ -176,6 +179,7 @@ class UndercountRow(_Model):
     first_year: int | None = None
     last_year: int | None = None
     low_recall: bool = False
+    fit: bool = True  # False: the source's counts never enter the ADU fit or its tests (D-081 item 4)
     report: str
     notes: str = ""
 
@@ -193,12 +197,20 @@ class UndercountRow(_Model):
         if self.kind in ("floor", "none") and any(given):
             raise ValueError(f"{self.source}: a {self.kind} row has no k (it is 1)")
         if all(given):
-            if not 1.0 <= self.low <= self.value <= self.high:
-                raise ValueError(f"{self.source}: need 1 <= low <= value <= high")
+            # A field k counts roll-confirmed ADUs the flags missed, so it is >= 1. A parser k is precision /
+            # recall (D-081), which falls below 1 when false positives outnumber misses.
+            if self.kind == "field" and self.low < 1.0:
+                raise ValueError(f"{self.source}: a field row needs low >= 1")
+            if self.low <= 0.0:
+                raise ValueError(f"{self.source}: need low > 0")
+            if not self.low <= self.value <= self.high:
+                raise ValueError(f"{self.source}: need low <= value <= high")
             if not 0.0 < self.interval < 1.0:
                 raise ValueError(f"{self.source}: interval must be in (0, 1)")
         if self.first_year and self.last_year and self.first_year > self.last_year:
             raise ValueError(f"{self.source}: first_year after last_year")
+        if not self.fit and (any(given) or self.prior):
+            raise ValueError(f"{self.source}: a row out of the fit has no k")
         return self
 
     @property

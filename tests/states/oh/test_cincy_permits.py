@@ -241,7 +241,10 @@ def test_not_a_dwelling_unit_negates(ruled):
     assert "S-SHED" not in _adus(ruled)
     assert ruled.loc["S-SHED", "building_type_std"] == "OTHER"  # an alteration permit with no unit
     facts, _ = cp.read_text("POOL HOUSE. NOT A DWELLING UNIT/ADU")
-    assert facts.building_type_std is None and "negated" in facts.evidence[-1]
+    # Since #389 the shared parser negates this itself, so the adapter's NOT_A_UNIT branch may not fire;
+    # either way the permit is not an ADU.
+    assert facts.building_type_std is None
+    assert not facts.evidence or any("negated" in e for e in facts.evidence)
 
 
 def test_house_permitted_separately_leaves_the_adu(ruled):
