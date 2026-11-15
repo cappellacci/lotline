@@ -20,8 +20,9 @@
   that cite the house (parser conflict, 25 of 55 named misses). Both #391 issues are confirmed: one code-437
   apartment "basement unit upfit" among the Mecklenburg flags, and two real ADUs vetoed by "upgrade". The
   no-kitchen setting barely moves k.
-- **Decisions:** proposed in the PR: the four undercount-table rows; whether `adu_flag_undercount` accepts k < 1
-  (Mecklenburg 0.98); keeping Asheville 2022 on as a field-prior row.
+- **Decisions:** Ben, 2026-11-11: `adu_flag_undercount` parser rows may have k < 1 (Mecklenburg 0.98); field
+  rows keep k ≥ 1. The loader change is issue #402. Proposed in the PR: the four undercount-table rows; keeping
+  Asheville 2022 on as a field-prior row.
 - **AI:** Claude Code wrote the rule, the sampling and scoring scripts and the report, and judged every permit.
   One reader, no second coder.
 - **Open / next:** the parser fixes in report §3 (Mecklenburg run-together text, the alteration veto, the

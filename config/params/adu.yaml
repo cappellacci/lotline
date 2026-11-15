@@ -148,8 +148,8 @@ adu_transport_widening:
 # `prior: true` takes the prior below; a parser row with no value has no hand check yet and keeps k = 1.
 adu_flag_undercount:
   table: true
-  unit: ratio of true ADU permits to counted ADU permits (k >= 1)
-  source: "D-078 (Ben, 2026-11-10: accepted all six proposals), from D-074 step 1 and D-075 step 2"
+  unit: ratio of true ADU permits to counted ADU permits (field rows k >= 1; parser rows k = precision / recall, D-081)
+  source: "D-078 (Ben, 2026-11-10: accepted all six proposals), from D-074 step 1 and D-075 step 2; parser rows re-measured as precision / recall under D-081 (Ben, 2026-11-11) in the 2026-11-11b hand checks"
   prior:
     low: 1.0
     interval: 0.90
@@ -227,7 +227,7 @@ adu_flag_undercount:
       prior: true
       report: src/lotline/adapters/states/tx/sa_permits.py
       notes: "'Res Accessory Dwelling Permit' type; the parser adds a few from accessory-building descriptions, but the city's type carries the count"
-    # -- parser sources: k = 1 / recall from each source's own check (D-078 §2-3) --
+    # -- parser sources: k = precision / recall from each source's own hand check (D-081 item 1) --
     - source: mpls_ccs_permits
       place: Minneapolis (MN)
       kind: parser
@@ -240,32 +240,32 @@ adu_flag_undercount:
     - source: meck_permits
       place: Charlotte and the Mecklenburg towns (NC)
       kind: parser
-      value: 1.04
-      low: 1.0
-      high: 1.27
+      value: 0.98
+      low: 0.86
+      high: 1.13
       interval: 0.90
-      report: reports/nc/charlotte-adu-counts.md
-      notes: "Charlotte's hand check: central recall 0.96 (1.04); strict precision 0.79 (1.27) taken as the upper end; worst case 0.70 (1.43) kept as a sensitivity. The towns share the file and the parser, so they take Charlotte's k"
+      report: reports/nc/parser-handcheck-2026-11-11b.md
+      notes: "D-081 hand check after parser round 2 (#389, rebuilt offline in #391): precision 27/30, recall 0.92, k = p / r with a simulated 90% range. As pre-registered 1.02 (0.88-1.19); no-kitchen sensitivity 1.00 (0.86-1.19). Replaces 1.04 (1.0-1.27) from reports/nc/charlotte-adu-counts.md. The towns share the file and the parser"
     - source: cle_permits
       place: Cleveland (OH)
       kind: parser
       value: 1.07
       low: 1.0
-      high: 1.07
+      high: 1.31
       interval: 0.90
-      report: reports/oh/adu-coverage-and-undercount.md
-      notes: "Hand check: recall at least 15/16 among near-miss permits, k about 1.0-1.07 (D-078); central at 1 / (15/16)"
+      report: reports/oh/parser-handcheck-2026-11-11.md
+      notes: "Hand check (#384): precision 15/15, recall 15/16, so p / r = 1 / (15/16) = 1.07; 0 misses in 60 more near-misses; honest 90% range 1.00-1.31. Counts unchanged by parser round 2 (#391), so not re-checked"
     - source: asheville_permits
       place: Asheville (NC), before 2022
       kind: parser
       last_year: 2021
-      value: 1.59
-      low: 1.43
-      high: 1.79
+      value: 1.47
+      low: 1.33
+      high: 1.61
       interval: 0.90
       low_recall: true
-      report: reports/nc/asheville-adu-scout.md
-      notes: "Description rule recall 82/130 = 0.63 on the city-typed 2022-26 ADUs; range from the 90% Wilson interval on that share (0.56-0.70). Low-recall row: reported with and without it (D-078 §3)"
+      report: reports/nc/parser-handcheck-2026-11-11b.md
+      notes: "D-081 hand check after parser round 2: precision 28/30, recall 0.63, k = p / r. No-kitchen sensitivity 1.44 (1.30-1.57). Replaces 1.59 (1.43-1.79), the 1 / recall benchmark. Low-recall row: reported with and without it (D-078 §3). From 2022 the city's ADU record types carry the count (field row above; the hand check gives 1.00, 0.87-1.16, inside the prior)"
     - source: austin_inferred_adu
       place: Austin (TX), inferred-ADU rule, 2024 on
       kind: parser
@@ -277,16 +277,40 @@ adu_flag_undercount:
       low_recall: true
       report: reports/tx/adu-coverage-and-undercount.md
       notes: "Recall 0.434 (95%: 0.34-0.53) of the post-HOME inferred rule. Keyed to the inferred rule's own source name: its counts are not yet in the permits table, and austin_permits' R-102 flags keep the field k. Low-recall row (D-078 §3)"
+    - source: greensboro_permits
+      place: Greensboro (NC)
+      kind: parser
+      value: 1.39
+      low: 1.10
+      high: 2.33
+      interval: 0.90
+      report: reports/nc/parser-handcheck-2026-11-11b.md
+      notes: "D-081 hand check: precision 40/41 (census of flags), recall 0.70; wide range from the 1,380-permit near-miss pool. No-kitchen sensitivity 1.43 (1.03-2.36). Replaces the k = 1 placeholder"
+    - source: fw_permits
+      place: Fort Worth (TX)
+      kind: parser
+      value: 1.14
+      low: 0.92
+      high: 1.60
+      interval: 0.90
+      report: reports/tx/parser-handcheck-2026-11-11b.md
+      notes: "D-081 hand check after parser round 2, 2015-2026 (the fit's years; 1.09 over all years). No longer a low-recall row (was 1 / recall 2.49). Kitchen rule (D-081 item 2) drops 51 in-law suites, 43 of them separate units; Fort Worth bars a second kitchen, so the no-kitchen count (166 flags, k 1.04 (0.87-1.30); 1.07 for 2015-2026) is Fort Worth's named sensitivity"
+    - source: cincy_permits
+      place: Cincinnati (OH)
+      kind: parser
+      value: 0.78
+      low: 0.61
+      high: 1.31
+      interval: 0.90
+      report: reports/oh/parser-handcheck-2026-11-11b.md
+      notes: "D-081 hand check after the #388 adapter fix: precision 14/18 (4 bare 'carriage house' flags unclear), recall 14/14 inside the combo-text download net, so recall is an upper bound. The range spans the readings of the 4 unclear flags (central 0.61-0.95); read as #384 did, 0.89 (0.74-1.02). No-kitchen 0.79. Replaces #384's 1.07"
     # parser sources with no hand-check k yet: k = 1 (their counts stay lower bounds)
-    - {source: greensboro_permits, place: Greensboro (NC), kind: parser, report: src/lotline/adapters/states/nc/greensboro_permits.py, notes: "No measured recall in D-078"}
     - {source: wilmington_permits, place: Wilmington (NC), kind: parser, report: reports/nc/wilmington-adu-scout.md, notes: "No measured recall in D-078"}
     - {source: chapel_hill_permits, place: Chapel Hill (NC), kind: parser, report: reports/nc/chapel-hill-adu-scout.md, notes: "No measured recall in D-078"}
     - {source: cary_permits, place: Cary (NC), kind: parser, report: reports/nc/cary-adu-scout.md, notes: "Most ADUs named only in the description; D-074 lets the Wake-roll match set Cary's k later"}
     - {source: rochester_permits, place: Rochester (MN), kind: parser, report: src/lotline/adapters/states/mn/rochester_permits.py, notes: "No measured recall in D-078"}
-    - {source: cincy_permits, place: Cincinnati (OH), kind: parser, report: src/lotline/adapters/states/oh/cincy_permits.py, notes: "No measured recall in D-078"}
     - {source: montgomery_permits, place: Dayton and Montgomery County (OH), kind: parser, report: src/lotline/adapters/states/oh/montgomery_permits.py, notes: "No measured recall in D-078"}
-    - {source: dallas_permits, place: Dallas (TX), kind: parser, report: src/lotline/adapters/states/tx/dallas_permits.py, notes: "No measured recall in D-078"}
-    - {source: fw_permits, place: Fort Worth (TX), kind: parser, report: src/lotline/adapters/states/tx/fw_permits.py, notes: "No measured recall in D-078"}
+    - {source: dallas_permits, place: Dallas (TX), kind: parser, report: reports/tx/parser-handcheck-2026-11-11b.md, notes: "D-081 item 4: no k and out of the fit. Only 6 true ADUs in the table (parser finds 5), too few for a recall estimate. The joint refit's entry removes it from the fit set; until then it is k = 1"}
     # -- floor and no-k sources --
     - source: metc_residential_permits
       place: Met Council suburbs (MN)
