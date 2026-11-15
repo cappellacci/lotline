@@ -177,7 +177,8 @@ class GlobalsA:
     """Form A's shared draws: scale = θ × v (θ from its interval, v = exp(τ z) the state multiplier).
 
     `beta` (D-084, Form A′): β_o per draw; a place carrying z (`adu_owner.with_z`) is then scaled by
-    exp(β_o z) in that draw. None is Form A."""
+    exp(β_o z) in that draw. None is Form A. D-087: `beta` may be (draws, terms), β over a vector of place
+    terms (`adu_terms`); the place is then scaled by exp(β · z_vector)."""
 
     scale: np.ndarray
     alpha: float
@@ -187,14 +188,29 @@ class GlobalsA:
     trend_ref: int = 2020
     trend_cap: int | None = None  # the trend is held flat after this year (None: continued)
     type_beta: np.ndarray | None = None  # D-088, Form P: draws × type terms; None is no type terms
+    alpha_core: float | None = None  # D-094, Form S: core cities' place-effect variance; None is one α
+
+    def place_alpha(self, pl: cal.PlaceData) -> float:
+        """D-094: α_core for a core city (its first type indicator, `adu_types.TERMS` order, is 1) when the
+        draws carry one; otherwise α."""
+        d = (pl.extra or {}).get("type_d")
+        if self.alpha_core is not None and d is not None and len(d) and d[0] == 1.0:
+            return self.alpha_core
+        return self.alpha
 
     def place_scale(self, pl: cal.PlaceData) -> np.ndarray:
         """scale × exp(β_o z_i) × exp(Σ_j β_j d_ij) per draw (scale alone for Form A, a place without z, or a
-        place of the reference type)."""
+        place of the reference type). D-087: with β per draw over a vector of terms (2-D), the place carries
+        its vector (`adu_terms.with_zv`) and the factor is exp(β · zv)."""
         out = self.scale
-        z = float((pl.extra or {}).get("place_z", 0.0))
-        if self.beta is not None and z != 0.0:
-            out = out * np.exp(self.beta * z)
+        if self.beta is not None and self.beta.ndim == 2:
+            zv = (pl.extra or {}).get("place_zv")
+            if zv is not None and any(zv):
+                out = out * np.exp(self.beta @ np.asarray(zv, dtype=float)[: self.beta.shape[1]])
+        else:
+            z = float((pl.extra or {}).get("place_z", 0.0))
+            if self.beta is not None and z != 0.0:
+                out = out * np.exp(self.beta * z)
         d = (pl.extra or {}).get("type_d")
         if self.type_beta is not None and d is not None and any(d):
             out = out * np.exp(self.type_beta @ np.asarray(d, dtype=float))
@@ -242,7 +258,17 @@ def globals_a(
     tau = np.broadcast_to(np.asarray(taus, dtype=float), (n,))
     v = np.exp(tau * rng.standard_normal(n))
     cv = cal._cvals(fit.m_owner, fit.m_other)
-    return GlobalsA(theta * v, fit.alpha, cv, beta, gamma, trend_ref, trend_cap, type_beta)
+    return GlobalsA(
+        theta * v,
+        fit.alpha,
+        cv,
+        beta,
+        gamma,
+        trend_ref,
+        trend_cap,
+        type_beta,
+        getattr(fit, "alpha_core", None),
+    )
 
 
 def globals_b(b: FormB, s: float, n: int, seed: int) -> GlobalsB:
@@ -304,7 +330,7 @@ def place_loglik(pl: cal.PlaceData, g) -> np.ndarray:
         lw = np.log(np.where(share > 0, share, 1.0))  # zero-weight combinations are skipped below
         per = np.stack(
             [
-                lw[c] + _marginal(y, g.year_scale(pl) * ks[c][None, :], g.alpha, lf)
+                lw[c] + _marginal(y, g.year_scale(pl) * ks[c][None, :], g.place_alpha(pl), lf)
                 for c in range(len(ks))
                 if pl.w[c] > 0
             ],
@@ -340,7 +366,8 @@ def predict(places: Sequence[cal.PlaceData], g, seed: int) -> dict[str, np.ndarr
     out = {}
     for pl in places:
         rng = np.random.default_rng([seed, zlib.crc32(pl.geoid.encode())])
-        u = rng.gamma(1 / g.alpha, g.alpha, size=n) if g.alpha > 0 else np.ones(n)
+        a = g.place_alpha(pl) if isinstance(g, GlobalsA) else g.alpha
+        u = rng.gamma(1 / a, a, size=n) if a > 0 else np.ones(n)
         if isinstance(g, GlobalsA):
             combo = rng.choice(len(pl.w), size=n, p=pl.w / pl.w.sum())
             mu = g.year_scale(pl) * u[:, None] * pl.k(g.cvals)[combo]
