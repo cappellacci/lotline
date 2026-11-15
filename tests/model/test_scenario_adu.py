@@ -877,3 +877,25 @@ def test_partial_share_draws_at_the_central_share_reproduce_the_fixed_run():
     pd.testing.assert_frame_equal(fixed, same)
     _, low = adu.run(places, 2025, draws=60, params={adu.SHARE_DRAWS: 3, "adu_partial_rule_share": 0.4})
     assert not low.equals(fixed)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-098: first-years share where a reform brings ADUs to a place that allows none
+# ---------------------------------------------------------------------------------------------------------
+
+
+def test_new_rule_share_scales_only_places_with_no_adus_today_by_hand():
+    """A place with no ADU rule (c = 0): Handbook year 1 = 2,000 × ν h_m (no ramp, D-048), so ν 0.5 halves
+    what is added. A partial rule (c = m_x) keeps its full upgrade (1 − m_x) h_m whatever ν is. ν 1 is the
+    configured default, the engine as before."""
+    assert adu.central_params()[adu.NEW_RULE] == 1.0
+    none = _places()
+    full = adu.central_path(none, params=A4)
+    half = adu.central_path(none, params=A4 | {adu.NEW_RULE: 0.5})
+    hm = full["mature_hazard"][0]
+    assert half["added"][0, 0] == pytest.approx(2000 * 0.5 * hm, rel=1e-6)
+    assert half["added"][0, 0] == pytest.approx(full["added"][0, 0] / 2, rel=1e-6)
+    part = _places(rule_class="partial", rule_age=50.0)
+    a = adu.central_path(part, params=A4)
+    b = adu.central_path(part, params=A4 | {adu.NEW_RULE: 0.5})
+    assert np.allclose(a["added"], b["added"])

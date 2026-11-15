@@ -6843,15 +6843,18 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   expected count is multiplied by ν. K = 5, fixed now: it matches the engine's five-year window.
   - ν = 1 is A + P as fitted (D-096). Places whose first allowing row starts 2016-01-01 never take ν.
   - Fitted with A + P on the D-096 rows by profile likelihood over ν on a grid of 0.05 to 1.50, step 0.05:
-    each place's base exposure is scaled by ν in its new-rule years, and θ, α, the rule shares and the core
-    term are refit at each ν. ν̂ is the profile maximum, with a 90% interval from the χ² profile.
+    each place's base exposure is scaled by ν in its new-rule years, and θ, α and the core term are refit at
+    each ν with the rule shares held at D-096's (m_o 1.0, m_x 0.7). The report also checks the rule shares'
+    profile at ν̂. ν̂ is the profile maximum, with a 90% interval from the χ² profile.
   - **What identifies ν.** For most of these places every observed year is a new-rule year, so ν is
     identified across places: new-rule place-years against place-years of the same type and rules in places
     that allowed ADUs earlier. Places with years on both sides add a within-place comparison.
 - **Held-out check.** For each newly allowing place j:
   1. refit ν, θ, α and the core term without j;
-  2. predict j's counts in its new-rule years from its rules, type and transport alone, with a new place
-     effect (as tier 1), under ν̂(−j) and under ν = 1;
+  2. predict j's counts in its new-rule years from its rules and type alone, with a new place effect
+     integrated out (negative binomial at the refit α), under ν̂(−j) and under ν = 1. θ, α and the core term
+     are point estimates from the fit without j, with the rule shares at D-096's m_o and m_x. There is no
+     state multiplier, because j's state stays in the fit;
   3. take the paired log-score difference.
 
   The gain is the sum over places, with its paired SE.

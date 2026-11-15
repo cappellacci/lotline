@@ -25,6 +25,14 @@ adu_partial_share_draws:
   source: "D-097 (accepted 2026-11-15): A + place types refitted at each m_x on the 0.1 grid (scripts/dev/adu_mx_grid.py on the D-096 rows); weights = mean of the leave-one-state-out folds' normalized profile likelihoods. Off (0) until Ben chooses after D-097's report"
   notes: "When on, each draw gets one m_x shared by every place and state, and theta, alpha and the core term move to that grid row's refit (scenarios.adu.apply_partial_share_grid), so the counts stay matched."
 
+adu_new_rule_share:
+  value: 1.0
+  low: 1.0
+  high: 1.0
+  unit: share of the mature ADU hazard reached in the first five years where a reform brings ADUs to a place that allows none today (nu)
+  source: "D-098 (drafted 2026-11-15, not yet accepted): 1 = no first-years discount, the engine as before. To be estimated by profile likelihood on the places that first allowed ADUs after 2016 (D-096 rows) only if D-098 is accepted and its decision rule passes"
+  notes: "Applies in pool_paths to the Handbook's new hazard where today's rule share is 0 (an explicit no-ADU rule, or a drawn 'none' rule); places that already allow ADUs keep the full upgrade. Every window year (2027-31) is within D-098's five years."
+
 adu_owner_occupancy_share:
   value: 1.0
   low: 1.0
