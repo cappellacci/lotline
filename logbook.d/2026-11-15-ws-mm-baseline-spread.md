@@ -68,3 +68,14 @@
     session has been told.
   - #395, #397, #398 and #401 had failed since 11 Nov on a Cincinnati test then broken on `main`. They are now
     merged with `main` and pushed.
+- **Run 8, the baseline choice:** Ben said "Yes, run it". It took about 2 minutes, offline.
+  - **The rule picks C0-year:** the current three-year baseline plus a per-year negative binomial, φ = 9.13.
+  - **Margin:** C2-year (six years, state growth) scores best by 197, against a paired SE of 103. That is within
+    2 SE, so the simpler candidate is kept. It is close.
+  - **Noise form:** per-year noise beats a place multiplier by about 1,500 log points under every construction.
+    The longer window doesn't help.
+  - **Coverage:** 0.79 in 2021 (nominal 0.80), so the stop rule doesn't trigger.
+  - **Next, pre-registered:** the NB likelihood in the fit, φ on both origins, then the refit and §7. All of it
+    needs Ben's go-ahead.
+  - **Outputs:** `reports/mm-d092/run8-baseline/` and `scripts/dev/mm_baseline_choice_page.py`. Page:
+    https://claude.ai/artifact/BUNjwor6A2oD2WpUyEZLg8
