@@ -6333,7 +6333,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Status:** Ben to accept the outcome. Nothing written to config.
 
 ### D-091 · 2026-11-14 · ADUs: a drift term for the forecast window, its spread learned leaving one state out (method only, before any run)
-- **Status: accepted 2026-11-14, with two conditions** ("I accept as long as 1. We can roll back. 2. you show
+- **Status: accepted 2026-11-14, with two conditions; outcome adopted 2026-11-15 (see the end).** ("I accept as long as 1. We can roll back. 2. you show
   me clear evidence in the report following this analysis on whether this improves the predictive power").
   Ben chose the approach the same day ("Let's try the leave out one state method"). No fit, forecast or score
   for this entry had been run when it was accepted. How each condition is met:
@@ -6468,3 +6468,16 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **The tool outcome this case triggers, as fixed:** persistence with the drift band as the no-reform range;
     a bill's effect as F1's ratio, labelled unchecked within ×2. **Not applied: it needs Ben's separate
     approval.** To roll back, close PR #430.
+- **Outcome adopted, 2026-11-15.** Ben, on "Adopt the outcome: persistence with drift as the no-reform range?":
+  "Adopt it". What this adopts, and what it does not yet change:
+  - **No-reform range, for places with their own ADU counts:** persistence (rate ~ Gamma(Y + 0.5, lot-years))
+    times a place drift d = exp(σz), with σ = 1.025 (×2.8 at one SD), the four-state F0 value the run logged for reference
+    (`summary.json`; the leave-one-state-out values were 0.85–1.10).
+    It is used where a place has fit-period counts; places with none keep the type model (D-088), unchanged.
+  - **A bill's effect:** F1's ratio (with-bill ÷ no-bill) applied to that range, labelled in the tool as
+    "not checked within ×2" until a held-out test checks it.
+  - **Not yet wired.** The engine and config are unchanged by this entry. Wiring is a separate PR on top of
+    the A + P engine (#432), so the ratio comes from A + P rather than Form A; that PR names the σ value and
+    its source row in `config/params/`.
+  - **Rollback stays as before:** the drift is off by default, σ = 0 gives D-090 exactly, and the wiring PR
+    will keep the current engine path behind the same switch.

@@ -45,3 +45,12 @@
   - The rollback check gap is 3.6 × 10⁻¹⁵.
   - The page was rendered and read in the browser. Its claims were checked against the CSVs; one sentence
     (that the losses are small places) was corrected to name Bend.
+
+### LB-NNN · 2026-11-15 · ws/adu-drift · D-091 outcome adopted
+
+- **Question:** Does Ben adopt the outcome D-091 triggered?
+- **Answer:** Yes ("Adopt it"). For places with their own ADU counts, the no-reform range becomes persistence
+  times a place drift (σ = 1.025); a bill's effect is F1's ratio, labelled "not checked within ×2".
+- **Outputs:** `docs/analysis_plan.md` D-091, "Outcome adopted" item. Engine and config unchanged; wiring is a
+  separate PR on top of the A + P engine (#432).
+- **Claude's part:** recorded the decision and the σ value from `reports/adu-drift/summary.json`; no new run.
