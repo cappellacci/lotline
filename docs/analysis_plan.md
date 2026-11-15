@@ -6696,3 +6696,26 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     (Burnsville's dose falls). The clearest cause is zoned coverage: Forest Lake's new rule is coded as covering
     about 6% of the city and Cottage Grove's 75%, while the rules before count as covering all of it.
   - Nothing goes to config or the engine. D-093's "not checked within ×2" stands.
+
+### D-096 · 2026-11-15 · ADUs: A + place types refitted on the coverage-fixed rule rows, and D-095 rerun (method only, before any fit)
+- **Status: on Ben's go-ahead ("Yes, fix then refit"), after PR #440 corrected the rule rows the coverage audit
+  flagged.** No fit on the corrected rows had been run when this was committed. Provisional number.
+- **Inputs:**
+  - PR #440's `config/reforms/*.csv`: 33 rows with changed values (4 blank or "none" rows → explicit no-ADU;
+    17 zone lists naming every single-family district → citywide; 12 subsets read as citywide → zone lists).
+    The run reads them from that branch's checkout (its `src` on `PYTHONPATH`, so `CONFIG_DIR` is its
+    `config/`). Nothing is merged here.
+  - **Place-years under an `UNKNOWN-PLACEHOLDER` row are left out of every fit and score.** These are
+    Cottage Grove 2016–2022 and Maplewood 2016–2023: the years between each row's effective date and its end
+    date. Both places counted 0 ADUs in those years. Leaving them out means the fit doesn't treat a rule nobody
+    could find as one that allowed ADUs.
+- **Runs, unchanged from their entries:**
+  1. D-088's `adu_types_refit.py`: Forms A, A + P, A′, A′ + P; data tiers, tests A, B and D, the tier-1
+     held-out log score, and D-088's decision rule.
+  2. D-095's `adu_reform_ratio.py`: the reform-ratio check. Its events are rebuilt from the corrected rows.
+- **What is compared:** each output against the checked-row run (`reports/adu-place-types-checked/`,
+  `reports/adu-reform-ratio/`). The report lists θ, α, m_o, m_x and the core term, the claim tier and
+  useful states, the decision, D-095's events (how many are still events) and its reading.
+- **Config is not changed by this entry.** The engine still runs m_x 0.4 and core +1.199 from the pre-checked
+  rows; whether to move config to the checked-row fit was already Ben's open decision. If this refit holds up,
+  the report proposes config values for that decision. Adopting them needs his yes.
