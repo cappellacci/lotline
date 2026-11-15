@@ -13,7 +13,6 @@ import math
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 root, out = Path(sys.argv[1]), Path(sys.argv[2])
@@ -151,51 +150,86 @@ def unseen_chart():
     )
 
 
-def history_panels():
-    """Per state: counted ADUs a year (the places with counts), and the engine's 2027-31 no-reform mean a year
-    for the places that have their own counts."""
-    out = []
-    for st in ORDER:
-        s = py[py.state == st].groupby("year")["adus"].sum()
-        if s.empty or st not in basis.index:
-            continue
-        nplaces = py[py.state == st]["geoid"].nunique()
-        b = basis.loc[st]
-        pred = b.current_rules_adus_mean / 5
-        recent = b.observed_per_year
-        w, h, lw, bot, top = 300, 170, 40, 26, 12
-        years = list(range(2016, 2032))
-        ymax = max(s.max(), pred, recent) * 1.15
+STATUS = {
+    "handbook": "allows",
+    "partial": "allows",
+    "uncertain": "allows",
+    "none": "none",
+    "unknown": "uncoded",
+}
+SEGMENTS = [  # (label, column, status, css class)
+    ("Built anyway: rules allow ADUs", "current_rules_adus_mean", "allows", "s-base"),
+    ("Built anyway: rule not coded", "current_rules_adus_mean", "uncoded", "s-base2"),
+    ("Added: rules allow ADUs but restrict them", "adu_permits_added_mean", "allows", "s-add"),
+    ("Added: no ADUs allowed today", "adu_permits_added_mean", "none", "s-none"),
+    ("Added: rule not coded", "adu_permits_added_mean", "uncoded", "s-add2"),
+]
 
-        def sx(y, years=years, lw=lw, w=w):
-            return lw + (y - years[0]) / (years[-1] - years[0]) * (w - lw - 8)
 
-        def sy(v, top=top, h=h, bot=bot, ymax=ymax):
-            return top + (1 - v / ymax) * (h - top - bot)
+def reform_chart():
+    """ADUs a year per state, 2027-31: no reform against full statewide reform (P10-P90, tick at P50)."""
+    f = eng[eng.period.str.contains("-")].set_index(["state", "outcome"])
+    lw, top, gh = 130, 14, 50
+    h = top + gh * len(ORDER) + 34
+    sx = log_axis(20, 20000, lw, W - 80)
+    g = [
+        f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="ADUs a year with no reform and with full reform">'
+    ]
+    for t in (30, 100, 300, 1000, 3000, 10000):
+        g.append(f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 6}" y2="{h - 28}" class="grid"/>')
+        g.append(f'<text x="{sx(t):.1f}" y="{h - 14}" class="tick" text-anchor="middle">{t:,}</text>')
+    for i, st in enumerate(ORDER):
+        y0 = top + gh * i
+        g.append(f'<text x="0" y="{y0 + 18}" class="st">{NAME[st]}</text>')
+        for j, (o, cls) in enumerate((("current_rules_adus", "nr"), ("handbook_adus", "fr"))):
+            r = f.loc[(st, o)]
+            y = y0 + 6 + 16 * j
+            p10, p50, p90 = r.p10 / 5, r.p50 / 5, r.p90 / 5
+            g.append(f'<line x1="{sx(p10):.1f}" x2="{sx(p90):.1f}" y1="{y}" y2="{y}" class="{cls}"/>')
+            g.append(
+                f'<line x1="{sx(p50):.1f}" x2="{sx(p50):.1f}" y1="{y - 6}" y2="{y + 6}" class="{cls}m"/>'
+            )
+            g.append(f'<text x="{sx(p90) + 6:.1f}" y="{y + 4}" class="val">{p50:,.0f}</text>')
+    g.append(
+        f'<text x="{W - 8}" y="{h - 1}" class="tick" text-anchor="end">ADUs a year, statewide, 2027–31 average: P10–P90, tick and label at P50 (log scale)</text>'
+    )
+    g.append("</svg>")
+    return "".join(g)
 
-        g = [f'<svg viewBox="0 0 {w} {h}" class="chart" role="img" aria-label="{NAME[st]} ADUs a year">']
-        for t in np.linspace(0, ymax, 4)[:-1]:
-            g.append(f'<line x1="{lw}" x2="{w - 8}" y1="{sy(t):.1f}" y2="{sy(t):.1f}" class="grid"/>')
-            g.append(f'<text x="{lw - 4}" y="{sy(t) + 4:.1f}" class="tick" text-anchor="end">{t:,.0f}</text>')
-        for y in (2016, 2020, 2025, 2031):
-            anchor = "end" if y == 2031 else "middle"
-            g.append(f'<text x="{sx(y):.1f}" y="{h - 8}" class="tick" text-anchor="{anchor}">{y}</text>')
-        pts = " ".join(f"{sx(y):.1f},{sy(v):.1f}" for y, v in s.items())
-        g.append(f'<polyline points="{pts}" class="hist"/>')
-        for y, v in s.items():
-            g.append(f'<circle cx="{sx(y):.1f}" cy="{sy(v):.1f}" r="2.5" class="histd"/>')
+
+def source_chart():
+    """Where each state's five-year ADUs come from (means over draws): built anyway vs added, by today's rule."""
+    p = pl.assign(status=pl.rule_class.map(STATUS).fillna("uncoded"))
+    lw, top, rh = 130, 10, 40
+    h = top + rh * len(ORDER) + 6
+    g = [f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="where the ADUs come from">']
+    x1 = W - 70
+    for i, st in enumerate(ORDER):
+        q = p[p.state == st]
+        vals = [q.loc[q.status == stt, col].sum() for _, col, stt, _ in SEGMENTS]
+        tot = sum(vals)
+        y = top + rh * i
+        g.append(f'<text x="0" y="{y + 18}" class="st">{NAME[st]}</text>')
+        x = lw
+        for v, (lab, _, _, cls) in zip(vals, SEGMENTS, strict=True):
+            wv = v / tot * (x1 - lw) if tot else 0
+            if wv > 0:
+                g.append(
+                    f'<rect x="{x:.1f}" y="{y + 4}" width="{wv:.1f}" height="22" class="{cls}"><title>{esc(lab)}: {v:,.0f}</title></rect>'
+                )
+                if wv > 34:
+                    g.append(
+                        f'<text x="{x + wv / 2:.1f}" y="{y + 19}" class="{"seg dark" if cls == "s-base2" else "seg"}" text-anchor="middle">{v / tot:.0%}</text>'
+                    )
+            x += wv
+        added = sum(v for v, s_ in zip(vals, SEGMENTS, strict=True) if s_[1] == "adu_permits_added_mean")
+        g.append(f'<text x="{x1 + 6}" y="{y + 19}" class="val">{tot / 5:,.0f}/yr</text>')
         g.append(
-            f'<line x1="{sx(2027):.1f}" x2="{sx(2031):.1f}" y1="{sy(pred):.1f}" y2="{sy(pred):.1f}" class="pred"/>'
+            f'<text x="{lw}" y="{y + 38}" class="tick">built anyway {(tot - added) / 5:,.0f} a year · added by the reform {added / 5:,.0f} a year</text>'
         )
-        g.append(
-            f'<line x1="{sx(2023):.1f}" x2="{sx(2025):.1f}" y1="{sy(recent):.1f}" y2="{sy(recent):.1f}" class="recent"/>'
-        )
-        g.append("</svg>")
-        out.append(
-            f"<figure>{''.join(g)}<figcaption><b>{NAME[st]}</b>. Black: the {nplaces} places in the fit. Gold and blue: the {int(b.places)} places "
-            f"the engine has own counts for: recent rate {recent:,.0f} a year, 2027–31 no-reform mean {pred:,.0f} a year (×{pred / max(recent, 1e-9):.1f}).</figcaption></figure>"
-        )
-    return "".join(out)
+    g.append("</svg>")
+    legend = "".join(f'<span><i class="{c}"></i>{esc(lab)}</span>' for lab, _, _, c in SEGMENTS)
+    return f'<div class="legend">{legend}</div>' + "".join(g)
 
 
 def state_table():
@@ -317,6 +351,11 @@ p {{ margin: 0; max-width: 65ch; }} section {{ display: grid; gap: 12px; }}
 .in {{ fill: var(--survey); opacity: .75; }} .out {{ fill: var(--confidence-outside); opacity: .85; }}
 .hist {{ fill: none; stroke: var(--ink); stroke-width: 2; }} .histd {{ fill: var(--ink); }}
 .pred {{ stroke: var(--survey); stroke-width: 4; stroke-linecap: round; }} .recent {{ stroke: var(--brass); stroke-width: 4; stroke-linecap: round; }}
+.nr {{ stroke: var(--ink-muted); stroke-width: 7; stroke-linecap: round; opacity: .45; }} .nrm {{ stroke: var(--ink); stroke-width: 2.5; }}
+.fr {{ stroke: var(--survey); stroke-width: 7; stroke-linecap: round; opacity: .45; }} .frm {{ stroke: var(--survey); stroke-width: 2.5; }}
+.s-base {{ fill: var(--ink-muted); }} .s-base2 {{ fill: var(--tier-none); }} .s-add {{ fill: var(--survey); }} .s-none {{ fill: var(--brass); }} .s-add2 {{ fill: var(--tier-3); }}
+.legend i.s-base {{ background: var(--ink-muted); }} .legend i.s-base2 {{ background: var(--tier-none); }} .legend i.s-add {{ background: var(--survey); }} .legend i.s-none {{ background: var(--brass); }} .legend i.s-add2 {{ background: var(--tier-3); }}
+.chart .seg {{ fill: var(--paper); font-size: 10.5px; font-weight: 600; }} .chart .seg.dark {{ fill: var(--ink); }}
 .barp {{ fill: var(--survey); }} .baro {{ fill: var(--brass); }}
 .pair {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }}
 figure {{ margin: 0; display: grid; gap: 6px; min-width: 0; }} figcaption {{ font-size: .85rem; color: var(--ink-muted); }}
@@ -360,10 +399,14 @@ ul {{ margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 65ch; }
 
 <section>
   <h2>2 · What does it predict for 2027–31?</h2>
-  <h3>Counted ADUs a year, and the engine's no-reform rate for the same places</h3>
-  <div class="legend"><span><i style="background:var(--ink)"></i>counted ADUs a year, places in the fit</span><span><i style="background:var(--brass)"></i>recent rate the engine starts from</span><span><i style="background:var(--survey)"></i>engine 2027–31 no-reform mean</span></div>
-  <div class="pair">{history_panels()}</div>
-  <p class="foot">History lines jump where permit files start or stop (Texas falls after 2023 when Austin's file ends; Ohio is Cincinnati's 2024–25 only). The engine's lines are means over draws for the places with their own counts.</p>
+  <h3>No reform against full statewide reform, ADUs a year</h3>
+  <p>"No reform": today's local rules stay as they are, and places keep building at their own pace (where a place has its own counts, its recent rate). "Full reform": the Handbook rule in every place from 2027.</p>
+  <div class="legend"><span><i style="background:var(--ink-muted)"></i>no reform</span><span><i style="background:var(--survey)"></i>full statewide reform</span></div>
+  {reform_chart()}
+  <h3>Where the ADUs come from</h3>
+  <p>Each bar is the state's ADUs under full reform, 2027–31 (averages over draws), split into what would be built anyway and what the reform adds, by the place's rule today.</p>
+  {source_chart()}
+  <p class="foot">"Rule not coded": places with no coded local rule. They take a rule drawn from coded places like them, so part of their "built anyway" and "added" is a guess about today's rules. Averages, not medians, so they sit above the medians in the table below.</p>
   <h3>Statewide totals, every place, 2027–31</h3>
   <div class="scroll"><table>
   <tr><th class="form">State</th><th>ADUs, today's rules</th><th>ADUs, Handbook bill</th><th>ADUs added by the bill</th><th>Additional homes</th></tr>
