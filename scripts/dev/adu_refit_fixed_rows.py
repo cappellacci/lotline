@@ -54,29 +54,38 @@ def _load(name: str, file: str):
     return mod
 
 
+def _cut(p, drop):
+    gone = drop.get(p.geoid) if p is not None else None
+    if gone:
+        p = jr.subset_years(p, [y for y in p.years if int(y) not in gone])
+    return p
+
+
 def patch() -> dict[str, set[int]]:
-    """Wrap the `adu_owner_refit` module the target script ended up with (each script's loader re-executes
-    its helpers, so the wrap is applied after the target is loaded)."""
+    """Wrap whichever place builders the target script ended up with (each script's loader re-executes its
+    helpers, so the wrap is applied after the target is loaded): `adu_owner_refit.inputs` (D-084 to D-095)
+    and `adu_joint_refit.limit_years` (D-079's fit set, read by `adu_types_slopes`)."""
     drop = unknown_years()
-    own = sys.modules["adu_owner_refit"]
-    base = own.inputs
+    own = sys.modules.get("adu_owner_refit")
+    if own is not None:
+        base_inputs = own.inputs
 
-    def inputs(store):
-        places, new, table = base(store)
-        kept = []
-        for p in places:
-            gone = drop.get(p.geoid)
-            if gone:
-                p = jr.subset_years(p, [y for y in p.years if int(y) not in gone])
-            if p is not None:
-                kept.append(p)
-        return kept, new, table
+        def inputs(store):
+            places, new, table = base_inputs(store)
+            return [q for q in (_cut(p, drop) for p in places) if q is not None], new, table
 
-    own.inputs = inputs
+        own.inputs = inputs
+    jrm = sys.modules.get("adu_joint_refit")
+    if jrm is not None:
+        base_limit = jrm.limit_years
+
+        def limit_years(pl):
+            return _cut(base_limit(pl), drop)
+
+        jrm.limit_years = limit_years
     return drop
 
 
-# top level, so worker processes (which re-run this file) load and patch the same way
 # worker processes get other arguments, so the target's file name travels in the environment
 if len(sys.argv) > 1 and sys.argv[1].endswith(".py"):
     os.environ[ENV] = sys.argv[1]

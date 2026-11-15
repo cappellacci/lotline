@@ -670,7 +670,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
 | `adu_handbook_min_sqft` | 600 | fixed | sq ft | Handbook benchmark ADU scenario: one ADU per eligible single-family parcel, at least 600 sq ft, no parking re… |
-| `adu_partial_rule_share` | 0.4 | fixed | share of Handbook uptake reached under current local rules (m_x) | Estimated, D-088 (Form A + place types, chosen by Ben 2026-11-14): profile maximum 0.4, 90% profile interval… |
+| `adu_partial_rule_share` | 0.7 | fixed | share of Handbook uptake reached under current local rules (m_x) | Estimated, D-096 (Form A + place types on the coverage-fixed rule rows of PR #440, 63 places, 446 place-years |
 | `adu_owner_occupancy_share` | 1 | fixed | share of Handbook uptake reached when owner occupancy is the only restriction (m_o) | Estimated, D-088 (Form A + place types): profile maximum 1.0, 90% profile interval 1.0-1.0 on the 0.1 grid |
 | `adu_observed_years` | 3 | fixed | years (ending at the data origin) | D-082 (2026-11-12, Ben): the observed ADU floor is the mean of the 3 years ending at the data origin, the sam… |
 | `adu_own_rate_drift` | 1 | fixed | switch (1 = a place's own ADU counts set its no-reform rate; 0 = the mechanism with the observed floor, as before) | D-091, outcome adopted by Ben 2026-11-15 ("Adopt it") |
@@ -701,39 +701,39 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `adu_anchor_info_log_se_theta` | 0.191245 | fixed | log-SE of theta (observed information, core-city term at its estimate) | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `adu_anchor_info_log_se_alpha` | 0.239148 | fixed | log-SE of alpha (observed information) | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `adu_anchor_info_corr` | 0.114507 | fixed | correlation of log theta and log alpha (observed information) | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__adu_sqft` | -3.48546e-06 | fixed | change in log(theta) per unit of adu_sqft | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__adu_sqft` | 1.95669e-05 | fixed | change in log(alpha) per unit of adu_sqft | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__hard_cost_per_sqft_usd` | -1.65161e-05 | fixed | change in log(theta) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__hard_cost_per_sqft_usd` | 9.4325e-05 | fixed | change in log(alpha) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__adu_hard_cost_premium` | -0.0024371 | fixed | change in log(theta) per unit of adu_hard_cost_premium | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__adu_hard_cost_premium` | 0.0136487 | fixed | change in log(alpha) per unit of adu_hard_cost_premium | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__soft_cost_share` | -0.00234916 | fixed | change in log(theta) per unit of soft_cost_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__soft_cost_share` | 0.013104 | fixed | change in log(alpha) per unit of soft_cost_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__construction_loan_rate` | -0.000966991 | fixed | change in log(theta) per unit of construction_loan_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__construction_loan_rate` | 0.0057694 | fixed | change in log(alpha) per unit of construction_loan_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__average_draw_share` | -0.000191942 | fixed | change in log(theta) per unit of average_draw_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__average_draw_share` | 0.000961389 | fixed | change in log(alpha) per unit of average_draw_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__construction_years_irc` | -0.000113242 | fixed | change in log(theta) per unit of construction_years_irc | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__construction_years_irc` | 0.000654155 | fixed | change in log(alpha) per unit of construction_years_irc | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__rental_vacancy_rate` | -0.0029903 | fixed | change in log(theta) per unit of rental_vacancy_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__rental_vacancy_rate` | 0.0165735 | fixed | change in log(alpha) per unit of rental_vacancy_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__operating_expense_share` | -0.00436781 | fixed | change in log(theta) per unit of operating_expense_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__operating_expense_share` | 0.0243288 | fixed | change in log(alpha) per unit of operating_expense_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__cap_rate` | -0.0502176 | fixed | change in log(theta) per unit of cap_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__cap_rate` | 0.284442 | fixed | change in log(alpha) per unit of cap_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__adu_margin` | -0.00254719 | fixed | change in log(theta) per unit of adu_margin | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__adu_margin` | 0.0142691 | fixed | change in log(alpha) per unit of adu_margin | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__adu_rent_to_median_ratio` | 0.00281819 | fixed | change in log(theta) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__adu_rent_to_median_ratio` | -0.0159071 | fixed | change in log(alpha) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__adu_feasibility_dispersion` | -0.0688809 | fixed | change in log(theta) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__adu_feasibility_dispersion` | 0.0199967 | fixed | change in log(alpha) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__adu_equity_elasticity` | 0.136887 | fixed | change in log(theta) per unit of adu_equity_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__adu_equity_elasticity` | -0.143319 | fixed | change in log(alpha) per unit of adu_equity_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_theta__adu_rate_semi_elasticity` | 1.64468 | fixed | change in log(theta) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
-| `anchor_slope_alpha__adu_rate_semi_elasticity` | -0.13071 | fixed | change in log(alpha) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `adu_anchor_info_log_se_theta` | 0.177073 | fixed | log-SE of theta (observed information, core-city term at its estimate) | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `adu_anchor_info_log_se_alpha` | 0.235958 | fixed | log-SE of alpha (observed information) | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `adu_anchor_info_corr` | 0.0545329 | fixed | correlation of log theta and log alpha (observed information) | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__adu_sqft` | 9.0208e-06 | fixed | change in log(theta) per unit of adu_sqft | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__adu_sqft` | 4.41167e-05 | fixed | change in log(alpha) per unit of adu_sqft | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__hard_cost_per_sqft_usd` | 4.43279e-05 | fixed | change in log(theta) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__hard_cost_per_sqft_usd` | 0.000213231 | fixed | change in log(alpha) per unit of hard_cost_per_sqft_usd | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__adu_hard_cost_premium` | 0.00626674 | fixed | change in log(theta) per unit of adu_hard_cost_premium | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__adu_hard_cost_premium` | 0.0307374 | fixed | change in log(alpha) per unit of adu_hard_cost_premium | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__soft_cost_share` | 0.00598697 | fixed | change in log(theta) per unit of soft_cost_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__soft_cost_share` | 0.0294836 | fixed | change in log(alpha) per unit of soft_cost_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__construction_loan_rate` | 0.00261573 | fixed | change in log(theta) per unit of construction_loan_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__construction_loan_rate` | 0.0129863 | fixed | change in log(alpha) per unit of construction_loan_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__average_draw_share` | 0.000442494 | fixed | change in log(theta) per unit of average_draw_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__average_draw_share` | 0.00214945 | fixed | change in log(alpha) per unit of average_draw_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__construction_years_irc` | 0.000304677 | fixed | change in log(theta) per unit of construction_years_irc | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__construction_years_irc` | 0.00145899 | fixed | change in log(alpha) per unit of construction_years_irc | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__rental_vacancy_rate` | 0.00767028 | fixed | change in log(theta) per unit of rental_vacancy_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__rental_vacancy_rate` | 0.0372904 | fixed | change in log(alpha) per unit of rental_vacancy_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__operating_expense_share` | 0.0110577 | fixed | change in log(theta) per unit of operating_expense_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__operating_expense_share` | 0.0546286 | fixed | change in log(alpha) per unit of operating_expense_share | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__cap_rate` | 0.1316 | fixed | change in log(theta) per unit of cap_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__cap_rate` | 0.641644 | fixed | change in log(alpha) per unit of cap_rate | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__adu_margin` | 0.00650788 | fixed | change in log(theta) per unit of adu_margin | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__adu_margin` | 0.0321186 | fixed | change in log(alpha) per unit of adu_margin | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__adu_rent_to_median_ratio` | -0.00716767 | fixed | change in log(theta) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__adu_rent_to_median_ratio` | -0.0355641 | fixed | change in log(alpha) per unit of adu_rent_to_median_ratio | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__adu_feasibility_dispersion` | -0.0885648 | fixed | change in log(theta) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__adu_feasibility_dispersion` | -0.00108224 | fixed | change in log(alpha) per unit of adu_feasibility_dispersion | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__adu_equity_elasticity` | 0.117409 | fixed | change in log(theta) per unit of adu_equity_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__adu_equity_elasticity` | -0.194184 | fixed | change in log(alpha) per unit of adu_equity_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_theta__adu_rate_semi_elasticity` | 1.3183 | fixed | change in log(theta) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
+| `anchor_slope_alpha__adu_rate_semi_elasticity` | -0.0564401 | fixed | change in log(alpha) per unit of adu_rate_semi_elasticity | Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types |
 
 **`config/params/adu_counts.yaml`** (2 parameters)
 
@@ -758,8 +758,8 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_type_units_end_year` | 2015 | fixed | last year of the ACS 5-year vintage | D-088: housing units for the core-city ranking from ACS 2011-15, before the 2016 fit window, so the type can'… |
 | `adu_type_min_fit_places` | 8 | fixed | fit places of the type | D-088 merge rule: a type needs at least this many fit places (in at least adu_type_min_fit_states states) to… |
 | `adu_type_min_fit_states` | 3 | fixed | states | D-088 merge rule, with adu_type_min_fit_places |
-| `adu_types_core_log_multiplier` | 1.199 | 0.546–1.898 | log of a core city's hazard multiplier over a suburb's (β_core) | Estimated, D-088 (run 2026-11-14): Form A + P central fit, 90% profile-likelihood interval |
-| `adu_types_town_prior_sd` | 0.729 | fixed | SD of a town's log hazard multiplier over a suburb's (prior N(0, s²), one draw per draw shared by a state's towns) | D-089 (accepted 2026-11-14): no fit place is a town, so towns get a prior centred on the suburb rate with s =… |
+| `adu_types_core_log_multiplier` | 1.67 | 1.064–2.315 | log of a core city's hazard multiplier over a suburb's (β_core) | Estimated, D-096 (Form A + place types on the coverage-fixed rule rows of PR #440 |
+| `adu_types_town_prior_sd` | 1.015 | fixed | SD of a town's log hazard multiplier over a suburb's (prior N(0, s²), one draw per draw shared by a state's towns) | D-089 (accepted 2026-11-14): no fit place is a town, so towns get a prior centred on the suburb rate with s =… |
 
 **`config/params/adu_screen.yaml`** (6 parameters)
 
@@ -946,7 +946,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `adu_mature_hazard_ref` | 0.000448 | 0.00033–0.000624 | ADU permits per eligible single-family parcel per year, for a suburb at the reference place's rent, home value and rate | Estimated, D-088 (Form A + place types, chosen by Ben 2026-11-14 |
+| `adu_mature_hazard_ref` | 0.00024 | 0.000181–0.000327 | ADU permits per eligible single-family parcel per year, for a suburb at the reference place's rent, home value and rate | Estimated, D-096 (Form A + place types on the coverage-fixed rule rows of PR #440 |
 | `adu_ref_rent_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25064 median gross rent, Portland city OR (place 4159000), CPI-U… |
 | `adu_ref_home_value_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars |
 | `adu_ref_mortgage_rate` | 3.99 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-20… |
@@ -964,7 +964,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_ramp_share` | 1 | fixed | share of the mature hazard a rule has reached in each year it is in force (1 = full strength from year 1) | Estimated choice, D-048 (adopted by Ben 2026-11-05): fitting D-041 with no ramp raised the log-likelihood by… |
 | `adu_extrapolation_shared_share` | 1 | 0.5–1 | share of the extrapolation noise's variance common to every place in a draw | Choice (D-030) |
 | `adu_extrapolation_widening` | 1 | 0.5–2 | standard deviation of log(hazard) per unit of log distance outside the calibration range | Judgment |
-| `adu_place_effect_variance` | 1.55 | 1.046–2.297 | variance of a place's multiplier on the ADU hazard (gamma, mean 1), after the place-type term | Estimated, D-088 (alpha, same fit as adu_mature_hazard_ref) |
+| `adu_place_effect_variance` | 1.439 | 0.976–2.121 | variance of a place's multiplier on the ADU hazard (gamma, mean 1), after the place-type term | Estimated, D-096 (alpha, same fit as adu_mature_hazard_ref |
 
 **`config/params/housing_need.yaml`** (56 parameters)
 

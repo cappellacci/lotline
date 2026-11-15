@@ -10,12 +10,12 @@ adu_handbook_min_sqft:
   notes: "Fixed by the Handbook. A local rule capping ADUs below this size counts as a partial rule. The ADU prototype (proforma.yaml adu_sqft, 600-1,000) never goes below it."
 
 adu_partial_rule_share:
-  value: 0.4
-  low: 0.4
-  high: 0.4
+  value: 0.7
+  low: 0.7
+  high: 0.7
   unit: share of Handbook uptake reached under current local rules (m_x)
-  source: "Estimated, D-088 (Form A + place types, chosen by Ben 2026-11-14): profile maximum 0.4, 90% profile interval 0.4-0.4 on the 0.1 grid; 0.4 in every leave-one-state-out fit but without MN (0.3). Earlier: 1.0 (D-053, set by Bend 2016-17 when the big cities' excess had no term of its own). Judgment before any fit: 0.3, low 0.1, high 0.6 (adu-study-design.md: DC <30/yr E046, New Hampshire 0.1-1.5 per 1,000 houses E056; E053; C21)"
-  notes: "Applies where ADUs are allowed but with parking, a permit by conditional use (not by right), attached ADUs only or a cap under 600 sq ft (owner occupancy has its own share). A rule failing both owner occupancy and another condition gets m_o x m_x. At 0.4 the Handbook scenario adds ADUs where today's rule is partial; under D-053 (1.0) it added none there."
+  source: "Estimated, D-096 (Form A + place types on the coverage-fixed rule rows of PR #440, 63 places, 446 place-years; config approved by Ben 2026-11-15): profile maximum 0.7, 90% profile interval 0.7-0.8 on the 0.1 grid; leave-one-state-out 0.4 (without OR) to 1.0 (without NC). Earlier: 0.8 (D-088 on the checked rows, not adopted), 0.4 (D-088, adopted 2026-11-14), 1.0 (D-053). Judgment before any fit: 0.3, low 0.1, high 0.6 (adu-study-design.md: DC <30/yr E046, New Hampshire 0.1-1.5 per 1,000 houses E056; E053; C21)"
+  notes: "Applies where ADUs are allowed but with parking, a permit by conditional use (not by right), attached ADUs only or a cap under 600 sq ft (owner occupancy has its own share). A rule failing both owner occupancy and another condition gets m_o x m_x. Fixed in a run at the profile maximum (the 0.1 grid gives no finer interval). At 0.7 the Handbook scenario adds about 43% to a place whose rule is partial (1 / 0.7), down from 150% at 0.4."
 
 adu_owner_occupancy_share:
   value: 1.0
