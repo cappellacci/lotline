@@ -5241,14 +5241,14 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Decided by:** Ben, 2026-11-11 (accepted all six). The proposals were written by Claude Code.
   **Status:** decided. Items 3 and 6 are in progress; nothing is wired yet.
 
-### D-082 · 2026-11-11 · Missing middle: one counting protocol, Oregon in the fit, and accuracy tests (method only, before any count)
+### D-092 · 2026-11-11 · Missing middle: one counting protocol, Oregon in the fit, and accuracy tests (method only, before any count) (was D-082)
 - **Status: Approved by Ben, 2026-11-12 ("Approve D-082"), as written, with the amendments below.** Method only:
   nothing below has been run or counted. Each run in §9 still needs its own go-ahead.
   - **Counting choices accepted (2026-11-12, "Yes, start run 1"):** the 13 choices in PR #408 (address
     fallback to parcel × issue year, missing parcel ID as its own building, unknown units left out, aggregate
     rows dropped, Wilson 90% interval on k, conversions, townhouses and 5–6, prior roll, s_td, r56 only in
     Minneapolis, pooling, the roll interface, Ramsey dropped outright).
-  - **Run 1 done (2026-11-12):** `reports/mm-d082/run1-coverage/` (branch `ws/mm-run1-coverage`). As
+  - **Run 1 done (2026-11-12):** `reports/mm-d092/run1-coverage/` (branch `ws/mm-run1-coverage`). As
     pre-registered, Raleigh, Austin and Bend are strong. The run-1 choices (window from 2013, full years only,
     per-place windows, Mecklenburg not screened) are listed there for Ben to confirm.
   - **Deviation (2026-11-12, written after run 1's first pass was read; Ben chose "Per-permit split rule"):**
@@ -5280,7 +5280,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     `docs/research/mm-methodology-review-2026-11.md`, #392). This entry is its step 2.
   - Step 1 runs in parallel. It is second-coder rule checks: `reports/{nc,tx,mn,or}/mm-rule-checks-2026-11.md`.
     Its outcome decides which events enter, under the rules below; it does not change them.
-  - **Number:** provisional. If another entry takes D-082 first, this one is renumbered on merge, as before.
+  - **Number:** written as D-082. The ADU observed-floor entry took D-082 on `main` first (2026-11-12), so this
+    entry was renumbered D-092 on 2026-11-15 (Ben: "Yes, renumber"). Quotes of Ben's approval keep his words
+    ("Approve D-082"); they refer to this entry.
 - **Why.** Missing middle has not had the November ADU rebuild (D-074 to D-081). The review found five problems:
   - the adopted fit (D-054 (b), adopted by D-055) rests on six NC events with unverified dates (fold without NC:
     θ 0.013 against 0.12 per 1,000);
