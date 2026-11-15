@@ -385,7 +385,7 @@ def _best_alpha(places, theta, half, tol=1e-4):
 
 
 def log_prior_term(log_theta: float, log_prior: tuple[float, float] | None) -> float:
-    """−(ln θ − m)² / (2 s²) for a lognormal prior (m, s) on θ (constant dropped); 0 without a prior (D-082
+    """−(ln θ − m)² / (2 s²) for a lognormal prior (m, s) on θ (constant dropped); 0 without a prior (D-092
     C4). By hand: m = ln 0.001, s = 0.5, θ = 0.001 e -> −1 / 0.5 = −2."""
     if log_prior is None:
         return 0.0
@@ -433,7 +433,7 @@ def _interval(f, x_hat: float, f_hat: float, lo: float, hi: float, iters: int = 
 def fit(places: Sequence[Place], halves=HALF_GRID, log_prior: tuple[float, float] | None = None) -> Fit:
     """Maximum likelihood (θ, α, half) with profile-likelihood 90% intervals (D-038).
 
-    `log_prior` (m, s): a lognormal prior on θ, ln θ ~ N(m, s²) (D-082 challenger C4). The fit then maximizes
+    `log_prior` (m, s): a lognormal prior on θ, ln θ ~ N(m, s²) (D-092 challenger C4). The fit then maximizes
     the log-likelihood plus `log_prior_term` (a penalized likelihood, reported in `loglik`), and the
     intervals use the same χ² cut on that sum. None (the default) is the plain D-038 fit."""
     n_years = int(sum(len(p.years) for p in places))
@@ -926,22 +926,22 @@ def tau_summary(profile: pd.DataFrame, draws: int = 20_000, seed: int = 0) -> di
 
 
 # ---------------------------------------------------------------------------------------------------------
-# D-082 (proposed): standards events (dose class S), the level component L, challengers C1, C3, C4, and the
+# D-092 (proposed): standards events (dose class S), the level component L, challengers C1, C3, C4, and the
 # §5 choosing rule. Code only: nothing here has been run on real data.
 # ---------------------------------------------------------------------------------------------------------
 
-DOSE_CLASSES = ("cap", "S")  # D-082 §1b: a cap rise (D-042) or a standards event
-S_DOSE = 1 / 3  # D-082 §1b: a standards event's dose increase (the approval-grade step); config: mm.yaml
+DOSE_CLASSES = ("cap", "S")  # D-092 §1b: a cap rise (D-042) or a standards event
+S_DOSE = 1 / 3  # D-092 §1b: a standards event's dose increase (the approval-grade step); config: mm.yaml
 CLASS_SIZES = {"bldgs_2": (2, 2), "bldgs_3_4": (3, 4)}  # units per building in each BPS class
 LEVEL_AGE = 1e3  # event age given to level places: the ramp is 1 (mature) at any half-way point
-LEVEL_POOL_MIN = 3  # D-082 §1b (D-042's thin-pool rule): fewer "none" places in a band -> the pooled band
-C4_WIDENING = 2.0  # D-082 §5: C4's prior log-SD = θ_L's profile log-SE × 2 (selection)
-SE_MARGIN = 2.0  # D-082 §5: a challenger must beat M's held-out log score by more than 2 paired SE
+LEVEL_POOL_MIN = 3  # D-092 §1b (D-042's thin-pool rule): fewer "none" places in a band -> the pooled band
+C4_WIDENING = 2.0  # D-092 §5: C4's prior log-SD = θ_L's profile log-SE × 2 (selection)
+SE_MARGIN = 2.0  # D-092 §5: a challenger must beat M's held-out log score by more than 2 paired SE
 
 
 @dataclass(frozen=True)
 class Event:
-    """One place's D-082 event: year, the cap in force the year before and after, and its dose class
+    """One place's D-092 event: year, the cap in force the year before and after, and its dose class
     ('cap' = D-042's cap rise; 'S' = a standards event, §1b)."""
 
     year: int
@@ -957,7 +957,7 @@ class Event:
 
 
 def standards_classes(prior_cap: int, cap: int) -> tuple[str, ...]:
-    """BPS classes a standards route covers (D-082 §1b): the 2-4 unit classes whose smallest size is at or
+    """BPS classes a standards route covers (D-092 §1b): the 2-4 unit classes whose smallest size is at or
     below the route's cap and, when the coded cap rose, above the prior cap.
 
     By hand: Houston's MUR, prior cap 2, route cap 4 -> 3-4 unit only; prior 1, cap 2 -> 2-unit only; a route
@@ -982,7 +982,7 @@ def standards_year(rows: pd.DataFrame, first: int = 2013, last: int = 2025) -> f
 
 
 def classify_event(rows: pd.DataFrame, year: int, coverage: Mapping[str, float]) -> Event | None:
-    """D-082's event for one place at `year` (`rows`: its in-force missing-middle rows after
+    """D-092's event for one place at `year` (`rows`: its in-force missing-middle rows after
     `rule_tags.apply`): class 'S' if a `[standards]` row comes into force that year (its cap is the route's
     cap), else 'cap' if `prior_cap` rises (D-042), else None.
 
@@ -1007,7 +1007,7 @@ def first_event(
     coverage: Mapping[str, float],
     last: int = 2025,
 ) -> tuple[Event | None, list[tuple[int, int, int]]]:
-    """D-082 §1's event: the first year from `start` (D-042's `event_year`, or the first `[standards]` year
+    """D-092 §1's event: the first year from `start` (D-042's `event_year`, or the first `[standards]` year
     if earlier) to `last` at which `classify_event` finds a cap rise or a standards row. Returns (event or
     None, misses), where misses holds (start, cap before, cap after) when `start` itself set no event.
 
@@ -1026,7 +1026,7 @@ def first_event(
 
 
 def standards_variant(events: Mapping[str, Event], variant: str = "main", s_dose: float = S_DOSE):
-    """(events, S dose) for D-082 §1b's sensitivities: 'main' (S events at `s_dose`), 'exclude' (S events
+    """(events, S dose) for D-092 §1b's sensitivities: 'main' (S events at `s_dose`), 'exclude' (S events
     left out) or 'dose1' (S events at dose 1)."""
     if variant == "main":
         return dict(events), s_dose
@@ -1040,7 +1040,7 @@ def standards_variant(events: Mapping[str, Event], variant: str = "main", s_dose
 def retarget_events(
     panel: pd.DataFrame, classes: pd.DataFrame, events: Mapping[str, Event], s_dose: float = S_DOSE
 ) -> pd.DataFrame:
-    """`retarget` for D-082 events. A 'cap' event is exactly `retarget`'s (classes above the prior cap; dose =
+    """`retarget` for D-092 events. A 'cap' event is exactly `retarget`'s (classes above the prior cap; dose =
     the increase over the year before the event). An 'S' event counts the classes its route covers
     (`Event.classes`) and takes dose `s_dose` from its event year on (0 before), whatever the coded dose.
 
@@ -1101,7 +1101,7 @@ def level_places(
     min_places: int = LEVEL_POOL_MIN,
     feasibility: bool = True,
 ) -> list[Place]:
-    """`Place` per always-allowed place for the level model (D-082 §1b):
+    """`Place` per always-allowed place for the level model (D-092 §1b):
 
         y_it ~ Poisson(b_it + θ_L u_i E_it d_i F_i / F(1)),   b_it = r(state, band) × E_it
 
@@ -1138,7 +1138,7 @@ def level_places(
 
 
 def fit_level(places: Sequence[Place]) -> Fit:
-    """θ_L, α_L and their 90% profile-likelihood intervals for the level places (D-082 §1b): `fit` with the
+    """θ_L, α_L and their 90% profile-likelihood intervals for the level places (D-092 §1b): `fit` with the
     ramp at 1 (the half-way point is not estimated; `half` in the result is a placeholder)."""
     return fit(places, halves=(HALF_GRID[0],))
 
@@ -1221,7 +1221,7 @@ def select_model(
     challengers: Sequence[str] = ("C1", "C3", "C4"),
     margin: float = SE_MARGIN,
 ) -> dict:
-    """D-082 §5's rule. `scores`: one row per held-out place with columns `ls_<model>` (held-out log scores,
+    """D-092 §5's rule. `scores`: one row per held-out place with columns `ls_<model>` (held-out log scores,
     leave one state out). `tests_passed`: model -> how many of tests A-C it passes. A challenger replaces M
     only if Σ(ls_C − ls_M) > `margin` × paired SE and it passes no fewer of tests A-C than M. If several
     qualify, the largest Σ wins. Returns {"chosen", "table"}.

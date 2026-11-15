@@ -1,13 +1,13 @@
-# D-082 run 3: lots that gained a 2–4 unit building between two parcel rolls (2026-11-12)
+# D-092 run 3: lots that gained a 2–4 unit building between two parcel rolls (2026-11-12)
 
-**What this is.** This is the observed side of test B (D-082 §2, §7). We take two county or city tax rolls a few
+**What this is.** This is the observed side of test B (D-092 §2, §7). We take two county or city tax rolls a few
 years apart and look at every lot that held one house, or nothing, on the first roll. We count how many of those
 lots hold **one building with 2–4 homes** on the second roll. Test B then compares these counts with what the
 model predicts (run 5). **Nothing was fitted. Nothing was written to config.** No data was downloaded: the Wake,
 Minneapolis and Met Council rolls are the processed tables, and Franklin uses the cached auditor spreadsheets.
 
 - **Go-ahead:** Ben, 2026-11-12 ("Can we get close to having a finalized model over night?").
-- **Command:** `uv run python scripts/dev/mm_counts_d082.py --rolls --out reports/mm-d082/run3-rolls`.
+- **Command:** `uv run python scripts/dev/mm_counts_d092.py --rolls --out reports/mm-d092/run3-rolls`.
 - **Holdouts:** every roll went through `mm_counts.blind`. The Met Council roll lost 754,645 rows, which are all
   of Ramsey County, St. Paul included. Nothing was unblinded.
 - **Rule** (`mm_counts.diff_rolls_24`, committed with a synthetic test before any diff was run):
@@ -48,7 +48,7 @@ The per-place rows (GEOID, counts, share and interval) are in `roll_gains_by_pla
    about a third of house parcels. The main reading fills a missing count from the land use (house 1, duplex 2,
    triplex/fourplex 3). Read as coded, it finds 14 gains instead of 359.
 
-## Choices not in D-082's text (made by Claude Code, for Ben to confirm)
+## Choices not in D-092's text (made by Claude Code, for Ben to confirm)
 
 - **Minneapolis: 2017 → 2024, not 2026.** The 2025 and 2026 vintages have unit counts on about 1% of house
   parcels, against 100% through 2024.
@@ -61,7 +61,7 @@ The per-place rows (GEOID, counts, share and interval) are in `roll_gains_by_pla
   is reported beside it.
 - **A house-coded parcel with 2+ units is ambiguous** (house plus ADU, or a miscoded duplex). It is neither a
   single dwelling nor one 2–4 building, so its building count is NA. This applies to every parcel-based roll.
-- **Merge rule:** lot area up more than 20% (D-082). Wake uses `lot_sqft` from the roll. Franklin uses acres
+- **Merge rule:** lot area up more than 20% (D-092). Wake uses `lot_sqft` from the roll. Franklin uses acres
   × 43,560.
 
 ## Not done in this run

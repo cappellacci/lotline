@@ -1,4 +1,4 @@
-"""D-082 (proposed): standards events, the level component, challengers C1, C3, C4 and §5's choosing rule do
+"""D-092 (proposed): standards events, the level component, challengers C1, C3, C4 and §5's choosing rule do
 what the analysis plan says (hand-worked examples and simulated places; no real data)."""
 
 import math

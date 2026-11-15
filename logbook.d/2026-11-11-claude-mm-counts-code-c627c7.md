@@ -1,5 +1,5 @@
-### LB-NNN · 2026-11-11 · Build: D-082 missing-middle counting code (no counts run)
-- **Question:** Can the counting rules D-082 (proposed) §2–§3 pre-registers be committed in code, with
+### LB-NNN · 2026-11-11 · Build: D-092 missing-middle counting code (no counts run)
+- **Question:** Can the counting rules D-092 (proposed) §2–§3 pre-registers be committed in code, with
   hand-worked tests, before Ben approves the protocol and before any count is seen?
 - **What I did:**
   - New `src/lotline/model/mm_counts.py`. It holds five pieces:
@@ -14,15 +14,15 @@
     `holdout.apply` runs. The counting functions raise `NeverReadError` if a St. Paul or Ramsey row reaches
     them.
   - The thresholds (0.85, 3 years, 0.8 and 1.25, 2–4 units, 50 buildings, ±2 years, +20%, z) are in
-    `config/params/mm.yaml` with source "D-082 (proposed)".
-  - `scripts/dev/mm_counts_d082.py --dry` prints input structure only. Without `--dry` it stops, because
+    `config/params/mm.yaml` with source "D-092 (proposed)".
+  - `scripts/dev/mm_counts_d092.py --dry` prints input structure only. Without `--dry` it stops, because
     counts need Ben's go-ahead. I ran `--dry` once.
 - **Inputs:**
-  - D-082 and the methodology review §1–§3 (branch `ws/mm-review`, PR #392);
+  - D-092 and the methodology review §1–§3 (branch `ws/mm-review`, PR #392);
   - the roll-diff pattern in `wake_roll_diff.py`, `franklin_roll_diff.py` and `mpls_roll_diff.py`;
   - for the one dry run, the processed `permits`, `parcels` and `bps_place_year` tables. Structure only.
 - **Outputs:** `src/lotline/model/mm_counts.py`, `tests/model/test_mm_counts.py` (22 tests),
-  `scripts/dev/mm_counts_d082.py`, `config/params/mm.yaml` (10 new `mm_*` keys).
+  `scripts/dev/mm_counts_d092.py`, `config/params/mm.yaml` (10 new `mm_*` keys).
 - **Findings (structure only, from the dry run):**
   - No processed permit table has a street address. The schema filter drops it, and Raleigh doesn't request
     it. So the collapse falls back to parcel × issue year, and two buildings on one parcel in one year merge.
@@ -37,7 +37,7 @@
   numbers are worked out in comments. `compliance_check.py` gives 0 FAIL. No count, ratio or 2–4 building
   number was computed or printed from real data.
 - **Open / next:**
-  - Ben approves D-082 or amends it;
+  - Ben approves D-092 or amends it;
   - decide whether to carry an address key (contract-change issue);
   - add a zoning join for `sf_only_zoned`;
   - write adapters from the Wake, Franklin and Minneapolis card/building summaries to the roll interface;

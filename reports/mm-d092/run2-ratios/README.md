@@ -1,6 +1,6 @@
-# D-082 run 2: uplift ratios for what BPS can't see (2026-11-12)
+# D-092 run 2: uplift ratios for what BPS can't see (2026-11-12)
 
-**What this is.** Census BPS counts new 2–4 unit buildings. D-082 §3 asks how much other housing comes with
+**What this is.** Census BPS counts new 2–4 unit buildings. D-092 §3 asks how much other housing comes with
 them on the same kind of lot:
 - **r56:** 5–6 unit buildings on single-family-zoned lots;
 - **rTH:** townhouses on single-family-zoned lots;
@@ -12,17 +12,17 @@ Each ratio is measured against new 2–4 unit buildings in the strong permit sou
 uplift in a separate config PR.
 
 - **Go-ahead:** Ben, 2026-11-12 ("Can we get close to having a finalized model over night?").
-- **Command:** `uv run python scripts/dev/mm_counts_d082.py --ratios --out reports/mm-d082/run2-ratios`. It
+- **Command:** `uv run python scripts/dev/mm_counts_d092.py --ratios --out reports/mm-d092/run2-ratios`. It
   uses cached tables only. Raleigh's prior roll needs the PIN↔REID crosswalk from the registered Wake roll
   spreadsheets, which are read offline and use no personal column.
 - **Holdouts:** every table went through `mm_counts.blind`. Nothing was unblinded.
-- **Shared classifier (D-082 §6):** every permit gets one theme from `build.permit_theme` (#405) before
+- **Shared classifier (D-092 §6):** every permit gets one theme from `build.permit_theme` (#405) before
   counting. A U2/U3_4 row whose theme is not `mm_2_4` or `conversion` is recoded to OTHER, so the 2–4 collapse
   never counts it. These rows are ADUs filed in a 2-unit class, alterations adding no home, and demolitions.
   Demolitions stay flagged for s_td (`mm_counts.apply_themes`).
 - **Two source sets:**
   - **split-strong** (main): Raleigh, Durham, Columbus, College Station and Bend, with the per-permit split
-    collapse (the D-082 deviation of 2026-11-12);
+    collapse (the D-092 deviation of 2026-11-12);
   - **prereg-strong**: Raleigh, Austin and Bend, with the pre-registered collapse.
 
   Minneapolis is not strong. It is shown as a side figure because r56 is defined only there.
@@ -77,7 +77,7 @@ All rows, with both collapses, are in `ratios_by_source.csv`. The pooled rows ar
    and 0 elsewhere (`two_unit_adu_share.csv`). So the ADU/2–4 overlap is not a material correction for BPS
    places, on this evidence.
 
-## Choices not in D-082's text (made by Claude Code, for Ben to confirm)
+## Choices not in D-092's text (made by Claude Code, for Ben to confirm)
 
 - **Theme recode:** described above (`apply_themes`). The run-1 coverage screen did not use the classifier.
 - **Parcel keys:**
