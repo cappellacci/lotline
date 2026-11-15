@@ -231,19 +231,47 @@ def test_year_split_row():
         {
             "source": "X",
             "place": "x",
-            "kind": "parser",
+            "kind": "field",
             "value": 0.9,
             "low": 0.8,
             "high": 1.0,
             "interval": 0.9,
             "report": "r",
-        },  # k < 1
+        },  # a field k < 1 (field flags only miss ADUs; D-081 keeps field rows >= 1)
+        {
+            "source": "X",
+            "place": "x",
+            "kind": "parser",
+            "value": 0.9,
+            "low": 0.0,
+            "high": 1.0,
+            "interval": 0.9,
+            "report": "r",
+        },  # a k of 0 is impossible
         {"source": "A", "place": "a", "kind": "parser", "report": "r"},  # A already has a row for every year
     ],
 )
 def test_table_rejects_bad_rows(bad):
     with pytest.raises(ValueError):
         _table(rows=TABLE["rows"] + [bad])
+
+
+def test_parser_row_below_one_is_allowed_and_drawn_by_hand():
+    """D-081: a parser k is precision / recall. Precision 0.78, recall 1.0 gives 0.78 (90%: 0.61-1.31)."""
+    row = {
+        "source": "CIN",
+        "place": "cin",
+        "kind": "parser",
+        "value": 0.78,
+        "low": 0.61,
+        "high": 1.31,
+        "interval": 0.9,
+        "report": "r",
+    }
+    c = {r.source: r for r in uc.resolve(_table(rows=TABLE["rows"] + [row]))}["CIN"]
+    assert c.quantile(0.0) == pytest.approx(0.78)
+    assert c.quantile(-Z90) == pytest.approx(0.61)
+    assert c.quantile(Z90) == pytest.approx(1.31)
 
 
 # ---- k scales counted ADU permits only -----------------------------------------------------------------
@@ -348,6 +376,13 @@ def test_real_table_matches_d078():
     assert rows[("durham_permits", None, None)].prior
     assert rows[("metc_residential_permits", None, None)].floor
     assert rows[("columbus_permits", None, None)].kind == "none"
+    # D-081 hand checks (2026-11-11b): parser k = precision / recall, which may sit below 1
+    assert rows[("meck_permits", None, None)].value == 0.98
+    assert rows[("cincy_permits", None, None)].value == 0.78
+    assert rows[("fw_permits", None, None)].value == 1.14
+    assert rows[("greensboro_permits", None, None)].value == 1.39
+    assert rows[("asheville_permits", None, 2021)].value == 1.47
+    assert rows[("dallas_permits", None, None)].value is None  # out of the fit (D-081 item 4)
     centre, low, high, _ = uc.prior(t)
     assert centre == pytest.approx(math.exp((math.log(1.07) + math.log(1.13) + math.log(1.06)) / 3))
     assert centre == pytest.approx(1.0862, abs=1e-4)

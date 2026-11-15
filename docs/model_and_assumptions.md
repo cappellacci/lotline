@@ -671,7 +671,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_handbook_min_sqft` | 600 | fixed | sq ft | Handbook benchmark ADU scenario: one ADU per eligible single-family parcel, at least 600 sq ft, no parking re… |
 | `adu_partial_rule_share` | 1 | fixed | share of Handbook uptake reached under current local rules (m_x) | Estimated, D-053 (fit 3's pre-registered rule, Ben 2026-11-06): five-state fit (MN, NC, OH, TX, OR |
 | `adu_owner_occupancy_share` | 1 | 0.9–1 | share of Handbook uptake reached when owner occupancy is the only restriction (m_o) | Estimated, D-019 fit 3 (pre-registered): profile maximum 1.0, 90% profile interval 0.9-1.0 (grid 0.1-1.0), na… |
-| `adu_observed_years` | 4 | fixed | years (ending at the data origin) | WS-NC-GUTCHECK (2026-11-09 |
+| `adu_observed_years` | 3 | fixed | years (ending at the data origin) | D-082 (2026-11-12, Ben): the observed ADU floor is the mean of the 3 years ending at the data origin, the sam… |
 | `adu_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: P10/P90 of 1,000 draws move by under 2% between seeds on the development run |
 | `adu_simulation_seed` | 20261020 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |
 | `adu_rule_band_small_max_pop` | 10,000 | fixed | 2020 population (upper edge of the small-place band) | Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+ for the rule priors of places with no cod… |
@@ -1092,19 +1092,19 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `cstx_permits` | College Station (TX) | field | all | prior | prior | `src/lotline/adapters/states/tx/cstx_permits.py` |
 | `sa_permits` | San Antonio (TX) | field | all | prior | prior | `src/lotline/adapters/states/tx/sa_permits.py` |
 | `mpls_ccs_permits` | Minneapolis (MN) | parser | all | 1.04 | 1.02–1.1 (90%) | `reports/mn/adu-coverage-and-undercount.md` |
-| `meck_permits` | Charlotte and the Mecklenburg towns (NC) | parser | all | 1.04 | 1–1.27 (90%) | `reports/nc/charlotte-adu-counts.md` |
-| `cle_permits` | Cleveland (OH) | parser | all | 1.07 | 1–1.07 (90%) | `reports/oh/adu-coverage-and-undercount.md` |
-| `asheville_permits` | Asheville (NC), before 2022 | parser | –2021 | 1.59 | 1.43–1.79 (90%) | `reports/nc/asheville-adu-scout.md` |
+| `meck_permits` | Charlotte and the Mecklenburg towns (NC) | parser | all | 0.98 | 0.86–1.13 (90%) | `reports/nc/parser-handcheck-2026-11-11b.md` |
+| `cle_permits` | Cleveland (OH) | parser | all | 1.07 | 1–1.31 (90%) | `reports/oh/parser-handcheck-2026-11-11.md` |
+| `asheville_permits` | Asheville (NC), before 2022 | parser | –2021 | 1.47 | 1.33–1.61 (90%) | `reports/nc/parser-handcheck-2026-11-11b.md` |
 | `austin_inferred_adu` | Austin (TX), inferred-ADU rule, 2024 on | parser | 2024– | 2.3 | 1.89–2.94 (95%) | `reports/tx/adu-coverage-and-undercount.md` |
-| `greensboro_permits` | Greensboro (NC) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/nc/greensboro_permits.py` |
+| `greensboro_permits` | Greensboro (NC) | parser | all | 1.39 | 1.1–2.33 (90%) | `reports/nc/parser-handcheck-2026-11-11b.md` |
+| `fw_permits` | Fort Worth (TX) | parser | all | 1.14 | 0.92–1.6 (90%) | `reports/tx/parser-handcheck-2026-11-11b.md` |
+| `cincy_permits` | Cincinnati (OH) | parser | all | 0.78 | 0.61–1.31 (90%) | `reports/oh/parser-handcheck-2026-11-11b.md` |
 | `wilmington_permits` | Wilmington (NC) | parser | all | 1 | fixed (no hand check yet) | `reports/nc/wilmington-adu-scout.md` |
 | `chapel_hill_permits` | Chapel Hill (NC) | parser | all | 1 | fixed (no hand check yet) | `reports/nc/chapel-hill-adu-scout.md` |
 | `cary_permits` | Cary (NC) | parser | all | 1 | fixed (no hand check yet) | `reports/nc/cary-adu-scout.md` |
 | `rochester_permits` | Rochester (MN) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/mn/rochester_permits.py` |
-| `cincy_permits` | Cincinnati (OH) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/oh/cincy_permits.py` |
 | `montgomery_permits` | Dayton and Montgomery County (OH) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/oh/montgomery_permits.py` |
-| `dallas_permits` | Dallas (TX) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/tx/dallas_permits.py` |
-| `fw_permits` | Fort Worth (TX) | parser | all | 1 | fixed (no hand check yet) | `src/lotline/adapters/states/tx/fw_permits.py` |
+| `dallas_permits` | Dallas (TX) | parser | all | 1 | fixed (no hand check yet) | `reports/tx/parser-handcheck-2026-11-11b.md` |
 | `metc_residential_permits` | Met Council suburbs (MN) | floor | all | 1 | fixed (floor) | `reports/mn/adu-coverage-and-undercount.md` |
 | `columbus_permits` | Columbus (OH) | none | all | 1 | fixed | `reports/oh/adu-coverage-and-undercount.md` |
 | `columbus_legistar` | Columbus (OH), Council variances | none | all | 1 | fixed | `reports/oh/adu-coverage-and-undercount.md` |
