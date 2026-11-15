@@ -1,0 +1,262 @@
+<title>ADU place types</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column; headline, a decision panel, numbered findings each with a chart, then tables. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header, section { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow, .num-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.num-tag { color: var(--survey); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 21px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.stat { border-top: 2px solid var(--rule); padding-top: var(--space-2); }
+.stat b { display: block; font-family: var(--font-mono); font-size: 22px; font-weight: 500; }
+.stat span { font-size: 13px; color: var(--ink-muted); }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); align-items: center; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.dot.a { background: var(--ink-faint); } .dot.f { background: var(--scenario-adu); } .dot.c { background: var(--brass); } .dot.k { background: var(--survey); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--ink-faint); stroke-width: 1.5; }
+.chart .band { fill: var(--confidence-inside); fill-opacity: .10; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink-muted); font-size: 12.5px; }
+.chart .val { fill: var(--ink-muted); font-size: 11.5px; font-family: var(--font-mono); }
+.chart .move { stroke: var(--rule); stroke-width: 3; }
+.chart .pt-a { fill: var(--ink-faint); }
+.chart .pt-p { fill: var(--scenario-adu); }
+.chart .pt-c { fill: var(--brass); }
+.chart .pt-k { fill: var(--survey); }
+.chart .bar-a { fill: var(--scenario-adu); }
+.chart .bar-p { fill: var(--brass); }
+.chart .ci { stroke-width: 3; }
+.chart .ci.ca { stroke: var(--scenario-adu); } .chart .pt.ca { fill: var(--scenario-adu); }
+.chart .ci.cp { stroke: var(--brass); } .chart .pt.cp { fill: var(--brass); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 520px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.useful { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · D-088 ADU place types · 14 Nov 2026</div>
+  <h1>Core cities build about three times as many ADUs per lot as suburbs, and that moves every held-out state toward its real count</h1>
+  <p class="lede">D-088 asked where the differences between places sit (by state, by kind of place, or by how ADUs were counted) and whether a place type shared across states helps the model carry over to a state it has not seen. Typing places as core cities or suburbs gives the best leave-one-state-out result yet, and the pre-set rule adopts it over Form A. It adds nothing once owner share (Form A′) is in. And about 70% of the spread is between places of the same state, type and counting method, which no grouping reaches.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>×3.3</b><span>core city over suburb, Form A + types (90%: ×1.7 to ×6.7)</span></div>
+  <div class="stat"><b>3 of 4</b><span>held-out states useful at tier 1 with types (Form A: 0; A′: 1)</span></div>
+  <div class="stat"><b>+7.2</b><span>tier-1 held-out log score, A + types over A (bar: 2 SE = 6.1)</span></div>
+  <div class="stat"><b>71%</b><span>of the spread between places that state, type and counting source leave unexplained (Form A)</span></div>
+</div>
+
+<div class="decision">
+  <span class="tag">Decided by the pre-set rule</span>
+  <h2>Types replace Form A; they do not improve Form A′</h2>
+  <ol>
+    <li><b>Form A + types:</b> adopted over Form A. tier-1 log score gain 7.2 &gt; 2 SE (6.1); tests A-B 1 vs 1; test D -3.4 (SE 2.6).</li>
+    <li><b>Form A′ + types:</b> not adopted. no lower tier, and the tier-1 log score gain -0.6 is not above 2 SE (4.4).</li>
+    <li>No form passes D-075's claim rule at any tier: that needs every scorable state useful, and Minnesota stays outside ×2 for every form.</li>
+  </ol>
+  <p class="note">Which pair counts depends on D-084, still open: keep Form A (then A + types is the form), or adopt A′ (then A′ stays as is). The two finalists, A + types and A′, are a near tie on the tier-1 log score (+7.2 and +6.8 over A); A + types has more useful states (3 against 1). That comparison is descriptive, not part of the rule. Nothing goes to config.</p>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>In this data, state, kind of place and counting method are almost the same thing</h2>
+  <p>Before any fit, the 64 fit places split into 16 core cities, spread over all five states, and 48 suburbs, all in Minnesota and North Carolina. There are no towns. Texas, Oregon and Ohio contribute only core cities. Minnesota's 41 suburbs are all counted from the Met Council survey; the other states use city permit records or parsers. So "Minnesota is over-predicted" and "suburbs are over-predicted" and "survey places are over-predicted" are largely one statement, and Part 1 cannot pull them apart cleanly.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>State</th><th>Core cities</th><th>Suburbs</th><th>Survey</th><th>Parser</th><th>Permit field</th></tr></thead>
+    <tbody><tr><td>Minnesota</td><td class='num'>2</td><td class='num'>41</td><td class='num'>41</td><td class='num'>2</td><td class='num'>0</td></tr><tr><td>North Carolina</td><td class='num'>6</td><td class='num'>7</td><td class='num'>0</td><td class='num'>10</td><td class='num'>3</td></tr><tr><td>Ohio</td><td class='num'>1</td><td class='num'>0</td><td class='num'>0</td><td class='num'>1</td><td class='num'>0</td></tr><tr><td>Texas</td><td class='num'>3</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>3</td></tr><tr><td>Oregon</td><td class='num'>4</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td><td class='num'>4</td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>Each grouping explains about a quarter of the spread, and together not much more</h2>
+  <p>Under Form A, kind of place explains 26% of the spread in place effects, state 23% and counting source 23%; all three together 29%. The pre-set reading is "types matter": type explains a little more than state, and core cities sit above suburbs with every state left out. A typical core city's effect is ×1.7, a suburb's ×0.3. Under Form A′, owner share has already absorbed most of it: the three explain 12%, 10% and 10% (reading: "mixed").</p>
+  <div class="legend"><span><i class="dot f"></i>Form A</span><span><i class="dot c"></i>Form A′ (owner share)</span></div>
+  <svg viewBox="0 0 640 226" class="chart" role="img" aria-label="variance shares"><line x1="170.0" x2="170.0" y1="10" y2="196" class="zero"/><text x="170.0" y="212" class="tick" text-anchor="middle">0%</text><line x1="282.5" x2="282.5" y1="10" y2="196" class="grid"/><text x="282.5" y="212" class="tick" text-anchor="middle">25%</text><line x1="395.0" x2="395.0" y1="10" y2="196" class="grid"/><text x="395.0" y="212" class="tick" text-anchor="middle">50%</text><line x1="507.5" x2="507.5" y1="10" y2="196" class="grid"/><text x="507.5" y="212" class="tick" text-anchor="middle">75%</text><line x1="620.0" x2="620.0" y1="10" y2="196" class="grid"/><text x="620.0" y="212" class="tick" text-anchor="middle">100%</text><text x="160" y="34" class="lab" text-anchor="end">State</text><rect x="170" y="20" width="103.5" height="13" class="bar-a" rx="2"/><text x="279.5" y="31" class="val">23%</text><rect x="170" y="36" width="55.1" height="13" class="bar-p" rx="2"/><text x="231.1" y="47" class="val">12%</text><text x="160" y="78" class="lab" text-anchor="end">Place type</text><rect x="170" y="64" width="118.3" height="13" class="bar-a" rx="2"/><text x="294.3" y="75" class="val">26%</text><rect x="170" y="80" width="42.8" height="13" class="bar-p" rx="2"/><text x="218.8" y="91" class="val">10%</text><text x="160" y="122" class="lab" text-anchor="end">Counting source</text><rect x="170" y="108" width="104.1" height="13" class="bar-a" rx="2"/><text x="280.1" y="119" class="val">23%</text><rect x="170" y="124" width="44.6" height="13" class="bar-p" rx="2"/><text x="220.6" y="135" class="val">10%</text><text x="160" y="166" class="lab" text-anchor="end">All three together</text><rect x="170" y="152" width="130.1" height="13" class="bar-a" rx="2"/><text x="306.1" y="163" class="val">29%</text><rect x="170" y="168" width="63.7" height="13" class="bar-p" rx="2"/><text x="239.7" y="179" class="val">14%</text><text x="620" y="225" class="tick" text-anchor="end">share of the spread between places explained (weighted by fit years)</text></svg>
+  <p class="note">The rest, about 71% under A, is between places of the same state, type and counting method: Edina against Richfield, Cary against Durham. That is what no form so far can predict for a state it has not seen.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>With types, every held-out state moves toward its observed count</h2>
+  <p>Leave one state out, forecast it from the other four. Form A misses Texas ×5.9, Oregon ×3.6 and North Carolina ×2.7 low, and Minnesota ÷3.4 high. With the core-city term these become ×2.4, ×2.0, ×1.6 and ÷2.0: three of four states inside ×2 and their ranges. Owner share (A′) does about as well on Texas and less well elsewhere, and adding types to it changes little at tier 1.</p>
+  <div class="legend"><span><i class="dot a"></i>A</span><span><i class="dot f"></i>A + types</span><span><i class="dot c"></i>A′</span><span><i class="dot k"></i>A′ + types</span></div>
+  <svg viewBox="0 0 640 192" class="chart" role="img" aria-label="tier 1 observed over median by held-out state"><rect x="298.6" y="10" width="128.6" height="152" class="band"/><line x1="170.0" x2="170.0" y1="10" y2="162" class="grid"/><text x="170.0" y="178" class="tick" text-anchor="middle">÷8</text><line x1="298.6" x2="298.6" y1="10" y2="162" class="grid"/><text x="298.6" y="178" class="tick" text-anchor="middle">÷2</text><line x1="362.9" x2="362.9" y1="10" y2="162" class="zero"/><text x="362.9" y="178" class="tick" text-anchor="middle">×1</text><line x1="427.1" x2="427.1" y1="10" y2="162" class="grid"/><text x="427.1" y="178" class="tick" text-anchor="middle">×2</text><line x1="491.4" x2="491.4" y1="10" y2="162" class="grid"/><text x="491.4" y="178" class="tick" text-anchor="middle">×4</text><line x1="620.0" x2="620.0" y1="10" y2="162" class="grid"/><text x="620.0" y="178" class="tick" text-anchor="middle">×16</text><text x="160" y="39.0" class="lab" text-anchor="end">Minnesota</text><line x1="250.2" x2="298.6" y1="35.0" y2="35.0" class="move"/><circle cx="250.2" cy="35.0" r="5" class="pt-a"/><circle cx="298.6" cy="35.0" r="5" class="pt-p"/><circle cx="294.6" cy="35.0" r="5" class="pt-c"/><circle cx="289.0" cy="35.0" r="5" class="pt-k"/><text x="160" y="73.0" class="lab" text-anchor="end">North Carolina</text><line x1="402.1" x2="454.1" y1="69.0" y2="69.0" class="move"/><circle cx="454.1" cy="69.0" r="5" class="pt-a"/><circle cx="404.4" cy="69.0" r="5" class="pt-p"/><circle cx="418.0" cy="69.0" r="5" class="pt-c"/><circle cx="402.1" cy="69.0" r="5" class="pt-k"/><text x="160" y="107.0" class="lab" text-anchor="end">Texas</text><line x1="430.7" x2="526.9" y1="103.0" y2="103.0" class="move"/><circle cx="526.9" cy="103.0" r="5" class="pt-a"/><circle cx="445.0" cy="103.0" r="5" class="pt-p"/><circle cx="443.1" cy="103.0" r="5" class="pt-c"/><circle cx="430.7" cy="103.0" r="5" class="pt-k"/><text x="160" y="141.0" class="lab" text-anchor="end">Oregon</text><line x1="424.9" x2="482.5" y1="137.0" y2="137.0" class="move"/><circle cx="482.5" cy="137.0" r="5" class="pt-a"/><circle cx="424.9" cy="137.0" r="5" class="pt-p"/><circle cx="451.8" cy="137.0" r="5" class="pt-c"/><circle cx="438.5" cy="137.0" r="5" class="pt-k"/><text x="620" y="191" class="tick" text-anchor="end">observed ÷ forecast median, held-out state, tier 1 (shaded: within ×2)</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 4</div>
+  <h2>The core-city effect is steady on its own, and mostly the same thing as owner share</h2>
+  <p>On its own the core-city term holds at ×2.5 to ×3.5 with any state left out. Next to owner share it shrinks to about ×2.3, its interval includes no effect, and without Oregon it nearly vanishes. Core cities are where renters are (correlation with owner share -0.68). The two terms measure much the same urban-versus-suburban difference; types are simpler to explain and need only a metro map and a housing count.</p>
+  <div class="legend"><span><i class="dot f"></i>A + types</span><span><i class="dot c"></i>A′ + types</span></div>
+  <svg viewBox="0 0 640 292" class="chart" role="img" aria-label="core city term by fit"><line x1="170.0" x2="170.0" y1="10" y2="262" class="grid"/><text x="170.0" y="278" class="tick" text-anchor="middle">-1.0</text><line x1="232.5" x2="232.5" y1="10" y2="262" class="grid"/><text x="232.5" y="278" class="tick" text-anchor="middle">-0.5</text><line x1="295.0" x2="295.0" y1="10" y2="262" class="zero"/><text x="295.0" y="278" class="tick" text-anchor="middle">+0.0</text><line x1="357.5" x2="357.5" y1="10" y2="262" class="grid"/><text x="357.5" y="278" class="tick" text-anchor="middle">+0.5</text><line x1="420.0" x2="420.0" y1="10" y2="262" class="grid"/><text x="420.0" y="278" class="tick" text-anchor="middle">+1.0</text><line x1="482.5" x2="482.5" y1="10" y2="262" class="grid"/><text x="482.5" y="278" class="tick" text-anchor="middle">+1.5</text><line x1="545.0" x2="545.0" y1="10" y2="262" class="grid"/><text x="545.0" y="278" class="tick" text-anchor="middle">+2.0</text><line x1="607.5" x2="607.5" y1="10" y2="262" class="grid"/><text x="607.5" y="278" class="tick" text-anchor="middle">+2.5</text><text x="160" y="38.0" class="lab" text-anchor="end">All places</text><line x1="363.2" x2="532.3" y1="26.0" y2="26.0" class="ci ca"/><circle cx="444.9" cy="26.0" r="4.5" class="pt ca"/><line x1="285.4" x2="518.8" y1="46.0" y2="46.0" class="ci cp"/><circle cx="401.4" cy="46.0" r="4.5" class="pt cp"/><text x="160" y="78.0" class="lab" text-anchor="end">Without MN</text><line x1="335.7" x2="520.2" y1="66.0" y2="66.0" class="ci ca"/><circle cx="429.0" cy="66.0" r="4.5" class="pt ca"/><line x1="304.6" x2="582.0" y1="86.0" y2="86.0" class="ci cp"/><circle cx="451.4" cy="86.0" r="4.5" class="pt cp"/><text x="160" y="118.0" class="lab" text-anchor="end">Without NC</text><line x1="329.3" x2="566.1" y1="106.0" y2="106.0" class="ci ca"/><circle cx="440.0" cy="106.0" r="4.5" class="pt ca"/><line x1="253.0" x2="574.0" y1="126.0" y2="126.0" class="ci cp"/><circle cx="410.3" cy="126.0" r="4.5" class="pt cp"/><text x="160" y="158.0" class="lab" text-anchor="end">Without OH</text><line x1="368.9" x2="541.9" y1="146.0" y2="146.0" class="ci ca"/><circle cx="452.2" cy="146.0" r="4.5" class="pt ca"/><line x1="285.5" x2="521.6" y1="166.0" y2="166.0" class="ci cp"/><circle cx="402.7" cy="166.0" r="4.5" class="pt cp"/><text x="160" y="198.0" class="lab" text-anchor="end">Without TX</text><line x1="356.9" x2="545.1" y1="186.0" y2="186.0" class="ci ca"/><circle cx="446.7" cy="186.0" r="4.5" class="pt ca"/><line x1="282.7" x2="528.1" y1="206.0" y2="206.0" class="ci cp"/><circle cx="403.8" cy="206.0" r="4.5" class="pt cp"/><text x="160" y="238.0" class="lab" text-anchor="end">Without OR</text><line x1="314.2" x2="516.1" y1="226.0" y2="226.0" class="ci ca"/><circle cx="409.1" cy="226.0" r="4.5" class="pt ca"/><line x1="202.6" x2="485.6" y1="246.0" y2="246.0" class="ci cp"/><circle cx="341.4" cy="246.0" r="4.5" class="pt cp"/><text x="620" y="291" class="tick" text-anchor="end">core-city term, log multiple of a suburb (90% interval)</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 5</div>
+  <h2>Types don't help forecast the places the model has already seen</h2>
+  <p>On D-085's test D (fit 2016–20, forecast 2021–25), types change nothing that matters: Minnesota is still forecast 8× too high, mostly Minneapolis's 2021 reform step. Carrying each place's own rate forward still scores best. Types answer "what will a new state look like", not "what will this city do next".</p>
+</section>
+
+<section>
+  <div class="num-tag">Data-tier table</div>
+  <h2>Observed ÷ forecast median, by held-out state and tier</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Held out</th><th>Tier</th><th>A</th><th>A + types</th><th>A′</th><th>A′ + types</th></tr></thead>
+    <tbody><tr><td>Minnesota</td><td>0</td><td class='num '>0.36</td><td class='num useful'>0.75</td><td class='num useful'>0.60</td><td class='num useful'>0.71</td></tr><tr><td></td><td>1</td><td class='num '>0.30</td><td class='num useful'>0.50</td><td class='num '>0.48</td><td class='num '>0.45</td></tr><tr><td></td><td>2</td><td class='num '>0.37</td><td class='num useful'>0.63</td><td class='num useful'>0.59</td><td class='num useful'>0.53</td></tr><tr><td>North Carolina</td><td>0</td><td class='num '>7.50</td><td class='num '>4.75</td><td class='num '>5.15</td><td class='num '>4.67</td></tr><tr><td></td><td>1</td><td class='num '>2.68</td><td class='num useful'>1.57</td><td class='num useful'>1.81</td><td class='num useful'>1.53</td></tr><tr><td></td><td>2</td><td class='num '>2.91</td><td class='num useful'>1.89</td><td class='num '>2.03</td><td class='num useful'>1.97</td></tr><tr><td>Texas</td><td>0</td><td class='num '>14.55</td><td class='num '>5.35</td><td class='num '>4.60</td><td class='num '>4.28</td></tr><tr><td></td><td>1</td><td class='num '>5.87</td><td class='num '>2.42</td><td class='num '>2.38</td><td class='num '>2.08</td></tr><tr><td></td><td>2</td><td class='num '>5.87</td><td class='num '>2.75</td><td class='num '>2.49</td><td class='num '>2.46</td></tr><tr><td>Oregon</td><td>0</td><td class='num '>3.63</td><td class='num useful'>1.95</td><td class='num '>2.61</td><td class='num '>2.23</td></tr><tr><td></td><td>1</td><td class='num '>3.63</td><td class='num useful'>1.95</td><td class='num '>2.61</td><td class='num '>2.26</td></tr><tr><td></td><td>2</td><td class='num '>2.70</td><td class='num useful'>1.60</td><td class='num '>2.20</td><td class='num useful'>1.55</td></tr><tr><td><b>Useful states</b></td><td>0 / 1 / 2</td><td class='num'>0 / 0 / 0</td><td class='num'>2 / 3 / 3</td><td class='num'>1 / 1 / 1</td><td class='num'>1 / 1 / 3</td></tr></tbody>
+  </table></div>
+  <p class="note">Green: inside P10–P90 and within ×2. Ohio has no scorable place outside its tier-2 city, so four states are scored. A four-type sensitivity (suburbs split by pre-1960 housing) does worse: 2 useful at tier 1.</p>
+</section>
+
+<footer>
+  <div>The base forms match D-084 to the digit (Form A θ 0.7563 per 1,000, log-lik -1,347.71; A′ β_o -0.546). Types: core city is the largest place in its metro area by 2011–15 housing units, or any place with a third of its units; other places in a metro are suburbs; the rest towns (none in the fit set). 20,000 draws, seed 20261111.</div>
+  <div>Sources: <code>reports/adu-place-types/</code>, <code>src/lotline/model/adu_types.py</code>, on branch <code>ws/adu-segments</code>. Method: D-088 in <code>docs/analysis_plan.md</code>. Run offline from cached data. St. Paul stays out. Nothing was unblinded and nothing was written to config.</div>
+</footer>
+</main>
