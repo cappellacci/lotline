@@ -1,4 +1,4 @@
-### LB-NNN · 2026-11-11 · CODE: the shared permit-to-theme classifier (D-082 §6), code and synthetic tests only
+### LB-NNN · 2026-11-11 · CODE: the shared permit-to-theme classifier (D-092 §6), code and synthetic tests only
 - **Question:** how can every processed permit get exactly one of ADU, new 2–4 unit building, conversion or
   other, so that the ADU fit and the missing-middle counts never count the same permit twice? The cases are
   Austin's post-HOME two-family ADUs (causal diagram §6.6) and Rochester's code 103 house + attached ADU
@@ -33,5 +33,5 @@
   classifier's ADU test and 2–4 types match `scenarios.adu._is_adu` and `estimate_mm.MM_TYPES`.
 - **Open / next:**
   - WS-CORE wires #404.
-  - The before/after count by source × year waits for Ben's go-ahead (D-082 §9).
+  - The before/after count by source × year waits for Ben's go-ahead (D-092 §9).
   - Austin rule hand check.

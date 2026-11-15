@@ -1,4 +1,4 @@
-"""The shared permit-to-theme classifier (D-082 §6) on hand-built rows shaped like `schemas.Permits`.
+"""The shared permit-to-theme classifier (D-092 §6) on hand-built rows shaped like `schemas.Permits`.
 
 Each case states the theme a careful reader would give the permit and why; nothing here is real data.
 """
