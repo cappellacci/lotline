@@ -6680,3 +6680,19 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Outputs:** `reports/adu-reform-ratio/` (events, per-event forecasts and scores, b profile, README, run log)
   and a results page published as an Artifact. Code: `scripts/dev/adu_reform_ratio.py`, with tests for the
   forecast and the b profile against hand-worked examples. St. Paul stays out; nothing is unblinded.
+- **Result, 2026-11-15** (`reports/adu-reform-ratio/`, page https://claude.ai/artifact/JggHUyaPLYuJxwMFBvMk6j):
+  - **Reading: not shown either way.** M's summed log-score gain over P is +4.2 (2 paired SE 7.9); b̂ 1.3, 90%
+    interval 0.55 to 2.05 (contains 1, excludes 0). M′ (refitted shares, own place left out): +2.4 (2 SE 6.7), b̂
+    1.3 (0.55 to 2.2).
+  - **What carries it:** Raleigh 2021 (2.1 → 201 ADUs; observed rate ×29, engine ×9.4, refit ×4.7); Greensboro
+    2024 ×2.75 against ×2.83. Minneapolis 2021 fell (×0.45, engine ×0.97). Five Minnesota suburbs built none
+    before or after.
+  - **Other measures:** inside P10–P90, P 9 of 10, M 10, M′ 8; observed within ×2 of the median, P 2, M 3, M′ 3. Of
+    the 6 events whose engine ratio is beyond ×1.5 either way, 2 moved the same way (Raleigh, Greensboro); the 4
+    others are places with 0 to 4 ADUs.
+  - **Sensitivity without drift:** "contradicted" (b 1.05 to 1.6), but the paired SE of the gain is 172,
+    dominated by Raleigh and Minneapolis, so it is not read.
+  - **Correction to the count above:** the dose rises while Form A's share falls in **6** events, not 7
+    (Burnsville's dose falls). The clearest cause is zoned coverage: Forest Lake's new rule is coded as covering
+    about 6% of the city and Cottage Grove's 75%, while the rules before count as covering all of it.
+  - Nothing goes to config or the engine. D-093's "not checked within ×2" stands.
