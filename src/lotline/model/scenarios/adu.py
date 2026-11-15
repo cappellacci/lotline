@@ -151,6 +151,50 @@ def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) ->
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
 
 
+GRID_FILE = "adu_partial_share_grid.csv"
+SHARE_DRAWS = (
+    "adu_partial_share_draws"  # 0 fixed; 1 the grid's weights; 2 the fold maxima; 3 all at the set m_x
+)
+CORE_SHIFT = "adu_types_core_shift"
+
+
+def partial_share_grid() -> pd.DataFrame:
+    """D-097: config/params/adu_partial_share_grid.csv, A + place types refitted at each m_x on the 0.1 grid
+    (m_x, θ̂, α̂, β̂_core, log-likelihood, weight, weight_fold_max)."""
+    return pd.read_csv(CONFIG_DIR / "params" / GRID_FILE)
+
+
+def apply_partial_share_grid(
+    sets: list[dict[str, float]], grid: pd.DataFrame, mode: int, seed: int, central_mx: float
+) -> list[dict[str, float]]:
+    """D-097: one m_x per draw, with θ, α and the core term moved to that grid row's refit.
+
+    The draw's own lognormal spread and judgment shifts stay: θ_d × θ̂(m) ÷ θ̂(m̂), α_d × α̂(m) ÷ α̂(m̂), and the
+    core term shifted by β̂(m) − β̂(m̂) (`adu_types_core_shift`), m̂ the configured central m_x. `mode` 1 draws m
+    from `weight`, 2 from `weight_fold_max`, 3 puts every draw at the set's own `adu_partial_rule_share`.
+    Own stream: (seed, 97).
+
+    By hand: grid rows m 0.4 (θ 2, α 1, β 1) and 0.7 (θ 1, α 2, β 2), central 0.7, mode 3 with a set at
+    m_x 0.4 and θ 3: θ 3 × 2 / 1 = 6, α × 0.5, core shift −1."""
+    g = grid.set_index("m_x")
+    c = g.loc[round(central_mx, 1)]
+    if mode == 3:
+        ms = np.array([round(p["adu_partial_rule_share"], 1) for p in sets])
+    else:
+        w = g["weight" if mode == 1 else "weight_fold_max"].to_numpy(dtype=float)
+        ms = np.random.default_rng([seed, 97]).choice(g.index.to_numpy(), size=len(sets), p=w / w.sum())
+    out = []
+    for p, m in zip(sets, ms, strict=True):
+        r = g.loc[m]
+        q = dict(p)
+        q["adu_partial_rule_share"] = float(m)
+        q["adu_mature_hazard_ref"] = p["adu_mature_hazard_ref"] * r["theta"] / c["theta"]
+        q["adu_place_effect_variance"] = p["adu_place_effect_variance"] * r["alpha"] / c["alpha"]
+        q[CORE_SHIFT] = float(r["core"] - c["core"])
+        out.append(q)
+    return out
+
+
 def anchor_terms() -> dict[str, float]:
     """config/params/adu_anchor.yaml: the anchor's observed-information terms and judgment slopes (D-030),
     for the Form A + place types fit (D-088; `scripts/dev/adu_types_slopes.py`)."""
@@ -1016,6 +1060,12 @@ def run(
     n = int(draws or central["adu_simulation_draws"])
     seed = int(central["adu_simulation_seed"])
     sets = [p | dict(params or {}) for p in draw_params(n, seed, anchor)]
+    share_mode = int(central.get(SHARE_DRAWS, 0))
+    if share_mode:  # D-097: m_x drawn, θ, α and the core term refitted at it
+        sets = apply_partial_share_grid(
+            sets, partial_share_grid(), share_mode, seed, specs()["adu_partial_rule_share"].value
+        )
+    core_shift = np.array([p.get(CORE_SHIFT, 0.0) for p in sets])
     rule_rng = np.random.default_rng(seed + 2)
     drawn = np.zeros((n, len(places)))
     lead, horizon, first = baseline.window(origin)
@@ -1027,6 +1077,7 @@ def run(
         places["place_type"] if "place_type" in places else pd.Series(None, index=places.index, dtype=object)
     )
     log_type = type_log_multipliers(ptype, st, n, seed + 7, types_spec)  # D-088, D-089: own stream
+    log_type = log_type + core_shift[:, None] * (ptype == CORE).to_numpy()[None, :]  # D-097 (0 when off)
     var_u = np.array([p["adu_place_effect_variance"] for p in sets])[:, None]
     gamma = np.random.default_rng(seed + 3).standard_gamma(
         1 / np.maximum(var_u, 1e-12), size=(n, len(places))
