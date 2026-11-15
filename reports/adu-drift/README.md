@@ -33,7 +33,7 @@
 | Places inside their own P10–P90 (honest ≈ 80%) | 58% | **81%** | 58% | **77%** |
 | States whose total is inside P10–P90 (of 4) | 0 | **4** | 1 | 2 |
 | Useful states (inside and within ×2; bar 3) | 0 | **3** | 1 | 2 |
-| Summed per-place log score | −1,111 | −683 | −1,117 | −675 |
+| Summed per-place log score (higher is better) | −823 | −394 | −829 | −387 |
 | Gain with drift, against the 2-SE bar | | +429 vs 551 | | +442 vs 571 |
 | Places better / worse with drift | | 17 / 22 | | 20 / 20 |
 | Gain without Portland | | +158 | | +163 |
