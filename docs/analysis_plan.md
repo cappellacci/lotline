@@ -5725,3 +5725,14 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - **What it will not do:** fit or change the model, write to config, download anything, or touch the
     holdouts. Franklin County's file may overlap Columbus's; both are reported by source.
   - **The code** (`lotline.model.project_size`) comes with 7 hand-worked tests.
+- **Decision 2026-11-15: C4 to config.** Ben chose C4 ("C4 (θ 1.04)") after runs 9–13: §5's rule picks it (it
+  beats M by 5 paired SE held out and passes the same §7 tests), and its five-year rate (0.24 per 1,000 a year)
+  is within about 10% of M's (0.27).
+  - `mm_hazard.yaml`: θ 1.04 per 1,000 (0.13–19.4), ramp half-way at 4.0 years (1.0–6.0), α at the search's
+    floor (interval to 1.92), and a new key, `mm_year_spread_phi` 13.63 (12.85–14.48, run 9).
+  - The scenario (`scenarios/mm.py`) draws each place-year's added buildings as Poisson(mean × g), g ~
+    Gamma(mean 1, variance 1/φ), as the fit does; φ is held at its value. Hand-worked tests check the mean and
+    the negative binomial variance.
+  - Not changed: V5 Charlotte (`validation/v5.py`, frozen and scored) and V9 Oregon (`validation/v9.py`, frozen)
+    read these keys but keep their Poisson draws; a rerun at today's config would not reproduce their frozen
+    numbers, which reproduce at their freeze commits.

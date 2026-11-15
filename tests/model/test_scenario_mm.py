@@ -22,8 +22,8 @@ def _place(geoid="1", eligible=1000.0, dose=0.25, band=2, f_ratio=1.2, house_sha
 
 def test_log_sd_by_hand():
     s = load_params("mm_hazard")["mm_mature_hazard_ref"]
-    # (ln 0.001006 − ln 0.0000325) / 3.2897 = 1.0434
-    assert mm.log_sd(s) == pytest.approx(1.0434, abs=1e-4)
+    # D-092 C4: (ln 0.01939 − ln 0.0001316) / 3.2897 = 4.9927 / 3.2897 = 1.5177
+    assert mm.log_sd(s) == pytest.approx(1.5177, abs=1e-4)
 
 
 def test_year_shape_by_hand():
@@ -148,3 +148,22 @@ def test_dose_pool_holds_origin_doses_by_hand():
     pools = mm.dose_pools(places, min_coded=5)
     assert pools[2].mean() == pytest.approx(0.2)
     assert mm.dose_pools(places.drop(columns="pool_dose"), min_coded=5)[2].mean() == pytest.approx(0.35)
+
+
+def test_year_spread_keeps_the_mean_and_adds_nb_variance():
+    # one place, dose 0, θ 0.001 × E 1000 × F 1 = 1 a year at maturity; half 0.5 -> year 5 mean 0.9952.
+    # φ 2: variance = mean + mean² / φ = 0.9952 + 0.9952² / 2 = 1.4904 (Poisson: 0.9952)
+    p = pd.DataFrame([_place(dose=0.0, f_ratio=1.0)])
+    res = mm.simulate(p, _draws(n=200_000), HALF, SLOPE, seed=3, phi=2.0)
+    y5 = res.buildings[:, 4]
+    assert y5.mean() == pytest.approx(0.9952, rel=0.01)
+    assert y5.var() == pytest.approx(1.4904, rel=0.03)
+
+
+def test_no_phi_is_poisson_and_unchanged():
+    p = pd.DataFrame([_place()])
+    a = mm.simulate(p, _draws(n=5_000), HALF, SLOPE, seed=7)
+    b = mm.simulate(p, _draws(n=5_000), HALF, SLOPE, seed=7, phi=None)
+    assert np.array_equal(a.buildings, b.buildings)
+    y = a.buildings[:, 4]
+    assert y.var() == pytest.approx(y.mean(), rel=0.08)

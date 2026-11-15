@@ -1,9 +1,9 @@
 """Handbook missing-middle scenario: 2-6 homes in three stories allowed by right on every single-family-zoned
 parcel, setbacks and coverage not binding (Handbook benchmark; analysis plan D-063, approved 2026-11-08).
 
-For each place i and scenario year t = 1 … 5, with the fitted D-038 model (`mm_hazard.yaml`, D-055 values):
+For each place i and scenario year t = 1 … 5, with the fitted model (`mm_hazard.yaml`, D-092's C4 values):
 
-    added buildings_it ~ Poisson(θ × ramp(t − 0.5; half) × u_i × E_i × (1 − d_i) × F(PCR_i) / F(1))
+    added buildings_it ~ Poisson(θ × ramp(t − 0.5; half) × u_i × E_i × (1 − d_i) × F(PCR_i) / F(1) × g_it)
     teardowns_it       ~ Binomial(added buildings_it, s × house share_i)
     added homes_it     = added buildings_it × homes per building − teardowns_it
 
@@ -11,6 +11,9 @@ For each place i and scenario year t = 1 … 5, with the fitted D-038 model (`mm
   fitted value; D-062 showed that θ's interval with the ramp held already carries the five-year range.
 - **u_i:** the place's multiplier, Gamma(mean 1, variance α), from a stream keyed by (seed, geoid), as in the
   backtests (`calibrate_mm.predict_places`).
+- **g_it:** the year's lumpiness, Gamma(mean 1, variance 1/φ), one per place, year and draw, so each year's
+  count is negative binomial (variance mean + mean²/φ) as in D-092's fit (`mm_year_spread_phi`; builders put
+  up 2-4 unit buildings in clusters, run 13). φ is held at its value; with no φ the count is Poisson.
 - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the roll nearest the origin, made
   non-overlapping as the ADU scenario does (D-020).
 - **d_i:** the dose of the rules in force on `baseline.rules_as_of` (31 December of the window's first
@@ -121,14 +124,15 @@ def simulate(
     seed: int,
     min_coded: int = 5,
     horizon: int = HORIZON,
+    phi: float | None = None,
 ) -> Result:
     """Joint draws of the added buildings, homes and teardowns (module docstring).
 
     `places`: geoid, eligible, dose (NaN = no coded rule), band, f_ratio, house_share; optional data_tier
     (default 3) and f_share (F(PCR), for the funnel's pencil-out stage; default f_ratio). `draws`: one row per
     draw (theta, alpha, units, teardown_scale; `draw_params`). Every place shares a draw's parameters; its u,
-    its drawn dose (if uncoded) and its counts come from its own keyed stream, so a place draws alike
-    whichever places it is run with.
+    its drawn dose (if uncoded), its yearly lumpiness g (if `phi` is given) and its counts come from its own
+    keyed stream, so a place draws alike whichever places it is run with.
     """
     n = len(draws)
     shape = year_shape(half, slope, horizon)
@@ -149,6 +153,8 @@ def simulate(
             d = np.full(n, float(p.dose))
         gap = np.clip(1.0 - d, 0.0, 1.0)
         mu = (th * u * float(p.eligible) * gap * float(p.f_ratio))[:, None] * shape[None, :]
+        if phi is not None:
+            mu = mu * r.gamma(phi, 1.0 / phi, size=mu.shape)
         b = r.poisson(mu).astype(float)
         share = np.clip(scale * float(p.house_share), 0.0, 1.0)
         t = r.binomial(b.astype(np.int64), share[:, None]).astype(float)
@@ -308,6 +314,6 @@ def run(state: str, store, origin: int = 2025, n: int | None = None, seed: int |
     places = places_from_store(state, store, origin)
     res = simulate(
         places, draw_params(n, seed, sp), sp["mm_ramp_half_years"].value, sp["mm_ramp_slope_years"].value,
-        seed, int(sp["mm_rule_min_coded"].value),
+        seed, int(sp["mm_rule_min_coded"].value), phi=sp["mm_year_spread_phi"].value,
     )  # fmt: skip
     return places, res, summarize(res)

@@ -1,0 +1,227 @@
+<title>Missing-middle config C4</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.rng .old { stroke: var(--ink-faint); stroke-width: 6; stroke-linecap: round; }
+.rng .new { stroke: var(--scenario-missing-middle); stroke-width: 6; stroke-linecap: round; }
+.rng .med { fill: var(--ink); }
+.key { display: flex; gap: 1.2rem; font-size: .85rem; color: var(--ink-muted); flex-wrap: wrap; }
+.key i { display: inline-block; width: 18px; height: 6px; border-radius: 3px; margin-right: .35rem; vertical-align: 2px; }
+.key .old { background: var(--ink-faint); } .key .new { background: var(--scenario-missing-middle); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · C4 to config · 15 Nov 2026</div>
+  <h1>The missing-middle effect is now about 2.5× larger, with honest ranges</h1>
+  <p class="lede">Ben chose D-092's C4 fit for the tool. The mature rate θ is 1.04 new 2–4 unit buildings per 1,000 eligible lots a year (0.13–19.4); the reform reaches half of that after 4 years; each year is lumpy, because builders put up these buildings in clusters. In the Handbook scenario, statewide five-year net homes roughly double and a half at the median, and the upper ends grow about fourfold.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>2.4–2.7×</b><span>median five-year net homes, C4 against D-055, by state</span></div>
+  <div class="tile"><b>12,066</b><span>Texas median (P10–P90 1,774–86,570)</span></div>
+  <div class="tile"><b>57%</b><span>of the five-year total lands in year 5: the effect is still growing</span></div>
+  <div class="tile"><b>0.78</b><span>C4's place coverage in the §7 tests (bar 0.60–0.95); D-055's ranges were too narrow</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Every state moves the same way</h2>
+  <div class="scroll"><svg viewBox="0 0 680 276" class="chart rng" role="img" aria-label="Five-year net homes by state, old and new values"><line x1="50.0" x2="50.0" y1="10" y2="250" class="grid"/><text x="50.0" y="266" class="tick" text-anchor="middle">10</text><line x1="202.5" x2="202.5" y1="10" y2="250" class="grid"/><text x="202.5" y="266" class="tick" text-anchor="middle">100</text><line x1="355.0" x2="355.0" y1="10" y2="250" class="grid"/><text x="355.0" y="266" class="tick" text-anchor="middle">1,000</text><line x1="507.5" x2="507.5" y1="10" y2="250" class="grid"/><text x="507.5" y="266" class="tick" text-anchor="middle">10,000</text><line x1="660.0" x2="660.0" y1="10" y2="250" class="grid"/><text x="660.0" y="266" class="tick" text-anchor="middle">100,000</text><text x="42" y="34" class="lab" text-anchor="end">TX</text><line x1="364.4" x2="555.1" y1="24" y2="24" class="old"><title>TX D-055: 1,152 to 20,518, median 4,747</title></line><circle cx="458.2" cy="24" r="3.5" class="med"/><line x1="393.0" x2="650.4" y1="38" y2="38" class="new"><title>TX C4: 1,774 to 86,570, median 12,066</title></line><circle cx="519.9" cy="38" r="3.5" class="med"/><text x="42" y="80" class="lab" text-anchor="end">NC</text><line x1="275.5" x2="465.3" y1="70" y2="70" class="old"><title>NC D-055: 301 to 5,286, median 1,204</title></line><circle cx="367.3" cy="70" r="3.5" class="med"/><line x1="303.7" x2="559.4" y1="84" y2="84" class="new"><title>NC C4: 461 to 21,906, median 3,078</title></line><circle cx="429.5" cy="84" r="3.5" class="med"/><text x="42" y="126" class="lab" text-anchor="end">OH</text><line x1="267.3" x2="451.2" y1="116" y2="116" class="old"><title>OH D-055: 266 to 4,271, median 1,071</title></line><circle cx="359.5" cy="116" r="3.5" class="med"/><line x1="292.6" x2="549.2" y1="130" y2="130" class="new"><title>OH C4: 390 to 18,769, median 2,621</title></line><circle cx="418.8" cy="130" r="3.5" class="med"/><text x="42" y="172" class="lab" text-anchor="end">MN</text><line x1="239.9" x2="424.9" y1="162" y2="162" class="old"><title>MN D-055: 176 to 2,875, median 696</title></line><circle cx="331.0" cy="162" r="3.5" class="med"/><line x1="264.5" x2="521.5" y1="176" y2="176" class="new"><title>MN C4: 255 to 12,353, median 1,758</title></line><circle cx="392.4" cy="176" r="3.5" class="med"/><text x="42" y="218" class="lab" text-anchor="end">OR</text><line x1="95.9" x2="300.9" y1="208" y2="208" class="old"><title>OR D-055: 20 to 442, median 96</title></line><circle cx="199.8" cy="208" r="3.5" class="med"/><line x1="136.7" x2="395.9" y1="222" y2="222" class="new"><title>OR C4: 37 to 1,853, median 256</title></line><circle cx="264.8" cy="222" r="3.5" class="med"/></svg></div>
+  <div class="key"><span><i class="old"></i>D-055 (before)</span><span><i class="new"></i>C4 (now)</span><span>dot: median; bar: P10–P90; log scale</span></div>
+  <div class="scroll"><table><thead><tr><th>State</th><th>D-055 median</th><th>D-055 P10–P90</th><th>C4 median</th><th>C4 P10–P90</th><th>Median ratio</th></tr></thead><tbody><tr><td>TX</td><td>4,747</td><td>1,152–20,518</td><td><b>12,066</b></td><td>1,774–86,570</td><td>2.5×</td></tr><tr><td>NC</td><td>1,204</td><td>301–5,286</td><td><b>3,078</b></td><td>461–21,906</td><td>2.6×</td></tr><tr><td>OH</td><td>1,071</td><td>266–4,271</td><td><b>2,621</b></td><td>390–18,769</td><td>2.4×</td></tr><tr><td>MN</td><td>696</td><td>176–2,875</td><td><b>1,758</b></td><td>255–12,353</td><td>2.5×</td></tr><tr><td>OR</td><td>96</td><td>20–442</td><td><b>256</b></td><td>37–1,853</td><td>2.7×</td></tr></tbody></table></div>
+  <p class="note">Five-year added 2–4 unit homes net of houses torn down, origin 2025, same places, seed and draws. Oregon is small because its places already allow most of the Handbook rule.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>Quote medians, not means</h2>
+  <p>θ's range spans a factor of about 150, so a few draws with a large θ pull the mean far above the median (Texas: mean 39,580, median 12,066). The tool's headlines should give the median and the P10–P90 range. And because the reform reaches half its pace only after 4 years, a five-year window catches the start of the effect, not its full size.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>What else this touches</h2>
+  <p>St. Paul's V5 forecast is not frozen yet and reads these values, so it will use C4 if frozen after this merges. V5 Charlotte and V9 Oregon are frozen; their code is unchanged and reproduces at their freeze commits. The app's missing-middle numbers change when the results are regenerated.</p>
+</section>
+
+<footer>
+  <div>Run: <code>mm_config_compare.py</code> (D-055 against C4, Handbook scenario, origin 2025). No permits read; nothing unblinded.</div>
+  <div>Sources: <code>reports/mm-d092/config-c4/</code> on branch <code>ws/mm-baseline-spread</code> (PR #436).</div>
+</footer>
+</main>

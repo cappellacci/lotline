@@ -157,3 +157,13 @@
     project model is a next step). README and page updated (same link).
   - **Aside for the data owner:** Minneapolis's `mpls_ccs_permits` types about 950 permits as 3–4 unit with 0
     new homes; worth a look in the adapter.
+- **C4 to config:** Ben chose "C4 (θ 1.04)".
+  - `config/params/mm_hazard.yaml`: θ 1.04 per 1,000 (0.13–19.4), half-way point 4.0 years (1.0–6.0), α at
+    the search's floor, new `mm_year_spread_phi` 13.63 (run 9). Parameter table regenerated.
+  - `scenarios/mm.py` draws each place-year's added buildings with the fit's lumpiness (Poisson × Gamma, mean 1,
+    variance 1/φ); 2 hand-worked tests (mean kept, NB variance; no φ unchanged). V5 and V9 code left as frozen.
+  - **Effect on the scenario** (`reports/mm-d092/config-c4/`, `scripts/dev/mm_config_compare.py`): statewide
+    median net homes over five years rise about 2.5× (MN 696 → 1,758; TX 4,747 → 12,066), P90s about 4×;
+    year 5 carries 57% of the total. Page: https://claude.ai/artifact/1BzpK5S9isRk9eptDaBKDR
+  - Decision recorded in `docs/analysis_plan.md`; proposed for HANDOFF in the PR description.
+  - **How it was checked:** the 57 config-dependent tests (scenario, V5, V9, results) and the full CI set.
