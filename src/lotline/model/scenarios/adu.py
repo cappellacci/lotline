@@ -144,21 +144,10 @@ def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) ->
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
 
 
-# adu_anchor.yaml's observed-information terms, replaced by the Form A + place types fit's (D-088)
-INFO_FROM_TYPES = {
-    "adu_anchor_info_log_se_theta": "adu_types_info_log_se_theta",
-    "adu_anchor_info_log_se_alpha": "adu_types_info_log_se_alpha",
-    "adu_anchor_info_corr": "adu_types_info_corr",
-}
-
-
 def anchor_terms() -> dict[str, float]:
-    """The anchor's observed-information terms and judgment slopes (D-030): the slopes from
-    config/params/adu_anchor.yaml, the information terms from the fit the anchor now comes from
-    (adu_place_types.yaml, D-088)."""
-    out = {k: s.value for k, s in load_params("adu_anchor").items()}
-    types = load_params(TYPE_FILE)
-    return out | {k: types[v].value for k, v in INFO_FROM_TYPES.items()}
+    """config/params/adu_anchor.yaml: the anchor's observed-information terms and judgment slopes (D-030),
+    for the Form A + place types fit (D-088; `scripts/dev/adu_types_slopes.py`)."""
+    return {k: s.value for k, s in load_params("adu_anchor").items()}
 
 
 # ---------------------------------------------------------------------------------------------------------

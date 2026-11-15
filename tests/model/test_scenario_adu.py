@@ -807,9 +807,8 @@ def test_core_city_hazard_is_the_suburb_hazard_times_the_multiplier_by_hand():
 
 
 def test_anchor_draws_read_the_type_fits_information_terms():
-    """D-088: the anchor's observed-information terms come from adu_place_types.yaml; the slopes still from
-    adu_anchor.yaml."""
+    """D-088: adu_anchor.yaml holds the Form A + place types fit's observed-information terms and slopes."""
     a = adu.anchor_terms()
-    assert a["adu_anchor_info_corr"] == pytest.approx(0.115)
-    assert a["adu_anchor_info_log_se_theta"] == pytest.approx(0.191)
+    assert a["adu_anchor_info_corr"] == pytest.approx(0.115, abs=5e-4)
+    assert a["adu_anchor_info_log_se_theta"] == pytest.approx(0.191, abs=5e-4)
     assert any(k.startswith("anchor_slope_theta__") for k in a)

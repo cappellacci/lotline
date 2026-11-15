@@ -6046,3 +6046,14 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - With m_x held at 1.0, the types alone give MN 412, NC 215, OH 349, TX 3,744 and OR 11.
     - So the type term and the new anchor make most of the rise in OH and TX. The partial-rule share makes
       most of it in MN and NC.
+- **Anchor draw terms, 2026-11-14.** Ben asked for the slopes to be recomputed for this fit
+  ("Recompute slopes").
+  - **How:** `scripts/dev/adu_types_slopes.py` rebuilds D-088's fit places with each judgment parameter at
+    central ± 10% of its range, then refits θ, α and the core term at m_o 1.0 and m_x 0.4.
+    `config/params/adu_anchor.yaml` is regenerated. Its observed-information terms are back in that file, so
+    `adu_place_types.yaml` no longer holds them.
+  - **Result:**
+    - θ slopes are within about 25% of D-053's, and the α slopes are about half.
+    - The core term's slopes are negligible against its SE, so they aren't drawn.
+  - **Statewide effect:** additional homes move by at most 3.4% at P50 and 5.7% at P90
+    (`reports/adu-types-slopes/`, page https://claude.ai/artifact/FiiNrCDR2gxt3q8FBjtRnZ). This closes the approximation the engine note listed.

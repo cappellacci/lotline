@@ -5,8 +5,8 @@
 # Read by model/scenarios/adu.py: each place carries a type (core city, suburb or town, from national data,
 # adu_types.jurisdiction_types). A core city's hazard is multiplied by exp(β_core), β_core drawn per draw; a
 # town's by exp(s z), z one standard normal per draw and state; a suburb's by 1. The rest of Form A + P (θ, α,
-# m_o, m_x) is in hazard.yaml and adu.yaml. The observed-information terms below replace adu_anchor.yaml's
-# D-048 ones in the draws; adu_anchor.yaml's judgment slopes are still D-053's (not yet recomputed for this fit).
+# m_o, m_x) is in hazard.yaml and adu.yaml; the anchor's draw terms (observed information and judgment slopes,
+# recomputed for this fit) are in adu_anchor.yaml.
 #
 # Central fit: 64 places, 395 place-years in MN, NC, OH, TX and OR (D-088 fit set; St. Paul held out), offline,
 # scripts/dev/adu_types_refit.py (reports/adu-place-types/fits.csv, variant central, fold all, form A+P).
@@ -51,27 +51,6 @@ adu_types_core_log_multiplier:
   unit: log of a core city's hazard multiplier over a suburb's (β_core)
   source: "Estimated, D-088 (run 2026-11-14): Form A + P central fit, 90% profile-likelihood interval; x3.3 (x1.7 to x6.7). D-088's rule adopted it: tier-1 log-score gain +7.2 against 2 SE of 6.1. Leave-one-state-out fits +0.91 to +1.26, every interval above 0"
   notes: "Drawn per draw as N(β̂, se), se = (high - low) / (2 x 1.645) = 0.411, shared by every core city in the draw (scenarios.adu.type_log_multipliers). Suburbs get 0. Towns get the D-089 prior below."
-
-adu_types_info_log_se_theta:
-  value: 0.191
-  low: 0.191
-  high: 0.191
-  unit: log-SE of θ (observed information at the fit, type term held at its estimate)
-  source: "D-088 central fit, refit 2026-11-14 with lotline.model.calibrate_adu.information_se on the type-scaled places"
-
-adu_types_info_log_se_alpha:
-  value: 0.239
-  low: 0.239
-  high: 0.239
-  unit: log-SE of α (observed information at the fit, type term held at its estimate)
-  source: "As adu_types_info_log_se_theta"
-
-adu_types_info_corr:
-  value: 0.115
-  low: 0.115
-  high: 0.115
-  unit: correlation of log θ and log α (observed information)
-  source: "As adu_types_info_log_se_theta"
 
 # ---- Towns (D-089) ----
 
