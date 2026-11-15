@@ -48,3 +48,23 @@
   - **Proposal for Ben:** choose a steadier baseline on the same uncoded places before refitting.
   - **Outputs:** `reports/mm-d092/run7-kappa/` (README, summary.json, places.csv, run-log.txt, results.html) and
     `scripts/dev/mm_kappa_page.py`. Page: https://claude.ai/artifact/7PUN5YyVXbsDUSsg3e6SWD
+- **Deviation (b): the baseline choice, pre-registered and coded (no run).** Ben: "Yes, pre-register them".
+  - **Pre-registration:** pushed first, in commit 5890ce71, before any scoring code.
+  - **Candidates:** four constructions × two noise forms.
+    - Constructions: C0 (3 pre-years, own growth), C1 (6 pre-years, own growth), C2 (6 pre-years, state
+      growth) and C3 (6 pre-years, no growth).
+    - Noise forms: Nw (place multiplier) and Ny (per-year negative binomial).
+  - **Code:**
+    - `calibrate_mm.nb_year_terms`, `baseline_scores` and `fit_noise`;
+    - `scripts/dev/mm_baseline_choice_d092.py`, which fits on the 2016 origin, scores on 2021, and applies the
+      2-SE preference rule and the coverage stop rule.
+  - **Tests:** 7 more, 24 in all. They cover the NB by hand and against the gamma mixture, φ recovery, and the
+    selection rule on hand-built scores.
+  - **Dry run:** 473 and 468 pseudo-forecasts, present under all four constructions. The full suite passes (2,169).
+- **CI failures Ben asked about (2026-11-15):**
+  - `ruff check .` failed on every ADU branch from 14 Nov. The cause was `scripts/dev/adu_trend_page.py:49`, low
+    in the stack. Local checks had linted only changed files.
+  - The ADU session's rebase has fixed it. Its four rebased branches now fail `params_table.py --check`; that
+    session has been told.
+  - #395, #397, #398 and #401 had failed since 11 Nov on a Cincinnati test then broken on `main`. They are now
+    merged with `main` and pushed.

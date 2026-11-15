@@ -156,3 +156,81 @@ def test_kappa_zero_draws_are_unchanged():
     u = r.gamma(2.0, 0.5, size=500)
     direct = r.poisson(a.B[None, :] + (th * u)[:, None] * a.k(2.0)[None, :])
     assert np.array_equal(before, direct)
+
+
+# ---- D-092 deviation (b): the per-year negative binomial (form Ny) and the baseline scores ----
+
+
+def test_nb_year_by_hand():
+    # y = 1, μ = 2, φ = 1 (r = 1): lnΓ(2) − lnΓ(1) + ln(1/3) + ln(2/3) = ln(2/9)
+    assert cal.nb_year_terms([1.0], [2.0], 1.0)[0] == pytest.approx(math.log(2 / 9))
+
+
+def test_nb_year_is_poisson_at_zero():
+    y, mu = np.array([0.0, 3.0]), np.array([1.5, 2.0])
+    assert np.allclose(cal.nb_year_terms(y, mu, 0.0), y * np.log(mu) - mu)
+    assert np.allclose(cal.nb_year_terms(y, mu, 1e-8), y * np.log(mu) - mu, atol=1e-6)
+
+
+def test_nb_year_matches_gamma_mixture():
+    # NB(mean μ, var μ + φμ²) is a Poisson with a Gamma(mean 1, variance φ) multiplier on that one year
+    for y, mu, phi in ((0.0, 2.0, 0.7), (5.0, 1.5, 2.0), (12.0, 9.0, 0.3)):
+        assert cal.nb_year_terms([y], [mu], phi)[0] == pytest.approx(_brute([y], [mu], phi), abs=1e-6)
+
+
+def test_baseline_scores_forms():
+    a = _place("a", y=(3, 5), B=(4.0, 4.0))
+    b = _place("b", y=(0, 9, 1), B=(2.0, 2.5, 3.0))
+    w = cal.baseline_scores([a, b], "w", 0.5)
+    assert w[0] == pytest.approx(_brute([3, 5], [4.0, 4.0], 0.5), abs=1e-6)
+    yr = cal.baseline_scores([a, b], "year", 0.5)
+    assert yr[1] == pytest.approx(float(np.sum(cal.nb_year_terms([0, 9, 1], [2.0, 2.5, 3.0], 0.5))))
+    with pytest.raises(ValueError):
+        cal.baseline_scores([a], "month", 0.5)
+
+
+def test_fit_noise_w_equals_fit_kappa():
+    rng = np.random.default_rng(3)
+    ps = [
+        _place(str(i), y=tuple(rng.poisson(10.0 * rng.gamma(2.0, 0.5), size=4)), B=(10.0,) * 4)
+        for i in range(200)
+    ]
+    assert cal.fit_noise(ps, "w").kappa == pytest.approx(cal.fit_kappa(ps).kappa, rel=1e-6)
+
+
+def test_fit_noise_year_recovers_phi():
+    rng = np.random.default_rng(6)
+    phi = 0.8
+    ys = rng.poisson(15.0 * rng.gamma(1 / phi, phi, size=(500, 5)))
+    f = cal.fit_noise([_place(str(i), y=tuple(y), B=(15.0,) * 5) for i, y in enumerate(ys)], "year")
+    assert f.low < phi < f.high
+
+
+def _choice_module():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[2] / "scripts" / "dev" / "mm_baseline_choice_d092.py"
+    spec = importlib.util.spec_from_file_location("mm_baseline_choice_d092", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_choice_rule_prefers_simpler_within_two_se():
+    import pandas as pd
+
+    m = _choice_module()
+    base = np.zeros(100)
+    alt = np.where(np.arange(100) % 2 == 0, 1.03, -0.97)  # paired differences: mean 0.03, sd ≈ 1
+    # C3-year leads by Σ 3.0 with paired SE ≈ 1 × √100 = 10: within 2 SE, so C0-w (earlier in the
+    # order) is chosen
+    scores = pd.DataFrame({"C0-w": base, "C3-year": alt})
+    table = pd.DataFrame({"candidate": ["C0-w", "C3-year"], "heldout": scores.sum().to_list()})
+    pick = m.choose(table, scores)
+    assert pick["best_score"] == "C3-year"
+    assert pick["chosen"] == "C0-w"
+    # a clear lead (Σ 503 against SE ≈ 10) wins even though C3-year is later in the order
+    scores2 = pd.DataFrame({"C0-w": base, "C3-year": alt + 5.0})
+    table2 = pd.DataFrame({"candidate": ["C0-w", "C3-year"], "heldout": scores2.sum().to_list()})
+    assert m.choose(table2, scores2)["chosen"] == "C3-year"
