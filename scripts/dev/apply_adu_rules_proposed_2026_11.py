@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E501  (one-off script: long rule notes and the docstring are kept as written when it ran)
 """Apply PR #417's proposed ADU rule rows to config/reforms/*.csv.
 
 Ben accepted the rows on 2026-11-13 ("Yes, do both"); the same script built the rows the version C test read
@@ -79,7 +80,9 @@ def override(prop: pd.DataFrame) -> pd.DataFrame:
         i = prop.index[prop["reform_id"] == rid]
         assert len(i) == 1, rid
         prop.loc[i, field] = pd.NA if value is None else value
-        prop.loc[i, "coding_notes"] = _note(prop.loc[i[0], "coding_notes"], f"[source check 2026-11-13] {field} = {value}: {why}.")
+        prop.loc[i, "coding_notes"] = _note(
+            prop.loc[i[0], "coding_notes"], f"[source check 2026-11-13] {field} = {value}: {why}."
+        )
     for rid, why in RULED:
         i = prop.index[prop["reform_id"] == rid]
         assert len(i) == 1, rid
@@ -145,7 +148,9 @@ def conform(mine: pd.DataFrame, old: pd.DataFrame, todo: pd.DataFrame) -> pd.Dat
                 raise SystemExit(f"{r['reform_id']}: no https source found")
             mine.at[i, "source_url"] = "; ".join(dict.fromkeys(u.rstrip(".") for u in urls))
             local = f" Local copy read: {src_txt}." if src_txt else ""
-            mine.at[i, "coding_notes"] = _note(r["coding_notes"], f"[config 2026-11-13] Source link from {where}.{local}")
+            mine.at[i, "coding_notes"] = _note(
+                r["coding_notes"], f"[config 2026-11-13] Source link from {where}.{local}"
+            )
         if r["coder_agreement"] == "single_coder" and pd.notna(r["coder_2"]):
             mine.at[i, "coding_notes"] = _note(mine.at[i, "coding_notes"],
                                                f"[config 2026-11-13] Second coder {r['coder_2']} reviewed; not every field agreed.")  # fmt: skip
@@ -172,8 +177,10 @@ def main() -> None:
         mine = prop[prop["state"] == st].copy()
         geoids = set(mine["jurisdiction_geoid"])
         own = (cur["theme"] == "adu") & cur.apply(
-            lambda r: r["jurisdiction_geoid"] in geoids
-            and str(r["reform_id"]).startswith(f"{st}-{r['jurisdiction_geoid']}-"),
+            lambda r, geoids=geoids, st=st: (
+                r["jurisdiction_geoid"] in geoids
+                and str(r["reform_id"]).startswith(f"{st}-{r['jurisdiction_geoid']}-")
+            ),
             axis=1,
         )
         old = cur[own]
