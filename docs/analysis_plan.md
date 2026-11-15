@@ -6624,3 +6624,59 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Nothing went to config or the engine. The fit option stays in the code, off by default.
   - **Deviation, disclosed:** τ's profile still fits one α, so the state multiplier's spread is learned as under
     A + P for every form. Test D's forecasts (`adu_trend`) and the predictive draws read each place's α by type.
+
+### D-095 · 2026-11-15 · ADUs: does the engine's reform ratio match what happened where rules changed? (method only, before any score)
+- **Status: written on Ben's request ("Test reform effect", 2026-11-15) and committed before any post-reform count
+  was compared with a forecast.** It is a check, not a model change: nothing goes to config or the engine under
+  it. Provisional number, like D-083 to D-086.
+- **Why.** Since D-093 the engine sets a place's Handbook ADU rate as its own no-reform rate × the mechanism's
+  ratio h_hb ÷ h_cur (`own_rate_paths`), and D-093 says that ratio "has not been checked within ×2 on held-out
+  data". The places whose coded rules changed inside their counted years are the only direct check.
+- **What was looked at before writing** (no post-reform count, rate or score):
+  - D-079's event finder (`joint_refit.events`) on the checked rule rows: **10 events in 3 states**: Burnsville
+    2018, Cottage Grove 2023, Forest Lake 2023, Maplewood 2024, Minneapolis 2021, Rosemount 2024 (MN); Cornelius
+    2023, Greensboro 2024, Raleigh 2021 (NC); College Station 2019 (TX). D-079's minimum of 2 fit years each side.
+  - Each event's Form A rule share before and after (weight-averaged over blank-field combinations, coverage
+    included), at the engine's config (m_o 1.0, m_x 0.4) and at the checked-row fit (m_o 1.0, m_x 0.8). The
+    ratio after ÷ before at the engine's values: 0.76, 0.57, 0.06, 0.76, 0.96, 0.57, 0.50, 2.83, 9.37, 0.74 (same
+    order). **In 7 events D-079's dose rises while Form A's share falls**: the two codings read the same
+    rule change differently (the dose grades by-right and owner occupancy only; Form A also counts the other
+    restrictions and the zoned coverage). This is reported as found; the test below scores the engine's
+    ratio as it stands.
+- **The forecasts.** For each event, the place's total count over its after years, from its before years only:
+  - **P, no effect (persistence):** rate ~ Gamma(Y_before + 0.5, E_before), E the base exposure (eligible lots ×
+    years), times drift exp(σ z), σ = `adu_drift_sigma` (1.025, D-091), one z per draw; count ~ Poisson(rate ×
+    E_after).
+  - **M, the engine's ratio:** the same, with exposure k_t = base_t × s_t, s_t the Form A rule share in year t
+    (weight-averaged over blank-field combinations) at the engine's config m_o and m_x. So the after count's
+    mean is P's × (mean share after ÷ mean share before), which is the engine's h_hb ÷ h_cur logic applied to
+    a real rule change.
+  - **M′, the refitted ratio:** as M, with m_o and m_x from the A + P fit on the checked rows **without the
+    event's place** (D-088's code), so its own counts do not set its ratio.
+  - 20,000 draws each; seed fixed in the script. Without drift (σ = 0) is a sensitivity.
+- **Measures, all reported:**
+  1. Each event's log score (log mean over draws of P(observed after total)) under P, M and M′; the summed gain
+     of M and of M′ over P with its paired SE.
+  2. A pooled exponent b: the after mean is P's × ratio^b, b = 1 the engine's ratio, b = 0 rules make no
+     difference. b̂ and its 90% profile interval from the summed log score on a grid from −2 to 3 (step
+     0.05), for the engine's ratios and for the refitted ones.
+  3. Per event: observed after rate ÷ before rate (with the + 0.5 prior), next to the model's ratio; whether
+     the observed total is inside M's P10–P90; whether observed ÷ M's median is within ×2.
+  4. Direction: among events whose model ratio is above 1.5 or below 1 ÷ 1.5, how many moved the same way.
+- **Reading rule, fixed now:**
+  - **Supported** if M's summed gain over P is above 2 paired SE and b's interval contains 1 and excludes 0.
+  - **Contradicted** if M is worse than P by more than 2 paired SE, or b's interval excludes 1.
+  - **Not shown either way** otherwise. With 10 events this is the likely outcome, and the report says so
+    rather than reading a direction into it.
+  - Whatever the reading, nothing changes in the engine without a separate entry and Ben's approval. If
+    contradicted, the follow-up options (the ratio from the dose instead, capping the ratio, or ratio 1 for
+    own-count places) go to Ben in chat.
+- **What it cannot say:**
+  - It tests rule changes that happened, mostly partial to fuller rules within cities that already allowed
+    ADUs. The Handbook change in the engine is often larger.
+  - The after windows are short (2 to 3 years for six events), so a slow start after a reform looks like no
+    effect.
+  - The before years are in the A + P fit for every other event's M′ fit; only the event's own place is left out.
+- **Outputs:** `reports/adu-reform-ratio/` (events, per-event forecasts and scores, b profile, README, run log)
+  and a results page published as an Artifact. Code: `scripts/dev/adu_reform_ratio.py`, with tests for the
+  forecast and the b profile against hand-worked examples. St. Paul stays out; nothing is unblinded.
