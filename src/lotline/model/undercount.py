@@ -1,6 +1,8 @@
 """The ADU flag undercount k by permit source (D-074 step 1, D-075 step 2, D-078).
 
-A source's counted ADU permits are multiplied by its k: k = true ADU permits / counted ADU permits, so k >= 1.
+A source's counted ADU permits are multiplied by its k: k = true ADU permits / counted ADU permits.
+For a field flag k >= 1 (roll-confirmed ADUs the flag missed). For a parser source k = precision / recall
+from its own hand check (D-081), which is below 1 when the parser's false positives outnumber its misses.
 k scales counted ADU permits only (fit inputs, the D-070 observed floor, the `historical_floor` check and
 tests A-C), never eligible lots. The table lives in `config/params/adu.yaml` (`adu_flag_undercount`) and is
 loaded by `lotline.config.load_undercount`.
@@ -47,6 +49,7 @@ class Row:
     from_prior: bool
     floor: bool
     low_recall: bool
+    fit: bool = True
 
     @property
     def fixed(self) -> bool:
@@ -109,6 +112,7 @@ def resolve(table: UndercountTable | None = None) -> list[Row]:
                 r.prior,
                 r.floor,
                 r.low_recall,
+                r.fit,
             )
         )
     return out
@@ -174,6 +178,25 @@ def scale(by_source: pd.DataFrame, factors: Factors | None, count: str = "adu") 
     idx = [factors.index(s, y) for s, y in zip(by_source["source"], by_source["issue_year"], strict=True)]
     k = np.array([1.0 if i < 0 else factors.k[i] for i in idx], dtype=float)
     return by_source.assign(counted=by_source[count], k_row=idx, **{count: by_source[count] * k})
+
+
+def out_of_fit(table: UndercountTable | None = None) -> frozenset[str]:
+    """Sources whose counts never enter the ADU fit or its tests (`fit: false`, D-081 item 4)."""
+    table = load_undercount() if table is None else table
+    return frozenset(r.source for r in table.rows if not r.fit)
+
+
+def low_recall_rows(table: UndercountTable | None = None) -> list[tuple[str, int | None, int | None]]:
+    """(source, first_year, last_year) of the low-recall rows (D-078 §3), for the with/without report."""
+    table = load_undercount() if table is None else table
+    return [(r.source, r.first_year, r.last_year) for r in table.rows if r.low_recall]
+
+
+def at_field_z(z: float, table: UndercountTable | None = None) -> Factors:
+    """Every field row at standard-normal z (one shared z, D-078 §5) and every other row at its median: the
+    D-079 undercount refits use z = ±1.645 (the field rows' 5th and 95th percentiles)."""
+    rows = resolve(table)
+    return Factors(rows, [float(r.quantile(z if r.shared else 0.0)) for r in rows])
 
 
 TABLE = "table"  # a builder's default: the table's central k (`central()`); None turns the correction off

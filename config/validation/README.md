@@ -9,3 +9,9 @@ Hand-coded inputs for validation tests, each with a source. Nothing here is an o
   - **Bend:** no official yearly count was found for 2009–2017. The city site rate-limited fetches, and the 2016
     ADU amendment record (PZ-15-0849) wasn't reached. With no rows, Bend's own-history variant equals its
     transfer prediction.
+- `adu_roll_counts.csv`: second homes gained between two parcel rolls, per jurisdiction, copied from the roll
+  comparisons already on `main` (`reports/nc/wake-roll-adu-diff.md`, `reports/oh/franklin-roll-adu-diff.json`).
+  Unlike the files above, this one **is** scored: it is the observed side of D-074 test B (the roll check),
+  run by `scripts/dev/adu_joint_refit.py`. `sets_k` marks the city whose roll set a flag undercount k
+  (Raleigh); test B leaves it out. `first_year`-`last_year` are the model years the roll window covers.
+  These counts were published before D-079, so they are not a holdout.
