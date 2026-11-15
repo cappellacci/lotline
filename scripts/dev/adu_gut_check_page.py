@@ -232,6 +232,75 @@ def source_chart():
     return f'<div class="legend">{legend}</div>' + "".join(g)
 
 
+TYPES = [("core", "Core cities"), ("suburb", "Suburbs"), ("town", "Towns")]
+
+
+def by_type() -> pd.DataFrame:
+    """Per state and place type: places, eligible lots, and ADUs a year (2027-31 means over draws) with no
+    reform and added by full reform."""
+    g = pl.groupby(["state", "place_type"]).agg(
+        places=("geoid", "size"),
+        lots=("eligible_parcels", "sum"),
+        base=("current_rules_adus_mean", "sum"),
+        added=("adu_permits_added_mean", "sum"),
+    )
+    g[["base", "added"]] /= 5
+    return g
+
+
+def type_chart():
+    g = by_type()
+    out = []
+    for st in ORDER:
+        rows = [(lab, g.loc[(st, t)]) for t, lab in TYPES if (st, t) in g.index]
+        vmax = max(r.base + r.added for _, r in rows) * 1.05
+        w, lw, top, rh = 300, 92, 6, 30
+        h = top + rh * len(rows) + 4
+
+        def sx(v, lw=lw, w=w, vmax=vmax):
+            return lw + v / vmax * (w - lw - 70)
+
+        svg = [
+            f'<svg viewBox="0 0 {w} {h}" class="chart" role="img" aria-label="{NAME[st]} ADUs by place type">'
+        ]
+        for i, (lab, r) in enumerate(rows):
+            y = top + rh * i
+            svg.append(f'<text x="0" y="{y + 15}" class="lab">{esc(lab)}</text>')
+            svg.append(
+                f'<rect x="{lw}" y="{y + 4}" width="{sx(r.base) - lw:.1f}" height="16" class="s-base"/>'
+            )
+            svg.append(
+                f'<rect x="{sx(r.base):.1f}" y="{y + 4}" width="{sx(r.base + r.added) - sx(r.base):.1f}" height="16" class="s-add"/>'
+            )
+            pct = r.added / r.base if r.base > 0 else float("inf")
+            tag = f"+{pct:.0%}" if math.isfinite(pct) else "new"
+            svg.append(
+                f'<text x="{sx(r.base + r.added) + 5:.1f}" y="{y + 16}" class="val">{r.base + r.added:,.0f} ({tag})</text>'
+            )
+        svg.append("</svg>")
+        out.append(
+            f"<figure>{''.join(svg)}<figcaption><b>{NAME[st]}</b>: ADUs a year, built anyway (grey) and added by full reform (blue); label is the full-reform total and the rise.</figcaption></figure>"
+        )
+    return "".join(out)
+
+
+def type_table():
+    g = by_type()
+    rows = []
+    for st in ORDER:
+        for t, lab in TYPES:
+            if (st, t) not in g.index:
+                continue
+            r = g.loc[(st, t)]
+            nr = r.base / r.lots * 1000
+            fr = (r.base + r.added) / r.lots * 1000
+            rows.append(
+                f"<tr><td class='form'>{NAME[st] if t == 'core' else ''}</td><td class='form'>{lab}</td><td>{int(r.places):,}</td>"
+                f"<td>{r.lots:,.0f}</td><td>{r.base:,.0f}</td><td>{r.added:,.0f}</td><td>{nr:.2f}</td><td>{fr:.2f}</td></tr>"
+            )
+    return "".join(rows)
+
+
 def state_table():
     f = eng[eng.period.str.contains("-")].set_index(["state", "outcome"])
     rows = []
@@ -407,6 +476,14 @@ ul {{ margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 65ch; }
   <p>Each bar is the state's ADUs under full reform, 2027–31 (averages over draws), split into what would be built anyway and what the reform adds, by the place's rule today.</p>
   {source_chart()}
   <p class="foot">"Rule not coded": places with no coded local rule. They take a rule drawn from coded places like them, so part of their "built anyway" and "added" is a guess about today's rules. Averages, not medians, so they sit above the medians in the table below.</p>
+  <h3>By place type</h3>
+  <p>The same split by the kind of place: core cities (the largest place in a metro area, or one at least a third its size), suburbs (other places in a metro area) and towns (places in a micropolitan area or outside any metro or micro area).</p>
+  <div class="pair">{type_chart()}</div>
+  <div class="scroll"><table>
+  <tr><th class="form">State</th><th class="form">Place type</th><th>Places</th><th>Eligible lots</th><th>Built anyway, a year</th><th>Added by reform, a year</th><th>Per 1,000 lots, no reform</th><th>Per 1,000 lots, full reform</th></tr>
+  {type_table()}
+  </table></div>
+  <p class="foot">Averages over draws, 2027–31, every place in the state. For scale: the busiest counted places build about 1 to 2.4 ADUs a year per 1,000 lots (Portland 1.2, Asheville 2.4, 2021–25).</p>
   <h3>Statewide totals, every place, 2027–31</h3>
   <div class="scroll"><table>
   <tr><th class="form">State</th><th>ADUs, today's rules</th><th>ADUs, Handbook bill</th><th>ADUs added by the bill</th><th>Additional homes</th></tr>
