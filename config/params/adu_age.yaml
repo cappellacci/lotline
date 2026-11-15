@@ -1,0 +1,17 @@
+# ADU Form A″: housing age as a second place term (analysis plan D-087, accepted by Ben 2026-11-14).
+# Only the standardization of the term is fixed here. β's, θ and α are fitted; no fitted value goes to config
+# until Ben approves a result.
+
+adu_age_share_center:
+  value: 0.2045
+  low: 0.2045
+  high: 0.2045
+  unit: share of housing units built before 1960
+  source: "D-087: z = (a − center) / scale; the mean of ACS 2011-15 B25034 (built 1959 or earlier) over D-083's 57 screened places (reports/adu-covariate-screen/factors.csv, X2), fixed before any fit"
+
+adu_age_share_scale:
+  value: 0.1669
+  low: 0.1669
+  high: 0.1669
+  unit: share of housing units built before 1960
+  source: "D-087: the population standard deviation of the same 57 places' pre-1960 share (D-084's convention), fixed before any fit"

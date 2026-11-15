@@ -1,0 +1,352 @@
+{
+  "split": {
+    "fit": [
+      2016,
+      2019
+    ],
+    "lead": 2020,
+    "window": [
+      2021,
+      2025
+    ]
+  },
+  "places_by_state_and_class": {
+    "MN": {
+      "history": 27,
+      "new": 15,
+      "none": 1
+    },
+    "NC": {
+      "history": 11,
+      "thin": 2
+    },
+    "OH": {
+      "new": 1
+    },
+    "TX": {
+      "history": 2,
+      "new": 1
+    },
+    "OR": {
+      "history": 3,
+      "new": 1
+    }
+  },
+  "rule_change_places": [
+    {
+      "state": "MN",
+      "name": "Bloomington city",
+      "class": "history",
+      "rule_change_years": "2023"
+    },
+    {
+      "state": "MN",
+      "name": "Burnsville city",
+      "class": "history",
+      "rule_change_years": "2021"
+    },
+    {
+      "state": "MN",
+      "name": "Chanhassen city",
+      "class": "history",
+      "rule_change_years": "2025"
+    },
+    {
+      "state": "MN",
+      "name": "Cottage Grove city",
+      "class": "history",
+      "rule_change_years": "2023"
+    },
+    {
+      "state": "MN",
+      "name": "Forest Lake city",
+      "class": "history",
+      "rule_change_years": "2023"
+    },
+    {
+      "state": "MN",
+      "name": "Maplewood city",
+      "class": "history",
+      "rule_change_years": "2024"
+    },
+    {
+      "state": "MN",
+      "name": "Minneapolis city",
+      "class": "history",
+      "rule_change_years": "2021 2023"
+    },
+    {
+      "state": "MN",
+      "name": "Minnetonka city",
+      "class": "history",
+      "rule_change_years": "2022"
+    },
+    {
+      "state": "MN",
+      "name": "Mounds View city",
+      "class": "history",
+      "rule_change_years": "2025"
+    },
+    {
+      "state": "MN",
+      "name": "Plymouth city",
+      "class": "history",
+      "rule_change_years": "2024"
+    },
+    {
+      "state": "MN",
+      "name": "Rosemount city",
+      "class": "history",
+      "rule_change_years": "2024"
+    },
+    {
+      "state": "MN",
+      "name": "Vadnais Heights city",
+      "class": "history",
+      "rule_change_years": "2025"
+    },
+    {
+      "state": "NC",
+      "name": "Cary town",
+      "class": "thin",
+      "rule_change_years": "2025"
+    },
+    {
+      "state": "NC",
+      "name": "Charlotte city",
+      "class": "history",
+      "rule_change_years": "2023 2024"
+    },
+    {
+      "state": "NC",
+      "name": "Cornelius town",
+      "class": "history",
+      "rule_change_years": "2023"
+    },
+    {
+      "state": "NC",
+      "name": "Greensboro city",
+      "class": "history",
+      "rule_change_years": "2024"
+    },
+    {
+      "state": "NC",
+      "name": "Huntersville town",
+      "class": "history",
+      "rule_change_years": "2025"
+    },
+    {
+      "state": "NC",
+      "name": "Raleigh city",
+      "class": "thin",
+      "rule_change_years": "2021"
+    },
+    {
+      "state": "NC",
+      "name": "Wilmington city",
+      "class": "history",
+      "rule_change_years": "2022 2024"
+    },
+    {
+      "state": "TX",
+      "name": "San Antonio city",
+      "class": "new",
+      "rule_change_years": "2023"
+    },
+    {
+      "state": "OR",
+      "name": "Portland city",
+      "class": "history",
+      "rule_change_years": "2022"
+    }
+  ],
+  "fits": {
+    "F1": {
+      "theta": {
+        "MN": 0.00020657801695214806,
+        "NC": 0.0018620786096892206,
+        "OR": 0.0035701377157505497,
+        "TX": 0.0021839890878220525
+      },
+      "low": {
+        "MN": 0.00010479588493908672,
+        "NC": 0.0009298375901802204,
+        "OR": 0.0009982703146860013,
+        "TX": 0.0004903036656632473
+      },
+      "high": {
+        "MN": 0.0004328604644657378,
+        "NC": 0.004542588243548488,
+        "OR": 0.03167759147434516,
+        "TX": 0.039182955975942575
+      },
+      "alpha": 2.7141950604263214,
+      "m_owner": 0.5,
+      "m_other": 0.4,
+      "owner_interval": [
+        0.2,
+        1.0
+      ],
+      "other_interval": [
+        0.3,
+        0.7
+      ],
+      "owner_estimated": false,
+      "other_estimated": true,
+      "loglik": -311.75800365444013,
+      "n_places": 46,
+      "n_years": 168,
+      "use": [],
+      "n_terms": 0,
+      "betas": [],
+      "cov": []
+    },
+    "F2": {
+      "theta": {
+        "MN": 5.21461664119192e-05,
+        "NC": 0.001675431840070903,
+        "OR": 0.0077568966386454925,
+        "TX": 0.006441257234637672
+      },
+      "low": {
+        "MN": 2.0301789787235294e-05,
+        "NC": 0.0009543166098443919,
+        "OR": 0.0028627162956937824,
+        "TX": 0.001977054171531472
+      },
+      "high": {
+        "MN": 0.00013187778904766927,
+        "NC": 0.003258728632525221,
+        "OR": 0.033943801813626384,
+        "TX": 0.04328448583257979
+      },
+      "alpha": 1.456099493455022,
+      "m_owner": 0.7,
+      "m_other": 0.3,
+      "owner_interval": [
+        0.3,
+        1.0
+      ],
+      "other_interval": [
+        0.4,
+        1.0
+      ],
+      "owner_estimated": true,
+      "other_estimated": false,
+      "loglik": -303.22729939208216,
+      "n_places": 46,
+      "n_years": 168,
+      "use": [
+        0
+      ],
+      "n_terms": 1,
+      "betas": [
+        1.3078863454930816
+      ],
+      "cov": [
+        [
+          0.10493517242549973
+        ]
+      ]
+    }
+  },
+  "trends": {
+    "MN": {
+      "per_year": -0.16545172527805535,
+      "theta_2019": 0.0001640504289613482
+    },
+    "NC": {
+      "per_year": -0.16036430359075382,
+      "theta_2019": 0.0014903447240561492
+    },
+    "TX": {
+      "per_year": -0.02177239358666891,
+      "theta_2019": 0.0021165671267046327
+    },
+    "OR": {
+      "per_year": -0.196120928537041,
+      "theta_2019": 0.0027029792945579504
+    }
+  },
+  "central": {
+    "useful_F0": {
+      "MN": false,
+      "NC": false,
+      "TX": false,
+      "OR": false
+    },
+    "useful_F1": {
+      "MN": false,
+      "NC": true,
+      "TX": false,
+      "OR": false
+    },
+    "useful_F2": {
+      "MN": false,
+      "NC": false,
+      "TX": false,
+      "OR": false
+    },
+    "useful_trend": {
+      "MN": false,
+      "NC": false,
+      "TX": false,
+      "OR": false
+    },
+    "log_gain_F1_over_F0": [
+      -5.515269369014227,
+      102.13396373748535
+    ],
+    "log_gain_F2_over_F1": [
+      -41.89773068371629,
+      43.886970322178726
+    ],
+    "log_gain_trend_over_F1": [
+      185.23081331999077,
+      275.97022443885226
+    ],
+    "log_gain_by_state": {
+      "MN": {
+        "F1 - F0": [
+          -48.23072646030311,
+          42.32306450260787
+        ],
+        "places": 27
+      },
+      "NC": {
+        "F1 - F0": [
+          107.97024609341639,
+          63.53889651902358
+        ],
+        "places": 11
+      },
+      "TX": {
+        "F1 - F0": [
+          -2.7955507091718648,
+          2.191937267849452
+        ],
+        "places": 2
+      },
+      "OR": {
+        "F1 - F0": [
+          -62.459238292955646,
+          59.26753622717732
+        ],
+        "places": 3
+      }
+    },
+    "places_scored": 43,
+    "verdict": {
+      "own_history_enough": false,
+      "useful_states_f1": 1,
+      "mechanism_beats_persistence": false,
+      "f2_replaces_f1": false,
+      "reasons": [
+        "rule 1: F1 useful in 1 of 4 states (bar 3) -> own history is not enough to forecast within \u00d72",
+        "rule 2: F1 \u2212 F0 log score -5.52, bar 2 SE = 204.27 -> F1 forecasts no better than persistence",
+        "rule 3: F2 \u2212 F1 log score -41.90, bar 87.77; useful states F2 0 vs F1 1 -> F1 stays"
+      ]
+    }
+  },
+  "rows": "D-087's fit set and rule rows (PR #419 head ef37063f via ws/adu-age-term)"
+}

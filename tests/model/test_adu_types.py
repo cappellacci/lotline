@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from lotline.model import adu_owner as ao
+from lotline.model import adu_screen as scr
 from lotline.model import adu_types as ty
 from lotline.model import calibrate_adu as cal
 from lotline.model import joint_refit as jr
@@ -164,3 +165,125 @@ def test_decide_hand_worked():
     assert not ty.decide(None, None, 10, 4, 1, 0, -3, 2).types
     assert not ty.decide(None, None, 10, 4, 1, 1, -5, 2).types
     assert ty.decide(2, 1, -50, 1, 1, 1, 0, 1).types
+
+
+def test_config_mirrors_type_rules():
+    """config/params/adu_place_types.yaml holds D-088's typing rules; the module's defaults must agree."""
+    import inspect
+
+    from lotline.config import load_params
+
+    p = load_params("adu_place_types")
+    assert p["adu_type_core_share"].value == pytest.approx(ty.CORE_SHARE, abs=1e-4)
+    sig = inspect.signature(ty.merge_small).parameters
+    assert p["adu_type_min_fit_places"].value == sig["min_places"].default
+    assert p["adu_type_min_fit_states"].value == sig["min_states"].default
+
+
+def test_config_town_prior_follows_core_term():
+    """D-089: the town prior's s is |β̂_core| / z_90, from the configured core term."""
+    from lotline.config import load_params
+    from lotline.model import adu_profiles as pr
+
+    p = load_params("adu_place_types")
+    s = pr.town_sd(p["adu_types_core_log_multiplier"].value)
+    assert p["adu_types_town_prior_sd"].value == pytest.approx(s, abs=5e-4)
+
+
+def test_raw_types_hand_worked():
+    """Metro M: places A 300 and B 90, township T 500 (not ranked: only places can be core); micro place D;
+    county remainder R with no area -> A core, B suburb (90 < 100), T suburb, D town, R town."""
+    u = pd.DataFrame(
+        {
+            "geoid": ["A", "B", "T", "D", "R"],
+            "kind": ["place", "place", "township", "place", "county_unincorporated"],
+            "cbsa_code": ["M", "M", "M", "m", None],
+            "cbsa_type": ["metro", "metro", "metro", "micro", None],
+            "units": [300, 90, 500, 50, 20],
+        }
+    )
+    assert ty.raw_types(u).to_dict() == {"A": "core", "B": "suburb", "T": "suburb", "D": "town", "R": "town"}
+
+
+def test_config_units_vintage_matches_module():
+    from lotline.config import load_params
+
+    assert load_params("adu_place_types")["adu_type_units_end_year"].value == ty.UNITS_END
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-094: a place-effect variance per type (Form S)
+# ---------------------------------------------------------------------------------------------------------
+
+
+def test_screen_loglik_alpha_per_place_hand_worked():
+    # one year, y = 2, k = 1, rate 1: α = 1 -> NB(r 1, p 1/2) at 2 = 1/8; α -> 0 -> Poisson(1) at 2 = e^-1 / 2
+    pls = [_pl("a", [2], [1.0]), _pl("b", [2], [1.0])]
+    p = scr.prepare(pls, cal._cvals(1.0, 1.0))
+    got = scr.place_loglik(p, np.ones(2), np.array([1.0, 0.0]))
+    assert got == pytest.approx([math.log(1 / 8), -1.0 - math.log(2)])
+    assert scr.place_loglik(p, np.ones(2), np.array([1.0, 1.0])) == pytest.approx(
+        scr.place_loglik(p, np.ones(2), 1.0)
+    )
+
+
+def test_alphas_and_is_core_hand_worked():
+    assert ty.alphas(0.0, math.log(0.5), np.array([1.0, 0.0])) == pytest.approx([0.5, 1.0])
+    assert ty.alphas(math.log(2.0), 3.0, None) == pytest.approx(2.0)
+    pls = [
+        ty.with_types(_pl(str(i), [0], [1.0]), ty.indicators(k))
+        for i, k in enumerate(("core", "suburb", "town"))
+    ]
+    assert list(ty.is_core(pls + [_pl("x", [0], [1.0])])) == [1.0, 0.0, 0.0, 0.0]
+
+
+def test_spread_at_lambda_zero_is_form_p():
+    places = _synthetic(0.8, 0.0, n=24)
+    p = scr.prepare(places, cal._cvals(0.4, 0.4))
+    zm = np.column_stack([ty.is_core(places)])
+    core = ty.is_core(places)
+    for lt, la, b in ((-4.0, 0.2, (0.5,)), (-3.5, -1.0, (1.2,))):
+        assert ty._ll(p, zm, lt, la, b, core, 0.0) == pytest.approx(ty._ll(p, zm, lt, la, b))
+
+
+def _synthetic_spread(alpha_core, alpha_sub, n=150, years=6, seed=11):
+    rng = np.random.default_rng(seed)
+    out = []
+    for i in range(n):
+        kind = "core" if i % 3 == 0 else "suburb"
+        a = alpha_core if kind == "core" else alpha_sub
+        base = np.full(years, float(rng.uniform(1000, 4000)))
+        u = rng.gamma(1 / a, a)
+        y = rng.poisson(0.02 * u * base)
+        out.append(ty.with_types(_pl(str(i), y, base, T_HB), ty.indicators(kind)))
+    return out
+
+
+def test_fit3_types_spread_recovers_planted_alphas():
+    places = _synthetic_spread(0.1, 1.2)
+    fit = ty.fit3_types(places, estimate_beta=False, terms=(), grid=(1.0,), spread=True)
+    assert fit.alpha_core < fit.alpha  # core cities vary less, as planted
+    assert fit.lam_low < math.log(0.1 / 1.2) < fit.lam_high and fit.lam_high < 0
+    assert fit.alpha_core == pytest.approx(fit.alpha * math.exp(fit.lam))
+    plain = ty.fit3_types(places, estimate_beta=False, terms=(), grid=(1.0,))
+    assert fit.loglik > plain.loglik and plain.alpha_core is None
+
+
+def test_globals_alpha_per_type_draws_and_switch_off():
+    cv = cal._cvals(1.0, 1.0)
+    core = ty.with_types(_pl("c", [1, 2], [50.0, 50.0]), ty.indicators("core"))
+    sub = ty.with_types(_pl("s", [1, 2], [50.0, 50.0]), ty.indicators("suburb"))
+    g1 = jr.GlobalsA(np.full(4000, 0.1), 1.5, cv)
+    g2 = jr.GlobalsA(np.full(4000, 0.1), 1.5, cv, alpha_core=1.5)
+    assert g2.place_alpha(core) == 1.5 and g2.place_alpha(sub) == 1.5
+    for a, b in zip(
+        jr.predict([core, sub], g1, 3).values(), jr.predict([core, sub], g2, 3).values(), strict=True
+    ):
+        assert np.array_equal(a, b)  # α_core = α reproduces one α exactly
+    g3 = jr.GlobalsA(np.full(4000, 1.0), 1.5, cv, alpha_core=0.2)
+    assert g3.place_alpha(core) == 0.2 and g3.place_alpha(sub) == 1.5
+    # Var(Y) of a one-year total under rate 50: μ + α μ², by type
+    d = jr.predict([core, sub], g3, 3)
+    assert d["c"][:, 0].var() == pytest.approx(50 + 0.2 * 2500, rel=0.15)
+    assert d["s"][:, 0].var() == pytest.approx(50 + 1.5 * 2500, rel=0.15)
+    assert jr.place_loglik(core, g3)[0] != pytest.approx(jr.place_loglik(core, g1)[0])
