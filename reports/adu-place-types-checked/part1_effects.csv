@@ -1,0 +1,119 @@
+geoid,state,name,years,log_effect,type,type_raw,cbsa_code,cbsa_type,units,units_source,main_source,source_kind,form
+2701486,MN,Andover city,10,-2.250272762932738,suburb,suburb,33460,metro,10309.0,acs 2011-15,metc_residential_permits,survey,A
+2701900,MN,Apple Valley city,10,-0.881955209094571,suburb,suburb,33460,metro,19925.0,acs 2011-15,metc_residential_permits,survey,A
+2706382,MN,Blaine city,3,-3.5773160004681697,suburb,suburb,33460,metro,22623.0,acs 2011-15,metc_residential_permits,survey,A
+2706616,MN,Bloomington city,10,-4.562675573981822,suburb,suburb,33460,metro,38287.0,acs 2011-15,metc_residential_permits,survey,A
+2708794,MN,Burnsville city,10,-2.180900802325524,suburb,suburb,33460,metro,26108.0,acs 2011-15,metc_residential_permits,survey,A
+2710918,MN,Chanhassen city,10,-1.7282732310643558,suburb,suburb,33460,metro,8992.0,acs 2011-15,metc_residential_permits,survey,A
+2713456,MN,Cottage Grove city,10,-4.1669638796923145,suburb,suburb,33460,metro,12370.0,acs 2011-15,metc_residential_permits,survey,A
+2713910450,MN,Cedar Lake township,10,-0.07317830116122255,suburb,suburb,33460,metro,924.0,acs 2011-15,metc_residential_permits,survey,A
+2713928322,MN,Helena township,10,-1.6124114472140256,suburb,suburb,33460,metro,539.0,acs 2011-15,metc_residential_permits,survey,A
+2713931580,MN,Jackson township,4,-0.18442420404506435,suburb,suburb,33460,metro,480.0,acs 2011-15,metc_residential_permits,survey,A
+2713957184,MN,St. Lawrence township,8,-0.5360662285711869,suburb,suburb,33460,metro,158.0,acs 2011-15,metc_residential_permits,survey,A
+2714158,MN,Crystal city,7,-1.8443992280611725,suburb,suburb,33460,metro,9727.0,acs 2011-15,metc_residential_permits,survey,A
+2715022,MN,Dayton city,6,-0.40066106272520735,suburb,suburb,33460,metro,1723.0,acs 2011-15,metc_residential_permits,survey,A
+2716304132,MN,Baytown township,8,-1.9388538920956397,suburb,suburb,33460,metro,642.0,acs 2011-15,metc_residential_permits,survey,A
+2716315688,MN,Denmark township,6,0.7496943653015841,suburb,suburb,33460,metro,706.0,acs 2011-15,metc_residential_permits,survey,A
+2717288,MN,Eagan city,10,-4.341212131700261,suburb,suburb,33460,metro,26500.0,acs 2011-15,metc_residential_permits,survey,A
+2721770,MN,Forest Lake city,10,-2.9908007088011797,suburb,suburb,33460,metro,7475.0,acs 2011-15,metc_residential_permits,survey,A
+2722814,MN,Fridley city,4,0.7804759769999656,suburb,suburb,33460,metro,11415.0,acs 2011-15,metc_residential_permits,survey,A
+2724308,MN,Golden Valley city,3,-0.9733641745669415,suburb,suburb,33460,metro,9315.0,acs 2011-15,metc_residential_permits,survey,A
+2730140,MN,Hopkins city,3,-0.55928950435947,suburb,suburb,33460,metro,8298.0,acs 2011-15,metc_residential_permits,survey,A
+2730392,MN,Hugo city,10,-3.2731665456047567,suburb,suburb,33460,metro,5410.0,acs 2011-15,metc_residential_permits,survey,A
+2731076,MN,Inver Grove Heights city,10,-0.3531159321672742,suburb,suburb,33460,metro,14013.0,acs 2011-15,metc_residential_permits,survey,A
+2735180,MN,Lakeville city,10,-4.484404581416448,suburb,suburb,33460,metro,20152.0,acs 2011-15,metc_residential_permits,survey,A
+2740382,MN,Maplewood city,10,-3.73676945313178,suburb,suburb,33460,metro,15663.0,acs 2011-15,metc_residential_permits,survey,A
+2741480,MN,Medina city,10,-1.3741564423226376,suburb,suburb,33460,metro,1880.0,acs 2011-15,metc_residential_permits,survey,A
+2743000,MN,Minneapolis city,10,-0.0015663255979172829,core,core,33460,metro,180989.0,acs 2011-15,mpls_ccs_permits,parser,A
+2743252,MN,Minnetonka city,10,-0.6764272163526329,suburb,suburb,33460,metro,23825.0,acs 2011-15,metc_residential_permits,survey,A
+2744530,MN,Mounds View city,8,-2.202347075340412,suburb,suburb,33460,metro,5070.0,acs 2011-15,metc_residential_permits,survey,A
+2748580,MN,Orono city,3,1.1687852941550934,suburb,suburb,33460,metro,3506.0,acs 2011-15,metc_residential_permits,survey,A
+2751730,MN,Plymouth city,10,-1.3659852169172186,suburb,suburb,33460,metro,31575.0,acs 2011-15,metc_residential_permits,survey,A
+2753026,MN,Ramsey city,4,-1.90069170914934,suburb,suburb,33460,metro,8616.0,acs 2011-15,metc_residential_permits,survey,A
+2754214,MN,Richfield city,10,-0.7331102562018416,suburb,suburb,33460,metro,15878.0,acs 2011-15,metc_residential_permits,survey,A
+2755186,MN,Rogers city,6,-2.3694696028675986,suburb,suburb,33460,metro,4043.0,acs 2011-15,metc_residential_permits,survey,A
+2755726,MN,Rosemount city,10,-3.5874533432685882,suburb,suburb,33460,metro,7995.0,acs 2011-15,metc_residential_permits,survey,A
+2755852,MN,Roseville city,10,-0.5828645261256081,suburb,suburb,33460,metro,15516.0,acs 2011-15,metc_residential_permits,survey,A
+2757220,MN,St. Louis Park city,5,-3.7078354184702045,suburb,suburb,33460,metro,23637.0,acs 2011-15,metc_residential_permits,survey,A
+2762824,MN,Stillwater city,10,0.3912847685492351,suburb,suburb,33460,metro,7502.0,acs 2011-15,metc_residential_permits,survey,A
+2766460,MN,Vadnais Heights city,10,-2.669992678682138,suburb,suburb,33460,metro,5607.0,acs 2011-15,metc_residential_permits,survey,A
+2768818,MN,Wayzata city,4,0.2133620778311024,suburb,suburb,33460,metro,2247.0,acs 2011-15,metc_residential_permits,survey,A
+3702140,NC,Asheville city,10,2.3455980909494043,core,core,11700,metro,42100.0,acs 2011-15,asheville_permits,parser,A
+37063,NC,Durham County Unincorporated Area,10,-0.6454375083361448,suburb,suburb,20500,metro,16601.0,acs 2011-15,durham_permits,field,A
+3710740,NC,Cary town,7,-0.20567868590451846,suburb,suburb,39580,metro,58827.0,acs 2011-15,cary_permits,parser,A
+3711800,NC,Chapel Hill town,6,0.22725457008967265,suburb,suburb,20500,metro,22205.0,acs 2011-15,chapel_hill_permits,parser,A
+3712000,NC,Charlotte city,10,-0.8347818984346652,core,core,16740,metro,333257.0,acs 2011-15,meck_permits,parser,A
+3714700,NC,Cornelius town,8,-1.3309049411572824,suburb,suburb,16740,metro,12365.0,acs 2011-15,meck_permits,parser,A
+3719000,NC,Durham city,10,0.32002881280393874,core,core,20500,metro,109084.0,acs 2011-15,durham_permits,field,A
+3728000,NC,Greensboro city,7,-0.9451608108776784,core,core,24660,metro,127779.0,acs 2011-15,greensboro_permits,parser,A
+3733120,NC,Huntersville town,10,-2.282160212217474,suburb,suburb,16740,metro,19118.0,acs 2011-15,meck_permits,parser,A
+3741960,NC,Matthews town,10,-1.236953933683668,suburb,suburb,16740,metro,11621.0,acs 2011-15,meck_permits,parser,A
+3743480,NC,Mint Hill town,10,-1.601348063121003,suburb,suburb,16740,metro,9136.0,acs 2011-15,meck_permits,parser,A
+3755000,NC,Raleigh city,7,0.3289392062391184,core,core,39580,metro,186002.0,acs 2011-15,raleigh_permits,field,A
+3774440,NC,Wilmington city,10,1.5393668259797049,core,core,48900,metro,55195.0,acs 2011-15,wilmington_permits,parser,A
+4805000,TX,Austin city,8,1.1595388452267046,core,core,12420,metro,380280.0,acs 2011-15,austin_permits,field,A
+4815976,TX,College Station city,9,-0.9277682265896122,core,core,17780,metro,40255.0,acs 2011-15,cstx_permits,field,A
+4865000,TX,San Antonio city,5,-0.4391588255743294,core,core,41700,metro,535145.0,acs 2011-15,sa_permits,field,A
+4105800,OR,Bend city,10,1.5289141640369084,core,core,13460,metro,36579.0,acs 2011-15,bend_permits,field,A
+4147000,OR,Medford city,6,1.3172521053104638,core,core,32780,metro,32209.0,acs 2011-15,medford_permits,field,A
+4159000,OR,Portland city,10,1.406392903607321,core,core,38900,metro,269917.0,acs 2011-15,portland_permits,field,A
+4164900,OR,Salem city,8,1.0194122863660477,core,core,41420,metro,61417.0,acs 2011-15,mwvcog_permits,field,A
+2701486,MN,Andover city,10,-0.7929634442660182,suburb,suburb,33460,metro,10309.0,acs 2011-15,metc_residential_permits,survey,A′
+2701900,MN,Apple Valley city,10,-0.35694474228138157,suburb,suburb,33460,metro,19925.0,acs 2011-15,metc_residential_permits,survey,A′
+2706382,MN,Blaine city,3,-2.0968729598372593,suburb,suburb,33460,metro,22623.0,acs 2011-15,metc_residential_permits,survey,A′
+2706616,MN,Bloomington city,10,-3.9035376299919715,suburb,suburb,33460,metro,38287.0,acs 2011-15,metc_residential_permits,survey,A′
+2708794,MN,Burnsville city,10,-1.9916103134632754,suburb,suburb,33460,metro,26108.0,acs 2011-15,metc_residential_permits,survey,A′
+2710918,MN,Chanhassen city,10,-0.5117419295187321,suburb,suburb,33460,metro,8992.0,acs 2011-15,metc_residential_permits,survey,A′
+2713456,MN,Cottage Grove city,10,-2.602507605655496,suburb,suburb,33460,metro,12370.0,acs 2011-15,metc_residential_permits,survey,A′
+2713910450,MN,Cedar Lake township,10,1.030884325618189,suburb,suburb,33460,metro,924.0,acs 2011-15,metc_residential_permits,survey,A′
+2713928322,MN,Helena township,10,-0.4069096426476949,suburb,suburb,33460,metro,539.0,acs 2011-15,metc_residential_permits,survey,A′
+2713931580,MN,Jackson township,4,-0.03592982935018142,suburb,suburb,33460,metro,480.0,acs 2011-15,metc_residential_permits,survey,A′
+2713957184,MN,St. Lawrence township,8,-0.07752199076104993,suburb,suburb,33460,metro,158.0,acs 2011-15,metc_residential_permits,survey,A′
+2714158,MN,Crystal city,7,-1.3358480866454843,suburb,suburb,33460,metro,9727.0,acs 2011-15,metc_residential_permits,survey,A′
+2715022,MN,Dayton city,6,0.8105333704286357,suburb,suburb,33460,metro,1723.0,acs 2011-15,metc_residential_permits,survey,A′
+2716304132,MN,Baytown township,8,-0.5295757620128259,suburb,suburb,33460,metro,642.0,acs 2011-15,metc_residential_permits,survey,A′
+2716315688,MN,Denmark township,6,1.2836725190669864,suburb,suburb,33460,metro,706.0,acs 2011-15,metc_residential_permits,survey,A′
+2717288,MN,Eagan city,10,-3.5773927367586578,suburb,suburb,33460,metro,26500.0,acs 2011-15,metc_residential_permits,survey,A′
+2721770,MN,Forest Lake city,10,-2.0960540020381337,suburb,suburb,33460,metro,7475.0,acs 2011-15,metc_residential_permits,survey,A′
+2722814,MN,Fridley city,4,0.7577665714820351,suburb,suburb,33460,metro,11415.0,acs 2011-15,metc_residential_permits,survey,A′
+2724308,MN,Golden Valley city,3,-0.28563281410309094,suburb,suburb,33460,metro,9315.0,acs 2011-15,metc_residential_permits,survey,A′
+2730140,MN,Hopkins city,3,-1.1183025132761004,suburb,suburb,33460,metro,8298.0,acs 2011-15,metc_residential_permits,survey,A′
+2730392,MN,Hugo city,10,-1.7920989565307581,suburb,suburb,33460,metro,5410.0,acs 2011-15,metc_residential_permits,survey,A′
+2731076,MN,Inver Grove Heights city,10,0.036693311697585614,suburb,suburb,33460,metro,14013.0,acs 2011-15,metc_residential_permits,survey,A′
+2735180,MN,Lakeville city,10,-2.860009920869373,suburb,suburb,33460,metro,20152.0,acs 2011-15,metc_residential_permits,survey,A′
+2740382,MN,Maplewood city,10,-2.840572785809407,suburb,suburb,33460,metro,15663.0,acs 2011-15,metc_residential_permits,survey,A′
+2741480,MN,Medina city,10,-0.004418831971190831,suburb,suburb,33460,metro,1880.0,acs 2011-15,metc_residential_permits,survey,A′
+2743000,MN,Minneapolis city,10,-0.6910769336901276,core,core,33460,metro,180989.0,acs 2011-15,mpls_ccs_permits,parser,A′
+2743252,MN,Minnetonka city,10,-0.23300163556321124,suburb,suburb,33460,metro,23825.0,acs 2011-15,metc_residential_permits,survey,A′
+2744530,MN,Mounds View city,8,-1.5997116006876202,suburb,suburb,33460,metro,5070.0,acs 2011-15,metc_residential_permits,survey,A′
+2748580,MN,Orono city,3,1.7747237110182514,suburb,suburb,33460,metro,3506.0,acs 2011-15,metc_residential_permits,survey,A′
+2751730,MN,Plymouth city,10,-0.8639617945442596,suburb,suburb,33460,metro,31575.0,acs 2011-15,metc_residential_permits,survey,A′
+2753026,MN,Ramsey city,4,-0.6863237920620259,suburb,suburb,33460,metro,8616.0,acs 2011-15,metc_residential_permits,survey,A′
+2754214,MN,Richfield city,10,-0.651745577665198,suburb,suburb,33460,metro,15878.0,acs 2011-15,metc_residential_permits,survey,A′
+2755186,MN,Rogers city,6,-1.1817230159252434,suburb,suburb,33460,metro,4043.0,acs 2011-15,metc_residential_permits,survey,A′
+2755726,MN,Rosemount city,10,-2.070004303171836,suburb,suburb,33460,metro,7995.0,acs 2011-15,metc_residential_permits,survey,A′
+2755852,MN,Roseville city,10,-0.4540275974526,suburb,suburb,33460,metro,15516.0,acs 2011-15,metc_residential_permits,survey,A′
+2757220,MN,St. Louis Park city,5,-3.5965572677170896,suburb,suburb,33460,metro,23637.0,acs 2011-15,metc_residential_permits,survey,A′
+2762824,MN,Stillwater city,10,0.9671495158406657,suburb,suburb,33460,metro,7502.0,acs 2011-15,metc_residential_permits,survey,A′
+2766460,MN,Vadnais Heights city,10,-1.4732202703832409,suburb,suburb,33460,metro,5607.0,acs 2011-15,metc_residential_permits,survey,A′
+2768818,MN,Wayzata city,4,0.14191229533756283,suburb,suburb,33460,metro,2247.0,acs 2011-15,metc_residential_permits,survey,A′
+3702140,NC,Asheville city,10,1.790861729952576,core,core,11700,metro,42100.0,acs 2011-15,asheville_permits,parser,A′
+37063,NC,Durham County Unincorporated Area,10,0.40481904640412636,suburb,suburb,20500,metro,16601.0,acs 2011-15,durham_permits,field,A′
+3710740,NC,Cary town,7,0.12801402687864727,suburb,suburb,39580,metro,58827.0,acs 2011-15,cary_permits,parser,A′
+3711800,NC,Chapel Hill town,6,-0.5141938631620729,suburb,suburb,20500,metro,22205.0,acs 2011-15,chapel_hill_permits,parser,A′
+3712000,NC,Charlotte city,10,-1.2205062252557113,core,core,16740,metro,333257.0,acs 2011-15,meck_permits,parser,A′
+3714700,NC,Cornelius town,8,-1.1448046783192083,suburb,suburb,16740,metro,12365.0,acs 2011-15,meck_permits,parser,A′
+3719000,NC,Durham city,10,-0.31274742087456314,core,core,20500,metro,109084.0,acs 2011-15,durham_permits,field,A′
+3728000,NC,Greensboro city,7,-1.4692585507994698,core,core,24660,metro,127779.0,acs 2011-15,greensboro_permits,parser,A′
+3733120,NC,Huntersville town,10,-1.5635106868938644,suburb,suburb,16740,metro,19118.0,acs 2011-15,meck_permits,parser,A′
+3741960,NC,Matthews town,10,-0.546875023733134,suburb,suburb,16740,metro,11621.0,acs 2011-15,meck_permits,parser,A′
+3743480,NC,Mint Hill town,10,-0.7126469482304635,suburb,suburb,16740,metro,9136.0,acs 2011-15,meck_permits,parser,A′
+3755000,NC,Raleigh city,7,-0.1565406575553066,core,core,39580,metro,186002.0,acs 2011-15,raleigh_permits,field,A′
+3774440,NC,Wilmington city,10,0.658506460129989,core,core,48900,metro,55195.0,acs 2011-15,wilmington_permits,parser,A′
+4805000,TX,Austin city,8,0.3050736585131324,core,core,12420,metro,380280.0,acs 2011-15,austin_permits,field,A′
+4815976,TX,College Station city,9,-2.2594841183410197,core,core,17780,metro,40255.0,acs 2011-15,cstx_permits,field,A′
+4865000,TX,San Antonio city,5,-0.8090512546515507,core,core,41700,metro,535145.0,acs 2011-15,sa_permits,field,A′
+4105800,OR,Bend city,10,1.3507339091844361,core,core,13460,metro,36579.0,acs 2011-15,bend_permits,field,A′
+4147000,OR,Medford city,6,0.7447373155462741,core,core,32780,metro,32209.0,acs 2011-15,medford_permits,field,A′
+4159000,OR,Portland city,10,0.9627128292833184,core,core,38900,metro,269917.0,acs 2011-15,portland_permits,field,A′
+4164900,OR,Salem city,8,0.5793072735213866,core,core,41420,metro,61417.0,acs 2011-15,mwvcog_permits,field,A′

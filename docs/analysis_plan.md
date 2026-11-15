@@ -5879,6 +5879,40 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   most sense."
   - This settles D-084's open call: Form A′ is not adopted, and D-088's rule picks A + P over Form A.
   - The fitted values (θ, α, the core-city term, m_o 1.0, m_x 0.4) go to config in their own PR.
+- **Rescored on the checked rule rows, 2026-11-15** (`reports/adu-place-types-checked/`, run at `a40c09cf`, the
+  top of the ADU stack, which carries #419's rows). Ben asked for it ("Score A + place types on the checked rule
+  rows"). The script, forms, tests and decision rule are D-088's, unchanged; only the rule rows differ.
+  - **Inputs:** 64 places, 491 place-years (D-088 had 395). Every place keeps its type.
+  - **Fits** (m_o 1.0, m_x 0.8 for all four forms, as in D-087; D-088 had m_x 0.4):
+    - A: θ 0.503 per 1,000, α 2.648 (matches D-087's Form A).
+    - A + P: θ 0.200 per 1,000, α 1.698, core city +1.84 (+1.19 to +2.54), ×6.3; LR 19.4 over A.
+    - A′ + P: θ 0.221, α 1.623, β_o −0.27, core +1.45 (+0.51 to +2.38).
+  - **Tiers, observed ÷ P50 (useful = inside P10–P90 and within ×2):**
+
+    | Form | Tier | MN | NC | TX | OR | Useful |
+    |---|---|---:|---:|---:|---:|---:|
+    | A | 1 | 0.27 | 3.59 | 6.16 | 4.79 | 0 of 4 |
+    | A + P | 0 | 0.88 | 3.43 | 3.91 | 8.23 | 1 of 4 |
+    | A + P | 1 | 0.76 | 1.42 | 1.45 | 1.72 | **4 of 4** |
+    | A + P | 2 | 0.84 | 1.74 | 1.66 | 1.50 | **4 of 4** |
+    | A′ + P | 1 | 0.87 | 1.38 | 1.20 | 1.92 | 4 of 4 |
+
+    - **A + P and A′ + P pass D-075's claim rule at tier 1, the first forms to do so.** Ohio has no targets, so
+      this is 4 of the 4 states that can be scored, not 4 of 5.
+    - The ranges are wide: P90 ÷ P10 at tier 1 is ×4.4 (MN), ×24 (NC), ×71 (TX) and ×22 (OR).
+    - Tier 0 (national data only) is useful in Minnesota alone; Oregon's tier-0 median is ×8 low.
+  - **D-088's rule, A against A + P: keep A.** A + P passes at a lower tier (1 against none), its tier-1 held-out
+    log score beats A's by +13.1 (2 SE 7.5), and test D is −5.6 (2 SE 6.3), inside the allowance. It fails one
+    condition: tests A–B, 1 against A's 2. A's extra pass is test A in Texas, one place, College Station
+    (observed 5.4; medians A 6, A + P 25, inside A + P's range but outside ×2). This is the same place that
+    decided D-087 step 1.
+  - **A′ against A′ + P: types adopted** (lower tier; tests A–B 1 each; test D +2.4).
+  - **Test D (forecast 2021–2025 from 2016–2020):** no form is useful in any state. Every form forecasts
+    Minnesota about ×2.6 too high (A + P 0.38) and North Carolina ×1.6 too low; persistence is closer in MN and
+    TX.
+  - **Not written to config.** The engine still carries D-088's old-row values (core +1.199, m_x 0.4). Whether
+    to keep A + P against the rule's single-place result, and whether to move config to the checked-row fit,
+    are Ben's calls.
 
 ### D-089 · 2026-11-14 · ADUs: a profile of each state's places, how much of each state lies outside the fit's evidence, and a prior for towns (method only, before any count)
 - **Status: accepted by Ben, 2026-11-14 ("Accept D-089"). Proposed by Claude Code the same day.**
