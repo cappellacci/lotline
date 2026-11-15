@@ -15,6 +15,7 @@ and its `main()` runs with the remaining arguments.
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -26,6 +27,7 @@ from lotline.model.scenarios import adu
 
 HERE = Path(__file__).resolve().parent
 TAG = "UNKNOWN-PLACEHOLDER"
+ENV = "LOTLINE_REFIT_TARGET"
 
 
 def unknown_years() -> dict[str, set[int]]:
@@ -75,7 +77,11 @@ def patch() -> dict[str, set[int]]:
 
 
 # top level, so worker processes (which re-run this file) load and patch the same way
-TARGET = _load(Path(sys.argv[1]).stem, Path(sys.argv[1]).name) if len(sys.argv) > 1 else None
+# worker processes get other arguments, so the target's file name travels in the environment
+if len(sys.argv) > 1 and sys.argv[1].endswith(".py"):
+    os.environ[ENV] = sys.argv[1]
+_name = os.environ.get(ENV)
+TARGET = _load(Path(_name).stem, Path(_name).name) if _name else None
 DROPPED = patch() if TARGET is not None else {}
 
 if __name__ == "__main__":
