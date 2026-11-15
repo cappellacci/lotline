@@ -179,3 +179,11 @@
     https://claude.ai/artifact/72uydyJJNJduLuErr9uQXw
   - **How it was checked:** every number read from the result files by the script; the page was viewed in the
     browser.
+- **V5 St. Paul with C4, method and code (not frozen):** Ben said "Let's try St. Paul".
+  - **D-098** in `docs/analysis_plan.md` (template D-071), written before any prediction: BPS St. Paul 2–4 unit
+    buildings, pass rule on 2024–2025; NB years with φ; B flat at 2021–2023's mean; E = 55,269 H1/H2 lots; gap 1;
+    F 0.702. Inputs read only before 2024; D-013's exposure disclosed.
+  - **Code:** `src/lotline/validation/v5_stpaul.py` (7 hand-worked tests in `tests/core/test_v5_stpaul.py`),
+    `scripts/dev/v5_stp_predict.py` (`--out` dry run, `--freeze` once).
+  - **Dry run (not committed):** buildings 2024–2025 P10 9, P50 15, P90 28 (baseline P50 12, added P50 2);
+    2024–2026 P10 17, P50 27, P90 69. Freeze waits for Ben.

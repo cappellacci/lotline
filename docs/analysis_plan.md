@@ -5736,3 +5736,61 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - Not changed: V5 Charlotte (`validation/v5.py`, frozen and scored) and V9 Oregon (`validation/v9.py`, frozen)
     read these keys but keep their Poisson draws; a rerun at today's config would not reproduce their frozen
     numbers, which reproduce at their freeze commits.
+
+### D-098 · 2026-11-15 · V5 St. Paul blind forward test with C4: what is frozen and how it is made (method only, before any prediction)
+- **Status:** method written before any St. Paul prediction was made (WS-MN brief; holdout `V5-MN-STPAUL`,
+  2024-01-01 to 2026-12-31). Ben: "Let's try St. Paul" (2026-11-15), after C4 went to config. It follows D-071
+  (Charlotte), with C4's model. The number may change if another branch takes D-098 first.
+- **What was looked at before writing (all before the window, none a St. Paul outcome from 2024):**
+  - the H1/H2 lots on the 2023 roll and the 2023-11-26 zoning snapshot (`stpaul_v5.load`): 55,269 eligible
+    lots (rule 1.1), H1 37,695 and H2 17,574 (`reports/mn/V5-stpaul-inputs.md`);
+  - BPS St. Paul (2758000) 2–4 unit buildings through the holdout filter, last year 2023: 2021: 9, 2022: 4,
+    2023: 6 (homes 23, 10, 12);
+  - the coded rule `MN-2758000-missing_middle-2023` (cap 4, by right; effective 2023-11-26): dose 0 on 1 July
+    2023 and 1 on 1 July 2024 (`estimate_mm.rules_by_year`);
+  - St. Paul's ACS 5-year rent ending 2023 ($1,320 in 2025 dollars) and the 2023 cost index: price-to-cost
+    0.851, F(PCR)/F(1) 0.702.
+- **Known exposure (D-013):** post-reform St. Paul figures appeared in a research document during scouting. They
+  were not reread, are not used, and the freeze file says so.
+- **Fit used, and St. Paul's place in it.** C4 (`mm_hazard.yaml`, D-092 run 10): St. Paul and Ramsey County are
+  asserted absent from the panel, so the fit never saw St. Paul. Nothing is refitted for V5.
+- **Target (primary; the pass rule applies to it).** New 2–4 unit buildings in Census BPS for St. Paul
+  (2758000, `bldgs_2 + bldgs_3_4`), the sum over 2024 and 2025: the outcome C4 was fitted on, and the years
+  that can be scored before 16 December. 2026 and 2024–2026 are frozen too and scored when BPS 2026 is out.
+- **Secondary targets (reported, not the pass rule):**
+  - (a) homes in those buildings (`units_2 + units_3_4`);
+  - (b) the added buildings alone (the reform part), compared descriptively with Met Council permits for 2–4
+    unit homes (`DTQ`) on H1/H2 lots after unblinding. Exploratory.
+- **Model (C4, as the fit).** For year t = 2024, 2025, 2026, draw d:
+
+      buildings_dt ~ NB(mean B + θ_d u_d E gap F ramp(t − 2024 + 0.5), size φ)
+
+  - **B:** the mean of 2021–2023 (6.33 buildings a year), held flat: C0's own-growth index needs blind years
+    (as D-071). Homes per baseline building: 45 / 19 = 2.37.
+  - **E:** 55,269 eligible H1/H2 lots, counted, not drawn. **gap:** 1 − 0 = 1 (the coded rows). Lots that
+    were RT1 or RT2 before already allowed some 2–4 unit buildings in practice, but the fit's dose comes from
+    coded rules, so the same rule is used here; stated as a possible overstatement of the gap.
+  - **F:** 0.702. **Ramp:** half-way 4.0 years, slope 0.75; ages 0.5, 1.5, 2.5 give 0.009, 0.034 and 0.119
+    of the mature rate (2024 is the first event year: the rule is in force on 1 July 2024).
+  - **Per draw:** θ and α lognormal from their 90% intervals; one u ~ Gamma(mean 1, variance α) shared across
+    the years; each year Poisson(mean × g), g ~ Gamma(mean 1, variance 1/φ), φ = `mm_year_spread_phi`.
+    Baseline and added are drawn as two Poissons with the same g (so their sum is the NB above).
+  - **Homes:** baseline buildings × 2.37 plus added buildings × `mm_units_per_project` (triangular).
+  - **No annual input after 2023.**
+- **Draws:** `mm_scenario_draws`, seed `mm_scenario_seed`.
+- **Freeze.** `scripts/dev/v5_stp_predict.py --freeze` writes `results/frozen/V5-MN-STPAUL.json` once (refuses
+  to overwrite), with the commit, draws, seed, inputs, parameter values, sha256 of the input tables and config
+  files read. D-037 says V5 freezes on the `mm_hazard.yaml` on `main` at the freeze. If PR #436 (C4) is not
+  on `main` when Ben wants the freeze, the freeze is made on #436's commit and records it; Ben decides which.
+- **Scoring (after the freeze is on `main` and Ben asks to unblind):** release the holdout in
+  `config/states/mn.yaml`, read BPS 2758000 for 2024–2025 and compute, as D-071:
+  - **pass rule:** the observed 2024–2025 sum lies within P10–P90 of the frozen draws (one case: a
+    demonstration, not proof);
+  - also D-040's verdict, randomized coverage, the percentile, and CRPS against no reform (the baseline part
+    of the same draws).
+- **Expected, before any prediction (from the inputs, not a run):** the reform adds little in 2024–2025 at
+  C4's median (about 40 buildings a year at maturity × ramp 0.009 and 0.034 ≈ 2), so the median sits near the
+  baseline (about 13 over two years), with a right tail from θ. **This is a test of C4's slow ramp:** if St.
+  Paul built many more 2–4 unit buildings in 2024–2025, the slow ramp is wrong.
+- **Decided by:** Ben (V5 design; "Let's try St. Paul", 2026-11-15). Written by Claude Code before any code or
+  prediction.
