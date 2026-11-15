@@ -1,0 +1,212 @@
+<title>ADU Range Coverage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+:root { --s0: var(--survey); --s1: var(--tier-3); --s2: var(--tier-1); --s3: var(--tier-none); }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body, Inter, system-ui, sans-serif); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display, "Space Grotesk", system-ui, sans-serif); text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; line-height: 1.15; } h2 { font-size: 1.2rem; }
+.kicker { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; color: var(--ink-muted); }
+p { margin: 0; max-width: 65ch; } section { display: grid; gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.card { background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; }
+.card b { font-family: var(--font-display, "Space Grotesk", sans-serif); font-size: 1.6rem; }
+.card span { color: var(--ink-muted); font-size: .85rem; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.pair figure { margin: 0; display: grid; gap: 6px; min-width: 0; } figcaption { font-size: .85rem; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--ink-muted); font-size: 11px; font-family: inherit; }
+.chart .st { fill: var(--ink); font-weight: 600; font-size: 12.5px; } .chart .val { fill: var(--ink); }
+.grid { stroke: var(--rule); stroke-width: 1; } .ideal { stroke: var(--brass); stroke-dasharray: 4 3; stroke-width: 1.5; }
+.mid { fill: var(--survey); } .tail { fill: var(--confidence-outside); }
+.s0 { fill: var(--s0); } .s1 { fill: var(--s1); } .s2 { fill: var(--s2); } .s3 { fill: var(--s3); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: .9rem; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: right; }
+th { color: var(--ink-muted); font-weight: 500; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+td.form, th.form { text-align: left; }
+td.good { color: var(--confidence-inside); font-weight: 600; } td.wide { color: var(--confidence-edge); font-weight: 600; } td.narrow { color: var(--confidence-outside); font-weight: 600; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 65ch; }
+.foot { color: var(--ink-faint); font-size: .8rem; }
+</style>
+<div class="wrap">
+<header style="display:grid;gap:8px">
+  <div class="kicker">Lotline · ADU model · range check · 15 Nov 2026</div>
+  <h1>Are the ADU ranges the right width?</h1>
+  <p>Each state was left out in turn and every one of its 64 counted places predicted from the other states (A + place types, checked rule rows).
+  We then asked where each place's actual count fell in its predicted range. If the ranges are honest, 80% of places land inside the middle 80%.</p>
+</header>
+
+<div class="cards">
+  <div class="card"><span>Inside the middle 80%, all places</span><b>69%</b><span>About right, slightly narrow. The ranges are not oversized overall.</span></div>
+  <div class="card"><span>Core cities inside the middle 80%</span><b>88%</b><span>Too wide; and they hold 97% of observed ADUs. Suburbs: 62%, too narrow.</span></div>
+  <div class="card"><span>Biggest source of a state's range</span><b>Place luck</b><span>In states with few counted places, one city's unexplained rate swings the total.</span></div>
+</div>
+
+<section>
+  <h2>Where each place's actual count fell in its range</h2>
+  <div class="pair">
+    <figure><svg viewBox="0 0 300 150" class="chart" role="img" aria-label="core cities"><line x1="30" x2="292" y1="124.0" y2="124.0" class="grid"/><text x="26" y="128.0" class="tick" text-anchor="end">0%</text><line x1="30" x2="292" y1="92.0" y2="92.0" class="grid"/><text x="26" y="96.0" class="tick" text-anchor="end">10%</text><line x1="30" x2="292" y1="60.0" y2="60.0" class="grid"/><text x="26" y="64.0" class="tick" text-anchor="end">20%</text><line x1="30" x2="292" y1="28.0" y2="28.0" class="grid"/><text x="26" y="32.0" class="tick" text-anchor="end">30%</text><rect x="31.0" y="104.0" width="24.2" height="20.0" class="tail" rx="2"/><rect x="57.2" y="124.0" width="24.2" height="0.0" class="mid" rx="2"/><rect x="83.4" y="124.0" width="24.2" height="0.0" class="mid" rx="2"/><rect x="109.6" y="24.0" width="24.2" height="100.0" class="mid" rx="2"/><rect x="135.8" y="124.0" width="24.2" height="0.0" class="mid" rx="2"/><rect x="162.0" y="104.0" width="24.2" height="20.0" class="mid" rx="2"/><rect x="188.2" y="44.0" width="24.2" height="80.0" class="mid" rx="2"/><rect x="214.4" y="64.0" width="24.2" height="60.0" class="mid" rx="2"/><rect x="240.6" y="104.0" width="24.2" height="20.0" class="mid" rx="2"/><rect x="266.8" y="104.0" width="24.2" height="20.0" class="tail" rx="2"/><line x1="30" x2="292" y1="92.0" y2="92.0" class="ideal"/><text x="30" y="142" class="tick">0 · below the range</text><text x="292" y="142" class="tick" text-anchor="end">above · 1</text></svg><figcaption><b>16 core cities.</b> Piled in the middle: actual counts land near the median far more often than an honest range allows, so these ranges are too wide.</figcaption></figure>
+    <figure><svg viewBox="0 0 300 150" class="chart" role="img" aria-label="suburbs"><line x1="30" x2="292" y1="124.0" y2="124.0" class="grid"/><text x="26" y="128.0" class="tick" text-anchor="end">0%</text><line x1="30" x2="292" y1="92.0" y2="92.0" class="grid"/><text x="26" y="96.0" class="tick" text-anchor="end">10%</text><line x1="30" x2="292" y1="60.0" y2="60.0" class="grid"/><text x="26" y="64.0" class="tick" text-anchor="end">20%</text><line x1="30" x2="292" y1="28.0" y2="28.0" class="grid"/><text x="26" y="32.0" class="tick" text-anchor="end">30%</text><rect x="31.0" y="57.3" width="24.2" height="66.7" class="tail" rx="2"/><rect x="57.2" y="90.7" width="24.2" height="33.3" class="mid" rx="2"/><rect x="83.4" y="117.3" width="24.2" height="6.7" class="mid" rx="2"/><rect x="109.6" y="117.3" width="24.2" height="6.7" class="mid" rx="2"/><rect x="135.8" y="104.0" width="24.2" height="20.0" class="mid" rx="2"/><rect x="162.0" y="97.3" width="24.2" height="26.7" class="mid" rx="2"/><rect x="188.2" y="104.0" width="24.2" height="20.0" class="mid" rx="2"/><rect x="214.4" y="97.3" width="24.2" height="26.7" class="mid" rx="2"/><rect x="240.6" y="64.0" width="24.2" height="60.0" class="mid" rx="2"/><rect x="266.8" y="70.7" width="24.2" height="53.3" class="tail" rx="2"/><line x1="30" x2="292" y1="92.0" y2="92.0" class="ideal"/><text x="30" y="142" class="tick">0 · below the range</text><text x="292" y="142" class="tick" text-anchor="end">above · 1</text></svg><figcaption><b>48 suburbs</b> (41 in Minnesota). Too many at the ends, purple: these ranges are a little too narrow.</figcaption></figure>
+  </div>
+  <p class="foot">Randomized percentile of the observed total over each place's fit years; a calibrated forecast fills each bar to the dashed 10% line. With 16 core cities the pattern is suggestive, not conclusive (about 1.5 standard errors).</p>
+</section>
+
+<section>
+  <h2>What makes a state's range wide</h2>
+  <div class="legend"><span><i style="background:var(--s0)"></i>Everything</span><span><i style="background:var(--s1)"></i>Without the unknown state level</span><span><i style="background:var(--s2)"></i>Without place-to-place luck</span><span><i style="background:var(--s3)"></i>Shared parameters only (θ, core term, rule multipliers)</span></div>
+  <svg viewBox="0 0 660 378" class="chart" role="img" aria-label="range width by source"><line x1="130.0" x2="130.0" y1="8" y2="352" class="grid"/><text x="130.0" y="368" class="tick" text-anchor="middle">×1</text><line x1="220.2" x2="220.2" y1="8" y2="352" class="grid"/><text x="220.2" y="368" class="tick" text-anchor="middle">×2</text><line x1="339.4" x2="339.4" y1="8" y2="352" class="grid"/><text x="339.4" y="368" class="tick" text-anchor="middle">×5</text><line x1="429.6" x2="429.6" y1="8" y2="352" class="grid"/><text x="429.6" y="368" class="tick" text-anchor="middle">×10</text><line x1="519.8" x2="519.8" y1="8" y2="352" class="grid"/><text x="519.8" y="368" class="tick" text-anchor="middle">×20</text><line x1="610.0" x2="610.0" y1="8" y2="352" class="grid"/><text x="610.0" y="368" class="tick" text-anchor="middle">×40</text><text x="0" y="26" class="st">Minnesota</text><text x="0" y="42" class="tick">43 counted places</text><rect x="130" y="16" width="288.4" height="12" rx="2" class="s0"/><text x="423.4" y="26" class="val">×9.2</text><rect x="130" y="33" width="236.3" height="12" rx="2" class="s1"/><text x="371.3" y="43" class="val">×6.1</text><rect x="130" y="50" width="189.7" height="12" rx="2" class="s2"/><text x="324.7" y="60" class="val">×4.3</text><rect x="130" y="67" width="124.7" height="12" rx="2" class="s3"/><text x="259.7" y="77" class="val">×2.6</text><text x="0" y="110" class="st">North Carolina</text><text x="0" y="126" class="tick">13 counted places</text><rect x="130" y="100" width="415.5" height="12" rx="2" class="s0"/><text x="550.5" y="110" class="val">×24.4</text><rect x="130" y="117" width="353.3" height="12" rx="2" class="s1"/><text x="488.3" y="127" class="val">×15.1</text><rect x="130" y="134" width="279.8" height="12" rx="2" class="s2"/><text x="414.8" y="144" class="val">×8.6</text><rect x="130" y="151" width="210.4" height="12" rx="2" class="s3"/><text x="345.4" y="161" class="val">×5.0</text><text x="0" y="194" class="st">Texas</text><text x="0" y="210" class="tick">3 counted places</text><rect x="130" y="184" width="417.7" height="12" rx="2" class="s0"/><text x="552.7" y="194" class="val">×24.8</text><rect x="130" y="201" width="386.6" height="12" rx="2" class="s1"/><text x="521.6" y="211" class="val">×19.5</text><rect x="130" y="218" width="213.7" height="12" rx="2" class="s2"/><text x="348.7" y="228" class="val">×5.2</text><rect x="130" y="235" width="166.1" height="12" rx="2" class="s3"/><text x="301.1" y="245" class="val">×3.6</text><text x="0" y="278" class="st">Oregon</text><text x="0" y="294" class="tick">4 counted places</text><rect x="130" y="268" width="430.4" height="12" rx="2" class="s0"/><text x="565.4" y="278" class="val">×27.3</text><rect x="130" y="285" width="391.1" height="12" rx="2" class="s1"/><text x="526.1" y="295" class="val">×20.2</text><rect x="130" y="302" width="236.5" height="12" rx="2" class="s2"/><text x="371.5" y="312" class="val">×6.2</text><rect x="130" y="319" width="181.6" height="12" rx="2" class="s3"/><text x="316.6" y="329" class="val">×4.0</text><text x="652" y="377" class="tick" text-anchor="end">top of range ÷ bottom (P90 ÷ P10) of the state total, log scale</text></svg>
+  <p>Removing each place's own unexplained rate shrinks a state's range the most: from about ×25 to ×5–9 in North Carolina, Texas and Oregon. Removing the unknown state level helps less (to ×15–20). The fitted parameters alone give only ×3–5. Minnesota's range is narrow because 43 places average their luck out.</p>
+</section>
+
+<section>
+  <h2>Coverage across the checks we have</h2>
+  <div class="scroll"><table>
+  <tr><th class="form">Prediction</th><th>Places</th><th>Inside P10–P90</th><th>Middle 80% (randomized)</th><th>Below</th><th>Above</th></tr>
+  <tr><td class='form'>All 64 places, A + types</td><td>64</td><td>83%</td><td class='narrow'>69%</td><td>17%</td><td>14%</td></tr><tr><td class='form'>Core cities</td><td>16</td><td>94%</td><td class='good'>88%</td><td>6%</td><td>6%</td></tr><tr><td class='form'>Suburbs</td><td>48</td><td>79%</td><td class='narrow'>62%</td><td>21%</td><td>17%</td></tr><tr><td class='form'>Form A, all places</td><td>64</td><td>89%</td><td class='good'>77%</td><td>17%</td><td>6%</td></tr><tr><td class='form'>Test D, A + types, no drift</td><td>49</td><td>49%</td><td class='narrow'>47%</td><td>10%</td><td>43%</td></tr><tr><td class='form'>D-091 own counts, no drift</td><td>43</td><td>58%</td><td class='narrow'>56%</td><td>12%</td><td>33%</td></tr><tr><td class='form'>D-091 own counts, with drift (the engine)</td><td>43</td><td>81%</td><td class='good'>79%</td><td>0%</td><td>21%</td></tr>
+  </table></div>
+  <p class="foot">Target: 80% in the middle, 10% below, 10% above. Green within 8 points; amber too wide; purple too narrow. "Inside P10–P90" flatters small counts, since a place with 0 built is inside any range that starts at 0; the randomized column corrects for that. The test D and D-091 rows use the plain percentile.</p>
+</section>
+
+<section>
+  <h2>What this suggests</h2>
+  <ul>
+  <li><b>Don't narrow the ranges across the board.</b> Over all places they are about right, a little narrow if anything.</li>
+  <li><b>Test a separate place-luck spread for core cities and suburbs.</b> Core cities carry almost all ADUs and look too wide; suburbs look too narrow. Fitting one spread for each type would narrow the state totals honestly, if it holds up held out. It would need its own entry (D-094) before any fit.</li>
+  <li><b>The cheapest narrowing is data: counts for the biggest core cities.</b> Where a city has its own counts, the engine already uses them (D-093), replacing that city's luck with what it actually built.</li>
+  <li><b>Over time, drift was the fix.</b> Without it, forecasts of 2021–25 held about half the places in the middle 80%; with D-091's drift, which the engine now uses, about 80%.</li>
+  </ul>
+</section>
+
+<p class="foot">Source: reports/adu-range-coverage/ (scripts/dev/adu_range_coverage.py, offline, St. Paul excluded; tier-1 held-out inputs as D-088's held-out log score). Built by scripts/dev/adu_range_coverage_page.py.</p>
+</div>

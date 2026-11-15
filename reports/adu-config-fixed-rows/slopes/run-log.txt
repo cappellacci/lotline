@@ -1,0 +1,19 @@
+config: /private/tmp/claude-501/-Users-bencappellacci-Engineering-lotline/f321e88a-e8e4-4c8e-8b67-b263fdca7bb4/scratchpad/combo-wt/config; unknown place-years left out: {'2713456': [2016, 2017, 2018, 2019, 2020, 2021, 2022], '2740382': [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]}
+central: θ 0.2403/1,000, α 1.439, core +1.670, loglik -1468.08 (63 places, 446 place-years); info log-SE θ 0.177, α 0.236, corr 0.055
+24 judgment parameters
+  hard_cost_per_sqft_usd           151..179: dlogθ/dp +4.4328e-05  dlogα/dp +0.00021323  dβcore/dp +0.0014931  (499s)
+  adu_sqft                         760..840: dlogθ/dp +9.0208e-06  dlogα/dp +4.4117e-05  dβcore/dp +0.00030822  (506s)
+  adu_hard_cost_premium            0.11..0.19: dlogθ/dp +0.0062667  dlogα/dp +0.030737  dβcore/dp +0.21444  (508s)
+  soft_cost_share                  0.18..0.22: dlogθ/dp +0.005987  dlogα/dp +0.029484  dβcore/dp +0.20557  (181s)
+  construction_loan_rate           0.0805..0.0895: dlogθ/dp +0.0026157  dlogα/dp +0.012986  dβcore/dp +0.089624  (180s)
+  average_draw_share               0.475..0.525: dlogθ/dp +0.00044249  dlogα/dp +0.0021495  dβcore/dp +0.015235  (180s)
+  construction_years_irc           0.675..0.825: dlogθ/dp +0.00030468  dlogα/dp +0.001459  dβcore/dp +0.010153  (181s)
+  rental_vacancy_rate              0.045..0.055: dlogθ/dp +0.0076703  dlogα/dp +0.03729  dβcore/dp +0.25962  (245s)
+  operating_expense_share          0.33..0.37: dlogθ/dp +0.011058  dlogα/dp +0.054629  dβcore/dp +0.37975  (247s)
+  cap_rate                         0.052..0.058: dlogθ/dp +0.1316  dlogα/dp +0.64164  dβcore/dp +4.4827  (247s)
+  adu_margin                       0.08..0.12: dlogθ/dp +0.0065079  dlogα/dp +0.032119  dβcore/dp +0.22429  (249s)
+  adu_rent_to_median_ratio         0.96..1.04: dlogθ/dp -0.0071677  dlogα/dp -0.035564  dβcore/dp -0.24697  (249s)
+  adu_feasibility_dispersion       0.445..0.555: dlogθ/dp -0.088565  dlogα/dp -0.0010822  dβcore/dp -0.31636  (211s)
+  adu_equity_elasticity            0.2..0.3: dlogθ/dp +0.11741  dlogα/dp -0.19418  dβcore/dp +0.1499  (210s)
+  adu_rate_semi_elasticity         0.055..0.085: dlogθ/dp +1.3183  dlogα/dp -0.05644  dβcore/dp -0.28155  (129s)
+wrote /Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-types-checked/config/params/adu_anchor.yaml
