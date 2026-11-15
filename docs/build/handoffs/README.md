@@ -32,4 +32,5 @@ Each file is a self-contained brief for one Claude Code session. Start a session
 | `12-texas-data-complete.md` | Texas end-to-end data: assess, plan, work (week of 2026-10-26). **Closed 2026-11-01**: see its closing section for the engine pickups and decisions to fold | Plan approved by Ben |
 | `14-engine-four-state-refresh.md` | Engine on all four states' data: rule tags, panel counts, D-024/D-025 amendments and one run each, V5 freezes by Nov 17 | NC and MN data on `main` (2026-11-02) |
 | `15-fee-section-for-app.md` | The app's fee section from the fee prototype page: grid format, run-by-run sums, parity numbers, Ben's design calls (2026-11-10) | Fees in `lotline results` for the bundle; the prototype works from `reports/fees-knobs/` meanwhile |
+| `16-adu-model-what-we-tried.md` | ADU model: what was tried for the five-state fit (D-079 to D-090), what worked (place types), and ideas for a better way (2026-11-14) | Context for the ADU thread; read-only |
 | `09-combine-and-aggregate.md` | Combine scenarios on the same lots; aggregate to county and state; demand cap | Best after D-025; works with stubs before |
