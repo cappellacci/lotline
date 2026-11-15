@@ -69,11 +69,14 @@ CHALLENGERS = ("C1", "C3", "C4")
 # D-092 deviation 2026-11-15: the place-level rate multiplier's variance κ (0 = runs 4-5), set by --kappa, and
 # the challengers refit with it (C1 and C3 are not refit when κ > 0).
 KAPPA = 0.0
+PHI = 0.0  # D-092 deviation (b): per-year NB overdispersion φ, set by --phi (run 8 chose this form)
 ACTIVE = set(CHALLENGERS)
 
 
 def kap(places):
-    """The places with the run's κ (`calibrate_mm.with_kappa`); unchanged at κ = 0."""
+    """The places with the run's noise: φ (`with_phi`) or κ (`with_kappa`); unchanged when both are 0."""
+    if PHI > 0:
+        return cal.with_phi(places, PHI)
     return cal.with_kappa(places, KAPPA) if KAPPA > 0 else list(places)
 
 
@@ -362,6 +365,7 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
         "r5_M": {"r5": r5.r5, "low": r5.low, "high": r5.high},
         "c3_slope": {"c": c3.b, "low": c3.b_low, "high": c3.b_high} if c3 is not None else None,
         "kappa": KAPPA,
+        "phi": PHI,
         "c4_prior": dict(zip(("log_mean", "log_sd"), cal.level_prior(full["L"], p["widening"]), strict=True)),
         "paired_vs_M": {c: cal.paired_delta(fs, f"ls_{c}", "ls_M") for c in CHALLENGERS if c in ACTIVE},
         "paired_M_vs_none": cal.paired_delta(fs, "ls_M", "ls_none"),
@@ -381,8 +385,13 @@ if __name__ == "__main__":
     ap.add_argument("--tests-passed", type=Path, help="JSON {model: tests A-C passed} for §5's rule")
     ap.add_argument("--kappa", type=float, default=0.0,
                     help="variance of the rate multiplier w (κ); > 0: refits M, C4 only")  # fmt: skip
+    ap.add_argument(
+        "--phi", type=float, default=0.0, help="per-year NB overdispersion φ; > 0: refits M, C4 only"
+    )
     args = ap.parse_args()
-    KAPPA = args.kappa
-    if KAPPA > 0:
+    if args.kappa > 0 and args.phi > 0:
+        ap.error("use --kappa or --phi, not both")
+    KAPPA, PHI = args.kappa, args.phi
+    if KAPPA > 0 or PHI > 0:
         ACTIVE = {"C4"}
     main(args.out, args.dry, args.tests_passed)

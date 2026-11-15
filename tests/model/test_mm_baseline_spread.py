@@ -234,3 +234,70 @@ def test_choice_rule_prefers_simpler_within_two_se():
     scores2 = pd.DataFrame({"C0-w": base, "C3-year": alt + 5.0})
     table2 = pd.DataFrame({"candidate": ["C0-w", "C3-year"], "heldout": scores2.sum().to_list()})
     assert m.choose(table2, scores2)["chosen"] == "C3-year"
+
+
+# ---- the per-year NB (φ) inside the main likelihood and the draws ----
+
+
+def test_place_loglik_phi_poisson_u_is_nb_sum():
+    y, B, k, theta, phi = [2.0, 0.0, 7.0], [1.5, 2.0, 1.0], [100.0, 200.0, 300.0], 0.01, 0.6
+    mu = np.array(B) + theta * np.array(k)
+    expected = float(np.sum(cal.nb_year_terms(y, mu, phi)))
+    assert cal.place_loglik(y, B, k, theta, 1e-9, phi=phi) == pytest.approx(expected)
+
+
+def test_place_loglik_phi_with_u_matches_nested_brute_force():
+    y, B, k, theta, alpha, phi = [1.0, 3.0], [1.0, 1.0], [100.0, 100.0], 0.01, 0.5, 0.4
+    r = 1 / alpha
+    v = np.linspace(-20, 5, 20_001)
+    u = np.exp(v)
+    log_g = r * math.log(r) - math.lgamma(r) + r * v - r * u
+    inner = np.array(
+        [float(np.sum(cal.nb_year_terms(y, np.array(B) + theta * ui * np.array(k), phi))) for ui in u]
+    )
+    f = log_g + inner
+    m = f.max()
+    brute = float(m + math.log(np.trapezoid(np.exp(f - m), v)))
+    assert cal.place_loglik(y, B, k, theta, alpha, phi=phi) == pytest.approx(brute, abs=1e-3)
+
+
+@pytest.mark.parametrize("alpha", [1e-9, 0.6, 3.0])
+def test_stacked_loglik_phi_is_the_sum_of_places(alpha):
+    ps = cal.with_phi(
+        [
+            _place("a", (3, 5), (4.0, 4.0), (500.0, 600.0)),
+            _place("b", (0, 1, 9), (2.0, 2.5, 3.0), (0, 300, 900)),
+        ],
+        0.9,
+    )
+    total = sum(cal.place_loglik(p.y, p.B, p.k(2.0), 0.004, alpha, phi=p.phi) for p in ps)
+    assert cal.loglik(ps, 0.004, alpha, 2.0) == pytest.approx(total, rel=1e-9)
+
+
+def test_both_noise_forms_refused():
+    with pytest.raises(ValueError):
+        cal.place_loglik([1.0], [1.0], [1.0], 0.01, 0.5, kappa=0.3, phi=0.3)
+    with pytest.raises(ValueError):
+        cal.loglik([cal.replace(_place(kappa=0.3), phi=0.3)], 0.01, 0.5, 2.0)
+
+
+def test_no_effect_log_score_with_phi():
+    p = cal.with_phi([_place(y=(3, 5), B=(4.0, 4.0))], 0.5)[0]
+    assert cal.no_effect_log_score(p) == pytest.approx(
+        float(np.sum(cal.nb_year_terms([3, 5], [4.0, 4.0], 0.5)))
+    )
+
+
+def test_benchmark_variance_per_year_nb():
+    # B = 10 a year for 2 years, φ = 0.25, years independent: Var = Σ (μ + φ μ²) = 2 × (10 + 25) = 70
+    p = cal.with_phi([_place(y=(0, 0), B=(10.0, 10.0))], 0.25)[0]
+    tot = cal.benchmark_places([p], 0.0, 1.0, draws=200_000, seed=4)["a"].sum(axis=1)
+    assert tot.mean() == pytest.approx(20.0, rel=0.01)
+    assert tot.var() == pytest.approx(70.0, rel=0.03)
+
+
+def test_phi_zero_draws_are_unchanged():
+    a = _place(y=(0, 0), B=(10.0, 10.0), kr=(100.0, 100.0))
+    before = cal.predict_places([a], 0.01, 0.3, 0.5, 2.0, draws=500, seed=9)["a"]
+    after = cal.predict_places(cal.with_phi([a], 0.0), 0.01, 0.3, 0.5, 2.0, draws=500, seed=9)["a"]
+    assert np.array_equal(before, after)

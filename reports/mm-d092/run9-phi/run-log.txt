@@ -1,0 +1,80 @@
+uncoded places kept: 483; removed by reason (overlapping): {'event': 0, 'dose': 0, 'tests': 0, 'test_c': 11, 'level_set': 0, 'excluded': 0, 'holdouts': 0}
+origin 2016: 473 places {'TX': 193, 'OH': 147, 'MN': 93, 'NC': 40}
+origin 2021: 468 places {'TX': 193, 'OH': 142, 'MN': 93, 'NC': 40}
+{
+ "form": "year",
+ "phi": {
+  "main": {
+   "kappa": 13.632980572972555,
+   "low": 12.846378759323553,
+   "high": 14.474574254073142,
+   "loglik": 16800.761144410797,
+   "loglik_poisson": 1780.1372699156461,
+   "places": 941,
+   "place_years": 4685
+  },
+  "origin_2021_only": {
+   "kappa": 17.45910474271308,
+   "low": 16.153437758485865,
+   "high": 18.888126445716885,
+   "loglik": 12333.074563860746,
+   "loglik_poisson": 2075.173994129905,
+   "places": 468,
+   "place_years": 2334
+  },
+  "by_state": {
+   "MN": {
+    "kappa": 7.439511634156928,
+    "low": 6.361020923551094,
+    "high": 8.710162364271053,
+    "loglik": -215.74120737371067,
+    "loglik_poisson": -1090.3719539670797,
+    "places": 186,
+    "place_years": 930
+   },
+   "NC": {
+    "kappa": 8.072684576152641,
+    "low": 6.509890861130375,
+    "high": 10.048041062603223,
+    "loglik": 874.0841792663455,
+    "loglik_poisson": 167.54403769931707,
+    "places": 80,
+    "place_years": 397
+   },
+   "OH": {
+    "kappa": 8.11543151068258,
+    "low": 7.11309014599927,
+    "high": 9.266884836899989,
+    "loglik": 296.6017050267184,
+    "loglik_poisson": -1285.0805613656862,
+    "places": 289,
+    "place_years": 1428
+   },
+   "TX": {
+    "kappa": 19.99771588747181,
+    "low": 18.419626363493016,
+    "high": 20.085536923187668,
+    "loglik": 15923.913005182394,
+    "loglik_poisson": 3988.0457475490957,
+    "places": 386,
+    "place_years": 1930
+   }
+  }
+ },
+ "kept_places": 483,
+ "removed": {
+  "event": 0,
+  "dose": 0,
+  "tests": 0,
+  "test_c": 11,
+  "level_set": 0,
+  "excluded": 0,
+  "holdouts": 0
+ },
+ "origins": [
+  2016,
+  2021
+ ],
+ "horizon": 5,
+ "seconds": 97
+}

@@ -69,6 +69,7 @@ class Place:
     z: float = 0.0  # D-042: centred log builder capacity (0 = no modifier)
     unstable: bool = False  # D-058: the pre-reform pace failed the dispersion test (baseline window widened)
     kappa: float = 0.0  # D-092 deviation 2026-11-15: variance of the place-level rate multiplier w (0 = none)
+    phi: float = 0.0  # D-092 deviation (b): per-year NB overdispersion, Var = μ + φμ² (0 = Poisson)
 
     @property
     def B(self) -> np.ndarray:
@@ -341,7 +342,7 @@ def _place_loglik_w(y, B, k, theta: float, alpha: float, kappa: float) -> float:
     return float(np.logaddexp.reduce(terms))
 
 
-def place_loglik(y, B, k, theta: float, alpha: float, kappa: float = 0.0) -> float:
+def place_loglik(y, B, k, theta: float, alpha: float, kappa: float = 0.0, phi: float = 0.0) -> float:
     """log ∫∫ Π_t Poisson(y_t; w (B_t + θ u k_t)) dGamma(u; mean 1, var α) dGamma(w; mean 1, var κ), dropping
     Σ log y_t! (a constant). w (D-092 deviation 2026-11-15) is integrated in closed form (`_w_mixed`); κ = 0
     is the run-4 likelihood.
@@ -350,8 +351,12 @@ def place_loglik(y, B, k, theta: float, alpha: float, kappa: float = 0.0) -> flo
     Var = μ + αμ² (`calibrate_adu.nb_loglik`, plus log y!).
     """
     y, B, k = (np.asarray(a, dtype=float) for a in (y, B, k))
+    if kappa >= KAPPA_NONE and phi >= KAPPA_NONE:
+        raise ValueError("use one noise form: kappa (per place) or phi (per year), not both")
     if kappa >= KAPPA_NONE:
         return _place_loglik_w(y, B, k, theta, alpha, kappa)
+    if phi >= KAPPA_NONE:
+        return _place_loglik_y(y, B, k, theta, alpha, phi)
     if alpha < ALPHA_POISSON:
         return float(np.sum(_log_pois(y, B + theta * k)))
     u, w, lump = _u_grid(alpha)
@@ -375,14 +380,17 @@ class Stack:
     starts: np.ndarray
     n_places: int
     kappa: float = 0.0
+    phi: float = 0.0
 
     @classmethod
     def of(cls, places: Sequence[Place]) -> Stack:
         if isinstance(places, Stack):
             return places
-        kappas = {p.kappa for p in places}
-        if len(kappas) > 1:
-            raise ValueError(f"places carry different kappa values: {sorted(kappas)}")
+        kappas, phis = {p.kappa for p in places}, {p.phi for p in places}
+        if len(kappas) > 1 or len(phis) > 1:
+            raise ValueError(
+                f"places carry different noise values: kappa {sorted(kappas)}, phi {sorted(phis)}"
+            )
         lens = [len(p.years) for p in places]
         return cls(
             y=np.concatenate([p.y for p in places]),
@@ -392,6 +400,7 @@ class Stack:
             starts=np.concatenate([[0], np.cumsum(lens)[:-1]]).astype(int),
             n_places=len(places),
             kappa=kappas.pop() if kappas else 0.0,
+            phi=phis.pop() if phis else 0.0,
         )
 
 
@@ -399,8 +408,12 @@ def loglik(places, theta: float, alpha: float, half: float, slope: float = SLOPE
     """Σ over places of `place_loglik`, computed on the stacked years."""
     st = Stack.of(places)
     k = st.kr * ramp(st.age, half, slope)
+    if st.kappa >= KAPPA_NONE and st.phi >= KAPPA_NONE:
+        raise ValueError("use one noise form: kappa (per place) or phi (per year), not both")
     if st.kappa >= KAPPA_NONE:
         return _loglik_w(st, k, theta, alpha)
+    if st.phi >= KAPPA_NONE:
+        return _loglik_y(st, k, theta, alpha)
     if alpha < ALPHA_POISSON:
         return float(np.sum(_log_pois(st.y, st.B + theta * k)))
     u, w, lump = _u_grid(alpha)
@@ -443,9 +456,59 @@ def _loglik_w(st: Stack, k: np.ndarray, theta: float, alpha: float) -> float:
     return float(np.logaddexp.reduce(terms, axis=0).sum())
 
 
+def _nb_core(y, mu, phi: float, lg):
+    """`nb_year_terms` with the μ-free part lg = lnΓ(y + r) − lnΓ(r) passed in (it is fixed for a fit, so it
+    is computed once per call, not once per u node)."""
+    r = 1.0 / phi
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ymu = np.where(y > 0, y * np.log(np.where(mu > 0, mu, 1.0) / (r + mu)), 0.0)
+        ymu = ymu + np.where((mu <= 0) & (y > 0), -np.inf, 0.0)
+    return lg + r * np.log(r / (r + mu)) + ymu
+
+
+def _lg(y, phi: float):
+    r = 1.0 / phi
+    return np.vectorize(math.lgamma, otypes=[float])(np.asarray(y, dtype=float) + r) - math.lgamma(r)
+
+
+def _place_loglik_y(y, B, k, theta: float, alpha: float, phi: float) -> float:
+    """`place_loglik` with per-year NB noise (φ > 0): Π_t NB(y_t; B_t + θ u k_t, φ), u on its grid."""
+    lg = _lg(y, phi)
+    if alpha < ALPHA_POISSON:
+        return float(np.sum(_nb_core(y, B + theta * k, phi, lg)))
+    u, wts, lump = _u_grid(alpha)
+    ll = _nb_core(y[None, :], B[None, :] + theta * u[:, None] * k[None, :], phi, lg[None, :]).sum(axis=1)
+    with np.errstate(divide="ignore"):
+        terms = np.log(wts) + ll
+        if lump > 0:
+            terms = np.append(terms, math.log(lump) + float(np.sum(_nb_core(y, B, phi, lg))))
+    return float(np.logaddexp.reduce(terms))
+
+
+def _loglik_y(st: Stack, k: np.ndarray, theta: float, alpha: float) -> float:
+    """`loglik` with per-year NB noise (φ = st.phi > 0), per place, u on its grid."""
+    lg = _lg(st.y, st.phi)
+    if alpha < ALPHA_POISSON:
+        return float(np.sum(_nb_core(st.y, st.B + theta * k, st.phi, lg)))
+    u, wts, lump = _u_grid(alpha)
+    mu = st.B[None, :] + theta * u[:, None] * k[None, :]
+    ll = np.add.reduceat(_nb_core(st.y[None, :], mu, st.phi, lg[None, :]), st.starts, axis=1)
+    with np.errstate(divide="ignore"):
+        terms = np.log(wts)[:, None] + ll
+        if lump > 0:
+            base = np.add.reduceat(_nb_core(st.y, st.B, st.phi, lg), st.starts)
+            terms = np.vstack([terms, math.log(lump) + base[None, :]])
+    return float(np.logaddexp.reduce(terms, axis=0).sum())
+
+
+def with_phi(places: Sequence[Place], phi: float) -> list[Place]:
+    """The places with the per-year NB overdispersion φ set (D-092 deviation (b)); κ is cleared."""
+    return [replace(p, phi=float(phi), kappa=0.0) for p in places]
+
+
 def with_kappa(places: Sequence[Place], kappa: float) -> list[Place]:
     """The places with the rate-multiplier variance κ set (D-092 deviation 2026-11-15)."""
-    return [replace(p, kappa=float(kappa)) for p in places]
+    return [replace(p, kappa=float(kappa), phi=0.0) for p in places]
 
 
 @dataclass(frozen=True)
@@ -973,7 +1036,7 @@ def predict_places(
         u = r.gamma(1 / alpha, alpha, size=draws) if alpha >= ALPHA_POISSON else np.ones(draws)
         k = p.k(half) * math.exp(b * p.z)
         mu = p.B[None, :] + (th * u)[:, None] * k[None, :]
-        out[p.geoid] = r.poisson(mu * _w_draws(p, seed, draws)[:, None])
+        out[p.geoid] = r.poisson(mu * _w_draws(p, seed, draws)[:, None] * _year_draws(p, seed, draws))
     return out
 
 
@@ -985,8 +1048,24 @@ def benchmark_places(places: Sequence[Place], rate: float, half: float, draws: i
     for p in places:
         r = np.random.default_rng([seed, zlib.crc32(p.geoid.encode())])
         mu = p.B + rate * p.k(half)
-        out[p.geoid] = r.poisson(np.broadcast_to(mu, (draws, len(mu))) * _w_draws(p, seed, draws)[:, None])
+        m = (
+            np.broadcast_to(mu, (draws, len(mu)))
+            * _w_draws(p, seed, draws)[:, None]
+            * _year_draws(p, seed, draws)
+        )
+        out[p.geoid] = r.poisson(m)
     return out
+
+
+def _year_draws(p: Place, seed: int, draws: int) -> np.ndarray | float:
+    """Per-year Gamma(mean 1, variance φ) multipliers (draws × years), so each year is NB(μ_t, φ) given the
+    rest, from the place's own stream keyed by (seed, geoid, 2); 1.0 when φ = 0 (draws unchanged)."""
+    import zlib
+
+    if p.phi < KAPPA_NONE:
+        return 1.0
+    r = np.random.default_rng([seed, zlib.crc32(p.geoid.encode()), 2])
+    return r.gamma(1 / p.phi, p.phi, size=(draws, len(p.years)))
 
 
 def _w_draws(p: Place, seed: int, draws: int) -> np.ndarray:
@@ -1025,10 +1104,10 @@ def heldout_log_score(
     By hand: Poisson (α ≈ 0), B = 0, one year, k = 1, y = 1, θ = 2, se = 0 -> ln 2 − 2."""
     k = place.k(half) * math.exp(b * place.z)
     if log_se <= 0:
-        return place_loglik(place.y, place.B, k, theta, alpha, place.kappa)
+        return place_loglik(place.y, place.B, k, theta, alpha, place.kappa, place.phi)
     x, lw = gh_log_nodes(log_se, n)
     terms = [
-        w + place_loglik(place.y, place.B, k, theta * math.exp(xi), alpha, place.kappa)
+        w + place_loglik(place.y, place.B, k, theta * math.exp(xi), alpha, place.kappa, place.phi)
         for xi, w in zip(x, lw, strict=True)
     ]
     return float(np.logaddexp.reduce(terms))
@@ -1040,6 +1119,8 @@ def no_effect_log_score(place: Place) -> float:
     if place.kappa >= KAPPA_NONE:
         y, B = np.asarray(place.y, float), np.asarray(place.B, float)
         return float(_w_mixed(_ylogmu(y, B).sum(), B.sum(), y.sum(), place.kappa))
+    if place.phi >= KAPPA_NONE:
+        return float(np.sum(nb_year_terms(place.y, place.B, place.phi)))
     return float(np.sum(_log_pois(place.y, place.B)))
 
 

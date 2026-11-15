@@ -81,7 +81,7 @@ def row(f: cal.KappaFit) -> dict:
             "loglik_poisson": f.loglik_poisson, "places": f.n_places, "place_years": f.n_years}  # fmt: skip
 
 
-def main(out: Path, dry: bool) -> None:
+def main(out: Path, dry: bool, form: str = "w") -> None:
     t0 = time.time()
     p = d092.params()
     store = DataStore()
@@ -100,15 +100,16 @@ def main(out: Path, dry: bool) -> None:
 
     # ================= Not run without Ben's go-ahead (D-092 §9) =================
     every = [q for ps in by_origin.values() for q in ps]
-    main_fit = cal.fit_kappa(every)
-    res = {"main": row(main_fit), "origin_2021_only": row(cal.fit_kappa(by_origin[2021]))}
-    res["by_state"] = {s: row(cal.fit_kappa([q for q in every if state[q.geoid] == s])) for s in STATES}
+    main_fit = cal.fit_noise(every, form)
+    res = {"main": row(main_fit), "origin_2021_only": row(cal.fit_noise(by_origin[2021], form))}
+    res["by_state"] = {s: row(cal.fit_noise([q for q in every if state[q.geoid] == s], form)) for s in STATES}
     rows = [{"geoid": q.geoid, "name": q.name, "state": state[q.geoid], "origin": q.T, "years": len(q.years),
              "observed": float(q.y.sum()), "baseline": float(q.B.sum())} for q in every]  # fmt: skip
     out.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(out / "places.csv", index=False)
-    summary = {"kappa": res, "kept_places": len(keep), "removed": removed, "origins": list(ORIGINS),
-               "horizon": HORIZON, "seconds": round(time.time() - t0)}  # fmt: skip
+    summary = {"form": form, "kappa" if form == "w" else "phi": res, "kept_places": len(keep),
+               "removed": removed, "origins": list(ORIGINS), "horizon": HORIZON,
+               "seconds": round(time.time() - t0)}  # fmt: skip
     (out / "summary.json").write_text(json.dumps(summary, indent=2, default=float))
     print(json.dumps(summary, indent=1, default=float))
 
@@ -117,5 +118,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--dry", action="store_true", help="structure only: places per origin, no outcome read")
+    ap.add_argument("--form", choices=("w", "year"), default="w",
+                    help="w: place multiplier κ (run 7); year: per-year NB φ (deviation (b))")  # fmt: skip
     a = ap.parse_args()
-    main(a.out, a.dry)
+    main(a.out, a.dry, a.form)

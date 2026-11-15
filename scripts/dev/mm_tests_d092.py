@@ -318,6 +318,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
         "test_c_places": len(c_df),
         "data_tier": "not run (see README)",
         "kappa": d092.KAPPA,
+        "phi": d092.PHI,
         "seed": SEED,
         "draws": DRAWS,
         "seconds": round(time.time() - t0),
@@ -333,8 +334,13 @@ if __name__ == "__main__":
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--kappa", type=float, default=0.0,
                     help="variance of the rate multiplier w (κ); > 0: scores M, C4 only")  # fmt: skip
+    ap.add_argument(
+        "--phi", type=float, default=0.0, help="per-year NB overdispersion φ; > 0: scores M, C4 only"
+    )
     a = ap.parse_args()
-    if a.kappa > 0:
-        d092.KAPPA, d092.ACTIVE = a.kappa, {"C4"}
+    if a.kappa > 0 and a.phi > 0:
+        ap.error("use --kappa or --phi, not both")
+    if a.kappa > 0 or a.phi > 0:
+        d092.KAPPA, d092.PHI, d092.ACTIVE = a.kappa, a.phi, {"C4"}
         MODELS = ("M", "C4")
     main(a.run4, a.out, a.run3)
