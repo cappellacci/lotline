@@ -15,12 +15,11 @@
     permits with ADUs in the project-name text only, so it is a lower bound (maybe).
   - Oregon: Deschutes County (public domain) and Jackson County (CC BY 4.0) look usable, from metadata only.
     Keizer, via MWVCOG, is the cheapest new place after unblinding.
-  - Fort Worth's Socrata endpoint is gone (404) and the data moved to ArcGIS. Its `Use_Type 'Accessory Dwelling'`
-    field is mostly non-dwellings.
+  - Fort Worth's old Socrata table is gone, but `fw_permits` already uses the ArcGIS layer, so no repoint is
+    needed. Its `Use_Type 'Accessory Dwelling'` field is mostly non-dwellings.
   - Cincinnati's short series comes from its permit text: ADUs are rarely named before 2023.
 - **Decisions:** None made. Proposed for Ben:
   - which candidates, if any, to register;
-  - repoint `fw_permits` to the ArcGIS layer;
   - whether the Corvallis and DLCD city-year ADU tables (holdout outcomes, not opened) should score the Oregon test
     after the freeze.
 - **AI:** Claude Code (Opus 5.5) ran the search through subagents and wrote the report. The lead session re-ran the
