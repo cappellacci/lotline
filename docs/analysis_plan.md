@@ -6333,8 +6333,28 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Status:** Ben to accept the outcome. Nothing written to config.
 
 ### D-091 · 2026-11-14 · ADUs: a drift term for the forecast window, its spread learned leaving one state out (method only, before any run)
-- **Status: proposed.** Ben chose this approach on 2026-11-14 ("Let's try the leave out one state method").
-  No fit, forecast or score for this entry has been run.
+- **Status: accepted 2026-11-14, with two conditions** ("I accept as long as 1. We can roll back. 2. you show
+  me clear evidence in the report following this analysis on whether this improves the predictive power").
+  Ben chose the approach the same day ("Let's try the leave out one state method"). No fit, forecast or score
+  for this entry had been run when it was accepted. How each condition is met:
+  1. **Rollback.**
+     - The drift is an option on D-090's code, off by default.
+     - σ = 0 reproduces D-090's draws and scores exactly, and a test checks it.
+     - Nothing goes to config or the tool. The tool outcomes below take effect only through a later,
+       separate approval.
+     - The work sits on its own branch and PR (`ws/adu-drift`), so dropping it means closing that PR.
+  2. **Evidence on predictive power, side by side, with D-090's no-drift forecasts as the baseline.** For F0
+     and F1 the report gives, each with and without drift:
+     - the summed held-out per-place log score and its paired SE (the main measure);
+     - the per-place CRPS summed, and the state totals' CRPS;
+     - the share of places inside their own P10–P90, against the 80% an honest band gives;
+     - the useful states.
+
+     **Drift improves predictive power** if the log-score gain over no drift is more than 2 paired SE. If the
+     gain is smaller, or CRPS gets worse, the report says so plainly.
+
+     The median-1 design cannot move any median, so the ×2 part of "useful" cannot improve. The report says
+     this rather than counting it as a gain or a loss.
 - **Why.** D-090's ranges were far too narrow. P10–P90 averaged about ±9% of the median, and 1 of 16 state ×
   forecaster pairs held the observed total.
   - Four years of a place's own counts pin its rate. Nothing in the model lets that rate move between the fit
@@ -6405,3 +6425,30 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - The code adds the drift term to `adu_forecast` (draws and the quadrature log score), the σ fit, and the
     calibration share, each with a hand-worked test.
   - It extends `scripts/dev/adu_time_split.py` with a `--drift` step that reads D-090's outputs.
+- **Built, 2026-11-14, before any run.**
+  - **Code:**
+    - `src/lotline/model/adu_forecast.py` gains the drift options and the fixed-drift log-score grids. It also
+      gains `drift_loglik`, `fit_sigma`, `fit_mu_sigma`, `drift_mult`, `coverage` and `predict_new`.
+    - Eight hand-worked tests sit in `tests/model/test_adu_forecast.py`.
+    - The run script is `scripts/dev/adu_drift.py`.
+
+  What the build settles that the entry left open:
+  1. **The run is its own script,** `adu_drift.py`, not a `--drift` flag on D-090's. It reads D-090's
+     `places.csv` and F1 fit and rebuilds D-090's places and draws unchanged. Keeping it separate leaves
+     D-090's script as it ran.
+  2. **The integral over d uses the trapezoid rule, not 40 Gauss–Hermite nodes.**
+     - Each place's log score is computed at fixed drifts, from log d −8 to +8 in steps of 0.02, and d is
+       integrated on that grid.
+     - A hand-worked test showed why. A large place's likelihood is about 0.03 wide in log d, and 40 nodes
+       cannot resolve it: on simulated places with σ = 0.8, the node version found 0.55. The grid version
+       recovers 0.8 (test `test_fit_sigma_recovers_spread`).
+     - Mass beyond log d ±8 (×3,000) is dropped.
+  3. **The rollback check is built in.**
+     - With no drift, the draws are D-090's exactly (test `test_no_drift_reproduces_d090_exactly`).
+     - The run compares each place's grid value at d = 1 with D-090's `place_scores.csv` and logs the largest
+       gap.
+  4. **The shared-by-state sensitivity uses the same σ as the main read.** It has no per-place log score,
+     because a shared d does not split by place. It is scored on totals and coverage only.
+  5. **σ on all four states together is computed and logged for reference.** It is not used for any forecast.
+  6. **A smoke run** (500 draws) checked the code path. Its outputs went to a scratch folder, and only its
+     status lines were shown, not its results.

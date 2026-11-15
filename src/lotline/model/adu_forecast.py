@@ -109,20 +109,26 @@ def f0_posterior(fit_pl: cal.PlaceData, shape0: float = F0_PRIOR_SHAPE) -> tuple
     return float(np.sum(fit_pl.y)) + shape0, float(np.sum(lots(fit_pl)))
 
 
-def f0_draws(fit_pl: cal.PlaceData, win_pl: cal.PlaceData, n: int, seed: int) -> np.ndarray:
-    """F0's predictive counts (n draws × window years), from a stream keyed by (seed, geoid)."""
+def f0_draws(
+    fit_pl: cal.PlaceData, win_pl: cal.PlaceData, n: int, seed: int, mult: np.ndarray | None = None
+) -> np.ndarray:
+    """F0's predictive counts (n draws × window years), from a stream keyed by (seed, geoid). `mult` (D-091):
+    a drift multiplier per draw on the window rate; None is D-090's draws exactly."""
     a, b = f0_posterior(fit_pl)
     rng = np.random.default_rng([seed, zlib.crc32(fit_pl.geoid.encode()), 90])
     rate = rng.gamma(a, 1.0 / b, size=n)
+    if mult is not None:
+        rate = rate * mult
     return rng.poisson(rate[:, None] * lots(win_pl)[None, :])
 
 
-def f0_log_score(fit_pl: cal.PlaceData, win_pl: cal.PlaceData) -> float:
+def f0_log_score(fit_pl: cal.PlaceData, win_pl: cal.PlaceData, logd: float = 0.0) -> float:
     """log P(window counts | F0), the gamma rate integrated (exact):
     Σ y_t log e_t − Σ log y_t! + a log b − log Γ(a) + log Γ(a + Y) − (a + Y) log(b + Σ e_t).
-    By hand: a 1, b 1 (fit y 0.5, lots 1), one window year y 0, e 1 -> log(1/2)."""
+    By hand: a 1, b 1 (fit y 0.5, lots 1), one window year y 0, e 1 -> log(1/2). `logd` (D-091): the window
+    exposure is scaled by exp(logd), a fixed drift."""
     a, b = f0_posterior(fit_pl)
-    y, e = np.asarray(win_pl.y, dtype=float), lots(win_pl)
+    y, e = np.asarray(win_pl.y, dtype=float), lots(win_pl) * math.exp(logd)
     big_y, big_e = float(y.sum()), float(e.sum())
     head = float(np.sum(np.where(y > 0, y * np.log(np.where(e > 0, e, 1.0)), 0.0)))
     head -= float(sum(math.lgamma(v + 1) for v in y))
@@ -311,11 +317,14 @@ def _combo_loglik(y: np.ndarray, mu: np.ndarray, alpha: float) -> np.ndarray:
     return jr._marginal(y, mu, alpha, float(sum(math.lgamma(v + 1) for v in y)))
 
 
-def predict_own(fit_pl: cal.PlaceData, win_pl: cal.PlaceData, g: jr.GlobalsA, seed: int) -> np.ndarray:
+def predict_own(
+    fit_pl: cal.PlaceData, win_pl: cal.PlaceData, g: jr.GlobalsA, seed: int, mult: np.ndarray | None = None
+) -> np.ndarray:
     """F1's predictive counts (draws × window years) for a place with history. In each draw j the place's
     blank-field combination c is drawn with probability ∝ w_c P(fit counts | scale_j, c), then
     u ~ Gamma(r + Y, rate r + scale_j K_c) (r = 1/α, Y the fit counts, K_c the fit exposure; D-052), then each
-    window year ~ Poisson(scale_j u k_ct). α = 0 gives u = 1."""
+    window year ~ Poisson(scale_j u k_ct). α = 0 gives u = 1. `mult` (D-091): a drift multiplier per draw on
+    the window mean; None is D-090's draws exactly."""
     n = len(g.scale)
     rng = np.random.default_rng([seed, zlib.crc32(fit_pl.geoid.encode()), 91])
     scale = g.place_scale(fit_pl)
@@ -336,7 +345,8 @@ def predict_own(fit_pl: cal.PlaceData, win_pl: cal.PlaceData, g: jr.GlobalsA, se
         u = rng.gamma(r + y.sum(), 1.0 / (r + scale * big_k))
     else:
         u = np.ones(n)
-    return rng.poisson((scale * u)[:, None] * kw[combo])
+    m = scale * u if mult is None else scale * u * mult
+    return rng.poisson(m[:, None] * kw[combo])
 
 
 def _whole(fit_pl: cal.PlaceData, win_pl: cal.PlaceData) -> cal.PlaceData:
@@ -362,14 +372,102 @@ def _whole(fit_pl: cal.PlaceData, win_pl: cal.PlaceData) -> cal.PlaceData:
     )
 
 
-def own_log_score(fit_pl: cal.PlaceData, win_pl: cal.PlaceData, g: jr.GlobalsA) -> float:
+def own_log_score(fit_pl: cal.PlaceData, win_pl: cal.PlaceData, g: jr.GlobalsA, logd: float = 0.0) -> float:
     """D-049's held-out log score of the window counts given the place's own fit counts:
     log mean_j P(window | fit counts, draw j) = log mean_j exp(ℓ_j(fit + window) − ℓ_j(fit)), each ℓ with u
-    integrated and combinations mixed (`joint_refit.place_loglik`)."""
-    both = jr.place_loglik(_whole(fit_pl, win_pl), g)
+    integrated and combinations mixed (`joint_refit.place_loglik`). `logd` (D-091): the window exposure is
+    scaled by exp(logd), a fixed drift."""
+    return float(own_log_score_grid(fit_pl, win_pl, g, [logd])[0])
+
+
+def own_log_score_grid(fit_pl: cal.PlaceData, win_pl: cal.PlaceData, g: jr.GlobalsA, logds) -> np.ndarray:
+    """`own_log_score` at each fixed drift log d (the fit part's likelihood computed once)."""
     alone = jr.place_loglik(fit_pl, g)
-    d = np.where(np.isfinite(alone), both - alone, -np.inf)
-    return float(jr._logsumexp_rows(d[None, :], axis=1)[0] - math.log(len(d)))
+    out = []
+    for ld in logds:
+        wp = win_pl if ld == 0 else replace(win_pl, base=win_pl.base * math.exp(ld))
+        d = np.where(np.isfinite(alone), jr.place_loglik(_whole(fit_pl, wp), g) - alone, -np.inf)
+        out.append(float(jr._logsumexp_rows(d[None, :], axis=1)[0] - math.log(len(d))))
+    return np.array(out)
+
+
+def predict_new(
+    win_pl: cal.PlaceData, g: jr.GlobalsA, seed: int, mult: np.ndarray | None = None
+) -> np.ndarray:
+    """A new place's predictive counts, u from the prior: `joint_refit.predict`'s Form A path on the same
+    stream, with an optional drift multiplier per draw (None gives `joint_refit.predict` exactly)."""
+    n = len(g.scale)
+    rng = np.random.default_rng([seed, zlib.crc32(win_pl.geoid.encode())])
+    u = rng.gamma(1 / g.alpha, g.alpha, size=n) if g.alpha > 0 else np.ones(n)
+    combo = rng.choice(len(win_pl.w), size=n, p=win_pl.w / win_pl.w.sum())
+    m = g.place_scale(win_pl) * u if mult is None else g.place_scale(win_pl) * u * mult
+    return rng.poisson(m[:, None] * win_pl.k(g.cvals)[combo])
+
+
+def new_log_score_grid(win_pl: cal.PlaceData, g: jr.GlobalsA, logds) -> np.ndarray:
+    """`joint_refit.held_out_log_score` of a new place's window at each fixed drift log d."""
+    return np.array(
+        [jr.held_out_log_score(win_pl if ld == 0 else replace(win_pl, base=win_pl.base * math.exp(ld)), g)
+         for ld in logds]
+    )  # fmt: skip
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-091: the drift term d = exp(μ + σ z), one draw per place for the whole window
+# ---------------------------------------------------------------------------------------------------------
+
+LOGD_STEP = 0.02
+LOGD_GRID = np.round(np.arange(-8.0, 8.0 + 1e-9, LOGD_STEP), 10)  # fixed-drift grid for the log scores
+SIGMA_GRID = np.round(np.arange(0.0, 3.0 + 1e-9, 0.025), 10)  # D-091: σ from 0 to 3 by 0.025
+MU_GRID = np.round(np.arange(-2.0, 2.0 + 1e-9, 0.05), 10)  # the log-mean sensitivity
+CALIBRATION = (0.65, 0.95)  # rule 3: share of places inside their own P10-P90
+
+
+def drift_loglik(grid_ll: np.ndarray, sigma: float, mu: float = 0.0) -> float:
+    """log ∫ P(y | log d = v) N(v; μ, σ²) dv for one place, from its log scores on `LOGD_GRID`, by the
+    trapezoid rule on that grid (step 0.02: a large place's likelihood is a few hundredths wide in log d, too
+    narrow for Gauss-Hermite nodes; the trapezoid rule is very accurate for smooth peaked integrands). Mass
+    beyond ±8 is dropped. σ = 0 gives the log score at log d = μ (linear between grid points)."""
+    if sigma <= 0:
+        return float(np.interp(mu, LOGD_GRID, grid_ll))
+    v = LOGD_GRID
+    lw = np.full(len(v), math.log(LOGD_STEP))
+    lw[[0, -1]] -= math.log(2)
+    a = grid_ll + lw - 0.5 * ((v - mu) / sigma) ** 2 - math.log(sigma * math.sqrt(2 * math.pi))
+    top = a.max()
+    return float(top + math.log(np.exp(a - top).sum())) if np.isfinite(top) else -math.inf
+
+
+def fit_sigma(grids: Sequence[np.ndarray], mu: float = 0.0, sigmas=SIGMA_GRID) -> float:
+    """σ maximizing Σ_places `drift_loglik` (the training places' windows)."""
+    ll = [sum(drift_loglik(g_, s, mu) for g_ in grids) for s in sigmas]
+    return float(sigmas[int(np.argmax(ll))])
+
+
+def fit_mu_sigma(grids: Sequence[np.ndarray], mus=MU_GRID, sigmas=SIGMA_GRID) -> tuple[float, float]:
+    """(μ, σ) maximizing Σ_places `drift_loglik` (the log-mean sensitivity)."""
+    best, arg = -math.inf, (0.0, 0.0)
+    for m in mus:
+        for s in sigmas:
+            ll = sum(drift_loglik(g_, s, m) for g_ in grids)
+            if ll > best:
+                best, arg = ll, (float(m), float(s))
+    return arg
+
+
+def drift_mult(n: int, sigma: float, seed: int, key: str, mu: float = 0.0) -> np.ndarray:
+    """d per draw, exp(μ + σ z), from a stream keyed by (seed, key): key a geoid (independent places) or a
+    state (one d shared by every place in it)."""
+    z = np.random.default_rng([seed, zlib.crc32(key.encode()), 92]).standard_normal(n)
+    return np.exp(mu + sigma * z)
+
+
+def coverage(inside: Sequence[bool]) -> tuple[float, bool]:
+    """(share of places inside their own P10-P90, whether it lies in D-091's 65-95%). By hand: 8 of 10 ->
+    (0.8, True)."""
+    v = np.asarray(inside, dtype=bool)
+    share = float(v.mean()) if len(v) else math.nan
+    return share, bool(CALIBRATION[0] <= share <= CALIBRATION[1])
 
 
 # ---------------------------------------------------------------------------------------------------------

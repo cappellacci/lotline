@@ -181,3 +181,67 @@ def test_decide_hand_worked():
     )  # fmt: skip
     v = af.decide({"MN": 1, "NC": 0, "TX": 1, "OR": 0}, {"MN": 1, "NC": 0, "TX": 1, "OR": 0}, 7, 4, 7, 3)
     assert (v.own_history_enough, v.mechanism_beats_persistence, v.f2_replaces_f1) == (False, False, True)
+
+
+# --- D-091: the drift term ------------------------------------------------------------------------------
+
+
+def test_no_drift_reproduces_d090_exactly():
+    # rollback: mult None (and mult 1) give D-090's draws; logd 0 gives D-090's scores
+    fit, win = _pl([1, 3], base=[1.0, 2.0]), _pl([2, 0], years=[2021, 2022], base=[1.5, 1.0])
+    g = jr.GlobalsA(np.array([0.5, 2.0, 1.1]).repeat(100), 0.7, CV)
+    base = af.predict_own(fit, win, g, 9)
+    assert np.array_equal(base, af.predict_own(fit, win, g, 9, mult=np.ones(300)))
+    assert np.array_equal(af.f0_draws(fit, win, 300, 3), af.f0_draws(fit, win, 300, 3, mult=np.ones(300)))
+    assert np.array_equal(af.predict_new(win, g, 4), jr.predict([win], g, 4)[win.geoid])
+    assert af.own_log_score(fit, win, g, 0.0) == af.own_log_score(fit, win, g)
+
+
+def test_f0_log_score_with_drift_hand_worked():
+    # a 1, b 1; window y 0 on 1 lot, drift ×3: ∫ e^-λ e^-3λ dλ = 1/4
+    fit, win = _pl([0.5], lots=[1.0]), _pl([0], years=[2021], lots=[1.0])
+    assert af.f0_log_score(fit, win, math.log(3)) == pytest.approx(math.log(0.25))
+
+
+def test_own_log_score_with_drift_hand_worked():
+    # u ~ Gamma(3, rate 2); window k 1 × drift 2: E e^-2u = (2/4)^3 = 1/8
+    g = jr.GlobalsA(np.array([1.0]), 1.0, CV)
+    assert af.own_log_score(_pl([2]), _pl([0], years=[2021]), g, math.log(2)) == pytest.approx(
+        math.log(1 / 8)
+    )
+
+
+def test_drift_loglik_hand_worked():
+    grid = af.LOGD_GRID
+    assert af.drift_loglik(np.full(len(grid), -3.0), 1.2) == pytest.approx(
+        -3.0
+    )  # flat: drift changes nothing
+    # log score linear in log d: L = log d -> log E e^{σ z} = σ²/2
+    assert af.drift_loglik(grid.copy(), 0.5) == pytest.approx(0.125, abs=1e-6)
+    assert af.drift_loglik(grid.copy(), 0.0, mu=0.3) == pytest.approx(0.3)
+
+
+def test_fit_sigma_recovers_spread():
+    rng = np.random.default_rng(7)
+    lg = np.vectorize(math.lgamma)
+    grids = []
+    for _ in range(300):
+        e = 1000.0  # a large place: its likelihood is about 0.03 wide in log d
+        y = rng.poisson(e * math.exp(0.8 * rng.standard_normal()))
+        mu = e * np.exp(af.LOGD_GRID)
+        grids.append(y * np.log(mu) - mu - lg(y + 1.0))
+    assert af.fit_sigma(grids) == pytest.approx(0.8, abs=0.1)
+    m, s = af.fit_mu_sigma(grids, mus=np.round(np.arange(-0.5, 0.5 + 1e-9, 0.05), 10))
+    assert abs(m) <= 0.15 and s == pytest.approx(0.8, abs=0.1)
+
+
+def test_drift_mult_shared_by_key():
+    a, b = af.drift_mult(5, 0.7, 1, "NC"), af.drift_mult(5, 0.7, 1, "NC")
+    assert np.array_equal(a, b)
+    assert np.allclose(af.drift_mult(5, 0.0, 1, "x"), 1.0)
+    assert np.log(af.drift_mult(200_000, 0.7, 1, "y")).std() == pytest.approx(0.7, rel=0.01)
+
+
+def test_coverage_hand_worked():
+    assert af.coverage([True] * 8 + [False] * 2) == (0.8, True)
+    assert af.coverage([True] * 1 + [False] * 9) == (0.1, False)
