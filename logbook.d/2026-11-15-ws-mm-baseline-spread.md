@@ -42,7 +42,7 @@
   - **Result:** κ̂ = 7.65 (7.02–8.35). By state, MN 4.4, NC 5.0, OH 4.8 and TX 11.0.
   - **What that means:** the median place would get a multiplier of 0.02. That is not usable as it stands, so the
     refit was not started.
-  - **Cause:** 2–4 unit buildings come in projects. 47% of the five-year pseudo-forecasts saw none, and only 33%
+  - **Cause:** 2–4 unit buildings come in projects. 47% of the five-year pseudo-forecasts saw none, and only 28%
     landed within ×2 of their baseline. A one-project burst in the three pre-years sets the baseline: Forney
     has a baseline of 178 and built 0.
   - **Proposal for Ben:** choose a steadier baseline on the same uncoded places before refitting.
