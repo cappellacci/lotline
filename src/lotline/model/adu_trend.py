@@ -304,9 +304,14 @@ def _early_late(pl_early: cal.PlaceData, pl_late: cal.PlaceData, g):
             continue
         mu = me * ke[j][None, :]
         big_me[:, j] = mu.sum(axis=1)
-        lw[:, j] = math.log(share[j]) + jr._marginal(ye, mu, g.alpha, lf)
+        lw[:, j] = math.log(share[j]) + jr._marginal(ye, mu, _alpha(g, pl_early), lf)
     late = ml[:, None, :] * kl[None, :, :]
     return late, big_me, lw
+
+
+def _alpha(g, pl: cal.PlaceData) -> float:
+    """The place's α under the draws: by type where they carry one (D-094), else the one α."""
+    return g.place_alpha(pl) if hasattr(g, "place_alpha") else g.alpha
 
 
 def forecast(pl_early: cal.PlaceData, pl_late: cal.PlaceData, g, seed: int) -> np.ndarray:
@@ -321,8 +326,9 @@ def forecast(pl_early: cal.PlaceData, pl_late: cal.PlaceData, g, seed: int) -> n
     combo = (rng.random(n)[:, None] > np.cumsum(w, axis=1)).sum(axis=1)
     combo = np.minimum(combo, w.shape[1] - 1)
     ye = float(np.sum(pl_early.y))
-    if g.alpha > 0:
-        r = 1.0 / g.alpha
+    a = _alpha(g, pl_early)
+    if a > 0:
+        r = 1.0 / a
         u = rng.gamma(r + ye, 1.0 / (r + big_me[np.arange(n), combo]))
     else:
         u = np.ones(n)
@@ -349,8 +355,8 @@ def forecast_log_score(pl_early: cal.PlaceData, pl_late: cal.PlaceData, g) -> fl
         if not np.isfinite(lw[:, j]).any():
             continue
         mu_all = np.concatenate([me * ke[j][None, :], late[:, j, :]], axis=1)
-        joint = jr._marginal(y_all, mu_all, g.alpha, lf_all)
-        early = jr._marginal(ye, me * ke[j][None, :], g.alpha, lf_e)
+        joint = jr._marginal(y_all, mu_all, _alpha(g, pl_early), lf_all)
+        early = jr._marginal(ye, me * ke[j][None, :], _alpha(g, pl_early), lf_e)
         post = lw[:, j] - jr._logsumexp_rows(lw, axis=1)  # log P(c | early, draw)
         per[:, j] = post + joint - early
     lp = jr._logsumexp_rows(per, axis=1)

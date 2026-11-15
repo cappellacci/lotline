@@ -101,11 +101,15 @@ def decompose(form, st, t1, fit, g, pred) -> dict:
     multipliers' draws alone, plus Poisson noise)."""
     out = {"form": form, "state": st, "places": len(t1)}
     no_tau = TYP.globals_for(fit, np.zeros(R.DRAWS), R.SEED)
+
+    def no_luck(x):  # every place's α to 0, core cities' too where the draws carry their own (D-094)
+        return dataclasses.replace(x, alpha=0.0, alpha_core=None if x.alpha_core is None else 0.0)
+
     for name, gg in (
         ("full", g),
         ("no_state_multiplier", no_tau),
-        ("no_place_luck", dataclasses.replace(g, alpha=0.0)),
-        ("shared_parameters_only", dataclasses.replace(no_tau, alpha=0.0)),
+        ("no_place_luck", no_luck(g)),
+        ("shared_parameters_only", no_luck(no_tau)),
     ):
         pr = pred if name == "full" else jr.predict(t1, gg, R.SEED)
         tot = np.sum([pr[p.geoid].sum(axis=1) for p in t1], axis=0)

@@ -214,49 +214,93 @@ class CellFit:
     la: float
     b: tuple[float, ...]  # (β_o if estimated, then one per estimated type term)
     loglik: float
+    lam: float = 0.0  # D-094: log(α_core ÷ α_sub); 0 without a spread by type
 
 
-def _ll(p: scr.Prepared, zm: np.ndarray, lt: float, la: float, b) -> float:
+LAMBDA = (-8.0, 8.0)  # D-094: search bounds on λ = log(α_core ÷ α_sub)
+
+
+def alphas(la: float, lam: float, core: np.ndarray | None):
+    """α per place: exp(la) (one value) without a spread by type; exp(la + λ core_i) with one (D-094).
+    By hand: la 0, λ log 0.5, core (1, 0) -> (0.5, 1)."""
+    if core is None:
+        return math.exp(la)
+    return np.exp(np.clip(la + lam * core, *scr.LOG_ALPHA))
+
+
+def _ll(p: scr.Prepared, zm: np.ndarray, lt: float, la: float, b, core=None, lam: float = 0.0) -> float:
     if zm.shape[1]:
         rate = math.exp(lt) * np.exp(zm @ np.asarray(b, dtype=float))
     else:
         rate = np.full(len(p.Y), math.exp(lt))
-    return float(np.sum(scr.place_loglik(p, rate, math.exp(la))))
+    return float(np.sum(scr.place_loglik(p, rate, alphas(la, lam, core))))
 
 
-def _maximize(p, zm, fixed: Mapping[int, float] | None = None, start: CellFit | None = None) -> CellFit:
-    """Maximize over (log θ, log α, b), with the b's in `fixed` (index -> value) held."""
+def _maximize(
+    p, zm, fixed: Mapping[int, float] | None = None, start: CellFit | None = None, core=None, lam_fixed=None
+) -> CellFit:
+    """Maximize over (log θ, log α, b), with the b's in `fixed` (index -> value) held. With `core` (D-094),
+    also over λ = log(α_core ÷ α_sub) unless `lam_fixed` holds it; α is then α_sub."""
     fixed = dict(fixed or {})
     m = zm.shape[1]
     free = [i for i in range(m) if i not in fixed]
+    free_lam = core is not None and lam_fixed is None
     x0 = [math.log(7e-4), math.log(1.5)] + [0.0] * len(free)
     if start is not None:
         x0 = [start.lt, start.la] + [start.b[i] for i in free]
+    if free_lam:
+        x0 = x0 + [start.lam if start is not None else 0.0]
 
     def unpack(x):
         b = np.zeros(m)
         for i, v in fixed.items():
             b[i] = v
-        for i, v in zip(free, x[2:], strict=True):
+        for i, v in zip(free, x[2 : 2 + len(free)], strict=True):
             b[i] = float(np.clip(v, *BETA))
-        return float(x[0]), float(np.clip(x[1], *scr.LOG_ALPHA)), b
+        if free_lam:
+            lam = float(np.clip(x[-1], *LAMBDA))
+        else:
+            lam = 0.0 if lam_fixed is None else float(lam_fixed)
+        return float(x[0]), float(np.clip(x[1], *scr.LOG_ALPHA)), b, lam
 
     def neg(x):
-        lt, la, b = unpack(x)
-        ll = _ll(p, zm, lt, la, b)
+        lt, la, b, lam = unpack(x)
+        ll = _ll(p, zm, lt, la, b, core, lam)
         return -ll if np.isfinite(ll) else 1e300
 
     x, _ = nelder_mead(neg, np.array(x0, dtype=float), step=0.5, iters=4000, tol=1e-9)
     x, val = nelder_mead(neg, x, step=0.05, iters=4000, tol=1e-11)  # restart: Nelder-Mead can stall
-    lt, la, b = unpack(x)
-    return CellFit(lt, la, tuple(float(v) for v in b), -val)
+    lt, la, b, lam = unpack(x)
+    return CellFit(lt, la, tuple(float(v) for v in b), -val, lam)
 
 
-def _interval(p, zm, best: CellFit, i: int) -> tuple[float, float]:
+def _lam_interval(p, zm, best: CellFit, core) -> tuple[float, float]:
+    """D-094: 90% profile interval on λ (an edge at the search bound means it is open there)."""
+
+    def gap(v):
+        f = _maximize(p, zm, start=best, core=core, lam_fixed=v)
+        return 2 * (best.loglik - f.loglik) - cal.CHI2_90
+
+    def edge(far):
+        lo, hi = best.lam, far
+        if gap(far) < 0:
+            return far
+        for _ in range(30):
+            mid = (lo + hi) / 2
+            if gap(mid) < 0:
+                lo = mid
+            else:
+                hi = mid
+        return (lo + hi) / 2
+
+    return edge(LAMBDA[0]), edge(LAMBDA[1])
+
+
+def _interval(p, zm, best: CellFit, i: int, core=None) -> tuple[float, float]:
     """90% profile interval on b_i (an edge at the search bound means it is open there)."""
 
     def gap(v):
-        f = _maximize(p, zm, fixed={i: v}, start=best)
+        f = _maximize(p, zm, fixed={i: v}, start=best, core=core)
         return 2 * (best.loglik - f.loglik) - cal.CHI2_90
 
     def edge(far):
@@ -284,6 +328,11 @@ class Fit3Types(ao.Fit3Term):
     type_low: tuple[float, ...] = ()
     type_high: tuple[float, ...] = ()
     type_estimated: tuple[bool, ...] = ()
+    # D-094, Form S: α (above) is then the suburbs' (and towns') variance and alpha_core the core cities'
+    alpha_core: float | None = None
+    lam: float = 0.0
+    lam_low: float = 0.0
+    lam_high: float = 0.0
 
     def type_se(self) -> np.ndarray:
         return (np.asarray(self.type_high) - np.asarray(self.type_low)) / (2 * ao.Z_90)
@@ -297,9 +346,12 @@ def fit3_types(
     judgment=(0.5, 0.3),
     ranges=((0.2, 1.0), (0.1, 0.6)),
     log_theta_range=(-14.0, 0.0),
+    spread: bool = False,
 ) -> Fit3Types:
-    """Form P by fit 3's procedure (module docstring). `terms=()` fits the base form by the same optimizer."""
+    """Form P by fit 3's procedure (module docstring). `terms=()` fits the base form by the same optimizer.
+    `spread` (D-094, Form S): core cities get their own place-effect variance, α_core = α_sub e^λ."""
     m = len(terms)
+    core = is_core(places) if spread else None
     dmat = np.array([type_d(pl, m)[:m] for pl in places]).reshape(len(places), m)
     est_t = [bool(dmat[:, j].any()) for j in range(m)]
     cols = ([np.array([ao.place_z(pl) for pl in places])] if estimate_beta else []) + [
@@ -307,7 +359,7 @@ def fit3_types(
     ]
     zm = np.column_stack(cols) if cols else np.zeros((len(places), 0))
     preps = {(mo, mx): scr.prepare(places, cal._cvals(mo, mx)) for mo in grid for mx in grid}
-    surface = {key: _maximize(p, zm) for key, p in preps.items()}
+    surface = {key: _maximize(p, zm, core=core) for key, p in preps.items()}
     lls = {key: f.loglik for key, f in surface.items()}
     top = max(lls.values())
 
@@ -328,7 +380,10 @@ def fit3_types(
     cands = [preps[(a, b)] for a in mos for b in mxs]
 
     def prof(lt):
-        return max(scr._golden(lambda la, p=p: _ll(p, zm, lt, la, best.b), *scr.LOG_ALPHA)[1] for p in cands)
+        return max(
+            scr._golden(lambda la, p=p: _ll(p, zm, lt, la, best.b, core, best.lam), *scr.LOG_ALPHA)[1]
+            for p in cands
+        )
 
     ll_hat = max(prof(best.lt), best.loglik)
 
@@ -345,7 +400,8 @@ def fit3_types(
 
     low, high = edge(log_theta_range[0], best.lt), edge(log_theta_range[1], best.lt)
     p = preps[(m_o, m_x)]
-    ints = [_interval(p, zm, best, i) for i in range(zm.shape[1])]
+    ints = [_interval(p, zm, best, i, core) for i in range(zm.shape[1])]
+    lam_low, lam_high = _lam_interval(p, zm, best, core) if spread else (0.0, 0.0)
     k = 1 if estimate_beta else 0
     beta, b_lo, b_hi = (best.b[0], *ints[0]) if estimate_beta else (0.0, 0.0, 0.0)
     tb, tl, th = [], [], []
@@ -382,7 +438,17 @@ def fit3_types(
         type_low=tuple(tl),
         type_high=tuple(th),
         type_estimated=tuple(est_t),
+        alpha_core=float(alphas(best.la, best.lam, np.ones(1))[0]) if spread else None,
+        lam=best.lam if spread else 0.0,
+        lam_low=lam_low,
+        lam_high=lam_high,
     )
+
+
+def is_core(places: Sequence[cal.PlaceData]) -> np.ndarray:
+    """1 for a core city (its `core` indicator), else 0: D-094's spread groups. Read from the places' full
+    `TERMS` indicators, whatever terms the form fits. By hand: d (1, 0) -> 1; (0, 1) -> 0; none -> 0."""
+    return np.array([type_d(pl)[0] if len(type_d(pl)) else 0.0 for pl in places], dtype=float)
 
 
 def type_draws(fit, n: int, seed: int) -> np.ndarray | None:
@@ -408,7 +474,12 @@ def effects(places: Sequence[cal.PlaceData], fit) -> pd.DataFrame:
     p = scr.prepare(places, cal._cvals(fit.m_owner, fit.m_other))
     z = np.array([ao.place_z(pl) for pl in places])
     rate = fit.theta * np.exp(fit.beta * z)
-    u = scr.posterior_mean(p, rate, fit.alpha)
+    a = (
+        fit.alpha
+        if getattr(fit, "alpha_core", None) is None
+        else alphas(math.log(fit.alpha), fit.lam, is_core(places))
+    )
+    u = scr.posterior_mean(p, rate, a)
     return pd.DataFrame(
         {
             "geoid": [pl.geoid for pl in places],

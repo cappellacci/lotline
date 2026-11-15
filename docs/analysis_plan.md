@@ -6551,9 +6551,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   sensitivity); the engine's gap differs from the one σ was learned on.
 
 ### D-094 · 2026-11-15 · ADUs: a separate place-luck spread for core cities and suburbs (method only, before any fit)
-- **Status: proposed by Claude Code, 2026-11-15, on Ben's request ("Draft D-094"). Not yet accepted.** No
-  fit, prediction or score with a type-specific spread has been run. The number is provisional, like D-083 to
-  D-086.
+- **Status: accepted by Ben, 2026-11-15 ("Accept D-094 and run it"). Drafted by Claude Code the same day, on
+  his request ("Draft D-094").** No fit, prediction or score with a type-specific spread had been run when it
+  was accepted. The number is provisional, like D-083 to D-086.
 - **What was looked at before writing** (disclosed because it motivated the entry):
   - the range coverage check (`reports/adu-range-coverage/`, page
     https://claude.ai/artifact/DM6piJbfqSHe6RBZMQVrRh): A + P, each state left out, tier-1 inputs, 64
@@ -6610,3 +6610,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   are both learned from the same 16 places, so the two can trade off, which λ's interval will show; and the
   places with counts are larger than most in their states, so a spread learned on them may not hold for
   places without counts.
+- **Result, 2026-11-15** (`reports/adu-type-spread/`, page https://claude.ai/artifact/1QRuqXpv5b1rrYFDPBszR9):
+  - **λ̂ −0.89 (90% interval −1.59 to −0.16)**: α_core 1.01, α_sub 2.45 (A + P's one α: 1.70). The likelihood
+    ratio over A + P is 4.0 on one parameter. Core-city term +1.81 (+1.20 to +2.43), almost unchanged.
+  - **Leaving one state out:** λ̂ without NC −1.38, without TX −0.88, without OH −0.91, without OR −0.57
+    (interval crosses 0), **without MN +0.51 (−0.63 to +1.60)**. The difference rests on Minnesota's suburbs.
+  - **Decision rule: A + P stays.** Tier-1 held-out log-score gain −0.1 (2 SE 2.9); claim tier 1 for both, 4 of 4
+    useful states at tiers 1 and 2 for both; tests A–B 1 each; test D −0.9 (2 SE 3.7).
+  - **Reported, not deciding:** held-out state-total P90 ÷ P10 would narrow (NC ×24 → ×11, TX ×25 → ×13, OR ×27 →
+    ×18; MN ×9.2 → ×9.4). Coverage in the middle 80%: all 69% → 70%, core cities 88% → 94%, suburbs 62% → 62%,
+    so the per-type spread did not move coverage toward 80%.
+  - **A + S** (spread by type, no type terms): no claim tier, held-out log score −8.6 (2 SE 7.3) against A + P.
+  - Nothing went to config or the engine. The fit option stays in the code, off by default.
+  - **Deviation, disclosed:** τ's profile still fits one α, so the state multiplier's spread is learned as under
+    A + P for every form. Test D's forecasts (`adu_trend`) and the predictive draws read each place's α by type.
