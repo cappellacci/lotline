@@ -49,6 +49,7 @@ class Row:
     from_prior: bool
     floor: bool
     low_recall: bool
+    fit: bool = True
 
     @property
     def fixed(self) -> bool:
@@ -111,6 +112,7 @@ def resolve(table: UndercountTable | None = None) -> list[Row]:
                 r.prior,
                 r.floor,
                 r.low_recall,
+                r.fit,
             )
         )
     return out
@@ -176,6 +178,25 @@ def scale(by_source: pd.DataFrame, factors: Factors | None, count: str = "adu") 
     idx = [factors.index(s, y) for s, y in zip(by_source["source"], by_source["issue_year"], strict=True)]
     k = np.array([1.0 if i < 0 else factors.k[i] for i in idx], dtype=float)
     return by_source.assign(counted=by_source[count], k_row=idx, **{count: by_source[count] * k})
+
+
+def out_of_fit(table: UndercountTable | None = None) -> frozenset[str]:
+    """Sources whose counts never enter the ADU fit or its tests (`fit: false`, D-081 item 4)."""
+    table = load_undercount() if table is None else table
+    return frozenset(r.source for r in table.rows if not r.fit)
+
+
+def low_recall_rows(table: UndercountTable | None = None) -> list[tuple[str, int | None, int | None]]:
+    """(source, first_year, last_year) of the low-recall rows (D-078 §3), for the with/without report."""
+    table = load_undercount() if table is None else table
+    return [(r.source, r.first_year, r.last_year) for r in table.rows if r.low_recall]
+
+
+def at_field_z(z: float, table: UndercountTable | None = None) -> Factors:
+    """Every field row at standard-normal z (one shared z, D-078 §5) and every other row at its median: the
+    D-079 undercount refits use z = ±1.645 (the field rows' 5th and 95th percentiles)."""
+    rows = resolve(table)
+    return Factors(rows, [float(r.quantile(z if r.shared else 0.0)) for r in rows])
 
 
 TABLE = "table"  # a builder's default: the table's central k (`central()`); None turns the correction off
