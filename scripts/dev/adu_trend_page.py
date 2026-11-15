@@ -37,18 +37,24 @@ def ratio_chart(rows, series, label):
         return LW + (math.log(v) - lo) / (hi - lo) * (W - LW - 20)
 
     g = [f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="{esc(label)}">']
-    g.append(f'<rect x="{sx(0.5):.1f}" y="{top - 8}" width="{sx(2) - sx(0.5):.1f}" height="{h - 30 - top + 8}" class="band"/>')
+    g.append(
+        f'<rect x="{sx(0.5):.1f}" y="{top - 8}" width="{sx(2) - sx(0.5):.1f}" height="{h - 30 - top + 8}" class="band"/>'
+    )
     for t, s in ((1 / 32, "÷32"), (1 / 8, "÷8"), (0.5, "÷2"), (1, "×1"), (2, "×2"), (8, "×8")):
-        g.append(f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 8}" y2="{h - 30}" class="{"zero" if t == 1 else "grid"}"/>')
+        g.append(
+            f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 8}" y2="{h - 30}" class="{"zero" if t == 1 else "grid"}"/>'
+        )
         g.append(f'<text x="{sx(t):.1f}" y="{h - 14}" class="tick" text-anchor="middle">{s}</text>')
     for i, (name, vals) in enumerate(rows):
         y = top + rh * i + rh / 2
         g.append(f'<text x="{LW - 10}" y="{y + 4}" class="lab" text-anchor="end">{esc(name)}</text>')
         xs = [sx(v) for v in vals]
         g.append(f'<line x1="{min(xs):.1f}" x2="{max(xs):.1f}" y1="{y}" y2="{y}" class="move"/>')
-        for (cls, _), x in zip(series, xs):
+        for (cls, _), x in zip(series, xs, strict=True):
             g.append(f'<circle cx="{x:.1f}" cy="{y}" r="5" class="{cls}"/>')
-    g.append(f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">observed ÷ forecast median, 2021–25 (shaded: within ×2)</text>')
+    g.append(
+        f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">observed ÷ forecast median, 2021–25 (shaded: within ×2)</text>'
+    )
     g.append("</svg>")
     return "".join(g)
 
@@ -57,7 +63,15 @@ def gamma_chart():
     rows = []
     for fold in ["all", "without MN", "without NC", "without OH", "without TX", "without OR"]:
         r = fits[(fits.variant == "central") & (fits.fold == fold) & (fits.form == "A+T")].iloc[0]
-        rows.append(("All places" if fold == "all" else fold.replace("without", "Without"), r.gamma, r.gamma_low, r.gamma_high, fold in ("all", "without OR")))
+        rows.append(
+            (
+                "All places" if fold == "all" else fold.replace("without", "Without"),
+                r.gamma,
+                r.gamma_low,
+                r.gamma_high,
+                fold in ("all", "without OR"),
+            )
+        )
     r = fits[(fits.variant == "early") & (fits.form == "A+T")].iloc[0]
     rows.append(("2016–20 only", r.gamma, r.gamma_low, r.gamma_high, False))
     lo, hi = -0.30, 0.05
@@ -69,7 +83,9 @@ def gamma_chart():
 
     g = [f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="gamma by fit">']
     for t in (-0.30, -0.25, -0.20, -0.15, -0.10, -0.05, 0, 0.05):
-        g.append(f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 6}" y2="{h - 30}" class="{"zero" if t == 0 else "grid"}"/>')
+        g.append(
+            f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 6}" y2="{h - 30}" class="{"zero" if t == 0 else "grid"}"/>'
+        )
         g.append(f'<text x="{sx(t):.1f}" y="{h - 14}" class="tick" text-anchor="middle">{t:+.2f}</text>')
     for i, (name, b, bl, bh, main) in enumerate(rows):
         y = top + rh * i + rh / 2
@@ -77,7 +93,9 @@ def gamma_chart():
         g.append(f'<text x="{LW - 10}" y="{y + 4}" class="lab {cls}" text-anchor="end">{esc(name)}</text>')
         g.append(f'<line x1="{sx(bl):.1f}" x2="{sx(bh):.1f}" y1="{y}" y2="{y}" class="ci {cls}"/>')
         g.append(f'<circle cx="{sx(b):.1f}" cy="{y}" r="5" class="pt {cls}"/>')
-    g.append(f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">γ, log change in uptake per year (90% interval), Form A + trend</text>')
+    g.append(
+        f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">γ, log change in uptake per year (90% interval), Form A + trend</text>'
+    )
     g.append("</svg>")
     return "".join(g)
 
@@ -88,7 +106,10 @@ full = fits[(fits.variant == "central") & (fits.fold == "all")].set_index("form"
 lr = 2 * (full.loc["A+T"].loglik - full.loc["A"].loglik)
 SERIES = [("pt-a", "A"), ("pt-p", "A+T flat"), ("pt-c", "A+T continued"), ("pt-k", "persistence")]
 piv = ds.pivot_table(index="state", columns="forecast", values="obs_over_p50")
-d_rows = [(f"{STATE[s]} ({int(ds[(ds.state == s)].places.iloc[0])})", [piv.loc[s, f] for _, f in SERIES]) for s in ("MN", "NC", "TX", "OR")]
+d_rows = [
+    (f"{STATE[s]} ({int(ds[(ds.state == s)].places.iloc[0])})", [piv.loc[s, f] for _, f in SERIES])
+    for s in ("MN", "NC", "TX", "OR")
+]
 ps = pd.read_csv(rep / "test_d_places_scores.csv")
 mpls = ps[(ps.name == "Minneapolis city")].set_index("forecast")
 
@@ -97,7 +118,9 @@ for s in ("MN", "NC", "TX", "OR"):
     for f in ("A", "A+T flat", "A+T continued", "A′", "A′+T flat", "persistence"):
         r = ds[(ds.state == s) & (ds.forecast == f)].iloc[0]
         u = "useful" if (r.inside and 0.5 <= r.obs_over_p50 <= 2) else ""
-        trows.append(f"<tr><td>{STATE[s] if f == 'A' else ''}</td><td>{esc(f)}</td><td class='num'>{r.observed:,.0f}</td><td class='num'>{r.p10:,.0f}–{r.p50:,.0f}–{r.p90:,.0f}</td><td class='num {u}'>{r.obs_over_p50:.2f}</td></tr>")
+        trows.append(
+            f"<tr><td>{STATE[s] if f == 'A' else ''}</td><td>{esc(f)}</td><td class='num'>{r.observed:,.0f}</td><td class='num'>{r.p10:,.0f}–{r.p50:,.0f}–{r.p90:,.0f}</td><td class='num {u}'>{r.obs_over_p50:.2f}</td></tr>"
+        )
 ls = ps.pivot_table(index="geoid", columns="forecast", values="log_score").sum()
 age = summ["outlook_rule_age"]
 
