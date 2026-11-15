@@ -5573,3 +5573,48 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - **Runs:** each run needs Ben's go-ahead after its code is pushed (§9).
   - **Next, decided 2026-11-15 regardless of this result:** place types (core city, suburb, town), as in ADU's
     D-088. They get their own pre-registration after this run.
+- **Deviation 2026-11-15 (b): choosing the baseline before the refit.** This is method only, written after
+  run 7's κ and before any candidate is scored. Ben: "Yes, pre-register them" (2026-11-15).
+  - **Why:**
+    - Run 7's κ̂ is 7.65, which would forecast the median place at 2% of its baseline.
+    - Only 28% of 941 uncoded pseudo-forecasts land within ×2 of their baseline, and 47% saw no 2–4 unit
+      building at all.
+    - 2–4 unit buildings come in projects. A three-year baseline catches or misses a burst by chance, and the
+      own growth index (capped at ×4) carries the burst forward.
+  - **Candidates:** four baseline constructions (C), each with two noise forms (N), so eight in all.
+    - **Constructions:**
+      - **C0, as now:** 3 pre-years, own growth index (1-unit + 5+ units).
+      - **C1:** 6 pre-years (D-058's long window), own growth index.
+      - **C2:** 6 pre-years, the state's growth index (the summed uncoded places, `growth="state"`).
+      - **C3:** 6 pre-years, no growth index.
+    - All four keep the zero floor.
+    - **Noise forms:**
+      - **Nw:** one place-level multiplier w ~ Gamma(mean 1, variance κ), as run 7.
+      - **Ny:** independent year-level overdispersion, y_t ~ NB(mean B_t, variance B_t + φ B_t²).
+      - Both have closed forms, and each can enter the main fit at run 4's cost: Nw as coded, Ny as a negative
+        binomial inside the u integral.
+  - **Data:** run 7's uncoded places, with the same exclusions.
+    - **Training:** the 2016 origin (scored 2016–2020). Each candidate's κ or φ is fitted here.
+    - **Scoring:** the 2021 origin (scored 2021–2025), with the parameter fixed from 2016.
+    - **Place set:** only (place, origin) pairs present under every construction, so all candidates score the
+      same counts.
+    - None of these places is used by the fit or by any §7 test.
+  - **Rule:**
+    - Pick the candidate with the highest held-out log score: Σ over places, Σ log y! dropped the same way for
+      every form.
+    - If another candidate is within 2 paired SE of the best, prefer, in order:
+      - C0 over C1 over C2 over C3 (fewest changes from runs 4–5);
+      - then Nw over Ny (already coded).
+  - **Reported, never selected:**
+    - for each candidate, the share of 2021 pseudo-forecasts inside their P10–P90 (20,000 draws, seed 20261115);
+    - the fitted κ or φ;
+    - the median predicted ÷ baseline.
+  - **Then:**
+    - The chosen construction becomes the baseline everywhere, for every place, in the refit and in §7: M's places,
+      test C, test B, the placebo and leave one state out.
+    - Its noise parameter is re-estimated on both origins (as run 7) and fixed in the refit.
+    - If Ny wins, `calibrate_mm` gets the negative-binomial likelihood inside the u integral, with its own tests,
+      before the refit.
+    - The refit and §7 run as the first deviation states, after Ben's go-ahead.
+  - **Stop rule:** if the chosen candidate still has a 2021 coverage under 0.5, the refit is not run. The finding
+    goes back to Ben instead.
