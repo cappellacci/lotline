@@ -66,6 +66,17 @@ EVENT_YEARS = range(FIRST, LAST + 1)
 LEVEL_YEARS = range(2016, 2026)  # the level model's years: the D-054 fit's outcome years
 DRAWS, SEED = d054.DRAWS, d054.SEED
 CHALLENGERS = ("C1", "C3", "C4")
+# D-092 deviation 2026-11-15: the place-level rate multiplier's variance κ (0 = runs 4-5), set by --kappa, and
+# the challengers refit with it (C1 and C3 are not refit when κ > 0).
+KAPPA = 0.0
+ACTIVE = set(CHALLENGERS)
+
+
+def kap(places):
+    """The places with the run's κ (`calibrate_mm.with_kappa`); unchanged at κ = 0."""
+    return cal.with_kappa(places, KAPPA) if KAPPA > 0 else list(places)
+
+
 TAGS = tuple(rule_tags.SENSITIVITIES)
 
 
@@ -139,7 +150,7 @@ def tag_drops(rules: dict, drop, rule: str) -> set[str]:
 def build_m(panel, classes, events, p, s_dose):
     """M's places (D-059 (b')): own-growth baseline, fixed window, zero floor; S events at `s_dose`."""
     rp = cal.retarget_events(panel, classes, events, s_dose)
-    return cal.place_inputs(rp, list(events), p["margin"], p["sigma"], growth="own", zero_floor=True), rp
+    return kap(cal.place_inputs(rp, list(events), p["margin"], p["sigma"], growth="own", zero_floor=True)), rp
 
 
 def build_c1(panel, classes, events, all_events, p, s_dose):
@@ -159,7 +170,7 @@ def build_c1(panel, classes, events, all_events, p, s_dose):
     b = cal.place_inputs(rp, or_ids, p["margin"], p["sigma"], growth="given", series_by_place=series,
                          zero_floor=True)  # fmt: skip
     order = {g: i for i, g in enumerate(events)}
-    return sorted(a + b, key=lambda q: order[q.geoid])
+    return kap(sorted(a + b, key=lambda q: order[q.geoid]))
 
 
 def with_z(places, pace, fit_ids):
@@ -261,9 +272,11 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
     full["M"] = cal.fit(m_fit)
     r5 = cal.five_year_profile(m_fit)
     full["L"] = cal.fit_level(lv)
-    full["C1"] = cal.fit(c1_fit)
-    c3 = cal.fit_capacity(with_z(m_fit, pace, fit_ids))
-    full["C3"] = c3.fit
+    if "C1" in ACTIVE:
+        full["C1"] = cal.fit(c1_fit)
+    c3 = cal.fit_capacity(with_z(m_fit, pace, fit_ids)) if "C3" in ACTIVE else None
+    if c3 is not None:
+        full["C3"] = c3.fit
     full["C4"] = cal.fit(m_fit, log_prior=cal.level_prior(full["L"], p["widening"]))
     for k, f in full.items():
         fits.append(d054.fit_row(f"{k}_full", f, b=c3.b if k == "C3" else 0.0))
@@ -287,10 +300,13 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
         if not held:
             continue
         keep_m = [q for q in m_fit if state_of[q.geoid] != s]
-        fold = {"M": cal.fit(keep_m), "C1": cal.fit([q for q in c1_fit if state_of[q.geoid] != s])}
+        fold = {"M": cal.fit(keep_m)}
+        if "C1" in ACTIVE:
+            fold["C1"] = cal.fit([q for q in c1_fit if state_of[q.geoid] != s])
         keep_ids = [q.geoid for q in keep_m]
-        c3f = cal.fit_capacity(with_z(keep_m, pace, keep_ids))
-        fold["C3"] = c3f.fit
+        c3f = cal.fit_capacity(with_z(keep_m, pace, keep_ids)) if "C3" in ACTIVE else None
+        if c3f is not None:
+            fold["C3"] = c3f.fit
         lf = cal.fit_level([q for q in lv if state_of[q.geoid] != s])
         fold["C4"] = cal.fit(keep_m, log_prior=cal.level_prior(lf, p["widening"]))
         z = cal.conditional_z(pace, keep_ids)
@@ -307,11 +323,13 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
             for k in ("M", "C4"):
                 f = fold[k]
                 row[f"ls_{k}"] = cal.heldout_log_score(q, f.theta, f.log_se, f.alpha, f.half)
-            f = fold["C1"]
-            row["ls_C1"] = cal.heldout_log_score(c1_targets[g], f.theta, f.log_se, f.alpha, f.half)
-            f = fold["C3"]
-            qz = replace(q, z=float(z.get(g, 0.0)))
-            row["ls_C3"] = cal.heldout_log_score(qz, f.theta, f.log_se, f.alpha, f.half, b=c3f.b)
+            if "C1" in fold:
+                f = fold["C1"]
+                row["ls_C1"] = cal.heldout_log_score(c1_targets[g], f.theta, f.log_se, f.alpha, f.half)
+            if "C3" in fold:
+                f = fold["C3"]
+                qz = replace(q, z=float(z.get(g, 0.0)))
+                row["ls_C3"] = cal.heldout_log_score(qz, f.theta, f.log_se, f.alpha, f.half, b=c3f.b)
             row["ls_none"] = cal.no_effect_log_score(q)
             rows.append(row)
         for k, f in fold.items():
@@ -323,7 +341,7 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
     selection = {"status": "pending: tests A-C have no pass counts yet (D-092 §7)"}
     if tests_passed is not None:
         passed = json.loads(tests_passed.read_text())
-        sel = cal.select_model(fs, passed, "M", CHALLENGERS, p["se_margin"])
+        sel = cal.select_model(fs, passed, "M", [c for c in CHALLENGERS if c in ACTIVE], p["se_margin"])
         selection = {
             "chosen": sel["chosen"],
             "table": sel["table"].to_dict("records"),
@@ -342,9 +360,10 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
         "excluded": EXCLUDE,
         "full": {k: d054.fit_row(f"{k}_full", f) for k, f in full.items()},
         "r5_M": {"r5": r5.r5, "low": r5.low, "high": r5.high},
-        "c3_slope": {"c": c3.b, "low": c3.b_low, "high": c3.b_high},
+        "c3_slope": {"c": c3.b, "low": c3.b_low, "high": c3.b_high} if c3 is not None else None,
+        "kappa": KAPPA,
         "c4_prior": dict(zip(("log_mean", "log_sd"), cal.level_prior(full["L"], p["widening"]), strict=True)),
-        "paired_vs_M": {c: cal.paired_delta(fs, f"ls_{c}", "ls_M") for c in CHALLENGERS},
+        "paired_vs_M": {c: cal.paired_delta(fs, f"ls_{c}", "ls_M") for c in CHALLENGERS if c in ACTIVE},
         "paired_M_vs_none": cal.paired_delta(fs, "ls_M", "ls_none"),
         "selection": selection,
         "seconds": round(time.time() - t0),
@@ -360,5 +379,10 @@ if __name__ == "__main__":
         "--dry", action="store_true", help="structure only: places, events, classes; no counts, no fit"
     )
     ap.add_argument("--tests-passed", type=Path, help="JSON {model: tests A-C passed} for §5's rule")
+    ap.add_argument("--kappa", type=float, default=0.0,
+                    help="variance of the rate multiplier w (κ); > 0: refits M, C4 only")  # fmt: skip
     args = ap.parse_args()
+    KAPPA = args.kappa
+    if KAPPA > 0:
+        ACTIVE = {"C4"}
     main(args.out, args.dry, args.tests_passed)

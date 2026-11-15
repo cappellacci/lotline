@@ -5514,3 +5514,62 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Deviation from the review:** the review suggested Oregon's tiers (C1) as the main design. Here M stays main,
   because the main model must apply to every place, BPS-only ones included. C1 is the first challenger and can
   replace M under §5's rule.
+- **Deviation 2026-11-15: the no-reform baseline gets its own uncertainty.** This is method only, written
+  before any refit or count. Ben: "Yes, start step 1" (2026-11-15), after runs 4–5.
+  - **Why:**
+    - Runs 4–5 found that no model passes §7. The main cause is a baseline treated as known: each place's
+      B_t = β g_t gets only Poisson noise.
+    - Only 37% of 43 no-reform places land inside their P10–P90, against a bar of 70%.
+    - Place coverage is 0.44, against a target of 0.60–0.95.
+    - The placebo keeps two thirds of the effect. Places drift far from their pre-period pace, and the reform
+      term absorbs the drift.
+    - This is missing middle's analogue of ADU's D-091 drift term.
+  - **Model:** y_t ~ Poisson(w (B_t + θ u k_t)).
+    - w ~ Gamma(mean 1, variance κ): one per place, shared across its years, and independent of u.
+    - κ = 0 is runs 4–5 exactly.
+    - w scales the whole rate, the reform part too: a place whose market slows down builds less with the reform
+      as well. This form integrates w out in closed form, a negative binomial on the place's total
+      (`calibrate_mm._w_mixed`), so a fit costs the same as before.
+    - A separate multiplier on B alone would need a two-dimensional integral, about 100 times slower than run
+      4's 2 h 39 min.
+  - **κ is estimated first, from places that neither the fit nor any test uses.**
+    - **Places:** the "uncoded" places in MN, NC, OH and TX.
+    - **Left out:**
+      - every fit place;
+      - test A's and test C's places;
+      - the scored test places: Minneapolis, Durham city, Durham County and Raleigh;
+      - the always-allowed level set, Lubbock and Richfield;
+      - the holdouts: St. Paul, Ramsey County, Charlotte and Mecklenburg;
+      - Oregon, where HB 2001 reaches most places, and D-037 learns from our own four states.
+    - **Pseudo-forecasts:** run 5 built test C's baselines with own growth, 3 pre-years and the zero floor. Each
+      kept place gets the same construction at two origins, with no reform term:
+      - 2016, scored 2016–2020;
+      - 2021, scored 2021–2025.
+
+      A place enters an origin if it has a pre-year with data and at least one scored year.
+    - **Estimate:** κ̂ maximizes Σ log ∫ Π_t Poisson(y_t; w B_t) dGamma(w), which is `calibrate_mm.fit_kappa`.
+      It comes with a 90% profile interval. One w per (place, origin).
+  - **Refit:**
+    - M and C4 are refit with κ fixed at κ̂, with the same code, holdouts, sensitivities and leave-one-state-out
+      folds as run 4.
+    - C1 and C3 are not refit: both lost to M by more than 2 paired SE in run 4.
+    - The level fit L is unchanged. It feeds C4's prior only.
+  - **Predictions:** every predicted place draws its own w per draw, from a stream keyed by (seed, geoid, 1).
+    That includes test C's no-reform places and test B's areas. So at κ = 0, u and the Poisson draws are
+    unchanged (`calibrate_mm._w_draws`). κ's own uncertainty is not drawn in the main run.
+  - **Tests and selection:** §7's tests and §5's rule run unchanged, with the same bars, draws (20,000) and seed
+    (20261112). The results are then directly comparable with run 5.
+  - **Pre-stated sensitivities**, reported and never selected:
+    - κ at each end of its 90% interval;
+    - κ estimated on the 2021 origin only;
+    - κ estimated per state.
+  - **Success**, stated before any result:
+    - test C passes: at least 70% inside, and every state total inside;
+    - place coverage is inside 0.60–0.95.
+
+    The placebo and leave-one-state-out are reported either way. No setting is tuned after the results are read.
+  - **Code:** `calibrate_mm` (`kappa` on `Place`, `_w_mixed`, `fit_kappa`, `with_kappa`, `_w_draws`), with
+    hand-worked and brute-force tests in `tests/model/test_mm_baseline_spread.py`.
+  - **Runs:** each run needs Ben's go-ahead after its code is pushed (§9).
+  - **Next, decided 2026-11-15 regardless of this result:** place types (core city, suburb, town), as in ADU's
+    D-088. They get their own pre-registration after this run.

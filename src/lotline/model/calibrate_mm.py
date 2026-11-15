@@ -68,6 +68,7 @@ class Place:
     eligible: np.ndarray
     z: float = 0.0  # D-042: centred log builder capacity (0 = no modifier)
     unstable: bool = False  # D-058: the pre-reform pace failed the dispersion test (baseline window widened)
+    kappa: float = 0.0  # D-092 deviation 2026-11-15: variance of the place-level rate multiplier w (0 = none)
 
     @property
     def B(self) -> np.ndarray:
@@ -295,13 +296,62 @@ def _log_pois(y, mu):
         return np.where(mu > 0, y * np.log(np.where(mu > 0, mu, 1.0)) - mu, np.where(y > 0, -np.inf, 0.0))
 
 
-def place_loglik(y, B, k, theta: float, alpha: float) -> float:
-    """log ∫ Π_t Poisson(y_t; B_t + θ u k_t) dGamma(u; mean 1, var α), dropping Σ log y_t! (a constant).
+KAPPA_NONE = 1e-9  # below it the rate multiplier w is 1 (runs 4-5 exactly)
+LOG_KAPPA = (-9.0, 3.0)  # κ searched from ~1e-4 to ~20
+
+
+def _w_mixed(ylogmu, M, Y, kappa: float):
+    """log ∫ Π_t Poisson(y_t; w μ_t) dGamma(w; mean 1, variance κ), Σ log y_t! dropped, from the sums a
+    place's years give: ylogmu = Σ y_t ln μ_t, M = Σ μ_t, Y = Σ y_t (arrays broadcast). With r = 1/κ the
+    integral is closed: Σ y ln μ + r ln r + lnΓ(r + Y) − lnΓ(r) − (r + Y) ln(r + M). κ below KAPPA_NONE
+    gives the Poisson Σ y ln μ − M (D-092 deviation 2026-11-15).
+
+    By hand: one year, μ = 2, y = 1, κ = 1 (r = 1): ln 2 + 0 + ln Γ(2) − 0 − 2 ln 3 = ln(2/9)."""
+    if kappa < KAPPA_NONE:
+        return ylogmu - M
+    r = 1.0 / kappa
+    Y = np.asarray(Y, dtype=float)
+    lg = np.vectorize(math.lgamma, otypes=[float])(r + Y) - math.lgamma(r)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return ylogmu + r * math.log(r) + lg - (r + Y) * np.log(r + M)
+
+
+def _ylogmu(y, mu):
+    """Σ-ready y ln μ, 0 where y = 0 and −inf where μ = 0 < y."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.where(y > 0, y * np.log(np.where(mu > 0, mu, 1.0)), 0.0) + np.where(
+            (mu <= 0) & (y > 0), -np.inf, 0.0
+        )
+
+
+def _place_loglik_w(y, B, k, theta: float, alpha: float, kappa: float) -> float:
+    """`place_loglik` with the rate multiplier w (κ > 0): u on its grid, w in closed form."""
+    if alpha < ALPHA_POISSON:
+        mu = B + theta * k
+        return float(_w_mixed(_ylogmu(y, mu).sum(), mu.sum(), y.sum(), kappa))
+    u, wts, lump = _u_grid(alpha)
+    mu = B[None, :] + theta * u[:, None] * k[None, :]
+    ll = _w_mixed(_ylogmu(y[None, :], mu).sum(axis=1), mu.sum(axis=1), y.sum(), kappa)
+    with np.errstate(divide="ignore"):
+        terms = np.log(wts) + ll
+        if lump > 0:
+            terms = np.append(
+                terms, math.log(lump) + float(_w_mixed(_ylogmu(y, B).sum(), B.sum(), y.sum(), kappa))
+            )
+    return float(np.logaddexp.reduce(terms))
+
+
+def place_loglik(y, B, k, theta: float, alpha: float, kappa: float = 0.0) -> float:
+    """log ∫∫ Π_t Poisson(y_t; w (B_t + θ u k_t)) dGamma(u; mean 1, var α) dGamma(w; mean 1, var κ), dropping
+    Σ log y_t! (a constant). w (D-092 deviation 2026-11-15) is integrated in closed form (`_w_mixed`); κ = 0
+    is the run-4 likelihood.
 
     Poisson (α -> 0) at u = 1. With B = 0 and one year it is the negative binomial with mean θk and
     Var = μ + αμ² (`calibrate_adu.nb_loglik`, plus log y!).
     """
     y, B, k = (np.asarray(a, dtype=float) for a in (y, B, k))
+    if kappa >= KAPPA_NONE:
+        return _place_loglik_w(y, B, k, theta, alpha, kappa)
     if alpha < ALPHA_POISSON:
         return float(np.sum(_log_pois(y, B + theta * k)))
     u, w, lump = _u_grid(alpha)
@@ -324,11 +374,15 @@ class Stack:
     age: np.ndarray
     starts: np.ndarray
     n_places: int
+    kappa: float = 0.0
 
     @classmethod
     def of(cls, places: Sequence[Place]) -> Stack:
         if isinstance(places, Stack):
             return places
+        kappas = {p.kappa for p in places}
+        if len(kappas) > 1:
+            raise ValueError(f"places carry different kappa values: {sorted(kappas)}")
         lens = [len(p.years) for p in places]
         return cls(
             y=np.concatenate([p.y for p in places]),
@@ -337,6 +391,7 @@ class Stack:
             age=np.concatenate([p.age for p in places]),
             starts=np.concatenate([[0], np.cumsum(lens)[:-1]]).astype(int),
             n_places=len(places),
+            kappa=kappas.pop() if kappas else 0.0,
         )
 
 
@@ -344,6 +399,8 @@ def loglik(places, theta: float, alpha: float, half: float, slope: float = SLOPE
     """Σ over places of `place_loglik`, computed on the stacked years."""
     st = Stack.of(places)
     k = st.kr * ramp(st.age, half, slope)
+    if st.kappa >= KAPPA_NONE:
+        return _loglik_w(st, k, theta, alpha)
     if alpha < ALPHA_POISSON:
         return float(np.sum(_log_pois(st.y, st.B + theta * k)))
     u, w, lump = _u_grid(alpha)
@@ -356,6 +413,74 @@ def loglik(places, theta: float, alpha: float, half: float, slope: float = SLOPE
             base = np.add.reduceat(_log_pois(st.y, st.B), st.starts)
             terms = np.vstack([terms, math.log(lump) + base[None, :]])
     return float(np.logaddexp.reduce(terms, axis=0).sum())
+
+
+def _loglik_w(st: Stack, k: np.ndarray, theta: float, alpha: float) -> float:
+    """`loglik` with the rate multiplier w (κ = st.kappa > 0): per place, u on its grid and w in closed
+    form."""
+    Y = np.add.reduceat(st.y, st.starts)
+    if alpha < ALPHA_POISSON:
+        mu = st.B + theta * k
+        ll = _w_mixed(
+            np.add.reduceat(_ylogmu(st.y, mu), st.starts), np.add.reduceat(mu, st.starts), Y, st.kappa
+        )
+        return float(np.sum(ll))
+    u, wts, lump = _u_grid(alpha)
+    mu = st.B[None, :] + theta * u[:, None] * k[None, :]
+    ll = _w_mixed(
+        np.add.reduceat(_ylogmu(st.y[None, :], mu), st.starts, axis=1),
+        np.add.reduceat(mu, st.starts, axis=1),
+        Y[None, :],
+        st.kappa,
+    )  # (grid, places)
+    with np.errstate(divide="ignore"):
+        terms = np.log(wts)[:, None] + ll
+        if lump > 0:
+            base = _w_mixed(
+                np.add.reduceat(_ylogmu(st.y, st.B), st.starts), np.add.reduceat(st.B, st.starts), Y, st.kappa
+            )
+            terms = np.vstack([terms, math.log(lump) + base[None, :]])
+    return float(np.logaddexp.reduce(terms, axis=0).sum())
+
+
+def with_kappa(places: Sequence[Place], kappa: float) -> list[Place]:
+    """The places with the rate-multiplier variance κ set (D-092 deviation 2026-11-15)."""
+    return [replace(p, kappa=float(kappa)) for p in places]
+
+
+@dataclass(frozen=True)
+class KappaFit:
+    kappa: float
+    low: float  # 90% profile-likelihood interval
+    high: float
+    loglik: float
+    loglik_poisson: float  # κ = 0, for the likelihood-ratio
+    n_places: int
+    n_years: int
+
+
+def fit_kappa(places: Sequence[Place], tol: float = 1e-5) -> KappaFit:
+    """κ̂: the maximum-likelihood variance of w in y_t ~ Poisson(w B_t), w ~ Gamma(mean 1, variance κ), one w
+    per place, over no-reform pseudo-forecasts (D-092 deviation 2026-11-15). Only B is used: any reform
+    term (k) is ignored, so pass places with no reform in their years.
+
+    By hand: two places, one year each, B = 1, y = 0 and 2: mean ratio 1, sample variance of y/B 2 -> above
+    the Poisson's 1, so κ̂ > 0 (and κ̂ = 0 when y = 1, 1)."""
+    st = Stack.of(with_kappa(places, 0.0))
+    Y = np.add.reduceat(st.y, st.starts)
+    ylm = np.add.reduceat(_ylogmu(st.y, st.B), st.starts)
+    M = np.add.reduceat(st.B, st.starts)
+
+    def ll(lk):
+        return float(np.sum(_w_mixed(ylm, M, Y, math.exp(lk))))
+
+    lk, best = _golden_max(ll, *LOG_KAPPA, tol=tol)
+    pois = float(np.sum(_w_mixed(ylm, M, Y, 0.0)))
+    if pois >= best:  # no extra spread: κ̂ = 0, with the upper bound from the profile
+        lo, hi = LOG_KAPPA[0], _interval(ll, LOG_KAPPA[0], pois, *LOG_KAPPA)[1]
+        return KappaFit(0.0, 0.0, math.exp(hi), pois, pois, st.n_places, len(st.y))
+    lo, hi = _interval(ll, lk, best, *LOG_KAPPA)
+    return KappaFit(math.exp(lk), math.exp(lo), math.exp(hi), best, pois, st.n_places, len(st.y))
 
 
 @dataclass(frozen=True)
@@ -797,7 +922,8 @@ def predict_places(
         r = np.random.default_rng([seed, zlib.crc32(p.geoid.encode())])
         u = r.gamma(1 / alpha, alpha, size=draws) if alpha >= ALPHA_POISSON else np.ones(draws)
         k = p.k(half) * math.exp(b * p.z)
-        out[p.geoid] = r.poisson(p.B[None, :] + (th * u)[:, None] * k[None, :])
+        mu = p.B[None, :] + (th * u)[:, None] * k[None, :]
+        out[p.geoid] = r.poisson(mu * _w_draws(p, seed, draws)[:, None])
     return out
 
 
@@ -809,8 +935,19 @@ def benchmark_places(places: Sequence[Place], rate: float, half: float, draws: i
     for p in places:
         r = np.random.default_rng([seed, zlib.crc32(p.geoid.encode())])
         mu = p.B + rate * p.k(half)
-        out[p.geoid] = r.poisson(np.broadcast_to(mu, (draws, len(mu))))
+        out[p.geoid] = r.poisson(np.broadcast_to(mu, (draws, len(mu))) * _w_draws(p, seed, draws)[:, None])
     return out
+
+
+def _w_draws(p: Place, seed: int, draws: int) -> np.ndarray:
+    """The place's rate multiplier w ~ Gamma(mean 1, variance κ) per draw, from its own stream keyed by
+    (seed, geoid, 1) so u and the Poisson draws are unchanged; all ones when κ = 0 (runs 4-5 exactly)."""
+    import zlib
+
+    if p.kappa < KAPPA_NONE:
+        return np.ones(draws)
+    r = np.random.default_rng([seed, zlib.crc32(p.geoid.encode()), 1])
+    return r.gamma(1 / p.kappa, p.kappa, size=draws)
 
 
 def state_total(draws_by_place: Mapping[str, np.ndarray], geoids: Sequence[str]) -> np.ndarray:
@@ -838,17 +975,21 @@ def heldout_log_score(
     By hand: Poisson (α ≈ 0), B = 0, one year, k = 1, y = 1, θ = 2, se = 0 -> ln 2 − 2."""
     k = place.k(half) * math.exp(b * place.z)
     if log_se <= 0:
-        return place_loglik(place.y, place.B, k, theta, alpha)
+        return place_loglik(place.y, place.B, k, theta, alpha, place.kappa)
     x, lw = gh_log_nodes(log_se, n)
     terms = [
-        w + place_loglik(place.y, place.B, k, theta * math.exp(xi), alpha)
+        w + place_loglik(place.y, place.B, k, theta * math.exp(xi), alpha, place.kappa)
         for xi, w in zip(x, lw, strict=True)
     ]
     return float(np.logaddexp.reduce(terms))
 
 
 def no_effect_log_score(place: Place) -> float:
-    """Σ_t log Poisson(y_t; B_t), Σ log y! dropped (the no-effect benchmark's held-out log score)."""
+    """Σ_t log Poisson(y_t; B_t), Σ log y! dropped (the no-effect benchmark's held-out log score); with the
+    place's κ > 0, w integrated out (`_w_mixed`)."""
+    if place.kappa >= KAPPA_NONE:
+        y, B = np.asarray(place.y, float), np.asarray(place.B, float)
+        return float(_w_mixed(_ylogmu(y, B).sum(), B.sum(), y.sum(), place.kappa))
     return float(np.sum(_log_pois(place.y, place.B)))
 
 

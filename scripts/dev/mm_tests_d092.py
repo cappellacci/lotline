@@ -180,8 +180,8 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
     sub["T"] = float(first)
     sub["dose"] = 0.0
     sub["eligible"] = sub["eligible"].where(sub["eligible"] > 0, 1.0)
-    c_places = [q.upto(first + 4) for q in cal.place_inputs(sub, c_ids, p["margin"], p["sigma"], growth="own",
-                                                            zero_floor=True)]  # fmt: skip
+    c_base = cal.place_inputs(sub, c_ids, p["margin"], p["sigma"], growth="own", zero_floor=True)
+    c_places = [q.upto(first + 4) for q in d092.kap(c_base)]
     c_rows, c_pits = [], []
     c_draws = cal.benchmark_places(c_places, 0.0, 1.0, draws=DRAWS, seed=SEED)
     for q in c_places:
@@ -202,7 +202,8 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
 
     # ---- placebo ----
     shift = int(pm["mm_placebo_shift_years"])
-    plac = cal.place_inputs(rp, fit_ids, p["margin"], p["sigma"], growth="own", zero_floor=True, shift=shift)
+    plac = d092.kap(cal.place_inputs(rp, fit_ids, p["margin"], p["sigma"], growth="own", zero_floor=True,
+                                     shift=shift))  # fmt: skip
     pr5 = cal.five_year_profile(plac)
     run4_summary = json.loads((run4 / "summary.json").read_text())
     main_r5 = float(run4_summary["r5_M"]["r5"])
@@ -230,8 +231,8 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
             base = panel[panel["place"].isin(ids)].copy()
             base["T"], base["dose"] = float(y0), 0.0
             base["eligible"] = base["eligible"].where(base["eligible"] > 0, 1.0)
-            bq = {q.geoid: q for q in cal.place_inputs(base, ids, p["margin"], p["sigma"], growth="own",
-                                                       zero_floor=True)}  # fmt: skip
+            b_base = cal.place_inputs(base, ids, p["margin"], p["sigma"], growth="own", zero_floor=True)
+            bq = {q.geoid: q for q in d092.kap(b_base)}
             for k in MODELS:
                 f = fits.get(f"{k}_full")
                 if f is None:
@@ -300,7 +301,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
     passed = {k: v["tests_a_c_passed"] for k, v in res.items()}
     scores = pd.read_csv(run4 / "place_scores.csv", dtype={"geoid": str})
     fs = scores[~scores["test_place"]]
-    sel = cal.select_model(fs, passed, "M", d092.CHALLENGERS, p["se_margin"])
+    sel = cal.select_model(fs, passed, "M", [c for c in d092.CHALLENGERS if c in MODELS], p["se_margin"])
 
     out.mkdir(parents=True, exist_ok=True)
     loso_df.to_csv(out / "loso_states.csv", index=False)
@@ -316,6 +317,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
         "unchanged_non_oregon_places": same,
         "test_c_places": len(c_df),
         "data_tier": "not run (see README)",
+        "kappa": d092.KAPPA,
         "seed": SEED,
         "draws": DRAWS,
         "seconds": round(time.time() - t0),
@@ -329,5 +331,10 @@ if __name__ == "__main__":
     ap.add_argument("--run4", type=Path, required=True)
     ap.add_argument("--run3", type=Path)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--kappa", type=float, default=0.0,
+                    help="variance of the rate multiplier w (κ); > 0: scores M, C4 only")  # fmt: skip
     a = ap.parse_args()
+    if a.kappa > 0:
+        d092.KAPPA, d092.ACTIVE = a.kappa, {"C4"}
+        MODELS = ("M", "C4")
     main(a.run4, a.out, a.run3)
