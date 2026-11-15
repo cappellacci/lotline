@@ -24,7 +24,7 @@ the start of year 1; `baseline.window`):
   `adu_observed_years` years ending at the data origin (`observed_per_year`; a held-out place's years end
   before its holdout). It is a floor on the current-rules hazard: ADUs a place
   already builds are in its baseline and are never counted as added (additionality, MS-10).
-- **Own counts with drift** (D-091, adopted 2026-11-15; D-092; `adu_own_rate_drift`, 0 turns it off): where a
+- **Own counts with drift** (D-091, adopted 2026-11-15; D-093; `adu_own_rate_drift`, 0 turns it off): where a
   place has an observed ADU rate, its own counts set the no-reform hazard instead, in the lead years too:
   persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z) with σ
   `adu_drift_sigma` (`own_rate_draws`). The Handbook hazard is that rate times the mechanism's ratio
@@ -47,7 +47,7 @@ town prior; one place multiplier per place; extrapolation noise shared across pl
 The mortgage-rate stress range is a sensitivity (`params=`), not part of the forecast range. Numerator (units)
 and denominator (eligible parcels) stay in separate columns. Nothing is fitted here: the anchor, place-effect
 variance, rule shares and core-city term come from D-088's Form A + place types fit
-(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter as the no-reform rate with drift (D-092),
+(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter as the no-reform rate with drift (D-093),
 or as the additionality floor with the switch off.
 """
 

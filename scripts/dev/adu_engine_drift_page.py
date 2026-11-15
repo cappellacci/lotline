@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ruff: noqa: E501  (long lines are the HTML/CSS page template)
-"""Results page for D-092, the engine wiring of D-091's adopted outcome: reports/adu-engine-drift/.
+"""Results page for D-093, the engine wiring of D-091's adopted outcome: reports/adu-engine-drift/.
 
     uv run python scripts/dev/adu_engine_drift_page.py
 
@@ -145,7 +145,7 @@ def main() -> None:
 <style>{style}{EXTRA_CSS}</style>
 <main>
 <header>
-  <div class="eyebrow">Lotline · D-092: the engine reads D-091's adopted outcome · 15 Nov 2026</div>
+  <div class="eyebrow">Lotline · D-093: the engine reads D-091's adopted outcome · 15 Nov 2026</div>
   <h1>Using each place's own ADU counts barely moves the homes a reform adds, and lowers today's baseline</h1>
   <p class="lede">Where a place has its own ADU counts, the engine now takes its no-reform ADUs from those counts, times a drift of ×2.8 either way at one SD, and scales them by the model's with-reform ÷ no-reform ratio for the Handbook bill. That is the outcome Ben adopted after D-090 and D-091. Elsewhere the A + place-types model runs as before. Additional homes at the median move by under 10% in every state. The no-reform baseline falls in four states, because the model put places with counts above what they actually build.</p>
 </header>
