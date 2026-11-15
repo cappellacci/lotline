@@ -6014,3 +6014,11 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     smallest in TX. The town prior barely widens any range: towns add few ADUs.
   - Nothing is written to config. The town prior (sd 0.729) and the A + P values wait for Ben's approval in
     their own PR.
+- **Config, 2026-11-14.** Ben approved writing the values ("Open the config PR"). They are in
+  `config/params/adu_place_types.yaml`: D-088's typing rules, the A + P fit (θ 0.000448 for a suburb, α 1.550,
+  core +1.199, m_o 1.0, m_x 0.4, observed-information SEs) and D-089's town prior sd 0.729.
+  - The scenario engine doesn't read them yet. It still runs D-053's Form A from `hazard.yaml`.
+  - The θ in this file is a suburb's rate. Used without the core term, it would understate every core city about
+    3.3-fold. So the switch happens in one step, in the PR that wires the type term into the engine.
+  - The D-088 run didn't save the intervals for α and the rule shares. The central A + P fit was rerun offline
+    once to read them, and the rerun reproduced every fitted value.

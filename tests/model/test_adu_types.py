@@ -164,3 +164,26 @@ def test_decide_hand_worked():
     assert not ty.decide(None, None, 10, 4, 1, 0, -3, 2).types
     assert not ty.decide(None, None, 10, 4, 1, 1, -5, 2).types
     assert ty.decide(2, 1, -50, 1, 1, 1, 0, 1).types
+
+
+def test_config_mirrors_type_rules():
+    """config/params/adu_place_types.yaml holds D-088's typing rules; the module's defaults must agree."""
+    import inspect
+
+    from lotline.config import load_params
+
+    p = load_params("adu_place_types")
+    assert p["adu_type_core_share"].value == pytest.approx(ty.CORE_SHARE, abs=1e-4)
+    sig = inspect.signature(ty.merge_small).parameters
+    assert p["adu_type_min_fit_places"].value == sig["min_places"].default
+    assert p["adu_type_min_fit_states"].value == sig["min_states"].default
+
+
+def test_config_town_prior_follows_core_term():
+    """D-089: the town prior's s is |β̂_core| / z_90, from the configured core term."""
+    from lotline.config import load_params
+    from lotline.model import adu_profiles as pr
+
+    p = load_params("adu_place_types")
+    s = pr.town_sd(p["adu_types_core_log_multiplier"].value)
+    assert p["adu_types_town_prior_sd"].value == pytest.approx(s, abs=5e-4)
