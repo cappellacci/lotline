@@ -123,8 +123,11 @@ def test_observed_adus_are_never_counted_as_added():
     hm = adu.central_path(_places())["mature_hazard"][0]
     out = adu.central_path(_places(observed_rate=hm * 1.5))
     assert np.all(out["added"] == 0)
-    half = adu.central_path(_places(observed_rate=hm / 2))
-    assert 0 < half["added"].sum() < adu.central_path(_places())["added"].sum()
+    # The floor reading (before D-091, adu_own_rate_drift 0): an observed rate below h_m lowers what is added.
+    # With own counts on, added ADUs are own rate × (ratio − 1) instead (tests/model/test_adu_own_rate.py).
+    off = {"adu_own_rate_drift": 0}
+    half = adu.central_path(_places(observed_rate=hm / 2), params=off)
+    assert 0 < half["added"].sum() < adu.central_path(_places(), params=off)["added"].sum()
 
 
 def test_run_ranges_are_ordered_and_flag_extrapolation():

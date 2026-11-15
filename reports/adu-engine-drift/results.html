@@ -1,0 +1,234 @@
+<title>ADU engine with own counts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column; headline, stats, numbered findings with charts, then tables. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header, section { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow, .num-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.num-tag { color: var(--survey); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 21px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.stat { border-top: 2px solid var(--rule); padding-top: var(--space-2); }
+.stat b { display: block; font-family: var(--font-mono); font-size: 22px; font-weight: 500; }
+.stat span { font-size: 13px; color: var(--ink-muted); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); align-items: center; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { font-family: var(--font-sans); }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink-muted); font-size: 12.5px; }
+.chart .seg { fill: var(--paper); font-size: 11px; font-family: var(--font-mono); }
+.seg-core, .sw.core { fill: var(--scenario-adu); background: var(--scenario-adu); }
+.seg-sub, .sw.sub { fill: var(--brass); background: var(--brass); }
+.seg-town, .sw.town { fill: var(--survey); background: var(--survey); }
+.seg-out, .sw.out { fill: var(--ink-muted); background: var(--ink-muted); }
+.seg-in, .sw.in { fill: var(--confidence-inside); background: var(--confidence-inside); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.r-old, .sw.r-old { fill: var(--scenario-baseline); background: var(--scenario-baseline); stroke: var(--scenario-baseline); }
+.r-mid, .sw.r-mid { fill: var(--brass); background: var(--brass); stroke: var(--brass); }
+.r-new, .sw.r-new { fill: var(--scenario-adu); background: var(--scenario-adu); stroke: var(--scenario-adu); }
+.chart line.rng { stroke-width: 3; stroke-linecap: round; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .val { fill: var(--ink-muted); font-size: 11px; font-family: var(--font-mono); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · D-092: the engine reads D-091's adopted outcome · 15 Nov 2026</div>
+  <h1>Using each place's own ADU counts barely moves the homes a reform adds, and lowers today's baseline</h1>
+  <p class="lede">Where a place has its own ADU counts, the engine now takes its no-reform ADUs from those counts, times a drift of ×2.8 either way at one SD, and scales them by the model's with-reform ÷ no-reform ratio for the Handbook bill. That is the outcome Ben adopted after D-090 and D-091. Elsewhere the A + place-types model runs as before. Additional homes at the median move by under 10% in every state. The no-reform baseline falls in four states, because the model put places with counts above what they actually build.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>4,645 → 5,083</b><span>Texas additional homes, 2027–31, P50 (P90 13,291 → 16,976)</span></div>
+  <div class="stat"><b>424 → 457</b><span>Ohio additional homes, P50</span></div>
+  <div class="stat"><b>632 → 616</b><span>Minnesota additional homes, P50</span></div>
+  <div class="stat"><b>2,215 → 1,153</b><span>Minnesota ADUs under today's rules, P90: the baseline's top end falls by half</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Additional homes from the Handbook ADU reform barely change</h2>
+  <p>The reform's effect still comes from the model's ratio, so the added homes stay close to before. Texas and Ohio rise most, by 8–9% at the median. Texas's P90 rises more, because its six places with counts (Austin among them) hold a sixth of its lots and their drift is wide.</p>
+  <div class="legend"><span><i class="sw r-old"></i>Before: A + place types, observed rate as a floor</span><span><i class="sw r-new"></i>Now: own counts with drift where a place has them</span></div>
+  <svg viewBox="0 0 640 256" class="chart" role="img" aria-label="additional homes, 2027–2031"><line x1="130.0" x2="130.0" y1="4" y2="218" class="grid"/><text x="130.0" y="238" class="tick" text-anchor="middle">0</text><line x1="224.0" x2="224.0" y1="4" y2="218" class="grid"/><text x="224.0" y="238" class="tick" text-anchor="middle">4,000</text><line x1="318.0" x2="318.0" y1="4" y2="218" class="grid"/><text x="318.0" y="238" class="tick" text-anchor="middle">8,000</text><line x1="412.0" x2="412.0" y1="4" y2="218" class="grid"/><text x="412.0" y="238" class="tick" text-anchor="middle">12,000</text><line x1="506.0" x2="506.0" y1="4" y2="218" class="grid"/><text x="506.0" y="238" class="tick" text-anchor="middle">16,000</text><line x1="600.0" x2="600.0" y1="4" y2="218" class="grid"/><text x="600.0" y="238" class="tick" text-anchor="middle">20,000</text><text x="120" y="36" class="lab" text-anchor="end">Minnesota</text><line x1="137.3" x2="164.6" y1="17" y2="17" class="rng r-old"/><circle cx="144.8" cy="17" r="4.5" class="r-old"/><text x="170.6" y="21" class="val">632</text><line x1="137.0" x2="163.8" y1="31" y2="31" class="rng r-new"/><circle cx="144.5" cy="31" r="4.5" class="r-new"/><text x="169.8" y="35" class="val">616</text><text x="120" y="80" class="lab" text-anchor="end">North Carolina</text><line x1="135.8" x2="165.6" y1="61" y2="61" class="rng r-old"/><circle cx="143.3" cy="61" r="4.5" class="r-old"/><text x="171.6" y="65" class="val">566</text><line x1="136.1" x2="166.2" y1="75" y2="75" class="rng r-new"/><circle cx="143.4" cy="75" r="4.5" class="r-new"/><text x="172.2" y="79" class="val">569</text><text x="120" y="124" class="lab" text-anchor="end">Ohio</text><line x1="133.5" x2="172.1" y1="105" y2="105" class="rng r-old"/><circle cx="140.0" cy="105" r="4.5" class="r-old"/><text x="178.1" y="109" class="val">424</text><line x1="133.6" x2="176.9" y1="119" y2="119" class="rng r-new"/><circle cx="140.7" cy="119" r="4.5" class="r-new"/><text x="182.9" y="123" class="val">457</text><text x="120" y="168" class="lab" text-anchor="end">Texas</text><line x1="174.6" x2="442.3" y1="149" y2="149" class="rng r-old"/><circle cx="239.2" cy="149" r="4.5" class="r-old"/><text x="448.3" y="153" class="val">4,645</text><line x1="176.2" x2="528.9" y1="163" y2="163" class="rng r-new"/><circle cx="249.4" cy="163" r="4.5" class="r-new"/><text x="534.9" y="167" class="val">5,083</text><text x="120" y="212" class="lab" text-anchor="end">Oregon</text><line x1="130.3" x2="132.4" y1="193" y2="193" class="rng r-old"/><circle cx="130.7" cy="193" r="4.5" class="r-old"/><text x="138.4" y="197" class="val">30</text><line x1="130.3" x2="132.4" y1="207" y2="207" class="rng r-new"/><circle cx="130.7" cy="207" r="4.5" class="r-new"/><text x="138.4" y="211" class="val">29</text><text x="600" y="252" class="tick" text-anchor="end">additional homes, 2027–2031; line P10–P90, dot and number P50</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>ADUs under today's rules fall, and their range narrows</h2>
+  <p>Before, a place with counts got the larger of the model's rate and its observed rate. On the whole the model ran higher than those places build, so its spread set the top of the range. Now the place's own rate sets it. Oregon is the exception: its places with counts build more than the model says, so the baseline rises a little.</p>
+  <div class="legend"><span><i class="sw r-old"></i>Before: A + place types, observed rate as a floor</span><span><i class="sw r-new"></i>Now: own counts with drift where a place has them</span></div>
+  <svg viewBox="0 0 640 256" class="chart" role="img" aria-label="ADU permits under current rules, 2027–2031"><line x1="130.0" x2="130.0" y1="4" y2="218" class="grid"/><text x="130.0" y="238" class="tick" text-anchor="middle">0</text><line x1="224.0" x2="224.0" y1="4" y2="218" class="grid"/><text x="224.0" y="238" class="tick" text-anchor="middle">4,000</text><line x1="318.0" x2="318.0" y1="4" y2="218" class="grid"/><text x="318.0" y="238" class="tick" text-anchor="middle">8,000</text><line x1="412.0" x2="412.0" y1="4" y2="218" class="grid"/><text x="412.0" y="238" class="tick" text-anchor="middle">12,000</text><line x1="506.0" x2="506.0" y1="4" y2="218" class="grid"/><text x="506.0" y="238" class="tick" text-anchor="middle">16,000</text><line x1="600.0" x2="600.0" y1="4" y2="218" class="grid"/><text x="600.0" y="238" class="tick" text-anchor="middle">20,000</text><text x="120" y="36" class="lab" text-anchor="end">Minnesota</text><line x1="140.7" x2="182.0" y1="17" y2="17" class="rng r-old"/><circle cx="150.2" cy="17" r="4.5" class="r-old"/><text x="188.0" y="21" class="val">861</text><line x1="142.2" x2="157.1" y1="31" y2="31" class="rng r-new"/><circle cx="146.5" cy="31" r="4.5" class="r-new"/><text x="163.1" y="35" class="val">700</text><text x="120" y="80" class="lab" text-anchor="end">North Carolina</text><line x1="184.7" x2="376.6" y1="61" y2="61" class="rng r-old"/><circle cx="224.8" cy="61" r="4.5" class="r-old"/><text x="382.6" y="65" class="val">4,034</text><line x1="178.4" x2="275.0" y1="75" y2="75" class="rng r-new"/><circle cx="209.6" cy="75" r="4.5" class="r-new"/><text x="281.0" y="79" class="val">3,388</text><text x="120" y="124" class="lab" text-anchor="end">Ohio</text><line x1="135.2" x2="200.2" y1="105" y2="105" class="rng r-old"/><circle cx="144.1" cy="105" r="4.5" class="r-old"/><text x="206.2" y="109" class="val">599</text><line x1="135.2" x2="164.8" y1="119" y2="119" class="rng r-new"/><circle cx="141.2" cy="119" r="4.5" class="r-new"/><text x="170.8" y="123" class="val">476</text><text x="120" y="168" class="lab" text-anchor="end">Texas</text><line x1="177.5" x2="466.1" y1="149" y2="149" class="rng r-old"/><circle cx="230.2" cy="149" r="4.5" class="r-old"/><text x="472.1" y="153" class="val">4,262</text><line x1="177.9" x2="416.2" y1="163" y2="163" class="rng r-new"/><circle cx="226.5" cy="163" r="4.5" class="r-new"/><text x="422.2" y="167" class="val">4,108</text><text x="120" y="212" class="lab" text-anchor="end">Oregon</text><line x1="197.1" x2="294.2" y1="193" y2="193" class="rng r-old"/><circle cx="224.0" cy="193" r="4.5" class="r-old"/><text x="300.2" y="197" class="val">4,002</text><line x1="190.2" x2="302.8" y1="207" y2="207" class="rng r-new"/><circle cx="229.3" cy="207" r="4.5" class="r-new"/><text x="308.8" y="211" class="val">4,225</text><text x="600" y="252" class="tick" text-anchor="end">ADU permits under current rules, 2027–2031; line P10–P90, dot and number P50</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>Which places changed</h2>
+  <p>Only places with observed ADU counts change; the rest give identical numbers both ways (same seeds). They are few in Ohio and Texas but hold 16–48% of eligible lots, because they include the big cities.</p>
+  <div class="scroll"><table><thead><tr><th>State</th><th>Places with own counts</th><th>Share of eligible lots</th><th>Current-rules ADUs (mean), before → now</th><th>ADU permits added (mean), before → now</th></tr></thead><tbody><tr><td>Minnesota</td><td class='num'>184</td><td class='num'>48%</td><td class='num'>1,068 → 645</td><td class='num'>988 → 951</td></tr><tr><td>North Carolina</td><td class='num'>23</td><td class='num'>22%</td><td class='num'>3,889 → 2,503</td><td class='num'>143 → 153</td></tr><tr><td>Ohio</td><td class='num'>16</td><td class='num'>16%</td><td class='num'>936 → 245</td><td class='num'>293 → 420</td></tr><tr><td>Texas</td><td class='num'>6</td><td class='num'>17%</td><td class='num'>2,348 → 1,688</td><td class='num'>3,988 → 5,990</td></tr><tr><td>Oregon</td><td class='num'>4</td><td class='num'>22%</td><td class='num'>2,757 → 2,836</td><td class='num'>4 → 4</td></tr></tbody></table></div>
+  <p class="note">Means over 1,000 draws, summed over places. St. Paul (V5, still blind) is left out.</p>
+</section>
+
+<section>
+  <div class="num-tag">What it cannot say</div>
+  <h2>Three limits</h2>
+  <ul>
+    <li><b>The bill's ratio is unchecked.</b> D-090 found the model within ×2 in 1 of 4 states. The ratio may be better than the level, but no held-out test shows it. The app should label a bill's effect "not checked within ×2".</li>
+    <li><b>Independent drift averages out in state totals.</b> Each place draws its own drift, median 1, mean 1.69. Summed over many places, the state total drifts toward the mean, and its range narrows. D-091 found one drift shared by a state covered state totals better; that is a sensitivity, not what runs here.</li>
+    <li><b>The drift was learned on a different gap.</b> σ 1.025 comes from forecasting 2021–25 from four years, 2016–19. The engine reads three years, 2023–25, and forecasts 2027–31.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="num-tag">State table</div>
+  <h2>P50 and P10–P90, before and now</h2>
+  <div class="scroll"><table><thead><tr><th>State</th><th>2027–2031</th><th>Before: A + place types, observed rate as a floor</th><th>Now: own counts with drift where a place has them</th></tr></thead><tbody><tr><td>Minnesota</td><td>ADUs under current rules</td><td class='num'>861<br><small>453–2,215</small></td><td class='num'>700<br><small>518–1,153</small></td></tr><tr><td></td><td>ADU permits added</td><td class='num'>1,174<br><small>570–2,700</small></td><td class='num'>1,132<br><small>560–2,584</small></td></tr><tr><td></td><td>Additional homes</td><td class='num'>632<br><small>309–1,471</small></td><td class='num'>616<br><small>298–1,437</small></td></tr><tr><td>North Carolina</td><td>ADUs under current rules</td><td class='num'>4,034<br><small>2,327–10,493</small></td><td class='num'>3,388<br><small>2,058–6,172</small></td></tr><tr><td></td><td>ADU permits added</td><td class='num'>1,046<br><small>457–2,696</small></td><td class='num'>1,039<br><small>468–2,701</small></td></tr><tr><td></td><td>Additional homes</td><td class='num'>566<br><small>247–1,514</small></td><td class='num'>569<br><small>258–1,538</small></td></tr><tr><td>Ohio</td><td>ADUs under current rules</td><td class='num'>599<br><small>220–2,986</small></td><td class='num'>476<br><small>220–1,481</small></td></tr><tr><td></td><td>ADU permits added</td><td class='num'>776<br><small>277–3,231</small></td><td class='num'>837<br><small>287–3,603</small></td></tr><tr><td></td><td>Additional homes</td><td class='num'>424<br><small>150–1,793</small></td><td class='num'>457<br><small>154–1,996</small></td></tr><tr><td>Texas</td><td>ADUs under current rules</td><td class='num'>4,262<br><small>2,022–14,304</small></td><td class='num'>4,108<br><small>2,039–12,178</small></td></tr><tr><td></td><td>ADU permits added</td><td class='num'>8,383<br><small>3,562–23,422</small></td><td class='num'>9,238<br><small>3,730–30,707</small></td></tr><tr><td></td><td>Additional homes</td><td class='num'>4,645<br><small>1,896–13,291</small></td><td class='num'>5,083<br><small>1,968–16,976</small></td></tr><tr><td>Oregon</td><td>ADUs under current rules</td><td class='num'>4,002<br><small>2,855–6,985</small></td><td class='num'>4,225<br><small>2,560–7,354</small></td></tr><tr><td></td><td>ADU permits added</td><td class='num'>54<br><small>21–177</small></td><td class='num'>54<br><small>21–180</small></td></tr><tr><td></td><td>Additional homes</td><td class='num'>30<br><small>12–104</small></td><td class='num'>29<br><small>12–102</small></td></tr></tbody></table></div>
+</section>
+
+<footer>
+  <div>Engine: <code>scenarios.adu.run</code>, origin 2025, window 2027–2031, 1,000 draws, seed 20261020, on #434's A + place-types anchor slopes; inputs <code>places_from_store</code> from holdout-filtered tables, offline. New: <code>adu_own_rate_drift</code> 1, <code>adu_drift_sigma</code> 1.025 (config/params/adu.yaml). Set the switch to 0 for the before run.</div>
+  <div>Sources: <code>reports/adu-engine-drift/</code>, <code>scripts/dev/adu_engine_drift_check.py</code>, branch <code>ws/adu-engine-drift</code>. Nothing was unblinded.</div>
+</footer>
+</main>

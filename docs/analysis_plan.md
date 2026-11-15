@@ -6481,3 +6481,34 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     its source row in `config/params/`.
   - **Rollback stays as before:** the drift is off by default, σ = 0 gives D-090 exactly, and the wiring PR
     will keep the current engine path behind the same switch.
+
+### D-092 · 2026-11-15 · ADUs: the engine reads D-091's adopted outcome (own counts with drift as the no-reform rate)
+- **Status: built and run 2026-11-15, on Ben's go-ahead** ("Adopt it" on D-091's outcome, then "Wire it now").
+  D-090 and D-091 are on PRs #429 and #430, which are not in this branch's history; their entries join this
+  file when the stacks merge.
+- **What changes in `scenarios/adu.py`:**
+  - Where a place has an observed ADU rate, its no-reform hazard is persistence × drift (`own_rate_draws`):
+    rate ~ Gamma(Y + 0.5, E) over the `adu_observed_years` years (Y the undercount-scaled count each draw
+    uses), times exp(σ z), one z per place and draw, σ = `adu_drift_sigma` 1.025. The lead years use it too.
+  - The Handbook hazard is that rate × the mechanism's h_hb ÷ h_cur (both with the observed floor, as
+    before). Where the mechanism's h_cur is 0 (no rule allows ADUs and none were observed) the ratio is
+    undefined, and the mechanism's added hazard is added instead (`own_rate_paths`).
+  - Places with no observed rate are unchanged. Outputs gain `no_reform_basis`.
+  - `adu_own_rate_drift` 0 restores #434's engine exactly (test `test_switch_off_is_the_mechanism_with_the_floor`).
+- **Deviation from D-091's wording:** D-091 named "F1's ratio" (plain Form A). The engine uses the A + place
+  types mechanism of #432/#434, as the D-091 adoption note said it would. σ is D-091's four-state F0 value,
+  learned for a 4-year fit and a 1-year lead; the engine reads 3 years and its own lead.
+- **Changed test:** `test_observed_adus_are_never_counted_as_added` keeps its first check (an observed rate
+  above the Handbook hazard adds nothing, true both ways) and runs its second (an observed rate below h_m
+  lowers what is added) with the switch off. With it on, a place's added ADUs are its own rate × (ratio − 1),
+  which can exceed the floor version where the half-count prior lifts a tiny observed rate.
+- **Result** (`reports/adu-engine-drift/`, page https://claude.ai/artifact/RbG2SiXAtPKiJY1xMoyTQV; 1,000
+  draws, origin 2025, St. Paul left out):
+  - Additional homes, 2027–31 P50, before → now: MN 632 → 616, NC 566 → 569, OH 424 → 457, TX 4,645 →
+    5,083, OR 30 → 29. TX P90 13,291 → 16,976.
+  - Current-rules ADUs P50 fall in MN (861 → 700), NC (4,034 → 3,388), OH (599 → 476) and TX (4,262 →
+    4,108); OR rises (4,002 → 4,225). P90s fall by about half in MN, NC and OH.
+  - Places with own counts: MN 184 (48% of eligible lots), NC 23 (22%), OH 16 (16%), TX 6 (17%), OR 4 (22%).
+- **What it cannot say:** the ratio is unchecked on held-out data; independent drift (mean 1.69, median 1)
+  averages out in state totals, so their range is narrower than one shared drift would give (D-091's
+  sensitivity); the engine's gap differs from the one σ was learned on.

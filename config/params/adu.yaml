@@ -33,6 +33,22 @@ adu_observed_years:
   source: "D-082 (2026-11-12, Ben): the observed ADU floor is the mean of the 3 years ending at the data origin, the same window as D-074 test C and the historical_floor check (historical_floor_years, 3). Before D-082 it was 4 years (WS-NC-GUTCHECK, 2026-11-09, D-070), which replaced D-019's fixed 2019-2022 window. With 4 years the floor (2022-2025) sat below test C's 2023-2025 average wherever 2022 was a slow year; 41 of test C's 43 failures in the D-079 refit came from that mismatch alone (reports/adu-joint-refit-2026-11, test_c.csv)."
   notes: "Three years, matching the test and the historical_floor check, and closer to the current market where uptake is rising (Wilmington 23, 44, 45, 59 in 2022-25). A held-out place's window ends the year before its holdout starts (Charlotte and Mecklenburg County 37119: 2020-2022; St. Paul: 2021-2023), so no held-out outcome is read. Origin-2022 backtests now read 2020-2022 rather than D-019's 2019-2022. Austin's 2024-25 counts are low because HOME moved ADUs to other permit types (D-070 TX caveat), so its floor falls further until the inferred HOME counts are loaded."
 
+adu_own_rate_drift:
+  value: 1
+  low: 1
+  high: 1
+  unit: switch (1 = a place's own ADU counts set its no-reform rate; 0 = the mechanism with the observed floor, as before)
+  source: "D-091, outcome adopted by Ben 2026-11-15 (\"Adopt it\"). In D-090's within-state test (fit 2016-19, forecast 2021-25) persistence was within x2 of observed in all 4 scored states and Form A in 1 of 4; with D-091's drift, persistence was useful in 3 of 4 and 81% of places fell inside their own P10-P90 (reports/adu-drift/)."
+  notes: "Rollback: set to 0. Where a place has an observed ADU rate (adu_observed_years), no-reform ADUs = persistence x drift (own_rate_draws) and Handbook ADUs = that x the mechanism's Handbook / current-rules ratio (own_rate_paths); the ratio itself has not been checked within x2 on held-out data. Places with no observed rate keep the mechanism unchanged."
+
+adu_drift_sigma:
+  value: 1.025
+  low: 1.025
+  high: 1.025
+  unit: SD of log drift (one multiplier per place for the whole window)
+  source: "Estimated, D-091 (2026-11-14, reports/adu-drift/summary.json sigma_all_states_reported_only F0): maximum likelihood over MN, NC, TX and OR places with own history, persistence forecasts 2021-25 from 2016-19. Leaving one state out gave 0.85-1.10 (F0). exp(1.025) = x2.8 at one SD."
+  notes: "Held fixed in the draws; the leave-one-state-out range 0.85-1.10 is the sensitivity. Learned for a 4-year fit and a 1-year lead before a 5-year window; the engine reads 3 observed years (adu_observed_years) and its own lead (forecast_lead_years), a close but not identical gap."
+
 adu_simulation_draws:
   value: 1000
   low: 500

@@ -24,6 +24,12 @@ the start of year 1; `baseline.window`):
   `adu_observed_years` years ending at the data origin (`observed_per_year`; a held-out place's years end
   before its holdout). It is a floor on the current-rules hazard: ADUs a place
   already builds are in its baseline and are never counted as added (additionality, MS-10).
+- **Own counts with drift** (D-091, adopted 2026-11-15; D-092; `adu_own_rate_drift`, 0 turns it off): where a
+  place has an observed ADU rate, its own counts set the no-reform hazard instead, in the lead years too:
+  persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z) with σ
+  `adu_drift_sigma` (`own_rate_draws`). The Handbook hazard is that rate times the mechanism's ratio
+  h_hb ÷ h_cur above, or plus the mechanism's added hazard where h_cur is 0 (`own_rate_paths`). The ratio
+  has not been checked within ×2 on held-out data. Places with no observed rate keep the mechanism.
 
 Each year the pool of parcels without an ADU shrinks, separately under each set of rules:
 gross ADUs(t) = R(t − 1) × h(t), R(t) = R(t − 1) − gross ADUs(t), R(0) = eligible parcels. So a parcel gets at
@@ -41,7 +47,8 @@ town prior; one place multiplier per place; extrapolation noise shared across pl
 The mortgage-rate stress range is a sensitivity (`params=`), not part of the forecast range. Numerator (units)
 and denominator (eligible parcels) stay in separate columns. Nothing is fitted here: the anchor, place-effect
 variance, rule shares and core-city term come from D-088's Form A + place types fit
-(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter only as the additionality floor.
+(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter as the no-reform rate with drift (D-092),
+or as the additionality floor with the switch off.
 """
 
 from __future__ import annotations
@@ -747,22 +754,52 @@ class Paths:
         return self.handbook - self.current
 
 
-def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True, lead=0):
+def own_rate_paths(h_own, h_cur_mech, h_hb_mech):
+    """D-091 (adopted 2026-11-15): the no-reform and Handbook hazards where a place's own counts set the
+    no-reform rate. `h_own` is that rate (persistence × drift; NaN: no own counts, keep the mechanism).
+
+    - no reform: h_own;
+    - Handbook: h_own × (h_hb_mech ÷ h_cur_mech), the mechanism's ratio, where h_cur_mech > 0; where it is 0
+      (no rule allows ADUs and nothing was observed) the ratio is undefined and the mechanism's added hazard
+      h_hb_mech − h_cur_mech is added instead.
+
+    Both capped at 1. By hand: h_own 0.01, mechanism 0.02 → 0.05 gives 0.01 → 0.025; h_own 0.001, mechanism
+    0 → 0.03 gives 0.001 → 0.031; h_own NaN gives the mechanism's 0.02 → 0.05.
+    """
+    own = np.asarray(h_own, dtype=float)
+    cur_m, hb_m = np.asarray(h_cur_mech, dtype=float), np.asarray(h_hb_mech, dtype=float)
+    use = np.isfinite(own)
+    o = np.where(use, own, 0.0)
+    pos = cur_m > 0
+    ratio_hb = o * np.divide(hb_m, cur_m, out=np.ones_like(cur_m), where=pos)
+    hb_own = np.where(pos, ratio_hb, o + (hb_m - cur_m))
+    cur = np.where(use, np.minimum(o, 1.0), cur_m)
+    hb = np.where(use, np.minimum(hb_own, 1.0), hb_m)
+    return cur, hb
+
+
+def pool_paths(
+    eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True, lead=0, h_own=None
+):
     """Gross ADUs per year under current and Handbook rules, depleting the pool of parcels without an ADU.
 
     `rule_age` is the current rule's age in years at the origin (NaN: no rule). `ramp_params` gives the ramp
     (`hazard.adu_ramp`; D-048: 1 every year). With `enabled=False` the Handbook path equals the current-rules
     path, so nothing is added. `lead` years (D-061) run first under current rules only, on one shared pool,
     and are not returned: the window's year t has rule age a + lead + t and Handbook ramp(t).
+    `h_own` (D-091; None or NaN per place: off) replaces the no-reform hazard, in the lead years too, and
+    scales the Handbook hazard by the mechanism's ratio (`own_rate_paths`).
     """
     e = np.asarray(eligible, dtype=float)
     hm = np.asarray(h_mature, dtype=float)
     floor = np.nan_to_num(np.asarray(h_floor, dtype=float), nan=0.0)
     c = np.asarray(rule_share, dtype=float)
     age = np.nan_to_num(np.asarray(rule_age, dtype=float), nan=0.0)
+    own = np.full(len(e), np.nan) if h_own is None else np.asarray(h_own, dtype=float)
     r = e.copy()
     for s in range(1, int(lead) + 1):  # lead years: current rules only, nothing reported (D-061)
         h_lead = np.minimum(np.maximum(c * hm * hazard.adu_ramp(age + s, ramp_params), floor), 1.0)
+        h_lead, _ = own_rate_paths(own, h_lead, h_lead)
         r = r - r * h_lead
     age = age + int(lead)
     r_hb, r_cur = r.copy(), r.copy()
@@ -775,9 +812,40 @@ def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, h
             h_hb = np.minimum(np.maximum(h_new, floor), 1.0)
         else:
             h_hb = h_cur
+        h_cur, h_hb = own_rate_paths(own, h_cur, h_hb)
         hb[:, i], cur[:, i] = r_hb * h_hb, r_cur * h_cur
         r_hb, r_cur = r_hb - hb[:, i], r_cur - cur[:, i]
     return Paths(hb, cur)
+
+
+def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed) -> np.ndarray:
+    """D-091 (adopted 2026-11-15): each place's no-reform ADU rate per eligible parcel a year from its own
+    counts, persistence × drift (draws × places; NaN where the place has no observed rate).
+
+    - Persistence (D-090 F0): rate ~ Gamma(Y + 0.5, E), Y = observed_rate × eligible × n_years (the counts
+      the observed rate came from, undercount-scaled as drawn), E = eligible × n_years lot-years.
+    - Drift: × d = exp(σ z), z standard normal, one per place and draw for the whole window (median 1).
+
+    `observed_rate` is one row (places) or one row per draw (`observed_rate_draws`). Own stream: `seed`.
+    By hand: rate 0.01, 100 lots, 3 years -> Y 3, E 300, posterior mean 3.5 / 300 = 0.01167 before drift.
+    """
+    obs = np.atleast_2d(np.asarray(observed_rate, dtype=float))
+    obs = np.broadcast_to(obs, (n, obs.shape[1]))
+    e = np.asarray(eligible, dtype=float)
+    lot_years = np.where(e > 0, e * n_years, np.nan)
+    y = np.nan_to_num(obs * lot_years, nan=0.0)
+    rng = np.random.default_rng(seed)
+    rate = rng.standard_gamma(y + 0.5) / lot_years
+    drift = np.exp(sigma * rng.standard_normal(obs.shape))
+    return np.where(np.isfinite(obs) & np.isfinite(lot_years), rate * drift, np.nan)
+
+
+def own_rate_central(observed_rate, eligible, n_years) -> np.ndarray:
+    """The persistence posterior mean (Y + 0.5) / E at the median drift (1); NaN without an observed rate."""
+    e = np.asarray(eligible, dtype=float)
+    lot_years = np.where(e > 0, e * n_years, np.nan)
+    obs = np.asarray(observed_rate, dtype=float)
+    return (obs * lot_years + 0.5) / lot_years
 
 
 def with_rule_probs(places: pd.DataFrame, params: Mapping[str, float]) -> pd.DataFrame:
@@ -826,6 +894,9 @@ def central_path(
         horizon,
         enabled,
         lead,
+        own_rate_central(places["observed_rate"], places["eligible_parcels"], p["adu_observed_years"])
+        if p["adu_own_rate_drift"]
+        else None,
     )
     homes = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
     return {
@@ -963,6 +1034,18 @@ def run(
     u_all = np.where(var_u > 0, gamma * var_u, 1.0)
     obs_d = observed_rate_draws(places, n, seed + 6)  # D-078: each draw's flag undercount k, own stream
     e = places["eligible_parcels"].to_numpy(dtype=float)
+    own = (  # D-091: own counts × drift as the no-reform rate, own stream
+        own_rate_draws(
+            places["observed_rate"].to_numpy(dtype=float)[None, :] if obs_d is None else obs_d,
+            e,
+            central["adu_observed_years"],
+            central["adu_drift_sigma"],
+            n,
+            seed + 8,
+        )
+        if central["adu_own_rate_drift"]
+        else np.full((n, len(places)), np.nan)
+    )
     e_mult = (
         eligible_proxy_step.multipliers(places, n, np.random.default_rng(seed + 5))
         if eligible_proxy
@@ -1003,6 +1086,7 @@ def run(
             horizon,
             enabled,
             lead,
+            own[d],
         )
         out["handbook"][d], out["current"][d], out["added"][d] = paths.handbook, paths.current, paths.added
         out["homes"][d] = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
@@ -1025,6 +1109,9 @@ def run(
             calibration_distance=dist["total"],
             outside_calibration=dist["total"] > 0,
             outside_fit_states=(st.notna() & ~st.isin(fitted)).to_numpy(),
+            no_reform_basis=np.where(
+                np.isfinite(own).any(axis=0) if n else False, "own ADU counts with drift", "model"
+            ),
             draws_from_unknown_rule=np.where(sampled, 1.0, 0.0) if n else 0.0,
             drawn_none=(drawn == 0).mean(axis=0),
             drawn_partial=((drawn >= 1) & (drawn <= 3)).mean(axis=0),
