@@ -4,17 +4,17 @@
     PYTHONPATH=<checkout with the corrected rows>/src python scripts/dev/adu_refit_fixed_rows.py \
         adu_types_refit.py --out reports/adu-types-fixed-rows --workers 7
 
-The rule rows come from the `config/` next to the `src` on PYTHONPATH (`lotline.config.CONFIG_DIR`). Any ADU rule
-row whose `coding_notes` holds `UNKNOWN-PLACEHOLDER` marks its place's years from its effective date to the day
-before its end date as unknown; `adu_owner_refit.inputs` (which every D-084 to D-095 script reads its places
-from) is wrapped so those years are cut from each place (`joint_refit.subset_years`). The named script then
-runs as `__main__` with the remaining arguments.
+The rule rows come from the `config/` next to the `src` on PYTHONPATH (`lotline.config.CONFIG_DIR`). Any ADU
+rule row whose `coding_notes` holds `UNKNOWN-PLACEHOLDER` marks its place's years from its effective date to
+the day before its end date as unknown; `adu_owner_refit.inputs` (which every D-084 to D-095 script reads its
+places from) is wrapped so those years are cut (`joint_refit.subset_years`). The named script is
+loaded as a module at the top level (so worker processes, which re-run this file, can unpickle its functions)
+and its `main()` runs with the remaining arguments.
 """
 
 from __future__ import annotations
 
 import importlib.util
-import runpy
 import sys
 from pathlib import Path
 
@@ -53,8 +53,10 @@ def _load(name: str, file: str):
 
 
 def patch() -> dict[str, set[int]]:
+    """Wrap the `adu_owner_refit` module the target script ended up with (each script's loader re-executes
+    its helpers, so the wrap is applied after the target is loaded)."""
     drop = unknown_years()
-    own = _load("adu_owner_refit", "adu_owner_refit.py")
+    own = sys.modules["adu_owner_refit"]
     base = own.inputs
 
     def inputs(store):
@@ -72,12 +74,13 @@ def patch() -> dict[str, set[int]]:
     return drop
 
 
-DROPPED = patch()  # top level, so worker processes patch too
+# top level, so worker processes (which re-run this file) load and patch the same way
+TARGET = _load(Path(sys.argv[1]).stem, Path(sys.argv[1]).name) if len(sys.argv) > 1 else None
+DROPPED = patch() if TARGET is not None else {}
 
 if __name__ == "__main__":
-    script = sys.argv[1]
     print(
         f"config: {CONFIG_DIR}; unknown place-years left out: { {g: sorted(y) for g, y in DROPPED.items()} }"
     )
-    sys.argv = [str(HERE / script), *sys.argv[2:]]
-    runpy.run_path(str(HERE / script), run_name="__main__")
+    sys.argv = [str(HERE / sys.argv[1]), *sys.argv[2:]]
+    TARGET.main()
