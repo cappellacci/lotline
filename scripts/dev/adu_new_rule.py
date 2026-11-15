@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""D-098: profile of the first-years share ν, and its held-out check, on the D-096 rows.
+"""D-099: profile of the first-years share ν, and its held-out check, on the D-096 rows.
 
     PYTHONPATH=<checkout with the D-096 rows>/src python scripts/dev/adu_refit_fixed_rows.py \
         adu_new_rule.py --out reports/adu-new-rule --workers 7
 
-Run only after D-098 is accepted. Steps (D-098):
+Run only after D-099 is accepted. Steps (D-099):
 1. All-data profile over `adu_new_rule.NU_GRID`: each place's base scaled by ν in its first K years after f_i,
    A + P's θ, α and core term refit at D-096's m_o and m_x (`adu_types._maximize`); ν̂ and its 90% interval.
 2. Held-out: for each newly allowing fit place j, the profile without j, then j's new-rule years scored from

@@ -30,8 +30,8 @@ adu_new_rule_share:
   low: 1.0
   high: 1.0
   unit: share of the mature ADU hazard reached in the first five years where a reform brings ADUs to a place that allows none today (nu)
-  source: "D-098 (drafted 2026-11-15, not yet accepted): 1 = no first-years discount, the engine as before. To be estimated by profile likelihood on the places that first allowed ADUs after 2016 (D-096 rows) only if D-098 is accepted and its decision rule passes"
-  notes: "Applies in pool_paths to the Handbook's new hazard where today's rule share is 0 (an explicit no-ADU rule, or a drawn 'none' rule); places that already allow ADUs keep the full upgrade. Every window year (2027-31) is within D-098's five years."
+  source: "D-099 (drafted 2026-11-15, not yet accepted): 1 = no first-years discount, the engine as before. To be estimated by profile likelihood on the places that first allowed ADUs after 2016 (D-096 rows) only if D-099 is accepted and its decision rule passes"
+  notes: "Applies in pool_paths to the Handbook's new hazard where today's rule share is 0 (an explicit no-ADU rule, or a drawn 'none' rule); places that already allow ADUs keep the full upgrade. Every window year (2027-31) is within D-099's five years."
 
 adu_owner_occupancy_share:
   value: 1.0

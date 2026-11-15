@@ -1,4 +1,4 @@
-"""D-098: uptake in the first years after a place first allows ADUs.
+"""D-099: uptake in the first years after a place first allows ADUs.
 
 f_i is the year a place's first ADU-allowing rule took effect: the earliest ADU row that is neither an
 explicit no-ADU row (`adus_per_lot` 0) nor marked `UNKNOWN-PLACEHOLDER`. A first row starting on
@@ -17,7 +17,7 @@ import pandas as pd
 
 from lotline.model import calibrate_adu as cal
 
-K = 5  # years after f_i that take ν, fixed in D-098 (the engine's five-year window)
+K = 5  # years after f_i that take ν, fixed in D-099 (the engine's five-year window)
 WINDOW_START = pd.Timestamp("2016-01-01")
 PLACEHOLDER = "UNKNOWN-PLACEHOLDER"
 NU_GRID = tuple(round(v, 2) for v in np.arange(0.05, 1.5001, 0.05))
