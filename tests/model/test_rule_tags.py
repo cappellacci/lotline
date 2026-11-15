@@ -260,7 +260,7 @@ def test_adu_panel_tag_sensitivities(adu_rules):
 
 
 # ---------------------------------------------------------------------------------------------------------
-# D-082 §1 (proposed): tags count only on the event-setting row
+# D-092 §1 (proposed): tags count only on the event-setting row
 # ---------------------------------------------------------------------------------------------------------
 
 EVENTS = range(2013, 2026)  # D-042's event window
@@ -291,7 +291,7 @@ def test_cap_in_force_and_event_setting_rows_by_hand():
 
 def test_event_setting_row_rule_keeps_oregon_land_division_places():
     r = reforms(
-        *_oregon_city("1"),  # dated cap row, blank-dated land division -> kept under D-082
+        *_oregon_city("1"),  # dated cap row, blank-dated land division -> kept under D-092
         *_oregon_city("2", cap_row_adopted=None),  # the cap row itself is blank-dated -> dropped
         *_oregon_city("3", cap_notes="DATE UNCONFIRMED"),
         *_oregon_city("4", cap_notes="[earliest-known] earliest source"),

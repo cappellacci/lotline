@@ -1,7 +1,7 @@
-# D-082 run 4: joint refit of M and its challengers (2026-11-12)
+# D-092 run 4: joint refit of M and its challengers (2026-11-12)
 
-**What this is.** This is run 4 of D-082 §9. It fits the main missing-middle uptake model and its challengers on
-the D-082 event rows and BPS counts, then scores each one on states it did not see (leave one state out).
+**What this is.** This is run 4 of D-092 §9. It fits the main missing-middle uptake model and its challengers on
+the D-092 event rows and BPS counts, then scores each one on states it did not see (leave one state out).
 
 | Model | What it is |
 |---|---|
@@ -15,7 +15,7 @@ C2 (within-city lots) was not built; see run 5. **Nothing was written to config.
 
 - **Go-ahead:** Ben's overnight request on 2026-11-12, "Can we get close to having a finalized model over
   night?", taken as the go-ahead for runs 2–6 in order.
-- **Command:** `uv run python scripts/dev/calibrate_mm_d082.py --out reports/mm-d082/run4-refit`. It reads the
+- **Command:** `uv run python scripts/dev/calibrate_mm_d092.py --out reports/mm-d092/run4-refit`. It reads the
   cached processed tables and downloads nothing. Wall time was 2 h 39 min.
 - **Holdouts:** St. Paul and Ramsey County are dropped before fitting. The scored test places (Minneapolis,
   Durham city and Durham County) are scored, never fitted. No `--unblind`.
@@ -63,7 +63,7 @@ M beats "no reform effect" by 186, with a paired SE of 63.
 
    **Without Oregon, θ falls to 0.034 per 1,000** (0.004–0.75). That is about 1/20 of the full fit and below
    the 0.12 adopted for D-059.
-2. **θ is about 5 times D-059's adopted 0.12.** This follows from the change of fit set: D-082's event rule
+2. **θ is about 5 times D-059's adopted 0.12.** This follows from the change of fit set: D-092's event rule
    brings in 86 Oregon places with HB 2001 events. Without Oregon the figure is in D-059's range.
 3. **C4 barely differs from M.** The level prior is very wide (log-SD 4.3, after doubling), so it hardly
    moves θ (0.633 against 0.632). Its 2.9-SE edge is real by the §5 rule but small in size.
@@ -78,6 +78,6 @@ M beats "no reform effect" by 186, with a paired SE of 63.
 
 ## Run-4 choices (made by Claude Code, for Ben to confirm)
 
-- Lubbock and Richfield are excluded, as in `calibrate_mm_d082.EXCLUDE`, carried over from D-059.
-- The fit uses BPS 2–4 unit buildings for every place (D-082 §1: BPS is the outcome everywhere). Runs 1–3 feed
+- Lubbock and Richfield are excluded, as in `calibrate_mm_d092.EXCLUDE`, carried over from D-059.
+- The fit uses BPS 2–4 unit buildings for every place (D-092 §1: BPS is the outcome everywhere). Runs 1–3 feed
   the tests, not the fit.

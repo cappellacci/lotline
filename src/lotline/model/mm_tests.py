@@ -1,10 +1,10 @@
-"""Pass rules for D-082 §7's missing-middle accuracy tests, fixed in code before any test is run.
+"""Pass rules for D-092 §7's missing-middle accuracy tests, fixed in code before any test is run.
 
 Each function takes already-scored rows (observed total and predictive P10/P50/P90, or draws) and applies one
 rule from the §7 table. The thresholds live in `config/params/mm.yaml` (the `mm_test_*`, `mm_loso_*`,
 `mm_placebo_*` and `mm_place_coverage_*` keys); each function takes them as arguments, with those values as
 defaults, so tests can pass hand-worked values. Nothing here reads data or fits anything:
-`scripts/dev/mm_tests_d082.py` builds the inputs.
+`scripts/dev/mm_tests_d092.py` builds the inputs.
 
 - **Test A, new places** (`test_a`): at least 60% of newly entering non-Oregon places inside P10–P90, and the
   median of observed ÷ P50 within ×2.

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Missing middle: D-082's five-state refit with the level component and challengers (PROPOSED; not run).
+"""Missing middle: D-092's five-state refit with the level component and challengers (PROPOSED; not run).
 
-    uv run python scripts/dev/calibrate_mm_d082.py --out /tmp/x --dry     # structure only: no counts, no fit
-    uv run python scripts/dev/calibrate_mm_d082.py --out reports/mm-d082  # ONLY with Ben's go-ahead (§9)
+    uv run python scripts/dev/calibrate_mm_d092.py --out /tmp/x --dry     # structure only: no counts, no fit
+    uv run python scripts/dev/calibrate_mm_d092.py --out reports/mm-d092  # ONLY with Ben's go-ahead (§9)
 
-D-082 is proposed, not approved. Without --dry this script fits on real data, so it must not be run until Ben
-approves D-082 and asks for the run (D-082 §9: each run needs his go-ahead after its code is pushed).
+D-092 is proposed, not approved. Without --dry this script fits on real data, so it must not be run until Ben
+approves D-092 and asks for the run (D-092 §9: each run needs his go-ahead after its code is pushed).
 
-What it wires (D-082 §1, §1b, §5; analysis plan on branch ws/mm-review):
-- Fit set: every place in MN, NC, OH, TX and OR with a D-082 event in 2013-2025
+What it wires (D-092 §1, §1b, §5; analysis plan on branch ws/mm-review):
+- Fit set: every place in MN, NC, OH, TX and OR with a D-092 event in 2013-2025
   (`calibrate_mm.classify_event`: a cap rise, D-042, or a `[standards]` row, dose class S), under the
   accepted rule rows. Oregon joins.
 - Test places (Minneapolis, Durham city, Durham County, and Raleigh as in D-054 to D-059) are held out of the
@@ -59,7 +59,7 @@ HOLDOUTS = {
 }
 EXCLUDE = {  # out of the fit, the targets and the level set
     "4845000": "Lubbock",  # D-059: no usable source for its pre-UDC rule (#398 confirms)
-    "2754214": "Richfield",  # D-082 §1b: no cap rise, and its effective date is unresolved
+    "2754214": "Richfield",  # D-092 §1b: no cap rise, and its effective date is unresolved
 }
 FIRST, LAST = d042.FIT_FIRST, d042.FIT_LAST  # D-042's event window, 2013-2025
 EVENT_YEARS = range(FIRST, LAST + 1)
@@ -105,8 +105,8 @@ def rule_rows(store: DataStore, states) -> dict:
     return out
 
 
-def events_d082(panel: pd.DataFrame, rules: dict) -> tuple[dict[str, cal.Event], dict]:
-    """geoid -> Event for every panel place with a D-082 event in the window (the first cap rise or standards
+def events_d092(panel: pd.DataFrame, rules: dict) -> tuple[dict[str, cal.Event], dict]:
+    """geoid -> Event for every panel place with a D-092 event in the window (the first cap rise or standards
     row at or after its first in-window dose change, `calibrate_mm.first_event`); and the places with a dose
     change but no event (geoid -> (year, prior cap, cap after) at that first change)."""
     events, no_event = {}, {}
@@ -183,12 +183,12 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
     band_of = panel.groupby("place")["band"].first().to_dict()
     rules = rule_rows(store, STATES)
     classes = bps_classes(store, set(panel["place"]))
-    all_events, no_event = events_d082(panel, rules)
+    all_events, no_event = events_d092(panel, rules)
     usable = {g: e for g, e in all_events.items() if e.classes}
     fit_events = {g: e for g, e in usable.items() if g not in TESTS and g not in EXCLUDE}
     test_events = {g: e for g, e in usable.items() if g in TESTS}
 
-    # ---- level set L and the "none" comparison places (fixed from rule rows, D-082 §1b) ----
+    # ---- level set L and the "none" comparison places (fixed from rule rows, D-092 §1b) ----
     panel_ids = set(panel["place"])
     always = set().union(*(rule_tags.always_allowed_places(r["raw"]) for r in rules.values()))
     level_ids = sorted((always & panel_ids) - set(all_events) - set(TESTS) - set(EXCLUDE) - set(HOLDOUTS))
@@ -196,7 +196,7 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
     none_ids = (none_ids & panel_ids) - set(TESTS) - set(HOLDOUTS)
     none_rows = panel[panel["place"].isin(none_ids) & panel["year"].isin(LEVEL_YEARS)]
 
-    # ---- tag sensitivity, both readings (D-082 §1: report the event-setting-row reading) ----
+    # ---- tag sensitivity, both readings (D-092 §1: report the event-setting-row reading) ----
     drops = {
         f"{rule}:{t}": tag_drops(rules, [t], rule)
         for rule in ("event_setting_row", "any_event_row")
@@ -248,7 +248,7 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
                for k, v in drops.items() if k.startswith("any_event_row")})  # fmt: skip
         return
 
-    # ================= Not run without Ben's go-ahead (D-082 §9) =================
+    # ================= Not run without Ben's go-ahead (D-092 §9) =================
     targets_by_id = {q.geoid: q for q in d054.horizon(m_fit + m_test)}
     pace = d042.capacity(
         classes, rp, {g: (e.year, e.prior_cap) for g, e in {**fit_events, **test_events}.items()}
@@ -320,7 +320,7 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
     scores = pd.DataFrame(rows)
     fs = scores[~scores["test_place"]]
 
-    selection = {"status": "pending: tests A-C have no pass counts yet (D-082 §7)"}
+    selection = {"status": "pending: tests A-C have no pass counts yet (D-092 §7)"}
     if tests_passed is not None:
         passed = json.loads(tests_passed.read_text())
         sel = cal.select_model(fs, passed, "M", CHALLENGERS, p["se_margin"])
@@ -335,7 +335,7 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
     scores.to_csv(out / "place_scores.csv", index=False)
     struct.to_csv(out / "structure.csv", index=False)
     summary = {
-        "status": "D-082 proposed; run with Ben's go-ahead",
+        "status": "D-092 proposed; run with Ben's go-ahead",
         "fit_set": {s: [name_of[g] for g in fit_ids if state_of[g] == s] for s in STATES},
         "test_places": [TESTS[g] for g in test_ids],
         "level_set": [q.name for q in lv],

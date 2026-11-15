@@ -1,4 +1,4 @@
-"""One theme per permit row: `adu`, `mm_2_4`, `conversion` or `other` (D-082 §6).
+"""One theme per permit row: `adu`, `mm_2_4`, `conversion` or `other` (D-092 §6).
 
 Why. The ADU fit counts ADU permits; the missing-middle outcome counts 2-4 unit buildings. Without one shared
 rule the same permit can land in both: Austin files post-HOME second homes as two-family (R-103) permits,
@@ -34,7 +34,7 @@ Precedence (the first rule that matches decides; the order is the method):
    new 2-4 unit building even when its result is typed U2 or U3_4.
 7. `new_2_4`: `building_type_std` in `MM_TYPES` (U2, U3_4, DTQ, as `model.estimate_mm.MM_TYPES`) → `mm_2_4`.
 8. `other_type`: everything else (SFD, TH, U5_6, U7P, MF5, OTHER, UNKNOWN) → `other`. Townhouses and 5-6 unit
-   buildings stay `other` here; D-082 §3's ratios select them by `building_type_std`, not by theme.
+   buildings stay `other` here; D-092 §3's ratios select them by `building_type_std`, not by theme.
 
 `units_new` that is missing (null) never stops a row from matching rules 4-7: a typed new building with an
 unknown unit count is still that building.

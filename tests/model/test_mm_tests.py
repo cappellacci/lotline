@@ -1,4 +1,4 @@
-"""D-082 §7 pass rules (`lotline.model.mm_tests`), each against a hand-worked example."""
+"""D-092 §7 pass rules (`lotline.model.mm_tests`), each against a hand-worked example."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import pytest
 from lotline.model import mm_tests as mt
 
 
-def test_params_are_the_d082_section_7_values():
+def test_params_are_the_d092_section_7_values():
     p = {k: mt._p(k) for k in ("mm_test_a_coverage", "mm_test_a_ratio", "mm_test_c_coverage",
                                "mm_loso_min_places", "mm_placebo_shift_years", "mm_place_coverage_low",
                                "mm_place_coverage_high", "mm_test_c_first_year")}  # fmt: skip

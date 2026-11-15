@@ -1,5 +1,5 @@
 {
-  "status": "D-082 proposed; run with Ben's go-ahead",
+  "status": "D-092 proposed; run with Ben's go-ahead",
   "fit_set": {
     "MN": [
       "St. Louis Park city"
@@ -260,7 +260,7 @@
     "n": 93
   },
   "selection": {
-    "status": "pending: tests A-C have no pass counts yet (D-082 \u00a77)"
+    "status": "pending: tests A-C have no pass counts yet (D-092 \u00a77)"
   },
   "seconds": 9565
 }

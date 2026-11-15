@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""D-082 run 5: the missing-middle accuracy tests of §7, scored on run 4's fits.
+"""D-092 run 5: the missing-middle accuracy tests of §7, scored on run 4's fits.
 
-    uv run python scripts/dev/mm_tests_d082.py \
-        --run4 reports/mm-d082/run4-refit --out reports/mm-d082/run5-tests
+    uv run python scripts/dev/mm_tests_d092.py \
+        --run4 reports/mm-d092/run4-refit --out reports/mm-d092/run5-tests
 
 Ben's go-ahead: "Can we get close to having a finalized model over night?" (2026-11-12), which covers runs
 2–6 in order. Pass rules are `lotline.model.mm_tests` (fixed in code before this script was first run), and
@@ -53,10 +53,10 @@ from lotline.model import mm_tests as mt
 from lotline.model import rule_tags
 
 HERE = Path(__file__).parent
-_spec = importlib.util.spec_from_file_location("d082", HERE / "calibrate_mm_d082.py")
-d082 = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(d082)
-d054, d042 = d082.d054, d082.d042
+_spec = importlib.util.spec_from_file_location("d092", HERE / "calibrate_mm_d092.py")
+d092 = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(d092)
+d054, d042 = d092.d054, d092.d042
 
 MODELS = ("M", "C1", "C3", "C4")
 DRAWS, SEED = 20_000, 20261112
@@ -71,7 +71,7 @@ B_AREAS = {
     "Minneapolis": (2017, 2023),
     "Met Council": (2021, 2024),
 }
-B_PASS_AREAS = ("Wake", "Franklin", "Minneapolis")  # D-082 §7 test B; Met Council is reported only
+B_PASS_AREAS = ("Wake", "Franklin", "Minneapolis")  # D-092 §7 test B; Met Council is reported only
 
 
 def fold_fits(run4: Path) -> dict[str, dict]:
@@ -95,23 +95,23 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
         print(f"[{time.time() - t0:5.0f}s] {msg}", flush=True)
 
     rng = np.random.default_rng(SEED)
-    p = d082.params()
+    p = d092.params()
     pm = {k: mt._p(k) for k in ("mm_placebo_shift_years", "mm_test_c_first_year")}
     store = DataStore()
-    panel = mm.build_panel(store, states=d082.STATES).data
-    assert not set(panel["place"]) & set(d082.HOLDOUTS), "holdout places in the panel"
+    panel = mm.build_panel(store, states=d092.STATES).data
+    assert not set(panel["place"]) & set(d092.HOLDOUTS), "holdout places in the panel"
     state_of = panel.groupby("place")["state"].first().to_dict()
     name_of = panel.groupby("place")["name"].first().to_dict()
-    rules = d082.rule_rows(store, d082.STATES)
-    classes = d082.bps_classes(store, set(panel["place"]))
-    all_events, _ = d082.events_d082(panel, rules)
+    rules = d092.rule_rows(store, d092.STATES)
+    classes = d092.bps_classes(store, set(panel["place"]))
+    all_events, _ = d092.events_d092(panel, rules)
     usable = {g: e for g, e in all_events.items() if e.classes}
-    fit_events = {g: e for g, e in usable.items() if g not in d082.TESTS and g not in d082.EXCLUDE}
-    test_events = {g: e for g, e in usable.items() if g in d082.TESTS}
-    m_fit, rp = d082.build_m(panel, classes, fit_events, p, p["s_dose"])
+    fit_events = {g: e for g, e in usable.items() if g not in d092.TESTS and g not in d092.EXCLUDE}
+    test_events = {g: e for g, e in usable.items() if g in d092.TESTS}
+    m_fit, rp = d092.build_m(panel, classes, fit_events, p, p["s_dose"])
     fit_ids = [q.geoid for q in m_fit]
     targets = {q.geoid: q for q in d054.horizon(m_fit)}
-    c1_targets = {q.geoid: q for q in d054.horizon(d082.build_c1(panel, classes, fit_events, all_events, p,
+    c1_targets = {q.geoid: q for q in d054.horizon(d092.build_c1(panel, classes, fit_events, all_events, p,
                                                                  p["s_dose"]))}  # fmt: skip
     pace = d042.capacity(
         classes, rp, {g: (e.year, e.prior_cap) for g, e in {**fit_events, **test_events}.items()}
@@ -126,7 +126,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
     pits = {k: [] for k in MODELS}
     # ---- leave one state out + test A (fold = without the place's state) ----
     # "Newly entering" (§7 A: from step 1 or method changes): a non-Oregon fit place that was not in D-059's
-    # fit set, or whose D-082 event differs from D-059's (another year, or the standards class S).
+    # fit set, or whose D-092 event differs from D-059's (another year, or the standards class S).
     d059 = pd.read_csv(D059_SCORES, dtype={"geoid": str})
     d059_T = dict(
         zip(d059.loc[~d059["test_place"], "geoid"], d059.loc[~d059["test_place"], "T"], strict=True)
@@ -139,12 +139,12 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
         if g not in d059_T:
             return "not in D-059"
         e = fit_events[g]
-        return f"D-059 T {int(d059_T[g])} -> D-082 {e.year} {e.dose_class}"
+        return f"D-059 T {int(d059_T[g])} -> D-092 {e.year} {e.dose_class}"
 
     new_why = {name_of[g]: why(g) for g in new_ids}
     same = {name_of[g]: fit_events[g].year for g in fit_ids if state_of[g] != "OR" and g not in new_ids}
     loso_rows, a_rows = [], []
-    for s in d082.STATES:
+    for s in d092.STATES:
         held = [g for g in fit_ids if state_of[g] == s]
         if not held:
             continue
@@ -174,7 +174,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
     franklin = set(oh_bps.loc[oh_bps["county_geoid"].astype(str) == FRANKLIN, "geoid"].dropna().astype(str))
     max_dose = panel.groupby("place")["dose"].max().fillna(0.0)
     c_ids = sorted(g for g in (none_ids | franklin) & set(panel["place"])
-                   if g not in all_events and max_dose.get(g, 0.0) <= 0 and g not in d082.TESTS)  # fmt: skip
+                   if g not in all_events and max_dose.get(g, 0.0) <= 0 and g not in d092.TESTS)  # fmt: skip
     first = int(pm["mm_test_c_first_year"])
     sub = panel[panel["place"].isin(c_ids)].copy()
     sub["T"] = float(first)
@@ -217,7 +217,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
     if gains_path is not None and gains_path.exists():
         gains = pd.read_csv(gains_path, dtype={"jurisdiction_geoid": str})
         gains = gains[gains["read"] == "main"]
-        m_test, _ = d082.build_m(panel, classes, test_events, p, p["s_dose"])
+        m_test, _ = d092.build_m(panel, classes, test_events, p, p["s_dose"])
         all_places = {q.geoid: q for q in m_fit + m_test}
         z_full = cal.conditional_z(pace, fit_ids)
         for area, (y0, y1) in B_AREAS.items():
@@ -300,7 +300,7 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
     passed = {k: v["tests_a_c_passed"] for k, v in res.items()}
     scores = pd.read_csv(run4 / "place_scores.csv", dtype={"geoid": str})
     fs = scores[~scores["test_place"]]
-    sel = cal.select_model(fs, passed, "M", d082.CHALLENGERS, p["se_margin"])
+    sel = cal.select_model(fs, passed, "M", d092.CHALLENGERS, p["se_margin"])
 
     out.mkdir(parents=True, exist_ok=True)
     loso_df.to_csv(out / "loso_states.csv", index=False)

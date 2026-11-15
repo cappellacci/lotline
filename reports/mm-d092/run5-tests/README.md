@@ -1,12 +1,12 @@
-# D-082 run 5: the §7 tests and model selection (2026-11-12)
+# D-092 run 5: the §7 tests and model selection (2026-11-12)
 
-**What this is.** This is run 5 of D-082 §9. It puts each run-4 model (M, C1, C3, C4) through D-082 §7's tests,
+**What this is.** This is run 5 of D-092 §9. It puts each run-4 model (M, C1, C3, C4) through D-092 §7's tests,
 then applies §5's selection rule. **Nothing was written to config.**
 
 - **Command:**
 
   ```bash
-  uv run python scripts/dev/mm_tests_d082.py --run4 reports/mm-d082/run4-refit --run3 reports/mm-d082/run3-rolls --out reports/mm-d082/run5-tests
+  uv run python scripts/dev/mm_tests_d092.py --run4 reports/mm-d092/run4-refit --run3 reports/mm-d092/run3-rolls --out reports/mm-d092/run5-tests
   ```
 
   It uses 20,000 draws with seed 20261112 and takes about 3 minutes. Nothing is downloaded.

@@ -1,14 +1,14 @@
-# D-082 run 1: permit coverage screen and k_src (2026-11-12)
+# D-092 run 1: permit coverage screen and k_src (2026-11-12)
 
-**What this is.** This is the first of D-082's six runs (§9). It asks one question for each permit source that
+**What this is.** This is the first of D-092's six runs (§9). It asks one question for each permit source that
 might feed the missing-middle counts: *do the city's own permit records see about the same number of new
 2–4 unit buildings as the Census Building Permits Survey (BPS) does, in the years before the reform?* A source
 that does (0.8 ≤ k ≤ 1.25) and passes the other three tests is "strong." Strong sources feed runs 2–4: the
 uplift ratios, the roll check and challenger C2. **Nothing was fitted. Nothing was written to config.**
 
-- **Approved by:** Ben approved D-082 on 2026-11-12 ("Approve D-082"). The go-ahead for this run was "Yes, start
+- **Approved by:** Ben approved D-092 on 2026-11-12 ("Approve D-082"). The go-ahead for this run was "Yes, start
   run 1", which also accepted the 13 counting choices in PR #408.
-- **Command:** `uv run python scripts/dev/mm_counts_d082.py --coverage --out reports/mm-d082/run1-coverage`.
+- **Command:** `uv run python scripts/dev/mm_counts_d092.py --coverage --out reports/mm-d092/run1-coverage`.
   It uses cached processed tables only, with no download, and takes about 2 minutes.
 - **Holdouts:** every table went through `mm_counts.blind`. That function drops St. Paul and all of Ramsey
   County, then applies `holdout.apply`. No unblinding was done. Mecklenburg was not screened (see below).
@@ -18,7 +18,7 @@ uplift ratios, the roll check and challenger C2. **Nothing was fitted. Nothing w
 
 ## Result
 
-**Main collapse: per-permit split** (D-082 deviation, 2026-11-12, chosen by Ben after the first pass of this
+**Main collapse: per-permit split** (D-092 deviation, 2026-11-12, chosen by Ben after the first pass of this
 run: "Per-permit split rule"). With no address, one parcel × issue year whose units sum above 4, and whose
 permits are **each** 2–4 units, counts each permit as its own building. Groups with a sub-2 permit (one permit
 per duplex side) stay merged. The pre-registered collapse is kept as `prereg_k`. The bounds from the first pass
@@ -62,10 +62,10 @@ ratios on both source sets.
 6. **The long window (back to 1992) is a sensitivity** (`long_*` in `coverage.csv`). Using it would change
    several verdicts, so the 2013 start matters.
 
-## Run-1 choices (not in D-082's text; made by Claude Code, for Ben to confirm)
+## Run-1 choices (not in D-092's text; made by Claude Code, for Ben to confirm)
 
-- **Event years.** These come from D-082's event rule on the accepted rule rows
-  (`calibrate_mm_d082.events_d082`). Raleigh, Columbus, Cincinnati and College Station have no event in
+- **Event years.** These come from D-092's event rule on the accepted rule rows
+  (`calibrate_mm_d092.events_d092`). Raleigh, Columbus, Cincinnati and College Station have no event in
   2013–2025, so all of their window is "before the event." Raleigh is a test place. Its 2021 text change does
   not meet the cap-rise rule under the accepted rows, so its window runs to 2025.
 - **Window start.** The window starts in 2013 (D-042's first event year) or the source's first full year,
@@ -76,7 +76,7 @@ ratios on both source sets.
   from the totals (`mm_counts.area_coverage`, with a hand-worked test). Only Durham (city plus unincorporated
   county, both with a 2020 event) uses this.
 - **Mecklenburg was not screened.** BPS has no place rows for Charlotte or the Mecklenburg towns, which are
-  94% of the source's rows, and the D-082 panel keeps Mecklenburg out. A county-only k would describe the
+  94% of the source's rows, and the D-092 panel keeps Mecklenburg out. A county-only k would describe the
   wrong area.
 - **The pre-years test counts full years inside the source's span.** Minneapolis's December 2016 does not
   count, so it has exactly 3 pre-years.

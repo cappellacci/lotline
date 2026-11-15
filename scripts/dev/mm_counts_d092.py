@@ -1,12 +1,12 @@
-"""Inputs and runs for the D-082 missing-middle counts (`lotline.model.mm_counts`).
+"""Inputs and runs for the D-092 missing-middle counts (`lotline.model.mm_counts`).
 
-    uv run python scripts/dev/mm_counts_d082.py --dry                                  # structure only
-    uv run python scripts/dev/mm_counts_d082.py --coverage --out reports/mm-d082/run1-coverage   # run 1
+    uv run python scripts/dev/mm_counts_d092.py --dry                                  # structure only
+    uv run python scripts/dev/mm_counts_d092.py --coverage --out reports/mm-d092/run1-coverage   # run 1
 
 `--dry` reads each candidate permit source, parcel roll and BPS table through `mm_counts.blind` (St. Paul and
 Ramsey County dropped outright, then `holdout.apply`) and prints **structure only**.
 
-`--coverage` is D-082 §9 run 1 (approved by Ben 2026-11-12; go-ahead "Yes, start run 1"). Since the
+`--coverage` is D-092 §9 run 1 (approved by Ben 2026-11-12; go-ahead "Yes, start run 1"). Since the
 2026-11-12 deviation ("Per-permit split rule") the main collapse is the per-permit split; the pre-registered
 collapse is kept as `prereg_*`. For each candidate permit source it reports the building collapse, k_src
 against BPS over each place's own pre-event years, its 90% interval, and the four strong-source tests. It
@@ -14,7 +14,7 @@ writes `coverage.csv` and `coverage_by_year.csv` to `--out`. Nothing is fitted a
 config. Runs 2-6 are not here: each needs its own go-ahead.
 
 Run-1 choices (stated in the report):
-- Event years: D-082's event rule (`calibrate_mm_d082.events_d082`, the accepted rule rows). A place with no
+- Event years: D-092's event rule (`calibrate_mm_d092.events_d092`, the accepted rule rows). A place with no
   event is pre-event through the source's last full year.
 - Window: from 2013 (D-042's first event year) or the source's first full year, whichever is later, to the
   year before the place's event. The long window (back to BPS's first year, 1992) is a sensitivity.
@@ -34,7 +34,7 @@ from lotline.io import DataStore
 from lotline.model import mm_counts as mc
 from lotline.validation.undercount import wilson
 
-# D-082 §2: the strong permit candidates (review §2), by state and processed file name
+# D-092 §2: the strong permit candidates (review §2), by state and processed file name
 # (processed/<st>/permits/<name>.parquet).
 PERMIT_SOURCES = {
     "MN": [("Minneapolis", "mpls_permits")],
@@ -43,7 +43,7 @@ PERMIT_SOURCES = {
     "TX": [("Austin", "austin_permits"), ("College Station", "cstx_permits")],
     "OR": [("Portland", "portland_permits"), ("Bend", "bend_permits"), ("Medford", "medford_permits")],
 }
-# D-082 §2 test B rolls (Wake 2019→2023, Franklin 2016→2025, Minneapolis 2017→2026, Met Council 2021→2025).
+# D-092 §2 test B rolls (Wake 2019→2023, Franklin 2016→2025, Minneapolis 2017→2026, Met Council 2021→2025).
 ROLL_SOURCES = {
     "NC": [("Wake", "wake_realestate")],
     "OH": [("Franklin", "oh_parcels")],
@@ -78,7 +78,7 @@ def _present(df: pd.DataFrame, cols: tuple[str, ...]) -> str:
 
 
 def dry(store: DataStore) -> None:
-    print("D-082 inputs, structure only (no counts of 2-4 unit buildings, no ratios)\n")
+    print("D-092 inputs, structure only (no counts of 2-4 unit buildings, no ratios)\n")
     print("Permit sources")
     for state, sources in PERMIT_SOURCES.items():
         for place, source in sources:
@@ -123,20 +123,20 @@ def dry(store: DataStore) -> None:
 
 # ------------------------------------------------------------------------------------------ run 1: coverage
 
-WINDOW_FIRST = 2013  # D-042's first event year (calibrate_mm_d082.FIRST)
+WINDOW_FIRST = 2013  # D-042's first event year (calibrate_mm_d092.FIRST)
 BPS_LAST = 2025
 BPS_FIRST = 1992
 NOT_SCREENED = {  # source -> reason (no k is computed)
     "meck_permits": "BPS has no place rows for Charlotte or the Mecklenburg towns (Mecklenburg is kept out "
-    "of the D-082 panel); a county-only k would cover about 6% of the source's rows",
+    "of the D-092 panel); a county-only k would cover about 6% of the source's rows",
 }
 
 
-def _d082():
+def _d092():
     import importlib.util
     from pathlib import Path
 
-    spec = importlib.util.spec_from_file_location("d082", Path(__file__).with_name("calibrate_mm_d082.py"))
+    spec = importlib.util.spec_from_file_location("d092", Path(__file__).with_name("calibrate_mm_d092.py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -157,11 +157,11 @@ def coverage(store: DataStore, out) -> pd.DataFrame:
 
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    d082 = _d082()
+    d092 = _d092()
     from lotline.model import estimate_mm as mm
 
-    panel = mm.build_panel(store, states=d082.STATES).data
-    events, _ = d082.events_d082(panel, d082.rule_rows(store, d082.STATES))
+    panel = mm.build_panel(store, states=d092.STATES).data
+    events, _ = d092.events_d092(panel, d092.rule_rows(store, d092.STATES))
     names = panel.groupby("place")["name"].first().to_dict()
     rows, by_year = [], []
     for state, sources in PERMIT_SOURCES.items():
@@ -179,7 +179,7 @@ def coverage(store: DataStore, out) -> pd.DataFrame:
             df = mc.blind(raw, state, date_col="issue_date", year_col="issue_year")
             y0, y1 = full_years(df)
             df = df.loc[pd.to_numeric(df["issue_year"]).between(y0, y1)]
-            # Main: the per-permit split (D-082 deviation 2026-11-12). Pre-registered rule kept as `prereg_*`.
+            # Main: the per-permit split (D-092 deviation 2026-11-12). Pre-registered rule kept as `prereg_*`.
             bld = mc.collapse_buildings(df, split_merged=True)
             bld0 = mc.collapse_buildings(df)
             rep = mc.collapse_report(bld)
@@ -269,7 +269,7 @@ def _wake_cards(store: DataStore, name: str) -> pd.DataFrame:
 
 # ------------------------------------------------------------------------------------------ run 2: ratios
 
-RATIO_FIRST, RATIO_LAST = 2016, 2025  # D-082 §3
+RATIO_FIRST, RATIO_LAST = 2016, 2025  # D-092 §3
 SPLIT_STRONG = ("Raleigh", "Durham", "Columbus", "College Station", "Bend")  # run 1, per-permit split
 PREREG_STRONG = ("Raleigh", "Austin", "Bend")  # run 1, pre-registered collapse
 SIDE = ("Minneapolis",)  # not strong; r56 is defined there only, so it is shown as a side figure
@@ -476,9 +476,9 @@ def rolls(store: DataStore, out) -> pd.DataFrame:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry", action="store_true", help="print input structure only (no counts)")
-    ap.add_argument("--coverage", action="store_true", help="D-082 run 1: coverage, k_src, strong tests")
-    ap.add_argument("--ratios", action="store_true", help="D-082 run 2: uplift ratios r56, rTH, rCV, s_td")
-    ap.add_argument("--rolls", action="store_true", help="D-082 run 3: 2-4 roll diffs (test B, observed)")
+    ap.add_argument("--coverage", action="store_true", help="D-092 run 1: coverage, k_src, strong tests")
+    ap.add_argument("--ratios", action="store_true", help="D-092 run 2: uplift ratios r56, rTH, rCV, s_td")
+    ap.add_argument("--rolls", action="store_true", help="D-092 run 3: 2-4 roll diffs (test B, observed)")
     ap.add_argument("--out", help="output directory")
     args = ap.parse_args()
     if args.dry:
@@ -502,7 +502,7 @@ def main() -> int:
         with pd.option_context("display.width", 250, "display.max_columns", 60, "display.max_rows", 300):
             print(t.to_string(index=False))
         return 0
-    print("Choose --dry, or --coverage --out DIR (D-082 run 1). Runs 2-6 need their own go-ahead.")
+    print("Choose --dry, or --coverage --out DIR (D-092 run 1). Runs 2-6 need their own go-ahead.")
     return 2
 
 

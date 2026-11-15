@@ -1,7 +1,7 @@
 # ruff: noqa: E501  (long lines are the HTML/CSS page template)
-"""Build the D-082 run-6 results page from the run-4 and run-5 report files (to scale, log axes).
+"""Build the D-092 run-6 results page from the run-4 and run-5 report files (to scale, log axes).
 
-Usage: uv run python scripts/dev/mm_results_page_d082.py . reports/mm-d082/run6-results/d082-results.html
+Usage: uv run python scripts/dev/mm_results_page_d092.py . reports/mm-d092/run6-results/d092-results.html
 """
 
 import json
@@ -13,7 +13,7 @@ import pandas as pd
 
 root = Path(sys.argv[1])
 out = Path(sys.argv[2])
-r4, r5 = root / "reports/mm-d082/run4-refit", root / "reports/mm-d082/run5-tests"
+r4, r5 = root / "reports/mm-d092/run4-refit", root / "reports/mm-d092/run5-tests"
 fits = pd.read_csv(r4 / "fits.csv").set_index("fit")
 s4 = json.loads((r4 / "summary.json").read_text())
 s5 = json.loads((r5 / "summary.json").read_text())
@@ -287,7 +287,7 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
 </style>
 <main>
 <header>
-  <div class="eyebrow">Lotline · D-082 runs 4–5 · 12 Nov 2026</div>
+  <div class="eyebrow">Lotline · D-092 runs 4–5 · 12 Nov 2026</div>
   <h1>The missing-middle model fails its own accuracy tests</h1>
   <p class="lede">We refit the missing-middle uptake model and three challengers, then held each one to the six checks set out before any number was seen. None of the four passes any of the three selection tests (A–C). The cause is mostly one thing: the model treats the no-reform baseline as known.</p>
 </header>
@@ -302,7 +302,7 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
 <div class="decision">
   <span class="tag">Needs Ben's call</span>
   <h2>Which way to take the model</h2>
-  <p>The rule in D-082 §5 picks C4, because every model ties at zero tests passed and C4 scores 2.9 paired SE better than M. C4's θ is the same as M's (0.633 against 0.632). With every model failing, that pick carries no weight. Options:</p>
+  <p>The rule in D-092 §5 picks C4, because every model ties at zero tests passed and C4 scores 2.9 paired SE better than M. C4's θ is the same as M's (0.633 against 0.632). With every model failing, that pick carries no weight. Options:</p>
   <ol>
     <li><b>Recommended: give the baseline its own uncertainty.</b> Fit a place-level spread on the no-reform level from the no-reform places, then rerun runs 4–5. This is a method change to D-059 (b′), so it needs a dated deviation entry.</li>
     <li><b>Use the four-state θ (0.034) as the main value</b>, with Oregon as an outside check, in line with D-037's route one.</li>
@@ -362,7 +362,7 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
 </section>
 
 <footer>
-  <div>Sources: <code>reports/mm-d082/run4-refit/</code> and <code>reports/mm-d082/run5-tests/</code> on branch <code>ws/mm-run5</code> (PR #415, stacked on #414 → #410 → #392). Pass rules: <code>src/lotline/model/mm_tests.py</code>.</div>
+  <div>Sources: <code>reports/mm-d092/run4-refit/</code> and <code>reports/mm-d092/run5-tests/</code> on branch <code>ws/mm-run5</code> (PR #415, stacked on #414 → #410 → #392). Pass rules: <code>src/lotline/model/mm_tests.py</code>.</div>
   <div>Holdouts: St. Paul and Ramsey County stay blind, with no unblinding. Everything was run from cached data, with nothing downloaded.</div>
 </footer>
 </main>
