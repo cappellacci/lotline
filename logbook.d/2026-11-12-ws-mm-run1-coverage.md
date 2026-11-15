@@ -1,8 +1,8 @@
-### LB-NNN · 2026-11-12 · Analysis: D-082 run 1, permit coverage screen and k_src
+### LB-NNN · 2026-11-12 · Analysis: D-092 run 1, permit coverage screen and k_src
 - **Question:** Which missing-middle permit sources see about as many new 2–4 unit buildings as Census BPS
-  before each place's reform? Those sources are "strong" under D-082 §2 and feed runs 2–4.
+  before each place's reform? Those sources are "strong" under D-092 §2 and feed runs 2–4.
 - **Decisions:**
-  - Ben approved D-082 on 2026-11-12 ("Approve D-082").
+  - Ben approved D-092 on 2026-11-12 ("Approve D-082").
   - Ben gave the go-ahead for run 1 ("Yes, start run 1"). That answer also accepted PR #408's 13 counting
     choices.
 - **What Claude did:**
@@ -10,12 +10,12 @@
     and the #403 rule rows.
   - Added `mm_counts.area_coverage`: one k per source, with each place over its own pre-event years. It has a
     hand-worked test.
-  - Added the `--coverage` run mode to `scripts/dev/mm_counts_d082.py`, then ran it once on cached tables. No
+  - Added the `--coverage` run mode to `scripts/dev/mm_counts_d092.py`, then ran it once on cached tables. No
     download was made, and every table went through `mm_counts.blind`.
   - Added a split sensitivity for buildings merged by the address fallback. It is reported only and is not the
     entry rule.
-- **Outputs:** `reports/mm-d082/run1-coverage/{README.md,coverage.csv,coverage_by_year.csv}`,
-  `src/lotline/model/mm_counts.py`, `tests/model/test_mm_counts.py`, `scripts/dev/mm_counts_d082.py`.
+- **Outputs:** `reports/mm-d092/run1-coverage/{README.md,coverage.csv,coverage_by_year.csv}`,
+  `src/lotline/model/mm_counts.py`, `tests/model/test_mm_counts.py`, `scripts/dev/mm_counts_d092.py`.
 - **Findings:**
   - As pre-registered, three sources are strong: Raleigh (k 0.81), Austin (0.92) and Bend (1.01).
   - Medford enters but has only 2 pre-years.

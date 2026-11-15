@@ -1,7 +1,7 @@
-"""Missing-middle permit and roll counts pre-registered by D-082 (proposed) §2–§3. Code only: nothing here has
+"""Missing-middle permit and roll counts pre-registered by D-092 (proposed) §2–§3. Code only: nothing here has
 been run on real data, and every run waits for Ben's go-ahead.
 
-D-082 keeps Census BPS as the fitted outcome everywhere and adds record-level permit counts from the strong
+D-092 keeps Census BPS as the fitted outcome everywhere and adds record-level permit counts from the strong
 sources (numeric unit counts, parcel IDs) for three things: measured uplift ratios (§3), test B (the roll
 diff) and challenger 2. This module holds the counting rules, so they are committed and tested before any
 count:
@@ -20,13 +20,13 @@ count:
   area up more than 20%) and splits (parcel ID retired) are reported and left out, as in `wake_roll_diff.py`
   §1.
 - **Holdouts**, `blind`: every table that enters goes through `holdout.apply`, after St. Paul and all of
-  Ramsey County are dropped outright (D-082 §1: "St. Paul and Ramsey are never read"). The counting functions
+  Ramsey County are dropped outright (D-092 §1: "St. Paul and Ramsey are never read"). The counting functions
   refuse (raise `NeverReadError`) a table that still carries one of those GEOIDs, so a caller that skipped
   `blind` fails loudly instead of counting the holdout.
 
-Every threshold is read from `config/params/mm.yaml` (the `mm_*` keys under "D-082 counting protocol"); the
+Every threshold is read from `config/params/mm.yaml` (the `mm_*` keys under "D-092 counting protocol"); the
 functions take them as arguments with those values as defaults, so tests can pass hand-worked values.
-No data is read here: `scripts/dev/mm_counts_d082.py` builds the inputs through `DataStore`.
+No data is read here: `scripts/dev/mm_counts_d092.py` builds the inputs through `DataStore`.
 """
 
 from __future__ import annotations
@@ -43,19 +43,19 @@ from lotline.validation.undercount import wilson
 
 # ---------------------------------------------------------------------------------------------- parameters
 
-MM_TYPES = ("U2", "U3_4")  # D-082 §2: the 2–4 unit classes
+MM_TYPES = ("U2", "U3_4")  # D-092 §2: the 2–4 unit classes
 HOUSE_USES = frozenset({"SF_DETACHED"})  # "held a house" in the prior roll (s_td)
 VACANT_USES = frozenset({"VACANT_RESIDENTIAL"})
 ONE_BUILDING_24_USES = frozenset({"DUPLEX", "TRI_QUAD"})  # roll land uses read as one 2–4 unit building
 
-# D-082 §1: St. Paul and Ramsey County are never read (V5 blind test). Not parameters: fixed identifiers.
+# D-092 §1: St. Paul and Ramsey County are never read (V5 blind test). Not parameters: fixed identifiers.
 NEVER_READ_PLACES = frozenset({"2758000"})  # St. Paul city
 NEVER_READ_COUNTIES = ("27123",)  # Ramsey County: any GEOID or MN parcel ID that starts with it
 
 
 @cache
 def params() -> dict[str, float]:
-    """The D-082 counting thresholds from config/params/mm.yaml."""
+    """The D-092 counting thresholds from config/params/mm.yaml."""
     p = load_params("mm")
     keys = (
         "mm_strong_parcel_fill",
@@ -156,7 +156,7 @@ def collapse_buildings(
     address_col: str = "address",
     split_merged: bool = False,
 ) -> pd.DataFrame:
-    """Permit rows → one row per building (D-082 §2).
+    """Permit rows → one row per building (D-092 §2).
 
     Key: `source` × `parcel_id` × `issue_year` × normalized street address, over rows whose
     `building_type_std` is in `types`. Units (`units_new`) are summed across the building's permits.
@@ -170,9 +170,9 @@ def collapse_buildings(
       and are dropped; the count is in `attrs["aggregate_rows"]`.
     - **Status:** `ok` if `min_units ≤ units ≤ max_units`; `units_missing` if any permit in the building has
       no unit count; `units_out_of_range` otherwise. Only `ok` buildings are counted anywhere. With
-      `check_units=False` (townhouses, which have no unit bound in D-082) every building with units is `ok`.
+      `check_units=False` (townhouses, which have no unit bound in D-092) every building with units is `ok`.
 
-    - **Per-permit split** (`split_merged=True`; D-082 deviation 2026-11-12, chosen by Ben after run 1): when
+    - **Per-permit split** (`split_merged=True`; D-092 deviation 2026-11-12, chosen by Ben after run 1): when
       a group's units sum above `max_units` and **every** permit in it has a unit count inside
       `min_units … max_units`, each permit is its own building (`split` True). Without an address, this
       separates several 2–4 buildings permitted on one parcel in one year. Groups with a permit below
@@ -269,7 +269,7 @@ def ok(buildings: pd.DataFrame) -> pd.DataFrame:
 def coverage_k(
     permit_buildings: int, bps_buildings: int, *, z: float | None = None
 ) -> dict[str, float | bool]:
-    """k_src = permit buildings ÷ BPS 2–4 unit buildings, with an interval and the D-082 entry rule.
+    """k_src = permit buildings ÷ BPS 2–4 unit buildings, with an interval and the D-092 entry rule.
 
     Interval: **conditional binomial (Wilson)**. Treat both counts as Poisson; given their total
     n = a + b, a is Binomial(n, p) with p = k / (1 + k). The Wilson interval on p (z = 1.6449, 90% two-sided,
@@ -335,7 +335,7 @@ def area_coverage(
     """k_src for a source whose places have different events: `windows` maps each place GEOID to its own
     pre-event years (first, last), inclusive. Permit buildings (`ok`, conversions included) and BPS 2–4 unit
     buildings are summed over every place's own years, then `coverage_k` is applied once to the totals, so
-    the source still gets a single k (D-082 §2: one k per source, never pooled across sources).
+    the source still gets a single k (D-092 §2: one k per source, never pooled across sources).
 
     By hand: G1 years 2016–2017 and G2 year 2018 → only those place-years count."""
     b = ok(buildings)
@@ -357,7 +357,7 @@ def strong_source(
     fill: float | None = None,
     min_pre_years: float | None = None,
 ) -> dict[str, float | bool]:
-    """The four D-082 §2 tests for one source's permit rows (all types):
+    """The four D-092 §2 tests for one source's permit rows (all types):
 
     - `has_units`: some U2/U3_4 row has a numeric `units_new`;
     - `parcel_fill`: share of rows with a parcel ID, at least 0.85;
@@ -437,7 +437,7 @@ def source_ratios(
     r56_measured: bool = False,
     window: int | None = None,
 ) -> pd.DataFrame:
-    """D-082 §3 ratios for one source over `first_year` … `last_year`: one row per ratio with its numerator,
+    """D-092 §3 ratios for one source over `first_year` … `last_year`: one row per ratio with its numerator,
     denominator and value (NaN when not measured).
 
     The denominator of r56, rTH and rCV is **new 2–4 unit buildings**: `ok` collapsed U2/U3_4 buildings with
@@ -633,7 +633,7 @@ def _check_roll(roll: pd.DataFrame, what: str) -> None:
 def diff_rolls_24(
     before: pd.DataFrame, after: pd.DataFrame, *, merge_growth: float | None = None
 ) -> pd.DataFrame:
-    """Test B rule (D-082 §2): one row per roll-1 lot that was a **single dwelling** (one dwelling building
+    """Test B rule (D-092 §2): one row per roll-1 lot that was a **single dwelling** (one dwelling building
     with one unit) or **vacant** (no dwelling building, no units).
 
     Groups, in order of precedence:
