@@ -6549,3 +6549,64 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **What it cannot say:** the ratio is unchecked on held-out data; independent drift (mean 1.69, median 1)
   averages out in state totals, so their range is narrower than one shared drift would give (D-091's
   sensitivity); the engine's gap differs from the one σ was learned on.
+
+### D-094 · 2026-11-15 · ADUs: a separate place-luck spread for core cities and suburbs (method only, before any fit)
+- **Status: proposed by Claude Code, 2026-11-15, on Ben's request ("Draft D-094"). Not yet accepted.** No
+  fit, prediction or score with a type-specific spread has been run. The number is provisional, like D-083 to
+  D-086.
+- **What was looked at before writing** (disclosed because it motivated the entry):
+  - the range coverage check (`reports/adu-range-coverage/`, page
+    https://claude.ai/artifact/DM6piJbfqSHe6RBZMQVrRh): A + P, each state left out, tier-1 inputs, 64
+    places. In the randomized middle 80%: all places 69%, core cities 88% (16 places; too wide, about 1.5 SE
+    from 80%), suburbs 62% (48 places; too narrow). Core cities hold 97% of the observed ADUs.
+  - the same check's split of state-total width: switching off place luck (α = 0) narrows P90 ÷ P10 from
+    ×9.2 to ×4.3 (MN), ×24 to ×8.6 (NC), ×25 to ×5.2 (TX) and ×27 to ×6.2 (OR), the largest single source.
+  - D-088's fits on the checked rule rows (α 1.698 under A + P).
+  - Because the coverage split by type has been seen, coverage by type cannot be the deciding test: a
+    separate spread will move it toward 80% almost by construction. The held-out log score decides
+    (rule 1 below); coverage is reported.
+- **Why.** One α covers every place. If core cities really vary less around their fitted rate than suburbs
+  do, one α overstates the core cities' luck and understates the suburbs'. Core cities carry nearly all the
+  ADUs, so their overstated luck is what widens each state's total. A spread per type would narrow the state
+  ranges where that is honest and widen suburbs' where it is not.
+- **The term (Form A + P + S).** Everything in A + P is unchanged (θ, the rule multipliers m_o and m_x on
+  their grid, the core-city and town terms, the state multiplier). Only the place effect changes:
+  - u_i ~ Gamma(mean 1, variance α_t(i)), with α_core for core cities and α_sub for suburbs.
+  - Towns, where any remain after D-088's merge rule, take α_sub (fixed now, to keep two spread parameters;
+    on the checked rows every town is merged into suburb anyway).
+  - Fitted as log α_sub and λ = log(α_core ÷ α_sub), by the same profile likelihood as A + P's α, with λ's
+    90% interval from the χ² profile. λ = 0 is A + P exactly.
+  - If λ̂ ≥ 0 (core cities vary as much or more), the entry reports that and stops: the narrowing it is
+    meant to test is not in the data.
+- **Sensitivity, reported and not used to choose:** Form A + S (a spread per type, no core-city or town mean
+  term), to show how much of the type difference sits in the centre and how much in the spread.
+- **Tests, the same as D-088's, with A + P as the base** (the engine's form; D-088's rule kept Form A on the
+  checked rows only through College Station in tests A–B, and that decision is Ben's, open):
+  1. tier-1 held-out log score, each state left out (D-075's inputs), summed over places, with its paired SE
+     against A + P;
+  2. D-075's claim rule (useful in at least 4 states) at tiers 0, 1 and 2;
+  3. tests A–B;
+  4. test D (within-state forecast 2021–25), log score and paired SE.
+  - Also reported: the randomized-PIT coverage of the range coverage check (middle 50%, 80%, 90%) for all
+    places, core cities and suburbs; the state-total P90 ÷ P10 and its split by source; α_core, α_sub and λ
+    with intervals, on all states and in each left-out fold.
+- **Decision rule, fixed now** (`adu_types.decide`, base A + P, candidate A + P + S): S replaces A + P only if
+  (1) it passes the claim rule at a lower tier, or at the same tier with a tier-1 log score gain above 2
+  paired SE; (2) it passes at least as many of tests A–B; and (3) its test D log score is not worse by more
+  than 2 paired SE. With 16 core cities, a gain this large is not assured; if it falls short, the entry says
+  so and nothing changes.
+- **Rollback.** The spread per type is an option on `adu_types.fit_types` and `joint_refit.GlobalsA`, off by
+  default. A test checks that α_core = α_sub reproduces A + P's likelihood and draws exactly. Nothing goes to
+  config or the engine under this entry.
+- **If adopted, a later, separate approval** would split `adu_place_effect_variance` into a core and a
+  suburb value, regenerate `config/params/adu_anchor.yaml` (the slopes and the θ–α correlation) for the new
+  fit, and have `scenarios/adu.py` draw u by `place_type`. The engine already replaces luck with a place's own
+  counts where it has them (D-093), so the change matters most for places, and states, without them.
+- **Tests that prove the code:** the negative-binomial marginal with two αs against a hand-worked example;
+  λ = 0 reproducing A + P; predictive draws whose variance of u matches each type's α.
+- **Outputs:** `reports/adu-type-spread/` (fits, held-out scores, tests A–B and D, coverage, width split,
+  README, run log) and a results page published as an Artifact.
+- **What it cannot say:** 16 core cities in 4 states pin α_core loosely; a core city's luck and its mean term
+  are both learned from the same 16 places, so the two can trade off, which λ's interval will show; and the
+  places with counts are larger than most in their states, so a spread learned on them may not hold for
+  places without counts.
