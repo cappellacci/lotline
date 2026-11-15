@@ -147,7 +147,7 @@ def main() -> None:
 <header>
   <div class="eyebrow">Lotline · D-093: the engine reads D-091's adopted outcome · 15 Nov 2026</div>
   <h1>Using each place's own ADU counts barely moves the homes a reform adds, and lowers today's baseline</h1>
-  <p class="lede">Where a place has its own ADU counts, the engine now takes its no-reform ADUs from those counts, times a drift of ×2.8 either way at one SD, and scales them by the model's with-reform ÷ no-reform ratio for the Handbook bill. That is the outcome Ben adopted after D-090 and D-091. Elsewhere the A + place-types model runs as before. Additional homes at the median move by under 10% in every state. The no-reform baseline falls in four states, because the model put places with counts above what they actually build.</p>
+  <p class="lede">Where a place has its own ADU counts, the engine now takes its no-reform ADUs from those counts, times a drift of ×2.8 either way at one SD, and scales them by the model's with-reform ÷ no-reform ratio for the Handbook bill. That is the outcome Ben adopted after D-090 and D-091. Elsewhere the A + place-types model runs as before. Additional homes at the median move by 10% or less in every state. The no-reform baseline falls in Minnesota, North Carolina and Ohio, where the model put places with counts above what they actually build, and its top end roughly halves there.</p>
 </header>
 
 <div class="stats">
@@ -160,7 +160,7 @@ def main() -> None:
 <section>
   <div class="num-tag">Finding 1</div>
   <h2>Additional homes from the Handbook ADU reform barely change</h2>
-  <p>The reform's effect still comes from the model's ratio, so the added homes stay close to before. Texas and Ohio rise most, by 8–9% at the median. Texas's P90 rises more, because its six places with counts (Austin among them) hold a sixth of its lots and their drift is wide.</p>
+  <p>The reform's effect still comes from the model's ratio, so the added homes stay close to before. Texas and Ohio rise most, by about 9–10% at the median. Texas's P90 rises more, because its six places with counts (Austin among them) hold a sixth of its lots and their drift is wide.</p>
   <div class="legend">{legend}</div>
   {range_chart(runs, "additional_homes", "additional homes, 2027–2031")}
 </section>
@@ -168,7 +168,7 @@ def main() -> None:
 <section>
   <div class="num-tag">Finding 2</div>
   <h2>ADUs under today's rules fall, and their range narrows</h2>
-  <p>Before, a place with counts got the larger of the model's rate and its observed rate. On the whole the model ran higher than those places build, so its spread set the top of the range. Now the place's own rate sets it. Oregon is the exception: its places with counts build more than the model says, so the baseline rises a little.</p>
+  <p>Before, a place with counts got the larger of the model's rate and its observed rate. On the whole the model ran higher than those places build, so its spread set the top of the range. Now the place's own rate sets it. Texas barely moves at the median, and Oregon rises a little: their places with counts build about as many as, or more than, the model says.</p>
   <div class="legend">{legend}</div>
   {range_chart(runs, "current_rules_adus", "ADU permits under current rules, 2027–2031")}
 </section>
@@ -198,7 +198,7 @@ def main() -> None:
 </section>
 
 <footer>
-  <div>Engine: <code>scenarios.adu.run</code>, origin 2025, window 2027–2031, 1,000 draws, seed 20261020, on #434's A + place-types anchor slopes; inputs <code>places_from_store</code> from holdout-filtered tables, offline. New: <code>adu_own_rate_drift</code> 1, <code>adu_drift_sigma</code> 1.025 (config/params/adu.yaml). Set the switch to 0 for the before run.</div>
+  <div>Engine: <code>scenarios.adu.run</code>, origin 2025, window 2027–2031, 1,000 draws, seed 20261020, on #434's A + place-types anchor slopes and the 65 fit places' checked rule rows (stack rebased 15 Nov); inputs <code>places_from_store</code> from holdout-filtered tables, offline. New: <code>adu_own_rate_drift</code> 1, <code>adu_drift_sigma</code> 1.025 (config/params/adu.yaml). Set the switch to 0 for the before run.</div>
   <div>Sources: <code>reports/adu-engine-drift/</code>, <code>scripts/dev/adu_engine_drift_check.py</code>, branch <code>ws/adu-engine-drift</code>. Nothing was unblinded.</div>
 </footer>
 </main>

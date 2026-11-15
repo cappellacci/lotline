@@ -6503,12 +6503,15 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   lowers what is added) with the switch off. With it on, a place's added ADUs are its own rate × (ratio − 1),
   which can exceed the floor version where the half-count prior lifts a tiny observed rate.
 - **Result** (`reports/adu-engine-drift/`, page https://claude.ai/artifact/RbG2SiXAtPKiJY1xMoyTQV; 1,000
-  draws, origin 2025, St. Paul left out):
-  - Additional homes, 2027–31 P50, before → now: MN 632 → 616, NC 566 → 569, OH 424 → 457, TX 4,645 →
-    5,083, OR 30 → 29. TX P90 13,291 → 16,976.
-  - Current-rules ADUs P50 fall in MN (861 → 700), NC (4,034 → 3,388), OH (599 → 476) and TX (4,262 →
-    4,108); OR rises (4,002 → 4,225). P90s fall by about half in MN, NC and OH.
+  draws, origin 2025, St. Paul left out; run on the rebased stack, so the 65 fit places' checked rule rows
+  are in both columns):
+  - Additional homes, 2027–31 P50, before → now: MN 631 → 640, NC 524 → 526, OH 421 → 458, TX 4,713 →
+    5,168, OR 27 → 27. TX P90 13,295 → 17,020.
+  - Current-rules ADUs P50 fall in MN (880 → 704), NC (4,098 → 3,438) and OH (588 → 476); TX is about flat
+    (4,042 → 4,104) and OR rises (3,938 → 4,243). P90s fall by about half in MN, NC and OH.
   - Places with own counts: MN 184 (48% of eligible lots), NC 23 (22%), OH 16 (16%), TX 6 (17%), OR 4 (22%).
+  - A first run on #434 before the rebase (without the checked rule rows) gave the same pattern; it is not
+    kept.
 - **What it cannot say:** the ratio is unchecked on held-out data; independent drift (mean 1.69, median 1)
   averages out in state totals, so their range is narrower than one shared drift would give (D-091's
   sensitivity); the engine's gap differs from the one σ was learned on.
