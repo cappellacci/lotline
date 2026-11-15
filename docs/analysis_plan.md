@@ -5794,3 +5794,10 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   Paul built many more 2–4 unit buildings in 2024–2025, the slow ramp is wrong.
 - **Decided by:** Ben (V5 design; "Let's try St. Paul", 2026-11-15). Written by Claude Code before any code or
   prediction.
+- **Frozen (2026-11-15, code at 9ee70aa, `results/frozen/V5-MN-STPAUL.json`, 4,000 draws, seed 20261108).**
+  Ben: "Freeze now on #436" (C4 is on PR #436, not yet on `main`; the file records the commit and every config
+  hash, and reaches `main` with C4). Inputs: 55,269 eligible H1/H2 lots, dose gap 1, F(PCR)/F(1) 0.702 (PCR
+  0.851), B 6.33 buildings a year (2021–2023: 9, 4, 6). **BPS St. Paul 2–4 unit buildings, 2024–2025: P10 9,
+  P50 15, P90 28 (mean 18.6).** Baseline part P50 12; added part P50 2, P90 14. 2024–2026: P10 17, P50 27,
+  P90 69. Homes 2024–2025: P10 21, P50 36, P90 65. No outcome has been read; scoring waits for this file on
+  `main` and Ben's go-ahead.

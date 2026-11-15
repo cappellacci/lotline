@@ -187,3 +187,6 @@
     `scripts/dev/v5_stp_predict.py` (`--out` dry run, `--freeze` once).
   - **Dry run (not committed):** buildings 2024–2025 P10 9, P50 15, P90 28 (baseline P50 12, added P50 2);
     2024–2026 P10 17, P50 27, P90 69. Freeze waits for Ben.
+- **V5 St. Paul frozen:** Ben said "Freeze now on #436". `results/frozen/V5-MN-STPAUL.json` (code 9ee70aa, 4,000
+  draws, seed 20261108, C4's values): 2024–2025 BPS 2–4 unit buildings P10 9, P50 15, P90 28. The freeze matches
+  the dry run exactly. Recorded under D-098. Scoring waits for the file on `main` and Ben's go-ahead to unblind.
