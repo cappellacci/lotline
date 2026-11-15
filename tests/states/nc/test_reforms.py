@@ -79,7 +79,8 @@ def test_hand_checked_values(reforms):
     assert sl["effective_date"] == pd.Timestamp("2027-01-15")
     assert sl["parking_min_per_unit"] == 0
     assert sl["adu_max_sqft"] == 800
-    # Durham EHC: 800 sq ft ADUs, voted 2019-09-03 (city) and 2019-10-28 (county); city rule effective 2019-10-01
+    # Durham EHC: 800 sq ft ADUs, voted 2019-09-03 (city) and 2019-10-28 (county); city rule effective
+    # 2019-10-01
     # (WS-ADU-RULES, source check 2026-11-13), row NC-3719000-adu-2019
     assert r.at["NC-3719000-adu-2019", "adu_max_sqft"] == 800
     assert r.at["NC-3719000-adu-2019", "effective_date"] == pd.Timestamp("2019-10-01")

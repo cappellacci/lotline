@@ -132,12 +132,14 @@ def test_no_adu_rows_are_explicit(reforms):
 def test_austin_adu_history(reforms):
     r = reforms.set_index("reform_id")
     # Ord. 20151119-080: 15% of a 5,750 sq ft lot, one parking space
-    # WS-ADU-RULES (2026-11-13): adu_max_sqft is the absolute cap, 1,100 (862 was the FAR result on a 5,750 sq ft
+    # WS-ADU-RULES (2026-11-13): adu_max_sqft is the absolute cap, 1,100 (862 was the FAR result on a 5,750
+    # sq ft
     # lot); parking depends on distance to a transit corridor (1 or 0), so the number is blank
     assert r.at["TX-4805000-adu-2015", "adu_max_sqft"] == 1100
     assert pd.isna(r.at["TX-4805000-adu-2015", "parking_min_per_unit"])
     assert r.at["TX-4805000-adu-2015", "parking"].startswith("depends")
-    # parking minimums gone: voted 2023-11-02, effective 2023-11-13 (source check 2026-11-13); HOME phase 1 from 2024-02-05
+    # parking minimums gone: voted 2023-11-02, effective 2023-11-13 (source check 2026-11-13); HOME phase 1
+    # from 2024-02-05
     assert r.at["TX-4805000-adu-2023", "effective_date"] == pd.Timestamp("2023-11-13")
     assert r.at["TX-4805000-adu-2023", "supersedes"] == "TX-4805000-adu-2015"
     assert r.at["TX-4805000-adu-2024", "effective_date"] == pd.Timestamp("2024-02-05")
@@ -182,7 +184,8 @@ def test_second_coder_review_2026_10_30(reforms):
     r = reforms.set_index("reform_id")
     assert r.at["TX-4801000-adu-2010", "coder_agreement"] == "agree"
     assert r.at["TX-4801000-adu-2010", "coder_2"] == "ben-review"
-    # TX-4815976-adu-2023 was recoded by WS-ADU-RULES (2026-11-13): effective 2023-08-20, ten days after passage
+    # TX-4815976-adu-2023 was recoded by WS-ADU-RULES (2026-11-13): effective 2023-08-20, ten days after
+    # passage
     assert r.at["TX-4815976-adu-2023", "effective_date"] == pd.Timestamp("2023-08-20")
     # League City: set to pending by the review, then back in force on Ben's second batch (Ord. 2026-10,
     # effective on passage 2026-05-26; Planning Director approval, so by right)
