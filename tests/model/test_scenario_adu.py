@@ -97,16 +97,25 @@ def test_handbook_equivalent_rules_add_nothing():
 def test_partial_rules_get_the_increment_only_by_hand():
     """A partial rule at m_x = 0.3 (the D-053 sensitivity): current hazard = 0.3 × h_m. The lead year (D-061)
     runs under current rules only, leaving R = 2,000 × (1 − 0.3 h_m) parcels. Handbook year 1:
-    0.3 h_m + 0.7 h_m (no ramp, D-048). Added in year 1 = R × 0.7 × h_m (same pool in year 1). At the
-    adopted m_x = 1.0 (D-053) a partial rule already counts in full, so nothing is added."""
+    0.3 h_m + 0.7 h_m (no ramp, D-048). Added in year 1 = R × 0.7 × h_m (same pool in year 1). At D-053's
+    m_x = 1.0 a partial rule counted in full, so nothing was added; at the adopted m_x = 0.4 (D-088) the
+    increment is 0.6 × h_m."""
     old = {"adu_partial_rule_share": 0.3}
     out = adu.central_path(_places(rule_class="partial", rule_age=50.0), params=old)
     hm = out["mature_hazard"][0]
     pool = 2000 * (1 - 0.3 * hm)
     assert out["current"][0, 0] == pytest.approx(pool * 0.3 * hm, rel=1e-6)
     assert out["added"][0, 0] == pytest.approx(pool * 0.7 * hm, rel=1e-6)
-    assert adu.central_params()["adu_partial_rule_share"] == 1.0
-    assert adu.central_path(_places(rule_class="partial", rule_age=50.0))["added"].sum() == 0
+    assert (
+        adu.central_path(
+            _places(rule_class="partial", rule_age=50.0), params={"adu_partial_rule_share": 1.0}
+        )["added"].sum()
+        == 0
+    )
+    assert adu.central_params()["adu_partial_rule_share"] == 0.4
+    now = adu.central_path(_places(rule_class="partial", rule_age=50.0))
+    hm = now["mature_hazard"][0]
+    assert now["added"][0, 0] == pytest.approx(2000 * (1 - 0.4 * hm) * 0.6 * hm, rel=1e-6)
 
 
 def test_observed_adus_are_never_counted_as_added():
@@ -254,18 +263,18 @@ def _no_slopes(corr: float = 0.0) -> dict:
 
 
 def test_log_sd_from_the_90_percent_interval_by_hand():
-    """Anchor 90% interval 0.000213-0.000463 (D-053): (ln 0.000463 − ln 0.000213) / (2 × 1.644854) =
-    0.7764 / 3.2897 = 0.2360."""
+    """Anchor 90% interval 0.000330-0.000624 (D-088): (ln 0.000624 − ln 0.000330) / (2 × 1.644854) =
+    0.6371 / 3.2897 = 0.1937."""
     s = adu.specs()["adu_mature_hazard_ref"]
-    assert adu.log_sd(s) == pytest.approx((math.log(0.000463) - math.log(0.000213)) / 3.289708, rel=1e-6)
-    assert adu.log_sd(s) == pytest.approx(0.2360, abs=1e-4)
+    assert adu.log_sd(s) == pytest.approx((math.log(0.000624) - math.log(0.000330)) / 3.289708, rel=1e-6)
+    assert adu.log_sd(s) == pytest.approx(0.1937, abs=1e-4)
 
 
 def test_anchor_draws_have_their_median_at_the_estimate():
     """D-030: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
-    the judgment shift), not triangular(low, central, high). With D-053's anchor 0.308e-3 (0.213-0.463e-3) the
-    triangular median is 0.463e-3 − √(0.250e-3 × 0.155e-3 / 2) = 0.324e-3, 5% above the estimate (D-019's
-    interval gave 41%)."""
+    the judgment shift), not triangular(low, central, high). With D-088's anchor 0.448e-3 (0.330-0.624e-3)
+    the triangular median is 0.624e-3 − √(0.294e-3 × 0.176e-3 / 2) = 0.463e-3, 3.4% above the estimate
+    (D-053's interval gave 5%, D-019's 41%)."""
     spec = adu.specs()
     sets = adu.draw_params(20_000, 7, _no_slopes())
     theta = np.array([p["adu_mature_hazard_ref"] for p in sets])
@@ -276,8 +285,8 @@ def test_anchor_draws_have_their_median_at_the_estimate():
     assert np.median(alpha) == pytest.approx(a.value, rel=0.02)
     assert np.percentile(theta, 5) == pytest.approx(t.value * math.exp(-1.644854 * adu.log_sd(t)), rel=0.05)
     old = np.random.default_rng(7).triangular(t.low, t.value, t.high, 20_000)
-    assert np.median(old) == pytest.approx(0.324e-3, rel=0.01)  # the bias D-030 removes
-    assert np.median(old) > 1.05 * t.value
+    assert np.median(old) == pytest.approx(0.463e-3, rel=0.01)  # the bias D-030 removes
+    assert np.median(old) > 1.03 * t.value
 
 
 def test_anchor_shifts_with_the_judgment_parameters_it_was_fitted_at_by_hand():
@@ -748,3 +757,59 @@ def test_flagged_state_borrows_the_no_law_prior_and_keeps_its_coded_places(monke
     off = adu.rule_inputs("LL", Store(), targets, date)[0].set_index("geoid")
     assert off.loc["1100006", "p_none"] == pytest.approx(0)
     assert not off.loc["1100006", "prior_source"].startswith("states without")
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Place types (D-088, D-089)
+# ---------------------------------------------------------------------------------------------------------
+
+NO_SPREAD = {"adu_types_core_log_multiplier": (math.log(3.0),) * 3, "adu_types_town_prior_sd": 0.0}
+
+
+def test_type_terms_from_config_by_hand():
+    """Core term 1.199 (0.546-1.898): se = (1.898 − 0.546) / 3.2897 = 0.4110; the town prior's SD is
+    |β̂_core| / 1.645 = 0.729."""
+    tt = adu.type_terms()
+    assert tt["core"] == pytest.approx(1.199)
+    assert tt["core_se"] == pytest.approx((1.898 - 0.546) / 3.289708, rel=1e-6)
+    assert tt["town_sd"] == pytest.approx(1.199 / 1.644854, abs=5e-4)
+
+
+def test_type_log_multipliers_by_hand():
+    """With no spread, a core city gets log 3 in every draw and suburbs, towns and untyped places 0. With the
+    configured spread, every core city shares one draw; towns share one draw per state; suburbs stay 0."""
+    types = ["core", "suburb", "town", None, "core", "town"]
+    states = ["A", "A", "A", "A", "B", "B"]
+    m = adu.type_log_multipliers(types, states, 4, 1, NO_SPREAD)
+    assert np.allclose(m[:, [0, 4]], math.log(3.0)) and np.allclose(m[:, [1, 2, 3, 5]], 0.0)
+    m = adu.type_log_multipliers(types, states, 20_000, 1)
+    assert np.array_equal(m[:, 0], m[:, 4])  # one core draw, shared
+    assert np.all(m[:, 1] == 0) and np.all(m[:, 3] == 0)
+    assert not np.array_equal(m[:, 2], m[:, 5])  # towns in different states draw apart
+    assert m[:, 0].mean() == pytest.approx(1.199, abs=0.01)
+    assert m[:, 0].std() == pytest.approx((1.898 - 0.546) / 3.289708, rel=0.03)
+    assert m[:, 2].mean() == pytest.approx(0.0, abs=0.02) and m[:, 2].std() == pytest.approx(0.729, rel=0.03)
+
+
+def test_core_city_hazard_is_the_suburb_hazard_times_the_multiplier_by_hand():
+    """The same place as a suburb and as a core city (×3, no spread): the core city's central mature hazard is
+    3 × the suburb's, in `central_path` and in `run`'s table. A place with no `place_type` column runs exactly
+    as a suburb."""
+    two = _places(geoid=["S", "C"], place_type=["suburb", "core"])
+    c = adu.central_path(two, params=A4, types_spec=NO_SPREAD)
+    assert c["mature_hazard"][1] == pytest.approx(3 * c["mature_hazard"][0], rel=1e-9)
+    _, tot = adu.run(two, 2025, draws=50, types_spec=NO_SPREAD)
+    assert tot["mature_hazard_central"].iloc[1] == pytest.approx(3 * tot["mature_hazard_central"].iloc[0])
+    _, plain = adu.run(_places(), 2025, draws=50)
+    _, suburb = adu.run(_places(place_type="suburb"), 2025, draws=50)
+    cols = ["adu_permits_added_mean", "current_rules_adus_mean", "mature_hazard_central"]
+    assert np.allclose(plain[cols].to_numpy(), suburb[cols].to_numpy())
+
+
+def test_anchor_draws_read_the_type_fits_information_terms():
+    """D-088: the anchor's observed-information terms come from adu_place_types.yaml; the slopes still from
+    adu_anchor.yaml."""
+    a = adu.anchor_terms()
+    assert a["adu_anchor_info_corr"] == pytest.approx(0.115)
+    assert a["adu_anchor_info_log_se_theta"] == pytest.approx(0.191)
+    assert any(k.startswith("anchor_slope_theta__") for k in a)

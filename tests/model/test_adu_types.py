@@ -187,3 +187,24 @@ def test_config_town_prior_follows_core_term():
     p = load_params("adu_place_types")
     s = pr.town_sd(p["adu_types_core_log_multiplier"].value)
     assert p["adu_types_town_prior_sd"].value == pytest.approx(s, abs=5e-4)
+
+
+def test_raw_types_hand_worked():
+    """Metro M: places A 300 and B 90, township T 500 (not ranked: only places can be core); micro place D;
+    county remainder R with no area -> A core, B suburb (90 < 100), T suburb, D town, R town."""
+    u = pd.DataFrame(
+        {
+            "geoid": ["A", "B", "T", "D", "R"],
+            "kind": ["place", "place", "township", "place", "county_unincorporated"],
+            "cbsa_code": ["M", "M", "M", "m", None],
+            "cbsa_type": ["metro", "metro", "metro", "micro", None],
+            "units": [300, 90, 500, 50, 20],
+        }
+    )
+    assert ty.raw_types(u).to_dict() == {"A": "core", "B": "suburb", "T": "suburb", "D": "town", "R": "town"}
+
+
+def test_config_units_vintage_matches_module():
+    from lotline.config import load_params
+
+    assert load_params("adu_place_types")["adu_type_units_end_year"].value == ty.UNITS_END

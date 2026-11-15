@@ -94,6 +94,91 @@ def merge_small(
     return mapping, notes
 
 
+UNITS_END = 2015  # D-088: the core-city ranking reads ACS 2011-15 (config adu_type_units_end_year, tested)
+
+
+def units_table(store, state: str) -> pd.DataFrame:
+    """Housing units per jurisdiction of `state`: ACS B25024_001 (all housing units), the latest vintage
+    ending in `UNITS_END` or earlier that the holdout filter lets through, else the latest it lets through,
+    else the jurisdiction's largest eligible-lot count (flagged). A county's unincorporated remainder is the
+    county less its places. Columns: state, geoid, name, kind, cbsa_code, cbsa_type, units, units_vintage,
+    units_source. National data and parcel counts only: no ADU outcome is read."""
+    from lotline.validation import holdout
+
+    st = state.lower()
+    a = holdout.apply_acs(store.read(st, "acs_geo_year"), st)
+    a = a[(a["table_id"] == "B25024") & (a["variable"].astype(str) == "B25024_001")]
+    by = a.groupby(["geo", "end_year"])["estimate"].sum()
+    geos = set(by.index.get_level_values("geo"))
+    juris = store.read(st, "jurisdictions")
+    juris = juris.assign(geoid=juris["geoid"].astype(str))
+    elig = store.read(st, "eligible_parcels")
+    elig = elig[elig["theme"] == "adu"].groupby("jurisdiction_geoid")["eligible_parcels"].max()
+    geo_of = {"place": "place:{}", "township": "cousub:{}"}
+    rows = []
+    for r in juris.itertuples():
+        units, vintage, source, ser = np.nan, None, "none", None
+        if r.kind == "county_unincorporated":
+            cg = f"county:{r.county_geoid}"
+            if cg in geos:
+                ser = by.xs(cg, level="geo")
+                inside = juris[
+                    (juris["county_geoid"].astype(str) == str(r.county_geoid)) & (juris["kind"] == "place")
+                ]
+                for g in inside["geoid"]:
+                    if f"place:{g}" in geos:
+                        ser = ser.sub(by.xs(f"place:{g}", level="geo").reindex(ser.index).fillna(0.0))
+        elif r.kind in geo_of and geo_of[r.kind].format(r.geoid) in geos:
+            ser = by.xs(geo_of[r.kind].format(r.geoid), level="geo")
+        if ser is not None and len(ser):
+            early = ser[ser.index <= UNITS_END]
+            if len(early):
+                vintage = int(early.index.max())
+                units = float(early.loc[vintage])
+                source = "acs 2011-15" if vintage == UNITS_END else "acs early"
+            else:
+                vintage = int(ser.index.max())
+                units, source = float(ser.loc[vintage]), "acs latest let through"
+        if not np.isfinite(units) and r.geoid in elig.index:
+            units, source = float(elig.loc[r.geoid]), "eligible lots (flag)"
+        rows.append(
+            {
+                "state": st.upper(),
+                "geoid": r.geoid,
+                "name": r.name,
+                "kind": r.kind,
+                "cbsa_code": r.cbsa_code,
+                "cbsa_type": r.cbsa_type,
+                "units": units,
+                "units_vintage": vintage,
+                "units_source": source,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def raw_types(units: pd.DataFrame, core_share: float = CORE_SHARE) -> pd.Series:
+    """D-088's raw type per geoid from a `units_table`: Census places by `assign_types`; townships and
+    unincorporated county areas are suburbs in a metro and towns otherwise (only a place can be a core city).
+
+    By hand: metro M with places A 300, B 90 and township T 500; micro place D -> A core, B suburb (90 < 100;
+    T is not ranked), T suburb, D town."""
+    u = units.assign(geoid=units["geoid"].astype(str))
+    out = pd.Series(
+        np.where(u["cbsa_type"] == "metro", REFERENCE, "town"), index=u["geoid"].to_numpy(), dtype=object
+    )
+    places = u[u["kind"] == "place"]
+    t = assign_types(places, core_share)
+    out.loc[t.index] = t
+    return out
+
+
+def jurisdiction_types(store, state: str, core_share: float = CORE_SHARE) -> pd.Series:
+    """Every jurisdiction's raw type in `state` (geoid -> core, suburb or town), as D-088 and D-089 read them.
+    The scenario engine uses these with D-089's town prior, so towns stay towns (no merge)."""
+    return raw_types(units_table(store, state), core_share)
+
+
 def indicators(type_: str, terms: Sequence[str] = TERMS) -> np.ndarray:
     """d for one place. By hand: 'core' -> (1, 0); 'suburb' -> (0, 0); 'town' -> (0, 1)."""
     return np.array([1.0 if type_ == t else 0.0 for t in terms])

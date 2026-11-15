@@ -41,7 +41,6 @@ from lotline.model import adu_types as ty
 from lotline.model import calibrate_adu as cal
 from lotline.model import joint_refit as jr
 from lotline.model.scenarios import adu
-from lotline.validation import holdout
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -76,79 +75,17 @@ R = TR.R
 
 
 def units_table(store, st: str) -> pd.DataFrame:
-    """Housing units per jurisdiction: ACS B25024_001 (all housing units), the latest vintage ending in 2015
-    or earlier that the holdout filter lets through, else the latest it lets through, else the place's
-    largest eligible-lot count (flagged)."""
-    a = holdout.apply_acs(store.read(st, "acs_geo_year"), st)
-    a = a[(a["table_id"] == "B25024") & (a["variable"].astype(str) == "B25024_001")]
-    by = a.groupby(["geo", "end_year"])["estimate"].sum()
-    juris = store.read(st, "jurisdictions")
-    juris = juris.assign(geoid=juris["geoid"].astype(str))
-    elig = store.read(st, "eligible_parcels")
-    elig = elig[elig["theme"] == "adu"].groupby("jurisdiction_geoid")["eligible_parcels"].max()
-    geo_of = {"place": "place:{}", "township": "cousub:{}"}
-    rows = []
-    for r in juris.itertuples():
-        units, vintage, source = np.nan, None, "none"
-        key = geo_of.get(r.kind, "").format(r.geoid) if r.kind in geo_of else None
-        if r.kind == "county_unincorporated":
-            cg = f"county:{r.county_geoid}"
-            if cg in by.index.get_level_values("geo"):
-                tot = by.xs(cg, level="geo")
-                inside = juris[
-                    (juris["county_geoid"].astype(str) == str(r.county_geoid)) & (juris["kind"] == "place")
-                ]
-                for g in inside["geoid"]:
-                    pg = f"place:{g}"
-                    if pg in by.index.get_level_values("geo"):
-                        tot = tot.sub(by.xs(pg, level="geo").reindex(tot.index).fillna(0.0))
-                ser = tot
-            else:
-                ser = None
-        elif key is not None and key in by.index.get_level_values("geo"):
-            ser = by.xs(key, level="geo")
-        else:
-            ser = None
-        if ser is not None and len(ser):
-            early = ser[ser.index <= UNITS_END]
-            if len(early):
-                vintage = int(early.index.max())
-                units, source = (
-                    float(early.loc[vintage]),
-                    "acs 2011-15" if vintage == UNITS_END else "acs early",
-                )
-            else:
-                vintage = int(ser.index.max())
-                units, source = float(ser.loc[vintage]), "acs latest let through"
-        if not np.isfinite(units) and r.geoid in elig.index:
-            units, source = float(elig.loc[r.geoid]), "eligible lots (flag)"
-        rows.append(
-            {
-                "state": st.upper(),
-                "geoid": r.geoid,
-                "name": r.name,
-                "kind": r.kind,
-                "cbsa_code": r.cbsa_code,
-                "cbsa_type": r.cbsa_type,
-                "units": units,
-                "units_vintage": vintage,
-                "units_source": source,
-            }
-        )
-    return pd.DataFrame(rows)
+    """Housing units per jurisdiction (now `adu_types.units_table`, which the engine also reads)."""
+    return ty.units_table(store, st)
 
 
 def type_table(store) -> pd.DataFrame:
     """Every jurisdiction's raw type. Only Census places can be a core city; townships and unincorporated
-    county areas in a metro are suburbs (D-088)."""
+    county areas in a metro are suburbs (D-088; `adu_types.raw_types`)."""
     out = []
     for st in R.STATES:
         u = units_table(store, st.lower())
-        places = u[u["kind"] == "place"]
-        t = ty.assign_types(places)
-        u["type_raw"] = u["geoid"].map(t)
-        other = u["kind"] != "place"
-        u.loc[other, "type_raw"] = np.where(u.loc[other, "cbsa_type"] == "metro", "suburb", "town")
+        u["type_raw"] = u["geoid"].astype(str).map(ty.raw_types(u))
         out.append(u)
     return pd.concat(out, ignore_index=True)
 

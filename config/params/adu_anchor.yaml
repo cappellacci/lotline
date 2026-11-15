@@ -4,6 +4,9 @@
 # shifts log(theta) and log(alpha) by slope x (drawn - central value) for every parameter here, so
 # the anchor stays consistent with the four states' data under that draw's transport (D-048).
 # Parameters the fit does not depend on are left out (slope 0).
+# Since D-088 (2026-11-14) the scenario draws read the three observed-information terms from
+# adu_place_types.yaml (the Form A + place types fit); the slopes here are still read, as an approximation,
+# until they are recomputed for that fit.
 
 adu_anchor_info_log_se_theta:
   value: 0.232023

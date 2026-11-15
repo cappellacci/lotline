@@ -6022,3 +6022,27 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     3.3-fold. So the switch happens in one step, in the PR that wires the type term into the engine.
   - The D-088 run didn't save the intervals for α and the rule shares. The central A + P fit was rerun offline
     once to read them, and the rerun reproduced every fitted value.
+- **Engine, 2026-11-14.** Ben asked for the type term to be wired into the scenario engine ("Wire it here"),
+  and the engine now runs Form A + place types.
+  - **Where the values live:**
+    - `hazard.yaml` holds θ (0.000448, a suburb's rate) and α (1.550).
+    - `adu.yaml` holds m_o (1.0) and m_x (0.4).
+    - `adu_place_types.yaml` keeps the typing rules, the core term, the town prior and the fit's
+      observed-information terms. The draws read those terms in place of `adu_anchor.yaml`'s D-048 ones.
+  - **What the engine does with them:**
+    - `scenarios.adu.places_from_store` gives each place its raw type (`adu_types.jurisdiction_types`, moved
+      from the D-088 script; it reproduces every saved type).
+    - `scenarios.adu.run` multiplies each draw's hazard by exp(β_core) for a core city, with one N(1.199,
+      0.411) draw shared by every core city.
+    - A town's hazard is multiplied by exp(0.729 z), with one z per draw and state. A suburb, or a place with
+      no type, is multiplied by 1.
+  - **Kept as approximations, to be redone for this fit:**
+    - the judgment slopes in `adu_anchor.yaml` (still D-053's);
+    - θ's lognormal width, which comes from the profile interval as before.
+  - **Before and after** (`reports/adu-types-engine/`, page https://claude.ai/artifact/Wn5ktV2Hvo26TQdTEseNci):
+    additional homes, 2027–2031, at P50:
+    - MN 286 → 634, NC 139 → 575, OH 236 → 422, TX 1,902 → 4,809, OR 26 → 29.
+    - The ranges widen; for example, TX's P90 goes from 4,922 to 13,788.
+    - With m_x held at 1.0, the types alone give MN 412, NC 215, OH 349, TX 3,744 and OR 11.
+    - So the type term and the new anchor make most of the rise in OH and TX. The partial-rule share makes
+      most of it in MN and NC.

@@ -10,7 +10,9 @@ the start of year 1; `baseline.window`):
     Handbook rules  h_hb(t)  = max(c × h_m × ramp(a + t) + (1 − c) × h_m × ramp(t), observed ADU rate)
 
 - **h_m**, the place's mature ADU hazard (`model.hazard.adu_mature_hazard`), with each simulation draw widened
-  where the place lies outside the calibration range (`hazard.widen`).
+  where the place lies outside the calibration range (`hazard.widen`), times the place-type multiplier
+  (D-088, D-089; `type_log_multipliers`): exp(β_core) for a core city, a draw from the town prior for a town,
+  1 for a suburb (the type the anchor θ describes) or a place with no `place_type`.
 - **c, how close current local rules already are to the Handbook** (`current_rules`): 1 when the coded ADU
   rule in force at the origin allows a detached ADU of 600+ sq ft by right with no owner-occupancy or parking
   requirement; `adu_partial_rule_share` when ADUs are allowed with any of those restrictions; 0 when no ADU
@@ -34,11 +36,12 @@ added or reported.
 
 Every result is a range: P10/P50/P90 and the mean over `adu_simulation_draws` draws (`draw_params`, D-030):
 judgment parameters triangular(low, central, high); the fitted anchor and place-effect variance lognormal
-around their estimates, shifted with the judgment parameters they were fitted at; one place multiplier per
-place; extrapolation noise shared across places (`extrapolation_noise`). The mortgage-rate stress range is a
-sensitivity (`params=`), not part of the forecast range. Numerator (units) and denominator (eligible parcels)
-stay in separate columns. Nothing is fitted here: the anchor comes from D-019 fit 3
-(`scripts/dev/calibrate_adu.py`), and observed local ADUs enter only as the additionality floor.
+around their estimates, shifted with the judgment parameters they were fitted at; the core-city term and the
+town prior; one place multiplier per place; extrapolation noise shared across places (`extrapolation_noise`).
+The mortgage-rate stress range is a sensitivity (`params=`), not part of the forecast range. Numerator (units)
+and denominator (eligible parcels) stay in separate columns. Nothing is fitted here: the anchor, place-effect
+variance, rule shares and core-city term come from D-088's Form A + place types fit
+(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter only as the additionality floor.
 """
 
 from __future__ import annotations
@@ -141,9 +144,80 @@ def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) ->
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
 
 
+# adu_anchor.yaml's observed-information terms, replaced by the Form A + place types fit's (D-088)
+INFO_FROM_TYPES = {
+    "adu_anchor_info_log_se_theta": "adu_types_info_log_se_theta",
+    "adu_anchor_info_log_se_alpha": "adu_types_info_log_se_alpha",
+    "adu_anchor_info_corr": "adu_types_info_corr",
+}
+
+
 def anchor_terms() -> dict[str, float]:
-    """config/params/adu_anchor.yaml: the anchor's observed-information terms and slopes (D-030)."""
-    return {k: s.value for k, s in load_params("adu_anchor").items()}
+    """The anchor's observed-information terms and judgment slopes (D-030): the slopes from
+    config/params/adu_anchor.yaml, the information terms from the fit the anchor now comes from
+    (adu_place_types.yaml, D-088)."""
+    out = {k: s.value for k, s in load_params("adu_anchor").items()}
+    types = load_params(TYPE_FILE)
+    return out | {k: types[v].value for k, v in INFO_FROM_TYPES.items()}
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Place types (D-088, D-089)
+# ---------------------------------------------------------------------------------------------------------
+
+TYPE_FILE = "adu_place_types"
+CORE, TOWN = "core", "town"
+
+
+def type_terms(spec: Mapping[str, float] | None = None) -> dict[str, float]:
+    """The core-city term's estimate and SE, and the town prior's SD, from config/params/adu_place_types.yaml
+    (`spec` replaces the file: keys as there, each a value or a (value, low, high) tuple).
+    se = (high − low) / (2 × 1.645). By hand: 1.199 (0.546-1.898) -> se 1.352 / 3.2897 = 0.4110."""
+    if spec is None:
+        p = load_params(TYPE_FILE)
+        c = p["adu_types_core_log_multiplier"]
+        core = (c.value, c.low, c.high)
+        town = p["adu_types_town_prior_sd"].value
+    else:
+        core = spec["adu_types_core_log_multiplier"]
+        core = tuple(core) if isinstance(core, (tuple, list)) else (core, core, core)
+        town = spec["adu_types_town_prior_sd"]
+    return {"core": float(core[0]), "core_se": (core[2] - core[1]) / (2 * Z_90), "town_sd": float(town)}
+
+
+def central_type_log_multiplier(types, spec: Mapping[str, float] | None = None) -> np.ndarray:
+    """Each place's log multiplier at central values: β̂_core for a core city, 0 otherwise (the town prior's
+    centre is the suburb rate)."""
+    tt = type_terms(spec)
+    types = pd.Series(types, dtype=object).reset_index(drop=True)
+    return np.where(types == CORE, tt["core"], 0.0)
+
+
+def type_log_multipliers(types, states, n: int, seed: int, spec=None) -> np.ndarray:
+    """Log hazard multiplier per draw and place (draws × places), D-088 and D-089:
+
+    - core city: β_d ~ N(β̂_core, se), one per draw, shared by every core city;
+    - town: s × z_ds, z standard normal, one per draw and state (shared by the state's towns), s the town
+      prior's SD;
+    - suburb, or a place with no type: 0.
+
+    By hand with se and s at 0: a core city gets β̂ in every draw, a town 0.
+    """
+    tt = type_terms(spec)
+    types = pd.Series(types, dtype=object).reset_index(drop=True)
+    states = pd.Series(states, dtype=object).reset_index(drop=True).fillna("")
+    rng = np.random.default_rng(seed)
+    core = rng.normal(tt["core"], tt["core_se"], size=n)
+    out = np.zeros((n, len(types)))
+    is_core = (types == CORE).to_numpy()
+    out[:, is_core] = core[:, None]
+    is_town = (types == TOWN).to_numpy()
+    if is_town.any():
+        names = sorted(states[is_town].unique())
+        z = rng.standard_normal((n, len(names)))
+        col = states[is_town].map({st: i for i, st in enumerate(names)}).to_numpy()
+        out[:, is_town] = tt["town_sd"] * z[:, col]
+    return out
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -732,11 +806,16 @@ def with_rule_probs(places: pd.DataFrame, params: Mapping[str, float]) -> pd.Dat
 
 
 def central_path(
-    places: pd.DataFrame, horizon: int | None = None, enabled: bool = True, params: dict | None = None
+    places: pd.DataFrame,
+    horizon: int | None = None,
+    enabled: bool = True,
+    params: dict | None = None,
+    types_spec: Mapping[str, float] | None = None,
 ) -> dict[str, np.ndarray]:
     """The scenario at central parameter values, no widening: arrays (places × years) for each outcome.
 
-    For hand checks and the worked example; `run` gives the ranges. `params` overrides central values.
+    For hand checks and the worked example; `run` gives the ranges. `params` overrides central values;
+    `types_spec` replaces adu_place_types.yaml (`type_terms`).
     """
     p = central_params() | (params or {})
     places = with_rule_probs(places, p)
@@ -745,6 +824,8 @@ def central_path(
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
     rate = given.fillna(p["mortgage_rate_forecast"]).to_numpy(dtype=float)
     hm = hazard.adu_mature_hazard(places["rent"], places["home_value"], rate, p)
+    if "place_type" in places:  # D-088: core cities at exp(β̂_core); towns at the suburb rate (prior centre)
+        hm = np.minimum(hm * np.exp(central_type_log_multiplier(places["place_type"], types_spec)), 1.0)
     c = expected_rule_share(places, p)  # E[c] over the rule types (D-022)
     paths = pool_paths(
         places["eligible_parcels"],
@@ -832,6 +913,7 @@ def run(
     states_spec: Mapping[str, float] | None = None,
     eligible_proxy: bool = False,
     return_draws: bool = False,
+    types_spec: Mapping[str, float] | None = None,
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
@@ -847,10 +929,13 @@ def run(
     config/params/adu_anchor.yaml (tests). With a `state` column, places in a state outside the fit that
     estimated τ also get a state multiplier exp(τ_d z_ds), shared by the state's places, with τ_d drawn per
     draw (`state_noise`, config/params/adu_state_effect.yaml, D-044); `states_spec` replaces that file
-    (tests). With `eligible_proxy` (D-056), a state whose every place has `denominator_source ==
-    "acs_sf_fallback"` has its eligible parcels multiplied in each draw by eligible_proxy_scale ×
-    exp(eligible_proxy_sd × z), one z per state per draw (`eligible_proxy.multipliers`, its own random
-    stream); any state with a parcel-based place is untouched, and with the flag off nothing changes.
+    (tests). With a `place_type` column (core, suburb or town; `places_from_store` adds it), each draw
+    multiplies the hazard by the place-type multiplier (`type_log_multipliers`, its own random stream);
+    `types_spec` replaces config/params/adu_place_types.yaml (tests). With `eligible_proxy` (D-056), a state
+    whose every place has `denominator_source == "acs_sf_fallback"` has its eligible parcels multiplied in
+    each draw by eligible_proxy_scale × exp(eligible_proxy_sd × z), one z per state per draw
+    (`eligible_proxy.multipliers`, its own random stream); any state with a parcel-based place is untouched,
+    and with the flag off nothing changes.
     With `return_draws`, a last element is added: per-draw arrays for the results bundle (`model/results.py`):
     `eligible`, `pencil` and `rule_share` (draws x places; pencil = the pro forma's feasible share F(PCR) the
     hazard uses; rule_share = c, how close that draw's current rules are to the Handbook),
@@ -878,6 +963,10 @@ def run(
     grid, probs, fitted = state_effect(states_spec)
     st = places["state"] if "state" in places else pd.Series(np.nan, index=places.index)
     z_state = state_noise(st, fitted, grid, probs, n, seed + 4)
+    ptype = (
+        places["place_type"] if "place_type" in places else pd.Series(None, index=places.index, dtype=object)
+    )
+    log_type = type_log_multipliers(ptype, st, n, seed + 7, types_spec)  # D-088, D-089: own stream
     var_u = np.array([p["adu_place_effect_variance"] for p in sets])[:, None]
     gamma = np.random.default_rng(seed + 3).standard_gamma(
         1 / np.maximum(var_u, 1e-12), size=(n, len(places))
@@ -911,7 +1000,7 @@ def run(
         hm = hazard.adu_mature_hazard(*args, p)
         dist_d = hazard.calibration_distance(*args, p)["total"]
         hm = hazard.widen_unseen_state(hm, dist_d, z[d], z_state[d], 1.0, "both", p)
-        hm = np.clip(hm * u_all[d], 0.0, 1.0)
+        hm = np.clip(hm * np.exp(log_type[d]) * u_all[d], 0.0, 1.0)
         c, idx, sampled = draw_rule_share(places, p, rule_rng)
         drawn[d] = idx
         share[d] = c
@@ -938,7 +1027,11 @@ def run(
         places.drop(columns=["observed_adu_by_k_row"], errors="ignore")
         .assign(
             mortgage_rate_central=args[2],
-            mature_hazard_central=hazard.adu_mature_hazard(*args, central),
+            mature_hazard_central=np.minimum(
+                hazard.adu_mature_hazard(*args, central)
+                * np.exp(central_type_log_multiplier(ptype, types_spec)),
+                1.0,
+            ),
             price_to_cost_central=hazard.adu_price_to_cost(places["rent"], params=central),
             calibration_distance=dist["total"],
             outside_calibration=dist["total"] > 0,
@@ -1288,6 +1381,12 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     per_year = observed_per_year(counts, origin, n_years, stops)
     places["observed_adu_per_year"] = places["geoid"].map(per_year)
     places["observed_rate"] = places["observed_adu_per_year"] / places["eligible_parcels"]
+    # D-088 place type from national data (OMB metro areas, ACS 2011-15 housing units); a jurisdiction the
+    # type table doesn't know is a town (no metro area known), as D-089 read it
+    from lotline.model import adu_types
+
+    types = adu_types.jurisdiction_types(store, state)
+    places["place_type"] = places["geoid"].astype(str).map(types).fillna(TOWN)
     if k_adj is not None:
         terms = observed_terms_by_k_row(counts, origin, n_years, stops)
         places["observed_adu_by_k_row"] = places["geoid"].map(terms)

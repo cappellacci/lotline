@@ -1,12 +1,12 @@
-# ADU Form A + place types (analysis plan D-088, accepted by Ben 2026-11-14; "I agree that plan A + place types
-# makes the most sense") and D-089's town prior (accepted 2026-11-14). Ben approved writing the fitted values to
-# config on 2026-11-14 ("Open the config PR").
+# ADU place types (analysis plan D-088, accepted by Ben 2026-11-14; "I agree that plan A + place types makes the
+# most sense") and D-089's town prior (accepted 2026-11-14). Ben approved writing the fitted values to config on
+# 2026-11-14 ("Open the config PR") and wiring them into the engine ("Wire it here").
 #
-# NOT YET READ BY THE SCENARIO ENGINE. The engine still runs D-053's Form A (hazard.yaml adu_mature_hazard_ref,
-# adu_place_effect_variance; adu.yaml adu_partial_rule_share). θ here is the rate of a SUBURB (the reference
-# type): used without the core term it would understate every core city about 3.3-fold, so hazard.yaml stays as
-# it is until the PR that wires the type term into model/scenarios/adu.py switches the engine over in one step.
-# That PR also decides how adu_anchor.yaml's judgment slopes (fitted around D-053) carry over.
+# Read by model/scenarios/adu.py: each place carries a type (core city, suburb or town, from national data,
+# adu_types.jurisdiction_types). A core city's hazard is multiplied by exp(β_core), β_core drawn per draw; a
+# town's by exp(s z), z one standard normal per draw and state; a suburb's by 1. The rest of Form A + P (θ, α,
+# m_o, m_x) is in hazard.yaml and adu.yaml. The observed-information terms below replace adu_anchor.yaml's
+# D-048 ones in the draws; adu_anchor.yaml's judgment slopes are still D-053's (not yet recomputed for this fit).
 #
 # Central fit: 64 places, 395 place-years in MN, NC, OH, TX and OR (D-088 fit set; St. Paul held out), offline,
 # scripts/dev/adu_types_refit.py (reports/adu-place-types/fits.csv, variant central, fold all, form A+P).
@@ -42,23 +42,7 @@ adu_type_min_fit_states:
   unit: states
   source: "D-088 merge rule, with adu_type_min_fit_places. Core cities: 16 places in all 5 states, kept"
 
-# ---- Form A + P, fitted (D-088 central fit) ----
-
-adu_types_hazard_ref:
-  value: 0.000448
-  low: 0.000330
-  high: 0.000624
-  unit: ADU permits per eligible single-family parcel per year, for a suburb at the reference place's rent, home value and rate
-  source: "Estimated, D-088 (run 2026-11-14): Form A + P central fit, 64 places in five states, 90% profile-likelihood interval (0.4476 per 1,000; 0.330-0.624). Same units as hazard.yaml adu_mature_hazard_ref (D-053: 0.000308), but for the reference type (suburb); a core city multiplies it by exp(adu_types_core_log_multiplier)"
-  notes: "Higher than D-053's 0.000308 because m_x is 0.4 here, not 1.0 (partial rules count at 40%, so the same permits imply a higher full-rule rate), and the core term takes the big cities' excess out of the place effects. Observed-information log-SE 0.191 (adu_types_info_log_se_theta). Drawn lognormal, as D-030."
-
-adu_types_place_effect_variance:
-  value: 1.550
-  low: 1.046
-  high: 2.297
-  unit: variance of a place's multiplier on the ADU hazard (gamma, mean 1), after the type term
-  source: "Estimated, D-088 (run 2026-11-14): same fit as adu_types_hazard_ref; 90% interval from the observed-information log-SE 0.239 at the fit (refit 2026-11-14 to read it; the D-088 run did not save it, and the refit reproduced every fitted value). D-053's Form A (no types): 2.317"
-  notes: "Smaller than D-053's because the core term now explains part of the spread between places (D-088 Part 1: types alone 26% of it under Form A). About 70% of the spread is still between look-alike places."
+# ---- Form A + P, fitted (D-088 central fit). θ, α, m_o and m_x are in hazard.yaml and adu.yaml ----
 
 adu_types_core_log_multiplier:
   value: 1.199
@@ -66,21 +50,7 @@ adu_types_core_log_multiplier:
   high: 1.898
   unit: log of a core city's hazard multiplier over a suburb's (β_core)
   source: "Estimated, D-088 (run 2026-11-14): Form A + P central fit, 90% profile-likelihood interval; x3.3 (x1.7 to x6.7). D-088's rule adopted it: tier-1 log-score gain +7.2 against 2 SE of 6.1. Leave-one-state-out fits +0.91 to +1.26, every interval above 0"
-  notes: "Drawn per draw as N(β̂, se), se = (high - low) / (2 x 1.645) = 0.411, shared by every core city in the draw (adu_types.type_draws). Suburbs get 0. Towns get the D-089 prior below."
-
-adu_types_owner_occupancy_share:
-  value: 1.0
-  low: 1.0
-  high: 1.0
-  unit: share of Handbook uptake reached when owner occupancy is the only restriction (m_o), under Form A + P
-  source: "Estimated, D-088 central fit: profile maximum 1.0, 90% profile interval 1.0-1.0 on the 0.1 grid. Same as D-053 (adu.yaml adu_owner_occupancy_share 1.0, 0.9-1.0)"
-
-adu_types_partial_rule_share:
-  value: 0.4
-  low: 0.4
-  high: 0.4
-  unit: share of Handbook uptake reached under current partial local rules (m_x), under Form A + P
-  source: "Estimated, D-088 central fit: profile maximum 0.4, 90% profile interval 0.4-0.4 on the 0.1 grid (the interval is narrower than one grid step). D-053 had 1.0, set by Bend 2016-17; with the core term the fit no longer needs full-strength partial rules to carry the big cities. Leave-one-state-out: 0.4 except without MN (0.3)"
+  notes: "Drawn per draw as N(β̂, se), se = (high - low) / (2 x 1.645) = 0.411, shared by every core city in the draw (scenarios.adu.type_log_multipliers). Suburbs get 0. Towns get the D-089 prior below."
 
 adu_types_info_log_se_theta:
   value: 0.191
