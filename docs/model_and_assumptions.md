@@ -1003,10 +1003,10 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `mm_scenario_seed` | 20261108 | fixed | seed | Choice (D-063): fixed so a run regenerates |
 | `mm_rule_min_coded` | 5 | fixed | coded places | Choice (D-063), as adu_rule_min_coded (D-022): a size band needs at least 5 coded places to supply the dose o… |
 | `mm_teardown_share_scale` | 1 | 0.5–1 | share of a place's house share of eligible parcels | Judgment (D-063 choice 2): new 2-4 unit buildings replace a house in proportion to the share of eligible parc… |
-| `mm_standards_dose_increase` | 0.3333 | 0.3333–1 | dose increase of a standards event (dose class S) | D-082 (proposed) §1b: a standards event (the cap doesn't rise |
-| `mm_level_pool_min_places` | 3 | fixed | coded "none" places in a state and size band | D-082 (proposed) §1b, D-042's thin-pool rule: the no-rule level b for an always-allowed place comes from code… |
-| `mm_level_prior_widening` | 2 | fixed | multiplier on θ_L's profile log-SE | D-082 (proposed) §5, challenger C4: θ_L enters as a lognormal prior on M's mature level with its log-SD from… |
-| `mm_challenger_se_margin` | 2 | fixed | paired standard errors of the held-out log score | D-082 (proposed) §5: a challenger replaces M only if its leave-one-state-out held-out log score beats M's by… |
+| `mm_standards_dose_increase` | 0.3333 | 0.3333–1 | dose increase of a standards event (dose class S) | D-092 (proposed) §1b: a standards event (the cap doesn't rise |
+| `mm_level_pool_min_places` | 3 | fixed | coded "none" places in a state and size band | D-092 (proposed) §1b, D-042's thin-pool rule: the no-rule level b for an always-allowed place comes from code… |
+| `mm_level_prior_widening` | 2 | fixed | multiplier on θ_L's profile log-SE | D-092 (proposed) §5, challenger C4: θ_L enters as a lognormal prior on M's mature level with its log-SD from… |
+| `mm_challenger_se_margin` | 2 | fixed | paired standard errors of the held-out log score | D-092 (proposed) §5: a challenger replaces M only if its leave-one-state-out held-out log score beats M's by… |
 
 **`config/params/mm_hazard.yaml`** (6 parameters)
 

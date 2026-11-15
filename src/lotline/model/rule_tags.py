@@ -13,10 +13,10 @@ The data threads mark how sure a rule's date is in free text in `coding_notes` (
   its coded date; a sensitivity drops it.
 - A "none" row (ADU `adus_per_lot` = 0; missing middle `unit_cap` = 1) is a control on evidence, never an
   event.
-- `[standards]` (D-082 §1b, proposed): the row's cap doesn't rise, but its by-right route gets cheaper or
+- `[standards]` (D-092 §1b, proposed): the row's cap doesn't rise, but its by-right route gets cheaper or
   simpler (Houston's 2023 MUR route). `calibrate_mm.classify_event` makes it a dose-class "S" event.
 
-D-082 §1 (proposed) reads the date tags on the event-setting row only (`dropped_places(rule=
+D-092 §1 (proposed) reads the date tags on the event-setting row only (`dropped_places(rule=
 "event_setting_row")`): a tag on a row that sets no cap (Oregon's SB 458 land-division rows) no longer drops
 its place. The D-024 / D-025 reading (`rule="any_event_row"`) stays the default.
 
@@ -36,14 +36,14 @@ import pandas as pd
 PREDATES = "[predates]"
 EARLIEST_KNOWN = "[earliest-known]"
 UNCONFIRMED = "DATE UNCONFIRMED"
-# D-082 §1b: the cap doesn't rise, but the by-right route gets cheaper (dose class S)
+# D-092 §1b: the cap doesn't rise, but the by-right route gets cheaper (dose class S)
 STANDARDS = "[standards]"
 # The adoption-year searches in both panels start in 1990, so a rule in force from here is treated in every
 # panel year and its adoption year is never inside a panel.
 ALWAYS_IN_FORCE = pd.Timestamp("1990-01-01")
 WINDOW_START = pd.Timestamp("2010-01-01")  # an earliest-known date on or before this: "before the window"
 SENSITIVITIES = ("earliest_known", "unconfirmed")  # the flags `dropped_places` can drop
-DROP_RULES = ("any_event_row", "event_setting_row")  # D-082 §1: which rows' tags count (see `dropped_places`)
+DROP_RULES = ("any_event_row", "event_setting_row")  # D-092 §1: which rows' tags count (see `dropped_places`)
 
 
 def flags(reforms: pd.DataFrame) -> pd.DataFrame:
@@ -107,7 +107,7 @@ def dropped_places(
     2018-05-01 -> dropped; one effective 2015-06-30 (in force all panel long) -> kept; a `[predates]` or a
     "none" row -> kept.
 
-    rule 'event_setting_row' (D-082 §1, missing middle): only the rows that set the place's event count. The
+    rule 'event_setting_row' (D-092 §1, missing middle): only the rows that set the place's event count. The
     event is the first year in `years` whose cap in force on 1 July (`cap_path`) is above the year before;
     the event-setting rows are those in force on 1 July of that year but not of the year before whose cap
     reaches the new cap. The place is dropped if any of them carries a flag in `drop`. A row with no cap
@@ -178,7 +178,7 @@ def cap_in_force(rows: pd.DataFrame, year: int, coverage: Mapping[str, float] | 
 def event_setting_rows(
     rows: pd.DataFrame, years: Sequence[int], coverage: Mapping[str, float] | None = None
 ) -> list:
-    """Index labels of the rows that set one place's first cap rise inside `years` (D-082 §1): the rows newly
+    """Index labels of the rows that set one place's first cap rise inside `years` (D-092 §1): the rows newly
     in force on 1 July of the first year whose `cap_in_force` is above the year before, whose own cap is at
     least the new cap (and that pass the coverage rule when `coverage` is given). [] if the cap never rises.
     By hand: cap-2 row 2010, cap-4 row 2021-08-01, capless row 2022-06-30, years 2013-2025 -> the cap-4 row.
@@ -200,7 +200,7 @@ def event_setting_rows(
 
 
 def always_allowed_places(reforms: pd.DataFrame) -> set[str]:
-    """Places whose missing-middle rule predates the window (D-082 §1b's level set, before removing event
+    """Places whose missing-middle rule predates the window (D-092 §1b's level set, before removing event
     places): an in-force missing-middle row tagged `[predates]`, or read as before the window, with
     `unit_cap` at least 2. Pass the coded rows *before* `apply` (it moves the dates that `before_window`
     reads). By hand: a `[predates]` cap-2 row -> in; a before-window earliest-known cap-3 row -> in; a
@@ -219,7 +219,7 @@ def always_allowed_places(reforms: pd.DataFrame) -> set[str]:
 
 
 def none_places(reforms: pd.DataFrame) -> set[str]:
-    """Coded "none" places (D-082 §1b's comparison set for the no-rule level b): every in-force
+    """Coded "none" places (D-092 §1b's comparison set for the no-rule level b): every in-force
     missing-middle row of the place has `unit_cap` 1. Fixed from rule rows, before any count. By hand: a
     place with one cap-1 row -> in; a cap-1 row and a later cap-2 row -> out; a blank cap -> out."""
     mm = reforms[(reforms["theme"] == "missing_middle") & (reforms["status"] == "in_force")]
