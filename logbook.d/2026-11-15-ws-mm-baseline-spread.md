@@ -148,3 +148,12 @@
     `scripts/dev/mm_projects_page.py`. Page: https://claude.ai/artifact/BvoadqpTCF3itcSBYUYdgq
   - **How it was checked:** the grouping code has 7 hand-worked tests; the largest projects were looked at by
     hand (no `n_buildings` > 1 in any file, so the clusters are many permits on one parcel).
+- **After run 13: recorded, not built.** Ben chose "Record it, choose config".
+  - **Check after the run (reported only):** some permit files record one permit per home or duplex side
+    (Austin's 202-permit parcel is about 100–130 duplexes; Durham 43% one-home duplex permits; Minneapolis's
+    "3–4 unit" permits mostly carry no new homes). Recounted as homes ÷ homes per building, pooled inflation is
+    11.8 by lot and 5.6 by day, 39–44% in projects of 3+: the finding holds. `check_building_equivalents.json`.
+  - **Recorded:** a limitation in `docs/model_and_assumptions.md` (clustering is why the ranges are wide; a
+    project model is a next step). README and page updated (same link).
+  - **Aside for the data owner:** Minneapolis's `mpls_ccs_permits` types about 950 permits as 3–4 unit with 0
+    new homes; worth a look in the adapter.

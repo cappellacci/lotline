@@ -599,6 +599,16 @@ Comparison, so a reader sees them where the numbers are.
   apartments. ADU, townhouse and 5–6 unit effects therefore need city permit files, which only some places
   have. The missing-middle result counts 2–4 unit buildings only and is a floor for the Handbook's 2–6 unit
   scenario (see "What missing middle counts").
+- **Missing-middle buildings come in clusters, and the model counts buildings, not projects** (D-092 run 13,
+  `reports/mm-d092/run13-projects/`). In 15–20 city permit files, 34–44% of 2–4 unit buildings are in projects
+  of 3 or more: one builder putting up a row of duplexes, or a build-to-rent community (the largest is about
+  100–130 duplexes on one Austin parcel in three months). Clustering multiplies a place's year-to-year variance
+  by about 5 to 13 over a model that treats each building as independent. Cities differ a lot: Minneapolis,
+  Cleveland and Cincinnati build mostly one at a time (1.0–1.4); Austin, College Station, Wilmington and
+  Columbus build in large groups (12–22). This is why missing middle's ranges are wide: a place's count
+  depends on whether one big project lands in the five years. The model carries it as a per-year spread (φ)
+  rather than modelling projects. A project model would match how building happens but adds no information,
+  so it is left as a next step, not built.
 - **Denominators are weak in most places.** Every MN and NC jurisdiction, and most of OH and TX, uses the ACS
   fallback (homes, not lots; no zoning; no vacant land), quality `low`. Austin's parcels cover the Travis part
   only (0.95 of ACS detached homes). No jurisdiction is yet labelled above data tier 3.

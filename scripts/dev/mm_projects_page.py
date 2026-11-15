@@ -90,8 +90,8 @@ def main() -> None:
 <div class="tiles">
   <div class="tile"><b>{lot["inflation"]:.1f} / {day["inflation"]:.1f}</b><span>variance inflation, by lot / by day (bar 1.5)</span></div>
   <div class="tile"><b>{lot["share_in_3plus"]:.0%}</b><span>of buildings in projects of 3+ (by lot)</span></div>
-  <div class="tile"><b>202</b><span>duplex buildings on one Austin parcel within a year: the largest project</span></div>
-  <div class="tile"><b>1.13</b><span>Minneapolis, by lot: the one big city where nearly every project is one building</span></div>
+  <div class="tile"><b>~100–130</b><span>duplexes on one Austin parcel in three months (202 permits, some per side): the largest project</span></div>
+  <div class="tile"><b>1.0–1.1</b><span>Minneapolis, by lot: the one big city where nearly every project is one building</span></div>
 </div>
 
 <section>
@@ -107,13 +107,13 @@ def main() -> None:
   <h2>"Same lot" wasn't a lower bound</h2>
   <p>The plan called same lot the low estimate and same day the high one. It came out the other way round in the pooled numbers ({lot["inflation"]:.1f} against {day["inflation"]:.1f}). That's because one parcel can hold a whole build-to-rent community permitted over a year, while a same-day group catches only one day of it. Both are far over 1.5, so the verdict doesn't depend on which is right.</p>
   <div class="scroll"><table><thead><tr><th rowspan="2">Source</th><th colspan="3">Same lot</th><th colspan="3">Same day</th></tr><tr><th>Projects</th><th>Inflation</th><th>In 3+</th><th>Projects</th><th>Inflation</th><th>In 3+</th></tr></thead><tbody>{rows}</tbody></table></div>
-  <p class="note">2–4 unit building permits from 2010, through the holdout filter; St. Paul and Mecklenburg left out. Franklin and Montgomery counties' files hold no typed 2–4 unit permits. Inflation is E[S²]/E[S], where S is buildings per project.</p>
+  <p class="note">2–4 unit building permits from 2010, through the holdout filter; St. Paul and Mecklenburg left out. Franklin and Montgomery counties' files hold no typed 2–4 unit permits. Inflation is E[S²]/E[S], where S is buildings per project. A check after the run, reported only: some files record one permit per home or duplex side (Austin's 202 permits are about 100–130 duplexes). Counted as homes ÷ homes per building instead, inflation is 11.8 by lot and 5.6 by day, with 39–44% in projects of 3+, so the finding holds.</p>
 </section>
 
 <section class="decision">
   <div class="num-tag">For Ben</div>
-  <h2>Build the project-based model, or record it?</h2>
-  <p>Clustering is real and large, so it's the honest explanation for missing middle's wide ranges. A model of projects × buildings per project would match how building happens. But it adds no new information, so the ranges probably won't narrow much, and it means a new fit and a new §7 run with about a month left. Nothing goes to config; run 11 stands.</p>
+  <h2>Decided: record it, don't build it</h2>
+  <p>Clustering is real and large, so it's the honest explanation for missing middle's wide ranges. A model of projects × buildings per project would match how building happens, but it adds no new information. Ben chose to record it as the reason for the ranges and a stated limitation (15 Nov 2026). Run 11 stands; the config choice is next.</p>
 </section>
 
 <footer>

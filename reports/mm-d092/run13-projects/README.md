@@ -26,6 +26,27 @@ Descriptive only: no fit, nothing to config, run 11 stands.
   inflation is still 3.0 (Austin), 9.3 (College Station), 8.7 (Wilmington) and 3.7 (Columbus).
 - Franklin and Montgomery counties' files have no typed 2–4 unit permits (ADUs only), so they add nothing.
 
+## Check after the run: permits are not always buildings (reported only)
+
+`mm_units_per_project`'s note says some city files file one permit per home or per duplex side. They do:
+- Austin's 202-permit parcel is 138 one-home and 64 two-home permits, all "Two Family Bldgs": about 100–130
+  real duplexes, still one project.
+- One-home permits among duplex permits: Durham 43%, Asheville 38%, Greensboro 34%, Austin 16%.
+- Minneapolis's 947 "3–4 unit" permits carry 0.28 new homes on average, so most aren't new buildings.
+
+Recounted in building-equivalents (homes ÷ homes per building: 2 for a duplex permit, the permit's own 3 or 4
+for a 3–4 unit one, else 3.5; permits with no new homes dropped), the finding holds
+(`check_building_equivalents.json`):
+
+| Grouping | Projects | Buildings | Inflation | In projects of 3+ |
+|---|---|---|---|---|
+| Same lot | 3,582 | 5,877 | 11.8 | 39% |
+| Same day | 4,252 | 7,737 | 5.6 | 44% |
+
+Minneapolis falls to 170 buildings (inflation 1.03); Durham rises to 9.8 by lot. The verdict doesn't change.
+Ben's choice after run 13: record clustering as the reason for the wide ranges and a stated limitation; don't
+build the project model (2026-11-15, "Record it, choose config").
+
 ## Files
 
 - `summary.json`: per source and pooled, for both groupings; the verdict.
