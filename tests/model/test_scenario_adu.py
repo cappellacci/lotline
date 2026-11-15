@@ -816,3 +816,64 @@ def test_anchor_draws_read_the_type_fits_information_terms():
     assert a["adu_anchor_info_corr"] == pytest.approx(0.0545, abs=5e-4)
     assert a["adu_anchor_info_log_se_theta"] == pytest.approx(0.177, abs=5e-4)
     assert any(k.startswith("anchor_slope_theta__") for k in a)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-097: m_x drawn from the refitted grid
+# ---------------------------------------------------------------------------------------------------------
+
+GRID_HAND = pd.DataFrame(
+    {"m_x": [0.4, 0.7], "theta": [2.0, 1.0], "alpha": [1.0, 2.0], "core": [1.0, 2.0], "weight": [0.25, 0.75],
+     "weight_fold_max": [0.5, 0.5]}
+)  # fmt: skip
+
+
+def test_apply_partial_share_grid_by_hand():
+    """Central m_x 0.7. A set moved to m_x 0.4 (mode 3) with θ 3, α 4: θ 3 × 2 / 1 = 6, α 4 × 1 / 2 = 2, core
+    shift 1 − 2 = −1. A set left at 0.7 is unchanged with shift 0."""
+    sets = [
+        {"adu_partial_rule_share": 0.4, "adu_mature_hazard_ref": 3.0, "adu_place_effect_variance": 4.0},
+        {"adu_partial_rule_share": 0.7, "adu_mature_hazard_ref": 3.0, "adu_place_effect_variance": 4.0},
+    ]
+    out = adu.apply_partial_share_grid(sets, GRID_HAND, 3, 1, 0.7)
+    assert out[0]["adu_mature_hazard_ref"] == pytest.approx(6.0)
+    assert out[0]["adu_place_effect_variance"] == pytest.approx(2.0)
+    assert out[0][adu.CORE_SHIFT] == pytest.approx(-1.0)
+    assert out[1]["adu_mature_hazard_ref"] == 3.0 and out[1][adu.CORE_SHIFT] == 0.0
+
+
+def test_apply_partial_share_grid_draws_follow_the_weights():
+    sets = [
+        {"adu_partial_rule_share": 0.7, "adu_mature_hazard_ref": 1.0, "adu_place_effect_variance": 1.0}
+    ] * 20_000
+    m = np.array(
+        [p["adu_partial_rule_share"] for p in adu.apply_partial_share_grid(sets, GRID_HAND, 1, 5, 0.7)]
+    )
+    assert (m == 0.4).mean() == pytest.approx(0.25, abs=0.015)
+    m2 = np.array(
+        [p["adu_partial_rule_share"] for p in adu.apply_partial_share_grid(sets, GRID_HAND, 2, 5, 0.7)]
+    )
+    assert (m2 == 0.4).mean() == pytest.approx(0.5, abs=0.015)
+
+
+def test_partial_share_grid_central_row_matches_config():
+    """The grid's row at the configured m_x is the fit the config holds (θ, α, core)."""
+    g = adu.partial_share_grid().set_index("m_x")
+    c = adu.central_params()
+    r = g.loc[round(c["adu_partial_rule_share"], 1)]
+    assert r["theta"] == pytest.approx(c["adu_mature_hazard_ref"], rel=0.01)
+    assert r["alpha"] == pytest.approx(c["adu_place_effect_variance"], rel=0.01)
+    assert r["core"] == pytest.approx(adu.type_terms()["core"], abs=0.005)
+    assert g["weight"].sum() == pytest.approx(1.0) and g["weight_fold_max"].sum() == pytest.approx(1.0)
+
+
+def test_partial_share_draws_at_the_central_share_reproduce_the_fixed_run():
+    """Mode 3 with every draw at the configured m_x moves nothing (ratios 1, shift 0): the run is the
+    fixed-m_x run draw for draw. Mode 0 is the default."""
+    places = _places(rule_class="partial", rule_age=50.0, place_type="core")
+    assert adu.central_params()[adu.SHARE_DRAWS] == 0
+    _, fixed = adu.run(places, 2025, draws=60)
+    _, same = adu.run(places, 2025, draws=60, params={adu.SHARE_DRAWS: 3})
+    pd.testing.assert_frame_equal(fixed, same)
+    _, low = adu.run(places, 2025, draws=60, params={adu.SHARE_DRAWS: 3, "adu_partial_rule_share": 0.4})
+    assert not low.equals(fixed)

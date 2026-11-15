@@ -6757,8 +6757,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     its leave-one-state-out range, or reporting it as a sensitivity, would be a separate entry.
 
 ### D-097 · 2026-11-15 · ADUs: carrying the partial-rule share's uncertainty into the engine's ranges (method only, before any fit or run)
-- **Status: drafted on Ben's request ("Draft that entry", 2026-11-15). Not yet accepted.** No fit, run or
-  score for this entry has been made. Provisional number.
+- **Status: accepted by Ben, 2026-11-15** ("Once we've made this update, I'd like to see a visual breakdown",
+  in reply to the draft; drafted the same day on his request, "Draft that entry"). No fit, run or score for
+  this entry had been made when it was accepted. Provisional number.
 - **Why.** The bill's effect on a place with a partial rule is the ratio 1 ÷ m_x, so m_x sets most of the
   Handbook result. D-096 fixed m_x at 0.7 in every draw (`adu_partial_rule_share` low = high). The full-data
   profile interval is narrow (0.7–0.8 on the 0.1 grid), but leaving one state out gives 0.4 (without OR), 0.7
@@ -6797,3 +6798,23 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **What it cannot say:** five folds are a small sample of how m_x varies between states. The 0.1 grid is
   coarse. A different m_x per state might be closer to the truth, but four states with counts can't
   estimate one each.
+- **Result, 2026-11-15** (`reports/adu-mx-grid/`, `reports/adu-mx-engine/`; grid table
+  `config/params/adu_partial_share_grid.csv`; engine switch `adu_partial_share_draws`, left at 0):
+  - **Grid fits** (all states, m_o 1.0): the 0.7 row matches D-096's central fit (θ 0.000240, α 1.439,
+    core +1.670). Main weights: 0.4 18%, 0.7 45%, 0.8 14%, 1.0 20%, the rest under 2% each. Fold maxima,
+    with m_o held at 1.0: 0.4 (without OR), 0.7 (three folds), 1.0 (without NC).
+  - **Consistency check passed:** current-rules ADUs within 2% of fixed 0.7 in every state (limit 10%).
+  - **Additional homes 2027–31, P50 (P10–P90), fixed 0.7 → grid draws:**
+    - MN 302 (141–747) → 307 (127–839);
+    - NC 208 (89–619) → 201 (63–713);
+    - OH 230 (75–1,155) → 226 (70–1,251);
+    - TX 3,198 (1,118–10,817) → 3,272 (1,107–12,004);
+    - OR 10 (4–32) → 9 (3–40).
+    - The fold-maxima sensitivity is close to the main grid.
+    - Fixed 0.4 / fixed 1.0: MN 581 / 192, NC 461 / 86, OH 407 / 159, TX 5,141 / 2,206, OR 20 / 4.
+  - **Deviation, disclosed:** the held-out tier-1 log score with m_x drawn was not computed. The fold fits at
+    each m_x exist (`profiles.csv`), but the held-out predictive code takes one rule share per fit, so the
+    mixture needs new code. The entry marked that measure as reported only.
+  - **Decision for Ben:** the switch stays off (m_x fixed at 0.7) until he chooses. Drawing m_x keeps the
+    medians and widens P90 ÷ P10 by 12% (TX) to 66% (OR): MN ×5.3 → ×6.6, NC ×7.0 → ×11.3, OH ×15.4 → ×17.9,
+    TX ×9.7 → ×10.8, OR ×8.0 → ×13.3.
