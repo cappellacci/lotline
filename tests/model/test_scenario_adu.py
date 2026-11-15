@@ -98,8 +98,8 @@ def test_partial_rules_get_the_increment_only_by_hand():
     """A partial rule at m_x = 0.3 (the D-053 sensitivity): current hazard = 0.3 × h_m. The lead year (D-061)
     runs under current rules only, leaving R = 2,000 × (1 − 0.3 h_m) parcels. Handbook year 1:
     0.3 h_m + 0.7 h_m (no ramp, D-048). Added in year 1 = R × 0.7 × h_m (same pool in year 1). At D-053's
-    m_x = 1.0 a partial rule counted in full, so nothing was added; at the adopted m_x = 0.4 (D-088) the
-    increment is 0.6 × h_m."""
+    m_x = 1.0 a partial rule counted in full, so nothing was added; at the adopted m_x = 0.7 (D-096) the
+    increment is 0.3 × h_m."""
     old = {"adu_partial_rule_share": 0.3}
     out = adu.central_path(_places(rule_class="partial", rule_age=50.0), params=old)
     hm = out["mature_hazard"][0]
@@ -112,10 +112,10 @@ def test_partial_rules_get_the_increment_only_by_hand():
         )["added"].sum()
         == 0
     )
-    assert adu.central_params()["adu_partial_rule_share"] == 0.4
+    assert adu.central_params()["adu_partial_rule_share"] == 0.7
     now = adu.central_path(_places(rule_class="partial", rule_age=50.0))
     hm = now["mature_hazard"][0]
-    assert now["added"][0, 0] == pytest.approx(2000 * (1 - 0.4 * hm) * 0.6 * hm, rel=1e-6)
+    assert now["added"][0, 0] == pytest.approx(2000 * (1 - 0.7 * hm) * 0.3 * hm, rel=1e-6)
 
 
 def test_observed_adus_are_never_counted_as_added():
@@ -123,8 +123,11 @@ def test_observed_adus_are_never_counted_as_added():
     hm = adu.central_path(_places())["mature_hazard"][0]
     out = adu.central_path(_places(observed_rate=hm * 1.5))
     assert np.all(out["added"] == 0)
-    half = adu.central_path(_places(observed_rate=hm / 2))
-    assert 0 < half["added"].sum() < adu.central_path(_places())["added"].sum()
+    # The floor reading (before D-091, adu_own_rate_drift 0): an observed rate below h_m lowers what is added.
+    # With own counts on, added ADUs are own rate × (ratio − 1) instead (tests/model/test_adu_own_rate.py).
+    off = {"adu_own_rate_drift": 0}
+    half = adu.central_path(_places(observed_rate=hm / 2), params=off)
+    assert 0 < half["added"].sum() < adu.central_path(_places(), params=off)["added"].sum()
 
 
 def test_run_ranges_are_ordered_and_flag_extrapolation():
@@ -263,18 +266,18 @@ def _no_slopes(corr: float = 0.0) -> dict:
 
 
 def test_log_sd_from_the_90_percent_interval_by_hand():
-    """Anchor 90% interval 0.000330-0.000624 (D-088): (ln 0.000624 − ln 0.000330) / (2 × 1.644854) =
-    0.6371 / 3.2897 = 0.1937."""
+    """Anchor 90% interval 0.000181-0.000327 (D-096): (ln 0.000327 − ln 0.000181) / (2 × 1.644854) =
+    0.5915 / 3.2897 = 0.1798."""
     s = adu.specs()["adu_mature_hazard_ref"]
-    assert adu.log_sd(s) == pytest.approx((math.log(0.000624) - math.log(0.000330)) / 3.289708, rel=1e-6)
-    assert adu.log_sd(s) == pytest.approx(0.1937, abs=1e-4)
+    assert adu.log_sd(s) == pytest.approx((math.log(0.000327) - math.log(0.000181)) / 3.289708, rel=1e-6)
+    assert adu.log_sd(s) == pytest.approx(0.1798, abs=1e-4)
 
 
 def test_anchor_draws_have_their_median_at_the_estimate():
     """D-030: the fitted anchor and place-effect variance are lognormal with median at the estimate (before
-    the judgment shift), not triangular(low, central, high). With D-088's anchor 0.448e-3 (0.330-0.624e-3)
-    the triangular median is 0.624e-3 − √(0.294e-3 × 0.176e-3 / 2) = 0.463e-3, 3.4% above the estimate
-    (D-053's interval gave 5%, D-019's 41%)."""
+    the judgment shift), not triangular(low, central, high). With D-096's anchor 0.240e-3 (0.181-0.327e-3)
+    the triangular median is 0.327e-3 − √(0.146e-3 × 0.087e-3 / 2) = 0.2473e-3, 3.0% above the estimate
+    (D-088's interval gave 3.4%, D-053's 5%, D-019's 41%)."""
     spec = adu.specs()
     sets = adu.draw_params(20_000, 7, _no_slopes())
     theta = np.array([p["adu_mature_hazard_ref"] for p in sets])
@@ -285,8 +288,8 @@ def test_anchor_draws_have_their_median_at_the_estimate():
     assert np.median(alpha) == pytest.approx(a.value, rel=0.02)
     assert np.percentile(theta, 5) == pytest.approx(t.value * math.exp(-1.644854 * adu.log_sd(t)), rel=0.05)
     old = np.random.default_rng(7).triangular(t.low, t.value, t.high, 20_000)
-    assert np.median(old) == pytest.approx(0.463e-3, rel=0.01)  # the bias D-030 removes
-    assert np.median(old) > 1.03 * t.value
+    assert np.median(old) == pytest.approx(0.2473e-3, rel=0.01)  # the bias D-030 removes
+    assert np.median(old) > 1.02 * t.value
 
 
 def test_anchor_shifts_with_the_judgment_parameters_it_was_fitted_at_by_hand():
@@ -767,12 +770,12 @@ NO_SPREAD = {"adu_types_core_log_multiplier": (math.log(3.0),) * 3, "adu_types_t
 
 
 def test_type_terms_from_config_by_hand():
-    """Core term 1.199 (0.546-1.898): se = (1.898 − 0.546) / 3.2897 = 0.4110; the town prior's SD is
-    |β̂_core| / 1.645 = 0.729."""
+    """Core term 1.670 (1.064-2.315, D-096): se = (2.315 − 1.064) / 3.2897 = 0.3803; the town prior's SD is
+    |β̂_core| / 1.645 = 1.015."""
     tt = adu.type_terms()
-    assert tt["core"] == pytest.approx(1.199)
-    assert tt["core_se"] == pytest.approx((1.898 - 0.546) / 3.289708, rel=1e-6)
-    assert tt["town_sd"] == pytest.approx(1.199 / 1.644854, abs=5e-4)
+    assert tt["core"] == pytest.approx(1.670)
+    assert tt["core_se"] == pytest.approx((2.315 - 1.064) / 3.289708, rel=1e-6)
+    assert tt["town_sd"] == pytest.approx(1.670 / 1.644854, abs=5e-4)
 
 
 def test_type_log_multipliers_by_hand():
@@ -786,9 +789,9 @@ def test_type_log_multipliers_by_hand():
     assert np.array_equal(m[:, 0], m[:, 4])  # one core draw, shared
     assert np.all(m[:, 1] == 0) and np.all(m[:, 3] == 0)
     assert not np.array_equal(m[:, 2], m[:, 5])  # towns in different states draw apart
-    assert m[:, 0].mean() == pytest.approx(1.199, abs=0.01)
-    assert m[:, 0].std() == pytest.approx((1.898 - 0.546) / 3.289708, rel=0.03)
-    assert m[:, 2].mean() == pytest.approx(0.0, abs=0.02) and m[:, 2].std() == pytest.approx(0.729, rel=0.03)
+    assert m[:, 0].mean() == pytest.approx(1.670, abs=0.01)
+    assert m[:, 0].std() == pytest.approx((2.315 - 1.064) / 3.289708, rel=0.03)
+    assert m[:, 2].mean() == pytest.approx(0.0, abs=0.03) and m[:, 2].std() == pytest.approx(1.015, rel=0.03)
 
 
 def test_core_city_hazard_is_the_suburb_hazard_times_the_multiplier_by_hand():
@@ -807,8 +810,70 @@ def test_core_city_hazard_is_the_suburb_hazard_times_the_multiplier_by_hand():
 
 
 def test_anchor_draws_read_the_type_fits_information_terms():
-    """D-088: adu_anchor.yaml holds the Form A + place types fit's observed-information terms and slopes."""
+    """D-088 form, D-096 fit: adu_anchor.yaml holds the Form A + place types fit's observed-information terms
+    and slopes (regenerated on the coverage-fixed rule rows, 2026-11-15)."""
     a = adu.anchor_terms()
-    assert a["adu_anchor_info_corr"] == pytest.approx(0.115, abs=5e-4)
-    assert a["adu_anchor_info_log_se_theta"] == pytest.approx(0.191, abs=5e-4)
+    assert a["adu_anchor_info_corr"] == pytest.approx(0.0545, abs=5e-4)
+    assert a["adu_anchor_info_log_se_theta"] == pytest.approx(0.177, abs=5e-4)
     assert any(k.startswith("anchor_slope_theta__") for k in a)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# D-097: m_x drawn from the refitted grid
+# ---------------------------------------------------------------------------------------------------------
+
+GRID_HAND = pd.DataFrame(
+    {"m_x": [0.4, 0.7], "theta": [2.0, 1.0], "alpha": [1.0, 2.0], "core": [1.0, 2.0], "weight": [0.25, 0.75],
+     "weight_fold_max": [0.5, 0.5]}
+)  # fmt: skip
+
+
+def test_apply_partial_share_grid_by_hand():
+    """Central m_x 0.7. A set moved to m_x 0.4 (mode 3) with θ 3, α 4: θ 3 × 2 / 1 = 6, α 4 × 1 / 2 = 2, core
+    shift 1 − 2 = −1. A set left at 0.7 is unchanged with shift 0."""
+    sets = [
+        {"adu_partial_rule_share": 0.4, "adu_mature_hazard_ref": 3.0, "adu_place_effect_variance": 4.0},
+        {"adu_partial_rule_share": 0.7, "adu_mature_hazard_ref": 3.0, "adu_place_effect_variance": 4.0},
+    ]
+    out = adu.apply_partial_share_grid(sets, GRID_HAND, 3, 1, 0.7)
+    assert out[0]["adu_mature_hazard_ref"] == pytest.approx(6.0)
+    assert out[0]["adu_place_effect_variance"] == pytest.approx(2.0)
+    assert out[0][adu.CORE_SHIFT] == pytest.approx(-1.0)
+    assert out[1]["adu_mature_hazard_ref"] == 3.0 and out[1][adu.CORE_SHIFT] == 0.0
+
+
+def test_apply_partial_share_grid_draws_follow_the_weights():
+    sets = [
+        {"adu_partial_rule_share": 0.7, "adu_mature_hazard_ref": 1.0, "adu_place_effect_variance": 1.0}
+    ] * 20_000
+    m = np.array(
+        [p["adu_partial_rule_share"] for p in adu.apply_partial_share_grid(sets, GRID_HAND, 1, 5, 0.7)]
+    )
+    assert (m == 0.4).mean() == pytest.approx(0.25, abs=0.015)
+    m2 = np.array(
+        [p["adu_partial_rule_share"] for p in adu.apply_partial_share_grid(sets, GRID_HAND, 2, 5, 0.7)]
+    )
+    assert (m2 == 0.4).mean() == pytest.approx(0.5, abs=0.015)
+
+
+def test_partial_share_grid_central_row_matches_config():
+    """The grid's row at the configured m_x is the fit the config holds (θ, α, core)."""
+    g = adu.partial_share_grid().set_index("m_x")
+    c = adu.central_params()
+    r = g.loc[round(c["adu_partial_rule_share"], 1)]
+    assert r["theta"] == pytest.approx(c["adu_mature_hazard_ref"], rel=0.01)
+    assert r["alpha"] == pytest.approx(c["adu_place_effect_variance"], rel=0.01)
+    assert r["core"] == pytest.approx(adu.type_terms()["core"], abs=0.005)
+    assert g["weight"].sum() == pytest.approx(1.0) and g["weight_fold_max"].sum() == pytest.approx(1.0)
+
+
+def test_partial_share_draws_at_the_central_share_reproduce_the_fixed_run():
+    """Mode 3 with every draw at the configured m_x moves nothing (ratios 1, shift 0): the run is the
+    fixed-m_x run draw for draw. Mode 0 is the default."""
+    places = _places(rule_class="partial", rule_age=50.0, place_type="core")
+    assert adu.central_params()[adu.SHARE_DRAWS] == 0
+    _, fixed = adu.run(places, 2025, draws=60)
+    _, same = adu.run(places, 2025, draws=60, params={adu.SHARE_DRAWS: 3})
+    pd.testing.assert_frame_equal(fixed, same)
+    _, low = adu.run(places, 2025, draws=60, params={adu.SHARE_DRAWS: 3, "adu_partial_rule_share": 0.4})
+    assert not low.equals(fixed)

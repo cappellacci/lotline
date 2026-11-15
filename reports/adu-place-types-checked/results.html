@@ -1,0 +1,223 @@
+<title>ADU Place Types, Checked Rows</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+:root { --v-a: var(--tier-none); --v-old: var(--tier-1); --v-new: var(--survey); }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body, Inter, system-ui, sans-serif); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display, "Space Grotesk", system-ui, sans-serif); text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; line-height: 1.15; } h2 { font-size: 1.2rem; }
+.kicker { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; color: var(--ink-muted); }
+p { margin: 0; max-width: 65ch; } section { display: grid; gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.card { background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; }
+.card b { font-family: var(--font-display, "Space Grotesk", sans-serif); font-size: 1.6rem; }
+.card span { color: var(--ink-muted); font-size: .85rem; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--ink-muted); font-size: 11px; font-family: inherit; }
+.chart .st { fill: var(--ink); font-weight: 600; font-size: 12.5px; }
+.chart .lab { fill: var(--ink-muted); } .chart .ok { fill: var(--confidence-inside); font-size: 13px; }
+.grid { stroke: var(--rule); stroke-width: 1; }
+.v-a { fill: var(--v-a); } .v-old { fill: var(--v-old); } .v-new { fill: var(--v-new); }
+.med { stroke: var(--ink); stroke-width: 2; }
+.obs { fill: var(--brass); } .obs-line { stroke: var(--brass); stroke-dasharray: 3 3; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: .9rem; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: right; }
+th { color: var(--ink-muted); font-weight: 500; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+td.form, th.form { text-align: left; } td.form { color: var(--ink); }
+td.good { color: var(--confidence-inside); font-weight: 600; } td.edge { color: var(--confidence-edge); } td.bad { color: var(--confidence-outside); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 18px; height: 8px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
+.call { background: var(--paper-sunken); border-left: 3px solid var(--brass); padding: 14px 16px; border-radius: 4px; display: grid; gap: 8px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; max-width: 65ch; }
+.foot { color: var(--ink-faint); font-size: .8rem; }
+</style>
+<div class="wrap">
+<header style="display:grid;gap:8px">
+  <div class="kicker">Lotline · ADU model · D-088 rescored · 15 Nov 2026</div>
+  <h1>Place types on the checked rule rows: the first form to pass the transfer test</h1>
+  <p>D-088's run, repeated unchanged on the source-checked local ADU rules (#419). With each state left out in turn,
+  A + place types lands inside its range and within ×2 in all four states that have counts, at tiers 1 and 2.
+  D-088's own decision rule still keeps Form A, on one place.</p>
+</header>
+
+<div class="cards">
+  <div class="card"><span>Useful states, tier 1</span><b>4 of 4</b><span>A + types; was 3 of 4 on the old rows. Form A: 0 of 4.</span></div>
+  <div class="card"><span>Held-out log score over Form A</span><b>+13.1</b><span>2 SE = 7.5; 64 places</span></div>
+  <div class="card"><span>Core city vs suburb</span><b>×6.3</b><span>β +1.84 (+1.19 to +2.54); was ×3.3</span></div>
+</div>
+
+<section>
+  <h2>Tier 1: each state predicted from the other states plus its 20 largest places' rules</h2>
+  <div class="legend"><span><i style="background:var(--v-a)"></i>Form A</span><span><i style="background:var(--v-old)"></i>A + types, old rows</span><span><i style="background:var(--v-new)"></i>A + types, checked rows</span><span>Bar P10–P90, tick median, <span style="color:var(--brass)">◆ observed</span>, ✓ useful</span></div>
+  <svg viewBox="0 0 660 360" class="chart" role="img" aria-label="tier 1 ranges by state"><line x1="239.2" x2="239.2" y1="8" y2="332" class="grid"/><text x="239.2" y="348" class="tick" text-anchor="middle">10</text><line x1="317.2" x2="317.2" y1="8" y2="332" class="grid"/><text x="317.2" y="348" class="tick" text-anchor="middle">30</text><line x1="402.6" x2="402.6" y1="8" y2="332" class="grid"/><text x="402.6" y="348" class="tick" text-anchor="middle">100</text><line x1="480.6" x2="480.6" y1="8" y2="332" class="grid"/><text x="480.6" y="348" class="tick" text-anchor="middle">300</text><line x1="566.0" x2="566.0" y1="8" y2="332" class="grid"/><text x="566.0" y="348" class="tick" text-anchor="middle">1,000</text><line x1="644.0" x2="644.0" y1="8" y2="332" class="grid"/><text x="644.0" y="348" class="tick" text-anchor="middle">3,000</text><text x="8" y="26" class="st">Minnesota</text><text x="180" y="42" class="lab" text-anchor="end">Form A, checked rows</text><rect x="395.1" y="34" width="111.2" height="8" rx="4" class="v-a"/><line x1="451.1" x2="451.1" y1="31" y2="45" class="med"/><text x="656" y="42" class="ok" text-anchor="end"></text><text x="180" y="60" class="lab" text-anchor="end">A + types, old rows</text><rect x="341.0" y="52" width="116.2" height="8" rx="4" class="v-old"/><line x1="396.7" x2="396.7" y1="49" y2="63" class="med"/><text x="656" y="60" class="ok" text-anchor="end">✓</text><text x="180" y="78" class="lab" text-anchor="end">A + types, checked rows</text><rect x="323.9" y="70" width="106.0" height="8" rx="4" class="v-new"/><line x1="377.3" x2="377.3" y1="67" y2="81" class="med"/><text x="656" y="78" class="ok" text-anchor="end">✓</text><line x1="357.6" x2="357.6" y1="30" y2="82" class="obs-line"/><path d="M357.6 25l5 5l-5 5l-5-5z" class="obs"/><text x="365.6" y="33" class="tick" text-anchor="start">observed 53 (old rows 46)</text><text x="8" y="104" class="st">North Carolina</text><text x="180" y="120" class="lab" text-anchor="end">Form A, checked rows</text><rect x="288.4" y="112" width="295.3" height="8" rx="4" class="v-a"/><line x1="441.5" x2="441.5" y1="109" y2="123" class="med"/><text x="656" y="120" class="ok" text-anchor="end"></text><text x="180" y="138" class="lab" text-anchor="end">A + types, old rows</text><rect x="387.7" y="130" width="220.3" height="8" rx="4" class="v-old"/><line x1="498.8" x2="498.8" y1="127" y2="141" class="med"/><text x="656" y="138" class="ok" text-anchor="end">✓</text><text x="180" y="156" class="lab" text-anchor="end">A + types, checked rows</text><rect x="390.2" y="148" width="224.7" height="8" rx="4" class="v-new"/><line x1="507.1" x2="507.1" y1="145" y2="159" class="med"/><text x="656" y="156" class="ok" text-anchor="end">✓</text><line x1="532.2" x2="532.2" y1="108" y2="160" class="obs-line"/><path d="M532.2 103l5 5l-5 5l-5-5z" class="obs"/><text x="524.2" y="111" class="tick" text-anchor="end">observed 621 (old rows 607)</text><text x="8" y="182" class="st">Texas</text><text x="180" y="198" class="lab" text-anchor="end">Form A, checked rows</text><rect x="190.0" y="190" width="359.3" height="8" rx="4" class="v-a"/><line x1="365.2" x2="365.2" y1="187" y2="201" class="med"/><text x="656" y="198" class="ok" text-anchor="end"></text><text x="180" y="216" class="lab" text-anchor="end">A + types, old rows</text><rect x="263.1" y="208" width="290.3" height="8" rx="4" class="v-old"/><line x1="431.4" x2="431.4" y1="205" y2="219" class="med"/><text x="656" y="216" class="ok" text-anchor="end"></text><text x="180" y="234" class="lab" text-anchor="end">A + types, checked rows</text><rect x="291.9" y="226" width="302.6" height="8" rx="4" class="v-new"/><line x1="468.1" x2="468.1" y1="223" y2="237" class="med"/><text x="656" y="234" class="ok" text-anchor="end">✓</text><line x1="494.2" x2="494.2" y1="186" y2="238" class="obs-line"/><path d="M494.2 181l5 5l-5 5l-5-5z" class="obs"/><text x="486.2" y="189" class="tick" text-anchor="end">observed 364</text><text x="8" y="260" class="st">Oregon</text><text x="180" y="276" class="lab" text-anchor="end">Form A, checked rows</text><rect x="252.1" y="268" width="282.4" height="8" rx="4" class="v-a"/><line x1="409.4" x2="409.4" y1="265" y2="279" class="med"/><text x="656" y="276" class="ok" text-anchor="end"></text><text x="180" y="294" class="lab" text-anchor="end">A + types, old rows</text><rect x="361.5" y="286" width="205.8" height="8" rx="4" class="v-old"/><line x1="473.1" x2="473.1" y1="283" y2="297" class="med"/><text x="656" y="294" class="ok" text-anchor="end">✓</text><text x="180" y="312" class="lab" text-anchor="end">A + types, checked rows</text><rect x="360.2" y="304" width="220.9" height="8" rx="4" class="v-new"/><line x1="482.0" x2="482.0" y1="301" y2="315" class="med"/><text x="656" y="312" class="ok" text-anchor="end">✓</text><line x1="520.5" x2="520.5" y1="264" y2="316" class="obs-line"/><path d="M520.5 259l5 5l-5 5l-5-5z" class="obs"/><text x="512.5" y="267" class="tick" text-anchor="end">observed 527</text><text x="644" y="359" class="tick" text-anchor="end">ADUs counted in the held-out state's target places (log scale)</text></svg>
+  <p>Every state's range on the checked rows contains what was built, and every median is within ×2. The ranges are wide: P90 is ×4 the P10 in Minnesota and ×22–71 elsewhere.</p>
+</section>
+
+<section>
+  <h2>Observed ÷ median, every form and tier</h2>
+  <div class="scroll"><table>
+  <tr><th class="form">Form</th><th>Tier</th><th>MN</th><th>NC</th><th>TX</th><th>OR</th><th>Useful</th></tr>
+  <tr><td rowspan="3" class="form">Form A</td><td>0</td><td class="bad">0.28</td><td class="edge">6.67</td><td class="edge">20.20</td><td class="bad">27.73</td><td class='num'><b>0</b> of 4</td></tr><tr><td>1</td><td class="bad">0.27</td><td class="edge">3.59</td><td class="edge">6.16</td><td class="edge">4.79</td><td class='num'><b>0</b> of 4</td></tr><tr><td>2</td><td class="bad">0.28</td><td class="edge">3.63</td><td class="edge">5.96</td><td class="edge">2.83</td><td class='num'><b>0</b> of 4</td></tr><tr><td rowspan="3" class="form">A′ (owner share)</td><td>0</td><td class="good">0.79</td><td class="edge">4.19</td><td class="edge">3.57</td><td class="bad">14.63</td><td class='num'><b>1</b> of 4</td></tr><tr><td>1</td><td class="good">0.78</td><td class="edge">2.04</td><td class="good">1.51</td><td class="edge">3.01</td><td class='num'><b>2</b> of 4</td></tr><tr><td>2</td><td class="good">0.85</td><td class="edge">2.26</td><td class="good">1.65</td><td class="edge">2.47</td><td class='num'><b>2</b> of 4</td></tr><tr><td rowspan="3" class="form">A + types, old rows (D-088)</td><td>0</td><td class="good">0.75</td><td class="edge">4.75</td><td class="edge">5.35</td><td class="good">1.95</td><td class='num'><b>2</b> of 4</td></tr><tr><td>1</td><td class="good">0.50</td><td class="good">1.57</td><td class="edge">2.42</td><td class="good">1.95</td><td class='num'><b>3</b> of 4</td></tr><tr><td>2</td><td class="good">0.63</td><td class="good">1.89</td><td class="edge">2.75</td><td class="good">1.60</td><td class='num'><b>3</b> of 4</td></tr><tr><td rowspan="3" class="form">A + types, checked rows</td><td>0</td><td class="good">0.88</td><td class="edge">3.43</td><td class="edge">3.91</td><td class="bad">8.23</td><td class='num'><b>1</b> of 4</td></tr><tr><td>1</td><td class="good">0.76</td><td class="good">1.42</td><td class="good">1.45</td><td class="good">1.72</td><td class='num'><b>4</b> of 4</td></tr><tr><td>2</td><td class="good">0.84</td><td class="good">1.74</td><td class="good">1.66</td><td class="good">1.50</td><td class='num'><b>4</b> of 4</td></tr><tr><td rowspan="3" class="form">A′ + types, checked rows</td><td>0</td><td class="good">0.98</td><td class="edge">3.39</td><td class="edge">2.96</td><td class="bad">9.24</td><td class='num'><b>1</b> of 4</td></tr><tr><td>1</td><td class="good">0.87</td><td class="good">1.38</td><td class="good">1.20</td><td class="good">1.92</td><td class='num'><b>4</b> of 4</td></tr><tr><td>2</td><td class="good">0.93</td><td class="good">1.93</td><td class="good">1.51</td><td class="good">1.48</td><td class='num'><b>4</b> of 4</td></tr>
+  </table></div>
+  <p class="foot">Green: useful (inside P10–P90 and within ×2). Amber: inside the range, outside ×2. Purple: outside the range. Ohio has no target places with counts, so it can't be scored; "4 of 4" is all the states that can be.</p>
+</section>
+
+<section>
+  <h2>The decision rule keeps Form A, on College Station</h2>
+  <div class="call">
+  <p>D-088's rule needs all three: a lower passing tier <b>(met: tier 1 against none)</b>; at least as many of tests A–B
+  <b>(missed: 1 against 2)</b>; test D not worse by more than 2 SE <b>(met: -5.6, 2 SE 6.3)</b>.</p>
+  <p>Form A's extra pass is test A in Texas, which is one city: College Station built about 5 ADUs; Form A's median is 6,
+  A + types' 25 (inside its range, outside ×2). It is the same single place that decided D-087's step 1.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Test D: forecasting 2021–2025 from 2016–2020 inside each state</h2>
+  <div class="scroll"><table>
+  <tr><th class="form">Forecast</th><th>MN</th><th>NC</th><th>TX</th><th>OR</th></tr>
+  <tr><td class='form'>Form A</td><td class="bad">0.23</td><td class="edge">1.55</td><td class="edge">0.84</td><td class="edge">0.62</td></tr><tr><td class='form'>A + types</td><td class="bad">0.38</td><td class="edge">1.57</td><td class="edge">0.83</td><td class="edge">0.62</td></tr><tr><td class='form'>A′ + types</td><td class="bad">0.45</td><td class="edge">1.58</td><td class="edge">0.83</td><td class="edge">0.62</td></tr><tr><td class='form'>Own past rate</td><td class="edge">0.68</td><td class="bad">2.13</td><td class="edge">0.90</td><td class="edge">0.62</td></tr>
+  </table></div>
+  <p>Observed ÷ median. No form is useful in any state over time: every form forecasts Minnesota about ×2.6 too high and North Carolina ×1.6 too low. Types help Minnesota (0.23 → 0.38) and change nothing elsewhere. This is what D-091's drift term and the D-093 engine path address.</p>
+</section>
+
+<section>
+  <h2>What it means, and what it doesn't</h2>
+  <ul>
+  <li>With coded rules for a state's 20 largest places (tier 1), A + types transfers to every state we can test. National data alone (tier 0) works only in Minnesota.</li>
+  <li>The four states also informed the rule coding and the choice of types, so this is not a blind test. St. Paul (V5) and the V9 Oregon holdout are the clean checks and were not touched.</li>
+  <li>The fit moved: θ 0.200 per 1,000 lots (was 0.448), α 1.70, m_x 0.8 (was 0.4). The engine still runs on the old-row values; nothing was written to config.</li>
+  </ul>
+</section>
+
+<p class="foot">Source: reports/adu-place-types-checked/ (run at a40c09cf, offline, St. Paul excluded). Method: D-088 in docs/analysis_plan.md, with the 2026-11-15 rescoring note. Built by scripts/dev/adu_types_checked_page.py.</p>
+</div>
