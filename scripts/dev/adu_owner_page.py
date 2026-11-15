@@ -38,9 +38,13 @@ def ratio_chart(rows, label):
         return LW + (math.log(v) - lo) / (hi - lo) * (W - LW - 20)
 
     g = [f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="{esc(label)}">']
-    g.append(f'<rect x="{sx(0.5):.1f}" y="{top - 8}" width="{sx(2) - sx(0.5):.1f}" height="{h - 30 - top + 8}" class="band"/>')
+    g.append(
+        f'<rect x="{sx(0.5):.1f}" y="{top - 8}" width="{sx(2) - sx(0.5):.1f}" height="{h - 30 - top + 8}" class="band"/>'
+    )
     for t, s in ((1 / 16, "÷16"), (1 / 4, "÷4"), (0.5, "÷2"), (1, "×1"), (2, "×2"), (4, "×4"), (16, "×16")):
-        g.append(f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 8}" y2="{h - 30}" class="{"zero" if t == 1 else "grid"}"/>')
+        g.append(
+            f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 8}" y2="{h - 30}" class="{"zero" if t == 1 else "grid"}"/>'
+        )
         g.append(f'<text x="{sx(t):.1f}" y="{h - 14}" class="tick" text-anchor="middle">{s}</text>')
     for i, (name, a, p) in enumerate(rows):
         y = top + rh * i + rh / 2
@@ -48,7 +52,9 @@ def ratio_chart(rows, label):
         g.append(f'<line x1="{sx(a):.1f}" x2="{sx(p):.1f}" y1="{y}" y2="{y}" class="move"/>')
         g.append(f'<circle cx="{sx(a):.1f}" cy="{y}" r="5" class="pt-a"/>')
         g.append(f'<circle cx="{sx(p):.1f}" cy="{y}" r="5" class="pt-p"/>')
-    g.append(f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">observed ÷ predicted median (shaded: within ×2)</text>')
+    g.append(
+        f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">observed ÷ predicted median (shaded: within ×2)</text>'
+    )
     g.append("</svg>")
     return "".join(g)
 
@@ -57,7 +63,15 @@ def beta_chart():
     rows = []
     for fold in ["all", "without MN", "without NC", "without OH", "without TX", "without OR"]:
         r = fits[(fits.variant == "central") & (fits.fold == fold) & (fits.form == "A′")].iloc[0]
-        rows.append(("All places" if fold == "all" else fold.replace("without", "Without"), r.beta, r.beta_low, r.beta_high, fold == "all"))
+        rows.append(
+            (
+                "All places" if fold == "all" else fold.replace("without", "Without"),
+                r.beta,
+                r.beta_low,
+                r.beta_high,
+                fold == "all",
+            )
+        )
     r = fits[(fits.variant == "2016-20 vintage") & (fits.fold == "all")].iloc[0]
     rows.append(("2016–20 owner share", r.beta, r.beta_low, r.beta_high, False))
     w = summ["sensitivity_within_state"]
@@ -71,7 +85,9 @@ def beta_chart():
 
     g = [f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="beta_o by fit">']
     for t in (-1.25, -1, -0.75, -0.5, -0.25, 0, 0.25):
-        g.append(f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 6}" y2="{h - 30}" class="{"zero" if t == 0 else "grid"}"/>')
+        g.append(
+            f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top - 6}" y2="{h - 30}" class="{"zero" if t == 0 else "grid"}"/>'
+        )
         g.append(f'<text x="{sx(t):.1f}" y="{h - 14}" class="tick" text-anchor="middle">{t:+g}</text>')
     for i, (name, b, bl, bh, main) in enumerate(rows):
         y = top + rh * i + rh / 2
@@ -79,15 +95,22 @@ def beta_chart():
         g.append(f'<text x="{LW - 10}" y="{y + 4}" class="lab {cls}" text-anchor="end">{esc(name)}</text>')
         g.append(f'<line x1="{sx(bl):.1f}" x2="{sx(bh):.1f}" y1="{y}" y2="{y}" class="ci {cls}"/>')
         g.append(f'<circle cx="{sx(b):.1f}" cy="{y}" r="5" class="pt {cls}"/>')
-    g.append(f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">β_o per SD of owner share (90% interval)</text>')
+    g.append(
+        f'<text x="{W - 20}" y="{h - 1}" class="tick" text-anchor="end">β_o per SD of owner share (90% interval)</text>'
+    )
     g.append("</svg>")
     return "".join(g)
 
 
 t1 = tiers[tiers.tier == 1].set_index(["held_out", "form"])
-state_rows = [(STATE[s], t1.loc[(s, "A"), "obs_over_p50"], t1.loc[(s, "A′"), "obs_over_p50"]) for s in ("MN", "NC", "TX", "OR")]
+state_rows = [
+    (STATE[s], t1.loc[(s, "A"), "obs_over_p50"], t1.loc[(s, "A′"), "obs_over_p50"])
+    for s in ("MN", "NC", "TX", "OR")
+]
 tap = ta.pivot_table(index="name", columns="form", values="obs_over_p50")
-place_rows = [(n.replace(" city", "").replace(" town", ""), tap.loc[n, "A"], tap.loc[n, "A′"]) for n in tap.index]
+place_rows = [
+    (n.replace(" city", "").replace(" town", ""), tap.loc[n, "A"], tap.loc[n, "A′"]) for n in tap.index
+]
 
 fa = fits[(fits.variant == "central") & (fits.fold == "all")].set_index("form")
 A, P = fa.loc["A"], fa.loc["A′"]
@@ -100,9 +123,13 @@ for s in ("MN", "NC", "TX", "OR"):
         for f in ("A", "A′"):
             r = tiers[(tiers.held_out == s) & (tiers.tier == tier) & (tiers.form == f)].iloc[0]
             u = "useful" if r.useful else ""
-            cells.append(f'<td class="num">{r.p10:,.0f}–{r.p50:,.0f}–{r.p90:,.0f}</td><td class="num {u}">{r.obs_over_p50:.2f}</td>')
+            cells.append(
+                f'<td class="num">{r.p10:,.0f}–{r.p50:,.0f}–{r.p90:,.0f}</td><td class="num {u}">{r.obs_over_p50:.2f}</td>'
+            )
         obs = tiers[(tiers.held_out == s) & (tiers.tier == tier)].observed.iloc[0]
-        tier_rows.append(f"<tr><td>{STATE[s] if tier == 0 else ''}</td><td>{tier}</td><td class='num'>{obs:,.0f}</td>{''.join(cells)}</tr>")
+        tier_rows.append(
+            f"<tr><td>{STATE[s] if tier == 0 else ''}</td><td>{tier}</td><td class='num'>{obs:,.0f}</td>{''.join(cells)}</tr>"
+        )
 
 vc = summ["vintage_check"]
 ol = summ["outlook_pre1960"]
