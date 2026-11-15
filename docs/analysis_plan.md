@@ -6482,12 +6482,10 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Rollback stays as before:** the drift is off by default, σ = 0 gives D-090 exactly, and the wiring PR
     will keep the current engine path behind the same switch.
 
-### D-092 · 2026-11-15 · ADUs: the engine reads D-091's adopted outcome (own counts with drift as the no-reform rate)
-
 ### D-093 · 2026-11-15 · ADUs: the engine reads D-091's adopted outcome (own counts with drift as the no-reform rate)
 - **Status: built and run 2026-11-15, on Ben's go-ahead** ("Adopt it" on D-091's outcome, then "Wire it now").
-  D-090 and D-091 are on PRs #429 and #430, which are not in this branch's history; their entries join this
-  file when the stacks merge.
+  Numbered D-093 because missing middle's method took D-092. Stacked on #430 (D-091) after the two ADU stacks
+  were rebased into one line on 2026-11-15 (Ben: "Yes please rebase the open PRs").
 - **What changes in `scenarios/adu.py`:**
   - Where a place has an observed ADU rate, its no-reform hazard is persistence × drift (`own_rate_draws`):
     rate ~ Gamma(Y + 0.5, E) over the `adu_observed_years` years (Y the undercount-scaled count each draw
