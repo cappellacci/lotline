@@ -1,0 +1,204 @@
+[09:47:06] {
+ "fit_set": {
+  "places": 64,
+  "place_years": 491
+ },
+ "types": {
+  "merge": {
+   "core": "core",
+   "suburb": "suburb",
+   "town": "suburb"
+  },
+  "merge_notes": [
+   "town has fewer than 8 fit places in 3 states: merged into suburb"
+  ],
+  "fit_places_by_type": {
+   "core": 16,
+   "suburb": 48
+  },
+  "fit_places_by_raw_type": {
+   "core": 16,
+   "suburb": 48
+  },
+  "fit_states_by_type": {
+   "core": 5,
+   "suburb": 2
+  },
+  "state_by_type": {
+   "core": {
+    "MN": 2,
+    "NC": 6,
+    "OH": 1,
+    "OR": 4,
+    "TX": 3
+   },
+   "suburb": {
+    "MN": 41,
+    "NC": 7,
+    "OH": 0,
+    "OR": 0,
+    "TX": 0
+   }
+  },
+  "units_sources": {
+   "acs 2011-15": 64
+  },
+  "roll_towns_by_type": {
+   "suburb": 32,
+   "core": 1
+  },
+  "core_cities": [
+   "Minneapolis city",
+   "Rochester city",
+   "Asheville city",
+   "Charlotte city",
+   "Durham city",
+   "Greensboro city",
+   "Raleigh city",
+   "Wilmington city",
+   "Cincinnati city",
+   "Austin city",
+   "College Station city",
+   "San Antonio city",
+   "Bend city",
+   "Medford city",
+   "Portland city",
+   "Salem city"
+  ],
+  "sens_suburb_split_x2_median": 0.1180667023363652,
+  "sens_fit_places_by_type4": {
+   "suburb": 28,
+   "suburb_old": 20,
+   "core": 16
+  }
+ },
+ "sources": {
+  "fit_places_by_kind": {
+   "survey": 41,
+   "parser": 13,
+   "field": 10
+  },
+  "state_by_kind": {
+   "field": {
+    "MN": 0,
+    "NC": 3,
+    "OH": 0,
+    "OR": 4,
+    "TX": 3
+   },
+   "parser": {
+    "MN": 2,
+    "NC": 10,
+    "OH": 1,
+    "OR": 0,
+    "TX": 0
+   },
+   "survey": {
+    "MN": 41,
+    "NC": 0,
+    "OH": 0,
+    "OR": 0,
+    "TX": 0
+   }
+  }
+ }
+}
+[09:47:06] fits on 2016-2020 (test D), four forms
+[09:47:26]   A early: theta 0.5495/1,000 (0.345-1.000), alpha 3.263, beta +0.000, no types, m_o 0.3, m_x 1.0, loglik -603.21 (20s)
+[09:47:26]   A+P early: theta 0.0995/1,000 (0.065-0.159), alpha 1.612, beta +0.000, core +2.640 (+1.890, +3.454), town +0.000 (+0.000, +0.000), m_o 0.5, m_x 1.0, loglik -591.60 (17s)
+[09:49:29]   A′ early: theta 0.2046/1,000 (0.134-0.336), alpha 1.743, beta -1.645, no types, m_o 0.5, m_x 1.0, loglik -591.04 (142s)
+[09:49:29]   A′+P early: theta 0.1053/1,000 (0.070-0.169), alpha 1.454, beta -0.858, core +1.680 (+0.433, +2.773), town +0.000 (+0.000, +0.000), m_o 0.6, m_x 1.0, loglik -588.91 (19s)
+[09:49:29] fits on every year, four forms, all folds
+[09:49:58]   A all: theta 0.5030/1,000 (0.359-0.784), alpha 2.648, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1418.63 (29s)
+[09:49:58]   A+P all: theta 0.1997/1,000 (0.148-0.281), alpha 1.698, beta +0.000, core +1.839 (+1.191, +2.536), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1408.94 (25s)
+[09:54:01]   A′ all: theta 0.3791/1,000 (0.278-0.553), alpha 1.844, beta -0.782, no types, m_o 1.0, m_x 0.8, loglik -1411.50 (272s)
+[09:54:01]   A′+P all: theta 0.2210/1,000 (0.164-0.310), alpha 1.623, beta -0.271, core +1.446 (+0.512, +2.376), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1408.42 (28s)
+[09:54:01]   A without MN: theta 1.0667/1,000 (0.753-1.580), alpha 0.996, beta +0.000, no types, m_o 0.4, m_x 0.8, loglik -1176.68 (15s)
+[09:54:01]   A+P without MN: theta 0.2774/1,000 (0.209-0.379), alpha 0.618, beta +0.000, core +1.658 (+0.993, +2.284), town +0.000 (+0.000, +0.000), m_o 0.4, m_x 0.8, loglik -1170.64 (13s)
+[09:54:01]   A′ without MN: theta 0.4996/1,000 (0.366-0.706), alpha 0.770, beta -0.862, no types, m_o 0.4, m_x 0.8, loglik -1173.33 (143s)
+[09:54:01]   A′+P without MN: theta 0.2746/1,000 (0.207-0.374), alpha 0.610, beta -0.194, core +1.458 (+0.523, +2.280), town +0.000 (+0.000, +0.000), m_o 0.4, m_x 0.8, loglik -1170.46 (16s)
+[09:54:01]   A without NC: theta 0.3574/1,000 (0.234-0.577), alpha 3.322, beta +0.000, no types, m_o 1.0, m_x 1.0, loglik -979.22 (27s)
+[09:54:01]   A+P without NC: theta 0.1604/1,000 (0.108-0.250), alpha 2.295, beta +0.000, core +1.838 (+0.945, +2.866), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 1.0, loglik -973.74 (23s)
+[09:54:01]   A′ without NC: theta 0.3218/1,000 (0.214-0.512), alpha 2.611, beta -0.664, no types, m_o 1.0, m_x 1.0, loglik -975.90 (243s)
+[09:54:01]   A′+P without NC: theta 0.1701/1,000 (0.115-0.265), alpha 2.276, beta -0.108, core +1.673 (+0.378, +3.032), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 1.0, loglik -973.69 (26s)
+[09:54:01]   A without OH: theta 0.5067/1,000 (0.360-0.797), alpha 2.711, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1413.74 (31s)
+[09:54:01]   A+P without OH: theta 0.1998/1,000 (0.148-0.284), alpha 1.712, beta +0.000, core +1.889 (+1.226, +2.607), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1403.94 (26s)
+[09:54:49]   A′ without OH: theta 0.3841/1,000 (0.280-0.565), alpha 1.843, beta -0.811, no types, m_o 1.0, m_x 0.8, loglik -1406.37 (273s)
+[09:54:49]   A′+P without OH: theta 0.2237/1,000 (0.166-0.316), alpha 1.618, beta -0.301, core +1.456 (+0.512, +2.402), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1403.31 (29s)
+[09:54:49]   A without TX: theta 0.4910/1,000 (0.344-0.783), alpha 2.818, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1322.74 (30s)
+[09:54:49]   A+P without TX: theta 0.2005/1,000 (0.146-0.285), alpha 1.784, beta +0.000, core +1.931 (+1.226, +2.710), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1313.48 (25s)
+[09:55:23]   A′ without TX: theta 0.3886/1,000 (0.280-0.575), alpha 1.937, beta -0.810, no types, m_o 1.0, m_x 0.8, loglik -1315.96 (270s)
+[09:55:23]   A′+P without TX: theta 0.2245/1,000 (0.164-0.318), alpha 1.686, beta -0.298, core +1.508 (+0.531, +2.500), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1312.89 (28s)
+[09:55:23]   A without OR: theta 0.5773/1,000 (0.404-0.962), alpha 2.672, beta +0.000, no types, m_o 1.0, m_x 0.5, loglik -733.98 (30s)
+[09:55:23]   A+P without OR: theta 0.3025/1,000 (0.216-0.466), alpha 1.994, beta +0.000, core +1.561 (+0.798, +2.418), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.5, loglik -728.44 (25s)
+[09:55:57]   A′ without OR: theta 0.4811/1,000 (0.342-0.745), alpha 2.018, beta -0.635, no types, m_o 1.0, m_x 0.5, loglik -729.39 (265s)
+[09:55:57]   A′+P without OR: theta 0.3359/1,000 (0.240-0.511), alpha 1.907, beta -0.271, core +1.130 (+0.023, +2.247), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.5, loglik -727.99 (28s)
+[09:55:57]   A without place 2754880: theta 0.5103/1,000 (0.363-0.802), alpha 2.668, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1414.40 (30s)
+[09:55:57]   A+P without place 2754880: theta 0.1991/1,000 (0.148-0.281), alpha 1.643, beta +0.000, core +1.903 (+1.251, +2.606), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1404.23 (25s)
+[09:56:58]   A′ without place 2754880: theta 0.3861/1,000 (0.282-0.569), alpha 1.863, beta -0.776, no types, m_o 1.0, m_x 0.8, loglik -1407.48 (275s)
+[09:56:58]   A′+P without place 2754880: theta 0.2164/1,000 (0.161-0.305), alpha 1.585, beta -0.226, core +1.575 (+0.644, +2.505), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1403.85 (29s)
+[09:56:58]   A without place 3702140: theta 0.4506/1,000 (0.314-0.643), alpha 2.322, beta +0.000, no types, m_o 1.0, m_x 0.7, loglik -1332.62 (30s)
+[09:56:58]   A+P without place 3702140: theta 0.1991/1,000 (0.148-0.286), alpha 1.636, beta +0.000, core +1.602 (+0.951, +2.304), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1325.34 (26s)
+[09:58:36]   A′ without place 3702140: theta 0.3399/1,000 (0.251-0.505), alpha 1.718, beta -0.689, no types, m_o 1.0, m_x 0.8, loglik -1327.05 (276s)
+[09:58:36]   A′+P without place 3702140: theta 0.2203/1,000 (0.164-0.315), alpha 1.554, beta -0.275, core +1.205 (+0.286, +2.128), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1324.78 (30s)
+[09:58:36]   A without place 3710740: theta 0.5043/1,000 (0.358-0.790), alpha 2.720, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1392.16 (31s)
+[09:58:36]   A+P without place 3710740: theta 0.1936/1,000 (0.143-0.274), alpha 1.733, beta +0.000, core +1.870 (+1.210, +2.577), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1382.57 (26s)
+[09:59:17]   A′ without place 3710740: theta 0.3792/1,000 (0.276-0.557), alpha 1.905, beta -0.778, no types, m_o 1.0, m_x 0.8, loglik -1385.27 (275s)
+[09:59:17]   A′+P without place 3710740: theta 0.2137/1,000 (0.158-0.302), alpha 1.662, beta -0.255, core +1.497 (+0.544, +2.441), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1382.11 (29s)
+[09:59:17]   A without place 3711800: theta 0.5004/1,000 (0.355-0.785), alpha 2.720, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1403.49 (31s)
+[09:59:17]   A+P without place 3711800: theta 0.1865/1,000 (0.138-0.264), alpha 1.690, beta +0.000, core +1.908 (+1.252, +2.607), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1393.49 (26s)
+[09:59:57]   A′ without place 3711800: theta 0.3829/1,000 (0.279-0.561), alpha 1.898, beta -0.787, no types, m_o 1.0, m_x 0.8, loglik -1396.54 (275s)
+[09:59:57]   A′+P without place 3711800: theta 0.2027/1,000 (0.150-0.287), alpha 1.664, beta -0.165, core +1.646 (+0.593, +2.717), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1393.35 (29s)
+[09:59:57]   A without place 3712000: theta 0.4738/1,000 (0.336-0.722), alpha 2.750, beta +0.000, no types, m_o 1.0, m_x 0.9, loglik -1375.66 (30s)
+[09:59:57]   A+P without place 3712000: theta 0.1807/1,000 (0.134-0.252), alpha 1.698, beta +0.000, core +1.942 (+1.281, +2.656), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.9, loglik -1365.33 (25s)
+[10:00:31]   A′ without place 3712000: theta 0.3562/1,000 (0.259-0.509), alpha 1.890, beta -0.808, no types, m_o 1.0, m_x 0.9, loglik -1368.30 (274s)
+[10:00:31]   A′+P without place 3712000: theta 0.1996/1,000 (0.148-0.278), alpha 1.625, beta -0.264, core +1.558 (+0.614, +2.503), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.9, loglik -1364.83 (29s)
+[10:00:31]   A without place 3719000: theta 0.4993/1,000 (0.348-0.730), alpha 2.719, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1333.04 (31s)
+[10:00:31]   A+P without place 3719000: theta 0.1811/1,000 (0.133-0.274), alpha 1.743, beta +0.000, core +1.913 (+1.245, +2.637), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.9, loglik -1323.53 (26s)
+[10:01:28]   A′ without place 3719000: theta 0.3821/1,000 (0.262-0.545), alpha 1.904, beta -0.783, no types, m_o 1.0, m_x 0.8, loglik -1326.15 (276s)
+[10:01:28]   A′+P without place 3719000: theta 0.2007/1,000 (0.148-0.303), alpha 1.668, beta -0.270, core +1.522 (+0.568, +2.476), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.9, loglik -1323.02 (30s)
+[10:01:28]   A without place 3755000: theta 0.4993/1,000 (0.354-0.730), alpha 2.719, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1379.87 (31s)
+[10:01:28]   A+P without place 3755000: theta 0.2002/1,000 (0.147-0.280), alpha 1.748, beta +0.000, core +1.866 (+1.197, +2.591), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1370.41 (27s)
+[10:02:10]   A′ without place 3755000: theta 0.3814/1,000 (0.277-0.544), alpha 1.906, beta -0.780, no types, m_o 1.0, m_x 0.8, loglik -1372.99 (269s)
+[10:02:10]   A′+P without place 3755000: theta 0.2213/1,000 (0.163-0.310), alpha 1.672, beta -0.266, core +1.479 (+0.523, +2.435), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1369.91 (29s)
+[10:02:10]   A without place 3774440: theta 0.4712/1,000 (0.336-0.703), alpha 2.631, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1373.88 (30s)
+[10:02:10]   A+P without place 3774440: theta 0.2001/1,000 (0.147-0.280), alpha 1.741, beta +0.000, core +1.777 (+1.109, +2.501), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1365.17 (26s)
+[10:03:01]   A′ without place 3774440: theta 0.3739/1,000 (0.272-0.532), alpha 1.898, beta -0.751, no types, m_o 1.0, m_x 0.8, loglik -1367.67 (246s)
+[10:03:01]   A′+P without place 3774440: theta 0.2201/1,000 (0.162-0.308), alpha 1.672, beta -0.254, core +1.422 (+0.481, +2.362), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1364.72 (29s)
+[10:03:01]   A without place 4147000: theta 0.4792/1,000 (0.341-0.745), alpha 2.662, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1376.92 (31s)
+[10:03:01]   A+P without place 4147000: theta 0.2002/1,000 (0.147-0.283), alpha 1.750, beta +0.000, core +1.803 (+1.133, +2.529), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1368.01 (26s)
+[10:03:34]   A′ without place 4147000: theta 0.3722/1,000 (0.271-0.545), alpha 1.890, beta -0.757, no types, m_o 1.0, m_x 0.8, loglik -1370.37 (226s)
+[10:03:34]   A′+P without place 4147000: theta 0.2214/1,000 (0.163-0.312), alpha 1.674, beta -0.267, core +1.416 (+0.463, +2.371), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1367.51 (30s)
+[10:03:34]   A without place 4164900: theta 0.4874/1,000 (0.346-0.761), alpha 2.691, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1350.59 (30s)
+[10:03:34]   A+P without place 4164900: theta 0.2002/1,000 (0.147-0.284), alpha 1.756, beta +0.000, core +1.829 (+1.159, +2.556), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1341.48 (26s)
+[10:03:57]   A′ without place 4164900: theta 0.3745/1,000 (0.273-0.549), alpha 1.897, beta -0.766, no types, m_o 1.0, m_x 0.8, loglik -1343.88 (209s)
+[10:03:57]   A′+P without place 4164900: theta 0.2216/1,000 (0.163-0.313), alpha 1.679, beta -0.268, core +1.436 (+0.476, +2.397), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1340.98 (29s)
+[10:03:57]   A without place 4815976: theta 0.5079/1,000 (0.361-0.798), alpha 2.706, beta +0.000, no types, m_o 1.0, m_x 0.8, loglik -1402.14 (31s)
+[10:03:57]   A+P without place 4815976: theta 0.1997/1,000 (0.148-0.281), alpha 1.699, beta +0.000, core +1.894 (+1.233, +2.609), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1392.26 (26s)
+[10:04:27]   A′ without place 4815976: theta 0.3837/1,000 (0.281-0.560), alpha 1.817, beta -0.819, no types, m_o 1.0, m_x 0.8, loglik -1394.60 (184s)
+[10:04:27]   A′+P without place 4815976: theta 0.2246/1,000 (0.166-0.315), alpha 1.598, beta -0.313, core +1.443 (+0.501, +2.387), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1391.58 (27s)
+[10:06:22] sensitivity: four types, full fit and the data-tier folds
+[10:06:49]   A+P4 all: theta 0.1163/1,000 (0.087-0.161), alpha 1.518, beta +0.000, core +2.380 (+1.671, +3.107), suburb_old +1.023 (+0.294, +1.764), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1406.34 (27s)
+[10:06:54]   A′+P4 all: theta 0.1187/1,000 (0.089-0.164), alpha 1.514, beta -0.027, core +2.330 (+1.200, +3.452), suburb_old +1.005 (+0.201, +1.815), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1406.34 (32s)
+[10:06:54]   A+P4 without MN: theta 0.2180/1,000 (0.166-0.294), alpha 0.574, beta +0.000, core +1.899 (+1.209, +2.541), suburb_old +1.067 (-0.209, +2.789), town +0.000 (+0.000, +0.000), m_o 0.4, m_x 0.8, loglik -1169.71 (15s)
+[10:06:54]   A′+P4 without MN: theta 0.1881/1,000 (0.143-0.253), alpha 0.561, beta +0.365, core +2.452 (+1.007, +3.851), suburb_old +1.698 (-0.270, +3.834), town +0.000 (+0.000, +0.000), m_o 0.4, m_x 0.8, loglik -1169.44 (18s)
+[10:06:54]   A+P4 without NC: theta 0.0714/1,000 (0.049-0.109), alpha 1.927, beta +0.000, core +2.649 (+1.629, +3.707), suburb_old +1.272 (+0.316, +2.215), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 1.0, loglik -971.42 (24s)
+[10:06:54]   A′+P4 without NC: theta 0.0528/1,000 (0.036-0.080), alpha 1.926, beta +0.316, core +3.272 (+1.652, +4.000), suburb_old +1.503 (+0.449, +2.523), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 1.0, loglik -971.08 (27s)
+[10:06:54]   A+P4 without OH: theta 0.1164/1,000 (0.087-0.162), alpha 1.525, beta +0.000, core +2.430 (+1.710, +3.174), suburb_old +1.024 (+0.293, +1.766), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1401.35 (27s)
+[10:07:06]   A′+P4 without OH: theta 0.1216/1,000 (0.091-0.170), alpha 1.514, beta -0.061, core +2.320 (+1.179, +3.457), suburb_old +0.982 (+0.176, +1.795), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1401.33 (29s)
+[10:07:06]   A+P4 without TX: theta 0.1166/1,000 (0.086-0.162), alpha 1.583, beta +0.000, core +2.473 (+1.715, +3.270), suburb_old +1.024 (+0.281, +1.778), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1310.97 (24s)
+[10:07:11]   A′+P4 without TX: theta 0.1214/1,000 (0.090-0.169), alpha 1.573, beta -0.055, core +2.374 (+1.203, +3.549), suburb_old +0.985 (+0.166, +1.813), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1310.96 (26s)
+[10:07:11]   A+P4 without OR: theta 0.1774/1,000 (0.129-0.264), alpha 1.802, beta +0.000, core +2.095 (+1.272, +2.972), suburb_old +1.013 (+0.223, +1.815), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.5, loglik -726.26 (21s)
+[10:07:13]   A′+P4 without OR: theta 0.1828/1,000 (0.132-0.272), alpha 1.794, beta -0.042, core +2.014 (+0.709, +3.321), suburb_old +0.985 (+0.119, +1.858), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.5, loglik -726.25 (24s)
+[10:08:20] part 1
+[10:08:20]   A: {'state': 0.32072875789108335, 'type': 0.3577563877682486, 'source': 0.3190854355713404, 'all three': 0.40113579833161295, 'state + type': 0.4008548946208253, 'state + source': 0.3473016389705334} -> types matter
+[10:08:21]   A′: {'state': 0.17546911508604632, 'type': 0.10483941124531714, 'source': 0.11925631715359311, 'all three': 0.1894743670935186, 'state + type': 0.18678630072723953, 'state + source': 0.18137905856972253} -> states differ
+[10:08:21] test D
+[10:08:27] data tiers
+[10:12:11] held-out log scores (tier 1)
+[10:14:12] tests A and B
+[10:14:17]   part 1 A: {'state': 0.32072875789108335, 'type': 0.35775638776824836, 'source': 0.31908543557134034, 'all three': 0.40113579833161306, 'state + type': 0.4008548946208253, 'state + source': 0.3473016389705334} -> types matter
+[10:14:17]   part 1 A′: {'state': 0.17546911508604632, 'type': 0.10483941124531718, 'source': 0.11925631715359311, 'all three': 0.18947436709351861, 'state + type': 0.18678630072723942, 'state + source': 0.18137905856972256} -> states differ
+[10:14:17] A vs A+P: {'types': False, 'reason': 'fewer of tests A-B passed (1 vs 2)'}
+[10:14:17] A′ vs A′+P: {'types': True, 'reason': 'a lower tier; tests A-B 1 vs 1; test D +2.4 (SE 3.4)'}
+[10:14:17] done

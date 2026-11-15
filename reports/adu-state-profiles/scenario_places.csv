@@ -1,0 +1,3620 @@
+geoid,name,eligible_parcels,type,outside,state
+27001,Aitkin County Unincorporated Area,10895.0,town,True,MN
+2700172,Ada city,680.0,town,True,MN
+2700190,Adams city,330.0,town,True,MN
+2700262,Adrian city,505.0,town,True,MN
+2700316,Afton city,1156.0,suburb,True,MN
+2700337376,Linwood township,2316.0,suburb,False,MN
+2700460,Aitkin city,642.0,town,True,MN
+2700496,Akeley city,161.0,town,True,MN
+27005,Becker County Unincorporated Area,8938.0,town,True,MN
+2700622,Albany city,878.0,suburb,True,MN
+2700676,Alberta city,47.0,town,True,MN
+2700694,Albert Lea city,6069.0,town,True,MN
+2700705086,Bemidji township,1055.0,town,True,MN
+2700722886,Frohn township,610.0,town,True,MN
+2700730,Albertville city,2536.0,suburb,False,MN
+2700746906,Northern township,1463.0,town,True,MN
+2700764291,Taylor township,89.0,town,True,MN
+2700764390,Ten Lake township,457.0,town,True,MN
+2700765812,Turtle River township,509.0,town,True,MN
+2700892,Aldrich city,29.0,town,True,MN
+27009,Benton County Unincorporated Area,4044.0,suburb,True,MN
+2700928,Alexandria city,4101.0,town,True,MN
+27011,Big Stone County Unincorporated Area,1138.0,town,True,MN
+2701162,Alpha city,88.0,town,True,MN
+2701234,Altura city,165.0,town,True,MN
+2701252,Alvarado city,84.0,town,True,MN
+27013,Blue Earth County Part Unincorporated Area,4170.0,suburb,True,MN
+2701324,Amboy city,235.0,suburb,True,MN
+2701337052,Lime township,327.0,suburb,True,MN
+2701339896,Mankato township,635.0,suburb,False,MN
+2701486,Andover city,11571.0,suburb,False,MN
+27015,Brown County Unincorporated Area,2353.0,town,True,MN
+2701684,Annandale city,1161.0,suburb,True,MN
+27017,Carlton County Part Unincorporated Area,5248.0,suburb,True,MN
+2701720,Anoka city,4776.0,suburb,True,MN
+2701764768,Thomson township,2107.0,suburb,False,MN
+2701864,Appleton city,497.0,town,True,MN
+27019,Carver County Unincorporated Area,971.0,suburb,True,MN
+2701900,Apple Valley city,10977.0,suburb,False,MN
+2701905266,Benton township,178.0,suburb,True,MN
+2701909406,Camden township,216.0,suburb,True,MN
+2701914482,Dahlgren township,387.0,suburb,True,MN
+2701926918,Hancock township,61.0,suburb,True,MN
+2701929726,Hollywood township,227.0,suburb,True,MN
+2701935108,Laketown township,529.0,suburb,False,MN
+2701958486,San Francisco township,276.0,suburb,True,MN
+2701967450,Waconia township,335.0,suburb,True,MN
+2701968566,Watertown township,350.0,suburb,False,MN
+2701972,Arco city,31.0,town,True,MN
+2701972130,Young America township,182.0,suburb,True,MN
+2702026,Arden Hills city,2436.0,suburb,False,MN
+27021,Cass County Part Unincorporated Area,17369.0,town,True,MN
+2702101738,Ansel township,39.0,town,True,MN
+2702108596,Bungo township,64.0,town,True,MN
+2702134,Argyle city,217.0,town,True,MN
+2702140076,Maple township,203.0,town,True,MN
+2702152,Arlington city,682.0,town,True,MN
+27023,Chippewa County Unincorporated Area,1154.0,town,True,MN
+2702422,Ashby city,145.0,town,True,MN
+27025,Chisago County Unincorporated Area,6427.0,suburb,True,MN
+2702536440,Lent township,1151.0,suburb,True,MN
+2702548,Askov city,106.0,town,True,MN
+2702692,Atwater city,357.0,town,True,MN
+27027,Clay County Unincorporated Area,2912.0,suburb,True,MN
+2702728,Audubon city,170.0,town,True,MN
+2702872,Aurora city,897.0,suburb,True,MN
+2702908,Austin city,9307.0,town,True,MN
+2702913150,Copley township,320.0,town,True,MN
+2703052,Avoca city,75.0,town,True,MN
+2703070,Avon city,627.0,suburb,True,MN
+27031,Cook County Unincorporated Area,4632.0,town,True,MN
+2703106,Babbitt city,873.0,suburb,True,MN
+2703124,Backus city,121.0,town,True,MN
+2703160,Badger city,126.0,town,True,MN
+2703196,Bagley city,545.0,town,True,MN
+2703250,Balaton city,254.0,town,True,MN
+27033,Cottonwood County Unincorporated Area,1331.0,town,True,MN
+27035,Crow Wing County Part Unincorporated Area,16631.0,town,True,MN
+2703514122,Crow Wing township,685.0,town,True,MN
+2703531202,Irondale township,525.0,town,True,MN
+2703574,Barnesville city,1025.0,suburb,True,MN
+2703628,Barnum city,147.0,suburb,True,MN
+2703682,Barrett city,166.0,town,True,MN
+2703710306,Castle Rock township,470.0,suburb,True,MN
+2703716228,Douglas township,249.0,suburb,True,MN
+2703718,Barry city,7.0,town,True,MN
+2703719376,Empire township,896.0,suburb,False,MN
+2703719871,Eureka township,506.0,suburb,True,MN
+2703725802,Greenvale township,271.0,suburb,True,MN
+2703726882,Hampton township,278.0,suburb,True,MN
+2703740724,Marshan township,391.0,suburb,True,MN
+2703746330,Nininger township,342.0,suburb,True,MN
+2703753116,Randolph township,395.0,suburb,True,MN
+2703753260,Ravenna township,953.0,suburb,False,MN
+2703759008,Sciota township,157.0,suburb,True,MN
+2703766820,Vermillion township,402.0,suburb,True,MN
+2703768530,Waterford township,206.0,suburb,True,MN
+27039,Dodge County Unincorporated Area,2841.0,suburb,True,MN
+2703970,Battle Lake city,356.0,town,True,MN
+2704024,Baudette city,392.0,town,True,MN
+2704042,Baxter city,2533.0,town,True,MN
+27041,Douglas County Part Unincorporated Area,10431.0,town,True,MN
+2704100946,Alexandria township,1222.0,town,True,MN
+2704114,Bayport city,892.0,suburb,False,MN
+2704204,Beardsley city,93.0,town,True,MN
+27043,Faribault County Unincorporated Area,2126.0,town,True,MN
+2704456,Beaver Bay city,87.0,town,True,MN
+2704492,Beaver Creek city,103.0,suburb,True,MN
+27045,Fillmore County Unincorporated Area,2271.0,suburb,True,MN
+2704618,Becker city,1503.0,suburb,True,MN
+27047,Freeborn County Unincorporated Area,4840.0,town,True,MN
+2704762,Belgrade city,274.0,suburb,True,MN
+2704798,Bellechester city,68.0,town,True,MN
+2704834,Belle Plaine city,2354.0,suburb,True,MN
+27049,Goodhue County Unincorporated Area,5574.0,town,True,MN
+2704960,Bellingham city,72.0,town,True,MN
+2705014,Beltrami city,35.0,suburb,True,MN
+2705050,Belview city,125.0,town,True,MN
+2705068,Bemidji city,3419.0,town,True,MN
+2705135882,Lawrence township,43.0,town,True,MN
+2705212,Benson city,1116.0,town,True,MN
+2705321965,Fort Snelling UT,2.0,suburb,True,MN
+2705327476,Hassan township,793.0,suburb,True,MN
+2705482,Bertha city,181.0,town,True,MN
+27055,Houston County Unincorporated Area,2341.0,suburb,True,MN
+2705533884,La Crescent township,482.0,suburb,False,MN
+2705554,Bethel city,189.0,suburb,True,MN
+2705644,Bigelow city,140.0,town,True,MN
+2705680,Big Falls city,96.0,town,True,MN
+2705698,Bigfork city,59.0,town,True,MN
+2705700514,Akeley township,434.0,town,True,MN
+2705703178,Badoura township,112.0,town,True,MN
+2705711682,Clay township,86.0,town,True,MN
+2705712232,Clover township,161.0,town,True,MN
+2705728340,Helga township,573.0,town,True,MN
+2705728556,Henrietta township,733.0,town,True,MN
+2705740022,Mantrap township,567.0,town,True,MN
+2705752,Big Lake city,3858.0,suburb,True,MN
+2705755132,Rockwood township,199.0,town,True,MN
+2705764804,Thorpe township,70.0,town,True,MN
+2705765038,Todd township,655.0,town,True,MN
+2705896,Bingham Lake city,49.0,town,True,MN
+27059,Isanti County Part Unincorporated Area,8301.0,suburb,True,MN
+2705902602,Athens township,750.0,suburb,True,MN
+2706058,Birchwood Village city,392.0,suburb,True,MN
+2706076,Bird Island city,519.0,town,True,MN
+27061,Itasca County Unincorporated Area,13925.0,town,True,MN
+2706112,Biscay city,55.0,town,True,MN
+2706148,Biwabik city,541.0,suburb,True,MN
+2706256,Blackduck city,153.0,town,True,MN
+27063,Jackson County Unincorporated Area,1913.0,town,True,MN
+2706382,Blaine city,24136.0,suburb,False,MN
+2706490,Blomkest city,85.0,town,True,MN
+2706502296,Arthur township,627.0,town,True,MN
+2706508344,Brunswick township,518.0,town,True,MN
+2706512754,Comfort township,356.0,town,True,MN
+2706521644,Ford township,132.0,town,True,MN
+2706525406,Grass Lake township,362.0,town,True,MN
+2706527782,Hay Brook township,97.0,town,True,MN
+2706532300,Kanabec township,301.0,town,True,MN
+2706533560,Knife Lake township,555.0,town,True,MN
+2706533776,Kroschel township,151.0,town,True,MN
+2706550002,Peace township,540.0,town,True,MN
+2706551874,Pomroy township,192.0,town,True,MN
+2706561348,South Fork township,267.0,town,True,MN
+2706569988,Whited township,381.0,town,True,MN
+2706580,Blooming Prairie city,794.0,town,True,MN
+2706616,Bloomington city,21279.0,suburb,True,MN
+2706688,Blue Earth city,1142.0,town,True,MN
+27067,Kandiyohi County Part Unincorporated Area,7563.0,town,True,MN
+2706757076,St. Johns township,116.0,town,True,MN
+2706778,Bluffton city,82.0,town,True,MN
+27069,Kittson County Unincorporated Area,1041.0,town,True,MN
+2707048,Bovey city,236.0,town,True,MN
+2707066,Bowlus city,176.0,town,True,MN
+27071,Koochiching County Unincorporated Area,3031.0,town,True,MN
+2707138,Boyd city,109.0,town,True,MN
+2707282,Braham city,592.0,suburb,True,MN
+27073,Lac Qui Parle County Unincorporated Area,1503.0,town,True,MN
+2707300,Brainerd city,3935.0,town,True,MN
+2707336,Brandon city,135.0,town,True,MN
+2707462,Breckenridge city,998.0,town,True,MN
+27075,Lake County Unincorporated Area,2184.0,town,True,MN
+2707516,Breezy Point city,1549.0,town,True,MN
+2707660,Brewster city,145.0,town,True,MN
+2707678,Bricelyn city,195.0,town,True,MN
+27077,Lake of the Woods County Unincorporated Area,1800.0,town,True,MN
+27079,Le Sueur County Unincorporated Area,5192.0,suburb,True,MN
+2707948,Brooklyn Center city,7300.0,suburb,True,MN
+2707966,Brooklyn Park city,17439.0,suburb,True,MN
+2707984,Brook Park city,44.0,town,True,MN
+2708056,Brookston city,85.0,suburb,True,MN
+2708092,Brooten city,298.0,suburb,True,MN
+27081,Lincoln County Unincorporated Area,1305.0,town,True,MN
+2708110,Browerville city,331.0,town,True,MN
+2708164,Brownsdale city,308.0,town,True,MN
+2708200,Browns Valley city,207.0,town,True,MN
+2708218,Brownsville city,251.0,suburb,True,MN
+2708254,Brownton city,314.0,town,True,MN
+2708290,Bruno city,19.0,town,True,MN
+27083,Lyon County Unincorporated Area,1906.0,town,True,MN
+2708416,Buckman city,131.0,town,True,MN
+2708452,Buffalo city,5481.0,suburb,False,MN
+2708488,Buffalo Lake city,302.0,town,True,MN
+27085,McLeod County Unincorporated Area,3362.0,town,True,MN
+2708524,Buhl city,564.0,suburb,True,MN
+2708794,Burnsville city,11320.0,suburb,False,MN
+27089,Marshall County Part Unincorporated Area,2008.0,town,True,MN
+2708902,Burtrum city,39.0,town,True,MN
+2708925046,Grand Plain township,31.0,town,True,MN
+2708992,Butterfield city,170.0,town,True,MN
+27091,Martin County Unincorporated Area,2475.0,town,True,MN
+2709154,Byron city,2399.0,suburb,False,MN
+2709226,Caledonia city,1165.0,core,True,MN
+2709280,Callaway city,81.0,town,True,MN
+27093,Meeker County Unincorporated Area,5291.0,town,True,MN
+2709316,Calumet city,107.0,town,True,MN
+2709370,Cambridge city,3058.0,suburb,True,MN
+27095,Mille Lacs County Part Unincorporated Area,4350.0,suburb,True,MN
+2709525586,Greenbush township,400.0,suburb,True,MN
+2709552540,Princeton township,826.0,suburb,True,MN
+2709604,Canby city,662.0,town,True,MN
+27097,Morrison County Unincorporated Area,5965.0,town,True,MN
+2709730,Cannon Falls city,1324.0,town,True,MN
+2709802,Canton city,174.0,suburb,True,MN
+27099,Mower County Unincorporated Area,3945.0,town,True,MN
+2709964,Carlos city,187.0,town,True,MN
+2710018,Carlton city,252.0,suburb,True,MN
+27101,Murray County Unincorporated Area,2053.0,town,True,MN
+2710144,Carver city,2294.0,suburb,False,MN
+2710252,Cass Lake city,167.0,town,True,MN
+27103,Nicollet County Unincorporated Area,2197.0,suburb,True,MN
+2710468,Cedar Mills city,24.0,town,True,MN
+27105,Nobles County Unincorporated Area,1660.0,town,True,MN
+2710648,Centerville city,1464.0,suburb,False,MN
+27107,Norman County Unincorporated Area,1282.0,town,True,MN
+2710792,Ceylon city,133.0,town,True,MN
+2710846,Champlin city,6850.0,suburb,False,MN
+27109,Olmsted County Part Unincorporated Area,4258.0,suburb,False,MN
+2710900,Chandler city,111.0,town,True,MN
+2710910180,Cascade township,1168.0,suburb,False,MN
+2710916282,Dover township,75.0,suburb,True,MN
+2710918,Chanhassen city,9611.0,suburb,False,MN
+2710918962,Elmira township,82.0,suburb,True,MN
+2710920636,Farmington township,63.0,suburb,True,MN
+2710927692,Haverhill township,480.0,suburb,True,MN
+2710928880,High Forest township,274.0,suburb,True,MN
+2710932282,Kalmar township,352.0,suburb,True,MN
+2710945610,New Haven township,423.0,suburb,True,MN
+2710948526,Orion township,139.0,suburb,True,MN
+2710948616,Oronoco township,981.0,suburb,False,MN
+2710951550,Pleasant Grove township,229.0,suburb,True,MN
+2710954898,Rochester township,832.0,suburb,True,MN
+2710954988,Rock Dell township,144.0,suburb,True,MN
+2710958234,Salem township,327.0,suburb,True,MN
+2710967270,Viola township,131.0,suburb,True,MN
+2710972,Chaska city,8503.0,suburb,False,MN
+2711008,Chatfield city,1125.0,suburb,True,MN
+2711102836,Aurdal township,675.0,town,True,MN
+2711108938,Buse township,182.0,town,True,MN
+2711112106,Clitherall township,249.0,town,True,MN
+2711112844,Compton township,216.0,town,True,MN
+2711114644,Dane Prairie township,362.0,town,True,MN
+2711117162,Dunn township,478.0,town,True,MN
+2711120024,Everts township,463.0,town,True,MN
+2711120924,Fergus Falls township,303.0,town,True,MN
+2711123840,Girard township,385.0,town,True,MN
+2711128538,Henning township,107.0,town,True,MN
+2711146240,Nidaros township,159.0,town,True,MN
+2711148742,Orwell township,41.0,town,True,MN
+2711148850,Oscar township,60.0,town,True,MN
+2711150110,Pelican township,210.0,town,True,MN
+2711150488,Perham township,420.0,town,True,MN
+2711156320,Rush Lake township,581.0,town,True,MN
+2711158864,Scambler township,280.0,town,True,MN
+2711163688,Sverdrup township,250.0,town,True,MN
+2711169430,Western township,29.0,town,True,MN
+2711296,Chickamaw Beach city,149.0,town,True,MN
+2711346510,Norden township,144.0,town,True,MN
+2711346762,North township,222.0,town,True,MN
+2711347590,Numedal township,38.0,town,True,MN
+2711350,Chisago City city,2142.0,suburb,True,MN
+2711351802,Polk Centre township,21.0,town,True,MN
+2711355060,Rocksbury township,346.0,town,True,MN
+2711358342,Sanders township,96.0,town,True,MN
+2711386,Chisholm city,2223.0,suburb,True,MN
+2711440,Chokio city,186.0,town,True,MN
+2711494,Circle Pines city,1919.0,suburb,False,MN
+27115,Pine County Part Unincorporated Area,722.0,town,True,MN
+2711502224,Arna township,252.0,town,True,MN
+2711503736,Barry township,227.0,town,True,MN
+2711505986,Birch Creek township,122.0,town,True,MN
+2711507552,Bremen township,190.0,town,True,MN
+2711508002,Brook Park township,207.0,town,True,MN
+2711511098,Chengwatana township,518.0,town,True,MN
+2711512268,Clover township,222.0,town,True,MN
+2711513942,Crosby township,44.0,town,True,MN
+2711514680,Danforth township,87.0,town,True,MN
+2711515598,Dell Grove township,442.0,town,True,MN
+2711521140,Finlayson township,238.0,town,True,MN
+2711529312,Hinckley township,278.0,town,True,MN
+2711532930,Kerrick township,159.0,town,True,MN
+2711532984,Kettle River township,326.0,town,True,MN
+2711543486,Mission Creek township,202.0,town,True,MN
+2711544764,Munch township,178.0,town,True,MN
+2711545484,New Dosey township,176.0,town,True,MN
+2711546132,Nickerson township,150.0,town,True,MN
+2711546618,Norman township,219.0,town,True,MN
+2711548,Clara City city,524.0,town,True,MN
+2711548148,Ogema township,234.0,town,True,MN
+2711549660,Park township,55.0,town,True,MN
+2711549876,Partridge township,310.0,town,True,MN
+2711551082,Pine City township,659.0,town,True,MN
+2711551226,Pine Lake township,486.0,town,True,MN
+2711551784,Pokegama township,1237.0,town,True,MN
+2711556194,Royalton township,352.0,town,True,MN
+2711558414,Sandstone township,356.0,town,True,MN
+2711563238,Sturgeon Lake township,146.0,town,True,MN
+2711566,Claremont city,160.0,suburb,True,MN
+2711570780,Windemere township,1112.0,town,True,MN
+2711602,Clarissa city,256.0,town,True,MN
+2711656,Clarkfield city,353.0,town,True,MN
+2711674,Clarks Grove city,203.0,town,True,MN
+27117,Pipestone County Unincorporated Area,591.0,town,True,MN
+2711746,Clearbrook city,211.0,town,True,MN
+2711764,Clear Lake city,320.0,suburb,True,MN
+2711800,Clearwater city,686.0,suburb,True,MN
+2711836,Clements city,61.0,town,True,MN
+2711872,Cleveland city,208.0,suburb,True,MN
+27119,Polk County Unincorporated Area,4613.0,suburb,True,MN
+2711980,Clinton city,146.0,town,True,MN
+2712088,Clitherall city,56.0,town,True,MN
+27121,Pope County Unincorporated Area,674.0,town,True,MN
+2712124092,Glenwood township,511.0,town,True,MN
+2712136764,Leven township,188.0,town,True,MN
+2712143342,Minnewaska township,242.0,town,True,MN
+2712153854,Reno township,130.0,town,True,MN
+2712155240,Rolling Forks township,26.0,town,True,MN
+2712160,Cloquet city,4035.0,suburb,True,MN
+2712167702,Walden township,47.0,town,True,MN
+2712169646,Westport township,82.0,town,True,MN
+2712169952,White Bear Lake township,196.0,town,True,MN
+2712369916,White Bear township,3430.0,suburb,False,MN
+2712376,Coates city,59.0,suburb,True,MN
+2712412,Cohasset city,1014.0,town,True,MN
+2712430,Cokato city,831.0,suburb,True,MN
+2712484,Cold Spring city,1410.0,suburb,True,MN
+2712502,Coleraine city,655.0,town,True,MN
+2712664,Cologne city,777.0,suburb,True,MN
+27127,Redwood County Unincorporated Area,2154.0,town,True,MN
+2712700,Columbia Heights city,6538.0,suburb,True,MN
+2712718,Columbus city,1661.0,suburb,False,MN
+2712772,Comfrey city,167.0,town,True,MN
+27129,Renville County Unincorporated Area,1267.0,town,True,MN
+2713006,Cook city,307.0,suburb,True,MN
+27131,Rice County Part Unincorporated Area,4945.0,town,True,MN
+2713107714,Bridgewater township,643.0,town,True,MN
+2713114,Coon Rapids city,20761.0,suburb,True,MN
+2713168,Corcoran city,2813.0,suburb,False,MN
+27133,Rock County Unincorporated Area,1203.0,suburb,True,MN
+2713384,Correll city,10.0,town,True,MN
+2713420,Cosmos city,222.0,town,True,MN
+2713456,Cottage Grove city,12276.0,suburb,False,MN
+2713510414,Cedarbend township,50.0,town,True,MN
+2713520492,Falun township,99.0,town,True,MN
+2713531634,Jadis township,199.0,town,True,MN
+2713534010,Lake township,626.0,town,True,MN
+2713539644,Malung township,170.0,town,True,MN
+2713544080,Moranville township,268.0,town,True,MN
+2713555942,Ross township,121.0,town,True,MN
+2713562158,Spruce township,189.0,town,True,MN
+2713562338,Stafford township,95.0,town,True,MN
+2713564,Cottonwood city,393.0,town,True,MN
+2713582,Courtland city,307.0,suburb,True,MN
+27137,St. Louis County Part Unincorporated Area,17689.0,suburb,True,MN
+2713708,Credit River,2023.0,suburb,True,MN
+2713709784,Canosia township,987.0,suburb,True,MN
+2713717018,Duluth township,943.0,suburb,True,MN
+2713724218,Gnesen township,847.0,suburb,False,MN
+2713725928,Greenwood township,267.0,suburb,True,MN
+2713735234,Lakewood township,1012.0,suburb,True,MN
+2713742056,Midway township,640.0,suburb,False,MN
+2713754060,Rice Lake city,1634.0,suburb,False,MN
+2713780,Cromwell city,103.0,suburb,True,MN
+2713870,Crookston city,2189.0,core,True,MN
+27139,Scott County Unincorporated Area,212.0,suburb,True,MN
+2713904852,Belle Plaine township,220.0,suburb,True,MN
+2713906418,Blakeley township,128.0,suburb,True,MN
+2713910450,Cedar Lake township,1025.0,suburb,True,MN
+2713913726,Credit River township,1820.0,suburb,True,MN
+2713924,Crosby city,809.0,town,True,MN
+2713928322,Helena township,581.0,suburb,True,MN
+2713931580,Jackson township,230.0,suburb,True,MN
+2713938294,Louisville township,429.0,suburb,True,MN
+2713945754,New Market township,1257.0,suburb,False,MN
+2713957184,St. Lawrence township,163.0,suburb,True,MN
+2713958324,Sand Creek township,432.0,suburb,True,MN
+2713961978,Spring Lake township,1433.0,suburb,True,MN
+2713978,Crosslake city,2676.0,town,True,MN
+27141,Sherburne County Part Unincorporated Area,12985.0,suburb,False,MN
+2714104636,Becker township,1779.0,suburb,False,MN
+2714158,Crystal city,7375.0,suburb,True,MN
+27143,Sibley County Unincorporated Area,2597.0,town,True,MN
+2714320,Currie city,126.0,town,True,MN
+2714428,Cuyuna city,164.0,town,True,MN
+2714446,Cyrus city,128.0,town,True,MN
+27145,Stearns County Part Unincorporated Area,4471.0,suburb,True,MN
+2714500640,Albany township,228.0,suburb,True,MN
+2714502530,Ashley township,44.0,suburb,True,MN
+2714503088,Avon township,700.0,suburb,True,MN
+2714518,Dakota city,165.0,town,True,MN
+2714520294,Fair Haven township,557.0,suburb,False,MN
+2714520600,Farming township,213.0,suburb,True,MN
+2714526090,Grove township,83.0,suburb,True,MN
+2714536656,Le Sauk township,581.0,suburb,False,MN
+2714538780,Lynden township,710.0,suburb,False,MN
+2714539518,Maine Prairie township,615.0,suburb,True,MN
+2714541588,Melrose township,184.0,suburb,True,MN
+2714544800,Munson township,540.0,suburb,True,MN
+2714547644,Oak township,117.0,suburb,True,MN
+2714549984,Paynesville township,673.0,suburb,True,MN
+2714553314,Raymond township,27.0,suburb,True,MN
+2714557148,St. Joseph township,316.0,suburb,True,MN
+2714558666,Sauk Centre township,364.0,suburb,True,MN
+2714567630,Wakefield township,1064.0,suburb,False,MN
+2714572256,Zion township,36.0,suburb,True,MN
+2714626,Dalton city,105.0,town,True,MN
+27147,Steele County Unincorporated Area,1991.0,town,True,MN
+2714716,Danube city,211.0,town,True,MN
+2714734,Danvers city,66.0,town,True,MN
+2714770,Darfur city,60.0,town,True,MN
+2714842,Darwin city,121.0,town,True,MN
+2714878,Dassel city,414.0,town,True,MN
+27149,Stevens County Part Unincorporated Area,842.0,town,True,MN
+2714929438,Hodges township,100.0,town,True,MN
+2714963724,Swan Lake township,120.0,town,True,MN
+2714968,Dawson city,555.0,town,True,MN
+2715022,Dayton city,3425.0,suburb,True,MN
+27151,Swift County Unincorporated Area,1592.0,town,True,MN
+2715148,Deephaven city,1377.0,suburb,True,MN
+2715184,Deer Creek city,145.0,town,True,MN
+27153,Todd County Part Unincorporated Area,6654.0,town,True,MN
+2715305500,Bertha township,131.0,town,True,MN
+2715308272,Bruce township,230.0,town,True,MN
+2715310,Deer River city,222.0,town,True,MN
+2715326018,Grey Eagle township,513.0,town,True,MN
+2715346,Deerwood city,196.0,town,True,MN
+2715363058,Stowe Prairie township,164.0,town,True,MN
+2715418,De Graff city,52.0,town,True,MN
+2715454,Delano city,2660.0,suburb,True,MN
+2715472,Delavan city,79.0,town,True,MN
+27155,Traverse County Unincorporated Area,661.0,town,True,MN
+2715544,Delhi city,27.0,town,True,MN
+2715616,Dellwood city,458.0,suburb,True,MN
+27157,Wabasha County Unincorporated Area,2761.0,suburb,True,MN
+2715724,Dent city,85.0,town,True,MN
+2715832,Detroit Lakes city,3363.0,town,True,MN
+2715886,Dexter city,177.0,town,True,MN
+27159,Wadena County Unincorporated Area,2928.0,town,True,MN
+2715976,Dilworth city,1426.0,suburb,True,MN
+2715994,Dodge Center city,923.0,suburb,True,MN
+2716084,Donnelly city,142.0,town,True,MN
+27161,Waseca County Unincorporated Area,1886.0,town,True,MN
+2716264,Dover city,302.0,suburb,True,MN
+2716300,Dovray city,23.0,town,True,MN
+2716304132,Baytown township,822.0,suburb,True,MN
+2716315688,Denmark township,662.0,suburb,False,MN
+2716325982,Grey Cloud Island township,124.0,suburb,True,MN
+2716341120,May township,1223.0,suburb,True,MN
+2716362842,Stillwater township,773.0,suburb,True,MN
+2716369520,West Lakeland township,1412.0,suburb,True,MN
+27165,Watonwan County Unincorporated Area,1515.0,town,True,MN
+27167,Wilkin County Unincorporated Area,1030.0,town,True,MN
+27169,Winona County Part Unincorporated Area,2106.0,town,True,MN
+2716929222,Hillsdale township,68.0,town,True,MN
+2716958558,Saratoga township,99.0,town,True,MN
+2716968188,Warren township,93.0,town,True,MN
+2716970690,Wilson township,382.0,town,True,MN
+2717000,Duluth city,28251.0,core,True,MN
+2717090,Dumont city,56.0,town,True,MN
+27171,Wright County Part Unincorporated Area,10011.0,suburb,False,MN
+2717113222,Corinna township,1195.0,suburb,False,MN
+2717126,Dundas city,660.0,town,True,MN
+2717141966,Middleville township,297.0,suburb,True,MN
+2717144,Dundee city,35.0,town,True,MN
+2717162878,Stockholm township,269.0,suburb,True,MN
+2717180,Dunnell city,146.0,town,True,MN
+2717288,Eagan city,14461.0,suburb,False,MN
+27173,Yellow Medicine County Unincorporated Area,1884.0,town,True,MN
+2717342,Eagle Bend city,240.0,town,True,MN
+2717378,Eagle Lake city,842.0,suburb,True,MN
+2717486,East Bethel city,4597.0,suburb,False,MN
+2717612,East Grand Forks city,2374.0,core,True,MN
+2717630,East Gull Lake city,734.0,town,True,MN
+2717738,Easton city,91.0,town,True,MN
+2717900,Echo city,108.0,town,True,MN
+2718116,Eden Prairie city,13515.0,suburb,False,MN
+2718134,Eden Valley city,268.0,town,True,MN
+2718152,Edgerton city,535.0,town,True,MN
+2718188,Edina city,12571.0,suburb,False,MN
+2718260,Effie city,46.0,town,True,MN
+2718368,Eitzen city,142.0,suburb,True,MN
+2718386,Elba city,93.0,town,True,MN
+2718458,Elbow Lake city,398.0,town,True,MN
+2718530,Elgin city,412.0,suburb,True,MN
+2718566,Elizabeth city,92.0,town,True,MN
+2718662,Elko New Market city,1704.0,suburb,False,MN
+2718674,Elk River city,8470.0,suburb,False,MN
+2718728,Elkton city,74.0,town,True,MN
+2718746,Ellendale city,292.0,town,True,MN
+2718836,Ellsworth city,168.0,town,True,MN
+2718998,Elmore city,214.0,town,True,MN
+2719142,Ely city,1669.0,suburb,True,MN
+2719160,Elysian city,260.0,suburb,True,MN
+2719286,Emily city,993.0,town,True,MN
+2719340,Emmons city,166.0,town,True,MN
+2719700,Erskine city,192.0,suburb,True,MN
+2719898,Evansville city,197.0,town,True,MN
+2719934,Eveleth city,1543.0,suburb,True,MN
+2720078,Excelsior city,463.0,suburb,True,MN
+2720114,Eyota city,764.0,suburb,True,MN
+2720222,Fairfax city,532.0,town,True,MN
+2720330,Fairmont city,3345.0,town,True,MN
+2720420,Falcon Heights city,1138.0,suburb,True,MN
+2720546,Faribault city,6183.0,town,True,MN
+2720618,Farmington city,6710.0,suburb,False,MN
+2720690,Farwell city,38.0,town,True,MN
+2720798,Federal Dam city,97.0,town,True,MN
+2720834,Felton city,93.0,suburb,True,MN
+2720906,Fergus Falls city,4841.0,town,True,MN
+2720978,Fertile city,285.0,suburb,True,MN
+2721032,Fifty Lakes city,552.0,town,True,MN
+2721122,Finlayson city,88.0,town,True,MN
+2721158,Fisher city,136.0,suburb,True,MN
+2721266,Flensburg city,81.0,town,True,MN
+2721338,Floodwood city,314.0,suburb,True,MN
+2721410,Florence city,11.0,town,True,MN
+2721536,Foley city,683.0,suburb,True,MN
+2721608,Forada city,124.0,town,True,MN
+2721770,Forest Lake city,5868.0,suburb,False,MN
+2721824,Foreston city,225.0,suburb,True,MN
+2721932,Fort Ripley city,33.0,town,True,MN
+2721986,Fosston city,488.0,suburb,True,MN
+2722094,Fountain city,170.0,suburb,True,MN
+2722364,Franklin city,204.0,town,True,MN
+2722472,Frazee city,451.0,town,True,MN
+2722652,Freeport city,278.0,suburb,True,MN
+2722814,Fridley city,8532.0,suburb,True,MN
+2722940,Frost city,127.0,town,True,MN
+2722958,Fulda city,581.0,town,True,MN
+2723120,Garfield city,147.0,town,True,MN
+2723192,Garrison city,35.0,town,True,MN
+2723228,Garvin city,52.0,town,True,MN
+2723300,Gaylord city,621.0,town,True,MN
+2723318,Gem Lake city,178.0,suburb,True,MN
+2723444,Genola city,48.0,town,True,MN
+2723498,Georgetown city,46.0,suburb,True,MN
+2723660,Ghent city,154.0,town,True,MN
+2723678,Gibbon city,362.0,town,True,MN
+2723714,Gilbert city,892.0,suburb,True,MN
+2723804,Gilman city,209.0,suburb,True,MN
+2723948,Glencoe city,1785.0,town,True,MN
+2724074,Glenwood city,815.0,town,True,MN
+2724182,Glyndon city,448.0,suburb,True,MN
+2724308,Golden Valley city,6375.0,suburb,False,MN
+2724398,Goodhue city,290.0,town,True,MN
+2724506,Good Thunder city,211.0,suburb,True,MN
+2724524,Goodview city,1176.0,town,True,MN
+2724758,Graceville city,195.0,town,True,MN
+2724884,Granada city,125.0,town,True,MN
+2724992,Grand Marais city,701.0,town,True,MN
+2725010,Grand Meadow city,487.0,town,True,MN
+2725118,Grand Rapids city,3198.0,town,True,MN
+2725280,Granite Falls city,917.0,town,True,MN
+2725334,Grant city,1641.0,suburb,False,MN
+2725424,Grasston city,37.0,town,True,MN
+2725604,Greenbush city,210.0,town,True,MN
+2725622,Greenfield city,956.0,suburb,True,MN
+2725658,Green Isle city,172.0,town,True,MN
+2725874,Greenwald city,103.0,suburb,True,MN
+2725918,Greenwood city,270.0,suburb,True,MN
+2726000,Grey Eagle city,143.0,town,True,MN
+2726126,Grove City city,275.0,town,True,MN
+2726216,Grygla city,68.0,town,True,MN
+2726378,Hackensack city,133.0,town,True,MN
+2726450,Hadley city,17.0,town,True,MN
+2726576,Hallock city,340.0,town,True,MN
+2726630,Halstad city,197.0,town,True,MN
+2726666,Hamburg city,207.0,suburb,True,MN
+2726738,Ham Lake city,6015.0,suburb,False,MN
+2726828,Hammond city,68.0,suburb,True,MN
+2726864,Hampton city,219.0,suburb,True,MN
+2726936,Hancock city,281.0,town,True,MN
+2726972,Hanley Falls city,76.0,town,True,MN
+2726990,Hanover city,1284.0,suburb,True,MN
+2727008,Hanska city,164.0,town,True,MN
+2727098,Harding city,49.0,town,True,MN
+2727116,Hardwick city,85.0,suburb,True,MN
+2727188,Harmony city,520.0,suburb,True,MN
+2727278,Harris city,394.0,suburb,True,MN
+2727530,Hastings city,5294.0,suburb,False,MN
+2727566,Hatfield city,34.0,town,True,MN
+2727746,Hawley city,595.0,suburb,True,MN
+2727872,Hayfield city,371.0,suburb,True,MN
+2728016,Hazel Run city,29.0,town,True,MN
+2728124,Hector city,499.0,town,True,MN
+2728214,Heidelberg city,70.0,suburb,True,MN
+2728394,Henderson city,311.0,town,True,MN
+2728430,Hendricks city,303.0,town,True,MN
+2728484,Hendrum city,102.0,town,True,MN
+2728520,Henning city,296.0,town,True,MN
+2728574,Henriette city,28.0,town,True,MN
+2728646,Herman city,245.0,town,True,MN
+2728682,Hermantown city,3057.0,suburb,False,MN
+2728700,Heron Lake city,277.0,town,True,MN
+2728754,Hewitt city,88.0,town,True,MN
+2728790,Hibbing city,6452.0,suburb,True,MN
+2729096,Hill City city,137.0,town,True,MN
+2729150,Hillman city,39.0,town,True,MN
+2729204,Hills city,282.0,suburb,True,MN
+2729258,Hilltop city,13.0,suburb,True,MN
+2729294,Hinckley city,472.0,town,True,MN
+2729474,Hoffman city,271.0,town,True,MN
+2729510,Hokah city,280.0,suburb,True,MN
+2729582,Holdingford city,306.0,suburb,True,MN
+2729618,Holland city,124.0,town,True,MN
+2729672,Holloway city,30.0,town,True,MN
+2730140,Hopkins city,2377.0,suburb,True,MN
+2730230,Houston city,423.0,suburb,True,MN
+2730284,Howard Lake city,841.0,suburb,True,MN
+2730302,Hoyt Lakes city,1001.0,suburb,True,MN
+2730392,Hugo city,4392.0,suburb,False,MN
+2730644,Hutchinson city,4628.0,town,True,MN
+2730842,Independence city,1280.0,suburb,True,MN
+2731040,International Falls city,2549.0,town,True,MN
+2731076,Inver Grove Heights city,8004.0,suburb,False,MN
+2731238,Iron Junction city,70.0,suburb,True,MN
+2731274,Ironton city,227.0,town,True,MN
+2731328,Isanti city,2527.0,suburb,True,MN
+2731472,Isle city,337.0,suburb,True,MN
+2731526,Ivanhoe city,269.0,town,True,MN
+2731562,Jackson city,1157.0,town,True,MN
+2731706,Janesville city,918.0,town,True,MN
+2731760,Jasper city,271.0,town,True,MN
+2731796,Jeffers city,153.0,town,True,MN
+2731832,Jenkins city,196.0,town,True,MN
+2732012,Johnson city,15.0,town,True,MN
+2732174,Jordan city,1943.0,suburb,False,MN
+2732372,Kandiyohi city,159.0,town,True,MN
+2732444,Karlstad city,227.0,town,True,MN
+2732462,Kasota city,201.0,suburb,True,MN
+2732498,Kasson city,2127.0,suburb,True,MN
+2732570,Keewatin city,410.0,town,True,MN
+2732606,Kelliher city,189.0,town,True,MN
+2732642,Kellogg city,221.0,suburb,True,MN
+2732732,Kennedy city,107.0,town,True,MN
+2732786,Kent city,37.0,town,True,MN
+2732840,Kenyon city,592.0,town,True,MN
+2732876,Kerkhoven city,241.0,town,True,MN
+2732966,Kettle River city,53.0,suburb,True,MN
+2733056,Kiester city,252.0,town,True,MN
+2733110,Kilkenny city,51.0,suburb,True,MN
+2733164,Kimball city,333.0,suburb,True,MN
+2733416,Kinney city,99.0,suburb,True,MN
+2733866,La Crescent city,2063.0,core,True,MN
+2733920,Lafayette city,176.0,suburb,True,MN
+2734100,Lake Benton city,347.0,town,True,MN
+2734136,Lake Bronson city,98.0,town,True,MN
+2734172,Lake City city,1817.0,suburb,True,MN
+2734190,Lake Crystal city,950.0,suburb,True,MN
+2734244,Lake Elmo city,4344.0,suburb,False,MN
+2734316,Lakefield city,777.0,town,True,MN
+2734622,Lakeland city,739.0,suburb,False,MN
+2734658,Lakeland Shores city,137.0,suburb,True,MN
+2734676,Lake Lillian city,92.0,town,True,MN
+2734784,Lake Park city,288.0,town,True,MN
+2734865,Lake St. Croix Beach city,620.0,suburb,True,MN
+2734928,Lake Shore city,920.0,town,True,MN
+2735180,Lakeville city,19592.0,suburb,False,MN
+2735198,Lake Wilson city,130.0,town,True,MN
+2735288,Lamberton city,335.0,town,True,MN
+2735414,Landfall city,1.0,suburb,True,MN
+2735450,Lanesboro city,372.0,suburb,True,MN
+2735612,Laporte city,45.0,town,True,MN
+2735648,La Prairie city,226.0,town,True,MN
+2735720,Lastrup city,66.0,town,True,MN
+2735738,Lauderdale city,484.0,suburb,True,MN
+2736134,Le Center city,760.0,suburb,True,MN
+2736530,Leonidas city,30.0,suburb,True,MN
+2736620,Le Roy city,460.0,town,True,MN
+2736728,Lester Prairie city,679.0,town,True,MN
+2736746,Le Sueur city,1212.0,suburb,True,MN
+2736800,Lewiston city,458.0,town,True,MN
+2736836,Lexington city,492.0,suburb,True,MN
+2737016,Lilydale city,9.0,suburb,True,MN
+2737304,Lindstrom city,1906.0,suburb,True,MN
+2737322,Lino Lakes city,8238.0,suburb,False,MN
+2737412,Lismore city,150.0,town,True,MN
+2737448,Litchfield city,1950.0,town,True,MN
+2737502,Little Canada city,2211.0,suburb,False,MN
+2737556,Little Falls city,3206.0,town,True,MN
+2737592,Littlefork city,242.0,town,True,MN
+2737970,Long Beach city,177.0,town,True,MN
+2738006,Long Lake city,504.0,suburb,True,MN
+2738060,Long Prairie city,1127.0,town,True,MN
+2738114,Longville city,118.0,town,True,MN
+2738150,Lonsdale city,1675.0,town,True,MN
+2738222,Loretto city,190.0,suburb,True,MN
+2738366,Lowry city,123.0,town,True,MN
+2738420,Lucan city,66.0,town,True,MN
+2738564,Luverne city,1515.0,core,True,MN
+2738654,Lyle city,229.0,town,True,MN
+2738708,Lynd city,154.0,town,True,MN
+2738888,Mabel city,335.0,suburb,True,MN
+2738996,McGrath city,26.0,town,True,MN
+2739014,McGregor city,115.0,town,True,MN
+2739050,McIntosh city,179.0,suburb,True,MN
+2739140,McKinley city,121.0,suburb,True,MN
+2739230,Madelia city,690.0,town,True,MN
+2739266,Madison city,649.0,town,True,MN
+2739320,Madison Lake city,438.0,suburb,True,MN
+2739338,Magnolia city,94.0,suburb,True,MN
+2739428,Mahtomedi city,2640.0,suburb,False,MN
+2739806,Manhattan Beach city,58.0,town,True,MN
+2739878,Mankato city,8550.0,core,True,MN
+2739986,Mantorville city,351.0,suburb,True,MN
+2740166,Maple Grove city,17226.0,suburb,True,MN
+2740220,Maple Lake city,776.0,suburb,True,MN
+2740256,Maple Plain city,528.0,suburb,True,MN
+2740310,Mapleton city,571.0,suburb,True,MN
+2740346,Mapleview city,100.0,town,True,MN
+2740382,Maplewood city,9599.0,suburb,False,MN
+2740418,Marble city,218.0,town,True,MN
+2740526,Marietta city,79.0,town,True,MN
+2740562,Marine on St. Croix city,411.0,suburb,True,MN
+2740688,Marshall city,3732.0,town,True,MN
+2741138,Mayer city,869.0,suburb,True,MN
+2741210,Maynard city,157.0,town,True,MN
+2741282,Mazeppa city,358.0,suburb,True,MN
+2741372,Meadowlands city,57.0,suburb,True,MN
+2741426,Medford city,469.0,town,True,MN
+2741462,Medicine Lake city,121.0,suburb,True,MN
+2741480,Medina city,2194.0,suburb,True,MN
+2741570,Melrose city,1025.0,suburb,True,MN
+2741660,Menahga city,436.0,town,True,MN
+2741678,Mendota city,99.0,suburb,True,MN
+2741696,Mendota Heights city,3504.0,suburb,False,MN
+2741714,Mentor city,66.0,suburb,True,MN
+2741912,Middle River city,108.0,town,True,MN
+2742092,Miesville city,69.0,suburb,True,MN
+2742110,Milaca city,873.0,suburb,True,MN
+2742254,Millerville city,44.0,town,True,MN
+2742290,Millville city,84.0,suburb,True,MN
+2742362,Milroy city,75.0,town,True,MN
+2742398,Miltona city,128.0,town,True,MN
+2743000,Minneapolis city,75361.0,core,False,MN
+2743036,Minneiska city,92.0,suburb,True,MN
+2743126,Minneota city,529.0,town,True,MN
+2743144,Minnesota City city,80.0,town,True,MN
+2743198,Minnesota Lake city,283.0,town,True,MN
+2743252,Minnetonka city,13308.0,suburb,False,MN
+2743270,Minnetonka Beach city,184.0,suburb,True,MN
+2743306,Minnetrista city,3079.0,suburb,True,MN
+2743720,Montevideo city,1848.0,town,True,MN
+2743738,Montgomery city,1073.0,suburb,True,MN
+2743774,Monticello city,4383.0,suburb,True,MN
+2743810,Montrose city,1390.0,suburb,True,MN
+2743864,Moorhead city,11801.0,core,True,MN
+2743954,Moose Lake city,240.0,suburb,True,MN
+2744044,Mora city,991.0,town,True,MN
+2744116,Morgan city,318.0,town,True,MN
+2744242,Morris city,1341.0,town,True,MN
+2744296,Morristown city,334.0,town,True,MN
+2744368,Morton city,217.0,town,True,MN
+2744422,Motley city,265.0,town,True,MN
+2744476,Mound city,3374.0,suburb,True,MN
+2744530,Mounds View city,3414.0,suburb,False,MN
+2744548,Mountain Iron city,1178.0,suburb,True,MN
+2744566,Mountain Lake city,617.0,town,True,MN
+2744818,Murdock city,128.0,town,True,MN
+2744980,Nashwauk city,411.0,town,True,MN
+2745196,Nerstrand city,116.0,town,True,MN
+2745340,Nevis city,181.0,town,True,MN
+2745376,New Auburn city,151.0,town,True,MN
+2745430,New Brighton city,5436.0,suburb,False,MN
+2745520,Newfolden city,125.0,town,True,MN
+2745556,New Germany city,158.0,suburb,True,MN
+2745628,New Hope city,4631.0,suburb,True,MN
+2745682,New London city,354.0,town,True,MN
+2745772,New Munich city,156.0,suburb,True,MN
+2745790,Newport city,1301.0,suburb,True,MN
+2745808,New Prague city,1526.0,suburb,False,MN
+2745862,New Richland city,470.0,town,True,MN
+2746024,New Trier city,41.0,suburb,True,MN
+2746042,New Ulm city,4736.0,town,True,MN
+2746060,New York Mills city,510.0,town,True,MN
+2746150,Nicollet city,268.0,suburb,True,MN
+2746258,Nielsville city,35.0,suburb,True,MN
+2746294,Nimrod city,65.0,town,True,MN
+2746348,Nisswa city,1377.0,town,True,MN
+2746798,North Branch city,4024.0,suburb,True,MN
+2746924,Northfield city,4236.0,town,True,MN
+2747068,North Mankato city,3931.0,core,True,MN
+2747104,North Oaks city,1671.0,suburb,True,MN
+2747122,Northome city,87.0,town,True,MN
+2747212,Northrop city,103.0,town,True,MN
+2747221,North St. Paul city,3377.0,suburb,True,MN
+2747520,Norwood Young America city,1287.0,suburb,True,MN
+2747536,Nowthen city,1612.0,suburb,False,MN
+2747680,Oakdale city,6609.0,suburb,False,MN
+2747690,Oak Grove city,3573.0,suburb,False,MN
+2747914,Oak Park Heights city,1070.0,suburb,True,MN
+2748130,Ogema city,78.0,town,True,MN
+2748166,Ogilvie city,87.0,town,True,MN
+2748184,Okabena city,93.0,town,True,MN
+2748202,Oklee city,167.0,town,True,MN
+2748256,Olivia city,912.0,town,True,MN
+2748310,Onamia city,245.0,suburb,True,MN
+2748562,Ormsby city,57.0,town,True,MN
+2748580,Orono city,3071.0,suburb,True,MN
+2748598,Oronoco city,649.0,suburb,True,MN
+2748634,Orr city,133.0,suburb,True,MN
+2748706,Ortonville city,868.0,town,True,MN
+2748796,Osakis city,766.0,town,True,MN
+2748976,Oslo city,100.0,town,True,MN
+2749012,Osseo city,596.0,suburb,True,MN
+2749030,Ostrander city,112.0,suburb,True,MN
+2749138,Otsego city,8495.0,suburb,False,MN
+2749210,Ottertail city,403.0,town,True,MN
+2749300,Owatonna city,8269.0,town,True,MN
+2749732,Parkers Prairie city,411.0,town,True,MN
+2749768,Park Rapids city,1283.0,town,True,MN
+2749966,Paynesville city,888.0,suburb,True,MN
+2750056,Pease city,106.0,suburb,True,MN
+2750164,Pelican Rapids city,650.0,town,True,MN
+2750200,Pemberton city,90.0,suburb,True,MN
+2750344,Pennock city,180.0,town,True,MN
+2750416,Pequot Lakes city,926.0,town,True,MN
+2750470,Perham city,1050.0,town,True,MN
+2750506,Perley city,51.0,town,True,MN
+2750596,Peterson city,118.0,suburb,True,MN
+2750776,Pierz city,470.0,town,True,MN
+2750902,Pillager city,163.0,town,True,MN
+2751064,Pine City city,1161.0,town,True,MN
+2751136,Pine Island city,1056.0,town,True,MN
+2751280,Pine River city,222.0,town,True,MN
+2751316,Pine Springs city,157.0,suburb,True,MN
+2751388,Pipestone city,1662.0,town,True,MN
+2751424,Plainview city,1173.0,suburb,True,MN
+2751460,Plato city,143.0,town,True,MN
+2751712,Plummer city,120.0,town,True,MN
+2751730,Plymouth city,18122.0,suburb,True,MN
+2752144,Porter city,94.0,town,True,MN
+2752450,Preston city,589.0,suburb,True,MN
+2752522,Princeton city,1506.0,suburb,True,MN
+2752558,Prinsburg city,256.0,town,True,MN
+2752594,Prior Lake city,9948.0,suburb,False,MN
+2752630,Proctor city,1319.0,suburb,True,MN
+2752756,Quamba city,24.0,town,True,MN
+2752882,Racine city,204.0,town,True,MN
+2753026,Ramsey city,10452.0,suburb,False,MN
+2753080,Randall city,262.0,town,True,MN
+2753098,Randolph city,200.0,suburb,True,MN
+2753134,Ranier city,233.0,town,True,MN
+2753296,Raymond city,256.0,town,True,MN
+2753476,Red Lake Falls city,447.0,town,True,MN
+2753620,Red Wing city,4659.0,town,True,MN
+2753656,Redwood Falls city,1563.0,town,True,MN
+2753782,Remer city,182.0,town,True,MN
+2753890,Renville city,506.0,town,True,MN
+2753908,Revere city,36.0,town,True,MN
+2753998,Rice city,664.0,suburb,True,MN
+2754214,Richfield city,9718.0,suburb,False,MN
+2754268,Richmond city,580.0,suburb,True,MN
+2754340,Richville city,49.0,town,True,MN
+2754736,Riverton city,64.0,town,True,MN
+2754808,Robbinsdale city,4328.0,suburb,True,MN
+2754880,Rochester city,39177.0,core,True,MN
+2754934,Rock Creek city,598.0,town,True,MN
+2755006,Rockford city,1192.0,suburb,False,MN
+2755078,Rockville city,819.0,suburb,True,MN
+2755186,Rogers city,3987.0,suburb,False,MN
+2755276,Rollingstone city,235.0,town,True,MN
+2755366,Ronneby CDP,19.0,suburb,True,MN
+2755546,Roseau city,810.0,town,True,MN
+2755600,Rose Creek city,200.0,town,True,MN
+2755726,Rosemount city,7725.0,suburb,False,MN
+2755852,Roseville city,8647.0,suburb,False,MN
+2756014,Rothsay city,162.0,town,True,MN
+2756086,Round Lake city,164.0,town,True,MN
+2756176,Royalton city,443.0,town,True,MN
+2756284,Rushford city,682.0,suburb,True,MN
+2756302,Rushford Village city,324.0,suburb,True,MN
+2756338,Rushmore city,132.0,town,True,MN
+2756428,Russell city,178.0,town,True,MN
+2756482,Ruthton city,144.0,town,True,MN
+2756518,Rutledge city,93.0,town,True,MN
+2756554,Sabin city,213.0,suburb,True,MN
+2756572,Sacred Heart city,247.0,town,True,MN
+2756680,St. Anthony city (Hennepin and Ramsey Counties),1887.0,suburb,False,MN
+2756698,St. Anthony city (Stearns County),34.0,suburb,True,MN
+2756724,St. Augusta city,1361.0,suburb,False,MN
+2756770,St. Bonifacius city,664.0,suburb,False,MN
+2756788,St. Charles city,1148.0,town,True,MN
+2756824,St. Clair city,242.0,suburb,True,MN
+2756896,St. Cloud city,15237.0,core,True,MN
+2756950,St. Francis city,2679.0,suburb,True,MN
+2757022,St. Hilaire city,95.0,town,True,MN
+2757040,St. James city,1575.0,town,True,MN
+2757130,St. Joseph city,1804.0,suburb,True,MN
+2757202,St. Leo city,62.0,town,True,MN
+2757220,St. Louis Park city,11577.0,suburb,True,MN
+2757238,St. Martin city,139.0,suburb,True,MN
+2757292,St. Marys Point city,223.0,suburb,True,MN
+2757346,St. Michael city,7474.0,suburb,False,MN
+2758018,St. Paul Park city,1683.0,suburb,True,MN
+2758036,St. Peter city,2562.0,suburb,True,MN
+2758090,St. Stephen city,311.0,suburb,True,MN
+2758306,Sanborn city,157.0,town,True,MN
+2758396,Sandstone city,501.0,town,True,MN
+2758576,Sargeant city,45.0,town,True,MN
+2758612,Sartell city,4519.0,suburb,False,MN
+2758648,Sauk Centre city,1540.0,suburb,True,MN
+2758684,Sauk Rapids city,3671.0,suburb,True,MN
+2758738,Savage city,10399.0,suburb,False,MN
+2758900,Scandia city,1856.0,suburb,False,MN
+2758936,Scanlon city,434.0,suburb,True,MN
+2759098,Seaforth city,37.0,town,True,MN
+2759152,Sebeka city,307.0,town,True,MN
+2759314,Shafer city,350.0,suburb,True,MN
+2759350,Shakopee city,13456.0,suburb,False,MN
+2759566,Shelly city,104.0,town,True,MN
+2759782,Shevlin city,84.0,town,True,MN
+2759998,Shoreview city,6745.0,suburb,False,MN
+2760016,Shorewood city,2514.0,suburb,False,MN
+2760250,Silver Bay city,917.0,town,True,MN
+2760376,Silver Lake city,345.0,town,True,MN
+2760808,Slayton city,847.0,town,True,MN
+2760844,Sleepy Eye city,1355.0,town,True,MN
+2761402,South Haven city,76.0,suburb,True,MN
+2761492,South St. Paul city,6074.0,suburb,True,MN
+2761690,Spicer city,425.0,town,True,MN
+2761816,Springfield city,759.0,town,True,MN
+2761852,Spring Grove city,589.0,suburb,True,MN
+2761996,Spring Lake Park city,2035.0,suburb,True,MN
+2762014,Spring Park city,183.0,suburb,True,MN
+2762104,Spring Valley city,1045.0,suburb,True,MN
+2762320,Stacy city,1416.0,suburb,True,MN
+2762446,Staples city,725.0,town,True,MN
+2762500,Starbuck city,488.0,town,True,MN
+2762662,Steen city,55.0,suburb,True,MN
+2762698,Stephen city,237.0,town,True,MN
+2762788,Stewart city,254.0,town,True,MN
+2762824,Stillwater city,6032.0,suburb,False,MN
+2762896,Stockton city,245.0,town,True,MN
+2763022,Storden city,119.0,town,True,MN
+2763220,Sturgeon Lake city,113.0,town,True,MN
+2763454,Sunburg city,45.0,town,True,MN
+2763544,Sunfish Lake city,234.0,suburb,True,MN
+2763778,Swanville city,183.0,town,True,MN
+2764048,Taconite city,249.0,town,True,MN
+2764210,Taopi city,44.0,town,True,MN
+2764264,Taunton city,58.0,town,True,MN
+2764318,Taylors Falls city,414.0,suburb,True,MN
+2764570,Thief River Falls city,2679.0,town,True,MN
+2764750,Thomson,65.0,suburb,True,MN
+2764948,Tintah city,24.0,town,True,MN
+2765164,Tonka Bay city,586.0,suburb,True,MN
+2765272,Tower city,252.0,suburb,True,MN
+2765308,Tracy city,683.0,town,True,MN
+2765470,Trimont city,245.0,town,True,MN
+2765506,Trommald city,34.0,town,True,MN
+2765542,Trosky city,56.0,town,True,MN
+2765668,Truman city,461.0,town,True,MN
+2765938,Twin Valley city,328.0,town,True,MN
+2765956,Two Harbors city,1388.0,town,True,MN
+2766046,Tyler city,431.0,town,True,MN
+2766136,Ulen city,209.0,suburb,True,MN
+2766172,Underwood city,185.0,town,True,MN
+2766334,Upsala city,187.0,town,True,MN
+2766424,Utica city,104.0,town,True,MN
+2766460,Vadnais Heights city,3078.0,suburb,False,MN
+2766766,Vergas city,179.0,town,True,MN
+2766802,Vermillion city,168.0,suburb,True,MN
+2766874,Verndale city,198.0,town,True,MN
+2766910,Vernon Center city,127.0,suburb,True,MN
+2766982,Vesta city,125.0,town,True,MN
+2767036,Victoria city,4430.0,suburb,False,MN
+2767130,Village of Minnetonka Beach,219.0,suburb,True,MN
+2767144,Villard city,122.0,town,True,MN
+2767288,Virginia city,3031.0,suburb,True,MN
+2767378,Wabasha city,1134.0,suburb,True,MN
+2767396,Wabasso city,204.0,town,True,MN
+2767432,Waconia city,4630.0,suburb,False,MN
+2767504,Wadena city,1315.0,town,True,MN
+2767558,Wahkon city,155.0,suburb,True,MN
+2767612,Waite Park city,1667.0,suburb,True,MN
+2767756,Waldorf city,116.0,town,True,MN
+2767792,Walker city,316.0,town,True,MN
+2767846,Walnut Grove city,290.0,town,True,MN
+2767900,Walters city,31.0,town,True,MN
+2767918,Waltham city,91.0,town,True,MN
+2767972,Wanamingo city,388.0,town,True,MN
+2768170,Warren city,529.0,town,True,MN
+2768224,Warroad city,407.0,town,True,MN
+2768296,Waseca city,2997.0,town,True,MN
+2768548,Watertown city,1563.0,suburb,True,MN
+2768584,Waterville city,812.0,suburb,True,MN
+2768620,Watkins city,232.0,town,True,MN
+2768656,Watson city,84.0,town,True,MN
+2768674,Waubun city,122.0,town,True,MN
+2768764,Waverly city,869.0,suburb,True,MN
+2768818,Wayzata city,909.0,suburb,False,MN
+2769070,Welcome city,316.0,town,True,MN
+2769106,Wells city,1012.0,town,True,MN
+2769142,Wendell city,64.0,town,True,MN
+2769250,Westbrook city,320.0,town,True,MN
+2769304,West Concord city,340.0,suburb,True,MN
+2769700,West St. Paul city,4717.0,suburb,False,MN
+2769736,West Union city,39.0,town,True,MN
+2769808,Whalan city,53.0,suburb,True,MN
+2769844,Wheaton city,617.0,town,True,MN
+2769970,White Bear Lake city,6454.0,suburb,False,MN
+2770258,Wilder city,15.0,town,True,MN
+2770366,Willernie city,287.0,suburb,True,MN
+2770402,Williams city,94.0,town,True,MN
+2770420,Willmar city,5023.0,town,True,MN
+2770492,Willow River city,146.0,town,True,MN
+2770582,Wilmont city,137.0,town,True,MN
+2770708,Wilton city,91.0,town,True,MN
+2770798,Windom city,1744.0,town,True,MN
+2770924,Winnebago city,498.0,town,True,MN
+2771032,Winona city,7367.0,town,True,MN
+2771086,Winsted city,834.0,town,True,MN
+2771122,Winthrop city,567.0,town,True,MN
+2771140,Winton city,118.0,suburb,True,MN
+2771338,Wolf Lake city,31.0,town,True,MN
+2771392,Wolverton city,52.0,town,True,MN
+2771428,Woodbury city,17908.0,suburb,False,MN
+2771446,Wood Lake city,167.0,town,True,MN
+2771500,Woodland city,168.0,suburb,True,MN
+2771680,Woodstock city,62.0,town,True,MN
+2771734,Worthington city,3429.0,town,True,MN
+2771788,Wrenshall city,151.0,suburb,True,MN
+2771950,Wykoff city,198.0,suburb,True,MN
+2772022,Wyoming city,2773.0,suburb,False,MN
+2772184,Zemple city,10.0,town,True,MN
+2772238,Zimmerman city,2159.0,suburb,True,MN
+2772310,Zumbro Falls city,119.0,suburb,True,MN
+2772328,Zumbrota city,1372.0,town,True,MN
+37001,Alamance County Unincorporated Area,18427.2151656173,suburb,True,NC
+3700160,Aberdeen town,3399.0,core,True,NC
+37003,Alexander County,11733.0,suburb,True,NC
+37005,Alleghany County,5978.0,town,True,NC
+3700500,Ahoskie town,1489.0,town,True,NC
+3700640,Alamance village,384.0,suburb,True,NC
+3700680,Albemarle city,5902.0,town,True,NC
+37007,Anson County Unincorporated Area,6660.0,suburb,True,NC
+37009,Ashe County,13182.0,town,True,NC
+37011,Avery County Unincorporated Area,8841.0,town,True,NC
+37013,Beaufort County Unincorporated Area,12793.0,town,True,NC
+3701400,Angier town,3233.0,town,True,NC
+37015,Bertie County,5971.0,town,True,NC
+3701520,Apex town,19458.0,suburb,False,NC
+37017,Bladen County Unincorporated Area,8820.0,town,True,NC
+3701720,Archdale city,3678.0,suburb,True,NC
+3701760,Archer Lodge town,1598.0,suburb,True,NC
+37019,Brunswick County Unincorporated Area,28075.0,suburb,True,NC
+3702080,Asheboro city,6393.0,suburb,True,NC
+37021,Buncombe County Unincorporated Area,41926.0,suburb,True,NC
+3702140,Asheville city,21263.0,core,False,NC
+37023,Burke County Unincorporated Area,18917.384074941452,suburb,True,NC
+37025,Cabarrus County,16213.207135897384,suburb,True,NC
+3702500,Atlantic Beach town,1716.0,town,True,NC
+37027,Caldwell County Unincorporated Area,27167.615925058548,suburb,True,NC
+3702840,Ayden town,1818.0,suburb,True,NC
+37029,Camden County,3483.0,suburb,False,NC
+3702960,Badin town,362.0,town,True,NC
+3703020,Bailey town,204.0,suburb,True,NC
+37031,Carteret County Unincorporated Area,15371.0,town,True,NC
+3703150,Bald Head Island village,1097.0,suburb,True,NC
+37033,Caswell County,7670.0,town,True,NC
+37035,Catawba County,49926.0,suburb,True,NC
+3703500,Banner Elk town,440.0,town,True,NC
+37037,Chatham County Unincorporated Area,24736.0,suburb,True,NC
+37039,Cherokee County,13986.0,town,True,NC
+37041,Chowan County,3432.0,town,True,NC
+3704260,Beaufort town,2125.0,town,True,NC
+37043,Clay County,5784.0,town,True,NC
+37045,Cleveland County Unincorporated Area,20136.0,town,True,NC
+3704510,Beech Mountain town,1665.0,town,True,NC
+3704640,Belhaven town,568.0,town,True,NC
+37047,Columbus County Unincorporated Area,10273.0,town,True,NC
+3704840,Belmont city,4927.0,suburb,True,NC
+37049,Craven County Unincorporated Area,15034.0,town,True,NC
+3704950,Belville town,714.0,suburb,False,NC
+3705040,Benson town,1441.0,suburb,True,NC
+37051,Cumberland County Unincorporated Area,27571.0,suburb,True,NC
+3705220,Bessemer City city,1975.0,suburb,True,NC
+37053,Currituck County,17161.0,suburb,False,NC
+3705340,Bethania town,150.0,suburb,True,NC
+3705460,Bethel town,712.0,suburb,True,NC
+37055,Dare County Unincorporated Area,10450.0,town,True,NC
+37057,Davidson County Unincorporated Area,36669.0,suburb,True,NC
+3705880,Biltmore Forest town,525.0,suburb,True,NC
+37059,Davie County,14431.0,suburb,True,NC
+3706000,Biscoe town,421.0,town,True,NC
+3706080,Black Creek town,218.0,town,True,NC
+37061,Duplin County,14199.0,town,True,NC
+3706140,Black Mountain town,2778.0,suburb,True,NC
+3706240,Bladenboro town,566.0,town,True,NC
+37063,Durham County Unincorporated Area,12529.0,suburb,False,NC
+37065,Edgecombe County Unincorporated Area,6477.0,suburb,True,NC
+3706500,Blowing Rock town,1245.0,town,True,NC
+3706660,Boardman town,40.0,town,True,NC
+37067,Forsyth County Unincorporated Area,21680.0,suburb,True,NC
+3706740,Bogue town,270.0,town,True,NC
+3706760,Boiling Spring Lakes city,2501.0,suburb,True,NC
+3706820,Bolivia town,57.0,suburb,True,NC
+3706860,Bolton town,146.0,town,True,NC
+37069,Franklin County,22350.0,suburb,True,NC
+3707080,Boone town,1662.0,town,True,NC
+37071,Gaston County Unincorporated Area,25886.0,suburb,True,NC
+3707140,Boonville town,604.0,suburb,True,NC
+3707220,Bostic town,141.0,town,True,NC
+37073,Gates County,2939.0,suburb,True,NC
+37075,Graham County,3640.0,town,True,NC
+37077,Granville County,16237.0,town,True,NC
+3707860,Bridgeton town,142.0,town,True,NC
+37079,Greene County,4551.0,town,True,NC
+3708080,Broadway town,552.0,town,True,NC
+37081,Guilford County Unincorporated Area,34595.0,suburb,True,NC
+3708140,Brookford town,164.0,suburb,True,NC
+37083,Halifax County Unincorporated Area,8452.0,town,True,NC
+3708420,Brunswick town,123.0,town,True,NC
+37085,Harnett County Unincorporated Area,33377.0,town,True,NC
+37087,Haywood County Unincorporated Area,19516.0,town,True,NC
+37089,Henderson County,29100.0,suburb,True,NC
+3708960,Burgaw town,951.0,suburb,True,NC
+3709060,Burlington city,16861.0,core,True,NC
+37091,Hertford County Unincorporated Area,4894.0,town,True,NC
+3709140,Burnsville town,709.0,town,True,NC
+37093,Hoke County Unincorporated Area,14014.0,suburb,True,NC
+37095,Hyde County,2138.0,town,True,NC
+3709540,Calabash town,1080.0,suburb,True,NC
+37097,Iredell County Unincorporated Area,43624.0,suburb,True,NC
+3709800,Cameron town,115.0,suburb,True,NC
+37099,Jackson County,19301.0,town,True,NC
+37101,Johnston County Unincorporated Area,48759.65162200282,suburb,True,NC
+3710120,Candor town,283.0,suburb,True,NC
+3710240,Canton town,1535.0,town,True,NC
+3710260,Cape Carteret town,1241.0,town,True,NC
+37103,Jones County,3038.0,town,True,NC
+37105,Lee County Unincorporated Area,10023.978723404256,town,True,NC
+3710500,Carolina Beach town,2773.0,suburb,True,NC
+3710550,Carolina Shores town,2323.0,suburb,False,NC
+3710620,Carrboro town,4264.0,suburb,True,NC
+3710680,Carthage town,1177.0,suburb,True,NC
+37107,Lenoir County Unincorporated Area,8723.809917355371,town,True,NC
+3710740,Cary town,39762.0,suburb,True,NC
+3710860,Castalia town,98.0,suburb,True,NC
+37109,Lincoln County,34425.0,suburb,True,NC
+3710960,Caswell Beach town,378.0,suburb,True,NC
+37111,McDowell County Unincorporated Area,12621.0,town,True,NC
+37113,Macon County,20811.0,town,True,NC
+3711340,Cedar Point town,777.0,town,True,NC
+37115,Madison County,7373.0,suburb,True,NC
+3711620,Cerro Gordo town,60.0,town,True,NC
+3711640,Chadbourn town,533.0,town,True,NC
+37117,Martin County,7480.0,town,True,NC
+3711800,Chapel Hill town,9714.0,suburb,True,NC
+37119,Mecklenburg County,21812.0,suburb,False,NC
+3712000,Charlotte city,203927.0,core,False,NC
+37121,Mitchell County,6649.0,town,True,NC
+37123,Montgomery County,10169.0,town,True,NC
+3712340,Cherryville city,2176.0,suburb,True,NC
+3712460,Chimney Rock Village village,163.0,town,True,NC
+37125,Moore County Unincorporated Area,18555.0,suburb,True,NC
+37127,Nash County Unincorporated Area,11246.734463276836,suburb,True,NC
+3712780,Clarkton town,225.0,town,True,NC
+3712860,Clayton town,8475.0,suburb,True,NC
+37129,New Hanover County Unincorporated Area,36976.0,suburb,True,NC
+3712960,Clemmons village,5613.0,suburb,False,NC
+37131,Northampton County,6798.0,town,True,NC
+37133,Onslow County Unincorporated Area,38812.0,suburb,True,NC
+3713360,Coats town,725.0,town,True,NC
+37135,Orange County Unincorporated Area,23081.0,suburb,True,NC
+37137,Pamlico County,5060.0,town,True,NC
+37139,Pasquotank County Unincorporated Area,9052.0,town,True,NC
+3713940,Columbia town,335.0,town,True,NC
+37141,Pender County Unincorporated Area,17653.0,suburb,True,NC
+3714100,Concord city,31209.0,suburb,True,NC
+3714200,Conetoe town,113.0,suburb,True,NC
+3714280,Connelly Springs town,598.0,suburb,True,NC
+37143,Perquimans County,4886.0,town,True,NC
+37145,Person County,11413.0,suburb,True,NC
+37147,Pitt County Unincorporated Area,15806.190082644629,suburb,True,NC
+3714700,Cornelius town,8835.0,suburb,False,NC
+37149,Polk County,8760.0,town,True,NC
+3715020,Cove City town,128.0,town,True,NC
+37151,Randolph County Unincorporated Area,26984.797197353055,suburb,True,NC
+3715260,Cramerton town,1677.0,suburb,False,NC
+37153,Richmond County Unincorporated Area,10538.0,town,True,NC
+3715320,Creedmoor city,1485.0,town,True,NC
+37155,Robeson County Unincorporated Area,18742.0,town,True,NC
+37157,Rockingham County Unincorporated Area,18002.0,suburb,True,NC
+37159,Rowan County,42814.444292674045,suburb,True,NC
+37161,Rutherford County Unincorporated Area,15960.0,town,True,NC
+3716180,Dallas town,1836.0,suburb,True,NC
+3716240,Danbury town,57.0,suburb,True,NC
+37163,Sampson County,15927.0,town,True,NC
+3716400,Davidson town,3990.0,suburb,False,NC
+37165,Scotland County,8196.0,town,True,NC
+37167,Stanly County,11279.34857142857,town,True,NC
+3716820,Dellview town,26.0,suburb,True,NC
+37169,Stokes County Unincorporated Area,11940.0,suburb,True,NC
+3716980,Denton town,603.0,suburb,True,NC
+37171,Surry County,22326.0,town,True,NC
+37173,Swain County,5697.0,town,True,NC
+37175,Transylvania County,14486.0,town,True,NC
+3717520,Dortches town,428.0,suburb,True,NC
+3717660,Dover town,138.0,town,True,NC
+37177,Tyrrell County Unincorporated Area,1136.0,town,True,NC
+3717860,Drexel town,672.0,suburb,True,NC
+37179,Union County Unincorporated Area,27997.0,suburb,True,NC
+3718040,Dublin town,92.0,town,True,NC
+3718060,Duck town,2218.0,town,True,NC
+37181,Vance County,6948.0,town,True,NC
+37183,Wake County Unincorporated Area,64617.0,suburb,True,NC
+3718320,Dunn city,3260.0,town,True,NC
+37185,Warren County,6237.0,town,True,NC
+37187,Washington County,4024.0,town,True,NC
+37189,Watauga County Unincorporated Area,16355.0,town,True,NC
+3719000,Durham city,67180.0,core,False,NC
+37191,Wayne County Unincorporated Area,23451.0,suburb,True,NC
+37193,Wilkes County Unincorporated Area,19868.0,town,True,NC
+3719300,East Arcadia town,123.0,town,True,NC
+3719320,East Bend town,197.0,suburb,True,NC
+37195,Wilson County Unincorporated Area,9030.0,town,True,NC
+37197,Yadkin County,10073.0,suburb,True,NC
+3719740,Eastover town,1279.0,suburb,True,NC
+37199,Yancey County Unincorporated Area,7668.0,town,True,NC
+3720080,Eden city,5840.0,suburb,True,NC
+3720120,Edenton town,1703.0,town,True,NC
+3720580,Elizabeth City city,6501.0,town,True,NC
+3720600,Elizabethtown town,1246.0,town,True,NC
+3720780,Ellenboro town,246.0,town,True,NC
+3720980,Elm City town,472.0,town,True,NC
+3721095,Elon town,1830.0,suburb,True,NC
+3721160,Emerald Isle town,4247.0,town,True,NC
+3721360,Enfield town,734.0,town,True,NC
+3721740,Erwin town,1771.0,town,True,NC
+3721960,Eureka town,126.0,suburb,True,NC
+3722240,Fair Bluff town,236.0,town,True,NC
+3722500,Fairview town,1339.0,suburb,True,NC
+3722620,Falcon town,62.0,town,True,NC
+3722640,Falkland town,64.0,suburb,True,NC
+3722820,Farmville town,1796.0,suburb,True,NC
+3722920,Fayetteville city,57314.0,core,False,NC
+3723600,Flat Rock village,1871.0,suburb,False,NC
+3723760,Fletcher town,2289.0,suburb,False,NC
+3724080,Forest City town,2353.0,town,True,NC
+3724170,Forest Hills village,151.0,town,True,NC
+3724440,Fountain town,156.0,suburb,True,NC
+3724520,Four Oaks town,824.0,suburb,True,NC
+3724570,Foxfire village,645.0,suburb,True,NC
+3724740,Franklinville town,180.0,suburb,True,NC
+3724900,Fremont town,579.0,suburb,True,NC
+3725300,Fuquay-Varina town,16264.0,suburb,False,NC
+3725480,Garner town,10394.0,suburb,True,NC
+3725580,Gastonia city,25186.0,suburb,True,NC
+3725980,Gibsonville town,3499.0,suburb,True,NC
+3726200,Glen Alpine town,601.0,suburb,True,NC
+3726740,Godwin town,58.0,suburb,True,NC
+3726880,Goldsboro city,8803.0,core,True,NC
+3727280,Graham city,5613.0,suburb,True,NC
+3727870,Green Level town,698.0,suburb,True,NC
+3728000,Greensboro city,71813.0,core,False,NC
+3728080,Greenville city,14718.0,core,True,NC
+3728200,Grifton town,742.0,suburb,True,NC
+3728240,Grimesland town,210.0,suburb,True,NC
+3729640,Harmony town,204.0,suburb,True,NC
+3729800,Harrisburg town,5814.0,suburb,False,NC
+3730120,Havelock city,4091.0,town,True,NC
+3730260,Haw River town,763.0,suburb,True,NC
+3730620,Hemby Bridge town,582.0,suburb,True,NC
+3730660,Henderson city,4680.0,town,True,NC
+3730720,Hendersonville city,3608.0,suburb,True,NC
+3731400,High Point city,31181.0,core,False,NC
+3731440,High Shoals city,168.0,suburb,True,NC
+3731500,Hildebran town,737.0,suburb,True,NC
+3731960,Holden Beach town,2260.0,suburb,False,NC
+3732180,Holly Ridge town,1818.0,suburb,True,NC
+3732260,Holly Springs town,13385.0,suburb,False,NC
+3732640,Hope Mills town,5208.0,suburb,True,NC
+3732840,Hot Springs town,226.0,suburb,True,NC
+3733120,Huntersville town,19871.0,suburb,False,NC
+3733460,Indian Beach town,135.0,town,True,NC
+3733560,Indian Trail town,14939.0,suburb,False,NC
+3734200,Jacksonville city,12342.0,core,True,NC
+3734300,Jamestown town,1166.0,suburb,True,NC
+3734840,Jonesville town,821.0,suburb,True,NC
+3735200,Kannapolis city,19631.0,suburb,True,NC
+3735540,Kenly town,606.0,town,True,NC
+3735600,Kernersville town,6867.0,suburb,True,NC
+3735720,Kill Devil Hills town,5585.0,town,True,NC
+3735760,King city,2626.0,suburb,True,NC
+3735880,Kings Mountain city,3624.0,town,True,NC
+3735920,Kinston city,6665.0,town,True,NC
+3736020,Kittrell town,49.0,town,True,NC
+3736060,Kitty Hawk town,2192.0,town,True,NC
+3736080,Knightdale town,5186.0,suburb,False,NC
+3736220,Kure Beach town,1491.0,suburb,False,NC
+3736400,La Grange town,694.0,town,True,NC
+3736500,Lake Lure town,1783.0,town,True,NC
+3736512,Lake Park village,1252.0,suburb,False,NC
+3736640,Lake Waccamaw town,820.0,town,True,NC
+3737160,Laurel Park town,825.0,suburb,False,NC
+3737640,Leggett town,27.0,suburb,True,NC
+3737680,Leland town,10757.0,suburb,False,NC
+3738040,Lewisville town,4857.0,suburb,True,NC
+3738060,Lexington city,6289.0,suburb,True,NC
+3738100,Liberty town,734.0,suburb,True,NC
+3738220,Lillington town,1769.0,town,True,NC
+3738320,Lincolnton city,3540.0,suburb,True,NC
+3738360,Linden town,48.0,suburb,True,NC
+3738860,Locust city,1977.0,town,True,NC
+3739420,Love Valley town,154.0,suburb,True,NC
+3739480,Lowell city,1455.0,suburb,True,NC
+3739600,Lucama town,233.0,town,True,NC
+3739700,Lumberton city,5145.0,town,True,NC
+3739880,McAdenville town,432.0,suburb,True,NC
+3739960,Macclesfield town,200.0,suburb,True,NC
+3740560,Madison town,817.0,suburb,True,NC
+3740600,Maggie Valley town,1215.0,town,True,NC
+3741060,Manteo town,705.0,town,True,NC
+3741420,Marion city,2215.0,town,True,NC
+3741580,Marshall town,293.0,suburb,True,NC
+3741620,Mars Hill town,471.0,suburb,True,NC
+3741640,Marshville town,794.0,suburb,True,NC
+3741720,Marvin village,2134.0,suburb,True,NC
+3741960,Matthews town,8335.0,suburb,False,NC
+3742060,Mayodan town,989.0,suburb,True,NC
+3742240,Mebane city,4303.0,suburb,True,NC
+3742620,Micro town,145.0,suburb,True,NC
+3742640,Middleburg town,26.0,town,True,NC
+3742700,Middlesex town,352.0,suburb,True,NC
+3742760,Midland town,1555.0,suburb,True,NC
+3742860,Midway town,1843.0,suburb,True,NC
+3743260,Mills River town,2551.0,suburb,True,NC
+3743360,Mineral Springs town,1164.0,suburb,False,NC
+3743480,Mint Hill town,9855.0,suburb,False,NC
+3743580,Misenheimer village,79.0,town,True,NC
+3743860,Momeyer town,102.0,suburb,True,NC
+3743920,Monroe city,12770.0,suburb,True,NC
+3744100,Montreat town,551.0,suburb,True,NC
+3744220,Mooresville town,15328.0,suburb,False,NC
+3744320,Morehead City town,3229.0,town,True,NC
+3744400,Morganton city,4530.0,core,True,NC
+3744520,Morrisville town,3942.0,suburb,True,NC
+3744900,Mount Gilead town,454.0,town,True,NC
+3744960,Mount Holly city,6331.0,suburb,True,NC
+3745100,Mount Olive town,1348.0,suburb,True,NC
+3745140,Mount Pleasant town,718.0,suburb,True,NC
+3745880,Nags Head town,4245.0,town,True,NC
+3746000,Nashville town,1806.0,suburb,True,NC
+3746060,Navassa town,697.0,suburb,True,NC
+3746340,New Bern city,12038.0,town,True,NC
+3746820,New London town,217.0,town,True,NC
+3746860,Newport town,1224.0,town,True,NC
+3747845,North Topsail Beach town,1156.0,suburb,True,NC
+3747860,Northwest city,507.0,suburb,True,NC
+3747880,North Wilkesboro town,1201.0,town,True,NC
+3747980,Norwood town,1008.0,town,True,NC
+3748040,Oakboro town,1069.0,town,True,NC
+3748345,Oak Island town,9177.0,suburb,False,NC
+3748480,Oak Ridge town,3043.0,suburb,True,NC
+3748700,Ocean Isle Beach town,2485.0,suburb,False,NC
+3749600,Ossipee town,210.0,suburb,True,NC
+3751040,Peletier town,271.0,town,True,NC
+3751780,Pikeville town,266.0,suburb,True,NC
+3751840,Pinebluff town,638.0,suburb,True,NC
+3751940,Pinehurst village,8173.0,core,True,NC
+3752000,Pine Knoll Shores town,1090.0,town,True,NC
+3752020,Pine Level town,619.0,suburb,True,NC
+3752140,Pinetops town,477.0,suburb,True,NC
+3752220,Pineville town,1953.0,suburb,True,NC
+3752400,Pink Hill town,168.0,town,True,NC
+3752760,Pleasant Garden town,1605.0,suburb,True,NC
+3753140,Polkton town,210.0,suburb,True,NC
+3753820,Princeton town,506.0,suburb,True,NC
+3753840,Princeville town,557.0,suburb,True,NC
+3754580,Raeford city,1278.0,suburb,True,NC
+3755000,Raleigh city,90215.0,core,False,NC
+3755040,Ramseur town,593.0,suburb,True,NC
+3755080,Randleman city,1460.0,suburb,True,NC
+3755260,Ranlo town,1598.0,suburb,True,NC
+3755460,Red Cross town,280.0,town,True,NC
+3755640,Red Oak town,1435.0,suburb,False,NC
+3755660,Red Springs town,1132.0,town,True,NC
+3755900,Reidsville city,4988.0,suburb,True,NC
+3756240,Rhodhiss town,282.0,suburb,True,NC
+3756340,Richfield town,287.0,town,True,NC
+3756360,Richlands town,795.0,suburb,False,NC
+3756710,River Bend town,1358.0,town,True,NC
+3756900,Roanoke Rapids city,4605.0,town,True,NC
+3757000,Robbins town,376.0,suburb,True,NC
+3757260,Rockingham city,3075.0,town,True,NC
+3757500,Rocky Mount city,18639.0,core,True,NC
+3757640,Rolesville town,3667.0,suburb,True,NC
+3758160,Roxboro city,2501.0,suburb,True,NC
+3758360,Rural Hall town,1030.0,suburb,True,NC
+3758420,Ruth town,154.0,town,True,NC
+3758440,Rutherford College town,516.0,suburb,True,NC
+3758460,Rutherfordton town,1343.0,town,True,NC
+3758620,St. Helena village,197.0,suburb,True,NC
+3758630,St. James town,4024.0,suburb,True,NC
+3759090,Sandy Creek town,27.0,suburb,True,NC
+3759135,Sandyfield town,90.0,town,True,NC
+3759280,Sanford city,7971.0,town,True,NC
+3759340,Saratoga town,165.0,town,True,NC
+3759780,Scotland Neck town,933.0,town,True,NC
+3760080,Seagrove town,122.0,suburb,True,NC
+3760180,Sedalia town,306.0,suburb,True,NC
+3760320,Selma town,2024.0,suburb,True,NC
+3760505,Seven Devils town,342.0,town,True,NC
+3760540,Seven Springs town,29.0,suburb,True,NC
+3760800,Shallotte town,1635.0,suburb,False,NC
+3761060,Sharpsburg town,470.0,suburb,True,NC
+3761200,Shelby city,7448.0,town,True,NC
+3761860,Siler City town,1826.0,suburb,True,NC
+3762040,Simpson village,169.0,suburb,True,NC
+3762060,Sims town,139.0,town,True,NC
+3762520,Smithfield town,3548.0,suburb,True,NC
+3763120,Southern Pines town,5329.0,core,True,NC
+3763130,Southern Shores town,2517.0,town,True,NC
+3763400,Southport city,2147.0,suburb,False,NC
+3763720,Speed town,42.0,suburb,True,NC
+3763880,Spindale town,1547.0,town,True,NC
+3764160,Spring Hope town,518.0,suburb,True,NC
+3764180,Spring Lake town,1681.0,suburb,True,NC
+3764380,Staley town,133.0,suburb,True,NC
+3764420,Stallings town,6615.0,suburb,False,NC
+3764460,Stanfield town,555.0,town,True,NC
+3764500,Stanley town,1888.0,suburb,True,NC
+3764560,Stantonsburg town,438.0,town,True,NC
+3764580,Star town,284.0,town,True,NC
+3764740,Statesville city,10275.0,suburb,True,NC
+3764840,Stedman town,490.0,suburb,True,NC
+3765040,Stokesdale town,2497.0,suburb,True,NC
+3765100,Stoneville town,441.0,suburb,True,NC
+3765580,Summerfield town,3967.0,suburb,False,NC
+3765900,Sunset Beach town,3301.0,suburb,True,NC
+3766040,Surf City town,3253.0,suburb,False,NC
+3766360,Swansboro town,1443.0,suburb,False,NC
+3766460,Swepsonville town,972.0,suburb,True,NC
+3766520,Tabor City town,747.0,town,True,NC
+3766700,Tarboro town,3804.0,suburb,True,NC
+3766740,Tar Heel town,47.0,town,True,NC
+3766980,Taylortown town,330.0,suburb,True,NC
+3767420,Thomasville city,8850.0,suburb,True,NC
+3767720,Tobaccoville village,955.0,suburb,True,NC
+3768040,Topsail Beach town,1168.0,suburb,False,NC
+3768340,Trent Woods town,1882.0,town,True,NC
+3768400,Trinity city,2454.0,suburb,True,NC
+3768500,Troutman town,3709.0,suburb,True,NC
+3768520,Troy town,805.0,town,True,NC
+3769260,Unionville town,2368.0,suburb,True,NC
+3769520,Valdese town,1782.0,suburb,True,NC
+3769680,Vanceboro town,266.0,town,True,NC
+3769795,Varnamtown town,226.0,suburb,True,NC
+3769840,Vass town,619.0,suburb,True,NC
+3770340,Wade town,204.0,suburb,True,NC
+3770540,Wake Forest town,13760.0,suburb,False,NC
+3770660,Walkertown town,1957.0,suburb,True,NC
+3770740,Wallburg town,1039.0,suburb,True,NC
+3770780,Walnut Cove town,556.0,suburb,True,NC
+3770820,Walnut Creek village,454.0,suburb,True,NC
+3771220,Washington city,3197.0,town,True,NC
+3771320,Watha town,83.0,suburb,True,NC
+3771460,Waxhaw town,7337.0,suburb,False,NC
+3771500,Waynesville town,3638.0,town,True,NC
+3771560,Weaverville town,1436.0,suburb,True,NC
+3771680,Weddington town,4658.0,suburb,True,NC
+3771780,Weldon town,518.0,town,True,NC
+3771860,Wendell town,4931.0,suburb,True,NC
+3771900,Wentworth town,855.0,suburb,True,NC
+3771940,Wesley Chapel village,3156.0,suburb,False,NC
+3773140,Whispering Pines village,1894.0,suburb,False,NC
+3773160,Whitakers town,242.0,suburb,True,NC
+3773300,White Lake town,598.0,town,True,NC
+3773660,Whiteville city,1488.0,town,True,NC
+3773760,Whitsett town,269.0,suburb,True,NC
+3774440,Wilmington city,29808.0,core,False,NC
+3774540,Wilson city,13755.0,town,True,NC
+3774580,Wilson's Mills town,654.0,suburb,True,NC
+3774760,Wingate town,1078.0,suburb,True,NC
+3775000,Winston-Salem city,65304.0,core,True,NC
+3775060,Winterville town,3780.0,suburb,True,NC
+3775280,Woodfin town,1827.0,suburb,True,NC
+3775820,Wrightsville Beach town,1051.0,suburb,True,NC
+3775960,Yadkinville town,616.0,suburb,True,NC
+3776220,Zebulon town,3479.0,suburb,True,NC
+39001,Adams County Part,4427.0,town,True,OH
+3900182012,Wayne township,348.0,town,True,OH
+3900198,Ada village,981.0,town,True,OH
+39003,Allen County Part,505.0,suburb,True,OH
+3900301602,Amanda township,709.0,suburb,True,OH
+3900301756,American township,3958.0,suburb,True,OH
+3900302988,Auglaize township,677.0,suburb,True,OH
+3900304206,Bath township,2850.0,suburb,True,OH
+3900337646,Jackson township,753.0,suburb,True,OH
+3900347656,Marion township,978.0,suburb,True,OH
+3900361742,Perry township,903.0,suburb,True,OH
+3900366614,Richland township,521.0,suburb,True,OH
+3900371955,Shawnee township,3931.0,suburb,True,OH
+3900373982,Spencer township,269.0,suburb,True,OH
+3900375199,Sugar Creek township,389.0,suburb,True,OH
+3900436,Addyston village,297.0,suburb,True,OH
+3900464,Adena village,307.0,suburb,True,OH
+39005,Ashland County Part,1701.0,town,True,OH
+3900515672,Clear Creek township,439.0,town,True,OH
+3900531682,Green township,237.0,town,True,OH
+3900537660,Jackson township,856.0,town,True,OH
+3900541272,Lake township,223.0,town,True,OH
+3900550050,Mifflin township,536.0,town,True,OH
+3900550610,Milton township,780.0,town,True,OH
+3900551688,Montgomery township,968.0,town,True,OH
+3900558562,Orange township,675.0,town,True,OH
+3900561756,Perry township,524.0,town,True,OH
+3900568966,Ruggles township,364.0,town,True,OH
+3900575357,Sullivan township,1032.0,town,True,OH
+3900577532,Troy township,351.0,town,True,OH
+3900579758,Vermillion township,672.0,town,True,OH
+39007,Ashtabula County,22558.0,suburb,True,OH
+39009,Athens County Part,7300.0,town,True,OH
+3900902750,Athens township,1626.0,town,True,OH
+3901000,Akron city,59904.0,core,True,OH
+3901042,Albany village,259.0,town,True,OH
+3901115448,Clay township,229.0,town,True,OH
+3901122722,Duchouquet township,978.0,town,True,OH
+3901129848,German township,211.0,town,True,OH
+3901130954,Goshen township,153.0,town,True,OH
+3901137674,Jackson township,200.0,town,True,OH
+3901144618,Logan township,410.0,town,True,OH
+3901152472,Moulton township,520.0,town,True,OH
+3901154,Alexandria village,197.0,suburb,True,OH
+3901155986,Noble township,359.0,town,True,OH
+3901165018,Pusheta township,286.0,town,True,OH
+3901169694,St. Marys township,1212.0,town,True,OH
+3901169806,Salem township,174.0,town,True,OH
+3901178204,Union township,563.0,town,True,OH
+3901181074,Washington township,272.0,town,True,OH
+3901182054,Wayne township,213.0,town,True,OH
+39013,Belmont County Part,12071.0,suburb,True,OH
+3901420,Alliance city,6212.0,suburb,True,OH
+39015,Brown County Unincorporated Area,11008.0,suburb,True,OH
+3901630,Amanda village,240.0,suburb,True,OH
+39017,Butler County Unincorporated Area,54749.0,suburb,True,OH
+3901798,Amherst city,4563.0,suburb,True,OH
+39019,Carroll County Part,6993.0,suburb,True,OH
+3902092,Anna village,531.0,town,True,OH
+39021,Champaign County Unincorporated Area,7432.0,town,True,OH
+3902179086,Urbana township,4170.0,town,True,OH
+3902204,Antwerp village,566.0,town,True,OH
+39023,Clark County Unincorporated Area,24363.0,suburb,True,OH
+3902316,Arcadia village,265.0,town,True,OH
+3902344,Archbold village,1231.0,suburb,True,OH
+3902400,Arlington village,610.0,town,True,OH
+3902428,Arlington Heights village,177.0,suburb,True,OH
+39025,Clermont County Unincorporated Area,54511.0,suburb,True,OH
+3902568,Ashland city,5559.0,town,True,OH
+3902582,Ashley village,447.0,suburb,True,OH
+3902638,Ashtabula city,5326.0,suburb,True,OH
+3902680,Ashville village,1272.0,suburb,True,OH
+39027,Clinton County Unincorporated Area,7026.0,town,True,OH
+3902736,Athens city,2955.0,town,True,OH
+3902820,Attica village,356.0,town,True,OH
+39029,Columbiana County Part,12791.0,town,True,OH
+3902925998,Fairfield township,1443.0,town,True,OH
+3902944226,Liverpool township,1381.0,town,True,OH
+3902961798,Perry township,1445.0,town,True,OH
+3903086,Aurora city,4503.0,suburb,False,OH
+39031,Coshocton County Part,5431.0,town,True,OH
+39033,Crawford County Part,3180.0,town,True,OH
+3903337744,Jackson township,109.0,town,True,OH
+3903338570,Jefferson township,467.0,town,True,OH
+3903352,Avon city,7974.0,suburb,False,OH
+3903364010,Polk township,702.0,town,True,OH
+3903464,Avon Lake city,8380.0,suburb,False,OH
+3903513372,Chagrin Falls township,38.0,suburb,True,OH
+3903558408,Olmsted township,3700.0,suburb,True,OH
+3903646,Bairdstown village,98.0,suburb,True,OH
+39037,Darke County Unincorporated Area,14597.0,town,True,OH
+3903744,Baltic village,198.0,town,True,OH
+3903758,Baltimore village,939.0,suburb,True,OH
+3903828,Barberton city,8688.0,suburb,True,OH
+39039,Defiance County Part,346.0,town,True,OH
+3903900268,Adams township,294.0,town,True,OH
+3903921322,Defiance township,567.0,town,True,OH
+3903921420,Delaware township,262.0,town,True,OH
+3903926,Barnesville village,1502.0,core,True,OH
+3903935112,Hicksville township,420.0,town,True,OH
+3903935196,Highland township,604.0,town,True,OH
+3903940,Barnhill village,126.0,town,True,OH
+3903947852,Mark township,235.0,town,True,OH
+3903950190,Milford township,288.0,town,True,OH
+3903956014,Noble township,589.0,town,True,OH
+3903966670,Richland township,346.0,town,True,OH
+3903976772,Tiffin township,415.0,town,True,OH
+3903981200,Washington township,320.0,town,True,OH
+39041,Delaware County Unincorporated Area,40162.0,suburb,True,OH
+3904305802,Berlin township,955.0,suburb,True,OH
+3904327482,Florence township,790.0,suburb,True,OH
+3904332578,Groton township,354.0,suburb,True,OH
+3904337030,Huron township,904.0,suburb,True,OH
+3904347572,Margaretta township,1689.0,suburb,True,OH
+3904350148,Milan township,928.0,suburb,False,OH
+3904359276,Oxford township,431.0,suburb,True,OH
+3904361714,Perkins township,3967.0,suburb,True,OH
+3904379730,Vermilion township,1510.0,suburb,True,OH
+3904402,Bay View village,350.0,suburb,True,OH
+3904416,Bay Village city,6194.0,suburb,False,OH
+3904458,Beach City village,386.0,suburb,True,OH
+39045,Fairfield County Part,1580.0,suburb,True,OH
+3904500,Beachwood city,3008.0,suburb,True,OH
+3904501637,Amanda township,611.0,suburb,True,OH
+3904505956,Berne township,1304.0,suburb,True,OH
+3904506950,Bloom township,2550.0,suburb,True,OH
+3904532060,Greenfield township,1494.0,suburb,True,OH
+3904535812,Hocking township,1087.0,suburb,False,OH
+3904543120,Liberty township,1689.0,suburb,False,OH
+3904563240,Pleasant township,2048.0,suburb,True,OH
+3904566684,Richland township,734.0,suburb,True,OH
+3904569120,Rush Creek township,615.0,suburb,True,OH
+3904580206,Violet township,7048.0,suburb,True,OH
+3904580570,Walnut township,1508.0,suburb,True,OH
+3904696,Beaver village,135.0,town,True,OH
+39047,Fayette County Unincorporated Area,3977.0,town,True,OH
+3904752,Beaverdam village,124.0,suburb,True,OH
+3904878,Bedford city,4153.0,suburb,True,OH
+39049,Franklin County Unincorporated Area,36000.0,suburb,True,OH
+3904920,Bedford Heights city,2628.0,suburb,True,OH
+3905074,Bellaire village,1170.0,core,True,OH
+39051,Fulton County Part Unincorporated Area,4807.0,suburb,True,OH
+3905116,Belle Center village,308.0,town,True,OH
+3905116126,Clinton township,608.0,suburb,True,OH
+3905129876,German township,595.0,suburb,True,OH
+3905228,Bellevue city,2508.0,town,True,OH
+3905284,Bellville village,684.0,suburb,True,OH
+39053,Gallia County Part,5065.0,town,True,OH
+3905312,Belmont village,201.0,suburb,True,OH
+3905424,Belpre city,2356.0,town,True,OH
+39055,Geauga County Unincorporated Area,27725.0,suburb,True,OH
+3905550,Bentleyville village,312.0,suburb,True,OH
+3905690,Berea city,6260.0,suburb,True,OH
+39057,Greene County Unincorporated Area,30087.0,suburb,True,OH
+3905732,Berkey village,116.0,suburb,True,OH
+39059,Guernsey County Unincorporated Area,8547.0,town,True,OH
+3905900,Berlin Heights village,314.0,suburb,True,OH
+39061,Hamilton County Unincorporated Area,95725.0,suburb,True,OH
+3906138,Bethesda village,450.0,suburb,True,OH
+3906194,Bettsville village,253.0,town,True,OH
+3906222,Beverly village,347.0,town,True,OH
+3906278,Bexley city,3989.0,suburb,False,OH
+39063,Hancock County Part,2613.0,town,True,OH
+3906301644,Amanda township,238.0,town,True,OH
+3906312392,Cass township,320.0,town,True,OH
+3906321462,Delaware township,220.0,town,True,OH
+3906323086,Eagle township,347.0,town,True,OH
+3906337800,Jackson township,323.0,town,True,OH
+3906343148,Liberty township,1940.0,town,True,OH
+3906347698,Marion township,1104.0,town,True,OH
+3906358632,Orange township,350.0,town,True,OH
+3906364066,Portage township,190.0,town,True,OH
+3906379408,Van Buren township,278.0,town,True,OH
+3906381284,Washington township,277.0,town,True,OH
+39065,Hardin County Part,2238.0,town,True,OH
+3906506866,Blanchard township,688.0,town,True,OH
+3906509848,Buck township,309.0,town,True,OH
+3906513316,Cessna township,182.0,town,True,OH
+3906522736,Dudley township,566.0,town,True,OH
+3906531024,Goshen township,213.0,town,True,OH
+3906532837,Hale township,452.0,town,True,OH
+3906537814,Jackson township,301.0,town,True,OH
+3906563282,Pleasant township,469.0,town,True,OH
+3906576198,Taylor Creek township,223.0,town,True,OH
+39067,Harrison County Part,3890.0,town,True,OH
+3906904052,Bartlow township,164.0,town,True,OH
+3906920016,Damascus township,437.0,town,True,OH
+3906927342,Flatrock township,472.0,town,True,OH
+3906928700,Freedom township,308.0,town,True,OH
+3906933866,Harrison township,368.0,town,True,OH
+3906943176,Liberty township,397.0,town,True,OH
+3906947726,Marion township,241.0,town,True,OH
+3906951408,Monroe township,295.0,town,True,OH
+3906953564,Napoleon township,462.0,town,True,OH
+3906963296,Pleasant township,403.0,town,True,OH
+3906966502,Richfield township,256.0,town,True,OH
+3906967062,Ridgeville township,371.0,town,True,OH
+3906981326,Washington township,581.0,town,True,OH
+3907062,Bloomdale village,350.0,suburb,True,OH
+39071,Highland County Part,6162.0,town,True,OH
+3907137828,Jackson township,223.0,town,True,OH
+3907146452,Madison township,594.0,town,True,OH
+3907169862,Salem township,155.0,town,True,OH
+3907178344,Union township,469.0,town,True,OH
+3907202,Bloomingdale village,77.0,suburb,True,OH
+3907286,Bloomville village,310.0,town,True,OH
+39073,Hocking County Part,7682.0,suburb,True,OH
+3907300,Blue Ash city,3868.0,suburb,False,OH
+3907426,Bluffton village,1138.0,suburb,True,OH
+39075,Holmes County Part,6304.0,town,True,OH
+3907505830,Berlin township,910.0,town,True,OH
+3907594,Bolivar village,379.0,town,True,OH
+39077,Huron County Part,1636.0,town,True,OH
+3907709148,Bronson township,636.0,town,True,OH
+3907715364,Clarksfield township,456.0,town,True,OH
+3907726040,Fairfield township,161.0,town,True,OH
+3907732102,Greenfield township,632.0,town,True,OH
+3907732382,Greenwich township,150.0,town,True,OH
+3907745514,Lyme township,323.0,town,True,OH
+3907754712,New Haven township,501.0,town,True,OH
+3907754922,New London township,228.0,town,True,OH
+3907757358,Norwich township,299.0,town,True,OH
+3907766810,Richmond township,298.0,town,True,OH
+3907767006,Ridgefield township,298.0,town,True,OH
+3907767300,Ripley township,231.0,town,True,OH
+3907772193,Sherman township,161.0,town,True,OH
+3907777158,Townsend township,448.0,town,True,OH
+3907780472,Wakeman township,333.0,town,True,OH
+3907790,Boston Heights village,489.0,suburb,True,OH
+3907832,Botkins village,370.0,town,True,OH
+39079,Jackson County Part,4811.0,town,True,OH
+39081,Jefferson County Part,10681.0,suburb,True,OH
+39083,Knox County Part,884.0,town,True,OH
+3908305844,Berlin township,478.0,town,True,OH
+3908309470,Brown township,363.0,town,True,OH
+3908316140,Clinton township,936.0,town,True,OH
+3908316686,College township,101.0,town,True,OH
+3908333880,Harrison township,141.0,town,True,OH
+3908335462,Hilliar township,619.0,town,True,OH
+3908336,Bratenahl village,432.0,suburb,True,OH
+3908336526,Howard township,3042.0,town,True,OH
+3908338668,Jefferson township,100.0,town,True,OH
+3908343218,Liberty township,485.0,town,True,OH
+3908349658,Middlebury township,240.0,town,True,OH
+3908350204,Milford township,482.0,town,True,OH
+3908350330,Miller township,251.0,town,True,OH
+3908351436,Monroe township,704.0,town,True,OH
+3908352108,Morgan township,248.0,town,True,OH
+3908352290,Morris township,740.0,town,True,OH
+3908362652,Pike township,330.0,town,True,OH
+3908363310,Pleasant township,657.0,town,True,OH
+3908364,Brecksville city,4546.0,suburb,False,OH
+3908382194,Wayne township,256.0,town,True,OH
+3908392,Bremen village,576.0,suburb,True,OH
+39085,Lake County Unincorporated Area,27553.0,suburb,True,OH
+3908532,Brice village,46.0,suburb,True,OH
+3908560,Bridgeport village,740.0,suburb,True,OH
+39087,Lawrence County Part,10840.0,suburb,True,OH
+39089,Licking County Part,32259.0,suburb,True,OH
+3909064,Broadview Heights city,5915.0,suburb,True,OH
+39091,Logan County Unincorporated Area,12010.0,town,True,OH
+3909246,Brooklyn city,3661.0,suburb,True,OH
+3909274,Brooklyn Heights village,618.0,suburb,True,OH
+3909288,Brook Park city,6980.0,suburb,True,OH
+3909301812,Amherst township,1729.0,suburb,True,OH
+3909308770,Brighton township,288.0,suburb,True,OH
+3909309568,Brownhelm township,703.0,suburb,True,OH
+3909311010,Camden township,329.0,suburb,True,OH
+3909312140,Carlisle township,2753.0,suburb,True,OH
+3909316,Brookside village,258.0,suburb,True,OH
+3909316910,Columbia township,3339.0,suburb,False,OH
+3909324220,Eaton township,2549.0,suburb,True,OH
+3909325270,Elyria township,1264.0,suburb,True,OH
+3909331164,Grafton township,897.0,suburb,False,OH
+3909334972,Henrietta township,587.0,suburb,False,OH
+3909336876,Huntington township,360.0,suburb,True,OH
+3909341244,LaGrange township,1558.0,suburb,True,OH
+3909355446,New Russia township,688.0,suburb,True,OH
+3909358,Brookville city,1980.0,suburb,True,OH
+3909361532,Penfield township,577.0,suburb,False,OH
+3909362960,Pittsfield township,580.0,suburb,False,OH
+3909367776,Rochester township,234.0,suburb,True,OH
+3909372067,Sheffield township,1233.0,suburb,True,OH
+3909382656,Wellington township,382.0,suburb,True,OH
+39095,Lucas County Unincorporated Area,38257.0,suburb,True,OH
+3909680,Brunswick city,11304.0,suburb,True,OH
+39097,Madison County Part,5703.0,suburb,True,OH
+3909792,Bryan city,2999.0,town,True,OH
+3909890,Buckeye Lake village,733.0,suburb,True,OH
+39099,Mahoning County Unincorporated Area,50611.0,suburb,True,OH
+3910030,Bucyrus city,4104.0,town,True,OH
+39101,Marion County Part,382.0,town,True,OH
+3910106348,Big Island township,418.0,town,True,OH
+3910115196,Claridon township,530.0,town,True,OH
+3910131178,Grand township,96.0,town,True,OH
+3910131192,Grand Prairie township,462.0,town,True,OH
+3910147768,Marion township,2226.0,town,True,OH
+3910151730,Montgomery township,321.0,town,True,OH
+3910163352,Pleasant township,1345.0,town,True,OH
+3910164794,Prospect township,349.0,town,True,OH
+3910166754,Richland township,552.0,town,True,OH
+3910170240,Salt Rock township,138.0,town,True,OH
+3910171073,Scott township,90.0,town,True,OH
+3910177742,Tully township,148.0,town,True,OH
+3910180514,Waldo township,235.0,town,True,OH
+39103,Medina County Unincorporated Area,33489.0,suburb,True,OH
+39105,Meigs County Unincorporated Area,5405.0,town,True,OH
+3910674,Butlerville village,54.0,suburb,True,OH
+39107,Mercer County Part,30.0,town,True,OH
+3910706586,Black Creek township,182.0,town,True,OH
+3910710604,Butler township,516.0,town,True,OH
+3910712952,Center township,339.0,town,True,OH
+3910722708,Dublin township,359.0,town,True,OH
+3910728350,Franklin township,1025.0,town,True,OH
+3910730058,Gibson township,183.0,town,True,OH
+3910731430,Granville township,459.0,town,True,OH
+3910736344,Hopewell township,326.0,town,True,OH
+3910738724,Jefferson township,1080.0,town,True,OH
+3910743260,Liberty township,251.0,town,True,OH
+3910747782,Marion township,777.0,town,True,OH
+3910765781,Recovery township,311.0,town,True,OH
+3910778442,Union township,203.0,town,True,OH
+3910781452,Washington township,247.0,town,True,OH
+3910884,Cairo village,179.0,suburb,True,OH
+39109,Miami County Unincorporated Area,36748.0,suburb,True,OH
+3910940,Caldwell village,590.0,town,True,OH
+3910954,Caledonia village,179.0,town,True,OH
+3910996,Cambridge city,3548.0,town,True,OH
+3911066,Campbell city,3243.0,suburb,True,OH
+39111,Monroe County Part,2866.0,town,True,OH
+39113,Montgomery County Unincorporated Area,65207.0,suburb,True,OH
+3911304,Canal Fulton city,1647.0,suburb,True,OH
+3911332,Canal Winchester city,2969.0,suburb,True,OH
+39115,Morgan County Unincorporated Area,2788.0,town,True,OH
+3911506964,Bloom township,299.0,town,True,OH
+39117,Morrow County Part,6651.0,suburb,True,OH
+3911712098,Cardington township,405.0,suburb,True,OH
+3911714030,Chester township,694.0,suburb,True,OH
+3911743680,Lincoln township,726.0,suburb,True,OH
+3911773061,South Bloomfield township,681.0,suburb,True,OH
+3911777602,Troy township,259.0,suburb,True,OH
+3911783454,Westfield township,491.0,suburb,True,OH
+39119,Muskingum County Unincorporated Area,12056.0,town,True,OH
+3911926502,Falls township,3210.0,town,True,OH
+3911961994,Perry township,946.0,town,True,OH
+3911982236,Wayne township,1997.0,town,True,OH
+3912000,Canton city,21780.0,core,True,OH
+3912084,Cardington village,815.0,suburb,True,OH
+39121,Noble County Part,2573.0,town,True,OH
+3912112,Carey village,1290.0,town,True,OH
+3912168,Carlisle village,1881.0,suburb,True,OH
+3912252,Carroll village,161.0,suburb,True,OH
+3912280,Carrollton village,906.0,suburb,True,OH
+39123,Ottawa County Part,16675.0,suburb,True,OH
+3912476,Castalia village,272.0,suburb,True,OH
+39125,Paulding County Part Unincorporated Area,741.0,town,True,OH
+3912503002,Auglaize township,515.0,town,True,OH
+3912505634,Benton township,196.0,town,True,OH
+3912507370,Blue Creek township,121.0,town,True,OH
+3912512308,Carryall township,426.0,town,True,OH
+3912519176,Crane township,402.0,town,True,OH
+3912525298,Emerald township,256.0,town,True,OH
+3912533950,Harrison township,260.0,town,True,OH
+3912542000,Latty township,189.0,town,True,OH
+3912561266,Paulding township,878.0,town,True,OH
+3912581536,Washington township,171.0,town,True,OH
+39127,Perry County Part,3897.0,suburb,True,OH
+3912700,Cecil village,51.0,town,True,OH
+3912736386,Hopewell township,534.0,suburb,True,OH
+3912765760,Reading township,655.0,suburb,True,OH
+3912776659,Thorn township,1230.0,suburb,True,OH
+3912784,Cedarville village,445.0,suburb,True,OH
+3912868,Celina city,3193.0,town,True,OH
+39129,Pickaway County Unincorporated Area,4322.0,suburb,True,OH
+3912915077,Circleville township,752.0,suburb,True,OH
+3912921168,Deercreek township,433.0,suburb,True,OH
+3912933978,Harrison township,187.0,suburb,True,OH
+3912946564,Madison township,294.0,suburb,True,OH
+3912951534,Monroe township,327.0,suburb,True,OH
+3912953256,Muhlenberg township,202.0,suburb,True,OH
+3912962008,Perry township,140.0,suburb,True,OH
+3912962484,Pickaway township,604.0,suburb,True,OH
+3912980598,Walnut township,927.0,suburb,False,OH
+3912981550,Washington township,971.0,suburb,True,OH
+3912982264,Wayne township,115.0,suburb,True,OH
+3913036,Centerburg village,467.0,town,True,OH
+39131,Pike County Unincorporated Area,4277.0,town,True,OH
+3913169,Centerville (Thurman) village,25.0,town,True,OH
+3913190,Centerville city,6173.0,suburb,False,OH
+39133,Portage County Unincorporated Area,25016.0,suburb,True,OH
+3913358,Chagrin Falls village,1312.0,suburb,False,OH
+39135,Preble County Unincorporated Area,10144.0,town,True,OH
+3913694,Chatfield village,74.0,town,True,OH
+39137,Putnam County Part,1100.0,town,True,OH
+3913732228,Greensburg township,387.0,town,True,OH
+3913738024,Jackson township,284.0,town,True,OH
+3913738976,Jennings township,480.0,town,True,OH
+3913743288,Liberty township,476.0,town,True,OH
+3913751562,Monroe township,246.0,town,True,OH
+3913751660,Monterey township,311.0,town,True,OH
+3913758996,Ottawa township,780.0,town,True,OH
+3913759612,Palmer township,329.0,town,True,OH
+3913762036,Perry township,257.0,town,True,OH
+3913763380,Pleasant township,505.0,town,True,OH
+3913778526,Union township,517.0,town,True,OH
+3913779450,Van Buren township,222.0,town,True,OH
+39139,Richland County Unincorporated Area,20293.0,suburb,True,OH
+3913904,Chesapeake village,325.0,suburb,True,OH
+3913932,Cheshire village,70.0,town,True,OH
+39141,Ross County Unincorporated Area,11373.0,town,True,OH
+3914110016,Buckskin township,432.0,town,True,OH
+3914114,Chesterville village,81.0,suburb,True,OH
+3914121224,Deerfield township,324.0,town,True,OH
+3914128,Cheviot city,2349.0,suburb,True,OH
+3914156,Chickasaw village,118.0,town,True,OH
+3914184,Chillicothe city,7250.0,town,True,OH
+3914296,Christiansburg village,219.0,town,True,OH
+39143,Sandusky County Part,1707.0,town,True,OH
+3914303730,Ballville township,2285.0,town,True,OH
+3914331990,Green Creek township,1006.0,town,True,OH
+3914338052,Jackson township,627.0,town,True,OH
+3914366460,Rice township,350.0,town,True,OH
+3914367188,Riley township,429.0,town,True,OH
+3914370408,Sandusky township,1408.0,town,True,OH
+3914371087,Scott township,423.0,town,True,OH
+3914381592,Washington township,538.0,town,True,OH
+3914386506,Woodville township,441.0,town,True,OH
+39145,Scioto County Unincorporated Area,11251.0,town,True,OH
+3914515560,Clay township,1355.0,town,True,OH
+3914538815,Jefferson township,577.0,town,True,OH
+3914579170,Valley township,687.0,town,True,OH
+39147,Seneca County Part,3185.0,town,True,OH
+3914700324,Adams township,324.0,town,True,OH
+3914716154,Clinton township,1250.0,town,True,OH
+3914724346,Eden township,533.0,town,True,OH
+3914736400,Hopewell township,871.0,town,True,OH
+3914738066,Jackson township,500.0,town,True,OH
+3914763394,Pleasant township,466.0,town,True,OH
+3914771024,Scipio township,499.0,town,True,OH
+3914916168,Clinton township,135.0,town,True,OH
+3914919834,Cynthian township,555.0,town,True,OH
+3914922050,Dinsmore township,363.0,town,True,OH
+3914928434,Franklin township,598.0,town,True,OH
+3914931850,Green township,268.0,town,True,OH
+3914938080,Jackson township,217.0,town,True,OH
+3914944884,Loramie township,467.0,town,True,OH
+3914946172,McLean township,525.0,town,True,OH
+3914958660,Orange township,318.0,town,True,OH
+3914962064,Perry township,226.0,town,True,OH
+3914969960,Salem township,650.0,town,True,OH
+3914977854,Turtle Creek township,412.0,town,True,OH
+3914979464,Van Buren township,436.0,town,True,OH
+3914981620,Washington township,500.0,town,True,OH
+3915000,Cincinnati city,56981.0,core,True,OH
+3915070,Circleville city,3691.0,suburb,True,OH
+39151,Stark County Unincorporated Area,69775.0,suburb,True,OH
+3915210,Clarington village,132.0,town,True,OH
+39153,Summit County Unincorporated Area,48360.0,suburb,True,OH
+39155,Trumbull County Part,41447.0,suburb,True,OH
+3915588,Clay Center village,110.0,suburb,True,OH
+39157,Tuscarawas County Part,5556.0,town,True,OH
+3915722470,Dover township,1174.0,town,True,OH
+3915731066,Goshen township,1411.0,town,True,OH
+3915742182,Lawrence township,1313.0,town,True,OH
+3915770443,Sandy township,573.0,town,True,OH
+39159,Union County Unincorporated Area,16804.0,suburb,True,OH
+3916000,Cleveland city,80693.0,core,True,OH
+3916014,Cleveland Heights city,12725.0,suburb,True,OH
+3916028,Cleves village,1050.0,suburb,True,OH
+3916056,Clifton village,69.0,suburb,True,OH
+3916134034,Harrison township,312.0,town,True,OH
+3916135756,Hoaglin township,219.0,town,True,OH
+3916138122,Jackson township,130.0,town,True,OH
+3916138990,Jennings township,264.0,town,True,OH
+3916143372,Liberty township,212.0,town,True,OH
+3916163408,Pleasant township,697.0,town,True,OH
+3916166978,Ridge township,416.0,town,True,OH
+3916177756,Tully township,318.0,town,True,OH
+3916178596,Union township,265.0,town,True,OH
+3916181676,Washington township,404.0,town,True,OH
+3916185750,Willshire township,327.0,town,True,OH
+3916187136,York township,207.0,town,True,OH
+3916266,Cloverdale village,49.0,town,True,OH
+39163,Vinton County Part,2792.0,town,True,OH
+3916308,Clyde city,1812.0,town,True,OH
+3916378,Coal Grove village,642.0,suburb,True,OH
+3916434,Coalton village,146.0,town,True,OH
+39165,Warren County Unincorporated Area,42162.0,suburb,True,OH
+3916532,Coldwater village,1452.0,town,True,OH
+39167,Washington County Part Unincorporated Area,8712.0,town,True,OH
+3916753452,Muskingum township,1596.0,town,True,OH
+39169,Wayne County Unincorporated Area,22027.0,town,True,OH
+3917036,Columbiana city,1938.0,town,True,OH
+39171,Williams County Part,5531.0,town,True,OH
+39173,Wood County Unincorporated Area,42562.0,suburb,True,OH
+39175,Wyandot County Part Unincorporated Area,2556.0,town,True,OH
+3917519246,Crawford township,336.0,town,True,OH
+3918000,Columbus city,173843.0,core,False,OH
+3918014,Columbus Grove village,654.0,town,True,OH
+3918504,Continental village,369.0,town,True,OH
+3918546,Convoy village,386.0,town,True,OH
+3918868,Coshocton city,3964.0,town,True,OH
+3919330,Crestline village,1468.0,town,True,OH
+3919400,Cridersville village,444.0,town,True,OH
+3919456,Crooksville village,701.0,suburb,True,OH
+3919778,Cuyahoga Falls city,15302.0,suburb,True,OH
+3919806,Cuyahoga Heights village,177.0,suburb,True,OH
+3920114,Danville village,270.0,town,True,OH
+3921000,Dayton city,43400.0,core,True,OH
+3921266,Deer Park city,2044.0,suburb,True,OH
+3921308,Defiance city,5320.0,town,True,OH
+3921378,De Graff village,516.0,town,True,OH
+3921434,Delaware city,12226.0,suburb,True,OH
+3921602,Delphos city,2286.0,suburb,True,OH
+3921616,Delta village,1137.0,suburb,True,OH
+3921714,Dennison village,914.0,town,True,OH
+3921812,Deshler village,632.0,town,True,OH
+3922022,Dillonvale village,271.0,suburb,True,OH
+3922456,Dover city,4219.0,town,True,OH
+3922568,Doylestown village,1033.0,town,True,OH
+3922610,Dresden village,504.0,town,True,OH
+3922694,Dublin city,12495.0,suburb,False,OH
+3923380,East Cleveland city,3067.0,suburb,True,OH
+3923618,Eastlake city,6711.0,suburb,True,OH
+3923730,East Liverpool city,3407.0,town,True,OH
+3923940,East Palestine village,1710.0,town,True,OH
+3924052,East Sparta village,268.0,suburb,True,OH
+3924234,Eaton city,2900.0,town,True,OH
+3924486,Edgerton village,632.0,town,True,OH
+3924598,Edison village,207.0,suburb,True,OH
+3924640,Edon village,280.0,town,True,OH
+3924808,Elida village,762.0,suburb,True,OH
+3925186,Elmwood Place village,566.0,suburb,True,OH
+3925256,Elyria city,15559.0,suburb,True,OH
+3925396,Englewood city,4613.0,suburb,True,OH
+3925452,Enon village,898.0,suburb,True,OH
+3925704,Euclid city,15052.0,suburb,True,OH
+3925802,Evendale village,1083.0,suburb,False,OH
+3925914,Fairborn city,9014.0,suburb,True,OH
+3925942,Fairfax village,696.0,suburb,True,OH
+3925970,Fairfield city,10728.0,suburb,True,OH
+3926166,Fairlawn city,1989.0,suburb,False,OH
+3926446,Fairview Park city,5730.0,suburb,True,OH
+3926656,Farmersville village,356.0,suburb,True,OH
+3926768,Fayette village,349.0,suburb,True,OH
+3926796,Fayetteville village,134.0,suburb,True,OH
+3927048,Findlay city,11488.0,town,True,OH
+3927636,Forest village,509.0,town,True,OH
+3927706,Forest Park city,5025.0,suburb,True,OH
+3927818,Fort Jennings village,198.0,town,True,OH
+3927832,Fort Loramie village,501.0,town,True,OH
+3927902,Fort Recovery village,456.0,town,True,OH
+3927944,Fort Shawnee CDP,2169.0,suburb,True,OH
+3928014,Fostoria city,4172.0,town,True,OH
+3928476,Franklin city,3544.0,suburb,True,OH
+3928574,Frazeysburg village,347.0,town,True,OH
+3928658,Fredericktown village,762.0,town,True,OH
+3928826,Fremont city,4736.0,town,True,OH
+3929106,Gahanna city,9891.0,suburb,False,OH
+3929162,Galion city,3586.0,town,True,OH
+3929204,Gallipolis village,1237.0,town,True,OH
+3929246,Gambier village,209.0,town,True,OH
+3929428,Garfield Heights city,10149.0,suburb,True,OH
+3929498,Gates Mills village,947.0,suburb,False,OH
+3929932,Germantown city,2065.0,suburb,True,OH
+3929974,Gettysburg village,166.0,town,True,OH
+3930072,Gibsonburg village,874.0,town,True,OH
+3930198,Girard city,3202.0,suburb,True,OH
+3930282,Glandorf village,352.0,town,True,OH
+3930380,Glendale village,875.0,suburb,False,OH
+3930436,Glenford village,55.0,suburb,True,OH
+3930632,Glenwillow village,238.0,suburb,True,OH
+3930702,Gnadenhutten village,539.0,town,True,OH
+3930786,Golf Manor village,960.0,suburb,True,OH
+3931150,Grafton village,889.0,suburb,True,OH
+3931304,Grandview Heights city,1842.0,suburb,False,OH
+3931458,Gratiot village,107.0,suburb,True,OH
+3931948,Green Camp village,117.0,town,True,OH
+3932088,Greenfield village,1438.0,town,True,OH
+3932158,Greenhills village,1298.0,suburb,True,OH
+3932256,Green Springs village,339.0,town,True,OH
+3932368,Greenwich village,456.0,town,True,OH
+3932592,Grove City city,12145.0,suburb,True,OH
+3932606,Groveport city,1891.0,suburb,True,OH
+3932620,Grover Hill village,133.0,town,True,OH
+3932956,Hamden village,257.0,town,True,OH
+3933012,Hamilton city,18606.0,suburb,True,OH
+3933096,Hamler village,236.0,town,True,OH
+3933292,Hanover village,377.0,suburb,True,OH
+3933306,Hanoverton village,145.0,town,True,OH
+3933838,Harrison city,3313.0,suburb,True,OH
+3934118,Harrod village,141.0,suburb,True,OH
+3934202,Hartford (Croton) village,136.0,suburb,True,OH
+3934328,Hartville village,764.0,suburb,True,OH
+3934384,Harveysburg village,241.0,suburb,True,OH
+3934552,Haviland village,57.0,town,True,OH
+3934636,Hayesville village,152.0,town,True,OH
+3935098,Hicksville village,1246.0,town,True,OH
+3935252,Highland Heights city,3435.0,suburb,True,OH
+3935255,Highland Hills village,142.0,suburb,True,OH
+3935476,Hilliard city,9365.0,suburb,False,OH
+3935560,Hillsboro city,1835.0,town,True,OH
+3935854,Holgate village,411.0,town,True,OH
+3935924,Holloway village,136.0,suburb,True,OH
+3936260,Hopedale village,355.0,town,True,OH
+3936568,Hoytville village,100.0,suburb,True,OH
+3936918,Hunting Valley village,271.0,suburb,True,OH
+3936988,Huntsville village,150.0,town,True,OH
+3937016,Huron city,2748.0,suburb,True,OH
+3937240,Independence city,2881.0,suburb,True,OH
+3937464,Ironton city,3851.0,core,True,OH
+3937842,Jackson city,2012.0,town,True,OH
+3938192,Jacksonburg village,11.0,suburb,True,OH
+3938220,Jackson Center village,489.0,town,True,OH
+3939074,Jerry City village,206.0,suburb,True,OH
+3939172,Jewett village,233.0,town,True,OH
+3939340,Johnstown village,1836.0,suburb,True,OH
+3939536,Kalida village,386.0,town,True,OH
+3939662,Kelleys Island village,733.0,suburb,False,OH
+3939872,Kent city,4325.0,suburb,True,OH
+3939886,Kenton city,2664.0,town,True,OH
+3940040,Kettering city,18621.0,core,True,OH
+3940054,Kettlersville village,56.0,town,True,OH
+3940544,Kipton village,103.0,suburb,True,OH
+3941118,Lafayette village,117.0,suburb,True,OH
+3941230,LaGrange village,755.0,suburb,True,OH
+3941454,Lakemore village,1059.0,suburb,True,OH
+3941608,Lakeview village,403.0,town,True,OH
+3941664,Lakewood city,9331.0,suburb,True,OH
+3941720,Lancaster city,12256.0,suburb,True,OH
+3941902,La Rue village,213.0,town,True,OH
+3942028,Laura village,142.0,suburb,True,OH
+3942364,Lebanon city,5221.0,suburb,True,OH
+3942476,Leesburg village,333.0,town,True,OH
+3942560,Leetonia village,619.0,town,True,OH
+3942602,Leipsic village,731.0,town,True,OH
+3943414,Liberty Center village,362.0,town,True,OH
+3943554,Lima city,10612.0,core,True,OH
+3943596,Limaville CDP,65.0,suburb,True,OH
+3943722,Lincoln Heights village,881.0,suburb,True,OH
+3943904,Lindsey village,208.0,town,True,OH
+3943918,Linndale village,15.0,suburb,True,OH
+3944030,Lisbon village,931.0,town,True,OH
+3944086,Lithopolis village,793.0,suburb,True,OH
+3944352,Lockington village,45.0,town,True,OH
+3944366,Lockland village,755.0,suburb,True,OH
+3944632,Logan city,2063.0,suburb,True,OH
+3944674,London city,2886.0,suburb,True,OH
+3944856,Lorain city,20213.0,suburb,True,OH
+3945066,Loudonville village,955.0,town,True,OH
+3945094,Louisville city,2731.0,suburb,True,OH
+3945108,Loveland city,3769.0,suburb,True,OH
+3945164,Lowell village,225.0,town,True,OH
+3945178,Lowellville village,416.0,suburb,True,OH
+3945220,Lower Salem village,35.0,town,True,OH
+3945374,Ludlow Falls village,73.0,suburb,True,OH
+3945556,Lyndhurst city,5694.0,suburb,True,OH
+3945626,Lyons village,212.0,suburb,True,OH
+3945794,McClure village,190.0,town,True,OH
+3945808,McComb village,485.0,town,True,OH
+3945822,McConnelsville village,528.0,town,True,OH
+3945934,McDonald village,1239.0,suburb,True,OH
+3945976,Macedonia city,4523.0,suburb,False,OH
+3946312,Madeira city,3363.0,suburb,False,OH
+3946942,Malinta village,86.0,town,True,OH
+3946970,Malta village,204.0,town,True,OH
+3946998,Malvern village,301.0,suburb,True,OH
+3947012,Manchester village,601.0,town,True,OH
+3947138,Mansfield city,13057.0,core,True,OH
+3947306,Maple Heights city,8975.0,suburb,True,OH
+3947474,Marble Cliff village,136.0,suburb,True,OH
+3947600,Mariemont village,1055.0,suburb,False,OH
+3947628,Marietta city,3948.0,town,True,OH
+3947754,Marion city,10130.0,town,True,OH
+3948104,Martins Ferry city,2297.0,core,True,OH
+3948188,Mason city,9414.0,suburb,False,OH
+3948244,Massillon city,10882.0,core,True,OH
+3948286,Matamoras village,184.0,town,True,OH
+3948342,Maumee city,4747.0,suburb,True,OH
+3948468,Mayfield village,1169.0,suburb,False,OH
+3948482,Mayfield Heights city,5479.0,suburb,True,OH
+3948790,Medina city,7179.0,suburb,True,OH
+3949000,Melrose village,88.0,town,True,OH
+3949042,Mendon village,262.0,town,True,OH
+3949056,Mentor city,16311.0,suburb,True,OH
+3949238,Metamora village,207.0,suburb,True,OH
+3949434,Miamisburg city,6477.0,suburb,True,OH
+3949644,Middleburg Heights city,4950.0,suburb,True,OH
+3949728,Middle Point village,187.0,town,True,OH
+3949756,Middleport village,699.0,town,True,OH
+3949840,Middletown city,15149.0,suburb,True,OH
+3949896,Midland village,94.0,town,True,OH
+3949966,Midvale village,239.0,town,True,OH
+3950036,Mifflin village,59.0,town,True,OH
+3950134,Milan village,555.0,suburb,True,OH
+3950176,Milford city,1348.0,suburb,True,OH
+3950358,Miller City village,84.0,town,True,OH
+3950372,Millersburg village,691.0,town,True,OH
+3950400,Millersport village,380.0,suburb,True,OH
+3950764,Mineral City village,228.0,town,True,OH
+3950904,Mingo Junction village,1281.0,suburb,True,OH
+3950918,Minster village,988.0,town,True,OH
+3951058,Mogadore village,1414.0,suburb,True,OH
+3951310,Monroe city,4820.0,suburb,True,OH
+3951618,Monroeville village,381.0,town,True,OH
+3951674,Montezuma village,85.0,town,True,OH
+3951716,Montgomery city,3350.0,suburb,False,OH
+3951772,Montpelier village,1418.0,town,True,OH
+3952010,Moraine city,2022.0,suburb,True,OH
+3952052,Moreland Hills village,1337.0,suburb,False,OH
+3952276,Morral village,134.0,town,True,OH
+3952598,Mount Blanchard village,159.0,town,True,OH
+3952738,Mount Gilead village,1544.0,suburb,True,OH
+3952752,Mount Healthy city,1757.0,suburb,True,OH
+3952976,Mount Pleasant village,167.0,suburb,True,OH
+3953046,Mount Sterling village,573.0,suburb,True,OH
+3953102,Mount Vernon city,4525.0,town,True,OH
+3953312,Munroe Falls city,1718.0,suburb,True,OH
+3953480,Mutual village,55.0,town,True,OH
+3953550,Napoleon city,2727.0,town,True,OH
+3953690,Navarre village,613.0,suburb,True,OH
+3953816,Nellie village,53.0,town,True,OH
+3953942,Nevada village,258.0,town,True,OH
+3953970,New Albany city,3488.0,suburb,True,OH
+3954040,Newark city,13871.0,suburb,True,OH
+3954166,New Boston village,615.0,town,True,OH
+3954194,New Bremen village,1000.0,town,True,OH
+3954250,Newburgh Heights village,492.0,suburb,True,OH
+3954432,Newcomerstown village,1197.0,town,True,OH
+3954446,New Concord village,522.0,town,True,OH
+3954726,New Holland village,260.0,suburb,True,OH
+3954838,New Knoxville village,346.0,town,True,OH
+3954866,New Lexington village,1410.0,suburb,True,OH
+3954908,New London village,637.0,town,True,OH
+3954978,New Madison village,311.0,town,True,OH
+3955216,New Philadelphia city,5793.0,town,True,OH
+3955678,Newtown village,709.0,suburb,True,OH
+3955748,New Vienna village,293.0,town,True,OH
+3955776,New Washington village,395.0,town,True,OH
+3955790,New Waterford village,278.0,town,True,OH
+3955874,Ney village,133.0,town,True,OH
+3955916,Niles city,5522.0,suburb,True,OH
+3956294,North Canton city,5412.0,suburb,True,OH
+3956322,North College Hill city,3155.0,suburb,True,OH
+3956420,North Fairfield village,126.0,town,True,OH
+3956448,Northfield village,1123.0,suburb,True,OH
+3956882,North Olmsted city,10238.0,suburb,True,OH
+3956924,North Randall village,155.0,suburb,True,OH
+3956966,North Ridgeville city,13497.0,suburb,True,OH
+3956994,North Robinson village,70.0,town,True,OH
+3957008,North Royalton city,8682.0,suburb,True,OH
+3957260,Norton city,4369.0,suburb,True,OH
+3957302,Norwalk city,4261.0,town,True,OH
+3957386,Norwood city,4620.0,suburb,True,OH
+3957582,Oak Harbor village,907.0,suburb,True,OH
+3957596,Oak Hill village,424.0,town,True,OH
+3957750,Oakwood village (Cuyahoga County),1269.0,suburb,True,OH
+3957792,Oakwood village (Paulding County),273.0,town,True,OH
+3957834,Oberlin city,1773.0,suburb,True,OH
+3957862,Obetz village,2147.0,suburb,True,OH
+3958002,Ohio City village,240.0,town,True,OH
+3958422,Olmsted Falls city,2607.0,suburb,True,OH
+3958604,Orange village,1245.0,suburb,True,OH
+3958730,Oregon city,6580.0,suburb,True,OH
+3958982,Ottawa village,1508.0,town,True,OH
+3959052,Ottoville village,332.0,town,True,OH
+3959234,Oxford city,2370.0,suburb,True,OH
+3959416,Painesville city,4676.0,suburb,True,OH
+3959738,Pandora village,538.0,town,True,OH
+3961000,Parma city,27537.0,suburb,True,OH
+3961028,Parma Heights city,5757.0,suburb,True,OH
+3961056,Parral village,84.0,town,True,OH
+3961252,Paulding village,1071.0,town,True,OH
+3961322,Payne village,404.0,town,True,OH
+3961686,Pepper Pike city,2717.0,suburb,False,OH
+3962190,Perrysville village,209.0,town,True,OH
+3962442,Philo village,293.0,town,True,OH
+3962498,Pickerington city,6162.0,suburb,False,OH
+3962708,Piketon village,414.0,town,True,OH
+3962834,Pioneer village,382.0,town,True,OH
+3963030,Plain City village,1319.0,suburb,True,OH
+3963044,Plainfield village,66.0,town,True,OH
+3963716,Pleasantville village,272.0,suburb,True,OH
+3963800,Plymouth village,583.0,suburb,True,OH
+3963996,Polk village,85.0,town,True,OH
+3964024,Pomeroy village,545.0,town,True,OH
+3964108,Portage village,228.0,suburb,True,OH
+3964262,Port Jefferson village,103.0,town,True,OH
+3964304,Portsmouth city,5758.0,town,True,OH
+3964346,Port Washington village,183.0,town,True,OH
+3964486,Powell city,4118.0,suburb,True,OH
+3964542,Powhatan Point village,515.0,suburb,True,OH
+3964780,Prospect village,373.0,town,True,OH
+3965200,Quincy village,215.0,town,True,OH
+3965592,Ravenna city,3044.0,suburb,True,OH
+3965662,Rayland village,167.0,suburb,True,OH
+3965732,Reading city,3302.0,suburb,True,OH
+3966152,Reminderville village,1304.0,suburb,False,OH
+3966390,Reynoldsburg city,9852.0,suburb,True,OH
+3966894,Richmond Heights city,3233.0,suburb,True,OH
+3967118,Ridgeway village,116.0,town,True,OH
+3967258,Rio Grande village,117.0,town,True,OH
+3967762,Rochester village,73.0,suburb,True,OH
+3967874,Rockford village,422.0,town,True,OH
+3968056,Rocky River city,5755.0,suburb,True,OH
+3968560,Roseville village,478.0,suburb,True,OH
+3969176,Rushsylvania village,167.0,town,True,OH
+3969302,Russells Point village,683.0,town,True,OH
+3969344,Russia village,185.0,town,True,OH
+3969358,Rutland village,289.0,town,True,OH
+3969400,Sabina village,763.0,town,True,OH
+3969470,St. Bernard village,1031.0,suburb,True,OH
+3969526,St. Clairsville city,1683.0,core,True,OH
+3969540,St. Henry village,758.0,town,True,OH
+3969652,St. Louisville village,119.0,suburb,True,OH
+3969680,St. Marys city,2757.0,town,True,OH
+3969834,Salem city,3910.0,town,True,OH
+3970380,Sandusky city,7280.0,core,True,OH
+3970576,Savannah village,115.0,town,True,OH
+3970814,Scio village,306.0,town,True,OH
+3971080,Scott village,92.0,town,True,OH
+3971206,Seaman village,269.0,town,True,OH
+3971220,Sebring village,1324.0,suburb,True,OH
+3971360,Senecaville village,191.0,town,True,OH
+3971416,Seven Hills city,5126.0,suburb,True,OH
+3971640,Shadyside village,1392.0,core,True,OH
+3971682,Shaker Heights city,6841.0,suburb,False,OH
+3971892,Sharonville city,3724.0,suburb,True,OH
+3972060,Sheffield village,1287.0,suburb,False,OH
+3972088,Sheffield Lake city,3331.0,suburb,True,OH
+3972102,Shelby city,2852.0,suburb,True,OH
+3972256,Sherwood village,250.0,town,True,OH
+3972396,Shreve village,440.0,town,True,OH
+3972424,Sidney city,6026.0,town,True,OH
+3972522,Silverton village,1498.0,suburb,True,OH
+3972760,Smithfield village,291.0,suburb,True,OH
+3972928,Solon city,7846.0,suburb,False,OH
+3972977,Somerset village,400.0,suburb,True,OH
+3973040,South Amherst village,624.0,suburb,True,OH
+3973068,South Bloomfield village,847.0,suburb,True,OH
+3973264,South Euclid city,8244.0,suburb,True,OH
+3973446,South Lebanon village,1736.0,suburb,True,OH
+3973670,South Point village,1277.0,suburb,True,OH
+3973684,South Russell village,1333.0,suburb,True,OH
+3973894,South Zanesville village,619.0,town,True,OH
+3974034,Spencerville village,708.0,suburb,True,OH
+3974076,Springboro city,6150.0,suburb,False,OH
+3974104,Springdale city,2800.0,suburb,True,OH
+3974118,Springfield city,16476.0,core,True,OH
+3974608,Steubenville city,5341.0,core,True,OH
+3974804,Stone Creek village,64.0,town,True,OH
+3974944,Stow city,9441.0,suburb,True,OH
+3974958,Strasburg village,854.0,town,True,OH
+3975000,Stratton village,81.0,suburb,True,OH
+3975014,Streetsboro city,4073.0,suburb,True,OH
+3975098,Strongsville city,15698.0,suburb,False,OH
+3975140,Stryker village,500.0,town,True,OH
+3975210,Sugarcreek village,875.0,town,True,OH
+3975252,Sugar Grove village,146.0,suburb,True,OH
+3975602,Sunbury village,2193.0,suburb,False,OH
+3975896,Swanton village,1328.0,suburb,True,OH
+3975980,Sycamore village,315.0,town,True,OH
+3976050,Syracuse village,260.0,town,True,OH
+3976106,Tallmadge city,5485.0,suburb,True,OH
+3976428,Terrace Park village,781.0,suburb,True,OH
+3976680,Thornville village,386.0,suburb,True,OH
+3976764,Thurston village,176.0,suburb,True,OH
+3976778,Tiffin city,4832.0,town,True,OH
+3976806,Tiltonsville village,479.0,suburb,True,OH
+3976834,Timberlake village,294.0,suburb,True,OH
+3977000,Toledo city,81585.0,core,True,OH
+3977112,Toronto city,1863.0,suburb,True,OH
+3977308,Tremont City village,111.0,suburb,True,OH
+3977322,Trenton city,4443.0,suburb,True,OH
+3977504,Trotwood city,7780.0,suburb,True,OH
+3977924,Tuscarawas village,346.0,town,True,OH
+3978050,Twinsburg city,5054.0,suburb,False,OH
+3978176,Uhrichsville city,1685.0,town,True,OH
+3978470,Union city,2714.0,suburb,True,OH
+3978932,University Heights city,3851.0,suburb,True,OH
+3979002,Upper Arlington city,11257.0,suburb,False,OH
+3979044,Upper Sandusky city,1899.0,town,True,OH
+3979226,Valley Hi village,26.0,town,True,OH
+3979268,Valley View village,733.0,suburb,False,OH
+3979394,Van Buren village,139.0,town,True,OH
+3979492,Vandalia city,4660.0,suburb,True,OH
+3979534,Vanlue village,108.0,town,True,OH
+3979562,Van Wert city,4053.0,town,True,OH
+3979632,Venedocia village,38.0,town,True,OH
+3979716,Vermilion city,4327.0,core,True,OH
+3979912,Versailles village,882.0,town,True,OH
+3980178,Vinton village,85.0,town,True,OH
+3980304,Wadsworth city,7156.0,suburb,True,OH
+3980458,Wakeman village,372.0,town,True,OH
+3980500,Waldo village,135.0,town,True,OH
+3980738,Walton Hills village,975.0,suburb,True,OH
+3980766,Wapakoneta city,3391.0,town,True,OH
+3980892,Warren city,12127.0,core,True,OH
+3980990,Warrensville Heights city,3378.0,suburb,True,OH
+3981032,Warsaw village,193.0,town,True,OH
+3981718,Washington Court House city,4620.0,town,True,OH
+3981928,Wauseon city,2127.0,suburb,True,OH
+3981935,Waverly village,1935.0,town,True,OH
+3982334,Wayne village,396.0,suburb,True,OH
+3982348,Wayne Lakes village,294.0,town,True,OH
+3982390,Waynesfield village,274.0,town,True,OH
+3982642,Wellington village,1592.0,suburb,True,OH
+3982712,Wellston city,1543.0,town,True,OH
+3982740,Wellsville village,869.0,town,True,OH
+3983090,West Carrollton city,3337.0,suburb,True,OH
+3983342,Westerville city,10924.0,suburb,False,OH
+3983580,West Jefferson village,1349.0,suburb,True,OH
+3983608,West Lafayette village,658.0,town,True,OH
+3983622,Westlake city,8942.0,suburb,False,OH
+3983734,West Liberty village,544.0,town,True,OH
+3983818,West Mansfield village,227.0,town,True,OH
+3984294,West Union village,815.0,town,True,OH
+3984308,West Unity village,498.0,town,True,OH
+3984742,Whitehall city,4176.0,suburb,True,OH
+3984770,Whitehouse village,1754.0,suburb,True,OH
+3985036,Wickliffe city,4645.0,suburb,True,OH
+3985232,Willard city,1744.0,town,True,OH
+3985484,Willoughby city,6266.0,suburb,True,OH
+3985512,Willoughby Hills city,2401.0,suburb,True,OH
+3985638,Willowick city,5469.0,suburb,True,OH
+3985736,Willshire village,149.0,town,True,OH
+3985792,Wilmington city,3374.0,town,True,OH
+3985876,Winchester village,303.0,town,True,OH
+3986184,Wintersville village,1433.0,suburb,True,OH
+3986366,Woodlawn village,812.0,suburb,True,OH
+3986394,Woodmere village,163.0,suburb,True,OH
+3986436,Woodsfield village,1028.0,town,True,OH
+3986478,Woodstock village,124.0,town,True,OH
+3986492,Woodville village,667.0,town,True,OH
+3986548,Wooster city,6602.0,town,True,OH
+3986604,Worthington city,4767.0,suburb,False,OH
+3986632,Wren village,78.0,town,True,OH
+3986730,Wyoming city,2696.0,suburb,False,OH
+3986772,Xenia city,8849.0,suburb,True,OH
+3986940,Yellow Springs village,1425.0,suburb,True,OH
+3987178,Yorkville village,363.0,suburb,True,OH
+3988000,Youngstown city,21992.0,core,True,OH
+3988070,Zanesfield village,85.0,town,True,OH
+3988084,Zanesville city,7462.0,town,True,OH
+3988168,Zoar village,85.0,town,True,OH
+4800160,Abernathy city,1135.0,town,True,TX
+48007,Aransas County Unincorporated Area,5357.0,suburb,True,TX
+4801000,Abilene city,37128.0,core,True,TX
+4801240,Addison town,1647.0,suburb,True,TX
+48015,Austin County Unincorporated Area,5811.0,suburb,True,TX
+4801576,Alamo city,5999.0,suburb,True,TX
+4801600,Alamo Heights city,2215.0,suburb,False,TX
+4801744,Aledo city,1761.0,suburb,True,TX
+4801852,Alice city,5381.0,town,True,TX
+4801924,Allen city,30890.0,suburb,True,TX
+48021,Bastrop County Unincorporated Area,18098.0,suburb,True,TX
+4802104,Alpine city,2434.0,town,True,TX
+4802188,Alto town,358.0,town,True,TX
+4802212,Alton city,4702.0,suburb,True,TX
+4802260,Alvarado city,1985.0,suburb,True,TX
+4802272,Alvin city,6861.0,suburb,True,TX
+4802284,Alvord town,505.0,suburb,True,TX
+48029,Bexar County Unincorporated Area,175564.0,suburb,True,TX
+4803000,Amarillo city,62437.0,core,True,TX
+4803084,Amherst city,279.0,town,True,TX
+4803144,Anahuac city,761.0,suburb,True,TX
+4803216,Andrews city,3970.0,town,True,TX
+4803264,Angleton city,7038.0,suburb,True,TX
+4803288,Angus city,144.0,town,True,TX
+4803300,Anna city,9351.0,suburb,True,TX
+4803336,Annetta town,936.0,suburb,True,TX
+4803360,Annona town,121.0,town,True,TX
+4803372,Anson city,880.0,suburb,True,TX
+4803432,Anthony town,1278.0,suburb,True,TX
+4803540,Anton city,434.0,suburb,True,TX
+4803600,Aransas Pass city,2947.0,suburb,True,TX
+4803696,Archer City city,757.0,suburb,True,TX
+4803708,Arcola city,561.0,suburb,True,TX
+4803768,Argyle city,1393.0,suburb,True,TX
+48039,Brazoria County Unincorporated Area,32329.0,suburb,True,TX
+4804000,Arlington city,97063.0,suburb,True,TX
+4804156,Arp city,333.0,suburb,True,TX
+4804300,Asherton city,304.0,town,True,TX
+4804504,Athens city,3306.0,town,True,TX
+4804516,Atlanta city,1807.0,town,True,TX
+4804600,Aubrey city,2931.0,suburb,True,TX
+4804672,Aurora city,465.0,suburb,True,TX
+48049,Brown County Unincorporated Area,5370.0,town,True,TX
+4805000,Austin city,163890.0,core,True,TX
+4805036,Austwell city,142.0,town,True,TX
+4805168,Azle city,4268.0,suburb,True,TX
+4805288,Bailey's Prairie village,362.0,suburb,True,TX
+48053,Burnet County Unincorporated Area,9883.0,town,True,TX
+4805372,Balch Springs city,5785.0,suburb,True,TX
+4805384,Balcones Heights city,159.0,suburb,True,TX
+4805456,Ballinger city,1610.0,town,True,TX
+48055,Caldwell County Unincorporated Area,2712.0,suburb,True,TX
+4805528,Bandera city,258.0,suburb,True,TX
+4805552,Bangs city,573.0,town,True,TX
+4805612,Bardwell city,195.0,suburb,True,TX
+48057,Calhoun County Unincorporated Area,3525.0,town,True,TX
+4805732,Bartlett city,541.0,suburb,True,TX
+4805768,Bartonville town,524.0,suburb,True,TX
+4805864,Bastrop city,3624.0,suburb,True,TX
+4805984,Bay City city,4394.0,town,True,TX
+4806060,Bayou Vista city,1088.0,suburb,False,TX
+48061,Cameron County Unincorporated Area,25129.0,suburb,True,TX
+4806104,Bayside town,242.0,town,True,TX
+4806128,Baytown city,20667.0,suburb,True,TX
+4806140,Bayview town,200.0,suburb,True,TX
+4806200,Beach City city,1096.0,suburb,False,TX
+4806242,Bear Creek village,204.0,suburb,True,TX
+4806272,Beasley city,251.0,suburb,True,TX
+4807000,Beaumont city,34934.0,core,True,TX
+48071,Chambers County Unincorporated Area,10897.0,suburb,True,TX
+4807132,Bedford city,13426.0,suburb,True,TX
+4807156,Bee Cave city,2347.0,suburb,False,TX
+4807192,Beeville city,3794.0,town,True,TX
+4807300,Bellaire city,6137.0,suburb,True,TX
+4807408,Bellmead city,2898.0,suburb,True,TX
+4807420,Bells town,719.0,suburb,True,TX
+4807432,Bellville city,1272.0,suburb,True,TX
+4807492,Belton city,5574.0,suburb,True,TX
+4807552,Benbrook city,8183.0,suburb,True,TX
+4807636,Benjamin city,106.0,town,True,TX
+4807852,Berryville town,344.0,town,True,TX
+4807864,Bertram city,726.0,town,True,TX
+4808104,Beverly Hills city,628.0,suburb,True,TX
+4808128,Bevil Oaks city,492.0,suburb,True,TX
+4808212,Big Lake city,1038.0,town,True,TX
+4808224,Big Sandy town,414.0,suburb,True,TX
+4808236,Big Spring city,8076.0,town,True,TX
+4808260,Big Wells city,180.0,town,True,TX
+4808392,Bishop city,1309.0,suburb,True,TX
+48085,Collin County Unincorporated Area,23770.0,suburb,True,TX
+4808536,Blanco city,657.0,town,True,TX
+4808596,Blanket town,148.0,town,True,TX
+4808788,Blooming Grove town,302.0,town,True,TX
+4808812,Blossom city,392.0,town,True,TX
+4808860,Blue Mound city,788.0,suburb,True,TX
+4808872,Blue Ridge city,402.0,suburb,True,TX
+48091,Comal County Unincorporated Area,28591.0,suburb,True,TX
+4809160,Boerne city,5913.0,suburb,True,TX
+4809172,Bogata city,348.0,town,True,TX
+4809328,Bonham city,2616.0,town,True,TX
+4809448,Booker town,436.0,town,True,TX
+4809556,Borger city,5148.0,town,True,TX
+4809628,Bovina city,442.0,town,True,TX
+4809640,Bowie city,2117.0,town,True,TX
+4809748,Boyd town,519.0,suburb,True,TX
+4809868,Brackettville city,473.0,town,True,TX
+4809916,Brady city,2187.0,town,True,TX
+4810072,Brazoria city,984.0,suburb,True,TX
+4810090,Brazos Country city,216.0,suburb,True,TX
+4810132,Breckenridge city,1535.0,town,True,TX
+4810144,Bremond city,379.0,suburb,True,TX
+4810156,Brenham city,5067.0,town,True,TX
+4810197,Briarcliff village,1484.0,suburb,True,TX
+4810216,Briaroaks city,196.0,suburb,True,TX
+4810252,Bridge City city,3161.0,suburb,True,TX
+4810264,Bridgeport city,1360.0,suburb,True,TX
+4810528,Bronte town,374.0,town,True,TX
+4810636,Brookshire city,893.0,suburb,True,TX
+4810648,Brookside Village city,483.0,suburb,True,TX
+4810720,Brownfield city,3347.0,town,True,TX
+4810756,Brownsboro city,389.0,town,True,TX
+4810768,Brownsville city,47491.0,core,True,TX
+4810780,Brownwood city,5663.0,town,True,TX
+4810828,Bruceville-Eddy city,510.0,suburb,True,TX
+4810912,Bryan city,20426.0,core,True,TX
+4810960,Bryson city,163.0,town,True,TX
+4811020,Buckholts town,105.0,town,True,TX
+4811080,Buda city,5353.0,suburb,False,TX
+4811128,Buffalo Gap town,193.0,suburb,True,TX
+4811212,Bullard town,1529.0,suburb,True,TX
+4811224,Bulverde city,2380.0,suburb,True,TX
+48113,Dallas County Unincorporated Area,2414.0,suburb,True,TX
+4811300,Bunker Hill Village city,1286.0,suburb,True,TX
+4811368,Burkburnett city,4123.0,suburb,True,TX
+4811428,Burleson city,15717.0,suburb,True,TX
+4811464,Burnet city,2041.0,town,True,TX
+4811716,Caddo Mills city,1109.0,suburb,True,TX
+4811836,Caldwell city,1313.0,suburb,True,TX
+4811968,Callisburg city,99.0,town,True,TX
+4811992,Calvert city,393.0,suburb,True,TX
+4812040,Cameron city,1536.0,town,True,TX
+48121,Denton County Unincorporated Area,52035.0,suburb,True,TX
+4812388,Camp Wood city,121.0,town,True,TX
+4812412,Canadian city,899.0,town,True,TX
+4812472,Caney City town,122.0,town,True,TX
+4812496,Canton city,1508.0,town,True,TX
+4812532,Canyon city,3889.0,suburb,True,TX
+4812916,Carmine city,120.0,town,True,TX
+4812988,Carrizo Springs city,1565.0,town,True,TX
+4813024,Carrollton city,32997.0,suburb,True,TX
+4813108,Carthage city,2039.0,town,True,TX
+4813276,Castle Hills city,1537.0,suburb,False,TX
+48133,Eastland County Unincorporated Area,2961.0,town,True,TX
+4813312,Castroville city,1080.0,suburb,True,TX
+4813492,Cedar Hill city,14409.0,suburb,True,TX
+4813552,Cedar Park city,21300.0,suburb,False,TX
+4813672,Celeste city,270.0,suburb,True,TX
+4813684,Celina city,12366.0,suburb,False,TX
+4813732,Center city,1493.0,town,True,TX
+48139,Ellis County Unincorporated Area,17040.0,suburb,True,TX
+4814224,Chandler city,1286.0,town,True,TX
+4814404,Charlotte city,263.0,suburb,True,TX
+4814620,Chico city,536.0,suburb,True,TX
+4814668,Childress city,1960.0,town,True,TX
+4814716,China Grove town,513.0,suburb,True,TX
+4814920,Cibolo city,11671.0,suburb,False,TX
+4815004,Cisco city,1652.0,town,True,TX
+4815112,Clarendon city,624.0,town,True,TX
+4815160,Clarksville city,1339.0,town,True,TX
+4815172,Clarksville City city,247.0,suburb,True,TX
+4815196,Claude city,599.0,suburb,True,TX
+4815328,Clear Lake Shores city,474.0,suburb,True,TX
+4815364,Cleburne city,9861.0,suburb,True,TX
+4815436,Cleveland city,1890.0,suburb,True,TX
+4815472,Clifton city,1210.0,suburb,True,TX
+4815544,Clint town,395.0,suburb,True,TX
+4815652,Clute city,2196.0,suburb,True,TX
+4815676,Clyde city,1338.0,suburb,True,TX
+48157,Fort Bend County Unincorporated Area,171077.0,suburb,True,TX
+4815700,Coahoma town,269.0,town,True,TX
+4815796,Cockrell Hill city,780.0,suburb,True,TX
+4815916,Coleman city,1889.0,town,True,TX
+4815976,College Station city,22450.0,core,True,TX
+4815988,Colleyville city,9317.0,suburb,True,TX
+4816036,Collinsville town,577.0,suburb,True,TX
+4816120,Colorado City city,1353.0,town,True,TX
+4816168,Columbus city,1249.0,town,True,TX
+4816192,Comanche city,1425.0,town,True,TX
+4816204,Combes town,1008.0,suburb,True,TX
+4816216,Combine city,625.0,suburb,True,TX
+4816240,Commerce city,1842.0,suburb,True,TX
+4816432,Conroe city,27955.0,suburb,True,TX
+4816468,Converse city,10180.0,suburb,True,TX
+4816564,Cooper city,701.0,town,True,TX
+4816612,Coppell city,10730.0,suburb,False,TX
+4816624,Copperas Cove city,11516.0,suburb,True,TX
+4816636,Copper Canyon town,1034.0,suburb,True,TX
+4816696,Corinth city,8001.0,suburb,False,TX
+48167,Galveston County Unincorporated Area,12704.0,suburb,True,TX
+48169,Garza County Unincorporated Area,539.0,suburb,True,TX
+4817000,Corpus Christi city,88238.0,core,True,TX
+4817036,Corrigan town,242.0,town,True,TX
+4817060,Corsicana city,6794.0,town,True,TX
+4817200,Cottonwood city,81.0,suburb,True,TX
+4817208,Cottonwood Shores city,555.0,town,True,TX
+4817216,Cotulla city,837.0,town,True,TX
+4817372,Covington city,100.0,town,True,TX
+4817504,Crandall city,1464.0,suburb,True,TX
+4817516,Crane city,1185.0,town,True,TX
+4817564,Crawford town,438.0,suburb,True,TX
+4817612,Creedmoor city,152.0,suburb,True,TX
+4817648,Cresson city,363.0,town,True,TX
+4817744,Crockett city,2133.0,town,True,TX
+4817768,Crosbyton city,632.0,suburb,True,TX
+4817816,Cross Plains town,417.0,suburb,True,TX
+4817852,Cross Roads town,958.0,suburb,True,TX
+4817917,Cross Timber town,137.0,suburb,True,TX
+4817960,Crowley city,6321.0,suburb,True,TX
+4818020,Crystal City city,1741.0,town,True,TX
+4818092,Cuero city,2593.0,town,True,TX
+48181,Grayson County Unincorporated Area,14083.0,suburb,True,TX
+4818128,Cumby city,234.0,town,True,TX
+4818152,Cuney town,43.0,town,True,TX
+4818260,Cut and Shoot city,307.0,suburb,True,TX
+4818464,Daingerfield city,915.0,town,True,TX
+4818476,Daisetta city,384.0,suburb,True,TX
+4818524,Dalhart city,2557.0,town,True,TX
+48189,Hale County Unincorporated Area,1905.0,town,True,TX
+4819000,Dallas city,230655.0,core,True,TX
+4819084,Dalworthington Gardens city,780.0,suburb,False,TX
+4819120,Danbury city,809.0,suburb,True,TX
+4819288,Darrouzett town,127.0,town,True,TX
+4819420,Dawson town,419.0,town,True,TX
+4819432,Dayton city,2385.0,suburb,True,TX
+4819528,Decatur city,2488.0,suburb,True,TX
+4819624,Deer Park city,10039.0,suburb,True,TX
+4819648,De Kalb city,623.0,suburb,True,TX
+4819792,Del Rio city,9751.0,town,True,TX
+48199,Hardin County Unincorporated Area,8628.0,suburb,True,TX
+4819900,Denison city,8552.0,core,True,TX
+4819972,Denton city,35976.0,suburb,True,TX
+4819984,Denver City town,1286.0,town,True,TX
+4820020,Deport city,268.0,town,True,TX
+4820092,DeSoto city,15072.0,suburb,True,TX
+48201,Harris County Unincorporated Area,575338.0,suburb,True,TX
+4820152,Devine city,1448.0,suburb,True,TX
+4820308,Diboll city,1197.0,town,True,TX
+4820344,Dickinson city,6027.0,suburb,True,TX
+4820428,Dilley city,820.0,town,True,TX
+4820464,Dimmitt city,1256.0,town,True,TX
+4820540,DISH town,165.0,suburb,True,TX
+4820848,Domino town,8.0,town,True,TX
+4820884,Donna city,4183.0,suburb,True,TX
+48209,Hays County Unincorporated Area,32764.0,suburb,True,TX
+4821028,Double Oak town,1037.0,suburb,True,TX
+4821112,Douglassville town,122.0,town,True,TX
+4821424,Dripping Springs city,1703.0,suburb,False,TX
+4821484,Dublin city,941.0,town,True,TX
+48215,Hidalgo County Unincorporated Area,67613.0,suburb,True,TX
+4821556,Dumas city,4021.0,town,True,TX
+4821628,Duncanville city,10584.0,suburb,True,TX
+4821844,Eagle Lake city,1084.0,town,True,TX
+4821892,Eagle Pass city,7117.0,core,True,TX
+4821904,Early city,932.0,town,True,TX
+4821928,Earth city,403.0,town,True,TX
+4822132,Eastland city,1488.0,town,True,TX
+4822192,Easton city,107.0,suburb,True,TX
+4822276,East Tawakoni city,432.0,town,True,TX
+4822516,Ector city,262.0,town,True,TX
+4822528,Edcouch city,921.0,suburb,True,TX
+4822552,Eden city,481.0,town,True,TX
+4822588,Edgecliff Village town,1441.0,suburb,True,TX
+4822612,Edgewood town,585.0,town,True,TX
+4822660,Edinburg city,23438.0,core,True,TX
+4822720,Edna city,2000.0,town,True,TX
+4822864,El Campo city,3671.0,town,True,TX
+4822905,El Cenizo city,771.0,suburb,True,TX
+4822960,Eldorado city,799.0,town,True,TX
+4822984,Electra city,1250.0,suburb,True,TX
+4823044,Elgin city,3742.0,suburb,True,TX
+4823140,Elkhart town,420.0,town,True,TX
+4823164,El Lago city,887.0,suburb,False,TX
+4823272,Elmendorf city,637.0,suburb,True,TX
+48239,Jackson County Unincorporated Area,2729.0,town,True,TX
+4824000,El Paso city,182889.0,core,True,TX
+4824036,Elsa city,1766.0,suburb,True,TX
+4824216,Emory city,313.0,town,True,TX
+4824228,Enchanted Oaks town,238.0,town,True,TX
+4824240,Encinal city,259.0,town,True,TX
+4824348,Ennis city,6465.0,suburb,True,TX
+48245,Jefferson County Unincorporated Area,8473.0,suburb,True,TX
+4824552,Escobares city,811.0,town,True,TX
+4824768,Euless city,12972.0,suburb,True,TX
+4824828,Eustace city,308.0,town,True,TX
+4824864,Evant town,208.0,suburb,True,TX
+4824912,Everman city,1990.0,suburb,True,TX
+48251,Johnson County Unincorporated Area,17438.0,suburb,True,TX
+4825104,Fairfield city,1154.0,town,True,TX
+4825168,Fair Oaks Ranch city,3889.0,suburb,False,TX
+4825224,Fairview town,3537.0,suburb,False,TX
+4825368,Falfurrias city,2002.0,town,True,TX
+4825392,Falls City city,211.0,town,True,TX
+4825452,Farmers Branch city,7932.0,suburb,True,TX
+4825488,Farmersville city,1354.0,suburb,True,TX
+48255,Karnes County Unincorporated Area,692.0,town,True,TX
+4825548,Farwell city,465.0,town,True,TX
+4825572,Fate city,7050.0,suburb,True,TX
+4825644,Fayetteville city,185.0,town,True,TX
+48257,Kaufman County Unincorporated Area,23081.0,suburb,True,TX
+4825752,Ferris city,988.0,suburb,True,TX
+48259,Kendall County Unincorporated Area,8374.0,suburb,False,TX
+4826028,Flatonia town,492.0,town,True,TX
+4826136,Florence city,245.0,suburb,True,TX
+4826160,Floresville city,2158.0,suburb,True,TX
+4826232,Flower Mound town,24284.0,suburb,True,TX
+4826268,Floydada city,1088.0,town,True,TX
+4826328,Follett city,192.0,town,True,TX
+4826544,Forest Hill city,4354.0,suburb,True,TX
+4826604,Forney city,8439.0,suburb,True,TX
+4826808,Fort Stockton city,2620.0,town,True,TX
+4827000,Fort Worth city,252742.0,core,False,TX
+4827288,Franklin city,334.0,suburb,True,TX
+4827300,Frankston town,388.0,town,True,TX
+4827348,Fredericksburg city,4890.0,town,True,TX
+4827420,Freeport city,3902.0,suburb,True,TX
+4827648,Friendswood city,12855.0,suburb,False,TX
+4827660,Friona city,1172.0,town,True,TX
+4827684,Frisco city,59942.0,suburb,True,TX
+4827696,Fritch city,907.0,town,True,TX
+4827768,Frost city,305.0,town,True,TX
+4827876,Fulshear city,12226.0,suburb,True,TX
+4827888,Fulton town,413.0,suburb,True,TX
+4827984,Gainesville city,5311.0,town,True,TX
+4827996,Galena Park city,2812.0,suburb,True,TX
+4828068,Galveston city,20138.0,suburb,True,TX
+4828080,Ganado city,536.0,town,True,TX
+4828248,Garden Ridge city,1537.0,suburb,True,TX
+48287,Lee County Unincorporated Area,3404.0,town,True,TX
+4829000,Garland city,57094.0,suburb,True,TX
+4829036,Garrett town,245.0,suburb,True,TX
+4829060,Garrison city,275.0,town,True,TX
+48291,Liberty County Unincorporated Area,13777.0,suburb,True,TX
+4829168,Gatesville city,2589.0,suburb,True,TX
+4829336,Georgetown city,27335.0,suburb,True,TX
+4829348,George West city,829.0,town,True,TX
+4829408,Gholson city,214.0,suburb,True,TX
+4829432,Giddings city,1836.0,town,True,TX
+4829564,Gilmer city,1265.0,suburb,True,TX
+4829660,Gladewater city,2053.0,suburb,True,TX
+4829840,Glenn Heights city,4541.0,suburb,True,TX
+4829876,Glen Rose city,967.0,town,True,TX
+48299,Llano County Unincorporated Area,7358.0,town,True,TX
+4829972,Godley city,1614.0,suburb,True,TX
+4830080,Goliad city,644.0,suburb,True,TX
+4830092,Golinda city,281.0,suburb,True,TX
+4830116,Gonzales city,2068.0,town,True,TX
+4830188,Goodlow city,106.0,town,True,TX
+4830392,Graham city,3132.0,town,True,TX
+4830416,Granbury city,3555.0,town,True,TX
+4830464,Grand Prairie city,42684.0,suburb,True,TX
+4830476,Grand Saline city,1193.0,town,True,TX
+4830512,Grandview city,528.0,suburb,True,TX
+4830548,Granger city,339.0,suburb,True,TX
+4830584,Granite Shoals city,1721.0,town,True,TX
+4830608,Granjeno city,79.0,suburb,True,TX
+4830632,Grapeland city,545.0,town,True,TX
+4830644,Grapevine city,12201.0,suburb,True,TX
+4830752,Grays Prairie village,75.0,suburb,True,TX
+4830920,Greenville city,9270.0,suburb,True,TX
+4831064,Gregory city,534.0,suburb,True,TX
+4831100,Grey Forest city,505.0,suburb,True,TX
+4831280,Groesbeck city,1098.0,town,True,TX
+4831292,Groom town,292.0,suburb,True,TX
+4831328,Groves city,6046.0,suburb,True,TX
+4831340,Groveton city,342.0,town,True,TX
+4831412,Gruver city,463.0,town,True,TX
+4831592,Gun Barrel City city,2425.0,town,True,TX
+4831616,Gunter city,668.0,suburb,True,TX
+4831715,Hackberry town,978.0,suburb,True,TX
+4831820,Hale Center city,755.0,town,True,TX
+4831868,Hallettsville city,1005.0,town,True,TX
+4831880,Hallsburg city,88.0,suburb,True,TX
+48319,Mason County Unincorporated Area,1204.0,town,True,TX
+4831904,Hallsville city,1433.0,suburb,True,TX
+4831928,Haltom City city,10970.0,suburb,True,TX
+4831952,Hamilton city,1157.0,town,True,TX
+4831964,Hamlin city,921.0,suburb,True,TX
+48321,Matagorda County Unincorporated Area,6825.0,town,True,TX
+4832240,Hardin city,251.0,suburb,True,TX
+4832312,Harker Heights city,9815.0,suburb,True,TX
+4832372,Harlingen city,18486.0,core,True,TX
+4832576,Hart city,275.0,town,True,TX
+4832696,Haskell city,1259.0,town,True,TX
+4832720,Haslet city,1813.0,suburb,True,TX
+4832810,Hawk Cove city,91.0,suburb,True,TX
+4832816,Hawkins city,577.0,town,True,TX
+4832972,Hearne city,1379.0,suburb,True,TX
+4832984,Heath city,3499.0,suburb,True,TX
+4833020,Hebron town,28.0,suburb,True,TX
+4833068,Hedwig Village city,596.0,suburb,True,TX
+4833146,Helotes city,3262.0,suburb,False,TX
+4833188,Hemphill city,376.0,town,True,TX
+4833200,Hempstead city,880.0,suburb,True,TX
+4833212,Henderson city,3716.0,suburb,True,TX
+4833284,Henrietta city,1391.0,suburb,True,TX
+4833320,Hereford city,4458.0,town,True,TX
+4833428,Hewitt city,4702.0,suburb,True,TX
+4833476,Hickory Creek town,1788.0,suburb,False,TX
+4833548,Hico city,636.0,town,True,TX
+4833560,Hidalgo city,3936.0,suburb,True,TX
+4833578,Hideaway city,1665.0,suburb,False,TX
+4833794,Highland Haven city,353.0,town,True,TX
+4833824,Highland Park town,2864.0,suburb,True,TX
+4833848,Highland Village city,5260.0,suburb,True,TX
+48339,Montgomery County Unincorporated Area,178794.0,suburb,True,TX
+4833968,Hill Country Village city,338.0,suburb,True,TX
+4834018,Hillcrest Village,291.0,suburb,True,TX
+4834088,Hillsboro city,2431.0,town,True,TX
+4834148,Hilshire Village city,308.0,suburb,True,TX
+4834220,Hitchcock city,2240.0,suburb,True,TX
+4834502,Holiday Lakes town,320.0,suburb,True,TX
+4834508,Holland town,318.0,suburb,True,TX
+4834532,Holliday city,633.0,suburb,True,TX
+4834628,Hollywood Park town,1249.0,suburb,True,TX
+4834676,Hondo city,1924.0,suburb,True,TX
+4834700,Honey Grove city,640.0,town,True,TX
+4834736,Hooks city,944.0,suburb,True,TX
+4834832,Horizon City city,7377.0,suburb,True,TX
+4834862,Horseshoe Bay city,2345.0,town,True,TX
+48349,Navarro County Unincorporated Area,5865.0,town,True,TX
+4835000,Houston city,444742.0,core,True,TX
+4835072,Howardwick city,200.0,town,True,TX
+4835084,Howe town,858.0,suburb,True,TX
+4835180,Hubbard city,531.0,town,True,TX
+4835228,Hudson city,955.0,town,True,TX
+4835254,Hudson Oaks city,832.0,suburb,False,TX
+4835300,Hughes Springs city,718.0,town,True,TX
+4835348,Humble city,2888.0,suburb,True,TX
+4835480,Hunters Creek Village city,1506.0,suburb,True,TX
+4835492,Huntington city,1202.0,town,True,TX
+48355,Nueces County Unincorporated Area,6133.0,suburb,True,TX
+4835528,Huntsville city,7748.0,town,True,TX
+4835576,Hurst city,11055.0,suburb,True,TX
+4835612,Hutchins city,1078.0,suburb,True,TX
+4835624,Hutto city,11275.0,suburb,True,TX
+4835732,Idalou city,892.0,suburb,True,TX
+4835816,Impact town,4.0,suburb,True,TX
+4835918,Indian Lake town,344.0,suburb,True,TX
+4836008,Ingleside city,3031.0,suburb,True,TX
+4836020,Ingleside on the Bay city,358.0,suburb,True,TX
+4836032,Ingram city,580.0,town,True,TX
+4836092,Iowa Colony village,15760.0,suburb,True,TX
+48361,Orange County Unincorporated Area,11748.0,suburb,True,TX
+4836104,Iowa Park city,2634.0,suburb,True,TX
+4837000,Irving city,37704.0,suburb,True,TX
+4837072,Italy town,668.0,suburb,True,TX
+4837084,Itasca city,562.0,town,True,TX
+4837112,Ivanhoe city,1361.0,town,True,TX
+4837156,Jacinto City city,2558.0,suburb,True,TX
+4837168,Jacksboro city,1188.0,town,True,TX
+4837216,Jacksonville city,3602.0,town,True,TX
+4837252,Jamaica Beach city,1431.0,suburb,False,TX
+48373,Polk County Unincorporated Area,16738.0,town,True,TX
+4837396,Jarrell city,1034.0,suburb,True,TX
+4837420,Jasper city,1794.0,town,True,TX
+4837528,Jefferson city,579.0,town,True,TX
+4837612,Jersey Village city,2203.0,suburb,True,TX
+4837648,Jewett city,192.0,town,True,TX
+4837684,Joaquin city,203.0,town,True,TX
+4837780,Johnson City city,586.0,town,True,TX
+4837984,Jones Creek village,721.0,suburb,True,TX
+4838020,Jonestown city,1723.0,suburb,True,TX
+4838068,Josephine city,914.0,suburb,True,TX
+4838080,Joshua city,2012.0,suburb,True,TX
+4838116,Jourdanton city,1097.0,suburb,True,TX
+4838248,Junction city,909.0,town,True,TX
+4838332,Justin city,1677.0,suburb,True,TX
+4838452,Karnes City city,1113.0,town,True,TX
+4838476,Katy city,7228.0,suburb,True,TX
+4838488,Kaufman city,1981.0,suburb,True,TX
+4838548,Keene city,1250.0,suburb,True,TX
+4838632,Keller city,14469.0,suburb,False,TX
+4838776,Kemah city,627.0,suburb,True,TX
+4838788,Kemp city,389.0,suburb,True,TX
+4838800,Kempner city,303.0,suburb,True,TX
+4838848,Kendleton city,243.0,suburb,True,TX
+4838860,Kenedy city,1196.0,town,True,TX
+4838896,Kennedale city,2614.0,suburb,True,TX
+4838992,Kerens city,517.0,town,True,TX
+4839004,Kermit city,2151.0,town,True,TX
+4839040,Kerrville city,7358.0,town,True,TX
+48391,Refugio County Unincorporated Area,608.0,town,True,TX
+4839124,Kilgore city,4149.0,suburb,True,TX
+4839148,Killeen city,42204.0,core,True,TX
+4839352,Kingsville city,3354.0,town,True,TX
+4839448,Kirby city,2452.0,suburb,True,TX
+4839460,Kirbyville city,398.0,town,True,TX
+48395,Robertson County Unincorporated Area,3412.0,suburb,True,TX
+4839868,Kountze city,478.0,suburb,True,TX
+4839916,Krugerville city,568.0,suburb,False,TX
+4839928,Krum city,2073.0,suburb,True,TX
+4839940,Kurten town,129.0,suburb,True,TX
+4839952,Kyle city,15981.0,suburb,True,TX
+4840108,LaCoste city,301.0,suburb,True,TX
+4840168,Lacy-Lakeview city,1620.0,suburb,True,TX
+4840204,La Feria city,2331.0,suburb,True,TX
+4840264,Lago Vista city,6629.0,suburb,False,TX
+4840276,La Grange city,1772.0,town,True,TX
+4840336,Laguna Vista town,1820.0,suburb,True,TX
+4840384,La Joya city,1383.0,suburb,True,TX
+4840450,Lake Bridgeport city,190.0,suburb,True,TX
+4840516,Lake Dallas city,2547.0,suburb,True,TX
+4840588,Lake Jackson city,8616.0,suburb,True,TX
+4840696,Lakeport city,350.0,suburb,True,TX
+48407,San Jacinto County Unincorporated Area,10012.0,suburb,True,TX
+4840738,Lakeside town (San Patricio County),196.0,suburb,True,TX
+4840744,Lakeside town (Tarrant County),666.0,suburb,True,TX
+4840756,Lakeside City town,445.0,suburb,True,TX
+4840804,Lake Tanglewood village,381.0,suburb,True,TX
+48409,San Patricio County Unincorporated Area,3817.0,suburb,True,TX
+4840984,Lakeway city,7191.0,suburb,True,TX
+4841050,Lakewood Village city,303.0,suburb,True,TX
+4841056,Lake Worth city,1753.0,suburb,True,TX
+4841116,La Marque city,6655.0,suburb,True,TX
+4841164,Lamesa city,3595.0,town,True,TX
+4841188,Lampasas city,2370.0,suburb,True,TX
+4841212,Lancaster city,10597.0,suburb,True,TX
+4841440,La Porte city,11768.0,suburb,True,TX
+4841464,Laredo city,65677.0,core,True,TX
+4841764,La Vernia city,332.0,suburb,True,TX
+4841788,La Villa city,475.0,suburb,True,TX
+4841800,Lavon city,2647.0,suburb,False,TX
+4841848,La Ward city,39.0,town,True,TX
+4841980,League City city,34671.0,suburb,True,TX
+4842016,Leander city,22267.0,suburb,True,TX
+4842352,Leonard city,775.0,town,True,TX
+4842388,Leon Valley city,3000.0,suburb,True,TX
+4842448,Levelland city,4239.0,suburb,True,TX
+4842508,Lewisville city,25749.0,suburb,True,TX
+4842532,Lexington town,338.0,town,True,TX
+4842568,Liberty city,2210.0,suburb,True,TX
+4842664,Liberty Hill city,1758.0,suburb,True,TX
+4842820,Lindale city,2098.0,suburb,True,TX
+4842868,Lindsay city,466.0,town,True,TX
+4843012,Little Elm city,13660.0,suburb,True,TX
+4843024,Littlefield city,2426.0,town,True,TX
+4843066,Little River-Academy city,725.0,suburb,True,TX
+4843096,Live Oak city,4741.0,suburb,True,TX
+4843120,Liverpool city,183.0,suburb,True,TX
+4843132,Livingston town,2273.0,town,True,TX
+4843144,Llano city,1081.0,town,True,TX
+4843240,Lockhart city,4140.0,suburb,True,TX
+4843252,Lockney town,722.0,town,True,TX
+4843354,Log Cabin city,222.0,town,True,TX
+4843636,Lone Oak city,177.0,suburb,True,TX
+4843684,Lone Star city,676.0,town,True,TX
+4843888,Longview city,22753.0,core,False,TX
+4843996,Loraine town,221.0,town,True,TX
+4844020,Lorena city,495.0,suburb,True,TX
+4844032,Lorenzo city,412.0,suburb,True,TX
+4844116,Los Fresnos city,2121.0,suburb,True,TX
+4844128,Los Indios town,209.0,suburb,True,TX
+4844176,Lott city,165.0,suburb,True,TX
+4844308,Lowry Crossing city,600.0,suburb,False,TX
+4845000,Lubbock city,75436.0,core,True,TX
+4845012,Lucas city,2458.0,suburb,True,TX
+4845072,Lufkin city,9693.0,town,True,TX
+4845096,Luling city,2105.0,suburb,True,TX
+4845120,Lumberton city,4852.0,suburb,True,TX
+4845228,Lyford city,561.0,town,True,TX
+4845288,Lytle city,685.0,suburb,True,TX
+48453,Travis County Unincorporated Area,84649.0,suburb,True,TX
+4845324,Mabank town,1237.0,suburb,True,TX
+4845384,McAllen city,39589.0,core,True,TX
+4845432,McCamey city,918.0,town,True,TX
+4845672,McGregor city,2402.0,suburb,True,TX
+4845744,McKinney city,57273.0,suburb,True,TX
+4845804,McLendon-Chisholm city,1484.0,suburb,True,TX
+4845996,Madisonville city,1540.0,town,True,TX
+4846056,Magnolia city,1877.0,suburb,True,TX
+4846224,Malakoff city,616.0,town,True,TX
+4846260,Malone town,118.0,town,True,TX
+48463,Uvalde County Unincorporated Area,2700.0,town,True,TX
+4846440,Manor city,7544.0,suburb,True,TX
+4846452,Mansfield city,22687.0,suburb,True,TX
+48465,Val Verde County Unincorporated Area,3448.0,town,True,TX
+4846500,Manvel city,4366.0,suburb,True,TX
+4846584,Marble Falls city,1733.0,town,True,TX
+4846620,Marfa city,1043.0,town,True,TX
+4846692,Marion city,328.0,suburb,True,TX
+4846740,Marlin city,2005.0,suburb,True,TX
+4846776,Marshall city,7915.0,suburb,True,TX
+4846824,Mart city,684.0,suburb,True,TX
+4846848,Martindale city,324.0,suburb,True,TX
+4846968,Mason city,755.0,town,True,TX
+4847040,Mathis city,1410.0,suburb,True,TX
+4847088,Maud city,371.0,suburb,True,TX
+48471,Walker County Unincorporated Area,7705.0,town,True,TX
+4847268,Maypearl city,334.0,suburb,True,TX
+4847316,Meadow town,173.0,town,True,TX
+4847330,Meadowlakes city,904.0,town,True,TX
+4847337,Meadows Place city,1466.0,suburb,True,TX
+4847496,Melissa city,6919.0,suburb,True,TX
+4847568,Melvin town,99.0,town,True,TX
+4847616,Memphis city,1089.0,town,True,TX
+4847700,Mercedes city,4507.0,suburb,True,TX
+4847760,Meridian city,530.0,suburb,True,TX
+4847796,Merkel town,936.0,suburb,True,TX
+4847832,Mertzon city,333.0,suburb,True,TX
+4847892,Mesquite city,38140.0,suburb,True,TX
+4847916,Mexia city,1982.0,town,True,TX
+4848072,Midland city,38142.0,core,True,TX
+4848096,Midlothian city,11323.0,suburb,True,TX
+48481,Wharton County Unincorporated Area,7382.0,town,True,TX
+4848396,Miles city,312.0,town,True,TX
+4848408,Milford town,287.0,suburb,True,TX
+48485,Wichita County Unincorporated Area,2213.0,suburb,True,TX
+4848648,Mineola city,1570.0,town,True,TX
+4848684,Mineral Wells city,5066.0,town,True,TX
+4848720,Mingus city,86.0,town,True,TX
+4848768,Mission city,26019.0,core,True,TX
+4848804,Missouri City city,25248.0,suburb,True,TX
+4848858,Mobile City city,2.0,suburb,True,TX
+48489,Willacy County Unincorporated Area,2288.0,town,True,TX
+4848936,Monahans city,2589.0,town,True,TX
+4849068,Mont Belvieu city,3207.0,suburb,False,TX
+48491,Williamson County Unincorporated Area,58166.0,suburb,True,TX
+4849128,Montgomery city,711.0,suburb,True,TX
+4849200,Moody city,462.0,suburb,True,TX
+4849380,Morgan's Point city,135.0,suburb,True,TX
+4849392,Morgan's Point Resort city,1967.0,suburb,True,TX
+4849464,Morton city,653.0,suburb,True,TX
+4849600,Mountain City city,296.0,suburb,True,TX
+4849800,Mount Pleasant city,4171.0,town,True,TX
+4849860,Mount Vernon town,686.0,town,True,TX
+4849932,Muenster city,549.0,town,True,TX
+4849968,Muleshoe city,1718.0,town,True,TX
+4850076,Murchison city,198.0,town,True,TX
+4850100,Murphy city,6026.0,suburb,True,TX
+4850200,Mustang Ridge city,408.0,suburb,True,TX
+4850256,Nacogdoches city,6591.0,town,True,TX
+4850352,Nash city,858.0,suburb,True,TX
+4850376,Nassau Bay city,1303.0,suburb,True,TX
+4850400,Natalia city,238.0,suburb,True,TX
+4850448,Navarro town,31.0,town,True,TX
+4850472,Navasota city,1995.0,town,True,TX
+4850580,Nederland city,6320.0,suburb,True,TX
+4850628,Needville city,1295.0,suburb,True,TX
+4850760,Nevada city,475.0,suburb,True,TX
+4850772,Newark city,341.0,suburb,True,TX
+4850796,New Berlin city,181.0,suburb,True,TX
+4850808,New Boston city,1607.0,suburb,True,TX
+4850820,New Braunfels city,30456.0,suburb,True,TX
+4850868,Newcastle city,234.0,town,True,TX
+4850916,New Deal town,153.0,suburb,True,TX
+4850920,New Fairview city,141.0,suburb,True,TX
+4851012,New Home city,124.0,suburb,True,TX
+4851036,New Hope town,244.0,suburb,True,TX
+4851336,New Summerfield city,129.0,town,True,TX
+4851372,Newton city,510.0,town,True,TX
+4851492,Niederwald city,96.0,suburb,True,TX
+4851588,Nixon city,635.0,town,True,TX
+4851708,Nolanville city,2006.0,suburb,True,TX
+4851756,Noonday city,300.0,suburb,True,TX
+4852212,Northlake town,3485.0,suburb,True,TX
+4852356,North Richland Hills city,20599.0,suburb,True,TX
+4852902,Oak Grove town,245.0,suburb,True,TX
+4853115,Oak Leaf city,579.0,suburb,True,TX
+4853130,Oak Point city,2300.0,suburb,False,TX
+4853154,Oak Ridge town (Cooke County),39.0,town,True,TX
+4853160,Oak Ridge town (Kaufman County),291.0,suburb,True,TX
+4853190,Oak Ridge North city,1119.0,suburb,False,TX
+4853217,Oak Valley town,85.0,town,True,TX
+4853376,Odem city,731.0,suburb,True,TX
+4853388,Odessa city,32943.0,core,True,TX
+4853824,Old River-Winfree city,383.0,suburb,True,TX
+4853988,Olmos Park city,679.0,suburb,True,TX
+4854000,Olney city,1221.0,town,True,TX
+4854012,Olton city,598.0,town,True,TX
+4854024,Omaha city,363.0,town,True,TX
+4854048,Onalaska city,1204.0,town,True,TX
+4854132,Orange city,6220.0,suburb,True,TX
+4854168,Orange Grove city,373.0,town,True,TX
+4854192,Orchard city,86.0,suburb,True,TX
+4854216,Ore City city,231.0,suburb,True,TX
+4854432,Overton city,711.0,suburb,True,TX
+4854444,Ovilla city,1499.0,suburb,True,TX
+4854528,Oyster Creek city,553.0,suburb,True,TX
+4854600,Paducah town,676.0,town,True,TX
+4854684,Palacios city,1821.0,town,True,TX
+4854708,Palestine city,5297.0,town,True,TX
+4854726,Palisades village,141.0,suburb,True,TX
+4854744,Palmer town,660.0,suburb,True,TX
+4854780,Palmhurst city,698.0,suburb,True,TX
+4854798,Palm Valley city,568.0,suburb,True,TX
+4854804,Palmview city,4350.0,suburb,True,TX
+4854912,Pampa city,7301.0,town,True,TX
+4854960,Panhandle town,1012.0,suburb,True,TX
+4855008,Panorama Village city,855.0,suburb,True,TX
+4855020,Pantego town,860.0,suburb,False,TX
+4855056,Paradise city,219.0,suburb,True,TX
+4855080,Paris city,8085.0,town,True,TX
+4855152,Parker city,1816.0,suburb,False,TX
+4856000,Pasadena city,33468.0,suburb,True,TX
+4856108,Pattison city,178.0,suburb,True,TX
+4856156,Patton Village city,758.0,suburb,True,TX
+4856348,Pearland city,37438.0,suburb,True,TX
+4856384,Pearsall city,2153.0,town,True,TX
+4856485,Pecan Hill city,232.0,suburb,True,TX
+4856640,Pelican Bay city,826.0,suburb,True,TX
+4856696,Penitas city,1731.0,suburb,True,TX
+4856912,Perryton city,2760.0,town,True,TX
+4856996,Petersburg city,388.0,town,True,TX
+4857176,Pflugerville city,18866.0,suburb,True,TX
+4857200,Pharr city,18716.0,core,True,TX
+4857476,Pilot Point city,1500.0,suburb,True,TX
+4857524,Pine Forest city,166.0,suburb,True,TX
+4857608,Pinehurst city,671.0,suburb,True,TX
+4857644,Pineland city,280.0,town,True,TX
+4857800,Piney Point Village city,1125.0,suburb,True,TX
+4857908,Pittsburg city,1258.0,town,True,TX
+4857968,Plains town,482.0,town,True,TX
+4857980,Plainview city,6338.0,town,True,TX
+4858016,Plano city,73658.0,suburb,True,TX
+4858280,Pleasanton city,2577.0,suburb,True,TX
+4858400,Pleasant Valley town,144.0,suburb,True,TX
+4858532,Point city,243.0,town,True,TX
+4858568,Point Comfort city,155.0,town,True,TX
+4858586,Point Venture village,1363.0,suburb,True,TX
+4858664,Ponder town,899.0,suburb,True,TX
+4858808,Port Aransas city,3736.0,suburb,False,TX
+4858820,Port Arthur city,17056.0,core,True,TX
+4858892,Port Isabel city,1339.0,suburb,True,TX
+4858904,Portland city,6080.0,suburb,True,TX
+4858916,Port Lavaca city,3688.0,town,True,TX
+4858940,Port Neches city,4946.0,suburb,True,TX
+4859012,Post city,1198.0,suburb,True,TX
+4859065,Post Oak Bend,233.0,suburb,True,TX
+4859084,Poteet city,773.0,suburb,True,TX
+4859096,Poth town,478.0,suburb,True,TX
+4859132,Pottsboro town,978.0,suburb,True,TX
+4859336,Prairie View city,588.0,suburb,True,TX
+4859384,Premont city,934.0,town,True,TX
+4859396,Presidio city,896.0,town,True,TX
+4859540,Primera town,1444.0,suburb,True,TX
+4859576,Princeton city,10242.0,suburb,True,TX
+4859636,Progreso city,1258.0,suburb,True,TX
+4859642,Progreso Lakes city,106.0,suburb,True,TX
+4859696,Prosper town,12900.0,suburb,False,TX
+4859748,Providence Village town,3338.0,suburb,True,TX
+4860044,Quanah city,834.0,town,True,TX
+4860080,Queen City city,523.0,town,True,TX
+4860140,Quinlan city,450.0,suburb,True,TX
+4860164,Quintana town,29.0,suburb,True,TX
+4860188,Quitman city,739.0,town,True,TX
+4860356,Ralls city,719.0,suburb,True,TX
+4860544,Rancho Viejo town,1034.0,suburb,False,TX
+4860672,Ransom Canyon town,534.0,suburb,True,TX
+4860752,Ravenna city,67.0,town,True,TX
+4860836,Raymondville city,2299.0,town,True,TX
+4861196,Red Oak city,4674.0,suburb,True,TX
+4861340,Redwater city,243.0,suburb,True,TX
+4861436,Refugio town,1055.0,town,True,TX
+4861592,Reno city (Lamar County),1027.0,town,True,TX
+4861604,Reno city (Parker and Tarrant Counties),866.0,suburb,True,TX
+4861616,Retreat town,260.0,town,True,TX
+4861700,Rhome city,405.0,suburb,True,TX
+4861736,Rice city,202.0,town,True,TX
+4861796,Richardson city,25439.0,suburb,True,TX
+4861820,Richland town,128.0,town,True,TX
+4861844,Richland Hills city,2710.0,suburb,True,TX
+4861892,Richmond city,2846.0,suburb,True,TX
+4861904,Richwood city,1574.0,suburb,True,TX
+4862180,Rio Hondo city,577.0,suburb,True,TX
+4862240,Rio Vista city,224.0,suburb,True,TX
+4862384,River Oaks city,2707.0,suburb,True,TX
+4862504,Roanoke city,2776.0,suburb,True,TX
+4862564,Robert Lee city,367.0,town,True,TX
+4862588,Robinson city,3913.0,suburb,True,TX
+4862600,Robstown city,2800.0,suburb,True,TX
+4862672,Rockdale city,2136.0,town,True,TX
+4862804,Rockport city,4913.0,suburb,False,TX
+4862828,Rockwall city,15109.0,suburb,False,TX
+4862924,Rogers town,384.0,suburb,True,TX
+4863008,Rollingwood city,466.0,suburb,True,TX
+4863044,Roman Forest city,665.0,suburb,False,TX
+4863140,Ropesville city,165.0,suburb,True,TX
+4863176,Roscoe city,550.0,town,True,TX
+4863188,Rosebud city,480.0,suburb,True,TX
+4863272,Rose Hill Acres city,165.0,suburb,True,TX
+4863284,Rosenberg city,9809.0,suburb,True,TX
+4863464,Rotan city,667.0,town,True,TX
+4863500,Round Rock city,32923.0,suburb,True,TX
+4863524,Round Top town,80.0,town,True,TX
+4863572,Rowlett city,20142.0,suburb,True,TX
+4863668,Royse City city,6112.0,suburb,True,TX
+4863782,Runaway Bay city,783.0,suburb,True,TX
+4863848,Rusk city,909.0,town,True,TX
+4864064,Sachse city,8331.0,suburb,False,TX
+4864088,Sadler city,63.0,suburb,True,TX
+4864112,Saginaw city,7710.0,suburb,True,TX
+4864172,St. Hedwig town,538.0,suburb,True,TX
+4864184,St. Jo city,321.0,town,True,TX
+4864220,St. Paul town,333.0,suburb,True,TX
+4864268,Salado village,901.0,suburb,False,TX
+4864472,San Angelo city,31737.0,core,True,TX
+4865000,San Antonio city,368060.0,core,True,TX
+4865024,San Augustine city,608.0,town,True,TX
+4865036,San Benito city,5965.0,suburb,True,TX
+4865066,Sanctuary town,99.0,suburb,True,TX
+4865372,San Felipe town,466.0,suburb,True,TX
+4865408,Sanger city,3434.0,suburb,True,TX
+4865516,San Juan city,10613.0,suburb,True,TX
+4865552,San Leanna village,274.0,suburb,True,TX
+4865600,San Marcos city,10628.0,suburb,True,TX
+4865612,San Patricio city,135.0,suburb,True,TX
+4865648,San Saba city,1028.0,town,True,TX
+4865660,Sansom Park city,1455.0,suburb,True,TX
+4865690,Santa Clara city,181.0,suburb,True,TX
+4865726,Santa Fe city,3940.0,suburb,True,TX
+4865768,Santa Rosa town,815.0,suburb,True,TX
+4866008,Savoy city,265.0,town,True,TX
+4866128,Schertz city,14307.0,suburb,False,TX
+4866188,Schulenburg city,1002.0,town,True,TX
+4866392,Seabrook city,3739.0,suburb,False,TX
+4866416,Seadrift city,537.0,town,True,TX
+4866428,Seagoville city,4409.0,suburb,True,TX
+4866440,Seagraves city,605.0,town,True,TX
+4866464,Sealy city,1634.0,suburb,True,TX
+4866644,Seguin city,9213.0,suburb,True,TX
+4866704,Selma city,3274.0,suburb,True,TX
+4866764,Seminole city,2091.0,town,True,TX
+4866908,Seven Points city,150.0,town,True,TX
+4866968,Seymour city,1261.0,town,True,TX
+4867100,Shady Shores town,1023.0,suburb,False,TX
+4867136,Shallowater city,1129.0,suburb,True,TX
+4867160,Shamrock city,910.0,town,True,TX
+4867268,Shavano Park city,1355.0,suburb,True,TX
+4867400,Shenandoah city,1629.0,suburb,True,TX
+4867424,Shepherd city,593.0,suburb,True,TX
+4867496,Sherman city,13294.0,core,True,TX
+4867640,Shiner city,897.0,town,True,TX
+4867688,Shoreacres city,680.0,suburb,False,TX
+4867832,Silsbee city,2502.0,suburb,True,TX
+4867964,Simonton city,374.0,suburb,True,TX
+4868036,Sinton city,1373.0,suburb,True,TX
+4868120,Skellytown town,304.0,suburb,True,TX
+4868180,Slaton city,2058.0,suburb,True,TX
+4868300,Smiley city,182.0,town,True,TX
+4868456,Smithville city,1549.0,suburb,True,TX
+4868504,Smyer town,105.0,suburb,True,TX
+4868576,Snook city,365.0,suburb,True,TX
+4868624,Snyder city,4102.0,town,True,TX
+4868636,Socorro city,11352.0,suburb,True,TX
+4868708,Somerset city,838.0,suburb,True,TX
+4868720,Somerville city,499.0,suburb,True,TX
+4868756,Sonora city,959.0,town,True,TX
+4868828,Sour Lake city,676.0,suburb,True,TX
+4869020,South Houston city,3403.0,suburb,True,TX
+4869032,Southlake city,9539.0,suburb,True,TX
+4869104,Southmayd city,166.0,suburb,True,TX
+4869140,South Padre Island town,1530.0,suburb,False,TX
+4869272,Southside Place city,493.0,suburb,True,TX
+4869476,Spearman city,1233.0,town,True,TX
+4869548,Splendora city,387.0,suburb,True,TX
+4869800,Springtown city,1098.0,suburb,True,TX
+4869830,Spring Valley Village city,1493.0,suburb,True,TX
+4869908,Stafford city,3145.0,suburb,True,TX
+4869932,Stagecoach town,244.0,suburb,True,TX
+4869980,Stamford city,1122.0,suburb,True,TX
+4870040,Stanton city,880.0,suburb,True,TX
+4870076,Star Harbor city,372.0,town,True,TX
+4870208,Stephenville city,5210.0,town,True,TX
+4870376,Stockdale city,325.0,suburb,True,TX
+4870544,Stratford city,740.0,town,True,TX
+4870808,Sugar Land city,34563.0,suburb,True,TX
+4870868,Sullivan City city,1354.0,suburb,True,TX
+4870904,Sulphur Springs city,4929.0,town,True,TX
+4871060,Sundown city,296.0,suburb,True,TX
+4871156,Sunnyvale town,2533.0,suburb,True,TX
+4871180,Sunray city,862.0,town,True,TX
+4871228,Sunrise Beach Village city,975.0,town,True,TX
+4871324,Sunset Valley city,413.0,suburb,True,TX
+4871384,Surfside Beach city,1308.0,suburb,True,TX
+4871492,Sweeny city,1176.0,suburb,True,TX
+4871540,Sweetwater city,4000.0,town,True,TX
+4871684,Taft city,924.0,suburb,True,TX
+4871708,Tahoka city,1077.0,suburb,True,TX
+4871732,Talco city,147.0,town,True,TX
+4871756,Talty town,752.0,suburb,True,TX
+4871948,Taylor city,5948.0,suburb,True,TX
+4871960,Taylor Lake Village city,1443.0,suburb,True,TX
+4871966,Taylor Landing city,108.0,suburb,True,TX
+4872020,Teague city,1318.0,town,True,TX
+4872176,Temple city,26101.0,core,False,TX
+4872284,Terrell city,4320.0,suburb,True,TX
+4872296,Terrell Hills city,1833.0,suburb,True,TX
+4872368,Texarkana city,10643.0,core,True,TX
+4872392,Texas City city,16201.0,suburb,True,TX
+4872464,Texhoma city,153.0,town,True,TX
+4872530,The Colony city,13029.0,suburb,True,TX
+4872578,The Hills village,1081.0,suburb,True,TX
+4872776,Thorndale city,541.0,town,True,TX
+4872824,Thrall city,257.0,suburb,True,TX
+4872872,Three Rivers city,595.0,town,True,TX
+4872989,Tiki Island village,1134.0,suburb,True,TX
+4873030,Timbercreek Canyon village,209.0,suburb,True,TX
+4873112,Tioga town,421.0,suburb,True,TX
+4873268,Tolar city,385.0,town,True,TX
+4873316,Tomball city,4275.0,suburb,True,TX
+4873328,Tom Bean city,242.0,suburb,True,TX
+4873352,Tool city,1141.0,town,True,TX
+4873493,Town of Pecos,3002.0,town,True,TX
+4873592,Trenton city,273.0,town,True,TX
+4873652,Trinidad city,333.0,town,True,TX
+4873664,Trinity city,523.0,town,True,TX
+4873710,Trophy Club town,4487.0,suburb,False,TX
+4873724,Troup city,624.0,suburb,True,TX
+4873748,Troy city,680.0,suburb,True,TX
+4873868,Tulia city,1520.0,town,True,TX
+4874048,Tuscola city,326.0,suburb,True,TX
+4874132,Tye city,361.0,suburb,True,TX
+4874144,Tyler city,28535.0,core,False,TX
+4874216,Uhland city,415.0,suburb,True,TX
+4874372,Union Valley city,221.0,suburb,True,TX
+4874408,Universal City city,5806.0,suburb,True,TX
+4874492,University Park city,5417.0,suburb,True,TX
+4874588,Uvalde city,4508.0,town,True,TX
+4874732,Valley Mills city,443.0,suburb,True,TX
+4874756,Valley View city,300.0,town,True,TX
+4874912,Van city,1014.0,town,True,TX
+4874924,Van Alstyne city,1972.0,suburb,True,TX
+4875032,Van Horn town,836.0,town,True,TX
+4875188,Vega city,355.0,suburb,True,TX
+4875236,Venus town,1529.0,suburb,True,TX
+4875308,Vernon city,3603.0,town,True,TX
+4875428,Victoria city,17889.0,core,True,TX
+4875476,Vidor city,2966.0,suburb,True,TX
+4875668,Vinton village,440.0,suburb,True,TX
+4875752,Volente village,347.0,suburb,True,TX
+4875764,Von Ormy city,243.0,suburb,True,TX
+4876000,Waco city,36827.0,core,True,TX
+4876096,Wake Village city,2056.0,suburb,True,TX
+4876228,Waller city,481.0,suburb,True,TX
+4876240,Wallis city,546.0,suburb,True,TX
+4876348,Walnut Springs city,278.0,suburb,True,TX
+4876576,Warren City city,116.0,suburb,True,TX
+4876636,Waskom city,471.0,suburb,True,TX
+4876672,Watauga city,8113.0,suburb,True,TX
+4876816,Waxahachie city,12046.0,suburb,True,TX
+4876864,Weatherford city,10780.0,suburb,True,TX
+4876948,Webster city,1010.0,suburb,True,TX
+4877020,Weimar city,1004.0,town,True,TX
+4877056,Weir city,85.0,suburb,True,TX
+4877152,Wellington city,985.0,town,True,TX
+4877272,Weslaco city,10910.0,suburb,True,TX
+4877332,West city,666.0,suburb,True,TX
+4877416,West Columbia city,1180.0,suburb,True,TX
+4877620,Westlake town,719.0,suburb,True,TX
+4877632,West Lake Hills city,1267.0,suburb,True,TX
+4877740,Weston city,372.0,suburb,True,TX
+4877746,Weston Lakes city,1598.0,suburb,True,TX
+4877752,West Orange city,1429.0,suburb,True,TX
+4877788,Westover Hills town,263.0,suburb,True,TX
+4877896,West Tawakoni city,577.0,suburb,True,TX
+4877956,West University Place city,5254.0,suburb,True,TX
+4878076,Westworth Village city,835.0,suburb,True,TX
+4878136,Wharton city,2502.0,town,True,TX
+4878208,Wheeler city,581.0,town,True,TX
+4878316,White Deer town,511.0,suburb,True,TX
+4878328,Whiteface town,136.0,suburb,True,TX
+4878388,Whitehouse city,2610.0,suburb,True,TX
+4878436,White Oak city,1578.0,suburb,True,TX
+4878532,Whitesboro city,1387.0,suburb,True,TX
+4878544,White Settlement city,4969.0,suburb,True,TX
+4878628,Whitewright town,619.0,suburb,True,TX
+4878664,Whitney town,566.0,town,True,TX
+4879000,Wichita Falls city,30539.0,core,True,TX
+4879036,Wickett town,219.0,town,True,TX
+4879408,Willis city,2100.0,suburb,True,TX
+4879492,Willow Park city,2011.0,suburb,True,TX
+4879564,Wills Point city,1353.0,town,True,TX
+4879576,Wilmer city,1020.0,suburb,True,TX
+4879612,Wilson city,175.0,suburb,True,TX
+4879624,Wimberley city,1170.0,suburb,False,TX
+4879672,Windcrest city,2246.0,suburb,True,TX
+4879696,Windthorst town,104.0,suburb,True,TX
+4879720,Winfield city,69.0,town,True,TX
+4879768,Wink city,385.0,town,True,TX
+4879816,Winnsboro city,1016.0,town,True,TX
+4879828,Winona town,224.0,suburb,True,TX
+4879876,Winters city,925.0,town,True,TX
+4879972,Wolfforth city,2009.0,suburb,True,TX
+4880044,Woodbranch city,521.0,suburb,True,TX
+4880058,Woodcreek city,758.0,suburb,False,TX
+4880144,Woodloch town,104.0,suburb,True,TX
+4880176,Woodsboro town,614.0,town,True,TX
+4880212,Woodville town,700.0,town,True,TX
+4880224,Woodway city,3901.0,suburb,False,TX
+4880296,Wortham town,388.0,town,True,TX
+4880356,Wylie city,16195.0,suburb,True,TX
+4880560,Yoakum city,1995.0,town,True,TX
+4880584,Yorktown city,975.0,town,True,TX
+4100275,Adair Village city,255.0,suburb,True,OR
+41003,Benton County Unincorporated Area,8009.0,suburb,False,OR
+41005,Clackamas County Unincorporated Area,49439.0,suburb,True,OR
+41007,Clatsop County Unincorporated Area,5607.0,town,True,OR
+41009,Columbia County Unincorporated Area,6924.0,suburb,True,OR
+4101000,Albany city,13624.0,core,True,OR
+41011,Coos County Unincorporated Area,13115.0,town,True,OR
+41013,Crook County,5179.0,suburb,True,OR
+41015,Curry County Unincorporated Area,6578.0,town,True,OR
+41017,Deschutes County Unincorporated Area,30317.0,suburb,True,OR
+41019,Douglas County Unincorporated Area,26451.0,town,True,OR
+4102000,Amity city,460.0,suburb,True,OR
+41021,Gilliam County Unincorporated Area,897.0,town,True,OR
+41023,Grant County,3047.0,town,True,OR
+41025,Harney County,2361.0,town,True,OR
+41027,Hood River County Unincorporated Area,5040.0,town,True,OR
+41029,Jackson County Unincorporated Area,20467.0,suburb,True,OR
+4103050,Ashland city,6705.0,suburb,True,OR
+41031,Jefferson County,7247.0,suburb,True,OR
+4103150,Astoria city,3184.0,town,True,OR
+4103250,Aumsville city,1153.0,suburb,True,OR
+41033,Josephine County Unincorporated Area,16427.0,suburb,False,OR
+4103300,Aurora city,424.0,suburb,True,OR
+41035,Klamath County,23691.0,town,True,OR
+4103650,Baker City city,3411.0,town,True,OR
+41037,Lake County,3095.0,town,True,OR
+41039,Lane County Unincorporated Area,34201.0,suburb,True,OR
+41041,Lincoln County Unincorporated Area,9896.0,town,True,OR
+41043,Linn County Unincorporated Area,9933.0,suburb,True,OR
+41045,Malheur County Unincorporated Area,4899.0,town,True,OR
+41047,Marion County Unincorporated Area,20286.0,suburb,True,OR
+4104800,Bay City city,672.0,town,True,OR
+41049,Morrow County Unincorporated Area,1642.0,town,True,OR
+41051,Multnomah County Part 2 Unincorporated Area,4708.0,suburb,False,OR
+41053,Polk County Unincorporated Area,7392.0,suburb,True,OR
+4105350,Beaverton city,20345.0,suburb,True,OR
+41057,Tillamook County Unincorporated Area,9661.0,town,True,OR
+4105800,Bend city,33499.0,core,False,OR
+41061,Union County Unincorporated Area,4624.0,town,True,OR
+41063,Wallowa County,3501.0,town,True,OR
+41065,Wasco County,7721.0,town,True,OR
+41067,Washington County Unincorporated Area,66712.0,suburb,True,OR
+41071,Yamhill County Unincorporated Area,8415.0,suburb,False,OR
+4107200,Boardman city,660.0,town,True,OR
+4108650,Brookings city,1909.0,town,True,OR
+4109050,Brownsville city,689.0,suburb,True,OR
+4110750,Canby city,5393.0,suburb,False,OR
+4110850,Cannon Beach city,1452.0,town,True,OR
+4111150,Carlton city,878.0,suburb,False,OR
+4112400,Central Point city,5202.0,suburb,False,OR
+4113750,Clatskanie city,658.0,suburb,True,OR
+4114400,Coburg city,432.0,suburb,True,OR
+4114750,Columbia City city,739.0,suburb,False,OR
+4115250,Coos Bay city,4414.0,town,True,OR
+4115550,Cornelius city,3696.0,suburb,False,OR
+4115800,Corvallis city,12140.0,core,True,OR
+4115950,Cottage Grove city,2963.0,suburb,True,OR
+4116950,Creswell city,1637.0,suburb,False,OR
+4117300,Culver city,538.0,suburb,True,OR
+4117700,Dallas city,4596.0,suburb,True,OR
+4118250,Dayton city,638.0,suburb,True,OR
+4118850,Depoe Bay city,911.0,town,True,OR
+4119100,Detroit city,162.0,suburb,True,OR
+4120100,Donald city,248.0,suburb,True,OR
+4121050,Dundee city,1052.0,suburb,False,OR
+4121150,Dunes City city,745.0,suburb,False,OR
+4121250,Durham city,372.0,suburb,True,OR
+4121550,Eagle Point city,2697.0,suburb,False,OR
+4122200,Echo city,160.0,town,True,OR
+4123800,Estacada city,2081.0,suburb,True,OR
+4123850,Eugene city,41188.0,core,False,OR
+4124250,Fairview city,1916.0,suburb,True,OR
+4126050,Florence city,3153.0,suburb,True,OR
+4126200,Forest Grove city,6254.0,suburb,True,OR
+4128000,Garibaldi city,384.0,town,True,OR
+4128200,Gates city,102.0,suburb,True,OR
+4128450,Gearhart city,1155.0,town,True,OR
+4128650,Gervais city,621.0,suburb,True,OR
+4130550,Grants Pass city,11752.0,core,True,OR
+4131250,Gresham city,24404.0,suburb,True,OR
+4131750,Halsey city,385.0,suburb,True,OR
+4132050,Happy Valley city,8488.0,suburb,False,OR
+4132550,Harrisburg city,802.0,suburb,True,OR
+4133700,Hermiston city,4014.0,town,True,OR
+4134100,Hillsboro city,25571.0,suburb,True,OR
+4134900,Hood River city,2399.0,town,True,OR
+4135450,Hubbard city,877.0,suburb,False,OR
+4135800,Idanha city,60.0,suburb,True,OR
+4136150,Independence city,1835.0,suburb,True,OR
+4136500,Irrigon city,376.0,town,True,OR
+4137000,Jacksonville city,1185.0,suburb,False,OR
+4137250,Jefferson city,841.0,suburb,True,OR
+4138000,Junction City city,1933.0,suburb,True,OR
+4138500,Keizer city,9696.0,suburb,True,OR
+4139150,King City city,1881.0,suburb,False,OR
+4140300,Lafayette city,1171.0,suburb,True,OR
+4140350,La Grande city,3608.0,town,True,OR
+4140550,Lake Oswego city,12221.0,suburb,False,OR
+4140650,Lakeside city,782.0,town,True,OR
+4141650,Lebanon city,4701.0,core,True,OR
+4142600,Lincoln City city,5032.0,town,True,OR
+4144050,Lowell city,344.0,suburb,True,OR
+4144300,Lyons city,429.0,suburb,True,OR
+4145000,McMinnville city,8007.0,suburb,True,OR
+4145700,Manzanita city,1206.0,town,True,OR
+4147000,Medford city,23399.0,core,False,OR
+4148150,Mill City city,640.0,suburb,True,OR
+4148300,Millersburg city,1058.0,suburb,True,OR
+4148650,Milwaukie city,6542.0,suburb,True,OR
+4149450,Molalla city,2725.0,suburb,False,OR
+4149550,Monmouth city,2153.0,suburb,True,OR
+4150150,Mount Angel city,635.0,suburb,False,OR
+4151700,Nehalem city,107.0,town,True,OR
+4152100,Newberg city,6042.0,suburb,False,OR
+4152450,Newport city,2996.0,town,True,OR
+4153000,North Bend city,3490.0,town,True,OR
+4154100,Oakridge city,1201.0,suburb,True,OR
+4154900,Ontario city,2730.0,town,True,OR
+4155200,Oregon City city,10964.0,suburb,False,OR
+4156250,Paisley city,63.0,town,True,OR
+4157150,Pendleton city,4216.0,town,True,OR
+4157450,Philomath city,1581.0,suburb,True,OR
+4157500,Phoenix city,1238.0,suburb,True,OR
+4159000,Portland city,163638.0,core,True,OR
+4159850,Prineville city,3452.0,suburb,True,OR
+4160850,Rainier city,553.0,suburb,True,OR
+4161200,Redmond city,10499.0,suburb,True,OR
+4161300,Reedsport city,1350.0,town,True,OR
+4162900,Rockaway Beach city,1389.0,town,True,OR
+4163450,Rogue River city,688.0,suburb,True,OR
+4163650,Roseburg city,6310.0,town,True,OR
+4164600,St. Helens city,4091.0,suburb,True,OR
+4164850,St. Paul city,150.0,suburb,True,OR
+4164900,Salem city,41427.0,core,False,OR
+4165250,Sandy city,3812.0,suburb,False,OR
+4165500,Scappoose city,2575.0,suburb,False,OR
+4165650,Scio city,244.0,suburb,True,OR
+4165800,Scotts Mills city,91.0,suburb,True,OR
+4165950,Seaside city,2982.0,town,True,OR
+4167050,Sheridan city,997.0,suburb,True,OR
+4167100,Sherwood city,5850.0,suburb,False,OR
+4167500,Siletz city,262.0,town,True,OR
+4167650,Silverton city,2744.0,suburb,False,OR
+4167950,Sisters city,1108.0,suburb,True,OR
+4169600,Springfield city,14497.0,core,True,OR
+4170200,Stayton city,2314.0,suburb,True,OR
+4170700,Sublimity city,973.0,suburb,False,OR
+4171950,Sweet Home city,2940.0,suburb,True,OR
+4172500,Talent city,1902.0,suburb,True,OR
+4172600,Tangent city,270.0,suburb,True,OR
+4173650,Tigard city,15664.0,suburb,False,OR
+4173700,Tillamook city,1062.0,town,True,OR
+4174000,Toledo city,953.0,town,True,OR
+4174850,Troutdale city,4398.0,suburb,False,OR
+4174950,Tualatin city,6235.0,suburb,True,OR
+4175150,Turner city,928.0,suburb,False,OR
+4175650,Umatilla city,1224.0,town,True,OR
+4177050,Veneta city,1586.0,suburb,True,OR
+4177250,Vernonia city,887.0,suburb,True,OR
+4178000,Waldport city,875.0,town,True,OR
+4178900,Warrenton city,1874.0,town,True,OR
+4180150,West Linn city,8836.0,suburb,False,OR
+4181300,Wheeler city,226.0,town,True,OR
+4182800,Wilsonville city,6023.0,suburb,True,OR
+4183750,Woodburn city,6377.0,suburb,True,OR
+4183950,Wood Village city,601.0,suburb,True,OR
+4184200,Yachats city,695.0,town,True,OR
+4184250,Yamhill city,390.0,suburb,True,OR

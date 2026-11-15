@@ -1,0 +1,243 @@
+<title>ADU own-history forecast</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column; headline, stat row, decision panel, numbered findings each with a chart or table. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header, section { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.eyebrow, .num-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.num-tag { color: var(--survey); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 21px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.stat { border-top: 2px solid var(--rule); padding-top: var(--space-2); }
+.stat b { display: block; font-family: var(--font-mono); font-size: 22px; font-weight: 500; }
+.stat span { font-size: 13px; color: var(--ink-muted); }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); align-items: center; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.dot.f0 { background: var(--ink-faint); } .dot.f1 { background: var(--scenario-adu); } .dot.f2 { background: var(--brass); } .dot.ft { background: var(--scenario-fees); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--ink-faint); stroke-width: 1.5; }
+.chart .band { fill: var(--confidence-inside); fill-opacity: .10; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink-muted); font-size: 12.5px; }
+.chart .move { stroke: var(--rule); stroke-width: 3; }
+.chart .f0 { fill: var(--ink-faint); } .chart .f1 { fill: var(--scenario-adu); } .chart .f2 { fill: var(--brass); } .chart .ft { fill: var(--scenario-fees); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.wide { min-width: 600px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.useful { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · D-090 ADU within-state forecast · 14 Nov 2026</div>
+  <h1>A state's own ADU history does not forecast its next five years inside the range</h1>
+  <p class="lede">We fitted each state on its own 2016–2019 permits and forecast 2021–2025 under the rules actually in force. Form A with each place's own history (F1) was useful in 1 of 4 states; the pre-set bar was 3. It did no better than carrying each place's old rate forward, and housing age did not help. Every forecaster's range was far too narrow.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>1 of 4</b><span>states where F1 was useful (inside P10–P90 and within ×2); bar 3</span></div>
+  <div class="stat"><b>-5.5</b><span>F1 − persistence, summed log score over 43 places; bar 2 SE = 204</span></div>
+  <div class="stat"><b>4 of 4</b><span>states where persistence's median was within ×2; its range held the total in 0</span></div>
+  <div class="stat"><b>+1.31</b><span>β per SD of housing age within states (SE 0.32); F2 − F1 log score -41.9</span></div>
+</div>
+
+<div class="decision">
+  <span class="tag">Needs Ben's call</span>
+  <p><b>What the pre-set rule says.</b> All three rules read against the model:</p>
+  <ol>
+    <li><b>Own history is not enough.</b> F1 is useful only in North Carolina. So, as D-090 fixed before the run, the tool shows the ranges and says plainly that ADU uptake cannot yet be forecast within ×2, even with local history.</li>
+    <li><b>The mechanism does not beat persistence.</b> F1 − F0 is -5.5 against a bar of 204. The spread is huge because a few cities swing it both ways (finding 3).</li>
+    <li><b>Housing age does not replace F1.</b> F2 − F1 is -41.9 (bar 88), useful in 0 states.</li>
+  </ol>
+  <p><b>Accept this outcome?</b> If yes, the next question is the range, not the median (finding 2).</p>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Medians land within ×2 more often than the verdict suggests</h2>
+  <p>Observed 2021–2025 total over the places with history, divided by each forecaster's median. Persistence is within ×2 in all four states; F1 in two (NC, TX); the trend sensitivity in three. F1 over-predicts Minnesota and Oregon about 2.5- to 3-fold.</p>
+  <div class="legend"><span><i class="dot f0"></i>Persistence (F0)</span><span><i class="dot f1"></i>Form A, own history (F1)</span><span><i class="dot f2"></i>F1 + housing age (F2)</span><span><i class="dot ft"></i>F1 + trend (sensitivity)</span></div>
+  <svg viewBox="0 0 640 176" class="chart" role="img" aria-label="Observed over median by state and forecaster"><rect x="338.8" y="10" width="112.5" height="136" class="band"/><line x1="170.0" x2="170.0" y1="10" y2="146" class="grid"/><text x="170.0" y="162" class="tick" text-anchor="middle">÷16</text><line x1="282.5" x2="282.5" y1="10" y2="146" class="grid"/><text x="282.5" y="162" class="tick" text-anchor="middle">÷4</text><line x1="338.8" x2="338.8" y1="10" y2="146" class="grid"/><text x="338.8" y="162" class="tick" text-anchor="middle">÷2</text><line x1="395.0" x2="395.0" y1="10" y2="146" class="zero"/><text x="395.0" y="162" class="tick" text-anchor="middle">×1</text><line x1="451.2" x2="451.2" y1="10" y2="146" class="grid"/><text x="451.2" y="162" class="tick" text-anchor="middle">×2</text><line x1="507.5" x2="507.5" y1="10" y2="146" class="grid"/><text x="507.5" y="162" class="tick" text-anchor="middle">×4</text><line x1="620.0" x2="620.0" y1="10" y2="146" class="grid"/><text x="620.0" y="162" class="tick" text-anchor="middle">×16</text><text x="160" y="37.0" class="lab" text-anchor="end">Minnesota</text><line x1="310.2" x2="375.9" y1="33.0" y2="33.0" class="move"/><circle cx="365.3" cy="33.0" r="5" class="f0"><title>Persistence (F0): 0.69</title></circle><circle cx="310.2" cy="33.0" r="5" class="f1"><title>Form A, own history (F1): 0.35</title></circle><circle cx="335.6" cy="33.0" r="5" class="f2"><title>F1 + housing age (F2): 0.48</title></circle><circle cx="375.9" cy="33.0" r="5" class="ft"><title>F1 + trend (sensitivity): 0.79</title></circle><text x="160" y="67.0" class="lab" text-anchor="end">North Carolina</text><line x1="381.6" x2="463.5" y1="63.0" y2="63.0" class="move"/><circle cx="437.5" cy="63.0" r="5" class="f0"><title>Persistence (F0): 1.69</title></circle><circle cx="391.0" cy="63.0" r="5" class="f1"><title>Form A, own history (F1): 0.95</title></circle><circle cx="381.6" cy="63.0" r="5" class="f2"><title>F1 + housing age (F2): 0.85</title></circle><circle cx="463.5" cy="63.0" r="5" class="ft"><title>F1 + trend (sensitivity): 2.32</title></circle><text x="160" y="97.0" class="lab" text-anchor="end">Texas</text><line x1="371.4" x2="381.7" y1="93.0" y2="93.0" class="move"/><circle cx="381.7" cy="93.0" r="5" class="f0"><title>Persistence (F0): 0.85</title></circle><circle cx="371.8" cy="93.0" r="5" class="f1"><title>Form A, own history (F1): 0.75</title></circle><circle cx="371.4" cy="93.0" r="5" class="f2"><title>F1 + housing age (F2): 0.75</title></circle><circle cx="379.6" cy="93.0" r="5" class="ft"><title>F1 + trend (sensitivity): 0.83</title></circle><text x="160" y="127.0" class="lab" text-anchor="end">Oregon</text><line x1="317.0" x2="406.1" y1="123.0" y2="123.0" class="move"/><circle cx="343.4" cy="123.0" r="5" class="f0"><title>Persistence (F0): 0.53</title></circle><circle cx="324.2" cy="123.0" r="5" class="f1"><title>Form A, own history (F1): 0.42</title></circle><circle cx="317.0" cy="123.0" r="5" class="f2"><title>F1 + housing age (F2): 0.38</title></circle><circle cx="406.1" cy="123.0" r="5" class="ft"><title>F1 + trend (sensitivity): 1.15</title></circle><text x="620" y="175" class="tick" text-anchor="end">observed ÷ predicted median (shaded: within ×2)</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>Every range is far too narrow</h2>
+  <p>With four years of each place's own counts, the forecasters pin each place's rate tightly, and nothing in the model lets a place's rate drift from one period to the next. The P10–P90 ranges span about ±10%, so even a median off by 15% falls outside. Of 16 state-forecaster pairs, 1 hold the observed total.</p>
+  <div class="scroll"><table class="wide"><thead><tr><th>State</th><th>Observed</th><th>Forecaster</th><th>P10–P50–P90</th><th>Obs ÷ P50</th><th>Inside</th></tr></thead><tbody><tr><td>Minnesota</td><td class='num'>119</td><td>Persistence (F0)</td><td class='num'>147–172–198</td><td class='num useful'>0.69</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>Form A, own history (F1)</td><td class='num'>295–339–388</td><td class='num '>0.35</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>F1 + housing age (F2)</td><td class='num'>213–248–285</td><td class='num '>0.48</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>F1 + trend (sensitivity)</td><td class='num'>128–151–176</td><td class='num useful'>0.79</td><td class=''>no</td></tr><tr><td>North Carolina</td><td class='num'>790</td><td>Persistence (F0)</td><td class='num'>425–468–510</td><td class='num useful'>1.69</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>Form A, own history (F1)</td><td class='num'>751–830–917</td><td class='num useful'>0.95</td><td class='useful'>yes</td></tr><tr><td></td><td class='num'></td><td>F1 + housing age (F2)</td><td class='num'>839–932–1,034</td><td class='num useful'>0.85</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>F1 + trend (sensitivity)</td><td class='num'>304–340–379</td><td class='num '>2.32</td><td class=''>no</td></tr><tr><td>Texas</td><td class='num'>366</td><td>Persistence (F0)</td><td class='num'>395–431–468</td><td class='num useful'>0.85</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>Form A, own history (F1)</td><td class='num'>448–487–527</td><td class='num useful'>0.75</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>F1 + housing age (F2)</td><td class='num'>450–489–529</td><td class='num useful'>0.75</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>F1 + trend (sensitivity)</td><td class='num'>406–442–480</td><td class='num useful'>0.83</td><td class=''>no</td></tr><tr><td>Oregon</td><td class='num'>1,464</td><td>Persistence (F0)</td><td class='num'>2,660–2,763–2,867</td><td class='num useful'>0.53</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>Form A, own history (F1)</td><td class='num'>3,366–3,504–3,647</td><td class='num '>0.42</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>F1 + housing age (F2)</td><td class='num'>3,666–3,827–3,992</td><td class='num '>0.38</td><td class=''>no</td></tr><tr><td></td><td class='num'></td><td>F1 + trend (sensitivity)</td><td class='num'>1,216–1,277–1,340</td><td class='num useful'>1.15</td><td class=''>no</td></tr></tbody></table></div>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>Where rules changed, the mechanism was right in North Carolina and wrong in Minneapolis and Bend</h2>
+  <p>Places with at least 50 ADUs in the window (· = a coded rule change in 2021–2025). In Wilmington and Charlotte, F1 priced the rule change and persistence missed by ×3 to ×6. In Minneapolis, F1 expected the 2021 change to raise output; output fell. Bend had no change in the window, but its stronger rule took effect partway through the fit years, so F1 projected the full-rule rate, about 3 times what came.</p>
+  <div class="legend"><span><i class="dot f0"></i>Persistence (F0)</span><span><i class="dot f1"></i>Form A, own history (F1)</span><span><i class="dot ft"></i>F1 + trend (sensitivity)</span></div>
+  <svg viewBox="0 0 640 326" class="chart" role="img" aria-label="Observed over median, large places"><rect x="338.8" y="10" width="112.5" height="286" class="band"/><line x1="170.0" x2="170.0" y1="10" y2="296" class="grid"/><text x="170.0" y="312" class="tick" text-anchor="middle">÷16</text><line x1="282.5" x2="282.5" y1="10" y2="296" class="grid"/><text x="282.5" y="312" class="tick" text-anchor="middle">÷4</text><line x1="338.8" x2="338.8" y1="10" y2="296" class="grid"/><text x="338.8" y="312" class="tick" text-anchor="middle">÷2</text><line x1="395.0" x2="395.0" y1="10" y2="296" class="zero"/><text x="395.0" y="312" class="tick" text-anchor="middle">×1</text><line x1="451.2" x2="451.2" y1="10" y2="296" class="grid"/><text x="451.2" y="312" class="tick" text-anchor="middle">×2</text><line x1="507.5" x2="507.5" y1="10" y2="296" class="grid"/><text x="507.5" y="312" class="tick" text-anchor="middle">×4</text><line x1="620.0" x2="620.0" y1="10" y2="296" class="grid"/><text x="620.0" y="312" class="tick" text-anchor="middle">×16</text><text x="160" y="37.0" class="lab" text-anchor="end">Minneapolis ·</text><line x1="272.3" x2="337.9" y1="33.0" y2="33.0" class="move"/><circle cx="337.9" cy="33.0" r="5" class="f0"><title>Persistence (F0): 0.50</title></circle><circle cx="272.3" cy="33.0" r="5" class="f1"><title>Form A, own history (F1): 0.22</title></circle><circle cx="337.9" cy="33.0" r="5" class="ft"><title>F1 + trend (sensitivity): 0.50</title></circle><text x="160" y="67.0" class="lab" text-anchor="end">Durham</text><line x1="480.2" x2="544.6" y1="63.0" y2="63.0" class="move"/><circle cx="524.0" cy="63.0" r="5" class="f0"><title>Persistence (F0): 4.90</title></circle><circle cx="480.2" cy="63.0" r="5" class="f1"><title>Form A, own history (F1): 2.86</title></circle><circle cx="544.6" cy="63.0" r="5" class="ft"><title>F1 + trend (sensitivity): 6.32</title></circle><text x="160" y="97.0" class="lab" text-anchor="end">Charlotte ·</text><line x1="400.0" x2="488.7" y1="93.0" y2="93.0" class="move"/><circle cx="488.7" cy="93.0" r="5" class="f0"><title>Persistence (F0): 3.17</title></circle><circle cx="400.0" cy="93.0" r="5" class="f1"><title>Form A, own history (F1): 1.06</title></circle><circle cx="477.6" cy="93.0" r="5" class="ft"><title>F1 + trend (sensitivity): 2.77</title></circle><text x="160" y="127.0" class="lab" text-anchor="end">Asheville</text><line x1="335.1" x2="404.0" y1="123.0" y2="123.0" class="move"/><circle cx="346.5" cy="123.0" r="5" class="f0"><title>Persistence (F0): 0.55</title></circle><circle cx="335.1" cy="123.0" r="5" class="f1"><title>Form A, own history (F1): 0.48</title></circle><circle cx="404.0" cy="123.0" r="5" class="ft"><title>F1 + trend (sensitivity): 1.12</title></circle><text x="160" y="157.0" class="lab" text-anchor="end">Wilmington ·</text><line x1="383.2" x2="545.8" y1="153.0" y2="153.0" class="move"/><circle cx="545.8" cy="153.0" r="5" class="f0"><title>Persistence (F0): 6.41</title></circle><circle cx="383.2" cy="153.0" r="5" class="f1"><title>Form A, own history (F1): 0.87</title></circle><circle cx="464.3" cy="153.0" r="5" class="ft"><title>F1 + trend (sensitivity): 2.35</title></circle><text x="160" y="187.0" class="lab" text-anchor="end">Portland ·</text><line x1="321.2" x2="402.8" y1="183.0" y2="183.0" class="move"/><circle cx="322.3" cy="183.0" r="5" class="f0"><title>Persistence (F0): 0.41</title></circle><circle cx="321.2" cy="183.0" r="5" class="f1"><title>Form A, own history (F1): 0.40</title></circle><circle cx="402.8" cy="183.0" r="5" class="ft"><title>F1 + trend (sensitivity): 1.10</title></circle><text x="160" y="217.0" class="lab" text-anchor="end">Bend</text><line x1="295.9" x2="394.2" y1="213.0" y2="213.0" class="move"/><circle cx="394.2" cy="213.0" r="5" class="f0"><title>Persistence (F0): 0.99</title></circle><circle cx="295.9" cy="213.0" r="5" class="f1"><title>Form A, own history (F1): 0.29</title></circle><circle cx="379.7" cy="213.0" r="5" class="ft"><title>F1 + trend (sensitivity): 0.83</title></circle><text x="160" y="247.0" class="lab" text-anchor="end">Salem</text><line x1="470.5" x2="539.6" y1="243.0" y2="243.0" class="move"/><circle cx="491.3" cy="243.0" r="5" class="f0"><title>Persistence (F0): 3.28</title></circle><circle cx="470.5" cy="243.0" r="5" class="f1"><title>Form A, own history (F1): 2.53</title></circle><circle cx="539.6" cy="243.0" r="5" class="ft"><title>F1 + trend (sensitivity): 5.94</title></circle><text x="160" y="277.0" class="lab" text-anchor="end">Austin</text><line x1="371.1" x2="382.1" y1="273.0" y2="273.0" class="move"/><circle cx="382.1" cy="273.0" r="5" class="f0"><title>Persistence (F0): 0.85</title></circle><circle cx="371.1" cy="273.0" r="5" class="f1"><title>Form A, own history (F1): 0.74</title></circle><circle cx="378.9" cy="273.0" r="5" class="ft"><title>F1 + trend (sensitivity): 0.82</title></circle><text x="620" y="325" class="tick" text-anchor="end">observed ÷ predicted median (shaded: within ×2)</text></svg>
+  <div class="scroll"><table class="wide"><thead><tr><th>Place</th><th>State</th><th>Observed</th><th>F0 P50</th><th>F1 P50</th><th>F1 − F0 log score</th><th>Rule changes</th></tr></thead><tbody><tr><td>Bend city</td><td>OR</td><td class='num'>290</td><td class='num'>293</td><td class='num'>984</td><td class='num'>-59.5</td><td>—</td></tr><tr><td>Minneapolis city</td><td>MN</td><td class='num'>72</td><td class='num'>146</td><td class='num'>328</td><td class='num'>-42.2</td><td>2021 2023</td></tr><tr><td>Asheville city</td><td>NC</td><td class='num'>172</td><td class='num'>313</td><td class='num'>360</td><td class='num'>-10.1</td><td>—</td></tr><tr><td>Portland city</td><td>OR</td><td class='num'>984</td><td class='num'>2,410</td><td class='num'>2,443</td><td class='num'>-8.7</td><td>2022</td></tr><tr><td>Salem city</td><td>OR</td><td class='num'>190</td><td class='num'>58</td><td class='num'>75</td><td class='num'>+5.7</td><td>—</td></tr><tr><td>Durham city</td><td>NC</td><td class='num'>240</td><td class='num'>49</td><td class='num'>84</td><td class='num'>+33.0</td><td>—</td></tr><tr><td>Charlotte city</td><td>NC</td><td class='num'>174</td><td class='num'>55</td><td class='num'>164</td><td class='num'>+39.2</td><td>2023 2024</td></tr><tr><td>Wilmington city</td><td>NC</td><td class='num'>141</td><td class='num'>22</td><td class='num'>163</td><td class='num'>+44.7</td><td>2022 2024</td></tr></tbody></table></div>
+  <p class="note">The four places where F1 loses most to persistence, and the four where it gains most. These eight make up about 90% of the absolute per-place differences, and they nearly cancel: that is why the paired SE is so large.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 4</div>
+  <h2>The other lines: rule changes, new places, thin history</h2>
+  <div class="scroll"><table class="wide"><thead><tr><th>Line</th><th>State</th><th>Places</th><th>Observed</th><th>F0 P10–P50–P90</th><th>÷</th><th>F1 P10–P50–P90</th><th>÷</th></tr></thead><tbody><tr><td>history, rule change in window</td><td>MN</td><td class='num'>12</td><td class='num'>94</td><td class='num'>130–153–178</td><td class='num '>0.62</td><td class='num'>288–332–380</td><td class='num '>0.28</td></tr><tr><td>history, rule change in window</td><td>NC</td><td class='num'>5</td><td class='num'>351</td><td class='num'>72–90–109</td><td class='num '>3.90</td><td class='num'>302–366–439</td><td class='num useful'>0.96</td></tr><tr><td>history, rule change in window</td><td>OR</td><td class='num'>1</td><td class='num'>984</td><td class='num'>2,315–2,410–2,506</td><td class='num '>0.41</td><td class='num'>2,347–2,443–2,539</td><td class='num '>0.40</td></tr><tr><td>history, no rule change</td><td>MN</td><td class='num'>15</td><td class='num'>25</td><td class='num'>11–18–28</td><td class='num useful'>1.39</td><td class='num'>3–7–13</td><td class='num '>3.57</td></tr><tr><td>history, no rule change</td><td>NC</td><td class='num'>6</td><td class='num'>439</td><td class='num'>339–378–416</td><td class='num '>1.16</td><td class='num'>417–463–511</td><td class='num useful'>0.95</td></tr><tr><td>history, no rule change</td><td>TX</td><td class='num'>2</td><td class='num'>366</td><td class='num'>395–431–468</td><td class='num '>0.85</td><td class='num'>448–487–527</td><td class='num '>0.75</td></tr><tr><td>history, no rule change</td><td>OR</td><td class='num'>2</td><td class='num'>480</td><td class='num'>314–352–392</td><td class='num '>1.36</td><td class='num'>962–1,060–1,165</td><td class='num '>0.45</td></tr><tr><td>new places in a known state</td><td>MN</td><td class='num'>15</td><td class='num'>29</td><td class='num'>—</td><td></td><td class='num'>3–11–34</td><td class='num '>2.64</td></tr><tr><td>new places in a known state</td><td>TX</td><td class='num'>1</td><td class='num'>261</td><td class='num'>—</td><td></td><td class='num'>1–134–2,582</td><td class='num useful'>1.95</td></tr><tr><td>new places in a known state</td><td>OR</td><td class='num'>1</td><td class='num'>166</td><td class='num'>—</td><td></td><td class='num'>1–79–1,101</td><td class='num '>2.10</td></tr><tr><td>thin history (1 fit year)</td><td>NC</td><td class='num'>2</td><td class='num'>227</td><td class='num'>—</td><td></td><td class='num'>17–43–103</td><td class='num '>5.28</td></tr></tbody></table></div>
+  <p class="note">New places draw u from the prior, so their ranges are wide and they land inside more often. Raleigh and Cary (thin history: only 2019 before the window) came in about 5 times above F1's median.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 5</div>
+  <h2>The fit-year trends all pointed down, and NC then rose</h2>
+  <p>A log-linear trend fitted per state on 2016–2019 falls in every state. It helps Oregon and Minnesota, where counts kept falling, and doubles the miss in North Carolina, where counts surged after 2020. D-090 kept it as a sensitivity for this reason.</p>
+  <div class="scroll"><table><thead><tr><th>State</th><th>F1 θ per 1,000 lots (90%)</th><th>F2 θ</th><th>Trend a year</th></tr></thead><tbody><tr><td>Minnesota</td><td class='num'>0.21 (0.10–0.43)</td><td class='num'>0.05</td><td class='num'>×0.85</td></tr><tr><td>North Carolina</td><td class='num'>1.86 (0.93–4.54)</td><td class='num'>1.68</td><td class='num'>×0.85</td></tr><tr><td>Texas</td><td class='num'>2.18 (0.49–39.18)</td><td class='num'>6.44</td><td class='num'>×0.98</td></tr><tr><td>Oregon</td><td class='num'>3.57 (1.00–31.68)</td><td class='num'>7.76</td><td class='num'>×0.82</td></tr></tbody></table></div>
+  <p class="note">F1: α 2.71, m_o 0.5, m_x 0.4 (estimated); F2: α 1.46, m_o 0.7, m_x 0.3. Fitted on 46 places, 168 place-years.</p>
+</section>
+
+<footer>
+  <p>Built by <code>scripts/dev/adu_time_split_page.py</code> from <code>reports/adu-time-split/</code>. Method: D-090 in <code>docs/analysis_plan.md</code>, accepted 14 Nov 2026 before any run; code committed at 62669bd5 before the fit.</p>
+  <p>A smoke run on a 2 × 2 grid came first; its per-state lines were seen before the full run. St. Paul is out of every fit and score; no <code>--unblind</code>. Nothing written to config.</p>
+</footer>
+</main>

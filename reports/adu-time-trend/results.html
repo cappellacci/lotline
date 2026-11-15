@@ -1,0 +1,242 @@
+<title>ADU time-trend test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column; headline, a decision panel, numbered findings each with a chart, then the tier table. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header, section { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow, .num-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.num-tag { color: var(--survey); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 21px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.stat { border-top: 2px solid var(--rule); padding-top: var(--space-2); }
+.stat b { display: block; font-family: var(--font-mono); font-size: 22px; font-weight: 500; }
+.stat span { font-size: 13px; color: var(--ink-muted); }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.legend { display: flex; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); align-items: center; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.dot.a { background: var(--ink-faint); } .dot.f { background: var(--scenario-adu); } .dot.c { background: var(--brass); } .dot.k { background: var(--survey); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--ink-faint); stroke-width: 1.5; }
+.chart .band { fill: var(--confidence-inside); fill-opacity: .10; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink-muted); font-size: 12.5px; }
+.chart .lab.cand { fill: var(--ink); font-weight: 600; }
+.chart .move { stroke: var(--rule); stroke-width: 3; }
+.chart .pt-a { fill: var(--ink-faint); }
+.chart .pt-p { fill: var(--scenario-adu); }
+.chart .pt-c { fill: var(--brass); }
+.chart .pt-k { fill: var(--survey); }
+.chart .ci { stroke: var(--ink-faint); stroke-width: 3; }
+.chart .ci.cand { stroke: var(--scenario-adu); }
+.chart .pt { fill: var(--ink-faint); }
+.chart .pt.cand { fill: var(--scenario-adu); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.useful { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · D-085 ADU time trend · 13 Nov 2026</div>
+  <h1>A yearly trend fits the past ADU counts far better, but forecasts 2021–25 no better, so the model keeps no trend</h1>
+  <p class="lede">D-085 asked two things: does uptake drift by calendar year, and can the model forecast the places it has seen? We added one shared yearly trend, and ran a new test: fit on 2016–20, forecast 2021–25. The trend explains a lot in sample, mostly Oregon's boom and fall, but it does not forecast better. A plain carry-forward of each place's own early rate does as well as any model form.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>-0.128</b><span>γ a year, all places (90%: -0.136 to -0.120)</span></div>
+  <div class="stat"><b>664</b><span>in-sample likelihood ratio for the trend (one number)</span></div>
+  <div class="stat"><b>+4.2</b><span>test D log score, trend held flat over Form A (bar: 2 SE = 16.3)</span></div>
+  <div class="stat"><b>+4.8</b><span>carry-forward over Form A on test D (SE 11.0)</span></div>
+</div>
+
+<div class="decision">
+  <span class="tag">Decided by the pre-set rule</span>
+  <h2>No trend, for either base form</h2>
+  <ol>
+    <li><b>Form A + trend:</b> test D gain 4.2 is not above 2 SE (16.3).</li>
+    <li><b>Form A′ + trend:</b> test D gain 0.7 is not above 2 SE (15.3); fewer of tests A-B passed (0 vs 1).</li>
+    <li>Continuing the trend past 2020 forecasts much worse than holding it flat (-32.5, SE 11.4), so "flat" was the version scored, as the rule says.</li>
+  </ol>
+  <p class="note">Nothing goes to config. The open call is still D-084 (adopt Form A′ or keep Form A); this result does not change it.</p>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>The trend is mostly Oregon's boom and fall</h2>
+  <p>Fitted on every place, uptake relative to the model falls about 12% a year. It stays near that when Minnesota, North Carolina, Ohio or Texas is left out. Without Oregon it shrinks to about 4% a year, and the likelihood gain drops from 664 to 26. Oregon's large cities issued ADU permits at a peak in the late 2010s and fewer since. A shared trend mostly encodes that one boom.</p>
+  <svg viewBox="0 0 640 248" class="chart" role="img" aria-label="gamma by fit"><line x1="170.0" x2="170.0" y1="10" y2="218" class="grid"/><text x="170.0" y="234" class="tick" text-anchor="middle">-0.30</text><line x1="234.3" x2="234.3" y1="10" y2="218" class="grid"/><text x="234.3" y="234" class="tick" text-anchor="middle">-0.25</text><line x1="298.6" x2="298.6" y1="10" y2="218" class="grid"/><text x="298.6" y="234" class="tick" text-anchor="middle">-0.20</text><line x1="362.9" x2="362.9" y1="10" y2="218" class="grid"/><text x="362.9" y="234" class="tick" text-anchor="middle">-0.15</text><line x1="427.1" x2="427.1" y1="10" y2="218" class="grid"/><text x="427.1" y="234" class="tick" text-anchor="middle">-0.10</text><line x1="491.4" x2="491.4" y1="10" y2="218" class="grid"/><text x="491.4" y="234" class="tick" text-anchor="middle">-0.05</text><line x1="555.7" x2="555.7" y1="10" y2="218" class="zero"/><text x="555.7" y="234" class="tick" text-anchor="middle">+0.00</text><line x1="620.0" x2="620.0" y1="10" y2="218" class="grid"/><text x="620.0" y="234" class="tick" text-anchor="middle">+0.05</text><text x="160" y="34.0" class="lab cand" text-anchor="end">All places</text><line x1="380.5" x2="401.1" y1="30.0" y2="30.0" class="ci cand"/><circle cx="390.8" cy="30.0" r="5" class="pt cand"/><text x="160" y="62.0" class="lab " text-anchor="end">Without MN</text><line x1="380.7" x2="402.1" y1="58.0" y2="58.0" class="ci "/><circle cx="391.5" cy="58.0" r="5" class="pt "/><text x="160" y="90.0" class="lab " text-anchor="end">Without NC</text><line x1="357.4" x2="380.4" y1="86.0" y2="86.0" class="ci "/><circle cx="369.0" cy="86.0" r="5" class="pt "/><text x="160" y="118.0" class="lab " text-anchor="end">Without OH</text><line x1="380.6" x2="401.2" y1="114.0" y2="114.0" class="ci "/><circle cx="390.9" cy="114.0" r="5" class="pt "/><text x="160" y="146.0" class="lab " text-anchor="end">Without TX</text><line x1="364.5" x2="386.6" y1="142.0" y2="142.0" class="ci "/><circle cx="375.6" cy="142.0" r="5" class="pt "/><text x="160" y="174.0" class="lab cand" text-anchor="end">Without OR</text><line x1="482.2" x2="516.6" y1="170.0" y2="170.0" class="ci cand"/><circle cx="499.4" cy="170.0" r="5" class="pt cand"/><text x="160" y="202.0" class="lab " text-anchor="end">2016–20 only</text><line x1="226.9" x2="277.9" y1="198.0" y2="198.0" class="ci "/><circle cx="252.4" cy="198.0" r="5" class="pt "/><text x="620" y="247" class="tick" text-anchor="end">γ, log change in uptake per year (90% interval), Form A + trend</text></svg>
+  <p class="note">A rule-age term in place of the calendar trend (outlook only) is weaker: δ -0.051 a year of rule age, likelihood ratio 23 against Form A′.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>Forecasting 2021–25 from 2016–20: no form is reliable, and the simplest forecast does as well</h2>
+  <p>This is the scenario's own job: forecast places the model has already seen. Every form misses Minnesota badly, and only North Carolina lands within ×2 and inside the range. Holding the trend flat helps Texas and Oregon but not enough to clear the bar. Carrying each place's own 2016–20 rate forward scores -146.2, against Form A's -151.0.</p>
+  <div class="legend"><span><i class="dot a"></i>Form A</span><span><i class="dot f"></i>+ trend, held flat</span><span><i class="dot c"></i>+ trend, continued</span><span><i class="dot k"></i>carry-forward</span></div>
+  <svg viewBox="0 0 640 192" class="chart" role="img" aria-label="test D observed over median by state"><rect x="395.0" y="10" width="112.5" height="152" class="band"/><line x1="170.0" x2="170.0" y1="10" y2="162" class="grid"/><text x="170.0" y="178" class="tick" text-anchor="middle">÷32</text><line x1="282.5" x2="282.5" y1="10" y2="162" class="grid"/><text x="282.5" y="178" class="tick" text-anchor="middle">÷8</text><line x1="395.0" x2="395.0" y1="10" y2="162" class="grid"/><text x="395.0" y="178" class="tick" text-anchor="middle">÷2</text><line x1="451.2" x2="451.2" y1="10" y2="162" class="zero"/><text x="451.2" y="178" class="tick" text-anchor="middle">×1</text><line x1="507.5" x2="507.5" y1="10" y2="162" class="grid"/><text x="507.5" y="178" class="tick" text-anchor="middle">×2</text><line x1="620.0" x2="620.0" y1="10" y2="162" class="grid"/><text x="620.0" y="178" class="tick" text-anchor="middle">×8</text><text x="160" y="39.0" class="lab" text-anchor="end">Minnesota (21)</text><line x1="229.6" x2="410.6" y1="35.0" y2="35.0" class="move"/><circle cx="229.6" cy="35.0" r="5" class="pt-a"/><circle cx="265.6" cy="35.0" r="5" class="pt-p"/><circle cx="313.8" cy="35.0" r="5" class="pt-c"/><circle cx="410.6" cy="35.0" r="5" class="pt-k"/><text x="160" y="73.0" class="lab" text-anchor="end">North Carolina (10)</text><line x1="458.8" x2="543.5" y1="69.0" y2="69.0" class="move"/><circle cx="458.8" cy="69.0" r="5" class="pt-a"/><circle cx="485.6" cy="69.0" r="5" class="pt-p"/><circle cx="543.5" cy="69.0" r="5" class="pt-c"/><circle cx="506.8" cy="69.0" r="5" class="pt-k"/><text x="160" y="107.0" class="lab" text-anchor="end">Texas (2)</text><line x1="436.3" x2="511.6" y1="103.0" y2="103.0" class="move"/><circle cx="436.3" cy="103.0" r="5" class="pt-a"/><circle cx="475.3" cy="103.0" r="5" class="pt-p"/><circle cx="511.6" cy="103.0" r="5" class="pt-c"/><circle cx="442.0" cy="103.0" r="5" class="pt-k"/><text x="160" y="141.0" class="lab" text-anchor="end">Oregon (4)</text><line x1="399.3" x2="483.8" y1="137.0" y2="137.0" class="move"/><circle cx="399.3" cy="137.0" r="5" class="pt-a"/><circle cx="432.4" cy="137.0" r="5" class="pt-p"/><circle cx="483.8" cy="137.0" r="5" class="pt-c"/><circle cx="413.0" cy="137.0" r="5" class="pt-k"/><text x="620" y="191" class="tick" text-anchor="end">observed ÷ forecast median, 2021–25 (shaded: within ×2)</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>Minneapolis: the model predicts a huge jump at the 2021 reform, and none came</h2>
+  <p>Fitted on 2016–20 alone, the share an owner-occupancy rule allows comes out at 0.1 (it is 1.0 on all years). So when Minneapolis dropped its owner-occupancy rule in 2021, the model expected uptake to rise about tenfold. It forecast 1,583 ADU permits for 2021–25; 72 were counted, fewer than the carry-forward's 145. This is most of Minnesota's miss. It is also the question D-086 asks: how much a rule change moves uptake. Here the model's step is far too big, the opposite of Raleigh's case.</p>
+</section>
+
+<section>
+  <div class="num-tag">Test D table</div>
+  <h2>2021–25 totals by state</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>State</th><th>Forecast</th><th>Observed</th><th>P10–P50–P90</th><th>Obs ÷ P50</th></tr></thead>
+    <tbody><tr><td>Minnesota</td><td>A</td><td class='num'>104</td><td class='num'>1,429–1,601–1,780</td><td class='num '>0.07</td></tr><tr><td></td><td>A+T flat</td><td class='num'>104</td><td class='num'>909–1,027–1,151</td><td class='num '>0.10</td></tr><tr><td></td><td>A+T continued</td><td class='num'>104</td><td class='num'>493–567–648</td><td class='num '>0.18</td></tr><tr><td></td><td>A′</td><td class='num'>104</td><td class='num'>724–814–909</td><td class='num '>0.13</td></tr><tr><td></td><td>A′+T flat</td><td class='num'>104</td><td class='num'>460–522–588</td><td class='num '>0.20</td></tr><tr><td></td><td>persistence</td><td class='num'>104</td><td class='num'>148–172–199</td><td class='num '>0.61</td></tr><tr><td>North Carolina</td><td>A</td><td class='num'>982</td><td class='num'>660–895–1,576</td><td class='num useful'>1.10</td></tr><tr><td></td><td>A+T flat</td><td class='num'>982</td><td class='num'>457–643–1,146</td><td class='num useful'>1.53</td></tr><tr><td></td><td>A+T continued</td><td class='num'>982</td><td class='num'>230–315–568</td><td class='num '>3.12</td></tr><tr><td></td><td>A′</td><td class='num'>982</td><td class='num'>669–863–1,342</td><td class='num useful'>1.14</td></tr><tr><td></td><td>A′+T flat</td><td class='num'>982</td><td class='num'>467–630–1,010</td><td class='num useful'>1.56</td></tr><tr><td></td><td>persistence</td><td class='num'>982</td><td class='num'>449–495–544</td><td class='num '>1.98</td></tr><tr><td>Texas</td><td>A</td><td class='num'>366</td><td class='num'>405–440–476</td><td class='num '>0.83</td></tr><tr><td></td><td>A+T flat</td><td class='num'>366</td><td class='num'>245–272–300</td><td class='num '>1.34</td></tr><tr><td></td><td>A+T continued</td><td class='num'>366</td><td class='num'>152–174–196</td><td class='num '>2.10</td></tr><tr><td></td><td>A′</td><td class='num'>366</td><td class='num'>409–444–480</td><td class='num '>0.82</td></tr><tr><td></td><td>A′+T flat</td><td class='num'>366</td><td class='num'>248–276–304</td><td class='num '>1.33</td></tr><tr><td></td><td>persistence</td><td class='num'>366</td><td class='num'>377–410–445</td><td class='num '>0.89</td></tr><tr><td>Oregon</td><td>A</td><td class='num'>1,630</td><td class='num'>2,981–3,093–3,209</td><td class='num '>0.53</td></tr><tr><td></td><td>A+T flat</td><td class='num'>1,630</td><td class='num'>1,952–2,056–2,164</td><td class='num '>0.79</td></tr><tr><td></td><td>A+T continued</td><td class='num'>1,630</td><td class='num'>1,002–1,091–1,185</td><td class='num '>1.49</td></tr><tr><td></td><td>A′</td><td class='num'>1,630</td><td class='num'>2,978–3,091–3,209</td><td class='num '>0.53</td></tr><tr><td></td><td>A′+T flat</td><td class='num'>1,630</td><td class='num'>1,951–2,054–2,163</td><td class='num '>0.79</td></tr><tr><td></td><td>persistence</td><td class='num'>1,630</td><td class='num'>2,516–2,612–2,708</td><td class='num '>0.62</td></tr></tbody>
+  </table></div>
+  <p class="note">Green ratios are inside the range and within ×2. Ohio has no fit year before 2024 and is not in test D. On the data-tier test, adding the trend changes no state's useful count; no form passes any tier.</p>
+</section>
+
+<footer>
+  <div>The base forms match D-084 to the digit (Form A θ 0.7563 per 1,000, log-lik −1,347.71). Test D: 38 places in the 2016–20 fit, 37 forecast (MN 21, NC 10, OR 4, TX 2), 178 place-years. Each place's effect is updated from its own early counts. 20,000 draws, seed 20261111.</div>
+  <div>Sources: <code>reports/adu-time-trend/</code>, <code>src/lotline/model/adu_trend.py</code>, on branch <code>ws/adu-time-trend</code>. Method: D-085 in <code>docs/analysis_plan.md</code>. Run offline from cached data. St. Paul stays out. Nothing was unblinded and nothing was written to config.</div>
+</footer>
+</main>

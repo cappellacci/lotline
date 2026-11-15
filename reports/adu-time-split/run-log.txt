@@ -1,0 +1,33 @@
+[18:35:35] MN: {'history': 27, 'new': 15, 'none': 1}
+[18:35:35] NC: {'history': 11, 'thin': 2}
+[18:35:35] OH: {'new': 1}
+[18:35:35] TX: {'history': 2, 'new': 1}
+[18:35:35] OR: {'history': 3, 'new': 1}
+[18:35:35] rule changes in 2021-2025: 21 places
+[18:35:35] fit: 46 places, 168 place-years, 2016-2019
+[18:35:54]   F1: theta per 1,000 [MN 0.207 (0.105-0.433), NC 1.862 (0.930-4.543), OR 3.570 (0.998-31.678), TX 2.184 (0.490-39.183)], alpha 2.714, m_o 0.5, m_x 0.4, betas [], loglik -311.76 (19s)
+[18:38:30]   F2: theta per 1,000 [MN 0.052 (0.020-0.132), NC 1.675 (0.954-3.259), OR 7.757 (2.863-33.944), TX 6.441 (1.977-43.284)], alpha 1.456, m_o 0.7, m_x 0.3, betas [+1.308 (SE 0.324)], loglik -303.23 (155s)
+[18:38:30]   trend MN: -0.165 a year (×0.85), theta at 2019 0.164/1,000
+[18:38:30]   trend NC: -0.160 a year (×0.85), theta at 2019 1.490/1,000
+[18:38:30]   trend TX: -0.022 a year (×0.98), theta at 2019 2.117/1,000
+[18:38:30]   trend OR: -0.196 a year (×0.82), theta at 2019 2.703/1,000
+[18:38:33]   MN history F0: obs 119, P50 172 (147-198), obs/P50 0.69, useful False
+[18:38:33]   MN history F1: obs 119, P50 339 (295-388), obs/P50 0.35, useful False
+[18:38:33]   MN history F2: obs 119, P50 248 (213-285), obs/P50 0.48, useful False
+[18:38:33]   MN history F1 + trend: obs 119, P50 151 (128-176), obs/P50 0.79, useful False
+[18:38:33]   NC history F0: obs 790, P50 468 (425-510), obs/P50 1.69, useful False
+[18:38:33]   NC history F1: obs 790, P50 830 (751-917), obs/P50 0.95, useful True
+[18:38:33]   NC history F2: obs 790, P50 932 (839-1034), obs/P50 0.85, useful False
+[18:38:33]   NC history F1 + trend: obs 790, P50 340 (304-379), obs/P50 2.32, useful False
+[18:38:33]   TX history F0: obs 366, P50 431 (395-468), obs/P50 0.85, useful False
+[18:38:33]   TX history F1: obs 366, P50 487 (448-527), obs/P50 0.75, useful False
+[18:38:33]   TX history F2: obs 366, P50 489 (450-529), obs/P50 0.75, useful False
+[18:38:33]   TX history F1 + trend: obs 366, P50 442 (406-480), obs/P50 0.83, useful False
+[18:38:33]   OR history F0: obs 1464, P50 2763 (2660-2867), obs/P50 0.53, useful False
+[18:38:33]   OR history F1: obs 1464, P50 3504 (3366-3647), obs/P50 0.42, useful False
+[18:38:33]   OR history F2: obs 1464, P50 3827 (3666-3992), obs/P50 0.38, useful False
+[18:38:33]   OR history F1 + trend: obs 1464, P50 1277 (1216-1340), obs/P50 1.15, useful False
+[18:38:33] rule 1: F1 useful in 1 of 4 states (bar 3) -> own history is not enough to forecast within ×2
+[18:38:33] rule 2: F1 − F0 log score -5.52, bar 2 SE = 204.27 -> F1 forecasts no better than persistence
+[18:38:33] rule 3: F2 − F1 log score -41.90, bar 87.77; useful states F2 0 vs F1 1 -> F1 stays
+[18:38:33] done
