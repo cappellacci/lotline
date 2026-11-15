@@ -6452,3 +6452,19 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   5. **σ on all four states together is computed and logged for reference.** It is not used for any forecast.
   6. **A smoke run** (500 draws) checked the code path. Its outputs went to a scratch folder, and only its
      status lines were shown, not its results.
+- **Result, 2026-11-14** (`reports/adu-drift/`, page https://claude.ai/artifact/G4sRpudCfVVXt8PyWV2asM).
+  - **Rollback check:** with drift off, every score matches D-090's to 3.6 × 10⁻¹⁵.
+  - **σ leaving one state out:** F0 0.85–1.10; F1 0.73–1.43.
+  1. **Rule 1:** F1+d is useful in 2 of 4 states (NC, TX). **Persistence with drift is useful in 3 of 4**
+     (MN, NC, TX); Oregon is inside its range at 0.47.
+  2. **Rule 2:** F1+d − F0+d = +7.6 (2 SE 31). No.
+  3. **Rule 3:** coverage 81% (F0+d) and 77% (F1+d). Pass.
+  - **Ben's condition 2: the pre-set improvement test is not met.**
+    - Log-score gain with drift: +429 for F0 (2 SE 551) and +442 for F1 (2 SE 571). Portland carries about
+      +270 of each; without it the gain is +158.
+    - Clear gains: coverage 58% → 81%; persistence's state totals inside 0 → 4 of 4; per-place CRPS down 13%.
+    - A loss: F1's state-total CRPS rises (2,309 → 2,879). Independent drift lifts NC's F1 total median
+      from 830 to 1,493, against 790 observed.
+  - **The tool outcome this case triggers, as fixed:** persistence with the drift band as the no-reform range;
+    a bill's effect as F1's ratio, labelled unchecked within ×2. **Not applied: it needs Ben's separate
+    approval.** To roll back, close PR #430.
