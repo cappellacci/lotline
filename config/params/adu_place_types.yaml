@@ -66,7 +66,7 @@ adu_types_core_log_multiplier:
   high: 1.898
   unit: log of a core city's hazard multiplier over a suburb's (β_core)
   source: "Estimated, D-088 (run 2026-11-14): Form A + P central fit, 90% profile-likelihood interval; x3.3 (x1.7 to x6.7). D-088's rule adopted it: tier-1 log-score gain +7.2 against 2 SE of 6.1. Leave-one-state-out fits +0.91 to +1.26, every interval above 0"
-  notes: "Drawn per draw as N(β̂, se), se = (high - low) / (2 x 1.645) = 0.425, shared by every core city in the draw (adu_types.type_draws). Suburbs get 0. Towns get the D-089 prior below."
+  notes: "Drawn per draw as N(β̂, se), se = (high - low) / (2 x 1.645) = 0.411, shared by every core city in the draw (adu_types.type_draws). Suburbs get 0. Towns get the D-089 prior below."
 
 adu_types_owner_occupancy_share:
   value: 1.0
