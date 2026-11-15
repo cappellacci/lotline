@@ -1,0 +1,217 @@
+<title>ADU Spread by Type</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+:root { --s0: var(--survey); --s2: var(--tier-1); }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body, Inter, system-ui, sans-serif); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display, "Space Grotesk", system-ui, sans-serif); text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; line-height: 1.15; } h2 { font-size: 1.2rem; }
+.kicker { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; color: var(--ink-muted); }
+p { margin: 0; max-width: 65ch; } section { display: grid; gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.card { background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; }
+.card b { font-family: var(--font-display, "Space Grotesk", sans-serif); font-size: 1.6rem; }
+.card span { color: var(--ink-muted); font-size: .85rem; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--ink-muted); font-size: 11px; font-family: inherit; }
+.chart .st { fill: var(--ink); font-weight: 600; font-size: 12.5px; } .chart .lab { fill: var(--ink); font-size: 12px; } .chart .val { fill: var(--ink); }
+.grid { stroke: var(--rule); stroke-width: 1; } .zero { stroke: var(--brass); stroke-dasharray: 4 3; stroke-width: 1.5; }
+.ci { stroke: var(--ink-muted); stroke-width: 2; } .pt { fill: var(--tier-1); } .pt0 { fill: var(--paper); stroke: var(--ink-muted); stroke-width: 2; }
+.s0 { fill: var(--s0); } .s2 { fill: var(--s2); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: .9rem; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: right; }
+th { color: var(--ink-muted); font-weight: 500; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+td.form, th.form { text-align: left; }
+td.good { color: var(--confidence-inside); font-weight: 600; } td.wide { color: var(--confidence-edge); font-weight: 600; } td.narrow { color: var(--confidence-outside); font-weight: 600; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 65ch; }
+.verdict { border-left: 4px solid var(--brass); padding: 10px 14px; background: var(--paper-raised); border-radius: 0 8px 8px 0; }
+.foot { color: var(--ink-faint); font-size: .8rem; }
+</style>
+<div class="wrap">
+<header style="display:grid;gap:8px">
+  <div class="kicker">Lotline · ADU model · D-094 · 15 Nov 2026</div>
+  <h1>Do core cities need their own spread of luck?</h1>
+  <p>Today one number sets how far any place can stray from its fitted rate. D-094 gave core cities and suburbs one each, refitted on the checked rule rows (64 places), and scored it the way D-088 scored place types: each state left out, then predicted.</p>
+</header>
+
+<div class="verdict"><b>Verdict: keep A + types.</b> No lower tier, and the tier-1 log score gain -0.1 is not above 2 SE (2.9). Nothing goes to config or the engine.</div>
+
+<div class="cards">
+  <div class="card"><span>Core cities' spread vs suburbs', all states</span><b>×0.41</b><span>α 1.01 vs 2.45; 90% interval ×0.20–×0.85. Core cities do vary less in the fit.</span></div>
+  <div class="card"><span>Held-out score gain</span><b>-0.1</b><span>log score over 64 places, 2 SE 2.9. Predicting a state it hasn't seen, it is no better.</span></div>
+  <div class="card"><span>Without Minnesota</span><b>×1.67</b><span>Leave Minnesota out and core cities look no steadier (interval ×0.53–×4.93): the evidence comes from Minnesota's uneven suburbs.</span></div>
+</div>
+
+<section>
+  <h2>Where the difference comes from</h2>
+  <svg viewBox="0 0 660 228" class="chart" role="img" aria-label="core-city spread relative to suburbs, by fold"><line x1="204.4" x2="204.4" y1="8" y2="200" class="grid"/><text x="204.4" y="214" class="tick" text-anchor="middle">×0.14</text><line x1="313.3" x2="313.3" y1="8" y2="200" class="grid"/><text x="313.3" y="214" class="tick" text-anchor="middle">×0.37</text><line x1="422.2" x2="422.2" y1="8" y2="200" class="zero"/><text x="422.2" y="214" class="tick" text-anchor="middle">×1</text><line x1="531.1" x2="531.1" y1="8" y2="200" class="grid"/><text x="531.1" y="214" class="tick" text-anchor="middle">×2.7</text><line x1="640.0" x2="640.0" y1="8" y2="200" class="grid"/><text x="640.0" y="214" class="tick" text-anchor="middle">×7.4</text><text x="0" y="28" class="st">All states</text><line x1="249.2" x2="404.9" y1="24" y2="24" class="ci"/><circle cx="325.4" cy="24" r="5" class="pt"/><text x="0" y="58" class="lab">Without Minnesota</text><line x1="353.3" x2="596.0" y1="54" y2="54" class="ci"/><circle cx="477.8" cy="54" r="5" class="pt0"/><text x="0" y="88" class="lab">Without North Carolina</text><line x1="180.4" x2="370.5" y1="84" y2="84" class="ci"/><circle cx="272.4" cy="84" r="5" class="pt"/><text x="0" y="118" class="lab">Without Texas</text><line x1="246.0" x2="411.3" y1="114" y2="114" class="ci"/><circle cx="326.2" cy="114" r="5" class="pt"/><text x="0" y="148" class="lab">Without Oregon</text><line x1="280.0" x2="446.1" y1="144" y2="144" class="ci"/><circle cx="360.6" cy="144" r="5" class="pt0"/><text x="0" y="178" class="lab">Without Ohio</text><line x1="245.9" x2="404.3" y1="174" y2="174" class="ci"/><circle cx="323.2" cy="174" r="5" class="pt"/><text x="652" y="227" class="tick" text-anchor="end">core cities' luck spread ÷ suburbs' (α_core ÷ α_sub), 90% interval</text></svg>
+  <p>Filled dots: the interval stays below ×1 (core cities vary less). Hollow: it crosses ×1. Leaving Minnesota out, where 41 of the 48 suburbs are, the estimate moves above ×1 and its interval spans ×1; leaving Oregon out, the interval also crosses ×1.</p>
+</section>
+
+<section>
+  <h2>State ranges would be narrower</h2>
+  <div class="legend"><span><i style="background:var(--s0)"></i>A + types (today)</span><span><i style="background:var(--s2)"></i>A + types + spread by type</span></div>
+  <svg viewBox="0 0 660 250" class="chart" role="img" aria-label="state total range width, today vs spread by type"><line x1="130.0" x2="130.0" y1="8" y2="224" class="grid"/><text x="130.0" y="240" class="tick" text-anchor="middle">×1</text><line x1="220.2" x2="220.2" y1="8" y2="224" class="grid"/><text x="220.2" y="240" class="tick" text-anchor="middle">×2</text><line x1="339.4" x2="339.4" y1="8" y2="224" class="grid"/><text x="339.4" y="240" class="tick" text-anchor="middle">×5</text><line x1="429.6" x2="429.6" y1="8" y2="224" class="grid"/><text x="429.6" y="240" class="tick" text-anchor="middle">×10</text><line x1="519.8" x2="519.8" y1="8" y2="224" class="grid"/><text x="519.8" y="240" class="tick" text-anchor="middle">×20</text><line x1="610.0" x2="610.0" y1="8" y2="224" class="grid"/><text x="610.0" y="240" class="tick" text-anchor="middle">×40</text><text x="0" y="28" class="st">Minnesota</text><rect x="130" y="14" width="288.4" height="14" rx="2" class="s0"/><text x="423.4" y="25" class="val">×9.2</text><rect x="130" y="34" width="292.1" height="14" rx="2" class="s2"/><text x="427.1" y="45" class="val">×9.4</text><text x="0" y="80" class="st">North Carolina</text><rect x="130" y="66" width="415.5" height="14" rx="2" class="s0"/><text x="550.5" y="77" class="val">×24.4</text><rect x="130" y="86" width="313.8" height="14" rx="2" class="s2"/><text x="448.8" y="97" class="val">×11.2</text><text x="0" y="132" class="st">Texas</text><rect x="130" y="118" width="417.7" height="14" rx="2" class="s0"/><text x="552.7" y="129" class="val">×24.8</text><rect x="130" y="138" width="331.9" height="14" rx="2" class="s2"/><text x="466.9" y="149" class="val">×12.8</text><text x="0" y="184" class="st">Oregon</text><rect x="130" y="170" width="430.4" height="14" rx="2" class="s0"/><text x="565.4" y="181" class="val">×27.3</text><rect x="130" y="190" width="378.6" height="14" rx="2" class="s2"/><text x="513.6" y="201" class="val">×18.3</text><text x="652" y="249" class="tick" text-anchor="end">top of range ÷ bottom (P90 ÷ P10) of the held-out state total, log scale</text></svg>
+  <p>Because core cities carry most ADUs, a smaller core-city spread narrows each held-out state's total: North Carolina ×24 → ×11, Texas ×25 → ×13, Oregon ×27 → ×18. Narrower is only better if it is still honest, and the place-level score says the narrower ranges are no more accurate. The state-level test (D-075) is unchanged: useful in 4 of 4 states at tier 1 either way.</p>
+</section>
+
+<section>
+  <h2>The tests D-094 fixed in advance</h2>
+  <div class="scroll"><table>
+  <tr><th class="form">Form</th><th>Claim tier</th><th>Useful states, tiers 0 · 1 · 2</th><th>Tests A–B passed</th><th>Held-out log score vs today</th><th>Test D vs today</th></tr>
+  <tr><td class='form'>A + types (today)</td><td>tier 1</td><td>1 · 4 · 4</td><td>1</td><td>—</td><td>—</td></tr><tr><td class='form'>A + types + spread by type</td><td>tier 1</td><td>1 · 4 · 4</td><td>1</td><td>-0.1 (2 SE 2.9)</td><td>-0.9 (2 SE 3.7)</td></tr><tr><td class='form'>Spread by type, no type terms</td><td>none</td><td>0 · 1 · 0</td><td>1</td><td>-8.6 (2 SE 7.3)</td><td>+1.4 (2 SE 9.6)</td></tr>
+  </table></div>
+  <p class="foot">D-088's rule: the new form replaces A + types only with a lower claim tier, or the same tier and a held-out gain above 2 SE; at least as many of tests A–B; and test D not worse by more than 2 SE.</p>
+</section>
+
+<section>
+  <h2>Coverage by type</h2>
+  <div class="scroll"><table>
+  <tr><th class="form">Form</th><th>All places</th><th>Core cities</th><th>Suburbs</th></tr>
+  <tr><td class='form'>A + types (today)</td><td class='narrow'>69%</td><td class='good'>88%</td><td class='narrow'>62%</td></tr><tr><td class='form'>A + types + spread by type</td><td class='narrow'>70%</td><td class='wide'>94%</td><td class='narrow'>62%</td></tr><tr><td class='form'>Spread by type, no type terms</td><td class='good'>80%</td><td class='wide'>94%</td><td class='good'>75%</td></tr>
+  </table></div>
+  <p class="foot">Share of held-out places inside the middle 80% of their range (randomized percentile; target 80%). Green within 8 points; amber too wide; purple too narrow. As D-094 warned, this split was seen before the entry was written, so it does not decide.</p>
+</section>
+
+<section>
+  <h2>What this means</h2>
+  <ul>
+  <li><b>No change to the model.</b> The held-out score is flat, so the narrower state ranges are not earned.</li>
+  <li><b>The fit's "core cities vary less" is a Minnesota suburbs story.</b> Its 41 suburbs are very uneven; that inflates one shared spread. Without them, nothing says core cities are steadier.</li>
+  <li><b>Narrowing honestly still means more counted core cities.</b> Sixteen core cities in four states cannot pin a separate spread; the data hunt for Texas, Ohio and Oregon sources is the route.</li>
+  </ul>
+</section>
+
+<p class="foot">Source: reports/adu-type-spread/ (scripts/dev/adu_type_spread.py, offline, St. Paul excluded, checked rule rows). The state multiplier's spread is learned with one α for every form (τ's profile), as under A + types. Built by scripts/dev/adu_type_spread_page.py.</p>
+</div>
