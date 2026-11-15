@@ -242,6 +242,23 @@ parcels. Eligibility follows one versioned rule, applied the same way in every s
 - **Fallback:** where there are no parcels, ACS one-unit detached homes stand in. That count has no vacant land
   and no zoning, so the missing-middle fallback denominator excludes vacant lots.
 
+**What missing middle counts (decided 2026-11-15).** The Handbook's scenario allows 2–6 homes per lot, up to
+three stories, and names townhouses and 2–6 unit buildings as examples. Lotline's missing-middle model counts a
+narrower thing: **BPS buildings of 2 units and of 3–4 units** (`bldgs_2`, `bldgs_3_4`), because that is the only
+part of the scenario that BPS reports the same way in every place and every year. Two parts of the Handbook's
+definition are not counted:
+
+- **Townhouses.** BPS files each fee-simple townhouse as a 1-unit home, so townhouse rows can't be told apart
+  from detached houses. This matters most where a reform allows lot splits (Houston, Austin).
+- **5–6 unit buildings.** BPS puts them in its 5+ class with large apartment buildings.
+
+The reform's strength (`estimate_mm.units_grade`) also stops at 4 homes per lot: a rule that allows 6 scores
+the same as one that allows 4, because a 5th or 6th home would land in a class the outcome doesn't count.
+Height (three stories) isn't used. **So the missing-middle result is a floor for the scenario.** It is the
+added building of duplexes, triplexes and fourplexes, not of everything the Handbook's scenario allows. Widening
+the count to townhouses and 5–6 unit buildings would need city permit files with unit counts, which only
+about 15 places have (3 of the 86 Oregon places the model is fitted on), so it is left as a next step.
+
 ### The baseline: what gets built with no change
 
 **In plain words:** each place keeps building at its own recent pace, pulled toward its neighbours' pace when
@@ -578,8 +595,10 @@ Comparison, so a reader sees them where the numbers are.
   parcels, D-005, before D-011). A pre-declared fix is still open (D-007). How much this bias carries into
   scenario effects depends on the scenario modules and will be reported with them.
 - **BPS hides building types.** BPS counts buildings of 1, 2, 3–4 and 5+ units. It does not flag ADUs (most are
-  filed as 1-unit homes) and it puts 5–6 unit buildings in with large apartments. ADU and 5–6 unit effects
-  therefore need city permit files, which only some places have.
+  filed as 1-unit homes), it files townhouses as 1-unit homes, and it puts 5–6 unit buildings in with large
+  apartments. ADU, townhouse and 5–6 unit effects therefore need city permit files, which only some places
+  have. The missing-middle result counts 2–4 unit buildings only and is a floor for the Handbook's 2–6 unit
+  scenario (see "What missing middle counts").
 - **Denominators are weak in most places.** Every MN and NC jurisdiction, and most of OH and TX, uses the ACS
   fallback (homes, not lots; no zoning; no vacant land), quality `low`. Austin's parcels cover the Travis part
   only (0.95 of ACS detached homes). No jurisdiction is yet labelled above data tier 3.

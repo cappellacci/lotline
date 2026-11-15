@@ -123,3 +123,17 @@
     projects.
   - **Outputs:** `reports/mm-d092/run12-types/` (README, run log, type table) and
     `scripts/dev/mm_types_page.py`. Page: https://claude.ai/artifact/G5ceVA6aHXtUBP9UUMJEDf
+- **What missing middle counts:** Ben asked to confirm the definition, then chose "Keep 2–4, disclose gaps".
+  - The Handbook allows 2–6 homes per lot, up to three stories, and names townhouses. The model counts BPS
+    2-unit and 3–4 unit buildings only; BPS files townhouses as 1-unit and puts 5–6 unit buildings in 5+. The
+    reform strength (`units_grade`) stops at 4 homes.
+  - Written up in `docs/model_and_assumptions.md` ("What missing middle counts", and the BPS limitation): the
+    missing-middle result is a floor for the Handbook's scenario. The `units_grade` docstring no longer calls
+    4 homes "the Handbook's fourplex". Proposed HANDOFF decision in the PR description.
+  - Claude read the Handbook (via a fetch agent) and the code; the comparison was checked against
+    `estimate_mm.py` and `calibrate_mm.py`.
+- **Deviation (d), buildings per project: pre-registered and coded, not run.** Ben said "Do the size check first".
+  - **Code:** `src/lotline/model/project_size.py` (same-lot and same-day groupings, inflation E[S²]/E[S]) with 7
+    hand-worked tests; `scripts/dev/mm_project_size_d092.py` with `--dry`.
+  - **Dry run:** field coverage per source only. 15 sources can group by lot, 20 by day.
+  - **Rule:** same-day inflation under 1.5 → stop; same-lot 1.5 or more → raise the compound model.

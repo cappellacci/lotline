@@ -5687,3 +5687,41 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
       `--unblind` is passed.
   - **The code** (`place_types.py`, `Stack` with one φ per place, `with_phi_by`) comes with hand-worked tests.
     The ADU stack has the same rule (PR #432). Once both are on main, one copy goes.
+- **Deviation 2026-11-15 (d): buildings per project (a descriptive check).** This is method only, written after
+  run 12 and before any permit is grouped. Ben chose "Do the size check first" (2026-11-15), and confirmed that
+  the outcome stays 2–4 unit buildings, with townhouses and 5–6 unit buildings disclosed as not counted ("Keep
+  2–4, disclose gaps"; `docs/model_and_assumptions.md`, "What missing middle counts").
+  - **Why:** BPS counts 2–4 unit buildings, but several can be one builder's project. If they are, a place's
+    yearly count is lumpy for a reason the model could carry (a compound Poisson: projects × buildings per
+    project). This check says whether that is worth building. It fits nothing.
+  - **Data:** every state's `permits` table through `holdout.apply`, from 2010. St. Paul, Ramsey, Charlotte and
+    Mecklenburg are also dropped by GEOID, and the `stpaul_permits` and `meck_permits` sources entirely.
+    `columbus_variances` (zoning variances) is not a permit file. No `--unblind`.
+  - **Buildings:** permits typed `U2` or `U3_4`, type known, not a demolition or conversion; `n_buildings` where
+    given, else 1 (`project_size.buildings`).
+  - **Two groupings, a lower and an upper bound:**
+    - **same lot:** same source and parcel ID, issued within 365 days of the project's first permit. It misses a
+      project built on lots split from one parent lot.
+    - **same day:** same source and issue date. It joins unrelated permits issued on one day.
+  - **Usable sources** (`mm_project_size_d092.py --dry`; shares over all permits of any type, no count by type):
+    a source is used when at least 90% of its permits carry the field.
+    - same lot (15): Minneapolis, Rochester (MN); Durham, Raleigh, Wilmington (NC); Cincinnati, Cleveland,
+      Columbus, Franklin County, Montgomery County (OH); Bend, Medford, Portland (OR); Austin, College Station
+      (TX). Cary has parcel IDs on 71% only, so it is same-day only.
+    - same day (20): the 15 above plus Cary, Chapel Hill, Greensboro, Dallas and San Antonio.
+    - not used: Met Council, Asheville, Fort Worth and Mid-Willamette (no day dates).
+  - **Measures**, per source and pooled:
+    - the **inflation** E[S²]/E[S], where S is buildings per project. A count's variance is its mean times
+      this (1 if every project is one building);
+    - the share of buildings in projects of 3 or more; projects, buildings and mean size.
+  - **Rule:**
+    - same-day (upper bound) inflation under 1.5 → **stop**: project size can't explain much of the lumpiness,
+      and project counting is recorded as a limitation;
+    - same-lot (lower bound) inflation 1.5 or more → raise the compound model with Ben;
+    - in between → report both; Ben decides.
+    - 1.5 is a judgment, not a derived bar: at that inflation a place's variance is half again a Poisson's.
+  - **Expected, before any grouping (a guess):** most 2–4 unit projects are one building; same lot gives about
+    1.2, same day more in the big cities.
+  - **What it will not do:** fit or change the model, write to config, download anything, or touch the
+    holdouts. Franklin County's file may overlap Columbus's; both are reported by source.
+  - **The code** (`lotline.model.project_size`) comes with 7 hand-worked tests.
