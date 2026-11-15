@@ -111,3 +111,15 @@
   - **Code:** a `Stack` can carry one φ per place (`with_phi_by`); 4 more tests. The `--phi-by-type` option is in
     the refit and test scripts.
   - **How it was checked:** the full CI set (ruff on the whole repo, params table, compliance, full pytest).
+- **Run 12, φ by place type:** Ben said "Yes, run it".
+  - **Result:** φ by type beat one φ by +24.8 held-out (paired SE 32.9), below the 2-SE bar, so it is **not
+    adopted**. The refit and §7 rerun were not done, and run 11 stands. Coverage is 0.79 against 0.78.
+  - **Reported only:**
+    - φ on both origins: town 5.9, core city 15.8, suburb 16.3.
+    - Within each state, suburbs are lumpier than towns. The state differs more than the type: Texas core
+      cities and suburbs hit the search's edge.
+    - The pre-run guess was that towns are lumpiest. It was wrong.
+  - **Plain reading:** for missing middle, place types are coded but not used. The next lever is counting
+    projects.
+  - **Outputs:** `reports/mm-d092/run12-types/` (README, run log, type table) and
+    `scripts/dev/mm_types_page.py`. Page: https://claude.ai/artifact/G5ceVA6aHXtUBP9UUMJEDf
