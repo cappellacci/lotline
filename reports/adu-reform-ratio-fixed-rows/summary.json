@@ -1,0 +1,78 @@
+{
+ "inputs": {
+  "m_owner": 1.0,
+  "m_other": 0.4,
+  "sigma": 1.025,
+  "draws": 20000,
+  "seed": 95
+ },
+ "events": 6,
+ "states": 3,
+ "drift": {
+  "M": {
+   "gain_over_P": {
+    "gain": 4.475989752483409,
+    "se": 4.111857890584282,
+    "events": 6
+   },
+   "b": 1.25,
+   "b_low": 0.6,
+   "b_high": 1.95,
+   "reading": "not shown either way"
+  },
+  "Mr": {
+   "gain_over_P": {
+    "gain": 3.1669174399432887,
+    "se": 3.648301077007168,
+    "events": 6
+   },
+   "b": 1.45,
+   "b_low": 0.55,
+   "b_high": 2.3,
+   "reading": "not shown either way"
+  }
+ },
+ "no_drift": {
+  "M": {
+   "gain_over_P": {
+    "gain": 176.9223363562885,
+    "se": 173.22066901659352,
+    "events": 6
+   },
+   "b": 1.15,
+   "b_low": 0.95,
+   "b_high": 1.45,
+   "reading": "not shown either way"
+  },
+  "Mr": {
+   "gain_over_P": {
+    "gain": 102.9682925872126,
+    "se": 195.58681615810065,
+    "events": 6
+   },
+   "b": 0.75,
+   "b_low": 0.7,
+   "b_high": 0.8,
+   "reading": "contradicted"
+  }
+ },
+ "direction": {
+  "events_with_big_ratio": 3,
+  "moved_same_way": 2
+ },
+ "coverage": {
+  "P": {
+   "inside_p10_p90": 5,
+   "within_x2": 1
+  },
+  "M": {
+   "inside_p10_p90": 6,
+   "within_x2": 2
+  },
+  "Mr": {
+   "inside_p10_p90": 4,
+   "within_x2": 2
+  }
+ },
+ "reading": "not shown either way"
+}
