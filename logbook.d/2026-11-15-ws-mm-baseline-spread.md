@@ -137,3 +137,14 @@
     hand-worked tests; `scripts/dev/mm_project_size_d092.py` with `--dry`.
   - **Dry run:** field coverage per source only. 15 sources can group by lot, 20 by day.
   - **Rule:** same-day inflation under 1.5 → stop; same-lot 1.5 or more → raise the compound model.
+- **Run 13, buildings per project:** Ben said "Yes, run it".
+  - **Result:** pooled inflation E[S²]/E[S] is 12.8 grouped by lot and 5.3 by day. 34–42% of 2–4 unit
+    buildings come in projects of 3 or more. By the pre-registered rule, the project model goes back to Ben.
+  - Cities differ: Minneapolis 1.13, Cleveland 1.36, Cincinnati 1.41 (by lot); Austin 23.8, College Station
+    22.0, Wilmington 16.6, Columbus 11.3. The pre-run guess (mostly single buildings) was wrong.
+  - Same lot came out higher than same day, so it wasn't the lower bound the plan called it; both are over the
+    bar. A check after the run, reported only: trimming each city's top 1% of projects leaves it well over 1.5.
+  - **Outputs:** `reports/mm-d092/run13-projects/` (README, summary, coverage, run log, page) and
+    `scripts/dev/mm_projects_page.py`. Page: https://claude.ai/artifact/BvoadqpTCF3itcSBYUYdgq
+  - **How it was checked:** the grouping code has 7 hand-worked tests; the largest projects were looked at by
+    hand (no `n_buildings` > 1 in any file, so the clusters are many permits on one parcel).
