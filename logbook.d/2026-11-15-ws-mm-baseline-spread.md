@@ -79,3 +79,22 @@
     needs Ben's go-ahead.
   - **Outputs:** `reports/mm-d092/run8-baseline/` and `scripts/dev/mm_baseline_choice_page.py`. Page:
     https://claude.ai/artifact/BUNjwor6A2oD2WpUyEZLg8
+- **Runs 9–11, the per-year NB in the fit, the refit and §7:** Ben said "Yes, code and refit".
+  - **Code:**
+    - φ is in `calibrate_mm`'s likelihood, held-out and no-effect scores, and draws. At φ = 0, draws are
+      bit-identical.
+    - 9 more tests, 33 in this file. The full suite passes (2,178).
+  - **Run 9:** φ = 13.63 (12.85–14.48) on both origins.
+  - **Run 10, the refit** (44 min):
+    - M's θ is 1.68 per 1,000 (0.12–21.9). r5 is 0.00027, with a half-life of 4.5 years and α about 0.
+    - Without Oregon, θ is 1.08, against 0.034 in run 4.
+    - M beats no-effect by only 5.0 (SE 3.4).
+  - **Run 11, the §7 tests:**
+    - Test B, leave one state out and coverage (0.84) now pass.
+    - Test C misses only on MN's three-place total: 79% of places are inside.
+    - Test A has one place. The placebo still fails.
+    - §5's rule picks C4.
+  - **Plain reading:** the ranges are honest now, but too wide to show the reform's effect.
+  - **Next, for Ben:** place types (already decided), and counting projects rather than buildings.
+  - **Outputs:** `reports/mm-d092/run9-phi/`, `run10-refit-phi/` and `run11-tests-phi/` (README and page script).
+    Page: https://claude.ai/artifact/Nc9Y2HZMAgmZbdb4sHPEEf
