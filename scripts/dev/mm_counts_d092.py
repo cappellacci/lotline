@@ -1,13 +1,13 @@
-"""Inputs for the D-082 (proposed) missing-middle counts (`lotline.model.mm_counts`): structure check only.
+"""Inputs for the D-092 (proposed) missing-middle counts (`lotline.model.mm_counts`): structure check only.
 
-    uv run python scripts/dev/mm_counts_d082.py --dry
+    uv run python scripts/dev/mm_counts_d092.py --dry
 
 `--dry` reads each candidate permit source, parcel roll and BPS table through `mm_counts.blind` (St. Paul and
 Ramsey County dropped outright, then `holdout.apply`) and prints **structure only**: source, rows, issue-year
 or vintage span, which columns are present and the parcel-ID fill. It prints no 2–4 unit count, no building
 count, no ratio and no breakdown by building type or land use.
 
-Without `--dry` the script stops: D-082 is proposed, not approved, and every count needs Ben's go-ahead after
+Without `--dry` the script stops: D-092 is proposed, not approved, and every count needs Ben's go-ahead after
 the code is reviewed. The counting run will be added here once he gives it.
 """
 
@@ -21,7 +21,7 @@ import pandas as pd
 from lotline.io import DataStore
 from lotline.model import mm_counts as mc
 
-# D-082 §2: the strong permit candidates (review §2), by state and processed file name
+# D-092 §2: the strong permit candidates (review §2), by state and processed file name
 # (processed/<st>/permits/<name>.parquet).
 PERMIT_SOURCES = {
     "MN": [("Minneapolis", "mpls_permits")],
@@ -30,7 +30,7 @@ PERMIT_SOURCES = {
     "TX": [("Austin", "austin_permits"), ("College Station", "cstx_permits")],
     "OR": [("Portland", "portland_permits"), ("Bend", "bend_permits"), ("Medford", "medford_permits")],
 }
-# D-082 §2 test B rolls (Wake 2019→2023, Franklin 2016→2025, Minneapolis 2017→2026, Met Council 2021→2025).
+# D-092 §2 test B rolls (Wake 2019→2023, Franklin 2016→2025, Minneapolis 2017→2026, Met Council 2021→2025).
 ROLL_SOURCES = {
     "NC": [("Wake", "wake_realestate")],
     "OH": [("Franklin", "oh_parcels")],
@@ -65,7 +65,7 @@ def _present(df: pd.DataFrame, cols: tuple[str, ...]) -> str:
 
 
 def dry(store: DataStore) -> None:
-    print("D-082 inputs, structure only (no counts of 2-4 unit buildings, no ratios)\n")
+    print("D-092 inputs, structure only (no counts of 2-4 unit buildings, no ratios)\n")
     print("Permit sources")
     for state, sources in PERMIT_SOURCES.items():
         for place, source in sources:
@@ -113,7 +113,7 @@ def main() -> int:
     ap.add_argument("--dry", action="store_true", help="print input structure only (no counts)")
     args = ap.parse_args()
     if not args.dry:
-        print("D-082 is proposed, not approved: counts need Ben's go-ahead. Only --dry is available.")
+        print("D-092 is proposed, not approved: counts need Ben's go-ahead. Only --dry is available.")
         return 2
     dry(DataStore())
     return 0

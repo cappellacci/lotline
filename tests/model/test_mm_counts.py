@@ -1,4 +1,4 @@
-"""D-082 (proposed) §2–§3 counting rules (`model/mm_counts.py`), each against a hand-worked synthetic example.
+"""D-092 (proposed) §2–§3 counting rules (`model/mm_counts.py`), each against a hand-worked synthetic example.
 
 No real data: every table here is built in the test.
 """
@@ -44,7 +44,7 @@ def permits(rows: list[dict], *, address: bool = True) -> pd.DataFrame:
 # --------------------------------------------------------------------------------------------- parameters
 
 
-def test_params_are_the_d082_values():
+def test_params_are_the_d092_values():
     p = mc.params()
     assert p["mm_coverage_k_low"] == 0.8
     assert p["mm_coverage_k_high"] == 1.25
