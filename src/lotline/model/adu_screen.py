@@ -93,14 +93,28 @@ def prepare(places: Sequence[cal.PlaceData], cvals: np.ndarray) -> Prepared:
     )
 
 
-def place_loglik(p: Prepared, rate: np.ndarray, alpha: float) -> np.ndarray:
+def place_loglik(p: Prepared, rate: np.ndarray, alpha) -> np.ndarray:
     """log P(y_i) per place at rate_i (θ_s e^{β z_i}), as `calibrate_adu.frailty_loglik_place`, mixed over the
-    blank-field combinations as `frailty_loglik`.
+    blank-field combinations as `frailty_loglik`. `alpha`: one value, or one per place (D-094).
 
     By hand (one place, one year): y = 2, k = 1, rate 1, α = 1 -> log(1/8)."""
     rate = np.asarray(rate, dtype=float)[:, None]
     y = p.Y[:, None]
     mu = rate * p.K
+    if np.ndim(alpha) > 0:  # D-094: α per place
+        alpha = np.asarray(alpha, dtype=float)
+        r = 1.0 / np.maximum(alpha, 1e-8)[:, None]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            nb = (
+                y * np.log(rate)
+                + p.H
+                + (_lgamma(y + r) - _lgamma(r) + r * np.log(r))
+                - (y + r) * np.log(r + mu)
+            )
+            pois = y * np.log(rate) + p.H - mu
+            core = np.where(alpha[:, None] <= 1e-8, pois, nb)
+            a = np.where(np.isfinite(p.log_w), p.log_w + core, -np.inf)
+        return _mix(a)
     with np.errstate(divide="ignore", invalid="ignore"):
         if alpha <= 1e-8:
             core = y * np.log(rate) + p.H - mu
@@ -113,6 +127,11 @@ def place_loglik(p: Prepared, rate: np.ndarray, alpha: float) -> np.ndarray:
                 - (y + r) * np.log(r + mu)
             )
         a = np.where(np.isfinite(p.log_w), p.log_w + core, -np.inf)
+    return _mix(a)
+
+
+def _mix(a: np.ndarray) -> np.ndarray:
+    """log Σ_c exp(a_ic) per place row; -inf where every combination is."""
     top = np.max(a, axis=1)
     safe = np.where(np.isfinite(top), top, 0.0)
     with np.errstate(divide="ignore"):

@@ -1,0 +1,272 @@
+{
+  "sigma_loso": {
+    "F0 without MN": 1.0,
+    "F1 without MN": 0.725,
+    "F0 without NC": 0.85,
+    "F1 without NC": 1.425,
+    "F0 without TX": 1.1,
+    "F1 without TX": 1.15,
+    "F0 without OR": 1.075,
+    "F1 without OR": 1.075
+  },
+  "mu_sigma_loso": {
+    "F0 without MN": [
+      0.55,
+      0.875
+    ],
+    "F1 without MN": [
+      0.0,
+      0.725
+    ],
+    "F0 without NC": [
+      0.1,
+      0.85
+    ],
+    "F1 without NC": [
+      0.4,
+      1.35
+    ],
+    "F0 without TX": [
+      0.45,
+      0.925
+    ],
+    "F1 without TX": [
+      0.35,
+      1.125
+    ],
+    "F0 without OR": [
+      0.45,
+      0.9
+    ],
+    "F1 without OR": [
+      0.45,
+      1.025
+    ]
+  },
+  "sigma_all_states_reported_only": {
+    "F0": 1.025,
+    "F1": 1.075
+  },
+  "rollback_check_max_gap": 3.552713678800501e-15,
+  "evidence": {
+    "F0": {
+      "drift": {
+        "log_score_gain": [
+          428.59060683081566,
+          275.6473887112738
+        ],
+        "crps_reduction_places": [
+          296.2480224525744,
+          319.1494117142419
+        ]
+      },
+      "drift, log-mean learned": {
+        "log_score_gain": [
+          428.5424767868956,
+          275.15460075061276
+        ],
+        "crps_reduction_places": [
+          -843.5877335235624,
+          692.1452030547966
+        ]
+      },
+      "by_variant": {
+        "none": {
+          "useful_states": {
+            "MN": false,
+            "NC": false,
+            "TX": false,
+            "OR": false
+          },
+          "inside_states": {
+            "MN": false,
+            "NC": false,
+            "TX": false,
+            "OR": false
+          },
+          "state_total_crps_sum": 1648.848278020183,
+          "place_coverage": 0.5813953488372093,
+          "place_coverage_ok": false,
+          "place_log_score_sum": -823.059788243272
+        },
+        "drift": {
+          "useful_states": {
+            "MN": true,
+            "NC": true,
+            "TX": true,
+            "OR": false
+          },
+          "inside_states": {
+            "MN": true,
+            "NC": true,
+            "TX": true,
+            "OR": true
+          },
+          "state_total_crps_sum": 1533.128261849426,
+          "place_coverage": 0.813953488372093,
+          "place_coverage_ok": true,
+          "place_log_score_sum": -394.4691814124563
+        },
+        "drift, shared by state": {
+          "useful_states": {
+            "MN": true,
+            "NC": true,
+            "TX": true,
+            "OR": true
+          },
+          "inside_states": {
+            "MN": true,
+            "NC": true,
+            "TX": true,
+            "OR": true
+          },
+          "state_total_crps_sum": 1456.2378323326298,
+          "place_coverage": 0.813953488372093,
+          "place_coverage_ok": true,
+          "place_log_score_sum": null
+        },
+        "drift, log-mean learned": {
+          "useful_states": {
+            "MN": false,
+            "NC": true,
+            "TX": true,
+            "OR": false
+          },
+          "inside_states": {
+            "MN": false,
+            "NC": true,
+            "TX": true,
+            "OR": false
+          },
+          "state_total_crps_sum": 2828.0094377388223,
+          "place_coverage": 0.8372093023255814,
+          "place_coverage_ok": true,
+          "place_log_score_sum": -394.51731145637643
+        }
+      },
+      "improves": false
+    },
+    "F1": {
+      "drift": {
+        "log_score_gain": [
+          441.75456563032503,
+          285.36924584220253
+        ],
+        "crps_reduction_places": [
+          356.9384641359212,
+          351.9859272937985
+        ]
+      },
+      "drift, log-mean learned": {
+        "log_score_gain": [
+          441.4250775531037,
+          284.78950337380513
+        ],
+        "crps_reduction_places": [
+          -1349.8057079954644,
+          793.9069887861851
+        ]
+      },
+      "by_variant": {
+        "none": {
+          "useful_states": {
+            "MN": false,
+            "NC": true,
+            "TX": false,
+            "OR": false
+          },
+          "inside_states": {
+            "MN": false,
+            "NC": true,
+            "TX": false,
+            "OR": false
+          },
+          "state_total_crps_sum": 2309.0112232029496,
+          "place_coverage": 0.5813953488372093,
+          "place_coverage_ok": false,
+          "place_log_score_sum": -828.5750576122862
+        },
+        "drift": {
+          "useful_states": {
+            "MN": false,
+            "NC": true,
+            "TX": true,
+            "OR": false
+          },
+          "inside_states": {
+            "MN": false,
+            "NC": true,
+            "TX": true,
+            "OR": false
+          },
+          "state_total_crps_sum": 2879.052942616884,
+          "place_coverage": 0.7674418604651163,
+          "place_coverage_ok": true,
+          "place_log_score_sum": -386.8204919819612
+        },
+        "drift, shared by state": {
+          "useful_states": {
+            "MN": false,
+            "NC": true,
+            "TX": true,
+            "OR": false
+          },
+          "inside_states": {
+            "MN": false,
+            "NC": true,
+            "TX": true,
+            "OR": true
+          },
+          "state_total_crps_sum": 2256.824182485771,
+          "place_coverage": 0.7674418604651163,
+          "place_coverage_ok": true,
+          "place_log_score_sum": null
+        },
+        "drift, log-mean learned": {
+          "useful_states": {
+            "MN": false,
+            "NC": false,
+            "TX": true,
+            "OR": false
+          },
+          "inside_states": {
+            "MN": false,
+            "NC": false,
+            "TX": true,
+            "OR": false
+          },
+          "state_total_crps_sum": 5239.5678458183575,
+          "place_coverage": 0.7209302325581395,
+          "place_coverage_ok": true,
+          "place_log_score_sum": -387.14998005918255
+        }
+      },
+      "improves": false
+    }
+  },
+  "verdict": {
+    "rule1_F1d_useful_states": 2,
+    "rule1_F0d_useful_states": 3,
+    "rule1_pass_F1d": false,
+    "rule1_pass_F0d": true,
+    "rule2_F1d_minus_F0d": [
+      7.648689430495093,
+      15.57770748342188
+    ],
+    "rule2_pass": false,
+    "rule3_coverage": {
+      "F0": 0.813953488372093,
+      "F1": 0.7674418604651163
+    },
+    "rule3_pass": {
+      "F0": true,
+      "F1": true
+    },
+    "improves": {
+      "F0": false,
+      "F1": false
+    }
+  },
+  "draws": 20000,
+  "d090_commit": "d03ec95e"
+}

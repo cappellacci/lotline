@@ -8,12 +8,12 @@
 # ---- The evidence anchor ----
 
 adu_mature_hazard_ref:
-  value: 0.000448
-  low: 0.000330
-  high: 0.000624
+  value: 0.000240
+  low: 0.000181
+  high: 0.000327
   unit: ADU permits per eligible single-family parcel per year, for a suburb at the reference place's rent, home value and rate
-  source: "Estimated, D-088 (Form A + place types, chosen by Ben 2026-11-14; config approved the same day): central fit over 64 places, 395 place-years in MN, NC, OH, TX and OR (the D-079 joint-refit inputs; St. Paul held out), 90% profile-likelihood interval, offline (scripts/dev/adu_types_refit.py, reports/adu-place-types/fits.csv). Earlier: 0.000308 (D-053, Form A, no types, m_x 1.0), 0.000659 (D-048, four states), 0.001038 (D-019 fit 3, 16 places, with the ramp). Research band: 4 per 1,000, Portland (E046, E047)"
-  notes: "The rate of a suburb, the reference place type. A core city's hazard is this times exp(adu_types_core_log_multiplier) (x3.3), and a town's is this times a draw from D-089's town prior (adu_place_types.yaml). Higher than D-053's 0.000308 because partial rules now count at m_x = 0.4, not 1.0, and the core term takes the big cities' excess out of the place effects. Drawn lognormal (D-030): median at the estimate, log-SD from the 90% interval, then shifted with the judgment parameters (adu_anchor.yaml slopes; computed for D-053's fit, used here as an approximation until they are recomputed for this fit)."
+  source: "Estimated, D-096 (Form A + place types on the coverage-fixed rule rows of PR #440; config approved by Ben 2026-11-15): central fit over 63 places, 446 place-years in MN, NC, OH, TX and OR (St. Paul held out; Cottage Grove 2016-22 and Maplewood 2016-23 left out as unknown rules), 90% profile-likelihood interval, offline (scripts/dev/adu_refit_fixed_rows.py adu_types_refit.py, reports/adu-types-fixed-rows/fits.csv). Earlier: 0.000448 (D-088, pre-check rows, m_x 0.4), 0.000308 (D-053, Form A, no types, m_x 1.0), 0.000659 (D-048), 0.001038 (D-019 fit 3). Research band: 4 per 1,000, Portland (E046, E047)"
+  notes: "The rate of a suburb, the reference place type. A core city's hazard is this times exp(adu_types_core_log_multiplier) (x5.3), and a town's is this times a draw from D-089's town prior (adu_place_types.yaml). Lower than D-088's 0.000448 mainly because partial rules now count at m_x = 0.7, not 0.4, so the same counts need less base rate. Drawn lognormal (D-030): median at the estimate, log-SD from the 90% interval, then shifted with the judgment parameters (adu_anchor.yaml slopes, recomputed for this fit by scripts/dev/adu_types_slopes.py)."
 
 adu_ref_rent_usd:
   value: 1573
@@ -149,9 +149,9 @@ adu_extrapolation_widening:
   source: "Judgment. Statistical protocol §5.5 step 3 and two-prong design: don't extrapolate silently; flag and widen. At 1.0, a place with rent 40% below the reference range (log distance 0.5) gets an extra log-sd of 0.5 (P10-P90 about x0.5 to x1.9)"
 
 adu_place_effect_variance:
-  value: 1.550
-  low: 1.046
-  high: 2.297
+  value: 1.439
+  low: 0.976
+  high: 2.121
   unit: variance of a place's multiplier on the ADU hazard (gamma, mean 1), after the place-type term
-  source: "Estimated, D-088 (alpha, same fit as adu_mature_hazard_ref); 90% interval from the observed-information log-SE 0.239 (adu_place_types.yaml adu_types_info_log_se_alpha). Earlier: 2.317 (D-053, no types), 2.214 (D-048, four states), 4.735 (D-019 fit 3, 16 places, with the ramp)"
-  notes: "Smaller than D-053's because the core-city term now explains part of the spread between places (D-088 Part 1); about 70% of the spread is still between look-alike places. Each simulation draw gives each place its own multiplier, so a single place's range is very wide; state totals are much tighter. Drawn lognormal around the estimate (D-030), correlated with the anchor by adu_types_info_corr."
+  source: "Estimated, D-096 (alpha, same fit as adu_mature_hazard_ref; coverage-fixed rule rows of PR #440; config approved by Ben 2026-11-15); 90% interval from the observed-information log-SE 0.236 (adu_anchor.yaml adu_anchor_info_log_se_alpha). Earlier: 1.550 (D-088, pre-check rows), 1.698 (D-088 on the checked rows, not adopted), 2.317 (D-053, no types), 2.214 (D-048), 4.735 (D-019 fit 3)"
+  notes: "Smaller than on the checked rows (1.70) because correcting how coverage and 'no ADUs' were coded explains part of what looked like places being randomly different (D-096). Each simulation draw gives each place its own multiplier, so a single place's range is very wide; state totals are much tighter. Drawn lognormal around the estimate (D-030), correlated with the anchor by adu_anchor_info_corr."

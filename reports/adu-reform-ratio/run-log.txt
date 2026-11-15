@@ -1,0 +1,93 @@
+[13:48:32] 10 events in 3 states
+[13:48:32] engine m_o 1.0, m_x 0.4; drift sigma 1.025
+[13:48:57]   A+P without place 2708794: theta 0.2044/1,000 (0.151-0.289), alpha 1.719, beta +0.000, core +1.816 (+1.162, +2.519), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1402.52 (24s)
+[13:48:57]   A+P without place 2713456: theta 0.2047/1,000 (0.153-0.286), alpha 1.602, beta +0.000, core +1.815 (+1.180, +2.492), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1407.23 (24s)
+[13:48:57]   A+P without place 2721770: theta 0.2045/1,000 (0.152-0.286), alpha 1.653, beta +0.000, core +1.816 (+1.173, +2.504), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1407.89 (24s)
+[13:48:57]   A+P without place 2740382: theta 0.2047/1,000 (0.152-0.287), alpha 1.622, beta +0.000, core +1.815 (+1.177, +2.497), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1407.48 (24s)
+[13:48:57]   A+P without place 2743000: theta 0.3601/1,000 (0.260-0.501), alpha 1.557, beta +0.000, core +1.337 (+0.686, +2.027), town +0.000 (+0.000, +0.000), m_o 0.4, m_x 0.8, loglik -1350.88 (23s)
+[13:48:57]   A+P without place 2755726: theta 0.2047/1,000 (0.152-0.287), alpha 1.628, beta +0.000, core +1.815 (+1.176, +2.498), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1407.57 (24s)
+[13:48:57]   A+P without place 3714700: theta 0.2023/1,000 (0.149-0.289), alpha 1.749, beta +0.000, core +1.827 (+1.166, +2.536), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1398.20 (24s)
+[13:49:13]   A+P without place 3728000: theta 0.1997/1,000 (0.148-0.278), alpha 1.699, beta +0.000, core +1.894 (+1.233, +2.609), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1391.49 (16s)
+[13:49:13]   A+P without place 3755000: theta 0.2002/1,000 (0.147-0.280), alpha 1.748, beta +0.000, core +1.866 (+1.197, +2.591), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1370.41 (16s)
+[13:49:13]   A+P without place 4815976: theta 0.1997/1,000 (0.148-0.281), alpha 1.699, beta +0.000, core +1.894 (+1.233, +2.609), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1392.26 (16s)
+[13:49:14] 
+                name  year  dose_before  dose_after  y_before  y_after  ratio_engine  ratio_refit  observed_ratio  M_p10  M_p50  M_p90   ls_P  ls_M  ls_Mr
+     Burnsville city  2018         0.70        0.67      0.00     2.00          0.76         0.94            1.07    0.0    1.0    8.0  -2.40 -2.41  -2.40
+  Cottage Grove city  2023         0.70        1.00      0.00     0.00          0.57         0.71            2.27    0.0    0.0    1.0  -0.22 -0.15  -0.17
+    Forest Lake city  2023         0.70        0.74      0.00     0.00          0.06         0.06            2.53    0.0    0.0    0.0  -0.20 -0.02  -0.02
+      Maplewood city  2024         0.70        1.00      0.00     0.00          0.76         0.95            4.23    0.0    0.0    1.0  -0.14 -0.11  -0.13
+    Minneapolis city  2021         0.67        1.00    144.48    72.28          0.97         2.42            0.45   40.0  153.0  568.0  -5.53 -5.50  -6.50
+      Rosemount city  2024         0.70        1.00      0.00     0.00          0.57         0.71            3.42    0.0    0.0    1.0  -0.16 -0.11  -0.13
+      Cornelius town  2023         0.67        1.00      1.96     3.92          0.50         0.69            2.51    0.0    1.0    4.0  -2.78 -3.25  -3.00
+     Greensboro city  2024         0.67        1.00     13.90    16.68          2.83         1.42            2.75    4.0   17.0   68.0  -4.23 -3.82  -3.99
+        Raleigh city  2021         0.33        1.00      2.14   201.16          9.37         4.69           29.02   11.0   55.0  256.0 -10.90 -6.96  -7.80
+College Station city  2019         1.00        0.67      3.26    13.03          0.74         0.95            0.92    2.0   10.0   43.0  -3.66 -3.67  -3.66
+[13:49:14] {
+ "drift": {
+  "M": {
+   "gain_over_P": {
+    "gain": 4.228310894418115,
+    "se": 3.972441497834177,
+    "events": 10
+   },
+   "b": 1.3,
+   "b_low": 0.55,
+   "b_high": 2.05,
+   "reading": "not shown either way"
+  },
+  "Mr": {
+   "gain_over_P": {
+    "gain": 2.4262342536545525,
+    "se": 3.358161314503189,
+    "events": 10
+   },
+   "b": 1.3,
+   "b_low": 0.55,
+   "b_high": 2.2,
+   "reading": "not shown either way"
+  }
+ },
+ "no_drift": {
+  "M": {
+   "gain_over_P": {
+    "gain": 176.98941165024848,
+    "se": 172.1859930520942,
+    "events": 10
+   },
+   "b": 1.3,
+   "b_low": 1.05,
+   "b_high": 1.6,
+   "reading": "contradicted"
+  },
+  "Mr": {
+   "gain_over_P": {
+    "gain": 64.06869140825472,
+    "se": 206.8870653447442,
+    "events": 10
+   },
+   "b": 0.7,
+   "b_low": 0.65,
+   "b_high": 0.75,
+   "reading": "contradicted"
+  }
+ },
+ "direction": {
+  "events_with_big_ratio": 6,
+  "moved_same_way": 2
+ },
+ "coverage": {
+  "P": {
+   "inside_p10_p90": 9,
+   "within_x2": 2
+  },
+  "M": {
+   "inside_p10_p90": 10,
+   "within_x2": 3
+  },
+  "Mr": {
+   "inside_p10_p90": 8,
+   "within_x2": 3
+  }
+ },
+ "reading": "not shown either way"
+}

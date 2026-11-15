@@ -1,0 +1,200 @@
+<title>ADU Refit on Fixed Rules</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body, Inter, system-ui, sans-serif); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2 { font-family: var(--font-display, "Space Grotesk", system-ui, sans-serif); text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; line-height: 1.15; } h2 { font-size: 1.2rem; }
+.kicker { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; color: var(--ink-muted); }
+p { margin: 0; max-width: 65ch; } section { display: grid; gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.card { background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; }
+.card b { font-family: var(--font-display, "Space Grotesk", sans-serif); font-size: 1.6rem; }
+.card span { color: var(--ink-muted); font-size: .85rem; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--ink-muted); font-size: 11px; font-family: inherit; }
+.chart .st { fill: var(--ink); font-weight: 600; font-size: 12.5px; }
+.grid { stroke: var(--rule); stroke-width: 1; }
+.old { stroke: var(--tier-none); stroke-width: 6; stroke-linecap: round; } .oldd { fill: var(--ink-muted); }
+.new { stroke: var(--survey); stroke-width: 6; stroke-linecap: round; } .newd { fill: var(--ink); }
+.obs { fill: var(--brass); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 18px; height: 6px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: .88rem; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: right; vertical-align: top; }
+th { color: var(--ink-muted); font-weight: 500; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+td.form, th.form { text-align: left; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 65ch; }
+.foot { color: var(--ink-faint); font-size: .8rem; }
+</style>
+<div class="wrap">
+<header style="display:grid;gap:8px">
+  <div class="kicker">Lotline · ADU model · D-096 · 15 Nov 2026</div>
+  <h1>Fixing how rules were coded makes places look less random</h1>
+  <p>The coverage audit found rule rows that called "no ADUs" an allowed rule, read lists of every single-family district as three-quarters of a city, and read rural-only rules as citywide. PR #440 corrected 33 rows. This page refits A + place types on them and reruns the tests.</p>
+</header>
+
+<div class="cards">
+  <div class="card"><span>Spread of place luck (α)</span><b>1.70 → 1.44</b><span>Some of what looked like places being randomly different was the coding.</span></div>
+  <div class="card"><span>Partial-rule share (m_x)</span><b>0.8 → 0.7</b><span>The engine still runs 0.4 from the old rows.</span></div>
+  <div class="card"><span>Reform events in the data</span><b>10 → 6</b><span>Four were placeholders turning into real coding, not reforms.</span></div>
+</div>
+
+<section>
+  <h2>Held-out state ranges, before and after the fixes</h2>
+  <div class="legend"><span><i style="background:var(--tier-none)"></i>checked rows</span><span><i style="background:var(--survey)"></i>fixed rows</span><span>◆ observed</span></div>
+  <svg viewBox="0 0 660 288" class="chart" role="img" aria-label="held-out state ranges before and after the fixes"><line x1="130.0" x2="130.0" y1="8" y2="260" class="grid"/><text x="130.0" y="274" class="tick" text-anchor="middle">10</text><line x1="228.2" x2="228.2" y1="8" y2="260" class="grid"/><text x="228.2" y="274" class="tick" text-anchor="middle">30</text><line x1="335.9" x2="335.9" y1="8" y2="260" class="grid"/><text x="335.9" y="274" class="tick" text-anchor="middle">100</text><line x1="434.1" x2="434.1" y1="8" y2="260" class="grid"/><text x="434.1" y="274" class="tick" text-anchor="middle">300</text><line x1="541.8" x2="541.8" y1="8" y2="260" class="grid"/><text x="541.8" y="274" class="tick" text-anchor="middle">1,000</text><line x1="640.0" x2="640.0" y1="8" y2="260" class="grid"/><text x="640.0" y="274" class="tick" text-anchor="middle">3,000</text><text x="0" y="32" class="st">Minnesota</text><line x1="236.8" x2="370.3" y1="22" y2="22" class="old"/><circle cx="304.0" cy="22" r="4" class="oldd"/><text x="376.3" y="26" class="tick">×4</text><line x1="225.2" x2="359.3" y1="40" y2="40" class="new"/><circle cx="293.1" cy="40" r="4" class="newd"/><text x="365.3" y="44" class="tick">×4</text><path d="M279.1 15 L284.1 31 L279.1 47 L274.1 31 Z" class="obs"/><text x="0" y="92" class="st">North Carolina</text><line x1="320.3" x2="603.3" y1="82" y2="82" class="old"/><circle cx="467.5" cy="82" r="4" class="oldd"/><text x="609.3" y="86" class="tick">×24</text><line x1="341.1" x2="600.8" y1="100" y2="100" class="new"/><circle cx="477.4" cy="100" r="4" class="newd"/><text x="606.8" y="104" class="tick">×18</text><path d="M499.1 75 L504.1 91 L499.1 107 L494.1 91 Z" class="obs"/><text x="0" y="152" class="st">Texas</text><line x1="196.3" x2="577.6" y1="142" y2="142" class="old"/><circle cx="418.3" cy="142" r="4" class="oldd"/><text x="583.6" y="146" class="tick">×71</text><line x1="215.4" x2="563.7" y1="160" y2="160" class="new"/><circle cx="416.4" cy="160" r="4" class="newd"/><text x="569.7" y="164" class="tick">×49</text><path d="M451.3 135 L456.3 151 L451.3 167 L446.3 151 Z" class="obs"/><text x="0" y="212" class="st">Oregon</text><line x1="282.4" x2="560.8" y1="202" y2="202" class="old"/><circle cx="435.9" cy="202" r="4" class="oldd"/><text x="566.8" y="206" class="tick">×22</text><line x1="319.2" x2="584.0" y1="220" y2="220" class="new"/><circle cx="463.6" cy="220" r="4" class="newd"/><text x="590.0" y="224" class="tick">×19</text><path d="M484.5 195 L489.5 211 L484.5 227 L479.5 211 Z" class="obs"/><text x="652" y="287" class="tick" text-anchor="end">ADUs counted in the held-out state's target places, tier 1 (log scale); ×: P90 ÷ P10</text></svg>
+  <p>Each state left out and predicted from the others with its 20 largest places' rules (tier 1). Ranges narrow in North Carolina, Texas and Oregon and the medians move toward what was built; every state stays useful.</p>
+</section>
+
+<section>
+  <h2>Fitted values</h2>
+  <div class="scroll"><table><tr><th class="form">A + place types</th><th>Checked rows</th><th>Fixed rows</th></tr><tr><td class='form'>Fit set</td><td>64 places, 491 place-years</td><td>63 places, 446 place-years</td></tr><tr><td class='form'>θ, ADUs per 1,000 eligible lots a year (suburb)</td><td>0.200</td><td>0.240</td></tr><tr><td class='form'>α, spread of place luck</td><td>1.698</td><td>1.439</td></tr><tr><td class='form'>Core-city term (log)</td><td>+1.84</td><td>+1.67</td></tr><tr><td class='form'>m_x, partial rule share</td><td>0.8</td><td>0.7</td></tr><tr><td class='form'>m_o, owner-occupancy share</td><td>1.0</td><td>1.0</td></tr></table></div>
+</section>
+
+<section>
+  <h2>The same tests, rerun</h2>
+  <div class="scroll"><table><tr><th class="form">Test</th><th>Checked rows</th><th>Fixed rows</th></tr><tr><td class='form'>A + P claim tier</td><td>1</td><td>1</td></tr><tr><td class='form'>A + P useful states, tiers 0 · 1 · 2</td><td>1 · 4 · 4</td><td>1 · 4 · 4</td></tr><tr><td class='form'>A vs A + P (D-088 rule)</td><td>kept: fewer of tests A-B passed (1 vs 2)</td><td>kept: fewer of tests A-B passed (1 vs 2)</td></tr><tr><td class='form'>A′ vs A′ + P</td><td>replaces: a lower tier; tests A-B 1 vs 1; test D +2.4 (SE 3.4)</td><td>replaces: a lower tier; tests A-B 1 vs 0; test D +2.4 (SE 3.4)</td></tr><tr><td class='form'>Reform check (D-095): events</td><td>10</td><td>6</td></tr><tr><td class='form'>Reform check: reading</td><td>not shown either way</td><td>not shown either way</td></tr><tr><td class='form'>Reform check: exponent b</td><td>1.30 (0.55–2.05)</td><td>1.25 (0.60–1.95)</td></tr></table></div>
+  <p class="foot">D-088's rule still keeps Form A over A + P only because A passes Texas's test A (College Station) and A + P doesn't; the held-out score gain of A + P stays large (+12.0, 2 SE 7.3). Reform check: 6 events left (Forest Lake, Minneapolis, Cornelius, Greensboro, Raleigh, College Station); Raleigh still carries it.</p>
+</section>
+
+<section>
+  <h2>What this means</h2>
+  <ul>
+  <li><b>The fixes are improvements</b>, not just changes: less unexplained place-to-place spread, narrower held-out ranges, and the same verdicts.</li>
+  <li><b>The engine's config is now two fits behind.</b> It runs m_x 0.4 and core +1.20 from rows before the checks; the fixed rows give m_x 0.7, core +1.67, θ 0.240 per 1,000 and α 1.44. Moving config is your call.</li>
+  <li><b>The reform ratio stays unproven</b> with six events.</li>
+  </ul>
+</section>
+
+<p class="foot">Sources: reports/adu-types-fixed-rows/ and reports/adu-reform-ratio-fixed-rows/ (D-088's and D-095's scripts run through scripts/dev/adu_refit_fixed_rows.py on PR #440's rule rows; offline; St. Paul excluded; Cottage Grove 2016–22 and Maplewood 2016–23 left out as unknown). Compared with reports/adu-place-types-checked/ and reports/adu-reform-ratio/. Built by scripts/dev/adu_fixed_rows_page.py.</p>
+</div>
