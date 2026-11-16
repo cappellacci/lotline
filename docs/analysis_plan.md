@@ -6820,8 +6820,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     TX ×9.7 → ×10.8, OR ×8.0 → ×13.3.
 
 ### D-099 · 2026-11-15 · ADUs: uptake in the first years after a place first allows ADUs (method only, before any fit)
-- **Status: drafted overnight on Ben's go-ahead ("When done let's do the fix", 2026-11-15, after the gut check).
-  Not yet accepted. No fit, run or score for this entry has been made.** Provisional number: drafted as
+- **Status: accepted by Ben, 2026-11-16 ("I accept D-099"). Drafted overnight on his go-ahead ("When done let's
+  do the fix", 2026-11-15, after the gut check). No fit, run or score for this entry had been made when it was
+  accepted.** Provisional number: drafted as
   D-098 and renumbered the same night, because the missing-middle St. Paul freeze (PR #436) took D-098. The code
   sits behind `adu_new_rule_share` at 1 (no effect) until Ben accepts and the fit is run.
 - **Why.** Under the Handbook reform, a place that allows no ADUs today gets the full fitted hazard for its
