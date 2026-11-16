@@ -5344,6 +5344,1480 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Decided by:** Ben, 2026-11-12 ("Yes, use 3 years"), from options proposed by Claude Code.
   **Status:** decided; wired in this entry's PR.
 
+### D-083 · 2026-11-13 · ADUs: a screen of the place effects against unused place factors (method only, before any run)
+- **Status: accepted by Ben, 2026-11-13 ("Accept D-083"), as written. Proposed by Claude Code the same day.**
+- **Run 2026-11-13** (`reports/adu-covariate-screen/`, as written, no deviation). Two candidates pass the bar,
+  both narrowly:
+  - **Owner-occupied share:** β −0.71 per SD, Holm p 0.083, α falls 16%.
+  - **Pre-1960 housing share:** β +0.59, Holm p 0.095, α falls 11%.
+  - Nothing else passes. HOA share and homestead share were not screened, under the availability rule.
+  - Any model change needs its own method entry.
+- **Addition, 2026-11-13: leave-one-place-out check.** Ben asked for it ("Run the check") after reading the
+  run above. It was written before the check was run.
+  - **Which factors:** the two candidates, X1 and X2, in the within-state version.
+  - **How:** each of the 57 screened places is dropped in turn, and β is refitted (θ_s, α and β, as above).
+  - z keeps its standardization over the 57 places, so every β is on the same scale.
+  - **Reported for each candidate:**
+    - the range of β over the 57 drops;
+    - the five places whose drop moves β most;
+    - how many drops keep β's sign;
+    - how many keep the unadjusted likelihood-ratio p below 0.10. This is the same as the 90% profile interval
+      excluding 0.
+  - **Reading rule:**
+    - **"Carried by one place"** if any single drop flips β's sign or lifts p to 0.10 or above.
+    - **"Robust"** if no drop does.
+    - **"Leaning on"** if the sign holds every time but p crosses 0.10 for 1–3 places. Those places are named.
+  - The check changes no verdict above. It decides whether a method entry for the factor is worth writing.
+  - **Result (2026-11-13): both candidates are robust.** Every one of the 57 drops kept β's sign and p below 0.10.
+    - Owner share: β ranges from −0.83 to −0.55.
+    - Housing age: β ranges from +0.43 to +0.70. Its weakest drop is Asheville, at p 0.075.
+  - Ben asked for it: "Draft the screen", after a methodology review in chat.
+  - No screen has been run. No covariate has been read against any count or fit output.
+  - **Number:** provisional. #392's missing-middle entry also carries a provisional D-082; whichever merges
+    second is renumbered.
+- **Why:**
+  - **The place effect is large.** α is 1.92 in the D-079 refit: two places with the same rules and market
+    can differ several-fold. That spread is where omitted factors sit.
+  - **Two size-and-value effects were flagged.** D-045's audit flagged home value (×1.86 across the
+    interquartile range) and place size (×0.55).
+  - **The market term points the wrong way.** h1 is negatively correlated with the observed rate (D-041:
+    −0.11 pooled).
+  - **The modifiers were never testable.** D-025's modifier tests had 31 treated places and were weakly
+    identified, so they rule nothing out.
+  - **The register factors were never tested.** `docs/research/lotline-confounder-register.csv` lists these
+    as modifiers or confounders, and no ADU fit has tested them, though the data adapters already hold most
+    of them:
+    - owner-occupancy (C15);
+    - parcel stock (C14);
+    - HOAs (C12);
+    - housing age;
+    - new-house building (C25, the co-built channel D-041 can only remove where permits carry parcel IDs;
+      Met Council has none).
+- **What the screen answers:** which pre-window place factors explain the place effects and the state misses
+  of the adopted model. It does not change the model. A factor that passes the bar below becomes a candidate
+  for its own method entry, scored on D-075's tests like any other form change.
+- **Model screened:** the D-079 refit's Form A, as kept. That means its place set (64 places, 395 place-years,
+  2016–2025), counts, k paths, m_o = 1.0 and m_x = 0.4. If Ben adopts a different ADU form before the screen
+  runs, the screen uses that form instead, and the entry is amended before the run.
+- **Factors, all measured before the 2016 window.** Post-window values could be the reform's own effect: land
+  value capitalizes the reform (C17, a mediator).
+
+  | # | Factor | Measure | Source |
+  |---|---|---|---|
+  | X1 | Owner-occupied share | B25003_002 / B25003_001 | ACS 5-year 2011–15, place |
+  | X2 | Older housing | share of units built before 1960 | ACS B25034, 2011–15 |
+  | X3 | Detached single-family share | 1-unit detached / all units | ACS B25024, 2011–15 |
+  | X4 | New-house building | BPS 1-unit buildings per 1,000 eligible lots, mean 2013–15 | BPS place |
+  | X5 | Lot size | median `lot_sqft` of eligible lots | parcel rolls (earliest roll on file) |
+  | X6 | HOAs | share of eligible lots with `hoa` true | parcel rolls |
+  | X7 | Owner-occupied lots | share of eligible lots with `homestead` true | parcel rolls |
+  | R1 | Place size (reference) | log eligible lots | as in the fit |
+  | R2 | Home value (reference) | log B25077 | ACS 2011–15 |
+
+  - R1 and R2 are already in the model or D-045's audit. They are screened as references, so the new factors
+    can be read against known effects. R2's residual effect says whether h1's judgment equity elasticity
+    (0.25) is too high or too low.
+  - **Availability rule:** a factor is screened only if it is available for at least 75% of the fit places,
+    and at least 30 of them. Parcel factors also need the field filled on at least 80% of a place's eligible
+    lots, or that place counts as missing.
+  - The places screened and the places dropped are reported for each factor.
+  - **Vintages:** if the ACS 2011–15 vintage is not cached, the latest cached vintage ending in 2015 or earlier
+    is used. If there is none, fetching it goes to Ben first; nothing is downloaded on this entry alone.
+  - **Holdouts:** where the ACS adapter hides a table for a holdout (the V9 Oregon rule on B25003, B25024 and
+    B25034), that place is dropped from that factor's screen. The hide is never bypassed. St. Paul stays out
+    of everything, and no `--unblind` is passed.
+- **Not screened, because each needs something new.** Each item below needs its own go-ahead:
+  - **Household income:** the ACS adapter has no income table. B19013 would need adding and a fetch.
+  - **ADU fees and pre-approved-plan programs** (C18, C21): not coded for the fit places.
+  - **Short-term-rental demand** (C36): no source.
+  - **Mandate versus a place's own choice** (C05–C07, C11): this is collinear with state (Oregon is the only
+    mandated state), so it needs a design of its own.
+- **Method, one factor at a time:**
+  - z_i is the factor standardized over the screened places.
+  - E[y_it | u_i] = θ · exp(β z_i) · u_i · k_it, where:
+    - k_it is Form A's per-year exposure at the refit's m_o and m_x;
+    - u_i ~ Gamma(mean 1, variance α).
+  - The likelihood is `calibrate_adu.frailty_loglik_place` with k scaled by exp(β z_i). θ, α and β are fitted
+    by maximum likelihood, and β gets a 90% profile interval.
+  - The comparison fit sets β = 0 on the same places. It is refitted, because the screened places can differ
+    from the full 64.
+  - **Two versions:**
+    - **Within-state (main read):** one θ per state, so β is identified only from differences between places
+      in the same state.
+    - **Pooled:** one θ, so β can also absorb differences between states. Its read is whether the factor
+      moves the D-079 leave-one-state-out medians toward the observed totals (MN over-predicted about 2.7×;
+      NC, OR and TX under-predicted 2.7–15×). That read is descriptive only.
+  - **Also reported:** the Spearman correlation of each place's posterior mean effect,
+    (1 + α Y_i) / (1 + α θ K_i), with z_i.
+- **Bar for a candidate, all of the following in the within-state version:**
+  1. The likelihood-ratio p is below 0.10 after a Holm correction over the factors actually screened.
+  2. α falls by at least 10% against the β = 0 fit.
+  3. β keeps its sign in every leave-one-state-out refit for states with at least 3 screened places.
+  - **A factor that meets 1 but not 2 or 3** is reported as "weak", not as a candidate.
+  - **Joint fit:** if 2 or more factors are candidates, one joint fit of the candidates is reported,
+    descriptively, with their pairwise correlations.
+- **What it will not do:**
+  - write to config;
+  - change the counts, the k table or the fit set;
+  - count as a causal estimate. The screen finds factors that predict where ADUs get built. Whether a factor
+    causes uptake is a question for the method entry it leads to.
+- **Built and run** only after Ben accepts this entry. The code is a small module with a hand-worked
+  synthetic test of the scaled likelihood, plus a dev script. It reads cached tables only, with no download.
+  The output goes to `reports/adu-covariate-screen/`, with a results page.
+
+### D-084 · 2026-11-13 · ADUs: owner-occupied share as a place term in Form A
+- **Status: accepted by Ben, 2026-11-13 ("Accept D-084").** Proposed by Claude Code the same day.
+  - Ben asked for it: "Draft owner share", after D-083's screen and its leave-one-place-out check.
+  - No fit, score, engine or scenario run has been made with this term.
+  - **Number:** provisional, like D-083.
+- **Why:**
+  - **The D-083 screen.** Owner-occupied share (ACS 2011–15) is the stronger of its two robust candidates:
+    - within states: β −0.71 per SD (−1.17 to −0.25), and α falls 16%;
+    - pooled: β −0.81, and α falls 26%;
+    - the sign holds when each state is left out, and when each of the 57 places is left out.
+  - **It is the only screened factor that lines up with the D-079 misses.** Minnesota's places are the most
+    owner-occupied (mean 0.74) and are over-predicted about 2.7×. NC, OR and TX are less owner-occupied
+    (0.45–0.59) and are under-predicted 2.7–15×.
+  - **Housing age is left out here.** It was also robust, but it explains nothing between states and only just
+    passes with Asheville out. A later entry can add it on its own evidence.
+- **What owner share stands for:** most likely how urban a place is and how much rental demand an added unit
+  meets. It is not a policy lever. The term is a modifier (C15/C16 in the confounder register): it changes
+  where the same rule yields more or fewer ADUs. It does not change any reform's effect relative to the
+  current rules, because the scenario multiplies both by the same exp(β z).
+- **Form A′, the challenger:**
+  - E[y_it | u_i] = θ · exp(β_o z_i) · u_i · parcels_it · h1_it · ρ_it · max over rules of (c_r × coverage_r).
+    This is Form A (D-079, D-048) with one place term.
+  - **z_i = (o_i − 0.6727) / 0.1544.** Here o_i is the place's owner-occupied share, and the center and scale
+    are the mean and SD over D-083's 57 screened places. Both are fixed now and go to config with this source
+    when the entry is built, so β is in D-083's units.
+  - **Fitted:** θ, α and β_o by maximum likelihood over fit 3's (m_o, m_x) grid, with profile intervals, as in
+    Form A. τ is estimated as in D-050 / D-053.
+  - **Not fixed from the screen:** β_o is refitted. D-083's −0.81 (pooled) is the expected value, not an input.
+- **Which owner share a place gets:**
+  - **In the fit:** ACS 5-year 2011–15 (B25003_002 / B25003_001), from before the 2016 window, as in D-083.
+  - **In the scenario:** the latest 5-year vintage ending at or before the data origin. The build PR reports the
+    correlation between the 2011–15 and latest vintages before any fit.
+  - **No place row** (Minnesota townships, the unincorporated county areas): use the county subdivision's
+    B25003 rows, or else the county's rows less its places. If neither exists, z = 0 and the place is
+    flagged.
+  - **Hidden by a holdout** (the V9 Oregon rule on B25003): use the latest vintage the filter lets through for
+    that use. If none, z = 0 and the place is flagged. The filter is never bypassed.
+  - **Tier 0, a state with no counts:** the same ACS read, which every state has. The term needs no local data.
+- **Scoring:** D-079's tests, unchanged, with Form A′ in place of Form B:
+  - the D-075 data-tier test (leave one state out; tiers 0, 1 and 2);
+  - tests A–C state by state, at D-074's bars and D-082's 0.99 tolerance on test C;
+  - the tier-1 held-out log score per place (D-049).
+- **Decision rule, fixed now.** It is D-079's rule with A′ as the challenger:
+  - **A′ replaces Form A if it passes D-075's claim rule at a lower tier than A.**
+  - **Or, if both pass at the same tier, or both pass none:** if A′'s tier-1 held-out log score beats A's by
+    more than 2 paired SE **and** A′ passes at least as many of tests A–C, counted state by state.
+  - The second branch differs from D-079. There, when neither form passed any tier, A was kept outright. Here
+    the score comparison still applies, because the D-079 refit showed no tier passing for either form. With
+    no way to tell apart, A′ could otherwise never replace A.
+  - Otherwise Form A is kept, and both forms' scores are reported.
+- **Expected direction, before any fit:**
+  - β_o is negative, about −0.7 to −0.8.
+  - Minnesota's held-out median falls and NC, OR and TX's rise.
+  - θ (at z = 0, a place with 67% owners) changes little.
+  - Whether any state moves inside ×2 is the open question.
+- **Sensitivities, reported and not used to choose:**
+  - owner share from the 2016–20 vintage;
+  - β_o fitted within states only (one θ per state, as D-083's main read);
+  - Form A′ with D-083's pre-1960 share added, reported as an outlook for a later entry.
+- **What it will not do:** write to config before Ben approves a result; change counts, k or the fit set; or
+  touch the holdouts. It runs offline from cached tables. If the latest ACS vintage is not cached for a
+  scenario state, fetching it goes to Ben first.
+- **Built and run** only after Ben accepts this entry. The code adds the place term to the joint-refit path
+  (`calibrate_adu` / `joint_refit`) with a hand-worked test, plus a dev run like `adu_joint_refit.py`'s.
+- **Built, 2026-11-13, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_owner.py`: the term, the fitter and the decision rule;
+    - `joint_refit.GlobalsA` carries β_o per draw;
+    - `scripts/dev/adu_owner_refit.py` runs everything;
+    - the hand-worked tests are in `tests/model/test_adu_owner.py`;
+    - the center, the scale and the fit vintage are in `config/params/adu_owner.yaml`.
+  - **One fitter for both forms.** `calibrate_adu.fit3` takes about 35 minutes per fit, too slow to profile β_o
+    as well. So both forms use `adu_owner.fit3_term`: fit 3's grid and rules, with the likelihood vectorized
+    over places.
+    - Form A is that fitter with β_o held at 0.
+    - On synthetic data it reproduces `fit3` (the cell, θ, α, the log-likelihood and θ's interval).
+    - The run also reports its Form A against D-079's values.
+  - **Uncertainty in the draws.**
+    - θ's interval is profiled with β_o held at its estimate. With z centered, the two are close to
+      independent.
+    - β_o is drawn on its own, N(β̂, se), with se from its 90% profile interval.
+    - τ, the tier-0 state effect, is profiled on the places with exp(β̂ z) folded in.
+  - **Test C is not run for A′.** The scenario engine has no place term, and D-079 leaves test C out of the count
+    in the decision rule. Form A's D-079 result stands: it fails in all five states.
+  - **Owner share sources.** For the 64 fit places:
+    - 57 read their own place rows;
+    - 6 Minnesota townships read their county subdivision's rows;
+    - Durham County unincorporated reads the county less the places whose county it is;
+    - none is flagged.
+  - **Vintage check.** Between 2011–15 and 2020–24 over the 64 places, the Pearson correlation is 0.982 and the
+    Spearman 0.973, and the mean change is +0.3 points.
+  - **Sensitivities:**
+    - 2016–20: A′ is refitted on all places and leaving each state out, and its tiers are scored.
+    - Within states: at A′'s chosen cell.
+    - The pre-1960 outlook: at A′'s chosen cell, with D-083's X2 standardized over its screened places. The 7
+      places without X2 get z = 0.
+- **Result, 2026-11-13** (`reports/adu-owner-share/`):
+  - **The rule picks Form A′.**
+    - Neither form passes any tier: A′ has 1 useful state per tier, A has 0.
+    - A′'s tier-1 held-out log score beats A's by 5.0, against 2 paired SE of 4.1, over 52 places.
+    - Each form passes 1 of tests A–B.
+  - **Fit:** β_o −0.546 (−0.877 to −0.221). α falls from 1.918 to 1.558. θ is 0.654 per 1,000 at z = 0.
+    m_o 1.0, m_x 0.4.
+  - **States:** every held-out state moves toward its observed count. Tier 1, observed ÷ P50, Form A to A′:
+    MN 0.30 to 0.48; NC 2.7 to 1.8; TX 5.9 to 2.4; OR 3.6 to 2.6.
+  - **β_o is smaller than the screen's −0.81,** because the six Minnesota townships enter here. Without them
+    it is −0.76. This check is descriptive and came after the run.
+  - **Not adopted yet.** Nothing is written to config. Adopting A′ and its values is Ben's call.
+
+### D-085 · 2026-11-13 · ADUs: a calendar-year trend, and a test that forecasts 2021–2025 from 2016–2020 (method only, before any fit)
+- **Status: accepted by Ben, 2026-11-13 ("Accept both").** Proposed by Claude Code the same day. Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
+  - No fit, score, residual by year, engine or scenario run has been made for this entry.
+  - **Number:** provisional, like D-083 and D-084.
+- **Why:**
+  - **The model has no year term.** Form A and Form A′ say a place's uptake under the same rules, lots and
+    market is the same in 2016 and in 2025. Nothing has tested that since D-048 set the ramp to 1.
+  - **The D-045 audit's year pattern was large, but it was read under the old ramp.** Observed ÷ expected fell
+    from 2.92 in 2016 to 0.48 in 2025: early years under-predicted, late years over-predicted. The logistic
+    ramp made expected counts rise with rule age, and D-048 then dropped it. How much of the pattern is left
+    under the flat ramp has not been read, and is not read before this entry is accepted. So the trend's sign
+    is not assumed here.
+  - **No test so far asks the scenario's own question.** The scenario forecasts five years ahead for places
+    it has seen. Leave-one-state-out (D-075) asks about places it has not seen. Tests A and B are about new
+    places, and test C is a one-year floor. None fits on early years and scores later years.
+- **Form T, the challenger:** the base form × exp(γ (t − 2020)).
+  - t is the calendar year of the place-year. γ is one number shared by every place and state.
+  - Centered on 2020, θ stays the rate in 2020, so θ and γ are close to independent.
+  - **The base form** is the one D-084 leaves in use: Form A′ if Ben adopts it, else Form A. Both pairs (A
+    against A + T, A′ against A′ + T) are fitted and scored, so the result does not wait for that call. The
+    decision below applies to the pair whose base is in use.
+  - **Fitted:** θ, α, γ (and β_o for A′) by maximum likelihood over fit 3's (m_o, m_x) grid, with profile
+    intervals, by `adu_owner.fit3_term`'s procedure. γ has its own profile interval, and the draws carry
+    γ ~ N(γ̂, se) as β_o's do.
+- **Test D, new: forecast 2021–2025 from 2016–2020.**
+  - **Places:** every fit place with at least one fit year in 2016–2020 and one in 2021–2025. From the D-079
+    fit set (an inputs count, no outcomes): 37 places, 323 place-years. MN 21, NC 10, OR 4, TX 2 (Austin to
+    2023, College Station). OH has no fit year before 2024 and is not scored.
+  - **Fit:** every form is refitted by its full procedure on 2016–2020 place-years only, all states pooled.
+    Places with no year before 2021 are not in this fit.
+  - **Forecast:** each place's 2021–2025 count, with its place effect updated from its own 2016–2020 counts
+    (the Gamma posterior), and θ, α, β_o and γ drawn from the 2016–2020 fit. Rules, lots, rent, value and
+    the mortgage rate are the actual ones in 2021–2025. That makes this a forecast given the market, not a
+    forecast of the market. The scenario has the same form: it fixes the rules and projects the market.
+  - **Extrapolating the trend.** Form T is scored two ways: γ continued through 2025, and γ held at its 2020
+    level. The way that scores better here is the way the scenario uses, fixed now. A tie (within 2 paired
+    SE) goes to holding it flat, the smaller assumption.
+  - **Scores:**
+    - per place: the log score of the 2021–2025 total, summed over places, with paired SE between forms;
+    - per state: observed ÷ P50 and inside P10–P90 on the state's total, CRPS;
+    - "useful" as in D-075: inside P10–P90 and within ×2.
+  - **A benchmark, reported and not used to choose:** each place's own 2016–2020 rate per eligible lot,
+    carried forward with a Gamma spread from its counts. If the model loses to this, the write-up says so.
+- **Decision rule, fixed now.** Form T replaces its base only if all three hold:
+  - **Test D:** T's summed log score beats the base's by more than 2 paired SE.
+  - **The full fit:** γ's 90% interval excludes 0.
+  - **No loss elsewhere:** on the D-075 data-tier test, T has at least as many useful states at each tier as
+    the base, and it passes at least as many of tests A–B, state by state.
+  - Otherwise the base is kept with no trend, and every score is reported.
+- **Expected direction, before any fit:** none on γ's sign, for the reason above. If γ is negative, the main
+  suspects are the Met Council survey's report rate drifting and the 2023–24 rate shock beyond what h1 carries.
+  If positive, it is uptake spreading as ADUs become familiar.
+- **Sensitivities, reported and not used to choose:**
+  - γ leaving out each state (as for β_o in D-084);
+  - **a rule-age term instead of the calendar trend**, exp(δ × min(rule age, 10)). The two can be told apart
+    only because places adopted in different years. Reported as an outlook;
+  - test D for the base forms with no trend is the first read of how well Lotline forecasts the places it has
+    seen. It is reported in full whatever the decision.
+- **What it will not do:** write to config before Ben approves a result; change counts, k or the fit set; or
+  touch the holdouts (St. Paul stays out of every fit and score; ACS through `holdout.apply_acs`). It runs
+  offline from cached tables, with seed 20261111 and 20,000 draws. Test C is not run for T, as for A′: the
+  engine has no trend term, and D-079 leaves C out of the count.
+- **Built and run** only after Ben accepts this entry. The code adds the trend to `adu_owner.fit3_term` (or a
+  sibling) with a hand-worked test, `joint_refit` carries γ per draw, and a dev run like
+  `adu_owner_refit.py`'s adds test D.
+- **Built, 2026-11-13, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_trend.py`: the trend, the fitter, test D's forecast and log score, the persistence
+      benchmark and the decision rules;
+    - `joint_refit.GlobalsA` carries γ per draw, with an optional year after which the trend is held flat;
+    - `scripts/dev/adu_trend_refit.py` runs everything;
+    - the hand-worked tests are in `tests/model/test_adu_trend.py`;
+    - the reference year (2020) and the split (2016–2020 against 2021–2025) are in
+      `config/params/adu_trend.yaml`.
+  - **Two fitters.** A and A′ use D-084's fitter, so their numbers are D-084's. The trend forms use
+    `adu_trend.fit3_trend`: fit 3's grid and rules, with θ, α, β_o and γ found together on each cell by
+    Nelder–Mead from two starts (nested golden sections over four numbers would take about 17 minutes a fit).
+    With γ held at 0 it reproduces D-084's fitter on synthetic data (the cell, θ, α, β_o, the log-likelihood and
+    the intervals), and it recovers a planted γ.
+  - **Test D's set (an inputs count):** the 2016–2020 fit has 38 places and 149 place-years. 37 places, with
+    178 place-years in 2021–2025, are forecast: MN 21, NC 10, OR 4, TX 2.
+  - **The forecast.** Per draw, the blank-field combination and the place effect come from their posterior
+    given the place's 2016–2020 counts. The draws are not reweighted per place, because the 2016–2020 fit
+    already used every early count. The log score is of the place's 2021–2025 counts year by year, as D-049's
+    is.
+  - **The benchmark** draws each place's rate per eligible lot (times the survey report rate) from
+    Gamma(early count + 0.5, early lot-years).
+  - **τ for the trend forms** is profiled on the places with exp(β̂ z) and exp(γ̂ (t − 2020)) folded in.
+  - **The rule-age outlook** uses the age of the oldest rule in force, capped at 10 years, with Form A′ as the
+    base. Only its fit and likelihood ratios are reported.
+  - **Seed** 20261111, 20,000 draws, as D-084.
+- **Result, 2026-11-13** (`reports/adu-time-trend/`):
+  - **The rule keeps no trend, for either base.** Test D gains: A + T over A 4.2 (2 SE 16.3); A′ + T over A′ 0.7
+    (2 SE 15.3), and A′ + T passes fewer of tests A–B (0 vs 1). Holding the trend flat after 2020 beat
+    continuing it by 32 (SE 11), so "flat" was the version scored.
+  - **In sample the trend is large but mostly Oregon:** γ −0.128 a year (−0.136 to −0.120), likelihood ratio
+    664; without Oregon −0.044 (−0.057 to −0.030), likelihood ratio 26.
+  - **Test D, the first forecast test of places the model has seen:** no form is reliable. Every form
+    over-forecasts Minnesota 5–15×, mostly Minneapolis: fitted on 2016–20, m_o is 0.1, so the 2021 removal of its
+    owner rule is forecast as a ~10× step (1,583 forecast, 72 counted). The carry-forward benchmark scores
+    −146.2 against Form A's −151.0 (SE 11).
+  - **Rule-age outlook:** δ −0.051 a year of rule age, likelihood ratio 23 against A′.
+  - Nothing is written to config.
+
+### D-088 · 2026-11-14 · ADUs: what the differences between places come from, and place types shared across states (method only, before any count or fit)
+- **Status: accepted by Ben, 2026-11-14 ("Accept D-088"). Proposed by Claude Code the same day.**
+  - Ben asked for it on 2026-11-14, after D-085's result and the D-086 event count. He read the results this
+    way: "we still don't have a model that explains or accounts for the variability across 5 states". He then
+    asked: "Is there a way for us to characterize/segment the data in a different way".
+  - **D-086 stops at the first coding.** Ben: "I dont think a second coder will realistically change the
+    results". The count stays at 6 events in 2 states, below D-079's bar of 8 events in 3 states, so g stays 0.
+  - No place type, decomposition, fit or score has been made for this entry.
+  - **Number:** D-088, because Ben has a D-087 running in another session. It is provisional, like D-083 to
+    D-086.
+- **What was looked at before writing:**
+  - D-083's screen, including X4 (new houses per lot) and R1 (place size);
+  - D-084's and D-085's results, including the state-by-state misses and test D's carry-forward benchmark;
+  - D-086's event count;
+  - that `jurisdictions` carries OMB's 2023 metro/micro area (`cbsa_code`, `cbsa_type`).
+  - No count, place effect or score has been tabulated by place type or by counting source.
+- **Why:**
+  - **No form so far passes any data tier.** At best 1 useful state per tier (A′).
+  - **The spread between places is still large.** α is 1.56 under A′. Two places with the same rules and
+    market can differ several-fold.
+  - **The misses go in one direction by state.** Minnesota is over-predicted, NC, TX and OR under-predicted
+    (D-084 tier 1, observed ÷ P50: MN 0.48, NC 1.8, TX 2.4, OR 2.6).
+  - **Test D's carry-forward benchmark beat every model form.** A place's own past rate predicts better than
+    anything the model knows about it.
+  - **What is missing is a description of where the differences sit.** Are they between states, between kinds
+    of place, or between ways of counting? Each answer leads somewhere different:
+    - between kinds of place: a typology that works in any state;
+    - between ways of counting: the k table, not behaviour;
+    - between states, with neither of the others: the honest answer is a wide tier-0 range.
+- **Considered and not used: measuring ADUs per new home built instead of per lot.** D-083's X4, new houses
+  per 1,000 lots in 2013–15, showed nothing:
+  - within states: β −0.19 per SD (−0.57 to +0.21);
+  - pooled: +0.15 (−0.28 to +0.64).
+  - A per-new-home yardstick forces that effect to be large and positive, which the screen already argues
+    against. It is not run here, and Ben can override this.
+- **Part 1: where the differences sit (descriptive; reading rule fixed now).**
+  - **What is decomposed:** each fit place's log place effect under the base form, as a posterior mean,
+    log((1 + α Y_i) / (1 + α θ K_i)), from the full-data fit. Places with less than 3 fit years are left out,
+    because their effect is mostly prior.
+  - **The groupings, each tried alone and then all together:**
+    - state;
+    - **place type** (below);
+    - **counting source:**
+      - Met Council survey;
+      - city permit records with a field flag;
+      - parser;
+      - by the place's main source in `adu_counts`.
+  - **Reported:**
+    - the share of the effects' variance each grouping explains (weighted by the place's fit years);
+    - the same with each state left out;
+    - a table of group means.
+  - **Reading rule:**
+    - **"Types matter"** if type explains more variance than state does, and its pattern holds with each state
+      left out.
+    - **"Counting matters"** if source explains more than both. This finding goes back to the k table.
+    - **"States differ"** if state explains the most and neither of the others comes close.
+  - Part 1 informs Part 2's write-up. It does not change Part 2's decision rule.
+- **Place types, from national data only, so they work in a state with no ADU data (tier 0):**
+  - **Core city:**
+    - the place with the most housing units in its metropolitan area (ACS 2011–15 B25001), or any place in that
+      metro with at least one third of the largest's units;
+    - this makes a twin core, such as Minneapolis–St. Paul, both core cities.
+  - **Suburb:** every other place in a metropolitan area. Minnesota townships and Durham County unincorporated
+    go here.
+  - **Town:** places in a micropolitan area or outside any area.
+  - **The area:** OMB's 2023 delineation, the vintage already in `jurisdictions`. Metro boundaries move little,
+    and a 2013 vintage would need a download, which goes to Ben first.
+  - **The minimum size rule, fixed now:**
+    - a type needs at least 8 fit places in at least 3 states;
+    - a type short of that is merged into the next one: town into suburb, then core city into suburb;
+    - the build PR reports the counts (an inputs count, no outcomes) before any fit.
+  - **Holdouts:** B25001 goes through `holdout.apply_acs`. A hidden place uses the latest vintage the filter
+    lets through, and otherwise its eligible-lot count as the size measure, flagged. St. Paul is typed, because
+    the type uses no outcome, but stays out of every fit and score.
+- **Part 2: Form P, the challenger.**
+  - **Form P** is the base form × exp(Σ_j β_j · 1[type_i = j]):
+    - suburb is the reference type, so at most 2 numbers;
+    - they are shared by every state.
+  - **The base:** Form A′ if Ben adopts D-084, else Form A. Both pairs (A against A + P, A′ against A′ + P)
+    are fitted and scored, as in D-085, so the result does not wait for that call.
+  - **Fitted:** θ, α, β_o (for A′) and the type terms by maximum likelihood over fit 3's (m_o, m_x) grid, with
+    profile intervals, by `adu_owner.fit3_term`'s procedure extended to several place terms.
+    - τ is profiled on the places with the terms folded in.
+    - The draws carry the type terms as N(β̂, se), as β_o.
+  - **Scoring, unchanged from D-084 and D-085:**
+    - the D-075 data-tier test (leave one state out; tiers 0, 1 and 2);
+    - tests A–B, state by state;
+    - the tier-1 held-out log score per place (D-049);
+    - test D (D-085), with no trend.
+- **Decision rule, fixed now.** P replaces its base only if all three hold:
+  - **Tiers:** P passes D-075's claim rule at a lower tier than the base. If both pass at the same tier, or
+    neither passes, P's tier-1 held-out log score must beat the base's by more than 2 paired SE.
+  - **No loss elsewhere:** P passes at least as many of tests A–B, state by state.
+  - **Test D:** P's log score is not worse than the base's by more than 2 paired SE.
+  - Otherwise the base is kept, and every score is reported.
+- **If nothing passes a tier, which is likely:**
+  - D-075 already fixes what the tool says: no tier is enough for a new state, and it shows the tier-2 ranges.
+  - This entry adds one line to that write-up: Part 1's answer to **where** the differences sit. For a
+    legislator, "places differ by type, and a state's mix of types drives its total" is a different finding
+    from "states differ in ways the data can't explain".
+  - That second case is also a finding: the same bill yields very different results by state.
+- **Expected direction, before any count or fit:**
+  - Core cities above suburbs, and towns below.
+  - Under A′ the type terms add little, because owner share already separates core cities from suburbs. Their
+    pairwise correlation is reported.
+  - Part 1: state explains more than type, with counting source a close second. This is a guess, not a prior
+    in the model.
+- **Sensitivities, reported and not used to choose:**
+  - types with a fourth class splitting suburbs by the D-083 pre-1960 share (median split);
+  - Part 1 on Form A's place effects if A′ is the base, and the other way round.
+- **What it will not do:**
+  - write to config before Ben approves a result;
+  - change counts, k, the rule rows or the fit set;
+  - download anything;
+  - touch the holdouts. St. Paul stays out of every fit and score, ACS goes through `holdout.apply_acs`, and no
+    `--unblind` is passed.
+  - It runs offline from cached tables, with seed 20261111 and 20,000 draws.
+- **Built and run** only after Ben accepts this entry:
+  - the code adds a type table builder and a multi-term version of `fit3_term`, with hand-worked tests;
+  - the dev run is like `adu_owner_refit.py`'s;
+  - the output goes to `reports/adu-place-types/`, with a results page.
+- **Built, 2026-11-14, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_types.py`: the type rule, the merge rule, the fitter (`fit3_types`), Part 1's
+      variance shares and reading rule, and the decision rule;
+    - `joint_refit.GlobalsA` carries the type terms per draw;
+    - `scripts/dev/adu_types_refit.py` runs everything;
+    - the hand-worked tests are in `tests/model/test_adu_types.py`.
+  - **The fitter.** It is fit 3's grid with θ, α, β_o and the type terms found together on each cell by
+    Nelder–Mead, as D-085's. With no type terms it reproduces D-084's fitter on synthetic data, and it recovers
+    planted terms. A and A′ keep D-084's fitter, so their numbers are D-084's.
+  - **Housing units:** ACS B25024_001 (all housing units, the same universe as B25001, which is not cached),
+    2011–15. All 64 fit places read it; none needed the eligible-lot fallback.
+  - **Only Census places can be core cities.** Townships and unincorporated county areas in a metro are
+    suburbs; elsewhere they are towns. A metro is ranked within the state, since only the fit states are cached.
+  - **Counting source:** among the sources that flag ADUs, the one with the most permit rows of any kind for
+    the place in its fit years. That is coverage, not ADU counts, so a place with no ADU counted still gets
+    the source that covers it. Its kind (survey, field, parser) comes from the undercount table.
+  - **"Its pattern holds with each state left out"** (Part 1's reading rule): the order of the types'
+    weighted mean effects is the same with each state left out as with all states.
+  - **The 4-type sensitivity** splits suburbs at their median D-083 X2 (pre-1960 share), over fit suburbs.
+  - **Seed** 20261111, 20,000 draws.
+- **Inputs count, 2026-11-14, before any fit** (`reports/adu-place-types/place_types.csv`). This was made before
+  any fit and changes nothing in the rule:
+  - **The 64 fit places split into 16 core cities, in all 5 states, and 48 suburbs, in MN (41) and NC (7). There
+    are no towns.**
+    - The core cities are Minneapolis, Rochester, Asheville, Charlotte, Durham, Greensboro, Raleigh,
+      Wilmington, Cincinnati, Austin, College Station, San Antonio, Bend, Medford, Portland and Salem.
+    - Town is merged into suburb under the size rule, so Form P has one term: core city against suburb.
+    - Suburb itself falls short of the 3-state bar. The rule only merges town and core, so it stands.
+  - **What this means before any fit:** in the fit set, place type and state nearly coincide. TX, OR and OH
+    contribute only core cities, and MN is 41 suburbs and 2 core cities. The core term is identified mainly
+    inside MN (Minneapolis and Rochester against 41 suburbs) and NC (6 cores against 7 suburbs). Part 1 cannot
+    separate state from type well, and the write-up will say so.
+  - Test B's roll towns are 32 suburbs and 1 core city.
+- **Run, 2026-11-14** (`reports/adu-place-types/`). The decision step stopped on a variable-name error after
+  every table was written. It was rerun from the saved tables (`--finish`), with no refit and no other change.
+  - **Part 1, under Form A: "types matter".** State, place type and counting source each explain about a
+    quarter of the spread in the place effects (23%, 26% and 23%), and all three together 29%:
+    - type explains slightly more than state, and core cities stay above suburbs with each state left out;
+    - a core city's mean effect is ×1.7, a suburb's ×0.30;
+    - the three groupings largely coincide in this fit set (above), so they cannot be cleanly separated.
+  - **Part 1, under Form A′: "mixed"** (state 12%, type 9.5%, source 10%, together 14%). Owner share has
+    absorbed most of it.
+  - **About 70% of the spread is between places of the same state, type and counting source.**
+  - **Part 2: the rule adopts types over Form A, and not over Form A′.**
+    - **A + P against A:**
+      - tier-1 held-out log score +7.2 (2 SE 6.1);
+      - tests A–B 1 each;
+      - test D −3.4 (SE 2.6), inside the 2 SE allowance;
+      - core-city term +1.20 (+0.55 to +1.90), ×3.3;
+      - useful states by tier: A 0/0/0, A + P 2/3/3.
+    - **A′ + P against A′:**
+      - tier-1 log score −0.6 (2 SE 4.4), so not adopted;
+      - core-city term +0.85 (−0.08 to +1.79);
+      - owner share and core city correlate at −0.68.
+    - **No form passes D-075's claim rule at any tier.** Minnesota stays outside ×2.
+    - **Which result counts depends on D-084, still open.** Keep Form A, and A + P is the form; adopt A′, and
+      it stays as is.
+    - A + P and A′ score nearly the same on the tier-1 log score (+7.2 and +6.8 over A), and A + P has more
+      useful states (3 against 1). That comparison is descriptive and not part of any rule.
+  - **Held-out states at tier 1, observed ÷ P50, A to A + P:**
+
+    | State | A | A + P |
+    |---|---:|---:|
+    | MN | 0.30 | 0.50 |
+    | NC | 2.68 | 1.57 |
+    | TX | 5.87 | 2.42 |
+    | OR | 3.63 | 1.95 |
+
+  - **Test D:** types change nothing. Minnesota is still forecast 8× too high, and carry-forward still scores
+    best.
+  - **Sensitivities:**
+    - core city alone, with each state left out: +0.91 to +1.26;
+    - core city next to owner share, without Oregon: +0.37 (−0.74 to +1.52);
+    - the 4-type split, with older suburbs +0.71: worse on tiers (2 useful at tier 1).
+  - Nothing is written to config.
+- **Ben's call, 2026-11-14: Form A + place types (A + P).** Ben: "I agree that plan A + place types makes the
+  most sense."
+  - This settles D-084's open call: Form A′ is not adopted, and D-088's rule picks A + P over Form A.
+  - The fitted values (θ, α, the core-city term, m_o 1.0, m_x 0.4) go to config in their own PR.
+- **Rescored on the checked rule rows, 2026-11-15** (`reports/adu-place-types-checked/`, run at `a40c09cf`, the
+  top of the ADU stack, which carries #419's rows). Ben asked for it ("Score A + place types on the checked rule
+  rows"). The script, forms, tests and decision rule are D-088's, unchanged; only the rule rows differ.
+  - **Inputs:** 64 places, 491 place-years (D-088 had 395). Every place keeps its type.
+  - **Fits** (m_o 1.0, m_x 0.8 for all four forms, as in D-087; D-088 had m_x 0.4):
+    - A: θ 0.503 per 1,000, α 2.648 (matches D-087's Form A).
+    - A + P: θ 0.200 per 1,000, α 1.698, core city +1.84 (+1.19 to +2.54), ×6.3; LR 19.4 over A.
+    - A′ + P: θ 0.221, α 1.623, β_o −0.27, core +1.45 (+0.51 to +2.38).
+  - **Tiers, observed ÷ P50 (useful = inside P10–P90 and within ×2):**
+
+    | Form | Tier | MN | NC | TX | OR | Useful |
+    |---|---|---:|---:|---:|---:|---:|
+    | A | 1 | 0.27 | 3.59 | 6.16 | 4.79 | 0 of 4 |
+    | A + P | 0 | 0.88 | 3.43 | 3.91 | 8.23 | 1 of 4 |
+    | A + P | 1 | 0.76 | 1.42 | 1.45 | 1.72 | **4 of 4** |
+    | A + P | 2 | 0.84 | 1.74 | 1.66 | 1.50 | **4 of 4** |
+    | A′ + P | 1 | 0.87 | 1.38 | 1.20 | 1.92 | 4 of 4 |
+
+    - **A + P and A′ + P pass D-075's claim rule at tier 1, the first forms to do so.** Ohio has no targets, so
+      this is 4 of the 4 states that can be scored, not 4 of 5.
+    - The ranges are wide: P90 ÷ P10 at tier 1 is ×4.4 (MN), ×24 (NC), ×71 (TX) and ×22 (OR).
+    - Tier 0 (national data only) is useful in Minnesota alone; Oregon's tier-0 median is ×8 low.
+  - **D-088's rule, A against A + P: keep A.** A + P passes at a lower tier (1 against none), its tier-1 held-out
+    log score beats A's by +13.1 (2 SE 7.5), and test D is −5.6 (2 SE 6.3), inside the allowance. It fails one
+    condition: tests A–B, 1 against A's 2. A's extra pass is test A in Texas, one place, College Station
+    (observed 5.4; medians A 6, A + P 25, inside A + P's range but outside ×2). This is the same place that
+    decided D-087 step 1.
+  - **A′ against A′ + P: types adopted** (lower tier; tests A–B 1 each; test D +2.4).
+  - **Test D (forecast 2021–2025 from 2016–2020):** no form is useful in any state. Every form forecasts
+    Minnesota about ×2.6 too high (A + P 0.38) and North Carolina ×1.6 too low; persistence is closer in MN and
+    TX.
+  - **Not written to config.** The engine still carries D-088's old-row values (core +1.199, m_x 0.4). Whether
+    to keep A + P against the rule's single-place result, and whether to move config to the checked-row fit,
+    are Ben's calls.
+
+### D-089 · 2026-11-14 · ADUs: a profile of each state's places, how much of each state lies outside the fit's evidence, and a prior for towns (method only, before any count)
+- **Status: accepted by Ben, 2026-11-14 ("Accept D-089"). Proposed by Claude Code the same day.**
+  - Ben asked for it on 2026-11-14 ("Draft D-089"), after choosing Form A + place types (D-088). He asked: "Is
+    there a way to characterize each state to look at the proportion, of suburb, city, population, price etc to
+    come up with a coefficient or modifier".
+  - No state profile has been tabulated. The type of every jurisdiction was computed in D-088's run
+    (`adu_types_refit.type_table`), but only the 64 fit places were read.
+  - **Number:** provisional, like D-083 to D-088.
+- **Why there is no state-level coefficient:**
+  - **The model already adds a state up place by place.** A statewide total sums, over every place:
+    - its type multiplier;
+    - its eligible lots;
+    - its rules;
+    - its rent and home value, through h1.
+  - So a state with more core cities already gets a larger total. A coefficient built from the same mix would
+    count it twice.
+  - **Five states, four of them scorable, cannot support it.** A modifier fitted on state-level mix, size and
+    price would rest on four points. It would reproduce those four and say little about a sixth.
+  - **Price is already in the model.** D-083 found home value adds nothing beyond h1 (β +0.17, −0.16 to +0.50).
+  - **What is left between states stays as τ,** the state effect, and it widens every tier-0 range as now.
+- **What this entry does instead:**
+  - describe each state's mix;
+  - measure how much of each state's total rests on places unlike any the model was fitted on;
+  - give the one unmeasured type, towns, a prior written down before any run.
+- **Part 1: a profile of each state (descriptive).**
+  - **For each of the five states, by type** (core city, suburb, town, by D-088's rule):
+    - the number of jurisdictions;
+    - population (2020 census, `jurisdictions.pop_2020`);
+    - eligible lots, from ACS one-unit detached homes (`eligible.from_acs`, 2011–15), the same national
+      measure for every state;
+    - each type's share of the state's eligible lots;
+    - the lot-weighted median home value (B25077), median rent (B25064) and owner share (B25003), 2011–15.
+  - **The same table for the 64 fit places,** so each state can be read against the evidence.
+  - **Holdouts:** ACS goes through `holdout.apply_acs`. A hidden place uses the latest vintage the filter lets
+    through, flagged. St. Paul's row is included, since profiles use no outcome, and stays out of every fit and
+    score. No permit or ADU count is read.
+- **Part 2: how much of each state is outside the evidence.** For each state, the share of its eligible lots
+  in places that are:
+  - **towns:** a type with no fit place;
+  - **beyond the fit's range for their type:** home value, rent, owner share or eligible-lot count outside the
+    5th–95th percentile of the fit places of the same type;
+  - **outside the evidence:** either of the above.
+  - **Reporting rule, fixed now:** if more than 25% of a state's eligible lots are outside the evidence, the
+    tool and the write-up label that state's range "mostly outside the places the model was fitted on". This
+    is a label, not a change to the numbers.
+- **Part 3: a prior for towns.**
+  - **The prior:** a town's multiplier, relative to a suburb, is exp(β_town) with β_town ~ N(0, s²). It is
+    drawn once per draw and shared by every town in every state.
+  - **s = |β̂_core| / 1.645 = 1.199 / 1.645 = 0.729,** from D-088's A + P fit. The 90% range is ×0.30 to ×3.3.
+  - **Why this width:** the one place-type gap we measured, core city against suburb, is ×3.3. A town could
+    differ from a suburb by as much, either way.
+    - Fewer renters and bigger lots point in opposite directions, so the center is a suburb, which is what the
+      D-088 merge already assumed.
+  - **Where it lives:** `config/params/` with this source. It is not fitted, because no fit place is a town.
+  - **Outside studies:** used only to check the range, never to set it (D-037). The write-up reports any town or
+    rural ADU rate found in published reports, next to the prior.
+- **Part 4: what it does to the ranges (one sensitivity run, reported and not used to choose).**
+  - Each state's 5-year ADU total under its current rules, under Form A + P:
+    - with towns treated as suburbs (D-088 as fitted);
+    - with the town prior.
+  - Reported:
+    - P10, P50 and P90;
+    - the share of the P50 from towns;
+    - the share from places outside the evidence.
+  - This is the first look at how much the unmeasured types widen a statewide range. It changes no form and
+    no rule.
+- **Expected direction, before any count:**
+  - Towns are a large share of eligible lots in OH, NC and TX, and a smaller one in MN (the Twin Cities) and OR
+    (its four metros).
+  - Every state has more than 25% of its lots outside the evidence: the fit set is mostly large cities and
+    Twin Cities suburbs.
+  - The town prior widens the statewide P10–P90 most in OH and NC, and moves P50 little.
+- **What it will not do:**
+  - fit a state-level coefficient;
+  - write the town prior or any fitted value to config before Ben approves them;
+  - read any ADU count, or St. Paul's or Oregon's outcomes;
+  - download anything.
+  - Profiles and Part 4 run offline from cached tables, with seed 20261111 and 20,000 draws.
+- **Wiring:** carrying the type term and the town prior into the scenario engine is a change to its ADU path.
+  It goes in its own PR after Ben approves the values, as a contract-change issue if it touches shared
+  schemas.
+- **Built and run** only after Ben accepts this entry:
+  - a small module for the profile and the evidence shares, with hand-worked tests;
+  - a dev script;
+  - output to `reports/adu-state-profiles/`, with a results page.
+- **Built and run, 2026-11-14** (`reports/adu-state-profiles/`, page
+  https://claude.ai/artifact/GoxSAAjVEv2szddSuRSJEb):
+  - **Code:**
+    - `src/lotline/model/adu_profiles.py`: the profile, the evidence flags, the label rule, the town prior's
+      width, and the statewide current-rules totals;
+    - hand-worked tests in `tests/model/test_adu_profiles.py`, including a check that the totals match
+      `scenarios.adu.pool_paths` draw by draw;
+    - `scripts/dev/adu_state_profiles.py` and `scripts/dev/adu_profiles_page.py`.
+  - **Build choices, made before reading any total:**
+    - The profiles use D-088's raw types: towns stay towns, with no merge.
+    - The 2011–15 ACS medians are in 2025 dollars.
+    - Unincorporated county areas read their county's value and rent (346 of 3,633 jurisdictions).
+    - Owner share is left missing where a county remainder's places lack ACS rows. A missing measure never
+      counts as out of range.
+    - Part 4 builds each state's scenario inputs (`places_from_store`, origin 2025, window 2027–2031), at
+      m_o 1.0 and m_x 0.4.
+    - Part 4's draws are θ, the core-city term, the town term (in the prior variant) and each place's
+      effect. There is no state effect (every state is in the fit) and no market-path draw.
+    - St. Paul is left out of the totals.
+    - The first Part 4 attempt stopped on a state-code case error before any total; it was fixed and rerun.
+  - **Result:**
+    - **Every state is labeled.** The share of each state's eligible lots outside the evidence:
+
+      | | MN | NC | OH | OR | TX |
+      |---|---:|---:|---:|---:|---:|
+      | All outside | 63% | 74% | 89% | 77% | 93% |
+      | of which towns | 30% | 26% | 20% | 18% | 9% |
+
+      - The rest is beyond the fit's range, mainly on price and size.
+      - The fitted suburbs all have home values of $228k or more and rents of $1,114 or more (2025 dollars).
+        Many OH and TX suburbs are cheaper, and TX's biggest places are bigger than any fitted place.
+      - The 64 fit places' lots are 79% in core cities. Each state's lots are 15–39% in core cities.
+    - **Towns yield 1–5% of each state's expected ADUs.** So the town prior moves P90 by under 3% everywhere.
+    - **Places outside the evidence yield** 42% of MN's expected ADUs, 25% of NC's, 47% of OH's, 65% of OR's
+      and 96% of TX's.
+    - **Statewide ADU permits, 2027–2031, current rules, A + P with the town prior** (P10–P50–P90):
+
+      | State | P10 | P50 | P90 |
+      |---|---:|---:|---:|
+      | MN | 644 | 1,000 | 1,951 |
+      | NC | 2,898 | 4,269 | 7,681 |
+      | OH | 759 | 1,278 | 2,881 |
+      | TX | 3,244 | 5,482 | 11,459 |
+      | OR | 3,031 | 4,021 | 6,846 |
+
+  - **My expectation was partly wrong.** Towns are the largest share of lots in MN, not the smallest, and the
+    smallest in TX. The town prior barely widens any range: towns add few ADUs.
+  - Nothing is written to config. The town prior (sd 0.729) and the A + P values wait for Ben's approval in
+    their own PR.
+- **Config, 2026-11-14.** Ben approved writing the values ("Open the config PR"). They are in
+  `config/params/adu_place_types.yaml`: D-088's typing rules, the A + P fit (θ 0.000448 for a suburb, α 1.550,
+  core +1.199, m_o 1.0, m_x 0.4, observed-information SEs) and D-089's town prior sd 0.729.
+  - The scenario engine doesn't read them yet. It still runs D-053's Form A from `hazard.yaml`.
+  - The θ in this file is a suburb's rate. Used without the core term, it would understate every core city about
+    3.3-fold. So the switch happens in one step, in the PR that wires the type term into the engine.
+  - The D-088 run didn't save the intervals for α and the rule shares. The central A + P fit was rerun offline
+    once to read them, and the rerun reproduced every fitted value.
+- **Engine, 2026-11-14.** Ben asked for the type term to be wired into the scenario engine ("Wire it here"),
+  and the engine now runs Form A + place types.
+  - **Where the values live:**
+    - `hazard.yaml` holds θ (0.000448, a suburb's rate) and α (1.550).
+    - `adu.yaml` holds m_o (1.0) and m_x (0.4).
+    - `adu_place_types.yaml` keeps the typing rules, the core term, the town prior and the fit's
+      observed-information terms. The draws read those terms in place of `adu_anchor.yaml`'s D-048 ones.
+  - **What the engine does with them:**
+    - `scenarios.adu.places_from_store` gives each place its raw type (`adu_types.jurisdiction_types`, moved
+      from the D-088 script; it reproduces every saved type).
+    - `scenarios.adu.run` multiplies each draw's hazard by exp(β_core) for a core city, with one N(1.199,
+      0.411) draw shared by every core city.
+    - A town's hazard is multiplied by exp(0.729 z), with one z per draw and state. A suburb, or a place with
+      no type, is multiplied by 1.
+  - **Kept as approximations, to be redone for this fit:**
+    - the judgment slopes in `adu_anchor.yaml` (still D-053's);
+    - θ's lognormal width, which comes from the profile interval as before.
+  - **Before and after** (`reports/adu-types-engine/`, page https://claude.ai/artifact/Wn5ktV2Hvo26TQdTEseNci):
+    additional homes, 2027–2031, at P50:
+    - MN 286 → 634, NC 139 → 575, OH 236 → 422, TX 1,902 → 4,809, OR 26 → 29.
+    - The ranges widen; for example, TX's P90 goes from 4,922 to 13,788.
+    - With m_x held at 1.0, the types alone give MN 412, NC 215, OH 349, TX 3,744 and OR 11.
+    - So the type term and the new anchor make most of the rise in OH and TX. The partial-rule share makes
+      most of it in MN and NC.
+- **Anchor draw terms, 2026-11-14.** Ben asked for the slopes to be recomputed for this fit
+  ("Recompute slopes").
+  - **How:** `scripts/dev/adu_types_slopes.py` rebuilds D-088's fit places with each judgment parameter at
+    central ± 10% of its range, then refits θ, α and the core term at m_o 1.0 and m_x 0.4.
+    `config/params/adu_anchor.yaml` is regenerated. Its observed-information terms are back in that file, so
+    `adu_place_types.yaml` no longer holds them.
+  - **Result:**
+    - θ slopes are within about 25% of D-053's, and the α slopes are about half.
+    - The core term's slopes are negligible against its SE, so they aren't drawn.
+  - **Statewide effect:** additional homes move by at most 3.4% at P50 and 5.7% at P90
+    (`reports/adu-types-slopes/`, page https://claude.ai/artifact/FiiNrCDR2gxt3q8FBjtRnZ). This closes the approximation the engine note listed.
+
+### D-087 · 2026-11-14 · ADUs: housing age as a second place term, and Forms A and A′ scored again on the checked rule rows (method only, before any fit)
+- **Status: accepted by Ben, 2026-11-14 ("Let's try D-087"), as written. Proposed by Claude Code the same day.**
+  - Ben asked for it ("Draft it"), after the D-083 screen was rerun on the source-checked rule rows
+    (`reports/adu-covariate-screen-final-rows/`, branch `ws/adu-screen-new-rows`).
+  - No fit or score has been made with the age term in Form A′. The screen and D-084's outlook below are the only
+    reads of it so far.
+  - **Number:** provisional. D-085 (#420) and D-086 (#421) are taken on other branches.
+- **Why:**
+  - **The rule rows changed after every accepted ADU run.** D-079, D-083's first run, D-084 and D-085 all read
+    the rows on `main` before PR #419. #419 replaces the 65 fit places' local ADU rows with the WS-ADU-RULES
+    rows (#417), after a source check and Ben's ruling of 2026-11-13.
+    - On those rows the fit set grows from 395 to 491 place-years.
+    - Form A's refit moves m_x from 0.4 to 0.8.
+    - The events reach D-079's bar (10 in 3 states).
+    - D-084's pick of A′ (log score +5.0 against a bar of 4.1) was narrow enough that it needs reading
+      again on these rows.
+  - **Housing age is the strongest place factor within states on the checked rows.** Share of homes built
+    before 1960 (ACS 2011–15):
+    - Holm p 0.0004, and α falls 30%;
+    - all 57 leave-one-place-out drops keep its sign and p < 0.10, with β from +0.84 to +1.06;
+    - it passes at m_x 0.7 too (Holm p 0.0005).
+  - **The evidence against, stated first:**
+    - D-084's outlook, on the old rows and pooled at A′'s cell, gave β_age +0.18 with LR p 0.45: once owner
+      share was in, age added nothing.
+    - In the pooled screen on the checked rows, age misses (Holm p 0.15; α falls 9%).
+    - Age is a within-state signal: it sorts places inside a state, not states from each other. The tier test
+      scores state totals, so age may improve the held-out log score per place and leave the tiers unchanged.
+- **What age stands for:** most likely older, denser neighbourhoods with garages, alleys and existing secondary
+  structures, where an ADU is cheaper to add. It is not a policy lever. Like owner share, it is a modifier: it
+  changes where the same rule yields more or fewer ADUs. It does not change a reform's effect relative to current
+  rules, because the scenario multiplies both by the same exp(β z).
+- **Form A″, the challenger:** Form A′ (D-084) × exp(β_a z_a,i).
+  - **z_a = (a_i − 0.2045) / 0.1669.** a_i is the place's share of housing units built before 1960 (ACS B25034,
+    2011–15). The center and scale are the mean and population SD over D-083's 57 screened places
+    (`reports/adu-covariate-screen/factors.csv`), D-084's convention. Both are fixed now and go to
+    `config/params/` with that source when the entry is built.
+  - **Fitted:** θ, α, β_o and β_a by maximum likelihood over fit 3's (m_o, m_x) grid, with `adu_owner.fit3_term`
+    extended to more than one place term. Owner share keeps D-084's center and scale.
+  - **Draws:** β_o and β_a are drawn jointly, N(β̂, Σ), with Σ from the observed information at the chosen cell.
+    The two factors are correlated (r −0.40 over the 57 places), so independent draws would overstate the spread.
+    If the fitter cannot give Σ, the build note says so and the draws are independent, a stated limit.
+  - **Not fixed from the screen:** β_a is refitted. The screen's +0.95 (within states) and +0.60 (pooled) are
+    expectations, not inputs.
+- **Which housing age a place gets:** D-084's rules for owner share, applied to B25034.
+  - **Townships and unincorporated areas:** the county subdivision's rows, or the county less its places.
+    Otherwise z = 0 and the place is flagged.
+  - **Holdouts:** a table hidden by a holdout (the V9 Oregon rule on B25034) gets the latest vintage the filter
+    lets through for that use, or z = 0 and a flag. The filter is never bypassed.
+  - **Scenario and tier 0:** the latest 5-year vintage ending at or before the data origin, which every state
+    has. The build reports the correlation between that vintage and 2011–15 before any fit.
+- **Data:** the rule rows on `main` once #413, #417 and #419 have merged. The fit set and events are rebuilt by
+  `adu_joint_refit` (expected: 64 places, 491 place-years) and written before any fit. If the rows change again
+  before the run, the run uses `main` as it then is, and the build note records the commit.
+- **Forms scored, all refitted on those rows:** Form A, Form A′ and Form A″.
+- **Scoring:** D-084's tests, unchanged:
+  - the D-075 data-tier test (leave one state out; tiers 0, 1 and 2);
+  - tests A and B, state by state;
+  - the tier-1 held-out log score per place (D-049).
+  - **Test C** is run for Form A only. The scenario engine has no place terms, as in D-084.
+  - **Test D** (D-085, forecast 2021–2025 from 2016–2020) is reported for all three forms and not used to choose.
+- **Decision rule, fixed now.** It is applied in two steps:
+  1. **A′ against A on the checked rows.** D-084's rule, unchanged. This repeats D-084 on the new rows. If Ben
+     has adopted A′ by then and A′ loses here, the result goes to Ben; it does not reverse the adoption by
+     itself.
+  2. **A″ against the base in use.** The base is A′ if Ben has adopted it, else the winner of step 1.
+     - A″ replaces the base if it passes D-075's claim rule at a lower tier.
+     - If both pass at the same tier, or neither passes: A″ replaces the base only if its tier-1 held-out log
+       score beats the base's by more than 2 paired SE **and** A″ passes at least as many of tests A–B, counted
+       state by state.
+     - Otherwise the base is kept and both forms' scores are reported.
+- **Expected direction, before any fit:**
+  - β_a is positive, below the screen's within-state +0.95 because owner share is also in and the fit is pooled.
+  - The log-score gain from age is uncertain: it may fall short of 2 paired SE, as D-084's outlook suggests.
+  - Tier results change little from A′, because age explains little between states.
+- **Sensitivities, reported and not used to choose:**
+  - **Within states:** A″ with one θ per state, as D-083's main read.
+  - **Age without owner share:** Form A × exp(β_a z_a).
+  - **m_x held at 0.4,** D-079's value, for A″, so the change in rows and the change in m_x can be told apart.
+- **What this cannot settle:** both factors were picked by screening the same five states that the tier test
+  leaves out one at a time, so the tier test is not blind to the choice. The frozen holdouts (St. Paul V5, V9
+  Oregon) are the clean check and are not touched here.
+- **What it will not do:** write fitted values to config before Ben approves a result; change counts, k or the
+  fit set; touch the holdouts or pass `--unblind`. It runs offline from cached tables. If a B25034 vintage is not
+  cached for a scenario state, fetching it goes to Ben first.
+- **Built and run** only after Ben accepts this entry, and after #419 merges. The code extends
+  `adu_owner.fit3_term` and `joint_refit.GlobalsA` to a vector of place terms, with a hand-worked synthetic test
+  of the two-term likelihood, plus a run script like `adu_owner_refit.py`.
+- **Built, 2026-11-14, before any fit.** These choices were fixed and committed before the run:
+  - **Code:**
+    - `src/lotline/model/adu_terms.py`: the fitter for any set of place terms (`fit3_terms`), the joint
+      β draws and the within-state sensitivity;
+    - `joint_refit.GlobalsA` takes β as (draws, terms) for a place carrying a vector of terms; D-084's
+      one-term path is unchanged;
+    - `scripts/dev/adu_age_refit.py` runs everything, and reuses D-084's owner-share reader;
+    - hand-worked tests in `tests/model/test_adu_terms.py`, including that `fit3_terms` reproduces
+      `adu_owner.fit3_term` for Form A and Form A′;
+    - the center and scale in `config/params/adu_age.yaml`.
+  - **One fitter for all three forms**, so they are compared on the same inputs. The β's are found by
+    coordinate ascent (a golden search on each β in turn), on the same vectorized likelihood as D-084.
+  - **β intervals** are Wald 90% intervals from Σ (the inverse of minus the Hessian of the profile
+    log-likelihood), not profile intervals. The draws use the same Σ. For one term the test checks the two
+    agree within 0.05.
+  - **Inputs (`--inputs-only`, no fit):** 64 places, 491 place-years, 11 new. Housing age: 57 places read
+    their own rows, 6 Minnesota townships their county subdivision's, Durham County unincorporated the county
+    less its places; none flagged. The 57 match D-083's X2 exactly. Vintage check, 2011–15 against 2020–24:
+    r 0.982, Spearman 0.963, mean change −2.4 points. Owner share and age correlate −0.39 over the 64 places.
+  - **Three deviations from the entry as written:**
+    1. **The rows are #419's head (ef37063f), merged into this branch,** because #413, #417 and #419 are not
+       yet on `main`. Ben asked to run now ("Let's try D-087"). If #419 changes before it merges, the run is
+       repeated.
+    2. **Test D is not run.** D-085's code is on an unmerged branch (#420) that also edits `joint_refit`. It is
+       reported once #420 merges.
+    3. **The base for step 2 is step 1's winner,** because A′ is not adopted on `main` (#418 is open).
+- **Result, 2026-11-14** (`reports/adu-age-term/`, run at `52d4ef2a`; a `--smoke` code-path run on a 2 × 2 grid
+  came first and its two decision lines were seen before the full run; nothing changed between them):
+  - **The rule keeps Form A in both steps.**
+    - No form passes any tier. Useful states at tiers 0–1–2: A 0–0–0, A′ 1–2–2, A″ 1–1–1.
+    - Step 1: A′'s tier-1 held-out log score beats A's by 7.74 against 2 paired SE of 7.37 (56 places), but A′
+      passes 1 of tests A–B and A passes 2.
+    - Step 2 (base A): A″ beats A by 7.89 against 5.62, but passes 1 of tests A–B against A's 2.
+    - A's extra pass is test A in Texas, which is one place, College Station (observed 5.4; medians A 6,
+      A′ 37, A″ 21). Without it the counts tie and step 1 would pick A′ (+8.07 against 7.31). That check was
+      run after the result and does not change the decision.
+  - **Fits** (64 places, 491 place-years, m_o 1.0, m_x 0.8 for all three):
+    - A: θ 0.503 per 1,000, α 2.648.
+    - A′: θ 0.379, α 1.844, β_o −0.78 (−1.10 to −0.46).
+    - A″: θ 0.367, α 1.769, β_o −0.70 (−1.02 to −0.38), β_a +0.44 (+0.03 to +0.84), corr(β_o, β_a) 0.22.
+  - **Age adds nothing held-out on top of owner share:** A″ against A′ is +0.15 against 2 SE of 3.57; in-sample
+    LR 3.3.
+  - **Within states the roles swap:** with one θ per state, β_o −0.09 (SE 0.28) and β_a +0.87 (SE 0.26).
+  - **Test C** (Form A only) passes in all five states. Test D waits for #420.
+  - Nothing is written to config. Whether to accept the rule's outcome is Ben's call.
+  - **Ben accepted the outcome, 2026-11-14 ("Accept, keep A").**
+    - Form A stays the working ADU form.
+    - A′ (#418) and A″ are not adopted, and nothing goes to config.
+    - Both terms are on record as carrying held-out signal.
+    - The result is read again once test D runs (#420), under the same rule.
+
+### D-090 · 2026-11-14 · ADUs: a within-state forecast test — fit on each state's own years to 2019, forecast 2021–2025 (method only, before any run)
+- **Status: accepted 2026-11-14** ("Accept D-090"), with rule 1's bar at 3 of 4 states as written. Ben asked
+  for this draft the same day ("Draft it D-90"). D-088 and D-089 are taken by other threads. No fit, forecast
+  or score for this entry had been run when it was accepted.
+- **Why.** Every ADU form so far fails D-075's claim rule, because leave one state out asks the model to
+  predict a state it has never seen. The states' base rates are far apart: one θ per state (D-087's
+  within-state sensitivity) gives, per 1,000 eligible lots, OH 0.02, MN 0.15, NC 0.73, TX 0.98 and OR 1.71.
+  No place term closes a gap like that, and five states are too few to fit a state-level driver.
+  - The tool's main use is different. A state that has its own permit history wants its next five years under
+    a bill. This entry tests that use directly: fit on a state's own years up to an origin, then forecast the
+    years after it.
+  - Leave one state out stays, reported as the no-local-data case.
+- **What was looked at before writing.**
+  - D-087's results.
+  - D-048 (the ramp was dropped because counts were flat or falling) and D-052. In D-052, Portland's own
+    pre-2018 history, a rise in the fee-waiver years, over-predicted 2018–2025 about fourfold.
+  - D-061 (one lead year before the window).
+  - **Observed ADU totals by state and year, 2016–2025, over D-087's 64 fit places**, next to Form A's
+    expected counts. They show no common calendar trend:
+    - MN is flat at about 30 a year;
+    - NC rises from about 88 a year in 2016–2020 to 230–260 in 2023–2025;
+    - TX and OR fall: OR from 526–628 in 2016–2018 to about 264 in 2024–2025.
+    These are the same counts every fit uses. No forecast was made from them.
+- **The split, fixed now:**
+  - Origin 2019: fit on 2016–2019.
+  - 2020 is the lead year. It is simulated, not scored, as D-061 does for the tool.
+  - The forecast window is **2021–2025**, five years, the tool's horizon.
+- **Places scored.**
+  - **Places with history:** fit places with at least 2 years in 2016–2019 and at least 1 year in 2021–2025.
+  - **Places entering after 2019** are scored as a second line, "new places in a known state". They use their
+    state's θ and draw u from its prior.
+  - **States:** MN, NC, TX and OR. Ohio has no ADU counts before 2024 and is not scored. The report says so.
+  - **Known limit.** TX has 2 places with history and OR has 3. Their totals are dominated by Austin and
+    Portland, so each of those state verdicts is close to a one-city verdict.
+- **Rules in the window are the rules as they actually were** (rules in force on 1 July of each year, from
+  the coded rows). The test is the tool's job: a forecast given the rules. Rule changes inside 2021–2025 are
+  listed by code before the run, for example Minneapolis 2021 and Wilmington 2021.
+- **Forecasters, fixed now:**
+  - **F0, persistence (the benchmark).** Each place's own 2016–2019 ADU rate per eligible lot, carried forward
+    with no rules and no state term. rate_i ~ Gamma(Y_i + 0.5, E_i), where Y_i is the count and E_i the
+    eligible lot-years. Each year is then Poisson. A place with no history has no F0 forecast and is left out
+    of the F0–F1 comparison.
+  - **F1, Form A with one θ per state and each place's own history.**
+    - Form A's mechanism (D-079), with α, m_o and m_x fitted jointly on all states' 2016–2019 years, and one θ
+      per state, as in D-087's within-state fit.
+    - Each place's u is updated on its own 2016–2019 counts by the gamma–Poisson posterior, as D-052 does.
+    - Draws carry each state's θ from its own 90% profile interval (lognormal), α, the u posterior, Poisson
+      noise and the undercount draws, using the joint refit's draw code.
+  - **F2, F1 plus housing age within states** (β_a fitted with state θs on 2016–2019). This is option 3 from
+    D-087's decision.
+  - **Sensitivity, reported and not used to choose:** F1 with a log-linear calendar trend per state, fitted on
+    2016–2019. The table above already shows trends that reverse, and D-052 shows a local rise that did not
+    continue. It is reported so that the cost of extrapolating a trend is visible.
+- **Scored per state and per forecaster:**
+  - the 2021–2025 total over the places with history: inside P10–P90, observed ÷ P50, CRPS and log score;
+  - D-049's held-out log score per place, summed over the window;
+  - the same for places with a rule change inside the window, on their own line, since only F1 and F2 can move
+    with a rule;
+  - the "new places in a known state" line for F1 and F2.
+- **Decision rule, fixed now:**
+  1. **Own history is enough** if F1 is useful (observed total inside P10–P90 and observed ÷ P50 within ×2) in
+     **at least 3 of the 4** scored states. This is the bar D-075 uses for a new state, which is 4 of 5,
+     scaled to 4 states. Ben confirmed the bar on 2026-11-14.
+  2. **The mechanism earns its place over persistence** if F1's summed per-place log score beats F0's by more
+     than 2 paired SE. If it does not, the report says F1 forecasts no better than persistence, and that its
+     value is in pricing rule changes, a claim that rests on the rule-change places only.
+  3. **Housing age (F2)** replaces F1 only if its per-place log score beats F1's by more than 2 paired SE
+     **and** it is useful in at least as many states.
+- **What it means for the tool**, decided now:
+  - **If rule 1 passes:** the tool's guidance is that a state with at least 4 years of its own ADU counts uses
+    the own-history forecast, and the leave-one-state-out ranges are shown as the no-data case.
+  - **If rule 1 fails:** the tool shows the ranges and says plainly that ADU uptake cannot yet be forecast
+    within ×2, even with local history.
+- **What this cannot settle.**
+  - Four states, and in two of them one dominant city.
+  - The window starts in 2021, so the post-2020 changes (rates, remote work, NC's surge) are inside what is
+    being forecast. That is a harder test than a quiet period would give, and the right one for a forward
+    tool.
+  - The frozen holdouts (St. Paul V5, V9 Oregon) are untouched.
+- **What it will not do:** write to config before Ben approves a result; change counts, k, rule rows or the
+  fit set; bypass the holdout filter or pass `--unblind`. It runs offline from cached data.
+- **Built and run** only after Ben accepts this entry. The code adds a year cut to the fit places, the u
+  posterior, and F0, each with a hand-worked test, plus a dev run script like `adu_age_refit.py`'s.
+- **Built, 2026-11-14, before any fit.** `src/lotline/model/adu_forecast.py` (the split, place classes, rule
+  changes, F0, the within-state fit, the own-history update, the trend, the rule), 16 hand-worked tests in
+  `tests/model/test_adu_forecast.py`, and `scripts/dev/adu_time_split.py`. Its `--inputs-only` step wrote
+  `reports/adu-time-split/places.csv` (class, fit and window years, rule changes, z_age per place) before any
+  fit. What it found and what the build settles that the entry left open:
+  1. **Places with history: 43** (MN 27, NC 11, TX 2, OR 3). New places in a known state: MN 15, TX 1 (San
+     Antonio), OR 1 (Medford). Ohio's one place (Cincinnati) is new and not scored. Austin's window is
+     2021–2023 (its R-102 flag stops, as in every fit).
+  2. **A third class, "thin history".** Raleigh and Cary have only 2019 before the window: one fit year, so
+     neither "with history" nor "new". They stay in the fit, are forecast with their one year's update, and
+     are scored on their own line, not in rule 1 or rule 2. So NC's rule-1 verdict is on 11 places without its
+     two largest cities. Jackson township (MN) has no window year and is not scored.
+  3. **Rule changes in 2021–2025, by code: 21 places** (`places.csv`, column `rule_change_years`; a change is
+     any year whose coded rules differ from the year before, counting from the lead year). Minneapolis 2021
+     and 2023; Wilmington 2022 and 2024. The entry's example said Wilmington 2021; the coded rows put it in
+     force on 1 July 2022.
+  4. **No separate undercount draw.** The entry said the draws carry the undercount draws. The joint refit's
+     draw code has none: counts carry the table's central k, as in every fit since D-078.
+  5. **The lead year changes no draw.** In this draw code the years are independent given u and the shared
+     draws (no stock of lots is used up), so 2020 is left out rather than simulated.
+  6. **θ_s's 90% interval** is profiled over α and the other states' θ at the chosen (m_o, m_x) cell, with β
+     held, not over every candidate cell as fit 3 does. The draws use the chosen cell, as every Form A draw
+     does.
+  7. **The u update** is drawn jointly with the place's blank-field combination: in each draw the combination
+     is weighted by how well it explains the fit counts, then u ~ Gamma(r + Y, r + θ_s K) on that combination.
+  8. **The trend sensitivity** fits γ_s and θ_s per state with α and the cell held at F1's. Its θ spread is
+     F1's interval, moved to the trend's θ_s.
+  9. **The (m_o, m_x) cells are fitted in parallel**, each starting from β = 0 (D-087 warm-started each cell
+     from the last). Only the speed changes.
+  10. **A smoke run** (`--smoke`: 2 × 2 grid, 500 draws) checked the code path; its outputs went to a scratch
+      folder. I saw its per-state history lines (on the toy grid) before the full run. Nothing in the method
+      or the rule changed after it; the only change was running the cells in parallel, since F2 on the full
+      grid would have taken about 3½ hours.
+- **Result, 2026-11-14** (`reports/adu-time-split/`, results page
+  https://claude.ai/artifact/Bfz5915ng524v1tJu1mW1o). **All three rules read against the model.**
+  1. **F1 is useful in 1 of 4 states** (North Carolina, observed ÷ P50 0.95), against a bar of 3, so own
+     history is not enough. Medians: MN 0.35, TX 0.75, OR 0.42. The tool's guidance is the pre-set one: show
+     the ranges and say plainly that ADU uptake cannot yet be forecast within ×2, even with local history.
+  2. **F1 − F0 summed log score is −5.5, against 2 SE = 204,** so F1 forecasts no better than persistence. By
+     state: MN −48, NC +108, TX −3, OR −62. Where F1 has value, it is in pricing rule changes, and only in NC:
+     Wilmington and Charlotte. It over-priced Minneapolis's 2021 change and Bend's move to its full rule
+     during the fit years.
+  3. **F2 − F1 is −41.9 (2 SE 88), and F2 is useful in 0 states,** so F1 stays. Housing age's in-sample β
+     (+1.31, SE 0.32) does not carry forward.
+  - **Not part of the rule:**
+    - Persistence's median is within ×2 in all 4 states.
+    - Every forecaster's P10–P90 is far too narrow (half-width about 9% of the median). Of 16 state ×
+      forecaster pairs, 1 holds the observed total.
+    - The model has no term for a place's rate drifting between periods. That, not the median, is what fails
+      first.
+    - The per-state trend falls in every state over 2016–2019. It helps MN and OR and doubles NC's miss.
+  - **Status:** Ben to accept the outcome. Nothing written to config.
+
+### D-091 · 2026-11-14 · ADUs: a drift term for the forecast window, its spread learned leaving one state out (method only, before any run)
+- **Status: accepted 2026-11-14, with two conditions; outcome adopted 2026-11-15 (see the end).** ("I accept as long as 1. We can roll back. 2. you show
+  me clear evidence in the report following this analysis on whether this improves the predictive power").
+  Ben chose the approach the same day ("Let's try the leave out one state method"). No fit, forecast or score
+  for this entry had been run when it was accepted. How each condition is met:
+  1. **Rollback.**
+     - The drift is an option on D-090's code, off by default.
+     - σ = 0 reproduces D-090's draws and scores exactly, and a test checks it.
+     - Nothing goes to config or the tool. The tool outcomes below take effect only through a later,
+       separate approval.
+     - The work sits on its own branch and PR (`ws/adu-drift`), so dropping it means closing that PR.
+  2. **Evidence on predictive power, side by side, with D-090's no-drift forecasts as the baseline.** For F0
+     and F1 the report gives, each with and without drift:
+     - the summed held-out per-place log score and its paired SE (the main measure);
+     - the per-place CRPS summed, and the state totals' CRPS;
+     - the share of places inside their own P10–P90, against the 80% an honest band gives;
+     - the useful states.
+
+     **Drift improves predictive power** if the log-score gain over no drift is more than 2 paired SE. If the
+     gain is smaller, or CRPS gets worse, the report says so plainly.
+
+     The median-1 design cannot move any median, so the ×2 part of "useful" cannot improve. The report says
+     this rather than counting it as a gain or a loss.
+- **Why.** D-090's ranges were far too narrow. P10–P90 averaged about ±9% of the median, and 1 of 16 state ×
+  forecaster pairs held the observed total.
+  - Four years of a place's own counts pin its rate. Nothing in the model lets that rate move between the fit
+    period and the forecast window.
+  - This entry adds that movement. It does not change any forecaster's median, so it tests the range
+    separately from the centre.
+- **What was looked at before writing** (disclosed because it bears on the choices below):
+  - D-090's results, all four states.
+  - One diagnostic computed after D-090, on the window counts of all four states. Over the 9 places that
+    persistence expected to have at least 20 ADUs, log(observed ÷ F0's median) has a median ratio of 0.99
+    and an SD of 1.07 (about ×2.9).
+    - That figure came from the windows that will be scored. It is the reason this entry learns the spread
+      leaving one state out: no state's own window sets its own spread.
+    - The pooled figure has nonetheless been seen. The report repeats this.
+- **The term.** In the window, each place's expected count is multiplied by d_i = exp(σ z_i), z_i ~ N(0, 1),
+  one draw per place shared by all its window years (a period shift, not year-to-year noise).
+  - The median of d is 1, so each forecaster's per-place median is unchanged. The mean rises by exp(σ²/2).
+    The median-1 choice is fixed now, as the design that isolates the range. A sensitivity with the
+    log-mean also learned leaving one state out is reported, not used to choose.
+  - Each d_i is independent across places (main read). Places in a state may move together, as NC's did.
+    So a sensitivity with one d shared by every place in a state, the fully correlated bound, is reported
+    alongside. The truth lies between the two.
+- **Forecasters:** D-090's F0 (persistence) and F1 (Form A, state θs, own-history u). Each gets its own σ,
+  because each has its own errors. F1's errors include how it prices rule changes. F2 and the trend are
+  dropped: D-090's rule 3 kept F1, and the trend was a sensitivity.
+- **Learning σ, leaving one state out.**
+  - For held-out state s, σ_F,−s maximizes the window likelihood of the other scored states' places with
+    history (D-090's classes and fits; MN, NC, TX, OR; Ohio has none).
+  - The likelihood is F's predictive with d integrated by Gauss–Hermite quadrature (40 nodes). For F1, u is
+    integrated as in D-090's score and d scales its window exposure.
+  - The grid for σ runs from 0 to 3 in steps of 0.025.
+  - D-090's 2016–2019 fits are reused unchanged; only σ uses window counts, and never the held-out state's.
+  - The four σ_F,−s values are reported per forecaster. If they differ by more than a factor of 2, the report
+    says the spread is not stable across states.
+- **Scored, as D-090, per state, on the places with history:**
+  - the window total: inside P10–P90, observed ÷ P50, CRPS, log score;
+  - the per-place log score summed;
+  - the share of places inside their own P10–P90 (calibration; about 80% expected), and its PIT histogram;
+  - D-090's other lines (rule change, no rule change, new, thin) reported, not used to choose. New places
+    get the drift term with their state's σ_F,−s.
+- **Decision rule, fixed now:**
+  1. **F1 with drift is enough** if it is useful in at least 3 of the 4 states (D-090's bar).
+  2. **The mechanism earns its place** if F1+d's summed per-place log score beats F0+d's by more than 2 paired
+     SE.
+  3. **The ranges are honest** if, for the forecaster used, the share of places inside their own P10–P90 lies
+     between 65% and 95%, pooled over the four held-out folds. Outside that, the report says the bands are
+     too narrow or too wide.
+- **What it means for the tool**, decided now, Ben to confirm:
+  - **F1+d passes rule 1:** the tool forecasts a state with history by F1 with the drift band.
+  - **Only F0+d passes rule 1:** the tool's no-reform range for a state with history is persistence with the
+    drift band.
+    - A bill's effect is the mechanism's ratio: F1 with the bill ÷ F1 without, draw by draw.
+    - It is applied to that range and labelled as a ratio the backtest has not checked within ×2.
+  - **Neither passes:** D-090's plain statement stands. The tool shows the drift-widened ranges as the honest
+    uncertainty and says the centre cannot yet be forecast within ×2.
+  - **In every case,** a state with no ADU history keeps the leave-one-state-out ranges (D-075's tiers),
+    shown as the no-data case.
+- **What this cannot settle.**
+  - Four states; σ for each fold is learned from three, two of which (TX, OR) have 2–3 places with history.
+  - One window, 2021–2025, which includes the post-2020 shifts. Drift in a quieter period may be smaller.
+  - A place-level d cannot say which places will move or which way. It only widens the range honestly.
+- **What it will not do:**
+  - write to config before Ben approves a result;
+  - change counts, k, rule rows, the fit set or D-090's fits;
+  - bypass the holdout filter or pass `--unblind`. St. Paul (V5) stays blind and out.
+  - It runs offline from cached data.
+- **Built and run** only after Ben accepts this entry.
+  - The code adds the drift term to `adu_forecast` (draws and the quadrature log score), the σ fit, and the
+    calibration share, each with a hand-worked test.
+  - It extends `scripts/dev/adu_time_split.py` with a `--drift` step that reads D-090's outputs.
+- **Built, 2026-11-14, before any run.**
+  - **Code:**
+    - `src/lotline/model/adu_forecast.py` gains the drift options and the fixed-drift log-score grids. It also
+      gains `drift_loglik`, `fit_sigma`, `fit_mu_sigma`, `drift_mult`, `coverage` and `predict_new`.
+    - Eight hand-worked tests sit in `tests/model/test_adu_forecast.py`.
+    - The run script is `scripts/dev/adu_drift.py`.
+
+  What the build settles that the entry left open:
+  1. **The run is its own script,** `adu_drift.py`, not a `--drift` flag on D-090's. It reads D-090's
+     `places.csv` and F1 fit and rebuilds D-090's places and draws unchanged. Keeping it separate leaves
+     D-090's script as it ran.
+  2. **The integral over d uses the trapezoid rule, not 40 Gauss–Hermite nodes.**
+     - Each place's log score is computed at fixed drifts, from log d −8 to +8 in steps of 0.02, and d is
+       integrated on that grid.
+     - A hand-worked test showed why. A large place's likelihood is about 0.03 wide in log d, and 40 nodes
+       cannot resolve it: on simulated places with σ = 0.8, the node version found 0.55. The grid version
+       recovers 0.8 (test `test_fit_sigma_recovers_spread`).
+     - Mass beyond log d ±8 (×3,000) is dropped.
+  3. **The rollback check is built in.**
+     - With no drift, the draws are D-090's exactly (test `test_no_drift_reproduces_d090_exactly`).
+     - The run compares each place's grid value at d = 1 with D-090's `place_scores.csv` and logs the largest
+       gap.
+  4. **The shared-by-state sensitivity uses the same σ as the main read.** It has no per-place log score,
+     because a shared d does not split by place. It is scored on totals and coverage only.
+  5. **σ on all four states together is computed and logged for reference.** It is not used for any forecast.
+  6. **A smoke run** (500 draws) checked the code path. Its outputs went to a scratch folder, and only its
+     status lines were shown, not its results.
+- **Result, 2026-11-14** (`reports/adu-drift/`, page https://claude.ai/artifact/G4sRpudCfVVXt8PyWV2asM).
+  - **Rollback check:** with drift off, every score matches D-090's to 3.6 × 10⁻¹⁵.
+  - **σ leaving one state out:** F0 0.85–1.10; F1 0.73–1.43.
+  1. **Rule 1:** F1+d is useful in 2 of 4 states (NC, TX). **Persistence with drift is useful in 3 of 4**
+     (MN, NC, TX); Oregon is inside its range at 0.47.
+  2. **Rule 2:** F1+d − F0+d = +7.6 (2 SE 31). No.
+  3. **Rule 3:** coverage 81% (F0+d) and 77% (F1+d). Pass.
+  - **Ben's condition 2: the pre-set improvement test is not met.**
+    - Log-score gain with drift: +429 for F0 (2 SE 551) and +442 for F1 (2 SE 571). Portland carries about
+      +270 of each; without it the gain is +158.
+    - Clear gains: coverage 58% → 81%; persistence's state totals inside 0 → 4 of 4; per-place CRPS down 13%.
+    - A loss: F1's state-total CRPS rises (2,309 → 2,879). Independent drift lifts NC's F1 total median
+      from 830 to 1,493, against 790 observed.
+  - **The tool outcome this case triggers, as fixed:** persistence with the drift band as the no-reform range;
+    a bill's effect as F1's ratio, labelled unchecked within ×2. **Not applied: it needs Ben's separate
+    approval.** To roll back, close PR #430.
+- **Outcome adopted, 2026-11-15.** Ben, on "Adopt the outcome: persistence with drift as the no-reform range?":
+  "Adopt it". What this adopts, and what it does not yet change:
+  - **No-reform range, for places with their own ADU counts:** persistence (rate ~ Gamma(Y + 0.5, lot-years))
+    times a place drift d = exp(σz), with σ = 1.025 (×2.8 at one SD), the four-state F0 value the run logged for reference
+    (`summary.json`; the leave-one-state-out values were 0.85–1.10).
+    It is used where a place has fit-period counts; places with none keep the type model (D-088), unchanged.
+  - **A bill's effect:** F1's ratio (with-bill ÷ no-bill) applied to that range, labelled in the tool as
+    "not checked within ×2" until a held-out test checks it.
+  - **Not yet wired.** The engine and config are unchanged by this entry. Wiring is a separate PR on top of
+    the A + P engine (#432), so the ratio comes from A + P rather than Form A; that PR names the σ value and
+    its source row in `config/params/`.
+  - **Rollback stays as before:** the drift is off by default, σ = 0 gives D-090 exactly, and the wiring PR
+    will keep the current engine path behind the same switch.
+
+### D-093 · 2026-11-15 · ADUs: the engine reads D-091's adopted outcome (own counts with drift as the no-reform rate)
+- **Status: built and run 2026-11-15, on Ben's go-ahead** ("Adopt it" on D-091's outcome, then "Wire it now").
+  Numbered D-093 because missing middle's method took D-092. Stacked on #430 (D-091) after the two ADU stacks
+  were rebased into one line on 2026-11-15 (Ben: "Yes please rebase the open PRs").
+- **What changes in `scenarios/adu.py`:**
+  - Where a place has an observed ADU rate, its no-reform hazard is persistence × drift (`own_rate_draws`):
+    rate ~ Gamma(Y + 0.5, E) over the `adu_observed_years` years (Y the undercount-scaled count each draw
+    uses), times exp(σ z), one z per place and draw, σ = `adu_drift_sigma` 1.025. The lead years use it too.
+  - The Handbook hazard is that rate × the mechanism's h_hb ÷ h_cur (both with the observed floor, as
+    before). Where the mechanism's h_cur is 0 (no rule allows ADUs and none were observed) the ratio is
+    undefined, and the mechanism's added hazard is added instead (`own_rate_paths`).
+  - Places with no observed rate are unchanged. Outputs gain `no_reform_basis`.
+  - `adu_own_rate_drift` 0 restores #434's engine exactly (test `test_switch_off_is_the_mechanism_with_the_floor`).
+- **Deviation from D-091's wording:** D-091 named "F1's ratio" (plain Form A). The engine uses the A + place
+  types mechanism of #432/#434, as the D-091 adoption note said it would. σ is D-091's four-state F0 value,
+  learned for a 4-year fit and a 1-year lead; the engine reads 3 years and its own lead.
+- **Changed test:** `test_observed_adus_are_never_counted_as_added` keeps its first check (an observed rate
+  above the Handbook hazard adds nothing, true both ways) and runs its second (an observed rate below h_m
+  lowers what is added) with the switch off. With it on, a place's added ADUs are its own rate × (ratio − 1),
+  which can exceed the floor version where the half-count prior lifts a tiny observed rate.
+- **Result** (`reports/adu-engine-drift/`, page https://claude.ai/artifact/RbG2SiXAtPKiJY1xMoyTQV; 1,000
+  draws, origin 2025, St. Paul left out; run on the rebased stack, so the 65 fit places' checked rule rows
+  are in both columns):
+  - Additional homes, 2027–31 P50, before → now: MN 631 → 640, NC 524 → 526, OH 421 → 458, TX 4,713 →
+    5,168, OR 27 → 27. TX P90 13,295 → 17,020.
+  - Current-rules ADUs P50 fall in MN (880 → 704), NC (4,098 → 3,438) and OH (588 → 476); TX is about flat
+    (4,042 → 4,104) and OR rises (3,938 → 4,243). P90s fall by about half in MN, NC and OH.
+  - Places with own counts: MN 184 (48% of eligible lots), NC 23 (22%), OH 16 (16%), TX 6 (17%), OR 4 (22%).
+  - A first run on #434 before the rebase (without the checked rule rows) gave the same pattern; it is not
+    kept.
+- **What it cannot say:** the ratio is unchecked on held-out data; independent drift (mean 1.69, median 1)
+  averages out in state totals, so their range is narrower than one shared drift would give (D-091's
+  sensitivity); the engine's gap differs from the one σ was learned on.
+
+### D-094 · 2026-11-15 · ADUs: a separate place-luck spread for core cities and suburbs (method only, before any fit)
+- **Status: accepted by Ben, 2026-11-15 ("Accept D-094 and run it"). Drafted by Claude Code the same day, on
+  his request ("Draft D-094").** No fit, prediction or score with a type-specific spread had been run when it
+  was accepted. The number is provisional, like D-083 to D-086.
+- **What was looked at before writing** (disclosed because it motivated the entry):
+  - the range coverage check (`reports/adu-range-coverage/`, page
+    https://claude.ai/artifact/DM6piJbfqSHe6RBZMQVrRh): A + P, each state left out, tier-1 inputs, 64
+    places. In the randomized middle 80%: all places 69%, core cities 88% (16 places; too wide, about 1.5 SE
+    from 80%), suburbs 62% (48 places; too narrow). Core cities hold 97% of the observed ADUs.
+  - the same check's split of state-total width: switching off place luck (α = 0) narrows P90 ÷ P10 from
+    ×9.2 to ×4.3 (MN), ×24 to ×8.6 (NC), ×25 to ×5.2 (TX) and ×27 to ×6.2 (OR), the largest single source.
+  - D-088's fits on the checked rule rows (α 1.698 under A + P).
+  - Because the coverage split by type has been seen, coverage by type cannot be the deciding test: a
+    separate spread will move it toward 80% almost by construction. The held-out log score decides
+    (rule 1 below); coverage is reported.
+- **Why.** One α covers every place. If core cities really vary less around their fitted rate than suburbs
+  do, one α overstates the core cities' luck and understates the suburbs'. Core cities carry nearly all the
+  ADUs, so their overstated luck is what widens each state's total. A spread per type would narrow the state
+  ranges where that is honest and widen suburbs' where it is not.
+- **The term (Form A + P + S).** Everything in A + P is unchanged (θ, the rule multipliers m_o and m_x on
+  their grid, the core-city and town terms, the state multiplier). Only the place effect changes:
+  - u_i ~ Gamma(mean 1, variance α_t(i)), with α_core for core cities and α_sub for suburbs.
+  - Towns, where any remain after D-088's merge rule, take α_sub (fixed now, to keep two spread parameters;
+    on the checked rows every town is merged into suburb anyway).
+  - Fitted as log α_sub and λ = log(α_core ÷ α_sub), by the same profile likelihood as A + P's α, with λ's
+    90% interval from the χ² profile. λ = 0 is A + P exactly.
+  - If λ̂ ≥ 0 (core cities vary as much or more), the entry reports that and stops: the narrowing it is
+    meant to test is not in the data.
+- **Sensitivity, reported and not used to choose:** Form A + S (a spread per type, no core-city or town mean
+  term), to show how much of the type difference sits in the centre and how much in the spread.
+- **Tests, the same as D-088's, with A + P as the base** (the engine's form; D-088's rule kept Form A on the
+  checked rows only through College Station in tests A–B, and that decision is Ben's, open):
+  1. tier-1 held-out log score, each state left out (D-075's inputs), summed over places, with its paired SE
+     against A + P;
+  2. D-075's claim rule (useful in at least 4 states) at tiers 0, 1 and 2;
+  3. tests A–B;
+  4. test D (within-state forecast 2021–25), log score and paired SE.
+  - Also reported: the randomized-PIT coverage of the range coverage check (middle 50%, 80%, 90%) for all
+    places, core cities and suburbs; the state-total P90 ÷ P10 and its split by source; α_core, α_sub and λ
+    with intervals, on all states and in each left-out fold.
+- **Decision rule, fixed now** (`adu_types.decide`, base A + P, candidate A + P + S): S replaces A + P only if
+  (1) it passes the claim rule at a lower tier, or at the same tier with a tier-1 log score gain above 2
+  paired SE; (2) it passes at least as many of tests A–B; and (3) its test D log score is not worse by more
+  than 2 paired SE. With 16 core cities, a gain this large is not assured; if it falls short, the entry says
+  so and nothing changes.
+- **Rollback.** The spread per type is an option on `adu_types.fit_types` and `joint_refit.GlobalsA`, off by
+  default. A test checks that α_core = α_sub reproduces A + P's likelihood and draws exactly. Nothing goes to
+  config or the engine under this entry.
+- **If adopted, a later, separate approval** would split `adu_place_effect_variance` into a core and a
+  suburb value, regenerate `config/params/adu_anchor.yaml` (the slopes and the θ–α correlation) for the new
+  fit, and have `scenarios/adu.py` draw u by `place_type`. The engine already replaces luck with a place's own
+  counts where it has them (D-093), so the change matters most for places, and states, without them.
+- **Tests that prove the code:** the negative-binomial marginal with two αs against a hand-worked example;
+  λ = 0 reproducing A + P; predictive draws whose variance of u matches each type's α.
+- **Outputs:** `reports/adu-type-spread/` (fits, held-out scores, tests A–B and D, coverage, width split,
+  README, run log) and a results page published as an Artifact.
+- **What it cannot say:** 16 core cities in 4 states pin α_core loosely; a core city's luck and its mean term
+  are both learned from the same 16 places, so the two can trade off, which λ's interval will show; and the
+  places with counts are larger than most in their states, so a spread learned on them may not hold for
+  places without counts.
+- **Result, 2026-11-15** (`reports/adu-type-spread/`, page https://claude.ai/artifact/1QRuqXpv5b1rrYFDPBszR9):
+  - **λ̂ −0.89 (90% interval −1.59 to −0.16)**: α_core 1.01, α_sub 2.45 (A + P's one α: 1.70). The likelihood
+    ratio over A + P is 4.0 on one parameter. Core-city term +1.81 (+1.20 to +2.43), almost unchanged.
+  - **Leaving one state out:** λ̂ without NC −1.38, without TX −0.88, without OH −0.91, without OR −0.57
+    (interval crosses 0), **without MN +0.51 (−0.63 to +1.60)**. The difference rests on Minnesota's suburbs.
+  - **Decision rule: A + P stays.** Tier-1 held-out log-score gain −0.1 (2 SE 2.9); claim tier 1 for both, 4 of 4
+    useful states at tiers 1 and 2 for both; tests A–B 1 each; test D −0.9 (2 SE 3.7).
+  - **Reported, not deciding:** held-out state-total P90 ÷ P10 would narrow (NC ×24 → ×11, TX ×25 → ×13, OR ×27 →
+    ×18; MN ×9.2 → ×9.4). Coverage in the middle 80%: all 69% → 70%, core cities 88% → 94%, suburbs 62% → 62%,
+    so the per-type spread did not move coverage toward 80%.
+  - **A + S** (spread by type, no type terms): no claim tier, held-out log score −8.6 (2 SE 7.3) against A + P.
+  - Nothing went to config or the engine. The fit option stays in the code, off by default.
+  - **Deviation, disclosed:** τ's profile still fits one α, so the state multiplier's spread is learned as under
+    A + P for every form. Test D's forecasts (`adu_trend`) and the predictive draws read each place's α by type.
+
+### D-095 · 2026-11-15 · ADUs: does the engine's reform ratio match what happened where rules changed? (method only, before any score)
+- **Status: written on Ben's request ("Test reform effect", 2026-11-15) and committed before any post-reform count
+  was compared with a forecast.** It is a check, not a model change: nothing goes to config or the engine under
+  it. Provisional number, like D-083 to D-086.
+- **Why.** Since D-093 the engine sets a place's Handbook ADU rate as its own no-reform rate × the mechanism's
+  ratio h_hb ÷ h_cur (`own_rate_paths`), and D-093 says that ratio "has not been checked within ×2 on held-out
+  data". The places whose coded rules changed inside their counted years are the only direct check.
+- **What was looked at before writing** (no post-reform count, rate or score):
+  - D-079's event finder (`joint_refit.events`) on the checked rule rows: **10 events in 3 states**: Burnsville
+    2018, Cottage Grove 2023, Forest Lake 2023, Maplewood 2024, Minneapolis 2021, Rosemount 2024 (MN); Cornelius
+    2023, Greensboro 2024, Raleigh 2021 (NC); College Station 2019 (TX). D-079's minimum of 2 fit years each side.
+  - Each event's Form A rule share before and after (weight-averaged over blank-field combinations, coverage
+    included), at the engine's config (m_o 1.0, m_x 0.4) and at the checked-row fit (m_o 1.0, m_x 0.8). The
+    ratio after ÷ before at the engine's values: 0.76, 0.57, 0.06, 0.76, 0.96, 0.57, 0.50, 2.83, 9.37, 0.74 (same
+    order). **In 7 events D-079's dose rises while Form A's share falls**: the two codings read the same
+    rule change differently (the dose grades by-right and owner occupancy only; Form A also counts the other
+    restrictions and the zoned coverage). This is reported as found; the test below scores the engine's
+    ratio as it stands.
+- **The forecasts.** For each event, the place's total count over its after years, from its before years only:
+  - **P, no effect (persistence):** rate ~ Gamma(Y_before + 0.5, E_before), E the base exposure (eligible lots ×
+    years), times drift exp(σ z), σ = `adu_drift_sigma` (1.025, D-091), one z per draw; count ~ Poisson(rate ×
+    E_after).
+  - **M, the engine's ratio:** the same, with exposure k_t = base_t × s_t, s_t the Form A rule share in year t
+    (weight-averaged over blank-field combinations) at the engine's config m_o and m_x. So the after count's
+    mean is P's × (mean share after ÷ mean share before), which is the engine's h_hb ÷ h_cur logic applied to
+    a real rule change.
+  - **M′, the refitted ratio:** as M, with m_o and m_x from the A + P fit on the checked rows **without the
+    event's place** (D-088's code), so its own counts do not set its ratio.
+  - 20,000 draws each; seed fixed in the script. Without drift (σ = 0) is a sensitivity.
+- **Measures, all reported:**
+  1. Each event's log score (log mean over draws of P(observed after total)) under P, M and M′; the summed gain
+     of M and of M′ over P with its paired SE.
+  2. A pooled exponent b: the after mean is P's × ratio^b, b = 1 the engine's ratio, b = 0 rules make no
+     difference. b̂ and its 90% profile interval from the summed log score on a grid from −2 to 3 (step
+     0.05), for the engine's ratios and for the refitted ones.
+  3. Per event: observed after rate ÷ before rate (with the + 0.5 prior), next to the model's ratio; whether
+     the observed total is inside M's P10–P90; whether observed ÷ M's median is within ×2.
+  4. Direction: among events whose model ratio is above 1.5 or below 1 ÷ 1.5, how many moved the same way.
+- **Reading rule, fixed now:**
+  - **Supported** if M's summed gain over P is above 2 paired SE and b's interval contains 1 and excludes 0.
+  - **Contradicted** if M is worse than P by more than 2 paired SE, or b's interval excludes 1.
+  - **Not shown either way** otherwise. With 10 events this is the likely outcome, and the report says so
+    rather than reading a direction into it.
+  - Whatever the reading, nothing changes in the engine without a separate entry and Ben's approval. If
+    contradicted, the follow-up options (the ratio from the dose instead, capping the ratio, or ratio 1 for
+    own-count places) go to Ben in chat.
+- **What it cannot say:**
+  - It tests rule changes that happened, mostly partial to fuller rules within cities that already allowed
+    ADUs. The Handbook change in the engine is often larger.
+  - The after windows are short (2 to 3 years for six events), so a slow start after a reform looks like no
+    effect.
+  - The before years are in the A + P fit for every other event's M′ fit; only the event's own place is left out.
+- **Outputs:** `reports/adu-reform-ratio/` (events, per-event forecasts and scores, b profile, README, run log)
+  and a results page published as an Artifact. Code: `scripts/dev/adu_reform_ratio.py`, with tests for the
+  forecast and the b profile against hand-worked examples. St. Paul stays out; nothing is unblinded.
+- **Result, 2026-11-15** (`reports/adu-reform-ratio/`, page https://claude.ai/artifact/JggHUyaPLYuJxwMFBvMk6j):
+  - **Reading: not shown either way.** M's summed log-score gain over P is +4.2 (2 paired SE 7.9); b̂ 1.3, 90%
+    interval 0.55 to 2.05 (contains 1, excludes 0). M′ (refitted shares, own place left out): +2.4 (2 SE 6.7), b̂
+    1.3 (0.55 to 2.2).
+  - **What carries it:** Raleigh 2021 (2.1 → 201 ADUs; observed rate ×29, engine ×9.4, refit ×4.7); Greensboro
+    2024 ×2.75 against ×2.83. Minneapolis 2021 fell (×0.45, engine ×0.97). Five Minnesota suburbs built none
+    before or after.
+  - **Other measures:** inside P10–P90, P 9 of 10, M 10, M′ 8; observed within ×2 of the median, P 2, M 3, M′ 3. Of
+    the 6 events whose engine ratio is beyond ×1.5 either way, 2 moved the same way (Raleigh, Greensboro); the 4
+    others are places with 0 to 4 ADUs.
+  - **Sensitivity without drift:** "contradicted" (b 1.05 to 1.6), but the paired SE of the gain is 172,
+    dominated by Raleigh and Minneapolis, so it is not read.
+  - **Correction to the count above:** the dose rises while Form A's share falls in **6** events, not 7
+    (Burnsville's dose falls). The clearest cause is zoned coverage: Forest Lake's new rule is coded as covering
+    about 6% of the city and Cottage Grove's 75%, while the rules before count as covering all of it.
+  - Nothing goes to config or the engine. D-093's "not checked within ×2" stands.
+
+### D-096 · 2026-11-15 · ADUs: A + place types refitted on the coverage-fixed rule rows, and D-095 rerun (method only, before any fit)
+- **Status: on Ben's go-ahead ("Yes, fix then refit"), after PR #440 corrected the rule rows the coverage audit
+  flagged.** No fit on the corrected rows had been run when this was committed. Provisional number.
+- **Inputs:**
+  - PR #440's `config/reforms/*.csv`: 33 rows with changed values (4 blank or "none" rows → explicit no-ADU;
+    17 zone lists naming every single-family district → citywide; 12 subsets read as citywide → zone lists).
+    The run reads them from that branch's checkout (its `src` on `PYTHONPATH`, so `CONFIG_DIR` is its
+    `config/`). Nothing is merged here.
+  - **Place-years under an `UNKNOWN-PLACEHOLDER` row are left out of every fit and score.** These are
+    Cottage Grove 2016–2022 and Maplewood 2016–2023: the years between each row's effective date and its end
+    date. Both places counted 0 ADUs in those years. Leaving them out means the fit doesn't treat a rule nobody
+    could find as one that allowed ADUs.
+- **Runs, unchanged from their entries:**
+  1. D-088's `adu_types_refit.py`: Forms A, A + P, A′, A′ + P; data tiers, tests A, B and D, the tier-1
+     held-out log score, and D-088's decision rule.
+  2. D-095's `adu_reform_ratio.py`: the reform-ratio check. Its events are rebuilt from the corrected rows.
+- **What is compared:** each output against the checked-row run (`reports/adu-place-types-checked/`,
+  `reports/adu-reform-ratio/`). The report lists θ, α, m_o, m_x and the core term, the claim tier and
+  useful states, the decision, D-095's events (how many are still events) and its reading.
+- **Config is not changed by this entry.** The engine still runs m_x 0.4 and core +1.199 from the pre-checked
+  rows; whether to move config to the checked-row fit was already Ben's open decision. If this refit holds up,
+  the report proposes config values for that decision. Adopting them needs his yes.
+- **Result, 2026-11-15** (`reports/adu-types-fixed-rows/`, `reports/adu-reform-ratio-fixed-rows/`, page
+  https://claude.ai/artifact/XNZB6mCqWFQzzModq2oeLQ):
+  - **Fit set:** 63 places and 446 place-years (was 64 and 491). Rosemount leaves; Burnsville, Chanhassen and
+    Vadnais Heights lose their now-explicit no-ADU years; the two placeholder spans are cut.
+  - **A + P:** θ 0.240 per 1,000 (was 0.200), **α 1.44 (was 1.70)**, core +1.67 (+1.06 to +2.32; was +1.84),
+    m_o 1.0, m_x 0.7 (was 0.8).
+  - **Leaving one state out:** m_x is 0.4 without OR, 0.8 without MN, 1.0 without NC, and 0.7 otherwise.
+  - **Tier 1:** useful in 4 of 4 states, as before. P90 ÷ P10: NC ×24 → ×18, TX ×71 → ×49, OR ×22 → ×19, MN
+    unchanged at ×4.5.
+  - **Decisions as before:** A vs A + P keeps A on tests A–B (College Station; tier-1 gain +12.0, 2 SE 7.2).
+    A′ + P replaces A′.
+  - **D-095 rerun:** 6 events (the 4 placeholder artefacts are gone); the reading is still "not shown either
+    way" (b 1.25, 0.60 to 1.95).
+  - **Config not changed.** Proposed for Ben's decision, if he moves config to this fit: `adu_partial_rule_share`
+    0.4 → 0.7, the core term +1.199 → +1.67, and θ and α from this fit, with `adu_anchor.yaml` regenerated by
+    `adu_types_slopes.py` on the same rows. This needs PR #440 merged first.
+- **Config adopted, 2026-11-15** (Ben: "Yes, update config"). Changed on the PR #437 branch; the values fit PR
+  #440's rule rows, so #440 should merge first. Page: https://claude.ai/artifact/N2MHdgvxHh3KL3rM2nLP7i;
+  runs in `reports/adu-config-fixed-rows/`.
+  - **Parameters:**
+    - `adu_partial_rule_share` 0.4 → 0.7;
+    - `adu_mature_hazard_ref` 0.000448 → 0.000240 (0.000181–0.000327);
+    - `adu_place_effect_variance` 1.550 → 1.439 (0.976–2.121, from the information log-SE 0.236);
+    - `adu_types_core_log_multiplier` +1.199 → +1.670 (1.064–2.315);
+    - `adu_types_town_prior_sd` 0.729 → 1.015 (D-089's rule);
+    - `adu_anchor.yaml` regenerated by `adu_types_slopes.py`, run through `adu_refit_fixed_rows.py` on #440's
+      rows (63 places, 446 place-years; θ, α and core match the D-096 fit);
+    - the tests pinned to the old values were updated.
+  - **Engine, additional homes 2027–31, P50 (today → D-096):** MN 640 → 302, NC 526 → 208, OH 458 → 230,
+    TX 5,168 → 3,198, OR 27 → 10. The five states together go from 6,819 to 3,948.
+    - #440's rows with the old values give nearly today's numbers (MN 646, NC 511, OR 22). So the drop comes
+      from the new values, mainly m_x: at 0.7 the bill's ratio for a partial rule is 1 ÷ 0.7 = 1.43, not 2.5.
+    - Current-rules ADUs barely move (own counts, D-093).
+  - **Open for Ben:** m_x is fixed in a run (low = high = 0.7). Its leave-one-state-out values span 0.4 to
+    1.0, so the reported ranges leave out the uncertainty that matters most for the bill. Drawing m_x over
+    its leave-one-state-out range, or reporting it as a sensitivity, would be a separate entry.
+
+### D-097 · 2026-11-15 · ADUs: carrying the partial-rule share's uncertainty into the engine's ranges (method only, before any fit or run)
+- **Status: accepted by Ben, 2026-11-15** ("Once we've made this update, I'd like to see a visual breakdown",
+  in reply to the draft; drafted the same day on his request, "Draft that entry"). No fit, run or score for
+  this entry had been made when it was accepted. Provisional number.
+- **Why.** The bill's effect on a place with a partial rule is the ratio 1 ÷ m_x, so m_x sets most of the
+  Handbook result. D-096 fixed m_x at 0.7 in every draw (`adu_partial_rule_share` low = high). The full-data
+  profile interval is narrow (0.7–0.8 on the 0.1 grid), but leaving one state out gives 0.4 (without OR), 0.7
+  (without OH, without TX), 0.8 (without MN) and 1.0 (without NC). Moving m_x from 0.4 to 0.7 halved the
+  added homes (D-096's engine runs), so the reported P10–P90 understates the uncertainty that matters most.
+- **What was looked at before writing:** D-096's fits on every fold and its engine runs at m_x 0.4 (today's
+  config at the time) and 0.7. Nothing at any other m_x was run.
+- **The proposal (main): m_x drawn per simulation draw, with θ, α and the core term refitted at it.**
+  1. **Grid fits.** For each m_x on the pre-registered 0.1 grid (`GRID3`), refit A + P on all states (the
+     D-096 rows and exclusions) with m_x held there and m_o at 1.0. Each fit gives θ̂(m_x), α̂(m_x),
+     β̂_core(m_x) and the log-likelihood.
+  2. **Weights.** w(m_x) is the average over the five leave-one-state-out folds of each fold's normalized
+     profile likelihood exp(ℓ_f(m_x) − max ℓ_f). This is the spread a new state's m_x would have, not just
+     the in-sample precision. Uniform weights over the five fold maxima {0.4, 0.7, 0.7, 0.8, 1.0} is the
+     sensitivity.
+  3. **Engine.** In each draw, m_x is drawn from w, shared by every place and state in the draw (one model,
+     one share). θ, α and β_core take that grid point's fitted values; their own lognormal and normal spread
+     and the judgment slopes stay as configured (the slopes were fitted at 0.7, an approximation the report
+     states).
+  4. **Config.** The grid table (m_x, weight, θ̂, α̂, β̂_core, log-likelihood, source) goes in
+     `config/params/adu_partial_share_grid.csv`, like `v1_excluded_places.csv`. `adu_partial_rule_share`
+     keeps 0.7 as its central value for single-number reads. If the shared loaders can't read a CSV in
+     params, that is a contract change for WS-CORE, raised first.
+- **Not chosen: drawing m_x alone** (triangular 0.4–1.0 in `adu_partial_rule_share`, θ unchanged). The counts
+  pin θ × m_x for partial-rule places, so moving m_x without θ would contradict the data the fit matched.
+- **Checks, fixed now:**
+  - **Consistency.** Under the grid draws, the engine's no-reform ADUs for the fit places must stay within 10%
+    of D-096's at P50 (own counts set them, D-093), so the widening falls on the bill, not the baseline.
+  - **Report.** Additional homes 2027–31 for each state at P10, P50 and P90: (a) D-096, m_x fixed at 0.7;
+    (b) the main grid draws; (c) the uniform-over-fold-maxima sensitivity; (d) m_x fixed at 0.4 and at 1.0.
+  - **Held-out.** The tier-1 log score and the D-075 claim tier, refitted with m_x drawn rather than fixed.
+    This is reported only: D-097 changes how uncertainty is carried, not the central fit, so no score decides
+    whether it is adopted.
+- **Decision for Ben after the report:** adopt the grid draws (main), the sensitivity weights, or keep m_x
+  fixed and report (d) beside the headline. Nothing goes to config before that.
+- **What it cannot say:** five folds are a small sample of how m_x varies between states. The 0.1 grid is
+  coarse. A different m_x per state might be closer to the truth, but four states with counts can't
+  estimate one each.
+- **Result, 2026-11-15** (`reports/adu-mx-grid/`, `reports/adu-mx-engine/`; grid table
+  `config/params/adu_partial_share_grid.csv`; engine switch `adu_partial_share_draws`, left at 0):
+  - **Grid fits** (all states, m_o 1.0): the 0.7 row matches D-096's central fit (θ 0.000240, α 1.439,
+    core +1.670). Main weights: 0.4 18%, 0.7 45%, 0.8 14%, 1.0 20%, the rest under 2% each. Fold maxima,
+    with m_o held at 1.0: 0.4 (without OR), 0.7 (three folds), 1.0 (without NC).
+  - **Consistency check passed:** current-rules ADUs within 2% of fixed 0.7 in every state (limit 10%).
+  - **Additional homes 2027–31, P50 (P10–P90), fixed 0.7 → grid draws:**
+    - MN 302 (141–747) → 307 (127–839);
+    - NC 208 (89–619) → 201 (63–713);
+    - OH 230 (75–1,155) → 226 (70–1,251);
+    - TX 3,198 (1,118–10,817) → 3,272 (1,107–12,004);
+    - OR 10 (4–32) → 9 (3–40).
+    - The fold-maxima sensitivity is close to the main grid.
+    - Fixed 0.4 / fixed 1.0: MN 581 / 192, NC 461 / 86, OH 407 / 159, TX 5,141 / 2,206, OR 20 / 4.
+  - **Deviation, disclosed:** the held-out tier-1 log score with m_x drawn was not computed. The fold fits at
+    each m_x exist (`profiles.csv`), but the held-out predictive code takes one rule share per fit, so the
+    mixture needs new code. The entry marked that measure as reported only.
+  - **Decision for Ben:** the switch stays off (m_x fixed at 0.7) until he chooses. Drawing m_x keeps the
+    medians and widens P90 ÷ P10 by 12% (TX) to 66% (OR): MN ×5.3 → ×6.6, NC ×7.0 → ×11.3, OH ×15.4 → ×17.9,
+    TX ×9.7 → ×10.8, OR ×8.0 → ×13.3.
 ### D-092 · 2026-11-11 · Missing middle: one counting protocol, Oregon in the fit, and accuracy tests (method only, before any count) (was D-082)
 - **Status: Approved by Ben, 2026-11-12 ("Approve D-082"), as written, with the amendments below.** Method only:
   nothing below has been run or counted. Each run in §9 still needs its own go-ahead.

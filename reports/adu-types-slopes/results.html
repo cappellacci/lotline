@@ -1,0 +1,215 @@
+<title>ADU anchor slopes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column; headline, stats, numbered findings with charts, then tables. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header, section { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow, .num-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.num-tag { color: var(--survey); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 21px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.stat { border-top: 2px solid var(--rule); padding-top: var(--space-2); }
+.stat b { display: block; font-family: var(--font-mono); font-size: 22px; font-weight: 500; }
+.stat span { font-size: 13px; color: var(--ink-muted); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); align-items: center; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { font-family: var(--font-sans); }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink-muted); font-size: 12.5px; }
+.chart .seg { fill: var(--paper); font-size: 11px; font-family: var(--font-mono); }
+.seg-core, .sw.core { fill: var(--scenario-adu); background: var(--scenario-adu); }
+.seg-sub, .sw.sub { fill: var(--brass); background: var(--brass); }
+.seg-town, .sw.town { fill: var(--survey); background: var(--survey); }
+.seg-out, .sw.out { fill: var(--ink-muted); background: var(--ink-muted); }
+.seg-in, .sw.in { fill: var(--confidence-inside); background: var(--confidence-inside); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.d-old, .sw.d-old { fill: var(--scenario-baseline); background: var(--scenario-baseline); }
+.d-new, .sw.d-new { fill: var(--scenario-adu); background: var(--scenario-adu); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--ink-faint); stroke-width: 1; }
+td.up { color: var(--confidence-outside); } td.down { color: var(--confidence-inside); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · ADU anchor draw terms for Form A + place types · 14 Nov 2026</div>
+  <h1>Recomputing the anchor's slopes for the new fit moves state totals by a few percent</h1>
+  <p class="lede">Each simulation draw shifts the ADU anchor θ and the place-effect variance α with the cost and market assumptions they were fitted at. Those shifts were still the ones measured for the old D-053 fit. Refit on D-088's 64 places with each assumption nudged, θ's shifts are nearly unchanged and α's are smaller. Statewide additional homes move by under 3.5% at the median and under 6% at P90.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>15 of 24</b><span>judgment parameters the fit depends on; the other 9 leave it unchanged</span></div>
+  <div class="stat"><b>±3.4%</b><span>largest change in a state's median additional homes (Texas, down)</span></div>
+  <div class="stat"><b>≤ 0.13</b><span>largest shift in the core-city term across any parameter's whole range (its SE is 0.41), so it gets no slope</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>How much θ moves across each assumption's whole range</h2>
+  <p>Change in log θ from the low to the high end of each parameter's range. The mortgage-rate and home-equity elasticities matter most, as before; the new fit leans on them slightly more.</p>
+  <div class="legend"><span><i class="sw d-old"></i>D-053 fit (used until now)</span><span><i class="sw d-new"></i>Form A + place types fit (now)</span></div>
+  <svg viewBox="0 0 640 368" class="chart" role="img" aria-label="change in log θ, low to high end of the parameter's range"><line x1="228.6" x2="228.6" y1="2" y2="336" class="grid"/><text x="228.6" y="350" class="tick" text-anchor="middle">-0.25</text><line x1="321.8" x2="321.8" y1="2" y2="336" class="grid"/><text x="321.8" y="350" class="tick" text-anchor="middle">-0.12</text><line x1="415.0" x2="415.0" y1="2" y2="336" class="zero"/><text x="415.0" y="350" class="tick" text-anchor="middle">+0.00</text><line x1="508.2" x2="508.2" y1="2" y2="336" class="grid"/><text x="508.2" y="350" class="tick" text-anchor="middle">+0.12</text><line x1="601.4" x2="601.4" y1="2" y2="336" class="grid"/><text x="601.4" y="350" class="tick" text-anchor="middle">+0.25</text><text x="200" y="18" class="lab" text-anchor="end">Mortgage-rate semi-elasticity</text><circle cx="579.2" cy="14" r="5" class="d-old"/><circle cx="601.4" cy="14" r="5" class="d-new"/><text x="200" y="40" class="lab" text-anchor="end">Home-equity elasticity</text><circle cx="458.9" cy="36" r="5" class="d-old"/><circle cx="466.7" cy="36" r="5" class="d-new"/><text x="200" y="62" class="lab" text-anchor="end">Feasibility spread</text><circle cx="377.4" cy="58" r="5" class="d-old"/><circle cx="386.4" cy="58" r="5" class="d-new"/><text x="200" y="84" class="lab" text-anchor="end">Hard cost per sq ft</text><circle cx="413.1" cy="80" r="5" class="d-old"/><circle cx="413.3" cy="80" r="5" class="d-new"/><text x="200" y="106" class="lab" text-anchor="end">Cap rate</text><circle cx="413.7" cy="102" r="5" class="d-old"/><circle cx="413.9" cy="102" r="5" class="d-new"/><text x="200" y="128" class="lab" text-anchor="end">ADU size</text><circle cx="413.8" cy="124" r="5" class="d-old"/><circle cx="413.9" cy="124" r="5" class="d-new"/><text x="200" y="150" class="lab" text-anchor="end">ADU rent ÷ median rent</text><circle cx="415.9" cy="146" r="5" class="d-old"/><circle cx="415.9" cy="146" r="5" class="d-new"/><text x="200" y="172" class="lab" text-anchor="end">ADU hard-cost premium</text><circle cx="414.2" cy="168" r="5" class="d-old"/><circle cx="414.3" cy="168" r="5" class="d-new"/><text x="200" y="194" class="lab" text-anchor="end">Operating expense share</text><circle cx="414.3" cy="190" r="5" class="d-old"/><circle cx="414.3" cy="190" r="5" class="d-new"/><text x="200" y="216" class="lab" text-anchor="end">ADU margin</text><circle cx="414.6" cy="212" r="5" class="d-old"/><circle cx="414.6" cy="212" r="5" class="d-new"/><text x="200" y="238" class="lab" text-anchor="end">Soft-cost share</text><circle cx="414.6" cy="234" r="5" class="d-old"/><circle cx="414.6" cy="234" r="5" class="d-new"/><text x="200" y="260" class="lab" text-anchor="end">Rental vacancy</text><circle cx="414.9" cy="256" r="5" class="d-old"/><circle cx="414.9" cy="256" r="5" class="d-new"/><text x="200" y="282" class="lab" text-anchor="end">Build time</text><circle cx="414.9" cy="278" r="5" class="d-old"/><circle cx="414.9" cy="278" r="5" class="d-new"/><text x="200" y="304" class="lab" text-anchor="end">Average loan draw</text><circle cx="415.0" cy="300" r="5" class="d-old"/><circle cx="415.0" cy="300" r="5" class="d-new"/><text x="200" y="326" class="lab" text-anchor="end">Construction loan rate</text><circle cx="415.0" cy="322" r="5" class="d-old"/><circle cx="415.0" cy="322" r="5" class="d-new"/><text x="620" y="364" class="tick" text-anchor="end">change in log θ, low to high end of the parameter's range</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>α moves less than it did</h2>
+  <p>With the core-city term in the fit, cost and market assumptions shift α about half as much as before: part of what α used to absorb (big cities building more) now sits in the core term.</p>
+  <div class="legend"><span><i class="sw d-old"></i>D-053 fit (used until now)</span><span><i class="sw d-new"></i>Form A + place types fit (now)</span></div>
+  <svg viewBox="0 0 640 368" class="chart" role="img" aria-label="change in log α, low to high end of the parameter's range"><line x1="228.6" x2="228.6" y1="2" y2="336" class="grid"/><text x="228.6" y="350" class="tick" text-anchor="middle">-0.07</text><line x1="321.8" x2="321.8" y1="2" y2="336" class="grid"/><text x="321.8" y="350" class="tick" text-anchor="middle">-0.04</text><line x1="415.0" x2="415.0" y1="2" y2="336" class="zero"/><text x="415.0" y="350" class="tick" text-anchor="middle">+0.00</text><line x1="508.2" x2="508.2" y1="2" y2="336" class="grid"/><text x="508.2" y="350" class="tick" text-anchor="middle">+0.04</text><line x1="601.4" x2="601.4" y1="2" y2="336" class="grid"/><text x="601.4" y="350" class="tick" text-anchor="middle">+0.07</text><text x="200" y="18" class="lab" text-anchor="end">Home-equity elasticity</text><circle cx="247.0" cy="14" r="5" class="d-old"/><circle cx="228.6" cy="14" r="5" class="d-new"/><text x="200" y="40" class="lab" text-anchor="end">Mortgage-rate semi-elasticity</text><circle cx="342.8" cy="36" r="5" class="d-old"/><circle cx="364.0" cy="36" r="5" class="d-new"/><text x="200" y="62" class="lab" text-anchor="end">Hard cost per sq ft</text><circle cx="483.2" cy="58" r="5" class="d-old"/><circle cx="449.3" cy="58" r="5" class="d-new"/><text x="200" y="84" class="lab" text-anchor="end">Feasibility spread</text><circle cx="390.8" cy="80" r="5" class="d-old"/><circle cx="443.6" cy="80" r="5" class="d-new"/><text x="200" y="106" class="lab" text-anchor="end">Cap rate</text><circle cx="459.0" cy="102" r="5" class="d-old"/><circle cx="437.2" cy="102" r="5" class="d-new"/><text x="200" y="128" class="lab" text-anchor="end">ADU size</text><circle cx="455.3" cy="124" r="5" class="d-old"/><circle cx="435.4" cy="124" r="5" class="d-new"/><text x="200" y="150" class="lab" text-anchor="end">ADU rent ÷ median rent</text><circle cx="382.5" cy="146" r="5" class="d-old"/><circle cx="398.5" cy="146" r="5" class="d-new"/><text x="200" y="172" class="lab" text-anchor="end">ADU hard-cost premium</text><circle cx="443.1" cy="168" r="5" class="d-old"/><circle cx="429.2" cy="168" r="5" class="d-new"/><text x="200" y="194" class="lab" text-anchor="end">Operating expense share</text><circle cx="440.0" cy="190" r="5" class="d-old"/><circle cx="427.7" cy="190" r="5" class="d-new"/><text x="200" y="216" class="lab" text-anchor="end">ADU margin</text><circle cx="429.7" cy="212" r="5" class="d-old"/><circle cx="422.4" cy="212" r="5" class="d-new"/><text x="200" y="238" class="lab" text-anchor="end">Soft-cost share</text><circle cx="428.5" cy="234" r="5" class="d-old"/><circle cx="421.8" cy="234" r="5" class="d-new"/><text x="200" y="260" class="lab" text-anchor="end">Rental vacancy</text><circle cx="419.2" cy="256" r="5" class="d-old"/><circle cx="417.2" cy="256" r="5" class="d-new"/><text x="200" y="282" class="lab" text-anchor="end">Build time</text><circle cx="417.5" cy="278" r="5" class="d-old"/><circle cx="416.3" cy="278" r="5" class="d-new"/><text x="200" y="304" class="lab" text-anchor="end">Construction loan rate</text><circle cx="416.3" cy="300" r="5" class="d-old"/><circle cx="415.7" cy="300" r="5" class="d-new"/><text x="200" y="326" class="lab" text-anchor="end">Average loan draw</text><circle cx="416.2" cy="322" r="5" class="d-old"/><circle cx="415.6" cy="322" r="5" class="d-new"/><text x="620" y="364" class="tick" text-anchor="end">change in log α, low to high end of the parameter's range</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>Statewide totals, before and after the new slopes</h2>
+  <div class="scroll"><table><thead><tr><th>State</th><th>2027–2031</th><th>P10</th><th></th><th>P50</th><th></th><th>P90</th><th></th></tr></thead><tbody><tr><td>Minnesota</td><td>Additional homes</td><td class='num'>318 → 309</td><td class='num down'>-2.8%</td><td class='num'>634 → 632</td><td class='num '>-0.3%</td><td class='num'>1,463 → 1,471</td><td class='num up'>+0.5%</td></tr><tr><td></td><td>Current-rules ADUs</td><td class='num'>454 → 453</td><td class='num '>-0.2%</td><td class='num'>850 → 861</td><td class='num up'>+1.3%</td><td class='num'>2,098 → 2,215</td><td class='num up'>+5.6%</td></tr><tr><td>North Carolina</td><td>Additional homes</td><td class='num'>252 → 247</td><td class='num down'>-2.0%</td><td class='num'>575 → 566</td><td class='num down'>-1.6%</td><td class='num'>1,516 → 1,514</td><td class='num '>-0.1%</td></tr><tr><td></td><td>Current-rules ADUs</td><td class='num'>2,255 → 2,327</td><td class='num up'>+3.2%</td><td class='num'>3,886 → 4,034</td><td class='num up'>+3.8%</td><td class='num'>9,691 → 10,493</td><td class='num up'>+8.3%</td></tr><tr><td>Ohio</td><td>Additional homes</td><td class='num'>149 → 150</td><td class='num up'>+0.7%</td><td class='num'>422 → 424</td><td class='num '>+0.4%</td><td class='num'>1,901 → 1,793</td><td class='num down'>-5.7%</td></tr><tr><td></td><td>Current-rules ADUs</td><td class='num'>234 → 220</td><td class='num down'>-5.6%</td><td class='num'>581 → 599</td><td class='num up'>+3.1%</td><td class='num'>3,179 → 2,986</td><td class='num down'>-6.0%</td></tr><tr><td>Texas</td><td>Additional homes</td><td class='num'>1,925 → 1,896</td><td class='num down'>-1.5%</td><td class='num'>4,809 → 4,645</td><td class='num down'>-3.4%</td><td class='num'>13,788 → 13,291</td><td class='num down'>-3.6%</td></tr><tr><td></td><td>Current-rules ADUs</td><td class='num'>2,042 → 2,022</td><td class='num down'>-1.0%</td><td class='num'>4,391 → 4,262</td><td class='num down'>-2.9%</td><td class='num'>12,785 → 14,304</td><td class='num up'>+11.9%</td></tr><tr><td>Oregon</td><td>Additional homes</td><td class='num'>10 → 12</td><td class='num up'>+9.9%</td><td class='num'>29 → 30</td><td class='num up'>+2.9%</td><td class='num'>103 → 104</td><td class='num up'>+1.1%</td></tr><tr><td></td><td>Current-rules ADUs</td><td class='num'>2,832 → 2,855</td><td class='num up'>+0.8%</td><td class='num'>3,956 → 4,002</td><td class='num up'>+1.1%</td><td class='num'>7,296 → 6,985</td><td class='num down'>-4.3%</td></tr></tbody></table></div>
+  <p class="note">Same engine, inputs, draws (1,000) and seed; only adu_anchor.yaml differs. St. Paul (V5, still blind) is left out.</p>
+</section>
+
+<footer>
+  <div>Slopes: <code>scripts/dev/adu_types_slopes.py</code>, central ± 10% of each range, θ, α and the core term refit at m_o 1.0, m_x 0.4; central refit reproduces D-088 (θ 0.4476 per 1,000, α 1.550, core +1.199). Observed information: log-SE θ 0.191, α 0.239, correlation 0.115.</div>
+  <div>Sources: <code>reports/adu-types-slopes/</code>, on branch <code>ws/adu-types-slopes</code>. Run offline; nothing unblinded.</div>
+</footer>
+</main>

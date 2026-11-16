@@ -10,7 +10,9 @@ the start of year 1; `baseline.window`):
     Handbook rules  h_hb(t)  = max(c × h_m × ramp(a + t) + (1 − c) × h_m × ramp(t), observed ADU rate)
 
 - **h_m**, the place's mature ADU hazard (`model.hazard.adu_mature_hazard`), with each simulation draw widened
-  where the place lies outside the calibration range (`hazard.widen`).
+  where the place lies outside the calibration range (`hazard.widen`), times the place-type multiplier
+  (D-088, D-089; `type_log_multipliers`): exp(β_core) for a core city, a draw from the town prior for a town,
+  1 for a suburb (the type the anchor θ describes) or a place with no `place_type`.
 - **c, how close current local rules already are to the Handbook** (`current_rules`): 1 when the coded ADU
   rule in force at the origin allows a detached ADU of 600+ sq ft by right with no owner-occupancy or parking
   requirement; `adu_partial_rule_share` when ADUs are allowed with any of those restrictions; 0 when no ADU
@@ -22,6 +24,12 @@ the start of year 1; `baseline.window`):
   `adu_observed_years` years ending at the data origin (`observed_per_year`; a held-out place's years end
   before its holdout). It is a floor on the current-rules hazard: ADUs a place
   already builds are in its baseline and are never counted as added (additionality, MS-10).
+- **Own counts with drift** (D-091, adopted 2026-11-15; D-093; `adu_own_rate_drift`, 0 turns it off): where a
+  place has an observed ADU rate, its own counts set the no-reform hazard instead, in the lead years too:
+  persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z) with σ
+  `adu_drift_sigma` (`own_rate_draws`). The Handbook hazard is that rate times the mechanism's ratio
+  h_hb ÷ h_cur above, or plus the mechanism's added hazard where h_cur is 0 (`own_rate_paths`). The ratio
+  has not been checked within ×2 on held-out data. Places with no observed rate keep the mechanism.
 
 Each year the pool of parcels without an ADU shrinks, separately under each set of rules:
 gross ADUs(t) = R(t − 1) × h(t), R(t) = R(t − 1) − gross ADUs(t), R(0) = eligible parcels. So a parcel gets at
@@ -34,11 +42,13 @@ added or reported.
 
 Every result is a range: P10/P50/P90 and the mean over `adu_simulation_draws` draws (`draw_params`, D-030):
 judgment parameters triangular(low, central, high); the fitted anchor and place-effect variance lognormal
-around their estimates, shifted with the judgment parameters they were fitted at; one place multiplier per
-place; extrapolation noise shared across places (`extrapolation_noise`). The mortgage-rate stress range is a
-sensitivity (`params=`), not part of the forecast range. Numerator (units) and denominator (eligible parcels)
-stay in separate columns. Nothing is fitted here: the anchor comes from D-019 fit 3
-(`scripts/dev/calibrate_adu.py`), and observed local ADUs enter only as the additionality floor.
+around their estimates, shifted with the judgment parameters they were fitted at; the core-city term and the
+town prior; one place multiplier per place; extrapolation noise shared across places (`extrapolation_noise`).
+The mortgage-rate stress range is a sensitivity (`params=`), not part of the forecast range. Numerator (units)
+and denominator (eligible parcels) stay in separate columns. Nothing is fitted here: the anchor, place-effect
+variance, rule shares and core-city term come from D-088's Form A + place types fit
+(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter as the no-reform rate with drift (D-093),
+or as the additionality floor with the switch off.
 """
 
 from __future__ import annotations
@@ -141,9 +151,113 @@ def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) ->
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
 
 
+GRID_FILE = "adu_partial_share_grid.csv"
+SHARE_DRAWS = (
+    "adu_partial_share_draws"  # 0 fixed; 1 the grid's weights; 2 the fold maxima; 3 all at the set m_x
+)
+CORE_SHIFT = "adu_types_core_shift"
+
+
+def partial_share_grid() -> pd.DataFrame:
+    """D-097: config/params/adu_partial_share_grid.csv, A + place types refitted at each m_x on the 0.1 grid
+    (m_x, θ̂, α̂, β̂_core, log-likelihood, weight, weight_fold_max)."""
+    return pd.read_csv(CONFIG_DIR / "params" / GRID_FILE)
+
+
+def apply_partial_share_grid(
+    sets: list[dict[str, float]], grid: pd.DataFrame, mode: int, seed: int, central_mx: float
+) -> list[dict[str, float]]:
+    """D-097: one m_x per draw, with θ, α and the core term moved to that grid row's refit.
+
+    The draw's own lognormal spread and judgment shifts stay: θ_d × θ̂(m) ÷ θ̂(m̂), α_d × α̂(m) ÷ α̂(m̂), and the
+    core term shifted by β̂(m) − β̂(m̂) (`adu_types_core_shift`), m̂ the configured central m_x. `mode` 1 draws m
+    from `weight`, 2 from `weight_fold_max`, 3 puts every draw at the set's own `adu_partial_rule_share`.
+    Own stream: (seed, 97).
+
+    By hand: grid rows m 0.4 (θ 2, α 1, β 1) and 0.7 (θ 1, α 2, β 2), central 0.7, mode 3 with a set at
+    m_x 0.4 and θ 3: θ 3 × 2 / 1 = 6, α × 0.5, core shift −1."""
+    g = grid.set_index("m_x")
+    c = g.loc[round(central_mx, 1)]
+    if mode == 3:
+        ms = np.array([round(p["adu_partial_rule_share"], 1) for p in sets])
+    else:
+        w = g["weight" if mode == 1 else "weight_fold_max"].to_numpy(dtype=float)
+        ms = np.random.default_rng([seed, 97]).choice(g.index.to_numpy(), size=len(sets), p=w / w.sum())
+    out = []
+    for p, m in zip(sets, ms, strict=True):
+        r = g.loc[m]
+        q = dict(p)
+        q["adu_partial_rule_share"] = float(m)
+        q["adu_mature_hazard_ref"] = p["adu_mature_hazard_ref"] * r["theta"] / c["theta"]
+        q["adu_place_effect_variance"] = p["adu_place_effect_variance"] * r["alpha"] / c["alpha"]
+        q[CORE_SHIFT] = float(r["core"] - c["core"])
+        out.append(q)
+    return out
+
+
 def anchor_terms() -> dict[str, float]:
-    """config/params/adu_anchor.yaml: the anchor's observed-information terms and slopes (D-030)."""
+    """config/params/adu_anchor.yaml: the anchor's observed-information terms and judgment slopes (D-030),
+    for the Form A + place types fit (D-088; `scripts/dev/adu_types_slopes.py`)."""
     return {k: s.value for k, s in load_params("adu_anchor").items()}
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Place types (D-088, D-089)
+# ---------------------------------------------------------------------------------------------------------
+
+TYPE_FILE = "adu_place_types"
+CORE, TOWN = "core", "town"
+
+
+def type_terms(spec: Mapping[str, float] | None = None) -> dict[str, float]:
+    """The core-city term's estimate and SE, and the town prior's SD, from config/params/adu_place_types.yaml
+    (`spec` replaces the file: keys as there, each a value or a (value, low, high) tuple).
+    se = (high − low) / (2 × 1.645). By hand: 1.199 (0.546-1.898) -> se 1.352 / 3.2897 = 0.4110."""
+    if spec is None:
+        p = load_params(TYPE_FILE)
+        c = p["adu_types_core_log_multiplier"]
+        core = (c.value, c.low, c.high)
+        town = p["adu_types_town_prior_sd"].value
+    else:
+        core = spec["adu_types_core_log_multiplier"]
+        core = tuple(core) if isinstance(core, (tuple, list)) else (core, core, core)
+        town = spec["adu_types_town_prior_sd"]
+    return {"core": float(core[0]), "core_se": (core[2] - core[1]) / (2 * Z_90), "town_sd": float(town)}
+
+
+def central_type_log_multiplier(types, spec: Mapping[str, float] | None = None) -> np.ndarray:
+    """Each place's log multiplier at central values: β̂_core for a core city, 0 otherwise (the town prior's
+    centre is the suburb rate)."""
+    tt = type_terms(spec)
+    types = pd.Series(types, dtype=object).reset_index(drop=True)
+    return np.where(types == CORE, tt["core"], 0.0)
+
+
+def type_log_multipliers(types, states, n: int, seed: int, spec=None) -> np.ndarray:
+    """Log hazard multiplier per draw and place (draws × places), D-088 and D-089:
+
+    - core city: β_d ~ N(β̂_core, se), one per draw, shared by every core city;
+    - town: s × z_ds, z standard normal, one per draw and state (shared by the state's towns), s the town
+      prior's SD;
+    - suburb, or a place with no type: 0.
+
+    By hand with se and s at 0: a core city gets β̂ in every draw, a town 0.
+    """
+    tt = type_terms(spec)
+    types = pd.Series(types, dtype=object).reset_index(drop=True)
+    states = pd.Series(states, dtype=object).reset_index(drop=True).fillna("")
+    rng = np.random.default_rng(seed)
+    core = rng.normal(tt["core"], tt["core_se"], size=n)
+    out = np.zeros((n, len(types)))
+    is_core = (types == CORE).to_numpy()
+    out[:, is_core] = core[:, None]
+    is_town = (types == TOWN).to_numpy()
+    if is_town.any():
+        names = sorted(states[is_town].unique())
+        z = rng.standard_normal((n, len(names)))
+        col = states[is_town].map({st: i for i, st in enumerate(names)}).to_numpy()
+        out[:, is_town] = tt["town_sd"] * z[:, col]
+    return out
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -684,22 +798,52 @@ class Paths:
         return self.handbook - self.current
 
 
-def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True, lead=0):
+def own_rate_paths(h_own, h_cur_mech, h_hb_mech):
+    """D-091 (adopted 2026-11-15): the no-reform and Handbook hazards where a place's own counts set the
+    no-reform rate. `h_own` is that rate (persistence × drift; NaN: no own counts, keep the mechanism).
+
+    - no reform: h_own;
+    - Handbook: h_own × (h_hb_mech ÷ h_cur_mech), the mechanism's ratio, where h_cur_mech > 0; where it is 0
+      (no rule allows ADUs and nothing was observed) the ratio is undefined and the mechanism's added hazard
+      h_hb_mech − h_cur_mech is added instead.
+
+    Both capped at 1. By hand: h_own 0.01, mechanism 0.02 → 0.05 gives 0.01 → 0.025; h_own 0.001, mechanism
+    0 → 0.03 gives 0.001 → 0.031; h_own NaN gives the mechanism's 0.02 → 0.05.
+    """
+    own = np.asarray(h_own, dtype=float)
+    cur_m, hb_m = np.asarray(h_cur_mech, dtype=float), np.asarray(h_hb_mech, dtype=float)
+    use = np.isfinite(own)
+    o = np.where(use, own, 0.0)
+    pos = cur_m > 0
+    ratio_hb = o * np.divide(hb_m, cur_m, out=np.ones_like(cur_m), where=pos)
+    hb_own = np.where(pos, ratio_hb, o + (hb_m - cur_m))
+    cur = np.where(use, np.minimum(o, 1.0), cur_m)
+    hb = np.where(use, np.minimum(hb_own, 1.0), hb_m)
+    return cur, hb
+
+
+def pool_paths(
+    eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True, lead=0, h_own=None
+):
     """Gross ADUs per year under current and Handbook rules, depleting the pool of parcels without an ADU.
 
     `rule_age` is the current rule's age in years at the origin (NaN: no rule). `ramp_params` gives the ramp
     (`hazard.adu_ramp`; D-048: 1 every year). With `enabled=False` the Handbook path equals the current-rules
     path, so nothing is added. `lead` years (D-061) run first under current rules only, on one shared pool,
     and are not returned: the window's year t has rule age a + lead + t and Handbook ramp(t).
+    `h_own` (D-091; None or NaN per place: off) replaces the no-reform hazard, in the lead years too, and
+    scales the Handbook hazard by the mechanism's ratio (`own_rate_paths`).
     """
     e = np.asarray(eligible, dtype=float)
     hm = np.asarray(h_mature, dtype=float)
     floor = np.nan_to_num(np.asarray(h_floor, dtype=float), nan=0.0)
     c = np.asarray(rule_share, dtype=float)
     age = np.nan_to_num(np.asarray(rule_age, dtype=float), nan=0.0)
+    own = np.full(len(e), np.nan) if h_own is None else np.asarray(h_own, dtype=float)
     r = e.copy()
     for s in range(1, int(lead) + 1):  # lead years: current rules only, nothing reported (D-061)
         h_lead = np.minimum(np.maximum(c * hm * hazard.adu_ramp(age + s, ramp_params), floor), 1.0)
+        h_lead, _ = own_rate_paths(own, h_lead, h_lead)
         r = r - r * h_lead
     age = age + int(lead)
     r_hb, r_cur = r.copy(), r.copy()
@@ -712,9 +856,40 @@ def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, h
             h_hb = np.minimum(np.maximum(h_new, floor), 1.0)
         else:
             h_hb = h_cur
+        h_cur, h_hb = own_rate_paths(own, h_cur, h_hb)
         hb[:, i], cur[:, i] = r_hb * h_hb, r_cur * h_cur
         r_hb, r_cur = r_hb - hb[:, i], r_cur - cur[:, i]
     return Paths(hb, cur)
+
+
+def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed) -> np.ndarray:
+    """D-091 (adopted 2026-11-15): each place's no-reform ADU rate per eligible parcel a year from its own
+    counts, persistence × drift (draws × places; NaN where the place has no observed rate).
+
+    - Persistence (D-090 F0): rate ~ Gamma(Y + 0.5, E), Y = observed_rate × eligible × n_years (the counts
+      the observed rate came from, undercount-scaled as drawn), E = eligible × n_years lot-years.
+    - Drift: × d = exp(σ z), z standard normal, one per place and draw for the whole window (median 1).
+
+    `observed_rate` is one row (places) or one row per draw (`observed_rate_draws`). Own stream: `seed`.
+    By hand: rate 0.01, 100 lots, 3 years -> Y 3, E 300, posterior mean 3.5 / 300 = 0.01167 before drift.
+    """
+    obs = np.atleast_2d(np.asarray(observed_rate, dtype=float))
+    obs = np.broadcast_to(obs, (n, obs.shape[1]))
+    e = np.asarray(eligible, dtype=float)
+    lot_years = np.where(e > 0, e * n_years, np.nan)
+    y = np.nan_to_num(obs * lot_years, nan=0.0)
+    rng = np.random.default_rng(seed)
+    rate = rng.standard_gamma(y + 0.5) / lot_years
+    drift = np.exp(sigma * rng.standard_normal(obs.shape))
+    return np.where(np.isfinite(obs) & np.isfinite(lot_years), rate * drift, np.nan)
+
+
+def own_rate_central(observed_rate, eligible, n_years) -> np.ndarray:
+    """The persistence posterior mean (Y + 0.5) / E at the median drift (1); NaN without an observed rate."""
+    e = np.asarray(eligible, dtype=float)
+    lot_years = np.where(e > 0, e * n_years, np.nan)
+    obs = np.asarray(observed_rate, dtype=float)
+    return (obs * lot_years + 0.5) / lot_years
 
 
 def with_rule_probs(places: pd.DataFrame, params: Mapping[str, float]) -> pd.DataFrame:
@@ -732,11 +907,16 @@ def with_rule_probs(places: pd.DataFrame, params: Mapping[str, float]) -> pd.Dat
 
 
 def central_path(
-    places: pd.DataFrame, horizon: int | None = None, enabled: bool = True, params: dict | None = None
+    places: pd.DataFrame,
+    horizon: int | None = None,
+    enabled: bool = True,
+    params: dict | None = None,
+    types_spec: Mapping[str, float] | None = None,
 ) -> dict[str, np.ndarray]:
     """The scenario at central parameter values, no widening: arrays (places × years) for each outcome.
 
-    For hand checks and the worked example; `run` gives the ranges. `params` overrides central values.
+    For hand checks and the worked example; `run` gives the ranges. `params` overrides central values;
+    `types_spec` replaces adu_place_types.yaml (`type_terms`).
     """
     p = central_params() | (params or {})
     places = with_rule_probs(places, p)
@@ -745,6 +925,8 @@ def central_path(
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
     rate = given.fillna(p["mortgage_rate_forecast"]).to_numpy(dtype=float)
     hm = hazard.adu_mature_hazard(places["rent"], places["home_value"], rate, p)
+    if "place_type" in places:  # D-088: core cities at exp(β̂_core); towns at the suburb rate (prior centre)
+        hm = np.minimum(hm * np.exp(central_type_log_multiplier(places["place_type"], types_spec)), 1.0)
     c = expected_rule_share(places, p)  # E[c] over the rule types (D-022)
     paths = pool_paths(
         places["eligible_parcels"],
@@ -756,6 +938,9 @@ def central_path(
         horizon,
         enabled,
         lead,
+        own_rate_central(places["observed_rate"], places["eligible_parcels"], p["adu_observed_years"])
+        if p["adu_own_rate_drift"]
+        else None,
     )
     homes = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
     return {
@@ -832,6 +1017,7 @@ def run(
     states_spec: Mapping[str, float] | None = None,
     eligible_proxy: bool = False,
     return_draws: bool = False,
+    types_spec: Mapping[str, float] | None = None,
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
@@ -847,10 +1033,13 @@ def run(
     config/params/adu_anchor.yaml (tests). With a `state` column, places in a state outside the fit that
     estimated τ also get a state multiplier exp(τ_d z_ds), shared by the state's places, with τ_d drawn per
     draw (`state_noise`, config/params/adu_state_effect.yaml, D-044); `states_spec` replaces that file
-    (tests). With `eligible_proxy` (D-056), a state whose every place has `denominator_source ==
-    "acs_sf_fallback"` has its eligible parcels multiplied in each draw by eligible_proxy_scale ×
-    exp(eligible_proxy_sd × z), one z per state per draw (`eligible_proxy.multipliers`, its own random
-    stream); any state with a parcel-based place is untouched, and with the flag off nothing changes.
+    (tests). With a `place_type` column (core, suburb or town; `places_from_store` adds it), each draw
+    multiplies the hazard by the place-type multiplier (`type_log_multipliers`, its own random stream);
+    `types_spec` replaces config/params/adu_place_types.yaml (tests). With `eligible_proxy` (D-056), a state
+    whose every place has `denominator_source == "acs_sf_fallback"` has its eligible parcels multiplied in
+    each draw by eligible_proxy_scale × exp(eligible_proxy_sd × z), one z per state per draw
+    (`eligible_proxy.multipliers`, its own random stream); any state with a parcel-based place is untouched,
+    and with the flag off nothing changes.
     With `return_draws`, a last element is added: per-draw arrays for the results bundle (`model/results.py`):
     `eligible`, `pencil` and `rule_share` (draws x places; pencil = the pro forma's feasible share F(PCR) the
     hazard uses; rule_share = c, how close that draw's current rules are to the Handbook),
@@ -871,6 +1060,12 @@ def run(
     n = int(draws or central["adu_simulation_draws"])
     seed = int(central["adu_simulation_seed"])
     sets = [p | dict(params or {}) for p in draw_params(n, seed, anchor)]
+    share_mode = int(central.get(SHARE_DRAWS, 0))
+    if share_mode:  # D-097: m_x drawn, θ, α and the core term refitted at it
+        sets = apply_partial_share_grid(
+            sets, partial_share_grid(), share_mode, seed, specs()["adu_partial_rule_share"].value
+        )
+    core_shift = np.array([p.get(CORE_SHIFT, 0.0) for p in sets])
     rule_rng = np.random.default_rng(seed + 2)
     drawn = np.zeros((n, len(places)))
     lead, horizon, first = baseline.window(origin)
@@ -878,6 +1073,11 @@ def run(
     grid, probs, fitted = state_effect(states_spec)
     st = places["state"] if "state" in places else pd.Series(np.nan, index=places.index)
     z_state = state_noise(st, fitted, grid, probs, n, seed + 4)
+    ptype = (
+        places["place_type"] if "place_type" in places else pd.Series(None, index=places.index, dtype=object)
+    )
+    log_type = type_log_multipliers(ptype, st, n, seed + 7, types_spec)  # D-088, D-089: own stream
+    log_type = log_type + core_shift[:, None] * (ptype == CORE).to_numpy()[None, :]  # D-097 (0 when off)
     var_u = np.array([p["adu_place_effect_variance"] for p in sets])[:, None]
     gamma = np.random.default_rng(seed + 3).standard_gamma(
         1 / np.maximum(var_u, 1e-12), size=(n, len(places))
@@ -885,6 +1085,18 @@ def run(
     u_all = np.where(var_u > 0, gamma * var_u, 1.0)
     obs_d = observed_rate_draws(places, n, seed + 6)  # D-078: each draw's flag undercount k, own stream
     e = places["eligible_parcels"].to_numpy(dtype=float)
+    own = (  # D-091: own counts × drift as the no-reform rate, own stream
+        own_rate_draws(
+            places["observed_rate"].to_numpy(dtype=float)[None, :] if obs_d is None else obs_d,
+            e,
+            central["adu_observed_years"],
+            central["adu_drift_sigma"],
+            n,
+            seed + 8,
+        )
+        if central["adu_own_rate_drift"]
+        else np.full((n, len(places)), np.nan)
+    )
     e_mult = (
         eligible_proxy_step.multipliers(places, n, np.random.default_rng(seed + 5))
         if eligible_proxy
@@ -911,7 +1123,7 @@ def run(
         hm = hazard.adu_mature_hazard(*args, p)
         dist_d = hazard.calibration_distance(*args, p)["total"]
         hm = hazard.widen_unseen_state(hm, dist_d, z[d], z_state[d], 1.0, "both", p)
-        hm = np.clip(hm * u_all[d], 0.0, 1.0)
+        hm = np.clip(hm * np.exp(log_type[d]) * u_all[d], 0.0, 1.0)
         c, idx, sampled = draw_rule_share(places, p, rule_rng)
         drawn[d] = idx
         share[d] = c
@@ -925,6 +1137,7 @@ def run(
             horizon,
             enabled,
             lead,
+            own[d],
         )
         out["handbook"][d], out["current"][d], out["added"][d] = paths.handbook, paths.current, paths.added
         out["homes"][d] = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
@@ -938,11 +1151,18 @@ def run(
         places.drop(columns=["observed_adu_by_k_row"], errors="ignore")
         .assign(
             mortgage_rate_central=args[2],
-            mature_hazard_central=hazard.adu_mature_hazard(*args, central),
+            mature_hazard_central=np.minimum(
+                hazard.adu_mature_hazard(*args, central)
+                * np.exp(central_type_log_multiplier(ptype, types_spec)),
+                1.0,
+            ),
             price_to_cost_central=hazard.adu_price_to_cost(places["rent"], params=central),
             calibration_distance=dist["total"],
             outside_calibration=dist["total"] > 0,
             outside_fit_states=(st.notna() & ~st.isin(fitted)).to_numpy(),
+            no_reform_basis=np.where(
+                np.isfinite(own).any(axis=0) if n else False, "own ADU counts with drift", "model"
+            ),
             draws_from_unknown_rule=np.where(sampled, 1.0, 0.0) if n else 0.0,
             drawn_none=(drawn == 0).mean(axis=0),
             drawn_partial=((drawn >= 1) & (drawn <= 3)).mean(axis=0),
@@ -1288,6 +1508,12 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     per_year = observed_per_year(counts, origin, n_years, stops)
     places["observed_adu_per_year"] = places["geoid"].map(per_year)
     places["observed_rate"] = places["observed_adu_per_year"] / places["eligible_parcels"]
+    # D-088 place type from national data (OMB metro areas, ACS 2011-15 housing units); a jurisdiction the
+    # type table doesn't know is a town (no metro area known), as D-089 read it
+    from lotline.model import adu_types
+
+    types = adu_types.jurisdiction_types(store, state)
+    places["place_type"] = places["geoid"].astype(str).map(types).fillna(TOWN)
     if k_adj is not None:
         terms = observed_terms_by_k_row(counts, origin, n_years, stops)
         places["observed_adu_by_k_row"] = places["geoid"].map(terms)

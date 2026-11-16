@@ -1,0 +1,67 @@
+MN 1050 places
+NC 453 places
+OH 945 places
+TX 1003 places
+OR 168 places
+state    period            outcome    p10     p50     p90    mean  own_rate_drift
+   MN 2027-2031      handbook_adus 1091.0  2089.0  4715.0  2791.0               0
+   MN 2027-2031 current_rules_adus  455.0   882.0  2278.0  1245.0               0
+   MN 2027-2031  adu_permits_added  566.0  1149.0  2692.0  1546.0               0
+   MN 2027-2031   additional_homes  303.0   640.0  1438.0   849.0               0
+   MN 2027-2031      handbook_adus 1220.0  1894.0  3610.0  2371.0               1
+   MN 2027-2031 current_rules_adus  520.0   704.0  1179.0   808.0               1
+   MN 2027-2031  adu_permits_added  604.0  1181.0  2656.0  1563.0               1
+   MN 2027-2031   additional_homes  323.0   646.0  1445.0   860.0               1
+   NC 2027-2031      handbook_adus 2943.0  5090.0 12852.0  7005.0               0
+   NC 2027-2031 current_rules_adus 2359.0  4123.0 10674.0  5603.0               0
+   NC 2027-2031  adu_permits_added  433.0   955.0  2399.0  1401.0               0
+   NC 2027-2031   additional_homes  235.0   515.0  1355.0   770.0               0
+   NC 2027-2031      handbook_adus 2758.0  4478.0  8242.0  5567.0               1
+   NC 2027-2031 current_rules_adus 2088.0  3451.0  6258.0  4169.0               1
+   NC 2027-2031  adu_permits_added  434.0   944.0  2422.0  1398.0               1
+   NC 2027-2031   additional_homes  240.0   511.0  1370.0   767.0               1
+   OH 2027-2031      handbook_adus  535.0  1412.0  6582.0  3339.0               0
+   OH 2027-2031 current_rules_adus  221.0   588.0  2939.0  1556.0               0
+   OH 2027-2031  adu_permits_added  276.0   777.0  3292.0  1783.0               0
+   OH 2027-2031   additional_homes  151.0   421.0  1816.0   982.0               0
+   OH 2027-2031      handbook_adus  573.0  1334.0  4985.0  2775.0               1
+   OH 2027-2031 current_rules_adus  217.0   476.0  1517.0   867.0               1
+   OH 2027-2031  adu_permits_added  288.0   841.0  3650.0  1908.0               1
+   OH 2027-2031   additional_homes  154.0   458.0  1991.0  1052.0               1
+   TX 2027-2031      handbook_adus 5903.0 13181.0 35923.0 19614.0               0
+   TX 2027-2031 current_rules_adus 2005.0  4042.0 13569.0  6751.0               0
+   TX 2027-2031  adu_permits_added 3620.0  8542.0 23596.0 12863.0               0
+   TX 2027-2031   additional_homes 1936.0  4713.0 13295.0  7067.0               0
+   TX 2027-2031      handbook_adus 6427.0 14285.0 42029.0 21116.0               1
+   TX 2027-2031 current_rules_adus 2038.0  4104.0 12179.0  6217.0               1
+   TX 2027-2031  adu_permits_added 3833.0  9474.0 30826.0 14899.0               1
+   TX 2027-2031   additional_homes 2011.0  5168.0 17020.0  8174.0               1
+   OR 2027-2031      handbook_adus 2900.0  4086.0  7082.0  4758.0               0
+   OR 2027-2031 current_rules_adus 2868.0  4011.0  7015.0  4691.0               0
+   OR 2027-2031  adu_permits_added   16.0    41.0   137.0    67.0               0
+   OR 2027-2031   additional_homes    9.0    22.0    76.0    37.0               0
+   OR 2027-2031      handbook_adus 2634.0  4334.0  7455.0  4833.0               1
+   OR 2027-2031 current_rules_adus 2573.0  4243.0  7382.0  4766.0               1
+   OR 2027-2031  adu_permits_added   16.0    41.0   137.0    67.0               1
+   OR 2027-2031   additional_homes    9.0    22.0    76.0    37.0               1
+          no_reform_basis  places  eligible_parcels  current_rules_adus_mean  adu_permits_added_mean state  own_rate_drift
+                    model     866          850413.0                    162.9                   571.7    MN               0
+own ADU counts with drift     184          784354.0                   1082.2                   973.8    MN               0
+                    model     866          850413.0                    162.9                   571.7    MN               1
+own ADU counts with drift     184          784354.0                    645.0                   991.7    MN               1
+                    model     430         2537049.4                   1666.3                  1306.7    NC               0
+own ADU counts with drift      23          702316.0                   3937.0                    94.6    NC               0
+                    model     430         2537049.4                   1666.3                  1306.7    NC               1
+own ADU counts with drift      23          702316.0                   2502.8                    90.8    NC               1
+                    model     929         2878710.0                    621.9                  1487.9    OH               0
+own ADU counts with drift      16          539033.0                    933.8                   295.0    OH               0
+                    model     929         2878710.0                    621.9                  1487.9    OH               1
+own ADU counts with drift      16          539033.0                    245.3                   419.7    OH               1
+                    model     997         6125981.0                   4528.6                  8748.7    TX               0
+own ADU counts with drift       6         1213361.0                   2222.2                  4114.7    TX               0
+                    model     997         6125981.0                   4528.6                  8748.7    TX               1
+own ADU counts with drift       6         1213361.0                   1688.1                  6150.1    TX               1
+                    model     164          902808.0                   1929.5                    67.4    OR               0
+own ADU counts with drift       4          261963.0                   2761.3                     0.0    OR               0
+                    model     164          902808.0                   1929.5                    67.4    OR               1
+own ADU counts with drift       4          261963.0                   2836.3                     0.0    OR               1

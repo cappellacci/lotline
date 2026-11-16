@@ -1,0 +1,84 @@
+{
+ "X1": {
+  "beta_full": -0.705629982511837,
+  "beta_min": -0.8306810174828587,
+  "beta_max": -0.5486273864228003,
+  "sign_kept": 57,
+  "p_below": 57,
+  "drops": 57,
+  "largest_shifts": [
+   {
+    "name": "Fridley city",
+    "state": "MN",
+    "beta": -0.5486273864228003,
+    "p": 0.044919829964594905
+   },
+   {
+    "name": "Hopkins city",
+    "state": "MN",
+    "beta": -0.8306810174828587,
+    "p": 0.004178390876862206
+   },
+   {
+    "name": "Orono city",
+    "state": "MN",
+    "beta": -0.8305561715895388,
+    "p": 0.003368136101749809
+   },
+   {
+    "name": "Dayton city",
+    "state": "MN",
+    "beta": -0.8188736595037126,
+    "p": 0.005766666054578769
+   },
+   {
+    "name": "Asheville city",
+    "state": "NC",
+    "beta": -0.6226334110953894,
+    "p": 0.017989164608080102
+   }
+  ],
+  "reading": "robust"
+ },
+ "X2": {
+  "beta_full": 0.5864145749101388,
+  "beta_min": 0.4276528789674444,
+  "beta_max": 0.7025816942602658,
+  "sign_kept": 57,
+  "p_below": 57,
+  "drops": 57,
+  "largest_shifts": [
+   {
+    "name": "Asheville city",
+    "state": "NC",
+    "beta": 0.4276528789674444,
+    "p": 0.07499699651114225
+   },
+   {
+    "name": "Burnsville city",
+    "state": "MN",
+    "beta": 0.7025816942602658,
+    "p": 0.004584380405233142
+   },
+   {
+    "name": "Bend city",
+    "state": "OR",
+    "beta": 0.6837266795193102,
+    "p": 0.00694414578457484
+   },
+   {
+    "name": "Portland city",
+    "state": "OR",
+    "beta": 0.682698440255215,
+    "p": 0.008728406224460973
+   },
+   {
+    "name": "Minneapolis city",
+    "state": "MN",
+    "beta": 0.6826689681376799,
+    "p": 0.011190389558887284
+   }
+  ],
+  "reading": "robust"
+ }
+}
