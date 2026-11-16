@@ -1,0 +1,44 @@
+geoid,name,state,franklin,none_coded,observed,p10,p50,p90
+2707966,Brooklyn Park city,MN,False,True,3.0,0.0,0.0,5.0
+2713114,Coon Rapids city,MN,False,True,9.0,0.0,1.0,9.0
+2754880,Rochester city,MN,False,True,20.0,0.0,0.0,2.0
+3906278,Bexley city,OH,True,False,0.0,0.0,0.0,3.0
+3918000,Columbus city,OH,True,False,355.0,1.0,118.0,997.1000000000022
+3922694,Dublin city,OH,True,False,2.0,0.0,1.0,9.0
+3929106,Gahanna city,OH,True,False,2.0,0.0,1.0,7.0
+3935476,Hilliard city,OH,True,False,8.0,0.0,0.0,6.0
+3953970,New Albany city,OH,True,False,0.0,0.0,0.0,4.0
+3966390,Reynoldsburg city,OH,True,False,5.0,0.0,52.0,461.0
+3979002,Upper Arlington city,OH,True,False,4.0,0.0,1.0,10.0
+3983342,Westerville city,OH,True,False,15.0,0.0,1.0,11.0
+3984742,Whitehall city,OH,True,False,0.0,0.0,0.0,1.0
+3986604,Worthington city,OH,True,False,0.0,0.0,0.0,2.0
+4801000,Abilene city,TX,False,True,307.0,0.0,37.0,320.0
+4801924,Allen city,TX,False,True,11.0,0.0,0.0,2.0
+4803000,Amarillo city,TX,False,True,51.0,0.0,13.0,112.0
+4804000,Arlington city,TX,False,True,93.0,0.0,4.0,34.0
+4810768,Brownsville city,TX,False,True,42.0,0.0,52.0,463.0
+4813024,Carrollton city,TX,False,True,0.0,0.0,0.0,2.0
+4815976,College Station city,TX,False,True,56.0,0.0,31.0,265.0
+4817000,Corpus Christi city,TX,False,True,19.0,0.0,0.0,3.0
+4819000,Dallas city,TX,False,True,545.0,3.0,251.0,2162.3000000000065
+4822660,Edinburg city,TX,False,True,593.0,3.0,322.0,2839.0
+4827000,Fort Worth city,TX,False,True,958.0,1.0,111.0,971.0
+4827684,Frisco city,TX,False,True,6.0,0.0,0.0,2.0
+4829000,Garland city,TX,False,True,2.0,0.0,0.0,3.0
+4830464,Grand Prairie city,TX,False,True,20.0,0.0,0.0,3.0
+4837000,Irving city,TX,False,True,9.0,0.0,2.0,19.0
+4839148,Killeen city,TX,False,True,301.0,1.0,130.0,1179.0
+4841464,Laredo city,TX,False,True,110.0,1.0,72.0,630.0
+4845384,McAllen city,TX,False,True,661.0,0.0,39.0,345.0
+4845744,McKinney city,TX,False,True,5.0,0.0,41.0,364.0
+4847892,Mesquite city,TX,False,True,0.0,0.0,1.0,10.0
+4848072,Midland city,TX,False,True,0.0,0.0,0.0,2.0
+4853388,Odessa city,TX,False,True,1.0,0.0,6.0,58.0
+4858016,Plano city,TX,False,True,6.0,0.0,1.0,8.0
+4861796,Richardson city,TX,False,True,0.0,0.0,0.0,2.0
+4863500,Round Rock city,TX,False,True,15.0,0.0,36.0,314.0
+4865000,San Antonio city,TX,False,True,323.0,1.0,89.0,785.2000000000044
+4870808,Sugar Land city,TX,False,True,0.0,0.0,0.0,3.0
+4874144,Tyler city,TX,False,True,208.0,0.0,33.0,291.0
+4876000,Waco city,TX,False,True,173.0,0.0,57.0,500.0

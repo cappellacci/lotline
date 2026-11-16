@@ -1,0 +1,227 @@
+<title>Missing-middle project size</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.dots .lot { fill: var(--scenario-missing-middle); } .dots .day { fill: none; stroke: var(--brass); stroke-width: 2; }
+.dots .bar { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.key { display: flex; gap: 1.2rem; font-size: .85rem; color: var(--ink-muted); flex-wrap: wrap; }
+.key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: .35rem; vertical-align: -1px; }
+.key .lot { background: var(--scenario-missing-middle); } .key .day { border: 2px solid var(--brass); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · D-092 run 13, buildings per project · 15 Nov 2026</div>
+  <h1>Duplexes and fourplexes come in clusters</h1>
+  <p class="lede">In the city permit files, a third or more of 2–4 unit buildings come in projects of 3 or more: 34% grouped by lot, 42% grouped by day. Clustering multiplies a place's year-to-year variance by 12.8 (by lot) or 5.3 (by day), far over the pre-registered bar of 1.5. By the rule, the project-based model goes back to Ben. The pre-run guess, that most projects are one building, was wrong.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>12.8 / 5.3</b><span>variance inflation, by lot / by day (bar 1.5)</span></div>
+  <div class="tile"><b>34%</b><span>of buildings in projects of 3+ (by lot)</span></div>
+  <div class="tile"><b>~100–130</b><span>duplexes on one Austin parcel in three months (202 permits, some per side): the largest project</span></div>
+  <div class="tile"><b>1.0–1.1</b><span>Minneapolis, by lot: the one big city where nearly every project is one building</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Most cities are over the bar, and they differ a lot</h2>
+  <div class="scroll"><svg viewBox="0 0 680 406" class="chart dots" role="img" aria-label="Inflation by city"><line x1="130.0" x2="130.0" y1="16" y2="380" class="grid"/><text x="130.0" y="396" class="tick" text-anchor="middle">1</text><line x1="193.2" x2="193.2" y1="16" y2="380" class="bar"/><text x="193.2" y="396" class="tick" text-anchor="middle">1.5</text><line x1="238.0" x2="238.0" y1="16" y2="380" class="grid"/><text x="238.0" y="396" class="tick" text-anchor="middle">2</text><line x1="380.8" x2="380.8" y1="16" y2="380" class="grid"/><text x="380.8" y="396" class="tick" text-anchor="middle">5</text><line x1="488.8" x2="488.8" y1="16" y2="380" class="grid"/><text x="488.8" y="396" class="tick" text-anchor="middle">10</text><line x1="596.8" x2="596.8" y1="16" y2="380" class="grid"/><text x="596.8" y="396" class="tick" text-anchor="middle">20</text><text x="122" y="39.0" class="lab" text-anchor="end">Austin</text><circle cx="623.7" cy="35.0" r="5" class="lot"><title>Austin, same lot: 23.76 (1406 projects, 2640 buildings)</title></circle><circle cx="412.9" cy="35.0" r="5" class="day"><title>Austin, same day: 6.15 (1291 projects, 2669 buildings)</title></circle><text x="122" y="61.0" class="lab" text-anchor="end">College Station</text><circle cx="612.0" cy="57.0" r="5" class="lot"><title>College Station, same lot: 22.04 (222 projects, 507 buildings)</title></circle><circle cx="443.8" cy="57.0" r="5" class="day"><title>College Station, same day: 7.49 (190 projects, 515 buildings)</title></circle><text x="122" y="83.0" class="lab" text-anchor="end">Wilmington</text><circle cx="567.6" cy="79.0" r="5" class="lot"><title>Wilmington, same lot: 16.59 (120 projects, 309 buildings)</title></circle><circle cx="523.1" cy="79.0" r="5" class="day"><title>Wilmington, same day: 12.47 (135 projects, 359 buildings)</title></circle><text x="122" y="105.0" class="lab" text-anchor="end">Columbus</text><circle cx="508.0" cy="101.0" r="5" class="lot"><title>Columbus, same lot: 11.31 (426 projects, 877 buildings)</title></circle><circle cx="447.1" cy="101.0" r="5" class="day"><title>Columbus, same day: 7.65 (382 projects, 877 buildings)</title></circle><text x="122" y="127.0" class="lab" text-anchor="end">Dallas</text><circle cx="431.6" cy="123.0" r="5" class="day"><title>Dallas, same day: 6.93 (900 projects, 1667 buildings)</title></circle><text x="122" y="149.0" class="lab" text-anchor="end">Rochester MN</text><circle cx="402.9" cy="145.0" r="5" class="lot"><title>Rochester MN, same lot: 5.76 (21 projects, 42 buildings)</title></circle><circle cx="383.7" cy="145.0" r="5" class="day"><title>Rochester MN, same day: 5.10 (15 projects, 42 buildings)</title></circle><text x="122" y="171.0" class="lab" text-anchor="end">Durham</text><circle cx="395.1" cy="167.0" r="5" class="lot"><title>Durham, same lot: 5.48 (535 projects, 851 buildings)</title></circle><circle cx="294.2" cy="167.0" r="5" class="day"><title>Durham, same day: 2.87 (526 projects, 851 buildings)</title></circle><text x="122" y="193.0" class="lab" text-anchor="end">Greensboro</text><circle cx="360.5" cy="189.0" r="5" class="day"><title>Greensboro, same day: 4.39 (92 projects, 216 buildings)</title></circle><text x="122" y="215.0" class="lab" text-anchor="end">Raleigh</text><circle cx="325.2" cy="211.0" r="5" class="lot"><title>Raleigh, same lot: 3.50 (204 projects, 280 buildings)</title></circle><circle cx="290.4" cy="211.0" r="5" class="day"><title>Raleigh, same day: 2.80 (192 projects, 300 buildings)</title></circle><text x="122" y="237.0" class="lab" text-anchor="end">Bend</text><circle cx="313.2" cy="233.0" r="5" class="lot"><title>Bend, same lot: 3.24 (416 projects, 541 buildings)</title></circle><circle cx="265.0" cy="233.0" r="5" class="day"><title>Bend, same day: 2.38 (368 projects, 541 buildings)</title></circle><text x="122" y="259.0" class="lab" text-anchor="end">Cleveland</text><circle cx="177.7" cy="255.0" r="5" class="lot"><title>Cleveland, same lot: 1.36 (60 projects, 67 buildings)</title></circle><circle cx="263.0" cy="255.0" r="5" class="day"><title>Cleveland, same day: 2.35 (59 projects, 89 buildings)</title></circle><text x="122" y="281.0" class="lab" text-anchor="end">Chapel Hill</text><circle cx="251.2" cy="277.0" r="5" class="day"><title>Chapel Hill, same day: 2.18 (32 projects, 51 buildings)</title></circle><text x="122" y="303.0" class="lab" text-anchor="end">Minneapolis</text><circle cx="149.1" cy="299.0" r="5" class="lot"><title>Minneapolis, same lot: 1.13 (979 projects, 1042 buildings)</title></circle><circle cx="243.3" cy="299.0" r="5" class="day"><title>Minneapolis, same day: 2.07 (734 projects, 1044 buildings)</title></circle><text x="122" y="325.0" class="lab" text-anchor="end">Portland</text><circle cx="214.9" cy="321.0" r="5" class="lot"><title>Portland, same lot: 1.72 (340 projects, 431 buildings)</title></circle><circle cx="236.9" cy="321.0" r="5" class="day"><title>Portland, same day: 1.99 (321 projects, 432 buildings)</title></circle><text x="122" y="347.0" class="lab" text-anchor="end">Cincinnati</text><circle cx="183.6" cy="343.0" r="5" class="lot"><title>Cincinnati, same lot: 1.41 (66 projects, 78 buildings)</title></circle><circle cx="231.9" cy="343.0" r="5" class="day"><title>Cincinnati, same day: 1.92 (54 projects, 78 buildings)</title></circle><text x="122" y="369.0" class="lab" text-anchor="end">Medford</text><circle cx="215.2" cy="365.0" r="5" class="lot"><title>Medford, same lot: 1.73 (46 projects, 55 buildings)</title></circle><circle cx="178.3" cy="365.0" r="5" class="day"><title>Medford, same day: 1.36 (46 projects, 55 buildings)</title></circle></svg></div>
+  <div class="key"><span><i class="lot"></i>same lot (parcel ID, within a year)</span><span><i class="day"></i>same day (issue date)</span><span>dashed line: the 1.5 bar</span></div>
+  <p>Cities with at least 10 same-day projects, on a log scale. Minneapolis, Cincinnati, Cleveland, Medford and Portland sit near the bar (1.1 to 2.4): their 2–4 unit buildings mostly come one or two at a time. Austin, College Station, Wilmington and Columbus build them in large groups, which fits Texas's lumpiness from run 12.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>"Same lot" wasn't a lower bound</h2>
+  <p>The plan called same lot the low estimate and same day the high one. It came out the other way round in the pooled numbers (12.8 against 5.3). That's because one parcel can hold a whole build-to-rent community permitted over a year, while a same-day group catches only one day of it. Both are far over 1.5, so the verdict doesn't depend on which is right.</p>
+  <div class="scroll"><table><thead><tr><th rowspan="2">Source</th><th colspan="3">Same lot</th><th colspan="3">Same day</th></tr><tr><th>Projects</th><th>Inflation</th><th>In 3+</th><th>Projects</th><th>Inflation</th><th>In 3+</th></tr></thead><tbody><tr><td>Minneapolis</td><td>979</td><td>1.13</td><td>1%</td><td>734</td><td>2.07</td><td>22%</td></tr><tr><td>Rochester MN</td><td>21</td><td>5.76</td><td>57%</td><td>15</td><td>5.10</td><td>69%</td></tr><tr><td>Durham</td><td>535</td><td>5.48</td><td>24%</td><td>526</td><td>2.87</td><td>30%</td></tr><tr><td>Raleigh</td><td>204</td><td>3.50</td><td>27%</td><td>192</td><td>2.80</td><td>34%</td></tr><tr><td>Wilmington</td><td>120</td><td>16.59</td><td>55%</td><td>135</td><td>12.47</td><td>59%</td></tr><tr><td>Cincinnati</td><td>66</td><td>1.41</td><td>15%</td><td>54</td><td>1.92</td><td>23%</td></tr><tr><td>Cleveland</td><td>60</td><td>1.36</td><td>15%</td><td>59</td><td>2.35</td><td>36%</td></tr><tr><td>Columbus</td><td>426</td><td>11.31</td><td>53%</td><td>382</td><td>7.65</td><td>58%</td></tr><tr><td>Bend</td><td>416</td><td>3.24</td><td>25%</td><td>368</td><td>2.38</td><td>30%</td></tr><tr><td>Medford</td><td>46</td><td>1.73</td><td>16%</td><td>46</td><td>1.36</td><td>5%</td></tr><tr><td>Portland</td><td>340</td><td>1.72</td><td>15%</td><td>321</td><td>1.99</td><td>22%</td></tr><tr><td>Austin</td><td>1406</td><td>23.76</td><td>45%</td><td>1291</td><td>6.15</td><td>49%</td></tr><tr><td>College Station</td><td>222</td><td>22.04</td><td>58%</td><td>190</td><td>7.49</td><td>67%</td></tr><tr><td>Cary</td><td>–</td><td>–</td><td>–</td><td>1</td><td>2.00</td><td>0%</td></tr><tr><td>Chapel Hill</td><td>–</td><td>–</td><td>–</td><td>32</td><td>2.18</td><td>29%</td></tr><tr><td>Greensboro</td><td>–</td><td>–</td><td>–</td><td>92</td><td>4.39</td><td>48%</td></tr><tr><td>Dallas</td><td>–</td><td>–</td><td>–</td><td>900</td><td>6.93</td><td>43%</td></tr><tr><td>San Antonio</td><td>–</td><td>–</td><td>–</td><td>3</td><td>1.00</td><td>0%</td></tr></tbody></table></div>
+  <p class="note">2–4 unit building permits from 2010, through the holdout filter; St. Paul and Mecklenburg left out. Franklin and Montgomery counties' files hold no typed 2–4 unit permits. Inflation is E[S²]/E[S], where S is buildings per project. A check after the run, reported only: some files record one permit per home or duplex side (Austin's 202 permits are about 100–130 duplexes). Counted as homes ÷ homes per building instead, inflation is 11.8 by lot and 5.6 by day, with 39–44% in projects of 3+, so the finding holds.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>Decided: record it, don't build it</h2>
+  <p>Clustering is real and large, so it's the honest explanation for missing middle's wide ranges. A model of projects × buildings per project would match how building happens, but it adds no new information. Ben chose to record it as the reason for the ranges and a stated limitation (15 Nov 2026). Run 11 stands; the config choice is next.</p>
+</section>
+
+<footer>
+  <div>Run: <code>mm_project_size_d092.py</code> (same lot and same day groupings; stop rule 1.5). Pre-registered in D-092's deviation (d) of 2026-11-15. Cached tables only; nothing unblinded.</div>
+  <div>Sources: <code>reports/mm-d092/run13-projects/</code> on branch <code>ws/mm-baseline-spread</code> (PR #436).</div>
+</footer>
+</main>

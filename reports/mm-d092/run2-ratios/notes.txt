@@ -1,0 +1,7 @@
+Raleigh: prior roll wake_realestate (vintages [2019, 2023], 166,425 roll rows on permit parcels)
+Durham: demolition-only (no prior roll)
+Columbus: prior roll oh_parcels (vintages [2011, 2012, 2014, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], 16,202 roll rows on permit parcels)
+College Station: demolition-only (no prior roll)
+Bend: demolition-only (no prior roll)
+Austin: demolition-only (no prior roll)
+Minneapolis: demolition-only (no prior roll)

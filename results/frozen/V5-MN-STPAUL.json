@@ -1,0 +1,395 @@
+{
+  "test_id": "V5-MN-STPAUL",
+  "method": "analysis plan D-098 (template D-071); model C4 (D-092 run 10)",
+  "commit": "9ee70aa6b44d45859a8b4522877cbbbf0dd6f60d",
+  "draws": 4000,
+  "seed": 20261108,
+  "years": [
+    2024,
+    2025,
+    2026
+  ],
+  "target": "BPS 2758000 new 2-4 unit buildings (bldgs_2 + bldgs_3_4), sum of 2024-2025",
+  "pass_rule": "observed 2024-2025 sum within P10-P90 of `prediction.buildings['2024-2025']`",
+  "secondary": {
+    "homes": "BPS 2758000 homes in 2-4 unit buildings (units_2 + units_3_4)",
+    "added": "added buildings on H1/H2 lots alone (descriptive, against Met Council DTQ permits)",
+    "later": "2026 and 2024-2026, scored when BPS 2026 is published"
+  },
+  "exposure": "D-013: post-reform St. Paul figures appeared in a research document during scouting; not reread and not used",
+  "inputs": {
+    "eligible": 55269,
+    "dose_pre": 0.0,
+    "dose_post": 1.0,
+    "rent": 1319.6054606896698,
+    "cost_index": 1.022357586779064,
+    "pcr": 0.8511468916870674,
+    "f_ratio": 0.7017619448417773,
+    "baseline_buildings": {
+      "2021": 9.0,
+      "2022": 4.0,
+      "2023": 6.0
+    },
+    "baseline_homes": {
+      "2021": 23.0,
+      "2022": 10.0,
+      "2023": 12.0
+    },
+    "gap": 1.0,
+    "B": 6.333333333333333,
+    "homes_per_baseline_building": 2.3684210526315788
+  },
+  "params": {
+    "mm_hazard": {
+      "mm_mature_hazard_ref": {
+        "value": 0.0010387,
+        "low": 0.0001316,
+        "high": 0.01939
+      },
+      "mm_place_effect_variance": {
+        "value": 6.1e-06,
+        "low": 6.1e-06,
+        "high": 1.92
+      },
+      "mm_year_spread_phi": {
+        "value": 13.63,
+        "low": 12.85,
+        "high": 14.48
+      },
+      "mm_units_per_project": {
+        "value": 2.08,
+        "low": 2.04,
+        "high": 2.75
+      },
+      "mm_ramp_half_years": {
+        "value": 4.0,
+        "low": 1.0,
+        "high": 6.0
+      },
+      "mm_ramp_slope_years": {
+        "value": 0.75,
+        "low": 0.5,
+        "high": 1.5
+      },
+      "mm_feasibility_dispersion": {
+        "value": 0.5,
+        "low": 0.25,
+        "high": 0.8
+      }
+    },
+    "mm": {
+      "mm_panel_first_year": {
+        "value": 2010.0,
+        "low": 2010.0,
+        "high": 2010.0
+      },
+      "mm_panel_last_year": {
+        "value": 2025.0,
+        "low": 2025.0,
+        "high": 2025.0
+      },
+      "mm_estimation_min_population": {
+        "value": 10000.0,
+        "low": 10000.0,
+        "high": 50000.0
+      },
+      "mm_dose_grade_permit": {
+        "value": 0.3333,
+        "low": 0.3333,
+        "high": 0.3333
+      },
+      "mm_estimation_bootstrap_draws": {
+        "value": 999.0,
+        "low": 999.0,
+        "high": 999.0
+      },
+      "mm_estimation_permutations": {
+        "value": 999.0,
+        "low": 999.0,
+        "high": 999.0
+      },
+      "mm_transport_widening": {
+        "value": 1.0,
+        "low": 1.0,
+        "high": 1.0
+      },
+      "mm_scenario_draws": {
+        "value": 4000.0,
+        "low": 4000.0,
+        "high": 4000.0
+      },
+      "mm_scenario_seed": {
+        "value": 20261108.0,
+        "low": 20261108.0,
+        "high": 20261108.0
+      },
+      "mm_rule_min_coded": {
+        "value": 5.0,
+        "low": 5.0,
+        "high": 5.0
+      },
+      "mm_teardown_share_scale": {
+        "value": 1.0,
+        "low": 0.5,
+        "high": 1.0
+      },
+      "mm_strong_parcel_fill": {
+        "value": 0.85,
+        "low": 0.85,
+        "high": 0.85
+      },
+      "mm_strong_min_pre_years": {
+        "value": 3.0,
+        "low": 3.0,
+        "high": 3.0
+      },
+      "mm_coverage_k_low": {
+        "value": 0.8,
+        "low": 0.8,
+        "high": 0.8
+      },
+      "mm_coverage_k_high": {
+        "value": 1.25,
+        "low": 1.25,
+        "high": 1.25
+      },
+      "mm_collapse_min_units": {
+        "value": 2.0,
+        "low": 2.0,
+        "high": 2.0
+      },
+      "mm_collapse_max_units": {
+        "value": 4.0,
+        "low": 4.0,
+        "high": 4.0
+      },
+      "mm_ratio_min_buildings": {
+        "value": 50.0,
+        "low": 50.0,
+        "high": 50.0
+      },
+      "mm_teardown_demolition_window": {
+        "value": 2.0,
+        "low": 2.0,
+        "high": 2.0
+      },
+      "mm_roll_merge_growth": {
+        "value": 0.2,
+        "low": 0.2,
+        "high": 0.2
+      },
+      "mm_coverage_interval_z": {
+        "value": 1.6449,
+        "low": 1.6449,
+        "high": 1.6449
+      },
+      "mm_standards_dose_increase": {
+        "value": 0.3333,
+        "low": 0.3333,
+        "high": 1.0
+      },
+      "mm_level_pool_min_places": {
+        "value": 3.0,
+        "low": 3.0,
+        "high": 3.0
+      },
+      "mm_level_prior_widening": {
+        "value": 2.0,
+        "low": 2.0,
+        "high": 2.0
+      },
+      "mm_challenger_se_margin": {
+        "value": 2.0,
+        "low": 2.0,
+        "high": 2.0
+      },
+      "mm_test_a_coverage": {
+        "value": 0.6,
+        "low": 0.6,
+        "high": 0.6
+      },
+      "mm_test_a_ratio": {
+        "value": 2.0,
+        "low": 2.0,
+        "high": 2.0
+      },
+      "mm_test_c_coverage": {
+        "value": 0.7,
+        "low": 0.7,
+        "high": 0.7
+      },
+      "mm_test_c_first_year": {
+        "value": 2021.0,
+        "low": 2021.0,
+        "high": 2021.0
+      },
+      "mm_loso_min_places": {
+        "value": 3.0,
+        "low": 3.0,
+        "high": 3.0
+      },
+      "mm_placebo_shift_years": {
+        "value": 3.0,
+        "low": 3.0,
+        "high": 3.0
+      },
+      "mm_place_coverage_low": {
+        "value": 0.6,
+        "low": 0.6,
+        "high": 0.6
+      },
+      "mm_place_coverage_high": {
+        "value": 0.95,
+        "low": 0.95,
+        "high": 0.95
+      }
+    }
+  },
+  "input_table_sha256": {
+    "parcels": "af68f6da211258adc1884f3fd327d25ba6f2ad001bf1d533ced4ee129a055e21",
+    "bps_place_year": "2c361006aa6451c987bf71b74841a571136e089ffd29ba188e21557337a71d97",
+    "acs_geo_year": "57e0fc807f6800d2e6cb23a5f3fe004deed1d621af72015a7243104420e6dc9a",
+    "market_geo_year": "5c884a397fe5f943e77431f7904c572c21dd3de6920d37977125a587c02c62a4"
+  },
+  "config_sha256": {
+    "config/params/mm_hazard.yaml": "9e77d93bd040704d25962dffe4da45958f8d585f0e45f708b78894b6f955cb2d",
+    "config/params/mm.yaml": "42f69304b3fa901e16ef0577c2580ce833aeee60ed984ca1f3aed19b1195f79a",
+    "config/params/proforma.yaml": "7389ddb4460659bf609b9ac2d5082ca51d9f1733c289085b28a90b8807e8716a",
+    "config/params/adu.yaml": "7afe48dde7471c582c03b4b7447f509fc2118a38d0f46fe36570ee66030cb880",
+    "config/reforms/mn.csv": "1e723e9272da5baa640daad23320c6acdb6acdf0e0544225705bab3f557413fb",
+    "config/reforms/nc.csv": "7c2ebccd96037bf2e31e79a8e778b1338320d8fab5efa3960b9036710ebd43e3",
+    "config/reforms/oh.csv": "7017f97ac61e3d4205acf794f166c7ca5f9ff7c8b065b9e8ae9147149ef79020",
+    "config/reforms/tx.csv": "9d234e78d604c1504aed580a51e22d1a8e898baa6349d1f70e394850ae6d2fd2",
+    "config/states/mn.yaml": "228c7f845adc1565bb89ea8a71ffeb92e017ab3c5071aebe8a7cffc582bc0b90"
+  },
+  "prediction": {
+    "baseline": {
+      "2024": {
+        "p10": 3.0,
+        "p50": 6.0,
+        "p90": 10.0,
+        "mean": 6.3135
+      },
+      "2025": {
+        "p10": 3.0,
+        "p50": 6.0,
+        "p90": 10.0,
+        "mean": 6.307
+      },
+      "2026": {
+        "p10": 3.0,
+        "p50": 6.0,
+        "p90": 10.0,
+        "mean": 6.3355
+      },
+      "2024-2025": {
+        "p10": 7.0,
+        "p50": 12.0,
+        "p90": 18.0,
+        "mean": 12.6205
+      },
+      "2024-2026": {
+        "p10": 12.0,
+        "p50": 19.0,
+        "p90": 26.0,
+        "mean": 18.956
+      }
+    },
+    "added": {
+      "2024": {
+        "p10": 0.0,
+        "p50": 0.0,
+        "p90": 3.0,
+        "mean": 1.28575
+      },
+      "2025": {
+        "p10": 0.0,
+        "p50": 1.0,
+        "p90": 11.0,
+        "mean": 4.68975
+      },
+      "2026": {
+        "p10": 0.0,
+        "p50": 5.0,
+        "p90": 36.0,
+        "mean": 16.34425
+      },
+      "2024-2025": {
+        "p10": 0.0,
+        "p50": 2.0,
+        "p90": 14.0,
+        "mean": 5.9755
+      },
+      "2024-2026": {
+        "p10": 1.0,
+        "p50": 7.0,
+        "p90": 49.0,
+        "mean": 22.31975
+      }
+    },
+    "buildings": {
+      "2024": {
+        "p10": 3.0,
+        "p50": 7.0,
+        "p90": 12.0,
+        "mean": 7.59925
+      },
+      "2025": {
+        "p10": 4.0,
+        "p50": 8.0,
+        "p90": 18.0,
+        "mean": 10.99675
+      },
+      "2026": {
+        "p10": 5.0,
+        "p50": 12.0,
+        "p90": 42.0,
+        "mean": 22.67975
+      },
+      "2024-2025": {
+        "p10": 9.0,
+        "p50": 15.0,
+        "p90": 28.0,
+        "mean": 18.596
+      },
+      "2024-2026": {
+        "p10": 17.0,
+        "p50": 27.0,
+        "p90": 69.09999999999991,
+        "mean": 41.27575
+      }
+    },
+    "homes": {
+      "2024": {
+        "p10": 7.105263157894736,
+        "p50": 16.57894736842105,
+        "p90": 28.421052631578945,
+        "mean": 17.913036357582136
+      },
+      "2025": {
+        "p10": 9.414060628159895,
+        "p50": 18.94736842105263,
+        "p90": 41.909086529165315,
+        "mean": 25.739320515066677
+      },
+      "2026": {
+        "p10": 11.701496135431487,
+        "p50": 27.073705478737757,
+        "p90": 99.50571776798097,
+        "mean": 52.63802313280139
+      },
+      "2024-2025": {
+        "p10": 21.31578947368421,
+        "p50": 36.21364920743562,
+        "p90": 65.32665219711777,
+        "mean": 43.65235687264882
+      },
+      "2024-2026": {
+        "p10": 39.5038615869805,
+        "p50": 63.670835144360545,
+        "p90": 162.91966797620776,
+        "mean": 96.2903800054502
+      }
+    }
+  }
+}
