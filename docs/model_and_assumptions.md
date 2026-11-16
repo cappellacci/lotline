@@ -583,7 +583,11 @@ standard errors held out and passes the same tests.
   inside; Minnesota 32 against a top of 13, a miss on small numbers.
 - **A new state:** with Oregon left out, the other states' 7 places predict Oregon's 86: median 915
   (457–4,789) against 703 built. One test, passed.
-- **Blind:** Charlotte passed with the earlier values (above); St. Paul is frozen with C4 and waits for scoring.
+- **Blind:** Charlotte passed with the earlier values (above). St. Paul, frozen with C4 before any outcome was
+  read, **missed**: 55 built in 2024–2025 against 9–28 (median 15). It built 33 in the first full year against
+  about 6 a year before, which a half-way point of 4 years cannot produce. Post-hoc (reported only), C4's mature
+  rate with a half-way point of one year (the low end of C4's own range) gives a median of 55, so St. Paul
+  agrees with C4's level and not its timing (`reports/v5-stpaul/`).
 - **The weak spot:** the reform's own effect is not clearly detected. Held out, the model with a reform effect
   beats the same model with none by only about 1.5 standard errors (+5.0, SE 3.4), and the placebo (reforms
   moved three years early) gives a larger effect than the real dates. The scenario's added homes rest on an
@@ -620,7 +624,7 @@ proposed there are confirmed at pre-registration (tag `prereg-v1`, **not yet mad
 | V2 Mechanism | Do the pro forma and hazard predict which parcels redevelop? | Pro forma and ADU hazard built; ADU anchor estimated on Minneapolis, Austin and 14 Twin Cities suburbs, tested on Raleigh and Durham (D-019 fit 3): Raleigh 230 observed vs mean 141 (90% 0–687), Durham 239 vs 172 (0–865): inside, but very wide. Parcel-level V2 **not run**. |
 | V3 In-state causal estimates | What did Raleigh's and Durham's reforms do? | **Planned.** |
 | V4 Backtests of known reforms | Would the range have contained what happened? | **Planned.** |
-| V5 Blind forward tests | St. Paul and Charlotte, predicted before outcomes are seen | **Charlotte: pass** (frozen 2026-11-09 with D-055's values, D-071): 119 new 2–4 unit buildings in 2023–2025 against 89–172, median 104 (`reports/v5-charlotte/`). **St. Paul: frozen** 2026-11-15 with C4 (D-098, `results/frozen/V5-MN-STPAUL.json`): 2024–2025 P10 9, P50 15, P90 28; not yet scored. Exposures disclosed (D-012, D-013). |
+| V5 Blind forward tests | St. Paul and Charlotte, predicted before outcomes are seen | **Charlotte: pass** (frozen 2026-11-09 with D-055's values, D-071): 119 new 2–4 unit buildings in 2023–2025 against 89–172, median 104 (`reports/v5-charlotte/`). **St. Paul: miss** (frozen 2026-11-15 with C4, D-098; scored 2026-11-16): 55 new 2–4 unit buildings in 2024–2025 against 9–28, median 15 (`reports/v5-stpaul/`). The effect came faster than C4's ramp allows; post-hoc, C4's level with a one-year ramp fits. Exposures disclosed (D-012, D-013). |
 | V6 Fee tests | Natural experiment; pro forma threshold; bunching | **Planned**; ε set (D-010). |
 | V7 Transport and second state | Does the method carry to other states? | Partly: V0 and V1 already run in all four states with the same code. |
 
