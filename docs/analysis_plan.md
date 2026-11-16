@@ -6877,3 +6877,17 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - Rules coded after an ordinance passed may miss earlier ADUs allowed under general accessory-building
     rules.
   - The Handbook rule may differ from these places' first rules: often a better rule, sometimes a worse one.
+- **Result, 2026-11-16** (`reports/adu-new-rule/`, page https://claude.ai/artifact/GZoQ3mG5iVvKhRzwQGVLEb; run
+  through `adu_refit_fixed_rows.py` on the D-096 rows; 28 newly allowing fit places):
+  - **Part 1 passes:** ν̂ 0.75 (90% interval 0.70–0.85). The log-likelihood at ν = 1 is 5.5 below the peak.
+  - **Part 2 fails:** the held-out gain is −0.11 (2 paired SE 1.86).
+  - **Decision: ν stays 1.** Part 3 (tests A–B and D) was not run because part 2 already fails.
+  - **Sensitivities:**
+    - K = 3: ν 0.40 (0.35–0.45), held-out gain +0.86 (2 SE 6.1);
+    - explicit no-ADU row before (15 places): ν 0.80 (0.70–0.90), gain −0.24 (2 SE 1.3);
+    - Raleigh left out: ν 0.80 (0.65–0.90), gain −0.51 (2 SE 1.8).
+    - None passes part 2.
+  - **What it means for the gut-check flag:** even ν̂ would lower a no-rule core city's Handbook rate only
+    ×0.77, because θ rises and the core term falls in the refit. A first-years discount doesn't explain the
+    Dallas and Fort Worth gap. The core-city term, fitted on cities that already allow ADUs, is the likelier
+    cause, and the data can't test it. Options go to Ben in chat.
