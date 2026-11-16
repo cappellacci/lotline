@@ -38,7 +38,11 @@ def main() -> None:
             _, totals = adu.run(
                 places, 2025, draws=a.draws, params={"adu_own_rate_drift": 1, adu.SHARE_DRAWS: 1}
             )
-            keep = [c for c in totals.columns if c.startswith(("current_rules_adus", "adu_permits_added"))]
+            keep = [
+                c
+                for c in totals.columns
+                if c.startswith(("current_rules_adus", "adu_permits_added", "handbook_adus"))
+            ]
             t = totals[["geoid", *keep]].copy()
             t["state"] = st
             for c in ("name", "eligible_parcels", "place_type", "rule_class", "observed_rate"):
