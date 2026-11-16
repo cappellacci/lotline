@@ -7378,3 +7378,49 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   P50 15, P90 28 (mean 18.6).** Baseline part P50 12; added part P50 2, P90 14. 2024–2026: P10 17, P50 27,
   P90 69. Homes 2024–2025: P10 21, P50 36, P90 65. No outcome has been read; scoring waits for this file on
   `main` and Ben's go-ahead.
+
+### D-100 · 2026-11-16 · Missing middle's ramp after St. Paul: one ramp or one per adoption route (proposed, method only, before any run)
+- **Status:** proposed; method only. Ben: "Draft a ramp entry" (2026-11-16), after V5 St. Paul missed (D-098). No
+  fit has been run. The run needs Ben's go-ahead (D-092 §9), and nothing goes to config without his choice.
+- **Why:**
+  - St. Paul, frozen with C4, built 55 new 2–4 unit buildings in 2024–2025 against 9–28. Post-hoc, C4's mature
+    rate with a half-way point of 1 year fits (median 55); C4's 4.0 years cannot make a first-year jump.
+  - C4's ramp is weakly pinned: half-way point 4.0 years, 90% range 1.0–6.0. Without Oregon it is not pinned at
+    all (6.0, range 0.5–6.0; `reports/mm-d092/run10-refit-phi/fits.csv`).
+  - The fit's events are recent: of the 86 Oregon fit places, 25 have their event in 2025 (one post year), 21 in
+    2021 and 37 in 2022. A place that has not had time to build pulls the ramp slower.
+  - Every locally adopted reform in the tests was under-predicted by C4: Minneapolis (275 against a median of
+    42), Houston (21 against 0) and St. Paul (55 against 15). Charlotte, also local, passed with D-055's fast
+    ramp.
+- **Hypothesis, stated before any fit:** a city that adopts its own reform does so where builders are ready, so
+  the effect arrives fast. A state mandate (Oregon's HB 2001) reaches every covered place, including ones with no
+  ready builders, so it arrives slower. The Handbook scenario is a statewide rule, so the mandate ramp would be
+  the one the scenario uses.
+- **Candidates** (all as C4 otherwise: the C0 baseline, φ 13.63, the θ_L prior, the same grid for the half-way
+  point, slope 0.75):
+  - **R0:** C4 as on `main` (one ramp; the 93 fit places).
+  - **R1:** one ramp, refit with St. Paul added (released 2026-11-16; event 2024, cap 1 → 4, E from the 2023
+    roll as in D-098).
+  - **R2:** one half-way point per route, refit with St. Paul added:
+    - **state-required:** an Oregon place HB 2001 covers: a city of 10,000 people or more (2020 census), or a
+      city or unincorporated area inside the Portland Metro boundary (Metro's member list, cited in config);
+    - **locally adopted:** every other fit place (the 7 outside Oregon, St. Paul, and any Oregon place HB 2001
+      does not cover).
+    - θ stays one value; only the timing differs by route.
+- **Selection (as D-092 §5):** a candidate replaces the one before it (R1 over R0, then R2 over R1) only if its
+  leave-one-state-out held-out log score is better by more than 2 paired SE and it passes no fewer of §7's
+  tests. Then §7 reruns unchanged (the same bars, 20,000 draws, seed 20261112).
+- **Reported, never selected:** each route's half-way point and 90% range; the five-year rate by route; the
+  route split's counts (places and place-years per route) before any fit, from a dry run that reads no outcome.
+- **What the scenario would use (fixed now):** if R2 is chosen, the Handbook scenario uses the state-required
+  ramp for every place, because the Handbook rule is a state law. The locally adopted ramp is shown as a
+  sensitivity ("if places respond like cities that chose the reform").
+- **What it cannot do:** test the new ramp blind. St. Paul is in the fit, and Charlotte and Oregon are already
+  released. The checks left are the held-out leave-one-state-out score, §7's tests, and the scored test places
+  (Minneapolis, Durham, Durham County, Raleigh).
+- **Expected, before any fit (a guess):** locally adopted half-way 1.5 years or less; state-required near 4;
+  R2 beats R1 by less than 2 SE because only about 8 local places carry the local ramp. If so, R1 or R0 stays,
+  and the faster ramp is reported as a sensitivity.
+- **Cheaper alternative (Ben's choice instead of the run):** no refit. Keep C4 and add a "fast ramp" sensitivity
+  to the scenario (half-way 1.0 year, the low end of C4's range), shown next to the main result.
+- **What it will not do:** write to config, download anything, or read any other holdout.
