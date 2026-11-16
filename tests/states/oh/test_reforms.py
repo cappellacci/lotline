@@ -52,6 +52,28 @@ ROUND_2 = {  # the 2026-10-26 round: places 21-40 and the Franklin County places
 }
 
 
+# 2026-11-15: largest places the ADU gut check found uncoded (docs/research/adu-uncoded-rules-2026-11.md)
+UNCODED_2026_11 = {
+    "3943554": "Lima",
+    "3983342": "Westerville",
+    "3948188": "Mason",
+    "3975098": "Strongsville",
+    "3903352": "Avon",
+    "3983622": "Westlake",
+    "3945976": "Macedonia",
+    "3964486": "Powell",
+    "3961686": "Pepper Pike",
+    "3921434": "Delaware",
+    "3949056": "Mentor",
+    "3903464": "Avon Lake",
+    "3947138": "Mansfield",
+    "3979716": "Vermilion",
+    "3904580206": "Violet Township",
+    "39049": "Franklin County unincorporated (county zoning resolution)",
+    "39109": "Miami County unincorporated (county zoning resolution)",
+}
+
+
 def _read() -> pd.DataFrame:
     df = pd.read_csv(PATH, dtype=str, keep_default_na=False).replace("", pd.NA)
     for col in BOOL_COLS:
@@ -73,7 +95,7 @@ def test_header_is_the_canonical_column_list():
 def test_rows_validate(reforms):
     assert len(reforms) >= 4
     assert (reforms["state"] == "OH").all()
-    assert set(reforms["jurisdiction_geoid"]) <= set(PLACES) | set(ROUND_2) | {"39"}
+    assert set(reforms["jurisdiction_geoid"]) <= set(PLACES) | set(ROUND_2) | set(UNCODED_2026_11) | {"39"}
 
 
 def test_every_row_has_an_https_source(reforms):

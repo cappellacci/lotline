@@ -44,7 +44,8 @@ def test_every_row_has_an_opened_source(reforms):
 
 
 def test_geoids_are_mn_places_or_townships(reforms):
-    assert reforms["jurisdiction_geoid"].str.fullmatch(r"27(\d{5}|\d{8})").all()
+    # places (7 digits), townships (10) and, since 2026-11-15, county unincorporated remainders (5)
+    assert reforms["jurisdiction_geoid"].str.fullmatch(r"27(\d{3}|\d{5}|\d{8})").all()
 
 
 def test_no_duplicate_reform_ids():
