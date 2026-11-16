@@ -18,3 +18,20 @@
 - **Not done:** the release and the score. Both wait for Ben's "unblind".
 - **Outputs:** `scripts/dev/v5_stp_score.py`, `src/lotline/validation/v5_stpaul.py`,
   `tests/core/test_v5_stpaul.py`.
+- **2026-11-16, unblinded and scored:** Ben said "Yes, unblind".
+  - The holdout was released in `config/states/mn.yaml` (`released_on: 2026-11-16`), after the freeze reached
+    `main` in #436.
+  - **Miss:** BPS St. Paul built 55 new 2–4 unit buildings in 2024–2025 (33, 22) against the frozen P10 9, P50
+    15, P90 28 (98th percentile). It beats no reform on CRPS (32.8 vs 40.0). Homes 123 against 21–65.
+  - As written in D-098 before the freeze, this says C4's slow ramp (half-way 4 years) is wrong for St. Paul.
+  - **Post-hoc, reported only:** the same draws with C4's θ and a half-way point of 1.0 year give a median of
+    55 (17–308); 0.5 year 66 (19–391); D-055's values 14 (9–36), also a miss. St. Paul implies θ 0.85–1.09 per
+    1,000: C4's level, reached fast.
+  - **Outputs:** `reports/v5-stpaul/` (README, score.json, posthoc_ramp.json, results.html),
+    `scripts/dev/v5_stp_page.py`. Page: https://claude.ai/artifact/19Eyqzf78EtfjJtRqivixd. The accuracy
+    report adds St. Paul (same link, https://claude.ai/artifact/72uydyJJNJduLuErr9uQXw). D-098 gains its
+    "Scored" bullet.
+  - **How it was checked:** the script regenerated the frozen draws exactly before scoring; the post-hoc rows
+    reuse the frozen inputs, draws and seed; the page's chart labels were checked against each row's numbers
+    (a label mix-up was caught and fixed before publishing).
+  - **Not changed:** config. Any ramp change is a new dated entry; St. Paul would be in-sample for it.

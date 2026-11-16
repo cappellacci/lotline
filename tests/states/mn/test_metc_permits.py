@@ -36,6 +36,7 @@ def test_conforms_and_is_registered(permits):
     assert "metc_permits" in registry.sources_for("MN")
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_held_out_st_paul_rows_disappear(permits):
     stpaul = permits[permits.jurisdiction_geoid == "2758000"]
     assert sorted(stpaul.issue_year) == [2022, 2023]  # 2024 and 2025 rows removed
@@ -116,6 +117,7 @@ def test_no_personal_fields_requested():
     assert not {"ADDRESS", "NAME", "ZIP_CODE", "ZIP_PLUS_4", "NOTES"} & set(mp.FIELDS)
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_load_through_pager(tmp_path):
     """load() pages the layer through the IO layer (manifest entries) and needs the jurisdictions table."""
     store = DataStore(tmp_path)

@@ -1,0 +1,108 @@
+{
+  "test_id": "V5-MN-STPAUL",
+  "method": "analysis plan D-098",
+  "frozen_commit": "9ee70aa6b44d45859a8b4522877cbbbf0dd6f60d",
+  "years_scored": [
+    2024,
+    2025
+  ],
+  "observed": {
+    "buildings": {
+      "2024": 33.0,
+      "2025": 22.0
+    },
+    "homes": {
+      "2024": 76.0,
+      "2025": 47.0
+    }
+  },
+  "baseline_per_year": 6.333333333333333,
+  "primary": {
+    "2024-2025": {
+      "p10": 9.0,
+      "p50": 15.0,
+      "p90": 28.0,
+      "mean": 18.596,
+      "observed": 55.0,
+      "pass": false,
+      "verdict": "missed (under)",
+      "obs_over_p50": 3.6666666666666665,
+      "percentile": 97.94999999999999,
+      "coverage_rand": 0.0,
+      "crps_model": 32.84961425,
+      "crps_no_reform": 40.02920325
+    },
+    "2024": {
+      "p10": 3.0,
+      "p50": 7.0,
+      "p90": 12.0,
+      "mean": 7.59925,
+      "observed": 33.0,
+      "pass": false,
+      "verdict": "missed (under)",
+      "obs_over_p50": 4.714285714285714,
+      "percentile": 99.575,
+      "coverage_rand": 0.0,
+      "crps_model": 23.3195430625,
+      "crps_no_reform": 25.00774
+    },
+    "2025": {
+      "p10": 4.0,
+      "p50": 8.0,
+      "p90": 18.0,
+      "mean": 10.99675,
+      "observed": 22.0,
+      "pass": false,
+      "verdict": "missed (under)",
+      "obs_over_p50": 2.75,
+      "percentile": 93.17500000000001,
+      "coverage_rand": 0.0,
+      "crps_model": 9.6148008125,
+      "crps_no_reform": 14.029497875
+    }
+  },
+  "secondary_homes": {
+    "2024-2025": {
+      "p10": 21.31578947368421,
+      "p50": 36.21364920743562,
+      "p90": 65.32665219711777,
+      "mean": 43.65235687264882,
+      "observed": 123.0,
+      "pass": false,
+      "verdict": "missed (under)",
+      "obs_over_p50": 3.396509401619344,
+      "percentile": 97.82499999999999,
+      "coverage_rand": 0.0,
+      "crps_model": 71.30333155175457,
+      "crps_no_reform": 87.5428498026316
+    },
+    "2024": {
+      "p10": 7.105263157894736,
+      "p50": 16.57894736842105,
+      "p90": 28.421052631578945,
+      "mean": 17.913036357582136,
+      "observed": 76.0,
+      "pass": false,
+      "verdict": "missed (under)",
+      "obs_over_p50": 4.584126984126985,
+      "percentile": 99.55000000000001,
+      "coverage_rand": 0.0,
+      "crps_model": 53.207054912327266,
+      "crps_no_reform": 57.07096315789474
+    },
+    "2025": {
+      "p10": 9.414060628159895,
+      "p50": 18.94736842105263,
+      "p90": 41.909086529165315,
+      "mean": 25.739320515066677,
+      "observed": 47.0,
+      "pass": false,
+      "verdict": "missed (under)",
+      "obs_over_p50": 2.4805555555555556,
+      "percentile": 91.925,
+      "coverage_rand": 0.0,
+      "crps_model": 18.631362485292055,
+      "crps_no_reform": 28.12267917763158
+    }
+  }
+}
