@@ -148,9 +148,9 @@ ul {{ margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 65ch; }
 <section>
   <h2>What this leaves</h2>
   <ul>
-  <li><b>The Dallas problem isn't a slow start.</b> Places that newly allow ADUs build only a little less at first, and that doesn't carry over to a held-out place. So a discount wouldn't be honest evidence for cutting Dallas's number.</li>
-  <li><b>The likelier cause is the core-city term itself.</b> It is fitted on 16 core cities that all allow ADUs, mostly mature programs (Portland, Asheville, Austin). Whether a large Sun Belt city with no ADU history would behave like them is not something our data can test.</li>
-  <li><b>So the honest options are presentational:</b> report the no-rule cities' reform ADUs as a separate, flagged line, or show the state's result with those cities at a range (for example from today's suburb rate up to the core-city rate) rather than at the core rate alone.</li>
+  <li><b>No first-years discount.</b> Places that newly allow ADUs build only a little less at first, and that doesn't carry over to a held-out place.</li>
+  <li><b>The Dallas gap was mostly the average, not the model.</b> After this run we found the gut check had compared Dallas's average over draws (2.3 a year per 1,000 lots) with other cities' actual rates. Its median is 0.35 (P10–P90 0.01–5.1), below what Austin (0.73) and Portland (1.2) built. A single city's average is pulled far above its median by its own place luck. The gut-check page is corrected.</li>
+  <li><b>One coding question remains:</b> since 2018 Dallas allows rentable ADUs by special exception or overlay, coded as "no ADUs". Recoding it as a restricted rule would scale Dallas's own tiny count instead, which would almost erase its gain.</li>
   </ul>
 </section>
 

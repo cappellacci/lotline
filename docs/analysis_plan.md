@@ -6889,5 +6889,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - None passes part 2.
   - **What it means for the gut-check flag:** even ν̂ would lower a no-rule core city's Handbook rate only
     ×0.77, because θ rises and the core term falls in the refit. A first-years discount doesn't explain the
-    Dallas and Fort Worth gap. The core-city term, fitted on cities that already allow ADUs, is the likelier
-    cause, and the data can't test it. Options go to Ben in chat.
+    Dallas and Fort Worth gap. **Correction, same day:** that gap came mostly from the gut check comparing
+    Dallas's mean over draws (2.3 a year per 1,000 lots) with other cities' actual rates. Its median is 0.35
+    (P10–P90 0.01–5.1), below Austin's (0.73) and Portland's (1.2) built rates. The gut-check page now uses
+    medians. Whether Dallas's special-exception rule should be coded as restricted rather than no-ADU is open
+    for Ben.
