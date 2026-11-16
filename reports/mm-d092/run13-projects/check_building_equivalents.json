@@ -1,0 +1,274 @@
+{
+  "note": "check after run 13, reported only: buildings = homes / homes per building (U2: 2; U3_4: the permit's 3 or 4, else 3.5); permits with 0 or no homes dropped",
+  "by_source": {
+    "mpls_ccs_permits": {
+      "same_lot": {
+        "projects": 173,
+        "buildings": 170.28571428571428,
+        "mean_size": 0.9843104872006606,
+        "inflation": 1.025647171620326,
+        "share_in_3plus": 0.0
+      },
+      "same_day": {
+        "projects": 160,
+        "buildings": 172.28571428571428,
+        "mean_size": 1.0767857142857142,
+        "inflation": 1.2492300402748164,
+        "share_in_3plus": 0.05804311774461028
+      }
+    },
+    "rochester_permits": {
+      "same_lot": {
+        "projects": 6,
+        "buildings": 6.0,
+        "mean_size": 1.0,
+        "inflation": 1.0,
+        "share_in_3plus": 0.0
+      },
+      "same_day": {
+        "projects": 4,
+        "buildings": 6.0,
+        "mean_size": 1.5,
+        "inflation": 1.6666666666666667,
+        "share_in_3plus": 0.0
+      }
+    },
+    "durham_permits": {
+      "same_lot": {
+        "projects": 181,
+        "buildings": 271.5,
+        "mean_size": 1.5,
+        "inflation": 9.842541436464089,
+        "share_in_3plus": 0.34806629834254144
+      },
+      "same_day": {
+        "projects": 186,
+        "buildings": 271.5,
+        "mean_size": 1.4596774193548387,
+        "inflation": 3.7780847145488026,
+        "share_in_3plus": 0.30939226519337015
+      }
+    },
+    "raleigh_permits": {
+      "same_lot": {
+        "projects": 198,
+        "buildings": 263.0,
+        "mean_size": 1.3282828282828283,
+        "inflation": 3.44106463878327,
+        "share_in_3plus": 0.24334600760456274
+      },
+      "same_day": {
+        "projects": 187,
+        "buildings": 282.0,
+        "mean_size": 1.5080213903743316,
+        "inflation": 2.624113475177305,
+        "share_in_3plus": 0.30141843971631205
+      }
+    },
+    "wilmington_permits": {
+      "same_lot": {
+        "projects": 118,
+        "buildings": 307.0,
+        "mean_size": 2.6016949152542375,
+        "inflation": 16.68729641693811,
+        "share_in_3plus": 0.5570032573289903
+      },
+      "same_day": {
+        "projects": 133,
+        "buildings": 357.0,
+        "mean_size": 2.6842105263157894,
+        "inflation": 12.529411764705882,
+        "share_in_3plus": 0.5938375350140056
+      }
+    },
+    "cincy_permits": {
+      "same_lot": {
+        "projects": 66,
+        "buildings": 78.0,
+        "mean_size": 1.1818181818181819,
+        "inflation": 1.4102564102564104,
+        "share_in_3plus": 0.15384615384615385
+      },
+      "same_day": {
+        "projects": 54,
+        "buildings": 78.0,
+        "mean_size": 1.4444444444444444,
+        "inflation": 1.9230769230769231,
+        "share_in_3plus": 0.23076923076923078
+      }
+    },
+    "cle_permits": {
+      "same_lot": {
+        "projects": 60,
+        "buildings": 67.0,
+        "mean_size": 1.1166666666666667,
+        "inflation": 1.3582089552238805,
+        "share_in_3plus": 0.14925373134328357
+      },
+      "same_day": {
+        "projects": 59,
+        "buildings": 89.0,
+        "mean_size": 1.5084745762711864,
+        "inflation": 2.3483146067415728,
+        "share_in_3plus": 0.3595505617977528
+      }
+    },
+    "columbus_permits": {
+      "same_lot": {
+        "projects": 383,
+        "buildings": 783.0,
+        "mean_size": 2.044386422976501,
+        "inflation": 12.10344827586207,
+        "share_in_3plus": 0.5338441890166028
+      },
+      "same_day": {
+        "projects": 331,
+        "buildings": 783.0,
+        "mean_size": 2.365558912386707,
+        "inflation": 7.985951468710089,
+        "share_in_3plus": 0.6053639846743295
+      }
+    },
+    "bend_permits": {
+      "same_lot": {
+        "projects": 416,
+        "buildings": 541.0,
+        "mean_size": 1.3004807692307692,
+        "inflation": 3.2402957486136783,
+        "share_in_3plus": 0.24584103512014788
+      },
+      "same_day": {
+        "projects": 368,
+        "buildings": 541.0,
+        "mean_size": 1.4701086956521738,
+        "inflation": 2.378927911275416,
+        "share_in_3plus": 0.3031423290203327
+      }
+    },
+    "medford_permits": {
+      "same_lot": {
+        "projects": 46,
+        "buildings": 55.0,
+        "mean_size": 1.1956521739130435,
+        "inflation": 1.727272727272727,
+        "share_in_3plus": 0.16363636363636364
+      },
+      "same_day": {
+        "projects": 46,
+        "buildings": 55.0,
+        "mean_size": 1.1956521739130435,
+        "inflation": 1.3636363636363635,
+        "share_in_3plus": 0.05454545454545454
+      }
+    },
+    "portland_permits": {
+      "same_lot": {
+        "projects": 340,
+        "buildings": 427.0,
+        "mean_size": 1.2558823529411764,
+        "inflation": 1.7224824355971897,
+        "share_in_3plus": 0.15456674473067916
+      },
+      "same_day": {
+        "projects": 321,
+        "buildings": 428.0,
+        "mean_size": 1.3333333333333333,
+        "inflation": 1.9848130841121496,
+        "share_in_3plus": 0.21728971962616822
+      }
+    },
+    "austin_permits": {
+      "same_lot": {
+        "projects": 1373,
+        "buildings": 2411.5,
+        "mean_size": 1.7563729060451565,
+        "inflation": 15.498963300850095,
+        "share_in_3plus": 0.42940078789135394
+      },
+      "same_day": {
+        "projects": 1285,
+        "buildings": 2440.5,
+        "mean_size": 1.8992217898832684,
+        "inflation": 4.918766646179062,
+        "share_in_3plus": 0.4578979717271051
+      }
+    },
+    "cstx_permits": {
+      "same_lot": {
+        "projects": 222,
+        "buildings": 497.0,
+        "mean_size": 2.2387387387387387,
+        "inflation": 22.180080482897385,
+        "share_in_3plus": 0.5754527162977867
+      },
+      "same_day": {
+        "projects": 190,
+        "buildings": 505.0,
+        "mean_size": 2.6578947368421053,
+        "inflation": 7.513861386138613,
+        "share_in_3plus": 0.6574257425742575
+      }
+    },
+    "cary_permits": {
+      "same_day": {
+        "projects": 1,
+        "buildings": 2.0,
+        "mean_size": 2.0,
+        "inflation": 2.0,
+        "share_in_3plus": 0.0
+      }
+    },
+    "chapel_hill_permits": {
+      "same_day": {
+        "projects": 31,
+        "buildings": 48.0,
+        "mean_size": 1.5483870967741935,
+        "inflation": 2.0416666666666665,
+        "share_in_3plus": 0.22916666666666666
+      }
+    },
+    "greensboro_permits": {
+      "same_day": {
+        "projects": 46,
+        "buildings": 117.5,
+        "mean_size": 2.5543478260869565,
+        "inflation": 5.057446808510638,
+        "share_in_3plus": 0.6382978723404256
+      }
+    },
+    "dallas_permits": {
+      "same_day": {
+        "projects": 847,
+        "buildings": 1558.0,
+        "mean_size": 1.8394332939787486,
+        "inflation": 7.2406931964056485,
+        "share_in_3plus": 0.4319640564826701
+      }
+    },
+    "sa_permits": {
+      "same_day": {
+        "projects": 3,
+        "buildings": 3.0,
+        "mean_size": 1.0,
+        "inflation": 1.0,
+        "share_in_3plus": 0.0
+      }
+    }
+  },
+  "pooled": {
+    "same_lot": {
+      "projects": 3582,
+      "buildings": 5877.285714285714,
+      "mean_size": 1.6407832814867989,
+      "inflation": 11.832273679020236,
+      "share_in_3plus": 0.3911669623976083
+    },
+    "same_day": {
+      "projects": 4252,
+      "buildings": 7736.785714285714,
+      "mean_size": 1.8195639027012498,
+      "inflation": 5.566455641943802,
+      "share_in_3plus": 0.4373263167612981
+    }
+  }
+}

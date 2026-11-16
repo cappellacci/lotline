@@ -242,6 +242,23 @@ parcels. Eligibility follows one versioned rule, applied the same way in every s
 - **Fallback:** where there are no parcels, ACS one-unit detached homes stand in. That count has no vacant land
   and no zoning, so the missing-middle fallback denominator excludes vacant lots.
 
+**What missing middle counts (decided 2026-11-15).** The Handbook's scenario allows 2–6 homes per lot, up to
+three stories, and names townhouses and 2–6 unit buildings as examples. Lotline's missing-middle model counts a
+narrower thing: **BPS buildings of 2 units and of 3–4 units** (`bldgs_2`, `bldgs_3_4`), because that is the only
+part of the scenario that BPS reports the same way in every place and every year. Two parts of the Handbook's
+definition are not counted:
+
+- **Townhouses.** BPS files each fee-simple townhouse as a 1-unit home, so townhouse rows can't be told apart
+  from detached houses. This matters most where a reform allows lot splits (Houston, Austin).
+- **5–6 unit buildings.** BPS puts them in its 5+ class with large apartment buildings.
+
+The reform's strength (`estimate_mm.units_grade`) also stops at 4 homes per lot: a rule that allows 6 scores
+the same as one that allows 4, because a 5th or 6th home would land in a class the outcome doesn't count.
+Height (three stories) isn't used. **So the missing-middle result is a floor for the scenario.** It is the
+added building of duplexes, triplexes and fourplexes, not of everything the Handbook's scenario allows. Widening
+the count to townhouses and 5–6 unit buildings would need city permit files with unit counts, which only
+about 15 places have (3 of the 86 Oregon places the model is fitted on), so it is left as a next step.
+
 ### The baseline: what gets built with no change
 
 **In plain words:** each place keeps building at its own recent pace, pulled toward its neighbours' pace when
@@ -437,7 +454,6 @@ For each place and each year t = 1 … 5 after the origin:
 | c | How close current local rules are to the Handbook, from the coded reforms (`config/reforms/<st>.csv`) in force on 31 December of the window's first year (2027-12-31, D-064): 1 if a detached ADU of 600+ sq ft is allowed by right with no owner-occupancy or parking rule; `adu_partial_rule_share` (0.3; 0.1–0.6, judgment) if any of those restrictions applies; 0 for an explicit "no ADUs" row. **Anything not coded is unknown (D-022):** a blank rubric field restricts, in each draw, with the probability that coded rules restrict it (state share if 5+ coded values, else pooled); a place with no ADU row draws its class from the coded places of its state and size band (<10k, 10–50k, 50k+ people; state, then all-state pooling below 5 coded places). A citywide parking reform with no minimum settles a blank parking field. The central path uses the expected c. Outputs report each place's class probabilities, whether its class was drawn, and the drawn shares. |
 | a | Years since that rule took effect: a recent reform (Columbus, December 2025) is still ramping up under current rules, and the Handbook adds nothing to it. |
 | Observed ADU rate | Where local permits flag ADUs (Met Council, Minneapolis, Raleigh, Durham, Cincinnati, Austin), ADU permits per eligible parcel a year over 2019–2022. ADUs a place already builds are in its baseline, so they are never counted as added (additionality, judging finding MS-10). |
-| Own counts with drift (D-093) | Where a place has an observed ADU rate, that rate, not the formula above, sets its no-reform ADUs: the place's own recent rate (`adu_observed_years`, with a half-count prior), times a place drift that is ×2.8 either way at one SD (`adu_drift_sigma` 1.025, learned in D-091 on 2021–25 forecasts from 2016–19). The Handbook path is that rate times the formula's Handbook ÷ current-rules ratio. Why: in D-090's within-state test a place's own rate was within ×2 of what happened in all four scored states, the formula in one; with drift, 81% of places fell inside their own P10–P90. The ratio has not been checked against held-out data. `adu_own_rate_drift` 0 restores the formula with the observed rate as a floor. |
 | Pool | Each year's ADUs use up parcels, so a parcel gets at most one ADU. |
 
 **Additionality and the baseline.** Census BPS counts a detached ADU as a 1-unit permit, so the baseline's
@@ -579,8 +595,20 @@ Comparison, so a reader sees them where the numbers are.
   parcels, D-005, before D-011). A pre-declared fix is still open (D-007). How much this bias carries into
   scenario effects depends on the scenario modules and will be reported with them.
 - **BPS hides building types.** BPS counts buildings of 1, 2, 3–4 and 5+ units. It does not flag ADUs (most are
-  filed as 1-unit homes) and it puts 5–6 unit buildings in with large apartments. ADU and 5–6 unit effects
-  therefore need city permit files, which only some places have.
+  filed as 1-unit homes), it files townhouses as 1-unit homes, and it puts 5–6 unit buildings in with large
+  apartments. ADU, townhouse and 5–6 unit effects therefore need city permit files, which only some places
+  have. The missing-middle result counts 2–4 unit buildings only and is a floor for the Handbook's 2–6 unit
+  scenario (see "What missing middle counts").
+- **Missing-middle buildings come in clusters, and the model counts buildings, not projects** (D-092 run 13,
+  `reports/mm-d092/run13-projects/`). In 15–20 city permit files, 34–44% of 2–4 unit buildings are in projects
+  of 3 or more: one builder putting up a row of duplexes, or a build-to-rent community (the largest is about
+  100–130 duplexes on one Austin parcel in three months). Clustering multiplies a place's year-to-year variance
+  by about 5 to 13 over a model that treats each building as independent. Cities differ a lot: Minneapolis,
+  Cleveland and Cincinnati build mostly one at a time (1.0–1.4); Austin, College Station, Wilmington and
+  Columbus build in large groups (12–22). This is why missing middle's ranges are wide: a place's count
+  depends on whether one big project lands in the five years. The model carries it as a per-year spread (φ)
+  rather than modelling projects. A project model would match how building happens but adds no information,
+  so it is left as a next step, not built.
 - **Denominators are weak in most places.** Every MN and NC jurisdiction, and most of OH and TX, uses the ACS
   fallback (homes, not lots; no zoning; no vacant land), quality `low`. Austin's parcels cover the Travis part
   only (0.95 of ACS detached homes). No jurisdiction is yet labelled above data tier 3.
@@ -663,7 +691,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 <!-- params-table:start -->
 <!-- GENERATED by `uv run python scripts/dev/params_table.py` from config/params/*.yaml. Do not edit by hand. -->
 
-328 parameters in 26 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
+351 parameters in 26 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
 **`config/params/adu.yaml`** (21 parameters)
 
@@ -1034,7 +1062,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 |---|---|---|---|---|
 | `mortgage_rate_forecast` | 6.6 | 2.96–6.81 | percent (30-year fixed), held flat over the 5-year forecast window (2027-2031 since D-061; the lead year 2026 too) | Central: FRED MORTGAGE30US annual mean for 2025, 6.595% (market_geo_year.mortgage_rate, national:US) |
 
-**`config/params/mm.yaml`** (11 parameters)
+**`config/params/mm.yaml`** (33 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
@@ -1049,15 +1077,38 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `mm_scenario_seed` | 20261108 | fixed | seed | Choice (D-063): fixed so a run regenerates |
 | `mm_rule_min_coded` | 5 | fixed | coded places | Choice (D-063), as adu_rule_min_coded (D-022): a size band needs at least 5 coded places to supply the dose o… |
 | `mm_teardown_share_scale` | 1 | 0.5–1 | share of a place's house share of eligible parcels | Judgment (D-063 choice 2): new 2-4 unit buildings replace a house in proportion to the share of eligible parc… |
+| `mm_strong_parcel_fill` | 0.85 | fixed | share of permit rows with a parcel ID | D-092 (proposed) §2: a permit source is strong only if a parcel ID is filled on at least 85% of rows |
+| `mm_strong_min_pre_years` | 3 | fixed | years before the place's event | D-092 (proposed) §2: a strong source covers at least 3 years before the place's event |
+| `mm_coverage_k_low` | 0.8 | fixed | permit buildings / BPS 2-4 unit buildings | D-092 (proposed) §2: the source enters if 0.8 <= k_src (D-072's coverage screen) |
+| `mm_coverage_k_high` | 1.25 | fixed | permit buildings / BPS 2-4 unit buildings | D-092 (proposed) §2: upper bound k_src <= 1.25, since permits can include conversions |
+| `mm_collapse_min_units` | 2 | fixed | units per collapsed building | D-092 (proposed) §2: a collapsed building whose summed units fall outside 2-4 is reported and left out |
+| `mm_collapse_max_units` | 4 | fixed | units per collapsed building | D-092 (proposed) §2: a collapsed building whose summed units fall outside 2-4 is reported and left out |
+| `mm_ratio_min_buildings` | 50 | fixed | new 2-4 unit buildings in a source | D-092 (proposed) §3: a ratio's range is the lowest and highest source ratio on at least 50 buildings |
+| `mm_teardown_demolition_window` | 2 | fixed | years either side of the 2-4 building's issue year | D-092 (proposed) §3: s_td counts a demolition permit on the same parcel within +/-2 years |
+| `mm_roll_merge_growth` | 0.2 | fixed | share increase in lot area between rolls | D-092 (proposed) §2, as wake_roll_diff.MERGE_ACRE_GROWTH: lot area up more than 20% is a possible merge, repo… |
+| `mm_coverage_interval_z` | 1.6449 | fixed | standard normal quantile | Choice (mm-counts code PR, D-092 (proposed)): 90% two-sided interval on k_src, as the D-074 k interval (valid… |
+| `mm_standards_dose_increase` | 0.3333 | 0.3333–1 | dose increase of a standards event (dose class S) | D-092 (proposed) §1b: a standards event (the cap doesn't rise |
+| `mm_level_pool_min_places` | 3 | fixed | coded "none" places in a state and size band | D-092 (proposed) §1b, D-042's thin-pool rule: the no-rule level b for an always-allowed place comes from code… |
+| `mm_level_prior_widening` | 2 | fixed | multiplier on θ_L's profile log-SE | D-092 (proposed) §5, challenger C4: θ_L enters as a lognormal prior on M's mature level with its log-SD from… |
+| `mm_challenger_se_margin` | 2 | fixed | paired standard errors of the held-out log score | D-092 (proposed) §5: a challenger replaces M only if its leave-one-state-out held-out log score beats M's by… |
+| `mm_test_a_coverage` | 0.6 | fixed | share of new places with the observed total inside P10-P90 | D-092 §7 test A (new places): pass if at least this share of newly entering non-Oregon places is inside P10-P… |
+| `mm_test_a_ratio` | 2 | fixed | factor | D-092 §7 test A: the median of observed / P50 over new places must lie within this factor of 1 |
+| `mm_test_c_coverage` | 0.7 | fixed | share of no-reform places with the observed total inside P10-P90 | D-092 §7 test C (no-reform floor): pass if at least this share of coded 'none' places and Franklin County pla… |
+| `mm_test_c_first_year` | 2021 | fixed | year | D-092 §7 test C: the no-reform forecast covers 2021-25 |
+| `mm_loso_min_places` | 3 | fixed | fit places in a held-out state | D-092 §7 leave one state out: fail if any state with at least this many fit places is missed (D-040 verdict) |
+| `mm_placebo_shift_years` | 3 | fixed | years | D-092 §7 placebo: events moved this many years early, pre-years only |
+| `mm_place_coverage_low` | 0.6 | fixed | share inside P10-P90 (randomized) | D-092 §7 place coverage: randomized P10-P90 coverage of place totals |
+| `mm_place_coverage_high` | 0.95 | fixed | share inside P10-P90 (randomized) | D-092 §7 place coverage: upper end of the 0.6-0.95 target |
 
-**`config/params/mm_hazard.yaml`** (6 parameters)
+**`config/params/mm_hazard.yaml`** (7 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `mm_mature_hazard_ref` | 0.0001235 | 3.25e-05–0.001006 | new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1) | Estimated, D-054 main fit (b), adopted by D-055 (Ben, 2026-11-06): D-038's Poisson-gamma likelihood and own-g… |
-| `mm_place_effect_variance` | 8.415 | 2.8–32.4 | variance of a place's multiplier on the missing-middle hazard (gamma, mean 1) | Estimated, D-054 main fit (alpha, 90% profile-likelihood interval), adopted by D-055 |
+| `mm_mature_hazard_ref` | 0.0010387 | 0.0001316–0.01939 | new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1) | Estimated, D-092 run 10, challenger C4 (Ben, 2026-11-15): M's likelihood with lumpy years (negative binomial,… |
+| `mm_place_effect_variance` | 6.1e-06 | 6.1e-06–1.92 | variance of a place's multiplier on the missing-middle hazard (gamma, mean 1) | Estimated, D-092 run 10, C4 (alpha, 90% profile-likelihood interval), Ben 2026-11-15 |
+| `mm_year_spread_phi` | 13.63 | 12.85–14.48 | negative binomial size of a place's yearly 2-4 unit building count (variance = mean + mean^2 / φ) | Estimated, D-092 run 9 (deviation (b)): 941 pseudo-forecasts of 483 unused MN, NC, OH and TX places, 2016 and… |
 | `mm_units_per_project` | 2.08 | 2.04–2.75 | homes per new 2-4 unit building (gross, before any demolished house) | Census BPS, the 15 fit places 2016-2025: 10,210 homes in 4,912 buildings (D-038) |
-| `mm_ramp_half_years` | 0.5 | 0.5–1 | years after adoption to reach half the mature hazard | Estimated, D-054 main fit (profile likelihood on the grid 0.5-6.0), adopted by D-055: 0.5 is the grid floor a… |
+| `mm_ramp_half_years` | 4 | 1–6 | years after adoption to reach half the mature hazard | Estimated, D-092 run 10, C4 (profile likelihood on the grid 0.5-6.0), Ben 2026-11-15 |
 | `mm_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature… |
 | `mm_feasibility_dispersion` | 0.5 | 0.25–0.8 | standard deviation of log(lot's own price-to-cost) for a rental duplex | Judgment (D-038), the ADU value (adu_feasibility_dispersion): lots differ in what a 2-4 unit building costs a… |
 

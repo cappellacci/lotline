@@ -1,0 +1,233 @@
+<title>Missing-middle lumpy-year refit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.rng .old { stroke: var(--scenario-baseline); stroke-width: 4; stroke-linecap: round; }
+.rng .new { stroke: var(--scenario-missing); stroke-width: 4; stroke-linecap: round; }
+.rng .obs { fill: var(--ink); }
+.rng .sw.old { background: var(--scenario-baseline); } .rng .sw.new { background: var(--scenario-missing); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+td.ok { color: var(--confidence-inside); font-weight: 600; } td.no { color: var(--confidence-outside); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · D-092 runs 9–11, refit with lumpy years · 15 Nov 2026</div>
+  <h1>Honest ranges now hold up, and they are too wide to show the reform's effect</h1>
+  <p class="lede">With each year's count allowed to be lumpy (φ = 13.6, fitted on places the model never uses), the missing-middle model's ranges are calibrated: 84% of places land inside P10–P90, against 44% before. Leave one state out and the parcel-roll check now pass. Test C misses on one rule, Minnesota's three-place total. But the same honesty swamps the reform signal: the model beats "no effect" by only 5.0 (SE 3.4), and the placebo still fails.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>0.44 → 0.84</b><span>place coverage, target 0.60–0.95</span></div>
+  <div class="tile"><b>79%</b><span>of no-reform places inside their range (bar 70%); MN total missed</span></div>
+  <div class="tile"><b>0.63 → 1.68</b><span>θ per 1,000 lots a year; 90% range now 0.12–21.9</span></div>
+  <div class="tile"><b>+5.0</b><span>held-out gain over "no reform effect" (SE 3.4); was +186 (SE 63)</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Two more tests pass, and coverage is on target</h2>
+  <div class="scroll"><table><thead><tr><th>§7 test (model M)</th><th>Run 5: certain baseline</th><th>Run 11: lumpy years</th></tr></thead><tbody><tr><td>A: new places (Houston only)</td><td class='no'>fail</td><td class='no'>fail</td></tr><tr><td>B: parcel-roll check</td><td class='no'>fail</td><td class='ok'>pass</td></tr><tr><td>C: places with no reform</td><td class='no'>fail</td><td class='no'>fail</td></tr><tr><td>Leave one state out</td><td class='no'>fail</td><td class='ok'>pass</td></tr><tr><td>Placebo (events 3 years early)</td><td class='no'>fail</td><td class='no'>fail</td></tr><tr><td>Place coverage (target 0.60–0.95)</td><td class='no'>0.44</td><td class='ok'>0.84</td></tr></tbody></table></div>
+  <p class="note">Test A has one place, Houston: 21 built, a range of 0–31, and a median of 0, so the within-×2 rule can't be met. Test C fails only on Minnesota's total: 32 built by three places against a P90 of 13.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>The ranges now reach the observed totals, because they are much wider</h2>
+  <div class="legend"><span><i class="sw old" style="background:var(--scenario-baseline)"></i>Run 5, Poisson baseline</span><span><i class="sw new" style="background:var(--scenario-missing)"></i>Run 11, lumpy years</span></div>
+  <svg viewBox="0 0 680 214" class="chart rng" role="img" aria-label="P10 to P90 ranges in runs 5 and 11 against observed totals"><line x1="250.0" x2="250.0" y1="4" y2="190" class="grid"/><text x="250.0" y="204" class="tick" text-anchor="middle">1</text><line x1="350.0" x2="350.0" y1="4" y2="190" class="grid"/><text x="350.0" y="204" class="tick" text-anchor="middle">10</text><line x1="450.0" x2="450.0" y1="4" y2="190" class="grid"/><text x="450.0" y="204" class="tick" text-anchor="middle">100</text><line x1="550.0" x2="550.0" y1="4" y2="190" class="grid"/><text x="550.0" y="204" class="tick" text-anchor="middle">1,000</text><line x1="650.0" x2="650.0" y1="4" y2="190" class="grid"/><text x="650.0" y="204" class="tick" text-anchor="middle">10,000</text><text x="240" y="20" class="lab" text-anchor="end">MN: no-reform places (test C)</text><line x1="297.7" x2="340.3" y1="11" y2="11" class="old"/><line x1="250.0" x2="361.4" y1="21" y2="21" class="new"/><circle cx="400.5" cy="16" r="4.5" class="obs"/><text x="240" y="50" class="lab" text-anchor="end">OH: no-reform places (test C)</text><line x1="519.4" x2="524.3" y1="41" y2="41" class="old"/><line x1="415.3" x2="560.2" y1="51" y2="51" class="new"/><circle cx="509.2" cy="46" r="4.5" class="obs"/><text x="240" y="80" class="lab" text-anchor="end">TX: no-reform places (test C)</text><line x1="610.3" x2="612.0" y1="71" y2="71" class="old"/><line x1="573.1" x2="635.6" y1="81" y2="81" class="new"/><circle cx="615.5" cy="76" r="4.5" class="obs"/><text x="240" y="110" class="lab" text-anchor="end">NC: fit places, state left out</text><line x1="334.5" x2="405.6" y1="101" y2="101" class="old"/><line x1="250.0" x2="417.2" y1="111" y2="111" class="new"/><circle cx="280.1" cy="106" r="4.5" class="obs"/><text x="240" y="140" class="lab" text-anchor="end">TX: fit places, state left out</text><line x1="373.0" x2="493.6" y1="131" y2="131" class="old"/><line x1="250.0" x2="446.4" y1="141" y2="141" class="new"/><circle cx="388.0" cy="136" r="4.5" class="obs"/><text x="240" y="170" class="lab" text-anchor="end">OR: fit places, state left out</text><line x1="540.5" x2="567.8" y1="161" y2="161" class="old"/><line x1="516.2" x2="649.9" y1="171" y2="171" class="new"/><circle cx="534.7" cy="166" r="4.5" class="obs"/><text x="650" y="212" class="tick" text-anchor="end">2–4 unit buildings, log scale; dot = observed</text></svg>
+  <p>Before, Ohio's and Texas's no-reform totals fell outside narrow ranges. Now they fall inside, as does Oregon left out. Oregon's range runs to nearly 10,000 against 703 built, which is too wide to guide a bill.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>The reform effect is no longer clear</h2>
+  <p>Once a place's no-reform path can swing the way real places do, the cap rises in this data add little that the model can tell apart from noise. Moving every event three years early gives a five-year rate of 0.00045, more than the real dates' 0.00027. Oregon and the other four states agree much more closely (θ 1.68 with Oregon, 1.08 without), so the 20× gap in run 4 was mostly the over-sure baseline.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>Next: place types, then count projects instead of buildings</h2>
+  <p>Place types (core city, suburb, town, as in ADU D-088) are already planned. They can explain part of the year-to-year spread and narrow every place's range without new data. The deeper fix is the unit: buildings arrive in projects, and run 1 found about 11 permit sources with parcel IDs. Counting projects would make the noise model match the mechanism. Nothing goes to config until you choose; the tool still runs D-059's θ = 0.12.</p>
+</section>
+
+<footer>
+  <div>Runs: <code>mm_kappa_d092.py --form year</code> (φ = 13.633, 941 pseudo-forecasts on unused places), <code>calibrate_mm_d092.py --phi</code> (M and C4, 93 fit places, 44 min), <code>mm_tests_d092.py --phi</code> (20,000 draws, seed 20261112). Pre-registered in D-092's deviations of 2026-11-15. Cached tables only; St. Paul and Ramsey not in the panel; nothing unblinded.</div>
+  <div>Sources: <code>reports/mm-d092/run9-phi/</code>, <code>run10-refit-phi/</code> and <code>run11-tests-phi/</code> on branch <code>ws/mm-baseline-spread</code> (PR #436).</div>
+</footer>
+</main>

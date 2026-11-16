@@ -1,31 +1,41 @@
-# Missing-middle uptake hazard (D-037 route 1, as amended: calibrated on our own four states; D-038): the yearly
+# Missing-middle uptake hazard (D-037 route 1, as amended: calibrated on our own states; D-038): the yearly
 # chance that an eligible single-family-zoned parcel (rule 1.1, D-014) gets a new 2-4 unit building, phased in
 # by a ramp. It plays the role adu_mature_hazard_ref plays for ADUs (hazard.yaml):
 #     expected buildings = baseline + θ × u_place × eligible parcels × dose × F(PCR) / F(1) × ramp(t)
-# Estimated by scripts/dev/calibrate_mm_d054.py (src/lotline/model/calibrate_mm.py) on 13 MN, NC, OH and TX places
-# whose rule raised the unit cap in 2013-2025, counting only the newly allowed building classes (D-054 main fit,
-# adopted by D-055); results in reports/mm-d054/. D-038's values (reports/mm-d038/) are in this file's history. Outside studies (Portland, Houston,
-# Auckland, SB 9: docs/research/mm-uptake-evidence.md) are a plausibility check only.
+#     each year's count ~ negative binomial around that mean, with spread φ (mm_year_spread_phi)
+# Values: D-092's challenger C4 (run 10, reports/mm-d092/run10-refit-phi/), chosen by Ben on 2026-11-15 after the
+# §7 tests (run 11). Fitted by scripts/dev/calibrate_mm_d092.py on 93 places in MN, NC, OH, TX and OR (86 in
+# Oregon) whose rule raised the unit cap or the approval standard in 2013-2025, with the C0 baseline and lumpy
+# years (φ 13.6). D-055's values (D-054 fit, reports/mm-d054/) and D-038's are in this file's history. Outside
+# studies (docs/research/mm-uptake-evidence.md) are a plausibility check only.
 # Kept out of hazard.yaml (D-037 named that file) because scenarios/adu.py draws every hazard.yaml parameter
 # from one random stream: a new key there would shift the ADU draws and the V5 ADU numbers (D-038).
 
 # ---- The anchor ----
 
 mm_mature_hazard_ref:
-  value: 0.0001235
-  low: 0.0000325
-  high: 0.001006
+  value: 0.0010387
+  low: 0.0001316
+  high: 0.01939
   unit: new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1)
-  source: "Estimated, D-054 main fit (b), adopted by D-055 (Ben, 2026-11-06): D-038's Poisson-gamma likelihood and own-growth baseline on D-042's events (a rise in the unit cap, building classes above the prior cap), 13 places, 69 place-years, 90% profile-likelihood interval; Minneapolis, Durham and Durham County held out as test places"
-  notes: "Replaces D-038's 1.08 per 1,000, which predates Austin's and Houston's [predates] rows. Leave-one-state-out (D-054): North Carolina useful; Texas missed by every model, because Lubbock's own-growth baseline (191 expected, 25 built); MN and OH carry no information. Folds give 0.013 (without NC) to 0.24 (without TX) per 1,000: most of the excess is NC towns (Wake Forest, Burlington) and Houston. The test places built more than the median (Durham city 100 against 33-54). Not blind: V9 Oregon re-scored with these values (D-055, reports/v9-oregon-d055/): headline 2018-2025 CRPS 84.8, against 690.6 for D-038's and 279.5 for no reform; place ranges are too narrow (34% above P90). Drawn lognormal: median at the estimate, log-SD (ln high - ln low) / 3.29 = 1.043."
+  source: "Estimated, D-092 run 10, challenger C4 (Ben, 2026-11-15): M's likelihood with lumpy years (negative binomial, φ 13.63) and the C0 baseline, plus a lognormal prior from the always-allowed places' level θ_L (log-SD doubled for selection, D-092 §5); 93 places, 299 place-years, 90% profile-likelihood interval. §5's rule picks C4: it beats M (1.68 per 1,000) on held-out log score by 5 paired SE and passes the same §7 tests"
+  notes: "1.04 per 1,000 (0.13-19.4). With the half-way point at 4.0 years the five-year rate is 0.24 per 1,000 a year (D-055's was 0.10). §7 tests (run 11, reports/mm-d092/run11-tests-phi/): place coverage 0.78 (C4) and 0.84 (M) inside the 0.60-0.95 bar; roll check and leave-one-state-out pass; the no-reform floor misses only on Minnesota's total; new places (Houston only) and the placebo fail. Against no reform effect, M is only +5.0 (SE 3.4) held out: the counts can't clearly show the effect apart from project clustering (run 13). θ without Oregon 1.08. Replaces D-055's 0.12 per 1,000, whose ranges were too narrow (V9 Oregon: 34% of places above P90). Drawn lognormal: median at the estimate, log-SD (ln high - ln low) / 3.29 = 1.518."
 
 mm_place_effect_variance:
-  value: 8.415
-  low: 2.80
-  high: 32.4
+  value: 0.0000061
+  low: 0.0000061
+  high: 1.92
   unit: variance of a place's multiplier on the missing-middle hazard (gamma, mean 1)
-  source: "Estimated, D-054 main fit (alpha, 90% profile-likelihood interval), adopted by D-055"
-  notes: "Very wide, as for ADUs: a single place's range is wide and its median far below its mean; state totals, summed over many places, are tighter. D-038 had 7.29 (3.18-19.78). Drawn lognormal around the estimate from its interval."
+  source: "Estimated, D-092 run 10, C4 (alpha, 90% profile-likelihood interval), Ben 2026-11-15"
+  notes: "At the search's floor: once each year is lumpy (φ), the data show no extra place-to-place spread, so most draws give every place a multiplier of about 1. D-055 had 8.42 (2.80-32.4), which stood in for the lumpiness φ now carries. Drawn lognormal from the interval: median about 0, 5% of draws above 1.92."
+
+mm_year_spread_phi:
+  value: 13.63
+  low: 12.85
+  high: 14.48
+  unit: negative binomial size of a place's yearly 2-4 unit building count (variance = mean + mean^2 / φ)
+  source: "Estimated, D-092 run 9 (deviation (b)): 941 pseudo-forecasts of 483 unused MN, NC, OH and TX places, 2016 and 2021 origins, 90% profile-likelihood interval; used in C4's fit (run 10)"
+  notes: "Builders put up 2-4 unit buildings in clusters (run 13: 34-44% of buildings are in projects of 3 or more), so a place's years are lumpy. By state: MN 7.4, NC 8.1, OH 8.1, TX 20 (the search's edge); by place type (run 12) not adopted. The scenario holds φ at its value (the interval is narrow) and draws each place-year's added buildings as Poisson(mean × g), g ~ Gamma(mean 1, variance 1/φ)."
 
 mm_units_per_project:
   value: 2.08
@@ -38,12 +48,12 @@ mm_units_per_project:
 # ---- Ramp after adoption ----
 
 mm_ramp_half_years:
-  value: 0.5
-  low: 0.5
-  high: 1.0
+  value: 4.0
+  low: 1.0
+  high: 6.0
   unit: years after adoption to reach half the mature hazard
-  source: "Estimated, D-054 main fit (profile likelihood on the grid 0.5-6.0), adopted by D-055: 0.5 is the grid floor and the 90% set holds no other grid point, so high is the neighbouring grid point (as D-038)"
-  notes: "On the grid floor: the data show the effect from the first year and cannot place the ramp. θ and the half-way point trade off (D-054: leaving Wake Forest out gives 2.6 per 1,000 at half 6.0), so draw them together or hold the half-way point at its value, as V9 and D-051 do. Outside series suggest 1.5-5 years (Portland, Auckland, Houston). D-038 had 2.0 (1.5-2.5)."
+  source: "Estimated, D-092 run 10, C4 (profile likelihood on the grid 0.5-6.0), Ben 2026-11-15"
+  notes: "Slow, and loosely pinned (1.0-6.0): with lumpy years the data put the effect later than D-055's 0.5 (the grid floor). D-055's note: the data could not place the ramp. θ and the half-way point trade off (D-054: leaving Wake Forest out gives 2.6 per 1,000 at half 6.0), so draw them together or hold the half-way point at its value, as V9 and D-051 do. Outside series suggest 1.5-5 years (Portland, Auckland, Houston). D-038 had 2.0 (1.5-2.5)."
 
 mm_ramp_slope_years:
   value: 0.75
@@ -51,7 +61,7 @@ mm_ramp_slope_years:
   high: 1.5
   unit: years (logistic scale)
   source: "Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature hazard"
-  notes: "At half 0.5 and slope 0.75 (D-055): year 1 (age 0.5) 0.50, year 2 0.79, year 3 0.94, year 4 0.98, year 5 1.00 of the mature hazard (ages at mid-year). At D-038's half 2.0: 0.12, 0.34, 0.66, 0.88, 0.97."
+  notes: "At half 4.0 and slope 0.75 (C4): year 1 (age 0.5) 0.009, year 2 0.034, year 3 0.12, year 4 0.34, year 5 0.66 of the mature hazard (ages at mid-year); mean 0.233. At D-055's half 0.5: 0.50, 0.79, 0.94, 0.98, 1.00."
 
 # ---- Feasibility transport ----
 

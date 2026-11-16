@@ -1,0 +1,34 @@
+{
+  "mapping": {
+    "core": "suburb",
+    "suburb": "suburb",
+    "town": "suburb"
+  },
+  "notes": [
+    "town has fewer than 8 fit places in 3 states: merged into suburb",
+    "core has fewer than 8 fit places in 3 states: merged into suburb"
+  ],
+  "uncoded_mapping": {
+    "core": "core",
+    "suburb": "suburb",
+    "town": "town"
+  },
+  "uncoded_notes": [],
+  "counts": {
+    "fit": {
+      "suburb": 93
+    },
+    "test": {
+      "suburb": 3
+    },
+    "test_c": {
+      "suburb": 44
+    },
+    "unused (phi)": {
+      "suburb": 483
+    }
+  },
+  "units_sources": {
+    "acs 2011-15": 623
+  }
+}
