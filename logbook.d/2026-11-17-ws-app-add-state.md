@@ -13,3 +13,11 @@
 - **Outputs:** `src/lotline/app/template.html`; tests in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and tests. Checked with `tests/app` (47 passed), ruff and `compliance_check.py`, and by clicking through the built page in the browser pane at desktop and phone widths.
 - **Open / next:** Ben's further sketches for the add-a-state workflow.
+
+### LB-NNN · 2026-11-17 · Deliverables: Results open with "[State] can add [X] homes" and a range box per reform
+- **Question:** What should a policymaker read first on a state's Results page?
+- **What I did:** Built Ben's sketch. The page now opens with a large headline, "[State] can add [X] homes over the next 5 years". X is the median of the three reforms' midpoints (ADUs, missing middle, fee reduction), with each reform passed on its own; they are never added together. Below it are three range boxes, one per reform. Each box shows the P10–P90 range, the midpoint and a small bar on a shared scale, plus one line on what the reform is (the Handbook definitions). The fee box switches between the Handbook benchmark and real local fees, and the headline follows the switch. The "Count homes" toggle further down moves the headline and boxes too. The old "Results" heading and lead line were folded into the headline and its note. The rest of the page is unchanged.
+- **Inputs:** Ben's sketch, described in chat (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`; a test in `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change and test. Checked with `tests/app` (48 passed), ruff and `compliance_check.py`, and in the browser pane for MN and OR (fee switch and the count toggle move the headline).
+- **Open / next:** Ben to confirm "median of the three" is the headline he wants; the detail card below still repeats the ranges.

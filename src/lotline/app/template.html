@@ -122,6 +122,20 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
 .row-pending { color: var(--ink-muted); font-size: 14px; line-height: 20px; font-style: italic; }
 @media (max-width: 640px) { .ranges { grid-template-columns: 1fr; } .ranges .nums { text-align: left; } }
+/* Results opening (Ben's sketch, 2026-11-17): "[State] can add [X] homes over the next 5 years", then one range box per reform */
+.hero { margin: 0 0 var(--space-6); }
+.hero .display { margin: 0 0 var(--space-2); }
+.hero .display .x { color: var(--survey); font-variant-numeric: tabular-nums; }
+.hero .note { color: var(--ink-muted); margin: 0 0 var(--space-5); }
+.boxes { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.box { background: var(--app-card); border: var(--stroke-hair) solid var(--rule); border-top: var(--stroke-mark) solid var(--box-c, var(--rule)); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.box h4 { margin: 0; font-size: 18px; line-height: 24px; color: var(--box-c, var(--ink)); }
+.box .range { font-family: var(--font-mono); font-size: 28px; line-height: 32px; font-variant-numeric: tabular-nums; color: var(--ink); }
+.box .midtxt { color: var(--ink-muted); font-size: 14px; line-height: 20px; }
+.box .track { height: 20px; }
+.box .track .line { top: 9px; }
+.box p.what { margin: var(--space-1) 0 0; font-size: 14px; line-height: 20px; }
+.box .toggle button { font-size: 12px; line-height: 16px; padding: 2px var(--space-2); }
 .headline { margin: 0 0 var(--space-4); }
 .headline .figure-large { display: block; color: var(--ink); }
 .toggle { display: inline-flex; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
@@ -254,8 +268,6 @@ table.checks td:last-child { min-width: 260px; }
     </div>
   </section>
   <section class="part" id="page-results" data-section="results" hidden>
-    <h2 class="h1" id="results-title">Results</h2>
-    <p class="lead" id="results-lead"></p>
     <div id="results-body"></div>
   </section>
   <section class="part" id="page-data" data-section="data" hidden>
@@ -691,7 +703,8 @@ function niceTicks(max, n = 4) {
 }
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
-const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null };
+const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null, fee: "fees" };
+const SCENARIOS_SHORT = { adu: "ADUs", missing_middle: "Missing middle", fees: "Fee reduction" };
 // Gross vs net (aggregate.homes_from_draws): "all new homes" = homes_in_place; "net new housing" = that × (1 − displacement_share).
 const OUTCOME_WORDS = {
   homes_in_place: ["All new homes", "Every new home the reform leads to."],
@@ -703,6 +716,15 @@ const FEE_NOTE = {
   fees: "<b>The Handbook benchmark:</b> every city is assumed to charge $50,000 a home, cut to $25,000. Real fees in our states are far lower (a typical city charges about $4,000 to $9,000 for a house), so this is the comparison every entry runs, not a forecast of a real cut.",
   fees_local_half: "<b>Real local fees cut in half:</b> each city's own fees for houses, duplexes and fourplexes, from its fee schedule (or, where none was coded, the state's typical fee), cut by half. Buildings of 5 or more homes are not covered.",
 };
+
+// What each reform is, in one line (the Handbook's definitions, as on The model page), for the range boxes.
+const WHAT = {
+  adu: "One backyard home (ADU) allowed on every house lot, at least 600 sq ft, with no parking required.",
+  missing_middle: "Buildings of 2 to 6 homes allowed on lots now zoned for one house, up to three stories.",
+  fees: "Development fees cut in half. The Handbook benchmark: a $50,000 fee everywhere, cut to $25,000.",
+  fees_local_half: "Development fees cut in half, starting from each city's own fees for houses, duplexes and fourplexes.",
+};
+const HERO = ["adu", "missing_middle", "fees"];  // one box per reform; the fee box switches between its two versions
 
 // "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
 function twoNumbersHtml(b, d, r) {
@@ -823,9 +845,9 @@ const SECTIONS = {
   results(b) {
     UI.b = b; UI.pins = {};
     const scen = scenariosIn(b);
+    if (!scen.includes(UI.fee)) UI.fee = "fees";
     UI.detail = scen.includes(UI.detail) ? UI.detail : scen[0];
     const yrs = AGG.windowLabel(b);  // from the bundle's totals (D-061: 2027–2031 for origin 2025)
-    $("results-lead").textContent = `Net new homes in ${b.meta.state} over ${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""} compared with no policy change (baseline). Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
     if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
     const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
       `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
@@ -838,7 +860,23 @@ const SECTIONS = {
     const pend = pendingIn(b);
     const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
     const tabs = scen.map((s) => `<button type="button" data-detail="${esc(s)}" aria-pressed="${s === UI.detail}">${esc(scenLabel(s))}</button>`).join("");
-    return `${flagHtml(b.meta)}
+    const fee2 = scen.includes("fees_local_half");
+    const boxes = HERO.map((k) => {
+      const feeSwitch = k === "fees" && fee2 ? `<span class="toggle" role="group" aria-label="Which fees">
+        <button type="button" data-fee="fees" aria-pressed="${UI.fee === "fees"}">Handbook benchmark</button><button type="button" data-fee="fees_local_half" aria-pressed="${UI.fee === "fees_local_half"}">Real local fees</button></span>` : "";
+      const s = k === "fees" ? UI.fee : k;
+      return `<div class="box" data-box="${esc(k)}" style="--box-c:${scenColor(s)}">
+        <h4>${esc(SCENARIOS_SHORT[k])}</h4>${feeSwitch}
+        <div class="range" data-box-range></div><div class="midtxt" data-box-mid></div>
+        <div class="track" data-box-track aria-hidden="true"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
+        <p class="what" data-box-what>${esc(WHAT[s])}</p></div>`;
+    }).join("");
+    return `<div class="hero" id="hero">
+        <h2 class="display" id="hero-line">Results</h2>
+        <p class="body note" id="hero-note"></p>
+        <div class="boxes">${boxes}</div>
+      </div>
+      ${flagHtml(b.meta)}
       <div class="card" id="headline-card">
         <p class="eyebrow">Five-year total${yrs ? `, ${yrs}` : ""}</p>
         <div class="headline" id="headline"></div>
@@ -928,6 +966,34 @@ function knobsHtml(b) {
   }).join("");
 }
 
+// "[State] can add [X] homes": X is the median of the three reforms' midpoints (the fee box's chosen version).
+// Each reform is estimated on its own; the three are never added together.
+function heroUpdate(b, R, o) {
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const mids = keys.map((s) => R[s][o].p50);
+  const x = mids.length ? AGG.percentile(mids, 50) : NaN;
+  $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
+  const yrs = AGG.windowLabel(b);
+  $("hero-note").textContent = `The middle estimate of the ${mids.length === 3 ? "three" : mids.length} reforms below, each passed on its own, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}${yrs ? ` in ${yrs}` : ""} compared with no policy change. The reforms are not added together. Each range runs from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
+  const top = Math.max(...keys.map((s) => R[s][o].p90), 1);
+  const pct = (v) => `${Math.max(0, Math.min(100, (v / top) * 100))}%`;
+  for (const k of HERO) {
+    const box = document.querySelector(`[data-box="${k}"]`);
+    if (!box) continue;
+    const s = k === "fees" ? UI.fee : k, r = R[s];
+    if (!r) { box.querySelector("[data-box-range]").textContent = "Not yet run"; continue; }
+    const { p10, p50, p90 } = r[o];
+    box.style.setProperty("--box-c", scenColor(s));
+    box.querySelector("[data-box-range]").textContent = `${fmtN(p10)} – ${fmtN(p90)} homes`;
+    box.querySelector("[data-box-mid]").textContent = `Midpoint ${fmtN(p50)}. Range P10 to P90.`;
+    box.querySelector("[data-box-what]").textContent = WHAT[s];
+    const t = box.querySelector("[data-box-track]");
+    for (const el of t.querySelectorAll(".band, .line")) { el.style.left = pct(p10); el.style.width = `calc(${pct(p90)} - ${pct(p10)})`; }
+    t.querySelector(".mid").style.left = pct(p50);
+  }
+}
+
 function updateResults() {
   const b = UI.b;
   if (!b || !scenariosIn(b).length) return;
@@ -948,6 +1014,7 @@ function updateResults() {
     t.setAttribute("aria-label", `${scenLabel(s)}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
     document.querySelector(`[data-nums="${CSS.escape(s)}"]`).innerHTML = `${fmtN(p10)} – ${fmtN(p90)} <span class="muted">(mid ${fmtN(p50)})</span>`;
   }
+  heroUpdate(b, R, o);
   $("axis").innerHTML = ticks.map((v) => `<span style="left:${pct(v)}">${fmtN(v)}</span>`).join("");
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
   const d = UI.detail, rd = R[d][o];
@@ -1230,6 +1297,7 @@ function wireResults() {
       $("knobs").innerHTML = knobsHtml(UI.b);
       drawTornado();
     }
+    if (t.dataset.fee) { UI.fee = t.dataset.fee; body.querySelectorAll("[data-fee]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
     if (t.dataset.reset) delete UI.pins[t.dataset.reset];
     if (t.id === "reset-all") UI.pins = {};
     updateResults();
@@ -1285,8 +1353,6 @@ async function show(state) {
   wireData();
   drawTornado();
   footer(b);
-  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
-  $("results-title").textContent = `Results: ${named}`;
   document.title = `Lotline · ${b.meta.state}`;
 }
 

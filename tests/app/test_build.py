@@ -172,6 +172,29 @@ def test_results_section_parts_are_on_the_page(tmp_path):
         assert part in html, part
 
 
+def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    js = html[html.index("function heroUpdate") :]
+    # "[State] can add [X] homes over the next 5 years", X the median of the three reforms' midpoints
+    assert (
+        'can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years'
+        in js
+    )
+    assert "const x = mids.length ? AGG.percentile(mids, 50) : NaN;" in js
+    assert 'const HERO = ["adu", "missing_middle", "fees"];' in html
+    # the headline comes first on the page, ahead of the overlap flag and the detail card
+    body = html[html.index("results(b) {") :]
+    assert (
+        body.index('<div class="hero" id="hero">')
+        < body.index("${flagHtml(b.meta)}")
+        < body.index('id="headline-card"')
+    )
+    # each box says in one line what the reform is, for every version the page can show
+    what = re.search(r"const WHAT = \{(.*?)\n\};", html, re.S).group(1)
+    for k in ("adu", "missing_middle", "fees", "fees_local_half"):
+        assert f"\n  {k}: " in what
+
+
 def test_gross_and_net_are_explained_in_plain_words(tmp_path):
     """Ben, 2026-11-09: the toggle reads "All new homes" / "Net new housing", a "Why two numbers?" note uses
     the state's own figures, and the displacement slider says what it means. The old wording is gone."""
