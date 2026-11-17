@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.14"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.15"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -596,6 +596,46 @@ class ResultsObserved(_Strict):
         return not df.duplicated(["state", "measure", "year"]).any()
 
 
+ADU_PLACE_TYPES = ["core", "suburb", "town"]  # D-088
+
+
+class ResultsAduPlaceTypes(_Strict):
+    """The ADU scenario by place type (D-088: core city, suburb, town), for the page's evidence card. `places`
+    and `lots` (eligible lots, the median over draws) describe the state; `base` (current-rules ADUs, the
+    no-reform world) and `added` (ADUs the Handbook reform adds) are gross ADU permits a year, averaged over
+    the window, each draw summed over the type's places; `base` and `added` are medians, with P10 and P90."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    place_type: Series[str] = pa.Field(isin=ADU_PLACE_TYPES)
+    places: Series[pd.Int64Dtype] = pa.Field(ge=0)
+    lots: Series[float] = pa.Field(ge=0)
+    base_p10: Series[float] = pa.Field(ge=0)
+    base: Series[float] = pa.Field(ge=0)
+    base_p90: Series[float] = pa.Field(ge=0)
+    added_p10: Series[float] = pa.Field(ge=0)
+    added: Series[float] = pa.Field(ge=0)
+    added_p90: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "place_type"]).any()
+
+
+class ResultsAduBaseline(_Strict):
+    """Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over
+    the draws: what the ADU scenario's added range stacks on."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    period: Series[str] = pa.Field(str_matches=r"^\d{4}$")
+    p10: Series[float] = pa.Field(ge=0)
+    p50: Series[float] = pa.Field(ge=0)
+    p90: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "period"]).any()
+
+
 class ResultsScorecard(_Strict):
     """Validation scorecard rows for the state (validation plan §5): one row per check."""
 
@@ -618,6 +658,8 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_scorecard": ResultsScorecard,
     "results_baseline": ResultsBaseline,
     "results_observed": ResultsObserved,
+    "results_adu_place_types": ResultsAduPlaceTypes,
+    "results_adu_baseline": ResultsAduBaseline,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -711,6 +753,11 @@ HISTORY = [
         "1.14",
         "results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook "
         "benchmark), D-065",
+    ),
+    (
+        "1.15",
+        "results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide "
+        "current-rules ADUs per window year), for the app's ADU evidence card",
     ),
 ]
 

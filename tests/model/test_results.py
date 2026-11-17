@@ -64,6 +64,7 @@ def _run_draws(n=4, places=3, years=5, seed=0):
         "eligible": np.tile([1000.0, 500.0, 200.0], (n, 1)),
         "pencil": rng.uniform(0.1, 0.9, (n, places)),
         "added": added,
+        "current": rng.uniform(0, 3, (n, places, years)),
         "homes": added * 0.65 * 0.9,
         "params": params,
     }
@@ -198,7 +199,44 @@ def make_fixture() -> dict[str, pd.DataFrame]:
     )
     juris = pd.DataFrame({"geoid": ["Z1", "Z2", "Z3"], "pop_2020": [6000, 2000, 2000]})
     seen = results.observed_table(_baseline_panel(), permits, juris, "ZZ", 2025)
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}
+    typed = _places().assign(place_type=["core", "suburb", "suburb"])
+    return {
+        "meta": meta,
+        "draws": d,
+        **parts,
+        "scorecard": scorecard,
+        "baseline": base,
+        "observed": seen,
+        "adu_place_types": results.adu_place_type_table("ZZ", typed, rd),
+        "adu_baseline": results.adu_baseline_years("ZZ", rd, 2025),
+    }
+
+
+def test_adu_place_types_and_baseline_by_hand():
+    """Docstring example: two suburbs with 3 and 5 current-rules ADUs a year and 1 and 2 added, every draw and
+    year; one core city with 10 and 4. Base and added are per year, summed over the type's places."""
+    n, yrs = 3, 5
+    cur = np.zeros((n, 3, yrs)) + np.array([3.0, 5.0, 10.0])[None, :, None]
+    add = np.zeros((n, 3, yrs)) + np.array([1.0, 2.0, 4.0])[None, :, None]
+    rd = {"current": cur, "added": add, "eligible": np.tile([100.0, 200.0, 50.0], (n, 1))}
+    places = pd.DataFrame({"geoid": ["a", "b", "c"], "place_type": ["suburb", "suburb", "core"]})
+    t = results.adu_place_type_table("ZZ", places, rd).set_index("place_type")
+    assert list(t.index) == ["core", "suburb"]  # no towns here, so no town row
+    assert t.loc["suburb", ["places", "lots", "base", "added"]].tolist() == [2, 300, 8, 3]
+    assert t.loc["core", ["base_p10", "base", "base_p90", "added"]].tolist() == [10, 10, 10, 4]
+    y = results.adu_baseline_years("ZZ", rd, 2025)
+    assert y["period"].tolist() == ["2027", "2028", "2029", "2030", "2031"] and (y["p50"] == 18).all()
+
+
+def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
+    b = results.validate_bundle(make_fixture())
+    path = results.write_bundle(b, tmp_path / "zz" / "bundle.json")
+    doc = json.loads(path.read_text())
+    for part in ("adu_place_types", "adu_baseline"):
+        del doc[part]
+    path.write_text(json.dumps(doc))
+    back = results.read_bundle(path)
+    assert back["adu_place_types"].empty and back["adu_baseline"].empty
 
 
 def test_bundle_round_trips(tmp_path):
