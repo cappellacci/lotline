@@ -370,3 +370,14 @@ def test_change_grid_revenue_by_hand():
             want = -s * fee[cls] * base[cls] + (1 - s) * fee[cls] * g["units_added"]
             assert np.allclose(g["revenue_change"], want)
     assert (grid.xs(0.0, level="share")["revenue_change"] == 0).all()
+
+
+def test_simulate_is_the_draws_behind_run():
+    """`simulate` (the results bundle's input) gives the draws `run` summarizes, per class and in total."""
+    places = by_size_frame(U2=10_000.0, U3_4=6_000.0)
+    sim = fees.simulate(places, 2025, mode="local_half", draws=100)
+    _, totals = fees.run(places, 2025, mode="local_half", draws=100)
+    assert sim["added"].sum(axis=2).mean(axis=0) == pytest.approx(totals["units_added_mean"].to_numpy())
+    for cls, a in sim["added_by_class"].items():
+        assert a.sum(axis=2).mean(axis=0) == pytest.approx(totals[f"units_added_mean_{cls}"].to_numpy())
+    assert sum(sim["added_by_class"].values()) == pytest.approx(sim["added"])

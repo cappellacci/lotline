@@ -17,9 +17,10 @@
 - `observed`: what was actually permitted in the years before the window (`observed_table`): ADU permits where
   local data flag them, and homes in 2-4 unit buildings from BPS.
 
-Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide. Fees (a statewide
-baseline forecast for every place) and the stacked combinations (`model/combine.py` not yet written) are
-listed in `meta.scenarios_pending`, never filled with stand-ins.
+Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide, and the fee scenario
+over every place the baseline forecasts (D-076) twice, as D-065 labels them: `fees`, the Handbook benchmark
+($50,000 cut in half), and `fees_local_half`, real local fees cut in half. The stacked combinations
+(`model/combine.py` not yet written) are listed in `meta.scenarios_pending`, never filled with stand-ins.
 
 Factors the scenario module does not draw itself are drawn here, triangular over config/params/aggregate.yaml
 (low, value, high), from `results_seed`: `completion_factor_single_family` (ADU),
@@ -47,7 +48,9 @@ from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
 PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard", "baseline", "observed")
 TABLE = {part: f"results_{part}" for part in PARTS}
-ENGINE_SCENARIOS = ("adu", "missing_middle")  # scenarios `build_bundle` can fill today
+ENGINE_SCENARIOS = ("adu", "missing_middle", "fees", "fees_local_half")  # scenarios `build_bundle` can fill
+# D-065: the bundle's fee scenarios and the `scenarios.fees` mode behind each
+FEE_SCENARIOS = {"fees": "handbook", "fees_local_half": "local_half"}
 REPO = Path(__file__).resolve().parents[3]
 
 
@@ -181,6 +184,56 @@ def mm_draws(res, rng: np.random.Generator) -> pd.DataFrame:
             "overlap_share": np.nan,
         }
     )
+
+
+def fee_rows(scenario: str, sim: Mapping, tier: int, rng: np.random.Generator) -> pd.DataFrame:
+    """`results_draws` rows for a fee scenario from `scenarios.fees.simulate` (D-065, D-076).
+
+    A fee cut opens no lots, so the funnel's first stage holds homes instead: eligible = the five-year
+    baseline homes in the building sizes a cut covers (1, 2 and 3-4 units; 5+ take no dose, D-073), all in
+    the state's data tier; pencil-out share = 1; θ = five-year homes added ÷ those homes (the cut's % change,
+    ramp included). Completion is drawn here per class (single-family for 1-unit, multifamily for 2-4) and
+    weighted by that draw's added homes; net-new share = 1 (the model adds new buildings and tears none
+    down); displacement drawn here.
+
+    By hand: 10,000 covered homes, 150 added (120 houses, 30 in 2-4 unit buildings), completion 0.95 and
+    0.85 -> θ 0.015, completion 0.93; `aggregate.homes_from_draws` gives 150 permits and 139.5 homes in place.
+    """
+    n = sim["n"]
+    by_class = sim["added_by_class"]
+    if by_class:
+        covered = sum(sim["by_size"][c].sum() for c in by_class)
+        sf = by_class["1"].sum(axis=(1, 2))
+        mf = sum(by_class[c].sum(axis=(1, 2)) for c in by_class if c != "1")
+    else:  # no size split: every unit takes the house's dose (D-032)
+        covered = sim["base"].sum()
+        sf = sim["added"].sum(axis=(1, 2))
+        mf = np.zeros(n)
+    added = sf + mf
+    c_sf = triangular("completion_factor_single_family", n, rng)
+    c_mf = triangular("completion_factor_multifamily", n, rng)
+    completion = np.divide(sf * c_sf + mf * c_mf, added, out=c_sf.copy(), where=added > 0)
+    tiers = {t: (covered if t == tier else 0.0) for t in (1, 2, 3)}
+    return pd.DataFrame(
+        {
+            "scenario": scenario,
+            "draw": np.arange(n),
+            "eligible_tier1": tiers[1],
+            "eligible_tier2": tiers[2],
+            "eligible_tier3": tiers[3],
+            "theta": added / covered if covered > 0 else np.zeros(n),
+            "pencil_out_share": 1.0,
+            "completion_factor": completion,
+            "net_new_share": 1.0,
+            "displacement_share": triangular("displacement_share", n, rng),
+            "overlap_share": np.nan,
+        }
+    )
+
+
+def fee_year_shares(sim: Mapping) -> np.ndarray:
+    """Each draw's fee-scenario homes by year as a share of its five-year total (draws x years)."""
+    return year_shares({"added": sim["added"]})
 
 
 def mm_year_shares(res) -> np.ndarray:
@@ -507,7 +560,8 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
 
 def build_bundle(state: str, store, *, role: str | None = None, origin: int | None = None, draws=None):
     """Run every scenario the engine supports for one state and assemble the eight tables (unwritten)."""
-    from lotline.model.scenarios import adu, mm
+    from lotline.model import fee_inputs
+    from lotline.model.scenarios import adu, fees, mm
 
     st = state.upper()
     agg = load_params("aggregate")
@@ -523,13 +577,19 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     _, totals_adu, run_draws = adu.run(places, origin, draws=n, eligible_proxy=tier3, return_draws=True)
     d_adu = adu_draws(places, run_draws, rng)
     _, res_mm, _ = mm.run(st, store, origin, n=n)
-    d = pd.concat([d_adu, mm_draws(res_mm, rng)], ignore_index=True).assign(state=st)
-    parts = summarize(
-        st, d, origin, {"adu": year_shares(run_draws), "missing_middle": mm_year_shares(res_mm)}
-    )
+    tier_parcels = places.groupby("data_tier")["eligible_parcels"].sum() if "data_tier" in places else None
+    tier = int(tier_parcels.idxmax()) if tier_parcels is not None and len(tier_parcels) else 3
+    fee_places = fee_inputs.statewide_places(st, store, origin)
+    fee_sims = {k: fees.simulate(fee_places, origin, mode=m, draws=n) for k, m in FEE_SCENARIOS.items()}
+    d = pd.concat(
+        [d_adu, mm_draws(res_mm, rng), *(fee_rows(k, sim, tier, rng) for k, sim in fee_sims.items())],
+        ignore_index=True,
+    ).assign(state=st)
+    shares = {"adu": year_shares(run_draws), "missing_middle": mm_year_shares(res_mm)}
+    shares.update({k: fee_year_shares(sim) for k, sim in fee_sims.items()})
+    parts = summarize(st, d, origin, shares)
 
     flag, median_distance = overlap_flag(places["eligible_parcels"], totals_adu["calibration_distance"])
-    tier_parcels = places.groupby("data_tier")["eligible_parcels"].sum() if "data_tier" in places else None
     caveats = []
     if tier3:
         caveats.append(
@@ -541,9 +601,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
             {
                 "state": st,
                 "state_role": role or ("national_only" if tier3 else "development"),
-                "data_tier": int(tier_parcels.idxmax())
-                if tier_parcels is not None and len(tier_parcels)
-                else 3,
+                "data_tier": tier,
                 "commit_sha": commit_sha(),
                 "run_at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "engine_version": lotline.__version__,

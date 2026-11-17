@@ -135,6 +135,10 @@ def test_scenario_labels_cover_the_schema_in_order():
 
     assert list(build.SCENARIOS) == list(SCENARIOS)
     assert build.SCENARIOS["adu"][0] == "ADUs" and build.SCENARIOS["fees"][0] == "Fee reduction"  # Handbook
+    # D-065: real local fees beside the benchmark, labelled apart; the fee sliders say what theta means there
+    assert build.SCENARIOS["fees_local_half"][0] == "Fee reduction, real local fees"
+    theta = next(k for k in build.knobs() if k["column"] == "theta")
+    assert {"fees", "fees_local_half"} <= set(theta["by_scenario"]) and "fees" in theta["params"]
 
 
 def test_every_slider_is_a_draws_factor_with_its_citation_from_config():

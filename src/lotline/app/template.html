@@ -275,7 +275,7 @@ table.checks td:last-child { min-width: 260px; }
           <ul>
             <li><b>ADUs:</b> one backyard home per house, at least 600 sq ft, with no parking required.</li>
             <li><b>Missing middle:</b> 2–6 homes allowed on lots now zoned for one house, up to three stories.</li>
-            <li><b>Fees:</b> development fees cut by half. Fee results are not in this app yet.</li>
+            <li><b>Fees:</b> development fees cut by half, shown two ways: the Handbook's benchmark (a $50,000 fee everywhere, cut to $25,000) and each city's real fees cut by half.</li>
           </ul>
         </li>
         <li><b>The comparison</b> is always reform against no reform. "No reform" keeps every city's own rules, including laws already passed that take effect by the end of 2027. A reform is never credited with homes that current law will produce anyway.</li>
@@ -430,7 +430,7 @@ table.checks td:last-child { min-width: 260px; }
         <h5>How it works</h5>
         <p class="formula">extra homes = usual homes × how strongly building responds × builder's share of the cut ÷ total cost of the home, plus lots that newly pay</p>
         <ul class="body-small steps-list">
-          <li><b>The cut:</b> the Handbook's $25,000 a home (half of a $50,000 baseline), or a share of each place's own fees. On the results page a slider sets the size of the change and toggles pick which home types a bill covers. Buildings of 5 or more homes are never covered.</li>
+          <li><b>The cut,</b> shown two ways on the Results page: the Handbook's benchmark, $25,000 a home (half of a $50,000 fee assumed everywhere), and half of each city's real fees for houses, duplexes and fourplexes. Buildings of 5 or more homes are never covered.</li>
           <li><b>Builder's share:</b> about half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters).</li>
           <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (from under 1% to 17%; each run draws one value).</li>
           <li><b>Lots that newly pay:</b> where parcel data allow, the cost model also counts lots that cross from not paying to paying after the cut.</li>
@@ -442,7 +442,7 @@ table.checks td:last-child { min-width: 260px; }
         </ul>
         <h5>How we tested it</h5>
         <p class="status"><span class="verdict not_run"><span class="glyph" aria-hidden="true"></span>Not yet run</span></p>
-        <p class="body-small">The fee model is built and checked against hand-worked examples, but it has not been tested against what happened after a real fee change, and its results are not in this app yet.</p>
+        <p class="body-small">The fee model is built and checked against hand-worked examples, but it has not been tested against what happened after a real fee change. Its results are on the Results page as a range, like the others.</p>
         <h5>What it can't tell you</h5>
         <ul class="body-small steps-list">
           <li><b>How a city replaces the money.</b> Fees often pay for roads, pipes and parks; what happens to those is not modelled.</li>
@@ -519,7 +519,7 @@ table.checks td:last-child { min-width: 260px; }
             <li>what happens to prices, rents, or who lives in the new homes.</li>
           </ul>
         </li>
-        <li><b>Fees:</b> the fee model is built but not yet tested or added to this app.</li>
+        <li><b>Fee cuts are not tested against a real fee change,</b> and their key number (how strongly building responds) is borrowed from published studies.</li>
       </ul>
       <details class="fold"><summary>Technical detail</summary><div id="trust-facts"></div></details>
     </div></div>
@@ -661,6 +661,11 @@ const OUTCOME_WORDS = {
   homes_net_statewide: ["Net new housing", "What the state gains: all new homes minus those that would have been built elsewhere in the state anyway."],
 };
 const KIND_OF_HOME = { adu: "backyard cottage or basement apartment", missing_middle: "duplex or fourplex" };
+// D-065: the two fee scenarios, each said plainly. The benchmark's $50,000 is far above the fees cities here charge.
+const FEE_NOTE = {
+  fees: "<b>The Handbook benchmark:</b> every city is assumed to charge $50,000 a home, cut to $25,000. Real fees in our states are far lower (a typical city charges about $4,000 to $9,000 for a house), so this is the comparison every entry runs, not a forecast of a real cut.",
+  fees_local_half: "<b>Real local fees cut in half:</b> each city's own fees for houses, duplexes and fourplexes, from its fee schedule (or, where none was coded, the state's typical fee), cut by half. Buildings of 5 or more homes are not covered.",
+};
 
 // "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
 function twoNumbersHtml(b, d, r) {
@@ -869,7 +874,8 @@ const SECTIONS = {
 
 function knobsHtml(b) {
   const s = UI.detail;
-  return DATA.knobs.map((k) => {
+  return DATA.knobs.map((k0) => {
+    const k = { ...k0, ...((k0.by_scenario || {})[s] || {}) };
     const vals = b.draws.filter((d) => d.scenario === s).map((d) => Number(d[k.column]));
     const fixed = AGG.percentile(vals, 0) === AGG.percentile(vals, 100);
     const params = (k.params[s] || []).map((p) => `<li><b>${esc(p.key)}</b> (config/params/${esc(p.file)}.yaml): ${esc(p.value)} (range ${esc(p.low)} to ${esc(p.high)}) ${esc(p.unit)}. ${esc(p.source)}</li>`).join("");
@@ -913,7 +919,8 @@ function updateResults() {
   $("record-card").innerHTML = recordHtml(b, d);
   $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}:</p>
     <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
-    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>`;
+    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>
+    ${FEE_NOTE[d] ? `<p class="body-small" style="margin:var(--space-2) 0 0">${FEE_NOTE[d]}</p>` : ""}`;
   // share of need: net statewide only (aggregate.share_of_need), the headline kind first
   const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
   $("need").innerHTML = needs.length ? needs.map((n) => {
@@ -923,7 +930,11 @@ function updateResults() {
       <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Counts net new housing. Source: ${esc(n.source)}.</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
   // funnel (log widths)
-  const f = R[d], stages = [
+  // a fee cut opens no lots: its first stage is the homes built anyway in the sizes it covers (results.fee_rows)
+  const f = R[d], stages = FEE_NOTE[d] ? [
+    ["Built anyway (1–4 unit buildings)", f.legal, "homes", "var(--survey)", 1],
+    ["Added by the cut", f.homes_in_place, "homes", scenColor(d), 1],
+  ] : [
     ["Legally allowed", f.legal, "lots", "var(--survey)", 1],
     ["Building pays", f.pencils, "lots", "var(--survey)", 0.6],
     ["Built", f.homes_in_place, "homes", scenColor(d), 1],
