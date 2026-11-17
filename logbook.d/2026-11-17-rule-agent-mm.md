@@ -1,0 +1,29 @@
+### LB-NNN · 2026-11-17 · Rules: a reusable missing-middle rule agent swarm (design, prototype, MN dry run)
+- **Question:** Can the Oct–Nov experience of coding local missing-middle rules be turned into a standalone agent swarm that takes one state and returns schema-valid `reforms` rows, handing whatever it cannot read to a person in a structured way?
+- **What I did:**
+  - Mined the lessons (two reading subagents over the rules-related `logbook.d/` fragments, LOGBOOK, HANDOFF, the ordinance research folder, second-coder sheets and decisions, MM causal diagram and uptake notes, the `tx_*`/`nc_*`/`mn_*` scripts, `rule_tags.py`, and the four 2026-11-11 MM rule-check reports from git history), then wrote the register with an ID and a swarm response per lesson.
+  - Designed the swarm: orchestrator command, scout, two blind coders on different model tiers, reconciler, verifier, optional browser stage. The deterministic steps are Python in a CLI.
+  - Built and tested the helpers.
+  - Dry-ran the swarm on 4 coded Minnesota places (St. Paul left out as the holdout) and fixed 12 problems the run exposed.
+- **Inputs:** sources listed in `docs/build/rule-agents/mm/LESSONS.md`; `config/reforms/mn.csv` (comparison only, never shown to coders); MN `jurisdictions` table (cached); web pages fetched through the new polite fetcher.
+- **Outputs:**
+  - `docs/build/rule-agents/mm/`: `LESSONS.md`, `DESIGN.md`, `DRY_RUN.md`, and `SHARED_CANDIDATES.md` (parts all three swarms could share, including a content-addressed primary-document store, §10).
+  - `.claude/agents/rules-mm-{scout,coder,reconciler,verifier}.md` and `.claude/commands/rules-mm.md`.
+  - `src/lotline/rule_agents/mm/`: dates, findings, access, fetch, handoff, reconcile, rows, compare, places, brief, CLI. Tests in `tests/rule_agents/mm/` (37 tests).
+  - Dry-run outputs stay in `$LOTLINE_DATA_DIR/rule_agents/mm/MN/dryrun-2026-11-17/`, not committed.
+- **Findings:**
+  - On the engine's reading (event year and final cap), all 4 places match the coded rows.
+  - Field differences worth a look:
+    - Minneapolis: the swarm leaves R2/R2B out, as two-family districts.
+    - Brooklyn Park: the swarm read the 2024 code's two-family row as "NP" in R-2; the coded row was narrowed to R-1.
+    - St. Louis Park: the swarm's computed effective date is 03-18, against the published 03-28.
+  - Blind coding worked as intended. Minneapolis coder A was blocked everywhere and coded nothing rather than code from news; coder B found an archived city page.
+  - Cost was ~370k subagent tokens per place.
+  - Three Sunfish Lake PDFs are committed under `docs/research/ordinances/source-pdfs/`, against the no-committed-data rule; flagged, not moved.
+- **Decisions:** none in HANDOFF. Proposed in the PR: zone rule for two-family districts (Minneapolis R2/R2B), schema additions (`date_basis`, `prior_cap`, `confidence`, `source_kind`, `standards_only`), `pypdf` dependency, shared document store.
+- **AI:** Claude Code (rule-agent-mm session) wrote everything; subagents mined the lessons and ran the dry-run stages. Checked by:
+  - Tests on synthetic fixtures (each test a hand-worked example), plus ruff.
+  - `compliance_check.py`.
+  - A schema validation of the built table.
+  - The dry-run comparison against coded rows.
+- **Open / next:** register the agent types and re-run the dry run with them (cost check); Ben's answers to the 13 hand-off tasks; merge the shared parts with the ADU and fee swarms (parent session).

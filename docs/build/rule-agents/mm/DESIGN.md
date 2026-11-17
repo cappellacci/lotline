@@ -175,7 +175,9 @@ the answers attached. The format is built for Ben **or his own browser agent** (
 
 ## 8. Cost
 
-Batch 1 spent ~107k tokens per city with one coder (R-9). Budget target here: scout (haiku) ~15k, two coders
+Measured in the 4-place dry run (`DRY_RUN.md`): ~370k subagent tokens per place with two coders on half the
+places, mostly context loading (~70k per subagent). Batch 1 spent ~107k tokens per city with one coder (R-9).
+Budget target once the agent types are registered: scout (haiku) ~15k, two coders
 ~60k each, reconciler ~15k for places with diffs, verifier (haiku) ~10k → ~150k per place, ~0.75M for a
 5-place dry run, ~15M for a 100-place state. `--single-coder` halves it for a first pass; `--only` re-runs
 places.
