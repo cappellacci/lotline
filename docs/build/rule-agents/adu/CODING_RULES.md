@@ -33,8 +33,11 @@ that did not pass (L-D9).
 For each era list every dated source as `DateEvidence` with `type`: `effective` (the ordinance's effective
 clause or a dated notice), `adopted` (final passage), `vote` (a council vote reported elsewhere),
 `codified` (a code edition, recodification or "current through" date), `first_seen` (earliest Wayback copy
-or document showing the rule), `in_force_by` (a document saying it was in force on a date), `announced`.
-Never compute "+30 days" (L-D2). The helper resolves the dates (`dates.resolve`, DESIGN §4). The quote for a
+or document showing the rule), `in_force_by` (a document saying it was in force on a date), `prior_to` (the era was the rule until a
+dated reform, start unknown: use this for the "before" state), `announced`.
+Never compute "+30 days" (L-D2). The helper resolves the dates (`dates.resolve`, DESIGN §4) and sets the date-quality tags (`[predates]`,
+`[earliest-known]`, `DATE UNCONFIRMED`) itself: never put them in `tags` (only `[detached-conditional]` and
+`[moratorium]` are yours). The quote for a
 date must name the ADU ordinance or section — check it is the ADU ordinance and the right town (L-D9, L-F12).
 
 ## Evidence

@@ -38,13 +38,21 @@ SourceKind = Literal[
 Confidence = Literal["high", "medium", "low"]
 # What a dated source says about the date. Only `effective` and `adopted` are treatment dates; the others
 # bound it (lesson L-D3: a recodification or code-edition date is not a first-allowed date).
-DateType = Literal["effective", "adopted", "vote", "codified", "first_seen", "in_force_by", "announced"]
+# `prior_to`: the era was the rule in force until this date (the state before a dated reform); its start is
+# unknown. Dry run 2026-11-17: coders used `in_force_by`, which put the prior era on the reform day.
+DateType = Literal[
+    "effective", "adopted", "vote", "codified", "first_seen", "in_force_by", "prior_to", "announced"
+]
 
 BOOL_FIELDS = ("by_right", "owner_occ", "adu_detached_allowed")
 NUM_FIELDS = ("adu_max_sqft", "parking_min_per_unit", "min_lot_sqft")
 INT_FIELDS = ("adus_per_lot",)
 TEXT_FIELDS = ("parking", "coverage", "coverage_zones")
 RUBRIC_FIELDS = INT_FIELDS + BOOL_FIELDS + NUM_FIELDS + TEXT_FIELDS
+# Date-quality tags are computed by dates.resolve, never set by a coder (dry run: coders set them
+# inconsistently). Coders may set only CODER_TAGS.
+DATE_TAGS = {"[predates]", "[earliest-known]", "DATE UNCONFIRMED"}
+CODER_TAGS = {"[detached-conditional]", "[moratorium]"}
 # Tags carried into coding_notes (existing conventions, docs/research/ordinances/README.md).
 TAGS = {
     "[predates]",  # in force at window start, first date unknown or only a recodification date
@@ -183,8 +191,10 @@ def check(coding: PlaceCoding) -> list[str]:
             out.append(f"{where}: duplicate era_id")
         seen.add(era.era_id)
         for tag in era.tags:
-            if tag not in TAGS:
-                out.append(f"{where}: unknown tag {tag!r} (allowed: {sorted(TAGS)})")
+            if tag in DATE_TAGS:
+                out.append(f"{where}: {tag} is set by the date rules, not by the coder (remove it)")
+            elif tag not in TAGS:
+                out.append(f"{where}: unknown tag {tag!r} (coders may set {sorted(CODER_TAGS)})")
         for field, fv in era.fields.items():
             if field not in RUBRIC_FIELDS:
                 out.append(f"{where}: unknown field {field!r}")

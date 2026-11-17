@@ -56,7 +56,7 @@ def test_no_adu_era_cannot_be_by_right_and_moratorium_is_a_no_adu_era():
 
 def test_unknown_tag_and_duplicate_era_and_empty_era():
     a, b = era_2020(), era_2020()
-    a.tags = ["[made-up]"]
+    a.tags = ["[made-up]"]  # unknown
     empty = C.Era(era_id="e", component="x", dates=[date("2021-01-01")])
     probs = C.check(coding(eras=[a, b, empty]))
     assert any("unknown tag" in p for p in probs)
@@ -117,6 +117,19 @@ def test_conflicting_effective_dates_are_reported():
 def test_month_precision_goes_to_first_of_month_and_is_noted():
     r = D.resolve([date("2022-09-15", "effective", precision="month")])
     assert r.effective == dt.date(2022, 9, 1) and "month only" in r.rule
+
+
+def test_prior_state_is_dated_at_window_start_not_on_the_reform_day():
+    r = D.resolve([date("2020-07-07", "prior_to")])
+    assert r.effective == D.WINDOW_START and r.tags == ["[predates]"]
+    old = D.resolve([date("2012-03-01", "prior_to")])
+    assert old.effective == dt.date(2012, 2, 29)
+
+
+def test_coders_cannot_set_date_quality_tags():
+    era = era_2020()
+    era.tags = ["[predates]"]
+    assert any("set by the date rules" in p for p in C.check(coding(eras=[era])))
 
 
 def test_announced_only_cannot_date_an_era():

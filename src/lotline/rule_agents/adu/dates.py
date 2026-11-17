@@ -13,7 +13,10 @@ Rules, in order (each result says which rule fired, for `coding_notes`):
    in force at window start: dated `window_start` and tagged `[predates]` (WS-ADU-RULES convention 6).
 4. Month or year precision is placed on the first day of the period and noted.
 
-`announced` dates feed `announced_date` only.
+5. **Only `prior_to`** (the state before a dated reform, start unknown): dated at the window start (or the day
+   before `prior_to` when that is earlier) and tagged `[predates]`.
+
+`announced` dates feed `announced_date` only. Date-quality tags come only from here, never from a coder.
 """
 
 from __future__ import annotations
@@ -74,7 +77,18 @@ def resolve(dates: list[DateEvidence], window_start: dt.date = WINDOW_START) -> 
         )
     bounds = by("codified", "first_seen", "in_force_by")
     if not bounds:
-        raise ValueError("only an announced date: not enough to date an era")
+        prior = by("prior_to")
+        if not prior:
+            raise ValueError("only an announced date: not enough to date an era")
+        until = min(_first_day(d) for d in prior)
+        start = window_start if until > window_start else until - dt.timedelta(days=1)
+        return ResolvedDates(
+            start,
+            None,
+            announced,
+            f"in force until {until}; start unknown: dated {start} and tagged [predates]" + note,
+            ["[predates]"],
+        )
     earliest = min(bounds, key=_first_day)
     day = _first_day(earliest)
     if day <= window_start:

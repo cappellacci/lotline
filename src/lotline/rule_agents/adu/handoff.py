@@ -27,6 +27,10 @@ REASONS = {
         "The site's robots.txt tells automated agents not to read this page.",
         "Open it in a browser.",
     ),
+    "known_blocker": (
+        "This publisher blocks automated agents (Municode, American Legal, eCode360): not tried.",
+        "Open it in a browser.",
+    ),
     "robots_unavailable": (
         "The site's robots.txt did not answer, so the agent did not read the site.",
         "Open it in a browser.",
