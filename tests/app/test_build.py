@@ -327,6 +327,9 @@ def test_add_a_state_button_opens_its_own_page(tmp_path):
     assert '<a class="add-state body-small" href="#add" data-page="add">Add a state</a>' in right
     assert 'id="page-add" data-section="add" hidden>' in html
     assert 'const PAGES = [...Object.keys(SECTIONS), "add"]' in html  # the router knows the page
+    # grey tiles and the map key's calls to action open the same page, not the README in a new tab
+    assert '<a class="tile none" href="#add" aria-label=' in html
+    assert 'const byos = (words) => `<a href="#add">${words}</a>`;' in html
 
 
 def test_state_picker_and_mark_sit_in_the_menu_bar(tmp_path):

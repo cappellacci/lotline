@@ -597,7 +597,7 @@ function loadState(state) {
 }
 
 // ---- state map: tile grid from us_tiles.yaml, coloured by each bundle's data tier -----------------------
-// Grey tiles have no bundle and link to the README's "bring your own state" steps. Bundles whose code is not
+// Grey tiles have no bundle and open the "Add a state" page (#add). Bundles whose code is not
 // on the grid (e.g. a test fixture) are listed under the key so they stay reachable.
 const TIER_WORDS = { 1: "Most detailed local records", 2: "Some local records", 3: "Mostly national data" };
 const TILE = 30, GAP = 3;
@@ -618,16 +618,16 @@ function drawMap() {
       `<text x="${x + TILE / 2}" y="${y + TILE / 2}">${esc(t.code)}</text>`;
     if (!b) {
       const say = `${t.name}: no results yet. Bring your own state`;
-      return `<a class="tile none" href="${esc(M.byos_url)}" target="_blank" rel="noopener" aria-label="${esc(say)}"><title>${esc(say)}</title>${square("var(--tier-none)")}</a>`;
+      return `<a class="tile none" href="#add" aria-label="${esc(say)}"><title>${esc(say)}</title>${square("var(--tier-none)")}</a>`;
     }
     const tier = b.meta.data_tier, sel = t.code === cur;
     const say = `${t.name}: ${DATA.roles[b.meta.state_role] || b.meta.state_role}, data tier ${tier} (${TIER_WORDS[tier] || ""})`;
     return `<a class="tile on ${Number(tier) === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
   }).join("");
   // The call to action sits where it applies: a national-data-only state can be sharpened with local records,
-  // and a grey state (only if any is left) can be added. Both point at the README's "bring your own state".
+  // and a grey state (only if any is left) can be added. Both open the "Add a state" page.
   const used = new Set(DATA.states.map((b) => b.meta.data_tier));
-  const byos = (words) => `<a href="${esc(M.byos_url)}" target="_blank" rel="noopener">${words}</a>`;
+  const byos = (words) => `<a href="#add">${words}</a>`;
   const grey = M.tiles.some((t) => !entryFor(t.code));
   $("map-legend").innerHTML = Object.entries(TIER_WORDS).filter(([k]) => used.has(Number(k))).map(([k, w]) =>
     `<li><span class="swatch" style="background:var(${esc(M.tier_tokens[k])})"></span><span>Tier ${esc(k)}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
