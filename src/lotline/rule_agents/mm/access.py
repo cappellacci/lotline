@@ -16,6 +16,8 @@ import re
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 
+from lotline.rule_agents.mm.findings import visible_text
+
 # Our fetches use lotline.io.http.USER_AGENT; robots rules are matched on its product token.
 UA_TOKEN = "lotline"
 
@@ -112,8 +114,7 @@ def classify(
     head = text[:500000]
     # Challenge words count only in what a reader sees (title + body text), never in scripts: a normal city
     # page loading an Akamai script was misread as a bot wall in the 2026-11-17 dry run (St. Louis Park).
-    visible = re.sub(r"<script.*?</script>|<style.*?</style>|<!--.*?-->", " ", head, flags=re.S | re.I)
-    visible = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", visible)).strip()
+    visible = re.sub(r"\s+", " ", visible_text(head)).strip()
     challenge = bool(_CHALLENGE.search(visible[:3000]))
     if status == 401 or (status == 200 and _LOGIN.search(head)):
         return "login_required", f"HTTP {status}: login form"

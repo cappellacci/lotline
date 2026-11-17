@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -280,7 +281,8 @@ def test_classify_ignores_challenge_words_in_scripts():
 
 def test_snapshot_name_is_stable():
     assert snapshot_name(URL) == snapshot_name(URL)
-    assert snapshot_name(URL).startswith("example.gov/") and snapshot_name(URL).endswith(".pdf")
+    name = Path(snapshot_name(URL))
+    assert name.parts[0] == "example.gov" and name.suffix == ".pdf"
     assert snapshot_name("https://x.gov/code?id=1").endswith(".html")
 
 
@@ -582,3 +584,15 @@ def test_pdftext_blank_pages_read_as_scan(tmp_path):
     assert kind[0] == "scanned_pdf"
     pages, chars = pdftext.write_sidecar(pdf, tmp_path / "text" / "scan.pdf.txt")
     assert (tmp_path / "text" / "scan.pdf.txt").exists()
+
+
+def test_visible_text_tolerates_odd_end_tags():
+    """Browsers close `</script >` and `</SCRIPT foo>`; script text and comments are never visible."""
+    from lotline.rule_agents.mm.findings import visible_text
+
+    html = (
+        "<p>Up to <b>three</b> homes</p><script>akamai()</script >"
+        "<!-- x --><SCRIPT>y()</SCRIPT foo>&amp; done"
+    )
+    t = " ".join(visible_text(html).split())
+    assert t == "Up to three homes & done"

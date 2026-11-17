@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from datetime import date
+from html.parser import HTMLParser
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
@@ -246,12 +247,37 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
-def visible_text(html: str) -> str:
-    """What a reader sees in an HTML page: scripts, styles, comments and tags removed, entities decoded."""
-    import html as _html
+class _Visible(HTMLParser):
+    """Collects text outside <script>, <style> and <template>; comments are dropped by the parser."""
 
-    t = re.sub(r"<script.*?</script>|<style.*?</style>|<!--.*?-->", " ", html, flags=re.S | re.I)
-    return _html.unescape(re.sub(r"<[^>]+>", " ", t))
+    _SKIP = frozenset({"script", "style", "template", "noscript"})
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self._depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self._SKIP:
+            self._depth += 1
+
+    def handle_endtag(self, tag):
+        if tag in self._SKIP and self._depth:
+            self._depth -= 1
+
+    def handle_data(self, data):
+        if not self._depth:
+            self.parts.append(data)
+
+
+def visible_text(html: str) -> str:
+    """What a reader sees in an HTML page: scripts, styles, comments and tags removed, entities decoded.
+    Uses the stdlib parser, so odd end tags (`</script >`, `</SCRIPT foo>`) are handled like a browser."""
+    p = _Visible()
+    # Older stdlib parsers (3.12.7) miss `</SCRIPT foo>` as an end tag; browsers accept it: normalise.
+    p.feed(re.sub(r"</(script|style|template|noscript)\b[^>]*>", r"</\1>", html, flags=re.I))
+    p.close()
+    return " ".join(p.parts)
 
 
 def verify_quote(quote: str, text: str) -> bool:
