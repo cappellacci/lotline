@@ -20,7 +20,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from lotline.rule_agents.mm.dates import DATE_BASES
+from lotline.rule_agents.mm.dates import ALL_TAGS, DATE_BASES
 
 QUOTE_MAX = 300  # the reforms schema's source_quote limit
 # Fields that, when coded, must each be backed by a quote. Dates count through `effective_date` (and
@@ -173,6 +173,8 @@ def check(f: PlaceFinding, *, today: date | None = None) -> list[str]:
                 out.append(f"{tag}: {fld} has no evidence")
         if not r.evidence:
             out.append(f"{tag}: no evidence at all")
+        if any(t in r.notes for t in ALL_TAGS):
+            out.append(f"{tag}: notes contain an engine tag: set date_basis/standards_only instead")
         if r.date_basis == "dated" and r.date_precision != "day":
             out.append(f"{tag}: a {r.date_precision}-precision date must be earliest_known or unconfirmed")
         if r.date_basis == "dated" and r.adoption_date is None:

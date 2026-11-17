@@ -25,6 +25,7 @@ from lotline.rule_agents.mm.findings import (
     draft_markers,
     verify_quote,
 )
+from lotline.rule_agents.mm.places import enumerate_places
 
 TODAY = date(2026, 11, 17)
 URL = "https://example.gov/ord-2019-048.pdf"
@@ -186,6 +187,11 @@ def test_lead_only_and_mirror_sources():
     df = rows.table(rows.place_rows(place([r2]), coder_2=None, agreement="single_coder"))
     assert "FLAG for second coder: unit_cap read on a mirror only." in df.loc[0, "coding_notes"]
     assert "Prior cap (code just before): 1." in df.loc[0, "coding_notes"]
+
+
+def test_tags_in_notes_rejected():
+    r = rule(notes="second coder says tag [predates]")
+    assert any("engine tag" in m for m in check(place([r]), today=TODAY))
 
 
 def test_draft_markers():
@@ -439,3 +445,57 @@ def test_cli_end_to_end(tmp_path, capsys):
     snap.write_text("<p>Up to three dwelling units are permitted on a zoning lot.</p>")
     assert cli.main(["quote", str(snap), "up to three dwelling units"]) == 0
     assert cli.main(["quote", str(snap), "up to four"]) == 1
+
+
+def test_enumerate_places():
+    j = pd.DataFrame(
+        {
+            "geoid": ["2700001", "2700002", "27R1"],
+            "name": ["A", "B", "Region"],
+            "kind": ["place", "place", "region"],
+            "pop_2020": [900, 5000, 99999],
+        }
+    )
+    coded = pd.DataFrame(
+        {
+            "theme": ["missing_middle", "adu"],
+            "jurisdiction_geoid": ["2700002", "2700001"],
+            "reform_id": ["MN-2700002-missing_middle-2020", "MN-2700001-adu-2019"],
+        }
+    )
+    out = enumerate_places(j, coded)
+    assert out["geoid"].tolist() == ["2700002", "2700001"] and out["priority"].tolist() == [1, 2]
+    assert out.loc[0, "coded_mm_ids"] == "MN-2700002-missing_middle-2020" and out.loc[1, "coded_mm_ids"] == ""
+    assert enumerate_places(j, coded, skip_coded=True)["geoid"].tolist() == ["2700001"]
+    assert enumerate_places(j, coded, min_pop=1000)["geoid"].tolist() == ["2700002"]
+    assert enumerate_places(j, coded, only=["2700001"])["geoid"].tolist() == ["2700001"]
+
+
+def test_brief_lists_holdouts_and_state_law(tmp_path):
+    from lotline.rule_agents.mm import brief
+
+    (tmp_path / "states").mkdir()
+    (tmp_path / "states" / "mn.yaml").write_text(
+        "holdouts:\n  - test_id: V5-X\n    place: St. Paul\n    geoid: '2758000'\n"
+    )
+    places = pd.DataFrame(
+        {
+            "geoid": ["2700001"],
+            "place": ["A"],
+            "kind": ["place"],
+            "pop": [1000],
+            "coded_mm_ids": [""],
+            "priority": [1],
+        }
+    )
+    coded = pd.DataFrame(
+        {
+            "theme": ["missing_middle"],
+            "jurisdiction_geoid": ["27"],
+            "reform_id": ["MN-27-missing_middle-2026"],
+            "component": ["State law"],
+        }
+    )
+    md = brief.render("MN", "r1", places, coded, tmp_path)
+    assert "St. Paul (2758000)" in md and "MN-27-missing_middle-2026" in md and "Minn. Stat." in md
+    assert "No default recorded" in brief.render("TX", "r1", places, None, tmp_path)

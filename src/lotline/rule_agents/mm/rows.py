@@ -73,7 +73,8 @@ def rule_row(
         e.source_kind not in ("mirror", None) for e in r.evidence if e.field == "unit_cap"
     )
     flag = "FLAG for second coder: unit_cap read on a mirror only." if mirror else ""
-    for part in (r.notes, prior, flag, adjudication and f"Reconciled: {adjudication}", _sources(r)):
+    conf = f"Confidence: {r.confidence}."
+    for part in (r.notes, prior, flag, conf, adjudication and f"Reconciled: {adjudication}", _sources(r)):
         if part:
             notes = f"{notes} {part}".strip()
     return {

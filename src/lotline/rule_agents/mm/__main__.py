@@ -1,6 +1,7 @@
 """Command line for the MM rule agent swarm's deterministic steps. The agents call these through Bash.
 
     python -m lotline.rule_agents.mm init STATE [--run RUN_ID]      # make the run folder, print its path
+    python -m lotline.rule_agents.mm places RUN_DIR [--limit N] [--only GEOID ...]   # + brief.md
     python -m lotline.rule_agents.mm fetch RUN_DIR URL               # polite fetch -> JSON (snapshot/blocker)
     python -m lotline.rule_agents.mm quote SNAPSHOT "QUOTE"          # is the quote in the saved page?
     python -m lotline.rule_agents.mm check RUN_DIR                   # every findings/*.json passes the checks
@@ -23,9 +24,10 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.rule_agents.mm import brief, handoff, reconcile, rows
 from lotline.rule_agents.mm import compare as cmp
-from lotline.rule_agents.mm import handoff, reconcile, rows
 from lotline.rule_agents.mm.findings import PlaceFinding, check, verify_quote
+from lotline.rule_agents.mm.places import enumerate_places
 
 REPO = Path(__file__).resolve().parents[4]
 CODERS = ("coder-a", "coder-b")
@@ -50,6 +52,28 @@ def cmd_init(a) -> int:
     for d in ("sources", "findings", "reconcile", "final", "verify", "answers", "out"):
         (run / d).mkdir(parents=True, exist_ok=True)
     print(run)
+    return 0
+
+
+def cmd_places(a) -> int:
+    run = Path(a.run)
+    st = _state(run)
+    if a.jurisdictions:
+        j = pd.read_csv(a.jurisdictions, dtype={"geoid": str})
+    else:
+        from lotline.io.store import DataStore
+
+        j = DataStore().read(st.lower(), "jurisdictions")
+        if j is None:
+            print(f"no jurisdictions table for {st}: pass --jurisdictions CSV (geoid, name, pop_2020)")
+            return 1
+    coded_path = REPO / "config" / "reforms" / f"{st.lower()}.csv"
+    coded = pd.read_csv(coded_path, dtype={"jurisdiction_geoid": str}) if coded_path.exists() else None
+    out = enumerate_places(j, coded, min_pop=a.min_pop, limit=a.limit, only=a.only, skip_coded=a.skip_coded)
+    out.to_csv(run / "places.csv", index=False)
+    (run / "brief.md").write_text(brief.render(st, run.name, out, coded, REPO / "config"))
+    print(out.to_string(index=False))
+    print(f"brief -> {run / 'brief.md'}")
     return 0
 
 
@@ -212,6 +236,13 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("init")
     s.add_argument("state")
     s.add_argument("--run")
+    s = sub.add_parser("places")
+    s.add_argument("run")
+    s.add_argument("--jurisdictions")
+    s.add_argument("--min-pop", type=int, default=0)
+    s.add_argument("--limit", type=int)
+    s.add_argument("--only", nargs="*")
+    s.add_argument("--skip-coded", action="store_true")
     s = sub.add_parser("fetch")
     s.add_argument("run")
     s.add_argument("url")
