@@ -690,7 +690,7 @@ const fmtInt = (x) => (Number.isFinite(x) ? Math.round(x).toLocaleString("en-US"
 const fmtPct = (x) => !Number.isFinite(x) ? "–" : (x * 100).toLocaleString("en-US", { maximumFractionDigits: x < 0.01 ? 2 : 1, minimumFractionDigits: x < 0.01 ? 2 : 1 }) + "%";
 const fmtFactor = (x, f) => !Number.isFinite(x) ? "–" : f === "rate" ? x.toPrecision(3) : fmtPct(x);
 const scenLabel = (k) => (DATA.scenarios[k] || { label: k }).label;
-const scenColor = (k) => `var(${(DATA.scenarios[k] || { color: "--ink" }).color})`;
+const scenColor = (k) => `var(${esc((DATA.scenarios[k] || { color: "--ink" }).color)})`;  // escaped: it goes into HTML
 const AGG = globalThis.LotlineAggregate;
 
 function niceTicks(max, n = 4) {
