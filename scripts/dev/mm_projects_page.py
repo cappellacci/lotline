@@ -2,7 +2,7 @@
 # ruff: noqa: E501  (long lines are the HTML/CSS page template)
 """Results page for D-092 run 13 (buildings per project): reports/mm-d092/run13-projects/results.html.
 
-    uv run python scripts/dev/mm_projects_page.py
+    uv run python scripts/dev/mm_projects_page.py [--dir reports/mm-d092/run13-projects-mpls-fix]
 
 Reads run 13's summary.json; borrows the Lotline stylesheet from the run-6 page.
 """
@@ -64,8 +64,20 @@ def dots(s: dict) -> str:
     return f'<div class="scroll"><svg viewBox="0 0 {W} {H}" class="chart dots" role="img" aria-label="Inflation by city">{"".join(g)}</svg></div>'
 
 
-def main() -> None:
-    s = json.loads((OUT / "summary.json").read_text())
+def main(out: Path = OUT) -> None:
+    s = json.loads((out / "summary.json").read_text())
+    fixed = out.name.endswith("mpls-fix")
+    mp = s["by_source"]["mpls_ccs_permits"]
+    mpls_tile = f"{mp['same_lot']['inflation']:.2f}–{mp['same_day']['inflation']:.2f}"
+    banner = (
+        '<section class="decision"><div class="num-tag">Corrected 17 Nov 2026</div><h2>Minneapolis rerun after a permit-file fix</h2>'
+        "<p>Minneapolis's file had typed roof, remodel and addition permits on existing duplexes and fourplexes as new 2–4 unit buildings (#450, fixed in #451). "
+        "Rerun with the fix, Minneapolis drops from 1,042 to 179 buildings (by lot); its 2017–2025 count is now 175 against Census's 165. "
+        "Every other city is unchanged. Pooled clustering goes up slightly: by lot 12.8 → 14.3 with 34% → 39% in projects of 3+; by day 5.3 → 5.6 with 42% → 44%. "
+        "The verdict is the same. The building-equivalent check (below) was not rerun; Minneapolis was not one of its large clusters.</p></section>"
+        if fixed
+        else ""
+    )
     lot, day = s["pooled"]["same_lot"], s["pooled"]["same_day"]
     rows = "".join(
         f"<tr><td>{NAMES.get(k, k)}</td>"
@@ -82,16 +94,16 @@ def main() -> None:
 <style>{style()}{EXTRA_CSS}</style>
 <main>
 <header>
-  <div class="eyebrow">Lotline · Missing middle · D-092 run 13, buildings per project · 15 Nov 2026</div>
+  <div class="eyebrow">Lotline · Missing middle · D-092 run 13, buildings per project · 15 Nov 2026{" (Minneapolis corrected 17 Nov)" if fixed else ""}</div>
   <h1>Duplexes and fourplexes come in clusters</h1>
   <p class="lede">In the city permit files, a third or more of 2–4 unit buildings come in projects of 3 or more: {lot["share_in_3plus"]:.0%} grouped by lot, {day["share_in_3plus"]:.0%} grouped by day. Clustering multiplies a place's year-to-year variance by {lot["inflation"]:.1f} (by lot) or {day["inflation"]:.1f} (by day), far over the pre-registered bar of 1.5. By the rule, the project-based model goes back to Ben. The pre-run guess, that most projects are one building, was wrong.</p>
 </header>
-
+{banner}
 <div class="tiles">
   <div class="tile"><b>{lot["inflation"]:.1f} / {day["inflation"]:.1f}</b><span>variance inflation, by lot / by day (bar 1.5)</span></div>
   <div class="tile"><b>{lot["share_in_3plus"]:.0%}</b><span>of buildings in projects of 3+ (by lot)</span></div>
   <div class="tile"><b>~100–130</b><span>duplexes on one Austin parcel in three months (202 permits, some per side): the largest project</span></div>
-  <div class="tile"><b>1.0–1.1</b><span>Minneapolis, by lot: the one big city where nearly every project is one building</span></div>
+  <div class="tile"><b>{mpls_tile}</b><span>Minneapolis, by lot / by day: the one big city where nearly every project is one building</span></div>
 </div>
 
 <section>
@@ -99,7 +111,7 @@ def main() -> None:
   <h2>Most cities are over the bar, and they differ a lot</h2>
   {dots(s)}
   <div class="key"><span><i class="lot"></i>same lot (parcel ID, within a year)</span><span><i class="day"></i>same day (issue date)</span><span>dashed line: the 1.5 bar</span></div>
-  <p>Cities with at least 10 same-day projects, on a log scale. Minneapolis, Cincinnati, Cleveland, Medford and Portland sit near the bar (1.1 to 2.4): their 2–4 unit buildings mostly come one or two at a time. Austin, College Station, Wilmington and Columbus build them in large groups, which fits Texas's lumpiness from run 12.</p>
+  <p>Cities with at least 10 same-day projects, on a log scale. Minneapolis, Cincinnati, Cleveland, Medford and Portland sit near the bar ({"1.0" if fixed else "1.1"} to 2.4): their 2–4 unit buildings mostly come one or two at a time. Austin, College Station, Wilmington and Columbus build them in large groups, which fits Texas's lumpiness from run 12.</p>
 </section>
 
 <section>
@@ -118,12 +130,12 @@ def main() -> None:
 
 <footer>
   <div>Run: <code>mm_project_size_d092.py</code> (same lot and same day groupings; stop rule 1.5). Pre-registered in D-092's deviation (d) of 2026-11-15. Cached tables only; nothing unblinded.</div>
-  <div>Sources: <code>reports/mm-d092/run13-projects/</code> on branch <code>ws/mm-baseline-spread</code> (PR #436).</div>
+  <div>Sources: <code>{out.relative_to(REPO)}/</code>{" (rerun after #451; the original run is in <code>reports/mm-d092/run13-projects/</code>)" if fixed else " on branch <code>ws/mm-baseline-spread</code> (PR #436)"}.</div>
 </footer>
 </main>
 """
-    (OUT / "results.html").write_text(html)
-    print(f"wrote {OUT / 'results.html'}")
+    (out / "results.html").write_text(html)
+    print(f"wrote {out / 'results.html'}")
 
 
 def style() -> str:
@@ -131,4 +143,8 @@ def style() -> str:
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dir", type=Path, default=OUT, help="run folder holding summary.json")
+    main(ap.parse_args().dir.resolve())
