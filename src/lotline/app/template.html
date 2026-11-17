@@ -1040,7 +1040,7 @@ function knobsHtml(b) {
 
 // "[State] can add [X] homes": X is the three reforms together (Ben, 2026-11-17), summed draw by draw so the range
 // is a real range of the total (the fee reform in the version its switch shows). Each reform is estimated on its
-// own, so a lot that two reforms open is counted in both: the note says so.
+// own, so a lot that two reforms open is counted in both.
 function heroUpdate(b, R, o) {
   const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
@@ -1051,13 +1051,17 @@ function heroUpdate(b, R, o) {
   const x = tot ? tot.p50 : NaN;
   $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
   const yrs = AGG.windowLabel(b);
-  const all = keys.length === 3 ? "All three reforms" : `The ${keys.length} reforms run so far`;
-  const kind = o === "homes_net_statewide"
-    ? "These are net new homes: homes that would not otherwise have been built anywhere in the state."
-    : "These count every new home the reforms lead to, including some that would have been built elsewhere in the state anyway.";
-  $("hero-note").textContent = `${all} added together, as if ${named} passed them at once${yrs ? `, over ${yrs}` : ""}. ` +
-    (tot ? `The likely range is ${fmtN(tot.p10)} to ${fmtN(tot.p90)} homes: 8 in 10 of the model's ${fmtInt(n)} runs land inside it. ` : "") +
-    `${kind} Each reform was estimated on its own, so a lot that two reforms open is counted twice and the total may run a little high.`;
+  const howMany = keys.length === 3 ? "three" : String(keys.length);
+  const homes = o === "homes_net_statewide"
+    ? "net new homes, homes that would not otherwise have been built,"
+    : "new homes, counting some that would have been built elsewhere in the state anyway,";
+  // Ben's wording (2026-11-17). The range is P10 to P90 of the summed draws; the chart below has each reform's.
+  $("hero-note").textContent =
+    `We looked at how ${howMany} housing reforms could add more housing to ${named} over the next ` +
+    `${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""}. ` +
+    (tot ? `We found that between ${fmtN(tot.p10)} and ${fmtN(tot.p90)} ${homes} could be produced. ` : "") +
+    "Each reform was estimated on its own, and our model was derived by looking at cities and states where " +
+    "similar rules have already been introduced.";
   const hiP = Math.max(...keys.map((s) => R[s][o].p90), 1);
   const lo = 1, hi = 10 ** Math.ceil(Math.log10(hiP * 3));
   const pos = (v) => `${(Math.log10(Math.max(v, lo)) / Math.log10(hi)) * 100}%`;

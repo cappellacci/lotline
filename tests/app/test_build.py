@@ -182,7 +182,7 @@ def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_p
     )
     assert "const sum = Array.from({ length: n }, (_, i) => per.reduce((t, a) => t + a[i], 0));" in js
     assert "const x = tot ? tot.p50 : NaN;" in js  # all three together (Ben, 2026-11-17)
-    assert "a lot that two reforms open is counted twice" in js  # the overlap is said plainly
+    assert "Each reform was estimated on its own" in js  # the note says the reforms were run separately
     assert 'const HERO = ["adu", "missing_middle", "fees"];' in html
     # the headline comes first on the page, ahead of the overlap flag and the detail card
     body = html[html.index("results(b) {") :]

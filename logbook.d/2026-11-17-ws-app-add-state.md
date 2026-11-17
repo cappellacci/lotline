@@ -76,3 +76,11 @@
 - **Outputs:** `src/lotline/app/template.html`; a test in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and test. Checked with `tests/app`, ruff and `compliance_check.py`, and in the browser pane with preview-only ADU parts.
 - **Open / next:** the two backtest charts need their data in the results files (ADU session); missing middle and fees deep dives to design.
+
+### LB-NNN · 2026-11-17 · Deliverables: the Results headline note in Ben's words; an https-only README link
+- **Question:** How should the note under a state's headline read to a policymaker?
+- **What I did:** Rewrote the note in Ben's words: "We looked at how three housing reforms could add more housing to [State] over the next 5 years (2027–2031). We found that between X and Y net new homes, homes that would not otherwise have been built, could be produced. Each reform was estimated on its own, and our model was derived by looking at cities and states where similar rules have already been introduced." X and Y are still the P10 and P90 of the three reforms summed run by run. The note no longer explains the 8-in-10 range or the double count. The add-a-state page now only uses an https link for the README guide, which clears a CodeQL alert.
+- **Inputs:** Ben's request (2026-11-17); the CodeQL check on PR #466.
+- **Outputs:** `src/lotline/app/template.html`; `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change. Checked with `tests/app` (50 passed), ruff and `compliance_check.py`, and in the browser pane on the real North Carolina results (6,190 homes; 2,000 to 21,300).
+- **Open / next:** none.
