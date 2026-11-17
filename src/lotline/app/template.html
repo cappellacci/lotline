@@ -34,7 +34,7 @@ header.mast .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: va
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.wordmark, .mark) .light { display: none; } :root:not([data-theme="light"]) :is(.wordmark, .mark) .dark { display: block; } }
 :root[data-theme="dark"] :is(.wordmark, .mark) .light { display: none; }
 :root[data-theme="dark"] :is(.wordmark, .mark) .dark { display: block; }
-.tagline { flex: 0 1 auto; margin: 0; color: var(--ink-muted); background: var(--app-page); padding: 0 var(--space-2); }  /* the backing box hugs the text, so the grid shows around it */
+.tagline { flex: 0 1 auto; margin: 0; color: var(--ink-muted); background: transparent; padding: 0 var(--space-2); }  /* no backing box: the grid shows through (Ben, 2026-11-17) */
 .picker { display: flex; align-items: center; gap: var(--space-2); }
 select, button { font: inherit; color: var(--ink); background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); }
 

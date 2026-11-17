@@ -20,3 +20,11 @@
 - **Outputs:** `src/lotline/app/template.html`.
 - **AI:** Claude Code made the change. Checked with `tests/app`, `compliance_check.py`, and in the browser pane.
 - **Open / next:** none.
+
+### LB-NNN · 2026-11-17 · Deliverables: the header tagline has no backing box
+- **Question:** Should the tagline keep a backing box at all?
+- **What I did:** Ben asked for it to be transparent. The grid now runs behind "Housing Reform Model", and the text stays readable.
+- **Inputs:** Ben's request (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`.
+- **AI:** Claude Code made the change. Checked with `tests/app`, `compliance_check.py`, and in the browser pane.
+- **Open / next:** none.
