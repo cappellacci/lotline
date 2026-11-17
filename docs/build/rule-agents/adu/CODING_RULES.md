@@ -44,7 +44,8 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
   WebFetch, curl, a browser user agent, or a different URL form to get round a block (L-R6). A block → add a
   `BlockedSource` with the helper's `reason` and move on.
 - Quote verbatim, ≤ 25 words, with the section number. Put the copy's path relative to `LOTLINE_DATA_DIR` in
-  `cache_path`. Use https (Wayback `https://web.archive.org/web/<ts>/<url>` for http-only pages).
+  `cache_path`. Put the fetch result's `doc_id` (sha256 of the bytes read) in `doc_id`, and the PDF page
+  in `page`. A quote read off a scanned page image is `quote_status: image_read`. Use https (Wayback `https://web.archive.org/web/<ts>/<url>` for http-only pages).
 - `kind`: `official_code` (the city's code or its official publisher, incl. Municode PDF blob, amlegal PDFs),
   `ordinance`, `staff_report`, `minutes`, `state_law`, `city_page`, `mirror` (Zoneomics etc.), `news`, `draft`.
 - `confidence`: `high` only on primary evidence with unambiguous text; mirrors, city pages and news are at most

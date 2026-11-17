@@ -77,6 +77,7 @@ class FetchResult:
     content_type: str | None = None
     retrieved: dt.date | None = None
     detail: str = ""
+    doc_id: str | None = None  # sha256 of the bytes: cite it in Evidence.doc_id
 
 
 # ---- robots ----------------------------------------------------------------------------------------------
@@ -292,6 +293,7 @@ class Fetcher:
             )
         )
         result = FetchResult(url, True, None, resp.status_code, dest, None, ctype, today)
+        result.doc_id = sha256_file(dest)
         if dest.suffix == ".pdf":
             if not pdf_has_text(resp.content):
                 result.reason = "scanned_pdf"

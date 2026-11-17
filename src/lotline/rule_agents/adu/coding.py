@@ -65,6 +65,10 @@ class Evidence(BaseModel):
     kind: SourceKind
     archived_from: str | None = None  # the live URL when `url` is a Wayback copy
     cache_path: str | None = None  # path under LOTLINE_DATA_DIR of the copy the quote was read from
+    # sha256 of the exact bytes read: the stable document id (SHARED_CANDIDATES §0, the shared doc store)
+    doc_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    page: int | None = Field(default=None, ge=1)  # PDF page the quote is on
+    quote_status: Literal["verbatim", "image_read", "human"] = "verbatim"  # image_read: scanned page
 
     @field_validator("url")
     @classmethod

@@ -56,6 +56,7 @@ def test_missing_robots_allows_and_page_is_cached_with_manifest_and_text(store):
     assert "shall not exceed 800 square feet" in text and "var a=1" not in text
     entry = json.loads(store.manifest_path.read_text().splitlines()[-1])
     assert entry["url"] == "https://a.gov/code" and entry["adapter"] == "lotline.rule_agents.adu.fetch"
+    assert r.doc_id == entry["sha256"]  # the stable document id evidence cites
 
 
 def test_robots_server_error_means_assume_disallowed(store):

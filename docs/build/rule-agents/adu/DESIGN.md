@@ -36,7 +36,7 @@ Only accepted rows reach the repo, through a dated `scripts/dev/` apply script a
 
 | Step | Input | Output | Stop rule |
 |---|---|---|---|
-| 0 worklist | state; `--places N` / `--geoids`; jurisdictions table | `places.csv`, blind holdouts printed | places with `pop_2020 < 2,500` skipped unless named (L-O5) |
+| 0 worklist | state; `--places N` / `--geoids`; jurisdictions table | `places.csv` (for agents), `existing_rows.csv` (orchestrator only: reform ids reveal rule years), blind holdouts printed | places with `pop_2020 < 2,500` skipped unless named (L-O5) |
 | 1 state law | state | `state_law.json`: each enacted ADU statute, citation, adopted/effective dates, coverage rule (threshold, strictness, population source), fields it sets | statute text read (official or Wayback); a bill that did not pass is never law (MN SF 3964) |
 | 2 scout | places batch, `state_law.json` | `sources/<geoid>.json`: official code URL + publisher, ADU section, adopting ordinance(s), Legistar/Wayback leads, fetch result per URL | ≤ 6 web searches and ≤ 8 fetches per place; stop on a host after its first block (L-R1, L-R9) |
 | 3a/3b coders | `sources/<geoid>.json`, `state_law.json` | `coding_[ab]/<geoid>.json` (`coding.PlaceCoding`) | ≤ 4 extra searches and ≤ 10 fetches per place; every era 2016–2025 plus the prior state (L-S5) |
@@ -49,7 +49,8 @@ Only accepted rows reach the repo, through a dated `scripts/dev/` apply script a
 
 - **Every coded value** (`FieldValue`) has ≥ 1 `Evidence`: https URL actually opened (Wayback https for
   http-only pages), retrieval date, verbatim quote ≤ 300 characters (aim ≤ 25 words), section, source kind,
-  and `cache_path` of the copy read. `check` refuses a value without evidence (L-O6, L-F3).
+  `cache_path` of the copy read, and `doc_id` (sha256 of those bytes), `page` and `quote_status`. The
+  document store these ids point into is shared across the three swarms: `SHARED_CANDIDATES.md` §0. `check` refuses a value without evidence (L-O6, L-F3).
 - **Source kinds** split into primary (official code, ordinance, staff report, minutes, state law,
   human-primary) and secondary (city page, mirror, news, draft, human-secondary). Only primary evidence can be
   `high` confidence; agreement on secondary evidence alone never counts as agreement (L-R4, L-S3).

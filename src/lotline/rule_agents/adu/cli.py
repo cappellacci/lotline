@@ -1,7 +1,7 @@
 """`python -m lotline.rule_agents.adu <command>`: the deterministic steps the ADU agents call.
 
 Run folder (outside the repo): `$LOTLINE_DATA_DIR/rule_agents/adu/<ST>/<run_id>/`
-    places.csv            worklist (rank, geoid, name, pop, existing rows)
+    places.csv            worklist (rank, geoid, name, pop); existing_rows.csv: orchestrator only
     state_law.json        state-law baseline (rules-adu-state-law)
     coding_a/<geoid>.json primary coder        coding_b/<geoid>.json  blind second coder
     decisions/<geoid>.json verifier rulings    final/<geoid>.json     merged coding
@@ -54,7 +54,9 @@ def cmd_worklist(a) -> int:
         wl = wl[wl["geoid"].isin(a.geoids.split(","))]
     out = run_dir(a.state, a.run_id) / "places.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
-    wl.to_csv(out, index=False)
+    # Existing reform ids reveal rule years: they go to an orchestrator-only file, never to the coders.
+    wl.drop(columns="existing_adu_rows").to_csv(out, index=False)
+    wl[["geoid", "name", "existing_adu_rows"]].to_csv(out.with_name("existing_rows.csv"), index=False)
     blind = P.blind_holdouts(a.state)
     print(f"{len(wl)} places -> {out}")
     print("blind holdouts (code rules only; open no outcomes):", json.dumps(blind) if blind else "none")
