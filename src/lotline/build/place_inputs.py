@@ -31,7 +31,7 @@ from lotline.config import load_params
 KEY = ["state", "geoid", "year"]
 UNITS = ["units_1", "units_2", "units_3_4", "units_5p"]
 THEMES = {"adu": "adu", "mm": "missing_middle"}
-PLACE_COLS = ["name", "kind", "county_geoid", "in_bps", "pop_2020", "data_tier"]
+PLACE_COLS = ["name", "kind", "county_geoid", "in_bps", "pop_2020", "data_tier", "cbsa_code", "cbsa_type"]
 
 
 def nearest_roll(elig: pd.DataFrame, theme: str, origin: int) -> pd.DataFrame:
@@ -103,6 +103,7 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
     base["size_band"] = adu.size_band(pop, edges)  # county remainders: no pop_2020 -> band 0 (as MM today)
     house = mm.house_shares(st, store)
     base["house_share"] = base["geoid"].map(house)  # latest roll, no origin cap (as MM today)
+    base = base.merge(place_tags(st, store, juris, parcels, permits), on="geoid", how="left")
 
     # county shares of the local-only places with eligible parcels (`adu._county_shares`, the places the
     # models ask for): one cached Census lookup for every year
@@ -111,7 +112,10 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
         with_parcels = set(elig.loc[elig["eligible_parcels"].fillna(0) > 0, "jurisdiction_geoid"])
     shares = adu._county_shares(st, store, base[base["geoid"].isin(with_parcels)])
     counts = adu.observed_adu_counts(permits, 1900, max(years, default=1900), adu_undercount())
-    units = panels.numerator(bps)[["geoid", "year", *UNITS, "imputed"]] if bps is not None else None
+    units = None
+    if bps is not None:
+        units = panels.numerator(bps)[["geoid", "year", "county_geoid", *UNITS, "imputed"]]
+        units = units.rename(columns={"county_geoid": "bps_county_geoid"})
 
     frames = []
     for year in years:
@@ -133,8 +137,51 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
     out = pd.concat(frames, ignore_index=True) if frames else base.assign(year=pd.Series(dtype=int))
     if units is not None:
         out = out.merge(units, on=["geoid", "year"], how="left")
+    # the baseline's FHFA index (`panels._hpi`): first of county, cbsa, state non-CBSA, state
+    if market is not None and len(out):
+        # county from that year's BPS row, as the baseline panel reads it (a place straddling two counties can
+        # differ from `jurisdictions.county_geoid`, which is the latest row's; task 5 list)
+        county = out["bps_county_geoid"] if "bps_county_geoid" in out else out["county_geoid"]
+        frame = out.assign(
+            county_geoid=county.fillna(out["county_geoid"]), cbsa_code=out["cbsa_code"].astype("string")
+        )
+        hpi = panels._hpi(frame, market, panels.HPI_LEVELS)
+        out["hpi"], out["hpi_geo"] = hpi["hpi"].astype(float), hpi["hpi_geo"]
     out["state"] = st
     return _flag_models(out)[[*KEY, *[c for c in out if c not in KEY]] + ["models", "models_note"]]
+
+
+def place_tags(state: str, store, juris: pd.DataFrame, parcels, permits) -> pd.DataFrame:
+    """Per-place tags the models read, computed once (WS-SCALE straight-line build, Ben 2026-11-17).
+
+    - `place_type`, `place_type_source`: D-088 core / suburb / town from national data
+      (`adu_types.jurisdiction_types`); a place the type table doesn't know is a town (D-089), source
+      "default_town".
+    - `is_holdout`: the place's outcomes are hidden by a holdout still blind (or the state is, statewide).
+    - `parcel_sources`, `permit_sources`: the sources in the parcel and permit tables tagged to the place,
+      sorted and `;`-joined; null where none.
+    """
+    from lotline.config import load_state
+    from lotline.model import adu_types
+    from lotline.model.scenarios.adu import TOWN
+    from lotline.validation.holdout import still_blind
+
+    out = juris[["geoid"]].copy()
+    types = adu_types.jurisdiction_types(store, state)
+    out["place_type"] = out["geoid"].astype(str).map(types)
+    out["place_type_source"] = np.where(out["place_type"].notna(), "acs_cbsa", "default_town")
+    out["place_type"] = out["place_type"].fillna(TOWN)
+    blind = still_blind(load_state(state).holdouts)
+    held = {g for h in blind for g in h.geoids}
+    out["is_holdout"] = out["geoid"].isin(held) | any(h.statewide for h in blind)
+    for col, table in (("parcel_sources", parcels), ("permit_sources", permits)):
+        if table is None or "source" not in table:
+            out[col] = None
+            continue
+        pairs = table[["jurisdiction_geoid", "source"]].dropna().drop_duplicates()
+        joined = pairs.groupby("jurisdiction_geoid")["source"].agg(lambda s: ";".join(sorted(s.astype(str))))
+        out[col] = out["geoid"].map(joined)
+    return out
 
 
 def adu_undercount():
