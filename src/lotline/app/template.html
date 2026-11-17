@@ -1480,7 +1480,8 @@ async function show(state) {
 // "home" is the opening card (no state chosen yet); "add" is the static add-a-state page. Results exist only
 // per state: there is no all-states results page.
 const PAGES = ["home", ...Object.keys(SECTIONS), "add"];
-$("add-readme").href = DATA.map.byos_url;
+// Only an https link is used (CodeQL: the URL comes from the embedded data block).
+if (/^https:\/\/[^\s"<>]+$/.test(String(DATA.map.byos_url || ""))) $("add-readme").href = DATA.map.byos_url;
 function route() {
   const [page, query] = location.hash.replace(/^#/, "").split("?");
   return { page: PAGES.includes(page) ? page : PAGES[0], state: new URLSearchParams(query || "").get("state") };
