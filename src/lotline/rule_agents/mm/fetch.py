@@ -40,6 +40,7 @@ class FetchResult:
     status: int | None
     blocker: str | None = None  # access.BLOCKER kind
     detail: str = ""
+    doc_id: str | None = None  # sha256 of the saved bytes: the document's stable ID (SHARED_CANDIDATES §10)
 
 
 def allowed(robots_txt: str | None, url: str) -> bool:
@@ -75,7 +76,7 @@ def _wait(root: Path, host: str) -> None:
 def get(url: str, run_id: str, *, store=None, http: httpx.Client | None = None) -> FetchResult:
     """Fetch one URL politely (network; exercised in dry runs, not unit tests)."""
     from lotline.io import http as lhttp
-    from lotline.io.store import DataStore
+    from lotline.io.store import DataStore, sha256_file
 
     store = store or DataStore()
     host = urlparse(url).hostname or ""
@@ -120,9 +121,10 @@ def get(url: str, run_id: str, *, store=None, http: httpx.Client | None = None) 
         ctype = "application/pdf" if path.suffix == ".pdf" else "text/html"
         text = "" if path.suffix == ".pdf" else path.read_text(errors="replace")[:20000]
         hit = classify(url, 200, content_type=ctype, text=text)
+        doc = sha256_file(path)
         if hit:
-            return FetchResult(url, path, 200, hit[0], hit[1])
-        return FetchResult(url, path, 200)
+            return FetchResult(url, path, 200, hit[0], hit[1], doc_id=doc)
+        return FetchResult(url, path, 200, doc_id=doc)
     finally:
         if own:
             http.close()

@@ -72,6 +72,7 @@ class Evidence(BaseModel):
     retrieved: date
     section: str | None = None  # e.g. "Sec. 20.3.2 Table 2-1", "Ord. 2019-048 §3", "p. 14"
     snapshot: str | None = None  # path of the saved copy (as `fetch` printed it)
+    doc_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")  # sha256 of the saved copy
     source_kind: (
         Literal[
             "code",  # the codified ordinance (Municode etc.)
