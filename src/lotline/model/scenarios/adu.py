@@ -151,6 +151,7 @@ def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) ->
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
 
 
+NEW_RULE = "adu_new_rule_share"  # D-099
 GRID_FILE = "adu_partial_share_grid.csv"
 SHARE_DRAWS = (
     "adu_partial_share_draws"  # 0 fixed; 1 the grid's weights; 2 the fold maxima; 3 all at the set m_x
@@ -832,7 +833,8 @@ def pool_paths(
     path, so nothing is added. `lead` years (D-061) run first under current rules only, on one shared pool,
     and are not returned: the window's year t has rule age a + lead + t and Handbook ramp(t).
     `h_own` (D-091; None or NaN per place: off) replaces the no-reform hazard, in the lead years too, and
-    scales the Handbook hazard by the mechanism's ratio (`own_rate_paths`).
+    scales the Handbook hazard by the mechanism's ratio (`own_rate_paths`). D-099: where today's rule share c
+    is 0 (no ADUs allowed), the Handbook's new hazard is multiplied by `adu_new_rule_share` (ν; 1 = none).
     """
     e = np.asarray(eligible, dtype=float)
     hm = np.asarray(h_mature, dtype=float)
@@ -840,6 +842,7 @@ def pool_paths(
     c = np.asarray(rule_share, dtype=float)
     age = np.nan_to_num(np.asarray(rule_age, dtype=float), nan=0.0)
     own = np.full(len(e), np.nan) if h_own is None else np.asarray(h_own, dtype=float)
+    nu = float(ramp_params.get(NEW_RULE, 1.0))  # D-099: first-years share where no ADUs are allowed today
     r = e.copy()
     for s in range(1, int(lead) + 1):  # lead years: current rules only, nothing reported (D-061)
         h_lead = np.minimum(np.maximum(c * hm * hazard.adu_ramp(age + s, ramp_params), floor), 1.0)
@@ -852,7 +855,7 @@ def pool_paths(
         h_rule = c * hm * hazard.adu_ramp(age + t, ramp_params)
         h_cur = np.minimum(np.maximum(h_rule, floor), 1.0)
         if enabled:
-            h_new = h_rule + (1.0 - c) * hm * hazard.adu_ramp(t, ramp_params)
+            h_new = h_rule + (1.0 - c) * hm * hazard.adu_ramp(t, ramp_params) * np.where(c <= 0, nu, 1.0)
             h_hb = np.minimum(np.maximum(h_new, floor), 1.0)
         else:
             h_hb = h_cur

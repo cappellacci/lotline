@@ -314,75 +314,68 @@ def state_table():
 
 
 def rate_chart():
-    """ADUs a year per 1,000 eligible lots: predicted under the Handbook (mean) for selected core cities, against
-    recent observed rates in core cities whose rules already allow ADUs."""
-    p = pl.copy()
-    p["hb"] = (p.current_rules_adus_mean + p.adu_permits_added_mean) / 5 / p.eligible_parcels * 1000
-    pred = p[
-        p["name"].isin(
-            [
-                "Dallas city",
-                "Fort Worth city",
-                "Cleveland city",
-                "Houston city",
-                "Austin city",
-                "Portland city",
-                "Raleigh city",
-            ]
-        )
-    ]
-    r = py[py.year >= 2021].groupby(["state", "name"]).agg(adus=("adus", "sum"), lots=("eligible", "sum"))
-    r["rate"] = r.adus / r.lots * 1000
-    obs = r.reset_index()
-    obs = obs[
-        obs["name"].isin(
-            [
-                "Asheville city",
-                "Portland city",
-                "Bend city",
-                "Durham city",
-                "Austin city",
-                "Raleigh city",
-                "Minneapolis city",
-            ]
-        )
-    ]
-    items = [
-        (f"{n.replace(' city', '')} (predicted)", v, "p")
-        for n, v in zip(pred["name"], pred["hb"], strict=True)
-    ]
-    items += [
-        (f"{n.replace(' city', '')} (built, 2021–25)", v, "o")
-        for n, v in zip(obs["name"], obs["rate"], strict=True)
-    ]
+    """ADUs a year per 1,000 eligible lots under the Handbook: the engine's P10-P90 range and median for selected
+    core cities (matched by state and name), against what core cities that already allow ADUs built, 2021-25."""
+    pred_names = [("TX", "Dallas city"), ("TX", "Fort Worth city"), ("TX", "Houston city"), ("TX", "Austin city"),
+                  ("OH", "Cleveland city"), ("OH", "Akron city"), ("OR", "Portland city"), ("NC", "Raleigh city")]  # fmt: skip
+    obs_names = [("NC", "Asheville city"), ("OR", "Portland city"), ("OR", "Bend city"), ("NC", "Durham city"),
+                 ("TX", "Austin city"), ("NC", "Raleigh city"), ("MN", "Minneapolis city")]  # fmt: skip
+    p = (
+        pl.sort_values("eligible_parcels")
+        .drop_duplicates(["state", "name"], keep="last")
+        .set_index(["state", "name"])
+        .sort_index()
+    )
+    items = []
+    for key in pred_names:
+        if key in p.index:
+            r = p.loc[key]
+            f = 1000 / 5 / r.eligible_parcels
+            items.append(
+                (
+                    f"{key[1].replace(' city', '')} (predicted)",
+                    r.handbook_adus_p50 * f,
+                    r.handbook_adus_p10 * f,
+                    r.handbook_adus_p90 * f,
+                    "p",
+                )
+            )
+    o = py[py.year >= 2021].groupby(["state", "name"]).agg(adus=("adus", "sum"), lots=("eligible", "sum"))
+    for key in obs_names:
+        if key in o.index:
+            v = o.loc[key].adus / o.loc[key].lots * 1000
+            items.append((f"{key[1].replace(' city', '')} (built, 2021–25)", v, None, None, "o"))
     items.sort(key=lambda t: -t[1])
-    lw, top, rh = 210, 8, 22
-    h = top + rh * len(items) + 26
-    vmax = max(v for _, v, _ in items) * 1.1
-
-    def sx(v):
-        return lw + v / vmax * (W - lw - 50)
-
+    lw, top, rh = 200, 8, 22
+    h = top + rh * len(items) + 28
+    sx = log_axis(0.01, 10, lw, W - 50)
     g = [f'<svg viewBox="0 0 {W} {h}" class="chart" role="img" aria-label="ADU rates per 1,000 lots">']
-    for t in (0.5, 1, 1.5, 2, 2.5):
-        if t < vmax:
-            g.append(f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top}" y2="{h - 22}" class="grid"/>')
-            g.append(f'<text x="{sx(t):.1f}" y="{h - 8}" class="tick" text-anchor="middle">{t}</text>')
-    for i, (lab, v, kind) in enumerate(items):
-        y = top + rh * i
-        g.append(f'<text x="{lw - 8}" y="{y + 14}" class="lab" text-anchor="end">{esc(lab)}</text>')
-        g.append(
-            f'<rect x="{lw}" y="{y + 4}" width="{sx(v) - lw:.1f}" height="{rh - 8}" rx="2" class="{"barp" if kind == "p" else "baro"}"/>'
-        )
-        g.append(f'<text x="{sx(v) + 5:.1f}" y="{y + 14}" class="val">{v:.2f}</text>')
+    for t in (0.01, 0.1, 0.3, 1, 3, 10):
+        g.append(f'<line x1="{sx(t):.1f}" x2="{sx(t):.1f}" y1="{top}" y2="{h - 24}" class="grid"/>')
+        g.append(f'<text x="{sx(t):.1f}" y="{h - 10}" class="tick" text-anchor="middle">{t:g}</text>')
+    for i, (lab, v, lo, hi, kind) in enumerate(items):
+        y = top + rh * i + 11
+        g.append(f'<text x="{lw - 8}" y="{y + 4}" class="lab" text-anchor="end">{esc(lab)}</text>')
+        if kind == "p":
+            g.append(f'<line x1="{sx(lo):.1f}" x2="{sx(hi):.1f}" y1="{y}" y2="{y}" class="whisk"/>')
+            g.append(f'<circle cx="{sx(v):.1f}" cy="{y}" r="4.5" class="dotp"/>')
+            g.append(f'<text x="{sx(hi) + 6:.1f}" y="{y + 4}" class="val">{v:.2f}</text>')
+        else:
+            g.append(
+                f'<rect x="{sx(v) - 5:.1f}" y="{y - 5}" width="10" height="10" class="baro" transform="rotate(45 {sx(v):.1f} {y})"/>'
+            )
+            g.append(f'<text x="{sx(v) + 10:.1f}" y="{y + 4}" class="val">{v:.2f}</text>')
+    g.append(
+        f'<text x="{W - 8}" y="{h - 1}" class="tick" text-anchor="end">ADUs a year per 1,000 eligible lots (log scale)</text>'
+    )
     g.append("</svg>")
     return "".join(g)
 
 
 tx = pl[pl.state == "TX"]
 tx_share = (
-    tx.set_index("name").loc[["Dallas city", "Fort Worth city"], "adu_permits_added_mean"].sum()
-    / tx.adu_permits_added_mean.sum()
+    tx[tx.name.isin(["Dallas city", "Fort Worth city"])].adu_permits_added_p50.sum()
+    / tx.adu_permits_added_p50.sum()
 )
 inside_places = drift_pl.inside.mean()
 n_inside_states = int(
@@ -425,7 +418,7 @@ p {{ margin: 0; max-width: 65ch; }} section {{ display: grid; gap: 12px; }}
 .s-base {{ fill: var(--ink-muted); }} .s-base2 {{ fill: var(--tier-none); }} .s-add {{ fill: var(--survey); }} .s-none {{ fill: var(--brass); }} .s-add2 {{ fill: var(--tier-3); }}
 .legend i.s-base {{ background: var(--ink-muted); }} .legend i.s-base2 {{ background: var(--tier-none); }} .legend i.s-add {{ background: var(--survey); }} .legend i.s-none {{ background: var(--brass); }} .legend i.s-add2 {{ background: var(--tier-3); }}
 .chart .seg {{ fill: var(--paper); font-size: 10.5px; font-weight: 600; }} .chart .seg.dark {{ fill: var(--ink); }}
-.barp {{ fill: var(--survey); }} .baro {{ fill: var(--brass); }}
+.whisk {{ stroke: var(--survey); stroke-width: 2; opacity: .5; }} .dotp {{ fill: var(--survey); }} .barp {{ fill: var(--survey); }} .baro {{ fill: var(--brass); }}
 .pair {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }}
 figure {{ margin: 0; display: grid; gap: 6px; min-width: 0; }} figcaption {{ font-size: .85rem; color: var(--ink-muted); }}
 .legend {{ display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; color: var(--ink-muted); align-items: center; }}
@@ -449,7 +442,7 @@ ul {{ margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 65ch; }
 <div class="cards">
   <div class="card"><span>Forecasting forward within a state</span><b>{n_inside_states} of {len(drift_tot)}</b><span>state totals for 2021–25 inside the forecast range; {inside_places:.0%} of {len(drift_pl)} places inside theirs.</span></div>
   <div class="card"><span>A state the model has never seen</span><b>{n_unseen} of {len(tiers)}</b><span>held-out states inside the range, using only rules and other states' data.</span></div>
-  <div class="card flag"><span>Gut-check flag</span><b>{tx_share:.0%}</b><span>of Texas's added ADUs come from Dallas and Fort Worth, which allow none today.</span></div>
+  <div class="card flag"><span>Gut-check flag</span><b>{tx_share:.0%}</b><span>of Texas's added ADUs (by place medians) come from Dallas and Fort Worth, which allow no rentable ADUs by right today.</span></div>
 </div>
 
 <section>
@@ -494,11 +487,11 @@ ul {{ margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 65ch; }
 
 <section>
   <h2>3 · What looks off</h2>
-  <h3>Places that allow no ADUs today get large predicted gains</h3>
+  <h3>Predicted Handbook rates for cities that allow no ADUs today, against what ADU-friendly cities built</h3>
   {rate_chart()}
-  <p class="foot">ADUs a year per 1,000 eligible lots. Blue: the engine's Handbook prediction (mean over draws, 2027–31). Gold: what core cities that already allow ADUs actually built, 2021–25.</p>
+  <p class="foot">Blue: the engine's Handbook prediction for 2027–31, median with P10–P90. Gold: what core cities that already allow ADUs built, 2021–25. A single city's range is very wide because it carries its own place luck; its average sits far above its median.</p>
   <ul>
-  <li><b>Dallas and Fort Worth carry {tx_share:.0%} of Texas's added ADUs.</b> Neither allows rentable ADUs today, so the engine has no own-count rate to scale and gives them the full fitted core-city rate (×5.3 a suburb's). Dallas comes out at about 2.3 a year per 1,000 lots: as high as Asheville, the busiest place we count, about twice Portland and three times Austin, all with permissive rules for years. Cleveland, in Ohio, is the same case. <b>This is the biggest thing to look at</b>: the core-city term is fitted on cities that already allow ADUs, mostly mature programs.</li>
+  <li><b>Dallas and Fort Worth carry {tx_share:.0%} of Texas's added ADUs.</b> Neither allows rentable ADUs by right today, so the engine gives them the fitted core-city rate for their market. At the median that is about 0.35 a year per 1,000 lots, below what Austin (0.73) or Portland (1.2) actually built: plausible for a large city with no ADU history. The range is wide (P90 about 5), and the <i>average</i> (2.3) is pulled up by those high draws. <b>Correction:</b> an earlier version of this page compared that average with other cities' actual rates and overstated the problem. Dallas's coding is a separate question: since 2018 it allows rentable ADUs by special exception, coded here as "no ADUs".</li>
   <li><b>The no-reform rate runs above recent counts.</b> In places with their own counts, the engine's 2027–31 mean is above their recent rate. Minnesota is ×{basis.loc["MN"].current_rules_adus_mean / 5 / basis.loc["MN"].observed_per_year:.1f}. Two reasons: the drift term's mean is 1.7× its median (the ranges are honest, but the mean is pulled up), and a half-count starting allowance on each of Minnesota's 184 counted places, most of which counted none. Medians sit closer to recent counts.</li>
   <li><b>Oregon's added homes are tiny</b> (about 10) because almost every Oregon lot already has a coded rule allowing ADUs (22% Handbook-equivalent, 74% allowed with some conditions not coded), so the bill changes little there. That is plausible after Oregon's 2017–19 state laws, but the 74% with uncoded conditions is worth a look.</li>
   <li><b>Austin still gains under the bill</b> even though its rule is Handbook-equivalent, because its zone list covers 64% of its lots (measured on parcels). The other 36% gain.</li>

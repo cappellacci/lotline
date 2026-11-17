@@ -1,0 +1,5 @@
+config: /Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-types-checked/config; unknown place-years left out: {'2713456': [2016, 2017, 2018, 2019, 2020, 2021, 2022], '2740382': [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]}
+main {'interval': {'nu': 0.75, 'low': 0.7, 'high': 0.85}, 'gain': -0.11049999654038739, 'se': 0.9320760795698209, 'places': 28}
+K = 3 {'interval': {'nu': 0.4, 'low': 0.35, 'high': 0.45}, 'gain': 0.8601544814792288, 'se': 3.0394668834837755, 'places': 28}
+explicit no-ADU before {'interval': {'nu': 0.8, 'low': 0.7, 'high': 0.9}, 'gain': -0.2433763754444801, 'se': 0.6363164415226542, 'places': 15}
+without Raleigh {'interval': {'nu': 0.8, 'low': 0.65, 'high': 0.9}, 'gain': -0.5076970185626977, 'se': 0.8783023845488227, 'places': 27}

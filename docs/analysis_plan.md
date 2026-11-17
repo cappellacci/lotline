@@ -7408,3 +7408,79 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     overlay; this is a convention, noted in its row.
 - **Tests:** the pinned values were updated. The unseen-state test holds m_x fixed so it still isolates τ.
   The full suite and the compliance check were run before commit.
+
+### D-099 · 2026-11-15 · ADUs: uptake in the first years after a place first allows ADUs (method only, before any fit)
+- **Status: accepted by Ben, 2026-11-16 ("I accept D-099"). Drafted overnight on his go-ahead ("When done let's
+  do the fix", 2026-11-15, after the gut check). No fit, run or score for this entry had been made when it was
+  accepted.** Provisional number: drafted as
+  D-098 and renumbered the same night, because the missing-middle St. Paul freeze (PR #436) took D-098. The code
+  sits behind `adu_new_rule_share` at 1 (no effect) until Ben accepts and the fit is run.
+- **Why.** Under the Handbook reform, a place that allows no ADUs today gets the full fitted hazard for its
+  type from the first year (`pool_paths`: h_hb = h_rule + (1 − c) h_m, c = 0). For a core city that is θ ×
+  e^{β_core} (×5.3), a rate fitted mostly on cities that have allowed ADUs for years. The gut check
+  (`reports/adu-gut-check/`) found the outcome: Dallas and Fort Worth give 46% of Texas's added ADUs, and
+  Dallas's predicted rate (2.3 a year per 1,000 lots) equals Asheville's, the busiest counted place.
+  - This is not D-048's ramp. D-048 tested a logistic ramp on every rule's age and found counts flat where
+    the ramp expected a rise. This entry asks a narrower question: do places that allow ADUs for the first
+    time build less than places of the same type that have allowed them for years?
+- **What was looked at before writing** (disclosed because it bears on the choices):
+  - the gut check;
+  - D-095's events and results, including Raleigh 2021 (2 → 201 ADUs, observed ×29 against the engine's
+    ×9.4);
+  - from the rule rows only (no counts): each fit place's first ADU-allowing row on the D-096 rows.
+    About 27 fit places first allow ADUs after 2016-01-01, 21 of them in Minnesota. A row starting exactly
+    2016-01-01 is the coding window's start, read as "allowed before 2016".
+- **The term.** For place i, f_i is the year its first ADU-allowing rule took effect (the earliest row that
+  is not an explicit no-ADU row or an `UNKNOWN-PLACEHOLDER`). For years t with 0 ≤ t − f_i < K, the place's
+  expected count is multiplied by ν. K = 5, fixed now: it matches the engine's five-year window.
+  - ν = 1 is A + P as fitted (D-096). Places whose first allowing row starts 2016-01-01 never take ν.
+  - Fitted with A + P on the D-096 rows by profile likelihood over ν on a grid of 0.05 to 1.50, step 0.05:
+    each place's base exposure is scaled by ν in its new-rule years, and θ, α and the core term are refit at
+    each ν with the rule shares held at D-096's (m_o 1.0, m_x 0.7). The report also checks the rule shares'
+    profile at ν̂. ν̂ is the profile maximum, with a 90% interval from the χ² profile.
+  - **What identifies ν.** For most of these places every observed year is a new-rule year, so ν is
+    identified across places: new-rule place-years against place-years of the same type and rules in places
+    that allowed ADUs earlier. Places with years on both sides add a within-place comparison.
+- **Held-out check.** For each newly allowing place j:
+  1. refit ν, θ, α and the core term without j;
+  2. predict j's counts in its new-rule years from its rules and type alone, with a new place effect
+     integrated out (negative binomial at the refit α), under ν̂(−j) and under ν = 1. θ, α and the core term
+     are point estimates from the fit without j, with the rule shares at D-096's m_o and m_x. There is no
+     state multiplier, because j's state stays in the fit;
+  3. take the paired log-score difference.
+
+  The gain is the sum over places, with its paired SE.
+- **Decision rule, fixed now.** ν goes to config only if (1) the all-data 90% interval excludes 1, and (2) the
+  held-out gain is above 2 paired SE, and (3) D-088's tests A–B and test D are not worse (`adu_types.decide`
+  with A + P as the base). Otherwise ν stays 1, and the report shows the engine at ν̂ and at the interval's
+  ends as a sensitivity.
+- **Engine, if adopted.** In `pool_paths`, the Handbook term's new part for a place (or a drawn rule) with
+  c = 0 becomes (1 − c) h_m ν. Every window year (2027–31) is within K of the reform. Places that allow ADUs
+  today keep 1 − c at full strength, since their reform upgrades an existing rule. `adu_new_rule_share` holds
+  ν (1 now). Own-count places with h_cur = 0 (Dallas, Fort Worth) take ν through the mechanism's added
+  hazard (`own_rate_paths`).
+- **Sensitivities, reported only:** K = 3; only places whose rows show an explicit no-ADU rule (or notes
+  saying not allowed) before f_i; Raleigh left out.
+- **What it cannot say:**
+  - Most new-rule places are Minnesota suburbs with small counts, and Raleigh is the only big core city
+    among them. A ν learned mostly on suburbs is applied to Dallas.
+  - Rules coded after an ordinance passed may miss earlier ADUs allowed under general accessory-building
+    rules.
+  - The Handbook rule may differ from these places' first rules: often a better rule, sometimes a worse one.
+- **Result, 2026-11-16** (`reports/adu-new-rule/`, page https://claude.ai/artifact/GZoQ3mG5iVvKhRzwQGVLEb; run
+  through `adu_refit_fixed_rows.py` on the D-096 rows; 28 newly allowing fit places):
+  - **Part 1 passes:** ν̂ 0.75 (90% interval 0.70–0.85). The log-likelihood at ν = 1 is 5.5 below the peak.
+  - **Part 2 fails:** the held-out gain is −0.11 (2 paired SE 1.86).
+  - **Decision: ν stays 1.** Part 3 (tests A–B and D) was not run because part 2 already fails.
+  - **Sensitivities:**
+    - K = 3: ν 0.40 (0.35–0.45), held-out gain +0.86 (2 SE 6.1);
+    - explicit no-ADU row before (15 places): ν 0.80 (0.70–0.90), gain −0.24 (2 SE 1.3);
+    - Raleigh left out: ν 0.80 (0.65–0.90), gain −0.51 (2 SE 1.8).
+    - None passes part 2.
+  - **What it means for the gut-check flag:** even ν̂ would lower a no-rule core city's Handbook rate only
+    ×0.77, because θ rises and the core term falls in the refit. A first-years discount doesn't explain the
+    Dallas and Fort Worth gap. **Correction, same day:** that gap came mostly from the gut check comparing
+    Dallas's mean over draws (2.3 a year per 1,000 lots) with other cities' actual rates. Its median is 0.35
+    (P10–P90 0.01–5.1), below Austin's (0.73) and Portland's (1.2) built rates. The gut-check page now uses
+    medians. Whether Dallas's special-exception rule should be coded as restricted rather than no-ADU is open
+    for Ben.
