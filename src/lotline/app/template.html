@@ -331,7 +331,7 @@ table.checks td:last-child { min-width: 260px; }
   <section class="part" id="page-add" data-section="add" hidden>
     <h2 class="h1">Add a state</h2>
     <p class="lead">How to run Lotline for a state that has no results yet, or sharpen one that rests on national data: what to gather, how to prepare it, and how to run the model.</p>
-    <p class="pending">Draft: these steps are a placeholder while the workflow is being revised. For now, follow the <a id="add-readme" href="#">"bring your own state" guide in the README</a>.</p>
+    <p class="pending">Draft: these steps are a placeholder while the workflow is being revised. For now, follow the <a id="add-readme" href="__BYOS_URL__" target="_blank" rel="noopener">"bring your own state" guide in the README</a>.</p>
     <div class="step"><p class="step-n" aria-hidden="true">1</p><div class="step-body"><h3 class="h3">Check what you already have</h3>
       <p class="body">Every state starts with national data (Census permits, home values, rents, building costs), so the model can run before any local data is gathered. List which local sources exist for your state.</p></div></div>
     <div class="step"><p class="step-n" aria-hidden="true">2</p><div class="step-body"><h3 class="h3">Prepare parcel records</h3>
@@ -1499,8 +1499,6 @@ async function show(state) {
 // "home" is the opening card (no state chosen yet); "add" is the static add-a-state page. Results exist only
 // per state: there is no all-states results page.
 const PAGES = ["home", ...Object.keys(SECTIONS), "add"];
-// Only an https link is used (CodeQL: the URL comes from the embedded data block).
-if (/^https:\/\/[^\s"<>]+$/.test(String(DATA.map.byos_url || ""))) $("add-readme").href = DATA.map.byos_url;
 function route() {
   const [page, query] = location.hash.replace(/^#/, "").split("?");
   return { page: PAGES.includes(page) ? page : PAGES[0], state: new URLSearchParams(query || "").get("state") };
