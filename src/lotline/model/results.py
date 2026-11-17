@@ -19,8 +19,9 @@
 
 Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide, and the fee scenario
 over every place the baseline forecasts (D-076) twice, as D-065 labels them: `fees`, the Handbook benchmark
-($50,000 cut in half), and `fees_local_half`, real local fees cut in half. The stacked combinations
-(`model/combine.py` not yet written) are listed in `meta.scenarios_pending`, never filled with stand-ins.
+($50,000 cut in half), and `fees_local_half`, real local fees cut in half. Stacked combinations
+are not planned (Ben, 2026-11-17) and are not listed; a single scenario the engine cannot run is listed in
+`meta.scenarios_pending`, never filled with a stand-in.
 
 Factors the scenario module does not draw itself are drawn here, triangular over config/params/aggregate.yaml
 (low, value, high), from `results_seed`: `completion_factor_single_family` (ADU),
@@ -51,6 +52,9 @@ TABLE = {part: f"results_{part}" for part in PARTS}
 ENGINE_SCENARIOS = ("adu", "missing_middle", "fees", "fees_local_half")  # scenarios `build_bundle` can fill
 # D-065: the bundle's fee scenarios and the `scenarios.fees` mode behind each
 FEE_SCENARIOS = {"fees": "handbook", "fees_local_half": "local_half"}
+# Reforms are shown one at a time; stacked combinations are not planned (Ben, 2026-11-17: "I don't think we
+# need to combine"), so they are never listed as pending. They stay in the schema's list (additive only).
+SINGLE_SCENARIOS = tuple(s for s in SCENARIOS if "+" not in s and s != "combined")
 REPO = Path(__file__).resolve().parents[3]
 
 
@@ -615,7 +619,8 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "overlap_flag": flag,
                 "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
-                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS),
+                "scenarios_pending": ", ".join(s for s in SINGLE_SCENARIOS if s not in ENGINE_SCENARIOS)
+                or None,
             }
         ]
     )

@@ -110,6 +110,13 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 @media (max-width: 640px) { .ranges { grid-template-columns: 1fr; } .ranges .nums { text-align: left; } }
 .headline { margin: 0 0 var(--space-4); }
 .headline .figure-large { display: block; color: var(--ink); }
+.model-switch { display: flex; flex-wrap: wrap; gap: 0; margin: 0 0 var(--space-4); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; width: fit-content; max-width: 100%; }
+.model-switch button { border: 0; border-right: var(--stroke-hair) solid var(--rule); border-radius: 0; background: var(--paper-raised); padding: var(--space-2) var(--space-4); font-size: 16px; font-weight: 600; cursor: pointer; color: var(--ink); }
+.model-switch button:last-child { border-right: 0; }
+.model-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.map-ramp { display: flex; gap: 2px; margin: var(--space-1) 0; }
+.map-ramp span { width: 28px; height: 12px; display: inline-block; }
+.badge { display: inline-flex; align-items: center; gap: var(--space-1); font-size: 12px; line-height: 16px; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: 2px var(--space-2); color: var(--ink-muted); }
 .toggle { display: inline-flex; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
 .toggle button { border: 0; border-radius: 0; background: var(--paper-raised); padding: var(--space-1) var(--space-3); cursor: pointer; }
 .toggle button[aria-pressed="true"] { background: var(--survey); color: var(--on-survey); }
@@ -173,6 +180,9 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .model-card .one { font-size: 17px; line-height: 26px; max-width: 70ch; margin: 0; }
 .model-card .status { margin: var(--space-1) 0 var(--space-2); }
 @media (max-width: 640px) { .model-card { padding: var(--space-3); } }
+svg.allstates { width: 100%; min-width: 560px; height: auto; display: block; margin: var(--space-3) 0; }
+svg.allstates text { font-family: var(--font-mono); font-size: 11px; fill: var(--ink-muted); }
+svg.allstates .lab { font-family: var(--font-sans); font-size: 12px; fill: var(--ink); }
 svg.dag { width: 100%; min-width: 760px; height: auto; display: block; margin: var(--space-3) 0; }
 svg.dag text { font-family: var(--font-sans); font-size: 13px; fill: var(--ink); text-anchor: middle; }
 svg.dag text.col { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; fill: var(--ink-muted); }
@@ -224,11 +234,16 @@ table.checks td:last-child { min-width: 260px; }
   <div class="intro"><p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p></div>
   <section class="part" id="page-results" data-section="results">
     <h2 class="h1">Results</h2>
+    <div class="model-switch" role="group" aria-label="Which reform" id="model-switch">
+      <button type="button" data-model="adu" aria-pressed="true">ADUs</button>
+      <button type="button" data-model="missing_middle" aria-pressed="false">Missing middle</button>
+      <button type="button" data-model="fees" aria-pressed="false">Fee cuts</button>
+    </div>
     <div class="card map-card" id="map-card">
       <div class="map-wrap"><svg id="state-map" role="group" aria-label="Map of US states: choose one to see its results"></svg></div>
       <div class="map-key">
         <h3 class="h3">Choose a state</h3>
-        <p class="body-small muted">Coloured states have Lotline results; click one to see them. The darker the colour, the more of the estimate rests on the state's own local records rather than national data.</p>
+        <p class="body-small muted" id="map-says"></p>
         <ul class="map-legend" id="map-legend"></ul>
         <p class="body-small muted map-off" id="map-off" hidden></p>
       </div>
@@ -452,6 +467,11 @@ table.checks td:last-child { min-width: 260px; }
         <p class="source">Sources: docs/analysis_plan.md D-010, D-065, D-073, D-076, D-077; config/params/fees.yaml.</p>
       </div>
 
+      <h4 class="h3">The three models, every state at once</h4>
+      <p class="body-small">What each model predicts for every state with results: net new homes over the five years, the band from P10 to P90 and the tick at the midpoint. The scale is logarithmic, so each gridline is ten times the last. Missing middle's bands are the widest because its reform effect is the least pinned down; Oregon adds few ADUs because its state law already allows what the reform asks.</p>
+      <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
+      <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
+
       <h4 class="h3">3d. The causal diagram</h4>
       <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
       <div class="scroll"><svg class="dag" id="dag" role="img" aria-label="Causal diagram: what drives the extra homes a reform adds, and how each other factor is handled" viewBox="0 0 960 400"></svg></div>
@@ -601,23 +621,51 @@ function drawMap() {
       const say = `${t.name}: no results yet. Bring your own state`;
       return `<a class="tile none" href="${esc(M.byos_url)}" target="_blank" rel="noopener" aria-label="${esc(say)}"><title>${esc(say)}</title>${square("var(--tier-none)")}</a>`;
     }
-    const tier = b.meta.data_tier, sel = t.code === cur;
-    const say = `${t.name}: ${DATA.roles[b.meta.state_role] || b.meta.state_role}, data tier ${tier} (${TIER_WORDS[tier] || ""})`;
-    return `<a class="tile on ${Number(tier) === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
+    const sel = t.code === cur, h = (b.headline || {})[pickedScenario()];
+    const step = h && Number.isFinite(h.share_p50) ? shareStep(h.share_p50) : 0;
+    const say = h ? `${t.name}: ${scenLabel(pickedScenario())}, midpoint ${fmtN(h.p50)} net new homes${Number.isFinite(h.share_p50) ? `, ${fmtPct(h.share_p50)} ${h.need_label || "of housing need"}` : ""}`
+      : `${t.name}: no ${MODEL_WORDS[UI.model]} result yet`;
+    return `<a class="tile on ${step <= 2 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(step ? `var(--tier-${step})` : "var(--tier-none)", sel)}</a>`;
   }).join("");
   // The call to action sits where it applies: a national-data-only state can be sharpened with local records,
   // and a grey state (only if any is left) can be added. Both point at the README's "bring your own state".
-  const used = new Set(DATA.states.map((b) => b.meta.data_tier));
   const byos = (words) => `<a href="${esc(M.byos_url)}" target="_blank" rel="noopener">${words}</a>`;
   const grey = M.tiles.some((t) => !entryFor(t.code));
-  $("map-legend").innerHTML = Object.entries(TIER_WORDS).filter(([k]) => used.has(Number(k))).map(([k, w]) =>
-    `<li><span class="swatch" style="background:var(${esc(M.tier_tokens[k])})"></span><span>Tier ${esc(k)}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
+  const top = shareMax();
+  $("map-says").textContent = `Each state is shaded by ${scenLabel(pickedScenario())}: the midpoint of net new homes over five years as a share of the state's housing need. Click a state to see its result.`;
+  $("map-legend").innerHTML = `<li><span class="map-ramp" aria-hidden="true">${[1, 2, 3, 4, 5].map((k) => `<span style="background:var(--tier-${k})"></span>`).join("")}</span>
+      <span>Share of housing need, from about 0% to ${fmtPct(top)}</span></li>` +
     (grey ? `<li><span class="swatch" style="background:var(--tier-none)"></span><span>No results yet: ${byos("bring your own state")}</span></li>` : "");
   const onMap = new Set(M.tiles.map((t) => t.code));
   const off = DATA.states.filter((b) => !onMap.has(b.meta.state));
   $("map-off").hidden = !off.length;
   $("map-off").innerHTML = off.length ? "Also run, not on the map: " + off.map((b) =>
     `<button type="button" data-state="${esc(b.meta.state)}"${b.meta.state === cur ? ' aria-pressed="true"' : ""}>${esc(b.meta.state)}</button>`).join("") : "";
+}
+// The map's five steps split 0 to the largest midpoint share among states with this scenario.
+function shareMax() {
+  const v = DATA.states.map((b) => ((b.headline || {})[pickedScenario()] || {}).share_p50).filter(Number.isFinite);
+  return v.length ? Math.max(...v) : 0;
+}
+function shareStep(x) {
+  const top = shareMax();
+  return top > 0 ? Math.min(5, Math.max(1, Math.ceil((x / top) * 5))) : 1;
+}
+function wireModels() {
+  $("model-switch").addEventListener("click", (e) => {
+    const t = e.target.closest("button[data-model]");
+    if (!t) return;
+    UI.model = t.dataset.model;
+    $("model-switch").querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
+    refreshResults();
+  });
+}
+function refreshResults() {
+  drawMap();
+  if (!UI.b) return;
+  $("results-body").innerHTML = SECTIONS.results(UI.b);
+  wireResults();
+  drawTornado();
 }
 function wireMap() {
   const onPick = (e) => {
@@ -654,7 +702,10 @@ function niceTicks(max, n = 4) {
 }
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
-const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null };
+const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null, model: "adu", feeMode: "fees" };
+// The home screen (Ben, 2026-11-17): a model tab picks the reform; the fee tab has a benchmark / real-fees switch.
+const MODEL_WORDS = { adu: "ADUs", missing_middle: "Missing middle", fees: "Fee cuts" };
+const pickedScenario = () => (UI.model === "fees" ? UI.feeMode : UI.model);
 // Gross vs net (aggregate.homes_from_draws): "all new homes" = homes_in_place; "net new housing" = that × (1 − displacement_share).
 const OUTCOME_WORDS = {
   homes_in_place: ["All new homes", "Every new home the reform leads to."],
@@ -785,11 +836,12 @@ function baselineHtml(b) {
 const SECTIONS = {
   results(b) {
     UI.b = b; UI.pins = {};
-    const scen = scenariosIn(b);
-    UI.detail = scen.includes(UI.detail) ? UI.detail : scen[0];
+    const want = pickedScenario();
+    UI.detail = scenariosIn(b).includes(want) ? want : null;
+    const scen = UI.detail ? [UI.detail] : [];
     const yrs = AGG.windowLabel(b);  // from the bundle's totals (D-061: 2027–2031 for origin 2025)
-    $("results-lead").textContent = `Net new homes in ${b.meta.state} over ${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""} compared with no policy change (baseline). Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
-    if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
+    $("results-lead").textContent = `${MODEL_WORDS[UI.model]} in ${b.meta.state}: homes added over ${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""} compared with no policy change. Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
+    if (!scen.length) return `<p class="pending">The engine has not run ${esc(MODEL_WORDS[UI.model])} for this state yet.</p>`;
     const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
       `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
     const rows = [`<div class="lab" style="color:var(--scenario-baseline)">Baseline</div>
@@ -798,27 +850,29 @@ const SECTIONS = {
     for (const s of scen) rows.push(`<div class="lab" style="color:${scenColor(s)}">${esc(scenLabel(s))}</div>
       <div class="track" data-track="${esc(s)}"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
       <div class="nums" data-nums="${esc(s)}"></div>`);
-    const pend = pendingIn(b);
-    const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
-    const tabs = scen.map((s) => `<button type="button" data-detail="${esc(s)}" aria-pressed="${s === UI.detail}">${esc(scenLabel(s))}</button>`).join("");
+    const feeSwitch = UI.model === "fees" ? `<div class="controls" style="margin:0 0 var(--space-3)"><span>Which fees</span><span class="toggle" role="group" aria-label="Which fees">
+      ${[["fees", "Handbook benchmark"], ["fees_local_half", "Real local fees"]].filter(([k]) => scenariosIn(b).includes(k)).map(([k, w]) =>
+        `<button type="button" data-feemode="${k}" aria-pressed="${k === UI.feeMode}">${w}</button>`).join("")}</span></div>` : "";
+    const tier = b.meta.data_tier;
+    const badge = `<span class="badge" title="${esc(TIER_WORDS[tier] || "")}">Data tier ${esc(String(tier))}: ${esc(TIER_WORDS[tier] || "")}</span>${Number(tier) === 3 ? ` <a class="body-small" href="${esc(DATA.map.byos_url)}" target="_blank" rel="noopener">sharpen it with your state's own data</a>` : ""}`;
     return `${flagHtml(b.meta)}
       <div class="card" id="headline-card">
-        <p class="eyebrow">Five-year total${yrs ? `, ${yrs}` : ""}</p>
+        <p class="eyebrow">${esc(b.meta.state)} · ${esc(MODEL_WORDS[UI.model])} · five-year total${yrs ? `, ${yrs}` : ""}</p>
+        <p style="margin:0 0 var(--space-3)">${badge}</p>
+        ${feeSwitch}
         <div class="headline" id="headline"></div>
         <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
           <span class="muted" id="outcome-note"></span></div>
         <div class="ranges" id="ranges">${rows.join("")}</div>
         <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
-        ${pendNote}
         <div id="two-numbers" style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:var(--stroke-hair) solid var(--rule)"></div>
-        <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
+        <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Each reform is shown on its own; they are not added together. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
       </div>
       <div class="card" id="record-card"></div>
       ${baselineHtml(b)}
       <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
-      <div class="card"><h3 class="h3">From legal lots to built homes</h3>
-        <div class="tabs" role="group" aria-label="Scenario">${tabs}</div>
-        <div id="funnel" style="margin-top:var(--space-4)"></div>
+      <div class="card"><h3 class="h3">${FEE_NOTE[UI.detail] ? "From homes built anyway to homes added" : "From legal lots to built homes"}</h3>
+        <div id="funnel" style="margin-top:var(--space-2)"></div>
         <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are all new homes.</p></div>
       <div class="card"><h3 class="h3">What it takes to pencil out</h3>
         <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
@@ -893,10 +947,10 @@ function knobsHtml(b) {
 
 function updateResults() {
   const b = UI.b;
-  if (!b || !scenariosIn(b).length) return;
-  const R = results(b);
+  if (!b || !UI.detail) return;
+  const R = { [UI.detail]: AGG.summarize(drawsFor(b, UI.detail), UI.pins) };  // the picked reform only
   const o = UI.outcome;
-  const max = Math.max(...Object.values(R).map((r) => r[o].p90), 1) * 1.08;
+  const max = Math.max(R[UI.detail][o].p90, 1) * 1.08;
   const ticks = niceTicks(max);
   const top = ticks[ticks.length - 1] >= max ? ticks[ticks.length - 1] : max;
   const pct = (x) => `${Math.max(0, Math.min(100, (x / top) * 100))}%`;
@@ -1113,8 +1167,38 @@ function wireModelCards() {
     document.querySelectorAll("[data-model-card]").forEach((c) => { c.hidden = c.dataset.modelCard !== t.dataset.model; });
   };
 }
+// Every state's five-year range per reform, from the headline numbers the page embeds (build.headline).
+function allStatesSvg() {
+  const order = ["adu", "missing_middle", "fees", "fees_local_half"].filter((k) => DATA.scenarios[k]);
+  const states = DATA.states.filter((b) => b.headline && Object.keys(b.headline).length);
+  const name = (c) => ((DATA.map.tiles || []).find((t) => t.code === c) || {}).name || c;
+  const vals = states.flatMap((b) => order.map((k) => b.headline[k]).filter(Boolean).flatMap((h) => [h.p10, h.p90])).filter((v) => v > 0);
+  if (!vals.length) return "";
+  const lo = 10 ** Math.floor(Math.log10(Math.min(...vals))), hi = 10 ** Math.ceil(Math.log10(Math.max(...vals)));
+  const W = 760, L = 130, R = 60, bar = 10, gap = 4, block = order.length * (bar + gap) + 14, T = 6;
+  const H = T + states.length * block + 24;
+  const x = (v) => L + (Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (W - L - R);
+  const g = [];
+  for (let t = lo; t <= hi; t *= 10) g.push(`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H - 20}" stroke="var(--rule)"></line><text x="${x(t)}" y="${H - 6}" text-anchor="middle">${fmtN(t)}</text>`);
+  states.forEach((b, i) => {
+    const y0 = T + i * block;
+    g.push(`<text class="lab" x="0" y="${y0 + block / 2 - 4}">${esc(name(b.meta.state))}</text>`);
+    order.forEach((k, j) => {
+      const h = b.headline[k];
+      if (!h) return;
+      const y = y0 + j * (bar + gap), c = scenColor(k), op = k === "fees_local_half" ? 0.45 : 0.3;
+      g.push(`<rect x="${x(h.p10)}" y="${y}" width="${Math.max(2, x(h.p90) - x(h.p10))}" height="${bar}" fill="${c}" opacity="${op}" rx="2"><title>${esc(scenLabel(k))}, ${esc(name(b.meta.state))}: ${fmtN(h.p10)} to ${fmtN(h.p90)} homes, midpoint ${fmtN(h.p50)}</title></rect>`);
+      g.push(`<line x1="${x(h.p50)}" x2="${x(h.p50)}" y1="${y - 1}" y2="${y + bar + 1}" stroke="${c}" stroke-width="2.5"></line>`);
+      g.push(`<text x="${Math.min(x(h.p90) + 5, W - R + 4)}" y="${y + bar - 1}">${fmtN(h.p50)}</text>`);
+    });
+  });
+  $("allstates").setAttribute("viewBox", `0 0 ${W} ${H}`);
+  $("allstates-key").innerHTML = order.map((k) => `<span><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(k)};opacity:${k === "fees_local_half" ? 0.45 : 0.3}"></span> ${esc(scenLabel(k))}</span>`).join("") + `<span class="muted">│ midpoint</span>`;
+  return g.join("");
+}
 function staticTrust() {
   wireModelCards();
+  $("allstates").innerHTML = allStatesSvg();
   $("dag").innerHTML = dagSvg();
   $("dag-key").innerHTML = dagKey();
   confHtml();
@@ -1193,6 +1277,7 @@ function wireResults() {
       $("knobs").innerHTML = knobsHtml(UI.b);
       drawTornado();
     }
+    if (t.dataset.feemode) { UI.feeMode = t.dataset.feemode; refreshResults(); return; }
     if (t.dataset.reset) delete UI.pins[t.dataset.reset];
     if (t.id === "reset-all") UI.pins = {};
     updateResults();
@@ -1275,6 +1360,7 @@ window.addEventListener("hashchange", () => {
 
 fillPicker();
 wireMap();
+wireModels();
 staticTrust();
 show($("state").value);
 go(route().page, false);

@@ -277,6 +277,20 @@ def state_script(bundle: dict) -> str:
     return f"LotlineState({_json(bundle)});\n"
 
 
+def headline(bundle: dict) -> dict:
+    """Each scenario's five-year net new homes (P10/P50/P90) and its midpoint share of the headline need,
+    embedded for the overview map, which colours every state by the picked model before its file loads (Ben,
+    2026-11-17). Read from the bundle's own totals and need tables; nothing is recomputed."""
+    out = {}
+    for r in bundle.get("totals") or []:
+        if r["outcome"] == "homes_net_statewide" and "-" in str(r["period"]):
+            out[r["scenario"]] = {k: r[k] for k in ("p10", "p50", "p90")}
+    for n in bundle.get("need") or []:
+        if n.get("is_headline") and n["scenario"] in out:
+            out[n["scenario"]].update(share_p50=n["share_p50"], need_label=n["label"])
+    return out
+
+
 def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict | None = None) -> dict:
     """What the page embeds: each state's meta and file, role labels, sliders, section 2's tables, build time.
 
@@ -300,7 +314,10 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
         "knobs": knobs(),
         "map": tile_map(),
         "data": data,
-        "states": [{"meta": b["meta"], "file": state_file(b["meta"]["state"])} for b in states],
+        "states": [
+            {"meta": b["meta"], "file": state_file(b["meta"]["state"]), "headline": headline(b)}
+            for b in states
+        ],
     }
 
 

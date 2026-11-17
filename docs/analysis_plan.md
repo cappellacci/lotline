@@ -7612,3 +7612,14 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   the elasticity, land capture and ramp.
 - **Not yet:** the D-077 knobs (size of the change, targeted home types), the stacked combinations
   (`model/combine.py`), and the house/duplex/fourplex pencil-out table.
+
+### App note · 2026-11-17 · One reform at a time on the home screen; no combined scenarios
+- **Decided by Ben, 2026-11-17:** reforms are not combined ("I don't think we need to combine"), so
+  `model/combine.py` and the stacked scenarios are dropped from the plan (WS-APP §Section 1 and WS-ENGINE's
+  combine item are superseded). They stay in the schema's scenario list, since schema changes are additive,
+  but the bundle no longer lists them as pending.
+- **Home screen:** a tab per reform (ADUs, Missing middle, Fee cuts) above a map shaded by that reform's
+  five-year net new homes (midpoint) as a share of each state's housing need; the picked state's output card
+  shows one reform at a time, its data tier as a badge, and for fees a switch between the Handbook benchmark
+  and real local fees (D-065).
+- **No model change:** every number is read from the bundles as before.
