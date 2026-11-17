@@ -12,3 +12,11 @@
 - **Outputs:** `src/lotline/app/template.html`; tests in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and tests. Checked with `tests/app` (52 passed), ruff and `compliance_check.py`, and in the browser pane on all five states' real results (bundles at ef37f59a).
 - **Open / next:** the fee slider and targeted-bill buttons need the fee grid in the results files (an engine step); the fee card's share is of all homes expected, not of household growth.
+
+### LB-NNN · 2026-11-17 · Deliverables: the header tagline no longer blanks out the grid
+- **Question:** Why did the "Housing Reform Model" tagline's box cover the header grid?
+- **What I did:** The tagline has a page-coloured backing so it reads over the grid, but it stretched to fill the header row. It now hugs its text, and the grid shows around it.
+- **Inputs:** Ben's screenshot (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`.
+- **AI:** Claude Code made the change. Checked with `tests/app`, `compliance_check.py`, and in the browser pane.
+- **Open / next:** none.
