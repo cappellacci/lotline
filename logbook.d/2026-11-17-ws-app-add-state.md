@@ -21,3 +21,19 @@
 - **Outputs:** `src/lotline/app/template.html`; a test in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and test. Checked with `tests/app` (48 passed), ruff and `compliance_check.py`, and in the browser pane for MN and OR (fee switch and the count toggle move the headline).
 - **Open / next:** the detail card below still repeats the ranges.
+
+### LB-NNN · 2026-11-17 · Deliverables: a range chart, a model selector and the ADU evidence card on the Results page
+- **Question:** How should a state's Results page lay out the three reforms and the evidence behind the ADU estimate?
+- **What I did:** Built Ben's next sketches.
+  - The three range boxes became one chart: a row per reform on a shared log axis, with a P10–P90 band and the midpoint, as in the "Results for 2027–2031" page's first chart.
+  - Below it sits a segmented selector (ADUs | Missing middle | Fee reduction), outside and above an evidence card that changes with it. The scenario tabs further down were dropped; the selector drives the cards below.
+  - The ADU card has four parts:
+    1. The year-by-year chart.
+    2. The first forecast year, with no reform and added.
+    3. Core cities, suburbs and towns (D-088's place types), drawn like the ADU gut check's "By place type" chart, with the method in plain words.
+    4. "How we get these numbers" in five steps, each with the bundle's own values.
+  - Missing middle and fees keep their existing content until their cards are designed.
+- **Inputs:** Ben's sketches (2026-11-17); the "Results for 2027–2031" and "ADU Gut Check" artifacts as visual references.
+- **Outputs:** `src/lotline/app/template.html`; tests in `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change and tests. Checked with `tests/app`, ruff and `compliance_check.py`, and in the browser pane. The preview fed the place-type chart from `reports/adu-gut-check/places.csv` with a "preview only" note; nothing from that run is in the app's data.
+- **Open / next:** the results bundle does not yet carry the ADU split by place type, the statewide estimate of ADUs built each year, or the no-reform forecast. Until the engine exports them, the card says so in place of those numbers.

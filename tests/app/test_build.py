@@ -197,6 +197,27 @@ def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_p
         assert f"\n  {k}: " in what
 
 
+def test_a_model_selector_above_the_evidence_card_and_the_adu_card_sections(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    body = html[html.index("results(b) {") :]
+    # the segmented selector sits outside and above the evidence card, under the headline
+    seg = 'class="seg" role="group"'
+    assert body.index('<div class="hero" id="hero">') < body.index(seg) < body.index('id="model-card"')
+    assert 'data-model="${esc(k)}"' in body and "if (t.dataset.model) {" in html
+    # ADU card: year by year, the first year, place types, then the steps; each heading in that order
+    ev = html[html.index("function evidenceHtml") :]
+    heads = (
+        'recordHtml(b, "adu")',
+        "with no reform, and what the reform adds on top",
+        "Where the ADUs would go: core cities, suburbs and towns",
+        "How we get these numbers",
+    )
+    assert [ev.index(h) for h in heads] == sorted(ev.index(h) for h in heads)
+    # the place-type chart reads the bundle when the engine exports it, and says so when it does not
+    assert "(b.adu_place_types || []).find((r) => r.place_type === k)" in html
+    assert "The split by place type is not in this state's results yet" in html
+
+
 def test_gross_and_net_are_explained_in_plain_words(tmp_path):
     """Ben, 2026-11-09: the toggle reads "All new homes" / "Net new housing", a "Why two numbers?" note uses
     the state's own figures, and the displacement slider says what it means. The old wording is gone."""
@@ -212,7 +233,7 @@ def test_gross_and_net_are_explained_in_plain_words(tmp_path):
 def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
     """Schemas 1.12 (Ben, 2026-11-09): actual yearly permits as bars beside the reform's yearly additions."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    parts = ('id="record-card"', "function recordHtml", "What gets built now, and what the reform would add")
+    parts = ('id="model-card"', "function recordHtml", "What gets built now, and what the reform would add")
     for part in (*parts, "Actually permitted", "Added by the reform (P10–P90"):
         assert part in html, part
     state_file = (tmp_path / "states" / "zz.js").read_text()
