@@ -149,6 +149,10 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .ev > section:first-child { padding-top: 0; border-top: 0; }
 .ev > section > h3 { margin: 0 0 var(--space-2); }
 .ev ol.how { padding-left: 0; list-style: none; margin: var(--space-3) 0 0; display: grid; gap: var(--space-3); counter-reset: how; }
+.fee-vers { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: var(--space-3); }
+.fee-ver { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
+.fee-ver.on { border-color: var(--ink); }
+.fee-ver h4 { margin: 0; }
 .ev ol.how li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: var(--space-3); align-items: baseline; counter-increment: how; }
 .ev ol.how li::before { content: counter(how); font-weight: 700; font-size: 22px; color: var(--brass); }
 .ev ol.how .v { font-family: var(--font-mono); font-size: 14px; white-space: nowrap; text-align: right; }
@@ -491,6 +495,9 @@ table.checks td:last-child { min-width: 260px; }
           <li><b>Blind:</b> Charlotte passed, with the earlier values. St. Paul, frozen with these values before any result was read, <b>missed</b>: 55 buildings in 2024–2025 against a range of 9 to 28. It built 33 in its first full year, against about 6 a year before.</li>
           <li><b>The weak spot:</b> the reform's own effect is not clearly detected. The model with a reform effect beats the same model without one by only about 1.5 standard errors, short of the 2 we set as the bar, and a fake reform date three years early shows a larger effect than the real dates.</li>
         </ul>
+        <div id="mm-heldout"></div>
+        <h5>State by state</h5>
+        <div id="mm-deep"><p class="pending">Loading each state's results…</p></div>
         <h5>What it can't tell you</h5>
         <ul class="body-small steps-list">
           <li><b>How big the effect is.</b> The counts are consistent with an effect but cannot pin it down, so the mature rate's range spans about 150-fold.</li>
@@ -509,7 +516,7 @@ table.checks td:last-child { min-width: 260px; }
         <ul class="body-small steps-list">
           <li><b>The cut,</b> shown two ways on the Results page: the Handbook's benchmark, $25,000 a home (half of a $50,000 fee assumed everywhere), and half of each city's real fees for houses, duplexes and fourplexes. Buildings of 5 or more homes are never covered.</li>
           <li><b>Builder's share:</b> about half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters).</li>
-          <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (from under 1% to 17%; each run draws one value).</li>
+          <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (Baum-Snow and Han 2024, measured neighborhood by neighborhood), from almost none (Mayer and Somerville 2000; Campbell and Alm 2006) to 17% (the metro-wide response in Saiz 2010 and Aastveit and others 2020). Each run draws one value.</li>
           <li><b>Lots that newly pay:</b> where parcel data allow, the cost model also counts lots that cross from not paying to paying after the cut.</li>
         </ul>
         <h5>What it learned from</h5>
@@ -805,7 +812,7 @@ const RECORD = {
   missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", base: "2_4", reform: "the missing-middle reform",
     pace: "The forecast is a range for each year; the reform's homes build up over the first years." },
 };
-function recordHtml(b, d) {
+function recordHtml(b, d, compact = false) {
   if (!Object.hasOwn(RECORD, d)) return "";  // d comes from a button's data attribute: known scenarios only
   const spec = RECORD[d];
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
@@ -850,6 +857,7 @@ function recordHtml(b, d) {
   const gap = obs.length && fut.length && fut[0].year - obs[obs.length - 1].year > 1 ? obs[obs.length - 1].year + 1 : null;
   if (gap !== null) parts.push(`<line x1="${x(gap)}" x2="${x(gap)}" y1="${T}" y2="${y(0)}" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="3 3"></line>`);
   const svg = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${name}: ${spec.what} permitted each year, and the reform's added permits each year`)}" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>`;
+  if (compact) return svg;
   const a = obs.length ? obs[0] : null;
   const cover = d === "adu" && a ? (Number.isFinite(a.population_share)
     ? ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, home to about ${Math.round(a.population_share * 100)}% of ${esc(name)}'s people, so they understate the state.`
@@ -866,8 +874,9 @@ function recordHtml(b, d) {
 
 // ---- the evidence card under the model selector: one per reform (ADUs first; the others still to design) ----
 function evidenceHtml(b, d, R) {
-  if (d !== "adu") return `<section>${recordHtml(b, d) || ""}${FEE_NOTE[d] ? `<p class="body-small">${FEE_NOTE[d]}</p>` : ""}</section>
-    <section><p class="pending">The evidence card for ${esc(scenLabel(d))} is still being designed. The cards below follow the reform chosen above.</p></section>`;
+  if (d === "missing_middle") return `<section>${recordHtml(b, d)}</section>${mmHowHtml(b, R)}`;
+  if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R);
+  if (d !== "adu") return `<section><p class="pending">The evidence card for ${esc(scenLabel(d))} is still being designed.</p></section>`;
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const med = (c) => AGG.percentile(drawsFor(b, "adu").map((x) => Number(x[c])).filter(Number.isFinite), 50);
   const st = (k) => (b.funnel || []).find((f) => f.scenario === "adu" && f.stage === k);
@@ -901,6 +910,115 @@ function evidenceHtml(b, d, R) {
     </ol>
     <p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p></section>`;
   return s1 + s3 + s4;
+}
+
+// Shared pieces of the "How we get these numbers" steps: the median of a factor across a reform's runs, a stage's
+// funnel row, a P10–P90 range in words, and a log-width bar against the first stage.
+function howKit(b, d, first) {
+  const med = (c) => AGG.percentile(drawsFor(b, d).map((x) => Number(x[c])).filter(Number.isFinite), 50);
+  const st = (k) => (b.funnel || []).find((f) => f.scenario === d && f.stage === k);
+  const rng = (x) => (x ? (x.p10 === x.p90 ? fmtN(x.p50) : `${fmtN(x.p10)} – ${fmtN(x.p90)}`) : "–");
+  const lmax = Math.log10(Math.max(first || 10, 10));
+  const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
+  const per10k = (v) => (Number.isFinite(v) ? (v * 10000).toLocaleString("en-US", { maximumSignificantDigits: 2 }) : "–");
+  const foot = `<p class="source">Bars: each stage's midpoint on a log scale. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`;
+  return { med, st, rng, fbar, per10k, foot };
+}
+
+// Missing middle's steps (Ben, 2026-11-17: "a similar section" to the ADU card's). The factors are the engine's
+// (results.mm_draws): θ is five-year homes permitted per lot where building pays; net-new share is 1 − houses
+// torn down ÷ homes permitted.
+function mmHowHtml(b, R) {
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const k0 = howKit(b, "missing_middle"), legal = k0.st("legal");
+  const { med, st, rng, fbar, per10k, foot } = howKit(b, "missing_middle", legal && legal.p50);
+  const pays = st("pencils"), r = R.missing_middle, col = scenColor("missing_middle");
+  if (!r) return "";
+  return `<section><h3 class="h3">How we get these numbers</h3>
+    <ol class="how">
+      <li><div><b>Find the lots where 2–4 homes would become legal</b><p>Every lot in ${esc(name)} now zoned for one house, from county parcel records (or Census counts of houses where a county has none), less what local rules already allow.</p>${fbar(legal && legal.p50, "var(--survey)")}</div><span class="v">${legal ? `${fmtN(legal.p50)} lots` : "–"}</span></li>
+      <li><div><b>Keep the lots where building pays</b><p>For each place, what a small multi-unit building would rent or sell for against what the land and construction cost. The range comes from uncertainty in costs and rents.</p>${fbar(pays && pays.p50, "var(--survey)", 0.6)}</div><span class="v">${pays ? `${rng(pays)} lots` : "–"}</span></li>
+      <li><div><b>Apply how often builders actually build</b><p>Measured from 93 places in our states (most in Oregon) that began allowing 2–4 homes on these lots. The effect builds up over several years, so the fifth year is not yet full speed. The range is very wide, because the effect is not clearly detected yet.</p></div><span class="v">${per10k(med("theta"))} homes per 10,000 lots over 5 years</span></li>
+      <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and a new building usually replaces the house on its lot, so only part of each permit is a gain (${fmtPct(med("net_new_share"))} after the houses torn down).</p>${fbar(r.homes_in_place.p50, col, 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
+      <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, col)}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
+    </ol>
+    <p class="body-small muted">Census permits count 2–4 unit buildings the same way everywhere; the reform allows up to 6 homes, so this is a floor.</p>
+    ${foot}</section>`;
+}
+
+// The fee card (Ben, 2026-11-17: what the results files hold now; the slider and targeted bills wait for the fee
+// grid to move into the bundle). Results files carry two versions: the Handbook benchmark and real local fees
+// halved. The fee model opens no lots, so the engine's first stage is the homes built anyway (results.fee_rows).
+const FEE_VERSIONS = [
+  ["fees", "The Handbook benchmark", "Every city assumed to charge $50,000 a home, cut to $25,000."],
+  ["fees_local_half", "Real local fees, halved", "Each city's own fees for houses, duplexes and fourplexes, cut by half."],
+];
+function feeEvidenceHtml(b, R) {
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const o = UI.outcome, yrs = AGG.windowLabel(b) || "the five years";
+  const all = (b.baseline || []).find((r) => r.size_class === "all" && /^\d{4}-\d{4}$/.test(String(r.period)));
+  const shown = FEE_VERSIONS.filter(([k]) => R[k]);
+  if (!shown.length) return `<section><p class="pending">The fee reform is not in this state's results yet.</p></section>`;
+  // 1. the two versions side by side: homes added and as a share of the homes expected anyway
+  const tiles = shown.map(([k, label, what]) => {
+    const x = R[k][o], on = k === UI.fee;
+    return `<div class="fee-ver${on ? " on" : ""}"><h4>${esc(label)}${on ? ` <span class="caption muted">(shown in the headline)</span>` : ""}</h4>
+      <p class="caption muted" style="margin:0">${esc(what)}</p>
+      <p class="figure" style="margin:var(--space-2) 0 0">+${fmtN(x.p50)} <span class="body">homes</span></p>
+      <p class="body-small" style="margin:0">Likely ${fmtN(x.p10)} to ${fmtN(x.p90)}${all ? `; the midpoint equals ${fmtPct(x.p50 / all.p50)} of the ${fmtN(all.p50)} homes expected with no change` : ""}.</p></div>`;
+  }).join("");
+  const s1 = `<section><h3 class="h3">Two ways to cut fees in half</h3>
+    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Handbook asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes. The switch on the fee row above picks which one the headline uses.</p>
+    <div class="fee-vers">${tiles}</div></section>`;
+  // 2. year by year: each version's added homes, P10–P90 whiskers with the midpoint
+  const s2 = `<section><h3 class="h3">Year by year</h3>${feeYearsChart(b, o, shown)}</section>`;
+  // 3. how we get these numbers, for the version the switch shows
+  const d = R[UI.fee] ? UI.fee : shown[0][0], r = R[d];
+  const k0 = howKit(b, d), base = k0.st("legal");
+  const { med, rng, fbar, per10k, foot } = howKit(b, d, base && base.p50);
+  const col = scenColor("fees");
+  const cut = d === "fees" ? "$25,000 off every home (half of a $50,000 fee the Handbook assumes everywhere)"
+    : "half of each city's own fee for each kind of home, from its fee schedule, or the state's typical fee where none was coded";
+  const s3 = `<section><h3 class="h3">How we get these numbers</h3>
+    <p class="body-small">Shown for ${esc(FEE_VERSIONS.find(([k]) => k === d)[1])}, the version the fee row's switch picks. A fee cut opens no new lots; it makes homes that could already be built cheaper, so a few more get built.</p>
+    <ol class="how">
+      <li><div><b>Start from the homes built anyway</b><p>Houses, duplexes, triplexes and fourplexes expected in ${esc(name)} over the five years with no change, from each place's own recent building. Buildings of 5 or more homes pay no fee in the model, so they are left out.</p>${fbar(base && base.p50, "var(--survey)")}</div><span class="v">${base ? `${fmtN(base.p50)} homes` : "–"}</span></li>
+      <li><div><b>Work out how much cheaper each home gets</b><p>The cut is ${esc(cut)}. About half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters), set against the full cost of building the home.</p></div><span class="v"></span></li>
+      <li><div><b>Apply how strongly building responds</b><p>A 10% cut in cost raises building by about 3%, the neighborhood-level response measured by Baum-Snow and Han (2024). The range runs from almost none, as studies of impact fees found (Mayer and Somerville 2000; Campbell and Alm 2006), to 17%, the larger metro-wide response (Saiz 2010; Aastveit and others 2020). These are published studies, not our own places: no fee cut in our states has been measured yet.</p></div><span class="v">${per10k(med("theta"))} more per 10,000 built anyway</span></li>
+      <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are). A fee cut tears nothing down, so every finished home is a new one.</p>${fbar(r.homes_in_place.p50, col, 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
+      <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, col)}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
+    </ol>
+    ${foot}</section>`;
+  return s1 + s2 + s3;
+}
+function feeYearsChart(b, o, shown) {
+  const rows = shown.map(([k, label]) => ({ k, label, yrs: (b.totals || []).filter((r) => r.scenario === k && r.outcome === o && /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year) }));
+  const years = [...new Set(rows.flatMap((r) => r.yrs.map((y) => y.year)))].sort();
+  if (!years.length) return `<p class="pending">No yearly forecast for the fee reform in this state's results.</p>`;
+  const top = Math.max(1, ...rows.flatMap((r) => r.yrs.map((y) => y.p90)));
+  const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
+  const W = 640, H = 200, L = 52, Rm = 12, T = 12, B = 28, slot = (W - L - Rm) / years.length;
+  const x = (yr) => L + (years.indexOf(yr) + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
+  const parts = [];
+  for (const t of ticks) parts.push(`<line x1="${L}" x2="${W - Rm}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)"></line><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmtN(t)}</text>`);
+  for (const yr of years) parts.push(`<text x="${x(yr)}" y="${H - 8}" text-anchor="middle">${yr}</text>`);
+  const off = Math.min(14, slot * 0.18), col = esc(scenColor("fees"));
+  rows.forEach((row, i) => {
+    const dx = rows.length > 1 ? (i === 0 ? -off : off) : 0, op = row.k === UI.fee ? 1 : 0.45;
+    for (const r of row.yrs) {
+      const xc = x(r.year) + dx;
+      parts.push(`<g opacity="${op}"><line x1="${xc}" x2="${xc}" y1="${y(r.p10)}" y2="${y(r.p90)}" stroke="${col}" stroke-width="2"></line>
+        <line x1="${xc - 5}" x2="${xc + 5}" y1="${y(r.p10)}" y2="${y(r.p10)}" stroke="${col}" stroke-width="2"></line>
+        <line x1="${xc - 5}" x2="${xc + 5}" y1="${y(r.p90)}" y2="${y(r.p90)}" stroke="${col}" stroke-width="2"></line>
+        <rect x="${xc - 6}" y="${y(r.p50) - 2}" width="12" height="4" fill="${col}"></rect>
+        <title>${r.year}, ${esc(row.label.toLowerCase())}: ${fmtN(r.p10)} to ${fmtN(r.p90)} homes added, midpoint ${fmtN(r.p50)}</title></g>`);
+    }
+  });
+  const legend = rows.map((row, i) => `<span><span style="display:inline-block;width:12px;height:3px;background:${col};opacity:${row.k === UI.fee ? 1 : 0.45};margin-right:6px;vertical-align:middle"></span>${rows.length > 1 ? (i === 0 ? "Left: " : "Right: ") : ""}${esc(row.label)}</span>`).join("");
+  return `<p class="body-small" style="margin:var(--space-1) 0 0">Homes the cut adds each year (${esc(OUTCOME_WORDS[o][0].toLowerCase())}). The effect builds up: about half shows after a year, because projects already in design were priced at the old fee.</p>
+    <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${legend}</div>
+    <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Homes the fee cut adds each year, by version" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
+    <p class="source">Whiskers: P10 to P90, bar at the midpoint, at the engine's central assumptions; the sliders do not move this chart.</p>`;
 }
 
 const PLACE_TYPES = [["core", "Core cities"], ["suburb", "Suburbs"], ["town", "Towns"]];
@@ -1308,7 +1426,16 @@ function laneChart(rows, unit) {
     <div></div><div class="axis">${dec.map((t) => `<span style="left:${pos(t)}">${fmtN(t)}</span>`).join("")}</div></div>
     <p class="source">${esc(unit)} Log scale.</p>`;
 }
+// Missing middle's two out-of-sample tests with numbers (docs/model_and_assumptions.md, "How accurate it is";
+// D-092 and V5 in docs/analysis_plan.md): 2–4 unit buildings, [label, sub, built, P50, P10, P90].
+const MM_HELDOUT = [
+  ["Oregon", "Oregon left out: the other states' places predict its 86 places", 703, 915, 457, 4789],
+  ["St. Paul", "Blind: frozen before any outcome was read, 2024–2025", 55, 15, 9, 28],
+];
 function heldoutHtml() {
+  $("mm-heldout").innerHTML = laneChart(MM_HELDOUT.map(([label, sub, n, p50, p10, p90]) => ({ label, sub,
+    lanes: [{ p10, p50, p90, mark: n, color: scenColor("missing_middle") }] })),
+    "New 2–4 unit buildings: the model's range (band, tick at the midpoint) and the number built (gold diamond). Oregon passed; St. Paul missed high, built faster than the model's slow build-up allows.");
   $("adu-heldout").innerHTML = laneChart(ADU_HELDOUT.map(([st, n, p50, p10, p90]) => ({ label: st, sub: "",
     lanes: [{ p10, p50, p90, mark: n, color: scenColor("adu") }] })),
     "ADUs counted in the hidden state's target places over the fit years: the model's range (band, tick at the midpoint) and the count (gold diamond).");
@@ -1319,6 +1446,7 @@ async function drawDeepDive() {
   if (DEEP) return;
   DEEP = await Promise.all(DATA.states.map((e) => loadState(e.meta.state).catch(() => null)));
   const bs = DEEP.filter(Boolean);
+  mmDeepDive(bs);
   const nameOf = (st) => (DATA.map.tiles.find((t) => t.code === st) || {}).name || st;
   const yearly = (b, scen) => (b.totals || []).filter((r) => r.scenario === scen && r.outcome === "permits_added" && /^\d{4}$/.test(r.period));
   const avg = (rows, k) => rows.reduce((t, r) => t + r[k], 0) / rows.length;
@@ -1345,6 +1473,35 @@ async function drawDeepDive() {
     <div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">ADUs with no reform</th><th class="n">ADUs added by the reform</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
     <p class="source">Midpoints, with P10–P90 below. "ADUs with no reform" adds the five yearly midpoints. "Net new homes" counts only ADUs that add a home the state would not otherwise get. Every figure comes from the state's results file.</p>
     <p class="pending">Still to add: the forecasting-forward test (fit on 2016–20, check against 2021–25) and the place-by-place check of forecasts against what was built. They are in the ADU gut check, but not yet in the results files.</p>`;
+}
+// The missing-middle deep dive (Ben, 2026-11-17), from the same results files as the ADU one: 2–4 unit homes a
+// year with and without the reform, each state's record and forecast, and the lots-to-homes steps by state.
+function mmDeepDive(bs) {
+  const nameOf = (st) => (DATA.map.tiles.find((t) => t.code === st) || {}).name || st;
+  const yr = (r) => /^\d{4}$/.test(r.period);
+  const avg = (rows, k) => rows.reduce((t, r) => t + r[k], 0) / rows.length;
+  const rows = bs.map((b) => {
+    const base = (b.baseline || []).filter((r) => r.size_class === "2_4" && yr(r));
+    const add = (b.totals || []).filter((r) => r.scenario === "missing_middle" && r.outcome === "permits_added" && yr(r));
+    if (!base.length) return { label: nameOf(b.meta.state), sub: "", lanes: [] };
+    const nr = { p10: avg(base, "p10"), p50: avg(base, "p50"), p90: avg(base, "p90"), color: "var(--scenario-baseline)" };
+    const wr = add.length ? { p10: nr.p50 + avg(add, "p10"), p50: nr.p50 + avg(add, "p50"), p90: nr.p50 + avg(add, "p90"), color: scenColor("missing_middle") } : null;
+    return { label: nameOf(b.meta.state), sub: "grey: no reform · coloured: with the reform", lanes: wr ? [nr, wr] : [nr] };
+  });
+  const years = bs.map((b) => `<figure style="margin:0;min-width:0"><figcaption class="h3" style="font-size:15px;margin-bottom:var(--space-1)">${esc(nameOf(b.meta.state))}</figcaption>${recordHtml(b, "missing_middle", true)}</figure>`).join("");
+  const tbl = bs.map((b) => {
+    const st = (k) => (b.funnel || []).find((f) => f.scenario === "missing_middle" && f.stage === k);
+    const win = (o) => (b.totals || []).find((r) => r.scenario === "missing_middle" && r.outcome === o && String(r.period).includes("-"));
+    const cell = (r) => (r ? `${fmtN(r.p50)}<br><span class="caption muted">${fmtN(r.p10)}–${fmtN(r.p90)}</span>` : "–");
+    return `<tr><td>${esc(nameOf(b.meta.state))}</td><td class="n">${cell(st("legal"))}</td><td class="n">${cell(st("pencils"))}</td><td class="n">${cell(win("permits_added"))}</td><td class="n">${cell(win("homes_net_statewide"))}</td></tr>`;
+  }).join("");
+  $("mm-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, homes a year.</b> Statewide homes permitted in 2–4 unit buildings a year with today's rules, and with the reform added on top, averaged over 2027–2031.</p>
+    ${laneChart(rows, "Homes in 2–4 unit buildings a year: the average of each window year's P10, midpoint and P90. With the reform: the no-reform midpoint plus the reform's range.")}
+    <p class="body-small" style="margin-top:var(--space-5)"><b>Each state's record and forecast.</b> Homes permitted in 2–4 unit buildings each year (bars, every city and town), then the no-reform forecast (grey) with the reform's range on top.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${years}</div>
+    <p class="body-small" style="margin-top:var(--space-5)"><b>From lots to homes, 2027–2031.</b></p>
+    <div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">Lots where 2–4 homes become legal</th><th class="n">Lots where building pays</th><th class="n">Homes permitted</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
+    <p class="source">Midpoints, with P10–P90 below. Every figure comes from the state's results file. The steps are explained on the Results page under "How we get these numbers".</p>`;
 }
 function staticTrust() {
   heldoutHtml();
