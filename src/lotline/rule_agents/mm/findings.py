@@ -191,9 +191,13 @@ def check(f: PlaceFinding, *, today: date | None = None) -> list[str]:
             out.append(f"{tag}: unit_cap blank: code the cap (1 for a 'none' row) or mark standards_only")
         is_event = r.status == "in_force" and r.date_basis != "predates" and (r.unit_cap or 0) > 1
         if is_event and not r.standards_only and r.effective_date.year >= 2010:
-            if r.prior_cap is None:
-                out.append(f"{tag}: event with no prior_cap: check what the code allowed just before")
-            elif r.unit_cap is not None and r.prior_cap >= r.unit_cap:
+            handed_off = any("prior_cap" in b.fields for b in f.blockers)
+            if r.prior_cap is None and not handed_off:
+                out.append(
+                    f"{tag}: event with no prior_cap: check what the code allowed just before, or hand off "
+                    "the predecessor code as a Blocker naming prior_cap"
+                )
+            elif r.prior_cap is not None and r.unit_cap is not None and r.prior_cap >= r.unit_cap:
                 out.append(
                     f"{tag}: prior_cap {r.prior_cap} >= unit_cap {r.unit_cap}: no cap rise; code it "
                     "'predates' (recodification) or 'standards_only' (cheaper route, same cap)"

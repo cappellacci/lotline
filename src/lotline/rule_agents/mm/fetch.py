@@ -114,12 +114,12 @@ def get(url: str, run_id: str, *, store=None, http: httpx.Client | None = None) 
             )
         except httpx.HTTPStatusError as exc:
             st = exc.response.status_code
-            kind, detail = classify(url, st, text=exc.response.text[:20000]) or ("not_found", f"HTTP {st}")
+            kind, detail = classify(url, st, text=exc.response.text) or ("not_found", f"HTTP {st}")
             return FetchResult(url, None, st, kind, detail)
         except httpx.TransportError as exc:
             return FetchResult(url, None, None, "unreachable", f"transport error: {exc}")
         ctype = "application/pdf" if path.suffix == ".pdf" else "text/html"
-        text = "" if path.suffix == ".pdf" else path.read_text(errors="replace")[:20000]
+        text = "" if path.suffix == ".pdf" else path.read_text(errors="replace")
         hit = classify(url, 200, content_type=ctype, text=text)
         doc = sha256_file(path)
         if hit:

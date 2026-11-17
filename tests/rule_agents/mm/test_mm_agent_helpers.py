@@ -166,6 +166,8 @@ def test_prior_cap_check():
         prior_cap=None, evidence=[ev("effective_date"), ev("unit_cap"), ev("by_right"), ev("coverage_zones")]
     )
     assert any("no prior_cap" in m for m in check(place([nopr]), today=TODAY))
+    blocked = Blocker(url="https://web.archive.org/x", kind="not_found", fields=["prior_cap"])
+    assert check(place([nopr], [blocked]), today=TODAY) == []  # handed off: allowed (St. Louis Park)
     recod = rule(prior_cap=3)
     assert any("no cap rise" in m for m in check(place([recod]), today=TODAY))
     pre = rule(
@@ -254,6 +256,21 @@ def test_classify():
     assert access.classify("https://x.gov/a", 200, text=body) is None
     login = '<form><input type="password" name="pw"></form>'
     assert access.classify("https://x.gov/a", 200, text=login)[0] == "login_required"
+
+
+def test_classify_ignores_challenge_words_in_scripts():
+    """St. Louis Park dry run: a long <head> with an Akamai script, then a real page -> usable."""
+    page = (
+        "<html><head><title>Zoning Code Update</title>"
+        + "<script>/* akamai bot manager */ var x = 1;</script>" * 600
+        + "</head><body>"
+        + "<p>The city council adopted the zoning code update on March 3, 2025.</p>" * 60
+        + "</body></html>"
+    )
+    assert len(page) > 20000
+    assert access.classify("https://www.stlouisparkmn.gov/zoning", 200, text=page) is None
+    wall = "<html><head><title>Just a moment...</title></head><body>Checking your browser</body></html>"
+    assert access.classify("https://x.gov/a", 200, text=wall)[0] == "http_403_waf"
 
 
 def test_snapshot_name_is_stable():

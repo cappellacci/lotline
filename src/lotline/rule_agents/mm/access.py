@@ -101,17 +101,19 @@ def classify(
 ) -> tuple[str, str] | None:
     """(blocker kind, detail) for a fetch result, or None when the page is usable.
 
-    `text` is the start of the body (HTML or extracted PDF text). For a PDF pass `pdf_text_chars` (characters
-    in its text layer) and `pdf_pages`: fewer than 200 characters per page means a scan (OCR is a human task;
+    `text` is the body (HTML or extracted PDF text; the first 500 kB are read). For a PDF pass
+    `pdf_text_chars` (characters in its text layer) and `pdf_pages`: fewer than 200 characters per page means a scan (OCR is a human task;
     we don't ship an OCR engine). By hand: 403 with "Just a moment..." -> http_403_waf; 200 Municode shell
     with "enable JavaScript" and under 2,000 characters -> code_host_wall; a 12-page PDF with 300 characters
     of text -> scanned_pdf; 200 with ordinance text -> None.
     """
     code_host = host_label(url)
-    head = text[:20000]
-    visible = re.sub(r"<script.*?</script>|<style.*?</style>", " ", head, flags=re.S | re.I)
+    head = text[:500000]
+    # Challenge words count only in what a reader sees (title + body text), never in scripts: a normal city
+    # page loading an Akamai script was misread as a bot wall in the 2026-11-17 dry run (St. Louis Park).
+    visible = re.sub(r"<script.*?</script>|<style.*?</style>|<!--.*?-->", " ", head, flags=re.S | re.I)
     visible = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", visible)).strip()
-    challenge = bool(_CHALLENGE.search(head))
+    challenge = bool(_CHALLENGE.search(visible[:3000]))
     if status == 401 or (status == 200 and _LOGIN.search(head)):
         return "login_required", f"HTTP {status}: login form"
     if status in (403, 429, 503) or (status == 200 and challenge and len(visible) < 3000):
