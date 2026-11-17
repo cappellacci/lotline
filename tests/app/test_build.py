@@ -189,7 +189,9 @@ def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_p
         < body.index("${flagHtml(b.meta)}")
         < body.index('id="headline-card"')
     )
-    # each box says in one line what the reform is, for every version the page can show
+    # the ranges sit on one shared log axis, a row per reform, as in the results page's first chart
+    assert '<div class="rc" id="rc">${rcRows}' in html and "const pos = (v) => `${(Math.log10(" in js
+    # each row says in one line what the reform is, for every version the page can show
     what = re.search(r"const WHAT = \{(.*?)\n\};", html, re.S).group(1)
     for k in ("adu", "missing_middle", "fees", "fees_local_half"):
         assert f"\n  {k}: " in what

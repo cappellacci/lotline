@@ -127,15 +127,20 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .hero .display { margin: 0 0 var(--space-2); }
 .hero .display .x { color: var(--survey); font-variant-numeric: tabular-nums; }
 .hero .note { color: var(--ink-muted); margin: 0 0 var(--space-5); }
-.boxes { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.box { background: var(--app-card); border: var(--stroke-hair) solid var(--rule); border-top: var(--stroke-mark) solid var(--box-c, var(--rule)); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
-.box h4 { margin: 0; font-size: 18px; line-height: 24px; color: var(--box-c, var(--ink)); }
-.box .range { font-family: var(--font-mono); font-size: 28px; line-height: 32px; font-variant-numeric: tabular-nums; color: var(--ink); }
-.box .midtxt { color: var(--ink-muted); font-size: 14px; line-height: 20px; }
-.box .track { height: 20px; }
-.box .track .line { top: 9px; }
-.box p.what { margin: var(--space-1) 0 0; font-size: 14px; line-height: 20px; }
-.box .toggle button { font-size: 12px; line-height: 16px; padding: 2px var(--space-2); }
+/* the reforms' ranges on one log axis, a row per reform (as in the "Results for 2027–2031" page's first chart) */
+.rc { display: grid; grid-template-columns: minmax(170px, 260px) minmax(0, 1fr); gap: var(--space-3) var(--space-5); align-items: center; }
+.rc .who h4 { margin: 0; font-size: 18px; line-height: 24px; }
+.rc .who p { margin: var(--space-1) 0 0; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.rc .who .toggle { margin-top: var(--space-2); }
+.rc .who .toggle button { font-size: 12px; line-height: 16px; padding: 2px var(--space-2); }
+.rc .lane { position: relative; height: 40px; margin-right: 150px; }
+.rc .lane .g { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.rc .lane .band { position: absolute; top: 12px; height: 16px; border-radius: 2px; opacity: .28; }
+.rc .lane .tick { position: absolute; top: 8px; height: 24px; width: 3px; margin-left: -1px; }
+.rc .lane .num { position: absolute; top: 10px; font-family: var(--font-mono); font-size: 14px; line-height: 20px; white-space: nowrap; color: var(--ink); }
+.rc .lane .num small { color: var(--ink-muted); font-size: 12px; }
+.rc .axis { height: 20px; margin-right: 150px; }
+@media (max-width: 640px) { .rc { grid-template-columns: 1fr; gap: var(--space-1) 0; } .rc .lane { margin: 0 110px var(--space-3) 0; } }
 .headline { margin: 0 0 var(--space-4); }
 .headline .figure-large { display: block; color: var(--ink); }
 .toggle { display: inline-flex; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
@@ -862,20 +867,18 @@ const SECTIONS = {
     const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
     const tabs = scen.map((s) => `<button type="button" data-detail="${esc(s)}" aria-pressed="${s === UI.detail}">${esc(scenLabel(s))}</button>`).join("");
     const fee2 = scen.includes("fees_local_half");
-    const boxes = HERO.map((k) => {
+    const rcRows = HERO.map((k) => {
       const feeSwitch = k === "fees" && fee2 ? `<span class="toggle" role="group" aria-label="Which fees">
         <button type="button" data-fee="fees" aria-pressed="${UI.fee === "fees"}">Handbook benchmark</button><button type="button" data-fee="fees_local_half" aria-pressed="${UI.fee === "fees_local_half"}">Real local fees</button></span>` : "";
       const s = k === "fees" ? UI.fee : k;
-      return `<div class="box" data-box="${esc(k)}" style="--box-c:${scenColor(s)}">
-        <h4>${esc(SCENARIOS_SHORT[k])}</h4>${feeSwitch}
-        <div class="range" data-box-range></div><div class="midtxt" data-box-mid></div>
-        <div class="track" data-box-track aria-hidden="true"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
-        <p class="what" data-box-what>${esc(WHAT[s])}</p></div>`;
+      return `<div class="who" data-box="${esc(k)}"><h4 style="color:${scenColor(s)}">${esc(SCENARIOS_SHORT[k])}</h4><p data-box-what>${esc(WHAT[s])}</p>${feeSwitch}</div>
+        <div class="lane" data-lane="${esc(k)}"></div>`;
     }).join("");
     return `<div class="hero" id="hero">
         <h2 class="display" id="hero-line">Results</h2>
         <p class="body note" id="hero-note"></p>
-        <div class="boxes">${boxes}</div>
+        <div class="card"><div class="rc" id="rc">${rcRows}<div></div><div class="axis" id="rc-axis"></div></div>
+          <p class="source">Each band runs from P10 to P90; the tick and the number mark the midpoint (P50). Log scale, so each step is ten times the last.</p></div>
       </div>
       ${flagHtml(b.meta)}
       <div class="card" id="headline-card">
@@ -978,21 +981,24 @@ function heroUpdate(b, R, o) {
   $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
   const yrs = AGG.windowLabel(b);
   $("hero-note").textContent = `The midpoint for ${best ? IN_NOTE[best] : "the reforms"}, the largest of the ${mids.length === 3 ? "three" : mids.length} reforms below, each passed on its own, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}${yrs ? ` in ${yrs}` : ""} compared with no policy change. The reforms are not added together. Each range runs from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
-  const top = Math.max(...keys.map((s) => R[s][o].p90), 1);
-  const pct = (v) => `${Math.max(0, Math.min(100, (v / top) * 100))}%`;
+  const hiP = Math.max(...keys.map((s) => R[s][o].p90), 1);
+  const lo = 1, hi = 10 ** Math.ceil(Math.log10(hiP * 3));
+  const pos = (v) => `${(Math.log10(Math.max(v, lo)) / Math.log10(hi)) * 100}%`;
+  const decades = Array.from({ length: Math.log10(hi) + 1 }, (_, i) => 10 ** i);
+  const grid = decades.map((t) => `<span class="g" style="left:${pos(t)}"></span>`).join("");
+  $("rc-axis").innerHTML = decades.map((t) => `<span style="left:${pos(t)}">${fmtN(t)}</span>`).join("");
   for (const k of HERO) {
-    const box = document.querySelector(`[data-box="${k}"]`);
-    if (!box) continue;
+    const lane = document.querySelector(`[data-lane="${k}"]`), who = document.querySelector(`[data-box="${k}"]`);
+    if (!lane) continue;
     const s = k === "fees" ? UI.fee : k, r = R[s];
-    if (!r) { box.querySelector("[data-box-range]").textContent = "Not yet run"; continue; }
-    const { p10, p50, p90 } = r[o];
-    box.style.setProperty("--box-c", scenColor(s));
-    box.querySelector("[data-box-range]").textContent = `${fmtN(p10)} – ${fmtN(p90)} homes`;
-    box.querySelector("[data-box-mid]").textContent = `Midpoint ${fmtN(p50)}. Range P10 to P90.`;
-    box.querySelector("[data-box-what]").textContent = WHAT[s];
-    const t = box.querySelector("[data-box-track]");
-    for (const el of t.querySelectorAll(".band, .line")) { el.style.left = pct(p10); el.style.width = `calc(${pct(p90)} - ${pct(p10)})`; }
-    t.querySelector(".mid").style.left = pct(p50);
+    if (who) { who.querySelector("[data-box-what]").textContent = WHAT[s]; who.querySelector("h4").style.color = scenColor(s); }
+    if (!r) { lane.innerHTML = `${grid}<span class="num muted" style="left:0">Not yet run</span>`; continue; }
+    const { p10, p50, p90 } = r[o], c = scenColor(s);
+    lane.setAttribute("aria-label", `${SCENARIOS_SHORT[k]}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
+    lane.setAttribute("role", "img");
+    lane.innerHTML = `${grid}<span class="band" style="left:${pos(p10)};width:calc(${pos(p90)} - ${pos(p10)});background:${c}"></span>
+      <span class="tick" style="left:${pos(p50)};background:${c}"></span>
+      <span class="num" style="left:calc(${pos(p90)} + 8px)">${fmtN(p50)} <small>(${fmtN(p10)}–${fmtN(p90)})</small></span>`;
   }
 }
 
