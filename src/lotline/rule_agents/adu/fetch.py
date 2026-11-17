@@ -79,6 +79,10 @@ class FetchResult:
     retrieved: dt.date | None = None
     detail: str = ""
     doc_id: str | None = None  # sha256 of the bytes: cite it in Evidence.doc_id
+    # The URL that actually answered. Wayback `/web/2023/<url>` redirects to the nearest capture, which may be
+    # years away (dry run: a "2023" Raleigh copy was from 2025): cite this URL and its timestamp.
+    final_url: str | None = None
+    wayback_ts: str | None = None
 
 
 # ---- robots ----------------------------------------------------------------------------------------------
@@ -313,6 +317,9 @@ class Fetcher:
         )
         result = FetchResult(url, True, None, resp.status_code, dest, None, ctype, today)
         result.doc_id = sha256_file(dest)
+        result.final_url = str(resp.url)
+        m = re.match(r"https://web\.archive\.org/web/(\d{14})", result.final_url)
+        result.wayback_ts = m.group(1) if m else None
         if dest.suffix == ".pdf":
             if not pdf_has_text(resp.content):
                 result.reason = "scanned_pdf"

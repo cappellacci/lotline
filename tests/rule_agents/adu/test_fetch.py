@@ -60,6 +60,22 @@ def test_missing_robots_allows_and_page_is_cached_with_manifest_and_text(store):
     assert r.doc_id == entry["sha256"]  # the stable document id evidence cites
 
 
+def test_wayback_redirect_reports_the_capture_actually_served(store):
+    def to_capture():
+        return httpx.Response(
+            302, headers={"location": "https://web.archive.org/web/20250614000000/https://a.gov/x"}
+        )
+
+    routes = {
+        "https://web.archive.org/web/2023/": to_capture,
+        "https://web.archive.org/web/20250614000000/": html(),
+    }
+    r = make(store, routes, []).get("https://web.archive.org/web/2023/https://a.gov/x")
+    assert (
+        r.ok and r.wayback_ts == "20250614000000" and r.final_url.endswith("20250614000000/https://a.gov/x")
+    )
+
+
 def test_robots_server_error_means_assume_disallowed(store):
     f = make(store, {"https://a.gov/robots.txt": httpx.Response(503)}, [])
     assert f.get("https://a.gov/code").reason == "robots_unavailable"

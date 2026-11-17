@@ -43,6 +43,10 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
   `ok`, `reason`, `path`, `text_path`). Read `text_path` (HTML) or `path` with the Read tool (PDF). Never use
   WebFetch, curl, a browser user agent, or a different URL form to get round a block (L-R6). A block → add a
   `BlockedSource` with the helper's `reason` and move on.
+- **Wayback**: cite the fetch result's `final_url` (the capture actually served; `/web/2023/…` may redirect to
+  a 2025 copy) and date the source by `wayback_ts`, not by the year you asked for. A Wayback copy of an
+  official page is `official_code` (or `ordinance`, `city_page`) with `archived_from` = the live URL, never
+  `mirror`.
 - Quote verbatim, ≤ 25 words, with the section number. Put the copy's path relative to `LOTLINE_DATA_DIR` in
   `cache_path`. Put the fetch result's `doc_id` (sha256 of the bytes read) in `doc_id`, and the PDF page
   in `page`. A quote read off a scanned page image is `quote_status: image_read`. Use https (Wayback `https://web.archive.org/web/<ts>/<url>` for http-only pages).

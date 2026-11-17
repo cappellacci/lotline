@@ -18,8 +18,10 @@ Read `docs/build/rule-agents/adu/CODING_RULES.md` (fetch and hard rules) and les
    (`webapi.legistar.com/v1/<client>/matters?$filter=...` for ADU text amendments), planning-commission items.
 3. Find **past versions** for 2016 onward: Wayback copies of the code section or the city's ADU page (pick
    copies near each suspected change), or the Municode PDF blob / `files.amlegal.com` PDFs.
-4. Fetch each candidate with the fetch helper. Publishers in the helper's `KNOWN_BLOCKERS` are tried once at
-   most; on any block, try one listed alternative, then record it as blocked. Never retry a refused host.
+4. Fetch each candidate with the fetch helper. For Wayback, record the `final_url` and `wayback_ts` it
+   returns (the capture served, which can differ from the year asked) and give the archived page its
+   original kind (an archived code section is `official_code`, not `mirror`). Publishers in the helper's
+   `KNOWN_BLOCKERS` are tried once at most; on any block, try one listed alternative, then record it as blocked. Never retry a refused host.
 5. Do not code values. Write `RUN_DIR/sources/<geoid>.json`:
 
 ```json
