@@ -7460,3 +7460,24 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - **Shared data:** MN's processed BPS table was rebuilt with St. Paul's released rows for this run, which
     made runs from `main` (where St. Paul is still blind) stop on a holdout-leak check. It was rebuilt blind
     from a clean `main` checkout the same evening; after #442 merges it needs one more offline rebuild.
+- **Fast-ramp sensitivity (pre-registered 2026-11-17, before any run; Ben: "Yes, add it").** The main result
+  keeps C4. Next to it, the scenario reports what the Handbook rule would add if every place took it up as
+  fast as the places that adopted on their own did in run 1:
+  - **What changes:** only the half-way point, to 0.5 years (R2's locally adopted fit;
+    `mm_ramp_half_years_fast`). θ, α, φ, the slope and every input stay at C4's values, with the same draws and
+    seed, so the two results differ only by the ramp. Also reported: 1.0 year, the low end of C4's range (this
+    entry's cheaper alternative).
+  - **Why θ is held:** R2's θ (0.94 per 1,000) was fitted jointly with its two ramps. Using it with the fast ramp
+    would lower the sensitivity by about 9%; this is stated rather than run.
+  - **Expected, by hand:** the five-year ramp sums are 1.163 (half-way 4.0), 3.837 (1.0) and 4.204 (0.5), so
+    the five-year totals should be about 3.3 and 3.6 times C4's, and year 5's share of the five years falls from
+    0.57 to about 0.24–0.26.
+  - **Reading:** a range for the timing, not a forecast. State-required Oregon places ramped slowly (half-way
+    4.0); the fast ramp is a fair upper case only if a state law is taken up the way a city's own reform is.
+  - **What it will not do:** change config's main values, fit anything, read permits or any holdout.
+- **Fast-ramp run (2026-11-17, `reports/mm-d100/fast-ramp/`, page https://claude.ai/artifact/CjkLoS18nmRupLFcyskYR6).**
+  As expected: with the same draws, five-year totals are 3.30 times C4's at half-way 1.0 and 3.61 times at 0.5
+  in every state, and year 5's share falls from 0.57 to 0.26 and 0.24. Median five-year net homes, C4 → fast
+  ramp: TX 12,066 → 43,589; NC 3,078 → 11,110; OH 2,621 → 9,443; MN 1,758 → 6,300; OR 256 → 927. The main run
+  reproduces config C4's numbers exactly. Shown on the page and in the report; adding it to the results bundle
+  needs a contract change (WS-CORE).

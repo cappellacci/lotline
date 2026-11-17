@@ -35,6 +35,11 @@ For each place i and scenario year t = 1 … 5, with the fitted model (`mm_hazar
 
 Every result is a range over `mm_scenario_draws` draws: P10/P50/P90 and the mean of the statewide sum. The
 baseline cancels in the added homes and is the baseline module's. Nothing is fitted here.
+
+**Fast-ramp sensitivity (D-100, pre-registered 2026-11-17):** `run(..., ramp="fast")` uses
+`mm_ramp_half_years_fast` (0.5 years, the fitted ramp of places that adopted on their own) instead of
+`mm_ramp_half_years` (C4's 4.0). Every other value, draw and seed is the main run's, so the two differ only by
+the ramp. It is shown next to the main result, never in its place.
 """
 
 from __future__ import annotations
@@ -77,6 +82,16 @@ def draw_params(n: int, seed: int, sp: Mapping | None = None) -> pd.DataFrame:
         s = sp[key]
         out[col] = rng.triangular(s.low, s.value, s.high, n) if s.low < s.high else np.full(n, s.value)
     return pd.DataFrame(out)
+
+
+RAMPS = {"main": "mm_ramp_half_years", "fast": "mm_ramp_half_years_fast"}
+
+
+def ramp_half(sp: Mapping, ramp: str = "main", end: str = "value") -> float:
+    """Half-way point for the main result or the fast-ramp sensitivity (D-100); `end` picks value/low/high."""
+    if ramp not in RAMPS:
+        raise ValueError(f"ramp must be one of {sorted(RAMPS)}, not {ramp!r}")
+    return float(getattr(sp[RAMPS[ramp]], end))
 
 
 def year_shape(half: float, slope: float, horizon: int = HORIZON) -> np.ndarray:
@@ -306,14 +321,27 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     return places
 
 
-def run(state: str, store, origin: int = 2025, n: int | None = None, seed: int | None = None):
-    """(places, Result, summary) for one state at the scenario's parameter values."""
+def run(
+    state: str,
+    store,
+    origin: int = 2025,
+    n: int | None = None,
+    seed: int | None = None,
+    ramp: str = "main",
+    places: pd.DataFrame | None = None,
+):
+    """(places, Result, summary) for one state at the scenario's parameter values.
+
+    `ramp="fast"` is D-100's fast-ramp sensitivity (module docstring). `places` reuses inputs already built by
+    `places_from_store` for the same state and origin, so the main run and the sensitivity share them.
+    """
     sp = specs()
     n = int(sp["mm_scenario_draws"].value) if n is None else n
     seed = int(sp["mm_scenario_seed"].value) if seed is None else seed
-    places = places_from_store(state, store, origin)
+    half = ramp_half(sp, ramp)
+    places = places_from_store(state, store, origin) if places is None else places
     res = simulate(
-        places, draw_params(n, seed, sp), sp["mm_ramp_half_years"].value, sp["mm_ramp_slope_years"].value,
+        places, draw_params(n, seed, sp), half, sp["mm_ramp_slope_years"].value,
         seed, int(sp["mm_rule_min_coded"].value), phi=sp["mm_year_spread_phi"].value,
     )  # fmt: skip
     return places, res, summarize(res)
