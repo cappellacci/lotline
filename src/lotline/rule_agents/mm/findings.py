@@ -36,9 +36,20 @@ EVIDENCED_FIELDS = (
     "parking_min_per_unit",
     "coverage_zones",
     "end_date",
+    "prior_cap",
 )
+# Lead-only sources: never enough on their own for a coded value (OH brief 2026-11-01; NC/MN second coding).
+LEAD_ONLY = ("news", "search_summary")
 # The fields two coders are compared on (`reconcile`) and the dry run checks (`compare`).
-KEY_FIELDS = ("effective_date", "adoption_date", "date_basis", "unit_cap", "by_right", "coverage_zones")
+KEY_FIELDS = (
+    "effective_date",
+    "adoption_date",
+    "date_basis",
+    "unit_cap",
+    "prior_cap",
+    "by_right",
+    "coverage_zones",
+)
 CONFIDENCE = ("high", "medium", "low")
 BLOCKER_KINDS = (
     "robots_disallow",  # robots.txt forbids the path for our user agent: never fetch it
@@ -71,6 +82,8 @@ class Evidence(BaseModel):
             "news",
             "state_law",
             "archive",  # a Wayback Machine copy of any of the above
+            "mirror",  # a third-party code mirror (e.g. Zoneomics): undated; confirm on the official code
+            "search_summary",  # an AI or search-engine summary: a lead only, never evidence on its own
             "human_lookup",  # an answer from the human lookup sheet
             "other",
         ]
@@ -111,6 +124,11 @@ class RuleFinding(BaseModel):
     far_cap: float | None = Field(default=None, ge=0)
     parking: str | None = None
     parking_min_per_unit: float | None = Field(default=None, ge=0)
+    # The MM-specific check (NC/TX second coding, 2026-11-11): what the code allowed on these lots just
+    # before this rule. An event needs prior_cap < unit_cap, with evidence from the predecessor code (often
+    # a Wayback copy plus the new code's district-conversion table). Equal caps mean a recodification:
+    # code the rule `predates` instead (League City 2020, Wake Forest, Morrisville).
+    prior_cap: int | None = Field(default=None, ge=1)
     standards_only: bool = False  # [standards]: the cap doesn't rise, the by-right route gets easier
     coverage: str  # plain-language area: "Citywide R1, R1A, R2, R2B"
     coverage_zones: list[str] = Field(default_factory=list)
@@ -167,6 +185,21 @@ def check(f: PlaceFinding, *, today: date | None = None) -> list[str]:
             out.append(f"{tag}: effective in the future: status should be 'pending'")
         if r.unit_cap is None and not r.standards_only:
             out.append(f"{tag}: unit_cap blank: code the cap (1 for a 'none' row) or mark standards_only")
+        is_event = r.status == "in_force" and r.date_basis != "predates" and (r.unit_cap or 0) > 1
+        if is_event and not r.standards_only and r.effective_date.year >= 2010:
+            if r.prior_cap is None:
+                out.append(f"{tag}: event with no prior_cap: check what the code allowed just before")
+            elif r.unit_cap is not None and r.prior_cap >= r.unit_cap:
+                out.append(
+                    f"{tag}: prior_cap {r.prior_cap} >= unit_cap {r.unit_cap}: no cap rise; code it "
+                    "'predates' (recodification) or 'standards_only' (cheaper route, same cap)"
+                )
+        for fld in cited:
+            kinds = {e.source_kind for e in r.evidence if e.field == fld}
+            if kinds and kinds <= set(LEAD_ONLY):
+                out.append(f"{tag}: {fld} rests only on {sorted(kinds)}: a lead, not evidence")
+            if kinds == {"mirror"} and r.confidence == "high":
+                out.append(f"{tag}: {fld} read on a mirror only: confidence cannot be high")
         if r.unit_cap == 1 and r.standards_only:
             out.append(f"{tag}: a 'none' row (unit_cap 1) cannot be standards_only")
         if r.unit_cap == 1 and r.date_basis != "predates" and r.by_right:
@@ -181,6 +214,20 @@ def check(f: PlaceFinding, *, today: date | None = None) -> list[str]:
         if b.kind != "records_request_only" and not b.fields:
             out.append(f"blocker {b.url}: name the field(s) it would settle")
     return out
+
+
+_DRAFT = re.compile(
+    r"\bdraft\b|ordinance no\.?\s*(?:x{2,}|_{3,}|\[)|\[insert|effective date\]|\bx{3,}-x{2,}\b|"
+    r"for discussion only|not adopted|proposed ordinance",
+    re.I,
+)
+
+
+def draft_markers(text: str) -> list[str]:
+    """Signs that a document is an unsigned draft, not the adopted text (St. Louis Park, Eagan Ord. 528,
+    Burnsville 2020 looked final). By hand: "Ordinance No. XXX-XX ... [insert effective date]" -> two
+    markers; a signed ordinance -> []."""
+    return sorted({m.group(0).strip().lower() for m in _DRAFT.finditer(text)})
 
 
 def _norm(s: str) -> str:

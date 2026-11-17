@@ -68,7 +68,12 @@ def rule_row(
     main = next((e for e in r.evidence if e.field == "unit_cap"), r.evidence[0] if r.evidence else None)
     urls = list(dict.fromkeys(e.url for e in r.evidence))
     notes = " ".join(tags_for(r.date_basis, standards_only=r.standards_only))
-    for part in (r.notes, adjudication and f"Reconciled: {adjudication}", _sources(r)):
+    prior = f"Prior cap (code just before): {r.prior_cap}." if r.prior_cap else ""
+    mirror = any(e.source_kind == "mirror" for e in r.evidence if e.field == "unit_cap") and not any(
+        e.source_kind not in ("mirror", None) for e in r.evidence if e.field == "unit_cap"
+    )
+    flag = "FLAG for second coder: unit_cap read on a mirror only." if mirror else ""
+    for part in (r.notes, prior, flag, adjudication and f"Reconciled: {adjudication}", _sources(r)):
         if part:
             notes = f"{notes} {part}".strip()
     return {

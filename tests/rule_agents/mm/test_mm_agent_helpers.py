@@ -16,7 +16,15 @@ from lotline.model import rule_tags
 from lotline.rule_agents.mm import __main__ as cli
 from lotline.rule_agents.mm import access, compare, dates, handoff, reconcile, rows
 from lotline.rule_agents.mm.fetch import allowed, snapshot_name
-from lotline.rule_agents.mm.findings import Blocker, Evidence, PlaceFinding, RuleFinding, check, verify_quote
+from lotline.rule_agents.mm.findings import (
+    Blocker,
+    Evidence,
+    PlaceFinding,
+    RuleFinding,
+    check,
+    draft_markers,
+    verify_quote,
+)
 
 TODAY = date(2026, 11, 17)
 URL = "https://example.gov/ord-2019-048.pdf"
@@ -36,7 +44,14 @@ def rule(**kw):
         by_right=True,
         coverage="Citywide R1, R1A, R2, R2B",
         coverage_zones=["R1", "R1A", "R2", "R2B"],
-        evidence=[ev("effective_date"), ev("unit_cap"), ev("by_right"), ev("coverage_zones")],
+        prior_cap=1,
+        evidence=[
+            ev("effective_date"),
+            ev("unit_cap"),
+            ev("by_right"),
+            ev("coverage_zones"),
+            ev("prior_cap", "R1 One-family dwelling P; Two-family dwelling --", "https://web.archive.org/x"),
+        ],
     )
     base.update(kw)
     return RuleFinding(**base)
@@ -131,7 +146,10 @@ def test_date_rules():
 
 def test_none_row_and_standards_rules():
     none_ok = rule(
-        unit_cap=1, by_right=None, evidence=[ev("effective_date"), ev("unit_cap"), ev("coverage_zones")]
+        unit_cap=1,
+        by_right=None,
+        prior_cap=None,
+        evidence=[ev("effective_date"), ev("unit_cap"), ev("coverage_zones")],
     )
     assert check(place([none_ok]), today=TODAY) == []
     bad = rule(unit_cap=1, standards_only=True)
@@ -139,6 +157,40 @@ def test_none_row_and_standards_rules():
     std = rule(unit_cap=None, standards_only=True)  # Houston-style MUR route: no cap change
     assert not any("unit_cap blank" in m for m in check(place([std]), today=TODAY))
     assert any("unit_cap blank" in m for m in check(place([rule(unit_cap=None)]), today=TODAY))
+
+
+def test_prior_cap_check():
+    """An event must show what the code allowed just before; an equal cap is a recodification."""
+    nopr = rule(
+        prior_cap=None, evidence=[ev("effective_date"), ev("unit_cap"), ev("by_right"), ev("coverage_zones")]
+    )
+    assert any("no prior_cap" in m for m in check(place([nopr]), today=TODAY))
+    recod = rule(prior_cap=3)
+    assert any("no cap rise" in m for m in check(place([recod]), today=TODAY))
+    pre = rule(
+        prior_cap=None,
+        date_basis="predates",
+        evidence=[ev("effective_date"), ev("unit_cap"), ev("by_right"), ev("coverage_zones")],
+    )
+    assert check(place([pre]), today=TODAY) == []
+
+
+def test_lead_only_and_mirror_sources():
+    news = ev("unit_cap")
+    news = news.model_copy(update={"source_kind": "news"})
+    r = rule(evidence=[e for e in rule().evidence if e.field != "unit_cap"] + [news])
+    assert any("a lead, not evidence" in m for m in check(place([r]), today=TODAY))
+    mir = ev("unit_cap").model_copy(update={"source_kind": "mirror"})
+    r2 = rule(confidence="high", evidence=[e for e in rule().evidence if e.field != "unit_cap"] + [mir])
+    assert any("mirror only" in m for m in check(place([r2]), today=TODAY))
+    df = rows.table(rows.place_rows(place([r2]), coder_2=None, agreement="single_coder"))
+    assert "FLAG for second coder: unit_cap read on a mirror only." in df.loc[0, "coding_notes"]
+    assert "Prior cap (code just before): 1." in df.loc[0, "coding_notes"]
+
+
+def test_draft_markers():
+    assert draft_markers("ORDINANCE NO. XXX-XX ... effective on [insert effective date]")
+    assert draft_markers("Ordinance No. 2690-25, adopted March 3, 2025. Signed: Mayor") == []
 
 
 def test_place_with_nothing_is_flagged_but_blocker_suffices():
