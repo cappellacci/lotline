@@ -1,0 +1,43 @@
+{
+  "central": {
+    "theta": 0.0004475922450740749,
+    "alpha": 1.5499535726173128,
+    "core": 1.1990831919259035,
+    "loglik": -1343.2568774381343
+  },
+  "places": 64,
+  "place_years": 395,
+  "info": {
+    "log_se_theta": 0.19124546513535753,
+    "log_se_alpha": 0.23914803942457027,
+    "corr": 0.11450732757112927
+  },
+  "in_fit": [
+    "adu_sqft",
+    "hard_cost_per_sqft_usd",
+    "adu_hard_cost_premium",
+    "soft_cost_share",
+    "construction_loan_rate",
+    "average_draw_share",
+    "construction_years_irc",
+    "rental_vacancy_rate",
+    "operating_expense_share",
+    "cap_rate",
+    "adu_margin",
+    "adu_rent_to_median_ratio",
+    "adu_feasibility_dispersion",
+    "adu_equity_elasticity",
+    "adu_rate_semi_elasticity"
+  ],
+  "not_in_fit": [
+    "single_family_sqft",
+    "townhouse_sqft",
+    "plex_unit_sqft",
+    "code_step_premium",
+    "construction_years_ibc",
+    "fee_paid_at_permit",
+    "sale_cost_share",
+    "developer_margin",
+    "existing_use_margin"
+  ]
+}

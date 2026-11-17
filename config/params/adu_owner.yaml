@@ -1,0 +1,24 @@
+# ADU Form A′: owner-occupied share as a place term (analysis plan D-084, accepted by Ben 2026-11-13).
+# Only the standardization of the term is fixed here. β_o, θ and α are fitted; no fitted value goes to config
+# until Ben approves a result.
+
+adu_owner_share_center:
+  value: 0.6727
+  low: 0.6727
+  high: 0.6727
+  unit: share of occupied homes that are owner-occupied
+  source: "D-084: z = (o − center) / scale; the mean of ACS 2011-15 B25003_002 / B25003_001 over D-083's 57 screened places (reports/adu-covariate-screen/factors.csv), fixed before any fit so β_o is in D-083's units"
+
+adu_owner_share_scale:
+  value: 0.1544
+  low: 0.1544
+  high: 0.1544
+  unit: share of occupied homes that are owner-occupied
+  source: "D-084: the standard deviation of the same 57 places' owner-occupied share, fixed before any fit"
+
+adu_owner_fit_end_year:
+  value: 2015
+  low: 2015
+  high: 2015
+  unit: last year of the ACS 5-year vintage
+  source: "D-084: the fit reads ACS 2011-15, before the 2016 fit window, as D-083 did"

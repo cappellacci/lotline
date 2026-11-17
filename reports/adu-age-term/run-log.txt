@@ -1,0 +1,75 @@
+commit: 52d4ef2aca273dd079cdb160e8c629f99d9e9881
+started: 2026-11-14T19:50:14Z
+[14:51:16] fit set: 64 places, 491 place-years, 11 new
+[14:51:16] owner share sources {'place': 57, 'county subdivision': 6, 'county less its places': 1}; flagged []
+[14:51:16] housing age sources {'place': 57, 'county subdivision': 6, 'county less its places': 1}; flagged []
+[14:51:16] age vintage check (2011-15 vs 2020-24, 64 places): pearson 0.982, spearman 0.963, mean change -2.4 points
+[14:51:16] owner-age correlation over the fit places: -0.393
+[14:51:16] fits: Forms A, A′ and A″, all folds
+[14:51:48]   A all: theta 0.5030/1,000 (0.359-0.784), alpha 2.648, betas [], m_o 1.0, m_x 0.8, loglik -1418.63 (31s)
+[14:59:25]   A′ all: theta 0.3791/1,000 (0.278-0.553), alpha 1.844, betas [-0.782 (-1.101, -0.463)], m_o 1.0, m_x 0.8, loglik -1411.50 (487s)
+[15:13:46]   A″ all: theta 0.3666/1,000 (0.271-0.531), alpha 1.769, betas [-0.698 (-1.015, -0.381), +0.436 (+0.034, +0.838)], m_o 1.0, m_x 0.8, loglik -1409.83 (1349s)
+[15:13:46]   A without MN: theta 1.0667/1,000 (0.753-1.580), alpha 0.996, betas [], m_o 0.4, m_x 0.8, loglik -1176.68 (15s)
+[15:13:46]   A′ without MN: theta 0.4996/1,000 (0.366-0.706), alpha 0.770, betas [-0.862 (-1.325, -0.399)], m_o 0.4, m_x 0.8, loglik -1173.33 (242s)
+[15:13:46]   A″ without MN: theta 0.6138/1,000 (0.457-0.848), alpha 0.676, betas [-0.598 (-1.083, -0.114), +0.471 (+0.032, +0.909)], m_o 0.4, m_x 0.8, loglik -1171.71 (794s)
+[15:13:46]   A without NC: theta 0.3574/1,000 (0.234-0.577), alpha 3.322, betas [], m_o 1.0, m_x 1.0, loglik -979.22 (26s)
+[15:13:46]   A′ without NC: theta 0.3218/1,000 (0.214-0.512), alpha 2.611, betas [-0.664 (-1.071, -0.258)], m_o 1.0, m_x 1.0, loglik -975.90 (430s)
+[15:13:46]   A″ without NC: theta 0.2993/1,000 (0.200-0.473), alpha 2.562, betas [-0.615 (-1.018, -0.212), +0.331 (-0.177, +0.839)], m_o 1.0, m_x 1.0, loglik -975.29 (1170s)
+[15:13:46]   A without OH: theta 0.5067/1,000 (0.360-0.797), alpha 2.711, betas [], m_o 1.0, m_x 0.8, loglik -1413.74 (33s)
+[15:13:46]   A′ without OH: theta 0.3841/1,000 (0.280-0.565), alpha 1.843, betas [-0.811 (-1.135, -0.487)], m_o 1.0, m_x 0.8, loglik -1406.37 (500s)
+[15:21:09]   A″ without OH: theta 0.3729/1,000 (0.275-0.544), alpha 1.727, betas [-0.722 (-1.040, -0.404), +0.510 (+0.100, +0.921)], m_o 1.0, m_x 0.8, loglik -1404.18 (1550s)
+[15:21:09]   A without TX: theta 0.4910/1,000 (0.344-0.783), alpha 2.818, betas [], m_o 1.0, m_x 0.8, loglik -1322.74 (36s)
+[15:21:09]   A′ without TX: theta 0.3886/1,000 (0.280-0.575), alpha 1.937, betas [-0.810 (-1.149, -0.471)], m_o 1.0, m_x 0.8, loglik -1315.96 (545s)
+[15:36:30]   A″ without TX: theta 0.3698/1,000 (0.268-0.545), alpha 1.875, betas [-0.705 (-1.050, -0.359), +0.431 (+0.005, +0.857)], m_o 1.0, m_x 0.8, loglik -1314.51 (2225s)
+[15:36:30]   A without OR: theta 0.5773/1,000 (0.404-0.962), alpha 2.672, betas [], m_o 1.0, m_x 0.5, loglik -733.98 (36s)
+[15:36:30]   A′ without OR: theta 0.4811/1,000 (0.342-0.745), alpha 2.018, betas [-0.635 (-0.967, -0.303)], m_o 1.0, m_x 0.5, loglik -729.39 (577s)
+[15:36:30]   A″ without OR: theta 0.4581/1,000 (0.330-0.698), alpha 1.878, betas [-0.541 (-0.861, -0.220), +0.572 (+0.128, +1.016)], m_o 1.0, m_x 0.5, loglik -727.10 (1658s)
+[15:36:30]   A without place 2754880: theta 0.5103/1,000 (0.363-0.802), alpha 2.668, betas [], m_o 1.0, m_x 0.8, loglik -1414.40 (44s)
+[15:36:30]   A′ without place 2754880: theta 0.3861/1,000 (0.282-0.569), alpha 1.863, betas [-0.776 (-1.097, -0.455)], m_o 1.0, m_x 0.8, loglik -1407.48 (839s)
+[15:41:58]   A″ without place 2754880: theta 0.3731/1,000 (0.275-0.546), alpha 1.783, betas [-0.692 (-1.010, -0.373), +0.441 (+0.035, +0.847)], m_o 1.0, m_x 0.8, loglik -1405.80 (1864s)
+[15:41:58]   A without place 3702140: theta 0.4506/1,000 (0.314-0.643), alpha 2.322, betas [], m_o 1.0, m_x 0.7, loglik -1332.62 (55s)
+[15:41:58]   A′ without place 3702140: theta 0.3399/1,000 (0.251-0.505), alpha 1.718, betas [-0.689 (-1.003, -0.375)], m_o 1.0, m_x 0.8, loglik -1327.05 (833s)
+[15:48:35]   A″ without place 3702140: theta 0.3378/1,000 (0.250-0.497), alpha 1.692, betas [-0.645 (-0.957, -0.334), +0.316 (-0.074, +0.706)], m_o 1.0, m_x 0.8, loglik -1326.09 (2089s)
+[15:48:35]   A without place 3710740: theta 0.5043/1,000 (0.358-0.790), alpha 2.720, betas [], m_o 1.0, m_x 0.8, loglik -1392.16 (57s)
+[15:48:35]   A′ without place 3710740: theta 0.3792/1,000 (0.276-0.557), alpha 1.905, betas [-0.778 (-1.100, -0.456)], m_o 1.0, m_x 0.8, loglik -1385.27 (786s)
+[15:52:07]   A″ without place 3710740: theta 0.3605/1,000 (0.264-0.527), alpha 1.815, betas [-0.694 (-1.012, -0.376), +0.471 (+0.050, +0.892)], m_o 1.0, m_x 0.8, loglik -1383.48 (1740s)
+[15:52:07]   A without place 3711800: theta 0.5004/1,000 (0.355-0.785), alpha 2.720, betas [], m_o 1.0, m_x 0.8, loglik -1403.49 (57s)
+[15:52:07]   A′ without place 3711800: theta 0.3829/1,000 (0.279-0.561), alpha 1.898, betas [-0.787 (-1.113, -0.462)], m_o 1.0, m_x 0.8, loglik -1396.54 (700s)
+[15:57:59]   A″ without place 3711800: theta 0.3684/1,000 (0.270-0.537), alpha 1.825, betas [-0.699 (-1.024, -0.374), +0.435 (+0.025, +0.845)], m_o 1.0, m_x 0.8, loglik -1394.95 (1549s)
+[15:57:59]   A without place 3712000: theta 0.4738/1,000 (0.336-0.722), alpha 2.750, betas [], m_o 1.0, m_x 0.9, loglik -1375.66 (43s)
+[15:57:59]   A′ without place 3712000: theta 0.3562/1,000 (0.259-0.509), alpha 1.890, betas [-0.808 (-1.131, -0.485)], m_o 1.0, m_x 0.9, loglik -1368.30 (709s)
+[16:01:16]   A″ without place 3712000: theta 0.3434/1,000 (0.252-0.488), alpha 1.820, betas [-0.724 (-1.046, -0.401), +0.425 (+0.016, +0.834)], m_o 1.0, m_x 0.9, loglik -1366.77 (1487s)
+[16:01:16]   A without place 3719000: theta 0.4993/1,000 (0.348-0.730), alpha 2.719, betas [], m_o 1.0, m_x 0.8, loglik -1333.04 (63s)
+[16:01:16]   A′ without place 3719000: theta 0.3821/1,000 (0.262-0.545), alpha 1.904, betas [-0.783 (-1.108, -0.457)], m_o 1.0, m_x 0.8, loglik -1326.15 (659s)
+[16:05:06]   A″ without place 3719000: theta 0.3680/1,000 (0.255-0.518), alpha 1.827, betas [-0.696 (-1.020, -0.372), +0.438 (+0.029, +0.847)], m_o 1.0, m_x 0.8, loglik -1324.53 (1388s)
+[16:05:06]   A without place 3755000: theta 0.4993/1,000 (0.354-0.730), alpha 2.719, betas [], m_o 1.0, m_x 0.8, loglik -1379.87 (33s)
+[16:05:06]   A′ without place 3755000: theta 0.3814/1,000 (0.277-0.544), alpha 1.906, betas [-0.780 (-1.104, -0.455)], m_o 1.0, m_x 0.8, loglik -1372.99 (547s)
+[16:10:08]   A″ without place 3755000: theta 0.3658/1,000 (0.268-0.515), alpha 1.828, betas [-0.689 (-1.012, -0.365), +0.445 (+0.033, +0.857)], m_o 1.0, m_x 0.8, loglik -1371.34 (1292s)
+[16:10:08]   A without place 3774440: theta 0.4712/1,000 (0.336-0.703), alpha 2.631, betas [], m_o 1.0, m_x 0.8, loglik -1373.88 (38s)
+[16:10:08]   A′ without place 3774440: theta 0.3739/1,000 (0.272-0.532), alpha 1.898, betas [-0.751 (-1.081, -0.421)], m_o 1.0, m_x 0.8, loglik -1367.67 (570s)
+[16:12:53]   A″ without place 3774440: theta 0.3602/1,000 (0.265-0.506), alpha 1.815, betas [-0.664 (-0.991, -0.336), +0.438 (+0.038, +0.839)], m_o 1.0, m_x 0.8, loglik -1365.98 (1246s)
+[16:12:53]   A without place 4147000: theta 0.4792/1,000 (0.341-0.745), alpha 2.662, betas [], m_o 1.0, m_x 0.8, loglik -1376.92 (37s)
+[16:12:53]   A′ without place 4147000: theta 0.3722/1,000 (0.271-0.545), alpha 1.890, betas [-0.757 (-1.081, -0.433)], m_o 1.0, m_x 0.8, loglik -1370.37 (574s)
+[16:15:57]   A″ without place 4147000: theta 0.3588/1,000 (0.264-0.521), alpha 1.809, betas [-0.672 (-0.993, -0.350), +0.437 (+0.036, +0.837)], m_o 1.0, m_x 0.8, loglik -1368.68 (1077s)
+[16:15:57]   A without place 4164900: theta 0.4874/1,000 (0.346-0.761), alpha 2.691, betas [], m_o 1.0, m_x 0.8, loglik -1350.59 (41s)
+[16:15:57]   A′ without place 4164900: theta 0.3745/1,000 (0.273-0.549), alpha 1.897, betas [-0.766 (-1.089, -0.443)], m_o 1.0, m_x 0.8, loglik -1343.88 (546s)
+[16:17:23]   A″ without place 4164900: theta 0.3619/1,000 (0.266-0.527), alpha 1.819, betas [-0.683 (-1.004, -0.363), +0.434 (+0.030, +0.837)], m_o 1.0, m_x 0.8, loglik -1342.23 (954s)
+[16:17:23]   A without place 4815976: theta 0.5079/1,000 (0.361-0.798), alpha 2.706, betas [], m_o 1.0, m_x 0.8, loglik -1402.14 (36s)
+[16:17:23]   A′ without place 4815976: theta 0.3837/1,000 (0.281-0.560), alpha 1.817, betas [-0.819 (-1.143, -0.496)], m_o 1.0, m_x 0.8, loglik -1394.60 (441s)
+[16:20:41]   A″ without place 4815976: theta 0.3707/1,000 (0.273-0.539), alpha 1.766, betas [-0.736 (-1.061, -0.411), +0.400 (-0.006, +0.806)], m_o 1.0, m_x 0.8, loglik -1393.22 (789s)
+[16:22:30] sensitivity: age without owner share (Form A × exp(β_a z_a)), all places
+[16:26:34]   A + age all: theta 0.4601/1,000 (0.333-0.705), alpha 2.395, betas [+0.613 (+0.168, +1.057)], m_o 1.0, m_x 0.8, loglik -1415.87 (244s)
+[16:26:34] sensitivity: A″ at m_x 0.4 (m_o 1.0)
+[16:26:44]   A″ at m_x 0.4 all: theta 0.5994/1,000 (0.441-0.841), alpha 1.799, betas [-0.594 (-0.912, -0.275), +0.461 (+0.054, +0.868)], m_o 1.0, m_x 0.4, loglik -1455.06 (10s)
+[16:26:44]   A′ at m_x 0.4 all: theta 0.6211/1,000 (0.453-0.884), alpha 1.878, betas [-0.678 (-1.001, -0.355)], m_o 1.0, m_x 0.4, loglik -1456.87 (3s)
+[16:28:09]   MN: tier-2 city 2743000
+[16:28:35]   NC: tier-2 city 3712000
+[16:28:43]   OH: tier-2 city 3915000
+[16:28:53]   TX: tier-2 city 4865000
+[16:29:00]   OR: tier-2 city 4159000
+[16:29:06] step 1: {'form': 'A', 'reason': 'A′ scores better but passes fewer of tests A-C (1 vs 2) [in this reason, A = A, A′ = A′]', 'log_gain': 7.73956503485857, 'log_gain_se': 3.6837501778847876}
+[16:29:06] step 2: {'form': 'A', 'reason': 'A′ scores better but passes fewer of tests A-C (1 vs 2) [in this reason, A = A, A′ = A″]', 'log_gain': 7.88833641307666, 'log_gain_se': 2.8080789527599537}
+[16:29:06] test C for Form A (the scenario engine with Form A's values)
+[16:30:05] sensitivity: A″ within states
+[16:30:44] done
+exit: 0 finished: 2026-11-14T21:30:44Z
