@@ -50,8 +50,19 @@ nav.sections a[aria-current="page"] { border-bottom-color: var(--survey); font-w
 nav.sections a.add-state { padding: var(--space-1) var(--space-3); border: var(--stroke-hair) solid var(--survey); border-radius: var(--radius-sm); color: var(--survey); font-weight: 600; }
 nav.sections a.add-state:hover { background: var(--paper-sunken); border-bottom-color: var(--survey); }
 nav.sections a.add-state[aria-current="page"] { background: var(--survey); color: var(--on-survey); }
-.intro { padding: var(--space-5) 0 0; }
-.intro p { margin: 0; color: var(--ink-muted); }
+/* opening card (Ben's sketch, 2026-11-17): name, what it measures and two buttons on the left; the state map on the right */
+.home-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-7); align-items: center; padding: var(--space-7); margin: 0; }
+.home-text h1 { margin: 0 0 var(--space-4); color: var(--ink); }
+.home-text p { color: var(--ink-muted); margin: 0 0 var(--space-5); }
+.home-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border: var(--stroke-hair) solid var(--survey); border-radius: var(--radius-sm); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; background: var(--app-card); color: var(--survey); }
+.btn:hover { background: var(--paper-sunken); }
+.btn.primary { background: var(--survey); color: var(--on-survey); }
+.btn.primary:hover { filter: brightness(1.1); }
+.home-map .map-wrap { max-width: none; }
+.home-map .map-legend { margin-top: var(--space-4); }
+.home-map.nudge svg { outline: 2px solid var(--focus); outline-offset: var(--space-2); }
+@media (max-width: 800px) { .home-card { grid-template-columns: 1fr; gap: var(--space-5); padding: var(--space-5); } }
 section.part[hidden] { display: none; }
 
 main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var(--stroke-hair) solid var(--rule); }
@@ -206,7 +217,7 @@ table.checks td:last-child { min-width: 260px; }
 <body>
 <header class="mast">
   <div class="wrap">
-    <a class="wordmark" href="#results" aria-label="Lotline"><span class="light"><!--__WORDMARK_LIGHT__--></span><span class="dark"><!--__WORDMARK_DARK__--></span></a>
+    <a class="wordmark" href="#home" aria-label="Lotline: home"><span class="light"><!--__WORDMARK_LIGHT__--></span><span class="dark"><!--__WORDMARK_DARK__--></span></a>
     <p class="tagline h3">Housing Reform Model</p>
   </div>
 </header>
@@ -220,23 +231,30 @@ table.checks td:last-child { min-width: 260px; }
     <div class="nav-right">
       <label class="picker body-small">State <select id="state" aria-label="State"></select></label>
       <a class="add-state body-small" href="#add" data-page="add">Add a state</a>
-      <a class="mark" href="#results" aria-label="Lotline: back to results"><span class="light"><!--__MARK_LIGHT__--></span><span class="dark"><!--__MARK_DARK__--></span></a>
+      <a class="mark" href="#home" aria-label="Lotline: home"><span class="light"><!--__MARK_LIGHT__--></span><span class="dark"><!--__MARK_DARK__--></span></a>
     </div>
   </div>
 </nav>
 <main class="wrap">
-  <div class="intro"><p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p></div>
-  <section class="part" id="page-results" data-section="results">
-    <h2 class="h1">Results</h2>
-    <div class="card map-card" id="map-card">
-      <div class="map-wrap"><svg id="state-map" role="group" aria-label="Map of US states: choose one to see its results"></svg></div>
-      <div class="map-key">
-        <h3 class="h3">Choose a state</h3>
-        <p class="body-small muted">Coloured states have Lotline results; click one to see them. The darker the colour, the more of the estimate rests on the state's own local records rather than national data.</p>
+  <section class="part" id="page-home" data-section="home">
+    <div class="card home-card">
+      <div class="home-text">
+        <h1 class="display">Lotline</h1>
+        <p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p>
+        <div class="home-actions">
+          <button type="button" class="btn primary" id="pick-state">Pick a state <span aria-hidden="true">→</span></button>
+          <a class="btn" href="#add">Add a state</a>
+        </div>
+      </div>
+      <div class="home-map" id="map-card">
+        <div class="map-wrap"><svg id="state-map" role="group" aria-label="Map of US states: choose one to see its results"></svg></div>
         <ul class="map-legend" id="map-legend"></ul>
         <p class="body-small muted map-off" id="map-off" hidden></p>
       </div>
     </div>
+  </section>
+  <section class="part" id="page-results" data-section="results" hidden>
+    <h2 class="h1" id="results-title">Results</h2>
     <p class="lead" id="results-lead"></p>
     <div id="results-body"></div>
   </section>
@@ -603,7 +621,7 @@ const TIER_WORDS = { 1: "Most detailed local records", 2: "Some local records", 
 const TILE = 30, GAP = 3;
 function pickState(code) {
   $("state").value = code;
-  go(route().page, false);
+  go("results");
   return show(code);
 }
 function drawMap() {
@@ -620,7 +638,7 @@ function drawMap() {
       const say = `${t.name}: no results yet. Bring your own state`;
       return `<a class="tile none" href="#add" aria-label="${esc(say)}"><title>${esc(say)}</title>${square("var(--tier-none)")}</a>`;
     }
-    const tier = b.meta.data_tier, sel = t.code === cur;
+    const tier = b.meta.data_tier, sel = t.code === cur && route().page !== "home";  // no pick yet on the opening card
     const say = `${t.name}: ${DATA.roles[b.meta.state_role] || b.meta.state_role}, data tier ${tier} (${TIER_WORDS[tier] || ""})`;
     return `<a class="tile on ${Number(tier) === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
   }).join("");
@@ -1267,11 +1285,15 @@ async function show(state) {
   wireData();
   drawTornado();
   footer(b);
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  $("results-title").textContent = `Results: ${named}`;
   document.title = `Lotline · ${b.meta.state}`;
 }
 
-// ---- pages: one section at a time, chosen by the URL hash (#results, #data, #trust; ?state=XX) -------------
-const PAGES = [...Object.keys(SECTIONS), "add"];  // "add": the static add-a-state page, from the toolbar button
+// ---- pages: one section at a time, chosen by the URL hash (#home, #results, #data, #trust, #add; ?state=XX) --
+// "home" is the opening card (no state chosen yet); "add" is the static add-a-state page. Results exist only
+// per state: there is no all-states results page.
+const PAGES = ["home", ...Object.keys(SECTIONS), "add"];
 $("add-readme").href = DATA.map.byos_url;
 function route() {
   const [page, query] = location.hash.replace(/^#/, "").split("?");
@@ -1282,9 +1304,10 @@ function go(page, scroll = true) {
   document.querySelectorAll("nav.sections a[data-page]").forEach((a) => {
     if (a.dataset.page === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
-  history.replaceState(null, "", `#${page}?state=${encodeURIComponent($("state").value)}`);
+  history.replaceState(null, "", page === "home" ? "#home" : `#${page}?state=${encodeURIComponent($("state").value)}`);
   if (page === "trust") drawTornado();  // measured while visible
   if (page === "data") ensureDashboard();
+  if (page === "home") drawMap();
   if (scroll) window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", () => {
@@ -1293,6 +1316,13 @@ window.addEventListener("hashchange", () => {
   go(r.page);
 });
 
+$("pick-state").addEventListener("click", () => {
+  const host = $("map-card"), first = host.querySelector(".tile.on");
+  host.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  host.classList.add("nudge");
+  setTimeout(() => host.classList.remove("nudge"), 1600);
+  if (first) first.focus({ preventScroll: true });
+});
 fillPicker();
 wireMap();
 staticTrust();

@@ -311,12 +311,27 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
     assert _state_file(tmp_path, "ZZ")["scorecard"][0]["check_id"] == "V1"
 
 
-def test_sections_are_separate_pages_with_the_intro_above_them(tmp_path):
+def test_the_app_opens_on_a_card_with_buttons_and_the_map(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    assert "Housing Reform Model" in html and "Lotline is a tool to help understand" in html
-    # one page shown at a time: results first, the other two hidden until their tab is chosen
-    assert '<section class="part" id="page-results" data-section="results">' in html
-    for page in ("data", "trust"):
+    assert "Housing Reform Model" in html
+    opening = r'<section class="part" id="page-home" data-section="home">.*?</section>'
+    home = re.search(opening, html, re.S).group(0)
+    text, rest = home.split('<div class="home-map"', 1)
+    # left column: the name, what it measures, then "Pick a state ->" and "Add a state"
+    assert '<h1 class="display">Lotline</h1>' in text and "Lotline is a tool to help understand" in text
+    assert text.index('id="pick-state"') < text.index('<a class="btn" href="#add">Add a state</a>')
+    assert 'Pick a state <span aria-hidden="true">→</span>' in text
+    # right column: the map selector
+    assert 'id="state-map"' in rest and 'id="map-legend"' in rest
+    # it is the default page; a map click goes to that state's results; no all-states results page
+    assert 'const PAGES = ["home", ...Object.keys(SECTIONS), "add"];' in html
+    assert re.search(r'function pickState\(code\) \{\s*\$\("state"\)\.value = code;\s*go\("results"\);', html)
+
+
+def test_sections_are_separate_pages(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    # one page shown at a time: the opening card first, the others hidden until chosen
+    for page in ("results", "data", "trust"):
         assert f'id="page-{page}" data-section="{page}" hidden>' in html
         assert f'href="#{page}" data-page="{page}"' in html
 
@@ -326,7 +341,7 @@ def test_add_a_state_button_opens_its_own_page(tmp_path):
     right = re.search(r'<div class="nav-right">.*?</div>', html, re.S).group(0)
     assert '<a class="add-state body-small" href="#add" data-page="add">Add a state</a>' in right
     assert 'id="page-add" data-section="add" hidden>' in html
-    assert 'const PAGES = [...Object.keys(SECTIONS), "add"]' in html  # the router knows the page
+    assert '"add"];' in html  # the router knows the page
     # grey tiles and the map key's calls to action open the same page, not the README in a new tab
     assert '<a class="tile none" href="#add" aria-label=' in html
     assert 'const byos = (words) => `<a href="#add">${words}</a>`;' in html
@@ -388,11 +403,10 @@ def test_state_map_colours_every_tier_and_links_grey_states_to_the_readme():
     assert "\n## Bring your own state\n" in (REPO / "README.md").read_text(encoding="utf-8")
 
 
-def test_state_map_is_on_the_results_page(tmp_path):
+def test_state_map_is_on_the_opening_card(tmp_path):
     page = build.build_app([FIXTURE], out_dir=tmp_path, generated="t", data_summary=None)
     html = page.read_text(encoding="utf-8")
-    assert 'id="state-map"' in html and 'id="map-legend"' in html and "Choose a state" in html
-    assert html.index('id="map-card"') < html.index('id="page-data"')  # on page 1
+    assert html.index('id="page-home"') < html.index('id="map-card"') < html.index('id="page-results"')
     assert _embedded(html)["map"] == build.tile_map()
 
 

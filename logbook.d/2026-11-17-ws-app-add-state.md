@@ -5,3 +5,11 @@
 - **Outputs:** `src/lotline/app/template.html`; a test in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and test. Checked with `tests/app` (46 passed), ruff and `compliance_check.py`, and by building the page from local bundles and clicking through it in the browser pane.
 - **Open / next:** Ben to write the real step-by-step content.
+
+### LB-NNN · 2026-11-17 · Deliverables: the app opens on a card with the state map
+- **Question:** What should someone see first when they open Lotline?
+- **What I did:** Built Ben's notebook sketch. The app now opens on a two-column card (`#home`). On the left: "Lotline" in display type, what it measures, and two buttons, "Pick a state →" (brings the map into view and focuses its first state) and "Add a state". On the right: the state map, moved off the Results page. Clicking a state opens that state's Results page, now titled with the state's name. There is no all-states results page. The old intro line above every page became the card's description. The wordmark and mark go back to the card.
+- **Inputs:** Ben's sketch, described in chat (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`; tests in `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change and tests. Checked with `tests/app` (47 passed), ruff and `compliance_check.py`, and by clicking through the built page in the browser pane at desktop and phone widths.
+- **Open / next:** Ben's further sketches for the add-a-state workflow.
