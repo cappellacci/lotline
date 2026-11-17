@@ -175,12 +175,12 @@ def test_results_section_parts_are_on_the_page(tmp_path):
 def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     js = html[html.index("function heroUpdate") :]
-    # "[State] can add [X] homes over the next 5 years", X the median of the three reforms' midpoints
+    # "[State] can add [X] homes over the next 5 years", X the largest of the three reforms' midpoints
     assert (
         'can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years'
         in js
     )
-    assert "const x = mids.length ? AGG.percentile(mids, 50) : NaN;" in js
+    assert "const x = best ? R[best][o].p50 : NaN;" in js  # the largest midpoint (Ben, 2026-11-17)
     assert 'const HERO = ["adu", "missing_middle", "fees"];' in html
     # the headline comes first on the page, ahead of the overlap flag and the detail card
     body = html[html.index("results(b) {") :]

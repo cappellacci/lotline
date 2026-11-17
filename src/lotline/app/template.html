@@ -724,7 +724,8 @@ const WHAT = {
   fees: "Development fees cut in half. The Handbook benchmark: a $50,000 fee everywhere, cut to $25,000.",
   fees_local_half: "Development fees cut in half, starting from each city's own fees for houses, duplexes and fourplexes.",
 };
-const HERO = ["adu", "missing_middle", "fees"];  // one box per reform; the fee box switches between its two versions
+const HERO = ["adu", "missing_middle", "fees"];
+const IN_NOTE = { adu: "ADUs", missing_middle: "missing middle", fees: "the fee reduction (Handbook benchmark)", fees_local_half: "the fee reduction (real local fees)" };  // one box per reform; the fee box switches between its two versions
 
 // "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
 function twoNumbersHtml(b, d, r) {
@@ -966,16 +967,17 @@ function knobsHtml(b) {
   }).join("");
 }
 
-// "[State] can add [X] homes": X is the median of the three reforms' midpoints (the fee box's chosen version).
-// Each reform is estimated on its own; the three are never added together.
+// "[State] can add [X] homes": X is the largest of the three reforms' midpoints (the fee box's chosen version;
+// Ben, 2026-11-17). Each reform is estimated on its own; the three are never added together.
 function heroUpdate(b, R, o) {
   const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
   const mids = keys.map((s) => R[s][o].p50);
-  const x = mids.length ? AGG.percentile(mids, 50) : NaN;
+  const best = keys.reduce((a, s) => (a === null || R[s][o].p50 > R[a][o].p50 ? s : a), null);
+  const x = best ? R[best][o].p50 : NaN;
   $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
   const yrs = AGG.windowLabel(b);
-  $("hero-note").textContent = `The middle estimate of the ${mids.length === 3 ? "three" : mids.length} reforms below, each passed on its own, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}${yrs ? ` in ${yrs}` : ""} compared with no policy change. The reforms are not added together. Each range runs from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
+  $("hero-note").textContent = `The midpoint for ${best ? IN_NOTE[best] : "the reforms"}, the largest of the ${mids.length === 3 ? "three" : mids.length} reforms below, each passed on its own, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}${yrs ? ` in ${yrs}` : ""} compared with no policy change. The reforms are not added together. Each range runs from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
   const top = Math.max(...keys.map((s) => R[s][o].p90), 1);
   const pct = (v) => `${Math.max(0, Math.min(100, (v / top) * 100))}%`;
   for (const k of HERO) {
