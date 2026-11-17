@@ -655,7 +655,7 @@ function wireModels() {
   $("model-switch").addEventListener("click", (e) => {
     const t = e.target.closest("button[data-model]");
     if (!t) return;
-    UI.model = t.dataset.model;
+    UI.model = { adu: "adu", missing_middle: "missing_middle", fees: "fees" }[t.dataset.model] || UI.model;
     $("model-switch").querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
     refreshResults();
   });
@@ -1170,6 +1170,7 @@ function wireModelCards() {
 // Every state's five-year range per reform, from the headline numbers the page embeds (build.headline).
 function allStatesSvg() {
   const order = ["adu", "missing_middle", "fees", "fees_local_half"].filter((k) => DATA.scenarios[k]);
+  const num = (h) => h && { p10: Number(h.p10), p50: Number(h.p50), p90: Number(h.p90) };
   const states = DATA.states.filter((b) => b.headline && Object.keys(b.headline).length);
   const name = (c) => ((DATA.map.tiles || []).find((t) => t.code === c) || {}).name || c;
   const vals = states.flatMap((b) => order.map((k) => b.headline[k]).filter(Boolean).flatMap((h) => [h.p10, h.p90])).filter((v) => v > 0);
@@ -1184,16 +1185,16 @@ function allStatesSvg() {
     const y0 = T + i * block;
     g.push(`<text class="lab" x="0" y="${y0 + block / 2 - 4}">${esc(name(b.meta.state))}</text>`);
     order.forEach((k, j) => {
-      const h = b.headline[k];
+      const h = num(b.headline[k]);
       if (!h) return;
-      const y = y0 + j * (bar + gap), c = scenColor(k), op = k === "fees_local_half" ? 0.45 : 0.3;
+      const y = y0 + j * (bar + gap), c = esc(scenColor(k)), op = k === "fees_local_half" ? 0.45 : 0.3;
       g.push(`<rect x="${x(h.p10)}" y="${y}" width="${Math.max(2, x(h.p90) - x(h.p10))}" height="${bar}" fill="${c}" opacity="${op}" rx="2"><title>${esc(scenLabel(k))}, ${esc(name(b.meta.state))}: ${fmtN(h.p10)} to ${fmtN(h.p90)} homes, midpoint ${fmtN(h.p50)}</title></rect>`);
       g.push(`<line x1="${x(h.p50)}" x2="${x(h.p50)}" y1="${y - 1}" y2="${y + bar + 1}" stroke="${c}" stroke-width="2.5"></line>`);
       g.push(`<text x="${Math.min(x(h.p90) + 5, W - R + 4)}" y="${y + bar - 1}">${fmtN(h.p50)}</text>`);
     });
   });
   $("allstates").setAttribute("viewBox", `0 0 ${W} ${H}`);
-  $("allstates-key").innerHTML = order.map((k) => `<span><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(k)};opacity:${k === "fees_local_half" ? 0.45 : 0.3}"></span> ${esc(scenLabel(k))}</span>`).join("") + `<span class="muted">│ midpoint</span>`;
+  $("allstates-key").innerHTML = order.map((k) => `<span><span class="swatch" style="display:inline-block;vertical-align:middle;background:${esc(scenColor(k))};opacity:${k === "fees_local_half" ? 0.45 : 0.3}"></span> ${esc(scenLabel(k))}</span>`).join("") + `<span class="muted">│ midpoint</span>`;
   return g.join("");
 }
 function staticTrust() {
@@ -1277,7 +1278,11 @@ function wireResults() {
       $("knobs").innerHTML = knobsHtml(UI.b);
       drawTornado();
     }
-    if (t.dataset.feemode) { UI.feeMode = t.dataset.feemode; refreshResults(); return; }
+    if (t.dataset.feemode) {
+      UI.feeMode = { fees: "fees", fees_local_half: "fees_local_half" }[t.dataset.feemode] || UI.feeMode;
+      refreshResults();
+      return;
+    }
     if (t.dataset.reset) delete UI.pins[t.dataset.reset];
     if (t.id === "reset-all") UI.pins = {};
     updateResults();
