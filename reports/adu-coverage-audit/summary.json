@@ -1,56 +1,38 @@
 {
- "adu_rows": 582,
+ "adu_rows": 626,
  "how": {
-  "citywide": 467,
-  "zones (judgment)": 75,
-  "zones (judgment); lot minimum from parcels": 15,
-  "lot minimum from parcels": 11,
-  "limited area (judgment)": 11,
-  "zones from parcels": 3
+  "citywide": 505,
+  "zones (judgment)": 81,
+  "zones (judgment); lot minimum from parcels": 18,
+  "limited area (judgment)": 12,
+  "lot minimum from parcels": 9,
+  "lot minimum (judgment)": 1
  },
  "flags": {
   "flag_blank": {
-   "rows": 7,
-   "fit_rows": 5,
-   "fit_places": 5
+   "rows": 4,
+   "fit_rows": 2,
+   "fit_places": 2
   },
   "flag_area_text_citywide": {
-   "rows": 103,
-   "fit_rows": 73,
-   "fit_places": 41
+   "rows": 110,
+   "fit_rows": 75,
+   "fit_places": 37
   },
   "flag_zones_switch": {
-   "rows": 55,
-   "fit_rows": 34,
-   "fit_places": 15
+   "rows": 29,
+   "fit_rows": 8,
+   "fit_places": 4
   },
   "strong": {
-   "rows": 35,
-   "fit_rows": 35,
-   "fit_places": 20
+   "rows": 32,
+   "fit_rows": 32,
+   "fit_places": 18
   }
  },
  "blank_rows": [
   {
    "reform_id": "MN-2713456-adu-2016",
-   "in_fit": true,
-   "says_not_allowed": false,
-   "says_unknown": true
-  },
-  {
-   "reform_id": "MN-2708794-adu-2016",
-   "in_fit": true,
-   "says_not_allowed": false,
-   "says_unknown": true
-  },
-  {
-   "reform_id": "MN-2755726-adu-2016",
-   "in_fit": true,
-   "says_not_allowed": true,
-   "says_unknown": true
-  },
-  {
-   "reform_id": "MN-2766460-adu-2016",
    "in_fit": true,
    "says_not_allowed": false,
    "says_unknown": true

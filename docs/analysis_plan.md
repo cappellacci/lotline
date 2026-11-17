@@ -7387,6 +7387,28 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   values give 14 (9–36), also a miss. St. Paul's excess implies θ of 0.85–1.09 per 1,000: C4's level, reached
   fast. Any change to the ramp is a new dated entry, and St. Paul would then be in-sample for it.
 
+### Config note · 2026-11-16 · ADUs: the D-096 fit refreshed on main's rule rows after PR #444; D-097 switched on; decisions
+- **What changed** (Ben, 2026-11-16: "I've reviewed 444, let's merge it. … m_x draws, let's turn them on.
+  Headline statistics should definitely be medians. Keep Dallas as no ADUs"):
+  - **Refit.** Form A + place types refit on main's rule rows, which now include #444's 44 rows for uncoded
+    MN and OH places and the Blaine fix (`scripts/dev/adu_config_fit.py` through `adu_refit_fixed_rows.py`;
+    `reports/adu-final-config/`). The fit set is 70 places and 498 place-years: #444 dated rows that let more
+    place-years in.
+    - θ 0.000224 (0.000170–0.000303), was 0.000240;
+    - α 1.505 (1.035–2.189), was 1.439;
+    - m_o 1.0 and m_x 0.7 (0.7–0.8), unchanged;
+    - core +1.740 (1.138–2.388), was +1.670; town prior SD 1.058.
+    - The anchor slopes and the D-097 grid were regenerated on the same rows.
+  - **D-097 on.** `adu_partial_share_draws` = 1: each draw takes m_x from the grid's weights, with θ, α and
+    the core term refit at that value.
+  - **Headline statistic.** Medians (P50) with P10–P90, never averages. The app already shows only P50
+    ("midpoint") and P10–P90, so nothing changes there. The decision is recorded because a single place's
+    average can sit far above its median (the Dallas reading, D-099).
+  - **Dallas** stays coded as no ADUs. Since 2018 its rentable ADUs come only by special exception or an
+    overlay; this is a convention, noted in its row.
+- **Tests:** the pinned values were updated. The unseen-state test holds m_x fixed so it still isolates τ.
+  The full suite and the compliance check were run before commit.
+
 ### D-100 · 2026-11-16 · Missing middle's ramp after St. Paul: one ramp or one per adoption route (proposed, method only, before any run)
 - **Status:** proposed; method only. Ben: "Draft a ramp entry" (2026-11-16), after V5 St. Paul missed (D-098). No
   fit has been run. The run needs Ben's go-ahead (D-092 §9), and nothing goes to config without his choice.
