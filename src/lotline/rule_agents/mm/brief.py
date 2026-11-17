@@ -65,14 +65,16 @@ def render(
     else:
         lines += ["- none"]
     lines += ["", "## Places in this run (priority order)"]
+    # Blind: existing coded rows are not shown (LESSONS S-1); the orchestrator keeps them in places.csv.
     for r in places.itertuples():
-        done = f" - already coded: {r.coded_mm_ids}" if r.coded_mm_ids else ""
-        lines.append(f"{r.priority}. {r.place} ({r.geoid}, pop {r.pop:,}){done}")
+        lines.append(f"{r.priority}. {r.place} ({r.geoid}, pop {r.pop:,})")
     lines += [
         "",
         "## Rules (every agent)",
         "- Network only through `python -m lotline.rule_agents.mm fetch RUN URL` (robots first, one try) or",
         "  WebSearch. Never retry a refused URL with curl, another user agent or browser headers.",
+        "- Code from sources only: do not open config/reforms/, docs/research/ordinances/, logbook.d/ or",
+        "  places.csv (existing coding; you must not see it).",
         "- No records requests, emails or forms. Write nothing outside the run folder. Run no model scripts.",
     ]
     return "\n".join(lines) + "\n"

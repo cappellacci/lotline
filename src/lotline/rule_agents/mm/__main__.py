@@ -153,9 +153,12 @@ def _finals(run: Path) -> list[dict]:
 def cmd_handoff(a) -> int:
     run = Path(a.run)
     finals = [PlaceFinding.model_validate(d["finding"]) for d in _finals(run)]
-    # blockers recorded by either coder count too: the reconciler may not have copied them
+    # places not reconciled yet: use the coders' blockers
+    done = {f.jurisdiction_geoid for f in finals}
     for p in sorted((run / "findings").glob("*.json")):
-        finals.append(_load(p))
+        f = _load(p)
+        if f.jurisdiction_geoid not in done:
+            finals.append(f)
     pops = {}
     places = run / "places.csv"
     if places.exists():

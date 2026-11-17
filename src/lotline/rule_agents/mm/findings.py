@@ -71,7 +71,7 @@ class Evidence(BaseModel):
     quote: str = Field(max_length=QUOTE_MAX)
     retrieved: date
     section: str | None = None  # e.g. "Sec. 20.3.2 Table 2-1", "Ord. 2019-048 §3", "p. 14"
-    snapshot: str | None = None  # path of the saved copy, relative to the run folder
+    snapshot: str | None = None  # path of the saved copy (as `fetch` printed it)
     source_kind: (
         Literal[
             "code",  # the codified ordinance (Municode etc.)

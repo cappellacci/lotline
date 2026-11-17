@@ -499,3 +499,5 @@ def test_brief_lists_holdouts_and_state_law(tmp_path):
     md = brief.render("MN", "r1", places, coded, tmp_path)
     assert "St. Paul (2758000)" in md and "MN-27-missing_middle-2026" in md and "Minn. Stat." in md
     assert "No default recorded" in brief.render("TX", "r1", places, None, tmp_path)
+    coded_place = places.assign(coded_mm_ids="MN-2700001-missing_middle-2020")
+    assert "missing_middle-2020" not in brief.render("MN", "r1", coded_place, None, tmp_path)  # blind
