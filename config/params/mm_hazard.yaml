@@ -35,7 +35,7 @@ mm_year_spread_phi:
   high: 14.48
   unit: negative binomial size of a place's yearly 2-4 unit building count (variance = mean + mean^2 / φ)
   source: "Estimated, D-092 run 9 (deviation (b)): 941 pseudo-forecasts of 483 unused MN, NC, OH and TX places, 2016 and 2021 origins, 90% profile-likelihood interval; used in C4's fit (run 10)"
-  notes: "Builders put up 2-4 unit buildings in clusters (run 13: 34-44% of buildings are in projects of 3 or more), so a place's years are lumpy. By state: MN 7.4, NC 8.1, OH 8.1, TX 20 (the search's edge); by place type (run 12) not adopted. The scenario holds φ at its value (the interval is narrow) and draws each place-year's added buildings as Poisson(mean × g), g ~ Gamma(mean 1, variance 1/φ)."
+  notes: "Builders put up 2-4 unit buildings in clusters (run 13, Minneapolis corrected 2026-11-17: 39-44% of buildings are in projects of 3 or more), so a place's years are lumpy. By state: MN 7.4, NC 8.1, OH 8.1, TX 20 (the search's edge); by place type (run 12) not adopted. The scenario holds φ at its value (the interval is narrow) and draws each place-year's added buildings as Poisson(mean × g), g ~ Gamma(mean 1, variance 1/φ)."
 
 mm_units_per_project:
   value: 2.08

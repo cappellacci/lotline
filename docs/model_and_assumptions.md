@@ -593,7 +593,7 @@ standard errors held out and passes the same tests.
   moved three years early) gives a larger effect than the real dates. The scenario's added homes rest on an
   effect the counts are consistent with but cannot pin down, which is why θ's range spans about 150-fold.
 
-**Why the ranges are wide.** 34–44% of 2–4 unit buildings come in projects of 3 or more (run 13), so a place's
+**Why the ranges are wide.** 39–44% of 2–4 unit buildings come in projects of 3 or more (run 13), so a place's
 count depends on whether one large project lands in the window. φ carries that; a project-based model would
 match how building happens but adds no information (a stated next step). Place types (core city, suburb,
 town) were tested and did not narrow the ranges (run 12).
@@ -653,10 +653,10 @@ Comparison, so a reader sees them where the numbers are.
   have. The missing-middle result counts 2–4 unit buildings only and is a floor for the Handbook's 2–6 unit
   scenario (see "What missing middle counts").
 - **Missing-middle buildings come in clusters, and the model counts buildings, not projects** (D-092 run 13,
-  `reports/mm-d092/run13-projects/`). In 15–20 city permit files, 34–44% of 2–4 unit buildings are in projects
+  `reports/mm-d092/run13-projects-mpls-fix/`, rerun 2026-11-17 after the Minneapolis permit fix, #451). In 15–20 city permit files, 39–44% of 2–4 unit buildings are in projects
   of 3 or more: one builder putting up a row of duplexes, or a build-to-rent community (the largest is about
   100–130 duplexes on one Austin parcel in three months). Clustering multiplies a place's year-to-year variance
-  by about 5 to 13 over a model that treats each building as independent. Cities differ a lot: Minneapolis,
+  by about 6 to 14 over a model that treats each building as independent. Cities differ a lot: Minneapolis,
   Cleveland and Cincinnati build mostly one at a time (1.0–1.4); Austin, College Station, Wilmington and
   Columbus build in large groups (12–22). This is why missing middle's ranges are wide: a place's count
   depends on whether one big project lands in the five years. The model carries it as a per-year spread (φ)

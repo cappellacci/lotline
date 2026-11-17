@@ -7302,6 +7302,14 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - **What it will not do:** fit or change the model, write to config, download anything, or touch the
     holdouts. Franklin County's file may overlap Columbus's; both are reported by source.
   - **The code** (`lotline.model.project_size`) comes with 7 hand-worked tests.
+- **Run 13 corrected (2026-11-17, Ben: "rerun run 13's Minneapolis row"; `reports/mm-d092/run13-projects-mpls-fix/`).**
+  Minneapolis's adapter had typed roof, remodel and addition permits on existing duplexes and fourplexes as new
+  2–4 unit buildings (#450, fixed in #451). Rerun with the same script and rule: Minneapolis falls from 1,042 to
+  179 buildings by lot (inflation 1.13 → 1.03; by day 2.07 → 1.28), and its 2017–2025 count is now 175 against
+  BPS's 165. Every other source is unchanged. Pooled: by lot 4,841 → 4,038 projects, inflation 12.8 → 14.3, in
+  projects of 3+ 34% → 39%; by day 5.3 → 5.6, 42% → 44%. The verdict and Ben's decision (record clustering as
+  the reason for the wide ranges; no project model) stand. The building-equivalent check was not rerun. The
+  original run stays in `reports/mm-d092/run13-projects/`.
 - **Decision 2026-11-15: C4 to config.** Ben chose C4 ("C4 (θ 1.04)") after runs 9–13: §5's rule picks it (it
   beats M by 5 paired SE held out and passes the same §7 tests), and its five-year rate (0.24 per 1,000 a year)
   is within about 10% of M's (0.27).
