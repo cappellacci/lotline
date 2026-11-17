@@ -362,6 +362,10 @@ from your data directory (see the note at the end of section 3).
      jurisdictions table wins (`False` keeps the value even if it is not in the table), and every row gets a
      `how` label saying which step placed it. `src/lotline/adapters/states/nc/onemap_parcels.py`
      (`resolve_jurisdictions`) is a three-line example.
+   - a source that names its city or uses a code ("TC" for Cary): put each name or code in
+     `config/crosswalks/xx_aliases.csv` (`source,field,raw,geoid,notes,source_url`) and read it with
+     `geo.aliases("XX", "<source>", "<field>")`; use the result as a resolver step. `nc_aliases.csv` is the
+     example.
 4. **Map land uses** with a crosswalk, `config/crosswalks/xx_<source>_land_use.csv`.
    - Every source code maps to one of: `SF_DETACHED`, `SF_ATTACHED`, `DUPLEX`, `TRI_QUAD`, `MULTIFAMILY_5P`,
      `MOBILE_HOME`, `CONDO_UNIT`, `VACANT_RESIDENTIAL`, `MIXED_USE`, `COMMERCIAL`, `INDUSTRIAL`,

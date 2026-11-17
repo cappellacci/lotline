@@ -187,3 +187,20 @@ def jurisdictions_table(state: str, store) -> pd.DataFrame:
 def known_geoids(state: str, store) -> set[str]:
     """GEOIDs of the state's jurisdictions table (`jurisdictions_table`)."""
     return set(jurisdictions_table(state, store)["geoid"].astype(str))
+
+
+def aliases(state: str, source: str, field: str | None = None, config_dir=None) -> dict[str, str]:
+    """`raw -> geoid` for one source (and source field) from `config/crosswalks/<st>_aliases.csv`
+    (`source,field,raw,geoid,notes,source_url`): every fixed name or code a source uses for a jurisdiction,
+    in one file per state. Values are returned as written; the adapter normalizes its own input to match.
+    An alias is a resolver step like any other: `("alias", series.map(aliases(...)))`."""
+    from lotline.config import CONFIG_DIR
+
+    path = (config_dir or CONFIG_DIR) / "crosswalks" / f"{state.lower()}_aliases.csv"
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    df = df[(df["source"] == source) & ((df["field"] == field) if field is not None else True)]
+    if df.empty:
+        raise KeyError(
+            f"{path.name}: no aliases for source {source!r}" + (f", field {field!r}" if field else "")
+        )
+    return dict(zip(df["raw"], df["geoid"], strict=True))
