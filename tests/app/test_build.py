@@ -45,7 +45,15 @@ def test_page_builds_from_fixture_and_has_every_section(tmp_path):
     assert [b["meta"]["state"] for b in data["states"]] == ["ZZ"]
     assert data["generated"] == "2026-11-06T00:00:00Z"
     fixture = json.loads(FIXTURE.read_text())
-    assert data["states"][0] == {"meta": fixture["meta"], "file": "states/zz.js"}  # the page embeds meta only
+    entry = data["states"][0]  # the page embeds meta and each scenario's five-year numbers only
+    assert {k: entry[k] for k in ("meta", "file")} == {"meta": fixture["meta"], "file": "states/zz.js"}
+    five = next(r for r in fixture["totals"] if r["outcome"] == "homes_net_statewide" and "-" in r["period"])
+    head = next(n for n in fixture["need"] if n["is_headline"])
+    assert entry["headline"]["adu"] == {
+        **{k: five[k] for k in ("p10", "p50", "p90")},
+        "share_p50": head["share_p50"],
+        "need_label": head["label"],
+    }
     assert _state_file(tmp_path, "ZZ") == fixture  # the full bundle, as-is, in its own file
     assert "uv run lotline results --all" in html
 
@@ -356,6 +364,7 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
         'id="dag"',
         'id="conf-table"',
         'id="checks"',
+        'id="allstates"',  # Ben, 2026-11-17: every state's range per reform, in the model section
     )
     for part in parts:
         assert part in html, part
