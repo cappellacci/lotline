@@ -57,6 +57,7 @@ import itertools
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -266,9 +267,19 @@ def type_log_multipliers(types, states, n: int, seed: int, spec=None) -> np.ndar
 # ---------------------------------------------------------------------------------------------------------
 
 
-def load_reforms(state: str) -> pd.DataFrame:
-    """The state's coded reforms (config/reforms/<st>.csv) with dates parsed."""
-    df = pd.read_csv(CONFIG_DIR / "reforms" / f"{state.lower()}.csv", dtype={"jurisdiction_geoid": str})
+def load_reforms(state: str, config_dir: Path | None = None) -> pd.DataFrame:
+    """The state's coded reforms (config/reforms/<st>.csv) with dates parsed.
+
+    A state outside `REFORM_STATES` with no reforms file gets an empty table (no coded rules), so a new
+    state runs on borrowed priors alone (WS-SCALE task 0). A listed state must have its file.
+    """
+    path = (config_dir or CONFIG_DIR) / "reforms" / f"{state.lower()}.csv"
+    if not path.exists() and state.upper() not in REFORM_STATES:
+        from lotline.schemas import Reforms
+
+        df = pd.DataFrame({c: pd.Series(dtype=object) for c in Reforms.to_schema().columns})
+    else:
+        df = pd.read_csv(path, dtype={"jurisdiction_geoid": str})
     for col in ("announced_date", "adoption_date", "effective_date", "end_date"):
         if col in df:
             df[col] = pd.to_datetime(df[col])
@@ -754,7 +765,7 @@ def adu_share_of_one_unit(permits: pd.DataFrame, first: int, last: int) -> tuple
     return adu, adu + int((w["building_type_std"] == "SFD").sum())
 
 
-def observed_adu_counts(permits: pd.DataFrame, first: int, last: int, undercount=None) -> pd.DataFrame:
+def observed_adu_counts(permits: pd.DataFrame | None, first: int, last: int, undercount=None) -> pd.DataFrame:
     """ADU permits per jurisdiction and year in [first, last], from sources that flag ADUs at all.
 
     Where two sources cover one jurisdiction (Met Council and Minneapolis's own permits), the larger count
@@ -766,6 +777,12 @@ def observed_adu_counts(permits: pd.DataFrame, first: int, last: int, undercount
     """
     from lotline.model import undercount as uc
 
+    if (
+        permits is None or permits.empty
+    ):  # no permit adapter for the state (WS-SCALE task 0): no observed ADUs
+        cols = ["geoid", "year", "adu_permits"]
+        cols += [] if undercount is None else ["source", "counted", "k_row"]
+        return pd.DataFrame({c: pd.Series(dtype=object) for c in cols})
     flagging = permits.loc[_is_adu(permits), "source"].unique()
     p = permits[permits["source"].isin(flagging) & permits["jurisdiction_geoid"].notna()]
     p = p[(p["issue_year"] >= first) & (p["issue_year"] <= last)].assign(adu=_is_adu)
@@ -1305,7 +1322,28 @@ def _county_shares(state: str, store, places: pd.DataFrame) -> pd.DataFrame:
 
 # States whose coded rules feed field probabilities, rule priors and blank shares. Oregon joined on
 # 2026-11-05 (D-053), after V9 was scored; V9 itself keeps the four states it was frozen from.
+# A state not listed here borrows from these states but feeds nothing back ("borrow only", Ben 2026-11-17,
+# WS-SCALE task 0): `reforms_with` adds it to the run on the fly, after the shared pools are built.
 REFORM_STATES = ("MN", "NC", "OH", "TX", "OR")
+
+
+def reforms_with(state: str, load=None) -> dict[str, pd.DataFrame]:
+    """`{state: reforms}` for every state in `REFORM_STATES`, then `state` itself if it is not listed.
+
+    Callers pool only the `REFORM_STATES` entries (`pooled_states`); the extra state's own rules still
+    apply to its own places. `load` defaults to `load_reforms`.
+    """
+    load = load or load_reforms
+    out = {st: load(st) for st in REFORM_STATES}
+    st = state.upper()
+    if st not in out:
+        out[st] = load(st)
+    return out
+
+
+def pooled_states(reforms: Mapping[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """The entries of `reforms` that feed shared pools (field probabilities, priors, blank shares)."""
+    return {st: r for st, r in reforms.items() if st in REFORM_STATES}
 
 
 _PARCEL_CACHE: dict[str, pd.DataFrame] = {}
@@ -1368,13 +1406,14 @@ def rule_inputs(
     central = {k: v.value for k, v in p.items()}
     min_count = int(central["adu_rule_min_coded"])
     edges = (central["adu_rule_band_small_max_pop"], central["adu_rule_band_mid_max_pop"])
-    reforms = {st: load_reforms(st).assign(state=st) for st in REFORM_STATES}
-    counts = field_restrict_counts(pd.concat(reforms.values(), ignore_index=True), prior_as_of)
+    reforms = {st: r.assign(state=st) for st, r in reforms_with(state).items()}
+    pooled = pooled_states(reforms)
+    counts = field_restrict_counts(pd.concat(pooled.values(), ignore_index=True), prior_as_of)
     covs = {st: coverage_map(st, store, r, central) for st, r in reforms.items()}
 
     def coded_on(date: pd.Timestamp) -> pd.DataFrame:
         out = []
-        for st, r in reforms.items():
+        for st, r in pooled.items():
             local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
             if not local:
                 continue
