@@ -70,3 +70,8 @@ def test_write_freeze_refuses_overwrite(tmp_path):
     assert p.exists()
     with pytest.raises(FileExistsError):
         v.write_freeze({"x": 2}, tmp_path)
+
+
+def test_scorable_years_by_hand():
+    bps = pd.DataFrame({"geoid": ["2758000"] * 3 + ["2743000"], "year": [2023, 2024, 2025, 2026]})
+    assert v.scorable_years(bps) == (2024, 2025)
