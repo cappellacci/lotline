@@ -201,7 +201,10 @@ def test_a_model_selector_above_the_evidence_card_and_the_adu_card_sections(tmp_
     # the segmented selector sits outside and above the evidence card, under the headline
     seg = 'class="seg" role="group"'
     assert body.index('<div class="hero" id="hero">') < body.index(seg) < body.index('id="model-card"')
-    assert 'data-model="${esc(k)}"' in body and "if (t.dataset.model) {" in html
+    assert 'data-model="${esc(k)}"' in body and "if (HERO.includes(t.dataset.model)) {" in html
+    # button values are checked against known constants, and colours are plain tokens (CodeQL)
+    assert 't.dataset.fee === "fees" || t.dataset.fee === "fees_local_half"' in html
+    assert "/^--[a-z0-9-]+$/.test(c)" in html
     # ADU card: year by year, the first year, place types, then the steps; each heading in that order
     ev = html[html.index("function evidenceHtml") :]
     heads = (

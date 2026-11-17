@@ -720,7 +720,11 @@ const fmtInt = (x) => (Number.isFinite(x) ? Math.round(x).toLocaleString("en-US"
 const fmtPct = (x) => !Number.isFinite(x) ? "–" : (x * 100).toLocaleString("en-US", { maximumFractionDigits: x < 0.01 ? 2 : 1, minimumFractionDigits: x < 0.01 ? 2 : 1 }) + "%";
 const fmtFactor = (x, f) => !Number.isFinite(x) ? "–" : f === "rate" ? x.toPrecision(3) : fmtPct(x);
 const scenLabel = (k) => (DATA.scenarios[k] || { label: k }).label;
-const scenColor = (k) => `var(${(DATA.scenarios[k] || { color: "--ink" }).color})`;
+// a colour token from build.SCENARIOS, checked to be a plain CSS custom property so it is safe in a style attribute
+const scenColor = (k) => {
+  const c = Object.hasOwn(DATA.scenarios, k) ? DATA.scenarios[k].color : "--ink";
+  return /^--[a-z0-9-]+$/.test(c) ? `var(${c})` : "var(--ink)";
+};
 const AGG = globalThis.LotlineAggregate;
 
 function niceTicks(max, n = 4) {
@@ -940,12 +944,6 @@ const SECTIONS = {
     if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
     const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
       `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
-    const rows = [`<div class="lab" style="color:var(--scenario-baseline)">Baseline</div>
-      <div class="track" aria-hidden="true"><span class="zero"></span></div>
-      <div class="nums muted">0 added, by definition</div>`];
-    for (const s of scen) rows.push(`<div class="lab" style="color:${scenColor(s)}">${esc(scenLabel(s))}</div>
-      <div class="track" data-track="${esc(s)}"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
-      <div class="nums" data-nums="${esc(s)}"></div>`);
     const pend = pendingIn(b);
     const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
     const seg = HERO.filter((k) => scen.includes(runOf(k))).map((k) =>
@@ -1342,18 +1340,18 @@ function wireResults() {
   body.onclick = (e) => {
     const t = e.target.closest("button");
     if (!t) return;
-    if (t.dataset.outcome) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
-    if (t.dataset.detail) {
+    if (t.dataset.outcome && Object.hasOwn(OUTCOME_WORDS, t.dataset.outcome)) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
+    if (t.dataset.detail && Object.hasOwn(DATA.scenarios, t.dataset.detail)) {
       UI.detail = t.dataset.detail; UI.pins = {};
       body.querySelectorAll("[data-detail]").forEach((x) => x.setAttribute("aria-pressed", x === t));
       $("knobs").innerHTML = knobsHtml(UI.b);
       drawTornado();
     }
-    if (t.dataset.fee) {
+    if (t.dataset.fee === "fees" || t.dataset.fee === "fees_local_half") {
       UI.fee = t.dataset.fee; body.querySelectorAll("[data-fee]").forEach((x) => x.setAttribute("aria-pressed", x === t));
       if (UI.model === "fees") { UI.detail = UI.fee; UI.pins = {}; $("knobs").innerHTML = knobsHtml(UI.b); drawTornado(); }
     }
-    if (t.dataset.model) {
+    if (HERO.includes(t.dataset.model)) {
       UI.model = t.dataset.model; UI.detail = UI.model === "fees" ? UI.fee : UI.model; UI.pins = {};
       body.querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
       $("knobs").innerHTML = knobsHtml(UI.b);
