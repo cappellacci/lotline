@@ -173,7 +173,9 @@ def main(out: Path, dry: bool) -> None:
             "cap": sp.new_cap,
             "classes": sp.classes,
         },  # fmt: skip
-        "route_counts": routes.groupby(["role", "route"]).size().to_dict(),
+        "route_counts": {
+            f"{r}/{t}": int(n) for (r, t), n in routes.groupby(["role", "route"]).size().items()
+        },
         "full": {k: d054.fit_row(f"{k}_full", f) for k, f in full.items()},
         "R2_halves": {
             "state": rf.half_state,

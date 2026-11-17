@@ -7446,3 +7446,17 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     `config/crosswalks/or_hb2001_metro.csv` (Metro's member cities and the three counties, cited). D-092's
     scripts now drop their listed places from the panel instead of asserting none are there, since St. Paul's
     release puts it back in the default panel.
+- **Run 1 (2026-11-16, `reports/mm-d100/run1/`): C4 stays.** Full fits: R0 reproduces C4 (1.04 per 1,000,
+  half-way 4.0); R1 0.76 (0.12–19.8), half-way 3.5; R2 0.94 (0.38–2.09, conditional on its pair of ramps),
+  half-way 4.0 for state-required places and 0.5 for locally adopted ones (0.5–4.0). Every fold with both groups
+  finds the same split. Held out (94 places): R1 against R0 −2.68 (SE 1.70), R2 against R1 −0.15 (SE 1.01), R2
+  against R0 −2.83 (SE 1.99). No candidate beats the one before it by 2 SE, so §7 is not rerun and nothing goes to
+  config. The scenario's ramp (state-required) equals C4's either way.
+  - **Reported:** five-year rates per 1,000 lots a year: C4 0.24, R2 state-required 0.22, R2 local 0.79. St. Paul
+    held out: R2 121.2 against C4 120.5 (log score).
+  - **How the run ended:** it stopped while writing summary.json (route counts keyed by tuples) after its fits,
+    scores and routes were saved. The bug is fixed; `mm_ramp_d100_summary.py` rebuilt the summary from the
+    saved files without refitting.
+  - **Shared data:** MN's processed BPS table was rebuilt with St. Paul's released rows for this run, which
+    made runs from `main` (where St. Paul is still blind) stop on a holdout-leak check. It was rebuilt blind
+    from a clean `main` checkout the same evening; after #442 merges it needs one more offline rebuild.
