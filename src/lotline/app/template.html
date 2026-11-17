@@ -1273,12 +1273,6 @@ function wireResults() {
     const t = e.target.closest("button");
     if (!t) return;
     if (t.dataset.outcome) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
-    if (t.dataset.detail) {
-      UI.detail = t.dataset.detail; UI.pins = {};
-      body.querySelectorAll("[data-detail]").forEach((x) => x.setAttribute("aria-pressed", x === t));
-      $("knobs").innerHTML = knobsHtml(UI.b);
-      drawTornado();
-    }
     if (t.dataset.feemode) {
       UI.feeMode = t.dataset.feemode === "fees_local_half" ? "fees_local_half" : "fees";
       refreshResults();
