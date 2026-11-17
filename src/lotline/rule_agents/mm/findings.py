@@ -59,6 +59,7 @@ BLOCKER_KINDS = (
     "js_only",  # the page is an empty shell without JavaScript
     "scanned_pdf",  # a PDF with no text layer
     "not_found",  # 404 / dead link, no archive copy
+    "unreachable",  # timeout, DNS failure, TLS error, connection refused (one try; not retried)
     "records_request_only",  # only by public-records request: Ben files none, so close as no usable source
     "ambiguous_source",  # readable, but the text does not settle the field (e.g. use table without dates)
     "conflicting_sources",

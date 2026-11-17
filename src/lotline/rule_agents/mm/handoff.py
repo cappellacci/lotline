@@ -84,6 +84,7 @@ def task_for(f: PlaceFinding, b: Blocker, n: int, *, pop: int | None = None) -> 
             "js_only": "The page needs JavaScript; open it in a browser.",
             "login_required": "Needs a login: mark no_usable_source unless you already have access.",
             "not_found": "Dead link: try the Wayback Machine (web.archive.org) or the city's site search.",
+        "unreachable": "The host did not answer scripts (timeout or connection error); try it in a browser.",
         }.get(b.kind, "Open in a browser.")
     )
     look = b.look_for or "; ".join(_LOOK_FOR.get(x, x) for x in fields)
