@@ -1,0 +1,230 @@
+<title>Missing-middle baseline spread</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.hist rect.bar { fill: var(--scenario-baseline); }
+.hist rect.bar.near { fill: var(--confidence-inside); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · D-092 run 7, the baseline's own spread · 15 Nov 2026</div>
+  <h1>A place's no-reform path is off by more than ×2 most of the time, so one spread number can't describe it</h1>
+  <p class="lede">Runs 4–5 failed because each place's no-reform baseline was treated as certain. Run 7 measured how far baselines actually miss, on 483 places the fit and tests never use. The miss is so large (κ = 7.7) that a single gamma spread would forecast most places near zero. Two to four unit buildings arrive in projects, and a three-year baseline catches or misses a project by chance. The refit is on hold until the baseline itself is steadier.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>28%</b><span>of five-year pseudo-forecasts land within ×2 of their baseline</span></div>
+  <div class="tile"><b>47%</b><span>saw no 2–4 unit building at all in five years</span></div>
+  <div class="tile"><b>10,337 vs 10,131</b><span>observed vs baseline, all places together: right on average</span></div>
+  <div class="tile"><b>0.02</b><span>the median place's multiplier at κ = 7.7 (P10 1e-07, P90 2.9)</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Right in total, far off place by place</h2>
+  <p>Each bar counts pseudo-forecasts (a place at the 2016 or 2021 origin) by how its five-year count compared with its baseline. Only the two green bars are within a factor of two. The rest spread over both sides, with a long tail of places that built nothing.</p>
+  <svg viewBox="0 0 640 230" class="chart hist" role="img" aria-label="Pseudo-forecasts by observed divided by baseline"><line x1="40" x2="620" y1="190.0" y2="190.0" class="grid"/><text x="34" y="194.0" class="tick" text-anchor="end">0</text><line x1="40" x2="620" y1="154.4" y2="154.4" class="grid"/><text x="34" y="158.4" class="tick" text-anchor="end">50</text><line x1="40" x2="620" y1="118.8" y2="118.8" class="grid"/><text x="34" y="122.8" class="tick" text-anchor="end">100</text><line x1="40" x2="620" y1="83.2" y2="83.2" class="grid"/><text x="34" y="87.2" class="tick" text-anchor="end">150</text><line x1="40" x2="620" y1="47.6" y2="47.6" class="grid"/><text x="34" y="51.6" class="tick" text-anchor="end">200</text><line x1="40" x2="620" y1="12.0" y2="12.0" class="grid"/><text x="34" y="16.0" class="tick" text-anchor="end">250</text><rect x="41.0" y="185.7" width="34.2" height="4.3" class="bar"/><rect x="77.2" y="189.3" width="34.2" height="0.7" class="bar"/><rect x="113.5" y="183.6" width="34.2" height="6.4" class="bar"/><rect x="149.8" y="176.5" width="34.2" height="13.5" class="bar"/><rect x="186.0" y="167.2" width="34.2" height="22.8" class="bar"/><rect x="222.2" y="83.9" width="34.2" height="106.1" class="bar"/><rect x="258.5" y="12.0" width="34.2" height="178.0" class="bar"/><rect x="294.8" y="78.9" width="34.2" height="111.1" class="bar near"/><rect x="331.0" y="114.5" width="34.2" height="75.5" class="bar near"/><rect x="367.2" y="118.8" width="34.2" height="71.2" class="bar"/><rect x="403.5" y="151.6" width="34.2" height="38.4" class="bar"/><rect x="439.8" y="166.5" width="34.2" height="23.5" class="bar"/><rect x="476.0" y="182.2" width="34.2" height="7.8" class="bar"/><rect x="512.2" y="181.5" width="34.2" height="8.5" class="bar"/><rect x="548.5" y="188.6" width="34.2" height="1.4" class="bar"/><rect x="584.8" y="189.3" width="34.2" height="0.7" class="bar"/><text x="40.0" y="206" class="tick" text-anchor="middle">÷256 or less</text><text x="185.0" y="206" class="tick" text-anchor="middle">÷16</text><text x="293.8" y="206" class="tick" text-anchor="middle">÷2</text><text x="330.0" y="206" class="tick" text-anchor="middle">×1</text><text x="366.2" y="206" class="tick" text-anchor="middle">×2</text><text x="475.0" y="206" class="tick" text-anchor="middle">×16</text><text x="620.0" y="206" class="tick" text-anchor="middle">×256+</text><text x="620" y="224" class="tick" text-anchor="end">observed ÷ baseline, five-year totals (green: within ×2)</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>κ is large in every state, largest in Texas</h2>
+  <div class="scroll"><table><thead><tr><th>Fit</th><th>κ̂</th><th>90% interval</th><th>Pseudo-forecasts</th></tr></thead><tbody><tr><td>Both origins (main)</td><td class='num'>7.65</td><td class='num'>7.02–8.35</td><td class='num'>941</td></tr><tr><td>2021 origin only</td><td class='num'>10.08</td><td class='num'>8.99–11.34</td><td class='num'>468</td></tr><tr><td>Minnesota</td><td class='num'>4.41</td><td class='num'>3.56–5.49</td><td class='num'>186</td></tr><tr><td>North Carolina</td><td class='num'>5.04</td><td class='num'>3.69–6.99</td><td class='num'>80</td></tr><tr><td>Ohio</td><td class='num'>4.83</td><td class='num'>4.02–5.82</td><td class='num'>289</td></tr><tr><td>Texas</td><td class='num'>11.04</td><td class='num'>9.77–12.53</td><td class='num'>386</td></tr></tbody></table></div>
+  <p class="note">κ is the variance of a place's rate multiplier, mean 1. κ = 0.5 would mean most places within ×2; at κ = 7.7, 60% of places get a multiplier under 0.1.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>Big places miss because one project falls in or out of the baseline years</h2>
+  <div class="scroll"><table><thead><tr><th>Place</th><th>Origin</th><th>Baseline</th><th>Observed</th></tr></thead><tbody><tr><td>Forney, TX</td><td class='num'>2021</td><td class='num'>178</td><td class='num'>0</td></tr><tr><td>Grapevine, TX</td><td class='num'>2016</td><td class='num'>175</td><td class='num'>0</td></tr><tr><td>Hewitt, TX</td><td class='num'>2021</td><td class='num'>85</td><td class='num'>0</td></tr><tr><td>Princeton, TX</td><td class='num'>2016</td><td class='num'>214</td><td class='num'>1</td></tr><tr><td>Port Arthur, TX</td><td class='num'>2016</td><td class='num'>203</td><td class='num'>6</td></tr><tr><td>Oxford, OH</td><td class='num'>2021</td><td class='num'>133</td><td class='num'>6</td></tr><tr><td>Sherman, TX</td><td class='num'>2021</td><td class='num'>224</td><td class='num'>13</td></tr><tr><td>Cleveland, OH</td><td class='num'>2021</td><td class='num'>197</td><td class='num'>16</td></tr></tbody></table></div>
+  <p>A burst in the three pre-years, multiplied by the place's growth index (capped at ×4), sets a baseline the next five years never reach. Places that land a project after the origin swing the other way.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>Steady the baseline before refitting</h2>
+  <p>Using κ = 7.7 would pass test C only because the ranges would cover almost anything. The proposal: pre-register a few baseline constructions (six pre-years, the state's growth index instead of the place's own, no growth index, and a per-year negative binomial for project lumpiness) and score them on these same uncoded places. Then take the best one's κ into the refit. These places are never used by the fit or the §7 tests, so nothing leaks.</p>
+</section>
+
+<footer>
+  <div>Run: <code>scripts/dev/mm_kappa_d092.py</code>, origins 2016 and 2021, five-year horizon, test C's baseline construction (own growth, 3 pre-years, zero floor), no reform term. Uncoded MN, NC, OH and TX places, minus test C's 11; no fit, test, level or holdout place. Cached tables only; nothing unblinded.</div>
+  <div>Sources: <code>reports/mm-d092/run7-kappa/</code> on branch <code>ws/mm-baseline-spread</code> (PR #436).</div>
+</footer>
+</main>

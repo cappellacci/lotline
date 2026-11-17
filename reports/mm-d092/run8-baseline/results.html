@@ -1,0 +1,226 @@
+<title>Missing-middle baseline choice</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.dots .pt { fill: var(--scenario-baseline); }
+.dots .pt.year { fill: var(--scenario-missing); }
+.dots .pt.chosen { stroke: var(--ink); stroke-width: 2; }
+.dots .se { stroke: var(--ink-faint); stroke-width: 2; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+tr.chosen td { font-weight: 600; }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · D-092 run 8, choosing the baseline · 15 Nov 2026</div>
+  <h1>Treating each year as lumpy fixes the baseline's ranges; the three-year baseline stays</h1>
+  <p class="lede">Eight pre-registered baselines were fitted on 2016–20 and scored on 2021–25, on 468 places the fit and tests never use. Letting each year's count be lumpy (projects arrive in bursts) beats one multiplier per place under every construction. The rule keeps today's three-year baseline, now with a per-year spread of φ = 9.1. Its ranges hold 79% of outcomes, where 80% is the target and runs 4–5 managed 37%.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>C0-year</b><span>chosen: 3 pre-years, own growth, lumpy year by year</span></div>
+  <div class="tile"><b>79%</b><span>of 2021–25 outcomes inside P10–P90 (target 80%)</span></div>
+  <div class="tile"><b>+1,495</b><span>log score, lumpy years over a place multiplier (mean over constructions)</span></div>
+  <div class="tile"><b>1.9 SE</b><span>the best scorer (C2-year) leads the chosen one by this much: close</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>Lumpy years beat a place multiplier, whatever the window</h2>
+  <p>Each dot is a candidate's held-out score against the best. The four per-year candidates sit together near the top, and the four place-multiplier candidates sit about 1,500 points lower. The ringed dot is the one the rule chose.</p>
+  <svg viewBox="0 0 640 246" class="chart dots" role="img" aria-label="Held-out log score against the best candidate"><line x1="237.0" x2="237.0" y1="4" y2="214" class="grid"/><text x="237.0" y="228" class="tick" text-anchor="middle">-2,500</text><line x1="313.6" x2="313.6" y1="4" y2="214" class="grid"/><text x="313.6" y="228" class="tick" text-anchor="middle">-2,000</text><line x1="390.2" x2="390.2" y1="4" y2="214" class="grid"/><text x="390.2" y="228" class="tick" text-anchor="middle">-1,500</text><line x1="466.8" x2="466.8" y1="4" y2="214" class="grid"/><text x="466.8" y="228" class="tick" text-anchor="middle">-1,000</text><line x1="543.4" x2="543.4" y1="4" y2="214" class="grid"/><text x="543.4" y="228" class="tick" text-anchor="middle">-500</text><line x1="620.0" x2="620.0" y1="4" y2="214" class="grid"/><text x="620.0" y="228" class="tick" text-anchor="middle">0</text><text x="220" y="18" class="lab" text-anchor="end">C2-year: lumpy year by year</text><circle cx="620.0" cy="14" r="6" class="pt year"/><text x="220" y="44" class="lab" text-anchor="end">C0-year: lumpy year by year</text><line x1="558.2" x2="620.0" y1="40" y2="40" class="se"/><circle cx="589.8" cy="40" r="6" class="pt year chosen"/><text x="220" y="70" class="lab" text-anchor="end">C3-year: lumpy year by year</text><line x1="555.0" x2="599.5" y1="66" y2="66" class="se"/><circle cx="577.3" cy="66" r="6" class="pt year"/><text x="220" y="96" class="lab" text-anchor="end">C1-year: lumpy year by year</text><line x1="538.6" x2="605.9" y1="92" y2="92" class="se"/><circle cx="572.3" cy="92" r="6" class="pt year"/><text x="220" y="122" class="lab" text-anchor="end">C2-w: one multiplier per place</text><line x1="263.5" x2="488.5" y1="118" y2="118" class="se"/><circle cx="376.0" cy="118" r="6" class="pt"/><text x="220" y="148" class="lab" text-anchor="end">C0-w: one multiplier per place</text><line x1="242.6" x2="485.1" y1="144" y2="144" class="se"/><circle cx="363.9" cy="144" r="6" class="pt"/><text x="220" y="174" class="lab" text-anchor="end">C3-w: one multiplier per place</text><line x1="238.5" x2="469.6" y1="170" y2="170" class="se"/><circle cx="354.1" cy="170" r="6" class="pt"/><text x="220" y="200" class="lab" text-anchor="end">C1-w: one multiplier per place</text><line x1="230.0" x2="468.5" y1="196" y2="196" class="se"/><circle cx="349.3" cy="196" r="6" class="pt"/><text x="620" y="244" class="tick" text-anchor="end">held-out log score minus the best (higher is better); line ±2 paired SE</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>A longer window doesn't help; the state's growth index helps a little</h2>
+  <div class="scroll"><table><thead><tr><th>Candidate</th><th>Baseline</th><th>Noise</th><th>Spread</th><th>vs best</th><th>Paired SE</th><th>Coverage</th></tr></thead><tbody><tr class=''><td>C2-year</td><td>6 pre-years, state growth</td><td>lumpy year by year</td><td class='num'>φ 8.96</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0.81</td></tr><tr class='chosen'><td>C0-year</td><td>3 pre-years, own growth (as now)</td><td>lumpy year by year</td><td class='num'>φ 9.13</td><td class='num'>-197</td><td class='num'>103</td><td class='num'>0.79</td></tr><tr class=''><td>C3-year</td><td>6 pre-years, no growth</td><td>lumpy year by year</td><td class='num'>φ 12.14</td><td class='num'>-279</td><td class='num'>73</td><td class='num'>0.76</td></tr><tr class=''><td>C1-year</td><td>6 pre-years, own growth</td><td>lumpy year by year</td><td class='num'>φ 8.74</td><td class='num'>-312</td><td class='num'>110</td><td class='num'>0.78</td></tr><tr class=''><td>C2-w</td><td>6 pre-years, state growth</td><td>one multiplier per place</td><td class='num'>κ 5.35</td><td class='num'>-1,593</td><td class='num'>367</td><td class='num'>0.82</td></tr><tr class=''><td>C0-w</td><td>3 pre-years, own growth (as now)</td><td>one multiplier per place</td><td class='num'>κ 4.90</td><td class='num'>-1,672</td><td class='num'>396</td><td class='num'>0.80</td></tr><tr class=''><td>C3-w</td><td>6 pre-years, no growth</td><td>one multiplier per place</td><td class='num'>κ 7.16</td><td class='num'>-1,736</td><td class='num'>377</td><td class='num'>0.76</td></tr><tr class=''><td>C1-w</td><td>6 pre-years, own growth</td><td>one multiplier per place</td><td class='num'>κ 5.10</td><td class='num'>-1,767</td><td class='num'>389</td><td class='num'>0.81</td></tr></tbody></table></div>
+  <p class="note">The rule picks the simplest candidate within 2 paired SE of the best. C2-year leads C0-year by 197 against 2 × 103, so C0-year is kept, narrowly.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>Next: put the lumpy-year form into the fit, then refit</h2>
+  <p>Single-place ranges stay wide: half of all place-forecasts have a median under 32% of the baseline, with the mean at the baseline. That is how 2–4 unit building behaves place by place, and state totals add up hundreds of places. The pre-registered next steps are to code the per-year negative binomial into the main likelihood, estimate φ on both origins, then refit M and C4 and rerun the §7 tests.</p>
+</section>
+
+<footer>
+  <div>Run: <code>scripts/dev/mm_baseline_choice_d092.py</code>, pre-registered in commit 5890ce71 before any scoring code. Fit on the 2016 origin (473 places), scored on 2021 (468); the same places for every candidate; coverage from 20,000 draws, seed 20261115. Cached tables only; nothing unblinded.</div>
+  <div>Sources: <code>reports/mm-d092/run8-baseline/</code> on branch <code>ws/mm-baseline-spread</code> (PR #436).</div>
+</footer>
+</main>

@@ -44,7 +44,8 @@ def test_every_row_has_an_opened_source(reforms):
 
 
 def test_geoids_are_mn_places_or_townships(reforms):
-    assert reforms["jurisdiction_geoid"].str.fullmatch(r"27(\d{5}|\d{8})").all()
+    # places (7 digits), townships (10) and, since 2026-11-15, county unincorporated remainders (5)
+    assert reforms["jurisdiction_geoid"].str.fullmatch(r"27(\d{3}|\d{5}|\d{8})").all()
 
 
 def test_no_duplicate_reform_ids():
@@ -66,7 +67,9 @@ def test_pipeline_and_ben_rows(reforms):
     other = reforms[reforms["coder"] != "claude"]
     reviewed = other["coder_agreement"].isin(["agree", "adjudicated"])
     assert (other.loc[~reviewed, "coder_agreement"] == "single_coder").all()
-    assert (other.loc[reviewed, "coder_2"] == "codex-2026-11-02").all()
+    # Second coders: the 2026-11-02 review and the MM rule checks (#395, accepted 2026-11-11)
+    second_coders = ["codex-2026-11-02", "claude-second-coder-2026-11-11"]
+    assert other.loc[reviewed, "coder_2"].isin(second_coders).all()
     r = reforms.set_index("reform_id")
     # Ben's lookups: Andover Ord. 463, Hugo Ord. 2011-459 (corrected by Ben 2026-11-02),
     # Inver Grove Heights 2015 then Ord. 1358

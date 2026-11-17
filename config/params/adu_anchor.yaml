@@ -7,233 +7,233 @@
 # are left out (slope 0). D-048's version came from scripts/dev/calibrate_adu.py --draw-terms.
 
 adu_anchor_info_log_se_theta:
-  value: 0.177073
-  low: 0.177073
-  high: 0.177073
+  value: 0.173021
+  low: 0.173021
+  high: 0.173021
   unit: log-SE of theta (observed information, core-city term at its estimate)
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16)"
 
 adu_anchor_info_log_se_alpha:
-  value: 0.235958
-  low: 0.235958
-  high: 0.235958
+  value: 0.227788
+  low: 0.227788
+  high: 0.227788
   unit: log-SE of alpha (observed information)
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16)"
 
 adu_anchor_info_corr:
-  value: 0.0545329
-  low: 0.0545329
-  high: 0.0545329
+  value: 0.062426
+  low: 0.062426
+  high: 0.062426
   unit: correlation of log theta and log alpha (observed information)
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16)"
 
 anchor_slope_theta__adu_sqft:
-  value: 9.0208e-06
-  low: 9.0208e-06
-  high: 9.0208e-06
+  value: -4.90195e-05
+  low: -4.90195e-05
+  high: -4.90195e-05
   unit: change in log(theta) per unit of adu_sqft
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_sqft range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_sqft range)"
 
 anchor_slope_alpha__adu_sqft:
-  value: 4.41167e-05
-  low: 4.41167e-05
-  high: 4.41167e-05
+  value: 5.75712e-05
+  low: 5.75712e-05
+  high: 5.75712e-05
   unit: change in log(alpha) per unit of adu_sqft
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_sqft range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_sqft range)"
 
 anchor_slope_theta__hard_cost_per_sqft_usd:
-  value: 4.43279e-05
-  low: 4.43279e-05
-  high: 4.43279e-05
+  value: -0.000236762
+  low: -0.000236762
+  high: -0.000236762
   unit: change in log(theta) per unit of hard_cost_per_sqft_usd
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
 
 anchor_slope_alpha__hard_cost_per_sqft_usd:
-  value: 0.000213231
-  low: 0.000213231
-  high: 0.000213231
+  value: 0.000278329
+  low: 0.000278329
+  high: 0.000278329
   unit: change in log(alpha) per unit of hard_cost_per_sqft_usd
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the hard_cost_per_sqft_usd range)"
 
 anchor_slope_theta__adu_hard_cost_premium:
-  value: 0.00626674
-  low: 0.00626674
-  high: 0.00626674
+  value: -0.0341534
+  low: -0.0341534
+  high: -0.0341534
   unit: change in log(theta) per unit of adu_hard_cost_premium
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_hard_cost_premium range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_hard_cost_premium range)"
 
 anchor_slope_alpha__adu_hard_cost_premium:
-  value: 0.0307374
-  low: 0.0307374
-  high: 0.0307374
+  value: 0.0400796
+  low: 0.0400796
+  high: 0.0400796
   unit: change in log(alpha) per unit of adu_hard_cost_premium
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_hard_cost_premium range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_hard_cost_premium range)"
 
 anchor_slope_theta__soft_cost_share:
-  value: 0.00598697
-  low: 0.00598697
-  high: 0.00598697
+  value: -0.0327589
+  low: -0.0327589
+  high: -0.0327589
   unit: change in log(theta) per unit of soft_cost_share
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the soft_cost_share range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the soft_cost_share range)"
 
 anchor_slope_alpha__soft_cost_share:
-  value: 0.0294836
-  low: 0.0294836
-  high: 0.0294836
+  value: 0.0384296
+  low: 0.0384296
+  high: 0.0384296
   unit: change in log(alpha) per unit of soft_cost_share
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the soft_cost_share range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the soft_cost_share range)"
 
 anchor_slope_theta__construction_loan_rate:
-  value: 0.00261573
-  low: 0.00261573
-  high: 0.00261573
+  value: -0.0143817
+  low: -0.0143817
+  high: -0.0143817
   unit: change in log(theta) per unit of construction_loan_rate
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the construction_loan_rate range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the construction_loan_rate range)"
 
 anchor_slope_alpha__construction_loan_rate:
-  value: 0.0129863
-  low: 0.0129863
-  high: 0.0129863
+  value: 0.0166934
+  low: 0.0166934
+  high: 0.0166934
   unit: change in log(alpha) per unit of construction_loan_rate
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the construction_loan_rate range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the construction_loan_rate range)"
 
 anchor_slope_theta__average_draw_share:
-  value: 0.000442494
-  low: 0.000442494
-  high: 0.000442494
+  value: -0.0024367
+  low: -0.0024367
+  high: -0.0024367
   unit: change in log(theta) per unit of average_draw_share
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the average_draw_share range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the average_draw_share range)"
 
 anchor_slope_alpha__average_draw_share:
-  value: 0.00214945
-  low: 0.00214945
-  high: 0.00214945
+  value: 0.00287628
+  low: 0.00287628
+  high: 0.00287628
   unit: change in log(alpha) per unit of average_draw_share
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the average_draw_share range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the average_draw_share range)"
 
 anchor_slope_theta__construction_years_irc:
-  value: 0.000304677
-  low: 0.000304677
-  high: 0.000304677
+  value: -0.00162222
+  low: -0.00162222
+  high: -0.00162222
   unit: change in log(theta) per unit of construction_years_irc
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the construction_years_irc range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the construction_years_irc range)"
 
 anchor_slope_alpha__construction_years_irc:
-  value: 0.00145899
-  low: 0.00145899
-  high: 0.00145899
+  value: 0.00190461
+  low: 0.00190461
+  high: 0.00190461
   unit: change in log(alpha) per unit of construction_years_irc
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the construction_years_irc range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the construction_years_irc range)"
 
 anchor_slope_theta__rental_vacancy_rate:
-  value: 0.00767028
-  low: 0.00767028
-  high: 0.00767028
+  value: -0.0414608
+  low: -0.0414608
+  high: -0.0414608
   unit: change in log(theta) per unit of rental_vacancy_rate
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the rental_vacancy_rate range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the rental_vacancy_rate range)"
 
 anchor_slope_alpha__rental_vacancy_rate:
-  value: 0.0372904
-  low: 0.0372904
-  high: 0.0372904
+  value: 0.0484955
+  low: 0.0484955
+  high: 0.0484955
   unit: change in log(alpha) per unit of rental_vacancy_rate
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the rental_vacancy_rate range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the rental_vacancy_rate range)"
 
 anchor_slope_theta__operating_expense_share:
-  value: 0.0110577
-  low: 0.0110577
-  high: 0.0110577
+  value: -0.0605013
+  low: -0.0605013
+  high: -0.0605013
   unit: change in log(theta) per unit of operating_expense_share
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the operating_expense_share range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the operating_expense_share range)"
 
 anchor_slope_alpha__operating_expense_share:
-  value: 0.0546286
-  low: 0.0546286
-  high: 0.0546286
+  value: 0.0712039
+  low: 0.0712039
+  high: 0.0712039
   unit: change in log(alpha) per unit of operating_expense_share
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the operating_expense_share range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the operating_expense_share range)"
 
 anchor_slope_theta__cap_rate:
-  value: 0.1316
-  low: 0.1316
-  high: 0.1316
+  value: -0.712794
+  low: -0.712794
+  high: -0.712794
   unit: change in log(theta) per unit of cap_rate
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the cap_rate range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the cap_rate range)"
 
 anchor_slope_alpha__cap_rate:
-  value: 0.641644
-  low: 0.641644
-  high: 0.641644
+  value: 0.837015
+  low: 0.837015
+  high: 0.837015
   unit: change in log(alpha) per unit of cap_rate
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the cap_rate range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the cap_rate range)"
 
 anchor_slope_theta__adu_margin:
-  value: 0.00650788
-  low: 0.00650788
-  high: 0.00650788
+  value: -0.0357305
+  low: -0.0357305
+  high: -0.0357305
   unit: change in log(theta) per unit of adu_margin
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_margin range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_margin range)"
 
 anchor_slope_alpha__adu_margin:
-  value: 0.0321186
-  low: 0.0321186
-  high: 0.0321186
+  value: 0.041913
+  low: 0.041913
+  high: 0.041913
   unit: change in log(alpha) per unit of adu_margin
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_margin range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_margin range)"
 
 anchor_slope_theta__adu_rent_to_median_ratio:
-  value: -0.00716767
-  low: -0.00716767
-  high: -0.00716767
+  value: 0.0393249
+  low: 0.0393249
+  high: 0.0393249
   unit: change in log(theta) per unit of adu_rent_to_median_ratio
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
 
 anchor_slope_alpha__adu_rent_to_median_ratio:
-  value: -0.0355641
-  low: -0.0355641
-  high: -0.0355641
+  value: -0.0463759
+  low: -0.0463759
+  high: -0.0463759
   unit: change in log(alpha) per unit of adu_rent_to_median_ratio
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_rent_to_median_ratio range)"
 
 anchor_slope_theta__adu_feasibility_dispersion:
-  value: -0.0885648
-  low: -0.0885648
-  high: -0.0885648
+  value: -0.0511471
+  low: -0.0511471
+  high: -0.0511471
   unit: change in log(theta) per unit of adu_feasibility_dispersion
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_feasibility_dispersion range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_feasibility_dispersion range)"
 
 anchor_slope_alpha__adu_feasibility_dispersion:
-  value: -0.00108224
-  low: -0.00108224
-  high: -0.00108224
+  value: -0.0132923
+  low: -0.0132923
+  high: -0.0132923
   unit: change in log(alpha) per unit of adu_feasibility_dispersion
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_feasibility_dispersion range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_feasibility_dispersion range)"
 
 anchor_slope_theta__adu_equity_elasticity:
-  value: 0.117409
-  low: 0.117409
-  high: 0.117409
+  value: 0.114382
+  low: 0.114382
+  high: 0.114382
   unit: change in log(theta) per unit of adu_equity_elasticity
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_equity_elasticity range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_equity_elasticity range)"
 
 anchor_slope_alpha__adu_equity_elasticity:
-  value: -0.194184
-  low: -0.194184
-  high: -0.194184
+  value: -0.171877
+  low: -0.171877
+  high: -0.171877
   unit: change in log(alpha) per unit of adu_equity_elasticity
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_equity_elasticity range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_equity_elasticity range)"
 
 anchor_slope_theta__adu_rate_semi_elasticity:
-  value: 1.3183
-  low: 1.3183
-  high: 1.3183
+  value: 1.36251
+  low: 1.36251
+  high: 1.36251
   unit: change in log(theta) per unit of adu_rate_semi_elasticity
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
 
 anchor_slope_alpha__adu_rate_semi_elasticity:
-  value: -0.0564401
-  low: -0.0564401
-  high: -0.0564401
+  value: -0.00223775
+  low: -0.00223775
+  high: -0.00223775
   unit: change in log(alpha) per unit of adu_rate_semi_elasticity
-  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 63 places, 446 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-15; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
+  source: "Estimated, scripts/dev/adu_types_slopes.py (D-088: Form A + place types; 70 places, 498 place-years, m_o and m_x at adu.yaml's values, core term refit, 2026-11-16; refit at central +/- 10% of the adu_rate_semi_elasticity range)"
 

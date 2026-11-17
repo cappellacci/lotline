@@ -6818,6 +6818,588 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Decision for Ben:** the switch stays off (m_x fixed at 0.7) until he chooses. Drawing m_x keeps the
     medians and widens P90 ÷ P10 by 12% (TX) to 66% (OR): MN ×5.3 → ×6.6, NC ×7.0 → ×11.3, OH ×15.4 → ×17.9,
     TX ×9.7 → ×10.8, OR ×8.0 → ×13.3.
+### D-092 · 2026-11-11 · Missing middle: one counting protocol, Oregon in the fit, and accuracy tests (method only, before any count) (was D-082)
+- **Status: Approved by Ben, 2026-11-12 ("Approve D-082"), as written, with the amendments below.** Method only:
+  nothing below has been run or counted. Each run in §9 still needs its own go-ahead.
+  - **Counting choices accepted (2026-11-12, "Yes, start run 1"):** the 13 choices in PR #408 (address
+    fallback to parcel × issue year, missing parcel ID as its own building, unknown units left out, aggregate
+    rows dropped, Wilson 90% interval on k, conversions, townhouses and 5–6, prior roll, s_td, r56 only in
+    Minneapolis, pooling, the roll interface, Ramsey dropped outright).
+  - **Run 1 done (2026-11-12):** `reports/mm-d092/run1-coverage/` (branch `ws/mm-run1-coverage`). As
+    pre-registered, Raleigh, Austin and Bend are strong. The run-1 choices (window from 2013, full years only,
+    per-place windows, Mecklenburg not screened) are listed there for Ben to confirm.
+  - **Deviation (2026-11-12, written after run 1's first pass was read; Ben chose "Per-permit split rule"):**
+    the processed permit tables carry no address, because every adapter excludes it as a personal field, and
+    re-downloading is ruled out. So the §2 collapse key falls back to parcel × issue year. In that fallback,
+    a parcel-year whose units sum above 4, and whose permits are each 2–4 units, now counts each permit as
+    its own building (`mm_counts.collapse_buildings(split_merged=True)`). The pre-registered collapse is still
+    reported as `prereg_k`.
+    - Under the split, the strong sources are Raleigh, Durham, Columbus, College Station and Bend.
+    - Under the pre-registered collapse, they were Raleigh, Austin and Bend.
+    - Runs 2–5 report both source sets.
+  - **Overnight go-ahead (2026-11-12):** Ben asked to "get close to having a finalized model" overnight. Runs
+    2–6 were run in order on that go-ahead. Config values still go in their own PR, only with Ben's approval.
+  - **Results of runs 2–5 (2026-11-12), with no value adopted:**
+    - **Run 2** (#414): s_td is 0.20 (0.11–0.43) and rCV is 0.023. r56 and rTH are not measurable without
+      `sf_only_zoned`.
+    - **Run 3** (#414): lots gaining a 2–4 unit building are 0.013% (Wake) to 0.36% (Minneapolis) of house
+      lots.
+    - **Run 4** (#415): M's θ is 0.63 per 1,000 eligible parcels a year (0.36–1.32). Without Oregon it is
+      0.034; Oregon is 86 of the 93 fit places.
+    - **Run 5** (#415): **M, C1, C3 and C4 each pass 0 of tests A–C.** Each also fails leave-one-state-out
+      (Oregon), and place coverage is about 0.44. M fails the placebo.
+    - The main cause is that the no-reform baseline is treated as known. Only 37% of no-reform places land
+      inside their P10–P90.
+    - §5's rule mechanically picks C4, which ties on tests and beats M by 2.9 SE, with the same θ. Because
+      every model fails, the choice is left to Ben.
+    - Run 6 is the results page: https://claude.ai/artifact/DVyYJNJjwPRXu3a28Ue5Dp.
+  - Ben approved the review's sequence on 2026-11-11 ("Let's follow your order";
+    `docs/research/mm-methodology-review-2026-11.md`, #392). This entry is its step 2.
+  - Step 1 runs in parallel. It is second-coder rule checks: `reports/{nc,tx,mn,or}/mm-rule-checks-2026-11.md`.
+    Its outcome decides which events enter, under the rules below; it does not change them.
+  - **Number:** written as D-082. The ADU observed-floor entry took D-082 on `main` first (2026-11-12), so this
+    entry was renumbered D-092 on 2026-11-15 (Ben: "Yes, renumber"). Quotes of Ben's approval keep his words
+    ("Approve D-082"); they refer to this entry.
+- **Why.** Missing middle has not had the November ADU rebuild (D-074 to D-081). The review found five problems:
+  - the adopted fit (D-054 (b), adopted by D-055) rests on six NC events with unverified dates (fold without NC:
+    θ 0.013 against 0.12 per 1,000);
+  - only 13 places and 69 place-years;
+  - a BPS-only outcome that misses 5–6 unit buildings, townhouses and conversions;
+  - a judgment teardown share;
+  - no ADU overlap rule.
+- **What was already looked at, stated now:**
+  - every fit place's BPS series (D-038 to D-059);
+  - Minneapolis, Durham city and Durham County (D-038 to D-059);
+  - Charlotte (V5, released 2026-11-09);
+  - Oregon 2018–2025 BPS 2–4 counts (V9, D-051 and D-055).
+
+  **Not seen:**
+  - any record-level permit count of 2–4 unit buildings;
+  - any roll diff for 2–4 units;
+  - the outcomes of any place that would newly enter;
+  - St. Paul, which stays blind (V5) and is never read.
+
+  The review read the permit and roll tables' column names and vocabularies only.
+
+#### 1. Events and the treated set
+- **Event rule unchanged:** D-042 change 1 (`calibrate_mm.event_year`, `prior_cap`, `retarget`). Each event
+  counts the building classes above the prior cap, and the dose is the increase.
+- **Rows that enter:** only rule rows Ben has accepted after step 1. A place found to have allowed duplexes
+  before its coded date takes `[predates]` and leaves the event set; it is never re-dated by judgment. A place
+  closed as "no usable source" keeps its `[earliest-known]` tag and is in the main fit. The tag sensitivity
+  (`rule_tags.SENSITIVITIES`) is reported with the main result, not as a footnote.
+- **A tag counts only on the row that sets the event.** For this sensitivity, a place is dropped only if the
+  row that creates its event (the first cap rise) carries `[earliest-known]`, `DATE UNCONFIRMED` or a blank
+  adoption date. Today a blank date anywhere drops the place. Oregon's SB 458 land-division rows set no unit cap
+  and have blank adoption dates, so the current reading would drop all of Oregon
+  (`reports/or/mm-rule-checks-2026-11.md`, #397). The change goes in `rule_tags.py` with a synthetic-fixture
+  test before any run.
+- **Oregon joins** (the dated entry D-054 requires). Its places are those with a first cap rise in 2016–2025
+  under the accepted `or.csv` rows. **Disclosed:** Oregon's BPS outcomes were seen in V9, so Oregon is fitted
+  data here, not a test.
+- **Test places** (Minneapolis, Durham city, Durham County) **stay out of the fit**. They are scored as before,
+  so the scores compare with D-054 to D-059.
+- **Holdouts:**
+  - St. Paul and Ramsey are never read;
+  - every Met Council table goes through `holdout.apply`;
+  - Charlotte is released and may be scored, but is not fitted in this entry.
+
+#### 1b. After the step 1 rule checks (2026-11-11; amends §1, still before any count)
+- **What the checks found:**
+  - **MN and OH** (#395): St. Louis Park (effective 2025-03-28) and Euclid (effective 2024-11-06) are confirmed.
+    For Richfield the adoption date is confirmed, but the effective date and the 2010 start are not found.
+  - **NC** (#401): Garner (2022-07-05) and Wilson are real events, but Wilson's covers SR6 only.
+    Wake Forest, Morrisville, Sanford and Burlington allowed duplexes before their coded dates: `[predates]`.
+    Durham city took effect 2019-10-01. Durham County has no usable source, so it keeps 2019-10-28. EHC2 doesn't
+    exist.
+  - **TX** (#398): Lewisville is confirmed (2022-12-01). League City's 2020 UDC is a recodification of an older
+    rule that already allowed duplexes, so it is `[predates]`. Houston's 2023 rule did not raise a cap (3+ units
+    were already legal as multifamily). It added an optional standards route, at most 4 units on local streets.
+    Lubbock's Ch. 40 has no usable source, so Lubbock stays out (D-059).
+  - **OR** (#397): 4 of the 9 rows checked are not as coded (Stayton, Sweet Home, Florence, Scappoose). 108 of
+    111 places have an event under `calibrate_mm.event_year`.
+- **Of the 13 D-054 fit places, 7 remain cap-rise events:** St. Louis Park, Garner, Wilson (SR6 coverage),
+  Euclid, Austin, Lewisville, and Houston as a standards event (below). Five move to always-allowed: Wake Forest,
+  Morrisville, Sanford, Burlington and League City. Lubbock stays out. The NC fold now holds 2 places, and most
+  of the fit's information will come from Oregon.
+- **Ben's decisions** (2026-11-11, in the TX session; `reports/tx/mm-rule-checks-2026-11.md`):
+  - (1) "Keep League City and Houston": places where duplexes have long been legal show what gets built in a
+    healthy market;
+  - (2) include standards reforms like Houston's MUR: making a type feasible counts, not only making it legal.
+
+  Ben confirmed on 2026-11-11 ("Every such place") that (1) applies to every place that turns out `[predates]`
+  in step 1, not to League City alone.
+- **How always-allowed places enter: a new level component (L).** They carry no event and no ramp. They inform
+  the **mature** rate.
+  - **Model.** For place i in year t:
+
+        y_it ~ Poisson(b_it + θ_L · u_i · E_it · d_i · F_i/F(1))
+
+    - d_i is the place's long-standing dose (D-024 formula).
+    - b_it is the no-rule level: the 2–4 rate per eligible parcel in coded "none" places of the same state and
+      size band (D-022 bands), × E_it.
+  - **Comparison pool.** If a state has fewer than 3 such places in a band, the four-state pool is used (D-042's
+    thin-pool rule). The comparison set is fixed from rule rows before any count.
+  - **How it relates to θ.** θ_L is reported beside θ from the event fit (M), with r5 for M. The scenario's θ is
+    M's θ. Joining them, with θ_L as a prior on M's mature level, is challenger C4, under §5's rule.
+  - **Why separate.** A long-allowed place's level mixes the rule's effect with why the place allowed duplexes
+    in the first place. Selection like that biases θ_L upward. It is reported as an upper check, not fitted into
+    the main θ unless C4 wins.
+- **How standards events enter: dose class "S".** A standards event (Houston MUR) is an event whose cap does
+  not rise but whose by-right route gets cheaper or simpler.
+  - Its dose increase is 1/3, the approval-grade step of D-024 (permit or conditional → by right): the closest
+    coded analogue to "made feasible".
+  - Its outcome classes are those the standards route covers (Houston: 3–4 unit buildings, since MUR's local-
+    street cap is 4).
+  - Sensitivities: S events left out, and S dose 1.
+- **Durham city** uses 2019-10-01. **Richfield** stays out (no cap rise, and its effective date is unresolved).
+- **The tag sensitivity** (above) is re-run on the corrected rows. Rows Ben accepts go into `config/reforms/*.csv`
+  in their own PR before any count.
+
+#### 2. Outcomes: BPS everywhere, permit counts where strong
+- **BPS stays the outcome for every place** (`units_2 + units_3_4` buildings, D-038).
+- **Permit counts, the main addition.** A source becomes "strong" if all four hold:
+  - it has a numeric unit count;
+  - a parcel ID is filled on at least 85% of rows;
+  - it covers at least 3 years before the place's event;
+  - it passes the coverage screen below.
+
+  The candidates are Minneapolis, Mecklenburg, Raleigh, Durham, Columbus, Cincinnati, Austin, College Station,
+  Portland, Bend and Medford (review §2).
+  - **Building collapse:** one building = one parcel × one issue year × one street address with
+    `building_type_std` in {U2, U3_4}, units summed across the permits. A unit sum outside 2–4 after collapsing is
+    reported and left out. A hand check of 30 collapsed buildings per source, on a pre-committed seed, gives the
+    collapse error.
+  - **Coverage screen and k:** k_src = permit buildings ÷ BPS buildings, over the same area and the years before
+    the source's events. The source enters if 0.8 ≤ k_src ≤ 1.25 (D-072's screen with an upper bound, since
+    permits can include conversions). k_src is kept per source and never pooled (D-078).
+  - **Use in the fit.** A permit place is fitted on its BPS outcome, as everywhere else. The permit counts are
+    used for three things:
+    - (a) the measured ratios (§3);
+    - (b) test B;
+    - (c) challenger 2 (§5).
+
+    No place switches outcome inside the main fit, so its baseline and outcome stay in one measurement.
+- **Rolls for test B:**
+  - Wake (2019-11 → 2023-12);
+  - Franklin (2016 → 2025);
+  - Minneapolis (2017 → 2026);
+  - Met Council (2021 → 2025, holdout-filtered).
+
+  A lot "gains a 2–4 building" if it was a single dwelling (or vacant) in the first roll and holds 2–4 units in
+  one building in the second. Merges (acreage up more than 20%) and splits (a parcel ID retired) are reported
+  and left out, as in `wake_roll_diff.py` §1. The rule is committed in code with a synthetic-fixture test before
+  any diff is run.
+- **Parser sources** (Wilmington, Asheville, Cleveland, San Antonio) are not used.
+- **Rochester** is used only if its offline rebuild works (`rochester_permits.py:168-200`).
+
+#### 3. Target: measured ratios for what BPS can't see
+In the strong permit places, over 2016–2025, each ratio is measured against new 2–4 unit buildings (the
+denominator):
+- **r56** = 5–6 unit buildings on single-family-zoned parcels (U5_6, Minneapolis only; elsewhere not measured,
+  stated);
+- **rTH** = townhouse buildings on parcels that were single-family-zoned in the prior roll (TH plus the parcel
+  join);
+- **rCV** = conversions to 2–4 units (`is_conversion`, Austin class 436);
+- **s_td** = the share of new 2–4 unit buildings whose parcel held a house in the prior roll, or had a
+  demolition permit within ±2 years. It replaces the judgment `mm_teardown_share_scale` × house share.
+
+Each ratio is pooled across sources as a building-weighted mean. Its range is the lowest and highest source ratio
+on at least 50 buildings. The scenario uses them as `homes = buildings × homes per building × (1 + r56·h56/h24
++ rTH + rCV) − teardowns`, with the h ratios measured the same way. All four are reported with and without
+the uplift. The headline stays "2–4 only" unless Ben adopts the uplift in a separate config PR.
+
+#### 4. Denominator
+- Places whose ratios come from permits take `eligible.permit_level` (#375, D-080 §1). BPS-fitted places keep
+  the BPS remainder.
+- 37119 and the 23 changed remainders are checked for missing-middle lots, as D-080 did. The scenario's lot
+  levels are reported before and after.
+- **Vacant and built lots:** in the parcel-joined places, the hazard on vacant and built eligible lots is
+  estimated separately (the D-038 check 6 never done). A weight enters the scenario only if the two differ by
+  more than 2 SE.
+- **Lot size:** the same comparison by eligible-lot-size tercile is reported. A `min_lot_sqft_missing_middle`
+  range sourced from the coded rules' own minimum lots is a sensitivity, not a draw.
+
+#### 5. Model and challengers
+- **Main (M):** D-054 (b), with D-058's zero floor (the D-059 (b′) specification) on the five-state fit set of
+  §1. Likelihood, ramp grid, slope 0.75, σ 0.5 and margin are unchanged, and r5 is reported (D-062).
+- **Challenger 1 (C1), Oregon tiers:** for Oregon places, the growth index g comes from Oregon places with no
+  cap rise yet in that year (not-yet-treated medium and large cities, and places under the threshold), as D-042's
+  comparison baseline but restricted to one state and one law. Other states keep M's baseline.
+- **Challenger 2 (C2), within-city lots:** in parcel-joined permit cities with zoning on the roll (Raleigh R-1
+  against other zones; Durham urban against suburban tier; Austin SF-1/2 against SF-3; Mecklenburg, Portland,
+  Bend), the counterfactual is the city's own ineligible single-family lots in the same year (a triple
+  difference). Its estimate is reported beside θ as a check on the mechanism. It replaces nothing on its own.
+- **Challenger 3 (C3), conditional place effect:** u_i's gamma prior is shifted by the place's own pre-reform
+  2–4 pace from BPS, ln E[u_i] = c × z_i with z_i as in D-042. That uses tier-0 data every state has, and its
+  target is V9's too-narrow place ranges.
+- **Challenger 4 (C4), level prior:** M with θ_L from §1b as a lognormal prior on M's mature level (its log-SD
+  from θ_L's profile interval, doubled for selection).
+- **Choosing.** A challenger replaces M only if both hold:
+  - its held-out log score beats M's by more than 2 paired SE (leave one state out, as D-054);
+  - it passes no fewer of tests A–C (§7).
+
+  Otherwise M stays, and the challengers are reported.
+
+#### 6. ADU overlap in the counts
+Before any permit count, one shared permit-to-theme classifier assigns each permit to exactly one of ADU, 2–4
+building, conversion or other. It has synthetic-fixture tests covering Austin's post-HOME two-family ADUs and
+Rochester's code 103. Both the ADU and the MM counts use it. Where it touches the shared permit schema, a
+`contract-change` issue goes to WS-CORE first. The measured share of "2-unit" BPS buildings that the classifier
+calls ADUs in permit places is reported as a correction for BPS places, not applied in the main fit. Stacking in
+`combine.py` is not in this entry.
+
+#### 7. Accuracy tests (pass rules fixed now)
+| Test | What | Pass |
+|---|---|---|
+| A, new places | Each newly entering non-Oregon place (from step 1 or method changes), predicted from a fit that leaves it out, over its post-years | ≥ 60% of places inside P10–P90; median observed ÷ P50 within ×2 |
+| B, roll check | Wake towns (Raleigh shown separately), Franklin and Minneapolis: predicted lots gaining a 2–4 building against the §2 roll diff | each area's total inside P10–P90 |
+| C, no-reform floor | Coded "none" places (MN 3, TX about 30) and Franklin County: M's no-reform forecast against observed 2–4 buildings, 2021–25 | ≥ 70% of places inside P10–P90; no state total missed |
+| Placebo | events moved 3 years early, pre-years only | 90% upper bound of r5 below the main r5 |
+| Leave one state out | five states, D-054's scores and D-040 verdicts | no state with 3 or more fit places missed |
+| Data tier | tier 0 (BPS history + ACS + θ), tier 1 (+ coded rules), tier 2 (+ one city's permit counts, left out of the target) | passes in ≥ 4 of 5 held-out states at the tier claimed |
+| Place coverage | randomized P10–P90 coverage of place totals in every test | reported; 0.6–0.95 is the target, and outside it is flagged before any freeze |
+
+#### 8. Uncertainty carried into the scenario
+- **Drawn:**
+  - r5 (θ at the fitted ramp);
+  - α, or C3's c if adopted;
+  - homes per building;
+  - s_td;
+  - r56, rTH and rCV, if adopted;
+  - k_src where permit counts enter a result.
+- **Sensitivities only:** σ, a slow ramp for years 6 and later, the vacant weight, the lot-size floor, and
+  2–4 only against the uplift.
+
+#### 9. Code, runs and what follows
+- **Code** (with hand-worked tests on synthetic fixtures):
+  - building collapse and the roll-diff rule in `src/lotline/build/` or a new `model/mm_counts.py`;
+  - challengers in `calibrate_mm.py`;
+  - the classifier where WS-CORE places it.
+- **Each run** needs Ben's go-ahead after its code is pushed. Order:
+  1. coverage screen and k;
+  2. ratios;
+  3. roll diffs;
+  4. the joint refit with challengers;
+  5. the tests;
+  6. a results page.
+- **Config:** nothing is written to `mm_hazard.yaml` or `mm.yaml` here. The values go in their own PR, only with
+  Ben's approval.
+- **Offline:** every count is rebuilt with `lotline fetch --offline` from the cached snapshots. No new download
+  is made.
+- **Decided by:** Ben, 2026-11-12 ("Approve D-082"). Proposed by the WS-MM-REVIEW session, 2026-11-11.
+- **Deviation from the review:** the review suggested Oregon's tiers (C1) as the main design. Here M stays main,
+  because the main model must apply to every place, BPS-only ones included. C1 is the first challenger and can
+  replace M under §5's rule.
+- **Deviation 2026-11-15: the no-reform baseline gets its own uncertainty.** This is method only, written
+  before any refit or count. Ben: "Yes, start step 1" (2026-11-15), after runs 4–5.
+  - **Why:**
+    - Runs 4–5 found that no model passes §7. The main cause is a baseline treated as known: each place's
+      B_t = β g_t gets only Poisson noise.
+    - Only 37% of 43 no-reform places land inside their P10–P90, against a bar of 70%.
+    - Place coverage is 0.44, against a target of 0.60–0.95.
+    - The placebo keeps two thirds of the effect. Places drift far from their pre-period pace, and the reform
+      term absorbs the drift.
+    - This is missing middle's analogue of ADU's D-091 drift term.
+  - **Model:** y_t ~ Poisson(w (B_t + θ u k_t)).
+    - w ~ Gamma(mean 1, variance κ): one per place, shared across its years, and independent of u.
+    - κ = 0 is runs 4–5 exactly.
+    - w scales the whole rate, the reform part too: a place whose market slows down builds less with the reform
+      as well. This form integrates w out in closed form, a negative binomial on the place's total
+      (`calibrate_mm._w_mixed`), so a fit costs the same as before.
+    - A separate multiplier on B alone would need a two-dimensional integral, about 100 times slower than run
+      4's 2 h 39 min.
+  - **κ is estimated first, from places that neither the fit nor any test uses.**
+    - **Places:** the "uncoded" places in MN, NC, OH and TX.
+    - **Left out:**
+      - every fit place;
+      - test A's and test C's places;
+      - the scored test places: Minneapolis, Durham city, Durham County and Raleigh;
+      - the always-allowed level set, Lubbock and Richfield;
+      - the holdouts: St. Paul, Ramsey County, Charlotte and Mecklenburg;
+      - Oregon, where HB 2001 reaches most places, and D-037 learns from our own four states.
+    - **Pseudo-forecasts:** run 5 built test C's baselines with own growth, 3 pre-years and the zero floor. Each
+      kept place gets the same construction at two origins, with no reform term:
+      - 2016, scored 2016–2020;
+      - 2021, scored 2021–2025.
+
+      A place enters an origin if it has a pre-year with data and at least one scored year.
+    - **Estimate:** κ̂ maximizes Σ log ∫ Π_t Poisson(y_t; w B_t) dGamma(w), which is `calibrate_mm.fit_kappa`.
+      It comes with a 90% profile interval. One w per (place, origin).
+  - **Refit:**
+    - M and C4 are refit with κ fixed at κ̂, with the same code, holdouts, sensitivities and leave-one-state-out
+      folds as run 4.
+    - C1 and C3 are not refit: both lost to M by more than 2 paired SE in run 4.
+    - The level fit L is unchanged. It feeds C4's prior only.
+  - **Predictions:** every predicted place draws its own w per draw, from a stream keyed by (seed, geoid, 1).
+    That includes test C's no-reform places and test B's areas. So at κ = 0, u and the Poisson draws are
+    unchanged (`calibrate_mm._w_draws`). κ's own uncertainty is not drawn in the main run.
+  - **Tests and selection:** §7's tests and §5's rule run unchanged, with the same bars, draws (20,000) and seed
+    (20261112). The results are then directly comparable with run 5.
+  - **Pre-stated sensitivities**, reported and never selected:
+    - κ at each end of its 90% interval;
+    - κ estimated on the 2021 origin only;
+    - κ estimated per state.
+  - **Success**, stated before any result:
+    - test C passes: at least 70% inside, and every state total inside;
+    - place coverage is inside 0.60–0.95.
+
+    The placebo and leave-one-state-out are reported either way. No setting is tuned after the results are read.
+  - **Code:** `calibrate_mm` (`kappa` on `Place`, `_w_mixed`, `fit_kappa`, `with_kappa`, `_w_draws`), with
+    hand-worked and brute-force tests in `tests/model/test_mm_baseline_spread.py`.
+  - **Runs:** each run needs Ben's go-ahead after its code is pushed (§9).
+  - **Next, decided 2026-11-15 regardless of this result:** place types (core city, suburb, town), as in ADU's
+    D-088. They get their own pre-registration after this run.
+- **Deviation 2026-11-15 (b): choosing the baseline before the refit.** This is method only, written after
+  run 7's κ and before any candidate is scored. Ben: "Yes, pre-register them" (2026-11-15).
+  - **Why:**
+    - Run 7's κ̂ is 7.65, which would forecast the median place at 2% of its baseline.
+    - Only 28% of 941 uncoded pseudo-forecasts land within ×2 of their baseline, and 47% saw no 2–4 unit
+      building at all.
+    - 2–4 unit buildings come in projects. A three-year baseline catches or misses a burst by chance, and the
+      own growth index (capped at ×4) carries the burst forward.
+  - **Candidates:** four baseline constructions (C), each with two noise forms (N), so eight in all.
+    - **Constructions:**
+      - **C0, as now:** 3 pre-years, own growth index (1-unit + 5+ units).
+      - **C1:** 6 pre-years (D-058's long window), own growth index.
+      - **C2:** 6 pre-years, the state's growth index (the summed uncoded places, `growth="state"`).
+      - **C3:** 6 pre-years, no growth index.
+    - All four keep the zero floor.
+    - **Noise forms:**
+      - **Nw:** one place-level multiplier w ~ Gamma(mean 1, variance κ), as run 7.
+      - **Ny:** independent year-level overdispersion, y_t ~ NB(mean B_t, variance B_t + φ B_t²).
+      - Both have closed forms, and each can enter the main fit at run 4's cost: Nw as coded, Ny as a negative
+        binomial inside the u integral.
+  - **Data:** run 7's uncoded places, with the same exclusions.
+    - **Training:** the 2016 origin (scored 2016–2020). Each candidate's κ or φ is fitted here.
+    - **Scoring:** the 2021 origin (scored 2021–2025), with the parameter fixed from 2016.
+    - **Place set:** only (place, origin) pairs present under every construction, so all candidates score the
+      same counts.
+    - None of these places is used by the fit or by any §7 test.
+  - **Rule:**
+    - Pick the candidate with the highest held-out log score: Σ over places, Σ log y! dropped the same way for
+      every form.
+    - If another candidate is within 2 paired SE of the best, prefer, in order:
+      - C0 over C1 over C2 over C3 (fewest changes from runs 4–5);
+      - then Nw over Ny (already coded).
+  - **Reported, never selected:**
+    - for each candidate, the share of 2021 pseudo-forecasts inside their P10–P90 (20,000 draws, seed 20261115);
+    - the fitted κ or φ;
+    - the median predicted ÷ baseline.
+  - **Then:**
+    - The chosen construction becomes the baseline everywhere, for every place, in the refit and in §7: M's places,
+      test C, test B, the placebo and leave one state out.
+    - Its noise parameter is re-estimated on both origins (as run 7) and fixed in the refit.
+    - If Ny wins, `calibrate_mm` gets the negative-binomial likelihood inside the u integral, with its own tests,
+      before the refit.
+    - The refit and §7 run as the first deviation states, after Ben's go-ahead.
+  - **Stop rule:** if the chosen candidate still has a 2021 coverage under 0.5, the refit is not run. The finding
+    goes back to Ben instead.
+- **Deviation 2026-11-15 (c): place types.** This is method only, written after runs 9–11 and before any count by
+  type. Ben: "Yes, place types" (2026-11-15). Earlier he asked that types be done whatever the result: "I think the
+  place types will end up being an important aspect of this being generalizable".
+  - **Why:**
+    - Run 11's ranges are calibrated (coverage 0.84), but wide. θ's 90% interval spans ×180, and the reform
+      effect is barely detected (+5.0, SE 3.4).
+    - The width comes from one φ (13.6) shared by every place. Run 9's φ differed by state (MN 7.4 to TX at
+      the search's edge), so places differ in how lumpy their years are.
+    - A type works in a state with no permit data (tier 0), which a state term does not.
+  - **Types:** ADU D-088's rule, unchanged (`lotline.model.place_types`):
+    - **core city:** the Census place with the most housing units in its metropolitan area, or any place there
+      with at least a third of the largest's units;
+    - **suburb:** every other place in a metro, including townships and unincorporated areas;
+    - **town:** places in a micropolitan area or outside any area;
+    - **units:** ACS B25024_001, latest vintage ending ≤ 2015, through `holdout.apply_acs`; areas are OMB 2023
+      from `jurisdictions`;
+    - **minimum size:** a type needs ≥ 8 places in ≥ 3 states, else it is merged into suburb (town first).
+  - **Inputs count, before any fit** (`mm_types_d092.py --dry`; housing units and areas only, no permit count):
+    - **The 93 fit places:**
+      - Oregon has 86: 10 core cities, 58 suburbs and 18 towns.
+      - The other states have 7: Austin and Houston (core cities), 4 suburbs and 1 town.
+      - Core cities (12) and towns (19) each come from only 2 states, so the minimum size rule merges both into
+        suburb.
+      - **A type term on the reform rate (ADU's Form P) is therefore not fitted.** It would be Oregon's alone.
+    - **The 483 uncoded places** that φ is learned from:
+      - core 42, suburb 340, town 101;
+      - every type is present in all four states (MN, NC, OH, TX), so nothing is merged;
+      - every place has ACS 2011–15 units.
+  - **Candidates:** both use the C0 construction (run 8's choice) and the per-year NB form.
+    - **Y1:** one φ for every place, as runs 9–11.
+    - **YT:** one φ per type: core, suburb and town.
+  - **Data and split, as run 8:**
+    - each φ is fitted on the 2016 origin (scored 2016–2020);
+    - scored, held out, on the 2021 origin (2021–2025);
+    - the places are run 7's uncoded places, which no fit or §7 test uses.
+  - **Rule:**
+    - YT is adopted only if its held-out log score beats Y1's by more than 2 paired SE.
+    - Otherwise Y1 is kept, and the refit is not rerun.
+  - **Reported, never selected:**
+    - each type's 2021 P10–P90 coverage under both candidates (20,000 draws, seed 20261115);
+    - φ by state and type on both origins.
+  - **If YT is adopted:**
+    - Each type's φ is re-estimated on both origins (as run 9) and fixed.
+    - Every place takes its type's φ, in the fit and in §7: M's places (Oregon's too), test C, test B, the
+      placebo and leave one state out (`calibrate_mm_d092.py --phi-by-type`, `mm_tests_d092.py
+      --phi-by-type`).
+    - M and C4 are refitted, and §7 reruns unchanged: the same bars, draws (20,000) and seed (20261112).
+    - **Also reported:**
+      - each place's P90 ÷ P10 against run 11's (median, and by type);
+      - Oregon's left-out range against run 11's 459–9,968;
+      - M against "no reform effect".
+    - **Success criteria, as before:**
+      - coverage in 0.60–0.95;
+      - test C passes;
+      - and now: the median place's P90 ÷ P10 is narrower than in run 11.
+  - **Expected, before any count or fit (a guess, not a prior):**
+    - core cities have the smallest φ, because many small projects a year average out;
+    - towns have the largest;
+    - YT beats Y1, but by less than the state differences in run 9 suggest, since Texas's suburbs carry much
+      of that.
+  - **What it will not do:**
+    - fit a type term on the reform rate (merged by the minimum size rule above);
+    - use a state term, because it would not carry to a new state;
+    - write to config;
+    - download anything;
+    - touch the holdouts: St. Paul and Ramsey stay out of the panel, ACS goes through `holdout.apply_acs`, and no
+      `--unblind` is passed.
+  - **The code** (`place_types.py`, `Stack` with one φ per place, `with_phi_by`) comes with hand-worked tests.
+    The ADU stack has the same rule (PR #432). Once both are on main, one copy goes.
+- **Deviation 2026-11-15 (d): buildings per project (a descriptive check).** This is method only, written after
+  run 12 and before any permit is grouped. Ben chose "Do the size check first" (2026-11-15), and confirmed that
+  the outcome stays 2–4 unit buildings, with townhouses and 5–6 unit buildings disclosed as not counted ("Keep
+  2–4, disclose gaps"; `docs/model_and_assumptions.md`, "What missing middle counts").
+  - **Why:** BPS counts 2–4 unit buildings, but several can be one builder's project. If they are, a place's
+    yearly count is lumpy for a reason the model could carry (a compound Poisson: projects × buildings per
+    project). This check says whether that is worth building. It fits nothing.
+  - **Data:** every state's `permits` table through `holdout.apply`, from 2010. St. Paul, Ramsey, Charlotte and
+    Mecklenburg are also dropped by GEOID, and the `stpaul_permits` and `meck_permits` sources entirely.
+    `columbus_variances` (zoning variances) is not a permit file. No `--unblind`.
+  - **Buildings:** permits typed `U2` or `U3_4`, type known, not a demolition or conversion; `n_buildings` where
+    given, else 1 (`project_size.buildings`).
+  - **Two groupings, a lower and an upper bound:**
+    - **same lot:** same source and parcel ID, issued within 365 days of the project's first permit. It misses a
+      project built on lots split from one parent lot.
+    - **same day:** same source and issue date. It joins unrelated permits issued on one day.
+  - **Usable sources** (`mm_project_size_d092.py --dry`; shares over all permits of any type, no count by type):
+    a source is used when at least 90% of its permits carry the field.
+    - same lot (15): Minneapolis, Rochester (MN); Durham, Raleigh, Wilmington (NC); Cincinnati, Cleveland,
+      Columbus, Franklin County, Montgomery County (OH); Bend, Medford, Portland (OR); Austin, College Station
+      (TX). Cary has parcel IDs on 71% only, so it is same-day only.
+    - same day (20): the 15 above plus Cary, Chapel Hill, Greensboro, Dallas and San Antonio.
+    - not used: Met Council, Asheville, Fort Worth and Mid-Willamette (no day dates).
+  - **Measures**, per source and pooled:
+    - the **inflation** E[S²]/E[S], where S is buildings per project. A count's variance is its mean times
+      this (1 if every project is one building);
+    - the share of buildings in projects of 3 or more; projects, buildings and mean size.
+  - **Rule:**
+    - same-day (upper bound) inflation under 1.5 → **stop**: project size can't explain much of the lumpiness,
+      and project counting is recorded as a limitation;
+    - same-lot (lower bound) inflation 1.5 or more → raise the compound model with Ben;
+    - in between → report both; Ben decides.
+    - 1.5 is a judgment, not a derived bar: at that inflation a place's variance is half again a Poisson's.
+  - **Expected, before any grouping (a guess):** most 2–4 unit projects are one building; same lot gives about
+    1.2, same day more in the big cities.
+  - **What it will not do:** fit or change the model, write to config, download anything, or touch the
+    holdouts. Franklin County's file may overlap Columbus's; both are reported by source.
+  - **The code** (`lotline.model.project_size`) comes with 7 hand-worked tests.
+- **Decision 2026-11-15: C4 to config.** Ben chose C4 ("C4 (θ 1.04)") after runs 9–13: §5's rule picks it (it
+  beats M by 5 paired SE held out and passes the same §7 tests), and its five-year rate (0.24 per 1,000 a year)
+  is within about 10% of M's (0.27).
+  - `mm_hazard.yaml`: θ 1.04 per 1,000 (0.13–19.4), ramp half-way at 4.0 years (1.0–6.0), α at the search's
+    floor (interval to 1.92), and a new key, `mm_year_spread_phi` 13.63 (12.85–14.48, run 9).
+  - The scenario (`scenarios/mm.py`) draws each place-year's added buildings as Poisson(mean × g), g ~
+    Gamma(mean 1, variance 1/φ), as the fit does; φ is held at its value. Hand-worked tests check the mean and
+    the negative binomial variance.
+  - Not changed: V5 Charlotte (`validation/v5.py`, frozen and scored) and V9 Oregon (`validation/v9.py`, frozen)
+    read these keys but keep their Poisson draws; a rerun at today's config would not reproduce their frozen
+    numbers, which reproduce at their freeze commits.
+
+### D-098 · 2026-11-15 · V5 St. Paul blind forward test with C4: what is frozen and how it is made (method only, before any prediction)
+- **Status:** method written before any St. Paul prediction was made (WS-MN brief; holdout `V5-MN-STPAUL`,
+  2024-01-01 to 2026-12-31). Ben: "Let's try St. Paul" (2026-11-15), after C4 went to config. It follows D-071
+  (Charlotte), with C4's model. The number may change if another branch takes D-098 first.
+- **What was looked at before writing (all before the window, none a St. Paul outcome from 2024):**
+  - the H1/H2 lots on the 2023 roll and the 2023-11-26 zoning snapshot (`stpaul_v5.load`): 55,269 eligible
+    lots (rule 1.1), H1 37,695 and H2 17,574 (`reports/mn/V5-stpaul-inputs.md`);
+  - BPS St. Paul (2758000) 2–4 unit buildings through the holdout filter, last year 2023: 2021: 9, 2022: 4,
+    2023: 6 (homes 23, 10, 12);
+  - the coded rule `MN-2758000-missing_middle-2023` (cap 4, by right; effective 2023-11-26): dose 0 on 1 July
+    2023 and 1 on 1 July 2024 (`estimate_mm.rules_by_year`);
+  - St. Paul's ACS 5-year rent ending 2023 ($1,320 in 2025 dollars) and the 2023 cost index: price-to-cost
+    0.851, F(PCR)/F(1) 0.702.
+- **Known exposure (D-013):** post-reform St. Paul figures appeared in a research document during scouting. They
+  were not reread, are not used, and the freeze file says so.
+- **Fit used, and St. Paul's place in it.** C4 (`mm_hazard.yaml`, D-092 run 10): St. Paul and Ramsey County are
+  asserted absent from the panel, so the fit never saw St. Paul. Nothing is refitted for V5.
+- **Target (primary; the pass rule applies to it).** New 2–4 unit buildings in Census BPS for St. Paul
+  (2758000, `bldgs_2 + bldgs_3_4`), the sum over 2024 and 2025: the outcome C4 was fitted on, and the years
+  that can be scored before 16 December. 2026 and 2024–2026 are frozen too and scored when BPS 2026 is out.
+- **Secondary targets (reported, not the pass rule):**
+  - (a) homes in those buildings (`units_2 + units_3_4`);
+  - (b) the added buildings alone (the reform part), compared descriptively with Met Council permits for 2–4
+    unit homes (`DTQ`) on H1/H2 lots after unblinding. Exploratory.
+- **Model (C4, as the fit).** For year t = 2024, 2025, 2026, draw d:
+
+      buildings_dt ~ NB(mean B + θ_d u_d E gap F ramp(t − 2024 + 0.5), size φ)
+
+  - **B:** the mean of 2021–2023 (6.33 buildings a year), held flat: C0's own-growth index needs blind years
+    (as D-071). Homes per baseline building: 45 / 19 = 2.37.
+  - **E:** 55,269 eligible H1/H2 lots, counted, not drawn. **gap:** 1 − 0 = 1 (the coded rows). Lots that
+    were RT1 or RT2 before already allowed some 2–4 unit buildings in practice, but the fit's dose comes from
+    coded rules, so the same rule is used here; stated as a possible overstatement of the gap.
+  - **F:** 0.702. **Ramp:** half-way 4.0 years, slope 0.75; ages 0.5, 1.5, 2.5 give 0.009, 0.034 and 0.119
+    of the mature rate (2024 is the first event year: the rule is in force on 1 July 2024).
+  - **Per draw:** θ and α lognormal from their 90% intervals; one u ~ Gamma(mean 1, variance α) shared across
+    the years; each year Poisson(mean × g), g ~ Gamma(mean 1, variance 1/φ), φ = `mm_year_spread_phi`.
+    Baseline and added are drawn as two Poissons with the same g (so their sum is the NB above).
+  - **Homes:** baseline buildings × 2.37 plus added buildings × `mm_units_per_project` (triangular).
+  - **No annual input after 2023.**
+- **Draws:** `mm_scenario_draws`, seed `mm_scenario_seed`.
+- **Freeze.** `scripts/dev/v5_stp_predict.py --freeze` writes `results/frozen/V5-MN-STPAUL.json` once (refuses
+  to overwrite), with the commit, draws, seed, inputs, parameter values, sha256 of the input tables and config
+  files read. D-037 says V5 freezes on the `mm_hazard.yaml` on `main` at the freeze. If PR #436 (C4) is not
+  on `main` when Ben wants the freeze, the freeze is made on #436's commit and records it; Ben decides which.
+- **Scoring (after the freeze is on `main` and Ben asks to unblind):** release the holdout in
+  `config/states/mn.yaml`, read BPS 2758000 for 2024–2025 and compute, as D-071:
+  - **pass rule:** the observed 2024–2025 sum lies within P10–P90 of the frozen draws (one case: a
+    demonstration, not proof);
+  - also D-040's verdict, randomized coverage, the percentile, and CRPS against no reform (the baseline part
+    of the same draws).
+- **Expected, before any prediction (from the inputs, not a run):** the reform adds little in 2024–2025 at
+  C4's median (about 40 buildings a year at maturity × ramp 0.009 and 0.034 ≈ 2), so the median sits near the
+  baseline (about 13 over two years), with a right tail from θ. **This is a test of C4's slow ramp:** if St.
+  Paul built many more 2–4 unit buildings in 2024–2025, the slow ramp is wrong.
+- **Decided by:** Ben (V5 design; "Let's try St. Paul", 2026-11-15). Written by Claude Code before any code or
+  prediction.
+- **Frozen (2026-11-15, code at 9ee70aa, `results/frozen/V5-MN-STPAUL.json`, 4,000 draws, seed 20261108).**
+  Ben: "Freeze now on #436" (C4 is on PR #436, not yet on `main`; the file records the commit and every config
+  hash, and reaches `main` with C4). Inputs: 55,269 eligible H1/H2 lots, dose gap 1, F(PCR)/F(1) 0.702 (PCR
+  0.851), B 6.33 buildings a year (2021–2023: 9, 4, 6). **BPS St. Paul 2–4 unit buildings, 2024–2025: P10 9,
+  P50 15, P90 28 (mean 18.6).** Baseline part P50 12; added part P50 2, P90 14. 2024–2026: P10 17, P50 27,
+  P90 69. Homes 2024–2025: P10 21, P50 36, P90 65. No outcome has been read; scoring waits for this file on
+  `main` and Ben's go-ahead.
+
+### Config note · 2026-11-16 · ADUs: the D-096 fit refreshed on main's rule rows after PR #444; D-097 switched on; decisions
+- **What changed** (Ben, 2026-11-16: "I've reviewed 444, let's merge it. … m_x draws, let's turn them on.
+  Headline statistics should definitely be medians. Keep Dallas as no ADUs"):
+  - **Refit.** Form A + place types refit on main's rule rows, which now include #444's 44 rows for uncoded
+    MN and OH places and the Blaine fix (`scripts/dev/adu_config_fit.py` through `adu_refit_fixed_rows.py`;
+    `reports/adu-final-config/`). The fit set is 70 places and 498 place-years: #444 dated rows that let more
+    place-years in.
+    - θ 0.000224 (0.000170–0.000303), was 0.000240;
+    - α 1.505 (1.035–2.189), was 1.439;
+    - m_o 1.0 and m_x 0.7 (0.7–0.8), unchanged;
+    - core +1.740 (1.138–2.388), was +1.670; town prior SD 1.058.
+    - The anchor slopes and the D-097 grid were regenerated on the same rows.
+  - **D-097 on.** `adu_partial_share_draws` = 1: each draw takes m_x from the grid's weights, with θ, α and
+    the core term refit at that value.
+  - **Headline statistic.** Medians (P50) with P10–P90, never averages. The app already shows only P50
+    ("midpoint") and P10–P90, so nothing changes there. The decision is recorded because a single place's
+    average can sit far above its median (the Dallas reading, D-099).
+  - **Dallas** stays coded as no ADUs. Since 2018 its rentable ADUs come only by special exception or an
+    overlay; this is a convention, noted in its row.
+- **Tests:** the pinned values were updated. The unseen-state test holds m_x fixed so it still isolates τ.
+  The full suite and the compliance check were run before commit.
 
 ### D-099 · 2026-11-15 · ADUs: uptake in the first years after a place first allows ADUs (method only, before any fit)
 - **Status: accepted by Ben, 2026-11-16 ("I accept D-099"). Drafted overnight on his go-ahead ("When done let's

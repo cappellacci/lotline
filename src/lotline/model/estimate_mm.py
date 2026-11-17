@@ -58,7 +58,9 @@ BPS = "bps"
 
 def units_grade(cap) -> float:
     """Grade of the units a rule allows on a single-family lot: 2 -> 1/3, 3 -> 2/3, 4 or more -> 1, under 2
-    -> 0 (equal steps up to the Handbook's fourplex). NaN if the cap is blank."""
+    -> 0 (equal steps up to a fourplex). NaN if the cap is blank. The Handbook allows up to 6 homes, but the
+    grade stops at 4 on purpose: the outcome counts BPS's 2-unit and 3-4 unit buildings only, so a 5th or 6th
+    home lands in a class it doesn't count (model_and_assumptions.md, "What missing middle counts")."""
     c = pd.to_numeric(cap, errors="coerce")
     if pd.isna(c):
         return np.nan
