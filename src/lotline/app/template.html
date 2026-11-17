@@ -306,7 +306,7 @@ table.checks td:last-child { min-width: 260px; }
           <ul>
             <li>Oregon from 2018: predicted from the other four states, then opened (November 5) and added to the fit;</li>
             <li>Charlotte from mid-2023, including the county figures its permits are filed under: predicted, then opened (November 9);</li>
-            <li>St. Paul from 2024: its prediction is frozen, and its records stay locked until it is scored.</li>
+            <li>St. Paul from 2024: kept locked until its frozen prediction was scored (16 November 2026).</li>
           </ul>
         </li>
         <li><b>Data tiers.</b> Each state is labelled by what its data rests on:
@@ -395,13 +395,13 @@ table.checks td:last-child { min-width: 260px; }
         <ul class="body-small steps-list">
           <li><b>The usual pace</b> is the place's own 2–4 unit building in the 3 years before the reform, moved with its growth in other homes.</li>
           <li><b>The mature rate:</b> about 1 new 2–4 unit building per 1,000 eligible lots a year once the reform is fully in effect where building just pays. Its range is very wide (0.13 to 19 per 1,000).</li>
-          <li><b>How far in the reform is:</b> the effect builds up over time, reaching half its full size after about 4 years (1 to 6). By the fifth year it is still growing.</li>
+          <li><b>How far in the reform is:</b> the effect builds up over time, reaching half its full size after about 4 years (1 to 6), as in Oregon's places that the state law required to allow it. By the fifth year it is still growing.</li>
           <li><b>Lumpy years:</b> a third or more of these buildings come in projects of three or more, so a place's count swings with whether one large project lands in the window.</li>
           <li><b>What it counts:</b> Census permits for 2–4 unit buildings, the only size reported the same way everywhere. The reform allows up to 6, so this is a floor.</li>
         </ul>
         <h5>What it learned from</h5>
         <ul class="body-small steps-list">
-          <li>93 places in all five states (86 of them in Oregon, after its 2019 law) whose coded rule raised the number of homes allowed, or how easily they are approved, between 2013 and 2025.</li>
+          <li>93 places in all five states (86 of them in Oregon, most under its 2019 law, HB 2001) whose coded rule raised the number of homes allowed, or how easily they are approved, between 2013 and 2025.</li>
           <li>Places that always allowed missing middle, to anchor the mature rate (widened, because such places may differ).</li>
           <li>483 other places, used only to measure how lumpy a place's years are.</li>
           <li>Tested and not used: place types (they did not narrow the ranges).</li>
@@ -411,7 +411,7 @@ table.checks td:last-child { min-width: 260px; }
         <ul class="body-small steps-list">
           <li><b>Single places:</b> 78% of 136 places landed inside their range (the target was 60% to 95%).</li>
           <li><b>A new state:</b> with Oregon left out, the other states predicted 457 to 4,789 buildings in Oregon's places (midpoint 915); 703 were built.</li>
-          <li><b>Blind:</b> Charlotte passed. St. Paul's prediction is frozen and its result is still to come.</li>
+          <li><b>Blind:</b> Charlotte passed, with the earlier values. St. Paul, frozen with these values before any result was read, <b>missed</b>: 55 buildings in 2024–2025 against a range of 9 to 28. It built 33 in its first full year, against about 6 a year before.</li>
           <li><b>The weak spot:</b> the reform's own effect is not clearly detected. The model with a reform effect beats the same model without one by only about 1.5 standard errors, short of the 2 we set as the bar, and a fake reform date three years early shows a larger effect than the real dates.</li>
         </ul>
         <h5>What it can't tell you</h5>
@@ -419,6 +419,7 @@ table.checks td:last-child { min-width: 260px; }
           <li><b>How big the effect is.</b> The counts are consistent with an effect but cannot pin it down, so the mature rate's range spans about 150-fold.</li>
           <li><b>5–6 unit buildings,</b> which Census permits lump with larger ones.</li>
           <li><b>Height and floor-area limits,</b> which can stop a fourplex the zoning allows.</li>
+          <li><b>How fast builders respond.</b> Places that chose the reform themselves, like St. Paul, reached half speed in about half a year. At that pace the five-year homes would be about 3.6 times higher; this faster case is not in the app yet.</li>
         </ul>
         <p class="source">Sources: docs/analysis_plan.md D-092 (challenger C4) and docs/model_and_assumptions.md; config/params/mm_hazard.yaml.</p>
       </div>
@@ -1035,7 +1036,7 @@ const CONF = [
   ["C26", "Homes that would have been built elsewhere in the state", "range", "A quarter by default, from none to half: the net-new housing slider."],
   ["C27", "Comparison places that quietly reformed too", "design", "Comparison places are used only in tests, where this biases toward no effect."],
   ["C28", "Places unlike any the model learned from", "range", "The overlap check flags them and their range is widened."],
-  ["C29", "Building held back before a reform, or a slow start after", "test", "A start-up ramp for ADUs was tested and dropped; missing middle keeps a short one."],
+  ["C29", "Building held back before a reform, or a slow start after", "test", "A start-up ramp for ADUs was tested and dropped; missing middle keeps a slow one (half its full pace after about 4 years)."],
   ["C30", "A duplex replacing a house that would have been rebuilt", "design", "The houses a project replaces are subtracted."],
   ["C31", "Existing unpermitted units being legalised", "range", "10% of new ADU permits, from none to 30%."],
   ["C32", "A change in how permits are recorded at the reform", "test", "Houston and Austin were checked; the outcome was redefined to newly allowed building types."],
@@ -1079,12 +1080,12 @@ const CHECKS = [
   ["Data match Census", "Do our place-by-place permit sums match Census state totals?", "pass", "Within 1% in most years (Ohio 34 of 34, Minnesota 30 of 32, North Carolina 29 of 31), but only 21 of 34 in Texas. Austin's own permit file matches Census at 0.98."],
   ["Baseline backtest", "Starting from past years, does the baseline predict the next five years better than simple rules of thumb?", "partial", "Beat both rules of thumb (the last 3 years' average and a 10-year trend) in 41 of 48 tests. Passed every preset target in 19 of 48. Its ranges held the actual state total 83% of the time, running about 14% low on average."],
   ["Reformed vs similar places", "Can comparisons with places that did not reform measure the effect directly?", "fail", "Too weak to tell an effect from noise, and a placebo check failed. This is why effects are built from their parts (step 3b)."],
-  ["Placebo date (missing middle)", "Does the model find an 'effect' at a fake date years before a real reform?", "fail", "The first missing-middle fit did (0.32 per 1,000 lots). Most of it came from building types in Houston and Austin that the reforms did not newly allow, so the outcome was redefined to newly allowed types. The refit's placebo was inconclusive, neither passed nor failed."],
+  ["Placebo date (missing middle)", "Does the model find an 'effect' at a fake date years before a real reform?", "fail", "The first missing-middle fit did (0.32 per 1,000 lots). Most of it came from building types in Houston and Austin that the reforms did not newly allow, so the outcome was redefined to newly allowed types. The current fit still fails: a fake reform date three years early shows a larger effect than the real dates."],
   ["Leave a state out (ADUs)", "Fit on the other states, predict the hidden one from its place types and the rules of its 20 largest places: is the actual count inside the range, with the midpoint within a factor of two?", "pass", "Useful in all four states with counts (Minnesota, North Carolina, Texas, Oregon). The ranges are wide: in Texas the high end is about 50 times the low. Details on the ADU card (step 3c)."],
   ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "With Oregon left out, the other states predicted 457 to 4,789 buildings in its places; 703 were built. 78% of 136 single places landed inside their range. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set. Details on the missing-middle card (step 3c)."],
-  ["Oregon, blind", "Predicted before Oregon's results were looked at, then compared.", "partial", "Missing middle: actual 1,753 homes inside the predicted 1,738–6,469, near the bottom. ADUs missed low: Portland had 1,930 against a range of 3–1,418, Bend 414 against 0–206. Oregon was then added to the ADU fit."],
-  ["Charlotte, blind (missing middle)", "Prediction frozen before Charlotte's years from mid-2023 were opened.", "pass", "The actual count landed inside the frozen range."],
-  ["St. Paul, blind (missing middle)", "Prediction frozen before St. Paul's years from 2024 are opened.", "not_run", "The prediction is frozen; the result comes when its years are opened."],
+  ["Oregon, blind", "Predicted before Oregon's results were looked at, then compared.", "partial", "Missing middle (earlier values): actual 1,753 homes inside the predicted 1,738–6,469, near the bottom. ADUs missed low: Portland had 1,930 against a range of 3–1,418, Bend 414 against 0–206. Oregon was then added to the ADU fit."],
+  ["Charlotte, blind (missing middle)", "Prediction frozen before Charlotte's years from mid-2023 were opened.", "pass", "The actual count landed inside the frozen range (earlier values)."],
+  ["St. Paul, blind (missing middle)", "Prediction frozen before St. Paul's years from 2024 were opened.", "fail", "Missed: 55 buildings in 2024–2025 against a frozen range of 9 to 28. The effect came much faster than the model's 4-year ramp; with a 1-year ramp the same model gives a median of 55. A refit with a separate ramp for places that chose the reform did not forecast better, so the model stays, and the faster case is reported as a sensitivity."],
 ];
 function checksHtml() {
   const V = { pass: "Pass", partial: "Partial", fail: "Fail", not_run: "Not yet run" };
