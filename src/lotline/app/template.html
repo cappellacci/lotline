@@ -236,6 +236,9 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .model-card .one { font-size: 17px; line-height: 26px; max-width: 70ch; margin: 0; }
 .model-card .status { margin: var(--space-1) 0 var(--space-2); }
 @media (max-width: 640px) { .model-card { padding: var(--space-3); } }
+svg.allstates { width: 100%; min-width: 560px; height: auto; display: block; margin: var(--space-3) 0; }
+svg.allstates text { font-family: var(--font-mono); font-size: 11px; fill: var(--ink-muted); }
+svg.allstates .lab { font-family: var(--font-sans); font-size: 12px; fill: var(--ink); }
 svg.dag { width: 100%; min-width: 760px; height: auto; display: block; margin: var(--space-3) 0; }
 svg.dag text { font-family: var(--font-sans); font-size: 13px; fill: var(--ink); text-anchor: middle; }
 svg.dag text.col { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; fill: var(--ink-muted); }
@@ -353,7 +356,7 @@ table.checks td:last-child { min-width: 260px; }
 
     <div class="step" id="step-goal"><p class="step-n" aria-hidden="true">1</p><div class="step-body">
       <h3 class="h2">The goal: exactly what we measure</h3>
-      <p><b>The question.</b> If a state passed one of three reforms, how many more homes would be permitted over the five years <b>2027–2031</b> than under the rules already in place?</p>
+      <p><b>The question.</b> If a state passed one of three reforms, how many more homes would it gain over the five years <b>2027–2031</b> than under the rules already in place? The headline counts net new housing: homes finished, minus houses torn down to build them and homes that would have been built elsewhere in the state anyway.</p>
       <ul class="body-small steps-list">
         <li><b>The three reforms</b> follow the challenge Handbook to the letter.
           <ul>
@@ -535,6 +538,11 @@ table.checks td:last-child { min-width: 260px; }
         </ul>
         <p class="source">Sources: docs/analysis_plan.md D-010, D-065, D-073, D-076, D-077; config/params/fees.yaml.</p>
       </div>
+
+      <h4 class="h3">The three models, every state at once</h4>
+      <p class="body-small">What each model predicts for every state with results: net new homes over the five years, the band from P10 to P90 and the tick at the midpoint. The scale is logarithmic, so each gridline is ten times the last. Missing middle's bands are the widest because its reform effect is the least pinned down; Oregon adds few ADUs because its state law already allows what the reform asks.</p>
+      <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
+      <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
 
       <h4 class="h3">3d. The causal diagram</h4>
       <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
@@ -1503,9 +1511,40 @@ function mmDeepDive(bs) {
     <div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">Lots where 2–4 homes become legal</th><th class="n">Lots where building pays</th><th class="n">Homes permitted</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
     <p class="source">Midpoints, with P10–P90 below. Every figure comes from the state's results file. The steps are explained on the Results page under "How we get these numbers".</p>`;
 }
+// Every state's five-year range per reform, from the numbers the page embeds per state (build.headline).
+function allStatesSvg() {
+  const order = ["adu", "missing_middle", "fees", "fees_local_half"].filter((k) => Object.hasOwn(DATA.scenarios, k));
+  const num = (h) => h && { p10: Number(h.p10), p50: Number(h.p50), p90: Number(h.p90) };
+  const states = DATA.states.filter((b) => b.headline && Object.keys(b.headline).length);
+  const name = (c) => ((DATA.map.tiles || []).find((t) => t.code === c) || {}).name || c;
+  const vals = states.flatMap((b) => order.map((k) => num(b.headline[k])).filter(Boolean).flatMap((h) => [h.p10, h.p90])).filter((v) => v > 0);
+  if (!vals.length) return "";
+  const lo = 10 ** Math.floor(Math.log10(Math.min(...vals))), hi = 10 ** Math.ceil(Math.log10(Math.max(...vals)));
+  const W = 760, L = 130, R = 60, bar = 10, gap = 4, block = order.length * (bar + gap) + 14, T = 6;
+  const H = T + states.length * block + 24;
+  const x = (v) => L + (Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (W - L - R);
+  const g = [];
+  for (let t = lo; t <= hi; t *= 10) g.push(`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H - 20}" stroke="var(--rule)"></line><text x="${x(t)}" y="${H - 6}" text-anchor="middle">${esc(fmtN(t))}</text>`);
+  states.forEach((b, i) => {
+    const y0 = T + i * block;
+    g.push(`<text class="lab" x="0" y="${y0 + block / 2 - 4}">${esc(name(b.meta.state))}</text>`);
+    order.forEach((k, j) => {
+      const h = num(b.headline[k]);
+      if (!h) return;
+      const y = y0 + j * (bar + gap), c = scenColor(k), op = k === "fees_local_half" ? 0.45 : 0.3;
+      g.push(`<rect x="${x(h.p10)}" y="${y}" width="${Math.max(2, x(h.p90) - x(h.p10))}" height="${bar}" fill="${c}" opacity="${op}" rx="2"><title>${esc(scenLabel(k))}, ${esc(name(b.meta.state))}: ${esc(fmtN(h.p10))} to ${esc(fmtN(h.p90))} homes, midpoint ${esc(fmtN(h.p50))}</title></rect>`);
+      g.push(`<line x1="${x(h.p50)}" x2="${x(h.p50)}" y1="${y - 1}" y2="${y + bar + 1}" stroke="${c}" stroke-width="2.5"></line>`);
+      g.push(`<text x="${Math.min(x(h.p90) + 5, W - R + 4)}" y="${y + bar - 1}">${esc(fmtN(h.p50))}</text>`);
+    });
+  });
+  $("allstates").setAttribute("viewBox", `0 0 ${W} ${H}`);
+  $("allstates-key").innerHTML = order.map((k) => `<span><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(k)};opacity:${k === "fees_local_half" ? 0.45 : 0.3}"></span> ${esc(scenLabel(k))}</span>`).join("") + `<span class="muted">│ midpoint</span>`;
+  return g.join("");
+}
 function staticTrust() {
   heldoutHtml();
   wireModelCards();
+  $("allstates").innerHTML = allStatesSvg();
   $("dag").innerHTML = dagSvg();
   $("dag-key").innerHTML = dagKey();
   confHtml();
