@@ -17,10 +17,14 @@ For every evidence entry:
    and judge by eye, noting "checked by eye p. N"). Entries with no snapshot and `source_kind: human_lookup`
    pass this step.
 2. The source is about this place **and state** (LESSONS R-8).
-3. Adoption/effective evidence is not a draft:
+3. Adoption/effective-date evidence is not a draft (the rule is for **date** evidence only; a compiled code
+   whose cover still says "Adoption Draft" but whose body is the current edition is not a draft):
    `uv run python -c "from lotline.rule_agents.mm.findings import draft_markers; print(draft_markers(open('<txt>').read()))"`
    prints `[]` (P-3).
-4. The quote supports the value: the `unit_cap` quote names the number of units or the dwelling type; the date
+4. The quote supports the value: the `unit_cap` quote names the number of units or the dwelling type — for a
+   **"none" row** (cap 1) the evidence is an empty cell, so accept a quote of the table row (e.g. "Duplex …")
+   and/or legend ("blank cell = prohibited") when `section` names the cell (table, row, column) and you can
+   see the cell is blank in the snapshot text or page image; the date
    quotes contain that date; the `prior_cap` quote is from a code **older** than the rule; zones in
    `coverage_zones` appear in the quote or its table.
 

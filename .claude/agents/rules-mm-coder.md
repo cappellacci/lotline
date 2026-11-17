@@ -37,7 +37,9 @@ the route by right. Window: from 2010-01-01; an older rule still in force is cod
 **unit_cap** [M-1]: the most principal homes allowed on one single-family-zoned lot under the rule (duplex =
 2). Bonus caps (affordability) go in `notes`; across districts code the cap that holds in all covered districts.
 A **"none" rule** (`unit_cap: 1`) when nothing allows 2–4 homes on single-family lots, with evidence from the
-current use table [M-3]. Districts that already allowed duplexes are two-family districts, not MM [M-4].
+current use table [M-3]: quote the two-family / three-four-unit **row** and the legend, and name the empty cell
+in `section` ("Table 60.200-1, row 'Duplex', column R-1: blank = prohibited"). Its `effective_date` is the
+date the code edition you read took effect (quote it), `date_basis` usually `earliest_known`. Districts that already allowed duplexes are two-family districts, not MM [M-4].
 
 **prior_cap** [M-2, DT-2]: for every dated rule with `unit_cap ≥ 2`, the cap in those districts **just before**,
 with evidence from the predecessor code (Wayback copy, old UDO, the new code's district-conversion table). If
