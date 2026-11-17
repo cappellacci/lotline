@@ -100,3 +100,15 @@
 - **Outputs:** `src/lotline/app/template.html`; `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change. Checked with `tests/app` (50 passed), ruff and `compliance_check.py`, and in the browser pane on North Carolina's real results. Also recomputed North Carolina's share of housing need from the bundle's runs for Ben: the page matches the engine's numbers exactly.
 - **Open / next:** the share-of-need card shows the selected reform alone and does not say which; Ben to decide how it should relate to the headline total.
+
+### LB-NNN · 2026-11-17 · Deliverables: share of housing need for all three reforms together, then each
+- **Question:** Why did the share-of-need card look small next to the headline, and what should it show?
+- **What I did:** The card showed only the reform picked in the selector, without naming it. North Carolina's ADUs alone were 0.06% of the need, while the headline's three reforms are about 3%. Ben chose "all three, then each". For each kind of need the card now shows:
+  - the share for all three reforms together, summed run by run like the headline;
+  - a table with each reform's own share;
+  - the linked sources.
+  The headline and the card now share one function for the summed runs.
+- **Inputs:** Ben's question and answer (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`; `tests/app/test_build.py`.
+- **AI:** Claude Code recomputed North Carolina's shares from the bundle's runs: they match the engine exactly. Then it wrote the change. Checked with `tests/app` (50 passed), `compliance_check.py`, and in the browser pane: North Carolina's midpoint is 3.0% of 205,300 homes, consistent with the 6,190-home headline.
+- **Open / next:** the two shortage figures (Up for Growth 41,700, Freddie Mac 167,400) have not been rechecked against their source spreadsheets.

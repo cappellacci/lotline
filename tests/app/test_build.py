@@ -174,7 +174,7 @@ def test_results_section_parts_are_on_the_page(tmp_path):
 
 def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    js = html[html.index("function heroUpdate") :]
+    js = html[html.index("function together") :]
     # "[State] can add [X] homes over the next 5 years", X the three reforms together, summed draw by draw
     assert (
         'can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years'

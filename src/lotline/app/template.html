@@ -1036,13 +1036,17 @@ function knobsHtml(b) {
 // "[State] can add [X] homes": X is the three reforms together (Ben, 2026-11-17), summed draw by draw so the range
 // is a real range of the total (the fee reform in the version its switch shows). Each reform is estimated on its
 // own, so a lot that two reforms open is counted in both.
-function heroUpdate(b, R, o) {
-  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
-  const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+// The reforms added together, run by run: each run's homes summed across the reforms, then P10/P50/P90 of the sums.
+function together(b, keys, o) {
   const per = keys.map((s) => AGG.homesFromDraws([...drawsFor(b, s)].sort((x, y) => x.draw - y.draw), UI.pins)[o]);
   const n = per.length ? Math.min(...per.map((a) => a.length)) : 0;
   const sum = Array.from({ length: n }, (_, i) => per.reduce((t, a) => t + a[i], 0));
-  const tot = n ? { p10: AGG.percentile(sum, 10), p50: AGG.percentile(sum, 50), p90: AGG.percentile(sum, 90) } : null;
+  return { n, tot: n ? { p10: AGG.percentile(sum, 10), p50: AGG.percentile(sum, 50), p90: AGG.percentile(sum, 90) } : null };
+}
+function heroUpdate(b, R, o) {
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const { n, tot } = together(b, keys, o);
   const x = tot ? tot.p50 : NaN;
   $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
   const yrs = AGG.windowLabel(b);
@@ -1087,17 +1091,28 @@ function updateResults() {
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
   const d = UI.detail;
   $("model-card").innerHTML = evidenceHtml(b, d, R);
-  // share of need: net statewide only (aggregate.share_of_need), the headline kind first
-  const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
-  $("need").innerHTML = needs.length ? needs.map((n) => {
-    const sh = AGG.shareOfNeed(R[d].homes_net_statewide, n);
+  // share of need (Ben, 2026-11-17): all three reforms together first, as in the headline, then each reform on its
+  // own. Net new homes only (aggregate.share_of_need); the need is the state's, so any reform's row gives it.
+  const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const kinds = [];
+  for (const n of b.need.filter((r) => nk.includes(r.scenario))) if (!kinds.some((k) => k.label === n.label)) kinds.push(n);
+  kinds.sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
+  const all = together(b, nk, "homes_net_statewide").tot;
+  const pctR = (sh) => `${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}`;
+  $("need").innerHTML = kinds.length && all ? kinds.map((n) => {
+    const sh = AGG.shareOfNeed(all, n);
     // When the need's high and low differ, say how far the midpoint moves; when they match, say nothing.
     const alt = n.denominator_high !== n.denominator_low
       ? ` If the need is ${fmtN(Math.min(n.denominator_high, n.denominator_low))} to ${fmtN(Math.max(n.denominator_high, n.denominator_low))} homes instead, it is ${fmtPct(Math.min(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} to ${fmtPct(Math.max(sh.share_p50_at_need_high, sh.share_p50_at_need_low))}.`
       : "";
-    return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-4) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
-      <span class="body">${esc(n.label)}</span></p>
+    const each = nk.map((s) => {
+      const e = AGG.shareOfNeed(R[s].homes_net_statewide, n);
+      return `<tr><td>${esc(scenLabel(s))}</td><td class="num">${pctR(e)}</td><td class="num muted">${fmtPct(e.share_p50)}</td></tr>`;
+    }).join("");
+    return `<h4 style="margin:var(--space-5) 0 0">${esc(n.label.replace(/^of /, "").replace(/^./, (c) => c.toUpperCase()))}</h4>
+      <p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-1) 0 0">${pctR(sh)} <span class="body">with all three reforms together</span></p>
       <p class="body-small" style="margin:var(--space-1) 0 0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes, counting net new homes only.${alt}</p>
+      <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Likely range</th><th class="num">Midpoint</th></tr></thead><tbody>${each}</tbody></table>
       <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sourceLinks(n.source)}</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
   for (const k of DATA.knobs) {
