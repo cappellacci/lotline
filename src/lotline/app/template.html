@@ -655,7 +655,8 @@ function wireModels() {
   $("model-switch").addEventListener("click", (e) => {
     const t = e.target.closest("button[data-model]");
     if (!t) return;
-    UI.model = { adu: "adu", missing_middle: "missing_middle", fees: "fees" }[t.dataset.model] || UI.model;
+    const m = t.dataset.model;  // compared, never copied: only these three constants reach the page
+    UI.model = m === "missing_middle" ? "missing_middle" : m === "fees" ? "fees" : "adu";
     $("model-switch").querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
     refreshResults();
   });
@@ -1279,7 +1280,7 @@ function wireResults() {
       drawTornado();
     }
     if (t.dataset.feemode) {
-      UI.feeMode = { fees: "fees", fees_local_half: "fees_local_half" }[t.dataset.feemode] || UI.feeMode;
+      UI.feeMode = t.dataset.feemode === "fees_local_half" ? "fees_local_half" : "fees";
       refreshResults();
       return;
     }
