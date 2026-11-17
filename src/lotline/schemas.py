@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.13"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.14"  # schemas-v1 line (additive changes only); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -430,7 +430,8 @@ TABLES: dict[str, type[pa.DataFrameModel]] = {
 SCENARIOS = [
     "adu",
     "missing_middle",
-    "fees",
+    "fees",  # the Handbook benchmark: a $50,000 fee cut in half (D-065)
+    "fees_local_half",  # real local fees cut in half (D-065)
     "adu+missing_middle",
     "adu+fees",
     "missing_middle+fees",
@@ -705,6 +706,11 @@ HISTORY = [
         "1.13",
         "fees: optional amount_per_unit_low_usd and amount_per_unit_high_usd (range of a fee that varies by "
         "area, basin, tier or plat date) and in_force_through (an older row still in force; #247, D-066)",
+    ),
+    (
+        "1.14",
+        "results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook "
+        "benchmark), D-065",
     ),
 ]
 
