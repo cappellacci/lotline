@@ -166,6 +166,13 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .steps-list ul { padding-left: 1.2em; margin: var(--space-1) 0; }
 .steps-list ul li { margin: var(--space-1) 0; }
 .formula { font-family: var(--font-mono); font-size: 15px; background: var(--paper-sunken); border-left: var(--stroke-line) solid var(--survey); padding: var(--space-3) var(--space-4); max-width: none; }
+.model-tabs { margin: var(--space-3) 0; }
+.model-card { background: var(--app-card); border: var(--stroke-hair) solid var(--rule); padding: var(--space-4) var(--space-5); }
+.model-card h5 { font-size: 14px; line-height: 20px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin: var(--space-5) 0 var(--space-2); }
+.model-card h5:first-child { margin-top: 0; }
+.model-card .one { font-size: 17px; line-height: 26px; max-width: 70ch; margin: 0; }
+.model-card .status { margin: var(--space-1) 0 var(--space-2); }
+@media (max-width: 640px) { .model-card { padding: var(--space-3); } }
 svg.dag { width: 100%; min-width: 760px; height: auto; display: block; margin: var(--space-3) 0; }
 svg.dag text { font-family: var(--font-sans); font-size: 13px; fill: var(--ink); text-anchor: middle; }
 svg.dag text.col { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; fill: var(--ink-muted); }
@@ -258,7 +265,7 @@ table.checks td:last-child { min-width: 260px; }
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
-    <p class="lead">How we got from the question to the numbers, one step at a time: what we measure, how the data were prepared, how the model builds its range and what we ruled out, how we tested it, and how it carries over to a new state.</p>
+    <p class="lead">How we got from the question to the numbers, one step at a time: what we measure, how the data were prepared, the three reform models side by side, where the range comes from and what we ruled out, how we tested it, and how it carries over to a new state.</p>
 
     <div class="step" id="step-goal"><p class="step-n" aria-hidden="true">1</p><div class="step-body">
       <h3 class="h2">The goal: exactly what we measure</h3>
@@ -268,7 +275,7 @@ table.checks td:last-child { min-width: 260px; }
           <ul>
             <li><b>ADUs:</b> one backyard home per house, at least 600 sq ft, with no parking required.</li>
             <li><b>Missing middle:</b> 2–6 homes allowed on lots now zoned for one house, up to three stories.</li>
-            <li><b>Fees:</b> development fees cut by half. Fee results are not in this app yet.</li>
+            <li><b>Fees:</b> development fees cut by half, shown two ways: the Handbook's benchmark (a $50,000 fee everywhere, cut to $25,000) and each city's real fees cut by half.</li>
           </ul>
         </li>
         <li><b>The comparison</b> is always reform against no reform. "No reform" keeps every city's own rules, including laws already passed that take effect by the end of 2027. A reform is never credited with homes that current law will produce anyway.</li>
@@ -295,10 +302,11 @@ table.checks td:last-child { min-width: 260px; }
         <li><b>Homes permitted.</b> Census permit counts by building size (1, 2, 3–4 and 5+ homes) for every place since 1992, plus city permit files that mark ADUs. A project total repeated on several permits is counted once.</li>
         <li><b>Local rules, with dates.</b> For each city we looked up when it allowed ADUs or missing middle, and how strict the rule is: by right or not, whether the owner must live there, parking, size. Places nobody has coded borrow the rules of similar coded places of the same size.</li>
         <li><b>Unknown is never zero.</b> A missing year stays missing; it does not count as a year with no building. An unknown zoning code counts the lot as eligible, flagged as an assumption.</li>
-        <li><b>Hidden years for blind tests.</b> Two places' recent records are locked away from the model so we can predict them first and look later:
+        <li><b>Hidden years for blind tests.</b> Some places' recent records were locked away from the model so we could predict them first and look later:
           <ul>
-            <li>St. Paul from 2024;</li>
-            <li>Charlotte from mid-2023, including the county figures Charlotte's permits are filed under.</li>
+            <li>Oregon from 2018: predicted from the other four states, then opened (November 5) and added to the fit;</li>
+            <li>Charlotte from mid-2023, including the county figures its permits are filed under: predicted, then opened (November 9);</li>
+            <li>St. Paul from 2024: kept locked until its frozen prediction was scored (16 November 2026).</li>
           </ul>
         </li>
         <li><b>Data tiers.</b> Each state is labelled by what its data rests on:
@@ -317,42 +325,149 @@ table.checks td:last-child { min-width: 260px; }
       <h4 class="h3">3a. What gets built anyway</h4>
       <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over 2021–2025. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
 
-      <h4 class="h3">3b. Why we built the effect from its parts</h4>
-      <p class="body-small">Our first plan was to compare reformed cities with similar cities that did not reform. In our four states those comparisons could not tell a real effect from noise: they could only have detected effects many times larger than any plausible one. So the model builds each reform's effect from its working parts, measuring each part separately:</p>
+      <h4 class="h3">3b. Why we built each effect from its parts</h4>
+      <p class="body-small">Our first plan was to compare reformed cities with similar cities that did not reform. In our four states those comparisons could not tell a real effect from noise: they could only have detected effects many times larger than any plausible one. So each reform's effect is built from its working parts, and each part is measured separately:</p>
       <p class="formula">extra homes = lots the reform opens up × share where building pays × how often owners build, once it pays</p>
       <ul class="body-small steps-list">
         <li><b>Lots the reform opens up</b> counts only what the reform adds beyond a city's current rule. A city that already allows ADUs gains little.</li>
         <li><b>Share where building pays</b> compares, lot by lot, what a new home would sell or rent for with what it costs to build, finance and sell.</li>
-        <li><b>How often owners build</b> is measured from our own reformed places, not borrowed from other studies. Outside studies are used only as a check.
-          <ul>
-            <li>ADUs: 53 places in Minnesota, North Carolina, Ohio, Texas and Oregon. A typical place sees about 0.31 ADUs per 1,000 lots a year (0.21 to 0.46).</li>
-            <li>Missing middle: 13 places in four states.</li>
-          </ul>
-        </li>
-        <li><b>Mortgage rates and home equity</b> enter for ADUs, because most ADUs are built by homeowners who borrow against their house.</li>
-        <li><b>What is already being built is never credited to the reform.</b>
-          <ul>
-            <li>For ADUs, a place's observed rate is a floor.</li>
-            <li>For missing middle, the houses a project replaces are subtracted.</li>
-          </ul>
-        </li>
+        <li><b>How often owners build</b> is measured from our own reformed places for ADUs and missing middle, not borrowed from other studies. Fee cuts are the exception: no place in our states cut fees on the scale of the reform, so their response comes from published studies (see the fee card).</li>
+        <li><b>What is already being built is never credited to the reform.</b></li>
       </ul>
 
-      <h4 class="h3">3c. The causal diagram</h4>
+      <h4 class="h3">3c. The three models</h4>
+      <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it; every card answers the same five questions.</p>
+      <div class="tabs model-tabs" role="group" aria-label="Which model">
+        <button type="button" class="chip" data-model="adu" aria-pressed="true">ADUs</button>
+        <button type="button" class="chip" data-model="mm" aria-pressed="false">Missing middle</button>
+        <button type="button" class="chip" data-model="fees" aria-pressed="false">Fee cuts</button>
+      </div>
+
+      <div class="model-card" id="model-adu" data-model-card="adu">
+        <h5>In one sentence</h5>
+        <p class="one">Every house lot where an ADU is allowed has a small yearly chance of getting one; the chance depends on the city's rules and on whether it is a big city or a suburb, and the reform raises it where local rules hold ADUs back.</p>
+        <h5>How it works</h5>
+        <p class="formula">ADUs a year = lots where allowed × base chance × how much the local rule allows × big-city factor × place's own luck</p>
+        <ul class="body-small steps-list">
+          <li><b>Base chance:</b> about 2 lots in 10,000 a year get an ADU in a suburb whose rules match the reform (0.22 per 1,000 lots; 0.17 to 0.30).</li>
+          <li><b>Local rules:</b> a rule whose only extra condition is that the owner lives there gets the full chance. A rule with other limits (a parking space, a smaller size cap, a permit hearing) reaches about 70% of it. That share is uncertain, so each run draws it, from 40% to 100%.</li>
+          <li><b>Big cities and suburbs.</b> Each place gets one of three labels, from national census data only:
+            <ul>
+              <li><b>core city:</b> the biggest city in its metro area, or one at least a third its size;</li>
+              <li><b>suburb:</b> any other place in a metro area;</li>
+              <li><b>town:</b> a place outside any metro area.</li>
+            </ul>
+            Core cities build ADUs at about 6 times the rate of suburbs with the same rules (3 to 11 times). This one fact explains much of the gap between states.</li>
+          <li><b>Place's own luck.</b> Some places build more or fewer ADUs than their rules suggest, for reasons we can't see: local builders, prices, habits. The model does not guess why; it gives each place a multiplier drawn to match how much real places differ. This is a large part of why answers come as ranges.</li>
+          <li><b>Prices and borrowing.</b> The chance rises where an ADU's rent covers what it costs to build, and with homeowners' equity; it falls as mortgage rates rise, because most ADUs are built by owners who borrow against their house. The sizes of these effects are judgment calls with wide ranges.</li>
+          <li><b>Places that count their own ADUs</b> keep their own recent pace as the no-reform rate. The reform adds the gap between what today's rule allows and what the reform allows. A place that allows no ADUs today gets the full rate for its type.</li>
+        </ul>
+        <h5>What it learned from</h5>
+        <ul class="body-small steps-list">
+          <li><b>Counted ADUs:</b> city permit files that mark ADUs, in places across Minnesota, North Carolina, Texas, Oregon and Ohio.</li>
+          <li><b>Checked local rules:</b> for 70 places we went back through their ordinances year by year and recorded their ADU rules from 2016 to 2025, then checked those records against the original sources. The fit uses 498 place-years.</li>
+          <li><b>Tested and set aside:</b> a slower start in the first years after a city first allows ADUs. The data leaned that way, but it did not predict held-out places any better, so it was not used.</li>
+        </ul>
+        <h5>How we tested it</h5>
+        <p class="status"><span class="verdict pass"><span class="glyph" aria-hidden="true"></span>Pass</span></p>
+        <p class="body-small">We hid one state, fitted the model on the others and predicted the hidden state from two things only: its places' types and the coded rules of its 20 largest places. A prediction counted as useful if the actual number fell inside its range (P10 to P90) and the midpoint was within a factor of two.</p>
+        <div class="scroll"><table class="body-small"><thead><tr><th>State hidden</th><th class="n">ADUs counted</th><th class="n">Midpoint</th><th class="n">Range (P10–P90)</th></tr></thead><tbody>
+          <tr><td>Minnesota</td><td class="n">50</td><td class="n">62</td><td class="n">29–130</td></tr>
+          <tr><td>North Carolina</td><td class="n">621</td><td class="n">487</td><td class="n">106–1,936</td></tr>
+          <tr><td>Texas</td><td class="n">364</td><td class="n">246</td><td class="n">26–1,278</td></tr>
+          <tr><td>Oregon</td><td class="n">527</td><td class="n">417</td><td class="n">83–1,603</td></tr>
+        </tbody></table></div>
+        <p class="body-small">Useful in all four. Ohio could not be tested this way: only 3 of its places have usable ADU counts. These four states also shaped the model's design, so this is not a fully blind test. The blind one, Oregon predicted before any of its data was opened, missed low (see the tests table below).</p>
+        <h5>What it can't tell you</h5>
+        <ul class="body-small steps-list">
+          <li><b>The ranges are wide.</b> In Texas the top of the range is about 50 times the bottom.</li>
+          <li><b>Big cities that allow no ADUs today</b> (Dallas, Fort Worth) take the full core-city rate under the reform. None of the places we fitted made that jump at that size, so these cities drive much of Texas's range.</li>
+          <li><b>High-uptake markets can be under-predicted,</b> as Portland and Bend were in the blind test.</li>
+        </ul>
+        <p class="source">Sources: docs/analysis_plan.md D-088, D-093, D-096, D-097, D-099 and the 2026-11-16 config note; config/params/hazard.yaml, adu.yaml, adu_place_types.yaml.</p>
+      </div>
+
+      <div class="model-card" id="model-mm" data-model-card="mm" hidden>
+        <h5>In one sentence</h5>
+        <p class="one">When a place starts allowing 2–4 homes on lots zoned for one house, small multi-unit buildings rise above the place's usual pace, slowly, and mostly where rents cover the cost of building.</p>
+        <h5>How it works</h5>
+        <p class="formula">2–4 unit buildings a year = the place's usual pace + mature rate × eligible lots × how much the rule changed × whether building pays × how far in the reform is</p>
+        <ul class="body-small steps-list">
+          <li><b>The usual pace</b> is the place's own 2–4 unit building in the 3 years before the reform, moved with its growth in other homes.</li>
+          <li><b>The mature rate:</b> about 1 new 2–4 unit building per 1,000 eligible lots a year once the reform is fully in effect where building just pays. Its range is very wide (0.13 to 19 per 1,000).</li>
+          <li><b>How far in the reform is:</b> the effect builds up over time, reaching half its full size after about 4 years (1 to 6), as in Oregon's places that the state law required to allow it. By the fifth year it is still growing.</li>
+          <li><b>Lumpy years:</b> a third or more of these buildings come in projects of three or more, so a place's count swings with whether one large project lands in the window.</li>
+          <li><b>What it counts:</b> Census permits for 2–4 unit buildings, the only size reported the same way everywhere. The reform allows up to 6, so this is a floor.</li>
+        </ul>
+        <h5>What it learned from</h5>
+        <ul class="body-small steps-list">
+          <li>93 places in all five states (86 of them in Oregon, most under its 2019 law, HB 2001) whose coded rule raised the number of homes allowed, or how easily they are approved, between 2013 and 2025.</li>
+          <li>Places that always allowed missing middle, to anchor the mature rate (widened, because such places may differ).</li>
+          <li>483 other places, used only to measure how lumpy a place's years are.</li>
+          <li>Tested and not used: place types (they did not narrow the ranges).</li>
+        </ul>
+        <h5>How we tested it</h5>
+        <p class="status"><span class="verdict partial"><span class="glyph" aria-hidden="true"></span>Partial</span></p>
+        <ul class="body-small steps-list">
+          <li><b>Single places:</b> 78% of 136 places landed inside their range (the target was 60% to 95%).</li>
+          <li><b>A new state:</b> with Oregon left out, the other states predicted 457 to 4,789 buildings in Oregon's places (midpoint 915); 703 were built.</li>
+          <li><b>Blind:</b> Charlotte passed, with the earlier values. St. Paul, frozen with these values before any result was read, <b>missed</b>: 55 buildings in 2024–2025 against a range of 9 to 28. It built 33 in its first full year, against about 6 a year before.</li>
+          <li><b>The weak spot:</b> the reform's own effect is not clearly detected. The model with a reform effect beats the same model without one by only about 1.5 standard errors, short of the 2 we set as the bar, and a fake reform date three years early shows a larger effect than the real dates.</li>
+        </ul>
+        <h5>What it can't tell you</h5>
+        <ul class="body-small steps-list">
+          <li><b>How big the effect is.</b> The counts are consistent with an effect but cannot pin it down, so the mature rate's range spans about 150-fold.</li>
+          <li><b>5–6 unit buildings,</b> which Census permits lump with larger ones.</li>
+          <li><b>Height and floor-area limits,</b> which can stop a fourplex the zoning allows.</li>
+          <li><b>How fast builders respond.</b> Places that chose the reform themselves, like St. Paul, reached half speed in about half a year. At that pace the five-year homes would be about 3.6 times higher; this faster case is not in the app yet.</li>
+        </ul>
+        <p class="source">Sources: docs/analysis_plan.md D-092 (challenger C4) and docs/model_and_assumptions.md; config/params/mm_hazard.yaml.</p>
+      </div>
+
+      <div class="model-card" id="model-fees" data-model-card="fees" hidden>
+        <h5>In one sentence</h5>
+        <p class="one">Cutting the fees a builder pays the city lowers the cost of a new home; part of the saving goes to landowners, and building responds weakly to the rest.</p>
+        <h5>How it works</h5>
+        <p class="formula">extra homes = usual homes × how strongly building responds × builder's share of the cut ÷ total cost of the home, plus lots that newly pay</p>
+        <ul class="body-small steps-list">
+          <li><b>The cut,</b> shown two ways on the Results page: the Handbook's benchmark, $25,000 a home (half of a $50,000 fee assumed everywhere), and half of each city's real fees for houses, duplexes and fourplexes. Buildings of 5 or more homes are never covered.</li>
+          <li><b>Builder's share:</b> about half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters).</li>
+          <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (from under 1% to 17%; each run draws one value).</li>
+          <li><b>Lots that newly pay:</b> where parcel data allow, the cost model also counts lots that cross from not paying to paying after the cut.</li>
+        </ul>
+        <h5>What it learned from</h5>
+        <ul class="body-small steps-list">
+          <li><b>Fee schedules</b> coded for 50 places, which hold about a third of each state's usual building. Other places take their state's median fee ($3,900 a home in Texas to $9,100 in Minnesota).</li>
+          <li><b>How strongly building responds</b> comes from published studies, not our own places: most studies of fees find no clear effect on how much is built, and the high end comes from metro-wide supply studies.</li>
+        </ul>
+        <h5>How we tested it</h5>
+        <p class="status"><span class="verdict not_run"><span class="glyph" aria-hidden="true"></span>Not yet run</span></p>
+        <p class="body-small">The fee model is built and checked against hand-worked examples, but it has not been tested against what happened after a real fee change. Its results are on the Results page as a range, like the others.</p>
+        <h5>What it can't tell you</h5>
+        <ul class="body-small steps-list">
+          <li><b>How a city replaces the money.</b> Fees often pay for roads, pipes and parks; what happens to those is not modelled.</li>
+          <li><b>Its own accuracy.</b> Unlike the other two models, its key number is borrowed, not measured here.</li>
+          <li><b>Oregon:</b> not in the fee run yet.</li>
+        </ul>
+        <p class="source">Sources: docs/analysis_plan.md D-010, D-065, D-073, D-076, D-077; config/params/fees.yaml.</p>
+      </div>
+
+      <h4 class="h3">3d. The causal diagram</h4>
       <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
       <div class="scroll"><svg class="dag" id="dag" role="img" aria-label="Causal diagram: what drives the extra homes a reform adds, and how each other factor is handled" viewBox="0 0 960 400"></svg></div>
       <div class="dag-key body-small" id="dag-key"></div>
 
-      <h4 class="h3">3d. Every factor we considered, and what we did with it</h4>
+      <h4 class="h3">3e. Every factor we considered, and what we did with it</h4>
       <p class="body-small">We kept a register of every factor that could bias the answer or change its size: <span id="conf-count"></span>. Each one was handled in one of the ways below. The ones we could not handle are listed as limits, not hidden.</p>
       <div id="conf-summary"></div>
       <details class="fold"><summary>The full register</summary><div class="scroll" id="conf-table"></div>
         <p class="source">From docs/research/lotline-confounder-register.csv and the causal diagrams in docs/research/. The decisions are in docs/analysis_plan.md.</p></details>
 
-      <h4 class="h3">3e. Where the range comes from</h4>
+      <h4 class="h3">3f. Where the range comes from</h4>
       <ul class="body-small steps-list">
         <li><b>The building cycle:</b> each run replays a different stretch of the state's past booms and busts.</li>
         <li><b>The measured rates:</b> how often owners build, and how fast, are drawn from their fitted ranges, not fixed at one value.</li>
+        <li><b>How much a partial local rule already allows</b> (ADUs): each run draws it from the values the data support.</li>
         <li><b>Place-to-place differences we cannot measure:</b> each place gets its own multiplier, drawn to match how much real places differ. A state the model was not fitted on gets a wider spread still.</li>
         <li><b>Judgment calls</b> are drawn from stated low-to-high ranges, each with a source in config/params:
           <ul>
@@ -365,7 +480,7 @@ table.checks td:last-child { min-width: 260px; }
       </ul>
       <div id="trust-body"></div>
 
-      <h4 class="h3">3f. How we tested it</h4>
+      <h4 class="h3">3g. How we tested it</h4>
       <p class="body-small">Each test was set up before its result was seen. Where a test failed we say so; several failures changed the model.</p>
       <div class="scroll"><table class="checks"><thead><tr><th>Test</th><th>What it asks</th><th>Result</th></tr></thead><tbody id="checks"></tbody></table></div>
     </div></div>
@@ -382,6 +497,7 @@ table.checks td:last-child { min-width: 260px; }
             <li>the state's unknown character gets the widest spread the model has, anywhere from a third of a typical state to three times one.</li>
           </ul>
         </li>
+        <li><b>ADU place types come from national data,</b> so every place in any state gets one, even in a state with no ADU counts at all.</li>
         <li><b>Places outside a state ADU law</b> borrow the rules of small towns in states without one, not those of big cities that have reformed.</li>
         <li><b>The test case is Oregon.</b> It was predicted from the other four states before its own results were looked at, and the app shows it as the "transfer" state. Its missing-middle results were not used to fit the model. Since 2026-11-06, Portland and Bend are part of the ADU fit.</li>
       </ul>
@@ -392,7 +508,7 @@ table.checks td:last-child { min-width: 260px; }
       <h3 class="h2">What the model cannot tell you</h3>
       <ul class="body-small steps-list">
         <li><b>Single cities are very uncertain.</b> The state total is the number to rely on; one city's range can be very wide.</li>
-        <li><b>Missing middle rests on few places:</b> 13 reformed places in four states. Its edge over "no effect" is about 1.5 standard errors, short of the 2 we set as the bar.</li>
+        <li><b>Missing middle's effect is not clearly detected:</b> its edge over "no effect" is about 1.5 standard errors, short of the 2 we set as the bar, so its range is very wide.</li>
         <li><b>High-uptake ADU markets can be under-predicted,</b> as Portland and Bend were in the blind test.</li>
         <li><b>Not modelled:</b>
           <ul>
@@ -403,7 +519,7 @@ table.checks td:last-child { min-width: 260px; }
             <li>what happens to prices, rents, or who lives in the new homes.</li>
           </ul>
         </li>
-        <li><b>Fees:</b> the fee model is built but not yet tested or added to this app.</li>
+        <li><b>Fee cuts are not tested against a real fee change,</b> and their key number (how strongly building responds) is borrowed from published studies.</li>
       </ul>
       <details class="fold"><summary>Technical detail</summary><div id="trust-facts"></div></details>
     </div></div>
@@ -545,6 +661,11 @@ const OUTCOME_WORDS = {
   homes_net_statewide: ["Net new housing", "What the state gains: all new homes minus those that would have been built elsewhere in the state anyway."],
 };
 const KIND_OF_HOME = { adu: "backyard cottage or basement apartment", missing_middle: "duplex or fourplex" };
+// D-065: the two fee scenarios, each said plainly. The benchmark's $50,000 is far above the fees cities here charge.
+const FEE_NOTE = {
+  fees: "<b>The Handbook benchmark:</b> every city is assumed to charge $50,000 a home, cut to $25,000. Real fees in our states are far lower (a typical city charges about $4,000 to $9,000 for a house), so this is the comparison every entry runs, not a forecast of a real cut.",
+  fees_local_half: "<b>Real local fees cut in half:</b> each city's own fees for houses, duplexes and fourplexes, from its fee schedule (or, where none was coded, the state's typical fee), cut by half. Buildings of 5 or more homes are not covered.",
+};
 
 // "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
 function twoNumbersHtml(b, d, r) {
@@ -753,7 +874,8 @@ const SECTIONS = {
 
 function knobsHtml(b) {
   const s = UI.detail;
-  return DATA.knobs.map((k) => {
+  return DATA.knobs.map((k0) => {
+    const k = { ...k0, ...((k0.by_scenario || {})[s] || {}) };
     const vals = b.draws.filter((d) => d.scenario === s).map((d) => Number(d[k.column]));
     const fixed = AGG.percentile(vals, 0) === AGG.percentile(vals, 100);
     const params = (k.params[s] || []).map((p) => `<li><b>${esc(p.key)}</b> (config/params/${esc(p.file)}.yaml): ${esc(p.value)} (range ${esc(p.low)} to ${esc(p.high)}) ${esc(p.unit)}. ${esc(p.source)}</li>`).join("");
@@ -797,7 +919,8 @@ function updateResults() {
   $("record-card").innerHTML = recordHtml(b, d);
   $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}:</p>
     <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
-    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>`;
+    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>
+    ${FEE_NOTE[d] ? `<p class="body-small" style="margin:var(--space-2) 0 0">${FEE_NOTE[d]}</p>` : ""}`;
   // share of need: net statewide only (aggregate.share_of_need), the headline kind first
   const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
   $("need").innerHTML = needs.length ? needs.map((n) => {
@@ -807,7 +930,11 @@ function updateResults() {
       <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Counts net new housing. Source: ${esc(n.source)}.</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
   // funnel (log widths)
-  const f = R[d], stages = [
+  // a fee cut opens no lots: its first stage is the homes built anyway in the sizes it covers (results.fee_rows)
+  const f = R[d], stages = FEE_NOTE[d] ? [
+    ["Built anyway (1–4 unit buildings)", f.legal, "homes", "var(--survey)", 1],
+    ["Added by the cut", f.homes_in_place, "homes", scenColor(d), 1],
+  ] : [
     ["Legally allowed", f.legal, "lots", "var(--survey)", 1],
     ["Building pays", f.pencils, "lots", "var(--survey)", 0.6],
     ["Built", f.homes_in_place, "homes", scenColor(d), 1],
@@ -920,7 +1047,7 @@ const CONF = [
   ["C26", "Homes that would have been built elsewhere in the state", "range", "A quarter by default, from none to half: the net-new housing slider."],
   ["C27", "Comparison places that quietly reformed too", "design", "Comparison places are used only in tests, where this biases toward no effect."],
   ["C28", "Places unlike any the model learned from", "range", "The overlap check flags them and their range is widened."],
-  ["C29", "Building held back before a reform, or a slow start after", "test", "A start-up ramp for ADUs was tested and dropped; missing middle keeps a short one."],
+  ["C29", "Building held back before a reform, or a slow start after", "test", "A start-up ramp for ADUs was tested and dropped; missing middle keeps a slow one (half its full pace after about 4 years)."],
   ["C30", "A duplex replacing a house that would have been rebuilt", "design", "The houses a project replaces are subtracted."],
   ["C31", "Existing unpermitted units being legalised", "range", "10% of new ADU permits, from none to 30%."],
   ["C32", "A change in how permits are recorded at the reform", "test", "Houston and Austin were checked; the outcome was redefined to newly allowed building types."],
@@ -964,18 +1091,30 @@ const CHECKS = [
   ["Data match Census", "Do our place-by-place permit sums match Census state totals?", "pass", "Within 1% in most years (Ohio 34 of 34, Minnesota 30 of 32, North Carolina 29 of 31), but only 21 of 34 in Texas. Austin's own permit file matches Census at 0.98."],
   ["Baseline backtest", "Starting from past years, does the baseline predict the next five years better than simple rules of thumb?", "partial", "Beat both rules of thumb (the last 3 years' average and a 10-year trend) in 41 of 48 tests. Passed every preset target in 19 of 48. Its ranges held the actual state total 83% of the time, running about 14% low on average."],
   ["Reformed vs similar places", "Can comparisons with places that did not reform measure the effect directly?", "fail", "Too weak to tell an effect from noise, and a placebo check failed. This is why effects are built from their parts (step 3b)."],
-  ["Placebo date (missing middle)", "Does the model find an 'effect' at a fake date years before a real reform?", "fail", "The first missing-middle fit did (0.32 per 1,000 lots). Most of it came from building types in Houston and Austin that the reforms did not newly allow, so the outcome was redefined to newly allowed types. The refit's placebo was inconclusive, neither passed nor failed."],
-  ["Leave a state out (ADUs)", "Fit on four states, predict the fifth: does the range hold what happened?", "pass", "No state missed in all five tests, but the ranges are very wide (the high end is often dozens of times the low)."],
-  ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "Texas missed at first because Lubbock's permits fell after its reform. Lubbock's coding was later questioned; without it every state passed. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set."],
-  ["Oregon, blind", "Predicted before Oregon's results were looked at, then compared.", "partial", "Missing middle: actual 1,753 homes inside the predicted 1,738–6,469, near the bottom. ADUs missed low: Portland had 1,930 against a range of 3–1,418, Bend 414 against 0–206. Oregon was then added to the ADU fit."],
-  ["St. Paul and Charlotte, blind", "Predictions frozen before the hidden years are opened.", "not_run", "Predictions are due to be frozen on 17 November; results come after."],
+  ["Placebo date (missing middle)", "Does the model find an 'effect' at a fake date years before a real reform?", "fail", "The first missing-middle fit did (0.32 per 1,000 lots). Most of it came from building types in Houston and Austin that the reforms did not newly allow, so the outcome was redefined to newly allowed types. The current fit still fails: a fake reform date three years early shows a larger effect than the real dates."],
+  ["Leave a state out (ADUs)", "Fit on the other states, predict the hidden one from its place types and the rules of its 20 largest places: is the actual count inside the range, with the midpoint within a factor of two?", "pass", "Useful in all four states with counts (Minnesota, North Carolina, Texas, Oregon). The ranges are wide: in Texas the high end is about 50 times the low. Details on the ADU card (step 3c)."],
+  ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "With Oregon left out, the other states predicted 457 to 4,789 buildings in its places; 703 were built. 78% of 136 single places landed inside their range. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set. Details on the missing-middle card (step 3c)."],
+  ["Oregon, blind", "Predicted before Oregon's results were looked at, then compared.", "partial", "Missing middle (earlier values): actual 1,753 homes inside the predicted 1,738–6,469, near the bottom. ADUs missed low: Portland had 1,930 against a range of 3–1,418, Bend 414 against 0–206. Oregon was then added to the ADU fit."],
+  ["Charlotte, blind (missing middle)", "Prediction frozen before Charlotte's years from mid-2023 were opened.", "pass", "The actual count landed inside the frozen range (earlier values)."],
+  ["St. Paul, blind (missing middle)", "Prediction frozen before St. Paul's years from 2024 were opened.", "fail", "Missed: 55 buildings in 2024–2025 against a frozen range of 9 to 28. The effect came much faster than the model's 4-year ramp; with a 1-year ramp the same model gives a median of 55. A refit with a separate ramp for places that chose the reform did not forecast better, so the model stays, and the faster case is reported as a sensitivity."],
 ];
 function checksHtml() {
   const V = { pass: "Pass", partial: "Partial", fail: "Fail", not_run: "Not yet run" };
   $("checks").innerHTML = CHECKS.map(([t, ask, v, said]) => `<tr><td><b>${esc(t)}</b></td><td>${esc(ask)}</td>
     <td><span class="verdict ${v}"><span class="glyph" aria-hidden="true"></span>${V[v]}</span><br><span class="body-small">${esc(said)}</span></td></tr>`).join("");
 }
+function wireModelCards() {
+  const bar = document.querySelector(".model-tabs");
+  if (!bar) return;
+  bar.onclick = (e) => {
+    const t = e.target.closest("button[data-model]");
+    if (!t) return;
+    bar.querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
+    document.querySelectorAll("[data-model-card]").forEach((c) => { c.hidden = c.dataset.modelCard !== t.dataset.model; });
+  };
+}
 function staticTrust() {
+  wireModelCards();
   $("dag").innerHTML = dagSvg();
   $("dag-key").innerHTML = dagKey();
   confHtml();

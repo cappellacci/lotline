@@ -81,7 +81,7 @@ def test_building_types(permits):
     assert t("mpls-BLDG9011") == ["U7P", "high"]  # 48 new units
     assert t("mpls-BLDG9012") == ["U3_4", "high"]
     assert t("mpls-BLDG9013") == ["U3_4", "high"]  # TFD (two- or three-family) with 3 units
-    assert t("mpls-BLDG9014") == ["DTQ", "high"]  # TFD, no count
+    assert t("mpls-BLDG9014") == ["OTHER", "high"]  # remodel on an existing TFD: not a new DTQ (#450)
     assert t("mpls-BLDG9017") == ["OTHER", "high"]
 
 
@@ -119,7 +119,7 @@ def test_adu_inferred_only_with_evidence(permits):
     # Not ADUs themselves: negated, future, the new house (its ADU has its own row), work on an existing ADU.
     for pid in ("mpls-BLDG9003", "mpls-BLDG9004", "mpls-BLDG9023", "mpls-BLDG9009", "mpls-BLDG9024"):
         assert permits.loc[pid, "building_type_std"] == "SFD", pid
-    assert permits.loc["mpls-BLDG9025", "building_type_std"] == "DTQ"
+    assert permits.loc["mpls-BLDG9025", "building_type_std"] == "OTHER"  # duplex remodel (#450)
     assert permits.adu_type.notna().sum() == 6
 
 
@@ -178,3 +178,46 @@ def test_house_that_counted_its_adu_gives_one_unit_to_the_adu_row():
     assert out.loc["mpls-BLDG9099", ["units_new", "units_confidence"]].tolist() == [1, "derived"]
     assert out.loc["mpls-BLDG9099-ADU", "units_new"] == 1
     assert out.loc[["mpls-BLDG9099", "mpls-BLDG9099-ADU"], "units_new"].sum() == 2
+
+
+def _one(**fields) -> pd.DataFrame:
+    """A one-permit raw frame: fixture row BLDG9001's columns with `fields` overriding them."""
+    row = _raw().query("permitNumber == 'BLDG9001'").copy()
+    for col, value in fields.items():
+        row[col] = value
+    return row
+
+
+@pytest.mark.parametrize(
+    ("fields", "expected"),
+    [
+        # Roof permit on an existing fourplex, 0 new units: work on the building, not a new 3-4 unit one.
+        (
+            dict(permitType="Commercial", occupancyType="3to4", workType="RoofWind", dwellingUnitsNew="0"),
+            "OTHER",
+        ),
+        (
+            dict(permitType="Commercial", occupancyType="3to4", workType="Remodel", dwellingUnitsNew=None),
+            "OTHER",
+        ),
+        # Remodel on an existing two/three-family house: not a new DTQ.
+        (dict(permitType="Res", occupancyType="TFD", workType="Remodel", dwellingUnitsNew="0"), "OTHER"),
+        (dict(permitType="Res", occupancyType="TFD", workType="Addition", dwellingUnitsNew="0"), "OTHER"),
+        # New construction keeps the occupancy type: a new 4-unit building, a new TFD with no count.
+        (dict(permitType="Commercial", occupancyType="3to4", workType="New", dwellingUnitsNew="4"), "U3_4"),
+        (dict(permitType="Commercial", occupancyType="3to4", workType="New", dwellingUnitsNew="0"), "U3_4"),
+        (dict(permitType="Res", occupancyType="TFD", workType="New", dwellingUnitsNew=None), "DTQ"),
+        # A permit that adds units to an existing fourplex is new construction by its count.
+        (
+            dict(permitType="Commercial", occupancyType="3to4", workType="UnitCon", dwellingUnitsNew="1"),
+            "U3_4",
+        ),
+        # A demolition is typed by the building it removes.
+        (dict(permitType="Wrecking", occupancyType="3to4", workType="Misc", dwellingUnitsNew=None), "U3_4"),
+        # Unchanged for other occupancies (issue #450 is about the 2-4 unit types).
+        (dict(permitType="Res", occupancyType="SFD", workType="Remodel", dwellingUnitsNew="0"), "SFD"),
+    ],
+)
+def test_two_to_four_unit_type_only_for_new_construction(fields, expected):
+    out = mp.to_permits(_one(comments="WORK", **fields))
+    assert out["building_type_std"].tolist() == [expected]

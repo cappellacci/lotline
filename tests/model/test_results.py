@@ -350,3 +350,47 @@ def test_mm_draws_reproduce_the_scenario():
     assert (d["eligible_tier2"] == 0).all()
     shares = results.mm_year_shares(res)
     assert shares.sum(axis=1)[res.homes_gross.sum(axis=1) > 0] == pytest.approx(1.0)
+
+
+def test_fee_rows_by_hand():
+    """D-065 fee scenarios in the bundle: covered homes as the first stage, θ the % change, completion
+    weighted by class. Docstring example: 10,000 covered homes, 120 houses and 30 plex homes added."""
+    yrs = 5
+    by_size = {
+        c: np.full((1, yrs), v / yrs) for c, v in (("1", 8_000), ("2", 1_200), ("3_4", 800), ("5p", 5_000))
+    }
+    added = {
+        "1": np.full((1, 1, yrs), 120 / yrs),
+        "2": np.full((1, 1, yrs), 20 / yrs),
+        "3_4": np.full((1, 1, yrs), 10 / yrs),
+    }
+    sim = {
+        "n": 1,
+        "by_size": by_size,
+        "added_by_class": added,
+        "added": sum(added.values()),
+        "base": sum(by_size.values()),
+    }
+
+    class Fixed:  # triangular() draws: single-family 0.95, multifamily 0.85, displacement 0.25
+        def triangular(self, lo, mode, hi, n):
+            return np.full(n, mode)
+
+    import unittest.mock as mock
+
+    vals = {
+        "completion_factor_single_family": 0.95,
+        "completion_factor_multifamily": 0.85,
+        "displacement_share": 0.25,
+    }
+    with mock.patch.object(
+        results, "triangular", lambda name, n, rng, file="aggregate": np.full(n, vals[name])
+    ):
+        rows = results.fee_rows("fees", sim, 2, Fixed())
+    r = rows.iloc[0]
+    assert (r.eligible_tier1, r.eligible_tier2, r.eligible_tier3) == (0, 10_000, 0)  # 5+ units take no dose
+    assert r.theta == pytest.approx(0.015) and r.pencil_out_share == 1 and r.net_new_share == 1
+    assert r.completion_factor == pytest.approx(0.93)
+    h = aggregate.homes_from_draws(rows)
+    assert h["permits_added"][0] == pytest.approx(150) and h["homes_in_place"][0] == pytest.approx(139.5)
+    assert results.fee_year_shares(sim)[0] == pytest.approx(np.full(yrs, 0.2))

@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.13** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.14** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -295,7 +295,7 @@ Table checks: `one_row_per_key`
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
 | `draw` | integer | yes | no | ≥ 0 |
 | `eligible_tier1` | number | yes | no | ≥ 0 |
 | `eligible_tier2` | number | yes | no | ≥ 0 |
@@ -314,7 +314,7 @@ Legal -> Pencils -> Built for each scenario: parcels for `legal` and `pencils`, 
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
 | `stage` | text | yes | no | one of `legal`, `pencils`, `built` |
 | `unit` | text | yes | no | one of `parcels`, `homes` |
 | `p10` | number | yes | no | ≥ 0 |
@@ -328,7 +328,7 @@ The parity target: statewide P10/P50/P90 and mean per scenario, outcome and peri
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
 | `outcome` | text | yes | no | one of `permits_added`, `homes_in_place`, `homes_net_statewide` |
 | `period` | text | yes | no | matches `^\d{4}(-\d{4})?$` |
 | `p10` | number | yes | no |  |
@@ -343,7 +343,7 @@ Share of housing need (D-057): one row per scenario and denominator kind the sta
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
 | `denominator_kind` | text | yes | no | one of `household_growth_5y`, `shortage_stock` |
 | `label` | text | yes | no |  |
 | `denominator` | number | yes | no |  |
@@ -425,3 +425,4 @@ Table checks: `one_row_per_key`
 | 1.11 | results_baseline: the no-policy-change forecast in the results bundle (homes permitted statewide by building size and period), so the app can show the level reforms add to |
 | 1.12 | results_observed: permits actually issued in the years before the window (ADU permits where local data flag them; homes in 2-4 unit buildings from BPS); results_baseline size_class 2_4 |
 | 1.13 | fees: optional amount_per_unit_low_usd and amount_per_unit_high_usd (range of a fee that varies by area, basin, tier or plat date) and in_force_through (an older row still in force; #247, D-066) |
+| 1.14 | results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook benchmark), D-065 |

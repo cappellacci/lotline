@@ -1,0 +1,135 @@
+{
+  "status": "D-100 run 1 (Ben's go-ahead 2026-11-16); summary rebuilt from the saved files",
+  "full": {
+    "R0": {
+      "per_1000": 1.0386962707638192,
+      "low_per_1000": 0.1316089074707753,
+      "high_per_1000": 19.390527069344287,
+      "log_se": 1.5176742822928384,
+      "alpha": 6.144505358680093e-06,
+      "alpha_low": 6.14421235332821e-06,
+      "alpha_high": 1.9243842781346552,
+      "half": 4.0,
+      "half_low": 1.0,
+      "half_high": 6.0,
+      "b": 0.0,
+      "places": 93.0,
+      "place_years": 299.0,
+      "loglik": 368.0849403976815,
+      "note": NaN
+    },
+    "R1": {
+      "per_1000": 0.7589841205253334,
+      "low_per_1000": 0.1164307922876226,
+      "high_per_1000": 19.81186458800033,
+      "log_se": 1.56145749713062,
+      "alpha": 6.144505358680093e-06,
+      "alpha_low": 6.14421235332821e-06,
+      "alpha_high": 1.9921288317248873,
+      "half": 3.5,
+      "half_low": 0.5,
+      "half_high": 6.0,
+      "b": 0.0,
+      "places": 94.0,
+      "place_years": 301.0,
+      "loglik": 488.4352040293461,
+      "note": NaN
+    },
+    "R2": {
+      "per_1000": 0.9439576225849158,
+      "low_per_1000": 0.3818247617987359,
+      "high_per_1000": 2.0934188683137336,
+      "log_se": 0.5172471435190558,
+      "alpha": 6.144505358680093e-06,
+      "alpha_low": 6.14421235332821e-06,
+      "alpha_high": 1.412848558147117,
+      "half": 4.0,
+      "half_low": 4.0,
+      "half_high": 4.0,
+      "b": 0.0,
+      "places": 94.0,
+      "place_years": 301.0,
+      "loglik": 490.47734191642974,
+      "note": NaN
+    }
+  },
+  "R2_halves": {
+    "state": 4.0,
+    "local": 0.5,
+    "local_low": 0.5,
+    "local_high": 4.0
+  },
+  "R2_fold_halves": {
+    "MN": [
+      4.0,
+      0.5
+    ],
+    "NC": [
+      4.0,
+      0.5
+    ],
+    "OH": [
+      4.0,
+      0.5
+    ],
+    "TX": [
+      4.5,
+      0.5
+    ],
+    "OR": [
+      0.5,
+      0.5
+    ]
+  },
+  "R2_theta_interval_note": "R2's \u03b8 interval is conditional on its best pair of half-way points (fit with the pair held), so it is narrower than R0's and R1's, which profile over the ramp",
+  "r5_per_1000": {
+    "R0": 0.24159328996937493,
+    "R1": 0.24028759924600857,
+    "R2": 0.21955776106162095,
+    "R2_local": 0.7936099693173753
+  },
+  "route_counts": {
+    "fit/local": 37,
+    "fit/state_required": 57,
+    "test/local": 3
+  },
+  "paired": {
+    "R1_vs_R0": {
+      "delta": -2.677513257574376,
+      "paired_se": 1.7024087739124056,
+      "n": 94
+    },
+    "R2_vs_R1": {
+      "delta": -0.15400451317403516,
+      "paired_se": 1.0113724367520989,
+      "n": 94
+    },
+    "R2_vs_R0": {
+      "delta": -2.8315177707484107,
+      "paired_se": 1.988925962521418,
+      "n": 94
+    },
+    "R0_vs_none": {
+      "delta": 6.662613846237153,
+      "paired_se": 3.3510402337668723,
+      "n": 94
+    },
+    "R1_vs_none": {
+      "delta": 3.9851005886627764,
+      "paired_se": 4.513005243875768,
+      "n": 94
+    },
+    "R2_vs_none": {
+      "delta": 3.8310960754887406,
+      "paired_se": 4.786252689764786,
+      "n": 94
+    }
+  },
+  "beats_by_2se": {
+    "R1_vs_R0": false,
+    "R2_vs_R1": false,
+    "R2_vs_R0": false
+  },
+  "chosen_by_scores": "R0",
+  "section7_rerun": "not triggered: no candidate beats the one before it by 2 paired SE"
+}

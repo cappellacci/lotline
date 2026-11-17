@@ -86,8 +86,8 @@ def main(out: Path, dry: bool, form: str = "w") -> None:
     p = d092.params()
     store = DataStore()
     panel = mm.build_panel(store, states=d092.STATES).data
-    leaked = sorted(set(panel["place"]) & set(d092.HOLDOUTS))
-    assert not leaked, f"holdout places in the panel: {leaked}"
+    # D-100: St. Paul is released (D-098); D-092's runs still keep every listed place out
+    panel = panel[~panel["place"].isin(d092.HOLDOUTS)]
     keep, removed = kept_ids(panel, store)
     state = panel.groupby("place")["state"].first().to_dict()
     print(f"uncoded places kept: {len(keep)}; removed by reason (overlapping): {removed}", flush=True)

@@ -7302,6 +7302,14 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - **What it will not do:** fit or change the model, write to config, download anything, or touch the
     holdouts. Franklin County's file may overlap Columbus's; both are reported by source.
   - **The code** (`lotline.model.project_size`) comes with 7 hand-worked tests.
+- **Run 13 corrected (2026-11-17, Ben: "rerun run 13's Minneapolis row"; `reports/mm-d092/run13-projects-mpls-fix/`).**
+  Minneapolis's adapter had typed roof, remodel and addition permits on existing duplexes and fourplexes as new
+  2–4 unit buildings (#450, fixed in #451). Rerun with the same script and rule: Minneapolis falls from 1,042 to
+  179 buildings by lot (inflation 1.13 → 1.03; by day 2.07 → 1.28), and its 2017–2025 count is now 175 against
+  BPS's 165. Every other source is unchanged. Pooled: by lot 4,841 → 4,038 projects, inflation 12.8 → 14.3, in
+  projects of 3+ 34% → 39%; by day 5.3 → 5.6, 42% → 44%. The verdict and Ben's decision (record clustering as
+  the reason for the wide ranges; no project model) stand. The building-equivalent check was not rerun. The
+  original run stays in `reports/mm-d092/run13-projects/`.
 - **Decision 2026-11-15: C4 to config.** Ben chose C4 ("C4 (θ 1.04)") after runs 9–13: §5's rule picks it (it
   beats M by 5 paired SE held out and passes the same §7 tests), and its five-year rate (0.24 per 1,000 a year)
   is within about 10% of M's (0.27).
@@ -7484,3 +7492,123 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     (P10–P90 0.01–5.1), below Austin's (0.73) and Portland's (1.2) built rates. The gut-check page now uses
     medians. Whether Dallas's special-exception rule should be coded as restricted rather than no-ADU is open
     for Ben.
+
+### D-100 · 2026-11-16 · Missing middle's ramp after St. Paul: one ramp or one per adoption route (proposed, method only, before any run)
+- **Status:** proposed; method only. Ben: "Draft a ramp entry" (2026-11-16), after V5 St. Paul missed (D-098). No
+  fit has been run. The run needs Ben's go-ahead (D-092 §9), and nothing goes to config without his choice.
+- **Why:**
+  - St. Paul, frozen with C4, built 55 new 2–4 unit buildings in 2024–2025 against 9–28. Post-hoc, C4's mature
+    rate with a half-way point of 1 year fits (median 55); C4's 4.0 years cannot make a first-year jump.
+  - C4's ramp is weakly pinned: half-way point 4.0 years, 90% range 1.0–6.0. Without Oregon it is not pinned at
+    all (6.0, range 0.5–6.0; `reports/mm-d092/run10-refit-phi/fits.csv`).
+  - The fit's events are recent: of the 86 Oregon fit places, 25 have their event in 2025 (one post year), 21 in
+    2021 and 37 in 2022. A place that has not had time to build pulls the ramp slower.
+  - Every locally adopted reform in the tests was under-predicted by C4: Minneapolis (275 against a median of
+    42), Houston (21 against 0) and St. Paul (55 against 15). Charlotte, also local, passed with D-055's fast
+    ramp.
+- **Hypothesis, stated before any fit:** a city that adopts its own reform does so where builders are ready, so
+  the effect arrives fast. A state mandate (Oregon's HB 2001) reaches every covered place, including ones with no
+  ready builders, so it arrives slower. The Handbook scenario is a statewide rule, so the mandate ramp would be
+  the one the scenario uses.
+- **Candidates** (all as C4 otherwise: the C0 baseline, φ 13.63, the θ_L prior, the same grid for the half-way
+  point, slope 0.75):
+  - **R0:** C4 as on `main` (one ramp; the 93 fit places).
+  - **R1:** one ramp, refit with St. Paul added (released 2026-11-16; event 2024, cap 1 → 4, E from the 2023
+    roll as in D-098).
+  - **R2:** one half-way point per route, refit with St. Paul added:
+    - **state-required:** an Oregon place HB 2001 covers: a city of 10,000 people or more (2020 census), or a
+      city or unincorporated area inside the Portland Metro boundary (Metro's member list, cited in config);
+    - **locally adopted:** every other fit place (the 7 outside Oregon, St. Paul, and any Oregon place HB 2001
+      does not cover).
+    - θ stays one value; only the timing differs by route.
+- **Selection (as D-092 §5):** a candidate replaces the one before it (R1 over R0, then R2 over R1) only if its
+  leave-one-state-out held-out log score is better by more than 2 paired SE and it passes no fewer of §7's
+  tests. Then §7 reruns unchanged (the same bars, 20,000 draws, seed 20261112).
+- **Reported, never selected:** each route's half-way point and 90% range; the five-year rate by route; the
+  route split's counts (places and place-years per route) before any fit, from a dry run that reads no outcome.
+- **What the scenario would use (fixed now):** if R2 is chosen, the Handbook scenario uses the state-required
+  ramp for every place, because the Handbook rule is a state law. The locally adopted ramp is shown as a
+  sensitivity ("if places respond like cities that chose the reform").
+- **What it cannot do:** test the new ramp blind. St. Paul is in the fit, and Charlotte and Oregon are already
+  released. The checks left are the held-out leave-one-state-out score, §7's tests, and the scored test places
+  (Minneapolis, Durham, Durham County, Raleigh).
+- **Expected, before any fit (a guess):** locally adopted half-way 1.5 years or less; state-required near 4;
+  R2 beats R1 by less than 2 SE because only about 8 local places carry the local ramp. If so, R1 or R0 stays,
+  and the faster ramp is reported as a sensitivity.
+- **Cheaper alternative (Ben's choice instead of the run):** no refit. Keep C4 and add a "fast ramp" sensitivity
+  to the scenario (half-way 1.0 year, the low end of C4's range), shown next to the main result.
+- **What it will not do:** write to config, download anything, or read any other holdout.
+- **Approved and coded (2026-11-16; Ben: "Approve, run the refit").** Before the run:
+  - **Route split** (`mm_ramp_d100.py --dry`, no outcome read): 57 state-required Oregon fit places (237
+    place-years) and 37 locally adopted fit places (64 place-years): 29 small Oregon towns HB 2001 does not
+    cover, 7 places outside Oregon, and St. Paul. Test places (Minneapolis, Durham, Raleigh) are all local.
+  - **St. Paul enters like every other place:** its D-092 event (2024, cap 1 → 4, both classes) and the
+    standard citywide eligible-lot count, not D-098's H1/H2 count. A small deviation from this entry's text,
+    so it is treated the same as the other 93.
+  - **Data:** MN's processed BPS table was rebuilt offline from the cached Census files
+    (`lotline fetch --state MN --source bps --offline`), so St. Paul's released 2024–2025 rows are in it.
+  - **Code:** `lotline.model.mm_routes` (the route rule, the age shift and `fit_routes`, 5 hand-worked tests);
+    `estimate_mm.build_panel(include=...)` keeps a released holdout place and refuses a blind one (2 tests);
+    `config/crosswalks/or_hb2001_metro.csv` (Metro's member cities and the three counties, cited). D-092's
+    scripts now drop their listed places from the panel instead of asserting none are there, since St. Paul's
+    release puts it back in the default panel.
+- **Run 1 (2026-11-16, `reports/mm-d100/run1/`): C4 stays.** Full fits: R0 reproduces C4 (1.04 per 1,000,
+  half-way 4.0); R1 0.76 (0.12–19.8), half-way 3.5; R2 0.94 (0.38–2.09, conditional on its pair of ramps),
+  half-way 4.0 for state-required places and 0.5 for locally adopted ones (0.5–4.0). Every fold with both groups
+  finds the same split. Held out (94 places): R1 against R0 −2.68 (SE 1.70), R2 against R1 −0.15 (SE 1.01), R2
+  against R0 −2.83 (SE 1.99). No candidate beats the one before it by 2 SE, so §7 is not rerun and nothing goes to
+  config. The scenario's ramp (state-required) equals C4's either way.
+  - **Reported:** five-year rates per 1,000 lots a year: C4 0.24, R2 state-required 0.22, R2 local 0.79. St. Paul
+    held out: R2 121.2 against C4 120.5 (log score).
+  - **How the run ended:** it stopped while writing summary.json (route counts keyed by tuples) after its fits,
+    scores and routes were saved. The bug is fixed; `mm_ramp_d100_summary.py` rebuilt the summary from the
+    saved files without refitting.
+  - **Shared data:** MN's processed BPS table was rebuilt with St. Paul's released rows for this run, which
+    made runs from `main` (where St. Paul is still blind) stop on a holdout-leak check. It was rebuilt blind
+    from a clean `main` checkout the same evening; after #442 merges it needs one more offline rebuild.
+- **Fast-ramp sensitivity (pre-registered 2026-11-17, before any run; Ben: "Yes, add it").** The main result
+  keeps C4. Next to it, the scenario reports what the Handbook rule would add if every place took it up as
+  fast as the places that adopted on their own did in run 1:
+  - **What changes:** only the half-way point, to 0.5 years (R2's locally adopted fit;
+    `mm_ramp_half_years_fast`). θ, α, φ, the slope and every input stay at C4's values, with the same draws and
+    seed, so the two results differ only by the ramp. Also reported: 1.0 year, the low end of C4's range (this
+    entry's cheaper alternative).
+  - **Why θ is held:** R2's θ (0.94 per 1,000) was fitted jointly with its two ramps. Using it with the fast ramp
+    would lower the sensitivity by about 9%; this is stated rather than run.
+  - **Expected, by hand:** the five-year ramp sums are 1.163 (half-way 4.0), 3.837 (1.0) and 4.204 (0.5), so
+    the five-year totals should be about 3.3 and 3.6 times C4's, and year 5's share of the five years falls from
+    0.57 to about 0.24–0.26.
+  - **Reading:** a range for the timing, not a forecast. State-required Oregon places ramped slowly (half-way
+    4.0); the fast ramp is a fair upper case only if a state law is taken up the way a city's own reform is.
+  - **What it will not do:** change config's main values, fit anything, read permits or any holdout.
+- **Fast-ramp run (2026-11-17, `reports/mm-d100/fast-ramp/`, page https://claude.ai/artifact/CjkLoS18nmRupLFcyskYR6).**
+  As expected: with the same draws, five-year totals are 3.30 times C4's at half-way 1.0 and 3.61 times at 0.5
+  in every state, and year 5's share falls from 0.57 to 0.26 and 0.24. Median five-year net homes, C4 → fast
+  ramp: TX 12,066 → 43,589; NC 3,078 → 11,110; OH 2,621 → 9,443; MN 1,758 → 6,300; OR 256 → 927. The main run
+  reproduces config C4's numbers exactly. Shown on the page and in the report; adding it to the results bundle
+  needs a contract change (WS-CORE).
+
+### Results note · 2026-11-17 · Fees in the results bundle and the app: the benchmark and real local fees halved
+- **What changed** (Ben, 2026-11-17: "wire the fee results into the app"; "Both, side by side" for which fee
+  scenario; knobs in a next PR). Carries out D-065's "both, labelled" in the app. No fee parameter changed.
+  - `lotline results` now runs the fee scenario statewide (every place the baseline forecasts, as D-076) in
+    two modes: `fees`, the Handbook benchmark ($50,000 fee everywhere, cut by $25,000), and `fees_local_half`,
+    real local fees cut in half. Schemas 1.14 adds `fees_local_half` to the scenario list.
+  - **How a fee cut fits the bundle's funnel** (`results.fee_rows`): a cut opens no lots, so the first stage is
+    the five-year baseline homes in 1-4 unit buildings (5+ take no dose, D-073); pencil-out share 1;
+    θ = homes added ÷ those homes (the cut's % change, ramp included); completion drawn per class
+    (single-family for 1-unit, multifamily for 2-4) and weighted by each draw's added homes; net-new share 1
+    (no teardowns); displacement as the other scenarios. The engine's totals equal
+    `aggregate.homes_from_draws` over these rows, so the app's parity holds.
+  - `fee_inputs.py` holds the statewide place builder moved from `scripts/dev/fee_dev_run.py`;
+    `fees.simulate` returns the draws `fees.run` summarizes.
+  - The fee draws come after the ADU and missing-middle draws from the same generator, so those results are
+    unchanged (checked on North Carolina: ADU 131 (44-467), missing middle 2,047 (303-12,546), as before).
+- **Check against D-076** (North Carolina, real local fees halved, five-year permits added): 475 (122-1,940)
+  in the bundle against D-076's 486 (125-1,982), the same model with a different draw count.
+- **In the app:** both fee rows on the Results page; a plain note under each (the benchmark's $50,000 is far
+  above real fees; real fees from each city's schedule or the state's typical fee); the funnel shows "built
+  anyway" and "added by the cut"; the uptake slider reads "how strongly building responds to the cut", citing
+  the elasticity, land capture and ramp.
+- **Not yet:** the D-077 knobs (size of the change, targeted home types), the stacked combinations
+  (`model/combine.py`), and the house/duplex/fourplex pencil-out table.

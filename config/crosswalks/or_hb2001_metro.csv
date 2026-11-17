@@ -1,0 +1,28 @@
+name,geoid,source,note
+Beaverton,4105350,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Cornelius,4115550,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Durham,4121250,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Fairview,4124250,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Forest Grove,4126200,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Gladstone,,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city; no Lotline jurisdiction row
+Gresham,4131250,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Happy Valley,4132050,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Hillsboro,4134100,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Johnson City,,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city; no Lotline jurisdiction row
+King City,4139150,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Lake Oswego,4140550,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Maywood Park,,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city; no Lotline jurisdiction row
+Milwaukie,4148650,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Oregon City,4155200,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Portland,4159000,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Rivergrove,,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city; no Lotline jurisdiction row
+Sherwood,4167100,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Tigard,4173650,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Troutdale,4174850,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Tualatin,4174950,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+West Linn,4180150,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Wilsonville,4182800,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Wood Village,4183950,https://www.oregonmetro.gov/regional-leadership/what-metro/cities-and-counties,Metro member city
+Clackamas County Unincorporated Area,41005,https://oregon.public.law/statutes/ors_197.758,"ORS 197.758: unincorporated areas of a county within Metro (urban, zoned for residential use)"
+Multnomah County Part 2 Unincorporated Area,41051,https://oregon.public.law/statutes/ors_197.758,"ORS 197.758: unincorporated areas of a county within Metro (urban, zoned for residential use)"
+Washington County Unincorporated Area,41067,https://oregon.public.law/statutes/ors_197.758,"ORS 197.758: unincorporated areas of a county within Metro (urban, zoned for residential use)"

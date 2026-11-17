@@ -99,8 +99,8 @@ def phi_by_type(train, test, type_of: dict[str, str]) -> dict:
 def main(out: Path, dry: bool) -> None:
     store = DataStore()
     panel = mm.build_panel(store, states=d092.STATES).data
-    leaked = sorted(set(panel["place"]) & set(d092.HOLDOUTS))
-    assert not leaked, f"holdout places in the panel: {leaked}"
+    # D-100: St. Paul is released (D-098); D-092's runs still keep every listed place out
+    panel = panel[~panel["place"].isin(d092.HOLDOUTS)]
     types = pt.type_table(store, d092.STATES).set_index("geoid")
     state_of = panel.groupby("place")["state"].first().to_dict()
     rs = roles(panel, store)

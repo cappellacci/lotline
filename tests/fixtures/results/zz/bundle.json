@@ -16,7 +16,7 @@
   "overlap_flag": "medium",
   "overlap_note": "Synthetic fixture: 20% of eligible parcels outside the calibration range",
   "caveats": null,
-  "scenarios_pending": "missing_middle, fees, adu+missing_middle, adu+fees, missing_middle+fees, combined"
+  "scenarios_pending": "missing_middle, fees, fees_local_half, adu+missing_middle, adu+fees, missing_middle+fees, combined"
  },
  "draws": [
   {

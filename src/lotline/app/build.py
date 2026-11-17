@@ -60,7 +60,8 @@ ROLES = {
 SCENARIOS = {
     "adu": ("ADUs", "--scenario-adu"),
     "missing_middle": ("Missing middle", "--scenario-missing-middle"),
-    "fees": ("Fee reduction", "--scenario-fees"),
+    "fees": ("Fee reduction", "--scenario-fees"),  # the Handbook benchmark: $50,000 cut in half (D-065)
+    "fees_local_half": ("Fee reduction, real local fees", "--scenario-fees"),
     "adu+missing_middle": ("ADUs + missing middle", "--ink-muted"),
     "adu+fees": ("ADUs + fee reduction", "--ink-muted"),
     "missing_middle+fees": ("Missing middle + fee reduction", "--ink-muted"),
