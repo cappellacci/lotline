@@ -180,6 +180,14 @@ Batch 1 spent ~107k tokens per city with one coder (R-9). Budget target here: sc
 5-place dry run, ~15M for a 100-place state. `--single-coder` halves it for a first pass; `--only` re-runs
 places.
 
+## 8a. Primary documents
+
+Every fetched or hand-supplied document is identified by the sha256 of its bytes (`doc_id`, already in
+`manifest.jsonl`), and every `Evidence` entry carries it with URL, retrieval date, page/section and quote. The
+shared store that dedupes documents across places and categories, keeps text sidecars and an index the scout,
+verifier and hand-off packager query, and takes files a person supplies, is proposed in
+`SHARED_CANDIDATES.md` §10; MM only adds `doc_id` today.
+
 ## 9. Proposed schema changes (for WS-CORE; not made here)
 
 1. `date_basis` column (`dated | predates | earliest_known | unconfirmed`) instead of free-text tags in
