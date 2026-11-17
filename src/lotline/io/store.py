@@ -108,6 +108,13 @@ def _read_jsonl(path: Path, cls) -> list:
     return list(items)
 
 
+# Read cache for `DataStore.read` (WS-SCALE task 4): one `lotline results` run read `jurisdictions` about 19
+# times. Keyed on every file's path, size and modification time, so a rewritten table is read afresh. Holds
+# the most recent `READ_CACHE_TABLES` tables (0 turns it off); mechanics only, no result depends on it.
+READ_CACHE_TABLES = 32
+_READ_CACHE: dict[tuple, pd.DataFrame] = {}
+
+
 class DataStore:
     """Paths and manifest for one data directory."""
 
@@ -135,7 +142,16 @@ class DataStore:
         files = sorted(self.processed(state, table).glob("*.parquet"))
         if not files:
             return None
-        return pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
+        key = tuple((str(f), st.st_size, st.st_mtime_ns) for f in files for st in [f.stat()])
+        hit = _READ_CACHE.get(key)
+        if hit is None:
+            hit = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
+            if READ_CACHE_TABLES <= 0:  # cache off
+                return hit
+            while len(_READ_CACHE) >= READ_CACHE_TABLES:
+                _READ_CACHE.pop(next(iter(_READ_CACHE)))
+            _READ_CACHE[key] = hit
+        return hit.copy()  # callers modify what they read: never hand out the cached frame
 
     @property
     def manifest_path(self) -> Path:
