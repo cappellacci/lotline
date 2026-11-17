@@ -167,7 +167,7 @@ def test_a_slider_citing_an_unknown_parameter_is_refused(tmp_path):
 def test_results_section_parts_are_on_the_page(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     assert "<b>Provisional:</b> how the sliders move an assumption" in html  # Ben, 2026-11-06
-    for part in ('id="headline"', 'id="ranges"', 'id="need"', 'id="funnel"', 'id="knobs"', "pencil out",
+    for part in ('id="hero-line"', 'id="rc"', 'id="need"', 'id="knobs"', "pencil out",
                  "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
         assert part in html, part
 
@@ -175,20 +175,18 @@ def test_results_section_parts_are_on_the_page(tmp_path):
 def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     js = html[html.index("function heroUpdate") :]
-    # "[State] can add [X] homes over the next 5 years", X the largest of the three reforms' midpoints
+    # "[State] can add [X] homes over the next 5 years", X the three reforms together, summed draw by draw
     assert (
         'can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years'
         in js
     )
-    assert "const x = best ? R[best][o].p50 : NaN;" in js  # the largest midpoint (Ben, 2026-11-17)
+    assert "const sum = Array.from({ length: n }, (_, i) => per.reduce((t, a) => t + a[i], 0));" in js
+    assert "const x = tot ? tot.p50 : NaN;" in js  # all three together (Ben, 2026-11-17)
+    assert "a lot that two reforms open is counted twice" in js  # the overlap is said plainly
     assert 'const HERO = ["adu", "missing_middle", "fees"];' in html
     # the headline comes first on the page, ahead of the overlap flag and the detail card
     body = html[html.index("results(b) {") :]
-    assert (
-        body.index('<div class="hero" id="hero">')
-        < body.index("${flagHtml(b.meta)}")
-        < body.index('id="headline-card"')
-    )
+    assert body.index('<div class="hero" id="hero">') < body.index("${flagHtml(b.meta)}")
     # the ranges sit on one shared log axis, a row per reform, as in the results page's first chart
     assert '<div class="rc" id="rc">${rcRows}' in html and "const pos = (v) => `${(Math.log10(" in js
     # each row says in one line what the reform is, for every version the page can show
@@ -222,7 +220,7 @@ def test_gross_and_net_are_explained_in_plain_words(tmp_path):
     """Ben, 2026-11-09: the toggle reads "All new homes" / "Net new housing", a "Why two numbers?" note uses
     the state's own figures, and the displacement slider says what it means. The old wording is gone."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    for part in ('"All new homes"', '"Net new housing"', "Why two numbers?", 'id="two-numbers"',
+    for part in ('"All new homes"', '"Net new housing"',
                  "Homes that would have been built elsewhere in the state anyway"):  # fmt: skip
         assert part in html, part
     for gone in ("In the places that build", "places that build", "Net statewide", "pulled in from nearby",
@@ -244,16 +242,16 @@ def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
     assert len(yearly) == 5  # one per window year, the whiskers
 
 
-def test_baseline_card_reads_the_bundle_baseline(tmp_path):
-    """Schemas 1.11: the page shows the no-change forecast from the bundle's `baseline` part."""
+def test_old_results_cards_are_gone_and_the_funnel_lives_in_the_steps(tmp_path):
+    """Ben, 2026-11-17: the per-scenario headline card, "With no policy change" and "From legal lots to built
+    homes" are removed; the funnel's stages become bars in the ADU card's "How we get these numbers"."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    parts = ("function baselineHtml", "With no policy change", "${baselineHtml(b)}", "0 added, by definition")
-    for part in (*parts, "The baseline forecast is not in this state's results yet."):
-        assert part in html, part
-    state_file = (tmp_path / "states" / "zz.js").read_text()
-    doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])
-    window = [r for r in doc["baseline"] if r["size_class"] == "all" and r["period"] == "2027-2031"]
-    assert len(window) == 1 and window[0]["p10"] <= window[0]["p50"] <= window[0]["p90"]
+    for gone in ('id="headline-card"', "would add, counting", "With no policy change",
+                 "From legal lots to built homes", 'id="funnel"', 'id="two-numbers"',
+                 "function baselineHtml"):  # fmt: skip
+        assert gone not in html, gone
+    ev = html[html.index("function evidenceHtml") :]
+    assert ev.count("${fbar(") == 4 and "How we get these numbers" in ev
 
 
 # ------------------------------------------------------------------------------- section 2: the data

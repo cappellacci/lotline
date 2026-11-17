@@ -152,6 +152,7 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .ev ol.how li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: var(--space-3); align-items: baseline; counter-increment: how; }
 .ev ol.how li::before { content: counter(how); font-weight: 700; font-size: 22px; color: var(--brass); }
 .ev ol.how .v { font-family: var(--font-mono); font-size: 14px; white-space: nowrap; text-align: right; }
+.ev ol.how .fbar { height: 10px; margin-top: var(--space-2); border-radius: var(--radius-bar); }
 .ev ol.how p { margin: var(--space-1) 0 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
 @media (max-width: 640px) { .ev ol.how li { grid-template-columns: 32px minmax(0, 1fr); } .ev ol.how .v { grid-column: 2; text-align: left; } }
 .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3); margin: var(--space-3) 0; }
@@ -751,19 +752,6 @@ const WHAT = {
 const HERO = ["adu", "missing_middle", "fees"];
 const IN_NOTE = { adu: "ADUs", missing_middle: "missing middle", fees: "the fee reduction (Handbook benchmark)", fees_local_half: "the fee reduction (real local fees)" };  // one box per reform; the fee box switches between its two versions
 
-// "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
-function twoNumbersHtml(b, d, r) {
-  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
-  const gross = r.homes_in_place.p50, net = r.homes_net_statewide.p50;
-  const share = gross > 0 ? 1 - net / gross : null;
-  const kind = KIND_OF_HOME[d] || "new home";
-  return `<p class="body-small" style="margin:0"><b>Why two numbers?</b> A new home doesn't always mean one more home for the state. Some of the people who move into a new ${esc(kind)} would otherwise have moved into a home built somewhere else in ${esc(name)}, and that home now won't be built. So the page counts two ways:</p>
-    <ul class="body-small" style="margin:var(--space-2) 0 0">
-      <li><b>All new homes: about ${fmtN(gross)}.</b> Every new home the reform leads to.</li>
-      <li><b>Net new housing: about ${fmtN(net)}.</b> What's left after taking out the homes that would have been built elsewhere in ${esc(name)} anyway${share === null ? "" : `, about ${Math.round(share * 100)}% of them`}. This is the honest answer to "how many more homes does the state get?"</li>
-    </ul>
-    <p class="body-small muted" style="margin:var(--space-1) 0 0">That share is an assumption, from none to half (studies of zoning reforms in Auckland and Lower Hutt, New Zealand), not something measured in ${esc(name)}. The slider "Homes that would have been built elsewhere in the state anyway" below shows how much it matters.</p>`;
-}
 
 function scenariosIn(b) {
   const have = new Set(b.draws.map((d) => d.scenario));
@@ -790,7 +778,6 @@ function flagHtml(m) {
 
 // The baseline (results_baseline, schemas 1.11): homes permitted with no policy change. Read as is from the
 // bundle; the sliders do not move it. "all" is summed within each draw, so it is not the sum of the size rows.
-const SIZE_WORDS = { "1": "Single-family (1 unit)", "2": "Duplexes (2 units)", "3_4": "3–4 unit buildings", "5p": "5 or more units" };
 // The state's own record next to the forecast (results_observed, schemas 1.12): bars = what was actually
 // permitted each year; whiskers = the reform's added permits each year (P10-P90, tick at the midpoint) at the
 // engine's central assumptions, so the sliders don't move them; for missing middle a grey whisker is the
@@ -861,6 +848,9 @@ function evidenceHtml(b, d, R) {
   const legal = st("legal"), pays = st("pencils"), r = R.adu, o = UI.outcome;
   const rng = (x) => (x ? (x.p10 === x.p90 ? fmtN(x.p50) : `${fmtN(x.p10)} – ${fmtN(x.p90)}`) : "–");
   const theta = med("theta");
+  // the old lots-to-homes funnel, folded into the steps: a bar per stage, log widths
+  const lmax = Math.log10(Math.max(legal ? legal.p50 : 10, 10));
+  const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
   // 1. year by year
   const s1 = `<section>${recordHtml(b, "adu")}
     <p class="pending">Still to come: the estimated number of ADUs built each year across the whole state (not only the places whose permits we can count), and the forecast with no reform. The engine works both out but does not export them yet.</p></section>`;
@@ -886,13 +876,13 @@ function evidenceHtml(b, d, R) {
   // 4. how we get these numbers
   const s4 = `<section><h3 class="h3">How we get these numbers</h3>
     <ol class="how">
-      <li><div><b>Find the lots where an ADU would become legal</b><p>Every single-family lot in ${esc(name)} where the reform allows a backyard home, from county parcel records (or Census counts of houses where a county has none).</p></div><span class="v">${legal ? `${fmtN(legal.p50)} lots` : "–"}</span></li>
-      <li><div><b>Keep the lots where building one pays off</b><p>For each place, what an ADU would rent for against what it costs to build and finance (national building costs, local rents and home values, mortgage rates). The range comes from uncertainty in costs and rents.</p></div><span class="v">${pays ? `${rng(pays)} lots` : "–"}</span></li>
+      <li><div><b>Find the lots where an ADU would become legal</b><p>Every single-family lot in ${esc(name)} where the reform allows a backyard home, from county parcel records (or Census counts of houses where a county has none).</p>${fbar(legal && legal.p50, "var(--survey)")}</div><span class="v">${legal ? `${fmtN(legal.p50)} lots` : "–"}</span></li>
+      <li><div><b>Keep the lots where building one pays off</b><p>For each place, what an ADU would rent for against what it costs to build and finance (national building costs, local rents and home values, mortgage rates). The range comes from uncertainty in costs and rents.</p>${fbar(pays && pays.p50, "var(--survey)", 0.6)}</div><span class="v">${pays ? `${rng(pays)} lots` : "–"}</span></li>
       <li><div><b>Apply how often owners actually build</b><p>Measured from places in our own states that already allow ADUs: how many owners of lots like these built one. Not borrowed from other markets.</p></div><span class="v">${Number.isFinite(theta) ? `${(theta * 10000).toLocaleString("en-US", { maximumSignificantDigits: 2 })} per 10,000 lots over 5 years` : "–"}</span></li>
-      <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and some ADUs house a relative or are rented short-term rather than adding a home (${fmtPct(med("net_new_share"))} add one).</p></div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
-      <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p></div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
+      <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and some ADUs house a relative or are rented short-term rather than adding a home (${fmtPct(med("net_new_share"))} add one).</p>${fbar(r.homes_in_place.p50, scenColor("adu"), 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
+      <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, scenColor("adu"))}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
-    <p class="source">Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p></section>`;
+    <p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p></section>`;
   return s1 + s2 + s3 + s4;
 }
 
@@ -917,22 +907,6 @@ function placeTypeChart(b) {
     <p class="source">ADUs a year, averaged over 2027–2031 and the engine's draws. The label is the total with the reform and its rise over what would be built anyway.</p>`;
 }
 
-function baselineHtml(b) {
-  const rows = b.baseline || [];
-  const win = rows.find((r) => r.size_class === "all" && r.period.includes("-"));
-  if (!win) return `<div class="card"><h3 class="h3">With no policy change</h3><p class="pending">The baseline forecast is not in this state's results yet.</p></div>`;
-  const yrs = win.period.replace("-", "–");
-  const sizes = Object.keys(SIZE_WORDS).map((k) => rows.find((r) => r.size_class === k && r.period === win.period)).filter(Boolean);
-  const basis = win.basis === "reported" ? "permits as reported to the Census Bureau (not counting its estimates for places that did not report)" : "permits including the Census Bureau's estimates for places that did not report";
-  const cover = Number.isFinite(win.coverage_share) ? `, which issued ${fmtPct(win.coverage_share)} of the state's ${esc(String(b.meta.origin_year))} permits` : "";
-  return `<div class="card" id="baseline-card"><h3 class="h3">With no policy change</h3>
-    <p class="body" style="margin:0 0 var(--space-2)">If nothing changes, the places Lotline forecasts are expected to permit</p>
-    <span class="figure">${fmtN(win.p10)} to ${fmtN(win.p90)} homes</span>
-    <span class="body muted">over ${esc(yrs)}, midpoint ${fmtN(win.p50)} (about ${fmtN(win.p50 / b.meta.horizon_years)} a year).</span>
-    <div class="scroll" style="margin-top:var(--space-3)"><table><thead><tr><th>Building size</th><th class="n">P10 – P90</th><th class="n">Midpoint</th></tr></thead>
-      <tbody>${sizes.map((r) => `<tr><td>${esc(SIZE_WORDS[r.size_class])}</td><td class="n">${fmtN(r.p10)} – ${fmtN(r.p90)}</td><td class="n">${fmtN(r.p50)}</td></tr>`).join("")}</tbody></table></div>
-    <p class="source">The scenarios above count homes added on top of this. Baseline: each place keeps its own recent pace, pulled toward its county's when its record is thin, with a regional building cycle around it (model/baseline.py). ${fmtInt(win.places)} places${cover}. Counts are ${basis}. The size rows are separate ranges; they do not add up to the total range.</p></div>`;
-}
 
 const SECTIONS = {
   results(b) {
@@ -968,27 +942,15 @@ const SECTIONS = {
         <h2 class="display" id="hero-line">Results</h2>
         <p class="body note" id="hero-note"></p>
         <div class="card"><div class="rc" id="rc">${rcRows}<div></div><div class="axis" id="rc-axis"></div></div>
-          <p class="source">Each band runs from P10 to P90; the tick and the number mark the midpoint (P50). Log scale, so each step is ten times the last.</p></div>
+          <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
+            <span class="muted" id="outcome-note"></span></div>
+          ${pendNote}
+          <p class="source">Each band runs from P10 to P90; the tick and the number mark the midpoint (P50). Log scale, so each step is ten times the last. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p></div>
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
       <div class="card ev" id="model-card"></div>
       ${flagHtml(b.meta)}
-      <div class="card" id="headline-card">
-        <p class="eyebrow">Five-year total${yrs ? `, ${yrs}` : ""}</p>
-        <div class="headline" id="headline"></div>
-        <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
-          <span class="muted" id="outcome-note"></span></div>
-        <div class="ranges" id="ranges">${rows.join("")}</div>
-        <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
-        ${pendNote}
-        <div id="two-numbers" style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:var(--stroke-hair) solid var(--rule)"></div>
-        <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
-      </div>
-      ${baselineHtml(b)}
       <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
-      <div class="card"><h3 class="h3">From legal lots to built homes</h3>
-        <div id="funnel" style="margin-top:var(--space-4)"></div>
-        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are all new homes.</p></div>
       <div class="card"><h3 class="h3">What it takes to pencil out</h3>
         <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
       <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
@@ -1060,17 +1022,26 @@ function knobsHtml(b) {
   }).join("");
 }
 
-// "[State] can add [X] homes": X is the largest of the three reforms' midpoints (the fee box's chosen version;
-// Ben, 2026-11-17). Each reform is estimated on its own; the three are never added together.
+// "[State] can add [X] homes": X is the three reforms together (Ben, 2026-11-17), summed draw by draw so the range
+// is a real range of the total (the fee reform in the version its switch shows). Each reform is estimated on its
+// own, so a lot that two reforms open is counted in both: the note says so.
 function heroUpdate(b, R, o) {
   const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
-  const mids = keys.map((s) => R[s][o].p50);
-  const best = keys.reduce((a, s) => (a === null || R[s][o].p50 > R[a][o].p50 ? s : a), null);
-  const x = best ? R[best][o].p50 : NaN;
+  const per = keys.map((s) => AGG.homesFromDraws([...drawsFor(b, s)].sort((x, y) => x.draw - y.draw), UI.pins)[o]);
+  const n = per.length ? Math.min(...per.map((a) => a.length)) : 0;
+  const sum = Array.from({ length: n }, (_, i) => per.reduce((t, a) => t + a[i], 0));
+  const tot = n ? { p10: AGG.percentile(sum, 10), p50: AGG.percentile(sum, 50), p90: AGG.percentile(sum, 90) } : null;
+  const x = tot ? tot.p50 : NaN;
   $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
   const yrs = AGG.windowLabel(b);
-  $("hero-note").textContent = `The midpoint for ${best ? IN_NOTE[best] : "the reforms"}, the largest of the ${mids.length === 3 ? "three" : mids.length} reforms below, each passed on its own, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}${yrs ? ` in ${yrs}` : ""} compared with no policy change. The reforms are not added together. Each range runs from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
+  const all = keys.length === 3 ? "All three reforms" : `The ${keys.length} reforms run so far`;
+  const kind = o === "homes_net_statewide"
+    ? "These are net new homes: homes that would not otherwise have been built anywhere in the state."
+    : "These count every new home the reforms lead to, including some that would have been built elsewhere in the state anyway.";
+  $("hero-note").textContent = `${all} added together, as if ${named} passed them at once${yrs ? `, over ${yrs}` : ""}. ` +
+    (tot ? `The likely range is ${fmtN(tot.p10)} to ${fmtN(tot.p90)} homes: 8 in 10 of the model's ${fmtInt(n)} runs land inside it. ` : "") +
+    `${kind} Each reform was estimated on its own, so a lot that two reforms open is counted twice and the total may run a little high.`;
   const hiP = Math.max(...keys.map((s) => R[s][o].p90), 1);
   const lo = 1, hi = 10 ** Math.ceil(Math.log10(hiP * 3));
   const pos = (v) => `${(Math.log10(Math.max(v, lo)) / Math.log10(hi)) * 100}%`;
@@ -1097,32 +1068,10 @@ function updateResults() {
   if (!b || !scenariosIn(b).length) return;
   const R = results(b);
   const o = UI.outcome;
-  const max = Math.max(...Object.values(R).map((r) => r[o].p90), 1) * 1.08;
-  const ticks = niceTicks(max);
-  const top = ticks[ticks.length - 1] >= max ? ticks[ticks.length - 1] : max;
-  const pct = (x) => `${Math.max(0, Math.min(100, (x / top) * 100))}%`;
-  for (const [s, r] of Object.entries(R)) {
-    const t = document.querySelector(`[data-track="${CSS.escape(s)}"]`);
-    if (!t) continue;
-    t.querySelectorAll(".grid-line").forEach((g) => g.remove());
-    for (const v of ticks) { const g = document.createElement("span"); g.className = "grid-line"; g.style.left = pct(v); t.prepend(g); }
-    const { p10, p50, p90 } = r[o];
-    for (const el of t.querySelectorAll(".band, .line")) { el.style.left = pct(p10); el.style.width = `calc(${pct(p90)} - ${pct(p10)})`; }
-    t.querySelector(".mid").style.left = pct(p50);
-    t.setAttribute("aria-label", `${scenLabel(s)}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
-    document.querySelector(`[data-nums="${CSS.escape(s)}"]`).innerHTML = `${fmtN(p10)} – ${fmtN(p90)} <span class="muted">(mid ${fmtN(p50)})</span>`;
-  }
   heroUpdate(b, R, o);
-  $("axis").innerHTML = ticks.map((v) => `<span style="left:${pct(v)}">${fmtN(v)}</span>`).join("");
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
-  const d = UI.detail, rd = R[d][o];
-  const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
-  $("two-numbers").innerHTML = twoNumbersHtml(b, d, R[d]);
+  const d = UI.detail;
   $("model-card").innerHTML = evidenceHtml(b, d, R);
-  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}:</p>
-    <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
-    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>
-    ${FEE_NOTE[d] ? `<p class="body-small" style="margin:var(--space-2) 0 0">${FEE_NOTE[d]}</p>` : ""}`;
   // share of need: net statewide only (aggregate.share_of_need), the headline kind first
   const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
   $("need").innerHTML = needs.length ? needs.map((n) => {
@@ -1131,21 +1080,6 @@ function updateResults() {
       <span class="body">${esc(n.label)}</span></p>
       <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Counts net new housing. Source: ${esc(n.source)}.</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
-  // funnel (log widths)
-  // a fee cut opens no lots: its first stage is the homes built anyway in the sizes it covers (results.fee_rows)
-  const f = R[d], stages = FEE_NOTE[d] ? [
-    ["Built anyway (1–4 unit buildings)", f.legal, "homes", "var(--survey)", 1],
-    ["Added by the cut", f.homes_in_place, "homes", scenColor(d), 1],
-  ] : [
-    ["Legally allowed", f.legal, "lots", "var(--survey)", 1],
-    ["Building pays", f.pencils, "lots", "var(--survey)", 0.6],
-    ["Built", f.homes_in_place, "homes", scenColor(d), 1],
-  ];
-  const lmax = Math.log10(Math.max(f.legal.p90, 10));
-  const w = (x) => `${Math.max(1, (Math.log10(Math.max(x, 1)) / lmax) * 100)}%`;
-  $("funnel").innerHTML = `<div class="funnel">${stages.map(([lab, r, unit, col, op]) => `<div class="lab body-small" style="font-weight:600">${lab}</div>
-    <div><div class="bar" style="width:${w(r.p50)};background:${col};opacity:${op}"></div></div>
-    <div class="nums body-small" style="font-family:var(--font-mono);text-align:right">${r.p10 === r.p90 ? fmtN(r.p50) : `${fmtN(r.p10)} – ${fmtN(r.p90)}`} ${unit}</div>`).join("")}</div>`;
   for (const k of DATA.knobs) {
     const el = document.querySelector(`[data-val="${CSS.escape(k.column)}"]`);
     if (!el) continue;

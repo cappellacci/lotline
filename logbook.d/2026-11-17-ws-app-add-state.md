@@ -37,3 +37,15 @@
 - **Outputs:** `src/lotline/app/template.html`; tests in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and tests. Checked with `tests/app`, ruff and `compliance_check.py`, and in the browser pane. The preview fed the place-type chart from `reports/adu-gut-check/places.csv` with a "preview only" note; nothing from that run is in the app's data.
 - **Open / next:** the results bundle does not yet carry the ADU split by place type, the statewide estimate of ADUs built each year, or the no-reform forecast. Until the engine exports them, the card says so in place of those numbers.
+
+### LB-NNN · 2026-11-17 · Deliverables: the Results headline adds up the three reforms; old cards removed
+- **Question:** What number should a state's Results headline carry, and which old cards go?
+- **What I did:**
+  - **Headline:** now the three reforms added together, as if passed at once. It sums each draw's homes across ADUs, missing middle and the fee reform (in the version the fee switch shows), then takes the P50, with the P10–P90 as the "likely range". It replaces the largest-midpoint version.
+  - **Note under the headline:** rewritten in plain words. It explains the likely range as "8 in 10 of the model's runs land inside it" and says what net new homes are. It also says plainly that each reform was estimated alone, so a lot two reforms open is counted twice and the total may run a little high.
+  - **Removed:** the per-scenario headline card ("ADUs would add, counting net new housing:", with its range rows and "Why two numbers?"), "With no policy change" and "From legal lots to built homes".
+  - **Moved and folded:** the "Count homes" toggle moved under the range chart. The funnel's stages became log-scale bars in the ADU card's "How we get these numbers".
+- **Inputs:** Ben's request (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`; tests in `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change and tests. Checked with `tests/app` (49 passed), ruff and `compliance_check.py`, and in the browser pane (Oregon: 748 homes, likely range 298 to 2,040; the count toggle moves it).
+- **Open / next:** the engine's "combined" scenario (each lot counted once) would remove the double count; it is still marked not yet run.
