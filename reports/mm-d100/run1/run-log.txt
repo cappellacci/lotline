@@ -1,0 +1,40 @@
+R0 fit places: 93 | R1/R2 fit places: 94 | test places: 3
+St. Paul event: year 2024, prior cap 1, cap 4, classes ('bldgs_2', 'bldgs_3_4')
+                           places  place_years
+role state route                              
+fit  MN    local                2            3
+     NC    local                2           16
+     OH    local                1            1
+     OR    local               29           37
+           state_required      57          237
+     TX    local                3            7
+test MN    local                1            6
+     NC    local                2           12
+locally adopted fit places: ['Austin city', 'Boardman city', 'Brookings city', 'Creswell city', 'Dayton city', 'Dundee city', 'Eagle Point city', 'Estacada city', 'Euclid city', 'Florence city', 'Garner town', 'Harrisburg city', 'Hood River city', 'Houston city', 'Independence city', 'Jacksonville city', 'Junction City city', 'Lafayette city', 'Lewisville city', 'Lincoln City city', 'Millersburg city', 'Mount Angel city', 'Oakridge city', 'Philomath city', 'Phoenix city', 'Reedsport city', 'Seaside city', 'Sisters city', 'St. Louis Park city', 'St. Paul city', 'Sweet Home city', 'Talent city', 'Toledo city', 'Umatilla city', 'Veneta city', 'Warrenton city', 'Wilson city']
+[  478s] R0 1.0387/1,000 half 4.0; R1 0.7590 half 3.5
+[  825s] R2 0.9440/1,000 half state 4.0, local 0.5 (0.5-4.0)
+[ 1363s] fold MN: R0 1.0472, R1 1.0472, R2 0.9496 | R2 halves 4.0/0.5
+[ 1854s] fold NC: R0 0.6726, R1 0.5224, R2 0.9974 | R2 halves 4.0/0.5
+[ 2376s] fold OH: R0 1.0403, R1 0.7605, R2 0.9575 | R2 halves 4.0/0.5
+[ 2879s] fold TX: R0 1.6926, R1 0.7787, R2 1.4940 | R2 halves 4.5/0.5
+[ 2917s] fold OR: R0 1.0410, R1 0.1657, R2 0.1657 | R2 halves 0.5/0.5
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/mm-baseline-spread/scripts/dev/mm_ramp_d100.py", line 199, in <module>
+    if __name__ == "__main__":
+        ^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/mm-baseline-spread/scripts/dev/mm_ramp_d100.py", line 190, in main
+    "R1_vs_none": cal.paired_delta(fs, "ls_R1", "ls_none"),
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/opt/anaconda3/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/opt/anaconda3/lib/python3.12/json/encoder.py", line 377, in _iterencode_dict
+    raise TypeError(f'keys must be str, int, float, bool or None, '
+TypeError: keys must be str, int, float, bool or None, not tuple

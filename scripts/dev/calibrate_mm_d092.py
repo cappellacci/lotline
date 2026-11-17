@@ -203,8 +203,8 @@ def main(out: Path, dry: bool = False, tests_passed: Path | None = None) -> None
     p = params()
     store = DataStore()
     panel = mm.build_panel(store, states=STATES).data
-    leaked = sorted(set(panel["place"]) & set(HOLDOUTS))
-    assert not leaked, f"holdout places in the panel: {leaked}"
+    # D-100: St. Paul is released (D-098); D-092's runs still keep every listed place out
+    panel = panel[~panel["place"].isin(HOLDOUTS)]
     state_of = panel.groupby("place")["state"].first().to_dict()
     name_of = panel.groupby("place")["name"].first().to_dict()
     band_of = panel.groupby("place")["band"].first().to_dict()
