@@ -1272,7 +1272,7 @@ function wireResults() {
   body.onclick = (e) => {
     const t = e.target.closest("button");
     if (!t) return;
-    if (t.dataset.outcome) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
+    if (t.dataset.outcome) { UI.outcome = t.dataset.outcome === "homes_in_place" ? "homes_in_place" : "homes_net_statewide"; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
     if (t.dataset.feemode) {
       UI.feeMode = t.dataset.feemode === "fees_local_half" ? "fees_local_half" : "fees";
       refreshResults();
