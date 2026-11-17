@@ -45,19 +45,19 @@ adu_type_min_fit_states:
 # ---- Form A + P, fitted (D-088 central fit). θ, α, m_o and m_x are in hazard.yaml and adu.yaml ----
 
 adu_types_core_log_multiplier:
-  value: 1.670
-  low: 1.064
-  high: 2.315
+  value: 1.740
+  low: 1.138
+  high: 2.388
   unit: log of a core city's hazard multiplier over a suburb's (β_core)
-  source: "Estimated, D-096 (Form A + place types on the coverage-fixed rule rows of PR #440; config approved by Ben 2026-11-15): central fit, 90% profile-likelihood interval; x5.3 (x2.9 to x10.1). Tier-1 held-out log-score gain over Form A +12.0 (2 SE 7.2). Leave-one-state-out +1.46 to +1.75. Earlier: +1.199 (D-088, pre-check rows), +1.84 (D-088 on the checked rows, not adopted)"
+  source: "Estimated, D-096 form refit on main's rule rows after PR #444 (config approved by Ben 2026-11-16): central fit, 90% profile-likelihood interval; x5.7 (x3.1 to x10.9). Earlier: +1.670 (D-096, before #444), +1.199 (D-088, pre-check rows)"
   notes: "Drawn per draw as N(β̂, se), se = (high - low) / (2 x 1.645) = 0.380, shared by every core city in the draw (scenarios.adu.type_log_multipliers). Suburbs get 0. Towns get the D-089 prior below."
 
 # ---- Towns (D-089) ----
 
 adu_types_town_prior_sd:
-  value: 1.015
-  low: 1.015
-  high: 1.015
+  value: 1.058
+  low: 1.058
+  high: 1.058
   unit: SD of a town's log hazard multiplier over a suburb's (prior N(0, s²), one draw per draw shared by a state's towns)
-  source: "D-089 (accepted 2026-11-14): no fit place is a town, so towns get a prior centred on the suburb rate with s = |β̂_core| / 1.645 = 1.670 / 1.645 (D-096 core term), so a town's 90% range (x0.19 to x5.3) is as wide as the one type gap measured, either way. Fixed by rule, not estimated"
+  source: "D-089 (accepted 2026-11-14): no fit place is a town, so towns get a prior centred on the suburb rate with s = |β̂_core| / 1.645 = 1.740 / 1.645, so a town's 90% range is as wide as the one type gap measured, either way. Fixed by rule, not estimated"
   notes: "Towns hold 9-30% of a state's eligible lots but 1-5% of its expected ADUs (reports/adu-state-profiles, at the D-088 core term)."
