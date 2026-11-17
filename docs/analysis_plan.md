@@ -7579,3 +7579,28 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   ramp: TX 12,066 → 43,589; NC 3,078 → 11,110; OH 2,621 → 9,443; MN 1,758 → 6,300; OR 256 → 927. The main run
   reproduces config C4's numbers exactly. Shown on the page and in the report; adding it to the results bundle
   needs a contract change (WS-CORE).
+
+### Results note · 2026-11-17 · Fees in the results bundle and the app: the benchmark and real local fees halved
+- **What changed** (Ben, 2026-11-17: "wire the fee results into the app"; "Both, side by side" for which fee
+  scenario; knobs in a next PR). Carries out D-065's "both, labelled" in the app. No fee parameter changed.
+  - `lotline results` now runs the fee scenario statewide (every place the baseline forecasts, as D-076) in
+    two modes: `fees`, the Handbook benchmark ($50,000 fee everywhere, cut by $25,000), and `fees_local_half`,
+    real local fees cut in half. Schemas 1.14 adds `fees_local_half` to the scenario list.
+  - **How a fee cut fits the bundle's funnel** (`results.fee_rows`): a cut opens no lots, so the first stage is
+    the five-year baseline homes in 1-4 unit buildings (5+ take no dose, D-073); pencil-out share 1;
+    θ = homes added ÷ those homes (the cut's % change, ramp included); completion drawn per class
+    (single-family for 1-unit, multifamily for 2-4) and weighted by each draw's added homes; net-new share 1
+    (no teardowns); displacement as the other scenarios. The engine's totals equal
+    `aggregate.homes_from_draws` over these rows, so the app's parity holds.
+  - `fee_inputs.py` holds the statewide place builder moved from `scripts/dev/fee_dev_run.py`;
+    `fees.simulate` returns the draws `fees.run` summarizes.
+  - The fee draws come after the ADU and missing-middle draws from the same generator, so those results are
+    unchanged (checked on North Carolina: ADU 131 (44-467), missing middle 2,047 (303-12,546), as before).
+- **Check against D-076** (North Carolina, real local fees halved, five-year permits added): 475 (122-1,940)
+  in the bundle against D-076's 486 (125-1,982), the same model with a different draw count.
+- **In the app:** both fee rows on the Results page; a plain note under each (the benchmark's $50,000 is far
+  above real fees; real fees from each city's schedule or the state's typical fee); the funnel shows "built
+  anyway" and "added by the cut"; the uptake slider reads "how strongly building responds to the cut", citing
+  the elasticity, land capture and ramp.
+- **Not yet:** the D-077 knobs (size of the change, targeted home types), the stacked combinations
+  (`model/combine.py`), and the house/duplex/fourplex pencil-out table.
