@@ -63,8 +63,8 @@ Running four states is the test that a state with thin data can still use the me
 - It does not judge whether a reform is a good idea. It estimates production, with its uncertainty.
 - It does not model reforms other than the three above, or local rules layered on top of them, except as
   clearly labelled extra scenarios (none are defined yet).
-- It produces ADU scenario results only as development runs (not yet published); missing middle and fees are
-  not built. See "Status" below.
+- It produces ADU scenario results only as development runs (not yet published). Missing middle is built and
+  fitted (D-092's C4, 2026-11-15; "The missing-middle model" below). See "Status" below for the rest.
 
 ### Status: what is built and what is planned
 
@@ -77,10 +77,10 @@ Running four states is the test that a state with thin data can still use the me
 | Baseline forecast with P10/P50/P90 | **Built**, tested, backtested (V1) | `model/baseline.py`, `model/backtest.py` |
 | Pro forma (residual land value, 7 building prototypes) | **Built**, tested | `model/proforma.py` |
 | Real 2025 dollars; completion factors | **Built**, tested | `model/money.py`, `model/completion.py` |
-| Scenario modules (ADU, missing middle, fees) | ADU **built**, tested (2026-10-20); missing middle and fees **planned** | `model/scenarios/adu.py`, `config/params/adu.yaml`, `market.yaml` |
+| Scenario modules (ADU, missing middle, fees) | ADU **built**, tested (2026-10-20); missing middle **built**, fitted and tested (D-092's C4, 2026-11-15); fees see "The ADU scenario" section's fee notes | `model/scenarios/adu.py`, `config/params/adu.yaml`, `market.yaml` |
 | ADU effect estimation, staggered adoption (D-023) | **Built**, tested on simulated panels (2026-10-20); **not yet run** on real data (waits for the adoption-date coding) | `model/estimate_adu.py`, `scripts/dev/estimate_adu.py` |
 | ADU effect estimation, pooled hierarchical negative binomial (D-025, main model) | **Built**, tested on sparse synthetic panels (2026-10-20); run once after this entry | `model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py` |
-| Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); missing middle **planned** | `model/hazard.py`, `config/params/hazard.yaml` |
+| Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); **built for missing middle** (D-092's C4, `mm_hazard.yaml`, 2026-11-15) | `model/hazard.py`, `config/params/hazard.yaml` |
 | Evidence prong (comparable places, transport) | **Planned** | `src/lotline/evidence/` is empty |
 | Combined scenarios (no lot counted twice) | **Planned** | `model/combine` (BUILD_PLAN §5) |
 | Statewide aggregation, net-new and displacement shares | **Planned** (parameters set) | `config/params/aggregate.yaml` |
@@ -380,8 +380,8 @@ scenario two answers that inform each other:
 
 1. **Mechanism prong, "what do your own economics say?"** Eligible parcels → pro forma feasibility → an annual
    *redevelopment hazard* (the share of feasible lots actually built on each year) → permits. Built: the
-   eligible-parcel rule, the pro forma, and the ADU hazard with its ramp-up (next section). **Planned:** the
-   hazard for missing middle.
+   eligible-parcel rule, the pro forma, the ADU hazard with its ramp-up (next section), and the missing-middle
+   hazard (D-092's C4; "The missing-middle model" below).
 2. **Evidence prong, "what happened in places like you?"** Measured effects from places that already reformed
    (Portland, Seattle, California, Spokane and Auckland in the design; Raleigh and Durham in state), per 1,000
    eligible lots and by year since the reform. **Planned:** the comparables table, an original ADU
@@ -528,9 +528,8 @@ shares), 2026–2030:
 Places whose ADU rule is not coded (most of them) draw their rule from coded places like them (D-022), so
 these totals will move as more rules are coded.
 
-- **Missing middle:** for each eligible lot, compare the best 2–6 unit prototype's residual land value with
-  the lot's existing-use value; lots that newly pencil enter the hazard. Proposed (judging panel): apply the
-  benchmark only to the increment above what local rules already allow.
+- **Missing middle:** see "The missing-middle model" below. The scenario applies only the increment above
+  what local rules already allow (the dose gap 1 − d), with the lot's feasibility F(PCR) scaling the rate.
 - **Fees:** the primary route is the pro forma threshold (validation test V6b): count lots that cross
   feasibility when fees fall by the builder's share of the cut, (1 − λ) × $25,000. Where parcel data are
   missing, the fallback is the elasticity form (D-010):
@@ -550,6 +549,60 @@ these totals will move as more rules are coded.
   at today's fees, after a cut and at the Handbook's levels, with the fee per lot and its share of cost.
 - **Combined runs:** one allocation step so the same lot is never counted for both ADU and missing middle; the
   combined result is at most the sum of the parts.
+
+### The missing-middle model (D-092, C4)
+
+**What it estimates.** New 2–4 unit buildings per place and year, in Census BPS, because that is what BPS
+reports the same way everywhere ("What missing middle counts" above: a floor for the Handbook's 2–6 unit
+scenario). For place i in year t (`config/params/mm_hazard.yaml`, values from D-092's challenger C4, chosen by
+Ben on 2026-11-15):
+
+    buildings_it ~ NB(mean B_it + θ × u_i × E_i × dose change_i × F(PCR_i)/F(1) × ramp(t), size φ)
+
+| Piece | What it is | Value (90% range) |
+|---|---|---|
+| B_it | the no-reform baseline: the place's mean of its 3 pre-reform years, moved by its own growth in other homes (C0) | from the place's own BPS history |
+| θ | the mature rate: new 2–4 unit buildings per eligible lot per year when a reform fully allows them, at a price-to-cost of 1 | 1.04 per 1,000 lots (0.13–19.4) |
+| ramp(t) | how fast the effect builds up after adoption (logistic) | half-way at 4.0 years (1.0–6.0) |
+| u_i | the place's own multiplier, Gamma(mean 1, variance α) | α at the search's floor: no extra place spread once years are lumpy |
+| φ | lumpiness of a place's years (negative binomial size) | 13.6 (12.9–14.5) |
+| E_i, dose, F | eligible lots (rule 1.1), the coded rule's strength, and feasibility from rent and cost | per place |
+
+**How it was fitted.** 93 places in MN, NC, OH, TX and OR (86 in Oregon, after HB 2001) whose coded rule
+raised the unit cap or the approval standard in 2013–2025, with every holdout (St. Paul, Ramsey, Charlotte,
+Mecklenburg) asserted absent. C4 adds a prior from places that always allowed missing middle (their level,
+widened for selection). φ was estimated separately on 483 places no fit or test uses, scored held out
+(D-092 deviation (b), run 9). D-092 §5's pre-registered rule chose C4 over M (θ 1.68): it beats M by 5 paired
+standard errors held out and passes the same tests.
+
+**How accurate it is** (`reports/mm-d092/accuracy/`, from runs 11–13 and V5):
+- **A place's count:** 78% of 136 places land inside their P10–P90 (the target is 60–95%); the baseline alone,
+  held out on 468 unused places, 79%. Single places can miss at the median by 3–6× while still inside the
+  range (Franklin County built 142 against 483; Minneapolis 275 against 42).
+- **State totals with no reform:** Texas 4,515 built against 1,701–7,183 and Ohio 391 against 45–1,266, both
+  inside; Minnesota 32 against a top of 13, a miss on small numbers.
+- **A new state:** with Oregon left out, the other states' 7 places predict Oregon's 86: median 915
+  (457–4,789) against 703 built. One test, passed.
+- **Blind:** Charlotte passed with the earlier values (above). St. Paul, frozen with C4 before any outcome was
+  read, **missed**: 55 built in 2024–2025 against 9–28 (median 15). It built 33 in the first full year against
+  about 6 a year before, which a half-way point of 4 years cannot produce. Post-hoc (reported only), C4's mature
+  rate with a half-way point of one year (the low end of C4's own range) gives a median of 55, so St. Paul
+  agrees with C4's level and not its timing (`reports/v5-stpaul/`).
+- **The weak spot:** the reform's own effect is not clearly detected. Held out, the model with a reform effect
+  beats the same model with none by only about 1.5 standard errors (+5.0, SE 3.4), and the placebo (reforms
+  moved three years early) gives a larger effect than the real dates. The scenario's added homes rest on an
+  effect the counts are consistent with but cannot pin down, which is why θ's range spans about 150-fold.
+
+**Why the ranges are wide.** 34–44% of 2–4 unit buildings come in projects of 3 or more (run 13), so a place's
+count depends on whether one large project lands in the window. φ carries that; a project-based model would
+match how building happens but adds no information (a stated next step). Place types (core city, suburb,
+town) were tested and did not narrow the ranges (run 12).
+
+**What the scenario gives** (Handbook rule everywhere, origin 2025; `reports/mm-d092/config-c4/`). Five-year
+net added homes, P10 / median / P90: Texas 1,774 / 12,066 / 86,570; North Carolina 461 / 3,078 / 21,906;
+Ohio 390 / 2,621 / 18,769; Minnesota 255 / 1,758 / 12,353; Oregon 37 / 256 / 1,853 (most of its places
+already allow missing middle). The effect is still growing at year 5: with the half-way point at 4 years,
+year 5 holds 57% of the five-year total. Means sit far above medians, so headlines quote the median and range.
 
 ### Adding up to a state total (planned)
 
@@ -571,7 +624,7 @@ proposed there are confirmed at pre-registration (tag `prereg-v1`, **not yet mad
 | V2 Mechanism | Do the pro forma and hazard predict which parcels redevelop? | Pro forma and ADU hazard built; ADU anchor estimated on Minneapolis, Austin and 14 Twin Cities suburbs, tested on Raleigh and Durham (D-019 fit 3): Raleigh 230 observed vs mean 141 (90% 0–687), Durham 239 vs 172 (0–865): inside, but very wide. Parcel-level V2 **not run**. |
 | V3 In-state causal estimates | What did Raleigh's and Durham's reforms do? | **Planned.** |
 | V4 Backtests of known reforms | Would the range have contained what happened? | **Planned.** |
-| V5 Blind forward tests | St. Paul and Charlotte, predicted before outcomes are seen | **Planned**; predictions to be frozen by Nov 17. Exposures disclosed (D-012, D-013). |
+| V5 Blind forward tests | St. Paul and Charlotte, predicted before outcomes are seen | **Charlotte: pass** (frozen 2026-11-09 with D-055's values, D-071): 119 new 2–4 unit buildings in 2023–2025 against 89–172, median 104 (`reports/v5-charlotte/`). **St. Paul: miss** (frozen 2026-11-15 with C4, D-098; scored 2026-11-16): 55 new 2–4 unit buildings in 2024–2025 against 9–28, median 15 (`reports/v5-stpaul/`). The effect came faster than C4's ramp allows; post-hoc, C4's level with a one-year ramp fits. Exposures disclosed (D-012, D-013). |
 | V6 Fee tests | Natural experiment; pro forma threshold; bunching | **Planned**; ε set (D-010). |
 | V7 Transport and second state | Does the method carry to other states? | Partly: V0 and V1 already run in all four states with the same code. |
 
@@ -691,7 +744,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 <!-- params-table:start -->
 <!-- GENERATED by `uv run python scripts/dev/params_table.py` from config/params/*.yaml. Do not edit by hand. -->
 
-352 parameters in 26 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
+353 parameters in 26 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
 **`config/params/adu.yaml`** (22 parameters)
 
@@ -1101,7 +1154,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `mm_place_coverage_low` | 0.6 | fixed | share inside P10-P90 (randomized) | D-092 §7 place coverage: randomized P10-P90 coverage of place totals |
 | `mm_place_coverage_high` | 0.95 | fixed | share inside P10-P90 (randomized) | D-092 §7 place coverage: upper end of the 0.6-0.95 target |
 
-**`config/params/mm_hazard.yaml`** (7 parameters)
+**`config/params/mm_hazard.yaml`** (8 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
@@ -1111,6 +1164,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `mm_units_per_project` | 2.08 | 2.04–2.75 | homes per new 2-4 unit building (gross, before any demolished house) | Census BPS, the 15 fit places 2016-2025: 10,210 homes in 4,912 buildings (D-038) |
 | `mm_ramp_half_years` | 4 | 1–6 | years after adoption to reach half the mature hazard | Estimated, D-092 run 10, C4 (profile likelihood on the grid 0.5-6.0), Ben 2026-11-15 |
 | `mm_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature… |
+| `mm_ramp_half_years_fast` | 0.5 | 0.5–1 | years after adoption to reach half the mature hazard, fast-ramp sensitivity only | Estimated, D-100 run 1 (reports/mm-d100/run1/), R2's half-way point for places that adopted on their own (0.5… |
 | `mm_feasibility_dispersion` | 0.5 | 0.25–0.8 | standard deviation of log(lot's own price-to-cost) for a rental duplex | Judgment (D-038), the ADU value (adu_feasibility_dispersion): lots differ in what a 2-4 unit building costs a… |
 
 **`config/params/money.yaml`** (1 parameter)

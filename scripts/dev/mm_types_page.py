@@ -21,7 +21,7 @@ TYPES = (("core", "Core city"), ("suburb", "Suburb"), ("town", "Town"))
 STATES = ("MN", "NC", "OH", "TX")
 EDGE = 20.0
 EXTRA_CSS = """
-.bars .b { fill: var(--scenario-missing); } .bars .b.edge { fill: var(--brass); }
+.bars .b { fill: var(--scenario-missing-middle); } .bars .b.edge { fill: var(--brass); }
 .bars .one { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; }
 """
 

@@ -108,7 +108,8 @@ def main(out: Path, dry: bool) -> None:
     p = d092.params()
     store = DataStore()
     panel = mm.build_panel(store, states=d092.STATES).data
-    assert not set(panel["place"]) & set(d092.HOLDOUTS), "holdout places in the panel"
+    # D-100: St. Paul is released (D-098); D-092's runs still keep every listed place out
+    panel = panel[~panel["place"].isin(d092.HOLDOUTS)]
     keep, removed = K.kept_ids(panel, store)
     built = {
         (c, o): build(panel, keep, o, p, how) for c, how in CONSTRUCTIONS.items() for o in (TRAIN, SCORE)
