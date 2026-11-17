@@ -196,6 +196,11 @@ def test_tags_in_notes_rejected():
     assert any("engine tag" in m for m in check(place([r]), today=TODAY))
 
 
+def test_verify_quote_across_markup():
+    html = "<html><body><p>Effective <b>January&nbsp;1, 2020</b>, up to three units</p></body></html>"
+    assert verify_quote("Effective January 1, 2020, up to three units", html)
+
+
 def test_draft_markers():
     assert draft_markers("ORDINANCE NO. XXX-XX ... effective on [insert effective date]")
     assert draft_markers("Ordinance No. 2690-25, adopted March 3, 2025. Signed: Mayor") == []

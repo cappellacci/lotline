@@ -17,8 +17,9 @@ For every evidence entry:
    and judge by eye, noting "checked by eye p. N"). Entries with no snapshot and `source_kind: human_lookup`
    pass this step.
 2. The source is about this place **and state** (LESSONS R-8).
-3. Adoption/effective-date evidence is not a draft (the rule is for **date** evidence only; a compiled code
-   whose cover still says "Adoption Draft" but whose body is the current edition is not a draft):
+3. Adoption/effective-date evidence from an **ordinance or code document** is not a draft (the rule is for
+   date evidence only; a compiled code whose cover still says "Adoption Draft" but whose body is the current
+   edition is not a draft; a city news or "recently adopted" page that also lists proposals is not a draft):
    `uv run python -c "from lotline.rule_agents.mm.findings import draft_markers; print(draft_markers(open('<txt>').read()))"`
    prints `[]` (P-3).
 4. The quote supports the value: the `unit_cap` quote names the number of units or the dwelling type — for a
@@ -34,7 +35,8 @@ For every evidence entry:
   "reason"}]}`.
 - All passed → in `final/<GEOID>.json` set `"verified_by": "rules-mm-verifier"` and `"verified_date"` (today).
 - Any failed → remove that evidence entry; if no evidence is left for a field, blank the field and set the
-  rule's `confidence` to `"low"`; add the reason to the rule's `notes` ("verifier: quote not in snapshot").
+  rule's `confidence` to `"low"` — except `effective_date`, which is required: keep it, set `date_basis` to
+  `"unconfirmed"` and add a Blocker naming `effective_date`; add the reason to the rule's `notes` ("verifier: quote not in snapshot").
   Leave `verified_by` empty. Then run `uv run python -m lotline.rule_agents.mm check <RUN>`.
 
 Write nothing outside `<RUN>`.

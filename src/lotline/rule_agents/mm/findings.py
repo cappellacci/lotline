@@ -246,11 +246,21 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+def visible_text(html: str) -> str:
+    """What a reader sees in an HTML page: scripts, styles, comments and tags removed, entities decoded."""
+    import html as _html
+
+    t = re.sub(r"<script.*?</script>|<style.*?</style>|<!--.*?-->", " ", html, flags=re.S | re.I)
+    return _html.unescape(re.sub(r"<[^>]+>", " ", t))
+
+
 def verify_quote(quote: str, text: str) -> bool:
     """True when `quote` appears in `text` after normalising case, whitespace, curly quotes, dashes and
     punctuation (PDF text layers break lines and hyphenate). An ellipsis ("...") in the quote splits it into
     parts that must appear in order. By hand: "Up to  three\\ndwelling units" in "...up to three dwelling
     units on a zoning lot" -> True; "four" in a text without it -> False."""
+    if re.search(r"<(html|body|div|p|span)\b", text[:5000], re.I):
+        text = visible_text(text)  # a quote may span markup (Minneapolis dry run)
     hay = _norm(text)
     parts = [p for p in re.split(r"\.\.\.|…|\[\.\.\.\]", quote) if _norm(p)]
     pos = 0
