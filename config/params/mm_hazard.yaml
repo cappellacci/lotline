@@ -63,6 +63,14 @@ mm_ramp_slope_years:
   source: "Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature hazard"
   notes: "At half 4.0 and slope 0.75 (C4): year 1 (age 0.5) 0.009, year 2 0.034, year 3 0.12, year 4 0.34, year 5 0.66 of the mature hazard (ages at mid-year); mean 0.233. At D-055's half 0.5: 0.50, 0.79, 0.94, 0.98, 1.00."
 
+mm_ramp_half_years_fast:
+  value: 0.5
+  low: 0.5
+  high: 1.0
+  unit: years after adoption to reach half the mature hazard, fast-ramp sensitivity only
+  source: "Estimated, D-100 run 1 (reports/mm-d100/run1/), R2's half-way point for places that adopted on their own (0.5, the grid floor; interval 0.5-4.0). High: 1.0, the low end of C4's range (D-100's cheaper alternative). Sensitivity pre-registered 2026-11-17 (Ben: 'Yes, add it')"
+  notes: "Not the main result: the Handbook rule is a state law, and state-required places (Oregon's HB 2001) ramped at C4's 4.0. Used only by the scenario's fast-ramp sensitivity, with C4's θ held (R2's θ with this ramp, 0.94 per 1,000, would be about 9% lower). Year shares at 0.5: 0.50, 0.79, 0.94, 0.98, 1.00 of the mature hazard; five-year sum 4.20 against C4's 1.16."
+
 # ---- Feasibility transport ----
 
 mm_feasibility_dispersion:

@@ -167,3 +167,25 @@ def test_no_phi_is_poisson_and_unchanged():
     assert np.array_equal(a.buildings, b.buildings)
     y = a.buildings[:, 4]
     assert y.var() == pytest.approx(y.mean(), rel=0.08)
+
+
+def test_ramp_half_picks_the_main_or_fast_ramp_from_config():
+    sp = mm.specs()
+    assert mm.ramp_half(sp) == 4.0  # C4
+    assert mm.ramp_half(sp, "fast") == 0.5  # D-100 R2, places that adopted on their own
+    assert mm.ramp_half(sp, "fast", "high") == 1.0  # C4's low end, D-100's cheaper alternative
+    with pytest.raises(ValueError):
+        mm.ramp_half(sp, "slow")
+
+
+def test_fast_ramp_differs_from_main_only_by_the_ramp():
+    # Same place, draws and seed. Main (half 4.0): ages 0.5 … 4.5 give 0.0093, 0.0344, 0.1192, 0.3392, 0.6608,
+    # sum 1.1630, so 0.001 × 1000 × 0.75 × 1.2 × 1.1630 = 1.0467 buildings. Fast (half 0.5): sum 4.2036,
+    # 3.7833 buildings: 3.61 times as many, and year 5 is 0.237 of the five years instead of 0.568.
+    places, d = pd.DataFrame([_place()]), _draws()
+    main = mm.simulate(places, d, 4.0, SLOPE, seed=1)
+    fast = mm.simulate(places, d, 0.5, SLOPE, seed=1)
+    assert main.buildings.sum(1).mean() == pytest.approx(1.0467, rel=0.03)
+    assert fast.buildings.sum(1).mean() == pytest.approx(3.7833, rel=0.02)
+    assert fast.buildings[:, 4].sum() / fast.buildings.sum() == pytest.approx(0.9952 / 4.2036, rel=0.05)
+    assert main.buildings[:, 4].sum() / main.buildings.sum() == pytest.approx(0.6608 / 1.1630, rel=0.05)

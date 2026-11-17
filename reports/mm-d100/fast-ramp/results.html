@@ -1,0 +1,238 @@
+<title>Missing-middle fast ramp</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.rng .main { stroke: var(--scenario-missing-middle); stroke-width: 6; stroke-linecap: round; }
+.rng .mid { stroke: var(--ink-faint); stroke-width: 6; stroke-linecap: round; }
+.rng .fast { stroke: var(--ink-muted); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 2 3; }
+.rng .med { fill: var(--ink); }
+.bars .main { fill: var(--scenario-missing-middle); } .bars .fast { fill: var(--ink-muted); }
+.key { display: flex; gap: 1.2rem; font-size: .85rem; color: var(--ink-muted); flex-wrap: wrap; }
+.key i { display: inline-block; width: 18px; height: 6px; border-radius: 3px; margin-right: .35rem; vertical-align: 2px; }
+.key .main { background: var(--scenario-missing-middle); } .key .mid { background: var(--ink-faint); }
+.key .fast { background: repeating-linear-gradient(90deg, var(--ink-muted) 0 2px, transparent 2px 5px); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · D-100 fast-ramp sensitivity · 17 Nov 2026</div>
+  <h1>If builders took up the rule as fast as cities that chose it, five-year homes would be about 3.6 times higher</h1>
+  <p class="lede">The main result keeps C4: the Handbook rule reaches half its full pace after 4 years, as Oregon's state-required places did. D-100 found that places which adopted the reform on their own reached half pace in about half a year. This sensitivity runs the same scenario with that fast ramp, changing nothing else: same θ, same draws, same seed.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>3.6×</b><span>five-year net homes at half-way 0.5 years against C4, every state (3.3× at 1.0 year)</span></div>
+  <div class="tile"><b>43,589</b><span>Texas median with the fast ramp, against 12,066 with C4</span></div>
+  <div class="tile"><b>24%</b><span>of the five years lands in year 5 with the fast ramp (57% with C4)</span></div>
+  <div class="tile"><b>3.30 · 3.61</b><span>measured ratios at 1.0 and 0.5 years, exactly the hand calculation written before the run</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>The ramp is about timing: the fast ramp books in five years what C4 reaches later</h2>
+  <div class="scroll"><svg viewBox="0 0 680 220" class="chart bars" role="img" aria-label="Share of the mature rate by scenario year for the two ramps"><line x1="50" x2="660" y1="186.0" y2="186.0" class="grid"/><text x="42" y="190.0" class="tick" text-anchor="end">0%</text><line x1="50" x2="660" y1="143.0" y2="143.0" class="grid"/><text x="42" y="147.0" class="tick" text-anchor="end">25%</text><line x1="50" x2="660" y1="100.0" y2="100.0" class="grid"/><text x="42" y="104.0" class="tick" text-anchor="end">50%</text><line x1="50" x2="660" y1="57.0" y2="57.0" class="grid"/><text x="42" y="61.0" class="tick" text-anchor="end">75%</text><line x1="50" x2="660" y1="14.0" y2="14.0" class="grid"/><text x="42" y="18.0" class="tick" text-anchor="end">100%</text><rect x="73.0" y="184.4" width="34" height="1.6" class="main" rx="2"><title>year 1: 1% of the mature rate</title></rect><rect x="115.0" y="100.0" width="34" height="86.0" class="fast" rx="2"><title>year 1: 50% of the mature rate</title></rect><text x="111.0" y="208" class="tick" text-anchor="middle">year 1</text><rect x="195.0" y="180.1" width="34" height="5.9" class="main" rx="2"><title>year 2: 3% of the mature rate</title></rect><rect x="237.0" y="49.9" width="34" height="136.1" class="fast" rx="2"><title>year 2: 79% of the mature rate</title></rect><text x="233.0" y="208" class="tick" text-anchor="middle">year 2</text><rect x="317.0" y="165.5" width="34" height="20.5" class="main" rx="2"><title>year 3: 12% of the mature rate</title></rect><rect x="359.0" y="25.2" width="34" height="160.8" class="fast" rx="2"><title>year 3: 94% of the mature rate</title></rect><text x="355.0" y="208" class="tick" text-anchor="middle">year 3</text><rect x="439.0" y="127.7" width="34" height="58.3" class="main" rx="2"><title>year 4: 34% of the mature rate</title></rect><rect x="481.0" y="17.1" width="34" height="168.9" class="fast" rx="2"><title>year 4: 98% of the mature rate</title></rect><text x="477.0" y="208" class="tick" text-anchor="middle">year 4</text><rect x="561.0" y="72.3" width="34" height="113.7" class="main" rx="2"><title>year 5: 66% of the mature rate</title></rect><rect x="603.0" y="14.8" width="34" height="171.2" class="fast" rx="2"><title>year 5: 100% of the mature rate</title></rect><text x="599.0" y="208" class="tick" text-anchor="middle">year 5</text></svg></div>
+  <div class="key"><span><i class="main"></i>C4, half-way 4.0 years</span><span><i class="fast"></i>fast ramp, half-way 0.5 years</span><span>share of the full (mature) rate in each scenario year</span></div>
+  <p>Both ramps reach the same mature rate. Over five years C4's ramp averages 23% of it and the fast ramp 84%, so the whole sensitivity is a multiplier of 4.20 ÷ 1.16 = 3.6 on every place. It moves no place relative to another and adds no new uncertainty: it shows how much of the five-year number depends on how quickly builders respond.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>Every state scales by the same factor</h2>
+  <div class="scroll"><svg viewBox="0 0 680 336" class="chart rng" role="img" aria-label="Five-year net homes by state for three ramps"><line x1="50.0" x2="50.0" y1="10" y2="310" class="grid"/><text x="50.0" y="326" class="tick" text-anchor="middle">10</text><line x1="172.0" x2="172.0" y1="10" y2="310" class="grid"/><text x="172.0" y="326" class="tick" text-anchor="middle">100</text><line x1="294.0" x2="294.0" y1="10" y2="310" class="grid"/><text x="294.0" y="326" class="tick" text-anchor="middle">1,000</text><line x1="416.0" x2="416.0" y1="10" y2="310" class="grid"/><text x="416.0" y="326" class="tick" text-anchor="middle">10,000</text><line x1="538.0" x2="538.0" y1="10" y2="310" class="grid"/><text x="538.0" y="326" class="tick" text-anchor="middle">100,000</text><line x1="660.0" x2="660.0" y1="10" y2="310" class="grid"/><text x="660.0" y="326" class="tick" text-anchor="middle">1,000,000</text><text x="42" y="38" class="lab" text-anchor="end">TX</text><line x1="324.4" x2="530.4" y1="24" y2="24" class="main"><title>TX, C4, half-way 4.0 years (main result): 1,774 to 86,570, median 12,066</title></line><circle cx="426.0" cy="24" r="3.5" class="med"/><line x1="387.6" x2="593.4" y1="38" y2="38" class="mid"><title>TX, half-way 1.0 year: 5,847 to 284,408, median 39,818</title></line><circle cx="489.2" cy="38" r="3.5" class="med"/><line x1="392.7" x2="598.3" y1="52" y2="52" class="fast"><title>TX, half-way 0.5 years (fast ramp): 6,448 to 312,206, median 43,589</title></line><circle cx="494.0" cy="52" r="3.5" class="med"/><text x="42" y="96" class="lab" text-anchor="end">NC</text><line x1="253.0" x2="457.5" y1="82" y2="82" class="main"><title>NC, C4, half-way 4.0 years (main result): 461 to 21,906, median 3,078</title></line><circle cx="353.6" cy="82" r="3.5" class="med"/><line x1="315.7" x2="521.1" y1="96" y2="96" class="mid"><title>NC, half-way 1.0 year: 1,506 to 72,683, median 10,182</title></line><circle cx="417.0" cy="96" r="3.5" class="med"/><line x1="321.5" x2="525.9" y1="110" y2="110" class="fast"><title>NC, half-way 0.5 years (fast ramp): 1,679 to 79,624, median 11,110</title></line><circle cx="421.6" cy="110" r="3.5" class="med"/><text x="42" y="154" class="lab" text-anchor="end">OH</text><line x1="244.1" x2="449.4" y1="140" y2="140" class="main"><title>OH, C4, half-way 4.0 years (main result): 390 to 18,769, median 2,621</title></line><circle cx="345.1" cy="140" r="3.5" class="med"/><line x1="307.3" x2="512.4" y1="154" y2="154" class="mid"><title>OH, half-way 1.0 year: 1,285 to 61,667, median 8,615</title></line><circle cx="408.1" cy="154" r="3.5" class="med"/><line x1="312.1" x2="517.1" y1="168" y2="168" class="fast"><title>OH, half-way 0.5 years (fast ramp): 1,408 to 67,461, median 9,443</title></line><circle cx="413.0" cy="168" r="3.5" class="med"/><text x="42" y="212" class="lab" text-anchor="end">MN</text><line x1="221.6" x2="427.2" y1="198" y2="198" class="main"><title>MN, C4, half-way 4.0 years (main result): 255 to 12,353, median 1,758</title></line><circle cx="323.9" cy="198" r="3.5" class="med"/><line x1="285.5" x2="490.6" y1="212" y2="212" class="mid"><title>MN, half-way 1.0 year: 852 to 40,856, median 5,768</title></line><circle cx="386.8" cy="212" r="3.5" class="med"/><line x1="290.2" x2="495.5" y1="226" y2="226" class="fast"><title>MN, half-way 0.5 years (fast ramp): 931 to 44,809, median 6,300</title></line><circle cx="391.5" cy="226" r="3.5" class="med"/><text x="42" y="270" class="lab" text-anchor="end">OR</text><line x1="119.3" x2="326.7" y1="256" y2="256" class="main"><title>OR, C4, half-way 4.0 years (main result): 37 to 1,853, median 256</title></line><circle cx="221.8" cy="256" r="3.5" class="med"/><line x1="183.4" x2="390.2" y1="270" y2="270" class="mid"><title>OR, half-way 1.0 year: 124 to 6,141, median 852</title></line><circle cx="285.5" cy="270" r="3.5" class="med"/><line x1="188.3" x2="395.0" y1="284" y2="284" class="fast"><title>OR, half-way 0.5 years (fast ramp): 136 to 6,728, median 927</title></line><circle cx="290.0" cy="284" r="3.5" class="med"/></svg></div>
+  <div class="key"><span><i class="main"></i>C4 (main)</span><span><i class="mid"></i>half-way 1.0 year</span><span><i class="fast"></i>half-way 0.5 years</span><span>dot: median; bar: P10–P90; log scale</span></div>
+  <div class="scroll"><table><thead><tr><th>State</th><th>C4 median</th><th>C4 P10–P90</th><th>1.0 yr median</th><th>1.0 yr P10–P90</th><th>0.5 yr median</th><th>0.5 yr P10–P90</th></tr></thead><tbody><tr><td>TX</td><td><b>12,066</b></td><td>1,774–86,570</td><td>39,818</td><td>5,847–284,408</td><td>43,589</td><td>6,448–312,206</td></tr><tr><td>NC</td><td><b>3,078</b></td><td>461–21,906</td><td>10,182</td><td>1,506–72,683</td><td>11,110</td><td>1,679–79,624</td></tr><tr><td>OH</td><td><b>2,621</b></td><td>390–18,769</td><td>8,615</td><td>1,285–61,667</td><td>9,443</td><td>1,408–67,461</td></tr><tr><td>MN</td><td><b>1,758</b></td><td>255–12,353</td><td>5,768</td><td>852–40,856</td><td>6,300</td><td>931–44,809</td></tr><tr><td>OR</td><td><b>256</b></td><td>37–1,853</td><td>852</td><td>124–6,141</td><td>927</td><td>136–6,728</td></tr></tbody></table></div>
+  <p class="note">Five-year added 2–4 unit homes net of houses torn down, origin 2025, 4,000 draws. Quote medians: θ's wide range pulls means far above them.</p>
+</section>
+
+<section>
+  <div class="num-tag">How to read it</div>
+  <h2>An upper case for timing, not a second forecast</h2>
+  <p>C4 stays the headline because the Handbook rule is a state law, and Oregon's state-required places ramped slowly. The fast ramp is fair only if a state law were taken up the way a city's own reform is: by a city that wanted it, often with builders already lined up (St. Paul built 55 buildings in two years). It also holds C4's θ; with R2's own θ (0.94 per 1,000) it would be about 9% lower. The locally adopted ramp rests on 37 places and 64 post-reform years and did not improve held-out forecasts.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>Getting it into the app</h2>
+  <p>The engine can now run it (<code>mm.run(..., ramp="fast")</code>). Showing it in the app means a new part in the results bundle, a shared contract owned by WS-CORE, so it needs a contract-change issue and your OK. Until then it lives on this page and in <code>reports/mm-d100/fast-ramp/</code>.</p>
+</section>
+
+<footer>
+  <div>Run: <code>mm_fast_ramp_run.py</code>, pre-registered in D-100 on 17 Nov 2026 before the run. No permits read; nothing unblinded; config's main values unchanged.</div>
+  <div>Sources: <code>reports/mm-d100/fast-ramp/</code> on branch <code>ws/mm-fast-ramp</code>.</div>
+</footer>
+</main>
