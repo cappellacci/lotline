@@ -334,3 +334,23 @@ def test_smoke_counts_with_90_percent_zero_places():
     c = mm.smoke_counts(pd.DataFrame(rows))
     assert c["all_zero_places"] == 85 and c["kept_by_place_fe"] == 15
     assert c["treated_places_by_bin"] == {"k0_1": 5, "k2_3": 5, "k4p": 5}
+
+
+def test_include_refuses_a_blind_holdout(monkeypatch):
+    # D-100: `include` keeps a released holdout place; one still blind is refused
+    from lotline.validation import holdout
+
+    real = holdout.holdouts_for
+    monkeypatch.setattr(
+        holdout, "holdouts_for", lambda st: [h.model_copy(update={"released_on": None}) for h in real(st)]
+    )
+    with pytest.raises(ValueError, match="still blind"):
+        mm.build_panel(synthetic_store(), states=("MN",), years=YEARS, reforms=synthetic_reforms(),
+                       include=(mm.ST_PAUL,))  # fmt: skip
+
+
+def test_include_keeps_a_released_holdout():
+    # St. Paul's V5 holdout was released on 2026-11-16 (D-098); default panels still leave it out
+    p = mm.build_panel(synthetic_store(), states=("MN",), years=YEARS, reforms=synthetic_reforms(),
+                       include=(mm.ST_PAUL,))  # fmt: skip
+    assert mm.ST_PAUL in set(p.data["place"]) and mm.ST_PAUL not in p.excluded["holdout"]

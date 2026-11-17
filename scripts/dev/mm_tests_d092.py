@@ -99,7 +99,8 @@ def main(run4: Path, out: Path, run3: Path | None) -> None:
     pm = {k: mt._p(k) for k in ("mm_placebo_shift_years", "mm_test_c_first_year")}
     store = DataStore()
     panel = mm.build_panel(store, states=d092.STATES).data
-    assert not set(panel["place"]) & set(d092.HOLDOUTS), "holdout places in the panel"
+    # D-100: St. Paul is released (D-098); D-092's runs still keep every listed place out
+    panel = panel[~panel["place"].isin(d092.HOLDOUTS)]
     state_of = panel.groupby("place")["state"].first().to_dict()
     name_of = panel.groupby("place")["name"].first().to_dict()
     rules = d092.rule_rows(store, d092.STATES)

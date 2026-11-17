@@ -7432,3 +7432,17 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Cheaper alternative (Ben's choice instead of the run):** no refit. Keep C4 and add a "fast ramp" sensitivity
   to the scenario (half-way 1.0 year, the low end of C4's range), shown next to the main result.
 - **What it will not do:** write to config, download anything, or read any other holdout.
+- **Approved and coded (2026-11-16; Ben: "Approve, run the refit").** Before the run:
+  - **Route split** (`mm_ramp_d100.py --dry`, no outcome read): 57 state-required Oregon fit places (237
+    place-years) and 37 locally adopted fit places (64 place-years): 29 small Oregon towns HB 2001 does not
+    cover, 7 places outside Oregon, and St. Paul. Test places (Minneapolis, Durham, Raleigh) are all local.
+  - **St. Paul enters like every other place:** its D-092 event (2024, cap 1 → 4, both classes) and the
+    standard citywide eligible-lot count, not D-098's H1/H2 count. A small deviation from this entry's text,
+    so it is treated the same as the other 93.
+  - **Data:** MN's processed BPS table was rebuilt offline from the cached Census files
+    (`lotline fetch --state MN --source bps --offline`), so St. Paul's released 2024–2025 rows are in it.
+  - **Code:** `lotline.model.mm_routes` (the route rule, the age shift and `fit_routes`, 5 hand-worked tests);
+    `estimate_mm.build_panel(include=...)` keeps a released holdout place and refuses a blind one (2 tests);
+    `config/crosswalks/or_hb2001_metro.csv` (Metro's member cities and the three counties, cited). D-092's
+    scripts now drop their listed places from the panel instead of asserting none are there, since St. Paul's
+    release puts it back in the default panel.
