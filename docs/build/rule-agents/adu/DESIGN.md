@@ -38,7 +38,7 @@ Only accepted rows reach the repo, through a dated `scripts/dev/` apply script a
 |---|---|---|---|
 | 0 worklist | state; `--places N` / `--geoids`; jurisdictions table | `places.csv` (for agents), `existing_rows.csv` (orchestrator only: reform ids reveal rule years), blind holdouts printed | places with `pop_2020 < 2,500` skipped unless named (L-O5) |
 | 1 state law | state | `state_law.json`: each enacted ADU statute, citation, adopted/effective dates, coverage rule (threshold, strictness, population source), fields it sets | statute text read (official or Wayback); a bill that did not pass is never law (MN SF 3964) |
-| 2 scout | places batch, `state_law.json` | `sources/<geoid>.json`: official code URL + publisher, ADU section, adopting ordinance(s), Legistar/Wayback leads, fetch result per URL | ≤ 6 web searches and ≤ 8 fetches per place; stop on a host after its first block (L-R1, L-R9) |
+| 2 scout | places batch, `state_law.json` | `sources/<geoid>.json`: official code URL + publisher, ADU section, adopting ordinance(s), Legistar/Wayback leads, fetch result per URL | ≤ 8 web searches and ≤ 10 fetches per place, incl. an amendment sweep; stop on a host after its first block (L-R1, L-R9) |
 | 3a/3b coders | `sources/<geoid>.json`, `state_law.json` | `coding_[ab]/<geoid>.json` (`coding.PlaceCoding`) | ≤ 4 extra searches and ≤ 10 fetches per place; every era 2016–2025 plus the prior state (L-S5) |
 | 4 check | codings | pass / problems | a coding that fails twice is kept as `partial` with the failing fields blanked |
 | 5 verifier | both codings + `diff-coders` output | `decisions/<geoid>.json`, `final/<geoid>.json(.meta)` | re-opens only the diffs' sources; anything not settled from a primary source is `human` (L-S7) |

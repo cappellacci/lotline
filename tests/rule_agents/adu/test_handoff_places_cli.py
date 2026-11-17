@@ -36,10 +36,17 @@ def test_task_id_is_stable_and_reason_and_fields_are_checked():
         task(fields_to_fill=["colour"])
 
 
+def test_all_is_shorthand_for_every_field():
+    assert task(fields_to_fill=["all"]).fields_to_fill == list(H.ALLOWED)
+
+
 def test_triage_ranks_by_population_dedupes_and_closes_records_request_only():
     big = task(geoid="3700001", place="Bigtown", pop_2020=50000)
     rr = task(geoid="3700002", place="Recordsville", notes="records_request_only: ordinance not online")
-    queue, closed = H.triage([task(), big, task(), rr])
+    same_page = task(fields_to_fill=["adu_max_sqft"], era_id="2020")
+    queue, closed = H.triage([task(), big, task(), rr, same_page])
+    merged = next(t for t in queue if t.place == "Testville")
+    assert merged.fields_to_fill == ["adoption_date", "effective_date", "adu_max_sqft"]
     assert [t.place for t in queue] == ["Bigtown", "Testville"] and [t.priority for t in queue] == [1, 2]
     assert [t.status for t in closed] == ["no_usable_source"]
 
@@ -90,6 +97,12 @@ def test_state_law_threshold_is_strict_and_flags_near_threshold():
     p = pd.DataFrame({"geoid": ["1", "2", "3"], "kind": "place", "pop_2020": [2500, 2501, 10000]})
     cov = P.covered_by_state_law(p, 2500)
     assert list(cov["covered"]) == [False, True, True] and list(cov["near_threshold"]) == [True, True, False]
+
+
+def test_tasks_skip_fields_the_final_coding_settled_on_primary_evidence():
+    final = coding()  # every era has adus_per_lot on official code
+    assert cli.settled_fields_dropped(["adus_per_lot", "adu_max_sqft"], final) == ["adu_max_sqft"]
+    assert cli.settled_fields_dropped(["adus_per_lot"], None) == ["adus_per_lot"]
 
 
 def test_cli_end_to_end(tmp_path, monkeypatch, capsys):

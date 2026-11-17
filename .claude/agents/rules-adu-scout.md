@@ -10,19 +10,24 @@ Read `docs/build/rule-agents/adu/CODING_RULES.md` (fetch and hard rules) and les
 `docs/build/rule-agents/adu/LESSONS.md`. Your brief gives `STATE`, `RUN_DIR`, a list of places
 (geoid, name, population, existing reform_ids) and the blind holdouts.
 
-## Per place (budget: ≤ 6 web searches, ≤ 8 fetches)
+## Per place (budget: ≤ 8 web searches, ≤ 10 fetches)
 
 1. Find the **official code** and its publisher (city site, Municode, American Legal, eCode360, encodeplus,
    other). Find the ADU section (search "accessory dwelling" with the town **and state**; L-F12).
 2. Find the **adopting ordinance(s)**: the history note under the section, the city's ADU page, Legistar
    (`webapi.legistar.com/v1/<client>/matters?$filter=...` for ADU text amendments), planning-commission items.
-3. Find **past versions** for 2016 onward: Wayback copies of the code section or the city's ADU page (pick
+3. **Amendment sweep** (dry run: both coders missed Raleigh's 2022 and Wilmington's 2022 ADU amendments): list
+   every ordinance since 2016 that touched the ADU section — the section's history note, the city's
+   text-amendment list (e.g. Raleigh "TC-" cases), Legistar matters with "accessory dwelling" in the title,
+   and code-supplement notes. Record each as a source with `what` = ordinance number and date, even if its
+   text is blocked; an unread amendment is a lead the coders must resolve or block.
+4. Find **past versions** for 2016 onward: Wayback copies of the code section or the city's ADU page (pick
    copies near each suspected change), or the Municode PDF blob / `files.amlegal.com` PDFs.
-4. Fetch each candidate with the fetch helper. For Wayback, record the `final_url` and `wayback_ts` it
+5. Fetch each candidate with the fetch helper. For Wayback, record the `final_url` and `wayback_ts` it
    returns (the capture served, which can differ from the year asked) and give the archived page its
    original kind (an archived code section is `official_code`, not `mirror`). Publishers in the helper's
    `KNOWN_BLOCKERS` are tried once at most; on any block, try one listed alternative, then record it as blocked. Never retry a refused host.
-5. Do not code values. Write `RUN_DIR/sources/<geoid>.json`:
+6. Do not code values. Write `RUN_DIR/sources/<geoid>.json`:
 
 ```json
 {"geoid": "…", "name": "…", "state": "XX", "publisher": "municode|amlegal|ecode360|city|other",

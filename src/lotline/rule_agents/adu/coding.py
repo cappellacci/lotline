@@ -185,6 +185,16 @@ def check(coding: PlaceCoding) -> list[str]:
         out.append("outcome 'coded' needs at least one era")
     if coding.outcome == "no_usable_source" and coding.eras:
         out.append("outcome 'no_usable_source' must not carry eras")
+    from lotline.rule_agents.adu.handoff import ALLOWED, REASONS  # late: handoff imports this module
+
+    for b in coding.blocked:
+        if b.reason not in REASONS:
+            out.append(f"blocked {b.url}: unknown reason {b.reason!r} (use one of {sorted(REASONS)})")
+        bad = set(b.fields) - set(ALLOWED) - {"all"}
+        if bad:
+            out.append(
+                f"blocked {b.url}: unknown fields {sorted(bad)} ('all' or fields from {sorted(ALLOWED)})"
+            )
     for era in coding.eras:
         where = f"era {era.era_id}"
         if era.era_id in seen:

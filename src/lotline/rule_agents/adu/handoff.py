@@ -151,6 +151,8 @@ class HumanTask:
     task_id: str = ""
 
     def __post_init__(self):
+        if "all" in self.fields_to_fill:  # shorthand: the whole rubric and both dates
+            self.fields_to_fill = list(ALLOWED)
         if self.reason not in REASONS:
             raise ValueError(f"unknown reason {self.reason!r}; expected one of {sorted(REASONS)}")
         bad = set(self.fields_to_fill) - set(ALLOWED)
@@ -180,9 +182,20 @@ class HumanTask:
 def triage(tasks: list[HumanTask]) -> tuple[list[HumanTask], list[HumanTask]]:
     """(tasks to queue, tasks closed now). Duplicates (same task_id) are merged; records-request-only
     questions are closed as no_usable_source; the rest are ranked by population and numbered."""
-    seen: dict[str, HumanTask] = {}
-    for t in tasks:
-        seen.setdefault(t.task_id, t)
+    seen: dict[tuple, HumanTask] = {}
+    for t in tasks:  # one task per place + page: both coders and the merge often block on the same URL
+        key = (t.state, t.geoid, t.url)
+        if key not in seen:
+            seen[key] = t
+            continue
+        k = seen[key]
+        k.fields_to_fill = list(dict.fromkeys(k.fields_to_fill + t.fields_to_fill))
+        eras = [e for e in dict.fromkeys(k.era_id.split("; ") + t.era_id.split("; ")) if e]
+        k.era_id = "; ".join(eras)
+        if t.what_to_look_for not in k.what_to_look_for:
+            k.what_to_look_for += " " + t.what_to_look_for
+        k.est_minutes = max(k.est_minutes, t.est_minutes)
+        k.notes = "; ".join(n for n in (k.notes, t.notes) if n)
     queue, closed = [], []
     for t in seen.values():
         if RECORDS_REQUEST_ONLY in t.notes:

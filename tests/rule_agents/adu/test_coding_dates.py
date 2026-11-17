@@ -71,6 +71,14 @@ def test_evidence_must_be_https_and_quote_at_most_300_chars():
         ev("x" * 301)
 
 
+def test_block_reasons_must_come_from_the_task_vocabulary():
+    c = coding()
+    c.blocked = [C.BlockedSource(url="https://x.gov", reason="not_tried", what_to_look_for="x")]
+    assert any("unknown reason 'not_tried'" in p for p in C.check(c))
+    c.blocked[0].reason = "known_blocker"
+    assert C.check(c) == []
+
+
 def test_outcome_consistency():
     assert C.check(coding(eras=[])) == ["outcome 'coded' needs at least one era"]
     c = coding()

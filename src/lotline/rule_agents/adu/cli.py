@@ -147,6 +147,24 @@ def cmd_rows(a) -> int:
     return 0
 
 
+def settled_fields_dropped(fields: list[str], final: C.PlaceCoding | None) -> list[str]:
+    """Fields a blocked page would answer, minus those every final era already has on primary evidence."""
+    if "all" in fields:
+        fields = list(H.ALLOWED)
+    if final is None or not final.eras:
+        return fields
+
+    def settled(f: str) -> bool:
+        return all(
+            (fv := e.fields.get(f)) is not None
+            and fv.value is not None
+            and any(x.primary for x in fv.evidence)
+            for e in final.eras
+        )
+
+    return [f for f in fields if f not in C.RUBRIC_FIELDS or not settled(f)]
+
+
 def cmd_tasks(a) -> int:
     """Collect every blocked source and unresolved diff in a run into tasks.csv / tasks.md."""
     d = Path(a.dir)
@@ -155,9 +173,13 @@ def cmd_tasks(a) -> int:
         pl = pd.read_csv(d / "places.csv", dtype={"geoid": str})
         pops = dict(zip(pl["geoid"], pl["pop_2020"], strict=False))
     tasks: list[H.HumanTask] = []
+    finals = {c.geoid: c for c in _load_all(d / "final")} if (d / "final").exists() else {}
     for sub in ("coding_a", "coding_b", "final"):
         for c in _load_all(d / sub) if (d / sub).exists() else []:
             for b in c.blocked:
+                fields = settled_fields_dropped(b.fields, finals.get(c.geoid))
+                if b.fields and not fields:
+                    continue  # the verifier already settled every field this page would answer
                 tasks.append(
                     H.HumanTask(
                         state=c.state,
@@ -168,7 +190,7 @@ def cmd_tasks(a) -> int:
                         reason=b.reason,
                         url=b.url,
                         what_to_look_for=b.what_to_look_for,
-                        fields_to_fill=b.fields,
+                        fields_to_fill=fields,
                         pop_2020=int(pops.get(c.geoid, 0)),
                         notes=b.note or "",
                     )
