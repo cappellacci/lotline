@@ -61,3 +61,18 @@
 - **Outputs:** `src/lotline/app/template.html`; a test in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and test. Checked with `tests/app` (49 passed), ruff and `compliance_check.py`, and in the browser pane with the 1.15 Texas parts (no reform 788 ADU permits in 2027, 355–2,090).
 - **Open / next:** the published bundles carry the new parts after ws/adu-bundle-detail merges and all five states are rerun from main.
+
+### LB-NNN · 2026-11-17 · Deliverables: the Model page's section 3 goes model by model, with an ADU deep dive
+- **Question:** How do the ADU gut check's charts fit on the Model page?
+- **What I did:**
+  - **Section 3:** retitled "What each model does, and how we get our ranges". The model chips became the segmented selector used on the Results page (ADUs | Missing middle | Fee reduction).
+  - **Held-out state test:** in the ADU card, the table became a range chart, each state's band with the counted ADUs as a gold diamond, from the same four rows.
+  - **"State by state" deep dive:** loads every state's results file when the Model page opens. It has three parts:
+    1. No reform against the reform, ADUs a year (from `adu_baseline` and the yearly totals).
+    2. By place type, one small chart per state (from `adu_place_types`).
+    3. A statewide totals table.
+  - **Not yet in the results files:** the forecasting-forward test and the place-by-place check, marked as still to add.
+- **Inputs:** Ben's request (2026-11-17); the ADU Gut Check artifact as the visual reference.
+- **Outputs:** `src/lotline/app/template.html`; a test in `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change and test. Checked with `tests/app`, ruff and `compliance_check.py`, and in the browser pane with preview-only ADU parts.
+- **Open / next:** the two backtest charts need their data in the results files (ADU session); missing middle and fees deep dives to design.

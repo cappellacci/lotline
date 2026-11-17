@@ -248,6 +248,20 @@ def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
     assert len(yearly) == 5  # one per window year, the whiskers
 
 
+def test_model_page_section_three_has_a_selector_and_an_adu_deep_dive(tmp_path):
+    """Ben, 2026-11-17: section 3 is "What each model does, and how we get our ranges", with a segmented model
+    selector and an ADU deep dive built from every state's results file (gut-check style charts)."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    assert '<h3 class="h2">What each model does, and how we get our ranges</h3>' in html
+    assert '<div class="seg model-tabs" role="group" aria-label="Which model">' in html
+    adu = html[html.index('id="model-adu"') : html.index('id="model-mm"')]
+    assert 'id="adu-heldout"' in adu and 'id="adu-deep"' in adu
+    assert 'if (page === "trust") { drawTornado(); drawDeepDive(); }' in html  # loads every state on open
+    deep = html[html.index("async function drawDeepDive") :]
+    for part in ("b.adu_baseline", "placeTypeChart(b)", "Statewide totals, 2027–2031"):
+        assert part in deep, part
+
+
 def test_old_results_cards_are_gone_and_the_funnel_lives_in_the_steps(tmp_path):
     """Ben, 2026-11-17: the per-scenario headline card, "With no policy change" and "From legal lots to built
     homes" are removed; the funnel's stages become bars in the ADU card's "How we get these numbers"."""

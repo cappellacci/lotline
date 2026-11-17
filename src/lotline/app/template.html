@@ -164,6 +164,7 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .zones > div { border: var(--stroke-hair) solid var(--rule); padding: var(--space-3); background: var(--paper-sunken); }
 .zones h4 { margin: 0 0 var(--space-1); font-size: 16px; }
 .zones p { margin: 0; font-size: 14px; line-height: 20px; }
+.rc .lane .dia { position: absolute; width: 11px; height: 11px; margin-left: -5px; background: var(--brass); transform: rotate(45deg); }
 .rc .axis { height: 20px; margin-right: 150px; }
 @media (max-width: 640px) { .rc { grid-template-columns: 1fr; gap: var(--space-1) 0; } .rc .lane { margin: 0 110px var(--space-3) 0; } }
 .headline { margin: 0 0 var(--space-4); }
@@ -399,7 +400,7 @@ table.checks td:last-child { min-width: 260px; }
     </div></div>
 
     <div class="step" id="step-model"><p class="step-n" aria-hidden="true">3</p><div class="step-body">
-      <h3 class="h2">What the model does, and where the range comes from</h3>
+      <h3 class="h2">What each model does, and how we get our ranges</h3>
 
       <h4 class="h3">3a. What gets built anyway</h4>
       <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over 2021–2025. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
@@ -414,12 +415,12 @@ table.checks td:last-child { min-width: 260px; }
         <li><b>What is already being built is never credited to the reform.</b></li>
       </ul>
 
-      <h4 class="h3">3c. The three models</h4>
-      <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it; every card answers the same five questions.</p>
-      <div class="tabs model-tabs" role="group" aria-label="Which model">
-        <button type="button" class="chip" data-model="adu" aria-pressed="true">ADUs</button>
-        <button type="button" class="chip" data-model="mm" aria-pressed="false">Missing middle</button>
-        <button type="button" class="chip" data-model="fees" aria-pressed="false">Fee cuts</button>
+      <h4 class="h3">3c. The three models, in depth</h4>
+      <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it: every card answers the same five questions, then goes state by state.</p>
+      <div class="seg model-tabs" role="group" aria-label="Which model">
+        <button type="button" data-model="adu" aria-pressed="true">ADUs</button>
+        <button type="button" data-model="mm" aria-pressed="false">Missing middle</button>
+        <button type="button" data-model="fees" aria-pressed="false">Fee reduction</button>
       </div>
 
       <div class="model-card" id="model-adu" data-model-card="adu">
@@ -450,13 +451,10 @@ table.checks td:last-child { min-width: 260px; }
         <h5>How we tested it</h5>
         <p class="status"><span class="verdict pass"><span class="glyph" aria-hidden="true"></span>Pass</span></p>
         <p class="body-small">We hid one state, fitted the model on the others and predicted the hidden state from two things only: its places' types and the coded rules of its 20 largest places. A prediction counted as useful if the actual number fell inside its range (P10 to P90) and the midpoint was within a factor of two.</p>
-        <div class="scroll"><table class="body-small"><thead><tr><th>State hidden</th><th class="n">ADUs counted</th><th class="n">Midpoint</th><th class="n">Range (P10–P90)</th></tr></thead><tbody>
-          <tr><td>Minnesota</td><td class="n">50</td><td class="n">62</td><td class="n">29–130</td></tr>
-          <tr><td>North Carolina</td><td class="n">621</td><td class="n">487</td><td class="n">106–1,936</td></tr>
-          <tr><td>Texas</td><td class="n">364</td><td class="n">246</td><td class="n">26–1,278</td></tr>
-          <tr><td>Oregon</td><td class="n">527</td><td class="n">417</td><td class="n">83–1,603</td></tr>
-        </tbody></table></div>
+        <div id="adu-heldout"></div>
         <p class="body-small">Useful in all four. Ohio could not be tested this way: only 3 of its places have usable ADU counts. These four states also shaped the model's design, so this is not a fully blind test. The blind one, Oregon predicted before any of its data was opened, missed low (see the tests table below).</p>
+        <h5>State by state</h5>
+        <div id="adu-deep"><p class="pending">Loading each state's results…</p></div>
         <h5>What it can't tell you</h5>
         <ul class="body-small steps-list">
           <li><b>The ranges are wide.</b> In Texas the top of the range is about 50 times the bottom.</li>
@@ -1267,7 +1265,70 @@ function wireModelCards() {
     document.querySelectorAll("[data-model-card]").forEach((c) => { c.hidden = c.dataset.modelCard !== t.dataset.model; });
   };
 }
+// The ADU model's leave-one-state-out test (D-096; the 2026-11-15 gut check): ADUs counted in the hidden state's
+// target places over the fit years, against the model's range for them.
+const ADU_HELDOUT = [
+  ["Minnesota", 50, 62, 29, 130], ["North Carolina", 621, 487, 106, 1936], ["Texas", 364, 246, 26, 1278], ["Oregon", 527, 417, 83, 1603],
+];
+// rows: [{label, sub, lanes: [{p10, p50, p90, color, mark}]}] on one log axis, as in the Results range chart
+function laneChart(rows, unit) {
+  const vals = rows.flatMap((r) => r.lanes.flatMap((l) => [l.p90, l.mark].filter(Number.isFinite)));
+  if (!vals.length) return "";
+  const lo = 10 ** Math.floor(Math.log10(Math.max(1, Math.min(...rows.flatMap((r) => r.lanes.map((l) => l.p10).filter((v) => v > 0)), 10)))),
+    hi = 10 ** Math.ceil(Math.log10(Math.max(...vals) * 2));
+  const pos = (v) => `${Math.max(0, Math.min(100, ((Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * 100))}%`;
+  const dec = []; for (let t = lo; t <= hi; t *= 10) dec.push(t);
+  const grid = dec.map((t) => `<span class="g" style="left:${pos(t)}"></span>`).join("");
+  return `<div class="rc">${rows.map((r) => `<div class="who"><h4 style="font-size:15px">${esc(r.label)}</h4>${r.sub ? `<p>${esc(r.sub)}</p>` : ""}</div>
+    <div>${r.lanes.length ? r.lanes.map((l) => `<div class="lane" style="height:${r.lanes.length > 1 ? 26 : 40}px">${grid}
+      <span class="band" style="top:${r.lanes.length > 1 ? 5 : 12}px;left:${pos(l.p10)};width:calc(${pos(l.p90)} - ${pos(l.p10)});background:${l.color}"></span>
+      <span class="tick" style="top:${r.lanes.length > 1 ? 2 : 8}px;height:${r.lanes.length > 1 ? 22 : 24}px;left:${pos(l.p50)};background:${l.color}"></span>
+      ${Number.isFinite(l.mark) ? `<span class="dia" title="Counted: ${fmtN(l.mark)}" style="top:${r.lanes.length > 1 ? 8 : 15}px;left:${pos(l.mark)}"></span>` : ""}
+      <span class="num" style="top:${r.lanes.length > 1 ? 3 : 10}px;left:calc(${pos(l.p90)} + 8px)">${fmtN(l.p50)} <small>(${fmtN(l.p10)}–${fmtN(l.p90)})${Number.isFinite(l.mark) ? `, counted ${fmtN(l.mark)}` : ""}</small></span></div>`).join("")
+      : `<div class="lane"><span class="num muted" style="left:0">Not in this state's results yet</span></div>`}</div>`).join("")}
+    <div></div><div class="axis">${dec.map((t) => `<span style="left:${pos(t)}">${fmtN(t)}</span>`).join("")}</div></div>
+    <p class="source">${esc(unit)} Log scale.</p>`;
+}
+function heldoutHtml() {
+  $("adu-heldout").innerHTML = laneChart(ADU_HELDOUT.map(([st, n, p50, p10, p90]) => ({ label: st, sub: "",
+    lanes: [{ p10, p50, p90, mark: n, color: scenColor("adu") }] })),
+    "ADUs counted in the hidden state's target places over the fit years: the model's range (band, tick at the midpoint) and the count (gold diamond).");
+}
+// The ADU deep dive: every state's results file, loaded when the Model page opens.
+let DEEP = null;
+async function drawDeepDive() {
+  if (DEEP) return;
+  DEEP = await Promise.all(DATA.states.map((e) => loadState(e.meta.state).catch(() => null)));
+  const bs = DEEP.filter(Boolean);
+  const nameOf = (st) => (DATA.map.tiles.find((t) => t.code === st) || {}).name || st;
+  const yearly = (b, scen) => (b.totals || []).filter((r) => r.scenario === scen && r.outcome === "permits_added" && /^\d{4}$/.test(r.period));
+  const avg = (rows, k) => rows.reduce((t, r) => t + r[k], 0) / rows.length;
+  const rows = bs.map((b) => {
+    const base = (b.adu_baseline || []).filter((r) => /^\d{4}$/.test(r.period)), add = yearly(b, "adu");
+    if (!base.length) return { label: nameOf(b.meta.state), sub: "", lanes: [] };
+    const nr = { p10: avg(base, "p10"), p50: avg(base, "p50"), p90: avg(base, "p90"), color: "var(--scenario-baseline)" };
+    const wr = add.length ? { p10: nr.p10 + avg(add, "p10"), p50: nr.p50 + avg(add, "p50"), p90: nr.p90 + avg(add, "p90"), color: scenColor("adu") } : null;
+    return { label: nameOf(b.meta.state), sub: "grey: no reform · blue: with the reform", lanes: wr ? [nr, wr] : [nr] };
+  });
+  const types = bs.map((b) => `<figure style="margin:0;min-width:0"><figcaption class="h3" style="font-size:15px;margin-bottom:var(--space-1)">${esc(nameOf(b.meta.state))}</figcaption>${placeTypeChart(b)}</figure>`).join("");
+  const tbl = bs.map((b) => {
+    const base = (b.adu_baseline || []).filter((r) => /^\d{4}$/.test(r.period));
+    const win = (o) => (b.totals || []).find((r) => r.scenario === "adu" && r.outcome === o && r.period.includes("-"));
+    const add = win("permits_added"), net = win("homes_net_statewide");
+    const cell = (r) => (r ? `${fmtN(r.p50)}<br><span class="caption muted">${fmtN(r.p10)}–${fmtN(r.p90)}</span>` : "–");
+    return `<tr><td>${esc(nameOf(b.meta.state))}</td><td class="n">${base.length ? fmtN(base.reduce((t, r) => t + r.p50, 0)) : "–"}</td><td class="n">${cell(add)}</td><td class="n">${cell(net)}</td></tr>`;
+  }).join("");
+  $("adu-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, ADUs a year.</b> Statewide ADU permits a year with today's rules, and with the reform on top, averaged over 2027–2031.</p>
+    ${laneChart(rows, "Gross ADU permits a year: the average of each window year's P10, midpoint and P90.")}
+    <p class="body-small" style="margin-top:var(--space-5)"><b>By place type.</b> The same split, by core cities, suburbs and towns: grey is built anyway, blue is added by the reform.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${types}</div>
+    <p class="body-small" style="margin-top:var(--space-5)"><b>Statewide totals, 2027–2031.</b></p>
+    <div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">ADUs with no reform</th><th class="n">ADUs added by the reform</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
+    <p class="source">Midpoints, with P10–P90 below. "ADUs with no reform" adds the five yearly midpoints. "Net new homes" counts only ADUs that add a home the state would not otherwise get. Every figure comes from the state's results file.</p>
+    <p class="pending">Still to add: the forecasting-forward test (fit on 2016–20, check against 2021–25) and the place-by-place check of forecasts against what was built. They are in the ADU gut check, but not yet in the results files.</p>`;
+}
 function staticTrust() {
+  heldoutHtml();
   wireModelCards();
   $("dag").innerHTML = dagSvg();
   $("dag-key").innerHTML = dagKey();
@@ -1430,7 +1491,7 @@ function go(page, scroll = true) {
     if (a.dataset.page === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
   history.replaceState(null, "", page === "home" ? "#home" : `#${page}?state=${encodeURIComponent($("state").value)}`);
-  if (page === "trust") drawTornado();  // measured while visible
+  if (page === "trust") { drawTornado(); drawDeepDive(); }  // measured while visible
   if (page === "data") ensureDashboard();
   if (page === "home") drawMap();
   if (scroll) window.scrollTo(0, 0);
