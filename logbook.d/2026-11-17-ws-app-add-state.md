@@ -84,3 +84,11 @@
 - **Outputs:** `src/lotline/app/template.html`; `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change. Checked with `tests/app` (50 passed), ruff and `compliance_check.py`, and in the browser pane on the real North Carolina results (6,190 homes; 2,000 to 21,300).
 - **Open / next:** none.
+
+### LB-NNN · 2026-11-17 · Deliverables: share of housing need, with linked sources
+- **Question:** How can the "Share of housing need" card read less like a data dump?
+- **What I did:** Each need now has its range, one line with the midpoint, and a "Sources" line where each source's name links to its page in place of a raw URL. The "if the need is X or Y" clause only shows when the high and low needs differ (it read "0.06% to 0.06%" when they matched), and gives the lower number first.
+- **Inputs:** Ben's request (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`.
+- **AI:** Claude Code wrote the change. Checked with `tests/app`, `compliance_check.py`, and in the browser pane on North Carolina's real results (all four links point to their sources).
+- **Open / next:** none.

@@ -617,6 +617,16 @@ table.checks td:last-child { min-width: 260px; }
 const DATA = JSON.parse(document.getElementById("lotline-data").textContent);
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+// A source line from the bundle ("Name: https://... ; Other (https://...) ; analysis plan D-057") as linked names:
+// each "; " piece links its own text to its https URL; pieces without one stay plain text. Everything is escaped.
+function sourceLinks(text) {
+  return String(text ?? "").split(/\s+;\s+|(?<=\));\s+/).map((piece) => {
+    const m = piece.match(/https:\/\/[^\s"<>()]+/);
+    if (!m) return esc(piece.replace(/[.;\s]+$/, ""));
+    const label = piece.replace(m[0], "").replace(/\(\s*\)/, "").replace(/[\s:;.(]+$/, "").trim() || m[0];
+    return `<a href="${esc(m[0])}" target="_blank" rel="noopener">${esc(label)}</a>`;
+  }).join(" · ");
+}
 
 // ---- state picker: grouped by role, no state names in code ----------------------------------------------
 function fillPicker() {
@@ -1096,9 +1106,14 @@ function updateResults() {
   const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
   $("need").innerHTML = needs.length ? needs.map((n) => {
     const sh = AGG.shareOfNeed(R[d].homes_net_statewide, n);
-    return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-2) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
+    // When the need's high and low differ, say how far the midpoint moves; when they match, say nothing.
+    const alt = n.denominator_high !== n.denominator_low
+      ? ` If the need is ${fmtN(Math.min(n.denominator_high, n.denominator_low))} to ${fmtN(Math.max(n.denominator_high, n.denominator_low))} homes instead, it is ${fmtPct(Math.min(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} to ${fmtPct(Math.max(sh.share_p50_at_need_high, sh.share_p50_at_need_low))}.`
+      : "";
+    return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-4) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
       <span class="body">${esc(n.label)}</span></p>
-      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Counts net new housing. Source: ${esc(n.source)}.</p>`;
+      <p class="body-small" style="margin:var(--space-1) 0 0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes, counting net new homes only.${alt}</p>
+      <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sourceLinks(n.source)}</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
   for (const k of DATA.knobs) {
     const el = document.querySelector(`[data-val="${CSS.escape(k.column)}"]`);
