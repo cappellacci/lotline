@@ -73,8 +73,14 @@ def _notes(era: Era, resolved: D.ResolvedDates, agreement_note: str) -> str:
     return " ".join(parts)
 
 
-def build(coding: PlaceCoding, agreement: str, verified_on: dt.date | None = None) -> list[dict]:
-    """Rows for one place (oldest era first). `agreement` is the schema CODER_AGREEMENT value."""
+def build(
+    coding: PlaceCoding,
+    agreement: str,
+    verified_on: dt.date | None = None,
+    second_look: list[str] | None = None,
+) -> list[dict]:
+    """Rows for one place (oldest era first). `agreement` is the schema CODER_AGREEMENT value; `second_look`
+    names the fields a targeted second coder checked (None: no second coder, or a full one)."""
     eras = sorted(coding.eras, key=lambda e: D.resolve(e.dates).effective)
     rows: list[dict] = []
     ids: set[str] = set()
@@ -121,6 +127,8 @@ def build(coding: PlaceCoding, agreement: str, verified_on: dt.date | None = Non
         if not row["coverage"]:
             row["coverage"] = "Not stated in the coded sources"
         note = f"Coded by the ADU rule agent swarm ({coding.coder}); coder agreement: {agreement}."
+        if second_look:
+            note += f" Blind second look on weak values only: {', '.join(second_look)}."
         row["coding_notes"] = _notes(era, r, note)
         if rows and rows[-1]["end_date"] is None:
             rows[-1]["end_date"] = r.effective

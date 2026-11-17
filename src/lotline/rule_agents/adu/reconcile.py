@@ -10,6 +10,11 @@ Statuses: `agree` (same value, or both blank), `a_only` / `b_only` (one blank), 
 value that rests only on secondary sources on both sides is reported as `agree_secondary`, which never
 counts as agreement in `coder_agreement` (README convention 3; TX lesson: a check that could not read the
 source is not agreement).
+
+**Targeted second look** (`score.py`, Ben 2026-11-17): when the second coder coded only some fields, pass
+those as `fields`; other fields are taken from A without a diff. Era-level diffs are always kept (an era only
+one coder found is the most useful thing a second look can turn up). A targeted place is never `agree`: it is
+`adjudicated` when the verifier ruled, else `single_coder`.
 """
 
 from __future__ import annotations
@@ -64,7 +69,15 @@ def _secondary_only(fv: FieldValue | None) -> bool:
     return fv is not None and fv.evidence and not any(e.primary for e in fv.evidence)
 
 
-def compare(a: PlaceCoding, b: PlaceCoding) -> list[Diff]:
+def compare(a: PlaceCoding, b: PlaceCoding, fields: set[str] | None = None) -> list[Diff]:
+    """Field-by-field diffs; with `fields`, only those fields (plus era-level diffs) are compared."""
+    out = _compare(a, b)
+    if fields is None:
+        return out
+    return [d for d in out if d.field == "era" or d.field in fields]
+
+
+def _compare(a: PlaceCoding, b: PlaceCoding) -> list[Diff]:
     out: list[Diff] = []
     for ea, eb in match_eras(a.eras, b.eras):
         if ea is None or eb is None:
@@ -112,10 +125,10 @@ def needs_verifier(diffs: list[Diff]) -> list[Diff]:
     return [d for d in diffs if d.status not in ("agree",)]
 
 
-def coder_agreement(diffs: list[Diff], verified: bool) -> str:
-    """Schema CODER_AGREEMENT for a place: 'agree' only when every compared value agreed on primary
-    evidence; 'adjudicated' when the verifier settled the rest; else 'single_coder'."""
-    if all(d.status == "agree" for d in diffs):
+def coder_agreement(diffs: list[Diff], verified: bool, targeted: bool = False) -> str:
+    """Schema CODER_AGREEMENT for a place: 'agree' only when every value was second-coded and agreed on
+    primary evidence; 'adjudicated' when the verifier settled the rest; else 'single_coder'."""
+    if not targeted and all(d.status == "agree" for d in diffs):
         return "agree"
     return "adjudicated" if verified else "single_coder"
 
@@ -130,13 +143,20 @@ class Decision:
     note: str = ""
 
 
-def merge(a: PlaceCoding, b: PlaceCoding, decisions: list[Decision], verifier: str, on: dt.date):
+def merge(
+    a: PlaceCoding,
+    b: PlaceCoding,
+    decisions: list[Decision],
+    verifier: str,
+    on: dt.date,
+    fields: set[str] | None = None,
+):
     """(final coding, unresolved diffs). Starts from A; applies decisions; any non-agree diff without a
     decision is unresolved and its field is blanked (blank = unknown, never a guess)."""
     final = a.model_copy(deep=True)
     final.coder = f"{a.coder}+{b.coder}"
     by_key = {(d.era_key, d.field): d for d in decisions}
-    diffs = compare(a, b)
+    diffs = compare(a, b, fields)
     eras_a = {str(D.resolve(e.dates).effective): e for e in final.eras}
     pairs = {str(D.resolve(ea.dates).effective): eb for ea, eb in match_eras(a.eras, b.eras) if ea and eb}
     unresolved: list[Diff] = []
@@ -175,5 +195,6 @@ def merge(a: PlaceCoding, b: PlaceCoding, decisions: list[Decision], verifier: s
         if dec.note:
             era.fields[d.field].note = (era.fields[d.field].note or "") + f" verifier {on}: {dec.note}"
     final.eras.sort(key=lambda e: D.resolve(e.dates).effective)
-    final.notes = ((final.notes or "") + f" Reconciled by {verifier} on {on}.").strip()
+    scope = f" (second look on: {', '.join(sorted(fields))})" if fields is not None else ""
+    final.notes = ((final.notes or "") + f" Reconciled by {verifier} on {on}{scope}.").strip()
     return final, unresolved

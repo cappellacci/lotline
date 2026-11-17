@@ -3,12 +3,14 @@
 Run folder (outside the repo): `$LOTLINE_DATA_DIR/rule_agents/adu/<ST>/<run_id>/`
     places.csv            worklist (rank, geoid, name, pop); existing_rows.csv: orchestrator only
     state_law.json        state-law baseline (rules-adu-state-law)
-    coding_a/<geoid>.json primary coder        coding_b/<geoid>.json  blind second coder
+    coding_a/<geoid>.json primary coder        score/<geoid>.json     which values get a second look
+    coding_b/<geoid>.json blind second coder (targeted to weak values, or full for the audit sample)
     decisions/<geoid>.json verifier rulings    final/<geoid>.json     merged coding
     tasks.csv / tasks.md  human lookups        rows.csv               proposed `reforms` rows
     compare.md            comparison with config/reforms/<st>.csv (dry runs)
 
-Commands: run-dir, worklist, fetch, check, verify-quotes, diff-coders, merge, rows, tasks, ingest, compare.
+Commands: run-dir, worklist, fetch, check, verify-quotes, score, diff-coders, merge, rows, tasks, ingest,
+compare.
 """
 
 from __future__ import annotations
@@ -29,7 +31,8 @@ from lotline.rule_agents.adu import handoff as H
 from lotline.rule_agents.adu import places as P
 from lotline.rule_agents.adu import reconcile as R
 from lotline.rule_agents.adu import rows as W
-from lotline.rule_agents.adu.fetch import Fetcher, quote_in_text
+from lotline.rule_agents.adu import score as S
+from lotline.rule_agents.adu.fetch import Fetcher
 
 
 def run_dir(state: str, run_id: str, store: DataStore | None = None) -> Path:
@@ -87,8 +90,9 @@ def cmd_check(a) -> int:
 
 
 def cmd_verify_quotes(a) -> int:
-    """Every quote with a cached HTML text copy must appear verbatim; PDFs are listed for the Read tool."""
-    store = DataStore()
+    """Every verbatim quote with a cached text copy (HTML or text PDF) must be found in it; for PDFs the page
+    is reported and must match `page` when the coder gave one. Image-read and human quotes are listed only."""
+    root = DataStore().root
     code = 0
     for p in a.paths:
         c = C.load(p)
@@ -97,22 +101,46 @@ def cmd_verify_quotes(a) -> int:
                 e for d in era.dates for e in d.evidence
             ]
             for e in evs:
-                if not e.cache_path:
-                    print(f"{c.geoid} {era.era_id}: no cached copy for {e.url} (verifier must re-open)")
-                    continue
-                src = store.root / e.cache_path
-                txt = src.with_suffix(".txt")
-                if txt.exists():
-                    ok = quote_in_text(e.quote, txt.read_text())
-                    print(f"{c.geoid} {era.era_id}: {'OK ' if ok else 'MISSING'} {e.url}")
-                    code |= not ok
-                else:
-                    print(f"{c.geoid} {era.era_id}: READ-TOOL {src} (check quote by eye)")
+                status, page = S.quote_check(e, root)
+                note = f" p.{page}" if page else ""
+                if page and e.page and e.page != page:
+                    note += f" (coder said p.{e.page})"
+                label = {"found": "OK     ", "missing": "MISSING", "unchecked": "BY-EYE "}[status]
+                print(f"{c.geoid} {era.era_id}: {label} {e.url}{note}")
+                code |= status == "missing"
     return code
 
 
+def cmd_score(a) -> int:
+    """Score coder A's values; write score/<geoid>.json; print who needs which second look."""
+    root = DataStore().root
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    tally = {"none": 0, "targeted": 0, "full": 0}
+    for p in a.paths:
+        c = C.load(p)
+        src = Path(a.sources) / f"{c.geoid}.json" if a.sources else None
+        sources = json.loads(src.read_text()) if src and src.exists() else None
+        card = S.score(c, root, sources, a.audit_rate)
+        (out / f"{c.geoid}.json").write_text(S.to_json(card) + "\n")
+        tally[card.mode] += 1
+        extra = f"; {len(card.uncoded_amendments)} uncoded amendment(s)" if card.uncoded_amendments else ""
+        counts = f"strong {card.strong}, weak {card.weak}, looks {len(card.looks)}"
+        print(f"{c.geoid} {c.name}: {card.mode:8} {counts}{extra}")
+    t = tally
+    print(f"second coder: {t['full']} full (audit), {t['targeted']} targeted, {t['none']} skipped")
+    return 0
+
+
+def _scope(score_path: str | None) -> set[str] | None:
+    if not score_path:
+        return None
+    card = json.loads(Path(score_path).read_text())
+    return set(card["second_coder_fields"]) if card["mode"] == "targeted" else None
+
+
 def cmd_diff(a) -> int:
-    diffs = R.compare(C.load(a.a), C.load(a.b))
+    diffs = R.compare(C.load(a.a), C.load(a.b), _scope(a.score))
     rows = [asdict(d) for d in diffs if a.all or d.status != "agree"]
     print(json.dumps(rows, default=str, indent=1))
     print(f"coder_agreement before verifier: {R.coder_agreement(diffs, verified=False)}", file=sys.stderr)
@@ -122,10 +150,15 @@ def cmd_diff(a) -> int:
 def cmd_merge(a) -> int:
     A, B = C.load(a.a), C.load(a.b)
     decisions = [R.Decision(**d) for d in json.loads(Path(a.decisions).read_text())] if a.decisions else []
-    final, unresolved = R.merge(A, B, decisions, a.verifier, dt.date.today())
+    fields = _scope(a.score)
+    final, unresolved = R.merge(A, B, decisions, a.verifier, dt.date.today(), fields)
     C.dump(final, a.out)
+    agreement = R.coder_agreement(
+        R.compare(A, B, fields), verified=bool(decisions), targeted=fields is not None
+    )
     meta = {
-        "agreement": R.coder_agreement(R.compare(A, B), verified=bool(decisions)),
+        "agreement": agreement,
+        "second_look": sorted(fields) if fields is not None else None,
         "unresolved": [asdict(u) for u in unresolved],
     }
     Path(a.out).with_suffix(".meta").write_text(json.dumps(meta, default=str, indent=1))
@@ -140,7 +173,7 @@ def cmd_rows(a) -> int:
         meta_p = Path(p).with_suffix(".meta")
         meta = json.loads(meta_p.read_text()) if meta_p.exists() else {"agreement": "single_coder"}
         verified = dt.date.today() if meta["agreement"] != "single_coder" else None
-        rows += W.build(c, meta["agreement"], verified)
+        rows += W.build(c, meta["agreement"], verified, meta.get("second_look"))
     df = W.to_frame(rows)
     W.write_csv(df, a.out)
     print(f"{len(df)} rows valid against the reforms schema -> {a.out}")
@@ -267,15 +300,23 @@ def main(argv=None) -> int:
         s = sp.add_parser(name)
         s.add_argument("paths", nargs="+")
         s.set_defaults(fn=fn)
+    s = sp.add_parser("score")
+    s.add_argument("paths", nargs="+")
+    s.add_argument("--sources", help="RUN_DIR/sources (for uncoded-amendment leads)")
+    s.add_argument("--out", required=True)
+    s.add_argument("--audit-rate", type=float, default=S.AUDIT_RATE)
+    s.set_defaults(fn=cmd_score)
     s = sp.add_parser("diff-coders")
     s.add_argument("a")
     s.add_argument("b")
     s.add_argument("--all", action="store_true")
+    s.add_argument("--score", help="score/<geoid>.json: compare only the targeted fields")
     s.set_defaults(fn=cmd_diff)
     s = sp.add_parser("merge")
     s.add_argument("a")
     s.add_argument("b")
     s.add_argument("--decisions")
+    s.add_argument("--score", help="score/<geoid>.json: a targeted second look compares only its fields")
     s.add_argument("--verifier", default=W.VERIFIER)
     s.add_argument("--out", required=True)
     s.set_defaults(fn=cmd_merge)

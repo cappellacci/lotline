@@ -12,8 +12,8 @@ coders cited (fetch them again with the fetch helper if a copy is missing).
 
 ## Per place
 
-1. `uv run python -m lotline.rule_agents.adu diff-coders RUN_DIR/coding_a/<g>.json RUN_DIR/coding_b/<g>.json`
-   lists every difference (`disagree`, `a_only`, `b_only`, `agree_secondary`, `era_a_only`, `era_b_only`).
+1. `uv run python -m lotline.rule_agents.adu diff-coders RUN_DIR/coding_a/<g>.json RUN_DIR/coding_b/<g>.json
+   --score RUN_DIR/score/<g>.json` lists (for a targeted place, only on the fields the second coder was given) every difference (`disagree`, `a_only`, `b_only`, `agree_secondary`, `era_a_only`, `era_b_only`).
 2. `verify-quotes` on both files. A quote that is not in its source discredits that value.
 3. For each difference, open the cited sections and decide one of:
    - `a` / `b`: the source plainly supports that value (quote it in `note`, with the section);
@@ -25,7 +25,7 @@ coders cited (fetch them again with the fetch helper if a copy is missing).
    For `agree_secondary`, rule only if you can confirm on a primary source you can open (else leave it).
 4. Write `RUN_DIR/decisions/<g>.json` as a list of `{"era_key", "field", "take", "note"}` (`era_key` and
    `field` exactly as `diff-coders` printed them), then run
-   `uv run python -m lotline.rule_agents.adu merge RUN_DIR/coding_a/<g>.json RUN_DIR/coding_b/<g>.json --decisions RUN_DIR/decisions/<g>.json --out RUN_DIR/final/<g>.json`.
+   `uv run python -m lotline.rule_agents.adu merge RUN_DIR/coding_a/<g>.json RUN_DIR/coding_b/<g>.json --decisions RUN_DIR/decisions/<g>.json --score RUN_DIR/score/<g>.json --out RUN_DIR/final/<g>.json`.
 
 ## Rules
 

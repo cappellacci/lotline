@@ -12,11 +12,15 @@ blind holdouts and `state_law.json`.
 
 ## Per place (budget beyond the scout's sources: ≤ 4 web searches, ≤ 10 fetches)
 
-1. Read `RUN_DIR/sources/<geoid>.json` and open its fetched copies (`text_path` for HTML; Read the PDF at
-   `path`). Fetch more only with the fetch helper.
+1. Read `RUN_DIR/sources/<geoid>.json` and open its fetched copies: `text_path` for HTML and text PDFs (PDF
+   pages are separated by form feeds); a scanned PDF (`scanned_pdf`) only through its page images. Fetch more
+   only with the fetch helper.
 2. Build the eras, oldest first: the state before the first ADU rule (often `adus_per_lot = 0`), then each
    version that changed a field. Look specifically for removals and re-adoptions (L-S5).
-3. For every value: quote, section, URL, `cache_path`, kind, confidence. For every era: every dated source
+3. For every value: quote, section, URL, `cache_path`, `doc_id`, PDF `page`, kind, confidence. Your
+   confidence decides the cost of the run: only weak values get a second coder (`score`), so mark `high`
+   whenever the rule is met (primary source, verbatim quote, text that needs no reading-in) and never
+   otherwise. For every era: every dated source
    with its type. Leave anything not found blank.
 4. Local rules only: the state-law rows are made separately. But if the local rule predates and differs from
    a state law, code it (L-D8), and note in the place `notes` what the state law changes.

@@ -147,3 +147,75 @@ def test_quote_check_normalises_quotes_dashes_case_and_ellipsis():
     assert F.quote_in_text("Sec. 5.3 - An ... exceed 800 square feet", text)
     assert not F.quote_in_text("shall not exceed 1,000 square feet", text)
     assert not F.quote_in_text("Parking: none ... Sec. 5.3", text)  # parts must appear in order
+
+
+def tiny_pdf(pages: list[str]) -> bytes:
+    """A minimal, valid PDF with one line of Helvetica text per page (hand-built; no PDF writer needed)."""
+    n = len(pages)
+    objs = ["<< /Type /Catalog /Pages 2 0 R >>"]
+    kids = " ".join(f"{4 + 2 * i} 0 R" for i in range(n))
+    objs.append(f"<< /Type /Pages /Kids [{kids}] /Count {n} >>")
+    objs.append("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+    for i, line in enumerate(pages):
+        stream = f"BT /F1 10 Tf 20 700 Td ({line}) Tj ET"
+        objs.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> "
+            f"/Contents {5 + 2 * i} 0 R >>"
+        )
+        objs.append(f"<< /Length {len(stream)} >>\nstream\n{stream}\nendstream")
+    out, offsets = b"%PDF-1.4\n", []
+    for k, body in enumerate(objs, 1):
+        offsets.append(len(out))
+        out += f"{k} 0 obj\n{body}\nendobj\n".encode()
+    xref = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode()
+    out += b"".join(f"{o:010d} 00000 n \n".encode() for o in offsets)
+    out += f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    return out
+
+
+def test_text_pdf_gets_a_page_separated_text_sidecar(store):
+    pdf = tiny_pdf(
+        ["Section 5.3 Accessory dwelling units are permitted by right.", "One ADU per lot. Max 800 sq ft."]
+    )
+    f = make(
+        store,
+        {
+            "https://g.gov/ord.pdf": httpx.Response(
+                200, content=pdf, headers={"content-type": "application/pdf"}
+            )
+        },
+        [],
+    )
+    r = f.get("https://g.gov/ord.pdf")
+    assert (r.ok, r.reason) == (True, None)
+    text = r.text_path.read_text()
+    assert text.count("\f") == 1
+    assert F.quote_page("accessory dwelling units are permitted by right", text) == 1
+    assert F.quote_page("One ADU per lot", text) == 2
+    assert F.quote_page("three ADUs per lot", text) is None
+
+
+def test_pdf_with_no_extractable_text_is_scanned(store):
+    pdf = tiny_pdf([""])
+    f = make(
+        store,
+        {
+            "https://g.gov/scan.pdf": httpx.Response(
+                200, content=pdf, headers={"content-type": "application/pdf"}
+            )
+        },
+        [],
+    )
+    r = f.get("https://g.gov/scan.pdf")
+    assert (r.ok, r.reason, r.text_path) == (True, "scanned_pdf", None)
+
+
+def test_quote_across_a_page_break_counts_on_the_first_page():
+    assert F.quote_page("by right. One ADU", "permitted by right.\fOne ADU per lot") == 1
+
+
+def test_quote_check_tolerates_pdf_word_breaks_but_not_different_words():
+    text = "accessory dwelling un its shall not be subject to Article 6.7 and the requirem ents"
+    assert F.quote_in_text("accessory dwelling units shall not be subject to Article 6.7", text)
+    assert not F.quote_in_text("accessory dwelling units shall be subject to Article 6.7", text)

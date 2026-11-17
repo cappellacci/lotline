@@ -10,7 +10,15 @@ four components; the differences below are what the merge has to settle.
 "An intelligent way of storing and referencing primary documents and other necessary data." Proposed as one
 store for all three swarms, because one county or city code routinely serves ADU, missing-middle and fee
 coding. ADU's code already cites `doc_id` (sha256) in every `Evidence` and returns it from `fetch`; the
-store below is what that id points into. Not built here (shared; for the parent).
+store below is what that id points into. Not built here (shared; for the parent). **Ben approved the design
+on 2026-11-17, noting that each swarm will usually run on its own.**
+
+**Swarms run independently.** The store is a shared format, not a shared service: each swarm reads and
+writes it on its own, at any time, and works the same whether or not another swarm has run. So: appends to
+`index.jsonl` and `citations.jsonl` take a file lock (as the fetch rate limit already does) and are single
+JSON lines; a record never assumes another category's records exist; `categories[]` grows by new lines, not
+by rewrites ("latest wins" per `doc_id`); `find` is a speed-up (skip a fetch already done) and never a
+precondition; and a swarm that finds the store missing creates it.
 
 **What exists today (and its gaps).**
 - `manifest.jsonl` (`lotline.io.store`): url, path, accessed_at, sha256, bytes, source, license, adapter —
@@ -72,8 +80,9 @@ ordinance, lessons L-D9/L-F12, can be withdrawn everywhere at once).
   hash, which serves Replicability without committing any document.
 
 **Text sidecars.** HTML → text with the standard library (as ADU's `fetch.html_to_text`). Text PDFs →
-`pypdf` (BSD-3, needs Ben's OK) with `\f` page breaks so quotes resolve to pages; without it, the Read tool
-reads PDFs and the quote check for PDFs stays by eye. Scanned PDFs → `text_status = scanned`; a quote read
+`pypdf` (BSD-3; added by ADU on Ben's OK, 2026-11-17) with `\f` page breaks so quotes resolve to pages
+(ADU's `fetch.pdf_pages`, `quote_page`, and a whitespace-free second pass in `quote_in_text`, because pypdf
+breaks words with stray spaces). Scanned PDFs → `text_status = scanned`; a quote read
 off the image is `quote_status = image_read`, never `verbatim` (L-R7). No OCR dependency proposed.
 
 **Guards.** Docs flagged `may_contain_outcomes`, or tied to a blind holdout's GEOID, are listed with a
@@ -137,6 +146,9 @@ window). Candidate for the shared core with the window start as a parameter. Fee
   predates — today this lives in tags inside `coding_notes`, which are fragile to match, lessons L-F14), and
   `evidence_ref` (a pointer to the run's evidence file for the row). Same as the fees proposal for
   `quote_status`, `confidence`, `retrieved_date`, `source_kind` if the parent prefers per-row provenance.
-- Dependency `pypdf` (BSD-3-Clause) for PDF text: not added by ADU (the Read tool reads PDFs); fees proposes
-  it. If added, `fetch.py` should write a `.txt` next to every text PDF so `verify-quotes` covers PDFs too.
+- Dependency `pypdf` (BSD-3-Clause, 7.1.0): **added** in the ADU PR on Ben's OK (2026-11-17); `fetch.py`
+  writes a `.txt` next to every text PDF and `verify-quotes` covers PDFs. Fees can use it as is.
+- First-pass scoring (`adu/score.py`): a value is strong only when `high`, primary and its quote is found by
+  machine; only weak values get the blind second coder, plus a ~10% audit sample. The rule is not
+  ADU-specific (fees and MM can reuse it with their own field lists); a shared-core candidate.
 - `src/lotline/rule_agents/__init__.py` is left to the parent (implicit namespace package meanwhile).

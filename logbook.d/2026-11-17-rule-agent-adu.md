@@ -18,7 +18,8 @@
   - `docs/build/rule-agents/adu/` (`LESSONS.md`, `DESIGN.md`, `CODING_RULES.md`, `SHARED_CANDIDATES.md`,
     `DRYRUN-2026-11-17-NC.md`);
   - `.claude/agents/rules-adu-*.md` (6) and `.claude/commands/rules-adu.md`;
-  - `src/lotline/rule_agents/adu/` and `tests/rule_agents/adu/` (49 tests);
+  - `src/lotline/rule_agents/adu/` (incl. `score.py`) and `tests/rule_agents/adu/` (61 tests);
+  - `pyproject.toml` / `uv.lock`: `pypdf`;
   - the dry-run folder `~/lotline-data/rule_agents/adu/NC/dryrun-2026-11-17/`, outside the repo.
 - **Findings:**
   - Of 62 field comparisons with the second-coded NC rows: 34 matched and 1 differed (an adoption date known
@@ -29,11 +30,14 @@
     mirror only.
   - About 1.0M subagent tokens for 5 places (about 200k a place); the blind coder is the largest share.
     The run ended with 12 lookups, 165 minutes in all.
-- **Decisions:** none added. Proposed in the PR:
-  - add `pypdf` (BSD-3-Clause);
-  - how to code Raleigh's 2019 cottage overlay;
-  - whether to keep the blind second coder by default;
-  - the shared primary-document store.
+- **Decisions (Ben, same day; proposed for HANDOFF in the PR):**
+  - `pypdf` (BSD-3-Clause) added: text PDFs get a page-separated text copy and PDF quotes are checked by
+    machine (all 71 dry-run quotes found after a whitespace-tolerant second pass for pypdf's word breaks);
+  - Raleigh's 2019 cottage overlay is "no ADUs" (the `config/` change goes to the ADU model's owner session);
+  - the second coder runs only where the first pass is weak: new `score` step (strong = high confidence,
+    primary source, quote found by machine), plus uncoded-amendment leads and a ~10% full audit sample;
+  - the shared primary-document store is approved; each swarm runs on its own, so the store is a shared
+    format that no swarm depends on another to fill.
 - **AI:** Claude Code (Opus) wrote the docs, agents and helpers. Subagents mined the lessons and ran the dry
   run (scout and packager on Sonnet). Checks:
   - unit tests on synthetic fixtures, with hand-worked expectations;

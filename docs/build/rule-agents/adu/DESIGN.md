@@ -6,7 +6,7 @@ owner occupancy, parking, size cap, ADUs per lot, lot minimum, coverage, and ado
 value cites a URL, a verbatim quote and a retrieval date. Anything the agents cannot read becomes a structured
 human lookup task. Lesson IDs (`L-xx`) refer to [`LESSONS.md`](LESSONS.md).
 
-Run it with `/rules-adu <ST> [--places N | --geoids a,b] [--run-id id]` (`.claude/commands/rules-adu.md`).
+Run it with `/rules-adu <ST> [--places N | --geoids a,b] [--run-id id] [--second-coder targeted|full|off]` (`.claude/commands/rules-adu.md`).
 
 ## 1. Shape
 
@@ -15,9 +15,9 @@ Run it with `/rules-adu <ST> [--places N | --geoids a,b] [--run-id id]` (`.claud
  ├─ 0. worklist ............ helper `worklist`        places.csv (largest first, existing rows, holdouts)
  ├─ 1. rules-adu-state-law . agent (1 per state)       state_law.json (+ per-place coverage)
  ├─ 2. rules-adu-scout ..... agent (1 per ~5 places)   sources/<geoid>.json (candidate URLs, fetch results)
- ├─ 3a rules-adu-coder ..... agent (1 per ~5 places)   coding_a/<geoid>.json
- ├─ 3b rules-adu-second-coder agent, blind, parallel   coding_b/<geoid>.json
- ├─ 4. check ............... helper `check`            refuse malformed codings (back to 3 once)
+ ├─ 3. rules-adu-coder ..... agent (1 per ~5 places)   coding_a/<geoid>.json
+ ├─ 4. check + score ....... helpers `check`, `score`  refuse malformed codings; score/<geoid>.json: weak values
+ ├─ 4b rules-adu-second-coder agent, blind, targeted   coding_b/<geoid>.json (weak fields only; full on audit)
  ├─ 5. rules-adu-verifier .. agent (1 per ~5 places)   decisions/<geoid>.json -> helper `merge` -> final/
  ├─ 6. rows ................ helper `rows`             rows.csv (schema-validated `reforms` rows)
  ├─ 7. rules-adu-handoff ... agent + helper `tasks`    tasks.csv / tasks.md (human lookups)
@@ -39,8 +39,9 @@ Only accepted rows reach the repo, through a dated `scripts/dev/` apply script a
 | 0 worklist | state; `--places N` / `--geoids`; jurisdictions table | `places.csv` (for agents), `existing_rows.csv` (orchestrator only: reform ids reveal rule years), blind holdouts printed | places with `pop_2020 < 2,500` skipped unless named (L-O5) |
 | 1 state law | state | `state_law.json`: each enacted ADU statute, citation, adopted/effective dates, coverage rule (threshold, strictness, population source), fields it sets | statute text read (official or Wayback); a bill that did not pass is never law (MN SF 3964) |
 | 2 scout | places batch, `state_law.json` | `sources/<geoid>.json`: official code URL + publisher, ADU section, adopting ordinance(s), Legistar/Wayback leads, fetch result per URL | ≤ 8 web searches and ≤ 10 fetches per place, incl. an amendment sweep; stop on a host after its first block (L-R1, L-R9) |
-| 3a/3b coders | `sources/<geoid>.json`, `state_law.json` | `coding_[ab]/<geoid>.json` (`coding.PlaceCoding`) | ≤ 4 extra searches and ≤ 10 fetches per place; every era 2016–2025 plus the prior state (L-S5) |
-| 4 check | codings | pass / problems | a coding that fails twice is kept as `partial` with the failing fields blanked |
+| 3 coder | `sources/<geoid>.json`, `state_law.json` | `coding_a/<geoid>.json` (`coding.PlaceCoding`) | ≤ 4 extra searches and ≤ 10 fetches per place; every era 2016–2025 plus the prior state (L-S5) |
+| 4 check + score | `coding_a`, `sources` | pass / problems; `score/<geoid>.json` (§5a) | a coding that fails twice is kept as `partial` with the failing fields blanked |
+| 4b second coder | `sources/<geoid>.json`, the field list only | `coding_b/<geoid>.json` | same budget; codes only the listed fields (all on audit places) and resolves uncoded amendments |
 | 5 verifier | both codings + `diff-coders` output | `decisions/<geoid>.json`, `final/<geoid>.json(.meta)` | re-opens only the diffs' sources; anything not settled from a primary source is `human` (L-S7) |
 | 6 rows | `final/*.json` | `rows.csv` validated by `schemas.validate(df, "reforms")` | any schema error stops the run |
 | 7 hand-off | blocked sources, unresolved diffs | `tasks.csv` + `tasks.md` | records-request-only questions closed as `no_usable_source` (L-H1) |
@@ -86,6 +87,29 @@ reading), `low` (inferred from context; the verifier must confirm or blank it). 
 `coded`, `partial` (some eras or fields blocked) or `no_usable_source`. Per row, `coder_agreement` and tags.
 The report counts values by confidence and agreement so Ben sees at a glance what rests on what.
 
+## 5a. First-pass score: second look only where evidence is weak (Ben, 2026-11-17)
+
+The NC dry run second-coded everything: the blind coder took about 40% of the tokens, mostly re-deriving
+values already quoted verbatim from an official source. Now `score` (`score.py`) rates each value of the
+first coding:
+
+- **strong**: `high` confidence, a primary source, and the quote found by machine in the cached text copy
+  (HTML, or a text PDF on the page the coder named; pypdf). Dates: as above, and not `DATE UNCONFIRMED` or
+  `[earliest-known]`.
+- **weak**: anything else, with the reasons listed; also a core field the coder left out with no blocked
+  source to explain it.
+- **uncoded amendment**: an ordinance the scout listed (2016 or later) whose year matches no coded era. This
+  catches the NC dry run's main miss (Raleigh 2022, Wilmington 2022), which no value-level score could.
+
+A place with nothing weak skips the second coder; otherwise the second coder, still blind, recodes only the
+weak fields (dates always, so eras can be matched) and resolves the amendments. `diff-coders` and `merge`
+then compare only those fields (`--score`), and the rows say which fields had the second look. A fixed ~10%
+sample of places (chosen by a hash of the GEOID, so reruns pick the same ones) is second-coded in full: the
+report counts how many strong values it contradicted, which is the check that the score can be trusted.
+On the NC dry run's first codings (rescored after the PDF text fix), all 71 quotes were found by machine;
+1 place would skip the second coder (Matthews: nothing coded) and 4 get targeted looks, because most first
+values there were `medium` (mirrors, news, a Cloudflare-walled code).
+
 ## 6. Retrieval policy (L-R1–R9)
 
 Agents fetch only through `python -m lotline.rule_agents.adu fetch --state ST <url>` — no WebFetch, curl or
@@ -117,11 +141,11 @@ request or staff could answer are closed at once as `no_usable_source` (L-H1).
 
 ## 9. Cost
 
-Per place, a scout pass (≤ 6 searches, ≤ 8 fetches), two coders (≤ 4 searches, ≤ 10 fetches each) and a
-verifier pass on diffs only. Batches of about five places per agent keep the shared prompt cost low. Blocked
-hosts are dropped after one refusal, so a fully blocked place costs one scout pass plus tasks. Ben's D-088
-note (a second coder may not move results) is honoured by `--no-second-coder`: the run then marks every row
-`single_coder` and the verifier checks quotes only.
+Per place, a scout pass (≤ 8 searches, ≤ 10 fetches), one coder (≤ 4 searches, ≤ 10 fetches), a targeted
+second look on weak values only (§5a) and a verifier pass on diffs only. Batches of about five places per
+agent keep the shared prompt cost low. Blocked hosts are dropped after one refusal, so a fully blocked place
+costs one scout pass plus tasks. `--second-coder off` (D-088: a second coder may not move results) skips the
+second look entirely and marks every row `single_coder`; `--second-coder full` is the dry run's setup.
 
 ## 10. Reuse by the other categories
 

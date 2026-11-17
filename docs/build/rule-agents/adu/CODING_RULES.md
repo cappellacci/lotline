@@ -43,7 +43,8 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
 ## Evidence
 
 - Fetch only with `uv run python -m lotline.rule_agents.adu fetch --state <ST> <url>` (prints JSON with
-  `ok`, `reason`, `path`, `text_path`). Read `text_path` (HTML) or `path` with the Read tool (PDF). Never use
+  `ok`, `reason`, `path`, `text_path`). Read `text_path`: HTML text, or a text PDF's pages (pypdf, separated
+  by form feeds). A `scanned_pdf` has no text copy: read its page images and mark the quote `image_read`. Never use
   WebFetch, curl, a browser user agent, or a different URL form to get round a block (L-R6). A block → add a
   `BlockedSource` with the helper's `reason` and move on.
 - **Wayback**: cite the fetch result's `final_url` (the capture actually served; `/web/2023/…` may redirect to
@@ -57,6 +58,10 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
   `ordinance`, `staff_report`, `minutes`, `state_law`, `city_page`, `mirror` (Zoneomics etc.), `news`, `draft`.
 - `confidence`: `high` only on primary evidence with unambiguous text; mirrors, city pages and news are at most
   `medium` (L-R4); anything you had to infer is `low`.
+- **The first pass is scored** (`score`, Ben 2026-11-17): a value is strong only if `high`, primary, and its
+  quote is found by machine in the cached text (on the PDF page given). Only weak values, uncoded amendments
+  and a ~10% audit sample get the blind second coder. Under-marking confidence costs tokens; over-marking it
+  skips the check, and the audit sample measures how often that happens.
 
 ## Hard rules
 

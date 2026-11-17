@@ -11,9 +11,10 @@ browser user agent (lessons L-R6). Here:
   classified (`REASONS` in handoff.py) and returned as a block; the orchestrator turns it into a human task.
 - **Every copy lands in LOTLINE_DATA_DIR** (`raw/rule_agents/adu/<ST>/<host>/<sha1(url)>.<ext>`) and in
   `manifest.jsonl`; nothing is written to the repo.
-- **Text** for the coders: HTML is reduced to text with the standard-library parser; a PDF with no text layer
-  is a `scanned_pdf` block (the coder may still read it with the Read tool and must say so); a text PDF is
-  returned as a path for the Read tool (no PDF dependency added).
+- **Text** for the coders: HTML is reduced to text with the standard-library parser; a text PDF is extracted
+  with `pypdf` (BSD-3-Clause; Ben's OK 2026-11-17) into a `.txt` sidecar with pages separated by form feeds,
+  so `verify-quotes` checks PDF quotes mechanically and names the page. A PDF with no text layer is a
+  `scanned_pdf` block (the coder may still read the page images and must mark the quote `image_read`).
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from __future__ import annotations
 import datetime as dt
 import fcntl
 import hashlib
+import io
 import re
 import time
 import zlib
@@ -74,7 +76,7 @@ class FetchResult:
     reason: str | None = None  # a handoff.REASONS key when not ok
     status: int | None = None
     path: Path | None = None  # cached copy under LOTLINE_DATA_DIR
-    text_path: Path | None = None  # extracted text (HTML) next to it
+    text_path: Path | None = None  # extracted text (HTML, or text PDF with \f page breaks)
     content_type: str | None = None
     retrieved: dt.date | None = None
     detail: str = ""
@@ -156,6 +158,24 @@ def pdf_has_text(data: bytes, max_streams: int = 400) -> bool:
     return False
 
 
+MIN_PAGE_CHARS = 40  # a page with less extractable text than this is treated as an image
+
+
+def pdf_pages(data: bytes) -> list[str] | None:
+    """Text of each PDF page (pypdf), or None when pypdf cannot read the file."""
+    from pypdf import PdfReader  # imported here so the HTML-only path never needs it
+
+    try:
+        reader = PdfReader(io.BytesIO(data))
+        return [(page.extract_text() or "") for page in reader.pages]
+    except Exception:  # noqa: BLE001 (malformed PDFs are common; fall back to the byte check)
+        return None
+
+
+def pdf_is_scanned(pages: list[str]) -> bool:
+    return not any(len(p.strip()) >= MIN_PAGE_CHARS for p in pages)
+
+
 class _Text(HTMLParser):
     SKIP = {"script", "style", "noscript", "svg", "head"}
     BLOCK = {"p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "section", "table", "dd", "dt"}
@@ -196,13 +216,33 @@ def normalize(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
+def quote_page(quote: str, text: str) -> int | None:
+    """1-based page (form-feed separated) on which the quote is found, or None. A quote that runs across a
+    page break counts on the page where it starts."""
+    pages = text.split("\f")
+    for i, page in enumerate(pages, 1):
+        if quote_in_text(quote, page):
+            return i
+    for i in range(1, len(pages)):
+        if quote_in_text(quote, pages[i - 1] + " " + pages[i]):
+            return i
+    return None
+
+
 def quote_in_text(quote: str, text: str) -> bool:
     """The verifier's check that a quote is verbatim in the cached source (whitespace, quotes, dashes and
-    case normalised; an ellipsis splits the quote into parts that must all appear in order)."""
-    hay = normalize(text)
+    case normalised; an ellipsis splits the quote into parts that must all appear in order). PDF text
+    extraction often breaks words with stray spaces ("requirem ents"), so a second pass ignores whitespace
+    altogether: the letters must still match exactly, in order."""
+    return _parts_in(quote, normalize(text), normalize) or _parts_in(
+        quote, re.sub(r"\s+", "", normalize(text)), lambda s: re.sub(r"\s+", "", normalize(s))
+    )
+
+
+def _parts_in(quote: str, hay: str, norm) -> bool:
     pos = 0
     for part in re.split(r"\s*(?:\.\.\.|…)\s*", quote):
-        part = normalize(part)
+        part = norm(part)
         if not part:
             continue
         i = hay.find(part, pos)
@@ -321,9 +361,16 @@ class Fetcher:
         m = re.match(r"https://web\.archive\.org/web/(\d{14})", result.final_url)
         result.wayback_ts = m.group(1) if m else None
         if dest.suffix == ".pdf":
-            if not pdf_has_text(resp.content):
+            pages = pdf_pages(resp.content)
+            scanned = pdf_is_scanned(pages) if pages is not None else not pdf_has_text(resp.content)
+            if scanned:
                 result.reason = "scanned_pdf"
-                result.detail = "no text layer: read page images with the Read tool and say so, or hand off"
+                result.detail = "no text layer: read page images, mark quotes image_read, or hand off"
+            elif pages is not None:
+                result.text_path = dest.with_suffix(".txt")
+                result.text_path.write_text("\f".join(pages))
+            else:
+                result.detail = "pypdf could not parse it: read with the Read tool, check quotes by eye"
         elif dest.suffix == ".html":
             text = html_to_text(resp.text)
             result.text_path = dest.with_suffix(".txt")
