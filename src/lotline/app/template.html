@@ -47,6 +47,9 @@ nav.sections .mark { padding: 0; border: 0; }
 nav.sections a { display: block; padding: var(--space-3) 0; color: var(--ink); text-decoration: none; white-space: nowrap; border-bottom: var(--stroke-line) solid transparent; }
 nav.sections a:hover { border-bottom-color: var(--rule); }
 nav.sections a[aria-current="page"] { border-bottom-color: var(--survey); font-weight: 600; }
+nav.sections a.add-state { padding: var(--space-1) var(--space-3); border: var(--stroke-hair) solid var(--survey); border-radius: var(--radius-sm); color: var(--survey); font-weight: 600; }
+nav.sections a.add-state:hover { background: var(--paper-sunken); border-bottom-color: var(--survey); }
+nav.sections a.add-state[aria-current="page"] { background: var(--survey); color: var(--on-survey); }
 .intro { padding: var(--space-5) 0 0; }
 .intro p { margin: 0; color: var(--ink-muted); }
 section.part[hidden] { display: none; }
@@ -216,6 +219,7 @@ table.checks td:last-child { min-width: 260px; }
     </div>
     <div class="nav-right">
       <label class="picker body-small">State <select id="state" aria-label="State"></select></label>
+      <a class="add-state body-small" href="#add" data-page="add">Add a state</a>
       <a class="mark" href="#results" aria-label="Lotline: back to results"><span class="light"><!--__MARK_LIGHT__--></span><span class="dark"><!--__MARK_DARK__--></span></a>
     </div>
   </div>
@@ -262,6 +266,21 @@ table.checks td:last-child { min-width: 260px; }
       <iframe class="dash" id="dash-frame" title="Data coverage, ordinances and growth" scrolling="no"></iframe>
     </div>
     <div id="data-sources"></div>
+  </section>
+  <section class="part" id="page-add" data-section="add" hidden>
+    <h2 class="h1">Add a state</h2>
+    <p class="lead">How to run Lotline for a state that has no results yet, or sharpen one that rests on national data: what to gather, how to prepare it, and how to run the model.</p>
+    <p class="pending">Draft: these steps are a placeholder while the workflow is being revised. For now, follow the <a id="add-readme" href="#">"bring your own state" guide in the README</a>.</p>
+    <div class="step"><p class="step-n" aria-hidden="true">1</p><div class="step-body"><h3 class="h3">Check what you already have</h3>
+      <p class="body">Every state starts with national data (Census permits, home values, rents, building costs), so the model can run before any local data is gathered. List which local sources exist for your state.</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">2</p><div class="step-body"><h3 class="h3">Prepare parcel records</h3>
+      <p class="body">Placeholder: county or state parcel rolls, and the fields the model needs (land use, lot size, year built, units).</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">3</p><div class="step-body"><h3 class="h3">Prepare building permits</h3>
+      <p class="body">Placeholder: city permit files for ADUs and 2–4 unit buildings, on top of the Census survey.</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">4</p><div class="step-body"><h3 class="h3">Code local rules and fees</h3>
+      <p class="body">Placeholder: which places already allow ADUs or missing middle and since when, and each city's fees per new home.</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">5</p><div class="step-body"><h3 class="h3">Run the model and check the results</h3>
+      <p class="body">Placeholder: the commands that build the state's results and the checks to read before trusting them.</p></div></div>
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
@@ -1252,7 +1271,8 @@ async function show(state) {
 }
 
 // ---- pages: one section at a time, chosen by the URL hash (#results, #data, #trust; ?state=XX) -------------
-const PAGES = Object.keys(SECTIONS);
+const PAGES = [...Object.keys(SECTIONS), "add"];  // "add": the static add-a-state page, from the toolbar button
+$("add-readme").href = DATA.map.byos_url;
 function route() {
   const [page, query] = location.hash.replace(/^#/, "").split("?");
   return { page: PAGES.includes(page) ? page : PAGES[0], state: new URLSearchParams(query || "").get("state") };

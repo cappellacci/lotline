@@ -321,6 +321,14 @@ def test_sections_are_separate_pages_with_the_intro_above_them(tmp_path):
         assert f'href="#{page}" data-page="{page}"' in html
 
 
+def test_add_a_state_button_opens_its_own_page(tmp_path):
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    right = re.search(r'<div class="nav-right">.*?</div>', html, re.S).group(0)
+    assert '<a class="add-state body-small" href="#add" data-page="add">Add a state</a>' in right
+    assert 'id="page-add" data-section="add" hidden>' in html
+    assert 'const PAGES = [...Object.keys(SECTIONS), "add"]' in html  # the router knows the page
+
+
 def test_state_picker_and_mark_sit_in_the_menu_bar(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     nav = re.search(r'<nav class="sections".*?</nav>', html, re.S).group(0)
