@@ -188,11 +188,13 @@ Registries move into the state yaml.
       other state's uncoded places borrow.
 - [ ] **1. Audit, finish.** Every place the code branches on a state, or a file in `adapters/` does more than
       reshape data. Start from § Audit and write the full list to the PR.
-- [ ] **2. Schema.**
+- [x] **2. Schema.** Issue #455; Ben agreed 2026-11-17, then chose the straight-line build (tags in
+      `place_inputs`, `local_jurisdictions` in the state file). `tests/config/test_state_schema.py` not written.
   - A draft of the state settings schema, `geography`, the aliases format and `place_inputs`, in the
     `contract-change` issue.
   - Validate all 5 states against it (`tests/config/test_state_schema.py`).
-- [ ] **3. Geography.**
+- [x] **3. Geography.** #459 (resolver, 43.3M rows unchanged), #463 (list without adapter output), #467
+      (aliases), tags in `place_inputs` (#465).
   - The shared resolver, with synthetic tests: point inside a place, in a township, outside both, on a
     border, and an alias hit.
   - The aliases files.
@@ -200,7 +202,8 @@ Registries move into the state yaml.
   - Move the five parcel adapters' `resolve*` onto the resolver, then the name-lookup adapters.
   - **Check:** every adapter's `jurisdiction_geoid` column is unchanged on cached raw data, row for row
     (`--offline`). Any difference is listed and explained.
-- [ ] **4. `place_inputs`, behavior-preserving.**
+- [ ] **4. `place_inputs`, behavior-preserving.** Built, registered, schema 1.15, checked (#461, #465, and
+      the fetch-step PR); owners' switch-over PRs still to do.
   - Build the table and a `DataStore` read cache.
   - Hand each model's owner a switch-over PR that reads it.
   - **Check:** `lotline results --all` bundles are identical before and after (same seed). The fee dev run's

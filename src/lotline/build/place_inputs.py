@@ -28,6 +28,23 @@ import pandas as pd
 
 from lotline.config import load_params
 
+SOURCE = "place_inputs"
+TABLE = "place_inputs"
+RUN_LAST = True  # `lotline fetch` with no --source builds it after every other source
+# what the table is built from (all already in the manifest under their own sources)
+MANIFEST_SOURCES = ["census_acs5", "census_bps_place_annual", "census_dec_pl", "census_geo_codes"]
+PROVENANCE = {
+    "title": "Lotline place inputs (derived): every shared per-place input, built from the canonical tables",
+    "landing_url": "https://github.com/cappellacci/lotline/blob/main/src/lotline/build/place_inputs.py",
+    "table": "place_inputs",
+    "cleaning": [
+        "Built after every other table, from jurisdictions, eligible_parcels, bps_place_year, acs_geo_year, "
+        "market_geo_year, parcels and permits (holdout-filtered)",
+        "Each column filled by the function the models use; no fills",
+    ],
+    "limitations": ["Reproduces today's model inputs, including where the models disagree (WS-SCALE task 5)"],
+}
+
 KEY = ["state", "geoid", "year"]
 UNITS = ["units_1", "units_2", "units_3_4", "units_5p"]
 THEMES = {"adu": "adu", "mm": "missing_middle"}
@@ -182,6 +199,14 @@ def place_tags(state: str, store, juris: pd.DataFrame, parcels, permits) -> pd.D
         joined = pairs.groupby("jurisdiction_geoid")["source"].agg(lambda s: ";".join(sorted(s.astype(str))))
         out[col] = out["geoid"].map(joined)
     return out
+
+
+def load(state: str, store, *, refresh: bool = False) -> pd.DataFrame:
+    """`lotline fetch --source place_inputs`: build and validate the table. Reads only processed tables (no
+    download; `refresh` is ignored). Run it after every other source."""
+    from lotline.schemas import validate
+
+    return validate(build(state, store), TABLE)
 
 
 def adu_undercount():

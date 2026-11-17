@@ -104,3 +104,41 @@ def test_sources_are_sorted_and_joined():
     assert tags.loc["1", "permit_sources"] == "a;b" and pd.isna(tags.loc["2", "permit_sources"])
     assert tags["place_type"].tolist() == ["core", "town"]
     assert tags["place_type_source"].tolist() == ["acs_cbsa", "default_town"]
+
+
+def test_registered_as_the_last_build_step_and_validates(zz):
+    from lotline import registry
+    from lotline.schemas import validate
+
+    names = [s.name for s in registry._national()]
+    assert names[-1] == "place_inputs"
+    out = validate(place_inputs.build("ZZ", zz, years=[2024, 2025]), "place_inputs")
+    assert len(out) == 8 and out["models"].str.len().gt(0).all()
+
+
+def test_plain_fetch_builds_place_inputs_after_every_other_source(monkeypatch, tmp_path):
+    """`lotline fetch --state XX` runs sources in name order, but place_inputs reads every other table, so it
+    goes last (`RUN_LAST`), after e.g. `rlis_parcels` and `portland_permits`."""
+    import types
+
+    from lotline import cli, registry
+    from lotline.registry import Source
+
+    ran = []
+
+    def module(name, last=False):
+        def load(state, store, refresh=False):
+            ran.append(name)
+            return pd.DataFrame()
+
+        return types.SimpleNamespace(SOURCE=name, load=load, RUN_LAST=last)
+
+    fake = {
+        n: Source(n, module(n, n == "place_inputs"), "t", None)
+        for n in ("acs", "place_inputs", "portland_permits", "rlis_parcels")
+    }
+    monkeypatch.setattr(registry, "sources_for", lambda state: fake)
+    monkeypatch.setattr("lotline.validation.holdout.assert_no_leak", lambda df, table, state: None)
+    monkeypatch.setenv("LOTLINE_DATA_DIR", str(tmp_path))
+    assert cli.main(["fetch", "--state", "OR"]) == 0
+    assert ran == ["acs", "portland_permits", "rlis_parcels", "place_inputs"]

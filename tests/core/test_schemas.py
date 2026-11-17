@@ -106,6 +106,20 @@ MINIMAL = {
         "dollar_year": 2024,
         "source": "t",
     },
+    "place_inputs": {
+        "state": "MN",
+        "geoid": "2743000",
+        "year": 2025,
+        "name": "Minneapolis",
+        "kind": "place",
+        "data_tier": 1,
+        "acs_geo": "place:2743000",
+        "size_band": 2,
+        "place_type": "core",
+        "place_type_source": "acs_cbsa",
+        "is_holdout": False,
+        "models": "adu;missing_middle;fees;baseline",
+    },
 }
 
 
@@ -114,7 +128,7 @@ def _df(table, **over):
 
 
 def test_every_table_has_a_minimal_valid_row():
-    assert SCHEMAS_VERSION == "1.14"
+    assert SCHEMAS_VERSION == "1.15"
     assert set(TABLES) == set(MINIMAL)
     for table in TABLES:
         assert_conforms(_df(table), table)
