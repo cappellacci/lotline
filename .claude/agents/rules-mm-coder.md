@@ -39,7 +39,9 @@ the route by right. Window: from 2010-01-01; an older rule still in force is cod
 A **"none" rule** (`unit_cap: 1`) when nothing allows 2–4 homes on single-family lots, with evidence from the
 current use table [M-3]: quote the two-family / three-four-unit **row** and the legend, and name the empty cell
 in `section` ("Table 60.200-1, row 'Duplex', column R-1: blank = prohibited"). Its `effective_date` is the
-date the code edition you read took effect (quote it), `date_basis` usually `earliest_known`. Districts that already allowed duplexes are two-family districts, not MM [M-4].
+date the code edition you read took effect (quote it), `date_basis` usually `earliest_known`. **Coverage** [M-4, revised 2026-11-17]: `coverage_zones` lists every residential district whose cap rose to
+`unit_cap` under the rule, two-family districts included (a 2→3 rise counts). A two-family district whose cap did
+not rise is left out. `prior_cap` is the lowest cap any covered district had just before.
 
 **prior_cap** [M-2, DT-2]: for every dated rule with `unit_cap ≥ 2`, the cap in those districts **just before**,
 with evidence from the predecessor code (Wayback copy, old UDO, the new code's district-conversion table). If
@@ -70,8 +72,9 @@ printed), `source_kind`. News, mirrors and search summaries cannot stand alone [
 values are never `confidence: "high"`.
 
 **PDFs** [P-1..P-3]: read use tables from the **page image** (Read with `pages`), not the text layer; cite
-"Table X, row Y, column Z". Save the text you relied on as `<RUN>/text/<snapshot file name>.txt` (the
-verifier checks quotes there; agents cannot write under `raw/`). Check drafts: `uv run python -c "from lotline.rule_agents.mm.findings import draft_markers;
+"Table X, row Y, column Z". `… quote <snapshot> "<quote>" --run <RUN>` writes the text layer to `<RUN>/text/<snapshot file name>.txt`
+(pypdf, `=== page N ===` markers) the first time; if it says the PDF is a scan, save the text you read from the
+page image there yourself (the verifier checks quotes in that file; agents cannot write under `raw/`). Check drafts: `uv run python -c "from lotline.rule_agents.mm.findings import draft_markers;
 print(draft_markers(open('<RUN>/text/<snapshot file name>.txt').read()))"` — a draft supports `announced_date` only.
 
 **Blockers**: any source you needed and could not read → `{"url", "kind", "detail", "fields", "look_for"}`

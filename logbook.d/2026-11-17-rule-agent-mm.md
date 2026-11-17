@@ -9,7 +9,7 @@
 - **Outputs:**
   - `docs/build/rule-agents/mm/`: `LESSONS.md`, `DESIGN.md`, `DRY_RUN.md`, and `SHARED_CANDIDATES.md` (parts all three swarms could share, including a content-addressed primary-document store, §10).
   - `.claude/agents/rules-mm-{scout,coder,reconciler,verifier}.md` and `.claude/commands/rules-mm.md`.
-  - `src/lotline/rule_agents/mm/`: dates, findings, access, fetch, handoff, reconcile, rows, compare, places, brief, CLI. Tests in `tests/rule_agents/mm/` (37 tests).
+  - `src/lotline/rule_agents/mm/`: dates, findings, access, fetch, handoff, reconcile, rows, compare, places, brief, CLI. Tests in `tests/rule_agents/mm/` (38 tests, including `pdftext`).
   - Dry-run outputs stay in `$LOTLINE_DATA_DIR/rule_agents/mm/MN/dryrun-2026-11-17/`, not committed.
 - **Findings:**
   - On the engine's reading (event year and final cap), all 4 places match the coded rows.
@@ -20,7 +20,13 @@
   - Blind coding worked as intended. Minneapolis coder A was blocked everywhere and coded nothing rather than code from news; coder B found an archived city page.
   - Cost was ~370k subagent tokens per place.
   - Three Sunfish Lake PDFs are committed under `docs/research/ordinances/source-pdfs/`, against the no-committed-data rule; flagged, not moved.
-- **Decisions:** none in HANDOFF. Proposed in the PR: zone rule for two-family districts (Minneapolis R2/R2B), schema additions (`date_basis`, `prior_cap`, `confidence`, `source_kind`, `standards_only`), `pypdf` dependency, shared document store.
+- **Decisions:** none in HANDOFF. Ben answered the PR's questions the same day (proposed for HANDOFF in the PR):
+  - A 2→3 rise in two-family districts counts as MM coverage; LESSONS M-4 and the coder prompt revised; no coded row changed.
+  - `pypdf` (BSD-3) added; `pdftext.py` writes page-marked text sidecars and flags scanned PDFs at fetch (1 new test).
+  - Schema additions (`date_basis`, `prior_cap`, `confidence`, `source_kind`, `standards_only`) approved, for WS-CORE to make.
+  - The shared document store is to be built by the parent/merge session.
+  - The browser stage may run unattended.
+  - Brooklyn Park R-2 left for a look; the Sunfish Lake PDFs question is still open.
 - **AI:** Claude Code (rule-agent-mm session) wrote everything; subagents mined the lessons and ran the dry-run stages. Checked by:
   - Tests on synthetic fixtures (each test a hand-worked example), plus ruff.
   - `compliance_check.py`.

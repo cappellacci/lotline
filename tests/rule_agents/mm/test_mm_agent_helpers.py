@@ -559,3 +559,26 @@ def test_brief_lists_holdouts_and_state_law(tmp_path):
     assert "No default recorded" in brief.render("TX", "r1", places, None, tmp_path)
     coded_place = places.assign(coded_mm_ids="MN-2700001-missing_middle-2020")
     assert "missing_middle-2020" not in brief.render("MN", "r1", coded_place, None, tmp_path)  # blind
+
+
+def test_pdftext_blank_pages_read_as_scan(tmp_path):
+    """A PDF whose pages have no text layer extracts 0 characters, which `classify` calls a scan."""
+    from pypdf import PdfWriter
+
+    from lotline.rule_agents.mm import access, pdftext
+
+    w = PdfWriter()
+    w.add_blank_page(width=612, height=792)
+    w.add_blank_page(width=612, height=792)
+    pdf = tmp_path / "scan.pdf"
+    with pdf.open("wb") as fh:
+        w.write(fh)
+    text, pages, chars = pdftext.extract(pdf)
+    assert (pages, chars) == (2, 0)
+    assert "=== page 2 ===" in text
+    kind = access.classify(
+        "https://x.gov/o.pdf", 200, content_type="application/pdf", pdf_text_chars=chars, pdf_pages=pages
+    )
+    assert kind[0] == "scanned_pdf"
+    pages, chars = pdftext.write_sidecar(pdf, tmp_path / "text" / "scan.pdf.txt")
+    assert (tmp_path / "text" / "scan.pdf.txt").exists()

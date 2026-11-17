@@ -37,7 +37,7 @@ You are the orchestrator. You run the deterministic steps yourself through
    blockers appended. Places with diffs: `rules-mm-reconciler`. With `--single-coder`: copy a's finding with
    `"agreement": "single_coder"`, `"coder_2": null`.
 7. **Verify** each final with `rules-mm-verifier`, then `… check <RUN>` again.
-8. **Browser check (only with `--browser` and Ben present).** For priority-1 tasks from step 9's sheet, open
+8. **Browser check (only with `--browser`; may run unattended).** For priority-1 tasks from step 9's sheet, open
    each start URL in the built-in browser one page at a time; read; stop at any challenge, CAPTCHA or login and
    leave that task for Ben. Record answers in `out/human-lookups.csv` with `checked_by = rules-mm-browser`,
    then `… ingest <RUN> <RUN>/out/human-lookups.csv` and re-run steps 4–7 for those places only.

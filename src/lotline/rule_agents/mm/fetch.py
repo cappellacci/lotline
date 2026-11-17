@@ -118,9 +118,16 @@ def get(url: str, run_id: str, *, store=None, http: httpx.Client | None = None) 
             return FetchResult(url, None, st, kind, detail)
         except httpx.TransportError as exc:
             return FetchResult(url, None, None, "unreachable", f"transport error: {exc}")
-        ctype = "application/pdf" if path.suffix == ".pdf" else "text/html"
-        text = "" if path.suffix == ".pdf" else path.read_text(errors="replace")
-        hit = classify(url, 200, content_type=ctype, text=text)
+        if path.suffix == ".pdf":
+            from lotline.rule_agents.mm.pdftext import extract
+
+            try:
+                _, pages, chars = extract(path)
+            except Exception:  # noqa: BLE001 - an unreadable PDF is left to the coder's page-image read
+                pages, chars = None, None
+            hit = classify(url, 200, content_type="application/pdf", pdf_text_chars=chars, pdf_pages=pages)
+        else:
+            hit = classify(url, 200, content_type="text/html", text=path.read_text(errors="replace"))
         doc = sha256_file(path)
         if hit:
             return FetchResult(url, path, 200, hit[0], hit[1], doc_id=doc)

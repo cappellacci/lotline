@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lotline.rule_agents.mm import brief, handoff, reconcile, rows
+from lotline.rule_agents.mm import brief, handoff, pdftext, reconcile, rows
 from lotline.rule_agents.mm import compare as cmp
 from lotline.rule_agents.mm.findings import PlaceFinding, check, verify_quote
 from lotline.rule_agents.mm.places import enumerate_places
@@ -113,8 +113,10 @@ def cmd_quote(a) -> int:
         if alt.exists():
             side = alt
         else:
-            print(f"NOT CHECKED: save the PDF's text as {side} first")
-            return 2
+            pages, chars = pdftext.write_sidecar(p, side)
+            if chars / max(pages, 1) < 200:
+                print(f"NOT CHECKED: scanned PDF ({chars} characters over {pages} pages); read the page")
+                return 2
     text = (side if p.suffix == ".pdf" else p).read_text(errors="replace")
     ok = verify_quote(a.quote, text)
     print("found" if ok else "NOT FOUND")

@@ -15,7 +15,7 @@ named so it can move to `src/lotline/rule_agents/common/` with little change. Th
 | 6 | **Date-basis vocabulary and tag writer** (`dated / predates / earliest_known / unconfirmed` ↔ `[predates]`, `[earliest-known]`, `DATE UNCONFIRMED`) | `dates.py` | `rule_tags.py` reads the same tags for ADU and MM | None (fees use `year` / `in_force_through`, so only `parse_date` is shared there) |
 | 7 | **Run folder, brief and CLI shape** (`init / places / fetch / quote / check / reconcile / handoff / ingest / build / compare`), holdouts and state-law rows in the brief, blind brief (no existing coded IDs) | `__main__.py`, `brief.py`, `places.py` | Same orchestration for all three | Category argument; `build` calls the category's row builder and `schemas.validate(df, "reforms" | "fees")` |
 | 8 | **Verifier agent** (re-find quotes, right place and state, not a draft, quote supports value; never fetches) | `.claude/agents/rules-mm-verifier.md` | Category-independent | Step 4's "quote supports the value" examples per category |
-| 9 | **Optional browser stage** run by the orchestrator in the main session, one page at a time, stop on any challenge | DESIGN §4.5 | Code hosts block every category | None |
+| 9 | **Optional browser stage** run by the orchestrator in the main session, one page at a time, stop on any challenge; may run unattended (Ben, 2026-11-17) | DESIGN §4.5 | Code hosts block every category | None |
 
 ## Not shared (MM-specific)
 
@@ -41,7 +41,10 @@ named so it can move to `src/lotline/rule_agents/common/` with little change. Th
   MM tests are `tests/rule_agents/mm/test_mm_agent_helpers.py` (with `tests/rule_agents/mm/__init__.py`).
 - **Leak all three hit:** never show coders existing `reform_id`s (their years give the dates away). MM's brief
   omits them; the orchestrator keeps them in `places.csv`.
-- **pypdf (BSD-3)** is proposed by fees too; MM would use it for `.txt` sidecars and scan detection.
+- **pypdf (BSD-3)** was approved by Ben on 2026-11-17 and added in PR #469 (`mm/pdftext.py`: page-marked text
+  sidecars, scan test). Fees can use the same module once it moves to `common/`.
+- **Ben's answers, 2026-11-17:** schema additions approved (WS-CORE to make them); build the shared document
+  store (§10) in the parent/merge session; the browser stage (#9) may run unattended.
 
 ## 10. Primary-document store (Ben's added requirement, 2026-11-17)
 

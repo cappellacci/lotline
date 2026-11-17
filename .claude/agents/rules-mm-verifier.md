@@ -13,7 +13,7 @@ You do **not** fetch anything and you do not re-code; you check.
 For every evidence entry:
 
 1. `uv run python -m lotline.rule_agents.mm quote <snapshot> "<quote>" --run <RUN>` prints `found` (for a PDF it
-   reads `<RUN>/text/<snapshot file name>.txt`; `NOT CHECKED` means the coder did not save the text — read the PDF page with Read
+   reads `<RUN>/text/<snapshot file name>.txt`; writing it from the text layer if missing; `NOT CHECKED` means a scan with no saved text — read the PDF page with Read
    and judge by eye, noting "checked by eye p. N"). Entries with no snapshot and `source_kind: human_lookup`
    pass this step.
 2. The source is about this place **and state** (LESSONS R-8).

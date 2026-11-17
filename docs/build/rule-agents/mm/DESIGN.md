@@ -36,7 +36,7 @@ moratoria: M-9) or anything outside MM, and it never runs the engine, scenarios 
   ├─ 4 reconcile              CLI: reconcile         -> reconcile/<geoid>.json (field diffs)
   │    adjudicate ×places w/ diffs  rules-mm-reconciler -> final/<geoid>.json
   ├─ 5 verify     ×N places   rules-mm-verifier      -> verify/<geoid>.json; sets verified_by or demotes
-  ├─ 6 [optional] browser check of hand-offs, orchestrator in the main session, Ben present (R-6)
+  ├─ 6 [optional] browser check of hand-offs, orchestrator in the main session, may run unattended (R-6)
   ├─ 7 build + handoff + compare   CLI               -> out/*.csv, out/human-lookups.*
   └─ 8 report                 orchestrator           -> out/run-report.md
          later: Ben answers lookups -> CLI ingest -> re-run steps 2–8 for those places only
@@ -127,8 +127,8 @@ field is blanked if nothing else supports it, confidence drops to `low`, and the
 
 ### 4.5 Browser check (optional, R-6)
 
-Code-host walls (Municode, American Legal, eCode360) are where most MM answers live. When Ben is present and
-asks for it, the orchestrator opens each priority-1 hand-off in the built-in browser **one page at a time**,
+Code-host walls (Municode, American Legal, eCode360) are where most MM answers live. With `--browser` (Ben
+present or not; unattended runs approved 2026-11-17), the orchestrator opens each priority-1 hand-off in the built-in browser **one page at a time**,
 reads it, and **stops on any challenge, CAPTCHA or login** (never solves or bypasses one). Results are
 written as answered rows in `human-lookups.csv` with `checked_by = rules-mm-browser` and go through `ingest`
 like a person's answers. Background subagents never drive the browser.
@@ -203,5 +203,13 @@ Until then `rows.py` writes all four into `coding_notes` in a fixed form.
 
 ## 10. Open choices (for Ben)
 
-See the PR description: model tiers for coder B, whether to add `pypdf` (BSD-3) for PDF text checks, whether
-the browser stage may run unattended, and where answered hand-off sheets live in the repo.
+Settled by Ben on 2026-11-17:
+- Two-family districts: a 2→3 rise counts as coverage (LESSONS M-4 revised); existing coded rows unchanged.
+- `pypdf` (BSD-3) added: `pdftext.py` writes page-marked `.txt` sidecars for `quote` and flags scans at fetch.
+  Use tables are still read from the page image (P-1).
+- §9 schema additions approved; WS-CORE makes them in `schemas.py` (contract change, not done here).
+- The shared document store (SHARED_CANDIDATES §10) is to be built by the parent/merge session.
+- The browser stage may run unattended.
+
+Still open: model tier for coder B, where answered hand-off sheets live in the repo, and whether the three
+Sunfish Lake PDFs leave git.
