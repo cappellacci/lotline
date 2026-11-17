@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import base64
 import datetime as dt
+import html
 import json
 import re
 from collections.abc import Iterable
@@ -385,6 +386,8 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
         .replace("<!--__MARK_LIGHT__-->", _svg("lotline-mark-light.svg", 24))
         .replace("<!--__MARK_DARK__-->", _svg("lotline-mark-dark.svg", 24))
         .replace("__FAVICON__", _data_uri("lotline-mark-favicon.svg"))
+        # the add-a-state page's README link, written into the page here rather than set by script (CodeQL)
+        .replace("__BYOS_URL__", html.escape(str((data.get("map") or {}).get("byos_url") or "README.md")))
         .replace("/*__LOTLINE_AGGREGATE__*/", AGGREGATE_JS.read_text(encoding="utf-8"))
         .replace("/*__LOTLINE_DASHBOARD__*/", _json(dashboard))
         .replace("/*__LOTLINE_DATA__*/", blob)
