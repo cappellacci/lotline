@@ -92,3 +92,11 @@
 - **Outputs:** `src/lotline/app/template.html`.
 - **AI:** Claude Code wrote the change. Checked with `tests/app`, `compliance_check.py`, and in the browser pane on North Carolina's real results (all four links point to their sources).
 - **Open / next:** none.
+
+### LB-NNN · 2026-11-17 · Deliverables: every forecast year stacked in the ADU year chart; the 2027-only chart dropped
+- **Question:** What was the "2027: with no reform, and what the reform adds on top" chart for, and should it stay?
+- **What I did:** It showed only the first forecast year, and it repeated that year from the chart above. Ben chose to show all five years or drop it. Each forecast year in the year-by-year chart is now a stack: the no-reform midpoint in grey, the reform's P10–P90 band on top, a line at its midpoint. Hovering a year shows its ranges. The separate 2027 section is gone.
+- **Inputs:** Ben's question and answer (2026-11-17).
+- **Outputs:** `src/lotline/app/template.html`; `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change. Checked with `tests/app` (50 passed), ruff and `compliance_check.py`, and in the browser pane on North Carolina's real results. Also recomputed North Carolina's share of housing need from the bundle's runs for Ben: the page matches the engine's numbers exactly.
+- **Open / next:** the share-of-need card shows the selected reform alone and does not say which; Ben to decide how it should relate to the headline total.

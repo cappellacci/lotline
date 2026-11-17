@@ -205,11 +205,10 @@ def test_a_model_selector_above_the_evidence_card_and_the_adu_card_sections(tmp_
     # button values are checked against known constants, and colours are plain tokens (CodeQL)
     assert 't.dataset.fee === "fees" || t.dataset.fee === "fees_local_half"' in html
     assert "/^--[a-z0-9-]+$/.test(c)" in html
-    # ADU card: year by year, the first year, place types, then the steps; each heading in that order
+    # ADU card: year by year (forecast years stacked), place types, then the steps; each heading in that order
     ev = html[html.index("function evidenceHtml") :]
     heads = (
         'recordHtml(b, "adu")',
-        "with no reform, and what the reform adds on top",
         "Where the ADUs would go: core cities, suburbs and towns",
         "How we get these numbers",
     )
@@ -217,9 +216,10 @@ def test_a_model_selector_above_the_evidence_card_and_the_adu_card_sections(tmp_
     # the place-type chart reads the bundle when the engine exports it, and says so when it does not
     assert "(b.adu_place_types || []).find((r) => r.place_type === k)" in html
     assert "The split by place type is not in this state's results yet" in html
-    # schemas 1.15: the no-reform ADU forecast feeds the yearly chart and the first-year stack
+    # schemas 1.15: the no-reform ADU forecast is the grey base of each forecast year in the yearly chart
     assert '(d === "adu" ? (b.adu_baseline || [])' in html
-    assert "(b.adu_baseline || []).find((x) => x.period === yr.period)" in html
+    assert "const baseAt = (yr) => base.find((r) => r.year === yr);" in html
+    assert "with no reform, and what the reform adds on top" not in html  # the one-year section is gone
 
 
 def test_gross_and_net_are_explained_in_plain_words(tmp_path):
@@ -238,7 +238,7 @@ def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
     """Schemas 1.12 (Ben, 2026-11-09): actual yearly permits as bars beside the reform's yearly additions."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     parts = ('id="model-card"', "function recordHtml", "What gets built now, and what the reform would add")
-    for part in (*parts, "Actually permitted", "Added by the reform (P10–P90"):
+    for part in (*parts, "Actually permitted", "(P10–P90, line at the midpoint)"):
         assert part in html, part
     state_file = (tmp_path / "states" / "zz.js").read_text()
     doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])

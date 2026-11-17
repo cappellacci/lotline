@@ -818,7 +818,11 @@ function recordHtml(b, d) {
   if (!obs.length && !fut.length) return `${title}<p class="pending">No permit record or yearly forecast for this state yet.</p>`;
   const years = [...obs.map((r) => r.year), ...fut.map((r) => r.year)];
   const y0 = Math.min(...years), y1 = Math.max(...years);
-  const top = Math.max(1, ...obs.map((r) => r.value), ...fut.map((r) => r.p90), ...base.map((r) => r.p90));
+  // A forecast year with a no-reform count is drawn as a stack: grey to the no-reform midpoint, the reform's
+  // P10–P90 band on top of it, a line at its midpoint (Ben, 2026-11-17: show every forecast year this way).
+  const baseAt = (yr) => base.find((r) => r.year === yr);
+  const stackTop = fut.map((r) => (baseAt(r.year) ? baseAt(r.year).p50 : 0) + r.p90);
+  const top = Math.max(1, ...obs.map((r) => r.value), ...stackTop, ...base.filter((r) => !fut.some((f) => f.year === r.year)).map((r) => r.p90));
   const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
   const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
   const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
@@ -833,9 +837,16 @@ function recordHtml(b, d) {
     <line x1="${xc - 6}" x2="${xc + 6}" y1="${y(r.p90)}" y2="${y(r.p90)}" stroke="${stroke}" stroke-width="2"></line>
     <rect x="${xc - 5}" y="${y(r.p50) - 2}" width="10" height="4" fill="${stroke}"></rect>
     <title>${r.year}: ${esc(label)} ${fmtN(r.p10)} to ${fmtN(r.p90)}, midpoint ${fmtN(r.p50)}</title></g>`;
-  const off = base.length ? Math.min(10, slot * 0.18) : 0;
-  for (const r of base) parts.push(whisker(x(r.year) - off, r, "var(--scenario-baseline)", `${spec.what} with no change`));
-  for (const r of fut) parts.push(whisker(x(r.year) + off, r, color, "added by the reform"));
+  for (const r of base) if (!fut.some((f) => f.year === r.year)) parts.push(whisker(x(r.year), r, "var(--scenario-baseline)", `${spec.what} with no change`));
+  for (const r of fut) {
+    const nb = baseAt(r.year);
+    if (!nb) { parts.push(whisker(x(r.year), r, color, "added by the reform")); continue; }
+    const b0 = nb.p50, xl = x(r.year) - bw / 2;
+    parts.push(`<g><rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(0) - y(b0))}" fill="var(--scenario-baseline)"></rect>
+      <rect x="${xl}" y="${y(b0 + r.p90)}" width="${bw}" height="${Math.max(1, y(b0 + r.p10) - y(b0 + r.p90))}" fill="${color}" opacity="0.4"></rect>
+      <rect x="${xl}" y="${y(b0 + r.p50) - 1.5}" width="${bw}" height="3" fill="${color}"></rect>
+      <title>${r.year}: ${fmtN(b0)} ${esc(spec.what)} with no change (${fmtN(nb.p10)} to ${fmtN(nb.p90)}), plus ${fmtN(r.p10)} to ${fmtN(r.p90)} added by the reform (midpoint ${fmtN(r.p50)}): ${fmtN(b0 + r.p50)} in all</title></g>`);
+  }
   const gap = obs.length && fut.length && fut[0].year - obs[obs.length - 1].year > 1 ? obs[obs.length - 1].year + 1 : null;
   if (gap !== null) parts.push(`<line x1="${x(gap)}" x2="${x(gap)}" y1="${T}" y2="${y(0)}" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="3 3"></line>`);
   const svg = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${name}: ${spec.what} permitted each year, and the reform's added permits each year`)}" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>`;
@@ -845,12 +856,12 @@ function recordHtml(b, d) {
     : ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, so they understate the state.`) : "";
   const legend = `<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
     <span><span style="display:inline-block;width:12px;height:10px;background:var(--ink-muted);opacity:.55;margin-right:6px"></span>Actually permitted</span>
-    ${base.length ? `<span><span style="display:inline-block;width:12px;height:3px;background:var(--scenario-baseline);margin-right:6px;vertical-align:middle"></span>Expected with no change (P10–P90)</span>` : ""}
-    <span><span style="display:inline-block;width:12px;height:3px;background:${color};margin-right:6px;vertical-align:middle"></span>Added by the reform (P10–P90, bar at the midpoint)</span></div>`;
+    ${base.length ? `<span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Expected with no change (midpoint)</span>` : ""}
+    <span><span style="display:inline-block;width:12px;height:10px;background:${color};opacity:.4;margin-right:6px"></span>Added by the reform${base.length ? ", on top" : ""} (P10–P90, line at the midpoint)</span></div>`;
   return `${title}
     <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
-    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Whiskers: added permits at the engine's central assumptions; the sliders above do not move this chart.</p>`;
+    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. The sliders above do not move this chart.</p>`;
 }
 
 // ---- the evidence card under the model selector: one per reform (ADUs first; the others still to design) ----
@@ -858,8 +869,6 @@ function evidenceHtml(b, d, R) {
   if (d !== "adu") return `<section>${recordHtml(b, d) || ""}${FEE_NOTE[d] ? `<p class="body-small">${FEE_NOTE[d]}</p>` : ""}</section>
     <section><p class="pending">The evidence card for ${esc(scenLabel(d))} is still being designed. The cards below follow the reform chosen above.</p></section>`;
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
-  const yr = (b.totals || []).filter((r) => r.scenario === "adu" && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
-    .sort((x, y) => Number(x.period) - Number(y.period))[0];
   const med = (c) => AGG.percentile(drawsFor(b, "adu").map((x) => Number(x[c])).filter(Number.isFinite), 50);
   const st = (k) => (b.funnel || []).find((f) => f.scenario === "adu" && f.stage === k);
   const legal = st("legal"), pays = st("pencils"), r = R.adu, o = UI.outcome;
@@ -870,31 +879,7 @@ function evidenceHtml(b, d, R) {
   const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
   // 1. year by year
   const s1 = `<section>${recordHtml(b, "adu")}
-    <p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "grey whiskers are the ADUs expected statewide with no reform and blue ones what the reform adds" : "the no-reform forecast is not in this state's results yet"}.</p></section>`;
-  // 2. the first window year: the no-reform count (adu_baseline) with the reform's added range stacked on it
-  const nr = yr ? (b.adu_baseline || []).find((x) => x.period === yr.period) : null;
-  let s2body;
-  if (!yr) s2body = `<p class="pending">The reform's yearly forecast is not in this state's results.</p>`;
-  else if (!nr) s2body = `<p class="body-small">Added by the reform: <b>${fmtN(yr.p50)}</b> ADU permits (${fmtN(yr.p10)} to ${fmtN(yr.p90)}).</p>
-    <p class="pending">The no-reform count for ${esc(yr.period)} is not in this state's results yet, so the reform's range is shown alone.</p>`;
-  else {
-    const top = (nr.p90 + yr.p90) * 1.05, pc = (v) => `${Math.max(0, Math.min(100, (v / top) * 100))}%`;
-    const ticks = niceTicks(top).filter((t) => t <= top);
-    s2body = `<div class="stack" role="img" aria-label="${esc(`${yr.period}: ${fmtN(nr.p50)} ADU permits with no reform, plus ${fmtN(yr.p10)} to ${fmtN(yr.p90)} added by the reform`)}">
-        ${ticks.map((t) => `<span class="g" style="left:${pc(t)}"></span>`).join("")}
-        <span class="seg-base" style="width:${pc(nr.p50)}"></span>
-        <span class="seg-add" style="left:${pc(nr.p50 + yr.p10)};width:calc(${pc(nr.p50 + yr.p90)} - ${pc(nr.p50 + yr.p10)});background:${scenColor("adu")}"></span>
-        <span class="seg-tick" style="left:${pc(nr.p50 + yr.p50)};background:${scenColor("adu")}"></span>
-      </div>
-      <div class="axis" style="position:relative">${ticks.map((t) => `<span style="left:${pc(t)}">${fmtN(t)}</span>`).join("")}</div>
-      <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin-top:var(--space-3)">
-        <span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>With no reform: <b>${fmtN(nr.p50)}</b> <span class="muted">(${fmtN(nr.p10)}–${fmtN(nr.p90)})</span></span>
-        <span><span style="display:inline-block;width:12px;height:10px;background:${scenColor("adu")};opacity:.35;margin-right:6px"></span>Added by the reform: <b>${fmtN(yr.p50)}</b> <span class="muted">(${fmtN(yr.p10)}–${fmtN(yr.p90)})</span></span></div>`;
-  }
-  const s2 = `<section><h3 class="h3">${yr ? esc(yr.period) : "The first year"}: with no reform, and what the reform adds on top</h3>
-    <p class="body-small">ADU permits statewide in the reform's first year. Grey is what today's rules are expected to bring; the blue band is the range the reform adds on top, with a tick at its midpoint.</p>
-    ${s2body}
-    <p class="source">Gross ADU permits, midpoints with P10–P90 in brackets, at the engine's central assumptions; the sliders do not move this chart.</p></section>`;
+    <p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p></section>`;
   // 3. place types (D-088): built anyway and added by the reform, ADUs a year; read from the bundle when exported
   const s3 = `<section><h3 class="h3">Where the ADUs would go: core cities, suburbs and towns</h3>
     <p class="body-small">Every place in the state is one of three types, set from Census metro and micro areas, so the same split works in any state:</p>
@@ -915,7 +900,7 @@ function evidenceHtml(b, d, R) {
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, scenColor("adu"))}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
     <p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p></section>`;
-  return s1 + s2 + s3 + s4;
+  return s1 + s3 + s4;
 }
 
 const PLACE_TYPES = [["core", "Core cities"], ["suburb", "Suburbs"], ["town", "Towns"]];
