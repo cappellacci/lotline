@@ -102,8 +102,9 @@ def classify(
     """(blocker kind, detail) for a fetch result, or None when the page is usable.
 
     `text` is the body (HTML or extracted PDF text; the first 500 kB are read). For a PDF pass
-    `pdf_text_chars` (characters in its text layer) and `pdf_pages`: fewer than 200 characters per page means a scan (OCR is a human task;
-    we don't ship an OCR engine). By hand: 403 with "Just a moment..." -> http_403_waf; 200 Municode shell
+    `pdf_text_chars` (characters in its text layer) and `pdf_pages`: fewer than 200 characters per page means
+    a scan (OCR is a human task; we don't ship an OCR engine). By hand: 403 with "Just a moment..." ->
+    http_403_waf; 200 Municode shell
     with "enable JavaScript" and under 2,000 characters -> code_host_wall; a 12-page PDF with 300 characters
     of text -> scanned_pdf; 200 with ordinance text -> None.
     """
