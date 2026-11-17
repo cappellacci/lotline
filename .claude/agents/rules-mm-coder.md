@@ -68,9 +68,9 @@ printed), `source_kind`. News, mirrors and search summaries cannot stand alone [
 values are never `confidence: "high"`.
 
 **PDFs** [P-1..P-3]: read use tables from the **page image** (Read with `pages`), not the text layer; cite
-"Table X, row Y, column Z". Save the text you relied on beside the PDF as `<snapshot>.txt` (the verifier
-checks quotes there). Check drafts: `uv run python -c "from lotline.rule_agents.mm.findings import draft_markers;
-print(draft_markers(open('<snapshot>.txt').read()))"` — a draft supports `announced_date` only.
+"Table X, row Y, column Z". Save the text you relied on as `<RUN>/text/<snapshot file name>.txt` (the
+verifier checks quotes there; agents cannot write under `raw/`). Check drafts: `uv run python -c "from lotline.rule_agents.mm.findings import draft_markers;
+print(draft_markers(open('<RUN>/text/<snapshot file name>.txt').read()))"` — a draft supports `announced_date` only.
 
 **Blockers**: any source you needed and could not read → `{"url", "kind", "detail", "fields", "look_for"}`
 with `kind` from `findings.BLOCKER_KINDS` and the exact fields it would settle. Leave those fields blank. A

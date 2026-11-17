@@ -49,7 +49,7 @@ def _state(run: Path) -> str:
 
 def cmd_init(a) -> int:
     run = run_root() / a.state.upper() / (a.run or date.today().isoformat())
-    for d in ("sources", "findings", "reconcile", "final", "verify", "answers", "out"):
+    for d in ("sources", "findings", "reconcile", "final", "verify", "answers", "text", "out"):
         (run / d).mkdir(parents=True, exist_ok=True)
     print(run)
     return 0
@@ -89,18 +89,32 @@ def cmd_fetch(a) -> int:  # pragma: no cover - network
                 "status": r.status,
                 "blocker": r.blocker,
                 "detail": r.detail,
+                "doc_id": r.doc_id,
             }
         )
     )
     return 0
 
 
+def sidecar(snapshot: Path, run: Path | None) -> Path:
+    """Where the text an agent read from a PDF is kept: `<RUN>/text/<snapshot name>.txt` (agents may not
+    write under raw/), else beside the snapshot."""
+    if run is not None:
+        return run / "text" / (snapshot.name + ".txt")
+    return snapshot.with_name(snapshot.name + ".txt")
+
+
 def cmd_quote(a) -> int:
     p = Path(a.snapshot)
-    side = p.with_name(p.name + ".txt")  # PDFs: the text the agent read from it, saved beside it
+    run = Path(a.run) if a.run else None
+    side = sidecar(p, run)
     if p.suffix == ".pdf" and not side.exists():
-        print(f"NOT CHECKED: save the PDF's text as {side.name} first")
-        return 2
+        alt = p.with_name(p.name + ".txt")
+        if alt.exists():
+            side = alt
+        else:
+            print(f"NOT CHECKED: save the PDF's text as {side} first")
+            return 2
     text = (side if p.suffix == ".pdf" else p).read_text(errors="replace")
     ok = verify_quote(a.quote, text)
     print("found" if ok else "NOT FOUND")
@@ -252,6 +266,7 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("quote")
     s.add_argument("snapshot")
     s.add_argument("quote")
+    s.add_argument("--run", help="run folder holding text/ sidecars")
     for name in ("check", "reconcile", "handoff", "build"):
         sub.add_parser(name).add_argument("run")
     s = sub.add_parser("ingest")
