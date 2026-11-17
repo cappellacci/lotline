@@ -61,7 +61,11 @@ def compare(agent: pd.DataFrame, coded: pd.DataFrame, years: Sequence[int] = YEA
     a = summary(agent, years)
     c = summary(coded[coded["jurisdiction_geoid"].astype(str).isin(a.index)], years)
     both = a.join(c, lsuffix="_agent", rsuffix="_coded", how="left")
-    both["match"] = (both["event_year_agent"].astype(str) == both["event_year_coded"].astype(str)) & (
-        both["final_cap_agent"] == both["final_cap_coded"]
-    )
+
+    def label(v: object) -> str:
+        return "none" if v is None or (isinstance(v, float) and pd.isna(v)) else str(v).removesuffix(".0")
+
+    ev_a = both["event_year_agent"].map(label)
+    ev_c = both["event_year_coded"].map(label)
+    both["match"] = (ev_a == ev_c) & (both["final_cap_agent"] == both["final_cap_coded"])
     return both

@@ -459,6 +459,22 @@ def test_compare_against_coded():
     assert res["event_year_coded"].iloc[0] == 2020
 
 
+def test_compare_two_none_places_match():
+    """Dry-run bug: a place with no event on both sides compared None with NaN and failed."""
+    none = rule(unit_cap=1, by_right=None, prior_cap=None, date_basis="earliest_known", adoption_date=None)
+    a = rows.table(rows.place_rows(place([none]), coder_2=None, agreement="single_coder"))
+    old = rule(
+        unit_cap=1,
+        by_right=None,
+        prior_cap=None,
+        effective_date=date(2010, 1, 1),
+        adoption_date=None,
+        date_basis="earliest_known",
+    )
+    c = rows.table(rows.place_rows(place([old]), coder_2=None, agreement="single_coder"))
+    assert bool(compare.compare(a, c)["match"].iloc[0])
+
+
 def test_cli_end_to_end(tmp_path, capsys):
     run = tmp_path / "MN" / "2026-11-17"
     for d in ("findings", "reconcile", "final", "answers", "out"):
