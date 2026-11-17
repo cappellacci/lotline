@@ -37,14 +37,14 @@ def holdouts(state: str, config_dir: Path) -> list[dict]:
 def render(
     state: str, run_id: str, places: pd.DataFrame, coded: pd.DataFrame | None, config_dir: Path
 ) -> str:
-    """The brief as Markdown. By hand: a state with a holdout St. Paul and a state-law row "27" -> both listed."""
+    """The brief as Markdown. By hand: a holdout St. Paul and a state-law row "27" -> both listed."""
     st = state.upper()
     lines = [
         f"# /rules-mm brief: {st}, run {run_id}",
         "",
-        "Question per place: when did 2-4 homes first become allowed on lots zoned single-family, by right or",
-        "by permit, in which districts, and what did the code allow just before? Window: rules in force from",
-        "2010-01-01; anything older still in force is coded with date_basis 'predates' (never dropped).",
+        "Question per place: when did 2-4 homes first become allowed on lots zoned single-family, by right",
+        "or by permit, in which districts, and what did the code allow just before? Window: rules in force",
+        "from 2010-01-01; anything older still in force is coded with date_basis 'predates' (never dropped).",
         "",
         f"Effective-date default: {STATE_EFFECTIVE_RULES.get(st, NO_DEFAULT)}",
         "",
@@ -73,6 +73,6 @@ def render(
         "## Rules (every agent)",
         "- Network only through `python -m lotline.rule_agents.mm fetch RUN URL` (robots first, one try) or",
         "  WebSearch. Never retry a refused URL with curl, another user agent or browser headers.",
-        "- No records requests, emails or forms. Write nothing outside this run folder. Run no model scripts.",
+        "- No records requests, emails or forms. Write nothing outside the run folder. Run no model scripts.",
     ]
     return "\n".join(lines) + "\n"
