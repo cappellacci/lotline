@@ -278,8 +278,24 @@ def test_old_results_cards_are_gone_and_the_funnel_lives_in_the_steps(tmp_path):
                  "From legal lots to built homes", 'id="funnel"', 'id="two-numbers"',
                  "function baselineHtml"):  # fmt: skip
         assert gone not in html, gone
-    ev = html[html.index("function evidenceHtml") :]
+    ev = html[html.index("function evidenceHtml") : html.index("function howKit")]
     assert ev.count("${fbar(") == 4 and "How we get these numbers" in ev
+
+
+def test_missing_middle_and_fees_have_their_own_evidence_cards(tmp_path):
+    """Ben, 2026-11-17: missing middle gets "How we get these numbers" like the ADU card; the fee card shows
+    the two versions in the results files, year by year, and its own steps."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    ev = html[html.index("function evidenceHtml") :]
+    assert "${recordHtml(b, d)}</section>${mmHowHtml(b, R)}`;" in ev
+    assert 'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R);' in ev
+    mm = html[html.index("function mmHowHtml") : html.index("const FEE_VERSIONS")]
+    fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
+    for part in (mm, fee):
+        assert "How we get these numbers" in part and part.count("<li><div><b>") == 5
+    assert "Find the lots where 2–4 homes would become legal" in mm
+    assert "Start from the homes built anyway" in fee and "Two ways to cut fees in half" in fee
+    assert '(r) => r.size_class === "all"' in fee  # the share is of all homes expected, as the hand-off says
 
 
 # ------------------------------------------------------------------------------- section 2: the data
@@ -562,3 +578,14 @@ def test_pages_workflow_builds_from_what_publish_app_uploads():
     # the page must be built with the code that made the results
     assert "ref: refs/tags/${{ inputs.tag }}" in wf
     assert 'WORKFLOW = "pages.yml"' in (REPO / "scripts" / "publish_app.py").read_text(encoding="utf-8")
+
+
+def test_model_page_has_a_missing_middle_deep_dive(tmp_path):
+    """Ben, 2026-11-17: the Model page's missing middle card gets a deep dive like the ADU one, from the same
+    results files, plus its two out-of-sample tests as a range chart."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    assert '<div id="mm-heldout"></div>' in html and '<div id="mm-deep">' in html
+    assert "mmDeepDive(bs);" in html  # drawn with the ADU deep dive when the Model page opens
+    dive = html[html.index("function mmDeepDive") : html.index("function staticTrust")]
+    assert 'r.size_class === "2_4"' in dive and 'recordHtml(b, "missing_middle", true)' in dive
+    assert '["St. Paul", "Blind: frozen before any outcome was read, 2024–2025", 55, 15, 9, 28]' in html
