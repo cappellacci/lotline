@@ -7378,6 +7378,14 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   P50 15, P90 28 (mean 18.6).** Baseline part P50 12; added part P50 2, P90 14. 2024–2026: P10 17, P50 27,
   P90 69. Homes 2024–2025: P10 21, P50 36, P90 65. No outcome has been read; scoring waits for this file on
   `main` and Ben's go-ahead.
+- **Scored (2026-11-16, Ben: "Yes, unblind"; `reports/v5-stpaul/`).** The holdout was released in
+  `config/states/mn.yaml`. **Miss:** BPS St. Paul built 55 new 2–4 unit buildings in 2024–2025 (2024: 33, 2025:
+  22) against the frozen P10 9, P50 15, P90 28 (98th percentile). Against no reform, CRPS 32.8 vs 40.0: the
+  reform part points the right way but is far too small. Homes: 123 against 21–65. As written before the freeze,
+  this says C4's slow ramp is wrong for St. Paul. **Post-hoc (after the score; reported only):** with the same
+  draws, C4's θ with a half-way point of 1.0 year gives a median of 55 (17–308) and 0.5 year 66 (19–391); D-055's
+  values give 14 (9–36), also a miss. St. Paul's excess implies θ of 0.85–1.09 per 1,000: C4's level, reached
+  fast. Any change to the ramp is a new dated entry, and St. Paul would then be in-sample for it.
 
 ### Config note · 2026-11-16 · ADUs: the D-096 fit refreshed on main's rule rows after PR #444; D-097 switched on; decisions
 - **What changed** (Ben, 2026-11-16: "I've reviewed 444, let's merge it. … m_x draws, let's turn them on.

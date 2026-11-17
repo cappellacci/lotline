@@ -1,0 +1,38 @@
+{
+  "note": "post-hoc, after the score was read; reported only, not a re-score",
+  "observed_2024_2025": 55.0,
+  "rows": [
+    {
+      "label": "C4 as frozen (half 4.0)",
+      "p10": 9.0,
+      "p50": 15.0,
+      "p90": 28.0,
+      "percentile": 97.94999999999999,
+      "inside": false
+    },
+    {
+      "label": "C4's \u03b8 with a fast ramp (half 0.5, D-055's)",
+      "p10": 19.0,
+      "p50": 66.0,
+      "p90": 391.0999999999999,
+      "percentile": 43.625,
+      "inside": true
+    },
+    {
+      "label": "C4's \u03b8, half 1.0 (the low end of C4's ramp range)",
+      "p10": 17.0,
+      "p50": 55.0,
+      "p90": 308.0999999999999,
+      "percentile": 50.212500000000006,
+      "inside": true
+    },
+    {
+      "label": "D-055 values (\u03b8 0.12/1,000, \u03b1 8.4, half 0.5, Poisson years)",
+      "p10": 9.0,
+      "p50": 14.0,
+      "p90": 36.0,
+      "percentile": 94.0,
+      "inside": false
+    }
+  ]
+}
