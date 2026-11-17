@@ -73,6 +73,26 @@ def _sources(args: argparse.Namespace) -> int:
     return 0
 
 
+def _unlisted(args: argparse.Namespace) -> int:
+    from lotline.build.jurisdictions import unlisted
+    from lotline.config import all_states
+    from lotline.io import DataStore
+
+    store = DataStore()
+    found = 0
+    for state in [args.state.upper()] if args.state else all_states():
+        df = unlisted(state, store)
+        found += len(df)
+        for r in df.itertuples():
+            print(f"{state}  {r.geoid:<11} {r.table:<8} {r.rows:>9,} rows")
+    if found:
+        print("Add each government above to local_jurisdictions in config/states/<st>.yaml (GEOID: name),")
+        print("then rerun `lotline fetch --source jurisdictions` and the adapters.")
+    else:
+        print("every GEOID your permit and parcel tables use is in the jurisdictions list")
+    return 1 if found else 0
+
+
 def _provenance(args: argparse.Namespace) -> int:
     from lotline import provenance
     from lotline.io import DataStore
@@ -291,6 +311,12 @@ def build_parser() -> argparse.ArgumentParser:
     srcs = sub.add_parser("sources", help="list the data sources available for each state")
     srcs.add_argument("--state", help="two-letter state code (default: every configured state)")
     srcs.set_defaults(func=_sources)
+
+    unl = sub.add_parser(
+        "unlisted", help="GEOIDs your permit and parcel data use that the jurisdictions list lacks"
+    )
+    unl.add_argument("--state", help="two-letter state code (default: every state)")
+    unl.set_defaults(func=_unlisted)
 
     prov = sub.add_parser("provenance", help="generate or check docs/data_provenance.md from the manifest")
     prov.add_argument("--write", action="store_true", help="regenerate the document before checking it")

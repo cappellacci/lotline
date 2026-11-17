@@ -166,19 +166,34 @@ def tiers_from_parcels(parcels: pd.DataFrame | None, params: dict | None = None)
     return {g: int(t) for g, t in tier.items()}
 
 
-def local_geoids(state: str, store: DataStore) -> set[str]:
-    """Jurisdictions a state's own sources report (permits and parcels), plus every holdout place.
+def local_geoids(state: str, store: DataStore | None = None) -> set[str]:
+    """Jurisdictions outside the Census permit survey: the state file's `local_jurisdictions`, plus every
+    holdout place.
 
     A holdout place is always its own jurisdiction, even where BPS files it under a county (Charlotte):
     otherwise an adapter that keeps only known GEOIDs would relabel its rows as the county's (#123).
-    Rerun `lotline fetch --source jurisdictions` after adding a permit or parcel source.
+    Reads no permit or parcel table, so the list never depends on adapter output and needs no rerun
+    (WS-SCALE straight-line build; `store` is unused and kept for callers). `unlisted` finds GEOIDs the
+    state's data uses that are missing from the list.
     """
-    local: set[str] = set()
+    cfg = load_state(state)
+    return set(cfg.local_jurisdictions) | {h.geoid for h in cfg.holdouts if not h.statewide}
+
+
+def unlisted(state: str, store: DataStore) -> pd.DataFrame:
+    """GEOIDs (7- or 10-digit) the state's permit and parcel tables use that are not in its jurisdictions
+    table: candidates for `local_jurisdictions`. Columns: geoid, table, rows."""
+    juris = store.read(state, "jurisdictions")
+    known = set(juris["geoid"].astype(str)) if juris is not None else set()
+    out = []
     for table in ("permits", "parcels"):
         rows = store.read(state, table)
-        if rows is not None:
-            local |= set(rows["jurisdiction_geoid"].dropna().astype(str))
-    return local | {h.geoid for h in load_state(state).holdouts}
+        if rows is None:
+            continue
+        g = rows["jurisdiction_geoid"].dropna().astype(str)
+        counts = g[g.str.len().isin([7, 10]) & ~g.isin(known)].value_counts()
+        out += [{"geoid": k, "table": table, "rows": int(v)} for k, v in counts.items()]
+    return pd.DataFrame(out, columns=["geoid", "table", "rows"])
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
