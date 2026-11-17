@@ -155,6 +155,11 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .ev ol.how .fbar { height: 10px; margin-top: var(--space-2); border-radius: var(--radius-bar); }
 .ev ol.how p { margin: var(--space-1) 0 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
 @media (max-width: 640px) { .ev ol.how li { grid-template-columns: 32px minmax(0, 1fr); } .ev ol.how .v { grid-column: 2; text-align: left; } }
+.stack { position: relative; height: 36px; margin-top: var(--space-3); }
+.stack .g { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.stack .seg-base { position: absolute; left: 0; top: 6px; height: 24px; background: var(--scenario-baseline); }
+.stack .seg-add { position: absolute; top: 6px; height: 24px; opacity: .35; }
+.stack .seg-tick { position: absolute; top: 2px; height: 32px; width: 3px; margin-left: -1px; }
 .zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3); margin: var(--space-3) 0; }
 .zones > div { border: var(--stroke-hair) solid var(--rule); padding: var(--space-3); background: var(--paper-sunken); }
 .zones h4 { margin: 0 0 var(--space-1); font-size: 16px; }
@@ -795,8 +800,8 @@ function recordHtml(b, d) {
   const obs = (b.observed || []).filter((r) => r.measure === spec.measure).sort((x, y) => x.year - y.year);
   const fut = (b.totals || []).filter((r) => r.scenario === d && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
     .map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year);
-  const base = spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base && /^\d{4}$/.test(r.period))
-    .map((r) => ({ ...r, year: Number(r.period) })) : [];
+  const base = (d === "adu" ? (b.adu_baseline || []) : spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base) : [])
+    .filter((r) => /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) }));
   const title = `<h3 class="h3">What gets built now, and what the reform would add</h3>`;
   if (!obs.length && !fut.length) return `${title}<p class="pending">No permit record or yearly forecast for this state yet.</p>`;
   const years = [...obs.map((r) => r.year), ...fut.map((r) => r.year)];
@@ -853,16 +858,31 @@ function evidenceHtml(b, d, R) {
   const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
   // 1. year by year
   const s1 = `<section>${recordHtml(b, "adu")}
-    <p class="pending">Still to come: the estimated number of ADUs built each year across the whole state (not only the places whose permits we can count), and the forecast with no reform. The engine works both out but does not export them yet.</p></section>`;
-  // 2. the first window year
+    <p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "grey whiskers are the ADUs expected statewide with no reform and blue ones what the reform adds" : "the no-reform forecast is not in this state's results yet"}.</p></section>`;
+  // 2. the first window year: the no-reform count (adu_baseline) with the reform's added range stacked on it
+  const nr = yr ? (b.adu_baseline || []).find((x) => x.period === yr.period) : null;
+  let s2body;
+  if (!yr) s2body = `<p class="pending">The reform's yearly forecast is not in this state's results.</p>`;
+  else if (!nr) s2body = `<p class="body-small">Added by the reform: <b>${fmtN(yr.p50)}</b> ADU permits (${fmtN(yr.p10)} to ${fmtN(yr.p90)}).</p>
+    <p class="pending">The no-reform count for ${esc(yr.period)} is not in this state's results yet, so the reform's range is shown alone.</p>`;
+  else {
+    const top = (nr.p90 + yr.p90) * 1.05, pc = (v) => `${Math.max(0, Math.min(100, (v / top) * 100))}%`;
+    const ticks = niceTicks(top).filter((t) => t <= top);
+    s2body = `<div class="stack" role="img" aria-label="${esc(`${yr.period}: ${fmtN(nr.p50)} ADU permits with no reform, plus ${fmtN(yr.p10)} to ${fmtN(yr.p90)} added by the reform`)}">
+        ${ticks.map((t) => `<span class="g" style="left:${pc(t)}"></span>`).join("")}
+        <span class="seg-base" style="width:${pc(nr.p50)}"></span>
+        <span class="seg-add" style="left:${pc(nr.p50 + yr.p10)};width:calc(${pc(nr.p50 + yr.p90)} - ${pc(nr.p50 + yr.p10)});background:${scenColor("adu")}"></span>
+        <span class="seg-tick" style="left:${pc(nr.p50 + yr.p50)};background:${scenColor("adu")}"></span>
+      </div>
+      <div class="axis" style="position:relative">${ticks.map((t) => `<span style="left:${pc(t)}">${fmtN(t)}</span>`).join("")}</div>
+      <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin-top:var(--space-3)">
+        <span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>With no reform: <b>${fmtN(nr.p50)}</b> <span class="muted">(${fmtN(nr.p10)}–${fmtN(nr.p90)})</span></span>
+        <span><span style="display:inline-block;width:12px;height:10px;background:${scenColor("adu")};opacity:.35;margin-right:6px"></span>Added by the reform: <b>${fmtN(yr.p50)}</b> <span class="muted">(${fmtN(yr.p10)}–${fmtN(yr.p90)})</span></span></div>`;
+  }
   const s2 = `<section><h3 class="h3">${yr ? esc(yr.period) : "The first year"}: with no reform, and what the reform adds on top</h3>
-    <div class="rc" style="margin-top:var(--space-3)">
-      <div class="who"><h4 style="color:var(--scenario-baseline)">With no reform</h4><p>ADUs built under today's rules.</p></div>
-      <div class="lane"><span class="num muted" style="left:0">Not exported yet</span></div>
-      <div class="who"><h4 style="color:${scenColor("adu")}">Added by the reform</h4><p>Extra ADU permits in ${yr ? esc(yr.period) : "that year"}, P10 to P90.</p></div>
-      <div class="lane">${yr ? `<span class="num" style="left:0">${fmtN(yr.p50)} <small>(${fmtN(yr.p10)}–${fmtN(yr.p90)})</small></span>` : `<span class="num muted" style="left:0">Not in this run</span>`}</div>
-    </div>
-    <p class="source">This chart will stack the reform's range on top of the no-reform count once the engine exports that count. Added permits are at the engine's central assumptions.</p></section>`;
+    <p class="body-small">ADU permits statewide in the reform's first year. Grey is what today's rules are expected to bring; the blue band is the range the reform adds on top, with a tick at its midpoint.</p>
+    ${s2body}
+    <p class="source">Gross ADU permits, midpoints with P10–P90 in brackets, at the engine's central assumptions; the sliders do not move this chart.</p></section>`;
   // 3. place types (D-088): built anyway and added by the reform, ADUs a year; read from the bundle when exported
   const s3 = `<section><h3 class="h3">Where the ADUs would go: core cities, suburbs and towns</h3>
     <p class="body-small">Every place in the state is one of three types, set from Census metro and micro areas, so the same split works in any state:</p>
@@ -895,8 +915,8 @@ function placeTypeChart(b) {
   const bars = rows.map(([w, r], i) => {
     const y = i * rh + 4, tot = r.base + r.added, rise = r.base > 0 ? `+${Math.round((r.added / r.base) * 100)}%` : "new";
     return `<text x="0" y="${y + 17}" style="fill:var(--ink);font-family:var(--font-sans);font-size:13px">${esc(w)}</text>
-      <rect x="${L}" y="${y + 4}" width="${sx(r.base) - L}" height="20" fill="var(--scenario-baseline)"><title>${esc(w)}: ${fmtN(r.base)} a year built anyway</title></rect>
-      <rect x="${sx(r.base)}" y="${y + 4}" width="${sx(tot) - sx(r.base)}" height="20" fill="${scenColor("adu")}"><title>${esc(w)}: ${fmtN(r.added)} a year added by the reform</title></rect>
+      <rect x="${L}" y="${y + 4}" width="${sx(r.base) - L}" height="20" fill="var(--scenario-baseline)"><title>${esc(w)}: ${fmtN(r.base)} a year built anyway${Number.isFinite(r.base_p10) ? ` (${fmtN(r.base_p10)}–${fmtN(r.base_p90)})` : ""}</title></rect>
+      <rect x="${sx(r.base)}" y="${y + 4}" width="${sx(tot) - sx(r.base)}" height="20" fill="${scenColor("adu")}"><title>${esc(w)}: ${fmtN(r.added)} a year added by the reform${Number.isFinite(r.added_p10) ? ` (${fmtN(r.added_p10)}–${fmtN(r.added_p90)})` : ""}</title></rect>
       <text x="${sx(tot) + 6}" y="${y + 18}" style="fill:var(--ink)">${fmtN(tot)} a year (${rise})</text>`;
   }).join("");
   const note = b.adu_place_types_note ? `<p class="pending">${esc(b.adu_place_types_note)}</p>` : "";
@@ -904,7 +924,7 @@ function placeTypeChart(b) {
       <span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Built anyway</span>
       <span><span style="display:inline-block;width:12px;height:10px;background:${scenColor("adu")};margin-right:6px"></span>Added by the reform</span></div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ADUs a year by place type, built anyway and added by the reform" style="width:100%;min-width:420px;height:auto;font-family:var(--font-mono);font-size:12px">${bars}</svg></div>
-    <p class="source">ADUs a year, averaged over 2027–2031 and the engine's draws. The label is the total with the reform and its rise over what would be built anyway.</p>`;
+    <p class="source">Gross ADU permits a year, averaged over 2027–2031: midpoints across the engine's draws (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`;
 }
 
 

@@ -49,3 +49,15 @@
 - **Outputs:** `src/lotline/app/template.html`; tests in `tests/app/test_build.py`.
 - **AI:** Claude Code wrote the change and tests. Checked with `tests/app` (49 passed), ruff and `compliance_check.py`, and in the browser pane (Oregon: 748 homes, likely range 298 to 2,040; the count toggle moves it).
 - **Open / next:** the engine's "combined" scenario (each lot counted once) would remove the double count; it is still marked not yet run.
+
+### LB-NNN · 2026-11-17 · Deliverables: the ADU card reads the engine's new ADU parts (schemas 1.15)
+- **Question:** How does the ADU evidence card use the no-reform forecast and place-type split the ADU session now exports?
+- **What I did:** Wired the two new bundle parts from ws/adu-bundle-detail into the ADU card.
+  - `adu_baseline` gives the year-by-year chart its no-reform whiskers for 2027–2031. It also gives the first-year chart a grey no-reform bar with the reform's added range stacked on top.
+  - `adu_place_types` keeps the field names the page already read. Its new P10–P90 columns show on hover.
+  - The ADU session confirmed there is no backcast for past years, so the yearly chart says its pre-2026 bars are counted permits only.
+  - Bundles without the new parts still show "not in this state's results yet".
+- **Inputs:** the ADU session's message (2026-11-17); its Texas schemas 1.15 bundle, used only in the local preview.
+- **Outputs:** `src/lotline/app/template.html`; a test in `tests/app/test_build.py`.
+- **AI:** Claude Code wrote the change and test. Checked with `tests/app` (49 passed), ruff and `compliance_check.py`, and in the browser pane with the 1.15 Texas parts (no reform 788 ADU permits in 2027, 355–2,090).
+- **Open / next:** the published bundles carry the new parts after ws/adu-bundle-detail merges and all five states are rerun from main.

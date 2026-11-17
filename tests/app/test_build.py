@@ -214,6 +214,9 @@ def test_a_model_selector_above_the_evidence_card_and_the_adu_card_sections(tmp_
     # the place-type chart reads the bundle when the engine exports it, and says so when it does not
     assert "(b.adu_place_types || []).find((r) => r.place_type === k)" in html
     assert "The split by place type is not in this state's results yet" in html
+    # schemas 1.15: the no-reform ADU forecast feeds the yearly chart and the first-year stack
+    assert '(d === "adu" ? (b.adu_baseline || [])' in html
+    assert "(b.adu_baseline || []).find((x) => x.period === yr.period)" in html
 
 
 def test_gross_and_net_are_explained_in_plain_words(tmp_path):
