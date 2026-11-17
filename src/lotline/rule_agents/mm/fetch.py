@@ -27,7 +27,7 @@ import httpx
 
 from lotline.rule_agents.mm.access import classify, robots_allows, robots_url
 
-AGENT_TOKENS = ("lotline", "Claude-User", "ClaudeBot")
+AGENT_TOKENS = ("lotline", "Claude-User", "ClaudeBot", "anthropic-ai")
 HOST_INTERVAL = 3.0  # seconds between requests to one host
 ADAPTER = "rule_agents.mm"
 ADAPTER_VERSION = "0.1"
