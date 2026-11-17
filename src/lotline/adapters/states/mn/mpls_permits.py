@@ -42,7 +42,7 @@ from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.mn.mpls_permits"
-VERSION = "1.0"
+VERSION = "1.1"
 SOURCE = "mpls_ccs_permits"
 TABLE = "permits"
 LICENSE = "CC0 1.0 (City of Minneapolis open data waiver)"
@@ -92,6 +92,12 @@ OCCUPANCY_TYPES = {
     "Accessory": "OTHER",
 }
 MULTI = {"TFD", "3to4", "MFD", "Mixed", "Comm"}  # 2+ reported new units refine these to a size class
+# occupancyType is the building the work is on, not what the permit builds. A roof or remodel permit on an
+# existing duplex or fourplex is not a new 2-4 unit building (#450), so these occupancies give their type only
+# to new construction (a positive dwellingUnitsNew or workType New) or a demolition (the building removed);
+# any other work on them is OTHER.
+NEW_ONLY_OCCUPANCY = {"TFD", "3to4"}
+NEW_WORK = "New"
 
 CONVERSION_WORK = {"Conversion", "UnitCon"}
 ADU_WORK = {"Accessory", "Conversion", "UnitCon", "Remodel", "Addition", "New", "UnitFinish"}
@@ -155,8 +161,11 @@ PROVENANCE = {
         "Wrecking permits: is_demolition=True; dwellingUnitsEliminated is always empty there, so a whole SFD "
         "wrecked → units_removed=1 (derived), any other building → null",
         "building_type_std from occupancyType: SFD→SFD, TH→TH, TFD (two- or three-family)→DTQ, 3to4→U3_4, "
-        "MFD→MF5, Comm and Accessory→OTHER, blank→UNKNOWN; when TFD/3to4/MFD/Mixed/Comm reports N≥2 new "
-        "units the Census size class of N is used (2→U2, 3-4→U3_4, 5-6→U5_6, 7+→U7P)",
+        "MFD→MF5, Comm and Accessory→OTHER, blank→UNKNOWN; TFD and 3to4 give DTQ/U3_4 only to new "
+        "construction (dwellingUnitsNew > 0 or workType New) and Wrecking permits (the building removed): "
+        "roof, remodel, addition and other work on an existing two- to four-unit building is OTHER (#450); "
+        "when TFD/3to4/MFD/Mixed/Comm reports N≥2 new units the Census size class of N is used (2→U2, "
+        "3-4→U3_4, 5-6→U5_6, 7+→U7P)",
         "ADU (type_confidence=inferred): Res permit on an SFD/TFD/Accessory occupancy; work type Accessory, "
         "Conversion, UnitCon, Remodel, Addition, UnitFinish, or New on an Accessory structure; comments "
         "name an ADU and do not negate it ('NOT AN ADU', 'FUTURE ADU') or describe work on an existing "
@@ -187,6 +196,8 @@ PROVENANCE = {
         "Demolished units are unknown for anything but whole single-family houses",
         "A permit listed on several parcels keeps only its lowest APN",
         "Minneapolis only; Commercial permits cover apartments, mixed use and non-residential alike",
+        "occupancyType is the existing building's type: SFD, TH and MFD (MF5) permits keep it for repair "
+        "and remodel work too, so those types count work on existing buildings, not only new ones",
     ],
 }
 
@@ -237,6 +248,8 @@ def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
     completed = _local_date(raw["completeDate"]).where(status == "Closed")
 
     btype = occ.map(OCCUPANCY_TYPES).fillna("UNKNOWN")
+    builds_new = (new > 0).fillna(False) | (work == NEW_WORK).fillna(False) | wrecking
+    btype = btype.mask(occ.isin(NEW_ONLY_OCCUPANCY).fillna(False) & ~builds_new, "OTHER")
     refine = occ.isin(MULTI) & (new >= 2).fillna(False)
     btype = btype.mask(refine, new.map(size_class, na_action="ignore"))
     confidence = pd.Series("high", index=raw.index).mask(btype == "UNKNOWN", "unknown")
