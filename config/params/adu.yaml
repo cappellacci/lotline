@@ -18,11 +18,11 @@ adu_partial_rule_share:
   notes: "Applies where ADUs are allowed but with parking, a permit by conditional use (not by right), attached ADUs only or a cap under 600 sq ft (owner occupancy has its own share). A rule failing both owner occupancy and another condition gets m_o x m_x. Fixed in a run at the profile maximum (the 0.1 grid gives no finer interval). At 0.7 the Handbook scenario adds about 43% to a place whose rule is partial (1 / 0.7), down from 150% at 0.4."
 
 adu_partial_share_draws:
-  value: 0
-  low: 0
-  high: 0
+  value: 1
+  low: 1
+  high: 1
   unit: how m_x is drawn (0 fixed at adu_partial_rule_share; 1 drawn from config/params/adu_partial_share_grid.csv weights; 2 from its fold maxima; 3 every draw at the set adu_partial_rule_share, with theta, alpha and the core term refitted there)
-  source: "D-097 (accepted 2026-11-15): A + place types refitted at each m_x on the 0.1 grid (scripts/dev/adu_mx_grid.py on the D-096 rows); weights = mean of the leave-one-state-out folds' normalized profile likelihoods. Off (0) until Ben chooses after D-097's report"
+  source: "D-097 (accepted 2026-11-15; switched on by Ben 2026-11-16, 'm_x draws, let's turn them on'): A + place types refitted at each m_x on the 0.1 grid (scripts/dev/adu_mx_grid.py on main's rule rows after PR #444); weights = mean of the leave-one-state-out folds' normalized profile likelihoods"
   notes: "When on, each draw gets one m_x shared by every place and state, and theta, alpha and the core term move to that grid row's refit (scenarios.adu.apply_partial_share_grid), so the counts stay matched."
 
 adu_owner_occupancy_share:

@@ -7378,3 +7378,25 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   P50 15, P90 28 (mean 18.6).** Baseline part P50 12; added part P50 2, P90 14. 2024–2026: P10 17, P50 27,
   P90 69. Homes 2024–2025: P10 21, P50 36, P90 65. No outcome has been read; scoring waits for this file on
   `main` and Ben's go-ahead.
+
+### Config note · 2026-11-16 · ADUs: the D-096 fit refreshed on main's rule rows after PR #444; D-097 switched on; decisions
+- **What changed** (Ben, 2026-11-16: "I've reviewed 444, let's merge it. … m_x draws, let's turn them on.
+  Headline statistics should definitely be medians. Keep Dallas as no ADUs"):
+  - **Refit.** Form A + place types refit on main's rule rows, which now include #444's 44 rows for uncoded
+    MN and OH places and the Blaine fix (`scripts/dev/adu_config_fit.py` through `adu_refit_fixed_rows.py`;
+    `reports/adu-final-config/`). The fit set is 70 places and 498 place-years: #444 dated rows that let more
+    place-years in.
+    - θ 0.000224 (0.000170–0.000303), was 0.000240;
+    - α 1.505 (1.035–2.189), was 1.439;
+    - m_o 1.0 and m_x 0.7 (0.7–0.8), unchanged;
+    - core +1.740 (1.138–2.388), was +1.670; town prior SD 1.058.
+    - The anchor slopes and the D-097 grid were regenerated on the same rows.
+  - **D-097 on.** `adu_partial_share_draws` = 1: each draw takes m_x from the grid's weights, with θ, α and
+    the core term refit at that value.
+  - **Headline statistic.** Medians (P50) with P10–P90, never averages. The app already shows only P50
+    ("midpoint") and P10–P90, so nothing changes there. The decision is recorded because a single place's
+    average can sit far above its median (the Dallas reading, D-099).
+  - **Dallas** stays coded as no ADUs. Since 2018 its rentable ADUs come only by special exception or an
+    overlay; this is a convention, noted in its row.
+- **Tests:** the pinned values were updated. The unseen-state test holds m_x fixed so it still isolates τ.
+  The full suite and the compliance check were run before commit.
