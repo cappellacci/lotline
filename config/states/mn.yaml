@@ -13,6 +13,12 @@ holdouts:
     outcome_from: 2024-01-01
     outcome_until: 2026-12-31
     reason: V5 blind forward test of the St. Paul 2023 reform (validation plan §3)
+    # Released on Ben's go-ahead ("Yes, unblind") on 2026-11-16 after the freeze reached main: frozen in #436
+    # (results/frozen/V5-MN-STPAUL.json, D-098, C4), scored by scripts/dev/v5_stp_score.py (reports/v5-stpaul/).
+    released_on: 2026-11-16
+    released_note: >-
+      Frozen (#436, D-098) and scored on BPS 2758000 2024-2025. St. Paul's outcomes can now enter tables;
+      D-092's missing-middle scripts still leave St. Paul and Ramsey out of the panel by their own list.
 # Last date usable for fitting, by GEOID (validation plan §2). St. Paul: data through 2023 only (V5 blind test).
 train_until:
   "2758000": 2023-12-31

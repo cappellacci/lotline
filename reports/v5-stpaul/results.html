@@ -1,0 +1,224 @@
+<title>St. Paul blind test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.rng .rg { stroke: var(--scenario-missing-middle); stroke-width: 8; stroke-linecap: round; opacity: .45; }
+.rng .rg.frozen { opacity: .9; }
+.rng .med { stroke: var(--ink); stroke-width: 2; }
+.rng .obs { stroke: #c2410c; stroke-width: 2; stroke-dasharray: 5 3; }
+.rng .obstxt { fill: #c2410c; font-size: 12px; }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · V5 St. Paul blind test (D-098) · scored 16 Nov 2026</div>
+  <h1>St. Paul built faster than the model said</h1>
+  <p class="lede">After its 2023 reform allowed up to four homes on 55,269 single-family lots, St. Paul got 55 new 2–4 unit buildings in 2024–25. The forecast frozen before we looked was 9 to 28, median 15: a miss, at the 98th percentile. The model's mature rate looks right; its timing doesn't. It assumed the reform takes four years to reach half speed, and St. Paul got there in about one.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>55</b><span>2–4 unit buildings built in 2024–25 (about 6 a year before the reform)</span></div>
+  <div class="tile"><b>9–28</b><span>the frozen forecast's range (median 15): missed</span></div>
+  <div class="tile"><b>32.8 vs 40.0</b><span>score against "no reform" (CRPS, lower is better): right direction, too small</span></div>
+  <div class="tile"><b>0.85–1.09</b><span>mature rate per 1,000 lots St. Paul implies with a fast ramp; C4's is 1.04</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>The frozen forecast missed high building in year one</h2>
+  <div class="scroll"><table><thead><tr><th>Period</th><th>Built</th><th>P10</th><th>P50</th><th>P90</th><th>Percentile</th><th>CRPS: model vs no reform</th></tr></thead><tbody><tr><td>2024-2025</td><td>55</td><td>9</td><td>15</td><td>28</td><td>98</td><td>32.8 vs 40.0</td></tr><tr><td>2024</td><td>33</td><td>3</td><td>7</td><td>12</td><td>100</td><td>23.3 vs 25.0</td></tr><tr><td>2025</td><td>22</td><td>4</td><td>8</td><td>18</td><td>93</td><td>9.6 vs 14.0</td></tr></tbody></table></div>
+  <p>St. Paul got 33 in 2024, the first full year, against about 6 a year in 2021–23. C4 puts only 1% of its mature rate into year one and 3% into year two, so it could not produce that jump. Homes in these buildings (123) were above their range too.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2 · post-hoc</div>
+  <h2>A fast ramp at C4's level would have caught it</h2>
+  <div class="scroll"><svg viewBox="0 0 700 184" class="chart rng" role="img" aria-label="St. Paul 2024-2025: built against the frozen forecast and post-hoc variants"><line x1="300.0" x2="300.0" y1="10" y2="158" class="grid"/><text x="300.0" y="174" class="tick" text-anchor="middle">5</text><line x1="357.8" x2="357.8" y1="10" y2="158" class="grid"/><text x="357.8" y="174" class="tick" text-anchor="middle">10</text><line x1="415.6" x2="415.6" y1="10" y2="158" class="grid"/><text x="415.6" y="174" class="tick" text-anchor="middle">20</text><line x1="492.0" x2="492.0" y1="10" y2="158" class="grid"/><text x="492.0" y="174" class="tick" text-anchor="middle">50</text><line x1="549.8" x2="549.8" y1="10" y2="158" class="grid"/><text x="549.8" y="174" class="tick" text-anchor="middle">100</text><line x1="607.6" x2="607.6" y1="10" y2="158" class="grid"/><text x="607.6" y="174" class="tick" text-anchor="middle">200</text><line x1="684.0" x2="684.0" y1="10" y2="158" class="grid"/><text x="684.0" y="174" class="tick" text-anchor="middle">500</text><line x1="499.9" x2="499.9" y1="6" y2="158" class="obs"/><text x="503.9" y="16" class="obstxt">built: 55</text><text x="290" y="39.0" class="lab" text-anchor="end">Frozen: C4, half-way 4.0 years</text><line x1="349.0" x2="443.7" y1="35.0" y2="35.0" class="rg frozen"><title>Frozen: C4, half-way 4.0 years: 9–28, median 15</title></line><line x1="391.6" x2="391.6" y1="28.0" y2="42.0" class="med"/><text x="290" y="73.0" class="lab" text-anchor="end">C4's θ, half-way 0.5 year (post-hoc)</text><line x1="411.3" x2="663.5" y1="69.0" y2="69.0" class="rg"><title>C4's θ, half-way 0.5 year (post-hoc): 19–391, median 66</title></line><line x1="515.2" x2="515.2" y1="62.0" y2="76.0" class="med"/><text x="290" y="107.0" class="lab" text-anchor="end">C4's θ, half-way 1.0 year (post-hoc)</text><line x1="402.0" x2="643.6" y1="103.0" y2="103.0" class="rg"><title>C4's θ, half-way 1.0 year (post-hoc): 17–308, median 55</title></line><line x1="499.9" x2="499.9" y1="96.0" y2="110.0" class="med"/><text x="290" y="141.0" class="lab" text-anchor="end">Old D-055 values (post-hoc)</text><line x1="349.0" x2="464.6" y1="137.0" y2="137.0" class="rg"><title>Old D-055 values (post-hoc): 9–36, median 14</title></line><line x1="385.9" x2="385.9" y1="130.0" y2="144.0" class="med"/></svg></div>
+  <p>Same frozen inputs, draws and seed; only the ramp or the values changed. These are checks made after the score was read, so they are reported, not a re-score. With C4's mature rate and a half-way point of one year (the low end of C4's own range), the median is 55. The old D-055 values missed too, for the opposite reason: a fast ramp but a level eight times lower.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>Keep the slow ramp, or move to a fast one?</h2>
+  <p>Charlotte (passed) and St. Paul (missed) are two blind cases. The fit pins the ramp poorly (1.0–6.0 years), and St. Paul points to the fast end. Changing the ramp would use St. Paul, so it needs a new dated entry, and St. Paul would no longer be a blind test for the changed model. Nothing in config has changed.</p>
+</section>
+
+<footer>
+  <div>Frozen in #436 (<code>results/frozen/V5-MN-STPAUL.json</code>, code 9ee70aa, 4,000 draws, seed 20261108) before any outcome was read; scored by <code>v5_stp_score.py</code>, which regenerates the freeze first. Exposure D-013 disclosed. Sources: <code>reports/v5-stpaul/</code>.</div>
+</footer>
+</main>

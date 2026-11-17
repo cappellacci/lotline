@@ -44,8 +44,8 @@ def test_attribution_shares():
 
 
 def test_held_out_years_from_config():
-    assert {2024, 2025, 2026} <= v0.held_out_years("MN")
-    # NC's V5 holdout was released after scoring (D-071), so V0 judges every NC year again
+    # Both V5 holdouts were released after scoring (NC D-071, MN D-098), so V0 judges every year again
+    assert v0.held_out_years("MN") == set()
     assert v0.held_out_years("NC") == set() and v0.held_out_years("OH") == set()
 
 

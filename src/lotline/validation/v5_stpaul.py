@@ -103,6 +103,14 @@ def baseline(bps: pd.DataFrame, geoid: str = ST_PAUL, years=BASELINE_YEARS) -> t
     )
 
 
+def scorable_years(bps: pd.DataFrame, geoid: str = ST_PAUL, years=YEARS) -> tuple[int, ...]:
+    """The window years BPS already has a row for (2026 waits for its publication).
+
+    By hand: rows for 2023, 2024 and 2025 -> (2024, 2025)."""
+    have = set(bps.loc[bps["geoid"] == geoid, "year"].astype(int))
+    return tuple(y for y in years if y in have)
+
+
 def ramp_shape(half: float, slope: float, years=YEARS, T: int = T) -> np.ndarray:
     """Share of the mature hazard in each year: ramp at age t − T + 0.5."""
     from lotline.model.hazard import ramp
@@ -183,9 +191,9 @@ def inputs(store) -> Inputs:
     eligible = int(stpaul_v5.load(store)["h_lots"]["eligible"].sum())
     pre, post = stpaul_dose()
     bps = holdout.apply(store.read(STATE, "bps_place_year"), STATE, geoid_col="geoid", year_col="year")
-    if bps.loc[bps["geoid"] == ST_PAUL, "year"].max() > INPUT_LAST_YEAR:
-        raise ValueError("St. Paul BPS rows after 2023 are visible: is the holdout applied?")
-    bld, hom = baseline(bps)
+    # The baseline reads 2021-2023 only (`baseline` refuses later years). Rows after 2023 are dropped here
+    # too, so the inputs match before and after the holdout is released (scoring regenerates the freeze).
+    bld, hom = baseline(bps[bps["year"] <= INPUT_LAST_YEAR])
     market = store.read(STATE, "market_geo_year")
     cpi = money.index_by_year(market, "cpi_u")
     cost = hazard.cost_index_by_year(market)

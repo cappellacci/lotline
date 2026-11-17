@@ -9,6 +9,7 @@ Gathers results already on file; runs nothing and reads no permits:
   place coverage, M against no effect, placebo);
 - run 12's held-out coverage of the no-reform baseline on 468 unused places (reports/mm-d092/run12-types/);
 - V5 Charlotte, blind, scored with D-055's values (reports/v5-charlotte/score.json);
+- V5 St. Paul, blind, frozen and scored with C4 (reports/v5-stpaul/score.json);
 - V9 Oregon, the frozen D-038 forecast (reports/v9-oregon-d055/mm_totals.csv).
 Borrows the Lotline stylesheet from the run-6 page.
 """
@@ -62,6 +63,9 @@ def gather() -> tuple[list, dict]:
     v5 = json.loads((REPO / "reports" / "v5-charlotte" / "score.json").read_text())["primary"]["2023-2025"]
     rows.append(("Places that reformed", "Charlotte area, 2023–25 (blind)", v5["observed"], v5["p10"], v5["p50"], v5["p90"],
                  "older D-055 values", True))  # fmt: skip
+    sp = json.loads((REPO / "reports" / "v5-stpaul" / "score.json").read_text())["primary"]["2024-2025"]
+    rows.append(("Places that reformed", "St. Paul, 2024–25 (blind, C4)", sp["observed"], sp["p10"], sp["p50"], sp["p90"],
+                 "C4, frozen 15 Nov", False))  # fmt: skip
     for r in rows_of("test_c_states.csv", model=None):
         rows.append(("Statewide, no reform (test C)", f"{r['state']}: {r['places']} places with no reform", float(r["observed"]),
                      float(r["p10"]), float(r["p50"]), float(r["p90"]), "", False))  # fmt: skip
@@ -138,7 +142,7 @@ def main() -> None:
 <header>
   <div class="eyebrow">Lotline · Missing middle · Accuracy of the C4 model · 15 Nov 2026</div>
   <h1>How accurate is the missing-middle model?</h1>
-  <p class="lede">Honest, but not sharp. When we check the model against what was actually built, the real count lands inside its range about 8 times in 10, which is what a P10–P90 range should do. But the ranges are wide (often 10-fold), single-place medians can miss by 3–6×, and the data can't yet cleanly separate the reform's own effect from ordinary ups and downs in building. For a new state, our one real test, Oregon, came in inside the range with the median 1.3× too high.</p>
+  <p class="lede">Honest, but not sharp. When we check the model against what was actually built, the real count lands inside its range about 8 times in 10, which is what a P10–P90 range should do. But the ranges are wide (often 10-fold), single-place medians can miss by 3–6×, and the data can't yet cleanly separate the reform's own effect from ordinary ups and downs in building. For a new state, our one real test, Oregon, came in inside the range with the median 1.3× too high. C4's first blind test, St. Paul, missed: 55 built against 9–28, because the reform worked much faster than C4's ramp assumes.</p>
 </header>
 
 <div class="tiles">
@@ -164,7 +168,7 @@ def main() -> None:
     <li><b>The ranges are honest.</b> Across every test, {cov["coverage"]:.0%} of {cov["places"]} places land inside their P10–P90 range. The no-reform baseline alone, scored held out on {r12["places"]} places it never saw, lands inside {r12["Y1"]:.0%} of the time.</li>
     <li><b>Single places are hard.</b> The parcel-roll check passes (Wake, Franklin, Minneapolis all inside), but Franklin County built 142 against a median of 483 (3.4× too high) and Minneapolis built 275 against a median of 42 (6.5× too low), each just inside its range.</li>
     <li><b>Why:</b> 34–44% of 2–4 unit buildings come in projects of 3 or more (run 13). Whether one big project lands in a place in five years decides its count, and nothing in our data can foresee that.</li>
-    <li><b>Charlotte, our one blind test so far,</b> passed: 119 built against 89–172 (median 104). That used the older D-055 values, not C4.</li>
+    <li><b>Blind tests:</b> Charlotte passed with the older D-055 values (119 built against 89–172). St. Paul, frozen with C4 before we looked, <b>missed</b>: 55 built in 2024–25 against 9–28 (median 15). C4 assumes the reform takes 4 years to reach half speed; St. Paul got there in about one. Post-hoc, C4's mature rate with a one-year ramp gives a median of 55 (<code>reports/v5-stpaul/</code>).</li>
   </ul>
 </section>
 
@@ -200,8 +204,8 @@ def main() -> None:
 
 <section class="decision">
   <div class="num-tag">What would sharpen this</div>
-  <h2>The next real test is St. Paul</h2>
-  <p>St. Paul's blind forecast (V5, freeze due 17 November) would be C4's first blind test, if it is frozen after PR #436 merges. Beyond that, the honest limits stay: the outcome counts 2–4 unit buildings only (a floor for the Handbook's 2–6), and clustering means single-place forecasts will stay wide.</p>
+  <h2>The ramp is the open question</h2>
+  <p>St. Paul says the effect arrives fast: C4's level with a ramp near one year fits it, and C4's own fit allows 1.0–6.0 years. Whether to move the ramp is Ben's call, and a new dated entry, because it would use St. Paul. Beyond that, the honest limits stay: the outcome counts 2–4 unit buildings only (a floor for the Handbook's 2–6), and clustering means single-place forecasts will stay wide.</p>
 </section>
 
 <footer>

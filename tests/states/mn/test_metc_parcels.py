@@ -71,6 +71,7 @@ def test_ids_vintage_and_dates(parcels):
     assert parcels.loc["270531234567890123"].vintage == 2023  # the service-name year, not the export year
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_st_paul_kept_from_a_2023_export_hidden_from_a_2024_one(parcels):
     assert (parcels.jurisdiction_geoid == ST_PAUL).sum() == 3
     later, _ = _parcels("2024", shift=370)  # Ramsey exported 2024-12-31

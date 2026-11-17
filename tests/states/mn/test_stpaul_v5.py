@@ -42,6 +42,7 @@ def test_districts_cleans_codes_and_drops_empty_rows():
     assert out["district"].tolist() == ["H1"]
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_roll_2023_keeps_st_paul_rolls_dated_before_the_window():
     p = pd.DataFrame(
         {
