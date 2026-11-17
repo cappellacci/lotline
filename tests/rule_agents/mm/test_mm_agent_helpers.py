@@ -344,6 +344,26 @@ def test_reconcile_cap_and_date_major():
     assert fields == {("unit_cap", "major"), ("effective_date", "major")}
 
 
+def test_reconcile_none_rows_dates_minor():
+    """Rochester dry run: both coders coded a none row; date basis and adoption differ -> minor only."""
+    ev3 = [ev("effective_date"), ev("unit_cap"), ev("coverage_zones")]
+    a = place(
+        [
+            rule(
+                unit_cap=1,
+                by_right=None,
+                prior_cap=None,
+                adoption_date=None,
+                date_basis="earliest_known",
+                evidence=ev3,
+            )
+        ]
+    )
+    b = place([rule(unit_cap=1, by_right=None, prior_cap=None, evidence=ev3)], coder="b")
+    d = reconcile.compare(a, b)
+    assert {x.field for x in d} == {"adoption_date", "date_basis"} and {x.severity for x in d} == {"minor"}
+
+
 # ---- rows --------------------------------------------------------------------------------------------------
 
 

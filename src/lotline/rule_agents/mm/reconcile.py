@@ -78,6 +78,8 @@ def compare(fa: PlaceFinding, fb: PlaceFinding) -> list[Diff]:
                 sev = "minor"
             if f == "by_right" and (va is None or vb is None):
                 sev = "minor"  # one coder left it blank
+            if x.unit_cap == 1 and y.unit_cap == 1 and f in ("effective_date", "adoption_date", "date_basis"):
+                sev = "minor"  # two "none" rows: a control, never an event, so its date moves nothing
             out.append(Diff(key, f, va, vb, sev))
     out += [Diff("unpaired", "rule", r.component, None, "major") for r in only_a]
     out += [Diff("unpaired", "rule", None, r.component, "major") for r in only_b]
