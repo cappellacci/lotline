@@ -26,12 +26,16 @@
   - 3 of 5 cities refuse automated readers at `robots.txt` (Plymouth, Minnetonka, Eagan) → 9 human tasks.
   - Without a PDF library most schedules can't be read or quote-checked. With pypdf, 31 of 39 first-coder
     quotes matched word for word; the misses had labels glued on.
-- **Decisions:** none made. Proposed in the PR: add pypdf (BSD-3); additive schema columns (`quote_status`,
-  `confidence`, `retrieved_date`, `source_kind`, `levying_body`, `source_doc_id`); Coon Rapids connection
-  permit component and 65%/35% plan review; adding the MN state surcharge to the 12 places.
+- **Decisions (Ben, 2026-11-17, in chat):** pypdf (BSD-3-Clause) added as a dependency; the MN state permit
+  surcharge added to the 12 coded places that lacked it (48 rows in `config/fees/mn.csv`, component `other` so no
+  permit row is hidden); Coon Rapids plan review at the 35% small-scale residential rate ($856.54, was $1,590.71);
+  additive evidence columns on `fees` sent to WS-CORE as issue #472. Open: the $125 connection permit's
+  component (left under water_sewer). Proposed HANDOFF decision: "Minnesota fees include the state permit
+  surcharge (Minn. Stat. 326B.148, 0.0005 x valuation); Coon Rapids plan review at 35%."
 - **AI:** Claude Code (Opus 5.5) wrote the docs, agents, helpers and tests and ran the dry run with sonnet
   subagents. Checks: 33 hand-worked tests (e.g. Apple Valley $1,302.50 + $7.40 × 255 = $3,189.50; Brunswick
   $3,282 × 3 bedrooms = $9,846), the `fees` schema on every built row, a blind second coder on two places,
-  run-vs-existing comparison, `compliance_check.py`. No model run; no rows merged into `config/fees/`.
-- **Open / next:** pypdf decision; a reconciler run on a place with real `differ` pairs; the history pass;
+  run-vs-existing comparison, `compliance_check.py`. No model run. After Ben's answers, the fee changes were
+  checked with `fee_levels.coded_fees` old vs new: +$177.38 a house in 11 places, -$556.79 in Coon Rapids.
+- **Open / next:** the Coon Rapids fourplex permit (~$580 a unit high); a reconciler run on a place with real `differ` pairs; the history pass;
   merge the shared parts with the MM and ADU swarms; work the 16 human tasks.

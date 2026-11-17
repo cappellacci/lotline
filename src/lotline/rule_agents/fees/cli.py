@@ -8,7 +8,7 @@
     reconcile C1 C2 --out DIR          pair the two coders' items -> pairs.jsonl, items.merged.jsonl
     build ITEMS --out DIR              items -> rows.csv (schema-validated), rows_low.csv, build_report.md
     tasks JSONL... --out DIR           human tasks -> human_tasks.csv, human_tasks.md
-    text FILE                          a saved document's text (PDF pages numbered; needs pypdf for PDFs)
+    text FILE                          a saved document's text (PDF pages numbered, via pypdf)
     register FILE --url URL --state ST a document a person saved by hand -> store, manifest, doc id
     ingest-tasks CSV --out FILE        answered human tasks -> items
     compare ROWS --state ST [--places] run rows vs config/fees/<st>.csv
@@ -37,15 +37,18 @@ SOURCE = "rule-agents-fees"
 
 
 def _pdf_text(path: Path) -> str:
-    """Page-numbered text of a PDF with pypdf (BSD-3-Clause), if installed. pypdf is a proposed dependency
-    (SHARED_CANDIDATES.md); until Ben approves it, PDFs raise ValueError and quotes stay image_read."""
+    """Page-numbered text of a PDF with pypdf (BSD-3-Clause; a project dependency since 2026-11-17). A scanned
+    PDF yields empty pages: its quotes stay image_read."""
     try:
         from pypdf import PdfReader
     except ImportError as e:
         raise ValueError(
-            f"{path} is a PDF and no PDF text reader is installed (pypdf proposed): quotes from it stay image_read"
+            f"{path} is a PDF and pypdf is not installed (run uv sync): quotes from it stay image_read"
         ) from e
-    pages = PdfReader(str(path)).pages
+    try:
+        pages = PdfReader(str(path)).pages
+    except Exception as e:  # pypdf raises many types for a damaged or truncated file
+        raise ValueError(f"{path}: pypdf could not read it ({e}); quotes from it stay image_read") from e
     return "\n".join(f"[page {n}]\n{p.extract_text() or ''}" for n, p in enumerate(pages, 1))
 
 
@@ -154,8 +157,8 @@ def cmd_fetch(a: argparse.Namespace) -> None:
 
 
 def _sidecar(store, path: Path) -> str:
-    """Doc ID (sha256) of a saved document; writes its text to interim/docs/<sha256>.txt (HTML and text only;
-    PDFs wait for an approved PDF reader). SHARED_CANDIDATES.md section 11."""
+    """Doc ID (sha256) of a saved document; writes its text to interim/docs/<sha256>.txt (HTML, text and PDF;
+    none for a PDF pypdf can't open). SHARED_CANDIDATES.md section 11."""
     from lotline.io.store import sha256_file
 
     doc_id = sha256_file(path)

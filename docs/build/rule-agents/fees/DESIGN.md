@@ -182,7 +182,7 @@ Lotline deflates later (D-066).
 5. Component from `pays_for` vs name hint: disagreements are listed.
 6. Per place and component: which expected bodies are coded; `partial` when one is missing (T3).
 
-## Proposed schema change (for WS-CORE, not made here)
+## Proposed schema change (for WS-CORE, not made here; issue #472)
 
 Rows today hide evidence status and confidence in free-text `notes`. Proposed additive columns for `fees`
 (and `reforms`): `levying_body`, `quote_status` (verbatim / image_read / summariser), `confidence` (high /

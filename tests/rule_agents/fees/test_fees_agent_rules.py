@@ -87,7 +87,7 @@ def test_doc_id_and_sidecar(tmp_path):
     assert access.quote_found("Water tap fee: $1,828", side) and "x()" not in side
     # a hand-saved PDF gets a doc id but no text sidecar until a PDF reader is approved
     pdf = tmp_path / "s.pdf"
-    pdf.write_bytes(b"%PDF-1.4 fake")
+    pdf.write_bytes(b"%PDF-1.4 fake")  # damaged: no sidecar, no crash
     entry = store.register(
         pdf,
         source="rule-agents-fees-manual",

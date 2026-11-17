@@ -27,10 +27,11 @@ Additive, optional columns on `fees` and `reforms`: `quote_status`, `confidence`
 with `src/lotline/rule_agents/__init__.py` added at merge time. The fees package currently relies on an implicit
 namespace package for `lotline.rule_agents` so it does not create a file the sibling sessions also create.
 
-## Proposed dependency (for Ben)
+## Dependency: pypdf (approved by Ben 2026-11-17)
 
-`pypdf` (BSD-3-Clause) to extract PDF text so `quotecheck` can mark PDF quotes `verbatim` instead of
-`image_read`. Most fee schedules are PDFs; today only HTML and text sources can be checked word for word.
+`pypdf` (BSD-3-Clause) extracts PDF text so `quotecheck` can mark PDF quotes `verbatim` instead of
+`image_read`. Most fee schedules are PDFs. Added to `pyproject.toml` in PR #470; the MM and ADU swarms can use it
+for ordinance PDFs too.
 
 ## 11. Primary-document store (Ben's requirement, relayed 2026-11-17)
 
