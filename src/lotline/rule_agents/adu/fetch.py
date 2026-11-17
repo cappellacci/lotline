@@ -23,6 +23,7 @@ import fcntl
 import hashlib
 import re
 import time
+import zlib
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -128,9 +129,27 @@ def classify(status: int, headers: dict[str, str], body_head: str, final_url: st
     return None
 
 
-def pdf_has_text(data: bytes) -> bool:
-    """True when a PDF carries a text layer (any font resource). Scanned PDFs carry images only."""
-    return b"/Font" in data
+def pdf_has_text(data: bytes, max_streams: int = 400) -> bool:
+    """True when a PDF carries a text layer (a font resource or text-showing operators).
+
+    PDF 1.5+ files often hide `/Font` inside compressed object streams, so Flate streams are inflated
+    (standard library zlib) and searched too. Scanned PDFs carry images only.
+    (Dry run 2026-11-17: Raleigh and Wilmington text PDFs were wrongly flagged before this.)"""
+    if b"/Font" in data:
+        return True
+    for i, m in enumerate(re.finditer(rb"stream\r?\n", data)):
+        if i >= max_streams:
+            break
+        end = data.find(b"endstream", m.end())
+        if end < 0:
+            break
+        try:
+            raw = zlib.decompressobj().decompress(data[m.end() : end], 2_000_000)
+        except zlib.error:
+            continue
+        if b"/Font" in raw or re.search(rb"\)\s*Tj|\]\s*TJ", raw):
+            return True
+    return False
 
 
 class _Text(HTMLParser):

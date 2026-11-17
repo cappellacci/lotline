@@ -1,6 +1,7 @@
 """Polite retrieval: robots.txt first, no retry on a block, cache + manifest in the data dir, text."""
 
 import json
+import zlib
 
 import httpx
 import pytest
@@ -112,6 +113,16 @@ def test_classify_status_codes():
     )
     assert F.classify(404, {}, "", "https://x") == "not_found"
     assert F.classify(200, {"content-type": "text/html"}, PAGE, "https://x") is None
+
+
+def test_text_layer_found_inside_compressed_object_streams():
+    hidden = zlib.compress(b"<< /Type /Page /Resources << /Font << /F1 5 0 R >> >> >>")
+    pdf = b"%PDF-1.5\n1 0 obj << /Type /ObjStm /Filter /FlateDecode >>\nstream\n" + hidden + b"\nendstream"
+    assert F.pdf_has_text(pdf)
+    ops = zlib.compress(b"BT /F1 12 Tf (Accessory dwelling) Tj ET")
+    assert F.pdf_has_text(b"%PDF-1.7\n2 0 obj\nstream\n" + ops + b"\nendstream")
+    image = zlib.compress(b"\x00\xff" * 500)
+    assert not F.pdf_has_text(b"%PDF-1.7\n3 0 obj << /Subtype /Image >>\nstream\n" + image + b"\nendstream")
 
 
 def test_quote_check_normalises_quotes_dashes_case_and_ellipsis():
