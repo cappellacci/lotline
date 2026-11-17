@@ -72,3 +72,28 @@ def test_quote_found():
     assert access.quote_found("zone 2 - other", text)
     assert not access.quote_found("Single-family dwelling $1916.00", text)
     assert not access.quote_found("$1916.00 ... Zone 1:", text)  # parts out of order
+
+
+def test_doc_id_and_sidecar(tmp_path):
+    from lotline.io.store import DataStore, sha256_file
+    from lotline.rule_agents.fees import cli
+
+    store = DataStore(tmp_path / "data")
+    page = tmp_path / "fees.html"
+    page.write_text("<html><script>x()</script><p>Water&nbsp;tap fee: $1,828</p></html>")
+    doc_id = cli._sidecar(store, page)
+    assert doc_id == sha256_file(page)
+    side = (store.root / "interim" / "docs" / f"{doc_id}.txt").read_text()
+    assert access.quote_found("Water tap fee: $1,828", side) and "x()" not in side
+    # a hand-saved PDF gets a doc id but no text sidecar until a PDF reader is approved
+    pdf = tmp_path / "s.pdf"
+    pdf.write_bytes(b"%PDF-1.4 fake")
+    entry = store.register(
+        pdf,
+        source="rule-agents-fees-manual",
+        url="https://x.example/s.pdf",
+        license="public record",
+        vintage="mn",
+    )
+    assert cli._sidecar(store, store.root / entry.path) == entry.sha256
+    assert not (store.root / "interim" / "docs" / f"{entry.sha256}.txt").exists()

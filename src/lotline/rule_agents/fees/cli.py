@@ -8,6 +8,8 @@
     reconcile C1 C2 --out DIR          pair the two coders' items -> pairs.jsonl, items.merged.jsonl
     build ITEMS --out DIR              items -> rows.csv (schema-validated), rows_low.csv, build_report.md
     tasks JSONL... --out DIR           human tasks -> human_tasks.csv, human_tasks.md
+    text FILE                          a saved document's text (PDF pages numbered; needs pypdf for PDFs)
+    register FILE --url URL --state ST a document a person saved by hand -> store, manifest, doc id
     ingest-tasks CSV --out FILE        answered human tasks -> items
     compare ROWS --state ST [--places] run rows vs config/fees/<st>.csv
 
@@ -34,13 +36,24 @@ from lotline.rule_agents.fees.records import read_items, read_jsonl, write_items
 SOURCE = "rule-agents-fees"
 
 
+def _pdf_text(path: Path) -> str:
+    """Page-numbered text of a PDF with pypdf (BSD-3-Clause), if installed. pypdf is a proposed dependency
+    (SHARED_CANDIDATES.md); until Ben approves it, PDFs raise ValueError and quotes stay image_read."""
+    try:
+        from pypdf import PdfReader
+    except ImportError as e:
+        raise ValueError(
+            f"{path} is a PDF and no PDF text reader is installed (pypdf proposed): quotes from it stay image_read"
+        ) from e
+    pages = PdfReader(str(path)).pages
+    return "\n".join(f"[page {n}]\n{p.extract_text() or ''}" for n, p in enumerate(pages, 1))
+
+
 def _text_of(path: Path) -> str:
-    """Plain text of a saved HTML or text file. PDFs need a PDF reader (not a dependency yet): None."""
+    """Plain text of a saved HTML, text or PDF file (by content, not extension: servers mislabel PDFs)."""
     raw = path.read_bytes()
     if raw[:5] == b"%PDF-":
-        raise ValueError(
-            f"{path} is a PDF: read it with the Read tool; quotes from it are image_read until a PDF text reader is approved"
-        )
+        return _pdf_text(path)
     s = raw.decode("utf-8", errors="replace")
     if path.suffix.lower() in (".html", ".htm") or "<html" in s[:2000].lower():
         s = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", s)
@@ -100,6 +113,21 @@ def cmd_fetch(a: argparse.Namespace) -> None:
         out["reason"] = "http_403_waf"
     if out["reason"] is None:
         store = DataStore()
+        known = store.latest(a.url)
+        if known and (store.root / known.path).is_file():  # one copy per URL, whichever reader saved it
+            path = store.root / known.path
+            print(
+                json.dumps(
+                    {
+                        "url": a.url,
+                        "path": str(path),
+                        "doc_id": _sidecar(store, path),
+                        "reason": None,
+                        "reused": True,
+                    }
+                )
+            )
+            return
         dest = store.raw(SOURCE, a.state.lower()) / a.name
         _space_requests(store.root, httpx.URL(a.url).host)
         try:
@@ -116,6 +144,7 @@ def cmd_fetch(a: argparse.Namespace) -> None:
             body = path.read_bytes()[:20000].decode("utf-8", errors="replace")
             out["reason"] = access.access_reason(200, body if not body.startswith("%PDF-") else "")
             out["path"] = str(path)
+            out["doc_id"] = _sidecar(store, path)
         except httpx.HTTPStatusError as e:
             out["reason"] = access.access_reason(e.response.status_code, e.response.text[:20000])
         except httpx.TransportError as e:
@@ -124,24 +153,80 @@ def cmd_fetch(a: argparse.Namespace) -> None:
     print(json.dumps(out))
 
 
+def _sidecar(store, path: Path) -> str:
+    """Doc ID (sha256) of a saved document; writes its text to interim/docs/<sha256>.txt (HTML and text only;
+    PDFs wait for an approved PDF reader). SHARED_CANDIDATES.md section 11."""
+    from lotline.io.store import sha256_file
+
+    doc_id = sha256_file(path)
+    side = store.root / "interim" / "docs" / f"{doc_id}.txt"
+    if not side.exists():
+        try:
+            text = _text_of(path)
+        except ValueError:
+            return doc_id
+        side.parent.mkdir(parents=True, exist_ok=True)
+        side.write_text(text)
+    return doc_id
+
+
+def cmd_register(a: argparse.Namespace) -> None:
+    """A document a person saved by hand (e.g. from a site that refuses scripts): into the store and manifest."""
+    from lotline.io.store import DataStore
+
+    store = DataStore()
+    entry = store.register(
+        Path(a.file),
+        source=f"{SOURCE}-manual",
+        url=a.url,
+        license="public record (fee schedule)",
+        vintage=a.state.lower(),
+        adapter="rule_agents.fees.manual",
+    )
+    path = store.root / entry.path
+    print(json.dumps({"url": a.url, "path": str(path), "doc_id": _sidecar(store, path), "reason": None}))
+
+
 def cmd_quotecheck(a: argparse.Namespace) -> None:
+    """Re-check every quote against its saved file. Only a match gives `verbatim`; a `verbatim` claim that does
+    not match a readable file is downgraded to `none` (the row is then held back for a person). PDFs are
+    checked only when a PDF text reader is installed; otherwise they keep `image_read`."""
     items, n_ok, notes = read_items(a.items), 0, []
     for i, it in enumerate(items):
-        if not (it.quote and it.local_path) or it.quote_status == "verbatim":
+        if not (it.quote and it.local_path):
             continue
         try:
-            text = _text_of(Path(it.local_path))
+            text = _text_of(_resolve(it.local_path))
         except (OSError, ValueError) as e:
+            if it.quote_status == "verbatim":
+                items[i] = it.model_copy(update={"quote_status": "image_read"})
             notes.append(f"{it.item_id}: {e}")
             continue
         if access.quote_found(it.quote, text):
             items[i] = it.model_copy(update={"quote_status": "verbatim"})
             n_ok += 1
         else:
+            if it.quote_status == "verbatim":
+                items[i] = it.model_copy(update={"quote_status": "none"})
             notes.append(f"{it.item_id}: quote not found word for word in {it.local_path}")
     write_items(items, a.items)
     print(f"{n_ok} quote(s) matched word for word")
     print("\n".join(notes))
+
+
+def _resolve(local_path: str) -> Path:
+    """A saved document's path: absolute as given, or relative to LOTLINE_DATA_DIR (as manifest paths are)."""
+    p = Path(local_path).expanduser()
+    if p.is_absolute():
+        return p
+    from lotline.io.store import data_dir
+
+    return data_dir() / p
+
+
+def cmd_text(a: argparse.Namespace) -> None:
+    """Print a saved document's text (PDF pages numbered) so agents read it the same way every time."""
+    print(_text_of(_resolve(a.file)))
 
 
 def cmd_reconcile(a: argparse.Namespace) -> None:
@@ -188,6 +273,8 @@ def cmd_tasks(a: argparse.Namespace) -> None:
     tasks = []
     for t in raw:
         t.pop("task_id", None)
+        # agents sometimes write lists; the task format holds plain text
+        t = {k: (" ".join(map(str, v)) if isinstance(v, list) else v) for k, v in t.items()}
         count[t["place_geoid"]] = count.get(t["place_geoid"], 0) + 1
         tasks.append(handoff.make_task(count[t["place_geoid"]], **t))
     out = Path(a.out)
@@ -245,6 +332,14 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("files", nargs="+")
     p.add_argument("--out", required=True)  # noqa: E702
     p.set_defaults(fn=cmd_tasks)
+    p = sub.add_parser("text")
+    p.add_argument("file")
+    p.set_defaults(fn=cmd_text)  # noqa: E702
+    p = sub.add_parser("register")
+    p.add_argument("file")
+    p.add_argument("--url", required=True)
+    p.add_argument("--state", required=True)  # noqa: E702
+    p.set_defaults(fn=cmd_register)
     p = sub.add_parser("ingest-tasks")
     p.add_argument("csv")
     p.add_argument("--out", required=True)  # noqa: E702

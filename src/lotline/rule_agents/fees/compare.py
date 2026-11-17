@@ -8,21 +8,34 @@ from __future__ import annotations
 
 import pandas as pd
 
+TYPES = ("SFD", "U2", "U3_4", "ADU")
+
 
 def totals(df: pd.DataFrame) -> pd.DataFrame:
-    """Per place, building type and component: newest year and the summed per-unit amount of that year."""
+    """Per place, building type (SFD, U2, U3_4, ADU) and component: the summed per-unit amount of the newest
+    schedule year. A house sums its SFD and OTHER rows; other types use their own rows if any, else the
+    place's OTHER rows (as fee_levels does, D-066, without its "from SFD" step, so a gap stays visible)."""
+    cols = ["jurisdiction_geoid", "building_type_std", "fee_component", "year", "per_unit", "rows"]
     if df.empty:
-        return pd.DataFrame(
-            columns=["jurisdiction_geoid", "building_type_std", "fee_component", "year", "per_unit", "rows"]
-        )
+        return pd.DataFrame(columns=cols)
     d = df.copy()
     d["year"] = d["year"].astype(int)
-    newest = d.groupby(["jurisdiction_geoid", "building_type_std", "fee_component"])["year"].transform("max")
-    d = d[d["year"] == newest]
-    g = d.groupby(["jurisdiction_geoid", "building_type_std", "fee_component"])
-    return g.agg(
-        year=("year", "max"), per_unit=("amount_per_unit_usd", "sum"), rows=("fee_type", "size")
-    ).reset_index()
+    out = []
+    for (g, comp), sub in d.groupby(["jurisdiction_geoid", "fee_component"]):
+        for t in TYPES:
+            if t == "SFD":  # a house pays its SFD rows and the OTHER rows (fee_levels.py)
+                rows = sub[sub["building_type_std"].isin(["SFD", "OTHER"])]
+            else:
+                rows = sub[sub["building_type_std"] == t]
+            if rows.empty:
+                rows = sub[sub["building_type_std"] == "OTHER"]
+            if rows.empty:
+                continue
+            rows = rows[rows["year"] == rows["year"].max()]
+            out.append(
+                (g, t, comp, int(rows["year"].max()), float(rows["amount_per_unit_usd"].sum()), len(rows))
+            )
+    return pd.DataFrame(out, columns=cols)
 
 
 def compare(run: pd.DataFrame, existing: pd.DataFrame, places: list[str] | None = None) -> pd.DataFrame:

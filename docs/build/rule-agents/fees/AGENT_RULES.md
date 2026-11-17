@@ -31,7 +31,10 @@ Every `rules-fees-*` agent reads this file first. Why each rule exists: `LESSONS
 
 Each item with a number needs `url`, `retrieved_at` (today), `page_or_section` (page number, table name or
 section), and `quote`: at most 300 characters copied **word for word** from the document, containing the
-number and its row and column labels. Set `local_path` to the file the helper saved. Use `quote_status`:
+number and its row and column labels. Set `local_path` to the file the helper saved and `sha256` to the
+`doc_id` it printed: that is the document's ID, shared by every item read from the same bytes (one copy per
+document, however many places or categories cite it; SHARED_CANDIDATES.md §11). A document a person saved by
+hand goes in with `uv run python -m lotline.rule_agents.fees register <file> --url <page> --state <ST>`. Use `quote_status`:
 `verbatim` only after `fees_tool quotecheck` matched it (HTML and text files), `image_read` for PDFs and scans
 you read with the Read tool, `summariser` as in rule 3. Set `source_kind`: `official` (the levying body's own
 adopted schedule, ordinance, resolution, rate page or utility rules), `wayback` (a dated archive copy: evidence

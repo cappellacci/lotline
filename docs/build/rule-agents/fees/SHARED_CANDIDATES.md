@@ -31,3 +31,39 @@ namespace package for `lotline.rule_agents` so it does not create a file the sib
 
 `pypdf` (BSD-3-Clause) to extract PDF text so `quotecheck` can mark PDF quotes `verbatim` instead of
 `image_read`. Most fee schedules are PDFs; today only HTML and text sources can be checked word for word.
+
+## 11. Primary-document store (Ben's requirement, relayed 2026-11-17)
+
+*Shared by all three swarms; designed here, not built as shared code. The fees package has only the thin
+pieces it needs now (marked "fees now").*
+
+**What exists today.** `lotline.io.http.fetch` downloads into `LOTLINE_DATA_DIR/raw/<source>/<vintage>/` and
+appends a `manifest.jsonl` entry (url, path, accessed_at, sha256, bytes, source, license, etag). `DataStore.register`
+records a file saved by hand the same way (hard link, no second copy). `provenance.py` renders the manifest into
+`docs/data_provenance.md`. Ordinance work kept its own side lists instead: `manual/adu-rules-2026-11/<ST>/`
+with a `downloads.jsonl`, `mn-source-evidence-register-2026-11-02.csv` (place, url, type, section, excerpt,
+`pdf_downloaded`), and three PDFs committed under `docs/research/ordinances/source-pdfs/` (see the note at the
+end). Nothing links a coded value to the exact bytes it came from, and nothing links one schedule to the next.
+
+**Design.**
+
+| Piece | Where | What it holds |
+|---|---|---|
+| Bytes | `raw/rule-agents/<st>/<file>` via `fetch`; hand-supplied files via `register` (source `rule-agents-manual`) | the document exactly as retrieved; manifest entry with sha256. **fees now:** `fetch` and `register` commands |
+| Doc ID | the file's **sha256** | every coded value cites `doc_id` + url + retrieved date + page/table + quote. Same bytes from two URLs or two places = one doc (dedupe across places and categories for free). **fees now:** `FeeItem.sha256` is the doc ID; `fetch` prints it |
+| Text sidecar | `interim/docs/<sha256>.txt` (and `.pages.jsonl`: one line per PDF page once a PDF reader is approved) | plain text for search, quote checks and re-checking without re-downloading. **fees now:** written for HTML/text on `fetch`; `quotecheck` uses it |
+| Doc index | `interim/docs/index.jsonl`, one line per doc_id | `doc_id, urls[], first_seen, last_seen, title, doc_kind` (fee schedule, rate ordinance, utility rules, budget book, ordinance, code section, council minutes), `issuer` (levying body / city), `jurisdictions[]` (GEOIDs it covers: a utility schedule covers many places), `categories[]` (fees / adu / mm), `label` ("FY2027"), `adopted_date`, `effective_date`, `supersedes` / `superseded_by` (doc_ids), `supplied_by` (`agent` or `human:<initials>`), `access` (ok / reason code) |
+| History | `supersedes` links in the index | successive schedules of one issuer and doc_kind form a chain, so "what was in force in 2019" is a walk back along the chain; Wayback captures join the chain with their capture date |
+| Human slot | `register <file> --url --issuer ...` | a person who opens a blocked page saves the PDF and registers it; it gets a doc_id, a sidecar and an index line marked `supplied_by=human:<initials>`, and answers to human tasks cite that doc_id |
+| Queries | a small `docs` module: `find(issuer=, jurisdiction=, kind=, category=)`, `history(doc_id)`, `text(doc_id)`, `cited_by(doc_id)` | used by the scout (do we already have it?), the second coder (read the same bytes), the reconciler and the human-task packager (attach the doc already on disk) |
+
+**Rules.** Index lines are append-only; corrections are new lines (latest wins), as the manifest does. Nothing
+under `LOTLINE_DATA_DIR` is committed; the repo holds only rows that cite doc_ids and URLs. A doc is never
+re-downloaded when its URL's manifest entry is current, so two swarms reading the same county code share one
+copy.
+
+**Schema proposal (adds to the one above):** optional `source_doc_id` (sha256) on `fees` and `reforms`.
+
+**Note for Ben:** `docs/research/ordinances/source-pdfs/` holds three Sunfish Lake PDFs committed on
+2026-11 (commit 0cf58b81). They are public records, but CLAUDE.md says downloaded documents stay in
+`LOTLINE_DATA_DIR`; with a doc store they could move there and be cited by doc_id.

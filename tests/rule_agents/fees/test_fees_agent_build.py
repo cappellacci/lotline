@@ -234,3 +234,101 @@ def test_compare():
     )
     c = compare.compare(run, existing, ["1"]).set_index("fee_component")["status"].to_dict()
     assert c == {"impact": "run_only", "permit": "match", "water_sewer": "differ"}
+
+
+def test_quotecheck_promotes_and_downgrades(tmp_path, make_item):
+    from lotline.rule_agents.fees import cli
+    from lotline.rule_agents.fees.records import read_items, write_items
+
+    page = tmp_path / "statute.html"
+    page.write_text("<p>one-half mill (.0005) of the <b>valuation</b> of the structure</p>")
+    items = [
+        make_item(
+            item_id="ok",
+            quote="one-half mill (.0005) of the valuation",
+            quote_status="image_read",
+            local_path=str(page),
+        ),
+        make_item(
+            item_id="bad", quote="one mill of the valuation", quote_status="verbatim", local_path=str(page)
+        ),
+    ]
+    path = tmp_path / "items.jsonl"
+    write_items(items, path)
+    cli.main(["quotecheck", str(path)])
+    got = {i.item_id: i.quote_status for i in read_items(path)}
+    assert got == {"ok": "verbatim", "bad": "none"}  # an unmatched verbatim claim is held back
+
+
+def test_compare_resolves_other_rows():
+    cols = [
+        "jurisdiction_geoid",
+        "year",
+        "fee_component",
+        "building_type_std",
+        "amount_per_unit_usd",
+        "fee_type",
+    ]
+    existing = pd.DataFrame([("1", 2026, "water_sewer", "OTHER", 2610.0, "SAC + permit")], columns=cols)
+    run = pd.DataFrame(
+        [("1", 2026, "water_sewer", "SFD", 2485.0, "SAC"), ("1", 2026, "water_sewer", "U2", 2610.0, "x")],
+        columns=cols,
+    )
+    c = compare.compare(run, existing).set_index("building_type_std")["status"].to_dict()
+    # OTHER stands for every type in the existing table; the run's own type rows are compared with it
+    assert c == {"ADU": "existing_only", "SFD": "differ", "U2": "match", "U3_4": "existing_only"}
+    # a house sums SFD and OTHER rows
+    run2 = pd.DataFrame(
+        [("1", 2026, "water_sewer", "SFD", 2485.0, "SAC"), ("1", 2026, "water_sewer", "OTHER", 125.0, "p")],
+        columns=cols,
+    )
+    assert compare.compare(run2, existing).set_index("building_type_std").loc["SFD", "status"] == "match"
+
+
+def test_reconcile_second_pass_pairs_relabelled_fees(make_item):
+    # coder 1 codes the state surcharge per type and the connection permit as a permit; coder 2 codes one OTHER
+    # surcharge and calls the connection permit water/sewer: same money, different labels -> partly, not verified
+    c1 = [
+        make_item(
+            item_id=f"s-{t}",
+            building_type=t,
+            basis_kind="pct_of_value",
+            amount=None,
+            pct=0.05,
+            pays_for="state_surcharge",
+        )
+        for t in ("SFD", "U2")
+    ]
+    c1.append(
+        make_item(item_id="cp", fee_type="Water/sewer connection permit", pays_for="trade_permit", amount=125)
+    )
+    c2 = [
+        make_item(
+            item_id="s-o",
+            building_type="OTHER",
+            basis_kind="pct_of_value",
+            amount=None,
+            pct=0.05,
+            pays_for="state_surcharge",
+            coder="c2",
+        ),
+        make_item(
+            item_id="cp2",
+            fee_type="Water/sewer connection permit",
+            pays_for="sewer",
+            amount=125,
+            building_type="OTHER",
+            coder="c2",
+        ),
+    ]
+    pairs = {p["coder1"]: p for p in reconcile.pair(c1, c2)}
+    assert pairs["s-SFD"]["outcome"] == "partly" and pairs["s-SFD"]["coder2"] == "s-o"
+    assert (
+        pairs["s-U2"]["coder2"] == "s-o" and pairs["s-U2"]["value1"] == 82.5
+    )  # OTHER repriced at the duplex
+    assert "component permit vs water_sewer" in pairs["cp"]["why"]
+    merged = {
+        i.item_id: i.verified_by for i in reconcile.merge(c1, c2, list(pairs.values()), date(2026, 11, 17))
+    }
+    # building type label only -> verified; a component difference -> left for the reconciler
+    assert merged == {"s-SFD": reconcile.VERIFIER, "s-U2": reconcile.VERIFIER, "cp": None}

@@ -13,7 +13,12 @@ Read `docs/build/rule-agents/fees/AGENT_RULES.md` first and follow it.
 files, `tasks.*.jsonl`.
 
 **For each pair that is not `agree`:**
-- `partly` (same amount, other year): find the effective date in the document; correct the item's dates with
+- `partly` pairs carry a `why`. "building type X vs OTHER" alone was already verified by the helper (same
+  money, one coder wrote per-type rows, the other one OTHER row): nothing to do. "component A vs B" means the
+  coders classed the same fee differently: apply the `pays_for` table in AGENT_RULES.md; if the fee's purpose
+  is genuinely unclear (e.g. a "water/sewer connection permit": an inspection permit or a utility charge?),
+  it goes to `decisions.md` for Ben.
+- `partly` with no `why` (same amount, other year): find the effective date in the document; correct the item's dates with
   the quote that shows them.
 - `differ`: open the cited page(s) of both items (saved files only; no new downloads unless a cited file is
   missing). If one coder misread a number, a column or a row, correct the first coder's item, put the corrected

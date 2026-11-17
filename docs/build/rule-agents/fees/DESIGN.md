@@ -36,7 +36,11 @@ coverage passes had to recheck, and means every per-unit number can be reproduce
 
 **Run folder:** `$LOTLINE_DATA_DIR/rule-agents/fees/<ST>/<run-id>/` (outside the repo). Downloads go through
 `lotline.io.http.fetch` into `$LOTLINE_DATA_DIR/raw/rule-agents-fees/<st>/…`, so each lands in
-`manifest.jsonl` with its sha256 (R5, R6). Nothing downloaded is committed.
+`manifest.jsonl` with its sha256 (R5, R6). Nothing downloaded is committed. The sha256 is the document's ID
+(`FeeItem.sha256`): every amount cites it with the URL, retrieval date, page/table and quote; HTML and text
+documents get a text sidecar at `interim/docs/<sha256>.txt`; hand-saved documents enter through
+`fees_tool register`. The full document store (index, schedule history chains, dedupe across categories) is
+designed as a shared component in `SHARED_CANDIDATES.md` §11.
 
 ## The unit of work: a fee item
 
@@ -119,7 +123,10 @@ then by amount and name similarity:
 
 - `agree`: same priced basis and amount within 0.5% or $1, and the same effective year → `verified_by =
   rules-fees-second-coder`, `verified_date` = its run date.
-- `partly`: same amount, different date, label or basis wording → reconciler.
+- `partly`: same amount, different year → reconciler. A second pass pairs fees the coders labelled
+  differently: within a place, compatible building types (equal, or either is `OTHER`, repriced at the other's
+  prototype) and the same amount → `partly` with a `why`. If the only difference is per-type rows vs one
+  `OTHER` row, it counts as verified; a component difference never does (dry run: the $125 connection permit).
 - `differ` / `only_coder1` / `only_coder2` → reconciler.
 
 The reconciler re-opens only the cited page, fixes transcription and column slips with a quote, and sends

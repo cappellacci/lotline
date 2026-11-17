@@ -14,7 +14,7 @@ from datetime import date
 
 from lotline.rule_agents.fees import classify
 from lotline.rule_agents.fees.build import price_all, schedule_year
-from lotline.rule_agents.fees.prototype import assumptions
+from lotline.rule_agents.fees.prototype import assumptions, price, prototypes
 from lotline.rule_agents.fees.records import FeeItem
 
 VERIFIER = "rules-fees-second-coder"
@@ -76,17 +76,84 @@ def pair(coder1: list[FeeItem], coder2: list[FeeItem]) -> list[dict]:
                 "year2": schedule_year(b)[0],
             }
         )
-    for rest in pool.values():
-        for b in rest:
+    return _second_pass(out, coder1, coder2, pool, p2)
+
+
+def _at(item: FeeItem, building_type: str) -> float | None:
+    """Per-unit amount of `item` priced at another building type's prototype (OTHER items apply to all)."""
+    if item.basis_kind == "share_of":
+        return None
+    protos = prototypes()
+    return price(
+        item.model_copy(update={"building_type": building_type}), protos[building_type]
+    ).amount_per_unit
+
+
+def _second_pass(out: list[dict], coder1, coder2, pool, p2) -> list[dict]:
+    """Pair what the first pass left over when the coders labelled the same fee differently: within a place,
+    building types compatible (equal, or either is OTHER) and the same per-unit amount at coder 1's type ->
+    `partly`, with the reason. Labels are for the reconciler to settle; agreement on the amount is not enough
+    to verify. A coder-2 OTHER item may stand for several coder-1 type items."""
+    by1 = {a.item_id: a for a in coder1}
+    left2 = [b for rest in pool.values() for b in rest]
+    used: set[str] = set()
+    for p in out:
+        if p["outcome"] != "only_coder1":
+            continue
+        a = by1[p["coder1"]]
+        for b in left2:
+            if b.place_geoid != a.place_geoid or (b.item_id in used and b.building_type != "OTHER"):
+                continue
+            if not (a.building_type == b.building_type or "OTHER" in (a.building_type, b.building_type)):
+                continue
+            t = a.building_type if a.building_type != "OTHER" else b.building_type
+            t = "SFD" if t == "OTHER" else t
+            va, vb = _at(a, t), _at(b, t)
+            if va is None or not _close(va, vb):
+                continue
+            why = []
+            if a.building_type != b.building_type:
+                why.append(f"building type {a.building_type} vs {b.building_type}")
+            if classify.component(a.pays_for) != classify.component(b.pays_for):
+                why.append(f"component {classify.component(a.pays_for)} vs {classify.component(b.pays_for)}")
+            p.update(outcome="partly", coder2=b.item_id, value1=va, value2=vb, why="; ".join(why))
+            used.add(b.item_id)
+            break
+    others1 = [a for a in coder1 if a.building_type == "OTHER"]
+    for b in left2:
+        if b.item_id in used:
+            continue
+        # the reverse case: one coder-1 OTHER item stands for several coder-2 type items
+        t = "SFD" if b.building_type == "OTHER" else b.building_type
+        match = next(
+            (
+                a
+                for a in others1
+                if a.place_geoid == b.place_geoid and _at(a, t) is not None and _close(_at(a, t), _at(b, t))
+            ),
+            None,
+        )
+        if match is not None:
             out.append(
                 {
-                    "outcome": "only_coder2",
-                    "coder1": None,
+                    "outcome": "partly",
+                    "coder1": match.item_id,
                     "coder2": b.item_id,
-                    "value1": None,
-                    "value2": p2[b.item_id].amount_per_unit,
+                    "value1": _at(match, t),
+                    "value2": _at(b, t),
+                    "why": f"building type OTHER vs {b.building_type}",
                 }
             )
+            continue
+        out.append(
+            {
+                "outcome": "only_coder2",
+                "coder1": None,
+                "coder2": b.item_id,
+                "value1": None,
+                "value2": p2[b.item_id].amount_per_unit,
+            }
+        )
     return out
 
 
@@ -95,7 +162,18 @@ def merge(coder1: list[FeeItem], coder2: list[FeeItem], pairs: list[dict], today
 
     Agreement lifts an `image_read` or `verbatim` item to `high` confidence; a summariser read never verifies.
     """
-    agree = {p["coder1"] for p in pairs if p["outcome"] == "agree"}
+    # same money from the same page, written as per-type rows by one coder and one OTHER row by the other:
+    # agreement on everything the engine uses, so it verifies; a component difference never does
+    agree = {
+        p["coder1"]
+        for p in pairs
+        if p["outcome"] == "agree"
+        or (
+            p["outcome"] == "partly"
+            and p.get("why", "").startswith("building type")
+            and "component" not in p["why"]
+        )
+    }
     out = []
     for it in coder1:
         if it.item_id in agree and it.quote_status in ("verbatim", "image_read"):
