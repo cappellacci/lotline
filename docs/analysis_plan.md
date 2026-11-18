@@ -7612,3 +7612,30 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   the elasticity, land capture and ramp.
 - **Not yet:** the D-077 knobs (size of the change, targeted home types), the stacked combinations
   (`model/combine.py`), and the house/duplex/fourplex pencil-out table.
+
+### D-101 · 2026-11-17 · One county for a place that spans two (WS-SCALE task 5, rule 5; approved by Ben)
+- **Why:** a place in two counties got its county two ways.
+  - `jurisdictions` took the county of the place's latest BPS row.
+  - The baseline panel took, each year, the county of the first BPS row by ID.
+  - So the FHFA price index and the metro area could come from different counties for one place
+    (Rutherford College, NC: Caldwell in one, Burke in the other).
+- **Rule (Ben, 2026-11-17, "all as recommended"):** a place that spans counties is filed under the county
+  holding most of it, in `jurisdictions` and in the baseline panel. `place_inputs` reads the same county.
+- **Deviation, stated:** Ben's rule names 2020 *population*. The Census parts Lotline already holds are 2020
+  *housing units* by county part (DHC H1_001N, `geoparts.county_shares`); population parts (P1) would be a new
+  download. Housing units are used, and the PR names every place that moves. Switching to population is one
+  variable in `geoparts.main_county` once the download is approved.
+- **Places that move (housing-unit majority differs from the old `jurisdictions` county):**
+  - NC (10): Rutherford College, Midland, Candor, Falcon, Tobaccoville, Mint Hill, Kenly, Kannapolis, Rhodhiss,
+    Whitakers;
+  - OH (2): Ridgeway, Vermilion;
+  - TX (6): Fritch, New Fairview, Warren City, Windthorst, Carrollton, Mustang Ridge;
+  - MN and OR: none.
+- **Effect (same seed, 1,000 draws, origin 2025; five-year statewide medians):**
+  - Scenario totals: every change is within 0.06% (OH ADU 183.1 → 183.0; TX fees 5,224 → 5,224); MN, NC and
+    OR scenario medians unchanged to the unit.
+  - Baseline, all sizes: OH −0.14%, TX −0.16%, NC, MN and OR unchanged. The largest size-class move is OH
+    2-4 units, −1.2% (6,578 → 6,501).
+- **Code:** `geoparts.main_county`, `jurisdictions.build(main_counties=...)`, `panels.build` (county from
+  `jurisdictions`), `place_inputs` (the panel's county). Tests: `test_geoparts`, `test_jurisdictions`,
+  `test_panels`.
