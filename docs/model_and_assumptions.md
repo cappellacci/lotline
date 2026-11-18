@@ -82,7 +82,7 @@ Running four states is the test that a state with thin data can still use the me
 | ADU effect estimation, pooled hierarchical negative binomial (D-025, main model) | **Built**, tested on sparse synthetic panels (2026-10-20); run once after this entry | `model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py` |
 | Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); **built for missing middle** (D-092's C4, `mm_hazard.yaml`, 2026-11-15) | `model/hazard.py`, `config/params/hazard.yaml` |
 | Evidence prong (comparable places, transport) | **Planned** | `src/lotline/evidence/` is empty |
-| Combined scenarios (no lot counted twice) | **Planned** | `model/combine` (BUILD_PLAN §5) |
+| Combined scenarios | **Dropped** (Ben, 2026-11-17): each reform is run on its own | none |
 | Statewide aggregation, net-new and displacement shares | **Planned** (parameters set) | `config/params/aggregate.yaml` |
 | Market absorption cap | **Planned** (proposed by the judging panel; not yet in the build plan) | none yet |
 | Global sensitivity (tornado chart) | **Planned** | `model/uncertainty` (BUILD_PLAN §5) |
@@ -547,8 +547,9 @@ these totals will move as more rules are coded.
   local fees by half through the same machinery ("don't raise impact fees", office hours A4). The pencil-out
   table (`model/pencil_out.py`) shows for each place what a house, a duplex and a fourplex can pay for land
   at today's fees, after a cut and at the Handbook's levels, with the fee per lot and its share of cost.
-- **Combined runs:** one allocation step so the same lot is never counted for both ADU and missing middle; the
-  combined result is at most the sum of the parts.
+- **No combined runs** (Ben, 2026-11-17): each reform is run on its own, so how two reforms share a lot (C47)
+  is not modelled. The Results headline adds the three reforms' draws together and says that a lot two
+  reforms open is counted twice.
 
 ### The missing-middle model (D-092, C4)
 

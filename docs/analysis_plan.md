@@ -7612,3 +7612,16 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   the elasticity, land capture and ramp.
 - **Not yet:** the D-077 knobs (size of the change, targeted home types), the stacked combinations
   (`model/combine.py`), and the house/duplex/fourplex pencil-out table.
+
+### Deviation · 2026-11-18 · No combined scenarios
+- **What changed** (Ben, 2026-11-17: "I don't think we need to combine"; 2026-11-18: "we're not doing any
+  combined runs. make sure the engine and code don't contain that concept"). Each reform is run on its own.
+  The planned `model/combine.py` (one parcel allocation for stacked reforms, C47) is dropped, and so are the
+  three pairs and the all-three run.
+- **Code:** schemas 1.17 removes `adu+missing_middle`, `adu+fees`, `missing_middle+fees` and `combined` from
+  the results scenario list (no bundle ever held rows for them); the engine no longer lists them in
+  `meta.scenarios_pending`; the app drops their labels and the combined colour token, and ignores them in
+  bundles written before 1.17.
+- **What this leaves unmodelled:** how two reforms share one lot (C47). The Results headline adds the three
+  reforms' draws and says that a lot two reforms open is counted twice; the "What the model cannot tell you"
+  list names the limit. Earlier entries that mention `combine.py` stand as history.

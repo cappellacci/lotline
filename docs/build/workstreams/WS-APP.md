@@ -1,5 +1,7 @@
 # WS-APP · Interface and deliverable documents (weeks 6–9)
 
+> **Superseded 2026-11-18 (Ben):** there are no combined scenarios. Each reform is run on its own; `model/combine.py` and stacked/combined runs are dropped. Items below that mention them no longer apply.
+
 **Start:** Nov 18, once the engine's results bundle (WS-ENGINE, "results export") is stable.
 **Owns:** `src/lotline/app/`, `scripts/build_app.py`, `docs/model_and_assumptions.md`, `docs/policy_scenario_comparison.md`, `docs/slides*`, `README.md` (user sections).
 **Revised 2026-11-06** (Ben): the app is a **static page built from pre-computed results**, not a Streamlit server. See HANDOFF decisions of 2026-11-06 for why.

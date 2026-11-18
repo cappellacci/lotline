@@ -1,0 +1,11 @@
+### LB-NNN · 2026-11-18 · Deliverables: the results ranges explained in plain words
+- **Question:** "Each band runs from P10 to P90; the tick and the number mark the midpoint (P50)": what does that mean to a policymaker? (Ben: "a lot of people will ask".)
+- **What I did:** `src/lotline/app/template.html`: under the results bars, a "How to read the bars" paragraph. It says the model ran N times with different plausible values; the number and tick are the middle result (half the runs higher, half lower); the bar covers the middle 80% (1 run in 10 below, 1 in 10 above; the bracketed numbers are its ends); a longer bar means less certainty; and the scale is logarithmic. The P10/P90/P50 terms stay in the source line for technical readers. The all-states chart caption uses the same words.
+- **Outputs:** `src/lotline/app/template.html`; `tests/app/test_build.py::test_results_ranges_are_explained_in_plain_words`.
+- **AI:** Claude Code wrote the wording and test; checked in the browser pane on North Carolina.
+
+### LB-NNN · 2026-11-18 · Engine and app: no combined scenarios
+- **Question:** Why does the Results page say "Not yet run: ADUs + missing middle; …; Combined (all three)"? (Ben: "we're not doing any combined runs. make sure the engine and code don't contain that concept".)
+- **What I did:** removed the combined scenarios everywhere. Schemas 1.17 drops `adu+missing_middle`, `adu+fees`, `missing_middle+fees` and `combined` from the results scenario list (`src/lotline/schemas.py`, `docs/schemas.md` regenerated). The engine lists only single reforms as pending (`model/results.py`). The app drops their labels and the `scenario-combined` colour (`app/build.py`, `docs/build/identity/tokens.*`, STYLE_GUIDE), and ignores them in bundles written before 1.17, so the live page loses the note without a new model run. The WS-APP and WS-ENGINE briefs and handoff 09 are marked superseded; `docs/model_and_assumptions.md` and the two judge prompts updated; a dated deviation in `docs/analysis_plan.md`.
+- **Outputs:** the files above; `tests/app/test_build.py::test_no_combined_scenarios`; fixture bundle updated.
+- **AI:** Claude Code made the change; full test suite and compliance check run.

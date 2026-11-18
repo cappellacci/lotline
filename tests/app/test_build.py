@@ -356,6 +356,35 @@ def test_fee_card_shows_what_places_charge_today(tmp_path):
         assert words in today
 
 
+def test_results_ranges_are_explained_in_plain_words(tmp_path):
+    """Ben, 2026-11-18: "P10 to P90 ... midpoint (P50)" needs a plain explanation for a policymaker."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    results = html[html.index("const SECTIONS = {") :]
+    results = results[: results.index("How to read the bars") + 2000]
+    for words in (
+        "How to read the bars.",
+        "half the runs came out higher and half lower",
+        "1 run in 10 came out below its left end and 1 in 10 above its right end",
+        "A longer bar means we are less sure.",
+    ):
+        assert words in results
+    assert "Each band runs from P10 to P90" not in html
+
+
+def test_no_combined_scenarios(tmp_path):
+    """Ben, 2026-11-18: no combined runs. Neither the schema, the engine nor the app knows them, and a bundle
+    written before schemas 1.17 that still lists them as pending shows no "Not yet run" for them."""
+    from lotline.model import results
+    from lotline.schemas import SCENARIOS
+
+    for names in (SCENARIOS, list(build.SCENARIOS), list(results.ENGINE_SCENARIOS)):
+        assert not [s for s in names if "+" in s or s == "combined"]
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    pending = html[html.index("function pendingIn") : html.index("const drawsFor")]
+    assert "s in DATA.scenarios" in pending
+    assert "scenario-combined" not in html and "Combined (all three)" not in html
+
+
 def test_without_a_data_summary_sources_are_still_listed():
     d = build.data_section(["ZZ"], None)
     assert d["by_state"]["ZZ"]["totals"] is None and d["by_state"]["ZZ"]["sources"]
