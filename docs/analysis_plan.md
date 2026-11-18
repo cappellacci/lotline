@@ -7771,6 +7771,8 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   split place's county. No population download is made. After merge, the stored `jurisdictions` tables
   are rebuilt per state (`lotline fetch --source jurisdictions`). Wisconsin waits for its blind copy.
 
+
+
 ### D-102 · 2026-11-17 · County remainders get their 2020 population (WS-SCALE task 5, rule 6; approved by Ben)
 - **Why:** a county's unincorporated remainder had no `pop_2020`, so every model read it as 0 and put it in the
   smallest size band (`fillna(0)`). Size band picks the pool an uncoded place borrows its ADU rule prior and its
@@ -8026,3 +8028,5 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     $9,100, against the Handbook's $50,000, so halving them moves building about 4-10 times less than the
     benchmark cut.
   - The published range, not a measured fee cut in our states, is the comparison (V6a stays open).
+
+
