@@ -5,13 +5,13 @@ argument-hint: "<STATE> [--limit N] [--only GEOID ...] [--skip-coded] [--min-pop
 
 # /rules-mm — missing-middle rule swarm for one state
 
-Arguments: `$ARGUMENTS`. Design: `docs/build/rule-agents/mm/DESIGN.md`; lessons: `LESSONS.md` (same folder).
+Arguments: `$ARGUMENTS`. What this is for and what it never does: `docs/build/rule-agents/PRINCIPLES.md`. Design: `docs/build/rule-agents/mm/DESIGN.md`; lessons: `LESSONS.md` (same folder).
 You are the orchestrator. You run the deterministic steps yourself through
 `uv run python -m lotline.rule_agents.mm …` and hand research to the subagents `rules-mm-scout`,
 `rules-mm-coder`, `rules-mm-reconciler`, `rules-mm-verifier`. Shared tools (document store, passages,
 spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/build/rule-agents/CORE.md`).
 
-## Spending (Ben, 2026-11-17: keep token use down)
+## Spending (keep token use down)
 
 - Every place has a budget (default 120k tokens, 12 fetches, 8 searches; `--budget` sets tokens). After each
   subagent returns, record the tokens the Agent tool reports:
@@ -24,7 +24,8 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
 
 ## Never
 
-- Edit `config/`, `src/`, `docs/` or any repo file during a run; outputs stay in the run folder (Ben merges).
+- Edit `config/`, `src/`, `docs/` or any repo file during a run; outputs stay in the run folder; the user reviews
+  the table and imports it (`docs/build/rule-agents/PRINCIPLES.md`).
 - Run engine, scenario, calibration or model scripts; open permit/BPS data; write outcome numbers (holdouts).
 - Fetch outside `python -m lotline.rule_agents.mm fetch` (store first, then polite network); retry a refusal another way; file records requests,
   send emails or fill forms; solve or bypass a challenge.
@@ -35,13 +36,13 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
    reuse the existing run and skip places whose stage outputs exist.
 2. **Places + brief.** `… places <RUN> [--limit N] [--only …] [--skip-coded] [--min-pop N]` (writes
    `places.csv` and `brief.md`; for a state with no jurisdictions table pass `--jurisdictions <csv>` with
-   `geoid,name,pop_2020`). Show Ben the list and the brief's holdouts; if the brief says "No default recorded"
-   for the effective-date rule, ask Ben for the state's rule (one question) or proceed with "hand off when
+   `geoid,name,pop_2020`). Show the user the list and the brief's holdouts; if the brief says "No default recorded"
+   for the effective-date rule, ask the user for the state's rule (one question) or proceed with "hand off when
    silent".
 3. **Scout** each place (`rules-mm-scout`, prompt: `RUN=<RUN> GEOID=<g> COUNTY=<c>`), 4 at a time. The
    scout checks the document store first, so documents another swarm already fetched cost nothing.
 4. **Code.** For each place start `rules-mm-coder` as coder **a** (prompt `RUN GEOID COUNTY coder=a`).
-   **Second coder only where it matters** (the ADU rule Ben approved 2026-11-17; it was ~40% of tokens):
+   **Second coder only where it matters** (it was ~40% of tokens in the dry runs):
    once a's file passes `check` (step 5), run `… select-b <RUN>` and start coder **b** (`model: opus`, a
    different tier from a; LESSONS S-4; prompt `RUN GEOID COUNTY coder=b`, never a's output) only for the
    places it lists: an **event** (a rule with `unit_cap` ≥ 2 not coded `predates`), any rule below `high`
@@ -56,17 +57,17 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
 7. **Verify** each final with `rules-mm-verifier`, then `… check <RUN>` again.
 8. **Browser check (only with `--browser`; may run unattended).** For priority-1 tasks from step 9's sheet, open
    each start URL in the built-in browser one page at a time; read; stop at any challenge, CAPTCHA or login and
-   leave that task for Ben. Record answers in `out/human-lookups.csv` with `checked_by = rules-mm-browser`,
+   leave that task for the user. Record answers in `out/human-lookups.csv` with `checked_by = rules-mm-browser`,
    then `… ingest <RUN> <RUN>/out/human-lookups.csv` and re-run steps 4–7 for those places only.
 9. **Build.** `… build <RUN>` (schema-valid `out/reforms_mm_<st>.csv`), `… handoff <RUN>`
    (`out/human-lookups.csv` + `.md`), `… compare <RUN>` (against `config/reforms/<st>.csv`).
 10. **Report** `out/run-report.md`: places run; rules by `date_basis`; events (dated cap rises), none rows,
     always-allowed (`predates`) places, standards rows; agreement counts; every major diff and its decision;
     hand-off tasks by blocker kind; compare mismatches; problems still listed by `check`; places to check
-    first (largest population with low confidence or a mismatch). Then tell Ben, in plain words, what to
+    first (largest population with low confidence or a mismatch). Then tell the user, in plain words, what to
     decide: which rows to merge, which hand-offs to do first.
 
-## When Ben answers the hand-offs
+## When the user answers the hand-offs
 
 `… ingest <RUN> <answers.csv>` refuses rows without a quote or with bad dates and saves the rest under
 `answers/`. Re-run steps 4–9 with `--only` those places, giving the coder the answers file as extra evidence

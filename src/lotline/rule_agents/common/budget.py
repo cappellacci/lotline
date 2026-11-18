@@ -9,7 +9,7 @@ The orchestrator (the main Claude session running `/rules-<cat>`) records each s
 Agent tool reports when the subagent returns, with `ledger add`; scouts and coders record their own web
 searches and fetches. `ledger status` says what is left and whether to stop.
 
-Defaults are working limits (Ben, 2026-11-17: "reduce token usage"), set from the dry runs, not model
+Defaults are working limits set from the 2026-11-17 dry runs, not model
 parameters; override per run with `--tokens/--fetches/--searches` on `ledger status`.
 """
 
