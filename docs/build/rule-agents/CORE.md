@@ -4,8 +4,7 @@
 calls that day: missing middle is the master copy because it came first; build one store for primary
 documents; cut token use in searching and coding.*
 
-Every swarm follows [`GUARDRAILS.md`](GUARDRAILS.md) (outside studies are checks, one owner per model, GEOID
-keys, existing CSV headers, holdouts). The three swarms (`/rules-mm`, `/rules-adu`, `/rules-fees`) each research one rule category for one state.
+The three swarms (`/rules-mm`, `/rules-adu`, `/rules-fees`) each research one rule category for one state.
 Everything that is not about the category itself lives once, in `src/lotline/rule_agents/common/`, with one
 command line: `uv run python -m lotline.rule_agents --help`. MM uses it now; ADU and fees move onto it after
 their PRs merge (their sessions know their code best).
