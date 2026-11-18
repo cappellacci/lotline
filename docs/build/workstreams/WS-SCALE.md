@@ -186,7 +186,7 @@ Registries move into the state yaml.
 - [x] **0. Blockers (do first).** Done 2026-11-17: "borrow only" (Ben). The three in § Audit D. The `REFORM_STATES` fix is a method choice: put it to
       Ben in plain words (memory: raise decisions in chat). A state listed there feeds the rule priors that every
       other state's uncoded places borrow.
-- [ ] **1. Audit, finish.** Every place the code branches on a state, or a file in `adapters/` does more than
+- [x] **1. Audit, finish.** Done 2026-11-17: `docs/build/ws-scale-audit.md`. Every place the code branches on a state, or a file in `adapters/` does more than
       reshape data. Start from § Audit and write the full list to the PR.
 - [x] **2. Schema.** Issue #455; Ben agreed 2026-11-17, then chose the straight-line build (tags in
       `place_inputs`, `local_jurisdictions` in the state file). All 5 states checked by
