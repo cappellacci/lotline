@@ -5,10 +5,11 @@ where to go, what to look for, which exact cells to fill with which allowed valu
 (acceptance). Tasks are written largest place first, because lessons L-H2/L-H3 showed ranked, one-row-per-
 place return tables were the ones that got filled.
 
-For now (how the app should treat these is still open), a question only a records request or staff could
-answer is closed at once as `no_usable_source` (never queued). Filled tasks are read back as `human_primary` /
-`human_secondary` evidence; a filled value with no URL and quote is rejected (lesson L-H4: search-summary
-answers without links could not be used).
+Priority: 1 = the rule's existence or timing (`adus_per_lot`, dates), 2 = other fields, 3 = **optional**: a
+source only a public-records request reaches. The user may file that request themselves or mark the task
+`no_usable_source`; agents never file requests, email or call anyone.
+Filled tasks are read back as `human_primary` / `human_secondary` evidence; a filled value with no URL
+and quote is rejected (lesson L-H4: search-summary answers without links could not be used).
 """
 
 from __future__ import annotations
@@ -63,6 +64,11 @@ REASONS = {
         "The agent searched and found no online source.",
         "Search once more (city site, Wayback, Legistar); if nothing, mark no_usable_source.",
     ),
+    "records_request_only": (
+        "This record is only available by public-records request.",
+        "Optional: this record is only available by public-records request. File one with the city clerk if "
+        "you want it (it can take weeks); otherwise mark no_usable_source.",
+    ),
     "conflicting_sources": (
         "The two coders read different values and the verifier could not settle it.",
         "Read the section and pick the value the code supports.",
@@ -72,8 +78,10 @@ REASONS = {
         "Decide, and say why in notes.",
     ),
 }
-# Questions no online source can answer; closed without a task (current default; still under review).
+# Sources only a public-records request reaches: an optional, priority-3 task (also recognised as a note
+# prefix on a `not_found_online` block, the form the coders used before this reason existed).
 RECORDS_REQUEST_ONLY = "records_request_only"
+PRIORITY_1_FIELDS = {"adus_per_lot", "adoption_date", "effective_date"}
 
 ALLOWED = {
     "adus_per_lot": "whole number (0 = no rentable ADU allowed)",
@@ -98,6 +106,7 @@ ACCEPT = (
 COLUMNS = [
     "task_id",
     "priority",
+    "optional",
     "state",
     "geoid",
     "place",
@@ -147,7 +156,8 @@ class HumanTask:
     answered_by: str = ""
     answered_on: str = ""
     notes: str = ""
-    priority: int = 0
+    priority: int = 0  # 1 rule existence/timing, 2 other fields, 3 optional (records request only)
+    optional: bool = False
     task_id: str = ""
 
     def __post_init__(self):
@@ -174,14 +184,16 @@ class HumanTask:
             fields_to_fill="; ".join(self.fields_to_fill),
             allowed_values=" | ".join(f"{f}: {ALLOWED[f]}" for f in self.fields_to_fill),
             acceptance=ACCEPT,
+            optional="yes" if self.optional else "",
         )
         d.pop("reason")
         return {c: d.get(c, "") for c in COLUMNS}
 
 
 def triage(tasks: list[HumanTask]) -> tuple[list[HumanTask], list[HumanTask]]:
-    """(tasks to queue, tasks closed now). Duplicates (same task_id) are merged; records-request-only
-    questions are closed as no_usable_source; the rest are ranked by population and numbered."""
+    """(tasks to queue, tasks closed now; nothing is closed any more). Duplicates (same place + page) are
+    merged; tasks get priority 1/2/3 (3 = optional, records request only) and are sorted by priority, then
+    largest place first."""
     seen: dict[tuple, HumanTask] = {}
     for t in tasks:  # one task per place + page: both coders and the merge often block on the same URL
         key = (t.state, t.geoid, t.url)
@@ -196,17 +208,16 @@ def triage(tasks: list[HumanTask]) -> tuple[list[HumanTask], list[HumanTask]]:
             k.what_to_look_for += " " + t.what_to_look_for
         k.est_minutes = max(k.est_minutes, t.est_minutes)
         k.notes = "; ".join(n for n in (k.notes, t.notes) if n)
-    queue, closed = [], []
+    queue: list[HumanTask] = []
     for t in seen.values():
-        if RECORDS_REQUEST_ONLY in t.notes:
-            t.status = "no_usable_source"
-            closed.append(t)
+        t.optional = t.reason == RECORDS_REQUEST_ONLY or t.notes.startswith(RECORDS_REQUEST_ONLY)
+        if t.optional:
+            t.priority = 3
         else:
-            queue.append(t)
-    queue.sort(key=lambda t: (-t.pop_2020, t.place, t.era_id))
-    for i, t in enumerate(queue, 1):
-        t.priority = i
-    return queue, closed
+            t.priority = 1 if PRIORITY_1_FIELDS & set(t.fields_to_fill) else 2
+        queue.append(t)
+    queue.sort(key=lambda t: (t.priority, -t.pop_2020, t.place, t.era_id))
+    return queue, []
 
 
 def write_csv(tasks: list[HumanTask], path: str | Path) -> None:
@@ -220,11 +231,17 @@ def write_csv(tasks: list[HumanTask], path: str | Path) -> None:
 
 def write_markdown(tasks: list[HumanTask], path: str | Path, title: str) -> None:
     """A checklist a person can work top to bottom; the CSV is where answers go."""
-    lines = [f"# {title}", "", f"{len(tasks)} lookups, largest place first. Fill answers in the CSV.", ""]
-    for t in tasks:
+    lines = [
+        f"# {title}",
+        "",
+        f"{len(tasks)} lookups, priority 1 first, then largest place. Fill answers in the CSV.",
+        "",
+    ]
+    for n, t in enumerate(tasks, 1):
         r = t.row()
+        opt = " · optional" if t.optional else ""
         lines += [
-            f"## {t.priority}. {t.place} ({t.geoid}) — {t.question}",
+            f"## {n}. {t.place} ({t.geoid}) — {t.question} · priority {t.priority}{opt}",
             f"- [ ] **Open:** {t.url}" + (f" (or {r['alt_urls']})" if t.alt_urls else ""),
             f"- **Why the agent stopped:** {r['why_agent_stopped']} {r['what_to_do']}",
             f"- **Look for:** {t.what_to_look_for}",

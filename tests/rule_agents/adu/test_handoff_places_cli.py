@@ -40,15 +40,19 @@ def test_all_is_shorthand_for_every_field():
     assert task(fields_to_fill=["all"]).fields_to_fill == list(H.ALLOWED)
 
 
-def test_triage_ranks_by_population_dedupes_and_closes_records_request_only():
+def test_triage_ranks_by_priority_then_population_and_keeps_records_requests_as_optional():
     big = task(geoid="3700001", place="Bigtown", pop_2020=50000)
     rr = task(geoid="3700002", place="Recordsville", notes="records_request_only: ordinance not online")
     same_page = task(fields_to_fill=["adu_max_sqft"], era_id="2020")
-    queue, closed = H.triage([task(), big, task(), rr, same_page])
+    sizes = task(geoid="3700003", place="Sizeton", pop_2020=90000, fields_to_fill=["adu_max_sqft"])
+    rr2 = task(geoid="3700004", place="Clerkburg", reason="records_request_only", pop_2020=99000)
+    queue, closed = H.triage([task(), big, task(), rr, same_page, sizes, rr2])
     merged = next(t for t in queue if t.place == "Testville")
     assert merged.fields_to_fill == ["adoption_date", "effective_date", "adu_max_sqft"]
-    assert [t.place for t in queue] == ["Bigtown", "Testville"] and [t.priority for t in queue] == [1, 2]
-    assert [t.status for t in closed] == ["no_usable_source"]
+    assert [t.place for t in queue] == ["Bigtown", "Testville", "Sizeton", "Clerkburg", "Recordsville"]
+    assert [t.priority for t in queue] == [1, 1, 2, 3, 3]
+    assert [t.optional for t in queue] == [False, False, False, True, True]
+    assert closed == [] and all(t.status == "open" for t in queue)
 
 
 def test_written_tasks_have_plain_instructions(tmp_path):
@@ -146,3 +150,13 @@ def test_cli_end_to_end(tmp_path, monkeypatch, capsys):
     }
     assert "Testville" in (d / "tasks.md").read_text()
     capsys.readouterr()
+
+
+def test_optional_task_is_marked_in_sheet_and_checklist(tmp_path):
+    queue, _ = H.triage([task(reason="records_request_only")])
+    H.write_csv(queue, tmp_path / "t.csv")
+    H.write_markdown(queue, tmp_path / "t.md", "Lookups")
+    row = H.read_csv(tmp_path / "t.csv")[0]
+    assert (row["optional"], row["priority"]) == ("yes", "3")
+    assert row["what_to_do"].startswith("Optional: this record is only available by public-records request.")
+    assert "· priority 3 · optional" in (tmp_path / "t.md").read_text()

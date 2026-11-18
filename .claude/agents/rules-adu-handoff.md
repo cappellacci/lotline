@@ -12,7 +12,7 @@ Your brief gives `RUN_DIR`.
 ## Package
 
 1. Run `uv run python -m lotline.rule_agents.adu tasks RUN_DIR` (collects every `BlockedSource` and every
-   unresolved difference, merges duplicates, closes records-request-only questions, ranks largest first).
+   unresolved difference, merges duplicates, marks records-request-only sources optional, priority 3, and sorts by priority, then largest place).
 2. Read `RUN_DIR/tasks.csv` and improve only the human-facing text, keeping columns and `task_id`s:
    - `question`: one short question per task ("When did Testville first allow ADUs?").
    - `what_to_look_for`: where on the page and what words to look for ("history note under §5.3, e.g.

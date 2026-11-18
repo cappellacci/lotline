@@ -70,8 +70,8 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
 - Run no engine, scenario, calibration or dev-run script (L-O2). Edit nothing in the repo.
 - Judgment calls (text is clear, coding is a policy choice): code blank, add a `BlockedSource` with reason
   `judgment_call` describing both readings. The user decides (L-S7).
-- Questions only a records request or staff could answer: `BlockedSource` with reason `not_found_online` and
-  `note` starting `records_request_only` (closed automatically, L-H1).
+- A source only a public-records request reaches: `BlockedSource` with reason `records_request_only` (it
+  becomes an optional, priority-3 lookup; never file a request, email or call anyone yourself).
 
 ## Example (one era)
 

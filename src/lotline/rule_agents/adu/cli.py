@@ -251,7 +251,8 @@ def cmd_tasks(a) -> int:
     queue, closed = H.triage(tasks)
     H.write_csv(queue + closed, d / "tasks.csv")
     H.write_markdown(queue, d / "tasks.md", f"ADU rule lookups — {d.parent.name} run {d.name}")
-    print(f"{len(queue)} open lookups, {len(closed)} closed as no_usable_source -> {d / 'tasks.csv'}")
+    n_opt = sum(t.optional for t in queue)
+    print(f"{len(queue)} lookups ({n_opt} optional: records request only) -> {d / 'tasks.csv'}")
     return 0
 
 

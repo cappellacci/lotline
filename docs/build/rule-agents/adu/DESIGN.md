@@ -44,7 +44,7 @@ Downloaded copies go to `$LOTLINE_DATA_DIR/raw/rule_agents/adu/<ST>/<host>/` and
 | 4b second coder | `sources/<geoid>.json`, the field list only | `coding_b/<geoid>.json` | same budget; codes only the listed fields (all on audit places) and resolves uncoded amendments |
 | 5 verifier | both codings + `diff-coders` output | `decisions/<geoid>.json`, `final/<geoid>.json(.meta)` | re-opens only the diffs' sources; anything not settled from a primary source is `human` (L-S7) |
 | 6 rows | `final/*.json` | `rows.csv` validated by `schemas.validate(df, "reforms")` | any schema error stops the run |
-| 7 hand-off | blocked sources, unresolved diffs | `tasks.csv` + `tasks.md` | records-request-only questions closed as `no_usable_source` (L-H1) |
+| 7 hand-off | blocked sources, unresolved diffs | `tasks.csv` + `tasks.md` | records-request-only sources become optional, priority-3 tasks |
 
 ## 3. Evidence requirements
 
@@ -128,8 +128,10 @@ API, Municode PDF blob, `files.amlegal.com`, Wayback) are tried before handing o
 stopped in plain words, what to look for, exactly which fields to fill with their allowed values, an estimate
 in minutes, and **done when**: every field filled (or "not found") with the URL read and a verbatim sentence;
 dates with the ordinance number where shown. `ingest` accepts only rows marked `done` with an https URL and a
-quote; accepted answers become `human_primary` evidence and re-enter at step 5. Questions only a records
-request or staff could answer are closed at once as `no_usable_source` (L-H1).
+quote; accepted answers become `human_primary` evidence and re-enter at step 5. Tasks carry priority 1
+(the rule's existence or dates), 2 (other fields) or 3 = **optional**: a source only a public-records request
+reaches, which the user may request themselves or mark `no_usable_source`. Agents never file requests, email
+or call anyone.
 
 ## 8. Holdouts and other guards
 
