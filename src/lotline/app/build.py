@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import base64
 import datetime as dt
+import html
 import json
 import re
 from collections.abc import Iterable
@@ -277,6 +278,21 @@ def state_script(bundle: dict) -> str:
     return f"LotlineState({_json(bundle)});\n"
 
 
+def headline(bundle: dict) -> dict:
+    """Each scenario's five-year net new homes (P10/P50/P90) and its midpoint share of the headline need,
+    embedded so the Model tab's every-state chart can draw before any state file loads (Ben, 2026-11-17). Read
+    from the bundle's own totals and need tables; nothing is recomputed. The Results page's own headline (the
+    three reforms added per draw) is computed from the state file, not from these."""
+    out = {}
+    for r in bundle.get("totals") or []:
+        if r["outcome"] == "homes_net_statewide" and "-" in str(r["period"]):
+            out[r["scenario"]] = {k: r[k] for k in ("p10", "p50", "p90")}
+    for n in bundle.get("need") or []:
+        if n.get("is_headline") and n["scenario"] in out:
+            out[n["scenario"]].update(share_p50=n["share_p50"], need_label=n["label"])
+    return out
+
+
 def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict | None = None) -> dict:
     """What the page embeds: each state's meta and file, role labels, sliders, section 2's tables, build time.
 
@@ -300,7 +316,10 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
         "knobs": knobs(),
         "map": tile_map(),
         "data": data,
-        "states": [{"meta": b["meta"], "file": state_file(b["meta"]["state"])} for b in states],
+        "states": [
+            {"meta": b["meta"], "file": state_file(b["meta"]["state"]), "headline": headline(b)}
+            for b in states
+        ],
     }
 
 
@@ -385,6 +404,8 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
         .replace("<!--__MARK_LIGHT__-->", _svg("lotline-mark-light.svg", 24))
         .replace("<!--__MARK_DARK__-->", _svg("lotline-mark-dark.svg", 24))
         .replace("__FAVICON__", _data_uri("lotline-mark-favicon.svg"))
+        # the add-a-state page's README link, written into the page here rather than set by script (CodeQL)
+        .replace("__BYOS_URL__", html.escape(str((data.get("map") or {}).get("byos_url") or "README.md")))
         .replace("/*__LOTLINE_AGGREGATE__*/", AGGREGATE_JS.read_text(encoding="utf-8"))
         .replace("/*__LOTLINE_DASHBOARD__*/", _json(dashboard))
         .replace("/*__LOTLINE_DATA__*/", blob)
