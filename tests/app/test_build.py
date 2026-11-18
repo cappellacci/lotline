@@ -335,6 +335,27 @@ def test_available_vs_used_lists_every_registry_source_and_parcels_used():
     assert d["by_state"]["ZZ"]["totals"]["parcels"] == 300 and d["summary_generated"] == SUMMARY["generated"]
 
 
+def test_fee_card_shows_what_places_charge_today(tmp_path):
+    """Ben, 2026-11-17: the fee card shows real fees (how much lower than the Handbook's $50,000) and how they
+    fall on each kind of home, from the dashboard summary's fee block (dashboard/fees.py)."""
+    fees = {"summary": {"house": {"places": 1, "min": 5000, "median": 5000, "max": 5000}}, "places": []}
+    summary = {**SUMMARY, "states": [{**SUMMARY["states"][0], "fees": fees}]}
+    assert build.data_section(["ZZ"], summary)["by_state"]["ZZ"]["fees"] == fees
+    assert build.data_section(["ZZ"], None)["by_state"]["ZZ"]["fees"] is None
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
+    assert "return s1 + feeTodayHtml(b, name) + s2 + s3;" in fee
+    today = html[html.index("function feeTodayHtml") : html.index("const PLACE_TYPES")]
+    for words in (
+        "What builders pay in fees today",
+        "By kind of home",
+        "Share of building cost",
+        "Every place we coded",
+        "No city fee schedules are coded for this state yet.",
+    ):
+        assert words in today
+
+
 def test_without_a_data_summary_sources_are_still_listed():
     d = build.data_section(["ZZ"], None)
     assert d["by_state"]["ZZ"]["totals"] is None and d["by_state"]["ZZ"]["sources"]

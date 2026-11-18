@@ -358,11 +358,11 @@ table.checks td:last-child { min-width: 260px; }
       <h3 class="h2">The goal: exactly what we measure</h3>
       <p><b>The question.</b> If a state passed one of three reforms, how many more homes would it gain over the five years <b>2027–2031</b> than under the rules already in place? The headline counts net new housing: homes finished, minus houses torn down to build them and homes that would have been built elsewhere in the state anyway.</p>
       <ul class="body-small steps-list">
-        <li><b>The three reforms</b> follow the challenge Handbook to the letter.
+        <li><b>The three reforms</b> follow the Challenge Handbook to the letter.
           <ul>
             <li><b>ADUs:</b> one backyard home per house, at least 600 sq ft, with no parking required.</li>
             <li><b>Missing middle:</b> 2–6 homes allowed on lots now zoned for one house, up to three stories.</li>
-            <li><b>Fees:</b> development fees cut by half, shown two ways: the Handbook's benchmark (a $50,000 fee everywhere, cut to $25,000) and each city's real fees cut by half.</li>
+            <li><b>Fees:</b> development fees cut by half, shown two ways: the Challenge benchmark (a $50,000 fee everywhere, cut to $25,000) and each city's real fees cut by half.</li>
           </ul>
         </li>
         <li><b>The comparison</b> is always reform against no reform. "No reform" keeps every city's own rules, including laws already passed that take effect by the end of 2027. A reform is never credited with homes that current law will produce anyway.</li>
@@ -517,7 +517,7 @@ table.checks td:last-child { min-width: 260px; }
         <h5>How it works</h5>
         <p class="formula">extra homes = usual homes × how strongly building responds × builder's share of the cut ÷ total cost of the home, plus lots that newly pay</p>
         <ul class="body-small steps-list">
-          <li><b>The cut,</b> shown two ways on the Results page: the Handbook's benchmark, $25,000 a home (half of a $50,000 fee assumed everywhere), and half of each city's real fees for houses, duplexes and fourplexes. Buildings of 5 or more homes are never covered.</li>
+          <li><b>The cut,</b> shown two ways on the Results page: the Challenge benchmark, $25,000 a home (half of a $50,000 fee assumed everywhere), and half of each city's real fees for houses, duplexes and fourplexes. Buildings of 5 or more homes are never covered.</li>
           <li><b>Builder's share:</b> about half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters).</li>
           <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (Baum-Snow and Han 2024, measured neighborhood by neighborhood), from almost none (Mayer and Somerville 2000; Campbell and Alm 2006) to 17% (the metro-wide response in Saiz 2010 and Aastveit and others 2020). Each run draws one value.</li>
           <li><b>Lots that newly pay:</b> where parcel data allow, the cost model also counts lots that cross from not paying to paying after the cut.</li>
@@ -770,7 +770,7 @@ const OUTCOME_WORDS = {
 const KIND_OF_HOME = { adu: "backyard cottage or basement apartment", missing_middle: "duplex or fourplex" };
 // D-065: the two fee scenarios, each said plainly. The benchmark's $50,000 is far above the fees cities here charge.
 const FEE_NOTE = {
-  fees: "<b>The Handbook benchmark:</b> every city is assumed to charge $50,000 a home, cut to $25,000. Real fees in our states are far lower (a typical city charges about $4,000 to $9,000 for a house), so this is the comparison every entry runs, not a forecast of a real cut.",
+  fees: "<b>The Challenge benchmark:</b> every city is assumed to charge $50,000 a home, cut to $25,000. Real fees in our states are far lower (a typical city charges about $4,000 to $9,000 for a house), so this is the comparison every entry runs, not a forecast of a real cut.",
   fees_local_half: "<b>Real local fees cut in half:</b> each city's own fees for houses, duplexes and fourplexes, from its fee schedule (or, where none was coded, the state's typical fee), cut by half. Buildings of 5 or more homes are not covered.",
 };
 
@@ -778,11 +778,11 @@ const FEE_NOTE = {
 const WHAT = {
   adu: "One backyard home (ADU) allowed on every house lot, at least 600 sq ft, with no parking required.",
   missing_middle: "Buildings of 2 to 6 homes allowed on lots now zoned for one house, up to three stories.",
-  fees: "Development fees cut in half. The Handbook benchmark: a $50,000 fee everywhere, cut to $25,000.",
+  fees: "Development fees cut in half. The Challenge benchmark: a $50,000 fee everywhere, cut to $25,000.",
   fees_local_half: "Development fees cut in half, starting from each city's own fees for houses, duplexes and fourplexes.",
 };
 const HERO = ["adu", "missing_middle", "fees"];
-const IN_NOTE = { adu: "ADUs", missing_middle: "missing middle", fees: "the fee reduction (Handbook benchmark)", fees_local_half: "the fee reduction (real local fees)" };  // one box per reform; the fee box switches between its two versions
+const IN_NOTE = { adu: "ADUs", missing_middle: "missing middle", fees: "the fee reduction (Challenge benchmark)", fees_local_half: "the fee reduction (real local fees)" };  // one box per reform; the fee box switches between its two versions
 
 
 function scenariosIn(b) {
@@ -955,10 +955,10 @@ function mmHowHtml(b, R) {
 }
 
 // The fee card (Ben, 2026-11-17: what the results files hold now; the slider and targeted bills wait for the fee
-// grid to move into the bundle). Results files carry two versions: the Handbook benchmark and real local fees
+// grid to move into the bundle). Results files carry two versions: the Challenge benchmark and real local fees
 // halved. The fee model opens no lots, so the engine's first stage is the homes built anyway (results.fee_rows).
 const FEE_VERSIONS = [
-  ["fees", "The Handbook benchmark", "Every city assumed to charge $50,000 a home, cut to $25,000."],
+  ["fees", "The Challenge benchmark", "Every city assumed to charge $50,000 a home, cut to $25,000."],
   ["fees_local_half", "Real local fees, halved", "Each city's own fees for houses, duplexes and fourplexes, cut by half."],
 ];
 function feeEvidenceHtml(b, R) {
@@ -976,7 +976,7 @@ function feeEvidenceHtml(b, R) {
       <p class="body-small" style="margin:0">Likely ${fmtN(x.p10)} to ${fmtN(x.p90)}${all ? `; the midpoint equals ${fmtPct(x.p50 / all.p50)} of the ${fmtN(all.p50)} homes expected with no change` : ""}.</p></div>`;
   }).join("");
   const s1 = `<section><h3 class="h3">Two ways to cut fees in half</h3>
-    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Handbook asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes. The switch on the fee row above picks which one the headline uses.</p>
+    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Challenge asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes. The switch on the fee row above picks which one the headline uses.</p>
     <div class="fee-vers">${tiles}</div></section>`;
   // 2. year by year: each version's added homes, P10–P90 whiskers with the midpoint
   const s2 = `<section><h3 class="h3">Year by year</h3>${feeYearsChart(b, o, shown)}</section>`;
@@ -985,7 +985,7 @@ function feeEvidenceHtml(b, R) {
   const k0 = howKit(b, d), base = k0.st("legal");
   const { med, rng, fbar, per10k, foot } = howKit(b, d, base && base.p50);
   const col = scenColor("fees");
-  const cut = d === "fees" ? "$25,000 off every home (half of a $50,000 fee the Handbook assumes everywhere)"
+  const cut = d === "fees" ? "$25,000 off every home (half of a $50,000 fee the Challenge benchmark assumes everywhere)"
     : "half of each city's own fee for each kind of home, from its fee schedule, or the state's typical fee where none was coded";
   const s3 = `<section><h3 class="h3">How we get these numbers</h3>
     <p class="body-small">Shown for ${esc(FEE_VERSIONS.find(([k]) => k === d)[1])}, the version the fee row's switch picks. A fee cut opens no new lots; it makes homes that could already be built cheaper, so a few more get built.</p>
@@ -997,7 +997,7 @@ function feeEvidenceHtml(b, R) {
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, col)}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
     ${foot}</section>`;
-  return s1 + s2 + s3;
+  return s1 + feeTodayHtml(b, name) + s2 + s3;
 }
 function feeYearsChart(b, o, shown) {
   const rows = shown.map(([k, label]) => ({ k, label, yrs: (b.totals || []).filter((r) => r.scenario === k && r.outcome === o && /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year) }));
@@ -1027,6 +1027,67 @@ function feeYearsChart(b, o, shown) {
     <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${legend}</div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Homes the fee cut adds each year, by version" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
     <p class="source">Whiskers: P10 to P90, bar at the midpoint, at the engine's central assumptions; the sliders do not move this chart.</p>`;
+}
+
+// What builders pay today: the coded local fees behind the "real local fees" version (data dashboard summary,
+// dashboard/fees.py), so a reader can see how much lower real fees are than the Challenge's $50,000.
+const FEE_TYPES = [["house", "House", 1], ["duplex", "Duplex", 2], ["fourplex", "Fourplex", 4], ["adu", "ADU", 1]];
+const FEE_PARTS = [["permit", "Building permit and plan review", 1], ["water_sewer", "Water and sewer hookup", 0.7], ["impact", "Impact fees (parks, roads, schools)", 0.45], ["planning", "Planning", 0.3], ["other", "Other", 0.3], ["filled", "Not found in the schedule: typical value used", 0]];
+const usd = (v) => (Number.isFinite(v) ? "$" + fmtN(v) : "–");
+function feeTodayHtml(b, name) {
+  const f = ((DATA.data.by_state || {})[b.meta.state] || {}).fees;
+  if (!f || !(f.places || []).length) return `<section><h3 class="h3">What builders pay in fees today</h3><p class="pending">No city fee schedules are coded for this state yet.</p></section>`;
+  const S = f.summary || {}, h = S.house || {}, hb = f.handbook_fee, cut = hb * f.handbook_cut_share;
+  const col = esc(scenColor("fees"));
+  const times = h.median ? hb / h.median : NaN;
+  const under = f.places.filter((p) => (p.types.house || {}).fee < cut).length;
+  const lede = `<p class="body-small">The fees a new home pays today in the ${h.places} ${esc(name)} ${h.places === 1 ? "place" : "places"} whose fee schedules we coded, in 2025 dollars. The typical place charges <b>${usd(h.median)}</b> for a new house, from ${usd(h.min)} to ${usd(h.max)}. The Challenge benchmark assumes ${usd(hb)} everywhere${Number.isFinite(times) && times >= 1.5 ? `, about ${Math.round(times)} times the typical fee here` : ""}, so its ${usd(cut)} cut is ${under === h.places ? "more than the whole fee in every place we coded" : under ? `more than the whole fee in ${under} of the ${h.places} places we coded` : "smaller than the fee in every place we coded"}. Cutting the real fee in half saves <b>${usd(h.median / 2)}</b> on the typical house.</p>`;
+  // strip: every place's house fee on one dollar axis, against the Challenge's levels
+  const W = 640, L = 12, Rm = 12, H = 96, top = Math.max(hb, h.max || 0) * 1.04, x = (v) => L + (v / top) * (W - L - Rm);
+  const ticks = niceTicks(top, 5).filter((t) => t <= top);
+  const parts = ticks.map((t) => `<line x1="${x(t)}" x2="${x(t)}" y1="18" y2="64" stroke="var(--rule)"></line><text x="${x(t)}" y="80" text-anchor="middle">${usd(t)}</text>`);
+  const mark = (v, label, dash) => `<line x1="${x(v)}" x2="${x(v)}" y1="10" y2="64" stroke="var(--ink)" stroke-width="1.5"${dash ? ' stroke-dasharray="4 3"' : ""}></line><text x="${x(v) - 4}" y="12" text-anchor="end" style="fill:var(--ink)">${esc(label)}</text>`;
+  parts.push(mark(hb, `Challenge: ${usd(hb)}`), mark(hb - cut, `after its cut: ${usd(hb - cut)}`, true));
+  for (const p of f.places) {
+    const t = (p.types || {}).house;
+    if (!t) continue;
+    parts.push(`<circle cx="${x(t.fee)}" cy="42" r="6" fill="${col}" fill-opacity="0.55" stroke="${col}"><title>${esc(p.name)}: ${usd(t.fee)} for a new house</title></circle>`);
+  }
+  parts.push(`<line x1="${x(h.median)}" x2="${x(h.median)}" y1="26" y2="58" stroke="var(--ink)" stroke-width="3"></line><text x="${x(h.median) + 6}" y="62" style="fill:var(--ink)">typical ${usd(h.median)}</text>`);
+  const strip = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fee for a new house in each coded place, against the Challenge's $50,000" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
+    <p class="source">Each dot is one place's fee for a new house; hover for its name. Thick line: the typical (median) place.</p>`;
+  // by type of home: per unit, per lot and as a share of building cost
+  const adus = f.places.filter((p) => p.types.adu);
+  const aduSame = adus.filter((p) => Math.abs(p.types.adu.fee - ((p.types.house || {}).fee || 0)) < 1).length;
+  const aduOwn = adus.length > aduSame;  // some place charges an ADU differently from a house
+  const types = FEE_TYPES.filter(([k]) => S[k] && (k !== "adu" || aduOwn));
+  const typeRows = types.map(([k, label, units]) => {
+    const share = f.places.map((p) => (p.types[k] || {}).share).filter(Number.isFinite).sort((a, c) => a - c);
+    const mid = share.length ? share[Math.floor((share.length - 1) / 2)] : NaN;
+    const perLot = units > 1 ? usd(S[k].median * units) : usd(S[k].median);
+    return `<tr><td>${esc(label)}${units > 1 ? ` <span class="muted">(${units} homes)</span>` : ""}</td><td class="num">${usd(S[k].median)}</td><td class="num" style="white-space:nowrap">${usd(S[k].min)}–${usd(S[k].max)}</td><td class="num">${perLot}</td><td class="num">${k === "adu" ? "–" : fmtPct(mid)}</td></tr>`;
+  }).join("");
+  const fp = S.fourplex, hs = (() => { const v = f.places.map((p) => (p.types.house || {}).share).filter(Number.isFinite).sort((a, c) => a - c); return v.length ? v[Math.floor((v.length - 1) / 2)] : NaN; })();
+  const fs = (() => { const v = f.places.map((p) => (p.types.fourplex || {}).share).filter(Number.isFinite).sort((a, c) => a - c); return v.length ? v[Math.floor((v.length - 1) / 2)] : NaN; })();
+  const typeNote = fp ? `<p class="body-small">Fees are charged per home, so a fourplex pays a fee on each of its four homes: ${usd(fp.median * 4)} on one lot in the typical place, against ${usd(h.median)} for a house. That is ${fmtPct(fs)} of what the fourplex costs to build, against ${fmtPct(hs)} for a house${fs > hs ? ", so the same cut takes a bigger share off the cost of a fourplex" : ""}.</p>` : "";
+  const aduNote = S.adu ? `<p class="body-small">ADUs: ${aduOwn ? `${adus.length - aduSame} of ${adus.length} places charge an ADU differently from a house; the rest have no separate ADU charge, so an ADU is taken to pay what a house pays` : "no place we coded has a separate ADU charge, so an ADU is taken to pay what a house pays"}. Many cities charge ADUs less, or waive fees for them. The fee reform here covers houses through fourplexes; ADU fees belong to the ADU bill.</p>` : "";
+  const typeTbl = `<div class="scroll"><table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Kind of home</th><th class="num">Typical fee per home</th><th class="num">Lowest to highest</th><th class="num">Fee per lot</th><th class="num">Share of building cost</th></tr></thead><tbody>${typeRows}</tbody></table></div>`;
+  // every place, with the house fee split into its parts
+  const maxH = Math.max(...f.places.map((p) => (p.types.house || {}).fee || 0), 1);
+  const bar = (p) => {
+    const c = p.components || {}, tot = (p.types.house || {}).fee || 0;
+    const segs = FEE_PARTS.filter(([k]) => c[k] > 0).map(([k, label, op]) => `<span title="${esc(label)}: ${usd(c[k])}" style="display:inline-block;height:12px;width:${(c[k] / maxH) * 100}%;background:${k === "filled" ? "var(--rule)" : col};opacity:${k === "filled" ? 1 : op}"></span>`).join("");
+    return `<div style="display:flex;min-width:120px" aria-label="${esc(p.name)}: ${usd(tot)}">${segs}</div>`;
+  };
+  const cell = (p, k) => { const t = p.types[k]; return t ? `${usd(t.fee)}${k === "adu" && Math.abs(t.fee - ((p.types.house || {}).fee || 0)) < 1 ? "<sup>=</sup>" : ""}${t.filled ? "<sup>*</sup>" : ""}` : "–"; };
+  const rows = f.places.map((p) => `<tr><td>${esc(p.name)}</td><td>${bar(p)}</td>${types.map(([k]) => `<td class="num">${cell(p, k)}</td>`).join("")}</tr>`).join("");
+  const key = FEE_PARTS.map(([k, label, op]) => `<span><span style="display:inline-block;width:12px;height:10px;background:${k === "filled" ? "var(--rule)" : col};opacity:${k === "filled" ? 1 : op};margin-right:6px"></span>${esc(label)}</span>`).join("");
+  const places = `<details style="margin-top:var(--space-3)"><summary class="body-small">Every place we coded (${f.places.length})</summary>
+    <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${key}</div>
+    <div class="scroll"><table class="body-small"><thead><tr><th>Place</th><th>House fee, by part</th>${types.map(([, l]) => `<th class="num">${esc(l)}${l === "House" ? "" : " (per home)"}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="source">* part of the fee was not in the schedule we found (usually the building permit or the water hookup), so the typical value of coded places fills it. ${aduOwn ? "= no separate ADU charge: shown as a house's fee. " : ""}Amounts per home in 2025 dollars, from each city's official fee schedule (config/fees/), under the rules in docs/research/fee-levels-vs-handbook.md.</p></details>`;
+  return `<section><h3 class="h3">What builders pay in fees today</h3>${lede}${strip}
+    <h4 style="margin:var(--space-4) 0 0">By kind of home</h4>${typeNote}${typeTbl}${aduNote}${places}</section>`;
 }
 
 const PLACE_TYPES = [["core", "Core cities"], ["suburb", "Suburbs"], ["town", "Towns"]];
@@ -1070,7 +1131,7 @@ const SECTIONS = {
     const fee2 = scen.includes("fees_local_half");
     const rcRows = HERO.map((k) => {
       const feeSwitch = k === "fees" && fee2 ? `<span class="toggle" role="group" aria-label="Which fees">
-        <button type="button" data-fee="fees" aria-pressed="${UI.fee === "fees"}">Handbook benchmark</button><button type="button" data-fee="fees_local_half" aria-pressed="${UI.fee === "fees_local_half"}">Real local fees</button></span>` : "";
+        <button type="button" data-fee="fees" aria-pressed="${UI.fee === "fees"}">Challenge benchmark</button><button type="button" data-fee="fees_local_half" aria-pressed="${UI.fee === "fees_local_half"}">Real local fees</button></span>` : "";
       const s = k === "fees" ? UI.fee : k;
       return `<div class="who" data-box="${esc(k)}"><h4 style="color:${scenColor(s)}">${esc(SCENARIOS_SHORT[k])}</h4><p data-box-what>${esc(WHAT[s])}</p>${feeSwitch}</div>
         <div class="lane" data-lane="${esc(k)}"></div>`;
@@ -1260,7 +1321,7 @@ const DAG = {
   nodes: {
     why:   { x: 10,  y: 30,  w: 190, kind: "conf",  t: ["Why places reform:", "price pressure, momentum,", "local politics"] },
     econ:  { x: 10,  y: 290, w: 190, kind: "conf",  t: ["Economy, interest rates", "and the building cycle"] },
-    ref:   { x: 250, y: 20,  w: 200, kind: "treat", t: ["The reform", "(the Handbook rule)"] },
+    ref:   { x: 250, y: 20,  w: 200, kind: "treat", t: ["The reform", "(the Challenge rule)"] },
     gap:   { x: 250, y: 110, w: 200, kind: "input", t: ["How far today's local", "rules fall short of it"] },
     land:  { x: 250, y: 200, w: 200, kind: "bad",   t: ["Land prices rise", "after the reform"] },
     base:  { x: 250, y: 290, w: 200, kind: "base",  t: ["Building that would", "happen anyway (baseline)"] },
@@ -1328,7 +1389,7 @@ const CONF = [
   ["C10", "How strict the rule is (owner must live there, parking, size)", "input", "Coded rule by rule; it sets how much a reform adds."],
   ["C11", "Rules on paper vs in practice; local opt-outs", "input", "Partly: rule coverage is coded where known; uncoded places borrow from similar ones."],
   ["C12", "HOA covenants", "input", "Lots excluded where known; few data."],
-  ["C13", "Whether the old rule actually held building back", "design", "Only the gap between today's rule and the Handbook rule is added."],
+  ["C13", "Whether the old rule actually held building back", "design", "Only the gap between today's rule and the Challenge rule is added."],
   ["C14", "Kind of lots: size, house value, age, garage or alley", "test", "A land-share term was tested; not adopted."],
   ["C15", "Owners living on site; household make-up", "input", "Owner-occupancy rules are coded; the data showed no effect."],
   ["C16", "Location and access to jobs and transit", "limit", "Not modelled."],
