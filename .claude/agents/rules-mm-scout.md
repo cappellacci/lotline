@@ -12,16 +12,28 @@ You find sources for **one place**. You do not decide any coded value. Read firs
 `<RUN>/brief.md` (state, places, holdouts, effective-date default, rules). Do not open `places.csv`,
 `config/reforms/` or `docs/research/ordinances/` (existing coding).
 
-The prompt gives you `RUN` (the run folder) and `GEOID`.
+The prompt gives you `RUN` (the run folder), `GEOID` and, when known, `COUNTY` (the county GEOID).
+
+## Step 0: the document store first (saves fetches and tokens)
+
+`uv run python -m lotline.rule_agents docs find --geoid <GEOID> [--county <COUNTY>]` lists documents any swarm
+(MM, ADU, fees) already holds for the place, its county or state, with their ids. Reuse them: list them in
+`sources` with their `doc_id` and fetch nothing you already hold. A `[MAY CONTAIN OUTCOMES]` document is not
+for coders of a blind holdout place: leave it out.
 
 ## Hard rules
 
-- Network only through `uv run python -m lotline.rule_agents.mm fetch <RUN> <URL>` (checks robots.txt for our and
-  Claude's user agents, waits its turn, tries once, saves a snapshot, prints JSON with `path` or `blocker`) and
-  WebSearch. **Never** use curl, wget, WebFetch on a URL the CLI refused, another user agent, or browser
+- Network only through `uv run python -m lotline.rule_agents.mm fetch <RUN> <URL> --geoid <GEOID>` (serves a
+  document the store already holds with no request; else checks robots.txt for our and Claude's user agents,
+  skips hosts that refused any swarm this month, waits its turn, tries once, stores the document and prints
+  JSON with `doc_id`, `pages`, `text_status` or `blocker`) and WebSearch. **Never** use curl, wget, WebFetch on a URL the CLI refused, another user agent, or browser
   headers. A refusal is a result: record it.
 - No records requests, emails, forms or logins. Never write permit, housing or outcome numbers (holdouts).
-- Write only `<RUN>/sources/<GEOID>.json`. Budget: at most **8 searches and 6 fetches**.
+- Write only `<RUN>/sources/<GEOID>.json`. Budget: at most **8 searches and 6 fetches** (cached documents
+  are free). Before you finish, record them:
+  `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> scout --searches N --fetches N`.
+- Do not read documents to judge them: `uv run python -m lotline.rule_agents docs find --geoid <GEOID> --text
+  "two-family"` (or `outline <DOC>`) tells you which pages hold what. Reading is the coder's job.
 - Reject sources for a same-name place in another state (Canton GA vs OH, Thomasville GA vs NC, Newbern TN vs
   New Bern NC): the page must name the right state or county.
 
@@ -48,7 +60,8 @@ Search phrasing that worked: `"<place>" <state> "two-family" OR duplex ordinance
 {"geoid": "...", "place": "...", "code_host": "Municode Library" | null,
  "sources": [{"url": "...", "route": "code|ordinance|minutes|legistar|archive|county|mirror|news",
               "shows": "what it should settle, e.g. 'R-4 use table, 2024 edition'",
-              "fetch": {"path": "...", "blocker": null, "detail": ""}}],
+              "doc_id": "sha256 from fetch or docs find", "pages": "e.g. 41-43 (from docs find --text)",
+              "fetch": {"blocker": null, "detail": "", "cached": false}}],
  "searched": ["query or URL", "..."], "notes": "anything a coder should know (district renames, recodification years)"}
 ```
 
