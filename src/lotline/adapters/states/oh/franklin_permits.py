@@ -72,6 +72,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.config import state_rule
 from lotline.io import DataStore
 from lotline.io.http import fetch
 from lotline.schemas import validate
@@ -90,9 +91,9 @@ COLUMBUS_GEOID = "3918000"
 # Appraisal snapshots read together: 1990–2022 and 2020 to 2026-10 (overlaps deduplicated). A newer snapshot
 # is added here, so a rerun reads the same files.
 SNAPSHOTS = ("2022-12-15", "2026-10-15")
-ADU_REPEAT_DAYS = 730  # one ADU per parcel in any two years
+ADU_REPEAT_DAYS = state_rule("OH", "adu_repeat_days")  # one ADU per parcel in any two years (oh.yaml rules)
 ADU_WINDOW = 160  # characters before an ADU noun searched for a creation verb
-DISTRICT_SHARE = 0.95  # taxing district → jurisdiction, for parcels missing from the roll
+DISTRICT_SHARE = state_rule("OH", "district_jurisdiction_share")  # config/states/oh.yaml rules
 
 # Columbus plan-review boilerplate ("USE/OCCUPANCY GROUP: 1, 2, 3 FAMILY DWELLING") names the code's use
 # group, not the building: only the text after "DESCRIPTION OF WORK:" describes the work.

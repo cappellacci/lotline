@@ -220,7 +220,8 @@ Registries move into the state yaml.
 - [x] **7. Crosswalks.** Done 2026-11-17 (all 18 loaders unchanged); registries stay CSVs; `or_metro_cities.csv`
       kept (a dev script reads it). Convert the 24 odd files to the two formats; delete `or_metro_cities.csv`. **Check:**
       every adapter's `land_use_std` and `building_type_std` columns are unchanged row for row.
-- [ ] **8. Adapter rules as data.** Move state quirks into named, documented rules in the state file (`rules:`
+- [ ] **8. Adapter rules as data.** Started 2026-11-17: `rules:` block and five rules (OH three, TX two), values
+      unchanged; onemap tier cutoffs read from params. No ranges set yet (Ben). The rest of the audit list is open. Move state quirks into named, documented rules in the state file (`rules:`
       with id, what it does, assumption, sensitivity range, source). First case: TX `austin_home_adu_share`, the
       share of 2024+ duplex permits on single-family lots counted as ADUs, with low and high values.
 - [ ] **9. Missing-input matrix.** For each of parcels, zoning and permits missing, run NC with that input

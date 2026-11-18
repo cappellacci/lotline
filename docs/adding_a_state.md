@@ -382,6 +382,13 @@ from your data directory (see the note at the end of section 3).
      county only (`mn_land_use.csv`, `or_rlis_land_use.csv`).
 5. **Call** `holdout.apply(...)` on the rows before returning them, then `validate(df, TABLE)`.
 6. **Add a `sources:` entry** in `config/states/xx.yaml` with name, URL, license, access, cadence and notes.
+7. **Name your judgments.** A share, threshold, date or label your adapter applies to the data, beyond
+   reshaping it (for example "a taxing district maps to a city when 95% of its parcels are in that city"),
+   goes in the state file's `rules:` block, not in code:
+   - give it `value`, `unit`, `what`, `assumption`, `source` and `used_by` (the modules that read it), plus
+     `low` and `high` when you know a sensitivity range;
+   - read it with `lotline.config.state_rule("XX", "<rule id>")`;
+   - `config/states/oh.yaml` has three examples, `tx.yaml` two.
 
 ### Step 9. Add local permits (optional, level 2; 1 to 2 days per source)
 
