@@ -15,7 +15,7 @@ from datetime import date
 from lotline.rule_agents.fees import classify
 from lotline.rule_agents.fees.build import price_all, schedule_year
 from lotline.rule_agents.fees.prototype import assumptions, price, prototypes
-from lotline.rule_agents.fees.records import FeeItem
+from lotline.rule_agents.fees.records import READ, FeeItem
 
 VERIFIER = "rules-fees-second-coder"
 
@@ -176,7 +176,7 @@ def merge(coder1: list[FeeItem], coder2: list[FeeItem], pairs: list[dict], today
     }
     out = []
     for it in coder1:
-        if it.item_id in agree and it.quote_status in ("verbatim", "image_read"):
+        if it.item_id in agree and it.quote_status in READ:
             it = it.model_copy(update={"verified_by": VERIFIER, "verified_date": today})
         out.append(it)
     by2 = {b.item_id: b for b in coder2}

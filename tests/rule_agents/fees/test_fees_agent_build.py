@@ -180,7 +180,7 @@ def test_tasks_roundtrip_and_ingest(tmp_path):
     opt = handoff.make_task(2, **_task(reason="records_request_only"))  # optional, lowest priority
     assert (opt.priority, opt.optional) == (3, "yes")
     md = handoff.to_markdown([opt])
-    assert "(priority 3 · optional" in md and "File one with the city clerk" in md
+    assert "priority 3 · optional" in md and "File one with the city clerk" in md
     with pytest.raises(ValueError):
         handoff.make_task(2, **_task(reason="call_staff"))
     done = t.model_copy(
@@ -203,6 +203,31 @@ def test_tasks_roundtrip_and_ingest(tmp_path):
     assert len(items) == 1 and items[0].coder == "human:BC" and items[0].body_kind == "utility"
     assert items[0].has_evidence()
     assert "FEES-TX-4827000-01" in handoff.to_markdown(back)
+    assert items[0].quote_status == "human" and items[0].doc_id is None
+    old = handoff.make_task(3, **_task(reason="budget_exhausted"))  # pre-core task files
+    assert old.reason == "budget_spent" and "budget" in old.browser_tip
+
+
+def test_saved_file_goes_into_the_document_store(tmp_path):
+    from lotline.rule_agents.common.docstore import DocStore
+
+    docs = DocStore(tmp_path)
+    docs.inbox.mkdir(parents=True, exist_ok=True)
+    (docs.inbox / "fees2026.html").write_text("<p>Water $3,500 per SU</p>")
+    t = handoff.make_task(1, **_task()).model_copy(
+        update={
+            "status": "done",
+            "answer_amount": 3500.0,
+            "answer_quote": "Water $3,500 per SU",
+            "answered_by": "BC",
+            "answered_date": date(2026, 11, 18),
+            "answer_page_or_section": "Table 1",
+            "answer_saved_file": "fees2026.html",
+        }
+    )
+    (item,) = handoff.answers_to_items([t], docs=docs)
+    assert item.doc_id and docs.get(item.doc_id).first_url == t.start_url
+    assert docs.quote(item.doc_id, item.quote)[0] == "verbatim"
 
 
 def test_compare():
@@ -259,7 +284,7 @@ def test_quotecheck_promotes_and_downgrades(tmp_path, make_item):
     write_items(items, path)
     cli.main(["quotecheck", str(path)])
     got = {i.item_id: i.quote_status for i in read_items(path)}
-    assert got == {"ok": "verbatim", "bad": "none"}  # an unmatched verbatim claim is held back
+    assert got == {"ok": "verbatim", "bad": "not_checked"}  # an unmatched verbatim claim is held back
 
 
 def test_compare_resolves_other_rows():

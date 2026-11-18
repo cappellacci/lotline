@@ -2,6 +2,12 @@
 
 An item stays close to the source and holds no derived numbers. `build.py` turns items into `fees` rows.
 See docs/build/rule-agents/fees/DESIGN.md ("The unit of work: a fee item").
+
+Evidence vocabulary (source kinds, quote statuses, the confidence cap) is the shared core's
+(`lotline.rule_agents.common.evidence`); `FeeItem.evidence()` gives the item's support as a shared `Evidence`.
+Item files written before the move (2026-11-17 dry run) still load: `sha256` becomes `doc_id`, quote status
+`none` becomes `not_checked`, a `summariser` read becomes source kind `search_summary`, and source kind
+`official` becomes `fee_schedule`.
 """
 
 from __future__ import annotations
@@ -13,6 +19,8 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from lotline.rule_agents.common.evidence import QUOTE_STATUS, SOURCE_KINDS, Evidence
 
 BodyKind = Literal["city", "county", "utility", "regional", "special_district", "school_district", "state"]
 BuildingType = Literal["SFD", "U2", "U3_4", "ADU", "OTHER"]
@@ -32,7 +40,11 @@ BasisKind = Literal[
     "conditional",
     "excluded",
 ]
-QuoteStatus = Literal["verbatim", "image_read", "summariser", "none"]
+QuoteStatus = Literal[QUOTE_STATUS]  # type: ignore[valid-type]
+SourceKind = Literal[SOURCE_KINDS]  # type: ignore[valid-type]
+# quote statuses a person or the build may rely on (a summariser read is never one)
+READ = ("verbatim", "image_read", "human")
+_OLD_SOURCE_KIND = {"official": "fee_schedule", "wayback": "archive", "draft": "other", "guide": "other"}
 Confidence = Literal["high", "medium", "low"]
 GroupKind = Literal["area", "plat_date"]
 
@@ -91,18 +103,35 @@ class FeeItem(BaseModel):
     payment_timing: str | None = None
     url: str | None = None
     local_path: str | None = None  # path under LOTLINE_DATA_DIR
-    sha256: str | None = None
+    doc_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")  # document store id (sha256)
     retrieved_at: date | None = None
     page_or_section: str | None = None
     quote: str | None = Field(default=None, max_length=300)
-    quote_status: QuoteStatus = "none"
-    source_kind: Literal["official", "mirror", "draft", "guide", "wayback"] = "official"
+    quote_status: QuoteStatus = "not_checked"
+    source_kind: SourceKind = "fee_schedule"
     applies_when: str | None = None  # conditions (conditional / excluded) or the column/tier read
     confidence: Confidence | None = None
     coder: str
     verified_by: str | None = None  # set by reconcile when the blind second coder read the same value
     verified_date: date | None = None
     notes: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _legacy(cls, d):
+        """Item files from before the shared core (see module docstring)."""
+        if not isinstance(d, dict):
+            return d
+        d = dict(d)
+        if "sha256" in d:
+            d.setdefault("doc_id", d.pop("sha256"))
+        if d.get("quote_status") == "summariser":
+            d["quote_status"], d["source_kind"] = "not_checked", "search_summary"
+        elif d.get("quote_status") == "none":
+            d["quote_status"] = "not_checked"
+        if d.get("source_kind") in _OLD_SOURCE_KIND:
+            d["source_kind"] = _OLD_SOURCE_KIND[d["source_kind"]]
+        return d
 
     @model_validator(mode="after")
     def _numbers_for_basis(self) -> FeeItem:
@@ -127,8 +156,26 @@ class FeeItem(BaseModel):
             and self.retrieved_at
             and self.page_or_section
             and self.quote
-            and self.quote_status in ("verbatim", "image_read")
+            and self.quote_status in READ
+            and self.source_kind != "search_summary"
         )
+
+    def evidence(self) -> list[Evidence]:
+        """The item's support as shared `Evidence` (empty without a URL, quote and retrieval date)."""
+        if not (self.url and self.quote and self.retrieved_at and self.url.startswith("http")):
+            return []
+        return [
+            Evidence(
+                field="amount",
+                url=self.url,
+                quote=self.quote,
+                retrieved=self.retrieved_at,
+                section=self.page_or_section,
+                doc_id=self.doc_id,
+                source_kind=self.source_kind,
+                quote_status=self.quote_status,
+            )
+        ]
 
 
 def read_items(path: Path) -> list[FeeItem]:

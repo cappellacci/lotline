@@ -11,14 +11,14 @@ Read `docs/build/rule-agents/fees/AGENT_RULES.md` first and follow it. Fields of
 `src/lotline/rule_agents/fees/records.py`.
 
 **Input:** state, run folder, ONE place GEOID; the place's entry in `<run>/places.jsonl` and its rows in
-`<run>/sources.jsonl` (only those with `access = "ok"` or a `local_path`).
+`<run>/sources.jsonl` (only those with `access = "ok"` or a `doc_id`).
 
 **Steps:**
-1. For each source: if it has `local_path`, use it; else
-   `uv run python -m lotline.rule_agents.fees fetch <url> --state <ST> --name <geoid>-<short-name>.<ext>`.
-   If the output has a `reason`, stop using that host and write a human task.
-2. Read the saved file with the Read tool (for a long PDF, find the fee table's pages first; read only those).
-   A scanned PDF you cannot read reliably → `scanned_pdf` task.
+1. For each source: if it has a `doc_id`, use it; else `uv run python -m lotline.rule_agents.fees fetch <run> <url> --geoid <geoid>`
+   (store first). If the output has a `blocker`, stop using that host and write a human task.
+2. Read the stored document: `uv run python -m lotline.rule_agents outline <doc>` for its headings, `uv run python -m lotline.rule_agents excerpts <doc> fees` for the
+   fee passages, then `uv run python -m lotline.rule_agents docs text <doc> --page N` for the pages that hold the tables. Read whole documents
+   only when they are short. A scan (`text_status` scanned) you cannot read reliably by eye → `scanned_pdf` task.
 3. Write items for what a **typical new house, duplex, fourplex and ADU** pays: building permit, plan review,
    trade permits a new home needs (plumbing, mechanical, electrical, if charged separately), state surcharge,
    water and sewer connection / capacity / tap / meter charges, impact fees or SDCs. Skip fees for commercial
@@ -29,11 +29,11 @@ Read `docs/build/rule-agents/fees/AGENT_RULES.md` first and follow it. Fields of
    - Each item's `quote` must contain the number and its row label; include the column header in
      `page_or_section` when the table has several columns (e.g. "Table 3, column 'inside city'"). [P4]
    - `item_id`: `<geoid>-c1-<nn>`; `coder`: `rules-fees-reader`.
-4. Run `uv run python -m lotline.rule_agents.fees quotecheck <run>/items.coder1.<geoid>.jsonl`. For HTML and
-   text sources it marks matched quotes `verbatim`; fix any quote it reports as not found (re-copy it from the
-   file), or leave it `image_read` for PDFs.
+4. Run `uv run python -m lotline.rule_agents.fees quotecheck <run>/items.coder1.<geoid>.jsonl`. It marks quotes found in the stored text
+   `verbatim` (HTML, text and PDF); re-copy any quote it reports as not found (one contiguous run of text,
+   labels in `page_or_section`), or keep `image_read` for a scanned page.
 5. For every expected (body, component) in places.jsonl that has no item and no task yet, write a task
-   (`not_found`, `buried_document` or `budget_exhausted`).
+   (`not_found`, `buried_document` or `budget_spent`). Record your fetches and searches with `ledger add`.
 
 **Outputs:** `<run>/items.coder1.<geoid>.jsonl`, `<run>/tasks.reader.<geoid>.jsonl`.
 

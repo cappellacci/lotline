@@ -26,9 +26,14 @@ One task covers one **place × levying body × component** (e.g. "Fort Worth · 
 | `est_minutes` | the swarm's guess |
 | `status` | `open` → `done` (answered) or `no_usable_source` (looked, nothing official online) |
 
-**Reasons** (`handoff.REASONS`): `robots_disallow`, `http_403_waf`, `login_required`, `scanned_pdf`,
-`buried_document`, `not_found`, `summariser_only`, `coders_disagree`, `verify_low`, `budget_exhausted`,
-`records_request_only`.
+**Reasons** (`handoff.REASONS`): the shared blocker kinds (`common.evidence.BLOCKER_KINDS`, with the shared
+browser tips in `common.handoff`): `robots_disallow`, `http_403_waf`, `code_host_wall`, `login_required`,
+`js_only`, `scanned_pdf`, `not_found`, `unreachable`, `robots_unavailable`, `ambiguous_source`,
+`conflicting_sources`, `budget_spent`, `records_request_only`; plus the fee-only `buried_document`,
+`summariser_only`, `coders_disagree`, `verify_low`. Each task also carries `browser_tip`, `held_docs` (documents
+already in the store for the place) and `optional`; the Markdown checklist is the shared one. An answer may
+name a file dropped in the `rule_docs` inbox in `answer_saved_file`: `ingest-tasks` registers it in the
+document store so the item cites its `doc_id`.
 `records_request_only` makes an **optional** task: always priority 3, `optional` = yes in the sheet and
 "· optional" in the Markdown checklist, with the tip "Optional: this record is only available by public-records
 request. File one with the city clerk if you want it (it can take weeks); otherwise mark no_usable_source." The

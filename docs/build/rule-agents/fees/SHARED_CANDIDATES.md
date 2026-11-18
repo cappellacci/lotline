@@ -1,7 +1,9 @@
 # Components the fees, ADU and missing-middle swarms should share
 
-*For the parent session to merge. The fees swarm built its own copy of each (in `src/lotline/rule_agents/fees/`)
-so it could be tested now; none of it is fees-specific except where noted.*
+*Status 2026-11-18: merged.* The shared core (`src/lotline/rule_agents/common/`, PR #480) took these parts, and
+the fees swarm now uses it: fetch, document store, reading (`outline`, `excerpts`), evidence and confidence cap,
+human-task tips and checklist, budget ledger, `doctor` and `import`. The fees copies (`fees/access.py`, the
+sidecar writer, `register`, `robots`, `text`) are deleted. This file is kept as the record of what was proposed.
 
 | # | Component | Fees version | What is shared | What stays per category |
 |---|---|---|---|---|

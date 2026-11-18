@@ -34,13 +34,17 @@ synthetic fixtures. Agents never do arithmetic for the table: they record what t
 bracket, share, units per dwelling) and the helper prices it. This removes the hand-arithmetic slips the
 coverage passes had to recheck, and means every per-unit number can be reproduced from the items file.
 
-**Run folder:** `$LOTLINE_DATA_DIR/rule-agents/fees/<ST>/<run-id>/` (outside the repo). Downloads go through
-`lotline.io.http.fetch` into `$LOTLINE_DATA_DIR/raw/rule-agents-fees/<st>/…`, so each lands in
-`manifest.jsonl` with its sha256 (R5, R6). Nothing downloaded is committed. The sha256 is the document's ID
-(`FeeItem.sha256`): every amount cites it with the URL, retrieval date, page/table and quote; HTML and text
-documents get a text sidecar at `interim/docs/<sha256>.txt`; hand-saved documents enter through
-`fees_tool register`. The full document store (index, schedule history chains, dedupe across categories) is
-designed as a shared component in `SHARED_CANDIDATES.md` §11.
+**Run folder:** `$LOTLINE_DATA_DIR/rule-agents/fees/<ST>/<run-id>/` (outside the repo). **Shared core (since
+2026-11-18):** documents live in the shared document store (`lotline.rule_agents.common.docstore`,
+`$LOTLINE_DATA_DIR/rule_docs/`): `fees fetch` is `common.fetch.get(url, "fees", run)`, store-first (a schedule
+any swarm already holds costs no request), with robots.txt, known refusals, one spaced request and a manifest
+entry (R5, R6). The store keeps the blob, a text sidecar (PDF pages included) and the schedule's version chain;
+the doc ID is the sha256 (`FeeItem.doc_id`), cited by every amount with the URL, retrieval date, page/table and
+quote. Agents read with the shared `outline`, `excerpts` and `docs text`; hand-saved documents enter with
+`docs add` or the inbox. Evidence vocabulary and the confidence cap are `common.evidence`; human tasks use the
+shared tips and checklist (`common.handoff`); per-place spending is the shared ledger (`common.budget`);
+`doctor` checks the set-up and `import` takes the proposed table into `config/fees/<st>.csv`. Nothing
+downloaded is committed.
 
 ## The unit of work: a fee item
 
@@ -54,7 +58,7 @@ the source and holds no derived numbers:
 | How much | `basis_kind`, `amount`, `bracket_base`, `bracket_start`, `bracket_end`, `rate_per_1000`, `pct`, `share_of`, `units_per_dwelling`, `quantity_per_unit`, `master_meter_amount` | `basis_kind` is one of 13 kinds (below) |
 | Range group | `group_id`, `group_kind` (area, plat_date), `cohort_start` | Ben's 2026-10-30 rule (D4) |
 | When | `schedule_label`, `adopted_date`, `effective_date`, `fiscal_year_start`, `in_force_through` | adopted ≠ effective (D2) |
-| Evidence | `url`, `local_path`, `sha256`, `retrieved_at`, `page_or_section`, `quote`, `quote_status` | every amount needs all of these (below) |
+| Evidence | `url`, `doc_id`, `retrieved_at`, `page_or_section`, `quote`, `quote_status`, `source_kind` (`local_path` only for files outside the store) | every amount needs all of these (below); `FeeItem.evidence()` gives the shared `Evidence` |
 | Judgment | `applies_when`, `confidence`, `coder`, `notes` | |
 
 `basis_kind` → how the helper prices one dwelling unit of the prototype (`prototype.price`):
@@ -107,11 +111,12 @@ Every item with an `amount` (or `pct`, or bracket numbers) must carry `url`, `re
 
 **Confidence** (written into `notes` as `conf=`; the schema has no column for it, see *Proposed schema
 change*):
-- **high:** `verbatim`, an adopted schedule/ordinance/rates page of the levying body, and the second coder
-  read the same amount (`verified_by` filled).
-- **medium:** `verbatim` or `image_read`, a single coder, or the second coder only partly agreed (same
-  amount, different date or label).
-- **low:** `summariser`, a third-party mirror, a draft or a city guide (S2), or coders disagree and the
+- **high:** the shared cap allows high (`common.evidence.max_confidence`: a primary source, such as a
+  `fee_schedule`, with a machine-found or person-read quote) **and** the second coder read the same amount
+  (`verified_by` filled).
+- **medium:** the cap allows high but a single coder, or the cap is medium (a mirror, city page or scan read by
+  eye).
+- **low:** no read quote, a `search_summary` or `news` source (S2), or coders disagree and the
   reconciler could not settle it from the page. Low rows go to `rows_low.csv` and a human task, not into
   `rows.csv`.
 

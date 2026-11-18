@@ -17,8 +17,8 @@ it (LESSONS S3). If your prompt contains coder 1's values, stop and say so.
 `<run>/sources.jsonl`.
 
 **Steps:** the same as the reader (`.claude/agents/rules-fees-reader.md`, steps 1-4), with three differences:
-1. Use the files already saved by the reader when `sources.jsonl` or the manifest has them (do not download a
-   file twice); otherwise fetch with the helper.
+1. Use the documents already in the store (`doc_id` in `sources.jsonl`, or `docs find`); `fetch` is store-first,
+   so it never downloads a file twice.
 2. Re-derive the dates yourself: find the effective date in the document (or the ordinance/resolution that
    adopted it), and say in `notes` which version of the document you read (its label and date). Most past
    second-coder findings were about dates and versions (LESSONS S1).

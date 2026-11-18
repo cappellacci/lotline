@@ -14,9 +14,10 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
+from lotline.rule_agents.common.evidence import max_confidence
 from lotline.rule_agents.fees import classify, groups
 from lotline.rule_agents.fees.prototype import BASIS, Priced, Prototype, building_fee, price, prototypes
-from lotline.rule_agents.fees.records import FeeItem
+from lotline.rule_agents.fees.records import READ, FeeItem
 
 _ZERO_OK = re.compile(
     r"exempt|waive|no (impact |system development |capacity )?fee|not (charged|required)|\$0\b|none", re.I
@@ -64,12 +65,21 @@ def price_all(items: Iterable[FeeItem], protos: dict[str, Prototype] | None = No
     return out
 
 
+_RANK = {"low": 0, "medium": 1, "high": 2}
+
+
 def confidence(item: FeeItem) -> str:
-    if item.confidence:
-        return item.confidence
-    if not item.has_evidence() or item.source_kind != "official":
+    """The shared cap (`common.evidence.max_confidence`: high needs a primary source with a machine-found or
+    person-read quote), and for fees high also needs the blind second coder's agreement (`verified_by`). A
+    confidence the coder set can lower this, never raise it. By hand: fee_schedule + verbatim + verified ->
+    high; same, unverified -> medium; mirror + verbatim + verified -> medium; no quote -> low."""
+    if not item.has_evidence():
         return "low"
-    return "high" if item.verified_by else "medium"
+    cap = max_confidence(item.evidence())
+    got = "high" if cap == "high" and item.verified_by else ("medium" if cap != "low" else "low")
+    if item.confidence and _RANK[item.confidence] < _RANK[got]:
+        return item.confidence
+    return got
 
 
 @dataclass
@@ -159,7 +169,7 @@ def build(items: Iterable[FeeItem], protos: dict[str, Prototype] | None = None) 
             "payment_timing": it.payment_timing,
             "source": it.url or "",
             "source_section": it.page_or_section,
-            "source_quote": it.quote if it.quote_status in ("verbatim", "image_read") else None,
+            "source_quote": it.quote if it.quote_status in READ else None,
             "verified_by": it.verified_by,
             "verified_date": it.verified_date,
             "notes": text,

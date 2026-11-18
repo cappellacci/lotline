@@ -1,11 +1,14 @@
 # ruff: noqa: E501  (hand-worked examples)
-"""Component taxonomy, the group rule and polite access (LESSONS T1, D4, R1-R5)."""
+"""Component taxonomy, the group rule, and fee items on the shared core (LESSONS T1, D4, R1-R5).
+
+robots.txt, block detection and the word-for-word quote rule are tested with the shared core
+(tests/rule_agents/common/test_rule_core.py)."""
 
 from datetime import date
 
 import pytest
 
-from lotline.rule_agents.fees import access, classify, groups
+from lotline.rule_agents.fees import classify, groups
 
 
 @pytest.mark.parametrize(
@@ -48,52 +51,57 @@ def test_plat_date_group_newest():
         groups.central_index([1, 2], "plat_date", [None, date(2020, 1, 1)])
 
 
-def test_robots():
-    txt = "User-agent: *\nDisallow: /regs/\n"
-    assert not access.robots_allows(txt, "https://online.example.com/regs/doc.aspx")
-    assert access.robots_allows(txt, "https://online.example.com/fees.pdf")
-    assert access.robots_allows(None, "https://anything.example.com/x")
+def _stored(tmp_path, name, body):
+    from lotline.rule_agents.common.docstore import DocStore
+
+    docs = DocStore(tmp_path)
+    p = docs.data_root / "raw" / "rule_docs" / "2026-11-17" / name
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_bytes(body if isinstance(body, bytes) else body.encode())
+    rec = docs.ingest(p, url=f"https://city.example.gov/{name}", added_by="run:fees:t", category="fees")
+    return docs, rec
 
 
-def test_access_reasons():
-    assert access.access_reason(403) == "http_403_waf"
-    assert access.access_reason(200, "<title>Just a moment...</title>") == "http_403_waf"
-    assert access.access_reason(200, "fees " * 5000 + "akamai") is None  # long real page naming a CDN
-    assert access.access_reason(200, '<form><input type="password"></form>') == "login_required"
-    assert access.access_reason(200, "ok", robots_ok=False) == "robots_disallow"
-    assert access.access_reason(404) == "not_found"
-    assert access.access_reason(200, "Water capacity fee $1,828") is None
+def test_quote_checked_against_the_document_store(tmp_path, make_item):
+    from lotline.rule_agents.fees.cli import check_quote
 
-
-def test_quote_found():
-    text = "Zone 1:\n  Single-family   dwelling $1871.00  $1916.00 per unit\nZone 2 – other"
-    assert access.quote_found("Single-family dwelling $1871.00 $1916.00 per unit", text)
-    assert access.quote_found("Zone 1: ... $1916.00 per unit", text)
-    assert access.quote_found("zone 2 - other", text)
-    assert not access.quote_found("Single-family dwelling $1916.00", text)
-    assert not access.quote_found("$1916.00 ... Zone 1:", text)  # parts out of order
-
-
-def test_doc_id_and_sidecar(tmp_path):
-    from lotline.io.store import DataStore, sha256_file
-    from lotline.rule_agents.fees import cli
-
-    store = DataStore(tmp_path / "data")
-    page = tmp_path / "fees.html"
-    page.write_text("<html><script>x()</script><p>Water&nbsp;tap fee: $1,828</p></html>")
-    doc_id = cli._sidecar(store, page)
-    assert doc_id == sha256_file(page)
-    side = (store.root / "interim" / "docs" / f"{doc_id}.txt").read_text()
-    assert access.quote_found("Water tap fee: $1,828", side) and "x()" not in side
-    # a hand-saved PDF gets a doc id but no text sidecar until a PDF reader is approved
-    pdf = tmp_path / "s.pdf"
-    pdf.write_bytes(b"%PDF-1.4 fake")  # damaged: no sidecar, no crash
-    entry = store.register(
-        pdf,
-        source="rule-agents-fees-manual",
-        url="https://x.example/s.pdf",
-        license="public record",
-        vintage="mn",
+    docs, rec = _stored(
+        tmp_path, "fees.html", "<html><script>x()</script><p>Water&nbsp;tap fee: $1,828</p></html>"
     )
-    assert cli._sidecar(store, store.root / entry.path) == entry.sha256
-    assert not (store.root / "interim" / "docs" / f"{entry.sha256}.txt").exists()
+    ok = make_item(item_id="ok", quote="Water tap fee: $1,828", doc_id=rec.doc_id, quote_status="not_checked")
+    bad = make_item(item_id="bad", quote="Water tap fee: $1,900", doc_id=rec.doc_id, quote_status="verbatim")
+    assert check_quote(ok, docs)[0] == "verbatim"
+    assert check_quote(bad, docs)[0] == "not_checked"  # an unmatched verbatim claim is held back
+
+
+def test_damaged_pdf_leaves_quote_unchecked(tmp_path, make_item):
+    from lotline.rule_agents.fees.cli import check_quote
+
+    pdf = tmp_path / "s.pdf"
+    pdf.write_bytes(b"%PDF-1.4 fake")  # damaged: no crash
+    it = make_item(item_id="p", quote="anything", quote_status="verbatim", local_path=str(pdf))
+    status, note = check_quote(it, None)
+    assert status == "image_read" and "unreadable" in note
+
+
+def test_old_item_files_still_load(make_item):
+    from lotline.rule_agents.fees.records import FeeItem
+
+    base = make_item(item_id="o").model_dump(mode="json", exclude_none=True)
+    base.pop("doc_id", None)
+    old = {**base, "sha256": "a" * 64, "quote_status": "summariser", "source_kind": "official"}
+    it = FeeItem.model_validate(old)
+    assert (it.doc_id, it.quote_status, it.source_kind) == ("a" * 64, "not_checked", "search_summary")
+    assert FeeItem.model_validate({**base, "source_kind": "wayback"}).source_kind == "archive"
+
+
+def test_evidence_and_confidence_use_the_shared_cap(make_item):
+    from lotline.rule_agents.fees.build import confidence
+
+    it = make_item(item_id="c")  # fee_schedule, verbatim quote
+    assert it.evidence()[0].source_kind == "fee_schedule"
+    assert confidence(it) == "medium"  # unverified
+    assert confidence(it.model_copy(update={"verified_by": "rules-fees-second-coder"})) == "high"
+    mirror = it.model_copy(update={"verified_by": "x", "source_kind": "mirror"})
+    assert confidence(mirror) == "medium"  # a mirror never reaches high
+    assert confidence(it.model_copy(update={"verified_by": "x", "confidence": "low"})) == "low"

@@ -15,10 +15,4 @@ agree_tolerance:
   value: {relative: 0.005, absolute_usd: 1.0}
   source: "Choice: coders agree when per-unit amounts differ by at most 0.5% or $1 (rounding in schedules)"
 
-budgets_per_place:
-  value: {requests: 12, searches: 6, documents_read_in_full: 3}
-  source: "Choice, from the 2026-11-09 coverage passes (most places needed 2-4 documents); keeps runs token-lean"
-
-min_seconds_between_requests_per_host:
-  value: 2.0
-  source: "Choice; lotline.io.http keeps 1.0 s for census.gov after the 2026-10-19 block (R6)"
+# Per-place budgets and request spacing are the shared core's (common.budget DEFAULT_LIMITS, common.fetch HOST_INTERVAL).

@@ -38,3 +38,11 @@
   `fee_levels.coded_fees` old vs new: +$177.38 a house in 11 places, -$556.79 in Coon Rapids.
 - **Open / next:** the Coon Rapids fourplex permit (~$580 a unit high); a reconciler run on a place with real `differ` pairs; the history pass;
   merge the shared parts with the MM and ADU swarms; work the 16 human tasks.
+- **Update 2026-11-18 (on the shared core):** after #480 merged, the fees swarm moved onto
+  `lotline.rule_agents.common`: store-first `common.fetch.get`, the shared document store and reading tools
+  (`outline`, `excerpts`, `docs text`), `common.evidence` (source kinds, quote statuses, `max_confidence` as the
+  confidence cap), shared human-task tips and checklist (records-request-only stays an optional task), the
+  budget ledger, `doctor` as step 0 of `/rules-fees`, and the `import ... fees ST` command to end a run. The
+  fees copies (`fees/access.py`, sidecars, `register`, `robots`, `text`) are deleted; item files from the dry
+  run still load. Checked by tests (fee items on the shared store, legacy files, the confidence cap, saved
+  files from the inbox) and by re-building the dry run's merged items.
