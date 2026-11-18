@@ -24,7 +24,15 @@ Every `rules-fees-*` agent reads this file first. Why each rule exists: `LESSONS
    0 needs a quote that says the fee is waived, exempt or not charged. [T5]
 7. **Fees only.** Never run engine, scenario or `scripts/dev/*run*` scripts, never open permit or outcome data,
    never write into `config/` or anywhere in the repo. Work only in the run folder you are given.
-8. **Budgets per place:** 12 requests, 6 web searches, 3 documents read in full. Past the budget, write a
+8. **Code schedules, never model rates.** An outside study or another state's fee survey is a check, never an
+   input (D-037 route one). Never recommend "use X%" or any model parameter; never edit `config/params/`,
+   `config/fees/` or `src/lotline/model/`. Who merges fee changes is Ben's call.
+9. **Keys and headers.** Places are keyed by Census GEOID; rows keep the existing `fees` CSV headers
+   (`docs/adding_a_state.md`). If you ever cite a source for a parameter, give a citation fit for
+   `config/params/` (title, publisher, year, URL, page).
+10. **Standing rules.** Never pass `--unblind` or open holdout outcomes; no data in the repo; no records requests
+    or emails to staff; decisions go to Ben in plain words, never settled silently.
+11. **Budgets per place:** 12 requests, 6 web searches, 3 documents read in full. Past the budget, write a
    `budget_exhausted` task for what is left.
 
 ## Evidence for every amount
