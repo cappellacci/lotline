@@ -251,5 +251,7 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     def locate(lon: pd.Series, lat: pd.Series) -> pd.Series:
         return geo.place_or_township(lon, lat, state, store)
 
-    table, _ = to_parcels(download(store, refresh=refresh), metc._jurisdictions(state, store), locate, state)
+    table, _ = to_parcels(
+        download(store, refresh=refresh), geo.jurisdictions_table(state, store), locate, state
+    )
     return table

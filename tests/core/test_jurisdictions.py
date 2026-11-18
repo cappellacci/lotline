@@ -72,16 +72,37 @@ def test_local_only_jurisdictions_are_added_from_the_census_and_flagged():
     assert "2799999999" not in df.index  # never invented
 
 
-def test_holdout_places_and_parcel_places_are_always_local_jurisdictions(tmp_path):
+def test_local_jurisdictions_come_from_the_state_file_and_holdouts_never_from_data(tmp_path):
+    """Straight-line build (WS-SCALE, Ben 2026-11-17): the list reads no permit or parcel table."""
     from lotline.build.jurisdictions import local_geoids
+    from lotline.config import load_state
     from lotline.io import DataStore
 
     store = DataStore(tmp_path)
     out = store.processed("NC", "parcels", "onemap_parcels")
     out.parent.mkdir(parents=True)
-    pd.DataFrame({"jurisdiction_geoid": ["3743480", "37119", None]}).to_parquet(out)  # Matthews, county
+    pd.DataFrame({"jurisdiction_geoid": ["3799999", "37119", None]}).to_parquet(out)  # not on the list
     local = local_geoids("NC", store)
-    assert {"3712000", "3743480", "37119"} <= local  # Charlotte even with no Charlotte rows anywhere
+    assert "3712000" in local  # Charlotte (holdout) even with no Charlotte rows anywhere
+    assert "3743480" in local and "3743480" in load_state("NC").local_jurisdictions  # Matthews, listed
+    assert "3799999" not in local and "37119" not in local  # data alone adds nothing
+    assert local == local_geoids("NC")  # no store needed
+    assert "41" not in local_geoids("OR")  # a statewide holdout is not a jurisdiction
+
+
+def test_unlisted_reports_geoids_the_data_uses_but_the_list_lacks(tmp_path):
+    from lotline.build.jurisdictions import unlisted
+    from lotline.io import DataStore
+
+    store = DataStore(tmp_path)
+    for table, geoids in (("jurisdictions", None), ("permits", ["3700001", "3700002", "3700002", "37001"])):
+        path = store.processed("NC", table, "x")
+        path.parent.mkdir(parents=True)
+        df = pd.DataFrame({"geoid": ["3700001", "37001"]}) if geoids is None else None
+        df = df if df is not None else pd.DataFrame({"jurisdiction_geoid": geoids})
+        df.to_parquet(path)
+    out = unlisted("NC", store)
+    assert out.to_dict("records") == [{"geoid": "3700002", "table": "permits", "rows": 2}]
 
 
 def test_tiers_follow_the_loaded_parcels():

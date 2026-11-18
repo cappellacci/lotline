@@ -215,13 +215,12 @@ def resolve(
     juris_city: pd.Series, county_geoid: pd.Series, jurisdictions: pd.DataFrame
 ) -> tuple[pd.Series, pd.Series]:
     """(jurisdiction_geoid, how): the named city if it is a place in the table, else the county remainder."""
+    from lotline import geo
+
     lookup = city_lookup(jurisdictions)
-    keys = juris_city.astype("string").fillna("").map(_name_key)
-    city = keys.map(lookup).astype("string")
-    found = city.notna()
-    geoid = city.where(found, county_geoid.astype("string")).astype("string")
-    how = pd.Series("county_remainder", index=juris_city.index, dtype="string").mask(found, "juris_city")
-    return geoid, how
+    city = juris_city.astype("string").fillna("").map(_name_key).map(lookup)
+    steps = [("juris_city", city, False), ("county_remainder", county_geoid, False)]
+    return geo.resolve(steps, set(), otherwise="county_remainder")
 
 
 # ---- zoning ----------------------------------------------------------------------------------------------
@@ -434,19 +433,12 @@ def download_zoning(store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     )
 
 
-def _jurisdictions(state: str, store: DataStore) -> pd.DataFrame:
-    juris = store.read(state, "jurisdictions")
-    if juris is None:
-        from lotline.build import jurisdictions as jur
-
-        juris = jur.load(state, store)
-    return juris
-
-
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     if state.upper() != "OR":
         raise ValueError(f"{SOURCE} covers Oregon Metro's three counties only, not {state}")
-    juris = _jurisdictions(state, store)
+    from lotline import geo
+
+    juris = geo.jurisdictions_table(state, store)
     raw = download(store, refresh=refresh)
     zoning = download_zoning(store, refresh=refresh)
     table, _ = to_parcels(raw, roll_date(store, refresh=refresh), juris, state, zoning=zoning)

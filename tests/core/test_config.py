@@ -4,8 +4,10 @@ from pydantic import ValidationError
 from lotline.config import Holdout, Parameter, all_states, load_state
 
 
-def test_four_states_configured_with_required_holdouts():
-    assert all_states() == ["MN", "NC", "OH", "OR", "TX"]
+def test_the_five_states_configured_with_required_holdouts():
+    # a superset check, so adding config/states/<st>.yaml for a new state needs no test edit (WS-SCALE task 0)
+    states = all_states()
+    assert {"MN", "NC", "OH", "OR", "TX"} <= set(states) and states == sorted(states)
     assert [h.test_id for h in load_state("MN").holdouts] == ["V5-MN-STPAUL"]
     assert [h.test_id for h in load_state("NC").holdouts] == ["V5-NC-CHARLOTTE"]
     charlotte = load_state("NC").holdouts[0]

@@ -282,8 +282,8 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     )
     places["house_share"] = hs.where(~acs_only, 1.0).fillna(hs.median()).fillna(1.0)
 
-    reforms = {st: rule_tags.apply(adu.load_reforms(st)) for st in adu.REFORM_STATES}
-    every = pd.concat([r.assign(state=st) for st, r in reforms.items()], ignore_index=True)
+    reforms = {st: rule_tags.apply(r) for st, r in adu.reforms_with(state).items()}
+    every = pd.concat([r.assign(state=st) for st, r in adu.pooled_states(reforms).items()], ignore_index=True)
     blanks = emm.blank_shares(every[every["status"] == "in_force"])
     ref = reforms[state.upper()]
     mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]

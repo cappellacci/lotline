@@ -1,0 +1,11 @@
+source,field,raw,geoid,notes,source_url
+mwvcog_permits,City,SALEM,4164900,where the permit is,https://www.mwvcog.org/
+mwvcog_permits,City,KEIZER,4138500,where the permit is,https://www.mwvcog.org/
+mwvcog_permits,City,TURNER,4175150,where the permit is,https://www.mwvcog.org/
+mwvcog_permits,City,MARION COUNTY,41047,where the permit is,https://www.mwvcog.org/
+mwvcog_permits,City,MARION CO,41047,where the permit is,https://www.mwvcog.org/
+mwvcog_permits,City,POLK COUNTY,41053,where the permit is,https://www.mwvcog.org/
+mwvcog_permits,City,POLK CO,41053,where the permit is,https://www.mwvcog.org/
+mwvcog_permits,JURISD,SALEM,4164900,issuing office of a self-permitting city; used when City is blank,https://www.mwvcog.org/
+mwvcog_permits,JURISD,KEIZER,4138500,issuing office of a self-permitting city; used when City is blank,https://www.mwvcog.org/
+mwvcog_permits,JURISD,TURNER,4175150,issuing office of a self-permitting city; used when City is blank,https://www.mwvcog.org/
