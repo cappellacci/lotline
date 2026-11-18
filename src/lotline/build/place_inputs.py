@@ -156,12 +156,8 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
         out = out.merge(units, on=["geoid", "year"], how="left")
     # the baseline's FHFA index (`panels._hpi`): first of county, cbsa, state non-CBSA, state
     if market is not None and len(out):
-        # county from that year's BPS row, as the baseline panel reads it (a place straddling two counties can
-        # differ from `jurisdictions.county_geoid`, which is the latest row's; task 5 list)
-        county = out["bps_county_geoid"] if "bps_county_geoid" in out else out["county_geoid"]
-        frame = out.assign(
-            county_geoid=county.fillna(out["county_geoid"]), cbsa_code=out["cbsa_code"].astype("string")
-        )
+        # the jurisdictions table's county, as the baseline panel now reads it (task 5 rule 5)
+        frame = out.assign(cbsa_code=out["cbsa_code"].astype("string"))
         hpi = panels._hpi(frame, market, panels.HPI_LEVELS)
         out["hpi"], out["hpi_geo"] = hpi["hpi"].astype(float), hpi["hpi_geo"]
     out["state"] = st
