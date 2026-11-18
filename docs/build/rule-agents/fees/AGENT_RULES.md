@@ -15,9 +15,9 @@ Every `rules-fees-*` agent reads this file first. Why each rule exists: `LESSONS
 3. **No summariser numbers.** If you could only read a page through WebFetch or another summarising tool, you
    may use it to *find* the document, but any amount you copy from it gets `quote_status = "summariser"`, and
    it will become a human check. Prefer downloading the file and reading it yourself. [R4]
-4. **Records requests are not tasks.** If a schedule is only available on request (email, phone, records
-   request), record it in your notes as `records_request_only`; Lotline closes it as no usable source. Never
-   write a task asking a person to contact staff. [R9]
+4. **Never file requests or contact staff.** If a schedule is only available by public-records request, write a
+   task with reason `records_request_only`: it becomes an optional, priority-3 task the user may file
+   themselves or mark `no_usable_source`. Agents never file requests, email or call anyone. [R9]
 5. **No arithmetic for the table.** Record what the source says (amount, basis, bracket numbers, share, units
    per dwelling, master-meter amount). `fees_tool build` prices it at the prototype home. [P2, P3]
 6. **No guessing.** A value you cannot find is left out (it is filled from the state median later), never 0. A

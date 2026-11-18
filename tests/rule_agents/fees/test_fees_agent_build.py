@@ -177,8 +177,10 @@ def _task(**kw):
 def test_tasks_roundtrip_and_ingest(tmp_path):
     t = handoff.make_task(1, **_task())
     assert t.task_id == "FEES-TX-4827000-01"
-    with pytest.raises(ValueError):
-        handoff.make_task(2, **_task(reason="records_request_only"))  # Ben files no records requests
+    opt = handoff.make_task(2, **_task(reason="records_request_only"))  # optional, lowest priority
+    assert (opt.priority, opt.optional) == (3, "yes")
+    md = handoff.to_markdown([opt])
+    assert "(priority 3 · optional" in md and "File one with the city clerk" in md
     with pytest.raises(ValueError):
         handoff.make_task(2, **_task(reason="call_staff"))
     done = t.model_copy(

@@ -29,9 +29,15 @@ REASONS = {
     "coders_disagree": "the two coders read different values and the page did not settle it",
     "verify_low": "a value rests on a mirror, draft or guide, not the adopted schedule",
     "budget_exhausted": "the place used up its request or reading budget",
+    "records_request_only": "the schedule is only available by public-records request",
 }
-# Closed without a task (Ben does not file records requests or email staff): R9
-CLOSED = {"records_request_only": "only available on request: closed as no usable source"}
+# Optional tasks: always priority 3, `optional` = yes. Agents never file requests, email or call anyone (R9).
+OPTIONAL_TIPS = {
+    "records_request_only": (
+        "Optional: this record is only available by public-records request. File one with the city clerk "
+        "if you want it (it can take weeks); otherwise mark no_usable_source."
+    ),
+}
 
 # Columns a person fills; their names match the FeeItem fields they become
 ANSWER_FIELDS = [
@@ -77,6 +83,7 @@ class HumanTask(BaseModel):
         "charges no such fee, enter 0 and quote the line that says so."
     )
     priority: int = Field(ge=1, le=3)  # 1 = moves the place's total most
+    optional: Literal["yes", "no"] = "no"
     est_minutes: int = 10
     status: Literal["open", "done", "no_usable_source"] = "open"
     answer_fee_type: str | None = None
@@ -94,10 +101,11 @@ class HumanTask(BaseModel):
 
 
 def make_task(n: int, **kw) -> HumanTask:
-    """A task with id FEES-<ST>-<geoid>-<nn>. Refuses closed reasons (records requests are never tasks)."""
+    """A task with id FEES-<ST>-<geoid>-<nn>. A records-request-only source becomes an optional task at
+    priority 3 (the user may file the request or mark it no_usable_source)."""
     reason = kw["reason"]
-    if reason in CLOSED:
-        raise ValueError(f"{reason}: {CLOSED[reason]}; record it in the run report, not as a task")
+    if reason in OPTIONAL_TIPS:
+        kw = {**kw, "priority": 3, "optional": "yes"}
     if reason not in REASONS:
         raise ValueError(f"unknown reason {reason!r}; expected one of {sorted(REASONS)}")
     return HumanTask(task_id=f"FEES-{kw['state']}-{kw['place_geoid']}-{n:02d}", **kw)
@@ -128,9 +136,12 @@ def to_markdown(tasks: list[HumanTask]) -> str:
     ]
     for t in sorted(tasks, key=lambda t: (t.priority, t.place_name, t.task_id)):
         out += [
-            f"## {t.task_id} · {t.place_name} · {t.levying_body} · {t.component} (priority {t.priority}, ~{t.est_minutes} min)",
+            f"## {t.task_id} · {t.place_name} · {t.levying_body} · {t.component} (priority {t.priority}"
+            + (" · optional" if t.optional == "yes" else "")
+            + f", ~{t.est_minutes} min)",
             f"- **Open:** {t.start_url}" + (f" (also: {t.other_urls})" if t.other_urls else ""),
             f"- **Why a person:** {REASONS[t.reason]}.",
+            *([f"- **Tip:** {OPTIONAL_TIPS[t.reason]}"] if t.reason in OPTIONAL_TIPS else []),
             f"- **Look for:** {t.look_for}",
             f"- **Building types:** {t.building_types}",
             f"- **Fill:** {t.fields_to_fill}",

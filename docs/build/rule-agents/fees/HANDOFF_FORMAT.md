@@ -27,9 +27,12 @@ One task covers one **place × levying body × component** (e.g. "Fort Worth · 
 | `status` | `open` → `done` (answered) or `no_usable_source` (looked, nothing official online) |
 
 **Reasons** (`handoff.REASONS`): `robots_disallow`, `http_403_waf`, `login_required`, `scanned_pdf`,
-`buried_document`, `not_found`, `summariser_only`, `coders_disagree`, `verify_low`, `budget_exhausted`.
-There is deliberately **no** reason for emailing staff, phoning or filing a records request: the swarm does
-not ask for those, so a source available only that way is closed as no usable source and listed in the run report.
+`buried_document`, `not_found`, `summariser_only`, `coders_disagree`, `verify_low`, `budget_exhausted`,
+`records_request_only`.
+`records_request_only` makes an **optional** task: always priority 3, `optional` = yes in the sheet and
+"· optional" in the Markdown checklist, with the tip "Optional: this record is only available by public-records
+request. File one with the city clerk if you want it (it can take weeks); otherwise mark no_usable_source." The
+agents themselves never file requests, email or call anyone.
 
 ## Answer columns
 

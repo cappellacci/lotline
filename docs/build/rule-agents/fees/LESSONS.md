@@ -36,7 +36,7 @@ never been re-opened by an independent checker. The swarm's first job is to make
 | R6 | Parallel downloads got the project's network blocked by census.gov (2026-10-19). | `lotline/io/http.py` | One request at a time per host, minimum interval, at most 12 requests per place per run. |
 | R7 | Ben has local copies the agents can't fetch (`~/lotline-data/manual/nc_fees/`). | permits, plex-utility | Before fetching, the scout looks for a local copy under `LOTLINE_DATA_DIR/manual/`. |
 | R8 | Wayback copies rescued several ADU rules where the live site refused scripts, but Wayback's copy may be an older schedule. | ordinances README | Wayback is allowed as evidence of a dated version only (its capture date is the evidence date). It never stands for "current" without a human check. |
-| R9 | Ben will not email staff or file records requests. | memory note, 2026-11 | A source that is only available on request closes as `no_usable_source`; the swarm never emits a "call / email / request" task. |
+| R9 | Ben will not email staff or file records requests. | memory note, 2026-11 | A source only available on request becomes an optional, priority-3 task the user may file or mark `no_usable_source` (decided 2026-11-17); agents never file, email or call. |
 
 ## 2. Finding the schedule and parsing it
 
