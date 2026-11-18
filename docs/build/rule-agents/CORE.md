@@ -14,7 +14,7 @@ their PRs merge (their sessions know their code best).
 | Module | What it does | Came from |
 |---|---|---|
 | `docstore` | One store of primary documents for all swarms (below) | new; MM §10, ADU §0, fees §11 |
-| `fetch` | Store first; known refusals; robots.txt for our and Claude's tokens; one try; never another user agent | MM `fetch.py` |
+| `fetch` | Store first; known refusals; robots.txt for our and Claude's tokens; one try; never another user agent; records the URL that answered and the Wayback capture served (`final_url`, `wayback_ts`) | MM `fetch.py` |
 | `access` | Blocker classifier and code-host table (Municode, American Legal, eCode360, Legistar…) | MM `access.py` |
 | `evidence` | `Evidence` (+ `doc_id`, `page`, `quote_status`), `Blocker`, `max_confidence` rule | MM `findings.py` + fees |
 | `text` | What a reader sees in HTML; quote check (with pypdf word-split pass); page of a quote | MM + ADU |

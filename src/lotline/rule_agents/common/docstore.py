@@ -91,6 +91,8 @@ class DocRecord:
     adopted_date: str = ""
     effective_date: str = ""
     supersedes: str = ""  # an earlier doc_id from the same URL or the same issuer's schedule
+    served_url: str = ""  # the URL that actually answered, when a redirect took the request elsewhere
+    wayback_ts: str = ""  # the 14-digit Wayback capture served (a year-only link redirects to the nearest)
     added_by: str = ""  # run id, or human:<initials>
     may_contain_outcomes: bool = False
     draft_markers: list[str] = field(default_factory=list)
