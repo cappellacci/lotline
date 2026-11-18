@@ -34,7 +34,7 @@ header.mast .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: va
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.wordmark, .mark) .light { display: none; } :root:not([data-theme="light"]) :is(.wordmark, .mark) .dark { display: block; } }
 :root[data-theme="dark"] :is(.wordmark, .mark) .light { display: none; }
 :root[data-theme="dark"] :is(.wordmark, .mark) .dark { display: block; }
-.tagline { flex: 1 1 280px; margin: 0; color: var(--ink-muted); background: var(--app-page); padding: 0 var(--space-2); }
+.tagline { flex: 0 1 auto; margin: 0; color: var(--ink-muted); background: transparent; padding: 0 var(--space-2); }  /* no backing box: the grid shows through (Ben, 2026-11-17) */
 .picker { display: flex; align-items: center; gap: var(--space-2); }
 select, button { font: inherit; color: var(--ink); background: var(--paper-raised); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); }
 
@@ -47,8 +47,22 @@ nav.sections .mark { padding: 0; border: 0; }
 nav.sections a { display: block; padding: var(--space-3) 0; color: var(--ink); text-decoration: none; white-space: nowrap; border-bottom: var(--stroke-line) solid transparent; }
 nav.sections a:hover { border-bottom-color: var(--rule); }
 nav.sections a[aria-current="page"] { border-bottom-color: var(--survey); font-weight: 600; }
-.intro { padding: var(--space-5) 0 0; }
-.intro p { margin: 0; color: var(--ink-muted); }
+nav.sections a.add-state { padding: var(--space-1) var(--space-3); border: var(--stroke-hair) solid var(--survey); border-radius: var(--radius-sm); color: var(--survey); font-weight: 600; }
+nav.sections a.add-state:hover { background: var(--paper-sunken); border-bottom-color: var(--survey); }
+nav.sections a.add-state[aria-current="page"] { background: var(--survey); color: var(--on-survey); }
+/* opening card (Ben's sketch, 2026-11-17): name, what it measures and two buttons on the left; the state map on the right */
+.home-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-7); align-items: center; padding: var(--space-7); margin: 0; }
+.home-text h1 { margin: 0 0 var(--space-4); color: var(--ink); }
+.home-text p { color: var(--ink-muted); margin: 0 0 var(--space-5); }
+.home-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border: var(--stroke-hair) solid var(--survey); border-radius: var(--radius-sm); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; background: var(--app-card); color: var(--survey); }
+.btn:hover { background: var(--paper-sunken); }
+.btn.primary { background: var(--survey); color: var(--on-survey); }
+.btn.primary:hover { filter: brightness(1.1); }
+.home-map .map-wrap { max-width: none; }
+.home-map .map-legend { margin-top: var(--space-4); }
+.home-map.nudge svg { outline: 2px solid var(--focus); outline-offset: var(--space-2); }
+@media (max-width: 800px) { .home-card { grid-template-columns: 1fr; gap: var(--space-5); padding: var(--space-5); } }
 section.part[hidden] { display: none; }
 
 main section.part { padding: var(--space-7) 0 var(--space-6); border-bottom: var(--stroke-hair) solid var(--rule); }
@@ -108,6 +122,55 @@ pre.code { background: var(--paper-sunken); padding: var(--space-3); overflow-x:
 .axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
 .row-pending { color: var(--ink-muted); font-size: 14px; line-height: 20px; font-style: italic; }
 @media (max-width: 640px) { .ranges { grid-template-columns: 1fr; } .ranges .nums { text-align: left; } }
+/* Results opening (Ben's sketch, 2026-11-17): "[State] can add [X] homes over the next 5 years", then one range box per reform */
+.hero { margin: 0 0 var(--space-6); }
+.hero .display { margin: 0 0 var(--space-2); }
+.hero .display .x { color: var(--survey); font-variant-numeric: tabular-nums; }
+.hero .note { color: var(--ink-muted); margin: 0 0 var(--space-5); }
+/* the reforms' ranges on one log axis, a row per reform (as in the "Results for 2027–2031" page's first chart) */
+.rc { display: grid; grid-template-columns: minmax(170px, 260px) minmax(0, 1fr); gap: var(--space-3) var(--space-5); align-items: center; }
+.rc .who h4 { margin: 0; font-size: 18px; line-height: 24px; }
+.rc .who p { margin: var(--space-1) 0 0; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.rc .who .toggle { margin-top: var(--space-2); }
+.rc .who .toggle button { font-size: 12px; line-height: 16px; padding: 2px var(--space-2); }
+.rc .lane { position: relative; height: 40px; margin-right: 150px; }
+.rc .lane .g { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.rc .lane .band { position: absolute; top: 12px; height: 16px; border-radius: 2px; opacity: .28; }
+.rc .lane .tick { position: absolute; top: 8px; height: 24px; width: 3px; margin-left: -1px; }
+.rc .lane .num { position: absolute; top: 10px; font-family: var(--font-mono); font-size: 14px; line-height: 20px; white-space: nowrap; color: var(--ink); }
+.rc .lane .num small { color: var(--ink-muted); font-size: 12px; }
+/* model selector and evidence card (Ben's sketch, 2026-11-17): the selector sits above and outside the card */
+.seg { display: inline-flex; border: var(--stroke-hair) solid var(--survey); border-radius: var(--radius-sm); overflow: hidden; margin: var(--space-2) 0 0; max-width: 100%; }
+.seg button { border: 0; border-radius: 0; background: var(--app-card); color: var(--survey); font-weight: 600; padding: var(--space-2) var(--space-5); cursor: pointer; }
+.seg button + button { border-left: var(--stroke-hair) solid var(--survey); }
+.seg button[aria-pressed="true"] { background: var(--survey); color: var(--on-survey); }
+@media (max-width: 640px) { .seg button { padding: var(--space-2) var(--space-3); } }
+.ev > section { padding: var(--space-5) 0; border-top: var(--stroke-hair) solid var(--rule); }
+.ev > section:first-child { padding-top: 0; border-top: 0; }
+.ev > section > h3 { margin: 0 0 var(--space-2); }
+.ev ol.how { padding-left: 0; list-style: none; margin: var(--space-3) 0 0; display: grid; gap: var(--space-3); counter-reset: how; }
+.fee-vers { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: var(--space-3); }
+.fee-ver { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
+.fee-ver.on { border-color: var(--ink); }
+.fee-ver h4 { margin: 0; }
+.ev ol.how li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: var(--space-3); align-items: baseline; counter-increment: how; }
+.ev ol.how li::before { content: counter(how); font-weight: 700; font-size: 22px; color: var(--brass); }
+.ev ol.how .v { font-family: var(--font-mono); font-size: 14px; white-space: nowrap; text-align: right; }
+.ev ol.how .fbar { height: 10px; margin-top: var(--space-2); border-radius: var(--radius-bar); }
+.ev ol.how p { margin: var(--space-1) 0 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+@media (max-width: 640px) { .ev ol.how li { grid-template-columns: 32px minmax(0, 1fr); } .ev ol.how .v { grid-column: 2; text-align: left; } }
+.stack { position: relative; height: 36px; margin-top: var(--space-3); }
+.stack .g { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.stack .seg-base { position: absolute; left: 0; top: 6px; height: 24px; background: var(--scenario-baseline); }
+.stack .seg-add { position: absolute; top: 6px; height: 24px; opacity: .35; }
+.stack .seg-tick { position: absolute; top: 2px; height: 32px; width: 3px; margin-left: -1px; }
+.zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3); margin: var(--space-3) 0; }
+.zones > div { border: var(--stroke-hair) solid var(--rule); padding: var(--space-3); background: var(--paper-sunken); }
+.zones h4 { margin: 0 0 var(--space-1); font-size: 16px; }
+.zones p { margin: 0; font-size: 14px; line-height: 20px; }
+.rc .lane .dia { position: absolute; width: 11px; height: 11px; margin-left: -5px; background: var(--brass); transform: rotate(45deg); }
+.rc .axis { height: 20px; margin-right: 150px; }
+@media (max-width: 640px) { .rc { grid-template-columns: 1fr; gap: var(--space-1) 0; } .rc .lane { margin: 0 110px var(--space-3) 0; } }
 .headline { margin: 0 0 var(--space-4); }
 .headline .figure-large { display: block; color: var(--ink); }
 .toggle { display: inline-flex; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
@@ -173,6 +236,9 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .model-card .one { font-size: 17px; line-height: 26px; max-width: 70ch; margin: 0; }
 .model-card .status { margin: var(--space-1) 0 var(--space-2); }
 @media (max-width: 640px) { .model-card { padding: var(--space-3); } }
+svg.allstates { width: 100%; min-width: 560px; height: auto; display: block; margin: var(--space-3) 0; }
+svg.allstates text { font-family: var(--font-mono); font-size: 11px; fill: var(--ink-muted); }
+svg.allstates .lab { font-family: var(--font-sans); font-size: 12px; fill: var(--ink); }
 svg.dag { width: 100%; min-width: 760px; height: auto; display: block; margin: var(--space-3) 0; }
 svg.dag text { font-family: var(--font-sans); font-size: 13px; fill: var(--ink); text-anchor: middle; }
 svg.dag text.col { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; fill: var(--ink-muted); }
@@ -203,7 +269,7 @@ table.checks td:last-child { min-width: 260px; }
 <body>
 <header class="mast">
   <div class="wrap">
-    <a class="wordmark" href="#results" aria-label="Lotline"><span class="light"><!--__WORDMARK_LIGHT__--></span><span class="dark"><!--__WORDMARK_DARK__--></span></a>
+    <a class="wordmark" href="#home" aria-label="Lotline: home"><span class="light"><!--__WORDMARK_LIGHT__--></span><span class="dark"><!--__WORDMARK_DARK__--></span></a>
     <p class="tagline h3">Housing Reform Model</p>
   </div>
 </header>
@@ -216,24 +282,30 @@ table.checks td:last-child { min-width: 260px; }
     </div>
     <div class="nav-right">
       <label class="picker body-small">State <select id="state" aria-label="State"></select></label>
-      <a class="mark" href="#results" aria-label="Lotline: back to results"><span class="light"><!--__MARK_LIGHT__--></span><span class="dark"><!--__MARK_DARK__--></span></a>
+      <a class="add-state body-small" href="#add" data-page="add">Add a state</a>
+      <a class="mark" href="#home" aria-label="Lotline: home"><span class="light"><!--__MARK_LIGHT__--></span><span class="dark"><!--__MARK_DARK__--></span></a>
     </div>
   </div>
 </nav>
 <main class="wrap">
-  <div class="intro"><p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p></div>
-  <section class="part" id="page-results" data-section="results">
-    <h2 class="h1">Results</h2>
-    <div class="card map-card" id="map-card">
-      <div class="map-wrap"><svg id="state-map" role="group" aria-label="Map of US states: choose one to see its results"></svg></div>
-      <div class="map-key">
-        <h3 class="h3">Choose a state</h3>
-        <p class="body-small muted">Coloured states have Lotline results; click one to see them. The darker the colour, the more of the estimate rests on the state's own local records rather than national data.</p>
+  <section class="part" id="page-home" data-section="home">
+    <div class="card home-card">
+      <div class="home-text">
+        <h1 class="display">Lotline</h1>
+        <p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p>
+        <div class="home-actions">
+          <button type="button" class="btn primary" id="pick-state">Pick a state <span aria-hidden="true">→</span></button>
+          <a class="btn" href="#add">Add a state</a>
+        </div>
+      </div>
+      <div class="home-map" id="map-card">
+        <div class="map-wrap"><svg id="state-map" role="group" aria-label="Map of US states: choose one to see its results"></svg></div>
         <ul class="map-legend" id="map-legend"></ul>
         <p class="body-small muted map-off" id="map-off" hidden></p>
       </div>
     </div>
-    <p class="lead" id="results-lead"></p>
+  </section>
+  <section class="part" id="page-results" data-section="results" hidden>
     <div id="results-body"></div>
   </section>
   <section class="part" id="page-data" data-section="data" hidden>
@@ -263,13 +335,28 @@ table.checks td:last-child { min-width: 260px; }
     </div>
     <div id="data-sources"></div>
   </section>
+  <section class="part" id="page-add" data-section="add" hidden>
+    <h2 class="h1">Add a state</h2>
+    <p class="lead">How to run Lotline for a state that has no results yet, or sharpen one that rests on national data: what to gather, how to prepare it, and how to run the model.</p>
+    <p class="pending">Draft: these steps are a placeholder while the workflow is being revised. For now, follow the <a id="add-readme" href="__BYOS_URL__" target="_blank" rel="noopener">"bring your own state" guide in the README</a>.</p>
+    <div class="step"><p class="step-n" aria-hidden="true">1</p><div class="step-body"><h3 class="h3">Check what you already have</h3>
+      <p class="body">Every state starts with national data (Census permits, home values, rents, building costs), so the model can run before any local data is gathered. List which local sources exist for your state.</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">2</p><div class="step-body"><h3 class="h3">Prepare parcel records</h3>
+      <p class="body">Placeholder: county or state parcel rolls, and the fields the model needs (land use, lot size, year built, units).</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">3</p><div class="step-body"><h3 class="h3">Prepare building permits</h3>
+      <p class="body">Placeholder: city permit files for ADUs and 2–4 unit buildings, on top of the Census survey.</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">4</p><div class="step-body"><h3 class="h3">Code local rules and fees</h3>
+      <p class="body">Placeholder: which places already allow ADUs or missing middle and since when, and each city's fees per new home.</p></div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">5</p><div class="step-body"><h3 class="h3">Run the model and check the results</h3>
+      <p class="body">Placeholder: the commands that build the state's results and the checks to read before trusting them.</p></div></div>
+  </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
     <p class="lead">How we got from the question to the numbers, one step at a time: what we measure, how the data were prepared, the three reform models side by side, where the range comes from and what we ruled out, how we tested it, and how it carries over to a new state.</p>
 
     <div class="step" id="step-goal"><p class="step-n" aria-hidden="true">1</p><div class="step-body">
       <h3 class="h2">The goal: exactly what we measure</h3>
-      <p><b>The question.</b> If a state passed one of three reforms, how many more homes would be permitted over the five years <b>2027–2031</b> than under the rules already in place?</p>
+      <p><b>The question.</b> If a state passed one of three reforms, how many more homes would it gain over the five years <b>2027–2031</b> than under the rules already in place? The headline counts net new housing: homes finished, minus houses torn down to build them and homes that would have been built elsewhere in the state anyway.</p>
       <ul class="body-small steps-list">
         <li><b>The three reforms</b> follow the challenge Handbook to the letter.
           <ul>
@@ -320,7 +407,7 @@ table.checks td:last-child { min-width: 260px; }
     </div></div>
 
     <div class="step" id="step-model"><p class="step-n" aria-hidden="true">3</p><div class="step-body">
-      <h3 class="h2">What the model does, and where the range comes from</h3>
+      <h3 class="h2">What each model does, and how we get our ranges</h3>
 
       <h4 class="h3">3a. What gets built anyway</h4>
       <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over 2021–2025. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
@@ -335,12 +422,12 @@ table.checks td:last-child { min-width: 260px; }
         <li><b>What is already being built is never credited to the reform.</b></li>
       </ul>
 
-      <h4 class="h3">3c. The three models</h4>
-      <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it; every card answers the same five questions.</p>
-      <div class="tabs model-tabs" role="group" aria-label="Which model">
-        <button type="button" class="chip" data-model="adu" aria-pressed="true">ADUs</button>
-        <button type="button" class="chip" data-model="mm" aria-pressed="false">Missing middle</button>
-        <button type="button" class="chip" data-model="fees" aria-pressed="false">Fee cuts</button>
+      <h4 class="h3">3c. The three models, in depth</h4>
+      <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it: every card answers the same five questions, then goes state by state.</p>
+      <div class="seg model-tabs" role="group" aria-label="Which model">
+        <button type="button" data-model="adu" aria-pressed="true">ADUs</button>
+        <button type="button" data-model="mm" aria-pressed="false">Missing middle</button>
+        <button type="button" data-model="fees" aria-pressed="false">Fee reduction</button>
       </div>
 
       <div class="model-card" id="model-adu" data-model-card="adu">
@@ -371,13 +458,10 @@ table.checks td:last-child { min-width: 260px; }
         <h5>How we tested it</h5>
         <p class="status"><span class="verdict pass"><span class="glyph" aria-hidden="true"></span>Pass</span></p>
         <p class="body-small">We hid one state, fitted the model on the others and predicted the hidden state from two things only: its places' types and the coded rules of its 20 largest places. A prediction counted as useful if the actual number fell inside its range (P10 to P90) and the midpoint was within a factor of two.</p>
-        <div class="scroll"><table class="body-small"><thead><tr><th>State hidden</th><th class="n">ADUs counted</th><th class="n">Midpoint</th><th class="n">Range (P10–P90)</th></tr></thead><tbody>
-          <tr><td>Minnesota</td><td class="n">50</td><td class="n">62</td><td class="n">29–130</td></tr>
-          <tr><td>North Carolina</td><td class="n">621</td><td class="n">487</td><td class="n">106–1,936</td></tr>
-          <tr><td>Texas</td><td class="n">364</td><td class="n">246</td><td class="n">26–1,278</td></tr>
-          <tr><td>Oregon</td><td class="n">527</td><td class="n">417</td><td class="n">83–1,603</td></tr>
-        </tbody></table></div>
+        <div id="adu-heldout"></div>
         <p class="body-small">Useful in all four. Ohio could not be tested this way: only 3 of its places have usable ADU counts. These four states also shaped the model's design, so this is not a fully blind test. The blind one, Oregon predicted before any of its data was opened, missed low (see the tests table below).</p>
+        <h5>State by state</h5>
+        <div id="adu-deep"><p class="pending">Loading each state's results…</p></div>
         <h5>What it can't tell you</h5>
         <ul class="body-small steps-list">
           <li><b>The ranges are wide.</b> In Texas the top of the range is about 50 times the bottom.</li>
@@ -414,6 +498,9 @@ table.checks td:last-child { min-width: 260px; }
           <li><b>Blind:</b> Charlotte passed, with the earlier values. St. Paul, frozen with these values before any result was read, <b>missed</b>: 55 buildings in 2024–2025 against a range of 9 to 28. It built 33 in its first full year, against about 6 a year before.</li>
           <li><b>The weak spot:</b> the reform's own effect is not clearly detected. The model with a reform effect beats the same model without one by only about 1.5 standard errors, short of the 2 we set as the bar, and a fake reform date three years early shows a larger effect than the real dates.</li>
         </ul>
+        <div id="mm-heldout"></div>
+        <h5>State by state</h5>
+        <div id="mm-deep"><p class="pending">Loading each state's results…</p></div>
         <h5>What it can't tell you</h5>
         <ul class="body-small steps-list">
           <li><b>How big the effect is.</b> The counts are consistent with an effect but cannot pin it down, so the mature rate's range spans about 150-fold.</li>
@@ -432,12 +519,12 @@ table.checks td:last-child { min-width: 260px; }
         <ul class="body-small steps-list">
           <li><b>The cut,</b> shown two ways on the Results page: the Handbook's benchmark, $25,000 a home (half of a $50,000 fee assumed everywhere), and half of each city's real fees for houses, duplexes and fourplexes. Buildings of 5 or more homes are never covered.</li>
           <li><b>Builder's share:</b> about half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters).</li>
-          <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (from under 1% to 17%; each run draws one value).</li>
+          <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (Baum-Snow and Han 2024, measured neighborhood by neighborhood), from almost none (Mayer and Somerville 2000; Campbell and Alm 2006) to 17% (the metro-wide response in Saiz 2010 and Aastveit and others 2020). Each run draws one value.</li>
           <li><b>Lots that newly pay:</b> where parcel data allow, the cost model also counts lots that cross from not paying to paying after the cut.</li>
         </ul>
         <h5>What it learned from</h5>
         <ul class="body-small steps-list">
-          <li><b>Fee schedules</b> coded for 50 places, which hold about a third of each state's usual building. Other places take their state's median fee ($3,900 a home in Texas to $9,100 in Minnesota).</li>
+          <li><b>Fee schedules</b> coded for 58 places, which hold about a third of each state's usual building. Other places take their state's median fee ($3,900 a home in Texas to $9,100 in Minnesota).</li>
           <li><b>How strongly building responds</b> comes from published studies, not our own places: most studies of fees find no clear effect on how much is built, and the high end comes from metro-wide supply studies.</li>
         </ul>
         <h5>How we tested it</h5>
@@ -447,10 +534,15 @@ table.checks td:last-child { min-width: 260px; }
         <ul class="body-small steps-list">
           <li><b>How a city replaces the money.</b> Fees often pay for roads, pipes and parks; what happens to those is not modelled.</li>
           <li><b>Its own accuracy.</b> Unlike the other two models, its key number is borrowed, not measured here.</li>
-          <li><b>Oregon:</b> not in the fee run yet.</li>
+          <li><b>Oregon:</b> only 4 cities are coded (Bend, Eugene, Portland and Salem), with fees far above the other states' ($17,500 to $42,800 a home, mostly system development charges). Four is too few for an Oregon median, so its other places take the median of every coded place (about $7,100), which likely understates what they charge.</li>
         </ul>
         <p class="source">Sources: docs/analysis_plan.md D-010, D-065, D-073, D-076, D-077; config/params/fees.yaml.</p>
       </div>
+
+      <h4 class="h3">The three models, every state at once</h4>
+      <p class="body-small">What each model predicts for every state with results: net new homes over the five years, the band from P10 to P90 and the tick at the midpoint. The scale is logarithmic, so each gridline is ten times the last. Missing middle's bands are the widest because its reform effect is the least pinned down; Oregon adds few ADUs because its state law already allows what the reform asks.</p>
+      <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
+      <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
 
       <h4 class="h3">3d. The causal diagram</h4>
       <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
@@ -540,6 +632,16 @@ table.checks td:last-child { min-width: 260px; }
 const DATA = JSON.parse(document.getElementById("lotline-data").textContent);
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+// A source line from the bundle ("Name: https://... ; Other (https://...) ; analysis plan D-057") as linked names:
+// each "; " piece links its own text to its https URL; pieces without one stay plain text. Everything is escaped.
+function sourceLinks(text) {
+  return String(text ?? "").split(/\s+;\s+|(?<=\));\s+/).map((piece) => {
+    const m = piece.match(/https:\/\/[^\s"<>()]+/);
+    if (!m) return esc(piece.replace(/[.;\s]+$/, ""));
+    const label = piece.replace(m[0], "").replace(/\(\s*\)/, "").replace(/[\s:;.(]+$/, "").trim() || m[0];
+    return `<a href="${esc(m[0])}" target="_blank" rel="noopener">${esc(label)}</a>`;
+  }).join(" · ");
+}
 
 // ---- state picker: grouped by role, no state names in code ----------------------------------------------
 function fillPicker() {
@@ -578,13 +680,13 @@ function loadState(state) {
 }
 
 // ---- state map: tile grid from us_tiles.yaml, coloured by each bundle's data tier -----------------------
-// Grey tiles have no bundle and link to the README's "bring your own state" steps. Bundles whose code is not
+// Grey tiles have no bundle and open the "Add a state" page (#add). Bundles whose code is not
 // on the grid (e.g. a test fixture) are listed under the key so they stay reachable.
 const TIER_WORDS = { 1: "Most detailed local records", 2: "Some local records", 3: "Mostly national data" };
 const TILE = 30, GAP = 3;
 function pickState(code) {
   $("state").value = code;
-  go(route().page, false);
+  go("results");
   return show(code);
 }
 function drawMap() {
@@ -599,16 +701,16 @@ function drawMap() {
       `<text x="${x + TILE / 2}" y="${y + TILE / 2}">${esc(t.code)}</text>`;
     if (!b) {
       const say = `${t.name}: no results yet. Bring your own state`;
-      return `<a class="tile none" href="${esc(M.byos_url)}" target="_blank" rel="noopener" aria-label="${esc(say)}"><title>${esc(say)}</title>${square("var(--tier-none)")}</a>`;
+      return `<a class="tile none" href="#add" aria-label="${esc(say)}"><title>${esc(say)}</title>${square("var(--tier-none)")}</a>`;
     }
-    const tier = b.meta.data_tier, sel = t.code === cur;
+    const tier = b.meta.data_tier, sel = t.code === cur && route().page !== "home";  // no pick yet on the opening card
     const say = `${t.name}: ${DATA.roles[b.meta.state_role] || b.meta.state_role}, data tier ${tier} (${TIER_WORDS[tier] || ""})`;
     return `<a class="tile on ${Number(tier) === 3 ? "txt-ink" : "txt-paper"}${sel ? " sel" : ""}" href="#" data-state="${esc(t.code)}" aria-label="${esc(say)}"${sel ? ' aria-current="true"' : ""}><title>${esc(say)}</title>${square(`var(${M.tier_tokens[tier]})`, sel)}</a>`;
   }).join("");
   // The call to action sits where it applies: a national-data-only state can be sharpened with local records,
-  // and a grey state (only if any is left) can be added. Both point at the README's "bring your own state".
+  // and a grey state (only if any is left) can be added. Both open the "Add a state" page.
   const used = new Set(DATA.states.map((b) => b.meta.data_tier));
-  const byos = (words) => `<a href="${esc(M.byos_url)}" target="_blank" rel="noopener">${words}</a>`;
+  const byos = (words) => `<a href="#add">${words}</a>`;
   const grey = M.tiles.some((t) => !entryFor(t.code));
   $("map-legend").innerHTML = Object.entries(TIER_WORDS).filter(([k]) => used.has(Number(k))).map(([k, w]) =>
     `<li><span class="swatch" style="background:var(${esc(M.tier_tokens[k])})"></span><span>Tier ${esc(k)}: ${esc(w)}${k === "3" ? ` · ${byos("sharpen it with your state's own data")}` : ""}</span></li>`).join("") +
@@ -641,7 +743,11 @@ const fmtInt = (x) => (Number.isFinite(x) ? Math.round(x).toLocaleString("en-US"
 const fmtPct = (x) => !Number.isFinite(x) ? "–" : (x * 100).toLocaleString("en-US", { maximumFractionDigits: x < 0.01 ? 2 : 1, minimumFractionDigits: x < 0.01 ? 2 : 1 }) + "%";
 const fmtFactor = (x, f) => !Number.isFinite(x) ? "–" : f === "rate" ? x.toPrecision(3) : fmtPct(x);
 const scenLabel = (k) => (DATA.scenarios[k] || { label: k }).label;
-const scenColor = (k) => `var(${(DATA.scenarios[k] || { color: "--ink" }).color})`;
+// a colour token from build.SCENARIOS, checked to be a plain CSS custom property so it is safe in a style attribute
+const scenColor = (k) => {
+  const c = Object.hasOwn(DATA.scenarios, k) ? DATA.scenarios[k].color : "--ink";
+  return /^--[a-z0-9-]+$/.test(c) ? `var(${c})` : "var(--ink)";
+};
 const AGG = globalThis.LotlineAggregate;
 
 function niceTicks(max, n = 4) {
@@ -654,7 +760,8 @@ function niceTicks(max, n = 4) {
 }
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
-const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null };
+const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null, fee: "fees", model: null };
+const SCENARIOS_SHORT = { adu: "ADUs", missing_middle: "Missing middle", fees: "Fee reduction" };
 // Gross vs net (aggregate.homes_from_draws): "all new homes" = homes_in_place; "net new housing" = that × (1 − displacement_share).
 const OUTCOME_WORDS = {
   homes_in_place: ["All new homes", "Every new home the reform leads to."],
@@ -667,19 +774,16 @@ const FEE_NOTE = {
   fees_local_half: "<b>Real local fees cut in half:</b> each city's own fees for houses, duplexes and fourplexes, from its fee schedule (or, where none was coded, the state's typical fee), cut by half. Buildings of 5 or more homes are not covered.",
 };
 
-// "Why two numbers?": the scenario's own gross and net midpoints (sliders included) and the share taken out.
-function twoNumbersHtml(b, d, r) {
-  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
-  const gross = r.homes_in_place.p50, net = r.homes_net_statewide.p50;
-  const share = gross > 0 ? 1 - net / gross : null;
-  const kind = KIND_OF_HOME[d] || "new home";
-  return `<p class="body-small" style="margin:0"><b>Why two numbers?</b> A new home doesn't always mean one more home for the state. Some of the people who move into a new ${esc(kind)} would otherwise have moved into a home built somewhere else in ${esc(name)}, and that home now won't be built. So the page counts two ways:</p>
-    <ul class="body-small" style="margin:var(--space-2) 0 0">
-      <li><b>All new homes: about ${fmtN(gross)}.</b> Every new home the reform leads to.</li>
-      <li><b>Net new housing: about ${fmtN(net)}.</b> What's left after taking out the homes that would have been built elsewhere in ${esc(name)} anyway${share === null ? "" : `, about ${Math.round(share * 100)}% of them`}. This is the honest answer to "how many more homes does the state get?"</li>
-    </ul>
-    <p class="body-small muted" style="margin:var(--space-1) 0 0">That share is an assumption, from none to half (studies of zoning reforms in Auckland and Lower Hutt, New Zealand), not something measured in ${esc(name)}. The slider "Homes that would have been built elsewhere in the state anyway" below shows how much it matters.</p>`;
-}
+// What each reform is, in one line (the Handbook's definitions, as on The model page), for the range boxes.
+const WHAT = {
+  adu: "One backyard home (ADU) allowed on every house lot, at least 600 sq ft, with no parking required.",
+  missing_middle: "Buildings of 2 to 6 homes allowed on lots now zoned for one house, up to three stories.",
+  fees: "Development fees cut in half. The Handbook benchmark: a $50,000 fee everywhere, cut to $25,000.",
+  fees_local_half: "Development fees cut in half, starting from each city's own fees for houses, duplexes and fourplexes.",
+};
+const HERO = ["adu", "missing_middle", "fees"];
+const IN_NOTE = { adu: "ADUs", missing_middle: "missing middle", fees: "the fee reduction (Handbook benchmark)", fees_local_half: "the fee reduction (real local fees)" };  // one box per reform; the fee box switches between its two versions
+
 
 function scenariosIn(b) {
   const have = new Set(b.draws.map((d) => d.scenario));
@@ -706,7 +810,6 @@ function flagHtml(m) {
 
 // The baseline (results_baseline, schemas 1.11): homes permitted with no policy change. Read as is from the
 // bundle; the sliders do not move it. "all" is summed within each draw, so it is not the sum of the size rows.
-const SIZE_WORDS = { "1": "Single-family (1 unit)", "2": "Duplexes (2 units)", "3_4": "3–4 unit buildings", "5p": "5 or more units" };
 // The state's own record next to the forecast (results_observed, schemas 1.12): bars = what was actually
 // permitted each year; whiskers = the reform's added permits each year (P10-P90, tick at the midpoint) at the
 // engine's central assumptions, so the sliders don't move them; for missing middle a grey whisker is the
@@ -717,20 +820,24 @@ const RECORD = {
   missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", base: "2_4", reform: "the missing-middle reform",
     pace: "The forecast is a range for each year; the reform's homes build up over the first years." },
 };
-function recordHtml(b, d) {
+function recordHtml(b, d, compact = false) {
   if (!Object.hasOwn(RECORD, d)) return "";  // d comes from a button's data attribute: known scenarios only
   const spec = RECORD[d];
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const obs = (b.observed || []).filter((r) => r.measure === spec.measure).sort((x, y) => x.year - y.year);
   const fut = (b.totals || []).filter((r) => r.scenario === d && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
     .map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year);
-  const base = spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base && /^\d{4}$/.test(r.period))
-    .map((r) => ({ ...r, year: Number(r.period) })) : [];
+  const base = (d === "adu" ? (b.adu_baseline || []) : spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base) : [])
+    .filter((r) => /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) }));
   const title = `<h3 class="h3">What gets built now, and what the reform would add</h3>`;
   if (!obs.length && !fut.length) return `${title}<p class="pending">No permit record or yearly forecast for this state yet.</p>`;
   const years = [...obs.map((r) => r.year), ...fut.map((r) => r.year)];
   const y0 = Math.min(...years), y1 = Math.max(...years);
-  const top = Math.max(1, ...obs.map((r) => r.value), ...fut.map((r) => r.p90), ...base.map((r) => r.p90));
+  // A forecast year with a no-reform count is drawn as a stack: grey to the no-reform midpoint, the reform's
+  // P10–P90 band on top of it, a line at its midpoint (Ben, 2026-11-17: show every forecast year this way).
+  const baseAt = (yr) => base.find((r) => r.year === yr);
+  const stackTop = fut.map((r) => (baseAt(r.year) ? baseAt(r.year).p50 : 0) + r.p90);
+  const top = Math.max(1, ...obs.map((r) => r.value), ...stackTop, ...base.filter((r) => !fut.some((f) => f.year === r.year)).map((r) => r.p90));
   const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
   const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
   const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
@@ -745,81 +852,242 @@ function recordHtml(b, d) {
     <line x1="${xc - 6}" x2="${xc + 6}" y1="${y(r.p90)}" y2="${y(r.p90)}" stroke="${stroke}" stroke-width="2"></line>
     <rect x="${xc - 5}" y="${y(r.p50) - 2}" width="10" height="4" fill="${stroke}"></rect>
     <title>${r.year}: ${esc(label)} ${fmtN(r.p10)} to ${fmtN(r.p90)}, midpoint ${fmtN(r.p50)}</title></g>`;
-  const off = base.length ? Math.min(10, slot * 0.18) : 0;
-  for (const r of base) parts.push(whisker(x(r.year) - off, r, "var(--scenario-baseline)", `${spec.what} with no change`));
-  for (const r of fut) parts.push(whisker(x(r.year) + off, r, color, "added by the reform"));
+  for (const r of base) if (!fut.some((f) => f.year === r.year)) parts.push(whisker(x(r.year), r, "var(--scenario-baseline)", `${spec.what} with no change`));
+  for (const r of fut) {
+    const nb = baseAt(r.year);
+    if (!nb) { parts.push(whisker(x(r.year), r, color, "added by the reform")); continue; }
+    const b0 = nb.p50, xl = x(r.year) - bw / 2;
+    parts.push(`<g><rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(0) - y(b0))}" fill="var(--scenario-baseline)"></rect>
+      <rect x="${xl}" y="${y(b0 + r.p90)}" width="${bw}" height="${Math.max(1, y(b0 + r.p10) - y(b0 + r.p90))}" fill="${color}" opacity="0.4"></rect>
+      <rect x="${xl}" y="${y(b0 + r.p50) - 1.5}" width="${bw}" height="3" fill="${color}"></rect>
+      <title>${r.year}: ${fmtN(b0)} ${esc(spec.what)} with no change (${fmtN(nb.p10)} to ${fmtN(nb.p90)}), plus ${fmtN(r.p10)} to ${fmtN(r.p90)} added by the reform (midpoint ${fmtN(r.p50)}): ${fmtN(b0 + r.p50)} in all</title></g>`);
+  }
   const gap = obs.length && fut.length && fut[0].year - obs[obs.length - 1].year > 1 ? obs[obs.length - 1].year + 1 : null;
   if (gap !== null) parts.push(`<line x1="${x(gap)}" x2="${x(gap)}" y1="${T}" y2="${y(0)}" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="3 3"></line>`);
   const svg = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${name}: ${spec.what} permitted each year, and the reform's added permits each year`)}" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>`;
+  if (compact) return svg;
   const a = obs.length ? obs[0] : null;
   const cover = d === "adu" && a ? (Number.isFinite(a.population_share)
     ? ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, home to about ${Math.round(a.population_share * 100)}% of ${esc(name)}'s people, so they understate the state.`
     : ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, so they understate the state.`) : "";
   const legend = `<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
     <span><span style="display:inline-block;width:12px;height:10px;background:var(--ink-muted);opacity:.55;margin-right:6px"></span>Actually permitted</span>
-    ${base.length ? `<span><span style="display:inline-block;width:12px;height:3px;background:var(--scenario-baseline);margin-right:6px;vertical-align:middle"></span>Expected with no change (P10–P90)</span>` : ""}
-    <span><span style="display:inline-block;width:12px;height:3px;background:${color};margin-right:6px;vertical-align:middle"></span>Added by the reform (P10–P90, bar at the midpoint)</span></div>`;
+    ${base.length ? `<span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Expected with no change (midpoint)</span>` : ""}
+    <span><span style="display:inline-block;width:12px;height:10px;background:${color};opacity:.4;margin-right:6px"></span>Added by the reform${base.length ? ", on top" : ""} (P10–P90, line at the midpoint)</span></div>`;
   return `${title}
     <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
-    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Whiskers: added permits at the engine's central assumptions; the sliders above do not move this chart.</p>`;
+    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. The sliders above do not move this chart.</p>`;
 }
 
-function baselineHtml(b) {
-  const rows = b.baseline || [];
-  const win = rows.find((r) => r.size_class === "all" && r.period.includes("-"));
-  if (!win) return `<div class="card"><h3 class="h3">With no policy change</h3><p class="pending">The baseline forecast is not in this state's results yet.</p></div>`;
-  const yrs = win.period.replace("-", "–");
-  const sizes = Object.keys(SIZE_WORDS).map((k) => rows.find((r) => r.size_class === k && r.period === win.period)).filter(Boolean);
-  const basis = win.basis === "reported" ? "permits as reported to the Census Bureau (not counting its estimates for places that did not report)" : "permits including the Census Bureau's estimates for places that did not report";
-  const cover = Number.isFinite(win.coverage_share) ? `, which issued ${fmtPct(win.coverage_share)} of the state's ${esc(String(b.meta.origin_year))} permits` : "";
-  return `<div class="card" id="baseline-card"><h3 class="h3">With no policy change</h3>
-    <p class="body" style="margin:0 0 var(--space-2)">If nothing changes, the places Lotline forecasts are expected to permit</p>
-    <span class="figure">${fmtN(win.p10)} to ${fmtN(win.p90)} homes</span>
-    <span class="body muted">over ${esc(yrs)}, midpoint ${fmtN(win.p50)} (about ${fmtN(win.p50 / b.meta.horizon_years)} a year).</span>
-    <div class="scroll" style="margin-top:var(--space-3)"><table><thead><tr><th>Building size</th><th class="n">P10 – P90</th><th class="n">Midpoint</th></tr></thead>
-      <tbody>${sizes.map((r) => `<tr><td>${esc(SIZE_WORDS[r.size_class])}</td><td class="n">${fmtN(r.p10)} – ${fmtN(r.p90)}</td><td class="n">${fmtN(r.p50)}</td></tr>`).join("")}</tbody></table></div>
-    <p class="source">The scenarios above count homes added on top of this. Baseline: each place keeps its own recent pace, pulled toward its county's when its record is thin, with a regional building cycle around it (model/baseline.py). ${fmtInt(win.places)} places${cover}. Counts are ${basis}. The size rows are separate ranges; they do not add up to the total range.</p></div>`;
+// ---- the evidence card under the model selector: one per reform (ADUs first; the others still to design) ----
+function evidenceHtml(b, d, R) {
+  if (d === "missing_middle") return `<section>${recordHtml(b, d)}</section>${mmHowHtml(b, R)}`;
+  if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R);
+  if (d !== "adu") return `<section><p class="pending">The evidence card for ${esc(scenLabel(d))} is still being designed.</p></section>`;
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const med = (c) => AGG.percentile(drawsFor(b, "adu").map((x) => Number(x[c])).filter(Number.isFinite), 50);
+  const st = (k) => (b.funnel || []).find((f) => f.scenario === "adu" && f.stage === k);
+  const legal = st("legal"), pays = st("pencils"), r = R.adu, o = UI.outcome;
+  const rng = (x) => (x ? (x.p10 === x.p90 ? fmtN(x.p50) : `${fmtN(x.p10)} – ${fmtN(x.p90)}`) : "–");
+  const theta = med("theta");
+  // the old lots-to-homes funnel, folded into the steps: a bar per stage, log widths
+  const lmax = Math.log10(Math.max(legal ? legal.p50 : 10, 10));
+  const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
+  // 1. year by year
+  const s1 = `<section>${recordHtml(b, "adu")}
+    <p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p></section>`;
+  // 3. place types (D-088): built anyway and added by the reform, ADUs a year; read from the bundle when exported
+  const s3 = `<section><h3 class="h3">Where the ADUs would go: core cities, suburbs and towns</h3>
+    <p class="body-small">Every place in the state is one of three types, set from Census metro and micro areas, so the same split works in any state:</p>
+    <div class="zones">
+      <div><h4>Core cities</h4><p>The largest place in a metro area, or any place at least a third its size.</p></div>
+      <div><h4>Suburbs</h4><p>Every other place in a metro area.</p></div>
+      <div><h4>Towns</h4><p>Places in a micropolitan area, or outside any metro or micro area.</p></div>
+    </div>
+    ${placeTypeChart(b)}
+    <p class="body-small"><b>How the numbers are set.</b> Where a place's permit records count ADUs, it keeps building at its own recent pace. Every other place takes the rate fitted for its type and market on the places we can count in our own states: how often owners of lots like its lots built an ADU where their rules allowed one. The reform adds homes only on lots it newly opens, or where it loosens a rule; those lots take the same rate. Grey is what would be built anyway, blue is what the reform adds.</p></section>`;
+  // 4. how we get these numbers
+  const s4 = `<section><h3 class="h3">How we get these numbers</h3>
+    <ol class="how">
+      <li><div><b>Find the lots where an ADU would become legal</b><p>Every single-family lot in ${esc(name)} where the reform allows a backyard home, from county parcel records (or Census counts of houses where a county has none).</p>${fbar(legal && legal.p50, "var(--survey)")}</div><span class="v">${legal ? `${fmtN(legal.p50)} lots` : "–"}</span></li>
+      <li><div><b>Keep the lots where building one pays off</b><p>For each place, what an ADU would rent for against what it costs to build and finance (national building costs, local rents and home values, mortgage rates). The range comes from uncertainty in costs and rents.</p>${fbar(pays && pays.p50, "var(--survey)", 0.6)}</div><span class="v">${pays ? `${rng(pays)} lots` : "–"}</span></li>
+      <li><div><b>Apply how often owners actually build</b><p>Measured from places in our own states that already allow ADUs: how many owners of lots like these built one. Not borrowed from other markets.</p></div><span class="v">${Number.isFinite(theta) ? `${(theta * 10000).toLocaleString("en-US", { maximumSignificantDigits: 2 })} per 10,000 lots over 5 years` : "–"}</span></li>
+      <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and some ADUs house a relative or are rented short-term rather than adding a home (${fmtPct(med("net_new_share"))} add one).</p>${fbar(r.homes_in_place.p50, scenColor("adu"), 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
+      <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, scenColor("adu"))}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
+    </ol>
+    <p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p></section>`;
+  return s1 + s3 + s4;
 }
+
+// Shared pieces of the "How we get these numbers" steps: the median of a factor across a reform's runs, a stage's
+// funnel row, a P10–P90 range in words, and a log-width bar against the first stage.
+function howKit(b, d, first) {
+  const med = (c) => AGG.percentile(drawsFor(b, d).map((x) => Number(x[c])).filter(Number.isFinite), 50);
+  const st = (k) => (b.funnel || []).find((f) => f.scenario === d && f.stage === k);
+  const rng = (x) => (x ? (x.p10 === x.p90 ? fmtN(x.p50) : `${fmtN(x.p10)} – ${fmtN(x.p90)}`) : "–");
+  const lmax = Math.log10(Math.max(first || 10, 10));
+  const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
+  const per10k = (v) => (Number.isFinite(v) ? (v * 10000).toLocaleString("en-US", { maximumSignificantDigits: 2 }) : "–");
+  const foot = `<p class="source">Bars: each stage's midpoint on a log scale. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`;
+  return { med, st, rng, fbar, per10k, foot };
+}
+
+// Missing middle's steps (Ben, 2026-11-17: "a similar section" to the ADU card's). The factors are the engine's
+// (results.mm_draws): θ is five-year homes permitted per lot where building pays; net-new share is 1 − houses
+// torn down ÷ homes permitted.
+function mmHowHtml(b, R) {
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const k0 = howKit(b, "missing_middle"), legal = k0.st("legal");
+  const { med, st, rng, fbar, per10k, foot } = howKit(b, "missing_middle", legal && legal.p50);
+  const pays = st("pencils"), r = R.missing_middle, col = scenColor("missing_middle");
+  if (!r) return "";
+  return `<section><h3 class="h3">How we get these numbers</h3>
+    <ol class="how">
+      <li><div><b>Find the lots where 2–4 homes would become legal</b><p>Every lot in ${esc(name)} now zoned for one house, from county parcel records (or Census counts of houses where a county has none), less what local rules already allow.</p>${fbar(legal && legal.p50, "var(--survey)")}</div><span class="v">${legal ? `${fmtN(legal.p50)} lots` : "–"}</span></li>
+      <li><div><b>Keep the lots where building pays</b><p>For each place, what a small multi-unit building would rent or sell for against what the land and construction cost. The range comes from uncertainty in costs and rents.</p>${fbar(pays && pays.p50, "var(--survey)", 0.6)}</div><span class="v">${pays ? `${rng(pays)} lots` : "–"}</span></li>
+      <li><div><b>Apply how often builders actually build</b><p>Measured from 93 places in our states (most in Oregon) that began allowing 2–4 homes on these lots. The effect builds up over several years, so the fifth year is not yet full speed. The range is very wide, because the effect is not clearly detected yet.</p></div><span class="v">${per10k(med("theta"))} homes per 10,000 lots over 5 years</span></li>
+      <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and a new building usually replaces the house on its lot, so only part of each permit is a gain (${fmtPct(med("net_new_share"))} after the houses torn down).</p>${fbar(r.homes_in_place.p50, col, 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
+      <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, col)}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
+    </ol>
+    <p class="body-small muted">Census permits count 2–4 unit buildings the same way everywhere; the reform allows up to 6 homes, so this is a floor.</p>
+    ${foot}</section>`;
+}
+
+// The fee card (Ben, 2026-11-17: what the results files hold now; the slider and targeted bills wait for the fee
+// grid to move into the bundle). Results files carry two versions: the Handbook benchmark and real local fees
+// halved. The fee model opens no lots, so the engine's first stage is the homes built anyway (results.fee_rows).
+const FEE_VERSIONS = [
+  ["fees", "The Handbook benchmark", "Every city assumed to charge $50,000 a home, cut to $25,000."],
+  ["fees_local_half", "Real local fees, halved", "Each city's own fees for houses, duplexes and fourplexes, cut by half."],
+];
+function feeEvidenceHtml(b, R) {
+  const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const o = UI.outcome, yrs = AGG.windowLabel(b) || "the five years";
+  const all = (b.baseline || []).find((r) => r.size_class === "all" && /^\d{4}-\d{4}$/.test(String(r.period)));
+  const shown = FEE_VERSIONS.filter(([k]) => R[k]);
+  if (!shown.length) return `<section><p class="pending">The fee reform is not in this state's results yet.</p></section>`;
+  // 1. the two versions side by side: homes added and as a share of the homes expected anyway
+  const tiles = shown.map(([k, label, what]) => {
+    const x = R[k][o], on = k === UI.fee;
+    return `<div class="fee-ver${on ? " on" : ""}"><h4>${esc(label)}${on ? ` <span class="caption muted">(shown in the headline)</span>` : ""}</h4>
+      <p class="caption muted" style="margin:0">${esc(what)}</p>
+      <p class="figure" style="margin:var(--space-2) 0 0">+${fmtN(x.p50)} <span class="body">homes</span></p>
+      <p class="body-small" style="margin:0">Likely ${fmtN(x.p10)} to ${fmtN(x.p90)}${all ? `; the midpoint equals ${fmtPct(x.p50 / all.p50)} of the ${fmtN(all.p50)} homes expected with no change` : ""}.</p></div>`;
+  }).join("");
+  const s1 = `<section><h3 class="h3">Two ways to cut fees in half</h3>
+    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Handbook asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes. The switch on the fee row above picks which one the headline uses.</p>
+    <div class="fee-vers">${tiles}</div></section>`;
+  // 2. year by year: each version's added homes, P10–P90 whiskers with the midpoint
+  const s2 = `<section><h3 class="h3">Year by year</h3>${feeYearsChart(b, o, shown)}</section>`;
+  // 3. how we get these numbers, for the version the switch shows
+  const d = R[UI.fee] ? UI.fee : shown[0][0], r = R[d];
+  const k0 = howKit(b, d), base = k0.st("legal");
+  const { med, rng, fbar, per10k, foot } = howKit(b, d, base && base.p50);
+  const col = scenColor("fees");
+  const cut = d === "fees" ? "$25,000 off every home (half of a $50,000 fee the Handbook assumes everywhere)"
+    : "half of each city's own fee for each kind of home, from its fee schedule, or the state's typical fee where none was coded";
+  const s3 = `<section><h3 class="h3">How we get these numbers</h3>
+    <p class="body-small">Shown for ${esc(FEE_VERSIONS.find(([k]) => k === d)[1])}, the version the fee row's switch picks. A fee cut opens no new lots; it makes homes that could already be built cheaper, so a few more get built.</p>
+    <ol class="how">
+      <li><div><b>Start from the homes built anyway</b><p>Houses, duplexes, triplexes and fourplexes expected in ${esc(name)} over the five years with no change, from each place's own recent building. Buildings of 5 or more homes pay no fee in the model, so they are left out.</p>${fbar(base && base.p50, "var(--survey)")}</div><span class="v">${base ? `${fmtN(base.p50)} homes` : "–"}</span></li>
+      <li><div><b>Work out how much cheaper each home gets</b><p>The cut is ${esc(cut)}. About half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters), set against the full cost of building the home.</p></div><span class="v"></span></li>
+      <li><div><b>Apply how strongly building responds</b><p>A 10% cut in cost raises building by about 3%, the neighborhood-level response measured by Baum-Snow and Han (2024). The range runs from almost none, as studies of impact fees found (Mayer and Somerville 2000; Campbell and Alm 2006), to 17%, the larger metro-wide response (Saiz 2010; Aastveit and others 2020). These are published studies, not our own places: no fee cut in our states has been measured yet.</p></div><span class="v">${per10k(med("theta"))} more per 10,000 built anyway</span></li>
+      <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are). A fee cut tears nothing down, so every finished home is a new one.</p>${fbar(r.homes_in_place.p50, col, 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
+      <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, col)}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
+    </ol>
+    ${foot}</section>`;
+  return s1 + s2 + s3;
+}
+function feeYearsChart(b, o, shown) {
+  const rows = shown.map(([k, label]) => ({ k, label, yrs: (b.totals || []).filter((r) => r.scenario === k && r.outcome === o && /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year) }));
+  const years = [...new Set(rows.flatMap((r) => r.yrs.map((y) => y.year)))].sort();
+  if (!years.length) return `<p class="pending">No yearly forecast for the fee reform in this state's results.</p>`;
+  const top = Math.max(1, ...rows.flatMap((r) => r.yrs.map((y) => y.p90)));
+  const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
+  const W = 640, H = 200, L = 52, Rm = 12, T = 12, B = 28, slot = (W - L - Rm) / years.length;
+  const x = (yr) => L + (years.indexOf(yr) + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
+  const parts = [];
+  for (const t of ticks) parts.push(`<line x1="${L}" x2="${W - Rm}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)"></line><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmtN(t)}</text>`);
+  for (const yr of years) parts.push(`<text x="${x(yr)}" y="${H - 8}" text-anchor="middle">${yr}</text>`);
+  const off = Math.min(14, slot * 0.18), col = esc(scenColor("fees"));
+  rows.forEach((row, i) => {
+    const dx = rows.length > 1 ? (i === 0 ? -off : off) : 0, op = row.k === UI.fee ? 1 : 0.45;
+    for (const r of row.yrs) {
+      const xc = x(r.year) + dx;
+      parts.push(`<g opacity="${op}"><line x1="${xc}" x2="${xc}" y1="${y(r.p10)}" y2="${y(r.p90)}" stroke="${col}" stroke-width="2"></line>
+        <line x1="${xc - 5}" x2="${xc + 5}" y1="${y(r.p10)}" y2="${y(r.p10)}" stroke="${col}" stroke-width="2"></line>
+        <line x1="${xc - 5}" x2="${xc + 5}" y1="${y(r.p90)}" y2="${y(r.p90)}" stroke="${col}" stroke-width="2"></line>
+        <rect x="${xc - 6}" y="${y(r.p50) - 2}" width="12" height="4" fill="${col}"></rect>
+        <title>${r.year}, ${esc(row.label.toLowerCase())}: ${fmtN(r.p10)} to ${fmtN(r.p90)} homes added, midpoint ${fmtN(r.p50)}</title></g>`);
+    }
+  });
+  const legend = rows.map((row, i) => `<span><span style="display:inline-block;width:12px;height:3px;background:${col};opacity:${row.k === UI.fee ? 1 : 0.45};margin-right:6px;vertical-align:middle"></span>${rows.length > 1 ? (i === 0 ? "Left: " : "Right: ") : ""}${esc(row.label)}</span>`).join("");
+  return `<p class="body-small" style="margin:var(--space-1) 0 0">Homes the cut adds each year (${esc(OUTCOME_WORDS[o][0].toLowerCase())}). The effect builds up: about half shows after a year, because projects already in design were priced at the old fee.</p>
+    <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${legend}</div>
+    <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Homes the fee cut adds each year, by version" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
+    <p class="source">Whiskers: P10 to P90, bar at the midpoint, at the engine's central assumptions; the sliders do not move this chart.</p>`;
+}
+
+const PLACE_TYPES = [["core", "Core cities"], ["suburb", "Suburbs"], ["town", "Towns"]];
+function placeTypeChart(b) {
+  const rows = PLACE_TYPES.map(([k, w]) => [w, (b.adu_place_types || []).find((r) => r.place_type === k)]).filter(([, r]) => r);
+  if (!rows.length) return `<p class="pending">The split by place type is not in this state's results yet: the engine works it out but does not export it.</p>`;
+  const top = Math.max(...rows.map(([, r]) => r.base + r.added), 1) * 1.05;
+  const W = 640, L = 110, RR = 130, rh = 34, H = rh * rows.length + 6, sx = (v) => L + (v / top) * (W - L - RR);
+  const bars = rows.map(([w, r], i) => {
+    const y = i * rh + 4, tot = r.base + r.added, rise = r.base > 0 ? `+${Math.round((r.added / r.base) * 100)}%` : "new";
+    return `<text x="0" y="${y + 17}" style="fill:var(--ink);font-family:var(--font-sans);font-size:13px">${esc(w)}</text>
+      <rect x="${L}" y="${y + 4}" width="${sx(r.base) - L}" height="20" fill="var(--scenario-baseline)"><title>${esc(w)}: ${fmtN(r.base)} a year built anyway${Number.isFinite(r.base_p10) ? ` (${fmtN(r.base_p10)}–${fmtN(r.base_p90)})` : ""}</title></rect>
+      <rect x="${sx(r.base)}" y="${y + 4}" width="${sx(tot) - sx(r.base)}" height="20" fill="${scenColor("adu")}"><title>${esc(w)}: ${fmtN(r.added)} a year added by the reform${Number.isFinite(r.added_p10) ? ` (${fmtN(r.added_p10)}–${fmtN(r.added_p90)})` : ""}</title></rect>
+      <text x="${sx(tot) + 6}" y="${y + 18}" style="fill:var(--ink)">${fmtN(tot)} a year (${rise})</text>`;
+  }).join("");
+  const note = b.adu_place_types_note ? `<p class="pending">${esc(b.adu_place_types_note)}</p>` : "";
+  return `${note}<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
+      <span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Built anyway</span>
+      <span><span style="display:inline-block;width:12px;height:10px;background:${scenColor("adu")};margin-right:6px"></span>Added by the reform</span></div>
+    <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ADUs a year by place type, built anyway and added by the reform" style="width:100%;min-width:420px;height:auto;font-family:var(--font-mono);font-size:12px">${bars}</svg></div>
+    <p class="source">Gross ADU permits a year, averaged over 2027–2031: midpoints across the engine's draws (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`;
+}
+
 
 const SECTIONS = {
   results(b) {
     UI.b = b; UI.pins = {};
     const scen = scenariosIn(b);
-    UI.detail = scen.includes(UI.detail) ? UI.detail : scen[0];
+    if (!scen.includes(UI.fee)) UI.fee = "fees";
+    const runOf = (k) => (k === "fees" ? UI.fee : k);
+    UI.model = HERO.includes(UI.model) && scen.includes(runOf(UI.model)) ? UI.model : HERO.find((k) => scen.includes(runOf(k))) || null;
+    UI.detail = UI.model ? runOf(UI.model) : scen[0];
     const yrs = AGG.windowLabel(b);  // from the bundle's totals (D-061: 2027–2031 for origin 2025)
-    $("results-lead").textContent = `Net new homes in ${b.meta.state} over ${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""} compared with no policy change (baseline). Every result is a range from P10 to P90 of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws.`;
     if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
     const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
       `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
-    const rows = [`<div class="lab" style="color:var(--scenario-baseline)">Baseline</div>
-      <div class="track" aria-hidden="true"><span class="zero"></span></div>
-      <div class="nums muted">0 added, by definition</div>`];
-    for (const s of scen) rows.push(`<div class="lab" style="color:${scenColor(s)}">${esc(scenLabel(s))}</div>
-      <div class="track" data-track="${esc(s)}"><span class="band"></span><span class="line" style="background:${scenColor(s)}"></span><span class="mid" style="background:${scenColor(s)}"></span></div>
-      <div class="nums" data-nums="${esc(s)}"></div>`);
     const pend = pendingIn(b);
     const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
-    const tabs = scen.map((s) => `<button type="button" data-detail="${esc(s)}" aria-pressed="${s === UI.detail}">${esc(scenLabel(s))}</button>`).join("");
-    return `${flagHtml(b.meta)}
-      <div class="card" id="headline-card">
-        <p class="eyebrow">Five-year total${yrs ? `, ${yrs}` : ""}</p>
-        <div class="headline" id="headline"></div>
-        <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
-          <span class="muted" id="outcome-note"></span></div>
-        <div class="ranges" id="ranges">${rows.join("")}</div>
-        <div class="ranges"><div></div><div class="axis" id="axis"></div><div></div></div>
-        ${pendNote}
-        <div id="two-numbers" style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:var(--stroke-hair) solid var(--rule)"></div>
-        <p class="source">Range bars: the band runs from P10 to P90, the tick marks the midpoint (P50). Scenarios are not added together; "Combined" is run once with each lot counted once. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>
+    const seg = HERO.filter((k) => scen.includes(runOf(k))).map((k) =>
+      `<button type="button" data-model="${esc(k)}" aria-pressed="${k === UI.model}">${esc(SCENARIOS_SHORT[k])}</button>`).join("");
+    const fee2 = scen.includes("fees_local_half");
+    const rcRows = HERO.map((k) => {
+      const feeSwitch = k === "fees" && fee2 ? `<span class="toggle" role="group" aria-label="Which fees">
+        <button type="button" data-fee="fees" aria-pressed="${UI.fee === "fees"}">Handbook benchmark</button><button type="button" data-fee="fees_local_half" aria-pressed="${UI.fee === "fees_local_half"}">Real local fees</button></span>` : "";
+      const s = k === "fees" ? UI.fee : k;
+      return `<div class="who" data-box="${esc(k)}"><h4 style="color:${scenColor(s)}">${esc(SCENARIOS_SHORT[k])}</h4><p data-box-what>${esc(WHAT[s])}</p>${feeSwitch}</div>
+        <div class="lane" data-lane="${esc(k)}"></div>`;
+    }).join("");
+    return `<div class="hero" id="hero">
+        <h2 class="display" id="hero-line">Results</h2>
+        <p class="body note" id="hero-note"></p>
+        <div class="card"><div class="rc" id="rc">${rcRows}<div></div><div class="axis" id="rc-axis"></div></div>
+          <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
+            <span class="muted" id="outcome-note"></span></div>
+          ${pendNote}
+          <p class="source">Each band runs from P10 to P90; the tick and the number mark the midpoint (P50). Log scale, so each step is ten times the last. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p></div>
       </div>
-      <div class="card" id="record-card"></div>
-      ${baselineHtml(b)}
+      <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
+      <div class="card ev" id="model-card"></div>
+      ${flagHtml(b.meta)}
       <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div></div>
-      <div class="card"><h3 class="h3">From legal lots to built homes</h3>
-        <div class="tabs" role="group" aria-label="Scenario">${tabs}</div>
-        <div id="funnel" style="margin-top:var(--space-4)"></div>
-        <p class="source">Bar lengths on a log scale: each stage is many times smaller than the one before. Legal and pays-off counts are lots; built counts are all new homes.</p></div>
       <div class="card"><h3 class="h3">What it takes to pencil out</h3>
         <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
       <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
@@ -891,59 +1159,88 @@ function knobsHtml(b) {
   }).join("");
 }
 
+// "[State] can add [X] homes": X is the three reforms together (Ben, 2026-11-17), summed draw by draw so the range
+// is a real range of the total (the fee reform in the version its switch shows). Each reform is estimated on its
+// own, so a lot that two reforms open is counted in both.
+// The reforms added together, run by run: each run's homes summed across the reforms, then P10/P50/P90 of the sums.
+function together(b, keys, o) {
+  const per = keys.map((s) => AGG.homesFromDraws([...drawsFor(b, s)].sort((x, y) => x.draw - y.draw), UI.pins)[o]);
+  const n = per.length ? Math.min(...per.map((a) => a.length)) : 0;
+  const sum = Array.from({ length: n }, (_, i) => per.reduce((t, a) => t + a[i], 0));
+  return { n, tot: n ? { p10: AGG.percentile(sum, 10), p50: AGG.percentile(sum, 50), p90: AGG.percentile(sum, 90) } : null };
+}
+function heroUpdate(b, R, o) {
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const { n, tot } = together(b, keys, o);
+  const x = tot ? tot.p50 : NaN;
+  $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
+  const yrs = AGG.windowLabel(b);
+  const howMany = keys.length === 3 ? "three" : String(keys.length);
+  const homes = o === "homes_net_statewide"
+    ? "net new homes, homes that would not otherwise have been built,"
+    : "new homes, counting some that would have been built elsewhere in the state anyway,";
+  // Ben's wording (2026-11-17). The range is P10 to P90 of the summed draws; the chart below has each reform's.
+  $("hero-note").textContent =
+    `We looked at how ${howMany} housing reforms could add more housing to ${named} over the next ` +
+    `${b.meta.horizon_years} years${yrs ? ` (${yrs})` : ""}. ` +
+    (tot ? `We found that between ${fmtN(tot.p10)} and ${fmtN(tot.p90)} ${homes} could be produced. ` : "") +
+    "Each reform was estimated on its own, and our model was derived by looking at cities and states where " +
+    "similar rules have already been introduced.";
+  const hiP = Math.max(...keys.map((s) => R[s][o].p90), 1);
+  const lo = 1, hi = 10 ** Math.ceil(Math.log10(hiP * 3));
+  const pos = (v) => `${(Math.log10(Math.max(v, lo)) / Math.log10(hi)) * 100}%`;
+  const decades = Array.from({ length: Math.log10(hi) + 1 }, (_, i) => 10 ** i);
+  const grid = decades.map((t) => `<span class="g" style="left:${pos(t)}"></span>`).join("");
+  $("rc-axis").innerHTML = decades.map((t) => `<span style="left:${pos(t)}">${fmtN(t)}</span>`).join("");
+  for (const k of HERO) {
+    const lane = document.querySelector(`[data-lane="${k}"]`), who = document.querySelector(`[data-box="${k}"]`);
+    if (!lane) continue;
+    const s = k === "fees" ? UI.fee : k, r = R[s];
+    if (who) { who.querySelector("[data-box-what]").textContent = WHAT[s]; who.querySelector("h4").style.color = scenColor(s); }
+    if (!r) { lane.innerHTML = `${grid}<span class="num muted" style="left:0">Not yet run</span>`; continue; }
+    const { p10, p50, p90 } = r[o], c = scenColor(s);
+    lane.setAttribute("aria-label", `${SCENARIOS_SHORT[k]}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
+    lane.setAttribute("role", "img");
+    lane.innerHTML = `${grid}<span class="band" style="left:${pos(p10)};width:calc(${pos(p90)} - ${pos(p10)});background:${c}"></span>
+      <span class="tick" style="left:${pos(p50)};background:${c}"></span>
+      <span class="num" style="left:calc(${pos(p90)} + 8px)">${fmtN(p50)} <small>(${fmtN(p10)}–${fmtN(p90)})</small></span>`;
+  }
+}
+
 function updateResults() {
   const b = UI.b;
   if (!b || !scenariosIn(b).length) return;
   const R = results(b);
   const o = UI.outcome;
-  const max = Math.max(...Object.values(R).map((r) => r[o].p90), 1) * 1.08;
-  const ticks = niceTicks(max);
-  const top = ticks[ticks.length - 1] >= max ? ticks[ticks.length - 1] : max;
-  const pct = (x) => `${Math.max(0, Math.min(100, (x / top) * 100))}%`;
-  for (const [s, r] of Object.entries(R)) {
-    const t = document.querySelector(`[data-track="${CSS.escape(s)}"]`);
-    if (!t) continue;
-    t.querySelectorAll(".grid-line").forEach((g) => g.remove());
-    for (const v of ticks) { const g = document.createElement("span"); g.className = "grid-line"; g.style.left = pct(v); t.prepend(g); }
-    const { p10, p50, p90 } = r[o];
-    for (const el of t.querySelectorAll(".band, .line")) { el.style.left = pct(p10); el.style.width = `calc(${pct(p90)} - ${pct(p10)})`; }
-    t.querySelector(".mid").style.left = pct(p50);
-    t.setAttribute("aria-label", `${scenLabel(s)}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
-    document.querySelector(`[data-nums="${CSS.escape(s)}"]`).innerHTML = `${fmtN(p10)} – ${fmtN(p90)} <span class="muted">(mid ${fmtN(p50)})</span>`;
-  }
-  $("axis").innerHTML = ticks.map((v) => `<span style="left:${pct(v)}">${fmtN(v)}</span>`).join("");
+  heroUpdate(b, R, o);
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
-  const d = UI.detail, rd = R[d][o];
-  const pinned = Object.values(UI.pins).filter((q) => q !== 50).length;
-  $("two-numbers").innerHTML = twoNumbersHtml(b, d, R[d]);
-  $("record-card").innerHTML = recordHtml(b, d);
-  $("headline").innerHTML = `<p class="body" style="margin:0 0 var(--space-2)">${esc(scenLabel(d))} would add, counting ${o === "homes_net_statewide" ? "net new housing" : "all new homes"}:</p>
-    <span class="figure-large">${fmtN(rd.p10)} to ${fmtN(rd.p90)} homes</span>
-    <span class="body muted">Midpoint ${fmtN(rd.p50)}${pinned ? `, with ${pinned} assumption${pinned > 1 ? "s" : ""} moved by the sliders below` : ""}.</span>
-    ${FEE_NOTE[d] ? `<p class="body-small" style="margin:var(--space-2) 0 0">${FEE_NOTE[d]}</p>` : ""}`;
-  // share of need: net statewide only (aggregate.share_of_need), the headline kind first
-  const needs = b.need.filter((n) => n.scenario === d).sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
-  $("need").innerHTML = needs.length ? needs.map((n) => {
-    const sh = AGG.shareOfNeed(R[d].homes_net_statewide, n);
-    return `<p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-2) 0 0">${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}
-      <span class="body">${esc(n.label)}</span></p>
-      <p class="body-small muted" style="margin:0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes; ${fmtPct(sh.share_p50_at_need_high)} to ${fmtPct(sh.share_p50_at_need_low)} if the need is ${fmtN(n.denominator_high)} or ${fmtN(n.denominator_low)}. Counts net new housing. Source: ${esc(n.source)}.</p>`;
+  const d = UI.detail;
+  $("model-card").innerHTML = evidenceHtml(b, d, R);
+  // share of need (Ben, 2026-11-17): all three reforms together first, as in the headline, then each reform on its
+  // own. Net new homes only (aggregate.share_of_need); the need is the state's, so any reform's row gives it.
+  const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const kinds = [];
+  for (const n of b.need.filter((r) => nk.includes(r.scenario))) if (!kinds.some((k) => k.label === n.label)) kinds.push(n);
+  kinds.sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
+  const all = together(b, nk, "homes_net_statewide").tot;
+  const pctR = (sh) => `${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}`;
+  $("need").innerHTML = kinds.length && all ? kinds.map((n) => {
+    const sh = AGG.shareOfNeed(all, n);
+    // When the need's high and low differ, say how far the midpoint moves; when they match, say nothing.
+    const alt = n.denominator_high !== n.denominator_low
+      ? ` If the need is ${fmtN(Math.min(n.denominator_high, n.denominator_low))} to ${fmtN(Math.max(n.denominator_high, n.denominator_low))} homes instead, it is ${fmtPct(Math.min(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} to ${fmtPct(Math.max(sh.share_p50_at_need_high, sh.share_p50_at_need_low))}.`
+      : "";
+    const each = nk.map((s) => {
+      const e = AGG.shareOfNeed(R[s].homes_net_statewide, n);
+      return `<tr><td>${esc(scenLabel(s))}</td><td class="num">${pctR(e)}</td><td class="num muted">${fmtPct(e.share_p50)}</td></tr>`;
+    }).join("");
+    return `<h4 style="margin:var(--space-5) 0 0">${esc(n.label.replace(/^of /, "").replace(/^./, (c) => c.toUpperCase()))}</h4>
+      <p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-1) 0 0">${pctR(sh)} <span class="body">with all three reforms together</span></p>
+      <p class="body-small" style="margin:var(--space-1) 0 0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes, counting net new homes only.${alt}</p>
+      <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Likely range</th><th class="num">Midpoint</th></tr></thead><tbody>${each}</tbody></table>
+      <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sourceLinks(n.source)}</p>`;
   }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
-  // funnel (log widths)
-  // a fee cut opens no lots: its first stage is the homes built anyway in the sizes it covers (results.fee_rows)
-  const f = R[d], stages = FEE_NOTE[d] ? [
-    ["Built anyway (1–4 unit buildings)", f.legal, "homes", "var(--survey)", 1],
-    ["Added by the cut", f.homes_in_place, "homes", scenColor(d), 1],
-  ] : [
-    ["Legally allowed", f.legal, "lots", "var(--survey)", 1],
-    ["Building pays", f.pencils, "lots", "var(--survey)", 0.6],
-    ["Built", f.homes_in_place, "homes", scenColor(d), 1],
-  ];
-  const lmax = Math.log10(Math.max(f.legal.p90, 10));
-  const w = (x) => `${Math.max(1, (Math.log10(Math.max(x, 1)) / lmax) * 100)}%`;
-  $("funnel").innerHTML = `<div class="funnel">${stages.map(([lab, r, unit, col, op]) => `<div class="lab body-small" style="font-weight:600">${lab}</div>
-    <div><div class="bar" style="width:${w(r.p50)};background:${col};opacity:${op}"></div></div>
-    <div class="nums body-small" style="font-family:var(--font-mono);text-align:right">${r.p10 === r.p90 ? fmtN(r.p50) : `${fmtN(r.p10)} – ${fmtN(r.p90)}`} ${unit}</div>`).join("")}</div>`;
   for (const k of DATA.knobs) {
     const el = document.querySelector(`[data-val="${CSS.escape(k.column)}"]`);
     if (!el) continue;
@@ -1113,8 +1410,141 @@ function wireModelCards() {
     document.querySelectorAll("[data-model-card]").forEach((c) => { c.hidden = c.dataset.modelCard !== t.dataset.model; });
   };
 }
+// The ADU model's leave-one-state-out test (D-096; the 2026-11-15 gut check): ADUs counted in the hidden state's
+// target places over the fit years, against the model's range for them.
+const ADU_HELDOUT = [
+  ["Minnesota", 50, 62, 29, 130], ["North Carolina", 621, 487, 106, 1936], ["Texas", 364, 246, 26, 1278], ["Oregon", 527, 417, 83, 1603],
+];
+// rows: [{label, sub, lanes: [{p10, p50, p90, color, mark}]}] on one log axis, as in the Results range chart
+function laneChart(rows, unit) {
+  const vals = rows.flatMap((r) => r.lanes.flatMap((l) => [l.p90, l.mark].filter(Number.isFinite)));
+  if (!vals.length) return "";
+  const lo = 10 ** Math.floor(Math.log10(Math.max(1, Math.min(...rows.flatMap((r) => r.lanes.map((l) => l.p10).filter((v) => v > 0)), 10)))),
+    hi = 10 ** Math.ceil(Math.log10(Math.max(...vals) * 2));
+  const pos = (v) => `${Math.max(0, Math.min(100, ((Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * 100))}%`;
+  const dec = []; for (let t = lo; t <= hi; t *= 10) dec.push(t);
+  const grid = dec.map((t) => `<span class="g" style="left:${pos(t)}"></span>`).join("");
+  return `<div class="rc">${rows.map((r) => `<div class="who"><h4 style="font-size:15px">${esc(r.label)}</h4>${r.sub ? `<p>${esc(r.sub)}</p>` : ""}</div>
+    <div>${r.lanes.length ? r.lanes.map((l) => `<div class="lane" style="height:${r.lanes.length > 1 ? 26 : 40}px">${grid}
+      <span class="band" style="top:${r.lanes.length > 1 ? 5 : 12}px;left:${pos(l.p10)};width:calc(${pos(l.p90)} - ${pos(l.p10)});background:${l.color}"></span>
+      <span class="tick" style="top:${r.lanes.length > 1 ? 2 : 8}px;height:${r.lanes.length > 1 ? 22 : 24}px;left:${pos(l.p50)};background:${l.color}"></span>
+      ${Number.isFinite(l.mark) ? `<span class="dia" title="Counted: ${fmtN(l.mark)}" style="top:${r.lanes.length > 1 ? 8 : 15}px;left:${pos(l.mark)}"></span>` : ""}
+      <span class="num" style="top:${r.lanes.length > 1 ? 3 : 10}px;left:calc(${pos(l.p90)} + 8px)">${fmtN(l.p50)} <small>(${fmtN(l.p10)}–${fmtN(l.p90)})${Number.isFinite(l.mark) ? `, counted ${fmtN(l.mark)}` : ""}</small></span></div>`).join("")
+      : `<div class="lane"><span class="num muted" style="left:0">Not in this state's results yet</span></div>`}</div>`).join("")}
+    <div></div><div class="axis">${dec.map((t) => `<span style="left:${pos(t)}">${fmtN(t)}</span>`).join("")}</div></div>
+    <p class="source">${esc(unit)} Log scale.</p>`;
+}
+// Missing middle's two out-of-sample tests with numbers (docs/model_and_assumptions.md, "How accurate it is";
+// D-092 and V5 in docs/analysis_plan.md): 2–4 unit buildings, [label, sub, built, P50, P10, P90].
+const MM_HELDOUT = [
+  ["Oregon", "Oregon left out: the other states' places predict its 86 places", 703, 915, 457, 4789],
+  ["St. Paul", "Blind: frozen before any outcome was read, 2024–2025", 55, 15, 9, 28],
+];
+function heldoutHtml() {
+  $("mm-heldout").innerHTML = laneChart(MM_HELDOUT.map(([label, sub, n, p50, p10, p90]) => ({ label, sub,
+    lanes: [{ p10, p50, p90, mark: n, color: scenColor("missing_middle") }] })),
+    "New 2–4 unit buildings: the model's range (band, tick at the midpoint) and the number built (gold diamond). Oregon passed; St. Paul missed high, built faster than the model's slow build-up allows.");
+  $("adu-heldout").innerHTML = laneChart(ADU_HELDOUT.map(([st, n, p50, p10, p90]) => ({ label: st, sub: "",
+    lanes: [{ p10, p50, p90, mark: n, color: scenColor("adu") }] })),
+    "ADUs counted in the hidden state's target places over the fit years: the model's range (band, tick at the midpoint) and the count (gold diamond).");
+}
+// The ADU deep dive: every state's results file, loaded when the Model page opens.
+let DEEP = null;
+async function drawDeepDive() {
+  if (DEEP) return;
+  DEEP = await Promise.all(DATA.states.map((e) => loadState(e.meta.state).catch(() => null)));
+  const bs = DEEP.filter(Boolean);
+  mmDeepDive(bs);
+  const nameOf = (st) => (DATA.map.tiles.find((t) => t.code === st) || {}).name || st;
+  const yearly = (b, scen) => (b.totals || []).filter((r) => r.scenario === scen && r.outcome === "permits_added" && /^\d{4}$/.test(r.period));
+  const avg = (rows, k) => rows.reduce((t, r) => t + r[k], 0) / rows.length;
+  const rows = bs.map((b) => {
+    const base = (b.adu_baseline || []).filter((r) => /^\d{4}$/.test(r.period)), add = yearly(b, "adu");
+    if (!base.length) return { label: nameOf(b.meta.state), sub: "", lanes: [] };
+    const nr = { p10: avg(base, "p10"), p50: avg(base, "p50"), p90: avg(base, "p90"), color: "var(--scenario-baseline)" };
+    const wr = add.length ? { p10: nr.p10 + avg(add, "p10"), p50: nr.p50 + avg(add, "p50"), p90: nr.p90 + avg(add, "p90"), color: scenColor("adu") } : null;
+    return { label: nameOf(b.meta.state), sub: "grey: no reform · blue: with the reform", lanes: wr ? [nr, wr] : [nr] };
+  });
+  const types = bs.map((b) => `<figure style="margin:0;min-width:0"><figcaption class="h3" style="font-size:15px;margin-bottom:var(--space-1)">${esc(nameOf(b.meta.state))}</figcaption>${placeTypeChart(b)}</figure>`).join("");
+  const tbl = bs.map((b) => {
+    const base = (b.adu_baseline || []).filter((r) => /^\d{4}$/.test(r.period));
+    const win = (o) => (b.totals || []).find((r) => r.scenario === "adu" && r.outcome === o && r.period.includes("-"));
+    const add = win("permits_added"), net = win("homes_net_statewide");
+    const cell = (r) => (r ? `${fmtN(r.p50)}<br><span class="caption muted">${fmtN(r.p10)}–${fmtN(r.p90)}</span>` : "–");
+    return `<tr><td>${esc(nameOf(b.meta.state))}</td><td class="n">${base.length ? fmtN(base.reduce((t, r) => t + r.p50, 0)) : "–"}</td><td class="n">${cell(add)}</td><td class="n">${cell(net)}</td></tr>`;
+  }).join("");
+  $("adu-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, ADUs a year.</b> Statewide ADU permits a year with today's rules, and with the reform on top, averaged over 2027–2031.</p>
+    ${laneChart(rows, "Gross ADU permits a year: the average of each window year's P10, midpoint and P90.")}
+    <p class="body-small" style="margin-top:var(--space-5)"><b>By place type.</b> The same split, by core cities, suburbs and towns: grey is built anyway, blue is added by the reform.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${types}</div>
+    <p class="body-small" style="margin-top:var(--space-5)"><b>Statewide totals, 2027–2031.</b></p>
+    <div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">ADUs with no reform</th><th class="n">ADUs added by the reform</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
+    <p class="source">Midpoints, with P10–P90 below. "ADUs with no reform" adds the five yearly midpoints. "Net new homes" counts only ADUs that add a home the state would not otherwise get. Every figure comes from the state's results file.</p>
+    <p class="pending">Still to add: the forecasting-forward test (fit on 2016–20, check against 2021–25) and the place-by-place check of forecasts against what was built. They are in the ADU gut check, but not yet in the results files.</p>`;
+}
+// The missing-middle deep dive (Ben, 2026-11-17), from the same results files as the ADU one: 2–4 unit homes a
+// year with and without the reform, each state's record and forecast, and the lots-to-homes steps by state.
+function mmDeepDive(bs) {
+  const nameOf = (st) => (DATA.map.tiles.find((t) => t.code === st) || {}).name || st;
+  const yr = (r) => /^\d{4}$/.test(r.period);
+  const avg = (rows, k) => rows.reduce((t, r) => t + r[k], 0) / rows.length;
+  const rows = bs.map((b) => {
+    const base = (b.baseline || []).filter((r) => r.size_class === "2_4" && yr(r));
+    const add = (b.totals || []).filter((r) => r.scenario === "missing_middle" && r.outcome === "permits_added" && yr(r));
+    if (!base.length) return { label: nameOf(b.meta.state), sub: "", lanes: [] };
+    const nr = { p10: avg(base, "p10"), p50: avg(base, "p50"), p90: avg(base, "p90"), color: "var(--scenario-baseline)" };
+    const wr = add.length ? { p10: nr.p50 + avg(add, "p10"), p50: nr.p50 + avg(add, "p50"), p90: nr.p50 + avg(add, "p90"), color: scenColor("missing_middle") } : null;
+    return { label: nameOf(b.meta.state), sub: "grey: no reform · coloured: with the reform", lanes: wr ? [nr, wr] : [nr] };
+  });
+  const years = bs.map((b) => `<figure style="margin:0;min-width:0"><figcaption class="h3" style="font-size:15px;margin-bottom:var(--space-1)">${esc(nameOf(b.meta.state))}</figcaption>${recordHtml(b, "missing_middle", true)}</figure>`).join("");
+  const tbl = bs.map((b) => {
+    const st = (k) => (b.funnel || []).find((f) => f.scenario === "missing_middle" && f.stage === k);
+    const win = (o) => (b.totals || []).find((r) => r.scenario === "missing_middle" && r.outcome === o && String(r.period).includes("-"));
+    const cell = (r) => (r ? `${fmtN(r.p50)}<br><span class="caption muted">${fmtN(r.p10)}–${fmtN(r.p90)}</span>` : "–");
+    return `<tr><td>${esc(nameOf(b.meta.state))}</td><td class="n">${cell(st("legal"))}</td><td class="n">${cell(st("pencils"))}</td><td class="n">${cell(win("permits_added"))}</td><td class="n">${cell(win("homes_net_statewide"))}</td></tr>`;
+  }).join("");
+  $("mm-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, homes a year.</b> Statewide homes permitted in 2–4 unit buildings a year with today's rules, and with the reform added on top, averaged over 2027–2031.</p>
+    ${laneChart(rows, "Homes in 2–4 unit buildings a year: the average of each window year's P10, midpoint and P90. With the reform: the no-reform midpoint plus the reform's range.")}
+    <p class="body-small" style="margin-top:var(--space-5)"><b>Each state's record and forecast.</b> Homes permitted in 2–4 unit buildings each year (bars, every city and town), then the no-reform forecast (grey) with the reform's range on top.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${years}</div>
+    <p class="body-small" style="margin-top:var(--space-5)"><b>From lots to homes, 2027–2031.</b></p>
+    <div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">Lots where 2–4 homes become legal</th><th class="n">Lots where building pays</th><th class="n">Homes permitted</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
+    <p class="source">Midpoints, with P10–P90 below. Every figure comes from the state's results file. The steps are explained on the Results page under "How we get these numbers".</p>`;
+}
+// Every state's five-year range per reform, from the numbers the page embeds per state (build.headline).
+function allStatesSvg() {
+  const order = ["adu", "missing_middle", "fees", "fees_local_half"].filter((k) => Object.hasOwn(DATA.scenarios, k));
+  const num = (h) => h && { p10: Number(h.p10), p50: Number(h.p50), p90: Number(h.p90) };
+  const states = DATA.states.filter((b) => b.headline && Object.keys(b.headline).length);
+  const name = (c) => ((DATA.map.tiles || []).find((t) => t.code === c) || {}).name || c;
+  const vals = states.flatMap((b) => order.map((k) => num(b.headline[k])).filter(Boolean).flatMap((h) => [h.p10, h.p90])).filter((v) => v > 0);
+  if (!vals.length) return "";
+  const lo = 10 ** Math.floor(Math.log10(Math.min(...vals))), hi = 10 ** Math.ceil(Math.log10(Math.max(...vals)));
+  const W = 760, L = 130, R = 60, bar = 10, gap = 4, block = order.length * (bar + gap) + 14, T = 6;
+  const H = T + states.length * block + 24;
+  const x = (v) => L + (Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (W - L - R);
+  const g = [];
+  for (let t = lo; t <= hi; t *= 10) g.push(`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H - 20}" stroke="var(--rule)"></line><text x="${x(t)}" y="${H - 6}" text-anchor="middle">${esc(fmtN(t))}</text>`);
+  states.forEach((b, i) => {
+    const y0 = T + i * block;
+    g.push(`<text class="lab" x="0" y="${y0 + block / 2 - 4}">${esc(name(b.meta.state))}</text>`);
+    order.forEach((k, j) => {
+      const h = num(b.headline[k]);
+      if (!h) return;
+      const y = y0 + j * (bar + gap), c = scenColor(k), op = k === "fees_local_half" ? 0.45 : 0.3;
+      g.push(`<rect x="${x(h.p10)}" y="${y}" width="${Math.max(2, x(h.p90) - x(h.p10))}" height="${bar}" fill="${c}" opacity="${op}" rx="2"><title>${esc(scenLabel(k))}, ${esc(name(b.meta.state))}: ${esc(fmtN(h.p10))} to ${esc(fmtN(h.p90))} homes, midpoint ${esc(fmtN(h.p50))}</title></rect>`);
+      g.push(`<line x1="${x(h.p50)}" x2="${x(h.p50)}" y1="${y - 1}" y2="${y + bar + 1}" stroke="${c}" stroke-width="2.5"></line>`);
+      g.push(`<text x="${Math.min(x(h.p90) + 5, W - R + 4)}" y="${y + bar - 1}">${esc(fmtN(h.p50))}</text>`);
+    });
+  });
+  $("allstates").setAttribute("viewBox", `0 0 ${W} ${H}`);
+  $("allstates-key").innerHTML = order.map((k) => `<span><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(k)};opacity:${k === "fees_local_half" ? 0.45 : 0.3}"></span> ${esc(scenLabel(k))}</span>`).join("") + `<span class="muted">│ midpoint</span>`;
+  return g.join("");
+}
 function staticTrust() {
+  heldoutHtml();
   wireModelCards();
+  $("allstates").innerHTML = allStatesSvg();
   $("dag").innerHTML = dagSvg();
   $("dag-key").innerHTML = dagKey();
   confHtml();
@@ -1186,10 +1616,20 @@ function wireResults() {
   body.onclick = (e) => {
     const t = e.target.closest("button");
     if (!t) return;
-    if (t.dataset.outcome) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
-    if (t.dataset.detail) {
+    if (t.dataset.outcome && Object.hasOwn(OUTCOME_WORDS, t.dataset.outcome)) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
+    if (t.dataset.detail && Object.hasOwn(DATA.scenarios, t.dataset.detail)) {
       UI.detail = t.dataset.detail; UI.pins = {};
       body.querySelectorAll("[data-detail]").forEach((x) => x.setAttribute("aria-pressed", x === t));
+      $("knobs").innerHTML = knobsHtml(UI.b);
+      drawTornado();
+    }
+    if (t.dataset.fee === "fees" || t.dataset.fee === "fees_local_half") {
+      UI.fee = t.dataset.fee; body.querySelectorAll("[data-fee]").forEach((x) => x.setAttribute("aria-pressed", x === t));
+      if (UI.model === "fees") { UI.detail = UI.fee; UI.pins = {}; $("knobs").innerHTML = knobsHtml(UI.b); drawTornado(); }
+    }
+    if (HERO.includes(t.dataset.model)) {
+      UI.model = t.dataset.model; UI.detail = UI.model === "fees" ? UI.fee : UI.model; UI.pins = {};
+      body.querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
       $("knobs").innerHTML = knobsHtml(UI.b);
       drawTornado();
     }
@@ -1251,8 +1691,10 @@ async function show(state) {
   document.title = `Lotline · ${b.meta.state}`;
 }
 
-// ---- pages: one section at a time, chosen by the URL hash (#results, #data, #trust; ?state=XX) -------------
-const PAGES = Object.keys(SECTIONS);
+// ---- pages: one section at a time, chosen by the URL hash (#home, #results, #data, #trust, #add; ?state=XX) --
+// "home" is the opening card (no state chosen yet); "add" is the static add-a-state page. Results exist only
+// per state: there is no all-states results page.
+const PAGES = ["home", ...Object.keys(SECTIONS), "add"];
 function route() {
   const [page, query] = location.hash.replace(/^#/, "").split("?");
   return { page: PAGES.includes(page) ? page : PAGES[0], state: new URLSearchParams(query || "").get("state") };
@@ -1262,9 +1704,10 @@ function go(page, scroll = true) {
   document.querySelectorAll("nav.sections a[data-page]").forEach((a) => {
     if (a.dataset.page === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
-  history.replaceState(null, "", `#${page}?state=${encodeURIComponent($("state").value)}`);
-  if (page === "trust") drawTornado();  // measured while visible
+  history.replaceState(null, "", page === "home" ? "#home" : `#${page}?state=${encodeURIComponent($("state").value)}`);
+  if (page === "trust") { drawTornado(); drawDeepDive(); }  // measured while visible
   if (page === "data") ensureDashboard();
+  if (page === "home") drawMap();
   if (scroll) window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", () => {
@@ -1273,6 +1716,13 @@ window.addEventListener("hashchange", () => {
   go(r.page);
 });
 
+$("pick-state").addEventListener("click", () => {
+  const host = $("map-card"), first = host.querySelector(".tile.on");
+  host.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  host.classList.add("nudge");
+  setTimeout(() => host.classList.remove("nudge"), 1600);
+  if (first) first.focus({ preventScroll: true });
+});
 fillPicker();
 wireMap();
 staticTrust();
