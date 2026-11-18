@@ -4,6 +4,7 @@
 calls that day: missing middle is the master copy because it came first; build one store for primary
 documents; cut token use in searching and coding.*
 
+The rule agents are a service in the app for a user adding a state ([`PRINCIPLES.md`](PRINCIPLES.md)).
 The three swarms (`/rules-mm`, `/rules-adu`, `/rules-fees`) each research one rule category for one state.
 Everything that is not about the category itself lives once, in `src/lotline/rule_agents/common/`, with one
 command line: `uv run python -m lotline.rule_agents --help`. MM uses it now; ADU and fees move onto it after
