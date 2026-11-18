@@ -67,8 +67,7 @@ def build(
         .agg(name=("name", "last"), bps_id=("bps_id", "last"), county_geoid=("county_geoid", "last"))
         .reset_index()
     )
-    # Unincorporated areas get no population: the county total would overstate them, and places that
-    # straddle county lines make "county minus its places" unreliable from these files.
+    # County remainders get no population here; `load` fills it (`remainder_population`, task 5 rule 6).
     pops = census[census["level"] != "county"].drop_duplicates("geoid").set_index("geoid")
     df = latest.assign(
         state=state,
@@ -139,6 +138,35 @@ def _local_rows(
             "in_bps",
         ],
     )
+
+
+def remainder_population(
+    juris: pd.DataFrame, census: pd.DataFrame, county_shares: pd.DataFrame, township_shares: pd.DataFrame
+) -> pd.Series:
+    """2020 population of each county remainder (task 5 rule 6, Ben 2026-11-17): the county's 2020 population
+    minus every BPS-universe place in it (a place spanning counties split by its 2020 housing-unit shares) and
+    every BPS-universe township net of the places inside it. The same subtraction as the remainder's eligible
+    homes (`eligible.allocate_homes`), so a remainder's population and its homes describe the same area.
+    Below 0 (never expected with census counts) is set to 0. Index: county GEOID.
+
+    By hand: county 100,000; place A 30,000 (all in it); place B 20,000 with 25% of its homes here; township T
+    10,000 holding dependent place C 4,000 → 100,000 − 30,000 − 5,000 − (10,000 − 4,000) − 4,000 = 55,000.
+    """
+    from lotline.build.eligible import allocate_homes
+
+    pops = census.drop_duplicates("geoid").set_index("geoid")
+    prefix = {"place": "place:", "cousub": "cousub:", "county": "county:"}
+    as_acs = pd.DataFrame(
+        {
+            "geo": pops["level"].map(prefix) + pops.index,
+            "end_year": 2020,
+            "estimate": pd.to_numeric(pops["pop_2020"], errors="coerce").astype(float),
+        }
+    ).dropna(subset=["geo"])
+    alloc = allocate_homes(as_acs, juris, county_shares, township_shares)
+    counties = juris.loc[juris["kind"] == "county_unincorporated", "geoid"]
+    got = alloc.set_index("jurisdiction_geoid")["homes"]
+    return got.reindex(counties).round().astype("Int64").rename("pop_2020")
 
 
 def tiers_from_parcels(parcels: pd.DataFrame | None, params: dict | None = None) -> dict[str, int]:
@@ -216,7 +244,7 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     tiers = tiers_from_parcels(store.read(state, "parcels"))
     places = sorted({g for g in [*bps_table["geoid"].dropna(), *local] if len(g) == 7})
     main = geoparts.main_county(fips, places, store, refresh)
-    return build(
+    out = build(
         state,
         bps_table,
         census,
@@ -226,3 +254,11 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
         parcel_tiers=tiers,
         main_counties=main,
     )
+    # task 5 rule 6: county remainders get their 2020 population, so they land in the right size band
+    in_list = out.loc[out["kind"] == "place", "geoid"].tolist()
+    townships = out.loc[out["kind"] == "township", "geoid"].tolist()
+    c_shares = geoparts.county_shares(fips, in_list, store, refresh)
+    t_shares = geoparts.township_shares(fips, in_list, townships, store, refresh)
+    rem = remainder_population(out, census, c_shares, t_shares)
+    out["pop_2020"] = out["geoid"].map(rem).fillna(out["pop_2020"]).astype("Int64")
+    return validate(out, "jurisdictions")
