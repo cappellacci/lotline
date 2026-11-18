@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.15** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.16** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -258,6 +258,64 @@ Table checks: `one_row_per_key`, `range_brackets_central`
 | `verified_date` | date | no | yes |  |
 | `notes` | text | no | yes |  |
 
+## `place_inputs`
+
+Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task 4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use; a value missing at its source stays null here (no fills). `models` lists who reads the row; `models_note` says why a place is out of the others.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `geoid` | text | yes | no |  |
+| `year` | integer | yes | no | ≥ 1980; ≤ 2100 |
+| `name` | text | yes | no |  |
+| `kind` | text | yes | no | one of `state`, `county`, `county_unincorporated`, `place`, `township`, `region`, `other` |
+| `county_geoid` | text | no | yes |  |
+| `in_bps` | true/false | no | yes |  |
+| `pop_2020` | integer | no | yes | ≥ 0 |
+| `data_tier` | integer | yes | no | one of `1`, `2`, `3` |
+| `cbsa_code` | text | no | yes |  |
+| `cbsa_type` | text | no | yes |  |
+| `acs_geo` | text | yes | no |  |
+| `size_band` | integer | yes | no | ≥ 0 |
+| `place_type` | text | yes | no | one of `core`, `suburb`, `town` |
+| `place_type_source` | text | yes | no | one of `acs_cbsa`, `default_town` |
+| `is_holdout` | true/false | yes | no |  |
+| `parcel_sources` | text | no | yes |  |
+| `permit_sources` | text | no | yes |  |
+| `house_share` | number | no | yes | ≥ 0; ≤ 1 |
+| `eligible_parcels_adu` | number | no | yes | ≥ 0 |
+| `eligible_parcels_reported_adu` | number | no | yes | ≥ 0 |
+| `overlap_removed_adu` | number | no | yes |  |
+| `parcels_year_adu` | integer | no | yes |  |
+| `parcels_after_origin_adu` | true/false | no | yes |  |
+| `denominator_source_adu` | text | no | yes | one of `parcels`, `parcels_interpolated`, `parcels_scaled_acs`, `acs_sf_fallback`, `published` |
+| `denominator_quality_adu` | text | no | yes | one of `high`, `medium`, `low` |
+| `eligible_parcels_mm` | number | no | yes | ≥ 0 |
+| `eligible_parcels_reported_mm` | number | no | yes | ≥ 0 |
+| `overlap_removed_mm` | number | no | yes |  |
+| `parcels_year_mm` | integer | no | yes |  |
+| `parcels_after_origin_mm` | true/false | no | yes |  |
+| `denominator_source_mm` | text | no | yes | one of `parcels`, `parcels_interpolated`, `parcels_scaled_acs`, `acs_sf_fallback`, `published` |
+| `denominator_quality_mm` | text | no | yes | one of `high`, `medium`, `low` |
+| `rent` | number | no | yes | ≥ 0 |
+| `home_value` | number | no | yes | ≥ 0 |
+| `acs_end_year` | integer | no | yes |  |
+| `new_home_value` | number | no | yes |  |
+| `fee_parcel_vintage` | integer | no | yes |  |
+| `observed_adu_per_year` | number | no | yes | ≥ 0 |
+| `bps_county_geoid` | text | no | yes |  |
+| `units_1` | integer | no | yes | ≥ 0 |
+| `units_2` | integer | no | yes | ≥ 0 |
+| `units_3_4` | integer | no | yes | ≥ 0 |
+| `units_5p` | integer | no | yes | ≥ 0 |
+| `imputed` | true/false | no | yes |  |
+| `hpi` | number | no | yes |  |
+| `hpi_geo` | text | no | yes |  |
+| `models` | text | yes | no |  |
+| `models_note` | text | no | yes |  |
+
 # Results bundle (engine to app)
 
 Written by `lotline results --state XX` to `reports/results/<st>/bundle.json`; not adapter inputs. See issue #310.
@@ -460,3 +518,4 @@ Table checks: `one_row_per_key`
 | 1.13 | fees: optional amount_per_unit_low_usd and amount_per_unit_high_usd (range of a fee that varies by area, basin, tier or plat date) and in_force_through (an older row still in force; #247, D-066) |
 | 1.14 | results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook benchmark), D-065 |
 | 1.15 | results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide current-rules ADUs per window year), for the app's ADU evidence card |
+| 1.16 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |

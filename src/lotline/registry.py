@@ -48,7 +48,7 @@ class Source:
 
 def _national() -> list[Source]:
     from lotline.adapters.national import acs, bps, fhfa, fred
-    from lotline.build import demand, eligible, jurisdictions
+    from lotline.build import demand, eligible, jurisdictions, place_inputs
 
     return [
         Source("acs", acs, "acs_geo_year", None),
@@ -58,6 +58,7 @@ def _national() -> list[Source]:
         Source("demand", demand, "market_geo_year", None),
         Source("eligible", eligible, "eligible_parcels", None),
         Source("jurisdictions", jurisdictions, "jurisdictions", None),
+        Source("place_inputs", place_inputs, "place_inputs", None),  # last: reads every table above
     ]
 
 

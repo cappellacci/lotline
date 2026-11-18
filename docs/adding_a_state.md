@@ -292,7 +292,11 @@ This downloads into `LOTLINE_DATA_DIR`, records every file in `manifest.jsonl`, 
 - `bps_place_year`: Census permits by building size, per place and township;
 - `market_geo_year`: FHFA prices, FRED rates and costs, and the demand index;
 - `jurisdictions`: every permit-issuing place, with its tier;
-- `eligible_parcels`: eligible lots from the ACS (one-unit detached homes) where there are no parcels.
+- `eligible_parcels`: eligible lots from the ACS (one-unit detached homes) where there are no parcels;
+- `place_inputs` (last): one row per place and year with every input the models share (eligible lots for
+  ADUs and middle housing, rent and value, observed ADUs, permits by size, place type, price index) and a
+  `models` column saying which models read the place and, in `models_note`, why it is left out of the others.
+  Open it to see exactly what the models will see for your state.
 
 Then check the national data:
 
@@ -407,12 +411,13 @@ uv run lotline unlisted --state XX
 uv run lotline fetch --state XX --source jurisdictions
 uv run lotline fetch --state XX --source eligible
 uv run lotline fetch --state XX --source demand
+uv run lotline fetch --state XX --source place_inputs
 ```
 
 `unlisted` lists GEOIDs your new data uses that are not jurisdictions yet; add any real government to
 `local_jurisdictions` (step 2) and rerun the adapter. `jurisdictions` then picks up each place's tier from its
 parcels (the one thing it still reads from local data). `eligible` swaps the ACS estimate for the parcel count
-where parcels exist. Then rerun step 7.
+where parcels exist. `place_inputs` goes last, since it reads every other table. Then rerun step 7.
 
 When the state has local data but is not in any fit (the usual case), label it a transfer state:
 

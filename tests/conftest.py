@@ -85,7 +85,7 @@ def _zz_store(root) -> DataStore:
                 "eligible_parcels": pd.array([8_000, 2_500, 700, 1_200] * 2, dtype="Int64"),
                 "data_tier": pd.array([3] * 2 * len(geoids), dtype="Int64"),
                 "denominator_source": proxy.ACS_SOURCE,
-                "denominator_quality": "acs",
+                "denominator_quality": "low",
             }
         ),
     )
