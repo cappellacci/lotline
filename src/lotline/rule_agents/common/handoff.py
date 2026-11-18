@@ -5,8 +5,8 @@ owner occupancy; fees: amount, basis, year) and builds tasks with these pieces: 
 blocker kind, the closed `result` answers, the acceptance rule, the documents already held for the place,
 the Markdown checklist and the base answer checks. Moved from the MM swarm's `mm/handoff.py` (master).
 
-Records-request-only sources never become tasks (Ben files no records requests): they close as
-`no_usable_source` at once.
+A source available only by public-records request becomes an **optional** task (priority 3, `optional` =
+yes): the user may file the request themselves or mark it `no_usable_source`. Agents never file one.
 """
 
 from __future__ import annotations
@@ -31,13 +31,17 @@ BLOCKER_TIPS = {
     "unreachable": "The host did not answer (timeout or connection error); try it in a browser.",
     "robots_unavailable": "The site's robots.txt did not answer, so scripts stay off; open it in a browser.",
     "budget_spent": "The agents ran out of search budget here; a quick look on the city site may settle it.",
+    "records_request_only": (
+        "Optional: this record is only available by public-records request. File one with the city clerk "
+        "if you want it (it can take weeks); otherwise mark no_usable_source."
+    ),
 }
 
 ACCEPTANCE = (
     "Done when result is filled. 'found': fill the listed columns and paste a verbatim quote (<=300 chars) "
     "from source_url that shows the value; dates as YYYY-MM-DD. If you saved the document, drop it in the "
     "rule_docs inbox and put its file name in saved_file. 'not_found': the page is readable but does not "
-    "answer it. 'no_usable_source': only by records request, login, or gone."
+    "answer it. 'no_usable_source': only by records request you chose not to file, login, or gone."
 )
 # Answer columns every category's sheet has (after its own value columns).
 COMMON_ANSWER_COLUMNS = ["result", "source_url", "quote", "saved_file", "checked_by", "checked_on", "notes"]
@@ -79,7 +83,10 @@ def to_markdown(rows: list[dict], title: str) -> str:
     buf = io.StringIO()
     buf.write(f"# {title}\n\nFill answers in the CSV with the same task_id. Priority 1 first.\n\n")
     for r in rows:
-        buf.write(f"- [ ] **{r['task_id']}** · {r['place']} · priority {r['priority']} · `{r['blocker']}`\n")
+        opt = " · optional" if r.get("optional") == "yes" else ""
+        buf.write(
+            f"- [ ] **{r['task_id']}** · {r['place']} · priority {r['priority']}{opt} · `{r['blocker']}`\n"
+        )
         buf.write(f"  - Open: {r['start_url']}\n  - Tip: {r['browser_tip']}\n")
         buf.write(f"  - Look for: {r['look_for']}\n  - Fill: `{r['fields_to_fill']}`\n")
         if r.get("held_docs"):

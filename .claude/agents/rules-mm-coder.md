@@ -44,7 +44,8 @@ Never Read a whole stored document or snapshot file. For each `doc_id` in the sc
    documents you have not opened.
 - Code from sources only: never open `places.csv`, `config/reforms/`, `docs/research/ordinances/` or
   `logbook.d/` (existing coding) [S-1].
-- No records requests, emails, forms or logins [R-10]. Never write permit/housing/outcome numbers [M-10].
+- Never file records requests, send emails, fill forms or log in [R-10]; a records-request-only source is a
+  Blocker `records_request_only` (an optional task for the user). Never write permit/housing/outcome numbers [M-10].
 - Write only `<RUN>/findings/<GEOID>.coder-<a|b>.json`. Then run
   `uv run python -m lotline.rule_agents.mm check <RUN>` and fix every problem it lists for your file (one retry).
 

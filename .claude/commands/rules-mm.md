@@ -71,4 +71,4 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
 
 `… ingest <RUN> <answers.csv>` refuses rows without a quote or with bad dates and saves the rest under
 `answers/`. Re-run steps 4–9 with `--only` those places, giving the coder the answers file as extra evidence
-(`source_kind: human_lookup`). Records-request-only sources close as `no_usable_source`.
+(`source_kind: human_lookup`). Records-request-only sources are optional tasks: the user files the request or marks `no_usable_source`.

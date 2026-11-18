@@ -28,7 +28,8 @@ for coders of a blind holdout place: leave it out.
   skips hosts that refused any swarm this month, waits its turn, tries once, stores the document and prints
   JSON with `doc_id`, `pages`, `text_status` or `blocker`) and WebSearch. **Never** use curl, wget, WebFetch on a URL the CLI refused, another user agent, or browser
   headers. A refusal is a result: record it.
-- No records requests, emails, forms or logins. Never write permit, housing or outcome numbers (holdouts).
+- Never file records requests, send emails, fill forms or log in (a records-request-only source is a
+  Blocker `records_request_only`; the user decides whether to file one). Never write permit, housing or outcome numbers (holdouts).
 - Write only `<RUN>/sources/<GEOID>.json`. Budget: at most **8 searches and 6 fetches** (cached documents
   are free). Before you finish, record them:
   `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> scout --searches N --fetches N`.

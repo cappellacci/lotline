@@ -22,6 +22,9 @@ the people who built Lotline.*
   turns rules into housing estimates.
 - Work around a site that refuses them (robots.txt, bot walls, logins), use another user agent, or fill forms.
   A refusal becomes a lookup task.
+- File public-records requests, email staff or call anyone. A record that only a records request can reach
+  becomes an **optional** lookup (lowest priority): the user may file the request or mark it unavailable
+  (Ben, 2026-11-17).
 - Open outcome data (permit counts, staff reports flagged `may_contain_outcomes`) for a place that the app
   holds back for validation, when the state has such holdouts.
 - Show coders the state's existing coded rows: those are used only to compare with afterwards.
