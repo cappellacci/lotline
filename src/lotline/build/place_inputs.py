@@ -117,7 +117,7 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
     base = juris[["geoid", *[c for c in PLACE_COLS if c in juris]]].copy()
     base["acs_geo"] = base["kind"].map(adu.ACS_PREFIX) + ":" + base["geoid"]
     pop = pd.to_numeric(base["pop_2020"], errors="coerce").fillna(0)
-    base["size_band"] = adu.size_band(pop, edges)  # county remainders: no pop_2020 -> band 0 (as MM today)
+    base["size_band"] = adu.size_band(pop, edges)  # county remainders: their 2020 population (task 5 rule 6)
     house = mm.house_shares(st, store)
     base["house_share"] = base["geoid"].map(house)  # latest roll, no origin cap (as MM today)
     base = base.merge(place_tags(st, store, juris, parcels, permits), on="geoid", how="left")
