@@ -138,3 +138,52 @@ def place_or_township(lon, lat, state: str, store, *, refresh: bool = False) -> 
         if rest.size:
             out[rest] = assign(x[rest], y[rest], load_polygons(state, store, "cousub", refresh=refresh))
     return pd.Series(out, index=index, dtype=object, name="geoid")
+
+
+# ---- one resolver for every adapter (WS-SCALE task 3) ----------------------------------------------------
+
+UNRESOLVED = "unresolved"
+
+
+def resolve(steps, known, *, otherwise: str = UNRESOLVED) -> tuple[pd.Series, pd.Series]:
+    """(jurisdiction_geoid, how) per row: the first step that gives a usable GEOID wins.
+
+    `steps` is an ordered list of `(how, geoids)` or `(how, geoids, must_be_known)`, each `geoids` a Series on
+    the same index. A step gives a usable GEOID for a row when its value is present and, if `must_be_known`
+    (the default), is in `known` (the GEOIDs of the jurisdictions table). Rows no step resolves get <NA>
+    and how `otherwise`.
+
+    Every adapter that tags rows with a jurisdiction writes its rule as steps, so the rule is one readable
+    list. By hand, with known = {"A", "C"}: steps [("place", [A, B, <NA>]), ("county", [C, C, C], False)]
+    -> geoids [A, C, C], how [place, county, county].
+    """
+    if not steps:
+        raise ValueError("resolve needs at least one step")
+    index = steps[0][1].index
+    geoid = pd.Series(pd.NA, index=index, dtype="string")
+    how = pd.Series(otherwise, index=index, dtype="string")
+    for step in steps:
+        label, values = step[0], step[1].astype("string")
+        must_be_known = step[2] if len(step) > 2 else True
+        ok = values.notna()
+        if must_be_known:
+            ok &= values.isin(known)
+        take = ok.fillna(False).astype(bool) & geoid.isna()
+        geoid = geoid.mask(take, values)
+        how = how.mask(take, label)
+    return geoid, how
+
+
+def jurisdictions_table(state: str, store) -> pd.DataFrame:
+    """The state's jurisdictions table, built if it is not on disk yet. One loader for every adapter."""
+    juris = store.read(state, "jurisdictions")
+    if juris is None:
+        from lotline.build import jurisdictions as jur
+
+        juris = jur.load(state, store)
+    return juris
+
+
+def known_geoids(state: str, store) -> set[str]:
+    """GEOIDs of the state's jurisdictions table (`jurisdictions_table`)."""
+    return set(jurisdictions_table(state, store)["geoid"].astype(str))

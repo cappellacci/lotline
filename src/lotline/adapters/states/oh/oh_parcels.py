@@ -800,28 +800,24 @@ def resolve_jurisdictions(
     `how` is "place", "township", "township_of_place" (a place not in the table → its township) or
     "county_fallback" (neither is in the table, or no centroid: the county's remainder row).
     """
+    from lotline import geo
+
     found = found.astype("string")
-    cousub = cousub.astype("string")
-    in_found = found.isin(known).fillna(False).astype(bool)
-    in_cousub = cousub.isin(known).fillna(False).astype(bool)
-    geoid = found.where(in_found, cousub.where(in_cousub, county_geoid.astype("string")))
-    how = pd.Series("county_fallback", index=found.index, dtype="string")
-    how = how.mask(in_cousub & ~in_found, "township_of_place")
-    how = how.mask(in_found & found.str.len().eq(10), "township")
-    how = how.mask(in_found & found.str.len().eq(7), "place")
-    return geoid, how
+    steps = [
+        ("place", found.where(found.str.len().eq(7))),
+        ("township", found.where(found.str.len().eq(10))),
+        ("township_of_place", cousub),
+        ("county_fallback", county_geoid, False),
+    ]
+    return geo.resolve(steps, known, otherwise="county_fallback")
 
 
 def assign_jurisdictions(df: pd.DataFrame, state: str, store: DataStore) -> tuple[pd.DataFrame, pd.Series]:
     """Fill `jurisdiction_geoid` from the centroids; return the rows and how each was placed."""
     from lotline import geo
     from lotline.adapters.national.tiger_boundaries import load_polygons
-    from lotline.build import jurisdictions as jur
 
-    juris = store.read(state, "jurisdictions")
-    if juris is None:
-        juris = jur.load(state, store)
-    known = set(juris["geoid"])
+    known = geo.known_geoids(state, store)
     found = geo.place_or_township(df["lon"], df["lat"], state, store)
     cousub = pd.Series(
         geo.assign(df["lon"].to_numpy(), df["lat"].to_numpy(), load_polygons(state, store, "cousub")),

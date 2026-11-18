@@ -348,6 +348,14 @@ from your data directory (see the note at the end of section 3).
    Add `year_built`, `units` and `zoning_raw` when the source has them. **Never request owner names or
    addresses.** List those fields in a `PERSONAL` set and test that they are never requested, as the Ohio and
    North Carolina adapters do.
+   **Tag each parcel with its jurisdiction** using `lotline.geo`, not your own lookup:
+   - a source covering one city: set `jurisdiction_geoid` to that city's constant GEOID;
+   - otherwise: `geo.place_or_township(lon, lat, state, store)` for the point, then `geo.resolve(steps,
+     geo.known_geoids(state, store))`, where `steps` is your rule as an ordered list, e.g.
+     `[("place", place), ("county_remainder", county_geoid, False)]`. The first step that gives a GEOID in the
+     jurisdictions table wins (`False` keeps the value even if it is not in the table), and every row gets a
+     `how` label saying which step placed it. `src/lotline/adapters/states/nc/onemap_parcels.py`
+     (`resolve_jurisdictions`) is a three-line example.
 4. **Map land uses** with a crosswalk, `config/crosswalks/xx_<source>_land_use.csv`.
    - Every source code maps to one of: `SF_DETACHED`, `SF_ATTACHED`, `DUPLEX`, `TRI_QUAD`, `MULTIFAMILY_5P`,
      `MOBILE_HOME`, `CONDO_UNIT`, `VACANT_RESIDENTIAL`, `MIXED_USE`, `COMMERCIAL`, `INDUSTRIAL`,
