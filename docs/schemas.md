@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.15** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.16** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -465,6 +465,39 @@ Table checks: `one_row_per_key`
 | `population_share` | number | yes | yes | ≥ 0; ≤ 1 |
 | `basis` | text | yes | no | one of `reported`, `with_imputation`, `flagged_permits` |
 
+## `results_adu_place_types`
+
+The ADU scenario by place type (D-088: core city, suburb, town), for the page's evidence card. `places` and `lots` (eligible lots, the median over draws) describe the state; `base` (current-rules ADUs, the no-reform world) and `added` (ADUs the Handbook reform adds) are gross ADU permits a year, averaged over the window, each draw summed over the type's places; `base` and `added` are medians, with P10 and P90.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `place_type` | text | yes | no | one of `core`, `suburb`, `town` |
+| `places` | integer | yes | no | ≥ 0 |
+| `lots` | number | yes | no | ≥ 0 |
+| `base_p10` | number | yes | no | ≥ 0 |
+| `base` | number | yes | no | ≥ 0 |
+| `base_p90` | number | yes | no | ≥ 0 |
+| `added_p10` | number | yes | no | ≥ 0 |
+| `added` | number | yes | no | ≥ 0 |
+| `added_p90` | number | yes | no | ≥ 0 |
+
+## `results_adu_baseline`
+
+Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over the draws: what the ADU scenario's added range stacks on.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `period` | text | yes | no | matches `^\d{4}$` |
+| `p10` | number | yes | no | ≥ 0 |
+| `p50` | number | yes | no | ≥ 0 |
+| `p90` | number | yes | no | ≥ 0 |
+
 ## Version history
 
 | Version | Change |
@@ -484,4 +517,5 @@ Table checks: `one_row_per_key`
 | 1.12 | results_observed: permits actually issued in the years before the window (ADU permits where local data flag them; homes in 2-4 unit buildings from BPS); results_baseline size_class 2_4 |
 | 1.13 | fees: optional amount_per_unit_low_usd and amount_per_unit_high_usd (range of a fee that varies by area, basin, tier or plat date) and in_force_through (an older row still in force; #247, D-066) |
 | 1.14 | results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook benchmark), D-065 |
-| 1.15 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |
+| 1.15 | results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide current-rules ADUs per window year), for the app's ADU evidence card |
+| 1.16 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |
