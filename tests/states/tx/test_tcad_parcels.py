@@ -190,7 +190,8 @@ def test_crosswalks_are_sourced():
 
     assert lu.land_use_std.isin(LAND_USES).all()
     ent = pd.read_csv(tp.ENTITY_CROSSWALK, dtype=str)
-    assert ent.jurisdiction_geoid.str.fullmatch(r"48\d{5}").all()
+    ent = ent[ent["source"] == "tcad"]
+    assert len(ent) and ent.geoid.str.fullmatch(r"48\d{5}").all()
 
 
 def test_registered_as_tx_source():

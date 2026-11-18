@@ -66,3 +66,27 @@ def test_first_step_wins_and_index_is_kept():
 def test_no_steps_is_an_error():
     with pytest.raises(ValueError):
         geo.resolve([], KNOWN)
+
+
+@pytest.mark.parametrize("state", ["nc", "or", "tx"])
+def test_aliases_files_are_well_formed(state):
+    """WS-SCALE: one aliases file per state; each (source, field, raw) maps to one GEOID of that state."""
+    from lotline.config import CONFIG_DIR, load_state
+
+    df = pd.read_csv(CONFIG_DIR / "crosswalks" / f"{state}_aliases.csv", dtype=str, keep_default_na=False)
+    assert list(df.columns) == ["source", "field", "raw", "geoid", "notes", "source_url"]
+    assert not df.duplicated(["source", "field", "raw"]).any()
+    fips = load_state(state.upper()).fips
+    assert df["geoid"].str.fullmatch(fips + r"(\d{3}|\d{5}|\d{8})").all()
+    assert df["source_url"].str.startswith("https://").all()
+
+
+def test_aliases_lookup_by_source_and_field():
+    assert geo.aliases("NC", "cary_permits", "jurisdiction") == {"TC": "3710740", "CC": "3710740"}
+    assert geo.aliases("OR", "mwvcog_permits", "JURISD") == {
+        "SALEM": "4164900",
+        "KEIZER": "4138500",
+        "TURNER": "4175150",
+    }
+    with pytest.raises(KeyError):
+        geo.aliases("NC", "no_such_source")

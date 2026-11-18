@@ -23,7 +23,7 @@ line**, so nothing personal reaches memory as a field or the table. The raw zip 
 
 - Real property only (`prop_type_cd` R); one row per prop_id and roll (highest sup_num).
 - City of Austin: a property is placed in a city when one of its `PROP_ENT.TXT` taxing units is named in
-  `config/crosswalks/tx_tcad_entities.csv` (CITY OF AUSTIN → 4805000). Properties not taxed by a listed city
+  `config/crosswalks/tx_aliases.csv` (CITY OF AUSTIN → 4805000). Properties not taxed by a listed city
   are left out of this table (they belong to other cities or the county).
 - Land use: the improvement's state code (else the land's), first looked up in TCAD's own codes
   (`config/crosswalks/tx_tcad_state_codes.csv`: A4/A5 condos, A2 mobile homes, B2 duplexes, B3/B4 triplexes
@@ -71,7 +71,7 @@ LICENSE = "Public information (Texas Public Information Act); published by Travi
 TRAVIS_FIPS = "48453"
 LAND_USE_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_ptad_land_use.csv"
 DISTRICT_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_tcad_state_codes.csv"
-ENTITY_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_tcad_entities.csv"
+ENTITY_CROSSWALK = CONFIG_DIR / "crosswalks" / "tx_aliases.csv"  # source tcad, field entity_name
 SQFT_PER_ACRE = 43_560  # definition of the acre
 
 REGISTER_HELP = (
@@ -127,7 +127,7 @@ PROVENANCE = {
         "names and IDs, owner, mailing and mortgage-company addresses, mortgage loan numbers, deed "
         "book/page/number, agents, ARB, lawsuit and exemption-applicant data, situs address",
         "Real property only (prop_type_cd R); one row per prop_id and roll, the highest supplement",
-        "City placement: properties taxed by an entity named in config/crosswalks/tx_tcad_entities.csv "
+        "City placement: properties taxed by an entity named in config/crosswalks/tx_aliases.csv "
         "(CITY OF AUSTIN → 4805000); others are left out",
         "land_use_std: improvement (else land) state code → state category (STATE_CD.TXT ptd_state_cd) → "
         "config/crosswalks/tx_ptad_land_use.csv; land_use_raw keeps the district code",
@@ -194,9 +194,10 @@ def load_land_use_crosswalk(path: Path = LAND_USE_CROSSWALK) -> dict[str, str]:
         return {r["ptad_code"].strip().upper(): r["land_use_std"].strip() for r in csv.DictReader(fh)}
 
 
-def load_entities(path: Path = ENTITY_CROSSWALK) -> dict[str, str]:
-    with open(path, newline="") as fh:
-        return {_norm(r["entity_name"]): r["jurisdiction_geoid"].strip() for r in csv.DictReader(fh)}
+def load_entities() -> dict[str, str]:
+    from lotline import geo
+
+    return {_norm(k): g.strip() for k, g in geo.aliases("TX", "tcad", "entity_name").items()}
 
 
 def _norm(name: str) -> str:
