@@ -164,6 +164,7 @@ def data_section(states: Iterable[str], summary: dict | None) -> dict:
             "name": s.get("name") if s else None,
             "totals": s.get("totals") if s else None,
             "sources": sources_table(st, s),
+            "fees": s.get("fees") if s else None,
         }
     generated = (summary or {}).get("generated")
     return {"summary_generated": generated, "by_state": out, "overall": overall(summary)}
