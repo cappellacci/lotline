@@ -17,6 +17,8 @@
     python -m lotline.rule_agents ledger add RUN PLACE AGENT [--tokens N] [--fetches N] [--searches N]
     python -m lotline.rule_agents ledger status RUN PLACE [--tokens N] [--fetches N] [--searches N]
     python -m lotline.rule_agents ledger summary RUN
+    python -m lotline.rule_agents doctor ST [--category C]        # is everything a run needs in place?
+    python -m lotline.rule_agents import PROPOSAL.csv reforms|fees ST [--replace-changed] [--yes]
 
 DOC is a doc id or a unique prefix of 8+ characters. Category-specific steps stay in each swarm's own command
 line (`python -m lotline.rule_agents.mm ...`).
@@ -204,6 +206,34 @@ def _ledger(a) -> int:
     return 0
 
 
+def _doctor(a) -> int:
+    from lotline.rule_agents.common import doctor
+
+    res = doctor.checks(a.state, Path(a.repo), category=a.category)
+    print(doctor.render(res))
+    return 0 if all(ok for ok, _, _ in res) else 1
+
+
+def _import(a) -> int:
+    """Preview (default) or write (--yes) a reviewed proposal into config/<table>/<st>.csv."""
+    from lotline.rule_agents.common import importer
+
+    try:
+        p = importer.plan(Path(a.proposal), a.table, a.state, Path(a.config))
+        print(p.summary())
+        if p.changed and not a.replace_changed:
+            print("Changed rows are listed only; pass --replace-changed to replace them.")
+        if not a.yes:
+            importer.validate_text(importer.merged_text(p, replace_changed=a.replace_changed), a.table)
+            print("Preview only (the merged table passes the schema). Pass --yes to write it.")
+            return 0
+        print(f"written: {importer.apply(p, replace_changed=a.replace_changed)}")
+        return 0
+    except importer.ImportError_ as exc:
+        print(f"NOT IMPORTED: {exc}")
+        return 1
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m lotline.rule_agents", description=__doc__.split("\n")[0])
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -270,8 +300,29 @@ def main(argv: list[str] | None = None) -> int:
             s.add_argument(o, type=int)
     lp.add_parser("summary").add_argument("run")
 
+    repo = Path(__file__).resolve().parents[3]
+    s = sub.add_parser("doctor")
+    s.add_argument("state")
+    s.add_argument("--category", choices=("mm", "adu", "fees"))
+    s.add_argument("--repo", default=str(repo))
+    s = sub.add_parser("import")
+    s.add_argument("proposal")
+    s.add_argument("table", choices=("reforms", "fees"))
+    s.add_argument("state")
+    s.add_argument("--config", default=str(repo / "config"))
+    s.add_argument("--replace-changed", action="store_true")
+    s.add_argument("--yes", action="store_true", help="write the file (default: preview only)")
+
     a = p.parse_args(argv)
-    return {"docs": _docs, "excerpts": _excerpts, "outline": _outline, "ledger": _ledger}[a.cmd](a)
+    cmds = {
+        "docs": _docs,
+        "excerpts": _excerpts,
+        "outline": _outline,
+        "ledger": _ledger,
+        "doctor": _doctor,
+        "import": _import,
+    }
+    return cmds[a.cmd](a)
 
 
 if __name__ == "__main__":

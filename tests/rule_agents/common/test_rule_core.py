@@ -413,3 +413,121 @@ def test_a_heading_brings_its_lettered_standards(docs):
     rec = docs.ingest(_raw(docs, "p.txt", page), url="https://city.gov/p.txt", added_by="r")
     text = " ".join(p.text for p in excerpts.excerpts(docs, rec.doc_id, "adu", max_chars=2000))
     assert "1,200 square feet" in text and "Antennas" not in text
+
+
+# ---- import and setup check --------------------------------------------------------------------------------
+def _reform_file(tmp_path, rows):
+    """A tiny config/reforms/mn.csv using the real header, filled from an existing schema-valid row shape."""
+    from lotline.schemas import columns
+
+    header = list(columns("reforms"))
+    cfg = tmp_path / "config" / "reforms"
+    cfg.mkdir(parents=True)
+    import csv as _csv
+
+    with open(cfg / "mn.csv", "w", newline="") as fh:
+        w = _csv.DictWriter(fh, fieldnames=header)
+        w.writeheader()
+        for r in rows:
+            w.writerow({c: r.get(c, "") for c in header})
+    return tmp_path / "config", header
+
+
+def _reform(rid, cap, **kw):
+    """A schema-valid row: the first missing-middle row of the repo's MN reforms file, re-keyed."""
+    import csv as _csv
+    from pathlib import Path
+
+    src = Path(__file__).resolve().parents[3] / "config" / "reforms" / "mn.csv"
+    with open(src, newline="") as fh:
+        base = next(r for r in _csv.DictReader(fh) if r["theme"] == "missing_middle")
+    geoid = rid.split("-")[1]
+    return {
+        **base,
+        "reform_id": rid,
+        "jurisdiction_geoid": geoid,
+        "unit_cap": str(cap),
+        "supersedes": "",
+        **kw,
+    }
+
+
+def test_import_previews_adds_and_only_replaces_changes_when_asked(tmp_path):
+    from lotline.rule_agents.common import importer
+    from lotline.schemas import columns
+
+    a, b = _reform("MN-2700001-missing_middle-2020", 3), _reform("MN-2700002-missing_middle-2021", 2)
+    config, header = _reform_file(tmp_path, [a, b])
+    before = (config / "reforms" / "mn.csv").read_text()
+    prop = tmp_path / "proposal.csv"
+    import csv as _csv
+
+    with open(prop, "w", newline="") as fh:
+        w = _csv.DictWriter(fh, fieldnames=list(columns("reforms")))
+        w.writeheader()
+        w.writerow({**a, "unit_cap": "4"})
+        w.writerow(_reform("MN-2700003-missing_middle-2022", 2))
+    try:
+        p = importer.plan(prop, "reforms", "MN", config)
+    except importer.ImportError_ as exc:  # pragma: no cover - shows the schema problem if the fixture drifts
+        raise AssertionError(exc) from None
+    assert [r["reform_id"] for r in p.added] == ["MN-2700003-missing_middle-2022"]
+    assert [(n["reform_id"], cols) for _, n, cols in p.changed] == [
+        ("MN-2700001-missing_middle-2020", ["unit_cap"])
+    ]
+    # preview writes nothing
+    assert (config / "reforms" / "mn.csv").read_text() == before
+    assert "MN-2700003" in importer.merged_text(p)
+    importer.apply(p)
+    rows = (config / "reforms" / "mn.csv").read_text().splitlines()
+    assert len(rows) == 4 and rows[1] == before.splitlines()[1]  # existing row untouched, byte for byte
+    importer.apply(importer.plan(prop, "reforms", "MN", config), replace_changed=True)
+    assert "MN-2700001" in (config / "reforms" / "mn.csv").read_text().splitlines()[1]
+
+
+def test_import_refuses_unknown_columns_other_states_and_repeated_keys(tmp_path):
+    from lotline.rule_agents.common import importer
+
+    config, header = _reform_file(tmp_path, [])
+    bad = tmp_path / "bad.csv"
+    bad.write_text("reform_id,state,colour\nMN-2700001-missing_middle-2020,MN,red\n")
+    with pytest.raises(importer.ImportError_, match="colour"):
+        importer.plan(bad, "reforms", "MN", config)
+    bad.write_text("reform_id,state\nWI-5500001-missing_middle-2020,WI\n")
+    with pytest.raises(importer.ImportError_, match="other than MN"):
+        importer.plan(bad, "reforms", "MN", config)
+    bad.write_text("reform_id,state\nMN-1,MN\nMN-1,MN\n")
+    with pytest.raises(importer.ImportError_, match="repeats"):
+        importer.plan(bad, "reforms", "MN", config)
+
+
+def test_import_will_not_write_a_table_that_fails_the_schema(tmp_path):
+    from lotline.rule_agents.common import importer
+
+    config, header = _reform_file(tmp_path, [])
+    prop = tmp_path / "p.csv"
+    prop.write_text("reform_id,state,jurisdiction_geoid,theme\nMN-2700001-x-2020,MN,2700001,not_a_theme\n")
+    p = importer.plan(prop, "reforms", "MN", config)
+    with pytest.raises(importer.ImportError_, match="schema"):
+        importer.apply(p)
+    assert len((config / "reforms" / "mn.csv").read_text().splitlines()) == 1  # unchanged
+
+
+def test_doctor_flags_only_what_a_run_needs(tmp_path):
+    from lotline.rule_agents.common import doctor
+
+    repo = tmp_path / "repo"
+    (repo / ".claude" / "commands").mkdir(parents=True)
+    (repo / ".claude" / "commands" / "rules-mm.md").write_text("x")
+    res = doctor.checks("MN", repo, category="mm", data_root=tmp_path / "data")
+    bad = {label for ok, label, _ in res if not ok}
+    assert any("data folder" in b for b in bad)  # missing data folder is flagged
+    assert any("jurisdictions" in b for b in bad)
+    assert not any("rules-adu" in b for b in bad)  # other categories are information only
+    assert any(
+        "rules-fees" in b
+        for b in {
+            label for ok, label, _ in doctor.checks("MN", repo, category="fees", data_root=tmp_path) if not ok
+        }
+    )
+    assert "thing(s) to fix" in doctor.render(res)

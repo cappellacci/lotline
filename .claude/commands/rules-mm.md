@@ -32,6 +32,8 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
 
 ## Steps
 
+0. **Setup check.** `uv run python -m lotline.rule_agents doctor <ST> --category mm`; stop and show the user
+   what to fix if it does not say "Ready.".
 1. **Init.** `uv run python -m lotline.rule_agents.mm init <ST> [--run RUN_ID]` → prints `RUN`. With `--resume`,
    reuse the existing run and skip places whose stage outputs exist.
 2. **Places + brief.** `… places <RUN> [--limit N] [--only …] [--skip-coded] [--min-pop N]` (writes
@@ -64,7 +66,8 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
 10. **Report** `out/run-report.md`: places run; rules by `date_basis`; events (dated cap rises), none rows,
     always-allowed (`predates`) places, standards rows; agreement counts; every major diff and its decision;
     hand-off tasks by blocker kind; compare mismatches; problems still listed by `check`; places to check
-    first (largest population with low confidence or a mismatch). Then tell the user, in plain words, what to
+    first (largest population with low confidence or a mismatch). Tell the user how to review and import the table: `uv run python -m lotline.rule_agents import
+    <RUN>/out/reforms_mm_<st>.csv reforms <ST>` (preview), then `--yes`. Then tell the user, in plain words, what to
     decide: which rows to merge, which hand-offs to do first.
 
 ## When the user answers the hand-offs
