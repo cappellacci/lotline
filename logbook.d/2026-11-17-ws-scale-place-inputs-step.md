@@ -1,7 +1,7 @@
-### LB-NNN · 2026-11-17 · Build: WS-SCALE task 4 (part 2), place_inputs as a fetch step (schemas 1.15)
+### LB-NNN · 2026-11-17 · Build: WS-SCALE task 4 (part 2), place_inputs as a fetch step (schemas 1.16)
 - **Question:** Can `place_inputs` be built by `lotline fetch` like any other table, validated by a schema?
 - **What I did:**
-  - `PlaceInputs` schema (49 columns, one row per state, geoid, year), `SCHEMAS_VERSION` 1.15, history row,
+  - `PlaceInputs` schema (49 columns, one row per state, geoid, year), `SCHEMAS_VERSION` 1.16, history row,
     `docs/schemas.md` regenerated.
   - Registered `place_inputs` as a national build step; `RUN_LAST` makes a plain `lotline fetch` build it
     after every adapter (sources otherwise run in name order).
