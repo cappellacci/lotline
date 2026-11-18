@@ -90,3 +90,11 @@ sources:
       2026-10-15 appraisal snapshots (1990 to now), with each issuing office's permit number and work
       description. ADU permits only (named description rules), outside Columbus; Columbus's own layer takes
       the flags by permit number. Not a complete record of new houses (about a tenth of BPS for Columbus).
+
+# Governments the Census permit survey files under a county but this state's own permit or parcel data
+# reports separately (WS-SCALE, Ben 2026-11-17). Written once from the jurisdictions table built
+# 2026-11-17 (rows with in_bps false); before then the build read them from the permit and parcel tables.
+# With the survey's places and the holdouts they make the jurisdictions list. Add a GEOID here when
+# `lotline unlisted --state OH` reports one your data uses.
+local_jurisdictions:
+  "3902179086": "Urbana township"

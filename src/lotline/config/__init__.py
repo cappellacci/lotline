@@ -92,6 +92,11 @@ class StateConfig(_Model):
     # D-068: the state's ADU law is coded row by row for every place it covers (config/reforms/<st>.csv), so a
     # place with no ADU row is outside the law and takes the prior of states without such a law.
     adu_state_law_rows_complete: bool = False
+    # Governments the Census permit survey has no row for (it files their permits under a county), which the
+    # state's own permit or parcel data reports separately: GEOID -> name. With the survey's places and the
+    # holdouts, they make the jurisdictions list (build/jurisdictions.py), which reads no adapter output
+    # (WS-SCALE, Ben 2026-11-17). `lotline unlisted --state XX` prints GEOIDs the data uses that are missing.
+    local_jurisdictions: dict[str, str] = {}
 
 
 class Parameter(_Model):

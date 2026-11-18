@@ -141,6 +141,12 @@ Optional keys, added later when they apply:
 - `adu_state_law_rows_complete: true`: only if you generate a state-law row for **every** place the state's ADU
   law covers (as Oregon does, D-068). A place without a row is then read as outside the law.
 - `parcel_sources`: needed only when two parcel sources cover the same jurisdiction.
+- `local_jurisdictions`: governments the Census permit survey has no row for (it files their permits under
+  a county) but your own permit or parcel data reports separately, as `"GEOID": "Name"`. Minnesota lists 23
+  townships, North Carolina 196 towns. The jurisdictions list is the survey's places, these, and the
+  holdouts; it never reads your data, so it needs no rebuild when you add a source. After adding a permit
+  or parcel source, run `uv run lotline unlisted --state XX`: it prints every GEOID your data uses that the
+  list lacks. Add the real governments among them here.
 - `data_tiers`: to override a place's tier by hand.
 
 Saving this file registers the state everywhere the code calls `all_states()`, including the app.
@@ -393,13 +399,16 @@ The national build steps read whatever local tables exist when they run, so rebu
 sources, in this order:
 
 ```bash
+uv run lotline unlisted --state XX
 uv run lotline fetch --state XX --source jurisdictions
 uv run lotline fetch --state XX --source eligible
 uv run lotline fetch --state XX --source demand
 ```
 
-`jurisdictions` now picks up local GEOIDs and each place's tier from its parcels. `eligible` swaps the ACS
-estimate for the parcel count where parcels exist. Then rerun step 7.
+`unlisted` lists GEOIDs your new data uses that are not jurisdictions yet; add any real government to
+`local_jurisdictions` (step 2) and rerun the adapter. `jurisdictions` then picks up each place's tier from its
+parcels (the one thing it still reads from local data). `eligible` swaps the ACS estimate for the parcel count
+where parcels exist. Then rerun step 7.
 
 When the state has local data but is not in any fit (the usual case), label it a transfer state:
 
