@@ -217,7 +217,8 @@ Registries move into the state yaml.
   - one missing-ACS rule.
 - [ ] **6. Fees in the bundle.** Add `fees` to `ENGINE_SCENARIOS`, reading `place_inputs`. This is the fee
       model's owner's call.
-- [ ] **7. Crosswalks.** Convert the 24 odd files to the two formats; delete `or_metro_cities.csv`. **Check:**
+- [x] **7. Crosswalks.** Done 2026-11-17 (all 18 loaders unchanged); registries stay CSVs; `or_metro_cities.csv`
+      kept (a dev script reads it). Convert the 24 odd files to the two formats; delete `or_metro_cities.csv`. **Check:**
       every adapter's `land_use_std` and `building_type_std` columns are unchanged row for row.
 - [ ] **8. Adapter rules as data.** Move state quirks into named, documented rules in the state file (`rules:`
       with id, what it does, assumption, sensitivity range, source). First case: TX `austin_home_adu_share`, the

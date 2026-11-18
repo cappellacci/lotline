@@ -374,8 +374,12 @@ from your data directory (see the note at the end of section 3).
    - Every source code maps to one of: `SF_DETACHED`, `SF_ATTACHED`, `DUPLEX`, `TRI_QUAD`, `MULTIFAMILY_5P`,
      `MOBILE_HOME`, `CONDO_UNIT`, `VACANT_RESIDENTIAL`, `MIXED_USE`, `COMMERCIAL`, `INDUSTRIAL`,
      `AGRICULTURAL`, `INSTITUTIONAL`, `OTHER` or `UNKNOWN`.
-   - Columns are up to the adapter. `config/crosswalks/oh_dte_luc.csv` is a simple example:
-     `state_luc,label,land_use_std,basis`.
+   - Use the land-use format, `field,code,description,land_use_std,notes,source_url`, and read it with
+     `lotline.adapters.crosswalks.read(path, "land_use")`. The reader checks the header and that every
+     `land_use_std` is in the list above. `config/crosswalks/oh_dte_luc.csv` is a simple example.
+   - Labels that vary by county are matched with ordered rules instead of exact codes: leave `code` blank and
+     add a `pattern` column (a regular expression; the first match wins), plus `county` if a rule holds in one
+     county only (`mn_land_use.csv`, `or_rlis_land_use.csv`).
 5. **Call** `holdout.apply(...)` on the rows before returning them, then `validate(df, TABLE)`.
 6. **Add a `sources:` entry** in `config/states/xx.yaml` with name, URL, license, access, cadence and notes.
 
@@ -393,6 +397,11 @@ the table.
   - `source`.
 - **Building types:** `SFD`, `ADU`, `TH`, `U2`, `U3_4`, `U5_6`, `U7P`, `DTQ`, `MF5`, `OTHER` or `UNKNOWN`.
   Never guess a finer type: set `type_confidence` to `inferred` or `unknown` instead.
+- **Map permit types** with a building-type crosswalk,
+  `field,code,description,building_type_std,role,derived_units,notes,source_url`
+  (`config/crosswalks/nc_gso_occupancy.csv` is the example), read with
+  `crosswalks.read(path, "building_type")`. `role` is what the permit does in your adapter's terms
+  (dwelling, multi, demolition, ...); `derived_units` is the unit count to record when the source gives none.
 - **ADUs:** mark them `building_type_std = ADU` (or fill `adu_type`). A permit that builds a house and an ADU
   together is split into two rows (D-041).
 - **Hand-check the flag:** if ADUs come from reading descriptions, check 30 flagged and 30 unflagged permits

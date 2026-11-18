@@ -109,6 +109,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp
@@ -128,8 +129,9 @@ LICENSE = (
     "State of Ohio OGRIP public data, provided 'as is' (no use restrictions stated for public downloads)"
 )
 LUC_CROSSWALK = CONFIG_DIR / "crosswalks" / "oh_dte_luc.csv"
-COUNTY_FIPS = CONFIG_DIR / "crosswalks" / "oh_county_fips.csv"
-COUNTIES: list[str] | None = None  # None: all 88 counties in oh_county_fips.csv (a list limits the run)
+COUNTY_FIPS = CONFIG_DIR / "crosswalks" / "oh_aliases.csv"  # source oh_parcels, field county
+SOURCE_NAME = "oh_parcels"
+COUNTIES: list[str] | None = None  # None: all 88 counties in oh_aliases.csv (a list limits the run)
 SQFT_PER_ACRE = 43_560.0
 # The server intermittently answers deep-offset pages with "400: Invalid query parameters" and serves the same
 # page on a later try (seen on Franklin at offset ~418,000); the pager retries error bodies.
@@ -291,7 +293,7 @@ PROVENANCE = {
         "Ohio South State Plane)",
         "vintage_date = the county's latest CurrentTo (export date); vintage = its year; a county with no "
         "CurrentTo on any parcel takes the download (snapshot) date",
-        "county_geoid from the county name via config/crosswalks/oh_county_fips.csv",
+        "county_geoid from the county name via config/crosswalks/oh_aliases.csv",
         "County layers (COUNTY_LAYERS: Summit Fiscal Office as of 2025-03-25, Lucas Auditor tax year 2025, "
         "Cuyahoga Fiscal Office tax year 2026, Butler CURRENTPARCELS read 2026-10-26; owner and address "
         "fields never requested) joined on the parcel ID, attributes only: the county's DTE land-use code "
@@ -362,11 +364,14 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 def luc_crosswalk(path: Path = LUC_CROSSWALK) -> dict[str, str]:
     """3-digit DTE class → land_use_std."""
-    return {r["state_luc"]: r["land_use_std"] for r in _read_csv(path)}
+    return {r["code"]: r["land_use_std"] for r in crosswalks.read(path, "land_use")}
 
 
-def county_fips(path: Path = COUNTY_FIPS) -> dict[str, str]:
-    return {r["county"]: r["county_geoid"] for r in _read_csv(path)}
+def county_fips() -> dict[str, str]:
+    """County name in the parcel layers -> county GEOID (`config/crosswalks/oh_aliases.csv`)."""
+    from lotline import geo
+
+    return geo.aliases("OH", SOURCE_NAME, "county")
 
 
 def luc_code(raw: pd.Series) -> pd.Series:
