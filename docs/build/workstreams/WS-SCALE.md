@@ -224,10 +224,12 @@ Registries move into the state yaml.
       unchanged; onemap tier cutoffs read from params. No ranges set yet (Ben). The rest of the audit list is open. Move state quirks into named, documented rules in the state file (`rules:`
       with id, what it does, assumption, sensitivity range, source). First case: TX `austin_home_adu_share`, the
       share of 2024+ duplex permits on single-family lots counted as ADUs, with low and high values.
-- [ ] **9. Missing-input matrix.** For each of parcels, zoning and permits missing, run NC with that input
+- [x] **9. Missing-input matrix.** Done 2026-11-17: `docs/adding_a_state.md` §2,
+      `scripts/dev/missing_input_matrix.py`. Parcels narrow, not widen, the MM range (for Ben). For each of parcels, zoning and permits missing, run NC with that input
       dropped to its fallback. Record how far the median moves and how much the range widens, as a plain table
       in `docs/adding_a_state.md` §2.
-- [ ] **10. Borrowed parameters.** Document the rule for states with no reform history: take the uptake
+- [x] **10. Borrowed parameters.** Done 2026-11-17: `docs/adding_a_state.md` §8 (Rules/Handbook read: no causal
+      identification asked; quoted). Document the rule for states with no reform history: take the uptake
       parameters from reformed states, with the D-043 transport. Check the Rules/Handbook on whether causal
       identification is expected; quote it.
 - [x] **11. Bring-your-own-state guide.** Short path added 2026-11-17, generated from the steps file (task 13);

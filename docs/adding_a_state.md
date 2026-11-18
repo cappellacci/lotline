@@ -88,6 +88,33 @@ and costs) covers every state, so level 0 needs no local data at all.
 that test because too few permit sources had years after a reform (`reports/mm-d092/run5-tests/README.md`).
 The fee scenario has none either. Treat level 1 as the minimum for all three models until those tests exist.
 
+
+**What each kind of local data is worth (task 9, North Carolina, 2026-11-17).** NC was run four times with
+the same seed: as is, then with one input dropped to the fallback a state without it would get. Five-year net
+homes statewide, change in the median against the full run, and the P10-P90 range as a multiple of the full
+run's range:
+
+| Input dropped | Fallback | ADU median | ADU range | Middle housing median | Middle housing range | Fees |
+|---|---|---|---|---|---|---|
+| Parcels | ACS count of one-unit homes, scaled (D-056); tier 3 | −4% | ×0.97 | −18% | ×0.79 | +3%, ×1.03 |
+| Zoning rules (`config/reforms/nc.csv`) | Rule priors borrowed from the other coded states | +251% | ×4.9 | +51% | ×1.5 | unchanged |
+| Permits | No observed ADU floor | +4% | ×1.01 | unchanged | unchanged | unchanged |
+
+How to read it:
+- **Coded local rules matter most.** Without them, NC's places take the other states' rule mix. The ADU
+  median rises 3.5-fold and its range widens almost 5-fold, which suggests NC's own ordinances allow ADUs
+  less often than the borrowed mix (not checked rule by rule). This is why level 1 (coded rules) is the
+  recommended minimum.
+- **Parcels move the middle-housing median by about a fifth.** They do not widen the range: the ACS
+  fallback gives a smaller eligible count, so the range narrows with it. The D-056 factor's own uncertainty
+  is in the fallback, but here it is smaller than the change in the count.
+- **Permits barely move the scenario totals.** Their job is the observed ADU counts and the tests, not the
+  forecast.
+- **One state, one seed, 1,000 draws.** The numbers are NC's. A state whose own rules are looser than
+  the borrowed mix would move the other way.
+- **Rerun:** `uv run python scripts/dev/missing_input_matrix.py --state NC --out <folder>` (offline;
+  writes nothing to the data directory; holdouts stay hidden).
+
 ---
 
 ## 3. Known blockers (cleared by WS-SCALE task 0, 2026-11-17)
@@ -655,3 +682,38 @@ Not hard-coded, so nothing to change:
 - the app build and the map (`src/lotline/app/us_tiles.yaml` lists every state);
 - the dashboard;
 - `compliance_check.py`.
+
+---
+
+## 8. Reference: what a state with no reform history borrows (WS-SCALE task 10)
+
+Most states have passed no ADU or middle-housing reform, so they have no uptake history of their own. Lotline
+does not need one. The rule is the same for every such state: **the uptake parameters come from the reformed
+states the model was fitted on, moved to the new state's own market, and the range widens by how much states
+differ from each other.**
+
+| What | Borrowed from | Moved to the new state by | Extra width for a new state |
+|---|---|---|---|
+| ADU uptake rate θ | The fit on the reformed states (`config/params/hazard.yaml`) | The state's own rents, home values and mortgage rates (`model/hazard.py`, D-043) | A state multiplier exp(τz) drawn per draw, τ from its fitted profile (D-044, `config/params/adu_state_effect.yaml`), plus the extrapolation widening for places outside the fitted range (D-030) |
+| ADU rule probabilities for uncoded places | The coded places of the states in `REFORM_STATES` ("borrow only", section 3) | The place's size band | None beyond the prior's own spread |
+| Missing-middle dose and blank shares | The same coded places, pooled | Size band | None beyond the prior's own spread |
+| Fee levels for places with no fee file | The coded places of every state, pooled (`model/fee_levels.py`, below 5 own places) | None | The pooled prior's spread |
+| Eligible lots with no parcels | The ACS count of one-unit detached homes | The D-056 scaling factor | The factor's log-sd |
+
+A borrowed parameter never changes for the states it came from: the new state feeds nothing back until Ben
+pools it (step 14).
+
+**Is this allowed?** The Rules and Handbook (read 2026-11-17) do not ask for causal identification. Neither
+page uses the words "causal", "identification" or "counterfactual".
+- The Handbook calls the challenge "methodology-agnostic".
+- The Handbook accepts assumptions when they are "clearly described and justified".
+- The Rules score the opposite of a data requirement. Under Policy Insight (§8), work applied to "states
+  with less complete data" is judged more favorably.
+
+So a borrowed parameter is acceptable when it is written down, sourced, and carried with its range. That is
+what the table above and `config/params/` do.
+
+**What a borrowed parameter cannot say.** It assumes the new state's builders and owners respond to a reform
+the way owners did in the fitted states once rents and prices are accounted for. Its range covers how much
+the fitted states differed; it cannot cover a way the new state differs from all of them. The bundle's
+`overlap_flag` says when a place sits outside the fitted range, and the guide's step 11 asks you to report it.
