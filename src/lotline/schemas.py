@@ -836,8 +836,8 @@ HISTORY = [
     (
         "1.17",
         "results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, "
-        "`missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle "
-        "ever held rows for them, so no data is lost",
+        "`missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). "
+        "No bundle ever held rows for them, so no data is lost",
     ),
 ]
 

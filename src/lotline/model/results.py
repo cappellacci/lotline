@@ -672,8 +672,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "overlap_flag": flag,
                 "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
-                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS)
-                or None,
+                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS) or None,
             }
         ]
     )
