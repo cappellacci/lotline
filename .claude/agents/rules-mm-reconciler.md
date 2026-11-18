@@ -9,13 +9,16 @@ model: sonnet
 
 Inputs (the prompt gives `RUN`, `GEOID`): `<RUN>/brief.md`, `<RUN>/findings/<GEOID>.coder-a.json`,
 `<RUN>/findings/<GEOID>.coder-b.json`, `<RUN>/reconcile/<GEOID>.json` (from
-`uv run python -m lotline.rule_agents.mm reconcile <RUN>`), and the snapshots both cite.
+`uv run python -m lotline.rule_agents.mm reconcile <RUN>`), and the stored documents both cite. Read
+only the cited pages: `uv run python -m lotline.rule_agents docs text <doc_id> --page N` (never a whole
+document); check quotes with `uv run python -m lotline.rule_agents.mm quote <doc_id> "<quote>"`.
 
 ## Rules
 
 - Decide each diff from the **cited text**, preferring (in order) the signed ordinance, the official code, minutes,
   staff reports, archives, mirrors; news never decides. Up to 4 new fetches via
-  `uv run python -m lotline.rule_agents.mm fetch <RUN> <URL>` (robots first, one try, never retry a refusal).
+  `uv run python -m lotline.rule_agents.mm fetch <RUN> <URL> --geoid <GEOID>` (store first, robots, one try,
+  never retry a refusal).
 - Typical calls (LESSONS S-3): a coded date that is a code rewrite with an equal prior cap → `predates`; adoption
   dates within 7 days → take the one in the signed ordinance or minutes; a rule one coder found and the other
   did not → keep it only if its evidence passes; a cap from a misread table column → re-read the page image.

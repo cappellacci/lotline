@@ -23,6 +23,8 @@ reports/judging/
 reports/adu-d0*/**/panel.csv
 
 # Ordinance PDFs for rule research live in LOTLINE_DATA_DIR/manual/<state>/ (MN: manual/mn/second_coder_2026-11-02)
+# and, from 2026-11-17, in the rule document store (LOTLINE_DATA_DIR/rule_docs; see docs/build/rule-agents/CORE.md)
+docs/research/ordinances/source-pdfs/
 docs/research/ordinances/*.pdf
 # Data dashboard build output (aggregates of downloaded data)
 reports/data_dashboard/

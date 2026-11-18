@@ -90,3 +90,21 @@ def agreement(diffs: list[Diff]) -> str:
     """The reforms schema's `coder_agreement` for a reconciled place: 'agree' when there is no diff,
     else 'adjudicated' (the reconciler decided)."""
     return "agree" if not diffs else "adjudicated"
+
+
+def needs_second_coder(f: PlaceFinding, position: int, audit_every: int = 10) -> str | None:
+    """Why this place gets the blind second coder, or None (token rule, 2026-11-17, as ADU's scoring step):
+    an event (a rule with unit_cap >= 2 not coded `predates`) decides the model's treatment dates; a rule
+    below high confidence is where a second reading pays; every `audit_every`-th place (1-based `position`
+    in places.csv order) is an audit sample so single-coder places stay checked.
+
+    By hand: a 2020 dated cap-3 rule -> "event"; a predates cap-2 rule at high -> None (position 3);
+    the same at position 10 -> "audit"; a none row at medium -> "confidence"."""
+    for r in f.rules:
+        if (r.unit_cap or 0) >= 2 and r.date_basis != "predates" and r.status == "in_force":
+            return "event"
+    if any(r.confidence != "high" for r in f.rules) or not f.rules:
+        return "confidence"
+    if audit_every and position % audit_every == 0:
+        return "audit"
+    return None

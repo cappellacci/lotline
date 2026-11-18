@@ -1,6 +1,6 @@
 ---
 name: rules-mm-coder
-description: Codes missing-middle rules for ONE place for the /rules-mm swarm, as first or second (blind) coder. Reads the run brief, the scout's sources and snapshots, fetches politely, and writes a PlaceFinding JSON where every coded field cites a URL, a verbatim quote and the retrieval date; anything it cannot read becomes a structured Blocker for a person, never a guess.
+description: Codes missing-middle rules for ONE place for the /rules-mm swarm, as first or second (blind) coder. Reads the run brief, the scout's sources and short page-cited passages of the stored documents, fetches politely, and writes a PlaceFinding JSON where every coded field cites a URL, a verbatim quote and the retrieval date; anything it cannot read becomes a structured Blocker for a person, never a guess.
 tools: Read, Write, Bash, WebSearch
 model: sonnet
 ---
@@ -24,11 +24,28 @@ the route by right. Window: from 2010-01-01; an older rule still in force is cod
 
 ## Hard rules
 
-- Network only via `uv run python -m lotline.rule_agents.mm fetch <RUN> <URL>` and WebSearch. Never curl, never
-  another user agent, never retry a refusal [R-5]. Budget: **12 fetches, 10 searches**.
+- Network only via `uv run python -m lotline.rule_agents.mm fetch <RUN> <URL> --geoid <GEOID>` and WebSearch.
+  Never curl, never another user agent, never retry a refusal [R-5]. Budget: **8 fetches, 6 searches**, and
+  the place's token budget: run `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID>` before any
+  new search; if it says `"stop": true`, stop searching and turn every open field into a Blocker with kind
+  `budget_spent`. Record what you used before finishing:
+  `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> coder-<a|b> --searches N --fetches N`.
+
+## Reading documents (the biggest token cost; read narrowly)
+
+Never Read a whole stored document or snapshot file. For each `doc_id` in the scout's list:
+
+1. `uv run python -m lotline.rule_agents excerpts <DOC> mm [--extra R-1 "Ord. 2019-48"]` prints the best
+   passages (about 6,000 characters at most), each tagged `[doc p.N]`. Usually this is all you need.
+2. `uv run python -m lotline.rule_agents outline <DOC>` lists section and table headings by page;
+   `uv run python -m lotline.rule_agents docs text <DOC> --page N` prints one page.
+3. Only for a use table, Read the PDF **page image** for that one page (Read with `pages: "N"`) [P-1].
+4. `uv run python -m lotline.rule_agents docs find --geoid <GEOID> --text "<words>"` finds the page in
+   documents you have not opened.
 - Code from sources only: never open `places.csv`, `config/reforms/`, `docs/research/ordinances/` or
   `logbook.d/` (existing coding) [S-1].
-- No records requests, emails, forms or logins [R-10]. Never write permit/housing/outcome numbers [M-10].
+- Never file records requests, send emails, fill forms or log in [R-10]; a records-request-only source is a
+  Blocker `records_request_only` (an optional task for the user). Never write permit/housing/outcome numbers [M-10].
 - Write only `<RUN>/findings/<GEOID>.coder-<a|b>.json`. Then run
   `uv run python -m lotline.rule_agents.mm check <RUN>` and fix every problem it lists for your file (one retry).
 
@@ -67,15 +84,16 @@ before 2010, or carried over by a recodification). Future effective date → `st
 **Never write tags like [predates] in notes** — set `date_basis` / `standards_only`.
 
 **Evidence** for every non-blank coded field: `field`, `url`, verbatim `quote` (≤ 300 chars, copied exactly),
-`section` (ordinance §, table row/column, PDF page), `retrieved` (today), `snapshot` (the `path` the fetch
-printed), `source_kind`. News, mirrors and search summaries cannot stand alone [R-7, H-3]; mirror-only
+`section` (ordinance §, table row/column), `page`, `retrieved` (the date the document was first fetched),
+`doc_id` (from fetch / the scout), `source_kind`, and `quote_status` from
+`uv run python -m lotline.rule_agents.mm quote <DOC> "<quote>"` (`found p.N` → `verbatim` and `page` N; for a
+scan, read the page image and set `image_read`). News, mirrors and search summaries cannot stand alone [R-7, H-3]; mirror-only
 values are never `confidence: "high"`.
 
 **PDFs** [P-1..P-3]: read use tables from the **page image** (Read with `pages`), not the text layer; cite
-"Table X, row Y, column Z". `… quote <snapshot> "<quote>" --run <RUN>` writes the text layer to `<RUN>/text/<snapshot file name>.txt`
-(pypdf, `=== page N ===` markers) the first time; if it says the PDF is a scan, save the text you read from the
-page image there yourself (the verifier checks quotes in that file; agents cannot write under `raw/`). Check drafts: `uv run python -c "from lotline.rule_agents.mm.findings import draft_markers;
-print(draft_markers(open('<RUN>/text/<snapshot file name>.txt').read()))"` — a draft supports `announced_date` only.
+"Table X, row Y, column Z". The store keeps each document's text by page; a scanned document shows
+`text_status: scanned`, and its quotes are `image_read`. Drafts: `uv run python -m lotline.rule_agents docs show
+<DOC>` lists `draft_markers`; a draft supports `announced_date` only.
 
 **Blockers**: any source you needed and could not read → `{"url", "kind", "detail", "fields", "look_for"}`
 with `kind` from `findings.BLOCKER_KINDS` and the exact fields it would settle. Leave those fields blank. A
