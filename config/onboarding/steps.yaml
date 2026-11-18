@@ -5,8 +5,10 @@
 # `lotline.onboarding` (steps, commands, check). Each step can be done three ways:
 #   manual:    a person follows the guide section named in `guide`;
 #   built_in:  the app (or `lotline onboard`) runs `commands`, with XX replaced by the state code;
-#   agent:     a coding agent works from `agent.brief` (rule- and fee-coding swarms; owned by the
-#              "Local rules agent swarm design" session, briefs still being written).
+#   agent:     the app's rule agents (a service the user switches on, docs/build/rule-agents/PRINCIPLES.md)
+#              propose a table in the existing CSV format, keyed by GEOID; the user reviews it and imports it
+#              to `agent.import_to`. The agents never write config, never produce model rates and never open
+#              outcome data for held-back places. The imported file passes the same `check` as a hand-made one.
 # `check` names a function in lotline.onboarding.CHECKS that says whether the step is done for a state.
 # `level` is the data level of section 2 of the guide the step belongs to (0 national only ... 3 local parcels;
 # null: every level); `done_when` says in plain words what `check` tests;
@@ -20,14 +22,10 @@ steps:
     short_path: false
     inputs: [the state's laws, city websites, open-data portals, docs/research/lotline-data-catalog.csv]
     outputs: [docs/build/xx-assessment.md]
-    modes: [manual, agent]
+    modes: [manual]
     commands: []
     check: assessment_written
     done_when: docs/build/xx-assessment.md exists
-    agent:
-      brief: null
-      owner: Local rules agent swarm design
-      note: A scouting agent can fill the assessment from public sources; no brief yet.
 
   - id: state_config
     title: Write the state config
@@ -64,11 +62,14 @@ steps:
     modes: [manual, agent]
     commands: []
     check: reforms_coded
-    done_when: config/reforms/xx.csv exists
+    done_when: config/reforms/xx.csv loads and passes the reforms schema
     agent:
-      brief: docs/research/ordinances/oh-lookups-brief-2026-11-01.md
+      proposes: reforms
+      import_to: config/reforms/xx.csv
       owner: Local rules agent swarm design
-      note: The Ohio lookup brief is today's closest example; the swarm brief for reforms CSVs replaces it.
+      note: >-
+        The agents return proposed reforms rows (ADU and missing middle), each value with a quote and page, plus a
+        lookup list for sources they could not read. Review, then import.
 
   - id: fees
     title: Code fees for at least 5 places
@@ -82,9 +83,12 @@ steps:
     check: fees_coded
     done_when: config/fees/xx.csv covers at least 5 places
     agent:
-      brief: null
+      proposes: fees
+      import_to: config/fees/xx.csv
       owner: Local rules agent swarm design
-      note: The swarm brief for fees CSVs is being written.
+      note: >-
+        The agents return proposed fees rows from each place's fee schedule, with citations, plus a lookup list.
+        Review, then import.
 
   - id: national_data
     title: Fetch the national data
@@ -121,14 +125,10 @@ steps:
     short_path: false
     inputs: [a parcel layer with land use, ideally year built]
     outputs: [src/lotline/adapters/states/xx/, config/crosswalks/xx_*_land_use.csv, parcels]
-    modes: [manual, agent]
+    modes: [manual]
     commands: []
     check: parcels_built
     done_when: a parcels table is built
-    agent:
-      brief: null
-      owner: null
-      note: Adapter writing; follow the guide's step and an existing adapter as the template.
 
   - id: permits
     title: Add local permits
@@ -137,14 +137,10 @@ steps:
     short_path: false
     inputs: [record-level permits, ideally with ADU flags]
     outputs: [src/lotline/adapters/states/xx/, permits]
-    modes: [manual, agent]
+    modes: [manual]
     commands: []
     check: permits_built
     done_when: a permits table is built
-    agent:
-      brief: null
-      owner: null
-      note: Adapter writing; follow the guide's step and an existing adapter as the template.
 
   - id: rebuild
     title: Rebuild the derived tables

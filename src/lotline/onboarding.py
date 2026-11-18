@@ -8,7 +8,8 @@ file and gives three things for each step:
 - `check(step, state, store)`: whether the step is done for the state, with a plain-language detail. It looks
   only at files: the state's config files and which processed tables exist. It reads no table contents,
   except `no_unlisted_geoids`, which reads the state's permits and parcels.
-- the step's `agent` brief, for steps a coding agent can do (rule and fee coding).
+- `import_action(step, state)`: for the steps the app's rule agents can do (rules, fees), the "review and
+  import" action: the proposed table's schema, where it is imported to, and the check that must then pass.
 
 `plan(state, store)` puts it together for one state, and `render_short_path()` / `render_table()` write the
 guide's generated blocks, so the guide and the app show the same steps.
@@ -42,9 +43,14 @@ class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
-class AgentBrief(_Model):
-    brief: str | None = None  # repo path of the brief, or None while it is being written
-    owner: str | None = None  # the session or workstream that owns the brief
+class AgentService(_Model):
+    """How the app's rule agents do a step: they propose a table (`reforms` or `fees` rows, the existing CSV
+    header, keyed by GEOID); the user reviews it and imports it to `import_to`. The step's `check` then
+    validates the imported file exactly as it would a hand-made one. The agents never write config."""
+
+    proposes: str = Field(pattern=r"^(reforms|fees)$")  # the schema table the proposal follows
+    import_to: str  # repo path, `xx` = the state code in lower case
+    owner: str
     note: str = ""
 
 
@@ -60,7 +66,7 @@ class Step(_Model):
     commands: list[list[str]]
     check: str | None
     done_when: str
-    agent: AgentBrief | None = None
+    agent: AgentService | None = None
 
 
 @dataclass(frozen=True)
@@ -172,13 +178,18 @@ def _state_config_consistent(state, store):
 
 
 def _reforms_coded(state, store):
-    import pandas as pd
+    from lotline.model.scenarios.adu import load_reforms
+    from lotline.schemas import validate
 
     path = CONFIG_DIR / "reforms" / f"{state.lower()}.csv"
     if not path.exists():
         return Status(False, f"no config/reforms/{state.lower()}.csv yet")
-    places = pd.read_csv(path, dtype=str)["jurisdiction_geoid"].nunique()
-    return Status(True, f"{places} places coded in config/reforms/{state.lower()}.csv")
+    try:
+        rows = validate(load_reforms(state), "reforms")
+    except Exception as e:  # noqa: BLE001 - shown to the user as the reason
+        return Status(False, f"config/reforms/{state.lower()}.csv does not pass the reforms schema: {e}")
+    n = rows["jurisdiction_geoid"].nunique()
+    return Status(True, f"{n} places coded in config/reforms/{state.lower()}.csv")
 
 
 def _fees_coded(state, store):
@@ -248,6 +259,21 @@ def check(s: Step | str, state: str, store=None) -> Status:
     return CHECKS[s.check](state.upper(), store)
 
 
+def import_action(s: Step | str, state: str) -> dict | None:
+    """For an agent step: what the app's "review and import" action needs. The proposed table's schema,
+    the file to write once the user accepts it, and the check that must pass afterwards (the manual
+    path's own)."""
+    s = step(s) if isinstance(s, str) else s
+    if s.agent is None:
+        return None
+    return {
+        "proposes": s.agent.proposes,
+        "import_to": s.agent.import_to.replace("xx", state.lower()),
+        "check": s.check,
+        "owner": s.agent.owner,
+    }
+
+
 def plan(state: str, store=None) -> list[dict]:
     """Every step for one state: what it is, how it can be done, its commands and whether it is done."""
     out = []
@@ -264,6 +290,7 @@ def plan(state: str, store=None) -> list[dict]:
                 "modes": list(s.modes),
                 "commands": commands(s, state),
                 "agent": s.agent.model_dump() if s.agent else None,
+                "import": import_action(s, state),
                 "done": status.done,
                 "detail": status.detail,
             }

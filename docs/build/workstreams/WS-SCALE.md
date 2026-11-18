@@ -268,15 +268,21 @@ The guide's prose stays hand-written; titles, order, short path, times and check
 - *Built-in:* the app runs `onboarding.commands(step, state)` (lotline fetch for national sources,
   validate, results, provenance). Nothing in `onboarding` runs a command itself, so the app decides how
   to run and show it.
-- *Agent:* `step.agent.brief` points to a brief. Rule coding (`rules`, reforms CSV) and fee coding
-  (`fees`, fees CSV) are the swarm steps, owned by the "Local rules agent swarm design" session.
-  - Their briefs are not written yet. `rules` points to the Ohio lookup brief as the nearest example
-    meanwhile.
-  - Adapter steps (`parcels`, `permits`) are marked agent-capable with no brief.
+- *Agent:* the app's rule agents, a service the user switches on (Ben 2026-11-17,
+  `docs/build/rule-agents/PRINCIPLES.md` on `ws/rule-agents-core`).
+  - They propose a table: `reforms` rows for the `rules` step, `fees` rows for the `fees` step. The table
+    uses the existing CSV header, keyed by GEOID, with a citation for every value.
+  - The user reviews it and imports it (`onboarding.import_action`: the schema, the target file, the
+    check). The imported file passes the same check as a hand-made one; the reforms check validates the
+    schema.
+  - The agents never write config, never produce model rates, and never open outcome data for
+    held-back places.
+  - Only `rules` and `fees` are agent steps. Adapter writing (`parcels`, `permits`) is manual.
 
 **Function interface for the app** (`src/lotline/onboarding.py`):
 - `steps()`: the validated steps;
 - `commands(step, state)`: argument lists;
+- `import_action(step, state)`: the review-and-import action of an agent step;
 - `check(step, state, store)`: a `Status(done, detail)`. It looks at config files and which processed tables
   exist. It downloads nothing and reads no holdout outcomes;
 - `plan(state, store)`: the whole checklist for one state as JSON-ready dicts;
