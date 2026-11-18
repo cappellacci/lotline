@@ -596,3 +596,39 @@ def test_visible_text_tolerates_odd_end_tags():
     )
     t = " ".join(visible_text(html).split())
     assert t == "Up to three homes & done"
+
+
+def test_second_coder_only_where_it_matters():
+    """Token rule (2026-11-17): events, below-high confidence and a 1-in-10 audit get coder b."""
+    from lotline.rule_agents.mm.findings import Evidence, PlaceFinding, RuleFinding
+    from lotline.rule_agents.mm.reconcile import needs_second_coder
+
+    ev = [Evidence(field="unit_cap", url="https://x.gov", quote="q", retrieved=date(2026, 11, 17))]
+
+    def place(**kw):
+        rule = dict(
+            effective_date=date(2005, 1, 1),
+            date_basis="predates",
+            unit_cap=2,
+            coverage="R-2",
+            confidence="high",
+            evidence=ev,
+            component="c",
+        )
+        rule.update(kw)
+        return PlaceFinding(
+            state="NC",
+            jurisdiction_geoid="3700001",
+            place="X",
+            coder="a",
+            coded_on=date(2026, 11, 17),
+            rules=[RuleFinding(**rule)],
+        )
+
+    assert (
+        needs_second_coder(place(date_basis="dated", effective_date=date(2020, 1, 1), unit_cap=3), 3)
+        == "event"
+    )
+    assert needs_second_coder(place(), 3) is None
+    assert needs_second_coder(place(), 10) == "audit"
+    assert needs_second_coder(place(unit_cap=1, confidence="medium"), 3) == "confidence"

@@ -1,0 +1,20 @@
+### LB-NNN · 2026-11-17 · Rules: shared core for the rule agent swarms (document store, token cuts)
+- **Question:** What should the missing-middle, ADU and fee rule swarms share, how should they store and cite primary documents, and how can searching and coding use fewer tokens?
+- **What I did:**
+  - Started three sessions, one per category (MM PR #469, fees #470, ADU #471), each to mine the Oct–Nov lessons, design a swarm, build helpers and dry-run on ≤5 coded places. Relayed Ben's added requirement for a primary-document store to all three.
+  - Read the three `SHARED_CANDIDATES.md` proposals (they agreed on fetch/robots, evidence, human tasks, blind second coding and the document store) and built the shared core from the MM code, which Ben named the master copy.
+  - Moved MM's fetch, access, dates, PDF text and text helpers into `src/lotline/rule_agents/common/`, with re-exports so MM callers and tests keep working; added the document store, page-cited passages, the spending ledger, shared hand-off pieces and the evidence confidence rule.
+  - Pointed the MM agents and `/rules-mm` at the store: the scout checks the store first, coders read passages and single pages instead of whole documents, the verifier checks quotes by document id with no network, every place has a budget, and the second coder runs only on events, below-high confidence and a 1-in-10 audit (`mm select-b`).
+  - Registered the three Sunfish Lake PDFs (committed under `docs/research/ordinances/source-pdfs/`) in the store and removed them from git.
+- **Inputs:** the three PRs' `SHARED_CANDIDATES.md`, dry-run token counts (MM ~370k per place, ADU ~200k), `lotline.io.store` / `lotline.io.http`; the Sunfish Lake PDFs (source URLs from `mn-source-evidence-register-2026-11-02.csv`).
+- **Outputs:**
+  - `docs/build/rule-agents/CORE.md` (design: modules, store layout and rules, token changes, passage method, the ADU/fees migration).
+  - `src/lotline/rule_agents/__init__.py`, `__main__.py` (shared CLI: `docs`, `excerpts`, `outline`, `ledger`), `common/{docstore,fetch,access,evidence,text,excerpts,budget,handoff,dates,pdftext}.py`; MM modules re-pointed; `mm select-b`.
+  - `tests/rule_agents/common/test_rule_core.py` (22 tests: synthetic HTML, a hand-built two-page PDF, a mock web server); one new MM test.
+  - `docs/research/rule_docs_catalog.csv` (data-free list of stored documents); `.gitignore` keeps `source-pdfs/` out.
+- **Findings:**
+  - On the 329-page Sunfish Lake code book, ADU passages are ~3k characters against 655k for the whole text, and they hold the ADU heading with its lettered standards, including the 1,200 sq ft cap. A first version missed the cap because weak words ("parking", "square feet") filled the budget; scoring now needs a strong topic word and a heading brings the clauses under it.
+  - A place GEOID does not contain its county's code, so the store matches county documents only when the county is given (`places.csv` now carries `county`).
+- **Decisions:** proposed for HANDOFF in the PR: (1) MM is the master copy of the shared core; (2) one content-addressed document store under `LOTLINE_DATA_DIR/rule_docs` for all swarms, with a committed data-free catalogue; (3) second coder only for events, below-high confidence and a 10% audit in MM too (`--both-coders` restores the old behaviour); (4) per-place budget, default 120k tokens / 12 fetches / 8 searches.
+- **AI:** Claude Code (parent session) wrote the core, tests and docs and coordinated the three category sessions. Checked by: 62 rule-agent tests and `tests/model/test_rule_tags.py` passing, ruff clean, `compliance_check.py`, and a run of `docs find`, `excerpts` and `docs quote` on the real Sunfish Lake documents in the local store.
+- **Next:** merge #469, then this PR; the ADU and fee sessions move onto `common`; the next dry run measures tokens per place with the ledger.

@@ -1,6 +1,6 @@
 ---
 description: Research missing-middle (2-4 homes on single-family lots) local rules for one state with a two-coder agent swarm; writes a schema-valid reforms table and a human lookup sheet
-argument-hint: "<STATE> [--limit N] [--only GEOID ...] [--skip-coded] [--min-pop N] [--single-coder] [--run RUN_ID] [--resume] [--browser]"
+argument-hint: "<STATE> [--limit N] [--only GEOID ...] [--skip-coded] [--min-pop N] [--single-coder | --both-coders] [--budget TOKENS] [--run RUN_ID] [--resume] [--browser]"
 ---
 
 # /rules-mm — missing-middle rule swarm for one state
@@ -8,13 +8,25 @@ argument-hint: "<STATE> [--limit N] [--only GEOID ...] [--skip-coded] [--min-pop
 Arguments: `$ARGUMENTS`. Design: `docs/build/rule-agents/mm/DESIGN.md`; lessons: `LESSONS.md` (same folder).
 You are the orchestrator. You run the deterministic steps yourself through
 `uv run python -m lotline.rule_agents.mm …` and hand research to the subagents `rules-mm-scout`,
-`rules-mm-coder`, `rules-mm-reconciler`, `rules-mm-verifier`.
+`rules-mm-coder`, `rules-mm-reconciler`, `rules-mm-verifier`. Shared tools (document store, passages,
+spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/build/rule-agents/CORE.md`).
+
+## Spending (Ben, 2026-11-17: keep token use down)
+
+- Every place has a budget (default 120k tokens, 12 fetches, 8 searches; `--budget` sets tokens). After each
+  subagent returns, record the tokens the Agent tool reports:
+  `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> <agent> --tokens N`.
+- Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID>`;
+  exit code 3 (`"stop": true`) means no more research on that place: take what is coded, turn every open
+  field into a `budget_spent` blocker, and move on.
+- Give subagents only `RUN`, `GEOID` and `COUNTY` (from `places.csv`) in their prompts; they read what they need.
+- End the report with `uv run python -m lotline.rule_agents ledger summary <RUN>`.
 
 ## Never
 
 - Edit `config/`, `src/`, `docs/` or any repo file during a run; outputs stay in the run folder (Ben merges).
 - Run engine, scenario, calibration or model scripts; open permit/BPS data; write outcome numbers (holdouts).
-- Fetch outside `python -m lotline.rule_agents.mm fetch`; retry a refusal another way; file records requests,
+- Fetch outside `python -m lotline.rule_agents.mm fetch` (store first, then polite network); retry a refusal another way; file records requests,
   send emails or fill forms; solve or bypass a challenge.
 
 ## Steps
@@ -26,16 +38,21 @@ You are the orchestrator. You run the deterministic steps yourself through
    `geoid,name,pop_2020`). Show Ben the list and the brief's holdouts; if the brief says "No default recorded"
    for the effective-date rule, ask Ben for the state's rule (one question) or proceed with "hand off when
    silent".
-3. **Scout** each place (`rules-mm-scout`, prompt: `RUN=<RUN> GEOID=<g>`), 4 at a time.
-4. **Code.** For each place start `rules-mm-coder` as coder **a** (prompt `RUN GEOID coder=a`). Unless
-   `--single-coder`, also start coder **b** with `model: opus` (a different tier from a; LESSONS S-4) and the
-   prompt `RUN GEOID coder=b` — never paste coder a's output into b's prompt. Run a and b in parallel.
+3. **Scout** each place (`rules-mm-scout`, prompt: `RUN=<RUN> GEOID=<g> COUNTY=<c>`), 4 at a time. The
+   scout checks the document store first, so documents another swarm already fetched cost nothing.
+4. **Code.** For each place start `rules-mm-coder` as coder **a** (prompt `RUN GEOID COUNTY coder=a`).
+   **Second coder only where it matters** (the ADU rule Ben approved 2026-11-17; it was ~40% of tokens):
+   once a's file passes `check` (step 5), run `… select-b <RUN>` and start coder **b** (`model: opus`, a
+   different tier from a; LESSONS S-4; prompt `RUN GEOID COUNTY coder=b`, never a's output) only for the
+   places it lists: an **event** (a rule with `unit_cap` ≥ 2 not coded `predates`), any rule below `high`
+   confidence, or the 10% audit sample. `--both-coders` runs b
+   everywhere; `--single-coder` never.
 5. **Check.** `… check <RUN>`. Re-run a coder once for a file that still fails; then move on (the place's
    remaining problems go into the report).
 6. **Reconcile.** `… reconcile <RUN>`. Places with 0 diffs: write `final/<g>.json` yourself as
    `{"finding": <coder a's finding>, "coder_2": "rules-mm-coder-b (opus)", "agreement": "agree"}` with b's
-   blockers appended. Places with diffs: `rules-mm-reconciler`. With `--single-coder`: copy a's finding with
-   `"agreement": "single_coder"`, `"coder_2": null`.
+   blockers appended. Places with diffs: `rules-mm-reconciler`. Places with no coder b (`--single-coder`, or
+   not selected in step 4): copy a's finding with `"agreement": "single_coder"`, `"coder_2": null`.
 7. **Verify** each final with `rules-mm-verifier`, then `… check <RUN>` again.
 8. **Browser check (only with `--browser`; may run unattended).** For priority-1 tasks from step 9's sheet, open
    each start URL in the built-in browser one page at a time; read; stop at any challenge, CAPTCHA or login and
