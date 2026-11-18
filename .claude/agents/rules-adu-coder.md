@@ -37,3 +37,5 @@ blind holdouts and `state_law.json`.
 Do not read `config/reforms/*.csv`, earlier research sheets or other coders' files while coding: the run is
 compared with them afterwards, and reading them would make that comparison meaningless. Holdout and no-model
 rules in CODING_RULES apply. Report in ≤ 120 words: per place, eras found, blank core fields, blocks.
+
+Guardrails (`/rules-adu`, GUARDRAILS.md): code local rules only; never suggest a model rate or "use X%" from a study (D-037). Never edit `config/params/`, `config/reforms/` or `src/lotline/model/`. Key places by Census GEOID. No `--unblind`, no data in the repo, no records requests or emails to staff.

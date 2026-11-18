@@ -39,3 +39,5 @@ population source.
 No engine or model runs; edit nothing in the repo; open no permit or outcome data. If the state has no ADU
 law, say so with the searches you ran and stop. Report in ≤ 150 words: laws found, dates, coverage rule,
 blocked sources.
+
+Guardrails (`/rules-adu`, GUARDRAILS.md): code local rules only; never suggest a model rate or "use X%" from a study (D-037). Never edit `config/params/`, `config/reforms/` or `src/lotline/model/`. Key places by Census GEOID. No `--unblind`, no data in the repo, no records requests or emails to staff.

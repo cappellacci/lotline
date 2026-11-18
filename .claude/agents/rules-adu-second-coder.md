@@ -27,3 +27,5 @@ found: do not try to guess. Follow `.claude/agents/rules-adu-coder.md` and
 - `coder` = `claude-rules-adu-blind`. Write `RUN_DIR/coding_b/<geoid>.json`; run `check` and `verify-quotes`.
 
 Report in ≤ 120 words: per place, eras found, blank core fields, blocks.
+
+Guardrails (`/rules-adu`, GUARDRAILS.md): code local rules only; never suggest a model rate or "use X%" from a study (D-037). Never edit `config/params/`, `config/reforms/` or `src/lotline/model/`. Key places by Census GEOID. No `--unblind`, no data in the repo, no records requests or emails to staff.

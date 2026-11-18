@@ -30,7 +30,7 @@ code, so a run is reproducible and a judge can read why a value was chosen.
 
 **Run folder** (outside the repo, never committed): `$LOTLINE_DATA_DIR/rule_agents/adu/<ST>/<run_id>/`.
 Downloaded copies go to `$LOTLINE_DATA_DIR/raw/rule_agents/adu/<ST>/<host>/` and `manifest.jsonl` (L-H6).
-Only accepted rows reach the repo, through a dated `scripts/dev/` apply script after Ben says yes (L-O3).
+Rows are handed to the ADU model's owner session, which applies those Ben accepts (L-O3).
 
 ## 2. Steps, inputs, outputs, stop rules
 
@@ -132,6 +132,13 @@ quote; accepted answers become `human_primary` evidence and re-enter at step 5. 
 request or staff could answer are closed at once as `no_usable_source` (L-H1).
 
 ## 8. Holdouts and other guards
+
+The five shared guardrails (outside studies are checks only, D-037; one owner per model, so no edits to
+`config/params/`, `config/reforms/` or `src/lotline/model/`; start from existing research while coders stay
+blind; Census GEOIDs and the existing `reforms` headers; the standing rules) are spelled out in
+`.claude/commands/rules-adu.md` and in `docs/build/rule-agents/GUARDRAILS.md` once the core PR lands. The
+shared core will live in `src/lotline/rule_agents/common/` (branch `ws/rule-agents-core`); ADU moves onto it
+after that PR merges, not before.
 
 - `worklist` prints the state's still-blind holdouts (`lotline.validation.holdout`). Their rules may be coded;
   agents open no permit data, ADU dashboards, staff reports with activity counts, refits or `reports/`, and
