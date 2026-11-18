@@ -12,11 +12,11 @@ ORD = "https://example.gov/ordinances/2020-12.pdf"
 MIRROR = "https://www.zoneomics.com/code/testville"
 
 
-def ev(quote: str, url: str = CODE, kind: str = "official_code", section: str | None = "5.3") -> Evidence:
-    return Evidence(url=url, retrieved=DAY, quote=quote, section=section, kind=kind)
+def ev(quote: str, url: str = CODE, kind: str = "code", section: str | None = "5.3") -> Evidence:
+    return Evidence(url=url, retrieved=DAY, quote=quote, section=section, source_kind=kind)
 
 
-def fv(value, quote="ADU text", kind="official_code", confidence="high", url=CODE) -> FieldValue:
+def fv(value, quote="ADU text", kind="code", confidence="high", url=CODE) -> FieldValue:
     return FieldValue(value=value, evidence=[ev(quote, url, kind)], confidence=confidence)
 
 

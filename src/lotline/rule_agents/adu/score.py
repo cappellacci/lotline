@@ -8,9 +8,9 @@ in full (`AUDIT_RATE`) so the run can report how often a "strong" value turned o
 A value is **strong** when all of these hold, and **weak** otherwise (the reasons are listed):
 
 - confidence is `high`;
-- at least one primary source (official code, ordinance, staff report, minutes, state law, human-primary);
-- that source's quote was **checked by machine**: verbatim, and found in the cached text copy (HTML, or a
-  text PDF on the page the coder named). An image-read or unchecked quote is never strong.
+- at least one primary source (official code, ordinance, staff report, minutes, state law, human lookup);
+- that source's quote was **checked by machine**: verbatim, and found in the stored document's text
+  (`doc_id`; for a text PDF, on the page the coder named). An image-read or unchecked quote is never strong.
 
 Dates are scored on the resolved date: weak when `dates.resolve` tags it `DATE UNCONFIRMED` or
 `[earliest-known]`, or when no date evidence of the deciding type passes the checks above (confidence is not
@@ -32,11 +32,10 @@ import hashlib
 import json
 import re
 from dataclasses import asdict, dataclass, field
-from pathlib import Path
 
 from lotline.rule_agents.adu import dates as D
 from lotline.rule_agents.adu.coding import RUBRIC_FIELDS, Era, Evidence, FieldValue, PlaceCoding
-from lotline.rule_agents.adu.fetch import quote_in_text, quote_page
+from lotline.rule_agents.common.docstore import DocStore
 
 AUDIT_RATE = 0.10  # share of places second-coded in full, chosen by a hash of the GEOID (reproducible)
 DATE_FIELDS = ("effective_date", "adoption_date")
@@ -53,29 +52,28 @@ _AMENDMENT = re.compile(r"\b(ord(inance)?\.?|amend\w*|TC-\d|text (change|amendme
 _YEAR = re.compile(r"\b(20[12]\d)\b")
 
 
-def quote_check(e: Evidence, root: Path) -> tuple[str, int | None]:
-    """('found' | 'missing' | 'unchecked', page). `unchecked`: image-read or human quote, no cached copy,
-    or no text copy (scanned or unparseable PDF)."""
-    if e.quote_status != "verbatim" or not e.cache_path:
+def quote_check(e: Evidence, docs: DocStore) -> tuple[str, int | None]:
+    """('found' | 'missing' | 'unchecked', page) against the stored document `e.doc_id` (`DocStore.quote`).
+    `unchecked`: an image-read or human quote, no doc_id, a document the store does not hold, or one with no
+    text layer. For a PDF the page is returned and must match `e.page` when the coder named one."""
+    if e.quote_status != "verbatim" or not e.doc_id:
         return "unchecked", None
-    src = root / e.cache_path
-    txt = src.with_suffix(".txt")
-    if not txt.exists():
+    rec = docs.get(e.doc_id)
+    if rec is None or rec.text_status in ("scanned", "none"):
         return "unchecked", None
-    text = txt.read_text()
-    if src.suffix == ".pdf":
-        page = quote_page(e.quote, text)
-        if page is None or (e.page is not None and e.page != page):
-            return "missing", page
-        return "found", page
-    return ("found" if quote_in_text(e.quote, text) else "missing"), None
+    status, page = docs.quote(e.doc_id, e.quote)
+    if status != "verbatim":
+        return "missing", None
+    if rec.ext != ".pdf":
+        return "found", None
+    return ("missing" if e.page is not None and e.page != page else "found"), page
 
 
-def _evidence_problems(evs: list[Evidence], root: Path) -> list[str]:
+def _evidence_problems(evs: list[Evidence], docs: DocStore) -> list[str]:
     primary = [e for e in evs if e.primary]
     if not primary:
         return ["no primary source"]
-    checks = [quote_check(e, root)[0] for e in primary]
+    checks = [quote_check(e, docs)[0] for e in primary]
     if "found" in checks:
         return []
     if "missing" in checks:
@@ -83,12 +81,12 @@ def _evidence_problems(evs: list[Evidence], root: Path) -> list[str]:
     return ["quote not machine-checked (image-read, no text copy or no cache)"]
 
 
-def value_problems(fv: FieldValue, root: Path) -> list[str]:
+def value_problems(fv: FieldValue, docs: DocStore) -> list[str]:
     out = [] if fv.confidence == "high" else [f"confidence {fv.confidence}"]
-    return out + _evidence_problems(fv.evidence, root)
+    return out + _evidence_problems(fv.evidence, docs)
 
 
-def date_problems(era: Era, which: str, root: Path) -> list[str]:
+def date_problems(era: Era, which: str, docs: DocStore) -> list[str]:
     r = D.resolve(era.dates)
     if which == "adoption_date" and r.adoption is None:
         return []  # nothing coded; the effective date carries the era
@@ -97,7 +95,7 @@ def date_problems(era: Era, which: str, root: Path) -> list[str]:
     evs = [e for d in era.dates if d.type in deciding for e in d.evidence]
     if not evs:  # the date came from a bound or adoption date: judge the evidence that fired the rule
         evs = [e for d in era.dates if d.type != "announced" for e in d.evidence]
-    return out + _evidence_problems(evs, root)
+    return out + _evidence_problems(evs, docs)
 
 
 @dataclass
@@ -148,14 +146,14 @@ def uncoded_amendments(coding: PlaceCoding, sources: dict | None) -> list[str]:
 
 
 def score(
-    coding: PlaceCoding, root: Path, sources: dict | None = None, audit_rate: float = AUDIT_RATE
+    coding: PlaceCoding, docs: DocStore, sources: dict | None = None, audit_rate: float = AUDIT_RATE
 ) -> Scorecard:
     card = Scorecard(coding.geoid, coding.name, "none")
     covered = {f for b in coding.blocked for f in (b.fields or [])}
     for era in coding.eras:
         key = str(D.resolve(era.dates).effective)
         for f in DATE_FIELDS:
-            probs = date_problems(era, f, root)
+            probs = date_problems(era, f, docs)
             if probs:
                 card.looks.append(Look(key, f, probs))
         for f in SCORED_FIELDS:
@@ -167,7 +165,7 @@ def score(
                 continue
             if fv.value is None:
                 continue  # deliberate blank, explained in its note
-            probs = value_problems(fv, root)
+            probs = value_problems(fv, docs)
             if probs:
                 card.looks.append(Look(key, f, probs))
             else:

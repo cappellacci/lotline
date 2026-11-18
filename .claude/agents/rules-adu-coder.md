@@ -12,20 +12,22 @@ blind holdouts and `state_law.json`.
 
 ## Per place (budget beyond the scout's sources: ≤ 4 web searches, ≤ 10 fetches)
 
-1. Read `RUN_DIR/sources/<geoid>.json` and open its fetched copies: `text_path` for HTML and text PDFs (PDF
-   pages are separated by form feeds); a scanned PDF (`scanned_pdf`) only through its page images. Fetch more
-   only with the fetch helper.
+1. Read `RUN_DIR/sources/<geoid>.json`. Read its documents with the shared tools, not whole files:
+   `uv run python -m lotline.rule_agents outline <DOC>`, then `… excerpts <DOC> adu` (page-cited ADU
+   passages) and `… docs text <DOC> --page N` for the pages you need; a scanned PDF (`scanned_pdf`) only
+   through its page images. Fetch more only with the fetch helper (store first).
 2. Build the eras, oldest first: the state before the first ADU rule (often `adus_per_lot = 0`), then each
    version that changed a field. Look specifically for removals and re-adoptions (L-S5).
-3. For every value: quote, section, URL, `cache_path`, `doc_id`, PDF `page`, kind, confidence. Your
+3. For every value: quote, section, URL, `doc_id`, PDF `page`, `source_kind`, confidence (check a quote
+   with `… docs quote <DOC> "<quote>"`). Your
    confidence decides the cost of the run: only weak values get a second coder (`score`), so mark `high`
    whenever the rule is met (primary source, verbatim quote, text that needs no reading-in) and never
    otherwise. For every era: every dated source
    with its type. Leave anything not found blank.
 4. Local rules only: the state-law rows are made separately. But if the local rule predates and differs from
    a state law, code it (L-D8), and note in the place `notes` what the state law changes.
-5. Record each block as a `BlockedSource` (reason from the helper; `fields` = exactly what it would settle;
-   `what_to_look_for` = one plain sentence a person can act on, e.g. "Ordinance that added §5.3: its number,
+5. Record each block as a `Blocker` (`kind` from the helper; `fields` = exactly what it would settle;
+   `look_for` = one plain sentence a person can act on, e.g. "Ordinance that added §5.3: its number,
    adoption date and effective date").
 6. Write `RUN_DIR/coding_a/<geoid>.json`, then run
    `uv run python -m lotline.rule_agents.adu check RUN_DIR/coding_a/<geoid>.json` and

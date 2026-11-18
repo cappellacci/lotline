@@ -53,3 +53,15 @@
   - the parent session merges the shared fetch, evidence, hand-off and document-store pieces with the MM and
     fee swarms;
   - a first real run on a state not yet coded.
+- **Addendum, 2026-11-18 (moved onto the shared core, after #480 merged):**
+  - fetch is now `common.fetch.get(url, "adu", ...)`: store first, into the shared document store; the local
+    fetcher, block classifier and PDF text code are deleted (`adu/fetch.py` is a shim);
+  - evidence and blockers are the shared models (`source_kind` vocabulary, `doc_id` into the store, the
+    shared confidence rule enforced by `check`); `score` and `verify-quotes` check quotes against the stored
+    document by `doc_id`;
+  - lookup sheets use the shared answer columns, browser tips, answer checks, `held_docs` and saved-file
+    registration; records-request-only sources stay optional, priority 3;
+  - `/rules-adu` gains `doctor` as step 0, the budget ledger, `outline` / `excerpts` for reading, and ends by
+    telling the user the `import ... reforms ST` command (a new test checks `import` accepts `rows.csv`);
+  - not carried over: the old fetcher's Wayback `final_url`; coders now ask for an exact 14-digit capture.
+  - Checks: tests (rule agents and full suite), ruff, `compliance_check.py` (0 FAIL).

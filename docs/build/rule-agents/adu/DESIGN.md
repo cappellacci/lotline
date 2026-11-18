@@ -50,11 +50,12 @@ Downloaded copies go to `$LOTLINE_DATA_DIR/raw/rule_agents/adu/<ST>/<host>/` and
 
 - **Every coded value** (`FieldValue`) has ≥ 1 `Evidence`: https URL actually opened (Wayback https for
   http-only pages), retrieval date, verbatim quote ≤ 300 characters (aim ≤ 25 words), section, source kind,
-  `cache_path` of the copy read, and `doc_id` (sha256 of those bytes), `page` and `quote_status`. The
-  document store these ids point into is shared across the three swarms: `SHARED_CANDIDATES.md` §0. `check` refuses a value without evidence (L-O6, L-F3).
-- **Source kinds** split into primary (official code, ordinance, staff report, minutes, state law,
-  human-primary) and secondary (city page, mirror, news, draft, human-secondary). Only primary evidence can be
-  `high` confidence; agreement on secondary evidence alone never counts as agreement (L-R4, L-S3).
+  `doc_id` (the shared document store's sha256 id of the bytes read), `page` and `quote_status`
+  (`common.evidence.Evidence`; the store is `common.docstore`, shared by the three swarms). `check` refuses a value without evidence (L-O6, L-F3).
+- **Source kinds** are the shared vocabulary (`common.evidence.SOURCE_KINDS`): primary (code, ordinance,
+  staff report, minutes, state law, archive, human lookup) and secondary (city page, mirror, news, other).
+  The shared confidence rule (`max_confidence`) caps a value: high needs a primary source with a verbatim or
+  person-checked quote; news alone is low; agreement on secondary evidence alone never counts as agreement (L-R4, L-S3).
 - **Dates** are `DateEvidence` with a type (`effective`, `adopted`, `vote`, `codified`, `first_seen`,
   `in_force_by`, `announced`) and precision. The coder records what the source says; `dates.resolve` decides
   (§4). Coders never compute a date (L-D2).
@@ -127,8 +128,11 @@ API, Municode PDF blob, `files.amlegal.com`, Wayback) are tried before handing o
 (a checklist with the same content). Each task says: the URL to open (plus alternatives), why the agent
 stopped in plain words, what to look for, exactly which fields to fill with their allowed values, an estimate
 in minutes, and **done when**: every field filled (or "not found") with the URL read and a verbatim sentence;
-dates with the ordinance number where shown. `ingest` accepts only rows marked `done` with an https URL and a
-quote; accepted answers become `human_primary` evidence and re-enter at step 5. Tasks carry priority 1
+dates with the ordinance number where shown. The answer columns and checks are the shared ones
+(`common.handoff`: `result` found / not_found / no_usable_source, `source_url`, `quote`, `saved_file`...).
+`ingest` accepts only `found` rows with an https URL and a quote; a saved file in the store's inbox is
+registered and cited by doc_id; accepted answers become `human_lookup` evidence and re-enter at step 5.
+Each task lists the documents the store already holds for the place (`held_docs`). Tasks carry priority 1
 (the rule's existence or dates), 2 (other fields) or 3 = **optional**: a source only a public-records request
 reaches, which the user may request themselves or mark `no_usable_source`. Agents never file requests, email
 or call anyone.
@@ -137,8 +141,11 @@ or call anyone.
 
 The service's shared principles are in `docs/build/rule-agents/PRINCIPLES.md` (the table is a proposal the
 user imports; rules, not rates; GEOIDs and existing headers; no workarounds; no outcome data for held-back
-places; coders blind to existing rows). The shared core will live in `src/lotline/rule_agents/common/`; ADU
-moves onto it after that lands.
+places; coders blind to existing rows). ADU runs on the shared core, `src/lotline/rule_agents/common/`
+(design `docs/build/rule-agents/CORE.md`): store-first fetch into the document store, `outline` / `excerpts`
+for reading, the evidence and blocker models with the shared confidence rule, the shared lookup-sheet parts,
+the budget ledger, `doctor` before a run and `import` after it. ADU keeps only what is ADU-specific: eras,
+date resolution, first-pass scoring, reconciliation and `reforms` rows.
 
 - `worklist` prints the state's still-blind holdouts (`lotline.validation.holdout`). Their rules may be coded;
   agents open no permit data, ADU dashboards, staff reports with activity counts, refits or `reports/`, and

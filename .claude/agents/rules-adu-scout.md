@@ -23,19 +23,21 @@ Read `docs/build/rule-agents/adu/CODING_RULES.md` (fetch and hard rules) and les
    text is blocked; an unread amendment is a lead the coders must resolve or block.
 4. Find **past versions** for 2016 onward: Wayback copies of the code section or the city's ADU page (pick
    copies near each suspected change), or the Municode PDF blob / `files.amlegal.com` PDFs.
-5. Fetch each candidate with the fetch helper. For Wayback, record the `final_url` and `wayback_ts` it
-   returns (the capture served, which can differ from the year asked) and give the archived page its
-   original kind (an archived code section is `official_code`, not `mirror`). Publishers in the helper's
-   `KNOWN_BLOCKERS` are tried once at most; on any block, try one listed alternative, then record it as blocked. Never retry a refused host.
+5. First look in the shared document store (`uv run python -m lotline.rule_agents docs find --geoid <G>
+   --category adu`); a held document needs no fetch. Fetch the rest with the fetch helper (`… adu fetch
+   --state ST --run-id ID --geoid G <url>`, store first). For Wayback, ask for an exact 14-digit capture
+   (CODING_RULES, Evidence) and give the archived page its original kind (an archived code section is `code`,
+   not `mirror`). Code-host walls (Municode, American Legal, eCode360) are tried once at most; on any block,
+   try one allowed alternative, then record it as blocked. Never retry a refused host.
 6. Do not code values. Write `RUN_DIR/sources/<geoid>.json`:
 
 ```json
 {"geoid": "…", "name": "…", "state": "XX", "publisher": "municode|amlegal|ecode360|city|other",
  "sources": [{"url": "https://…", "what": "current code §5.3 ADUs | Ord. 2020-12 | Wayback 2018 copy | …",
-              "kind": "official_code|ordinance|staff_report|minutes|city_page|mirror|news|draft",
-              "fetch": {"ok": true, "reason": null, "path": "…", "text_path": "…"},
+              "kind": "code|ordinance|staff_report|minutes|archive|city_page|mirror|news|other",
+              "fetch": {"doc_id": "…", "blocker": null, "pages": 3, "text_path": "…"},
               "dates_seen": ["2020-07-22 effective", "…"]}],
- "blocked": [{"url": "…", "reason": "<helper reason>", "fields": ["…"], "what_to_look_for": "…"}],
+ "blocked": [{"url": "…", "kind": "<helper blocker>", "fields": ["…"], "look_for": "…"}],
  "leads": ["unverified hints, e.g. a news story saying ADUs were allowed in 2019"]}
 ```
 

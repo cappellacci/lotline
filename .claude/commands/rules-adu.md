@@ -7,7 +7,9 @@ argument-hint: "<ST> [--places N | --geoids g1,g2] [--run-id id] [--second-coder
 
 Arguments: `$ARGUMENTS`. Design: `docs/build/rule-agents/adu/DESIGN.md`. Binding coding rules:
 `docs/build/rule-agents/adu/CODING_RULES.md`. You (the main session) orchestrate: you run helpers, launch
-agents, enforce budgets and stop rules, and write the report. You never code values yourself.
+agents, enforce budgets and stop rules, and write the report. You never code values yourself. Shared tools
+(document store, passages, spending ledger, setup check, import): `uv run python -m lotline.rule_agents …`
+(design: `docs/build/rule-agents/CORE.md`).
 
 ## What this service is
 
@@ -25,7 +27,22 @@ it; it is not repeated here). The ones every step of this command enforces:
 - **No outcome data for held-back places** (the holdouts `worklist` prints).
 - **Coders are blind to existing rows.** Only this orchestrator reads them, and only to compare afterwards.
 
-## 0. Set up
+## Spending (keep token use down)
+
+- Every place has a budget (default 120k tokens, 12 fetches, 8 searches). After each subagent returns, record
+  the tokens the Agent tool reports: `uv run python -m lotline.rule_agents ledger add RUN_DIR <GEOID> <agent>
+  --tokens N` (for a batch, split evenly across its places).
+- Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status RUN_DIR <GEOID>`;
+  exit code 3 (`"stop": true`) means no more research on that place: take what is coded, turn every open
+  field into a `budget_spent` blocker, and move on.
+- End the report with `uv run python -m lotline.rule_agents ledger summary RUN_DIR`.
+
+## 0. Setup check
+
+`uv run python -m lotline.rule_agents doctor ST --category adu`. If it does not say "Ready.", stop and show the
+user what to fix.
+
+## 0b. Set up
 
 - Parse: state `ST` (two letters, required); `--places N` (default 10, largest first, population >= 2,500)
   or `--geoids`; `--run-id` (default `<YYYY-MM-DD>-<HHMM>`); `--second-coder` (default `targeted`: a blind second
@@ -38,7 +55,7 @@ it; it is not repeated here). The ones every step of this command enforces:
   It prints the blind holdouts: pass them to every agent. If the jurisdictions table is missing, stop and say
   which build step makes it.
 - Never run engine, scenario, calibration or dev-run scripts. Never edit `config/`. Never download data except
-  through the fetch helper (it writes under `LOTLINE_DATA_DIR`).
+  through the fetch helper (store first, into the shared document store under `LOTLINE_DATA_DIR`).
 
 ## 1. State law
 
@@ -60,7 +77,7 @@ Batch places in groups of about five. In one message, launch `rules-adu-scout` f
   failing fields blanked; say so in the report.
 - `uv run python -m lotline.rule_agents.adu score RUN_DIR/coding_a/*.json --sources RUN_DIR/sources --out
   RUN_DIR/score [--audit-rate R]`. A value is strong only when it is `high` confidence, rests on a primary
-  source, and its quote was found by machine in the cached copy (on the named PDF page). Each
+  source, and its quote was found by machine in the stored document (`doc_id`; on the named PDF page). Each
   `score/<g>.json` has `mode`: `none` (all strong, or nothing coded), `targeted` (`second_coder_fields` lists
   the fields to recode), or `full` (audit sample). It also lists `uncoded_amendments`: ordinances the scout
   found that match no coded era.
@@ -102,5 +119,8 @@ process incident. With `--compare`, run
 and summarise matches and differences, naming the source each side cites.
 
 Tell the user in plain words: where the files are, how many rows are ready to review, how many lookups wait
-for them (and how long they take), and every judgment call the agents left for them. The user reviews
-`rows.csv` and imports what they accept; the agents never edit `config/` themselves.
+for them (and how long they take; optional records-request lookups counted apart), and every judgment call
+the agents left for them. The user reviews `rows.csv` and imports what they accept; the agents never edit
+`config/` themselves. End by telling the user how to import the table:
+`uv run python -m lotline.rule_agents import RUN_DIR/rows.csv reforms ST` (a preview of what would change),
+then the same command with `--yes` to apply it.

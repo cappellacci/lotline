@@ -8,78 +8,59 @@ place return tables were the ones that got filled.
 Priority: 1 = the rule's existence or timing (`adus_per_lot`, dates), 2 = other fields, 3 = **optional**: a
 source only a public-records request reaches. The user may file that request themselves or mark the task
 `no_usable_source`; agents never file requests, email or call anyone.
-Filled tasks are read back as `human_primary` / `human_secondary` evidence; a filled value with no URL
-and quote is rejected (lesson L-H4: search-summary answers without links could not be used).
+Filled tasks are read back as `human_lookup` evidence (`quote_status` human); a `found` answer with no URL
+and quote is rejected (lesson L-H4: search-summary answers without links could not be used). A file the
+person saved goes in the document store's inbox and is registered with `common.handoff.take_saved_file`,
+so the evidence cites its exact bytes (`doc_id`).
+
+Shared pieces come from `common.handoff`: the browser tip for each blocker kind, the `result` answers, the
+answer columns, the base answer checks, and the documents already held for a place.
 """
 
 from __future__ import annotations
 
-import csv
 import datetime as dt
 import hashlib
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 from lotline.rule_agents.adu.coding import RUBRIC_FIELDS, Evidence
+from lotline.rule_agents.common import handoff as CH
+from lotline.rule_agents.common.evidence import BLOCKER_KINDS
 
-# reason -> plain-language "why the agent stopped" and "what to do".
-REASONS = {
-    "robots_disallow": (
-        "The site's robots.txt tells automated agents not to read this page.",
-        "Open it in a browser.",
-    ),
-    "known_blocker": (
-        "This publisher blocks automated agents (Municode, American Legal, eCode360): not tried.",
-        "Open it in a browser.",
-    ),
-    "robots_unavailable": (
-        "The site's robots.txt did not answer, so the agent did not read the site.",
-        "Open it in a browser.",
-    ),
-    "http_403": ("The site refuses automated requests (HTTP 403).", "Open it in a browser."),
-    "waf_challenge": (
-        "The site shows a bot check (Cloudflare or similar).",
-        "Open it in a browser; pass the check yourself.",
-    ),
-    "login_required": (
-        "The page needs a login.",
-        "Use it only if you already have access; otherwise mark no_usable_source.",
-    ),
-    "rate_limited": ("The site asked the agent to slow down (HTTP 429).", "Open it in a browser."),
-    "js_only_viewer": ("The code viewer only works with JavaScript in a browser.", "Open it in a browser."),
-    "scanned_pdf": (
-        "The PDF is a scan with no text layer.",
-        "Read the page in the PDF and copy the sentence.",
-    ),
-    "too_large": ("The file is too large to fetch automatically.", "Open it and find the section."),
-    "no_answer": ("The site did not answer.", "Try it in a browser; if it is down, try the Wayback link."),
-    "not_found": ("The page no longer exists.", "Try the Wayback link or search the city site."),
-    "http_error": ("The site returned an error.", "Try it in a browser."),
-    "not_https": ("Only an http page was found.", "Find the https page or a Wayback copy."),
-    "minutes_only": (
-        "The date is only in meeting minutes or agendas the agent could not open.",
-        "Find the ordinance number and date in the minutes.",
-    ),
-    "not_found_online": (
-        "The agent searched and found no online source.",
-        "Search once more (city site, Wayback, Legistar); if nothing, mark no_usable_source.",
-    ),
-    "records_request_only": (
-        "This record is only available by public-records request.",
-        "Optional: this record is only available by public-records request. File one with the city clerk if "
-        "you want it (it can take weeks); otherwise mark no_usable_source.",
-    ),
-    "conflicting_sources": (
-        "The two coders read different values and the verifier could not settle it.",
-        "Read the section and pick the value the code supports.",
-    ),
-    "judgment_call": (
-        "The text is clear but how to code it is a policy choice.",
-        "Decide, and say why in notes.",
-    ),
+CATEGORY = "adu"
+# blocker kind -> plain-language "why the agent stopped" (what to do: `common.handoff.browser_tip`).
+WHY = {
+    "robots_disallow": "The site's robots.txt tells automated agents not to read this page.",
+    "robots_unavailable": "The site's robots.txt did not answer, so the agent did not read the site.",
+    "http_403_waf": "The site refuses automated requests (HTTP 403 or a bot check).",
+    "code_host_wall": "This code publisher blocks automated agents (Municode, American Legal, eCode360).",
+    "login_required": "The page needs a login.",
+    "js_only": "The code viewer only works with JavaScript in a browser.",
+    "scanned_pdf": "The PDF is a scan with no text layer.",
+    "not_found": "The page no longer exists, or the agent searched and found no online source.",
+    "unreachable": "The site did not answer.",
+    "records_request_only": "This record is only available by public-records request.",
+    "ambiguous_source": "The page is readable but does not settle the value (or only minutes mention it).",
+    "conflicting_sources": "The two coders read different values and the verifier could not settle it.",
+    "budget_spent": "The agents ran out of search budget for this place.",
+    "judgment_call": "The text is clear but how to code it is a policy choice.",
 }
+REASONS = WHY  # the blocker kinds a coding may use
+_TODO = {
+    "ambiguous_source": "Read the section and say which value the text supports.",
+    "conflicting_sources": "Read the section and pick the value the code supports.",
+    "judgment_call": "Decide, and say why in notes.",
+}
+assert set(BLOCKER_KINDS) <= set(WHY)
+
+
+def what_to_do(url: str, kind: str) -> str:
+    return _TODO.get(kind) or CH.browser_tip(url, kind)
+
+
 # Sources only a public-records request reaches: an optional, priority-3 task (also recognised as a note
-# prefix on a `not_found_online` block, the form the coders used before this reason existed).
+# prefix on a `not_found` block).
 RECORDS_REQUEST_ONLY = "records_request_only"
 PRIORITY_1_FIELDS = {"adus_per_lot", "adoption_date", "effective_date"}
 
@@ -98,12 +79,11 @@ ALLOWED = {
     "effective_date": "YYYY-MM-DD (date the rule took effect)",
 }
 ACCEPT = (
-    "Done when every listed field is filled (or explicitly 'not found'), with the URL you read it on and a "
-    "verbatim sentence (under 25 words) that shows it. Dates need the ordinance number if the page shows "
-    "one. "
-    "If no source exists online, set status = no_usable_source."
+    "Done when result is filled. 'found': fill every listed field in answers (field=value; field=not found "
+    "if absent), with the URL you read it on and a verbatim sentence (under 25 words) that shows it. Dates "
+    "need the ordinance number if the page shows one. " + CH.ACCEPTANCE[CH.ACCEPTANCE.index("If you saved") :]
 )
-COLUMNS = [
+TASK_COLUMNS = [
     "task_id",
     "priority",
     "optional",
@@ -113,25 +93,20 @@ COLUMNS = [
     "pop_2020",
     "era_id",
     "question",
+    "blocker",
     "why_agent_stopped",
     "url",
     "alt_urls",
     "what_to_do",
     "what_to_look_for",
+    "held_docs",
     "fields_to_fill",
     "allowed_values",
     "acceptance",
     "est_minutes",
-    "status",
-    "answers",
-    "answer_url",
-    "answer_quote",
-    "answer_section",
-    "answered_by",
-    "answered_on",
-    "notes",
 ]
-STATUSES = ("open", "done", "no_usable_source")
+ANSWER_COLUMNS = ["answers", "section", *CH.COMMON_ANSWER_COLUMNS]
+COLUMNS = TASK_COLUMNS + ANSWER_COLUMNS
 
 
 @dataclass
@@ -140,7 +115,7 @@ class HumanTask:
     geoid: str
     place: str
     question: str
-    reason: str
+    blocker: str
     url: str
     what_to_look_for: str
     fields_to_fill: list[str]
@@ -148,13 +123,7 @@ class HumanTask:
     pop_2020: int = 0
     alt_urls: list[str] = field(default_factory=list)
     est_minutes: int = 10
-    status: str = "open"
-    answers: str = ""  # "field=value; field=value"
-    answer_url: str = ""
-    answer_quote: str = ""
-    answer_section: str = ""
-    answered_by: str = ""
-    answered_on: str = ""
+    held_docs: str = ""  # documents the store already holds for the place (`common.handoff.held_docs`)
     notes: str = ""
     priority: int = 0  # 1 rule existence/timing, 2 other fields, 3 optional (records request only)
     optional: bool = False
@@ -163,8 +132,8 @@ class HumanTask:
     def __post_init__(self):
         if "all" in self.fields_to_fill:  # shorthand: the whole rubric and both dates
             self.fields_to_fill = list(ALLOWED)
-        if self.reason not in REASONS:
-            raise ValueError(f"unknown reason {self.reason!r}; expected one of {sorted(REASONS)}")
+        if self.blocker not in REASONS:
+            raise ValueError(f"unknown blocker {self.blocker!r}; expected one of {sorted(REASONS)}")
         bad = set(self.fields_to_fill) - set(ALLOWED)
         if bad:
             raise ValueError(f"unknown fields {sorted(bad)}")
@@ -175,18 +144,16 @@ class HumanTask:
             self.task_id = f"ADU-{self.state}-{self.geoid}-" + hashlib.sha1(key.encode()).hexdigest()[:6]
 
     def row(self) -> dict:
-        why, todo = REASONS[self.reason]
-        d = {k: v for k, v in asdict(self).items()}
+        d = asdict(self)
         d.update(
-            why_agent_stopped=why,
-            what_to_do=todo,
+            why_agent_stopped=WHY[self.blocker],
+            what_to_do=what_to_do(self.url, self.blocker),
             alt_urls="; ".join(self.alt_urls),
             fields_to_fill="; ".join(self.fields_to_fill),
             allowed_values=" | ".join(f"{f}: {ALLOWED[f]}" for f in self.fields_to_fill),
             acceptance=ACCEPT,
             optional="yes" if self.optional else "",
         )
-        d.pop("reason")
         return {c: d.get(c, "") for c in COLUMNS}
 
 
@@ -210,7 +177,7 @@ def triage(tasks: list[HumanTask]) -> tuple[list[HumanTask], list[HumanTask]]:
         k.notes = "; ".join(n for n in (k.notes, t.notes) if n)
     queue: list[HumanTask] = []
     for t in seen.values():
-        t.optional = t.reason == RECORDS_REQUEST_ONLY or t.notes.startswith(RECORDS_REQUEST_ONLY)
+        t.optional = t.blocker == RECORDS_REQUEST_ONLY or t.notes.startswith(RECORDS_REQUEST_ONLY)
         if t.optional:
             t.priority = 3
         else:
@@ -222,11 +189,7 @@ def triage(tasks: list[HumanTask]) -> tuple[list[HumanTask], list[HumanTask]]:
 
 def write_csv(tasks: list[HumanTask], path: str | Path) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with Path(path).open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLUMNS)
-        w.writeheader()
-        for t in tasks:
-            w.writerow(t.row())
+    CH.write_csv([t.row() for t in tasks], Path(path), COLUMNS)
 
 
 def write_markdown(tasks: list[HumanTask], path: str | Path, title: str) -> None:
@@ -245,8 +208,10 @@ def write_markdown(tasks: list[HumanTask], path: str | Path, title: str) -> None
             f"- [ ] **Open:** {t.url}" + (f" (or {r['alt_urls']})" if t.alt_urls else ""),
             f"- **Why the agent stopped:** {r['why_agent_stopped']} {r['what_to_do']}",
             f"- **Look for:** {t.what_to_look_for}",
+            *([f"- **Already held (no need to download):** {t.held_docs}"] if t.held_docs else []),
             f"- **Fill:** {r['allowed_values']}",
-            f"- **Done when:** URL + verbatim sentence + section; about {t.est_minutes} min. "
+            f"- **Done when:** result filled; for 'found', URL + verbatim sentence + section; about "
+            f"{t.est_minutes} min. "
             f"Task `{t.task_id}`.",
             "",
         ]
@@ -254,8 +219,7 @@ def write_markdown(tasks: list[HumanTask], path: str | Path, title: str) -> None
 
 
 def read_csv(path: str | Path) -> list[dict]:
-    with Path(path).open(newline="") as fh:
-        return list(csv.DictReader(fh))
+    return CH.read_answers(Path(path))
 
 
 def parse_answers(text: str) -> dict[str, str]:
@@ -270,33 +234,38 @@ def parse_answers(text: str) -> dict[str, str]:
     return out
 
 
-def answered(row: dict) -> tuple[dict[str, str], Evidence | None, list[str]]:
-    """(answers, evidence, problems) for one filled CSV row. A 'done' row needs answers, an https URL and a
-    quote; otherwise it is not accepted and stays open."""
-    problems: list[str] = []
-    if row.get("status") != "done":
+def answered(row: dict, docs=None) -> tuple[dict[str, str], Evidence | None, list[str]]:
+    """(answers, evidence, problems) for one filled CSV row. Only `result` = found is read back: it needs
+    answers for every listed field, an https source_url and a verbatim quote (`common.handoff.base_problems`).
+    A `saved_file` in the inbox is registered in the document store and cited by doc_id."""
+    problems = CH.base_problems(row)
+    if (row.get("result") or "").strip() != "found":
         return {}, None, problems
     try:
         ans = parse_answers(row.get("answers", ""))
     except ValueError as exc:
-        return {}, None, [str(exc)]
+        return {}, None, [*problems, str(exc)]
     want = {f.strip() for f in row.get("fields_to_fill", "").split(";") if f.strip()}
     missing = want - set(ans)
     if missing:
         problems.append(f"fields not answered: {sorted(missing)} (write field=not found if absent)")
-    if not row.get("answer_url", "").startswith("https://"):
-        problems.append("answer_url must be an https link to the page read")
-    if not row.get("answer_quote", "").strip():
-        problems.append("answer_quote is required (a verbatim sentence)")
+    url = (row.get("source_url") or "").strip()
+    if not url.startswith("https://"):
+        problems.append("source_url must be an https link to the page read")
     if problems:
         return ans, None, problems
-    when = row.get("answered_on") or dt.date.today().isoformat()
+    doc_id = CH.take_saved_file(
+        docs, row, geoid=row.get("geoid", ""), category=CATEGORY, state=row.get("state", "")
+    )
+    when = row.get("checked_on") or dt.date.today().isoformat()
     ev = Evidence(
-        url=row["answer_url"],
+        url=url,
         retrieved=dt.date.fromisoformat(when),
-        quote=row["answer_quote"].strip()[:300],
-        section=row.get("answer_section") or None,
-        kind="human_primary",
+        quote=row["quote"].strip(),
+        section=row.get("section") or None,
+        source_kind="human_lookup",
+        quote_status="human",
+        doc_id=doc_id,
     )
     return ans, ev, problems
 

@@ -28,7 +28,7 @@ Read `docs/build/rule-agents/adu/CODING_RULES.md` (evidence, fetch and hard rule
 
 Write `RUN_DIR/state_law.json`:
 `{"state": "XX", "checked": "YYYY-MM-DD", "laws": [...], "not_enacted": [...], "blocked": [...]}`.
-`blocked` uses the BlockedSource shape (url, reason, fields, what_to_look_for).
+`blocked` uses the Blocker shape (url, kind, fields, look_for).
 
 The orchestrator expands each law into per-place rows (never one statewide row, L-D7) using
 `places.covered_by_state_law`; places within 5% of a threshold become human checks against the named

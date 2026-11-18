@@ -11,13 +11,14 @@ Your brief gives `RUN_DIR`.
 
 ## Package
 
-1. Run `uv run python -m lotline.rule_agents.adu tasks RUN_DIR` (collects every `BlockedSource` and every
+1. Run `uv run python -m lotline.rule_agents.adu tasks RUN_DIR` (collects every `Blocker` and every
    unresolved difference, merges duplicates, marks records-request-only sources optional, priority 3, and sorts by priority, then largest place).
 2. Read `RUN_DIR/tasks.csv` and improve only the human-facing text, keeping columns and `task_id`s:
    - `question`: one short question per task ("When did Testville first allow ADUs?").
    - `what_to_look_for`: where on the page and what words to look for ("history note under §5.3, e.g.
      'Ord. 2020-12, 7-7-2020'"). Use what the scout and coders already found.
-   - `alt_urls`: add a Wayback or PDF alternative if the run found one.
+   - `alt_urls`: add a Wayback or PDF alternative if the run found one. Keep `held_docs` (documents the
+     store already holds for the place, so the person does not download them again).
    - `est_minutes`: 5 for a single value on a known page, 10–15 for a date hunt, 20 for a version history.
    - Merge tasks that one page settles (same URL, same place) into one with all their fields.
 3. Rewrite `tasks.md` from the edited CSV (same order). Keep it to what a person needs: open, look for,
@@ -25,8 +26,10 @@ Your brief gives `RUN_DIR`.
 
 ## Read back (when the brief says `INGEST=<path>`)
 
-Run `uv run python -m lotline.rule_agents.adu ingest <path>`. List accepted answers and every rejected row
-with its reason (missing URL or quote, unanswered fields). Accepted answers go back to the verifier.
+Run `uv run python -m lotline.rule_agents.adu ingest <path>`. Only rows with `result` = found are read back;
+a file the person dropped in the document store's inbox (`saved_file`) is registered and cited by its doc_id.
+List accepted answers and every rejected row with its reason (missing source_url or quote, unanswered
+fields). Accepted answers go back to the verifier.
 
 Report in ≤ 80 words: open tasks, minutes in total, closed as no usable source.
 

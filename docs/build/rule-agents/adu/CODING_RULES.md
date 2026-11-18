@@ -42,24 +42,34 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
 
 ## Evidence
 
-- Fetch only with `uv run python -m lotline.rule_agents.adu fetch --state <ST> <url>` (prints JSON with
-  `ok`, `reason`, `path`, `text_path`). Read `text_path`: HTML text, or a text PDF's pages (pypdf, separated
-  by form feeds). A `scanned_pdf` has no text copy: read its page images and mark the quote `image_read`. Never use
-  WebFetch, curl, a browser user agent, or a different URL form to get round a block (L-R6). A block → add a
-  `BlockedSource` with the helper's `reason` and move on.
-- **Wayback**: cite the fetch result's `final_url` (the capture actually served; `/web/2023/…` may redirect to
-  a 2025 copy) and date the source by `wayback_ts`, not by the year you asked for. A Wayback copy of an
-  official page is `official_code` (or `ordinance`, `city_page`) with `archived_from` = the live URL, never
-  `mirror`.
-- Quote verbatim, ≤ 25 words, with the section number. Put the copy's path relative to `LOTLINE_DATA_DIR` in
-  `cache_path`. Put the fetch result's `doc_id` (sha256 of the bytes read) in `doc_id`, and the PDF page
-  in `page`. A quote read off a scanned page image is `quote_status: image_read`. Use https (Wayback `https://web.archive.org/web/<ts>/<url>` for http-only pages).
-- `kind`: `official_code` (the city's code or its official publisher, incl. Municode PDF blob, amlegal PDFs),
-  `ordinance`, `staff_report`, `minutes`, `state_law`, `city_page`, `mirror` (Zoneomics etc.), `news`, `draft`.
-- `confidence`: `high` only on primary evidence with unambiguous text; mirrors, city pages and news are at most
-  `medium` (L-R4); anything you had to infer is `low`.
+- Fetch only with `uv run python -m lotline.rule_agents.adu fetch --state <ST> --run-id <ID> --geoid <G>
+  <url>`: the shared core, **store first** (a document any swarm already holds is served with no request; a
+  refusal any swarm met in the last 30 days is returned with no request). It prints JSON with `doc_id`,
+  `blocker`, `cached`, `pages` and `text_path`. Before fetching, look in the store:
+  `uv run python -m lotline.rule_agents docs find --geoid <G> --category adu`.
+- Read with the shared tools, not whole files: `uv run python -m lotline.rule_agents outline <DOC>` (headings
+  and pages), `… excerpts <DOC> adu` (short page-cited ADU passages), `… docs text <DOC> --page N`, and check a
+  quote with `… docs quote <DOC> "<quote>"` (prints `verbatim p.N`). A `scanned_pdf` has no text layer: read
+  its page images and mark the quote `image_read`. Never use WebFetch, curl, a browser user agent, or a
+  different URL form to get round a block (L-R6). A block → add a `Blocker` with the helper's `kind` and move
+  on.
+- **Wayback**: ask for an exact capture (`https://web.archive.org/web/<14-digit timestamp>/<url>`, from the
+  CDX list `https://web.archive.org/cdx/search/cdx?url=<url>`), so the capture served is the one you cite; a
+  year-only `/web/2023/…` may redirect to a 2025 copy. Date the source by that timestamp, not by the year you
+  asked for. A Wayback copy of an official page keeps its own kind (`code`, `ordinance`, `city_page`) with
+  `archived_from` = the live URL, never `mirror`.
+- Quote verbatim, ≤ 25 words, with the section number. Put the fetch result's `doc_id` (the document store's
+  sha256 id of the bytes read) in `doc_id`, and the PDF page in `page`: the verifier and `score` check the
+  quote against that stored document. A quote read off a scanned page image is `quote_status: image_read`. Use https (Wayback `https://web.archive.org/web/<ts>/<url>` for http-only pages).
+- `source_kind` (the shared vocabulary, `common.evidence.SOURCE_KINDS`): `code` (the city's code or its
+  official publisher, incl. Municode PDF blob, amlegal PDFs), `ordinance`, `staff_report`, `minutes`,
+  `state_law`, `archive`, `city_page`, `mirror` (Zoneomics etc.), `news`, `other` (drafts), `human_lookup`.
+- `confidence` follows the shared rule (`common.evidence.max_confidence`, enforced by `check`): `high` only on
+  a primary source whose quote is verbatim (or a person's lookup) with unambiguous text; mirrors, city pages,
+  drafts and image-read quotes are at most `medium` (L-R4); news alone is `low`; anything you had to infer is
+  `low`.
 - **The first pass is scored** (`score`): a value is strong only if `high`, primary, and its
-  quote is found by machine in the cached text (on the PDF page given). Only weak values, uncoded amendments
+  quote is found by machine in the stored document (on the PDF page given). Only weak values, uncoded amendments
   and a ~10% audit sample get the blind second coder. Under-marking confidence costs tokens; over-marking it
   skips the check, and the audit sample measures how often that happens.
 
@@ -68,9 +78,9 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
 - Holdouts (the orchestrator lists them): code rules only; open no permit data, ADU counts, dashboards, staff
   reports with activity numbers, `reports/` or refits; drop search snippets with permit numbers (L-O1).
 - Run no engine, scenario, calibration or dev-run script (L-O2). Edit nothing in the repo.
-- Judgment calls (text is clear, coding is a policy choice): code blank, add a `BlockedSource` with reason
+- Judgment calls (text is clear, coding is a policy choice): code blank, add a `Blocker` with kind
   `judgment_call` describing both readings. The user decides (L-S7).
-- A source only a public-records request reaches: `BlockedSource` with reason `records_request_only` (it
+- A source only a public-records request reaches: `Blocker` with kind `records_request_only` (it
   becomes an optional, priority-3 lookup; never file a request, email or call anyone yourself).
 
 ## Example (one era)
@@ -79,7 +89,7 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
 {"era_id": "2020", "component": "Ord. 2020-12 (made-up example): ADUs by right in R-1 to R-3",
  "dates": [{"date": "2020-07-07", "type": "adopted", "evidence": [{"url": "https://…", "retrieved": "2026-11-17",
    "quote": "Adopted: July 7, 2020 … Effective: July 22, 2020", "section": "Ord. 2020-12",
-   "kind": "ordinance", "cache_path": "raw/rule_agents/adu/NC/…/ab12.pdf"}]},
+   "source_kind": "ordinance", "doc_id": "<64 hex>", "page": 3}]},
    {"date": "2020-07-22", "type": "effective", "evidence": ["…same evidence…"]}],
  "fields": {"adu_max_sqft": {"value": 800, "confidence": "high", "evidence": [{"…": "…"}]}},
  "tags": []}

@@ -8,7 +8,8 @@ tools: Read, Grep, Glob, Bash, Write
 
 Read `docs/build/rule-agents/adu/CODING_RULES.md` and section S of `docs/build/rule-agents/adu/LESSONS.md`.
 Your brief gives `STATE`, `RUN_DIR` and the places. You have no web search: you judge from the sources the
-coders cited (fetch them again with the fetch helper if a copy is missing).
+coders cited, read from the shared document store by `doc_id` (`uv run python -m lotline.rule_agents docs text
+<DOC> --page N`; fetch with the fetch helper, store first, only if the store lacks it).
 
 ## Per place
 

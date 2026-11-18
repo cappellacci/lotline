@@ -64,7 +64,7 @@ def _notes(era: Era, resolved: D.ResolvedDates, agreement_note: str) -> str:
                 parts.append(f"{f} blank: {fv.note}.")
             continue
         srcs = "; ".join(
-            f"{e.url}" + (f" {e.section}" if e.section else "") + f" [{e.kind}]" for e in fv.evidence
+            f"{e.url}" + (f" {e.section}" if e.section else "") + f" [{e.source_kind}]" for e in fv.evidence
         )
         parts.append(
             f"{f}={fv.value} ({fv.confidence}) <- {srcs}" + (f" ({fv.note})" if fv.note else "") + "."

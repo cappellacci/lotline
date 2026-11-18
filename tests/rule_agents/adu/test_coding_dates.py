@@ -29,7 +29,13 @@ def test_value_without_evidence_is_refused():
 def test_mirror_only_value_cannot_be_high_confidence():
     era = era_2020()
     era.fields["adu_max_sqft"] = fv(800, "800 square feet", kind="mirror", url=MIRROR, confidence="high")
-    assert any("secondary sources only" in p for p in C.check(coding(eras=[era])))
+    assert any("allows 'medium' at most" in p for p in C.check(coding(eras=[era])))
+    # the shared rule (common.evidence.max_confidence): news alone caps at low, an image-read code at medium
+    era.fields["adu_max_sqft"] = fv(800, "800 square feet", kind="news", url=MIRROR, confidence="medium")
+    assert any("allows 'low' at most" in p for p in C.check(coding(eras=[era])))
+    era.fields["adu_max_sqft"] = fv(800, "800 square feet", confidence="high")
+    era.fields["adu_max_sqft"].evidence[0].quote_status = "image_read"
+    assert any("allows 'medium' at most" in p for p in C.check(coding(eras=[era])))
     era.fields["adu_max_sqft"].confidence = "medium"
     assert C.check(coding(eras=[era])) == []
 
@@ -73,9 +79,9 @@ def test_evidence_must_be_https_and_quote_at_most_300_chars():
 
 def test_block_reasons_must_come_from_the_task_vocabulary():
     c = coding()
-    c.blocked = [C.BlockedSource(url="https://x.gov", reason="not_tried", what_to_look_for="x")]
-    assert any("unknown reason 'not_tried'" in p for p in C.check(c))
-    c.blocked[0].reason = "known_blocker"
+    c.blocked = [C.Blocker(url="https://x.gov", kind="not_tried", look_for="x")]
+    assert any("unknown kind 'not_tried'" in p for p in C.check(c))
+    c.blocked[0].kind = "code_host_wall"
     assert C.check(c) == []
 
 

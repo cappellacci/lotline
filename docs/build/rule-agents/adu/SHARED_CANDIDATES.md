@@ -1,7 +1,8 @@
 # Shared components: candidates for one core used by the ADU, missing-middle and fee swarms
 
-Written by the ADU swarm session for the parent session that merges the three. Nothing here is a shared core
-yet: each swarm keeps its own copy under `src/lotline/rule_agents/<category>/` until the parent merges them.
+Written by the ADU swarm session for the parent session that merges the three. **Superseded 2026-11-18:** the
+shared core landed as `src/lotline/rule_agents/common/` (design `docs/build/rule-agents/CORE.md`) and ADU now
+runs on it; this file is kept as the record of what was proposed.
 The fees session's list (`docs/build/rule-agents/fees/SHARED_CANDIDATES.md` on its branch) proposes the same
 four components; the differences below are what the merge has to settle.
 

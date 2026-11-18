@@ -18,23 +18,15 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-# Source kinds. Primary sources can carry "high" confidence on their own; the rest cap a value at "medium"
-# (lessons L-R4, L-S3: a mirror, city guide, draft or news report is at most "partly" for a second coder).
-PRIMARY_KINDS = {"official_code", "ordinance", "staff_report", "minutes", "state_law", "human_primary"}
-SECONDARY_KINDS = {"city_page", "mirror", "news", "draft", "human_secondary"}
-SourceKind = Literal[
-    "official_code",
-    "ordinance",
-    "staff_report",
-    "minutes",
-    "state_law",
-    "human_primary",
-    "city_page",
-    "mirror",
-    "news",
-    "draft",
-    "human_secondary",
-]
+from lotline.rule_agents.common.evidence import LEAD_ONLY, QUOTE_MAX, SECONDARY, SOURCE_KINDS, max_confidence
+from lotline.rule_agents.common.evidence import Blocker as CommonBlocker
+from lotline.rule_agents.common.evidence import Evidence as CommonEvidence
+
+_RANK = {"low": 0, "medium": 1, "high": 2}
+
+# Source kinds and the confidence rule come from the shared core (`common.evidence`): a primary source
+# (code, ordinance, minutes, staff report, state law, archive copy, human lookup) can carry "high" on its own;
+# a city page, mirror, news story or "other" (drafts) caps a value at "medium" (lessons L-R4, L-S3).
 Confidence = Literal["high", "medium", "low"]
 # What a dated source says about the date. Only `effective` and `adopted` are treatment dates; the others
 # bound it (lesson L-D3: a recodification or code-edition date is not a first-allowed date).
@@ -63,20 +55,18 @@ TAGS = {
 }
 
 
-class Evidence(BaseModel):
+class Evidence(CommonEvidence):
+    """The shared evidence model (`common.evidence.Evidence`) as ADU codings use it: nested under the field it
+    supports (so `field` may stay blank), https only, `source_kind` required, and `quote_status` defaults to
+    `verbatim` (the verifier checks it against the stored document named by `doc_id`)."""
+
     model_config = ConfigDict(extra="forbid")
 
-    url: str
-    retrieved: dt.date
-    quote: str = Field(min_length=1, max_length=300)
-    section: str | None = None
-    kind: SourceKind
-    archived_from: str | None = None  # the live URL when `url` is a Wayback copy
-    cache_path: str | None = None  # path under LOTLINE_DATA_DIR of the copy the quote was read from
-    # sha256 of the exact bytes read: the stable document id (SHARED_CANDIDATES §0, the shared doc store)
-    doc_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
-    page: int | None = Field(default=None, ge=1)  # PDF page the quote is on
+    field: str = ""
+    quote: str = Field(min_length=1, max_length=QUOTE_MAX)
+    source_kind: Literal[SOURCE_KINDS]  # type: ignore[valid-type]
     quote_status: Literal["verbatim", "image_read", "human"] = "verbatim"  # image_read: scanned page
+    archived_from: str | None = None  # the live URL when `url` is a Wayback copy
 
     @field_validator("url")
     @classmethod
@@ -87,7 +77,7 @@ class Evidence(BaseModel):
 
     @property
     def primary(self) -> bool:
-        return self.kind in PRIMARY_KINDS
+        return self.source_kind not in SECONDARY and self.source_kind not in LEAD_ONLY
 
 
 class FieldValue(BaseModel):
@@ -129,16 +119,15 @@ class Era(BaseModel):
         return None if fv is None else fv.value
 
 
-class BlockedSource(BaseModel):
-    """A source the coder could not read; becomes a human lookup task (handoff.py)."""
+class Blocker(CommonBlocker):
+    """A source the coder could not read or settle (`common.evidence.Blocker`, kinds `BLOCKER_KINDS` plus
+    `judgment_call`); it becomes a human lookup task (handoff.py). `look_for` is required here."""
 
     model_config = ConfigDict(extra="forbid")
 
-    url: str
-    reason: str  # handoff.REASONS key
+    kind: str  # handoff.REASONS key
+    look_for: str
     era_id: str | None = None
-    fields: list[str] = []
-    what_to_look_for: str
     note: str | None = None
 
 
@@ -152,7 +141,7 @@ class PlaceCoding(BaseModel):
     coded_at: dt.date
     outcome: Literal["coded", "partial", "no_usable_source"]
     eras: list[Era] = []
-    blocked: list[BlockedSource] = []
+    blocked: list[Blocker] = []
     notes: str | None = None
 
 
@@ -188,8 +177,8 @@ def check(coding: PlaceCoding) -> list[str]:
     from lotline.rule_agents.adu.handoff import ALLOWED, REASONS  # late: handoff imports this module
 
     for b in coding.blocked:
-        if b.reason not in REASONS:
-            out.append(f"blocked {b.url}: unknown reason {b.reason!r} (use one of {sorted(REASONS)})")
+        if b.kind not in REASONS:
+            out.append(f"blocked {b.url}: unknown kind {b.kind!r} (use one of {sorted(REASONS)})")
         bad = set(b.fields) - set(ALLOWED) - {"all"}
         if bad:
             out.append(
@@ -216,8 +205,9 @@ def check(coding: PlaceCoding) -> list[str]:
                 out.append(f"{where}: {problem}")
             if not fv.evidence:
                 out.append(f"{where}: {field} = {fv.value!r} has no evidence (blank it or cite a source)")
-            elif fv.confidence == "high" and not any(e.primary for e in fv.evidence):
-                out.append(f"{where}: {field} is 'high' confidence on secondary sources only (cap at medium)")
+            elif _RANK[fv.confidence] > _RANK[max_confidence(fv.evidence)]:
+                cap = max_confidence(fv.evidence)
+                out.append(f"{where}: {field} is {fv.confidence!r} but its evidence allows {cap!r} at most")
         if era.value("adus_per_lot") == 0:
             for f in ("by_right", "adu_detached_allowed"):
                 if era.value(f) is True:

@@ -27,12 +27,16 @@ import pandas as pd
 from lotline.config import CONFIG_DIR
 from lotline.io.store import DataStore
 from lotline.rule_agents.adu import coding as C
+from lotline.rule_agents.adu import fetch as F
 from lotline.rule_agents.adu import handoff as H
 from lotline.rule_agents.adu import places as P
 from lotline.rule_agents.adu import reconcile as R
 from lotline.rule_agents.adu import rows as W
 from lotline.rule_agents.adu import score as S
-from lotline.rule_agents.adu.fetch import Fetcher
+from lotline.rule_agents.common import handoff as CH
+from lotline.rule_agents.common.docstore import DocStore
+
+CATEGORY_ADU = "adu"
 
 
 def run_dir(state: str, run_id: str, store: DataStore | None = None) -> Path:
@@ -67,10 +71,14 @@ def cmd_worklist(a) -> int:
 
 
 def cmd_fetch(a) -> int:
-    f = Fetcher(DataStore(), a.state)
+    """Store-first fetch into the shared document store; prints one JSON line per URL (doc_id, blocker,
+    and `text_path`, the page-marked text sidecar coders read)."""
+    docs = DocStore()
+    facts = {"jurisdictions": [a.geoid] if a.geoid else None, "states": [a.state.upper()]}
     for url in a.urls:
-        r = f.get(url)
-        d = {k: (str(v) if isinstance(v, (Path, dt.date)) else v) for k, v in asdict(r).items()}
+        r = F.get(url, a.run_id, docs=docs, **facts)
+        d = json.loads(r.to_json())
+        d["text_path"] = str(docs.sidecar(r.doc_id)) if r.doc_id else None
         print(json.dumps(d))
     return 0
 
@@ -92,7 +100,7 @@ def cmd_check(a) -> int:
 def cmd_verify_quotes(a) -> int:
     """Every verbatim quote with a cached text copy (HTML or text PDF) must be found in it; for PDFs the page
     is reported and must match `page` when the coder gave one. Image-read and human quotes are listed only."""
-    root = DataStore().root
+    docs = DocStore()
     code = 0
     for p in a.paths:
         c = C.load(p)
@@ -101,7 +109,7 @@ def cmd_verify_quotes(a) -> int:
                 e for d in era.dates for e in d.evidence
             ]
             for e in evs:
-                status, page = S.quote_check(e, root)
+                status, page = S.quote_check(e, docs)
                 note = f" p.{page}" if page else ""
                 if page and e.page and e.page != page:
                     note += f" (coder said p.{e.page})"
@@ -113,7 +121,7 @@ def cmd_verify_quotes(a) -> int:
 
 def cmd_score(a) -> int:
     """Score coder A's values; write score/<geoid>.json; print who needs which second look."""
-    root = DataStore().root
+    docs = DocStore()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     tally = {"none": 0, "targeted": 0, "full": 0}
@@ -121,7 +129,7 @@ def cmd_score(a) -> int:
         c = C.load(p)
         src = Path(a.sources) / f"{c.geoid}.json" if a.sources else None
         sources = json.loads(src.read_text()) if src and src.exists() else None
-        card = S.score(c, root, sources, a.audit_rate)
+        card = S.score(c, docs, sources, a.audit_rate)
         (out / f"{c.geoid}.json").write_text(S.to_json(card) + "\n")
         tally[card.mode] += 1
         extra = f"; {len(card.uncoded_amendments)} uncoded amendment(s)" if card.uncoded_amendments else ""
@@ -206,6 +214,7 @@ def cmd_tasks(a) -> int:
         pl = pd.read_csv(d / "places.csv", dtype={"geoid": str})
         pops = dict(zip(pl["geoid"], pl["pop_2020"], strict=False))
     tasks: list[H.HumanTask] = []
+    docs = DocStore()
     finals = {c.geoid: c for c in _load_all(d / "final")} if (d / "final").exists() else {}
     for sub in ("coding_a", "coding_b", "final"):
         for c in _load_all(d / sub) if (d / sub).exists() else []:
@@ -219,10 +228,10 @@ def cmd_tasks(a) -> int:
                         geoid=c.geoid,
                         place=c.name,
                         era_id=b.era_id or "",
-                        question=b.what_to_look_for.split(".")[0],
-                        reason=b.reason,
+                        question=b.look_for.split(".")[0],
+                        blocker=b.kind,
                         url=b.url,
-                        what_to_look_for=b.what_to_look_for,
+                        what_to_look_for=b.look_for,
                         fields_to_fill=fields,
                         pop_2020=int(pops.get(c.geoid, 0)),
                         notes=b.note or "",
@@ -241,13 +250,15 @@ def cmd_tasks(a) -> int:
                     place=c.name,
                     era_id=u["era_key"],
                     question=f"{u['field']} for the rule in force from {u['era_key']}",
-                    reason="conflicting_sources",
+                    blocker="conflicting_sources",
                     url=src or "(no source opened; search the city code)",
                     what_to_look_for=f"Coders read {u['a']!r} and {u['b']!r}.",
                     fields_to_fill=[field],
                     pop_2020=int(pops.get(geoid, 0)),
                 )
             )
+    for t in tasks:
+        t.held_docs = CH.held_docs(docs, t.geoid, CATEGORY_ADU)
     queue, closed = H.triage(tasks)
     H.write_csv(queue + closed, d / "tasks.csv")
     H.write_markdown(queue, d / "tasks.md", f"ADU rule lookups — {d.parent.name} run {d.name}")
@@ -258,13 +269,15 @@ def cmd_tasks(a) -> int:
 
 def cmd_ingest(a) -> int:
     bad = 0
+    docs = DocStore()
     for row in H.read_csv(a.path):
-        ans, ev, probs = H.answered(row)
+        ans, ev, probs = H.answered(row, docs)
         if probs:
             bad += 1
             print(f"{row['task_id']}: NOT ACCEPTED: {'; '.join(probs)}")
         elif ev:
-            print(f"{row['task_id']}: accepted {ans} <- {ev.url}")
+            held = f" (saved file {ev.doc_id[:12]})" if ev.doc_id else ""
+            print(f"{row['task_id']}: accepted {ans} <- {ev.url}{held}")
     return 1 if bad else 0
 
 
@@ -295,6 +308,8 @@ def main(argv=None) -> int:
     s.set_defaults(fn=cmd_worklist)
     s = sp.add_parser("fetch")
     s.add_argument("--state", required=True)
+    s.add_argument("--run-id", required=True)
+    s.add_argument("--geoid", help="the place the document is for (recorded on the stored document)")
     s.add_argument("urls", nargs="+")
     s.set_defaults(fn=cmd_fetch)
     for name, fn in (("check", cmd_check), ("verify-quotes", cmd_verify_quotes)):

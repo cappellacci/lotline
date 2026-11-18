@@ -120,3 +120,14 @@ def test_compare_with_config_reports_matches_and_differences():
     assert by[(2020, "effective_date")] == "match" and by[(2020, "by_right")] == "match"
     assert by[(2016, "era")] == "era missing"
     assert dt.date(2020, 7, 22).isoformat() in set(cmp["proposed"].astype(str))
+
+
+def test_rows_csv_is_accepted_by_the_shared_import(tmp_path):
+    """The run's rows.csv goes through `python -m lotline.rule_agents import RUN/rows.csv reforms ST`."""
+    from lotline.rule_agents.common import importer
+
+    df = W.to_frame(W.build(coding(), "single_coder"))
+    W.write_csv(df, tmp_path / "rows.csv")
+    p = importer.plan(tmp_path / "rows.csv", "reforms", "NC", tmp_path / "config")
+    assert len(p.added) == len(df) and not p.changed
+    importer.validate_text(importer.merged_text(p), "reforms")
