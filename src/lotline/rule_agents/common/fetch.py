@@ -13,6 +13,9 @@
 3. **One request**, spaced `HOST_INTERVAL` seconds per host across processes, through `lotline.io.http.fetch`
    (so it is in `manifest.jsonl`). A 403 is never retried, and **never retried with another user agent, curl
    or browser-like headers** (Oct 2026 incident: docs/build/rule-agents/mm/LESSONS.md, R-5).
+   Redirects are followed; the URL that actually answered is kept (`final_url`), and for the Wayback Machine
+   its 14-digit capture time (`wayback_ts`): `/web/2023/<url>` redirects to the nearest capture, which can
+   be from another year, so a coder dates the text by `wayback_ts`, never by the year in the link.
 4. **Ingest**: the file goes into the document store (blob, text sidecar, index event) and the result is
    classified (`access.classify`). Any blocker is recorded in `blocks.jsonl` for every swarm to see.
 
@@ -24,6 +27,7 @@ from __future__ import annotations
 import fcntl
 import hashlib
 import json
+import re
 import time
 from dataclasses import asdict, dataclass
 from datetime import date
@@ -40,6 +44,7 @@ HOST_INTERVAL = 3.0  # seconds between requests to one host, across processes
 SOURCE = "rule_docs"
 ADAPTER = "rule_agents.common.fetch"
 ADAPTER_VERSION = "1.0"
+_WAYBACK = re.compile(r"^https?://web\.archive\.org/web/(\d{14})")
 _EXTS = (".pdf", ".htm", ".html", ".txt", ".json", ".xml", ".csv", ".xlsx", ".docx")
 
 
@@ -54,6 +59,8 @@ class FetchResult:
     cached: bool = False  # served from the document store, no request made
     pages: int | None = None
     text_status: str = ""
+    final_url: str | None = None  # the URL that answered, when a redirect took the request elsewhere
+    wayback_ts: str | None = None  # 14-digit Wayback capture actually served
 
     def to_json(self) -> str:
         d = asdict(self)
@@ -73,6 +80,13 @@ def snapshot_name(url: str) -> str:
     ext = ext if ext in _EXTS else ".html"
     h = hashlib.sha1(url.encode()).hexdigest()[:12]
     return f"{p.hostname}/{h}{ext}"
+
+
+def wayback_ts(url: str | None) -> str | None:
+    """The 14-digit capture time in a Wayback URL: '.../web/20230115083000/https://x' -> '20230115083000';
+    a year-only '.../web/2023/https://x' -> None (it is not a capture, only a request for the nearest one)."""
+    m = _WAYBACK.match(url or "")
+    return m.group(1) if m else None
 
 
 def _wait(root: Path, host: str) -> None:
@@ -124,6 +138,8 @@ def _result(docs: DocStore, url: str, rec, status, cached) -> FetchResult:
         cached=cached,
         pages=rec.pages,
         text_status=rec.text_status,
+        final_url=rec.served_url or None,
+        wayback_ts=rec.wayback_ts or wayback_ts(url),
     )
 
 
@@ -174,6 +190,12 @@ def get(
         store = DataStore(docs.data_root)
         dest = store.raw(SOURCE, date.today().isoformat()) / snapshot_name(url)
         _wait(docs.data_root, host)
+        served: list[str] = []  # every response's URL; the last is the one that answered
+
+        def _note(resp: httpx.Response) -> None:
+            served.append(str(resp.url))
+
+        http.event_hooks["response"].append(_note)
         try:
             path = lhttp.fetch(
                 url,
@@ -195,6 +217,13 @@ def get(
         except httpx.TransportError as exc:
             docs.record_block(url, "unreachable", str(exc)[:200], category)
             return FetchResult(url, None, None, "unreachable", f"transport error: {exc}")
+        finally:
+            http.event_hooks["response"].remove(_note)
+        final = served[-1] if served else url
+        if final != url:
+            facts = {**facts, "served_url": final}
+        if wayback_ts(final):
+            facts = {**facts, "wayback_ts": wayback_ts(final)}
         rec = docs.ingest(path, url=url, added_by=f"run:{category}:{run_id}", category=category, **facts)
         if rec.ext == ".pdf":
             hit = (

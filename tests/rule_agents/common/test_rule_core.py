@@ -531,3 +531,31 @@ def test_doctor_flags_only_what_a_run_needs(tmp_path):
         }
     )
     assert "thing(s) to fix" in doctor.render(res)
+
+
+def test_a_year_only_wayback_link_records_the_capture_actually_served(docs, monkeypatch):
+    """By hand: /web/2023/<url> redirects to the nearest capture, /web/20220301120000/<url> (a 2022 copy);
+    the result and the stored document carry that capture, and a later store hit reports it too."""
+    monkeypatch.setattr(fetch, "HOST_INTERVAL", 0.0)
+    asked = "https://web.archive.org/web/2023/https://city.gov/udo/adu"
+    served = "https://web.archive.org/web/20220301120000/https://city.gov/udo/adu"
+
+    def srv(request: httpx.Request) -> httpx.Response:
+        u = str(request.url)
+        if u.endswith("/robots.txt"):
+            return httpx.Response(200, text="User-agent: *\nAllow: /")
+        if u == asked:
+            return httpx.Response(302, headers={"location": served})
+        if u == served:
+            return httpx.Response(200, text=ADU_PAGE, headers={"content-type": "text/html"})
+        return httpx.Response(404)
+
+    http = httpx.Client(transport=httpx.MockTransport(srv), follow_redirects=True)
+    r = fetch.get(asked, "adu", "r1", docs=docs, http=http)
+    assert r.blocker is None
+    assert r.final_url == served and r.wayback_ts == "20220301120000"
+    assert docs.get(r.doc_id).wayback_ts == "20220301120000"
+    again = fetch.get(asked, "mm", "r2", docs=docs, http=http)
+    assert again.cached and again.wayback_ts == "20220301120000" and again.final_url == served
+    assert not http.event_hooks["response"]  # the caller's client is left as it was
+    assert fetch.wayback_ts(asked) is None
