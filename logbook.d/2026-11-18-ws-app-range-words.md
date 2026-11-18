@@ -1,0 +1,5 @@
+### LB-NNN · 2026-11-18 · Deliverables: the results ranges explained in plain words
+- **Question:** "Each band runs from P10 to P90; the tick and the number mark the midpoint (P50)": what does that mean to a policymaker? (Ben: "a lot of people will ask".)
+- **What I did:** `src/lotline/app/template.html`: under the results bars, a "How to read the bars" paragraph. It says the model ran N times with different plausible values; the number and tick are the middle result (half the runs higher, half lower); the bar covers the middle 80% (1 run in 10 below, 1 in 10 above; the bracketed numbers are its ends); a longer bar means less certainty; and the scale is logarithmic. The P10/P90/P50 terms stay in the source line for technical readers. The all-states chart caption uses the same words.
+- **Outputs:** `src/lotline/app/template.html`; `tests/app/test_build.py::test_results_ranges_are_explained_in_plain_words`.
+- **AI:** Claude Code wrote the wording and test; checked in the browser pane on North Carolina.

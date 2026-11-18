@@ -540,7 +540,7 @@ table.checks td:last-child { min-width: 260px; }
       </div>
 
       <h4 class="h3">The three models, every state at once</h4>
-      <p class="body-small">What each model predicts for every state with results: net new homes over the five years, the band from P10 to P90 and the tick at the midpoint. The scale is logarithmic, so each gridline is ten times the last. Missing middle's bands are the widest because its reform effect is the least pinned down; Oregon adds few ADUs because its state law already allows what the reform asks.</p>
+      <p class="body-small">What each model predicts for every state with results: net new homes over the five years. The tick is the middle result of the model's runs; the band covers the middle 80% of them, so 1 run in 10 came out below it and 1 in 10 above. The scale is logarithmic, so each gridline is ten times the last. Missing middle's bands are the widest because its reform effect is the least pinned down; Oregon adds few ADUs because its state law already allows what the reform asks.</p>
       <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
       <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
 
@@ -1143,7 +1143,8 @@ const SECTIONS = {
           <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
             <span class="muted" id="outcome-note"></span></div>
           ${pendNote}
-          <p class="source">Each band runs from P10 to P90; the tick and the number mark the midpoint (P50). Log scale, so each step is ten times the last. Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p></div>
+          <p class="body-small how-read"><b>How to read the bars.</b> We ran the model ${b.meta.n_draws.toLocaleString("en-US")} times, each time with a different plausible value for everything we are unsure about, such as how many owners build and what building costs. The number and the tick show the middle result: half the runs came out higher and half lower. The bar covers the middle 80% of runs: 1 run in 10 came out below its left end and 1 in 10 above its right end; the numbers in brackets are those two ends. A longer bar means we are less sure. The scale is logarithmic: each gridline is ten times the one before, so a bar that looks short can still span a wide range.</p>
+          <p class="source">Bars: 10th to 90th percentile (P10–P90) of the runs; tick: the median (P50). Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p></div>
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
       <div class="card ev" id="model-card"></div>
