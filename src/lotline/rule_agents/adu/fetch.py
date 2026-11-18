@@ -12,7 +12,7 @@ browser user agent (lessons L-R6). Here:
 - **Every copy lands in LOTLINE_DATA_DIR** (`raw/rule_agents/adu/<ST>/<host>/<sha1(url)>.<ext>`) and in
   `manifest.jsonl`; nothing is written to the repo.
 - **Text** for the coders: HTML is reduced to text with the standard-library parser; a text PDF is extracted
-  with `pypdf` (BSD-3-Clause; Ben's OK 2026-11-17) into a `.txt` sidecar with pages separated by form feeds,
+  with `pypdf` (BSD-3-Clause) into a `.txt` sidecar with pages separated by form feeds,
   so `verify-quotes` checks PDF quotes mechanically and names the page. A PDF with no text layer is a
   `scanned_pdf` block (the coder may still read the page images and must mark the quote `image_read`).
 """

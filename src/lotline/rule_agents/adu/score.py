@@ -1,4 +1,4 @@
-"""Score the first coder's work so the second look goes only where the evidence is weak (Ben, 2026-11-17).
+"""Score the first coder's work so the second look goes only where the evidence is weak.
 
 The blind second coder used to recode every field of every place (about 40% of a run's tokens in the NC dry
 run). Now a single coder runs, every value is scored, and only weak values (plus eras the scout found but the

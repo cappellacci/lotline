@@ -58,7 +58,7 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
   `ordinance`, `staff_report`, `minutes`, `state_law`, `city_page`, `mirror` (Zoneomics etc.), `news`, `draft`.
 - `confidence`: `high` only on primary evidence with unambiguous text; mirrors, city pages and news are at most
   `medium` (L-R4); anything you had to infer is `low`.
-- **The first pass is scored** (`score`, Ben 2026-11-17): a value is strong only if `high`, primary, and its
+- **The first pass is scored** (`score`): a value is strong only if `high`, primary, and its
   quote is found by machine in the cached text (on the PDF page given). Only weak values, uncoded amendments
   and a ~10% audit sample get the blind second coder. Under-marking confidence costs tokens; over-marking it
   skips the check, and the audit sample measures how often that happens.
@@ -69,7 +69,7 @@ date must name the ADU ordinance or section — check it is the ADU ordinance an
   reports with activity numbers, `reports/` or refits; drop search snippets with permit numbers (L-O1).
 - Run no engine, scenario, calibration or dev-run script (L-O2). Edit nothing in the repo.
 - Judgment calls (text is clear, coding is a policy choice): code blank, add a `BlockedSource` with reason
-  `judgment_call` describing both readings. Ben decides (L-S7).
+  `judgment_call` describing both readings. The user decides (L-S7).
 - Questions only a records request or staff could answer: `BlockedSource` with reason `not_found_online` and
   `note` starting `records_request_only` (closed automatically, L-H1).
 

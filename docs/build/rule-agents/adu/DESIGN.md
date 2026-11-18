@@ -30,7 +30,7 @@ code, so a run is reproducible and a judge can read why a value was chosen.
 
 **Run folder** (outside the repo, never committed): `$LOTLINE_DATA_DIR/rule_agents/adu/<ST>/<run_id>/`.
 Downloaded copies go to `$LOTLINE_DATA_DIR/raw/rule_agents/adu/<ST>/<host>/` and `manifest.jsonl` (L-H6).
-Rows are handed to the ADU model's owner session, which applies those Ben accepts (L-O3).
+`rows.csv` is a proposal: the user reviews it and imports what they accept; the agents never write `config/` (L-O3).
 
 ## 2. Steps, inputs, outputs, stop rules
 
@@ -85,9 +85,9 @@ remainders only where one code governs (L-F13); state law per covered place and 
 Per value: `high` (primary source, unambiguous text), `medium` (secondary source, or primary but needs a
 reading), `low` (inferred from context; the verifier must confirm or blank it). Per place, `outcome`:
 `coded`, `partial` (some eras or fields blocked) or `no_usable_source`. Per row, `coder_agreement` and tags.
-The report counts values by confidence and agreement so Ben sees at a glance what rests on what.
+The report counts values by confidence and agreement so the user sees at a glance what rests on what.
 
-## 5a. First-pass score: second look only where evidence is weak (Ben, 2026-11-17)
+## 5a. First-pass score: second look only where evidence is weak
 
 The NC dry run second-coded everything: the blind coder took about 40% of the tokens, mostly re-deriving
 values already quoted verbatim from an official source. Now `score` (`score.py`) rates each value of the
@@ -133,12 +133,10 @@ request or staff could answer are closed at once as `no_usable_source` (L-H1).
 
 ## 8. Holdouts and other guards
 
-The five shared guardrails (outside studies are checks only, D-037; one owner per model, so no edits to
-`config/params/`, `config/reforms/` or `src/lotline/model/`; start from existing research while coders stay
-blind; Census GEOIDs and the existing `reforms` headers; the standing rules) are spelled out in
-`.claude/commands/rules-adu.md` and in `docs/build/rule-agents/GUARDRAILS.md` once the core PR lands. The
-shared core will live in `src/lotline/rule_agents/common/` (branch `ws/rule-agents-core`); ADU moves onto it
-after that PR merges, not before.
+The service's shared principles are in `docs/build/rule-agents/PRINCIPLES.md` (the table is a proposal the
+user imports; rules, not rates; GEOIDs and existing headers; no workarounds; no outcome data for held-back
+places; coders blind to existing rows). The shared core will live in `src/lotline/rule_agents/common/`; ADU
+moves onto it after that lands.
 
 - `worklist` prints the state's still-blind holdouts (`lotline.validation.holdout`). Their rules may be coded;
   agents open no permit data, ADU dashboards, staff reports with activity counts, refits or `reports/`, and
@@ -151,7 +149,7 @@ after that PR merges, not before.
 Per place, a scout pass (≤ 8 searches, ≤ 10 fetches), one coder (≤ 4 searches, ≤ 10 fetches), a targeted
 second look on weak values only (§5a) and a verifier pass on diffs only. Batches of about five places per
 agent keep the shared prompt cost low. Blocked hosts are dropped after one refusal, so a fully blocked place
-costs one scout pass plus tasks. `--second-coder off` (D-088: a second coder may not move results) skips the
+costs one scout pass plus tasks. `--second-coder off` skips the
 second look entirely and marks every row `single_coder`; `--second-coder full` is the dry run's setup.
 
 ## 10. Reuse by the other categories

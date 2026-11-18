@@ -9,25 +9,21 @@ Arguments: `$ARGUMENTS`. Design: `docs/build/rule-agents/adu/DESIGN.md`. Binding
 `docs/build/rule-agents/adu/CODING_RULES.md`. You (the main session) orchestrate: you run helpers, launch
 agents, enforce budgets and stop rules, and write the report. You never code values yourself.
 
-## Guardrails (shared across the rule swarms: `docs/build/rule-agents/GUARDRAILS.md`, coming in the core PR)
+## What this service is
 
-1. **Outside studies are checks, not inputs** (D-037, route one). The swarm codes local rules. It never
-   recommends "use X%" or any uptake, effect or model rate, and never turns a study's number into a value.
-2. **One owner per model.** The ADU model belongs to the "ADU statewide prediction methodology" session. The
-   swarm never edits `config/params/`, `config/reforms/` or `src/lotline/model/`; it hands `rows.csv` (and
-   any correction to existing rows, e.g. Raleigh's 2019 overlay recoded as no ADUs) to that owner.
-3. **Start from what exists.** Before step 0, the orchestrator (only) reads the ADU notes in `docs/research/`
-   (`adu-*.md`, `ordinances/`) and the decisions log in `HANDOFF.md`, and passes on only what the agents need
-   (conventions, known blockers), never coded values. Scout and coders stay blind to coded rows. Any source
-   offered for a parameter carries a citation fit for `config/params/` (title, publisher, URL, date, page).
-4. **Census GEOIDs and the existing headers.** Places are keyed by Census GEOID (place, county subdivision or
-   county); rows keep the `reforms` CSV headers exactly (`schemas.Reforms`, `docs/adding_a_state.md`, PR
-   #452). WS-SCALE's jurisdiction resolver is coming (#455, #456–#468); until it lands, `worklist` uses the
-   jurisdictions table.
-5. **Standing rules.** No `--unblind`, ever, and holdout outcomes stay unopened. No downloaded data in the
-   repo (everything under `LOTLINE_DATA_DIR`). No records requests and no emails to staff: such questions
-   close as `no_usable_source`. Logbook fragments only (`logbook.d/`). Every decision goes to Ben in chat,
-   in plain words.
+The rule agents are a service in Lotline: a user switches them on, names a state, and gets back a proposed
+rules table, a lookup list and a run report. Shared principles: `docs/build/rule-agents/PRINCIPLES.md` (read
+it; it is not repeated here). The ones every step of this command enforces:
+
+- **The output is a proposal.** `rows.csv` is a table the user reviews and imports. Agents never write the
+  app's configuration (`config/`) or model code.
+- **Rules, not rates.** Agents code what local law says. They never produce a model rate or parameter
+  ("use X%"), from a study or otherwise.
+- **Census GEOIDs and the existing headers.** Places are keyed by GEOID; rows keep the `reforms` column
+  headers exactly (`schemas.Reforms`).
+- **Never work around a refusal** (robots.txt, bot walls, logins, other user agents): it becomes a lookup.
+- **No outcome data for held-back places** (the holdouts `worklist` prints).
+- **Coders are blind to existing rows.** Only this orchestrator reads them, and only to compare afterwards.
 
 ## 0. Set up
 
@@ -105,6 +101,6 @@ process incident. With `--compare`, run
 `uv run python -m lotline.rule_agents.adu compare --state ST --rows RUN_DIR/rows.csv > RUN_DIR/compare.txt`
 and summarise matches and differences, naming the source each side cites.
 
-Tell Ben in plain words: where the files are, how many rows are ready, how many lookups wait for him (and
-how long they take), and every judgment call the agents left for him. Rows go to the ADU model's owner session, which
-puts them in `config/` after Ben accepts them; the swarm never edits `config/` itself.
+Tell the user in plain words: where the files are, how many rows are ready to review, how many lookups wait
+for them (and how long they take), and every judgment call the agents left for them. The user reviews
+`rows.csv` and imports what they accept; the agents never edit `config/` themselves.

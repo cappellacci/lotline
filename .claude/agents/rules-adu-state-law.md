@@ -40,4 +40,4 @@ No engine or model runs; edit nothing in the repo; open no permit or outcome dat
 law, say so with the searches you ran and stop. Report in ≤ 150 words: laws found, dates, coverage rule,
 blocked sources.
 
-Guardrails (`/rules-adu`, GUARDRAILS.md): code local rules only; never suggest a model rate or "use X%" from a study (D-037). Never edit `config/params/`, `config/reforms/` or `src/lotline/model/`. Key places by Census GEOID. No `--unblind`, no data in the repo, no records requests or emails to staff.
+Principles (`docs/build/rule-agents/PRINCIPLES.md`): code local rules only, never a model rate or "use X%". Never write `config/` or model code; the output is a proposal the user reviews. Key places by Census GEOID. Never work around a refusal.

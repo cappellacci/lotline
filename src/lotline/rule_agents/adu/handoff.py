@@ -5,8 +5,8 @@ where to go, what to look for, which exact cells to fill with which allowed valu
 (acceptance). Tasks are written largest place first, because lessons L-H2/L-H3 showed ranked, one-row-per-
 place return tables were the ones that got filled.
 
-Ben does not file records requests or email staff: a question only a records request or staff could answer is
-closed at once as `no_usable_source` (never queued). Filled tasks are read back as `human_primary` /
+For now (how the app should treat these is still open), a question only a records request or staff could
+answer is closed at once as `no_usable_source` (never queued). Filled tasks are read back as `human_primary` /
 `human_secondary` evidence; a filled value with no URL and quote is rejected (lesson L-H4: search-summary
 answers without links could not be used).
 """
@@ -72,7 +72,7 @@ REASONS = {
         "Decide, and say why in notes.",
     ),
 }
-# Questions no online source can answer; closed without a task (Ben, standing rule).
+# Questions no online source can answer; closed without a task (current default; still under review).
 RECORDS_REQUEST_ONLY = "records_request_only"
 
 ALLOWED = {

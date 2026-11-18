@@ -11,7 +11,7 @@ value that rests only on secondary sources on both sides is reported as `agree_s
 counts as agreement in `coder_agreement` (README convention 3; TX lesson: a check that could not read the
 source is not agreement).
 
-**Targeted second look** (`score.py`, Ben 2026-11-17): when the second coder coded only some fields, pass
+**Targeted second look** (`score.py`): when the second coder coded only some fields, pass
 those as `fields`; other fields are taken from A without a diff. Era-level diffs are always kept (an era only
 one coder found is the most useful thing a second look can turn up). A targeted place is never `agree`: it is
 `adjudicated` when the verifier ruled, else `single_coder`.

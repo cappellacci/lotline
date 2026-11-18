@@ -4,7 +4,7 @@ A place's ADU history is a list of **eras**: the first rule (or an explicit "no 
 version that changed a coded field. Each era carries the rubric fields of the `reforms` schema plus dated
 evidence. Every non-blank value cites at least one source: URL, retrieval date, verbatim quote (<= 300
 characters, the schema's `source_quote` limit; coders aim for <= 25 words) and, where the source has one, a
-section number. Blank means "not found", never "no restriction" (D-022).
+section number. Blank means "not found", never "no restriction".
 
 The checks are deterministic so the orchestrator can refuse a coding before it reaches reconciliation.
 """

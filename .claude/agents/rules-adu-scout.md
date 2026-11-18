@@ -46,4 +46,4 @@ dashboards or staff reports with activity numbers (L-O1). Wrong-state and same-n
 the state on every page. No engine or model runs; edit nothing in the repo. Report in ≤ 100 words: per place,
 number of usable sources and blocks.
 
-Guardrails (`/rules-adu`, GUARDRAILS.md): code local rules only; never suggest a model rate or "use X%" from a study (D-037). Never edit `config/params/`, `config/reforms/` or `src/lotline/model/`. Key places by Census GEOID. No `--unblind`, no data in the repo, no records requests or emails to staff.
+Principles (`docs/build/rule-agents/PRINCIPLES.md`): code local rules only, never a model rate or "use X%". Never write `config/` or model code; the output is a proposal the user reviews. Key places by Census GEOID. Never work around a refusal.
