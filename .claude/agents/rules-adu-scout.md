@@ -26,8 +26,9 @@ Read `docs/build/rule-agents/adu/CODING_RULES.md` (fetch and hard rules) and les
 5. First look in the shared document store (`uv run python -m lotline.rule_agents docs find --geoid <G>
    --category adu`); a held document needs no fetch. Fetch the rest with the fetch helper (`… adu fetch
    --state ST --run-id ID --geoid G <url>`, store first). For Wayback, ask for an exact 14-digit capture
-   (CODING_RULES, Evidence) and give the archived page its original kind (an archived code section is `code`,
-   not `mirror`). Code-host walls (Municode, American Legal, eCode360) are tried once at most; on any block,
+   (CODING_RULES, Evidence); the fetch result's `wayback_ts` is the capture actually served (a redirect can
+   land on another year), so date the copy by it and record it in `what`. Give the archived page its
+   original kind (an archived code section is `code`, not `mirror`). Code-host walls (Municode, American Legal, eCode360) are tried once at most; on any block,
    try one allowed alternative, then record it as blocked. Never retry a refused host.
 6. Do not code values. Write `RUN_DIR/sources/<geoid>.json`:
 
