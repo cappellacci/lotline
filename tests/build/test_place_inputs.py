@@ -73,3 +73,34 @@ def test_models_flag_says_who_reads_each_row(zz):
     f = place_inputs._flag_models(df)
     assert f["models"].tolist() == ["missing_middle;fees;baseline", ""]
     assert "no ACS rent" in f.loc[0, "models_note"] and "not a BPS place" in f.loc[1, "models_note"]
+
+
+def test_place_tags_match_the_adu_model_and_mark_sources(zz):
+    t = _at(place_inputs.build("ZZ", zz, years=[2025]), 2025)
+    a = adu.places_from_store("ZZ", zz, 2025).set_index("geoid")
+    assert (t.loc[a.index, "place_type"] == a["place_type"]).all()
+    assert set(t["place_type_source"]) <= {"acs_cbsa", "default_town"}
+    assert not t["is_holdout"].any()  # ZZ has no holdouts
+    assert t["parcel_sources"].isna().all() and t["permit_sources"].isna().all()  # national data only
+    assert t["hpi_geo"].notna().all()  # falls back to the state series
+
+
+def test_sources_are_sorted_and_joined():
+    juris = pd.DataFrame({"geoid": ["1", "2"]})
+    permits = pd.DataFrame({"jurisdiction_geoid": ["1", "1", "1", None], "source": ["b", "a", "b", "c"]})
+
+    class Store:
+        def read(self, state, table):
+            return None
+
+    import lotline.model.adu_types as at
+
+    real = at.jurisdiction_types
+    at.jurisdiction_types = lambda store, state: pd.Series({"1": "core"})
+    try:
+        tags = place_inputs.place_tags("MN", Store(), juris, None, permits).set_index("geoid")
+    finally:
+        at.jurisdiction_types = real
+    assert tags.loc["1", "permit_sources"] == "a;b" and pd.isna(tags.loc["2", "permit_sources"])
+    assert tags["place_type"].tolist() == ["core", "town"]
+    assert tags["place_type_source"].tolist() == ["acs_cbsa", "default_town"]
