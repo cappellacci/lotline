@@ -22,10 +22,8 @@ helper's printed summaries, not the item files.
    via `uv run python -c` with `lotline.io.DataStore().read("<st>", "jurisdictions")`. Read **only** the
    jurisdictions table (no permits, no outcomes). Write `$RUN/plan.json` with state, places (geoid, name,
    pop) and options.
-4. Start from what exists: read the fee notes in `docs/research/` (fee-levels-vs-handbook, fee-pencil-out,
-   ordinances lookups) and the fee decisions in HANDOFF's decisions log (D-034, D-065, D-066, D-069, D-073).
-   Places are keyed by Census GEOID; WS-SCALE's place resolver (#455, #456-#468) will replace step 3's lookup
-   when it lands. Shared guardrails: `docs/build/rule-agents/GUARDRAILS.md` (core PR).
+4. Principles shared by all rule agents: `docs/build/rule-agents/PRINCIPLES.md`. Places are keyed by Census
+   GEOID.
 5. Holdouts: fees are inputs, so holdout places may be coded. Do not open any outcome data for them.
 
 ## 1. Enumerate levying bodies
@@ -71,14 +69,12 @@ Write `$RUN/report.md` and show the user, in plain words and at most ~25 lines:
 - places done; rows proposed (high / medium), low rows held back, items excluded;
 - second-coder agreement (`agree / partly / differ / only_coder1 / only_coder2`);
 - human tasks by reason, with the path to `human_tasks.md`;
-- decisions for Ben from `decisions.md`, each as one plain question;
+- decisions for the user from `decisions.md`, each as one plain question;
 - with `--compare`: per place and component, run vs existing totals, and what explains each difference.
 
-Do not copy rows into `config/fees/<st>.csv`, and never touch `config/params/` or `src/lotline/model/`. Fees
-has no owner session yet: ask Ben in chat who merges. Outside studies are checks, never a source of a rate to
-recommend (D-037). No `--unblind`, no records requests, logbook fragments only. Merging is a separate, reviewed step: a dated script under
-`scripts/dev/` that reads `$RUN/rows.csv`, drops rows already coded, validates with `load_fees`, and is
-committed through a PR with a logbook fragment.
+Do not copy rows into `config/fees/<st>.csv`, and never touch `config/params/` or model code. The output is a
+proposed fees table (`$RUN/rows.csv`) the user reviews and imports; importing drops rows already coded and
+validates with `load_fees`. Outside studies are checks, never a source of a rate to recommend.
 
 ## Stop rules
 

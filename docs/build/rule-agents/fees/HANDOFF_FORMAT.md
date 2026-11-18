@@ -28,8 +28,8 @@ One task covers one **place × levying body × component** (e.g. "Fort Worth · 
 
 **Reasons** (`handoff.REASONS`): `robots_disallow`, `http_403_waf`, `login_required`, `scanned_pdf`,
 `buried_document`, `not_found`, `summariser_only`, `coders_disagree`, `verify_low`, `budget_exhausted`.
-There is deliberately **no** reason for emailing staff, phoning or filing a records request: Ben does not do
-those, so a source available only that way is closed as no usable source and listed in the run report.
+There is deliberately **no** reason for emailing staff, phoning or filing a records request: the swarm does
+not ask for those, so a source available only that way is closed as no usable source and listed in the run report.
 
 ## Answer columns
 

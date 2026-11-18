@@ -12,7 +12,7 @@ Read `docs/build/rule-agents/fees/AGENT_RULES.md` first and follow it.
 **Input:** state, run folder, the GEOIDs you cover (at most 5), `<run>/places.jsonl`.
 
 **For each (place, body, component):**
-1. Look for a local copy first: `ls $LOTLINE_DATA_DIR/manual/` and its subfolders (e.g. `nc_fees/`). Ben saved
+1. Look for a local copy first: `ls $LOTLINE_DATA_DIR/manual/` and its subfolders (e.g. `nc_fees/`). The user saved
    schedules there that scripts cannot fetch. [R7]
 2. Search (at most 6 searches per place in total) for the **adopted** document. Fees hide in different
    document kinds; try the kinds in this order for the component: [P1]
