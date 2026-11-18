@@ -4,8 +4,8 @@ The sheet (`human-lookups.csv`, plus the same tasks as a Markdown checklist) fol
 `*-mm-lookups-todo.csv` sheets Ben filled in Oct-Nov 2026, with the lessons from them built in: a direct
 start URL, a browser tip for the code host, the exact fields to fill (one column each, closed choices where
 possible), an acceptance rule, and a `result` column with three closed answers so "nothing usable" is a
-recorded outcome rather than a blank. `records_request_only` tasks are never written: Ben files no records
-requests, so those close as `no_usable_source` at once (`task_for` returns None).
+recorded outcome rather than a blank. `records_request_only` sources become optional tasks (priority 3): the
+user may file the request or mark it `no_usable_source`; agents never file one.
 """
 
 from __future__ import annotations
@@ -31,6 +31,7 @@ TASK_COLUMNS = [
     "fields_to_fill",
     "acceptance",
     "held_docs",  # documents already in the store for this place: no need to download them again
+    "optional",  # yes = only a public-records request reaches it; the user may skip it
 ]
 ANSWER_COLUMNS = [
     "result",  # found / not_found / no_usable_source
@@ -66,13 +67,14 @@ _LOOK_FOR = {
 
 
 def task_for(f: PlaceFinding, b: Blocker, n: int, *, pop: int | None = None, docs=None) -> dict | None:
-    """One lookup task for blocker `b` of finding `f` (`n` numbers tasks within the place). None for a
-    records-request-only source. Priority 1 (do first) when the blocker hides a date or cap that decides
-    whether the place has an event; 2 for context-only fields (by_right, zones)."""
-    if b.kind == "records_request_only":
-        return None
+    """One lookup task for blocker `b` of finding `f` (`n` numbers tasks within the place). Priority 1 (do
+    first) when the blocker hides a date or cap that decides whether the place has an event; 2 for
+    context-only fields (by_right, zones); 3 and `optional` for a source only a records request reaches."""
     fields = b.fields or ["unit_cap", "by_right", "adoption_date", "effective_date"]
     priority = 1 if {"unit_cap", "effective_date", "adoption_date"} & set(fields) else 2
+    optional = b.kind == "records_request_only"
+    if optional:
+        priority = 3
     tip = H.browser_tip(b.url, b.kind)
     look = b.look_for or "; ".join(_LOOK_FOR.get(x, x) for x in fields)
     cols = sorted({_FIELD_COLUMN.get(x, "notes") for x in fields} | {"result", "source_url", "quote"})
@@ -89,6 +91,7 @@ def task_for(f: PlaceFinding, b: Blocker, n: int, *, pop: int | None = None, doc
         "fields_to_fill": ";".join(cols),
         "acceptance": H.ACCEPTANCE,
         "held_docs": H.held_docs(docs, f.jurisdiction_geoid, "mm"),
+        "optional": "yes" if optional else "",
         **{c: "" for c in ANSWER_COLUMNS},
     }
 

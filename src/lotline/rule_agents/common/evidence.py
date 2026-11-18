@@ -51,7 +51,7 @@ BLOCKER_KINDS = (
     "scanned_pdf",  # a PDF with no text layer
     "not_found",  # 404 / dead link, no archive copy
     "unreachable",  # timeout, DNS failure, TLS error, connection refused (one try; not retried)
-    "records_request_only",  # only by public-records request: Ben files none, so close as no usable source
+    "records_request_only",  # public-records request only: optional task for the user; agents never file
     "ambiguous_source",  # readable, but the text does not settle the field
     "conflicting_sources",
     "budget_spent",  # the place's search/fetch/token budget ran out before the field was settled

@@ -297,14 +297,15 @@ def test_tasks_dedupe_priority_and_records_requests():
     fa = place([], [b1, b3, b4])
     fb = place([], [b2], coder="rules-mm-coder-b")
     ts = handoff.tasks([fa, fb], {"2799999": 5000})
-    assert len(ts) == 2  # municode deduped across coders; the records request is not a task
+    assert len(ts) == 3  # municode deduped across coders; the records request is an optional task, last
     first = ts[0]
     assert first["priority"] == 1 and "municode" in first["start_url"]
     assert set(first["fields_to_fill"].split(";")) >= {"effective_date", "districts", "result", "quote"}
     assert "Versions" in first["browser_tip"]
-    assert ts[1]["priority"] == 2
+    assert ts[1]["priority"] == 2 and ts[1]["optional"] == ""
+    assert ts[2]["priority"] == 3 and ts[2]["optional"] == "yes" and "records request" in ts[2]["browser_tip"]
     md = handoff.to_markdown(ts, "MN lookups")
-    assert md.count("- [ ]") == 2
+    assert md.count("- [ ]") == 3 and "optional" in md
 
 
 def test_answers_roundtrip(tmp_path):
