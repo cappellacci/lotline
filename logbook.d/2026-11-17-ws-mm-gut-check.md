@@ -1,0 +1,14 @@
+### LB-NNN · 2026-11-17 · Validation: missing-middle gut check against 2019–2025 permits
+- **Question:** Do the app's missing-middle numbers for MN, NC, OH, TX and OR pass a gut check against observed 2–4 unit permits (units, baseline vs history, reform vs history, funnel)?
+- **What I did:** Rebuilt every results bundle from main ef37f59a (`lotline results --all`, not committed), compared the missing-middle baseline and scenario with the bundles' BPS 2–4 unit history, decomposed the funnel from the draws and wrote a results page. Asked by Ben through the ADU session; report only.
+- **Inputs:** `reports/results/<st>/bundle.json` (gitignored) for five states.
+- **Outputs:** `reports/mm-gut-check/` (README, summary.json, results.html); `scripts/dev/mm_gut_check_data.py`, `scripts/dev/mm_gut_check_page.py`; page https://claude.ai/artifact/VPPb52Mxzc4yTd1Ue6yLzb.
+- **Findings:**
+  - Every state passes `historical_floor` (with reform 1.10–2.14 times the 2023–2025 pace).
+  - No-reform midpoints are 78–96% of the recent pace; the means are 89–107%.
+  - Added permits at the median about equal the recent five-year 2–4 unit output in MN and NC. That is in line with St. Paul.
+  - Uptake (θ) drives both the level and the range; the pencil-out share barely varies across draws.
+  - One unit label was wrong: the Method card asked about permits while the headline counts net homes.
+- **Decisions:** none new. Ben approved the Method card wording; the ADU session applied it in #474.
+- **AI:** Claude Code (missing-middle session) did the rebuild, the comparison, the scripts and the page. Checked by: the summary reproduces the bundle's scorecard values; per-state funnel products match `aggregate.homes_from_draws`; ruff and compliance check; page reviewed after publishing.
+- **Open / next:** none.
