@@ -19,8 +19,9 @@
 
 Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide, and the fee scenario
 over every place the baseline forecasts (D-076) twice, as D-065 labels them: `fees`, the Handbook benchmark
-($50,000 cut in half), and `fees_local_half`, real local fees cut in half. The stacked combinations
-(`model/combine.py` not yet written) are listed in `meta.scenarios_pending`, never filled with stand-ins.
+($50,000 cut in half), and `fees_local_half`, real local fees cut in half. Stacked combinations
+are not planned (Ben, 2026-11-17) and are not listed; a single scenario the engine cannot run is listed in
+`meta.scenarios_pending`, never filled with a stand-in.
 
 Factors the scenario module does not draw itself are drawn here, triangular over config/params/aggregate.yaml
 (low, value, high), from `results_seed`: `completion_factor_single_family` (ADU),
@@ -46,11 +47,25 @@ from lotline.model import aggregate, baseline, gutcheck
 from lotline.model import eligible_proxy as proxy
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
-PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard", "baseline", "observed")
+PARTS = (
+    "meta",
+    "draws",
+    "funnel",
+    "totals",
+    "need",
+    "scorecard",
+    "baseline",
+    "observed",
+    "adu_place_types",
+    "adu_baseline",
+)
 TABLE = {part: f"results_{part}" for part in PARTS}
 ENGINE_SCENARIOS = ("adu", "missing_middle", "fees", "fees_local_half")  # scenarios `build_bundle` can fill
 # D-065: the bundle's fee scenarios and the `scenarios.fees` mode behind each
 FEE_SCENARIOS = {"fees": "handbook", "fees_local_half": "local_half"}
+# Reforms are shown one at a time; stacked combinations are not planned (Ben, 2026-11-17: "I don't think we
+# need to combine"), so they are never listed as pending. They stay in the schema's list (additive only).
+SINGLE_SCENARIOS = tuple(s for s in SCENARIOS if "+" not in s and s != "combined")
 REPO = Path(__file__).resolve().parents[3]
 
 
@@ -234,6 +249,51 @@ def fee_rows(scenario: str, sim: Mapping, tier: int, rng: np.random.Generator) -
 def fee_year_shares(sim: Mapping) -> np.ndarray:
     """Each draw's fee-scenario homes by year as a share of its five-year total (draws x years)."""
     return year_shares({"added": sim["added"]})
+
+
+def adu_place_type_table(state: str, places: pd.DataFrame, run_draws: Mapping) -> pd.DataFrame:
+    """`results_adu_place_types`: the ADU scenario by place type (D-088), from `adu.run`'s draws.
+
+    Per type: places; lots = the median over draws of its eligible lots; base and added = each draw's
+    current-rules and added gross ADUs summed over the type's places, averaged over the window years, then
+    P10/P50/P90 across draws. By hand: two suburb places with 3 and 5 current-rules ADUs a year and 1 and 2
+    added, in every draw -> base 8, added 3.
+    """
+    kind = places["place_type"].fillna("suburb").to_numpy() if "place_type" in places else None
+    cur = np.asarray(run_draws["current"], dtype=float)  # draws x places x years
+    add = np.asarray(run_draws["added"], dtype=float)
+    elig = np.asarray(run_draws["eligible"], dtype=float)
+    rows = []
+    for t in ("core", "suburb", "town"):
+        on = (kind == t) if kind is not None else np.full(cur.shape[1], t == "suburb")
+        if not on.any():
+            continue
+        b = cur[:, on, :].sum(axis=1).mean(axis=1)
+        a = add[:, on, :].sum(axis=1).mean(axis=1)
+        (b10, b50, b90), (a10, a50, a90) = np.percentile(b, [10, 50, 90]), np.percentile(a, [10, 50, 90])
+        rows.append(
+            {
+                "state": state,
+                "place_type": t,
+                "places": int(on.sum()),
+                "lots": float(np.median(elig[:, on].sum(axis=1))),
+                "base_p10": b10,
+                "base": b50,
+                "base_p90": b90,
+                "added_p10": a10,
+                "added": a50,
+                "added_p90": a90,
+            }
+        )
+    return pd.DataFrame(rows, columns=["state", *_columns("adu_place_types")])
+
+
+def adu_baseline_years(state: str, run_draws: Mapping, origin: int) -> pd.DataFrame:
+    """`results_adu_baseline`: statewide current-rules gross ADUs per window year, P10/P50/P90 over draws."""
+    cur = np.asarray(run_draws["current"], dtype=float).sum(axis=1)  # draws x years
+    _, _, first = baseline.window(origin)
+    rows = [{"state": state, "period": str(first + y), **_pct(cur[:, y])} for y in range(cur.shape[1])]
+    return pd.DataFrame(rows, columns=["state", *_columns("adu_baseline")])
 
 
 def mm_year_shares(res) -> np.ndarray:
@@ -550,8 +610,8 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
     from lotline.schemas import columns
 
     doc = json.loads(Path(path).read_text())
-    raw = {"meta": pd.DataFrame([doc["meta"]])} | {
-        part: pd.DataFrame(doc[part], columns=columns(TABLE[part]) if not doc[part] else None)
+    raw = {"meta": pd.DataFrame([doc["meta"]])} | {  # parts added later read as empty in older bundles
+        part: pd.DataFrame(doc.get(part) or [], columns=columns(TABLE[part]) if not doc.get(part) else None)
         for part in PARTS
         if part != "meta"
     }
@@ -615,7 +675,8 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "overlap_flag": flag,
                 "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
-                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS),
+                "scenarios_pending": ", ".join(s for s in SINGLE_SCENARIOS if s not in ENGINE_SCENARIOS)
+                or None,
             }
         ]
     )
@@ -630,4 +691,13 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     rows = historical_floor_rows(st, places, run_draws, adu_counts, panel, d, origin, class_draws)
     scorecard = pd.DataFrame(rows, columns=_columns("scorecard")).assign(state=st)
     seen = observed_table(panel, store.read(st, "permits"), store.read(st, "jurisdictions"), st, origin)
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}
+    return {
+        "meta": meta,
+        "draws": d,
+        **parts,
+        "scorecard": scorecard,
+        "baseline": base,
+        "observed": seen,
+        "adu_place_types": adu_place_type_table(st, places, run_draws),
+        "adu_baseline": adu_baseline_years(st, run_draws, origin),
+    }

@@ -203,7 +203,7 @@ Registries move into the state yaml.
   - Move the five parcel adapters' `resolve*` onto the resolver, then the name-lookup adapters.
   - **Check:** every adapter's `jurisdiction_geoid` column is unchanged on cached raw data, row for row
     (`--offline`). Any difference is listed and explained.
-- [ ] **4. `place_inputs`, behavior-preserving.** Built, registered, schema 1.15, checked (#461, #465, and
+- [ ] **4. `place_inputs`, behavior-preserving.** Built, registered, schema 1.16, checked (#461, #465, and
       the fetch-step PR); owners' switch-over PRs still to do.
   - Build the table and a `DataStore` read cache.
   - Hand each model's owner a switch-over PR that reads it.
