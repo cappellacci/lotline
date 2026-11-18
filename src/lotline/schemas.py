@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.16"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.17"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -505,11 +505,7 @@ SCENARIOS = [
     "missing_middle",
     "fees",  # the Handbook benchmark: a $50,000 fee cut in half (D-065)
     "fees_local_half",  # real local fees cut in half (D-065)
-    "adu+missing_middle",
-    "adu+fees",
-    "missing_middle+fees",
-    "combined",  # all three, one parcel allocation (C47)
-]
+]  # each reform is run on its own; there are no combined scenarios (Ben, 2026-11-17 and 2026-11-18)
 STATE_ROLES = ["benchmark", "development", "transfer", "national_only"]
 OVERLAP_FLAGS = ["high", "medium", "low"]
 FUNNEL_STAGES = ["legal", "pencils", "built"]
@@ -836,6 +832,12 @@ HISTORY = [
         "1.16",
         "place_inputs: every shared per-place input for all three models and the baseline, one row per "
         "(state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455)",
+    ),
+    (
+        "1.17",
+        "results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, "
+        "`missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle "
+        "ever held rows for them, so no data is lost",
     ),
 ]
 

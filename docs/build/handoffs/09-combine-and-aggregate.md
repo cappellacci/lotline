@@ -1,5 +1,7 @@
 # Thread 9: Combining scenarios and statewide aggregation (WS-ENGINE-AGG)
 
+> **Superseded 2026-11-18 (Ben):** there are no combined scenarios. Each reform is run on its own; `model/combine.py` and stacked/combined runs are dropped. Items below that mention them no longer apply.
+
 **Goal:** turn per-place scenario results into the numbers a legislator sees. Combine the reforms on the same lots without double counting, add places up to counties and the state with honest ranges, convert gross permits to net new homes, and cap the result by what local demand can absorb. Build it now against a **common scenario output contract** with stub scenarios, so the real ADU (D-025), missing-middle (thread 1, D-024) and fee (thread 2) results plug in when they land.
 
 **Read first:** the shared rules in `docs/build/handoffs/README.md`; `docs/research/lotline-two-prong-design.md`; `docs/research/lotline-causal-diagram.md` §1 (the forward-model formula) and C26, C30, C47 (displacement and substitution, ADU vs missing middle on one lot); `docs/research/lotline-statistical-protocol.md` §5.10 (gross to net); `config/params/aggregate.yaml` (net-new share, formalization, displacement, completion factors, publishing minimum D-015); `docs/analysis_plan.md` D-015, D-019, D-020, D-022; `src/lotline/model/scenarios/adu.py` (`run()`, `non_overlapping()`); `src/lotline/model/baseline.py` (baseline draws); the judging methodology report's MS-04 (no demand cap), in `reports/judging/2026-10-19-0518-e31b4ed/judge-methodology.md` (local, gitignored).

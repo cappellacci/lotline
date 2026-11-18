@@ -371,6 +371,20 @@ def test_results_ranges_are_explained_in_plain_words(tmp_path):
     assert "Each band runs from P10 to P90" not in html
 
 
+def test_no_combined_scenarios(tmp_path):
+    """Ben, 2026-11-18: no combined runs. Neither the schema, the engine nor the app knows them, and a bundle
+    written before schemas 1.17 that still lists them as pending shows no "Not yet run" for them."""
+    from lotline.model import results
+    from lotline.schemas import SCENARIOS
+
+    for names in (SCENARIOS, list(build.SCENARIOS), list(results.ENGINE_SCENARIOS)):
+        assert not [s for s in names if "+" in s or s == "combined"]
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    pending = html[html.index("function pendingIn") : html.index("const drawsFor")]
+    assert "s in DATA.scenarios" in pending
+    assert "scenario-combined" not in html and "Combined (all three)" not in html
+
+
 def test_without_a_data_summary_sources_are_still_listed():
     d = build.data_section(["ZZ"], None)
     assert d["by_state"]["ZZ"]["totals"] is None and d["by_state"]["ZZ"]["sources"]

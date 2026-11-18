@@ -604,7 +604,7 @@ table.checks td:last-child { min-width: 260px; }
         <li><b>High-uptake ADU markets can be under-predicted,</b> as Portland and Bend were in the blind test.</li>
         <li><b>Not modelled:</b>
           <ul>
-            <li>two reforms combined on the same lots;</li>
+            <li>how two reforms interact on the same lot: each reform is run on its own;</li>
             <li>5–6 unit buildings, which Census permits lump with larger ones;</li>
             <li>height and floor-area limits;</li>
             <li>approval times;</li>
@@ -790,7 +790,8 @@ function scenariosIn(b) {
   return Object.keys(DATA.scenarios).filter((k) => have.has(k));
 }
 function pendingIn(b) {
-  return (b.meta.scenarios_pending || "").split(",").map((s) => s.trim()).filter((s) => s && !scenariosIn(b).includes(s));
+  // only scenarios the app knows: bundles written before schemas 1.17 also list the dropped combined runs
+  return (b.meta.scenarios_pending || "").split(",").map((s) => s.trim()).filter((s) => s in DATA.scenarios && !scenariosIn(b).includes(s));
 }
 const drawsFor = (b, s) => b.draws.filter((d) => d.scenario === s);
 const results = (b) => Object.fromEntries(scenariosIn(b).map((s) => [s, AGG.summarize(drawsFor(b, s), UI.pins)]));
@@ -1424,7 +1425,7 @@ const CONF = [
   ["C44", "Lot-split and subdivision rules", "limit", "Cannot be separated in Houston and Austin."],
   ["C45", "Developer financing", "input", "In the cost of building."],
   ["C46", "Value of the existing house (teardown economics)", "test", "A land-share term was tested; not adopted."],
-  ["C47", "ADUs and missing middle competing for the same lot", "limit", "Each reform is run alone; combining them is not built."],
+  ["C47", "ADUs and missing middle competing for the same lot", "limit", "Each reform is run on its own; they are not run together."],
   ["C48", "Builder type and profit hurdle", "input", "A profit margin in the price-to-cost test."],
   ["C49", "Height and floor-area limits that come with the reform", "limit", "Not modelled."],
   ["C50", "Fees set high because a place is growing", "design", "The fee effect comes from cost arithmetic, not from comparing places with different fees."],

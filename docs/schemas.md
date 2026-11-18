@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.16** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.17** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -353,7 +353,7 @@ Table checks: `one_row_per_key`
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `draw` | integer | yes | no | ≥ 0 |
 | `eligible_tier1` | number | yes | no | ≥ 0 |
 | `eligible_tier2` | number | yes | no | ≥ 0 |
@@ -372,7 +372,7 @@ Legal -> Pencils -> Built for each scenario: parcels for `legal` and `pencils`, 
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `stage` | text | yes | no | one of `legal`, `pencils`, `built` |
 | `unit` | text | yes | no | one of `parcels`, `homes` |
 | `p10` | number | yes | no | ≥ 0 |
@@ -386,7 +386,7 @@ The parity target: statewide P10/P50/P90 and mean per scenario, outcome and peri
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `outcome` | text | yes | no | one of `permits_added`, `homes_in_place`, `homes_net_statewide` |
 | `period` | text | yes | no | matches `^\d{4}(-\d{4})?$` |
 | `p10` | number | yes | no |  |
@@ -401,7 +401,7 @@ Share of housing need (D-057): one row per scenario and denominator kind the sta
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `denominator_kind` | text | yes | no | one of `household_growth_5y`, `shortage_stock` |
 | `label` | text | yes | no |  |
 | `denominator` | number | yes | no |  |
@@ -519,3 +519,4 @@ Table checks: `one_row_per_key`
 | 1.14 | results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook benchmark), D-065 |
 | 1.15 | results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide current-rules ADUs per window year), for the app's ADU evidence card |
 | 1.16 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |
+| 1.17 | results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle ever held rows for them, so no data is lost |
