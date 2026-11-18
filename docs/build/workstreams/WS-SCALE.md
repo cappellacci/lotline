@@ -230,11 +230,60 @@ Registries move into the state yaml.
 - [ ] **10. Borrowed parameters.** Document the rule for states with no reform history: take the uptake
       parameters from reformed states, with the D-043 transport. Check the Rules/Handbook on whether causal
       identification is expected; quote it.
-- [ ] **11. Bring-your-own-state guide.** `docs/adding_a_state.md` exists (written 2026-11-17, before this
+- [x] **11. Bring-your-own-state guide.** Short path added 2026-11-17, generated from the steps file (task 13);
+      kept current with each task. `docs/adding_a_state.md` exists (written 2026-11-17, before this
       work). Keep it current as each task lands, and add a one-page "short path" at its top: copy a template
       state file, point to your data, run one command, read the confidence flag.
 - [ ] **12. Proof.** Onboard the unseen state (WI, V8) using only a new state file, aliases and adapter, with no
       engine edits. If an engine edit is needed, the abstraction is wrong; fix the abstraction, not WI.
+- [ ] **13. Onboarding as data, for the app** (added 2026-11-17, Ben: "wire it up into the app so a user can
+      follow the step by step instructions either by themselves, through built in functions to grab data, or to
+      launch agent swarms"). Steps file, function interface and `lotline onboard` built; app UI not started (see
+      § Task 13 design).
+
+## Task 13 design: onboarding steps as data
+
+**One source.** `config/onboarding/steps.yaml` lists the steps of `docs/adding_a_state.md`, in order. Each step
+has:
+- `id`, a plain-language `title`, `time`;
+- `level`: the data level it belongs to (section 2 of the guide), or null for every level;
+- `inputs`, `outputs`;
+- `modes`: any of `manual`, `built_in`, `agent`;
+- `commands` (built-in steps; `XX` is replaced by the state code);
+- `check`: a named function that says whether the step is done;
+- `done_when`: the same in plain words;
+- `agent`: the brief, its owner and a note (agent steps).
+
+**The guide renders from it.** `tests/core/test_onboarding.py` fails if:
+- a guide step heading does not start with the step's title, in order;
+- the guide's two generated blocks (the short path at the top, the step table in section 5) differ from
+  `uv run python -m lotline.onboarding`.
+
+The guide's prose stays hand-written; titles, order, short path, times and checks cannot drift.
+
+**Three modes per step.**
+- *Manual:* the guide section with the same number.
+- *Built-in:* the app runs `onboarding.commands(step, state)` (lotline fetch for national sources,
+  validate, results, provenance). Nothing in `onboarding` runs a command itself, so the app decides how
+  to run and show it.
+- *Agent:* `step.agent.brief` points to a brief. Rule coding (`rules`, reforms CSV) and fee coding
+  (`fees`, fees CSV) are the swarm steps, owned by the "Local rules agent swarm design" session.
+  - Their briefs are not written yet. `rules` points to the Ohio lookup brief as the nearest example
+    meanwhile.
+  - Adapter steps (`parcels`, `permits`) are marked agent-capable with no brief.
+
+**Function interface for the app** (`src/lotline/onboarding.py`):
+- `steps()`: the validated steps;
+- `commands(step, state)`: argument lists;
+- `check(step, state, store)`: a `Status(done, detail)`. It looks at config files and which processed tables
+  exist. It downloads nothing and reads no holdout outcomes;
+- `plan(state, store)`: the whole checklist for one state as JSON-ready dicts;
+- `config_problems(state)`: what is wrong with a state file;
+- `lotline onboard --state XX [--json]`: the same plan on the command line.
+
+**Stops here.** The app UI belongs to the "UI/UX Workflow" session; it reads `plan()` (or
+`lotline onboard --json`). Running commands from the app, and launching agents from a step, are that
+session's and the swarm session's to build.
 
 ## Not in scope
 - The ADU/Missing-Middle substitution model stays as is (reviewer: not worth the complexity for scoring).

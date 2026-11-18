@@ -14,6 +14,39 @@ case (file names use lower case).
 
 ---
 
+## The short path (one page)
+
+For a first result with national data only (level 0 in section 2), with no local data and no code:
+
+<!-- short-path:begin (generated from config/onboarding/steps.yaml) -->
+1. **Write the state config** (step 2, 15 minutes).
+2. **Check the state file** (step 3, 1 minute).
+   ```bash
+   uv run lotline onboard --state XX
+   ```
+3. **Fetch the national data** (step 6, about an hour, mostly waiting).
+   ```bash
+   uv run lotline fetch --state XX
+   uv run lotline validate --state XX
+   ```
+4. **Run the models for the first time** (step 7, a few minutes).
+   ```bash
+   uv run lotline results --state XX
+   uv run python scripts/dev/fee_dev_run.py --state XX --statewide --out reports/xx/fees-statewide.csv
+   ```
+5. **Read the results before you show them** (step 11, an hour).
+<!-- short-path:end -->
+
+Step 2 means: copy `config/states/oh.yaml` to `config/states/xx.yaml` and change the state code, name, FIPS
+code, Census region and ZIP prefixes (section 5, step 2). Then read the confidence flag in the bundle:
+`meta.data_tier`, `meta.overlap_flag` and `meta.caveats` (step 11). With national data only, the ADU ranges are
+wide and the bundle says "National data only"; the levels in section 2 say what each kind of local data adds.
+
+`uv run lotline onboard --state XX` prints this checklist for your state, marks what is already done, and
+shows the next commands. `--json` gives the same plan to the app.
+
+---
+
 ## 1. What you will end up with
 
 - `config/states/xx.yaml`: the state's settings.
@@ -103,6 +136,29 @@ tables too. Run
 
 ## 5. The steps
 
+Every step at a glance. **Ways to do it:** *manual* is this guide; *built-in* means `lotline onboard` and the
+app show the commands to run; *agent* means a coding agent can do it from a brief. **Done when** names the check
+`lotline onboard` runs.
+
+<!-- steps-table:begin (generated from config/onboarding/steps.yaml) -->
+| Step | Level | Time | Ways to do it | Done when |
+|---|---|---|---|---|
+| 1. Look at what the state publishes | 0 national | about half a day | manual, agent | docs/build/xx-assessment.md exists |
+| 2. Write the state config | 0 national | 15 minutes | manual | config/states/xx.yaml loads |
+| 3. Check the state file | 0 national | 1 minute | manual, built-in | the state file agrees with the repository |
+| 4. Code the state's ADU and middle-housing rules | 1 rules | 1 to 3 days for 20 places | manual, agent | config/reforms/xx.csv exists |
+| 5. Code fees for at least 5 places | 1 rules | 1 to 2 days | manual, agent | config/fees/xx.csv covers at least 5 places |
+| 6. Fetch the national data | 0 national | about an hour, mostly waiting | manual, built-in | the six national tables are built |
+| 7. Run the models for the first time | 0 national | a few minutes | manual, built-in | reports/results/xx/bundle.json exists |
+| 8. Add local parcels | 3 parcels | 1 to 3 days per source | manual, agent | a parcels table is built |
+| 9. Add local permits | 2 permits | 1 to 2 days per source | manual, agent | a permits table is built |
+| 10. Rebuild the derived tables | 2 permits | about 10 minutes | manual, built-in | every GEOID in your data is a jurisdiction |
+| 11. Read the results before you show them | any | an hour | manual | you have read the confidence flags (a person decides) |
+| 12. Write it up | any | half a day | manual, built-in | docs/build/xx-readiness.md exists |
+| 13. Run the checks and open the pull request | any | 15 minutes | manual, built-in | tests and compliance_check.py pass (a person decides) |
+| 14. Pool the state into the calibration (optional; Ben's call) | any | a method decision | manual | Ben approves an analysis_plan.md entry (a person decides) |
+<!-- steps-table:end -->
+
 ### Step 1. Look at what the state publishes (about half a day)
 
 Fill in a short assessment before writing any code. `docs/build/or-assessment.md` is the model. Answer:
@@ -151,9 +207,19 @@ Optional keys, added later when they apply:
 
 Saving this file registers the state everywhere the code calls `all_states()`, including the app.
 
-### Step 3. Clear the known blockers
+### Step 3. Check the state file (1 minute)
 
-Nothing to do: the blockers are cleared (section 3). Skip to step 4.
+```bash
+uv run lotline onboard --state XX
+```
+
+Step 3 of its list checks the state file against the rest of the repository:
+- every GEOID in it belongs to the state;
+- the files it names exist;
+- `parcel_sources` names real sources.
+
+The same checks run in `tests/config/test_state_schema.py`. The blockers that used to sit here are cleared
+(section 3).
 
 ### Step 4. Code the state's ADU and middle-housing rules (1 to 3 days for 20 places)
 
@@ -314,7 +380,7 @@ uv run lotline fetch --source jurisdictions
 With no `--state`, this builds the other states' jurisdiction tables too, if your data directory lacks them
 (section 3).
 
-### Step 7. Run the models for the first time
+### Step 7. Run the models for the first time (a few minutes)
 
 ```bash
 uv run lotline results --state XX
