@@ -143,15 +143,15 @@ app show the commands to run; *agent* means a coding agent can do it from a brie
 <!-- steps-table:begin (generated from config/onboarding/steps.yaml) -->
 | Step | Level | Time | Ways to do it | Done when |
 |---|---|---|---|---|
-| 1. Look at what the state publishes | 0 national | about half a day | manual, agent | docs/build/xx-assessment.md exists |
+| 1. Look at what the state publishes | 0 national | about half a day | manual | docs/build/xx-assessment.md exists |
 | 2. Write the state config | 0 national | 15 minutes | manual | config/states/xx.yaml loads |
 | 3. Check the state file | 0 national | 1 minute | manual, built-in | the state file agrees with the repository |
-| 4. Code the state's ADU and middle-housing rules | 1 rules | 1 to 3 days for 20 places | manual, agent | config/reforms/xx.csv exists |
+| 4. Code the state's ADU and middle-housing rules | 1 rules | 1 to 3 days for 20 places | manual, agent | config/reforms/xx.csv loads and passes the reforms schema |
 | 5. Code fees for at least 5 places | 1 rules | 1 to 2 days | manual, agent | config/fees/xx.csv covers at least 5 places |
 | 6. Fetch the national data | 0 national | about an hour, mostly waiting | manual, built-in | the six national tables are built |
 | 7. Run the models for the first time | 0 national | a few minutes | manual, built-in | reports/results/xx/bundle.json exists |
-| 8. Add local parcels | 3 parcels | 1 to 3 days per source | manual, agent | a parcels table is built |
-| 9. Add local permits | 2 permits | 1 to 2 days per source | manual, agent | a permits table is built |
+| 8. Add local parcels | 3 parcels | 1 to 3 days per source | manual | a parcels table is built |
+| 9. Add local permits | 2 permits | 1 to 2 days per source | manual | a permits table is built |
 | 10. Rebuild the derived tables | 2 permits | about 10 minutes | manual, built-in | every GEOID in your data is a jurisdiction |
 | 11. Read the results before you show them | any | an hour | manual | you have read the confidence flags (a person decides) |
 | 12. Write it up | any | half a day | manual, built-in | docs/build/xx-readiness.md exists |

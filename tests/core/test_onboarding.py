@@ -41,12 +41,26 @@ def test_commands_fill_in_the_state():
     assert onboarding.commands("rules", "WI") == []  # manual or agent only
 
 
-def test_agent_steps_name_an_owner_or_say_why_not():
-    for s in onboarding.steps():
-        if "agent" in s.modes:
-            assert s.agent.note
-            if s.agent.brief:
-                assert (onboarding.REPO / s.agent.brief).is_file(), s.agent.brief
+def test_agent_steps_are_review_and_import():
+    agent = [s for s in onboarding.steps() if "agent" in s.modes]
+    assert {s.id for s in agent} == {"rules", "fees"}  # the rule agents propose reforms and fees tables only
+    for s in agent:
+        assert "manual" in s.modes and s.check  # same check as the manual path
+        act = onboarding.import_action(s, "WI")
+        assert act["import_to"] == f"config/{act['proposes']}/wi.csv"
+    assert onboarding.import_action("national_data", "WI") is None
+
+
+def test_imported_reforms_must_pass_the_schema(monkeypatch, tmp_path):
+    (tmp_path / "reforms").mkdir()
+    (tmp_path / "reforms" / "mn.csv").write_text("reform_id,state\nbad,MN\n")
+    monkeypatch.setattr(onboarding, "CONFIG_DIR", tmp_path)
+    from lotline.model.scenarios import adu
+
+    real = adu.load_reforms
+    monkeypatch.setattr(adu, "load_reforms", lambda st, config_dir=None: real(st, tmp_path))
+    st = onboarding.check("rules", "MN")
+    assert st.done is False and "reforms schema" in st.detail
 
 
 @pytest.mark.parametrize("state", all_states())
@@ -79,7 +93,8 @@ def test_plan_is_json_for_the_app(tmp_path):
     plan = onboarding.plan("MN", DataStore(tmp_path))
     assert [p["n"] for p in plan] == list(range(1, 15))
     assert json.loads(json.dumps(plan))[1]["done"] is True  # MN's state file loads
-    assert {"id", "title", "modes", "commands", "agent", "done", "detail", "done_when"} <= set(plan[0])
+    keys = {"id", "title", "modes", "commands", "agent", "import", "done", "detail", "done_when"}
+    assert keys <= set(plan[0])
 
 
 def test_bad_steps_are_rejected(tmp_path):
