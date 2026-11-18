@@ -183,7 +183,7 @@ Registries move into the state yaml.
 - **One missing-value rule per column**, written in the schema and the guide.
 
 ## Tasks
-- [ ] **0. Blockers (do first).** The three in § Audit D. The `REFORM_STATES` fix is a method choice: put it to
+- [x] **0. Blockers (do first).** Done 2026-11-17: "borrow only" (Ben). The three in § Audit D. The `REFORM_STATES` fix is a method choice: put it to
       Ben in plain words (memory: raise decisions in chat). A state listed there feeds the rule priors that every
       other state's uncoded places borrow.
 - [ ] **1. Audit, finish.** Every place the code branches on a state, or a file in `adapters/` does more than

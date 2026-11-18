@@ -57,35 +57,28 @@ The fee scenario has none either. Treat level 1 as the minimum for all three mod
 
 ---
 
-## 3. Known blockers (as of `770c8d07`)
+## 3. Known blockers (cleared by WS-SCALE task 0, 2026-11-17)
 
-The README says a new state needs no change to model code. That is not yet true. Three things stop
-`lotline results` from running for a new state. Fix them before step 7. They are task 0 of WS-SCALE
-(`docs/build/workstreams/WS-SCALE.md`), which also plans one geography table and one input table for all three
-models; this guide changes as that work lands.
+Three things used to stop `lotline results` for a new state. They are fixed; this section says what changed so
+you know what the code now does for you. Tested in `tests/model/test_new_state_runs.py`, which builds a full
+bundle for a synthetic national-data-only state with no permits and no reforms file.
 
-1. **The state must be listed in `REFORM_STATES`.** `src/lotline/model/scenarios/adu.py:1308` reads
-   `REFORM_STATES = ("MN", "NC", "OH", "TX", "OR")`. The ADU code (`rule_inputs`) and the missing-middle code
-   (`scenarios/mm.py`, `places_from_store`) look the state up in a dictionary built from this list, and stop
-   with a `KeyError` if it is missing.
-   - **Fix:** add `"XX"` to the tuple.
-   - **Side effect, tell Ben:** every state in this list feeds the rule priors that uncoded places in *other*
-     states borrow. Adding a state with coded rules shifts those priors a little for every state. It does not
-     refit anything.
-   - Listing the state also means `config/reforms/xx.csv` must exist (step 4). A file with only the header row
-     is enough to run.
-2. **A state with no permit table crashes.** `observed_adu_counts` (`scenarios/adu.py`, called at about line
-   1509) and `results.build_bundle` (`src/lotline/model/results.py`, about line 571) pass
-   `store.read(state, "permits")` on without checking it. `store.read` returns nothing when no permit adapter
-   has run, so a national-only state stops there.
-   - **Fix (code):** treat a missing permit table as an empty one in both places. This needs a small change
-     with a test.
-   - **Until then:** a state needs at least one permit adapter (step 9).
-3. **A test pins the list of states.** `tests/core/test_config.py:8` asserts
-   `all_states() == ["MN", "NC", "OH", "OR", "TX"]`. Add `"XX"` in alphabetical order.
+1. **You no longer add the state to `REFORM_STATES`.** A state not in that list (`scenarios/adu.py`) is added
+   to the run on the fly (`adu.reforms_with`). It **borrows** the listed states' rule priors, field
+   probabilities and blank shares, and **feeds nothing back**, so no other state's results move ("borrow
+   only", Ben 2026-11-17).
+   - `config/reforms/xx.csv` is optional: without it the state has no coded rules, and every place takes the
+     borrowed priors. With it, its rules apply to its own places.
+   - Putting a state *into* `REFORM_STATES` is now part of pooling it into the calibration (step 14), a
+     method decision, because then its coded rules shift every state's priors.
+2. **A state with no permit table runs.** `adu.observed_adu_counts` treats a missing permit table as empty: no
+   observed ADU floor, and no `adu_permits` rows in the bundle's `observed` part.
+3. **No test pins the list of states.** `tests/core/test_config.py` checks that the five states are present,
+   not that they are the only ones.
 
 Also needed, but not a code change: `rule_inputs` reads the built `jurisdictions` table of **every** state in
-`REFORM_STATES`. Your data directory must hold the other five states' tables too. Run
+`REFORM_STATES`, since those feed the priors your state borrows. Your data directory must hold those states'
+tables too. Run
 `uv run lotline fetch --source jurisdictions` once with no `--state` to build them all.
 
 ---
@@ -154,7 +147,7 @@ Saving this file registers the state everywhere the code calls `all_states()`, i
 
 ### Step 3. Clear the known blockers
 
-Make the changes in section 3 (or confirm WS-ENGINE has made them).
+Nothing to do: the blockers are cleared (section 3). Skip to step 4.
 
 ### Step 4. Code the state's ADU and middle-housing rules (1 to 3 days for 20 places)
 
@@ -326,8 +319,8 @@ uv run python scripts/dev/fee_dev_run.py --state XX --statewide --out reports/xx
   prints five-year totals (P10, P50, P90 and the mean of added homes) for each size class, and `--out` writes
   them to the CSV.
 
-If the results run stops with a `KeyError` or `'NoneType' object has no attribute 'loc'`, a section 3 blocker is
-still in place.
+If the results run stops with a `KeyError` naming another state, that state's `jurisdictions` table is missing
+from your data directory (see the note at the end of section 3).
 
 ### Step 8. Add local parcels (optional, level 3; 1 to 3 days per source)
 
@@ -474,6 +467,8 @@ state might later be a blind test, freeze its prediction first.
      `adu_state_effect_fitted__XX`).
   
   A place-year enters only with a coded rule in force and a source that flags ADUs.
+- **Shared rule priors:** add the state to `REFORM_STATES` (`scenarios/adu.py`), so its coded rules feed the
+  priors other states borrow. Record the before/after bundles.
 - **Missing middle:**
   1. Add the state to `STATES` in `scripts/dev/calibrate_mm_d092.py`.
   2. Rerun it and `scripts/dev/mm_tests_d092.py` (marked "only with Ben's go-ahead").
@@ -489,9 +484,8 @@ state might later be a blind test, freeze its prediction first.
 
 | | Input | Where from |
 |---|---|---|
-| **Required** | State config; listed in `REFORM_STATES`; `config/reforms/xx.csv` (may be header only) | steps 2–4 |
+| **Required** | State config | step 2 |
 | | `jurisdictions`, `eligible_parcels` (theme `adu`), `acs_geo_year` (rent B25064, value B25077, homes by type B25024), `market_geo_year` (CPI) | step 6 |
-| | A `permits` table (blocker 2) | step 9 |
 | **Used if present** | Coded local ADU rules: each place's rule type and how long it has been in force | step 4 |
 | | Parcels: real eligible-lot counts; measured coverage of zone-limited rules | step 8 |
 | | Permits that flag ADUs: the place's own recent rate becomes its no-reform rate, with drift (D-091, D-093) | step 9 |
@@ -510,8 +504,7 @@ OR). It reads no permits.
 
 | | Input | Where from |
 |---|---|---|
-| **Required** | Listed in `REFORM_STATES`; `config/reforms/xx.csv` | steps 3–4 |
-| | `jurisdictions`, `eligible_parcels` (theme `missing_middle`), `acs_geo_year` (rent, value, households), `market_geo_year` (CPI, construction-input prices, mortgage rate) | step 6 |
+| **Required** | `jurisdictions`, `eligible_parcels` (theme `missing_middle`), `acs_geo_year` (rent, value, households), `market_geo_year` (CPI, construction-input prices, mortgage rate) | step 6 |
 | **Used if present** | Middle-housing rule rows: the dose per place | step 4 |
 | | Parcels: share of eligible lots with a house on them, zone coverage, single-family-only zoning | step 8 |
 | **Fallback** | No rule row: dose drawn from coded places in the same size band (≥ 5), else the state. **If nothing in the state is coded, dose is 0 (the full Handbook gap)** | `mm.yaml` |
@@ -537,8 +530,7 @@ OR). It reads no permits.
 
 | Where | What it is | Change it when |
 |---|---|---|
-| `src/lotline/model/scenarios/adu.py:1308` `REFORM_STATES` | States whose rules feed shared priors | **Always** (blocker 1) |
-| `tests/core/test_config.py:8` | Expected state list | **Always** (blocker 3) |
+| `src/lotline/model/scenarios/adu.py` `REFORM_STATES` | States whose rules feed shared priors | Only when pooling (step 14) |
 | `tests/core/test_ordinance_records.py` ≈ 208 | States whose fee CSVs are validated | When you add a fee file |
 | `src/lotline/model/estimate_mm.py:47` `STATES` | D-024 missing-middle panel | Only when refitting |
 | `scripts/dev/calibrate_adu.py` ≈ 300–311, 537 | ADU fit set | Only when pooling (step 14) |
