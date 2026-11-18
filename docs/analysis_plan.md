@@ -7639,3 +7639,31 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Code:** `geoparts.main_county`, `jurisdictions.build(main_counties=...)`, `panels.build` (county from
   `jurisdictions`), `place_inputs` (the panel's county). Tests: `test_geoparts`, `test_jurisdictions`,
   `test_panels`.
+
+### D-102 · 2026-11-17 · County remainders get their 2020 population (WS-SCALE task 5, rule 6; approved by Ben)
+- **Why:** a county's unincorporated remainder had no `pop_2020`, so every model read it as 0 and put it in the
+  smallest size band (`fillna(0)`). Size band picks the pool an uncoded place borrows its ADU rule prior and its
+  missing-middle dose from.
+- **Rule (Ben, 2026-11-17, "all as recommended"):** a remainder's population is the county's 2020 population
+  minus the jurisdictions listed inside it.
+  - Every BPS-universe place in the county is subtracted, a place spanning counties by its 2020
+    housing-unit share there.
+  - Every BPS-universe township is subtracted too, net of the places inside it. Ben's wording names
+    incorporated places; in township states (MN, OH) a listed township is outside the remainder too, so it
+    is subtracted as well.
+  - This is the same subtraction as the remainder's eligible homes (`eligible.allocate_homes`), so its
+    population and homes describe the same area.
+- **Check:** NC's remainders plus its listed jurisdictions add up to the state's 2020 population exactly
+  (10,439,387 of 10,439,388). Two Ohio remainders come out at or just below 0 and are held at 0:
+  - Shelby, whose listed townships hold the whole county;
+  - Lorain's county part.
+- **Effect (same seed, 1,000 draws, origin 2025; five-year statewide medians, against D-101):**
+  - Oregon missing middle: 167 → 100 (−40%); range 25-1,044 → 15-578;
+  - NC ADU: 131 → 121 (−8%); NC missing middle: 2,047 → 1,993 (−3%);
+  - OH ADU: 183 → 175 (−4%); MN ADU: −0.3%;
+  - unchanged: TX, every fee scenario and every baseline.
+- **Open question for Ben (no change made):** a remainder now borrows the rule prior of the size band its
+  population puts it in, and the mid and large bands are pooled from *cities'* ordinances. Unincorporated
+  county land is zoned by the county, not a city. Should remainders borrow from coded county remainders
+  only, or keep the band rule? Oregon's −40% comes from this choice.
+- **Code:** `jurisdictions.remainder_population` (hand-worked test), `jurisdictions.load`.

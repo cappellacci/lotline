@@ -148,3 +148,34 @@ def test_parcel_tiers_and_place_counties_reach_the_right_columns():
         "MN", bps_table, census, place_counties={"2743000": "27053"}, parcel_tiers={"2743000": 1}
     ).set_index("geoid")
     assert df.loc["2743000", "data_tier"] == 1
+
+
+def test_remainder_population_is_the_county_minus_what_is_listed_inside_it():
+    """Task 5 rule 6, the docstring's hand-worked example. County 39001 has 100,000 people. Place A
+    (30,000) is wholly in it; place B (20,000) has 25% of its homes in it; township T (10,000) holds
+    dependent place C (4,000). Remainder: 100,000 - 30,000 - 5,000 - (10,000 - 4,000) - 4,000 = 55,000.
+    A local-only place D (not in BPS) stays in the remainder, as its permits do."""
+    juris = pd.DataFrame(
+        {
+            "geoid": ["39001", "3900001", "3900002", "3900003", "3900004", "3900199999"],
+            "kind": ["county_unincorporated", "place", "place", "place", "place", "township"],
+            "in_bps": [True, True, True, True, False, True],
+        }
+    )
+    census = pd.DataFrame(
+        {
+            "geoid": ["39001", "3900001", "3900002", "3900003", "3900004", "3900199999"],
+            "level": ["county", "place", "place", "place", "place", "cousub"],
+            "pop_2020": [100_000, 30_000, 20_000, 4_000, 2_000, 10_000],
+        }
+    )
+    c_shares = pd.DataFrame(
+        {
+            "place_geoid": ["3900001", "3900002", "3900002", "3900003", "3900004"],
+            "county_geoid": ["39001", "39001", "39003", "39001", "39001"],
+            "share": [1.0, 0.25, 0.75, 1.0, 1.0],
+        }
+    )
+    t_shares = pd.DataFrame({"place_geoid": ["3900003"], "township_geoid": ["3900199999"], "share": [1.0]})
+    got = jurisdictions.remainder_population(juris, census, c_shares, t_shares)
+    assert got.to_dict() == {"39001": 55_000}
