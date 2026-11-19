@@ -41,9 +41,13 @@ def worklist(
 
 def blind_holdouts(state: str) -> list[dict]:
     """Holdouts of the state still blind (the project's registry, lotline.validation.holdout)."""
+    try:
+        hs = holdout.holdouts_for(state)
+    except FileNotFoundError:  # a state with no settings file has no holdouts (South Burlington VT)
+        return []
     return [
         {"test_id": h.test_id, "geoid": h.geoid, "place": h.place, "outcome_from": str(h.outcome_from)}
-        for h in holdout.still_blind(holdout.holdouts_for(state))
+        for h in holdout.still_blind(hs)
     ]
 
 

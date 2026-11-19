@@ -1,6 +1,7 @@
 # ruff: noqa: E501  (hand-worked examples)
 """Items -> schema-valid fee rows; reconciliation; human tasks; comparison (synthetic places only)."""
 
+import json
 from datetime import date
 
 import pandas as pd
@@ -359,3 +360,47 @@ def test_reconcile_second_pass_pairs_relabelled_fees(make_item):
     }
     # building type label only -> verified; a component difference -> left for the reconciler
     assert merged == {"s-SFD": reconcile.VERIFIER, "s-U2": reconcile.VERIFIER, "cp": None}
+
+
+def test_a_run_with_no_items_still_reconciles_builds_and_previews(tmp_path, monkeypatch):
+    """Burlington VT proof of concept: no place had items -> reconcile crashed on the missing coder-2 file,
+    and rows.csv had no header, so `import` refused it instead of reporting 0 rows."""
+    from lotline.rule_agents.common import importer
+    from lotline.rule_agents.fees import cli
+
+    (tmp_path / "items.coder1.jsonl").write_text("")
+    cli.main(
+        [
+            "reconcile",
+            str(tmp_path / "items.coder1.jsonl"),
+            str(tmp_path / "nope.jsonl"),
+            "--out",
+            str(tmp_path),
+        ]
+    )
+    cli.main(["build", str(tmp_path / "items.merged.jsonl"), "--out", str(tmp_path)])
+    header = (tmp_path / "rows.csv").read_text().splitlines()[0]
+    assert "jurisdiction_geoid" in header
+    p = importer.plan(tmp_path / "rows.csv", "fees", "VT", tmp_path / "config")
+    assert (len(p.added), len(p.changed)) == (0, 0)
+
+
+def test_tasks_copied_from_scout_to_reader_are_listed_once(tmp_path, monkeypatch):
+    from lotline.rule_agents.fees import cli
+
+    monkeypatch.setenv("LOTLINE_DATA_DIR", str(tmp_path / "data"))
+    (tmp_path / "data").mkdir()
+    t = _task(reason="not_found")
+    (tmp_path / "tasks.scout.jsonl").write_text(json.dumps(t) + "\n")
+    copy = {**t, "start_url": t["start_url"].replace("www.", "")}  # the same page, written another way
+    (tmp_path / "tasks.reader.jsonl").write_text(json.dumps(copy) + "\n")
+    cli.main(
+        [
+            "tasks",
+            str(tmp_path / "tasks.scout.jsonl"),
+            str(tmp_path / "tasks.reader.jsonl"),
+            "--out",
+            str(tmp_path),
+        ]
+    )
+    assert len(handoff.read_csv(tmp_path / "human_tasks.csv")) == 1

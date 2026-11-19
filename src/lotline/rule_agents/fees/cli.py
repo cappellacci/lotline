@@ -24,6 +24,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.rule_agents.common.handoff import url_key
 from lotline.rule_agents.fees import build, compare, handoff, reconcile
 from lotline.rule_agents.fees.prototype import prototypes
 from lotline.rule_agents.fees.records import read_items, read_jsonl, write_items
@@ -108,8 +109,14 @@ def _resolve(local_path: str) -> Path:
     return data_dir() / p
 
 
+def _items_or_none(path: Path) -> list:
+    """Items from a file, or none when the file does not exist (a run where no place had items, or no second
+    coder): the Burlington VT proof of concept stopped here with FileNotFoundError."""
+    return read_items(path) if Path(path).exists() else []
+
+
 def cmd_reconcile(a: argparse.Namespace) -> None:
-    c1, c2 = read_items(a.coder1), read_items(a.coder2)
+    c1, c2 = _items_or_none(a.coder1), _items_or_none(a.coder2)
     pairs = reconcile.pair(c1, c2)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -126,7 +133,12 @@ def cmd_build(a: argparse.Namespace) -> None:
     if not res.rows.empty:
         build.validate(res.rows)
         ok = "passed"
-    res.rows.to_csv(out / "rows.csv", index=False, date_format="%Y-%m-%d")
+    rows = res.rows
+    if rows.empty and not len(rows.columns):  # keep the header, so `import` reports 0 rows, not an error
+        from lotline.schemas import columns
+
+        rows = rows.reindex(columns=list(columns("fees")))
+    rows.to_csv(out / "rows.csv", index=False, date_format="%Y-%m-%d")
     res.low_rows.to_csv(out / "rows_low.csv", index=False, date_format="%Y-%m-%d")
     lines = (
         [
@@ -153,10 +165,17 @@ def cmd_tasks(a: argparse.Namespace) -> None:
     raw = [t for f in a.files for t in read_jsonl(Path(f))]
     count: dict[str, int] = {}
     tasks = []
+    seen: set[tuple] = set()
     for t in raw:
         t.pop("task_id", None)
         # agents sometimes write lists; the task format holds plain text
         t = {k: (" ".join(map(str, v)) if isinstance(v, list) else v) for k, v in t.items()}
+        # the reader copies the scout's open tasks: one task per place, body, component and page
+        url = url_key(t.get("start_url", ""))
+        key = (t.get("place_geoid"), t.get("levying_body"), t.get("component"), url)
+        if key in seen:
+            continue
+        seen.add(key)
         count[t["place_geoid"]] = count.get(t["place_geoid"], 0) + 1
         tasks.append(handoff.make_task(count[t["place_geoid"]], docs=docs, **t))
     out = Path(a.out)

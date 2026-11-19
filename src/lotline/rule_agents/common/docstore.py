@@ -64,6 +64,23 @@ DOC_TYPES = (
 TEXT_STATUS = ("text", "scanned", "image_read", "none")
 _LIST_FIELDS = ("urls", "jurisdictions", "states", "categories", "notes")
 _EXT_OK = (".pdf", ".htm", ".html", ".txt", ".json", ".xml", ".csv", ".xlsx", ".docx")
+
+
+def sniff_ext(file: Path) -> str:
+    """The document's real type, from its first bytes before its name: a PDF is a PDF even when the link
+    had no `.pdf` (CivicPlus `DocumentCenter/View/123/Name` links were stored as .html and read as raw PDF
+    bytes in the South Burlington VT proof of concept, 2026-11-19). Otherwise the file's own extension when
+    known, else .html."""
+    with open(file, "rb") as fh:
+        head = fh.read(1024)
+    if head.lstrip()[:5] == b"%PDF-":
+        return ".pdf"
+    suf = Path(file).suffix.lower()
+    if suf == ".pdf":  # named .pdf but not one (an error page saved under a PDF name)
+        return ".html"
+    return suf if suf in _EXT_OK else ".html"
+
+
 SCAN_CHARS_PER_PAGE = 200  # fewer text-layer characters per page than this = a scan (MM access.classify)
 
 
@@ -280,7 +297,7 @@ class DocStore:
 
         file = Path(file)
         did = sha256_file(file)
-        ext = file.suffix.lower() if file.suffix.lower() in _EXT_OK else ".html"
+        ext = sniff_ext(file)
         blob = self.blob(did, ext)
         known = self.records(include_withdrawn=True)
         if not blob.exists():

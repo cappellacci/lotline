@@ -33,7 +33,8 @@ Read `docs/build/rule-agents/fees/AGENT_RULES.md` first and follow it. Fields of
    `verbatim` (HTML, text and PDF); re-copy any quote it reports as not found (one contiguous run of text,
    labels in `page_or_section`), or keep `image_read` for a scanned page.
 5. For every expected (body, component) in places.jsonl that has no item and no task yet, write a task
-   (`not_found`, `buried_document` or `budget_spent`). Record your fetches and searches with `ledger add`.
+   (`not_found`, `buried_document` or `budget_spent`). Record your fetches and searches with
+   `uv run python -m lotline.rule_agents ledger add <run> <geoid> rules-fees-reader --fetches N --searches N`.
 
 **Outputs:** `<run>/items.coder1.<geoid>.jsonl`, `<run>/tasks.reader.<geoid>.jsonl`.
 

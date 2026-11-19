@@ -35,7 +35,7 @@ Open Claude Code in the repository folder and type one of:
 
 Useful options: `--limit 10` (largest 10 places first, a good first run), `--only <GEOID> ...`,
 `--budget 250000` (tokens per place, all agents together; this is the default, and a well-documented place
-needs most of it), `--jurisdictions places.csv` (a state the app has no places table for: a CSV with
+needs most of it; each agent gets a fixed share of it, so the second coder's check is never squeezed out), `--jurisdictions places.csv` (a state the app has no places table for: a CSV with
 `geoid,name,pop_2020`, Census GEOIDs).
 
 The agents work place by place:

@@ -60,8 +60,12 @@ def url_key(url: str) -> str:
 
 
 def browser_tip(url: str, kind: str) -> str:
+    """What to do in a browser; for a dead link, the exact archived address to open."""
     host = host_label(url)
-    return host[1] if host else BLOCKER_TIPS.get(kind, "Open in a browser.")
+    tip = host[1] if host else BLOCKER_TIPS.get(kind, "Open in a browser.")
+    if kind == "not_found" and url.startswith("http") and "web.archive.org" not in url:
+        tip += f" Archived copies: https://web.archive.org/web/*/{url}"
+    return tip
 
 
 def held_docs(

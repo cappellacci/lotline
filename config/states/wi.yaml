@@ -1,0 +1,24 @@
+# Wisconsin: the V8 unseen-state test (docs/research/lotline-validation-plan.md V8). Onboarded from this file
+# and the national sources only, with no engine edits; choices made while setting it up are in
+# docs/analysis_plan.md D-104, recorded before the first Wisconsin fetch.
+state: WI
+name: Wisconsin
+fips: "55"
+bps_region: Midwest Region
+# Wisconsin towns are general-purpose governments that issue building permits, and the Census permit survey
+# reports them as county subdivisions, as in MN and OH (D-104).
+township_permits: true
+# USPS 3-digit ZIP prefixes (inclusive ranges): 530-549 (USPS ZIP Code prefix assignments)
+zip3_ranges: [[530, 549]]
+holdouts:
+  - test_id: V8-WI-TRANSFER
+    place: Wisconsin (statewide)
+    geoid: "55"
+    outcome_from: 2020-01-01
+    outcome_until: 2099-12-31
+    reason: >-
+      V8 unseen-state test (D-104, Ben 2026-11-18): predict Wisconsin's 2021-2025 permits from origin 2019 with
+      the national data and the fitted calibration only, freeze the bundle on main, then score against the
+      Census permits once Ben unblinds. Registered before the first Wisconsin fetch, so no Wisconsin outcome
+      from 2020 on is ever downloaded into a table.
+sources: []

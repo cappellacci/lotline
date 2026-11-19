@@ -29,7 +29,10 @@ blind holdouts and `state_law.json`.
 5. Record each block as a `Blocker` (`kind` from the helper; `fields` = exactly what it would settle;
    `look_for` = one plain sentence a person can act on, e.g. "Ordinance that added §5.3: its number,
    adoption date and effective date").
-6. Write `RUN_DIR/coding_a/<geoid>.json`, then run
+   `era_id` = the coded era it is about; for a period you could not code at all, a label for that period
+   such as `before-2022` or the ordinance year `2019` (never blank: a blank `era_id` means "every coded
+   era", and fields those eras settled are dropped from the person's task).
+6. Write `RUN_DIR/coding_a/<geoid>.json` (with `coded_at`, today's date, which `check` requires), then run
    `uv run python -m lotline.rule_agents.adu check RUN_DIR/coding_a/<geoid>.json` and
    `uv run python -m lotline.rule_agents.adu verify-quotes RUN_DIR/coding_a/<geoid>.json`; fix every problem.
    `outcome` = `coded`, `partial` (some eras or fields blocked) or `no_usable_source`.
@@ -41,3 +44,5 @@ compared with them afterwards, and reading them would make that comparison meani
 rules in CODING_RULES apply. Report in ≤ 120 words: per place, eras found, blank core fields, blocks.
 
 Principles (`docs/build/rule-agents/PRINCIPLES.md`): code local rules only, never a model rate or "use X%". Never write `config/` or model code; the output is a proposal the user reviews. Key places by Census GEOID. Never work around a refusal.
+
+Spending: before you finish each place, record what you used (fetches and searches only; the orchestrator records tokens): `uv run python -m lotline.rule_agents ledger add RUN_DIR <geoid> rules-adu-coder --fetches N --searches N`. Before a new search, `ledger status RUN_DIR <geoid> --agent rules-adu-coder`; on `"stop": true`, stop and turn what is open into `budget_spent` blockers.
