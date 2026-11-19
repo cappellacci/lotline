@@ -461,10 +461,21 @@ table.checks td:last-child { min-width: 260px; }
     <div class="step" id="step-model"><p class="step-n" aria-hidden="true">3</p><div class="step-body">
       <h3 class="h2">What each model does, and how we get our ranges</h3>
 
-      <h4 class="h3">3a. What gets built anyway</h4>
+      <h4 class="h3">3a. The causal diagram</h4>
+      <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
+      <div class="scroll"><svg class="dag" id="dag" role="img" aria-label="Causal diagram: what drives the extra homes a reform adds, and how each other factor is handled" viewBox="0 0 960 400"></svg></div>
+      <div class="dag-key body-small" id="dag-key"></div>
+
+      <h4 class="h3">3b. Every factor we considered, and what we did with it</h4>
+      <p class="body-small">We kept a register of every factor that could bias the answer or change its size: <span id="conf-count"></span>. Each one was handled in one of the ways below. The ones we could not handle are listed as limits, not hidden.</p>
+      <div id="conf-summary"></div>
+      <details class="fold"><summary>The full register</summary><div class="scroll" id="conf-table"></div>
+        <p class="source">From docs/research/lotline-confounder-register.csv and the causal diagrams in docs/research/. The decisions are in docs/analysis_plan.md.</p></details>
+
+      <h4 class="h3">3c. What gets built anyway</h4>
       <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over 2021–2025. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
 
-      <h4 class="h3">3b. Why we built each effect from its parts</h4>
+      <h4 class="h3">3d. Why we built each effect from its parts</h4>
       <p class="body-small">Our first plan was to compare reformed cities with similar cities that did not reform. In the four states we first studied (before Oregon was added) those comparisons could not tell a real effect from noise: they could only have detected effects many times larger than any plausible one. So each reform's effect is built from its working parts, and each part is measured separately:</p>
       <p class="formula">extra homes = lots the reform opens up × share where building pays × how often owners build, once it pays</p>
       <details class="more"><summary>What each part means</summary><ul class="body-small steps-list">
@@ -474,7 +485,7 @@ table.checks td:last-child { min-width: 260px; }
         <li><b>What is already being built is never credited to the reform.</b></li>
       </ul></details>
 
-      <h4 class="h3">3c. The three models, in depth</h4>
+      <h4 class="h3">3e. The three models, in depth</h4>
       <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it: every card answers the same five questions, then goes state by state.</p>
       <div class="seg model-tabs" role="group" aria-label="Which model">
         <button type="button" data-model="adu" aria-pressed="true">ADUs</button>
@@ -592,17 +603,6 @@ table.checks td:last-child { min-width: 260px; }
       <p class="body-small">What each model predicts for every state with results: net new homes over the five years. The tick is the middle result of the model's runs; the band covers the middle 80% of them, so 1 run in 10 came out below it and 1 in 10 above. The scale is logarithmic, so each gridline is ten times the last. Missing middle's bands are the widest because its reform effect is the least pinned down; Oregon adds few ADUs because its state law already allows what the reform asks.</p>
       <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
       <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
-
-      <h4 class="h3">3d. The causal diagram</h4>
-      <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
-      <div class="scroll"><svg class="dag" id="dag" role="img" aria-label="Causal diagram: what drives the extra homes a reform adds, and how each other factor is handled" viewBox="0 0 960 400"></svg></div>
-      <div class="dag-key body-small" id="dag-key"></div>
-
-      <h4 class="h3">3e. Every factor we considered, and what we did with it</h4>
-      <p class="body-small">We kept a register of every factor that could bias the answer or change its size: <span id="conf-count"></span>. Each one was handled in one of the ways below. The ones we could not handle are listed as limits, not hidden.</p>
-      <div id="conf-summary"></div>
-      <details class="fold"><summary>The full register</summary><div class="scroll" id="conf-table"></div>
-        <p class="source">From docs/research/lotline-confounder-register.csv and the causal diagrams in docs/research/. The decisions are in docs/analysis_plan.md.</p></details>
 
       <h4 class="h3">3f. Where the range comes from</h4>
       <details class="more"><summary>Every source of the range</summary><ul class="body-small steps-list">
@@ -1744,10 +1744,10 @@ function confHtml() {
 const CHECKS = [
   ["Data match Census", "Do our place-by-place permit sums match Census state totals?", "pass", "Within 1% in most years (Ohio 34 of 34, Minnesota 30 of 32, North Carolina 29 of 31), but only 21 of 34 in Texas. Austin's own permit file matches Census at 0.98."],
   ["Baseline backtest", "Starting from past years, does the baseline predict the next five years better than simple rules of thumb?", "partial", "Beat both rules of thumb (the last 3 years' average and a 10-year trend) in 41 of 48 tests. Passed every preset target in 19 of 48. Its ranges held the actual state total 83% of the time, running about 14% low on average."],
-  ["Reformed vs similar places", "Can comparisons with places that did not reform measure the effect directly?", "fail", "Too weak to tell an effect from noise, and a placebo check failed. This is why effects are built from their parts (step 3b)."],
+  ["Reformed vs similar places", "Can comparisons with places that did not reform measure the effect directly?", "fail", "Too weak to tell an effect from noise, and a placebo check failed. This is why effects are built from their parts (step 3d)."],
   ["Placebo date (missing middle)", "Does the model find an 'effect' at a fake date years before a real reform?", "fail", "The first missing-middle fit did (0.32 per 1,000 lots). Most of it came from building types in Houston and Austin that the reforms did not newly allow, so the outcome was redefined to newly allowed types. The current fit still fails: a fake reform date three years early shows a larger effect than the real dates."],
-  ["Leave a state out (ADUs)", "Fit on the other states, predict the hidden one from its place types and the rules of its 20 largest places: is the actual count inside the range, with the midpoint within a factor of two?", "pass", "Useful in all four states with counts (Minnesota, North Carolina, Texas, Oregon). The ranges are wide: in Texas the high end is about 50 times the low. Details on the ADU card (step 3c)."],
-  ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "With Oregon left out, the other states predicted 457 to 4,789 buildings in its places; 703 were built. 78% of 136 single places landed inside their range. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set. Details on the missing-middle card (step 3c)."],
+  ["Leave a state out (ADUs)", "Fit on the other states, predict the hidden one from its place types and the rules of its 20 largest places: is the actual count inside the range, with the midpoint within a factor of two?", "pass", "Useful in all four states with counts (Minnesota, North Carolina, Texas, Oregon). The ranges are wide: in Texas the high end is about 50 times the low. Details on the ADU card (step 3e)."],
+  ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "With Oregon left out, the other states predicted 457 to 4,789 buildings in its places; 703 were built. 78% of 136 single places landed inside their range. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set. Details on the missing-middle card (step 3e)."],
   ["Oregon, blind", "Predicted before Oregon's results were looked at, then compared.", "partial", "Missing middle (earlier values): actual 1,753 homes inside the predicted 1,738–6,469, near the bottom. ADUs missed low: Portland had 1,930 against a range of 3–1,418, Bend 414 against 0–206. Oregon was then added to the ADU fit."],
   ["Charlotte, blind (missing middle)", "Prediction frozen before Charlotte's years from mid-2023 were opened.", "pass", "The actual count landed inside the frozen range (earlier values)."],
   ["St. Paul, blind (missing middle)", "Prediction frozen before St. Paul's years from 2024 were opened.", "fail", "Missed: 55 buildings in 2024–2025 against a frozen range of 9 to 28. The effect came much faster than the model's 4-year ramp; with a 1-year ramp the same model gives a median of 55. A refit with a separate ramp for places that chose the reform did not forecast better, so the model stays, and the faster case is reported as a sensitivity."],
