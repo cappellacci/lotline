@@ -1431,8 +1431,19 @@ function amiHtml(b) {
       : ` ${fc === "fees" ? "At the Handbook benchmark ($50,000 fee cut in half)" : "With real local fees cut in half"}: ${cost(cut, kind)}, ${pct0(cut.ami_share)} of AMI.`;
     return `<li><b>${esc(name)}:</b> pays for itself at ${esc(cost(be, kind))}, which needs ${esc(pct0(be.ami_share))} of AMI (${esc(pct0(be.ami_share_p10))}–${esc(pct0(be.ami_share_p90))}).${esc(tail)}</li>`;
   }).join("");
+  // The takeaway (Ben, 2026-11-19), generated from the rows so it only says what this state's numbers show: the
+  // smaller homes whose assumed rent needs a lower share of AMI than a new house.
+  const mk = (h) => pick(h, "market", "current");
+  const house = mk("house");
+  const small = [["adu", "ADUs", "a new ADU"], ["plex_unit", "missing-middle homes", "a duplex-to-fourplex unit"]].filter(([h]) => mk(h));
+  const below = small.filter(([h]) => house && mk(h).ami_share < house.ami_share);
+  const lead = !house || !small.length ? "" : below.length
+    ? `${below.map(([, w]) => w).join(" and ").replace(/^./, (c) => c.toUpperCase())} add an important layer of affordability in ${named}.`
+    : `In ${named}, new ADUs and missing-middle homes need about as much income as a new house.`;
+  const detail = !house ? "" : `At the rents the model assumes, ${small.map(([h, , w], i) => (i ? `${w} about ${pct0(mk(h).ami_share)}` : `${w} needs a household income of about ${pct0(mk(h).ami_share)} of area median income`)).join(" and ")}, against ${pct0(house.ami_share)} for a new single-family house.`;
   return `<div class="ami">
-    <p class="body" style="margin:0"><b>How we worked this out.</b> We took HUD's 2026 area median income (AMI) for every county in ${esc(named)}: about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, on average where the reforms add homes. For each kind of home we take the rent (or price) the model already assumes, work out the household income at which it costs 30% of income, and compare that income with AMI for a household of 1.5 people per bedroom. The further right a dot sits, the higher the income a household needs.</p>
+    ${lead ? `<p class="body" style="margin:0" id="ami-lead"><b>${esc(lead)}</b> ${esc(detail)}</p>` : ""}
+    <p class="body-small" style="margin:var(--space-3) 0 0"><b>How we worked this out.</b> We took HUD's 2026 area median income (AMI) for every county in ${esc(named)}: about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, on average where the reforms add homes. For each kind of home we take the rent (or price) the model already assumes, work out the household income at which it costs 30% of income, and compare that income with AMI for a household of 1.5 people per bedroom. The further right a dot sits, the higher the income a household needs.</p>
     <div class="ami-key"><span><i class="mkt"></i>Assumed rent or price (line: likely range)</span><span><i class="be"></i>Break-even: what it must earn to cover building it</span>
       <span><i style="background:var(--paper-sunken)"></i>Under 60% of AMI: usually needs subsidy</span><span><i style="background:var(--survey-band)"></i>60–80%: the gap small homes can reach</span><span><i style="border:1px solid var(--rule)"></i>Over 80%: within reach of zoning reform alone</span></div>
     <div class="ami-grid" style="--b1:${pos(AMI_BANDS.subsidy)};--b2:${pos(AMI_BANDS.zoning)}">${grid}${axis}</div>

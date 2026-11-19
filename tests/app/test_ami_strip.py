@@ -116,3 +116,22 @@ def test_band_edges_match_the_parameters():
         p["band_zoning_above"].value,
         p["axis_max"].value,
     ]
+
+
+@needs_node
+def test_takeaway_names_only_the_homes_cheaper_than_a_new_house(tmp_path):
+    doc = json.loads(FIXTURE.read_text())
+    house = _row(doc, "house", "market", "current")["ami_share"]
+    html = _render(tmp_path / "a", doc)["html"]
+    lead = html[html.index('id="ami-lead"') :].split("</p>")[0]
+    assert (
+        "ADUs and missing-middle homes add an important layer of affordability" in lead
+    )  # both below the house
+    assert f"against {_pct(house)} for a new single-family house" in lead
+    # make the house cheaper than an ADU: the lead names missing middle only
+    for r in doc["affordability"]:
+        if r["home_type"] == "adu" and r["rent_kind"] == "market":
+            r["ami_share"] = house + 0.1
+    lead = _render(tmp_path / "b", doc)["html"]
+    lead = lead[lead.index('id="ami-lead"') :].split("</p>")[0]
+    assert "Missing-middle homes add an important layer" in lead and "ADUs and" not in lead
