@@ -372,7 +372,7 @@ table.checks td:last-child { min-width: 260px; }
     <div id="data-body"></div>
     <div id="dash-host" hidden>
       <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--space-2);margin-top:var(--space-6)">
-        <h3 class="h3" id="dash-title">Coverage, ordinances and growth</h3>
+        <h3 class="h3" id="dash-title">Data overview dashboard: coverage, ordinances and growth</h3>
         <label class="picker body-small">Showing <select id="dash-state" aria-label="State shown in the data dashboard"></select></label>
       </div>
       <p class="body-small muted" id="dash-note"></p>
@@ -1940,7 +1940,7 @@ function dashOptions() {
 function dashScope() {
   const sel = $("dash-state");
   const name = DASH.scope === "ALL" ? "All states" : ((DATA.data.by_state || {})[DASH.scope] || {}).name;
-  $("dash-title").textContent = `Coverage, ordinances and growth: ${sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "all states"}`;
+  $("dash-title").textContent = "Data overview dashboard: coverage, ordinances and growth";  // the picker beside it names the state
   const f = $("dash-frame"), d = f && f.contentDocument;
   if (!DASH.loaded || !d) return;
   const chip = [...d.querySelectorAll("#state-bar .chip")].find((c) => c.textContent === name);
