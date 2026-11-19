@@ -1,6 +1,6 @@
 ---
 description: Run the ADU rule agent swarm for one state and propose `reforms` rows plus a human lookup list
-argument-hint: "<ST> [--places N | --geoids g1,g2] [--run-id id] [--second-coder targeted|full|off] [--audit-rate 0.1] [--skip-state-law] [--compare]"
+argument-hint: "<ST> [--places N | --geoids g1,g2] [--jurisdictions CSV] [--budget TOKENS] [--run-id id] [--second-coder targeted|full|off] [--audit-rate 0.1] [--skip-state-law] [--compare]"
 ---
 
 # /rules-adu — ADU rule agent swarm (orchestrator)
@@ -29,7 +29,9 @@ it; it is not repeated here). The ones every step of this command enforces:
 
 ## Spending (keep token use down)
 
-- Every place has a budget (default 120k tokens, 12 fetches, 8 searches). After each subagent returns, record
+- Every place has a budget (default 250k tokens, 12 fetches, 8 searches; the Agent tool's token count
+  includes everything an agent reads). For other limits, save them once after `run-dir`:
+  `uv run python -m lotline.rule_agents ledger limits RUN_DIR --tokens N`. After each subagent returns, record
   the tokens the Agent tool reports: `uv run python -m lotline.rule_agents ledger add RUN_DIR <GEOID> <agent>
   --tokens N` (for a batch, split evenly across its places).
 - Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status RUN_DIR <GEOID>`;
@@ -51,9 +53,10 @@ user what to fix.
   0.1; 0 turns the audit sample off); `--skip-state-law` (reuse a run's `state_law.json`); `--compare` (dry run: compare with
   `config/reforms/<st>.csv` at the end).
 - `RUN_DIR=$(uv run python -m lotline.rule_agents.adu run-dir --state ST --run-id ID)`.
-- `uv run python -m lotline.rule_agents.adu worklist --state ST --run-id ID [--limit N | --geoids ...]`.
-  It prints the blind holdouts: pass them to every agent. If the jurisdictions table is missing, stop and say
-  which build step makes it.
+- `uv run python -m lotline.rule_agents.adu worklist --state ST --run-id ID [--limit N | --geoids ...]
+  [--jurisdictions CSV]`. It prints the blind holdouts: pass them to every agent. A state with no
+  jurisdictions table needs `--jurisdictions` with `geoid,name,pop_2020` (`county_geoid` if known); if neither
+  exists, stop and ask the user for that CSV.
 - Never run engine, scenario, calibration or dev-run scripts. Never edit `config/`. Never download data except
   through the fetch helper (store first, into the shared document store under `LOTLINE_DATA_DIR`).
 

@@ -15,6 +15,7 @@
     python -m lotline.rule_agents excerpts DOC CATEGORY [--max-chars N] [--extra WORD ...] [--pages N ...]
     python -m lotline.rule_agents outline DOC
     python -m lotline.rule_agents ledger add RUN PLACE AGENT [--tokens N] [--fetches N] [--searches N]
+    python -m lotline.rule_agents ledger limits RUN [--tokens N] [--fetches N] [--searches N]
     python -m lotline.rule_agents ledger status RUN PLACE [--tokens N] [--fetches N] [--searches N]
     python -m lotline.rule_agents ledger summary RUN
     python -m lotline.rule_agents doctor ST [--category C]        # is everything a run needs in place?
@@ -182,7 +183,11 @@ def _outline(a) -> int:
 
 
 def _ledger(a) -> int:
-    lim = {k: v for k, v in (("tokens", a.tokens), ("fetches", a.fetches), ("searches", a.searches)) if v}
+    lim = {k: getattr(a, k, None) for k in ("tokens", "fetches", "searches")}
+    lim = {k: v for k, v in lim.items() if v}
+    if a.op == "limits":
+        print(json.dumps(budget.set_limits(Path(a.run), **lim) if lim else budget.run_limits(Path(a.run))))
+        return 0
     if a.op == "add":
         budget.add(
             Path(a.run),
@@ -298,6 +303,10 @@ def main(argv: list[str] | None = None) -> int:
             s.add_argument("--note")
         for o in ("--tokens", "--fetches", "--searches"):
             s.add_argument(o, type=int)
+    s = lp.add_parser("limits")
+    s.add_argument("run")
+    for o in ("--tokens", "--fetches", "--searches"):
+        s.add_argument(o, type=int)
     lp.add_parser("summary").add_argument("run")
 
     repo = Path(__file__).resolve().parents[3]

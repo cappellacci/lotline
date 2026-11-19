@@ -34,7 +34,9 @@ Open Claude Code in the repository folder and type one of:
 | `/rules-fees XX` | impact, permit, plan-review, utility and other development fees by year | `fees` |
 
 Useful options: `--limit 10` (largest 10 places first, a good first run), `--only <GEOID> ...`,
-`--budget 80000` (tokens per place).
+`--budget 250000` (tokens per place, all agents together; this is the default, and a well-documented place
+needs most of it), `--jurisdictions places.csv` (a state the app has no places table for: a CSV with
+`geoid,name,pop_2020`, Census GEOIDs).
 
 The agents work place by place:
 

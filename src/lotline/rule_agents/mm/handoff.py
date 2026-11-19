@@ -103,7 +103,7 @@ def tasks(findings: Iterable[PlaceFinding], pops: dict[str, int] | None = None, 
     for f in findings:
         n = 0
         for b in f.blockers:
-            key = (f.jurisdiction_geoid, b.url)
+            key = (f.jurisdiction_geoid, H.url_key(b.url))
             if key in out:
                 prev = set(out[key]["fields_to_fill"].split(";"))
                 t = task_for(f, b, 99, pop=pops.get(f.jurisdiction_geoid), docs=docs)

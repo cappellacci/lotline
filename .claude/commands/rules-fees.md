@@ -1,6 +1,6 @@
 ---
 description: Run the fees rule agent swarm for one state; proposes evidence-backed rows for config/fees/<st>.csv and a list of lookups for a person
-argument-hint: "<ST> [--places GEOID,GEOID,...] [--max N] [--no-second-coder] [--compare]"
+argument-hint: "<ST> [--places GEOID,GEOID,...] [--jurisdictions CSV] [--budget TOKENS] [--max N] [--no-second-coder] [--compare]"
 ---
 
 # /rules-fees: development fees for one state
@@ -19,18 +19,23 @@ is missing in plain words (its fix line) and stop.
 
 ## 0b. Set up
 
-1. Parse `<ST>` (two letters, required), `--places` (GEOIDs), `--max` (default 5; places are processed largest
+1. Parse `<ST>` (two letters, required), `--places` (GEOIDs), `--jurisdictions` (CSV, for a state with no
+   table), `--budget` (tokens per place; save it with `uv run python -m lotline.rule_agents ledger limits
+   "$RUN" --tokens N` once the run folder exists), `--max` (default 5; places are processed largest
    first), `--no-second-coder`, `--compare` (compare with existing rows at the end: dry runs).
 2. Run folder: `RUN=$(uv run python -c "from lotline.io.store import data_dir; print(data_dir())")/rule-agents/fees/<ST>/<YYYY-MM-DD>-<HHMM>`;
    `mkdir -p "$RUN"`. Nothing in the run folder is ever committed.
 3. Places: from `--places`, else the state's `jurisdictions` table (largest `pop_2020` first, kind `place`)
-   via `uv run python -c` with `lotline.io.DataStore().read("<st>", "jurisdictions")`. Read **only** the
+   via `uv run python -c` with `lotline.rule_agents.common.places.read_jurisdictions("<st>", <csv or None>)`
+   (a state with no table: the user's `--jurisdictions` CSV with `geoid,name,pop_2020`; if neither exists,
+   stop and ask for it). Read **only** the
    jurisdictions table (no permits, no outcomes). Write `$RUN/plan.json` with state, places (geoid, name,
    pop) and options.
 4. Principles shared by all rule agents: `docs/build/rule-agents/PRINCIPLES.md`. Places are keyed by Census
    GEOID.
 5. Holdouts: fees are inputs, so holdout places may be coded. Do not open any outcome data for them.
-6. Budget: every place has a shared spending budget (`common.budget`: tokens, fetches, searches). After each
+6. Budget: every place has a shared spending budget (`common.budget`: default 250k tokens, 12 fetches, 8
+   searches; the Agent tool's token count includes everything an agent reads). After each
    agent returns, record its token use from the Agent tool's report:
    `uv run python -m lotline.rule_agents ledger add "$RUN" <geoid> <agent> --tokens N` (agents record their own
    fetches and searches). Before spawning more work for a place, `ledger status "$RUN" <geoid>`; on `stop`,

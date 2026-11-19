@@ -179,6 +179,9 @@ def cmd_compare(a: argparse.Namespace) -> None:
 
     run = pd.read_csv(a.rows, dtype={"jurisdiction_geoid": str})
     existing = load_fees(a.state)
+    if existing is None:
+        print(f"no config/fees/{a.state.lower()}.csv yet (a new state): nothing to compare with")
+        return
     places = a.places.split(",") if a.places else sorted(run["jurisdiction_geoid"].unique())
     table = compare.compare(run, existing, places)
     print(table.to_string(index=False))

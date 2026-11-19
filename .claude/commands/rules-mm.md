@@ -1,6 +1,6 @@
 ---
 description: Research missing-middle (2-4 homes on single-family lots) local rules for one state with a two-coder agent swarm; writes a schema-valid reforms table and a human lookup sheet
-argument-hint: "<STATE> [--limit N] [--only GEOID ...] [--skip-coded] [--min-pop N] [--single-coder | --both-coders] [--budget TOKENS] [--run RUN_ID] [--resume] [--browser]"
+argument-hint: "<STATE> [--limit N] [--only GEOID ...] [--jurisdictions CSV] [--skip-coded] [--min-pop N] [--single-coder | --both-coders] [--budget TOKENS] [--run RUN_ID] [--resume] [--browser]"
 ---
 
 # /rules-mm — missing-middle rule swarm for one state
@@ -13,12 +13,17 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
 
 ## Spending (keep token use down)
 
-- Every place has a budget (default 120k tokens, 12 fetches, 8 searches; `--budget` sets tokens). After each
+- Every place has a budget (default 250k tokens, 12 fetches, 8 searches; the Agent tool's token count
+  includes everything an agent reads). With `--budget N`, save it once right after init:
+  `uv run python -m lotline.rule_agents ledger limits <RUN> --tokens N`, so every agent's `ledger status`
+  uses it. After each
   subagent returns, record the tokens the Agent tool reports:
   `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> <agent> --tokens N`.
 - Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID>`;
   exit code 3 (`"stop": true`) means no more research on that place: take what is coded, turn every open
-  field into a `budget_spent` blocker, and move on.
+  field into a `budget_spent` blocker, and move on. If no coder has written a finding yet, you write
+  `findings/<g>.coder-a.json` yourself: no rules, one `budget_spent` blocker per source the scout listed
+  (its URL), so the place still gets hand-off tasks; it goes to step 6 as a single-coder place.
 - Give subagents only `RUN`, `GEOID` and `COUNTY` (from `places.csv`) in their prompts; they read what they need.
 - End the report with `uv run python -m lotline.rule_agents ledger summary <RUN>`.
 
@@ -35,10 +40,11 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
 0. **Setup check.** `uv run python -m lotline.rule_agents doctor <ST> --category mm`; stop and show the user
    what to fix if it does not say "Ready.".
 1. **Init.** `uv run python -m lotline.rule_agents.mm init <ST> [--run RUN_ID]` → prints `RUN`. With `--resume`,
-   reuse the existing run and skip places whose stage outputs exist.
+   reuse the existing run and skip places whose stage outputs exist. With `--budget N`, run `ledger limits`
+   now (Spending).
 2. **Places + brief.** `… places <RUN> [--limit N] [--only …] [--skip-coded] [--min-pop N]` (writes
    `places.csv` and `brief.md`; for a state with no jurisdictions table pass `--jurisdictions <csv>` with
-   `geoid,name,pop_2020`). Show the user the list and the brief's holdouts; if the brief says "No default recorded"
+   `geoid,name,pop_2020` (`county_geoid` if known)). Show the user the list and the brief's holdouts; if the brief says "No default recorded"
    for the effective-date rule, ask the user for the state's rule (one question) or proceed with "hand off when
    silent".
 3. **Scout** each place (`rules-mm-scout`, prompt: `RUN=<RUN> GEOID=<g> COUNTY=<c>`), 4 at a time. The

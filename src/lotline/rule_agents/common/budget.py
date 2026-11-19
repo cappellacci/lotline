@@ -9,8 +9,13 @@ The orchestrator (the main Claude session running `/rules-<cat>`) records each s
 Agent tool reports when the subagent returns, with `ledger add`; scouts and coders record their own web
 searches and fetches. `ledger status` says what is left and whether to stop.
 
-Defaults are working limits set from the 2026-11-17 dry runs, not model
-parameters; override per run with `--tokens/--fetches/--searches` on `ledger status`.
+Defaults are working limits, not model parameters. Set a run's own limits once with `ledger limits RUN
+--tokens N` (saved in `RUN/limits.json`, so every agent's `ledger status` uses them); `--tokens/--fetches/
+--searches` on a single `ledger status` call override both.
+
+2026-11-19 (Burlington VT proof of concept): the scout alone used 88.5k tokens, because the count the Agent
+tool reports includes everything the agent reads. At 120k no place got past the scout to a coder, so the
+token default is 250k (scout, coder a, a selective coder b and the verifier on one well-documented place).
 """
 
 from __future__ import annotations
@@ -21,9 +26,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-# Per place, all agents together. ADU's dry run after its scoring step needed ~120k for a well-documented
-# place; anything beyond that was searching for sources that turned out not to be online.
-DEFAULT_LIMITS = {"tokens": 120_000, "fetches": 12, "searches": 8}
+# Per place, all agents together (see the module note for why 250k).
+DEFAULT_LIMITS = {"tokens": 250_000, "fetches": 12, "searches": 8}
 
 
 @dataclass
@@ -35,6 +39,32 @@ class Spend:
 
 def ledger_path(run: Path) -> Path:
     return Path(run) / "ledger.jsonl"
+
+
+def limits_path(run: Path) -> Path:
+    return Path(run) / "limits.json"
+
+
+def set_limits(run: Path, **lim: int) -> dict:
+    """Save this run's limits (unset keys keep the default) and return the full set in force."""
+    bad = [k for k in lim if k not in DEFAULT_LIMITS]
+    if bad:
+        raise ValueError(f"unknown limit(s) {bad}; use {sorted(DEFAULT_LIMITS)}")
+    if any(v is not None and v <= 0 for v in lim.values()):
+        raise ValueError("limits must be positive")
+    cur = run_limits(run)
+    cur.update({k: v for k, v in lim.items() if v is not None})
+    p = limits_path(run)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(cur))
+    return cur
+
+
+def run_limits(run: Path) -> dict:
+    """The limits in force for a run: the defaults, then anything saved with `set_limits`."""
+    p = limits_path(run)
+    saved = json.loads(p.read_text()) if p.exists() else {}
+    return {**DEFAULT_LIMITS, **saved}
 
 
 def add(
@@ -79,9 +109,9 @@ def spent(run: Path) -> dict[str, Spend]:
 
 
 def status(run: Path, place: str, limits: dict | None = None) -> dict:
-    """What is left for `place` and whether to stop. By hand: limits tokens 100, spent 60 + 50 -> left
-    tokens -10, stop True, reason ["tokens"]."""
-    lim = {**DEFAULT_LIMITS, **(limits or {})}
+    """What is left for `place` and whether to stop, against the run's limits (`run_limits`) with `limits`
+    on top. By hand: limits tokens 100, spent 60 + 50 -> left tokens -10, stop True, reason ["tokens"]."""
+    lim = {**run_limits(run), **(limits or {})}
     s = spent(run).get(place, Spend())
     left = {k: lim[k] - getattr(s, k) for k in lim}
     over = [k for k, v in left.items() if v <= 0]
