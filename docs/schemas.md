@@ -530,6 +530,36 @@ Table checks: `one_row_per_key`
 | `ami_share` | number | yes | no | ≥ 0 |
 | `ami_share_p90` | number | yes | no | ≥ 0 |
 
+## `results_shortfall`
+
+The shortfall view of housing need (`model/shortfall.py`; Ben, 2026-11-19): one row per state. The need is the shortage today plus household growth over the five years (negative where households are projected to fall) plus homes lost over the five years (`stock_loss_rate` x the ACS housing stock in `stock_year` x 5); `built` is the no-change forecast of homes permitted, all sizes, over the five years (P10, P50, P90); the gap is need minus built, with bounds from the need's low and high ends against built at P90 and P10. A gap at or below zero means homes built anyway would cover the need at that end.
+
+Table checks: `one_row_per_state`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `shortage_low` | number | yes | no | ≥ 0 |
+| `shortage` | number | yes | no | ≥ 0 |
+| `shortage_high` | number | yes | no | ≥ 0 |
+| `growth_low` | number | yes | no |  |
+| `growth` | number | yes | no |  |
+| `growth_high` | number | yes | no |  |
+| `stock` | number | yes | no | > 0 |
+| `stock_year` | integer | yes | no | ≥ 2009; ≤ 2100 |
+| `lost_low` | number | yes | no | ≥ 0 |
+| `lost` | number | yes | no | ≥ 0 |
+| `lost_high` | number | yes | no | ≥ 0 |
+| `need_low` | number | yes | no |  |
+| `need` | number | yes | no |  |
+| `need_high` | number | yes | no |  |
+| `built_p10` | number | yes | no | ≥ 0 |
+| `built` | number | yes | no | ≥ 0 |
+| `built_p90` | number | yes | no | ≥ 0 |
+| `gap_low` | number | yes | no |  |
+| `gap` | number | yes | no |  |
+| `gap_high` | number | yes | no |  |
+
 ## Version history
 
 | Version | Change |
@@ -552,4 +582,4 @@ Table checks: `one_row_per_key`
 | 1.15 | results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide current-rules ADUs per window year), for the app's ADU evidence card |
 | 1.16 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |
 | 1.17 | results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle ever held rows for them, so no data is lost |
-| 1.18 | market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income needed and share of AMI by home type and place type, market and break-even; WS-NEED-AMI part B, #496) |
+| 1.18 | market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income needed and share of AMI by home type and place type, market and break-even; WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway) |

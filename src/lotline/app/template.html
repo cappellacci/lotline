@@ -1344,7 +1344,71 @@ function heroUpdate(b, R, o) {
 // kind first. Each reform's net new homes midpoint is laid end to end from the left in its own colour; the whisker
 // is the likely range (P10 to P90) of the three together, summed run by run as in the headline; the rest of the bar
 // is the gap that remains. Every number is a bundle field or a sum over the bundle's draws.
+// The shortfall view of housing need (Ben, 2026-11-19; model/shortfall.py, results_shortfall): the homes the
+// state still lacks after what it builds anyway, and the reforms stacked on top. Every number is a bundle field
+// or a sum over the bundle's draws. Without a shortfall row the card falls back to the share-of-need view.
 function needHtml(b, R) {
+  const sf = (b.shortfall || [])[0];
+  const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const all = together(b, nk, "homes_net_statewide").tot;
+  if (!sf || !all) return needShareHtml(b, R);
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const end = ((AGG.windowLabel(b) || "").match(/\d{4}$/) || [""])[0];
+  const net = (s) => R[s].homes_net_statewide;
+  const rng = (r) => `${fmtN(r.p10)} to ${fmtN(r.p90)}`;
+  const nameOf = (s) => IN_NOTE[s] || scenLabel(s);
+  const ranked = [...nk].sort((x, y) => net(y).p50 - net(x).p50);
+  const top = ranked[0];
+  const need = sf.need, built = sf.built, gap = sf.gap;
+  const src = (kind) => ((b.need || []).find((r) => r.denominator_kind === kind) || {}).source;
+  const who = (t) => String(t || "").split(/[,:(]/)[0].trim();
+  const growthWords = sf.growth >= 0
+    ? `${fmtN(sf.growth)} for new households (${who(src("household_growth_5y")) || "the state's population projection"})`
+    : `less ${fmtN(-sf.growth)} because households are projected to fall`;
+  const lead = `${named} needs about ${fmtN(need)} more homes${end ? ` by ${end}` : " over the five years"}.`;
+  const parts = `That is ${fmtN(sf.shortage)} the state is already short (${who(src("shortage_stock")) || "Up for Growth"}), ${growthWords}, and ${fmtN(sf.lost)} to replace homes lost over five years.`;
+  const covers = gap > 0
+    ? `Homes the market builds anyway would cover about ${fmtN(built)} of them, leaving a gap of about ${fmtN(gap)} homes. The three reforms together would add ${rng(all)} net new homes, ${fmtPct(all.p10 / gap)} to ${fmtPct(all.p90 / gap)} of that gap, and ${nameOf(top)} would add the most (${rng(net(top))}).`
+    : `At the midpoint, homes the market builds anyway (about ${fmtN(built)}) would cover the need${sf.gap_high > 0 ? `, though a gap of up to ${fmtN(sf.gap_high)} remains possible if building is slow and the need is at its high end` : ""}. The three reforms would add ${rng(all)} net new homes on top, and ${nameOf(top)} would add the most (${rng(net(top))}).`;
+  // the bar: built anyway (grey, its P10-P90 whisker), the reforms laid end to end on top, the need line
+  const W = 720, T = 22, Hb = 32, H = T + Hb + 10;
+  const span = Math.max(need, built + all.p90, sf.built_p90) * 1.05;
+  const x = (v) => (Math.max(0, v) / span) * W;
+  let at = built;
+  const segs = nk.map((s) => {
+    const m = Math.max(0, net(s).p50);
+    const r = `<rect x="${x(at)}" y="${T}" width="${Math.max(1.5, x(at + m) - x(at))}" height="${Hb}" fill="${scenColor(s)}"><title>${esc(scenLabel(s))}: midpoint ${esc(fmtN(net(s).p50))} net new homes (${esc(rng(net(s)))})</title></rect>`;
+    at += m;
+    return r;
+  }).join("");
+  const wy = T + Hb / 2, needX = x(need);
+  const gapText = gap > 0 ? `Gap: about ${fmtN(Math.max(0, need - at))}` : "Built anyway covers the need";
+  const svg = `<svg class="needbar" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`Need ${fmtN(need)}; built anyway ${fmtN(built)}; reforms add ${rng(all)}`)}">
+      <rect x="0" y="${T}" width="${W}" height="${Hb}" fill="var(--paper-sunken)" stroke="var(--rule)"></rect>
+      <rect x="0" y="${T}" width="${x(built)}" height="${Hb}" fill="var(--scenario-baseline)"><title>${esc(`Built anyway: about ${fmtN(built)} (${fmtN(sf.built_p10)} to ${fmtN(sf.built_p90)})`)}</title></rect>
+      ${segs}
+      <line x1="${x(built + all.p10)}" x2="${x(built + all.p90)}" y1="${wy}" y2="${wy}" stroke="var(--ink)" stroke-width="1.5"></line>
+      <line x1="${x(built + all.p90)}" x2="${x(built + all.p90)}" y1="${wy - 7}" y2="${wy + 7}" stroke="var(--ink)" stroke-width="1.5"></line>
+      <line x1="${needX}" x2="${needX}" y1="${T - 6}" y2="${T + Hb + 6}" stroke="var(--ink)" stroke-width="2"></line>
+      <text x="${needX}" y="${T - 9}" text-anchor="${needX > W - 120 ? "end" : "middle"}">${esc(`Need: ${fmtN(need)}`)}</text>
+      <text x="${x(built) / 2}" y="${wy + 4}" text-anchor="middle" fill="var(--paper)" style="fill:var(--paper)">${esc(x(built) > 150 ? `Built anyway: ${fmtN(built)}` : "")}</text>
+      ${gap > 0 && needX - x(at) > 140 ? `<text x="${needX - 10}" y="${wy + 4}" text-anchor="end">${esc(gapText)}</text>` : ""}
+    </svg>`;
+  const key = `<div class="ami-key" style="margin:var(--space-3) 0 0"><span><i style="background:var(--scenario-baseline)"></i>Built anyway, no reform (midpoint)</span>${nk.map((s) => `<span><i style="background:${scenColor(s)}"></i>${esc(scenLabel(s))}</span>`).join("")}<span>Line: likely range of the three reforms together</span></div>`;
+  const each = nk.map((s) => `<tr><td><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(s)}"></span> ${esc(scenLabel(s))}</td><td class="num">${esc(rng(net(s)))}</td><td class="num">${gap > 0 ? esc(`${fmtPct(net(s).p10 / gap)} to ${fmtPct(net(s).p90 / gap)}`) : "–"}</td></tr>`).join("");
+  const details = `<p class="source" style="margin:0">The need adds three things: the shortage today (${fmtN(sf.shortage_low)} to ${fmtN(sf.shortage_high)} across estimates), household growth over the five years (${fmtN(sf.growth_low)} to ${fmtN(sf.growth_high)}), and homes lost to demolition, disaster or other uses (${fmtN(sf.lost_low)} to ${fmtN(sf.lost_high)}: ${fmtPct(sf.lost / sf.stock / 5)} a year of ${fmtN(sf.stock)} homes, ACS ${esc(sf.stock_year)}). Built anyway is the no-change forecast of homes permitted, all building sizes (${fmtN(sf.built_p10)} to ${fmtN(sf.built_p90)}). Permits count gross building and vacant or second homes are not taken out, so the gap is if anything understated. Because the gap is one uncertain number minus another, it could run from ${fmtN(sf.gap_low)} to ${fmtN(sf.gap_high)} (a negative gap means building anyway would cover the need). The reforms' blocks are midpoints laid end to end; the line is the likely range of the three together, added run by run. Net new homes only.</p>
+      <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Net new homes</th><th class="num">Share of the gap</th></tr></thead><tbody>${each}</tbody></table>`;
+  const sources = (b.need || []).filter((r, i, a) => a.findIndex((q) => q.denominator_kind === r.denominator_kind) === i).map((r) => sourceLinks(r.source)).join("; ");
+  return `<section class="need-kind" data-need-kind="shortfall">
+      <p class="need-lead">${esc(lead)}</p>
+      <p class="body-small muted" style="margin:var(--space-1) 0 0">${esc(parts)}</p>
+      <p class="body" style="margin:var(--space-2) 0 0" id="need-rank">${esc(covers)}</p>
+      <div class="scroll">${svg}</div>${key}
+      ${more(details)}
+      ${more(`<p class="source" style="margin:0">${sources}; housing stock: ACS 5-year B25024_001; homes lost: AHS Components of Inventory Change (config/params/aggregate.yaml).</p>`, "Sources")}</section>`;
+}
+
+function needShareHtml(b, R) {
   const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
   const kinds = [];
   for (const n of b.need.filter((r) => nk.includes(r.scenario))) if (!kinds.some((k) => k.label === n.label)) kinds.push(n);

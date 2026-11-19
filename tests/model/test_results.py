@@ -212,7 +212,42 @@ def make_fixture() -> dict[str, pd.DataFrame]:
         "affordability": affordability.table("ZZ", _affordability_inputs(typed, rd), n=200, seed=3).astype(
             {"places": "Int64"}
         ),
+        "shortfall": results.shortfall_table("ZZ", base, _acs_stock(), 2025, need_params=NEED, fips="99"),
     }
+
+
+def _acs_stock(units: float = 100_000.0):
+    """Synthetic acs_geo_year: the state's housing units (B25024_001) in two vintages; the newer is used."""
+    return pd.DataFrame(
+        {
+            "geo": "state:99",
+            "end_year": [2023, 2024],
+            "variable": "B25024_001",
+            "estimate": [units * 0.98, units],
+        }
+    )
+
+
+def test_shortfall_by_hand():
+    """NEED: growth 2,000 (1,500 to 2,500); shortage 5,000 (4,000 to 9,000); 100,000 homes at 0.3% (0.2% to
+    0.5%) a year lose 1,500 (1,000 to 2,500); need 8,500 (7,000 to 13,500) less what the no-change forecast
+    builds."""
+    b = results.baseline_table(_baseline_panel(), "ZZ", 2025)
+    t = results.shortfall_table("ZZ", b, _acs_stock(), 2025, need_params=NEED, fips="99").iloc[0]
+    five = b[(b["size_class"] == "all") & (b["period"] == "2027-2031")].iloc[0]
+    assert (t["lost_low"], t["lost"], t["lost_high"]) == pytest.approx((1000, 1500, 2500))
+    assert t["stock"] == 100_000 and t["stock_year"] == 2024
+    assert t["need"] == pytest.approx(5000 + 2000 + 1500)
+    assert t["gap"] == pytest.approx(8500 - five["p50"])
+    assert t["gap_low"] == pytest.approx(4000 + 1500 + 1000 - five["p90"])
+    assert t["gap_high"] == pytest.approx(9000 + 2500 + 2500 - five["p10"])
+
+
+def test_shortfall_needs_a_stock_and_a_shortage():
+    b = results.baseline_table(_baseline_panel(), "ZZ", 2025)
+    assert results.shortfall_table("ZZ", b, None, 2025, need_params=NEED, fips="99").empty
+    only_growth = {k: v for k, v in NEED.items() if k.startswith("household")}
+    assert results.shortfall_table("ZZ", b, _acs_stock(), 2025, need_params=only_growth, fips="99").empty
 
 
 def _market():
@@ -285,11 +320,16 @@ def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
     b = results.validate_bundle(make_fixture())
     path = results.write_bundle(b, tmp_path / "zz" / "bundle.json")
     doc = json.loads(path.read_text())
-    for part in ("adu_place_types", "adu_baseline", "affordability"):
+    for part in ("adu_place_types", "adu_baseline", "affordability", "shortfall"):
         del doc[part]
     path.write_text(json.dumps(doc))
     back = results.read_bundle(path)
-    assert back["adu_place_types"].empty and back["adu_baseline"].empty and back["affordability"].empty
+    assert (
+        back["adu_place_types"].empty
+        and back["adu_baseline"].empty
+        and back["affordability"].empty
+        and back["shortfall"].empty
+    )
 
 
 def test_bundle_round_trips(tmp_path):

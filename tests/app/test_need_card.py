@@ -30,7 +30,7 @@ HARNESS = Path(__file__).with_name("need_card_harness.js")  # the page's script 
 SCALE = {"missing_middle": 3.0, "fees": 2.0, "fees_local_half": 0.5}  # uptake multiples of the ADU draws
 
 
-def _bundle(*, fees_local_half: bool = True, need: bool = True) -> dict:
+def _bundle(*, fees_local_half: bool = True, need: bool = True, shortfall: bool = False) -> dict:
     doc = json.loads(FIXTURE.read_text())
     adu = [d for d in doc["draws"] if d["scenario"] == "adu"]
     for s, k in SCALE.items():
@@ -40,6 +40,8 @@ def _bundle(*, fees_local_half: bool = True, need: bool = True) -> dict:
         doc["need"] += [{**n, "scenario": s} for n in doc["need"] if n["scenario"] == "adu"]
     if not need:
         doc["need"] = []
+    if not shortfall:  # the share-of-need view (the fallback when a bundle has no shortfall row)
+        doc["shortfall"] = []
     return doc
 
 
@@ -119,3 +121,31 @@ def test_a_bundle_without_need_rows_says_so(tmp_path):
     html = _render(tmp_path, _bundle(need=False))["html"]
     assert "No housing-need estimate is coded for this state." in html
     assert "needbar" not in html
+
+
+def test_shortfall_view_stacks_the_reforms_on_what_gets_built_anyway(tmp_path):
+    """Ben, 2026-11-19: need left after homes built anyway; numbers trace to results_shortfall and draws."""
+    doc = _bundle(shortfall=True)
+    sf = doc["shortfall"][0]
+    html = _render(tmp_path, doc)["html"]
+    assert 'data-need-kind="shortfall"' in html and html.count('<svg class="needbar"') == 1
+    assert f"needs about {_fmt(sf['need'])} more homes by 2031" in html
+    assert f"{_fmt(sf['shortage'])} the state is already short" in html
+    assert f"{_fmt(sf['lost'])} to replace homes lost" in html
+    shown = ("adu", "missing_middle", "fees_local_half")
+    together = sum(_net([d for d in doc["draws"] if d["scenario"] == s]) for s in shown)
+    lo, hi = np.percentile(together, [10, 90])
+    assert f"{_fmt(lo)} to {_fmt(hi)} net new homes" in html
+    if sf["gap"] > 0:
+        assert f"leaving a gap of about {_fmt(sf['gap'])} homes" in html
+    else:
+        assert "would cover the need" in html
+    assert f"could run from {_fmt(sf['gap_low'])} to {_fmt(sf['gap_high'])}" in html  # the gap's full range
+
+
+def test_shortfall_view_says_when_building_anyway_covers_the_need(tmp_path):
+    doc = _bundle(shortfall=True)
+    sf = doc["shortfall"][0]
+    sf.update(built=sf["need"] + 1000, gap=-1000.0)
+    html = _render(tmp_path, doc)["html"]
+    assert "homes the market builds anyway" in html and "would cover the need" in html

@@ -734,6 +734,41 @@ class ResultsAffordability(_Strict):
         return not df.duplicated(["state", "home_type", "place_type", "rent_kind", "fee_case"]).any()
 
 
+class ResultsShortfall(_Strict):
+    """The shortfall view of housing need (`model/shortfall.py`; Ben, 2026-11-19): one row per state. The need
+    is the shortage today plus household growth over the five years (negative where households are projected
+    to fall) plus homes lost over the five years (`stock_loss_rate` x the ACS housing stock in `stock_year` x
+    5); `built` is the no-change forecast of homes permitted, all sizes, over the five years (P10, P50, P90);
+    the gap is need minus built, with bounds from the need's low and high ends against built at P90 and P10. A
+    gap at or below zero means homes built anyway would cover the need at that end."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    shortage_low: Series[float] = pa.Field(ge=0)
+    shortage: Series[float] = pa.Field(ge=0)
+    shortage_high: Series[float] = pa.Field(ge=0)
+    growth_low: Series[float] = pa.Field()
+    growth: Series[float] = pa.Field()
+    growth_high: Series[float] = pa.Field()
+    stock: Series[float] = pa.Field(gt=0)
+    stock_year: Series[pd.Int64Dtype] = pa.Field(ge=2009, le=2100)
+    lost_low: Series[float] = pa.Field(ge=0)
+    lost: Series[float] = pa.Field(ge=0)
+    lost_high: Series[float] = pa.Field(ge=0)
+    need_low: Series[float] = pa.Field()
+    need: Series[float] = pa.Field()
+    need_high: Series[float] = pa.Field()
+    built_p10: Series[float] = pa.Field(ge=0)
+    built: Series[float] = pa.Field(ge=0)
+    built_p90: Series[float] = pa.Field(ge=0)
+    gap_low: Series[float] = pa.Field()
+    gap: Series[float] = pa.Field()
+    gap_high: Series[float] = pa.Field()
+
+    @pa.dataframe_check
+    def one_row_per_state(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state"]).any()
+
+
 class ResultsAduBaseline(_Strict):
     """Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over
     the draws: what the ADU scenario's added range stacks on."""
@@ -774,6 +809,7 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_adu_place_types": ResultsAduPlaceTypes,
     "results_adu_baseline": ResultsAduBaseline,
     "results_affordability": ResultsAffordability,
+    "results_shortfall": ResultsShortfall,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -889,7 +925,7 @@ HISTORY = [
         "market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county "
         "rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income "
         "needed and share of AMI by home type and place type, market and break-even; "
-        "WS-NEED-AMI part B, #496)",
+        "WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway)",
     ),
 ]
 
