@@ -17,7 +17,7 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
   includes everything an agent reads). With `--budget N`, save it once right after init:
   `uv run python -m lotline.rule_agents ledger limits <RUN> --tokens N`, so every agent's `ledger status`
   uses it. After each
-  subagent returns, record the tokens the Agent tool reports:
+  subagent returns, record (only you record tokens; agents record their fetches and searches) the tokens the Agent tool reports:
   `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> <agent> --tokens N`.
 - Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID>`;
   exit code 3 (`"stop": true`) means no more research on that place: take what is coded, turn every open

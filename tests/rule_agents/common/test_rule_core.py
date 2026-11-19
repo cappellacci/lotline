@@ -642,3 +642,10 @@ def test_a_login_page_is_a_blocker_and_never_stored(docs, web):
     r = fetch.get("https://news.example/notice", "fees", "r1", docs=docs, http=http, doc_type="fee_schedule")
     assert r.blocker == "login_required" and r.doc_id is None
     assert docs.records() == {}  # nothing to offer as "already held"
+
+
+def test_adu_holdouts_for_a_state_with_no_settings_file_are_none():
+    """`adu worklist` crashed for VT (no config/states/vt.yaml) in the South Burlington proof of concept."""
+    from lotline.rule_agents.adu.places import blind_holdouts
+
+    assert blind_holdouts("ZZ") == []

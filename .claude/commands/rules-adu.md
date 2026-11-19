@@ -31,7 +31,7 @@ it; it is not repeated here). The ones every step of this command enforces:
 
 - Every place has a budget (default 250k tokens, 12 fetches, 8 searches; the Agent tool's token count
   includes everything an agent reads). For other limits, save them once after `run-dir`:
-  `uv run python -m lotline.rule_agents ledger limits RUN_DIR --tokens N`. After each subagent returns, record
+  `uv run python -m lotline.rule_agents ledger limits RUN_DIR --tokens N`. After each subagent returns, record (only you record tokens; agents record their fetches and searches)
   the tokens the Agent tool reports: `uv run python -m lotline.rule_agents ledger add RUN_DIR <GEOID> <agent>
   --tokens N` (for a batch, split evenly across its places).
 - Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status RUN_DIR <GEOID>`;

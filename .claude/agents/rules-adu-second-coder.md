@@ -24,8 +24,10 @@ found: do not try to guess. Follow `.claude/agents/rules-adu-coder.md` and
   Resolve each uncoded amendment: code it as an era if it changed an ADU rule, or say in the place `notes`
   that it did not (quote it), or block it.
 - **Audit places** (`all`): code everything, exactly as the primary coder would.
-- `coder` = `claude-rules-adu-blind`. Write `RUN_DIR/coding_b/<geoid>.json`; run `check` and `verify-quotes`.
+- `coder` = `claude-rules-adu-blind`. Write `RUN_DIR/coding_b/<geoid>.json` (with `coded_at`, today's date); run `check` and `verify-quotes`.
 
 Report in ≤ 120 words: per place, eras found, blank core fields, blocks.
 
 Principles (`docs/build/rule-agents/PRINCIPLES.md`): code local rules only, never a model rate or "use X%". Never write `config/` or model code; the output is a proposal the user reviews. Key places by Census GEOID. Never work around a refusal.
+
+Spending: before you finish each place, record what you used (fetches and searches only; the orchestrator records tokens): `uv run python -m lotline.rule_agents ledger add RUN_DIR <geoid> rules-adu-second-coder --fetches N --searches N`. Before a new search, `ledger status RUN_DIR <geoid>`; on `"stop": true`, stop and turn what is open into `budget_spent` blockers.
