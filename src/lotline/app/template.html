@@ -250,6 +250,11 @@ svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--i
 .acc-track .one { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink); }
 .acc-track .lab { position: absolute; top: -20px; transform: translateX(-50%); font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
 .acc-track .val { position: absolute; top: 3px; font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
+.data-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space-3); margin: 0 0 var(--space-6); }
+.data-tile { background: var(--paper); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
+.data-tile .k { color: var(--ink-muted); font-size: 13px; line-height: 18px; }
+.data-tile .v { font-size: clamp(18px, 1.9vw, 24px); line-height: 32px; white-space: nowrap; font-weight: 700; margin: var(--space-1) 0; font-variant-numeric: tabular-nums; color: var(--ink); }
+.data-tile .d { color: var(--ink-muted); font-size: 13px; line-height: 18px; }
 .ami { margin: var(--space-4) 0 0; }
 .ami p, .ami ol { max-width: none; }
 .ami-grid { display: grid; grid-template-columns: minmax(150px, 210px) 1fr minmax(190px, 240px); gap: var(--space-2) var(--space-4); align-items: center; }
@@ -350,6 +355,7 @@ table.checks td:last-child { min-width: 260px; }
   <section class="part" id="page-data" data-section="data" hidden>
     <h2 class="h1">The data</h2>
     <p class="lead" id="data-lead"></p>
+    <div class="data-tiles" id="data-tiles"></div>
     <div class="card" id="data-method"><h3 class="h3">What the model needs, and from which years</h3>
       <p class="body-small">Every estimate starts from the same question: how many lots could take an extra home under the reform, and how often have owners actually built on lots like them? Answering it takes seven kinds of data.</p>
       <div class="scroll"><table><thead><tr><th>Data</th><th>What it tells the model</th><th>Where it comes from</th><th>Years</th></tr></thead><tbody>
@@ -1242,6 +1248,7 @@ const SECTIONS = {
   },
   data(b) {
     $("data-lead").textContent = dataLead();
+    $("data-tiles").innerHTML = dataTilesHtml();
     const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] };
     const rows = d.sources.map((r) => {
       const used = r.parcels_on_file == null ? `<span class="muted">Available</span>`
@@ -2004,6 +2011,26 @@ function wireResults() {
 }
 
 // The data tab's opening summary: what was gathered across every state, from the data dashboard summary.
+// The data tab's headline numbers (Ben, 2026-11-19: under the title and lead), summed over every state in the
+// data dashboard summary; the same five tiles the dashboard showed, which no longer shows its own row.
+function dataTilesHtml() {
+  const by = Object.values(DATA.data.by_state || {}).map((s) => s.totals).filter(Boolean);
+  if (!by.length) return "";
+  const t = (k) => by.reduce((a, x) => a + (Number(x[k]) || 0), 0);
+  const single = by.reduce((a, x) => a + (((x.coder_agreement || {}).single_coder) || 0), 0);
+  const big = (v) => (v >= 1e6 ? `${(v / 1e6).toLocaleString("en-US", { maximumFractionDigits: 2 })}M` : fmtInt(v));
+  const share = (a, b) => (b ? `${((a / b) * 100).toLocaleString("en-US", { maximumFractionDigits: 1 })}%` : "–");
+  const nRef = t("reforms");
+  const tiles = [
+    ["Population covered by parcel data", share(t("population_covered"), t("population")), `${big(t("population_covered"))} of ${big(t("population"))} residents (2020)`],
+    ["Jurisdictions with parcels", `${fmtInt(t("jurisdictions_covered"))} / ${fmtInt(t("jurisdictions"))}`, `${fmtInt(t("counties_with_parcels"))} of ${fmtInt(t("counties_census") || t("counties"))} counties have a roll`],
+    ["Parcels on file", big(t("parcels")), `${share(t("parcels_zoned"), t("parcels"))} carry a zoning code`],
+    ["Eligible parcels", `${big(t("eligible_adu"))} ADU`, `${big(t("eligible_missing_middle"))} missing middle`],
+    ["Coded reforms", fmtInt(nRef), `${fmtInt(t("reform_places"))} places · ${nRef ? Math.round(((nRef - single) / nRef) * 100) : 0}% second-coded`],
+  ];
+  return tiles.map(([k, v, d]) => `<div class="data-tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="d">${esc(d)}</div></div>`).join("");
+}
+
 function dataLead() {
   const o = DATA.data.overall;
   const goal = "to measure and compare how housing reforms have actually performed";
