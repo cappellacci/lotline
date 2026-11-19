@@ -370,7 +370,7 @@ function estimated(m, c) { return !!c && PARCEL_METRICS.includes(m.key) && !(c.p
 function countyTip(f, c, m) {
   if (!c) return `<b>${esc(f.properties.name)} County</b><div class="muted">No jurisdictions in the table</div>`;
   const src = Object.entries(c.sources || {}).map(([s, v]) => `${s} (${v.vintage})`).join(", ") || "none";
-  return `<b>${esc(c.name)}</b> <span class="badge">${c.st}</span>` +
+  return `<b>${esc(c.name)}</b> <span class="badge">${esc(c.st)}</span>` +
     (["pop_cov", "parcels", "reforms"].includes(m.key) ? "" : row(m.label, m.fmt(m.value(c)))) + row("Population 2020", fmtK(c.pop)) +
     row("Population covered", c.pop ? pct(c.pop_covered / c.pop, 0) : "–") +
     row("Jurisdictions with parcels", `${c.jurisdictions_covered} / ${c.jurisdictions}`) +
@@ -383,7 +383,7 @@ function countyTip(f, c, m) {
     `<div class="muted" style="margin-top:4px">Sources: ${esc(src)}</div>`;
 }
 function jurTip(j) {
-  return `<b>${esc(j.name)}</b> <span class="badge">${j.st}</span>` + row("Type", KIND[j.kind] || j.kind) +
+  return `<b>${esc(j.name)}</b> <span class="badge">${esc(j.st)}</span>` + row("Type", KIND[j.kind] || j.kind) +
     row("Population 2020", fmtK(j.pop) + (j.pop_estimated ? "*" : "")) + row("Parcels on file", fmt(j.parcels)) +
     row("Roll", j.source ? `${j.source} (${j.vintage})` : "none") + row("Data tier", j.tier) +
     row("Reforms coded", Object.entries(j.reforms || {}).map(([t, n]) => `${(THEMES[t] || THEMES.other).label} ${n}`).join(", ") || "none");
@@ -498,7 +498,7 @@ function renderTimeline() {
     .attr("fill", r => r.coder_agreement === "single_coder" ? css("--surface-1") : css(THEMES[r.t].color))
     .attr("stroke", r => css(THEMES[r.t].color)).attr("stroke-width", 1.8)
     .style("cursor", r => r.source_url ? "pointer" : "default")
-    .on("mousemove", (e, r) => showTip(e, `<b>${esc(r.place)}</b> <span class="badge">${r.st}</span><div>${esc(THEMES[r.t].label)}${r.t === "other" ? " (" + esc(r.theme) + ")" : ""} · ${esc(r.status)}</div>` +
+    .on("mousemove", (e, r) => showTip(e, `<b>${esc(r.place)}</b> <span class="badge">${esc(r.st)}</span><div>${esc(THEMES[r.t].label)}${r.t === "other" ? " (" + esc(r.theme) + ")" : ""} · ${esc(r.status)}</div>` +
       row("Adopted", r.adopted || "–") + row("Effective", r.effective || "–") + row("Second coder", r.coder_agreement.replace("_", " ")) +
       `<div class="muted" style="margin-top:4px">${esc(r.component)}</div><div class="muted">${esc(r.id)}${r.source_url ? " · click for source" : ""}</div>`))
     .on("mouseleave", hideTip)
@@ -607,7 +607,7 @@ function renderChecks() {
   document.getElementById("checks").innerHTML = all
     .sort((a, b) => ["warn", "note", "ok"].indexOf(a.level) - ["warn", "note", "ok"].indexOf(b.level))
     .map(c => `<div class="check"><span class="icon" style="background:var(${icon[c.level][1]})" aria-label="${c.level}">${icon[c.level][0]}</span>
-      <div><div><span class="badge">${c.st}</span> ${esc(c.title)}</div><div class="det">${esc(c.detail)}${c.items.length ? "<br>" + c.items.map(esc).join(", ") : ""}</div></div>
+      <div><div><span class="badge">${esc(c.st)}</span> ${esc(c.title)}</div><div class="det">${esc(c.detail)}${c.items.length ? "<br>" + c.items.map(esc).join(", ") : ""}</div></div>
       <span class="val">${esc(c.value)}</span></div>`).join("");
 }
 

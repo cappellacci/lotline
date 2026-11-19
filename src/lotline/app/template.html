@@ -1081,7 +1081,7 @@ function feeTodayHtml(b, name) {
   if (!f || !(f.places || []).length) return `<section><h3 class="h3">What builders pay in fees today</h3><p class="pending">No city fee schedules are coded for this state yet.</p></section>`;
   const S = f.summary || {}, h = S.house || {}, hb = f.handbook_fee, cut = hb * f.handbook_cut_share;
   const col = esc(scenColor("fees"));
-  const lede = `<p class="body-small">We looked at the fee schedules of <button type="button" class="linkish" data-open="fee-places">${h.places} ${esc(name)} ${h.places === 1 ? "place" : "places"}</button> to see what builders really pay to build a new home today (in 2025 dollars). The typical place charges <b>${usd(h.median)}</b> for a new house, from ${usd(h.min)} to ${usd(h.max)}. Cutting the real fee in half saves <b>${usd(h.median / 2)}</b> on the typical house.</p>`;
+  const lede = `<p class="body-small">We looked at the fee schedules of <button type="button" class="linkish" data-open="fee-places">${esc(h.places)} ${esc(name)} ${h.places === 1 ? "place" : "places"}</button> to see what builders really pay to build a new home today (in 2025 dollars). The typical place charges <b>${usd(h.median)}</b> for a new house, from ${usd(h.min)} to ${usd(h.max)}. Cutting the real fee in half saves <b>${usd(h.median / 2)}</b> on the typical house.</p>`;
   // strip: every place's house fee on one dollar axis, against the Challenge's levels. Dots stack upward where
   // they would overlap (a small beeswarm); no gridlines; one row of labels above and one below.
   const W = 640, L = 12, Rm = 12, R = 5, top = Math.max(hb, h.max || 0) * 1.04, x = (v) => L + (v / top) * (W - L - Rm);
