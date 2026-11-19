@@ -98,6 +98,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 details summary { cursor: pointer; color: var(--text-secondary); }
 .defs dt { font-weight: 600; margin-top: 8px; }
 .defs dd { margin: 2px 0 0; color: var(--text-secondary); }
+.checks-fold > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.checks-fold[open] > summary { margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -171,7 +173,7 @@ details summary { cursor: pointer; color: var(--text-secondary); }
 
   <section class="card">
     <div class="card-head"><div><h2>Data checks</h2><p class="muted">Automatic checks run when this page was built. Warnings are things to look at, not errors by themselves.</p></div></div>
-    <div class="checks" id="checks"></div>
+    <details class="checks-fold"><summary id="checks-sum">Show the checks</summary><div class="checks" id="checks"></div></details>
   </section>
 
   <section class="card">
@@ -597,7 +599,12 @@ function renderPermits() {
 // ---------------------------------------------------------------- checks
 function renderChecks() {
   const icon = { ok: ["✓", "--good"], note: ["i", "--text-muted"], warn: ["!", "--critical"] };
-  document.getElementById("checks").innerHTML = scoped().flatMap(s => s.checks.map(c => ({ ...c, st: s.state })))
+  const all = scoped().flatMap(s => s.checks.map(c => ({ ...c, st: s.state })));
+  const n = (lv) => all.filter(c => c.level === lv).length;
+  const plural = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`;
+  document.getElementById("checks-sum").textContent =
+    `${plural(all.length, "check")}: ${plural(n("warn"), "warning")}, ${plural(n("note"), "note")}, ${n("ok")} OK`;
+  document.getElementById("checks").innerHTML = all
     .sort((a, b) => ["warn", "note", "ok"].indexOf(a.level) - ["warn", "note", "ok"].indexOf(b.level))
     .map(c => `<div class="check"><span class="icon" style="background:var(${icon[c.level][1]})" aria-label="${c.level}">${icon[c.level][0]}</span>
       <div><div><span class="badge">${c.st}</span> ${esc(c.title)}</div><div class="det">${esc(c.detail)}${c.items.length ? "<br>" + c.items.map(esc).join(", ") : ""}</div></div>
