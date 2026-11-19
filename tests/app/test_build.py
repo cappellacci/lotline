@@ -404,7 +404,7 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
     assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
-    for part in ("Data available and data used", 'id="dash-host"', 'id="dash-frame"', 'id="dash-state"'):
+    for part in ("Where each dataset comes from", 'id="dash-host"', 'id="dash-frame"', 'id="dash-state"'):
         assert part in html
     # The tier card was dropped (Ben, 2026-11-09): the dashboard carries coverage.
     assert '<p class="eyebrow">Data tier</p>' not in html

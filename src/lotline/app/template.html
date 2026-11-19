@@ -1260,9 +1260,10 @@ const SECTIONS = {
     }).join("");
     // The dashboard sits in #dash-host (kept across state changes); the full source list for the picked state
     // goes at the very bottom, in #data-sources.
-    $("data-sources").innerHTML = `<div class="card"><h3 class="h3">Data available and data used</h3>
-        <div class="scroll"><table><thead><tr><th>Source</th><th>Builds table</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <p class="source">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. Full provenance in docs/data_provenance.md.</p></div>`;
+    $("data-sources").innerHTML = `<div class="card"><h3 class="h3">Where each dataset comes from</h3>
+        <p class="body-small" style="margin:0 0 var(--space-2)">Every source the pipeline can download for ${esc(st)}, with a link to where it comes from. "In this build" says whether the model used it; for parcel rolls, how many of the parcels on file it used after picking one roll per place.</p>
+        <div class="scroll"><table><thead><tr><th>Source (links to the data)</th><th>Feeds</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
+        ${more(`<p class="source" style="margin:0">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. "Feeds" is the model table the source is turned into. Versions, access dates, licences and cleaning steps for every source are in docs/data_provenance.md.</p>`, "About this list")}</div>`;
     return "";  // the state data tier card was dropped (Ben, 2026-11-09): the dashboard below carries coverage
   },
   trust(b) {
@@ -1961,7 +1962,12 @@ function ensureDashboard() {
   f.onload = () => {
     DASH.loaded = true;
     const doc = f.contentDocument;
-    const fit = () => { f.style.height = `${doc.documentElement.scrollHeight}px`; };
+    // size the frame to its content: documentElement.scrollHeight never drops below the frame's own height, so
+    // a fold that closes (the data checks) would leave a gap; the body's bottom edge shrinks with it
+    const fit = () => {
+      const b = doc.body, m = parseFloat(doc.defaultView.getComputedStyle(b).marginBottom) || 0;
+      f.style.height = `${Math.ceil(b.getBoundingClientRect().bottom + m)}px`;
+    };
     new ResizeObserver(fit).observe(doc.body);
     dashScope(); fit();
   };
@@ -2034,11 +2040,11 @@ function dataTilesHtml() {
 
 function dataLead() {
   const o = DATA.data.overall;
-  if (!o) return "We chose a set of states to build our model, for their history of reforms, the range in their data quality and the variety of their housing markets.";
+  if (!o) return "We chose a set of states to build our model based on their history of reforms, the range in their data quality and the variety of their housing markets.";
   const n = o.states.length, words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
   const st = `${n < 10 ? words[n] : n} state${n === 1 ? "" : "s"}`;
   const mill = o.parcels >= 1e6 ? `${(o.parcels / 1e6).toLocaleString("en-US", { maximumFractionDigits: 1 })} million` : fmtInt(o.parcels);
-  return `We chose ${st} to build our model, for their history of reforms, the range in their data quality and the variety of their housing markets. For them we assembled data on ${mill} parcels and looked up and coded ${fmtInt(o.reforms)} local zoning and housing rules in ${fmtInt(o.reform_places)} cities and towns, to see how specific places responded to policy changes and to compare what reforms could do in each state.`;
+  return `We chose ${st} to build our model based on their history of reforms, the range in their data quality and the variety of their housing markets. For them we assembled data on ${mill} parcels and looked up and coded ${fmtInt(o.reforms)} local zoning and housing rules in ${fmtInt(o.reform_places)} cities and towns, to see how specific places responded to policy changes and to compare what reforms could do in each state.`;
 }
 
 function footer(b) {
