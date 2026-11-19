@@ -27,5 +27,6 @@ holdouts:
     released_note: >-
       Frozen (#500, D-104) and scored on Census permits 2021-2025 (#501, D-105: fails the pass rule). Wisconsin's
       full data can now be built. Anything built from it is post-test and is labelled so; it never re-scores
-      V8. A rescore needs the blind tables, whose hashes are in the frozen file.
+      V8. The blind tables are kept in ~/lotline-data-v8-blind (processed/WI copied 2026-11-19, hashes equal to
+      the frozen file; raw and manual link to the shared folder): rerun V8 with LOTLINE_DATA_DIR set to it.
 sources: []

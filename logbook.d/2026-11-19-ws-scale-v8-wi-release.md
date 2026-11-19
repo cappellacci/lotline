@@ -9,5 +9,10 @@
 - **AI:** Claude made the edit. Checks:
   - `holdout.still_blind` returns nothing for Wisconsin;
   - the holdout and state-schema tests pass.
-- **Open / next:** keep a blind copy of the Wisconsin processed tables before the first full rebuild, so V8
-  can be re-run (as V9's `lotline-data-v9-blind`).
+- **Blind copy (Ben 2026-11-19, "All as recommended"):** saved `~/lotline-data-v8-blind` before any full
+  Wisconsin rebuild, as for V9. It holds:
+  - `processed/WI` copied, with the five input tables' SHA-256 checked equal to the frozen file;
+  - `manifest.jsonl` copied;
+  - `raw` and `manual` linked to the shared folder.
+  V8's scripts are rerun with `LOTLINE_DATA_DIR=~/lotline-data-v8-blind`.
+- **Open / next:** full Wisconsin rebuild only after this merges.
