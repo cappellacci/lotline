@@ -19,7 +19,8 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
   uses it. After each
   subagent returns, record (only you record tokens; agents record their fetches and searches) the tokens the Agent tool reports:
   `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> <agent> --tokens N`.
-- Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID>`;
+- Each agent also has its own share of the place's tokens (scout 60k, first coder 60k, second coder 50k, verifier/reconciler 30k, hand-off 20k, fees enumerator 30k; scaled to `--budget`), and the second coder's and reviewer's unspent shares are held back from the others, so an early agent cannot spend the check. Before starting a subagent for a place,
+  `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID> --agent <agent name>`;
   exit code 3 (`"stop": true`) means no more research on that place: take what is coded, turn every open
   field into a `budget_spent` blocker, and move on. If no coder has written a finding yet, you write
   `findings/<g>.coder-a.json` yourself: no rules, one `budget_spent` blocker per source the scout listed

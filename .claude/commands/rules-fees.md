@@ -39,7 +39,7 @@ is missing in plain words (its fix line) and stop.
    agent returns, record (only you record tokens; agents record their fetches and searches) its token use from the Agent tool's report:
    `uv run python -m lotline.rule_agents ledger add "$RUN" <geoid> <agent> --tokens N`, with `<agent>` the
    agent's full name (`rules-fees-scout`, `rules-fees-reader`, ...) so its lines match its own (agents record their own
-   fetches and searches). Before spawning more work for a place, `ledger status "$RUN" <geoid>`; on `stop`,
+   fetches and searches). Each agent also has its own share of the place's tokens (scout 60k, first coder 60k, second coder 50k, verifier/reconciler 30k, hand-off 20k, fees enumerator 30k; scaled to `--budget`), and the second coder's and reviewer's unspent shares are held back from the others, so an early agent cannot spend the check. Before spawning an agent for a place, `ledger status "$RUN" <geoid> --agent <agent name>`; on `stop`,
    hand the place's open components to the user as `budget_spent` tasks.
 
 ## 1. Enumerate levying bodies

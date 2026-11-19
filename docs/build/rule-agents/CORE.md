@@ -19,7 +19,7 @@ their PRs merge (their sessions know their code best).
 | `evidence` | `Evidence` (+ `doc_id`, `page`, `quote_status`), `Blocker`, `max_confidence` rule | MM `findings.py` + fees |
 | `text` | What a reader sees in HTML; quote check (with pypdf word-split pass); page of a quote | MM + ADU |
 | `excerpts` | Short page-cited passages for coders, by category keywords | new (token cut) |
-| `budget` | Per-place limits and a spending ledger | new (token cut) |
+| `budget` | Per-place limits, a share per agent role (the second coder's and reviewer's held back), and a spending ledger | new (token cut) |
 | `handoff` | Browser tips, closed results, acceptance rule, held documents, saved-file intake | MM `handoff.py` |
 | `dates`, `pdftext` | Date parsing and date-basis tags; PDF text by page | MM |
 | `importer` | The user's step: preview a proposal against `config/<table>/<st>.csv`, then write it (text-level merge, schema check, never deletes) | new |

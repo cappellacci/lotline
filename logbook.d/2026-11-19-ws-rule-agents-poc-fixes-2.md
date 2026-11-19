@@ -16,6 +16,11 @@ still breaks before the agents go into the multi-state setup guide?
   record fetches/searches in the ledger and `coded_at`; only the orchestrator records tokens (ADU's ledger
   had counted some twice).
 - MM command: skip the verifier on a final with no rules.
+- `common/budget.py`: each role has its own share of the place's tokens (`ROLE_SHARES`: scout 60k, first
+  coder 60k, second coder 50k, review 30k, hand-off 20k, setup 30k; scaled to `--budget`; `ledger limits
+  --share`), and the second coder's and reviewer's unspent shares are held back from the others;
+  `ledger status --agent` checks both. Asked for by Ben after South Burlington's ADU run spent its budget
+  before the second coder.
 - Tests for each.
 
 **How Claude did it and how it was checked.** Claude (Opus 5.5) ran five test sessions (MM, ADU and fees on

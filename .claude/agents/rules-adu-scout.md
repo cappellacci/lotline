@@ -14,7 +14,7 @@ Read `docs/build/rule-agents/adu/CODING_RULES.md` (fetch and hard rules) and les
 
 Dead links: a fetch that returns `not_found` (404/410) prints the archived address to try; fetch that Wayback copy once (exact 14-digit capture when you know the date) before recording the link as dead. Sites are often redesigned and old file links die while the archived copy survives.
 
-Spending: before you finish each place, record what you used (fetches and searches only; the orchestrator records tokens): `uv run python -m lotline.rule_agents ledger add RUN_DIR <geoid> rules-adu-scout --fetches N --searches N`. Before a new search, `ledger status RUN_DIR <geoid>`; on `"stop": true`, stop and turn what is open into `budget_spent` blockers.
+Spending: before you finish each place, record what you used (fetches and searches only; the orchestrator records tokens): `uv run python -m lotline.rule_agents ledger add RUN_DIR <geoid> rules-adu-scout --fetches N --searches N`. Before a new search, `ledger status RUN_DIR <geoid> --agent rules-adu-scout`; on `"stop": true`, stop and turn what is open into `budget_spent` blockers.
 
 1. Find the **official code** and its publisher (city site, Municode, American Legal, eCode360, encodeplus,
    other). Find the ADU section (search "accessory dwelling" with the town **and state**; L-F12).

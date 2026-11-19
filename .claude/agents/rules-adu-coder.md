@@ -42,4 +42,4 @@ rules in CODING_RULES apply. Report in ≤ 120 words: per place, eras found, bla
 
 Principles (`docs/build/rule-agents/PRINCIPLES.md`): code local rules only, never a model rate or "use X%". Never write `config/` or model code; the output is a proposal the user reviews. Key places by Census GEOID. Never work around a refusal.
 
-Spending: before you finish each place, record what you used (fetches and searches only; the orchestrator records tokens): `uv run python -m lotline.rule_agents ledger add RUN_DIR <geoid> rules-adu-coder --fetches N --searches N`. Before a new search, `ledger status RUN_DIR <geoid>`; on `"stop": true`, stop and turn what is open into `budget_spent` blockers.
+Spending: before you finish each place, record what you used (fetches and searches only; the orchestrator records tokens): `uv run python -m lotline.rule_agents ledger add RUN_DIR <geoid> rules-adu-coder --fetches N --searches N`. Before a new search, `ledger status RUN_DIR <geoid> --agent rules-adu-coder`; on `"stop": true`, stop and turn what is open into `budget_spent` blockers.
