@@ -44,7 +44,8 @@ def _fmt_n(x: float) -> str:
 
 
 def _pct(x: float) -> str:
-    return f"{x * 100:.1f}%"
+    """The strip's pct0: whole percents."""
+    return f"{int(x * 100 + 0.5)}%"  # Math.round, not Python's round-half-even
 
 
 def _row(doc, home_type, rent_kind, fee_case, place_type="state"):
@@ -63,10 +64,15 @@ def test_strip_numbers_trace_to_the_bundle(tmp_path):
     for h in ("adu", "plex_unit", "house"):
         m = _row(doc, h, "market", "current")
         # midpoint with its range, and the dollar income beside it (S6)
-        assert f"needs about ${_fmt_n(m['income'])} a year, {_pct(m['ami_share'])} of AMI" in html
+        assert f"income about ${_fmt_n(m['income'])} a year" in html
+        assert f"<b>{_pct(m['ami_share'])} of AMI</b>" in html
         assert f"({_pct(m['ami_share_p10'])}–{_pct(m['ami_share_p90'])})" in html
         be = _row(doc, h, "break_even", "current")
-        assert f"{_pct(be['ami_share_p10'])} to {_pct(be['ami_share_p90'])}" in html
+        assert (
+            f"needs {_pct(be['ami_share'])} of AMI ({_pct(be['ami_share_p10'])}–{_pct(be['ami_share_p90'])})"
+            in html
+        )
+    assert html.index("How we worked this out") < html.index("ami-grid") < html.index("How to read it")
     assert "What this is not" in html and "not what they rent for" in html
 
 
@@ -77,7 +83,7 @@ def test_strip_shows_no_place_below_the_state(tmp_path):
     core = _row(doc, "adu", "market", "current", "core")
     state = _row(doc, "adu", "market", "current")
     if round(core["income"], -1) != round(state["income"], -1):
-        assert f"${_fmt_n(core['income'])} a year" not in html
+        assert f"income about ${_fmt_n(core['income'])} a year" not in html
 
 
 @needs_node
@@ -87,8 +93,8 @@ def test_fee_line_follows_the_switch(tmp_path):
     bench = _render(tmp_path / "b", doc, fee="fees")["html"]
     half = _row(doc, "plex_unit", "break_even", "fees_local_half")
     hb = _row(doc, "plex_unit", "break_even", "fees")
-    assert "with real local fees cut in half" in local and f"${_fmt_n(half['value'])} a month" in local
-    assert "Handbook benchmark" in bench and f"${_fmt_n(hb['value'])} a month" in bench
+    assert f"With real local fees cut in half: ${_fmt_n(half['value'])} a month" in local
+    assert f"($50,000 fee cut in half): ${_fmt_n(hb['value'])} a month" in bench
     assert "The model charges ADUs no fee" in local
 
 

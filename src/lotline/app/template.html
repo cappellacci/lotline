@@ -236,11 +236,30 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .model-card .one { font-size: 17px; line-height: 26px; max-width: 70ch; margin: 0; }
 .model-card .status { margin: var(--space-1) 0 var(--space-2); }
 @media (max-width: 640px) { .model-card { padding: var(--space-3); } }
+.need-lead { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 600; color: var(--ink); margin: var(--space-2) 0 0; }
 svg.needbar { width: 100%; min-width: 520px; height: auto; display: block; margin: var(--space-3) 0 var(--space-1); }
 svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-muted); }
-svg.amistrip { width: 100%; min-width: 560px; height: auto; display: block; margin: var(--space-3) 0 var(--space-1); }
-svg.amistrip text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-muted); }
-svg.amistrip .lab { font-family: var(--font-sans); font-size: 13px; fill: var(--ink); }
+.ami { margin: var(--space-4) 0 0; }
+.ami p, .ami ol { max-width: none; }
+.ami-grid { display: grid; grid-template-columns: minmax(150px, 220px) 1fr minmax(170px, 230px); gap: var(--space-2) var(--space-4); align-items: center; }
+.ami-grid .who { font-size: 15px; line-height: 20px; color: var(--ink); }
+.ami-grid .who small { display: block; color: var(--ink-muted); font-size: 13px; }
+.ami-grid .val { font-size: 15px; line-height: 20px; color: var(--ink); }
+.ami-grid .val small { display: block; color: var(--ink-muted); font-size: 13px; }
+.ami-track { position: relative; height: 32px; border: var(--stroke-hair) solid var(--rule); box-sizing: border-box;
+  background: linear-gradient(to right, var(--paper-sunken) 0 var(--b1), var(--survey-band) var(--b1) var(--b2), transparent var(--b2)); }
+.ami-track .rng { position: absolute; top: 15px; height: 2px; background: var(--ink); }
+.ami-track .dot { position: absolute; top: 9px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; box-sizing: border-box; }
+.ami-track .dot.mkt { background: var(--ink); }
+.ami-track .dot.be { background: var(--paper); border: 2px solid var(--ink); }
+.ami-track .off { position: absolute; top: 7px; right: 2px; font-size: 12px; color: var(--ink-muted); }
+.ami-axis { position: relative; height: 18px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); }
+.ami-axis span { position: absolute; transform: translateX(-50%); }
+.ami-key { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: 13px; color: var(--ink-muted); margin: var(--space-3) 0 var(--space-2); }
+.ami-key i { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px; border-radius: 2px; }
+.ami-key i.mkt, .ami-key i.be { border-radius: 50%; }
+.ami-key i.mkt { background: var(--ink); } .ami-key i.be { border: 2px solid var(--ink); box-sizing: border-box; }
+@media (max-width: 640px) { .ami-grid { grid-template-columns: 1fr; } .ami-grid .blank { display: none; } }
 svg.allstates { width: 100%; min-width: 560px; height: auto; display: block; margin: var(--space-3) 0; }
 svg.allstates text { font-family: var(--font-mono); font-size: 11px; fill: var(--ink-muted); }
 svg.allstates .lab { font-family: var(--font-sans); font-size: 12px; fill: var(--ink); }
@@ -1156,7 +1175,7 @@ const SECTIONS = {
       <div class="card ev" id="model-card"></div>
       ${flagHtml(b.meta)}
       <div class="card"><h3 class="h3">Share of housing need</h3><div id="need"></div>
-        <h4 style="margin-top:var(--space-6)">Who the new homes serve</h4><div id="ami"></div></div>
+        <p class="need-lead" style="margin-top:var(--space-7)">Who the new homes serve</p><div id="ami"></div></div>
       <div class="card"><h3 class="h3">What it takes to pencil out</h3>
         <p class="pending">The single-family, duplex and fourplex pencil-out table (with each place's per-unit connection fees named) is not in the results bundle yet. It will appear here once the engine exports it.</p></div>
       <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
@@ -1298,9 +1317,6 @@ function needHtml(b, R) {
   const ranked = [...nk].sort((x, y) => net(y).p50 - net(x).p50);
   const nameOf = (s) => IN_NOTE[s] || scenLabel(s);
   const top = ranked[0], second = ranked[1];
-  const rankLine = ranked.length < 2 ? "" : `<p class="body" style="margin:var(--space-2) 0 0" id="need-rank"><b>${esc(nameOf(top).replace(/^./, (c) => c.toUpperCase()))} adds the most:</b> about ${esc(fmtN(net(top).p50))} net new homes (${esc(rng(net(top)))}), then ` +
-    ranked.slice(1).map((s) => `${esc(nameOf(s))}, about ${esc(fmtN(net(s).p50))} (${esc(rng(net(s)))})`).join(", then ") + "." +
-    (net(top).p10 < net(second).p90 ? ` The ranges overlap, so the order of ${esc(nameOf(top))} and ${esc(nameOf(second))} is not certain.` : "") + `</p>`;
   const bar = (n) => {
     const need = n.denominator;
     const W = 720, L = 0, R0 = 0, T = 18, Hb = 28, H = T + Hb + 46;
@@ -1329,29 +1345,47 @@ function needHtml(b, R) {
       <text x="0" y="${T + Hb + 38}">${esc(`Line: likely range of all three together, ${rng(all)}`)}</text>
     </svg>`;
   };
-  return kinds.map((n, i) => {
-    const sh = AGG.shareOfNeed(all, n);
-    const growth = n.denominator_kind === "household_growth_5y";
-    const lead = growth
-      ? `${named} needs about ${fmtN(n.denominator)} homes${end ? ` by ${end}` : " over the five years"}.`
-      : `${named} is short about ${fmtN(n.denominator)} homes today.`;
-    // When the need's high and low differ, say how far the midpoint moves; when they match, say nothing.
-    const alt = n.denominator_high !== n.denominator_low
-      ? ` If the need is ${fmtN(Math.min(n.denominator_high, n.denominator_low))} to ${fmtN(Math.max(n.denominator_high, n.denominator_low))} homes instead, the three together cover ${fmtPct(Math.min(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} to ${fmtPct(Math.max(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} at the midpoint.`
-      : "";
-    const each = nk.map((s) => {
-      const e = AGG.shareOfNeed(net(s), n);
-      return `<tr><td><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(s)}"></span> ${esc(scenLabel(s))}</td><td class="num">${esc(rng(net(s)))}</td><td class="num">${esc(`${fmtPct(e.share_p10)} to ${fmtPct(e.share_p90)}`)}</td><td class="num muted">${esc(fmtPct(e.share_p50))}</td></tr>`;
-    }).join("");
-    return `<section class="need-kind" data-need-kind="${esc(n.denominator_kind)}"${i ? ' style="margin-top:var(--space-6)"' : ""}>
-      <h4 class="h3" style="margin:var(--space-2) 0 0">${esc(n.label.replace(/^of /, "").replace(/^./, (c) => c.toUpperCase()))}</h4>
-      <p class="${n.is_headline ? "body" : "body-small"}" style="margin:var(--space-1) 0 0"><b>${esc(lead)}</b> These three reforms together add ${esc(rng(all))} of them (${esc(`${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}`)}).</p>
-      ${i === 0 ? rankLine : ""}
+  // One bar, against the headline kind (Ben, 2026-11-19): household growth where the state demographer projects
+  // growth, else the shortage. The other kind is one sentence under the bar, never a second bar.
+  const n = kinds[0], other = kinds.find((k) => k.denominator_kind !== n.denominator_kind);
+  const who = (src) => String(src || "").split(/[,:(]/)[0].trim();  // the publisher, the source text's first clause
+  const growth = n.denominator_kind === "household_growth_5y";
+  const lead = growth
+    ? `${named} needs about ${fmtN(n.denominator)} homes${end ? ` by ${end}` : " over the five years"}.`
+    : `${named} is short about ${fmtN(n.denominator)} homes today.`;
+  const from = growth
+    ? `That is the growth in households implied by the ${who(n.source)}'s population projections${end ? `, mid-${end - 5} to mid-${end}` : ""}.`
+    : `That is ${who(n.source)}'s estimate of the homes the state is missing${n.denominator_high !== n.denominator_low ? `; other estimates run up to ${fmtN(Math.max(n.denominator_high, n.denominator_low))}` : ""}.`;
+  const sh = AGG.shareOfNeed(all, n);
+  const pctR = (x) => `${fmtPct(x.share_p10)} to ${fmtPct(x.share_p90)}`;
+  const overlap = second && net(top).p10 < net(second).p90;
+  const cover = `<p class="body" style="margin:var(--space-2) 0 0" id="need-rank">The three reforms together would cover ${esc(pctR(sh))} of it (${esc(rng(all))} net new homes), and ${esc(nameOf(top))} would add the most (${esc(rng(net(top)))})${overlap ? `, though its range overlaps with that of ${esc(nameOf(second))}` : ""}.</p>`;
+  const alt = n.denominator_high !== n.denominator_low
+    ? ` If the need is ${fmtN(Math.min(n.denominator_high, n.denominator_low))} to ${fmtN(Math.max(n.denominator_high, n.denominator_low))} homes instead, the three together cover ${fmtPct(Math.min(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} to ${fmtPct(Math.max(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} at the midpoint.`
+    : "";
+  const each = nk.map((s) => {
+    const e = AGG.shareOfNeed(net(s), n);
+    return `<tr><td><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(s)}"></span> ${esc(scenLabel(s))}</td><td class="num">${esc(rng(net(s)))}</td><td class="num">${esc(pctR(e))}</td><td class="num muted">${esc(fmtPct(e.share_p50))}</td></tr>`;
+  }).join("");
+  let also = "";
+  if (other) {
+    const so = AGG.shareOfNeed(all, other);
+    const range = other.denominator_high !== other.denominator_low ? ` (estimates run ${fmtN(Math.min(other.denominator_low, other.denominator_high))} to ${fmtN(Math.max(other.denominator_low, other.denominator_high))})` : "";
+    also = other.denominator_kind === "shortage_stock"
+      ? `${named} is also short about ${fmtN(other.denominator)} homes today${range}, by ${who(other.source)}'s estimate. The three reforms' ${rng(all)} homes would be ${pctR(so)} of that.`
+      : `Households are projected to grow by about ${fmtN(other.denominator)} over the five years; the three reforms would be ${pctR(so)} of that.`;
+    also = `<p class="body-small" style="margin:var(--space-3) 0 0" data-need-also="${esc(other.denominator_kind)}">${esc(also)}</p>`;
+  }
+  const sources = [n, other].filter(Boolean).map((k) => sourceLinks(k.source)).join("; ");
+  return `<section class="need-kind" data-need-kind="${esc(n.denominator_kind)}">
+      <p class="need-lead">${esc(lead)}</p>
+      <p class="body-small muted" style="margin:var(--space-1) 0 0">${esc(from)}</p>
+      ${cover}
       <div class="scroll">${bar(n)}</div>
       <p class="caption muted" style="margin:0">Coloured blocks: each reform's midpoint, laid end to end (${nk.map((s) => esc(nameOf(s))).join(", ")}). The line is the likely range of the three together, added run by run, so its midpoint (${esc(fmtN(all.p50))}) need not match the blocks' total. Net new homes only.${esc(alt)}</p>
       <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Net new homes</th><th class="num">Share of the need</th><th class="num">Midpoint</th></tr></thead><tbody>${each}</tbody></table>
-      <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sourceLinks(n.source)}</p></section>`;
-  }).join("");
+      ${also}
+      <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sources}</p></section>`;
 }
 
 // Who the new homes serve (WS-NEED-AMI part B; model/affordability.py; docs/research/lotline-ami-method.md). One row
@@ -1361,49 +1395,57 @@ function needHtml(b, R) {
 // Band edges and the axis end mirror config/params/affordability.yaml (a test checks they match).
 const AMI_BANDS = { subsidy: 0.6, zoning: 0.8, max: 1.5 };
 const AMI_ROWS = [
-  ["adu", "ADU (1 bedroom)", "rent"],
-  ["plex_unit", "Unit in a duplex to fourplex (2 bedrooms)", "rent"],
-  ["house", "New single-family house for sale (3 bedrooms), for contrast", "price"],
+  ["adu", "ADU", "1 bedroom, for rent", "rent"],
+  ["plex_unit", "Duplex to fourplex", "a 2-bedroom unit, for rent", "rent"],
+  ["house", "New single-family house", "3 bedrooms, for sale (for contrast)", "price"],
 ];
 const fmtUsd = (x) => (Number.isFinite(x) ? "$" + fmtN(x) : "–");
+const pct0 = (x) => (Number.isFinite(x) ? `${Math.round(x * 100)}%` : "–");
 function amiHtml(b) {
   const rows = (b.affordability || []).filter((r) => r.place_type === "state");
   if (!rows.length) return `<p class="pending">Not available for this state yet: it needs HUD's income limits file, which is downloaded by hand (see the Data page).</p>`;
   const pick = (h, kind, fc) => rows.find((r) => r.home_type === h && r.rent_kind === kind && r.fee_case === fc);
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const fc = UI.fee === "fees" ? "fees" : "fees_local_half";
-  const W = 760, L = 16, R = 16, x = (s) => L + (Math.min(Math.max(s, 0), AMI_BANDS.max) / AMI_BANDS.max) * (W - L - R);
-  const RH = 84, T = 34, H = T + RH * AMI_ROWS.length + 6;
-  const ticks = [0, 0.3, 0.6, 0.8, 1, 1.2, 1.5];
-  const what = (r, kind) => (kind === "price" ? `${fmtUsd(r.value)} price` : `${fmtUsd(r.value)} a month`);
-  const bands = `<rect x="${x(0)}" y="${T - 8}" width="${x(AMI_BANDS.subsidy) - x(0)}" height="${H - T + 2}" fill="var(--paper-sunken)"></rect>
-    <rect x="${x(AMI_BANDS.subsidy)}" y="${T - 8}" width="${x(AMI_BANDS.zoning) - x(AMI_BANDS.subsidy)}" height="${H - T + 2}" fill="var(--survey-band)"></rect>
-    <text x="${x(0) + 4}" y="${T - 14}">Under 60%: usually needs subsidy</text>
-    <text x="${(x(AMI_BANDS.subsidy) + x(AMI_BANDS.zoning)) / 2}" y="${T - 14}" text-anchor="middle">60–80%</text>
-    <text x="${W - R}" y="${T - 14}" text-anchor="end">Over 80%: zoning alone can reach</text>
-    ${ticks.map((t) => `<text x="${x(t)}" y="${H}" text-anchor="middle">${t * 100}%</text>`).join("")}`;
-  const lines = [], aria = [];
-  const marks = AMI_ROWS.map(([h, label, kind], i) => {
+  const pos = (s) => `${(Math.min(Math.max(s, 0), AMI_BANDS.max) / AMI_BANDS.max) * 100}%`;
+  const cost = (r, kind) => (kind === "price" ? `${fmtUsd(r.value)} to buy` : `${fmtUsd(r.value)} a month`);
+  const mfi = pick("adu", "market", "current");
+  const grid = AMI_ROWS.map(([h, name, sub, kind]) => {
     const m = pick(h, "market", "current"), be = pick(h, "break_even", "current");
     if (!m || !be) return "";
-    const y = T + i * RH + 34;
-    const over = (s) => (s > AMI_BANDS.max ? ` (beyond ${AMI_BANDS.max * 100}%)` : "");
-    aria.push(`${label}: at the assumed ${kind} about ${fmtPct(m.ami_share)} of AMI (${fmtPct(m.ami_share_p10)} to ${fmtPct(m.ami_share_p90)}); break-even about ${fmtPct(be.ami_share)}`);
-    const cut = pick(h, "break_even", fc);
-    if (cut) lines.push(h === "adu"
-      ? `<li><b>${esc(label)}:</b> break-even ${esc(what(be, kind))}, about ${esc(fmtPct(be.ami_share))} of AMI (${esc(fmtPct(be.ami_share_p10))} to ${esc(fmtPct(be.ami_share_p90))}). The model charges ADUs no fee, so the fee switch does not move it.</li>`
-      : `<li><b>${esc(label)}:</b> break-even at today's local fees ${esc(what(be, kind))}, about ${esc(fmtPct(be.ami_share))} of AMI (${esc(fmtPct(be.ami_share_p10))} to ${esc(fmtPct(be.ami_share_p90))}); ${fc === "fees" ? "at the Handbook benchmark ($50,000 fee cut in half)" : "with real local fees cut in half"}, ${esc(what(cut, kind))}, about ${esc(fmtPct(cut.ami_share))} (${esc(fmtPct(cut.ami_share_p10))} to ${esc(fmtPct(cut.ami_share_p90))}).</li>`);
-    return `<text class="lab" x="${L}" y="${y - 14}">${esc(label)}</text>
-      <line x1="${x(m.ami_share_p10)}" x2="${x(m.ami_share_p90)}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="2"></line>
-      <circle cx="${x(m.ami_share)}" cy="${y}" r="6" fill="var(--ink)"></circle>
-      <circle cx="${x(be.ami_share)}" cy="${y}" r="6" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"></circle>
-      <text x="${L}" y="${y + 26}">${esc(`${what(m, kind)}: needs about ${fmtUsd(m.income)} a year, ${fmtPct(m.ami_share)} of AMI (${fmtPct(m.ami_share_p10)}–${fmtPct(m.ami_share_p90)})${over(m.ami_share)}`)}</text>`;
+    const off = Math.max(m.ami_share_p90, be.ami_share) > AMI_BANDS.max ? `<span class="off">→ beyond ${AMI_BANDS.max * 100}%</span>` : "";
+    return `<div class="who"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+      <div class="ami-track" role="img" aria-label="${esc(`${name}: at ${cost(m, kind)}, needs ${pct0(m.ami_share)} of AMI (${pct0(m.ami_share_p10)} to ${pct0(m.ami_share_p90)}); break-even ${pct0(be.ami_share)}`)}">
+        <span class="rng" style="left:${pos(m.ami_share_p10)};width:calc(${pos(m.ami_share_p90)} - ${pos(m.ami_share_p10)})"></span>
+        <span class="dot be" style="left:${pos(be.ami_share)}" title="${esc(`Break-even: ${cost(be, kind)}, ${pct0(be.ami_share)} of AMI`)}"></span>
+        <span class="dot mkt" style="left:${pos(m.ami_share)}" title="${esc(`Assumed: ${cost(m, kind)}, ${pct0(m.ami_share)} of AMI`)}"></span>${off}
+      </div>
+      <div class="val"><b>${esc(pct0(m.ami_share))} of AMI</b> <span class="muted">(${esc(pct0(m.ami_share_p10))}–${esc(pct0(m.ami_share_p90))})</span><small>${esc(cost(m, kind))} · income about ${esc(fmtUsd(m.income))} a year</small></div>`;
   }).join("");
-  const mfi = pick("adu", "market", "current");
-  return `<p class="body" style="margin:var(--space-2) 0 0">The income a household needs so that each kind of new home costs 30% of its income, against the area median income (AMI) here (statewide average about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, weighted to where the reforms add homes).</p>
-    <svg class="amistrip" viewBox="0 0 ${W} ${H + 6}" role="img" aria-label="${esc(aria.join(". "))}">${bands}${marks}</svg>
-    <p class="caption muted" style="margin:0">Filled dot and line: the rent (or price) the model assumes, midpoint and likely range. The middle band, 60 to 80% of AMI, is the gap small homes can reach without subsidy. Hollow dot: the break-even rent, where the home pays for what it costs to build at today's local fees (land and the builder's profit left out, so it is a floor). A hollow dot to the right means the home does not pay for itself at local rents. Household size: 1.5 people per bedroom; AMI from HUD's income limits.</p>
-    <ul class="body-small" style="margin:var(--space-2) 0 0">${lines.join("")}</ul>
-    <p class="caption muted" style="margin:var(--space-1) 0 0"><b>What this is not:</b> the model predicts how many homes, not what they rent for. These rents are the model's own assumptions shown as incomes; new homes often rent above the median, and many ADUs are not rented at market at all.</p>`;
+  const ticks = [0, 0.3, 0.6, 0.8, 1, 1.2, 1.5];
+  const axis = `<div class="blank"></div><div class="ami-axis">${ticks.map((t) => `<span style="left:${pos(t)}">${Math.round(t * 100)}%</span>`).join("")}</div><div class="blank"></div>`;
+  const beLine = AMI_ROWS.map(([h, name, , kind]) => {
+    const be = pick(h, "break_even", "current"), cut = pick(h, "break_even", fc);
+    if (!be) return "";
+    const tail = h === "adu" || !cut ? " The model charges ADUs no fee, so cutting fees does not change it."
+      : ` ${fc === "fees" ? "At the Handbook benchmark ($50,000 fee cut in half)" : "With real local fees cut in half"}: ${cost(cut, kind)}, ${pct0(cut.ami_share)} of AMI.`;
+    return `<li><b>${esc(name)}:</b> pays for itself at ${esc(cost(be, kind))}, which needs ${esc(pct0(be.ami_share))} of AMI (${esc(pct0(be.ami_share_p10))}–${esc(pct0(be.ami_share_p90))}).${esc(tail)}</li>`;
+  }).join("");
+  return `<div class="ami">
+    <p class="body" style="margin:0"><b>How we worked this out.</b> We took HUD's 2026 area median income (AMI) for every county in ${esc(named)}: about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, on average where the reforms add homes. For each kind of home we take the rent (or price) the model already assumes, work out the household income at which it costs 30% of income, and compare that income with AMI for a household of 1.5 people per bedroom. The further right a dot sits, the higher the income a household needs.</p>
+    <div class="ami-key"><span><i class="mkt"></i>Assumed rent or price (line: likely range)</span><span><i class="be"></i>Break-even: what it must earn to cover building it</span>
+      <span><i style="background:var(--paper-sunken)"></i>Under 60% of AMI: usually needs subsidy</span><span><i style="background:var(--survey-band)"></i>60–80%: the gap small homes can reach</span><span><i style="border:1px solid var(--rule)"></i>Over 80%: within reach of zoning reform alone</span></div>
+    <div class="ami-grid" style="--b1:${pos(AMI_BANDS.subsidy)};--b2:${pos(AMI_BANDS.zoning)}">${grid}${axis}</div>
+    <p class="body-small" style="margin:var(--space-4) 0 var(--space-1)"><b>How to read it</b></p>
+    <ol class="body-small" style="margin:0;padding-left:1.25em">
+      <li>Find the black dot: the share of AMI a household needs for the rent or price the model assumes. The line around it is the likely range.</li>
+      <li>Check its band. Under 60% usually takes subsidy; 60 to 80% is the gap that smaller homes can reach; over 80% the market can serve once zoning allows it.</li>
+      <li>Compare the hollow dot. If it sits to the right of the black dot, the home costs more to build than local rents pay, so it is unlikely to be built at that rent without help.</li>
+    </ol>
+    <p class="body-small" style="margin:var(--space-4) 0 var(--space-1)"><b>What it takes to pay for itself</b> (construction, fees and interest; land and the builder's profit left out, so these are floors)</p>
+    <ul class="body-small" style="margin:0;padding-left:1.25em">${beLine}</ul>
+    <p class="body-small muted" style="margin:var(--space-3) 0 0"><b>What this is not.</b> The model predicts how many homes get built, not what they rent for. These rents are its own assumptions, shown as incomes. New homes often rent above the local median, AMI includes homeowners (the typical renter earns less), and many ADUs are not rented at market at all.</p>
+  </div>`;
 }
 
 function updateResults() {
