@@ -7714,4 +7714,11 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - The forecast also starts below Wisconsin's last observed year: 2019 had 17,317 reported units, and the
     2021 P50 is 15,316.
   - Why it starts low is **not investigated**; this entry records the result only.
-- **Open questions for Ben:** see the PR. Nothing is changed until he decides.
+- **How V8 is reported (Ben, 2026-11-19: "All as recommended"):**
+  - The headline is the pre-registered result: **fail**, on the all-sizes five-year total.
+  - The size classes, the years, observed ÷ P50 and the overlap are reported beside it, as the secondary
+    checks D-104 registered them as. They do not change the verdict.
+  - The result stays a fail. V8 is not rescored, and the frozen file does not change.
+- **Follow-ups Ben approved the same day, each in its own PR:**
+  - a diagnosis of why the forecast starts below 2019 (with a proposed fix as a separate decision);
+  - releasing Wisconsin from the blind.
