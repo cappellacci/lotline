@@ -215,6 +215,12 @@ iframe.dash { width: 100%; height: 80vh; border: 0; display: block; background: 
 .tornado .seg { position: absolute; top: 4px; bottom: 4px; background: var(--survey); opacity: .75; }
 .tornado .base { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--ink); }
 @media (max-width: 640px) { .tornado { grid-template-columns: 1fr; } }
+details.more { margin: var(--space-2) 0 0; }
+details.more > summary { cursor: pointer; color: var(--survey); text-decoration: underline; font-size: 14px; list-style: none; display: inline; }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::after { content: " ›"; text-decoration: none; display: inline-block; }
+details.more[open] > summary::after { content: " ⌄"; }
+details.more > :not(summary) { margin-top: var(--space-2); }
 details.fold { background: var(--paper-sunken); border: var(--stroke-hair) solid var(--rule); padding: var(--space-4); margin: var(--space-4) 0; }
 details.fold > summary { cursor: pointer; font-weight: 600; }
 
@@ -773,6 +779,8 @@ const scenColor = (k) => {
   return /^--[a-z0-9-]+$/.test(c) ? `var(${c})` : "var(--ink)";
 };
 const AGG = globalThis.LotlineAggregate;
+// A chart's explanatory notes, folded behind a link so the numbers lead (Ben, 2026-11-19); nothing is removed.
+const more = (html, label = "Graph details") => `<details class="more"><summary>${esc(label)}</summary>${html}</details>`;
 
 function niceTicks(max, n = 4) {
   if (!(max > 0)) return [0];
@@ -902,7 +910,7 @@ function recordHtml(b, d, compact = false) {
   return `${title}
     <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
-    <p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. The sliders above do not move this chart.</p>`;
+    ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. The sliders above do not move this chart.</p>`, "Graph details")}`;
 }
 
 // ---- the evidence card under the model selector: one per reform (ADUs first; the others still to design) ----
@@ -921,17 +929,17 @@ function evidenceHtml(b, d, R) {
   const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
   // 1. year by year
   const s1 = `<section>${recordHtml(b, "adu")}
-    <p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p></section>`;
+    ${more(`<p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p>`, "How to read this chart")}</section>`;
   // 3. place types (D-088): built anyway and added by the reform, ADUs a year; read from the bundle when exported
   const s3 = `<section><h3 class="h3">Where the ADUs would go: core cities, suburbs and towns</h3>
-    <p class="body-small">Every place in the state is one of three types, set from Census metro and micro areas, so the same split works in any state:</p>
+    ${more(`<p class="body-small" style="margin:0">Every place in the state is one of three types, set from Census metro and micro areas, so the same split works in any state:</p>
     <div class="zones">
       <div><h4>Core cities</h4><p>The largest place in a metro area, or any place at least a third its size.</p></div>
       <div><h4>Suburbs</h4><p>Every other place in a metro area.</p></div>
       <div><h4>Towns</h4><p>Places in a micropolitan area, or outside any metro or micro area.</p></div>
-    </div>
+    </div>`, "What core cities, suburbs and towns are")}
     ${placeTypeChart(b)}
-    <p class="body-small"><b>How the numbers are set.</b> Where a place's permit records count ADUs, it keeps building at its own recent pace. Every other place takes the rate fitted for its type and market on the places we can count in our own states: how often owners of lots like its lots built an ADU where their rules allowed one. The reform adds homes only on lots it newly opens, or where it loosens a rule; those lots take the same rate. Grey is what would be built anyway, blue is what the reform adds.</p></section>`;
+    ${more(`<p class="body-small">Where a place's permit records count ADUs, it keeps building at its own recent pace. Every other place takes the rate fitted for its type and market on the places we can count in our own states: how often owners of lots like its lots built an ADU where their rules allowed one. The reform adds homes only on lots it newly opens, or where it loosens a rule; those lots take the same rate. Grey is what would be built anyway, blue is what the reform adds.</p>`, "How the numbers are set")}</section>`;
   // 4. how we get these numbers
   const s4 = `<section><h3 class="h3">How we get these numbers</h3>
     <ol class="how">
@@ -941,7 +949,7 @@ function evidenceHtml(b, d, R) {
       <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and some ADUs house a relative or are rented short-term rather than adding a home (${fmtPct(med("net_new_share"))} add one).</p>${fbar(r.homes_in_place.p50, scenColor("adu"), 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, scenColor("adu"))}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
-    <p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p></section>`;
+    ${more(`<p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}</section>`;
   return s1 + s3 + s4;
 }
 
@@ -954,7 +962,7 @@ function howKit(b, d, first) {
   const lmax = Math.log10(Math.max(first || 10, 10));
   const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
   const per10k = (v) => (Number.isFinite(v) ? (v * 10000).toLocaleString("en-US", { maximumSignificantDigits: 2 }) : "–");
-  const foot = `<p class="source">Bars: each stage's midpoint on a log scale. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`;
+  const foot = `${more(`<p class="source">Bars: each stage's midpoint on a log scale. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}`;
   return { med, st, rng, fbar, per10k, foot };
 }
 
@@ -1051,7 +1059,7 @@ function feeYearsChart(b, o, shown) {
   return `<p class="body-small" style="margin:var(--space-1) 0 0">Homes the cut adds each year (${esc(OUTCOME_WORDS[o][0].toLowerCase())}). The effect builds up: about half shows after a year, because projects already in design were priced at the old fee.</p>
     <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${legend}</div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Homes the fee cut adds each year, by version" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
-    <p class="source">Whiskers: P10 to P90, bar at the midpoint, at the engine's central assumptions; the sliders do not move this chart.</p>`;
+    ${more(`<p class="source">Whiskers: P10 to P90, bar at the midpoint, at the engine's central assumptions; the sliders do not move this chart.</p>`, "Graph details")}`;
 }
 
 // What builders pay today: the coded local fees behind the "real local fees" version (data dashboard summary,
@@ -1080,7 +1088,7 @@ function feeTodayHtml(b, name) {
   }
   parts.push(`<line x1="${x(h.median)}" x2="${x(h.median)}" y1="26" y2="58" stroke="var(--ink)" stroke-width="3"></line><text x="${x(h.median) + 6}" y="62" style="fill:var(--ink)">typical ${usd(h.median)}</text>`);
   const strip = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fee for a new house in each coded place, against the Challenge's $50,000" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
-    <p class="source">Each dot is one place's fee for a new house; hover for its name. Thick line: the typical (median) place.</p>`;
+    ${more(`<p class="source">Each dot is one place's fee for a new house; hover for its name. Thick line: the typical (median) place.</p>`, "Graph details")}`;
   // by type of home: per unit, per lot and as a share of building cost
   const adus = f.places.filter((p) => p.types.adu);
   const aduSame = adus.filter((p) => Math.abs(p.types.adu.fee - ((p.types.house || {}).fee || 0)) < 1).length;
@@ -1133,7 +1141,7 @@ function placeTypeChart(b) {
       <span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Built anyway</span>
       <span><span style="display:inline-block;width:12px;height:10px;background:${scenColor("adu")};margin-right:6px"></span>Added by the reform</span></div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ADUs a year by place type, built anyway and added by the reform" style="width:100%;min-width:420px;height:auto;font-family:var(--font-mono);font-size:12px">${bars}</svg></div>
-    <p class="source">Gross ADU permits a year, averaged over 2027–2031: midpoints across the engine's draws (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`;
+    ${more(`<p class="source">Gross ADU permits a year, averaged over 2027–2031: midpoints across the engine's draws (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`, "Graph details")}`;
 }
 
 
@@ -1168,8 +1176,7 @@ const SECTIONS = {
           <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
             <span class="muted" id="outcome-note"></span></div>
           ${pendNote}
-          <p class="body-small how-read"><b>How to read the bars.</b> We ran the model ${b.meta.n_draws.toLocaleString("en-US")} times, each time with a different plausible value for everything we are unsure about, such as how many owners build and what building costs. The number and the tick show the middle result: half the runs came out higher and half lower. The bar covers the middle 80% of runs: 1 run in 10 came out below its left end and 1 in 10 above its right end; the numbers in brackets are those two ends. A longer bar means we are less sure. The scale is logarithmic: each gridline is ten times the one before, so a bar that looks short can still span a wide range.</p>
-          <p class="source">Bars: 10th to 90th percentile (P10–P90) of the runs; tick: the median (P50). Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p></div>
+          ${more(`<p class="source"><b>How to read the bars.</b> We ran the model ${esc(Number(b.meta.n_draws).toLocaleString("en-US"))} times, each time with a different plausible value for everything we are unsure about, such as how many owners build and what building costs. The number and the tick show the middle result: half the runs came out higher and half lower. The bar covers the middle 80% of runs: 1 run in 10 came out below its left end and 1 in 10 above its right end; the numbers in brackets are those two ends. A longer bar means we are less sure. The scale is logarithmic: each gridline is ten times the one before, so a bar that looks short can still span a wide range.</p><p class="source">Bars: 10th to 90th percentile (P10–P90) of the runs; tick: the median (P50). Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>`, "Graph details")}</div>
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
       <div class="card ev" id="model-card"></div>
@@ -1382,10 +1389,10 @@ function needHtml(b, R) {
       <p class="body-small muted" style="margin:var(--space-1) 0 0">${esc(from)}</p>
       ${cover}
       <div class="scroll">${bar(n)}</div>
-      <p class="caption muted" style="margin:0">Coloured blocks: each reform's midpoint, laid end to end (${nk.map((s) => esc(nameOf(s))).join(", ")}). The line is the likely range of the three together, added run by run, so its midpoint (${esc(fmtN(all.p50))}) need not match the blocks' total. Net new homes only.${esc(alt)}</p>
+      ${more(`<p class="source" style="margin:0">Coloured blocks: each reform's midpoint, laid end to end (${nk.map((s) => esc(nameOf(s))).join(", ")}). The line is the likely range of the three together, added run by run, so its midpoint (${esc(fmtN(all.p50))}) need not match the blocks' total. Net new homes only.${esc(alt)}</p>`)}
       <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Net new homes</th><th class="num">Share of the need</th><th class="num">Midpoint</th></tr></thead><tbody>${each}</tbody></table>
       ${also}
-      <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sources}</p></section>`;
+      ${more(`<p class="source" style="margin:0">${sources}</p>`, "Sources")}</section>`;
 }
 
 // Who the new homes serve (WS-NEED-AMI part B; model/affordability.py; docs/research/lotline-ami-method.md). One row
@@ -1443,18 +1450,17 @@ function amiHtml(b) {
   const detail = !house ? "" : `At the rents the model assumes, ${small.map(([h, , w], i) => (i ? `${w} about ${pct0(mk(h).ami_share)}` : `${w} needs a household income of about ${pct0(mk(h).ami_share)} of area median income`)).join(" and ")}, against ${pct0(house.ami_share)} for a new single-family house.`;
   return `<div class="ami">
     ${lead ? `<p class="body" style="margin:0" id="ami-lead"><b>${esc(lead)}</b> ${esc(detail)}</p>` : ""}
-    <p class="body-small" style="margin:var(--space-3) 0 0"><b>How we worked this out.</b> We took HUD's 2026 area median income (AMI) for every county in ${esc(named)}: about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, on average where the reforms add homes. For each kind of home we take the rent (or price) the model already assumes, work out the household income at which it costs 30% of income, and compare that income with AMI for a household of 1.5 people per bedroom. The further right a dot sits, the higher the income a household needs.</p>
+    ${more(`<p class="body-small" style="margin:0">We took HUD's 2026 area median income (AMI) for every county in ${esc(named)}: about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, on average where the reforms add homes. For each kind of home we take the rent (or price) the model already assumes, work out the household income at which it costs 30% of income, and compare that income with AMI for a household of 1.5 people per bedroom. The further right a dot sits, the higher the income a household needs.</p>`, "How we worked this out")}
     <div class="ami-key"><span><i class="mkt"></i>Assumed rent or price (line: likely range)</span><span><i class="be"></i>Break-even: what it must earn to cover building it</span>
       <span><i style="background:var(--paper-sunken)"></i>Under 60% of AMI: usually needs subsidy</span><span><i style="background:var(--survey-band)"></i>60–80%: the gap small homes can reach</span><span><i style="border:1px solid var(--rule)"></i>Over 80%: within reach of zoning reform alone</span></div>
     <div class="ami-grid" style="--b1:${pos(AMI_BANDS.subsidy)};--b2:${pos(AMI_BANDS.zoning)}">${grid}${axis}</div>
-    <p class="body-small" style="margin:var(--space-4) 0 var(--space-1)"><b>How to read it</b></p>
-    <ol class="body-small" style="margin:0;padding-left:1.25em">
+    ${more(`<ol class="body-small" style="margin:0;padding-left:1.25em">
       <li>Find the black dot: the share of AMI a household needs for the rent or price the model assumes. The line around it is the likely range.</li>
       <li>Check its band. Under 60% usually takes subsidy; 60 to 80% is the gap that smaller homes can reach; over 80% the market can serve once zoning allows it.</li>
       <li>Compare the hollow dot. If it sits to the right of the black dot, the home costs more to build than local rents pay, so it is unlikely to be built at that rent without help.</li>
-    </ol>
-    <p class="body-small" style="margin:var(--space-4) 0 var(--space-1)"><b>What it takes to pay for itself</b> (construction, fees and interest; land and the builder's profit left out, so these are floors)</p>
-    <ul class="body-small" style="margin:0;padding-left:1.25em">${beLine}</ul>
+    </ol>`, "How to read this chart")}
+    ${more(`<p class="body-small" style="margin:0">Construction, fees and interest; land and the builder's profit left out, so these are floors.</p>
+    <ul class="body-small" style="margin:var(--space-1) 0 0;padding-left:1.25em">${beLine}</ul>`, "What each home needs to pay for itself")}
     <p class="body-small muted" style="margin:var(--space-3) 0 0"><b>What this is not.</b> The model predicts how many homes get built, not what they rent for. These rents are its own assumptions, shown as incomes. New homes often rent above the local median, AMI includes homeowners (the typical renter earns less), and many ADUs are not rented at market at all.</p>
   </div>`;
 }
