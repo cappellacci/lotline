@@ -245,6 +245,11 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .need-lead { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 600; color: var(--ink); margin: var(--space-2) 0 0; }
 svg.needbar { width: 100%; min-width: 520px; height: auto; display: block; margin: var(--space-3) 0 var(--space-1); }
 svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-muted); }
+.acc-track { position: relative; height: 26px; margin: var(--space-3) 0 2px; background: var(--paper-sunken); border: var(--stroke-hair) solid var(--rule); box-sizing: border-box; max-width: 640px; }
+.acc-track .fill { position: absolute; left: 0; top: 6px; height: 12px; opacity: 0.85; }
+.acc-track .one { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink); }
+.acc-track .lab { position: absolute; top: -20px; transform: translateX(-50%); font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
+.acc-track .val { position: absolute; top: 3px; font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
 .ami { margin: var(--space-4) 0 0; }
 .ami p, .ami ol { max-width: none; }
 .ami-grid { display: grid; grid-template-columns: minmax(150px, 220px) 1fr minmax(170px, 230px); gap: var(--space-2) var(--space-4); align-items: center; }
@@ -913,10 +918,43 @@ function recordHtml(b, d, compact = false) {
     ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. The sliders above do not move this chart.</p>`, "Graph details")}`;
 }
 
+// How accurate is our model (Ben, 2026-11-19): one block at the end of each model's evidence card, holding only
+// the checks the bundle has for that model. The gut check (results_scorecard `historical_floor:<model>`) compares
+// the with-reform forecast with the state's recent observed pace. The overlap flag stays on the Model page only
+// (Ben, 2026-11-19).
+const ACC_STATES = "Minnesota, North Carolina, Ohio, Oregon and Texas";
+function accuracyHtml(b, d) {
+  const key = d === "fees_local_half" ? "fees" : d;
+  const what = { adu: "ADU permits", missing_middle: "homes in 2–4 unit buildings", fees: "new homes" }[key] || "homes";
+  const intro = `<p class="body-small" style="margin:0">We coded local rules and permit records for five states (${ACC_STATES}) so that the model learns from a wide range of places: big cities and small towns, fast-growing markets and slow ones. Each state's model is then checked against what that state actually built. <a href="#trust" data-page="trust">How we built and tested the model</a></p>`;
+  const row = (b.scorecard || []).find((r) => r.check_id === `historical_floor:${key}`);
+  let check;
+  if (row && Number.isFinite(row.value)) {
+    const yrs = (String(row.label).match(/(\d{4})-(\d{4})/) || []).slice(1);
+    const span = yrs.length ? `${yrs[0]}–${yrs[1]}` : "recent years";
+    const max = Math.max(3, Math.ceil(row.value * 1.2));
+    const at = (v) => `${(Math.min(v, max) / max) * 100}%`;
+    const ok = row.verdict === "pass";
+    const ticks = Array.from({ length: max + 1 }, (_, i) => i);
+    const named = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+    check = `<p class="body-small" style="margin:var(--space-3) 0 0"><b>Sanity check: ${ok ? "passed" : "not passed"}.</b> With the reform, the model expects about ${esc(row.value.toFixed(1))} times as many ${esc(what)} a year as ${esc(named)} averaged in ${esc(span)}. A reform that allows more building should not forecast less than places already build${ok ? ", and this one does not" : ", so read this forecast with care"}.</p>
+      <div class="acc-track" role="img" aria-label="${esc(`With the reform: ${row.value.toFixed(1)} times the ${span} average`)}">
+        <span class="fill" style="width:${at(row.value)};background:${scenColor(key)}"></span>
+        <span class="one" style="left:${at(1)}"></span><span class="lab" style="left:${at(1)}">${esc(span)} average</span>
+        <span class="val" style="left:calc(${at(row.value)} + 6px)">${esc(row.value.toFixed(1))}×</span>
+      </div>
+      <div class="ami-axis" style="max-width:640px">${ticks.map((t) => `<span style="left:${at(t)}">${t}×</span>`).join("")}</div>
+      ${more(`<p class="source" style="margin:0">${esc(row.label)}. Measure: ${esc(row.metric)}; target ${esc(row.target)}. A forecast below the recent pace would mean the model sees less building with the reform than places are doing without it.</p>`, "About this check")}`;
+  } else {
+    check = `<p class="body-small muted" style="margin:var(--space-3) 0 0">There is no sanity check against past building for ${esc({ adu: "ADUs", missing_middle: "missing middle", fees: "the fee reduction" }[key] || "this reform")} yet.</p>`;
+  }
+  return `<section><h3 class="h3">How accurate is our model</h3>${intro}${check}</section>`;
+}
+
 // ---- the evidence card under the model selector: one per reform (ADUs first; the others still to design) ----
 function evidenceHtml(b, d, R) {
-  if (d === "missing_middle") return `<section>${recordHtml(b, d)}</section>${mmHowHtml(b, R)}`;
-  if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R);
+  if (d === "missing_middle") return `<section>${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;
+  if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R) + accuracyHtml(b, d);
   if (d !== "adu") return `<section><p class="pending">The evidence card for ${esc(scenLabel(d))} is still being designed.</p></section>`;
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const med = (c) => AGG.percentile(drawsFor(b, "adu").map((x) => Number(x[c])).filter(Number.isFinite), 50);
@@ -950,7 +988,7 @@ function evidenceHtml(b, d, R) {
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, scenColor("adu"))}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
     ${more(`<p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}</section>`;
-  return s1 + s3 + s4;
+  return s1 + s3 + s4 + accuracyHtml(b, "adu");
 }
 
 // Shared pieces of the "How we get these numbers" steps: the median of a factor across a reform's runs, a stage's
@@ -1180,7 +1218,6 @@ const SECTIONS = {
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
       <div class="card ev" id="model-card"></div>
-      ${flagHtml(b.meta)}
       <h3 class="h2" style="margin:var(--space-7) 0 var(--space-3)">How reforms help meet housing need</h3>
       <div class="card"><div id="need"></div>
         <p class="need-lead" style="margin-top:var(--space-7)">Who the new homes serve</p><div id="ami"></div></div>
