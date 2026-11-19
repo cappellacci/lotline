@@ -2,6 +2,7 @@
 name: rules-adu-handoff
 description: ADU rule swarm, step 7. Packages everything the agents could not read or settle into a short, ranked human lookup list (tasks.csv + tasks.md) that a person can finish quickly, and reads filled answers back. Use via /rules-adu.
 tools: Read, Grep, Glob, Bash, Write
+model: haiku
 ---
 
 # ADU human-lookup packager
@@ -20,7 +21,10 @@ Your brief gives `RUN_DIR`.
    - `alt_urls`: add a Wayback or PDF alternative if the run found one. Keep `held_docs` (documents the
      store already holds for the place, so the person does not download them again).
    - `est_minutes`: 5 for a single value on a known page, 10–15 for a date hunt, 20 for a version history.
-   - Merge tasks that one page settles (same URL, same place) into one with all their fields.
+   - The tool already merges tasks one page settles and keeps every open field. **Do not add, drop or
+     rebuild tasks, and do not open documents**: work from `tasks.csv`, `sources/` and `final/` only. If a
+     blocker seems to be missing from the list, say so in your report (it is a tool bug to fix), do not
+     write it in by hand.
 3. Rewrite `tasks.md` from the edited CSV (same order). Keep it to what a person needs: open, look for,
    fill, done when.
 

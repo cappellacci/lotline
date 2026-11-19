@@ -192,19 +192,33 @@ def cmd_rows(a) -> int:
     return 0
 
 
-def settled_fields_dropped(fields: list[str], final: C.PlaceCoding | None) -> list[str]:
-    """Fields a blocked page would answer, minus those every final era already has on primary evidence."""
+def settled_fields_dropped(
+    fields: list[str], final: C.PlaceCoding | None, era_id: str | None = None
+) -> list[str]:
+    """Fields a blocked page would answer, minus those already settled on primary evidence.
+
+    - `era_id` names a coded era of the final -> only that era counts.
+    - `era_id` names a period with no coded era (e.g. "before-2022", "2019") -> nothing is settled: every
+      field stays. South Burlington VT, 2026-11-19: the rule before 2022 was never coded, yet its task lost 7
+      of 9 fields because the 2022 era had values for them, and the 2019 parking ordinance's task vanished.
+    - no `era_id` -> the blocker is about every coded era; a field is settled when all of them have it.
+    """
     if "all" in fields:
         fields = list(H.ALLOWED)
     if final is None or not final.eras:
         return fields
+    eras = final.eras
+    if era_id:
+        eras = [e for e in final.eras if e.era_id == era_id]
+        if not eras:
+            return fields
 
     def settled(f: str) -> bool:
         return all(
             (fv := e.fields.get(f)) is not None
             and fv.value is not None
             and any(x.primary for x in fv.evidence)
-            for e in final.eras
+            for e in eras
         )
 
     return [f for f in fields if f not in C.RUBRIC_FIELDS or not settled(f)]
@@ -223,7 +237,7 @@ def cmd_tasks(a) -> int:
     for sub in ("coding_a", "coding_b", "final"):
         for c in _load_all(d / sub) if (d / sub).exists() else []:
             for b in c.blocked:
-                fields = settled_fields_dropped(b.fields, finals.get(c.geoid))
+                fields = settled_fields_dropped(b.fields, finals.get(c.geoid), b.era_id)
                 if b.fields and not fields:
                     continue  # the verifier already settled every field this page would answer
                 tasks.append(

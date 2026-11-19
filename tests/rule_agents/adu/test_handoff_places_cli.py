@@ -182,3 +182,14 @@ def test_optional_task_is_marked_in_sheet_and_checklist(tmp_path):
     assert (row["optional"], row["priority"]) == ("yes", "3")
     assert row["what_to_do"].startswith("Optional: this record is only available by public-records request.")
     assert "· priority 3 · optional" in (tmp_path / "t.md").read_text()
+
+
+def test_a_blocker_for_an_uncoded_period_keeps_every_field():
+    """South Burlington VT: only the 2022 era was coded. A blocker for the rule before 2022 must keep all its
+    fields (the 2022 values say nothing about earlier years); one for the 2022 era drops what 2022 settled."""
+    final = coding()  # every era has adus_per_lot on official code
+    first = final.eras[0].era_id
+    asked = ["adus_per_lot", "by_right", "adu_max_sqft"]
+    assert cli.settled_fields_dropped(asked, final, "before-2016") == asked
+    assert "adus_per_lot" not in cli.settled_fields_dropped(asked, final, first)
+    assert "adus_per_lot" not in cli.settled_fields_dropped(asked, final)  # no era: about every coded era
