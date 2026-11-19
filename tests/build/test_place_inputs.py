@@ -2,6 +2,11 @@
 
 Synthetic state "ZZ" (fixture `zz` in tests/conftest.py). For origin 2025, each shared column equals what
 `adu.places_from_store` and `mm.places_from_store` compute themselves, place for place.
+
+Since the ADU switch-over (2026-11-19), `adu.places_from_store` reads these columns from `place_inputs`, so
+the ADU comparisons here check that it takes them over unchanged; the one-off check that the table reproduced
+the old ADU computation (all five states, origin 2025, 0 differences) is recorded in the switch-over PR, and
+tests/model/test_adu_place_inputs.py checks the stored table is what it reads.
 """
 
 import numpy as np
