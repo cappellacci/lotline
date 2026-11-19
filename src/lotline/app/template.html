@@ -2033,13 +2033,11 @@ function dataTilesHtml() {
 
 function dataLead() {
   const o = DATA.data.overall;
-  const goal = "to measure and compare how housing reforms have actually performed";
-  if (!o) return `Lotline pulls in parcel records, building permits and coded local zoning rules for each state, ${goal}.`;
+  if (!o) return "We chose a set of states to build our model, for their history of reforms, the range in their data quality and the variety of their housing markets.";
   const n = o.states.length, words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
   const st = `${n < 10 ? words[n] : n} state${n === 1 ? "" : "s"}`;
   const mill = o.parcels >= 1e6 ? `${(o.parcels / 1e6).toLocaleString("en-US", { maximumFractionDigits: 1 })} million` : fmtInt(o.parcels);
-  const permits = o.permit_first ? `, and read building permits from ${o.permit_first} to ${o.permit_last}` : "";
-  return `We pulled in data from ${st}, looked up and coded ${fmtInt(o.reforms)} local zoning and housing rules in ${fmtInt(o.reform_places)} cities and towns, assessed ${mill} parcels${permits}, ${goal}.`;
+  return `We chose ${st} to build our model, for their history of reforms, the range in their data quality and the variety of their housing markets. For them we assembled data on ${mill} parcels and looked up and coded ${fmtInt(o.reforms)} local zoning and housing rules in ${fmtInt(o.reform_places)} cities and towns, to see how specific places responded to policy changes and to compare what reforms could do in each state.`;
 }
 
 function footer(b) {
