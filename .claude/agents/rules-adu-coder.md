@@ -29,6 +29,9 @@ blind holdouts and `state_law.json`.
 5. Record each block as a `Blocker` (`kind` from the helper; `fields` = exactly what it would settle;
    `look_for` = one plain sentence a person can act on, e.g. "Ordinance that added §5.3: its number,
    adoption date and effective date").
+   `era_id` = the coded era it is about; for a period you could not code at all, a label for that period
+   such as `before-2022` or the ordinance year `2019` (never blank: a blank `era_id` means "every coded
+   era", and fields those eras settled are dropped from the person's task).
 6. Write `RUN_DIR/coding_a/<geoid>.json` (with `coded_at`, today's date, which `check` requires), then run
    `uv run python -m lotline.rule_agents.adu check RUN_DIR/coding_a/<geoid>.json` and
    `uv run python -m lotline.rule_agents.adu verify-quotes RUN_DIR/coding_a/<geoid>.json`; fix every problem.

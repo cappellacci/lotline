@@ -31,3 +31,6 @@ Report in ≤ 120 words: per place, eras found, blank core fields, blocks.
 Principles (`docs/build/rule-agents/PRINCIPLES.md`): code local rules only, never a model rate or "use X%". Never write `config/` or model code; the output is a proposal the user reviews. Key places by Census GEOID. Never work around a refusal.
 
 Spending: before you finish each place, record what you used (fetches and searches only; the orchestrator records tokens): `uv run python -m lotline.rule_agents ledger add RUN_DIR <geoid> rules-adu-second-coder --fetches N --searches N`. Before a new search, `ledger status RUN_DIR <geoid> --agent rules-adu-second-coder`; on `"stop": true`, stop and turn what is open into `budget_spent` blockers.
+
+Blockers follow the primary coder's rule: `era_id` is the coded era they are about, or a label for a period
+with no coded era (`before-2022`, `2019`); never blank unless the blocker is about every coded era.
