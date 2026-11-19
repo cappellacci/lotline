@@ -242,6 +242,8 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .model-card .one { font-size: 17px; line-height: 26px; max-width: 70ch; margin: 0; }
 .model-card .status { margin: var(--space-1) 0 var(--space-2); }
 @media (max-width: 640px) { .model-card { padding: var(--space-3); } }
+.why-line { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; color: var(--survey); }
+.why-line a { color: inherit; text-decoration: underline; }
 .need-lead { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 600; color: var(--ink); margin: var(--space-2) 0 0; }
 svg.needbar { width: 100%; min-width: 520px; height: auto; display: block; margin: var(--space-3) 0 var(--space-1); }
 svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-muted); }
@@ -256,6 +258,16 @@ svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--i
 .src-box table { margin: 0; }
 .src-box thead th { position: sticky; top: 0; background: var(--paper-raised); z-index: 1; }
 #step-tests { scroll-margin-top: 96px; }
+table.levels td, table.levels th { vertical-align: top; font-size: 14px; line-height: 20px; }
+table.levels td:first-child { white-space: nowrap; }
+.runs-card { margin: var(--space-4) 0; }
+.runs-title { margin: 0 0 var(--space-1); font-size: 15px; }
+svg.runs { width: 100%; min-width: 520px; height: auto; display: block; }
+svg.runs text { font-family: var(--font-mono); font-size: 11px; fill: var(--ink-muted); }
+svg.runs .lab { font-family: var(--font-sans); font-size: 12px; font-weight: 600; fill: var(--ink); }
+.read-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3) var(--space-4); margin: 0 0 var(--space-4); }
+.read-grid .part-k { font-weight: 600; margin: 0 0 var(--space-1); }
+.read-grid p.body-small { margin: 0; }
 .parts { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 0.8fr; gap: var(--space-2); align-items: stretch; margin: var(--space-4) 0 var(--space-2); }
 .part-card { background: var(--paper); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-3); font-size: 14px; line-height: 20px; }
 .part-card p { margin: 0 0 var(--space-2); max-width: none; }
@@ -421,7 +433,7 @@ table.checks td:last-child { min-width: 260px; }
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
-    <p class="lead">How we got from the question to the numbers, one step at a time: what we measure, how the data were prepared, the three reform models side by side, where the range comes from and what we ruled out, how we tested it, and how it carries over to a new state.</p>
+    <p class="lead">Lawmakers need to know how many homes a reform would add, and how sure they can be. Our model gives an expected range of outcomes for each policy and shows its uncertainty. We checked it against what actually happened in places we held back from the model. Only a handful of places have passed these reforms, and homebuilding rises and falls for many other reasons, so we had to control for many factors to get an honest range. We built the method so that any state could get an honest answer from its own data.</p>
 
     <div class="step" id="step-goal"><p class="step-n" aria-hidden="true">1</p><div class="step-body">
       <h3 class="h2">The goal: exactly what we measure</h3>
@@ -431,30 +443,37 @@ table.checks td:last-child { min-width: 260px; }
 
     <div class="step" id="step-data"><p class="step-n" aria-hidden="true">2</p><div class="step-body">
       <h3 class="h2">Preparing the data</h3>
-      <p>For every city, town and township in every year, the model needs two counts: how many lots a reform could touch, and how many homes were permitted. The Data page lists every source. These are the rules we applied to them.</p>
+      <p>For every city, town and township in every year, the model needs two counts: how many lots a reform could touch, and how many homes were permitted. The <a href="#data">Data page</a> lists every source. Click below to see the rules we applied to them:</p>
       <details class="more"><summary>How we prepared each kind of data</summary><p class="body-small"><b>Lots the reform could touch</b> follow one written rule, applied the same way in every state: for ADUs, a lot with one single-family house; for missing middle, a lot zoned for single-family homes only that holds one house or is vacant. Where a place has no parcel records, Census counts of single-family homes stand in. We tested that stand-in against real parcel counts in all five states and it came within 8% everywhere (0.92 to 1.07 times the parcel count); for missing middle it runs about 12% low, a known gap.</p><p class="body-small"><b>Homes permitted</b> come from Census permit counts by building size (1, 2, 3–4 and 5+ homes) for every place since 1992, plus city permit files that mark ADUs. A project total repeated on several permits is counted once.</p><p class="body-small"><b>Local rules</b> carry dates. For each city we looked up when it allowed ADUs or missing middle and how strict the rule is: whether it is by right, whether the owner must live there, and its parking and size limits. Places nobody has coded borrow the rules of similar coded places of the same size.</p><p class="body-small"><b>Unknown is never zero.</b> A missing year stays missing rather than counting as a year with no building, and an unknown zoning code counts the lot as eligible, flagged as an assumption.</p><p class="body-small"><b>Some years were hidden for blind tests.</b> We locked away some places' recent records so we could predict them first and look later. Oregon's records from 2018 were predicted from the other four states, then opened on November 5 and added to the fit. Charlotte's from mid-2023, including the county figures its permits are filed under, were predicted and then opened on November 9. St. Paul's from 2024 stayed locked until its frozen prediction was scored on 16 November 2026.</p><p class="body-small"><b>Each state has a data tier</b> that says what its data rests on: tier 1 is local parcels with year built, tier 2 is local parcels with land use, and tier 3 is national data only.</p></details>
     </div></div>
 
     <div class="step" id="step-model"><p class="step-n" aria-hidden="true">3</p><div class="step-body">
-      <h3 class="h2">What each model does, and how we get our ranges</h3>
+      <h3 class="h2">Causal factors and confounders</h3>
+      <p>Homebuilding rises and falls for many reasons besides law reforms. Before fitting anything, we mapped these reasons so the model only credits a reform and not other effects. We drew them from our own design work and a review of <a href="https://github.com/cappellacci/lotline/blob/main/docs/research/lotline-evidence-register.csv" target="_blank" rel="noopener">114 published studies and reports</a> on ADU, zoning and fee reforms.</p>
 
       <h4 class="h3">3a. The causal diagram</h4>
-      <p class="body-small">Before fitting anything, we drew how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">The housing market may change for reasons that have nothing to do with the reform, so we wanted to identify and control for them.</p>
+      <p class="body-small">The diagram shows how a reform could change building, and what else could make reformed places look different. This is the version the model uses today.</p>
       <div class="scroll"><svg class="dag" id="dag" role="img" aria-label="Causal diagram: what drives the extra homes a reform adds, and how each other factor is handled" viewBox="0 0 960 400"></svg></div>
       <div class="dag-key body-small" id="dag-key"></div>
 
-      <h4 class="h3">3b. Every factor we considered, and what we did with it</h4>
-      <p class="body-small">Before fitting anything, we listed every factor that could bias the answer or change its size, and decided for each one how the model would deal with it.</p>
+      <h4 class="h3">3b. Exploring factors that impact housing</h4>
       <div id="conf-summary"></div>
       <details class="fold"><summary>The full register</summary><div class="scroll" id="conf-table"></div>
         <p class="source">From docs/research/lotline-confounder-register.csv and the causal diagrams in docs/research/. The decisions are in docs/analysis_plan.md.</p></details>
 
       <h4 class="h3">3c. What gets built anyway</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">A reform only gets credit for homes beyond what each place would build anyway, so we forecast that first.</p>
       <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over 2021–2025. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
 
-      <h4 class="h3">3d. Why we built each effect from its parts</h4>
-      <p class="need-lead" style="margin:var(--space-1) 0 0">A reform's effect can't be read straight off the data, so we build it from three parts we can measure.</p>
-      <p class="body-small" style="margin:var(--space-2) 0 0">Each part is measured on its own, from data we hold for every place, and the three are multiplied together. The model then adds only what is extra: whatever is already being built is never credited to the reform.</p>
+    </div></div>
+
+    <div class="step" id="step-build"><p class="step-n" aria-hidden="true">4</p><div class="step-body">
+      <h3 class="h2">Building the models</h3>
+      <p>With the confounders mapped, we built each reform's effect from parts we can measure, gave every answer a range, and tested the model before trusting it.</p>
+
+      <h4 class="h3">4a. Why we built each effect from its parts</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 0">We can't measure a reform's potential from historical data alone, so we build it from three parts we can measure.</p>
       <div class="parts">
         <div class="part-card"><p class="part-k">1 · Lots the reform opens up</p><p>Lots where the reform allows something today's local rule does not. A city that already allows ADUs gains few.</p><p class="part-src">Measured from parcel records and each city's coded rules</p></div>
         <span class="part-op" aria-hidden="true">×</span>
@@ -464,10 +483,10 @@ table.checks td:last-child { min-width: 260px; }
         <span class="part-op" aria-hidden="true">=</span>
         <div class="part-card part-out"><p class="part-k">Extra homes</p><p>The homes the reform adds on top of what gets built anyway.</p></div>
       </div>
-      <details class="more"><summary>Why not just compare reformed cities with similar ones?</summary><p class="body-small">That was our first plan. In the four states we first studied (before Oregon was added), those comparisons could not tell a real effect from noise: they could only have detected effects many times larger than any plausible one, and a placebo check failed (see 3g). Building the effect from measured parts avoids that problem. Fee cuts are the one part we could not measure ourselves: no place in our states cut fees on the scale of the reform, so their response comes from published studies (see the fee card).</p></details>
+      <details class="more"><summary>Why not just compare reformed cities with similar ones?</summary><p class="body-small">That was our first plan. In the four states we first studied (before Oregon was added), those comparisons could not tell a real effect from noise: they could only have detected effects many times larger than any plausible one, and a placebo check failed (see 4d). Building the effect from measured parts avoids that problem. Fee cuts are the one part we could not measure ourselves: no place in our states cut fees on the scale of the reform, so their response comes from published studies (see the fee card).</p></details>
 
-      <h4 class="h3">3e. The three models, in depth</h4>
-      <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it: every card answers the same five questions, then goes state by state.</p>
+      <h4 class="h3">4b. Deep dive into our models</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">Each reform changes building in a different way, so each has its own model designed around the same principles.</p>
       <div class="seg model-tabs" role="group" aria-label="Which model">
         <button type="button" data-model="adu" aria-pressed="true">ADUs</button>
         <button type="button" data-model="mm" aria-pressed="false">Missing middle</button>
@@ -475,8 +494,8 @@ table.checks td:last-child { min-width: 260px; }
       </div>
 
       <div class="model-card" id="model-adu" data-model-card="adu">
-        <h5>In one sentence</h5>
-        <p class="one">Every house lot where an ADU is allowed has a small yearly chance of getting one; the chance depends on the city's rules and on whether it is a big city or a suburb, and the reform raises it where local rules hold ADUs back.</p>
+        <h5>What the model does</h5>
+        <p class="one">Every house lot where an ADU is allowed has a small chance each year of getting one. That chance depends on how strict the city's rules are and whether it is a big city, a suburb or a town. The reform raises the chance most where local rules are stricter than the reform, for example by requiring parking or an owner on site.</p>
         <h5>How it works</h5>
         <p class="formula">ADUs a year = lots where allowed × base chance × how much the local rule allows × big-city factor × place's own luck</p>
         <details class="more"><summary>How each part is measured</summary><ul class="body-small steps-list">
@@ -515,8 +534,8 @@ table.checks td:last-child { min-width: 260px; }
       </div>
 
       <div class="model-card" id="model-mm" data-model-card="mm" hidden>
-        <h5>In one sentence</h5>
-        <p class="one">When a place starts allowing 2–4 homes on lots zoned for one house, small multi-unit buildings rise above the place's usual pace, slowly, and mostly where rents cover the cost of building.</p>
+        <h5>What the model does</h5>
+        <p class="one">Every lot zoned for one house that the reform opens to 2–4 homes has a small chance each year of getting a small multi-unit building, on top of what the place already builds. That chance is higher where rents cover the cost of building, and it grows slowly: it reaches half its full size after about four years.</p>
         <h5>How it works</h5>
         <p class="formula">2–4 unit buildings a year = the place's usual pace + mature rate × eligible lots × how much the rule changed × whether building pays × how far in the reform is</p>
         <details class="more"><summary>How each part is measured</summary><ul class="body-small steps-list">
@@ -554,8 +573,8 @@ table.checks td:last-child { min-width: 260px; }
       </div>
 
       <div class="model-card" id="model-fees" data-model-card="fees" hidden>
-        <h5>In one sentence</h5>
-        <p class="one">Cutting the fees a builder pays the city lowers the cost of a new home; part of the saving goes to landowners, and building responds weakly to the rest.</p>
+        <h5>What the model does</h5>
+        <p class="one">Cutting the fees a builder pays the city lowers the cost of every new house, duplex and fourplex. About half of the saving ends up in land prices, so builders keep the rest. Building then rises a little above its usual pace: a 10% cut in cost adds about 3% more homes, and a few more lots become worth building on.</p>
         <h5>How it works</h5>
         <p class="formula">extra homes = usual homes × how strongly building responds × builder's share of the cut ÷ total cost of the home, plus lots that newly pay</p>
         <details class="more"><summary>How each part is measured</summary><ul class="body-small steps-list">
@@ -580,26 +599,57 @@ table.checks td:last-child { min-width: 260px; }
         <details class="more"><summary>Sources</summary><p class="source">Sources: docs/analysis_plan.md D-010, D-065, D-073, D-076, D-077; config/params/fees.yaml.</p></details>
       </div>
 
-      <h4 class="h3">The three models, every state at once</h4>
-      <p class="body-small">What each model predicts for every state with results: net new homes over the five years. The tick is the middle result of the model's runs; the band covers the middle 80% of them, so 1 run in 10 came out below it and 1 in 10 above. The scale is logarithmic, so each gridline is ten times the last. Missing middle's bands are the widest because its reform effect is the least pinned down; Oregon adds few ADUs because its state law already allows what the reform asks.</p>
-      <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
-      <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
-
-      <h4 class="h3">3f. Where the range comes from</h4>
+      <h4 class="h3">4c. How we get a range: runs and probabilities</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">No single number would be honest, so every answer is the middle 80% of 1,000 runs that each draw different plausible values.</p>
+      <p>Many of the model's inputs can't be known exactly: how often owners will build, how strong the next building cycle will be, how much one city differs from the next. So the model does not run once. It runs 1,000 times, and each run picks a different plausible value for each uncertain input, from the range the evidence supports. Every run gives one answer. The chart lines up all 1,000 answers from lowest to highest.</p>
+      <div class="card runs-card">
+        <h5 class="runs-title" id="runs-title"></h5>
+        <div class="scroll"><svg class="runs" id="runs" role="img"></svg></div>
+        <p class="body-small" id="runs-read" style="margin:var(--space-2) 0 0"></p>
+      </div>
+      <div class="read-grid">
+        <div><p class="part-k">The midpoint</p><p class="body-small">Half the runs came out below it and half above. It is our best single guess, not a promise.</p></div>
+        <div><p class="part-k">The range (P10 to P90)</p><p class="body-small">The middle 80% of runs. 1 run in 10 came out below it and 1 in 10 above, so 1 in 5 lands outside it.</p></div>
+        <div><p class="part-k">A wide range</p><p class="body-small">Means the evidence leaves a lot unsettled, not that the model failed. Missing middle's ranges are the widest for that reason.</p></div>
+        <div><p class="part-k">The log scale</p><p class="body-small">Runs bunch up at the low end and trail off far to the right. On a log scale each step is ten times the last, so both ends stay readable.</p></div>
+      </div>
       <details class="more"><summary>Every source of the range</summary><p class="body-small">Each of the model's runs differs in six ways. It replays a different stretch of the state's past booms and busts. It draws how often owners build, and how fast, from their fitted ranges instead of fixing them at one value. For ADUs, it draws how much a partial local rule already allows from the values the data support.</p><p class="body-small">It gives each place its own multiplier for the differences we cannot measure, drawn to match how much real places differ, with a wider spread still for a state the model was not fitted on. It draws the judgment calls (finished homes per permit, homes that would have been built elsewhere, and conversions of existing units) from stated low-to-high ranges, each with a source in config/params. And even at a known rate, the count in any one year varies by chance.</p></details>
       <div id="trust-body"></div>
 
-      <h4 class="h3" id="step-tests">3g. How we tested it</h4>
+      <h4 class="h3" id="step-tests">4d. How we tested it</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">A model is only worth trusting if it holds up on data it has not seen, so we set each test before seeing its result.</p>
       <p class="body-small">Each test was set up before its result was seen. Where a test failed we say so; several failures changed the model.</p>
       <div class="scroll"><table class="checks"><thead><tr><th>Test</th><th>What it asks</th><th>Result</th></tr></thead><tbody id="checks"></tbody></table></div>
       <div id="trust-checks"></div>
     </div></div>
 
-    <div class="step" id="step-states"><p class="step-n" aria-hidden="true">4</p><div class="step-body">
-      <h3 class="h2">Carrying it to another state</h3>
-      <p>Nothing in the model is written for one state. A new state is one settings file plus whatever data it has.</p>
+    <div class="step" id="step-states"><p class="step-n" aria-hidden="true">5</p><div class="step-body">
+      <h3 class="h2">Applying the model nationwide</h3>
+      <p>Nothing in the model is written for one state. We built it so that any state can be added with one settings file and whatever data it has, and our five study states show how the answers compare.</p>
+
+      <h4 class="h3">5a. Comparing our models across our five study states</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">Side by side, the states show where each reform adds the most homes, and how sure we can be in each.</p>
+      <p class="body-small">Each row is one state and one reform: net new homes over the five years, read like the chart in 4c. The tick is the midpoint of the runs and the band covers the middle 80%, on the same log scale. Missing middle's bands are the widest because its reform effect is the least pinned down. Oregon adds few ADUs because its state law already allows what the reform asks.</p>
+      <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
+      <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
+
+      <h4 class="h3">5b. Adding a new state</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">Every state already has the national data the model needs, so a new state can run on day one and gets sharper with each local source it adds.</p>
+      <p class="body-small">The engine keeps the method apart from the data. A state is a settings file; its local files plug in through small adapters that turn them into the same tables every state uses, and the model's equations never change. National data (Census permits and housing counts, home prices, interest rates and building costs) is fetched automatically for every state.</p>
+      <div class="scroll"><table class="levels"><thead><tr><th>Level</th><th>What the state adds</th><th>What we know about accuracy</th></tr></thead><tbody>
+        <tr><td><b>0. National only</b></td><td>A settings file, plus the state's own ADU and middle-housing laws if it has any</td><td>ADU results are not reliable on their own: in the leave-a-state-out test, national data alone worked only in Minnesota</td></tr>
+        <tr><td><b>1. Coded local rules</b> <span class="muted">(recommended minimum)</span></td><td>The ADU rules of its 20 largest places, the middle-housing rules it can find, and fees for at least 5 places</td><td>ADU results pass the same test in all 4 states that could be scored, with wide ranges</td></tr>
+        <tr><td><b>2. One measured city</b></td><td>Level 1, plus a large city's own permit file that marks ADUs</td><td>Also passes, and ties the state's level to its own counts</td></tr>
+        <tr><td><b>3. Local parcels</b></td><td>Parcel records with land use, and ideally year built</td><td>Replaces the Census estimate of eligible lots with a real count (data tier 2, or tier 1 with year built)</td></tr>
+      </tbody></table></div>
+      <p class="body-small">Missing middle and fee cuts have no accuracy result by data level yet, so treat level 1 as the minimum for all three models. The step-by-step guide is <a href="https://github.com/cappellacci/lotline/blob/main/docs/adding_a_state.md" target="_blank" rel="noopener">Adding a new state</a>.</p>
       <details class="more"><summary>What a new state needs, and what happens with little data</summary><p class="body-small">A new state supplies its Census code and whatever local data it has: parcel rolls, city permit files, coded local rules and fee schedules. Everything national (Census permits, housing counts, prices and rates) is fetched automatically.</p><p class="body-small">With little local data, the model still runs. Lots come from Census housing counts, adjusted using the stand-in test above, and uncoded places borrow rules from similar coded places. The state's unknown character gets the widest spread the model has, anywhere from a third of a typical state to three times one. ADU place types come from national data, so every place in any state gets one, even in a state with no ADU counts at all. Places outside a state ADU law borrow the rules of small towns in states without one, not those of big cities that have reformed.</p><p class="body-small">Oregon is the test case. It was predicted from the other four states before its own results were looked at, and the app shows it as the "transfer" state. Its missing-middle results were not used to fit the model; since 2026-11-06, Portland and Bend are part of the ADU fit.</p></details>
       <div id="trust-overlap"></div>
+
+      <h4 class="h3">5c. Coding local rules with rule agents</h4>
+      <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">Local rules and fees are the slowest data to gather by hand, so we built AI agents that research them and show their evidence.</p>
+      <p class="body-small">For a new state, the rule agents look up each place's ADU rules, missing-middle rules and development fees. Place by place, they find the official documents (the current code, the ordinance that changed it, the fee schedule), code each value with a word-for-word quote and the page it came from, and check every quote against the stored document by machine. On the places that matter most, a second agent codes the same place without seeing the first one's work, and a third settles any disagreement. They respect every site's rules for automated visitors and never contact anyone.</p>
+      <p class="body-small">They propose; a person decides. Each run produces a table in the app's own format, a short list of lookups the agents could not reach (most important first, with the link and what to look for), and a plain report of what was found and how sure it is. Nothing changes in the app until someone reviews the table and imports it. Anyone can run them with their own Claude account. The guide is <a href="https://github.com/cappellacci/lotline/blob/main/docs/adding_local_rules_with_agents.md" target="_blank" rel="noopener">Adding local rules with the rule agents</a>.</p>
     </div></div>
 
     <div class="step" id="step-limits"><p class="step-n" aria-hidden="true">!</p><div class="step-body">
@@ -804,17 +854,15 @@ function pendingIn(b) {
 const drawsFor = (b, s) => b.draws.filter((d) => d.scenario === s);
 const results = (b) => Object.fromEntries(scenariosIn(b).map((s) => [s, AGG.summarize(drawsFor(b, s), UI.pins)]));
 
-function flagHtml(m) {
-  const word = { high: "Inside the evidence", medium: "Near the edge of the evidence", low: "Outside the evidence" }[m.overlap_flag];
+function flagHtml(m, named) {
+  const word = { high: "Yes: inside the evidence", medium: "Partly: near the edge of the evidence", low: "Not yet: outside the evidence" }[m.overlap_flag];
   const say = {
-    high: "Most of this state's eligible lots look like the places the model learned from.",
-    medium: "Many of this state's eligible lots differ from the places the model learned from; read the range as approximate.",
-    low: "The model has not seen places like most of this state's; treat the range as wide.",
+    high: `Most of ${named}'s eligible lots have rents, home values and mortgage rates within the range of the places the model learned from, so its ranges can be read as they are.`,
+    medium: `Many of ${named}'s eligible lots have rents, home values or mortgage rates outside the range of the places the model learned from. Read its ranges as approximate.`,
+    low: `Most of ${named}'s eligible lots are unlike the places the model learned from. Treat its ranges as rough, and add local data (see the table above) to narrow them.`,
   }[m.overlap_flag];
-  return `<div class="card"><p class="eyebrow">How far the model is reaching</p>
-    <span class="flag ${esc(m.overlap_flag)}"><span class="glyph" aria-hidden="true"></span>${esc(word)}</span>
-    <p class="body-small">${esc(say)}</p>
-    <p class="source">Overlap check: ${esc(m.overlap_note || "")}.${m.caveats ? " " + esc(m.caveats) : ""}</p></div>`;
+  return `<span class="flag ${esc(m.overlap_flag)}"><span class="glyph" aria-hidden="true"></span>${esc(word)}</span>
+    <p class="body-small" style="margin:var(--space-2) 0 0">${esc(say)}</p>`;
 }
 
 // The baseline (results_baseline, schemas 1.11): homes permitted with no policy change. Read as is from the
@@ -1231,9 +1279,15 @@ const SECTIONS = {
             : `<tr><td class="code">${esc(c)}</td><td class="n muted" colspan="3">not used (single scenario)</td></tr>`; }).join("")}
         </tbody></table></div>`;
     }).join("");
-    $("trust-overlap").innerHTML = `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-2)">Overlap check for ${esc(b.meta.state)}</h4>
-        <p class="body-small">Does this state look like the places the model learned from? Each place is measured by how far its rent, home value and mortgage rate sit outside the range of the reference places behind the uptake rate (a log distance; 0 means inside on all three). The state is read from the middle of that distance, weighted by eligible lots: inside up to ${esc(DATA.overlap_thresholds.medium)}, near the edge up to ${esc(DATA.overlap_thresholds.low)}, outside beyond (config/params/aggregate.yaml).</p>
-        ${flagHtml(b.meta).replace('<div class="card">', '<div>')}</div>`;
+    const named = nameOfState(b.meta.state), m = b.meta;
+    const study = m.state_role === "development"
+      ? `<p class="body-small muted" style="margin:var(--space-2) 0 0">${esc(named)} is one of our study states, but that does not make every place in it like the places that set the ADU uptake rate, so even a study state can sit near the edge.</p>` : "";
+    const how = `<p class="body-small">Each place is compared with the reference places behind the ADU uptake rate on three things: rent, home value and mortgage rate. Its distance is how far it sits outside their range (on a log scale; 0 means inside on all three). The state is read from the middle of those distances, weighted by eligible lots: inside up to ${esc(DATA.overlap_thresholds.medium)}, near the edge up to ${esc(DATA.overlap_thresholds.low)}, and outside beyond that (config/params/aggregate.yaml).</p>
+      <p class="source">${esc(named)}: ${esc(m.overlap_note || "")}.${m.caveats ? " " + esc(m.caveats) : ""}</p>`;
+    $("trust-overlap").innerHTML = `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-1)">Is ${esc(named)} like the places the model learned from?</h4>
+        <p class="body-small" style="margin:0 0 var(--space-3)">This is the one check that works for a state with no building record of its own: it warns when the model is reaching beyond its evidence.</p>
+        ${flagHtml(m, named)}${study}
+        ${more(how, "How this is measured")}</div>`;
     $("trust-facts").innerHTML = `<p class="body-small">The engine's draws behind every number: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/dev/results_dashboard.py</span>).</p>${facts}`;
     return `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-2)">Which assumptions move the answer most, in ${esc(b.meta.state)}</h4>
         <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net new housing when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders on the Results page.</p>
@@ -1699,7 +1753,8 @@ function confHtml() {
   const count = (ways) => ways.reduce((t, w) => t + (by[w] || []).length, 0);
   const [h, c, l] = CONF_GROUPS.map(([, , ways]) => count(ways));
   const name = (r) => r[1].split(/[,(;:]/)[0].trim();
-  const lead = `<p class="need-lead" style="margin:var(--space-2) 0 0">Of ${CONF.length} factors that could bias the answer, the model handles ${h}, ${c} were checked and set aside, and ${l} are stated limits.</p>`;
+  const nt = (by.test || []).length, nb = (by.bad || []).length;
+  const lead = `<p class="why-line" style="margin:var(--space-3) 0 0">We identified ${CONF.length} factors that could bias the answer using a review of <a href="https://github.com/cappellacci/lotline/blob/main/docs/research/lotline-evidence-register.csv" target="_blank" rel="noopener">other housing studies</a>.</p><p style="margin:var(--space-2) 0 0">We treated each one according to its impact on our model: it handles ${h}, ${nt} proved to make no difference${nb ? `, ${nb} we left alone on purpose` : ""} and ${l} are stated limits we could not address.</p>`;
   const cells = CONF_GROUPS.flatMap(([, gname, ways, col]) => ways.flatMap((w) => (by[w] || []).map((r) =>
     `<span class="reg-cell" style="background:${col}" title="${esc(`${name(r)}: ${CONF_WAYS[w][0]}`)}"></span>`))).join("");
   const bar = `<div class="reg-bar" role="img" aria-label="${esc(`${h} handled, ${c} checked and set aside, ${l} stated limits`)}">${cells}</div>
@@ -1718,10 +1773,10 @@ function confHtml() {
 const CHECKS = [
   ["Data match Census", "Do our place-by-place permit sums match Census state totals?", "pass", "Within 1% in most years (Ohio 34 of 34, Minnesota 30 of 32, North Carolina 29 of 31), but only 21 of 34 in Texas. Austin's own permit file matches Census at 0.98."],
   ["Baseline backtest", "Starting from past years, does the baseline predict the next five years better than simple rules of thumb?", "partial", "Beat both rules of thumb (the last 3 years' average and a 10-year trend) in 41 of 48 tests. Passed every preset target in 19 of 48. Its ranges held the actual state total 83% of the time, running about 14% low on average."],
-  ["Reformed vs similar places", "Can comparisons with places that did not reform measure the effect directly?", "fail", "Too weak to tell an effect from noise, and a placebo check failed. This is why effects are built from their parts (step 3d)."],
+  ["Reformed vs similar places", "Can comparisons with places that did not reform measure the effect directly?", "fail", "Too weak to tell an effect from noise, and a placebo check failed. This is why effects are built from their parts (step 4a)."],
   ["Placebo date (missing middle)", "Does the model find an 'effect' at a fake date years before a real reform?", "fail", "The first missing-middle fit did (0.32 per 1,000 lots). Most of it came from building types in Houston and Austin that the reforms did not newly allow, so the outcome was redefined to newly allowed types. The current fit still fails: a fake reform date three years early shows a larger effect than the real dates."],
-  ["Leave a state out (ADUs)", "Fit on the other states, predict the hidden one from its place types and the rules of its 20 largest places: is the actual count inside the range, with the midpoint within a factor of two?", "pass", "Useful in all four states with counts (Minnesota, North Carolina, Texas, Oregon). The ranges are wide: in Texas the high end is about 50 times the low. Details on the ADU card (step 3e)."],
-  ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "With Oregon left out, the other states predicted 457 to 4,789 buildings in its places; 703 were built. 78% of 136 single places landed inside their range. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set. Details on the missing-middle card (step 3e)."],
+  ["Leave a state out (ADUs)", "Fit on the other states, predict the hidden one from its place types and the rules of its 20 largest places: is the actual count inside the range, with the midpoint within a factor of two?", "pass", "Useful in all four states with counts (Minnesota, North Carolina, Texas, Oregon). The ranges are wide: in Texas the high end is about 50 times the low. Details on the ADU card (step 4b)."],
+  ["Leave a state out (missing middle)", "The same test for missing middle.", "partial", "With Oregon left out, the other states predicted 457 to 4,789 buildings in its places; 703 were built. 78% of 136 single places landed inside their range. The model beats 'no effect' by about 1.5 standard errors, short of the 2 we set. Details on the missing-middle card (step 4b)."],
   ["Oregon, blind", "Predicted before Oregon's results were looked at, then compared.", "partial", "Missing middle (earlier values): actual 1,753 homes inside the predicted 1,738–6,469, near the bottom. ADUs missed low: Portland had 1,930 against a range of 3–1,418, Bend 414 against 0–206. Oregon was then added to the ADU fit."],
   ["Charlotte, blind (missing middle)", "Prediction frozen before Charlotte's years from mid-2023 were opened.", "pass", "The actual count landed inside the frozen range (earlier values)."],
   ["St. Paul, blind (missing middle)", "Prediction frozen before St. Paul's years from 2024 were opened.", "fail", "Missed: 55 buildings in 2024–2025 against a frozen range of 9 to 28. The effect came much faster than the model's 4-year ramp; with a 1-year ramp the same model gives a median of 55. A refit with a separate ramp for places that chose the reform did not forecast better, so the model stays, and the faster case is reported as a sensitivity."],
@@ -1880,7 +1935,43 @@ function staticTrust() {
   checksHtml();
 }
 
+// 4c (Ben, 2026-11-19): the 1,000 runs behind one range, binned on a log axis, the middle 80% shaded.
+function drawRuns() {
+  const el = $("runs"), b = UI.b;
+  if (!el || !b || !scenariosIn(b).length) return;
+  const s = UI.detail || scenariosIn(b)[0];
+  const v = AGG.homesFromDraws([...drawsFor(b, s)].sort((x, y) => x.draw - y.draw)).homes_net_statewide.filter(Number.isFinite);
+  if (!v.length) return;
+  const p10 = AGG.percentile(v, 10), p50 = AGG.percentile(v, 50), p90 = AGG.percentile(v, 90);
+  const lg = (t) => Math.log10(Math.max(1, t));
+  const lo = Math.floor(lg(Math.min(...v))), hi = Math.max(lo + 1, Math.ceil(lg(Math.max(...v))));
+  const W = 720, L = 10, R = 10, T = 34, Hc = 120, H = T + Hc + 26, nb = 48;
+  const x = (t) => L + ((lg(t) - lo) / (hi - lo)) * (W - L - R);
+  const bins = new Array(nb).fill(0);
+  for (const t of v) bins[Math.min(nb - 1, Math.floor(((lg(t) - lo) / (hi - lo)) * nb))] += 1;
+  const top = Math.max(...bins), bw = (W - L - R) / nb, col = scenColor(s);
+  const bars = bins.map((c, i) => {
+    if (!c) return "";
+    const x0 = L + i * bw, mid = 10 ** (lo + ((i + 0.5) / nb) * (hi - lo)), inside = mid >= p10 && mid <= p90;
+    const h = (c / top) * Hc;
+    return `<rect x="${x0 + 0.5}" y="${T + Hc - h}" width="${Math.max(1, bw - 1)}" height="${h}" fill="${col}" opacity="${inside ? 0.9 : 0.3}"></rect>`;
+  }).join("");
+  const band = `<rect x="${x(p10)}" y="${T - 4}" width="${x(p90) - x(p10)}" height="${Hc + 4}" fill="var(--survey-band)"></rect>`;
+  const mark = (t, lab, anchor) => `<line x1="${x(t)}" x2="${x(t)}" y1="${T - 6}" y2="${T + Hc}" stroke="var(--ink)" stroke-width="1.5"${lab === "Midpoint" ? "" : ' stroke-dasharray="3 3"'}></line>
+    <text class="lab" x="${x(t)}" y="${T - 12}" text-anchor="${anchor}">${esc(lab)} ${esc(fmtN(t))}</text>`;
+  const ticks = [];
+  for (let e = lo; e <= hi; e++) ticks.push(`<text x="${x(10 ** e)}" y="${T + Hc + 18}" text-anchor="${e === lo ? "start" : e === hi ? "end" : "middle"}">${esc(fmtN(10 ** e))}</text>
+    <line x1="${x(10 ** e)}" x2="${x(10 ** e)}" y1="${T + Hc}" y2="${T + Hc + 5}" stroke="var(--rule)"></line>`);
+  el.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  el.setAttribute("aria-label", `${v.length} runs of ${scenLabel(s)}: midpoint ${fmtN(p50)}, middle 80% ${fmtN(p10)} to ${fmtN(p90)} net new homes`);
+  el.innerHTML = band + bars + `<line x1="${L}" x2="${W - R}" y1="${T + Hc}" y2="${T + Hc}" stroke="var(--rule)"></line>` + ticks.join("")
+    + mark(p10, "P10", "end") + mark(p50, "Midpoint", "middle") + mark(p90, "P90", "start");
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  $("runs-title").textContent = `${v.length.toLocaleString("en-US")} runs of ${scenLabel(s)} in ${named}: net new homes, 2027–2031`;
+  $("runs-read").textContent = `Each bar counts the runs that landed at about that number. The lowest run came out at ${fmtN(Math.min(...v))} homes and the highest at ${fmtN(Math.max(...v))}. Half landed below ${fmtN(p50)}, the midpoint. 1 run in 10 came out below ${fmtN(p10)} and 1 in 10 above ${fmtN(p90)}, so the range we report is ${fmtN(p10)} to ${fmtN(p90)} (the shaded part).`;
+}
 function drawTornado() {
+  drawRuns();
   const el = $("tornado"), b = UI.b;
   if (!el || !b || !scenariosIn(b).length) return;
   const s = UI.detail || scenariosIn(b)[0];

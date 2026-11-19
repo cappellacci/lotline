@@ -176,7 +176,7 @@ def test_results_section_parts_are_on_the_page(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     assert "<b>Provisional:</b> how the sliders move an assumption" in html  # Ben, 2026-11-06
     for part in ('id="hero-line"', 'id="rc"', 'id="need"', 'id="knobs"',
-                 "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
+                 "like the places the model learned from?", "LotlineAggregate"):  # fmt: skip
         assert part in html, part
 
 
@@ -259,10 +259,14 @@ def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
 
 
 def test_model_page_section_three_has_a_selector_and_an_adu_deep_dive(tmp_path):
-    """Ben, 2026-11-17: section 3 is "What each model does, and how we get our ranges", with a segmented model
-    selector and an ADU deep dive built from every state's results file (gut-check style charts)."""
+    """Ben, 2026-11-17: the model section has a segmented model selector and an ADU deep dive built from every
+    state's results file (gut-check style charts). 2026-11-19: step 3 is "Causal factors and confounders" and
+    the models sit in step 4, "Building the models"."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    assert '<h3 class="h2">What each model does, and how we get our ranges</h3>' in html
+    assert '<h3 class="h2">Causal factors and confounders</h3>' in html
+    assert '<h3 class="h2">Building the models</h3>' in html
+    order = [html.index(t) for t in ("Causal factors and confounders", "4a. Why we built", 'id="model-adu"')]
+    assert order == sorted(order)
     assert '<div class="seg model-tabs" role="group" aria-label="Which model">' in html
     adu = html[html.index('id="model-adu"') : html.index('id="model-mm"')]
     assert 'id="adu-heldout"' in adu and 'id="adu-deep"' in adu
@@ -429,7 +433,7 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
 
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     parts = (
-        "Overlap check",
+        "like the places the model learned from?",  # the overlap check, in plain words (Ben, 2026-11-19)
         'id="tornado"',
         "Technical detail",
         'id="dag"',

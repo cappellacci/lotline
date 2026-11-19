@@ -606,7 +606,7 @@ function renderChecks() {
     `${plural(all.length, "check")}: ${plural(n("warn"), "warning")}, ${plural(n("note"), "note")}, ${n("ok")} OK`;
   document.getElementById("checks").innerHTML = all
     .sort((a, b) => ["warn", "note", "ok"].indexOf(a.level) - ["warn", "note", "ok"].indexOf(b.level))
-    .map(c => `<div class="check"><span class="icon" style="background:var(${icon[c.level][1]})" aria-label="${c.level}">${icon[c.level][0]}</span>
+    .map(c => `<div class="check"><span class="icon" style="background:var(${icon[c.level][1]})" aria-label="${esc(c.level)}">${esc(icon[c.level][0])}</span>
       <div><div><span class="badge">${esc(c.st)}</span> ${esc(c.title)}</div><div class="det">${esc(c.detail)}${c.items.length ? "<br>" + c.items.map(esc).join(", ") : ""}</div></div>
       <span class="val">${esc(c.value)}</span></div>`).join("");
 }
