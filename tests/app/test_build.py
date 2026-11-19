@@ -299,7 +299,7 @@ def test_missing_middle_and_fees_have_their_own_evidence_cards(tmp_path):
     for part in (mm, fee):
         assert "How we get these numbers" in part and part.count("<li><div><b>") == 5
     assert "Find the lots where 2–4 homes would become legal" in mm
-    assert "Start from the homes built anyway" in fee and "Two ways to cut fees in half" in fee
+    assert "Start from the homes built anyway" in fee and "What cutting fees in half would add" in fee
     assert '(r) => r.size_class === "all"' in fee  # the share is of all homes expected, as the hand-off says
 
 

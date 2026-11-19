@@ -1046,8 +1046,8 @@ function feeEvidenceHtml(b, R) {
       <p class="figure" style="margin:var(--space-2) 0 0">+${fmtN(x.p50)} <span class="body">homes</span></p>
       <p class="body-small" style="margin:0">Likely ${fmtN(x.p10)} to ${fmtN(x.p90)}${all ? `; the midpoint equals ${fmtPct(x.p50 / all.p50)} of the ${fmtN(all.p50)} homes expected with no change` : ""}.</p></div>`;
   }).join("");
-  const s1 = `<section><h3 class="h3">Two ways to cut fees in half</h3>
-    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Challenge asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes. The switch on the fee row above picks which one the headline uses.</p>
+  const s1 = `<section><h3 class="h3">What cutting fees in half would add</h3>
+    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Challenge asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes.</p>
     <div class="fee-vers">${tiles}</div></section>`;
   // 2. year by year: each version's added homes, P10–P90 whiskers with the midpoint
   const s2 = `<section><h3 class="h3">Year by year</h3>${feeYearsChart(b, o, shown)}</section>`;
@@ -1110,23 +1110,32 @@ function feeTodayHtml(b, name) {
   if (!f || !(f.places || []).length) return `<section><h3 class="h3">What builders pay in fees today</h3><p class="pending">No city fee schedules are coded for this state yet.</p></section>`;
   const S = f.summary || {}, h = S.house || {}, hb = f.handbook_fee, cut = hb * f.handbook_cut_share;
   const col = esc(scenColor("fees"));
-  const times = h.median ? hb / h.median : NaN;
-  const under = f.places.filter((p) => (p.types.house || {}).fee < cut).length;
-  const lede = `<p class="body-small">We looked at the fee schedules of ${h.places} ${esc(name)} ${h.places === 1 ? "place" : "places"} to see what builders really pay to build a new home today (in 2025 dollars). The typical place charges <b>${usd(h.median)}</b> for a new house, from ${usd(h.min)} to ${usd(h.max)}. The Challenge benchmark assumes ${usd(hb)} everywhere${Number.isFinite(times) && times >= 1.5 ? `, about ${Math.round(times)} times the typical fee here` : ""}, so its ${usd(cut)} cut is ${under === h.places ? "more than the whole fee in every place we coded" : under ? `more than the whole fee in ${under} of the ${h.places} places we coded` : "smaller than the fee in every place we coded"}. Cutting the real fee in half saves <b>${usd(h.median / 2)}</b> on the typical house.</p>`;
-  // strip: every place's house fee on one dollar axis, against the Challenge's levels
-  const W = 640, L = 12, Rm = 12, H = 96, top = Math.max(hb, h.max || 0) * 1.04, x = (v) => L + (v / top) * (W - L - Rm);
-  const ticks = niceTicks(top, 5).filter((t) => t <= top);
-  const parts = ticks.map((t) => `<line x1="${x(t)}" x2="${x(t)}" y1="18" y2="64" stroke="var(--rule)"></line><text x="${x(t)}" y="80" text-anchor="middle">${usd(t)}</text>`);
-  const mark = (v, label, dash) => `<line x1="${x(v)}" x2="${x(v)}" y1="10" y2="64" stroke="var(--ink)" stroke-width="1.5"${dash ? ' stroke-dasharray="4 3"' : ""}></line><text x="${x(v) - 4}" y="12" text-anchor="end" style="fill:var(--ink)">${esc(label)}</text>`;
-  parts.push(mark(hb, `Challenge: ${usd(hb)}`), mark(hb - cut, `after its cut: ${usd(hb - cut)}`, true));
-  for (const p of f.places) {
-    const t = (p.types || {}).house;
-    if (!t) continue;
-    parts.push(`<circle cx="${x(t.fee)}" cy="42" r="6" fill="${col}" fill-opacity="0.55" stroke="${col}"><title>${esc(p.name)}: ${usd(t.fee)} for a new house</title></circle>`);
+  const lede = `<p class="body-small">We looked at the fee schedules of <button type="button" class="linkish" data-open="fee-places">${h.places} ${esc(name)} ${h.places === 1 ? "place" : "places"}</button> to see what builders really pay to build a new home today (in 2025 dollars). The typical place charges <b>${usd(h.median)}</b> for a new house, from ${usd(h.min)} to ${usd(h.max)}. Cutting the real fee in half saves <b>${usd(h.median / 2)}</b> on the typical house.</p>`;
+  // strip: every place's house fee on one dollar axis, against the Challenge's levels. Dots stack upward where
+  // they would overlap (a small beeswarm); no gridlines; one row of labels above and one below.
+  const W = 640, L = 12, Rm = 12, R = 5, top = Math.max(hb, h.max || 0) * 1.04, x = (v) => L + (v / top) * (W - L - Rm);
+  const placed = [];
+  for (const p of [...f.places].filter((q) => (q.types || {}).house).sort((a, c) => a.types.house.fee - c.types.house.fee)) {
+    const cx = x(p.types.house.fee);
+    let row = 0;
+    while (placed.some((d) => d.row === row && Math.abs(d.cx - cx) < 2 * R + 1)) row += 1;
+    placed.push({ cx, row, p });
   }
-  parts.push(`<line x1="${x(h.median)}" x2="${x(h.median)}" y1="26" y2="58" stroke="var(--ink)" stroke-width="3"></line><text x="${x(h.median) + 6}" y="62" style="fill:var(--ink)">typical ${usd(h.median)}</text>`);
+  const stack = Math.max(1, ...placed.map((d) => d.row + 1));
+  const AX = 34 + stack * (2 * R + 1), H = AX + 40;
+  const short = (v) => (v >= 1000 ? `$${Math.round(v / 1000)}k` : usd(v));
+  const ticks = niceTicks(top, 5).filter((t) => t <= top);
+  const parts = [`<line x1="${L}" x2="${W - Rm}" y1="${AX}" y2="${AX}" stroke="var(--rule)"></line>`];
+  parts.push(...ticks.map((t) => `<line x1="${x(t)}" x2="${x(t)}" y1="${AX}" y2="${AX + 4}" stroke="var(--rule)"></line><text x="${x(t)}" y="${AX + 18}" text-anchor="middle">${short(t)}</text>`));
+  // both benchmark labels sit left of their line, on one row above the dots
+  const mark = (v, label, dash) => `<line x1="${x(v)}" x2="${x(v)}" y1="22" y2="${AX}" stroke="var(--ink-muted)" stroke-width="1.5"${dash ? ' stroke-dasharray="4 3"' : ""}></line><text x="${x(v) - 5}" y="16" text-anchor="end">${esc(label)}</text>`;
+  parts.push(mark(hb, `Challenge: ${usd(hb)}`, false), mark(hb - cut, `after its cut: ${usd(hb - cut)}`, true));
+  for (const d of placed) {
+    parts.push(`<circle cx="${d.cx}" cy="${AX - R - 2 - d.row * (2 * R + 1)}" r="${R}" fill="${col}" fill-opacity="0.6" stroke="${col}"><title>${esc(d.p.name)}: ${usd(d.p.types.house.fee)} for a new house</title></circle>`);
+  }
+  parts.push(`<path d="M ${x(h.median) - 6} ${AX + 30} L ${x(h.median) + 6} ${AX + 30} L ${x(h.median)} ${AX + 22} Z" fill="var(--ink)"></path><text x="${x(h.median) + 10}" y="${AX + 31}" style="fill:var(--ink)">typical place: ${usd(h.median)}</text>`);
   const strip = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fee for a new house in each coded place, against the Challenge's $50,000" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
-    ${more(`<p class="source">Each dot is one place's fee for a new house; hover for its name. Thick line: the typical (median) place.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Each dot is one place's fee for a new house (stacked where places charge about the same); hover for its name. The triangle marks the typical (median) place. The lines are the Challenge benchmark's $50,000 fee and the $25,000 it is left with after its cut.</p>`, "Graph details")}`;
   // by type of home: per unit, per lot and as a share of building cost
   const adus = f.places.filter((p) => p.types.adu);
   const aduSame = adus.filter((p) => Math.abs(p.types.adu.fee - ((p.types.house || {}).fee || 0)) < 1).length;
@@ -1153,7 +1162,7 @@ function feeTodayHtml(b, name) {
   const cell = (p, k) => { const t = p.types[k]; return t ? `${usd(t.fee)}${k === "adu" && Math.abs(t.fee - ((p.types.house || {}).fee || 0)) < 1 ? "<sup>=</sup>" : ""}${t.filled ? "<sup>*</sup>" : ""}` : "–"; };
   const rows = f.places.map((p) => `<tr><td>${esc(p.name)}</td><td>${bar(p)}</td>${types.map(([k]) => `<td class="num">${cell(p, k)}</td>`).join("")}</tr>`).join("");
   const key = FEE_PARTS.map(([k, label, op]) => `<span><span style="display:inline-block;width:12px;height:10px;background:${k === "filled" ? "var(--rule)" : col};opacity:${k === "filled" ? 1 : op};margin-right:6px"></span>${esc(label)}</span>`).join("");
-  const places = `<details style="margin-top:var(--space-3)"><summary class="body-small">Every place we coded (${f.places.length})</summary>
+  const places = `<details id="fee-places" style="margin-top:var(--space-3)"><summary class="body-small">Every place we coded (${f.places.length})</summary>
     <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${key}</div>
     <div class="scroll"><table class="body-small"><thead><tr><th>Place</th><th>House fee, by part</th>${types.map(([, l]) => `<th class="num">${esc(l)}${l === "House" ? "" : " (per home)"}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
     <p class="source">* part of the fee was not in the schedule we found (usually the building permit or the water hookup), so the typical value of coded places fills it. ${aduOwn ? "= no separate ADU charge: shown as a house's fee. " : ""}Amounts per home in 2025 dollars, from each city's official fee schedule (config/fees/), under the rules in docs/research/fee-levels-vs-handbook.md.</p></details>`;
@@ -1214,17 +1223,18 @@ const SECTIONS = {
           <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
             <span class="muted" id="outcome-note"></span></div>
           ${pendNote}
-          ${more(`<p class="source"><b>How to read the bars.</b> We ran the model ${esc(Number(b.meta.n_draws).toLocaleString("en-US"))} times, each time with a different plausible value for everything we are unsure about, such as how many owners build and what building costs. The number and the tick show the middle result: half the runs came out higher and half lower. The bar covers the middle 80% of runs: 1 run in 10 came out below its left end and 1 in 10 above its right end; the numbers in brackets are those two ends. A longer bar means we are less sure. The scale is logarithmic: each gridline is ten times the one before, so a bar that looks short can still span a wide range.</p><p class="source">Bars: 10th to 90th percentile (P10–P90) of the runs; tick: the median (P50). Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>`, "Graph details")}</div>
+          ${more(`<p class="source"><b>How to read the bars.</b> We ran the model ${esc(Number(b.meta.n_draws).toLocaleString("en-US"))} times, each time with a different plausible value for everything we are unsure about, such as how many owners build and what building costs. The number and the tick show the middle result: half the runs came out higher and half lower. The bar covers the middle 80% of runs: 1 run in 10 came out below its left end and 1 in 10 above its right end; the numbers in brackets are those two ends. A longer bar means we are less sure. The scale is logarithmic: each gridline is ten times the one before, so a bar that looks short can still span a wide range.</p><p class="source">Bars: 10th to 90th percentile (P10–P90) of the runs; tick: the median (P50). Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>`, "Graph details")}
+          <details class="more" id="knobs-card"><summary>Try different assumptions</summary>
+            <p class="body-small" style="margin:0">Sliders move the headline, the range for each reform above and what the reforms add in the housing-need card. The charts further down stay at the engine's estimate. <button type="button" class="linkish" id="reset-all">Reset all to the engine</button></p>
+            <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
+            <div id="knobs"></div></details></div>
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
       <div class="card ev" id="model-card"></div>
       <h3 class="h2" style="margin:var(--space-7) 0 var(--space-3)">How reforms help meet housing need</h3>
       <div class="card"><div id="need"></div>
         <p class="need-lead" style="margin-top:var(--space-7)">Who the new homes serve</p><div id="ami"></div></div>
-      <div class="card" id="knobs-card"><div class="head" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2)">
-        <h3 class="h3">Try different assumptions</h3><button type="button" class="linkish" id="reset-all">Reset all to the engine</button></div>
-        <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
-        <div id="knobs"></div></div>`;
+    `;
   },
   data(b) {
     $("data-lead").textContent = dataLead();
@@ -1951,6 +1961,11 @@ function wireResults() {
   body.onclick = (e) => {
     const t = e.target.closest("button");
     if (!t) return;
+    if (t.dataset.open) {  // a link that opens a fold on the page (e.g. the fee card's place count)
+      const d = document.getElementById(t.dataset.open);
+      if (d) { d.open = true; d.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      return;
+    }
     if (t.dataset.outcome && Object.hasOwn(OUTCOME_WORDS, t.dataset.outcome)) { UI.outcome = t.dataset.outcome; body.querySelectorAll("[data-outcome]").forEach((x) => x.setAttribute("aria-pressed", x === t)); }
     if (t.dataset.detail && Object.hasOwn(DATA.scenarios, t.dataset.detail)) {
       UI.detail = t.dataset.detail; UI.pins = {};
