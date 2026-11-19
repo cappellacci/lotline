@@ -7681,3 +7681,37 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Onboarding effort:** one state file. No aliases, crosswalks, adapters, `src/` change or parameter change. V0
   passes on 2010-2019, every year within 1% (`reports/wi/V0-national.md`); 1992-1993 are +5%, outside the
   window.
+
+### D-105 · 2026-11-19 · V8: Wisconsin scored against the Census permits (fails the pass rule; results only, no change)
+- **Why:** Ben, 2026-11-19 (via the Multi-state model setup guide session): "can we unblind Wisconsin and score
+  it?" The freeze (D-104) was on main (#500, 40232da0) before anything was unblinded.
+- **How:** `scripts/dev/v8_score.py`.
+  - It first rebuilds the baseline from the blind tables and stops unless it equals the frozen file. It did.
+  - It then unblinds Wisconsin's Census place permits in memory only (`bps.load(..., unblind=...)`). The
+    tables on disk stay blind.
+  - It scores the D-104 reading rules as written: reported units for every Wisconsin place; P10-P90 from the
+    frozen file; ranks within the 1,000 frozen draws.
+  - It was run from a fresh clone of the GitHub repo. The local `main` ref was behind #500, and
+    `check_unblind` checks that ref; it wasn't moved, because another session works on that checkout.
+  - Output: `reports/wi/V8-score.json` and `V8-score.md`.
+- **Result, statewide 2021-2025, reported units (observed vs P50, P10-P90):**
+  - **All sizes: 112,166 vs 75,347 (53,126-103,715). Outside the range: the V8 pass rule fails.**
+    - Observed ÷ P50 = 1.49; rank 0.95 in the draws.
+    - The 1,131 places the baseline forecasts alone sum to 110,278, also outside.
+    - The 5 permit rows with no place code add 50 units.
+  - 1 unit: 59,340 vs 51,972 (35,322-70,417). Inside; ×1.14.
+  - 2 units: 7,222 vs 3,638 (2,249-5,791). Outside; ×1.98.
+  - 3-4 units: 648 vs 424 (196-961). Inside; ×1.53.
+  - 5+ units: 44,956 vs 18,534 (11,078-31,454). Outside; ×2.43.
+  - 2-4 units: 7,870 vs 4,164 (2,602-6,484). Outside; ×1.89.
+  - By year, all sizes: only 2023 is inside its band (21,203 vs P90 21,365). The others are above P90 by
+    0-24%. Single-family homes are inside every year.
+- **Overlap:** low (median calibration distance 1.37). 1,186 of 1,189 places, holding 100% of eligible lots,
+  sit outside the calibration range. All of them are flagged in the bundle.
+- **Other V8 conditions:** V0 passes (D-104). Nothing in `src/` or `config/params/` changed for Wisconsin.
+- **Reading:**
+  - The miss is in apartments and duplexes. Single-family homes are close (×1.14).
+  - The forecast also starts below Wisconsin's last observed year: 2019 had 17,317 reported units, and the
+    2021 P50 is 15,316.
+  - Why it starts low is **not investigated**; this entry records the result only.
+- **Open questions for Ben:** see the PR. Nothing is changed until he decides.
