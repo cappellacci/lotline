@@ -64,7 +64,7 @@ def test_strip_numbers_trace_to_the_bundle(tmp_path):
     for h in ("adu", "plex_unit", "house"):
         m = _row(doc, h, "market", "current")
         # midpoint with its range, and the dollar income beside it (S6)
-        assert f"income about ${_fmt_n(m['income'])} a year" in html
+        assert f"{_fmt_n(m['income'])} income" in html
         assert f"<b>{_pct(m['ami_share'])} of AMI</b>" in html
         assert f"({_pct(m['ami_share_p10'])}–{_pct(m['ami_share_p90'])})" in html
         be = _row(doc, h, "break_even", "current")
@@ -84,7 +84,7 @@ def test_strip_shows_no_place_below_the_state(tmp_path):
     core = _row(doc, "adu", "market", "current", "core")
     state = _row(doc, "adu", "market", "current")
     if round(core["income"], -1) != round(state["income"], -1):
-        assert f"income about ${_fmt_n(core['income'])} a year" not in html
+        assert f"${_fmt_n(core['income'])} income" not in html
 
 
 @needs_node

@@ -252,7 +252,7 @@ svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--i
 .acc-track .val { position: absolute; top: 3px; font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
 .ami { margin: var(--space-4) 0 0; }
 .ami p, .ami ol { max-width: none; }
-.ami-grid { display: grid; grid-template-columns: minmax(150px, 220px) 1fr minmax(170px, 230px); gap: var(--space-2) var(--space-4); align-items: center; }
+.ami-grid { display: grid; grid-template-columns: minmax(150px, 210px) 1fr minmax(190px, 240px); gap: var(--space-2) var(--space-4); align-items: center; }
 .ami-grid .who { font-size: 15px; line-height: 20px; color: var(--ink); }
 .ami-grid .who small { display: block; color: var(--ink-muted); font-size: 13px; }
 .ami-grid .val { font-size: 15px; line-height: 20px; color: var(--ink); }
@@ -265,7 +265,11 @@ svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--i
 .ami-track .dot.be { background: var(--paper); border: 2px solid var(--ink); }
 .ami-track .off { position: absolute; top: 7px; right: 2px; font-size: 12px; color: var(--ink-muted); }
 .ami-axis { position: relative; height: 18px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); }
-.ami-axis span { position: absolute; transform: translateX(-50%); }
+.ami-axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.ami-axis span:first-child { transform: none; } .ami-axis span:last-child { transform: translateX(-100%); }
+.ami-bands { position: relative; height: 18px; font-size: 12px; color: var(--ink-muted); }
+.ami-bands span { position: absolute; top: 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ami-bands span:last-child { text-align: left; padding-left: 6px; }
 .ami-key { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: 13px; color: var(--ink-muted); margin: var(--space-3) 0 var(--space-2); }
 .ami-key i { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px; border-radius: 2px; }
 .ami-key i.mkt, .ami-key i.be { border-radius: 50%; }
@@ -1059,7 +1063,7 @@ function feeEvidenceHtml(b, R) {
   const cut = d === "fees" ? "$25,000 off every home (half of a $50,000 fee the Challenge benchmark assumes everywhere)"
     : "half of each city's own fee for each kind of home, from its fee schedule, or the state's typical fee where none was coded";
   const s3 = `<section><h3 class="h3">How we get these numbers</h3>
-    <p class="body-small">Shown for ${esc(FEE_VERSIONS.find(([k]) => k === d)[1])}, the version the fee row's switch picks. A fee cut opens no new lots; it makes homes that could already be built cheaper, so a few more get built.</p>
+    <p class="body-small">Unlike the other two reforms, a fee cut does not make any new homes legal. It lowers the cost of homes that can already be built, so builders start a few more of them. These steps go from the homes built anyway to the extra homes the cut adds (${esc(FEE_VERSIONS.find(([k]) => k === d)[1].toLowerCase())}).</p>
     <ol class="how">
       <li><div><b>Start from the homes built anyway</b><p>Houses, duplexes, triplexes and fourplexes expected in ${esc(name)} over the five years with no change, from each place's own recent building. Buildings of 5 or more homes pay no fee in the model, so they are left out.</p>${fbar(base && base.p50, "var(--survey)")}</div><span class="v">${base ? `${fmtN(base.p50)} homes` : "–"}</span></li>
       <li><div><b>Work out how much cheaper each home gets</b><p>The cut is ${esc(cut)}. About half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters), set against the full cost of building the home.</p></div><span class="v"></span></li>
@@ -1538,10 +1542,11 @@ function amiHtml(b) {
         <span class="dot be" style="left:${pos(be.ami_share)}" title="${esc(`Break-even: ${cost(be, kind)}, ${pct0(be.ami_share)} of AMI`)}"></span>
         <span class="dot mkt" style="left:${pos(m.ami_share)}" title="${esc(`Assumed: ${cost(m, kind)}, ${pct0(m.ami_share)} of AMI`)}"></span>${off}
       </div>
-      <div class="val"><b>${esc(pct0(m.ami_share))} of AMI</b> <span class="muted">(${esc(pct0(m.ami_share_p10))}–${esc(pct0(m.ami_share_p90))})</span><small>${esc(cost(m, kind))} · income about ${esc(fmtUsd(m.income))} a year</small></div>`;
+      <div class="val"><b>${esc(pct0(m.ami_share))} of AMI</b> <span class="muted">(${esc(pct0(m.ami_share_p10))}–${esc(pct0(m.ami_share_p90))})</span><small>${esc(kind === "price" ? `${fmtUsd(m.value)} home` : `${fmtUsd(m.value)}/mo`)} · ${esc(fmtUsd(m.income))} income</small></div>`;
   }).join("");
-  const ticks = [0, 0.3, 0.6, 0.8, 1, 1.2, 1.5];
-  const axis = `<div class="blank"></div><div class="ami-axis">${ticks.map((t) => `<span style="left:${pos(t)}">${Math.round(t * 100)}%</span>`).join("")}</div><div class="blank"></div>`;
+  const ticks = [0, 0.5, 1, 1.5];
+  const axis = `<div class="blank"></div><div class="ami-axis">${ticks.map((t, i) => `<span style="left:${pos(t)}">${Math.round(t * 100)}%${i === ticks.length - 1 ? " of AMI" : ""}</span>`).join("")}</div><div class="blank"></div>`;
+  const bandHead = `<div class="blank"></div><div class="ami-bands"><span style="left:0;width:${pos(AMI_BANDS.subsidy)}">Under 60%: needs subsidy</span><span style="left:${pos(AMI_BANDS.subsidy)};width:calc(${pos(AMI_BANDS.zoning)} - ${pos(AMI_BANDS.subsidy)})">60–80%</span><span style="left:${pos(AMI_BANDS.zoning)};right:0">Over 80%: zoning alone can reach</span></div><div class="blank"></div>`;
   const beLine = AMI_ROWS.map(([h, name, , kind]) => {
     const be = pick(h, "break_even", "current"), cut = pick(h, "break_even", fc);
     if (!be) return "";
@@ -1562,9 +1567,8 @@ function amiHtml(b) {
   return `<div class="ami">
     ${lead ? `<p class="body" style="margin:0" id="ami-lead"><b>${esc(lead)}</b> ${esc(detail)}</p>` : ""}
     ${more(`<p class="body-small" style="margin:0">We took HUD's 2026 area median income (AMI) for every county in ${esc(named)}: about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, on average where the reforms add homes. For each kind of home we take the rent (or price) the model already assumes, work out the household income at which it costs 30% of income, and compare that income with AMI for a household of 1.5 people per bedroom. The further right a dot sits, the higher the income a household needs.</p>`, "How we worked this out")}
-    <div class="ami-key"><span><i class="mkt"></i>Assumed rent or price (line: likely range)</span><span><i class="be"></i>Break-even: what it must earn to cover building it</span>
-      <span><i style="background:var(--paper-sunken)"></i>Under 60% of AMI: usually needs subsidy</span><span><i style="background:var(--survey-band)"></i>60–80%: the gap small homes can reach</span><span><i style="border:1px solid var(--rule)"></i>Over 80%: within reach of zoning reform alone</span></div>
-    <div class="ami-grid" style="--b1:${pos(AMI_BANDS.subsidy)};--b2:${pos(AMI_BANDS.zoning)}">${grid}${axis}</div>
+    <div class="ami-key"><span><i class="mkt"></i>Assumed rent or price, with its likely range</span><span><i class="be"></i>Break-even: what it must earn to cover building it</span></div>
+    <div class="ami-grid" style="--b1:${pos(AMI_BANDS.subsidy)};--b2:${pos(AMI_BANDS.zoning)}">${bandHead}${grid}${axis}</div>
     ${more(`<ol class="body-small" style="margin:0;padding-left:1.25em">
       <li>Find the black dot: the share of AMI a household needs for the rent or price the model assumes. The line around it is the likely range.</li>
       <li>Check its band. Under 60% usually takes subsidy; 60 to 80% is the gap that smaller homes can reach; over 80% the market can serve once zoning allows it.</li>
