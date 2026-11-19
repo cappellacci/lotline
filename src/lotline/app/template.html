@@ -1283,21 +1283,24 @@ const SECTIONS = {
 
 function knobsHtml(b) {
   const s = UI.detail;
-  return DATA.knobs.map((k0) => {
+  // a factor the engine holds at one value for this reform has nothing to move, so it gets no slider (Ben,
+  // 2026-11-19); the fee reduction holds the pays-off and adds-a-home shares at 1
+  const html = DATA.knobs.map((k0) => {
     const k = { ...k0, ...((k0.by_scenario || {})[s] || {}) };
     const vals = b.draws.filter((d) => d.scenario === s).map((d) => Number(d[k.column]));
     const fixed = AGG.percentile(vals, 0) === AGG.percentile(vals, 100);
+    if (fixed) return "";
     const params = (k.params[s] || []).map((p) => `<li><b>${esc(p.key)}</b> (config/params/${esc(p.file)}.yaml): ${esc(p.value)} (range ${esc(p.low)} to ${esc(p.high)}) ${esc(p.unit)}. ${esc(p.source)}</li>`).join("");
     return `<div class="knob" data-knob="${esc(k.column)}">
       <div class="head"><label class="h3" for="k-${esc(k.column)}" style="font-size:16px">${esc(k.label)}</label><span class="val" data-val="${esc(k.column)}"></span></div>
       <p class="body-small" style="margin:var(--space-1) 0">${esc(k.why)}</p>
-      ${fixed ? `<p class="body-small muted">Held fixed by the engine for this scenario at ${fmtFactor(vals[0], k.format)}.</p>` :
-      `<input type="range" id="k-${esc(k.column)}" min="0" max="100" step="5" value="50" data-pin="${esc(k.column)}" aria-describedby="v-${esc(k.column)}">
+      ${`<input type="range" id="k-${esc(k.column)}" min="0" max="100" step="5" value="50" data-pin="${esc(k.column)}" aria-describedby="v-${esc(k.column)}">
       <div class="ends"><span>${esc(k.low_word)}</span><button type="button" class="linkish" data-reset="${esc(k.column)}">Reset</button><span>${esc(k.high_word)}</span></div>`}
       <details><summary>Source and range</summary><ul>${params || "<li>Set by the engine run for this scenario.</li>"}</ul>
         <p>In the engine's draws: P10 ${fmtFactor(AGG.percentile(vals, 10), k.format)}, P50 ${fmtFactor(AGG.percentile(vals, 50), k.format)}, P90 ${fmtFactor(AGG.percentile(vals, 90), k.format)}.</p></details>
     </div>`;
   }).join("");
+  return html || `<p class="body-small muted">The engine holds every assumption for this reform at one value, so there is nothing to move here.</p>`;
 }
 
 // "[State] can add [X] homes": X is the three reforms together (Ben, 2026-11-17), summed draw by draw so the range
