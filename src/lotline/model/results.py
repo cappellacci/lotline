@@ -14,6 +14,9 @@
   `historical_floor_rows`): with-reform permits a year against the trailing observed average.
 - `baseline`: the no-policy-change forecast (`model/baseline.py`), homes permitted statewide per BPS building
   size and period, so the page can show the level the scenarios add to (`baseline_table`).
+- `affordability`: who the new homes serve (`model/affordability.py`, WS-NEED-AMI part B): rent or price,
+  income needed and share of area median income per home type and place type, market and break-even.
+  Context, not a scenario result; empty without a registered HUD income limits file.
 - `observed`: what was actually permitted in the years before the window (`observed_table`): ADU permits where
   local data flag them, and homes in 2-4 unit buildings from BPS.
 
@@ -58,6 +61,7 @@ PARTS = (
     "observed",
     "adu_place_types",
     "adu_baseline",
+    "affordability",
 )
 TABLE = {part: f"results_{part}" for part in PARTS}
 ENGINE_SCENARIOS = ("adu", "missing_middle", "fees", "fees_local_half")  # scenarios `build_bundle` can fill
@@ -291,6 +295,21 @@ def adu_baseline_years(state: str, run_draws: Mapping, origin: int) -> pd.DataFr
     _, _, first = baseline.window(origin)
     rows = [{"state": state, "period": str(first + y), **_pct(cur[:, y])} for y in range(cur.shape[1])]
     return pd.DataFrame(rows, columns=["state", *_columns("adu_baseline")])
+
+
+def affordability_table(state: str, places, run_draws: Mapping, res_mm, fee_places, store) -> pd.DataFrame:
+    """`results_affordability`: who the new homes serve (`model/affordability.py`), from the inputs the
+    scenarios already used. Empty (no rows) when no HUD income limits file is registered."""
+    from lotline.model import affordability
+
+    market = store.read(state, "market_geo_year")
+    inputs = affordability.inputs(places, run_draws, getattr(res_mm, "places", None), fee_places, market)
+    out = affordability.table(state, inputs)
+    return (
+        out.astype({"places": "Int64"})
+        if len(out)
+        else pd.DataFrame(columns=["state", *_columns("affordability")])
+    )
 
 
 def mm_year_shares(res) -> np.ndarray:
@@ -696,4 +715,5 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
         "observed": seen,
         "adu_place_types": adu_place_type_table(st, places, run_draws),
         "adu_baseline": adu_baseline_years(st, run_draws, origin),
+        "affordability": affordability_table(st, places, run_draws, res_mm, fee_places, store),
     }

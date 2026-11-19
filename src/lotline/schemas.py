@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.17"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.18"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -276,6 +276,14 @@ class MarketGeoYear(_Strict):
     demand_bartik: Optional[Series[float]] = pa.Field(nullable=True)
     demand_bartik_loo: Optional[Series[float]] = pa.Field(nullable=True)
     demand_imputed_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)
+    # HUD Section 8 income limits (adapters/national/hud_il.py), county rows, year = HUD fiscal year, nominal
+    # dollars: the HUD area's 4-person median family income (AMI) and the 50% limits for 1 to 5 persons
+    hud_mfi: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_1: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_2: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_3: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_4: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_5: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
 
     @pa.dataframe_check
     def one_row_per_geo_year(cls, df: pd.DataFrame) -> bool:
@@ -690,6 +698,42 @@ class ResultsAduPlaceTypes(_Strict):
         return not df.duplicated(["state", "place_type"]).any()
 
 
+class ResultsAffordability(_Strict):
+    """Who the new homes serve (WS-NEED-AMI part B; `model/affordability.py`): context beside the need, not a
+    result of the reform scenarios. Per home type (`adu`, `plex_unit`, `house` for contrast) and place type
+    (`core`, `suburb`, `town`, or `state` for all places): `value` is the monthly rent (ADU, plex unit) or the
+    sale price (house) in 2025 dollars, `income` the yearly household income at which its housing cost is 30%
+    of income, and `ami_share` that income over the HUD area median income for a household of 1.5 persons per
+    bedroom. `rent_kind` `market` is the rent the engine assumes; `break_even` the rent at which the pro
+    forma's value covers building it (no land, no profit), for three `fee_case`s: today's local fees
+    (`current`), real local fees cut in half (`fees_local_half`) and the Handbook benchmark (`fees`). Places
+    are weighted by the homes the matching reform adds there (`weighting` `homes_added`), or equally where it
+    adds none (`places_equal`); `mfi` is that weighted HUD 4-person MFI (2025 dollars). Medians with P10 and
+    P90 across draws. Empty when no HUD income limits file is registered."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    home_type: Series[str] = pa.Field(isin=["adu", "plex_unit", "house"])
+    place_type: Series[str] = pa.Field(isin=[*ADU_PLACE_TYPES, "state"])
+    rent_kind: Series[str] = pa.Field(isin=["market", "break_even"])
+    fee_case: Series[str] = pa.Field(isin=["current", "fees_local_half", "fees"])
+    places: Series[pd.Int64Dtype] = pa.Field(ge=1)
+    weighting: Series[str] = pa.Field(isin=["homes_added", "places_equal"])
+    mfi: Series[float] = pa.Field(gt=0)
+    value_p10: Series[float] = pa.Field(ge=0)
+    value: Series[float] = pa.Field(ge=0)
+    value_p90: Series[float] = pa.Field(ge=0)
+    income_p10: Series[float] = pa.Field(ge=0)
+    income: Series[float] = pa.Field(ge=0)
+    income_p90: Series[float] = pa.Field(ge=0)
+    ami_share_p10: Series[float] = pa.Field(ge=0)
+    ami_share: Series[float] = pa.Field(ge=0)
+    ami_share_p90: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "home_type", "place_type", "rent_kind", "fee_case"]).any()
+
+
 class ResultsAduBaseline(_Strict):
     """Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over
     the draws: what the ADU scenario's added range stacks on."""
@@ -729,6 +773,7 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_observed": ResultsObserved,
     "results_adu_place_types": ResultsAduPlaceTypes,
     "results_adu_baseline": ResultsAduBaseline,
+    "results_affordability": ResultsAffordability,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -838,6 +883,13 @@ HISTORY = [
         "results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, "
         "`missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). "
         "No bundle ever held rows for them, so no data is lost",
+    ),
+    (
+        "1.18",
+        "market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county "
+        "rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income "
+        "needed and share of AMI by home type and place type, market and break-even; "
+        "WS-NEED-AMI part B, #496)",
     ),
 ]
 
