@@ -17,9 +17,10 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
   includes everything an agent reads). With `--budget N`, save it once right after init:
   `uv run python -m lotline.rule_agents ledger limits <RUN> --tokens N`, so every agent's `ledger status`
   uses it. After each
-  subagent returns, record the tokens the Agent tool reports:
+  subagent returns, record (only you record tokens; agents record their fetches and searches) the tokens the Agent tool reports:
   `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> <agent> --tokens N`.
-- Before starting a subagent for a place, `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID>`;
+- Each agent also has its own share of the place's tokens (scout 60k, first coder 60k, second coder 50k, verifier/reconciler 30k, hand-off 20k, fees enumerator 30k; scaled to `--budget`), and the second coder's and reviewer's unspent shares are held back from the others, so an early agent cannot spend the check. Before starting a subagent for a place,
+  `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID> --agent <agent name>`;
   exit code 3 (`"stop": true`) means no more research on that place: take what is coded, turn every open
   field into a `budget_spent` blocker, and move on. If no coder has written a finding yet, you write
   `findings/<g>.coder-a.json` yourself: no rules, one `budget_spent` blocker per source the scout listed
@@ -62,7 +63,8 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
    `{"finding": <coder a's finding>, "coder_2": "rules-mm-coder-b (opus)", "agreement": "agree"}` with b's
    blockers appended. Places with diffs: `rules-mm-reconciler`. Places with no coder b (`--single-coder`, or
    not selected in step 4): copy a's finding with `"agreement": "single_coder"`, `"coder_2": null`.
-7. **Verify** each final with `rules-mm-verifier`, then `… check <RUN>` again.
+7. **Verify** each final with `rules-mm-verifier`, then `… check <RUN>` again. Skip the verifier for a final
+   with no rules (nothing to check; its blockers go straight to step 9), also when the budget stopped it.
 8. **Browser check (only with `--browser`; may run unattended).** For priority-1 tasks from step 9's sheet, open
    each start URL in the built-in browser one page at a time; read; stop at any challenge, CAPTCHA or login and
    leave that task for the user. Record answers in `out/human-lookups.csv` with `checked_by = rules-mm-browser`,

@@ -614,3 +614,102 @@ def test_a_dead_link_suggests_wayback_and_is_asked_again_after_a_day(docs, web):
         b["at"] = (datetime.now(UTC) - timedelta(days=2)).isoformat()
     docs.blocks_path.write_text("".join(json.dumps(b) + "\n" for b in rows))
     assert docs.recent_block("https://city.gov/old.pdf") is None  # a dead link is not a month-long refusal
+
+
+def test_a_pdf_from_a_link_with_no_extension_is_stored_and_read_as_a_pdf(docs):
+    """CivicPlus 'DocumentCenter/View/123/Fees' links have no .pdf: the bytes decide (South Burlington VT)."""
+    rec = docs.ingest(
+        _raw(docs, "city.gov/abc123.html", _pdf(["Zoning permit fee $150 per dwelling unit"])),
+        url="https://city.gov/DocumentCenter/View/123/Fee-Schedule",
+        added_by="run:fees:r1",
+        category="fees",
+    )
+    assert rec.ext == ".pdf" and rec.pages == 1  # one short line reads as a scan; the text is still there
+    assert "$150 per dwelling unit" in docs.text(rec.doc_id)
+
+
+def test_a_login_page_is_a_blocker_and_never_stored(docs, web):
+    srv, http = web(
+        {
+            "https://news.example/robots.txt": (200, "User-agent: *\nAllow: /", "text/plain"),
+            "https://news.example/notice": (
+                200,
+                '<html><body><form><input type="password" name="pw"></form></body></html>',
+                "text/html",
+            ),
+        }
+    )
+    r = fetch.get("https://news.example/notice", "fees", "r1", docs=docs, http=http, doc_type="fee_schedule")
+    assert r.blocker == "login_required" and r.doc_id is None
+    assert docs.records() == {}  # nothing to offer as "already held"
+
+
+def test_adu_holdouts_for_a_state_with_no_settings_file_are_none():
+    """`adu worklist` crashed for VT (no config/states/vt.yaml) in the South Burlington proof of concept."""
+    from lotline.rule_agents.adu.places import blind_holdouts
+
+    assert blind_holdouts("ZZ") == []
+
+
+def test_each_agent_has_its_own_share_so_the_scout_cannot_spend_the_coders_part(tmp_path, capsys):
+    """By hand at the default 250k: the scout spends 61,000 (over its 60,000 share) -> the scout stops, while
+    coder a still has the place's 189,000 and its own 60,000; the blind second coder keeps its 50,000."""
+    assert sum(budget.ROLE_SHARES.values()) == budget.DEFAULT_LIMITS["tokens"]
+    budget.add(tmp_path, GEOID, "rules-mm-scout", tokens=61_000)
+    st = budget.status(tmp_path, GEOID, agent="rules-mm-scout")
+    assert st["stop"] and st["reason"] == ["share:scout"]
+    st = budget.status(tmp_path, GEOID, agent="coder-a")
+    assert not st["stop"] and st["left"]["tokens"] == 189_000 and st["share"]["left"] == 60_000
+    assert budget.status(tmp_path, GEOID, agent="rules-adu-second-coder")["share"]["left"] == 50_000
+    assert not budget.status(tmp_path, GEOID)["stop"]  # without --agent: the place's pool only
+
+
+def test_shares_scale_with_the_run_budget_and_can_be_set():
+    import tempfile
+    from pathlib import Path
+
+    run = Path(tempfile.mkdtemp())
+    budget.set_limits(run, tokens=150_000)
+    assert budget.run_limits(run)["shares"]["scout"] == 36_000  # 60,000 x 0.6
+    budget.set_limits(run, {"scout": 80_000})
+    lim = budget.run_limits(run)
+    assert lim["shares"]["scout"] == 80_000 and lim["tokens"] == 150_000
+    with pytest.raises(ValueError):
+        budget.set_limits(run, {"coder": 1})
+
+
+def test_role_names_as_agents_write_them():
+    r = budget.role
+    assert [r("rules-mm-scout"), r("coder-b"), r("rules-fees-second-coder"), r("rules-fees-reader")] == [
+        "scout",
+        "coder_b",
+        "coder_b",
+        "coder_a",
+    ]
+    assert [r("coder-a"), r("rules-mm-verifier"), r("rules-adu-handoff"), r("rules-fees-enumerator")] == [
+        "coder_a",
+        "review",
+        "handoff",
+        "setup",
+    ]
+    assert r("orchestrator") == "other"
+
+
+def test_ledger_status_takes_an_agent_and_limits_take_shares(tmp_path, capsys):
+    run = str(tmp_path)
+    assert cli.main(["ledger", "limits", run, "--share", "scout=1000"]) == 0
+    capsys.readouterr()
+    cli.main(["ledger", "add", run, GEOID, "rules-mm-scout", "--tokens", "1000"])
+    assert cli.main(["ledger", "status", run, GEOID, "--agent", "rules-mm-scout"]) == 3
+    assert cli.main(["ledger", "status", run, GEOID, "--agent", "coder-a"]) == 0
+
+
+def test_the_checking_roles_shares_are_held_back_from_the_others(tmp_path):
+    """By hand: scout 100,000 + coder a 75,000 = 175,000 spent; 75,000 left < 80,000 held for coder b and
+    review -> the hand-off agent stops (held_back); coder b may still run (its 50,000 is untouched)."""
+    budget.add(tmp_path, GEOID, "rules-adu-scout", tokens=100_000)
+    budget.add(tmp_path, GEOID, "rules-adu-coder", tokens=75_000)
+    h = budget.status(tmp_path, GEOID, agent="rules-adu-handoff")
+    assert h["stop"] and "held_back" in h["reason"] and h["held_back"] == 80_000
+    b = budget.status(tmp_path, GEOID, agent="rules-adu-second-coder")
+    assert not b["stop"]

@@ -15,8 +15,8 @@
     python -m lotline.rule_agents excerpts DOC CATEGORY [--max-chars N] [--extra WORD ...] [--pages N ...]
     python -m lotline.rule_agents outline DOC
     python -m lotline.rule_agents ledger add RUN PLACE AGENT [--tokens N] [--fetches N] [--searches N]
-    python -m lotline.rule_agents ledger limits RUN [--tokens N] [--fetches N] [--searches N]
-    python -m lotline.rule_agents ledger status RUN PLACE [--tokens N] [--fetches N] [--searches N]
+    python -m lotline.rule_agents ledger limits RUN [--tokens N] [--fetches N] [--searches N] [--share R=N]
+    python -m lotline.rule_agents ledger status RUN PLACE [--agent NAME] [--tokens N] [--fetches N] [...]
     python -m lotline.rule_agents ledger summary RUN
     python -m lotline.rule_agents doctor ST [--category C]        # is everything a run needs in place?
     python -m lotline.rule_agents import PROPOSAL.csv reforms|fees ST [--replace-changed] [--yes]
@@ -186,7 +186,16 @@ def _ledger(a) -> int:
     lim = {k: getattr(a, k, None) for k in ("tokens", "fetches", "searches")}
     lim = {k: v for k, v in lim.items() if v}
     if a.op == "limits":
-        print(json.dumps(budget.set_limits(Path(a.run), **lim) if lim else budget.run_limits(Path(a.run))))
+        shares = {}
+        for kv in getattr(a, "share", None) or []:
+            k, _, v = kv.partition("=")
+            shares[k.strip()] = int(v)
+        changed = lim or shares
+        print(
+            json.dumps(
+                budget.set_limits(Path(a.run), shares, **lim) if changed else budget.run_limits(Path(a.run))
+            )
+        )
         return 0
     if a.op == "add":
         budget.add(
@@ -200,7 +209,7 @@ def _ledger(a) -> int:
         )
         return 0
     if a.op == "status":
-        st = budget.status(Path(a.run), a.place, lim)
+        st = budget.status(Path(a.run), a.place, lim, agent=getattr(a, "agent", None))
         print(json.dumps(st))
         return 3 if st["stop"] else 0
     for r in budget.summary(Path(a.run)):
@@ -301,10 +310,13 @@ def main(argv: list[str] | None = None) -> int:
         if name == "add":
             s.add_argument("agent")
             s.add_argument("--note")
+        else:
+            s.add_argument("--agent", help="also check this agent's share of the place's tokens")
         for o in ("--tokens", "--fetches", "--searches"):
             s.add_argument(o, type=int)
     s = lp.add_parser("limits")
     s.add_argument("run")
+    s.add_argument("--share", action="append", metavar="ROLE=TOKENS", help="e.g. scout=80000 (repeatable)")
     for o in ("--tokens", "--fetches", "--searches"):
         s.add_argument(o, type=int)
     lp.add_parser("summary").add_argument("run")
