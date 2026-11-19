@@ -418,53 +418,13 @@ table.checks td:last-child { min-width: 260px; }
     <div class="step" id="step-goal"><p class="step-n" aria-hidden="true">1</p><div class="step-body">
       <h3 class="h2">The goal: exactly what we measure</h3>
       <p><b>The question.</b> If a state passed one of three reforms, how many more homes would it gain over the five years <b>2027–2031</b> than under the rules already in place? The headline counts net new housing: homes finished, minus houses torn down to build them and homes that would have been built elsewhere in the state anyway.</p>
-      <details class="more"><summary>The reforms, the comparison, the unit and the ranges</summary><ul class="body-small steps-list">
-        <li><b>The three reforms</b> follow the Challenge Handbook to the letter.
-          <ul>
-            <li><b>ADUs:</b> one backyard home per house, at least 600 sq ft, with no parking required.</li>
-            <li><b>Missing middle:</b> 2–6 homes allowed on lots now zoned for one house, up to three stories.</li>
-            <li><b>Fees:</b> development fees cut by half, shown two ways: the Challenge benchmark (a $50,000 fee everywhere, cut to $25,000) and each city's real fees cut by half.</li>
-          </ul>
-        </li>
-        <li><b>The comparison</b> is always reform against no reform. "No reform" keeps every city's own rules, including laws already passed that take effect by the end of 2027. A reform is never credited with homes that current law will produce anyway.</li>
-        <li><b>The unit</b> is homes in building permits, added up place by place to a state total. That total becomes two numbers:
-          <ul>
-            <li><b>all new homes:</b> permits that get finished and add a home someone can live in;</li>
-            <li><b>net new housing:</b> all new homes minus those that would have been built elsewhere in the state anyway. That share is a quarter by default, anywhere from none to half.</li>
-          </ul>
-        </li>
-        <li><b>Every answer is a range.</b> The model runs 1,000 times, each with different plausible values for everything it is unsure about. The page shows the middle 80% of those runs (P10 to P90) and the midpoint.</li>
-      </ul></details>
+      <details class="more"><summary>The reforms, the comparison, the unit and the ranges</summary><p class="body-small">The three reforms follow the Challenge Handbook to the letter. The ADU reform allows one backyard home per house, at least 600 sq ft, with no parking required. Missing middle allows 2–6 homes, up to three stories, on lots now zoned for one house. The fee reform cuts development fees in half, and we show it two ways: the Challenge benchmark, which assumes a $50,000 fee everywhere and cuts it to $25,000, and each city's real fees cut in half.</p><p class="body-small">We always compare a reform with no reform. "No reform" keeps every city's own rules, including laws already passed that take effect by the end of 2027, so a reform is never credited with homes that current law will produce anyway.</p><p class="body-small">We count homes in building permits and add them up place by place to a state total. That total gives two numbers. <b>All new homes</b> are permits that get finished and add a home someone can live in. <b>Net new housing</b> is all new homes minus those that would have been built elsewhere in the state anyway; that share is a quarter by default, and anywhere from none to half.</p><p class="body-small">Every answer is a range. The model runs 1,000 times, each time with different plausible values for everything it is unsure about, and the page shows the middle 80% of those runs (P10 to P90) and the midpoint.</p></details>
     </div></div>
 
     <div class="step" id="step-data"><p class="step-n" aria-hidden="true">2</p><div class="step-body">
       <h3 class="h2">Preparing the data</h3>
       <p>For every city, town and township in every year, the model needs two counts: how many lots a reform could touch, and how many homes were permitted. The Data page lists every source. These are the rules we applied to them.</p>
-      <details class="more"><summary>How we prepared each kind of data</summary><ul class="body-small steps-list">
-        <li><b>Lots the reform could touch.</b> One written rule, applied the same way in every state.
-          <ul>
-            <li>For ADUs: a lot with one single-family house.</li>
-            <li>For missing middle: a lot zoned for single-family homes only, holding one house or vacant.</li>
-          </ul>
-          Where a place has no parcel records, Census counts of single-family homes stand in. We tested that stand-in against real parcel counts in all five states, and it came within 8% everywhere (0.92 to 1.07 times the parcel count). For missing middle it runs about 12% low, a known gap.</li>
-        <li><b>Homes permitted.</b> Census permit counts by building size (1, 2, 3–4 and 5+ homes) for every place since 1992, plus city permit files that mark ADUs. A project total repeated on several permits is counted once.</li>
-        <li><b>Local rules, with dates.</b> For each city we looked up when it allowed ADUs or missing middle, and how strict the rule is: by right or not, whether the owner must live there, parking, size. Places nobody has coded borrow the rules of similar coded places of the same size.</li>
-        <li><b>Unknown is never zero.</b> A missing year stays missing; it does not count as a year with no building. An unknown zoning code counts the lot as eligible, flagged as an assumption.</li>
-        <li><b>Hidden years for blind tests.</b> Some places' recent records were locked away from the model so we could predict them first and look later:
-          <ul>
-            <li>Oregon from 2018: predicted from the other four states, then opened (November 5) and added to the fit;</li>
-            <li>Charlotte from mid-2023, including the county figures its permits are filed under: predicted, then opened (November 9);</li>
-            <li>St. Paul from 2024: kept locked until its frozen prediction was scored (16 November 2026).</li>
-          </ul>
-        </li>
-        <li><b>Data tiers.</b> Each state is labelled by what its data rests on:
-          <ul>
-            <li>tier 1: local parcels with year built;</li>
-            <li>tier 2: local parcels with land use;</li>
-            <li>tier 3: national data only.</li>
-          </ul>
-        </li>
-      </ul></details>
+      <details class="more"><summary>How we prepared each kind of data</summary><p class="body-small"><b>Lots the reform could touch</b> follow one written rule, applied the same way in every state: for ADUs, a lot with one single-family house; for missing middle, a lot zoned for single-family homes only that holds one house or is vacant. Where a place has no parcel records, Census counts of single-family homes stand in. We tested that stand-in against real parcel counts in all five states and it came within 8% everywhere (0.92 to 1.07 times the parcel count); for missing middle it runs about 12% low, a known gap.</p><p class="body-small"><b>Homes permitted</b> come from Census permit counts by building size (1, 2, 3–4 and 5+ homes) for every place since 1992, plus city permit files that mark ADUs. A project total repeated on several permits is counted once.</p><p class="body-small"><b>Local rules</b> carry dates. For each city we looked up when it allowed ADUs or missing middle and how strict the rule is: whether it is by right, whether the owner must live there, and its parking and size limits. Places nobody has coded borrow the rules of similar coded places of the same size.</p><p class="body-small"><b>Unknown is never zero.</b> A missing year stays missing rather than counting as a year with no building, and an unknown zoning code counts the lot as eligible, flagged as an assumption.</p><p class="body-small"><b>Some years were hidden for blind tests.</b> We locked away some places' recent records so we could predict them first and look later. Oregon's records from 2018 were predicted from the other four states, then opened on November 5 and added to the fit. Charlotte's from mid-2023, including the county figures its permits are filed under, were predicted and then opened on November 9. St. Paul's from 2024 stayed locked until its frozen prediction was scored on 16 November 2026.</p><p class="body-small"><b>Each state has a data tier</b> that says what its data rests on: tier 1 is local parcels with year built, tier 2 is local parcels with land use, and tier 3 is national data only.</p></details>
     </div></div>
 
     <div class="step" id="step-model"><p class="step-n" aria-hidden="true">3</p><div class="step-body">
@@ -487,12 +447,7 @@ table.checks td:last-child { min-width: 260px; }
       <h4 class="h3">3d. Why we built each effect from its parts</h4>
       <p class="body-small">Our first plan was to compare reformed cities with similar cities that did not reform. In the four states we first studied (before Oregon was added) those comparisons could not tell a real effect from noise: they could only have detected effects many times larger than any plausible one. So each reform's effect is built from its working parts, and each part is measured separately:</p>
       <p class="formula">extra homes = lots the reform opens up × share where building pays × how often owners build, once it pays</p>
-      <details class="more"><summary>What each part means</summary><ul class="body-small steps-list">
-        <li><b>Lots the reform opens up</b> counts only what the reform adds beyond a city's current rule. A city that already allows ADUs gains little.</li>
-        <li><b>Share where building pays</b> compares, lot by lot, what a new home would sell or rent for with what it costs to build, finance and sell.</li>
-        <li><b>How often owners build</b> is measured from our own reformed places for ADUs and missing middle, not borrowed from other studies. Fee cuts are the exception: no place in our states cut fees on the scale of the reform, so their response comes from published studies (see the fee card).</li>
-        <li><b>What is already being built is never credited to the reform.</b></li>
-      </ul></details>
+      <details class="more"><summary>What each part means</summary><p class="body-small"><b>Lots the reform opens up</b> counts only what the reform adds beyond a city's current rule, so a city that already allows ADUs gains little. <b>Share where building pays</b> compares, lot by lot, what a new home would sell or rent for with what it costs to build, finance and sell. <b>How often owners build</b> is measured from our own reformed places for ADUs and missing middle, not borrowed from other studies. Fee cuts are the exception: no place in our states cut fees on the scale of the reform, so their response comes from published studies (see the fee card).</p><p class="body-small">Whatever is already being built is never credited to the reform.</p></details>
 
       <h4 class="h3">3e. The three models, in depth</h4>
       <p class="body-small">Each reform has its own model, built on the same frame. Pick one to read it: every card answers the same five questions, then goes state by state.</p>
@@ -614,20 +569,7 @@ table.checks td:last-child { min-width: 260px; }
       <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
 
       <h4 class="h3">3f. Where the range comes from</h4>
-      <details class="more"><summary>Every source of the range</summary><ul class="body-small steps-list">
-        <li><b>The building cycle:</b> each run replays a different stretch of the state's past booms and busts.</li>
-        <li><b>The measured rates:</b> how often owners build, and how fast, are drawn from their fitted ranges, not fixed at one value.</li>
-        <li><b>How much a partial local rule already allows</b> (ADUs): each run draws it from the values the data support.</li>
-        <li><b>Place-to-place differences we cannot measure:</b> each place gets its own multiplier, drawn to match how much real places differ. A state the model was not fitted on gets a wider spread still.</li>
-        <li><b>Judgment calls</b> are drawn from stated low-to-high ranges, each with a source in config/params:
-          <ul>
-            <li>finished homes per permit;</li>
-            <li>homes that would have been built elsewhere;</li>
-            <li>conversions of existing units.</li>
-          </ul>
-        </li>
-        <li><b>Year-to-year chance:</b> even at a known rate, the count in any one year varies.</li>
-      </ul></details>
+      <details class="more"><summary>Every source of the range</summary><p class="body-small">Each of the model's runs differs in six ways. It replays a different stretch of the state's past booms and busts. It draws how often owners build, and how fast, from their fitted ranges instead of fixing them at one value. For ADUs, it draws how much a partial local rule already allows from the values the data support.</p><p class="body-small">It gives each place its own multiplier for the differences we cannot measure, drawn to match how much real places differ, with a wider spread still for a state the model was not fitted on. It draws the judgment calls (finished homes per permit, homes that would have been built elsewhere, and conversions of existing units) from stated low-to-high ranges, each with a source in config/params. And even at a known rate, the count in any one year varies by chance.</p></details>
       <div id="trust-body"></div>
 
       <h4 class="h3" id="step-tests">3g. How we tested it</h4>
@@ -639,19 +581,7 @@ table.checks td:last-child { min-width: 260px; }
     <div class="step" id="step-states"><p class="step-n" aria-hidden="true">4</p><div class="step-body">
       <h3 class="h2">Carrying it to another state</h3>
       <p>Nothing in the model is written for one state. A new state is one settings file plus whatever data it has.</p>
-      <details class="more"><summary>What a new state needs, and what happens with little data</summary><ul class="body-small steps-list">
-        <li><b>What a state supplies:</b> its Census code and any local data it has (parcel rolls, city permit files, coded local rules, fee schedules). Everything national (Census permits, housing counts, prices, rates) is fetched automatically.</li>
-        <li><b>With little local data:</b>
-          <ul>
-            <li>lots come from Census housing counts, adjusted using the stand-in test above;</li>
-            <li>uncoded places borrow rules from similar coded places;</li>
-            <li>the state's unknown character gets the widest spread the model has, anywhere from a third of a typical state to three times one.</li>
-          </ul>
-        </li>
-        <li><b>ADU place types come from national data,</b> so every place in any state gets one, even in a state with no ADU counts at all.</li>
-        <li><b>Places outside a state ADU law</b> borrow the rules of small towns in states without one, not those of big cities that have reformed.</li>
-        <li><b>The test case is Oregon.</b> It was predicted from the other four states before its own results were looked at, and the app shows it as the "transfer" state. Its missing-middle results were not used to fit the model. Since 2026-11-06, Portland and Bend are part of the ADU fit.</li>
-      </ul></details>
+      <details class="more"><summary>What a new state needs, and what happens with little data</summary><p class="body-small">A new state supplies its Census code and whatever local data it has: parcel rolls, city permit files, coded local rules and fee schedules. Everything national (Census permits, housing counts, prices and rates) is fetched automatically.</p><p class="body-small">With little local data, the model still runs. Lots come from Census housing counts, adjusted using the stand-in test above, and uncoded places borrow rules from similar coded places. The state's unknown character gets the widest spread the model has, anywhere from a third of a typical state to three times one. ADU place types come from national data, so every place in any state gets one, even in a state with no ADU counts at all. Places outside a state ADU law borrow the rules of small towns in states without one, not those of big cities that have reformed.</p><p class="body-small">Oregon is the test case. It was predicted from the other four states before its own results were looked at, and the app shows it as the "transfer" state. Its missing-middle results were not used to fit the model; since 2026-11-06, Portland and Bend are part of the ADU fit.</p></details>
       <div id="trust-overlap"></div>
     </div></div>
 
