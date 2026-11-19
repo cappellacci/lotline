@@ -7669,3 +7669,15 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   is flagged, and nothing in `src/` changed for Wisconsin.
 - **Not on the user's path:** the holdout is a validation step for V8. A user adding their own state does not
   register one (`config/onboarding/steps.yaml`); the guide mentions it only as an optional backtest.
+- **Frozen 2026-11-19** (`results/frozen/V8-WI-TRANSFER.json`, written by `scripts/dev/v8_freeze.py`; a rebuild
+  gives an identical file). Prediction, statewide five-year permits 2021-2025 (reported units), P50 (P10-P90):
+  - all sizes 75,347 (53,126-103,715);
+  - 1 unit 51,972; 2 units 3,638; 3-4 units 424; 5+ units 18,534.
+  - The baseline covers 1,131 places (98% of homes).
+  - Overlap "low" (median calibration distance 1.37): Wisconsin's places sit mostly outside the range the
+    model learned from, as the bundle flags.
+  - Not scored (counterfactuals, five-year net homes P50): ADU 110 (17-1,018), missing middle 1,264,
+    fees 580.
+- **Onboarding effort:** one state file. No aliases, crosswalks, adapters, `src/` change or parameter change. V0
+  passes on 2010-2019, every year within 1% (`reports/wi/V0-national.md`); 1992-1993 are +5%, outside the
+  window.
