@@ -108,8 +108,8 @@ uv run python scripts/publish_app.py --go --tag app-2026-11-20
 On the app's map, a grey state has no results yet and a light one rests mostly on national data. The engine
 reads a state through its config and adapters, and national sources (building permits, the ACS) cover every
 state. **The full step-by-step guide, with the data each model needs and the minimum that has tested well, is
-[`docs/adding_a_state.md`](docs/adding_a_state.md).** Today a new state also needs three small code changes
-(guide §3); the outline below is the short version.
+[`docs/adding_a_state.md`](docs/adding_a_state.md).** The outline below is the short version; the app's
+"Add a state" page walks through it in plain words.
 
 1. Add `config/states/<st>.yaml` with the state's code, name, FIPS code and Census region; copy an existing file
    such as `config/states/or.yaml` as a template.

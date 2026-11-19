@@ -260,6 +260,12 @@ svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--i
 #step-tests { scroll-margin-top: 96px; }
 table.levels td, table.levels th { vertical-align: top; font-size: 14px; line-height: 20px; }
 table.levels td:first-child { white-space: nowrap; }
+.step-time { font-size: 14px; font-weight: 400; color: var(--ink-muted); margin-left: var(--space-2); white-space: nowrap; }
+.add-need { margin: var(--space-5) 0 0; }
+.add-more { margin: var(--space-6) 0 0; }
+.add-ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4); margin: var(--space-2) 0; }
+.add-ways .card { margin: 0; }
+.add-ways pre.code { font-size: 12px; }
 .runs-card { margin: var(--space-4) 0; }
 .runs-title { margin: 0 0 var(--space-1); font-size: 15px; }
 svg.runs { width: 100%; min-width: 520px; height: auto; display: block; }
@@ -418,18 +424,108 @@ table.checks td:last-child { min-width: 260px; }
   </section>
   <section class="part" id="page-add" data-section="add" hidden>
     <h2 class="h1">Add a state</h2>
-    <p class="lead">How to run Lotline for a state that has no results yet, or sharpen one that rests on national data: what to gather, how to prepare it, and how to run the model.</p>
-    <p class="pending">Draft: these steps are a placeholder while the workflow is being revised. For now, follow the <a id="add-readme" href="__BYOS_URL__" target="_blank" rel="noopener">"bring your own state" guide in the README</a>.</p>
-    <div class="step"><p class="step-n" aria-hidden="true">1</p><div class="step-body"><h3 class="h3">Check what you already have</h3>
-      <p class="body">Every state starts with national data (Census permits, home values, rents, building costs), so the model can run before any local data is gathered. List which local sources exist for your state.</p></div></div>
-    <div class="step"><p class="step-n" aria-hidden="true">2</p><div class="step-body"><h3 class="h3">Prepare parcel records</h3>
-      <p class="body">Placeholder: county or state parcel rolls, and the fields the model needs (land use, lot size, year built, units).</p></div></div>
-    <div class="step"><p class="step-n" aria-hidden="true">3</p><div class="step-body"><h3 class="h3">Prepare building permits</h3>
-      <p class="body">Placeholder: city permit files for ADUs and 2–4 unit buildings, on top of the Census survey.</p></div></div>
-    <div class="step"><p class="step-n" aria-hidden="true">4</p><div class="step-body"><h3 class="h3">Code local rules and fees</h3>
-      <p class="body">Placeholder: which places already allow ADUs or missing middle and since when, and each city's fees per new home.</p></div></div>
-    <div class="step"><p class="step-n" aria-hidden="true">5</p><div class="step-body"><h3 class="h3">Run the model and check the results</h3>
-      <p class="body">Placeholder: the commands that build the state's results and the checks to read before trusting them.</p></div></div>
+    <p class="lead">Lotline runs for any U.S. state. National data already covers every state, so a new state can have first results in an afternoon, and each local source you add narrows its ranges. This guide takes you from a fresh copy of Lotline to your state on the map.</p>
+
+    <div class="card add-need">
+      <h3 class="h3" style="margin:0 0 var(--space-2)">What you need</h3>
+      <ul class="body-small steps-list">
+        <li>A computer with <a href="https://docs.astral.sh/uv/getting-started/installation/" target="_blank" rel="noopener">uv</a> (it installs the right Python for you) and git.</li>
+        <li>A free <a href="https://api.census.gov/data/key_signup.html" target="_blank" rel="noopener">Census API key</a>.</li>
+        <li>About an hour for the national data to download.</li>
+        <li>Optional: <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a> with your own account, if you want the rule agents to research local rules for you (step 5).</li>
+      </ul>
+    </div>
+
+    <h3 class="h2" style="margin:var(--space-7) 0 var(--space-2)">Choose how far to go</h3>
+    <p class="body-small">You can stop after any level. Each one adds to the one before and narrows the ranges.</p>
+    <div class="scroll"><table class="levels"><thead><tr><th>Level</th><th>What you add</th><th>Time</th><th>What it buys</th></tr></thead><tbody>
+      <tr><td><b>0. National only</b></td><td>A settings file (steps 1–4)</td><td>An afternoon</td><td>Results for all three reforms. ADU results are not reliable on their own: in our leave-a-state-out test, national data alone worked only in Minnesota.</td></tr>
+      <tr><td><b>1. Coded local rules</b><br><span class="muted">recommended minimum</span></td><td>ADU rules for the 20 largest places, the middle-housing rules you can find, and fees for at least 5 places (step 5)</td><td>2–5 days by hand; less with the rule agents</td><td>ADU results pass the leave-a-state-out test in all 4 states that could be scored.</td></tr>
+      <tr><td><b>2. One measured city</b></td><td>A large city's permit file that marks ADUs (step 6)</td><td>1–2 days per source</td><td>Ties the state's level to its own counts.</td></tr>
+      <tr><td><b>3. Local parcels</b></td><td>Parcel records with land use, ideally year built (step 6)</td><td>1–3 days per source</td><td>A real count of the lots a reform could touch, instead of a Census estimate.</td></tr>
+    </tbody></table></div>
+    <p class="body-small muted">Missing middle and fee cuts have no accuracy result by level yet, so treat level 1 as the minimum for all three.</p>
+
+    <div class="step"><p class="step-n" aria-hidden="true">1</p><div class="step-body"><h3 class="h3">Set up Lotline <span class="step-time">15 minutes</span></h3>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">Everything runs on your own computer, from your own copy of the code.</p>
+      <p class="body-small">Copy Lotline and install it:</p>
+      <pre class="code"><code>git clone __REPO_URL__
+cd lotline
+uv sync --frozen
+cp .env.example .env</code></pre>
+      <p class="body-small">Open <span class="code">.env</span> and add your <span class="code">CENSUS_API_KEY</span>. Downloads go to <span class="code">LOTLINE_DATA_DIR</span> (by default <span class="code">~/lotline-data</span>), outside the code, so no data is ever mixed into it.</p>
+    </div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">2</p><div class="step-body"><h3 class="h3">Write your state's settings file <span class="step-time">15 minutes</span></h3>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">One short file is all the engine needs to know about a state; nothing else in the code changes.</p>
+      <p class="body-small">Create <span class="code">config/states/xx.yaml</span> (your state's two-letter code in lower case). Copying <span class="code">config/states/oh.yaml</span> is the quickest start:</p>
+      <pre class="code"><code>state: XX                  # two capital letters, matching the file name
+name: Statename
+fips: "55"                 # the state's two-digit FIPS code, in quotes
+bps_region: Midwest Region # Northeast, Midwest, South or West Region
+township_permits: false    # true where townships issue building permits
+zip3_ranges: [[530, 549]]  # the state's 3-digit ZIP prefixes
+holdouts: []
+sources: []</code></pre>
+      <p class="body-small">Saving the file adds the state everywhere, including this app. The loader rejects any setting it does not know, so a typo fails loudly.</p>
+    </div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">3</p><div class="step-body"><h3 class="h3">Fetch the national data <span class="step-time">about an hour, mostly waiting</span></h3>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">Census permits, housing counts, home prices, rents, interest rates and building costs exist for every state, so the model can run before you gather anything local.</p>
+      <pre class="code"><code>uv run lotline fetch --state XX
+uv run lotline validate --state XX
+uv run lotline fetch --source jurisdictions</code></pre>
+      <p class="body-small">The first command downloads and builds every table the models read, and records each file it fetched. The second checks that the Census place-by-place permits add up to the state total within 1% and writes a short report to <span class="code">reports/xx/V0-national.md</span>. The third builds the place lists of the five study states, because a new state borrows their coded rules until it has its own.</p>
+    </div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">4</p><div class="step-body"><h3 class="h3">Run the models <span class="step-time">a few minutes</span></h3>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">This gives you level 0: a first set of results for all three reforms, with the widest ranges.</p>
+      <pre class="code"><code>uv run lotline results --state XX
+uv run python scripts/build_app.py</code></pre>
+      <p class="body-small">The first command runs the ADU, missing-middle and fee models 1,000 times each and writes <span class="code">reports/results/xx/bundle.json</span>. The second rebuilds this app: open <span class="code">reports/app/index.html</span> and your state is on the map, labelled "National data only".</p>
+    </div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">5</p><div class="step-body"><h3 class="h3">Code local rules and fees <span class="step-time">level 1</span></h3>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">The model needs to know what each city allows today, or it can't tell what a state reform would add; this is the step that makes ADU results trustworthy.</p>
+      <div class="add-ways">
+        <div class="card"><p class="part-k">With the rule agents</p>
+          <p class="body-small">Open Claude Code in the Lotline folder and type one command per kind of rule. Start with the largest 10 places:</p>
+          <pre class="code"><code>/rules-adu XX --limit 10
+/rules-mm XX --limit 10
+/rules-fees XX --limit 10</code></pre>
+          <p class="body-small">The agents find each place's official documents, code every value with a word-for-word quote, and hand you a proposed table plus a short list of lookups they could not reach. Fill in the lookups you can, then preview and import:</p>
+          <pre class="code"><code>uv run python -m lotline.rule_agents import &lt;run folder&gt;/out/&lt;proposed&gt;.csv reforms XX
+uv run python -m lotline.rule_agents import &lt;run folder&gt;/out/&lt;proposed&gt;.csv reforms XX --yes</code></pre>
+          <p class="body-small">The first shows what would change; nothing is written until you add <span class="code">--yes</span>. Guide: <a href="__REPO_URL__/blob/main/docs/adding_local_rules_with_agents.md" target="_blank" rel="noopener">Adding local rules with the rule agents</a>.</p></div>
+        <div class="card"><p class="part-k">By hand</p>
+          <p class="body-small"><b>Rules</b> go in <span class="code">config/reforms/xx.csv</span> (copy the header from <span class="code">config/reforms/or.csv</span>). Start with the state law, if there is one, then the 20 largest places, then any other place that changed its rules in the last ten years. Record a place that does not allow ADUs too, with <span class="code">adus_per_lot</span> set to 0: a missing place counts as unknown, and the model borrows a rule from similar places.</p>
+          <p class="body-small"><b>Fees</b> go in <span class="code">config/fees/xx.csv</span>. Take about six of the largest places and copy from each official fee schedule the water and sewer connection fee, impact fees, and the building permit and plan review fees, for a house, an ADU, a duplex and a three- or four-unit building. Five places is the minimum for the state to get its own typical fee. Guide: <a href="__REPO_URL__/blob/main/config/fees/README.md" target="_blank" rel="noopener">how to code fees</a>.</p></div>
+      </div>
+      <p class="body-small">Then run step 4 again.</p>
+    </div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">6</p><div class="step-body"><h3 class="h3">Add local permits and parcels <span class="step-time">levels 2 and 3, optional</span></h3>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">Local records replace national estimates with real counts, which narrows the ranges most.</p>
+      <p class="body-small">Each local file plugs in through a small adapter in <span class="code">src/lotline/adapters/states/xx/</span> that turns it into the same table every state uses; <span class="code">src/lotline/adapters/states/or/rlis_parcels.py</span> is the template for parcels. Every adapter comes with a test on a few made-up rows, never on downloaded data. Then rebuild the tables that read local data, in this order, and rerun the models as a "transfer" state (one the model was not fitted on):</p>
+      <pre class="code"><code>uv run lotline unlisted --state XX
+uv run lotline fetch --state XX --source jurisdictions
+uv run lotline fetch --state XX --source eligible
+uv run lotline fetch --state XX --source demand
+uv run lotline fetch --state XX --source place_inputs
+uv run lotline results --state XX --role transfer</code></pre>
+    </div></div>
+    <div class="step"><p class="step-n" aria-hidden="true">7</p><div class="step-body"><h3 class="h3">Read the results before you share them <span class="step-time">half an hour</span></h3>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">A range is only useful if you know how far to trust it, and a new state is where the model reaches furthest.</p>
+      <ul class="body-small steps-list">
+        <li><b>Is the state like the places the model learned from?</b> The Model tab (step 5b) shows a plain verdict: inside, near the edge or outside the evidence. Outside means read the ranges as rough, and say so wherever you quote a number.</li>
+        <li><b>The data tier and caveats</b> on the Results page say what the numbers rest on.</li>
+        <li><b>ADU ranges are wider</b> for a state outside the fit, because the model draws how different an unknown state might be. That is intended.</li>
+        <li><b>Places with no Census rent or home value</b> are left out of the results. Count them before quoting a state total.</li>
+        <li><b>Fees:</b> check how many places use their own coded fees and how many borrow the state's typical fee.</li>
+      </ul>
+    </div></div>
+
+    <div class="card add-more">
+      <h3 class="h3" style="margin:0 0 var(--space-2)">Going further</h3>
+      <p class="body-small"><b>Test the model blind.</b> To predict your state before seeing its recent building, as we did for Oregon, add a holdout to the settings file before the first fetch. It is optional; the full guide explains how.</p>
+      <p class="body-small"><b>Share your state back.</b> To add it to the public Lotline, open a pull request with the files from steps 2, 5 and 6. The full guide lists the checks it must pass.</p>
+      <p class="body-small" style="margin:0">The full technical guide, with every setting, file format and check: <a href="__REPO_URL__/blob/main/docs/adding_a_state.md" target="_blank" rel="noopener">Adding a new state to Lotline</a>.</p>
+    </div>
   </section>
   <section class="part" id="page-trust" data-section="trust" hidden>
     <h2 class="h1">The model</h2>
@@ -449,7 +545,7 @@ table.checks td:last-child { min-width: 260px; }
 
     <div class="step" id="step-model"><p class="step-n" aria-hidden="true">3</p><div class="step-body">
       <h3 class="h2">Causal factors and confounders</h3>
-      <p>Homebuilding rises and falls for many reasons besides law reforms. Before fitting anything, we mapped these reasons so the model only credits a reform and not other effects. We drew them from our own design work and a review of <a href="https://github.com/cappellacci/lotline/blob/main/docs/research/lotline-evidence-register.csv" target="_blank" rel="noopener">114 published studies and reports</a> on ADU, zoning and fee reforms.</p>
+      <p>Homebuilding rises and falls for many reasons besides law reforms. Before fitting anything, we mapped these reasons so the model only credits a reform and not other effects. We drew them from our own design work and a review of <a href="__REPO_URL__/blob/main/docs/research/lotline-evidence-register.csv" target="_blank" rel="noopener">114 published studies and reports</a> on ADU, zoning and fee reforms.</p>
 
       <h4 class="h3">3a. The causal diagram</h4>
       <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">The housing market may change for reasons that have nothing to do with the reform, so we wanted to identify and control for them.</p>
@@ -642,14 +738,14 @@ table.checks td:last-child { min-width: 260px; }
         <tr><td><b>2. One measured city</b></td><td>Level 1, plus a large city's own permit file that marks ADUs</td><td>Also passes, and ties the state's level to its own counts</td></tr>
         <tr><td><b>3. Local parcels</b></td><td>Parcel records with land use, and ideally year built</td><td>Replaces the Census estimate of eligible lots with a real count (data tier 2, or tier 1 with year built)</td></tr>
       </tbody></table></div>
-      <p class="body-small">Missing middle and fee cuts have no accuracy result by data level yet, so treat level 1 as the minimum for all three models. The step-by-step guide is <a href="https://github.com/cappellacci/lotline/blob/main/docs/adding_a_state.md" target="_blank" rel="noopener">Adding a new state</a>.</p>
+      <p class="body-small">Missing middle and fee cuts have no accuracy result by data level yet, so treat level 1 as the minimum for all three models. The step-by-step guide is <a href="__REPO_URL__/blob/main/docs/adding_a_state.md" target="_blank" rel="noopener">Adding a new state</a>.</p>
       <details class="more"><summary>What a new state needs, and what happens with little data</summary><p class="body-small">A new state supplies its Census code and whatever local data it has: parcel rolls, city permit files, coded local rules and fee schedules. Everything national (Census permits, housing counts, prices and rates) is fetched automatically.</p><p class="body-small">With little local data, the model still runs. Lots come from Census housing counts, adjusted using the stand-in test above, and uncoded places borrow rules from similar coded places. The state's unknown character gets the widest spread the model has, anywhere from a third of a typical state to three times one. ADU place types come from national data, so every place in any state gets one, even in a state with no ADU counts at all. Places outside a state ADU law borrow the rules of small towns in states without one, not those of big cities that have reformed.</p><p class="body-small">Oregon is the test case. It was predicted from the other four states before its own results were looked at, and the app shows it as the "transfer" state. Its missing-middle results were not used to fit the model; since 2026-11-06, Portland and Bend are part of the ADU fit.</p></details>
       <div id="trust-overlap"></div>
 
       <h4 class="h3">5c. Coding local rules with rule agents</h4>
       <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">Local rules and fees are the slowest data to gather by hand, so we built AI agents that research them and show their evidence.</p>
       <p class="body-small">For a new state, the rule agents look up each place's ADU rules, missing-middle rules and development fees. Place by place, they find the official documents (the current code, the ordinance that changed it, the fee schedule), code each value with a word-for-word quote and the page it came from, and check every quote against the stored document by machine. On the places that matter most, a second agent codes the same place without seeing the first one's work, and a third settles any disagreement. They respect every site's rules for automated visitors and never contact anyone.</p>
-      <p class="body-small">They propose; a person decides. Each run produces a table in the app's own format, a short list of lookups the agents could not reach (most important first, with the link and what to look for), and a plain report of what was found and how sure it is. Nothing changes in the app until someone reviews the table and imports it. Anyone can run them with their own Claude account. The guide is <a href="https://github.com/cappellacci/lotline/blob/main/docs/adding_local_rules_with_agents.md" target="_blank" rel="noopener">Adding local rules with the rule agents</a>.</p>
+      <p class="body-small">They propose; a person decides. Each run produces a table in the app's own format, a short list of lookups the agents could not reach (most important first, with the link and what to look for), and a plain report of what was found and how sure it is. Nothing changes in the app until someone reviews the table and imports it. Anyone can run them with their own Claude account. The guide is <a href="__REPO_URL__/blob/main/docs/adding_local_rules_with_agents.md" target="_blank" rel="noopener">Adding local rules with the rule agents</a>.</p>
     </div></div>
 
     <div class="step" id="step-limits"><p class="step-n" aria-hidden="true">!</p><div class="step-body">
@@ -1754,7 +1850,7 @@ function confHtml() {
   const [h, c, l] = CONF_GROUPS.map(([, , ways]) => count(ways));
   const name = (r) => r[1].split(/[,(;:]/)[0].trim();
   const nt = (by.test || []).length, nb = (by.bad || []).length;
-  const lead = `<p class="why-line" style="margin:var(--space-3) 0 0">We identified ${CONF.length} factors that could bias the answer using a review of <a href="https://github.com/cappellacci/lotline/blob/main/docs/research/lotline-evidence-register.csv" target="_blank" rel="noopener">other housing studies</a>.</p><p style="margin:var(--space-2) 0 0">We treated each one according to its impact on our model: it handles ${h}, ${nt} proved to make no difference${nb ? `, ${nb} we left alone on purpose` : ""} and ${l} are stated limits we could not address.</p>`;
+  const lead = `<p class="why-line" style="margin:var(--space-3) 0 0">We identified ${CONF.length} factors that could bias the answer using a review of <a href="__REPO_URL__/blob/main/docs/research/lotline-evidence-register.csv" target="_blank" rel="noopener">other housing studies</a>.</p><p style="margin:var(--space-2) 0 0">We treated each one according to its impact on our model: it handles ${h}, ${nt} proved to make no difference${nb ? `, ${nb} we left alone on purpose` : ""} and ${l} are stated limits we could not address.</p>`;
   const cells = CONF_GROUPS.flatMap(([, gname, ways, col]) => ways.flatMap((w) => (by[w] || []).map((r) =>
     `<span class="reg-cell" style="background:${col}" title="${esc(`${name(r)}: ${CONF_WAYS[w][0]}`)}"></span>`))).join("");
   const bar = `<div class="reg-bar" role="img" aria-label="${esc(`${h} handled, ${c} checked and set aside, ${l} stated limits`)}">${cells}</div>
