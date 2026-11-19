@@ -932,7 +932,7 @@ function evidenceHtml(b, d, R) {
     ${more(`<p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p>`, "How to read this chart")}</section>`;
   // 3. place types (D-088): built anyway and added by the reform, ADUs a year; read from the bundle when exported
   const s3 = `<section><h3 class="h3">Where ADUs would go</h3>
-    <p class="body-small">Every place in the state is one of three types, set from Census metro and micro areas, so the same split works in any state.</p>
+    <p class="body-small">We divided every place in the state into one of three types using Census metro and micro areas, so that the model works in any state. This helps us show where the most growth would occur.</p>
     ${more(`<div class="zones">
       <div><h4>Core cities</h4><p>The largest place in a metro area, or any place at least a third its size.</p></div>
       <div><h4>Suburbs</h4><p>Every other place in a metro area.</p></div>
