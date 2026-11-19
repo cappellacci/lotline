@@ -32,3 +32,6 @@ For each kind of home (ADU; a unit in a duplex to fourplex) in each place type (
 
 ## Done when
 A reader can say from the card alone: how many homes the state needs, how much of that the three reforms cover, which reform covers the most, and what income a household needs to live in each kind of home. Tests and `compliance_check.py` pass; logbook fragment written.
+
+## Note (2026-11-19)
+The "What it takes to pencil out" placeholder card was removed from the Results page (Ben): the AMI section's break-even rows (what each home must earn to cover building it, with the fee cut) and the fee card's per-place fee table cover it. A place-by-place pencil-out view, if wanted, belongs on the Model page (nothing below place type on Results, S10).
