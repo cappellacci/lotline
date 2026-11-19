@@ -62,7 +62,8 @@ spending ledger): `uv run python -m lotline.rule_agents …` (design: `docs/buil
    `{"finding": <coder a's finding>, "coder_2": "rules-mm-coder-b (opus)", "agreement": "agree"}` with b's
    blockers appended. Places with diffs: `rules-mm-reconciler`. Places with no coder b (`--single-coder`, or
    not selected in step 4): copy a's finding with `"agreement": "single_coder"`, `"coder_2": null`.
-7. **Verify** each final with `rules-mm-verifier`, then `… check <RUN>` again.
+7. **Verify** each final with `rules-mm-verifier`, then `… check <RUN>` again. Skip the verifier for a final
+   with no rules (nothing to check; its blockers go straight to step 9), also when the budget stopped it.
 8. **Browser check (only with `--browser`; may run unattended).** For priority-1 tasks from step 9's sheet, open
    each start URL in the built-in browser one page at a time; read; stop at any challenge, CAPTCHA or login and
    leave that task for the user. Record answers in `out/human-lookups.csv` with `checked_by = rules-mm-browser`,

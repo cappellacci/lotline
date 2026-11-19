@@ -37,7 +37,7 @@ from urllib.parse import urlparse
 import httpx
 
 from lotline.rule_agents.common.access import classify, robots_allows, robots_url
-from lotline.rule_agents.common.docstore import DocStore
+from lotline.rule_agents.common.docstore import DocStore, sniff_ext
 
 AGENT_TOKENS = ("lotline", "Claude-User", "ClaudeBot", "anthropic-ai")
 HOST_INTERVAL = 3.0  # seconds between requests to one host, across processes
@@ -232,6 +232,14 @@ def get(
             facts = {**facts, "served_url": final}
         if wayback_ts(final):
             facts = {**facts, "wayback_ts": wayback_ts(final)}
+        if sniff_ext(path) != ".pdf":
+            # A wall (login form, bot challenge, code-host shell) is a result, not a document: record it and
+            # keep it out of the store, so it is never offered as "already held" (a news site's login page
+            # was stored as a fee schedule in the Burlington VT proof of concept, 2026-11-19).
+            wall = classify(url, 200, content_type="text/html", text=path.read_text(errors="replace"))
+            if wall:
+                docs.record_block(url, wall[0], wall[1], category)
+                return FetchResult(url, None, 200, wall[0], wall[1])
         rec = docs.ingest(path, url=url, added_by=f"run:{category}:{run_id}", category=category, **facts)
         if rec.ext == ".pdf":
             hit = (
@@ -240,7 +248,7 @@ def get(
                 else None
             )
         else:
-            hit = classify(url, 200, content_type="text/html", text=path.read_text(errors="replace"))
+            hit = None  # walls were caught before ingest
         res = _result(docs, url, rec, 200, False)
         if hit:
             res.blocker, res.detail = hit

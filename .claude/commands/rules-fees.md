@@ -37,7 +37,8 @@ is missing in plain words (its fix line) and stop.
 6. Budget: every place has a shared spending budget (`common.budget`: default 250k tokens, 12 fetches, 8
    searches; the Agent tool's token count includes everything an agent reads). After each
    agent returns, record its token use from the Agent tool's report:
-   `uv run python -m lotline.rule_agents ledger add "$RUN" <geoid> <agent> --tokens N` (agents record their own
+   `uv run python -m lotline.rule_agents ledger add "$RUN" <geoid> <agent> --tokens N`, with `<agent>` the
+   agent's full name (`rules-fees-scout`, `rules-fees-reader`, ...) so its lines match its own (agents record their own
    fetches and searches). Before spawning more work for a place, `ledger status "$RUN" <geoid>`; on `stop`,
    hand the place's open components to the user as `budget_spent` tasks.
 
@@ -63,8 +64,9 @@ Its prompt contains only the state, `$RUN` and the GEOID: **never** coder 1's it
 ## 5. Pair and reconcile
 
 ```bash
-cat "$RUN"/items.coder1.*.jsonl > "$RUN/items.coder1.jsonl"
-cat "$RUN"/items.coder2.*.jsonl > "$RUN/items.coder2.jsonl"
+# find, not a glob: a glob with no match is an error in zsh (no place had items, or no second coder)
+find "$RUN" -maxdepth 1 -name 'items.coder1.*.jsonl' -exec cat {} + > "$RUN/items.coder1.jsonl"
+find "$RUN" -maxdepth 1 -name 'items.coder2.*.jsonl' -exec cat {} + > "$RUN/items.coder2.jsonl"
 uv run python -m lotline.rule_agents.fees reconcile "$RUN/items.coder1.jsonl" "$RUN/items.coder2.jsonl" --out "$RUN"
 ```
 If any pair is not `agree`, spawn one `rules-fees-reconciler` with `$RUN`. Otherwise copy

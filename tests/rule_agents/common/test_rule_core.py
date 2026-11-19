@@ -614,3 +614,31 @@ def test_a_dead_link_suggests_wayback_and_is_asked_again_after_a_day(docs, web):
         b["at"] = (datetime.now(UTC) - timedelta(days=2)).isoformat()
     docs.blocks_path.write_text("".join(json.dumps(b) + "\n" for b in rows))
     assert docs.recent_block("https://city.gov/old.pdf") is None  # a dead link is not a month-long refusal
+
+
+def test_a_pdf_from_a_link_with_no_extension_is_stored_and_read_as_a_pdf(docs):
+    """CivicPlus 'DocumentCenter/View/123/Fees' links have no .pdf: the bytes decide (South Burlington VT)."""
+    rec = docs.ingest(
+        _raw(docs, "city.gov/abc123.html", _pdf(["Zoning permit fee $150 per dwelling unit"])),
+        url="https://city.gov/DocumentCenter/View/123/Fee-Schedule",
+        added_by="run:fees:r1",
+        category="fees",
+    )
+    assert rec.ext == ".pdf" and rec.pages == 1  # one short line reads as a scan; the text is still there
+    assert "$150 per dwelling unit" in docs.text(rec.doc_id)
+
+
+def test_a_login_page_is_a_blocker_and_never_stored(docs, web):
+    srv, http = web(
+        {
+            "https://news.example/robots.txt": (200, "User-agent: *\nAllow: /", "text/plain"),
+            "https://news.example/notice": (
+                200,
+                '<html><body><form><input type="password" name="pw"></form></body></html>',
+                "text/html",
+            ),
+        }
+    )
+    r = fetch.get("https://news.example/notice", "fees", "r1", docs=docs, http=http, doc_type="fee_schedule")
+    assert r.blocker == "login_required" and r.doc_id is None
+    assert docs.records() == {}  # nothing to offer as "already held"
