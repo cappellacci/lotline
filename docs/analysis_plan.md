@@ -7625,3 +7625,59 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **What this leaves unmodelled:** how two reforms share one lot (C47). The Results headline adds the three
   reforms' draws and says that a lot two reforms open is counted twice; the "What the model cannot tell you"
   list names the limit. Earlier entries that mention `combine.py` stand as history.
+
+### D-104 · 2026-11-19 · V8: Wisconsin, the unseen-state test, set up before any Wisconsin data is fetched (method only)
+- **Why:** V8 asks whether the framework works on a state it was never developed on (HANDOFF 2026-10-28;
+  validation plan V8). Ben, 2026-11-18: "keep the blind as you recommended. Ie: let's produce the most
+  statistically valid output from the model, balancing the steps/complexity for the end user."
+- **Written before** any Wisconsin table exists. The manifest held no Wisconsin entry when this was written,
+  and the state file with the holdout was committed first. National raw files that list every state (for
+  example the Census state permit totals) already sat in the data folder. No Wisconsin rows were read from
+  them, and every build drops Wisconsin rows over the window (`holdout.drop_statewide`).
+- **Blind:** `V8-WI-TRANSFER`, the whole state (`55`), outcomes from 2020-01-01. Every build drops:
+  - Wisconsin's Census permit rows from 2020 on;
+  - its ACS housing-stock rows whose five years reach 2020;
+  - its row in the national permit totals.
+- **The prediction:** the standard results bundle (`lotline results --state WI --origin 2019`), so the test is
+  the same engine a user gets.
+  - Origin 2019 forecasts 2021-2025 (D-061's one-year lead), a window already observed, so it can be scored.
+  - Same seed and draws as every bundle (`config/params/aggregate.yaml`).
+  - Frozen as `results/frozen/V8-WI-TRANSFER.json` (the bundle, its commit and its config hash), committed
+    on main before anyone opens a Wisconsin outcome.
+- **Data level 0 (national data only),** because V8 tests transfer with no local effort:
+  - no reforms file: every place borrows the coded states' rule priors ("borrow only", task 0);
+  - no parcels: eligible lots are the ACS count scaled by D-056 (tier 3);
+  - no permits: no observed ADU floor.
+  - Wisconsin is outside every fit, so its ADU rate takes the unseen-state multiplier (D-044).
+  - No aliases or crosswalks are needed at level 0 (they map local files, and there are none).
+- **Settings chosen, with reasons:**
+  - `township_permits: true`: Wisconsin towns are general-purpose governments that issue permits, and the
+    permit survey reports them as county subdivisions, as in MN and OH.
+  - `zip3_ranges` 530-549 (USPS prefixes).
+  - No `local_jurisdictions`: there is no local data to report places the survey lacks.
+- **No parameter, estimator or shared-code change** is made for Wisconsin. Any later one counts against V8 and is
+  logged here.
+- **Scored once Ben unblinds (reading rules written now):**
+  1. **Baseline (current rules):** statewide five-year net new homes, 2021-2025, all sizes and each size class.
+     A hit is the observed Census total inside P10-P90. Reported: the ratio observed ÷ P50 and where the
+     observed value falls in the draws.
+  2. **V0 on 2010-2019:** Wisconsin's place permits add to the state total within 1%.
+  3. **Overlap:** the share of Wisconsin places outside the calibration range, each flagged in the bundle.
+  - The ADU, missing-middle and fee rows are reform counterfactuals with no observed outcome in Wisconsin.
+    They are frozen for the record and not scored.
+- **Pass (proposed, as V8):** V0 passes, the statewide baseline total lies in P10-P90, every out-of-range place
+  is flagged, and nothing in `src/` changed for Wisconsin.
+- **Not on the user's path:** the holdout is a validation step for V8. A user adding their own state does not
+  register one (`config/onboarding/steps.yaml`); the guide mentions it only as an optional backtest.
+- **Frozen 2026-11-19** (`results/frozen/V8-WI-TRANSFER.json`, written by `scripts/dev/v8_freeze.py`; a rebuild
+  gives an identical file). Prediction, statewide five-year permits 2021-2025 (reported units), P50 (P10-P90):
+  - all sizes 75,347 (53,126-103,715);
+  - 1 unit 51,972; 2 units 3,638; 3-4 units 424; 5+ units 18,534.
+  - The baseline covers 1,131 places (98% of homes).
+  - Overlap "low" (median calibration distance 1.37): Wisconsin's places sit mostly outside the range the
+    model learned from, as the bundle flags.
+  - Not scored (counterfactuals, five-year net homes P50): ADU 110 (17-1,018), missing middle 1,264,
+    fees 580.
+- **Onboarding effort:** one state file. No aliases, crosswalks, adapters, `src/` change or parameter change. V0
+  passes on 2010-2019, every year within 1% (`reports/wi/V0-national.md`); 1992-1993 are +5%, outside the
+  window.
