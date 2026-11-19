@@ -189,7 +189,8 @@ Registries move into the state yaml.
 - [ ] **1. Audit, finish.** Every place the code branches on a state, or a file in `adapters/` does more than
       reshape data. Start from § Audit and write the full list to the PR.
 - [x] **2. Schema.** Issue #455; Ben agreed 2026-11-17, then chose the straight-line build (tags in
-      `place_inputs`, `local_jurisdictions` in the state file). `tests/config/test_state_schema.py` not written.
+      `place_inputs`, `local_jurisdictions` in the state file). All 5 states checked by
+      `tests/config/test_state_schema.py`.
   - A draft of the state settings schema, `geography`, the aliases format and `place_inputs`, in the
     `contract-change` issue.
   - Validate all 5 states against it (`tests/config/test_state_schema.py`).
