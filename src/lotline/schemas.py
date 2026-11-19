@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.18"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.19"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -426,9 +426,10 @@ class PlaceInputs(_Strict):
     """Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task
     4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with
     origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window
-    ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use; a value
-    missing at its source stays null here (no fills). `models` lists who reads the row; `models_note` says
-    why a place is out of the others.
+    ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use. Task 5 rules
+    (D-103): one place set (every jurisdiction feeds the ADU and missing-middle scenarios); no parcel roll
+    later than Y + 1; a missing ACS rent or value is the state median, flagged. `models` lists who reads the
+    row; `models_note` says what was filled or how the row is covered.
     """
 
     state: Series[str] = pa.Field(**_STATE)
@@ -450,7 +451,8 @@ class PlaceInputs(_Strict):
     is_holdout: Series[pd.BooleanDtype]
     parcel_sources: Optional[Series[str]] = pa.Field(nullable=True)  # sorted, ";"-joined
     permit_sources: Optional[Series[str]] = pa.Field(nullable=True)
-    house_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)  # latest roll (MM)
+    house_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)  # roll <= year + 1 (MM)
+    house_share_roll: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
     # eligible parcels at the origin, net of the D-020 overlap; one block per theme
     eligible_parcels_adu: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
     eligible_parcels_reported_adu: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
@@ -469,6 +471,8 @@ class PlaceInputs(_Strict):
     # prices (2025 dollars) and observed ADUs
     rent: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
     home_value: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    rent_filled: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)  # state median (task 5 rule 2)
+    home_value_filled: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
     acs_end_year: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
     new_home_value: Optional[Series[float]] = pa.Field(nullable=True)  # roll dollars (fees)
     fee_parcel_vintage: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
@@ -926,6 +930,11 @@ HISTORY = [
         "rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income "
         "needed and share of AMI by home type and place type, market and break-even; "
         "WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway)",
+    ),
+    (
+        "1.19",
+        "place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, "
+        "D-103)",
     ),
 ]
 
