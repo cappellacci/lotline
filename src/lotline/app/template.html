@@ -250,6 +250,11 @@ svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--i
 .acc-track .one { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink); }
 .acc-track .lab { position: absolute; top: -20px; transform: translateX(-50%); font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
 .acc-track .val { position: absolute; top: 3px; font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
+.src-tools { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); align-items: center; margin: var(--space-2) 0; }
+.src-tools input[type=search] { font: inherit; font-size: 14px; padding: 6px 10px; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink); min-width: 220px; }
+.src-box { max-height: 460px; overflow: auto; border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); }
+.src-box table { margin: 0; }
+.src-box thead th { position: sticky; top: 0; background: var(--paper-raised); z-index: 1; }
 .data-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space-3); margin: 0 0 var(--space-6); }
 .data-tile { background: var(--paper); border: var(--stroke-hair) solid var(--rule); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
 .data-tile .k { color: var(--ink-muted); font-size: 13px; line-height: 18px; }
@@ -1250,20 +1255,8 @@ const SECTIONS = {
   data(b) {
     $("data-lead").textContent = dataLead();
     $("data-tiles").innerHTML = dataTilesHtml();
-    const st = b.meta.state, d = (DATA.data.by_state || {})[st] || { sources: [] };
-    const rows = d.sources.map((r) => {
-      const used = r.parcels_on_file == null ? `<span class="muted">Available</span>`
-        : r.parcels_used > 0 ? `Used: ${fmtInt(r.parcels_used)} of ${fmtInt(r.parcels_on_file)} parcels`
-        : `<span class="muted">On file, not used: another source covers these places</span>`;
-      const title = r.url ? `<a href="${esc(r.url)}" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
-      return `<tr><td>${title}<br><span class="caption muted">${esc(r.source)} · ${r.scope === "national" ? "national" : "state"}</span></td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
-    }).join("");
-    // The dashboard sits in #dash-host (kept across state changes); the full source list for the picked state
-    // goes at the very bottom, in #data-sources.
-    $("data-sources").innerHTML = `<div class="card"><h3 class="h3">Where each dataset comes from</h3>
-        <p class="body-small" style="margin:0 0 var(--space-2)">Every source the pipeline can download for ${esc(st)}, with a link to where it comes from. "In this build" says whether the model used it; for parcel rolls, how many of the parcels on file it used after picking one roll per place.</p>
-        <div class="scroll"><table><thead><tr><th>Source (links to the data)</th><th>Feeds</th><th>In this build</th></tr></thead><tbody>${rows}</tbody></table></div>
-        ${more(`<p class="source" style="margin:0">Available: every source Lotline can fetch for ${esc(st)} (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. "Feeds" is the model table the source is turned into. Versions, access dates, licences and cleaning steps for every source are in docs/data_provenance.md.</p>`, "About this list")}</div>`;
+    $("data-sources").innerHTML = sourcesCardHtml();
+    wireSources();
     return "";  // the state data tier card was dropped (Ben, 2026-11-09): the dashboard below carries coverage
   },
   trust(b) {
@@ -2018,6 +2011,55 @@ function wireResults() {
 }
 
 // The data tab's opening summary: what was gathered across every state, from the data dashboard summary.
+// The data tab's source list (Rules §8: data available vs used): every state's registry sources, national ones
+// listed once, each title linking to where the data comes from; a search box and a state filter narrow it.
+function sourcesRows() {
+  const by = DATA.data.by_state || {};
+  const seen = new Map();
+  for (const [st, d] of Object.entries(by)) {
+    for (const r of d.sources || []) {
+      const key = r.scope === "national" ? `national:${r.source}` : `${st}:${r.source}`;
+      if (!seen.has(key)) seen.set(key, { ...r, states: r.scope === "national" ? "All states" : st });
+    }
+  }
+  return [...seen.values()].sort((a, c) => (a.scope === c.scope ? 0 : a.scope === "national" ? -1 : 1) || a.states.localeCompare(c.states) || a.title.localeCompare(c.title));
+}
+function sourcesCardHtml() {
+  const rows = sourcesRows();
+  const states = [...new Set(rows.filter((r) => r.scope !== "national").map((r) => r.states))].sort();
+  const tr = rows.map((r) => {
+    const used = r.parcels_on_file == null ? `<span class="muted">Available</span>`
+      : r.parcels_used > 0 ? `Used: ${fmtInt(r.parcels_used)} of ${fmtInt(r.parcels_on_file)} parcels`
+      : `<span class="muted">On file, not used: another source covers these places</span>`;
+    const title = r.url ? `<a href="${esc(r.url)}" rel="noopener" target="_blank">${esc(r.title)}</a>` : esc(r.title);
+    const hay = `${r.title} ${r.source} ${r.table} ${r.states}`.toLowerCase();
+    return `<tr data-st="${esc(r.states)}" data-q="${esc(hay)}"><td>${title}<br><span class="caption muted">${esc(r.source)}</span></td><td>${esc(r.states)}</td><td>${esc(r.table)}</td><td>${used}</td></tr>`;
+  }).join("");
+  return `<div class="card"><h3 class="h3">Where each dataset comes from</h3>
+      <p class="body-small" style="margin:0 0 var(--space-2)">Every source the pipeline can download, for all ${states.length} states, with a link to where it comes from. National sources feed every state. "In this build" says whether the model used it; for parcel rolls, how many of the parcels on file it used after picking one roll per place.</p>
+      <div class="src-tools"><input type="search" id="src-q" placeholder="Search sources" aria-label="Search sources">
+        <label class="picker body-small">State <select id="src-st" aria-label="Filter sources by state"><option value="">All states</option><option value="All states">National only</option>${states.map((x) => `<option value="${esc(x)}">${esc(x)}</option>`).join("")}</select></label>
+        <span class="body-small muted" id="src-n"></span></div>
+      <div class="src-box"><table><thead><tr><th>Source (links to the data)</th><th>State</th><th>Feeds</th><th>In this build</th></tr></thead><tbody id="src-body">${tr}</tbody></table></div>
+      ${more(`<p class="source" style="margin:0">Available: every source Lotline can fetch (the source registry). Used: for parcel rolls, the parcels each source supplies after the one-source-per-place rule. "Feeds" is the model table the source is turned into. Versions, access dates, licences and cleaning steps for every source are in docs/data_provenance.md.</p>`, "About this list")}</div>`;
+}
+function wireSources() {
+  const q = $("src-q"), sel = $("src-st"), body = $("src-body"), n = $("src-n");
+  if (!q || !sel || !body) return;
+  const apply = () => {
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const tr of body.rows) {
+      const ok = (!sel.value || tr.dataset.st === sel.value || (sel.value !== "All states" && tr.dataset.st === "All states"))
+        && words.every((w) => tr.dataset.q.includes(w));
+      tr.hidden = !ok;
+      if (ok) shown += 1;
+    }
+    n.textContent = `${shown} of ${body.rows.length} sources`;
+  };
+  q.oninput = apply; sel.onchange = apply; apply();
+}
+
 // The data tab's headline numbers (Ben, 2026-11-19: under the title and lead), summed over every state in the
 // data dashboard summary; the same five tiles the dashboard showed, which no longer shows its own row.
 function dataTilesHtml() {
