@@ -14,7 +14,7 @@ import pytest
 from pandera import errors as pa_errors
 
 from lotline.config import Parameter
-from lotline.model import aggregate, results
+from lotline.model import affordability, aggregate, results
 from lotline.model.scenarios import adu
 from lotline.schemas import SCENARIOS
 
@@ -209,7 +209,60 @@ def make_fixture() -> dict[str, pd.DataFrame]:
         "observed": seen,
         "adu_place_types": results.adu_place_type_table("ZZ", typed, rd),
         "adu_baseline": results.adu_baseline_years("ZZ", rd, 2025),
+        "affordability": affordability.table("ZZ", _affordability_inputs(typed, rd), n=200, seed=3).astype(
+            {"places": "Int64"}
+        ),
     }
+
+
+def _market():
+    """Synthetic market_geo_year: national CPI (2025 = 2026 level, so MFI needs no deflation) and HUD rows."""
+    cpi = pd.DataFrame({"geo": "national:US", "year": pd.array([2025, 2026], dtype="Int64"), "cpi_u": 300.0})
+    hud = pd.DataFrame(
+        {
+            "geo": ["county:99001", "county:99003"],
+            "year": pd.array([2026, 2026], dtype="Int64"),
+            "hud_mfi": [132_300.0, 100_000.0],
+            **{
+                f"hud_l50_{n}": [f * 66_150, f * 50_000]
+                for n, f in zip(range(1, 6), (0.7, 0.8, 0.9, 1.0, 1.08))
+            },
+        }
+    )
+    return pd.concat([cpi, hud], ignore_index=True)
+
+
+def _affordability_inputs(typed, rd):
+    places = typed.assign(
+        county_geoid=["99001", "99001", "99003"], rent=[1500.0, 1200.0, 1000.0],
+        home_value=[400_000.0, 300_000.0, 250_000.0],
+    )  # fmt: skip
+    mm = pd.DataFrame({"geoid": ["1", "2", "3"], "added_homes_net_mean": [30.0, 10.0, 0.0]})
+    fee = pd.DataFrame(
+        {"geoid": ["1", "2", "3"], "local_fee_per_unit": [30_000.0, 20_000.0, 10_000.0],
+         "local_fee_per_unit_U2": [20_000.0, 15_000.0, np.nan]}
+    )  # fmt: skip
+    return affordability.inputs(places, rd, mm, fee, _market())
+
+
+def test_affordability_inputs_join_hud_weights_and_fees():
+    rd = _run_draws()
+    p = _affordability_inputs(_places().assign(place_type=["core", "suburb", "suburb"]), rd).set_index(
+        "geoid"
+    )
+    assert p.loc["1", "mfi"] == pytest.approx(132_300) and p.loc["3", "mfi"] == pytest.approx(100_000)
+    assert p.loc["1", "l50_1"] / p.loc["1", "l50_4"] == pytest.approx(0.7)
+    assert p.loc["2", "weight_adu"] == pytest.approx(np.median(rd["added"][:, 1, :].sum(axis=1)))
+    assert p.loc["1", "weight_mm"] == 30.0
+    assert p.loc["3", "fee_plex"] == pytest.approx(17_500)  # missing: the state median of the others
+
+
+def test_affordability_inputs_without_hud_rows_leave_mfi_missing():
+    rd = _run_draws()
+    places = _places().assign(place_type="suburb", county_geoid="99001", rent=1000.0, home_value=2e5)
+    market = _market()
+    p = affordability.inputs(places, rd, None, None, market[market["geo"] == "national:US"])
+    assert p["mfi"].isna().all() and affordability.table("ZZ", p, n=5).empty
 
 
 def test_adu_place_types_and_baseline_by_hand():
@@ -232,11 +285,11 @@ def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
     b = results.validate_bundle(make_fixture())
     path = results.write_bundle(b, tmp_path / "zz" / "bundle.json")
     doc = json.loads(path.read_text())
-    for part in ("adu_place_types", "adu_baseline"):
+    for part in ("adu_place_types", "adu_baseline", "affordability"):
         del doc[part]
     path.write_text(json.dumps(doc))
     back = results.read_bundle(path)
-    assert back["adu_place_types"].empty and back["adu_baseline"].empty
+    assert back["adu_place_types"].empty and back["adu_baseline"].empty and back["affordability"].empty
 
 
 def test_bundle_round_trips(tmp_path):

@@ -682,6 +682,22 @@ Comparison, so a reader sees them where the numbers are.
   known places until `config/reforms/*.csv` covers every state.
 - **Small places.** Places with under 20 eligible parcels are too noisy to score; they are forecast with wide
   ranges and should be read rolled up to their county.
+- **Who the new homes serve is context, not a forecast** (the AMI strip under the need chart,
+  `model/affordability.py`, `config/params/affordability.yaml`, method in `docs/research/lotline-ami-method.md`).
+  Five limits apply to it:
+  1. The model predicts how many homes, not their rents. The market rent shown is a rent the model already
+     assumes (the place's median gross rent times a ratio), re-expressed as an income.
+  2. New homes usually rent above the median of existing homes. The rent ratios' ranges (0.8 to 1.2) cover some
+     of that, and both ratios are judgment, not estimates. The house row prices a new house at the place's
+     median home value, which understates a new house.
+  3. AMI is family income for the whole HUD area, owners included; the median renter earns less, so a home at
+     "60% AMI" is harder for a typical renter to afford than the label suggests.
+  4. Many ADUs are not rented at market (family, a home office, short-term rental), so "serves" describes what
+     an ADU could rent for, not who will live in it.
+  5. Town figures rest on the county's HUD area and small-sample ACS rents; the strip shows the state only, and
+     the bundle nothing below place type. Break-even leaves out land and the builder's profit (Ben, 2026-11-19),
+     so it is a floor on what a new home must earn; the house row leaves out mortgage insurance; property tax and
+     insurance rates are national.
 - **Not yet pre-registered.** The V1–V5 thresholds are proposals until the `prereg-v1` tag is made, and V1 has
   been used during development.
 
