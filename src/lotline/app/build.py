@@ -340,7 +340,7 @@ def _svg(name: str, height: int = 32) -> str:
 # and state bar are hidden (the app's picker drives it), and its colours are mapped onto the identity tokens.
 FOLD_CSS = """
 <style id="lotline-fold">
-body > header, #state-bar { display: none !important; }
+body > header, #state-bar, #tiles { display: none !important; }
 :root:not(#lotline-fold) {
   --surface-0: var(--paper-raised); --surface-1: var(--paper); --surface-2: var(--paper-sunken);
   --border: var(--rule); --grid: var(--rule); --text-primary: var(--ink); --text-secondary: var(--ink-muted);

@@ -7626,6 +7626,25 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   reforms' draws and says that a lot two reforms open is counted twice; the "What the model cannot tell you"
   list names the limit. Earlier entries that mention `combine.py` stand as history.
 
+### Deviation · 2026-11-19 · Housing need as the shortfall left after homes built anyway (proposed D-entry)
+- **What changed** (Ben, 2026-11-19: measuring the reforms against total demand "makes it look like they're a
+  very small piece"; "is there a better way to represent the shortfall"). The Results need card now shows the
+  homes a state still lacks after what it builds anyway, with the reforms stacked on top, instead of the reforms'
+  share of one kind of need. D-057's rule that the two kinds of need are never mixed is relaxed for this view
+  only: here they are added on purpose (the shortage is the backlog, household growth the new demand).
+- **Method** (`model/shortfall.py`, bundle table `results_shortfall`, schemas 1.18): need = shortage today +
+  household growth over the five years (as projected, negative where households fall: Ohio) + homes lost over
+  the five years (`aggregate.yaml` `stock_loss_rate` 0.3%, 0.2–0.5%, a year × the ACS 5-year housing stock,
+  B25024_001); gap = need − the no-change forecast of homes permitted, all building sizes, 2027–2031
+  (`results_baseline`, `all`). The gap's range is bounds (need low − built P90; need high − built P10), not
+  percentiles. The share-of-need card stays as the fallback for a bundle without the table.
+- **Result at the midpoints (2026-11-19 bundles):** gaps of about 98,000 (MN), 88,000 (OR) and 234,000 (TX);
+  NC (−49,000) and OH (−36,000) build enough anyway at the midpoint, though both ranges reach a gap. The card
+  says so plainly where the gap is at or below zero.
+- **Limits:** permits are gross building and vacancy and second homes are not taken out, so the gap is if
+  anything understated; the stock-loss rate is national and marked "approx."; the gap is one uncertain number
+  minus another, so its range is wide (NC from −225,000 to 259,000).
+
 ### D-104 · 2026-11-19 · V8: Wisconsin, the unseen-state test, set up before any Wisconsin data is fetched (method only)
 - **Why:** V8 asks whether the framework works on a state it was never developed on (HANDOFF 2026-10-28;
   validation plan V8). Ben, 2026-11-18: "keep the blind as you recommended. Ie: let's produce the most

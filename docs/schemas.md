@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.17** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.18** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -167,6 +167,12 @@ Table checks: `one_row_per_geo_year`
 | `demand_bartik` | number | no | yes |  |
 | `demand_bartik_loo` | number | no | yes |  |
 | `demand_imputed_share` | number | no | yes | ≥ 0; ≤ 1 |
+| `hud_mfi` | number | no | yes | > 0 |
+| `hud_l50_1` | number | no | yes | > 0 |
+| `hud_l50_2` | number | no | yes | > 0 |
+| `hud_l50_3` | number | no | yes | > 0 |
+| `hud_l50_4` | number | no | yes | > 0 |
+| `hud_l50_5` | number | no | yes | > 0 |
 
 ## `acs_geo_year`
 
@@ -498,6 +504,62 @@ Table checks: `one_row_per_key`
 | `p50` | number | yes | no | ≥ 0 |
 | `p90` | number | yes | no | ≥ 0 |
 
+## `results_affordability`
+
+Who the new homes serve (WS-NEED-AMI part B; `model/affordability.py`): context beside the need, not a result of the reform scenarios. Per home type (`adu`, `plex_unit`, `house` for contrast) and place type (`core`, `suburb`, `town`, or `state` for all places): `value` is the monthly rent (ADU, plex unit) or the sale price (house) in 2025 dollars, `income` the yearly household income at which its housing cost is 30% of income, and `ami_share` that income over the HUD area median income for a household of 1.5 persons per bedroom. `rent_kind` `market` is the rent the engine assumes; `break_even` the rent at which the pro forma's value covers building it (no land, no profit), for three `fee_case`s: today's local fees (`current`), real local fees cut in half (`fees_local_half`) and the Handbook benchmark (`fees`). Places are weighted by the homes the matching reform adds there (`weighting` `homes_added`), or equally where it adds none (`places_equal`); `mfi` is that weighted HUD 4-person MFI (2025 dollars). Medians with P10 and P90 across draws. Empty when no HUD income limits file is registered.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `home_type` | text | yes | no | one of `adu`, `plex_unit`, `house` |
+| `place_type` | text | yes | no | one of `core`, `suburb`, `town`, `state` |
+| `rent_kind` | text | yes | no | one of `market`, `break_even` |
+| `fee_case` | text | yes | no | one of `current`, `fees_local_half`, `fees` |
+| `places` | integer | yes | no | ≥ 1 |
+| `weighting` | text | yes | no | one of `homes_added`, `places_equal` |
+| `mfi` | number | yes | no | > 0 |
+| `value_p10` | number | yes | no | ≥ 0 |
+| `value` | number | yes | no | ≥ 0 |
+| `value_p90` | number | yes | no | ≥ 0 |
+| `income_p10` | number | yes | no | ≥ 0 |
+| `income` | number | yes | no | ≥ 0 |
+| `income_p90` | number | yes | no | ≥ 0 |
+| `ami_share_p10` | number | yes | no | ≥ 0 |
+| `ami_share` | number | yes | no | ≥ 0 |
+| `ami_share_p90` | number | yes | no | ≥ 0 |
+
+## `results_shortfall`
+
+The shortfall view of housing need (`model/shortfall.py`; Ben, 2026-11-19): one row per state. The need is the shortage today plus household growth over the five years (negative where households are projected to fall) plus homes lost over the five years (`stock_loss_rate` x the ACS housing stock in `stock_year` x 5); `built` is the no-change forecast of homes permitted, all sizes, over the five years (P10, P50, P90); the gap is need minus built, with bounds from the need's low and high ends against built at P90 and P10. A gap at or below zero means homes built anyway would cover the need at that end.
+
+Table checks: `one_row_per_state`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `shortage_low` | number | yes | no | ≥ 0 |
+| `shortage` | number | yes | no | ≥ 0 |
+| `shortage_high` | number | yes | no | ≥ 0 |
+| `growth_low` | number | yes | no |  |
+| `growth` | number | yes | no |  |
+| `growth_high` | number | yes | no |  |
+| `stock` | number | yes | no | > 0 |
+| `stock_year` | integer | yes | no | ≥ 2009; ≤ 2100 |
+| `lost_low` | number | yes | no | ≥ 0 |
+| `lost` | number | yes | no | ≥ 0 |
+| `lost_high` | number | yes | no | ≥ 0 |
+| `need_low` | number | yes | no |  |
+| `need` | number | yes | no |  |
+| `need_high` | number | yes | no |  |
+| `built_p10` | number | yes | no | ≥ 0 |
+| `built` | number | yes | no | ≥ 0 |
+| `built_p90` | number | yes | no | ≥ 0 |
+| `gap_low` | number | yes | no |  |
+| `gap` | number | yes | no |  |
+| `gap_high` | number | yes | no |  |
+
 ## Version history
 
 | Version | Change |
@@ -520,3 +582,4 @@ Table checks: `one_row_per_key`
 | 1.15 | results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide current-rules ADUs per window year), for the app's ADU evidence card |
 | 1.16 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |
 | 1.17 | results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle ever held rows for them, so no data is lost |
+| 1.18 | market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income needed and share of AMI by home type and place type, market and break-even; WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway) |

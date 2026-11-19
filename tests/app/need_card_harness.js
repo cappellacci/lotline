@@ -1,7 +1,7 @@
 // Runs the built app page's scripts under node with a stub DOM, loads one state file, and prints the fee
-// view the page picks and the need card's HTML. Used by tests/app/test_need_card.py.
+// view the page picks and the need card's (or the AMI strip's) HTML. Used by tests/app/test_need_card.py.
 const fs = require("fs"), vm = require("vm");
-const [dir, st] = process.argv.slice(2);
+const [dir, st, fn = "needHtml", fee = ""] = process.argv.slice(2);  // fn: needHtml or amiHtml
 const html = fs.readFileSync(dir + "/index.html", "utf8");
 // The page is our own build output, so plain string scanning finds its script blocks (no HTML parsing).
 const between = (open, from = 0) => {
@@ -24,6 +24,6 @@ const ctx = { document, console, CSS: { escape: (s) => s }, location: { hash: ""
 ctx.window = ctx; ctx.globalThis = ctx; vm.createContext(ctx);
 for (const s of scripts) { try { vm.runInContext(s, ctx); } catch (e) { /* page start-up touches the DOM */ } }
 vm.runInContext(fs.readFileSync(`${dir}/states/${st.toLowerCase()}.js`, "utf8"), ctx);
-const out = vm.runInContext(`(() => { const b = LOADED["${st}"]; SECTIONS.results(b);
-  return JSON.stringify({ fee: UI.fee, html: needHtml(b, results(b)) }); })()`, ctx);
+const out = vm.runInContext(`(() => { const b = LOADED["${st}"]; SECTIONS.results(b); if ("${fee}") UI.fee = "${fee}";
+  return JSON.stringify({ fee: UI.fee, html: ${fn === "amiHtml" ? "amiHtml(b)" : "needHtml(b, results(b))"} }); })()`, ctx);
 process.stdout.write(out);
