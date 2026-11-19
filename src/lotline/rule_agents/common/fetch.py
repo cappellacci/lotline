@@ -89,6 +89,11 @@ def wayback_ts(url: str | None) -> str | None:
     return m.group(1) if m else None
 
 
+def wayback_url(url: str, when: str = "2") -> str:
+    """The Wayback address for `url`; `when` is a year or a 14-digit capture ('2' = latest capture)."""
+    return f"https://web.archive.org/web/{when}/{url}"
+
+
 def _wait(root: Path, host: str) -> None:
     lock = root / ".ratelimit" / f"rule-agents-{host}"
     lock.parent.mkdir(parents=True, exist_ok=True)
@@ -213,6 +218,9 @@ def get(
             st = exc.response.status_code
             kind, detail = classify(url, st, text=exc.response.text) or ("not_found", f"HTTP {st}")
             docs.record_block(url, kind, detail, category)
+            if st in (404, 410) and not wayback_ts(url) and "web.archive.org" not in url:
+                # Sites are redesigned and old file links die; the archived copy is often still there.
+                detail += f"; try the archived copy {wayback_url(url)} (ask for an exact 14-digit capture)"
             return FetchResult(url, None, st, kind, detail)
         except httpx.TransportError as exc:
             docs.record_block(url, "unreachable", str(exc)[:200], category)

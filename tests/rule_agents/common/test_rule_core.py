@@ -359,9 +359,43 @@ def test_budget_stops_a_place_at_its_limit(tmp_path):
 
 def test_ledger_cli_status_exit_code_says_stop(tmp_path, capsys):
     run = str(tmp_path)
-    assert cli.main(["ledger", "add", run, GEOID, "coder-a", "--tokens", "130000"]) == 0
-    assert cli.main(["ledger", "status", run, GEOID]) == 3  # over the default 120k
+    assert cli.main(["ledger", "add", run, GEOID, "coder-a", "--tokens", "260000"]) == 0
+    assert cli.main(["ledger", "status", run, GEOID]) == 3  # over the default 250k
     assert json.loads(capsys.readouterr().out.strip().splitlines()[-1])["reason"] == ["tokens"]
+
+
+def test_run_limits_are_saved_so_every_agents_status_uses_them(tmp_path, capsys):
+    """By hand: limits saved at 60k; one agent spends 88.5k -> any later `status` call with no flags stops
+    (the Burlington VT run fell back to the default because --budget was not saved)."""
+    run = str(tmp_path)
+    assert cli.main(["ledger", "limits", run, "--tokens", "60000"]) == 0
+    assert json.loads(capsys.readouterr().out)["tokens"] == 60000
+    cli.main(["ledger", "add", run, GEOID, "scout", "--tokens", "88500"])
+    assert cli.main(["ledger", "status", run, GEOID]) == 3
+    assert budget.run_limits(tmp_path)["fetches"] == budget.DEFAULT_LIMITS["fetches"]
+    with pytest.raises(ValueError):
+        budget.set_limits(tmp_path, tokens=0)
+
+
+def test_ledger_summary_runs(tmp_path, capsys):
+    """`ledger summary` crashed in the Burlington run ('Namespace' has no 'tokens')."""
+    run = str(tmp_path)
+    cli.main(["ledger", "add", run, GEOID, "scout", "--tokens", "100", "--fetches", "2"])
+    assert cli.main(["ledger", "summary", run]) == 0
+    out = capsys.readouterr().out
+    assert "TOTAL" in out and "100" in out
+
+
+def test_a_places_csv_works_for_a_state_with_no_table(tmp_path):
+    from lotline.rule_agents.common.places import read_jurisdictions
+
+    p = tmp_path / "vt.csv"
+    p.write_text("geoid,name,pop_2020\n5010675,Burlington city,44743\n")
+    j = read_jurisdictions("VT", p)
+    assert list(j["geoid"]) == ["5010675"] and list(j["kind"]) == ["place"] and list(j["state"]) == ["VT"]
+    (tmp_path / "bad.csv").write_text("geoid,name\n1,x\n")
+    with pytest.raises(ValueError):
+        read_jurisdictions("VT", tmp_path / "bad.csv")
 
 
 # ---- evidence, text, hand-off ------------------------------------------------------------------------------
@@ -559,3 +593,24 @@ def test_a_year_only_wayback_link_records_the_capture_actually_served(docs, monk
     assert again.cached and again.wayback_ts == "20220301120000" and again.final_url == served
     assert not http.event_hooks["response"]  # the caller's client is left as it was
     assert fetch.wayback_ts(asked) is None
+
+
+def test_one_page_written_two_ways_is_one_key():
+    assert handoff.url_key("https://www.BurlingtonVT.gov/a%20b.pdf") == handoff.url_key(
+        "https://burlingtonvt.gov/a%20b.pdf"
+    )
+    assert handoff.url_key("https://city.gov/a") != handoff.url_key("https://city.gov/b")
+
+
+def test_a_dead_link_suggests_wayback_and_is_asked_again_after_a_day(docs, web):
+    from datetime import UTC, datetime, timedelta
+
+    srv, http = web({"https://city.gov/robots.txt": (200, "User-agent: *\nAllow: /", "text/plain")})
+    r = fetch.get("https://city.gov/old.pdf", "mm", "r1", docs=docs, http=http)
+    assert r.blocker == "not_found" and "https://web.archive.org/web/2/https://city.gov/old.pdf" in r.detail
+    assert docs.recent_block("https://city.gov/old.pdf") is not None  # same day: not asked again
+    rows = [json.loads(x) for x in docs.blocks_path.read_text().splitlines()]
+    for b in rows:
+        b["at"] = (datetime.now(UTC) - timedelta(days=2)).isoformat()
+    docs.blocks_path.write_text("".join(json.dumps(b) + "\n" for b in rows))
+    assert docs.recent_block("https://city.gov/old.pdf") is None  # a dead link is not a month-long refusal

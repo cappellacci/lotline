@@ -27,6 +27,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.rule_agents.common import budget
 from lotline.rule_agents.mm import brief, handoff, pdftext, reconcile, rows
 from lotline.rule_agents.mm import compare as cmp
 from lotline.rule_agents.mm.findings import PlaceFinding, check, verify_quote
@@ -61,15 +62,12 @@ def cmd_init(a) -> int:
 def cmd_places(a) -> int:
     run = Path(a.run)
     st = _state(run)
-    if a.jurisdictions:
-        j = pd.read_csv(a.jurisdictions, dtype={"geoid": str})
-    else:
-        from lotline.io.store import DataStore
+    from lotline.rule_agents.common.places import read_jurisdictions
 
-        j = DataStore().read(st.lower(), "jurisdictions")
-        if j is None:
-            print(f"no jurisdictions table for {st}: pass --jurisdictions CSV (geoid, name, pop_2020)")
-            return 1
+    j = read_jurisdictions(st, a.jurisdictions)
+    if j is None:
+        print(f"no jurisdictions table for {st}: pass --jurisdictions CSV (geoid, name, pop_2020)")
+        return 1
     coded_path = REPO / "config" / "reforms" / f"{st.lower()}.csv"
     coded = pd.read_csv(coded_path, dtype={"jurisdiction_geoid": str}) if coded_path.exists() else None
     out = enumerate_places(j, coded, min_pop=a.min_pop, limit=a.limit, only=a.only, skip_coded=a.skip_coded)
@@ -156,7 +154,8 @@ def cmd_reconcile(a) -> int:
         geoid = pa.name.split(".")[0]
         pb = run / "findings" / f"{geoid}.{CODERS[1]}.json"
         if not pb.exists():
-            print(f"{geoid}: no second coding yet")
+            print(f"{geoid}: one coder only (nothing to reconcile; write final/ from coder a)")
+            n += 1
             continue
         diffs = reconcile.compare(_load(pa), _load(pb))
         out = {
@@ -167,6 +166,8 @@ def cmd_reconcile(a) -> int:
         (run / "reconcile" / f"{geoid}.json").write_text(json.dumps(out, indent=1))
         print(f"{geoid}: {len(diffs)} diff(s) ({sum(d.severity == 'major' for d in diffs)} major)")
         n += 1
+    if not n:
+        print("no coder-a findings in this run yet")
     return 0 if n else 1
 
 
@@ -180,6 +181,9 @@ def cmd_select_b(a) -> int:
     for pa in sorted((run / "findings").glob(f"*.{CODERS[0]}.json")):
         geoid = pa.name.split(".")[0]
         pos = order.index(geoid) + 1 if geoid in order else 0
+        if budget.status(run, geoid)["stop"]:
+            print(f"{geoid}\t- (budget spent: hand off, no coder b)")
+            continue
         why = reconcile.needs_second_coder(_load(pa), pos, a.audit_every)
         print(f"{geoid}\t{why or '-'}")
         n += bool(why)
@@ -281,6 +285,9 @@ def cmd_compare(a) -> int:
     st = _state(run).lower()
     agent = pd.read_csv(run / "out" / f"reforms_mm_{st}.csv", dtype={"jurisdiction_geoid": str})
     coded_path = Path(a.coded) if a.coded else REPO / "config" / "reforms" / f"{st}.csv"
+    if not coded_path.exists():
+        print(f"no coded table at {coded_path} (a new state): nothing to compare with")
+        return 0
     coded = pd.read_csv(coded_path, dtype={"jurisdiction_geoid": str})
     res = cmp.compare(agent, coded)
     res.to_csv(run / "out" / "compare.csv")

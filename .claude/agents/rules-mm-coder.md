@@ -25,7 +25,8 @@ the route by right. Window: from 2010-01-01; an older rule still in force is cod
 ## Hard rules
 
 - Network only via `uv run python -m lotline.rule_agents.mm fetch <RUN> <URL> --geoid <GEOID>` and WebSearch.
-  Never curl, never another user agent, never retry a refusal [R-5]. Budget: **8 fetches, 6 searches**, and
+  Never curl, never another user agent, never retry a refusal [R-5]. Budget: **3 fetches, 1 search** beyond the scout's sources (the place's whole limit is 12 fetches and 8
+  searches, shared with the scout and the other coder), and
   the place's token budget: run `uv run python -m lotline.rule_agents ledger status <RUN> <GEOID>` before any
   new search; if it says `"stop": true`, stop searching and turn every open field into a Blocker with kind
   `budget_spent`. Record what you used before finishing:

@@ -15,7 +15,9 @@ Read `docs/build/rule-agents/fees/AGENT_RULES.md` first and follow it.
 1. Look in the document store first: `uv run python -m lotline.rule_agents docs find --geoid <G> --category fees` (documents earlier runs
    or a person saved, including hand-saved schedules from sites that refuse scripts). A held schedule needs no
    search. [R7]
-2. Search (at most 6 searches per place in total) for the **adopted** document. Fees hide in different
+2. Search (at most 6 searches per place in total; the place's whole limit is 8 searches and 12 fetches)
+   for the **adopted** document. Dead links: a fetch that returns `not_found` (404/410) prints the archived address to try; fetch that Wayback copy once (exact 14-digit capture when you know the date) before recording the link as dead. Sites are often redesigned and old file links die while the archived copy survives.
+    Fees hide in different
    document kinds; try the kinds in this order for the component: [P1]
    - permit: "fee schedule" / "master fee schedule" / "building permit fees" PDF; the budget book's fee
      appendix; the code chapter on building fees.

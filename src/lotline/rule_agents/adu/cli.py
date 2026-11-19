@@ -49,10 +49,14 @@ def _load_all(folder: Path) -> list[C.PlaceCoding]:
 
 
 def cmd_worklist(a) -> int:
-    store = DataStore()
-    j = store.read(a.state, "jurisdictions")
+    from lotline.rule_agents.common.places import read_jurisdictions
+
+    j = read_jurisdictions(a.state, a.jurisdictions)
     if j is None:
-        print(f"no jurisdictions table for {a.state}; build it first (lotline build) or pass --places-csv")
+        print(
+            f"no jurisdictions table for {a.state}; build it first (lotline build) or pass "
+            "--jurisdictions CSV (geoid, name, pop_2020)"
+        )
         return 2
     path = CONFIG_DIR / "reforms" / f"{a.state.lower()}.csv"
     existing = pd.read_csv(path, dtype=str) if path.exists() else None
@@ -284,7 +288,11 @@ def cmd_ingest(a) -> int:
 def cmd_compare(a) -> int:
     proposed = pd.read_csv(a.rows, dtype={"jurisdiction_geoid": str})
     proposed["effective_date"] = pd.to_datetime(proposed["effective_date"])
-    existing = W.read_config(CONFIG_DIR / "reforms" / f"{a.state.lower()}.csv")
+    path = CONFIG_DIR / "reforms" / f"{a.state.lower()}.csv"
+    if not path.exists():
+        print(f"no coded table at {path} (a new state): nothing to compare with")
+        return 0
+    existing = W.read_config(path)
     geoids = a.geoids.split(",") if a.geoids else sorted(proposed["jurisdiction_geoid"].unique())
     cmp = W.compare_with_config(proposed, existing, geoids)
     print(cmp.to_string(index=False))
@@ -305,6 +313,7 @@ def main(argv=None) -> int:
     s.add_argument("--min-pop", type=int, default=2500)
     s.add_argument("--limit", type=int)
     s.add_argument("--geoids")
+    s.add_argument("--jurisdictions", help="CSV of places (geoid, name, pop_2020) for a state with no table")
     s.set_defaults(fn=cmd_worklist)
     s = sp.add_parser("fetch")
     s.add_argument("--state", required=True)

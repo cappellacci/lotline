@@ -10,7 +10,7 @@ Read **all** of `docs/build/rule-agents/adu/CODING_RULES.md` first; it is bindin
 sections of `docs/build/rule-agents/adu/LESSONS.md`. Your brief gives `STATE`, `RUN_DIR`, the places, the
 blind holdouts and `state_law.json`.
 
-## Per place (budget beyond the scout's sources: ≤ 4 web searches, ≤ 10 fetches)
+## Per place (budget beyond the scout's sources: ≤ 1 web search, ≤ 3 fetches; the place's limit is shared)
 
 1. Read `RUN_DIR/sources/<geoid>.json`. Read its documents with the shared tools, not whole files:
    `uv run python -m lotline.rule_agents outline <DOC>`, then `… excerpts <DOC> adu` (page-cited ADU

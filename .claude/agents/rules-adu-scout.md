@@ -10,7 +10,9 @@ Read `docs/build/rule-agents/adu/CODING_RULES.md` (fetch and hard rules) and les
 `docs/build/rule-agents/adu/LESSONS.md`. Your brief gives `STATE`, `RUN_DIR`, a list of places
 (geoid, name, population, existing reform_ids) and the blind holdouts.
 
-## Per place (budget: ≤ 8 web searches, ≤ 10 fetches)
+## Per place (budget: ≤ 6 web searches, ≤ 6 fetches; the place's whole limit is 8 and 12, and the coders need the rest)
+
+Dead links: a fetch that returns `not_found` (404/410) prints the archived address to try; fetch that Wayback copy once (exact 14-digit capture when you know the date) before recording the link as dead. Sites are often redesigned and old file links die while the archived copy survives.
 
 1. Find the **official code** and its publisher (city site, Municode, American Legal, eCode360, encodeplus,
    other). Find the ADU section (search "accessory dwelling" with the town **and state**; L-F12).

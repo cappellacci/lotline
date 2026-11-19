@@ -43,7 +43,7 @@ WHY = {
     "records_request_only": "This record is only available by public-records request.",
     "ambiguous_source": "The page is readable but does not settle the value (or only minutes mention it).",
     "conflicting_sources": "The two coders read different values and the verifier could not settle it.",
-    "budget_spent": "The agents ran out of search budget for this place.",
+    "budget_spent": "The agents reached this place's spending limit before finishing it.",
     "judgment_call": "The text is clear but how to code it is a policy choice.",
 }
 REASONS = WHY  # the blocker kinds a coding may use
@@ -163,7 +163,7 @@ def triage(tasks: list[HumanTask]) -> tuple[list[HumanTask], list[HumanTask]]:
     largest place first."""
     seen: dict[tuple, HumanTask] = {}
     for t in tasks:  # one task per place + page: both coders and the merge often block on the same URL
-        key = (t.state, t.geoid, t.url)
+        key = (t.state, t.geoid, CH.url_key(t.url))
         if key not in seen:
             seen[key] = t
             continue

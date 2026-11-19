@@ -30,7 +30,7 @@ BLOCKER_TIPS = {
     "not_found": "Dead link: try the Wayback Machine (web.archive.org) or the city's site search.",
     "unreachable": "The host did not answer (timeout or connection error); try it in a browser.",
     "robots_unavailable": "The site's robots.txt did not answer, so scripts stay off; open it in a browser.",
-    "budget_spent": "The agents ran out of search budget here; a quick look on the city site may settle it.",
+    "budget_spent": "The agents used up this place's budget before reading this; a quick look may settle it.",
     "records_request_only": (
         "Optional: this record is only available by public-records request. File one with the city clerk "
         "if you want it (it can take weeks); otherwise mark no_usable_source."
@@ -45,6 +45,18 @@ ACCEPTANCE = (
 )
 # Answer columns every category's sheet has (after its own value columns).
 COMMON_ANSWER_COLUMNS = ["result", "source_url", "quote", "saved_file", "checked_by", "checked_on", "notes"]
+
+
+def url_key(url: str) -> str:
+    """One key for one page however its address was written: the host lower-cased without `www.`, the
+    rest as given. By hand: 'https://www.BurlingtonVT.gov/a.pdf' and 'https://burlingtonvt.gov/a.pdf' ->
+    'burlingtonvt.gov/a.pdf' (two tasks for one file in the Burlington VT run)."""
+    from urllib.parse import urlparse
+
+    p = urlparse((url or "").strip())
+    host = (p.hostname or "").lower().removeprefix("www.")
+    rest = p.path.rstrip("/") + (f"?{p.query}" if p.query else "")
+    return host + rest if host else (url or "").strip()
 
 
 def browser_tip(url: str, kind: str) -> str:

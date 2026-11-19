@@ -30,8 +30,10 @@ for coders of a blind holdout place: leave it out.
   headers. A refusal is a result: record it.
 - Never file records requests, send emails, fill forms or log in (a records-request-only source is a
   Blocker `records_request_only`; the user decides whether to file one). Never write permit, housing or outcome numbers (holdouts).
-- Write only `<RUN>/sources/<GEOID>.json`. Budget: at most **8 searches and 6 fetches** (cached documents
-  are free). Before you finish, record them:
+- Write only `<RUN>/sources/<GEOID>.json`. Budget: at most **6 searches and 6 fetches** (cached documents
+  are free; the place's whole limit is 8 searches and 12 fetches, and the coders need the rest).
+- Dead links: a fetch that returns `not_found` (404/410) prints the archived address to try; fetch that Wayback copy once (exact 14-digit capture when you know the date) before recording the link as dead. Sites are often redesigned and old file links die while the archived copy survives.
+  Every link that failed goes in `failed` (below), so the hand-off sheet lists it once. Before you finish, record them:
   `uv run python -m lotline.rule_agents ledger add <RUN> <GEOID> scout --searches N --fetches N`.
 - Do not read documents to judge them: `uv run python -m lotline.rule_agents docs find --geoid <GEOID> --text
   "two-family"` (or `outline <DOC>`) tells you which pages hold what. Reading is the coder's job.
@@ -63,6 +65,7 @@ Search phrasing that worked: `"<place>" <state> "two-family" OR duplex ordinance
               "shows": "what it should settle, e.g. 'R-4 use table, 2024 edition'",
               "doc_id": "sha256 from fetch or docs find", "pages": "e.g. 41-43 (from docs find --text)",
               "fetch": {"blocker": null, "detail": "", "cached": false}}],
+ "failed": [{"url": "...", "blocker": "not_found|robots_disallow|http_403_waf|...", "tried_archive": true}],
  "searched": ["query or URL", "..."], "notes": "anything a coder should know (district renames, recodification years)"}
 ```
 

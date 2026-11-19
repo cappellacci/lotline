@@ -42,6 +42,7 @@ from urllib.parse import urlparse
 
 from lotline.rule_agents.common import text as T
 
+SHORT_BLOCKS = {"not_found", "unreachable"}  # remembered for a day, not a month
 CATEGORIES = ("mm", "adu", "fees")
 DOC_TYPES = (
     "code_section",  # one section or chapter of a codified ordinance
@@ -516,10 +517,16 @@ class DocStore:
         code-host walls, robots, logins) are not asked again: one refusal closes the host for a month, so a
         second swarm spends no fetch, no robots read and no tokens on it (LESSONS R-5, Medford/Charlotte)."""
         host = (urlparse(url).hostname or "").lower()
-        cutoff = datetime.now(UTC) - timedelta(days=days)
+        now = datetime.now(UTC)
+        cutoff = now - timedelta(days=days)
         host_kinds = {"http_403_waf", "code_host_wall", "login_required", "robots_unavailable"}
         for b in reversed(self._read(self.blocks_path)):
-            if datetime.fromisoformat(b["at"]) < cutoff:
+            at = datetime.fromisoformat(b["at"])
+            if at < cutoff:
+                continue
+            # A dead link or a site that did not answer is not a refusal: ask again after a day, so a link
+            # the city fixes is not locked out for a month (Burlington VT proof of concept, 2026-11-19).
+            if b["kind"] in SHORT_BLOCKS and at < now - timedelta(days=1):
                 continue
             if b["url"] == url or (b["host"] == host and b["kind"] in host_kinds):
                 return b
