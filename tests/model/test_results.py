@@ -225,7 +225,7 @@ def _market():
             "hud_mfi": [132_300.0, 100_000.0],
             **{
                 f"hud_l50_{n}": [f * 66_150, f * 50_000]
-                for n, f in zip(range(1, 6), (0.7, 0.8, 0.9, 1.0, 1.08))
+                for n, f in zip(range(1, 6), (0.7, 0.8, 0.9, 1.0, 1.08), strict=True)
             },
         }
     )

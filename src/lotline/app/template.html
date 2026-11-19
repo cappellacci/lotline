@@ -1372,36 +1372,36 @@ function amiHtml(b) {
   const pick = (h, kind, fc) => rows.find((r) => r.home_type === h && r.rent_kind === kind && r.fee_case === fc);
   const fc = UI.fee === "fees" ? "fees" : "fees_local_half";
   const W = 760, L = 16, R = 16, x = (s) => L + (Math.min(Math.max(s, 0), AMI_BANDS.max) / AMI_BANDS.max) * (W - L - R);
-  const RH = 64, T = 34, H = T + RH * AMI_ROWS.length + 6;
+  const RH = 84, T = 34, H = T + RH * AMI_ROWS.length + 6;
   const ticks = [0, 0.3, 0.6, 0.8, 1, 1.2, 1.5];
   const what = (r, kind) => (kind === "price" ? `${fmtUsd(r.value)} price` : `${fmtUsd(r.value)} a month`);
   const bands = `<rect x="${x(0)}" y="${T - 8}" width="${x(AMI_BANDS.subsidy) - x(0)}" height="${H - T + 2}" fill="var(--paper-sunken)"></rect>
     <rect x="${x(AMI_BANDS.subsidy)}" y="${T - 8}" width="${x(AMI_BANDS.zoning) - x(AMI_BANDS.subsidy)}" height="${H - T + 2}" fill="var(--survey-band)"></rect>
-    <text x="${x(AMI_BANDS.subsidy) - 4}" y="${T - 14}" text-anchor="end">Under 60%: usually needs subsidy</text>
-    <text x="${(x(AMI_BANDS.subsidy) + x(AMI_BANDS.zoning)) / 2}" y="${T - 14}" text-anchor="middle">60–80%: the gap</text>
-    <text x="${x(AMI_BANDS.zoning) + 4}" y="${T - 14}">Over 80%: zoning reform alone can reach</text>
+    <text x="${x(0) + 4}" y="${T - 14}">Under 60%: usually needs subsidy</text>
+    <text x="${(x(AMI_BANDS.subsidy) + x(AMI_BANDS.zoning)) / 2}" y="${T - 14}" text-anchor="middle">60–80%</text>
+    <text x="${W - R}" y="${T - 14}" text-anchor="end">Over 80%: zoning alone can reach</text>
     ${ticks.map((t) => `<text x="${x(t)}" y="${H}" text-anchor="middle">${t * 100}%</text>`).join("")}`;
   const lines = [], aria = [];
   const marks = AMI_ROWS.map(([h, label, kind], i) => {
     const m = pick(h, "market", "current"), be = pick(h, "break_even", "current");
     if (!m || !be) return "";
-    const y = T + i * RH + 30;
+    const y = T + i * RH + 34;
     const over = (s) => (s > AMI_BANDS.max ? ` (beyond ${AMI_BANDS.max * 100}%)` : "");
     aria.push(`${label}: at the assumed ${kind} about ${fmtPct(m.ami_share)} of AMI (${fmtPct(m.ami_share_p10)} to ${fmtPct(m.ami_share_p90)}); break-even about ${fmtPct(be.ami_share)}`);
     const cut = pick(h, "break_even", fc);
     if (cut) lines.push(h === "adu"
-      ? `<li><b>${esc(label)}:</b> break-even ${esc(what(be, kind))} (${esc(fmtPct(be.ami_share_p10))} to ${esc(fmtPct(be.ami_share_p90))} of AMI). The model charges ADUs no fee, so the fee switch does not move it.</li>`
+      ? `<li><b>${esc(label)}:</b> break-even ${esc(what(be, kind))}, about ${esc(fmtPct(be.ami_share))} of AMI (${esc(fmtPct(be.ami_share_p10))} to ${esc(fmtPct(be.ami_share_p90))}). The model charges ADUs no fee, so the fee switch does not move it.</li>`
       : `<li><b>${esc(label)}:</b> break-even at today's local fees ${esc(what(be, kind))}, about ${esc(fmtPct(be.ami_share))} of AMI (${esc(fmtPct(be.ami_share_p10))} to ${esc(fmtPct(be.ami_share_p90))}); ${fc === "fees" ? "at the Handbook benchmark ($50,000 fee cut in half)" : "with real local fees cut in half"}, ${esc(what(cut, kind))}, about ${esc(fmtPct(cut.ami_share))} (${esc(fmtPct(cut.ami_share_p10))} to ${esc(fmtPct(cut.ami_share_p90))}).</li>`);
     return `<text class="lab" x="${L}" y="${y - 14}">${esc(label)}</text>
       <line x1="${x(m.ami_share_p10)}" x2="${x(m.ami_share_p90)}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="2"></line>
       <circle cx="${x(m.ami_share)}" cy="${y}" r="6" fill="var(--ink)"></circle>
       <circle cx="${x(be.ami_share)}" cy="${y}" r="6" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"></circle>
-      <text x="${W - R}" y="${y - 14}" text-anchor="end">${esc(`${what(m, kind)}: needs about ${fmtUsd(m.income)} a year, ${fmtPct(m.ami_share)} of AMI (${fmtPct(m.ami_share_p10)}–${fmtPct(m.ami_share_p90)})${over(m.ami_share)}`)}</text>`;
+      <text x="${L}" y="${y + 26}">${esc(`${what(m, kind)}: needs about ${fmtUsd(m.income)} a year, ${fmtPct(m.ami_share)} of AMI (${fmtPct(m.ami_share_p10)}–${fmtPct(m.ami_share_p90)})${over(m.ami_share)}`)}</text>`;
   }).join("");
   const mfi = pick("adu", "market", "current");
   return `<p class="body" style="margin:var(--space-2) 0 0">The income a household needs so that each kind of new home costs 30% of its income, against the area median income (AMI) here (statewide average about ${esc(fmtUsd(mfi && mfi.mfi))} for a family of four, weighted to where the reforms add homes).</p>
     <svg class="amistrip" viewBox="0 0 ${W} ${H + 6}" role="img" aria-label="${esc(aria.join(". "))}">${bands}${marks}</svg>
-    <p class="caption muted" style="margin:0">Filled dot and line: the rent (or price) the model assumes, midpoint and likely range. Hollow dot: the break-even rent, where the home pays for what it costs to build at today's local fees (land and the builder's profit left out, so it is a floor). A hollow dot to the right means the home does not pay for itself at local rents. Household size: 1.5 people per bedroom; AMI from HUD's income limits.</p>
+    <p class="caption muted" style="margin:0">Filled dot and line: the rent (or price) the model assumes, midpoint and likely range. The middle band, 60 to 80% of AMI, is the gap small homes can reach without subsidy. Hollow dot: the break-even rent, where the home pays for what it costs to build at today's local fees (land and the builder's profit left out, so it is a floor). A hollow dot to the right means the home does not pay for itself at local rents. Household size: 1.5 people per bedroom; AMI from HUD's income limits.</p>
     <ul class="body-small" style="margin:var(--space-2) 0 0">${lines.join("")}</ul>
     <p class="caption muted" style="margin:var(--space-1) 0 0"><b>What this is not:</b> the model predicts how many homes, not what they rent for. These rents are the model's own assumptions shown as incomes; new homes often rent above the median, and many ADUs are not rented at market at all.</p>`;
 }
