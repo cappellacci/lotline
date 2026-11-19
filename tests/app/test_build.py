@@ -217,7 +217,7 @@ def test_a_model_selector_above_the_evidence_card_and_the_adu_card_sections(tmp_
     ev = html[html.index("function evidenceHtml") :]
     heads = (
         'recordHtml(b, "adu")',
-        "Where the ADUs would go: core cities, suburbs and towns",
+        "Where ADUs would go",
         "How we get these numbers",
     )
     assert [ev.index(h) for h in heads] == sorted(ev.index(h) for h in heads)

@@ -72,7 +72,8 @@ def test_strip_numbers_trace_to_the_bundle(tmp_path):
             f"needs {_pct(be['ami_share'])} of AMI ({_pct(be['ami_share_p10'])}–{_pct(be['ami_share_p90'])})"
             in html
         )
-    assert html.index("How we worked this out") < html.index("ami-grid") < html.index("How to read this chart")
+    method, chart = html.index("How we worked this out"), html.index("ami-grid")
+    assert method < chart < html.index("How to read this chart")
     assert "What this is not" in html and "not what they rent for" in html
 
 
