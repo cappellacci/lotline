@@ -1129,13 +1129,13 @@ function feeTodayHtml(b, name) {
   parts.push(...ticks.map((t) => `<line x1="${x(t)}" x2="${x(t)}" y1="${AX}" y2="${AX + 4}" stroke="var(--rule)"></line><text x="${x(t)}" y="${AX + 18}" text-anchor="middle">${short(t)}</text>`));
   // both benchmark labels sit left of their line, on one row above the dots
   const mark = (v, label, dash) => `<line x1="${x(v)}" x2="${x(v)}" y1="22" y2="${AX}" stroke="var(--ink-muted)" stroke-width="1.5"${dash ? ' stroke-dasharray="4 3"' : ""}></line><text x="${x(v) - 5}" y="16" text-anchor="end">${esc(label)}</text>`;
-  parts.push(mark(hb, `Challenge: ${usd(hb)}`, false), mark(hb - cut, `after its cut: ${usd(hb - cut)}`, true));
+  parts.push(mark(hb, `Challenge: ${usd(hb)}`, false), mark(hb - cut, `Challenge fee cut: ${usd(hb - cut)}`, true));
   for (const d of placed) {
     parts.push(`<circle cx="${d.cx}" cy="${AX - R - 2 - d.row * (2 * R + 1)}" r="${R}" fill="${col}" fill-opacity="0.6" stroke="${col}"><title>${esc(d.p.name)}: ${usd(d.p.types.house.fee)} for a new house</title></circle>`);
   }
   parts.push(`<path d="M ${x(h.median) - 6} ${AX + 30} L ${x(h.median) + 6} ${AX + 30} L ${x(h.median)} ${AX + 22} Z" fill="var(--ink)"></path><text x="${x(h.median) + 10}" y="${AX + 31}" style="fill:var(--ink)">typical place: ${usd(h.median)}</text>`);
   const strip = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Fee for a new house in each coded place, against the Challenge's $50,000" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
-    ${more(`<p class="source">Each dot is one place's fee for a new house (stacked where places charge about the same); hover for its name. The triangle marks the typical (median) place. The lines are the Challenge benchmark's $50,000 fee and the $25,000 it is left with after its cut.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Each dot is one place's fee for a new house (stacked where places charge about the same); hover for its name. The triangle marks the typical (median) place. The lines are the Challenge benchmark's $50,000 fee and the $25,000 fee it leaves after its cut in half (Challenge fee cut).</p>`, "Graph details")}`;
   // by type of home: per unit, per lot and as a share of building cost
   const adus = f.places.filter((p) => p.types.adu);
   const aduSame = adus.filter((p) => Math.abs(p.types.adu.fee - ((p.types.house || {}).fee || 0)) < 1).length;
