@@ -648,3 +648,38 @@ def test_model_page_has_a_missing_middle_deep_dive(tmp_path):
     dive = html[html.index("function mmDeepDive") : html.index("function staticTrust")]
     assert 'r.size_class === "2_4"' in dive and 'recordHtml(b, "missing_middle", true)' in dive
     assert '["St. Paul", "Blind: frozen before any outcome was read, 2024–2025", 55, 15, 9, 28]' in html
+
+
+def test_add_a_state_page_is_a_real_guide(tmp_path):
+    """Ben, 2026-11-19: the Add a state page is a working guide, not placeholders: the data levels, seven
+    steps with the real commands, and links into the public repository written at build time."""
+    import tomllib
+
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    page = html[html.index('id="page-add"') : html.index('id="page-trust"')]
+    assert "Placeholder" not in page and "Draft:" not in page
+    assert page.count('<p class="step-n" aria-hidden="true">') == 7
+    commands = (
+        "uv sync --frozen",
+        "uv run lotline fetch --state XX",
+        "uv run lotline validate --state XX",
+        "uv run lotline results --state XX",
+        "/rules-adu XX",
+        "rule_agents import",
+    )
+    for cmd in commands:
+        assert cmd in page, cmd
+    links = tomllib.loads((REPO / "challenge.toml").read_text(encoding="utf-8"))["links"]
+    repo = links["repo_url"].rstrip("/")
+    assert "__REPO_URL__" not in html
+    assert f'href="{repo}/blob/main/docs/adding_a_state.md"' in page
+    named = (
+        "docs/adding_a_state.md",
+        "docs/adding_local_rules_with_agents.md",
+        "config/fees/README.md",
+        "config/states/oh.yaml",
+        "config/reforms/or.csv",
+        "src/lotline/adapters/states/or/rlis_parcels.py",
+    )
+    for path in named:
+        assert (REPO / path).exists(), path
