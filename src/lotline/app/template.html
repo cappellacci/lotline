@@ -308,6 +308,15 @@ svg.dag .ah { fill: var(--ink-muted); }
 .dag-key { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-2) var(--space-4); }
 .dag-key .k { display: flex; gap: var(--space-2); align-items: flex-start; }
 .dag-key svg { flex: none; margin-top: 3px; }
+.reg-bar { display: flex; gap: 2px; margin: var(--space-3) 0 0; }
+.reg-cell { flex: 1 1 0; height: 22px; border-radius: 2px; min-width: 4px; }
+.reg-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4); margin: var(--space-4) 0 var(--space-3); }
+.reg-group { border-top: 4px solid var(--rule); padding-top: var(--space-2); }
+.reg-head { font-size: 16px; font-weight: 600; margin: 0 0 var(--space-2); color: var(--ink); }
+.reg-head .figure { font-size: 26px; font-weight: 700; margin-right: 4px; }
+.reg-way { font-size: 14px; line-height: 20px; margin: 0 0 var(--space-3); }
+.reg-list { margin: 0; padding-left: 1.2em; font-size: 13px; line-height: 19px; }
+.reg-list li { margin: 2px 0; }
 .ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-3); margin: var(--space-3) 0; }
 .way { font-size: 14px; line-height: 20px; display: flex; gap: var(--space-3); align-items: flex-start; background: var(--app-card); border: var(--stroke-hair) solid var(--rule); padding: var(--space-3); min-width: 0; }
 .way .figure { font-size: 28px; line-height: 32px; font-weight: 700; color: var(--brass); min-width: 2ch; }
@@ -467,7 +476,7 @@ table.checks td:last-child { min-width: 260px; }
       <div class="dag-key body-small" id="dag-key"></div>
 
       <h4 class="h3">3b. Every factor we considered, and what we did with it</h4>
-      <p class="body-small">We kept a register of every factor that could bias the answer or change its size: <span id="conf-count"></span>. Each one was handled in one of the ways below. The ones we could not handle are listed as limits, not hidden.</p>
+      <p class="body-small">Before fitting anything, we listed every factor that could bias the answer or change its size, and decided for each one how the model would deal with it.</p>
       <div id="conf-summary"></div>
       <details class="fold"><summary>The full register</summary><div class="scroll" id="conf-table"></div>
         <p class="source">From docs/research/lotline-confounder-register.csv and the causal diagrams in docs/research/. The decisions are in docs/analysis_plan.md.</p></details>
@@ -1730,12 +1739,30 @@ const CONF = [
   ["C55", "The national swing in 2–4 unit building", "test", "A comparison baseline was tested and fit worse."],
   ["C56", "A growth index built partly from places' own post-reform permits", "limit", "A known flaw in the missing-middle fit, stated here; the fix tested did not fit better."],
 ];
+// The register's three outcomes (Ben, 2026-11-19): what the model deals with, what was checked and set aside,
+// and what is a stated limit. The seven ways stay as the sub-groups.
+const CONF_GROUPS = [
+  ["handled", "Handled in the model", ["design", "input", "base", "range"], "var(--survey)"],
+  ["checked", "Checked and set aside", ["test", "bad"], "var(--brass)"],
+  ["limit", "Stated limits", ["limit"], "var(--ink-faint)"],
+];
 function confHtml() {
   const by = {};
   for (const r of CONF) (by[r[2]] = by[r[2]] || []).push(r);
-  $("conf-count").textContent = `${CONF.length} factors`;
-  $("conf-summary").innerHTML = `<div class="ways">${Object.entries(CONF_WAYS).map(([k, [name, say]]) =>
-    `<div class="way"><span class="figure">${(by[k] || []).length}</span><div><b>${esc(name)}</b><br><span class="muted">${esc(say)}</span><br><span class="caption">${(by[k] || []).map((r) => esc(r[1].split(/[,(;]/)[0].trim())).join(" · ")}</span></div></div>`).join("")}</div>`;
+  const count = (ways) => ways.reduce((t, w) => t + (by[w] || []).length, 0);
+  const [h, c, l] = CONF_GROUPS.map(([, , ways]) => count(ways));
+  const name = (r) => r[1].split(/[,(;:]/)[0].trim();
+  const lead = `<p class="need-lead" style="margin:var(--space-2) 0 0">Of ${CONF.length} factors that could bias the answer, the model handles ${h}, ${c} were checked and set aside, and ${l} are stated limits.</p>`;
+  const cells = CONF_GROUPS.flatMap(([, gname, ways, col]) => ways.flatMap((w) => (by[w] || []).map((r) =>
+    `<span class="reg-cell" style="background:${col}" title="${esc(`${name(r)}: ${CONF_WAYS[w][0]}`)}"></span>`))).join("");
+  const bar = `<div class="reg-bar" role="img" aria-label="${esc(`${h} handled, ${c} checked and set aside, ${l} stated limits`)}">${cells}</div>
+    <div class="ami-key" style="margin:var(--space-2) 0 0">${CONF_GROUPS.map(([, gname, ways, col]) => `<span><i style="background:${col}"></i>${esc(gname)} (${count(ways)})</span>`).join("")}</div>`;
+  const groups = CONF_GROUPS.map(([, gname, ways, col]) => `<div class="reg-group" style="border-top-color:${col}">
+      <p class="reg-head"><span class="figure">${count(ways)}</span> ${esc(gname)}</p>
+      ${ways.filter((w) => (by[w] || []).length).map((w) => `<div class="reg-way"><b>${(by[w] || []).length} · ${esc(CONF_WAYS[w][0])}</b><br><span class="muted">${esc(CONF_WAYS[w][1])}</span>
+        ${more(`<ul class="reg-list">${(by[w] || []).map((r) => `<li>${esc(name(r))}</li>`).join("")}</ul>`, "Which factors")}</div>`).join("")}
+    </div>`).join("");
+  $("conf-summary").innerHTML = `${lead}${bar}<div class="reg-groups">${groups}</div>`;
   $("conf-table").innerHTML = `<table><thead><tr><th>ID</th><th>Factor</th><th>How it is handled</th><th>What we did</th></tr></thead><tbody>${CONF.map(([id, f, k, did]) =>
     `<tr><td class="code">${id}</td><td>${esc(f)}</td><td>${esc(CONF_WAYS[k][0])}</td><td>${esc(did)}</td></tr>`).join("")}</tbody></table>`;
 }
