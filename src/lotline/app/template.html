@@ -236,6 +236,8 @@ details.fold > summary { cursor: pointer; font-weight: 600; }
 .model-card .one { font-size: 17px; line-height: 26px; max-width: 70ch; margin: 0; }
 .model-card .status { margin: var(--space-1) 0 var(--space-2); }
 @media (max-width: 640px) { .model-card { padding: var(--space-3); } }
+svg.needbar { width: 100%; min-width: 520px; height: auto; display: block; margin: var(--space-3) 0 var(--space-1); }
+svg.needbar text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-muted); }
 svg.allstates { width: 100%; min-width: 560px; height: auto; display: block; margin: var(--space-3) 0; }
 svg.allstates text { font-family: var(--font-mono); font-size: 11px; fill: var(--ink-muted); }
 svg.allstates .lab { font-family: var(--font-sans); font-size: 12px; fill: var(--ink); }
@@ -760,7 +762,7 @@ function niceTicks(max, n = 4) {
 }
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
-const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null, fee: "fees", model: null };
+const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null, fee: "fees_local_half", model: null };  // real local fees by default (Ben, 2026-11-17); the Handbook benchmark is one click away
 const SCENARIOS_SHORT = { adu: "ADUs", missing_middle: "Missing middle", fees: "Fee reduction" };
 // Gross vs net (aggregate.homes_from_draws): "all new homes" = homes_in_place; "net new housing" = that × (1 − displacement_share).
 const OUTCOME_WORDS = {
@@ -1117,7 +1119,7 @@ const SECTIONS = {
   results(b) {
     UI.b = b; UI.pins = {};
     const scen = scenariosIn(b);
-    if (!scen.includes(UI.fee)) UI.fee = "fees";
+    if (!scen.includes(UI.fee)) UI.fee = scen.includes("fees_local_half") ? "fees_local_half" : "fees";
     const runOf = (k) => (k === "fees" ? UI.fee : k);
     UI.model = HERO.includes(UI.model) && scen.includes(runOf(UI.model)) ? UI.model : HERO.find((k) => scen.includes(runOf(k))) || null;
     UI.detail = UI.model ? runOf(UI.model) : scen[0];
@@ -1271,6 +1273,83 @@ function heroUpdate(b, R, o) {
   }
 }
 
+// The share-of-housing-need card (WS-NEED-AMI part A, office hours 2026-11-17 B1/B2). One bar per kind of need
+// the bundle carries (household growth over the five years; the standing shortage), never mixed: the headline
+// kind first. Each reform's net new homes midpoint is laid end to end from the left in its own colour; the whisker
+// is the likely range (P10 to P90) of the three together, summed run by run as in the headline; the rest of the bar
+// is the gap that remains. Every number is a bundle field or a sum over the bundle's draws.
+function needHtml(b, R) {
+  const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const kinds = [];
+  for (const n of b.need.filter((r) => nk.includes(r.scenario))) if (!kinds.some((k) => k.label === n.label)) kinds.push(n);
+  kinds.sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
+  const all = together(b, nk, "homes_net_statewide").tot;
+  if (!kinds.length || !all) return `<p class="pending">No housing-need estimate is coded for this state.</p>`;
+  const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
+  const yrs = AGG.windowLabel(b) || "";
+  const end = (yrs.match(/\d{4}$/) || [""])[0];
+  const net = (s) => R[s].homes_net_statewide;
+  const rng = (r) => `${fmtN(r.p10)} to ${fmtN(r.p90)}`;
+  // which reform adds the most, ranked by midpoint, each with its range; say so when the top two ranges overlap
+  const ranked = [...nk].sort((x, y) => net(y).p50 - net(x).p50);
+  const nameOf = (s) => IN_NOTE[s] || scenLabel(s);
+  const top = ranked[0], second = ranked[1];
+  const rankLine = ranked.length < 2 ? "" : `<p class="body" style="margin:var(--space-2) 0 0" id="need-rank"><b>${esc(nameOf(top).replace(/^./, (c) => c.toUpperCase()))} adds the most:</b> about ${esc(fmtN(net(top).p50))} net new homes (${esc(rng(net(top)))}), then ` +
+    ranked.slice(1).map((s) => `${esc(nameOf(s))}, about ${esc(fmtN(net(s).p50))} (${esc(rng(net(s)))})`).join(", then ") + "." +
+    (net(top).p10 < net(second).p90 ? ` The ranges overlap, so the order of ${esc(nameOf(top))} and ${esc(nameOf(second))} is not certain.` : "") + `</p>`;
+  const bar = (n) => {
+    const need = n.denominator;
+    const W = 720, L = 0, R0 = 0, T = 18, Hb = 28, H = T + Hb + 46;
+    const span = Math.max(need, all.p90) * 1.02;
+    const x = (v) => L + (Math.max(0, v) / span) * (W - L - R0);
+    let at = 0;
+    const segs = nk.map((s) => {
+      const m = Math.max(0, Math.min(net(s).p50, need - at));
+      const r = `<rect x="${x(at)}" y="${T}" width="${Math.max(0, x(at + m) - x(at))}" height="${Hb}" fill="${scenColor(s)}"><title>${esc(scenLabel(s))}: midpoint ${esc(fmtN(net(s).p50))} net new homes (${esc(rng(net(s)))})</title></rect>`;
+      at += m;
+      return r;
+    }).join("");
+    const gap = Math.max(0, need - at);
+    const gapX = x(at), needX = x(need);
+    const wy = T + Hb / 2;
+    return `<svg class="needbar" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`Need ${fmtN(need)} homes; the three reforms add ${rng(all)}; about ${fmtN(gap)} remain`)}">
+      <rect x="${x(0)}" y="${T}" width="${needX - x(0)}" height="${Hb}" fill="var(--paper-sunken)" stroke="var(--rule)"></rect>
+      ${segs}
+      <line x1="${x(all.p10)}" x2="${x(all.p90)}" y1="${wy}" y2="${wy}" stroke="var(--ink)" stroke-width="1.5"></line>
+      <line x1="${x(all.p10)}" x2="${x(all.p10)}" y1="${wy - 7}" y2="${wy + 7}" stroke="var(--ink)" stroke-width="1.5"></line>
+      <line x1="${x(all.p90)}" x2="${x(all.p90)}" y1="${wy - 7}" y2="${wy + 7}" stroke="var(--ink)" stroke-width="1.5"><title>${esc(`All three together: ${rng(all)}, midpoint ${fmtN(all.p50)}`)}</title></line>
+      <line x1="${needX}" x2="${needX}" y1="${T - 6}" y2="${T + Hb + 6}" stroke="var(--ink)" stroke-width="2"></line>
+      <text x="0" y="${T - 6}">${esc(`The three reforms, midpoints laid end to end: about ${fmtN(at)}`)}</text>
+      <text x="${needX}" y="${T - 6}" text-anchor="end">${esc(`Need: ${fmtN(need)}`)}</text>
+      <text x="${Math.min(gapX + 8, needX - 8)}" y="${T + Hb + 20}" text-anchor="${gapX + 8 > needX - 160 ? "end" : "start"}">${esc(gap > 0 ? `Gap that remains: about ${fmtN(gap)} homes` : "No gap left at the midpoints")}</text>
+      <text x="0" y="${T + Hb + 38}">${esc(`Line: likely range of all three together, ${rng(all)}`)}</text>
+    </svg>`;
+  };
+  return kinds.map((n, i) => {
+    const sh = AGG.shareOfNeed(all, n);
+    const growth = n.denominator_kind === "household_growth_5y";
+    const lead = growth
+      ? `${named} needs about ${fmtN(n.denominator)} homes${end ? ` by ${end}` : " over the five years"}.`
+      : `${named} is short about ${fmtN(n.denominator)} homes today.`;
+    // When the need's high and low differ, say how far the midpoint moves; when they match, say nothing.
+    const alt = n.denominator_high !== n.denominator_low
+      ? ` If the need is ${fmtN(Math.min(n.denominator_high, n.denominator_low))} to ${fmtN(Math.max(n.denominator_high, n.denominator_low))} homes instead, the three together cover ${fmtPct(Math.min(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} to ${fmtPct(Math.max(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} at the midpoint.`
+      : "";
+    const each = nk.map((s) => {
+      const e = AGG.shareOfNeed(net(s), n);
+      return `<tr><td><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(s)}"></span> ${esc(scenLabel(s))}</td><td class="num">${esc(rng(net(s)))}</td><td class="num">${esc(`${fmtPct(e.share_p10)} to ${fmtPct(e.share_p90)}`)}</td><td class="num muted">${esc(fmtPct(e.share_p50))}</td></tr>`;
+    }).join("");
+    return `<section class="need-kind" data-need-kind="${esc(n.denominator_kind)}"${i ? ' style="margin-top:var(--space-6)"' : ""}>
+      <h4 class="h3" style="margin:var(--space-2) 0 0">${esc(n.label.replace(/^of /, "").replace(/^./, (c) => c.toUpperCase()))}</h4>
+      <p class="${n.is_headline ? "body" : "body-small"}" style="margin:var(--space-1) 0 0"><b>${esc(lead)}</b> These three reforms together add ${esc(rng(all))} of them (${esc(`${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}`)}).</p>
+      ${i === 0 ? rankLine : ""}
+      <div class="scroll">${bar(n)}</div>
+      <p class="caption muted" style="margin:0">Coloured blocks: each reform's midpoint, laid end to end (${nk.map((s) => esc(nameOf(s))).join(", ")}). The line is the likely range of the three together, added run by run, so its midpoint (${esc(fmtN(all.p50))}) need not match the blocks' total. Net new homes only.${esc(alt)}</p>
+      <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Net new homes</th><th class="num">Share of the need</th><th class="num">Midpoint</th></tr></thead><tbody>${each}</tbody></table>
+      <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sourceLinks(n.source)}</p></section>`;
+  }).join("");
+}
+
 function updateResults() {
   const b = UI.b;
   if (!b || !scenariosIn(b).length) return;
@@ -1280,30 +1359,8 @@ function updateResults() {
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
   const d = UI.detail;
   $("model-card").innerHTML = evidenceHtml(b, d, R);
-  // share of need (Ben, 2026-11-17): all three reforms together first, as in the headline, then each reform on its
-  // own. Net new homes only (aggregate.share_of_need); the need is the state's, so any reform's row gives it.
-  const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
-  const kinds = [];
-  for (const n of b.need.filter((r) => nk.includes(r.scenario))) if (!kinds.some((k) => k.label === n.label)) kinds.push(n);
-  kinds.sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
-  const all = together(b, nk, "homes_net_statewide").tot;
-  const pctR = (sh) => `${fmtPct(sh.share_p10)} to ${fmtPct(sh.share_p90)}`;
-  $("need").innerHTML = kinds.length && all ? kinds.map((n) => {
-    const sh = AGG.shareOfNeed(all, n);
-    // When the need's high and low differ, say how far the midpoint moves; when they match, say nothing.
-    const alt = n.denominator_high !== n.denominator_low
-      ? ` If the need is ${fmtN(Math.min(n.denominator_high, n.denominator_low))} to ${fmtN(Math.max(n.denominator_high, n.denominator_low))} homes instead, it is ${fmtPct(Math.min(sh.share_p50_at_need_high, sh.share_p50_at_need_low))} to ${fmtPct(Math.max(sh.share_p50_at_need_high, sh.share_p50_at_need_low))}.`
-      : "";
-    const each = nk.map((s) => {
-      const e = AGG.shareOfNeed(R[s].homes_net_statewide, n);
-      return `<tr><td>${esc(scenLabel(s))}</td><td class="num">${pctR(e)}</td><td class="num muted">${fmtPct(e.share_p50)}</td></tr>`;
-    }).join("");
-    return `<h4 style="margin:var(--space-5) 0 0">${esc(n.label.replace(/^of /, "").replace(/^./, (c) => c.toUpperCase()))}</h4>
-      <p class="${n.is_headline ? "figure" : "body"}" style="margin:var(--space-1) 0 0">${pctR(sh)} <span class="body">with all three reforms together</span></p>
-      <p class="body-small" style="margin:var(--space-1) 0 0">Midpoint ${fmtPct(sh.share_p50)} of ${fmtN(n.denominator)} homes, counting net new homes only.${alt}</p>
-      <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Likely range</th><th class="num">Midpoint</th></tr></thead><tbody>${each}</tbody></table>
-      <p class="caption muted" style="margin:var(--space-1) 0 0">Sources: ${sourceLinks(n.source)}</p>`;
-  }).join("") : `<p class="pending">No housing-need estimate is coded for this state.</p>`;
+  // share of need (Ben, 2026-11-17; WS-NEED-AMI part A): one bar per kind of need, the reforms filled in from the left.
+  $("need").innerHTML = needHtml(b, R);
   for (const k of DATA.knobs) {
     const el = document.querySelector(`[data-val="${CSS.escape(k.column)}"]`);
     if (!el) continue;
