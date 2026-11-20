@@ -93,7 +93,7 @@ pre-installed browser), you may also take screenshots of the main views at 1280�
 
 - The planned "assumptions are user controls" sliders (HANDOFF decision 2026-09-30): each slider shows its source
   and reasonable range, and the headline 5-year range updates. Check exactly that.
-- Combined scenarios: the UI must make it obvious that combined ≠ sum, and why.
+- Each reform is run on its own (no combined scenarios, Ben 2026-11-17). Where the page adds the three together, it must say that a lot two reforms open is counted twice.
 - Four states: if the tool supports state switching, data-tier differences should be visible (e.g. "this state has
   no parcel zoning data; estimates use …").
 

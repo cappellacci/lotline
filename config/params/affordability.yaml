@@ -1,0 +1,165 @@
+# Who the new homes serve: the AMI strip (model/affordability.py; docs/research/lotline-ami-method.md; WS-NEED-AMI
+# part B). Context beside the housing need, not a forecast: the model predicts how many homes, not their rents.
+# Rents, prices and costs come from the engine's own inputs (ACS median rent and value, proforma.yaml, hazard.yaml,
+# market.yaml); this file holds only what turns a rent into an income and an income into a share of area median
+# income (AMI). Values marked "approx." were taken from memory of the public source and should be re-checked.
+
+# ---- Rent to income ----
+
+rent_share_of_income:
+  value: 0.30
+  low: 0.30
+  high: 0.30
+  unit: share of gross income spent on housing
+  source: "HUD's affordability standard and IRC 42(g)(2)(A) (tax-credit rents: gross rent no more than 30% of the income limit); the convention a housing official means by 'affordable at X% AMI'"
+  notes: "A definition, not an estimate; held fixed."
+
+persons_per_bedroom:
+  value: 1.5
+  low: 1.5
+  high: 1.5
+  unit: persons per bedroom (household size assumed for a unit)
+  source: "IRC 42(g)(2)(C): imputed household size of 1.5 persons per bedroom (one person for a studio); IRS Guide for Completing Form 8823, calculation methods"
+  notes: "A definition, not an estimate; held fixed (Ben, 2026-11-19: decision 3 of the method doc). A 1-bedroom uses the mean of the 1- and 2-person limits; 2 bedrooms the 3-person limit; 3 bedrooms the mean of the 4- and 5-person limits."
+
+# ---- Bedrooms per home type (prototype definitions, matching proforma.yaml's sizes) ----
+
+bedrooms_adu:
+  value: 1
+  low: 1
+  high: 1
+  unit: bedrooms
+  source: "Prototype definition: an 800 sq ft ADU (proforma.yaml adu_sqft) as a 1-bedroom; method doc 2026-11-17"
+
+bedrooms_plex_unit:
+  value: 2
+  low: 2
+  high: 2
+  unit: bedrooms
+  source: "Prototype definition: a 1,000 sq ft unit in a duplex to fourplex (proforma.yaml plex_unit_sqft) as a 2-bedroom; method doc 2026-11-17"
+
+bedrooms_house:
+  value: 3
+  low: 3
+  high: 3
+  unit: bedrooms
+  source: "Prototype definition: a 2,150 sq ft new single-family house (proforma.yaml single_family_sqft) as a 3-bedroom; Ben's decision 4, 2026-11-19"
+
+# ---- HUD household-size factors (fallback only: the HUD file's own limits by size are used where present) ----
+
+hud_size_factor_1:
+  value: 0.70
+  low: 0.70
+  high: 0.70
+  unit: share of the 4-person income limit
+  source: "HUD FY 2026 income limits methodology: 1 person = 70% of the 4-person limit (method doc, research item 1)"
+  notes: "Used only when a HUD row lacks its own 1-person limit; otherwise the factor is the file's 1-person limit over its 4-person limit."
+
+hud_size_factor_2:
+  value: 0.80
+  low: 0.80
+  high: 0.80
+  unit: share of the 4-person income limit
+  source: "HUD FY 2026 income limits methodology: 2 persons = 80% of the 4-person limit"
+  notes: "Fallback only, as for hud_size_factor_1."
+
+hud_size_factor_3:
+  value: 0.90
+  low: 0.90
+  high: 0.90
+  unit: share of the 4-person income limit
+  source: "HUD FY 2026 income limits methodology: 3 persons = 90% of the 4-person limit"
+  notes: "Fallback only, as for hud_size_factor_1."
+
+hud_size_factor_5:
+  value: 1.08
+  low: 1.08
+  high: 1.08
+  unit: share of the 4-person income limit
+  source: "HUD FY 2026 income limits methodology: 8% more per person above 4, so 5 persons = 108%"
+  notes: "Fallback only, as for hud_size_factor_1."
+
+# ---- Rent the plex unit is assumed to rent for ----
+
+plex_rent_to_median_ratio:
+  value: 1.0
+  low: 0.8
+  high: 1.2
+  unit: plex unit rent / place median gross rent
+  source: "Judgment, set to match hazard.yaml adu_rent_to_median_ratio: the missing-middle model uses the place's median gross rent with no premium, because any constant factor cancels in its fit (estimate_mm.plex_price_to_cost)"
+  notes: "Read only by the AMI strip, never by the missing-middle model. The range covers a new unit renting below or above the median of existing homes."
+
+# ---- The new single-family house row (cost of owning) ----
+
+down_payment_share:
+  value: 0.10
+  low: 0.035
+  high: 0.20
+  unit: share of price paid up front
+  source: "NAR 2024 Profile of Home Buyers and Sellers: median down payment 9% for first-time buyers, 18% for all buyers (approx.); low = FHA minimum 3.5% (HUD Handbook 4000.1); high = the conventional 20% that avoids mortgage insurance"
+  notes: "A buyer household, not an investor; mortgage insurance is left out (a stated limit), which understates the cost of owning at low down payments."
+
+property_tax_rate:
+  value: 0.010
+  low: 0.005
+  high: 0.020
+  unit: annual property tax / home value
+  source: "ACS 2023 1-year national: median real estate taxes paid (B25103) over median value of owner-occupied homes (B25077), about 1.0% (approx.); the range covers most states' effective rates (about 0.3% to 2.2%)"
+  notes: "National, not local: a state's own effective rate would replace it (to source per state)."
+
+home_insurance_rate:
+  value: 0.004
+  low: 0.0025
+  high: 0.008
+  unit: annual homeowners insurance premium / home value
+  source: "NAIC Dwelling Fire, Homeowners Owner-Occupied and Homeowners Tenant and Condominium/Cooperative Unit Owner's Insurance Report (data year 2021): average HO-3 premium about $1,400 (approx.), over a median value near $350,000; wide range for storm and fire states"
+  notes: "Premiums have risen since 2021 and vary widely by state; judgment-heavy, hence the wide range."
+
+mortgage_term_years:
+  value: 30
+  low: 30
+  high: 30
+  unit: years
+  source: "The term of market.yaml's mortgage_rate_forecast (FRED MORTGAGE30US, 30-year fixed)"
+  notes: "A definition matching the rate series; held fixed."
+
+# ---- The three bands on the axis ----
+
+band_subsidy_below:
+  value: 0.60
+  low: 0.60
+  high: 0.60
+  unit: share of AMI
+  source: "Kronberg Urbanists + Architects' spectrum of affordability as reported in CNU, 'Housing choice can make cities more affordable and resilient' (a write-up of the session slide, not the slide): below 60% AMI usually needs substantial subsidy; 60% is also the tax-credit rent ceiling (IRC 42(g)(1))"
+  notes: "A band edge for reading the strip, not an estimate."
+
+band_zoning_above:
+  value: 0.80
+  low: 0.80
+  high: 0.80
+  unit: share of AMI
+  source: "Kronberg via CNU (as for band_subsidy_below): above 80% AMI zoning reform alone can deliver; 80% is also HUD's 'low income' limit"
+  notes: "A band edge, not an estimate. 60 to 80% is the gap small homes can reach."
+
+axis_max:
+  value: 1.50
+  low: 1.50
+  high: 1.50
+  unit: share of AMI
+  source: "Display choice (WS-NEED-AMI part B: a 0 to 150% AMI axis); a marker beyond it is drawn at the edge with its value"
+
+# ---- Ranges ----
+
+affordability_draws:
+  value: 1000
+  low: 1000
+  high: 1000
+  unit: draws
+  source: "Same count as the pro forma's rlv_range; enough for stable P10 and P90"
+
+affordability_seed:
+  value: 20261119
+  low: 20261119
+  high: 20261119
+  unit: seed
+  source: "Fixed seed so the table is reproducible (date the parameters were set)"

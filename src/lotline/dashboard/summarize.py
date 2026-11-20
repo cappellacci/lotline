@@ -35,7 +35,9 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from lotline.config import CONFIG_DIR, all_states, load_state
+from lotline.dashboard import fees as fee_summary
 from lotline.io import DataStore
+from lotline.model import money
 
 UNASSIGNED = "unassigned"
 LAND_USE_ORDER = [
@@ -679,6 +681,17 @@ def data_checks(jdf, used, reforms, counts, known, permits) -> list[dict]:
 
 
 # ------------------------------------------------------------------------------------------ all states
+def state_fees(state: str, store: DataStore, fee_rows: pd.DataFrame) -> dict | None:
+    """The app's "what places charge today" block (dashboard/fees.py), in 2025 dollars with place names."""
+    if fee_rows.empty:
+        return None
+    market = store.read(state, "market_geo_year")
+    index = money.index_by_year(market, "cpi_u") if market is not None else None
+    jur = store.read(state, "jurisdictions")
+    names = dict(zip(jur["geoid"].astype(str), jur["name"], strict=True)) if jur is not None else {}
+    return fee_summary.fee_sample(state, fee_rows, names, index)
+
+
 def summarize(
     store: DataStore | None = None,
     states: list[str] | None = None,
@@ -696,10 +709,12 @@ def summarize(
     pep = None
     if fetch_missing or pep_adapter.cached(store):
         pep = pep_adapter.load(store, state_fips=fips)
+    fee_rows = fee_summary.all_coded_fees(all_states(config_dir))
     out = []
     for s in states:
         summary = summarize_state(s, store, pep=pep, config_dir=config_dir, points=points)
         if summary is not None:
+            summary["fees"] = state_fees(s, store, fee_rows)
             out.append(summary)
     return {
         "generated": dt.datetime.now(dt.UTC).strftime("%Y-%m-%d %H:%M UTC"),

@@ -115,7 +115,10 @@ def test_scenario_floor_keeps_non_overlapping_only():
     of ACS remainders; the permit-level swap is for the fit panels only, so the two never stack."""
     import inspect
 
+    from lotline.build import place_inputs
     from lotline.model.scenarios import adu
 
-    src = inspect.getsource(adu.places_from_store)
+    # since the place_inputs switch-over (WS-SCALE) the ADU lots are built in place_inputs._eligible
+    src = inspect.getsource(place_inputs._eligible)
     assert "non_overlapping" in src and "adu_panel_eligible" not in src and "permit_level" not in src
+    assert "adu_panel_eligible" not in inspect.getsource(adu.places_from_store)

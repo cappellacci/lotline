@@ -175,8 +175,8 @@ def test_a_slider_citing_an_unknown_parameter_is_refused(tmp_path):
 def test_results_section_parts_are_on_the_page(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     assert "<b>Provisional:</b> how the sliders move an assumption" in html  # Ben, 2026-11-06
-    for part in ('id="hero-line"', 'id="rc"', 'id="need"', 'id="knobs"', "pencil out",
-                 "How far the model is reaching", "LotlineAggregate"):  # fmt: skip
+    for part in ('id="hero-line"', 'id="rc"', 'id="need"', 'id="knobs"',
+                 "like the places the model learned from?", "LotlineAggregate"):  # fmt: skip
         assert part in html, part
 
 
@@ -192,9 +192,11 @@ def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_p
     assert "const x = tot ? tot.p50 : NaN;" in js  # all three together (Ben, 2026-11-17)
     assert "Each reform was estimated on its own" in js  # the note says the reforms were run separately
     assert 'const HERO = ["adu", "missing_middle", "fees"];' in html
-    # the headline comes first on the page, ahead of the overlap flag and the detail card
+    # the headline comes first, ahead of the detail card; each model card ends with "How accurate is our
+    # model" (Ben, 2026-11-19); the overlap flag is on the Model page
     body = html[html.index("results(b) {") :]
-    assert body.index('<div class="hero" id="hero">') < body.index("${flagHtml(b.meta)}")
+    assert body.index('<div class="hero" id="hero">') < body.index('id="model-card"')
+    assert "How accurate is our model" in html and 'return s1 + s3 + s4 + accuracyHtml(b, "adu");' in html
     # the ranges sit on one shared log axis, a row per reform, as in the results page's first chart
     assert '<div class="rc" id="rc">${rcRows}' in html and "const pos = (v) => `${(Math.log10(" in js
     # each row says in one line what the reform is, for every version the page can show
@@ -217,7 +219,7 @@ def test_a_model_selector_above_the_evidence_card_and_the_adu_card_sections(tmp_
     ev = html[html.index("function evidenceHtml") :]
     heads = (
         'recordHtml(b, "adu")',
-        "Where the ADUs would go: core cities, suburbs and towns",
+        "Where ADUs would go",
         "How we get these numbers",
     )
     assert [ev.index(h) for h in heads] == sorted(ev.index(h) for h in heads)
@@ -257,10 +259,14 @@ def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
 
 
 def test_model_page_section_three_has_a_selector_and_an_adu_deep_dive(tmp_path):
-    """Ben, 2026-11-17: section 3 is "What each model does, and how we get our ranges", with a segmented model
-    selector and an ADU deep dive built from every state's results file (gut-check style charts)."""
+    """Ben, 2026-11-17: the model section has a segmented model selector and an ADU deep dive built from every
+    state's results file (gut-check style charts). 2026-11-19: step 3 is "Causal factors and confounders" and
+    the models sit in step 4, "Building the models"."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
-    assert '<h3 class="h2">What each model does, and how we get our ranges</h3>' in html
+    assert '<h3 class="h2">Causal factors and confounders</h3>' in html
+    assert '<h3 class="h2">Building the models</h3>' in html
+    order = [html.index(t) for t in ("Causal factors and confounders", "4a. Why we built", 'id="model-adu"')]
+    assert order == sorted(order)
     assert '<div class="seg model-tabs" role="group" aria-label="Which model">' in html
     adu = html[html.index('id="model-adu"') : html.index('id="model-mm"')]
     assert 'id="adu-heldout"' in adu and 'id="adu-deep"' in adu
@@ -287,14 +293,17 @@ def test_missing_middle_and_fees_have_their_own_evidence_cards(tmp_path):
     the two versions in the results files, year by year, and its own steps."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     ev = html[html.index("function evidenceHtml") :]
-    assert "${recordHtml(b, d)}</section>${mmHowHtml(b, R)}`;" in ev
-    assert 'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R);' in ev
+    assert "${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;" in ev
+    assert (
+        'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R) + accuracyHtml(b, d);'
+        in ev
+    )
     mm = html[html.index("function mmHowHtml") : html.index("const FEE_VERSIONS")]
     fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
     for part in (mm, fee):
         assert "How we get these numbers" in part and part.count("<li><div><b>") == 5
     assert "Find the lots where 2–4 homes would become legal" in mm
-    assert "Start from the homes built anyway" in fee and "Two ways to cut fees in half" in fee
+    assert "Start from the homes built anyway" in fee and "What cutting fees in half would add" in fee
     assert '(r) => r.size_class === "all"' in fee  # the share is of all homes expected, as the hand-off says
 
 
@@ -335,6 +344,56 @@ def test_available_vs_used_lists_every_registry_source_and_parcels_used():
     assert d["by_state"]["ZZ"]["totals"]["parcels"] == 300 and d["summary_generated"] == SUMMARY["generated"]
 
 
+def test_fee_card_shows_what_places_charge_today(tmp_path):
+    """Ben, 2026-11-17: the fee card shows real fees (how much lower than the Handbook's $50,000) and how they
+    fall on each kind of home, from the dashboard summary's fee block (dashboard/fees.py)."""
+    fees = {"summary": {"house": {"places": 1, "min": 5000, "median": 5000, "max": 5000}}, "places": []}
+    summary = {**SUMMARY, "states": [{**SUMMARY["states"][0], "fees": fees}]}
+    assert build.data_section(["ZZ"], summary)["by_state"]["ZZ"]["fees"] == fees
+    assert build.data_section(["ZZ"], None)["by_state"]["ZZ"]["fees"] is None
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
+    assert "return s1 + feeTodayHtml(b, name) + s2 + s3;" in fee
+    today = html[html.index("function feeTodayHtml") : html.index("const PLACE_TYPES")]
+    for words in (
+        "What builders pay in fees today",
+        "By kind of home",
+        "Share of building cost",
+        "Every place we coded",
+        "No city fee schedules are coded for this state yet.",
+    ):
+        assert words in today
+
+
+def test_results_ranges_are_explained_in_plain_words(tmp_path):
+    """Ben, 2026-11-18: "P10 to P90 ... midpoint (P50)" needs a plain explanation for a policymaker."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    results = html[html.index("const SECTIONS = {") :]
+    results = results[: results.index("How to read the bars") + 2000]
+    for words in (
+        "How to read the bars.",
+        "half the runs came out higher and half lower",
+        "1 run in 10 came out below its left end and 1 in 10 above its right end",
+        "A longer bar means we are less sure.",
+    ):
+        assert words in results
+    assert "Each band runs from P10 to P90" not in html
+
+
+def test_no_combined_scenarios(tmp_path):
+    """Ben, 2026-11-18: no combined runs. Neither the schema, the engine nor the app knows them, and a bundle
+    written before schemas 1.17 that still lists them as pending shows no "Not yet run" for them."""
+    from lotline.model import results
+    from lotline.schemas import SCENARIOS
+
+    for names in (SCENARIOS, list(build.SCENARIOS), list(results.ENGINE_SCENARIOS)):
+        assert not [s for s in names if "+" in s or s == "combined"]
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    pending = html[html.index("function pendingIn") : html.index("const drawsFor")]
+    assert "s in DATA.scenarios" in pending
+    assert "scenario-combined" not in html and "Combined (all three)" not in html
+
+
 def test_without_a_data_summary_sources_are_still_listed():
     d = build.data_section(["ZZ"], None)
     assert d["by_state"]["ZZ"]["totals"] is None and d["by_state"]["ZZ"]["sources"]
@@ -349,7 +408,7 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
     assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
-    for part in ("Data available and data used", 'id="dash-host"', 'id="dash-frame"', 'id="dash-state"'):
+    for part in ("Where each dataset comes from", 'id="dash-host"', 'id="dash-frame"', 'id="dash-state"'):
         assert part in html
     # The tier card was dropped (Ben, 2026-11-09): the dashboard carries coverage.
     assert '<p class="eyebrow">Data tier</p>' not in html
@@ -374,7 +433,7 @@ def test_trust_section_parts_and_overlap_thresholds_from_config(tmp_path):
 
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     parts = (
-        "Overlap check",
+        "like the places the model learned from?",  # the overlap check, in plain words (Ben, 2026-11-19)
         'id="tornado"',
         "Technical detail",
         'id="dag"',
@@ -589,3 +648,38 @@ def test_model_page_has_a_missing_middle_deep_dive(tmp_path):
     dive = html[html.index("function mmDeepDive") : html.index("function staticTrust")]
     assert 'r.size_class === "2_4"' in dive and 'recordHtml(b, "missing_middle", true)' in dive
     assert '["St. Paul", "Blind: frozen before any outcome was read, 2024–2025", 55, 15, 9, 28]' in html
+
+
+def test_add_a_state_page_is_a_real_guide(tmp_path):
+    """Ben, 2026-11-19: the Add a state page is a working guide, not placeholders: the data levels, seven
+    steps with the real commands, and links into the public repository written at build time."""
+    import tomllib
+
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    page = html[html.index('id="page-add"') : html.index('id="page-trust"')]
+    assert "Placeholder" not in page and "Draft:" not in page
+    assert page.count('<p class="step-n" aria-hidden="true">') == 7
+    commands = (
+        "uv sync --frozen",
+        "uv run lotline fetch --state XX",
+        "uv run lotline validate --state XX",
+        "uv run lotline results --state XX",
+        "/rules-adu XX",
+        "rule_agents import",
+    )
+    for cmd in commands:
+        assert cmd in page, cmd
+    links = tomllib.loads((REPO / "challenge.toml").read_text(encoding="utf-8"))["links"]
+    repo = links["repo_url"].rstrip("/")
+    assert "__REPO_URL__" not in html
+    assert f'href="{repo}/blob/main/docs/adding_a_state.md"' in page
+    named = (
+        "docs/adding_a_state.md",
+        "docs/adding_local_rules_with_agents.md",
+        "config/fees/README.md",
+        "config/states/oh.yaml",
+        "config/reforms/or.csv",
+        "src/lotline/adapters/states/or/rlis_parcels.py",
+    )
+    for path in named:
+        assert (REPO / path).exists(), path

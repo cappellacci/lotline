@@ -132,3 +132,16 @@ def test_plex_prior_falls_back_to_houses_when_too_few_plexes_are_coded():
     out = fl.place_fees(places, five_places(), "U2")
     # No U2 rows anywhere; places 1-7 carry their SFD fees as "from SFD", so the U2 median is the SFD one.
     assert out.loc[0, "local_fee_per_unit"] == 5000
+
+
+def test_component_fees_split_sums_to_coded_fees():
+    """The per-component table (for the app's fee breakdown) adds up to coded_fees, place by place."""
+    df = five_places()
+    comps = fl.component_fees(df)
+    total = comps.groupby("geoid")["mid"].sum()
+    coded = fl.coded_fees(df).set_index("geoid")["local_fee_per_unit"]
+    assert total.to_dict() == pytest.approx(coded.to_dict())
+    two = comps[comps["geoid"] == "2"].set_index("fee_component")["mid"]
+    assert two.to_dict() == {"permit": 2000.0, "water_sewer": 3000.0}
+    with pytest.raises(ValueError):
+        fl.component_fees(df, "TOWER")

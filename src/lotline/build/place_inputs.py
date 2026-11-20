@@ -51,19 +51,66 @@ THEMES = {"adu": "adu", "mm": "missing_middle"}
 PLACE_COLS = ["name", "kind", "county_geoid", "in_bps", "pop_2020", "data_tier", "cbsa_code", "cbsa_type"]
 
 
+ROLL_LAG = (
+    1  # task 5 rule 4 (D-103): no parcel roll later than origin + 1, the fee model's rule, for every model
+)
+
+
 def nearest_roll(elig: pd.DataFrame, theme: str, origin: int) -> pd.DataFrame:
-    """Per jurisdiction, the eligible-parcel row from the newest roll <= origin, else the earliest later one
-    (flagged `parcels_after_origin`): the rule ADU and MM both use (`adu.places_from_store`, `mm._nearest`).
-    Returns geoid, eligible_parcels, parcels_year, parcels_after_origin, denominator_source,
-    denominator_quality, data_tier."""
+    """Per jurisdiction, the eligible-parcel row from the newest roll <= origin + 1 (task 5 rule 4, D-103: the
+    fee model's rule, now every model's). A roll dated origin + 1 is flagged `parcels_after_origin`; a place
+    whose only rolls are later has no row. Returns geoid, eligible_parcels, parcels_year,
+    parcels_after_origin, denominator_source, denominator_quality, data_tier."""
     from lotline.build import eligible as eligible_rule
 
     e = elig[(elig["theme"] == theme) & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
-    e = e.assign(after=e["year"] > origin, gap=(e["year"] - origin).abs())
-    e = e.sort_values(["after", "gap"]).groupby("jurisdiction_geoid").first().reset_index()
+    e = e[e["year"] <= origin + ROLL_LAG]
+    e = e.assign(after=e["year"] > origin)
+    e = e.sort_values("year").groupby("jurisdiction_geoid").last().reset_index()
     return e.rename(
         columns={"jurisdiction_geoid": "geoid", "year": "parcels_year", "after": "parcels_after_origin"}
-    ).drop(columns=["gap", "state", "theme", "rule_version"], errors="ignore")
+    ).drop(columns=["state", "theme", "rule_version"], errors="ignore")
+
+
+def house_shares_by_roll(parcels: pd.DataFrame | None) -> pd.DataFrame:
+    """geoid, roll (vintage), house_share for every jurisdiction and roll: `mm.house_share` (the share of
+    missing-middle eligible parcels holding a house) computed once per roll, so each origin can take the
+    newest roll <= origin + 1 (D-103)."""
+    from lotline.build import eligible as eligible_rule
+
+    cols = ["geoid", "roll", "house_share"]
+    if parcels is None or parcels.empty:
+        return pd.DataFrame(columns=cols)
+    ok = eligible_rule.classify(parcels, "missing_middle")["eligible"].to_numpy()
+    p = parcels.loc[ok, ["jurisdiction_geoid", "vintage", "land_use_std"]]
+    out = (
+        p.assign(house=p["land_use_std"] == "SF_DETACHED")
+        .groupby(["jurisdiction_geoid", "vintage"], as_index=False)["house"]
+        .mean()
+    )
+    return out.rename(columns={"jurisdiction_geoid": "geoid", "vintage": "roll", "house": "house_share"})[
+        cols
+    ]
+
+
+def _as_of(by_roll: pd.DataFrame, origin: int) -> pd.DataFrame:
+    """The newest roll <= origin + 1 per geoid: geoid, house_share, house_share_roll."""
+    r = by_roll[by_roll["roll"] <= origin + ROLL_LAG].sort_values("roll").groupby("geoid").last()
+    return r.reset_index().rename(columns={"roll": "house_share_roll"})
+
+
+def fill_prices(df: pd.DataFrame) -> pd.DataFrame:
+    """Task 5 rule 2 (D-103): a row with no ACS rent or home value takes the state median of that year's rows
+    that have one, flagged `rent_filled` / `home_value_filled`. Every model then reads the same filled value.
+    By hand: rents 1,000, 1,200, missing in one year -> the missing one is 1,100, flagged."""
+    out = df.copy()
+    for col in ("rent", "home_value"):
+        if col not in out:
+            continue
+        med = out.groupby("year")[col].transform("median")
+        out[f"{col}_filled"] = out[col].isna() & med.notna()
+        out[col] = out[col].fillna(med)
+    return out
 
 
 def _eligible(state, store, elig, juris, theme, origin, shares) -> pd.DataFrame:
@@ -93,7 +140,7 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
     from lotline.build import panels
     from lotline.config import load_state
     from lotline.model import money
-    from lotline.model.scenarios import adu, fees, mm
+    from lotline.model.scenarios import adu, fees
 
     st = state.upper()
     juris = store.read(st, "jurisdictions")
@@ -118,8 +165,7 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
     base["acs_geo"] = base["kind"].map(adu.ACS_PREFIX) + ":" + base["geoid"]
     pop = pd.to_numeric(base["pop_2020"], errors="coerce").fillna(0)
     base["size_band"] = adu.size_band(pop, edges)  # county remainders: no pop_2020 -> band 0 (as MM today)
-    house = mm.house_shares(st, store)
-    base["house_share"] = base["geoid"].map(house)  # latest roll, no origin cap (as MM today)
+    by_roll = house_shares_by_roll(parcels)  # house share per roll; each year takes roll <= year + 1 (D-103)
     base = base.merge(place_tags(st, store, juris, parcels, permits), on="geoid", how="left")
 
     # county shares of the local-only places with eligible parcels (`adu._county_shares`, the places the
@@ -150,18 +196,16 @@ def build(state: str, store, years: Iterable[int] | None = None) -> pd.DataFrame
             fp = fp.rename(columns={"parcel_vintage": "fee_parcel_vintage"})
             row = row.merge(fp, on="geoid", how="left")
         row["observed_adu_per_year"] = row["geoid"].map(adu.observed_per_year(counts, year, n_obs, stops))
+        row = row.merge(_as_of(by_roll, year), on="geoid", how="left")
         frames.append(row)
     out = pd.concat(frames, ignore_index=True) if frames else base.assign(year=pd.Series(dtype=int))
+    out = fill_prices(out)
     if units is not None:
         out = out.merge(units, on=["geoid", "year"], how="left")
     # the baseline's FHFA index (`panels._hpi`): first of county, cbsa, state non-CBSA, state
     if market is not None and len(out):
-        # county from that year's BPS row, as the baseline panel reads it (a place straddling two counties can
-        # differ from `jurisdictions.county_geoid`, which is the latest row's; task 5 list)
-        county = out["bps_county_geoid"] if "bps_county_geoid" in out else out["county_geoid"]
-        frame = out.assign(
-            county_geoid=county.fillna(out["county_geoid"]), cbsa_code=out["cbsa_code"].astype("string")
-        )
+        # the jurisdictions table's county, as the baseline panel now reads it (task 5 rule 5)
+        frame = out.assign(cbsa_code=out["cbsa_code"].astype("string"))
         hpi = panels._hpi(frame, market, panels.HPI_LEVELS)
         out["hpi"], out["hpi_geo"] = hpi["hpi"].astype(float), hpi["hpi_geo"]
     out["state"] = st
@@ -217,27 +261,35 @@ def adu_undercount():
 
 
 def _flag_models(df: pd.DataFrame) -> pd.DataFrame:
-    """`models`: which models read the row today, and `models_note`: why it is out of the others."""
-    adu_in = df.get("eligible_parcels_adu", pd.Series(np.nan, index=df.index)).fillna(0) > 0
-    adu_priced = (
-        df.get("rent", pd.Series(np.nan, index=df.index)).notna()
-        & df.get("home_value", pd.Series(np.nan, index=df.index)).notna()
-    )
-    mm_in = df.get("eligible_parcels_mm", pd.Series(np.nan, index=df.index)).fillna(0) > 0
+    """`models`: which models read the row, and `models_note`: what was filled or how the row is covered.
+
+    Task 5 rule 1 (D-103): one place set, the jurisdictions list. Every listed place gets the ADU and
+    missing-middle scenarios (0 eligible lots gives 0 homes, not a dropped place; a missing rent or value is
+    filled, rule 2). The baseline and the fee scenario, which works on baseline homes, forecast BPS places; a
+    local-only place's permits are filed in its county's BPS row, so it is covered there.
+    """
     in_bps = df["in_bps"].astype("boolean").fillna(True).astype(bool)
+    filled = {
+        c: df.get(f"{c}_filled", pd.Series(False, index=df.index)).fillna(False).astype(bool)
+        for c in ("rent", "home_value")
+    }
+    no_lots = {
+        t: df.get(f"eligible_parcels_{t}", pd.Series(np.nan, index=df.index)).fillna(0) <= 0 for t in THEMES
+    }
     models, notes = [], []
-    for a, p, m, b in zip(adu_in, adu_priced, mm_in, in_bps, strict=True):
-        tags = [t for t, ok in (("adu", a and p), ("missing_middle", m), ("fees", b), ("baseline", b)) if ok]
+    for i in range(len(df)):
+        b = bool(in_bps.iloc[i])
+        models.append(";".join(["adu", "missing_middle", *(["fees", "baseline"] if b else [])]))
         why = []
-        if not a:
-            why.append("adu: no eligible parcels")
-        elif not p:
-            why.append("adu: no ACS rent or value (dropped, results.py)")
-        if not m:
-            why.append("missing_middle: no eligible parcels")
+        if filled["rent"].iloc[i] or filled["home_value"].iloc[i]:
+            which = [c.replace("_", " ") for c in filled if filled[c].iloc[i]]
+            why.append(f"{' and '.join(which)} filled with the state median (no ACS value)")
+        if no_lots["adu"].iloc[i]:
+            why.append("adu: no eligible lots (0 homes)")
+        if no_lots["mm"].iloc[i]:
+            why.append("missing_middle: no eligible lots (0 homes)")
         if not b:
-            why.append("fees, baseline: not a BPS place")
-        models.append(";".join(tags))
+            why.append("fees, baseline: not a BPS place; covered in its county's row")
         notes.append("; ".join(why) or None)
     out = df.drop(columns=["models", "models_note"], errors="ignore")
     return out.assign(models=models, models_note=notes)
