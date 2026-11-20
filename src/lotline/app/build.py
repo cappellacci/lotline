@@ -413,6 +413,13 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
     )
 
 
+def built_states_only(summary: dict, states: set[str]) -> dict:
+    """The data dashboard summary cut to the states the page has results for (Ben, 2026-11-20: the dashboard
+    shows only states that are fully built). A state whose data is fetched but has no bundle (a blind test,
+    a state part-way through onboarding) stays out of the data tab, its totals and the folded dashboard."""
+    return {**summary, "states": [s for s in summary.get("states", []) if s.get("state") in states]}
+
+
 def build_app(
     bundles: Iterable[Path] | None = None,
     results_dir: Path = RESULTS_DIR,
@@ -427,15 +434,17 @@ def build_app(
     section 2 lists sources without coverage counts and says how to build it.
     """
     paths = list(bundles) if bundles is not None else find_bundles(results_dir)
+    bundles = [load_bundle(p) for p in paths]
     summary = None
     if data_summary is not None and Path(data_summary).exists():
-        summary = json.loads(Path(data_summary).read_text(encoding="utf-8"))
+        summary = built_states_only(
+            json.loads(Path(data_summary).read_text(encoding="utf-8")), {b["meta"]["state"] for b in bundles}
+        )
     dashboard = None
     if summary is not None:
         from lotline.dashboard.render import render as render_dashboard
 
         dashboard = fold_dashboard(render_dashboard(summary))
-    bundles = [load_bundle(p) for p in paths]
     html = render(payload(bundles, generated, summary), dashboard=dashboard)
     out = Path(out_dir)
     folder = out / STATE_DIR
