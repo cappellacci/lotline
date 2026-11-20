@@ -1586,6 +1586,8 @@ def observed_terms_by_k_row(
     for g, grp in counts.groupby("geoid"):
         last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
         w = grp[grp["year"].between(last - n_years + 1, last)]
+        if w["year"].nunique() < n_years:  # a year with no records: not observed (`observed_per_year`)
+            continue
         out[g] = {int(r): float(v) / n_years for r, v in w.groupby("k_row")["counted"].sum().items()}
     return out
 
@@ -1630,15 +1632,24 @@ def observed_per_year(counts: pd.DataFrame, origin: int, n_years: int, stops: Ma
     """Mean ADU permits a year per place over the `n_years` years ending at `origin` (WS-NC-GUTCHECK).
 
     A held-out place's years end the year before its holdout starts (`stops`), so a partly held-out year is
-    never read as a low count and no held-out outcome is used; its window keeps `n_years` years. Years with
-    no row count as 0, as in `observed_adu_counts`. `counts`: geoid, year, adu_permits.
+    never read as a low count and no held-out outcome is used; its window keeps `n_years` years.
+
+    Coverage (2026-11-19, Ben): `observed_adu_counts` has a row for a place and year only where a source that
+    flags ADUs holds at least one record of any kind for that place that year (0 when none was an ADU). A
+    place observed only if every window year has a row; otherwise it is left out (NaN after mapping) and
+    the mechanism estimates it. A year with no records means the source was not recording there (a source
+    that ended, such as Chapel Hill's in 2021; a county source holding a few stray rows for a town mostly in
+    the next county; a list of ADU permits only), not that no ADU was built.
 
     By hand: origin 2025, 4 years, place A 2022-25 = 1, 2, 3, 6 -> 3.0; place B held out from 2023 with
-    2019-22 = 2, 2, 4, 0 -> 2.0.
+    2019-22 = 2, 2, 4, 0 -> 2.0; place C with rows 2022, 2023, 2025 only -> left out.
     """
     rows = {}
     for g, grp in counts.groupby("geoid"):
         last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
         by_year = grp.set_index("year")["adu_permits"]
-        rows[g] = sum(float(by_year.get(y, 0)) for y in range(last - n_years + 1, last + 1)) / n_years
+        window = range(last - n_years + 1, last + 1)
+        if not all(y in by_year.index for y in window):
+            continue
+        rows[g] = sum(float(by_year[y]) for y in window) / n_years
     return pd.Series(rows, dtype=float, name="adu_permits_per_year")
