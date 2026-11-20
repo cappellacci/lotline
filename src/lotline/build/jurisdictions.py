@@ -46,6 +46,7 @@ def build(
     *,
     place_counties: dict[str, str] | None = None,
     parcel_tiers: dict[str, int] | None = None,
+    main_counties: dict[str, str] | None = None,
 ) -> pd.DataFrame:
     """Combine one state's BPS place-years with 2020 Census names and populations, and (if given) the
     OMB metro/micro area of each jurisdiction's county.
@@ -54,6 +55,9 @@ def build(
     Council townships whose permits BPS files under the county). They're added with `in_bps = False`, named
     from the 2020 Census; a GEOID the Census doesn't know is skipped with a warning, never invented.
     `place_counties` gives such a place's county (from the Census place-by-county file).
+    `main_counties` (place GEOID -> county, `geoparts.main_county`) settles a place that spans counties: it is
+    filed under the county holding most of its 2020 homes, in this table and in the baseline panel (task 5
+    rule 5). Without it, a BPS place keeps the county of its latest BPS row.
     """
     cfg = load_state(state)
     latest = (
@@ -76,6 +80,8 @@ def build(
     df = pd.concat(
         [df, _local_rows(state, df, census, local_geoids, place_counties or {})], ignore_index=True
     )
+    if main_counties:
+        df["county_geoid"] = df["geoid"].map(main_counties).fillna(df["county_geoid"])
     df["name"] = df["census_name"].fillna(df["name"])
     tiers = pd.Series({**(parcel_tiers or {}), **cfg.data_tiers}, dtype="Int64")  # config overrides data
     df["data_tier"] = df["geoid"].map(tiers).fillna(DEFAULT_TIER).astype("Int64")
@@ -208,6 +214,8 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
         dict(zip(pbc["place_geoid"], pbc["county_geoid"], strict=True)) if pbc is not None else {}
     )
     tiers = tiers_from_parcels(store.read(state, "parcels"))
+    places = sorted({g for g in [*bps_table["geoid"].dropna(), *local] if len(g) == 7})
+    main = geoparts.main_county(fips, places, store, refresh)
     return build(
         state,
         bps_table,
@@ -216,4 +224,5 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
         local,
         place_counties=place_counties,
         parcel_tiers=tiers,
+        main_counties=main,
     )

@@ -8,22 +8,28 @@ could not settle gets no rule and at least one blocker.
 
 **Evidence rule:** every coded field in `EVIDENCED_FIELDS` that is not blank has at least one `Evidence`
 entry naming it, with a URL, a verbatim quote of at most 300 characters and the retrieval date. The quote
-must appear in the saved snapshot (`verify_quote`); the verifier agent re-checks this.
+must appear in the stored document (`docs quote`); the verifier agent re-checks this. The evidence and
+blocker models and the text helpers live in the shared core (`lotline.rule_agents.common`).
 """
 
 from __future__ import annotations
 
-import re
-import unicodedata
 from datetime import date
-from html.parser import HTMLParser
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
-from lotline.rule_agents.mm.dates import ALL_TAGS, DATE_BASES
+from lotline.rule_agents.common.dates import ALL_TAGS, DATE_BASES
+from lotline.rule_agents.common.evidence import (  # noqa: F401 - re-exported for the MM agents and tests
+    BLOCKER_KINDS,
+    CONFIDENCE,
+    LEAD_ONLY,
+    QUOTE_MAX,
+    Blocker,
+    Evidence,
+)
+from lotline.rule_agents.common.text import draft_markers, verify_quote, visible_text  # noqa: F401
 
-QUOTE_MAX = 300  # the reforms schema's source_quote limit
 # Fields that, when coded, must each be backed by a quote. Dates count through `effective_date` (and
 # `adoption_date` when given): a coder may cite one passage for both.
 EVIDENCED_FIELDS = (
@@ -39,8 +45,6 @@ EVIDENCED_FIELDS = (
     "end_date",
     "prior_cap",
 )
-# Lead-only sources: never enough on their own for a coded value (OH brief 2026-11-01; NC/MN second coding).
-LEAD_ONLY = ("news", "search_summary")
 # The fields two coders are compared on (`reconcile`) and the dry run checks (`compare`).
 KEY_FIELDS = (
     "effective_date",
@@ -51,62 +55,6 @@ KEY_FIELDS = (
     "by_right",
     "coverage_zones",
 )
-CONFIDENCE = ("high", "medium", "low")
-BLOCKER_KINDS = (
-    "robots_disallow",  # robots.txt forbids the path for our user agent: never fetch it
-    "http_403_waf",  # 403 / Cloudflare or Akamai challenge ("Just a moment...")
-    "code_host_wall",  # Municode / American Legal / eCode360 / Granicus shells that need a browser
-    "login_required",
-    "js_only",  # the page is an empty shell without JavaScript
-    "scanned_pdf",  # a PDF with no text layer
-    "not_found",  # 404 / dead link, no archive copy
-    "unreachable",  # timeout, DNS failure, TLS error, connection refused (one try; not retried)
-    "records_request_only",  # only by public-records request: Ben files none, so close as no usable source
-    "ambiguous_source",  # readable, but the text does not settle the field (e.g. use table without dates)
-    "conflicting_sources",
-)
-
-
-class Evidence(BaseModel):
-    field: str  # one of EVIDENCED_FIELDS, or "component" / "status" for context quotes
-    url: str
-    quote: str = Field(max_length=QUOTE_MAX)
-    retrieved: date
-    section: str | None = None  # e.g. "Sec. 20.3.2 Table 2-1", "Ord. 2019-048 §3", "p. 14"
-    snapshot: str | None = None  # path of the saved copy (as `fetch` printed it)
-    doc_id: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")  # sha256 of the saved copy
-    source_kind: (
-        Literal[
-            "code",  # the codified ordinance (Municode etc.)
-            "ordinance",  # the adopted ordinance / signed text
-            "minutes",  # council minutes or agenda packet
-            "staff_report",
-            "city_page",  # a city web page about the change
-            "news",
-            "state_law",
-            "archive",  # a Wayback Machine copy of any of the above
-            "mirror",  # a third-party code mirror (e.g. Zoneomics): undated; confirm on the official code
-            "search_summary",  # an AI or search-engine summary: a lead only, never evidence on its own
-            "human_lookup",  # an answer from the human lookup sheet
-            "other",
-        ]
-        | None
-    ) = None
-
-    @field_validator("url")
-    @classmethod
-    def _http(cls, v: str) -> str:
-        if not re.match(r"^https?://", v):
-            raise ValueError(f"evidence url must be http(s): {v!r}")
-        return v
-
-
-class Blocker(BaseModel):
-    url: str
-    kind: Literal[BLOCKER_KINDS]  # type: ignore[valid-type]
-    detail: str = ""  # status code, robots line, what the page showed
-    fields: list[str] = Field(default_factory=list)  # which fields this source would have settled
-    look_for: str = ""  # what a person should look for at the URL
 
 
 class RuleFinding(BaseModel):
@@ -223,76 +171,3 @@ def check(f: PlaceFinding, *, today: date | None = None) -> list[str]:
         if b.kind != "records_request_only" and not b.fields:
             out.append(f"blocker {b.url}: name the field(s) it would settle")
     return out
-
-
-_DRAFT = re.compile(
-    r"\bdraft\b|ordinance no\.?\s*(?:x{2,}|_{3,}|\[)|\[insert|effective date\]|\bx{3,}-x{2,}\b|"
-    r"for discussion only|not adopted|proposed ordinance",
-    re.I,
-)
-
-
-def draft_markers(text: str) -> list[str]:
-    """Signs that a document is an unsigned draft, not the adopted text (St. Louis Park, Eagan Ord. 528,
-    Burnsville 2020 looked final). By hand: "Ordinance No. XXX-XX ... [insert effective date]" -> two
-    markers; a signed ordinance -> []."""
-    return sorted({m.group(0).strip().lower() for m in _DRAFT.finditer(text)})
-
-
-def _norm(s: str) -> str:
-    s = unicodedata.normalize("NFKC", s).lower()
-    s = s.replace("’", "'").replace("“", '"').replace("”", '"').replace("–", "-")
-    s = s.replace("—", "-").replace("§", "s")
-    s = re.sub(r"[^a-z0-9$%.'\"-]+", " ", s)
-    return re.sub(r"\s+", " ", s).strip()
-
-
-class _Visible(HTMLParser):
-    """Collects text outside <script>, <style> and <template>; comments are dropped by the parser."""
-
-    _SKIP = frozenset({"script", "style", "template", "noscript"})
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self.parts: list[str] = []
-        self._depth = 0
-
-    def handle_starttag(self, tag, attrs):
-        if tag in self._SKIP:
-            self._depth += 1
-
-    def handle_endtag(self, tag):
-        if tag in self._SKIP and self._depth:
-            self._depth -= 1
-
-    def handle_data(self, data):
-        if not self._depth:
-            self.parts.append(data)
-
-
-def visible_text(html: str) -> str:
-    """What a reader sees in an HTML page: scripts, styles, comments and tags removed, entities decoded.
-    Uses the stdlib parser, so odd end tags (`</script >`, `</SCRIPT foo>`) are handled like a browser."""
-    p = _Visible()
-    # Older stdlib parsers (3.12.7) miss `</SCRIPT foo>` as an end tag; browsers accept it: normalise.
-    p.feed(re.sub(r"</(script|style|template|noscript)\b[^>]*>", r"</\1>", html, flags=re.I))
-    p.close()
-    return " ".join(p.parts)
-
-
-def verify_quote(quote: str, text: str) -> bool:
-    """True when `quote` appears in `text` after normalising case, whitespace, curly quotes, dashes and
-    punctuation (PDF text layers break lines and hyphenate). An ellipsis ("...") in the quote splits it into
-    parts that must appear in order. By hand: "Up to  three\\ndwelling units" in "...up to three dwelling
-    units on a zoning lot" -> True; "four" in a text without it -> False."""
-    if re.search(r"<(html|body|div|p|span)\b", text[:5000], re.I):
-        text = visible_text(text)  # a quote may span markup (Minneapolis dry run)
-    hay = _norm(text)
-    parts = [p for p in re.split(r"\.\.\.|…|\[\.\.\.\]", quote) if _norm(p)]
-    pos = 0
-    for p in parts:
-        k = hay.find(_norm(p), pos)
-        if k < 0:
-            return False
-        pos = k + len(_norm(p))
-    return bool(parts)

@@ -1,0 +1,131 @@
+---
+description: Run the ADU rule agent swarm for one state and propose `reforms` rows plus a human lookup list
+argument-hint: "<ST> [--places N | --geoids g1,g2] [--jurisdictions CSV] [--budget TOKENS] [--run-id id] [--second-coder targeted|full|off] [--audit-rate 0.1] [--skip-state-law] [--compare]"
+---
+
+# /rules-adu — ADU rule agent swarm (orchestrator)
+
+Arguments: `$ARGUMENTS`. Design: `docs/build/rule-agents/adu/DESIGN.md`. Binding coding rules:
+`docs/build/rule-agents/adu/CODING_RULES.md`. You (the main session) orchestrate: you run helpers, launch
+agents, enforce budgets and stop rules, and write the report. You never code values yourself. Shared tools
+(document store, passages, spending ledger, setup check, import): `uv run python -m lotline.rule_agents …`
+(design: `docs/build/rule-agents/CORE.md`).
+
+## What this service is
+
+The rule agents are a service in Lotline: a user switches them on, names a state, and gets back a proposed
+rules table, a lookup list and a run report. Shared principles: `docs/build/rule-agents/PRINCIPLES.md` (read
+it; it is not repeated here). The ones every step of this command enforces:
+
+- **The output is a proposal.** `rows.csv` is a table the user reviews and imports. Agents never write the
+  app's configuration (`config/`) or model code.
+- **Rules, not rates.** Agents code what local law says. They never produce a model rate or parameter
+  ("use X%"), from a study or otherwise.
+- **Census GEOIDs and the existing headers.** Places are keyed by GEOID; rows keep the `reforms` column
+  headers exactly (`schemas.Reforms`).
+- **Never work around a refusal** (robots.txt, bot walls, logins, other user agents): it becomes a lookup.
+- **No outcome data for held-back places** (the holdouts `worklist` prints).
+- **Coders are blind to existing rows.** Only this orchestrator reads them, and only to compare afterwards.
+
+## Spending (keep token use down)
+
+- Every place has a budget (default 250k tokens, 12 fetches, 8 searches; the Agent tool's token count
+  includes everything an agent reads). For other limits, save them once after `run-dir`:
+  `uv run python -m lotline.rule_agents ledger limits RUN_DIR --tokens N`. After each subagent returns, record (only you record tokens; agents record their fetches and searches)
+  the tokens the Agent tool reports: `uv run python -m lotline.rule_agents ledger add RUN_DIR <GEOID> <agent>
+  --tokens N` (for a batch, split evenly across its places).
+- Each agent also has its own share of the place's tokens (scout 60k, first coder 60k, second coder 50k, verifier/reconciler 30k, hand-off 20k, fees enumerator 30k; scaled to `--budget`), and the second coder's and reviewer's unspent shares are held back from the others, so an early agent cannot spend the check. The state-law agent works for the whole state: record it under the place `_state`, not a town.
+- Before starting a subagent for a place,
+  `uv run python -m lotline.rule_agents ledger status RUN_DIR <GEOID> --agent <agent name>`;
+  exit code 3 (`"stop": true`) means no more research on that place: take what is coded, turn every open
+  field into a `budget_spent` blocker, and move on.
+- End the report with `uv run python -m lotline.rule_agents ledger summary RUN_DIR`.
+
+## 0. Setup check
+
+`uv run python -m lotline.rule_agents doctor ST --category adu`. If it does not say "Ready.", stop and show the
+user what to fix.
+
+## 0b. Set up
+
+- Parse: state `ST` (two letters, required); `--places N` (default 10, largest first, population >= 2,500)
+  or `--geoids`; `--run-id` (default `<YYYY-MM-DD>-<HHMM>`); `--second-coder` (default `targeted`: a blind second
+  look only at values the first pass scored weak, plus a full second coding of a fixed ~10% audit sample;
+  `full`: every place, as in the NC dry run; `off`: none, all rows `single_coder`); `--audit-rate` (default
+  0.1; 0 turns the audit sample off); `--skip-state-law` (reuse a run's `state_law.json`); `--compare` (dry run: compare with
+  `config/reforms/<st>.csv` at the end).
+- `RUN_DIR=$(uv run python -m lotline.rule_agents.adu run-dir --state ST --run-id ID)`.
+- `uv run python -m lotline.rule_agents.adu worklist --state ST --run-id ID [--limit N | --geoids ...]
+  [--jurisdictions CSV]`. It prints the blind holdouts: pass them to every agent. A state with no
+  jurisdictions table needs `--jurisdictions` with `geoid,name,pop_2020` (`county_geoid` if known); if neither
+  exists, stop and ask the user for that CSV.
+- Never run engine, scenario, calibration or dev-run scripts. Never edit `config/`. Never download data except
+  through the fetch helper (store first, into the shared document store under `LOTLINE_DATA_DIR`).
+
+## 1. State law
+
+Unless skipped, launch `rules-adu-state-law` with `STATE`, `RUN_DIR`. For each enacted law, expand coverage
+with `places.covered_by_state_law` (a short `uv run python -c`) and list near-threshold places for the human
+list. State-law rows are one per covered place (never one statewide row; `adoption_date` blank when the
+enrolled text has no signature date) and go to `RUN_DIR/state_law_rows.csv` through the same schema check.
+
+## 2. Scout, then first coder
+
+Batch places in groups of about five. In one message, launch `rules-adu-scout` for every batch (brief:
+`STATE`, `RUN_DIR`, the places' rows from `places.csv`, holdouts). When all return, in one message launch
+`rules-adu-coder` (coder id `claude-rules-adu`) for every batch.
+
+## 3. Check and score the first pass
+
+- `uv run python -m lotline.rule_agents.adu check RUN_DIR/coding_a/*.json`. Send each failing file back to
+  the coder once (SendMessage with the problems). A file that fails again is kept as `partial` with the
+  failing fields blanked; say so in the report.
+- `uv run python -m lotline.rule_agents.adu score RUN_DIR/coding_a/*.json --sources RUN_DIR/sources --out
+  RUN_DIR/score [--audit-rate R]`. A value is strong only when it is `high` confidence, rests on a primary
+  source, and its quote was found by machine in the stored document (`doc_id`; on the named PDF page). Each
+  `score/<g>.json` has `mode`: `none` (all strong, or nothing coded), `targeted` (`second_coder_fields` lists
+  the fields to recode), or `full` (audit sample). It also lists `uncoded_amendments`: ordinances the scout
+  found that match no coded era.
+
+## 4. Blind second look
+
+Unless `--second-coder off`, in one message launch `rules-adu-second-coder` (coder id
+`claude-rules-adu-blind`) for the places whose mode is `targeted` or `full` (`--second-coder full`: every
+place). Its brief per place: geoid, name, `fields` = `second_coder_fields` (or `all`), and the
+`uncoded_amendments` lines. **Never** pass the scorecard's `looks`, era keys or reasons, nor `coding_a/`:
+they would show the first coder's eras and doubts. Run `check` on `coding_b/`, as in step 3.
+
+## 5. Verify and merge
+
+- Places with a second coding: launch `rules-adu-verifier` per batch; it passes `--score RUN_DIR/score/<g>.json`
+  to `diff-coders` and `merge`, so a targeted place is compared only on its looked-at fields (plus any era
+  one coder found and the other did not).
+- Places with mode `none`, and every place with `--second-coder off`: copy `coding_a/<g>.json` to
+  `final/<g>.json` with no `.meta` (rows come out `single_coder`). Their quotes were already machine-checked by
+  `score`.
+- Each place ends with `final/<g>.json` (and `final/<g>.meta` where a verifier ran).
+
+## 6. Rows
+
+`uv run python -m lotline.rule_agents.adu rows RUN_DIR/final/*.json --out RUN_DIR/rows.csv`. A schema error
+stops the run: fix the coding, not the row.
+
+## 7. Human list
+
+Launch `rules-adu-handoff` with `RUN_DIR`. It produces `tasks.csv` and `tasks.md`.
+
+## 8. Report
+
+Write `RUN_DIR/report.md`: places run; per place outcome, eras, rows and `coder_agreement`; blank core
+fields; values by confidence; first-pass score (strong / weak values, places by second-coder mode, uncoded
+amendments, and for the audit sample how many strong values the full second coding contradicted); blocks by reason and host; open human tasks with total minutes; any holdout or
+process incident. With `--compare`, run
+`uv run python -m lotline.rule_agents.adu compare --state ST --rows RUN_DIR/rows.csv > RUN_DIR/compare.txt`
+and summarise matches and differences, naming the source each side cites.
+
+Tell the user in plain words: where the files are, how many rows are ready to review, how many lookups wait
+for them (and how long they take; optional records-request lookups counted apart), and every judgment call
+the agents left for them. The user reviews `rows.csv` and imports what they accept; the agents never edit
+`config/` themselves. End by telling the user how to import the table:
+`uv run python -m lotline.rule_agents import RUN_DIR/rows.csv reforms ST` (a preview of what would change),
+then the same command with `--yes` to apply it.

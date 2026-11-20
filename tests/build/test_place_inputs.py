@@ -2,12 +2,17 @@
 
 Synthetic state "ZZ" (fixture `zz` in tests/conftest.py). For origin 2025, each shared column equals what
 `adu.places_from_store` and `mm.places_from_store` compute themselves, place for place.
+
+Since the ADU switch-over (2026-11-19), `adu.places_from_store` reads these columns from `place_inputs`, so
+the ADU comparisons here check that it takes them over unchanged; the one-off check that the table reproduced
+the old ADU computation (all five states, origin 2025, 0 differences) is recorded in the switch-over PR, and
+tests/model/test_adu_place_inputs.py checks the stored table is what it reads.
 """
 
 import numpy as np
 import pandas as pd
 
-from lotline.build import place_inputs
+from lotline.build import eligible, place_inputs
 from lotline.model.scenarios import adu, mm
 
 
@@ -70,9 +75,46 @@ def test_models_flag_says_who_reads_each_row(zz):
         {"eligible_parcels_adu": [5.0, np.nan], "rent": [np.nan, 900.0], "home_value": [1.0, 1.0],
          "eligible_parcels_mm": [3.0, np.nan], "in_bps": [True, False]}
     )  # fmt: skip
+    df = place_inputs.fill_prices(df.assign(year=2025))
     f = place_inputs._flag_models(df)
-    assert f["models"].tolist() == ["missing_middle;fees;baseline", ""]
-    assert "no ACS rent" in f.loc[0, "models_note"] and "not a BPS place" in f.loc[1, "models_note"]
+    # task 5 rule 1 (D-103): every listed place feeds both scenarios; baseline and fees need a BPS place
+    assert f["models"].tolist() == ["adu;missing_middle;fees;baseline", "adu;missing_middle"]
+    assert "rent filled with the state median" in f.loc[0, "models_note"]
+    assert "covered in its county's row" in f.loc[1, "models_note"]
+    assert "adu: no eligible lots" in f.loc[1, "models_note"]
+
+
+def test_no_roll_later_than_origin_plus_one():
+    """Task 5 rule 4 (D-103). Rolls 2020, 2026 and 2028: origin 2025 takes 2026 (flagged after origin),
+    origin 2024 takes 2020, and a place with only a 2028 roll has none at origin 2025."""
+    elig = pd.DataFrame(
+        {
+            "jurisdiction_geoid": ["1", "1", "1", "2"],
+            "year": [2020, 2026, 2028, 2028],
+            "theme": "adu",
+            "rule_version": eligible.RULE_VERSION,
+            "eligible_parcels": [10.0, 20.0, 30.0, 5.0],
+        }
+    )
+    at25 = place_inputs.nearest_roll(elig, "adu", 2025).set_index("geoid")
+    assert at25.loc["1", "parcels_year"] == 2026 and at25.loc["1", "parcels_after_origin"]
+    assert "2" not in at25.index
+    at24 = place_inputs.nearest_roll(elig, "adu", 2024).set_index("geoid")
+    assert at24.loc["1", "parcels_year"] == 2020 and not at24.loc["1", "parcels_after_origin"]
+
+
+def test_house_share_takes_the_roll_for_each_origin():
+    by_roll = pd.DataFrame({"geoid": ["1", "1"], "roll": [2020, 2026], "house_share": [0.5, 0.8]})
+    assert place_inputs._as_of(by_roll, 2025).set_index("geoid").loc["1", "house_share"] == 0.8
+    assert place_inputs._as_of(by_roll, 2023).set_index("geoid").loc["1", "house_share_roll"] == 2020
+
+
+def test_fill_prices_hand_worked():
+    """Rents 1,000, 1,200 and missing in one year: the missing one is the median 1,100, flagged."""
+    df = pd.DataFrame({"year": [2025] * 3, "rent": [1000.0, 1200.0, np.nan], "home_value": [1.0, 2.0, 3.0]})
+    out = place_inputs.fill_prices(df)
+    assert out["rent"].tolist() == [1000.0, 1200.0, 1100.0]
+    assert out["rent_filled"].tolist() == [False, False, True] and not out["home_value_filled"].any()
 
 
 def test_place_tags_match_the_adu_model_and_mark_sources(zz):

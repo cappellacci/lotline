@@ -115,6 +115,11 @@ def build(
         if jurisdictions is not None and "cbsa_code" in jurisdictions
         else None
     )
+    if jurisdictions is not None and "county_geoid" in jurisdictions:
+        # one county per place, the jurisdictions table's (task 5 rule 5): a place BPS files under two
+        # counties in some years keeps the county holding most of its homes for the FHFA index
+        county = jurisdictions.set_index("geoid")["county_geoid"]
+        panel["county_geoid"] = panel["geoid"].map(county).fillna(panel["county_geoid"])
     panel["cbsa_code"] = panel["geoid"].map(cbsa) if cbsa is not None else pd.NA
     panel["cbsa_code"] = panel["cbsa_code"].astype("string")
     panel["theme"], panel["rule_version"] = theme, rule_version
