@@ -217,9 +217,11 @@ Registries move into the state yaml.
   - one missing-ACS rule.
 - [ ] **6. Fees in the bundle.** Add `fees` to `ENGINE_SCENARIOS`, reading `place_inputs`. This is the fee
       model's owner's call.
-- [ ] **7. Crosswalks.** Convert the 24 odd files to the two formats; delete `or_metro_cities.csv`. **Check:**
+- [x] **7. Crosswalks.** Done 2026-11-17 (all 18 loaders unchanged); registries stay CSVs; `or_metro_cities.csv`
+      kept (a dev script reads it). Convert the 24 odd files to the two formats; delete `or_metro_cities.csv`. **Check:**
       every adapter's `land_use_std` and `building_type_std` columns are unchanged row for row.
-- [ ] **8. Adapter rules as data.** Move state quirks into named, documented rules in the state file (`rules:`
+- [ ] **8. Adapter rules as data.** Started 2026-11-17: `rules:` block and five rules (OH three, TX two), values
+      unchanged; onemap tier cutoffs read from params. No ranges set yet (Ben). The rest of the audit list is open. Move state quirks into named, documented rules in the state file (`rules:`
       with id, what it does, assumption, sensitivity range, source). First case: TX `austin_home_adu_share`, the
       share of 2024+ duplex permits on single-family lots counted as ADUs, with low and high values.
 - [ ] **9. Missing-input matrix.** For each of parcels, zoning and permits missing, run NC with that input
@@ -228,11 +230,66 @@ Registries move into the state yaml.
 - [ ] **10. Borrowed parameters.** Document the rule for states with no reform history: take the uptake
       parameters from reformed states, with the D-043 transport. Check the Rules/Handbook on whether causal
       identification is expected; quote it.
-- [ ] **11. Bring-your-own-state guide.** `docs/adding_a_state.md` exists (written 2026-11-17, before this
+- [x] **11. Bring-your-own-state guide.** Short path added 2026-11-17, generated from the steps file (task 13);
+      kept current with each task. `docs/adding_a_state.md` exists (written 2026-11-17, before this
       work). Keep it current as each task lands, and add a one-page "short path" at its top: copy a template
       state file, point to your data, run one command, read the confidence flag.
 - [ ] **12. Proof.** Onboard the unseen state (WI, V8) using only a new state file, aliases and adapter, with no
       engine edits. If an engine edit is needed, the abstraction is wrong; fix the abstraction, not WI.
+- [ ] **13. Onboarding as data, for the app** (added 2026-11-17, Ben: "wire it up into the app so a user can
+      follow the step by step instructions either by themselves, through built in functions to grab data, or to
+      launch agent swarms"). Steps file, function interface and `lotline onboard` built; app UI not started (see
+      § Task 13 design).
+
+## Task 13 design: onboarding steps as data
+
+**One source.** `config/onboarding/steps.yaml` lists the steps of `docs/adding_a_state.md`, in order. Each step
+has:
+- `id`, a plain-language `title`, `time`;
+- `level`: the data level it belongs to (section 2 of the guide), or null for every level;
+- `inputs`, `outputs`;
+- `modes`: any of `manual`, `built_in`, `agent`;
+- `commands` (built-in steps; `XX` is replaced by the state code);
+- `check`: a named function that says whether the step is done;
+- `done_when`: the same in plain words;
+- `agent`: the brief, its owner and a note (agent steps).
+
+**The guide renders from it.** `tests/core/test_onboarding.py` fails if:
+- a guide step heading does not start with the step's title, in order;
+- the guide's two generated blocks (the short path at the top, the step table in section 5) differ from
+  `uv run python -m lotline.onboarding`.
+
+The guide's prose stays hand-written; titles, order, short path, times and checks cannot drift.
+
+**Three modes per step.**
+- *Manual:* the guide section with the same number.
+- *Built-in:* the app runs `onboarding.commands(step, state)` (lotline fetch for national sources,
+  validate, results, provenance). Nothing in `onboarding` runs a command itself, so the app decides how
+  to run and show it.
+- *Agent:* the app's rule agents, a service the user switches on (Ben 2026-11-17,
+  `docs/build/rule-agents/PRINCIPLES.md` on `ws/rule-agents-core`).
+  - They propose a table: `reforms` rows for the `rules` step, `fees` rows for the `fees` step. The table
+    uses the existing CSV header, keyed by GEOID, with a citation for every value.
+  - The user reviews it and imports it (`onboarding.import_action`: the schema, the target file, the
+    check). The imported file passes the same check as a hand-made one; the reforms check validates the
+    schema.
+  - The agents never write config, never produce model rates, and never open outcome data for
+    held-back places.
+  - Only `rules` and `fees` are agent steps. Adapter writing (`parcels`, `permits`) is manual.
+
+**Function interface for the app** (`src/lotline/onboarding.py`):
+- `steps()`: the validated steps;
+- `commands(step, state)`: argument lists;
+- `import_action(step, state)`: the review-and-import action of an agent step;
+- `check(step, state, store)`: a `Status(done, detail)`. It looks at config files and which processed tables
+  exist. It downloads nothing and reads no holdout outcomes;
+- `plan(state, store)`: the whole checklist for one state as JSON-ready dicts;
+- `config_problems(state)`: what is wrong with a state file;
+- `lotline onboard --state XX [--json]`: the same plan on the command line.
+
+**Stops here.** The app UI belongs to the "UI/UX Workflow" session; it reads `plan()` (or
+`lotline onboard --json`). Running commands from the app, and launching agents from a step, are that
+session's and the swarm session's to build.
 
 ## Not in scope
 - The ADU/Missing-Middle substitution model stays as is (reviewer: not worth the complexity for scoring).

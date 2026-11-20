@@ -121,7 +121,7 @@ def test_load_applies_holdout_before_returning(tmp_path, monkeypatch):
 
 def test_crosswalks_and_privacy():
     codes = mp.usdc_codes()
-    assert codes["103"]["building_type_std"] == "U2" and codes["645"]["activity"] == "demolition"
+    assert codes["103"]["building_type_std"] == "U2" and codes["645"]["role"] == "demolition"
     j = mp.tax_jurisdictions()
     assert j["MATTHEWS"] == "3741960" and j["MINT HILL"] == "3743480" and j["CHARLOTTE"] == "3712000"
     assert not set(mp.OUT_FIELDS) & mp.PERSONAL

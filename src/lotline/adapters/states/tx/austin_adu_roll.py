@@ -26,6 +26,7 @@ from pathlib import Path
 import pandas as pd
 
 from lotline.adapters.states.tx import tcad_parcels as tcad
+from lotline.config import state_rule
 
 INFO_FIELDS = {"prop_id": (1, 12), "imprv_id": (17, 12), "type_cd": (29, 10)}
 DET_FIELDS = {"prop_id": (1, 12), "imprv_id": (17, 12), "det_type": (41, 10), "yr_built": (86, 4)}
@@ -43,7 +44,7 @@ MIN_YEAR = 1800
 UNIVERSE_BEFORE = 2019  # main house built before this year
 WINDOW = (2019, 2023)  # second dwelling built in these years (inclusive) → R
 
-HOME_START = pd.Timestamp("2024-02-05")  # HOME phase 1 effective date
+HOME_START = pd.Timestamp(state_rule("TX", "austin_home_start"))  # HOME phase 1 (config/states/tx.yaml rules)
 HOME_CLASSES = frozenset({"101", "102", "103", "436"})
 DEMOLITION_CLASSES = frozenset({"645", "646"})
 DEMOLITION_LOOKBACK_YEARS = 3

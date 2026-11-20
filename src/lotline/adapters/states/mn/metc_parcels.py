@@ -39,7 +39,6 @@ never requested: `FIELDS` lists exactly what is read.
 
 from __future__ import annotations
 
-import csv
 import json
 import re
 from collections.abc import Callable
@@ -48,6 +47,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp, query_url
@@ -210,16 +210,15 @@ class Rule:
 
 
 def load_rules(path: Path) -> list[Rule]:
-    with open(path, newline="") as fh:
-        return [
-            Rule(
-                r["county"].strip(),
-                re.compile(r["pattern"], re.I),
-                r["land_use_std"].strip(),
-                r["refine_by_units"].strip().lower() == "yes",
-            )
-            for r in csv.DictReader(fh)
-        ]
+    return [
+        Rule(
+            r["county"].strip(),
+            re.compile(r["pattern"], re.I),
+            r["land_use_std"].strip(),
+            r["refine_by_units"].strip().lower() == "yes",
+        )
+        for r in crosswalks.read(path, "land_use")
+    ]
 
 
 def _norm_text(values: pd.Series) -> pd.Series:
