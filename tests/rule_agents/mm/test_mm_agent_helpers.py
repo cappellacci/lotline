@@ -297,14 +297,15 @@ def test_tasks_dedupe_priority_and_records_requests():
     fa = place([], [b1, b3, b4])
     fb = place([], [b2], coder="rules-mm-coder-b")
     ts = handoff.tasks([fa, fb], {"2799999": 5000})
-    assert len(ts) == 2  # municode deduped across coders; the records request is not a task
+    assert len(ts) == 3  # municode deduped across coders; the records request is an optional task, last
     first = ts[0]
     assert first["priority"] == 1 and "municode" in first["start_url"]
     assert set(first["fields_to_fill"].split(";")) >= {"effective_date", "districts", "result", "quote"}
     assert "Versions" in first["browser_tip"]
-    assert ts[1]["priority"] == 2
+    assert ts[1]["priority"] == 2 and ts[1]["optional"] == ""
+    assert ts[2]["priority"] == 3 and ts[2]["optional"] == "yes" and "records request" in ts[2]["browser_tip"]
     md = handoff.to_markdown(ts, "MN lookups")
-    assert md.count("- [ ]") == 2
+    assert md.count("- [ ]") == 3 and "optional" in md
 
 
 def test_answers_roundtrip(tmp_path):
@@ -596,3 +597,39 @@ def test_visible_text_tolerates_odd_end_tags():
     )
     t = " ".join(visible_text(html).split())
     assert t == "Up to three homes & done"
+
+
+def test_second_coder_only_where_it_matters():
+    """Token rule (2026-11-17): events, below-high confidence and a 1-in-10 audit get coder b."""
+    from lotline.rule_agents.mm.findings import Evidence, PlaceFinding, RuleFinding
+    from lotline.rule_agents.mm.reconcile import needs_second_coder
+
+    ev = [Evidence(field="unit_cap", url="https://x.gov", quote="q", retrieved=date(2026, 11, 17))]
+
+    def place(**kw):
+        rule = dict(
+            effective_date=date(2005, 1, 1),
+            date_basis="predates",
+            unit_cap=2,
+            coverage="R-2",
+            confidence="high",
+            evidence=ev,
+            component="c",
+        )
+        rule.update(kw)
+        return PlaceFinding(
+            state="NC",
+            jurisdiction_geoid="3700001",
+            place="X",
+            coder="a",
+            coded_on=date(2026, 11, 17),
+            rules=[RuleFinding(**rule)],
+        )
+
+    assert (
+        needs_second_coder(place(date_basis="dated", effective_date=date(2020, 1, 1), unit_cap=3), 3)
+        == "event"
+    )
+    assert needs_second_coder(place(), 3) is None
+    assert needs_second_coder(place(), 10) == "audit"
+    assert needs_second_coder(place(unit_cap=1, confidence="medium"), 3) == "confidence"

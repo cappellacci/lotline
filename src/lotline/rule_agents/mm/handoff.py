@@ -4,19 +4,18 @@ The sheet (`human-lookups.csv`, plus the same tasks as a Markdown checklist) fol
 `*-mm-lookups-todo.csv` sheets Ben filled in Oct-Nov 2026, with the lessons from them built in: a direct
 start URL, a browser tip for the code host, the exact fields to fill (one column each, closed choices where
 possible), an acceptance rule, and a `result` column with three closed answers so "nothing usable" is a
-recorded outcome rather than a blank. `records_request_only` tasks are never written: Ben files no records
-requests, so those close as `no_usable_source` at once (`task_for` returns None).
+recorded outcome rather than a blank. `records_request_only` sources become optional tasks (priority 3): the
+user may file the request or mark it `no_usable_source`; agents never file one.
 """
 
 from __future__ import annotations
 
-import csv
-import io
 from collections.abc import Iterable
 from datetime import date
 from pathlib import Path
 
-from lotline.rule_agents.mm.access import host_label
+from lotline.rule_agents.common import handoff as H
+from lotline.rule_agents.common.handoff import RESULTS, read_answers, to_markdown  # noqa: F401
 from lotline.rule_agents.mm.findings import Blocker, Evidence, PlaceFinding
 
 TASK_COLUMNS = [
@@ -31,6 +30,8 @@ TASK_COLUMNS = [
     "look_for",
     "fields_to_fill",
     "acceptance",
+    "held_docs",  # documents already in the store for this place: no need to download them again
+    "optional",  # yes = only a public-records request reaches it; the user may skip it
 ]
 ANSWER_COLUMNS = [
     "result",  # found / not_found / no_usable_source
@@ -42,12 +43,12 @@ ANSWER_COLUMNS = [
     "ordinance",  # ordinance number or file
     "source_url",  # the page that shows it (may differ from start_url)
     "quote",  # verbatim, at most 300 characters
+    "saved_file",  # a file the person saved into the rule_docs inbox (taken into the store on ingest)
     "checked_by",
     "checked_on",  # YYYY-MM-DD
     "notes",
 ]
 COLUMNS = TASK_COLUMNS + ANSWER_COLUMNS
-RESULTS = ("found", "not_found", "no_usable_source")
 
 _FIELD_COLUMN = {
     "unit_cap": "max_homes_per_single_family_lot",
@@ -65,28 +66,16 @@ _LOOK_FOR = {
 }
 
 
-def task_for(f: PlaceFinding, b: Blocker, n: int, *, pop: int | None = None) -> dict | None:
-    """One lookup task for blocker `b` of finding `f` (`n` numbers tasks within the place). None for a
-    records-request-only source. Priority 1 (do first) when the blocker hides a date or cap that decides
-    whether the place has an event; 2 for context-only fields (by_right, zones)."""
-    if b.kind == "records_request_only":
-        return None
+def task_for(f: PlaceFinding, b: Blocker, n: int, *, pop: int | None = None, docs=None) -> dict | None:
+    """One lookup task for blocker `b` of finding `f` (`n` numbers tasks within the place). Priority 1 (do
+    first) when the blocker hides a date or cap that decides whether the place has an event; 2 for
+    context-only fields (by_right, zones); 3 and `optional` for a source only a records request reaches."""
     fields = b.fields or ["unit_cap", "by_right", "adoption_date", "effective_date"]
     priority = 1 if {"unit_cap", "effective_date", "adoption_date"} & set(fields) else 2
-    host = host_label(b.url)
-    tip = (
-        host[1]
-        if host
-        else {
-            "robots_disallow": "The site asks robots not to fetch this path; open it yourself in a browser.",
-            "http_403_waf": "The site refuses scripts (bot wall); it opens in a normal browser.",
-            "scanned_pdf": "The PDF is a scan; read the page(s) by eye.",
-            "js_only": "The page needs JavaScript; open it in a browser.",
-            "login_required": "Needs a login: mark no_usable_source unless you already have access.",
-            "not_found": "Dead link: try the Wayback Machine (web.archive.org) or the city's site search.",
-            "unreachable": "The host did not answer (timeout or connection error); try it in a browser.",
-        }.get(b.kind, "Open in a browser.")
-    )
+    optional = b.kind == "records_request_only"
+    if optional:
+        priority = 3
+    tip = H.browser_tip(b.url, b.kind)
     look = b.look_for or "; ".join(_LOOK_FOR.get(x, x) for x in fields)
     cols = sorted({_FIELD_COLUMN.get(x, "notes") for x in fields} | {"result", "source_url", "quote"})
     return {
@@ -100,95 +89,57 @@ def task_for(f: PlaceFinding, b: Blocker, n: int, *, pop: int | None = None) -> 
         "browser_tip": tip,
         "look_for": look + (f" (population {pop:,})" if pop else ""),
         "fields_to_fill": ";".join(cols),
-        "acceptance": (
-            "Done when result is filled. 'found': fill the listed columns and paste a verbatim quote "
-            "(<=300 chars) from source_url that shows the value; dates as YYYY-MM-DD. 'not_found': the page "
-            "is readable but does not answer it. 'no_usable_source': only by records request, login, or gone."
-        ),
+        "acceptance": H.ACCEPTANCE,
+        "held_docs": H.held_docs(docs, f.jurisdiction_geoid, "mm"),
+        "optional": "yes" if optional else "",
         **{c: "" for c in ANSWER_COLUMNS},
     }
 
 
-def tasks(findings: Iterable[PlaceFinding], pops: dict[str, int] | None = None) -> list[dict]:
+def tasks(findings: Iterable[PlaceFinding], pops: dict[str, int] | None = None, docs=None) -> list[dict]:
     """All tasks for a run, deduplicated on (geoid, start_url) and sorted by priority then population."""
     pops = pops or {}
     out: dict[tuple[str, str], dict] = {}
     for f in findings:
         n = 0
         for b in f.blockers:
-            key = (f.jurisdiction_geoid, b.url)
+            key = (f.jurisdiction_geoid, H.url_key(b.url))
             if key in out:
                 prev = set(out[key]["fields_to_fill"].split(";"))
-                t = task_for(f, b, 99, pop=pops.get(f.jurisdiction_geoid))
+                t = task_for(f, b, 99, pop=pops.get(f.jurisdiction_geoid), docs=docs)
                 if t:
                     out[key]["fields_to_fill"] = ";".join(sorted(prev | set(t["fields_to_fill"].split(";"))))
                     out[key]["priority"] = min(out[key]["priority"], t["priority"])
                 continue
             n += 1
-            t = task_for(f, b, n, pop=pops.get(f.jurisdiction_geoid))
+            t = task_for(f, b, n, pop=pops.get(f.jurisdiction_geoid), docs=docs)
             if t:
                 out[key] = t
     return sorted(out.values(), key=lambda t: (t["priority"], -pops.get(t["geoid"], 0), t["task_id"]))
 
 
 def write_csv(rows: list[dict], path: Path) -> None:
-    with open(path, "w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLUMNS)
-        w.writeheader()
-        for r in rows:
-            w.writerow({c: r.get(c, "") for c in COLUMNS})
-
-
-def to_markdown(rows: list[dict], title: str) -> str:
-    """A checklist a person can work top to bottom; the CSV is where the answers go."""
-    buf = io.StringIO()
-    buf.write(f"# {title}\n\nFill answers in the CSV with the same task_id. Priority 1 first.\n\n")
-    for r in rows:
-        buf.write(f"- [ ] **{r['task_id']}** · {r['place']} · priority {r['priority']} · `{r['blocker']}`\n")
-        buf.write(f"  - Open: {r['start_url']}\n  - Tip: {r['browser_tip']}\n")
-        buf.write(f"  - Look for: {r['look_for']}\n  - Fill: `{r['fields_to_fill']}`\n")
-    return buf.getvalue()
-
-
-def read_answers(path: Path) -> list[dict]:
-    with open(path, newline="", encoding="utf-8-sig") as fh:
-        return list(csv.DictReader(fh))
+    H.write_csv(rows, path, COLUMNS)
 
 
 def answer_problems(row: dict) -> list[str]:
     """Why an answered row can't be used yet (empty: usable). By hand: result 'found' with no quote ->
     'found needs a quote'; result 'maybe' -> not one of the three answers; a quote of 400 characters ->
     too long."""
-    res = (row.get("result") or "").strip()
-    if not res:
-        return []  # not answered yet: stays open
-    out = []
-    if res not in RESULTS:
-        out.append(f"result {res!r} is not one of {RESULTS}")
-    if res == "found":
-        if not (row.get("quote") or "").strip():
-            out.append("found needs a quote")
-        if not (row.get("source_url") or row.get("start_url") or "").startswith("http"):
-            out.append("found needs a source_url")
+    out = H.base_problems(row, ("adopted_date", "effective_date"))
+    if (row.get("result") or "").strip() == "found":
         cap = (row.get("max_homes_per_single_family_lot") or "").strip()
         if cap and cap not in ("1", "2", "3", "4"):
             out.append(f"max_homes_per_single_family_lot {cap!r} must be 1-4")
         br = (row.get("by_right") or "").strip().lower()
         if br and br not in ("yes", "no"):
             out.append(f"by_right {br!r} must be yes or no")
-        for c in ("adopted_date", "effective_date", "checked_on"):
-            v = (row.get(c) or "").strip()
-            if v:
-                try:
-                    date.fromisoformat(v)
-                except ValueError:
-                    out.append(f"{c} {v!r} is not YYYY-MM-DD")
-    if len(row.get("quote") or "") > 300:
-        out.append("quote longer than 300 characters")
     return out
 
 
-def answer_to_evidence(row: dict, today: date | None = None) -> tuple[dict, list[Evidence]]:
+def answer_to_evidence(
+    row: dict, today: date | None = None, doc_id: str | None = None
+) -> tuple[dict, list[Evidence]]:
     """A usable 'found' answer -> (field values, evidence entries citing the human lookup). Values use
     finding field names (unit_cap, by_right, adoption_date, effective_date, coverage_zones). Other results
     -> ({}, [])."""
@@ -216,6 +167,8 @@ def answer_to_evidence(row: dict, today: date | None = None) -> tuple[dict, list
             retrieved=when,
             section=row.get("ordinance") or None,
             source_kind="human_lookup",
+            quote_status="human",
+            doc_id=doc_id,
         )
         for f in vals
     ]

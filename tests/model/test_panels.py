@@ -263,3 +263,16 @@ def test_denominator_carried_forward_to_later_years_only():
     assert pd.isna(p.loc[2022, "eligible_parcels"])
     assert p.loc[2023, "eligible_parcels"] == 500 and p.loc[2023, "denominator_year"] == 2023
     assert p.loc[2024, "eligible_parcels"] == 500 and p.loc[2024, "denominator_year"] == 2023
+
+
+def test_a_place_in_two_counties_takes_the_jurisdictions_county():
+    """Task 5 rule 5. Place 3700002 is filed under 37001 (first BPS ID) and 37003 in 2024; jurisdictions
+    puts it in 37003 (most of its homes). The panel uses 37003, which has no index: state fallback."""
+    juris = pd.DataFrame(
+        {"geoid": ["3700001", "3700002"], "county_geoid": ["37001", "37003"], "cbsa_code": None}
+    )
+    p = _panel(jurisdictions=juris)
+    assert p.loc[("3700002", 2024), "county_geoid"] == "37003"
+    assert p.loc[("3700002", 2024), "hpi_geo"] == "state:37"
+    assert p.loc[("3700001", 2024), "hpi_geo"] == "county:37001"
+    assert _panel().loc[("3700002", 2024), "county_geoid"] == "37001"  # without jurisdictions: BPS county

@@ -16,7 +16,7 @@ import pandas as pd
 from lotline.rule_agents.mm import THEME
 
 ZONING_KINDS = ("place", "township", "county_unincorporated")
-COLUMNS = ["geoid", "place", "kind", "pop", "coded_mm_ids", "priority"]
+COLUMNS = ["geoid", "county", "place", "kind", "pop", "coded_mm_ids", "priority"]
 
 
 def enumerate_places(
@@ -35,7 +35,16 @@ def enumerate_places(
         j["kind"] = "place"
     j = j[j["kind"].isin(ZONING_KINDS)]
     pop = pd.to_numeric(j.get("pop_2020", pd.Series(0, index=j.index)), errors="coerce").fillna(0).astype(int)
-    out = pd.DataFrame({"geoid": j["geoid"].astype(str), "place": j["name"], "kind": j["kind"], "pop": pop})
+    county = j["county_geoid"].astype("string") if "county_geoid" in j else pd.Series("", index=j.index)
+    out = pd.DataFrame(
+        {
+            "geoid": j["geoid"].astype(str),
+            "county": county.fillna(""),
+            "place": j["name"],
+            "kind": j["kind"],
+            "pop": pop,
+        }
+    )
     out = out[out["pop"] >= min_pop]
     ids: dict[str, str] = {}
     if coded is not None and len(coded):
