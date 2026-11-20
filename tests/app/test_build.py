@@ -683,3 +683,13 @@ def test_add_a_state_page_is_a_real_guide(tmp_path):
     )
     for path in named:
         assert (REPO / path).exists(), path
+
+
+def test_data_tab_shows_only_states_with_results(tmp_path):
+    """Ben, 2026-11-20: the data dashboard shows only states that are fully built (have a results bundle)."""
+    summary = {
+        "generated": "t",
+        "states": [{"state": "ZZ", "name": "Zedland"}, {"state": "WI", "name": "Wisconsin"}],
+    }
+    assert [s["state"] for s in build.built_states_only(summary, {"ZZ"})["states"]] == ["ZZ"]
+    assert build.built_states_only(summary, {"ZZ"})["generated"] == "t"
