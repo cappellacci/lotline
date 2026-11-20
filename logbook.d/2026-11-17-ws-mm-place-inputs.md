@@ -1,0 +1,12 @@
+### LB-NNN · 2026-11-17 · Engine: missing middle reads `place_inputs` (WS-SCALE switch-over, no change in results)
+- **Question:** Can the missing-middle scenario take its per-place inputs from the shared `place_inputs` table instead of computing them itself, without changing any input?
+- **What I did:**
+  - `mm.places_from_store` now reads eligible lots (net of the D-020 overlap), house share, size band and ACS rent from `place_inputs` at `year == origin` (`mm.place_inputs_at`). Doses, the price-to-cost ratio and the feasible share are still computed in the scenario, and so is MM's house-share fill. If the table is missing or has no row for the origin, it is built for that year. Removed `mm._nearest`.
+  - The place set is every place with eligible lots *before* the overlap is removed, as before. A first version filtered on the net count and dropped Scott County's remainder in MN (0 lots after the overlap); the comparison caught it.
+  - Built `place_inputs` for all five states offline (`lotline fetch --state XX --source place_inputs`, cached tables only).
+- **Inputs:** WS-SCALE hand-over note (repo copy coming in #484); processed tables in `LOTLINE_DATA_DIR`.
+- **Outputs:** `src/lotline/model/scenarios/mm.py`; `tests/model/test_mm_place_inputs.py` (reads the stored table, builds it when missing, keeps a place whose lots all overlap, the house-share fill by hand).
+- **Findings:** old and new `places_from_store` frames are identical in every shared column for MN, NC, OH, TX and OR at origins 2021, 2023 and 2025 (1,051 / 453 / 947 / 1,003 / 168 places). Four columns are gone (`overlap_clipped`, `rule_version`, `state`, `theme`); nothing downstream reads them.
+- **Decisions:** none. D-103 (#489) and D-056 tier-3 scaling come in later PRs, each with before/after bundles.
+- **AI:** Claude Code (missing-middle session) wrote the change and the tests. Checked by: a column-by-column comparison against the previous function on real cached tables (15 state-origin pairs), ruff, `params_table.py --check`, `compliance_check.py` (0 FAIL) and the full test suite.
+- **Open / next:** adopt D-103 once #489 merges (every listed place in, filled rents); D-056 scaling; #488's question on which pool county remainders borrow from.
