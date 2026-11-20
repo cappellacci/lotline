@@ -65,6 +65,14 @@ adu_drift_sigma:
   source: "Estimated, D-091 (2026-11-14, reports/adu-drift/summary.json sigma_all_states_reported_only F0): maximum likelihood over MN, NC, TX and OR places with own history, persistence forecasts 2021-25 from 2016-19. Leaving one state out gave 0.85-1.10 (F0). exp(1.025) = x2.8 at one SD."
   notes: "Held fixed in the draws; the leave-one-state-out range 0.85-1.10 is the sensitivity. Learned for a 4-year fit and a 1-year lead before a 5-year window; the engine reads 3 observed years (adu_observed_years) and its own lead (forecast_lead_years), a close but not identical gap."
 
+adu_drift_mean_one:
+  value: 1
+  low: 1
+  high: 1
+  unit: switch (1 = the place drift has mean 1, exp(sigma z - sigma^2/2); 0 = median 1, exp(sigma z), as D-091)
+  source: "Ben, 2026-11-20 (\"recentering the drift towards the average isn't a bad idea\"; \"Take the drift fix back here and proceed\"), after the NC no-reform check (docs/analysis_plan.md, 2026-11-20): with median-1 drift, NC's 23 places with own counts forecast 453 a year at the state midpoint against a pace of 298, because a sum over places sits near the sum of their means, and the mean of exp(sigma z) is exp(sigma^2/2) = x1.69 at sigma 1.025."
+  notes: "Rollback: set to 0. Changes only places with own ADU counts (adu_own_rate_drift); sigma is unchanged, so each place's P10-P90 keeps its width on the log scale and shifts down by x0.59. D-091's fit estimated sigma with the log-mean fixed at 0 (median 1); a learned log-mean came out near +0.5 (reports/adu-drift/summary.json mu_sigma_loso), so the mean-1 drift sits below what that within-state test saw (2016-19 -> 2021-25, a rising market)."
+
 adu_simulation_draws:
   value: 1000
   low: 500
