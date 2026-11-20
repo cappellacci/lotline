@@ -5234,6 +5234,22 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - Without the low-recall rows (Asheville before 2022; Austin's inferred rule has no counts in the table):
       tiers and tests A and B.
     - Fort Worth's no-kitchen count, reported beside its central count. It is not in the fit.
+  - **Confirmed by Ben, 2026-11-12, before the run** (relayed by the coordinating session; no run had been
+    scored). A first run started on `main` 1c7ad001 was stopped before any fit when Ben asked to review the
+    year limits; its output was discarded unread.
+    - **Year limits, unchanged.** Ben asked for the most inclusive windows, so the cached coverage was put to
+      him year by year.
+      - Austin's permits run from 1971 to 2026-11-10. Its 2024–2025 R-102 counts (90, 9) stay out, as
+        pre-registered: HOME (2024-02-05) ended the flag. Building the HOME-rule inferred counts is a later
+        follow-up.
+      - San Antonio's kept permits start on 2020-11-30. 2020 (about one month, 2 ADUs) stays out as a partial
+        year, so San Antonio is 2021–2025.
+      - D-079's 2016–2025 window stays for every state: no partial 2026 year and no Austin 2010–2015.
+    - **Test A's "new" place** = not in D-053's fit set.
+    - **Tier 0** borrows local rules by size band as 40 rule combinations. Ben expects many states to have no
+      ADU data, so tier 0 is a main use case, and its results are reported first.
+    - **Form A's τ** comes from the four-state profile likelihood (D-044), so the method carries to any state.
+    - **Form B's s** is the SD of the four fitted states' intercept shifts.
 
 ### D-080 · 2026-11-11 · ADUs: the 37119 lot count from the parcel roll, and legalized existing units left out of fitted counts
 - **Why:** the five-state rebuild (`reports/adu-rebuild-2026-11-11.md`, #381) raised two questions for Ben
