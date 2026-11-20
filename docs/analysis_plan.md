@@ -7834,3 +7834,20 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Accepted (Ben, 2026-11-19, "All as recommended"):** the baseline covers local-only places through their
   county's BPS row. This rebases onto main after D-101, without D-102 (#488), so county remainders keep
   band 0 here until #488 is decided.
+
+### D-106 · 2026-11-19 · V8 diagnosis: the baseline's shrinkage step lowers state totals (diagnosis only)
+- **Why:** Ben, 2026-11-19 ("All as recommended"): find why Wisconsin's forecast starts below 2019 (17,308
+  homes; 2021 median 15,316). Diagnosis only; V8 is not rescored and stays a fail (D-105).
+- **Finding** (`reports/wi/V8-baseline-diagnosis.md`, `scripts/dev/v8_baseline_diagnosis.py`, blind tables
+  only):
+  - The Fay-Herriot shrinkage step (protocol §5.7) lowers the statewide total by 1,832 homes a year (−11%):
+    duplexes −20%, 5+ units −21%. It pulls busy places such as Madison, Wauwatosa and Oak Creek toward quieter
+    county rates and does not keep the total.
+  - The D-029 cycle start then cuts 5+ units further (×0.87), because 2019 was a dip year for apartments.
+  - The same shrinkage loss appears in every state at origin 2019: 2-4 units −1% to −42%, 5+ units −4% to
+    −21%.
+- **Share of the V8 miss:** under a third. Holding 2019's pace gives about 86,500 homes against 112,166
+  observed; the rest is growth after 2019, mostly apartments.
+- **Proposed (not adopted; Ben's decision):** benchmark the shrunk levels within each shrinkage group so the
+  group total is kept. It needs a V1 rerun on all states with statewide totals scored, and before-and-after
+  bundles. No code or parameter is changed here.
