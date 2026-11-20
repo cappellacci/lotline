@@ -28,11 +28,14 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from lotline.config import load_params
+
 MAX_CODES = 800  # mechanics: more distinct values than this is free text (Alamance parusedsc2: 4,984)
 MIN_FIELD_COVERAGE = 0.5  # mechanics: a field must classify at least half the county's parcels to be read
 VACANT_FLAG_MIN_IMPROVED = 0.7  # mechanics: share of single-family parcels with a building value
-TIER1_MIN_YEAR_BUILT = 0.8  # D-016 (config/params/tiers.yaml tier1_min_year_built_share)
-TIER2_MIN_LAND_USE = 0.9  # D-016 (config/params/tiers.yaml tier2_min_land_use_share)
+_TIERS = load_params("tiers")  # D-016, read from config rather than copied
+TIER1_MIN_YEAR_BUILT = _TIERS["tier1_min_year_built_share"].value
+TIER2_MIN_LAND_USE = _TIERS["tier2_min_land_use_share"].value
 
 # (name, land_use_std, pattern). Order matters: the first match wins.
 RULES: list[tuple[str, str, str]] = [

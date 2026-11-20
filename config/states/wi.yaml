@@ -21,4 +21,12 @@ holdouts:
       the national data and the fitted calibration only, freeze the bundle on main, then score against the
       Census permits once Ben unblinds. Registered before the first Wisconsin fetch, so no Wisconsin outcome
       from 2020 on is ever downloaded into a table.
+    # Released on Ben's go-ahead ("All as recommended", 2026-11-19) after scoring: frozen in #500
+    # (results/frozen/V8-WI-TRANSFER.json, D-104), scored by scripts/dev/v8_score.py (#501, D-105).
+    released_on: 2026-11-19
+    released_note: >-
+      Frozen (#500, D-104) and scored on Census permits 2021-2025 (#501, D-105: fails the pass rule). Wisconsin's
+      full data can now be built. Anything built from it is post-test and is labelled so; it never re-scores
+      V8. The blind tables are kept in ~/lotline-data-v8-blind (processed/WI copied 2026-11-19, hashes equal to
+      the frozen file; raw and manual link to the shared folder): rerun V8 with LOTLINE_DATA_DIR set to it.
 sources: []

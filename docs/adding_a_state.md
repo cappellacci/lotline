@@ -14,6 +14,39 @@ case (file names use lower case).
 
 ---
 
+## The short path (one page)
+
+For a first result with national data only (level 0 in section 2), with no local data and no code:
+
+<!-- short-path:begin (generated from config/onboarding/steps.yaml) -->
+1. **Write the state config** (step 2, 15 minutes).
+2. **Check the state file** (step 3, 1 minute).
+   ```bash
+   uv run lotline onboard --state XX
+   ```
+3. **Fetch the national data** (step 6, about an hour, mostly waiting).
+   ```bash
+   uv run lotline fetch --state XX
+   uv run lotline validate --state XX
+   ```
+4. **Run the models for the first time** (step 7, a few minutes).
+   ```bash
+   uv run lotline results --state XX
+   uv run python scripts/dev/fee_dev_run.py --state XX --statewide --out reports/xx/fees-statewide.csv
+   ```
+5. **Read the results before you show them** (step 11, an hour).
+<!-- short-path:end -->
+
+Step 2 means: copy `config/states/oh.yaml` to `config/states/xx.yaml` and change the state code, name, FIPS
+code, Census region and ZIP prefixes (section 5, step 2). Then read the confidence flag in the bundle:
+`meta.data_tier`, `meta.overlap_flag` and `meta.caveats` (step 11). With national data only, the ADU ranges are
+wide and the bundle says "National data only"; the levels in section 2 say what each kind of local data adds.
+
+`uv run lotline onboard --state XX` prints this checklist for your state, marks what is already done, and
+shows the next commands. `--json` gives the same plan to the app.
+
+---
+
 ## 1. What you will end up with
 
 - `config/states/xx.yaml`: the state's settings.
@@ -54,6 +87,33 @@ and costs) covers every state, so level 0 needs no local data at all.
 **What is not known yet.** The missing-middle model has no data-tier result: the D-092 accuracy run skipped
 that test because too few permit sources had years after a reform (`reports/mm-d092/run5-tests/README.md`).
 The fee scenario has none either. Treat level 1 as the minimum for all three models until those tests exist.
+
+
+**What each kind of local data is worth (task 9, North Carolina, 2026-11-17).** NC was run four times with
+the same seed: as is, then with one input dropped to the fallback a state without it would get. Five-year net
+homes statewide, change in the median against the full run, and the P10-P90 range as a multiple of the full
+run's range:
+
+| Input dropped | Fallback | ADU median | ADU range | Middle housing median | Middle housing range | Fees |
+|---|---|---|---|---|---|---|
+| Parcels | ACS count of one-unit homes, scaled (D-056); tier 3 | −4% | ×0.97 | −18% | ×0.79 | +3%, ×1.03 |
+| Zoning rules (`config/reforms/nc.csv`) | Rule priors borrowed from the other coded states | +251% | ×4.9 | +51% | ×1.5 | unchanged |
+| Permits | No observed ADU floor | +4% | ×1.01 | unchanged | unchanged | unchanged |
+
+How to read it:
+- **Coded local rules matter most.** Without them, NC's places take the other states' rule mix. The ADU
+  median rises 3.5-fold and its range widens almost 5-fold, which suggests NC's own ordinances allow ADUs
+  less often than the borrowed mix (not checked rule by rule). This is why level 1 (coded rules) is the
+  recommended minimum.
+- **Parcels move the middle-housing median by about a fifth.** They do not widen the range: the ACS
+  fallback gives a smaller eligible count, so the range narrows with it. The D-056 factor's own uncertainty
+  is in the fallback, but here it is smaller than the change in the count.
+- **Permits barely move the scenario totals.** Their job is the observed ADU counts and the tests, not the
+  forecast.
+- **One state, one seed, 1,000 draws.** The numbers are NC's. A state whose own rules are looser than
+  the borrowed mix would move the other way.
+- **Rerun:** `uv run python scripts/dev/missing_input_matrix.py --state NC --out <folder>` (offline;
+  writes nothing to the data directory; holdouts stay hidden).
 
 ---
 
@@ -103,6 +163,29 @@ tables too. Run
 
 ## 5. The steps
 
+Every step at a glance. **Ways to do it:** *manual* is this guide; *built-in* means `lotline onboard` and the
+app show the commands to run; *agent* means a coding agent can do it from a brief. **Done when** names the check
+`lotline onboard` runs.
+
+<!-- steps-table:begin (generated from config/onboarding/steps.yaml) -->
+| Step | Level | Time | Ways to do it | Done when |
+|---|---|---|---|---|
+| 1. Look at what the state publishes | 0 national | about half a day | manual | docs/build/xx-assessment.md exists |
+| 2. Write the state config | 0 national | 15 minutes | manual | config/states/xx.yaml loads |
+| 3. Check the state file | 0 national | 1 minute | manual, built-in | the state file agrees with the repository |
+| 4. Code the state's ADU and middle-housing rules | 1 rules | 1 to 3 days for 20 places | manual, agent | config/reforms/xx.csv loads and passes the reforms schema |
+| 5. Code fees for at least 5 places | 1 rules | 1 to 2 days | manual, agent | config/fees/xx.csv covers at least 5 places |
+| 6. Fetch the national data | 0 national | about an hour, mostly waiting | manual, built-in | the six national tables are built |
+| 7. Run the models for the first time | 0 national | a few minutes | manual, built-in | reports/results/xx/bundle.json exists |
+| 8. Add local parcels | 3 parcels | 1 to 3 days per source | manual | a parcels table is built |
+| 9. Add local permits | 2 permits | 1 to 2 days per source | manual | a permits table is built |
+| 10. Rebuild the derived tables | 2 permits | about 10 minutes | manual, built-in | every GEOID in your data is a jurisdiction |
+| 11. Read the results before you show them | any | an hour | manual | you have read the confidence flags (a person decides) |
+| 12. Write it up | any | half a day | manual, built-in | docs/build/xx-readiness.md exists |
+| 13. Run the checks and open the pull request | any | 15 minutes | manual, built-in | tests and compliance_check.py pass (a person decides) |
+| 14. Pool the state into the calibration (optional; Ben's call) | any | a method decision | manual | Ben approves an analysis_plan.md entry (a person decides) |
+<!-- steps-table:end -->
+
 ### Step 1. Look at what the state publishes (about half a day)
 
 Fill in a short assessment before writing any code. `docs/build/or-assessment.md` is the model. Answer:
@@ -151,9 +234,19 @@ Optional keys, added later when they apply:
 
 Saving this file registers the state everywhere the code calls `all_states()`, including the app.
 
-### Step 3. Clear the known blockers
+### Step 3. Check the state file (1 minute)
 
-Nothing to do: the blockers are cleared (section 3). Skip to step 4.
+```bash
+uv run lotline onboard --state XX
+```
+
+Step 3 of its list checks the state file against the rest of the repository:
+- every GEOID in it belongs to the state;
+- the files it names exist;
+- `parcel_sources` names real sources.
+
+The same checks run in `tests/config/test_state_schema.py`. The blockers that used to sit here are cleared
+(section 3).
 
 ### Step 4. Code the state's ADU and middle-housing rules (1 to 3 days for 20 places)
 
@@ -314,7 +407,7 @@ uv run lotline fetch --source jurisdictions
 With no `--state`, this builds the other states' jurisdiction tables too, if your data directory lacks them
 (section 3).
 
-### Step 7. Run the models for the first time
+### Step 7. Run the models for the first time (a few minutes)
 
 ```bash
 uv run lotline results --state XX
@@ -374,10 +467,21 @@ from your data directory (see the note at the end of section 3).
    - Every source code maps to one of: `SF_DETACHED`, `SF_ATTACHED`, `DUPLEX`, `TRI_QUAD`, `MULTIFAMILY_5P`,
      `MOBILE_HOME`, `CONDO_UNIT`, `VACANT_RESIDENTIAL`, `MIXED_USE`, `COMMERCIAL`, `INDUSTRIAL`,
      `AGRICULTURAL`, `INSTITUTIONAL`, `OTHER` or `UNKNOWN`.
-   - Columns are up to the adapter. `config/crosswalks/oh_dte_luc.csv` is a simple example:
-     `state_luc,label,land_use_std,basis`.
+   - Use the land-use format, `field,code,description,land_use_std,notes,source_url`, and read it with
+     `lotline.adapters.crosswalks.read(path, "land_use")`. The reader checks the header and that every
+     `land_use_std` is in the list above. `config/crosswalks/oh_dte_luc.csv` is a simple example.
+   - Labels that vary by county are matched with ordered rules instead of exact codes: leave `code` blank and
+     add a `pattern` column (a regular expression; the first match wins), plus `county` if a rule holds in one
+     county only (`mn_land_use.csv`, `or_rlis_land_use.csv`).
 5. **Call** `holdout.apply(...)` on the rows before returning them, then `validate(df, TABLE)`.
 6. **Add a `sources:` entry** in `config/states/xx.yaml` with name, URL, license, access, cadence and notes.
+7. **Name your judgments.** A share, threshold, date or label your adapter applies to the data, beyond
+   reshaping it (for example "a taxing district maps to a city when 95% of its parcels are in that city"),
+   goes in the state file's `rules:` block, not in code:
+   - give it `value`, `unit`, `what`, `assumption`, `source` and `used_by` (the modules that read it), plus
+     `low` and `high` when you know a sensitivity range;
+   - read it with `lotline.config.state_rule("XX", "<rule id>")`;
+   - `config/states/oh.yaml` has three examples, `tx.yaml` two.
 
 ### Step 9. Add local permits (optional, level 2; 1 to 2 days per source)
 
@@ -393,6 +497,11 @@ the table.
   - `source`.
 - **Building types:** `SFD`, `ADU`, `TH`, `U2`, `U3_4`, `U5_6`, `U7P`, `DTQ`, `MF5`, `OTHER` or `UNKNOWN`.
   Never guess a finer type: set `type_confidence` to `inferred` or `unknown` instead.
+- **Map permit types** with a building-type crosswalk,
+  `field,code,description,building_type_std,role,derived_units,notes,source_url`
+  (`config/crosswalks/nc_gso_occupancy.csv` is the example), read with
+  `crosswalks.read(path, "building_type")`. `role` is what the permit does in your adapter's terms
+  (dwelling, multi, demolition, ...); `derived_units` is the unit count to record when the source gives none.
 - **ADUs:** mark them `building_type_std = ADU` (or fill `adu_type`). A permit that builds a house and an ADU
   together is split into two rows (D-041).
 - **Hand-check the flag:** if ADUs come from reading descriptions, check 30 flagged and 30 unflagged permits
@@ -573,3 +682,38 @@ Not hard-coded, so nothing to change:
 - the app build and the map (`src/lotline/app/us_tiles.yaml` lists every state);
 - the dashboard;
 - `compliance_check.py`.
+
+---
+
+## 8. Reference: what a state with no reform history borrows (WS-SCALE task 10)
+
+Most states have passed no ADU or middle-housing reform, so they have no uptake history of their own. Lotline
+does not need one. The rule is the same for every such state: **the uptake parameters come from the reformed
+states the model was fitted on, moved to the new state's own market, and the range widens by how much states
+differ from each other.**
+
+| What | Borrowed from | Moved to the new state by | Extra width for a new state |
+|---|---|---|---|
+| ADU uptake rate θ | The fit on the reformed states (`config/params/hazard.yaml`) | The state's own rents, home values and mortgage rates (`model/hazard.py`, D-043) | A state multiplier exp(τz) drawn per draw, τ from its fitted profile (D-044, `config/params/adu_state_effect.yaml`), plus the extrapolation widening for places outside the fitted range (D-030) |
+| ADU rule probabilities for uncoded places | The coded places of the states in `REFORM_STATES` ("borrow only", section 3) | The place's size band | None beyond the prior's own spread |
+| Missing-middle dose and blank shares | The same coded places, pooled | Size band | None beyond the prior's own spread |
+| Fee levels for places with no fee file | The coded places of every state, pooled (`model/fee_levels.py`, below 5 own places) | None | The pooled prior's spread |
+| Eligible lots with no parcels | The ACS count of one-unit detached homes | The D-056 scaling factor | The factor's log-sd |
+
+A borrowed parameter never changes for the states it came from: the new state feeds nothing back until Ben
+pools it (step 14).
+
+**Is this allowed?** The Rules and Handbook (read 2026-11-17) do not ask for causal identification. Neither
+page uses the words "causal", "identification" or "counterfactual".
+- The Handbook calls the challenge "methodology-agnostic".
+- The Handbook accepts assumptions when they are "clearly described and justified".
+- The Rules score the opposite of a data requirement. Under Policy Insight (§8), work applied to "states
+  with less complete data" is judged more favorably.
+
+So a borrowed parameter is acceptable when it is written down, sourced, and carried with its range. That is
+what the table above and `config/params/` do.
+
+**What a borrowed parameter cannot say.** It assumes the new state's builders and owners respond to a reform
+the way owners did in the fitted states once rents and prices are accounted for. Its range covers how much
+the fitted states differed; it cannot cover a way the new state differs from all of them. The bundle's
+`overlap_flag` says when a place sits outside the fitted range, and the guide's step 11 asks you to report it.

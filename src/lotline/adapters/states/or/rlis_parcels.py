@@ -48,7 +48,6 @@ district: those columns stay null (unknown).
 
 from __future__ import annotations
 
-import csv
 import json
 import re
 from dataclasses import dataclass
@@ -56,6 +55,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp, query_url
@@ -169,8 +169,9 @@ class Rule:
 
 
 def load_rules(path: Path = USE_CROSSWALK) -> list[Rule]:
-    with open(path, newline="") as fh:
-        return [Rule(re.compile(r["pattern"]), r["land_use_std"].strip()) for r in csv.DictReader(fh)]
+    return [
+        Rule(re.compile(r["pattern"]), r["land_use_std"].strip()) for r in crosswalks.read(path, "land_use")
+    ]
 
 
 def prop_code(raw: pd.Series) -> pd.Series:

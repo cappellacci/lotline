@@ -56,6 +56,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import epoch_ms_to_timestamp
@@ -138,7 +139,7 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def land_uses(path: Path = LAND_USE_CSV) -> dict[str, dict[str, str]]:
-    return {r["land_use"]: r for r in _read_csv(path)}
+    return crosswalks.by_code(crosswalks.read(path, "building_type"))
 
 
 def _clean(s: pd.Series) -> pd.Series:

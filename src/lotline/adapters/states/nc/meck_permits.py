@@ -63,6 +63,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import epoch_ms_to_timestamp
@@ -148,7 +149,7 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def usdc_codes(path: Path = USDC_CSV) -> dict[str, dict[str, str]]:
-    return {r["usdc_code"]: r for r in _read_csv(path)}
+    return crosswalks.by_code(crosswalks.read(path, "building_type"))
 
 
 def tax_jurisdictions() -> dict[str, str]:
@@ -209,7 +210,7 @@ def classify(row: pd.Series, codes: dict[str, dict[str, str]]) -> dict:
     """building_type_std, type_confidence, adu_type, units_new, units_removed, units_confidence, flags."""
     code = row["usdc"]
     info = codes.get(code) if isinstance(code, str) else None
-    activity = info["activity"] if info else None
+    activity = info["role"] if info else None
     btype = info["building_type_std"] if info else "UNKNOWN"
     conf = "high" if info else "unknown"
     n = pd.to_numeric(row.get("numunits"), errors="coerce")

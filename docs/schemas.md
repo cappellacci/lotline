@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.18** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.19** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -266,7 +266,7 @@ Table checks: `one_row_per_key`, `range_brackets_central`
 
 ## `place_inputs`
 
-Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task 4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use; a value missing at its source stays null here (no fills). `models` lists who reads the row; `models_note` says why a place is out of the others.
+Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task 4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use. Task 5 rules (D-103): one place set (every jurisdiction feeds the ADU and missing-middle scenarios); no parcel roll later than Y + 1; a missing ACS rent or value is the state median, flagged. `models` lists who reads the row; `models_note` says what was filled or how the row is covered.
 
 Table checks: `one_row_per_key`
 
@@ -291,6 +291,7 @@ Table checks: `one_row_per_key`
 | `parcel_sources` | text | no | yes |  |
 | `permit_sources` | text | no | yes |  |
 | `house_share` | number | no | yes | ≥ 0; ≤ 1 |
+| `house_share_roll` | integer | no | yes |  |
 | `eligible_parcels_adu` | number | no | yes | ≥ 0 |
 | `eligible_parcels_reported_adu` | number | no | yes | ≥ 0 |
 | `overlap_removed_adu` | number | no | yes |  |
@@ -307,6 +308,8 @@ Table checks: `one_row_per_key`
 | `denominator_quality_mm` | text | no | yes | one of `high`, `medium`, `low` |
 | `rent` | number | no | yes | ≥ 0 |
 | `home_value` | number | no | yes | ≥ 0 |
+| `rent_filled` | true/false | no | yes |  |
+| `home_value_filled` | true/false | no | yes |  |
 | `acs_end_year` | integer | no | yes |  |
 | `new_home_value` | number | no | yes |  |
 | `fee_parcel_vintage` | integer | no | yes |  |
@@ -583,3 +586,4 @@ Table checks: `one_row_per_state`
 | 1.16 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |
 | 1.17 | results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle ever held rows for them, so no data is lost |
 | 1.18 | market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income needed and share of AMI by home type and place type, market and break-even; WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway) |
+| 1.19 | place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, D-103) |

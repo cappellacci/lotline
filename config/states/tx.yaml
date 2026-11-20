@@ -91,3 +91,28 @@ sources:
       `lotline manifest register --source tcad` (Legacy 8.0.33 fixed-width layout, export dated 2026-07-18,
       557 MB zipped, about 18 GB unzipped). 239,626 City of Austin parcels (Travis County part only). Land use
       from TCAD's own codes (config/crosswalks/tx_tcad_state_codes.csv), else the state category.
+
+# Named adapter rules (WS-SCALE task 8, 2026-11-17): judgments the Texas adapters apply, kept here so they can
+# be read and varied without reading code. Values are unchanged from the constants they replace.
+rules:
+  austin_home_start:
+    value: "2024-02-05"
+    unit: date
+    what: >-
+      Austin HOME phase 1 start. From this date a two-family (R-103) permit for the HOME "TWO UNIT RES" use that
+      adds one home counts as an ADU (build/permit_theme.py, D-092 §6), and the TCAD roll counts HOME second
+      homes (austin_adu_roll.py).
+    assumption: >-
+      HOME removed the secondary-apartment use, so second homes on an existing lot moved from the ADU class
+      (R-102) to two-family. All or nothing: every such permit is an ADU (no share, no range set; a share with
+      a low and high value would be a method change, Ben's call).
+    source: "City of Austin HOME phase 1 (Ord. 20231207-001, config/reforms/tx.csv TX-4805000-missing_middle-2024), effective 2024-02-05; docs/research/lotline-causal-diagram-mm.md §6.6"
+    used_by: [permit_theme, austin_adu_roll]
+  austin_home_two_unit_use:
+    value: "TWO UNIT RES"
+    unit: permit use label
+    what: >-
+      The Austin permit use (reform_flag_raw) that marks a HOME second home filed as two-family.
+    assumption: The label is applied consistently from HOME phase 1 on. No range (a label).
+    source: "City of Austin issued permits (data.austintexas.gov 3syk-w9eu), use descriptions"
+    used_by: [permit_theme, austin_permits]
