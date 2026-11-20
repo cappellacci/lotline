@@ -110,7 +110,7 @@ from pathlib import Path
 import pandas as pd
 
 from lotline.adapters import crosswalks
-from lotline.config import CONFIG_DIR
+from lotline.config import CONFIG_DIR, state_rule
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp
 from lotline.schemas import validate
@@ -258,8 +258,8 @@ FRANKLIN_ROLLS = {
     2024: "2024-12-30",
     2025: "2025-12-31",
 }
-COUNTY_MIN_SHARE = 0.99  # share of a jurisdiction's houses in the county for it to get yearly rolls
-COUNTY_DISTRICT_SHARE = 0.95  # taxing district → jurisdiction, for parcels missing from the statewide roll
+COUNTY_MIN_SHARE = state_rule("OH", "county_min_share")  # config/states/oh.yaml rules
+COUNTY_DISTRICT_SHARE = state_rule("OH", "district_jurisdiction_share")  # config/states/oh.yaml rules
 FRANKLIN_MIN_SHARE = COUNTY_MIN_SHARE  # names used by the Franklin tests and docs
 FRANKLIN_DISTRICT_SHARE = COUNTY_DISTRICT_SHARE
 MONTGOMERY_GEOID = "39113"

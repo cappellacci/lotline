@@ -7834,3 +7834,53 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Accepted (Ben, 2026-11-19, "All as recommended"):** the baseline covers local-only places through their
   county's BPS row. This rebases onto main after D-101, without D-102 (#488), so county remainders keep
   band 0 here until #488 is decided.
+
+### D-106 · 2026-11-19 · V8 diagnosis: the baseline's shrinkage step lowers state totals (diagnosis only)
+- **Why:** Ben, 2026-11-19 ("All as recommended"): find why Wisconsin's forecast starts below 2019 (17,308
+  homes; 2021 median 15,316). Diagnosis only; V8 is not rescored and stays a fail (D-105).
+- **Finding** (`reports/wi/V8-baseline-diagnosis.md`, `scripts/dev/v8_baseline_diagnosis.py`, blind tables
+  only):
+  - The Fay-Herriot shrinkage step (protocol §5.7) lowers the statewide total by 1,832 homes a year (−11%):
+    duplexes −20%, 5+ units −21%. It pulls busy places such as Madison, Wauwatosa and Oak Creek toward quieter
+    county rates and does not keep the total.
+  - The D-029 cycle start then cuts 5+ units further (×0.87), because 2019 was a dip year for apartments.
+  - The same shrinkage loss appears in every state at origin 2019: 2-4 units −1% to −42%, 5+ units −4% to
+    −21%.
+- **Share of the V8 miss:** under a third. Holding 2019's pace gives about 86,500 homes against 112,166
+  observed; the rest is growth after 2019, mostly apartments.
+- **Proposed (not adopted; Ben's decision):** benchmark the shrunk levels within each shrinkage group so the
+  group total is kept. It needs a V1 rerun on all states with statewide totals scored, and before-and-after
+  bundles. No code or parameter is changed here.
+
+### Deviation · 2026-11-20 · ADUs: a place's own ADU rate needs permit records in every year it reads (proposed D-entry)
+
+- **Asked by:** Ben, 2026-11-19 ("Yes, make the coverage fix and measure it"), after the NC no-reform gap check.
+- **What was wrong:** `observed_per_year` treated every window year with no row as 0 ADUs. It did that for any
+  place that appeared in a source that flags ADUs, in any year. So a place whose source stopped, or that held
+  only a few stray rows, got an own rate of 0 and a no-reform forecast near 0 (D-091 persistence). Examples:
+  - Chapel Hill, NC: its permit file ends in 2021 (about 5 ADUs a year before that).
+  - Concord, Fairview, NC: only a few Mecklenburg rows, from parcels at the county line.
+  - 52 Minnesota places (mostly townships and small cities in the Met Council file) and 13 Ohio places (the
+    Franklin and Montgomery files list ADU permits only, so they can never show a zero).
+- **Rule now:** `observed_adu_counts` already has a row for a place and year only where the source holds at
+  least one record of any kind for it that year. A place keeps its own rate only if every year of its window
+  (`adu_observed_years`, ending at the origin or before its holdout) has such a row. Otherwise the mechanism
+  estimates it, as it does for places with no permit file. No new parameter.
+- **Not caught:** a place whose source has rows every year but holds only a sliver of it (Stallings, NC, a few
+  Mecklenburg rows a year). A volume test against Census permits was looked at and left out: it needs a
+  threshold, and the Census place geography does not match county remainders (Raleigh would sit at 0.45).
+- **Effect** (origin 2025, 1,000 draws; no-reform ADUs a year averaged over 2027-31, P10 / P50 / P90; five-year
+  ADUs added by the reform, P50). Places with an own rate, before → after:
+
+  | State | Own-rate places | No reform, all places | Reform adds (5 yr, P50) |
+  |---|---|---|---|
+  | MN | 184 → 132 | 103/136/227 → 96/138/281 | 537 → 525 |
+  | NC | 23 → 18 | 385/649/1,193 → 389/654/1,205 | 338 → 337 |
+  | OH | 16 → 3 | 23/57/187 → 23/57/199 | 452 → 454 |
+  | OR | 4 → 4 | unchanged | unchanged |
+  | TX | 6 → 5 (Dallas, file ends 2024) | unchanged | unchanged |
+
+  Statewide midpoints barely move. The wider P90s in MN and OH reflect places moved from a fixed zero to the
+  mechanism's range. Measured from the stored `place_inputs` with only the observed floor recomputed; the
+  bundles change once `place_inputs` is rebuilt.
+- **Holdouts:** windows still end before any holdout; no frozen prediction is touched.

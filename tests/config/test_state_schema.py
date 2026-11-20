@@ -124,3 +124,34 @@ def test_states_do_not_share_fips_or_zip_prefixes():
             for z in range(lo, hi + 1):
                 assert z not in owner, f"ZIP prefix {z:03d} is in both {owner[z]} and {c.state}"
                 owner[z] = c.state
+
+
+@pytest.mark.parametrize("state", STATES)
+def test_rules_name_modules_that_exist_and_read_them(state):
+    """Every named adapter rule (task 8) lists modules that exist and mention the rule id."""
+    from pathlib import Path
+
+    src = Path(__file__).resolve().parents[2] / "src" / "lotline"
+    modules = {p.stem: p for p in [*src.glob("adapters/states/*/*.py"), *src.glob("build/*.py")]}
+    for rule_id, rule in load_state(state).rules.items():
+        for name in rule.used_by:
+            assert name in modules, f"{state} rule {rule_id}: no module {name}"
+        readers = [n for n in rule.used_by if f'"{rule_id}"' in modules[n].read_text()]
+        assert readers, f"{state} rule {rule_id}: none of {rule.used_by} reads it"
+        assert rule.source.strip() and rule.what.strip() and rule.assumption.strip()
+
+
+def test_rule_range_and_lookup():
+    from pydantic import ValidationError
+
+    from lotline.config import AdapterRule, state_rule
+
+    base = dict(unit="share", what="w", assumption="a", source="s", used_by=["x"])
+    AdapterRule(value=0.95, low=0.9, high=0.99, **base)
+    with pytest.raises(ValidationError):
+        AdapterRule(value=0.95, low=0.96, high=0.99, **base)
+    with pytest.raises(ValidationError):
+        AdapterRule(value=0.95, low=0.9, **base)
+    assert state_rule("OH", "adu_repeat_days") == 730
+    with pytest.raises(KeyError, match="no rule"):
+        state_rule("OH", "no_such_rule")
