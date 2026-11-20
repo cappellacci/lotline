@@ -7884,3 +7884,33 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   mechanism's range. Measured from the stored `place_inputs` with only the observed floor recomputed; the
   bundles change once `place_inputs` is rebuilt.
 - **Holdouts:** windows still end before any holdout; no frozen prediction is touched.
+
+### Deviation · 2026-11-20 · ADUs: the place drift has mean 1, not median 1 (proposed D-entry; amends D-091)
+
+- **Asked by:** Ben, 2026-11-20 ("recentering the drift towards the average isn't a bad idea"; "Take the drift
+  fix back here and proceed"), after the NC no-reform check showed the forecast far above the permit history.
+- **Why:** D-091 multiplies each place's own ADU rate by exp(σ z), σ 1.025: median 1, mean exp(σ²/2) = ×1.69.
+  A state total sums places, so it sits nearer the sum of their means. NC's places with own counts forecast
+  441 a year at the state midpoint against a pace of 298, although their own medians summed to that pace.
+- **Change:** the drift is now exp(σ z − σ²/2): mean 1, median ×0.59. σ, the persistence posterior and the
+  mechanism are unchanged. Switch `adu_drift_mean_one` (config/params/adu.yaml); 0 restores D-091.
+- **Effect** (origin 2025, 1,000 draws, after the coverage rule of the same day; no-reform ADUs a year,
+  averaged over 2027-31; P10 / P50 / P90; "pace" = the k-adjusted 2023-25 average of the places with own
+  counts):
+
+  | State | Own-count places, pace | Those places: median 1 → mean 1 | Statewide no reform | Reform adds, 5 yr P50 |
+  |---|---|---|---|---|
+  | NC | 18, 298 | 257/441/809 → 152/261/483 | 387/646/1,180 → 270/453/867 | 342 → 339 |
+  | OR | 4, 347 | 211/444/1,075 → 125/264/642 | 406/697/1,309 → 300/513/913 | 14 → 14 |
+  | TX | 5, 205 | 110/248/651 → 65/147/386 | 345/768/2,057 → 278/620/1,873 | 5,178 → 4,648 |
+  | MN | 132, 44 | 75/102/155 → 44/61/92 | 94/140/281 → 61/95/227 | 523 → 474 |
+  | OH | 3, 22 | 9/24/71 → 5/14/42 | 24/55/181 → 18/42/154 | 437 → 435 |
+  | WI | 0 | — | unchanged | unchanged |
+
+- **What to watch:** where one city dominates (Portland in OR; Austin and San Antonio in TX) the state sum
+  does not average out, so its midpoint falls toward ×0.59 of pace: OR 264 vs 347, TX 147 vs 205. Each pace
+  stays inside its P10-P90. In NC, with 18 places, the midpoint is 261 vs 298. D-091's fit, with the log-mean
+  left free, found +0.5 (rates rose 2016-19 → 2021-25), so mean 1 is the cautious end of what the back-test saw.
+- **Reform effect:** the Handbook rate for own-count places is their no-reform rate × the mechanism's ratio,
+  so it falls too: TX −10% and MN −9% on the five-year midpoint; NC, OR, OH under 1%.
+- **Holdouts:** no frozen prediction file changes; scored tests keep their recorded results.

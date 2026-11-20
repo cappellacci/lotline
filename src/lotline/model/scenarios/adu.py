@@ -26,8 +26,9 @@ the start of year 1; `baseline.window`):
   already builds are in its baseline and are never counted as added (additionality, MS-10).
 - **Own counts with drift** (D-091, adopted 2026-11-15; D-093; `adu_own_rate_drift`, 0 turns it off): where a
   place has an observed ADU rate, its own counts set the no-reform hazard instead, in the lead years too:
-  persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z) with σ
-  `adu_drift_sigma` (`own_rate_draws`). The Handbook hazard is that rate times the mechanism's ratio
+  persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z − σ²/2) with σ
+  `adu_drift_sigma` (`own_rate_draws`): mean 1 since 2026-11-20 (`adu_drift_mean_one`; 0 gives D-091's
+  median-1 drift exp(σ z)). The Handbook hazard is that rate times the mechanism's ratio
   h_hb ÷ h_cur above, or plus the mechanism's added hazard where h_cur is 0 (`own_rate_paths`). The ratio
   has not been checked within ×2 on held-out data. Places with no observed rate keep the mechanism.
 
@@ -882,16 +883,19 @@ def pool_paths(
     return Paths(hb, cur)
 
 
-def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed) -> np.ndarray:
+def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed, mean_one: bool = False) -> np.ndarray:
     """D-091 (adopted 2026-11-15): each place's no-reform ADU rate per eligible parcel a year from its own
     counts, persistence × drift (draws × places; NaN where the place has no observed rate).
 
     - Persistence (D-090 F0): rate ~ Gamma(Y + 0.5, E), Y = observed_rate × eligible × n_years (the counts
       the observed rate came from, undercount-scaled as drawn), E = eligible × n_years lot-years.
     - Drift: × d = exp(σ z), z standard normal, one per place and draw for the whole window (median 1).
+      With `mean_one` (`adu_drift_mean_one`, Ben 2026-11-20): × d = exp(σ z − σ² / 2), mean 1, so a place's
+      expected rate stays at its persistence mean; its median falls to exp(−σ² / 2) (0.59 at σ 1.025).
 
     `observed_rate` is one row (places) or one row per draw (`observed_rate_draws`). Own stream: `seed`.
-    By hand: rate 0.01, 100 lots, 3 years -> Y 3, E 300, posterior mean 3.5 / 300 = 0.01167 before drift.
+    By hand: rate 0.01, 100 lots, 3 years -> Y 3, E 300, posterior mean 3.5 / 300 = 0.01167 before drift;
+    σ 1.025 with `mean_one`: every drift factor is the median-one factor × exp(−0.5253) = × 0.5914.
     """
     obs = np.atleast_2d(np.asarray(observed_rate, dtype=float))
     obs = np.broadcast_to(obs, (n, obs.shape[1]))
@@ -900,12 +904,13 @@ def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed) -> np.ndarr
     y = np.nan_to_num(obs * lot_years, nan=0.0)
     rng = np.random.default_rng(seed)
     rate = rng.standard_gamma(y + 0.5) / lot_years
-    drift = np.exp(sigma * rng.standard_normal(obs.shape))
+    drift = np.exp(sigma * rng.standard_normal(obs.shape) - (sigma**2 / 2 if mean_one else 0.0))
     return np.where(np.isfinite(obs) & np.isfinite(lot_years), rate * drift, np.nan)
 
 
 def own_rate_central(observed_rate, eligible, n_years) -> np.ndarray:
-    """The persistence posterior mean (Y + 0.5) / E at the median drift (1); NaN without an observed rate."""
+    """The persistence posterior mean (Y + 0.5) / E at drift 1 (the median, or with `adu_drift_mean_one` the
+    mean, of the drift factor); NaN without an observed rate."""
     e = np.asarray(eligible, dtype=float)
     lot_years = np.where(e > 0, e * n_years, np.nan)
     obs = np.asarray(observed_rate, dtype=float)
@@ -1113,6 +1118,7 @@ def run(
             central["adu_drift_sigma"],
             n,
             seed + 8,
+            mean_one=bool(central.get("adu_drift_mean_one", 0)),
         )
         if central["adu_own_rate_drift"]
         else np.full((n, len(places)), np.nan)
