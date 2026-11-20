@@ -18,7 +18,7 @@ theta:
     fees_local_half: [fees:fee_permit_elasticity, fees:land_capture_share, fees:fee_ramp_half_years]
   by_scenario:
     fees: &fee_theta
-      label: How strongly building responds to the cut
+      label: How strongly builders respond to fee cuts
       why: Extra homes as a share of the homes that would be built anyway, from the part of the saving builders keep after landowners take their share. Drawn from published studies, not measured in our states.
       low_word: Barely responds
       high_word: Responds strongly

@@ -27,6 +27,8 @@ Commands that download data need a `.env`: copy `.env.example` to `.env` and fil
 - [Data Provenance](docs/data_provenance.md): sources, licenses and preparation steps
 - [Disclosures](docs/disclosures.md): AI tools, models, external services and dependency licenses
 - [Data dictionary](docs/schemas.md) and [analysis plan](docs/analysis_plan.md)
+- [Adding local rules with the rule agents](docs/adding_local_rules_with_agents.md): research a state's
+  missing-middle, ADU and fee rules with your own Claude account, then review and import them
 
 ## License
 
@@ -106,8 +108,8 @@ uv run python scripts/publish_app.py --go --tag app-2026-11-20
 On the app's map, a grey state has no results yet and a light one rests mostly on national data. The engine
 reads a state through its config and adapters, and national sources (building permits, the ACS) cover every
 state. **The full step-by-step guide, with the data each model needs and the minimum that has tested well, is
-[`docs/adding_a_state.md`](docs/adding_a_state.md).** Today a new state also needs three small code changes
-(guide §3); the outline below is the short version.
+[`docs/adding_a_state.md`](docs/adding_a_state.md).** The outline below is the short version; the app's
+"Add a state" page walks through it in plain words.
 
 1. Add `config/states/<st>.yaml` with the state's code, name, FIPS code and Census region; copy an existing file
    such as `config/states/or.yaml` as a template.
@@ -115,7 +117,9 @@ state. **The full step-by-step guide, with the data each model needs and the min
 3. Optional, for a tighter range: add the state's own parcel, zoning or permit data as adapters in
    `src/lotline/adapters/states/<st>/`, with a land-use crosswalk in `config/crosswalks/`. Each source gets a
    row in `docs/data_provenance.md`.
-4. Run the engine and rebuild the page: `uv run lotline results --state XX`, then
+4. Optional: code the state's local rules (missing middle, ADUs, fees) with the rule agents and import them
+   ([guide](docs/adding_local_rules_with_agents.md)).
+5. Run the engine and rebuild the page: `uv run lotline results --state XX`, then
    `uv run python scripts/build_app.py`.
 
 With national data only, the engine estimates eligible lots from the ACS and the page labels the state

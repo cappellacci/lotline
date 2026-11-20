@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.16"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.19"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -276,6 +276,14 @@ class MarketGeoYear(_Strict):
     demand_bartik: Optional[Series[float]] = pa.Field(nullable=True)
     demand_bartik_loo: Optional[Series[float]] = pa.Field(nullable=True)
     demand_imputed_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)
+    # HUD Section 8 income limits (adapters/national/hud_il.py), county rows, year = HUD fiscal year, nominal
+    # dollars: the HUD area's 4-person median family income (AMI) and the 50% limits for 1 to 5 persons
+    hud_mfi: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_1: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_2: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_3: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_4: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_5: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
 
     @pa.dataframe_check
     def one_row_per_geo_year(cls, df: pd.DataFrame) -> bool:
@@ -418,9 +426,10 @@ class PlaceInputs(_Strict):
     """Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task
     4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with
     origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window
-    ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use; a value
-    missing at its source stays null here (no fills). `models` lists who reads the row; `models_note` says
-    why a place is out of the others.
+    ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use. Task 5 rules
+    (D-103): one place set (every jurisdiction feeds the ADU and missing-middle scenarios); no parcel roll
+    later than Y + 1; a missing ACS rent or value is the state median, flagged. `models` lists who reads the
+    row; `models_note` says what was filled or how the row is covered.
     """
 
     state: Series[str] = pa.Field(**_STATE)
@@ -442,7 +451,8 @@ class PlaceInputs(_Strict):
     is_holdout: Series[pd.BooleanDtype]
     parcel_sources: Optional[Series[str]] = pa.Field(nullable=True)  # sorted, ";"-joined
     permit_sources: Optional[Series[str]] = pa.Field(nullable=True)
-    house_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)  # latest roll (MM)
+    house_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)  # roll <= year + 1 (MM)
+    house_share_roll: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
     # eligible parcels at the origin, net of the D-020 overlap; one block per theme
     eligible_parcels_adu: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
     eligible_parcels_reported_adu: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
@@ -461,6 +471,8 @@ class PlaceInputs(_Strict):
     # prices (2025 dollars) and observed ADUs
     rent: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
     home_value: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    rent_filled: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)  # state median (task 5 rule 2)
+    home_value_filled: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
     acs_end_year: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
     new_home_value: Optional[Series[float]] = pa.Field(nullable=True)  # roll dollars (fees)
     fee_parcel_vintage: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
@@ -505,11 +517,7 @@ SCENARIOS = [
     "missing_middle",
     "fees",  # the Handbook benchmark: a $50,000 fee cut in half (D-065)
     "fees_local_half",  # real local fees cut in half (D-065)
-    "adu+missing_middle",
-    "adu+fees",
-    "missing_middle+fees",
-    "combined",  # all three, one parcel allocation (C47)
-]
+]  # each reform is run on its own; there are no combined scenarios (Ben, 2026-11-17 and 2026-11-18)
 STATE_ROLES = ["benchmark", "development", "transfer", "national_only"]
 OVERLAP_FLAGS = ["high", "medium", "low"]
 FUNNEL_STAGES = ["legal", "pencils", "built"]
@@ -694,6 +702,77 @@ class ResultsAduPlaceTypes(_Strict):
         return not df.duplicated(["state", "place_type"]).any()
 
 
+class ResultsAffordability(_Strict):
+    """Who the new homes serve (WS-NEED-AMI part B; `model/affordability.py`): context beside the need, not a
+    result of the reform scenarios. Per home type (`adu`, `plex_unit`, `house` for contrast) and place type
+    (`core`, `suburb`, `town`, or `state` for all places): `value` is the monthly rent (ADU, plex unit) or the
+    sale price (house) in 2025 dollars, `income` the yearly household income at which its housing cost is 30%
+    of income, and `ami_share` that income over the HUD area median income for a household of 1.5 persons per
+    bedroom. `rent_kind` `market` is the rent the engine assumes; `break_even` the rent at which the pro
+    forma's value covers building it (no land, no profit), for three `fee_case`s: today's local fees
+    (`current`), real local fees cut in half (`fees_local_half`) and the Handbook benchmark (`fees`). Places
+    are weighted by the homes the matching reform adds there (`weighting` `homes_added`), or equally where it
+    adds none (`places_equal`); `mfi` is that weighted HUD 4-person MFI (2025 dollars). Medians with P10 and
+    P90 across draws. Empty when no HUD income limits file is registered."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    home_type: Series[str] = pa.Field(isin=["adu", "plex_unit", "house"])
+    place_type: Series[str] = pa.Field(isin=[*ADU_PLACE_TYPES, "state"])
+    rent_kind: Series[str] = pa.Field(isin=["market", "break_even"])
+    fee_case: Series[str] = pa.Field(isin=["current", "fees_local_half", "fees"])
+    places: Series[pd.Int64Dtype] = pa.Field(ge=1)
+    weighting: Series[str] = pa.Field(isin=["homes_added", "places_equal"])
+    mfi: Series[float] = pa.Field(gt=0)
+    value_p10: Series[float] = pa.Field(ge=0)
+    value: Series[float] = pa.Field(ge=0)
+    value_p90: Series[float] = pa.Field(ge=0)
+    income_p10: Series[float] = pa.Field(ge=0)
+    income: Series[float] = pa.Field(ge=0)
+    income_p90: Series[float] = pa.Field(ge=0)
+    ami_share_p10: Series[float] = pa.Field(ge=0)
+    ami_share: Series[float] = pa.Field(ge=0)
+    ami_share_p90: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "home_type", "place_type", "rent_kind", "fee_case"]).any()
+
+
+class ResultsShortfall(_Strict):
+    """The shortfall view of housing need (`model/shortfall.py`; Ben, 2026-11-19): one row per state. The need
+    is the shortage today plus household growth over the five years (negative where households are projected
+    to fall) plus homes lost over the five years (`stock_loss_rate` x the ACS housing stock in `stock_year` x
+    5); `built` is the no-change forecast of homes permitted, all sizes, over the five years (P10, P50, P90);
+    the gap is need minus built, with bounds from the need's low and high ends against built at P90 and P10. A
+    gap at or below zero means homes built anyway would cover the need at that end."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    shortage_low: Series[float] = pa.Field(ge=0)
+    shortage: Series[float] = pa.Field(ge=0)
+    shortage_high: Series[float] = pa.Field(ge=0)
+    growth_low: Series[float] = pa.Field()
+    growth: Series[float] = pa.Field()
+    growth_high: Series[float] = pa.Field()
+    stock: Series[float] = pa.Field(gt=0)
+    stock_year: Series[pd.Int64Dtype] = pa.Field(ge=2009, le=2100)
+    lost_low: Series[float] = pa.Field(ge=0)
+    lost: Series[float] = pa.Field(ge=0)
+    lost_high: Series[float] = pa.Field(ge=0)
+    need_low: Series[float] = pa.Field()
+    need: Series[float] = pa.Field()
+    need_high: Series[float] = pa.Field()
+    built_p10: Series[float] = pa.Field(ge=0)
+    built: Series[float] = pa.Field(ge=0)
+    built_p90: Series[float] = pa.Field(ge=0)
+    gap_low: Series[float] = pa.Field()
+    gap: Series[float] = pa.Field()
+    gap_high: Series[float] = pa.Field()
+
+    @pa.dataframe_check
+    def one_row_per_state(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state"]).any()
+
+
 class ResultsAduBaseline(_Strict):
     """Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over
     the draws: what the ADU scenario's added range stacks on."""
@@ -733,6 +812,8 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_observed": ResultsObserved,
     "results_adu_place_types": ResultsAduPlaceTypes,
     "results_adu_baseline": ResultsAduBaseline,
+    "results_affordability": ResultsAffordability,
+    "results_shortfall": ResultsShortfall,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -836,6 +917,24 @@ HISTORY = [
         "1.16",
         "place_inputs: every shared per-place input for all three models and the baseline, one row per "
         "(state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455)",
+    ),
+    (
+        "1.17",
+        "results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, "
+        "`missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). "
+        "No bundle ever held rows for them, so no data is lost",
+    ),
+    (
+        "1.18",
+        "market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county "
+        "rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income "
+        "needed and share of AMI by home type and place type, market and break-even; "
+        "WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway)",
+    ),
+    (
+        "1.19",
+        "place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, "
+        "D-103)",
     ),
 ]
 

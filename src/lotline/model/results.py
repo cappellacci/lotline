@@ -14,14 +14,17 @@
   `historical_floor_rows`): with-reform permits a year against the trailing observed average.
 - `baseline`: the no-policy-change forecast (`model/baseline.py`), homes permitted statewide per BPS building
   size and period, so the page can show the level the scenarios add to (`baseline_table`).
+- `affordability`: who the new homes serve (`model/affordability.py`, WS-NEED-AMI part B): rent or price,
+  income needed and share of area median income per home type and place type, market and break-even.
+  Context, not a scenario result; empty without a registered HUD income limits file.
 - `observed`: what was actually permitted in the years before the window (`observed_table`): ADU permits where
   local data flag them, and homes in 2-4 unit buildings from BPS.
 
 Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide, and the fee scenario
 over every place the baseline forecasts (D-076) twice, as D-065 labels them: `fees`, the Handbook benchmark
-($50,000 cut in half), and `fees_local_half`, real local fees cut in half. Stacked combinations
-are not planned (Ben, 2026-11-17) and are not listed; a single scenario the engine cannot run is listed in
-`meta.scenarios_pending`, never filled with a stand-in.
+($50,000 cut in half), and `fees_local_half`, real local fees cut in half. Each reform is run on its own
+(Ben, 2026-11-17). A scenario the engine cannot run is listed in `meta.scenarios_pending`, never filled with
+a stand-in.
 
 Factors the scenario module does not draw itself are drawn here, triangular over config/params/aggregate.yaml
 (low, value, high), from `results_seed`: `completion_factor_single_family` (ADU),
@@ -58,14 +61,13 @@ PARTS = (
     "observed",
     "adu_place_types",
     "adu_baseline",
+    "affordability",
+    "shortfall",
 )
 TABLE = {part: f"results_{part}" for part in PARTS}
 ENGINE_SCENARIOS = ("adu", "missing_middle", "fees", "fees_local_half")  # scenarios `build_bundle` can fill
 # D-065: the bundle's fee scenarios and the `scenarios.fees` mode behind each
 FEE_SCENARIOS = {"fees": "handbook", "fees_local_half": "local_half"}
-# Reforms are shown one at a time; stacked combinations are not planned (Ben, 2026-11-17: "I don't think we
-# need to combine"), so they are never listed as pending. They stay in the schema's list (additive only).
-SINGLE_SCENARIOS = tuple(s for s in SCENARIOS if "+" not in s and s != "combined")
 REPO = Path(__file__).resolve().parents[3]
 
 
@@ -294,6 +296,69 @@ def adu_baseline_years(state: str, run_draws: Mapping, origin: int) -> pd.DataFr
     _, _, first = baseline.window(origin)
     rows = [{"state": state, "period": str(first + y), **_pct(cur[:, y])} for y in range(cur.shape[1])]
     return pd.DataFrame(rows, columns=["state", *_columns("adu_baseline")])
+
+
+def affordability_table(state: str, places, run_draws: Mapping, res_mm, fee_places, store) -> pd.DataFrame:
+    """`results_affordability`: who the new homes serve (`model/affordability.py`), from the inputs the
+    scenarios already used. Empty (no rows) when no HUD income limits file is registered."""
+    from lotline.model import affordability
+
+    market = store.read(state, "market_geo_year")
+    inputs = affordability.inputs(places, run_draws, getattr(res_mm, "places", None), fee_places, market)
+    out = affordability.table(state, inputs)
+    return (
+        out.astype({"places": "Int64"})
+        if len(out)
+        else pd.DataFrame(columns=["state", *_columns("affordability")])
+    )
+
+
+def state_stock(
+    acs: pd.DataFrame | None, state: str, origin: int, fips: str | None = None
+) -> tuple[float, int] | None:
+    """The state's housing units (ACS B25024_001, newest 5-year vintage ending by `origin`) and its year."""
+    from lotline.config import load_state
+
+    if acs is None or acs.empty:
+        return None
+    geo = f"state:{fips or load_state(state).fips}"
+    rows = acs[(acs["geo"] == geo) & (acs["variable"] == "B25024_001") & (acs["end_year"] <= origin)]
+    rows = rows.dropna(subset=["estimate"]).sort_values("end_year")
+    return (float(rows["estimate"].iloc[-1]), int(rows["end_year"].iloc[-1])) if len(rows) else None
+
+
+def shortfall_table(
+    state: str, base: pd.DataFrame, acs, origin: int, need_params=None, fips=None
+) -> pd.DataFrame:
+    """`results_shortfall`: the need left after homes built anyway (`model/shortfall.py`). No row when the
+    state has no shortage estimate, no housing stock or no five-year all-sizes baseline."""
+    from lotline.model import shortfall
+
+    cols = ["state", *_columns("shortfall")]
+    have = aggregate.need(state, need_params)
+    stock = state_stock(acs, state, origin, fips)
+    five = base[(base["size_class"] == "all") & base["period"].str.contains("-")] if len(base) else base
+    if aggregate.SHORTAGE not in have or stock is None or not len(five):
+        return pd.DataFrame(columns=cols)
+    sh = have[aggregate.SHORTAGE]
+    gr = have.get(aggregate.GROWTH)
+    growth = (gr.low, gr.value, gr.high) if gr is not None else (0.0, 0.0, 0.0)
+    r = load_params("aggregate")["stock_loss_rate"]
+    b = five.iloc[0]
+    g = shortfall.gap(
+        (sh.low, sh.value, sh.high),
+        growth,
+        stock[0],
+        (r.low, r.value, r.high),
+        (b["p10"], b["p50"], b["p90"]),
+    )
+    row = {
+        "state": state, "shortage_low": sh.low, "shortage": sh.value, "shortage_high": sh.high,
+        "growth_low": growth[0], "growth": growth[1], "growth_high": growth[2],
+        "stock": stock[0], "stock_year": stock[1],
+        "built_p10": b["p10"], "built": b["p50"], "built_p90": b["p90"], **g,
+    }  # fmt: skip
+    return pd.DataFrame([row], columns=cols).astype({"stock_year": "Int64"})
 
 
 def mm_year_shares(res) -> np.ndarray:
@@ -675,8 +740,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "overlap_flag": flag,
                 "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
-                "scenarios_pending": ", ".join(s for s in SINGLE_SCENARIOS if s not in ENGINE_SCENARIOS)
-                or None,
+                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS) or None,
             }
         ]
     )
@@ -700,4 +764,6 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
         "observed": seen,
         "adu_place_types": adu_place_type_table(st, places, run_draws),
         "adu_baseline": adu_baseline_years(st, run_draws, origin),
+        "affordability": affordability_table(st, places, run_draws, res_mm, fee_places, store),
+        "shortfall": shortfall_table(st, base, store.read(st, "acs_geo_year"), origin),
     }

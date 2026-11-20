@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.16** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.19** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -167,6 +167,12 @@ Table checks: `one_row_per_geo_year`
 | `demand_bartik` | number | no | yes |  |
 | `demand_bartik_loo` | number | no | yes |  |
 | `demand_imputed_share` | number | no | yes | ≥ 0; ≤ 1 |
+| `hud_mfi` | number | no | yes | > 0 |
+| `hud_l50_1` | number | no | yes | > 0 |
+| `hud_l50_2` | number | no | yes | > 0 |
+| `hud_l50_3` | number | no | yes | > 0 |
+| `hud_l50_4` | number | no | yes | > 0 |
+| `hud_l50_5` | number | no | yes | > 0 |
 
 ## `acs_geo_year`
 
@@ -260,7 +266,7 @@ Table checks: `one_row_per_key`, `range_brackets_central`
 
 ## `place_inputs`
 
-Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task 4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use; a value missing at its source stays null here (no fills). `models` lists who reads the row; `models_note` says why a place is out of the others.
+Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task 4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use. Task 5 rules (D-103): one place set (every jurisdiction feeds the ADU and missing-middle scenarios); no parcel roll later than Y + 1; a missing ACS rent or value is the state median, flagged. `models` lists who reads the row; `models_note` says what was filled or how the row is covered.
 
 Table checks: `one_row_per_key`
 
@@ -285,6 +291,7 @@ Table checks: `one_row_per_key`
 | `parcel_sources` | text | no | yes |  |
 | `permit_sources` | text | no | yes |  |
 | `house_share` | number | no | yes | ≥ 0; ≤ 1 |
+| `house_share_roll` | integer | no | yes |  |
 | `eligible_parcels_adu` | number | no | yes | ≥ 0 |
 | `eligible_parcels_reported_adu` | number | no | yes | ≥ 0 |
 | `overlap_removed_adu` | number | no | yes |  |
@@ -301,6 +308,8 @@ Table checks: `one_row_per_key`
 | `denominator_quality_mm` | text | no | yes | one of `high`, `medium`, `low` |
 | `rent` | number | no | yes | ≥ 0 |
 | `home_value` | number | no | yes | ≥ 0 |
+| `rent_filled` | true/false | no | yes |  |
+| `home_value_filled` | true/false | no | yes |  |
 | `acs_end_year` | integer | no | yes |  |
 | `new_home_value` | number | no | yes |  |
 | `fee_parcel_vintage` | integer | no | yes |  |
@@ -353,7 +362,7 @@ Table checks: `one_row_per_key`
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `draw` | integer | yes | no | ≥ 0 |
 | `eligible_tier1` | number | yes | no | ≥ 0 |
 | `eligible_tier2` | number | yes | no | ≥ 0 |
@@ -372,7 +381,7 @@ Legal -> Pencils -> Built for each scenario: parcels for `legal` and `pencils`, 
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `stage` | text | yes | no | one of `legal`, `pencils`, `built` |
 | `unit` | text | yes | no | one of `parcels`, `homes` |
 | `p10` | number | yes | no | ≥ 0 |
@@ -386,7 +395,7 @@ The parity target: statewide P10/P50/P90 and mean per scenario, outcome and peri
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `outcome` | text | yes | no | one of `permits_added`, `homes_in_place`, `homes_net_statewide` |
 | `period` | text | yes | no | matches `^\d{4}(-\d{4})?$` |
 | `p10` | number | yes | no |  |
@@ -401,7 +410,7 @@ Share of housing need (D-057): one row per scenario and denominator kind the sta
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half`, `adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined` |
+| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
 | `denominator_kind` | text | yes | no | one of `household_growth_5y`, `shortage_stock` |
 | `label` | text | yes | no |  |
 | `denominator` | number | yes | no |  |
@@ -498,6 +507,62 @@ Table checks: `one_row_per_key`
 | `p50` | number | yes | no | ≥ 0 |
 | `p90` | number | yes | no | ≥ 0 |
 
+## `results_affordability`
+
+Who the new homes serve (WS-NEED-AMI part B; `model/affordability.py`): context beside the need, not a result of the reform scenarios. Per home type (`adu`, `plex_unit`, `house` for contrast) and place type (`core`, `suburb`, `town`, or `state` for all places): `value` is the monthly rent (ADU, plex unit) or the sale price (house) in 2025 dollars, `income` the yearly household income at which its housing cost is 30% of income, and `ami_share` that income over the HUD area median income for a household of 1.5 persons per bedroom. `rent_kind` `market` is the rent the engine assumes; `break_even` the rent at which the pro forma's value covers building it (no land, no profit), for three `fee_case`s: today's local fees (`current`), real local fees cut in half (`fees_local_half`) and the Handbook benchmark (`fees`). Places are weighted by the homes the matching reform adds there (`weighting` `homes_added`), or equally where it adds none (`places_equal`); `mfi` is that weighted HUD 4-person MFI (2025 dollars). Medians with P10 and P90 across draws. Empty when no HUD income limits file is registered.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `home_type` | text | yes | no | one of `adu`, `plex_unit`, `house` |
+| `place_type` | text | yes | no | one of `core`, `suburb`, `town`, `state` |
+| `rent_kind` | text | yes | no | one of `market`, `break_even` |
+| `fee_case` | text | yes | no | one of `current`, `fees_local_half`, `fees` |
+| `places` | integer | yes | no | ≥ 1 |
+| `weighting` | text | yes | no | one of `homes_added`, `places_equal` |
+| `mfi` | number | yes | no | > 0 |
+| `value_p10` | number | yes | no | ≥ 0 |
+| `value` | number | yes | no | ≥ 0 |
+| `value_p90` | number | yes | no | ≥ 0 |
+| `income_p10` | number | yes | no | ≥ 0 |
+| `income` | number | yes | no | ≥ 0 |
+| `income_p90` | number | yes | no | ≥ 0 |
+| `ami_share_p10` | number | yes | no | ≥ 0 |
+| `ami_share` | number | yes | no | ≥ 0 |
+| `ami_share_p90` | number | yes | no | ≥ 0 |
+
+## `results_shortfall`
+
+The shortfall view of housing need (`model/shortfall.py`; Ben, 2026-11-19): one row per state. The need is the shortage today plus household growth over the five years (negative where households are projected to fall) plus homes lost over the five years (`stock_loss_rate` x the ACS housing stock in `stock_year` x 5); `built` is the no-change forecast of homes permitted, all sizes, over the five years (P10, P50, P90); the gap is need minus built, with bounds from the need's low and high ends against built at P90 and P10. A gap at or below zero means homes built anyway would cover the need at that end.
+
+Table checks: `one_row_per_state`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `shortage_low` | number | yes | no | ≥ 0 |
+| `shortage` | number | yes | no | ≥ 0 |
+| `shortage_high` | number | yes | no | ≥ 0 |
+| `growth_low` | number | yes | no |  |
+| `growth` | number | yes | no |  |
+| `growth_high` | number | yes | no |  |
+| `stock` | number | yes | no | > 0 |
+| `stock_year` | integer | yes | no | ≥ 2009; ≤ 2100 |
+| `lost_low` | number | yes | no | ≥ 0 |
+| `lost` | number | yes | no | ≥ 0 |
+| `lost_high` | number | yes | no | ≥ 0 |
+| `need_low` | number | yes | no |  |
+| `need` | number | yes | no |  |
+| `need_high` | number | yes | no |  |
+| `built_p10` | number | yes | no | ≥ 0 |
+| `built` | number | yes | no | ≥ 0 |
+| `built_p90` | number | yes | no | ≥ 0 |
+| `gap_low` | number | yes | no |  |
+| `gap` | number | yes | no |  |
+| `gap_high` | number | yes | no |  |
+
 ## Version history
 
 | Version | Change |
@@ -519,3 +584,6 @@ Table checks: `one_row_per_key`
 | 1.14 | results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook benchmark), D-065 |
 | 1.15 | results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide current-rules ADUs per window year), for the app's ADU evidence card |
 | 1.16 | place_inputs: every shared per-place input for all three models and the baseline, one row per (state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455) |
+| 1.17 | results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle ever held rows for them, so no data is lost |
+| 1.18 | market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income needed and share of AMI by home type and place type, market and break-even; WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway) |
+| 1.19 | place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, D-103) |

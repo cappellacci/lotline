@@ -112,3 +112,11 @@ historical_floor_years:
   unit: years of observed permits ending at the data origin
   source: "WS-NC-GUTCHECK brief task 6 (Ben, 2026-11-09), from office hours 2026-11-09 action item 3 (docs/research/office-hours-2026-11-09-greg-miller-notes.md): flag a with-reform median below the trailing 3-year observed average"
   notes: "Used only by the historical_floor scorecard check (model/gutcheck.py): a display flag, not a model input. Reasons that excuse a flag live in config/historical_floor_reasons.yaml."
+
+stock_loss_rate:
+  value: 0.003
+  low: 0.002
+  high: 0.005
+  unit: share of the housing stock lost per year (demolished, destroyed or converted to other uses)
+  source: "HUD / Census American Housing Survey, Components of Inventory Change (CINCH) reports: roughly 0.3% of the stock is lost each year in recent two-year panels (approx.); range covers panel-to-panel variation and older, higher-loss periods"
+  notes: "Used only by the shortfall view of housing need (model/shortfall.py; Ben, 2026-11-19): homes built anyway are gross permits, so homes lost over the five years are added to the need before the gap is taken. Vacancy and second homes are not netted out (a stated limit)."

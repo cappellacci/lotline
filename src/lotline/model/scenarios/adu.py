@@ -1496,11 +1496,37 @@ def county_mix(places: pd.DataFrame, state: str, store, origin: int, coded: pd.D
     return out
 
 
+# the ADU columns of `place_inputs` (suffix `_adu`) that `places_from_store` reads
+PLACE_INPUT_ADU = (
+    "eligible_parcels",
+    "eligible_parcels_reported",
+    "overlap_removed",
+    "parcels_year",
+    "parcels_after_origin",
+    "denominator_source",
+    "denominator_quality",
+)
+
+
+def _place_input_rows(state: str, store, origin: int) -> pd.DataFrame:
+    """`place_inputs` rows for a run with this origin (WS-SCALE, contract-change #455): the stored table's
+    year == origin, else built for that year from the same processed tables (a synthetic or partial store)."""
+    from lotline.build import place_inputs
+
+    table = store.read(state, place_inputs.TABLE)
+    rows = None if table is None else table[table["year"] == origin]
+    if rows is None or rows.empty:
+        rows = place_inputs.build(state, store, [origin])
+    return rows.assign(geoid=rows["geoid"].astype(str))
+
+
 def places_from_store(state: str, store, origin: int, undercount="table") -> pd.DataFrame:
     """One row per jurisdiction with ADU-eligible parcels: every input `run` needs, from processed tables.
 
-    Eligible parcels (theme 'adu', current rule version) from the newest year <= origin (else the earliest
-    later roll, flagged `parcels_after_origin`); ACS rent and value from the newest vintage <= origin; no
+    The shared per-place inputs come from `place_inputs` at year == origin (WS-SCALE): eligible parcels (theme
+    'adu', current rule version) from the newest roll <= origin (else the earliest later roll, flagged
+    `parcels_after_origin`), net of the D-020 overlap; ACS rent and value from the newest vintage <= origin;
+    the observed ADU floor; the D-088 place type. Model-specific steps stay here: no
     mortgage rate (forward runs use `mortgage_rate_forecast`); coded ADU rules in force on
     `baseline.rules_as_of` (31 December of the window's first year, D-064); observed ADU permits per parcel
     where local permits flag ADUs, each source's count times its flag undercount k (D-078; `undercount`:
@@ -1508,29 +1534,15 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     `observed_adu_by_k_row` so `run` can redraw k in every draw.
     Reads only holdout-filtered tables (DataStore); no outcome after the origin is used.
     """
-    from lotline.build import eligible as eligible_rule
-    from lotline.model import money
-
-    elig = store.read(state, "eligible_parcels")
-    elig = elig[(elig["theme"] == "adu") & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
-    # newest roll <= origin; where a place has only later rolls (e.g. Austin's 2026 TCAD roll), the earliest
-    # of those, flagged: a parcel count is a denominator, not an outcome, so no holdout is touched
-    elig = elig.assign(after=elig["year"] > origin, gap=(elig["year"] - origin).abs())
-    elig = elig.sort_values(["after", "gap"]).groupby("jurisdiction_geoid").first().reset_index()
-    elig = elig.rename(
-        columns={"jurisdiction_geoid": "geoid", "year": "parcels_year", "after": "parcels_after_origin"}
-    )
-    elig = elig.drop(columns="gap")
-    juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "county_geoid", "in_bps"]]
-    places = elig.merge(juris, on="geoid", how="left")
-    places = places[places["eligible_parcels"].fillna(0) > 0].reset_index(drop=True)
-    places = non_overlapping(places, store.read(state, "jurisdictions"), _county_shares(state, store, places))
-
-    market = store.read(state, "market_geo_year")
-    cpi = money.index_by_year(market, "cpi_u")
-    places["acs_geo"] = places["kind"].map(ACS_PREFIX) + ":" + places["geoid"]
-    acs = acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
-    places = places.merge(acs, left_on="acs_geo", right_index=True, how="left")
+    rows = _place_input_rows(state, store, origin)
+    adu_cols = {f"{c}_adu": c for c in PLACE_INPUT_ADU if f"{c}_adu" in rows}
+    keep = ["geoid", "name", "kind", "county_geoid", "in_bps", "data_tier", *adu_cols, "acs_geo", *ACS_VARS]
+    keep.append("acs_end_year")
+    rows = rows[rows["eligible_parcels_adu"].fillna(0) > 0]
+    places = rows[[c for c in keep if c in rows]].rename(columns=adu_cols)
+    places = places.sort_values("geoid").reset_index(drop=True)
+    place_type = rows.set_index("geoid")["place_type"]
+    observed = rows.set_index("geoid")["observed_adu_per_year"]
     places["mortgage_rate"] = np.nan  # forward run: the rate path is a drawn parameter (market.yaml)
 
     as_of = baseline.rules_as_of(origin)  # D-064: rules already law by the end of the first window year
@@ -1547,15 +1559,13 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     k_adj = uc.factors_arg(undercount)
     counts = observed_adu_counts(store.read(state, "permits"), 1900, origin, k_adj)
     stops = holdout_stops(load_state(state).holdouts)
-    per_year = observed_per_year(counts, origin, n_years, stops)
-    places["observed_adu_per_year"] = places["geoid"].map(per_year)
+    # place_inputs carries the observed floor at the table's central k (D-078); any other k is recomputed here
+    if not (isinstance(undercount, str) and undercount == "table"):
+        observed = pd.Series(observed_per_year(counts, origin, n_years, stops))
+    places["observed_adu_per_year"] = places["geoid"].map(observed).to_numpy()
     places["observed_rate"] = places["observed_adu_per_year"] / places["eligible_parcels"]
-    # D-088 place type from national data (OMB metro areas, ACS 2011-15 housing units); a jurisdiction the
-    # type table doesn't know is a town (no metro area known), as D-089 read it
-    from lotline.model import adu_types
-
-    types = adu_types.jurisdiction_types(store, state)
-    places["place_type"] = places["geoid"].astype(str).map(types).fillna(TOWN)
+    # D-088 place type from place_inputs (OMB metro areas, ACS 2011-15 units); a town where unknown (D-089)
+    places["place_type"] = places["geoid"].map(place_type).fillna(TOWN).to_numpy()
     if k_adj is not None:
         terms = observed_terms_by_k_row(counts, origin, n_years, stops)
         places["observed_adu_by_k_row"] = places["geoid"].map(terms)
