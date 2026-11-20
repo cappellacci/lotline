@@ -4,8 +4,8 @@ The page's own script runs under node, against a page built from a synthetic bun
 plus missing-middle and fee runs made by scaling its uptake, so every number is known by hand. Checks: the
 card's numbers trace to bundle fields (the need rows; each reform's draws, summed run by run for the three
 together); every midpoint comes with its range (S6); the fee view defaults to real local fees and falls back
-to the Handbook benchmark; one bar per kind of need, never mixed; a bundle with no need rows renders
-the pending note.
+to the Handbook benchmark; one bar against the headline kind of need, the other kind as one line; a bundle
+with no need rows renders the pending note.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ HARNESS = Path(__file__).with_name("need_card_harness.js")  # the page's script 
 SCALE = {"missing_middle": 3.0, "fees": 2.0, "fees_local_half": 0.5}  # uptake multiples of the ADU draws
 
 
-def _bundle(*, fees_local_half: bool = True, need: bool = True) -> dict:
+def _bundle(*, fees_local_half: bool = True, need: bool = True, shortfall: bool = False) -> dict:
     doc = json.loads(FIXTURE.read_text())
     adu = [d for d in doc["draws"] if d["scenario"] == "adu"]
     for s, k in SCALE.items():
@@ -40,6 +40,8 @@ def _bundle(*, fees_local_half: bool = True, need: bool = True) -> dict:
         doc["need"] += [{**n, "scenario": s} for n in doc["need"] if n["scenario"] == "adu"]
     if not need:
         doc["need"] = []
+    if not shortfall:  # the share-of-need view (the fallback when a bundle has no shortfall row)
+        doc["shortfall"] = []
     return doc
 
 
@@ -90,33 +92,60 @@ def test_card_numbers_trace_to_the_bundle(tmp_path):
     net = {s: _net([d for d in doc["draws"] if d["scenario"] == s]) for s in shown}
     together = sum(net.values())
     lo, hi = np.percentile(together, [10, 90])
-    for n in (r for r in doc["need"] if r["scenario"] == "adu"):
-        assert f'data-need-kind="{n["denominator_kind"]}"' in html  # one bar per kind
-        assert f"Need: {_fmt(n['denominator'])}" in html
+    assert 'data-need-kind="household_growth_5y"' in html  # one bar, against the headline kind
+    assert "Need: 2,000" in html and "Need: 5,000" not in html
     assert "needs about 2,000 homes by 2031" in html  # household growth over the window ends in 2031
-    assert "is short about 5,000 homes today" in html  # the shortage is a stock, not a five-year flow
-    assert f"together add {_fmt(lo)} to {_fmt(hi)} of them" in html
+    assert "mid-2026 to mid-2031" in html  # where the number comes from, in one plain sentence
+    assert "is also short about 5,000 homes today" in html  # the shortage: one line, not a second bar
+    assert f"({_fmt(lo)} to {_fmt(hi)} net new homes)" in html
     # each reform's row: its own draws' P10 to P90, never a bare midpoint
     for s in shown:
         p10, p90 = np.percentile(net[s], [10, 90])
         assert f"{_fmt(p10)} to {_fmt(p90)}" in html, s
-    # the ranking: missing middle (3× the ADU uptake) first, then ADUs, then the halved real fees
+    # one sentence: what the three cover and which adds the most (missing middle, 3x ADU uptake), with range
     rank = html[html.index('id="need-rank"') :].split("</p>")[0]
-    order = [rank.index(w) for w in ("Missing middle adds the most", "then ADUs", "real local fees")]
-    assert order == sorted(order)
-    for s in shown:  # every midpoint in the sentence carries its range
-        p10, p50, p90 = np.percentile(net[s], [10, 50, 90])
-        assert f"about {_fmt(p50)}" in rank and f"({_fmt(p10)} to {_fmt(p90)})" in rank, s
+    assert "The three reforms together would cover" in rank and "missing middle would add the most" in rank
+    p10, p90 = np.percentile(net["missing_middle"], [10, 90])
+    assert f"({_fmt(p10)} to {_fmt(p90)})" in rank
 
 
-def test_the_two_kinds_of_need_are_separate_bars(tmp_path):
+def test_one_bar_with_the_other_kind_as_a_line(tmp_path):
+    """Ben, 2026-11-19: one bar against the headline kind; the other kind is a sentence, not a second bar."""
     html = _render(tmp_path, _bundle())["html"]
-    assert html.count('<svg class="needbar"') == 2
-    # the headline kind comes first
-    assert html.index('data-need-kind="household_growth_5y"') < html.index('data-need-kind="shortage_stock"')
+    assert html.count('<svg class="needbar"') == 1
+    assert 'data-need-also="shortage_stock"' in html
+    assert html.index('class="needbar"') < html.index("data-need-also")
 
 
 def test_a_bundle_without_need_rows_says_so(tmp_path):
     html = _render(tmp_path, _bundle(need=False))["html"]
     assert "No housing-need estimate is coded for this state." in html
     assert "needbar" not in html
+
+
+def test_shortfall_view_stacks_the_reforms_on_what_gets_built_anyway(tmp_path):
+    """Ben, 2026-11-19: need left after homes built anyway; numbers trace to results_shortfall and draws."""
+    doc = _bundle(shortfall=True)
+    sf = doc["shortfall"][0]
+    html = _render(tmp_path, doc)["html"]
+    assert 'data-need-kind="shortfall"' in html and html.count('<svg class="needbar"') == 1
+    assert f"needs about {_fmt(sf['need'])} more homes by 2031" in html
+    assert f"{_fmt(sf['shortage'])} the state is already short" in html
+    assert f"{_fmt(sf['lost'])} to replace homes lost" in html
+    shown = ("adu", "missing_middle", "fees_local_half")
+    together = sum(_net([d for d in doc["draws"] if d["scenario"] == s]) for s in shown)
+    lo, hi = np.percentile(together, [10, 90])
+    assert f"{_fmt(lo)} to {_fmt(hi)} net new homes" in html
+    if sf["gap"] > 0:
+        assert f"leaving a gap of about {_fmt(sf['gap'])} homes" in html
+    else:
+        assert "would cover the need" in html
+    assert f"could run from {_fmt(sf['gap_low'])} to {_fmt(sf['gap_high'])}" in html  # the gap's full range
+
+
+def test_shortfall_view_says_when_building_anyway_covers_the_need(tmp_path):
+    doc = _bundle(shortfall=True)
+    sf = doc["shortfall"][0]
+    sf.update(built=sf["need"] + 1000, gap=-1000.0)
+    html = _render(tmp_path, doc)["html"]
+    assert "homes the market builds anyway" in html and "would cover the need" in html

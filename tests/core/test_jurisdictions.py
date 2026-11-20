@@ -43,6 +43,11 @@ def test_build_combines_bps_universe_with_census_names_and_population():
     df = jurisdictions.build("MN", bps_table, census).set_index("geoid")
     assert_conforms(df.reset_index(), "jurisdictions")
     assert len(df) == 4
+    # task 5 rule 5: a place in two counties is filed under the one holding most of its homes
+    moved = jurisdictions.build("MN", bps_table, census, main_counties={"2743000": "27123"}).set_index(
+        "geoid"
+    )
+    assert moved.loc["2743000", "county_geoid"] == "27123" and moved.loc["27003", "county_geoid"] == "27003"
     assert df.loc["2743000", "kind"] == "place" and df.loc["2743000", "pop_2020"] == 429954
     assert df.loc["2743000", "name"] == "Minneapolis city"
     assert df.loc["2700102224", "kind"] == "township"

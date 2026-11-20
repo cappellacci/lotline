@@ -7626,6 +7626,25 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   reforms' draws and says that a lot two reforms open is counted twice; the "What the model cannot tell you"
   list names the limit. Earlier entries that mention `combine.py` stand as history.
 
+### Deviation · 2026-11-19 · Housing need as the shortfall left after homes built anyway (proposed D-entry)
+- **What changed** (Ben, 2026-11-19: measuring the reforms against total demand "makes it look like they're a
+  very small piece"; "is there a better way to represent the shortfall"). The Results need card now shows the
+  homes a state still lacks after what it builds anyway, with the reforms stacked on top, instead of the reforms'
+  share of one kind of need. D-057's rule that the two kinds of need are never mixed is relaxed for this view
+  only: here they are added on purpose (the shortage is the backlog, household growth the new demand).
+- **Method** (`model/shortfall.py`, bundle table `results_shortfall`, schemas 1.18): need = shortage today +
+  household growth over the five years (as projected, negative where households fall: Ohio) + homes lost over
+  the five years (`aggregate.yaml` `stock_loss_rate` 0.3%, 0.2–0.5%, a year × the ACS 5-year housing stock,
+  B25024_001); gap = need − the no-change forecast of homes permitted, all building sizes, 2027–2031
+  (`results_baseline`, `all`). The gap's range is bounds (need low − built P90; need high − built P10), not
+  percentiles. The share-of-need card stays as the fallback for a bundle without the table.
+- **Result at the midpoints (2026-11-19 bundles):** gaps of about 98,000 (MN), 88,000 (OR) and 234,000 (TX);
+  NC (−49,000) and OH (−36,000) build enough anyway at the midpoint, though both ranges reach a gap. The card
+  says so plainly where the gap is at or below zero.
+- **Limits:** permits are gross building and vacancy and second homes are not taken out, so the gap is if
+  anything understated; the stock-loss rate is national and marked "approx."; the gap is one uncertain number
+  minus another, so its range is wide (NC from −225,000 to 259,000).
+
 ### D-104 · 2026-11-19 · V8: Wisconsin, the unseen-state test, set up before any Wisconsin data is fetched (method only)
 - **Why:** V8 asks whether the framework works on a state it was never developed on (HANDOFF 2026-10-28;
   validation plan V8). Ben, 2026-11-18: "keep the blind as you recommended. Ie: let's produce the most
@@ -7681,6 +7700,140 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Onboarding effort:** one state file. No aliases, crosswalks, adapters, `src/` change or parameter change. V0
   passes on 2010-2019, every year within 1% (`reports/wi/V0-national.md`); 1992-1993 are +5%, outside the
   window.
+
+### D-105 · 2026-11-19 · V8: Wisconsin scored against the Census permits (fails the pass rule; results only, no change)
+- **Why:** Ben, 2026-11-19 (via the Multi-state model setup guide session): "can we unblind Wisconsin and score
+  it?" The freeze (D-104) was on main (#500, 40232da0) before anything was unblinded.
+- **How:** `scripts/dev/v8_score.py`.
+  - It first rebuilds the baseline from the blind tables and stops unless it equals the frozen file. It did.
+  - It then unblinds Wisconsin's Census place permits in memory only (`bps.load(..., unblind=...)`). The
+    tables on disk stay blind.
+  - It scores the D-104 reading rules as written: reported units for every Wisconsin place; P10-P90 from the
+    frozen file; ranks within the 1,000 frozen draws.
+  - It was run from a fresh clone of the GitHub repo. The local `main` ref was behind #500, and
+    `check_unblind` checks that ref; it wasn't moved, because another session works on that checkout.
+  - Output: `reports/wi/V8-score.json` and `V8-score.md`.
+- **Result, statewide 2021-2025, reported units (observed vs P50, P10-P90):**
+  - **All sizes: 112,166 vs 75,347 (53,126-103,715). Outside the range: the V8 pass rule fails.**
+    - Observed ÷ P50 = 1.49; rank 0.95 in the draws.
+    - The 1,131 places the baseline forecasts alone sum to 110,278, also outside.
+    - The 5 permit rows with no place code add 50 units.
+  - 1 unit: 59,340 vs 51,972 (35,322-70,417). Inside; ×1.14.
+  - 2 units: 7,222 vs 3,638 (2,249-5,791). Outside; ×1.98.
+  - 3-4 units: 648 vs 424 (196-961). Inside; ×1.53.
+  - 5+ units: 44,956 vs 18,534 (11,078-31,454). Outside; ×2.43.
+  - 2-4 units: 7,870 vs 4,164 (2,602-6,484). Outside; ×1.89.
+  - By year, all sizes: only 2023 is inside its band (21,203 vs P90 21,365). The others are above P90 by
+    0-24%. Single-family homes are inside every year.
+- **Overlap:** low (median calibration distance 1.37). 1,186 of 1,189 places, holding 100% of eligible lots,
+  sit outside the calibration range. All of them are flagged in the bundle.
+- **Other V8 conditions:** V0 passes (D-104). Nothing in `src/` or `config/params/` changed for Wisconsin.
+- **Reading:**
+  - The miss is in apartments and duplexes. Single-family homes are close (×1.14).
+  - The forecast also starts below Wisconsin's last observed year: 2019 had 17,317 reported units, and the
+    2021 P50 is 15,316.
+  - Why it starts low is **not investigated**; this entry records the result only.
+- **How V8 is reported (Ben, 2026-11-19: "All as recommended"):**
+  - The headline is the pre-registered result: **fail**, on the all-sizes five-year total.
+  - The size classes, the years, observed ÷ P50 and the overlap are reported beside it, as the secondary
+    checks D-104 registered them as. They do not change the verdict.
+  - The result stays a fail. V8 is not rescored, and the frozen file does not change.
+- **Follow-ups Ben approved the same day, each in its own PR:**
+  - a diagnosis of why the forecast starts below 2019 (with a proposed fix as a separate decision);
+  - releasing Wisconsin from the blind.
+### D-101 · 2026-11-17 · One county for a place that spans two (WS-SCALE task 5, rule 5; approved by Ben)
+- **Why:** a place in two counties got its county two ways.
+  - `jurisdictions` took the county of the place's latest BPS row.
+  - The baseline panel took, each year, the county of the first BPS row by ID.
+  - So the FHFA price index and the metro area could come from different counties for one place
+    (Rutherford College, NC: Caldwell in one, Burke in the other).
+- **Rule (Ben, 2026-11-17, "all as recommended"):** a place that spans counties is filed under the county
+  holding most of it, in `jurisdictions` and in the baseline panel. `place_inputs` reads the same county.
+- **Deviation, stated:** Ben's rule names 2020 *population*. The Census parts Lotline already holds are 2020
+  *housing units* by county part (DHC H1_001N, `geoparts.county_shares`); population parts (P1) would be a new
+  download. Housing units are used, and the PR names every place that moves. Switching to population is one
+  variable in `geoparts.main_county` once the download is approved.
+- **Places that move (housing-unit majority differs from the old `jurisdictions` county):**
+  - NC (10): Rutherford College, Midland, Candor, Falcon, Tobaccoville, Mint Hill, Kenly, Kannapolis, Rhodhiss,
+    Whitakers;
+  - OH (2): Ridgeway, Vermilion;
+  - TX (6): Fritch, New Fairview, Warren City, Windthorst, Carrollton, Mustang Ridge;
+  - MN and OR: none.
+- **Effect (same seed, 1,000 draws, origin 2025; five-year statewide medians):**
+  - Scenario totals: every change is within 0.06% (OH ADU 183.1 → 183.0; TX fees 5,224 → 5,224); MN, NC and
+    OR scenario medians unchanged to the unit.
+  - Baseline, all sizes: OH −0.14%, TX −0.16%, NC, MN and OR unchanged. The largest size-class move is OH
+    2-4 units, −1.2% (6,578 → 6,501).
+- **Code:** `geoparts.main_county`, `jurisdictions.build(main_counties=...)`, `panels.build` (county from
+  `jurisdictions`), `place_inputs` (the panel's county). Tests: `test_geoparts`, `test_jurisdictions`,
+  `test_panels`.
+- **Deviation accepted (Ben, 2026-11-19, "All as recommended"):** housing units, not population, decide a
+  split place's county. No population download is made. After merge, the stored `jurisdictions` tables
+  are rebuilt per state (`lotline fetch --source jurisdictions`). Wisconsin waits for its blind copy.
+
+### D-102 · 2026-11-17 · County remainders get their 2020 population (WS-SCALE task 5, rule 6; approved by Ben)
+- **Why:** a county's unincorporated remainder had no `pop_2020`, so every model read it as 0 and put it in the
+  smallest size band (`fillna(0)`). Size band picks the pool an uncoded place borrows its ADU rule prior and its
+  missing-middle dose from.
+- **Rule (Ben, 2026-11-17, "all as recommended"):** a remainder's population is the county's 2020 population
+  minus the jurisdictions listed inside it.
+  - Every BPS-universe place in the county is subtracted, a place spanning counties by its 2020
+    housing-unit share there.
+  - Every BPS-universe township is subtracted too, net of the places inside it. Ben's wording names
+    incorporated places; in township states (MN, OH) a listed township is outside the remainder too, so it
+    is subtracted as well.
+  - This is the same subtraction as the remainder's eligible homes (`eligible.allocate_homes`), so its
+    population and homes describe the same area.
+- **Check:** NC's remainders plus its listed jurisdictions add up to the state's 2020 population exactly
+  (10,439,387 of 10,439,388). Two Ohio remainders come out at or just below 0 and are held at 0:
+  - Shelby, whose listed townships hold the whole county;
+  - Lorain's county part.
+- **Effect (same seed, 1,000 draws, origin 2025; five-year statewide medians, against D-101):**
+  - Oregon missing middle: 167 → 100 (−40%); range 25-1,044 → 15-578;
+  - NC ADU: 131 → 121 (−8%); NC missing middle: 2,047 → 1,993 (−3%);
+  - OH ADU: 183 → 175 (−4%); MN ADU: −0.3%;
+  - unchanged: TX, every fee scenario and every baseline.
+- **Open question for Ben (no change made):** a remainder now borrows the rule prior of the size band its
+  population puts it in, and the mid and large bands are pooled from *cities'* ordinances. Unincorporated
+  county land is zoned by the county, not a city. Should remainders borrow from coded county remainders
+  only, or keep the band rule? Oregon's −40% comes from this choice.
+- **Code:** `jurisdictions.remainder_population` (hand-worked test), `jurisdictions.load`.
+
+### D-103 · 2026-11-17 · One place set, one price-fill rule, one parcel-roll rule, set in `place_inputs` (WS-SCALE task 5, rules 1, 2, 4; approved by Ben)
+- **Why:** the models covered different places and read different rolls (`docs/build/workstreams/WS-SCALE.md`
+  § Audit A).
+  - ADU dropped a place with no ACS rent or value.
+  - Missing middle kept it, with a state-median feasibility share.
+  - Fees capped the parcel roll at origin + 1; ADU and missing middle took the nearest or latest roll.
+- **Rules (Ben, 2026-11-17, "all as recommended"), each set once in `place_inputs`, so every model that reads
+  the table inherits it:**
+  1. **One place set: the jurisdictions list.** Every listed place feeds the ADU and missing-middle
+     scenarios. A place with no eligible lots gives 0 homes rather than being dropped.
+     - Interpretation, stated: the baseline and the fee scenario (which works on baseline homes) forecast
+       BPS places. A local-only place's permits are filed in its county's BPS row, so the baseline covers it
+       there; `models_note` says so.
+  2. **A missing ACS rent or home value is that year's state median of the places that have one**, flagged
+     `rent_filled` / `home_value_filled`. Removing ADU's drop (`results.py`) is the ADU owner's change.
+  4. **No parcel roll later than origin + 1** (the fee model's rule) for eligible lots and for missing middle's
+     house share, which is now taken per origin from the newest roll <= origin + 1 (`house_share_roll`).
+- **Effect on `place_inputs` (origin 2025):**
+
+  | State | Places added to ADU | Places added to MM | Prices filled | Eligible lots changed (roll) | House shares changed |
+  |---|---|---|---|---|---|
+  | MN | 56 | 3 | 56 | 153 | 0 |
+  | NC | 4 | 1 | 4 | 0 | 0 |
+  | OH | 22 | 5 | 15 | 5 | 0 |
+  | OR | 0 | 0 | 0 | 0 | 0 |
+  | TX | 11 | 3 | 11 | 0 | 76 |
+
+- **Effect on results: none yet.** No model reads `place_inputs` until each owner's switch-over. Each owner's PR
+  shows the before/after bundles of adopting these rules.
+- **Code:** `place_inputs.nearest_roll` (cap), `house_shares_by_roll`, `fill_prices`, `_flag_models`; schemas
+  1.19 (`house_share_roll`, `rent_filled`, `home_value_filled`; numbered 1.17 when written, renumbered on
+  rebase because main took 1.17 and 1.18). Hand-worked tests in `tests/build/test_place_inputs.py`.
+- **Accepted (Ben, 2026-11-19, "All as recommended"):** the baseline covers local-only places through their
+  county's BPS row. This rebases onto main after D-101, without D-102 (#488), so county remainders keep
+  band 0 here until #488 is decided.
 
 ### D-106 · 2026-11-19 · V8 diagnosis: the baseline's shrinkage step lowers state totals (diagnosis only)
 - **Why:** Ben, 2026-11-19 ("All as recommended"): find why Wisconsin's forecast starts below 2019 (17,308

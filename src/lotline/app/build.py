@@ -33,6 +33,7 @@ KNOBS = Path(__file__).with_name("knobs.yaml")
 TILES = Path(__file__).with_name("us_tiles.yaml")
 CHALLENGE = REPO / "challenge.toml"
 BYOS_ANCHOR = "#bring-your-own-state"  # README section the grey states link to
+REPO_FALLBACK = "https://github.com/cappellacci/lotline"  # used only if challenge.toml has no repo_url
 IDENTITY = REPO / "docs" / "build" / "identity"
 RESULTS_DIR = REPO / "reports" / "results"
 DATA_SUMMARY = REPO / "reports" / "data_dashboard" / "summary.json"
@@ -91,6 +92,7 @@ def tile_map(path: Path = TILES, challenge: Path = CHALLENGE) -> dict:
         "tiles": [{"code": c, "name": n, "row": r, "col": k} for c, n, r, k in tiles],
         "tier_tokens": {str(k): v for k, v in TIER_TOKENS.items()},
         "byos_url": (repo.rstrip("/") if repo else "README.md") + BYOS_ANCHOR,
+        "repo_url": repo.rstrip("/"),  # the public repository the guide pages link into
     }
 
 
@@ -340,7 +342,7 @@ def _svg(name: str, height: int = 32) -> str:
 # and state bar are hidden (the app's picker drives it), and its colours are mapped onto the identity tokens.
 FOLD_CSS = """
 <style id="lotline-fold">
-body > header, #state-bar { display: none !important; }
+body > header, #state-bar, #tiles { display: none !important; }
 :root:not(#lotline-fold) {
   --surface-0: var(--paper-raised); --surface-1: var(--paper); --surface-2: var(--paper-sunken);
   --border: var(--rule); --grid: var(--rule); --text-primary: var(--ink); --text-secondary: var(--ink-muted);
@@ -403,6 +405,8 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
         .replace("__FAVICON__", _data_uri("lotline-mark-favicon.svg"))
         # the add-a-state page's README link, written into the page here rather than set by script (CodeQL)
         .replace("__BYOS_URL__", html.escape(str((data.get("map") or {}).get("byos_url") or "README.md")))
+        # the add-a-state guide's and the model tab's links into the repository (challenge.toml repo_url)
+        .replace("__REPO_URL__", html.escape(str((data.get("map") or {}).get("repo_url") or REPO_FALLBACK)))
         .replace("/*__LOTLINE_AGGREGATE__*/", AGGREGATE_JS.read_text(encoding="utf-8"))
         .replace("/*__LOTLINE_DASHBOARD__*/", _json(dashboard))
         .replace("/*__LOTLINE_DATA__*/", blob)
