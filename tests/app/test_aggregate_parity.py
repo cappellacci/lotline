@@ -192,3 +192,94 @@ try { agg.homesFromDraws([], {eligible_tier1: 50}); console.log("null"); }
 catch (e) { console.log('"refused"'); }
 """
     assert _node(script, {}) == "refused"
+
+
+# ---- the fee section's policy controls (D-077, results_fee_types) -----------------------------------------
+
+
+def _fee_fixture(n: int = 40) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """`fees_local_half` draws over 10,000 covered homes and their half-cut units by size (seeded)."""
+    rng = np.random.default_rng(7)
+    units = {"1": rng.uniform(60, 180, n), "2": rng.uniform(5, 40, n), "3_4": rng.uniform(0, 15, n)}
+    units["3_4"][:3] = 0.0  # a draw with nothing in a size keeps a defined completion
+    comp = {"1": rng.uniform(0.9, 1.0, n), "2": rng.uniform(0.8, 0.9, n)}
+    comp["3_4"] = comp["2"]
+    total = sum(units.values())
+    draws = pd.DataFrame(
+        {
+            "scenario": "fees_local_half",
+            "draw": np.arange(n),
+            "eligible_tier1": 0.0,
+            "eligible_tier2": 10_000.0,
+            "eligible_tier3": 0.0,
+            "theta": total / 10_000,
+            "pencil_out_share": 1.0,
+            "completion_factor": sum(units[c] * comp[c] for c in units) / total,
+            "net_new_share": 1.0,
+            "displacement_share": rng.uniform(0.1, 0.4, n),
+            "overlap_share": np.nan,
+        }
+    )
+    types = pd.DataFrame(
+        [{"scenario": "fees_local_half", "size": c, "draw": d, "fee_change_share": 0.5,
+          "units_added": units[c][d], "completion_factor": comp[c][d], "baseline_homes": 1_000.0}
+         for c in units for d in range(n)]
+    )  # fmt: skip
+    return draws, types
+
+
+FEE_RUN = """
+const agg = require(process.argv[1]);
+let s = ""; process.stdin.on("data", (c) => (s += c)).on("end", () => {
+  const {draws, types, cases} = JSON.parse(s);
+  process.stdout.write(JSON.stringify(cases.map(([change, sizes, pins]) =>
+    agg.summarize(agg.feePolicyDraws(draws, types, change, sizes), pins))));
+});
+"""
+FEE_CASES = [
+    [-0.5, ["1", "2", "3_4"], {}],
+    [-1.0, ["1", "2", "3_4"], {}],
+    [0.5, ["1", "2", "3_4"], {}],
+    [-0.3, ["2"], {}],
+    [-1.0, ["2", "3_4"], {"theta": 10}],
+    [0.5, ["1"], {"theta": 90}],
+    [0.0, ["1", "2", "3_4"], {}],
+]
+
+
+def test_fee_policy_js_matches_python():
+    draws, types = _fee_fixture()
+    js = _node(FEE_RUN, {"draws": _records(draws), "types": _records(types), "cases": FEE_CASES})
+    for (change, sizes, pins), got in zip(FEE_CASES, js, strict=True):
+        want = _python(aggregate.fee_policy_draws(draws, types, change, sizes), pins)
+        for k in OUTCOMES:
+            for p in ("p10", "p50", "p90"):
+                assert got[k][p] == pytest.approx(want[k][p], rel=1e-12, abs=1e-9), (change, sizes, k, p)
+
+
+def test_fee_policy_at_the_half_cut_on_every_size_is_the_bundles_draws():
+    draws, types = _fee_fixture()
+    (got,) = _node(FEE_RUN, {"draws": _records(draws), "types": _records(types),
+                             "cases": [[-0.5, ["1", "2", "3_4"], {}]]})  # fmt: skip
+    (plain,) = _node(RUN, {"draws": _records(draws), "cases": [{}]})
+    for k in OUTCOMES:
+        for p in ("p10", "p50", "p90"):
+            assert got[k][p] == pytest.approx(plain[k][p], rel=1e-12)
+
+
+def test_fee_policy_by_hand():
+    """aggregate.fee_policy_draws docstring: covered 10,000; half-cut 120 houses (0.95), 20 duplex and 10
+    three-to-four-unit homes (0.85)."""
+    row = {"draw": 0, "eligible_tier1": 0.0, "eligible_tier2": 10_000.0, "eligible_tier3": 0.0,
+           "theta": 0.015,
+           "pencil_out_share": 1.0, "completion_factor": 0.93, "net_new_share": 1.0,
+           "displacement_share": 0.0, "overlap_share": np.nan}  # fmt: skip
+    draws = pd.DataFrame([row])
+    types = pd.DataFrame({"draw": 0, "size": ["1", "2", "3_4"], "units_added": [120.0, 20.0, 10.0],
+                          "completion_factor": [0.95, 0.85, 0.85]})  # fmt: skip
+    duplex = aggregate.fee_policy_draws(draws, types, -1.0, ["2"]).iloc[0]
+    assert duplex.theta == pytest.approx(0.004) and duplex.completion_factor == pytest.approx(0.85)
+    assert duplex.sign == 1
+    rise = aggregate.fee_policy_draws(draws, types, 0.5, ["1", "2", "3_4"])
+    assert rise.iloc[0].theta == pytest.approx(0.015) and rise.iloc[0].sign == -1
+    assert aggregate.homes_from_draws(rise)["permits_added"][0] == pytest.approx(-150)

@@ -54,7 +54,8 @@
       const eligible = TIERS.reduce((s, c) => s + num(d[c]), 0);
       const pencils = eligible * get(d, "pencil_out_share");
       const ov = num(d.overlap_share);
-      const permits = pencils * get(d, "theta") * (1 - (Number.isNaN(ov) ? 0 : ov));
+      const sign = d.sign === -1 ? -1 : 1;  // a fee rise: homes lost (feePolicyDraws)
+      const permits = sign * pencils * get(d, "theta") * (1 - (Number.isNaN(ov) ? 0 : ov));
       const inPlace = permits * get(d, "completion_factor") * get(d, "net_new_share");
       const net = inPlace * (1 - get(d, "displacement_share"));
       out.legal.push(eligible);
@@ -64,6 +65,35 @@
       out.homes_net_statewide.push(net);
     }
     return out;
+  }
+
+  // The fee section's policy controls (D-077), from `results_fee_types`: `change` is the fee change as a share
+  // of each place's own fee (−0.5 halves fees, the `fees_local_half` scenario; −1 abolishes them; 0.5 raises
+  // them by half) and `sizes` the building sizes the bill covers ("1", "2", "3_4"). Homes added are linear in
+  // the change in every draw (checked when the bundle is built), so a draw's homes are its sizes' half-cut
+  // units × (−change ÷ 0.5). θ is re-set to those homes over the draw's covered homes and completion is
+  // re-weighted by size. A rise keeps θ positive and sets sign −1, so a slider that weakens θ still shrinks
+  // the effect. At change −0.5 with every size this returns the draws' own θ and completion.
+  // By hand: covered 10,000; half-cut units 120 houses (completion 0.95), 20 duplex and 10 three-to-four-unit
+  // homes (0.85): duplexes only, abolished -> 2 × 20 = 40 homes, θ 0.004, completion 0.85; every size, up by
+  // half -> 150 homes lost, θ 0.015, completion 0.93, sign −1.
+  function feePolicyDraws(draws, types, change, sizes) {
+    const k = -change / 0.5, sign = k < 0 ? -1 : 1, mag = Math.abs(k);
+    const by = new Map();
+    for (const t of types) {
+      if (!sizes.includes(String(t.size))) continue;
+      if (!by.has(t.draw)) by.set(t.draw, []);
+      by.get(t.draw).push(t);
+    }
+    return draws.map((d) => {
+      const ts = by.get(d.draw) || [];
+      const half = ts.reduce((a, t) => a + num(t.units_added), 0);
+      const covered = TIERS.reduce((a, c) => a + num(d[c]), 0);
+      const completion = half > 0
+        ? ts.reduce((a, t) => a + num(t.units_added) * num(t.completion_factor), 0) / half
+        : num(d.completion_factor);
+      return { ...d, theta: covered > 0 ? (half * mag) / covered : 0, completion_factor: completion, sign };
+    });
   }
 
   const range = (a) => ({ p10: percentile(a, 10), p50: percentile(a, 50), p90: percentile(a, 90) });
@@ -113,7 +143,7 @@
     return row ? String(row.period).replace("-", "\u2013") : null;
   }
 
-  const api = { TIERS, FACTORS, percentile, shiftScale, homesFromDraws, summarize, shareOfNeed, tornado, windowLabel };
+  const api = { TIERS, FACTORS, percentile, shiftScale, homesFromDraws, feePolicyDraws, summarize, shareOfNeed, tornado, windowLabel };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.LotlineAggregate = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
