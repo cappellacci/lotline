@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.19** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.20** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -563,6 +563,23 @@ Table checks: `one_row_per_state`
 | `gap` | number | yes | no |  |
 | `gap_high` | number | yes | no |  |
 
+## `results_fee_types`
+
+The fee section's policy controls (D-077): each draw's five-year homes added in one building size under real local fees cut by `fee_change_share` (0.5, the `fees_local_half` scenario), with that size's completion draw (single-family for houses, multifamily for 2-4 units) and five-year baseline homes. In every draw the engine's homes added are linear in the fee change (`fees.change_grid`; tested), so a change of s (a cut of s × each place's own fee; s < 0 a rise) adds (s ÷ 0.5) × `units_added`. The sizes' rows summed in a draw are that draw's `fees_local_half` homes in `results_draws`.
+
+Table checks: `one_row_per_key`
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `scenario` | text | yes | no | one of `fees_local_half` |
+| `size` | text | yes | no | one of `1`, `2`, `3_4` |
+| `draw` | integer | yes | no | ≥ 0 |
+| `fee_change_share` | number | yes | no | > 0; ≤ 1 |
+| `units_added` | number | yes | no | ≥ 0 |
+| `completion_factor` | number | yes | no | ≥ 0 |
+| `baseline_homes` | number | yes | no | ≥ 0 |
+
 ## Version history
 
 | Version | Change |
@@ -587,3 +604,4 @@ Table checks: `one_row_per_state`
 | 1.17 | results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, `missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). No bundle ever held rows for them, so no data is lost |
 | 1.18 | market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income needed and share of AMI by home type and place type, market and break-even; WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway) |
 | 1.19 | place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, D-103) |
+| 1.20 | results_fee_types (the fee section's slider and targeted-bill buttons, D-077): each draw's homes added by building size at real local fees cut by half, with the size's completion and baseline |

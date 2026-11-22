@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.19"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.20"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -788,6 +788,33 @@ class ResultsAduBaseline(_Strict):
         return not df.duplicated(["state", "period"]).any()
 
 
+FEE_SIZE_CLASSES = ["1", "2", "3_4"]  # BPS sizes a fee cut covers; 5+ unit buildings take no dose (D-073)
+
+
+class ResultsFeeTypes(_Strict):
+    """The fee section's policy controls (D-077): each draw's five-year homes added in one building size under
+    real local fees cut by `fee_change_share` (0.5, the `fees_local_half` scenario), with that size's
+    completion draw (single-family for houses, multifamily for 2-4 units) and five-year baseline homes.
+
+    In every draw the engine's homes added are linear in the fee change (`fees.change_grid`; tested), so a
+    change of s (a cut of s × each place's own fee; s < 0 a rise) adds (s ÷ 0.5) × `units_added`. The sizes'
+    rows summed in a draw are that draw's `fees_local_half` homes in `results_draws`.
+    """
+
+    state: Series[str] = pa.Field(**_STATE)
+    scenario: Series[str] = pa.Field(isin=["fees_local_half"])
+    size: Series[str] = pa.Field(isin=FEE_SIZE_CLASSES)
+    draw: Series[pd.Int64Dtype] = pa.Field(ge=0)
+    fee_change_share: Series[float] = pa.Field(gt=0, le=1)
+    units_added: Series[float] = pa.Field(ge=0)
+    completion_factor: Series[float] = pa.Field(ge=0)  # completions per permit; can exceed 1
+    baseline_homes: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "scenario", "size", "draw"]).any()
+
+
 class ResultsScorecard(_Strict):
     """Validation scorecard rows for the state (validation plan §5): one row per check."""
 
@@ -814,6 +841,7 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_adu_baseline": ResultsAduBaseline,
     "results_affordability": ResultsAffordability,
     "results_shortfall": ResultsShortfall,
+    "results_fee_types": ResultsFeeTypes,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -935,6 +963,11 @@ HISTORY = [
         "1.19",
         "place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, "
         "D-103)",
+    ),
+    (
+        "1.20",
+        "results_fee_types (the fee section's slider and targeted-bill buttons, D-077): each draw's homes "
+        "added by building size at real local fees cut by half, with the size's completion and baseline",
     ),
 ]
 

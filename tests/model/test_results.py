@@ -525,3 +525,53 @@ def test_fee_rows_by_hand():
     h = aggregate.homes_from_draws(rows)
     assert h["permits_added"][0] == pytest.approx(150) and h["homes_in_place"][0] == pytest.approx(139.5)
     assert results.fee_year_shares(sim)[0] == pytest.approx(np.full(yrs, 0.2))
+
+
+def test_fee_types_by_hand():
+    """`results_fee_types` (D-077 slider): per size the draw's homes added at the half cut, its completion
+    draw and baseline; the sizes add up to the draw's `fees_local_half` row. Fixture as in
+    `test_fee_rows_by_hand`: 120 houses, 20 duplex and 10 three-to-four-unit homes added on 8,000, 1,200 and
+    800 baseline homes."""
+    import unittest.mock as mock
+
+    yrs = 5
+    by_size = {
+        c: np.full((1, yrs), v / yrs) for c, v in (("1", 8_000), ("2", 1_200), ("3_4", 800), ("5p", 5_000))
+    }
+    added = {c: np.full((1, 1, yrs), v / yrs) for c, v in (("1", 120), ("2", 20), ("3_4", 10))}
+    sim = {"n": 1, "by_size": by_size, "added_by_class": added, "added": sum(added.values()),
+           "base": sum(by_size.values())}  # fmt: skip
+    vals = {"completion_factor_single_family": 0.95, "completion_factor_multifamily": 0.85,
+            "displacement_share": 0.25}  # fmt: skip
+    with mock.patch.object(
+        results, "triangular", lambda name, n, rng, file="aggregate": np.full(n, vals[name])
+    ):
+        rows, types = results.fee_rows_and_types("fees_local_half", sim, 2, None)
+        _, none = results.fee_rows_and_types("fees", sim, 2, None)
+    assert none.empty  # only the real-local-fee scenario gets the slider table
+    t = types.set_index("size")
+    assert t.loc["1", "units_added"] == pytest.approx(120) and t.loc["2", "units_added"] == pytest.approx(20)
+    assert t.loc["3_4", "units_added"] == pytest.approx(10)
+    assert list(t["completion_factor"]) == pytest.approx([0.95, 0.85, 0.85])
+    assert list(t["baseline_homes"]) == pytest.approx([8_000, 1_200, 800])
+    assert (t["fee_change_share"] == 0.5).all()
+    covered = rows.iloc[0][["eligible_tier1", "eligible_tier2", "eligible_tier3"]].sum()
+    assert t["units_added"].sum() == pytest.approx(rows.iloc[0].theta * covered)  # 150 = 0.015 x 10,000
+    # completion weighted by each size's homes reproduces the draw's blended completion (0.93)
+    blend = (t["units_added"] * t["completion_factor"]).sum() / t["units_added"].sum()
+    assert blend == pytest.approx(rows.iloc[0].completion_factor)
+    results.validate(types.assign(state="MN"), "results_fee_types")
+
+
+def test_check_fee_line_passes_on_the_engine_and_catches_a_mismatch():
+    from .test_fee_scenario import by_size_frame
+
+    places = by_size_frame(U2=10_000.0, U3_4=6_000.0)
+    results.check_fee_line(places, 2025, 20)
+    from lotline.model.scenarios import fees
+
+    g = fees.change_grid(places, 2025, [0.5], draws=20)
+    types = g.groupby(["draw", "size"], as_index=False)["units_added"].sum()
+    results.check_fee_line(places, 2025, 20, types)
+    with pytest.raises(ValueError, match="does not match"):
+        results.check_fee_line(places, 2025, 20, types.assign(units_added=types["units_added"] * 1.1 + 1))
