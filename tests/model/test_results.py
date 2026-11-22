@@ -16,7 +16,7 @@ from pandera import errors as pa_errors
 from lotline.config import Parameter
 from lotline.model import affordability, aggregate, results
 from lotline.model.scenarios import adu
-from lotline.schemas import SCENARIOS
+from lotline.schemas import SCENARIOS, columns
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "results" / "zz" / "bundle.json"
 
@@ -213,6 +213,7 @@ def make_fixture() -> dict[str, pd.DataFrame]:
             {"places": "Int64"}
         ),
         "shortfall": results.shortfall_table("ZZ", base, _acs_stock(), 2025, need_params=NEED, fips="99"),
+        "fee_types": pd.DataFrame(columns=columns("results_fee_types")),  # ADU-only fixture: no fee slider
     }
 
 
@@ -320,7 +321,7 @@ def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
     b = results.validate_bundle(make_fixture())
     path = results.write_bundle(b, tmp_path / "zz" / "bundle.json")
     doc = json.loads(path.read_text())
-    for part in ("adu_place_types", "adu_baseline", "affordability", "shortfall"):
+    for part in ("adu_place_types", "adu_baseline", "affordability", "shortfall", "fee_types"):
         del doc[part]
     path.write_text(json.dumps(doc))
     back = results.read_bundle(path)
@@ -329,6 +330,7 @@ def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
         and back["adu_baseline"].empty
         and back["affordability"].empty
         and back["shortfall"].empty
+        and back["fee_types"].empty
     )
 
 
