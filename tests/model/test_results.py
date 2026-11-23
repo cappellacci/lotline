@@ -315,6 +315,24 @@ def test_adu_place_types_and_baseline_by_hand():
     assert t.loc["core", ["base_p10", "base", "base_p90", "added"]].tolist() == [10, 10, 10, 4]
     y = results.adu_baseline_years("ZZ", rd, 2025)
     assert y["period"].tolist() == ["2027", "2028", "2029", "2030", "2031"] and (y["p50"] == 18).all()
+    assert "basis" not in y  # without `own`, the pre-1.21 shape
+
+
+def test_adu_baseline_split_by_basis_by_hand():
+    """adu_baseline_years docstring: places with 10 and 4 ADUs a year in every draw, the first with own
+    counts -> all 14, own_counts 10, model 4; the means add up. No own counts -> the `all` rows only."""
+    n, yrs = 3, 5
+    cur = np.zeros((n, 2, yrs)) + np.array([10.0, 4.0])[None, :, None]
+    y = results.adu_baseline_years("ZZ", {"current": cur}, 2025, own=[True, False]).set_index(
+        ["basis", "period"]
+    )
+    assert y.loc[("all", "2027"), "p50"] == 14 and y.loc[("own_counts", "2027"), "p50"] == 10
+    assert y.loc[("model", "2031"), ["p10", "p50", "p90", "mean"]].tolist() == [4, 4, 4, 4]
+    by = y["mean"].groupby(level="basis").sum()
+    assert by["all"] == pytest.approx(by["own_counts"] + by["model"])
+    results.validate(y.reset_index(), "results_adu_baseline")
+    none = results.adu_baseline_years("ZZ", {"current": cur}, 2025, own=[False, False])
+    assert set(none["basis"]) == {"all"} and len(none) == yrs
 
 
 def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):

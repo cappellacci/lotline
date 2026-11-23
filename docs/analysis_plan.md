@@ -7935,3 +7935,25 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   can then fall below the other two reforms' sum.
 - **No number changes** at the default setting: the page reproduces the `fees_local_half` draws exactly
   (parity test).
+
+### App note · 2026-11-23 · ADUs: the chart's no-change bars split by where the forecast comes from
+
+- **Asked by:** Ben, 2026-11-19 ("Let's also try the chart split where we have the data") and 2026-11-23 ("start
+  the ADU chart split"), after the NC check found the no-change forecast far above the counted history.
+- **What the chart shows now:**
+  - The history bars are labelled "Counted in N places' permit records" (N from `results_observed`).
+  - Each forecast year's no-change bar is split. The bottom (solid) is places whose no-reform rate comes from
+    their own ADU permit counts (D-091, D-093). The top (light) is places the model estimates.
+  - A thin whisker beside each bar shows the no-change range (P10-P90). The missing-middle chart gets the
+    same whisker.
+  - A state with no own-count places (Wisconsin today) keeps one bar.
+- **Data:** `results_adu_baseline` gains optional `basis` (all, own_counts, model) and `mean` (schemas 1.21).
+  - Each basis's percentiles are of its own sum over places, so they do not add up.
+  - The means do add up, so the bar is the `all` midpoint split in the ratio of the group means.
+  - Hover shows each group's own range.
+- **NC, origin 2025, 2027** (P10 / P50 / P90, mean):
+  - all: 270 / 454 / 873, mean 562;
+  - own counts: 153 / 262 / 484, mean 298 (equal to those places' 2023-25 pace of 298, as the mean-1 drift
+    intends);
+  - model: 57 / 151 / 534, mean 264.
+- **No number changes:** the `all` rows are the earlier rows.

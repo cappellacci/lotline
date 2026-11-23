@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.20** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.21** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -495,7 +495,7 @@ Table checks: `one_row_per_key`
 
 ## `results_adu_baseline`
 
-Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over the draws: what the ADU scenario's added range stacks on.
+Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over the draws: what the ADU scenario's added range stacks on. Optional `basis` and `mean` (schemas 1.21, the chart split, Ben 2026-11-19): `all` is every place; `own_counts` the places whose no-reform rate comes from their own ADU permit counts (D-091, D-093); `model` the places the mechanism estimates. Each basis's percentiles are of its own sum over places, so they do not add up; the means do (all = own_counts + model), which is how the page splits the bar. A bundle without `basis` has one row per period, every place.
 
 Table checks: `one_row_per_key`
 
@@ -503,9 +503,11 @@ Table checks: `one_row_per_key`
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
 | `period` | text | yes | no | matches `^\d{4}$` |
+| `basis` | text | no | yes | one of `all`, `own_counts`, `model` |
 | `p10` | number | yes | no | ≥ 0 |
 | `p50` | number | yes | no | ≥ 0 |
 | `p90` | number | yes | no | ≥ 0 |
+| `mean` | number | no | yes | ≥ 0 |
 
 ## `results_affordability`
 
@@ -605,3 +607,4 @@ Table checks: `one_row_per_key`
 | 1.18 | market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income needed and share of AMI by home type and place type, market and break-even; WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway) |
 | 1.19 | place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, D-103) |
 | 1.20 | results_fee_types (the fee section's slider and targeted-bill buttons, D-077): each draw's homes added by building size at real local fees cut by half, with the size's completion and baseline |
+| 1.21 | results_adu_baseline: optional basis (all, own_counts, model) and mean, so the ADU chart splits the no-reform bar into places with their own ADU counts and places the model estimates |

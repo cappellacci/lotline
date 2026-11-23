@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.20"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.21"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -980,6 +980,11 @@ HISTORY = [
         "1.20",
         "results_fee_types (the fee section's slider and targeted-bill buttons, D-077): each draw's homes "
         "added by building size at real local fees cut by half, with the size's completion and baseline",
+    ),
+    (
+        "1.21",
+        "results_adu_baseline: optional basis (all, own_counts, model) and mean, so the ADU chart splits the "
+        "no-reform bar into places with their own ADU counts and places the model estimates",
     ),
 ]
 

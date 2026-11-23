@@ -1046,8 +1046,18 @@ function recordHtml(b, d, compact = false) {
   const obs = (b.observed || []).filter((r) => r.measure === spec.measure).sort((x, y) => x.year - y.year);
   const fut = (b.totals || []).filter((r) => r.scenario === d && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
     .map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year);
-  const base = (d === "adu" ? (b.adu_baseline || []) : spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base) : [])
+  const isAll = (r) => r.basis === undefined || r.basis === null || r.basis === "all";
+  const base = (d === "adu" ? (b.adu_baseline || []).filter(isAll) : spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base) : [])
     .filter((r) => /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) }));
+  // The ADU chart split (Ben, 2026-11-19, "where we have the data"; results_adu_baseline basis, schemas 1.21): each
+  // no-change bar is split into places with their own ADU permit counts and places the model estimates, in the
+  // ratio of their means (means add up; the groups' midpoints do not). A state with no own-count places keeps
+  // one bar.
+  const split = d === "adu" ? (yr) => {
+    const at = (basis) => (b.adu_baseline || []).find((r) => r.basis === basis && Number(r.period) === yr);
+    const all = at("all"), own = at("own_counts"), mod = at("model");
+    return all && own && mod && all.mean > 0 ? { own, mod, share: own.mean / all.mean } : null;
+  } : () => null;
   const title = `<h3 class="h3">What gets built now, and what the reform would add</h3>`;
   if (!obs.length && !fut.length) return `${title}<p class="pending">No permit record or yearly forecast for this state yet.</p>`;
   const years = [...obs.map((r) => r.year), ...fut.map((r) => r.year)];
@@ -1056,7 +1066,7 @@ function recordHtml(b, d, compact = false) {
   // P10–P90 band on top of it, a line at its midpoint (Ben, 2026-11-17: show every forecast year this way).
   const baseAt = (yr) => base.find((r) => r.year === yr);
   const stackTop = fut.map((r) => (baseAt(r.year) ? baseAt(r.year).p50 : 0) + r.p90);
-  const top = Math.max(1, ...obs.map((r) => r.value), ...stackTop, ...base.filter((r) => !fut.some((f) => f.year === r.year)).map((r) => r.p90));
+  const top = Math.max(1, ...obs.map((r) => r.value), ...stackTop, ...base.map((r) => r.p90));
   const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
   const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
   const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
@@ -1075,8 +1085,19 @@ function recordHtml(b, d, compact = false) {
   for (const r of fut) {
     const nb = baseAt(r.year);
     if (!nb) { parts.push(whisker(x(r.year), r, color, "added by the reform")); continue; }
-    const b0 = nb.p50, xl = x(r.year) - bw / 2;
-    parts.push(`<g><rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(0) - y(b0))}" fill="var(--scenario-baseline)"></rect>
+    const b0 = nb.p50, xl = x(r.year) - bw / 2, sp = split(r.year);
+    if (sp) {  // own-count places at the bottom (solid), model-estimated places above them (light)
+      const b1 = b0 * sp.share;
+      parts.push(`<g><rect x="${xl}" y="${y(b1)}" width="${bw}" height="${Math.max(0, y(0) - y(b1))}" fill="var(--scenario-baseline)"></rect>
+        <rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(b1) - y(b0))}" fill="var(--scenario-baseline)" opacity="0.4"></rect>
+        <title>${r.year}, with no change: ${fmtN(b0)} ADUs (${fmtN(nb.p10)} to ${fmtN(nb.p90)}). About ${fmtN(b1)} in the places with their own permit counts (their own range ${fmtN(sp.own.p10)} to ${fmtN(sp.own.p90)}) and ${fmtN(b0 - b1)} in the places the model estimates (${fmtN(sp.mod.p10)} to ${fmtN(sp.mod.p90)}).</title></g>`);
+    }
+    const xw = xl - 5;  // the no-change range, P10–P90, just left of the bar
+    parts.push(`<g><line x1="${xw}" x2="${xw}" y1="${y(nb.p10)}" y2="${y(nb.p90)}" stroke="var(--ink-muted)" stroke-width="1.5"></line>
+      <line x1="${xw - 3}" x2="${xw + 3}" y1="${y(nb.p10)}" y2="${y(nb.p10)}" stroke="var(--ink-muted)" stroke-width="1.5"></line>
+      <line x1="${xw - 3}" x2="${xw + 3}" y1="${y(nb.p90)}" y2="${y(nb.p90)}" stroke="var(--ink-muted)" stroke-width="1.5"></line>
+      <title>${r.year}: with no change, likely ${fmtN(nb.p10)} to ${fmtN(nb.p90)} ${esc(spec.what)} (midpoint ${fmtN(b0)})</title></g>`);
+    parts.push(`<g>${sp ? "" : `<rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(0) - y(b0))}" fill="var(--scenario-baseline)"></rect>`}
       <rect x="${xl}" y="${y(b0 + r.p90)}" width="${bw}" height="${Math.max(1, y(b0 + r.p10) - y(b0 + r.p90))}" fill="${color}" opacity="0.4"></rect>
       <rect x="${xl}" y="${y(b0 + r.p50) - 1.5}" width="${bw}" height="3" fill="${color}"></rect>
       <title>${r.year}: ${fmtN(b0)} ${esc(spec.what)} with no change (${fmtN(nb.p10)} to ${fmtN(nb.p90)}), plus ${fmtN(r.p10)} to ${fmtN(r.p90)} added by the reform (midpoint ${fmtN(r.p50)}): ${fmtN(b0 + r.p50)} in all</title></g>`);
@@ -1089,14 +1110,21 @@ function recordHtml(b, d, compact = false) {
   const cover = d === "adu" && a ? (Number.isFinite(a.population_share)
     ? ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, home to about ${Math.round(a.population_share * 100)}% of ${esc(name)}'s people, so they understate the state.`
     : ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, so they understate the state.`) : "";
+  const hasSplit = fut.some((r) => split(r.year));
+  const histLabel = d === "adu" && a ? `Counted in ${fmtInt(a.places)} places' permit records` : "Actually permitted";
+  const sw = (bg, op = 1) => `<span style="display:inline-block;width:12px;height:10px;background:${bg};opacity:${op};margin-right:6px"></span>`;
+  const baseKey = !base.length ? "" : hasSplit
+    ? `<span>${sw("var(--scenario-baseline)")}No change: places with their own permit counts</span><span>${sw("var(--scenario-baseline)", 0.4)}No change: places the model estimates</span>`
+    : `<span>${sw("var(--scenario-baseline)")}Expected with no change (midpoint)</span>`;
+  const rangeKey = base.length && fut.some((r) => baseAt(r.year)) ? `<span><span style="display:inline-block;width:2px;height:12px;background:var(--ink-muted);margin:0 8px 0 5px;vertical-align:middle"></span>No-change range (P10–P90)</span>` : "";
   const legend = `<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
-    <span><span style="display:inline-block;width:12px;height:10px;background:var(--ink-muted);opacity:.55;margin-right:6px"></span>Actually permitted</span>
-    ${base.length ? `<span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Expected with no change (midpoint)</span>` : ""}
+    <span>${sw("var(--ink-muted)", 0.55)}${esc(histLabel)}</span>
+    ${baseKey}${rangeKey}
     <span><span style="display:inline-block;width:12px;height:10px;background:${color};opacity:.4;margin-right:6px"></span>Added by the reform${base.length ? ", on top" : ""} (P10–P90, line at the midpoint)</span></div>`;
   return `${title}
     <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
-    ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. The sliders above do not move this chart.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. ${hasSplit ? "The grey forecast bars cover every place in the state, not only the places counted in the bars before them. Each is split into the places whose forecast starts from their own ADU permit counts and the places the model estimates from their market and rules, in proportion to each group's average over the model runs (averages add up; midpoints do not). The thin line beside each bar is the likely range with no change. " : ""}The sliders above do not move this chart.</p>`, "Graph details")}`;
 }
 
 // How accurate is our model (Ben, 2026-11-19): one block at the end of each model's evidence card, holding only

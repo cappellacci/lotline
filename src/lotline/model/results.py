@@ -369,7 +369,9 @@ def adu_baseline_years(state: str, run_draws: Mapping, origin: int, own=None) ->
         cur = cur_by_place[:, m, :].sum(axis=1)
         for y in years:
             a = cur[:, y]
-            rows.append({"state": state, "period": str(first + y), "basis": basis, **_pct(a), "mean": a.mean()})
+            rows.append(
+                {"state": state, "period": str(first + y), "basis": basis, **_pct(a), "mean": a.mean()}
+            )
     return pd.DataFrame(rows, columns=["state", *_columns("adu_baseline")])
 
 
@@ -839,7 +841,9 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
         "baseline": base,
         "observed": seen,
         "adu_place_types": adu_place_type_table(st, places, run_draws),
-        "adu_baseline": adu_baseline_years(st, run_draws, origin, own=places["observed_rate"].notna().to_numpy()),
+        "adu_baseline": adu_baseline_years(
+            st, run_draws, origin, own=places["observed_rate"].notna().to_numpy()
+        ),
         "affordability": affordability_table(st, places, run_draws, res_mm, fee_places, store),
         "shortfall": shortfall_table(st, base, store.read(st, "acs_geo_year"), origin),
         "fee_types": fee_types,
