@@ -295,8 +295,8 @@ def test_missing_middle_and_fees_have_their_own_evidence_cards(tmp_path):
     ev = html[html.index("function evidenceHtml") :]
     assert "${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;" in ev
     assert (
-        'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R) + accuracyHtml(b, d);'
-        in ev
+        'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R, '
+        'feeSplit(b) ? "rest" : "all") + accuracyHtml(b, d);' in ev
     )
     mm = html[html.index("function mmHowHtml") : html.index("const FEE_VERSIONS")]
     fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
@@ -353,7 +353,10 @@ def test_fee_card_shows_what_places_charge_today(tmp_path):
     assert build.data_section(["ZZ"], None)["by_state"]["ZZ"]["fees"] is None
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
-    assert "return s1 + feeTodayHtml(b, name) + s2 + s3;" in fee
+    # all of it, or split around "Try a different fee change" (Ben, 2026-11-23): s1 above it, the rest below
+    assert 'if (part === "top") return s1;' in fee
+    assert "const rest = feeTodayHtml(b, name) + s2 + s3;" in fee
+    assert 'return part === "rest" ? rest : s1 + rest;' in fee
     today = html[html.index("function feeTodayHtml") : html.index("const PLACE_TYPES")]
     for words in (
         "What builders pay in fees today",
