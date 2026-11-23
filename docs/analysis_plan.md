@@ -7915,13 +7915,13 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   so it falls too: TX −10% and MN −9% on the five-year midpoint; NC, OR, OH under 1%.
 - **Holdouts:** no frozen prediction file changes; scored tests keep their recorded results.
 
-### App note · 2026-11-22 · Fees: "Test a fee bill" (D-077's slider and targeted bills in the app)
+### App note · 2026-11-22 · Fees: "Try a different fee change" (D-077's slider and targeted home types in the app)
 
 - **Asked by:** Ben, 2026-11-22 ("Yes, build it"), as the fee testing area: D-077's controls, which the fee
   prototype page had and the app did not.
 - **What the page does:** on the Fee reduction tab, with real local fees, a slider for the change to each city's
-  own fees (Abolish at the left, up 50% at the right; default: cut by half) and buttons for the homes a bill
-  covers (every home, houses only, duplexes only, duplexes to fourplexes). The headline, the fee card and the
+  own fees (Abolish at the left, up 50% at the right; default: cut by half) and buttons for the homes it
+  applies to (every home, houses only, duplexes only, duplexes to fourplexes). The headline, the fee card and the
   need card follow. The Challenge benchmark ($50,000 cut to $25,000) stays fixed. Fee revenue is not shown
   (D-077: a test Ben expected to drop).
 - **Data:** results bundle part `results_fee_types` (schemas 1.20): each draw's five-year homes added by

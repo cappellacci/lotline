@@ -947,8 +947,8 @@ function pendingIn(b) {
   // only scenarios the app knows: bundles written before schemas 1.17 also list the dropped combined runs
   return (b.meta.scenarios_pending || "").split(",").map((s) => s.trim()).filter((s) => s in DATA.scenarios && !scenariosIn(b).includes(s));
 }
-// The fee section's policy controls (D-077, "Test a fee bill"): a slider for the change to each city's own fees
-// and buttons for the homes the bill covers. They re-weight the real-local-fee draws (AGG.feePolicyDraws, from
+// The fee section's policy controls (D-077, "Try a different fee change"): a slider for the change to each city's own fees
+// and buttons for the homes it applies to. They re-weight the real-local-fee draws (AGG.feePolicyDraws, from
 // the bundle's `fee_types`), so the headline, the fee card and the need card follow them; the default (cut by
 // half, every home) is the engine's own `fees_local_half` draws. The Challenge benchmark stays fixed.
 const FEE_TARGETS = [
@@ -983,17 +983,17 @@ const drawsFor = (b, s) => {
 function feeTestHtml(b) {
   if (!feePolicyOn(b)) return "";
   if (UI.fee !== "fees_local_half") {
-    return `<h3 class="h3">Test a fee bill</h3><p class="body-small">The Challenge benchmark is fixed: a $50,000 fee everywhere, cut to $25,000. <button type="button" class="linkish" data-fee="fees_local_half">Switch to real local fees</button> to try a different change or a bill aimed at one kind of home.</p>`;
+    return `<h3 class="h3">Try a different fee change</h3><p class="body-small">The Challenge benchmark is fixed: a $50,000 fee everywhere, cut to $25,000. <button type="button" class="linkish" data-fee="fees_local_half">Switch to real local fees</button> to try a different change, or one aimed at one kind of home.</p>`;
   }
   const v = Math.round(UI.feeChange * 100);
   const targets = FEE_TARGETS.map(([k, label]) => `<button type="button" data-feetarget="${k}" aria-pressed="${k === UI.feeTarget}">${esc(label)}</button>`).join("");
-  return `<h3 class="h3">Test a fee bill</h3>
-    <p class="body-small">Change local fees and choose which homes the bill covers. The headline, the fee figures below and the housing-need card follow. It starts at the real local fees case: each city's own fees cut by half, for every home.</p>
+  return `<h3 class="h3">Try a different fee change</h3>
+    <p class="body-small">Change local fees and choose which homes it applies to. The headline, the fee figures below and the housing-need card follow. It starts at the real local fees case: each city's own fees cut by half, for every home.</p>
     <div class="knob"><div class="head"><label class="h3" for="fee-change" style="font-size:16px">Change to local fees</label><span class="val" id="fee-change-val"></span></div>
       <input type="range" id="fee-change" min="-100" max="50" step="10" value="${v}" aria-describedby="fee-change-val">
       <div class="ends"><span>Abolish</span><button type="button" class="linkish" data-feereset="1">Reset</button><span>Up 50%</span></div></div>
-    <p class="body-small" style="margin:var(--space-3) 0 var(--space-1)"><b>Which homes the bill covers</b></p>
-    <span class="toggle" role="group" aria-label="Which homes the bill covers">${targets}</span>
+    <p class="body-small" style="margin:var(--space-3) 0 var(--space-1)"><b>Which homes it applies to</b></p>
+    <span class="toggle" role="group" aria-label="Which homes it applies to">${targets}</span>
     <p class="body" id="fee-test-result" style="margin-top:var(--space-3)"></p>
     ${more(`<p class="source">Each city's fee for each kind of home is changed by the slider's share. In every model run, the homes a fee change adds are in proportion to the change: abolishing fees adds twice what cutting them by half adds, and raising them by half loses what halving them gains (checked when the results are built). So the page scales each run's homes from the half cut, by kind of home. Buildings of 5 or more homes pay no fee in the model and are never covered. The sliders under "Try different assumptions" move how strongly building responds, on top of this.</p>`, "How this works")}`;
 }
@@ -1206,8 +1206,8 @@ function mmHowHtml(b, R) {
     ${foot}</section>`;
 }
 
-// The fee card (Ben, 2026-11-17: what the results files hold now; the slider and targeted bills wait for the fee
-// grid to move into the bundle). Results files carry two versions: the Challenge benchmark and real local fees
+// The fee card (Ben, 2026-11-17). The slider and the "which homes" choice live in "Try a different fee change"
+// above it (results_fee_types, 2026-11-22); the card's real-local-fee tile follows them. Results files carry two versions: the Challenge benchmark and real local fees
 // halved. The fee model opens no lots, so the engine's first stage is the homes built anyway (results.fee_rows).
 const FEE_VERSIONS = [
   ["fees", "The Challenge benchmark", "Every city assumed to charge $50,000 a home, cut to $25,000."],
@@ -1218,7 +1218,7 @@ function feeEvidenceHtml(b, R) {
   const o = UI.outcome, yrs = AGG.windowLabel(b) || "the five years";
   const all = (b.baseline || []).find((r) => r.size_class === "all" && /^\d{4}-\d{4}$/.test(String(r.period)));
   const shown = FEE_VERSIONS.filter(([k]) => R[k]).map(([k, label, what]) =>
-    (k === "fees_local_half" && !feeDefault() ? [k, "Real local fees: your bill", feePolicyWhat()] : [k, label, what]));
+    (k === "fees_local_half" && !feeDefault() ? [k, "Real local fees: your change", feePolicyWhat()] : [k, label, what]));
   if (!shown.length) return `<section><p class="pending">The fee reform is not in this state's results yet.</p></section>`;
   // 1. the two versions side by side: homes added and as a share of the homes expected anyway
   const tiles = shown.map(([k, label, what]) => {
@@ -1530,7 +1530,7 @@ function heroUpdate(b, R, o) {
     if (who) { who.querySelector("[data-box-what]").textContent = WHAT[s]; who.querySelector("h4").style.color = scenColor(s); }
     if (!r) { lane.innerHTML = `${grid}<span class="num muted" style="left:0">Not yet run</span>`; continue; }
     const { p10, p50, p90 } = r[o], c = scenColor(s);
-    if (p50 < 0) {  // a fee rise in "Test a fee bill": homes lost, which a log scale cannot draw
+    if (p50 < 0) {  // a fee rise in "Try a different fee change": homes lost, which a log scale cannot draw
       const words = `${fmtN(-p50)} fewer homes (${fmtN(-p90)} to ${fmtN(-p10)} fewer)`;
       lane.setAttribute("aria-label", `${SCENARIOS_SHORT[k]}: ${words}`);
       lane.innerHTML = `${grid}<span class="num" style="left:0;color:${c}">${words}</span>`;

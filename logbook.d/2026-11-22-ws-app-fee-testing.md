@@ -1,4 +1,4 @@
-### LB-NNN · 2026-11-22 · APP · Can a policymaker test their own fee bill in the app?
+### LB-NNN · 2026-11-22 · APP · Can a policymaker try their own fee change in the app?
 
 - **Question:** the app's Fee reduction tab showed two fixed cases. Can a user change the size of the fee change
   and aim it at one kind of home (D-077), with the same model runs and ranges?
@@ -7,7 +7,7 @@
   - `fee_rows_and_types` and the build-time check `check_fee_line` in `src/lotline/model/results.py`;
   - `fee_policy_draws` in `src/lotline/model/aggregate.py` and `feePolicyDraws` in
     `src/lotline/app/aggregate.js`;
-  - the "Test a fee bill" box in `src/lotline/app/template.html`;
+  - the "Try a different fee change" box in `src/lotline/app/template.html`;
   - tests in `tests/model/test_results.py` and `tests/app/test_aggregate_parity.py`;
   - app note in `docs/analysis_plan.md` (2026-11-22).
 - **What Claude did and how it was checked:**
