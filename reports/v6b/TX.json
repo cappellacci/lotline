@@ -1,0 +1,63 @@
+{
+ "state": "TX",
+ "origin": 2025,
+ "places": 940,
+ "cuts": {
+  "fees": {
+   "label": "Challenge benchmark ($50,000 cut by $25,000)",
+   "fee_median": 50000.0,
+   "saving_median": 12500.0,
+   "places_with_lots": 0,
+   "places_feasibility_route": 0,
+   "lots_feasible_before": 0,
+   "lots_feasible_after": 0,
+   "lots_crossing": 0,
+   "response": {
+    "1": {
+     "p10": 0.002605835630678673,
+     "p50": 0.010174145869832132,
+     "p90": 0.04126742216618413,
+     "base_homes": 626429.8482499999,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.983
+    },
+    "2_4": {
+     "p10": 0.007326757253753915,
+     "p50": 0.027995544846212327,
+     "p90": 0.11646667933898092,
+     "base_homes": 36709.008499999996,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.948
+    }
+   }
+  },
+  "fees_local_half": {
+   "label": "Real local fees cut by half",
+   "fee_median": 3940.2366703034186,
+   "saving_median": 985.0591675758546,
+   "places_with_lots": 0,
+   "places_feasibility_route": 0,
+   "lots_feasible_before": 0,
+   "lots_feasible_after": 0,
+   "lots_crossing": 0,
+   "response": {
+    "1": {
+     "p10": 0.0002465556506433123,
+     "p50": 0.0009312363150824884,
+     "p90": 0.003784390976138513,
+     "base_homes": 626429.8482499999,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    },
+    "2_4": {
+     "p10": 0.0005969284285892475,
+     "p50": 0.0022815447630117293,
+     "p90": 0.009681370852792042,
+     "base_homes": 36709.008499999996,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    }
+   }
+  }
+ }
+}

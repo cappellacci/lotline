@@ -7957,3 +7957,26 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     intends);
   - model: 57 / 151 / 534, mean 264.
 - **No number changes:** the `all` rows are the earlier rows.
+
+### Results note · 2026-11-23 · V6b, the pro forma threshold test (fees; validation plan §V6, issue #49)
+
+- **Asked by:** Ben, 2026-11-23 ("lets do the Fee threshold check (V6b, #49)").
+- **Run:** `scripts/dev/v6b_fee_threshold.py` → `reports/v6b/V6b-fee-threshold.md` (and one JSON per state).
+  Processed tables only, offline, origin 2025, current engine and config; no parameter or model change.
+- **Lots that start to pencil out** (single-family prototype, central parameters; only where a parcel roll
+  gives candidate vacant lots and a new-home value):
+  - Minnesota (104 places): +336 lots with the $25,000 benchmark cut (+9%), +183 with real fees cut by
+    half (+3%).
+  - Oregon (25 places): +369 (+3%) and +74 (+0.5%).
+  - North Carolina, Ohio and Texas: no place has those inputs, so the engine uses the elasticity route
+    there.
+- **Five-year response against the plan's range** (0 to +12% for houses, 0 to +18% for 2-4 unit buildings):
+  - The benchmark cut gives houses +1.0% to +1.4% and 2-4 units +1.4% to +3.0% at the midpoint.
+  - Real fees cut by half give +0.1% to +0.4% for both.
+  - All 20 state-cut-size midpoints are inside the range, as are 94-100% of draws: **pass**.
+- **Reading:**
+  - The rule is weak on its own, since the range starts at 0.
+  - The finding the plan asked for is the gap. Real local fees for a new house have medians of $3,900-
+    $9,100, against the Handbook's $50,000, so halving them moves building about 4-10 times less than the
+    benchmark cut.
+  - The published range, not a measured fee cut in our states, is the comparison (V6a stays open).

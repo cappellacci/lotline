@@ -1,0 +1,63 @@
+{
+ "state": "MN",
+ "origin": 2025,
+ "places": 945,
+ "cuts": {
+  "fees": {
+   "label": "Challenge benchmark ($50,000 cut by $25,000)",
+   "fee_median": 50000.0,
+   "saving_median": 12500.0,
+   "places_with_lots": 104,
+   "places_feasibility_route": 15,
+   "lots_feasible_before": 3782,
+   "lots_feasible_after": 4118,
+   "lots_crossing": 336,
+   "response": {
+    "1": {
+     "p10": 0.0036291533199320583,
+     "p50": 0.012803256062245133,
+     "p90": 0.04346757942149717,
+     "base_homes": 57727.44175,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.988
+    },
+    "2_4": {
+     "p10": 0.006033880349123293,
+     "p50": 0.023054809673937623,
+     "p90": 0.0959318183355334,
+     "base_homes": 2513.41075,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.959
+    }
+   }
+  },
+  "fees_local_half": {
+   "label": "Real local fees cut by half",
+   "fee_median": 9147.96,
+   "saving_median": 2286.99,
+   "places_with_lots": 104,
+   "places_feasibility_route": 23,
+   "lots_feasible_before": 6400,
+   "lots_feasible_after": 6583,
+   "lots_crossing": 183,
+   "response": {
+    "1": {
+     "p10": 0.0008625548242788123,
+     "p50": 0.0029111312489948156,
+     "p90": 0.00966925754473086,
+     "base_homes": 57727.44175,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    },
+    "2_4": {
+     "p10": 0.0009118816961185085,
+     "p50": 0.0035159315722054388,
+     "p90": 0.014670095090186646,
+     "base_homes": 2513.41075,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    }
+   }
+  }
+ }
+}
