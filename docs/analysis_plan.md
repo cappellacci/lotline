@@ -7954,6 +7954,8 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Effect on today's results** (origin 2025, 2027-31 baseline P50, all sizes):
   - MN +9.0%, NC +7.5%, OH +5.1%, OR +8.0%, TX +6.0%.
   - 2-4 units: +11% to +17%. 5+ units: +6% to +19%.
-  - The need card's "built anyway" rises by as much. The reforms' added homes do not use this baseline
-    except where noted in their own entries.
+  - The need card's "built anyway" rises by as much.
+  - The fee reform scales with it, since its homes are a % change on the baseline
+    (`fee_inputs`, `baseline_forecast`), so fee results rise by about the same share.
+  - ADU and missing-middle additions do not read this baseline; only their gut-check comparisons do.
 - **Frozen predictions:** unchanged. V5 and V8 were scored on their frozen files.
