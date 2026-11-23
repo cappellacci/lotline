@@ -914,7 +914,7 @@ function niceTicks(max, n = 4) {
 }
 
 // ---- section 1 state: shifts (slider -> point in the factor's range), outcome, scenario in detail ------------------------------
-const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null, fee: "fees_local_half", model: null };  // real local fees by default (Ben, 2026-11-17); the Handbook benchmark is one click away
+const UI = { pins: {}, outcome: "homes_net_statewide", detail: null, b: null, fee: "fees_local_half", model: null, feeChange: -0.5, feeTarget: "all" };  // real local fees by default (Ben, 2026-11-17); the Handbook benchmark is one click away
 const SCENARIOS_SHORT = { adu: "ADUs", missing_middle: "Missing middle", fees: "Fee reduction" };
 // Gross vs net (aggregate.homes_from_draws): "all new homes" = homes_in_place; "net new housing" = that × (1 − displacement_share).
 const OUTCOME_WORDS = {
@@ -947,7 +947,73 @@ function pendingIn(b) {
   // only scenarios the app knows: bundles written before schemas 1.17 also list the dropped combined runs
   return (b.meta.scenarios_pending || "").split(",").map((s) => s.trim()).filter((s) => s in DATA.scenarios && !scenariosIn(b).includes(s));
 }
-const drawsFor = (b, s) => b.draws.filter((d) => d.scenario === s);
+// The fee section's policy controls (D-077, "Try a different fee change"): a slider for the change to each city's own fees
+// and buttons for the homes it applies to. They re-weight the real-local-fee draws (AGG.feePolicyDraws, from
+// the bundle's `fee_types`), so the headline, the fee card and the need card follow them; the default (cut by
+// half, every home) is the engine's own `fees_local_half` draws. The Challenge benchmark stays fixed.
+const FEE_TARGETS = [
+  ["all", "Every home", ["1", "2", "3_4"], "houses, duplexes, triplexes and fourplexes"],
+  ["1", "Houses only", ["1"], "houses"],
+  ["2", "Duplexes only", ["2"], "duplexes"],
+  ["2_4", "Duplexes to fourplexes", ["2", "3_4"], "duplexes, triplexes and fourplexes"],
+];
+const feeTarget = () => FEE_TARGETS.find((t) => t[0] === UI.feeTarget) || FEE_TARGETS[0];
+const feePolicyOn = (b) => Boolean(b && (b.fee_types || []).length);
+const feeDefault = () => Math.abs(UI.feeChange + 0.5) < 1e-9 && UI.feeTarget === "all";
+function feeChangeWords(c) {
+  const p = Math.round(Math.abs(c) * 100);
+  if (p === 0) return "no change to local fees";
+  if (c <= -1) return "local fees abolished";
+  if (c < 0) return p === 50 ? "local fees cut by half" : `local fees cut by ${p}%`;
+  return `local fees raised by ${p}%`;
+}
+function feePolicyWhat() {
+  const t = feeTarget(), w = feeChangeWords(UI.feeChange);
+  return `${w.charAt(0).toUpperCase()}${w.slice(1)}, ${t[0] === "all" ? "for houses, duplexes and fourplexes" : `for ${t[3]} only`}, starting from each city's own fees.`;
+}
+let FEE_MEMO = null;
+const drawsFor = (b, s) => {
+  const d = b.draws.filter((x) => x.scenario === s);
+  if (s !== "fees_local_half" || !feePolicyOn(b) || feeDefault()) return d;
+  const key = `${UI.feeChange}|${UI.feeTarget}`;
+  if (FEE_MEMO && FEE_MEMO.b === b && FEE_MEMO.key === key) return FEE_MEMO.d;
+  FEE_MEMO = { b, key, d: AGG.feePolicyDraws(d, b.fee_types, UI.feeChange, feeTarget()[2]) };
+  return FEE_MEMO.d;
+};
+function feeTestHtml(b) {
+  if (!feePolicyOn(b)) return "";
+  if (UI.fee !== "fees_local_half") {
+    return `<h3 class="h3">Try a different fee change</h3><p class="body-small">The Challenge benchmark is fixed: a $50,000 fee everywhere, cut to $25,000. <button type="button" class="linkish" data-fee="fees_local_half">Switch to real local fees</button> to try a different change, or one aimed at one kind of home.</p>`;
+  }
+  const v = Math.round(UI.feeChange * 100);
+  const targets = FEE_TARGETS.map(([k, label]) => `<button type="button" data-feetarget="${k}" aria-pressed="${k === UI.feeTarget}">${esc(label)}</button>`).join("");
+  return `<h3 class="h3">Try a different fee change</h3>
+    <p class="body-small">Change local fees and choose which homes it applies to. The figures above, the headline and the housing-need card follow. It starts at the real local fees case: each city's own fees cut by half, for every home.</p>
+    <div class="knob"><div class="head"><label class="h3" for="fee-change" style="font-size:16px">Change to local fees</label><span class="val" id="fee-change-val"></span></div>
+      <input type="range" id="fee-change" min="-100" max="50" step="10" value="${v}" aria-describedby="fee-change-val">
+      <div class="ends"><span>Abolish</span><button type="button" class="linkish" data-feereset="1">Reset</button><span>Up 50%</span></div></div>
+    <p class="body-small" style="margin:var(--space-3) 0 var(--space-1)"><b>Which homes it applies to</b></p>
+    <span class="toggle" role="group" aria-label="Which homes it applies to">${targets}</span>
+    <p class="body" id="fee-test-result" style="margin-top:var(--space-3)"></p>
+    ${more(`<p class="source">Each city's fee for each kind of home is changed by the slider's share. In every model run, the homes a fee change adds are in proportion to the change: abolishing fees adds twice what cutting them by half adds, and raising them by half loses what halving them gains (checked when the results are built). So the page scales each run's homes from the half cut, by kind of home. Buildings of 5 or more homes pay no fee in the model and are never covered. The sliders under "Try different assumptions" move how strongly building responds, on top of this.</p>`, "How this works")}`;
+}
+function feeTestUpdate(b) {
+  const box = $("fee-test");
+  if (!box) return;
+  box.hidden = UI.model !== "fees" || !feePolicyOn(b);
+  const val = $("fee-change-val"), out = $("fee-test-result");
+  if (val) val.textContent = feeChangeWords(UI.feeChange).replace(/^./, (c) => c.toUpperCase());
+  if (!out || box.hidden || UI.fee !== "fees_local_half") return;
+  const t = feeTarget();
+  const all = AGG.homesFromDraws([...drawsFor(b, "fees_local_half")].sort((x, y) => x.draw - y.draw), UI.pins);
+  const h = all.permits_added, counted = AGG.percentile(all[UI.outcome], 50);
+  const mid = AGG.percentile(h, 50), lo = AGG.percentile(h, 10), hi = AGG.percentile(h, 90);
+  const base = (b.fee_types || []).filter((r) => r.draw === 0 && t[2].includes(String(r.size))).reduce((a, r) => a + Number(r.baseline_homes), 0);
+  const yrs = AGG.windowLabel(b) || "the five years";
+  const up = mid >= 0;
+  out.innerHTML = Math.abs(mid) < 0.5 ? `No change: about the ${fmtN(base)} ${esc(t[3])} expected anyway over ${esc(yrs)}.`
+    : `About <b>${fmtN(Math.abs(mid))} ${up ? "more" : "fewer"}</b> ${esc(t[3])} permitted over ${esc(yrs)} (likely ${fmtN(Math.min(Math.abs(lo), Math.abs(hi)))} to ${fmtN(Math.max(Math.abs(lo), Math.abs(hi)))}), ${up ? "+" : "−"}${fmtPct(Math.abs(mid) / base)} on the ${fmtN(base)} expected anyway. Counted as ${esc(OUTCOME_WORDS[UI.outcome][0].toLowerCase())}, as in the headline: about ${fmtN(Math.abs(counted))} ${up ? "more" : "fewer"}.`;
+}
 const results = (b) => Object.fromEntries(scenariosIn(b).map((s) => [s, AGG.summarize(drawsFor(b, s), UI.pins)]));
 
 function flagHtml(m, named) {
@@ -980,8 +1046,18 @@ function recordHtml(b, d, compact = false) {
   const obs = (b.observed || []).filter((r) => r.measure === spec.measure).sort((x, y) => x.year - y.year);
   const fut = (b.totals || []).filter((r) => r.scenario === d && r.outcome === "permits_added" && /^\d{4}$/.test(r.period))
     .map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year);
-  const base = (d === "adu" ? (b.adu_baseline || []) : spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base) : [])
+  const isAll = (r) => r.basis === undefined || r.basis === null || r.basis === "all";
+  const base = (d === "adu" ? (b.adu_baseline || []).filter(isAll) : spec.base ? (b.baseline || []).filter((r) => r.size_class === spec.base) : [])
     .filter((r) => /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) }));
+  // The ADU chart split (Ben, 2026-11-19, "where we have the data"; results_adu_baseline basis, schemas 1.21): each
+  // no-change bar is split into places with their own ADU permit counts and places the model estimates, in the
+  // ratio of their means (means add up; the groups' midpoints do not). A state with no own-count places keeps
+  // one bar.
+  const split = d === "adu" ? (yr) => {
+    const at = (basis) => (b.adu_baseline || []).find((r) => r.basis === basis && Number(r.period) === yr);
+    const all = at("all"), own = at("own_counts"), mod = at("model");
+    return all && own && mod && all.mean > 0 ? { own, mod, share: own.mean / all.mean } : null;
+  } : () => null;
   const title = `<h3 class="h3">What gets built now, and what the reform would add</h3>`;
   if (!obs.length && !fut.length) return `${title}<p class="pending">No permit record or yearly forecast for this state yet.</p>`;
   const years = [...obs.map((r) => r.year), ...fut.map((r) => r.year)];
@@ -990,7 +1066,7 @@ function recordHtml(b, d, compact = false) {
   // P10–P90 band on top of it, a line at its midpoint (Ben, 2026-11-17: show every forecast year this way).
   const baseAt = (yr) => base.find((r) => r.year === yr);
   const stackTop = fut.map((r) => (baseAt(r.year) ? baseAt(r.year).p50 : 0) + r.p90);
-  const top = Math.max(1, ...obs.map((r) => r.value), ...stackTop, ...base.filter((r) => !fut.some((f) => f.year === r.year)).map((r) => r.p90));
+  const top = Math.max(1, ...obs.map((r) => r.value), ...stackTop, ...base.map((r) => r.p90));
   const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
   const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
   const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
@@ -1009,8 +1085,19 @@ function recordHtml(b, d, compact = false) {
   for (const r of fut) {
     const nb = baseAt(r.year);
     if (!nb) { parts.push(whisker(x(r.year), r, color, "added by the reform")); continue; }
-    const b0 = nb.p50, xl = x(r.year) - bw / 2;
-    parts.push(`<g><rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(0) - y(b0))}" fill="var(--scenario-baseline)"></rect>
+    const b0 = nb.p50, xl = x(r.year) - bw / 2, sp = split(r.year);
+    if (sp) {  // own-count places at the bottom (solid), model-estimated places above them (light)
+      const b1 = b0 * sp.share;
+      parts.push(`<g><rect x="${xl}" y="${y(b1)}" width="${bw}" height="${Math.max(0, y(0) - y(b1))}" fill="var(--scenario-baseline)"></rect>
+        <rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(b1) - y(b0))}" fill="var(--scenario-baseline)" opacity="0.4"></rect>
+        <title>${r.year}, with no change: ${fmtN(b0)} ADUs (${fmtN(nb.p10)} to ${fmtN(nb.p90)}). About ${fmtN(b1)} in the places with their own permit counts (their own range ${fmtN(sp.own.p10)} to ${fmtN(sp.own.p90)}) and ${fmtN(b0 - b1)} in the places the model estimates (${fmtN(sp.mod.p10)} to ${fmtN(sp.mod.p90)}).</title></g>`);
+    }
+    const xw = xl - 5;  // the no-change range, P10–P90, just left of the bar
+    parts.push(`<g><line x1="${xw}" x2="${xw}" y1="${y(nb.p10)}" y2="${y(nb.p90)}" stroke="var(--ink-muted)" stroke-width="1.5"></line>
+      <line x1="${xw - 3}" x2="${xw + 3}" y1="${y(nb.p10)}" y2="${y(nb.p10)}" stroke="var(--ink-muted)" stroke-width="1.5"></line>
+      <line x1="${xw - 3}" x2="${xw + 3}" y1="${y(nb.p90)}" y2="${y(nb.p90)}" stroke="var(--ink-muted)" stroke-width="1.5"></line>
+      <title>${r.year}: with no change, likely ${fmtN(nb.p10)} to ${fmtN(nb.p90)} ${esc(spec.what)} (midpoint ${fmtN(b0)})</title></g>`);
+    parts.push(`<g>${sp ? "" : `<rect x="${xl}" y="${y(b0)}" width="${bw}" height="${Math.max(0, y(0) - y(b0))}" fill="var(--scenario-baseline)"></rect>`}
       <rect x="${xl}" y="${y(b0 + r.p90)}" width="${bw}" height="${Math.max(1, y(b0 + r.p10) - y(b0 + r.p90))}" fill="${color}" opacity="0.4"></rect>
       <rect x="${xl}" y="${y(b0 + r.p50) - 1.5}" width="${bw}" height="3" fill="${color}"></rect>
       <title>${r.year}: ${fmtN(b0)} ${esc(spec.what)} with no change (${fmtN(nb.p10)} to ${fmtN(nb.p90)}), plus ${fmtN(r.p10)} to ${fmtN(r.p90)} added by the reform (midpoint ${fmtN(r.p50)}): ${fmtN(b0 + r.p50)} in all</title></g>`);
@@ -1023,14 +1110,21 @@ function recordHtml(b, d, compact = false) {
   const cover = d === "adu" && a ? (Number.isFinite(a.population_share)
     ? ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, home to about ${Math.round(a.population_share * 100)}% of ${esc(name)}'s people, so they understate the state.`
     : ` They come only from the ${fmtInt(a.places)} places whose permit records mark ADUs, so they understate the state.`) : "";
+  const hasSplit = fut.some((r) => split(r.year));
+  const histLabel = d === "adu" && a ? `Counted in ${fmtInt(a.places)} places' permit records` : "Actually permitted";
+  const sw = (bg, op = 1) => `<span style="display:inline-block;width:12px;height:10px;background:${bg};opacity:${op};margin-right:6px"></span>`;
+  const baseKey = !base.length ? "" : hasSplit
+    ? `<span>${sw("var(--scenario-baseline)")}No change: places with their own permit counts</span><span>${sw("var(--scenario-baseline)", 0.4)}No change: places the model estimates</span>`
+    : `<span>${sw("var(--scenario-baseline)")}Expected with no change (midpoint)</span>`;
+  const rangeKey = base.length && fut.some((r) => baseAt(r.year)) ? `<span><span style="display:inline-block;width:2px;height:12px;background:var(--ink-muted);margin:0 8px 0 5px;vertical-align:middle"></span>No-change range (P10–P90)</span>` : "";
   const legend = `<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
-    <span><span style="display:inline-block;width:12px;height:10px;background:var(--ink-muted);opacity:.55;margin-right:6px"></span>Actually permitted</span>
-    ${base.length ? `<span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Expected with no change (midpoint)</span>` : ""}
+    <span>${sw("var(--ink-muted)", 0.55)}${esc(histLabel)}</span>
+    ${baseKey}${rangeKey}
     <span><span style="display:inline-block;width:12px;height:10px;background:${color};opacity:.4;margin-right:6px"></span>Added by the reform${base.length ? ", on top" : ""} (P10–P90, line at the midpoint)</span></div>`;
   return `${title}
     <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
-    ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. The sliders above do not move this chart.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. ${hasSplit ? "The grey forecast bars cover every place in the state, not only the places counted in the bars before them. Each is split into the places whose forecast starts from their own ADU permit counts and the places the model estimates from their market and rules, in proportion to each group's average over the model runs (averages add up; midpoints do not). The thin line beside each bar is the likely range with no change. " : ""}The sliders above do not move this chart.</p>`, "Graph details")}`;
 }
 
 // How accurate is our model (Ben, 2026-11-19): one block at the end of each model's evidence card, holding only
@@ -1069,7 +1163,7 @@ function accuracyHtml(b, d) {
 // ---- the evidence card under the model selector: one per reform (ADUs first; the others still to design) ----
 function evidenceHtml(b, d, R) {
   if (d === "missing_middle") return `<section>${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;
-  if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R) + accuracyHtml(b, d);
+  if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R, feeSplit(b) ? "rest" : "all") + accuracyHtml(b, d);
   if (d !== "adu") return `<section><p class="pending">The evidence card for ${esc(scenLabel(d))} is still being designed.</p></section>`;
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const med = (c) => AGG.percentile(drawsFor(b, "adu").map((x) => Number(x[c])).filter(Number.isFinite), 50);
@@ -1140,28 +1234,35 @@ function mmHowHtml(b, R) {
     ${foot}</section>`;
 }
 
-// The fee card (Ben, 2026-11-17: what the results files hold now; the slider and targeted bills wait for the fee
-// grid to move into the bundle). Results files carry two versions: the Challenge benchmark and real local fees
+// The fee card (Ben, 2026-11-17). The slider and the "which homes" choice live in "Try a different fee change"
+// above it (results_fee_types, 2026-11-22); the card's real-local-fee tile follows them. Results files carry two versions: the Challenge benchmark and real local fees
 // halved. The fee model opens no lots, so the engine's first stage is the homes built anyway (results.fee_rows).
 const FEE_VERSIONS = [
   ["fees", "The Challenge benchmark", "Every city assumed to charge $50,000 a home, cut to $25,000."],
   ["fees_local_half", "Real local fees, halved", "Each city's own fees for houses, duplexes and fourplexes, cut by half."],
 ];
-function feeEvidenceHtml(b, R) {
+// With "Try a different fee change" on the page, the fee card is drawn in two parts around it (Ben, 2026-11-23:
+// the control sits below what the change adds): "top" is the first section, "rest" everything after it. The
+// control lives in its own element between them, so redrawing the card never removes a slider mid-drag.
+const feeSplit = (b) => UI.model === "fees" && feePolicyOn(b);
+function feeEvidenceHtml(b, R, part = "all") {
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const o = UI.outcome, yrs = AGG.windowLabel(b) || "the five years";
   const all = (b.baseline || []).find((r) => r.size_class === "all" && /^\d{4}-\d{4}$/.test(String(r.period)));
-  const shown = FEE_VERSIONS.filter(([k]) => R[k]);
+  const shown = FEE_VERSIONS.filter(([k]) => R[k]).map(([k, label, what]) =>
+    (k === "fees_local_half" && !feeDefault() ? [k, "Real local fees: your change", feePolicyWhat()] : [k, label, what]));
   if (!shown.length) return `<section><p class="pending">The fee reform is not in this state's results yet.</p></section>`;
   // 1. the two versions side by side: homes added and as a share of the homes expected anyway
   const tiles = shown.map(([k, label, what]) => {
     const x = R[k][o], on = k === UI.fee;
     return `<div class="fee-ver${on ? " on" : ""}"><h4>${esc(label)}${on ? ` <span class="caption muted">(shown in the headline)</span>` : ""}</h4>
       <p class="caption muted" style="margin:0">${esc(what)}</p>
-      <p class="figure" style="margin:var(--space-2) 0 0">+${fmtN(x.p50)} <span class="body">homes</span></p>
-      <p class="body-small" style="margin:0">Likely ${fmtN(x.p10)} to ${fmtN(x.p90)}${all ? `; the midpoint equals ${fmtPct(x.p50 / all.p50)} of the ${fmtN(all.p50)} homes expected with no change` : ""}.</p></div>`;
+      ${x.p50 < 0 ? `<p class="figure" style="margin:var(--space-2) 0 0">−${fmtN(-x.p50)} <span class="body">homes</span></p>
+      <p class="body-small" style="margin:0">Likely ${fmtN(-x.p90)} to ${fmtN(-x.p10)} fewer${all ? `; the midpoint equals ${fmtPct(-x.p50 / all.p50)} fewer than the ${fmtN(all.p50)} homes expected with no change` : ""}.</p>`
+      : `<p class="figure" style="margin:var(--space-2) 0 0">+${fmtN(x.p50)} <span class="body">homes</span></p>
+      <p class="body-small" style="margin:0">Likely ${fmtN(x.p10)} to ${fmtN(x.p90)}${all ? `; the midpoint equals ${fmtPct(x.p50 / all.p50)} of the ${fmtN(all.p50)} homes expected with no change` : ""}.</p>`}</div>`;
   }).join("");
-  const s1 = `<section><h3 class="h3">What cutting fees in half would add</h3>
+  const s1 = `<section><h3 class="h3">${feeDefault() ? "What cutting fees in half would add" : "What the fee change would add"}</h3>
     <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Challenge asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes.</p>
     <div class="fee-vers">${tiles}</div></section>`;
   // 2. year by year: each version's added homes, P10–P90 whiskers with the midpoint
@@ -1172,9 +1273,10 @@ function feeEvidenceHtml(b, R) {
   const { med, rng, fbar, per10k, foot } = howKit(b, d, base && base.p50);
   const col = scenColor("fees");
   const cut = d === "fees" ? "$25,000 off every home (half of a $50,000 fee the Challenge benchmark assumes everywhere)"
-    : "half of each city's own fee for each kind of home, from its fee schedule, or the state's typical fee where none was coded";
+    : feeDefault() ? "half of each city's own fee for each kind of home, from its fee schedule, or the state's typical fee where none was coded"
+    : `${feeChangeWords(UI.feeChange)} (each city's own fee, from its fee schedule, or the state's typical fee where none was coded), for ${feeTarget()[3]}`;
   const s3 = `<section><h3 class="h3">How we get these numbers</h3>
-    <p class="body-small">Unlike the other two reforms, a fee cut does not make any new homes legal. It lowers the cost of homes that can already be built, so builders start a few more of them. These steps go from the homes built anyway to the extra homes the cut adds (${esc(FEE_VERSIONS.find(([k]) => k === d)[1].toLowerCase())}).</p>
+    <p class="body-small">Unlike the other two reforms, a fee cut does not make any new homes legal. It lowers the cost of homes that can already be built, so builders start a few more of them. These steps go from the homes built anyway to the extra homes the cut adds (${esc(shown.find(([k]) => k === d)[1].toLowerCase())}).</p>
     <ol class="how">
       <li><div><b>Start from the homes built anyway</b><p>Houses, duplexes, triplexes and fourplexes expected in ${esc(name)} over the five years with no change, from each place's own recent building. Buildings of 5 or more homes pay no fee in the model, so they are left out.</p>${fbar(base && base.p50, "var(--survey)")}</div><span class="v">${base ? `${fmtN(base.p50)} homes` : "–"}</span></li>
       <li><div><b>Work out how much cheaper each home gets</b><p>The cut is ${esc(cut)}. About half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters), set against the full cost of building the home.</p></div><span class="v"></span></li>
@@ -1183,7 +1285,9 @@ function feeEvidenceHtml(b, R) {
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, col)}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
     ${foot}</section>`;
-  return s1 + feeTodayHtml(b, name) + s2 + s3;
+  if (part === "top") return s1;
+  const rest = feeTodayHtml(b, name) + s2 + s3;
+  return part === "rest" ? rest : s1 + rest;
 }
 function feeYearsChart(b, o, shown) {
   const rows = shown.map(([k, label]) => ({ k, label, yrs: (b.totals || []).filter((r) => r.scenario === k && r.outcome === o && /^\d{4}$/.test(r.period)).map((r) => ({ ...r, year: Number(r.period) })).sort((x, y) => x.year - y.year) }));
@@ -1209,7 +1313,7 @@ function feeYearsChart(b, o, shown) {
     }
   });
   const legend = rows.map((row, i) => `<span><span style="display:inline-block;width:12px;height:3px;background:${col};opacity:${row.k === UI.fee ? 1 : 0.45};margin-right:6px;vertical-align:middle"></span>${rows.length > 1 ? (i === 0 ? "Left: " : "Right: ") : ""}${esc(row.label)}</span>`).join("");
-  return `<p class="body-small" style="margin:var(--space-1) 0 0">Homes the 50% fee cut adds each year (${esc(OUTCOME_WORDS[o][0].toLowerCase())}). The impact builds over time because projects already in design are priced at the old fees.</p>
+  return `<p class="body-small" style="margin:var(--space-1) 0 0">Homes ${feeDefault() ? "the 50% fee cut" : "the fee change"} adds each year (${esc(OUTCOME_WORDS[o][0].toLowerCase())}). The impact builds over time because projects already in design are priced at the old fees.</p>
     <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${legend}</div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Homes the fee cut adds each year, by version" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
     ${more(`<p class="source">Whiskers: P10 to P90, bar at the midpoint, at the engine's central assumptions; the sliders do not move this chart.</p>`, "Graph details")}`;
@@ -1345,6 +1449,8 @@ const SECTIONS = {
             <div id="knobs"></div></details></div>
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
+      <div class="card ev" id="fee-top" hidden></div>
+      <div class="card" id="fee-test" hidden></div>
       <div class="card ev" id="model-card"></div>
       <h3 class="h2" style="margin:var(--space-7) 0 var(--space-3)">How reforms help meet housing need</h3>
       <div class="card"><div id="need"></div>
@@ -1459,6 +1565,12 @@ function heroUpdate(b, R, o) {
     if (who) { who.querySelector("[data-box-what]").textContent = WHAT[s]; who.querySelector("h4").style.color = scenColor(s); }
     if (!r) { lane.innerHTML = `${grid}<span class="num muted" style="left:0">Not yet run</span>`; continue; }
     const { p10, p50, p90 } = r[o], c = scenColor(s);
+    if (p50 < 0) {  // a fee rise in "Try a different fee change": homes lost, which a log scale cannot draw
+      const words = `${fmtN(-p50)} fewer homes (${fmtN(-p90)} to ${fmtN(-p10)} fewer)`;
+      lane.setAttribute("aria-label", `${SCENARIOS_SHORT[k]}: ${words}`);
+      lane.innerHTML = `${grid}<span class="num" style="left:0;color:${c}">${words}</span>`;
+      continue;
+    }
     lane.setAttribute("aria-label", `${SCENARIOS_SHORT[k]}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
     lane.setAttribute("role", "img");
     lane.innerHTML = `${grid}<span class="band" style="left:${pos(p10)};width:calc(${pos(p90)} - ${pos(p10)});background:${c}"></span>
@@ -1697,9 +1809,14 @@ function updateResults() {
   const R = results(b);
   const o = UI.outcome;
   heroUpdate(b, R, o);
+  const feeBox = document.querySelector('[data-box="fees"] [data-box-what]');
+  if (feeBox) feeBox.textContent = UI.fee === "fees_local_half" && !feeDefault() ? feePolicyWhat() : WHAT[UI.fee];
+  feeTestUpdate(b);
   $("outcome-note").textContent = OUTCOME_WORDS[o][1];
   const d = UI.detail;
   $("model-card").innerHTML = evidenceHtml(b, d, R);
+  const top = $("fee-top");
+  if (top) { top.hidden = !feeSplit(b); top.innerHTML = top.hidden ? "" : feeEvidenceHtml(b, R, "top"); }
   // share of need (Ben, 2026-11-17; WS-NEED-AMI part A): one bar per kind of need, the reforms filled in from the left.
   $("need").innerHTML = needHtml(b, R);
   // who the homes serve (WS-NEED-AMI part B): context beside the need, not a scenario result
@@ -2134,6 +2251,8 @@ function wireResults() {
   const body = $("results-body");
   const kn = $("knobs");
   if (kn) kn.innerHTML = knobsHtml(UI.b);
+  const feeTest = () => { const f = $("fee-test"); if (f) f.innerHTML = feeTestHtml(UI.b); };
+  feeTest();
   body.onclick = (e) => {
     const t = e.target.closest("button");
     if (!t) return;
@@ -2152,7 +2271,14 @@ function wireResults() {
     if (t.dataset.fee === "fees" || t.dataset.fee === "fees_local_half") {
       UI.fee = t.dataset.fee; body.querySelectorAll("[data-fee]").forEach((x) => x.setAttribute("aria-pressed", x === t));
       if (UI.model === "fees") { UI.detail = UI.fee; UI.pins = {}; $("knobs").innerHTML = knobsHtml(UI.b); drawTornado(); }
+      body.querySelectorAll("[data-fee]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.fee === UI.fee));
+      feeTest();
     }
+    if (t.dataset.feetarget && FEE_TARGETS.some(([k]) => k === t.dataset.feetarget)) {
+      UI.feeTarget = t.dataset.feetarget;
+      body.querySelectorAll("[data-feetarget]").forEach((x) => x.setAttribute("aria-pressed", x === t));
+    }
+    if (t.dataset.feereset) { UI.feeChange = -0.5; UI.feeTarget = "all"; feeTest(); }
     if (HERO.includes(t.dataset.model)) {
       UI.model = t.dataset.model; UI.detail = UI.model === "fees" ? UI.fee : UI.model; UI.pins = {};
       body.querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
@@ -2164,6 +2290,7 @@ function wireResults() {
     updateResults();
   };
   body.oninput = (e) => {
+    if (e.target.id === "fee-change") { UI.feeChange = Number(e.target.value) / 100; updateResults(); return; }
     const col = e.target.dataset && e.target.dataset.pin;
     if (!col) return;
     UI.pins[col] = Number(e.target.value);
