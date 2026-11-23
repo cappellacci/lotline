@@ -7914,3 +7914,46 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Reform effect:** the Handbook rate for own-count places is their no-reform rate × the mechanism's ratio,
   so it falls too: TX −10% and MN −9% on the five-year midpoint; NC, OR, OH under 1%.
 - **Holdouts:** no frozen prediction file changes; scored tests keep their recorded results.
+
+### App note · 2026-11-22 · Fees: "Try a different fee change" (D-077's slider and targeted home types in the app)
+
+- **Asked by:** Ben, 2026-11-22 ("Yes, build it"), as the fee testing area: D-077's controls, which the fee
+  prototype page had and the app did not.
+- **What the page does:** on the Fee reduction tab, with real local fees, a slider for the change to each city's
+  own fees (Abolish at the left, up 50% at the right; default: cut by half) and buttons for the homes it
+  applies to (every home, houses only, duplexes only, duplexes to fourplexes). The headline, the fee card and the
+  need card follow. The Challenge benchmark ($50,000 cut to $25,000) stays fixed. Fee revenue is not shown
+  (D-077: a test Ben expected to drop).
+- **Data:** results bundle part `results_fee_types` (schemas 1.20): each draw's five-year homes added by
+  building size at the half cut, with that size's completion draw and baseline. The page scales each draw by
+  (−change ÷ 0.5) and re-weights completion by size (`aggregate.fee_policy_draws`, mirrored in
+  `aggregate.js`, parity-tested). This relies on homes added being linear in the fee change in every draw,
+  which `fees.change_grid` showed (tested) and `results.check_fee_line` checks for every state when the bundle
+  is built; the build stops if it fails.
+- **Rises:** a fee rise is homes lost: the draws keep a positive θ and carry sign −1, so the
+  builder-response slider still means "weaker response, smaller effect". The headline's three-reform total
+  can then fall below the other two reforms' sum.
+- **No number changes** at the default setting: the page reproduces the `fees_local_half` draws exactly
+  (parity test).
+
+### App note · 2026-11-23 · ADUs: the chart's no-change bars split by where the forecast comes from
+
+- **Asked by:** Ben, 2026-11-19 ("Let's also try the chart split where we have the data") and 2026-11-23 ("start
+  the ADU chart split"), after the NC check found the no-change forecast far above the counted history.
+- **What the chart shows now:**
+  - The history bars are labelled "Counted in N places' permit records" (N from `results_observed`).
+  - Each forecast year's no-change bar is split. The bottom (solid) is places whose no-reform rate comes from
+    their own ADU permit counts (D-091, D-093). The top (light) is places the model estimates.
+  - A thin whisker beside each bar shows the no-change range (P10-P90). The missing-middle chart gets the
+    same whisker.
+  - A state with no own-count places (Wisconsin today) keeps one bar.
+- **Data:** `results_adu_baseline` gains optional `basis` (all, own_counts, model) and `mean` (schemas 1.21).
+  - Each basis's percentiles are of its own sum over places, so they do not add up.
+  - The means do add up, so the bar is the `all` midpoint split in the ratio of the group means.
+  - Hover shows each group's own range.
+- **NC, origin 2025, 2027** (P10 / P50 / P90, mean):
+  - all: 270 / 454 / 873, mean 562;
+  - own counts: 153 / 262 / 484, mean 298 (equal to those places' 2023-25 pace of 298, as the mean-1 drift
+    intends);
+  - model: 57 / 151 / 534, mean 264.
+- **No number changes:** the `all` rows are the earlier rows.

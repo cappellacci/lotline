@@ -22,6 +22,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import numpy as np
+import pandas as pd
 
 from lotline.config import Parameter, load_params
 
@@ -98,7 +99,8 @@ def homes_from_draws(draws) -> dict[str, np.ndarray]:
 
     eligible = Σ tiers; pencils = eligible × pencil_out_share; permits = pencils × theta × (1 − overlap);
     homes in place = permits × completion_factor × net_new_share; net statewide = homes in place ×
-    (1 − displacement_share). A null overlap_share (a single scenario) counts as 0.
+    (1 − displacement_share). A null overlap_share (a single scenario) counts as 0. An optional `sign` column
+    (−1 from `fee_policy_draws` for a fee rise) turns the homes into homes lost.
 
     By hand: 1,000 eligible, pencil-out 0.5, θ 0.04, overlap 0, completion 1.0, net-new 0.6, displacement 0.25
     -> 500 pencil out, 20 permits, 12 homes in place, 9 net statewide.
@@ -106,7 +108,8 @@ def homes_from_draws(draws) -> dict[str, np.ndarray]:
     eligible = sum(np.asarray(draws[c], dtype=float) for c in TIER_COLUMNS)
     pencils = eligible * np.asarray(draws["pencil_out_share"], dtype=float)
     overlap = np.nan_to_num(np.asarray(draws["overlap_share"], dtype=float), nan=0.0)
-    permits = pencils * np.asarray(draws["theta"], dtype=float) * (1 - overlap)
+    sign = np.asarray(draws["sign"], dtype=float) if "sign" in draws else 1.0  # -1: a fee rise, homes lost
+    permits = sign * pencils * np.asarray(draws["theta"], dtype=float) * (1 - overlap)
     in_place = (
         permits * np.asarray(draws["completion_factor"], dtype=float) * np.asarray(draws["net_new_share"])
     )
@@ -118,3 +121,31 @@ def homes_from_draws(draws) -> dict[str, np.ndarray]:
         "homes_in_place": in_place,
         "homes_net_statewide": net,
     }
+
+
+def fee_policy_draws(draws: pd.DataFrame, types: pd.DataFrame, change: float, sizes) -> pd.DataFrame:
+    """The fee section's policy controls (D-077) on `results_draws` rows of `fees_local_half`, from
+    `results_fee_types`; the page's `feePolicyDraws` (aggregate.js) mirrors it line for line.
+
+    `change` is the fee change as a share of each place's own fee (−0.5 halves fees; −1 abolishes them; 0.5
+    raises them by half), `sizes` the building sizes covered. A draw's homes = its sizes' half-cut units ×
+    (−change ÷ 0.5) (homes are linear in the change, `results.check_fee_line`); θ = those homes over the
+    draw's covered homes, completion re-weighted by size, sign −1 for a rise.
+
+    By hand: covered 10,000; half-cut 120 houses (completion 0.95), 20 duplex and 10 three-to-four-unit homes
+    (0.85): duplexes only, abolished -> 40 homes, θ 0.004, completion 0.85; every size up by half -> 150
+    homes lost, θ 0.015, completion 0.93, sign −1.
+    """
+    k = -float(change) / 0.5
+    t = types[types["size"].astype(str).isin([str(x) for x in sizes])]
+    half = t.groupby("draw")["units_added"].sum()
+    weighted = (t["units_added"] * t["completion_factor"]).groupby(t["draw"]).sum()
+    out = draws.copy()
+    units = out["draw"].map(half).fillna(0.0).to_numpy(dtype=float)
+    covered = sum(out[c].to_numpy(dtype=float) for c in TIER_COLUMNS)
+    out["theta"] = np.divide(units * abs(k), covered, out=np.zeros(len(out)), where=covered > 0)
+    own = out["completion_factor"].to_numpy(dtype=float)
+    mixed = out["draw"].map(weighted).fillna(0.0).to_numpy(dtype=float)
+    out["completion_factor"] = np.divide(mixed, units, out=own.copy(), where=units > 0)
+    out["sign"] = -1.0 if k < 0 else 1.0
+    return out

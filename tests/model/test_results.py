@@ -16,7 +16,7 @@ from pandera import errors as pa_errors
 from lotline.config import Parameter
 from lotline.model import affordability, aggregate, results
 from lotline.model.scenarios import adu
-from lotline.schemas import SCENARIOS
+from lotline.schemas import SCENARIOS, columns
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "results" / "zz" / "bundle.json"
 
@@ -213,6 +213,7 @@ def make_fixture() -> dict[str, pd.DataFrame]:
             {"places": "Int64"}
         ),
         "shortfall": results.shortfall_table("ZZ", base, _acs_stock(), 2025, need_params=NEED, fips="99"),
+        "fee_types": pd.DataFrame(columns=columns("results_fee_types")),  # ADU-only fixture: no fee slider
     }
 
 
@@ -314,13 +315,31 @@ def test_adu_place_types_and_baseline_by_hand():
     assert t.loc["core", ["base_p10", "base", "base_p90", "added"]].tolist() == [10, 10, 10, 4]
     y = results.adu_baseline_years("ZZ", rd, 2025)
     assert y["period"].tolist() == ["2027", "2028", "2029", "2030", "2031"] and (y["p50"] == 18).all()
+    assert "basis" not in y  # without `own`, the pre-1.21 shape
+
+
+def test_adu_baseline_split_by_basis_by_hand():
+    """adu_baseline_years docstring: places with 10 and 4 ADUs a year in every draw, the first with own
+    counts -> all 14, own_counts 10, model 4; the means add up. No own counts -> the `all` rows only."""
+    n, yrs = 3, 5
+    cur = np.zeros((n, 2, yrs)) + np.array([10.0, 4.0])[None, :, None]
+    y = results.adu_baseline_years("ZZ", {"current": cur}, 2025, own=[True, False]).set_index(
+        ["basis", "period"]
+    )
+    assert y.loc[("all", "2027"), "p50"] == 14 and y.loc[("own_counts", "2027"), "p50"] == 10
+    assert y.loc[("model", "2031"), ["p10", "p50", "p90", "mean"]].tolist() == [4, 4, 4, 4]
+    by = y["mean"].groupby(level="basis").sum()
+    assert by["all"] == pytest.approx(by["own_counts"] + by["model"])
+    results.validate(y.reset_index(), "results_adu_baseline")
+    none = results.adu_baseline_years("ZZ", {"current": cur}, 2025, own=[False, False])
+    assert set(none["basis"]) == {"all"} and len(none) == yrs
 
 
 def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
     b = results.validate_bundle(make_fixture())
     path = results.write_bundle(b, tmp_path / "zz" / "bundle.json")
     doc = json.loads(path.read_text())
-    for part in ("adu_place_types", "adu_baseline", "affordability", "shortfall"):
+    for part in ("adu_place_types", "adu_baseline", "affordability", "shortfall", "fee_types"):
         del doc[part]
     path.write_text(json.dumps(doc))
     back = results.read_bundle(path)
@@ -329,6 +348,7 @@ def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
         and back["adu_baseline"].empty
         and back["affordability"].empty
         and back["shortfall"].empty
+        and back["fee_types"].empty
     )
 
 
@@ -525,3 +545,53 @@ def test_fee_rows_by_hand():
     h = aggregate.homes_from_draws(rows)
     assert h["permits_added"][0] == pytest.approx(150) and h["homes_in_place"][0] == pytest.approx(139.5)
     assert results.fee_year_shares(sim)[0] == pytest.approx(np.full(yrs, 0.2))
+
+
+def test_fee_types_by_hand():
+    """`results_fee_types` (D-077 slider): per size the draw's homes added at the half cut, its completion
+    draw and baseline; the sizes add up to the draw's `fees_local_half` row. Fixture as in
+    `test_fee_rows_by_hand`: 120 houses, 20 duplex and 10 three-to-four-unit homes added on 8,000, 1,200 and
+    800 baseline homes."""
+    import unittest.mock as mock
+
+    yrs = 5
+    by_size = {
+        c: np.full((1, yrs), v / yrs) for c, v in (("1", 8_000), ("2", 1_200), ("3_4", 800), ("5p", 5_000))
+    }
+    added = {c: np.full((1, 1, yrs), v / yrs) for c, v in (("1", 120), ("2", 20), ("3_4", 10))}
+    sim = {"n": 1, "by_size": by_size, "added_by_class": added, "added": sum(added.values()),
+           "base": sum(by_size.values())}  # fmt: skip
+    vals = {"completion_factor_single_family": 0.95, "completion_factor_multifamily": 0.85,
+            "displacement_share": 0.25}  # fmt: skip
+    with mock.patch.object(
+        results, "triangular", lambda name, n, rng, file="aggregate": np.full(n, vals[name])
+    ):
+        rows, types = results.fee_rows_and_types("fees_local_half", sim, 2, None)
+        _, none = results.fee_rows_and_types("fees", sim, 2, None)
+    assert none.empty  # only the real-local-fee scenario gets the slider table
+    t = types.set_index("size")
+    assert t.loc["1", "units_added"] == pytest.approx(120) and t.loc["2", "units_added"] == pytest.approx(20)
+    assert t.loc["3_4", "units_added"] == pytest.approx(10)
+    assert list(t["completion_factor"]) == pytest.approx([0.95, 0.85, 0.85])
+    assert list(t["baseline_homes"]) == pytest.approx([8_000, 1_200, 800])
+    assert (t["fee_change_share"] == 0.5).all()
+    covered = rows.iloc[0][["eligible_tier1", "eligible_tier2", "eligible_tier3"]].sum()
+    assert t["units_added"].sum() == pytest.approx(rows.iloc[0].theta * covered)  # 150 = 0.015 x 10,000
+    # completion weighted by each size's homes reproduces the draw's blended completion (0.93)
+    blend = (t["units_added"] * t["completion_factor"]).sum() / t["units_added"].sum()
+    assert blend == pytest.approx(rows.iloc[0].completion_factor)
+    results.validate(types.assign(state="MN"), "results_fee_types")
+
+
+def test_check_fee_line_passes_on_the_engine_and_catches_a_mismatch():
+    from .test_fee_scenario import by_size_frame
+
+    places = by_size_frame(U2=10_000.0, U3_4=6_000.0)
+    results.check_fee_line(places, 2025, 20)
+    from lotline.model.scenarios import fees
+
+    g = fees.change_grid(places, 2025, [0.5], draws=20)
+    types = g.groupby(["draw", "size"], as_index=False)["units_added"].sum()
+    results.check_fee_line(places, 2025, 20, types)
+    with pytest.raises(ValueError, match="does not match"):
+        results.check_fee_line(places, 2025, 20, types.assign(units_added=types["units_added"] * 1.1 + 1))
