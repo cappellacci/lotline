@@ -345,11 +345,31 @@ def adu_place_type_table(state: str, places: pd.DataFrame, run_draws: Mapping) -
     return pd.DataFrame(rows, columns=["state", *_columns("adu_place_types")])
 
 
-def adu_baseline_years(state: str, run_draws: Mapping, origin: int) -> pd.DataFrame:
-    """`results_adu_baseline`: statewide current-rules gross ADUs per window year, P10/P50/P90 over draws."""
-    cur = np.asarray(run_draws["current"], dtype=float).sum(axis=1)  # draws x years
+def adu_baseline_years(state: str, run_draws: Mapping, origin: int, own=None) -> pd.DataFrame:
+    """`results_adu_baseline`: statewide current-rules gross ADUs per window year, P10/P50/P90 over draws.
+
+    With `own` (a bool per place: its no-reform rate comes from its own ADU counts), each year also gets the
+    mean and, where some places have own counts, `own_counts` and `model` rows: percentiles of each group's
+    own sum, and means that add up to the `all` row's (the page splits the bar by them).
+    By hand: places with 10 and 4 ADUs a year in every draw, the first with own counts -> all 14, own_counts
+    10, model 4; means the same.
+    """
+    cur_by_place = np.asarray(run_draws["current"], dtype=float)  # draws x places x years
     _, _, first = baseline.window(origin)
-    rows = [{"state": state, "period": str(first + y), **_pct(cur[:, y])} for y in range(cur.shape[1])]
+    years = range(cur_by_place.shape[2])
+    if own is None:
+        cur = cur_by_place.sum(axis=1)
+        rows = [{"state": state, "period": str(first + y), **_pct(cur[:, y])} for y in years]
+        cols = [c for c in _columns("adu_baseline") if c not in ("basis", "mean")]
+        return pd.DataFrame(rows, columns=["state", *cols])
+    own = np.asarray(own, dtype=bool)
+    groups = {"all": np.ones_like(own)} | ({"own_counts": own, "model": ~own} if own.any() else {})
+    rows = []
+    for basis, m in groups.items():
+        cur = cur_by_place[:, m, :].sum(axis=1)
+        for y in years:
+            a = cur[:, y]
+            rows.append({"state": state, "period": str(first + y), "basis": basis, **_pct(a), "mean": a.mean()})
     return pd.DataFrame(rows, columns=["state", *_columns("adu_baseline")])
 
 
@@ -819,7 +839,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
         "baseline": base,
         "observed": seen,
         "adu_place_types": adu_place_type_table(st, places, run_draws),
-        "adu_baseline": adu_baseline_years(st, run_draws, origin),
+        "adu_baseline": adu_baseline_years(st, run_draws, origin, own=places["observed_rate"].notna().to_numpy()),
         "affordability": affordability_table(st, places, run_draws, res_mm, fee_places, store),
         "shortfall": shortfall_table(st, base, store.read(st, "acs_geo_year"), origin),
         "fee_types": fee_types,

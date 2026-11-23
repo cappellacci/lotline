@@ -773,19 +773,31 @@ class ResultsShortfall(_Strict):
         return not df.duplicated(["state"]).any()
 
 
+ADU_BASELINE_BASES = ["all", "own_counts", "model"]
+
+
 class ResultsAduBaseline(_Strict):
     """Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over
-    the draws: what the ADU scenario's added range stacks on."""
+    the draws: what the ADU scenario's added range stacks on.
+
+    Optional `basis` and `mean` (schemas 1.21, the chart split, Ben 2026-11-19): `all` is every place;
+    `own_counts` the places whose no-reform rate comes from their own ADU permit counts (D-091, D-093);
+    `model` the places the mechanism estimates. Each basis's percentiles are of its own sum over places, so
+    they do not add up; the means do (all = own_counts + model), which is how the page splits the bar. A
+    bundle without `basis` has one row per period, every place."""
 
     state: Series[str] = pa.Field(**_STATE)
     period: Series[str] = pa.Field(str_matches=r"^\d{4}$")
+    basis: Optional[Series[str]] = pa.Field(isin=ADU_BASELINE_BASES, nullable=True)
     p10: Series[float] = pa.Field(ge=0)
     p50: Series[float] = pa.Field(ge=0)
     p90: Series[float] = pa.Field(ge=0)
+    mean: Optional[Series[float]] = pa.Field(ge=0, nullable=True)
 
     @pa.dataframe_check
     def one_row_per_key(cls, df: pd.DataFrame) -> bool:
-        return not df.duplicated(["state", "period"]).any()
+        key = ["state", "period", "basis"] if "basis" in df else ["state", "period"]
+        return not df.duplicated(key).any()
 
 
 FEE_SIZE_CLASSES = ["1", "2", "3_4"]  # BPS sizes a fee cut covers; 5+ unit buildings take no dose (D-073)
