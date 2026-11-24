@@ -640,13 +640,37 @@ def size_band(population, edges) -> np.ndarray:
     return np.searchsorted(np.asarray(edges, dtype=float), np.asarray(population, dtype=float), side="right")
 
 
+REMAINDER = "county_unincorporated"  # a county remainder: unincorporated land the county itself zones
+REMAINDER_BAND = -1  # the priors row county remainders read under D-102 option (b)
+
+
+def remainder_priors(coded: pd.DataFrame, min_count: int) -> pd.DataFrame:
+    """D-102 option (b) (Ben, 2026-11-24): for each state with at least `min_count` coded county remainders
+    (`kind` == county_unincorporated), one priors row (band `REMAINDER_BAND`) with their mean probabilities.
+    An uncoded remainder in that state reads it instead of its size band (`apply_priors`), since
+    unincorporated land is zoned by the county, not by cities its size. In other states remainders read the
+    smallest band (`apply_priors`).
+    By hand: 5 coded remainders, 1 Handbook-equivalent and 4 'none' -> p_handbook 0.2, p_none 0.8."""
+    if "kind" not in coded:
+        return pd.DataFrame(columns=["state", "band", "n_coded", "source", *P_COLS, "p_partial"])
+    rem = coded[coded["kind"] == REMAINDER]
+    rows = [
+        {"state": st, "band": REMAINDER_BAND, "n_coded": len(g), "source": "state, coded county remainders",
+         **g[list(P_COLS)].mean().to_dict()}
+        for st, g in rem.groupby("state") if len(g) >= min_count
+    ]  # fmt: skip
+    out = pd.DataFrame(rows, columns=["state", "band", "n_coded", "source", *P_COLS])
+    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+
+
 def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
     """Type probabilities for places with no ADU row, from the coded places themselves (D-022).
 
     `coded`: state, population and p_* (over TYPES) for every place with a coded rule (fractional where blanks
     or coverage leave the type uncertain). For each state and size band: the mean of the coded places'
     probabilities if at least `min_count` places are coded there; else the state's pooled mean; else the mean
-    over every state. Returns state, band, n_coded, source and p_* (and p_partial).
+    over every state. Returns state, band, n_coded, source and p_* (and p_partial). With a `kind` column, also
+    the `remainder_priors` rows (D-102 option (b)).
     By hand: 5 coded places in a band, 2 'other' and 3 Handbook-equivalent -> p_other 0.4, p_handbook 0.6.
     """
     c = coded.assign(band=size_band(coded["population"], edges))
@@ -671,7 +695,9 @@ def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
                 }
             )
     out = pd.DataFrame(rows)
-    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+    out = out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+    rem = remainder_priors(coded, min_count)
+    return pd.concat([out, rem], ignore_index=True) if len(rem) else out
 
 
 def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states, state: str) -> pd.DataFrame:
@@ -703,10 +729,16 @@ def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states,
 
 
 def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFrame:
-    """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`."""
+    """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`. A county
+    remainder (`kind`) reads its state's `REMAINDER_BAND` row where there is one, else the smallest band (0)
+    whatever its population (D-102 option (b), Ben 2026-11-24: county land is zoned more like small towns)."""
     out = places.assign(band=size_band(places["population"].fillna(0), edges))
+    if "kind" in out:
+        has_rem = set(priors.loc[priors["band"] == REMAINDER_BAND, "state"])
+        rem = out["kind"] == REMAINDER
+        out.loc[rem, "band"] = np.where(out.loc[rem, "state"].isin(has_rem), REMAINDER_BAND, 0)
     pr = priors.set_index(["state", "band"])
-    pooled = priors[list(P_COLS)].mean()
+    pooled = priors.loc[priors["band"] != REMAINDER_BAND, list(P_COLS)].mean()
     src = pd.Series("coded", index=out.index, dtype=object)
     for i in out.index[out["rule_class"] == "unknown"]:
         key = (out.at[i, "state"], out.at[i, "band"])
@@ -1430,7 +1462,11 @@ def rule_inputs(
             )
             cr = cr[cr["rule_class"] != "unknown"]
             pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
-            out.append(cr.assign(state=st, population=cr["geoid"].map(pop).astype(float)))
+            j = store.read(st, "jurisdictions").set_index("geoid")
+            kind = j["kind"] if "kind" in j else pd.Series(dtype=object)
+            out.append(
+                cr.assign(state=st, population=cr["geoid"].map(pop).astype(float), kind=cr["geoid"].map(kind))
+            )
         return pd.concat(out, ignore_index=True)
 
     coded_prior = coded_on(prior_as_of)
@@ -1441,7 +1477,10 @@ def rule_inputs(
         outside = no_state_rule_priors(
             coded_prior.dropna(subset=["population"]), edges, min_count, law_states, state
         )
-        priors = pd.concat([priors[priors["state"] != state], outside], ignore_index=True)
+        keep = (priors["state"] != state) | (
+            priors["band"] == REMAINDER_BAND
+        )  # (b): own remainders still apply
+        priors = pd.concat([priors[keep], outside], ignore_index=True)
     fp = field_probabilities(counts, state, min_count)
     cm = covs[state]
     rules = current_rules(
@@ -1452,9 +1491,12 @@ def rule_inputs(
         fp,
         dict(zip(cm.reform_id, cm.coverage, strict=True)),
     )
-    pop = store.read(state, "jurisdictions").set_index("geoid")["pop_2020"]
-    rules = rules.assign(state=state, population=rules["geoid"].map(pop).astype(float))
-    rules = apply_priors(rules, priors, edges).drop(columns=["state", "band"])
+    juris = store.read(state, "jurisdictions").set_index("geoid")
+    rules = rules.assign(
+        state=state, population=rules["geoid"].map(juris["pop_2020"]).astype(float),
+        kind=rules["geoid"].map(juris["kind"] if "kind" in juris else pd.Series(dtype=object)),
+    )  # fmt: skip
+    rules = apply_priors(rules, priors, edges).drop(columns=["state", "band", "kind"])
     info = {
         "field_counts": counts,
         "field_probs": fp,

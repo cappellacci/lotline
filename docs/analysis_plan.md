@@ -7771,6 +7771,8 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   split place's county. No population download is made. After merge, the stored `jurisdictions` tables
   are rebuilt per state (`lotline fetch --source jurisdictions`). Wisconsin waits for its blind copy.
 
+
+
 ### D-102 · 2026-11-17 · County remainders get their 2020 population (WS-SCALE task 5, rule 6; approved by Ben)
 - **Why:** a county's unincorporated remainder had no `pop_2020`, so every model read it as 0 and put it in the
   smallest size band (`fillna(0)`). Size band picks the pool an uncoded place borrows its ADU rule prior and its
@@ -8026,3 +8028,35 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     $9,100, against the Handbook's $50,000, so halving them moves building about 4-10 times less than the
     benchmark cut.
   - The published range, not a measured fee cut in our states, is the comparison (V6a stays open).
+
+
+
+### Deviation · 2026-11-24 · D-102 amended: county remainders borrow rules from county remainders (option (b))
+
+- **Asked by:** Ben, 2026-11-24.
+  - Chose option (b): "Yeah I think choice B is how I would so it as well for dividing up counties. I can
+    think of several that are pretty extreme on the rural/urban boundary".
+  - Chose the fallback: "Yes, smallest band".
+- **Why:** D-102 (rule 6) gives each county remainder its 2020 population. That moved remainders into the mid
+  and large size bands, whose rule priors (ADU) and dose pools (missing middle) come from cities' ordinances.
+  But unincorporated land is zoned by the county. Under rule 6 alone, Oregon's missing middle fell 40% (#488).
+- **Rule:**
+  - An uncoded county remainder borrows from its own state's coded county remainders where there are at
+    least `adu_rule_min_coded` (ADU) or the MM pool minimum (missing middle).
+  - Otherwise it borrows from the smallest size band (0), whatever its population.
+  - Places that are not remainders are unchanged.
+  - Code: `adu.remainder_priors`, `adu.apply_priors`, `mm.dose_pools`, `mm.remainder_pool_key`.
+- **Who has enough coded remainders today:**
+  - only Oregon's ADU rules (26 of 32 remainders coded);
+  - Oregon missing middle 3; MN ADU 4; OH 2; NC 1; TX 0.
+  - Every other state and model uses the smallest band.
+- **Effect** (origin 2025, 1,000 draws, five-year permits added P50, before = main at 46ff171d):
+  - Oregon ADU 14 → 13 (−8%); Oregon missing middle 442 → 464 (+5%; rule 6 alone gave −42%).
+  - NC ADU 339 → 328 (−3%); NC missing middle −0.1%.
+  - MN, OH, TX and WI within 1%. Fees and baselines unchanged.
+  - The small shifts come from coded remainders now having a population, so they enter the band pools that
+    other uncoded places draw from (before, they were dropped for a missing population).
+- **Data:**
+  - The stored `jurisdictions` and `place_inputs` tables were rebuilt offline with rule 6 (nothing
+    downloaded).
+  - The earlier copies are in ~/lotline-data-backup/d102-2026-11-24.
