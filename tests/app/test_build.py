@@ -636,6 +636,38 @@ def test_nothing_is_staged_without_a_bundle(tmp_path):
         build.release_inputs(tmp_path)
 
 
+def _publish_app():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("publish_app", REPO / "scripts" / "publish_app.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_publish_refuses_to_go_without_the_data_summary(tmp_path, monkeypatch):
+    mod = _publish_app()
+    calls = []
+    monkeypatch.setattr(mod.subprocess, "run", lambda *a, **k: calls.append(a))
+    missing = str(tmp_path / "missing.json")
+    args = ["--results", str(_results_dir(tmp_path)), "--data-summary", missing, "--go"]
+    with pytest.raises(SystemExit) as exc:
+        mod.main(args)
+    assert exc.value.code == 2
+    assert calls == [], "nothing may be released or deployed without the data summary"
+
+
+def test_publish_without_the_data_summary_only_when_asked(tmp_path, monkeypatch, capsys):
+    mod = _publish_app()
+    monkeypatch.setattr(mod, "_git", lambda *a: "")  # clean tree, nothing pushed: stops at the push check
+    args = ["--results", str(_results_dir(tmp_path)), "--data-summary", str(tmp_path / "missing.json")]
+    assert mod.main(args) == 0  # check only: warns, does not fail
+    assert "no data dashboard summary" in capsys.readouterr().out
+    with pytest.raises(SystemExit):
+        mod.main([*args, "--go", "--no-data-summary"])
+    assert "not pushed" in capsys.readouterr().err, "--no-data-summary should get past the summary check"
+
+
 def test_pages_workflow_builds_from_what_publish_app_uploads():
     from fnmatch import fnmatch
 

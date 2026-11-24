@@ -40,6 +40,11 @@ def main(argv: list[str] | None = None) -> int:
     today = dt.date.today().isoformat()
     p.add_argument("--tag", default=f"app-{today}", help="release tag (default app-<date>)")
     p.add_argument("--go", action="store_true", help="create the release and start the Pages deploy")
+    p.add_argument(
+        "--no-data-summary",
+        action="store_true",
+        help="publish without the data dashboard on purpose (the data tab then lists sources only)",
+    )
     a = p.parse_args(argv)
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -50,6 +55,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Built the page from {len(bundles)} state bundle(s):")
         for f in files:
             print(f"  {f.name}  ({f.stat().st_size / 1e6:.1f} MB)")
+        if summary is None and not a.no_data_summary:
+            # Without it the page silently drops the embedded data dashboard (releases app-2026-11-17, -17b).
+            msg = (
+                f"no data dashboard summary at {a.data_summary}, so the data tab would lose its dashboard. "
+                "Build it with scripts/build_data_dashboard.py, point --data-summary at one, "
+                "or pass --no-data-summary to publish without it on purpose"
+            )
+            if a.go:
+                p.error(msg)
+            print("warning:", msg)
         if not a.go:
             print("Check only. Add --go to upload these as release", a.tag, "and deploy the page.")
             return 0
