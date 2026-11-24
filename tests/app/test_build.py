@@ -696,6 +696,16 @@ def test_add_a_state_page_is_a_real_guide(tmp_path):
         assert (REPO / path).exists(), path
 
 
+def test_data_tab_shows_only_states_with_results(tmp_path):
+    """Ben, 2026-11-20: the data dashboard shows only states that are fully built (have a results bundle)."""
+    summary = {
+        "generated": "t",
+        "states": [{"state": "ZZ", "name": "Zedland"}, {"state": "WI", "name": "Wisconsin"}],
+    }
+    assert [s["state"] for s in build.built_states_only(summary, {"ZZ"})["states"]] == ["ZZ"]
+    assert build.built_states_only(summary, {"ZZ"})["generated"] == "t"
+
+
 def test_fee_box_baseline_counts_each_size_once(tmp_path):
     """A size stored at every slider stop (schemas 1.22) has one row per stop: the fee box's "expected
     anyway" must read the half cut's row only, or Minnesota's houses would be counted 15 times."""
