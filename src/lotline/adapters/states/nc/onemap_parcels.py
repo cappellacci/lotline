@@ -352,23 +352,17 @@ def resolve_jurisdictions(
     county_geoid: pd.Series, place: pd.Series, known: set[str]
 ) -> tuple[pd.Series, pd.Series]:
     """(jurisdiction_geoid, how): the place if any ('place' / 'place_not_in_bps'), else the county row."""
-    place = place.astype("string")
-    has = place.notna()
-    geoid = place.where(has, county_geoid.astype("string"))
-    how = pd.Series("county_remainder", index=place.index, dtype="string")
-    how = how.mask(has, "place_not_in_bps").mask(has & place.isin(known).fillna(False), "place")
-    return geoid, how
+    from lotline import geo
+
+    steps = [("place", place), ("place_not_in_bps", place, False), ("county_remainder", county_geoid, False)]
+    return geo.resolve(steps, known, otherwise="county_remainder")
 
 
 def assign_jurisdictions(df: pd.DataFrame, state: str, store: DataStore) -> tuple[pd.DataFrame, pd.Series]:
     from lotline import geo
-    from lotline.build import jurisdictions as jur
 
-    juris = store.read(state, "jurisdictions")
-    if juris is None:
-        juris = jur.load(state, store)
     place = geo.place_or_township(df["lon"], df["lat"], state, store)
-    geoid, how = resolve_jurisdictions(df["county_geoid"], place, set(juris["geoid"]))
+    geoid, how = resolve_jurisdictions(df["county_geoid"], place, geo.known_geoids(state, store))
     return df.assign(jurisdiction_geoid=geoid), how
 
 

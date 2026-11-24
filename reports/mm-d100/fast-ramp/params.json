@@ -1,0 +1,14 @@
+{
+  "draws": 4000,
+  "seed": 20261108,
+  "origin": 2025,
+  "halves": {
+    "main": 4.0,
+    "fast_high": 1.0,
+    "fast": 0.5
+  },
+  "slope": 0.75,
+  "theta": 0.0010387,
+  "phi": 13.63,
+  "seconds": 56
+}

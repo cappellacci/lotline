@@ -1,0 +1,222 @@
+<title>Missing-middle place types</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.bars .b { fill: var(--scenario-missing-middle); } .bars .b.edge { fill: var(--brass); }
+.bars .one { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · D-092 run 12, place types · 15 Nov 2026</div>
+  <h1>Place types don't narrow missing middle's ranges</h1>
+  <p class="lede">Giving core cities, suburbs and towns their own year-to-year lumpiness improved the held-out score by 24.8 log points, with a standard error of 32.9. The pre-registered bar was 2 standard errors, so one φ is kept and the refit isn't run. Coverage doesn't move (0.79 against 0.78). The size of the difference depends more on the state than on the type of place.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>+24.8</b><span>held-out gain from φ by type (SE 32.9); bar is 2 SE</span></div>
+  <div class="tile"><b>Not adopted</b><span>one φ (13.6) stays; run 11 stands</span></div>
+  <div class="tile"><b>5.9</b><span>towns' φ: the least lumpy type, not the most as guessed</span></div>
+  <div class="tile"><b>0 of 93</b><span>fit places can carry a type term on the reform rate (size rule merges both)</span></div>
+</div>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>The type difference doesn't hold up out of sample</h2>
+  <div class="scroll"><table><thead><tr><th>Type</th><th>φ, fitted 2016</th><th>φ, both origins (90%)</th><th>Places scored 2021</th><th>Coverage, one φ</th><th>Coverage, φ by type</th></tr></thead><tbody><tr><td>Core city</td><td>8.14</td><td>15.8 (13.9–18.2)</td><td>40</td><td>0.70</td><td>0.70</td></tr><tr><td>Suburb</td><td>11.66</td><td>16.3 (15.1–17.7)</td><td>330</td><td>0.79</td><td>0.80</td></tr><tr><td>Town</td><td>4.17</td><td>5.9 (5.2–6.8)</td><td>98</td><td>0.83</td><td>0.77</td></tr><tr><td><b>One φ</b></td><td>9.13</td><td>13.6</td><td>468</td><td>0.79</td><td>0.78</td></tr></tbody></table></div>
+  <p class="note">Coverage is the share of 2021–2025 totals inside P10–P90 (20,000 draws, seed 20261115). The places are the 483 unused ones (MN, NC, OH, TX), which no fit or test uses.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>The state matters more than the type</h2>
+  <svg viewBox="0 0 680 244" class="chart bars" role="img" aria-label="φ by state and place type"><line x1="40" x2="670" y1="200.0" y2="200.0" class="grid"/><text x="34" y="204.0" class="tick" text-anchor="end">0</text><line x1="40" x2="670" y1="157.1" y2="157.1" class="grid"/><text x="34" y="161.1" class="tick" text-anchor="end">5</text><line x1="40" x2="670" y1="114.3" y2="114.3" class="grid"/><text x="34" y="118.3" class="tick" text-anchor="end">10</text><line x1="40" x2="670" y1="71.4" y2="71.4" class="grid"/><text x="34" y="75.4" class="tick" text-anchor="end">15</text><line x1="40" x2="670" y1="28.6" y2="28.6" class="grid"/><text x="34" y="32.6" class="tick" text-anchor="end">20</text><rect x="60" y="128.5" width="38" height="71.5" class="b"><title>MN Core city: φ 8.3</title></rect><text x="79.0" y="214" class="tick" text-anchor="middle">C</text><text x="79.0" y="124.5" class="tick" text-anchor="middle">8.3</text><rect x="102" y="120.3" width="38" height="79.7" class="b"><title>MN Suburb: φ 9.3</title></rect><text x="121.0" y="214" class="tick" text-anchor="middle">S</text><text x="121.0" y="116.3" class="tick" text-anchor="middle">9.3</text><rect x="144" y="167.2" width="38" height="32.8" class="b"><title>MN Town: φ 3.8</title></rect><text x="163.0" y="214" class="tick" text-anchor="middle">T</text><text x="163.0" y="163.2" class="tick" text-anchor="middle">3.8</text><text x="121.0" y="232" class="lab" text-anchor="middle">MN</text><rect x="210" y="143.3" width="38" height="56.7" class="b"><title>NC Core city: φ 6.6</title></rect><text x="229.0" y="214" class="tick" text-anchor="middle">C</text><text x="229.0" y="139.3" class="tick" text-anchor="middle">6.6</text><rect x="252" y="98.6" width="38" height="101.4" class="b"><title>NC Suburb: φ 11.8</title></rect><text x="271.0" y="214" class="tick" text-anchor="middle">S</text><text x="271.0" y="94.6" class="tick" text-anchor="middle">11.8</text><rect x="294" y="151.5" width="38" height="48.5" class="b"><title>NC Town: φ 5.7</title></rect><text x="313.0" y="214" class="tick" text-anchor="middle">T</text><text x="313.0" y="147.5" class="tick" text-anchor="middle">5.7</text><text x="271.0" y="232" class="lab" text-anchor="middle">NC</text><rect x="360" y="173.4" width="38" height="26.6" class="b"><title>OH Core city: φ 3.1</title></rect><text x="379.0" y="214" class="tick" text-anchor="middle">C</text><text x="379.0" y="169.4" class="tick" text-anchor="middle">3.1</text><rect x="402" y="93.9" width="38" height="106.1" class="b"><title>OH Suburb: φ 12.4</title></rect><text x="421.0" y="214" class="tick" text-anchor="middle">S</text><text x="421.0" y="89.9" class="tick" text-anchor="middle">12.4</text><rect x="444" y="158.0" width="38" height="42.0" class="b"><title>OH Town: φ 4.9</title></rect><text x="463.0" y="214" class="tick" text-anchor="middle">T</text><text x="463.0" y="154.0" class="tick" text-anchor="middle">4.9</text><text x="421.0" y="232" class="lab" text-anchor="middle">OH</text><rect x="510" y="27.8" width="38" height="172.2" class="b edge"><title>TX Core city: φ 20.1</title></rect><text x="529.0" y="214" class="tick" text-anchor="middle">C</text><text x="529.0" y="23.8" class="tick" text-anchor="middle">20.1</text><rect x="552" y="27.8" width="38" height="172.2" class="b edge"><title>TX Suburb: φ 20.1</title></rect><text x="571.0" y="214" class="tick" text-anchor="middle">S</text><text x="571.0" y="23.8" class="tick" text-anchor="middle">20.1</text><rect x="594" y="128.9" width="38" height="71.1" class="b"><title>TX Town: φ 8.3</title></rect><text x="613.0" y="214" class="tick" text-anchor="middle">T</text><text x="613.0" y="124.9" class="tick" text-anchor="middle">8.3</text><text x="571.0" y="232" class="lab" text-anchor="middle">TX</text><line x1="40" x2="670" y1="83.1" y2="83.1" class="one"/><text x="668" y="78.1" class="reftxt" text-anchor="end">one φ, 13.6</text></svg>
+  <p>φ by state and type (C core city, S suburb, T town). Within each state, suburbs are lumpier than towns. But Texas's core cities and suburbs both hit the search's upper limit (shown in brass), while the other states' sit at 3–12. A state term isn't a candidate, because it wouldn't carry to a state with no permit data.</p>
+</section>
+
+<section class="decision">
+  <div class="num-tag">For Ben</div>
+  <h2>Next lever: count projects, not buildings</h2>
+  <p>For missing middle, place types are coded and recorded but not used: they don't narrow the noise, and the fit places (86 of 93 in Oregon) can't support a type term on the reform rate. Texas's lumpiness at the limit points to large multi-building projects, so the noise sits in what is counted. Nothing goes to config; the tool still runs D-059's θ = 0.12.</p>
+</section>
+
+<footer>
+  <div>Run: <code>mm_types_d092.py</code> (one φ against φ by type; trained 2016, scored 2021; 2-SE rule). Pre-registered in D-092's deviation (c) of 2026-11-15. Cached tables only; St. Paul and Ramsey not in the panel; nothing unblinded.</div>
+  <div>Sources: <code>reports/mm-d092/run12-types/</code> on branch <code>ws/mm-baseline-spread</code> (PR #436).</div>
+</footer>
+</main>

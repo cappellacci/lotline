@@ -68,7 +68,6 @@ site addresses (`situs_*`) and the legal description are in the same records but
 
 from __future__ import annotations
 
-import csv
 import re
 import zipfile
 from pathlib import Path
@@ -76,6 +75,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.adapters.states.tx import filegdb, projection, shapefile
 from lotline.config import CONFIG_DIR, load_params
 from lotline.io import DataStore
@@ -159,20 +159,18 @@ PROVENANCE = {
 
 
 def load_land_use_crosswalk(path: Path = LAND_USE_CROSSWALK) -> dict[str, str]:
-    with open(path, newline="") as fh:
-        return {r["ptad_code"].strip().upper(): r["land_use_std"].strip() for r in csv.DictReader(fh)}
+    return {r["code"].strip().upper(): r["land_use_std"].strip() for r in crosswalks.read(path, "land_use")}
 
 
 def load_county_land_use(path: Path = COUNTY_LAND_USE) -> dict[str, str]:
     """ "county_geoid|code" -> land_use_std from the per-county crosswalk's applied rows."""
     if not path.exists():
         return {}
-    with open(path, newline="") as fh:
-        return {
-            f"{r['county_geoid'].strip()}|{r['code'].strip().upper()}": r["land_use_std"].strip()
-            for r in csv.DictReader(fh)
-            if r.get("applied", "").strip().lower() == "yes" and r["land_use_std"].strip() != "UNKNOWN"
-        }
+    return {
+        f"{r['county'].strip()}|{r['code'].strip().upper()}": r["land_use_std"].strip()
+        for r in crosswalks.read(path, "land_use")
+        if r.get("applied", "").strip().lower() == "yes" and r["land_use_std"].strip() != "UNKNOWN"
+    }
 
 
 def county_land_use(std: pd.Series, county: pd.Series, code: pd.Series, local: dict) -> pd.Series:
@@ -298,22 +296,16 @@ def rows(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_un
 def resolve_jurisdictions(county_geoid: pd.Series, place: pd.Series, known: set[str]) -> pd.Series:
     """The place holding the centroid when it is a known jurisdiction, else the county remainder when that is
     one, else missing."""
-    place = place.astype("string")
-    county = county_geoid.astype("string")
-    ok = place.notna() & place.isin(known).fillna(False)
-    county = county.where(county.isin(known).fillna(False))
-    return place.where(ok, county)
+    from lotline import geo
+
+    return geo.resolve([("place", place), ("county", county_geoid)], known)[0]
 
 
 def assign_jurisdictions(df: pd.DataFrame, store: DataStore) -> pd.DataFrame:
     from lotline import geo
-    from lotline.build import jurisdictions as jur
 
-    juris = store.read("TX", "jurisdictions")
-    if juris is None:
-        juris = jur.load("TX", store)
     place = geo.place_or_township(df["lon"], df["lat"], "TX", store)
-    geoid = resolve_jurisdictions(df["county_geoid"], place, set(juris["geoid"]))
+    geoid = resolve_jurisdictions(df["county_geoid"], place, geo.known_geoids("TX", store))
     return df.assign(jurisdiction_geoid=geoid).loc[geoid.notna()]
 
 

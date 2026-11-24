@@ -368,6 +368,52 @@ def central_path(places: pd.DataFrame, mode: str = "local_half", params: dict | 
     }
 
 
+def simulate(
+    places: pd.DataFrame, origin: int, *, mode: str = "local_half", draws: int | None = None
+) -> dict:
+    """Every draw of the fee scenario per place and window year, before any summary (`run` and the results
+    bundle both read it).
+
+    Returns `added` (draws × places × years, all size classes), `added_by_class` (each covered BPS class:
+    draws × places × years; empty without a size split), `base` (places × years, the baseline every draw
+    shares), `by_size` (the baseline per class, or None), `used` (draws × places: the feasibility channel was
+    used), the parameter `sets`, and `n`, `horizon`, `first` (the window's first year) and `mode`.
+    """
+    central = central_params()
+    n = int(draws or central["fee_simulation_draws"])
+    sets = draw_params(n, int(central["fee_simulation_seed"]))
+    _, horizon, first = baseline_model.window(origin)
+    by_size = _by_size(places, horizon)
+    base = _baseline(places, horizon) if by_size is None else sum(by_size.values())
+    mode = _mode(mode)
+    seed = int(central["fee_simulation_seed"])
+    # the house fee keeps seed + 1 (results without a size split are unchanged); duplex + 2, fourplex + 3
+    fees_d = {t: fee_draws(places, mode, central, n, seed + 1 + k, t) for k, t in enumerate(_types(by_size))}
+    out = np.zeros((n, len(places), horizon))
+    out_size = {c: np.zeros((n, len(places), horizon)) for c in (SIZE_TYPES if by_size is not None else ())}
+    used = np.zeros((n, len(places)), dtype=bool)  # feasibility channel used in this draw
+    for d, p in enumerate(sets):
+        added, parts, _, channel, _ = _added(
+            places, {t: v[d] for t, v in fees_d.items()}, p, mode, base, by_size
+        )
+        out[d] = added
+        for c, a in parts.items():
+            out_size[c][d] = a
+        used[d] = channel == "feasibility"
+    return {
+        "added": out,
+        "added_by_class": out_size,
+        "base": base,
+        "by_size": by_size,
+        "used": used,
+        "sets": sets,
+        "n": n,
+        "horizon": horizon,
+        "first": first,
+        "mode": mode,
+    }
+
+
 def run(
     places: pd.DataFrame,
     origin: int,
@@ -389,28 +435,11 @@ def run(
     candidate lots' land values, 2025 dollars) for the feasibility channel. Extra columns are carried through.
     With `summary_by`, a third table sums each draw over the group's places (non-overlapping units, D-020).
     """
-    central = central_params()
-    n = int(draws or central["fee_simulation_draws"])
-    sets = draw_params(n, int(central["fee_simulation_seed"]))
-    _, horizon, first = baseline_model.window(origin)
-    by_size = _by_size(places, horizon)
-    base = _baseline(places, horizon) if by_size is None else sum(by_size.values())
-    mode = _mode(mode)
-    fee, source = fee_levels(places, mode, central)
-    seed = int(central["fee_simulation_seed"])
-    # the house fee keeps seed + 1 (results without a size split are unchanged); duplex + 2, fourplex + 3
-    fees_d = {t: fee_draws(places, mode, central, n, seed + 1 + k, t) for k, t in enumerate(_types(by_size))}
-    out = np.zeros((n, len(places), horizon))
-    out_size = {c: np.zeros((n, len(places))) for c in (SIZE_TYPES if by_size is not None else ())}
-    used = np.zeros((n, len(places)), dtype=bool)  # feasibility channel used in this draw
-    for d, p in enumerate(sets):
-        added, parts, _, channel, _ = _added(
-            places, {t: v[d] for t, v in fees_d.items()}, p, mode, base, by_size
-        )
-        out[d] = added
-        for c, a in parts.items():
-            out_size[c][d] = a.sum(axis=1)
-        used[d] = channel == "feasibility"
+    sim = simulate(places, origin, mode=mode, draws=draws)
+    n, horizon, first, mode = sim["n"], sim["horizon"], sim["first"], sim["mode"]
+    by_size, base, out, used = sim["by_size"], sim["base"], sim["added"], sim["used"]
+    out_size = {c: a.sum(axis=2) for c, a in sim["added_by_class"].items()}
+    fee, source = fee_levels(places, mode, central_params())
     c = central_path(places, mode)
     info = (
         places.drop(columns=["lot_values"], errors="ignore")

@@ -1,0 +1,71 @@
+commit: 7760ee5e11ddecc6edb7ed2b15f4918ddcc7f13f
+started: 2026-11-13T16:06:54Z
+[11:07:46] fit set: 64 places, 395 place-years, 11 new
+[11:07:46] owner share sources: {'place': 57, 'county subdivision': 6, 'county less its places': 1}; flagged: []
+[11:07:46] vintage check (2011-15 vs 2020-24, 64 places): pearson 0.982, spearman 0.973, mean change +0.3 points
+[11:07:46] fits: Form A (β_o = 0) and Form A′, all folds
+[11:08:29]   A all: theta 0.7563/1,000 (0.554-1.112), alpha 1.918, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1347.71 (40s)
+[11:14:45]   A′ all: theta 0.6543/1,000 (0.483-0.917), alpha 1.558, beta -0.546 (-0.877, -0.221), m_o 1.0, m_x 0.4, loglik -1344.00 (416s)
+[11:14:45]   A without MN: theta 1.5672/1,000 (1.151-2.217), alpha 0.677, beta +0.000 (+0.000, +0.000), m_o 0.6, m_x 0.3, loglik -1133.99 (21s)
+[11:14:45]   A′ without MN: theta 1.1102/1,000 (0.820-1.559), alpha 0.626, beta -0.418 (-0.887, +0.038), m_o 0.6, m_x 0.3, loglik -1132.85 (234s)
+[11:14:45]   A without NC: theta 0.7234/1,000 (0.485-1.399), alpha 2.616, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1012.07 (36s)
+[11:14:45]   A′ without NC: theta 0.6869/1,000 (0.462-1.274), alpha 2.257, beta -0.464 (-0.889, -0.049), m_o 1.0, m_x 0.4, loglik -1010.39 (371s)
+[11:14:45]   A without OH: theta 0.7666/1,000 (0.559-1.148), alpha 1.958, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1342.88 (42s)
+[11:15:00]   A′ without OH: theta 0.6639/1,000 (0.488-0.934), alpha 1.545, beta -0.584 (-0.920, -0.253), m_o 1.0, m_x 0.4, loglik -1338.81 (410s)
+[11:15:00]   A without TX: theta 0.7168/1,000 (0.517-1.090), alpha 1.993, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1256.04 (42s)
+[11:15:13]   A′ without TX: theta 0.6586/1,000 (0.477-0.943), alpha 1.647, beta -0.548 (-0.909, -0.193), m_o 1.0, m_x 0.4, loglik -1252.88 (404s)
+[11:15:13]   A without OR: theta 0.6088/1,000 (0.439-0.877), alpha 1.860, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -631.99 (41s)
+[11:15:43]   A′ without OR: theta 0.5596/1,000 (0.404-0.808), alpha 1.568, beta -0.439 (-0.776, -0.114), m_o 1.0, m_x 0.4, loglik -629.54 (396s)
+[11:15:43]   A without place 2754880: theta 0.7699/1,000 (0.563-1.156), alpha 1.901, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1343.33 (47s)
+[11:16:42]   A′ without place 2754880: theta 0.6676/1,000 (0.492-0.936), alpha 1.539, beta -0.541 (-0.871, -0.216), m_o 1.0, m_x 0.4, loglik -1339.67 (403s)
+[11:16:42]   A without place 3702140: theta 0.6956/1,000 (0.512-0.979), alpha 1.845, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1263.12 (50s)
+[11:18:38]   A′ without place 3702140: theta 0.6160/1,000 (0.457-0.855), alpha 1.520, beta -0.482 (-0.807, -0.161), m_o 1.0, m_x 0.4, loglik -1260.14 (365s)
+[11:18:38]   A without place 3710740: theta 0.7669/1,000 (0.559-1.122), alpha 1.960, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1324.90 (40s)
+[11:20:40]   A′ without place 3710740: theta 0.6656/1,000 (0.488-0.939), alpha 1.600, beta -0.541 (-0.875, -0.212), m_o 1.0, m_x 0.4, loglik -1321.34 (360s)
+[11:20:40]   A without place 3711800: theta 0.7510/1,000 (0.547-1.115), alpha 1.972, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1332.72 (40s)
+[11:20:56]   A′ without place 3711800: theta 0.6591/1,000 (0.483-0.931), alpha 1.609, beta -0.549 (-0.889, -0.216), m_o 1.0, m_x 0.4, loglik -1329.15 (356s)
+[11:20:56]   A without place 3712000: theta 0.9269/1,000 (0.674-1.320), alpha 1.938, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.3, loglik -1304.24 (40s)
+[11:21:28]   A′ without place 3712000: theta 0.8250/1,000 (0.601-1.177), alpha 1.628, beta -0.505 (-0.854, -0.168), m_o 1.0, m_x 0.3, loglik -1301.25 (363s)
+[11:21:28]   A without place 3719000: theta 0.7493/1,000 (0.546-1.111), alpha 1.970, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1299.12 (39s)
+[11:21:52]   A′ without place 3719000: theta 0.6570/1,000 (0.481-0.928), alpha 1.610, beta -0.544 (-0.882, -0.212), m_o 1.0, m_x 0.4, loglik -1295.58 (359s)
+[11:21:52]   A without place 3755000: theta 0.7601/1,000 (0.553-1.080), alpha 1.979, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1317.88 (39s)
+[11:22:36]   A′ without place 3755000: theta 0.6629/1,000 (0.486-0.936), alpha 1.606, beta -0.553 (-0.890, -0.222), m_o 1.0, m_x 0.4, loglik -1314.20 (355s)
+[11:22:36]   A without place 3774440: theta 0.7412/1,000 (0.539-1.053), alpha 1.962, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1303.71 (39s)
+[11:23:13]   A′ without place 3774440: theta 0.6564/1,000 (0.460-0.928), alpha 1.615, beta -0.541 (-0.884, -0.205), m_o 1.0, m_x 0.4, loglik -1300.29 (332s)
+[11:23:13]   A without place 4147000: theta 0.7332/1,000 (0.534-1.058), alpha 1.945, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1306.42 (40s)
+[11:24:04]   A′ without place 4147000: theta 0.6478/1,000 (0.474-0.915), alpha 1.605, beta -0.528 (-0.866, -0.197), m_o 1.0, m_x 0.4, loglik -1303.07 (286s)
+[11:24:04]   A without place 4164900: theta 0.7401/1,000 (0.539-1.052), alpha 1.960, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1291.40 (41s)
+[11:24:51]   A′ without place 4164900: theta 0.6501/1,000 (0.476-0.919), alpha 1.609, beta -0.534 (-0.871, -0.204), m_o 1.0, m_x 0.4, loglik -1287.94 (236s)
+[11:24:51]   A without place 4815976: theta 0.7641/1,000 (0.556-1.120), alpha 1.971, beta +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.4, loglik -1335.25 (41s)
+[11:25:07]   A′ without place 4815976: theta 0.6637/1,000 (0.488-0.935), alpha 1.558, beta -0.586 (-0.924, -0.253), m_o 1.0, m_x 0.4, loglik -1331.20 (219s)
+[11:26:38] sensitivity: owner share from 2016-20
+[11:31:07]   A′ all: theta 0.6897/1,000 (0.507-0.970), alpha 1.644, beta -0.447 (-0.768, -0.129), m_o 1.0, m_x 0.4, loglik -1345.08 (268s)
+[11:31:07]   A′ without MN: theta 1.1824/1,000 (0.870-1.672), alpha 0.647, beta -0.363 (-0.864, +0.118), m_o 0.6, m_x 0.3, loglik -1133.20 (154s)
+[11:31:07]   A′ without NC: theta 0.7134/1,000 (0.478-1.342), alpha 2.368, beta -0.347 (-0.749, +0.050), m_o 1.0, m_x 0.4, loglik -1011.03 (245s)
+[11:31:07]   A′ without OH: theta 0.7009/1,000 (0.513-0.990), alpha 1.641, beta -0.480 (-0.806, -0.156), m_o 1.0, m_x 0.4, loglik -1339.97 (267s)
+[11:31:07]   A′ without TX: theta 0.6889/1,000 (0.497-0.990), alpha 1.744, beta -0.436 (-0.784, -0.090), m_o 1.0, m_x 0.4, loglik -1253.91 (264s)
+[11:31:07]   A′ without OR: theta 0.5787/1,000 (0.417-0.838), alpha 1.641, beta -0.349 (-0.672, -0.035), m_o 1.0, m_x 0.4, loglik -630.33 (263s)
+Traceback (most recent call last):
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/scripts/dev/adu_owner_refit.py", line 529, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/scripts/dev/adu_owner_refit.py", line 402, in main
+    run(a, store)
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/scripts/dev/adu_owner_refit.py", line 465, in run
+    inp = R.tier_inputs(st, store, held)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/scripts/dev/adu_joint_refit.py", line 237, in tier_inputs
+    lots = acs_lots(held, store, pl)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/scripts/dev/adu_joint_refit.py", line 168, in acs_lots
+    rows = estimate_adu.permit_acs_rows(st, store, juris)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/src/lotline/model/estimate_adu.py", line 1326, in permit_acs_rows
+    c_shares = geoparts.county_shares(fips, places, store)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/src/lotline/adapters/national/geoparts.py", line 106, in county_shares
+    key = api_key() if (n > 1).any() else None
+          ^^^^^^^^^
+  File "/Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-screen/src/lotline/adapters/national/acs.py", line 76, in api_key
+    raise CensusKeyError("CENSUS_API_KEY is not set (add it to .env; see README)")
+lotline.adapters.national.acs.CensusKeyError: CENSUS_API_KEY is not set (add it to .env; see README)

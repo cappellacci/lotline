@@ -122,6 +122,18 @@ def county_shares(fips: str, places: list[str], store: DataStore, refresh: bool 
     return pd.concat(rows, ignore_index=True)[["place_geoid", "county_geoid", "share"]]
 
 
+def main_county(fips: str, places: list[str], store: DataStore, refresh: bool = False) -> dict[str, str]:
+    """place_geoid -> the one county a place is filed under: the county holding most of its 2020 homes
+    (task 5 rule 5, Ben 2026-11-17). Ties go to the lower county GEOID.
+
+    Ben's rule names 2020 population. The Census parts this module already reads are housing units by county
+    part (DHC H1_001N); population parts (P1) would be a new download, so housing units stand in. For a
+    place split between two counties the two rarely disagree; see the PR for the places that move."""
+    shares = county_shares(fips, places, store, refresh)
+    top = shares.sort_values(["place_geoid", "share", "county_geoid"], ascending=[True, False, True])
+    return dict(top.drop_duplicates("place_geoid")[["place_geoid", "county_geoid"]].itertuples(index=False))
+
+
 def township_shares(
     fips: str, places: list[str], townships: list[str], store: DataStore, refresh: bool = False
 ) -> pd.DataFrame:

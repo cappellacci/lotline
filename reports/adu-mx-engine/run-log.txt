@@ -1,0 +1,32 @@
+MN fixed 0.7
+MN grid
+MN fold maxima
+MN fixed 0.4
+MN fixed 1.0
+NC fixed 0.7
+NC grid
+NC fold maxima
+NC fixed 0.4
+NC fixed 1.0
+OH fixed 0.7
+OH grid
+OH fold maxima
+OH fixed 0.4
+OH fixed 1.0
+TX fixed 0.7
+TX grid
+TX fold maxima
+TX fixed 0.4
+TX fixed 1.0
+OR fixed 0.7
+OR grid
+OR fold maxima
+OR fixed 0.4
+OR fixed 1.0
+variant  fixed 0.4  fixed 0.7  fixed 1.0  fold maxima    grid
+state                                                        
+MN           581.0      302.0      192.0        314.0   307.0
+NC           461.0      208.0       86.0        202.0   201.0
+OH           407.0      230.0      159.0        232.0   226.0
+OR            20.0       10.0        4.0          9.0     9.0
+TX          5141.0     3198.0     2206.0       3312.0  3272.0

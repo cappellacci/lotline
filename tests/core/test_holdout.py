@@ -53,6 +53,7 @@ def test_date_filter_uses_exact_window():
     assert out.issue_date.tolist() == ["2023-05-31"]
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_default_registry_comes_from_state_config():
     out = holdout.apply(_annual(), "MN", year_col="year")
     assert not ((out.geoid == "2758000") & (out.year >= 2024)).any()

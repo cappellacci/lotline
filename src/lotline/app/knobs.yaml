@@ -4,6 +4,8 @@
 # `params` lists `file:key` in config/params/ per scenario; a scenario not listed shows "see the engine run".
 # A slider shifts its factor through that factor's own range in the engine's draws (src/lotline/app/aggregate.js).
 # The shift rule (each draw x P_q / P50) is provisional (Ben, 2026-11-06): revisit after feedback on the app.
+# `by_scenario` replaces the label, why and end words for scenarios where the factor means something else (the
+# fee scenarios' theta is the cut's % change in homes built, not an uptake rate).
 theta:
   label: How often owners build, once it pays
   why: The five-year chance that an owner of an eligible lot where the project pays actually builds.
@@ -12,6 +14,15 @@ theta:
   format: share
   params:
     adu: [hazard:adu_mature_hazard_ref]
+    fees: [fees:fee_permit_elasticity, fees:land_capture_share, fees:fee_ramp_half_years]
+    fees_local_half: [fees:fee_permit_elasticity, fees:land_capture_share, fees:fee_ramp_half_years]
+  by_scenario:
+    fees: &fee_theta
+      label: How strongly builders respond to fee cuts
+      why: Extra homes as a share of the homes that would be built anyway, from the part of the saving builders keep after landowners take their share. Drawn from published studies, not measured in our states.
+      low_word: Barely responds
+      high_word: Responds strongly
+    fees_local_half: *fee_theta
 pencil_out_share:
   label: Share of legal lots where building pays
   why: Of the lots the reform makes legal, the share where expected rent or sale value covers land, construction, fees and a fair return.
@@ -28,6 +39,8 @@ completion_factor:
   format: share
   params:
     adu: [aggregate:completion_factor_single_family]
+    fees: [aggregate:completion_factor_single_family, aggregate:completion_factor_multifamily]
+    fees_local_half: [aggregate:completion_factor_single_family, aggregate:completion_factor_multifamily]
 net_new_share:
   label: Finished units that add a home
   why: Some new units become offices, guest rooms or short-term rentals, or legalize a unit that already existed. Only the rest add a home.
@@ -44,3 +57,5 @@ displacement_share:
   format: share
   params:
     adu: [aggregate:displacement_share]
+    fees: [aggregate:displacement_share]
+    fees_local_half: [aggregate:displacement_share]

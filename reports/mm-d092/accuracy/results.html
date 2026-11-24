@@ -1,0 +1,267 @@
+<title>Missing-middle accuracy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a headline + its chart; a decision panel up top. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 34px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+section { display: flex; flex-direction: column; gap: var(--space-4); }
+.num-tag { font-family: var(--font-mono); color: var(--survey); font-size: 13px; }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision h2 { font-size: 19px; }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); }
+.tile { border-top: 2px solid var(--ink); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px; }
+.tile b { font-family: var(--font-mono); font-weight: 500; font-size: 24px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--ink-muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink); font-size: 12px; }
+.chart .band { fill: var(--survey-band); stroke: var(--survey); stroke-width: 1; }
+.chart .band.m { fill: var(--survey); fill-opacity: .35; }
+.chart .band.warn { fill: var(--brass); fill-opacity: .25; stroke: var(--brass); }
+.chart .mid { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--paper); stroke-width: 1.5; }
+.chart .obs.in { fill: var(--confidence-inside); }
+.chart .obs.out { fill: var(--confidence-outside); }
+.chart .ref { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .reftxt { fill: var(--brass); font-size: 11px; font-family: var(--font-mono); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: 13px; color: var(--ink-muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .sw { border-radius: 0; width: 18px; background: var(--survey-band); border: 1px solid var(--survey); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.f { color: var(--confidence-outside); font-weight: 600; }
+td.p { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+
+.acc .rg { stroke: var(--scenario-missing-middle); stroke-width: 7; stroke-linecap: round; opacity: .45; }
+.acc .rg.old { stroke: var(--ink-faint); }
+.acc .med { stroke: var(--ink); stroke-width: 2; }
+.acc .in { fill: var(--scenario-missing-middle); stroke: var(--bg, #fff); stroke-width: 1.5; }
+.acc .out { fill: #c2410c; stroke: var(--bg, #fff); stroke-width: 1.5; }
+.acc .grp { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; fill: var(--ink-muted); }
+.key { display: flex; gap: 1.2rem; font-size: .85rem; color: var(--ink-muted); flex-wrap: wrap; margin-top: .4rem; }
+.key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: .35rem; vertical-align: -1px; }
+.key .in { background: var(--scenario-missing-middle); } .key .out { background: #c2410c; }
+.key .rg { width: 20px; height: 7px; border-radius: 4px; background: var(--scenario-missing-middle); opacity: .45; }
+.verdict { display: inline-block; font: 600 .75rem/1 var(--font-mono, monospace); padding: .3rem .5rem; border-radius: 4px; border: 1px solid currentColor; margin-left: .4rem; vertical-align: 3px; }
+.good { color: var(--scenario-missing-middle); } .mixed { color: var(--brass); } .weak { color: #c2410c; }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · Missing middle · Accuracy of the C4 model · 15 Nov 2026</div>
+  <h1>How accurate is the missing-middle model?</h1>
+  <p class="lede">Honest, but not sharp. When we check the model against what was actually built, the real count lands inside its range about 8 times in 10, which is what a P10–P90 range should do. But the ranges are wide (often 10-fold), single-place medians can miss by 3–6×, and the data can't yet cleanly separate the reform's own effect from ordinary ups and downs in building. For a new state, our one real test, Oregon, came in inside the range with the median 1.3× too high. C4's first blind test, St. Paul, missed: 55 built against 9–28, because the reform worked much faster than C4's ramp assumes.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><b>78%</b><span>of 136 places land inside their P10–P90 range (target 60–95%)</span></div>
+  <div class="tile"><b>79%</b><span>of 468 places with no reform land inside, scored on 2021–25 held out</span></div>
+  <div class="tile"><b>703 vs 915</b><span>Oregon, built vs predicted median, from the other states only (range 457–4,789)</span></div>
+  <div class="tile"><b>Not clear</b><span>the reform's own effect: +5.0 against "no effect" (SE 3.4); the placebo test fails</span></div>
+</div>
+
+<section>
+  <div class="num-tag">The evidence</div>
+  <h2>Every test, built against predicted</h2>
+  <div class="scroll"><svg viewBox="0 0 720 408" class="chart acc" role="img" aria-label="Observed missing-middle buildings against the model's ranges"><line x1="250.0" x2="250.0" y1="10" y2="380" class="grid"/><text x="250.0" y="396" class="tick" text-anchor="middle">0–1</text><line x1="355.6" x2="355.6" y1="10" y2="380" class="grid"/><text x="355.6" y="396" class="tick" text-anchor="middle">10</text><line x1="461.1" x2="461.1" y1="10" y2="380" class="grid"/><text x="461.1" y="396" class="tick" text-anchor="middle">100</text><line x1="566.7" x2="566.7" y1="10" y2="380" class="grid"/><text x="566.7" y="396" class="tick" text-anchor="middle">1,000</text><line x1="672.2" x2="672.2" y1="10" y2="380" class="grid"/><text x="672.2" y="396" class="tick" text-anchor="middle">10,000</text><text x="8" y="32" class="grp">Places that reformed</text><text x="240" y="50.0" class="lab" text-anchor="end">Wake County towns, 2019-2022</text><line x1="332.1" x2="477.5" y1="46.0" y2="46.0" class="rg"><title>Wake County towns, 2019-2022: observed 28; range 6–143, median 29 (9 places)</title></line><line x1="404.4" x2="404.4" y1="40.0" y2="52.0" class="med"/><circle cx="402.8" cy="46.0" r="5" class="in"><title>Wake County towns, 2019-2022: observed 28; range 6–143, median 29 (9 places)</title></circle><text x="240" y="74.0" class="lab" text-anchor="end">Franklin County, OH, 2016-2023</text><line x1="475.2" x2="594.7" y1="70.0" y2="70.0" class="rg"><title>Franklin County, OH, 2016-2023: observed 142; range 136–1,844, median 483 (13 places)</title></line><line x1="533.3" x2="533.3" y1="64.0" y2="76.0" class="med"/><circle cx="477.2" cy="70.0" r="5" class="in"><title>Franklin County, OH, 2016-2023: observed 142; range 136–1,844, median 483 (13 places)</title></circle><text x="240" y="98.0" class="lab" text-anchor="end">Minneapolis, 2017-2023</text><line x1="250.0" x2="509.6" y1="94.0" y2="94.0" class="rg"><title>Minneapolis, 2017-2023: observed 275; range 1–288, median 42 (1 places)</title></line><line x1="421.3" x2="421.3" y1="88.0" y2="100.0" class="med"/><circle cx="507.5" cy="94.0" r="5" class="in"><title>Minneapolis, 2017-2023: observed 275; range 1–288, median 42 (1 places)</title></circle><text x="240" y="122.0" class="lab" text-anchor="end">Twin Cities suburbs, 2021-2024</text><line x1="461.6" x2="537.9" y1="118.0" y2="118.0" class="rg"><title>Twin Cities suburbs, 2021-2024: observed 321; range 101–534, median 202 (55 places)</title></line><line x1="493.3" x2="493.3" y1="112.0" y2="124.0" class="med"/><circle cx="514.6" cy="118.0" r="5" class="in"><title>Twin Cities suburbs, 2021-2024: observed 321; range 101–534, median 202 (55 places)</title></circle><text x="240" y="146.0" class="lab" text-anchor="end">Houston, from 2024 (new to the fit)</text><line x1="250.0" x2="405.9" y1="142.0" y2="142.0" class="rg"><title>Houston, from 2024 (new to the fit): observed 21; range 0–30, median 0 (test A)</title></line><line x1="250.0" x2="250.0" y1="136.0" y2="148.0" class="med"/><circle cx="389.6" cy="142.0" r="5" class="in"><title>Houston, from 2024 (new to the fit): observed 21; range 0–30, median 0 (test A)</title></circle><text x="240" y="170.0" class="lab" text-anchor="end">Charlotte area, 2023–25 (blind)</text><line x1="455.8" x2="486.0" y1="166.0" y2="166.0" class="rg old"><title>Charlotte area, 2023–25 (blind): observed 119; range 89–172, median 104 (older D-055 values)</title></line><line x1="462.9" x2="462.9" y1="160.0" y2="172.0" class="med"/><circle cx="469.1" cy="166.0" r="5" class="in"><title>Charlotte area, 2023–25 (blind): observed 119; range 89–172, median 104 (older D-055 values)</title></circle><text x="240" y="194.0" class="lab" text-anchor="end">St. Paul, 2024–25 (blind, C4)</text><line x1="350.7" x2="402.8" y1="190.0" y2="190.0" class="rg"><title>St. Paul, 2024–25 (blind, C4): observed 55; range 9–28, median 15 (C4, frozen 15 Nov)</title></line><line x1="374.1" x2="374.1" y1="184.0" y2="196.0" class="med"/><circle cx="433.7" cy="190.0" r="5" class="out"><title>St. Paul, 2024–25 (blind, C4): observed 55; range 9–28, median 15 (C4, frozen 15 Nov)</title></circle><text x="8" y="224" class="grp">Statewide, no reform (test C)</text><text x="240" y="242.0" class="lab" text-anchor="end">MN: 3 places with no reform</text><line x1="250.0" x2="367.6" y1="238.0" y2="238.0" class="rg"><title>MN: 3 places with no reform: observed 32; range 0–13, median 3</title></line><line x1="300.4" x2="300.4" y1="232.0" y2="244.0" class="med"/><circle cx="408.9" cy="238.0" r="5" class="out"><title>MN: 3 places with no reform: observed 32; range 0–13, median 3</title></circle><text x="240" y="266.0" class="lab" text-anchor="end">OH: 11 places with no reform</text><line x1="424.5" x2="577.5" y1="262.0" y2="262.0" class="rg"><title>OH: 11 places with no reform: observed 391; range 45–1,266, median 309</title></line><line x1="512.8" x2="512.8" y1="256.0" y2="268.0" class="med"/><circle cx="523.6" cy="262.0" r="5" class="in"><title>OH: 11 places with no reform: observed 391; range 45–1,266, median 309</title></circle><text x="240" y="290.0" class="lab" text-anchor="end">TX: 29 places with no reform</text><line x1="591.0" x2="657.1" y1="286.0" y2="286.0" class="rg"><title>TX: 29 places with no reform: observed 4,515; range 1,701–7,183, median 3,530</title></line><line x1="624.5" x2="624.5" y1="280.0" y2="292.0" class="med"/><circle cx="635.8" cy="286.0" r="5" class="in"><title>TX: 29 places with no reform: observed 4,515; range 1,701–7,183, median 3,530</title></circle><text x="8" y="320" class="grp">A new state (left out of the fit)</text><text x="240" y="338.0" class="lab" text-anchor="end">Oregon, from the other states' 7 places</text><line x1="530.8" x2="638.5" y1="334.0" y2="334.0" class="rg"><title>Oregon, from the other states' 7 places: observed 703; range 457–4,789, median 915 (86 places)</title></line><line x1="562.6" x2="562.6" y1="328.0" y2="340.0" class="med"/><circle cx="550.5" cy="334.0" r="5" class="in"><title>Oregon, from the other states' 7 places: observed 703; range 457–4,789, median 915 (86 places)</title></circle><text x="240" y="362.0" class="lab" text-anchor="end">Oregon 2018–25, blind (V9)</text><line x1="592.0" x2="652.3" y1="358.0" y2="358.0" class="rg old"><title>Oregon 2018–25, blind (V9): observed 1,753; range 1,738–6,469, median 2,658 (older D-038 values)</title></line><line x1="611.5" x2="611.5" y1="352.0" y2="364.0" class="med"/><circle cx="592.4" cy="358.0" r="5" class="in"><title>Oregon 2018–25, blind (V9): observed 1,753; range 1,738–6,469, median 2,658 (older D-038 values)</title></circle></svg></div>
+  <div class="key"><span><i class="rg"></i>model's P10–P90 range (grey: older values)</span><span>| median</span><span><i class="in"></i>actually built, inside</span><span><i class="out"></i>actually built, outside</span><span>2–4 unit buildings, log scale</span></div>
+  <div class="scroll"><table><thead><tr><th>Test</th><th>Built</th><th>Model median</th><th>Model range (P10–P90)</th><th>Result</th><th>Median ÷ built</th><th>Notes</th></tr></thead><tbody><tr><td>Wake County towns, 2019-2022</td><td>28</td><td>29</td><td>6–143</td><td>inside</td><td>1.0×</td><td>9 places</td></tr><tr><td>Franklin County, OH, 2016-2023</td><td>142</td><td>483</td><td>136–1,844</td><td>inside</td><td>3.4×</td><td>13 places</td></tr><tr><td>Minneapolis, 2017-2023</td><td>275</td><td>42</td><td>1–288</td><td>inside</td><td>0.2×</td><td>1 places</td></tr><tr><td>Twin Cities suburbs, 2021-2024</td><td>321</td><td>202</td><td>101–534</td><td>inside</td><td>0.6×</td><td>55 places</td></tr><tr><td>Houston, from 2024 (new to the fit)</td><td>21</td><td>0</td><td>0–30</td><td>inside</td><td>–</td><td>test A</td></tr><tr><td>Charlotte area, 2023–25 (blind)</td><td>119</td><td>104</td><td>89–172</td><td>inside</td><td>0.9×</td><td>older D-055 values</td></tr><tr><td>St. Paul, 2024–25 (blind, C4)</td><td>55</td><td>15</td><td>9–28</td><td>above</td><td>0.3×</td><td>C4, frozen 15 Nov</td></tr><tr><td>MN: 3 places with no reform</td><td>32</td><td>3</td><td>0–13</td><td>above</td><td>0.1×</td><td>C4</td></tr><tr><td>OH: 11 places with no reform</td><td>391</td><td>309</td><td>45–1,266</td><td>inside</td><td>0.8×</td><td>C4</td></tr><tr><td>TX: 29 places with no reform</td><td>4,515</td><td>3,530</td><td>1,701–7,183</td><td>inside</td><td>0.8×</td><td>C4</td></tr><tr><td>Oregon, from the other states' 7 places</td><td>703</td><td>915</td><td>457–4,789</td><td>inside</td><td>1.3×</td><td>86 places</td></tr><tr><td>Oregon 2018–25, blind (V9)</td><td>1,753</td><td>2,658</td><td>1,738–6,469</td><td>inside</td><td>1.5×</td><td>older D-038 values</td></tr></tbody></table></div>
+  <p class="note">Ranges are C4's (run 11, 20,000 draws), except Charlotte (frozen and scored blind with D-055's values) and Oregon's V9 row (frozen with D-038's). Counts are 2–4 unit buildings in Census permit data, or in county parcel rolls for the roll check.</p>
+</section>
+
+<section>
+  <div class="num-tag">Goal 1</div>
+  <h2>Estimating missing-middle buildings in a place <span class="verdict mixed">calibrated, wide</span></h2>
+  <ul>
+    <li><b>The ranges are honest.</b> Across every test, 78% of 136 places land inside their P10–P90 range. The no-reform baseline alone, scored held out on 468 places it never saw, lands inside 79% of the time.</li>
+    <li><b>Single places are hard.</b> The parcel-roll check passes (Wake, Franklin, Minneapolis all inside), but Franklin County built 142 against a median of 483 (3.4× too high) and Minneapolis built 275 against a median of 42 (6.5× too low), each just inside its range.</li>
+    <li><b>Why:</b> 34–44% of 2–4 unit buildings come in projects of 3 or more (run 13). Whether one big project lands in a place in five years decides its count, and nothing in our data can foresee that.</li>
+    <li><b>Blind tests:</b> Charlotte passed with the older D-055 values (119 built against 89–172). St. Paul, frozen with C4 before we looked, <b>missed</b>: 55 built in 2024–25 against 9–28 (median 15). C4 assumes the reform takes 4 years to reach half speed; St. Paul got there in about one. Post-hoc, C4's mature rate with a one-year ramp gives a median of 55 (<code>reports/v5-stpaul/</code>).</li>
+  </ul>
+</section>
+
+<section>
+  <div class="num-tag">Goal 2</div>
+  <h2>Projecting to a statewide total <span class="verdict mixed">totals inside, except Minnesota</span></h2>
+  <ul>
+    <li><b>Adding places up tightens the range</b> relative to the total, because one place's big project is offset by another's quiet year.</li>
+    <li><b>No-reform state totals:</b> Texas built 4,515 (range 1,701–7,183) and Ohio 391 (45–1,266), both inside. Minnesota's three places built 32 against a top of 13: a miss, on small numbers (Rochester alone built 20).</li>
+    <li><b>Not yet tested directly:</b> the statewide reform effect on its own. Every statewide number mixes the baseline (well tested) with the reform effect (weakly identified, below).</li>
+  </ul>
+</section>
+
+<section>
+  <div class="num-tag">Goal 3</div>
+  <h2>Predicting what a new state would build <span class="verdict mixed">one real test, passed</span></h2>
+  <ul>
+    <li><b>Oregon held out.</b> Fitted on the other states' 7 reforming places only, the model predicts Oregon's 86 places: median 915 (range 457–4,789) against 703 built. Inside, 1.3× high.</li>
+    <li><b>The other states can't serve as tests:</b> each has 1–3 reforming places, and Minnesota's and Ohio's built none in the window.</li>
+    <li><b>The earlier blind Oregon forecast (V9)</b>, frozen with D-038's values, was inside its range (1,753 built, 1,738–6,469) but 1.5× high and beat by "no reform". That was an older model; C4 hasn't had a blind new-state test, because Oregon is now in its fit.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="num-tag">The weak spot</div>
+  <h2>The reform's own effect isn't clearly detected <span class="verdict weak">weak</span></h2>
+  <ul>
+    <li>Held out, the model with a reform effect beats the same model with none by only 5.0 log points (SE 3.4), about 1.5 standard errors.</li>
+    <li>The placebo fails: moving each reform three years early gives a <i>larger</i> five-year rate (0.45 per 1,000 lots a year) than the real dates (0.27).</li>
+    <li>So the scenario's added homes rest on an effect the counts are consistent with but can't pin down. That is why θ's range spans about 150-fold, and why the tool shows wide ranges, not single numbers.</li>
+  </ul>
+</section>
+
+<section class="decision">
+  <div class="num-tag">What would sharpen this</div>
+  <h2>The ramp is the open question</h2>
+  <p>St. Paul says the effect arrives fast: C4's level with a ramp near one year fits it, and C4's own fit allows 1.0–6.0 years. Whether to move the ramp is Ben's call, and a new dated entry, because it would use St. Paul. Beyond that, the honest limits stay: the outcome counts 2–4 unit buildings only (a floor for the Handbook's 2–6), and clustering means single-place forecasts will stay wide.</p>
+</section>
+
+<footer>
+  <div>Built from results already on file; nothing was rerun and no permits were read. Sources: <code>reports/mm-d092/run11-tests-phi/</code>, <code>run12-types/</code>, <code>run13-projects/</code>, <code>reports/v5-charlotte/</code>, <code>reports/v9-oregon-d055/</code>. Page: <code>scripts/dev/mm_accuracy_page.py</code>.</div>
+</footer>
+</main>

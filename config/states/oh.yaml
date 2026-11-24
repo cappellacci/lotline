@@ -90,3 +90,48 @@ sources:
       2026-10-15 appraisal snapshots (1990 to now), with each issuing office's permit number and work
       description. ADU permits only (named description rules), outside Columbus; Columbus's own layer takes
       the flags by permit number. Not a complete record of new houses (about a tenth of BPS for Columbus).
+
+# Governments the Census permit survey files under a county but this state's own permit or parcel data
+# reports separately (WS-SCALE, Ben 2026-11-17). Written once from the jurisdictions table built
+# 2026-11-17 (rows with in_bps false); before then the build read them from the permit and parcel tables.
+# With the survey's places and the holdouts they make the jurisdictions list. Add a GEOID here when
+# `lotline unlisted --state OH` reports one your data uses.
+local_jurisdictions:
+  "3902179086": "Urbana township"
+
+# Named adapter rules (WS-SCALE task 8, 2026-11-17): judgments the Ohio adapters apply, kept here so they can be
+# read and varied without reading code. Values are unchanged from the constants they replace. No sensitivity
+# range has been set for these yet; each `assumption` says so.
+rules:
+  district_jurisdiction_share:
+    value: 0.95
+    unit: share of a taxing district's parcels
+    what: >-
+      A permit or parcel with no match in the parcel roll takes its taxing district's jurisdiction when at
+      least this share of the district's parcels lie in one jurisdiction; otherwise it is dropped.
+    assumption: >-
+      Districts this concentrated are effectively one jurisdiction. No range set; at 0.95 Franklin drops 50-280
+      eligible parcels a year (data_provenance oh_parcels).
+    source: "Adapter choice, OH S1 (commit 8cd357bf, 2026-10-23); no outside source"
+    used_by: [franklin_permits, montgomery_permits, oh_parcels]
+  adu_repeat_days:
+    value: 730
+    unit: days
+    what: >-
+      A parcel gets at most one ADU in any this-many days: a revision or a permit re-issued after expiring is
+      the same unit, not a new one.
+    assumption: >-
+      Re-issues fall within two years and a second real ADU on the same lot within two years is rare. No range
+      set.
+    source: "Adapter choice, OH S1 (commit 8cd357bf, 2026-10-23); no outside source"
+    used_by: [franklin_permits, montgomery_permits]
+  county_min_share:
+    value: 0.99
+    unit: share of a jurisdiction's single-family houses
+    what: >-
+      A jurisdiction gets a county's yearly parcel rolls (Franklin, Montgomery) only when at least this share of
+      its single-family houses lie in that county; others keep one roll and D-035's scaled history.
+    assumption: >-
+      A roll covering 99% of a place's houses stands for the whole place. No range set.
+    source: "Adapter choice, Franklin rolls (commit 3d2f526b, 2026-10-27); no outside source"
+    used_by: [oh_parcels]

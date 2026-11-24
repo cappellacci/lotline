@@ -1,0 +1,140 @@
+[  164s] setup: 93 fit places
+[  164s] LOSO MN: 1 places
+[  164s] LOSO NC: 2 places
+[  164s] LOSO OH: 1 places
+[  164s] LOSO TX: 3 places
+[  166s] LOSO OR: 86 places
+[  166s] test C: 43 places
+[  326s] placebo r5 0.00045 (0.00006-0.00350) vs main 0.00027
+[  329s] test B: Wake obs 28.0 P10-P90 6-143, Franklin obs 142.0 P10-P90 136-1844, Minneapolis obs 275.0 P10-P90 1-286, Met Council obs 321.0 P10-P90 102-554
+{
+ "models": {
+  "M": {
+   "test_a": {
+    "places": 1,
+    "share_inside": 1.0,
+    "median_ratio": Infinity,
+    "pass": false
+   },
+   "test_c": {
+    "places": 43,
+    "share_inside": 0.7906976744186046,
+    "states_missed": [
+     "MN"
+    ],
+    "pass": false
+   },
+   "test_b": {
+    "areas_inside": {
+     "Wake": true,
+     "Franklin": true,
+     "Minneapolis": true
+    },
+    "pass": true
+   },
+   "loso": {
+    "verdicts": {
+     "MN": "useful",
+     "NC": "inside only",
+     "OH": "useful",
+     "TX": "inside only",
+     "OR": "useful"
+    },
+    "failed_states": [],
+    "pass": true
+   },
+   "place_coverage": {
+    "places": 136,
+    "coverage": 0.8382352941176471,
+    "flag": false
+   },
+   "tests_a_c_passed": 1
+  },
+  "C4": {
+   "test_a": {
+    "places": 1,
+    "share_inside": 1.0,
+    "median_ratio": Infinity,
+    "pass": false
+   },
+   "test_c": {
+    "places": 43,
+    "share_inside": 0.7906976744186046,
+    "states_missed": [
+     "MN"
+    ],
+    "pass": false
+   },
+   "test_b": {
+    "areas_inside": {
+     "Wake": true,
+     "Franklin": true,
+     "Minneapolis": true
+    },
+    "pass": true
+   },
+   "loso": {
+    "verdicts": {
+     "MN": "useful",
+     "NC": "inside only",
+     "OH": "useful",
+     "TX": "inside only",
+     "OR": "useful"
+    },
+    "failed_states": [],
+    "pass": true
+   },
+   "place_coverage": {
+    "places": 136,
+    "coverage": 0.7794117647058824,
+    "flag": false
+   },
+   "tests_a_c_passed": 1
+  }
+ },
+ "placebo": {
+  "placebo_high": 0.003498051825017039,
+  "main_r5": 0.0002680245368752346,
+  "pass": false,
+  "placebo_r5": 0.00045335272652226056,
+  "placebo_low": 5.9337970933058153e-05,
+  "placebo_places": 90
+ },
+ "tests_passed": {
+  "M": 1,
+  "C4": 1
+ },
+ "selection": {
+  "chosen": "C4",
+  "table": [
+   {
+    "delta": 1.0468758278736663,
+    "paired_se": 0.21141817800210178,
+    "n": 93,
+    "model": "C4",
+    "beats_by_margin": true,
+    "tests_passed": 1,
+    "tests_passed_main": 1,
+    "replaces": true
+   }
+  ]
+ },
+ "new_places_test_a": {
+  "Houston city": "D-059 T 2024 -> D-092 2024 S"
+ },
+ "unchanged_non_oregon_places": {
+  "St. Louis Park city": 2025,
+  "Garner town": 2023,
+  "Wilson city": 2013,
+  "Euclid city": 2025,
+  "Austin city": 2024,
+  "Lewisville city": 2023
+ },
+ "test_c_places": 43,
+ "data_tier": "not run (see README)",
+ "kappa": 0.0,
+ "phi": 13.632980572972555,
+ "seed": 20261112,
+ "draws": 20000,
+ "seconds": 329
+}

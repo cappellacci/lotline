@@ -1,0 +1,10 @@
+### LB-NNN · 2026-11-17 · WS-MN · Minneapolis permits: repair work on 2–4 unit buildings no longer typed as new 2–4 unit buildings (#450)
+
+- **Question:** Why did the Minneapolis permit table hold 991 `U3_4` and 5,048 `DTQ` permits when almost none added homes, and what should those permits be typed as?
+- **Answer:** the adapter typed every permit by `occupancyType`, the type of the building the work is on. Roof, remodel, addition and misc permits on existing fourplexes and two/three-family houses therefore came out as new 2–4 unit buildings. Now `TFD`/`3to4` give `DTQ`/`U3_4` only to new construction (`dwellingUnitsNew` > 0 or workType `New`) and to wrecking permits (the building removed); all other work is `OTHER`. The ADU rule is unchanged.
+- **Before → after** (offline rebuild of the 2026-11-11 snapshot, 130,726 rows): `U3_4` 991 → 126, `DTQ` 5,048 → 145, `OTHER` 13,020 → 18,788; no other type changed.
+- **Outputs:** `src/lotline/adapters/states/mn/mpls_permits.py` (v1.1, provenance text), `tests/states/mn/test_mpls_permits.py` (10 new cases), fixture notes in `tests/states/mn/fixtures/mpls_permits_synthetic.csv`, the Minneapolis row of `docs/data_provenance.md`.
+- **Other adapters checked:** Rochester types from the Census construction code and only for `New` permits (not affected). Met Council `DTQ` is the survey's housing type; the non-gain `DTQ` rows are removals and conversions (flagged) plus 4 `RE` remodels over $1M with 0 units (not the same bug).
+- **Not changed (noted for the owners):** `SFD`, `TH` and `MF5` still follow occupancy for repair work (MF5: 6,203 of 6,240 rows add no unit); downstream readers that count `MF5` rows as new buildings should filter `units_new` > 0.
+- **Follow-up:** the missing-middle session reruns run 13's Minneapolis row (D-092) once this is on `main`.
+- **What Claude did and how it was checked:** read the adapter and the cached processed table, wrote the rule and tests, rebuilt offline (no downloads) and compared before/after by `building_type_std` and by permit class; `ruff check`, `ruff format --check`, `compliance_check.py` (0 FAIL) and the full pytest suite were run.

@@ -1,0 +1,98 @@
+geoid,name,state,role,pop_2020,route,T,post_years
+2757220,St. Louis Park city,MN,fit,50010,local,2025,1
+2758000,St. Paul city,MN,fit,311527,local,2024,2
+3725480,Garner town,NC,fit,31159,local,2023,3
+3774540,Wilson city,NC,fit,47851,local,2013,13
+3925704,Euclid city,OH,fit,49692,local,2025,1
+41005,Clackamas County Unincorporated Area,OR,fit,,state_required,2022,4
+4101000,Albany city,OR,fit,56472,state_required,2022,4
+4103050,Ashland city,OR,fit,21360,state_required,2021,5
+4103150,Astoria city,OR,fit,10181,state_required,2021,5
+4103650,Baker City city,OR,fit,10099,state_required,2021,5
+41051,Multnomah County Part 2 Unincorporated Area,OR,fit,,state_required,2022,4
+4105350,Beaverton city,OR,fit,97494,state_required,2022,4
+4105800,Bend city,OR,fit,99178,state_required,2022,4
+41067,Washington County Unincorporated Area,OR,fit,,state_required,2022,4
+4107200,Boardman city,OR,fit,3828,local,2025,1
+4108650,Brookings city,OR,fit,6744,local,2025,1
+4110750,Canby city,OR,fit,18171,state_required,2021,1
+4112400,Central Point city,OR,fit,18997,state_required,2021,5
+4115250,Coos Bay city,OR,fit,15985,state_required,2021,5
+4115550,Cornelius city,OR,fit,12694,state_required,2022,4
+4115800,Corvallis city,OR,fit,59922,state_required,2022,4
+4115950,Cottage Grove city,OR,fit,10574,state_required,2021,5
+4116950,Creswell city,OR,fit,5641,local,2025,1
+4117700,Dallas city,OR,fit,16854,state_required,2021,5
+4118250,Dayton city,OR,fit,2678,local,2025,1
+4121050,Dundee city,OR,fit,3238,local,2025,1
+4121250,Durham city,OR,fit,1944,state_required,2022,4
+4121550,Eagle Point city,OR,fit,9686,local,2025,1
+4123800,Estacada city,OR,fit,4356,local,2025,1
+4123850,Eugene city,OR,fit,176654,state_required,2022,4
+4124250,Fairview city,OR,fit,10424,state_required,2022,4
+4126050,Florence city,OR,fit,9396,local,2024,2
+4126200,Forest Grove city,OR,fit,26225,state_required,2022,4
+4130550,Grants Pass city,OR,fit,39189,state_required,2022,4
+4131250,Gresham city,OR,fit,114247,state_required,2022,4
+4132050,Happy Valley city,OR,fit,23733,state_required,2022,4
+4132550,Harrisburg city,OR,fit,3652,local,2025,1
+4133700,Hermiston city,OR,fit,19354,state_required,2021,5
+4134100,Hillsboro city,OR,fit,106447,state_required,2022,4
+4134900,Hood River city,OR,fit,8313,local,2025,1
+4136150,Independence city,OR,fit,9828,local,2023,3
+4137000,Jacksonville city,OR,fit,3020,local,2025,1
+4138000,Junction City city,OR,fit,6787,local,2025,1
+4138500,Keizer city,OR,fit,39376,state_required,2022,4
+4139150,King City city,OR,fit,5184,state_required,2022,4
+4140300,Lafayette city,OR,fit,4423,local,2025,1
+4140350,La Grande city,OR,fit,13026,state_required,2021,5
+4140550,Lake Oswego city,OR,fit,40731,state_required,2022,4
+4141650,Lebanon city,OR,fit,18447,state_required,2021,5
+4142600,Lincoln City city,OR,fit,9815,local,2022,4
+4145000,McMinnville city,OR,fit,34319,state_required,2022,4
+4147000,Medford city,OR,fit,85824,state_required,2022,4
+4148300,Millersburg city,OR,fit,2919,local,2025,1
+4148650,Milwaukie city,OR,fit,21119,state_required,2022,4
+4149450,Molalla city,OR,fit,10228,state_required,2021,1
+4149550,Monmouth city,OR,fit,11110,state_required,2021,5
+4150150,Mount Angel city,OR,fit,3392,local,2025,1
+4152100,Newberg city,OR,fit,25138,state_required,2022,4
+4152450,Newport city,OR,fit,10256,state_required,2021,5
+4153000,North Bend city,OR,fit,10317,state_required,2021,5
+4154100,Oakridge city,OR,fit,3206,local,2025,1
+4154900,Ontario city,OR,fit,11645,state_required,2021,5
+4155200,Oregon City city,OR,fit,37572,state_required,2022,4
+4157150,Pendleton city,OR,fit,17107,state_required,2021,5
+4157450,Philomath city,OR,fit,5350,local,2025,1
+4157500,Phoenix city,OR,fit,4475,local,2025,1
+4159000,Portland city,OR,fit,652503,state_required,2022,4
+4159850,Prineville city,OR,fit,10736,state_required,2021,1
+4161200,Redmond city,OR,fit,33274,state_required,2022,4
+4161300,Reedsport city,OR,fit,4310,local,2025,1
+4164600,St. Helens city,OR,fit,13817,state_required,2021,5
+4164900,Salem city,OR,fit,175535,state_required,2022,4
+4165250,Sandy city,OR,fit,12612,state_required,2021,5
+4165950,Seaside city,OR,fit,7115,local,2025,1
+4167100,Sherwood city,OR,fit,20450,state_required,2022,4
+4167650,Silverton city,OR,fit,10484,state_required,2021,5
+4167950,Sisters city,OR,fit,3064,local,2025,1
+4169600,Springfield city,OR,fit,61851,state_required,2022,4
+4171950,Sweet Home city,OR,fit,9828,local,2023,3
+4172500,Talent city,OR,fit,6282,local,2025,1
+4173650,Tigard city,OR,fit,54539,state_required,2022,4
+4174000,Toledo city,OR,fit,3546,local,2025,1
+4174850,Troutdale city,OR,fit,16300,state_required,2022,4
+4174950,Tualatin city,OR,fit,27942,state_required,2022,4
+4175650,Umatilla city,OR,fit,7363,local,2025,1
+4177050,Veneta city,OR,fit,5214,local,2025,1
+4178900,Warrenton city,OR,fit,6277,local,2025,1
+4180150,West Linn city,OR,fit,27373,state_required,2022,4
+4182800,Wilsonville city,OR,fit,26664,state_required,2022,4
+4183750,Woodburn city,OR,fit,26013,state_required,2022,4
+4183950,Wood Village city,OR,fit,4387,state_required,2022,4
+4805000,Austin city,TX,fit,961855,local,2024,2
+4835000,Houston city,TX,fit,2304580,local,2024,2
+4842508,Lewisville city,TX,fit,111822,local,2023,3
+2743000,Minneapolis city,MN,test,429954,local,2020,6
+37063,Durham County Unincorporated Area,NC,test,,local,2020,6
+3719000,Durham city,NC,test,283506,local,2020,6

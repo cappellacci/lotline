@@ -25,6 +25,7 @@ def permits() -> pd.DataFrame:
     return sp.to_permits(_raw()).set_index("permit_id")
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_conforms_registered_and_blind(permits):
     assert_conforms(permits.reset_index(), "permits")
     assert "stpaul_permits" in registry.sources_for("MN")
@@ -33,6 +34,7 @@ def test_conforms_registered_and_blind(permits):
     assert permits.issue_date.max() < pd.Timestamp("2024-01-01")
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_held_out_and_unissued_rows_are_gone(permits):
     assert {"stp-20 900008", "stp-20 900009", "stp-20 900010"}.isdisjoint(permits.index)
     # 03:00 UTC on 2024-01-01 is still 2023-12-31 in St. Paul: kept

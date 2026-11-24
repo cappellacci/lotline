@@ -1,0 +1,18 @@
+# Fees rule agent: assumptions the helpers use that are not in config/params/ (yet).
+# Each has a source. Proposed to move into config/params/fees.yaml once Ben approves (see DESIGN.md).
+# Prototype sizes and hard cost are NOT here: they are read from config/params/proforma.yaml.
+
+bedrooms_per_unit:
+  value: {SFD: 3, U2: 2, U3_4: 2, ADU: 1, OTHER: 3}
+  source: "Judgment for per-bedroom fees (Brunswick County, NC water/sewer): a 3-bedroom house and 2-bedroom plex units, as the 2026-11-09 plex-utility pass assumed (logbook.d/2026-11-09-ws-fees-plex-utility.md); a 1-bedroom ADU"
+  notes: "Used only for basis_kind per_bedroom. Every row priced this way says so in notes."
+
+units_per_building:
+  value: {SFD: 1, U2: 2, U3_4: 4, ADU: 1, OTHER: 1}
+  source: "Building types in schemas.py; U3_4 is priced as a fourplex, as scripts/dev/ordinance_records.py does (the model's missing-middle prototype)"
+
+agree_tolerance:
+  value: {relative: 0.005, absolute_usd: 1.0}
+  source: "Choice: coders agree when per-unit amounts differ by at most 0.5% or $1 (rounding in schedules)"
+
+# Per-place budgets and request spacing are the shared core's (common.budget DEFAULT_LIMITS, common.fetch HOST_INTERVAL).

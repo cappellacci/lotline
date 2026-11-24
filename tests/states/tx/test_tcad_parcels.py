@@ -185,12 +185,13 @@ def test_load_reads_registered_zip_and_applies_snapshot_holdout(tmp_path, monkey
 
 def test_crosswalks_are_sourced():
     lu = pd.read_csv(tp.LAND_USE_CROSSWALK, dtype=str)
-    assert lu.source_url.str.startswith("https://").all() and lu.ptad_code.is_unique
+    assert lu.source_url.str.startswith("https://").all() and lu.code.is_unique
     from lotline.schemas import LAND_USES
 
     assert lu.land_use_std.isin(LAND_USES).all()
     ent = pd.read_csv(tp.ENTITY_CROSSWALK, dtype=str)
-    assert ent.jurisdiction_geoid.str.fullmatch(r"48\d{5}").all()
+    ent = ent[ent["source"] == "tcad"]
+    assert len(ent) and ent.geoid.str.fullmatch(r"48\d{5}").all()
 
 
 def test_registered_as_tx_source():

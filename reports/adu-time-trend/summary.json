@@ -1,0 +1,258 @@
+{
+  "fit_set": {
+    "places": 64,
+    "place_years": 395
+  },
+  "test_d_set": {
+    "early_fit_places": 38,
+    "early_fit_place_years": 149,
+    "forecast_places": 37,
+    "by_state": {
+      "MN": 21,
+      "NC": 10,
+      "OR": 4,
+      "TX": 2
+    },
+    "late_place_years": 178
+  },
+  "ref_year": 2020,
+  "split_last_early_year": 2020,
+  "decisions": {
+    "A vs A+T": {
+      "extrapolation": "flat",
+      "continue_over_flat": {
+        "gain": -32.457774224136934,
+        "se": 11.428503969347814,
+        "places": 37
+      },
+      "test_d_gain_t_over_base": {
+        "gain": 4.213965549386087,
+        "se": 8.148684606259442,
+        "places": 37
+      },
+      "base_over_persistence": {
+        "gain": -4.8184018491238785,
+        "se": 10.987010532401722
+      },
+      "gamma_full": {
+        "gamma": -0.12823067958999454,
+        "low": -0.13624675507876088,
+        "high": -0.12022389569551478
+      },
+      "useful_states_by_tier": {
+        "base": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        },
+        "T": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        }
+      },
+      "tests_passed": {
+        "base": 1,
+        "T": 1
+      },
+      "decision": {
+        "trend": false,
+        "reason": "test D gain 4.2 is not above 2 SE (16.3)"
+      }
+    },
+    "A\u2032 vs A\u2032+T": {
+      "extrapolation": "flat",
+      "continue_over_flat": {
+        "gain": -33.622239642377686,
+        "se": 11.227938792506896,
+        "places": 37
+      },
+      "test_d_gain_t_over_base": {
+        "gain": 0.6862277426319436,
+        "se": 7.625657827791875,
+        "places": 37
+      },
+      "base_over_persistence": {
+        "gain": -8.686472801288572,
+        "se": 12.077115414893308
+      },
+      "gamma_full": {
+        "gamma": -0.1281461792637296,
+        "low": -0.13616237082996685,
+        "high": -0.12013922966886681
+      },
+      "useful_states_by_tier": {
+        "base": {
+          "0": 1,
+          "1": 1,
+          "2": 1
+        },
+        "T": {
+          "0": 1,
+          "1": 1,
+          "2": 1
+        }
+      },
+      "tests_passed": {
+        "base": 1,
+        "T": 0
+      },
+      "decision": {
+        "trend": false,
+        "reason": "test D gain 0.7 is not above 2 SE (15.3); fewer of tests A-B passed (0 vs 1)"
+      }
+    }
+  },
+  "claim_tier": {
+    "A": null,
+    "A+T": null,
+    "A\u2032": null,
+    "A\u2032+T": null
+  },
+  "tests": {
+    "A": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": true,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": false,
+        "TX": null,
+        "OR": null
+      }
+    },
+    "A+T": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": true,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": false,
+        "TX": null,
+        "OR": null
+      }
+    },
+    "A\u2032": {
+      "A": {
+        "MN": false,
+        "NC": true,
+        "OH": null,
+        "TX": false,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": false,
+        "TX": null,
+        "OR": null
+      }
+    },
+    "A\u2032+T": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": false,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": false,
+        "TX": null,
+        "OR": null
+      }
+    }
+  },
+  "gamma_without_state": {
+    "A+T": {
+      "MN": [
+        -0.12774457877390688,
+        -0.13609725287960572,
+        -0.11946764878637187
+      ],
+      "NC": [
+        -0.1452565116530528,
+        -0.15420951689749035,
+        -0.1363246494252856
+      ],
+      "OH": [
+        -0.12819048996131527,
+        -0.13620679858100848,
+        -0.12018341923835797
+      ],
+      "TX": [
+        -0.14012626788938004,
+        -0.14873724571417593,
+        -0.13152799026525727
+      ],
+      "OR": [
+        -0.04381522935807802,
+        -0.05720254075437339,
+        -0.030397638671075783
+      ]
+    },
+    "A\u2032+T": {
+      "MN": [
+        -0.12769966284806836,
+        -0.13605132196697867,
+        -0.11942352385330077
+      ],
+      "NC": [
+        -0.14519189592938025,
+        -0.1541449591480104,
+        -0.13625999106475145
+      ],
+      "OH": [
+        -0.12809219958269338,
+        -0.13610853340541856,
+        -0.12008510624174369
+      ],
+      "TX": [
+        -0.14008677749417175,
+        -0.1486978186340907,
+        -0.1314884353001765
+      ],
+      "OR": [
+        -0.043535278902121624,
+        -0.056924495229792864,
+        -0.03011577869998406
+      ]
+    }
+  },
+  "outlook_rule_age": {
+    "delta": -0.050648868492878335,
+    "delta_interval": [
+      -0.06399505218207391,
+      -0.037325472645468497
+    ],
+    "loglik": -1332.2857346695012,
+    "lr_vs_a_prime": 23.42010328983679,
+    "lr_vs_a_prime_t": -636.3081574990817
+  },
+  "base_check_vs_d084": {
+    "A": {
+      "theta": 0.0007562989321754987,
+      "alpha": 1.9183845907457209,
+      "beta": 0.0,
+      "loglik": -1347.7126927902923
+    },
+    "A\u2032": {
+      "theta": 0.0006542693482430439,
+      "alpha": 1.5576175678277986,
+      "beta": -0.545935421080832,
+      "loglik": -1343.9957863144195
+    }
+  }
+}

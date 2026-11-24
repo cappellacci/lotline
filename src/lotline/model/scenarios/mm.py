@@ -1,9 +1,9 @@
 """Handbook missing-middle scenario: 2-6 homes in three stories allowed by right on every single-family-zoned
 parcel, setbacks and coverage not binding (Handbook benchmark; analysis plan D-063, approved 2026-11-08).
 
-For each place i and scenario year t = 1 … 5, with the fitted D-038 model (`mm_hazard.yaml`, D-055 values):
+For each place i and scenario year t = 1 … 5, with the fitted model (`mm_hazard.yaml`, D-092's C4 values):
 
-    added buildings_it ~ Poisson(θ × ramp(t − 0.5; half) × u_i × E_i × (1 − d_i) × F(PCR_i) / F(1))
+    added buildings_it ~ Poisson(θ × ramp(t − 0.5; half) × u_i × E_i × (1 − d_i) × F(PCR_i) / F(1) × g_it)
     teardowns_it       ~ Binomial(added buildings_it, s × house share_i)
     added homes_it     = added buildings_it × homes per building − teardowns_it
 
@@ -11,6 +11,9 @@ For each place i and scenario year t = 1 … 5, with the fitted D-038 model (`mm
   fitted value; D-062 showed that θ's interval with the ramp held already carries the five-year range.
 - **u_i:** the place's multiplier, Gamma(mean 1, variance α), from a stream keyed by (seed, geoid), as in the
   backtests (`calibrate_mm.predict_places`).
+- **g_it:** the year's lumpiness, Gamma(mean 1, variance 1/φ), one per place, year and draw, so each year's
+  count is negative binomial (variance mean + mean²/φ) as in D-092's fit (`mm_year_spread_phi`; builders put
+  up 2-4 unit buildings in clusters, run 13). φ is held at its value; with no φ the count is Poisson.
 - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the roll nearest the origin, made
   non-overlapping as the ADU scenario does (D-020).
 - **d_i:** the dose of the rules in force on `baseline.rules_as_of` (31 December of the window's first
@@ -32,6 +35,11 @@ For each place i and scenario year t = 1 … 5, with the fitted D-038 model (`mm
 
 Every result is a range over `mm_scenario_draws` draws: P10/P50/P90 and the mean of the statewide sum. The
 baseline cancels in the added homes and is the baseline module's. Nothing is fitted here.
+
+**Fast-ramp sensitivity (D-100, pre-registered 2026-11-17):** `run(..., ramp="fast")` uses
+`mm_ramp_half_years_fast` (0.5 years, the fitted ramp of places that adopted on their own) instead of
+`mm_ramp_half_years` (C4's 4.0). Every other value, draw and seed is the main run's, so the two differ only by
+the ramp. It is shown next to the main result, never in its place.
 """
 
 from __future__ import annotations
@@ -76,9 +84,22 @@ def draw_params(n: int, seed: int, sp: Mapping | None = None) -> pd.DataFrame:
     return pd.DataFrame(out)
 
 
+RAMPS = {"main": "mm_ramp_half_years", "fast": "mm_ramp_half_years_fast"}
+
+
+def ramp_half(sp: Mapping, ramp: str = "main", end: str = "value") -> float:
+    """Half-way point for the main result or the fast-ramp sensitivity (D-100); `end` picks value/low/high."""
+    if ramp not in RAMPS:
+        raise ValueError(f"ramp must be one of {sorted(RAMPS)}, not {ramp!r}")
+    return float(getattr(sp[RAMPS[ramp]], end))
+
+
 def year_shape(half: float, slope: float, horizon: int = HORIZON) -> np.ndarray:
     """Share of the mature hazard in each scenario year: ramp at mid-year ages 0.5, 1.5, …"""
     return ramp(np.arange(horizon) + 0.5, half, slope)
+
+
+REMAINDER = "county_unincorporated"  # a county remainder: unincorporated land the county itself zones
 
 
 def dose_pools(places: pd.DataFrame, min_coded: int) -> dict:
@@ -86,13 +107,31 @@ def dose_pools(places: pd.DataFrame, min_coded: int) -> dict:
     it has at least `min_coded`, else every coded place in the state; empty if none is coded (then d = 0).
 
     D-067: the pool holds each coded place's `pool_dose` (its dose at the origin) where that column is
-    given, so a place's own 2026-27 rule changes its own dose but not what uncoded places draw."""
+    given, so a place's own 2026-27 rule changes its own dose but not what uncoded places draw.
+
+    D-102 option (b) (Ben, 2026-11-24): with a `kind` column and at least `min_coded` coded county
+    remainders, a "remainder" pool holds their doses; an uncoded remainder draws from it instead of its size
+    band (`remainder_pool_key`), since unincorporated land is zoned by the county, not by cities its size."""
     col = "pool_dose" if "pool_dose" in places else "dose"
     coded = places[places[col].notna()]
     every = coded[col].to_numpy(float)
-    return {
+    pools = {
         b: (g[col].to_numpy(float) if len(g) >= min_coded else every) for b, g in coded.groupby("band")
     } | {"all": every}
+    if "kind" in coded:
+        rem = coded[coded["kind"] == REMAINDER]
+        if len(rem) >= min_coded:
+            pools["remainder"] = rem[col].to_numpy(float)
+    return pools
+
+
+def remainder_pool_key(kind, band, pools: dict):
+    """The pool an uncoded place draws from (D-102 option (b), Ben 2026-11-24): a county remainder draws from
+    "remainder" where that pool exists, else from the smallest size band (0), whatever its population, since
+    county land is zoned more like small towns than like cities its size; any other place, its own band."""
+    if kind != REMAINDER:
+        return band
+    return "remainder" if "remainder" in pools else 0
 
 
 def _place_stream(seed: int, geoid: str) -> np.random.Generator:
@@ -121,14 +160,15 @@ def simulate(
     seed: int,
     min_coded: int = 5,
     horizon: int = HORIZON,
+    phi: float | None = None,
 ) -> Result:
     """Joint draws of the added buildings, homes and teardowns (module docstring).
 
     `places`: geoid, eligible, dose (NaN = no coded rule), band, f_ratio, house_share; optional data_tier
     (default 3) and f_share (F(PCR), for the funnel's pencil-out stage; default f_ratio). `draws`: one row per
     draw (theta, alpha, units, teardown_scale; `draw_params`). Every place shares a draw's parameters; its u,
-    its drawn dose (if uncoded) and its counts come from its own keyed stream, so a place draws alike
-    whichever places it is run with.
+    its drawn dose (if uncoded), its yearly lumpiness g (if `phi` is given) and its counts come from its own
+    keyed stream, so a place draws alike whichever places it is run with.
     """
     n = len(draws)
     shape = year_shape(half, slope, horizon)
@@ -143,12 +183,14 @@ def simulate(
         r = _place_stream(seed, p.geoid)
         u = r.gamma(1 / al, al)
         if pd.isna(p.dose):
-            pool = pools.get(p.band, pools["all"])
+            pool = pools.get(remainder_pool_key(getattr(p, "kind", None), p.band, pools), pools["all"])
             d = r.choice(pool, size=n) if len(pool) else np.zeros(n)
         else:
             d = np.full(n, float(p.dose))
         gap = np.clip(1.0 - d, 0.0, 1.0)
         mu = (th * u * float(p.eligible) * gap * float(p.f_ratio))[:, None] * shape[None, :]
+        if phi is not None:
+            mu = mu * r.gamma(phi, 1.0 / phi, size=mu.shape)
         b = r.poisson(mu).astype(float)
         share = np.clip(scale * float(p.house_share), 0.0, 1.0)
         t = r.binomial(b.astype(np.int64), share[:, None]).astype(float)
@@ -195,14 +237,30 @@ def current_dose(rows: pd.DataFrame, as_of: pd.Timestamp, coverage, blanks, perm
                 for r in live.to_dict("records")), default=0.0)  # fmt: skip
 
 
-def _nearest(elig: pd.DataFrame, theme: str, origin: int) -> pd.DataFrame:
-    """Per jurisdiction, the newest roll <= origin, else the earliest later one (as
-    `adu.places_from_store`)."""
-    from lotline.build import eligible as eligible_rule
+# `place_inputs` columns the scenario reads: place descriptors and the missing-middle parcel columns (`_mm`)
+PLACE_COLS = ["name", "kind", "county_geoid", "in_bps", "pop_2020", "data_tier"]
+MM_PARCEL_COLS = [
+    "eligible_parcels",
+    "eligible_parcels_reported",
+    "overlap_removed",
+    "parcels_year",
+    "parcels_after_origin",
+    "denominator_source",
+    "denominator_quality",
+]
 
-    e = elig[(elig["theme"] == theme) & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
-    e = e.assign(after=e["year"] > origin, gap=(e["year"] - origin).abs())
-    return e.sort_values(["after", "gap"]).groupby("jurisdiction_geoid").first().reset_index()
+
+def place_inputs_at(state: str, store, origin: int) -> pd.DataFrame:
+    """The `place_inputs` rows for `origin` (built by `lotline fetch --source place_inputs`). If the table is
+    missing, or has no row for `origin`, it is built here for that year from the same processed tables."""
+    from lotline.build import place_inputs
+
+    pin = store.read(state, place_inputs.TABLE)
+    if pin is not None:
+        pin = pin[pin["year"] == origin]
+    if pin is None or pin.empty:
+        pin = place_inputs.build(state, store, [origin])
+    return pin.reset_index(drop=True)
 
 
 def house_share(parcels: pd.DataFrame) -> float:
@@ -229,11 +287,12 @@ def house_shares(state: str, store) -> pd.Series:
 def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     """One row per jurisdiction with missing-middle eligible parcels: every input `simulate` needs.
 
-    Reads processed, holdout-filtered tables only: eligible parcels, jurisdictions, coded reforms, ACS rent
-    and the market series. No permits are read (D-063 choice 4).
+    Per-place inputs (eligible parcels net of the D-020 overlap, house share, size band, ACS rent) come from
+    `place_inputs` at `year == origin` (WS-SCALE); the dose, price-to-cost ratio and feasible share are
+    computed here. Reads processed, holdout-filtered tables only; no permits (D-063 choice 4).
     """
     from lotline.config import load_state
-    from lotline.model import baseline, hazard, money, rule_tags
+    from lotline.model import baseline, hazard, rule_tags
     from lotline.model import estimate_mm as emm
     from lotline.model.scenarios import adu
 
@@ -242,18 +301,13 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     margin = load_params("proforma")["developer_margin"].value
     sigma = sp["mm_feasibility_dispersion"].value
     permit_grade = sp["mm_dose_grade_permit"].value
-    elig = store.read(state, "eligible_parcels")
-    mm_e = _nearest(elig, "missing_middle", origin).rename(
-        columns={"jurisdiction_geoid": "geoid", "year": "parcels_year", "after": "parcels_after_origin"}
-    )
-    juris = store.read(state, "jurisdictions")
-    places = mm_e.drop(columns="gap").merge(
-        juris[["geoid", "name", "kind", "county_geoid", "in_bps", "pop_2020"]], on="geoid", how="left"
-    )
-    places = places[places["eligible_parcels"].fillna(0) > 0].reset_index(drop=True)
-    places = adu.non_overlapping(places, juris, adu._county_shares(state, store, places))
+    pin = place_inputs_at(state, store, origin)
+    mm_cols = {f"{c}_mm": c for c in MM_PARCEL_COLS}
+    cols = ["geoid", *PLACE_COLS, *mm_cols, "house_share", "size_band", "acs_geo", "rent"]
+    places = pin.loc[pin["eligible_parcels_reported_mm"].fillna(0) > 0, cols].rename(columns=mm_cols)
+    places = places.sort_values("geoid").reset_index(drop=True)
     places["eligible"] = places["eligible_parcels"].astype(float)
-    hs = places["geoid"].map(house_shares(state, store))
+    hs = places.pop("house_share")
     # ACS-fallback denominators count houses only (no vacant lots), so their house share is 1
     acs_only = ~places["denominator_source"].isin(adu.PARCEL_SOURCES) & hs.isna()
     places["house_share_source"] = np.where(
@@ -261,8 +315,8 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     )
     places["house_share"] = hs.where(~acs_only, 1.0).fillna(hs.median()).fillna(1.0)
 
-    reforms = {st: rule_tags.apply(adu.load_reforms(st)) for st in adu.REFORM_STATES}
-    every = pd.concat([r.assign(state=st) for st, r in reforms.items()], ignore_index=True)
+    reforms = {st: rule_tags.apply(r) for st, r in adu.reforms_with(state).items()}
+    every = pd.concat([r.assign(state=st) for st, r in adu.pooled_states(reforms).items()], ignore_index=True)
     blanks = emm.blank_shares(every[every["status"] == "in_force"])
     ref = reforms[state.upper()]
     mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]
@@ -281,15 +335,9 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
         if g in coded else np.nan
         for g in places["geoid"]
     ]  # fmt: skip
-    pop = pd.to_numeric(places["pop_2020"], errors="coerce").fillna(0)
-    places["band"] = adu.size_band(pop, (pa["adu_rule_band_small_max_pop"], pa["adu_rule_band_mid_max_pop"]))
+    places = places.rename(columns={"size_band": "band"})
 
-    market = store.read(state, "market_geo_year")
-    cpi = money.index_by_year(market, "cpi_u")
-    ci = hazard.cost_index_by_year(market)
-    places["acs_geo"] = places["kind"].map(adu.ACS_PREFIX) + ":" + places["geoid"]
-    acs = adu.acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
-    places = places.merge(acs[["rent"]], left_on="acs_geo", right_index=True, how="left")
+    ci = hazard.cost_index_by_year(store.read(state, "market_geo_year"))
     pcr = emm.plex_price_to_cost(places["rent"], cost_index=ci.get(origin, ci[max(ci)]))
     places["pcr"] = pcr
     f = pd.Series(np.where(np.isfinite(pcr), feasible_share(np.nan_to_num(pcr), margin, sigma), np.nan))
@@ -300,14 +348,27 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     return places
 
 
-def run(state: str, store, origin: int = 2025, n: int | None = None, seed: int | None = None):
-    """(places, Result, summary) for one state at the scenario's parameter values."""
+def run(
+    state: str,
+    store,
+    origin: int = 2025,
+    n: int | None = None,
+    seed: int | None = None,
+    ramp: str = "main",
+    places: pd.DataFrame | None = None,
+):
+    """(places, Result, summary) for one state at the scenario's parameter values.
+
+    `ramp="fast"` is D-100's fast-ramp sensitivity (module docstring). `places` reuses inputs already built by
+    `places_from_store` for the same state and origin, so the main run and the sensitivity share them.
+    """
     sp = specs()
     n = int(sp["mm_scenario_draws"].value) if n is None else n
     seed = int(sp["mm_scenario_seed"].value) if seed is None else seed
-    places = places_from_store(state, store, origin)
+    half = ramp_half(sp, ramp)
+    places = places_from_store(state, store, origin) if places is None else places
     res = simulate(
-        places, draw_params(n, seed, sp), sp["mm_ramp_half_years"].value, sp["mm_ramp_slope_years"].value,
-        seed, int(sp["mm_rule_min_coded"].value),
+        places, draw_params(n, seed, sp), half, sp["mm_ramp_slope_years"].value,
+        seed, int(sp["mm_rule_min_coded"].value), phi=sp["mm_year_spread_phi"].value,
     )  # fmt: skip
     return places, res, summarize(res)

@@ -1,0 +1,20 @@
+origin 2016: places per construction {'C0': 473, 'C1': 473, 'C2': 473, 'C3': 473}; in all four: 473
+origin 2021: places per construction {'C0': 468, 'C1': 468, 'C2': 468, 'C3': 468}; in all four: 468
+  C0-w: param 4.896 (4.286-5.608), held-out 10756.1, coverage 0.80, median pred/base 0.00
+  C0-year: param 9.130 (8.317-10.031), held-out 12231.1, coverage 0.79, median pred/base 0.32
+  C1-w: param 5.100 (4.450-5.860), held-out 10660.8, coverage 0.81, median pred/base 0.00
+  C1-year: param 8.743 (7.941-9.634), held-out 12116.3, coverage 0.78, median pred/base 0.11
+  C2-w: param 5.348 (4.679-6.126), held-out 10835.4, coverage 0.82, median pred/base 0.00
+  C2-year: param 8.958 (8.144-9.860), held-out 12428.0, coverage 0.81, median pred/base 0.00
+  C3-w: param 7.158 (6.287-8.171), held-out 10692.3, coverage 0.76, median pred/base 0.00
+  C3-year: param 12.142 (11.047-13.356), held-out 12149.0, coverage 0.76, median pred/base 0.00
+{
+ "best_score": "C2-year",
+ "within_2se": [
+  "C0-year",
+  "C2-year"
+ ],
+ "chosen": "C0-year",
+ "coverage_2021": 0.7905982905982906,
+ "stop": false
+}

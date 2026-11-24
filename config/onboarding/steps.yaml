@@ -1,0 +1,211 @@
+# The steps to add a state to Lotline, as data (WS-SCALE task 13).
+#
+# One source for both the guide (docs/adding_a_state.md: its step headings, short path and step table are
+# checked against this file by tests/core/test_onboarding.py) and the app, which reads it through
+# `lotline.onboarding` (steps, commands, check). Each step can be done three ways:
+#   manual:    a person follows the guide section named in `guide`;
+#   built_in:  the app (or `lotline onboard`) runs `commands`, with XX replaced by the state code;
+#   agent:     the app's rule agents (a service the user switches on, docs/build/rule-agents/PRINCIPLES.md)
+#              propose a table in the existing CSV format, keyed by GEOID; the user reviews it and imports it
+#              to `agent.import_to`. The agents never write config, never produce model rates and never open
+#              outcome data for held-back places. The imported file passes the same `check` as a hand-made one.
+# `check` names a function in lotline.onboarding.CHECKS that says whether the step is done for a state.
+# `level` is the data level of section 2 of the guide the step belongs to (0 national only ... 3 local parcels;
+# null: every level); `done_when` says in plain words what `check` tests;
+# `short_path: true` marks the steps of the one-page short path at the top of the guide.
+
+steps:
+  - id: assess
+    title: Look at what the state publishes
+    time: about half a day
+    level: 0
+    short_path: false
+    inputs: [the state's laws, city websites, open-data portals, docs/research/lotline-data-catalog.csv]
+    outputs: [docs/build/xx-assessment.md]
+    modes: [manual]
+    commands: []
+    check: assessment_written
+    done_when: docs/build/xx-assessment.md exists
+
+  - id: state_config
+    title: Write the state config
+    time: 15 minutes
+    level: 0
+    short_path: true
+    inputs: [state FIPS code, Census region, USPS 3-digit ZIP prefixes]
+    outputs: [config/states/xx.yaml]
+    modes: [manual]
+    commands: []
+    check: state_config_loads
+    done_when: config/states/xx.yaml loads
+
+  - id: check_config
+    title: Check the state file
+    time: 1 minute
+    level: 0
+    short_path: true
+    inputs: [config/states/xx.yaml]
+    outputs: []
+    modes: [manual, built_in]
+    commands:
+      - [uv, run, lotline, onboard, --state, XX]
+    check: state_config_consistent
+    done_when: the state file agrees with the repository
+
+  - id: rules
+    title: Code the state's ADU and middle-housing rules
+    time: 1 to 3 days for 20 places
+    level: 1
+    short_path: false
+    inputs: [state ADU and middle-housing laws, local ordinances of the 20 largest places]
+    outputs: [config/reforms/xx.csv]
+    modes: [manual, agent]
+    commands: []
+    check: reforms_coded
+    done_when: config/reforms/xx.csv loads and passes the reforms schema
+    agent:
+      proposes: reforms
+      import_to: config/reforms/xx.csv
+      owner: Local rules agent swarm design
+      note: >-
+        The agents return proposed reforms rows (ADU and missing middle), each value with a quote and page, plus a
+        lookup list for sources they could not read. Review, then import.
+
+  - id: fees
+    title: Code fees for at least 5 places
+    time: 1 to 2 days
+    level: 1
+    short_path: false
+    inputs: [fee schedules of the six largest places]
+    outputs: [config/fees/xx.csv]
+    modes: [manual, agent]
+    commands: []
+    check: fees_coded
+    done_when: config/fees/xx.csv covers at least 5 places
+    agent:
+      proposes: fees
+      import_to: config/fees/xx.csv
+      owner: Local rules agent swarm design
+      note: >-
+        The agents return proposed fees rows from each place's fee schedule, with citations, plus a lookup list.
+        Review, then import.
+
+  - id: national_data
+    title: Fetch the national data
+    time: about an hour, mostly waiting
+    level: 0
+    short_path: true
+    inputs: [CENSUS_API_KEY in .env]
+    outputs: [acs_geo_year, bps_place_year, market_geo_year, jurisdictions, eligible_parcels, place_inputs]
+    modes: [manual, built_in]
+    commands:
+      - [uv, run, lotline, fetch, --state, XX]
+      - [uv, run, lotline, validate, --state, XX]
+    check: national_tables_built
+    done_when: the six national tables are built
+
+  - id: first_run
+    title: Run the models for the first time
+    time: a few minutes
+    level: 0
+    short_path: true
+    inputs: [the national tables]
+    outputs: [reports/results/xx/bundle.json]
+    modes: [manual, built_in]
+    commands:
+      - [uv, run, lotline, results, --state, XX]
+      - [uv, run, python, scripts/dev/fee_dev_run.py, --state, XX, --statewide, --out, reports/xx/fees-statewide.csv]
+    check: results_bundle_written
+    done_when: reports/results/xx/bundle.json exists
+
+  - id: parcels
+    title: Add local parcels
+    time: 1 to 3 days per source
+    level: 3
+    short_path: false
+    inputs: [a parcel layer with land use, ideally year built]
+    outputs: [src/lotline/adapters/states/xx/, config/crosswalks/xx_*_land_use.csv, parcels]
+    modes: [manual]
+    commands: []
+    check: parcels_built
+    done_when: a parcels table is built
+
+  - id: permits
+    title: Add local permits
+    time: 1 to 2 days per source
+    level: 2
+    short_path: false
+    inputs: [record-level permits, ideally with ADU flags]
+    outputs: [src/lotline/adapters/states/xx/, permits]
+    modes: [manual]
+    commands: []
+    check: permits_built
+    done_when: a permits table is built
+
+  - id: rebuild
+    title: Rebuild the derived tables
+    time: about 10 minutes
+    level: 2
+    short_path: false
+    inputs: [the local tables]
+    outputs: [jurisdictions, eligible_parcels, place_inputs]
+    modes: [manual, built_in]
+    commands:
+      - [uv, run, lotline, unlisted, --state, XX]
+      - [uv, run, lotline, fetch, --state, XX, --source, jurisdictions]
+      - [uv, run, lotline, fetch, --state, XX, --source, eligible]
+      - [uv, run, lotline, fetch, --state, XX, --source, demand]
+      - [uv, run, lotline, fetch, --state, XX, --source, place_inputs]
+    check: no_unlisted_geoids
+    done_when: every GEOID in your data is a jurisdiction
+
+  - id: read_results
+    title: Read the results before you show them
+    time: an hour
+    level: null
+    short_path: true
+    inputs: [reports/results/xx/bundle.json]
+    outputs: []
+    modes: [manual]
+    commands: []
+    check: null
+    done_when: you have read the confidence flags
+
+  - id: write_up
+    title: Write it up
+    time: half a day
+    level: null
+    short_path: false
+    inputs: [the results, the assessment]
+    outputs: [docs/build/xx-readiness.md, docs/data_availability.md, docs/data_provenance.md]
+    modes: [manual, built_in]
+    commands:
+      - [uv, run, lotline, provenance, --write]
+    check: readiness_written
+    done_when: docs/build/xx-readiness.md exists
+
+  - id: checks
+    title: Run the checks and open the pull request
+    time: 15 minutes
+    level: null
+    short_path: false
+    inputs: [the branch]
+    outputs: [a pull request]
+    modes: [manual, built_in]
+    commands:
+      - [uv, run, pytest, -q]
+      - [python, compliance_check.py]
+    check: null
+    done_when: tests and compliance_check.py pass
+
+  - id: pool
+    title: Pool the state into the calibration (optional; Ben's call)
+    time: a method decision
+    level: null
+    short_path: false
+    inputs: [an analysis_plan.md entry]
+    outputs: [REFORM_STATES and the fit sets]
+    modes: [manual]
+    commands: []
+    check: null
+    done_when: Ben approves an analysis_plan.md entry

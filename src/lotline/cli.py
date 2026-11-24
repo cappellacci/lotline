@@ -26,7 +26,14 @@ def _fetch(args: argparse.Namespace) -> int:
     with offline_build(store) if args.offline else nullcontext() as sess:
         for state in states:
             available = registry.sources_for(state)
-            names = [args.source] if args.source else sorted(available)
+            # sources a module marks RUN_LAST (place_inputs, which reads every other table) go after the rest
+            names = (
+                [args.source]
+                if args.source
+                else sorted(
+                    available, key=lambda n: (bool(getattr(available[n].module, "RUN_LAST", False)), n)
+                )
+            )
             unknown = [n for n in names if n not in available]
             if unknown:
                 print(
@@ -71,6 +78,46 @@ def _sources(args: argparse.Namespace) -> int:
             title = getattr(src.module, "PROVENANCE", {}).get("title", "")
             print(f"{state}  {name:<16} {scope:<9} -> {src.table:<16} {title}")
     return 0
+
+
+def _onboard(args: argparse.Namespace) -> int:
+    """The adding-a-state checklist for one state: each step, whether it is done, and its commands."""
+    import json
+
+    from lotline import onboarding
+    from lotline.io import DataStore
+
+    plan = onboarding.plan(args.state, DataStore())
+    if args.json:
+        print(json.dumps(plan, indent=1))
+        return 0
+    mark = {True: "done", False: "todo", None: "  - "}
+    for s in plan:
+        print(f"[{mark[s['done']]}] {s['n']:>2}. {s['title']}  ({s['detail']})")
+        for cmd in s["commands"] if s["done"] is not True else []:
+            print(f"          $ {' '.join(cmd)}")
+    print("Guide: docs/adding_a_state.md (steps come from config/onboarding/steps.yaml)")
+    return 0
+
+
+def _unlisted(args: argparse.Namespace) -> int:
+    from lotline.build.jurisdictions import unlisted
+    from lotline.config import all_states
+    from lotline.io import DataStore
+
+    store = DataStore()
+    found = 0
+    for state in [args.state.upper()] if args.state else all_states():
+        df = unlisted(state, store)
+        found += len(df)
+        for r in df.itertuples():
+            print(f"{state}  {r.geoid:<11} {r.table:<8} {r.rows:>9,} rows")
+    if found:
+        print("Add each government above to local_jurisdictions in config/states/<st>.yaml (GEOID: name),")
+        print("then rerun `lotline fetch --source jurisdictions` and the adapters.")
+    else:
+        print("every GEOID your permit and parcel tables use is in the jurisdictions list")
+    return 1 if found else 0
 
 
 def _provenance(args: argparse.Namespace) -> int:
@@ -292,6 +339,19 @@ def build_parser() -> argparse.ArgumentParser:
     srcs.add_argument("--state", help="two-letter state code (default: every configured state)")
     srcs.set_defaults(func=_sources)
 
+    onb = sub.add_parser(
+        "onboard", help="the adding-a-state checklist for one state: what is done, what is next"
+    )
+    onb.add_argument("--state", required=True, help="two-letter state code")
+    onb.add_argument("--json", action="store_true", help="print the plan as JSON (for the app)")
+    onb.set_defaults(func=_onboard)
+
+    unl = sub.add_parser(
+        "unlisted", help="GEOIDs your permit and parcel data use that the jurisdictions list lacks"
+    )
+    unl.add_argument("--state", help="two-letter state code (default: every state)")
+    unl.set_defaults(func=_unlisted)
+
     prov = sub.add_parser("provenance", help="generate or check docs/data_provenance.md from the manifest")
     prov.add_argument("--write", action="store_true", help="regenerate the document before checking it")
     prov.add_argument("--check", action="store_true", help="check only (the default)")
@@ -354,7 +414,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     res.add_argument(
         "--role",
-        choices=["benchmark", "development", "transfer", "national_only"],
+        choices=["benchmark", "development", "transfer", "national_only", "ingestion_test"],
         help="how the app labels the state (default: national_only for a state with no parcel data, "
         "else development)",
     )

@@ -13,6 +13,12 @@ holdouts:
     outcome_from: 2024-01-01
     outcome_until: 2026-12-31
     reason: V5 blind forward test of the St. Paul 2023 reform (validation plan §3)
+    # Released on Ben's go-ahead ("Yes, unblind") on 2026-11-16 after the freeze reached main: frozen in #436
+    # (results/frozen/V5-MN-STPAUL.json, D-098, C4), scored by scripts/dev/v5_stp_score.py (reports/v5-stpaul/).
+    released_on: 2026-11-16
+    released_note: >-
+      Frozen (#436, D-098) and scored on BPS 2758000 2024-2025. St. Paul's outcomes can now enter tables;
+      D-092's missing-middle scripts still leave St. Paul and Ramsey out of the panel by their own list.
 # Last date usable for fitting, by GEOID (validation plan §2). St. Paul: data through 2023 only (V5 blind test).
 train_until:
   "2758000": 2023-12-31
@@ -291,3 +297,33 @@ sources:
       Ramsey parcel points outside St. Paul (server-side filter; V5 snapshot rule leaves no St. Paul rows in a
       2026 roll). Adds lot frontage (lot_width_ft). Owner, taxpayer, homestead names/addresses and site address
       never requested. The county firewall rejects "OR ... IS NULL" in a where clause (HTTP 403): two queries.
+
+# Governments the Census permit survey files under a county but this state's own permit or parcel data
+# reports separately (WS-SCALE, Ben 2026-11-17). Written once from the jurisdictions table built
+# 2026-11-17 (rows with in_bps false); before then the build read them from the permit and parcel tables.
+# With the survey's places and the holdouts they make the jurisdictions list. Add a GEOID here when
+# `lotline unlisted --state MN` reports one your data uses.
+local_jurisdictions:
+  "2701905266": "Benton township"
+  "2701909406": "Camden township"
+  "2701914482": "Dahlgren township"
+  "2701926918": "Hancock township"
+  "2701929726": "Hollywood township"
+  "2701935108": "Laketown township"
+  "2701958486": "San Francisco township"
+  "2701967450": "Waconia township"
+  "2701968566": "Watertown township"
+  "2701972130": "Young America township"
+  "2705321965": "Fort Snelling UT"
+  "2713904852": "Belle Plaine township"
+  "2713906418": "Blakeley township"
+  "2713910450": "Cedar Lake township"
+  "2713913726": "Credit River township"
+  "2713928322": "Helena township"
+  "2713931580": "Jackson township"
+  "2713938294": "Louisville township"
+  "2713945754": "New Market township"
+  "2713957184": "St. Lawrence township"
+  "2713958324": "Sand Creek township"
+  "2713961978": "Spring Lake township"
+  "2743270": "Minnetonka Beach city"

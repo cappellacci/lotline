@@ -34,6 +34,7 @@ def parcels() -> pd.DataFrame:
     return rp.to_parcels(raw, JURIS, locate)[0].set_index("parcel_id")
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_conforms_registered_and_blind(parcels):
     assert_conforms(parcels.reset_index(), "parcels")
     assert "ramsey_parcels" in registry.sources_for("MN")
@@ -47,6 +48,7 @@ def test_st_paul_never_requested():
     assert not rp.PERSONAL & set(rp.FIELDS)
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_rows_vintage_and_jurisdictions(parcels):
     assert len(parcels) == 4
     assert (parcels.vintage == 2026).all()

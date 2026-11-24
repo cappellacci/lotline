@@ -1,0 +1,63 @@
+{
+ "state": "OH",
+ "origin": 2025,
+ "places": 832,
+ "cuts": {
+  "fees": {
+   "label": "Challenge benchmark ($50,000 cut by $25,000)",
+   "fee_median": 50000.0,
+   "saving_median": 12500.0,
+   "places_with_lots": 0,
+   "places_feasibility_route": 0,
+   "lots_feasible_before": 0,
+   "lots_feasible_after": 0,
+   "lots_crossing": 0,
+   "response": {
+    "1": {
+     "p10": 0.003189000817970403,
+     "p50": 0.012450953672220776,
+     "p90": 0.050502152553739625,
+     "base_homes": 75870.93175,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.974
+    },
+    "2_4": {
+     "p10": 0.007876806289653098,
+     "p50": 0.030097847504903304,
+     "p90": 0.1252151595481961,
+     "base_homes": 7345.1537499999995,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.943
+    }
+   }
+  },
+  "fees_local_half": {
+   "label": "Real local fees cut by half",
+   "fee_median": 4949.0599999999995,
+   "saving_median": 1237.2649999999999,
+   "places_with_lots": 0,
+   "places_feasibility_route": 0,
+   "lots_feasible_before": 0,
+   "lots_feasible_after": 0,
+   "lots_crossing": 0,
+   "response": {
+    "1": {
+     "p10": 0.00033325178386027537,
+     "p50": 0.0013029473517005906,
+     "p90": 0.005301530107374118,
+     "base_homes": 75870.93175,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    },
+    "2_4": {
+     "p10": 0.0006610263654987443,
+     "p50": 0.002596833586398218,
+     "p90": 0.01084657205199961,
+     "base_homes": 7345.1537499999995,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    }
+   }
+  }
+ }
+}

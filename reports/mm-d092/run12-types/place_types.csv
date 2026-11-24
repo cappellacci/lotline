@@ -1,0 +1,624 @@
+role,geoid,state,name,type_raw,units,units_source,cbsa_code,type
+fit,2757220,MN,St. Louis Park city,suburb,23637.0,acs 2011-15,33460,suburb
+fit,3725480,NC,Garner town,suburb,11659.0,acs 2011-15,39580,suburb
+fit,3774540,NC,Wilson city,town,21874.0,acs 2011-15,48980,suburb
+fit,3925704,OH,Euclid city,suburb,26470.0,acs 2011-15,17410,suburb
+fit,41005,OR,Clackamas County Unincorporated Area,suburb,80639.0,acs 2011-15,38900,suburb
+fit,4101000,OR,Albany city,core,21095.0,acs 2011-15,10540,suburb
+fit,4103050,OR,Ashland city,suburb,10372.0,acs 2011-15,32780,suburb
+fit,4103150,OR,Astoria city,town,5085.0,acs 2011-15,11820,suburb
+fit,4103650,OR,Baker City city,town,4774.0,acs 2011-15,12520,suburb
+fit,41051,OR,Multnomah County Part 2 Unincorporated Area,suburb,7512.0,acs 2011-15,38900,suburb
+fit,4105350,OR,Beaverton city,suburb,39439.0,acs 2011-15,38900,suburb
+fit,4105800,OR,Bend city,core,36579.0,acs 2011-15,13460,suburb
+fit,41067,OR,Washington County Unincorporated Area,suburb,87062.0,acs 2011-15,38900,suburb
+fit,4107200,OR,Boardman city,town,1024.0,acs 2011-15,25840,suburb
+fit,4108650,OR,Brookings city,town,3587.0,acs 2011-15,15060,suburb
+fit,4110750,OR,Canby city,suburb,6134.0,acs 2011-15,38900,suburb
+fit,4112400,OR,Central Point city,suburb,7162.0,acs 2011-15,32780,suburb
+fit,4115250,OR,Coos Bay city,town,7799.0,acs 2011-15,18300,suburb
+fit,4115550,OR,Cornelius city,suburb,3517.0,acs 2011-15,38900,suburb
+fit,4115800,OR,Corvallis city,core,23837.0,acs 2011-15,18700,suburb
+fit,4115950,OR,Cottage Grove city,suburb,4142.0,acs 2011-15,21660,suburb
+fit,4116950,OR,Creswell city,suburb,2100.0,acs 2011-15,21660,suburb
+fit,4117700,OR,Dallas city,suburb,5907.0,acs 2011-15,41420,suburb
+fit,4118250,OR,Dayton city,suburb,826.0,acs 2011-15,38900,suburb
+fit,4121050,OR,Dundee city,suburb,1020.0,acs 2011-15,38900,suburb
+fit,4121250,OR,Durham city,suburb,596.0,acs 2011-15,38900,suburb
+fit,4121550,OR,Eagle Point city,suburb,3458.0,acs 2011-15,32780,suburb
+fit,4123800,OR,Estacada city,suburb,1343.0,acs 2011-15,38900,suburb
+fit,4123850,OR,Eugene city,core,70202.0,acs 2011-15,21660,suburb
+fit,4124250,OR,Fairview city,suburb,3989.0,acs 2011-15,38900,suburb
+fit,4126050,OR,Florence city,suburb,5266.0,acs 2011-15,21660,suburb
+fit,4126200,OR,Forest Grove city,suburb,8374.0,acs 2011-15,38900,suburb
+fit,4130550,OR,Grants Pass city,core,16054.0,acs 2011-15,24420,suburb
+fit,4131250,OR,Gresham city,suburb,40820.0,acs 2011-15,38900,suburb
+fit,4132050,OR,Happy Valley city,suburb,5489.0,acs 2011-15,38900,suburb
+fit,4132550,OR,Harrisburg city,suburb,1292.0,acs 2011-15,10540,suburb
+fit,4133700,OR,Hermiston city,town,6475.0,acs 2011-15,25840,suburb
+fit,4134100,OR,Hillsboro city,suburb,37566.0,acs 2011-15,38900,suburb
+fit,4134900,OR,Hood River city,town,3504.0,acs 2011-15,26220,suburb
+fit,4136150,OR,Independence city,suburb,3200.0,acs 2011-15,41420,suburb
+fit,4137000,OR,Jacksonville city,suburb,1608.0,acs 2011-15,32780,suburb
+fit,4138000,OR,Junction City city,suburb,2244.0,acs 2011-15,21660,suburb
+fit,4138500,OR,Keizer city,suburb,14306.0,acs 2011-15,41420,suburb
+fit,4139150,OR,King City city,suburb,1836.0,acs 2011-15,38900,suburb
+fit,4140300,OR,Lafayette city,suburb,1299.0,acs 2011-15,38900,suburb
+fit,4140350,OR,La Grande city,town,6028.0,acs 2011-15,29260,suburb
+fit,4140550,OR,Lake Oswego city,suburb,17073.0,acs 2011-15,38900,suburb
+fit,4141650,OR,Lebanon city,core,7117.0,acs 2011-15,10540,suburb
+fit,4142600,OR,Lincoln City city,town,6439.0,acs 2011-15,35440,suburb
+fit,4145000,OR,McMinnville city,suburb,12814.0,acs 2011-15,38900,suburb
+fit,4147000,OR,Medford city,core,32209.0,acs 2011-15,32780,suburb
+fit,4148300,OR,Millersburg city,suburb,632.0,acs 2011-15,10540,suburb
+fit,4148650,OR,Milwaukie city,suburb,9308.0,acs 2011-15,38900,suburb
+fit,4149450,OR,Molalla city,suburb,3184.0,acs 2011-15,38900,suburb
+fit,4149550,OR,Monmouth city,suburb,3687.0,acs 2011-15,41420,suburb
+fit,4150150,OR,Mount Angel city,suburb,1263.0,acs 2011-15,41420,suburb
+fit,4152100,OR,Newberg city,suburb,8158.0,acs 2011-15,38900,suburb
+fit,4152450,OR,Newport city,town,5668.0,acs 2011-15,35440,suburb
+fit,4153000,OR,North Bend city,town,4098.0,acs 2011-15,18300,suburb
+fit,4154100,OR,Oakridge city,suburb,1850.0,acs 2011-15,21660,suburb
+fit,4154900,OR,Ontario city,town,4744.0,acs 2011-15,36620,suburb
+fit,4155200,OR,Oregon City city,suburb,13313.0,acs 2011-15,38900,suburb
+fit,4157150,OR,Pendleton city,town,6732.0,acs 2011-15,25840,suburb
+fit,4157450,OR,Philomath city,suburb,2038.0,acs 2011-15,18700,suburb
+fit,4157500,OR,Phoenix city,suburb,2299.0,acs 2011-15,32780,suburb
+fit,4159000,OR,Portland city,core,269917.0,acs 2011-15,38900,suburb
+fit,4159850,OR,Prineville city,suburb,4388.0,acs 2011-15,13460,suburb
+fit,4161200,OR,Redmond city,suburb,11078.0,acs 2011-15,13460,suburb
+fit,4161300,OR,Reedsport city,town,2104.0,acs 2011-15,40700,suburb
+fit,4164600,OR,St. Helens city,suburb,5019.0,acs 2011-15,38900,suburb
+fit,4164900,OR,Salem city,core,61417.0,acs 2011-15,41420,suburb
+fit,4165250,OR,Sandy city,suburb,4156.0,acs 2011-15,38900,suburb
+fit,4165950,OR,Seaside city,town,4602.0,acs 2011-15,11820,suburb
+fit,4167100,OR,Sherwood city,suburb,6702.0,acs 2011-15,38900,suburb
+fit,4167650,OR,Silverton city,suburb,3826.0,acs 2011-15,41420,suburb
+fit,4167950,OR,Sisters city,suburb,1331.0,acs 2011-15,13460,suburb
+fit,4169600,OR,Springfield city,core,25407.0,acs 2011-15,21660,suburb
+fit,4171950,OR,Sweet Home city,suburb,3608.0,acs 2011-15,10540,suburb
+fit,4172500,OR,Talent city,suburb,2843.0,acs 2011-15,32780,suburb
+fit,4173650,OR,Tigard city,suburb,20827.0,acs 2011-15,38900,suburb
+fit,4174000,OR,Toledo city,town,1490.0,acs 2011-15,35440,suburb
+fit,4174850,OR,Troutdale city,suburb,6011.0,acs 2011-15,38900,suburb
+fit,4174950,OR,Tualatin city,suburb,11166.0,acs 2011-15,38900,suburb
+fit,4175650,OR,Umatilla city,town,1766.0,acs 2011-15,25840,suburb
+fit,4177050,OR,Veneta city,suburb,1696.0,acs 2011-15,21660,suburb
+fit,4178900,OR,Warrenton city,town,2123.0,acs 2011-15,11820,suburb
+fit,4180150,OR,West Linn city,suburb,10271.0,acs 2011-15,38900,suburb
+fit,4182800,OR,Wilsonville city,suburb,8844.0,acs 2011-15,38900,suburb
+fit,4183750,OR,Woodburn city,suburb,8707.0,acs 2011-15,41420,suburb
+fit,4183950,OR,Wood Village city,suburb,1255.0,acs 2011-15,38900,suburb
+fit,4805000,TX,Austin city,core,380280.0,acs 2011-15,12420,suburb
+fit,4835000,TX,Houston city,core,927107.0,acs 2011-15,26420,suburb
+fit,4842508,TX,Lewisville city,suburb,41637.0,acs 2011-15,19100,suburb
+test,2743000,MN,Minneapolis city,core,180989.0,acs 2011-15,33460,suburb
+test,37063,NC,Durham County Unincorporated Area,suburb,16601.0,acs 2011-15,20500,suburb
+test,3719000,NC,Durham city,core,109084.0,acs 2011-15,20500,suburb
+test_c,2707966,MN,Brooklyn Park city,suburb,28442.0,acs 2011-15,33460,suburb
+test_c,2713114,MN,Coon Rapids city,suburb,24723.0,acs 2011-15,33460,suburb
+test_c,2754880,MN,Rochester city,core,46355.0,acs 2011-15,40340,suburb
+test_c,3906278,OH,Bexley city,suburb,4912.0,acs 2011-15,18140,suburb
+test_c,3918000,OH,Columbus city,core,380493.0,acs 2011-15,18140,suburb
+test_c,3922694,OH,Dublin city,suburb,15893.0,acs 2011-15,18140,suburb
+test_c,3929106,OH,Gahanna city,suburb,13294.0,acs 2011-15,18140,suburb
+test_c,3932592,OH,Grove City city,suburb,15718.0,acs 2011-15,18140,suburb
+test_c,3935476,OH,Hilliard city,suburb,11802.0,acs 2011-15,18140,suburb
+test_c,3953970,OH,New Albany city,suburb,2988.0,acs 2011-15,18140,suburb
+test_c,3966390,OH,Reynoldsburg city,suburb,15138.0,acs 2011-15,18140,suburb
+test_c,3979002,OH,Upper Arlington city,suburb,14244.0,acs 2011-15,18140,suburb
+test_c,3983342,OH,Westerville city,suburb,14603.0,acs 2011-15,18140,suburb
+test_c,3984742,OH,Whitehall city,suburb,8191.0,acs 2011-15,18140,suburb
+test_c,3986604,OH,Worthington city,suburb,5824.0,acs 2011-15,18140,suburb
+test_c,4801000,TX,Abilene city,core,48240.0,acs 2011-15,10180,suburb
+test_c,4801924,TX,Allen city,suburb,30598.0,acs 2011-15,19100,suburb
+test_c,4803000,TX,Amarillo city,core,82549.0,acs 2011-15,11100,suburb
+test_c,4804000,TX,Arlington city,suburb,146385.0,acs 2011-15,19100,suburb
+test_c,4810768,TX,Brownsville city,core,56580.0,acs 2011-15,15180,suburb
+test_c,4813024,TX,Carrollton city,suburb,47069.0,acs 2011-15,19100,suburb
+test_c,4815976,TX,College Station city,core,40255.0,acs 2011-15,17780,suburb
+test_c,4817000,TX,Corpus Christi city,core,128025.0,acs 2011-15,18580,suburb
+test_c,4819000,TX,Dallas city,core,533556.0,acs 2011-15,19100,suburb
+test_c,4822660,TX,Edinburg city,core,26228.0,acs 2011-15,32580,suburb
+test_c,4827000,TX,Fort Worth city,core,301652.0,acs 2011-15,19100,suburb
+test_c,4827684,TX,Frisco city,suburb,47429.0,acs 2011-15,19100,suburb
+test_c,4829000,TX,Garland city,suburb,79895.0,acs 2011-15,19100,suburb
+test_c,4830464,TX,Grand Prairie city,suburb,63413.0,acs 2011-15,19100,suburb
+test_c,4837000,TX,Irving city,suburb,90420.0,acs 2011-15,19100,suburb
+test_c,4839148,TX,Killeen city,core,57554.0,acs 2011-15,28660,suburb
+test_c,4841464,TX,Laredo city,core,71718.0,acs 2011-15,29700,suburb
+test_c,4845384,TX,McAllen city,core,48245.0,acs 2011-15,32580,suburb
+test_c,4845744,TX,McKinney city,suburb,52790.0,acs 2011-15,19100,suburb
+test_c,4847892,TX,Mesquite city,suburb,51326.0,acs 2011-15,19100,suburb
+test_c,4848072,TX,Midland city,core,46260.0,acs 2011-15,33260,suburb
+test_c,4853388,TX,Odessa city,core,42396.0,acs 2011-15,36220,suburb
+test_c,4858016,TX,Plano city,suburb,108527.0,acs 2011-15,19100,suburb
+test_c,4861796,TX,Richardson city,suburb,42327.0,acs 2011-15,19100,suburb
+test_c,4863500,TX,Round Rock city,suburb,37622.0,acs 2011-15,12420,suburb
+test_c,4865000,TX,San Antonio city,core,535145.0,acs 2011-15,41700,suburb
+test_c,4870808,TX,Sugar Land city,suburb,28861.0,acs 2011-15,26420,suburb
+test_c,4874144,TX,Tyler city,core,42037.0,acs 2011-15,46340,suburb
+test_c,4876000,TX,Waco city,core,52565.0,acs 2011-15,47380,suburb
+unused (phi),2700694,MN,Albert Lea city,town,8583.0,acs 2011-15,10660,suburb
+unused (phi),2700928,MN,Alexandria city,town,6401.0,acs 2011-15,10820,suburb
+unused (phi),2701486,MN,Andover city,suburb,10309.0,acs 2011-15,33460,suburb
+unused (phi),2701720,MN,Anoka city,suburb,7526.0,acs 2011-15,33460,suburb
+unused (phi),2701900,MN,Apple Valley city,suburb,19925.0,acs 2011-15,33460,suburb
+unused (phi),2702908,MN,Austin city,town,10808.0,acs 2011-15,12380,suburb
+unused (phi),2705068,MN,Bemidji city,town,6250.0,acs 2011-15,13420,suburb
+unused (phi),2705752,MN,Big Lake city,suburb,3616.0,acs 2011-15,33460,suburb
+unused (phi),2706382,MN,Blaine city,suburb,22623.0,acs 2011-15,33460,suburb
+unused (phi),2706616,MN,Bloomington city,suburb,38287.0,acs 2011-15,33460,suburb
+unused (phi),2707300,MN,Brainerd city,town,6307.0,acs 2011-15,14660,suburb
+unused (phi),2707948,MN,Brooklyn Center city,suburb,11793.0,acs 2011-15,33460,suburb
+unused (phi),2708452,MN,Buffalo city,suburb,6251.0,acs 2011-15,33460,suburb
+unused (phi),2708794,MN,Burnsville city,suburb,26108.0,acs 2011-15,33460,suburb
+unused (phi),2710846,MN,Champlin city,suburb,8903.0,acs 2011-15,33460,suburb
+unused (phi),2710918,MN,Chanhassen city,suburb,8992.0,acs 2011-15,33460,suburb
+unused (phi),2710972,MN,Chaska city,suburb,9434.0,acs 2011-15,33460,suburb
+unused (phi),2712160,MN,Cloquet city,suburb,5163.0,acs 2011-15,20260,suburb
+unused (phi),2712369916,MN,White Bear township,suburb,4658.0,acs 2011-15,33460,suburb
+unused (phi),2712700,MN,Columbia Heights city,suburb,8403.0,acs 2011-15,33460,suburb
+unused (phi),2713456,MN,Cottage Grove city,suburb,12370.0,acs 2011-15,33460,suburb
+unused (phi),2714158,MN,Crystal city,suburb,9727.0,acs 2011-15,33460,suburb
+unused (phi),2717288,MN,Eagan city,suburb,26500.0,acs 2011-15,33460,suburb
+unused (phi),2717486,MN,East Bethel city,suburb,4280.0,acs 2011-15,33460,suburb
+unused (phi),2718116,MN,Eden Prairie city,suburb,25193.0,acs 2011-15,33460,suburb
+unused (phi),2718188,MN,Edina city,suburb,22364.0,acs 2011-15,33460,suburb
+unused (phi),2718674,MN,Elk River city,suburb,8596.0,acs 2011-15,33460,suburb
+unused (phi),2720330,MN,Fairmont city,town,5235.0,acs 2011-15,21860,suburb
+unused (phi),2720546,MN,Faribault city,town,8924.0,acs 2011-15,22060,suburb
+unused (phi),2720618,MN,Farmington city,suburb,7889.0,acs 2011-15,33460,suburb
+unused (phi),2720906,MN,Fergus Falls city,town,6547.0,acs 2011-15,22260,suburb
+unused (phi),2721770,MN,Forest Lake city,suburb,7475.0,acs 2011-15,33460,suburb
+unused (phi),2722814,MN,Fridley city,suburb,11415.0,acs 2011-15,33460,suburb
+unused (phi),2724308,MN,Golden Valley city,suburb,9315.0,acs 2011-15,33460,suburb
+unused (phi),2725118,MN,Grand Rapids city,town,4934.0,acs 2011-15,24330,suburb
+unused (phi),2726738,MN,Ham Lake city,suburb,5503.0,acs 2011-15,33460,suburb
+unused (phi),2727530,MN,Hastings city,suburb,9572.0,acs 2011-15,33460,suburb
+unused (phi),2728682,MN,Hermantown city,suburb,3934.0,acs 2011-15,20260,suburb
+unused (phi),2728790,MN,Hibbing city,suburb,8276.0,acs 2011-15,20260,suburb
+unused (phi),2730140,MN,Hopkins city,suburb,8298.0,acs 2011-15,33460,suburb
+unused (phi),2730392,MN,Hugo city,suburb,5410.0,acs 2011-15,33460,suburb
+unused (phi),2730644,MN,Hutchinson city,town,6258.0,acs 2011-15,26780,suburb
+unused (phi),2731076,MN,Inver Grove Heights city,suburb,14013.0,acs 2011-15,33460,suburb
+unused (phi),2734244,MN,Lake Elmo city,suburb,2931.0,acs 2011-15,33460,suburb
+unused (phi),2735180,MN,Lakeville city,suburb,20152.0,acs 2011-15,33460,suburb
+unused (phi),2737322,MN,Lino Lakes city,suburb,6848.0,acs 2011-15,33460,suburb
+unused (phi),2737502,MN,Little Canada city,suburb,4786.0,acs 2011-15,33460,suburb
+unused (phi),2739878,MN,Mankato city,core,16647.0,acs 2011-15,31860,suburb
+unused (phi),2740166,MN,Maple Grove city,suburb,25467.0,acs 2011-15,33460,suburb
+unused (phi),2740382,MN,Maplewood city,suburb,15663.0,acs 2011-15,33460,suburb
+unused (phi),2740688,MN,Marshall city,town,5818.0,acs 2011-15,32140,suburb
+unused (phi),2741696,MN,Mendota Heights city,suburb,4693.0,acs 2011-15,33460,suburb
+unused (phi),2743252,MN,Minnetonka city,suburb,23825.0,acs 2011-15,33460,suburb
+unused (phi),2743774,MN,Monticello city,suburb,5001.0,acs 2011-15,33460,suburb
+unused (phi),2743864,MN,Moorhead city,core,16347.0,acs 2011-15,22020,suburb
+unused (phi),2744530,MN,Mounds View city,suburb,5070.0,acs 2011-15,33460,suburb
+unused (phi),2745430,MN,New Brighton city,suburb,9344.0,acs 2011-15,33460,suburb
+unused (phi),2745628,MN,New Hope city,suburb,8517.0,acs 2011-15,33460,suburb
+unused (phi),2746042,MN,New Ulm city,town,6068.0,acs 2011-15,35580,suburb
+unused (phi),2746798,MN,North Branch city,suburb,3792.0,acs 2011-15,33460,suburb
+unused (phi),2746924,MN,Northfield city,town,6792.0,acs 2011-15,22060,suburb
+unused (phi),2747068,MN,North Mankato city,core,5990.0,acs 2011-15,31860,suburb
+unused (phi),2747221,MN,North St. Paul city,suburb,5009.0,acs 2011-15,33460,suburb
+unused (phi),2747680,MN,Oakdale city,suburb,11475.0,acs 2011-15,33460,suburb
+unused (phi),2749138,MN,Otsego city,suburb,5443.0,acs 2011-15,33460,suburb
+unused (phi),2749300,MN,Owatonna city,town,10897.0,acs 2011-15,36940,suburb
+unused (phi),2751730,MN,Plymouth city,suburb,31575.0,acs 2011-15,33460,suburb
+unused (phi),2752594,MN,Prior Lake city,suburb,9305.0,acs 2011-15,33460,suburb
+unused (phi),2753026,MN,Ramsey city,suburb,8616.0,acs 2011-15,33460,suburb
+unused (phi),2753620,MN,Red Wing city,town,7670.0,acs 2011-15,39860,suburb
+unused (phi),2754808,MN,Robbinsdale city,suburb,6469.0,acs 2011-15,33460,suburb
+unused (phi),2755186,MN,Rogers city,suburb,4043.0,acs 2011-15,33460,suburb
+unused (phi),2755726,MN,Rosemount city,suburb,7995.0,acs 2011-15,33460,suburb
+unused (phi),2755852,MN,Roseville city,suburb,15516.0,acs 2011-15,33460,suburb
+unused (phi),2756896,MN,St. Cloud city,core,27150.0,acs 2011-15,41060,suburb
+unused (phi),2757346,MN,St. Michael city,suburb,5457.0,acs 2011-15,33460,suburb
+unused (phi),2758036,MN,St. Peter city,suburb,3743.0,acs 2011-15,31860,suburb
+unused (phi),2758612,MN,Sartell city,suburb,6502.0,acs 2011-15,41060,suburb
+unused (phi),2758684,MN,Sauk Rapids city,suburb,5302.0,acs 2011-15,41060,suburb
+unused (phi),2758738,MN,Savage city,suburb,9815.0,acs 2011-15,33460,suburb
+unused (phi),2759350,MN,Shakopee city,suburb,13606.0,acs 2011-15,33460,suburb
+unused (phi),2759998,MN,Shoreview city,suburb,11204.0,acs 2011-15,33460,suburb
+unused (phi),2761492,MN,South St. Paul city,suburb,8880.0,acs 2011-15,33460,suburb
+unused (phi),2762824,MN,Stillwater city,suburb,7502.0,acs 2011-15,33460,suburb
+unused (phi),2766460,MN,Vadnais Heights city,suburb,5607.0,acs 2011-15,33460,suburb
+unused (phi),2767036,MN,Victoria city,suburb,2791.0,acs 2011-15,33460,suburb
+unused (phi),2767432,MN,Waconia city,suburb,4417.0,acs 2011-15,33460,suburb
+unused (phi),2769700,MN,West St. Paul city,suburb,8662.0,acs 2011-15,33460,suburb
+unused (phi),2769970,MN,White Bear Lake city,suburb,10658.0,acs 2011-15,33460,suburb
+unused (phi),2770420,MN,Willmar city,town,8309.0,acs 2011-15,48820,suburb
+unused (phi),2771032,MN,Winona city,town,11429.0,acs 2011-15,49100,suburb
+unused (phi),2771428,MN,Woodbury city,suburb,24744.0,acs 2011-15,33460,suburb
+unused (phi),2771734,MN,Worthington city,town,4742.0,acs 2011-15,49380,suburb
+unused (phi),3707080,NC,Boone town,town,6848.0,acs 2011-15,14380,suburb
+unused (phi),3710620,NC,Carrboro town,suburb,9225.0,acs 2011-15,20500,suburb
+unused (phi),3710740,NC,Cary town,suburb,58827.0,acs 2011-15,39580,suburb
+unused (phi),3711800,NC,Chapel Hill town,suburb,22205.0,acs 2011-15,20500,suburb
+unused (phi),3712860,NC,Clayton town,suburb,7073.0,acs 2011-15,39580,suburb
+unused (phi),3720080,NC,Eden city,suburb,7744.0,acs 2011-15,24660,suburb
+unused (phi),3720580,NC,Elizabeth City city,town,8234.0,acs 2011-15,21020,suburb
+unused (phi),3722920,NC,Fayetteville city,core,91987.0,acs 2011-15,22180,suburb
+unused (phi),3725300,NC,Fuquay-Varina town,suburb,7819.0,acs 2011-15,39580,suburb
+unused (phi),3725580,NC,Gastonia city,suburb,30803.0,acs 2011-15,16740,suburb
+unused (phi),3727280,NC,Graham city,suburb,6388.0,acs 2011-15,15500,suburb
+unused (phi),3728000,NC,Greensboro city,core,127779.0,acs 2011-15,24660,suburb
+unused (phi),3728080,NC,Greenville city,core,40655.0,acs 2011-15,24780,suburb
+unused (phi),3730120,NC,Havelock city,town,7280.0,acs 2011-15,35100,suburb
+unused (phi),3731400,NC,High Point city,core,46163.0,acs 2011-15,24660,suburb
+unused (phi),3732260,NC,Holly Springs town,suburb,10012.0,acs 2011-15,39580,suburb
+unused (phi),3732640,NC,Hope Mills town,suburb,6133.0,acs 2011-15,22180,suburb
+unused (phi),3734200,NC,Jacksonville city,core,23775.0,acs 2011-15,27340,suburb
+unused (phi),3735600,NC,Kernersville town,suburb,11104.0,acs 2011-15,49180,suburb
+unused (phi),3735880,NC,Kings Mountain city,town,4448.0,acs 2011-15,43140,suburb
+unused (phi),3735920,NC,Kinston city,town,11025.0,acs 2011-15,28820,suburb
+unused (phi),3736080,NC,Knightdale town,suburb,5070.0,acs 2011-15,39580,suburb
+unused (phi),3737680,NC,Leland town,suburb,7507.0,acs 2011-15,48900,suburb
+unused (phi),3738060,NC,Lexington city,suburb,8393.0,acs 2011-15,49180,suburb
+unused (phi),3739700,NC,Lumberton city,town,8668.0,acs 2011-15,31300,suburb
+unused (phi),3742240,NC,Mebane city,suburb,6076.0,acs 2011-15,15500,suburb
+unused (phi),3744400,NC,Morganton city,core,7715.0,acs 2011-15,25860,suburb
+unused (phi),3751940,NC,Pinehurst village,core,9223.0,acs 2011-15,38240,suburb
+unused (phi),3755900,NC,Reidsville city,suburb,7407.0,acs 2011-15,24660,suburb
+unused (phi),3756900,NC,Roanoke Rapids city,town,6821.0,acs 2011-15,40260,suburb
+unused (phi),3757500,NC,Rocky Mount city,core,26504.0,acs 2011-15,40580,suburb
+unused (phi),3761200,NC,Shelby city,town,9689.0,acs 2011-15,43140,suburb
+unused (phi),3763120,NC,Southern Pines town,core,6997.0,acs 2011-15,38240,suburb
+unused (phi),3764180,NC,Spring Lake town,suburb,5366.0,acs 2011-15,22180,suburb
+unused (phi),3766700,NC,Tarboro town,suburb,5081.0,acs 2011-15,40580,suburb
+unused (phi),3767420,NC,Thomasville city,suburb,12586.0,acs 2011-15,49180,suburb
+unused (phi),3771460,NC,Waxhaw town,suburb,3811.0,acs 2011-15,16740,suburb
+unused (phi),3771500,NC,Waynesville town,town,6052.0,acs 2011-15,48200,suburb
+unused (phi),3775000,NC,Winston-Salem city,core,105252.0,acs 2011-15,49180,suburb
+unused (phi),3775060,NC,Winterville town,suburb,3665.0,acs 2011-15,24780,suburb
+unused (phi),3900301756,OH,American township,suburb,6201.0,acs 2011-15,30620,suburb
+unused (phi),3900371955,OH,Shawnee township,suburb,5254.0,acs 2011-15,30620,suburb
+unused (phi),3900902750,OH,Athens township,town,10738.0,acs 2011-15,11900,suburb
+unused (phi),3901000,OH,Akron city,core,97572.0,acs 2011-15,10420,suburb
+unused (phi),3901122722,OH,Duchouquet township,town,6351.0,acs 2011-15,47540,suburb
+unused (phi),3901169694,OH,St. Marys township,town,5071.0,acs 2011-15,47540,suburb
+unused (phi),3901420,OH,Alliance city,suburb,10007.0,acs 2011-15,15940,suburb
+unused (phi),3901798,OH,Amherst city,suburb,4936.0,acs 2011-15,17410,suburb
+unused (phi),3902568,OH,Ashland city,town,9004.0,acs 2011-15,11740,suburb
+unused (phi),3902638,OH,Ashtabula city,suburb,9096.0,acs 2011-15,17410,suburb
+unused (phi),3902736,OH,Athens city,town,7866.0,acs 2011-15,11900,suburb
+unused (phi),3902961798,OH,Perry township,town,7833.0,acs 2011-15,41400,suburb
+unused (phi),3903086,OH,Aurora city,suburb,6577.0,acs 2011-15,10420,suburb
+unused (phi),3903352,OH,Avon city,suburb,8207.0,acs 2011-15,17410,suburb
+unused (phi),3903464,OH,Avon Lake city,suburb,9568.0,acs 2011-15,17410,suburb
+unused (phi),3903558408,OH,Olmsted township,suburb,5787.0,acs 2011-15,17410,suburb
+unused (phi),3903828,OH,Barberton city,suburb,11869.0,acs 2011-15,10420,suburb
+unused (phi),3903921322,OH,Defiance township,town,6206.0,acs 2011-15,19580,suburb
+unused (phi),3904337030,OH,Huron township,suburb,5278.0,acs 2011-15,41780,suburb
+unused (phi),3904361714,OH,Perkins township,suburb,5203.0,acs 2011-15,41780,suburb
+unused (phi),3904416,OH,Bay Village city,suburb,6313.0,acs 2011-15,17410,suburb
+unused (phi),3904500,OH,Beachwood city,suburb,5145.0,acs 2011-15,17410,suburb
+unused (phi),3904506950,OH,Bloom township,suburb,3275.0,acs 2011-15,18140,suburb
+unused (phi),3904580206,OH,Violet township,suburb,14646.0,acs 2011-15,18140,suburb
+unused (phi),3904878,OH,Bedford city,suburb,7011.0,acs 2011-15,17410,suburb
+unused (phi),3904920,OH,Bedford Heights city,suburb,5780.0,acs 2011-15,17410,suburb
+unused (phi),3905690,OH,Berea city,suburb,8113.0,acs 2011-15,17410,suburb
+unused (phi),3907300,OH,Blue Ash city,suburb,5429.0,acs 2011-15,17140,suburb
+unused (phi),3908364,OH,Brecksville city,suburb,5617.0,acs 2011-15,17410,suburb
+unused (phi),3909064,OH,Broadview Heights city,suburb,7784.0,acs 2011-15,17410,suburb
+unused (phi),3909246,OH,Brooklyn city,suburb,5101.0,acs 2011-15,17410,suburb
+unused (phi),3909288,OH,Brook Park city,suburb,7798.0,acs 2011-15,17410,suburb
+unused (phi),3909680,OH,Brunswick city,suburb,14044.0,acs 2011-15,17410,suburb
+unused (phi),3910030,OH,Bucyrus city,town,6081.0,acs 2011-15,15340,suburb
+unused (phi),3910147768,OH,Marion township,town,18529.0,acs 2011-15,32020,suburb
+unused (phi),3910738724,OH,Jefferson township,town,6361.0,acs 2011-15,16380,suburb
+unused (phi),3910996,OH,Cambridge city,town,5266.0,acs 2011-15,15740,suburb
+unused (phi),3912000,OH,Canton city,core,35896.0,acs 2011-15,15940,suburb
+unused (phi),3912868,OH,Celina city,town,4999.0,acs 2011-15,16380,suburb
+unused (phi),3913190,OH,Centerville city,suburb,11307.0,acs 2011-15,19430,suburb
+unused (phi),3914184,OH,Chillicothe city,town,10631.0,acs 2011-15,17060,suburb
+unused (phi),3914916168,OH,Clinton township,town,9567.0,acs 2011-15,43380,suburb
+unused (phi),3915070,OH,Circleville city,suburb,5883.0,acs 2011-15,18140,suburb
+unused (phi),3916000,OH,Cleveland city,core,212154.0,acs 2011-15,17410,suburb
+unused (phi),3916014,OH,Cleveland Heights city,suburb,21807.0,acs 2011-15,17410,suburb
+unused (phi),3916163408,OH,Pleasant township,town,4759.0,acs 2011-15,46780,suburb
+unused (phi),3918868,OH,Coshocton city,town,5364.0,acs 2011-15,18740,suburb
+unused (phi),3919778,OH,Cuyahoga Falls city,suburb,23390.0,acs 2011-15,10420,suburb
+unused (phi),3921308,OH,Defiance city,town,7659.0,acs 2011-15,19580,suburb
+unused (phi),3921434,OH,Delaware city,suburb,14784.0,acs 2011-15,18140,suburb
+unused (phi),3922456,OH,Dover city,town,5531.0,acs 2011-15,35420,suburb
+unused (phi),3923380,OH,East Cleveland city,suburb,13133.0,acs 2011-15,17410,suburb
+unused (phi),3923618,OH,Eastlake city,suburb,8253.0,acs 2011-15,17410,suburb
+unused (phi),3925256,OH,Elyria city,suburb,24654.0,acs 2011-15,17410,suburb
+unused (phi),3925396,OH,Englewood city,suburb,6160.0,acs 2011-15,19430,suburb
+unused (phi),3925914,OH,Fairborn city,suburb,16257.0,acs 2011-15,19430,suburb
+unused (phi),3925970,OH,Fairfield city,suburb,19068.0,acs 2011-15,17140,suburb
+unused (phi),3926446,OH,Fairview Park city,suburb,7663.0,acs 2011-15,17410,suburb
+unused (phi),3927048,OH,Findlay city,town,18867.0,acs 2011-15,22300,suburb
+unused (phi),3927706,OH,Forest Park city,suburb,7977.0,acs 2011-15,17140,suburb
+unused (phi),3928014,OH,Fostoria city,town,6340.0,acs 2011-15,45660,suburb
+unused (phi),3928476,OH,Franklin city,suburb,5043.0,acs 2011-15,17140,suburb
+unused (phi),3928826,OH,Fremont city,town,7201.0,acs 2011-15,23380,suburb
+unused (phi),3929162,OH,Galion city,town,5080.0,acs 2011-15,15340,suburb
+unused (phi),3929428,OH,Garfield Heights city,suburb,13601.0,acs 2011-15,17410,suburb
+unused (phi),3933012,OH,Hamilton city,suburb,27846.0,acs 2011-15,17140,suburb
+unused (phi),3933838,OH,Harrison city,suburb,4313.0,acs 2011-15,17140,suburb
+unused (phi),3937464,OH,Ironton city,core,5127.0,acs 2011-15,26580,suburb
+unused (phi),3939872,OH,Kent city,suburb,12144.0,acs 2011-15,10420,suburb
+unused (phi),3940040,OH,Kettering city,core,27085.0,acs 2011-15,19430,suburb
+unused (phi),3941664,OH,Lakewood city,suburb,27355.0,acs 2011-15,17410,suburb
+unused (phi),3941720,OH,Lancaster city,suburb,17636.0,acs 2011-15,18140,suburb
+unused (phi),3942364,OH,Lebanon city,suburb,7910.0,acs 2011-15,17140,suburb
+unused (phi),3943554,OH,Lima city,core,16859.0,acs 2011-15,30620,suburb
+unused (phi),3944674,OH,London city,suburb,4431.0,acs 2011-15,18140,suburb
+unused (phi),3944856,OH,Lorain city,suburb,29561.0,acs 2011-15,17410,suburb
+unused (phi),3945108,OH,Loveland city,suburb,5066.0,acs 2011-15,17140,suburb
+unused (phi),3945556,OH,Lyndhurst city,suburb,6498.0,acs 2011-15,17410,suburb
+unused (phi),3945976,OH,Macedonia city,suburb,4513.0,acs 2011-15,10420,suburb
+unused (phi),3947138,OH,Mansfield city,core,21895.0,acs 2011-15,31900,suburb
+unused (phi),3947306,OH,Maple Heights city,suburb,11034.0,acs 2011-15,17410,suburb
+unused (phi),3947628,OH,Marietta city,town,6811.0,acs 2011-15,31930,suburb
+unused (phi),3947754,OH,Marion city,town,14820.0,acs 2011-15,32020,suburb
+unused (phi),3948188,OH,Mason city,suburb,11863.0,acs 2011-15,17140,suburb
+unused (phi),3948244,OH,Massillon city,core,14824.0,acs 2011-15,15940,suburb
+unused (phi),3948342,OH,Maumee city,suburb,6373.0,acs 2011-15,45780,suburb
+unused (phi),3948482,OH,Mayfield Heights city,suburb,10215.0,acs 2011-15,17410,suburb
+unused (phi),3948790,OH,Medina city,suburb,11016.0,acs 2011-15,17410,suburb
+unused (phi),3949056,OH,Mentor city,suburb,20709.0,acs 2011-15,17410,suburb
+unused (phi),3949434,OH,Miamisburg city,suburb,9055.0,acs 2011-15,19430,suburb
+unused (phi),3949644,OH,Middleburg Heights city,suburb,7081.0,acs 2011-15,17410,suburb
+unused (phi),3949840,OH,Middletown city,suburb,23068.0,acs 2011-15,17140,suburb
+unused (phi),3951310,OH,Monroe city,suburb,5094.0,acs 2011-15,17140,suburb
+unused (phi),3951716,OH,Montgomery city,suburb,4041.0,acs 2011-15,17140,suburb
+unused (phi),3953102,OH,Mount Vernon city,town,7531.0,acs 2011-15,34540,suburb
+unused (phi),3954040,OH,Newark city,suburb,21657.0,acs 2011-15,18140,suburb
+unused (phi),3955216,OH,New Philadelphia city,town,7593.0,acs 2011-15,35420,suburb
+unused (phi),3955916,OH,Niles city,suburb,9045.0,acs 2011-15,49660,suburb
+unused (phi),3956294,OH,North Canton city,suburb,7696.0,acs 2011-15,15940,suburb
+unused (phi),3956882,OH,North Olmsted city,suburb,14194.0,acs 2011-15,17410,suburb
+unused (phi),3956966,OH,North Ridgeville city,suburb,12860.0,acs 2011-15,17410,suburb
+unused (phi),3957008,OH,North Royalton city,suburb,13100.0,acs 2011-15,17410,suburb
+unused (phi),3957260,OH,Norton city,suburb,4984.0,acs 2011-15,10420,suburb
+unused (phi),3957302,OH,Norwalk city,town,7366.0,acs 2011-15,35940,suburb
+unused (phi),3957386,OH,Norwood city,suburb,10101.0,acs 2011-15,17140,suburb
+unused (phi),3958730,OH,Oregon city,suburb,8769.0,acs 2011-15,45780,suburb
+unused (phi),3959234,OH,Oxford city,suburb,6797.0,acs 2011-15,17140,suburb
+unused (phi),3959416,OH,Painesville city,suburb,8194.0,acs 2011-15,17410,suburb
+unused (phi),3961000,OH,Parma city,suburb,36048.0,acs 2011-15,17410,suburb
+unused (phi),3961028,OH,Parma Heights city,suburb,9586.0,acs 2011-15,17410,suburb
+unused (phi),3962498,OH,Pickerington city,suburb,6957.0,acs 2011-15,18140,suburb
+unused (phi),3964304,OH,Portsmouth city,town,9717.0,acs 2011-15,39020,suburb
+unused (phi),3964486,OH,Powell city,suburb,4256.0,acs 2011-15,18140,suburb
+unused (phi),3965592,OH,Ravenna city,suburb,5665.0,acs 2011-15,10420,suburb
+unused (phi),3965732,OH,Reading city,suburb,4647.0,acs 2011-15,17140,suburb
+unused (phi),3966894,OH,Richmond Heights city,suburb,5558.0,acs 2011-15,17410,suburb
+unused (phi),3968056,OH,Rocky River city,suburb,9754.0,acs 2011-15,17410,suburb
+unused (phi),3969834,OH,Salem city,town,5632.0,acs 2011-15,41400,suburb
+unused (phi),3970380,OH,Sandusky city,core,13617.0,acs 2011-15,41780,suburb
+unused (phi),3971416,OH,Seven Hills city,suburb,5105.0,acs 2011-15,17410,suburb
+unused (phi),3971682,OH,Shaker Heights city,suburb,12564.0,acs 2011-15,17410,suburb
+unused (phi),3971892,OH,Sharonville city,suburb,6411.0,acs 2011-15,17140,suburb
+unused (phi),3972424,OH,Sidney city,town,9588.0,acs 2011-15,43380,suburb
+unused (phi),3972928,OH,Solon city,suburb,8809.0,acs 2011-15,17410,suburb
+unused (phi),3973264,OH,South Euclid city,suburb,9610.0,acs 2011-15,17410,suburb
+unused (phi),3974076,OH,Springboro city,suburb,6251.0,acs 2011-15,17140,suburb
+unused (phi),3974104,OH,Springdale city,suburb,4555.0,acs 2011-15,17140,suburb
+unused (phi),3974118,OH,Springfield city,core,28475.0,acs 2011-15,44220,suburb
+unused (phi),3974608,OH,Steubenville city,core,9217.0,acs 2011-15,48260,suburb
+unused (phi),3974944,OH,Stow city,suburb,14930.0,acs 2011-15,10420,suburb
+unused (phi),3975014,OH,Streetsboro city,suburb,7216.0,acs 2011-15,10420,suburb
+unused (phi),3975098,OH,Strongsville city,suburb,18431.0,acs 2011-15,17410,suburb
+unused (phi),3976106,OH,Tallmadge city,suburb,7152.0,acs 2011-15,10420,suburb
+unused (phi),3976778,OH,Tiffin city,town,7403.0,acs 2011-15,45660,suburb
+unused (phi),3977000,OH,Toledo city,core,138473.0,acs 2011-15,45780,suburb
+unused (phi),3977322,OH,Trenton city,suburb,4350.0,acs 2011-15,17140,suburb
+unused (phi),3977504,OH,Trotwood city,suburb,12150.0,acs 2011-15,19430,suburb
+unused (phi),3978050,OH,Twinsburg city,suburb,7705.0,acs 2011-15,10420,suburb
+unused (phi),3978932,OH,University Heights city,suburb,5277.0,acs 2011-15,17410,suburb
+unused (phi),3979492,OH,Vandalia city,suburb,6746.0,acs 2011-15,19430,suburb
+unused (phi),3979562,OH,Van Wert city,town,4842.0,acs 2011-15,46780,suburb
+unused (phi),3979716,OH,Vermilion city,core,5358.0,acs 2011-15,41780,suburb
+unused (phi),3980304,OH,Wadsworth city,suburb,9294.0,acs 2011-15,17410,suburb
+unused (phi),3980892,OH,Warren city,core,20416.0,acs 2011-15,49660,suburb
+unused (phi),3980990,OH,Warrensville Heights city,suburb,6999.0,acs 2011-15,17410,suburb
+unused (phi),3981718,OH,Washington Court House city,town,6556.0,acs 2011-15,47920,suburb
+unused (phi),3983090,OH,West Carrollton city,suburb,6534.0,acs 2011-15,19430,suburb
+unused (phi),3983622,OH,Westlake city,suburb,14856.0,acs 2011-15,17410,suburb
+unused (phi),3985036,OH,Wickliffe city,suburb,5905.0,acs 2011-15,17410,suburb
+unused (phi),3985484,OH,Willoughby city,suburb,11646.0,acs 2011-15,17410,suburb
+unused (phi),3985512,OH,Willoughby Hills city,suburb,4765.0,acs 2011-15,17410,suburb
+unused (phi),3985638,OH,Willowick city,suburb,6339.0,acs 2011-15,17410,suburb
+unused (phi),3985792,OH,Wilmington city,town,5934.0,acs 2011-15,48940,suburb
+unused (phi),3986548,OH,Wooster city,town,11887.0,acs 2011-15,49300,suburb
+unused (phi),3986772,OH,Xenia city,suburb,11469.0,acs 2011-15,19430,suburb
+unused (phi),3988000,OH,Youngstown city,core,33486.0,acs 2011-15,49660,suburb
+unused (phi),3988084,OH,Zanesville city,town,12555.0,acs 2011-15,49780,suburb
+unused (phi),4801240,TX,Addison town,suburb,9309.0,acs 2011-15,19100,suburb
+unused (phi),4801576,TX,Alamo city,suburb,7443.0,acs 2011-15,32580,suburb
+unused (phi),4801852,TX,Alice city,town,7258.0,acs 2011-15,10860,suburb
+unused (phi),4802212,TX,Alton city,suburb,4102.0,acs 2011-15,32580,suburb
+unused (phi),4802272,TX,Alvin city,suburb,9613.0,acs 2011-15,26420,suburb
+unused (phi),4803216,TX,Andrews city,town,4531.0,acs 2011-15,11380,suburb
+unused (phi),4803264,TX,Angleton city,suburb,7772.0,acs 2011-15,26420,suburb
+unused (phi),4803300,TX,Anna city,suburb,3266.0,acs 2011-15,19100,suburb
+unused (phi),4804504,TX,Athens city,town,4920.0,acs 2011-15,11980,suburb
+unused (phi),4805168,TX,Azle city,suburb,4651.0,acs 2011-15,19100,suburb
+unused (phi),4805372,TX,Balch Springs city,suburb,7343.0,acs 2011-15,19100,suburb
+unused (phi),4805984,TX,Bay City city,town,7861.0,acs 2011-15,13060,suburb
+unused (phi),4806128,TX,Baytown city,suburb,29451.0,acs 2011-15,26420,suburb
+unused (phi),4807132,TX,Bedford city,suburb,22362.0,acs 2011-15,19100,suburb
+unused (phi),4807192,TX,Beeville city,town,5456.0,acs 2011-15,13300,suburb
+unused (phi),4807300,TX,Bellaire city,suburb,6708.0,acs 2011-15,26420,suburb
+unused (phi),4807408,TX,Bellmead city,suburb,3564.0,acs 2011-15,47380,suburb
+unused (phi),4807492,TX,Belton city,suburb,7324.0,acs 2011-15,28660,suburb
+unused (phi),4807552,TX,Benbrook city,suburb,10233.0,acs 2011-15,19100,suburb
+unused (phi),4808236,TX,Big Spring city,town,9515.0,acs 2011-15,13700,suburb
+unused (phi),4809160,TX,Boerne city,suburb,4646.0,acs 2011-15,41700,suburb
+unused (phi),4809328,TX,Bonham city,town,3337.0,acs 2011-15,14300,suburb
+unused (phi),4809556,TX,Borger city,town,6167.0,acs 2011-15,14420,suburb
+unused (phi),4810156,TX,Brenham city,town,6416.0,acs 2011-15,14780,suburb
+unused (phi),4810780,TX,Brownwood city,town,8068.0,acs 2011-15,15220,suburb
+unused (phi),4810912,TX,Bryan city,core,32142.0,acs 2011-15,17780,suburb
+unused (phi),4811080,TX,Buda city,suburb,4161.0,acs 2011-15,12420,suburb
+unused (phi),4811368,TX,Burkburnett city,suburb,5012.0,acs 2011-15,48660,suburb
+unused (phi),4811428,TX,Burleson city,suburb,15111.0,acs 2011-15,19100,suburb
+unused (phi),4812532,TX,Canyon city,suburb,5749.0,acs 2011-15,11100,suburb
+unused (phi),4813492,TX,Cedar Hill city,suburb,16854.0,acs 2011-15,19100,suburb
+unused (phi),4813552,TX,Cedar Park city,suburb,21081.0,acs 2011-15,12420,suburb
+unused (phi),4813684,TX,Celina city,suburb,2196.0,acs 2011-15,19100,suburb
+unused (phi),4814920,TX,Cibolo city,suburb,7864.0,acs 2011-15,41700,suburb
+unused (phi),4815364,TX,Cleburne city,suburb,11479.0,acs 2011-15,19100,suburb
+unused (phi),4815652,TX,Clute city,suburb,4904.0,acs 2011-15,26420,suburb
+unused (phi),4815988,TX,Colleyville city,suburb,8624.0,acs 2011-15,19100,suburb
+unused (phi),4816432,TX,Conroe city,suburb,24754.0,acs 2011-15,26420,suburb
+unused (phi),4816468,TX,Converse city,suburb,6979.0,acs 2011-15,41700,suburb
+unused (phi),4816612,TX,Coppell city,suburb,15332.0,acs 2011-15,19100,suburb
+unused (phi),4816624,TX,Copperas Cove city,suburb,13877.0,acs 2011-15,28660,suburb
+unused (phi),4816696,TX,Corinth city,suburb,7399.0,acs 2011-15,19100,suburb
+unused (phi),4817060,TX,Corsicana city,town,9369.0,acs 2011-15,18620,suburb
+unused (phi),4817960,TX,Crowley city,suburb,5034.0,acs 2011-15,19100,suburb
+unused (phi),4819624,TX,Deer Park city,suburb,11706.0,acs 2011-15,26420,suburb
+unused (phi),4819792,TX,Del Rio city,town,12862.0,acs 2011-15,19620,suburb
+unused (phi),4819900,TX,Denison city,core,10488.0,acs 2011-15,43300,suburb
+unused (phi),4820092,TX,DeSoto city,suburb,20224.0,acs 2011-15,19100,suburb
+unused (phi),4820344,TX,Dickinson city,suburb,7408.0,acs 2011-15,26420,suburb
+unused (phi),4820884,TX,Donna city,suburb,5552.0,acs 2011-15,32580,suburb
+unused (phi),4821556,TX,Dumas city,town,5159.0,acs 2011-15,20300,suburb
+unused (phi),4821628,TX,Duncanville city,suburb,14575.0,acs 2011-15,19100,suburb
+unused (phi),4821892,TX,Eagle Pass city,core,9567.0,acs 2011-15,20580,suburb
+unused (phi),4822864,TX,El Campo city,town,4310.0,acs 2011-15,20900,suburb
+unused (phi),4824348,TX,Ennis city,suburb,6760.0,acs 2011-15,19100,suburb
+unused (phi),4824768,TX,Euless city,suburb,23293.0,acs 2011-15,19100,suburb
+unused (phi),4825224,TX,Fairview town,suburb,3658.0,acs 2011-15,19100,suburb
+unused (phi),4825452,TX,Farmers Branch city,suburb,12450.0,acs 2011-15,19100,suburb
+unused (phi),4825572,TX,Fate city,suburb,2636.0,acs 2011-15,19100,suburb
+unused (phi),4826232,TX,Flower Mound town,suburb,22997.0,acs 2011-15,19100,suburb
+unused (phi),4826544,TX,Forest Hill city,suburb,4146.0,acs 2011-15,19100,suburb
+unused (phi),4826604,TX,Forney city,suburb,5554.0,acs 2011-15,19100,suburb
+unused (phi),4827348,TX,Fredericksburg city,town,5622.0,acs 2011-15,23240,suburb
+unused (phi),4827420,TX,Freeport city,suburb,4933.0,acs 2011-15,26420,suburb
+unused (phi),4827648,TX,Friendswood city,suburb,13734.0,acs 2011-15,26420,suburb
+unused (phi),4827876,TX,Fulshear city,suburb,1141.0,acs 2011-15,26420,suburb
+unused (phi),4827984,TX,Gainesville city,town,6891.0,acs 2011-15,23620,suburb
+unused (phi),4827996,TX,Galena Park city,suburb,3131.0,acs 2011-15,26420,suburb
+unused (phi),4828068,TX,Galveston city,suburb,32060.0,acs 2011-15,26420,suburb
+unused (phi),4829168,TX,Gatesville city,suburb,3324.0,acs 2011-15,28660,suburb
+unused (phi),4829336,TX,Georgetown city,suburb,23977.0,acs 2011-15,12420,suburb
+unused (phi),4829840,TX,Glenn Heights city,suburb,4207.0,acs 2011-15,19100,suburb
+unused (phi),4830416,TX,Granbury city,town,4401.0,acs 2011-15,24180,suburb
+unused (phi),4830644,TX,Grapevine city,suburb,20368.0,acs 2011-15,19100,suburb
+unused (phi),4830920,TX,Greenville city,suburb,11013.0,acs 2011-15,19100,suburb
+unused (phi),4831328,TX,Groves city,suburb,6830.0,acs 2011-15,13140,suburb
+unused (phi),4831928,TX,Haltom City city,suburb,16270.0,acs 2011-15,19100,suburb
+unused (phi),4832312,TX,Harker Heights city,suburb,10735.0,acs 2011-15,28660,suburb
+unused (phi),4832372,TX,Harlingen city,core,24291.0,acs 2011-15,15180,suburb
+unused (phi),4833212,TX,Henderson city,suburb,4704.0,acs 2011-15,30980,suburb
+unused (phi),4833320,TX,Hereford city,town,5368.0,acs 2011-15,25820,suburb
+unused (phi),4833428,TX,Hewitt city,suburb,5464.0,acs 2011-15,47380,suburb
+unused (phi),4833560,TX,Hidalgo city,suburb,3310.0,acs 2011-15,32580,suburb
+unused (phi),4833848,TX,Highland Village city,suburb,5323.0,acs 2011-15,19100,suburb
+unused (phi),4834832,TX,Horizon City city,suburb,5150.0,acs 2011-15,21340,suburb
+unused (phi),4835348,TX,Humble city,suburb,5975.0,acs 2011-15,26420,suburb
+unused (phi),4835528,TX,Huntsville city,town,12260.0,acs 2011-15,26660,suburb
+unused (phi),4835576,TX,Hurst city,suburb,15430.0,acs 2011-15,19100,suburb
+unused (phi),4835624,TX,Hutto city,suburb,6168.0,acs 2011-15,12420,suburb
+unused (phi),4837216,TX,Jacksonville city,town,5569.0,acs 2011-15,27380,suburb
+unused (phi),4838476,TX,Katy city,suburb,5722.0,acs 2011-15,26420,suburb
+unused (phi),4838632,TX,Keller city,suburb,14826.0,acs 2011-15,19100,suburb
+unused (phi),4839040,TX,Kerrville city,town,10472.0,acs 2011-15,28500,suburb
+unused (phi),4839124,TX,Kilgore city,suburb,5836.0,acs 2011-15,30980,suburb
+unused (phi),4839352,TX,Kingsville city,town,10562.0,acs 2011-15,28780,suburb
+unused (phi),4839952,TX,Kyle city,suburb,10435.0,acs 2011-15,12420,suburb
+unused (phi),4840588,TX,Lake Jackson city,suburb,11449.0,acs 2011-15,26420,suburb
+unused (phi),4840984,TX,Lakeway city,suburb,5850.0,acs 2011-15,12420,suburb
+unused (phi),4841116,TX,La Marque city,suburb,6630.0,acs 2011-15,26420,suburb
+unused (phi),4841212,TX,Lancaster city,suburb,13793.0,acs 2011-15,19100,suburb
+unused (phi),4841440,TX,La Porte city,suburb,13042.0,acs 2011-15,26420,suburb
+unused (phi),4842016,TX,Leander city,suburb,10126.0,acs 2011-15,12420,suburb
+unused (phi),4842388,TX,Leon Valley city,suburb,4320.0,acs 2011-15,41700,suburb
+unused (phi),4842448,TX,Levelland city,suburb,5432.0,acs 2011-15,31180,suburb
+unused (phi),4843012,TX,Little Elm city,suburb,10806.0,acs 2011-15,19100,suburb
+unused (phi),4843096,TX,Live Oak city,suburb,6136.0,acs 2011-15,41700,suburb
+unused (phi),4843240,TX,Lockhart city,suburb,4412.0,acs 2011-15,12420,suburb
+unused (phi),4843888,TX,Longview city,core,33736.0,acs 2011-15,30980,suburb
+unused (phi),4845072,TX,Lufkin city,town,15146.0,acs 2011-15,31260,suburb
+unused (phi),4845120,TX,Lumberton city,suburb,5053.0,acs 2011-15,13140,suburb
+unused (phi),4846440,TX,Manor city,suburb,1883.0,acs 2011-15,12420,suburb
+unused (phi),4846452,TX,Mansfield city,suburb,21121.0,acs 2011-15,19100,suburb
+unused (phi),4846776,TX,Marshall city,suburb,9747.0,acs 2011-15,30980,suburb
+unused (phi),4847496,TX,Melissa city,suburb,1800.0,acs 2011-15,19100,suburb
+unused (phi),4847700,TX,Mercedes city,suburb,5551.0,acs 2011-15,32580,suburb
+unused (phi),4848096,TX,Midlothian city,suburb,7423.0,acs 2011-15,19100,suburb
+unused (phi),4848684,TX,Mineral Wells city,town,6209.0,acs 2011-15,33420,suburb
+unused (phi),4848768,TX,Mission city,core,29267.0,acs 2011-15,32580,suburb
+unused (phi),4848804,TX,Missouri City city,suburb,24134.0,acs 2011-15,26420,suburb
+unused (phi),4849800,TX,Mount Pleasant city,town,5428.0,acs 2011-15,34420,suburb
+unused (phi),4850100,TX,Murphy city,suburb,5326.0,acs 2011-15,19100,suburb
+unused (phi),4850256,TX,Nacogdoches city,town,13700.0,acs 2011-15,34860,suburb
+unused (phi),4850580,TX,Nederland city,suburb,7910.0,acs 2011-15,13140,suburb
+unused (phi),4850820,TX,New Braunfels city,suburb,24609.0,acs 2011-15,41700,suburb
+unused (phi),4852356,TX,North Richland Hills city,suburb,26588.0,acs 2011-15,19100,suburb
+unused (phi),4854132,TX,Orange city,suburb,9145.0,acs 2011-15,13140,suburb
+unused (phi),4854708,TX,Palestine city,town,7560.0,acs 2011-15,37300,suburb
+unused (phi),4854804,TX,Palmview city,suburb,1756.0,acs 2011-15,32580,suburb
+unused (phi),4854912,TX,Pampa city,town,8525.0,acs 2011-15,37420,suburb
+unused (phi),4855080,TX,Paris city,town,12101.0,acs 2011-15,37580,suburb
+unused (phi),4856000,TX,Pasadena city,suburb,54712.0,acs 2011-15,26420,suburb
+unused (phi),4857176,TX,Pflugerville city,suburb,19214.0,acs 2011-15,12420,suburb
+unused (phi),4857200,TX,Pharr city,core,23203.0,acs 2011-15,32580,suburb
+unused (phi),4857980,TX,Plainview city,town,8472.0,acs 2011-15,38380,suburb
+unused (phi),4858280,TX,Pleasanton city,suburb,3583.0,acs 2011-15,41700,suburb
+unused (phi),4858820,TX,Port Arthur city,core,23912.0,acs 2011-15,13140,suburb
+unused (phi),4858904,TX,Portland city,suburb,5852.0,acs 2011-15,18580,suburb
+unused (phi),4858916,TX,Port Lavaca city,town,4948.0,acs 2011-15,38920,suburb
+unused (phi),4858940,TX,Port Neches city,suburb,5414.0,acs 2011-15,13140,suburb
+unused (phi),4859576,TX,Princeton city,suburb,3151.0,acs 2011-15,19100,suburb
+unused (phi),4859696,TX,Prosper town,suburb,4541.0,acs 2011-15,19100,suburb
+unused (phi),4860836,TX,Raymondville city,town,3003.0,acs 2011-15,39700,suburb
+unused (phi),4861196,TX,Red Oak city,suburb,3916.0,acs 2011-15,19100,suburb
+unused (phi),4861892,TX,Richmond city,suburb,3897.0,acs 2011-15,26420,suburb
+unused (phi),4862588,TX,Robinson city,suburb,4266.0,acs 2011-15,47380,suburb
+unused (phi),4862600,TX,Robstown city,suburb,4237.0,acs 2011-15,18580,suburb
+unused (phi),4862804,TX,Rockport city,suburb,6290.0,acs 2011-15,18580,suburb
+unused (phi),4862828,TX,Rockwall city,suburb,15158.0,acs 2011-15,19100,suburb
+unused (phi),4863284,TX,Rosenberg city,suburb,11927.0,acs 2011-15,26420,suburb
+unused (phi),4863572,TX,Rowlett city,suburb,19592.0,acs 2011-15,19100,suburb
+unused (phi),4863668,TX,Royse City city,suburb,3207.0,acs 2011-15,19100,suburb
+unused (phi),4864064,TX,Sachse city,suburb,7429.0,acs 2011-15,19100,suburb
+unused (phi),4864112,TX,Saginaw city,suburb,7012.0,acs 2011-15,19100,suburb
+unused (phi),4864472,TX,San Angelo city,core,40170.0,acs 2011-15,41660,suburb
+unused (phi),4865036,TX,San Benito city,suburb,8637.0,acs 2011-15,15180,suburb
+unused (phi),4865516,TX,San Juan city,suburb,9713.0,acs 2011-15,32580,suburb
+unused (phi),4865600,TX,San Marcos city,suburb,22473.0,acs 2011-15,12420,suburb
+unused (phi),4865726,TX,Santa Fe city,suburb,5132.0,acs 2011-15,26420,suburb
+unused (phi),4866128,TX,Schertz city,suburb,13099.0,acs 2011-15,41700,suburb
+unused (phi),4866392,TX,Seabrook city,suburb,5629.0,acs 2011-15,26420,suburb
+unused (phi),4866428,TX,Seagoville city,suburb,4445.0,acs 2011-15,19100,suburb
+unused (phi),4866644,TX,Seguin city,suburb,10737.0,acs 2011-15,41700,suburb
+unused (phi),4866704,TX,Selma city,suburb,2656.0,acs 2011-15,41700,suburb
+unused (phi),4867496,TX,Sherman city,core,16706.0,acs 2011-15,43300,suburb
+unused (phi),4868624,TX,Snyder city,town,4964.0,acs 2011-15,43660,suburb
+unused (phi),4868636,TX,Socorro city,suburb,9593.0,acs 2011-15,21340,suburb
+unused (phi),4869020,TX,South Houston city,suburb,5216.0,acs 2011-15,26420,suburb
+unused (phi),4869032,TX,Southlake city,suburb,9215.0,acs 2011-15,19100,suburb
+unused (phi),4869908,TX,Stafford city,suburb,7238.0,acs 2011-15,26420,suburb
+unused (phi),4870208,TX,Stephenville city,town,7586.0,acs 2011-15,44500,suburb
+unused (phi),4870904,TX,Sulphur Springs city,town,6619.0,acs 2011-15,44860,suburb
+unused (phi),4871540,TX,Sweetwater city,town,5077.0,acs 2011-15,45020,suburb
+unused (phi),4871948,TX,Taylor city,suburb,5962.0,acs 2011-15,12420,suburb
+unused (phi),4872176,TX,Temple city,core,29683.0,acs 2011-15,28660,suburb
+unused (phi),4872284,TX,Terrell city,suburb,6192.0,acs 2011-15,19100,suburb
+unused (phi),4872368,TX,Texarkana city,core,16280.0,acs 2011-15,45500,suburb
+unused (phi),4872392,TX,Texas City city,suburb,19429.0,acs 2011-15,26420,suburb
+unused (phi),4872530,TX,The Colony city,suburb,15117.0,acs 2011-15,19100,suburb
+unused (phi),4873316,TX,Tomball city,suburb,4859.0,acs 2011-15,26420,suburb
+unused (phi),4873710,TX,Trophy Club town,suburb,3619.0,acs 2011-15,19100,suburb
+unused (phi),4874408,TX,Universal City city,suburb,7832.0,acs 2011-15,41700,suburb
+unused (phi),4874492,TX,University Park city,suburb,7848.0,acs 2011-15,19100,suburb
+unused (phi),4874588,TX,Uvalde city,town,5436.0,acs 2011-15,46620,suburb
+unused (phi),4875308,TX,Vernon city,town,5082.0,acs 2011-15,46900,suburb
+unused (phi),4875428,TX,Victoria city,core,26245.0,acs 2011-15,47020,suburb
+unused (phi),4876672,TX,Watauga city,suburb,8439.0,acs 2011-15,19100,suburb
+unused (phi),4876816,TX,Waxahachie city,suburb,11723.0,acs 2011-15,19100,suburb
+unused (phi),4876864,TX,Weatherford city,suburb,11308.0,acs 2011-15,19100,suburb
+unused (phi),4876948,TX,Webster city,suburb,5347.0,acs 2011-15,26420,suburb
+unused (phi),4877272,TX,Weslaco city,suburb,15093.0,acs 2011-15,32580,suburb
+unused (phi),4877956,TX,West University Place city,suburb,5855.0,acs 2011-15,26420,suburb
+unused (phi),4878544,TX,White Settlement city,suburb,6881.0,acs 2011-15,19100,suburb
+unused (phi),4880356,TX,Wylie city,suburb,14567.0,acs 2011-15,19100,suburb

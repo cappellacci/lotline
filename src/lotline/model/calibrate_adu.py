@@ -1002,6 +1002,64 @@ def predict_unseen_state(
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------
+# D-060: the calibration range from the places the anchor is fitted on
+# ---------------------------------------------------------------------------------------------------------
+
+FIT_RANGE_PERCENTILES = (5.0, 95.0)  # D-060, pre-registered: eligible-weighted 5th to 95th percentile
+
+
+def weighted_percentile(x, w, q: float) -> float:
+    """The q-th weighted percentile: the smallest x whose cumulative weight share reaches q / 100 (the
+    inverted weighted CDF; D-060).
+
+    By hand, x = (4, 1, 3, 2), weights (1, 1, 1, 1): sorted 1, 2, 3, 4 with shares 0.25, 0.5, 0.75, 1, so
+    q = 5 -> 1, q = 50 -> 2, q = 95 -> 4. Weights (1, 7, 1, 1) on x = (1, 2, 3, 4): shares 0.1, 0.8, 0.9,
+    1, so q = 5 -> 1, q = 50 -> 2, q = 85 -> 3, q = 95 -> 4.
+    """
+    x, w = np.asarray(x, dtype=float).ravel(), np.asarray(w, dtype=float).ravel()
+    keep = np.isfinite(x) & np.isfinite(w) & (w > 0)
+    x, w = x[keep], w[keep]
+    if x.size == 0:
+        raise ValueError("no positive-weight values")
+    order = np.argsort(x, kind="stable")
+    share = np.cumsum(w[order]) / w.sum()
+    i = int(np.searchsorted(share, q / 100.0 - 1e-12, side="left"))
+    return float(x[order][min(i, x.size - 1)])
+
+
+def fit_set_range(places: list[PlaceData], percentiles=FIT_RANGE_PERCENTILES) -> dict:
+    """D-060's calibration range from fit place-years (each `PlaceData.extra`): rent and home value at the
+    eligible-parcel-weighted `percentiles`, the mortgage rate at its min and max. Keys match
+    `config/params/hazard.yaml` (`adu_calibration_*`); also returns the min/max alternative (reported, not
+    used), and the place and place-year counts.
+
+    By hand, three place-years, rent 1,000 (10 parcels), 1,500 (980) and 2,000 (10): cumulative shares 0.01,
+    0.99, 1, so both the 5th and the 95th percentile are 1,500; min/max would give 1,000-2,000. Small places
+    at the edges do not set the range.
+    """
+    rent = np.concatenate([pl.extra["rent"] for pl in places])
+    value = np.concatenate([pl.extra["home_value"] for pl in places])
+    rate = np.concatenate([pl.extra["rate"] for pl in places])
+    w = np.concatenate([pl.extra["parcels"] for pl in places])
+    lo, hi = percentiles
+    return {
+        "adu_calibration_rent_low_usd": weighted_percentile(rent, w, lo),
+        "adu_calibration_rent_high_usd": weighted_percentile(rent, w, hi),
+        "adu_calibration_value_low_usd": weighted_percentile(value, w, lo),
+        "adu_calibration_value_high_usd": weighted_percentile(value, w, hi),
+        "adu_calibration_rate_low": float(np.nanmin(rate)),
+        "adu_calibration_rate_high": float(np.nanmax(rate)),
+        "minmax": {
+            "rent": (float(np.nanmin(rent)), float(np.nanmax(rent))),
+            "home_value": (float(np.nanmin(value)), float(np.nanmax(value))),
+        },
+        "places": len(places),
+        "place_years": int(rent.size),
+        "years": (int(min(pl.years.min() for pl in places)), int(max(pl.years.max() for pl in places))),
+    }
+
+
 def place_data(
     state: str,
     store,

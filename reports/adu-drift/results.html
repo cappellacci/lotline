@@ -1,0 +1,243 @@
+<title>ADU forecast drift</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column; headline, stat row, decision panel, the evidence table Ben asked for, then findings with charts. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header, section { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.eyebrow, .num-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.num-tag { color: var(--survey); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 21px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.stat { border-top: 2px solid var(--rule); padding-top: var(--space-2); }
+.stat b { display: block; font-family: var(--font-mono); font-size: 22px; font-weight: 500; }
+.stat span { font-size: 13px; color: var(--ink-muted); }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--ink-faint); stroke-width: 1.5; }
+.chart .tick { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink-muted); font-size: 12px; }
+.chart .lab.small { font-size: 11px; }
+.chart .lab.st { fill: var(--ink); font-weight: 600; font-size: 12.5px; }
+.chart .bar { stroke-width: 7; stroke-linecap: butt; }
+.chart .bar.f0.nd { stroke: var(--ink-faint); opacity: .55; } .chart .bar.f0.dr { stroke: var(--ink-faint); }
+.chart .bar.f1.nd { stroke: var(--scenario-adu); opacity: .45; } .chart .bar.f1.dr { stroke: var(--scenario-adu); }
+.chart .med { stroke: var(--ink); stroke-width: 2; }
+.chart .obs { stroke: var(--confidence-outside); stroke-width: 2.5; }
+.chart .up { fill: var(--confidence-inside); } .chart .down { fill: var(--confidence-outside); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.wide { min-width: 600px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.useful { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · D-091 ADU forecast drift · 14 Nov 2026</div>
+  <h1>The drift makes the ranges honest; a gain in predictive power is not proven at the pre-set bar</h1>
+  <p class="lede">D-090's forecasts were given one random multiplier per place for 2021–2025, its spread learned for each state from the other three. The bands now hold about 80% of places, as an honest 80% band should, and persistence with drift is useful in 3 of 4 states. The log score improves by a lot in total, but almost all of it is Portland; place by place, about as many get slightly worse as better.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>58% → 81%</b><span>places inside their own P10–P90, persistence (F1: → 77%)</span></div>
+  <div class="stat"><b>0 → 3 of 4</b><span>states where persistence is useful, without → with drift (bar 3)</span></div>
+  <div class="stat"><b>+429</b><span>log-score gain, persistence; the bar was 2 SE = 551. Without Portland +158</span></div>
+  <div class="stat"><b>×2.8</b><span>one SD of drift, learned leaving each state out (folds ×2.3–×3.0)</span></div>
+</div>
+
+<div class="decision">
+  <span class="tag">Needs Ben's call</span>
+  <p><b>D-091's rules, fixed before the run:</b></p>
+  <ol>
+    <li><b>Rule 1:</b> F1 with drift is useful in 2 of 4 (fails); <b>persistence with drift in 3 of 4 (passes).</b></li>
+    <li><b>Rule 2:</b> F1 with drift beats persistence with drift by +7.6, bar 31: no.</li>
+    <li><b>Rule 3, calibration:</b> 81% (persistence) and 77% (F1) of places inside their band, inside 65–95%: pass.</li>
+    <li><b>Your condition, "does it improve predictive power":</b> the pre-set test (log-score gain over 2 paired SE) is <b>not met</b> for either forecaster. Calibration and per-place CRPS improve clearly; the log-score total does not clear its bar because one city carries it.</li>
+  </ol>
+  <p><b>The outcome D-091 fixed for this case</b> ("only persistence with drift passes"): the tool's no-reform range for a state with history is persistence with the drift band; a bill's effect is F1's ratio (with ÷ without the bill) applied to it, labelled as unchecked within ×2. Nothing is in the tool or config yet. To roll back, close PR #430.</p>
+</div>
+
+<section>
+  <div class="num-tag">The evidence you asked for</div>
+  <h2>With and without drift, side by side</h2>
+  <div class="scroll"><table class="wide"><tr><th></th><th>F0 no drift</th><th>F0 + drift</th><th>F1 no drift</th><th>F1 + drift</th></tr><tr><td>Places inside their own P10–P90 (honest: ~80%)</td><td class='num '>58%</td><td class='num useful'>81%</td><td class='num '>58%</td><td class='num useful'>77%</td></tr><tr><td>States whose total is inside P10–P90 (of 4)</td><td class='num'>0</td><td class='num'>4</td><td class='num'>1</td><td class='num'>2</td></tr><tr><td>Useful states (inside and within ×2; bar 3)</td><td class='num '>0</td><td class='num useful'>3</td><td class='num '>1</td><td class='num '>2</td></tr><tr><td>Summed per-place log score (higher is better)</td><td class='num'>-823</td><td class='num'>-394</td><td class='num'>-829</td><td class='num'>-387</td></tr><tr><td>Gain with drift, and the 2-SE bar</td><td></td><td class='num'>+429 vs 551</td><td></td><td class='num'>+442 vs 571</td></tr><tr><td>Places better / worse with drift</td><td></td><td class='num'>17 / 22</td><td></td><td class='num'>20 / 20</td></tr><tr><td>Gain without Portland</td><td></td><td class='num'>+158</td><td></td><td class='num'>+163</td></tr><tr><td>Summed per-place CRPS (lower is better)</td><td class='num'>2,235</td><td class='num'>1,938</td><td class='num'>2,920</td><td class='num'>2,563</td></tr><tr><td>Summed state-total CRPS (lower is better)</td><td class='num'>1,649</td><td class='num'>1,533</td><td class='num'>2,309</td><td class='num'>2,879</td></tr></table></div>
+  <p class="note">σ is learned leaving each state out, so no state's own window sets its own band. With drift off, every place's draws and scores equal D-090's exactly (largest gap 3.6e-15). The median of d is 1, so each place's median is unchanged and the ×2 test cannot improve place by place.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 1</div>
+  <h2>The ranges now reach the observed totals</h2>
+  <p>Without drift every bar is a sliver and misses. With drift persistence's range holds the total in all four states; its median is within ×2 in three (Oregon is 0.47).</p>
+  <svg viewBox="0 0 640 346" class="chart" role="img" aria-label="State totals: ranges without and with drift"><line x1="150.0" x2="150.0" y1="10" y2="316" class="grid"/><text x="150.0" y="332" class="tick" text-anchor="middle">30</text><line x1="237.8" x2="237.8" y1="10" y2="316" class="grid"/><text x="237.8" y="332" class="tick" text-anchor="middle">100</text><line x1="317.9" x2="317.9" y1="10" y2="316" class="grid"/><text x="317.9" y="332" class="tick" text-anchor="middle">300</text><line x1="405.6" x2="405.6" y1="10" y2="316" class="grid"/><text x="405.6" y="332" class="tick" text-anchor="middle">1,000</text><line x1="485.7" x2="485.7" y1="10" y2="316" class="grid"/><text x="485.7" y="332" class="tick" text-anchor="middle">3,000</text><line x1="573.5" x2="573.5" y1="10" y2="316" class="grid"/><text x="573.5" y="332" class="tick" text-anchor="middle">10,000</text><text x="142" y="27.5" class="lab small" text-anchor="end">F0 no drift</text><line x1="265.9" x2="287.6" y1="23.5" y2="23.5" class="bar f0 nd"><title>Minnesota F0 no drift: P10 147, P50 172, P90 198</title></line><line x1="277.3" x2="277.3" y1="18.5" y2="28.5" class="med"/><text x="142" y="42.5" class="lab small" text-anchor="end">F0 + drift</text><line x1="220.6" x2="365.0" y1="38.5" y2="38.5" class="bar f0 dr"><title>Minnesota F0 + drift: P10 79, P50 191, P90 573</title></line><line x1="284.9" x2="284.9" y1="33.5" y2="43.5" class="med"/><text x="142" y="57.5" class="lab small" text-anchor="end">F1 no drift</text><line x1="316.6" x2="336.6" y1="53.5" y2="53.5" class="bar f1 nd"><title>Minnesota F1 no drift: P10 295, P50 339, P90 388</title></line><line x1="326.8" x2="326.8" y1="48.5" y2="58.5" class="med"/><text x="142" y="72.5" class="lab small" text-anchor="end">F1 + drift</text><line x1="263.3" x2="393.9" y1="68.5" y2="68.5" class="bar f1 dr"><title>Minnesota F1 + drift: P10 142, P50 344, P90 852</title></line><line x1="327.8" x2="327.8" y1="63.5" y2="73.5" class="med"/><line x1="250.6" x2="250.6" y1="14" y2="78" class="obs"><title>observed 119</title></line><text x="4" y="50" class="lab st">Minnesota</text><text x="142" y="101.5" class="lab small" text-anchor="end">F0 no drift</text><line x1="343.2" x2="356.5" y1="97.5" y2="97.5" class="bar f0 nd"><title>North Carolina F0 no drift: P10 425, P50 468, P90 510</title></line><line x1="350.3" x2="350.3" y1="92.5" y2="102.5" class="med"/><text x="142" y="116.5" class="lab small" text-anchor="end">F0 + drift</text><line x1="314.9" x2="417.3" y1="112.5" y2="112.5" class="bar f0 dr"><title>North Carolina F0 + drift: P10 288, P50 545, P90 1,173</title></line><line x1="361.4" x2="361.4" y1="107.5" y2="117.5" class="med"/><text x="142" y="131.5" class="lab small" text-anchor="end">F1 no drift</text><line x1="384.7" x2="399.3" y1="127.5" y2="127.5" class="bar f1 nd"><title>North Carolina F1 no drift: P10 751, P50 830, P90 917</title></line><line x1="392.0" x2="392.0" y1="122.5" y2="132.5" class="med"/><text x="142" y="146.5" class="lab small" text-anchor="end">F1 + drift</text><line x1="364.5" x2="515.9" y1="142.5" y2="142.5" class="bar f1 dr"><title>North Carolina F1 + drift: P10 569, P50 1,493, P90 4,537</title></line><line x1="434.8" x2="434.8" y1="137.5" y2="147.5" class="med"/><line x1="388.5" x2="388.5" y1="88" y2="152" class="obs"><title>observed 790</title></line><text x="4" y="124" class="lab st">North Carolina</text><text x="142" y="175.5" class="lab small" text-anchor="end">F0 no drift</text><line x1="337.9" x2="350.3" y1="171.5" y2="171.5" class="bar f0 nd"><title>Texas F0 no drift: P10 395, P50 431, P90 468</title></line><line x1="344.3" x2="344.3" y1="166.5" y2="176.5" class="med"/><text x="142" y="190.5" class="lab small" text-anchor="end">F0 + drift</text><line x1="251.1" x2="446.1" y1="186.5" y2="186.5" class="bar f0 dr"><title>Texas F0 + drift: P10 120, P50 434, P90 1,743</title></line><line x1="344.8" x2="344.8" y1="181.5" y2="191.5" class="med"/><text x="142" y="205.5" class="lab small" text-anchor="end">F1 no drift</text><line x1="347.1" x2="358.9" y1="201.5" y2="201.5" class="bar f1 nd"><title>Texas F1 no drift: P10 448, P50 487, P90 527</title></line><line x1="353.2" x2="353.2" y1="196.5" y2="206.5" class="med"/><text x="142" y="220.5" class="lab small" text-anchor="end">F1 + drift</text><line x1="251.7" x2="460.0" y1="216.5" y2="216.5" class="bar f1 dr"><title>Texas F1 + drift: P10 121, P50 484, P90 2,109</title></line><line x1="352.7" x2="352.7" y1="211.5" y2="221.5" class="med"/><line x1="332.3" x2="332.3" y1="162" y2="226" class="obs"><title>observed 366</title></line><text x="4" y="198" class="lab st">Texas</text><text x="142" y="249.5" class="lab small" text-anchor="end">F0 no drift</text><line x1="476.9" x2="482.4" y1="245.5" y2="245.5" class="bar f0 nd"><title>Oregon F0 no drift: P10 2,660, P50 2,763, P90 2,867</title></line><line x1="479.7" x2="479.7" y1="240.5" y2="250.5" class="med"/><text x="142" y="264.5" class="lab small" text-anchor="end">F0 + drift</text><line x1="410.3" x2="576.0" y1="260.5" y2="260.5" class="bar f0 dr"><title>Oregon F0 + drift: P10 1,066, P50 3,096, P90 10,350</title></line><line x1="488.0" x2="488.0" y1="255.5" y2="265.5" class="med"/><text x="142" y="279.5" class="lab small" text-anchor="end">F1 no drift</text><line x1="494.1" x2="499.9" y1="275.5" y2="275.5" class="bar f1 nd"><title>Oregon F1 no drift: P10 3,366, P50 3,504, P90 3,647</title></line><line x1="497.0" x2="497.0" y1="270.5" y2="280.5" class="med"/><text x="142" y="294.5" class="lab small" text-anchor="end">F1 + drift</text><line x1="439.4" x2="590.2" y1="290.5" y2="290.5" class="bar f1 dr"><title>Oregon F1 + drift: P10 1,589, P50 4,319, P90 12,586</title></line><line x1="512.3" x2="512.3" y1="285.5" y2="295.5" class="med"/><line x1="433.4" x2="433.4" y1="236" y2="300" class="obs"><title>observed 1,464</title></line><text x="4" y="272" class="lab st">Oregon</text><text x="624" y="345" class="tick" text-anchor="end">ADUs 2021–2025, places with history (log scale); bar P10–P90, tick median, red line observed</text></svg>
+  <p class="note">Faint bars: no drift. Solid: with drift. Grey: persistence (F0). Blue: F1.</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 2</div>
+  <h2>Most of the log-score gain is one city</h2>
+  <p>Persistence: 17 places better, 22 slightly worse. The losses are small (the largest is Bend, −2.5): where the old band already held what happened, a wider band spreads probability away from it. Portland's score alone rises by about 270, because without drift the observed total was far outside a very tight band. Remove Portland and the gain is +158, still large, but the paired SE is built from these same uneven gains, so the 2-SE bar is not met.</p>
+  <svg viewBox="0 0 640 190" class="chart" role="img" aria-label="Per-place log score change, F0"><line x1="44" x2="630" y1="156.0" y2="156.0" class="grid"/><text x="38" y="160.0" class="tick" text-anchor="end">-5</text><line x1="44" x2="630" y1="135.7" y2="135.7" class="zero"/><text x="38" y="139.7" class="tick" text-anchor="end">+0</text><line x1="44" x2="630" y1="95.1" y2="95.1" class="grid"/><text x="38" y="99.1" class="tick" text-anchor="end">+10</text><line x1="44" x2="630" y1="54.6" y2="54.6" class="grid"/><text x="38" y="58.6" class="tick" text-anchor="end">+20</text><line x1="44" x2="630" y1="14.0" y2="14.0" class="grid"/><text x="38" y="18.0" class="tick" text-anchor="end">+30</text><rect x="50.0" y="135.7" width="11.5" height="9.9" class="down"><title>Bend city: -2.45</title></rect><rect x="63.5" y="135.7" width="11.5" height="2.5" class="down"><title>College Station city: -0.62</title></rect><rect x="77.0" y="135.7" width="11.5" height="1.3" class="down"><title>Mint Hill town: -0.32</title></rect><rect x="90.5" y="135.7" width="11.5" height="1.1" class="down"><title>Roseville city: -0.28</title></rect><rect x="104.0" y="135.7" width="11.5" height="0.9" class="down"><title>Chapel Hill town: -0.21</title></rect><rect x="117.4" y="135.7" width="11.5" height="0.9" class="down"><title>Cornelius town: -0.21</title></rect><rect x="130.9" y="135.7" width="11.5" height="0.8" class="down"><title>Medina city: -0.14</title></rect><rect x="144.4" y="135.7" width="11.5" height="0.8" class="down"><title>Burnsville city: -0.11</title></rect><rect x="157.9" y="135.7" width="11.5" height="0.8" class="down"><title>Cedar Lake township: -0.11</title></rect><rect x="171.4" y="135.7" width="11.5" height="0.8" class="down"><title>Mounds View city: -0.03</title></rect><rect x="184.9" y="135.7" width="11.5" height="0.8" class="down"><title>Vadnais Heights city: -0.02</title></rect><rect x="198.4" y="135.7" width="11.5" height="0.8" class="down"><title>Forest Lake city: -0.02</title></rect><rect x="211.9" y="135.7" width="11.5" height="0.8" class="down"><title>Bloomington city: -0.02</title></rect><rect x="225.3" y="135.7" width="11.5" height="0.8" class="down"><title>Helena township: -0.02</title></rect><rect x="238.8" y="135.7" width="11.5" height="0.8" class="down"><title>Eagan city: -0.02</title></rect><rect x="252.3" y="135.7" width="11.5" height="0.8" class="down"><title>Maplewood city: -0.02</title></rect><rect x="265.8" y="135.7" width="11.5" height="0.8" class="down"><title>Apple Valley city: -0.02</title></rect><rect x="279.3" y="135.7" width="11.5" height="0.8" class="down"><title>Cottage Grove city: -0.02</title></rect><rect x="292.8" y="135.7" width="11.5" height="0.8" class="down"><title>Andover city: -0.02</title></rect><rect x="306.3" y="135.7" width="11.5" height="0.8" class="down"><title>Hugo city: -0.01</title></rect><rect x="319.8" y="135.7" width="11.5" height="0.8" class="down"><title>Lakeville city: -0.01</title></rect><rect x="333.3" y="135.7" width="11.5" height="0.8" class="down"><title>Rosemount city: -0.01</title></rect><rect x="346.7" y="135.7" width="11.5" height="0.8" class="down"><title>Plymouth city: -0.00</title></rect><rect x="360.2" y="135.7" width="11.5" height="0.8" class="up"><title>St. Lawrence township: +0.00</title></rect><rect x="373.7" y="135.7" width="11.5" height="0.8" class="up"><title>Austin city: +0.00</title></rect><rect x="387.2" y="135.7" width="11.5" height="0.8" class="up"><title>Baytown township: +0.01</title></rect><rect x="400.7" y="135.0" width="11.5" height="0.8" class="up"><title>Chanhassen city: +0.18</title></rect><rect x="414.2" y="134.8" width="11.5" height="0.9" class="up"><title>Crystal city: +0.22</title></rect><rect x="427.7" y="134.8" width="11.5" height="0.9" class="up"><title>Inver Grove Heights city: +0.23</title></rect><rect x="441.2" y="134.6" width="11.5" height="1.2" class="up"><title>Matthews town: +0.29</title></rect><rect x="454.7" y="133.9" width="11.5" height="1.9" class="up"><title>Richfield city: +0.46</title></rect><rect x="468.1" y="133.1" width="11.5" height="2.6" class="up"><title>Stillwater city: +0.63</title></rect><rect x="481.6" y="133.0" width="11.5" height="2.7" class="up"><title>Huntersville town: +0.68</title></rect><rect x="495.1" y="131.2" width="11.5" height="4.5" class="up"><title>Greensboro city: +1.12</title></rect><rect x="508.6" y="130.3" width="11.5" height="5.4" class="up"><title>Durham County Unincorporated Area: +1.33</title></rect><rect x="522.1" y="122.5" width="11.5" height="13.2" class="up"><title>Minnetonka city: +3.27</title></rect><rect x="535.6" y="97.8" width="11.5" height="37.9" class="up"><title>Minneapolis city: +9.35</title></rect><rect x="549.1" y="74.6" width="11.5" height="61.1" class="up"><title>Asheville city: +15.07</title></rect><rect x="562.6" y="69.7" width="11.5" height="66.0" class="up"><title>Salem city: +16.27</title></rect><rect x="576.0" y="34.8" width="11.5" height="100.9" class="up"><title>Charlotte city: +24.87</title></rect><rect x="589.5" y="14.0" width="11.5" height="121.7" class="up"><title>Wilmington city: +36.70</title></rect><text x="596.3" y="12" class="tick" text-anchor="end">Wilmington +37 ↑</text><rect x="603.0" y="14.0" width="11.5" height="121.7" class="up"><title>Durham city: +52.04</title></rect><text x="609.8" y="12" class="tick" text-anchor="end">Durham +52 ↑</text><rect x="616.5" y="14.0" width="11.5" height="121.7" class="up"><title>Portland city: +270.58</title></rect><text x="623.3" y="12" class="tick" text-anchor="end">Portland +271 ↑</text><text x="630" y="184" class="tick" text-anchor="end">each bar one place with history, sorted; log score with drift − without</text></svg>
+</section>
+
+<section>
+  <div class="num-tag">Finding 3</div>
+  <h2>Independent drift lifts a state's median when one place dominates its errors</h2>
+  <p>Each place keeps its median, but a state's total is a sum of skewed draws, so its median rises. For F1 in North Carolina, the total's median moved from 830 to 1,493 (observed 790), because F1's σ learned without NC is the widest fold (1.43). This is why F1's state-total CRPS gets worse while its per-place CRPS improves.</p>
+  <div class="scroll"><table class="wide"><tr><th>Fold</th><th>σ, persistence</th><th>σ, F1</th></tr><tr><td>Without Minnesota</td><td class='num'>1.000 (×2.7)</td><td class='num'>0.725 (×2.1)</td></tr><tr><td>Without North Carolina</td><td class='num'>0.850 (×2.3)</td><td class='num'>1.425 (×4.2)</td></tr><tr><td>Without Texas</td><td class='num'>1.100 (×3.0)</td><td class='num'>1.150 (×3.2)</td></tr><tr><td>Without Oregon</td><td class='num'>1.075 (×2.9)</td><td class='num'>1.075 (×2.9)</td></tr></table></div>
+  <p class="note">F1's folds range more widely than persistence's, because F1's errors include how it priced rule changes in each state. On all four states together: persistence 1.025, F1 1.075 (reported only, never used).</p>
+</section>
+
+<section>
+  <div class="num-tag">Finding 4</div>
+  <h2>Sensitivities</h2>
+  <div class="scroll"><table class="wide"><tr><th>Variant</th><th>F0 coverage</th><th>F0 useful</th><th>F0 total CRPS</th><th>F1 coverage</th><th>F1 useful</th><th>F1 total CRPS</th></tr><tr><td>drift</td><td class='num'>81%</td><td class='num'>3</td><td class='num'>1,533</td><td class='num'>77%</td><td class='num'>2</td><td class='num'>2,879</td></tr><tr><td>drift, shared by state</td><td class='num'>81%</td><td class='num'>4</td><td class='num'>1,456</td><td class='num'>77%</td><td class='num'>2</td><td class='num'>2,257</td></tr><tr><td>drift, log-mean learned</td><td class='num'>84%</td><td class='num'>2</td><td class='num'>2,828</td><td class='num'>72%</td><td class='num'>1</td><td class='num'>5,240</td></tr></table></div>
+  <p class="note">One drift shared by every place in a state, the correlated bound, does as well or better on totals: persistence useful in 4 of 4. Learning a log-mean as well shifts every median up and makes things worse; the median-1 choice holds.</p>
+</section>
+
+<footer>
+  <p>Built by <code>scripts/dev/adu_drift_page.py</code> from <code>reports/adu-drift/</code>. Method: D-091 in <code>docs/analysis_plan.md</code>, accepted 14 Nov 2026 with Ben's two conditions; code committed at d8429d88 before the run. D-090's fits and draws reused unchanged.</p>
+  <p>A smoke run (500 draws) came first; only its status lines were seen. St. Paul is out; no <code>--unblind</code>. Nothing written to config.</p>
+</footer>
+</main>

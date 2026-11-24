@@ -1,0 +1,173 @@
+<title>D-060 Calibration Range Port</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: one reading column of numbered findings, each a plain headline over its own chart (D-053 report style). */
+:root {
+  --bg: #f6f7f5; --surface: #ffffff; --fg: #1d2420; --muted: #5d6862; --rule: #d9dfdb;
+  --before: #9aa59f; --after: #2f6f5e; --accent: #b4572a; --band: #e9efeb;
+  --display: "Fraunces", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141917; --surface: #1c2320; --fg: #e5ebe7; --muted: #9aa7a0; --rule: #2e3833;
+  --before: #6d7872; --after: #6cc2a6; --accent: #e08a5c; --band: #222b27; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141917; --surface: #1c2320; --fg: #e5ebe7; --muted: #9aa7a0; --rule: #2e3833;
+  --before: #6d7872; --after: #6cc2a6; --accent: #e08a5c; --band: #222b27; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 40px; }
+h1 { font-family: var(--display); font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.15rem; font-weight: 600; margin: 0; text-wrap: balance; }
+.eyebrow { font-family: var(--mono); font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0; max-width: 65ch; }
+.muted { color: var(--muted); }
+header { display: grid; gap: 12px; }
+.decision { background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 18px 20px; display: grid; gap: 10px; }
+.decision h2 { color: var(--accent); }
+.decision ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+section.finding { display: grid; gap: 12px; }
+.num { font-family: var(--mono); color: var(--accent); margin-right: .4em; }
+.chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; overflow-x: auto; }
+.chart svg { display: block; width: 100%; height: auto; min-width: 520px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: .85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 18px; height: 4px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: .92rem; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 500; color: var(--muted); font-size: .8rem; }
+.tablewrap { overflow-x: auto; }
+footer { font-size: .85rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; }
+code { font-family: var(--mono); font-size: .88em; }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">ADU model · D-060 · run 2026-11-24 · PR #519</div>
+    <h1>Measuring distance from our own five states moves the ADU medians up and halves the ranges</h1>
+    <p class="muted">D-060 moved the ADU calibration range from Portland, Seattle and Los Angeles to where the anchor's own fit places sit. You approved it on Nov 6 and it passed its gates, but its PR never merged. This run ports it onto today's fit set (70 places, 513 place-years) and reruns the five core states with the same seed. Only the six range values changed.</p>
+  </header>
+
+  <div class="decision" id="decision">
+    <h2>For your call</h2>
+    <ol>
+      <li><strong>Merge #519 on green?</strong> It changes the ADU numbers below. The live app keeps the old numbers until it is republished.</li>
+      <li><strong>Overlap flag thresholds.</strong> With the new range every core state reads "high" overlap. Keep the 0.5 and 1.0 thresholds as they are (my pick: they still separate a state like Wisconsin from the fit states), or retune them in a separate entry.</li>
+    </ol>
+  </div>
+
+  <section class="finding">
+    <h2><span class="num">1</span>The new range sits where our states are, not where the West Coast is</h2>
+    <p>The range is the eligible-parcel-weighted 5th to 95th percentile of rent and home value over the fit place-years. The rate span is the same either way (2.96–6.81%).</p>
+    <div class="chart"><svg id="c-range" viewBox="0 0 700 200" role="img" aria-label="Old and new calibration ranges for rent and home value"></svg></div>
+    <div class="legend"><span><i style="background:var(--before)"></i>West Coast range (before)</span><span><i style="background:var(--after)"></i>Fit-set range (after)</span></div>
+  </section>
+
+  <section class="finding">
+    <h2><span class="num">2</span>ADU additional permits: medians rise 26–30% in MN, NC and TX, double in Ohio</h2>
+    <p>Five-year totals, 2027–2031, P10 to P90 with the median marked, on a log scale. The widening multiplies each draw by exp(s·z − s²/2), which keeps the mean but lowers the median and stretches P90. Less distance means less widening, so the median moves up toward the mean and the range narrows. Oregon barely moves because it already sat almost inside the old range.</p>
+    <div class="chart"><svg id="c-permits" viewBox="0 0 700 330" role="img" aria-label="ADU added permits P10 to P90 by state, before and after"></svg></div>
+    <div class="legend"><span><i style="background:var(--before)"></i>Before</span><span><i style="background:var(--after)"></i>After</span><span>Tick = median (P50)</span></div>
+    <div class="tablewrap"><table id="t-permits"></table></div>
+  </section>
+
+  <section class="finding">
+    <h2><span class="num">3</span>Means hardly move, so the expected number of homes is about the same</h2>
+    <p>The sum of the five states' mean added permits goes from 9,689 to 9,728 (+0.4%). Additional homes net statewide: 3,848 to 3,885 (+1.0%). What changes is how wide the range is and where the median sits in it.</p>
+    <div class="chart"><svg id="c-spread" viewBox="0 0 700 220" role="img" aria-label="P90 divided by P10 by state, before and after"></svg></div>
+    <div class="legend"><span><i style="background:var(--before)"></i>P90 ÷ P10 before</span><span><i style="background:var(--after)"></i>P90 ÷ P10 after</span></div>
+  </section>
+
+  <section class="finding">
+    <h2><span class="num">4</span>Every core state now reads "high" overlap</h2>
+    <p>The state's median log distance outside the range. "High" overlap is at or below 0.5 and "low" above 1.0. The thresholds were chosen on Nov 6 against the West Coast distances and are not retuned here.</p>
+    <div class="chart"><svg id="c-overlap" viewBox="0 0 700 220" role="img" aria-label="Median calibration distance by state, before and after, with flag thresholds"></svg></div>
+    <div class="legend"><span><i style="background:var(--before)"></i>Before</span><span><i style="background:var(--after)"></i>After</span><span><i style="background:var(--accent)"></i>Flag thresholds 0.5 and 1.0</span></div>
+  </section>
+
+  <section class="finding">
+    <h2><span class="num">5</span>Nothing outside ADUs changed</h2>
+    <p>Missing middle, fees, the baseline and the housing shortfall are identical field by field in all five bundles. Frozen V9 Oregon stays on the old range through a pin in code. V8 Wisconsin was frozen and scored on the old range and is not rescored.</p>
+  </section>
+
+  <footer>
+    Sources: <code>lotline results --state XX</code> before and after on branch <code>ws/d060-port</code> (PR #519), seed and draws from config. Range from <code>scripts/dev/adu_reference.py --fit-set</code>. Method and result: D-060 in <code>docs/analysis_plan.md</code>. Original run: PR #327 (not merged).
+  </footer>
+</main>
+
+<script>
+const S = ["MN","NC","OH","TX","OR"];
+const P = { // ADU permits_added 2027-2031: [p10,p50,p90,mean]
+  MN:{b:[200,474,1399,741], a:[325,601,1227,728]},
+  NC:{b:[106,328,1190,565], a:[190,426,1056,561]},
+  OH:{b:[150,435,2330,1158], a:[442,872,2023,1207]},
+  TX:{b:[1718,4648,14973,7201], a:[3117,5869,12594,7207]},
+  OR:{b:[4,13,49,24], a:[5,13,47,24]},
+};
+const D = {MN:[0.64,0.03], NC:[0.94,0.06], OH:[1.39,0.29], TX:[0.69,0.00], OR:[0.11,0.01]};
+const ns = "http://www.w3.org/2000/svg";
+function el(svg, tag, attrs, text){ const e=document.createElementNS(ns,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(text!=null) e.textContent=text; svg.appendChild(e); return e; }
+const fmt = n => n.toLocaleString("en-US");
+const txt = {fill:"var(--muted)", "font-size":"12", "font-family":"var(--mono)"};
+
+// 1. ranges
+(function(){
+  const svg=document.getElementById("c-range"), x0=150, x1=680;
+  const rows=[["Rent, $/month",[1573,2034],[1204,1826],800,2200,v=>"$"+fmt(v)],["Home value, $k",[519,836],[218,590],150,900,v=>"$"+v+"k"]];
+  rows.forEach((r,i)=>{
+    const [label,old,neu,lo,hi,f]=r, y=40+i*85, sx=v=>x0+(v-lo)/(hi-lo)*(x1-x0);
+    el(svg,"text",{x:0,y:y+20,fill:"var(--fg)","font-size":"14","font-family":"var(--body)"},label);
+    el(svg,"rect",{x:sx(old[0]),y:y,width:sx(old[1])-sx(old[0]),height:14,fill:"var(--before)",rx:2});
+    el(svg,"rect",{x:sx(neu[0]),y:y+20,width:sx(neu[1])-sx(neu[0]),height:14,fill:"var(--after)",rx:2});
+    el(svg,"text",{...txt,x:sx(old[1])+6,y:y+12},f(old[0])+"–"+f(old[1]));
+    el(svg,"text",{...txt,x:sx(neu[1])+6,y:y+32},f(neu[0])+"–"+f(neu[1]));
+    const step=(hi-lo)/(i?5:7); for(let v=lo; v<=hi+1e-9; v+=step){ el(svg,"line",{x1:sx(v),x2:sx(v),y1:y+40,y2:y+44,stroke:"var(--rule)"}); el(svg,"text",{...txt,x:sx(v),y:y+58,"text-anchor":"middle"},f(Math.round(v))); }
+  });
+})();
+
+// 2. permits, log scale
+(function(){
+  const svg=document.getElementById("c-permits"), x0=60, x1=680, lo=Math.log10(3), hi=Math.log10(20000), sx=v=>x0+(Math.log10(v)-lo)/(hi-lo)*(x1-x0);
+  [3,10,30,100,300,1000,3000,10000].forEach(v=>{ el(svg,"line",{x1:sx(v),x2:sx(v),y1:10,y2:300,stroke:"var(--rule)"}); el(svg,"text",{...txt,x:sx(v),y:318,"text-anchor":"middle"},fmt(v)); });
+  S.forEach((s,i)=>{
+    const y=26+i*56; el(svg,"text",{x:0,y:y+16,fill:"var(--fg)","font-size":"14","font-weight":"600","font-family":"var(--body)"},s);
+    [["b","var(--before)",0],["a","var(--after)",18]].forEach(([k,c,dy])=>{
+      const [p10,p50,p90]=P[s][k];
+      el(svg,"line",{x1:sx(p10),x2:sx(p90),y1:y+dy+6,y2:y+dy+6,stroke:c,"stroke-width":"8","stroke-linecap":"round"});
+      el(svg,"line",{x1:sx(p50),x2:sx(p50),y1:y+dy-1,y2:y+dy+13,stroke:"var(--fg)","stroke-width":"2"});
+    });
+  });
+  const t=document.getElementById("t-permits");
+  t.innerHTML="<tr><th>State</th><th>Before P10 / P50 / P90</th><th>After P10 / P50 / P90</th><th>P50 change</th><th>Mean</th></tr>"+
+    S.map(s=>{const b=P[s].b,a=P[s].a; return `<tr><td>${s}</td><td>${fmt(b[0])} / ${fmt(b[1])} / ${fmt(b[2])}</td><td>${fmt(a[0])} / ${fmt(a[1])} / ${fmt(a[2])}</td><td>${a[1]/b[1]>=1?"+":""}${Math.round((a[1]/b[1]-1)*100)}%</td><td>${fmt(b[3])} → ${fmt(a[3])}</td></tr>`}).join("");
+})();
+
+// 3. spread
+(function(){
+  const svg=document.getElementById("c-spread"), x0=60, x1=680, hi=16, sx=v=>x0+v/hi*(x1-x0);
+  [0,4,8,12,16].forEach(v=>{ el(svg,"line",{x1:sx(v),x2:sx(v),y1:6,y2:196,stroke:"var(--rule)"}); el(svg,"text",{...txt,x:sx(v),y:212,"text-anchor":"middle"},"×"+v); });
+  S.forEach((s,i)=>{
+    const y=14+i*37, b=P[s].b[2]/P[s].b[0], a=P[s].a[2]/P[s].a[0];
+    el(svg,"text",{x:0,y:y+15,fill:"var(--fg)","font-size":"14","font-weight":"600","font-family":"var(--body)"},s);
+    el(svg,"rect",{x:x0,y:y,width:sx(b)-x0,height:10,fill:"var(--before)",rx:2});
+    el(svg,"rect",{x:x0,y:y+12,width:sx(a)-x0,height:10,fill:"var(--after)",rx:2});
+    el(svg,"text",{...txt,x:sx(b)+6,y:y+9},b.toFixed(1));
+    el(svg,"text",{...txt,x:sx(a)+6,y:y+21},a.toFixed(1));
+  });
+})();
+
+// 4. overlap distance
+(function(){
+  const svg=document.getElementById("c-overlap"), x0=60, x1=680, hi=1.5, sx=v=>x0+v/hi*(x1-x0);
+  [0,0.25,0.5,0.75,1,1.25,1.5].forEach(v=>{ el(svg,"line",{x1:sx(v),x2:sx(v),y1:6,y2:196,stroke:"var(--rule)"}); el(svg,"text",{...txt,x:sx(v),y:212,"text-anchor":"middle"},v.toFixed(2)); });
+  [0.5,1].forEach(v=>el(svg,"line",{x1:sx(v),x2:sx(v),y1:6,y2:196,stroke:"var(--accent)","stroke-width":"2","stroke-dasharray":"4 3"}));
+  S.forEach((s,i)=>{
+    const y=14+i*37, [b,a]=D[s];
+    el(svg,"text",{x:0,y:y+15,fill:"var(--fg)","font-size":"14","font-weight":"600","font-family":"var(--body)"},s);
+    el(svg,"rect",{x:x0,y:y,width:Math.max(sx(b)-x0,1),height:10,fill:"var(--before)",rx:2});
+    el(svg,"rect",{x:x0,y:y+12,width:Math.max(sx(a)-x0,1),height:10,fill:"var(--after)",rx:2});
+    el(svg,"text",{...txt,x:sx(b)+6,y:y+9},b.toFixed(2));
+    el(svg,"text",{...txt,x:sx(a)+6,y:y+21},a.toFixed(2));
+  });
+})();
+</script>

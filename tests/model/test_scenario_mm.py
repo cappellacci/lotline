@@ -22,8 +22,8 @@ def _place(geoid="1", eligible=1000.0, dose=0.25, band=2, f_ratio=1.2, house_sha
 
 def test_log_sd_by_hand():
     s = load_params("mm_hazard")["mm_mature_hazard_ref"]
-    # (ln 0.001006 − ln 0.0000325) / 3.2897 = 1.0434
-    assert mm.log_sd(s) == pytest.approx(1.0434, abs=1e-4)
+    # D-092 C4: (ln 0.01939 − ln 0.0001316) / 3.2897 = 4.9927 / 3.2897 = 1.5177
+    assert mm.log_sd(s) == pytest.approx(1.5177, abs=1e-4)
 
 
 def test_year_shape_by_hand():
@@ -148,3 +148,64 @@ def test_dose_pool_holds_origin_doses_by_hand():
     pools = mm.dose_pools(places, min_coded=5)
     assert pools[2].mean() == pytest.approx(0.2)
     assert mm.dose_pools(places.drop(columns="pool_dose"), min_coded=5)[2].mean() == pytest.approx(0.35)
+
+
+def test_year_spread_keeps_the_mean_and_adds_nb_variance():
+    # one place, dose 0, θ 0.001 × E 1000 × F 1 = 1 a year at maturity; half 0.5 -> year 5 mean 0.9952.
+    # φ 2: variance = mean + mean² / φ = 0.9952 + 0.9952² / 2 = 1.4904 (Poisson: 0.9952)
+    p = pd.DataFrame([_place(dose=0.0, f_ratio=1.0)])
+    res = mm.simulate(p, _draws(n=200_000), HALF, SLOPE, seed=3, phi=2.0)
+    y5 = res.buildings[:, 4]
+    assert y5.mean() == pytest.approx(0.9952, rel=0.01)
+    assert y5.var() == pytest.approx(1.4904, rel=0.03)
+
+
+def test_no_phi_is_poisson_and_unchanged():
+    p = pd.DataFrame([_place()])
+    a = mm.simulate(p, _draws(n=5_000), HALF, SLOPE, seed=7)
+    b = mm.simulate(p, _draws(n=5_000), HALF, SLOPE, seed=7, phi=None)
+    assert np.array_equal(a.buildings, b.buildings)
+    y = a.buildings[:, 4]
+    assert y.var() == pytest.approx(y.mean(), rel=0.08)
+
+
+def test_ramp_half_picks_the_main_or_fast_ramp_from_config():
+    sp = mm.specs()
+    assert mm.ramp_half(sp) == 4.0  # C4
+    assert mm.ramp_half(sp, "fast") == 0.5  # D-100 R2, places that adopted on their own
+    assert mm.ramp_half(sp, "fast", "high") == 1.0  # C4's low end, D-100's cheaper alternative
+    with pytest.raises(ValueError):
+        mm.ramp_half(sp, "slow")
+
+
+def test_fast_ramp_differs_from_main_only_by_the_ramp():
+    # Same place, draws and seed. Main (half 4.0): ages 0.5 … 4.5 give 0.0093, 0.0344, 0.1192, 0.3392, 0.6608,
+    # sum 1.1630, so 0.001 × 1000 × 0.75 × 1.2 × 1.1630 = 1.0467 buildings. Fast (half 0.5): sum 4.2036,
+    # 3.7833 buildings: 3.61 times as many, and year 5 is 0.237 of the five years instead of 0.568.
+    places, d = pd.DataFrame([_place()]), _draws()
+    main = mm.simulate(places, d, 4.0, SLOPE, seed=1)
+    fast = mm.simulate(places, d, 0.5, SLOPE, seed=1)
+    assert main.buildings.sum(1).mean() == pytest.approx(1.0467, rel=0.03)
+    assert fast.buildings.sum(1).mean() == pytest.approx(3.7833, rel=0.02)
+    assert fast.buildings[:, 4].sum() / fast.buildings.sum() == pytest.approx(0.9952 / 4.2036, rel=0.05)
+    assert main.buildings[:, 4].sum() / main.buildings.sum() == pytest.approx(0.6608 / 1.1630, rel=0.05)
+
+
+def test_remainders_draw_from_coded_remainders():
+    """D-102 option (b): with 5 coded county remainders (dose 0.1) and 5 coded cities (dose 0.9) in one band,
+    an uncoded remainder draws from the remainder pool and an uncoded city from its band; with only 4 coded
+    remainders there is no remainder pool and a remainder draws from the smallest band (0)."""
+    from lotline.model.scenarios import mm
+
+    coded = pd.DataFrame({
+        "kind": ["county_unincorporated"] * 5 + ["place"] * 5,
+        "band": 1,
+        "dose": [0.1] * 5 + [0.9] * 5,
+    })  # fmt: skip
+    pools = mm.dose_pools(coded, min_coded=5)
+    assert sorted(set(pools["remainder"])) == [0.1]
+    assert mm.remainder_pool_key("county_unincorporated", 1, pools) == "remainder"
+    assert mm.remainder_pool_key("place", 1, pools) == 1
+    few = mm.dose_pools(coded.iloc[1:], min_coded=5)
+    assert "remainder" not in few and mm.remainder_pool_key("county_unincorporated", 1, few) == 0
+    assert mm.remainder_pool_key("place", 1, few) == 1

@@ -158,6 +158,23 @@ def coded_fees(
     return _summarize(_components(f, building_type), building_type, dollars)
 
 
+def component_fees(
+    fees: pd.DataFrame,
+    building_type: str = "SFD",
+    index: pd.Series | None = None,
+    to_year: int | None = None,
+) -> pd.DataFrame:
+    """`coded_fees` split by fee component: one row per place and component (columns state, geoid,
+    fee_component, mid, low, high, year, how), before any fill. Summed per place it equals `coded_fees`."""
+    if building_type not in TYPES:
+        raise ValueError(f"building_type must be one of {TYPES}, not {building_type!r}")
+    f = _rows(fees, index, to_year)
+    cols = ["state", "geoid", "fee_component", "mid", "low", "high", "year", "how"]
+    if f.empty:
+        return pd.DataFrame(columns=cols)
+    return _components(f, building_type).reset_index()[cols]
+
+
 def _prior(values: pd.DataFrame, state: str, min_places: int) -> tuple[float, float, float, str] | None:
     """(central, low, high, label) from per-place values (columns state, value): state first, then pooled."""
     for scope, v in (("state", values[values["state"] == state]), ("pooled", values)):

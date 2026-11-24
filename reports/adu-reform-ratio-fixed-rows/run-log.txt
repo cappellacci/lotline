@@ -1,0 +1,86 @@
+config: /Users/bencappellacci/Engineering/lotline/.claude/worktrees/adu-coverage-fix-fd61c2/config; unknown place-years left out: {'2713456': [2016, 2017, 2018, 2019, 2020, 2021, 2022], '2740382': [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]}
+[15:27:36] 6 events in 3 states
+[15:27:36] engine m_o 1.0, m_x 0.4; drift sigma 1.025
+[15:28:49]   A+P without place 2721770: theta 0.2462/1,000 (0.186-0.334), alpha 1.403, beta +0.000, core +1.646 (+1.045, +2.285), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.7, loglik -1467.06 (70s)
+[15:28:50]   A+P without place 2743000: theta 0.3352/1,000 (0.253-0.503), alpha 1.344, beta +0.000, core +1.348 (+0.740, +1.992), town +0.000 (+0.000, +0.000), m_o 0.5, m_x 0.8, loglik -1412.88 (72s)
+[15:28:50]   A+P without place 3714700: theta 0.2442/1,000 (0.183-0.334), alpha 1.478, beta +0.000, core +1.654 (+1.038, +2.311), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.7, loglik -1457.82 (72s)
+[15:28:50]   A+P without place 3728000: theta 0.2402/1,000 (0.175-0.328), alpha 1.432, beta +0.000, core +1.725 (+1.109, +2.385), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.7, loglik -1451.26 (71s)
+[15:28:50]   A+P without place 3755000: theta 0.2153/1,000 (0.161-0.324), alpha 1.463, beta +0.000, core +1.754 (+1.133, +2.421), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.8, loglik -1433.93 (71s)
+[15:28:50]   A+P without place 4815976: theta 0.2402/1,000 (0.180-0.328), alpha 1.434, beta +0.000, core +1.724 (+1.107, +2.385), town +0.000 (+0.000, +0.000), m_o 1.0, m_x 0.7, loglik -1451.43 (72s)
+[15:28:52] 
+                name  year  dose_before  dose_after  y_before  y_after  ratio_engine  ratio_refit  observed_ratio  M_p10  M_p50  M_p90   ls_P  ls_M  ls_Mr
+    Forest Lake city  2023         0.69        0.74      0.00     0.00          0.08         0.08            2.53    0.0    0.0    0.0  -0.20 -0.02  -0.02
+    Minneapolis city  2021         0.67        1.00    144.48    72.28          1.00         2.00            0.45   41.0  158.0  590.0  -5.53 -5.53  -6.25
+      Cornelius town  2023         0.67        1.00      1.96     3.92          0.67         0.88            2.51    0.0    1.0    5.0  -2.78 -3.03  -2.85
+     Greensboro city  2024         0.67        1.00     13.90    16.68          2.83         1.62            2.75    4.0   17.0   68.0  -4.23 -3.82  -3.92
+        Raleigh city  2021         0.33        1.00      2.14   201.16         12.50         6.25           29.02   14.0   73.0  338.0 -10.90 -6.76  -7.42
+College Station city  2019         1.00        0.67      3.26    13.03          0.74         0.91            0.92    2.0   10.0   43.0  -3.66 -3.67  -3.66
+[15:28:52] {
+ "drift": {
+  "M": {
+   "gain_over_P": {
+    "gain": 4.475989752483409,
+    "se": 4.111857890584282,
+    "events": 6
+   },
+   "b": 1.25,
+   "b_low": 0.6,
+   "b_high": 1.95,
+   "reading": "not shown either way"
+  },
+  "Mr": {
+   "gain_over_P": {
+    "gain": 3.1669174399432887,
+    "se": 3.648301077007168,
+    "events": 6
+   },
+   "b": 1.45,
+   "b_low": 0.55,
+   "b_high": 2.3,
+   "reading": "not shown either way"
+  }
+ },
+ "no_drift": {
+  "M": {
+   "gain_over_P": {
+    "gain": 176.9223363562885,
+    "se": 173.22066901659352,
+    "events": 6
+   },
+   "b": 1.15,
+   "b_low": 0.95,
+   "b_high": 1.45,
+   "reading": "not shown either way"
+  },
+  "Mr": {
+   "gain_over_P": {
+    "gain": 102.9682925872126,
+    "se": 195.58681615810065,
+    "events": 6
+   },
+   "b": 0.75,
+   "b_low": 0.7,
+   "b_high": 0.8,
+   "reading": "contradicted"
+  }
+ },
+ "direction": {
+  "events_with_big_ratio": 3,
+  "moved_same_way": 2
+ },
+ "coverage": {
+  "P": {
+   "inside_p10_p90": 5,
+   "within_x2": 1
+  },
+  "M": {
+   "inside_p10_p90": 6,
+   "within_x2": 2
+  },
+  "Mr": {
+   "inside_p10_p90": 4,
+   "within_x2": 2
+  }
+ },
+ "reading": "not shown either way"
+}

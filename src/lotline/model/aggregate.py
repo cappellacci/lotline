@@ -22,6 +22,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import numpy as np
+import pandas as pd
 
 from lotline.config import Parameter, load_params
 
@@ -98,7 +99,8 @@ def homes_from_draws(draws) -> dict[str, np.ndarray]:
 
     eligible = Σ tiers; pencils = eligible × pencil_out_share; permits = pencils × theta × (1 − overlap);
     homes in place = permits × completion_factor × net_new_share; net statewide = homes in place ×
-    (1 − displacement_share). A null overlap_share (a single scenario) counts as 0.
+    (1 − displacement_share). A null overlap_share (a single scenario) counts as 0. An optional `sign` column
+    (−1 from `fee_policy_draws` for a fee rise) turns the homes into homes lost.
 
     By hand: 1,000 eligible, pencil-out 0.5, θ 0.04, overlap 0, completion 1.0, net-new 0.6, displacement 0.25
     -> 500 pencil out, 20 permits, 12 homes in place, 9 net statewide.
@@ -106,7 +108,8 @@ def homes_from_draws(draws) -> dict[str, np.ndarray]:
     eligible = sum(np.asarray(draws[c], dtype=float) for c in TIER_COLUMNS)
     pencils = eligible * np.asarray(draws["pencil_out_share"], dtype=float)
     overlap = np.nan_to_num(np.asarray(draws["overlap_share"], dtype=float), nan=0.0)
-    permits = pencils * np.asarray(draws["theta"], dtype=float) * (1 - overlap)
+    sign = np.asarray(draws["sign"], dtype=float) if "sign" in draws else 1.0  # -1: a fee rise, homes lost
+    permits = sign * pencils * np.asarray(draws["theta"], dtype=float) * (1 - overlap)
     in_place = (
         permits * np.asarray(draws["completion_factor"], dtype=float) * np.asarray(draws["net_new_share"])
     )
@@ -118,3 +121,40 @@ def homes_from_draws(draws) -> dict[str, np.ndarray]:
         "homes_in_place": in_place,
         "homes_net_statewide": net,
     }
+
+
+def fee_policy_draws(draws: pd.DataFrame, types: pd.DataFrame, change: float, sizes) -> pd.DataFrame:
+    """The fee section's policy controls (D-077) on `results_draws` rows of `fees_local_half`, from
+    `results_fee_types`; the page's `feePolicyDraws` (aggregate.js) mirrors it line for line.
+
+    `change` is the fee change as a share of each place's own fee (−0.5 halves fees; −1 abolishes them; 0.5
+    raises them by half), `sizes` the building sizes covered. For each size, a row at s = −change is the
+    engine's result there (a size that is not linear in the change, schemas 1.22); otherwise the half-cut
+    row is scaled by s ÷ 0.5. θ = |homes| over the draw's covered homes, completion re-weighted by |homes|
+    per size, sign −1 when homes are lost.
+
+    By hand: covered 10,000; half-cut 120 houses (completion 0.95), 20 duplex and 10 three-to-four-unit homes
+    (0.85): duplexes only, abolished -> 40 homes, θ 0.004, completion 0.85; every size up by half -> 150
+    homes lost, θ 0.015, completion 0.93, sign −1; a stored house row of 300 at s = 1 -> 300 houses abolished.
+    """
+    s = round(-float(change), 1)
+    t = types.assign(share=types["fee_change_share"].astype(float).round(1), size=types["size"].astype(str))
+    t = t[t["size"].isin([str(x) for x in sizes])]
+    units = np.zeros(len(draws))
+    mag = np.zeros(len(draws))
+    weighted = np.zeros(len(draws))
+    for _size, g in t.groupby("size"):
+        own = g[g["share"] == s].set_index("draw")
+        half = g[g["share"] == 0.5].set_index("draw")
+        row = own if len(own) else half
+        u = draws["draw"].map(own["units_added"] if len(own) else half["units_added"] * s / 0.5)
+        u = u.fillna(0.0).to_numpy(dtype=float)
+        c = draws["draw"].map(row["completion_factor"]).fillna(0.0).to_numpy(dtype=float)
+        units, mag, weighted = units + u, mag + np.abs(u), weighted + np.abs(u) * c
+    out = draws.copy()
+    covered = sum(out[c].to_numpy(dtype=float) for c in TIER_COLUMNS)
+    out["theta"] = np.divide(np.abs(units), covered, out=np.zeros(len(out)), where=covered > 0)
+    own_c = out["completion_factor"].to_numpy(dtype=float)
+    out["completion_factor"] = np.divide(weighted, mag, out=own_c.copy(), where=mag > 0)
+    out["sign"] = np.where(units < 0, -1.0, 1.0)
+    return out

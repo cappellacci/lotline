@@ -43,6 +43,11 @@ def test_build_combines_bps_universe_with_census_names_and_population():
     df = jurisdictions.build("MN", bps_table, census).set_index("geoid")
     assert_conforms(df.reset_index(), "jurisdictions")
     assert len(df) == 4
+    # task 5 rule 5: a place in two counties is filed under the one holding most of its homes
+    moved = jurisdictions.build("MN", bps_table, census, main_counties={"2743000": "27123"}).set_index(
+        "geoid"
+    )
+    assert moved.loc["2743000", "county_geoid"] == "27123" and moved.loc["27003", "county_geoid"] == "27003"
     assert df.loc["2743000", "kind"] == "place" and df.loc["2743000", "pop_2020"] == 429954
     assert df.loc["2743000", "name"] == "Minneapolis city"
     assert df.loc["2700102224", "kind"] == "township"
@@ -72,16 +77,37 @@ def test_local_only_jurisdictions_are_added_from_the_census_and_flagged():
     assert "2799999999" not in df.index  # never invented
 
 
-def test_holdout_places_and_parcel_places_are_always_local_jurisdictions(tmp_path):
+def test_local_jurisdictions_come_from_the_state_file_and_holdouts_never_from_data(tmp_path):
+    """Straight-line build (WS-SCALE, Ben 2026-11-17): the list reads no permit or parcel table."""
     from lotline.build.jurisdictions import local_geoids
+    from lotline.config import load_state
     from lotline.io import DataStore
 
     store = DataStore(tmp_path)
     out = store.processed("NC", "parcels", "onemap_parcels")
     out.parent.mkdir(parents=True)
-    pd.DataFrame({"jurisdiction_geoid": ["3743480", "37119", None]}).to_parquet(out)  # Matthews, county
+    pd.DataFrame({"jurisdiction_geoid": ["3799999", "37119", None]}).to_parquet(out)  # not on the list
     local = local_geoids("NC", store)
-    assert {"3712000", "3743480", "37119"} <= local  # Charlotte even with no Charlotte rows anywhere
+    assert "3712000" in local  # Charlotte (holdout) even with no Charlotte rows anywhere
+    assert "3743480" in local and "3743480" in load_state("NC").local_jurisdictions  # Matthews, listed
+    assert "3799999" not in local and "37119" not in local  # data alone adds nothing
+    assert local == local_geoids("NC")  # no store needed
+    assert "41" not in local_geoids("OR")  # a statewide holdout is not a jurisdiction
+
+
+def test_unlisted_reports_geoids_the_data_uses_but_the_list_lacks(tmp_path):
+    from lotline.build.jurisdictions import unlisted
+    from lotline.io import DataStore
+
+    store = DataStore(tmp_path)
+    for table, geoids in (("jurisdictions", None), ("permits", ["3700001", "3700002", "3700002", "37001"])):
+        path = store.processed("NC", table, "x")
+        path.parent.mkdir(parents=True)
+        df = pd.DataFrame({"geoid": ["3700001", "37001"]}) if geoids is None else None
+        df = df if df is not None else pd.DataFrame({"jurisdiction_geoid": geoids})
+        df.to_parquet(path)
+    out = unlisted("NC", store)
+    assert out.to_dict("records") == [{"geoid": "3700002", "table": "permits", "rows": 2}]
 
 
 def test_tiers_follow_the_loaded_parcels():
@@ -122,3 +148,34 @@ def test_parcel_tiers_and_place_counties_reach_the_right_columns():
         "MN", bps_table, census, place_counties={"2743000": "27053"}, parcel_tiers={"2743000": 1}
     ).set_index("geoid")
     assert df.loc["2743000", "data_tier"] == 1
+
+
+def test_remainder_population_is_the_county_minus_what_is_listed_inside_it():
+    """Task 5 rule 6, the docstring's hand-worked example. County 39001 has 100,000 people. Place A
+    (30,000) is wholly in it; place B (20,000) has 25% of its homes in it; township T (10,000) holds
+    dependent place C (4,000). Remainder: 100,000 - 30,000 - 5,000 - (10,000 - 4,000) - 4,000 = 55,000.
+    A local-only place D (not in BPS) stays in the remainder, as its permits do."""
+    juris = pd.DataFrame(
+        {
+            "geoid": ["39001", "3900001", "3900002", "3900003", "3900004", "3900199999"],
+            "kind": ["county_unincorporated", "place", "place", "place", "place", "township"],
+            "in_bps": [True, True, True, True, False, True],
+        }
+    )
+    census = pd.DataFrame(
+        {
+            "geoid": ["39001", "3900001", "3900002", "3900003", "3900004", "3900199999"],
+            "level": ["county", "place", "place", "place", "place", "cousub"],
+            "pop_2020": [100_000, 30_000, 20_000, 4_000, 2_000, 10_000],
+        }
+    )
+    c_shares = pd.DataFrame(
+        {
+            "place_geoid": ["3900001", "3900002", "3900002", "3900003", "3900004"],
+            "county_geoid": ["39001", "39001", "39003", "39001", "39001"],
+            "share": [1.0, 0.25, 0.75, 1.0, 1.0],
+        }
+    )
+    t_shares = pd.DataFrame({"place_geoid": ["3900003"], "township_geoid": ["3900199999"], "share": [1.0]})
+    got = jurisdictions.remainder_population(juris, census, c_shares, t_shares)
+    assert got.to_dict() == {"39001": 55_000}

@@ -40,6 +40,7 @@ from collections.abc import Iterable
 
 import pandas as pd
 
+from lotline import geo
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer
 from lotline.schemas import validate
@@ -74,16 +75,10 @@ FIELDS = [
 PERSONAL = {"ADDRESS", "Match_addr", "StAddr", "AddNum", "StName", "POINT_X", "POINT_Y", "ZIP"}
 SALEM, KEIZER, TURNER = "4164900", "4138500", "4175150"
 MARION, POLK = "41047", "41053"
-CITIES = {
-    "SALEM": SALEM,
-    "KEIZER": KEIZER,
-    "TURNER": TURNER,
-    "MARION COUNTY": MARION,
-    "MARION CO": MARION,
-    "POLK COUNTY": POLK,
-    "POLK CO": POLK,
-}
-OFFICES = {"SALEM": SALEM, "KEIZER": KEIZER, "TURNER": TURNER}  # JURISD values that name the place
+# City spellings (Salem, Keizer, Turner, Marion and Polk counties) and the issuing offices of self-permitting
+# cities: config/crosswalks/or_aliases.csv
+CITIES = geo.aliases("OR", "mwvcog_permits", "City")
+OFFICES = geo.aliases("OR", "mwvcog_permits", "JURISD")  # JURISD values that name the place
 # Only Salem's permits are complete in the file (new houses within 2% of Census BPS in most years to 2023);
 # Keizer, Turner and the county remainders are partial, so `build` keeps Salem unless told otherwise.
 KEEP = (SALEM,)

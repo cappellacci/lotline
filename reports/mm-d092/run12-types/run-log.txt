@@ -1,0 +1,119 @@
+
+== fit: 93 places, raw type by state
+type_raw  core  suburb  town
+state                       
+MN           0       1     0
+NC           0       1     1
+OH           0       1     0
+OR          10      58    18
+TX           2       1     0
+
+== test: 3 places, raw type by state
+type_raw  core  suburb
+state                 
+MN           1       0
+NC           1       1
+
+== test_c: 44 places, raw type by state
+type_raw  core  suburb
+state                 
+MN           1       2
+OH           1      11
+TX          16      13
+
+== unused (phi): 483 places, raw type by state
+type_raw  core  suburb  town
+state                       
+MN           4      71    18
+NC          10      21     9
+OH          15     106    36
+TX          13     142    38
+
+minimum size rule on the fit places: {'core': 'suburb', 'suburb': 'suburb', 'town': 'suburb'} ['town has fewer than 8 fit places in 3 states: merged into suburb', 'core has fewer than 8 fit places in 3 states: merged into suburb']
+units source (all roles): {'acs 2011-15': 623}
+
+fit places' core cities:
+   state              name     units
+5     OR       Albany city   21095.0
+11    OR         Bend city   36579.0
+19    OR    Corvallis city   23837.0
+28    OR       Eugene city   70202.0
+32    OR  Grants Pass city   16054.0
+47    OR      Lebanon city    7117.0
+50    OR      Medford city   32209.0
+65    OR     Portland city  269917.0
+70    OR        Salem city   61417.0
+76    OR  Springfield city   25407.0
+90    TX       Austin city  380280.0
+91    TX      Houston city  927107.0
+minimum size rule on the uncoded places: {'core': 'core', 'suburb': 'suburb', 'town': 'town'} no merge
+{
+ "Y1_phi": 9.129587865434532,
+ "YT_phi_train": {
+  "core": 8.136239078422795,
+  "suburb": 11.662440526840502,
+  "town": 4.172278240681696
+ },
+ "heldout_Y1": 12231.069792535756,
+ "heldout_YT": 12255.912491355031,
+ "delta": 24.842698819274673,
+ "paired_se": 32.93126893528025,
+ "adopt_YT": false,
+ "coverage_2021": {
+  "core": {
+   "places": 40,
+   "Y1": 0.7,
+   "YT": 0.7
+  },
+  "suburb": {
+   "places": 330,
+   "Y1": 0.7878787878787878,
+   "YT": 0.796969696969697
+  },
+  "town": {
+   "places": 98,
+   "Y1": 0.826530612244898,
+   "YT": 0.7653061224489796
+  },
+  "all": {
+   "Y1": 0.7884615384615384,
+   "YT": 0.782051282051282,
+   "places": 468
+  }
+ },
+ "phi_both_origins": {
+  "town": {
+   "phi": 5.937759435932435,
+   "low": 5.1653990297604375,
+   "high": 6.829200475512513,
+   "n": 196
+  },
+  "core": {
+   "phi": 15.847064752688398,
+   "low": 13.851536886186825,
+   "high": 18.190113336743053,
+   "n": 80
+  },
+  "suburb": {
+   "phi": 16.3410112446316,
+   "low": 15.130124128832845,
+   "high": 17.663795146953827,
+   "n": 665
+  }
+ },
+ "phi_both_origins_one": 13.632980572972555,
+ "by_state_type": {
+  "MN-town": 3.826861363628627,
+  "MN-core": 8.344912089362248,
+  "MN-suburb": 9.295792880489072,
+  "NC-town": 5.661023406921619,
+  "NC-core": 6.6102590600998195,
+  "NC-suburb": 11.83419634751969,
+  "OH-town": 4.901527933094199,
+  "OH-core": 3.107046736770153,
+  "OH-suburb": 12.380751317401291,
+  "TX-town": 8.296067505802856,
+  "TX-core": 20.085472148580436,
+  "TX-suburb": 20.085472148580436
+ }
+}

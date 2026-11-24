@@ -92,6 +92,7 @@ def test_real_registry_is_consistent():
         assert all(module.PROVENANCE.get(k) for k in registry.PROVENANCE_KEYS)
 
 
+@pytest.mark.usefixtures("v5_blind")
 def test_central_guard_catches_an_adapter_that_forgot_the_holdout_filter():
     permits = pd.DataFrame(
         {

@@ -58,7 +58,9 @@ BPS = "bps"
 
 def units_grade(cap) -> float:
     """Grade of the units a rule allows on a single-family lot: 2 -> 1/3, 3 -> 2/3, 4 or more -> 1, under 2
-    -> 0 (equal steps up to the Handbook's fourplex). NaN if the cap is blank."""
+    -> 0 (equal steps up to a fourplex). NaN if the cap is blank. The Handbook allows up to 6 homes, but the
+    grade stops at 4 on purpose: the outcome counts BPS's 2-unit and 3-4 unit buildings only, so a 5th or 6th
+    home lands in a class it doesn't count (model_and_assumptions.md, "What missing middle counts")."""
     c = pd.to_numeric(cap, errors="coerce")
     if pd.isna(c):
         return np.nan
@@ -218,6 +220,7 @@ def build_panel(
     min_population: float | None = None,
     reforms: Mapping[str, pd.DataFrame] | None = None,
     drop_tags: Sequence[str] = (),
+    include: Sequence[str] = (),
 ) -> MMPanel:
     """The D-024 panel from processed, holdout-filtered tables (see the module docstring for columns).
 
@@ -226,12 +229,20 @@ def build_panel(
     `rule_tags` (`[predates]` rules in force before the panel). `drop_tags`: the tag sensitivities
     ('earliest_known', 'unconfirmed') whose in-panel events leave their place out. Excluded places are listed
     by reason in `excluded`: holdout, dropped by a tag sensitivity, under the population floor, no outcome
-    rows, no eligible parcels.
+    rows, no eligible parcels. `include`: holdout places to keep after their test was released (D-100 adds St.
+    Paul after D-098); a place whose holdout is still blind is refused.
     """
     from lotline.build import eligible as eligible_rule
     from lotline.config import load_params, load_state
     from lotline.model import estimate_adu, hazard, money, rule_tags
     from lotline.model.scenarios import adu
+    from lotline.validation import holdout as hold
+
+    include = set(include)
+    for st in states:
+        blind = {h.geoid for h in hold.still_blind(hold.holdouts_for(st))}
+        if include & blind:
+            raise ValueError(f"cannot include places whose holdout is still blind: {sorted(include & blind)}")
 
     pm = {k: v.value for k, v in load_params("mm").items()}
     pa_ = {k: v.value for k, v in load_params("adu").items()}
@@ -263,7 +274,7 @@ def build_panel(
         mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]
         dropped = rule_tags.dropped_places(mm_rows, years, drop_tags)
         juris = store.read(st, "jurisdictions")
-        held = _excluded_holdout(juris)
+        held = _excluded_holdout(juris) - include
         juris = juris.set_index("geoid")
         elig = store.read(st, "eligible_parcels")
         elig = elig[

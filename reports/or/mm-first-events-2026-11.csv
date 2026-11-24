@@ -1,0 +1,112 @@
+geoid,name,event_year,prior_cap,new_cap,cap_rise,event_rows,event_row_blank_or_tagged_earliest_known,has_predates_row
+41005,Unincorporated Clackamas Count,2022.0,1,4,True,2022;2022-landdiv,True,False
+4101000,Albany,2022.0,1,4,True,2022;2022-landdiv,True,False
+4103050,Ashland,2021.0,1,2,True,2021,False,False
+4103150,Astoria,2021.0,1,2,True,2021,False,False
+4103250,Aumsville,2025.0,1,2,True,2025;2025-landdiv,True,False
+4103650,Baker City,2021.0,1,2,True,2021,False,False
+4103800,Bandon,2025.0,1,2,True,2025;2025-landdiv,True,False
+41051,Unincorporated Multnomah Count,2022.0,1,4,True,2022;2022-landdiv,True,False
+4105350,Beaverton,2022.0,1,4,True,2022;2022-landdiv,True,False
+4105800,Bend,2017.0,3,3,False,2016,False,True
+41067,Unincorporated Washington Coun,2022.0,1,4,True,2022;2022-landdiv,True,False
+4107200,Boardman,2025.0,1,2,True,2025;2025-landdiv,True,False
+4108650,Brookings,2025.0,1,2,True,2025;2025-landdiv,True,False
+4109800,Burns,2025.0,1,2,True,2025;2025-landdiv,True,False
+4110750,Canby,2021.0,1,2,True,2021,False,False
+4112400,Central Point,2021.0,1,2,True,2021,False,False
+4115250,Coos Bay,2021.0,1,2,True,2021,False,False
+4115350,Coquille,2025.0,1,2,True,2025;2025-landdiv,True,False
+4115550,Cornelius,2022.0,1,4,True,2022;2022-landdiv,True,False
+4115800,Corvallis,2022.0,1,4,True,2022;2022-landdiv,True,False
+4115950,Cottage Grove,2021.0,1,2,True,2021,False,False
+4116950,Creswell,2025.0,1,2,True,2025;2025-landdiv,True,False
+4117700,Dallas,2021.0,1,2,True,2021,False,False
+4118250,Dayton,2025.0,1,2,True,2025;2025-landdiv,True,False
+4121050,Dundee,2025.0,1,2,True,2025;2025-landdiv,True,False
+4121250,Durham,2022.0,1,4,True,2022;2022-landdiv,True,False
+4121550,Eagle Point,2025.0,1,2,True,2025;2025-landdiv,True,False
+4123800,Estacada,2025.0,1,2,True,2025;2025-landdiv,True,False
+4123850,Eugene,2022.0,1,4,True,2022;2022-landdiv,True,False
+4124250,Fairview,2022.0,1,4,True,2022;2022-landdiv,True,False
+4126050,Florence,2024.0,1,2,True,2023-local,True,False
+4126200,Forest Grove,2022.0,1,4,True,2022-local;2022;2022-landdiv,True,False
+4128650,Gervais,2025.0,1,2,True,2025;2025-landdiv,True,False
+4129000,Gladstone,2022.0,1,4,True,2022;2022-landdiv,True,False
+4130550,Grants Pass,2022.0,1,4,True,2022;2022-landdiv,True,False
+4131250,Gresham,2022.0,1,4,True,2022-local;2022;2022-landdiv,True,False
+4132050,Happy Valley,2022.0,1,4,True,2022;2022-landdiv,True,False
+4132550,Harrisburg,2025.0,1,2,True,2025;2025-landdiv,True,False
+4133700,Hermiston,2021.0,1,2,True,2021,False,False
+4134100,Hillsboro,2022.0,1,4,True,2022;2022-landdiv,True,False
+4134900,Hood River,2025.0,1,2,True,2025;2025-landdiv,True,False
+4135450,Hubbard,2025.0,1,2,True,2025;2025-landdiv,True,False
+4136150,Independence,2023.0,1,2,True,2022-local;2022;2022-landdiv,True,False
+4137000,Jacksonville,2025.0,1,2,True,2025;2025-landdiv,True,False
+4137250,Jefferson,2025.0,1,2,True,2025;2025-landdiv,True,False
+4138000,Junction City,2025.0,1,2,True,2025;2025-landdiv,True,False
+4138500,Keizer,2022.0,1,4,True,2022;2022-landdiv,True,False
+4139150,King City,2022.0,1,4,True,2022;2022-landdiv,True,False
+4139700,Klamath Falls,2021.0,1,2,True,2021,False,False
+4140300,Lafayette,2025.0,1,2,True,2025;2025-landdiv,True,False
+4140350,La Grande,2021.0,1,2,True,2021,False,False
+4140550,Lake Oswego,2022.0,1,4,True,2022;2022-landdiv,True,False
+4141050,La Pine,2025.0,1,2,True,2025;2025-landdiv,True,False
+4141650,Lebanon,2021.0,1,2,True,2021,False,False
+4142600,Lincoln City,2022.0,1,2,True,2022-local,False,False
+4145000,McMinnville,2022.0,1,4,True,2022;2022-landdiv,True,False
+4145250,Madras,2025.0,1,2,True,2025;2025-landdiv,True,False
+4147000,Medford,2022.0,1,4,True,2022;2022-landdiv,True,False
+4148300,Millersburg,2025.0,1,2,True,2025;2025-landdiv,True,False
+4148600,Milton-Freewater,2025.0,1,2,True,2025;2025-landdiv,True,False
+4148650,Milwaukie,2022.0,1,4,True,2022-local;2022;2022-landdiv,True,False
+4149450,Molalla,2021.0,1,2,True,2021,False,False
+4149550,Monmouth,2021.0,1,2,True,2021,False,False
+4150150,Mount Angel,2025.0,1,2,True,2025;2025-landdiv,True,False
+4150950,Myrtle Creek,2025.0,1,2,True,2025;2025-landdiv,True,False
+4152100,Newberg,2022.0,1,4,True,2022;2022-landdiv,True,False
+4152450,Newport,2021.0,1,2,True,2021,False,False
+4153000,North Bend,2021.0,1,2,True,2021,False,False
+4153150,North Plains,2025.0,1,2,True,2025;2025-landdiv,True,False
+4153750,Nyssa,2025.0,1,2,True,2025;2025-landdiv,True,False
+4154100,Oakridge,2025.0,1,2,True,2025;2025-landdiv,True,False
+4154900,Ontario,2021.0,1,2,True,2021,False,False
+4155200,Oregon City,2022.0,1,4,True,2022;2022-landdiv,True,False
+4157150,Pendleton,2021.0,1,2,True,2021,False,False
+4157450,Philomath,2025.0,1,2,True,2025;2025-landdiv,True,False
+4157500,Phoenix,2025.0,1,2,True,2025;2025-landdiv,True,False
+4159000,Portland,2022.0,1,4,True,2021;2022-rip2;2022;2022-landdiv,True,False
+4159850,Prineville,2021.0,1,2,True,2021,False,False
+4161200,Redmond,2022.0,1,4,True,2022;2022-landdiv,True,False
+4161300,Reedsport,2025.0,1,2,True,2025;2025-landdiv,True,False
+4163650,Roseburg,2021.0,1,2,True,2021,False,False
+4164600,St. Helens,2021.0,1,2,True,2021,False,False
+4164900,Salem,2022.0,1,4,True,2022;2022-landdiv,True,False
+4165250,Sandy,2021.0,1,2,True,2021,False,False
+4165500,Scappoose,2025.0,2,2,False,2025;2025-landdiv,True,True
+4165950,Seaside,2025.0,1,2,True,2025;2025-landdiv,True,False
+4166550,Shady Cove,2025.0,1,2,True,2025;2025-landdiv,True,False
+4167050,Sheridan,2025.0,1,2,True,2025;2025-landdiv,True,False
+4167100,Sherwood,2022.0,1,4,True,2022;2022-landdiv,True,False
+4167650,Silverton,2021.0,1,2,True,2021,False,False
+4167950,Sisters,2025.0,1,2,True,2025;2025-landdiv,True,False
+4169600,Springfield,2022.0,1,4,True,2022;2022-landdiv,True,False
+4170200,Stayton,2025.0,2,2,False,2025;2025-landdiv,True,True
+4170700,Sublimity,2025.0,1,2,True,2025;2025-landdiv,True,False
+4171650,Sutherlin,2025.0,1,2,True,2025;2025-landdiv,True,False
+4171950,Sweet Home,2023.0,1,2,True,2022-local,False,False
+4172500,Talent,2025.0,1,2,True,2025;2025-landdiv,True,False
+4172950,The Dalles,2021.0,1,2,True,2021,False,False
+4173650,Tigard,2022.0,1,4,True,2022;2022-landdiv,True,False
+4173700,Tillamook,2025.0,1,2,True,2025;2025-landdiv,True,False
+4174000,Toledo,2025.0,1,2,True,2025;2025-landdiv,True,False
+4174850,Troutdale,2022.0,1,4,True,2022-local;2022;2022-landdiv,True,False
+4174950,Tualatin,2022.0,1,4,True,2022-local;2022;2022-landdiv,True,False
+4175650,Umatilla,2025.0,1,2,True,2025;2025-landdiv,True,False
+4177050,Veneta,2025.0,1,2,True,2025;2025-landdiv,True,False
+4178900,Warrenton,2025.0,1,2,True,2025;2025-landdiv,True,False
+4180150,West Linn,2022.0,1,4,True,2022;2022-landdiv,True,False
+4182800,Wilsonville,2022.0,1,4,True,2021;2022;2022-landdiv,True,False
+4183400,Winston,2025.0,1,2,True,2025;2025-landdiv,True,False
+4183750,Woodburn,2022.0,1,4,True,2022;2022-landdiv,True,False
+4183950,Wood Village,2022.0,1,4,True,2022;2022-landdiv,True,False

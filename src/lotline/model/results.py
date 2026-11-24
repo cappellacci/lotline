@@ -14,12 +14,17 @@
   `historical_floor_rows`): with-reform permits a year against the trailing observed average.
 - `baseline`: the no-policy-change forecast (`model/baseline.py`), homes permitted statewide per BPS building
   size and period, so the page can show the level the scenarios add to (`baseline_table`).
+- `affordability`: who the new homes serve (`model/affordability.py`, WS-NEED-AMI part B): rent or price,
+  income needed and share of area median income per home type and place type, market and break-even.
+  Context, not a scenario result; empty without a registered HUD income limits file.
 - `observed`: what was actually permitted in the years before the window (`observed_table`): ADU permits where
   local data flag them, and homes in 2-4 unit buildings from BPS.
 
-Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide. Fees (a statewide
-baseline forecast for every place) and the stacked combinations (`model/combine.py` not yet written) are
-listed in `meta.scenarios_pending`, never filled with stand-ins.
+Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide, and the fee scenario
+over every place the baseline forecasts (D-076) twice, as D-065 labels them: `fees`, the Handbook benchmark
+($50,000 cut in half), and `fees_local_half`, real local fees cut in half. Each reform is run on its own
+(Ben, 2026-11-17). A scenario the engine cannot run is listed in `meta.scenarios_pending`, never filled with
+a stand-in.
 
 Factors the scenario module does not draw itself are drawn here, triangular over config/params/aggregate.yaml
 (low, value, high), from `results_seed`: `completion_factor_single_family` (ADU),
@@ -45,9 +50,25 @@ from lotline.model import aggregate, baseline, gutcheck
 from lotline.model import eligible_proxy as proxy
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
-PARTS = ("meta", "draws", "funnel", "totals", "need", "scorecard", "baseline", "observed")
+PARTS = (
+    "meta",
+    "draws",
+    "funnel",
+    "totals",
+    "need",
+    "scorecard",
+    "baseline",
+    "observed",
+    "adu_place_types",
+    "adu_baseline",
+    "affordability",
+    "shortfall",
+    "fee_types",
+)
 TABLE = {part: f"results_{part}" for part in PARTS}
-ENGINE_SCENARIOS = ("adu", "missing_middle")  # scenarios `build_bundle` can fill today
+ENGINE_SCENARIOS = ("adu", "missing_middle", "fees", "fees_local_half")  # scenarios `build_bundle` can fill
+# D-065: the bundle's fee scenarios and the `scenarios.fees` mode behind each
+FEE_SCENARIOS = {"fees": "handbook", "fees_local_half": "local_half"}
 REPO = Path(__file__).resolve().parents[3]
 
 
@@ -181,6 +202,254 @@ def mm_draws(res, rng: np.random.Generator) -> pd.DataFrame:
             "overlap_share": np.nan,
         }
     )
+
+
+def fee_rows(scenario: str, sim: Mapping, tier: int, rng: np.random.Generator) -> pd.DataFrame:
+    """`results_draws` rows for a fee scenario (`fee_rows_and_types` without the size table)."""
+    return fee_rows_and_types(scenario, sim, tier, rng)[0]
+
+
+def fee_rows_and_types(
+    scenario: str, sim: Mapping, tier: int, rng: np.random.Generator
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """`results_draws` rows for a fee scenario from `scenarios.fees.simulate` (D-065, D-076).
+
+    A fee cut opens no lots, so the funnel's first stage holds homes instead: eligible = the five-year
+    baseline homes in the building sizes a cut covers (1, 2 and 3-4 units; 5+ take no dose, D-073), all in
+    the state's data tier; pencil-out share = 1; θ = five-year homes added ÷ those homes (the cut's % change,
+    ramp included). Completion is drawn here per class (single-family for 1-unit, multifamily for 2-4) and
+    weighted by that draw's added homes; net-new share = 1 (the model adds new buildings and tears none
+    down); displacement drawn here.
+
+    By hand: 10,000 covered homes, 150 added (120 houses, 30 in 2-4 unit buildings), completion 0.95 and
+    0.85 -> θ 0.015, completion 0.93; `aggregate.homes_from_draws` gives 150 permits and 139.5 homes in place.
+
+    The second table is `results_fee_types` for `fees_local_half` (empty otherwise, or without a size split):
+    per size and draw the homes added, that size's completion draw (the same draws as above) and baseline.
+    """
+    n = sim["n"]
+    by_class = sim["added_by_class"]
+    if by_class:
+        covered = sum(sim["by_size"][c].sum() for c in by_class)
+        sf = by_class["1"].sum(axis=(1, 2))
+        mf = sum(by_class[c].sum(axis=(1, 2)) for c in by_class if c != "1")
+    else:  # no size split: every unit takes the house's dose (D-032)
+        covered = sim["base"].sum()
+        sf = sim["added"].sum(axis=(1, 2))
+        mf = np.zeros(n)
+    added = sf + mf
+    c_sf = triangular("completion_factor_single_family", n, rng)
+    c_mf = triangular("completion_factor_multifamily", n, rng)
+    completion = np.divide(sf * c_sf + mf * c_mf, added, out=c_sf.copy(), where=added > 0)
+    tiers = {t: (covered if t == tier else 0.0) for t in (1, 2, 3)}
+    types = pd.DataFrame(columns=[c for c in _columns("fee_types")])
+    if scenario == "fees_local_half" and by_class:
+        types = pd.concat(
+            [
+                pd.DataFrame(
+                    {
+                        "scenario": scenario,
+                        "size": c,
+                        "draw": np.arange(n),
+                        "fee_change_share": 0.5,
+                        "units_added": by_class[c].sum(axis=(1, 2)),
+                        "completion_factor": c_sf if c == "1" else c_mf,
+                        "baseline_homes": float(sim["by_size"][c].sum()),
+                    }
+                )
+                for c in by_class
+            ],
+            ignore_index=True,
+        )
+    rows = pd.DataFrame(
+        {
+            "scenario": scenario,
+            "draw": np.arange(n),
+            "eligible_tier1": tiers[1],
+            "eligible_tier2": tiers[2],
+            "eligible_tier3": tiers[3],
+            "theta": added / covered if covered > 0 else np.zeros(n),
+            "pencil_out_share": 1.0,
+            "completion_factor": completion,
+            "net_new_share": 1.0,
+            "displacement_share": triangular("displacement_share", n, rng),
+            "overlap_share": np.nan,
+        }
+    )
+    return rows, types
+
+
+FEE_STOPS = tuple(round(x / 10, 1) for x in range(-5, 11) if x != 0)  # the slider: up 50% to abolished
+
+
+def fee_types_with_stops(places: pd.DataFrame, origin: int, draws: int, types: pd.DataFrame) -> pd.DataFrame:
+    """`results_fee_types` with every slider stop added for each size that is not linear in the fee change.
+
+    The engine's grid (`fees.change_grid`, same draws as `fees.simulate`) at every stop in `FEE_STOPS`: a size
+    whose homes added equal (s ÷ 0.5) × the half cut in every draw and stop (the elasticity route) keeps
+    only its 0.5 rows, which the page scales. Any other size (houses on the lot-feasibility route, places
+    with a parcel roll) gets the grid's value at every stop, with the draw's completion and the size's
+    baseline. Raises if the grid's half cut differs from `types` (they must be the same draws).
+    """
+    from lotline.model.scenarios import fees
+
+    if types is None or not len(types):
+        return types
+    grid = fees.change_grid(places, origin, list(FEE_STOPS), draws=draws)
+    w = grid.pivot_table(index=["draw", "size"], columns="share", values="units_added", aggfunc="sum")
+    tol = 1e-6 * max(1.0, float(w[0.5].abs().max()))
+    t = types.assign(draw=types["draw"].astype(int)).set_index(["draw", "size"]).sort_index()
+    if not np.allclose(
+        w[0.5].reindex(t.index).to_numpy(dtype=float), t["units_added"].to_numpy(float), atol=tol
+    ):
+        raise ValueError("results_fee_types does not match the engine's grid at a cut of half")
+    extra = []
+    for size in sorted(set(t.index.get_level_values("size"))):
+        ws = w.xs(size, level="size")
+        if all(np.allclose(ws[s], (s / 0.5) * ws[0.5], atol=tol) for s in FEE_STOPS):
+            continue
+        half = t.xs(size, level="size")
+        for s in FEE_STOPS:
+            if s == 0.5:
+                continue
+            at_s = ws[s].reindex(half.index).to_numpy(float)
+            extra.append(half.assign(fee_change_share=s, units_added=at_s).reset_index().assign(size=size))
+    return pd.concat([types, *extra], ignore_index=True) if extra else types
+
+
+def fee_year_shares(sim: Mapping) -> np.ndarray:
+    """Each draw's fee-scenario homes by year as a share of its five-year total (draws x years)."""
+    return year_shares({"added": sim["added"]})
+
+
+def adu_place_type_table(state: str, places: pd.DataFrame, run_draws: Mapping) -> pd.DataFrame:
+    """`results_adu_place_types`: the ADU scenario by place type (D-088), from `adu.run`'s draws.
+
+    Per type: places; lots = the median over draws of its eligible lots; base and added = each draw's
+    current-rules and added gross ADUs summed over the type's places, averaged over the window years, then
+    P10/P50/P90 across draws. By hand: two suburb places with 3 and 5 current-rules ADUs a year and 1 and 2
+    added, in every draw -> base 8, added 3.
+    """
+    kind = places["place_type"].fillna("suburb").to_numpy() if "place_type" in places else None
+    cur = np.asarray(run_draws["current"], dtype=float)  # draws x places x years
+    add = np.asarray(run_draws["added"], dtype=float)
+    elig = np.asarray(run_draws["eligible"], dtype=float)
+    rows = []
+    for t in ("core", "suburb", "town"):
+        on = (kind == t) if kind is not None else np.full(cur.shape[1], t == "suburb")
+        if not on.any():
+            continue
+        b = cur[:, on, :].sum(axis=1).mean(axis=1)
+        a = add[:, on, :].sum(axis=1).mean(axis=1)
+        (b10, b50, b90), (a10, a50, a90) = np.percentile(b, [10, 50, 90]), np.percentile(a, [10, 50, 90])
+        rows.append(
+            {
+                "state": state,
+                "place_type": t,
+                "places": int(on.sum()),
+                "lots": float(np.median(elig[:, on].sum(axis=1))),
+                "base_p10": b10,
+                "base": b50,
+                "base_p90": b90,
+                "added_p10": a10,
+                "added": a50,
+                "added_p90": a90,
+            }
+        )
+    return pd.DataFrame(rows, columns=["state", *_columns("adu_place_types")])
+
+
+def adu_baseline_years(state: str, run_draws: Mapping, origin: int, own=None) -> pd.DataFrame:
+    """`results_adu_baseline`: statewide current-rules gross ADUs per window year, P10/P50/P90 over draws.
+
+    With `own` (a bool per place: its no-reform rate comes from its own ADU counts), each year also gets the
+    mean and, where some places have own counts, `own_counts` and `model` rows: percentiles of each group's
+    own sum, and means that add up to the `all` row's (the page splits the bar by them).
+    By hand: places with 10 and 4 ADUs a year in every draw, the first with own counts -> all 14, own_counts
+    10, model 4; means the same.
+    """
+    cur_by_place = np.asarray(run_draws["current"], dtype=float)  # draws x places x years
+    _, _, first = baseline.window(origin)
+    years = range(cur_by_place.shape[2])
+    if own is None:
+        cur = cur_by_place.sum(axis=1)
+        rows = [{"state": state, "period": str(first + y), **_pct(cur[:, y])} for y in years]
+        cols = [c for c in _columns("adu_baseline") if c not in ("basis", "mean")]
+        return pd.DataFrame(rows, columns=["state", *cols])
+    own = np.asarray(own, dtype=bool)
+    groups = {"all": np.ones_like(own)} | ({"own_counts": own, "model": ~own} if own.any() else {})
+    rows = []
+    for basis, m in groups.items():
+        cur = cur_by_place[:, m, :].sum(axis=1)
+        for y in years:
+            a = cur[:, y]
+            rows.append(
+                {"state": state, "period": str(first + y), "basis": basis, **_pct(a), "mean": a.mean()}
+            )
+    return pd.DataFrame(rows, columns=["state", *_columns("adu_baseline")])
+
+
+def affordability_table(state: str, places, run_draws: Mapping, res_mm, fee_places, store) -> pd.DataFrame:
+    """`results_affordability`: who the new homes serve (`model/affordability.py`), from the inputs the
+    scenarios already used. Empty (no rows) when no HUD income limits file is registered."""
+    from lotline.model import affordability
+
+    market = store.read(state, "market_geo_year")
+    inputs = affordability.inputs(places, run_draws, getattr(res_mm, "places", None), fee_places, market)
+    out = affordability.table(state, inputs)
+    return (
+        out.astype({"places": "Int64"})
+        if len(out)
+        else pd.DataFrame(columns=["state", *_columns("affordability")])
+    )
+
+
+def state_stock(
+    acs: pd.DataFrame | None, state: str, origin: int, fips: str | None = None
+) -> tuple[float, int] | None:
+    """The state's housing units (ACS B25024_001, newest 5-year vintage ending by `origin`) and its year."""
+    from lotline.config import load_state
+
+    if acs is None or acs.empty:
+        return None
+    geo = f"state:{fips or load_state(state).fips}"
+    rows = acs[(acs["geo"] == geo) & (acs["variable"] == "B25024_001") & (acs["end_year"] <= origin)]
+    rows = rows.dropna(subset=["estimate"]).sort_values("end_year")
+    return (float(rows["estimate"].iloc[-1]), int(rows["end_year"].iloc[-1])) if len(rows) else None
+
+
+def shortfall_table(
+    state: str, base: pd.DataFrame, acs, origin: int, need_params=None, fips=None
+) -> pd.DataFrame:
+    """`results_shortfall`: the need left after homes built anyway (`model/shortfall.py`). No row when the
+    state has no shortage estimate, no housing stock or no five-year all-sizes baseline."""
+    from lotline.model import shortfall
+
+    cols = ["state", *_columns("shortfall")]
+    have = aggregate.need(state, need_params)
+    stock = state_stock(acs, state, origin, fips)
+    five = base[(base["size_class"] == "all") & base["period"].str.contains("-")] if len(base) else base
+    if aggregate.SHORTAGE not in have or stock is None or not len(five):
+        return pd.DataFrame(columns=cols)
+    sh = have[aggregate.SHORTAGE]
+    gr = have.get(aggregate.GROWTH)
+    growth = (gr.low, gr.value, gr.high) if gr is not None else (0.0, 0.0, 0.0)
+    r = load_params("aggregate")["stock_loss_rate"]
+    b = five.iloc[0]
+    g = shortfall.gap(
+        (sh.low, sh.value, sh.high),
+        growth,
+        stock[0],
+        (r.low, r.value, r.high),
+        (b["p10"], b["p50"], b["p90"]),
+    )
+    row = {
+        "state": state, "shortage_low": sh.low, "shortage": sh.value, "shortage_high": sh.high,
+        "growth_low": growth[0], "growth": growth[1], "growth_high": growth[2],
+        "stock": stock[0], "stock_year": stock[1],
+        "built_p10": b["p10"], "built": b["p50"], "built_p90": b["p90"], **g,
+    }  # fmt: skip
+    return pd.DataFrame([row], columns=cols).astype({"stock_year": "Int64"})
 
 
 def mm_year_shares(res) -> np.ndarray:
@@ -497,8 +766,8 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
     from lotline.schemas import columns
 
     doc = json.loads(Path(path).read_text())
-    raw = {"meta": pd.DataFrame([doc["meta"]])} | {
-        part: pd.DataFrame(doc[part], columns=columns(TABLE[part]) if not doc[part] else None)
+    raw = {"meta": pd.DataFrame([doc["meta"]])} | {  # parts added later read as empty in older bundles
+        part: pd.DataFrame(doc.get(part) or [], columns=columns(TABLE[part]) if not doc.get(part) else None)
         for part in PARTS
         if part != "meta"
     }
@@ -507,7 +776,8 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
 
 def build_bundle(state: str, store, *, role: str | None = None, origin: int | None = None, draws=None):
     """Run every scenario the engine supports for one state and assemble the eight tables (unwritten)."""
-    from lotline.model.scenarios import adu, mm
+    from lotline.model import fee_inputs
+    from lotline.model.scenarios import adu, fees, mm
 
     st = state.upper()
     agg = load_params("aggregate")
@@ -517,19 +787,33 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     rng = np.random.default_rng(seed)
 
     places = adu.places_from_store(st, store, origin)
-    places = places[places["rent"].notna() & places["home_value"].notna()].reset_index(drop=True)
+    # place_inputs fills a missing rent or home value with the state median (WS-SCALE task 5 rule 2), so no
+    # place is dropped for lack of prices; a gap here means the stored table predates that rule.
+    gaps = places["rent"].isna() | places["home_value"].isna()
+    if gaps.any():
+        raise ValueError(
+            f"{st}: {int(gaps.sum())} places have no rent or home value; rebuild place_inputs "
+            f"(lotline fetch --state {st} --source place_inputs --offline)"
+        )
     places["state"] = st
     tier3 = bool(proxy.proxy_states(places))
     _, totals_adu, run_draws = adu.run(places, origin, draws=n, eligible_proxy=tier3, return_draws=True)
     d_adu = adu_draws(places, run_draws, rng)
     _, res_mm, _ = mm.run(st, store, origin, n=n)
-    d = pd.concat([d_adu, mm_draws(res_mm, rng)], ignore_index=True).assign(state=st)
-    parts = summarize(
-        st, d, origin, {"adu": year_shares(run_draws), "missing_middle": mm_year_shares(res_mm)}
-    )
+    tier_parcels = places.groupby("data_tier")["eligible_parcels"].sum() if "data_tier" in places else None
+    tier = int(tier_parcels.idxmax()) if tier_parcels is not None and len(tier_parcels) else 3
+    fee_places = fee_inputs.statewide_places(st, store, origin)
+    fee_sims = {k: fees.simulate(fee_places, origin, mode=m, draws=n) for k, m in FEE_SCENARIOS.items()}
+    d_mm = mm_draws(res_mm, rng)  # the shared rng's order: ADU, missing middle, then each fee scenario
+    fee_parts = [fee_rows_and_types(k, sim, tier, rng) for k, sim in fee_sims.items()]
+    d = pd.concat([d_adu, d_mm, *(rows for rows, _ in fee_parts)], ignore_index=True).assign(state=st)
+    fee_types = pd.concat([types for _, types in fee_parts], ignore_index=True).assign(state=st)
+    fee_types = fee_types_with_stops(fee_places, origin, n, fee_types)
+    shares = {"adu": year_shares(run_draws), "missing_middle": mm_year_shares(res_mm)}
+    shares.update({k: fee_year_shares(sim) for k, sim in fee_sims.items()})
+    parts = summarize(st, d, origin, shares)
 
     flag, median_distance = overlap_flag(places["eligible_parcels"], totals_adu["calibration_distance"])
-    tier_parcels = places.groupby("data_tier")["eligible_parcels"].sum() if "data_tier" in places else None
     caveats = []
     if tier3:
         caveats.append(
@@ -541,9 +825,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
             {
                 "state": st,
                 "state_role": role or ("national_only" if tier3 else "development"),
-                "data_tier": int(tier_parcels.idxmax())
-                if tier_parcels is not None and len(tier_parcels)
-                else 3,
+                "data_tier": tier,
                 "commit_sha": commit_sha(),
                 "run_at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "engine_version": lotline.__version__,
@@ -557,7 +839,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "overlap_flag": flag,
                 "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
-                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS),
+                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS) or None,
             }
         ]
     )
@@ -572,4 +854,18 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     rows = historical_floor_rows(st, places, run_draws, adu_counts, panel, d, origin, class_draws)
     scorecard = pd.DataFrame(rows, columns=_columns("scorecard")).assign(state=st)
     seen = observed_table(panel, store.read(st, "permits"), store.read(st, "jurisdictions"), st, origin)
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}
+    return {
+        "meta": meta,
+        "draws": d,
+        **parts,
+        "scorecard": scorecard,
+        "baseline": base,
+        "observed": seen,
+        "adu_place_types": adu_place_type_table(st, places, run_draws),
+        "adu_baseline": adu_baseline_years(
+            st, run_draws, origin, own=places["observed_rate"].notna().to_numpy()
+        ),
+        "affordability": affordability_table(st, places, run_draws, res_mm, fee_places, store),
+        "shortfall": shortfall_table(st, base, store.read(st, "acs_geo_year"), origin),
+        "fee_types": fee_types,
+    }

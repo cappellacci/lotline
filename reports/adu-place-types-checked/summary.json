@@ -1,0 +1,758 @@
+{
+  "fit_set": {
+    "places": 64,
+    "place_years": 491
+  },
+  "types": {
+    "merge": {
+      "core": "core",
+      "suburb": "suburb",
+      "town": "suburb"
+    },
+    "merge_notes": [
+      "town has fewer than 8 fit places in 3 states: merged into suburb"
+    ],
+    "fit_places_by_type": {
+      "core": 16,
+      "suburb": 48
+    },
+    "fit_places_by_raw_type": {
+      "core": 16,
+      "suburb": 48
+    },
+    "fit_states_by_type": {
+      "core": 5,
+      "suburb": 2
+    },
+    "state_by_type": {
+      "core": {
+        "MN": 2,
+        "NC": 6,
+        "OH": 1,
+        "OR": 4,
+        "TX": 3
+      },
+      "suburb": {
+        "MN": 41,
+        "NC": 7,
+        "OH": 0,
+        "OR": 0,
+        "TX": 0
+      }
+    },
+    "units_sources": {
+      "acs 2011-15": 64
+    },
+    "roll_towns_by_type": {
+      "suburb": 32,
+      "core": 1
+    },
+    "core_cities": [
+      "Minneapolis city",
+      "Rochester city",
+      "Asheville city",
+      "Charlotte city",
+      "Durham city",
+      "Greensboro city",
+      "Raleigh city",
+      "Wilmington city",
+      "Cincinnati city",
+      "Austin city",
+      "College Station city",
+      "San Antonio city",
+      "Bend city",
+      "Medford city",
+      "Portland city",
+      "Salem city"
+    ],
+    "sens_suburb_split_x2_median": 0.1180667023363652,
+    "sens_fit_places_by_type4": {
+      "suburb": 28,
+      "suburb_old": 20,
+      "core": 16
+    }
+  },
+  "sources": {
+    "fit_places_by_kind": {
+      "survey": 41,
+      "parser": 13,
+      "field": 10
+    },
+    "state_by_kind": {
+      "field": {
+        "MN": 0,
+        "NC": 3,
+        "OH": 0,
+        "OR": 4,
+        "TX": 3
+      },
+      "parser": {
+        "MN": 2,
+        "NC": 10,
+        "OH": 1,
+        "OR": 0,
+        "TX": 0
+      },
+      "survey": {
+        "MN": 41,
+        "NC": 0,
+        "OH": 0,
+        "OR": 0,
+        "TX": 0
+      }
+    }
+  },
+  "part1": {
+    "A": {
+      "places": 59,
+      "weighted_variance": 2.931478446337671,
+      "shares": {
+        "state": 0.32072875789108335,
+        "type": 0.35775638776824836,
+        "source": 0.31908543557134034,
+        "all three": 0.40113579833161306,
+        "state + type": 0.4008548946208253,
+        "state + source": 0.3473016389705334
+      },
+      "type_order": [
+        "core",
+        "suburb"
+      ],
+      "type_order_holds_without_each_state": true,
+      "without_state": {
+        "MN": {
+          "places": 20,
+          "state": 0.2572313427267835,
+          "type": 0.43801129898442237,
+          "source": 0.13513057031206294,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        },
+        "NC": {
+          "places": 46,
+          "state": 0.31286245816502944,
+          "type": 0.3156694170199279,
+          "source": 0.320397048566178,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        },
+        "OR": {
+          "places": 55,
+          "state": 0.18962561699629166,
+          "type": 0.2547789202152273,
+          "source": 0.21995698665965396,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        },
+        "TX": {
+          "places": 56,
+          "state": 0.31115366768999686,
+          "type": 0.358323999181031,
+          "source": 0.3167647570094527,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        }
+      },
+      "group_means": {
+        "state": {
+          "MN": {
+            "places": 39,
+            "mean_log_effect": -1.82545868467895,
+            "x_mean": 0.16114371302326716
+          },
+          "NC": {
+            "places": 13,
+            "mean_log_effect": -0.3390773304619204,
+            "x_mean": 0.7124273546225612
+          },
+          "OR": {
+            "places": 4,
+            "mean_log_effect": 1.3356435764480428,
+            "x_mean": 3.8024423214432788
+          },
+          "TX": {
+            "places": 3,
+            "mean_log_effect": -0.05769988206202365,
+            "x_mean": 0.9439331962150883
+          }
+        },
+        "type": {
+          "core": {
+            "places": 14,
+            "mean_log_effect": 0.6126282334866974,
+            "x_mean": 1.8452748442786548
+          },
+          "suburb": {
+            "places": 45,
+            "mean_log_effect": -1.7573275659710414,
+            "x_mean": 0.17250525728320648
+          }
+        },
+        "source_kind": {
+          "field": {
+            "places": 10,
+            "mean_log_effect": 0.5203731527978398,
+            "x_mean": 1.6826554201422796
+          },
+          "parser": {
+            "places": 11,
+            "mean_log_effect": -0.3883473851780794,
+            "x_mean": 0.6781767138008892
+          },
+          "survey": {
+            "places": 38,
+            "mean_log_effect": -1.8858524714034874,
+            "x_mean": 0.1516996846500333
+          }
+        }
+      },
+      "state_by_type": {
+        "core": {
+          "MN": 1,
+          "NC": 6,
+          "OR": 4,
+          "TX": 3
+        },
+        "suburb": {
+          "MN": 38,
+          "NC": 7,
+          "OR": 0,
+          "TX": 0
+        }
+      },
+      "state_by_source": {
+        "field": {
+          "MN": 0,
+          "NC": 3,
+          "OR": 4,
+          "TX": 3
+        },
+        "parser": {
+          "MN": 1,
+          "NC": 10,
+          "OR": 0,
+          "TX": 0
+        },
+        "survey": {
+          "MN": 38,
+          "NC": 0,
+          "OR": 0,
+          "TX": 0
+        }
+      },
+      "reading": "types matter"
+    },
+    "A\u2032": {
+      "places": 59,
+      "weighted_variance": 1.7276717112042583,
+      "shares": {
+        "state": 0.17546911508604632,
+        "type": 0.10483941124531718,
+        "source": 0.11925631715359311,
+        "all three": 0.18947436709351861,
+        "state + type": 0.18678630072723942,
+        "state + source": 0.18137905856972256
+      },
+      "type_order": [
+        "core",
+        "suburb"
+      ],
+      "type_order_holds_without_each_state": true,
+      "without_state": {
+        "MN": {
+          "places": 20,
+          "state": 0.31313088158420427,
+          "type": 0.0874693177318961,
+          "source": 0.06669171689825389,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        },
+        "NC": {
+          "places": 46,
+          "state": 0.17219077477053094,
+          "type": 0.09347883805159236,
+          "source": 0.10264650853659166,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        },
+        "OR": {
+          "places": 55,
+          "state": 0.05952613053097367,
+          "type": 0.035971553899866275,
+          "source": 0.049100015071957964,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        },
+        "TX": {
+          "places": 56,
+          "state": 0.17991185202921267,
+          "type": 0.14061864674665422,
+          "source": 0.1682191459023823,
+          "type_order": [
+            "core",
+            "suburb"
+          ]
+        }
+      },
+      "group_means": {
+        "state": {
+          "MN": {
+            "places": 39,
+            "mean_log_effect": -1.042860859902243,
+            "x_mean": 0.35244494268189447
+          },
+          "NC": {
+            "places": 13,
+            "mean_log_effect": -0.32825293531190836,
+            "x_mean": 0.7201808375013525
+          },
+          "OR": {
+            "places": 4,
+            "mean_log_effect": 0.9481573372390083,
+            "x_mean": 2.5809494554879544
+          },
+          "TX": {
+            "places": 3,
+            "mean_log_effect": -0.9972738213737213,
+            "x_mean": 0.3688837145333142
+          }
+        },
+        "type": {
+          "core": {
+            "places": 14,
+            "mean_log_effect": 0.009725892000355053,
+            "x_mean": 1.0097733421950192
+          },
+          "suburb": {
+            "places": 45,
+            "mean_log_effect": -0.9751830784972657,
+            "x_mean": 0.3771233040748176
+          }
+        },
+        "source_kind": {
+          "field": {
+            "places": 10,
+            "mean_log_effect": 0.12195490419654087,
+            "x_mean": 1.129703155760122
+          },
+          "parser": {
+            "places": 11,
+            "mean_log_effect": -0.45392641377733906,
+            "x_mean": 0.6351294683048521
+          },
+          "survey": {
+            "places": 38,
+            "mean_log_effect": -1.0545093342801277,
+            "x_mean": 0.3483633153152113
+          }
+        }
+      },
+      "state_by_type": {
+        "core": {
+          "MN": 1,
+          "NC": 6,
+          "OR": 4,
+          "TX": 3
+        },
+        "suburb": {
+          "MN": 38,
+          "NC": 7,
+          "OR": 0,
+          "TX": 0
+        }
+      },
+      "state_by_source": {
+        "field": {
+          "MN": 0,
+          "NC": 3,
+          "OR": 4,
+          "TX": 3
+        },
+        "parser": {
+          "MN": 1,
+          "NC": 10,
+          "OR": 0,
+          "TX": 0
+        },
+        "survey": {
+          "MN": 38,
+          "NC": 0,
+          "OR": 0,
+          "TX": 0
+        }
+      },
+      "reading": "states differ"
+    }
+  },
+  "decisions": {
+    "A vs A+P": {
+      "claim_tier": {
+        "base": null,
+        "P": 1
+      },
+      "tier1_log_score_gain": {
+        "gain": 13.097187068032323,
+        "se": 3.739972510175603,
+        "places": 64
+      },
+      "test_d_gain": {
+        "gain": -5.609561936062292,
+        "se": 3.148132480986261,
+        "places": 49
+      },
+      "p_over_persistence_test_d": {
+        "gain": -2.9742871373957875,
+        "se": 8.205270252202503
+      },
+      "useful_states_by_tier": {
+        "base": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        },
+        "P": {
+          "0": 1,
+          "1": 4,
+          "2": 4
+        }
+      },
+      "tests_passed": {
+        "base": 2,
+        "P": 1
+      },
+      "type_terms_full": {
+        "core": [
+          1.8394983544136836,
+          1.1909247575900102,
+          2.535601583564934
+        ],
+        "town": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "lr_full": 19.369086769976548,
+      "decision": {
+        "types": false,
+        "reason": "fewer of tests A-B passed (1 vs 2)"
+      }
+    },
+    "A\u2032 vs A\u2032+P": {
+      "claim_tier": {
+        "base": null,
+        "P": 1
+      },
+      "tier1_log_score_gain": {
+        "gain": 1.2256416648657686,
+        "se": 2.262220800929796,
+        "places": 64
+      },
+      "test_d_gain": {
+        "gain": 2.3928884070567693,
+        "se": 3.4452042905713944,
+        "places": 49
+      },
+      "p_over_persistence_test_d": {
+        "gain": -9.049188707746897,
+        "se": 9.444724871454474
+      },
+      "useful_states_by_tier": {
+        "base": {
+          "0": 1,
+          "1": 2,
+          "2": 2
+        },
+        "P": {
+          "0": 1,
+          "1": 4,
+          "2": 4
+        }
+      },
+      "tests_passed": {
+        "base": 1,
+        "P": 1
+      },
+      "type_terms_full": {
+        "core": [
+          1.445881971030951,
+          0.5119557828304186,
+          2.3755451829393643
+        ],
+        "town": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "lr_full": 6.170578125767406,
+      "decision": {
+        "types": true,
+        "reason": "a lower tier; tests A-B 1 vs 1; test D +2.4 (SE 3.4)"
+      }
+    }
+  },
+  "claim_tier": {
+    "A": null,
+    "A+P": 1,
+    "A\u2032": null,
+    "A\u2032+P": 1
+  },
+  "useful": {
+    "A": {
+      "0": 0,
+      "1": 0,
+      "2": 0
+    },
+    "A+P": {
+      "0": 1,
+      "1": 4,
+      "2": 4
+    },
+    "A\u2032": {
+      "0": 1,
+      "1": 2,
+      "2": 2
+    },
+    "A\u2032+P": {
+      "0": 1,
+      "1": 4,
+      "2": 4
+    },
+    "A+P4": {
+      "0": 1,
+      "1": 4,
+      "2": 4
+    },
+    "A\u2032+P4": {
+      "0": 0,
+      "1": 3,
+      "2": 3
+    }
+  },
+  "tests": {
+    "A": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": true,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": true,
+        "TX": null,
+        "OR": null
+      }
+    },
+    "A+P": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": false,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": true,
+        "TX": null,
+        "OR": null
+      }
+    },
+    "A\u2032": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": false,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": true,
+        "TX": null,
+        "OR": null
+      }
+    },
+    "A\u2032+P": {
+      "A": {
+        "MN": false,
+        "NC": false,
+        "OH": null,
+        "TX": false,
+        "OR": false
+      },
+      "B": {
+        "MN": null,
+        "NC": false,
+        "OH": true,
+        "TX": null,
+        "OR": null
+      }
+    }
+  },
+  "type_terms_without_state": {
+    "A+P": {
+      "MN": {
+        "core": [
+          1.658304324038923,
+          0.9926075610563948,
+          2.283744665813076
+        ]
+      },
+      "NC": {
+        "core": [
+          1.8383839204097336,
+          0.9446592472008928,
+          2.8658933199799783
+        ]
+      },
+      "OH": {
+        "core": [
+          1.8894406793391532,
+          1.2262457455382658,
+          2.6069829608381907
+        ]
+      },
+      "TX": {
+        "core": [
+          1.9308611421162711,
+          1.2255903728559376,
+          2.7098231496036407
+        ]
+      },
+      "OR": {
+        "core": [
+          1.5612889473124412,
+          0.7983311605319843,
+          2.4178377861502662
+        ]
+      }
+    },
+    "A\u2032+P": {
+      "MN": {
+        "core": [
+          1.458387320893114,
+          0.5230644858929965,
+          2.2804580012073057
+        ]
+      },
+      "NC": {
+        "core": [
+          1.6729343768530764,
+          0.3778889160832912,
+          3.0317833244513337
+        ]
+      },
+      "OH": {
+        "core": [
+          1.4563481436745347,
+          0.5115897777825137,
+          2.402206418386718
+        ]
+      },
+      "TX": {
+        "core": [
+          1.5084416210861964,
+          0.53080979649803,
+          2.500039736455763
+        ]
+      },
+      "OR": {
+        "core": [
+          1.129716904431437,
+          0.0234724182678206,
+          2.2465027667125987
+        ]
+      }
+    }
+  },
+  "sensitivity_four_types": {
+    "A+P4": {
+      "terms": {
+        "core": [
+          2.3797588839697763,
+          1.6713139560051875,
+          3.1067226560458723
+        ],
+        "suburb_old": [
+          1.023499188046416,
+          0.2943299028976742,
+          1.7644194244058908
+        ],
+        "town": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "loglik": -1406.3403223869989,
+      "useful": {
+        "0": 1,
+        "1": 4,
+        "2": 4
+      },
+      "claim_tier": 1
+    },
+    "A\u2032+P4": {
+      "terms": {
+        "core": [
+          2.3302293337394175,
+          1.1998358129044346,
+          3.4524148171786666
+        ],
+        "suburb_old": [
+          1.0046219959272271,
+          0.2010959207052443,
+          1.815439275402388
+        ],
+        "town": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "loglik": -1406.3358044492606,
+      "useful": {
+        "0": 0,
+        "1": 3,
+        "2": 3
+      },
+      "claim_tier": null
+    }
+  },
+  "owner_vs_core_correlation": -0.680092197673996,
+  "base_check_vs_d084": {
+    "A": {
+      "theta": 0.0005029824589902,
+      "alpha": 2.6480947481086368,
+      "beta": 0.0,
+      "loglik": -1418.6282987499883
+    },
+    "A\u2032": {
+      "theta": 0.0003791198052572,
+      "alpha": 1.844006477864304,
+      "beta": -0.7822985004088595,
+      "loglik": -1411.5022531344748
+    }
+  }
+}

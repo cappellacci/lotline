@@ -1,0 +1,267 @@
+[   13s] MN: 1051 places main 1,758 | fast_high 5,768 | fast 6,300
+[   22s] NC: 453 places main 3,078 | fast_high 10,182 | fast 11,110
+[   33s] OH: 947 places main 2,621 | fast_high 8,615 | fast 9,443
+[   53s] TX: 1003 places main 12,066 | fast_high 39,818 | fast 43,589
+[   56s] OR: 168 places main 256 | fast_high 852 | fast 927
+{
+ "MN": {
+  "main": {
+   "half": 4.0,
+   "buildings": [
+    179,
+    1185,
+    8252,
+    3858
+   ],
+   "homes_net": [
+    255,
+    1758,
+    12353,
+    5697
+   ],
+   "year5_share": 0.569
+  },
+  "fast_high": {
+   "half": 1.0,
+   "buildings": [
+    588,
+    3890,
+    27516,
+    12718
+   ],
+   "homes_net": [
+    852,
+    5768,
+    40856,
+    18781
+   ],
+   "year5_share": 0.259,
+   "mean_ratio_to_main": 3.297
+  },
+  "fast": {
+   "half": 0.5,
+   "buildings": [
+    636,
+    4272,
+    30070,
+    13932
+   ],
+   "homes_net": [
+    931,
+    6300,
+    44809,
+    20575
+   ],
+   "year5_share": 0.237,
+   "mean_ratio_to_main": 3.612
+  }
+ },
+ "NC": {
+  "main": {
+   "half": 4.0,
+   "buildings": [
+    295,
+    1998,
+    13917,
+    6521
+   ],
+   "homes_net": [
+    461,
+    3078,
+    21906,
+    10108
+   ],
+   "year5_share": 0.568
+  },
+  "fast_high": {
+   "half": 1.0,
+   "buildings": [
+    985,
+    6596,
+    46425,
+    21525
+   ],
+   "homes_net": [
+    1506,
+    10182,
+    72683,
+    33363
+   ],
+   "year5_share": 0.258,
+   "mean_ratio_to_main": 3.301
+  },
+  "fast": {
+   "half": 0.5,
+   "buildings": [
+    1070,
+    7162,
+    50706,
+    23585
+   ],
+   "homes_net": [
+    1679,
+    11110,
+    79624,
+    36557
+   ],
+   "year5_share": 0.237,
+   "mean_ratio_to_main": 3.617
+  }
+ },
+ "OH": {
+  "main": {
+   "half": 4.0,
+   "buildings": [
+    250,
+    1674,
+    11803,
+    5520
+   ],
+   "homes_net": [
+    390,
+    2621,
+    18769,
+    8620
+   ],
+   "year5_share": 0.568
+  },
+  "fast_high": {
+   "half": 1.0,
+   "buildings": [
+    823,
+    5539,
+    39069,
+    18208
+   ],
+   "homes_net": [
+    1285,
+    8615,
+    61667,
+    28431
+   ],
+   "year5_share": 0.258,
+   "mean_ratio_to_main": 3.298
+  },
+  "fast": {
+   "half": 0.5,
+   "buildings": [
+    908,
+    6047,
+    42794,
+    19945
+   ],
+   "homes_net": [
+    1408,
+    9443,
+    67461,
+    31145
+   ],
+   "year5_share": 0.237,
+   "mean_ratio_to_main": 3.613
+  }
+ },
+ "TX": {
+  "main": {
+   "half": 4.0,
+   "buildings": [
+    1205,
+    8076,
+    56992,
+    26588
+   ],
+   "homes_net": [
+    1774,
+    12066,
+    86570,
+    39580
+   ],
+   "year5_share": 0.569
+  },
+  "fast_high": {
+   "half": 1.0,
+   "buildings": [
+    3950,
+    26752,
+    187047,
+    87702
+   ],
+   "homes_net": [
+    5847,
+    39818,
+    284408,
+    130550
+   ],
+   "year5_share": 0.258,
+   "mean_ratio_to_main": 3.298
+  },
+  "fast": {
+   "half": 0.5,
+   "buildings": [
+    4333,
+    29292,
+    204697,
+    96079
+   ],
+   "homes_net": [
+    6448,
+    43589,
+    312206,
+    143014
+   ],
+   "year5_share": 0.237,
+   "mean_ratio_to_main": 3.613
+  }
+ },
+ "OR": {
+  "main": {
+   "half": 4.0,
+   "buildings": [
+    26,
+    177,
+    1241,
+    581
+   ],
+   "homes_net": [
+    37,
+    256,
+    1853,
+    842
+   ],
+   "year5_share": 0.567
+  },
+  "fast_high": {
+   "half": 1.0,
+   "buildings": [
+    88,
+    583,
+    4078,
+    1918
+   ],
+   "homes_net": [
+    124,
+    852,
+    6141,
+    2781
+   ],
+   "year5_share": 0.258,
+   "mean_ratio_to_main": 3.303
+  },
+  "fast": {
+   "half": 0.5,
+   "buildings": [
+    94,
+    644,
+    4528,
+    2101
+   ],
+   "homes_net": [
+    136,
+    927,
+    6728,
+    3046
+   ],
+   "year5_share": 0.236,
+   "mean_ratio_to_main": 3.618
+  }
+ }
+}

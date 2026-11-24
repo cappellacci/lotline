@@ -10,7 +10,9 @@ the start of year 1; `baseline.window`):
     Handbook rules  h_hb(t)  = max(c × h_m × ramp(a + t) + (1 − c) × h_m × ramp(t), observed ADU rate)
 
 - **h_m**, the place's mature ADU hazard (`model.hazard.adu_mature_hazard`), with each simulation draw widened
-  where the place lies outside the calibration range (`hazard.widen`).
+  where the place lies outside the calibration range (`hazard.widen`), times the place-type multiplier
+  (D-088, D-089; `type_log_multipliers`): exp(β_core) for a core city, a draw from the town prior for a town,
+  1 for a suburb (the type the anchor θ describes) or a place with no `place_type`.
 - **c, how close current local rules already are to the Handbook** (`current_rules`): 1 when the coded ADU
   rule in force at the origin allows a detached ADU of 600+ sq ft by right with no owner-occupancy or parking
   requirement; `adu_partial_rule_share` when ADUs are allowed with any of those restrictions; 0 when no ADU
@@ -22,6 +24,13 @@ the start of year 1; `baseline.window`):
   `adu_observed_years` years ending at the data origin (`observed_per_year`; a held-out place's years end
   before its holdout). It is a floor on the current-rules hazard: ADUs a place
   already builds are in its baseline and are never counted as added (additionality, MS-10).
+- **Own counts with drift** (D-091, adopted 2026-11-15; D-093; `adu_own_rate_drift`, 0 turns it off): where a
+  place has an observed ADU rate, its own counts set the no-reform hazard instead, in the lead years too:
+  persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z − σ²/2) with σ
+  `adu_drift_sigma` (`own_rate_draws`): mean 1 since 2026-11-20 (`adu_drift_mean_one`; 0 gives D-091's
+  median-1 drift exp(σ z)). The Handbook hazard is that rate times the mechanism's ratio
+  h_hb ÷ h_cur above, or plus the mechanism's added hazard where h_cur is 0 (`own_rate_paths`). The ratio
+  has not been checked within ×2 on held-out data. Places with no observed rate keep the mechanism.
 
 Each year the pool of parcels without an ADU shrinks, separately under each set of rules:
 gross ADUs(t) = R(t − 1) × h(t), R(t) = R(t − 1) − gross ADUs(t), R(0) = eligible parcels. So a parcel gets at
@@ -34,11 +43,13 @@ added or reported.
 
 Every result is a range: P10/P50/P90 and the mean over `adu_simulation_draws` draws (`draw_params`, D-030):
 judgment parameters triangular(low, central, high); the fitted anchor and place-effect variance lognormal
-around their estimates, shifted with the judgment parameters they were fitted at; one place multiplier per
-place; extrapolation noise shared across places (`extrapolation_noise`). The mortgage-rate stress range is a
-sensitivity (`params=`), not part of the forecast range. Numerator (units) and denominator (eligible parcels)
-stay in separate columns. Nothing is fitted here: the anchor comes from D-019 fit 3
-(`scripts/dev/calibrate_adu.py`), and observed local ADUs enter only as the additionality floor.
+around their estimates, shifted with the judgment parameters they were fitted at; the core-city term and the
+town prior; one place multiplier per place; extrapolation noise shared across places (`extrapolation_noise`).
+The mortgage-rate stress range is a sensitivity (`params=`), not part of the forecast range. Numerator (units)
+and denominator (eligible parcels) stay in separate columns. Nothing is fitted here: the anchor, place-effect
+variance, rule shares and core-city term come from D-088's Form A + place types fit
+(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter as the no-reform rate with drift (D-093),
+or as the additionality floor with the switch off.
 """
 
 from __future__ import annotations
@@ -47,6 +58,7 @@ import itertools
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -141,9 +153,114 @@ def draw_params(n: int, seed: int, anchor: Mapping[str, float] | None = None) ->
     return [{k: float(v[i]) for k, v in cols.items()} for i in range(n)]
 
 
+NEW_RULE = "adu_new_rule_share"  # D-099
+GRID_FILE = "adu_partial_share_grid.csv"
+SHARE_DRAWS = (
+    "adu_partial_share_draws"  # 0 fixed; 1 the grid's weights; 2 the fold maxima; 3 all at the set m_x
+)
+CORE_SHIFT = "adu_types_core_shift"
+
+
+def partial_share_grid() -> pd.DataFrame:
+    """D-097: config/params/adu_partial_share_grid.csv, A + place types refitted at each m_x on the 0.1 grid
+    (m_x, θ̂, α̂, β̂_core, log-likelihood, weight, weight_fold_max)."""
+    return pd.read_csv(CONFIG_DIR / "params" / GRID_FILE)
+
+
+def apply_partial_share_grid(
+    sets: list[dict[str, float]], grid: pd.DataFrame, mode: int, seed: int, central_mx: float
+) -> list[dict[str, float]]:
+    """D-097: one m_x per draw, with θ, α and the core term moved to that grid row's refit.
+
+    The draw's own lognormal spread and judgment shifts stay: θ_d × θ̂(m) ÷ θ̂(m̂), α_d × α̂(m) ÷ α̂(m̂), and the
+    core term shifted by β̂(m) − β̂(m̂) (`adu_types_core_shift`), m̂ the configured central m_x. `mode` 1 draws m
+    from `weight`, 2 from `weight_fold_max`, 3 puts every draw at the set's own `adu_partial_rule_share`.
+    Own stream: (seed, 97).
+
+    By hand: grid rows m 0.4 (θ 2, α 1, β 1) and 0.7 (θ 1, α 2, β 2), central 0.7, mode 3 with a set at
+    m_x 0.4 and θ 3: θ 3 × 2 / 1 = 6, α × 0.5, core shift −1."""
+    g = grid.set_index("m_x")
+    c = g.loc[round(central_mx, 1)]
+    if mode == 3:
+        ms = np.array([round(p["adu_partial_rule_share"], 1) for p in sets])
+    else:
+        w = g["weight" if mode == 1 else "weight_fold_max"].to_numpy(dtype=float)
+        ms = np.random.default_rng([seed, 97]).choice(g.index.to_numpy(), size=len(sets), p=w / w.sum())
+    out = []
+    for p, m in zip(sets, ms, strict=True):
+        r = g.loc[m]
+        q = dict(p)
+        q["adu_partial_rule_share"] = float(m)
+        q["adu_mature_hazard_ref"] = p["adu_mature_hazard_ref"] * r["theta"] / c["theta"]
+        q["adu_place_effect_variance"] = p["adu_place_effect_variance"] * r["alpha"] / c["alpha"]
+        q[CORE_SHIFT] = float(r["core"] - c["core"])
+        out.append(q)
+    return out
+
+
 def anchor_terms() -> dict[str, float]:
-    """config/params/adu_anchor.yaml: the anchor's observed-information terms and slopes (D-030)."""
+    """config/params/adu_anchor.yaml: the anchor's observed-information terms and judgment slopes (D-030),
+    for the Form A + place types fit (D-088; `scripts/dev/adu_types_slopes.py`)."""
     return {k: s.value for k, s in load_params("adu_anchor").items()}
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Place types (D-088, D-089)
+# ---------------------------------------------------------------------------------------------------------
+
+TYPE_FILE = "adu_place_types"
+CORE, TOWN = "core", "town"
+
+
+def type_terms(spec: Mapping[str, float] | None = None) -> dict[str, float]:
+    """The core-city term's estimate and SE, and the town prior's SD, from config/params/adu_place_types.yaml
+    (`spec` replaces the file: keys as there, each a value or a (value, low, high) tuple).
+    se = (high − low) / (2 × 1.645). By hand: 1.199 (0.546-1.898) -> se 1.352 / 3.2897 = 0.4110."""
+    if spec is None:
+        p = load_params(TYPE_FILE)
+        c = p["adu_types_core_log_multiplier"]
+        core = (c.value, c.low, c.high)
+        town = p["adu_types_town_prior_sd"].value
+    else:
+        core = spec["adu_types_core_log_multiplier"]
+        core = tuple(core) if isinstance(core, (tuple, list)) else (core, core, core)
+        town = spec["adu_types_town_prior_sd"]
+    return {"core": float(core[0]), "core_se": (core[2] - core[1]) / (2 * Z_90), "town_sd": float(town)}
+
+
+def central_type_log_multiplier(types, spec: Mapping[str, float] | None = None) -> np.ndarray:
+    """Each place's log multiplier at central values: β̂_core for a core city, 0 otherwise (the town prior's
+    centre is the suburb rate)."""
+    tt = type_terms(spec)
+    types = pd.Series(types, dtype=object).reset_index(drop=True)
+    return np.where(types == CORE, tt["core"], 0.0)
+
+
+def type_log_multipliers(types, states, n: int, seed: int, spec=None) -> np.ndarray:
+    """Log hazard multiplier per draw and place (draws × places), D-088 and D-089:
+
+    - core city: β_d ~ N(β̂_core, se), one per draw, shared by every core city;
+    - town: s × z_ds, z standard normal, one per draw and state (shared by the state's towns), s the town
+      prior's SD;
+    - suburb, or a place with no type: 0.
+
+    By hand with se and s at 0: a core city gets β̂ in every draw, a town 0.
+    """
+    tt = type_terms(spec)
+    types = pd.Series(types, dtype=object).reset_index(drop=True)
+    states = pd.Series(states, dtype=object).reset_index(drop=True).fillna("")
+    rng = np.random.default_rng(seed)
+    core = rng.normal(tt["core"], tt["core_se"], size=n)
+    out = np.zeros((n, len(types)))
+    is_core = (types == CORE).to_numpy()
+    out[:, is_core] = core[:, None]
+    is_town = (types == TOWN).to_numpy()
+    if is_town.any():
+        names = sorted(states[is_town].unique())
+        z = rng.standard_normal((n, len(names)))
+        col = states[is_town].map({st: i for i, st in enumerate(names)}).to_numpy()
+        out[:, is_town] = tt["town_sd"] * z[:, col]
+    return out
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -151,9 +268,19 @@ def anchor_terms() -> dict[str, float]:
 # ---------------------------------------------------------------------------------------------------------
 
 
-def load_reforms(state: str) -> pd.DataFrame:
-    """The state's coded reforms (config/reforms/<st>.csv) with dates parsed."""
-    df = pd.read_csv(CONFIG_DIR / "reforms" / f"{state.lower()}.csv", dtype={"jurisdiction_geoid": str})
+def load_reforms(state: str, config_dir: Path | None = None) -> pd.DataFrame:
+    """The state's coded reforms (config/reforms/<st>.csv) with dates parsed.
+
+    A state outside `REFORM_STATES` with no reforms file gets an empty table (no coded rules), so a new
+    state runs on borrowed priors alone (WS-SCALE task 0). A listed state must have its file.
+    """
+    path = (config_dir or CONFIG_DIR) / "reforms" / f"{state.lower()}.csv"
+    if not path.exists() and state.upper() not in REFORM_STATES:
+        from lotline.schemas import Reforms
+
+        df = pd.DataFrame({c: pd.Series(dtype=object) for c in Reforms.to_schema().columns})
+    else:
+        df = pd.read_csv(path, dtype={"jurisdiction_geoid": str})
     for col in ("announced_date", "adoption_date", "effective_date", "end_date"):
         if col in df:
             df[col] = pd.to_datetime(df[col])
@@ -513,13 +640,37 @@ def size_band(population, edges) -> np.ndarray:
     return np.searchsorted(np.asarray(edges, dtype=float), np.asarray(population, dtype=float), side="right")
 
 
+REMAINDER = "county_unincorporated"  # a county remainder: unincorporated land the county itself zones
+REMAINDER_BAND = -1  # the priors row county remainders read under D-102 option (b)
+
+
+def remainder_priors(coded: pd.DataFrame, min_count: int) -> pd.DataFrame:
+    """D-102 option (b) (Ben, 2026-11-24): for each state with at least `min_count` coded county remainders
+    (`kind` == county_unincorporated), one priors row (band `REMAINDER_BAND`) with their mean probabilities.
+    An uncoded remainder in that state reads it instead of its size band (`apply_priors`), since
+    unincorporated land is zoned by the county, not by cities its size. In other states remainders read the
+    smallest band (`apply_priors`).
+    By hand: 5 coded remainders, 1 Handbook-equivalent and 4 'none' -> p_handbook 0.2, p_none 0.8."""
+    if "kind" not in coded:
+        return pd.DataFrame(columns=["state", "band", "n_coded", "source", *P_COLS, "p_partial"])
+    rem = coded[coded["kind"] == REMAINDER]
+    rows = [
+        {"state": st, "band": REMAINDER_BAND, "n_coded": len(g), "source": "state, coded county remainders",
+         **g[list(P_COLS)].mean().to_dict()}
+        for st, g in rem.groupby("state") if len(g) >= min_count
+    ]  # fmt: skip
+    out = pd.DataFrame(rows, columns=["state", "band", "n_coded", "source", *P_COLS])
+    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+
+
 def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
     """Type probabilities for places with no ADU row, from the coded places themselves (D-022).
 
     `coded`: state, population and p_* (over TYPES) for every place with a coded rule (fractional where blanks
     or coverage leave the type uncertain). For each state and size band: the mean of the coded places'
     probabilities if at least `min_count` places are coded there; else the state's pooled mean; else the mean
-    over every state. Returns state, band, n_coded, source and p_* (and p_partial).
+    over every state. Returns state, band, n_coded, source and p_* (and p_partial). With a `kind` column, also
+    the `remainder_priors` rows (D-102 option (b)).
     By hand: 5 coded places in a band, 2 'other' and 3 Handbook-equivalent -> p_other 0.4, p_handbook 0.6.
     """
     c = coded.assign(band=size_band(coded["population"], edges))
@@ -544,7 +695,9 @@ def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
                 }
             )
     out = pd.DataFrame(rows)
-    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+    out = out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+    rem = remainder_priors(coded, min_count)
+    return pd.concat([out, rem], ignore_index=True) if len(rem) else out
 
 
 def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states, state: str) -> pd.DataFrame:
@@ -576,10 +729,16 @@ def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states,
 
 
 def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFrame:
-    """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`."""
+    """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`. A county
+    remainder (`kind`) reads its state's `REMAINDER_BAND` row where there is one, else the smallest band (0)
+    whatever its population (D-102 option (b), Ben 2026-11-24: county land is zoned more like small towns)."""
     out = places.assign(band=size_band(places["population"].fillna(0), edges))
+    if "kind" in out:
+        has_rem = set(priors.loc[priors["band"] == REMAINDER_BAND, "state"])
+        rem = out["kind"] == REMAINDER
+        out.loc[rem, "band"] = np.where(out.loc[rem, "state"].isin(has_rem), REMAINDER_BAND, 0)
     pr = priors.set_index(["state", "band"])
-    pooled = priors[list(P_COLS)].mean()
+    pooled = priors.loc[priors["band"] != REMAINDER_BAND, list(P_COLS)].mean()
     src = pd.Series("coded", index=out.index, dtype=object)
     for i in out.index[out["rule_class"] == "unknown"]:
         key = (out.at[i, "state"], out.at[i, "band"])
@@ -639,7 +798,7 @@ def adu_share_of_one_unit(permits: pd.DataFrame, first: int, last: int) -> tuple
     return adu, adu + int((w["building_type_std"] == "SFD").sum())
 
 
-def observed_adu_counts(permits: pd.DataFrame, first: int, last: int, undercount=None) -> pd.DataFrame:
+def observed_adu_counts(permits: pd.DataFrame | None, first: int, last: int, undercount=None) -> pd.DataFrame:
     """ADU permits per jurisdiction and year in [first, last], from sources that flag ADUs at all.
 
     Where two sources cover one jurisdiction (Met Council and Minneapolis's own permits), the larger count
@@ -651,6 +810,12 @@ def observed_adu_counts(permits: pd.DataFrame, first: int, last: int, undercount
     """
     from lotline.model import undercount as uc
 
+    if (
+        permits is None or permits.empty
+    ):  # no permit adapter for the state (WS-SCALE task 0): no observed ADUs
+        cols = ["geoid", "year", "adu_permits"]
+        cols += [] if undercount is None else ["source", "counted", "k_row"]
+        return pd.DataFrame({c: pd.Series(dtype=object) for c in cols})
     flagging = permits.loc[_is_adu(permits), "source"].unique()
     p = permits[permits["source"].isin(flagging) & permits["jurisdiction_geoid"].notna()]
     p = p[(p["issue_year"] >= first) & (p["issue_year"] <= last)].assign(adu=_is_adu)
@@ -684,22 +849,54 @@ class Paths:
         return self.handbook - self.current
 
 
-def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True, lead=0):
+def own_rate_paths(h_own, h_cur_mech, h_hb_mech):
+    """D-091 (adopted 2026-11-15): the no-reform and Handbook hazards where a place's own counts set the
+    no-reform rate. `h_own` is that rate (persistence × drift; NaN: no own counts, keep the mechanism).
+
+    - no reform: h_own;
+    - Handbook: h_own × (h_hb_mech ÷ h_cur_mech), the mechanism's ratio, where h_cur_mech > 0; where it is 0
+      (no rule allows ADUs and nothing was observed) the ratio is undefined and the mechanism's added hazard
+      h_hb_mech − h_cur_mech is added instead.
+
+    Both capped at 1. By hand: h_own 0.01, mechanism 0.02 → 0.05 gives 0.01 → 0.025; h_own 0.001, mechanism
+    0 → 0.03 gives 0.001 → 0.031; h_own NaN gives the mechanism's 0.02 → 0.05.
+    """
+    own = np.asarray(h_own, dtype=float)
+    cur_m, hb_m = np.asarray(h_cur_mech, dtype=float), np.asarray(h_hb_mech, dtype=float)
+    use = np.isfinite(own)
+    o = np.where(use, own, 0.0)
+    pos = cur_m > 0
+    ratio_hb = o * np.divide(hb_m, cur_m, out=np.ones_like(cur_m), where=pos)
+    hb_own = np.where(pos, ratio_hb, o + (hb_m - cur_m))
+    cur = np.where(use, np.minimum(o, 1.0), cur_m)
+    hb = np.where(use, np.minimum(hb_own, 1.0), hb_m)
+    return cur, hb
+
+
+def pool_paths(
+    eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, horizon, enabled=True, lead=0, h_own=None
+):
     """Gross ADUs per year under current and Handbook rules, depleting the pool of parcels without an ADU.
 
     `rule_age` is the current rule's age in years at the origin (NaN: no rule). `ramp_params` gives the ramp
     (`hazard.adu_ramp`; D-048: 1 every year). With `enabled=False` the Handbook path equals the current-rules
     path, so nothing is added. `lead` years (D-061) run first under current rules only, on one shared pool,
     and are not returned: the window's year t has rule age a + lead + t and Handbook ramp(t).
+    `h_own` (D-091; None or NaN per place: off) replaces the no-reform hazard, in the lead years too, and
+    scales the Handbook hazard by the mechanism's ratio (`own_rate_paths`). D-099: where today's rule share c
+    is 0 (no ADUs allowed), the Handbook's new hazard is multiplied by `adu_new_rule_share` (ν; 1 = none).
     """
     e = np.asarray(eligible, dtype=float)
     hm = np.asarray(h_mature, dtype=float)
     floor = np.nan_to_num(np.asarray(h_floor, dtype=float), nan=0.0)
     c = np.asarray(rule_share, dtype=float)
     age = np.nan_to_num(np.asarray(rule_age, dtype=float), nan=0.0)
+    own = np.full(len(e), np.nan) if h_own is None else np.asarray(h_own, dtype=float)
+    nu = float(ramp_params.get(NEW_RULE, 1.0))  # D-099: first-years share where no ADUs are allowed today
     r = e.copy()
     for s in range(1, int(lead) + 1):  # lead years: current rules only, nothing reported (D-061)
         h_lead = np.minimum(np.maximum(c * hm * hazard.adu_ramp(age + s, ramp_params), floor), 1.0)
+        h_lead, _ = own_rate_paths(own, h_lead, h_lead)
         r = r - r * h_lead
     age = age + int(lead)
     r_hb, r_cur = r.copy(), r.copy()
@@ -708,13 +905,48 @@ def pool_paths(eligible, h_mature, h_floor, rule_share, rule_age, ramp_params, h
         h_rule = c * hm * hazard.adu_ramp(age + t, ramp_params)
         h_cur = np.minimum(np.maximum(h_rule, floor), 1.0)
         if enabled:
-            h_new = h_rule + (1.0 - c) * hm * hazard.adu_ramp(t, ramp_params)
+            h_new = h_rule + (1.0 - c) * hm * hazard.adu_ramp(t, ramp_params) * np.where(c <= 0, nu, 1.0)
             h_hb = np.minimum(np.maximum(h_new, floor), 1.0)
         else:
             h_hb = h_cur
+        h_cur, h_hb = own_rate_paths(own, h_cur, h_hb)
         hb[:, i], cur[:, i] = r_hb * h_hb, r_cur * h_cur
         r_hb, r_cur = r_hb - hb[:, i], r_cur - cur[:, i]
     return Paths(hb, cur)
+
+
+def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed, mean_one: bool = False) -> np.ndarray:
+    """D-091 (adopted 2026-11-15): each place's no-reform ADU rate per eligible parcel a year from its own
+    counts, persistence × drift (draws × places; NaN where the place has no observed rate).
+
+    - Persistence (D-090 F0): rate ~ Gamma(Y + 0.5, E), Y = observed_rate × eligible × n_years (the counts
+      the observed rate came from, undercount-scaled as drawn), E = eligible × n_years lot-years.
+    - Drift: × d = exp(σ z), z standard normal, one per place and draw for the whole window (median 1).
+      With `mean_one` (`adu_drift_mean_one`, Ben 2026-11-20): × d = exp(σ z − σ² / 2), mean 1, so a place's
+      expected rate stays at its persistence mean; its median falls to exp(−σ² / 2) (0.59 at σ 1.025).
+
+    `observed_rate` is one row (places) or one row per draw (`observed_rate_draws`). Own stream: `seed`.
+    By hand: rate 0.01, 100 lots, 3 years -> Y 3, E 300, posterior mean 3.5 / 300 = 0.01167 before drift;
+    σ 1.025 with `mean_one`: every drift factor is the median-one factor × exp(−0.5253) = × 0.5914.
+    """
+    obs = np.atleast_2d(np.asarray(observed_rate, dtype=float))
+    obs = np.broadcast_to(obs, (n, obs.shape[1]))
+    e = np.asarray(eligible, dtype=float)
+    lot_years = np.where(e > 0, e * n_years, np.nan)
+    y = np.nan_to_num(obs * lot_years, nan=0.0)
+    rng = np.random.default_rng(seed)
+    rate = rng.standard_gamma(y + 0.5) / lot_years
+    drift = np.exp(sigma * rng.standard_normal(obs.shape) - (sigma**2 / 2 if mean_one else 0.0))
+    return np.where(np.isfinite(obs) & np.isfinite(lot_years), rate * drift, np.nan)
+
+
+def own_rate_central(observed_rate, eligible, n_years) -> np.ndarray:
+    """The persistence posterior mean (Y + 0.5) / E at drift 1 (the median, or with `adu_drift_mean_one` the
+    mean, of the drift factor); NaN without an observed rate."""
+    e = np.asarray(eligible, dtype=float)
+    lot_years = np.where(e > 0, e * n_years, np.nan)
+    obs = np.asarray(observed_rate, dtype=float)
+    return (obs * lot_years + 0.5) / lot_years
 
 
 def with_rule_probs(places: pd.DataFrame, params: Mapping[str, float]) -> pd.DataFrame:
@@ -732,11 +964,16 @@ def with_rule_probs(places: pd.DataFrame, params: Mapping[str, float]) -> pd.Dat
 
 
 def central_path(
-    places: pd.DataFrame, horizon: int | None = None, enabled: bool = True, params: dict | None = None
+    places: pd.DataFrame,
+    horizon: int | None = None,
+    enabled: bool = True,
+    params: dict | None = None,
+    types_spec: Mapping[str, float] | None = None,
 ) -> dict[str, np.ndarray]:
     """The scenario at central parameter values, no widening: arrays (places × years) for each outcome.
 
-    For hand checks and the worked example; `run` gives the ranges. `params` overrides central values.
+    For hand checks and the worked example; `run` gives the ranges. `params` overrides central values;
+    `types_spec` replaces adu_place_types.yaml (`type_terms`).
     """
     p = central_params() | (params or {})
     places = with_rule_probs(places, p)
@@ -745,6 +982,8 @@ def central_path(
     given = places["mortgage_rate"] if "mortgage_rate" in places else pd.Series(np.nan, index=places.index)
     rate = given.fillna(p["mortgage_rate_forecast"]).to_numpy(dtype=float)
     hm = hazard.adu_mature_hazard(places["rent"], places["home_value"], rate, p)
+    if "place_type" in places:  # D-088: core cities at exp(β̂_core); towns at the suburb rate (prior centre)
+        hm = np.minimum(hm * np.exp(central_type_log_multiplier(places["place_type"], types_spec)), 1.0)
     c = expected_rule_share(places, p)  # E[c] over the rule types (D-022)
     paths = pool_paths(
         places["eligible_parcels"],
@@ -756,6 +995,9 @@ def central_path(
         horizon,
         enabled,
         lead,
+        own_rate_central(places["observed_rate"], places["eligible_parcels"], p["adu_observed_years"])
+        if p["adu_own_rate_drift"]
+        else None,
     )
     homes = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
     return {
@@ -832,6 +1074,7 @@ def run(
     states_spec: Mapping[str, float] | None = None,
     eligible_proxy: bool = False,
     return_draws: bool = False,
+    types_spec: Mapping[str, float] | None = None,
 ):
     """The scenario for every place: (per-year table, five-year totals), each with P10/P50/P90 and mean.
 
@@ -847,10 +1090,13 @@ def run(
     config/params/adu_anchor.yaml (tests). With a `state` column, places in a state outside the fit that
     estimated τ also get a state multiplier exp(τ_d z_ds), shared by the state's places, with τ_d drawn per
     draw (`state_noise`, config/params/adu_state_effect.yaml, D-044); `states_spec` replaces that file
-    (tests). With `eligible_proxy` (D-056), a state whose every place has `denominator_source ==
-    "acs_sf_fallback"` has its eligible parcels multiplied in each draw by eligible_proxy_scale ×
-    exp(eligible_proxy_sd × z), one z per state per draw (`eligible_proxy.multipliers`, its own random
-    stream); any state with a parcel-based place is untouched, and with the flag off nothing changes.
+    (tests). With a `place_type` column (core, suburb or town; `places_from_store` adds it), each draw
+    multiplies the hazard by the place-type multiplier (`type_log_multipliers`, its own random stream);
+    `types_spec` replaces config/params/adu_place_types.yaml (tests). With `eligible_proxy` (D-056), a state
+    whose every place has `denominator_source == "acs_sf_fallback"` has its eligible parcels multiplied in
+    each draw by eligible_proxy_scale × exp(eligible_proxy_sd × z), one z per state per draw
+    (`eligible_proxy.multipliers`, its own random stream); any state with a parcel-based place is untouched,
+    and with the flag off nothing changes.
     With `return_draws`, a last element is added: per-draw arrays for the results bundle (`model/results.py`):
     `eligible`, `pencil` and `rule_share` (draws x places; pencil = the pro forma's feasible share F(PCR) the
     hazard uses; rule_share = c, how close that draw's current rules are to the Handbook),
@@ -871,6 +1117,12 @@ def run(
     n = int(draws or central["adu_simulation_draws"])
     seed = int(central["adu_simulation_seed"])
     sets = [p | dict(params or {}) for p in draw_params(n, seed, anchor)]
+    share_mode = int(central.get(SHARE_DRAWS, 0))
+    if share_mode:  # D-097: m_x drawn, θ, α and the core term refitted at it
+        sets = apply_partial_share_grid(
+            sets, partial_share_grid(), share_mode, seed, specs()["adu_partial_rule_share"].value
+        )
+    core_shift = np.array([p.get(CORE_SHIFT, 0.0) for p in sets])
     rule_rng = np.random.default_rng(seed + 2)
     drawn = np.zeros((n, len(places)))
     lead, horizon, first = baseline.window(origin)
@@ -878,6 +1130,11 @@ def run(
     grid, probs, fitted = state_effect(states_spec)
     st = places["state"] if "state" in places else pd.Series(np.nan, index=places.index)
     z_state = state_noise(st, fitted, grid, probs, n, seed + 4)
+    ptype = (
+        places["place_type"] if "place_type" in places else pd.Series(None, index=places.index, dtype=object)
+    )
+    log_type = type_log_multipliers(ptype, st, n, seed + 7, types_spec)  # D-088, D-089: own stream
+    log_type = log_type + core_shift[:, None] * (ptype == CORE).to_numpy()[None, :]  # D-097 (0 when off)
     var_u = np.array([p["adu_place_effect_variance"] for p in sets])[:, None]
     gamma = np.random.default_rng(seed + 3).standard_gamma(
         1 / np.maximum(var_u, 1e-12), size=(n, len(places))
@@ -885,6 +1142,19 @@ def run(
     u_all = np.where(var_u > 0, gamma * var_u, 1.0)
     obs_d = observed_rate_draws(places, n, seed + 6)  # D-078: each draw's flag undercount k, own stream
     e = places["eligible_parcels"].to_numpy(dtype=float)
+    own = (  # D-091: own counts × drift as the no-reform rate, own stream
+        own_rate_draws(
+            places["observed_rate"].to_numpy(dtype=float)[None, :] if obs_d is None else obs_d,
+            e,
+            central["adu_observed_years"],
+            central["adu_drift_sigma"],
+            n,
+            seed + 8,
+            mean_one=bool(central.get("adu_drift_mean_one", 0)),
+        )
+        if central["adu_own_rate_drift"]
+        else np.full((n, len(places)), np.nan)
+    )
     e_mult = (
         eligible_proxy_step.multipliers(places, n, np.random.default_rng(seed + 5))
         if eligible_proxy
@@ -911,7 +1181,7 @@ def run(
         hm = hazard.adu_mature_hazard(*args, p)
         dist_d = hazard.calibration_distance(*args, p)["total"]
         hm = hazard.widen_unseen_state(hm, dist_d, z[d], z_state[d], 1.0, "both", p)
-        hm = np.clip(hm * u_all[d], 0.0, 1.0)
+        hm = np.clip(hm * np.exp(log_type[d]) * u_all[d], 0.0, 1.0)
         c, idx, sampled = draw_rule_share(places, p, rule_rng)
         drawn[d] = idx
         share[d] = c
@@ -925,6 +1195,7 @@ def run(
             horizon,
             enabled,
             lead,
+            own[d],
         )
         out["handbook"][d], out["current"][d], out["added"][d] = paths.handbook, paths.current, paths.added
         out["homes"][d] = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
@@ -938,11 +1209,18 @@ def run(
         places.drop(columns=["observed_adu_by_k_row"], errors="ignore")
         .assign(
             mortgage_rate_central=args[2],
-            mature_hazard_central=hazard.adu_mature_hazard(*args, central),
+            mature_hazard_central=np.minimum(
+                hazard.adu_mature_hazard(*args, central)
+                * np.exp(central_type_log_multiplier(ptype, types_spec)),
+                1.0,
+            ),
             price_to_cost_central=hazard.adu_price_to_cost(places["rent"], params=central),
             calibration_distance=dist["total"],
             outside_calibration=dist["total"] > 0,
             outside_fit_states=(st.notna() & ~st.isin(fitted)).to_numpy(),
+            no_reform_basis=np.where(
+                np.isfinite(own).any(axis=0) if n else False, "own ADU counts with drift", "model"
+            ),
             draws_from_unknown_rule=np.where(sampled, 1.0, 0.0) if n else 0.0,
             drawn_none=(drawn == 0).mean(axis=0),
             drawn_partial=((drawn >= 1) & (drawn <= 3)).mean(axis=0),
@@ -1082,7 +1360,28 @@ def _county_shares(state: str, store, places: pd.DataFrame) -> pd.DataFrame:
 
 # States whose coded rules feed field probabilities, rule priors and blank shares. Oregon joined on
 # 2026-11-05 (D-053), after V9 was scored; V9 itself keeps the four states it was frozen from.
+# A state not listed here borrows from these states but feeds nothing back ("borrow only", Ben 2026-11-17,
+# WS-SCALE task 0): `reforms_with` adds it to the run on the fly, after the shared pools are built.
 REFORM_STATES = ("MN", "NC", "OH", "TX", "OR")
+
+
+def reforms_with(state: str, load=None) -> dict[str, pd.DataFrame]:
+    """`{state: reforms}` for every state in `REFORM_STATES`, then `state` itself if it is not listed.
+
+    Callers pool only the `REFORM_STATES` entries (`pooled_states`); the extra state's own rules still
+    apply to its own places. `load` defaults to `load_reforms`.
+    """
+    load = load or load_reforms
+    out = {st: load(st) for st in REFORM_STATES}
+    st = state.upper()
+    if st not in out:
+        out[st] = load(st)
+    return out
+
+
+def pooled_states(reforms: Mapping[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """The entries of `reforms` that feed shared pools (field probabilities, priors, blank shares)."""
+    return {st: r for st, r in reforms.items() if st in REFORM_STATES}
 
 
 _PARCEL_CACHE: dict[str, pd.DataFrame] = {}
@@ -1145,13 +1444,14 @@ def rule_inputs(
     central = {k: v.value for k, v in p.items()}
     min_count = int(central["adu_rule_min_coded"])
     edges = (central["adu_rule_band_small_max_pop"], central["adu_rule_band_mid_max_pop"])
-    reforms = {st: load_reforms(st).assign(state=st) for st in REFORM_STATES}
-    counts = field_restrict_counts(pd.concat(reforms.values(), ignore_index=True), prior_as_of)
+    reforms = {st: r.assign(state=st) for st, r in reforms_with(state).items()}
+    pooled = pooled_states(reforms)
+    counts = field_restrict_counts(pd.concat(pooled.values(), ignore_index=True), prior_as_of)
     covs = {st: coverage_map(st, store, r, central) for st, r in reforms.items()}
 
     def coded_on(date: pd.Timestamp) -> pd.DataFrame:
         out = []
-        for st, r in reforms.items():
+        for st, r in pooled.items():
             local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
             if not local:
                 continue
@@ -1162,7 +1462,11 @@ def rule_inputs(
             )
             cr = cr[cr["rule_class"] != "unknown"]
             pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
-            out.append(cr.assign(state=st, population=cr["geoid"].map(pop).astype(float)))
+            j = store.read(st, "jurisdictions").set_index("geoid")
+            kind = j["kind"] if "kind" in j else pd.Series(dtype=object)
+            out.append(
+                cr.assign(state=st, population=cr["geoid"].map(pop).astype(float), kind=cr["geoid"].map(kind))
+            )
         return pd.concat(out, ignore_index=True)
 
     coded_prior = coded_on(prior_as_of)
@@ -1173,7 +1477,10 @@ def rule_inputs(
         outside = no_state_rule_priors(
             coded_prior.dropna(subset=["population"]), edges, min_count, law_states, state
         )
-        priors = pd.concat([priors[priors["state"] != state], outside], ignore_index=True)
+        keep = (priors["state"] != state) | (
+            priors["band"] == REMAINDER_BAND
+        )  # (b): own remainders still apply
+        priors = pd.concat([priors[keep], outside], ignore_index=True)
     fp = field_probabilities(counts, state, min_count)
     cm = covs[state]
     rules = current_rules(
@@ -1184,9 +1491,12 @@ def rule_inputs(
         fp,
         dict(zip(cm.reform_id, cm.coverage, strict=True)),
     )
-    pop = store.read(state, "jurisdictions").set_index("geoid")["pop_2020"]
-    rules = rules.assign(state=state, population=rules["geoid"].map(pop).astype(float))
-    rules = apply_priors(rules, priors, edges).drop(columns=["state", "band"])
+    juris = store.read(state, "jurisdictions").set_index("geoid")
+    rules = rules.assign(
+        state=state, population=rules["geoid"].map(juris["pop_2020"]).astype(float),
+        kind=rules["geoid"].map(juris["kind"] if "kind" in juris else pd.Series(dtype=object)),
+    )  # fmt: skip
+    rules = apply_priors(rules, priors, edges).drop(columns=["state", "band", "kind"])
     info = {
         "field_counts": counts,
         "field_probs": fp,
@@ -1234,11 +1544,37 @@ def county_mix(places: pd.DataFrame, state: str, store, origin: int, coded: pd.D
     return out
 
 
+# the ADU columns of `place_inputs` (suffix `_adu`) that `places_from_store` reads
+PLACE_INPUT_ADU = (
+    "eligible_parcels",
+    "eligible_parcels_reported",
+    "overlap_removed",
+    "parcels_year",
+    "parcels_after_origin",
+    "denominator_source",
+    "denominator_quality",
+)
+
+
+def _place_input_rows(state: str, store, origin: int) -> pd.DataFrame:
+    """`place_inputs` rows for a run with this origin (WS-SCALE, contract-change #455): the stored table's
+    year == origin, else built for that year from the same processed tables (a synthetic or partial store)."""
+    from lotline.build import place_inputs
+
+    table = store.read(state, place_inputs.TABLE)
+    rows = None if table is None else table[table["year"] == origin]
+    if rows is None or rows.empty:
+        rows = place_inputs.build(state, store, [origin])
+    return rows.assign(geoid=rows["geoid"].astype(str))
+
+
 def places_from_store(state: str, store, origin: int, undercount="table") -> pd.DataFrame:
     """One row per jurisdiction with ADU-eligible parcels: every input `run` needs, from processed tables.
 
-    Eligible parcels (theme 'adu', current rule version) from the newest year <= origin (else the earliest
-    later roll, flagged `parcels_after_origin`); ACS rent and value from the newest vintage <= origin; no
+    The shared per-place inputs come from `place_inputs` at year == origin (WS-SCALE): eligible parcels (theme
+    'adu', current rule version) from the newest roll <= origin (else the earliest later roll, flagged
+    `parcels_after_origin`), net of the D-020 overlap; ACS rent and value from the newest vintage <= origin;
+    the observed ADU floor; the D-088 place type. Model-specific steps stay here: no
     mortgage rate (forward runs use `mortgage_rate_forecast`); coded ADU rules in force on
     `baseline.rules_as_of` (31 December of the window's first year, D-064); observed ADU permits per parcel
     where local permits flag ADUs, each source's count times its flag undercount k (D-078; `undercount`:
@@ -1246,29 +1582,15 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     `observed_adu_by_k_row` so `run` can redraw k in every draw.
     Reads only holdout-filtered tables (DataStore); no outcome after the origin is used.
     """
-    from lotline.build import eligible as eligible_rule
-    from lotline.model import money
-
-    elig = store.read(state, "eligible_parcels")
-    elig = elig[(elig["theme"] == "adu") & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
-    # newest roll <= origin; where a place has only later rolls (e.g. Austin's 2026 TCAD roll), the earliest
-    # of those, flagged: a parcel count is a denominator, not an outcome, so no holdout is touched
-    elig = elig.assign(after=elig["year"] > origin, gap=(elig["year"] - origin).abs())
-    elig = elig.sort_values(["after", "gap"]).groupby("jurisdiction_geoid").first().reset_index()
-    elig = elig.rename(
-        columns={"jurisdiction_geoid": "geoid", "year": "parcels_year", "after": "parcels_after_origin"}
-    )
-    elig = elig.drop(columns="gap")
-    juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "county_geoid", "in_bps"]]
-    places = elig.merge(juris, on="geoid", how="left")
-    places = places[places["eligible_parcels"].fillna(0) > 0].reset_index(drop=True)
-    places = non_overlapping(places, store.read(state, "jurisdictions"), _county_shares(state, store, places))
-
-    market = store.read(state, "market_geo_year")
-    cpi = money.index_by_year(market, "cpi_u")
-    places["acs_geo"] = places["kind"].map(ACS_PREFIX) + ":" + places["geoid"]
-    acs = acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
-    places = places.merge(acs, left_on="acs_geo", right_index=True, how="left")
+    rows = _place_input_rows(state, store, origin)
+    adu_cols = {f"{c}_adu": c for c in PLACE_INPUT_ADU if f"{c}_adu" in rows}
+    keep = ["geoid", "name", "kind", "county_geoid", "in_bps", "data_tier", *adu_cols, "acs_geo", *ACS_VARS]
+    keep.append("acs_end_year")
+    rows = rows[rows["eligible_parcels_adu"].fillna(0) > 0]
+    places = rows[[c for c in keep if c in rows]].rename(columns=adu_cols)
+    places = places.sort_values("geoid").reset_index(drop=True)
+    place_type = rows.set_index("geoid")["place_type"]
+    observed = rows.set_index("geoid")["observed_adu_per_year"]
     places["mortgage_rate"] = np.nan  # forward run: the rate path is a drawn parameter (market.yaml)
 
     as_of = baseline.rules_as_of(origin)  # D-064: rules already law by the end of the first window year
@@ -1285,9 +1607,13 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     k_adj = uc.factors_arg(undercount)
     counts = observed_adu_counts(store.read(state, "permits"), 1900, origin, k_adj)
     stops = holdout_stops(load_state(state).holdouts)
-    per_year = observed_per_year(counts, origin, n_years, stops)
-    places["observed_adu_per_year"] = places["geoid"].map(per_year)
+    # place_inputs carries the observed floor at the table's central k (D-078); any other k is recomputed here
+    if not (isinstance(undercount, str) and undercount == "table"):
+        observed = pd.Series(observed_per_year(counts, origin, n_years, stops))
+    places["observed_adu_per_year"] = places["geoid"].map(observed).to_numpy()
     places["observed_rate"] = places["observed_adu_per_year"] / places["eligible_parcels"]
+    # D-088 place type from place_inputs (OMB metro areas, ACS 2011-15 units); a town where unknown (D-089)
+    places["place_type"] = places["geoid"].map(place_type).fillna(TOWN).to_numpy()
     if k_adj is not None:
         terms = observed_terms_by_k_row(counts, origin, n_years, stops)
         places["observed_adu_by_k_row"] = places["geoid"].map(terms)
@@ -1308,6 +1634,8 @@ def observed_terms_by_k_row(
     for g, grp in counts.groupby("geoid"):
         last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
         w = grp[grp["year"].between(last - n_years + 1, last)]
+        if w["year"].nunique() < n_years:  # a year with no records: not observed (`observed_per_year`)
+            continue
         out[g] = {int(r): float(v) / n_years for r, v in w.groupby("k_row")["counted"].sum().items()}
     return out
 
@@ -1352,15 +1680,24 @@ def observed_per_year(counts: pd.DataFrame, origin: int, n_years: int, stops: Ma
     """Mean ADU permits a year per place over the `n_years` years ending at `origin` (WS-NC-GUTCHECK).
 
     A held-out place's years end the year before its holdout starts (`stops`), so a partly held-out year is
-    never read as a low count and no held-out outcome is used; its window keeps `n_years` years. Years with
-    no row count as 0, as in `observed_adu_counts`. `counts`: geoid, year, adu_permits.
+    never read as a low count and no held-out outcome is used; its window keeps `n_years` years.
+
+    Coverage (2026-11-19, Ben): `observed_adu_counts` has a row for a place and year only where a source that
+    flags ADUs holds at least one record of any kind for that place that year (0 when none was an ADU). A
+    place observed only if every window year has a row; otherwise it is left out (NaN after mapping) and
+    the mechanism estimates it. A year with no records means the source was not recording there (a source
+    that ended, such as Chapel Hill's in 2021; a county source holding a few stray rows for a town mostly in
+    the next county; a list of ADU permits only), not that no ADU was built.
 
     By hand: origin 2025, 4 years, place A 2022-25 = 1, 2, 3, 6 -> 3.0; place B held out from 2023 with
-    2019-22 = 2, 2, 4, 0 -> 2.0.
+    2019-22 = 2, 2, 4, 0 -> 2.0; place C with rows 2022, 2023, 2025 only -> left out.
     """
     rows = {}
     for g, grp in counts.groupby("geoid"):
         last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
         by_year = grp.set_index("year")["adu_permits"]
-        rows[g] = sum(float(by_year.get(y, 0)) for y in range(last - n_years + 1, last + 1)) / n_years
+        window = range(last - n_years + 1, last + 1)
+        if not all(y in by_year.index for y in window):
+            continue
+        rows[g] = sum(float(by_year[y]) for y in window) / n_years
     return pd.Series(rows, dtype=float, name="adu_permits_per_year")

@@ -1,0 +1,38 @@
+state,geoid,name,early,late
+MN,2701486,Andover city,5,5
+MN,2701900,Apple Valley city,5,5
+MN,2706616,Bloomington city,5,5
+MN,2708794,Burnsville city,3,5
+MN,2713910450,Cedar Lake township,5,5
+MN,2713928322,Helena township,5,5
+MN,2713957184,St. Lawrence township,3,5
+MN,2714158,Crystal city,3,4
+MN,2715022,Dayton city,1,5
+MN,2716304132,Baytown township,3,5
+MN,2717288,Eagan city,5,5
+MN,2730392,Hugo city,5,5
+MN,2731076,Inver Grove Heights city,5,5
+MN,2735180,Lakeville city,5,5
+MN,2741480,Medina city,5,5
+MN,2743000,Minneapolis city,5,5
+MN,2751730,Plymouth city,5,5
+MN,2754214,Richfield city,5,5
+MN,2755186,Rogers city,1,5
+MN,2755852,Roseville city,5,5
+MN,2762824,Stillwater city,4,5
+NC,3702140,Asheville city,5,5
+NC,37063,Durham County Unincorporated Area,1,5
+NC,3710740,Cary town,2,5
+NC,3711800,Chapel Hill town,5,1
+NC,3712000,Charlotte city,5,5
+NC,3719000,Durham city,1,5
+NC,3741960,Matthews town,5,5
+NC,3743480,Mint Hill town,5,5
+NC,3755000,Raleigh city,2,5
+NC,3774440,Wilmington city,5,5
+TX,4805000,Austin city,5,3
+TX,4815976,College Station city,2,5
+OR,4105800,Bend city,5,5
+OR,4147000,Medford city,1,5
+OR,4159000,Portland city,5,5
+OR,4164900,Salem city,3,5
