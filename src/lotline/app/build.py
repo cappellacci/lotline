@@ -54,6 +54,7 @@ ROLES = {
     "development": "Development states",
     "transfer": "Unseen-state transfer runs",
     "national_only": "National data only",
+    "ingestion_test": "Data-ingestion test (not core)",
 }
 
 

@@ -64,6 +64,23 @@ def test_own_rate_draws_match_persistence_and_drift():
     assert log_d.std() == pytest.approx(sigma, rel=0.01)
 
 
+def test_mean_one_drift_is_the_median_one_drift_times_exp_minus_half_sigma_squared():
+    """Same stream: every mean-1 draw is the median-1 draw × exp(−σ²/2) (σ 1.025: × 0.5914), and the drift
+    factor's mean is 1 (its median exp(−σ²/2))."""
+    n, sigma = 200_000, 1.025
+    median_one = adu.own_rate_draws([0.01], [100.0], 3, sigma, n, 1)
+    mean_one = adu.own_rate_draws([0.01], [100.0], 3, sigma, n, 1, mean_one=True)
+    np.testing.assert_allclose(mean_one / median_one, np.exp(-(sigma**2) / 2))
+    assert np.exp(-(sigma**2) / 2) == pytest.approx(0.5914, abs=1e-4)
+    flat = adu.own_rate_draws([0.01], [100.0], 3, 0.0, n, 1)
+    d = mean_one[:, 0] / flat[:, 0]
+    assert d.mean() == pytest.approx(1.0, rel=0.02)
+    assert np.median(d) == pytest.approx(np.exp(-(sigma**2) / 2), rel=0.02)
+    # without drift the switch changes nothing
+    np.testing.assert_allclose(adu.own_rate_draws([0.01], [100.0], 3, 0.0, 50, 2, mean_one=True),
+                               adu.own_rate_draws([0.01], [100.0], 3, 0.0, 50, 2))  # fmt: skip
+
+
 def test_own_rate_draws_take_one_row_per_draw():
     """Each draw's undercount-scaled observed rate (`observed_rate_draws`) sets that draw's counts."""
     obs = np.array([[0.0], [1.0]])

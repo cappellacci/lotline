@@ -39,11 +39,38 @@ def test_observed_window_for_a_backtest_origin_is_d019s():
 
 
 def test_held_out_place_window_ends_before_its_holdout():
-    # B held out from 2023: window 2019-2022 = 2, 2, 4, 0 (missing year counts 0) -> 2.0, never the
-    # partly held-out 2023 (which the store would show as a low count)
-    rows = [("B", 2019, 2), ("B", 2020, 2), ("B", 2021, 4), ("B", 2023, 1)]
+    # B held out from 2023: window 2019-2022 = 2, 2, 4, 0 -> 2.0, never the partly held-out 2023 (which the
+    # store would show as a low count)
+    rows = [("B", 2019, 2), ("B", 2020, 2), ("B", 2021, 4), ("B", 2022, 0), ("B", 2023, 1)]
     out = adu.observed_per_year(_counts(rows), origin=2025, n_years=4, stops={"B": 2023})
     assert out["B"] == pytest.approx(2.0)
+
+
+def test_a_window_year_with_no_records_leaves_the_place_unobserved():
+    # C has rows 2022, 2023, 2025 (2024 missing: its source held no record for C) -> left out, not 1.5;
+    # D's source ended after 2023 -> left out; E has a row every year, zeros included -> (0 + 0 + 2 + 0) / 4
+    rows = [("C", 2022, 1), ("C", 2023, 2), ("C", 2025, 3)]
+    rows += [("D", y, 4) for y in (2020, 2021, 2022, 2023)]
+    rows += [("E", 2022, 0), ("E", 2023, 0), ("E", 2024, 2), ("E", 2025, 0)]
+    out = adu.observed_per_year(_counts(rows), origin=2025, n_years=4, stops={})
+    assert set(out.index) == {"E"}
+    assert out["E"] == pytest.approx(0.5)
+
+
+def test_observed_adu_counts_has_a_row_only_where_the_source_recorded_the_place():
+    # source S flags ADUs; place P has a house in 2024 (row, 0 ADUs) and nothing in 2025 (no row)
+    permits = pd.DataFrame(
+        {
+            "source": ["S", "S", "S"],
+            "jurisdiction_geoid": ["P", "P", "Q"],
+            "issue_year": [2024, 2023, 2025],
+            "building_type_std": ["SFD", "ADU", "ADU"],
+            "adu_type": [None, None, None],
+        }
+    )
+    got = adu.observed_adu_counts(permits, 2023, 2025)
+    assert set(map(tuple, got[["geoid", "year"]].to_numpy())) == {("P", 2023), ("P", 2024), ("Q", 2025)}
+    assert got.set_index(["geoid", "year"]).loc[("P", 2024), "adu_permits"] == 0
 
 
 def _holdout(geoid, start, released=None, reporting=()):

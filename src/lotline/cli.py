@@ -80,6 +80,26 @@ def _sources(args: argparse.Namespace) -> int:
     return 0
 
 
+def _onboard(args: argparse.Namespace) -> int:
+    """The adding-a-state checklist for one state: each step, whether it is done, and its commands."""
+    import json
+
+    from lotline import onboarding
+    from lotline.io import DataStore
+
+    plan = onboarding.plan(args.state, DataStore())
+    if args.json:
+        print(json.dumps(plan, indent=1))
+        return 0
+    mark = {True: "done", False: "todo", None: "  - "}
+    for s in plan:
+        print(f"[{mark[s['done']]}] {s['n']:>2}. {s['title']}  ({s['detail']})")
+        for cmd in s["commands"] if s["done"] is not True else []:
+            print(f"          $ {' '.join(cmd)}")
+    print("Guide: docs/adding_a_state.md (steps come from config/onboarding/steps.yaml)")
+    return 0
+
+
 def _unlisted(args: argparse.Namespace) -> int:
     from lotline.build.jurisdictions import unlisted
     from lotline.config import all_states
@@ -319,6 +339,13 @@ def build_parser() -> argparse.ArgumentParser:
     srcs.add_argument("--state", help="two-letter state code (default: every configured state)")
     srcs.set_defaults(func=_sources)
 
+    onb = sub.add_parser(
+        "onboard", help="the adding-a-state checklist for one state: what is done, what is next"
+    )
+    onb.add_argument("--state", required=True, help="two-letter state code")
+    onb.add_argument("--json", action="store_true", help="print the plan as JSON (for the app)")
+    onb.set_defaults(func=_onboard)
+
     unl = sub.add_parser(
         "unlisted", help="GEOIDs your permit and parcel data use that the jurisdictions list lacks"
     )
@@ -387,7 +414,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     res.add_argument(
         "--role",
-        choices=["benchmark", "development", "transfer", "national_only"],
+        choices=["benchmark", "development", "transfer", "national_only", "ingestion_test"],
         help="how the app labels the state (default: national_only for a state with no parcel data, "
         "else development)",
     )

@@ -95,6 +95,14 @@ def test_every_bundle_under_results_dir_appears_in_role_order(tmp_path):
     assert states == ["ZX", "ZZ", "ZY"]  # benchmark, development, transfer
 
 
+def test_every_schema_role_has_a_picker_label_and_the_ingestion_test_has_its_note():
+    from lotline.schemas import STATE_ROLES
+
+    assert list(build.ROLES) == STATE_ROLES  # picker order covers every role the bundle may carry
+    tpl = (Path(build.__file__).parent / "template.html").read_text()
+    assert 'b.meta.state_role === "ingestion_test"' in tpl and "not part of the model's core evidence" in tpl
+
+
 def test_invalid_bundle_is_refused(tmp_path):
     doc = json.loads(FIXTURE.read_text())
     doc["meta"]["overlap_flag"] = "excellent"  # not in the enum
@@ -295,8 +303,8 @@ def test_missing_middle_and_fees_have_their_own_evidence_cards(tmp_path):
     ev = html[html.index("function evidenceHtml") :]
     assert "${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;" in ev
     assert (
-        'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R) + accuracyHtml(b, d);'
-        in ev
+        'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R, '
+        'feeSplit(b) ? "rest" : "all") + accuracyHtml(b, d);' in ev
     )
     mm = html[html.index("function mmHowHtml") : html.index("const FEE_VERSIONS")]
     fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
@@ -353,7 +361,10 @@ def test_fee_card_shows_what_places_charge_today(tmp_path):
     assert build.data_section(["ZZ"], None)["by_state"]["ZZ"]["fees"] is None
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
-    assert "return s1 + feeTodayHtml(b, name) + s2 + s3;" in fee
+    # all of it, or split around "Try a different fee change" (Ben, 2026-11-23): s1 above it, the rest below
+    assert 'if (part === "top") return s1;' in fee
+    assert "const rest = feeTodayHtml(b, name) + s2 + s3;" in fee
+    assert 'return part === "rest" ? rest : s1 + rest;' in fee
     today = html[html.index("function feeTodayHtml") : html.index("const PLACE_TYPES")]
     for words in (
         "What builders pay in fees today",
@@ -693,3 +704,11 @@ def test_data_tab_shows_only_states_with_results(tmp_path):
     }
     assert [s["state"] for s in build.built_states_only(summary, {"ZZ"})["states"]] == ["ZZ"]
     assert build.built_states_only(summary, {"ZZ"})["generated"] == "t"
+
+
+def test_fee_box_baseline_counts_each_size_once(tmp_path):
+    """A size stored at every slider stop (schemas 1.22) has one row per stop: the fee box's "expected
+    anyway" must read the half cut's row only, or Minnesota's houses would be counted 15 times."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    box = html[html.index("function feeTestUpdate") : html.index("function feeTestUpdate") + 2000]
+    assert "r.draw === 0 && Number(r.fee_change_share) === 0.5 && t[2].includes(String(r.size))" in box

@@ -341,11 +341,11 @@ def test_registered_as_tx_source():
 def test_county_land_use_fills_unknown_from_listed_codes(tmp_path):
     path = tmp_path / "county.csv"
     path.write_text(
-        "county_geoid,code,meaning,land_use_std,confidence,source_url,note,applied\n"
-        "48491,RES,Residential single family,SF_DETACHED,high,https://example.org,,yes\n"
-        "48491,L,Land,VACANT_RESIDENTIAL,low,https://example.org,,no\n"
-        "48167,RL,Residential lot (land type),SF_DETACHED,medium,https://example.org,,no\n"
-        "48201,Z1,Unclear,UNKNOWN,medium,https://example.org,,yes\n"
+        "field,code,description,land_use_std,notes,source_url,county,confidence,applied\n"
+        "loc_land_use,RES,Residential single family,SF_DETACHED,,https://example.org,48491,high,yes\n"
+        "loc_land_use,L,Land,VACANT_RESIDENTIAL,,https://example.org,48491,low,no\n"
+        "loc_land_use,RL,Residential lot (land type),SF_DETACHED,,https://example.org,48167,medium,no\n"
+        "loc_land_use,Z1,Unclear,UNKNOWN,,https://example.org,48201,medium,yes\n"
     )
     local = sm.load_county_land_use(path)
     assert local == {"48491|RES": "SF_DETACHED"}  # rows not applied, and UNKNOWN rows, are not used

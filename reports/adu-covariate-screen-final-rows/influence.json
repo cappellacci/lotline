@@ -1,0 +1,84 @@
+{
+ "X1": {
+  "beta_full": -0.7622609283929535,
+  "beta_min": -1.045276897058858,
+  "beta_max": -0.6581803309261477,
+  "sign_kept": 57,
+  "p_below": 57,
+  "drops": 57,
+  "largest_shifts": [
+   {
+    "name": "Orono city",
+    "state": "MN",
+    "beta": -1.045276897058858,
+    "p": 0.00040430695181402116
+   },
+   {
+    "name": "Dayton city",
+    "state": "MN",
+    "beta": -0.9166964050333419,
+    "p": 0.005094932435776553
+   },
+   {
+    "name": "Fridley city",
+    "state": "MN",
+    "beta": -0.6581803309261477,
+    "p": 0.03452171480246425
+   },
+   {
+    "name": "Hopkins city",
+    "state": "MN",
+    "beta": -0.8406998034908117,
+    "p": 0.008706597002624883
+   },
+   {
+    "name": "St. Louis Park city",
+    "state": "MN",
+    "beta": -0.8384118479463387,
+    "p": 0.005985757850360559
+   }
+  ],
+  "reading": "robust"
+ },
+ "X2": {
+  "beta_full": 0.95299240022402,
+  "beta_min": 0.8371998185538532,
+  "beta_max": 1.0595742154812244,
+  "sign_kept": 57,
+  "p_below": 57,
+  "drops": 57,
+  "largest_shifts": [
+   {
+    "name": "Asheville city",
+    "state": "NC",
+    "beta": 0.8371998185538532,
+    "p": 0.000500264833412989
+   },
+   {
+    "name": "Orono city",
+    "state": "MN",
+    "beta": 0.8415849820912298,
+    "p": 0.00018524834049791377
+   },
+   {
+    "name": "Inver Grove Heights city",
+    "state": "MN",
+    "beta": 1.0595742154812244,
+    "p": 1.3365133930648264e-05
+   },
+   {
+    "name": "Minneapolis city",
+    "state": "MN",
+    "beta": 1.0429117825089573,
+    "p": 6.514457153755768e-05
+   },
+   {
+    "name": "Portland city",
+    "state": "OR",
+    "beta": 1.040998364644444,
+    "p": 2.7804987434064392e-05
+   }
+  ],
+  "reading": "robust"
+ }
+}

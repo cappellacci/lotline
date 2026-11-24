@@ -46,7 +46,6 @@ line**, so nothing personal reaches memory as a field or the table. The raw zip 
 
 from __future__ import annotations
 
-import csv
 import io
 import re
 import zipfile
@@ -54,6 +53,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.schemas import validate
@@ -190,8 +190,7 @@ def number(text: str, field: str = "") -> float | None:
 
 
 def load_land_use_crosswalk(path: Path = LAND_USE_CROSSWALK) -> dict[str, str]:
-    with open(path, newline="") as fh:
-        return {r["ptad_code"].strip().upper(): r["land_use_std"].strip() for r in csv.DictReader(fh)}
+    return {r["code"].strip().upper(): r["land_use_std"].strip() for r in crosswalks.read(path, "land_use")}
 
 
 def load_entities() -> dict[str, str]:
@@ -205,8 +204,7 @@ def _norm(name: str) -> str:
 
 
 def load_district_crosswalk(path: Path = DISTRICT_CROSSWALK) -> dict[str, str]:
-    with path.open(newline="") as fh:
-        return {r["state_cd"].strip().upper(): r["land_use_std"].strip() for r in csv.DictReader(fh)}
+    return {r["code"].strip().upper(): r["land_use_std"].strip() for r in crosswalks.read(path, "land_use")}
 
 
 def land_use(
