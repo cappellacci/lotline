@@ -39,7 +39,6 @@ never requested: `FIELDS` lists exactly what is read.
 
 from __future__ import annotations
 
-import csv
 import json
 import re
 from collections.abc import Callable
@@ -48,6 +47,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp, query_url
@@ -210,16 +210,15 @@ class Rule:
 
 
 def load_rules(path: Path) -> list[Rule]:
-    with open(path, newline="") as fh:
-        return [
-            Rule(
-                r["county"].strip(),
-                re.compile(r["pattern"], re.I),
-                r["land_use_std"].strip(),
-                r["refine_by_units"].strip().lower() == "yes",
-            )
-            for r in csv.DictReader(fh)
-        ]
+    return [
+        Rule(
+            r["county"].strip(),
+            re.compile(r["pattern"], re.I),
+            r["land_use_std"].strip(),
+            r["refine_by_units"].strip().lower() == "yes",
+        )
+        for r in crosswalks.read(path, "land_use")
+    ]
 
 
 def _norm_text(values: pd.Series) -> pd.Series:
@@ -318,14 +317,10 @@ def resolve(
     county_geoid: pd.Series, found: pd.Series, ctu: pd.Series, known: set[str]
 ) -> tuple[pd.Series, pd.Series]:
     """(jurisdiction_geoid, how): the point's place/township if known, else CTU_NAME's, else the county."""
-    found = found.astype("string")
-    ctu = ctu.astype("string")
-    in_found = found.isin(known).fillna(False).astype(bool)
-    in_ctu = ctu.isin(known).fillna(False).astype(bool)
-    geoid = found.where(in_found, ctu.where(in_ctu, county_geoid.astype("string")))
-    how = pd.Series("county_fallback", index=found.index, dtype="string")
-    how = how.mask(in_ctu & ~in_found, "ctu_name").mask(in_found, "point")
-    return geoid, how
+    from lotline import geo
+
+    steps = [("point", found), ("ctu_name", ctu), ("county_fallback", county_geoid, False)]
+    return geo.resolve(steps, known, otherwise="county_fallback")
 
 
 Locator = Callable[[pd.Series, pd.Series], pd.Series]
@@ -537,15 +532,6 @@ def download(roll: Roll, store: DataStore, *, refresh: bool = False) -> pd.DataF
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=FIELDS)
 
 
-def _jurisdictions(state: str, store: DataStore) -> pd.DataFrame:
-    juris = store.read(state, "jurisdictions")
-    if juris is None:
-        from lotline.build import jurisdictions as jur
-
-        juris = jur.load(state, store)
-    return juris
-
-
 def load(
     state: str, store: DataStore, *, refresh: bool = False, rolls: list[Roll] | None = None
 ) -> pd.DataFrame:
@@ -553,7 +539,7 @@ def load(
         raise ValueError(f"{SOURCE} covers the Minnesota 7-county metro only, not {state}")
     from lotline import geo
 
-    juris = _jurisdictions(state, store)
+    juris = geo.jurisdictions_table(state, store)
 
     def locate(lon: pd.Series, lat: pd.Series) -> pd.Series:
         return geo.place_or_township(lon, lat, state, store)

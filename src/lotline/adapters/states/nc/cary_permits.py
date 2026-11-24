@@ -69,6 +69,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline import geo
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.parse.permit_text import parse_description
@@ -85,7 +87,8 @@ LICENSE = (
     "attribution to the Town of Cary, North Carolina"
 )
 CARY = "3710740"
-JURISDICTIONS = {"TC": CARY, "CC": CARY}  # Town of Cary in Wake; in Chatham County
+# Town of Cary in Wake ("TC") and in Chatham County ("CC"): config/crosswalks/nc_aliases.csv
+JURISDICTIONS = geo.aliases("NC", "cary_permits", "jurisdiction")
 TYPES_CSV = CONFIG_DIR / "crosswalks" / "nc_cary_permit_types.csv"
 MISSING = (
     "No Cary permit export is registered. data.townofcary.org/robots.txt disallows automated downloads, so "
@@ -205,8 +208,7 @@ def read(path: Path) -> pd.DataFrame:
 
 
 def permit_types(path: Path = TYPES_CSV) -> dict[str, dict[str, str]]:
-    with path.open(newline="") as f:
-        return {r["permit_type"]: r for r in csv.DictReader(f)}
+    return crosswalks.by_code(crosswalks.read(path, "building_type"))
 
 
 def _number(s: pd.Series) -> pd.Series:

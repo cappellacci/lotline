@@ -83,3 +83,17 @@ def test_no_dependent_places_means_no_requests(fake_census, tmp_path, monkeypatc
     monkeypatch.setattr(geoparts, "_parts", lambda *a, **k: pytest.fail("no request expected"))
     out = geoparts.township_shares("39", ["3900100"], ["3900110000"], DataStore(tmp_path))
     assert out.empty
+
+
+def test_main_county_is_the_largest_part_ties_to_the_lower_geoid(monkeypatch):
+    """Task 5 rule 5: Rutherford College (NC) has more homes in Burke (37023) than Caldwell (37027)."""
+    shares = pd.DataFrame(
+        {
+            "place_geoid": ["3758440", "3758440", "3700009", "3700009", "3700010"],
+            "county_geoid": ["37027", "37023", "37005", "37003", "37001"],
+            "share": [0.3, 0.7, 0.5, 0.5, 1.0],
+        }
+    )
+    monkeypatch.setattr(geoparts, "county_shares", lambda *a, **k: shares)
+    got = geoparts.main_county("37", ["3758440", "3700009", "3700010"], store=None)
+    assert got == {"3758440": "37023", "3700009": "37003", "3700010": "37001"}

@@ -73,6 +73,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import epoch_ms_to_timestamp
@@ -172,7 +173,8 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 def uses(path: Path = USE_CSV) -> dict[tuple[str, str], dict[str, str]]:
     """(permit type, use in lower case) → crosswalk row; use "*" covers every use of that permit type."""
-    return {(r["permit_type"], r["use"].casefold()): r for r in _read_csv(path)}
+    rows = crosswalks.read(path, "building_type")
+    return {(t, u.casefold()): r for r in rows for t, u in [r["code"].split("|", 1)]}
 
 
 def _clean(s: pd.Series) -> pd.Series:

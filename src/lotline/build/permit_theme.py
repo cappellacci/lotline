@@ -45,6 +45,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from lotline.config import state_rule
+
 __all__ = [
     "ADU",
     "CONVERSION",
@@ -80,8 +82,8 @@ SOURCE_RULES = ("austin_home_two_unit",)
 
 AUSTIN_SOURCE = "austin_permits"
 # HOME phase 1: applications from 2024-02-05 (causal diagram §6.6); no HOME permit is issued earlier.
-AUSTIN_HOME_START = pd.Timestamp("2024-02-05")
-AUSTIN_TWO_UNIT = "TWO UNIT RES"
+AUSTIN_HOME_START = pd.Timestamp(state_rule("TX", "austin_home_start"))  # config/states/tx.yaml rules
+AUSTIN_TWO_UNIT = state_rule("TX", "austin_home_two_unit_use")
 
 
 def _col(df: pd.DataFrame, name: str, default=pd.NA) -> pd.Series:

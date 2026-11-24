@@ -26,8 +26,9 @@ the start of year 1; `baseline.window`):
   already builds are in its baseline and are never counted as added (additionality, MS-10).
 - **Own counts with drift** (D-091, adopted 2026-11-15; D-093; `adu_own_rate_drift`, 0 turns it off): where a
   place has an observed ADU rate, its own counts set the no-reform hazard instead, in the lead years too:
-  persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z) with σ
-  `adu_drift_sigma` (`own_rate_draws`). The Handbook hazard is that rate times the mechanism's ratio
+  persistence, rate ~ Gamma(Y + 0.5, E) over the observed years, times a place drift exp(σ z − σ²/2) with σ
+  `adu_drift_sigma` (`own_rate_draws`): mean 1 since 2026-11-20 (`adu_drift_mean_one`; 0 gives D-091's
+  median-1 drift exp(σ z)). The Handbook hazard is that rate times the mechanism's ratio
   h_hb ÷ h_cur above, or plus the mechanism's added hazard where h_cur is 0 (`own_rate_paths`). The ratio
   has not been checked within ×2 on held-out data. Places with no observed rate keep the mechanism.
 
@@ -57,6 +58,7 @@ import itertools
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -266,9 +268,19 @@ def type_log_multipliers(types, states, n: int, seed: int, spec=None) -> np.ndar
 # ---------------------------------------------------------------------------------------------------------
 
 
-def load_reforms(state: str) -> pd.DataFrame:
-    """The state's coded reforms (config/reforms/<st>.csv) with dates parsed."""
-    df = pd.read_csv(CONFIG_DIR / "reforms" / f"{state.lower()}.csv", dtype={"jurisdiction_geoid": str})
+def load_reforms(state: str, config_dir: Path | None = None) -> pd.DataFrame:
+    """The state's coded reforms (config/reforms/<st>.csv) with dates parsed.
+
+    A state outside `REFORM_STATES` with no reforms file gets an empty table (no coded rules), so a new
+    state runs on borrowed priors alone (WS-SCALE task 0). A listed state must have its file.
+    """
+    path = (config_dir or CONFIG_DIR) / "reforms" / f"{state.lower()}.csv"
+    if not path.exists() and state.upper() not in REFORM_STATES:
+        from lotline.schemas import Reforms
+
+        df = pd.DataFrame({c: pd.Series(dtype=object) for c in Reforms.to_schema().columns})
+    else:
+        df = pd.read_csv(path, dtype={"jurisdiction_geoid": str})
     for col in ("announced_date", "adoption_date", "effective_date", "end_date"):
         if col in df:
             df[col] = pd.to_datetime(df[col])
@@ -628,13 +640,37 @@ def size_band(population, edges) -> np.ndarray:
     return np.searchsorted(np.asarray(edges, dtype=float), np.asarray(population, dtype=float), side="right")
 
 
+REMAINDER = "county_unincorporated"  # a county remainder: unincorporated land the county itself zones
+REMAINDER_BAND = -1  # the priors row county remainders read under D-102 option (b)
+
+
+def remainder_priors(coded: pd.DataFrame, min_count: int) -> pd.DataFrame:
+    """D-102 option (b) (Ben, 2026-11-24): for each state with at least `min_count` coded county remainders
+    (`kind` == county_unincorporated), one priors row (band `REMAINDER_BAND`) with their mean probabilities.
+    An uncoded remainder in that state reads it instead of its size band (`apply_priors`), since
+    unincorporated land is zoned by the county, not by cities its size. In other states remainders read the
+    smallest band (`apply_priors`).
+    By hand: 5 coded remainders, 1 Handbook-equivalent and 4 'none' -> p_handbook 0.2, p_none 0.8."""
+    if "kind" not in coded:
+        return pd.DataFrame(columns=["state", "band", "n_coded", "source", *P_COLS, "p_partial"])
+    rem = coded[coded["kind"] == REMAINDER]
+    rows = [
+        {"state": st, "band": REMAINDER_BAND, "n_coded": len(g), "source": "state, coded county remainders",
+         **g[list(P_COLS)].mean().to_dict()}
+        for st, g in rem.groupby("state") if len(g) >= min_count
+    ]  # fmt: skip
+    out = pd.DataFrame(rows, columns=["state", "band", "n_coded", "source", *P_COLS])
+    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+
+
 def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
     """Type probabilities for places with no ADU row, from the coded places themselves (D-022).
 
     `coded`: state, population and p_* (over TYPES) for every place with a coded rule (fractional where blanks
     or coverage leave the type uncertain). For each state and size band: the mean of the coded places'
     probabilities if at least `min_count` places are coded there; else the state's pooled mean; else the mean
-    over every state. Returns state, band, n_coded, source and p_* (and p_partial).
+    over every state. Returns state, band, n_coded, source and p_* (and p_partial). With a `kind` column, also
+    the `remainder_priors` rows (D-102 option (b)).
     By hand: 5 coded places in a band, 2 'other' and 3 Handbook-equivalent -> p_other 0.4, p_handbook 0.6.
     """
     c = coded.assign(band=size_band(coded["population"], edges))
@@ -659,7 +695,9 @@ def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
                 }
             )
     out = pd.DataFrame(rows)
-    return out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+    out = out.assign(p_partial=out[["p_owner", "p_other", "p_both"]].sum(axis=1))
+    rem = remainder_priors(coded, min_count)
+    return pd.concat([out, rem], ignore_index=True) if len(rem) else out
 
 
 def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states, state: str) -> pd.DataFrame:
@@ -691,10 +729,16 @@ def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states,
 
 
 def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFrame:
-    """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`."""
+    """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`. A county
+    remainder (`kind`) reads its state's `REMAINDER_BAND` row where there is one, else the smallest band (0)
+    whatever its population (D-102 option (b), Ben 2026-11-24: county land is zoned more like small towns)."""
     out = places.assign(band=size_band(places["population"].fillna(0), edges))
+    if "kind" in out:
+        has_rem = set(priors.loc[priors["band"] == REMAINDER_BAND, "state"])
+        rem = out["kind"] == REMAINDER
+        out.loc[rem, "band"] = np.where(out.loc[rem, "state"].isin(has_rem), REMAINDER_BAND, 0)
     pr = priors.set_index(["state", "band"])
-    pooled = priors[list(P_COLS)].mean()
+    pooled = priors.loc[priors["band"] != REMAINDER_BAND, list(P_COLS)].mean()
     src = pd.Series("coded", index=out.index, dtype=object)
     for i in out.index[out["rule_class"] == "unknown"]:
         key = (out.at[i, "state"], out.at[i, "band"])
@@ -754,7 +798,7 @@ def adu_share_of_one_unit(permits: pd.DataFrame, first: int, last: int) -> tuple
     return adu, adu + int((w["building_type_std"] == "SFD").sum())
 
 
-def observed_adu_counts(permits: pd.DataFrame, first: int, last: int, undercount=None) -> pd.DataFrame:
+def observed_adu_counts(permits: pd.DataFrame | None, first: int, last: int, undercount=None) -> pd.DataFrame:
     """ADU permits per jurisdiction and year in [first, last], from sources that flag ADUs at all.
 
     Where two sources cover one jurisdiction (Met Council and Minneapolis's own permits), the larger count
@@ -766,6 +810,12 @@ def observed_adu_counts(permits: pd.DataFrame, first: int, last: int, undercount
     """
     from lotline.model import undercount as uc
 
+    if (
+        permits is None or permits.empty
+    ):  # no permit adapter for the state (WS-SCALE task 0): no observed ADUs
+        cols = ["geoid", "year", "adu_permits"]
+        cols += [] if undercount is None else ["source", "counted", "k_row"]
+        return pd.DataFrame({c: pd.Series(dtype=object) for c in cols})
     flagging = permits.loc[_is_adu(permits), "source"].unique()
     p = permits[permits["source"].isin(flagging) & permits["jurisdiction_geoid"].notna()]
     p = p[(p["issue_year"] >= first) & (p["issue_year"] <= last)].assign(adu=_is_adu)
@@ -865,16 +915,19 @@ def pool_paths(
     return Paths(hb, cur)
 
 
-def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed) -> np.ndarray:
+def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed, mean_one: bool = False) -> np.ndarray:
     """D-091 (adopted 2026-11-15): each place's no-reform ADU rate per eligible parcel a year from its own
     counts, persistence × drift (draws × places; NaN where the place has no observed rate).
 
     - Persistence (D-090 F0): rate ~ Gamma(Y + 0.5, E), Y = observed_rate × eligible × n_years (the counts
       the observed rate came from, undercount-scaled as drawn), E = eligible × n_years lot-years.
     - Drift: × d = exp(σ z), z standard normal, one per place and draw for the whole window (median 1).
+      With `mean_one` (`adu_drift_mean_one`, Ben 2026-11-20): × d = exp(σ z − σ² / 2), mean 1, so a place's
+      expected rate stays at its persistence mean; its median falls to exp(−σ² / 2) (0.59 at σ 1.025).
 
     `observed_rate` is one row (places) or one row per draw (`observed_rate_draws`). Own stream: `seed`.
-    By hand: rate 0.01, 100 lots, 3 years -> Y 3, E 300, posterior mean 3.5 / 300 = 0.01167 before drift.
+    By hand: rate 0.01, 100 lots, 3 years -> Y 3, E 300, posterior mean 3.5 / 300 = 0.01167 before drift;
+    σ 1.025 with `mean_one`: every drift factor is the median-one factor × exp(−0.5253) = × 0.5914.
     """
     obs = np.atleast_2d(np.asarray(observed_rate, dtype=float))
     obs = np.broadcast_to(obs, (n, obs.shape[1]))
@@ -883,12 +936,13 @@ def own_rate_draws(observed_rate, eligible, n_years, sigma, n, seed) -> np.ndarr
     y = np.nan_to_num(obs * lot_years, nan=0.0)
     rng = np.random.default_rng(seed)
     rate = rng.standard_gamma(y + 0.5) / lot_years
-    drift = np.exp(sigma * rng.standard_normal(obs.shape))
+    drift = np.exp(sigma * rng.standard_normal(obs.shape) - (sigma**2 / 2 if mean_one else 0.0))
     return np.where(np.isfinite(obs) & np.isfinite(lot_years), rate * drift, np.nan)
 
 
 def own_rate_central(observed_rate, eligible, n_years) -> np.ndarray:
-    """The persistence posterior mean (Y + 0.5) / E at the median drift (1); NaN without an observed rate."""
+    """The persistence posterior mean (Y + 0.5) / E at drift 1 (the median, or with `adu_drift_mean_one` the
+    mean, of the drift factor); NaN without an observed rate."""
     e = np.asarray(eligible, dtype=float)
     lot_years = np.where(e > 0, e * n_years, np.nan)
     obs = np.asarray(observed_rate, dtype=float)
@@ -1096,6 +1150,7 @@ def run(
             central["adu_drift_sigma"],
             n,
             seed + 8,
+            mean_one=bool(central.get("adu_drift_mean_one", 0)),
         )
         if central["adu_own_rate_drift"]
         else np.full((n, len(places)), np.nan)
@@ -1305,7 +1360,28 @@ def _county_shares(state: str, store, places: pd.DataFrame) -> pd.DataFrame:
 
 # States whose coded rules feed field probabilities, rule priors and blank shares. Oregon joined on
 # 2026-11-05 (D-053), after V9 was scored; V9 itself keeps the four states it was frozen from.
+# A state not listed here borrows from these states but feeds nothing back ("borrow only", Ben 2026-11-17,
+# WS-SCALE task 0): `reforms_with` adds it to the run on the fly, after the shared pools are built.
 REFORM_STATES = ("MN", "NC", "OH", "TX", "OR")
+
+
+def reforms_with(state: str, load=None) -> dict[str, pd.DataFrame]:
+    """`{state: reforms}` for every state in `REFORM_STATES`, then `state` itself if it is not listed.
+
+    Callers pool only the `REFORM_STATES` entries (`pooled_states`); the extra state's own rules still
+    apply to its own places. `load` defaults to `load_reforms`.
+    """
+    load = load or load_reforms
+    out = {st: load(st) for st in REFORM_STATES}
+    st = state.upper()
+    if st not in out:
+        out[st] = load(st)
+    return out
+
+
+def pooled_states(reforms: Mapping[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """The entries of `reforms` that feed shared pools (field probabilities, priors, blank shares)."""
+    return {st: r for st, r in reforms.items() if st in REFORM_STATES}
 
 
 _PARCEL_CACHE: dict[str, pd.DataFrame] = {}
@@ -1368,13 +1444,14 @@ def rule_inputs(
     central = {k: v.value for k, v in p.items()}
     min_count = int(central["adu_rule_min_coded"])
     edges = (central["adu_rule_band_small_max_pop"], central["adu_rule_band_mid_max_pop"])
-    reforms = {st: load_reforms(st).assign(state=st) for st in REFORM_STATES}
-    counts = field_restrict_counts(pd.concat(reforms.values(), ignore_index=True), prior_as_of)
+    reforms = {st: r.assign(state=st) for st, r in reforms_with(state).items()}
+    pooled = pooled_states(reforms)
+    counts = field_restrict_counts(pd.concat(pooled.values(), ignore_index=True), prior_as_of)
     covs = {st: coverage_map(st, store, r, central) for st, r in reforms.items()}
 
     def coded_on(date: pd.Timestamp) -> pd.DataFrame:
         out = []
-        for st, r in reforms.items():
+        for st, r in pooled.items():
             local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
             if not local:
                 continue
@@ -1385,7 +1462,11 @@ def rule_inputs(
             )
             cr = cr[cr["rule_class"] != "unknown"]
             pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
-            out.append(cr.assign(state=st, population=cr["geoid"].map(pop).astype(float)))
+            j = store.read(st, "jurisdictions").set_index("geoid")
+            kind = j["kind"] if "kind" in j else pd.Series(dtype=object)
+            out.append(
+                cr.assign(state=st, population=cr["geoid"].map(pop).astype(float), kind=cr["geoid"].map(kind))
+            )
         return pd.concat(out, ignore_index=True)
 
     coded_prior = coded_on(prior_as_of)
@@ -1396,7 +1477,10 @@ def rule_inputs(
         outside = no_state_rule_priors(
             coded_prior.dropna(subset=["population"]), edges, min_count, law_states, state
         )
-        priors = pd.concat([priors[priors["state"] != state], outside], ignore_index=True)
+        keep = (priors["state"] != state) | (
+            priors["band"] == REMAINDER_BAND
+        )  # (b): own remainders still apply
+        priors = pd.concat([priors[keep], outside], ignore_index=True)
     fp = field_probabilities(counts, state, min_count)
     cm = covs[state]
     rules = current_rules(
@@ -1407,9 +1491,12 @@ def rule_inputs(
         fp,
         dict(zip(cm.reform_id, cm.coverage, strict=True)),
     )
-    pop = store.read(state, "jurisdictions").set_index("geoid")["pop_2020"]
-    rules = rules.assign(state=state, population=rules["geoid"].map(pop).astype(float))
-    rules = apply_priors(rules, priors, edges).drop(columns=["state", "band"])
+    juris = store.read(state, "jurisdictions").set_index("geoid")
+    rules = rules.assign(
+        state=state, population=rules["geoid"].map(juris["pop_2020"]).astype(float),
+        kind=rules["geoid"].map(juris["kind"] if "kind" in juris else pd.Series(dtype=object)),
+    )  # fmt: skip
+    rules = apply_priors(rules, priors, edges).drop(columns=["state", "band", "kind"])
     info = {
         "field_counts": counts,
         "field_probs": fp,
@@ -1457,11 +1544,37 @@ def county_mix(places: pd.DataFrame, state: str, store, origin: int, coded: pd.D
     return out
 
 
+# the ADU columns of `place_inputs` (suffix `_adu`) that `places_from_store` reads
+PLACE_INPUT_ADU = (
+    "eligible_parcels",
+    "eligible_parcels_reported",
+    "overlap_removed",
+    "parcels_year",
+    "parcels_after_origin",
+    "denominator_source",
+    "denominator_quality",
+)
+
+
+def _place_input_rows(state: str, store, origin: int) -> pd.DataFrame:
+    """`place_inputs` rows for a run with this origin (WS-SCALE, contract-change #455): the stored table's
+    year == origin, else built for that year from the same processed tables (a synthetic or partial store)."""
+    from lotline.build import place_inputs
+
+    table = store.read(state, place_inputs.TABLE)
+    rows = None if table is None else table[table["year"] == origin]
+    if rows is None or rows.empty:
+        rows = place_inputs.build(state, store, [origin])
+    return rows.assign(geoid=rows["geoid"].astype(str))
+
+
 def places_from_store(state: str, store, origin: int, undercount="table") -> pd.DataFrame:
     """One row per jurisdiction with ADU-eligible parcels: every input `run` needs, from processed tables.
 
-    Eligible parcels (theme 'adu', current rule version) from the newest year <= origin (else the earliest
-    later roll, flagged `parcels_after_origin`); ACS rent and value from the newest vintage <= origin; no
+    The shared per-place inputs come from `place_inputs` at year == origin (WS-SCALE): eligible parcels (theme
+    'adu', current rule version) from the newest roll <= origin (else the earliest later roll, flagged
+    `parcels_after_origin`), net of the D-020 overlap; ACS rent and value from the newest vintage <= origin;
+    the observed ADU floor; the D-088 place type. Model-specific steps stay here: no
     mortgage rate (forward runs use `mortgage_rate_forecast`); coded ADU rules in force on
     `baseline.rules_as_of` (31 December of the window's first year, D-064); observed ADU permits per parcel
     where local permits flag ADUs, each source's count times its flag undercount k (D-078; `undercount`:
@@ -1469,29 +1582,15 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     `observed_adu_by_k_row` so `run` can redraw k in every draw.
     Reads only holdout-filtered tables (DataStore); no outcome after the origin is used.
     """
-    from lotline.build import eligible as eligible_rule
-    from lotline.model import money
-
-    elig = store.read(state, "eligible_parcels")
-    elig = elig[(elig["theme"] == "adu") & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
-    # newest roll <= origin; where a place has only later rolls (e.g. Austin's 2026 TCAD roll), the earliest
-    # of those, flagged: a parcel count is a denominator, not an outcome, so no holdout is touched
-    elig = elig.assign(after=elig["year"] > origin, gap=(elig["year"] - origin).abs())
-    elig = elig.sort_values(["after", "gap"]).groupby("jurisdiction_geoid").first().reset_index()
-    elig = elig.rename(
-        columns={"jurisdiction_geoid": "geoid", "year": "parcels_year", "after": "parcels_after_origin"}
-    )
-    elig = elig.drop(columns="gap")
-    juris = store.read(state, "jurisdictions")[["geoid", "name", "kind", "county_geoid", "in_bps"]]
-    places = elig.merge(juris, on="geoid", how="left")
-    places = places[places["eligible_parcels"].fillna(0) > 0].reset_index(drop=True)
-    places = non_overlapping(places, store.read(state, "jurisdictions"), _county_shares(state, store, places))
-
-    market = store.read(state, "market_geo_year")
-    cpi = money.index_by_year(market, "cpi_u")
-    places["acs_geo"] = places["kind"].map(ACS_PREFIX) + ":" + places["geoid"]
-    acs = acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
-    places = places.merge(acs, left_on="acs_geo", right_index=True, how="left")
+    rows = _place_input_rows(state, store, origin)
+    adu_cols = {f"{c}_adu": c for c in PLACE_INPUT_ADU if f"{c}_adu" in rows}
+    keep = ["geoid", "name", "kind", "county_geoid", "in_bps", "data_tier", *adu_cols, "acs_geo", *ACS_VARS]
+    keep.append("acs_end_year")
+    rows = rows[rows["eligible_parcels_adu"].fillna(0) > 0]
+    places = rows[[c for c in keep if c in rows]].rename(columns=adu_cols)
+    places = places.sort_values("geoid").reset_index(drop=True)
+    place_type = rows.set_index("geoid")["place_type"]
+    observed = rows.set_index("geoid")["observed_adu_per_year"]
     places["mortgage_rate"] = np.nan  # forward run: the rate path is a drawn parameter (market.yaml)
 
     as_of = baseline.rules_as_of(origin)  # D-064: rules already law by the end of the first window year
@@ -1508,15 +1607,13 @@ def places_from_store(state: str, store, origin: int, undercount="table") -> pd.
     k_adj = uc.factors_arg(undercount)
     counts = observed_adu_counts(store.read(state, "permits"), 1900, origin, k_adj)
     stops = holdout_stops(load_state(state).holdouts)
-    per_year = observed_per_year(counts, origin, n_years, stops)
-    places["observed_adu_per_year"] = places["geoid"].map(per_year)
+    # place_inputs carries the observed floor at the table's central k (D-078); any other k is recomputed here
+    if not (isinstance(undercount, str) and undercount == "table"):
+        observed = pd.Series(observed_per_year(counts, origin, n_years, stops))
+    places["observed_adu_per_year"] = places["geoid"].map(observed).to_numpy()
     places["observed_rate"] = places["observed_adu_per_year"] / places["eligible_parcels"]
-    # D-088 place type from national data (OMB metro areas, ACS 2011-15 housing units); a jurisdiction the
-    # type table doesn't know is a town (no metro area known), as D-089 read it
-    from lotline.model import adu_types
-
-    types = adu_types.jurisdiction_types(store, state)
-    places["place_type"] = places["geoid"].astype(str).map(types).fillna(TOWN)
+    # D-088 place type from place_inputs (OMB metro areas, ACS 2011-15 units); a town where unknown (D-089)
+    places["place_type"] = places["geoid"].map(place_type).fillna(TOWN).to_numpy()
     if k_adj is not None:
         terms = observed_terms_by_k_row(counts, origin, n_years, stops)
         places["observed_adu_by_k_row"] = places["geoid"].map(terms)
@@ -1537,6 +1634,8 @@ def observed_terms_by_k_row(
     for g, grp in counts.groupby("geoid"):
         last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
         w = grp[grp["year"].between(last - n_years + 1, last)]
+        if w["year"].nunique() < n_years:  # a year with no records: not observed (`observed_per_year`)
+            continue
         out[g] = {int(r): float(v) / n_years for r, v in w.groupby("k_row")["counted"].sum().items()}
     return out
 
@@ -1581,15 +1680,24 @@ def observed_per_year(counts: pd.DataFrame, origin: int, n_years: int, stops: Ma
     """Mean ADU permits a year per place over the `n_years` years ending at `origin` (WS-NC-GUTCHECK).
 
     A held-out place's years end the year before its holdout starts (`stops`), so a partly held-out year is
-    never read as a low count and no held-out outcome is used; its window keeps `n_years` years. Years with
-    no row count as 0, as in `observed_adu_counts`. `counts`: geoid, year, adu_permits.
+    never read as a low count and no held-out outcome is used; its window keeps `n_years` years.
+
+    Coverage (2026-11-19, Ben): `observed_adu_counts` has a row for a place and year only where a source that
+    flags ADUs holds at least one record of any kind for that place that year (0 when none was an ADU). A
+    place observed only if every window year has a row; otherwise it is left out (NaN after mapping) and
+    the mechanism estimates it. A year with no records means the source was not recording there (a source
+    that ended, such as Chapel Hill's in 2021; a county source holding a few stray rows for a town mostly in
+    the next county; a list of ADU permits only), not that no ADU was built.
 
     By hand: origin 2025, 4 years, place A 2022-25 = 1, 2, 3, 6 -> 3.0; place B held out from 2023 with
-    2019-22 = 2, 2, 4, 0 -> 2.0.
+    2019-22 = 2, 2, 4, 0 -> 2.0; place C with rows 2022, 2023, 2025 only -> left out.
     """
     rows = {}
     for g, grp in counts.groupby("geoid"):
         last = min(origin, stops.get(g, stops.get("*", 9999)) - 1)
         by_year = grp.set_index("year")["adu_permits"]
-        rows[g] = sum(float(by_year.get(y, 0)) for y in range(last - n_years + 1, last + 1)) / n_years
+        window = range(last - n_years + 1, last + 1)
+        if not all(y in by_year.index for y in window):
+            continue
+        rows[g] = sum(float(by_year[y]) for y in window) / n_years
     return pd.Series(rows, dtype=float, name="adu_permits_per_year")

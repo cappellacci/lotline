@@ -82,7 +82,7 @@ Running four states is the test that a state with thin data can still use the me
 | ADU effect estimation, pooled hierarchical negative binomial (D-025, main model) | **Built**, tested on sparse synthetic panels (2026-10-20); run once after this entry | `model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py` |
 | Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); **built for missing middle** (D-092's C4, `mm_hazard.yaml`, 2026-11-15) | `model/hazard.py`, `config/params/hazard.yaml` |
 | Evidence prong (comparable places, transport) | **Planned** | `src/lotline/evidence/` is empty |
-| Combined scenarios (no lot counted twice) | **Planned** | `model/combine` (BUILD_PLAN §5) |
+| Combined scenarios | **Dropped** (Ben, 2026-11-17): each reform is run on its own | none |
 | Statewide aggregation, net-new and displacement shares | **Planned** (parameters set) | `config/params/aggregate.yaml` |
 | Market absorption cap | **Planned** (proposed by the judging panel; not yet in the build plan) | none yet |
 | Global sensitivity (tornado chart) | **Planned** | `model/uncertainty` (BUILD_PLAN §5) |
@@ -416,8 +416,12 @@ Since D-048 (adopted 2026-11-05) a rule is at full strength from its first year,
 | ramp(t) | Share of the mature hazard reached t years after a rule took effect. 1 in every year (D-048): Lotline's own counts were flat or falling after reforms, not rising, and every fit that could choose dropped the ramp. Before D-048 it was a logistic, half 2 years, slope 0.75. | 1 (fixed) |
 
 The reference values (Portland's rent $1,573 and home value $519,222 in 2025 dollars, ACS 2015–19; the 2015–19
-mortgage rate) and the **calibration range** (rent $1,573–2,034 and home value $519k–836k across Portland,
-Seattle and Los Angeles; rates 2.96–6.81% over 2015–23) are recomputed by `scripts/dev/adu_reference.py`.
+mortgage rate) are recomputed by `scripts/dev/adu_reference.py`. The **calibration range** is where the places
+the anchor is fitted on sit (D-060): rent $1,204–1,826 and home value $218k–590k, the eligible-parcel-weighted
+5th to 95th percentiles over the fit's 70 places and 513 place-years in MN, NC, OH, TX and OR (2016–2025), and
+rates 2.96–6.81% over those years (`scripts/dev/adu_reference.py --fit-set`). Until 2026-11-24 it was the span of
+Portland, Seattle and Los Angeles (rent $1,573–2,034, home value $519k–836k), which left 96–99% of eligible
+parcels outside the range in four of the five states.
 
 **Worked example** (the test `test_mature_hazard_one_place_by_hand`, with the earlier anchor 0.004 for round
 arithmetic; the hazard scales in proportion to the anchor): rent $1,100, home value half Portland's,
@@ -426,8 +430,8 @@ mortgage rate 2 points above 2015–19. PCR = 148,200 / 187,966 = 0.788; F = Φ(
 rates e^(−0.07 × 2) = 0.869. Mature hazard = 0.0077 × 0.253 × 0.841 × 0.869 = **0.00142**, 1.4 ADUs per 1,000
 eligible lots a year, from year 1 after adoption (before D-048 the ramp gave 21% of that in year 1).
 
-**Outside the calibration range.** Most places Lotline covers have lower rents and home values than the
-reference cities. The formula still applies there, but it is extrapolation, so the tool says so: each place
+**Outside the calibration range.** Some places Lotline covers have lower rents and home values than the
+places the anchor is fitted on (or higher). The formula still applies there, but it is extrapolation, so the tool says so: each place
 gets its log distance outside the range (rent, home value and rate added up; 0 inside), a flag, and a wider
 interval. Each simulation draw multiplies the hazard by exp(s·z − s²/2), s = `adu_extrapolation_widening`
 (1.0, range 0.5–2) × distance, z standard normal; the mean stays put and P10–P90 widens with distance.
@@ -547,8 +551,9 @@ these totals will move as more rules are coded.
   local fees by half through the same machinery ("don't raise impact fees", office hours A4). The pencil-out
   table (`model/pencil_out.py`) shows for each place what a house, a duplex and a fourplex can pay for land
   at today's fees, after a cut and at the Handbook's levels, with the fee per lot and its share of cost.
-- **Combined runs:** one allocation step so the same lot is never counted for both ADU and missing middle; the
-  combined result is at most the sum of the parts.
+- **No combined runs** (Ben, 2026-11-17): each reform is run on its own, so how two reforms share a lot (C47)
+  is not modelled. The Results headline adds the three reforms' draws together and says that a lot two
+  reforms open is counted twice.
 
 ### The missing-middle model (D-092, C4)
 
@@ -681,6 +686,27 @@ Comparison, so a reader sees them where the numbers are.
   known places until `config/reforms/*.csv` covers every state.
 - **Small places.** Places with under 20 eligible parcels are too noisy to score; they are forecast with wide
   ranges and should be read rolled up to their county.
+- **Who the new homes serve is context, not a forecast** (the AMI strip under the need chart,
+  `model/affordability.py`, `config/params/affordability.yaml`, method in `docs/research/lotline-ami-method.md`).
+  Five limits apply to it:
+  1. The model predicts how many homes, not their rents. The market rent shown is a rent the model already
+     assumes (the place's median gross rent times a ratio), re-expressed as an income.
+  2. New homes usually rent above the median of existing homes. The rent ratios' ranges (0.8 to 1.2) cover some
+     of that, and both ratios are judgment, not estimates. The house row prices a new house at the place's
+     median home value, which understates a new house.
+  3. AMI is family income for the whole HUD area, owners included; the median renter earns less, so a home at
+     "60% AMI" is harder for a typical renter to afford than the label suggests.
+  4. Many ADUs are not rented at market (family, a home office, short-term rental), so "serves" describes what
+     an ADU could rent for, not who will live in it.
+  5. Town figures rest on the county's HUD area and small-sample ACS rents; the strip shows the state only, and
+     the bundle nothing below place type. Break-even leaves out land and the builder's profit (Ben, 2026-11-19),
+     so it is a floor on what a new home must earn; the house row leaves out mortgage insurance; property tax and
+     insurance rates are national.
+- **The housing-need gap is rough** (the need card, `model/shortfall.py`). It adds the shortage, household
+  growth and homes lost, then takes away the no-change forecast of homes permitted. Permits are gross building
+  and vacant or second homes are not netted out, so the gap is if anything understated. The stock-loss rate is
+  national and approximate, and the gap is one uncertain number minus another, so its range is wide and can
+  cross zero (North Carolina, Ohio).
 - **Not yet pre-registered.** The V1–V5 thresholds are proposals until the `prereg-v1` tag is made, and V1 has
   been used during development.
 
@@ -744,9 +770,9 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 <!-- params-table:start -->
 <!-- GENERATED by `uv run python scripts/dev/params_table.py` from config/params/*.yaml. Do not edit by hand. -->
 
-353 parameters in 26 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
+375 parameters in 27 files. "Fixed" means the value is set by the Handbook, the validation plan or a definition and is not varied.
 
-**`config/params/adu.yaml`** (22 parameters)
+**`config/params/adu.yaml`** (23 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
@@ -758,6 +784,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_observed_years` | 3 | fixed | years (ending at the data origin) | D-082 (2026-11-12, Ben): the observed ADU floor is the mean of the 3 years ending at the data origin, the sam… |
 | `adu_own_rate_drift` | 1 | fixed | switch (1 = a place's own ADU counts set its no-reform rate; 0 = the mechanism with the observed floor, as before) | D-091, outcome adopted by Ben 2026-11-15 ("Adopt it") |
 | `adu_drift_sigma` | 1.025 | fixed | SD of log drift (one multiplier per place for the whole window) | Estimated, D-091 (2026-11-14, reports/adu-drift/summary.json sigma_all_states_reported_only F0): maximum like… |
+| `adu_drift_mean_one` | 1 | fixed | switch (1 = the place drift has mean 1, exp(sigma z - sigma^2/2); 0 = median 1, exp(sigma z), as D-091) | Ben, 2026-11-20 ("recentering the drift towards the average isn't a bad idea" |
 | `adu_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: P10/P90 of 1,000 draws move by under 2% between seeds on the development run |
 | `adu_simulation_seed` | 20261020 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |
 | `adu_rule_band_small_max_pop` | 10,000 | fixed | 2020 population (upper edge of the small-place band) | Choice (D-022, Ben 2026-10-20): place-size bands <10k, 10-50k, 50k+ for the rule priors of places with no cod… |
@@ -924,7 +951,31 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_trend_ref_year` | 2020 | fixed | calendar year | D-085: the trend is exp(γ (t − 2020)), centered on 2020 so θ is the 2020 rate and θ and γ are close to indepe… |
 | `adu_trend_split_last_early_year` | 2020 | fixed | calendar year | D-085 test D: refit on 2016-2020 and forecast 2021-2025 for the same places |
 
-**`config/params/aggregate.yaml`** (14 parameters)
+**`config/params/affordability.yaml`** (19 parameters)
+
+| Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
+|---|---|---|---|---|
+| `rent_share_of_income` | 0.3 | fixed | share of gross income spent on housing | HUD's affordability standard and IRC 42(g)(2)(A) (tax-credit rents: gross rent no more than 30% of the income… |
+| `persons_per_bedroom` | 1.5 | fixed | persons per bedroom (household size assumed for a unit) | IRC 42(g)(2)(C): imputed household size of 1.5 persons per bedroom (one person for a studio) |
+| `bedrooms_adu` | 1 | fixed | bedrooms | Prototype definition: an 800 sq ft ADU (proforma.yaml adu_sqft) as a 1-bedroom |
+| `bedrooms_plex_unit` | 2 | fixed | bedrooms | Prototype definition: a 1,000 sq ft unit in a duplex to fourplex (proforma.yaml plex_unit_sqft) as a 2-bedroom |
+| `bedrooms_house` | 3 | fixed | bedrooms | Prototype definition: a 2,150 sq ft new single-family house (proforma.yaml single_family_sqft) as a 3-bedroom |
+| `hud_size_factor_1` | 0.7 | fixed | share of the 4-person income limit | HUD FY 2026 income limits methodology: 1 person = 70% of the 4-person limit (method doc, research item 1) |
+| `hud_size_factor_2` | 0.8 | fixed | share of the 4-person income limit | HUD FY 2026 income limits methodology: 2 persons = 80% of the 4-person limit |
+| `hud_size_factor_3` | 0.9 | fixed | share of the 4-person income limit | HUD FY 2026 income limits methodology: 3 persons = 90% of the 4-person limit |
+| `hud_size_factor_5` | 1.08 | fixed | share of the 4-person income limit | HUD FY 2026 income limits methodology: 8% more per person above 4, so 5 persons = 108% |
+| `plex_rent_to_median_ratio` | 1 | 0.8–1.2 | plex unit rent / place median gross rent | Judgment, set to match hazard.yaml adu_rent_to_median_ratio: the missing-middle model uses the place's median… |
+| `down_payment_share` | 0.1 | 0.035–0.2 | share of price paid up front | NAR 2024 Profile of Home Buyers and Sellers: median down payment 9% for first-time buyers, 18% for all buyers… |
+| `property_tax_rate` | 0.01 | 0.005–0.02 | annual property tax / home value | ACS 2023 1-year national: median real estate taxes paid (B25103) over median value of owner-occupied homes (B… |
+| `home_insurance_rate` | 0.004 | 0.0025–0.008 | annual homeowners insurance premium / home value | NAIC Dwelling Fire, Homeowners Owner-Occupied and Homeowners Tenant and Condominium/Cooperative Unit Owner's… |
+| `mortgage_term_years` | 30 | fixed | years | The term of market.yaml's mortgage_rate_forecast (FRED MORTGAGE30US, 30-year fixed) |
+| `band_subsidy_below` | 0.6 | fixed | share of AMI | Kronberg Urbanists + Architects' spectrum of affordability as reported in CNU, 'Housing choice can make citie… |
+| `band_zoning_above` | 0.8 | fixed | share of AMI | Kronberg via CNU (as for band_subsidy_below): above 80% AMI zoning reform alone can deliver |
+| `axis_max` | 1.5 | fixed | share of AMI | Display choice (WS-NEED-AMI part B: a 0 to 150% AMI axis) |
+| `affordability_draws` | 1,000 | fixed | draws | Same count as the pro forma's rlv_range |
+| `affordability_seed` | 20261119 | fixed | seed | Fixed seed so the table is reproducible (date the parameters were set) |
+
+**`config/params/aggregate.yaml`** (15 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
@@ -942,8 +993,9 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `overlap_flag_low_distance` | 1 | 0.75–1.5 | log distance outside the calibration range (eligible-weighted median over the state's places) | Ben, 2026-11-06 (results-bundle PR #311): a log distance of 1 is about 2.7x outside the range on one modifier… |
 | `results_origin_year` | 2025 | fixed | year | Lotline convention, as in every forward development run (scripts/dev/adu_dev_run.py --origin 2025): the last… |
 | `historical_floor_years` | 3 | fixed | years of observed permits ending at the data origin | WS-NC-GUTCHECK brief task 6 (Ben, 2026-11-09), from office hours 2026-11-09 action item 3 (docs/research/offi… |
+| `stock_loss_rate` | 0.003 | 0.002–0.005 | share of the housing stock lost per year (demolished, destroyed or converted to other uses) | HUD / Census American Housing Survey, Components of Inventory Change (CINCH) reports: roughly 0.3% of the sto… |
 
-**`config/params/baseline.yaml`** (32 parameters)
+**`config/params/baseline.yaml`** (33 parameters)
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
@@ -969,6 +1021,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `v1_bias_tolerance` | 0.25 | 0.1–0.5 | share of MAE | Proposed (WS-ENGINE round 2, 2026-10-14) to make V1's 'no systematic bias' testable |
 | `v1_coverage_low` | 0.7 | fixed | share | Validation plan V1 pass (proposed): coverage 70-90% |
 | `v1_coverage_high` | 0.9 | fixed | share | Validation plan V1 pass (proposed): coverage 70-90% |
+| `benchmark_levels` | 1 | 0–1 | flag (1 = yes) | Proposed in D-106 (2026-11-19, V8 diagnosis: the Fay-Herriot step lowers state totals, -11% in Wisconsin |
 | `use_direct_variance` | 1 | 0–1 | flag (1 = yes) | Deviation (WS-ENGINE round 2, 2026-10-14), after the first V1 run: one-off subdivision years in tiny places w… |
 | `use_state_momentum` | 0 | 0–1 | flag (1 = yes) | Validation plan V1 ('If it fails: add rates or regional demand to the baseline explicitly') |
 | `momentum_recent_years` | 3 | 1–5 | years | Chosen a priori to match the 3-year benchmark window (validation plan V1), not tuned |
@@ -1033,12 +1086,12 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_ref_rent_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25064 median gross rent, Portland city OR (place 4159000), CPI-U… |
 | `adu_ref_home_value_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars |
 | `adu_ref_mortgage_rate` | 3.99 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-20… |
-| `adu_calibration_rent_low_usd` | 1,573 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: lowest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (20… |
-| `adu_calibration_rent_high_usd` | 2,034 | fixed | USD per month (2025) | scripts/dev/adu_reference.py: highest ACS 2015-2019 median gross rent of Portland, Seattle and Los Angeles (2… |
-| `adu_calibration_value_low_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: lowest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (20… |
-| `adu_calibration_value_high_usd` | 835,671 | fixed | USD (2025) | scripts/dev/adu_reference.py: highest ACS 2015-2019 median home value of Portland, Seattle and Los Angeles (2… |
-| `adu_calibration_rate_low` | 2.96 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: lowest annual mean of FRED MORTGAGE30US over 2015-2023, the years the comparabl… |
-| `adu_calibration_rate_high` | 6.81 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: highest annual mean of FRED MORTGAGE30US over 2015-2023 |
+| `adu_calibration_rent_low_usd` | 1,204 | fixed | USD per month (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percen… |
+| `adu_calibration_rent_high_usd` | 1,826 | fixed | USD per month (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th perce… |
+| `adu_calibration_value_low_usd` | 218,001 | fixed | USD (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percen… |
+| `adu_calibration_value_high_usd` | 589,593 | fixed | USD (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th perce… |
+| `adu_calibration_rate_low` | 2.96 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): lowest annual mean of FRED MORTGAGE… |
+| `adu_calibration_rate_high` | 6.81 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): highest annual mean of FRED MORTGAG… |
 | `adu_rent_to_median_ratio` | 1 | 0.8–1.2 | ADU rent / place median gross rent | Judgment |
 | `adu_feasibility_dispersion` | 0.5 | 0.25–0.8 | standard deviation of log(lot's own price-to-cost) | Judgment |
 | `adu_equity_elasticity` | 0.25 | 0–0.5 | % change in hazard per % change in median home value | Judgment |

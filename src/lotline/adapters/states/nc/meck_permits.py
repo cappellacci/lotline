@@ -11,7 +11,7 @@ else touches them:
 
 1. **Server-side filter.** The query asks only for permits issued before the window opens, or issued
    later in a town that is not held out (`taxjuris` in the town list of
-   `config/crosswalks/nc_meck_tax_jurisdictions.csv`). The window date and the held-out GEOIDs are read
+   `config/crosswalks/nc_aliases.csv`). The window date and the held-out GEOIDs are read
    from the holdout config, never typed here. If a town's spelling is wrong, its later permits are simply
    not downloaded (lost, never leaked); `check_town_rows` then stops the run, so the gap can't go unseen.
 2. **`holdout.apply` right after the rows are built**, on the place found from each permit's point
@@ -63,6 +63,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import epoch_ms_to_timestamp
@@ -80,7 +81,7 @@ LICENSE = "Mecklenburg County GIS public data (accuracy disclaimer; no license s
 COUNTY = "37119"
 CHARLOTTE = "3712000"
 USDC_CSV = CONFIG_DIR / "crosswalks" / "nc_meck_usdc_codes.csv"
-JURIS_CSV = CONFIG_DIR / "crosswalks" / "nc_meck_tax_jurisdictions.csv"
+JURIS_CSV = CONFIG_DIR / "crosswalks" / "nc_aliases.csv"  # source meck_permits, field taxjuris
 
 OUT_FIELDS = [
     "objectid",
@@ -148,11 +149,13 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def usdc_codes(path: Path = USDC_CSV) -> dict[str, dict[str, str]]:
-    return {r["usdc_code"]: r for r in _read_csv(path)}
+    return crosswalks.by_code(crosswalks.read(path, "building_type"))
 
 
-def tax_jurisdictions(path: Path = JURIS_CSV) -> dict[str, str]:
-    return {r["taxjuris"].strip().upper(): r["geoid"] for r in _read_csv(path)}
+def tax_jurisdictions() -> dict[str, str]:
+    from lotline import geo
+
+    return {k.strip().upper(): g for k, g in geo.aliases("NC", "meck_permits", "taxjuris").items()}
 
 
 def _blind(state: str) -> list:
@@ -207,7 +210,7 @@ def classify(row: pd.Series, codes: dict[str, dict[str, str]]) -> dict:
     """building_type_std, type_confidence, adu_type, units_new, units_removed, units_confidence, flags."""
     code = row["usdc"]
     info = codes.get(code) if isinstance(code, str) else None
-    activity = info["activity"] if info else None
+    activity = info["role"] if info else None
     btype = info["building_type_std"] if info else "UNKNOWN"
     conf = "high" if info else "unknown"
     n = pd.to_numeric(row.get("numunits"), errors="coerce")

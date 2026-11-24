@@ -1,5 +1,7 @@
 # WS-ENGINE · Model engine (baseline, mechanism, scenarios, aggregation)
 
+> **Superseded 2026-11-18 (Ben):** there are no combined scenarios. Each reform is run on its own; `model/combine.py` and stacked/combined runs are dropped. Items below that mention them no longer apply.
+
 **Start:** after `schemas-v1` (wk 2). Synthetic-data first; MN data from wk 3.
 **Owns:** `src/lotline/build/` (except `eligible.py` signature, owned by CORE), `src/lotline/model/`, `config/params/`, `tests/model/`.
 **Principle:** every equation has a unit test against a hand-worked example ("tests prove the method"). Every parameter comes from `config/params/*.yaml` with a source. Nothing state-specific lives in this package: states differ only through data and config.

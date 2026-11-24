@@ -48,7 +48,6 @@ district: those columns stay null (unknown).
 
 from __future__ import annotations
 
-import csv
 import json
 import re
 from dataclasses import dataclass
@@ -56,6 +55,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters import crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp, query_url
@@ -169,8 +169,9 @@ class Rule:
 
 
 def load_rules(path: Path = USE_CROSSWALK) -> list[Rule]:
-    with open(path, newline="") as fh:
-        return [Rule(re.compile(r["pattern"]), r["land_use_std"].strip()) for r in csv.DictReader(fh)]
+    return [
+        Rule(re.compile(r["pattern"]), r["land_use_std"].strip()) for r in crosswalks.read(path, "land_use")
+    ]
 
 
 def prop_code(raw: pd.Series) -> pd.Series:
@@ -215,13 +216,12 @@ def resolve(
     juris_city: pd.Series, county_geoid: pd.Series, jurisdictions: pd.DataFrame
 ) -> tuple[pd.Series, pd.Series]:
     """(jurisdiction_geoid, how): the named city if it is a place in the table, else the county remainder."""
+    from lotline import geo
+
     lookup = city_lookup(jurisdictions)
-    keys = juris_city.astype("string").fillna("").map(_name_key)
-    city = keys.map(lookup).astype("string")
-    found = city.notna()
-    geoid = city.where(found, county_geoid.astype("string")).astype("string")
-    how = pd.Series("county_remainder", index=juris_city.index, dtype="string").mask(found, "juris_city")
-    return geoid, how
+    city = juris_city.astype("string").fillna("").map(_name_key).map(lookup)
+    steps = [("juris_city", city, False), ("county_remainder", county_geoid, False)]
+    return geo.resolve(steps, set(), otherwise="county_remainder")
 
 
 # ---- zoning ----------------------------------------------------------------------------------------------
@@ -434,19 +434,12 @@ def download_zoning(store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     )
 
 
-def _jurisdictions(state: str, store: DataStore) -> pd.DataFrame:
-    juris = store.read(state, "jurisdictions")
-    if juris is None:
-        from lotline.build import jurisdictions as jur
-
-        juris = jur.load(state, store)
-    return juris
-
-
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
     if state.upper() != "OR":
         raise ValueError(f"{SOURCE} covers Oregon Metro's three counties only, not {state}")
-    juris = _jurisdictions(state, store)
+    from lotline import geo
+
+    juris = geo.jurisdictions_table(state, store)
     raw = download(store, refresh=refresh)
     zoning = download_zoning(store, refresh=refresh)
     table, _ = to_parcels(raw, roll_date(store, refresh=refresh), juris, state, zoning=zoning)

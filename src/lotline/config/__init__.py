@@ -74,6 +74,31 @@ class Source(_Model):
     notes: str | None = None
 
 
+class AdapterRule(_Model):
+    """A named judgment inside one state's adapters (WS-SCALE task 8): a share, threshold, date or label the
+    code applies to that state's data, kept here with what it does and where it comes from, so it can be read,
+    questioned and varied without reading the adapter. `low`/`high` give a sensitivity range where one is
+    known; a rule without one says so in `assumption`. `used_by` names the modules that read it.
+    """
+
+    value: int | float | str
+    unit: str
+    what: str
+    assumption: str
+    source: str
+    used_by: list[str] = Field(min_length=1)
+    low: int | float | str | None = None
+    high: int | float | str | None = None
+
+    @model_validator(mode="after")
+    def _range(self) -> AdapterRule:
+        if (self.low is None) != (self.high is None):
+            raise ValueError("low and high go together")
+        if self.low is not None and not self.low <= self.value <= self.high:  # type: ignore[operator]
+            raise ValueError(f"value {self.value} outside [{self.low}, {self.high}]")
+        return self
+
+
 class StateConfig(_Model):
     state: str = Field(pattern=r"^[A-Z]{2}$")
     name: str
@@ -92,6 +117,13 @@ class StateConfig(_Model):
     # D-068: the state's ADU law is coded row by row for every place it covers (config/reforms/<st>.csv), so a
     # place with no ADU row is outside the law and takes the prior of states without such a law.
     adu_state_law_rows_complete: bool = False
+    # Governments the Census permit survey has no row for (it files their permits under a county), which the
+    # state's own permit or parcel data reports separately: GEOID -> name. With the survey's places and the
+    # holdouts, they make the jurisdictions list (build/jurisdictions.py), which reads no adapter output
+    # (WS-SCALE, Ben 2026-11-17). `lotline unlisted --state XX` prints GEOIDs the data uses that are missing.
+    local_jurisdictions: dict[str, str] = {}
+    # Named adapter rules (WS-SCALE task 8): rule id -> AdapterRule. Read with `state_rule(state, id)`.
+    rules: dict[str, AdapterRule] = {}
 
 
 class Parameter(_Model):
@@ -115,6 +147,14 @@ def load_state(state: str, config_dir: Path = CONFIG_DIR) -> StateConfig:
     if cfg.state != state.upper():
         raise ValueError(f"{path}: state is {cfg.state}, expected {state.upper()}")
     return cfg
+
+
+def state_rule(state: str, rule_id: str, config_dir: Path = CONFIG_DIR) -> int | float | str:
+    """The value of one named adapter rule in `config/states/<st>.yaml` (`rules:`)."""
+    rules = load_state(state, config_dir).rules
+    if rule_id not in rules:
+        raise KeyError(f"config/states/{state.lower()}.yaml has no rule {rule_id!r} (rules: {sorted(rules)})")
+    return rules[rule_id].value
 
 
 def all_states(config_dir: Path = CONFIG_DIR) -> list[str]:

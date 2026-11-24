@@ -150,3 +150,25 @@ def test_manifest_reads_appends_incrementally_and_survives_a_replaced_file(tmp_p
     store.manifest_path.unlink()
     store.record(entry(3))  # a new file (new inode): read again from the start
     assert [e.path for e in store.manifest()] == ["raw/s/v/3"]
+
+
+def test_read_cache_returns_copies_and_sees_rewrites(tmp_path):
+    """WS-SCALE task 4: `DataStore.read` caches a table but never hands out the cached frame, and a
+    rewritten file is read afresh."""
+    import os
+
+    import pandas as pd
+
+    from lotline.io.store import DataStore
+
+    store = DataStore(tmp_path)
+    path = store.processed("zz", "jurisdictions", "a")
+    path.parent.mkdir(parents=True)
+    pd.DataFrame({"geoid": ["1"], "n": [1]}).to_parquet(path, index=False)
+    first = store.read("zz", "jurisdictions")
+    first.loc[0, "n"] = 99  # a caller changing its copy must not change the next read
+    assert store.read("zz", "jurisdictions").loc[0, "n"] == 1
+    pd.DataFrame({"geoid": ["1", "2"], "n": [1, 2]}).to_parquet(path, index=False)
+    st = path.stat()
+    os.utime(path, ns=(st.st_atime_ns, st.st_mtime_ns + 1_000_000_000))
+    assert len(store.read("zz", "jurisdictions")) == 2

@@ -98,8 +98,8 @@ Run these and report what you found, tagged `[ran]` or `[read]`.
 
 - The "calibrate where reforms are old, apply where they aren't" transport step is the hardest idea to explain.
   Is it explained in plain words, with what is assumed to carry over and what is adjusted?
-- Combined scenarios (ADU + Missing Middle + Fees): is the overlap rule (one lot is never counted twice) written
-  down where a policymaker would see it?
+- Each reform is run on its own (no combined scenarios, Ben 2026-11-17). Where the page adds the three
+  together, is the double counting of lots two reforms open said where a policymaker would see it?
 - "Parcels in, regions out" (review N1): do docs say plainly that parcels are a counting device, not predictions?
 - The V0 1% reconciliation rule (analysis plan D-001) is a good transparency move; check it's surfaced, not buried.
 

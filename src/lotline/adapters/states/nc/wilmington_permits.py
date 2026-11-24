@@ -84,6 +84,7 @@ import re
 
 import pandas as pd
 
+from lotline import geo
 from lotline.io import DataStore
 from lotline.io.arcgis import epoch_ms_to_timestamp
 from lotline.parse.permit_text import ADU, ADU_KIND, parse_description
@@ -103,7 +104,7 @@ LICENSE = (
 )
 WILMINGTON = "3774440"
 COUNTY = "37129"  # New Hanover County unincorporated area
-DISTRICTS = {"City of Wilmington": WILMINGTON, "New Hanover County": COUNTY}
+DISTRICTS = geo.aliases("NC", "wilmington_permits", "DISTRICT")  # config/crosswalks/nc_aliases.csv
 
 PERMIT_TYPES = [
     "NHC Residential Building",

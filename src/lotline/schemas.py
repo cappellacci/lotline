@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.14"  # schemas-v1 line (additive changes only); history in docs/schemas.md
+SCHEMAS_VERSION = "1.23"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -276,6 +276,14 @@ class MarketGeoYear(_Strict):
     demand_bartik: Optional[Series[float]] = pa.Field(nullable=True)
     demand_bartik_loo: Optional[Series[float]] = pa.Field(nullable=True)
     demand_imputed_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)
+    # HUD Section 8 income limits (adapters/national/hud_il.py), county rows, year = HUD fiscal year, nominal
+    # dollars: the HUD area's 4-person median family income (AMI) and the 50% limits for 1 to 5 persons
+    hud_mfi: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_1: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_2: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_3: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_4: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
+    hud_l50_5: Optional[Series[float]] = pa.Field(nullable=True, gt=0)
 
     @pa.dataframe_check
     def one_row_per_geo_year(cls, df: pd.DataFrame) -> bool:
@@ -410,6 +418,82 @@ class Fees(_Strict):
         return bool(ok.all())
 
 
+PLACE_TYPES = ["core", "suburb", "town"]
+MODEL_TAGS = ["adu", "missing_middle", "fees", "baseline"]
+
+
+class PlaceInputs(_Strict):
+    """Every shared per-place input for the three models and the baseline, built once per state (WS-SCALE task
+    4, #455; `build/place_inputs.py`). One row per jurisdiction and origin year: row Y holds what a run with
+    origin Y reads (the parcel roll nearest Y, the newest ACS vintage ending by Y, the observed ADU window
+    ending at Y, BPS permits issued in Y). Columns are filled by the functions the models use. Task 5 rules
+    (D-103): one place set (every jurisdiction feeds the ADU and missing-middle scenarios); no parcel roll
+    later than Y + 1; a missing ACS rent or value is the state median, flagged. `models` lists who reads the
+    row; `models_note` says what was filled or how the row is covered.
+    """
+
+    state: Series[str] = pa.Field(**_STATE)
+    geoid: Series[str]
+    year: Series[pd.Int64Dtype] = pa.Field(ge=1980, le=2100)
+    name: Series[str]
+    kind: Series[str] = pa.Field(isin=JURISDICTION_KINDS)
+    county_geoid: Optional[Series[str]] = pa.Field(nullable=True)
+    in_bps: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
+    pop_2020: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True, ge=0)
+    data_tier: Series[pd.Int64Dtype] = pa.Field(isin=DATA_TIERS)
+    cbsa_code: Optional[Series[str]] = pa.Field(nullable=True)
+    cbsa_type: Optional[Series[str]] = pa.Field(nullable=True)
+    # tags
+    acs_geo: Series[str]  # place:/cousub:/county: + geoid
+    size_band: Series[pd.Int64Dtype] = pa.Field(ge=0)  # ADU rule-prior bands; no pop_2020 -> band 0
+    place_type: Series[str] = pa.Field(isin=PLACE_TYPES)  # D-088
+    place_type_source: Series[str] = pa.Field(isin=["acs_cbsa", "default_town"])  # D-089 default
+    is_holdout: Series[pd.BooleanDtype]
+    parcel_sources: Optional[Series[str]] = pa.Field(nullable=True)  # sorted, ";"-joined
+    permit_sources: Optional[Series[str]] = pa.Field(nullable=True)
+    house_share: Optional[Series[float]] = pa.Field(nullable=True, ge=0, le=1)  # roll <= year + 1 (MM)
+    house_share_roll: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
+    # eligible parcels at the origin, net of the D-020 overlap; one block per theme
+    eligible_parcels_adu: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    eligible_parcels_reported_adu: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    overlap_removed_adu: Optional[Series[float]] = pa.Field(nullable=True)
+    parcels_year_adu: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
+    parcels_after_origin_adu: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
+    denominator_source_adu: Optional[Series[str]] = pa.Field(nullable=True, isin=DENOMINATOR_SOURCES)
+    denominator_quality_adu: Optional[Series[str]] = pa.Field(nullable=True, isin=QUALITY)
+    eligible_parcels_mm: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    eligible_parcels_reported_mm: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    overlap_removed_mm: Optional[Series[float]] = pa.Field(nullable=True)
+    parcels_year_mm: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
+    parcels_after_origin_mm: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
+    denominator_source_mm: Optional[Series[str]] = pa.Field(nullable=True, isin=DENOMINATOR_SOURCES)
+    denominator_quality_mm: Optional[Series[str]] = pa.Field(nullable=True, isin=QUALITY)
+    # prices (2025 dollars) and observed ADUs
+    rent: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    home_value: Optional[Series[float]] = pa.Field(nullable=True, ge=0)
+    rent_filled: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)  # state median (task 5 rule 2)
+    home_value_filled: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
+    acs_end_year: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
+    new_home_value: Optional[Series[float]] = pa.Field(nullable=True)  # roll dollars (fees)
+    fee_parcel_vintage: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True)
+    observed_adu_per_year: Optional[Series[float]] = pa.Field(nullable=True, ge=0)  # holdout-stopped
+    # BPS permits issued in the year, and the price index the baseline reads
+    bps_county_geoid: Optional[Series[str]] = pa.Field(nullable=True)
+    units_1: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True, ge=0)
+    units_2: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True, ge=0)
+    units_3_4: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True, ge=0)
+    units_5p: Optional[Series[pd.Int64Dtype]] = pa.Field(nullable=True, ge=0)
+    imputed: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
+    hpi: Optional[Series[float]] = pa.Field(nullable=True)
+    hpi_geo: Optional[Series[str]] = pa.Field(nullable=True)
+    models: Series[str]  # ";"-joined MODEL_TAGS; "" = no model reads the row
+    models_note: Optional[Series[str]] = pa.Field(nullable=True)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "geoid", "year"]).any()
+
+
 TABLES: dict[str, type[pa.DataFrameModel]] = {
     "jurisdictions": Jurisdictions,
     "parcels": Parcels,
@@ -420,6 +504,7 @@ TABLES: dict[str, type[pa.DataFrameModel]] = {
     "acs_geo_year": AcsGeoYear,
     "reforms": Reforms,
     "fees": Fees,
+    "place_inputs": PlaceInputs,
 }
 
 
@@ -432,12 +517,8 @@ SCENARIOS = [
     "missing_middle",
     "fees",  # the Handbook benchmark: a $50,000 fee cut in half (D-065)
     "fees_local_half",  # real local fees cut in half (D-065)
-    "adu+missing_middle",
-    "adu+fees",
-    "missing_middle+fees",
-    "combined",  # all three, one parcel allocation (C47)
-]
-STATE_ROLES = ["benchmark", "development", "transfer", "national_only"]
+]  # each reform is run on its own; there are no combined scenarios (Ben, 2026-11-17 and 2026-11-18)
+STATE_ROLES = ["benchmark", "development", "transfer", "national_only", "ingestion_test"]
 OVERLAP_FLAGS = ["high", "medium", "low"]
 FUNNEL_STAGES = ["legal", "pencils", "built"]
 RESULT_OUTCOMES = ["permits_added", "homes_in_place", "homes_net_statewide"]
@@ -596,6 +677,159 @@ class ResultsObserved(_Strict):
         return not df.duplicated(["state", "measure", "year"]).any()
 
 
+ADU_PLACE_TYPES = ["core", "suburb", "town"]  # D-088
+
+
+class ResultsAduPlaceTypes(_Strict):
+    """The ADU scenario by place type (D-088: core city, suburb, town), for the page's evidence card. `places`
+    and `lots` (eligible lots, the median over draws) describe the state; `base` (current-rules ADUs, the
+    no-reform world) and `added` (ADUs the Handbook reform adds) are gross ADU permits a year, averaged over
+    the window, each draw summed over the type's places; `base` and `added` are medians, with P10 and P90."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    place_type: Series[str] = pa.Field(isin=ADU_PLACE_TYPES)
+    places: Series[pd.Int64Dtype] = pa.Field(ge=0)
+    lots: Series[float] = pa.Field(ge=0)
+    base_p10: Series[float] = pa.Field(ge=0)
+    base: Series[float] = pa.Field(ge=0)
+    base_p90: Series[float] = pa.Field(ge=0)
+    added_p10: Series[float] = pa.Field(ge=0)
+    added: Series[float] = pa.Field(ge=0)
+    added_p90: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "place_type"]).any()
+
+
+class ResultsAffordability(_Strict):
+    """Who the new homes serve (WS-NEED-AMI part B; `model/affordability.py`): context beside the need, not a
+    result of the reform scenarios. Per home type (`adu`, `plex_unit`, `house` for contrast) and place type
+    (`core`, `suburb`, `town`, or `state` for all places): `value` is the monthly rent (ADU, plex unit) or the
+    sale price (house) in 2025 dollars, `income` the yearly household income at which its housing cost is 30%
+    of income, and `ami_share` that income over the HUD area median income for a household of 1.5 persons per
+    bedroom. `rent_kind` `market` is the rent the engine assumes; `break_even` the rent at which the pro
+    forma's value covers building it (no land, no profit), for three `fee_case`s: today's local fees
+    (`current`), real local fees cut in half (`fees_local_half`) and the Handbook benchmark (`fees`). Places
+    are weighted by the homes the matching reform adds there (`weighting` `homes_added`), or equally where it
+    adds none (`places_equal`); `mfi` is that weighted HUD 4-person MFI (2025 dollars). Medians with P10 and
+    P90 across draws. Empty when no HUD income limits file is registered."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    home_type: Series[str] = pa.Field(isin=["adu", "plex_unit", "house"])
+    place_type: Series[str] = pa.Field(isin=[*ADU_PLACE_TYPES, "state"])
+    rent_kind: Series[str] = pa.Field(isin=["market", "break_even"])
+    fee_case: Series[str] = pa.Field(isin=["current", "fees_local_half", "fees"])
+    places: Series[pd.Int64Dtype] = pa.Field(ge=1)
+    weighting: Series[str] = pa.Field(isin=["homes_added", "places_equal"])
+    mfi: Series[float] = pa.Field(gt=0)
+    value_p10: Series[float] = pa.Field(ge=0)
+    value: Series[float] = pa.Field(ge=0)
+    value_p90: Series[float] = pa.Field(ge=0)
+    income_p10: Series[float] = pa.Field(ge=0)
+    income: Series[float] = pa.Field(ge=0)
+    income_p90: Series[float] = pa.Field(ge=0)
+    ami_share_p10: Series[float] = pa.Field(ge=0)
+    ami_share: Series[float] = pa.Field(ge=0)
+    ami_share_p90: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "home_type", "place_type", "rent_kind", "fee_case"]).any()
+
+
+class ResultsShortfall(_Strict):
+    """The shortfall view of housing need (`model/shortfall.py`; Ben, 2026-11-19): one row per state. The need
+    is the shortage today plus household growth over the five years (negative where households are projected
+    to fall) plus homes lost over the five years (`stock_loss_rate` x the ACS housing stock in `stock_year` x
+    5); `built` is the no-change forecast of homes permitted, all sizes, over the five years (P10, P50, P90);
+    the gap is need minus built, with bounds from the need's low and high ends against built at P90 and P10. A
+    gap at or below zero means homes built anyway would cover the need at that end."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    shortage_low: Series[float] = pa.Field(ge=0)
+    shortage: Series[float] = pa.Field(ge=0)
+    shortage_high: Series[float] = pa.Field(ge=0)
+    growth_low: Series[float] = pa.Field()
+    growth: Series[float] = pa.Field()
+    growth_high: Series[float] = pa.Field()
+    stock: Series[float] = pa.Field(gt=0)
+    stock_year: Series[pd.Int64Dtype] = pa.Field(ge=2009, le=2100)
+    lost_low: Series[float] = pa.Field(ge=0)
+    lost: Series[float] = pa.Field(ge=0)
+    lost_high: Series[float] = pa.Field(ge=0)
+    need_low: Series[float] = pa.Field()
+    need: Series[float] = pa.Field()
+    need_high: Series[float] = pa.Field()
+    built_p10: Series[float] = pa.Field(ge=0)
+    built: Series[float] = pa.Field(ge=0)
+    built_p90: Series[float] = pa.Field(ge=0)
+    gap_low: Series[float] = pa.Field()
+    gap: Series[float] = pa.Field()
+    gap_high: Series[float] = pa.Field()
+
+    @pa.dataframe_check
+    def one_row_per_state(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state"]).any()
+
+
+ADU_BASELINE_BASES = ["all", "own_counts", "model"]
+
+
+class ResultsAduBaseline(_Strict):
+    """Statewide current-rules ADUs (gross permits, the no-reform world) in each window year, P10/P50/P90 over
+    the draws: what the ADU scenario's added range stacks on.
+
+    Optional `basis` and `mean` (schemas 1.21, the chart split, Ben 2026-11-19): `all` is every place;
+    `own_counts` the places whose no-reform rate comes from their own ADU permit counts (D-091, D-093);
+    `model` the places the mechanism estimates. Each basis's percentiles are of its own sum over places, so
+    they do not add up; the means do (all = own_counts + model), which is how the page splits the bar. A
+    bundle without `basis` has one row per period, every place."""
+
+    state: Series[str] = pa.Field(**_STATE)
+    period: Series[str] = pa.Field(str_matches=r"^\d{4}$")
+    basis: Optional[Series[str]] = pa.Field(isin=ADU_BASELINE_BASES, nullable=True)
+    p10: Series[float] = pa.Field(ge=0)
+    p50: Series[float] = pa.Field(ge=0)
+    p90: Series[float] = pa.Field(ge=0)
+    mean: Optional[Series[float]] = pa.Field(ge=0, nullable=True)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        key = ["state", "period", "basis"] if "basis" in df else ["state", "period"]
+        return not df.duplicated(key).any()
+
+
+FEE_SIZE_CLASSES = ["1", "2", "3_4"]  # BPS sizes a fee cut covers; 5+ unit buildings take no dose (D-073)
+
+
+class ResultsFeeTypes(_Strict):
+    """The fee section's policy controls (D-077): each draw's five-year homes added in one building size under
+    real local fees cut by `fee_change_share` (0.5, the `fees_local_half` scenario), with that size's
+    completion draw (single-family for houses, multifamily for 2-4 units) and five-year baseline homes.
+
+    Where a size's homes added are linear in the fee change in every draw (the elasticity route), only
+    the half cut (`fee_change_share` 0.5) is stored, and a change of s (a cut of s × each place's own fee;
+    s < 0 a rise) adds (s ÷ 0.5) × `units_added`. Where they are not (houses on the lot-feasibility route,
+    places with a parcel roll; schemas 1.22), the engine's own result is stored at every slider stop (−0.5
+    to 1.0 in steps of 0.1, `results.FEE_STOPS`). The 0.5 rows summed over sizes in a draw are that draw's
+    `fees_local_half` homes in `results_draws`.
+    """
+
+    state: Series[str] = pa.Field(**_STATE)
+    scenario: Series[str] = pa.Field(isin=["fees_local_half"])
+    size: Series[str] = pa.Field(isin=FEE_SIZE_CLASSES)
+    draw: Series[pd.Int64Dtype] = pa.Field(ge=0)
+    fee_change_share: Series[float] = pa.Field(ge=-0.5, le=1)
+    units_added: Series[float]  # negative for a rise
+    completion_factor: Series[float] = pa.Field(ge=0)  # completions per permit; can exceed 1
+    baseline_homes: Series[float] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def one_row_per_key(cls, df: pd.DataFrame) -> bool:
+        return not df.duplicated(["state", "scenario", "size", "draw", "fee_change_share"]).any()
+
+
 class ResultsScorecard(_Strict):
     """Validation scorecard rows for the state (validation plan §5): one row per check."""
 
@@ -618,6 +852,11 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_scorecard": ResultsScorecard,
     "results_baseline": ResultsBaseline,
     "results_observed": ResultsObserved,
+    "results_adu_place_types": ResultsAduPlaceTypes,
+    "results_adu_baseline": ResultsAduBaseline,
+    "results_affordability": ResultsAffordability,
+    "results_shortfall": ResultsShortfall,
+    "results_fee_types": ResultsFeeTypes,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -711,6 +950,55 @@ HISTORY = [
         "1.14",
         "results scenarios: `fees_local_half` (real local fees cut in half) beside `fees` (the Handbook "
         "benchmark), D-065",
+    ),
+    (
+        "1.15",
+        "results_adu_place_types (the ADU scenario by place type, D-088) and results_adu_baseline (statewide "
+        "current-rules ADUs per window year), for the app's ADU evidence card",
+    ),
+    (
+        "1.16",
+        "place_inputs: every shared per-place input for all three models and the baseline, one row per "
+        "(state, geoid, year), built once by `lotline fetch --source place_inputs` (WS-SCALE task 4, #455)",
+    ),
+    (
+        "1.17",
+        "results scenarios: the never-built combined scenarios (`adu+missing_middle`, `adu+fees`, "
+        "`missing_middle+fees`, `combined`) removed; each reform is run on its own (Ben, 2026-11-18). "
+        "No bundle ever held rows for them, so no data is lost",
+    ),
+    (
+        "1.18",
+        "market_geo_year: optional hud_mfi and hud_l50_1 ... hud_l50_5 (HUD Section 8 income limits, county "
+        "rows, hand-downloaded file); results_affordability (who the new homes serve: rent or price, income "
+        "needed and share of AMI by home type and place type, market and break-even; "
+        "WS-NEED-AMI part B, #496); results_shortfall (need left after homes built anyway)",
+    ),
+    (
+        "1.19",
+        "place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, "
+        "D-103)",
+    ),
+    (
+        "1.20",
+        "results_fee_types (the fee section's slider and targeted-bill buttons, D-077): each draw's homes "
+        "added by building size at real local fees cut by half, with the size's completion and baseline",
+    ),
+    (
+        "1.21",
+        "results_adu_baseline: optional basis (all, own_counts, model) and mean, so the ADU chart splits the "
+        "no-reform bar into places with their own ADU counts and places the model estimates",
+    ),
+    (
+        "1.22",
+        "results_fee_types: a size whose homes are not linear in the fee change (houses on the "
+        "lot-feasibility route) carries every slider stop, not only the half cut; fee_change_share may be "
+        "negative (a rise)",
+    ),
+    (
+        "1.23",
+        "results_meta.state_role: adds ingestion_test, a state shown for transparency that is not part of "
+        "the model's core evidence (Wisconsin)",
     ),
 ]
 

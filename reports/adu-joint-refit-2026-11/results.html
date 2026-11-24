@@ -1,0 +1,248 @@
+<title>ADU Joint Refit 2026-11</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of findings, each with its chart; a decision panel at the end. Same ledger feel as the D-053 page: permit counts on log scales, plain annotations. Form A green, Form B ochre. */
+:root {
+  --bg: #f6f7f5; --panel: #ffffff; --fg: #1d2420; --muted: #5d6a63; --rule: #d9dfdb;
+  --a: #2f6f5e; --b: #b0703a; --obs: #1d2420; --bandA: rgba(47,111,94,.22); --bandB: rgba(176,112,58,.22);
+  --miss: #b2412f; --ok: #2f6f5e; --warn: #9a6b12; --warnbg: #fbf3e2;
+  --display: "Source Serif 4", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --a: #6cc3a8; --b: #e0a46c; --obs: #e4ebe7; --bandA: rgba(108,195,168,.24); --bandB: rgba(224,164,108,.24);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1a201d; --fg: #e4ebe7; --muted: #9aa8a0; --rule: #2e3833;
+  --a: #6cc3a8; --b: #e0a46c; --obs: #e4ebe7; --bandA: rgba(108,195,168,.24); --bandB: rgba(224,164,108,.24);
+  --miss: #ef7a66; --ok: #6cc3a8; --warn: #e0b35a; --warnbg: #2a2416; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); line-height: 1.55; }
+main { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(26px, 4vw, 34px); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 15px; }
+section { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.chart { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; min-width: 520px; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+svg text.lab { fill: var(--fg); font-family: var(--body); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 18px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.stat { border-top: 2px solid var(--rule); padding-top: 8px; display: grid; gap: 2px; }
+.stat .v { font-family: var(--display); font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 12px; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.pill.ok { color: var(--ok); border: 1px solid var(--ok); } .pill.miss { color: var(--miss); border: 1px solid var(--miss); } .pill.na { color: var(--muted); border: 1px solid var(--rule); }
+.decision { background: var(--warnbg); border-color: var(--warn); }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.src { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.wide { overflow-x: auto; }
+</style>
+
+<main>
+  <header style="display:grid;gap:8px">
+    <div class="eyebrow">Lotline · Analysis plan D-079 · run once on 2026-11-12 · main 1c7ad001</div>
+    <h1>The five-state ADU refit: Form A stays, and no data tier earns a claim</h1>
+    <p class="lede">D-079 pre-registered a contest between the current ADU model (Form A, D-048) and a regression challenger (Form B). Both were fitted to 64 places in five states and asked to predict 2021–2024 ADU permits in a state they had not seen, first with no local data (tier 0), then with the state's own coded local rules (tier 1), then with its largest city's counts (tier 2). Neither form predicts well enough in 4 of the 5 states at any tier, so by the rule written before the run Form A is kept and the tool shows tier-2 ranges. St. Paul stayed blind throughout.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">Headline</div>
+    <div class="stats">
+      <div class="stat"><span class="v">Form A</span><span class="k">kept by D-079's rule (neither form passes a tier)</span></div>
+      <div class="stat"><span class="v">0 of 4</span><span class="k">states Form A predicts usefully at tier 0 (4 needed; Ohio can't be scored)</span></div>
+      <div class="stat"><span class="v">2 of 4</span><span class="k">states Form B predicts usefully at tier 0 (MN, NC), with very wide ranges</span></div>
+      <div class="stat"><span class="v">0.76 per 1,000</span><span class="k">Form A's refit θ, 90% range 0.55–1.11 (not yet in config)</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">1 · A state with no ADU data (tier 0)</div>
+    <h2>With no local data, Form A's range usually holds the truth but its middle is off 3× to 15×</h2>
+    <p>Each state is predicted by a fit to the other four, with local rules borrowed by city size from those four states and lots from the ACS. The bar is P10–P90, the tick is the median and the dot is what was built in 2021–2024 (each state's largest city left out). A prediction counts as useful if the dot is inside the bar and within ×2 of the tick. Form A overshoots Minnesota and undershoots the other three. Form B is useful in Minnesota and North Carolina only because its bars are very wide (NC: 17 to 5,374). It misses Oregon by a factor of 26.</p>
+    <div class="chart" id="tier0"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandA)"></span>Form A P10–P90</span><span><span class="sw" style="background:var(--bandB)"></span>Form B P10–P90</span><span>| median · ● built · log scale · ✓ useful</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">2 · More data, tiers 1 and 2</div>
+    <h2>Adding a state's own rules or its biggest city barely moves the median</h2>
+    <p>Useful states per tier, against the bar of 4. Ohio's one fit place is its tier-2 city, so it has nothing left to score, and the bar needs all four other states. Form A never scores a state. Form B's tier-2 update collapses onto 1–3 of its 20,000 draws in MN, NC and OR, so its tier-2 ranges can't be trusted. The same pattern holds when the field undercount is set to its 5th or 95th percentile and when Asheville's low-recall years are dropped (Form B then reaches 3 states at tier 1).</p>
+    <div class="chart" id="useful"></div>
+    <div class="wide"><table id="tiertab"></table></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">3 · Test A · places new since D-053</div>
+    <h2>New places: Form A passes only in Texas</h2>
+    <p>Each new place is predicted with a fresh place effect. A state passes if at least 60% of its new places are inside P10–P90 and the median observed ÷ predicted is within ×2. North Carolina's seven new cities mostly sit inside their ranges, but they built about three times the median.</p>
+    <div class="chart" id="testa"></div>
+    <div class="legend"><span><span class="sw" style="background:var(--bandA)"></span>Form A</span><span><span class="sw" style="background:var(--bandB)"></span>Form B</span><span>● built 2021–2024 (log scale; 0 drawn at 0.5)</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">4 · Tests B and C</div>
+    <h2>The model expects more suburban ADUs than the parcel rolls show, and the no-reform floor sits below today's counts</h2>
+    <p><strong>Test B:</strong> the Wake County towns gained 5 ADUs on the rolls in 2020–2023, and Form A's range was 28–218 (Form B's 14–77). Three Franklin County towns gained 1, and the ranges were 2–102 and 2–29. Both forms fail in both states.</p>
+    <p><strong>Test C</strong> (Form A only) asks whether the engine's no-reform median is at least what places already build. It fails in all five states: 43 of 73 places fall short. Most of them build under one ADU a year, but Durham, Asheville, Wilmington, San Antonio, Fort Worth, Medford, Salem and Columbus also fall 2–20% short.</p>
+    <div class="chart" id="testc"></div>
+    <div class="legend"><span>each dot = one place · ratio = no-reform median ÷ counted ADUs a year · pass needs every dot at or right of 1</span></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">5 · The refit rate</div>
+    <h2>Minnesota holds θ down; without it θ doubles</h2>
+    <p>θ is Form A's ADU permit rate per 1,000 eligible lots at reference rent and value, with a 90% profile interval. Leaving out NC, OH, TX or OR moves it by under 20%. Leaving out Minnesota doubles it, which matches the tier-0 pattern: Minnesota builds far fewer ADUs per lot than the other states. D-053's 0.31 used a different fit set and m_x = 1.0, so it is not a like-for-like comparison.</p>
+    <div class="chart" id="theta"></div>
+  </section>
+
+  <section class="decision">
+    <div class="eyebrow">For Ben · proposed, nothing written to config</div>
+    <h2>What the pre-registered rule decided, and what is left to choose</h2>
+    <ul>
+      <li><strong>Decided by D-079's rule:</strong> Form A (D-048) stays the ADU model. Form B passes no tier and 0 of the state-by-state tests (Form A passes 1).</li>
+      <li><strong>D-075 claim:</strong> no tier passes for either form, so no data-tier claim can be made. The tool shows tier-2 ranges (D-075 §5).</li>
+      <li><strong>Open 1:</strong> whether to write the refit values (θ 0.756, α 1.92, m_o 1.0, m_x 0.4) to config in place of D-053's, given that tests A–C mostly fail.</li>
+      <li><strong>Open 2:</strong> how to respond to the failures. Each fix would be a new dated entry and a new run, because nothing may be tuned after scoring. The failures point at a state-level gap (Minnesota low, the others high) and at a no-reform floor that sits below current counts.</li>
+    </ul>
+  </section>
+
+  <p class="src">Sources: reports/adu-joint-refit-2026-11/ (README.md, summary.json, tiers.csv, fits.csv, test_a.csv, test_b.csv, test_c.csv, event_check.csv, run-log.txt). Code: scripts/dev/adu_joint_refit.py, lotline.model.joint_refit (PR #409). Branch ws/adu-joint-refit-results.</p>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+function svg(id, w, h) { const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); document.getElementById(id).appendChild(s); return s; }
+const fmt = n => n >= 1000 ? Math.round(n).toLocaleString("en-US") : (n < 10 && n % 1 ? n.toFixed(1) : String(Math.round(n)));
+
+// Log axis helper; values below `floor` are drawn at floor.
+function logAxis(s, x0, x1, lo, hi, yTop, yBot, ticks) {
+  const X = v => x0 + (Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (x1 - x0);
+  for (const t of ticks) { el("line", { x1: X(t), x2: X(t), y1: yTop, y2: yBot, stroke: "var(--rule)", "stroke-width": 1 }, s); el("text", { x: X(t), y: yBot + 14, "text-anchor": "middle" }, s, fmt(t)); }
+  return X;
+}
+function range(s, X, y, p10, p50, p90, obs, band, line, h = 10) {
+  el("rect", { x: X(p10), y: y - h / 2, width: Math.max(2, X(p90) - X(p10)), height: h, fill: band, rx: 2 }, s);
+  el("line", { x1: X(p50), x2: X(p50), y1: y - h / 2 - 2, y2: y + h / 2 + 2, stroke: line, "stroke-width": 2 }, s);
+  el("circle", { cx: X(obs), cy: y, r: 4, fill: "var(--obs)" }, s);
+}
+
+// 1 · tier 0 (central)
+const tier = {
+  MN: { obs: 46, A: [[43,127,354],[59,155,395],[54,126,255]], B: [[7,80,862],[9,103,1096],[10,121,246]], uA:[0,0,0], uB:[1,0,0] },
+  NC: { obs: 607, A: [[7,81,592],[37,227,1183],[41,208.5,908]], B: [[17,330,5374],[19,377,6513],[40,147.5,436]], uA:[0,0,0], uB:[1,1,0] },
+  OR: { obs: 527, A: [[28,145,529],[28,145,529],[44,195,698]], B: [[1,20,170],[1,20,169],[1,14,66]], uA:[0,0,0], uB:[0,0,0] },
+  TX: { obs: 364, A: [[0,25,542],[3,62,460],[4,62,400]], B: [[5,82,1075],[7,112,1508],[18,115,736]], uA:[0,0,0], uB:[0,0,0] },
+};
+const names = { MN: "Minnesota (36 places)", NC: "North Carolina (11)", OR: "Oregon (3)", TX: "Texas (2)", OH: "Ohio (none to score)" };
+{
+  const s = svg("tier0", 760, 300), X = logAxis(s, 190, 740, 0.5, 10000, 10, 270, [1, 10, 100, 1000, 10000]);
+  let y = 30;
+  for (const st of ["MN", "NC", "OR", "TX"]) {
+    const d = tier[st];
+    el("text", { x: 0, y: y + 14, class: "lab" }, s, names[st]);
+    range(s, X, y, ...d.A[0], d.obs, "var(--bandA)", "var(--a)");
+    if (d.uA[0]) el("text", { x: 180, y: y + 4, "text-anchor": "end", fill: "var(--ok)" }, s, "✓");
+    range(s, X, y + 22, ...d.B[0], d.obs, "var(--bandB)", "var(--b)");
+    if (d.uB[0]) el("text", { x: 180, y: y + 26, "text-anchor": "end", style: "fill:var(--ok)" }, s, "✓ B");
+    y += 60;
+  }
+  el("text", { x: 0, y: y + 10, class: "lab" }, s, names.OH);
+}
+
+// 2 · useful states per tier
+const useful = { "Form A": [0,0,0], "Form B": [2,1,0], "Form B, no low-recall rows": [2,3,1] };
+{
+  const s = svg("useful", 760, 200), x0 = 220, x1 = 740, cw = (x1 - x0) / 3;
+  const Y = v => 160 - v * 30;
+  for (let v = 0; v <= 4; v++) { el("line", { x1: x0, x2: x1, y1: Y(v), y2: Y(v), stroke: v === 4 ? "var(--miss)" : "var(--rule)", "stroke-dasharray": v === 4 ? "4 3" : "" }, s); el("text", { x: x0 - 6, y: Y(v) + 4, "text-anchor": "end" }, s, v); }
+  el("text", { x: x1, y: Y(4) - 6, "text-anchor": "end", style: "fill:var(--miss)" }, s, "claim bar: 4 states");
+  const cols = [["Form A", "var(--a)"], ["Form B", "var(--b)"], ["Form B, no low-recall rows", "var(--b)"]];
+  for (let t = 0; t < 3; t++) {
+    el("text", { x: x0 + cw * t + cw / 2, y: 180, "text-anchor": "middle" }, s, `tier ${t}`);
+    cols.forEach(([k, c], i) => {
+      const v = useful[k][t], bx = x0 + cw * t + 30 + i * 46;
+      el("rect", { x: bx, y: Y(v) - (v ? 0 : 1), width: 36, height: Math.max(1, 160 - Y(v)), fill: c, opacity: i === 2 ? 0.45 : 0.9 }, s);
+    });
+  }
+  cols.forEach(([k, c], i) => { el("rect", { x: 0, y: 30 + i * 22, width: 14, height: 10, fill: c, opacity: i === 2 ? 0.45 : 0.9 }, s); el("text", { x: 20, y: 39 + i * 22, class: "lab" }, s, k); });
+  el("text", { x: 0, y: 110 }, s, "useful = built total inside");
+  el("text", { x: 0, y: 124 }, s, "P10–P90 and within ×2 of P50");
+}
+{
+  const t = document.getElementById("tiertab");
+  let h = "<tr><th>State</th><th>Built</th><th>A tier 0</th><th>A tier 1</th><th>A tier 2</th><th>B tier 0</th><th>B tier 1</th><th>B tier 2</th></tr>";
+  for (const st of ["MN", "NC", "OR", "TX"]) {
+    const d = tier[st], c = (r, u) => `${fmt(r[0])}–<strong>${fmt(r[1])}</strong>–${fmt(r[2])}${u ? ' <span class="pill ok">useful</span>' : ""}`;
+    h += `<tr><td>${st}</td><td>${fmt(d.obs)}</td>${d.A.map((r, i) => `<td>${c(r, d.uA[i])}</td>`).join("")}${d.B.map((r, i) => `<td>${c(r, d.uB[i])}</td>`).join("")}</tr>`;
+  }
+  h += '<tr><td>OH</td><td>–</td><td colspan="6" style="text-align:left"><span class="pill na">no place to score besides the tier-2 city</span></td></tr>';
+  t.innerHTML = h;
+}
+
+// 3 · test A
+const ta = [
+  ["MN", "Rochester", 3, [0,17,102], [1,13,51]],
+  ["NC", "Asheville", 130.8, [0,10,61], [3,24,83]],
+  ["NC", "Cary", 20, [1,23,137], [0,4,20]],
+  ["NC", "Chapel Hill", 3, [0,2,12], [0,2,8]],
+  ["NC", "Charlotte", 135.2, [3,90,567], [9,125,588]],
+  ["NC", "Durham", 193.3, [1,41,251], [5,55,230]],
+  ["NC", "Raleigh", 141.2, [1,43,282], [6,74,322]],
+  ["NC", "Wilmington", 90, [0,18,104], [3,34,137]],
+  ["TX", "College Station", 5.4, [0,6,39], [3,34,135]],
+  ["OR", "Medford", 149.9, [0,20,117], [5,51,211]],
+  ["OR", "Salem", 140.1, [1,36,213], [8,101,450]],
+];
+const taPass = { MN: ["fail", "fail"], NC: ["fail", "fail"], TX: ["pass", "fail"], OR: ["fail", "fail"] };
+{
+  const s = svg("testa", 760, 40 + ta.length * 30), X = logAxis(s, 190, 700, 0.5, 1000, 8, 20 + ta.length * 30, [1, 10, 100, 1000]);
+  let prev = "";
+  ta.forEach(([st, nm, obs, A, B], i) => {
+    const y = 20 + i * 30;
+    el("text", { x: 0, y: y + 8, class: "lab" }, s, `${st} · ${nm}`);
+    range(s, X, y, ...A, obs, "var(--bandA)", "var(--a)", 8);
+    range(s, X, y + 11, ...B, obs, "var(--bandB)", "var(--b)", 8);
+    if (st !== prev) { const [pa, pb] = taPass[st]; el("text", { x: 756, y: y + 8, "text-anchor": "end", style: `fill:var(--${pa === "pass" ? "ok" : "miss"})` }, s, `A ${pa}`); el("text", { x: 756, y: y + 20, "text-anchor": "end", style: "fill:var(--miss)" }, s, `B ${pb}`); prev = st; }
+  });
+}
+
+// 4 · test C ratios
+const tc = { MN: [0.75,2.126,0.749,8.353,1.5,4.831,0.747,1.498,0.75,0.75,0.75,0.783,0.748,1.37,0.749,0.75,0.749,0.749,1.125,0.75,1.086,0.843,0.747,0.75,1.946,1.124,0.749,0.964,0.75,3.62,0.75,0.749,0.997,1,0.745],
+  NC: [0.916,0.775,0.75,1.532,1.496,1.024,0.796,0.806,0.961,0.915,1.122,2.622,1.194,2.14,1.547,1.045,0.863],
+  OH: [1.311,0.75,1.1,1.502,0.982,1.125,5.763,0.75,0.75,0.75,0.75,0.75],
+  TX: [2.314,1.466,1.041,0.922,0.924], OR: [1.174,0.945,1.116,0.926] };
+{
+  const s = svg("testc", 760, 200), X = logAxis(s, 120, 740, 0.5, 10, 10, 170, [0.5, 1, 2, 5, 10]);
+  el("line", { x1: X(1), x2: X(1), y1: 10, y2: 170, stroke: "var(--miss)", "stroke-width": 1.5, "stroke-dasharray": "4 3" }, s);
+  Object.entries(tc).forEach(([st, r], i) => {
+    const y = 26 + i * 30, n = r.filter(v => v < 1).length;
+    el("text", { x: 0, y: y + 4, class: "lab" }, s, `${st} · ${n}/${r.length} short`);
+    r.forEach((v, j) => el("circle", { cx: X(v), cy: y + ((j % 3) - 1) * 4, r: 3.2, fill: v < 1 ? "var(--miss)" : "var(--a)", opacity: 0.8 }, s));
+  });
+}
+
+// 5 · theta leave one state out
+const th = [["All five states", 0.756, 0.554, 1.112], ["Without MN", 1.567, 1.151, 2.217], ["Without NC", 0.723, 0.485, 1.399], ["Without OH", 0.767, 0.559, 1.148], ["Without TX", 0.717, 0.517, 1.090], ["Without OR", 0.609, 0.439, 0.877], ["D-053 (adopted, m_x 1.0)", 0.308, 0.213, 0.463]];
+{
+  const s = svg("theta", 760, 40 + th.length * 28), x0 = 200, x1 = 740, X = v => x0 + v / 2.4 * (x1 - x0);
+  for (const t of [0, 0.5, 1, 1.5, 2]) { el("line", { x1: X(t), x2: X(t), y1: 8, y2: 16 + th.length * 28, stroke: "var(--rule)" }, s); el("text", { x: X(t), y: 30 + th.length * 28, "text-anchor": "middle" }, s, t.toFixed(1)); }
+  th.forEach(([nm, v, lo, hi], i) => {
+    const y = 22 + i * 28, c = i === 6 ? "var(--muted)" : "var(--a)";
+    el("text", { x: 0, y: y + 4, class: "lab" }, s, nm);
+    el("line", { x1: X(lo), x2: X(hi), y1: y, y2: y, stroke: c, "stroke-width": 3, opacity: 0.5 }, s);
+    el("circle", { cx: X(v), cy: y, r: 5, fill: c }, s);
+    el("text", { x: X(hi) + 8, y: y + 4 }, s, v.toFixed(2));
+  });
+}
+</script>

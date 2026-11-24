@@ -226,7 +226,7 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
 
     table = counties()
     acquired = dict(zip(table["county_fips"], table["acquired"], strict=True))
-    juris = metc._jurisdictions(state, store)
+    juris = geo.jurisdictions_table(state, store)
 
     def locate(lon: pd.Series, lat: pd.Series) -> pd.Series:
         return geo.place_or_township(lon, lat, state, store)

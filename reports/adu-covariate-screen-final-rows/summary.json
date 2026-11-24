@@ -1,0 +1,90 @@
+{
+ "entry": "D-083 (accepted by Ben 2026-11-13)",
+ "model": {
+  "form": "Form A",
+  "m_owner": 1.0,
+  "m_other": 0.8
+ },
+ "fit_set": {
+  "places": 64,
+  "place_years": 491
+ },
+ "availability": {
+  "X1": {
+   "places": 57,
+   "share": 0.890625,
+   "screened": true
+  },
+  "X2": {
+   "places": 57,
+   "share": 0.890625,
+   "screened": true
+  },
+  "X3": {
+   "places": 57,
+   "share": 0.890625,
+   "screened": true
+  },
+  "X4": {
+   "places": 51,
+   "share": 0.796875,
+   "screened": true
+  },
+  "X5": {
+   "places": 53,
+   "share": 0.828125,
+   "screened": true
+  },
+  "X6": {
+   "places": 0,
+   "share": 0.0,
+   "screened": false
+  },
+  "X7": {
+   "places": 42,
+   "share": 0.65625,
+   "screened": false
+  },
+  "R1": {
+   "places": 57,
+   "share": 0.890625,
+   "screened": true
+  },
+  "R2": {
+   "places": 57,
+   "share": 0.890625,
+   "screened": true
+  }
+ },
+ "notes": [],
+ "candidates": [
+  "X1",
+  "X2"
+ ],
+ "joint_descriptive": {
+  "factors": [
+   "X1",
+   "X2"
+  ],
+  "places": 57,
+  "correlations": {
+   "X1": {
+    "X1": 1.0,
+    "X2": -0.398
+   },
+   "X2": {
+    "X1": -0.398,
+    "X2": 1.0
+   }
+  }
+ },
+ "params": {
+  "adu_screen_p_max": 0.1,
+  "adu_screen_alpha_drop": 0.1,
+  "adu_screen_loso_min_places": 3.0,
+  "adu_screen_min_share": 0.75,
+  "adu_screen_min_places": 30.0,
+  "adu_screen_min_field_fill": 0.8
+ },
+ "seconds": 268
+}

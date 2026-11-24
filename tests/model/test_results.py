@@ -14,9 +14,9 @@ import pytest
 from pandera import errors as pa_errors
 
 from lotline.config import Parameter
-from lotline.model import aggregate, results
+from lotline.model import affordability, aggregate, results
 from lotline.model.scenarios import adu
-from lotline.schemas import SCENARIOS
+from lotline.schemas import SCENARIOS, columns
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "results" / "zz" / "bundle.json"
 
@@ -64,6 +64,7 @@ def _run_draws(n=4, places=3, years=5, seed=0):
         "eligible": np.tile([1000.0, 500.0, 200.0], (n, 1)),
         "pencil": rng.uniform(0.1, 0.9, (n, places)),
         "added": added,
+        "current": rng.uniform(0, 3, (n, places, years)),
         "homes": added * 0.65 * 0.9,
         "params": params,
     }
@@ -198,7 +199,157 @@ def make_fixture() -> dict[str, pd.DataFrame]:
     )
     juris = pd.DataFrame({"geoid": ["Z1", "Z2", "Z3"], "pop_2020": [6000, 2000, 2000]})
     seen = results.observed_table(_baseline_panel(), permits, juris, "ZZ", 2025)
-    return {"meta": meta, "draws": d, **parts, "scorecard": scorecard, "baseline": base, "observed": seen}
+    typed = _places().assign(place_type=["core", "suburb", "suburb"])
+    return {
+        "meta": meta,
+        "draws": d,
+        **parts,
+        "scorecard": scorecard,
+        "baseline": base,
+        "observed": seen,
+        "adu_place_types": results.adu_place_type_table("ZZ", typed, rd),
+        "adu_baseline": results.adu_baseline_years("ZZ", rd, 2025),
+        "affordability": affordability.table("ZZ", _affordability_inputs(typed, rd), n=200, seed=3).astype(
+            {"places": "Int64"}
+        ),
+        "shortfall": results.shortfall_table("ZZ", base, _acs_stock(), 2025, need_params=NEED, fips="99"),
+        "fee_types": pd.DataFrame(columns=columns("results_fee_types")),  # ADU-only fixture: no fee slider
+    }
+
+
+def _acs_stock(units: float = 100_000.0):
+    """Synthetic acs_geo_year: the state's housing units (B25024_001) in two vintages; the newer is used."""
+    return pd.DataFrame(
+        {
+            "geo": "state:99",
+            "end_year": [2023, 2024],
+            "variable": "B25024_001",
+            "estimate": [units * 0.98, units],
+        }
+    )
+
+
+def test_shortfall_by_hand():
+    """NEED: growth 2,000 (1,500 to 2,500); shortage 5,000 (4,000 to 9,000); 100,000 homes at 0.3% (0.2% to
+    0.5%) a year lose 1,500 (1,000 to 2,500); need 8,500 (7,000 to 13,500) less what the no-change forecast
+    builds."""
+    b = results.baseline_table(_baseline_panel(), "ZZ", 2025)
+    t = results.shortfall_table("ZZ", b, _acs_stock(), 2025, need_params=NEED, fips="99").iloc[0]
+    five = b[(b["size_class"] == "all") & (b["period"] == "2027-2031")].iloc[0]
+    assert (t["lost_low"], t["lost"], t["lost_high"]) == pytest.approx((1000, 1500, 2500))
+    assert t["stock"] == 100_000 and t["stock_year"] == 2024
+    assert t["need"] == pytest.approx(5000 + 2000 + 1500)
+    assert t["gap"] == pytest.approx(8500 - five["p50"])
+    assert t["gap_low"] == pytest.approx(4000 + 1500 + 1000 - five["p90"])
+    assert t["gap_high"] == pytest.approx(9000 + 2500 + 2500 - five["p10"])
+
+
+def test_shortfall_needs_a_stock_and_a_shortage():
+    b = results.baseline_table(_baseline_panel(), "ZZ", 2025)
+    assert results.shortfall_table("ZZ", b, None, 2025, need_params=NEED, fips="99").empty
+    only_growth = {k: v for k, v in NEED.items() if k.startswith("household")}
+    assert results.shortfall_table("ZZ", b, _acs_stock(), 2025, need_params=only_growth, fips="99").empty
+
+
+def _market():
+    """Synthetic market_geo_year: national CPI (2025 = 2026 level, so MFI needs no deflation) and HUD rows."""
+    cpi = pd.DataFrame({"geo": "national:US", "year": pd.array([2025, 2026], dtype="Int64"), "cpi_u": 300.0})
+    hud = pd.DataFrame(
+        {
+            "geo": ["county:99001", "county:99003"],
+            "year": pd.array([2026, 2026], dtype="Int64"),
+            "hud_mfi": [132_300.0, 100_000.0],
+            **{
+                f"hud_l50_{n}": [f * 66_150, f * 50_000]
+                for n, f in zip(range(1, 6), (0.7, 0.8, 0.9, 1.0, 1.08), strict=True)
+            },
+        }
+    )
+    return pd.concat([cpi, hud], ignore_index=True)
+
+
+def _affordability_inputs(typed, rd):
+    places = typed.assign(
+        county_geoid=["99001", "99001", "99003"], rent=[1500.0, 1200.0, 1000.0],
+        home_value=[400_000.0, 300_000.0, 250_000.0],
+    )  # fmt: skip
+    mm = pd.DataFrame({"geoid": ["1", "2", "3"], "added_homes_net_mean": [30.0, 10.0, 0.0]})
+    fee = pd.DataFrame(
+        {"geoid": ["1", "2", "3"], "local_fee_per_unit": [30_000.0, 20_000.0, 10_000.0],
+         "local_fee_per_unit_U2": [20_000.0, 15_000.0, np.nan]}
+    )  # fmt: skip
+    return affordability.inputs(places, rd, mm, fee, _market())
+
+
+def test_affordability_inputs_join_hud_weights_and_fees():
+    rd = _run_draws()
+    p = _affordability_inputs(_places().assign(place_type=["core", "suburb", "suburb"]), rd).set_index(
+        "geoid"
+    )
+    assert p.loc["1", "mfi"] == pytest.approx(132_300) and p.loc["3", "mfi"] == pytest.approx(100_000)
+    assert p.loc["1", "l50_1"] / p.loc["1", "l50_4"] == pytest.approx(0.7)
+    assert p.loc["2", "weight_adu"] == pytest.approx(np.median(rd["added"][:, 1, :].sum(axis=1)))
+    assert p.loc["1", "weight_mm"] == 30.0
+    assert p.loc["3", "fee_plex"] == pytest.approx(17_500)  # missing: the state median of the others
+
+
+def test_affordability_inputs_without_hud_rows_leave_mfi_missing():
+    rd = _run_draws()
+    places = _places().assign(place_type="suburb", county_geoid="99001", rent=1000.0, home_value=2e5)
+    market = _market()
+    p = affordability.inputs(places, rd, None, None, market[market["geo"] == "national:US"])
+    assert p["mfi"].isna().all() and affordability.table("ZZ", p, n=5).empty
+
+
+def test_adu_place_types_and_baseline_by_hand():
+    """Docstring example: two suburbs with 3 and 5 current-rules ADUs a year and 1 and 2 added, every draw and
+    year; one core city with 10 and 4. Base and added are per year, summed over the type's places."""
+    n, yrs = 3, 5
+    cur = np.zeros((n, 3, yrs)) + np.array([3.0, 5.0, 10.0])[None, :, None]
+    add = np.zeros((n, 3, yrs)) + np.array([1.0, 2.0, 4.0])[None, :, None]
+    rd = {"current": cur, "added": add, "eligible": np.tile([100.0, 200.0, 50.0], (n, 1))}
+    places = pd.DataFrame({"geoid": ["a", "b", "c"], "place_type": ["suburb", "suburb", "core"]})
+    t = results.adu_place_type_table("ZZ", places, rd).set_index("place_type")
+    assert list(t.index) == ["core", "suburb"]  # no towns here, so no town row
+    assert t.loc["suburb", ["places", "lots", "base", "added"]].tolist() == [2, 300, 8, 3]
+    assert t.loc["core", ["base_p10", "base", "base_p90", "added"]].tolist() == [10, 10, 10, 4]
+    y = results.adu_baseline_years("ZZ", rd, 2025)
+    assert y["period"].tolist() == ["2027", "2028", "2029", "2030", "2031"] and (y["p50"] == 18).all()
+    assert "basis" not in y  # without `own`, the pre-1.21 shape
+
+
+def test_adu_baseline_split_by_basis_by_hand():
+    """adu_baseline_years docstring: places with 10 and 4 ADUs a year in every draw, the first with own
+    counts -> all 14, own_counts 10, model 4; the means add up. No own counts -> the `all` rows only."""
+    n, yrs = 3, 5
+    cur = np.zeros((n, 2, yrs)) + np.array([10.0, 4.0])[None, :, None]
+    y = results.adu_baseline_years("ZZ", {"current": cur}, 2025, own=[True, False]).set_index(
+        ["basis", "period"]
+    )
+    assert y.loc[("all", "2027"), "p50"] == 14 and y.loc[("own_counts", "2027"), "p50"] == 10
+    assert y.loc[("model", "2031"), ["p10", "p50", "p90", "mean"]].tolist() == [4, 4, 4, 4]
+    by = y["mean"].groupby(level="basis").sum()
+    assert by["all"] == pytest.approx(by["own_counts"] + by["model"])
+    results.validate(y.reset_index(), "results_adu_baseline")
+    none = results.adu_baseline_years("ZZ", {"current": cur}, 2025, own=[False, False])
+    assert set(none["basis"]) == {"all"} and len(none) == yrs
+
+
+def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
+    b = results.validate_bundle(make_fixture())
+    path = results.write_bundle(b, tmp_path / "zz" / "bundle.json")
+    doc = json.loads(path.read_text())
+    for part in ("adu_place_types", "adu_baseline", "affordability", "shortfall", "fee_types"):
+        del doc[part]
+    path.write_text(json.dumps(doc))
+    back = results.read_bundle(path)
+    assert (
+        back["adu_place_types"].empty
+        and back["adu_baseline"].empty
+        and back["affordability"].empty
+        and back["shortfall"].empty
+        and back["fee_types"].empty
+    )
 
 
 def test_bundle_round_trips(tmp_path):
@@ -394,3 +545,89 @@ def test_fee_rows_by_hand():
     h = aggregate.homes_from_draws(rows)
     assert h["permits_added"][0] == pytest.approx(150) and h["homes_in_place"][0] == pytest.approx(139.5)
     assert results.fee_year_shares(sim)[0] == pytest.approx(np.full(yrs, 0.2))
+
+
+def test_fee_types_by_hand():
+    """`results_fee_types` (D-077 slider): per size the draw's homes added at the half cut, its completion
+    draw and baseline; the sizes add up to the draw's `fees_local_half` row. Fixture as in
+    `test_fee_rows_by_hand`: 120 houses, 20 duplex and 10 three-to-four-unit homes added on 8,000, 1,200 and
+    800 baseline homes."""
+    import unittest.mock as mock
+
+    yrs = 5
+    by_size = {
+        c: np.full((1, yrs), v / yrs) for c, v in (("1", 8_000), ("2", 1_200), ("3_4", 800), ("5p", 5_000))
+    }
+    added = {c: np.full((1, 1, yrs), v / yrs) for c, v in (("1", 120), ("2", 20), ("3_4", 10))}
+    sim = {"n": 1, "by_size": by_size, "added_by_class": added, "added": sum(added.values()),
+           "base": sum(by_size.values())}  # fmt: skip
+    vals = {"completion_factor_single_family": 0.95, "completion_factor_multifamily": 0.85,
+            "displacement_share": 0.25}  # fmt: skip
+    with mock.patch.object(
+        results, "triangular", lambda name, n, rng, file="aggregate": np.full(n, vals[name])
+    ):
+        rows, types = results.fee_rows_and_types("fees_local_half", sim, 2, None)
+        _, none = results.fee_rows_and_types("fees", sim, 2, None)
+    assert none.empty  # only the real-local-fee scenario gets the slider table
+    t = types.set_index("size")
+    assert t.loc["1", "units_added"] == pytest.approx(120) and t.loc["2", "units_added"] == pytest.approx(20)
+    assert t.loc["3_4", "units_added"] == pytest.approx(10)
+    assert list(t["completion_factor"]) == pytest.approx([0.95, 0.85, 0.85])
+    assert list(t["baseline_homes"]) == pytest.approx([8_000, 1_200, 800])
+    assert (t["fee_change_share"] == 0.5).all()
+    covered = rows.iloc[0][["eligible_tier1", "eligible_tier2", "eligible_tier3"]].sum()
+    assert t["units_added"].sum() == pytest.approx(rows.iloc[0].theta * covered)  # 150 = 0.015 x 10,000
+    # completion weighted by each size's homes reproduces the draw's blended completion (0.93)
+    blend = (t["units_added"] * t["completion_factor"]).sum() / t["units_added"].sum()
+    assert blend == pytest.approx(rows.iloc[0].completion_factor)
+    results.validate(types.assign(state="MN"), "results_fee_types")
+
+
+def _half_cut_types(places, draws=20):
+    from lotline.model.scenarios import fees
+
+    g = fees.change_grid(places, 2025, [0.5], draws=draws)
+    t = g.groupby(["draw", "size"], as_index=False)["units_added"].sum()
+    return t.assign(
+        scenario="fees_local_half", fee_change_share=0.5, completion_factor=0.9, baseline_homes=1.0
+    )
+
+
+def test_fee_stops_kept_only_where_a_size_is_not_linear(monkeypatch):
+    """Elasticity only: every size is linear, so only the half cut is kept, and a mismatched half cut raises.
+    A size that is not linear (houses on the lot-feasibility route, here a hand-made grid: 10 at the half cut,
+    12 when abolished, 0 for a rise) gets the grid's value at every stop; linear sizes keep the half cut."""
+    from lotline.model.scenarios import fees
+
+    from .test_fee_scenario import by_size_frame
+
+    linear = by_size_frame(U2=10_000.0, U3_4=6_000.0).assign(local_fee_low=10_000.0, local_fee_high=10_000.0)
+    t = _half_cut_types(linear)
+    assert results.fee_types_with_stops(linear, 2025, 20, t).equals(t)
+    with pytest.raises(ValueError, match="does not match"):
+        results.fee_types_with_stops(linear, 2025, 20, t.assign(units_added=t["units_added"] * 1.1 + 1))
+
+    def grid(places, origin, shares, draws):
+        rows = []
+        for s in shares:
+            house = 10.0 if s == 0.5 else (12.0 if s > 0.5 else (s / 0.5) * 10.0 if s > 0 else 0.0)
+            for d in range(draws):
+                plex = 4.0 * s / 0.5
+                key = {"share": s, "draw": d, "state": "MN"}
+                rows += [key | {"size": "1", "units_added": house}, key | {"size": "2", "units_added": plex}]
+        return pd.DataFrame(rows)
+
+    monkeypatch.setattr(fees, "change_grid", grid)
+    half = pd.DataFrame(
+        [{"draw": d, "size": z, "units_added": u} for d in range(3) for z, u in (("1", 10.0), ("2", 4.0))]
+    )
+    half = half.assign(
+        scenario="fees_local_half", fee_change_share=0.5, completion_factor=0.9, baseline_homes=1.0
+    )
+    out = results.fee_types_with_stops(linear, 2025, 3, half)
+    houses = out[out["size"] == "1"].set_index(["fee_change_share", "draw"])["units_added"]
+    assert sorted(out.loc[out["size"] == "1", "fee_change_share"].unique()) == sorted(results.FEE_STOPS)
+    assert houses[(1.0, 0)] == 12.0 and houses[(0.6, 2)] == 12.0 and houses[(-0.3, 1)] == 0.0
+    assert houses[(0.2, 0)] == pytest.approx(4.0)
+    assert set(out.loc[out["size"] == "2", "fee_change_share"]) == {0.5}  # linear: the page scales it
+    results.validate(out.assign(state="MN"), "results_fee_types")

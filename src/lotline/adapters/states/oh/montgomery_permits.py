@@ -44,6 +44,7 @@ from pathlib import Path
 import pandas as pd
 
 from lotline.adapters.states.oh import franklin_permits as fp
+from lotline.config import state_rule
 from lotline.io import DataStore
 from lotline.schemas import validate
 from lotline.validation import holdout
@@ -59,8 +60,8 @@ LICENSE = (
     "no open-data license)"
 )
 COUNTY = "39113"
-ADU_REPEAT_DAYS = 730  # one ADU per parcel in any two years (as in franklin_permits)
-DISTRICT_SHARE = 0.95  # taxing district → jurisdiction, for parcels missing from the roll
+ADU_REPEAT_DAYS = state_rule("OH", "adu_repeat_days")  # one ADU per parcel in any two years (oh.yaml rules)
+DISTRICT_SHARE = state_rule("OH", "district_jurisdiction_share")  # config/states/oh.yaml rules
 MIN_RECORD = 150  # bytes: shorter lines are spill-over, not records
 # ADU-panel coverage (Ben, 2026-11-01): a place's zero-ADU years count as zeros only if it reports at least
 # this many permits a year to the Auditor over COVERAGE_YEARS; below it, missing ADUs are likely unreported
