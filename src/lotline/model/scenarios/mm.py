@@ -216,14 +216,30 @@ def current_dose(rows: pd.DataFrame, as_of: pd.Timestamp, coverage, blanks, perm
                 for r in live.to_dict("records")), default=0.0)  # fmt: skip
 
 
-def _nearest(elig: pd.DataFrame, theme: str, origin: int) -> pd.DataFrame:
-    """Per jurisdiction, the newest roll <= origin, else the earliest later one (as
-    `adu.places_from_store`)."""
-    from lotline.build import eligible as eligible_rule
+# `place_inputs` columns the scenario reads: place descriptors and the missing-middle parcel columns (`_mm`)
+PLACE_COLS = ["name", "kind", "county_geoid", "in_bps", "pop_2020", "data_tier"]
+MM_PARCEL_COLS = [
+    "eligible_parcels",
+    "eligible_parcels_reported",
+    "overlap_removed",
+    "parcels_year",
+    "parcels_after_origin",
+    "denominator_source",
+    "denominator_quality",
+]
 
-    e = elig[(elig["theme"] == theme) & (elig["rule_version"] == eligible_rule.RULE_VERSION)]
-    e = e.assign(after=e["year"] > origin, gap=(e["year"] - origin).abs())
-    return e.sort_values(["after", "gap"]).groupby("jurisdiction_geoid").first().reset_index()
+
+def place_inputs_at(state: str, store, origin: int) -> pd.DataFrame:
+    """The `place_inputs` rows for `origin` (built by `lotline fetch --source place_inputs`). If the table is
+    missing, or has no row for `origin`, it is built here for that year from the same processed tables."""
+    from lotline.build import place_inputs
+
+    pin = store.read(state, place_inputs.TABLE)
+    if pin is not None:
+        pin = pin[pin["year"] == origin]
+    if pin is None or pin.empty:
+        pin = place_inputs.build(state, store, [origin])
+    return pin.reset_index(drop=True)
 
 
 def house_share(parcels: pd.DataFrame) -> float:
@@ -250,11 +266,12 @@ def house_shares(state: str, store) -> pd.Series:
 def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     """One row per jurisdiction with missing-middle eligible parcels: every input `simulate` needs.
 
-    Reads processed, holdout-filtered tables only: eligible parcels, jurisdictions, coded reforms, ACS rent
-    and the market series. No permits are read (D-063 choice 4).
+    Per-place inputs (eligible parcels net of the D-020 overlap, house share, size band, ACS rent) come from
+    `place_inputs` at `year == origin` (WS-SCALE); the dose, price-to-cost ratio and feasible share are
+    computed here. Reads processed, holdout-filtered tables only; no permits (D-063 choice 4).
     """
     from lotline.config import load_state
-    from lotline.model import baseline, hazard, money, rule_tags
+    from lotline.model import baseline, hazard, rule_tags
     from lotline.model import estimate_mm as emm
     from lotline.model.scenarios import adu
 
@@ -263,18 +280,13 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     margin = load_params("proforma")["developer_margin"].value
     sigma = sp["mm_feasibility_dispersion"].value
     permit_grade = sp["mm_dose_grade_permit"].value
-    elig = store.read(state, "eligible_parcels")
-    mm_e = _nearest(elig, "missing_middle", origin).rename(
-        columns={"jurisdiction_geoid": "geoid", "year": "parcels_year", "after": "parcels_after_origin"}
-    )
-    juris = store.read(state, "jurisdictions")
-    places = mm_e.drop(columns="gap").merge(
-        juris[["geoid", "name", "kind", "county_geoid", "in_bps", "pop_2020"]], on="geoid", how="left"
-    )
-    places = places[places["eligible_parcels"].fillna(0) > 0].reset_index(drop=True)
-    places = adu.non_overlapping(places, juris, adu._county_shares(state, store, places))
+    pin = place_inputs_at(state, store, origin)
+    mm_cols = {f"{c}_mm": c for c in MM_PARCEL_COLS}
+    cols = ["geoid", *PLACE_COLS, *mm_cols, "house_share", "size_band", "acs_geo", "rent"]
+    places = pin.loc[pin["eligible_parcels_reported_mm"].fillna(0) > 0, cols].rename(columns=mm_cols)
+    places = places.sort_values("geoid").reset_index(drop=True)
     places["eligible"] = places["eligible_parcels"].astype(float)
-    hs = places["geoid"].map(house_shares(state, store))
+    hs = places.pop("house_share")
     # ACS-fallback denominators count houses only (no vacant lots), so their house share is 1
     acs_only = ~places["denominator_source"].isin(adu.PARCEL_SOURCES) & hs.isna()
     places["house_share_source"] = np.where(
@@ -302,15 +314,9 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
         if g in coded else np.nan
         for g in places["geoid"]
     ]  # fmt: skip
-    pop = pd.to_numeric(places["pop_2020"], errors="coerce").fillna(0)
-    places["band"] = adu.size_band(pop, (pa["adu_rule_band_small_max_pop"], pa["adu_rule_band_mid_max_pop"]))
+    places = places.rename(columns={"size_band": "band"})
 
-    market = store.read(state, "market_geo_year")
-    cpi = money.index_by_year(market, "cpi_u")
-    ci = hazard.cost_index_by_year(market)
-    places["acs_geo"] = places["kind"].map(adu.ACS_PREFIX) + ":" + places["geoid"]
-    acs = adu.acs_values(store.read(state, "acs_geo_year"), places["acs_geo"], origin, cpi)
-    places = places.merge(acs[["rent"]], left_on="acs_geo", right_index=True, how="left")
+    ci = hazard.cost_index_by_year(store.read(state, "market_geo_year"))
     pcr = emm.plex_price_to_cost(places["rent"], cost_index=ci.get(origin, ci[max(ci)]))
     places["pcr"] = pcr
     f = pd.Series(np.where(np.isfinite(pcr), feasible_share(np.nan_to_num(pcr), margin, sigma), np.nan))
