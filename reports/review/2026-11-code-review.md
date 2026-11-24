@@ -39,6 +39,17 @@ Status key: **proposed** = waiting for Ben's yes; **done** = acted on, with the 
 | #267, #268, #269 | Dependabot: ruff 0.17.3, pytest 9.2.0, pandera 0.35.0 | no | **rebase, full suite once each, merge** | All MIT. CI was green on 2026-11-03 but is stale |
 | #236 | Dependabot: pandas 3.1.0 | no | **close for now** | CI fails (A4). Reopen after the adapter fix. BSD-3 |
 
+**Outcome (2026-11-24, Ben: "Close the PRs then republish the app", then "close out the other 6 PRs").**
+No pull requests are open.
+- **Merged:** #517, #518 (carries #411, #395, #397, #398, #401, #421–#425), #519 (D-060, carries #327), #507
+  (test conflict resolved: both tests kept), #464, #439, #268 (pytest 9.2.0), #269 (pandera **0.36.0**: it
+  rebased onto a newer release, still MIT) and #267 (ruff **0.17.6**, MIT). Each was green on CI before merging.
+- **Closed with a reason:** #327, #354, #350, #433, #213, #219, #236 (#425 also closed as carried). #411,
+  #395, #397, #398, #401 and #421–#424 were already closed when this list was acted on.
+- **App republished:** release `app-2026-11-24e`, from `main` 058069a9. It has six bundles (five core
+  states plus Wisconsin as the ingestion test) built at 97e2436b with the D-060 range. The live data was
+  checked: MN ADU additional permits P10 325, P50 601, overlap "high".
+
 ### B2. Open issues (46)
 
 **Keep (13):**
