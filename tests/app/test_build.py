@@ -95,6 +95,14 @@ def test_every_bundle_under_results_dir_appears_in_role_order(tmp_path):
     assert states == ["ZX", "ZZ", "ZY"]  # benchmark, development, transfer
 
 
+def test_every_schema_role_has_a_picker_label_and_the_ingestion_test_has_its_note():
+    from lotline.schemas import STATE_ROLES
+
+    assert list(build.ROLES) == STATE_ROLES  # picker order covers every role the bundle may carry
+    tpl = (Path(build.__file__).parent / "template.html").read_text()
+    assert 'b.meta.state_role === "ingestion_test"' in tpl and "not part of the model's core evidence" in tpl
+
+
 def test_invalid_bundle_is_refused(tmp_path):
     doc = json.loads(FIXTURE.read_text())
     doc["meta"]["overlap_flag"] = "excellent"  # not in the enum

@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.22"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.23"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -518,7 +518,7 @@ SCENARIOS = [
     "fees",  # the Handbook benchmark: a $50,000 fee cut in half (D-065)
     "fees_local_half",  # real local fees cut in half (D-065)
 ]  # each reform is run on its own; there are no combined scenarios (Ben, 2026-11-17 and 2026-11-18)
-STATE_ROLES = ["benchmark", "development", "transfer", "national_only"]
+STATE_ROLES = ["benchmark", "development", "transfer", "national_only", "ingestion_test"]
 OVERLAP_FLAGS = ["high", "medium", "low"]
 FUNNEL_STAGES = ["legal", "pencils", "built"]
 RESULT_OUTCOMES = ["permits_added", "homes_in_place", "homes_net_statewide"]
@@ -994,6 +994,11 @@ HISTORY = [
         "results_fee_types: a size whose homes are not linear in the fee change (houses on the "
         "lot-feasibility route) carries every slider stop, not only the half cut; fee_change_share may be "
         "negative (a rise)",
+    ),
+    (
+        "1.23",
+        "results_meta.state_role: adds ingestion_test, a state shown for transparency that is not part of "
+        "the model's core evidence (Wisconsin)",
     ),
 ]
 

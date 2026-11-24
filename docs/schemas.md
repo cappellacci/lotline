@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.22** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.23** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -336,7 +336,7 @@ One row per bundle: what was run, from which commit and config, and how to label
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `state_role` | text | yes | no | one of `benchmark`, `development`, `transfer`, `national_only` |
+| `state_role` | text | yes | no | one of `benchmark`, `development`, `transfer`, `national_only`, `ingestion_test` |
 | `data_tier` | integer | yes | no | one of `1`, `2`, `3` |
 | `commit_sha` | text | yes | no | matches `^[0-9a-f]{7,40}$` |
 | `run_at` | text | yes | no | matches `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}` |
@@ -609,3 +609,4 @@ Table checks: `one_row_per_key`
 | 1.20 | results_fee_types (the fee section's slider and targeted-bill buttons, D-077): each draw's homes added by building size at real local fees cut by half, with the size's completion and baseline |
 | 1.21 | results_adu_baseline: optional basis (all, own_counts, model) and mean, so the ADU chart splits the no-reform bar into places with their own ADU counts and places the model estimates |
 | 1.22 | results_fee_types: a size whose homes are not linear in the fee change (houses on the lot-feasibility route) carries every slider stop, not only the half cut; fee_change_share may be negative (a rise) |
+| 1.23 | results_meta.state_role: adds ingestion_test, a state shown for transparency that is not part of the model's core evidence (Wisconsin) |

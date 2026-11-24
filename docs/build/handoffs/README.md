@@ -33,3 +33,4 @@ Each file is a self-contained brief for one Claude Code session. Start a session
 | `14-engine-four-state-refresh.md` | Engine on all four states' data: rule tags, panel counts, D-024/D-025 amendments and one run each, V5 freezes by Nov 17 | NC and MN data on `main` (2026-11-02) |
 | `15-fee-section-for-app.md` | The app's fee section from the fee prototype page: grid format, run-by-run sums, parity numbers, Ben's design calls (2026-11-10) | Fees in `lotline results` for the bundle; the prototype works from `reports/fees-knobs/` meanwhile |
 | `09-combine-and-aggregate.md` | Combine scenarios on the same lots; aggregate to county and state; demand cap | Best after D-025; works with stubs before |
+| `17-code-review-and-cleanup.md` | Thorough code review by area, then stale PRs, issues, Dependabot bumps and scratch cleanup (2026-11-24) | Wisconsin-label PR merged |
