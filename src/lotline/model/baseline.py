@@ -241,12 +241,18 @@ def level_estimates(
     use_direct_variance: bool = True,
     detrend: bool = True,
     key: str = "geoid",
+    benchmark: bool = False,
 ) -> pd.DataFrame:
     """Step 1-2 of the model: each place's direct rate, its group rate, and the Fay-Herriot shrunk rate.
 
     Uses only rows with year in [origin − level_years + 1, origin]; a place needs all of those years with both
     a count and a positive denominator. One row per place. `detrend` divides each year's count by the state's
     `cycle_index` before 1/k and the place's own variance are estimated (the level itself is never detrended).
+
+    `benchmark` (D-106's proposal, `benchmark_levels`): within each shrinkage group the shrunk levels are
+    scaled by r = Σ direct × parcels ÷ Σ level × parcels, so the group's homes at the shrunk rates equal its
+    homes at the direct rates (its observed pace); `level_var` scales by r². Shrinkage still moves places
+    toward their group, but no longer changes the group's total. See `benchmark_levels`.
     """
     first = origin - level_years + 1
     w = panel[(panel["year"] >= first) & (panel["year"] <= origin)]
@@ -289,7 +295,28 @@ def level_estimates(
     places = pd.concat(out)
     places["level"] = (1 - places["b"]) * places["direct"] + places["b"] * places["group_rate"]
     places["level_var"] = (1 - places["b"]) * places["v"]
+    if benchmark:
+        places = benchmark_levels(places)
     return places.reset_index()
+
+
+def benchmark_levels(places: pd.DataFrame) -> pd.DataFrame:
+    """Scale each shrinkage group's levels so its homes at the shrunk rates match its homes at direct rates.
+
+    r = Σ direct_i × parcels_mean_i ÷ Σ level_i × parcels_mean_i over the group's places (r = 1 where the
+    denominator is 0); level × r, level_var × r². The ratio benchmark of small-area estimation: the
+    Fay-Herriot step's between-place smoothing is kept, its drift in the group total is removed.
+
+    By hand: one group, direct (10, 2) per 1,000 parcels on 100 and 900 parcels -> 1.0 + 1.8 = 2.8 homes;
+    shrunk (9.615, 3.286) -> 0.9615 + 2.957 = 3.919, so r = 2.8 / 3.919 = 0.7145 and the levels become
+    (6.870, 2.348): 0.687 + 2.113 = 2.8 homes.
+    """
+    w = places["parcels_mean"].astype(float)
+    num = (places["direct"] * w).groupby(places["group"]).transform("sum")
+    den = (places["level"] * w).groupby(places["group"]).transform("sum")
+    r = np.divide(num.to_numpy(dtype=float), den.to_numpy(dtype=float),
+                  out=np.ones(len(places)), where=den.to_numpy(dtype=float) > 0)  # fmt: skip
+    return places.assign(level=places["level"] * r, level_var=places["level_var"] * r**2, benchmark_ratio=r)
 
 
 def cycle_index(rows: pd.DataFrame, value: str) -> pd.Series:
@@ -454,6 +481,7 @@ def forecast_draws(
         use_direct_variance=bool(p["use_direct_variance"].value),
         detrend=bool(p["detrend_dispersion"].value),
         key=key,
+        benchmark=bool(p["benchmark_levels"].value) if "benchmark_levels" in p else False,
     )
     columns = [key, "state", "year", "horizon", "parcels_origin", "level", "direct", "group_rate", "b"]
     columns += ["momentum", "demand", "mean", "p10", "p50", "p90"]

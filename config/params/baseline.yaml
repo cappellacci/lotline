@@ -180,6 +180,14 @@ v1_coverage_high:
   source: "Validation plan V1 pass (proposed): coverage 70-90%"
   notes: "Above this the band is too wide to be useful."
 
+benchmark_levels:
+  value: 1
+  low: 0
+  high: 1
+  unit: flag (1 = yes)
+  source: "Proposed in D-106 (2026-11-19, V8 diagnosis: the Fay-Herriot step lowers state totals, -11% in Wisconsin; 2-4 units -1% to -42% and 5+ units -4% to -21% across the development states at origin 2019). Adopted by Ben 2026-11-23 (\"Yes, turn it on\") after the V1 rerun on MN, NC, OH, OR, TX: state totals' observed/P50 1.52 -> 1.34 and P10-P90 coverage 70% -> 93% over 60 checks; place-level V1 about neutral (docs/analysis_plan.md, 2026-11-23)."
+  notes: "1 = within each shrinkage group the shrunk levels are scaled so the group's homes equal its homes at the direct rates (baseline.benchmark_levels); 0 = the Fay-Herriot levels as before (rollback)."
+
 use_direct_variance:
   value: 1
   low: 0

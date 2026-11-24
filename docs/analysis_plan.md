@@ -7957,3 +7957,49 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     intends);
   - model: 57 / 151 / 534, mean 264.
 - **No number changes:** the `all` rows are the earlier rows.
+
+### Deviation · 2026-11-23 · Baseline: keep each shrinkage group's total (D-106's proposal, tested, adopted; proposed D-entry)
+
+- **Asked by:** Ben, 2026-11-23 ("start the Wisconsin baseline fix"), after D-106 found the Fay-Herriot step
+  lowers state totals.
+- **Change:** `benchmark_levels` in config/params/baseline.yaml, **on** (adopted by Ben 2026-11-23, "Yes, turn it
+  on"; 0 rolls back).
+  - Within each shrinkage group, the shrunk levels are scaled by r = Σ direct × parcels ÷ Σ level × parcels,
+    so the group's homes at the shrunk rates equal its homes at its places' own rates
+    (`baseline.benchmark_levels`).
+  - Places still move toward their group; the group total no longer moves. This is the ratio benchmark of
+    small-area estimation.
+  - Shrinkage weights, cycle, momentum and draws are unchanged.
+- **V1 back-test, development states only** (MN, NC, OH, OR, TX; fit ends 2016, 2018, 2020; holdout-filtered;
+  no Wisconsin data). State totals, 60 state-size-window checks: observed ÷ forecast midpoint (geometric
+  mean), and the share of checks inside the randomized P10-P90.
+
+  | Size | Off: obs ÷ P50 | On | Off: inside | On |
+  |---|---|---|---|---|
+  | 1 unit | 1.11 | 1.07 | 80% | 93% |
+  | 2 units | 1.76 | 1.42 | 40% | 87% |
+  | 3-4 units | 1.85 | 1.58 | 73% | 93% |
+  | 5+ units | 1.47 | 1.32 | 87% | 100% |
+
+  - CRPS falls in most checks.
+  - Place-level V1 criteria are about neutral:
+    - passes: 20 → 21 of 60;
+    - bias within bounds: 33 → 36;
+    - beats the benchmarks: 48 → 47;
+    - coverage: 36 → 35.
+  - The forecast stays low overall (×1.34): the rest is growth after the fit window, as D-106 found.
+- **Wisconsin, after the fact (not a rescore; V8 stays a fail, D-105):**
+  - Method: the V8 baseline rebuilt from the blind tables, same code path. With the switch off it equals the
+    frozen 75,347. Compared with the observed totals already in reports/wi/V8-score.json; nothing unblinded.
+  - All sizes, 2021-25: 83,220 (58,989-115,565) against 112,166 observed, ×1.35, inside P10-P90 (frozen:
+    ×1.49, outside).
+  - Duplexes: just outside (P90 7,216 vs 7,222).
+  - 5+ units: still ×1.93.
+- **Effect on today's results** (origin 2025, 2027-31 baseline P50, all sizes):
+  - MN +9.0%, NC +7.5%, OH +5.1%, OR +8.0%, TX +6.0%.
+  - 2-4 units: +11% to +17%. 5+ units: +6% to +19%.
+  - The need card's "built anyway" rises by as much.
+  - The fee reform scales with it, since its homes are a % change on the baseline
+    (`fee_inputs`, `baseline_forecast`), so fee results rise by about the same share.
+  - ADU and missing-middle additions do not read this baseline; only their gut-check comparisons do.
+- **Frozen predictions:** unchanged. V5 and V8 were scored on their frozen files.
