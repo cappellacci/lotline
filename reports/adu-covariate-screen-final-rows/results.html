@@ -1,0 +1,291 @@
+<title>ADU screen, final rows</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column; headline, a decision panel, numbered findings each with a chart, then the table. */
+/* Lotline — generated from tokens.json (design system: https://claude.ai/artifact/XW95915mHhn65atvgS5Vye) */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f7f4ee;
+  --paper-raised: #fffdf9;
+  --paper-sunken: #ede9e0;
+  --rule: #d3cfc4;
+  --ink: #1c1b18;
+  --ink-muted: #5c5a53;
+  --ink-faint: #8a867b;
+  --survey: #2f6fb0;
+  --on-survey: #fffdf9;
+  --survey-band: #2f6fb026;
+  --brass: #b07a1a;
+  --on-brass: #1c1b18;
+  --focus: #2f6fb0;
+  --scenario-baseline: #8a867b;
+  --scenario-adu: #2f6fb0;
+  --scenario-missing-middle: #1a9e72;
+  --scenario-fees: #d1561b;
+  --scenario-combined: #1c1b18;
+  --confidence-inside: #1f8a5c;
+  --confidence-edge: #b07a1a;
+  --confidence-outside: #9a3b6e;
+  --tier-1: #8eafd0;
+  --tier-2: #6f97bf;
+  --tier-3: #5280ad;
+  --tier-4: #37659a;
+  --tier-5: #214a73;
+  --tier-none: #d3cfc4;
+  --shadow-tooltip: 0 1px 2px #1c1b1826;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-0: 0px;
+  --radius-sm: 2px;
+  --radius-bar: 1px;
+  --stroke-hair: 1px;
+  --stroke-line: 2px;
+  --stroke-mark: 3px;
+  --font-sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #1b1a17;
+    --paper-raised: #24221e;
+    --paper-sunken: #141311;
+    --rule: #3a3832;
+    --ink: #ece8df;
+    --ink-muted: #b3afa4;
+    --ink-faint: #7d7a71;
+    --survey: #6ea3d6;
+    --on-survey: #141311;
+    --survey-band: #6ea3d633;
+    --brass: #d7a74a;
+    --on-brass: #141311;
+    --focus: #6ea3d6;
+    --scenario-baseline: #7d7a71;
+    --scenario-adu: #4d8fd6;
+    --scenario-missing-middle: #22a877;
+    --scenario-fees: #d9602d;
+    --scenario-combined: #ece8df;
+    --confidence-inside: #35a070;
+    --confidence-edge: #b8862e;
+    --confidence-outside: #b8669c;
+    --tier-1: #34506c;
+    --tier-2: #466b8f;
+    --tier-3: #5e8ab1;
+    --tier-4: #82aed3;
+    --tier-5: #b3d0ea;
+    --tier-none: #3a3832;
+    --shadow-tooltip: 0 1px 2px #00000080;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1a17;
+  --paper-raised: #24221e;
+  --paper-sunken: #141311;
+  --rule: #3a3832;
+  --ink: #ece8df;
+  --ink-muted: #b3afa4;
+  --ink-faint: #7d7a71;
+  --survey: #6ea3d6;
+  --on-survey: #141311;
+  --survey-band: #6ea3d633;
+  --brass: #d7a74a;
+  --on-brass: #141311;
+  --focus: #6ea3d6;
+  --scenario-baseline: #7d7a71;
+  --scenario-adu: #4d8fd6;
+  --scenario-missing-middle: #22a877;
+  --scenario-fees: #d9602d;
+  --scenario-combined: #ece8df;
+  --confidence-inside: #35a070;
+  --confidence-edge: #b8862e;
+  --confidence-outside: #b8669c;
+  --tier-1: #34506c;
+  --tier-2: #466b8f;
+  --tier-3: #5e8ab1;
+  --tier-4: #82aed3;
+  --tier-5: #b3d0ea;
+  --tier-none: #3a3832;
+  --shadow-tooltip: 0 1px 2px #00000080;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+.display { font-family: var(--font-sans); font-size: 56px; line-height: 58px; font-weight: 700; letter-spacing: -0.02em }
+.h1 { font-family: var(--font-sans); font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em }
+.h2 { font-family: var(--font-sans); font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em }
+.h3 { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 600 }
+.eyebrow { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400 }
+.body-small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400 }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500 }
+.report-body { font-family: var(--font-serif); font-size: 11pt; line-height: 16pt; font-weight: 400 }
+.report-lead { font-family: var(--font-serif); font-size: 14pt; line-height: 20pt; font-weight: 400 }
+.figure-large { font-family: var(--font-mono); font-size: 44px; line-height: 48px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.figure { font-family: var(--font-mono); font-size: 20px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums }
+.code { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; font-variant-numeric: tabular-nums }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: var(--space-7); }
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-7); }
+header, section { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow, .num-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.num-tag { color: var(--survey); }
+h1 { font-family: var(--font-serif); font-weight: 600; font-size: 32px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-serif); font-weight: 600; font-size: 21px; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 17px; color: var(--ink-muted); }
+.decision { background: var(--paper-raised); border: 1px solid var(--brass); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.decision ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: var(--brass); color: var(--on-brass); padding: 2px 6px; border-radius: var(--radius-sm); align-self: flex-start; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-sans); }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--ink-faint); stroke-width: 1.5; }
+.chart .bar10 { stroke: var(--brass); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .tick, .chart .val { fill: var(--ink-faint); font-size: 11px; font-family: var(--font-mono); }
+.chart .lab { fill: var(--ink-muted); font-size: 12.5px; }
+.chart .lab.cand { fill: var(--ink); font-weight: 600; }
+.chart .ci { stroke: var(--ink-faint); stroke-width: 3; }
+.chart .ci.cand { stroke: var(--scenario-adu); }
+.chart .pt { fill: var(--ink-faint); }
+.chart .pt.cand { fill: var(--scenario-adu); }
+.chart .bar { fill: var(--rule); }
+.chart .drop { stroke: var(--scenario-adu); stroke-opacity: .45; stroke-width: 1.5; }
+.chart .bar.cand { fill: var(--scenario-adu); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 600; color: var(--ink-muted); font-size: 12px; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.v.candidate { color: var(--confidence-inside); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-muted); }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+footer { border-top: 1px solid var(--rule); padding-top: var(--space-4); font-size: 13px; color: var(--ink-muted); display: flex; flex-direction: column; gap: var(--space-2); }
+.chart .old { fill: var(--paper); stroke: var(--ink-faint); stroke-width: 1.5; }
+.chart .ci.old { stroke: var(--rule); }
+.key { display:flex; gap: var(--space-4); flex-wrap: wrap; font-size: 13px; color: var(--ink-muted); align-items:center }
+.sw { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px }
+td.v.no { color: var(--ink-faint) }
+.sens{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-3)}
+.sens div{background:var(--paper-raised);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:var(--space-3);display:flex;flex-direction:column;gap:2px}
+.sens .figure.pass{color:var(--confidence-inside)}
+.sens .figure.miss{color:var(--confidence-outside)}
+</style>
+<main>
+<header>
+  <div class="eyebrow">Lotline · D-083 screen on the final rule rows · 13 Nov 2026</div>
+  <h1>On the final rows both place factors pass, but owner share only just</h1>
+  <p class="lede">The D-083 place-factor screen, rerun on the ADU rule rows as they stand in PR #419: after the source check and your ruling on four values. Form A's multipliers were refitted on these rows first: m<sub>o</sub> 1.0, m<sub>x</sub> 0.8 (90% range 0.7–0.8; it was 0.7 on the unchecked rows). Fit set 64 places, 491 place-years. St. Paul out, no unblinding.</p>
+</header>
+<section class="decision">
+  <span class="tag">For Ben</span>
+  <h2>What this changes</h2>
+  <ol>
+    <li><b>Housing age is unchanged and strong.</b> Holm p 0.0004, α falls 30%, and every one of 57 leave-one-place-out drops keeps the sign and p &lt; 0.10 (β +0.84 to +1.06).</li>
+    <li><b>Owner share passes again within states, narrowly.</b> Holm p 0.081 against the 0.10 bar, α falls 21%, robust to dropping any place (β -1.05 to -0.66). Pooled across states it is the strongest factor: β −0.99, α falls 36%.</li>
+    <li><b>The pass rests on m<sub>x</sub>.</b> With m<sub>x</sub> held at 0.7 on these same rows, owner share's Holm p is 0.110 and it misses. The source-check corrections alone moved it from 0.117 to 0.110; refitting m<sub>x</sub> moved it to 0.081.</li>
+    <li><b>Recommendation unchanged:</b> one method entry adding both factors to Form A, scored on the data tiers before any fit is read. Owner share should go in on its pooled role (the state gap), not on its marginal within-state pass.</li>
+  </ol>
+</section>
+<section>
+  <div class="num-tag">Sensitivity</div>
+  <h2>Owner share's within-state Holm p, by rows and m<sub>x</sub></h2>
+  <div class="sens">
+    <div><span class="caption">Unchecked rows, m<sub>x</sub> 0.7</span><span class="figure miss">0.117</span><span class="caption">misses</span></div>
+    <div><span class="caption">Final rows, m<sub>x</sub> 0.7</span><span class="figure miss">0.110</span><span class="caption">misses</span></div>
+    <div><span class="caption">Final rows, m<sub>x</sub> 0.8 (fitted)</span><span class="figure pass">0.081</span><span class="caption">passes</span></div>
+    <div><span class="caption">D-083 rows, D-079 m<sub>x</sub> 0.4</span><span class="figure pass">0.083</span><span class="caption">passed</span></div>
+  </div>
+  <p class="note">Bar: Holm-adjusted p below 0.10. Housing age passes in every cell (Holm p ≤ 0.095).</p>
+</section>
+<section>
+  <div class="num-tag">Within-state effects</div>
+  <h2>Each factor compared only between places in the same state</h2>
+  <div class="key"><span><span class="sw" style="background:var(--paper);border:1.5px solid var(--ink-faint)"></span>unchecked rows (earlier rerun)</span><span><span class="sw" style="background:var(--scenario-adu)"></span>final rows, candidate</span><span><span class="sw" style="background:var(--ink-faint)"></span>final rows, other</span></div>
+  <svg class="chart" viewBox="0 0 680 306" role="img" aria-label="Effect per standard deviation, within">
+<line class="grid" x1="243.4" x2="243.4" y1="10" y2="280"/><text class="tick" x="243.4" y="296" text-anchor="middle">-1.5</text>
+<line class="grid" x1="310.6" x2="310.6" y1="10" y2="280"/><text class="tick" x="310.6" y="296" text-anchor="middle">-1.0</text>
+<line class="grid" x1="377.8" x2="377.8" y1="10" y2="280"/><text class="tick" x="377.8" y="296" text-anchor="middle">-0.5</text>
+<line class="zero" x1="445.0" x2="445.0" y1="10" y2="280"/><text class="tick" x="445.0" y="296" text-anchor="middle">+0.0</text>
+<line class="grid" x1="512.2" x2="512.2" y1="10" y2="280"/><text class="tick" x="512.2" y="296" text-anchor="middle">+0.5</text>
+<line class="grid" x1="579.4" x2="579.4" y1="10" y2="280"/><text class="tick" x="579.4" y="296" text-anchor="middle">+1.0</text>
+<line class="grid" x1="646.6" x2="646.6" y1="10" y2="280"/><text class="tick" x="646.6" y="296" text-anchor="middle">+1.5</text>
+<text class="lab cand" x="0" y="32">Owner-occupied share</text>
+<line class="ci old" x1="284.0" x2="415.3" y1="21" y2="21"/><circle class="old" cx="348.4" cy="21" r="4"/>
+<line class="ci cand" x1="278.5" x2="409.2" y1="33" y2="33"/><circle class="pt cand" cx="342.6" cy="33" r="5"/>
+<text class="lab cand" x="0" y="70">Homes built before 1960</text>
+<line class="ci old" x1="518.5" x2="625.9" y1="59" y2="59"/><circle class="old" cx="569.7" cy="59" r="4"/>
+<line class="ci cand" x1="521.6" x2="629.7" y1="71" y2="71"/><circle class="pt cand" cx="573.1" cy="71" r="5"/>
+<text class="lab" x="0" y="108">Detached single-family share</text>
+<line class="ci old" x1="376.4" x2="484.1" y1="97" y2="97"/><circle class="old" cx="429.6" cy="97" r="4"/>
+<line class="ci" x1="374.2" x2="482.3" y1="109" y2="109"/><circle class="pt" cx="427.7" cy="109" r="5"/>
+<text class="lab" x="0" y="146">New houses per 1,000 lots, 2013–15</text>
+<line class="ci old" x1="381.3" x2="490.7" y1="135" y2="135"/><circle class="old" cx="432.6" cy="135" r="4"/>
+<line class="ci" x1="379.4" x2="489.7" y1="147" y2="147"/><circle class="pt" cx="431.0" cy="147" r="5"/>
+<text class="lab" x="0" y="184">Median eligible lot size</text>
+<line class="ci old" x1="425.1" x2="536.1" y1="173" y2="173"/><circle class="old" cx="479.5" cy="173" r="4"/>
+<line class="ci" x1="422.0" x2="533.9" y1="185" y2="185"/><circle class="pt" cx="476.8" cy="185" r="5"/>
+<text class="lab" x="0" y="222">Place size (reference)</text>
+<line class="ci old" x1="361.5" x2="477.7" y1="211" y2="211"/><circle class="old" cx="416.9" cy="211" r="4"/>
+<line class="ci" x1="367.2" x2="484.8" y1="223" y2="223"/><circle class="pt" cx="423.3" cy="223" r="5"/>
+<text class="lab" x="0" y="260">Home value (reference)</text>
+<line class="ci old" x1="445.8" x2="535.0" y1="249" y2="249"/><circle class="old" cx="489.2" cy="249" r="4"/>
+<line class="ci" x1="444.3" x2="533.8" y1="261" y2="261"/><circle class="pt" cx="487.9" cy="261" r="5"/>
+</svg>
+  <p class="note">Effect on log ADU uptake per standard deviation of the factor, with 90% intervals.</p>
+</section>
+<section>
+  <div class="num-tag">Pooled effects</div>
+  <h2>One rate for all places, so states are compared too</h2>
+  <svg class="chart" viewBox="0 0 680 306" role="img" aria-label="Effect per standard deviation, pooled">
+<line class="grid" x1="243.4" x2="243.4" y1="10" y2="280"/><text class="tick" x="243.4" y="296" text-anchor="middle">-1.5</text>
+<line class="grid" x1="310.6" x2="310.6" y1="10" y2="280"/><text class="tick" x="310.6" y="296" text-anchor="middle">-1.0</text>
+<line class="grid" x1="377.8" x2="377.8" y1="10" y2="280"/><text class="tick" x="377.8" y="296" text-anchor="middle">-0.5</text>
+<line class="zero" x1="445.0" x2="445.0" y1="10" y2="280"/><text class="tick" x="445.0" y="296" text-anchor="middle">+0.0</text>
+<line class="grid" x1="512.2" x2="512.2" y1="10" y2="280"/><text class="tick" x="512.2" y="296" text-anchor="middle">+0.5</text>
+<line class="grid" x1="579.4" x2="579.4" y1="10" y2="280"/><text class="tick" x="579.4" y="296" text-anchor="middle">+1.0</text>
+<line class="grid" x1="646.6" x2="646.6" y1="10" y2="280"/><text class="tick" x="646.6" y="296" text-anchor="middle">+1.5</text>
+<text class="lab" x="0" y="32">Owner-occupied share</text>
+<line class="ci old" x1="268.0" x2="365.8" y1="21" y2="21"/><circle class="old" cx="316.9" cy="21" r="4"/>
+<line class="ci" x1="262.0" x2="361.2" y1="33" y2="33"/><circle class="pt" cx="311.5" cy="33" r="5"/>
+<text class="lab" x="0" y="70">Homes built before 1960</text>
+<line class="ci old" x1="467.5" x2="590.6" y1="59" y2="59"/><circle class="old" cx="526.4" cy="59" r="4"/>
+<line class="ci" x1="466.2" x2="591.9" y1="71" y2="71"/><circle class="pt" cx="526.2" cy="71" r="5"/>
+<text class="lab" x="0" y="108">Detached single-family share</text>
+<line class="ci old" x1="350.4" x2="464.2" y1="97" y2="97"/><circle class="old" cx="405.8" cy="97" r="4"/>
+<line class="ci" x1="349.2" x2="465.5" y1="109" y2="109"/><circle class="pt" cx="405.7" cy="109" r="5"/>
+<text class="lab" x="0" y="146">New houses per 1,000 lots, 2013–15</text>
+<line class="ci old" x1="408.4" x2="564.6" y1="135" y2="135"/><circle class="old" cx="480.3" cy="135" r="4"/>
+<line class="ci" x1="408.1" x2="565.7" y1="147" y2="147"/><circle class="pt" cx="480.6" cy="147" r="5"/>
+<text class="lab" x="0" y="184">Median eligible lot size</text>
+<line class="ci old" x1="390.5" x2="497.1" y1="173" y2="173"/><circle class="old" cx="442.7" cy="173" r="4"/>
+<line class="ci" x1="386.1" x2="493.9" y1="185" y2="185"/><circle class="pt" cx="438.8" cy="185" r="5"/>
+<text class="lab" x="0" y="222">Place size (reference)</text>
+<line class="ci old" x1="451.5" x2="559.0" y1="211" y2="211"/><circle class="old" cx="503.5" cy="211" r="4"/>
+<line class="ci" x1="455.6" x2="565.2" y1="223" y2="223"/><circle class="pt" cx="508.7" cy="223" r="5"/>
+<text class="lab" x="0" y="260">Home value (reference)</text>
+<line class="ci old" x1="415.4" x2="519.8" y1="249" y2="249"/><circle class="old" cx="465.3" cy="249" r="4"/>
+<line class="ci" x1="414.0" x2="520.8" y1="261" y2="261"/><circle class="pt" cx="465.0" cy="261" r="5"/>
+</svg>
+  <p>Owner share remains the factor that explains the gap between states: Minnesota's places are the most owner-occupied, and a negative effect pulls Minnesota down and the others up, the direction of the model's misses.</p>
+</section>
+<section>
+  <div class="num-tag">Table</div>
+  <h2>Unchecked rows against final rows, within-state version</h2>
+  <div class="scroll"><table>
+  <thead><tr><th>Factor</th><th>β before</th><th>β final</th><th>Holm p before</th><th>Holm p final</th><th>α falls before</th><th>α falls final</th><th>Before</th><th>Final</th></tr></thead>
+  <tbody><tr><td>Owner-occupied share</td><td class="num">-0.72</td><td class="num">-0.76</td><td class="num">0.117</td><td class="num">0.081</td><td class="num">19%</td><td class="num">21%</td><td class="v no">—</td><td class="v candidate">passes</td></tr><tr><td>Homes built before 1960</td><td class="num">+0.93</td><td class="num">+0.95</td><td class="num">0.001</td><td class="num">0.000</td><td class="num">28%</td><td class="num">30%</td><td class="v candidate">passes</td><td class="v candidate">passes</td></tr><tr><td>Detached single-family share</td><td class="num">-0.11</td><td class="num">-0.13</td><td class="num">1.000</td><td class="num">1.000</td><td class="num">2%</td><td class="num">2%</td><td class="v no">—</td><td class="v no">—</td></tr><tr><td>New houses per 1,000 lots, 2013–15</td><td class="num">-0.09</td><td class="num">-0.10</td><td class="num">1.000</td><td class="num">1.000</td><td class="num">1%</td><td class="num">1%</td><td class="v no">—</td><td class="v no">—</td></tr><tr><td>Median eligible lot size</td><td class="num">+0.26</td><td class="num">+0.24</td><td class="num">1.000</td><td class="num">1.000</td><td class="num">1%</td><td class="num">1%</td><td class="v no">—</td><td class="v no">—</td></tr><tr><td>Place size (reference)</td><td class="num">-0.21</td><td class="num">-0.16</td><td class="num">1.000</td><td class="num">1.000</td><td class="num">0%</td><td class="num">-0%</td><td class="v no">—</td><td class="v no">—</td></tr><tr><td>Home value (reference)</td><td class="num">+0.33</td><td class="num">+0.32</td><td class="num">0.471</td><td class="num">0.528</td><td class="num">3%</td><td class="num">3%</td><td class="v no">—</td><td class="v no">—</td></tr></tbody></table></div>
+  <p class="note">A candidate clears all three D-083 bars: Holm p &lt; 0.10, α falls ≥ 10%, and the sign holds with each state left out.</p>
+</section>
+<footer>
+  <div>Sources: <code>reports/adu-covariate-screen-final-rows/</code> (README.md, screen.csv, factors.csv, influence.*, summary.json, run-log.txt) on branch <code>ws/adu-screen-new-rows</code>, which carries PR #419's config. Offline; St. Paul out; no unblinding.</div>
+  <div>The rows reach main only once #413, #417 and #419 merge.</div>
+</footer>
+</main>
