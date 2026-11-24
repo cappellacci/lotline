@@ -4008,6 +4008,38 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   reports/adu-d060-range`.
 - **Decided by:** Ben, 2026-11-06 ("worth doing", through a pre-registered entry; approved as written,
   "Approve D-058", given under its first number). Written by WS-ENGINE before any run. **Status:** method approved, not run.
+- **Run and ported (added 2026-11-24, thread 17 code review; Ben: "Port it, show before/after").**
+  - **The run (2026-11-06, PR #327, not merged):** both gates passed on D-053's 53 fit places, and arm F was
+    adopted by the rule above. Place-total P10–P90 coverage was 73.6% under F and 74.1% under C, with no
+    state missed under either. #327 never merged, so until 2026-11-24 `main` kept the West Coast range.
+    #327's report (`reports/adu-d060-range/`) stays on its branch.
+  - **Ported 2026-11-24 on today's fit set.** The entry defines the range from the places the anchor is
+    fitted on. Since D-097 that is 70 places in MN, NC, OH, TX and OR (`scripts/dev/adu_mx_grid.places`),
+    which gives 513 place-years on today's inputs (498 when the anchor was fitted on 2026-11-16; input data
+    changed since).
+    - **Range:** rent $1,204–1,826, home value $218k–590k, rate 2.96–6.81. #327 had $1,237–1,855,
+      $218k–597k and the same rates. The percentiles and w are unchanged.
+    - **Gates not rerun** on the new fit set, because the range moved by under 3% at every bound. This is
+      a deviation from "any change is a new entry": the fit set changed under the entry's own definition,
+      not by choice.
+  - **What changed in results** (`lotline results`, five states, same seed, before and after only the six
+    `adu_calibration_*` values):
+    - **ADU additional permits, 2027–2031, P50:** MN 474 → 601, NC 328 → 426, OH 435 → 872, TX 4,648 →
+      5,869, OR 13 → 13.
+    - **Means within 4%,** because the widening keeps the mean.
+    - **P90 ÷ P10 roughly halved:** MN 7.0 → 3.8, NC 11.2 → 5.6, OH 15.5 → 4.6, TX 8.7 → 4.0, OR 11.6 → 9.1.
+    - Missing middle, fees, the baseline and the shortfall: unchanged.
+    - **Why own counts did not cancel the change:** where a place has its own counts (D-091),
+      `own_rate_paths` scales the own rate by the mechanism's Handbook-to-current ratio. When the observed
+      floor sets the current hazard, the floor is not widened and the Handbook hazard is, so the widening
+      passes through to the added ADUs.
+  - **Overlap flag:** every state now reads "high". The median distances are MN 0.03, NC 0.06, OH 0.29,
+    TX 0.00 and OR 0.01; before they were 0.64, 0.94, 1.39, 0.69 and 0.11. The thresholds are not retuned,
+    as written above, and this is reported to Ben as a finding.
+  - **Frozen predictions:** V9 is pinned to `hazard.PRE_D060_CALIBRATION` and tested
+    (`test_adu_draws_keep_the_frozen_calibration_range`). V5 St. Paul and Charlotte are missing-middle
+    tests, so they do not read this range. V8 Wisconsin was frozen and scored on the West Coast range, and
+    its freeze file's `config_sha256` records that config. It is not rescored.
 
 ### D-061 · 2026-11-06 · The five-year window starts in 2027, one year after the data origin (adopted 2026-11-08)
 - **Why:** The Handbook fixes the horizon but not its start ("Teams should assume a five year time horizon",

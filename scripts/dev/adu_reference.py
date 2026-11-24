@@ -2,6 +2,7 @@
 """Recompute the ADU hazard's reference values in config/params/hazard.yaml from public data.
 
     uv run python scripts/dev/adu_reference.py
+    uv run python scripts/dev/adu_reference.py --fit-set [--write]   # D-060
 
 The mature ADU hazard comes from strong reforms in high-cost West Coast cities (adu-study-design.md: about
 2-5 ADU permits per 1,000 single-family lots a year, Portland about 4). To carry it to another place, the
@@ -14,13 +15,28 @@ model needs the same effect modifiers for those reference cities, measured the s
   2015-2019, the reference rate, and its range over 2015-2023, the years the comparables' uptake covers.
 
 It prints each city's ADU price-to-cost ratio from the pro forma (central parameters, no local fee) and the
-values to copy into hazard.yaml. Portland is the reference place; the three cities span the calibration range.
+values to copy into hazard.yaml. Portland is the reference place; the three cities spanned the calibration
+range until D-060.
+
+`--fit-set` (D-060): the calibration range from the places the ADU anchor is fitted on: today D-096/D-097's
+Form A + place types fit set (`scripts/dev/adu_mx_grid.places`). Rent and home value at the eligible-parcel-
+weighted 5th and 95th percentiles over fit place-years, the mortgage rate at its min and max over them
+(`calibrate_adu.fit_set_range`). It prints that range, the min/max alternative and the current one; `--write`
+puts it into hazard.yaml's `adu_calibration_*` entries with sources. Rerun it whenever the anchor's fit set
+changes.
 """
 
 from __future__ import annotations
 
+import argparse
+import importlib.util
+import re
+import sys
+from pathlib import Path
+
 from lotline.adapters.national import acs
-from lotline.io import DataStore
+from lotline.config import CONFIG_DIR, load_params
+from lotline.io import DataStore, offline
 from lotline.model import hazard, money
 
 VINTAGE = 2019  # ACS 2015-2019: Portland's mature years before COVID (E046, E047)
@@ -71,5 +87,98 @@ def main() -> None:
     )
 
 
+FIT_SET_KEYS = {
+    "adu_calibration_rent_low_usd": ("rent", "5th", "USD per month (2025)"),
+    "adu_calibration_rent_high_usd": ("rent", "95th", "USD per month (2025)"),
+    "adu_calibration_value_low_usd": ("home value", "5th", "USD (2025)"),
+    "adu_calibration_value_high_usd": ("home value", "95th", "USD (2025)"),
+    "adu_calibration_rate_low": ("rate", "lowest", "percent (30-year fixed)"),
+    "adu_calibration_rate_high": ("rate", "highest", "percent (30-year fixed)"),
+}
+
+
+def anchor_places(store):
+    """The ADU anchor's fit places today: D-096/D-097's Form A + place types set (`adu_mx_grid.places`)."""
+    here = Path(__file__).resolve().parent
+    sys.path.insert(0, str(here))
+    spec = importlib.util.spec_from_file_location("adu_mx_grid", here / "adu_mx_grid.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["adu_mx_grid"] = mod
+    spec.loader.exec_module(mod)
+    with offline.offline_build(store):
+        return mod.places(store)
+
+
+def fit_set_entries(r: dict) -> str:
+    """hazard.yaml text for the six `adu_calibration_*` entries from `calibrate_adu.fit_set_range` output."""
+    lo, hi = r["years"]
+    where = f"{r['places']} places, {r['place_years']} place-years, {lo}-{hi}"
+    head = "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set)"
+    out = []
+    for key, (what, at, unit) in FIT_SET_KEYS.items():
+        v = r[key]
+        if what == "rate":
+            src = f"{head}: {at} annual mean of FRED MORTGAGE30US over the anchor's fit place-years ({where})"
+            val = f"{v:.2f}"
+        else:
+            acs_var = "gross rent" if what == "rent" else "home value"
+            src = (
+                f"{head}: eligible-parcel-weighted {at} percentile of ACS median {acs_var} (CPI-U, 2025 "
+                f"dollars) over the ADU anchor's fit place-years ({where}). Before D-060: the West Coast "
+                "reference cities' range (hazard.PRE_D060_CALIBRATION)"
+            )
+            val = f"{v:.0f}"
+        lines = [f"{key}:", f"  value: {val}", f"  low: {val}", f"  high: {val}", f"  unit: {unit}"]
+        lines.append(f'  source: "{src}"')
+        if key == "adu_calibration_rent_low_usd":
+            note = "Places outside the fit set's range are flagged and widened (hazard.widen); inside, none."
+            lines.append(f'  notes: "{note}"')
+        out.append("\n".join(lines))
+    return "\n\n".join(out)
+
+
+def write_fit_set(r: dict, path: Path) -> None:
+    """Replace hazard.yaml's six `adu_calibration_*` blocks (one contiguous run) with `fit_set_entries`."""
+    text = path.read_text()
+    pat = re.compile(r"^adu_calibration_rent_low_usd:.*?(?=^# ----)", re.S | re.M)
+    if not pat.search(text):
+        raise SystemExit(f"{path}: adu_calibration_* block not found")
+    path.write_text(pat.sub(lambda _m: fit_set_entries(r) + "\n\n", text, count=1))
+
+
+def _range_line(name: str, r: dict) -> str:
+    g = r.get
+    return (
+        f"  {name}: rent {g('adu_calibration_rent_low_usd'):,.0f}-{g('adu_calibration_rent_high_usd'):,.0f}, "
+        f"value {g('adu_calibration_value_low_usd'):,.0f}-{g('adu_calibration_value_high_usd'):,.0f}, "
+        f"rate {g('adu_calibration_rate_low'):.2f}-{g('adu_calibration_rate_high'):.2f}"
+    )
+
+
+def fit_set_main(write: bool) -> None:
+    from lotline.model import calibrate_adu as cal
+
+    r = cal.fit_set_range(anchor_places(DataStore()))
+    print(
+        f"D-060 fit set: {r['places']} places, {r['place_years']} place-years, "
+        f"{r['years'][0]}-{r['years'][1]}"
+    )
+    print(_range_line("current", {k: v.value for k, v in load_params("hazard").items()}))
+    print(_range_line("fit set, weighted 5th-95th", r))
+    mm = r["minmax"]
+    print(f"  min/max (not used): rent {mm['rent'][0]:,.0f}-{mm['rent'][1]:,.0f}, "
+          f"value {mm['home_value'][0]:,.0f}-{mm['home_value'][1]:,.0f}")  # fmt: skip
+    if write:
+        write_fit_set(r, CONFIG_DIR / "params" / "hazard.yaml")
+        print("written: config/params/hazard.yaml")
+
+
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--fit-set", action="store_true", help="D-060: the range from the anchor's fit set")
+    ap.add_argument("--write", action="store_true", help="with --fit-set: write it into hazard.yaml")
+    a = ap.parse_args()
+    if a.fit_set:
+        fit_set_main(a.write)
+    else:
+        main()
