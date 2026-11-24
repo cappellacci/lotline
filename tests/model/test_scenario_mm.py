@@ -189,3 +189,22 @@ def test_fast_ramp_differs_from_main_only_by_the_ramp():
     assert fast.buildings.sum(1).mean() == pytest.approx(3.7833, rel=0.02)
     assert fast.buildings[:, 4].sum() / fast.buildings.sum() == pytest.approx(0.9952 / 4.2036, rel=0.05)
     assert main.buildings[:, 4].sum() / main.buildings.sum() == pytest.approx(0.6608 / 1.1630, rel=0.05)
+
+
+def test_remainders_draw_from_coded_remainders():
+    """D-102 option (b): with 5 coded county remainders (dose 0.1) and 5 coded cities (dose 0.9) in one band,
+    an uncoded remainder draws from the remainder pool and an uncoded city from its band; with only 4 coded
+    remainders there is no remainder pool and both use the band."""
+    from lotline.model.scenarios import mm
+
+    coded = pd.DataFrame({
+        "kind": ["county_unincorporated"] * 5 + ["place"] * 5,
+        "band": 1,
+        "dose": [0.1] * 5 + [0.9] * 5,
+    })  # fmt: skip
+    pools = mm.dose_pools(coded, min_coded=5)
+    assert sorted(set(pools["remainder"])) == [0.1]
+    assert mm.remainder_pool_key("county_unincorporated", 1, pools) == "remainder"
+    assert mm.remainder_pool_key("place", 1, pools) == 1
+    few = mm.dose_pools(coded.iloc[1:], min_coded=5)
+    assert "remainder" not in few and mm.remainder_pool_key("county_unincorporated", 1, few) == 1

@@ -99,18 +99,36 @@ def year_shape(half: float, slope: float, horizon: int = HORIZON) -> np.ndarray:
     return ramp(np.arange(horizon) + 0.5, half, slope)
 
 
+REMAINDER = "county_unincorporated"  # a county remainder: unincorporated land the county itself zones
+
+
 def dose_pools(places: pd.DataFrame, min_coded: int) -> dict:
     """Doses of coded places by size band, for places with no coded rule (D-022): the band's coded doses if
     it has at least `min_coded`, else every coded place in the state; empty if none is coded (then d = 0).
 
     D-067: the pool holds each coded place's `pool_dose` (its dose at the origin) where that column is
-    given, so a place's own 2026-27 rule changes its own dose but not what uncoded places draw."""
+    given, so a place's own 2026-27 rule changes its own dose but not what uncoded places draw.
+
+    D-102 option (b) (Ben, 2026-11-24): with a `kind` column and at least `min_coded` coded county
+    remainders, a "remainder" pool holds their doses; an uncoded remainder draws from it instead of its size
+    band (`remainder_pool_key`), since unincorporated land is zoned by the county, not by cities its size."""
     col = "pool_dose" if "pool_dose" in places else "dose"
     coded = places[places[col].notna()]
     every = coded[col].to_numpy(float)
-    return {
+    pools = {
         b: (g[col].to_numpy(float) if len(g) >= min_coded else every) for b, g in coded.groupby("band")
     } | {"all": every}
+    if "kind" in coded:
+        rem = coded[coded["kind"] == REMAINDER]
+        if len(rem) >= min_coded:
+            pools["remainder"] = rem[col].to_numpy(float)
+    return pools
+
+
+def remainder_pool_key(kind, band, pools: dict):
+    """The pool an uncoded place draws from: "remainder" for a county remainder where that pool exists,
+    else its size band (D-102 option (b))."""
+    return "remainder" if kind == REMAINDER and "remainder" in pools else band
 
 
 def _place_stream(seed: int, geoid: str) -> np.random.Generator:
@@ -162,7 +180,7 @@ def simulate(
         r = _place_stream(seed, p.geoid)
         u = r.gamma(1 / al, al)
         if pd.isna(p.dose):
-            pool = pools.get(p.band, pools["all"])
+            pool = pools.get(remainder_pool_key(getattr(p, "kind", None), p.band, pools), pools["all"])
             d = r.choice(pool, size=n) if len(pool) else np.zeros(n)
         else:
             d = np.full(n, float(p.dose))
