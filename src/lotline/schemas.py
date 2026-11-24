@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.21"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.22"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -808,23 +808,26 @@ class ResultsFeeTypes(_Strict):
     real local fees cut by `fee_change_share` (0.5, the `fees_local_half` scenario), with that size's
     completion draw (single-family for houses, multifamily for 2-4 units) and five-year baseline homes.
 
-    In every draw the engine's homes added are linear in the fee change (`fees.change_grid`; tested), so a
-    change of s (a cut of s × each place's own fee; s < 0 a rise) adds (s ÷ 0.5) × `units_added`. The sizes'
-    rows summed in a draw are that draw's `fees_local_half` homes in `results_draws`.
+    Where a size's homes added are linear in the fee change in every draw (the elasticity route), only
+    the half cut (`fee_change_share` 0.5) is stored, and a change of s (a cut of s × each place's own fee;
+    s < 0 a rise) adds (s ÷ 0.5) × `units_added`. Where they are not (houses on the lot-feasibility route,
+    places with a parcel roll; schemas 1.22), the engine's own result is stored at every slider stop (−0.5
+    to 1.0 in steps of 0.1, `results.FEE_STOPS`). The 0.5 rows summed over sizes in a draw are that draw's
+    `fees_local_half` homes in `results_draws`.
     """
 
     state: Series[str] = pa.Field(**_STATE)
     scenario: Series[str] = pa.Field(isin=["fees_local_half"])
     size: Series[str] = pa.Field(isin=FEE_SIZE_CLASSES)
     draw: Series[pd.Int64Dtype] = pa.Field(ge=0)
-    fee_change_share: Series[float] = pa.Field(gt=0, le=1)
-    units_added: Series[float] = pa.Field(ge=0)
+    fee_change_share: Series[float] = pa.Field(ge=-0.5, le=1)
+    units_added: Series[float]  # negative for a rise
     completion_factor: Series[float] = pa.Field(ge=0)  # completions per permit; can exceed 1
     baseline_homes: Series[float] = pa.Field(ge=0)
 
     @pa.dataframe_check
     def one_row_per_key(cls, df: pd.DataFrame) -> bool:
-        return not df.duplicated(["state", "scenario", "size", "draw"]).any()
+        return not df.duplicated(["state", "scenario", "size", "draw", "fee_change_share"]).any()
 
 
 class ResultsScorecard(_Strict):
@@ -985,6 +988,12 @@ HISTORY = [
         "1.21",
         "results_adu_baseline: optional basis (all, own_counts, model) and mean, so the ADU chart splits the "
         "no-reform bar into places with their own ADU counts and places the model estimates",
+    ),
+    (
+        "1.22",
+        "results_fee_types: a size whose homes are not linear in the fee change (houses on the "
+        "lot-feasibility route) carries every slider stop, not only the half cut; fee_change_share may be "
+        "negative (a rise)",
     ),
 ]
 

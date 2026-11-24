@@ -279,28 +279,42 @@ def fee_rows_and_types(
     return rows, types
 
 
-def check_fee_line(places: pd.DataFrame, origin: int, draws: int, types: pd.DataFrame | None = None) -> None:
-    """Raise unless the fee section's slider arithmetic holds for these places (`results_fee_types`).
+FEE_STOPS = tuple(round(x / 10, 1) for x in range(-5, 11) if x != 0)  # the slider: up 50% to abolished
 
-    The app scales each draw's homes added at a cut of half by (s ÷ 0.5). Checked here on the engine's own
-    grid (`fees.change_grid`): abolishing fees adds twice the half cut and a rise of half loses it, in every
-    draw and size; with `types`, the grid's half-cut rows equal its `units_added` (same draws).
+
+def fee_types_with_stops(places: pd.DataFrame, origin: int, draws: int, types: pd.DataFrame) -> pd.DataFrame:
+    """`results_fee_types` with every slider stop added for each size that is not linear in the fee change.
+
+    The engine's grid (`fees.change_grid`, same draws as `fees.simulate`) at every stop in `FEE_STOPS`: a size
+    whose homes added equal (s ÷ 0.5) × the half cut in every draw and stop (the elasticity route) keeps
+    only its 0.5 rows, which the page scales. Any other size (houses on the lot-feasibility route, places
+    with a parcel roll) gets the grid's value at every stop, with the draw's completion and the size's
+    baseline. Raises if the grid's half cut differs from `types` (they must be the same draws).
     """
     from lotline.model.scenarios import fees
 
-    grid = fees.change_grid(places, origin, [0.5, 1.0, -0.5], draws=draws)
+    if types is None or not len(types):
+        return types
+    grid = fees.change_grid(places, origin, list(FEE_STOPS), draws=draws)
     w = grid.pivot_table(index=["draw", "size"], columns="share", values="units_added", aggfunc="sum")
     tol = 1e-6 * max(1.0, float(w[0.5].abs().max()))
-    if not (np.allclose(w[1.0], 2 * w[0.5], atol=tol) and np.allclose(w[-0.5], -w[0.5], atol=tol)):
-        raise ValueError(
-            "fee homes added are not linear in the fee change; the app's fee slider would be wrong"
-        )
-    if types is not None and len(types):
-        t = types.assign(draw=types["draw"].astype(int)).set_index(["draw", "size"])["units_added"]
-        t = t.sort_index()
-        grid_half = w[0.5].reindex(t.index).to_numpy(dtype=float)
-        if not np.allclose(grid_half, t.to_numpy(dtype=float), atol=tol):
-            raise ValueError("results_fee_types does not match the engine's grid at a cut of half")
+    t = types.assign(draw=types["draw"].astype(int)).set_index(["draw", "size"]).sort_index()
+    if not np.allclose(
+        w[0.5].reindex(t.index).to_numpy(dtype=float), t["units_added"].to_numpy(float), atol=tol
+    ):
+        raise ValueError("results_fee_types does not match the engine's grid at a cut of half")
+    extra = []
+    for size in sorted(set(t.index.get_level_values("size"))):
+        ws = w.xs(size, level="size")
+        if all(np.allclose(ws[s], (s / 0.5) * ws[0.5], atol=tol) for s in FEE_STOPS):
+            continue
+        half = t.xs(size, level="size")
+        for s in FEE_STOPS:
+            if s == 0.5:
+                continue
+            at_s = ws[s].reindex(half.index).to_numpy(float)
+            extra.append(half.assign(fee_change_share=s, units_added=at_s).reset_index().assign(size=size))
+    return pd.concat([types, *extra], ignore_index=True) if extra else types
 
 
 def fee_year_shares(sim: Mapping) -> np.ndarray:
@@ -787,7 +801,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     fee_parts = [fee_rows_and_types(k, sim, tier, rng) for k, sim in fee_sims.items()]
     d = pd.concat([d_adu, d_mm, *(rows for rows, _ in fee_parts)], ignore_index=True).assign(state=st)
     fee_types = pd.concat([types for _, types in fee_parts], ignore_index=True).assign(state=st)
-    check_fee_line(fee_places, origin, n, fee_types)
+    fee_types = fee_types_with_stops(fee_places, origin, n, fee_types)
     shares = {"adu": year_shares(run_draws), "missing_middle": mm_year_shares(res_mm)}
     shares.update({k: fee_year_shares(sim) for k, sim in fee_sims.items()})
     parts = summarize(st, d, origin, shares)

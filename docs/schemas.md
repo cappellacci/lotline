@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.21** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.22** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -567,7 +567,7 @@ Table checks: `one_row_per_state`
 
 ## `results_fee_types`
 
-The fee section's policy controls (D-077): each draw's five-year homes added in one building size under real local fees cut by `fee_change_share` (0.5, the `fees_local_half` scenario), with that size's completion draw (single-family for houses, multifamily for 2-4 units) and five-year baseline homes. In every draw the engine's homes added are linear in the fee change (`fees.change_grid`; tested), so a change of s (a cut of s × each place's own fee; s < 0 a rise) adds (s ÷ 0.5) × `units_added`. The sizes' rows summed in a draw are that draw's `fees_local_half` homes in `results_draws`.
+The fee section's policy controls (D-077): each draw's five-year homes added in one building size under real local fees cut by `fee_change_share` (0.5, the `fees_local_half` scenario), with that size's completion draw (single-family for houses, multifamily for 2-4 units) and five-year baseline homes. Where a size's homes added are linear in the fee change in every draw (the elasticity route), only the half cut (`fee_change_share` 0.5) is stored, and a change of s (a cut of s × each place's own fee; s < 0 a rise) adds (s ÷ 0.5) × `units_added`. Where they are not (houses on the lot-feasibility route, places with a parcel roll; schemas 1.22), the engine's own result is stored at every slider stop (−0.5 to 1.0 in steps of 0.1, `results.FEE_STOPS`). The 0.5 rows summed over sizes in a draw are that draw's `fees_local_half` homes in `results_draws`.
 
 Table checks: `one_row_per_key`
 
@@ -577,8 +577,8 @@ Table checks: `one_row_per_key`
 | `scenario` | text | yes | no | one of `fees_local_half` |
 | `size` | text | yes | no | one of `1`, `2`, `3_4` |
 | `draw` | integer | yes | no | ≥ 0 |
-| `fee_change_share` | number | yes | no | > 0; ≤ 1 |
-| `units_added` | number | yes | no | ≥ 0 |
+| `fee_change_share` | number | yes | no | ≥ -0.5; ≤ 1 |
+| `units_added` | number | yes | no |  |
 | `completion_factor` | number | yes | no | ≥ 0 |
 | `baseline_homes` | number | yes | no | ≥ 0 |
 
@@ -608,3 +608,4 @@ Table checks: `one_row_per_key`
 | 1.19 | place_inputs: house_share_roll, rent_filled, home_value_filled (WS-SCALE task 5 rules 1, 2, 4, D-103) |
 | 1.20 | results_fee_types (the fee section's slider and targeted-bill buttons, D-077): each draw's homes added by building size at real local fees cut by half, with the size's completion and baseline |
 | 1.21 | results_adu_baseline: optional basis (all, own_counts, model) and mean, so the ADU chart splits the no-reform bar into places with their own ADU counts and places the model estimates |
+| 1.22 | results_fee_types: a size whose homes are not linear in the fee change (houses on the lot-feasibility route) carries every slider stop, not only the half cut; fee_change_share may be negative (a rise) |

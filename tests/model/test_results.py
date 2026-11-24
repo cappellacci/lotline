@@ -583,15 +583,51 @@ def test_fee_types_by_hand():
     results.validate(types.assign(state="MN"), "results_fee_types")
 
 
-def test_check_fee_line_passes_on_the_engine_and_catches_a_mismatch():
-    from .test_fee_scenario import by_size_frame
-
-    places = by_size_frame(U2=10_000.0, U3_4=6_000.0)
-    results.check_fee_line(places, 2025, 20)
+def _half_cut_types(places, draws=20):
     from lotline.model.scenarios import fees
 
-    g = fees.change_grid(places, 2025, [0.5], draws=20)
-    types = g.groupby(["draw", "size"], as_index=False)["units_added"].sum()
-    results.check_fee_line(places, 2025, 20, types)
+    g = fees.change_grid(places, 2025, [0.5], draws=draws)
+    t = g.groupby(["draw", "size"], as_index=False)["units_added"].sum()
+    return t.assign(
+        scenario="fees_local_half", fee_change_share=0.5, completion_factor=0.9, baseline_homes=1.0
+    )
+
+
+def test_fee_stops_kept_only_where_a_size_is_not_linear(monkeypatch):
+    """Elasticity only: every size is linear, so only the half cut is kept, and a mismatched half cut raises.
+    A size that is not linear (houses on the lot-feasibility route, here a hand-made grid: 10 at the half cut,
+    12 when abolished, 0 for a rise) gets the grid's value at every stop; linear sizes keep the half cut."""
+    from lotline.model.scenarios import fees
+
+    from .test_fee_scenario import by_size_frame
+
+    linear = by_size_frame(U2=10_000.0, U3_4=6_000.0).assign(local_fee_low=10_000.0, local_fee_high=10_000.0)
+    t = _half_cut_types(linear)
+    assert results.fee_types_with_stops(linear, 2025, 20, t).equals(t)
     with pytest.raises(ValueError, match="does not match"):
-        results.check_fee_line(places, 2025, 20, types.assign(units_added=types["units_added"] * 1.1 + 1))
+        results.fee_types_with_stops(linear, 2025, 20, t.assign(units_added=t["units_added"] * 1.1 + 1))
+
+    def grid(places, origin, shares, draws):
+        rows = []
+        for s in shares:
+            house = 10.0 if s == 0.5 else (12.0 if s > 0.5 else (s / 0.5) * 10.0 if s > 0 else 0.0)
+            for d in range(draws):
+                plex = 4.0 * s / 0.5
+                key = {"share": s, "draw": d, "state": "MN"}
+                rows += [key | {"size": "1", "units_added": house}, key | {"size": "2", "units_added": plex}]
+        return pd.DataFrame(rows)
+
+    monkeypatch.setattr(fees, "change_grid", grid)
+    half = pd.DataFrame(
+        [{"draw": d, "size": z, "units_added": u} for d in range(3) for z, u in (("1", 10.0), ("2", 4.0))]
+    )
+    half = half.assign(
+        scenario="fees_local_half", fee_change_share=0.5, completion_factor=0.9, baseline_homes=1.0
+    )
+    out = results.fee_types_with_stops(linear, 2025, 3, half)
+    houses = out[out["size"] == "1"].set_index(["fee_change_share", "draw"])["units_added"]
+    assert sorted(out.loc[out["size"] == "1", "fee_change_share"].unique()) == sorted(results.FEE_STOPS)
+    assert houses[(1.0, 0)] == 12.0 and houses[(0.6, 2)] == 12.0 and houses[(-0.3, 1)] == 0.0
+    assert houses[(0.2, 0)] == pytest.approx(4.0)
+    assert set(out.loc[out["size"] == "2", "fee_change_share"]) == {0.5}  # linear: the page scales it
+    results.validate(out.assign(state="MN"), "results_fee_types")
