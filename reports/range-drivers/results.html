@@ -1,0 +1,92 @@
+<title>What Drives the Range</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: one reading column; each reform is a set of 100% bars, one per state, Minnesota (the benchmark) first. */
+:root {
+  --bg: #f6f7f5; --surface: #ffffff; --fg: #1d2420; --muted: #5d6862; --rule: #d9dfdb; --accent: #b4572a;
+  --c-uptake: #2f6f5e; --c-rule: #7fb3a2; --c-response: #3b5f9e; --c-costs: #c9a14a; --c-counting: #b4572a; --c-rest: #cfd5d1;
+  --display: "Fraunces", Georgia, serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141917; --surface: #1c2320; --fg: #e5ebe7; --muted: #9aa7a0; --rule: #2e3833; --accent: #e08a5c;
+  --c-uptake: #6cc2a6; --c-rule: #3f7f6c; --c-response: #8aa8e0; --c-costs: #d9b45e; --c-counting: #e08a5c; --c-rest: #3a4540; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141917; --surface: #1c2320; --fg: #e5ebe7; --muted: #9aa7a0; --rule: #2e3833; --accent: #e08a5c;
+  --c-uptake: #6cc2a6; --c-rule: #3f7f6c; --c-response: #8aa8e0; --c-costs: #d9b45e; --c-counting: #e08a5c; --c-rest: #3a4540; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 36px; }
+h1 { font-family: var(--display); font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.15rem; font-weight: 600; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.eyebrow { font-family: var(--mono); font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+header, section { display: grid; gap: 12px; }
+.num { font-family: var(--mono); color: var(--accent); margin-right: .4em; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: .85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.bars { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 44px 1fr 64px; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+.row .st { font-weight: 600; font-size: .9rem; }
+.row.bench .st { color: var(--accent); }
+.bar { display: flex; height: 22px; border-radius: 3px; overflow: hidden; min-width: 0; }
+.bar span { display: block; height: 100%; font-family: var(--mono); font-size: .72rem; color: #fff; line-height: 22px; text-align: center; overflow: hidden; white-space: nowrap; }
+.bar span.rest { color: var(--fg); }
+.spread { font-family: var(--mono); font-size: .8rem; color: var(--muted); text-align: right; }
+.head { font-size: .75rem; color: var(--muted); font-family: var(--mono); }
+footer { font-size: .85rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; }
+code { font-family: var(--mono); font-size: .88em; }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">Sensitivity · issue #54 · results of 2026-11-24</div>
+    <h1>One uncertain number drives most of each reform's range</h1>
+    <p class="muted">Every result is the spread of 1,000 model runs. For each run we know the values it drew for every uncertain assumption, so we can measure how much of the spread each assumption explains on its own. Nothing was rerun. Minnesota is the benchmark state; the other states follow it.</p>
+  </header>
+
+  <div class="legend" id="legend"></div>
+  <div id="sections"></div>
+
+  <section>
+    <h2>How to read this</h2>
+    <p>Each bar is one state's range for one reform, split by what explains it. "Everything else" is place-to-place luck, which local rules get drawn, effects that only appear when two assumptions combine, and assumptions that explain under 3% each. The figure on the right is how wide the range is: the 90th percentile divided by the 10th. In Wisconsin, a state the model was not fitted on, most of the ADU range comes from its unseen-state adjustment, which is in "everything else".</p>
+  </section>
+
+  <footer>
+    Sources: <code>scripts/dev/range_drivers.py</code> on the bundles of release app-2026-11-24f (commit 97e2436b), method in <code>src/lotline/model/sensitivity.py</code> (first-order shares from given data, chance level removed, tested by hand). Full table: <code>reports/range-drivers/drivers.csv</code>. Branch <code>ws/range-drivers</code>.
+  </footer>
+</main>
+
+<script>
+const D = {"adu": {"MN": {"spread": 4.51, "cats": {"uptake": 0.378, "rule": 0.287, "counting": 0.165, "rest": 0.169}}, "NC": {"spread": 5.8, "cats": {"uptake": 0.474, "rule": 0.424, "counting": 0.08, "rest": 0.022}}, "OH": {"spread": 5.42, "cats": {"uptake": 0.175, "rule": 0.115, "costs": 0.091, "counting": 0.134, "rest": 0.485}}, "OR": {"spread": 6.97, "cats": {"uptake": 0.335, "rule": 0.296, "rest": 0.369}}, "TX": {"spread": 4.47, "cats": {"uptake": 0.286, "rule": 0.174, "counting": 0.148, "rest": 0.391}}, "WI": {"spread": 17.65, "cats": {"uptake": 0.063, "rule": 0.05, "costs": 0.031, "rest": 0.856}}}, "fees": {"MN": {"spread": 11.94, "cats": {"response": 0.738, "costs": 0.079, "rest": 0.183}}, "NC": {"spread": 14.36, "cats": {"response": 0.925, "costs": 0.044, "rest": 0.03}}, "OH": {"spread": 14.31, "cats": {"response": 0.925, "costs": 0.045, "rest": 0.03}}, "OR": {"spread": 7.58, "cats": {"response": 0.528, "costs": 0.162, "rest": 0.309}}, "TX": {"spread": 14.4, "cats": {"response": 0.925, "costs": 0.044, "rest": 0.03}}, "WI": {"spread": 14.28, "cats": {"response": 0.925, "costs": 0.045, "rest": 0.03}}}, "fees_local_half": {"MN": {"spread": 10.9, "cats": {"response": 0.581, "costs": 0.17, "rest": 0.249}}, "NC": {"spread": 16.0, "cats": {"response": 0.923, "costs": 0.049, "rest": 0.028}}, "OH": {"spread": 15.75, "cats": {"response": 0.924, "costs": 0.05, "rest": 0.026}}, "OR": {"spread": 6.63, "cats": {"response": 0.423, "costs": 0.16, "rest": 0.416}}, "TX": {"spread": 16.07, "cats": {"response": 0.921, "costs": 0.049, "rest": 0.029}}, "WI": {"spread": 15.5, "cats": {"response": 0.924, "costs": 0.05, "rest": 0.026}}}, "missing_middle": {"MN": {"spread": 40.4, "cats": {"uptake": 0.959, "rest": 0.041}}, "NC": {"spread": 41.35, "cats": {"uptake": 0.961, "rest": 0.039}}, "OH": {"spread": 41.56, "cats": {"uptake": 0.959, "rest": 0.041}}, "OR": {"spread": 39.92, "cats": {"uptake": 0.956, "rest": 0.044}}, "TX": {"spread": 40.94, "cats": {"uptake": 0.961, "rest": 0.039}}, "WI": {"spread": 39.56, "cats": {"uptake": 0.959, "rest": 0.041}}}};
+const CATS = [
+  ["uptake", "Uptake rate (how fast owners and builders use a new allowance; fitted)"],
+  ["rule", "How much a partial ADU rule already counts"],
+  ["response", "How strongly building responds to a fee cut"],
+  ["costs", "Costs and who captures a fee cut"],
+  ["counting", "Legalized, replacement and relocated homes"],
+  ["rest", "Everything else"],
+];
+const SECTIONS = [
+  ["missing_middle", "Missing middle: the uptake rate explains 96% everywhere", "The range is very wide (about ×40) and rests almost entirely on how readily 2–4 home allowances get used where they already exist. Early permit counts after a reform would narrow it faster than anything else."],
+  ["fees", "Fee cut, Challenge benchmark ($50,000 → $25,000): builders' response explains 74–93%", "How strongly building responds to lower costs matters far more than construction costs or who captures the cut. Oregon and Minnesota spread more because their cities' fees and costs differ more."],
+  ["fees_local_half", "Fee cut, half of real local fees: the same story", "Builders' response explains 42–92%. Where fees vary a lot between cities (Oregon, Minnesota), more of the range comes from which cities cut how much."],
+  ["adu", "ADUs: two fitted numbers explain most of the range", "How fast owners add ADUs once allowed, and how much a partial ADU rule already counts. The two overlap, because one is refitted for each value of the other. Whether ADUs are new homes or legalize existing ones adds 8–17%."],
+];
+const ORDER = ["MN", "NC", "OH", "TX", "OR", "WI"];
+document.getElementById("legend").innerHTML = CATS.map(([k, l]) => `<span><i style="background:var(--c-${k})"></i>${l}</span>`).join("");
+document.getElementById("sections").innerHTML = SECTIONS.map(([sc, h, p], i) => {
+  const rows = ORDER.map(st => {
+    const r = D[sc][st];
+    const segs = CATS.filter(([k]) => r.cats[k] > 0).map(([k, l]) => {
+      const w = (r.cats[k] * 100).toFixed(1);
+      const txt = r.cats[k] >= 0.08 ? Math.round(r.cats[k] * 100) + "%" : "";
+      return `<span class="${k === "rest" ? "rest" : ""}" style="width:${w}%;background:var(--c-${k})" title="${l}: ${Math.round(r.cats[k] * 100)}%">${txt}</span>`;
+    }).join("");
+    return `<div class="row${st === "MN" ? " bench" : ""}"><span class="st">${st}</span><div class="bar">${segs}</div><span class="spread">×${r.spread.toFixed(1)}</span></div>`;
+  }).join("");
+  return `<section style="margin-bottom:32px"><h2><span class="num">${i + 1}</span>${h}</h2><p>${p}</p><div class="bars"><div class="row head"><span>State</span><span>Share of the range</span><span style="text-align:right">P90÷P10</span></div>${rows}</div></section>`;
+}).join("");
+</script>
