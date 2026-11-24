@@ -1439,6 +1439,7 @@ const SECTIONS = {
     return `<div class="hero" id="hero">
         <h2 class="display" id="hero-line">Results</h2>
         <p class="body note" id="hero-note"></p>
+        ${b.meta.state_role === "ingestion_test" ? `<p class="pending" id="role-note"><b>A data-ingestion test, not part of the model's core evidence.</b> ${esc(nameOfState(b.meta.state))} was brought in with national data only, to check that a new state can be added end to end, and its forecast was frozen before its permits were looked at. That pre-registered test missed: the forecast came in about a third below the homes actually permitted in 2021–2025. The miss led us to change how the baseline smooths small places, a fix every state now uses. Its numbers are shown for transparency.</p>` : ""}
         <div class="card"><div class="rc" id="rc">${rcRows}<div></div><div class="axis" id="rc-axis"></div></div>
           <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
             <span class="muted" id="outcome-note"></span></div>

@@ -787,7 +787,14 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
     rng = np.random.default_rng(seed)
 
     places = adu.places_from_store(st, store, origin)
-    places = places[places["rent"].notna() & places["home_value"].notna()].reset_index(drop=True)
+    # place_inputs fills a missing rent or home value with the state median (WS-SCALE task 5 rule 2), so no
+    # place is dropped for lack of prices; a gap here means the stored table predates that rule.
+    gaps = places["rent"].isna() | places["home_value"].isna()
+    if gaps.any():
+        raise ValueError(
+            f"{st}: {int(gaps.sum())} places have no rent or home value; rebuild place_inputs "
+            f"(lotline fetch --state {st} --source place_inputs --offline)"
+        )
     places["state"] = st
     tier3 = bool(proxy.proxy_states(places))
     _, totals_adu, run_draws = adu.run(places, origin, draws=n, eligible_proxy=tier3, return_draws=True)

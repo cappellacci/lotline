@@ -414,7 +414,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     res.add_argument(
         "--role",
-        choices=["benchmark", "development", "transfer", "national_only"],
+        choices=["benchmark", "development", "transfer", "national_only", "ingestion_test"],
         help="how the app labels the state (default: national_only for a state with no parcel data, "
         "else development)",
     )
