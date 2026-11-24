@@ -1008,7 +1008,8 @@ function feeTestUpdate(b) {
   const all = AGG.homesFromDraws([...drawsFor(b, "fees_local_half")].sort((x, y) => x.draw - y.draw), UI.pins);
   const h = all.permits_added, counted = AGG.percentile(all[UI.outcome], 50);
   const mid = AGG.percentile(h, 50), lo = AGG.percentile(h, 10), hi = AGG.percentile(h, 90);
-  const base = (b.fee_types || []).filter((r) => r.draw === 0 && t[2].includes(String(r.size))).reduce((a, r) => a + Number(r.baseline_homes), 0);
+  // one row per size: the half cut's (a size the engine stores at every slider stop has one row per stop)
+  const base = (b.fee_types || []).filter((r) => r.draw === 0 && Number(r.fee_change_share) === 0.5 && t[2].includes(String(r.size))).reduce((a, r) => a + Number(r.baseline_homes), 0);
   const yrs = AGG.windowLabel(b) || "the five years";
   const up = mid >= 0;
   out.innerHTML = Math.abs(mid) < 0.5 ? `No change: about the ${fmtN(base)} ${esc(t[3])} expected anyway over ${esc(yrs)}.`

@@ -686,3 +686,11 @@ def test_add_a_state_page_is_a_real_guide(tmp_path):
     )
     for path in named:
         assert (REPO / path).exists(), path
+
+
+def test_fee_box_baseline_counts_each_size_once(tmp_path):
+    """A size stored at every slider stop (schemas 1.22) has one row per stop: the fee box's "expected
+    anyway" must read the half cut's row only, or Minnesota's houses would be counted 15 times."""
+    html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
+    box = html[html.index("function feeTestUpdate") : html.index("function feeTestUpdate") + 2000]
+    assert "r.draw === 0 && Number(r.fee_change_share) === 0.5 && t[2].includes(String(r.size))" in box
