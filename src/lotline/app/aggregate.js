@@ -69,30 +69,34 @@
 
   // The fee section's policy controls (D-077), from `results_fee_types`: `change` is the fee change as a share
   // of each place's own fee (−0.5 halves fees, the `fees_local_half` scenario; −1 abolishes them; 0.5 raises
-  // them by half) and `sizes` the building sizes the bill covers ("1", "2", "3_4"). Homes added are linear in
-  // the change in every draw (checked when the bundle is built), so a draw's homes are its sizes' half-cut
-  // units × (−change ÷ 0.5). θ is re-set to those homes over the draw's covered homes and completion is
-  // re-weighted by size. A rise keeps θ positive and sets sign −1, so a slider that weakens θ still shrinks
-  // the effect. At change −0.5 with every size this returns the draws' own θ and completion.
+  // them by half) and `sizes` the building sizes the bill covers ("1", "2", "3_4"). For each size, a row at the
+  // stop s = −change is the engine's own result there (sizes that are not linear in the change, schemas 1.22);
+  // without one, the half-cut row is scaled by s ÷ 0.5 (linear sizes). θ is re-set to the homes over the draw's
+  // covered homes and completion is re-weighted by size. Fewer homes (a rise) keep θ positive and set sign −1,
+  // so a slider that weakens θ still shrinks the effect. At change −0.5 with every size this returns the
+  // draws' own θ and completion.
   // By hand: covered 10,000; half-cut units 120 houses (completion 0.95), 20 duplex and 10 three-to-four-unit
   // homes (0.85): duplexes only, abolished -> 2 × 20 = 40 homes, θ 0.004, completion 0.85; every size, up by
-  // half -> 150 homes lost, θ 0.015, completion 0.93, sign −1.
+  // half -> 150 homes lost, θ 0.015, completion 0.93, sign −1. With a stored house row of 300 at s = 1,
+  // houses only, abolished -> 300 homes (not 2 × 120).
   function feePolicyDraws(draws, types, change, sizes) {
-    const k = -change / 0.5, sign = k < 0 ? -1 : 1, mag = Math.abs(k);
-    const by = new Map();
-    for (const t of types) {
-      if (!sizes.includes(String(t.size))) continue;
-      if (!by.has(t.draw)) by.set(t.draw, []);
-      by.get(t.draw).push(t);
-    }
+    const s = Math.round(-change * 10) / 10;
+    const at = new Map();  // `${size}|${share}|${draw}` -> row
+    for (const t of types) at.set(`${t.size}|${Math.round(num(t.fee_change_share) * 10) / 10}|${t.draw}`, t);
     return draws.map((d) => {
-      const ts = by.get(d.draw) || [];
-      const half = ts.reduce((a, t) => a + num(t.units_added), 0);
+      let total = 0, weighted = 0, mag = 0;
+      for (const size of sizes) {
+        const own = at.get(`${size}|${s}|${d.draw}`), half = at.get(`${size}|0.5|${d.draw}`);
+        const row = own || half;
+        if (!row) continue;
+        const u = own ? num(own.units_added) : (num(half.units_added) * s) / 0.5;
+        total += u;
+        mag += Math.abs(u);
+        weighted += Math.abs(u) * num(row.completion_factor);
+      }
       const covered = TIERS.reduce((a, c) => a + num(d[c]), 0);
-      const completion = half > 0
-        ? ts.reduce((a, t) => a + num(t.units_added) * num(t.completion_factor), 0) / half
-        : num(d.completion_factor);
-      return { ...d, theta: covered > 0 ? (half * mag) / covered : 0, completion_factor: completion, sign };
+      const completion = mag > 0 ? weighted / mag : num(d.completion_factor);
+      return { ...d, theta: covered > 0 ? Math.abs(total) / covered : 0, completion_factor: completion, sign: total < 0 ? -1 : 1 };
     });
   }
 

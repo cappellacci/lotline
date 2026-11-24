@@ -225,6 +225,17 @@ def _fee_fixture(n: int = 40) -> tuple[pd.DataFrame, pd.DataFrame]:
           "units_added": units[c][d], "completion_factor": comp[c][d], "baseline_homes": 1_000.0}
          for c in units for d in range(n)]
     )  # fmt: skip
+    curve = {
+        round(x / 10, 1): (x / 5) ** 1.3 if x > 0 else -((-x / 5) ** 0.8)
+        for x in range(-5, 11)
+        if x not in (0, 5)
+    }
+    grid = pd.DataFrame(
+        [{"scenario": "fees_local_half", "size": "1", "draw": d, "fee_change_share": s,
+          "units_added": units["1"][d] * f, "completion_factor": comp["1"][d], "baseline_homes": 1_000.0}
+         for s, f in curve.items() for d in range(n)]
+    )  # fmt: skip
+    types = pd.concat([types, grid], ignore_index=True)
     return draws, types
 
 
@@ -239,6 +250,8 @@ let s = ""; process.stdin.on("data", (c) => (s += c)).on("end", () => {
 FEE_CASES = [
     [-0.5, ["1", "2", "3_4"], {}],
     [-1.0, ["1", "2", "3_4"], {}],
+    [-0.7, ["1"], {}],
+    [0.3, ["1", "2"], {"theta": 10}],
     [0.5, ["1", "2", "3_4"], {}],
     [-0.3, ["2"], {}],
     [-1.0, ["2", "3_4"], {"theta": 10}],
@@ -276,10 +289,18 @@ def test_fee_policy_by_hand():
            "displacement_share": 0.0, "overlap_share": np.nan}  # fmt: skip
     draws = pd.DataFrame([row])
     types = pd.DataFrame({"draw": 0, "size": ["1", "2", "3_4"], "units_added": [120.0, 20.0, 10.0],
-                          "completion_factor": [0.95, 0.85, 0.85]})  # fmt: skip
+                          "completion_factor": [0.95, 0.85, 0.85], "fee_change_share": 0.5})  # fmt: skip
     duplex = aggregate.fee_policy_draws(draws, types, -1.0, ["2"]).iloc[0]
     assert duplex.theta == pytest.approx(0.004) and duplex.completion_factor == pytest.approx(0.85)
     assert duplex.sign == 1
     rise = aggregate.fee_policy_draws(draws, types, 0.5, ["1", "2", "3_4"])
     assert rise.iloc[0].theta == pytest.approx(0.015) and rise.iloc[0].sign == -1
     assert aggregate.homes_from_draws(rise)["permits_added"][0] == pytest.approx(-150)
+    # a size the engine stores at every stop (not linear): its own row is used, not 2 × the half cut
+    row300 = {"draw": 0, "size": "1", "units_added": 300.0, "completion_factor": 0.95,
+              "fee_change_share": 1.0}  # fmt: skip
+    stored = pd.concat([types, pd.DataFrame([row300])])
+    houses = aggregate.fee_policy_draws(draws, stored, -1.0, ["1"]).iloc[0]
+    assert houses.theta == pytest.approx(0.03)  # 300 / 10,000, not 240 / 10,000
+    every = aggregate.fee_policy_draws(draws, stored, -1.0, ["1", "2", "3_4"]).iloc[0]
+    assert every.theta == pytest.approx((300 + 40 + 20) / 10_000)
