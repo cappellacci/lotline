@@ -49,11 +49,13 @@ working set; parking is optional if time allows (`CLAUDE.md`).
 
 ### Which states
 
-Lotline is developed and tested on four states with very different data: Minnesota, North Carolina, Ohio and
-Texas (HANDOFF decision of 2026-10-04). The same code runs on each; only a state's configuration file
-(`config/states/<st>.yaml`) and its local data adapters differ. One state will be the official benchmark state
-whose statewide total is submitted; that choice is still open (Minnesota is recommended in `HANDOFF.md`).
-Running four states is the test that a state with thin data can still use the method.
+Lotline is developed and tested on five states with very different data: Minnesota, North Carolina, Ohio and
+Texas (HANDOFF decision of 2026-10-04), and Oregon from November. The same code runs on each; only a state's
+configuration file (`config/states/<st>.yaml`) and its local data adapters differ. **Minnesota is the official
+benchmark state** whose statewide total is submitted (Ben, 2026-11-24). It has the most detailed local records
+of the five (data tier 1, with permit-level ADU counts from the Met Council) and scored highest in the state
+reassessment, so every step of the method can be checked there. The other four states, and Wisconsin as a
+data-ingestion test, show that a state with thinner data can still use the method.
 
 ### What Lotline does not do
 
