@@ -84,6 +84,34 @@ def test_level_estimates_by_hand():
     assert out["parcels_origin"].tolist() == [900.0, 100.0]
 
 
+def test_benchmark_levels_by_hand():
+    """baseline.benchmark_levels docstring: direct (10, 2) per 1,000 on 100 and 900 parcels = 2.8 homes;
+    shrunk (9.615, 3.286) = 3.919 homes, so r = 0.7145 and the levels become (6.870, 2.348)."""
+    p = pd.DataFrame({"group": "g", "direct": [10.0, 2.0], "level": [9.615, 3.286],
+                      "level_var": [1.0, 2.0], "parcels_mean": [100.0, 900.0]})  # fmt: skip
+    out = baseline.benchmark_levels(p)
+    r = 2.8 / (0.9615 + 2.9574)
+    assert out["benchmark_ratio"].tolist() == pytest.approx([r, r])
+    assert out["level"].tolist() == pytest.approx([9.615 * r, 3.286 * r])
+    assert out["level_var"].tolist() == pytest.approx([r**2, 2 * r**2])
+    assert (out["level"] * out["parcels_mean"]).sum() == pytest.approx(2800.0)  # per 1,000 parcels: 2.8 homes
+
+
+def test_benchmarked_levels_keep_each_group_total():
+    """TWO: A builds 10 per 1,000 on 900 parcels, B 0 on 100. Shrinkage moves B up and A down and changes the
+    total (9.45 homes against the direct 9.0); benchmarked, the total is the direct one and the ratio of the
+    two levels is unchanged."""
+    kw = dict(level_years=2, min_group_places=1, group="state")
+    off = baseline.level_estimates(TWO, "units_1", 2020, **kw).set_index("geoid")
+    on = baseline.level_estimates(TWO, "units_1", 2020, benchmark=True, **kw).set_index("geoid")
+    homes = lambda d, col: (d[col] * d["parcels_mean"]).sum() / 1000  # noqa: E731
+    assert homes(off, "level") != pytest.approx(homes(off, "direct"))
+    assert homes(on, "level") == pytest.approx(homes(on, "direct")) == pytest.approx(9.0)
+    ratio = lambda d: d.loc["A", "level"] / d.loc["B", "level"]  # noqa: E731
+    assert ratio(on) == pytest.approx(ratio(off))
+    assert (on["b"] == off["b"]).all()  # the shrinkage weights themselves are unchanged
+
+
 def test_county_group_falls_back_to_state_when_small():
     """With min_group_places = 2, county C1 (2 places) is a group; C2 (1 place) falls back to the state."""
     p = pd.concat([TWO, _panel([("D", "C2", 2019, 1, 100), ("D", "C2", 2020, 1, 100)])])
