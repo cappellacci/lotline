@@ -1,0 +1,63 @@
+{
+ "state": "NC",
+ "origin": 2025,
+ "places": 221,
+ "cuts": {
+  "fees": {
+   "label": "Challenge benchmark ($50,000 cut by $25,000)",
+   "fee_median": 50000.0,
+   "saving_median": 12500.0,
+   "places_with_lots": 0,
+   "places_feasibility_route": 0,
+   "lots_feasible_before": 0,
+   "lots_feasible_after": 0,
+   "lots_crossing": 0,
+   "response": {
+    "1": {
+     "p10": 0.002593945965021674,
+     "p50": 0.010127490934278168,
+     "p90": 0.04107866211144516,
+     "base_homes": 292812.1055,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.983
+    },
+    "2_4": {
+     "p10": 0.006380521695991287,
+     "p50": 0.024380718301042034,
+     "p90": 0.10141699505588375,
+     "base_homes": 5661.8665,
+     "p50_inside": true,
+     "share_of_draws_inside": 0.954
+    }
+   }
+  },
+  "fees_local_half": {
+   "label": "Real local fees cut by half",
+   "fee_median": 6683.15,
+   "saving_median": 1670.7875,
+   "places_with_lots": 0,
+   "places_feasibility_route": 0,
+   "lots_feasible_before": 0,
+   "lots_feasible_after": 0,
+   "lots_crossing": 0,
+   "response": {
+    "1": {
+     "p10": 0.0003970031897659098,
+     "p50": 0.0015522505001381937,
+     "p90": 0.006374215845863335,
+     "base_homes": 292812.1055,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    },
+    "2_4": {
+     "p10": 0.0008740109868758916,
+     "p50": 0.0033188021323236,
+     "p90": 0.013954625906590771,
+     "base_homes": 5661.8665,
+     "p50_inside": true,
+     "share_of_draws_inside": 1.0
+    }
+   }
+  }
+ }
+}
