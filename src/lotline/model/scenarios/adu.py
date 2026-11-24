@@ -648,7 +648,8 @@ def remainder_priors(coded: pd.DataFrame, min_count: int) -> pd.DataFrame:
     """D-102 option (b) (Ben, 2026-11-24): for each state with at least `min_count` coded county remainders
     (`kind` == county_unincorporated), one priors row (band `REMAINDER_BAND`) with their mean probabilities.
     An uncoded remainder in that state reads it instead of its size band (`apply_priors`), since
-    unincorporated land is zoned by the county, not by cities its size. Other states keep the band rule.
+    unincorporated land is zoned by the county, not by cities its size. In other states remainders read the
+    smallest band (`apply_priors`).
     By hand: 5 coded remainders, 1 Handbook-equivalent and 4 'none' -> p_handbook 0.2, p_none 0.8."""
     if "kind" not in coded:
         return pd.DataFrame(columns=["state", "band", "n_coded", "source", *P_COLS, "p_partial"])
@@ -729,12 +730,13 @@ def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states,
 
 def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFrame:
     """Fill p_* for 'unknown' places from `rule_priors` by state and size band; adds `prior_source`. A county
-    remainder (`kind`) reads its state's `REMAINDER_BAND` row where there is one (D-102 option (b))."""
+    remainder (`kind`) reads its state's `REMAINDER_BAND` row where there is one, else the smallest band (0)
+    whatever its population (D-102 option (b), Ben 2026-11-24: county land is zoned more like small towns)."""
     out = places.assign(band=size_band(places["population"].fillna(0), edges))
     if "kind" in out:
         has_rem = set(priors.loc[priors["band"] == REMAINDER_BAND, "state"])
-        rem = (out["kind"] == REMAINDER) & out["state"].isin(has_rem)
-        out.loc[rem, "band"] = REMAINDER_BAND
+        rem = out["kind"] == REMAINDER
+        out.loc[rem, "band"] = np.where(out.loc[rem, "state"].isin(has_rem), REMAINDER_BAND, 0)
     pr = priors.set_index(["state", "band"])
     pooled = priors.loc[priors["band"] != REMAINDER_BAND, list(P_COLS)].mean()
     src = pd.Series("coded", index=out.index, dtype=object)

@@ -194,7 +194,7 @@ def test_fast_ramp_differs_from_main_only_by_the_ramp():
 def test_remainders_draw_from_coded_remainders():
     """D-102 option (b): with 5 coded county remainders (dose 0.1) and 5 coded cities (dose 0.9) in one band,
     an uncoded remainder draws from the remainder pool and an uncoded city from its band; with only 4 coded
-    remainders there is no remainder pool and both use the band."""
+    remainders there is no remainder pool and a remainder draws from the smallest band (0)."""
     from lotline.model.scenarios import mm
 
     coded = pd.DataFrame({
@@ -207,4 +207,5 @@ def test_remainders_draw_from_coded_remainders():
     assert mm.remainder_pool_key("county_unincorporated", 1, pools) == "remainder"
     assert mm.remainder_pool_key("place", 1, pools) == 1
     few = mm.dose_pools(coded.iloc[1:], min_coded=5)
-    assert "remainder" not in few and mm.remainder_pool_key("county_unincorporated", 1, few) == 1
+    assert "remainder" not in few and mm.remainder_pool_key("county_unincorporated", 1, few) == 0
+    assert mm.remainder_pool_key("place", 1, few) == 1

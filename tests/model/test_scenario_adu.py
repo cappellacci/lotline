@@ -902,7 +902,7 @@ def test_new_rule_share_scales_only_places_with_no_adus_today_by_hand():
     assert np.allclose(a["added"], b["added"])
 
 
-def _coded(kind, n, p_handbook):
+def _coded_kind(kind, n, p_handbook):
     rows = {f"p_{t}": 0.0 for t in adu.TYPES} | {"p_handbook": p_handbook, "p_none": 1 - p_handbook}
     return pd.DataFrame([{"state": "OR", "population": 30_000.0, "kind": kind, **rows} for _ in range(n)])
 
@@ -911,9 +911,11 @@ def test_remainders_borrow_from_coded_remainders_by_hand():
     """D-102 option (b), remainder_priors docstring: 5 coded remainders, 1 Handbook-equivalent and 4 'none'
     -> p_handbook 0.2. Five coded cities of the same size are all Handbook-equivalent (p_handbook 1). An
     uncoded remainder reads the remainder row; an uncoded city of the same size reads the band; a state
-    with fewer than min_count coded remainders has no remainder row, so its remainders keep the band."""
-    rem = pd.concat([_coded("county_unincorporated", 1, 1.0), _coded("county_unincorporated", 4, 0.0)])
-    coded = pd.concat([rem, _coded("place", 5, 1.0)], ignore_index=True)
+    with fewer than min_count coded remainders has no remainder row, so its remainders read the smallest
+    band (0), whatever their population."""
+    county = "county_unincorporated"
+    rem = pd.concat([_coded_kind(county, 1, 1.0), _coded_kind(county, 4, 0.0)])
+    coded = pd.concat([rem, _coded_kind("place", 5, 1.0)], ignore_index=True)
     edges = (10_000, 50_000)
     pr = adu.rule_priors(coded, edges, min_count=5)
     row = pr[pr["band"] == adu.REMAINDER_BAND].iloc[0]
@@ -928,6 +930,7 @@ def test_remainders_borrow_from_coded_remainders_by_hand():
     assert out.loc["C", "p_handbook"] == pytest.approx(band["p_handbook"])
     few = adu.rule_priors(coded.iloc[1:], edges, min_count=5)  # 4 coded remainders: below the minimum
     assert (few["band"] != adu.REMAINDER_BAND).all()
-    assert adu.apply_priors(places, few, edges).set_index("geoid").loc["R", "prior_source"] != (
-        "state, coded county remainders"
-    )
+    few_out = adu.apply_priors(places, few, edges).set_index("geoid")
+    small = few[(few["state"] == "OR") & (few["band"] == 0)].iloc[0]  # too few: the smallest band, not band 1
+    assert few_out.loc["R", "prior_source"] == small["source"]
+    assert few_out.loc["R", "p_handbook"] == pytest.approx(small["p_handbook"])

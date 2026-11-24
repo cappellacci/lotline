@@ -126,9 +126,12 @@ def dose_pools(places: pd.DataFrame, min_coded: int) -> dict:
 
 
 def remainder_pool_key(kind, band, pools: dict):
-    """The pool an uncoded place draws from: "remainder" for a county remainder where that pool exists,
-    else its size band (D-102 option (b))."""
-    return "remainder" if kind == REMAINDER and "remainder" in pools else band
+    """The pool an uncoded place draws from (D-102 option (b), Ben 2026-11-24): a county remainder draws from
+    "remainder" where that pool exists, else from the smallest size band (0), whatever its population, since
+    county land is zoned more like small towns than like cities its size; any other place, its own band."""
+    if kind != REMAINDER:
+        return band
+    return "remainder" if "remainder" in pools else 0
 
 
 def _place_stream(seed: int, geoid: str) -> np.random.Generator:
