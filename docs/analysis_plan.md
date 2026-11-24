@@ -5234,6 +5234,22 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - Without the low-recall rows (Asheville before 2022; Austin's inferred rule has no counts in the table):
       tiers and tests A and B.
     - Fort Worth's no-kitchen count, reported beside its central count. It is not in the fit.
+  - **Confirmed by Ben, 2026-11-12, before the run** (relayed by the coordinating session; no run had been
+    scored). A first run started on `main` 1c7ad001 was stopped before any fit when Ben asked to review the
+    year limits; its output was discarded unread.
+    - **Year limits, unchanged.** Ben asked for the most inclusive windows, so the cached coverage was put to
+      him year by year.
+      - Austin's permits run from 1971 to 2026-11-10. Its 2024–2025 R-102 counts (90, 9) stay out, as
+        pre-registered: HOME (2024-02-05) ended the flag. Building the HOME-rule inferred counts is a later
+        follow-up.
+      - San Antonio's kept permits start on 2020-11-30. 2020 (about one month, 2 ADUs) stays out as a partial
+        year, so San Antonio is 2021–2025.
+      - D-079's 2016–2025 window stays for every state: no partial 2026 year and no Austin 2010–2015.
+    - **Test A's "new" place** = not in D-053's fit set.
+    - **Tier 0** borrows local rules by size band as 40 rule combinations. Ben expects many states to have no
+      ADU data, so tier 0 is a main use case, and its results are reported first.
+    - **Form A's τ** comes from the four-state profile likelihood (D-044), so the method carries to any state.
+    - **Form B's s** is the SD of the four fitted states' intercept shifts.
 
 ### D-080 · 2026-11-11 · ADUs: the 37119 lot count from the parcel roll, and legalized existing units left out of fitted counts
 - **Why:** the five-state rebuild (`reports/adu-rebuild-2026-11-11.md`, #381) raised two questions for Ben
@@ -5677,6 +5693,86 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     −146.2 against Form A's −151.0 (SE 11).
   - **Rule-age outlook:** δ −0.051 a year of rule age, likelihood ratio 23 against A′.
   - Nothing is written to config.
+
+### D-086 · 2026-11-13 · ADUs: coding each fit place's rule history, so the rule-change term can be tested (method only, before any coding)
+- **Status: accepted by Ben, 2026-11-13 ("Accept both").** Proposed by Claude Code the same day. Ben asked for it on 2026-11-13 ("Cool let's try both of those"), after the D-084 run.
+  - No row has been coded and no fit has been run for this entry. The only data read was an inputs count:
+    which fit places have permit files covering years before their first coded ADU rule. No ADU count was
+    read.
+  - **Number:** provisional, like D-083 to D-085.
+- **Why:**
+  - **The rule-change term is still unidentified.** D-079's g needs 8 events in 3 states. The D-079 build found
+    5 in 2 states: Inver Grove Heights 2019, Minneapolis 2021, Charlotte 2023, Raleigh 2021 and Wilmington 2024.
+    So g and g_m were held at 0.
+  - **How much a rule change moves uptake rests on one city.** m_x is set by Bend's 2016–17 years (D-053).
+    The D-079 event check put Raleigh's 2021 step at 6.6× predicted against 37.6× observed. If the model
+    under-reacts to reforms, every scenario's effect is too small.
+  - **Most fit places carry one coded row: the ordinance now in force.** The inputs count found 26 fit places
+    with permit files that cover years before that row (MN 20, NC 4, OH 1, TX 1). In those years the place
+    either allowed no ADUs or ran an older ordinance that nobody coded. If older, coding it adds fit years,
+    and, where the older rule had a different D-023 grade, an event.
+- **What counts as an event: unchanged from D-079.** A change in the D-023 dose (none 0, permit or conditional
+  use 1/3, by right with owner occupancy 2/3, by right without it 1) between two fit years, with at least two
+  fit years on each side. Built by code (`joint_refit.events`) from the coded rows, never chosen by hand.
+  - **An adoption (no ADUs to a rule) is coded but is not an event.** Form A has no expected count without a
+    rule. In Form B, years at dose 0 would measure "legal or not", which is not the question g asks: how much
+    a looser rule adds where ADUs are already legal.
+  - **Changes that leave the dose alone** (size caps, parking, detached allowed) are coded too, because Form A
+    reads them through c_r and coverage. They are not events. A finer dose would be its own entry.
+- **The coding, fixed now:**
+  - **Scope:** the 64 fit places of D-079, 2014-01-01 to 2025-12-31. Two years before the window, so a rule's
+    age is known at its start. St. Paul is not coded.
+  - **Sources, public only:** a code publisher's history pages (Municode, American Legal, eCode360, Code
+    Publishing), adopted ordinances, council and planning-commission minutes and staff reports posted online,
+    and archived snapshots of the code. No records requests and no emails to staff.
+  - **Rows:** every ordinance version that changed a field our rubric reads (`by_right`, `owner_occ`,
+    `adu_detached_allowed`, `adus_per_lot`, `adu_max_sqft`, `min_lot_sqft`, `parking`, `coverage`) gets its own
+    row, with `source_url`, `source_section`, `source_quote` and its effective date. The row it replaces gets an
+    `end_date`, and the new row names it in `supersedes`. Where the sources show no ADUs were allowed before a
+    place's first rule, that is a "no ADUs" row (#164's convention). Where the sources cannot settle a date or
+    a field, the field is left blank, which the model already treats as uncertain.
+  - **Coded blind to counts.** Coders work from ordinance sources and do not open permit counts.
+  - **Second coder.** Every new row that creates or moves an event is coded again by a second coder working
+    without the first row. A random 20% of the other new rows are too. Agreement goes in `coder_agreement`.
+    Disagreements are settled by a third read and listed for Ben in the PR.
+  - **One PR per state,** each with its rows, the sources and a list of the places searched where nothing older
+    was found.
+- **A check after coding, not used to choose rows:** the place-years with counted ADU permits but no coded rule
+  in force. These may point to a missed older rule. Each such place gets a second search, and the report lists
+  what that found, either way.
+- **Then, before any fit:** the events are rebuilt by code and the list is put in the PR, with the count by
+  state.
+- **If there are at least 8 events in at least 3 states:**
+  - Form B is fitted with g and g_m estimated, as D-079 wrote it, and scored against the base form (the form
+    in use after D-084 and D-085) by D-079's tests and D-084's decision rule.
+  - The D-079 event check is reported for every event: the base form's predicted step against the observed
+    step, with the place effect cancelling.
+- **If there are fewer:** g stays at 0. The event check is still reported. The bar is not lowered after the
+  count.
+- **The new rows change every form's inputs.** Earlier rules add fit years, and changed fields move c_r and
+  coverage. So before any comparison:
+  - the base form is refitted on the revised rows and rescored on the D-075 data-tier test and tests A–B;
+  - that refit becomes the reference, and its change from D-084's numbers is reported as a data revision.
+- **Expected yield, before coding:** unknown, and may fall short.
+  - Many of the 20 Minnesota places whose rule dates from 2020–2024 are likely first adoptions, which are not
+    events.
+  - The NC places (Durham city and county, Cornelius, Greensboro) and Cincinnati are more likely to have had
+    an older rule.
+  - Places already in the fit before 2016 (Austin, Portland, Bend, Minneapolis) may have amendments that
+    nobody coded.
+- **What it will not do:** change the event definition, the dose grades or D-079's bar; touch counts, k or the
+  holdouts; or write fitted values to config before Ben approves a result. It runs offline.
+- **Built and run** only after Ben accepts this entry: the state coding PRs first, then one run PR.
+- **Outcome (recorded on `main` 2026-11-24, from the D-088 entry and the coding PRs):**
+  - **Coded, first coder only:** 64 places in four batches. The rule histories are in `reports/adu-rule-history/`
+    (`mn-1.md`, `mn-2.md`, `nc.md`, `tx-or-oh.md`; PRs #422 to #425).
+  - **Stopped at the first coding** (Ben, 2026-11-14, in D-088): no second coder. The rebuilt count was
+    6 events in 2 states, below the bar of 8 events in 3 states, so g stays 0 and no Form B fit was run.
+  - **The coding PRs were not merged.** Their history rows ("no ADUs" rows and earlier ordinance versions) are
+    not in `config/reforms/`. Most rows for the rule now in force reached config through later rule-row PRs.
+    So the model's inputs never included D-086's history rows, and no model number rests on them.
+  - This entry was written on `ws/adu-rule-events` (#421) on 2026-11-13. It was added to `main` on 2026-11-24
+    because D-088 and later entries cite it.
 
 ### D-088 · 2026-11-14 · ADUs: what the differences between places come from, and place types shared across states (method only, before any count or fit)
 - **Status: accepted by Ben, 2026-11-14 ("Accept D-088"). Proposed by Claude Code the same day.**
