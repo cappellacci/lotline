@@ -89,6 +89,24 @@ def test_fee_draws_stay_in_range_and_center_on_the_central_value():
     assert np.all(fees.fee_draws(places, "handbook", HAND, 10, 1) == 50000)
 
 
+def test_fee_draws_are_keyed_by_place_not_row_order():
+    """Review A19: a place's draws do not move when another place is added or the rows are reordered."""
+    places = pd.DataFrame(
+        {
+            "geoid": ["4800001", "4800002"],
+            "local_fee_per_unit": [5000.0, 6000.0],
+            "local_fee_low": [4000.0, 5000.0],
+            "local_fee_high": [7000.0, 9000.0],
+        }
+    )
+    d = fees.fee_draws(places, "local_half", HAND, 50, 7)
+    more = pd.concat([places.iloc[[1]].assign(geoid="4800000"), places.iloc[::-1]], ignore_index=True)
+    e = fees.fee_draws(more, "local_half", HAND, 50, 7)
+    assert np.array_equal(d[:, 0], e[:, 2]) and np.array_equal(d[:, 1], e[:, 1])
+    other_seed = fees.fee_draws(places, "local_half", HAND, 50, 8)
+    assert not np.array_equal(d[:, 0], other_seed[:, 0])  # the seed still matters
+
+
 def test_builder_saving_and_elasticity_by_hand():
     # (1 − 0.5) × 0.5 × 50,000 = 12,500 reaches builders; 0.3 × 12,500 / 250,000 = 0.015.
     saving = fees.builder_saving(np.array([50000.0]), HAND)
