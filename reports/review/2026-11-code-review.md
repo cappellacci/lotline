@@ -20,6 +20,11 @@ Status key: **proposed** = waiting for Ben's yes; **done** = acted on, with the 
 | A9 | Engine: ADU | `adu.py` module docstring | Docstring left out D-099's ν; a stray line break. | Reader misses a factor. | nit | Added | fixed on `ws/adu-review-fixes` |
 | A10 | Engine: ADU | `adu.py` 456, 508, 517, 571 | 0.5 used as the unknown-field share and the parcel-measurement threshold, in code rather than config (CLAUDE.md). | Not tunable or cited. | nit | Move to `config/params/adu.yaml` with a source | proposed |
 | A11 | Engine: ADU | `adu.py` observed-rate draws, proxy scaling, `draw_rule_share` rounding | Edge cases: missing k-row terms give 0; proxy scaled differently from own rate; cumsum rounding can pick the last type. | None hit today's numbers. | nit | Leave; recheck if a state lacks the terms | proposed |
+| A12 | Engine: MM | `src/lotline/model/scenarios/mm.py` `dose_pools` | Coded county remainders also fed the city band and "all" dose pools. | Uncoded cities drew doses partly from county zoning. | important | Leave remainders out (as A7) | fixed on `ws/mm-review-fixes` (NC within 1%) |
+| A13 | Engine: MM | `mm.py` `simulate`, `run` | A new state with no coded MM rule gave every place dose 0. | Wisconsin was treated as banning 2–4 homes everywhere; the full Handbook effect was added. | important | Borrow the five states' coded doses by size band (`borrowed_pool`) | fixed on `ws/mm-review-fixes` (WI MM P50 2,757 → 1,327) |
+| A14 | Engine: MM | `mm.py` `places_from_store` | Missing cost-index year silently used the latest year. | A backtest origin before the series priced with today's costs. | nit | `cost_index_at`: nearest earlier year; error if empty | fixed on `ws/mm-review-fixes` |
+| A15 | Engine: MM | `mm.py` `log_sd` | low > high silently gave no range. | A config typo removes θ's uncertainty. | nit | Raise | fixed on `ws/mm-review-fixes` |
+| A16 | Engine: MM | `mm.py` docstring | Said "median rent"; code fills median F(PCR). | Reader misled. | nit | Docstring corrected | fixed on `ws/mm-review-fixes` |
 
 ## Part B: cleanup lists (proposed 2026-11-24)
 

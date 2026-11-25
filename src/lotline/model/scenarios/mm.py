@@ -20,9 +20,11 @@ For each place i and scenario year t = 1 … 5, with the fitted model (`mm_hazar
   year, D-064) (`estimate_mm.rule_dose`: units grade × approval grade × coverage). The Handbook rule has
   dose 1 (four or more units by right on every single-family zone); the fitted effect is per unit of dose
   increase (D-042), so the scenario adds 1 − d_i. A place with no coded rule draws d from coded places in
-  its state and size band (D-022), per draw.
+  its state and size band (D-022), per draw; coded county remainders stay out of those pools (D-102 (b)). A
+  state outside `adu.REFORM_STATES` with no coded rule of its own draws from the five states' coded places
+  by size band instead (`borrowed_pool`), as the ADU scenario does.
 - **F(PCR)/F(1):** the rental-duplex price-to-cost at the origin's ACS rent, relative to PCR = 1, with σ
-  and the developer margin of the fit. A place without a rent takes the state median.
+  and the developer margin of the fit. A place without a rent takes the median F(PCR) of the state's places.
 - **Homes per building:** `mm_units_per_project`, triangular. Only 2-4 unit buildings are counted (D-063
   choice 1): BPS puts 5-6 unit buildings with apartments, so the fit says nothing about them.
 - **Teardowns (D-063 choice 2):** a new building on a lot with a house replaces it. The house share is the
@@ -66,6 +68,8 @@ def specs() -> dict:
 def log_sd(spec) -> float:
     """Log-SD of a lognormal whose 90% interval is (low, high). By hand, θ 0.0000325-0.001006:
     (ln 0.001006 − ln 0.0000325) / 3.2897 = 3.4326 / 3.2897 = 1.0434."""
+    if spec.low > spec.high:
+        raise ValueError(f"low {spec.low} is above high {spec.high}")
     return float((np.log(spec.high) - np.log(spec.low)) / (2 * Z_90)) if spec.low < spec.high else 0.0
 
 
@@ -114,9 +118,12 @@ def dose_pools(places: pd.DataFrame, min_coded: int) -> dict:
     band (`remainder_pool_key`), since unincorporated land is zoned by the county, not by cities its size."""
     col = "pool_dose" if "pool_dose" in places else "dose"
     coded = places[places[col].notna()]
-    every = coded[col].to_numpy(float)
+    # D-102 (b): county remainders have their own pool, so they stay out of what towns and cities draw
+    cities = coded[coded["kind"] != REMAINDER] if "kind" in coded else coded
+    cities = cities if len(cities) else coded
+    every = cities[col].to_numpy(float)
     pools = {
-        b: (g[col].to_numpy(float) if len(g) >= min_coded else every) for b, g in coded.groupby("band")
+        b: (g[col].to_numpy(float) if len(g) >= min_coded else every) for b, g in cities.groupby("band")
     } | {"all": every}
     if "kind" in coded:
         rem = coded[coded["kind"] == REMAINDER]
@@ -161,6 +168,7 @@ def simulate(
     min_coded: int = 5,
     horizon: int = HORIZON,
     phi: float | None = None,
+    pool_places: pd.DataFrame | None = None,
 ) -> Result:
     """Joint draws of the added buildings, homes and teardowns (module docstring).
 
@@ -168,13 +176,14 @@ def simulate(
     (default 3) and f_share (F(PCR), for the funnel's pencil-out stage; default f_ratio). `draws`: one row per
     draw (theta, alpha, units, teardown_scale; `draw_params`). Every place shares a draw's parameters; its u,
     its drawn dose (if uncoded), its yearly lumpiness g (if `phi` is given) and its counts come from its own
-    keyed stream, so a place draws alike whichever places it is run with.
+    keyed stream, so a place draws alike whichever places it is run with. `pool_places` (band, kind, dose)
+    replaces `places` as the source of the dose pools (`borrowed_pool`).
     """
     n = len(draws)
     shape = year_shape(half, slope, horizon)
     th, al = draws["theta"].to_numpy(), draws["alpha"].to_numpy()
     units, scale = draws["units"].to_numpy(), draws["teardown_scale"].to_numpy()
-    pools = dose_pools(places, min_coded)
+    pools = dose_pools(places if pool_places is None else pool_places, min_coded)
     bld, hom, tdn = (np.zeros((n, horizon)) for _ in range(3))
     legal, pencils = np.zeros((n, 3)), np.zeros(n)
     has_share = "f_share" in places
@@ -284,6 +293,50 @@ def house_shares(state: str, store) -> pd.Series:
     return p.groupby("jurisdiction_geoid").apply(house_share, include_groups=False).dropna()
 
 
+def cost_index_at(ci: Mapping[int, float], origin: int) -> float:
+    """The cost index of `origin`, else of the nearest earlier year, else of the earliest year."""
+    if not ci:
+        raise ValueError("no construction cost index: fetch market_geo_year (PPI and CPI-U) first")
+    before = [y for y in ci if y <= origin]
+    return float(ci[max(before)] if before else ci[min(ci)])
+
+
+def borrowed_pool(store, origin: int) -> pd.DataFrame:
+    """Coded places of every state in `adu.REFORM_STATES` (band, kind, dose at the origin), for a new state
+    with no coded missing-middle rule of its own: it borrows from them by size band, as ADU priors do (code
+    review A13, Ben 2026-11-25), instead of taking d = 0 everywhere. Bands use 2020 population and the ADU
+    rule-band edges, as `place_inputs` does. Coverage and blanks as in `places_from_store`."""
+    from lotline.config import load_state
+    from lotline.model import estimate_mm as emm
+    from lotline.model import rule_tags
+    from lotline.model.scenarios import adu
+
+    sp = specs()
+    pa = {k: v.value for k, v in load_params("adu").items()}
+    edges = (pa["adu_rule_band_small_max_pop"], pa["adu_rule_band_mid_max_pop"])
+    permit_grade = sp["mm_dose_grade_permit"].value
+    reforms = {st: rule_tags.apply(adu.load_reforms(st)) for st in adu.REFORM_STATES}
+    every = pd.concat([r.assign(state=st) for st, r in reforms.items()], ignore_index=True)
+    blanks = emm.blank_shares(every[every["status"] == "in_force"])
+    at_origin = pd.Timestamp(f"{origin}-12-31")
+    rows = []
+    for st, ref in reforms.items():
+        mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]
+        if mm_rows.empty:
+            continue
+        cov = emm._mm_coverage(st, store, mm_rows, pa)
+        j = store.read(st, "jurisdictions").set_index("geoid")
+        fips = load_state(st).fips
+        for g, own in mm_rows.groupby("jurisdiction_geoid"):
+            if g == fips or g not in j.index:
+                continue
+            pop = pd.to_numeric(pd.Series([j.at[g, "pop_2020"]]), errors="coerce").fillna(0)
+            rows.append({"state": st, "geoid": g, "band": int(adu.size_band(pop, edges)[0]),
+                         "kind": j.at[g, "kind"] if "kind" in j else None,
+                         "dose": current_dose(own, at_origin, cov, blanks, permit_grade)})  # fmt: skip
+    return pd.DataFrame(rows, columns=["state", "geoid", "band", "kind", "dose"])
+
+
 def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     """One row per jurisdiction with missing-middle eligible parcels: every input `simulate` needs.
 
@@ -338,7 +391,7 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     places = places.rename(columns={"size_band": "band"})
 
     ci = hazard.cost_index_by_year(store.read(state, "market_geo_year"))
-    pcr = emm.plex_price_to_cost(places["rent"], cost_index=ci.get(origin, ci[max(ci)]))
+    pcr = emm.plex_price_to_cost(places["rent"], cost_index=cost_index_at(ci, origin))
     places["pcr"] = pcr
     f = pd.Series(np.where(np.isfinite(pcr), feasible_share(np.nan_to_num(pcr), margin, sigma), np.nan))
     f1 = float(feasible_share(1.0, margin, sigma))
@@ -367,8 +420,12 @@ def run(
     seed = int(sp["mm_scenario_seed"].value) if seed is None else seed
     half = ramp_half(sp, ramp)
     places = places_from_store(state, store, origin) if places is None else places
+    from lotline.model.scenarios import adu
+
+    new_state = state.upper() not in adu.REFORM_STATES and places["dose"].notna().sum() == 0
     res = simulate(
         places, draw_params(n, seed, sp), half, sp["mm_ramp_slope_years"].value,
         seed, int(sp["mm_rule_min_coded"].value), phi=sp["mm_year_spread_phi"].value,
+        pool_places=borrowed_pool(store, origin) if new_state else None,
     )  # fmt: skip
     return places, res, summarize(res)
