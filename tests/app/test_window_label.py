@@ -51,3 +51,22 @@ def test_page_does_not_work_out_the_window_from_meta():
     html = build.render(build.payload([json.loads(FIXTURE.read_text())], "t"))
     assert "origin_year + 1" not in html and "origin_year+1" not in html
     assert "AGG.windowLabel(b)" in html
+
+
+def test_every_window_label_call_on_b_sits_in_a_function_that_takes_b():
+    """The Model page's deep dives (`drawDeepDive`, `mmDeepDive`) hold only `bs`: a `windowLabel(b)` there
+    threw "b is not defined" and left both sections on their placeholder (nightly review, 2026-11-25). Each
+    top-level function that calls `windowLabel(b)` must take `b` as a parameter."""
+    import re
+
+    page = (REPO / "src" / "lotline" / "app" / "template.html").read_text(encoding="utf-8")
+    starts = [
+        (m.start(), m.group(1), m.group(2))
+        for m in re.finditer(r"^(?:async )?function (\w+)\(([^)]*)\)", page, re.M)
+    ]
+    bad = []
+    for i, (pos, name, params) in enumerate(starts):
+        body = page[pos : starts[i + 1][0] if i + 1 < len(starts) else len(page)]
+        if "windowLabel(b)" in body and "b" not in [p.split("=")[0].strip() for p in params.split(",")]:
+            bad.append(name)
+    assert not bad, f"windowLabel(b) used where no `b` parameter exists: {bad}"
