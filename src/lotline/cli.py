@@ -246,6 +246,16 @@ def _validate(args: argparse.Namespace) -> int:
 def _calibrate(args: argparse.Namespace) -> int:
     from lotline import calibrate
 
+    if args.run:
+        rows = calibrate.run(args.step or None, quick=args.quick, write=args.write)
+        for r in rows:
+            if r["name"] is None:
+                print(f"{r['step']:24} {r['status']}")
+            else:
+                d = "" if r["rel_diff"] is None else f"{100 * r['rel_diff']:.2f}%"
+                print(f"{r['step']:24} {r['name']:48} config {r['config']}  new {r['new']:.6g}  diff {d}")
+        if args.write:
+            print("wrote config and the lock")
     if args.write_lock:
         print(f"wrote {calibrate.write_lock()}")
     if args.list:
@@ -458,6 +468,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--write-lock",
         action="store_true",
         help="record config's fitted values in config/calibration.lock.json",
+    )
+    cal.add_argument("--run", action="store_true", help="recompute the ported steps and compare with config")
+    cal.add_argument("--step", action="append", help="only this step (repeatable); default every step")
+    cal.add_argument("--quick", action="store_true", help="with --run: fewer draws, minutes; can't --write")
+    cal.add_argument(
+        "--write", action="store_true", help="with --run: write new values into config and the lock"
     )
     cal.set_defaults(func=_calibrate)
     return parser

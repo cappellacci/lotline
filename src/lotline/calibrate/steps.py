@@ -35,6 +35,9 @@ class Step:
     status: str = "current"  # "current", "stale" (fit on an older model form) or "frozen" (validation only)
     notes: str = ""
     extra: dict = field(default_factory=dict)
+    # "module:function" that recomputes the step (phases 2-4); None until it is ported. The function takes a
+    # `RunContext` and returns {params file: {key: value}} for the keys the step produces.
+    runner: str | None = None
 
 
 STEPS: tuple[Step, ...] = (

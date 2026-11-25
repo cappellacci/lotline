@@ -8,6 +8,15 @@ re-run and the lock rewritten fails `--check`, so a fitted number can't drift fr
     lotline calibrate --list         # the steps in run order, with what each produces and how
     lotline calibrate --check        # registry, config and lock agree (no data needed; runs in CI)
     lotline calibrate --write-lock   # after re-running a step on purpose: record config's values
+    lotline calibrate --run [--step NAME] [--quick] [--write]   # recompute ported steps; compare or write
+
+Running (phases 2-4): a step with a `runner` ("module:function") is recomputed from the fetched data. The
+function takes a `RunContext` (the data store, quick or full, the step's seed and draws) and returns
+{params file: {key: value or {value, low, high}}}. `run` compares each value with config (relative
+difference) and, with `write`, puts it into the YAML `value:` (and `low:`/`high:`) lines, leaving comments and
+sources untouched, then rewrites the lock. Steps not yet ported are listed as such. Runners for different
+chains live in different modules (`lotline.calibrate.data_steps`, `.mm_steps`, `.adu_steps`), so they can be
+ported in parallel.
 
 What `--check` proves:
 1. every step's `after` names a known step and the steps have no cycle;
@@ -19,7 +28,10 @@ What `--check` proves:
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
+import re
+from dataclasses import dataclass
 from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 
@@ -147,3 +159,90 @@ def check(config_dir: Path = CONFIG_DIR, steps: tuple[Step, ...] = STEPS) -> lis
                 f"({owner[name]}) being re-run and the lock rewritten"
             )
     return problems
+
+
+@dataclass(frozen=True)
+class RunContext:
+    """What a runner gets: the data store, whether this is a quick run, and the step's own seed and draws (a
+    quick run may scale its draws down; the full run must use the step's own)."""
+
+    store: object
+    quick: bool
+    seed: int | None
+    draws: int | None
+
+
+def _resolve(runner: str):
+    module, _, name = runner.partition(":")
+    return getattr(importlib.import_module(module), name)
+
+
+def _fmt(v) -> str:
+    return str(v) if isinstance(v, int) and not isinstance(v, bool) else repr(float(v))
+
+
+def set_values(file: str, values: dict[str, object], config_dir: Path = CONFIG_DIR) -> None:
+    """Write each key's new numbers into `config/params/<file>.yaml`: a number sets `value:`; a dict may set
+    `value`, `low` and `high` (a fitted interval). Every other line (comments, sources, units) stays as it is.
+    Raises if a key or one of its lines isn't found."""
+    path = config_dir / "params" / f"{file}.yaml"
+    lines = path.read_text(encoding="utf-8").split("\n")
+    for key, new in values.items():
+        fields = new if isinstance(new, dict) else {"value": new}
+        start = next((i for i, ln in enumerate(lines) if ln == f"{key}:"), None)
+        if start is None:
+            raise KeyError(f"{file}.yaml has no top-level {key}")
+        tops = [i for i in range(start + 1, len(lines)) if lines[i] and not lines[i].startswith((" ", "#"))]
+        end = tops[0] if tops else len(lines)
+        for name, v in fields.items():
+            hit = next((i for i in range(start + 1, end) if re.match(rf"^\s+{name}:\s*\S", lines[i])), None)
+            if hit is None:
+                raise KeyError(f"{file}.yaml: {key} has no {name} line")
+            lines[hit] = re.sub(rf"^(\s+{name}:\s*).*$", lambda m, v=v: m.group(1) + _fmt(v), lines[hit])
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def run(
+    names: list[str] | None = None,
+    *,
+    quick: bool = False,
+    write: bool = False,
+    store=None,
+    config_dir: Path = CONFIG_DIR,
+    steps: tuple[Step, ...] = STEPS,
+) -> list[dict]:
+    """Recompute the ported steps (all, or `names`) in run order. One row per value: step, name, config value,
+    new value and relative difference; a step with no runner gives one row saying so. With `write` (full runs
+    only), new values go into config and the lock is rewritten."""
+    if write and quick:
+        raise ValueError(
+            "a quick run uses fewer draws, so it can't write config; run without --quick to write"
+        )
+    if store is None:
+        from lotline.io import DataStore
+
+        store = DataStore()
+    chosen = [s for s in order(steps) if names is None or s.name in names]
+    unknown = sorted(set(names or []) - {s.name for s in steps})
+    if unknown:
+        raise ValueError(f"unknown step(s) {unknown}")
+    rows: list[dict] = []
+    for s in chosen:
+        if s.runner is None:
+            rows.append({"step": s.name, "name": None, "status": "not ported yet"})
+            continue
+        out = _resolve(s.runner)(RunContext(store, quick, s.seed, s.draws))
+        for file, values in out.items():
+            raw = _raw(file, config_dir)
+            for key, out_value in values.items():
+                new = out_value["value"] if isinstance(out_value, dict) else out_value
+                old = (raw.get(key) or {}).get("value")
+                rel = abs(new - old) / abs(old) if old not in (None, 0) else None
+                rows.append(
+                    {"step": s.name, "name": f"{file}:{key}", "config": old, "new": new, "rel_diff": rel}
+                )
+            if write:
+                set_values(file, values, config_dir)
+    if write:
+        write_lock(config_dir, steps)
+    return rows
