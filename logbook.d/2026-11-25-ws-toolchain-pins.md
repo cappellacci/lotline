@@ -2,8 +2,8 @@
 
 - **Question:** What stops a fresh setup or a CI image change from running an untested toolchain?
 - **Outputs:** `.python-version` (3.12); `pyproject.toml` (bounds on httpx, pandas, pandera, pyarrow, pydantic, pyyaml;
-  `[tool.uv] required-version`); `uv.lock` (metadata only); `.github/workflows/tests.yml` and `compliance.yml`
-  (`actions/setup-node`, Node 22); `tests/app/conftest.py`.
+  `[tool.uv] required-version`); `uv.lock` (metadata only); `.github/workflows/tests.yml` (`actions/setup-node`,
+  Node 22) and `compliance.yml` (runs setup and static checks; the suite now runs once, in `tests.yml`); `tests/app/conftest.py`.
 - **Decision:** Ben, 2026-11-25 (overnight): "go with your suggested order"; item 2. Declaring numpy as a direct
   dependency is left for Ben (CLAUDE.md: ask before adding a dependency). Merge left to Ben.
 - **What Claude did and how it was checked:** `uv lock` after the bound changes left every package version as it was.
