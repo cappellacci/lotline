@@ -14,6 +14,7 @@ theta:
   format: share
   params:
     adu: [hazard:adu_mature_hazard_ref]
+    missing_middle: [mm_hazard:mm_mature_hazard_ref, mm_hazard:mm_ramp_half_years, mm_hazard:mm_units_per_project]
     fees: [fees:fee_permit_elasticity, fees:land_capture_share, fees:fee_ramp_half_years]
     fees_local_half: [fees:fee_permit_elasticity, fees:land_capture_share, fees:fee_ramp_half_years]
   by_scenario:
@@ -31,6 +32,7 @@ pencil_out_share:
   format: share
   params:
     adu: [proforma:adu_margin, proforma:hard_cost_per_sqft_usd, proforma:adu_hard_cost_premium]
+    missing_middle: [proforma:hard_cost_per_sqft_usd, mm_hazard:mm_feasibility_dispersion]
 completion_factor:
   label: Permits that become finished homes
   why: Some permitted homes are never finished or are finished late. This turns permits into completed homes.
@@ -39,6 +41,7 @@ completion_factor:
   format: share
   params:
     adu: [aggregate:completion_factor_single_family]
+    missing_middle: [aggregate:completion_factor_multifamily]
     fees: [aggregate:completion_factor_single_family, aggregate:completion_factor_multifamily]
     fees_local_half: [aggregate:completion_factor_single_family, aggregate:completion_factor_multifamily]
 net_new_share:
@@ -49,6 +52,7 @@ net_new_share:
   format: share
   params:
     adu: [aggregate:adu_net_new_share, aggregate:adu_formalization_share]
+    missing_middle: [mm:mm_teardown_share_scale]
 displacement_share:
   label: Homes that would have been built elsewhere in the state anyway
   why: Some new homes replace homes that would otherwise have been built in another town in the state. They count in "All new homes" but not in "Net new housing".
@@ -57,5 +61,6 @@ displacement_share:
   format: share
   params:
     adu: [aggregate:displacement_share]
+    missing_middle: [aggregate:displacement_share]
     fees: [aggregate:displacement_share]
     fees_local_half: [aggregate:displacement_share]
