@@ -663,7 +663,7 @@ uv run lotline results --state XX --role transfer</code></pre>
           <li><b>How big the effect is.</b> The counts are consistent with an effect but cannot pin it down, so the mature rate's range spans about 150-fold.</li>
           <li><b>5–6 unit buildings,</b> which Census permits lump with larger ones.</li>
           <li><b>Height and floor-area limits,</b> which can stop a fourplex the zoning allows.</li>
-          <li><b>How fast builders respond.</b> Places that chose the reform themselves, like St. Paul, reached half speed in about half a year. At that pace the five-year homes would be about 3.6 times higher; this faster case is not in the app yet.</li>
+          <li><b>How fast builders respond.</b> Places that chose the reform themselves, like St. Paul, reached half speed in about half a year. At that pace the five-year homes would be about 3.6 times higher. The model uses the slower pace measured in Oregon, where a state law required the change, because the Challenge reform is a state law.</li>
         </ul>
         <details class="more"><summary>Sources</summary><p class="source">Sources: docs/analysis_plan.md D-092 (challenger C4) and docs/model_and_assumptions.md; config/params/mm_hazard.yaml.</p></details>
       </div>
@@ -1216,7 +1216,9 @@ function howKit(b, d, first) {
 
 // Missing middle's steps (Ben, 2026-11-17: "a similar section" to the ADU card's). The factors are the engine's
 // (results.mm_draws): θ is five-year homes permitted per lot where building pays; net-new share is 1 − houses
-// torn down ÷ homes permitted.
+// torn down ÷ homes permitted. The ramp note (Ben, 2026-11-25, in place of #448): D-100's fast-ramp run gave five-year
+// totals 3.61 times C4's in every state (ramp sums 4.204 at half-way 0.5 years, mm_ramp_half_years_fast, against
+// 1.163 at 4.0, mm_ramp_half_years); the ratio depends only on the two ramps, so it holds for every state.
 function mmHowHtml(b, R) {
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const k0 = howKit(b, "missing_middle"), legal = k0.st("legal");
@@ -1227,7 +1229,7 @@ function mmHowHtml(b, R) {
     <ol class="how">
       <li><div><b>Find the lots where 2–4 homes would become legal</b><p>Every lot in ${esc(name)} now zoned for one house, from county parcel records (or Census counts of houses where a county has none), less what local rules already allow.</p>${fbar(legal && legal.p50, "var(--survey)")}</div><span class="v">${legal ? `${fmtN(legal.p50)} lots` : "–"}</span></li>
       <li><div><b>Keep the lots where building pays</b><p>For each place, what a small multi-unit building would rent or sell for against what the land and construction cost. The range comes from uncertainty in costs and rents.</p>${fbar(pays && pays.p50, "var(--survey)", 0.6)}</div><span class="v">${pays ? `${rng(pays)} lots` : "–"}</span></li>
-      <li><div><b>Apply how often builders actually build</b><p>Measured from 93 places in our states (most in Oregon) that began allowing 2–4 homes on these lots. The effect builds up over several years, so the fifth year is not yet full speed. The range is very wide, because the effect is not clearly detected yet.</p></div><span class="v">${per10k(med("theta"))} homes per 10,000 lots over 5 years</span></li>
+      <li><div><b>Apply how often builders actually build</b><p>Measured from 93 places in our states (most in Oregon) that began allowing 2–4 homes on these lots. The effect builds up over several years, so the fifth year is not yet full speed. The range is very wide, because the effect is not clearly detected yet.</p><p class="body-small muted">How fast builders respond is the biggest open question. If they took up a state law as fast as builders did in cities that adopted the reform on their own, the five-year total would be about 3.6 times higher. We use the slower pace measured in Oregon, where a state law required the change, because the Challenge reform is a state law.</p></div><span class="v">${per10k(med("theta"))} homes per 10,000 lots over 5 years</span></li>
       <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and a new building usually replaces the house on its lot, so only part of each permit is a gain (${fmtPct(med("net_new_share"))} after the houses torn down).</p>${fbar(r.homes_in_place.p50, col, 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, col)}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
