@@ -25,7 +25,9 @@ around that reflects lumpy years and the regional building cycle. Per place and 
 1,000 eligible parcels and `level_years` = m:
 
 1. **Recent level (direct estimate).** y_i = 1000 · Σ units / Σ eligible parcels over the m years ending at
-   the origin (a ratio of sums, so a place's size weights its own years).
+   the origin (a ratio of sums, so a place's size weights its own years). A place with fewer usable years
+   (at least `level_min_years`, the origin among them) uses the m_i it has; one with counts but no lot count
+   takes its own mean count, unshrunk (`count_only_places`; review A20, `level_estimates`).
 2. **Shrinkage (Fay-Herriot, protocol §5.7).** The group rate ḡ is the same ratio of sums over all places
    in the place's county (or the state, if the county has fewer than `min_group_places` places). Annual
    counts are treated as negative binomial, Var(c) = λ + λ²/k, with 1/k estimated by pooled moments
@@ -242,31 +244,45 @@ def level_estimates(
     detrend: bool = True,
     key: str = "geoid",
     benchmark: bool = False,
+    min_years: int | None = None,
+    count_only: bool = False,
 ) -> pd.DataFrame:
     """Step 1-2 of the model: each place's direct rate, its group rate, and the Fay-Herriot shrunk rate.
 
-    Uses only rows with year in [origin − level_years + 1, origin]; a place needs all of those years with both
-    a count and a positive denominator. One row per place. `detrend` divides each year's count by the state's
-    `cycle_index` before 1/k and the place's own variance are estimated (the level itself is never detrended).
+    Uses only rows with year in [origin − level_years + 1, origin]. A place needs at least `min_years` of
+    those years with both a count and a positive denominator, the origin among them (`min_years` None: all
+    `level_years`, the rule before review A20); its rate and variances use the m_i years it has. One row per
+    place. `detrend` divides each year's count by the state's `cycle_index` (taken over the places with every
+    window year) before 1/k and the place's own variance are estimated (the level itself is never detrended).
+
+    `count_only` (review A20): a place left out above that still has `min_years` counts, the origin among
+    them, but too few years with a positive denominator (a county remainder with no lot count, a place new to
+    the lot data) gets a level from its own counts, `route` 'own_counts': its mean count a year on a nominal
+    1,000 parcels, so level = mean count, with no shrinkage (b = 0) and variance the larger of the negative
+    binomial's at that mean, (c̄ + c̄² / k) / m, and its own (detrended) count variance / m, 1/k being the
+    state's. Every other place has `route` 'parcels'.
 
     `benchmark` (D-106's proposal, `benchmark_levels`): within each shrinkage group the shrunk levels are
     scaled by r = Σ direct × parcels ÷ Σ level × parcels, so the group's homes at the shrunk rates equal its
     homes at the direct rates (its observed pace); `level_var` scales by r². Shrinkage still moves places
     toward their group, but no longer changes the group's total. See `benchmark_levels`.
     """
+    need = level_years if min_years is None else int(min_years)
     first = origin - level_years + 1
-    w = panel[(panel["year"] >= first) & (panel["year"] <= origin)]
-    w = w[w[value].notna() & (w[PARCELS].astype(float) > 0)]
+    counted = panel[(panel["year"] >= first) & (panel["year"] <= origin) & panel[value].notna()]
+    w = counted[counted[PARCELS].astype(float) > 0]
     cols = [key, "state"] + ([group] if group not in ("state", key) else [])
     agg = w.groupby(key, sort=True).agg(
         years=("year", "nunique"), units=(value, "sum"), parcels_sum=(PARCELS, "sum")
     )
     meta = w.sort_values("year").groupby(key).last()[[c for c in cols if c != key]]
     places = agg.join(meta)
-    places = places[places["years"] == level_years].copy()
-    if places.empty:
+    at_origin = set(w.loc[w["year"] == origin, key])
+    places = places[(places["years"] >= need) & places.index.isin(at_origin)].copy()
+    own = _own_count_places(counted, value, origin, need, places.index, cols, key) if count_only else None
+    if places.empty and (own is None or own.empty):
         return places.assign(direct=[], group_rate=[], v=[], a=[], b=[], level=[], level_var=[], inv_k=[])
-    places["parcels_mean"] = places["parcels_sum"].astype(float) / level_years
+    places["parcels_mean"] = places["parcels_sum"].astype(float) / places["years"]
     origin_p = w[w["year"] == origin].set_index(key)[PARCELS].astype(float)
     places["parcels_origin"] = origin_p.reindex(places.index)
     places["direct"] = PER * places["units"].astype(float) / places["parcels_sum"].astype(float)
@@ -276,28 +292,68 @@ def level_estimates(
     sums = sums.where(~places["group"].str.startswith("state:"), state_sums)  # fallback = whole state
     places["group_rate"] = PER * sums["units"] / sums["parcels_sum"]
 
+    full = places.index[places["years"] == level_years]
+    basis = w[w[key].isin(full)]
     inw = w[w[key].isin(places.index)]
     c = inw[value].astype(float)
     if detrend:
-        c = c / cycle_index(inw, value)
+        c = c / cycle_index(inw, value, basis=basis)
     counts = c.groupby(inw[key])
     annual = PER * c / inw[PARCELS].astype(float)
-    places["v_direct"] = annual.groupby(inw[key]).var(ddof=1).reindex(places.index).fillna(0.0) / level_years
-    out = []
-    for _state, p in places.groupby("state"):
+    m = places["years"].astype(float)
+    places["v_direct"] = annual.groupby(inw[key]).var(ddof=1).reindex(places.index).fillna(0.0) / m
+    out, inv_ks = [], {}
+    for state, p in places.groupby("state"):
         inv_k = nb_inverse_dispersion([counts.get_group(g).to_numpy() for g in p.index])
+        inv_ks[state] = inv_k
         lam = p["group_rate"] * p["parcels_mean"] / PER
-        v = PER**2 / p["parcels_mean"] ** 2 * (lam + lam**2 * inv_k) / level_years
+        v = PER**2 / p["parcels_mean"] ** 2 * (lam + lam**2 * inv_k) / p["years"].astype(float)
         if use_direct_variance:
             v = np.maximum(v, p["v_direct"])
         a, b = fay_herriot(p["direct"].to_numpy(), v.to_numpy(), p["group_rate"].to_numpy())
         out.append(p.assign(v=v, a=a, b=b, inv_k=inv_k))
-    places = pd.concat(out)
+    places = pd.concat(out) if out else places.assign(v=[], a=[], b=[], inv_k=[])
     places["level"] = (1 - places["b"]) * places["direct"] + places["b"] * places["group_rate"]
     places["level_var"] = (1 - places["b"]) * places["v"]
+    places["route"] = "parcels"
+    if own is not None and len(own):
+        places = pd.concat([places, _own_count_levels(own, counted, value, inv_ks, basis, detrend, key)])
     if benchmark:
         places = benchmark_levels(places)
     return places.reset_index()
+
+
+def _own_count_places(counted, value, origin, need, fitted, cols, key) -> pd.DataFrame:
+    """Places outside `fitted` with at least `need` window counts, the origin among them (review A20)."""
+    rest = counted[~counted[key].isin(fitted)]
+    agg = rest.groupby(key, sort=True).agg(years=("year", "nunique"), units=(value, "sum"))
+    meta = rest.sort_values("year").groupby(key).last()[[c for c in cols if c != key]]
+    agg = agg.join(meta)
+    return agg[(agg["years"] >= need) & agg.index.isin(set(rest.loc[rest["year"] == origin, key]))].copy()
+
+
+def _own_count_levels(own, counted, value, inv_ks, basis, detrend, key) -> pd.DataFrame:
+    """Levels for the `count_only` route: mean count a year on a nominal `PER` parcels, no shrinkage.
+
+    By hand: counts 10 and 30 in a 2-year window, 1/k = 0.5, no detrending: level = 20 (per 1,000 nominal
+    parcels, so 20 homes a year); NB variance (20 + 400 × 0.5) / 2 = 110, own variance 200 / 2 = 100 ->
+    level_var 110.
+    """
+    rows = counted[counted[key].isin(own.index)]
+    c = rows[value].astype(float)
+    if detrend and len(basis):
+        c = c / cycle_index(rows, value, basis=basis)
+    m = own["years"].astype(float)
+    mean = own["units"].astype(float) / m
+    inv_k = own["state"].map(inv_ks).fillna(0.0).astype(float)
+    nb = (mean + mean**2 * inv_k) / m
+    direct_var = c.groupby(rows[key]).var(ddof=1).reindex(own.index).fillna(0.0) / m
+    v = np.maximum(nb, direct_var)
+    return own.assign(
+        parcels_sum=PER * m, parcels_mean=PER, parcels_origin=PER, direct=mean, group="own:" + own.index,
+        group_rate=mean, v_direct=direct_var, v=v, a=np.nan, b=0.0, inv_k=inv_k, level=mean, level_var=v,
+        route="own_counts",
+    )  # fmt: skip
 
 
 def benchmark_levels(places: pd.DataFrame) -> pd.DataFrame:
@@ -319,18 +375,20 @@ def benchmark_levels(places: pd.DataFrame) -> pd.DataFrame:
     return places.assign(level=places["level"] * r, level_var=places["level_var"] * r**2, benchmark_ratio=r)
 
 
-def cycle_index(rows: pd.DataFrame, value: str) -> pd.Series:
+def cycle_index(rows: pd.DataFrame, value: str, basis: pd.DataFrame | None = None) -> pd.Series:
     """Each row's state cycle index s_t = S_t / S̄: the state's total in the row's year over its mean.
 
-    `rows` are the place-years of a level window (every place present in every year). Where a year's total
-    is 0, s_t = 1 (every count that year is 0, so nothing is divided). By hand: totals 10, 20, 30 ->
-    S̄ = 20 and s = 0.5, 1, 1.5; a place's counts 1, 2, 3 detrend to 2, 2, 2, so it has no cycle variance left.
+    The totals come from `basis` (default `rows`): place-years of a level window with every place present in
+    every year, so a place joining partway is not a boom. A state or year missing from `basis` takes 1, as
+    does a year whose total is 0 (every count that year is 0, so nothing is divided). By hand: totals 10, 20,
+    30 -> S̄ = 20 and s = 0.5, 1, 1.5; a place's counts 1, 2, 3 detrend to 2, 2, 2, so it has no cycle
+    variance left.
     """
-    totals = rows.groupby(["state", "year"])[value].sum().astype(float)
+    totals = (rows if basis is None else basis).groupby(["state", "year"])[value].sum().astype(float)
     mean = totals.groupby(level="state").transform("mean")
     s = (totals / mean).where((totals > 0) & (mean > 0), 1.0)
     idx = pd.MultiIndex.from_arrays([rows["state"], rows["year"]])
-    return pd.Series(s.reindex(idx).to_numpy(dtype=float), index=rows.index)
+    return pd.Series(s.reindex(idx).fillna(1.0).to_numpy(dtype=float), index=rows.index)
 
 
 def cycle_shock_series(
@@ -482,9 +540,11 @@ def forecast_draws(
         detrend=bool(p["detrend_dispersion"].value),
         key=key,
         benchmark=bool(p["benchmark_levels"].value) if "benchmark_levels" in p else False,
+        min_years=int(p["level_min_years"].value) if "level_min_years" in p else None,
+        count_only=bool(p["count_only_places"].value) if "count_only_places" in p else False,
     )
     columns = [key, "state", "year", "horizon", "parcels_origin", "level", "direct", "group_rate", "b"]
-    columns += ["momentum", "demand", "mean", "p10", "p50", "p90"]
+    columns += ["route", "momentum", "demand", "mean", "p10", "p50", "p90"]
     tables, all_draws = [], []
     for state, ps in places.groupby("state", sort=True):
         history = int(p["cycle_history_years"].value)
@@ -519,6 +579,7 @@ def forecast_draws(
         rows = ps.loc[ps.index.repeat(horizon), [key, "state", "parcels_origin", "level", "direct"]]
         rows = rows.assign(group_rate=np.repeat(ps["group_rate"].to_numpy(), horizon))
         rows = rows.assign(b=np.repeat(ps["b"].to_numpy(), horizon), momentum=factor)
+        rows = rows.assign(route=np.repeat(ps["route"].to_numpy(), horizon))
         rows = rows.assign(demand=np.repeat(ps["demand"].to_numpy(), horizon))
         rows["horizon"] = np.tile(np.arange(1, horizon + 1), len(ps))
         rows["year"] = origin + lead + rows["horizon"]

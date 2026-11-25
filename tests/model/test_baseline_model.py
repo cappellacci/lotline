@@ -128,6 +128,65 @@ def test_place_needs_every_window_year():
     assert out["geoid"].tolist() == ["A"]
 
 
+# Review A20. A 3-year window ending 2020: A has every year; C joined in 2019 (4 and 6 units on 200 parcels);
+# D last reported in 2019. With min_years 2, C's direct rate uses its two years: 1000·10/400 = 25, parcels
+# mean 200; D is still out (no origin year).
+SHORT = _panel(
+    [
+        ("A", "C1", 2018, 9, 900), ("A", "C1", 2019, 9, 900), ("A", "C1", 2020, 9, 900),
+        ("C", "C1", 2019, 4, 200), ("C", "C1", 2020, 6, 200),
+        ("D", "C1", 2018, 5, 100), ("D", "C1", 2019, 5, 100),
+    ]
+)  # fmt: skip
+
+
+def test_a_short_history_uses_the_years_it_has():
+    kw = dict(level_years=3, min_group_places=1, group="state", detrend=False)
+    before = baseline.level_estimates(SHORT, "units_1", 2020, **kw)
+    assert before["geoid"].tolist() == ["A"]  # the rule before A20: every window year
+    out = baseline.level_estimates(SHORT, "units_1", 2020, min_years=2, **kw).set_index("geoid")
+    assert out.index.tolist() == ["A", "C"]
+    assert out.loc["C", "direct"] == pytest.approx(25.0)
+    assert out.loc["C", "parcels_mean"] == pytest.approx(200.0)
+    assert out.loc["C", "parcels_origin"] == 200.0
+    assert (out["route"] == "parcels").all()
+
+
+# Own counts (A20): A counts 0, 4 and B 2, 2 on 100 parcels give 1/k = (6 − 2) / (2² + 2²) = 0.5. R permits 10
+# and 30 homes but has no lot count: level 20, variance max((20 + 400 × 0.5) / 2, 200 / 2) = 110, unshrunk.
+OWN = _panel(
+    [
+        ("A", "C1", 2019, 0, 100), ("A", "C1", 2020, 4, 100),
+        ("B", "C1", 2019, 2, 100), ("B", "C1", 2020, 2, 100),
+        ("R", "C1", 2019, 10, 0), ("R", "C1", 2020, 30, None),
+    ]
+)  # fmt: skip
+
+
+def test_a_place_without_a_lot_count_takes_its_own_counts():
+    kw = dict(level_years=2, min_group_places=1, group="state", detrend=False)
+    assert "R" not in set(baseline.level_estimates(OWN, "units_1", 2020, **kw)["geoid"])
+    out = baseline.level_estimates(OWN, "units_1", 2020, min_years=2, count_only=True, **kw)
+    out = out.set_index("geoid")
+    r = out.loc["R"]
+    assert r["route"] == "own_counts" and r["inv_k"] == pytest.approx(0.5)
+    assert (r["level"], r["level_var"], r["b"]) == pytest.approx((20.0, 110.0, 0.0))
+    assert r["parcels_origin"] == 1000.0  # nominal, so level × parcels / 1,000 = homes a year
+    assert out.loc[["A", "B"], "level"].tolist() == pytest.approx(
+        baseline.level_estimates(OWN, "units_1", 2020, **kw).set_index("geoid")["level"].tolist()
+    )  # the parcel places are not moved by R
+
+
+def test_own_count_places_are_forecast():
+    """Through forecast_draws with the config's defaults (level_min_years 2, count_only_places on)."""
+    assert int(PARAMS["level_min_years"].value) == 2 and bool(PARAMS["count_only_places"].value)
+    table, draws = baseline.forecast_draws(OWN, "units_1", 2020, group="state", params=PARAMS)
+    r = table[table["geoid"] == "R"]
+    assert len(r) and (r["route"] == "own_counts").all()
+    assert (table.loc[table["geoid"] != "R", "route"] == "parcels").all()
+    assert draws[(table["geoid"] == "R").to_numpy()].mean() > 0
+
+
 def test_direct_variance_counts_a_one_off_year_as_noise():
     """B builds 0 then 2 on 100 parcels: annual rates 0 and 20, sample variance 200, /2 years = 100.
     That beats the negative-binomial variance, so with use_direct_variance B is treated as noisier."""
