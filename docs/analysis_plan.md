@@ -8188,3 +8188,25 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - The stored `jurisdictions` and `place_inputs` tables were rebuilt offline with rule 6 (nothing
     downloaded).
   - The earlier copies are in ~/lotline-data-backup/d102-2026-11-24.
+
+### Deviation · 2026-11-25 · ADU rule priors: three fixes from the code review (thread 17, A5–A7)
+
+- **Asked by:** Ben, 2026-11-25: "Fix them here please" (the ADU findings in
+  `reports/review/2026-11-code-review.md`).
+- **Fixes** (`src/lotline/model/scenarios/adu.py`):
+  - **A5. A new state borrows by size band.** A state outside `REFORM_STATES` (Wisconsin) had no priors rows,
+    so every uncoded place took one all-bands mean. It now reads every coded place by size band
+    (`no_state_rule_priors` with no law states), as D-022 intends.
+  - **A6. A gap re-types only its own row.** `type_probs` fell back to `rule_class` for every place when any
+    one place had a missing p_*. Now only the row with the gap falls back.
+  - **A7. Coded county remainders stay out of the city band pools.** Completes D-102 option (b): remainders
+    have their own priors row, so they no longer also shape what uncoded towns and cities borrow (the "small
+    shifts" noted in the D-102 entry above).
+- **Effect** (origin 2025, 1,000 draws, five-year ADU permits added P10 / P50 / P90; before = release
+  `app-2026-11-24f`):
+  - Wisconsin 147 / 591 / 2,418 → 127 / 527 / 2,098 (P50 −11%).
+  - MN 325 / 601 / 1,227 → 326 / 601 / 1,230; NC 190 / 426 / 1,056 → 198 / 432 / 1,080; OH 442 / 872 /
+    2,023 → 437 / 874 / 2,023.
+  - TX and OR unchanged. Missing middle, fees and baselines unchanged in every state.
+- **Not changed:** the review's amended-rule finding was wrong. Cass County's 2016 amendment and Medford's
+  2018 amendment each widen where ADUs are allowed, so their blank zone and lot limits are correct.

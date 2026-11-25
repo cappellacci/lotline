@@ -1,6 +1,5 @@
 """Handbook ADU scenario: one ADU allowed on every eligible single-family parcel, at least 600 sq ft, by
-right,
-with no parking requirement (Handbook benchmark; BUILD_PLAN §5; judging finding MS-01).
+right, with no parking requirement (Handbook benchmark; BUILD_PLAN §5; judging finding MS-01).
 
 For each jurisdiction and each of the five years of the window, t = 1 … 5 (D-061: the window starts
 `forecast_lead_years` after the data origin, so origin 2025 gives 2027-2031, and the reform takes effect at
@@ -30,7 +29,9 @@ the start of year 1; `baseline.window`):
   `adu_drift_sigma` (`own_rate_draws`): mean 1 since 2026-11-20 (`adu_drift_mean_one`; 0 gives D-091's
   median-1 drift exp(σ z)). The Handbook hazard is that rate times the mechanism's ratio
   h_hb ÷ h_cur above, or plus the mechanism's added hazard where h_cur is 0 (`own_rate_paths`). The ratio
-  has not been checked within ×2 on held-out data. Places with no observed rate keep the mechanism.
+  has not been checked within ×2 on held-out data. Places with no observed rate keep the mechanism. D-099:
+  where no ADUs are allowed today (c = 0), the added hazard in the first years is scaled by ν
+  (`adu_new_rule_share`; `own_rate_paths`).
 
 Each year the pool of parcels without an ADU shrinks, separately under each set of rules:
 gross ADUs(t) = R(t − 1) × h(t), R(t) = R(t − 1) − gross ADUs(t), R(0) = eligible parcels. So a parcel gets at
@@ -644,6 +645,12 @@ REMAINDER = "county_unincorporated"  # a county remainder: unincorporated land t
 REMAINDER_BAND = -1  # the priors row county remainders read under D-102 option (b)
 
 
+def _cities(coded: pd.DataFrame) -> pd.DataFrame:
+    """The coded places that are not county remainders: the pool behind the size-band priors. Remainders get
+    their own row (`remainder_priors`, D-102 option (b)), so they never shape what towns and cities borrow."""
+    return coded[coded["kind"] != REMAINDER] if "kind" in coded else coded
+
+
 def remainder_priors(coded: pd.DataFrame, min_count: int) -> pd.DataFrame:
     """D-102 option (b) (Ben, 2026-11-24): for each state with at least `min_count` coded county remainders
     (`kind` == county_unincorporated), one priors row (band `REMAINDER_BAND`) with their mean probabilities.
@@ -669,11 +676,12 @@ def rule_priors(coded: pd.DataFrame, edges, min_count: int) -> pd.DataFrame:
     `coded`: state, population and p_* (over TYPES) for every place with a coded rule (fractional where blanks
     or coverage leave the type uncertain). For each state and size band: the mean of the coded places'
     probabilities if at least `min_count` places are coded there; else the state's pooled mean; else the mean
-    over every state. Returns state, band, n_coded, source and p_* (and p_partial). With a `kind` column, also
-    the `remainder_priors` rows (D-102 option (b)).
+    over every state. Returns state, band, n_coded, source and p_* (and p_partial). With a `kind` column,
+    coded county remainders are left out of the band rows and get their own `remainder_priors` rows instead
+    (D-102 option (b)).
     By hand: 5 coded places in a band, 2 'other' and 3 Handbook-equivalent -> p_other 0.4, p_handbook 0.6.
     """
-    c = coded.assign(band=size_band(coded["population"], edges))
+    c = _cities(coded).assign(band=size_band(_cities(coded)["population"], edges))
     rows = []
     for state in sorted(c["state"].unique()):
         for band in range(len(edges) + 1):
@@ -709,7 +717,8 @@ def no_state_rule_priors(coded: pd.DataFrame, edges, min_count: int, law_states,
     By hand: no-law places in band 0, 3 Handbook-equivalent and 2 'none', min_count 5 -> p_handbook 0.6,
     p_none 0.4; flagged states' places never count.
     """
-    pool = coded[~coded["state"].isin(set(law_states))]
+    pool = _cities(coded)
+    pool = pool[~pool["state"].isin(set(law_states))]
     pool = pool.assign(band=size_band(pool["population"], edges))
     rows = []
     for band in range(len(edges) + 1):
@@ -753,7 +762,8 @@ def apply_priors(places: pd.DataFrame, priors: pd.DataFrame, edges) -> pd.DataFr
 def type_probs(places: pd.DataFrame) -> np.ndarray:
     """(places × TYPES) probabilities. Tables from before D-022 with only p_none/p_partial/p_handbook (or only
     `rule_class`) read 'partial' as 'other'."""
-    if all(c in places for c in P_COLS) and places[list(P_COLS)].notna().all(axis=None):
+    have = all(c in places for c in P_COLS)
+    if have and places[list(P_COLS)].notna().all(axis=None):
         return places[list(P_COLS)].to_numpy(dtype=float)
     cls = places["rule_class"]
     get = lambda col, fallback: places[col] if col in places else fallback  # noqa: E731
@@ -761,7 +771,11 @@ def type_probs(places: pd.DataFrame) -> np.ndarray:
     part = get("p_partial", (cls == "partial").astype(float)).fillna((cls == "partial").astype(float))
     hb = get("p_handbook", (cls == "handbook").astype(float)).fillna((cls == "handbook").astype(float))
     zero = np.zeros(len(places))
-    return np.column_stack([none, zero, part, zero, hb]).astype(float)
+    out = np.column_stack([none, zero, part, zero, hb]).astype(float)
+    if have:  # rows with every p_* filled keep them; only rows with a gap fall back
+        full = places[list(P_COLS)].notna().all(axis=1).to_numpy()
+        out[full] = places.loc[full, list(P_COLS)].to_numpy(dtype=float)
+    return out
 
 
 def expected_rule_share(places: pd.DataFrame, params: Mapping[str, float]) -> np.ndarray:
@@ -1481,6 +1495,12 @@ def rule_inputs(
             priors["band"] == REMAINDER_BAND
         )  # (b): own remainders still apply
         priors = pd.concat([priors[keep], outside], ignore_index=True)
+    elif not ((priors["state"] == state) & (priors["band"] != REMAINDER_BAND)).any():
+        # A state outside REFORM_STATES (e.g. Wisconsin): borrow from every coded place by size band, not
+        # the all-bands mean `apply_priors` falls back to.
+        every = no_state_rule_priors(coded_prior.dropna(subset=["population"]), edges, min_count, (), state)
+        every["source"] = every["source"].str.replace("states without a coded state ADU law", "all states")
+        priors = pd.concat([priors, every], ignore_index=True)
     fp = field_probabilities(counts, state, min_count)
     cm = covs[state]
     rules = current_rules(
