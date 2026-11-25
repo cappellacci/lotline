@@ -40,6 +40,18 @@ Status key: **proposed** = waiting for Ben's yes; **done** = acted on, with the 
 | A29 | Adapters | `dallas_permits.py:200`, `fw_permits.py:317`, `national/bps.py:44` | Dallas permit numbers coerced to integers; Fort Worth year is the filing year though the issue date is known; BPS default years stop at 2025 in code. | Non-numeric Dallas ids dropped silently; a December filing issued in January counts a year early; the 2026 BPS file needs a code edit. | nit | Ben, 2026-11-25: "do A29". Dallas: numeric ids stay integers, any other id kept as text (0 non-numeric ids in the 2026-11-11 snapshot; output identical, 134,124 rows). Fort Worth: no change: only 7,924 of 297,818 permits keep an Issued status date (the table mostly holds the latest status), so issue dates for 2.7% would mix two date rules; the documented filing-year rule stays. BPS: no change (2025 is the latest annual file, a data fact) | fixed on `ws/dfw-permits` (Dallas); Fort Worth, BPS kept as is |
 | A30 | App | `src/lotline/app/build.py` `render`, `template.html` 1411/2077/2105 | `PLACEHOLDERS` checks 7 of the 11 slots `render` fills; three chart captions type "2027–2031" instead of `windowLabel`. | A template edit that drops the aggregate or dashboard slot ships a page without it; a new origin year leaves stale captions. | nit | `PLACEHOLDERS` now lists every slot `render` fills; the dead `__BYOS_URL__` slot (no longer in the template) removed; the three captions read `AGG.windowLabel(b)` | fixed on `ws/review-tidy` |
 
+### Issue triage (2026-11-25)
+
+Ben, 2026-11-25: "Yes, as recommended"; #448 closed on his word.
+
+| Issue | Outcome | Why |
+|---|---|---|
+| #247 | closed, done | D-066 (`6a238d87`): fee low/high columns drawn in `fee_draws`; `in_force_through` keeps older rows still in force |
+| #406 | closed, superseded | Addresses are excluded as personal fields; the D-082 collapse uses the per-permit split rule Ben chose on 2026-11-12 |
+| #138 | closed, covered | Re-identification statement in `docs/data_availability.md`, referenced by `docs/data_provenance.md` |
+| #448 | closed, not planned | Ben: no fast-ramp result in the app. Instead, one sentence on the missing-middle card (and the Model tab) says the fast case is about 3.6× and why the model uses the slower pace (D-100) |
+| #506 | kept | Done with A21 as one results-schema change (both new `meta` fields) |
+
 ## Part B: cleanup lists (proposed 2026-11-24)
 
 ### B1. Open pull requests (23, counting #517)
