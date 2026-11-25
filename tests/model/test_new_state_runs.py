@@ -52,5 +52,8 @@ def test_a_new_national_only_state_builds_a_bundle(zz):
 def test_the_new_state_borrows_priors_without_moving_them(zz):
     _, with_zz = adu.rule_inputs("ZZ", zz, ["9900001", "9900002", "9900003"], pd.Timestamp("2025-12-31"))
     _, without = adu.rule_inputs("MN", zz, [], pd.Timestamp("2025-12-31"))
-    pd.testing.assert_frame_equal(with_zz["priors"], without["priors"])
+    pr = with_zz["priors"]
+    pd.testing.assert_frame_equal(pr[pr["state"] != "ZZ"].reset_index(drop=True), without["priors"])
+    own = pr[pr["state"] == "ZZ"]  # the new state reads every coded place by size band, not one pooled mean
+    assert sorted(own["band"]) == [0, 1, 2] and own["source"].str.startswith("all states").all()
     assert "ZZ" not in set(with_zz["coded"]["state"])

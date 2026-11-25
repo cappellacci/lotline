@@ -929,10 +929,22 @@ def test_remainders_borrow_from_coded_remainders_by_hand():
     assert out.loc["R", "p_handbook"] == pytest.approx(0.2)
     assert out.loc["R", "prior_source"] == "state, coded county remainders"
     band = pr[(pr["state"] == "OR") & (pr["band"] == 1)].iloc[0]
-    assert out.loc["C", "p_handbook"] == pytest.approx(band["p_handbook"])
+    assert band["p_handbook"] == pytest.approx(1.0) and band["n_coded"] == 5  # cities only (not 0.6)
+    assert out.loc["C", "p_handbook"] == pytest.approx(1.0)
     few = adu.rule_priors(coded.iloc[1:], edges, min_count=5)  # 4 coded remainders: below the minimum
     assert (few["band"] != adu.REMAINDER_BAND).all()
     few_out = adu.apply_priors(places, few, edges).set_index("geoid")
     small = few[(few["state"] == "OR") & (few["band"] == 0)].iloc[0]  # too few: the smallest band, not band 1
     assert few_out.loc["R", "prior_source"] == small["source"]
     assert few_out.loc["R", "p_handbook"] == pytest.approx(small["p_handbook"])
+
+
+def test_one_gap_falls_back_only_on_its_own_row():
+    """type_probs: a row with every p_* filled keeps them although another row has a gap; the row with the
+    gap reads its rule_class (here 'partial' -> 'other')."""
+    full = {f"p_{t}": 0.0 for t in adu.TYPES} | {"p_owner": 1.0}
+    gap = {f"p_{t}": np.nan for t in adu.TYPES}
+    places = pd.DataFrame([full | {"rule_class": "partial"}, gap | {"rule_class": "partial"}])
+    p = adu.type_probs(places)
+    assert p[0].tolist() == [0.0 if t != "owner" else 1.0 for t in adu.TYPES]
+    assert p[1].tolist() == [0.0 if t != "other" else 1.0 for t in adu.TYPES]
