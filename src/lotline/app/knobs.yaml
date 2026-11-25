@@ -2,7 +2,8 @@
 # This file holds only plain-language labels for the page and pointers to the parameters behind each factor;
 # every number (value, low, high, unit, source) is read from config/params/ at build time, never copied here.
 # `params` lists `file:key` in config/params/ per scenario; a scenario not listed shows "see the engine run".
-# A slider shifts its factor through that factor's own range in the engine's draws (src/lotline/app/aggregate.js).
+# A slider shifts its factor between that factor's P10 and P90 in the engine's draws (src/lotline/app/aggregate.js;
+# Ben, 2026-11-25: P10-P90, as every range on the page, not the single lowest and highest run).
 # The shift rule (each draw x P_q / P50) is provisional (Ben, 2026-11-06): revisit after feedback on the app.
 # `by_scenario` replaces the label, why and end words for scenarios where the factor means something else (the
 # fee scenarios' theta is the cut's % change in homes built, not an uptake rate).
