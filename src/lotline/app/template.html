@@ -1035,11 +1035,13 @@ function flagHtml(m, named) {
 // engine's central assumptions, so the sliders don't move them; for missing middle a grey whisker is the
 // no-change forecast of homes in 2-4 unit buildings. Permits against permits, one linear scale.
 const RECORD = {
-  adu: { measure: "adu_permits", what: "ADU permits", base: null, reform: "the ADU reform",
+  adu: { measure: "adu_permits", what: "ADU permits", axis: "ADU permits a year", base: null, reform: "the ADU reform",
     pace: "The forecast is a range for each year." },
-  missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", base: "2_4", reform: "the missing-middle reform",
+  missing_middle: { measure: "homes_2_4", what: "homes permitted in 2–4 unit buildings", axis: "Homes permitted a year", base: "2_4", reform: "the missing-middle reform",
     pace: "The forecast is a range for each year; the reform's homes build up over the first years." },
 };
+// A y-axis title, turned on its side along the chart's left edge (US-05: every yearly chart names its unit).
+const yTitle = (words, top, bottom) => `<text transform="translate(11 ${(top + bottom) / 2}) rotate(-90)" text-anchor="middle">${esc(words)}</text>`;
 function recordHtml(b, d, compact = false) {
   if (!Object.hasOwn(RECORD, d)) return "";  // d comes from a button's data attribute: known scenarios only
   const spec = RECORD[d];
@@ -1069,9 +1071,9 @@ function recordHtml(b, d, compact = false) {
   const stackTop = fut.map((r) => (baseAt(r.year) ? baseAt(r.year).p50 : 0) + r.p90);
   const top = Math.max(1, ...obs.map((r) => r.value), ...stackTop, ...base.map((r) => r.p90));
   const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
-  const W = 640, H = 220, L = 52, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
+  const W = 640, H = 220, L = 66, R = 12, T = 12, B = 28, slot = (W - L - R) / (y1 - y0 + 1);
   const x = (yr) => L + (yr - y0 + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
-  const color = esc(scenColor(d)), parts = [];
+  const color = esc(scenColor(d)), parts = [yTitle(spec.axis, T, H - B)];
   for (const t of ticks) parts.push(`<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)" stroke-width="1"></line>
     <text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmtN(t)}</text>`);
   for (let yr = y0; yr <= y1; yr++) parts.push(`<text x="${x(yr)}" y="${H - 8}" text-anchor="middle">${yr}</text>`);
@@ -1117,11 +1119,11 @@ function recordHtml(b, d, compact = false) {
   const baseKey = !base.length ? "" : hasSplit
     ? `<span>${sw("var(--scenario-baseline)")}No change: places with their own permit counts</span><span>${sw("var(--scenario-baseline)", 0.4)}No change: places the model estimates</span>`
     : `<span>${sw("var(--scenario-baseline)")}Expected with no change (midpoint)</span>`;
-  const rangeKey = base.length && fut.some((r) => baseAt(r.year)) ? `<span><span style="display:inline-block;width:2px;height:12px;background:var(--ink-muted);margin:0 8px 0 5px;vertical-align:middle"></span>No-change range (P10–P90)</span>` : "";
+  const rangeKey = base.length && fut.some((r) => baseAt(r.year)) ? `<span><span style="display:inline-block;width:2px;height:12px;background:var(--ink-muted);margin:0 8px 0 5px;vertical-align:middle"></span>Likely range with no change</span>` : "";
   const legend = `<div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">
     <span>${sw("var(--ink-muted)", 0.55)}${esc(histLabel)}</span>
     ${baseKey}${rangeKey}
-    <span><span style="display:inline-block;width:12px;height:10px;background:${color};opacity:.4;margin-right:6px"></span>Added by the reform${base.length ? ", on top" : ""} (P10–P90, line at the midpoint)</span></div>`;
+    <span><span style="display:inline-block;width:12px;height:10px;background:${color};opacity:.4;margin-right:6px"></span>Added by the reform${base.length ? ", on top" : ""} (likely range, line at the midpoint)</span></div>`;
   return `${title}
     <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
@@ -1172,9 +1174,8 @@ function evidenceHtml(b, d, R) {
   const legal = st("legal"), pays = st("pencils"), r = R.adu, o = UI.outcome;
   const rng = (x) => (x ? (x.p10 === x.p90 ? fmtN(x.p50) : `${fmtN(x.p10)} – ${fmtN(x.p90)}`) : "–");
   const theta = med("theta");
-  // the old lots-to-homes funnel, folded into the steps: a bar per stage, log widths
-  const lmax = Math.log10(Math.max(legal ? legal.p50 : 10, 10));
-  const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
+  // the old lots-to-homes funnel, folded into the steps: a bar per stage, log widths (the shared kit's scale)
+  const { fbar, scale } = howKit(b, "adu", legal && legal.p50);
   // 1. year by year
   const s1 = `<section>${recordHtml(b, "adu")}
     ${more(`<p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p>`, "How to read this chart")}</section>`;
@@ -1197,7 +1198,7 @@ function evidenceHtml(b, d, R) {
       <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and some ADUs house a relative or are rented short-term rather than adding a home (${fmtPct(med("net_new_share"))} add one).</p>${fbar(r.homes_in_place.p50, scenColor("adu"), 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, scenColor("adu"))}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
-    ${more(`<p class="source">Bars: each stage's midpoint on a log scale, so each is many times smaller than the one before. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}</section>`;
+    ${scale}${more(`<p class="source">Bars: each stage's midpoint on a log scale, from 1 at the left edge to the first stage at full width. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}</section>`;
   return s1 + s3 + s4 + accuracyHtml(b, "adu");
 }
 
@@ -1210,8 +1211,11 @@ function howKit(b, d, first) {
   const lmax = Math.log10(Math.max(first || 10, 10));
   const fbar = (v, col, op = 1) => (Number.isFinite(v) ? `<div class="fbar" aria-hidden="true" style="width:${Math.max(1, (Math.log10(Math.max(v, 1)) / lmax) * 100)}%;background:${col};opacity:${op}"></div>` : "");
   const per10k = (v) => (Number.isFinite(v) ? (v * 10000).toLocaleString("en-US", { maximumSignificantDigits: 2 }) : "–");
-  const foot = `${more(`<p class="source">Bars: each stage's midpoint on a log scale. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}`;
-  return { med, st, rng, fbar, per10k, foot };
+  // US-05: every bar is on the same log scale, from 1 at the left edge to the first stage at full width; say so on
+  // the page, not only in the folded details, with how much width a tenfold change takes.
+  const scale = `<p class="body-small muted" style="margin:var(--space-2) 0 0">Bar lengths use one log scale, so the small later steps stay visible: every ${Math.round(100 / lmax)}% of the full width is ten times more. Read the numbers, not the lengths.</p>`;
+  const foot = `${scale}${more(`<p class="source">Bars: each stage's midpoint on a log scale, from 1 at the left edge to the first stage at full width. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}`;
+  return { med, st, rng, fbar, per10k, foot, scale };
 }
 
 // Missing middle's steps (Ben, 2026-11-17: "a similar section" to the ADU card's). The factors are the engine's
@@ -1298,9 +1302,9 @@ function feeYearsChart(b, o, shown) {
   if (!years.length) return `<p class="pending">No yearly forecast for the fee reform in this state's results.</p>`;
   const top = Math.max(1, ...rows.flatMap((r) => r.yrs.map((y) => y.p90)));
   const ticks = niceTicks(top), ymax = ticks[ticks.length - 1] >= top ? ticks[ticks.length - 1] : top;
-  const W = 640, H = 200, L = 52, Rm = 12, T = 12, B = 28, slot = (W - L - Rm) / years.length;
+  const W = 640, H = 200, L = 66, Rm = 12, T = 12, B = 28, slot = (W - L - Rm) / years.length;
   const x = (yr) => L + (years.indexOf(yr) + 0.5) * slot, y = (v) => T + (1 - v / ymax) * (H - T - B);
-  const parts = [];
+  const parts = [yTitle(o === "homes_net_statewide" ? "Net new homes a year" : "Homes added a year", T, H - B)];
   for (const t of ticks) parts.push(`<line x1="${L}" x2="${W - Rm}" y1="${y(t)}" y2="${y(t)}" stroke="var(--rule)"></line><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${fmtN(t)}</text>`);
   for (const yr of years) parts.push(`<text x="${x(yr)}" y="${H - 8}" text-anchor="middle">${yr}</text>`);
   const off = Math.min(14, slot * 0.18), col = esc(scenColor("fees"));
@@ -1521,7 +1525,8 @@ function knobsHtml(b) {
       <p class="body-small" style="margin:var(--space-1) 0">${esc(k.why)}</p>
       ${`<input type="range" id="k-${esc(k.column)}" min="0" max="100" step="5" value="50" data-pin="${esc(k.column)}" aria-describedby="v-${esc(k.column)}">
       <div class="ends"><span>${esc(k.low_word)}</span><button type="button" class="linkish" data-reset="${esc(k.column)}">Reset</button><span>${esc(k.high_word)}</span></div>`}
-      <details><summary>Source and range</summary><ul>${params || "<li>Set by the engine run for this scenario.</li>"}</ul>
+      <details><summary>Source and range</summary>${(k.source_note || {})[s] ? `<p>${esc(k.source_note[s])}</p>` : ""}
+        ${params ? `<details><summary>Technical detail: the settings behind it</summary><ul>${params}</ul></details>` : "<ul><li>Set by the engine run for this scenario.</li></ul>"}
         <p>In the engine's draws: P10 ${fmtFactor(AGG.percentile(vals, 10), k.format)}, P50 ${fmtFactor(AGG.percentile(vals, 50), k.format)}, P90 ${fmtFactor(AGG.percentile(vals, 90), k.format)}.</p></details>
     </div>`;
   }).join("");
@@ -1626,7 +1631,8 @@ function needHtml(b, R) {
     return r;
   }).join("");
   const wy = T + Hb / 2, needX = x(need);
-  const gapText = gap > 0 ? `Gap: about ${fmtN(Math.max(0, need - at))}` : "Built anyway covers the need";
+  const left = Math.max(0, need - at);
+  const gapText = needX - x(at) > 330 ? `Still short after the reforms: about ${fmtN(left)}` : `Still short: about ${fmtN(left)}`;
   const svg = `<svg class="needbar" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`Need ${fmtN(need)}; built anyway ${fmtN(built)}; reforms add ${rng(all)}`)}">
       <rect x="0" y="${T}" width="${W}" height="${Hb}" fill="var(--paper-sunken)" stroke="var(--rule)"></rect>
       <rect x="0" y="${T}" width="${x(built)}" height="${Hb}" fill="var(--scenario-baseline)"><title>${esc(`Built anyway: about ${fmtN(built)} (${fmtN(sf.built_p10)} to ${fmtN(sf.built_p90)})`)}</title></rect>
@@ -1636,11 +1642,11 @@ function needHtml(b, R) {
       <line x1="${needX}" x2="${needX}" y1="${T - 6}" y2="${T + Hb + 6}" stroke="var(--ink)" stroke-width="2"></line>
       <text x="${needX}" y="${T - 9}" text-anchor="${needX > W - 120 ? "end" : "middle"}">${esc(`Need: ${fmtN(need)}`)}</text>
       <text x="${x(built) / 2}" y="${wy + 4}" text-anchor="middle" fill="var(--paper)" style="fill:var(--paper)">${esc(x(built) > 150 ? `Built anyway: ${fmtN(built)}` : "")}</text>
-      ${gap > 0 && needX - x(at) > 140 ? `<text x="${needX - 10}" y="${wy + 4}" text-anchor="end">${esc(gapText)}</text>` : ""}
+      ${gap > 0 && needX - x(at) > 160 ? `<text x="${needX - 10}" y="${wy + 4}" text-anchor="end">${esc(gapText)}</text>` : ""}
     </svg>`;
   const key = `<div class="ami-key" style="margin:var(--space-3) 0 0"><span><i style="background:var(--scenario-baseline)"></i>Built anyway, no reform (midpoint)</span>${nk.map((s) => `<span><i style="background:${scenColor(s)}"></i>${esc(scenLabel(s))}</span>`).join("")}<span>Line: likely range of the three reforms together</span></div>`;
   const each = nk.map((s) => `<tr><td><span class="swatch" style="display:inline-block;vertical-align:middle;background:${scenColor(s)}"></span> ${esc(scenLabel(s))}</td><td class="num">${esc(rng(net(s)))}</td><td class="num">${gap > 0 ? esc(`${fmtPct(net(s).p10 / gap)} to ${fmtPct(net(s).p90 / gap)}`) : "–"}</td></tr>`).join("");
-  const details = `<p class="source" style="margin:0">The need adds three things: the shortage today (${fmtN(sf.shortage_low)} to ${fmtN(sf.shortage_high)} across estimates), household growth over the five years (${fmtN(sf.growth_low)} to ${fmtN(sf.growth_high)}), and homes lost to demolition, disaster or other uses (${fmtN(sf.lost_low)} to ${fmtN(sf.lost_high)}: ${fmtPct(sf.lost / sf.stock / 5)} a year of ${fmtN(sf.stock)} homes, ACS ${esc(sf.stock_year)}). Built anyway is the no-change forecast of homes permitted, all building sizes (${fmtN(sf.built_p10)} to ${fmtN(sf.built_p90)}). Permits count gross building and vacant or second homes are not taken out, so the gap is if anything understated. Because the gap is one uncertain number minus another, it could run from ${fmtN(sf.gap_low)} to ${fmtN(sf.gap_high)} (a negative gap means building anyway would cover the need). The reforms' blocks are midpoints laid end to end; the line is the likely range of the three together, added run by run. Net new homes only.</p>
+  const details = `<p class="source" style="margin:0">The need adds three things: the shortage today (${fmtN(sf.shortage_low)} to ${fmtN(sf.shortage_high)} across estimates), household growth over the five years (${fmtN(sf.growth_low)} to ${fmtN(sf.growth_high)}), and homes lost to demolition, disaster or other uses (${fmtN(sf.lost_low)} to ${fmtN(sf.lost_high)}: ${fmtPct(sf.lost / sf.stock / 5)} a year of ${fmtN(sf.stock)} homes, ACS ${esc(sf.stock_year)}). Built anyway is the no-change forecast of homes permitted, all building sizes (${fmtN(sf.built_p10)} to ${fmtN(sf.built_p90)}). Permits count gross building and vacant or second homes are not taken out, so the gap is if anything understated. Because the gap is one uncertain number minus another, it could run from ${fmtN(sf.gap_low)} to ${fmtN(sf.gap_high)} (a negative gap means building anyway would cover the need). The reforms' blocks are midpoints laid end to end; the line is the likely range of the three together, added run by run.${gap > 0 ? ` The gap in the sentence above is the need less homes built anyway (${fmtN(gap)}); the bar's "still short after the reforms" figure also takes off the reforms' midpoints, so it is smaller.` : ""} Net new homes only.</p>
       <table class="body-small" style="margin-top:var(--space-2)"><thead><tr><th>Each reform on its own</th><th class="num">Net new homes</th><th class="num">Share of the gap</th></tr></thead><tbody>${each}</tbody></table>`;
   const sources = (b.need || []).filter((r, i, a) => a.findIndex((q) => q.denominator_kind === r.denominator_kind) === i).map((r) => sourceLinks(r.source)).join("; ");
   return `<section class="need-kind" data-need-kind="shortfall">
@@ -1691,7 +1697,7 @@ function needShareHtml(b, R) {
       <line x1="${x(all.p90)}" x2="${x(all.p90)}" y1="${wy - 7}" y2="${wy + 7}" stroke="var(--ink)" stroke-width="1.5"><title>${esc(`All three together: ${rng(all)}, midpoint ${fmtN(all.p50)}`)}</title></line>
       <line x1="${needX}" x2="${needX}" y1="${T - 6}" y2="${T + Hb + 6}" stroke="var(--ink)" stroke-width="2"></line>
       <text x="${needX}" y="${T - 6}" text-anchor="end">${esc(`Need: ${fmtN(need)}`)}</text>
-      <text x="${needX - 10}" y="${T + Hb / 2 + 4}" text-anchor="end">${esc(gap > 0 ? `Gap: about ${fmtN(gap)}` : "No gap left at the midpoints")}</text>
+      <text x="${needX - 10}" y="${T + Hb / 2 + 4}" text-anchor="end">${esc(gap > 0 ? (needX - gapX > 330 ? `Still short after the reforms: about ${fmtN(gap)}` : `Still short: about ${fmtN(gap)}`) : "No gap left at the midpoints")}</text>
     </svg>`;
   };
   // One bar, against the headline kind (Ben, 2026-11-19): household growth where the state demographer projects
@@ -1769,10 +1775,10 @@ function amiHtml(b) {
         <span class="dot be" style="left:${pos(be.ami_share)}" title="${esc(`Break-even: ${cost(be, kind)}, ${pct0(be.ami_share)} of AMI`)}"></span>
         <span class="dot mkt" style="left:${pos(m.ami_share)}" title="${esc(`Assumed: ${cost(m, kind)}, ${pct0(m.ami_share)} of AMI`)}"></span>${off}
       </div>
-      <div class="val"><b>${esc(pct0(m.ami_share))} of AMI</b> <span class="muted">(${esc(pct0(m.ami_share_p10))}–${esc(pct0(m.ami_share_p90))})</span><small>${esc(kind === "price" ? `${fmtUsd(m.value)} home` : `${fmtUsd(m.value)}/mo`)} · ${esc(fmtUsd(m.income))} income</small></div>`;
+      <div class="val"><b>${esc(pct0(m.ami_share))} of area median income</b> <span class="muted">(${esc(pct0(m.ami_share_p10))}–${esc(pct0(m.ami_share_p90))})</span><small>${esc(kind === "price" ? `${fmtUsd(m.value)} home` : `${fmtUsd(m.value)}/mo`)} · ${esc(fmtUsd(m.income))} income</small></div>`;
   }).join("");
   const ticks = [0, 0.5, 1, 1.5];
-  const axis = `<div class="blank"></div><div class="ami-axis">${ticks.map((t, i) => `<span style="left:${pos(t)}">${Math.round(t * 100)}%${i === ticks.length - 1 ? " of AMI" : ""}</span>`).join("")}</div><div class="blank"></div>`;
+  const axis = `<div class="blank"></div><div class="ami-axis">${ticks.map((t, i) => `<span style="left:${pos(t)}">${Math.round(t * 100)}%${i === ticks.length - 1 ? " of area median income" : ""}</span>`).join("")}</div><div class="blank"></div>`;
   const bandHead = `<div class="blank"></div><div class="ami-bands"><span style="left:0;width:${pos(AMI_BANDS.subsidy)}">Under 60%: needs subsidy</span><span style="left:${pos(AMI_BANDS.subsidy)};width:calc(${pos(AMI_BANDS.zoning)} - ${pos(AMI_BANDS.subsidy)})">60–80%</span><span style="left:${pos(AMI_BANDS.zoning)};right:0">Over 80%: zoning alone can reach</span></div><div class="blank"></div>`;
   const beLine = AMI_ROWS.map(([h, name, , kind]) => {
     const be = pick(h, "break_even", "current"), cut = pick(h, "break_even", fc);
@@ -1807,6 +1813,14 @@ function amiHtml(b) {
   </div>`;
 }
 
+// A slider's shift as words: "about 3 times" or "about 40% of" (US-06: no "×27.64" on the page).
+function timesWords(r) {
+  if (!Number.isFinite(r)) return "moved from";
+  if (r >= 1.05) return `about ${r < 10 ? r.toFixed(1).replace(/\.0$/, "") : fmtN(Math.round(r))} times`;
+  if (r > 0.95) return "about the same as";
+  return `about ${fmtPct(r)} of`;
+}
+
 function updateResults() {
   const b = UI.b;
   if (!b || !scenariosIn(b).length) return;
@@ -1830,8 +1844,8 @@ function updateResults() {
     if (!el) continue;
     const vals = drawsFor(b, d).map((x) => Number(x[k.column]));
     const q = UI.pins[k.column];
-    el.textContent = q === undefined || q === 50 ? `Engine estimate: ${fmtFactor(AGG.percentile(vals, 50), k.format)} (P10–P90 ${fmtFactor(AGG.percentile(vals, 10), k.format)} to ${fmtFactor(AGG.percentile(vals, 90), k.format)})`
-      : `Shifted to its P${q}: ${fmtFactor(AGG.percentile(vals, q), k.format)} at the midpoint (×${AGG.shiftScale(drawsFor(b, d), k.column, q).toFixed(2)})`;
+    el.textContent = q === undefined || q === 50 ? `Engine estimate: ${fmtFactor(AGG.percentile(vals, 50), k.format)} (likely ${fmtFactor(AGG.percentile(vals, 10), k.format)} to ${fmtFactor(AGG.percentile(vals, 90), k.format)})`
+      : `Set ${q < 50 ? "lower" : "higher"}: ${fmtFactor(AGG.percentile(vals, q), k.format)} at the midpoint, ${timesWords(AGG.shiftScale(drawsFor(b, d), k.column, q))} the engine's estimate`;
     const input = document.querySelector(`[data-pin="${CSS.escape(k.column)}"]`);
     if (input && q === undefined) input.value = 50;
   }
