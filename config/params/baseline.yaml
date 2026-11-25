@@ -48,7 +48,23 @@ level_years:
   high: 7
   unit: years
   source: "Chosen a priori (WS-ENGINE round 2, 2026-10-14), not tuned on the V1 windows: one more cycle-length than the 3-year benchmark to average out lumpy years"
-  notes: "A place's recent level = units / eligible parcels summed over the last 5 years. Must have all 5 years of numerator and denominator."
+  notes: "A place's recent level = units / eligible parcels summed over the last 5 years (or the level_min_years or more it has, review A20)."
+
+level_min_years:
+  value: 2
+  low: 2
+  high: 5
+  unit: years
+  source: "Choice (Ben, 2026-11-25, code review A20): a place with fewer than level_years usable years (new to BPS or the lot data) was left out of the baseline, 3.3% of Ohio's homes at origin 2025. Two years is the fewest that give a variance."
+  notes: "A place needs at least this many of the level_years window years with a count and a positive denominator, the origin among them; its rate and variances use the years it has. Set to level_years (5) for the rule before A20."
+
+count_only_places:
+  value: 1
+  low: 0
+  high: 1
+  unit: flag (1 = yes)
+  source: "Choice (Ben, 2026-11-25, code review A20): places that permit homes but have no eligible-parcel count (county remainders, places new to the lot data) were left out of the baseline (12 places in Texas, 854 homes at origin 2025)."
+  notes: "1 = such a place, with level_min_years counts including the origin, is forecast from its own mean count a year, unshrunk, with negative-binomial or its own variance (baseline.level_estimates, route own_counts); 0 = left out (the rule before A20)."
 
 min_group_places:
   value: 5

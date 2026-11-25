@@ -8250,3 +8250,28 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
     unchanged everywhere.
 - **Left open:** A18 (parcel values in the roll's own dollars) is moot while the switch is off; A19 (fee draws
   keyed by row order, not geoid) is proposed.
+
+### Deviation · 2026-11-25 · Baseline: places with a short history or no lot count are forecast (thread 17, A20)
+
+- **Asked by:** Ben, 2026-11-25: "Model them too".
+- **Why:** `baseline.level_estimates` needed all five window years with a count and an eligible-parcel count.
+  Places new to BPS, and places with no lot count (county remainders, places new to the lot data), were left
+  out of the baseline and so of the fee base: 3.3% of Ohio's homes at origin 2025 (19 places), about 0.9% in
+  Texas and North Carolina. The bundle's `coverage_share` recorded it; the app did not show it.
+- **Change** (`src/lotline/model/baseline.py`, `config/params/baseline.yaml`):
+  - `level_min_years` = 2: a place with at least 2 usable window years, the origin among them, uses the years
+    it has for its rate and variances (m_i in place of m).
+  - `count_only_places` = 1: a place with those counts but too few years with a lot count is forecast from
+    its own mean count a year (route `own_counts`), unshrunk, with the larger of the negative-binomial and
+    its own variance. It is kept out of the Fay-Herriot step, so the parcel places' levels do not move.
+  - The cycle index used for detrending is taken over places with every window year, so a place joining
+    partway is not read as a boom.
+  - Setting `level_min_years` to 5 and `count_only_places` to 0 restores the rule before A20.
+- **Effect** (origin 2025; five-year baseline, all sizes, P10 / P50 / P90; before = `main` with #526):
+  - Coverage of origin-year homes: OH 96.7% → 100%, NC 99.1% → 99.99%, TX 99.1% → 99.6%, MN, OR and WI
+    99.5% or more before and after.
+  - OH 100,226 / 150,102 / 214,297 → 104,677 / 156,838 / 222,237 (P50 +4.5%). NC +0.6%, OR +0.8%, TX
+    +0.4%, WI +0.4%, MN −0.3% (the cycle index's new basis).
+  - Fee scenarios move with their base (OH benchmark P50 1,212 → 1,272); ADU and missing middle unchanged.
+- **Not rerun:** the V1 backtest. The change applies to backtests too; places with short histories are few
+  in the V1 windows. Wisconsin's frozen V8 prediction is not rescored.
