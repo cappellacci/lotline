@@ -126,7 +126,7 @@ def classify_parcels(types: pd.DataFrame, years: pd.Series, window: tuple[int, i
     second = dw[[(p, i) not in main_key for p, i in zip(dw["prop_id"], dw["imprv_id"], strict=True)]]
     new = second[second["year"].between(*window)].sort_values(["parcel_id", "year", "imprv_id"])
     newest = new.drop_duplicates("parcel_id", keep="last").set_index("parcel_id")
-    out["group"] = newest["type_cd"].map(group_of).reindex(out.index).fillna("none")
+    out["group"] = newest["type_cd"].map(group_of).reindex(out.index).astype("str").fillna("none")
     out["new_year"] = newest["year"].reindex(out.index)
     out.loc[~out["universe"], "group"] = "none"
     out["in_r"] = out["group"].isin(["alq", "house"])
