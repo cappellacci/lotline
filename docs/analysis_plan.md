@@ -8229,3 +8229,24 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - Wisconsin 419 / 2,757 / 16,532 → 183 / 1,327 / 7,685 (P50 −52%).
   - NC 726 / 4,989 / 29,512 → 743 / 4,965 / 29,818.
   - MN, OH, TX and OR unchanged. ADU, fees and baselines unchanged in every state.
+
+### Deviation · 2026-11-25 · Fees: elasticity everywhere; the lot-feasibility channel switched off (thread 17, A17)
+
+- **Asked by:** Ben, 2026-11-25: "Elasticity everywhere".
+- **Why:** places with a parcel roll took the lot-feasibility channel (D-033), whose %Δ was 4–40 times the
+  elasticity route's (D-010) for the same cut: Duluth +8.3% against +0.2%, Sandy, OR +12% against +0.1%. Only
+  42 places in Minnesota and Oregon have a roll, yet they gave 23% of Minnesota's and 57% of Oregon's added
+  homes. A state's fee result leaned on which cities had parcel data, not on the policy.
+- **Change:** new fixed parameter `fee_feasibility_channel` = 0 in `config/params/fees.yaml`;
+  `fees.pct_change` uses the feasibility channel only when it is 1. The channel's code and tests stay, so it
+  can be switched back on. The app's fee card no longer says lots that newly pay are counted.
+- **Effect** (origin 2025, 1,000 draws, five-year fee permits added P10 / P50 / P90; before = `main` after
+  #525):
+  - Minnesota, benchmark: 246 / 862 / 2,853 → 160 / 618 / 2,556. Local fees cut in half: 57 / 192 / 642 →
+    31 / 119 / 485.
+  - Oregon, benchmark: 212 / 642 / 1,608 → 81 / 314 / 1,284. Local fees cut in half: 65 / 167 / 447 →
+    20 / 78 / 318.
+  - NC, OH, TX and WI have no parcel roll in the fee inputs, so they cannot change. ADU and missing middle are
+    unchanged everywhere.
+- **Left open:** A18 (parcel values in the roll's own dollars) is moot while the switch is off; A19 (fee draws
+  keyed by row order, not geoid) is proposed.
