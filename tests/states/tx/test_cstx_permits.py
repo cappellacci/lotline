@@ -76,4 +76,3 @@ def test_duplex_demolition_count_that_fits_is_reported():
     assert ok["units_removed"] == 2 and ok["units_confidence"] == "reported"
     bad = cs.classify("Demolition", "Duplex", "7", "")
     assert bad["units_removed"] == 2 and bad["units_confidence"] == "derived"
-
