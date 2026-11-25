@@ -90,6 +90,42 @@ def commit_sha(repo: Path = REPO) -> str:
     return out.stdout.strip()
 
 
+def tree_state(repo: Path = REPO) -> bool | None:
+    """`tree_is_clean`, but None when git can't tell (no repository, no git): `results_meta.tree_clean`."""
+    try:
+        out = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"], cwd=repo, capture_output=True, text=True
+        )
+    except OSError:
+        return None
+    return None if out.returncode else not out.stdout.strip()
+
+
+def post_test(state: str, origin: int, config_dir: Path | None = None) -> tuple[str | None, str | None]:
+    """(`post_test`, `post_test_note`) for `results_meta` (#506): this state's released holdout tests whose
+    outcome window opens by the origin year, so the run's data include outcomes the test was scored on.
+
+    By hand: Wisconsin, origin 2025, V8-WI-TRANSFER (outcomes from 2020, released 2026-11-19) ->
+    ("V8-WI-TRANSFER", "Built after the Wisconsin (statewide) test was scored: these results use 2020-2025
+    outcomes it predicted blind."). A test still blind, or one whose window opens after the origin year, is
+    not listed. (None, None) when nothing is listed."""
+    from lotline.config import CONFIG_DIR, load_state
+
+    folder = config_dir or CONFIG_DIR
+    if not (folder / "states" / f"{state.lower()}.yaml").exists():  # a state with no config has no holdouts
+        return None, None
+    cfg = load_state(state, folder)
+    hits = [h for h in cfg.holdouts if h.released_on and h.outcome_from.year <= origin]
+    if not hits:
+        return None, None
+    notes = [
+        f"the {h.place} test was scored: these results use {h.outcome_from.year}-{origin} outcomes it "
+        "predicted blind"
+        for h in hits
+    ]
+    return ", ".join(h.test_id for h in hits), "Built after " + "; and after ".join(notes) + "."
+
+
 def tree_is_clean(repo: Path = REPO) -> bool:
     """True when tracked files match HEAD, so `commit_sha` fully identifies the code that ran."""
     out = subprocess.run(
@@ -820,6 +856,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
             "National data only: eligible parcels are ACS single-family homes scaled by D-056 (zoning not "
             "observed); statewide results only."
         )
+    tested = post_test(st, origin)
     meta = pd.DataFrame(
         [
             {
@@ -840,6 +877,9 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
                 "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS) or None,
+                "tree_clean": tree_state(),
+                "post_test": tested[0],
+                "post_test_note": tested[1],
             }
         ]
     )

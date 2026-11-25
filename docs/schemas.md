@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.23** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.24** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -331,7 +331,7 @@ Written by `lotline results --state XX` to `reports/results/<st>/bundle.json`; n
 
 ## `results_meta`
 
-One row per bundle: what was run, from which commit and config, and how to label the state. `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`). `eligible_proxy` is true where the D-056 per-draw scale was applied (a state with no parcel denominator). `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so.
+One row per bundle: what was run, from which commit and config, and how to label the state. `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`). `eligible_proxy` is true where the D-056 per-draw scale was applied (a state with no parcel denominator). `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so. `tree_clean` is true when tracked files matched `commit_sha` at run time, false when they did not, null when unknown (no git). `post_test` lists, comma-separated, this state's released holdout tests whose outcome window opens by `origin_year`: the run has seen outcomes those tests were scored on. `post_test_note` says so in plain words for the page. Both null when there is none (schemas 1.24).
 
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
@@ -352,6 +352,9 @@ One row per bundle: what was run, from which commit and config, and how to label
 | `overlap_note` | text | yes | no |  |
 | `caveats` | text | no | yes |  |
 | `scenarios_pending` | text | no | yes |  |
+| `tree_clean` | true/false | no | yes |  |
+| `post_test` | text | no | yes |  |
+| `post_test_note` | text | no | yes |  |
 
 ## `results_draws`
 
@@ -610,3 +613,4 @@ Table checks: `one_row_per_key`
 | 1.21 | results_adu_baseline: optional basis (all, own_counts, model) and mean, so the ADU chart splits the no-reform bar into places with their own ADU counts and places the model estimates |
 | 1.22 | results_fee_types: a size whose homes are not linear in the fee change (houses on the lot-feasibility route) carries every slider stop, not only the half cut; fee_change_share may be negative (a rise) |
 | 1.23 | results_meta.state_role: adds ingestion_test, a state shown for transparency that is not part of the model's core evidence (Wisconsin) |
+| 1.24 | results_meta: adds optional tree_clean (the run's code matched commit_sha; null if unknown) and post_test / post_test_note (released holdout tests whose outcomes the run's data include; #506) |

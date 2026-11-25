@@ -2390,6 +2390,11 @@ function footer(b) {
     ["Schemas version", m.schemas_version], ["Config hash", m.config_hash],
     ["Draws", `${m.n_draws} per scenario, seed ${m.seed}`], ["Page built", DATA.generated],
   ];
+  // schemas 1.24 (A21, #506): shown only when the bundle carries them, so older bundles read as before
+  if (m.tree_clean === true || m.tree_clean === false) {
+    rows.splice(2, 0, ["Code at run", m.tree_clean ? "exactly the commit above" : "the commit above plus uncommitted changes"]);
+  }
+  if (m.post_test) rows.push(["Blind tests", `${m.post_test_note || "Built after a released blind test."} (${m.post_test})`]);
   $("meta").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
 }
 

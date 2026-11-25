@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.23"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.24"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -537,6 +537,10 @@ class ResultsMeta(_Strict):
     `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`).
     `eligible_proxy` is true where the D-056 per-draw scale was applied (a state with no parcel denominator).
     `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so.
+    `tree_clean` is true when tracked files matched `commit_sha` at run time, false when they did not, null
+    when unknown (no git). `post_test` lists, comma-separated, this state's released holdout tests whose
+    outcome window opens by `origin_year`: the run has seen outcomes those tests were scored on.
+    `post_test_note` says so in plain words for the page. Both null when there is none (schemas 1.24).
     """
 
     state: Series[str] = pa.Field(**_STATE)
@@ -556,6 +560,9 @@ class ResultsMeta(_Strict):
     overlap_note: Series[str]
     caveats: Optional[Series[str]] = pa.Field(nullable=True)
     scenarios_pending: Optional[Series[str]] = pa.Field(nullable=True)
+    tree_clean: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
+    post_test: Optional[Series[str]] = pa.Field(nullable=True)
+    post_test_note: Optional[Series[str]] = pa.Field(nullable=True)
 
 
 class ResultsDraws(_Strict):
@@ -999,6 +1006,11 @@ HISTORY = [
         "1.23",
         "results_meta.state_role: adds ingestion_test, a state shown for transparency that is not part of "
         "the model's core evidence (Wisconsin)",
+    ),
+    (
+        "1.24",
+        "results_meta: adds optional tree_clean (the run's code matched commit_sha; null if unknown) and "
+        "post_test / post_test_note (released holdout tests whose outcomes the run's data include; #506)",
     ),
 ]
 
