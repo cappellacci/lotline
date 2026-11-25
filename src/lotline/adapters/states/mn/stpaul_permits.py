@@ -34,7 +34,7 @@ from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.mn.stpaul_permits"
-VERSION = "1.0"
+VERSION = "1.1"
 SOURCE = "stpaul_permits"
 TABLE = "permits"
 LICENSE = "Public domain (City of Saint Paul item license; provided 'as is')"
@@ -45,7 +45,6 @@ LANDING_URL = "https://www.arcgis.com/home/item.html?id=cb618c6b5f8f46b696674e74
 
 ST_PAUL = "2758000"  # place GEOID (state 27 + FIPS place 58000)
 RAMSEY = "27123"  # county GEOID; St. Paul PINs are 12-digit Ramsey PINs
-TIMEZONE = "America/Chicago"
 
 # Exactly what is read. Never "*": ADDRESS, CONTRACTORNAME and CONTRACTORADDRESS are left out.
 FIELDS = [
@@ -92,7 +91,8 @@ PROVENANCE = {
         f"Download the Building_Permits_ feature layer ({LAYER_URL}) with the ArcGIS pager into a dated "
         f"snapshot, requesting only {', '.join(FIELDS)}. Street address, contractor name and contractor "
         "address are never requested; the work description is kept in the raw snapshot only",
-        "ISSUEDATE / FINALDATE (epoch ms, UTC) → local St. Paul calendar dates; issue_year from issue_date; "
+        "ISSUEDATE / FINALDATE (epoch ms holding St. Paul clock time) → calendar dates as stored, no "
+        "time-zone shift; issue_year from issue_date; "
         "date_precision=day; permits never issued are dropped",
         "Held-out place-years removed (validation/holdout.py: V5-MN-STPAUL hides 2024-2026) right after the "
         "dates are read, before any other step",
@@ -201,6 +201,10 @@ def clean_pin(pin: pd.Series) -> pd.Series:
 
 
 def _local_date(epoch_ms: pd.Series) -> pd.Series:
-    """Epoch milliseconds (UTC) → the calendar date in St. Paul."""
-    utc = epoch_ms_to_timestamp(epoch_ms)
-    return utc.dt.tz_localize("UTC").dt.tz_convert(TIMEZONE).dt.tz_localize(None).dt.normalize()
+    """Epoch milliseconds → the calendar date in St. Paul.
+
+    The layer stores the city's own clock time as if it were UTC: issue times cluster at 08:00-16:00 read as
+    UTC, which is the working day in Central time. So the date is read as stored, with no time-zone shift
+    (code review, 2026-11-25: converting to Central moved early-morning permits back a day, and one 1 January
+    permit into the year before)."""
+    return epoch_ms_to_timestamp(epoch_ms).dt.normalize()

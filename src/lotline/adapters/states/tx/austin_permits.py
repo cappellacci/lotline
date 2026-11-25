@@ -280,7 +280,9 @@ def build(raw: pd.DataFrame, state: str = "TX") -> pd.DataFrame:
     df = df.loc[keep.fillna(False).astype(bool)].copy()
 
     pclass = _text(df["permit_class"])
-    codes = pclass.map(class_code)
+    # A plain object Series, so a missing code stays None: `.map` on a string column keeps pd.NA from pandas
+    # 3.1, and `classify`'s `code == ...` tests would raise on it (review A4).
+    codes = pd.Series([class_code(v) for v in pclass], index=df.index, dtype=object)
     reported = pd.to_numeric(df["housing_units"], errors="coerce")
     parts = pd.DataFrame(
         [classify(codes.at[i], pclass.at[i], reported.at[i], df["description"].at[i]) for i in df.index],

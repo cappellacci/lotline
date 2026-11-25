@@ -36,10 +36,10 @@ def test_conforms_registered_and_blind(permits):
 
 @pytest.mark.usefixtures("v5_blind")
 def test_held_out_and_unissued_rows_are_gone(permits):
-    assert {"stp-20 900008", "stp-20 900009", "stp-20 900010"}.isdisjoint(permits.index)
-    # 03:00 UTC on 2024-01-01 is still 2023-12-31 in St. Paul: kept
-    assert permits.loc["stp-20 900007"].issue_date == pd.Timestamp("2023-12-31")
-    assert len(permits) == 7
+    # stored 2024-01-01 03:00 is St. Paul clock time, so 1 January 2024: held out with the rest of 2024
+    # (it was read as 2023-12-31 and kept before the 2026-11-25 date fix)
+    assert {"stp-20 900007", "stp-20 900008", "stp-20 900009", "stp-20 900010"}.isdisjoint(permits.index)
+    assert len(permits) == 6
 
 
 def test_holdout_runs_before_anything_else(monkeypatch):
@@ -84,3 +84,10 @@ def test_pins_dates_and_values(permits):
     assert pd.isna(permits.loc["stp-20 900006"].final_date)  # Inspected, not Finaled
     assert sfd.valuation_usd == 350000.0
     assert sfd.permit_class_raw == "Single Family Dwelling:New:Finaled"
+
+
+def test_dates_are_read_as_stored():
+    """St. Paul stores its clock time as if it were UTC: 03:00 on Jan 1 stays Jan 1 (review 2026-11-25)."""
+    ms = pd.Series([1577847600000, None])  # 2020-01-01 03:00 as stored
+    got = sp._local_date(ms)
+    assert got.iloc[0] == pd.Timestamp("2020-01-01") and pd.isna(got.iloc[1])

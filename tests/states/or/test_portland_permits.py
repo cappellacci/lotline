@@ -160,6 +160,22 @@ def test_a_new_house_with_an_adu_on_one_permit_becomes_two_rows(permits):
     assert permits.loc["HA-TH#house", "building_type_std"] == "TH"
 
 
+def test_any_new_building_with_an_adu_is_split_not_one_adu_row(raw):
+    """Code review 2026-11-25: a new Duplex flagged IS_ADU was one ADU row carrying every unit."""
+    extra = raw.iloc[[0, 0]].copy()
+    extra["FOLDERNUMB"] = ["HA-DUP2", "HA-DUP3"]
+    extra["NEWTYPE"] = "Duplex"
+    extra["IS_ADU"] = "True"
+    extra["NEW_UNITS"] = ["2", "3"]
+    p = pp.build(pd.concat([raw, extra], ignore_index=True)).set_index("permit_id")
+    assert "HA-DUP2" not in p.index and "HA-DUP3" not in p.index
+    two, three = p.loc["HA-DUP2#house"], p.loc["HA-DUP3#house"]
+    assert (two["building_type_std"], two["units_new"], two["type_confidence"]) == ("SFD", 1, "inferred")
+    assert (three["building_type_std"], three["units_new"]) == ("U2", 2)  # a duplex and its ADU
+    assert p.loc["HA-DUP2#adu", "units_new"] == p.loc["HA-DUP3#adu", "units_new"] == 1
+    assert p.loc[["HA-DUP3#house", "HA-DUP3#adu"], "units_new"].sum() == 3  # no unit lost or added
+
+
 def test_adu_kind_and_conversion_from_the_work_class(permits):
     assert permits.loc["A-DET", "adu_type"] == "detached"
     assert permits.loc["A-CONV", "adu_type"] == "internal_conversion"
