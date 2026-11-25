@@ -28,6 +28,16 @@ model form and not yet re-fitted on the current one:
 
 One step, `v5_charlotte_prior`, is `frozen`: it serves only the frozen V5 Charlotte test.
 
+**Runnable steps.** `uv run lotline calibrate --run` recomputes the steps that have a runner and compares each
+value with config; `--write` puts the new values into config and rewrites the lock. Today four data-only steps
+run (`src/lotline/calibrate/data_steps.py`):
+
+- three reproduce config exactly: the baseline ADU share, the ADU reference values and the mortgage rate;
+- the eligible-parcel proxy (D-056) does not: today's tables give k 0.971 and σ 0.106, against 0.998 and 0.060
+  from its 2026-11-06 run. Config keeps the older values until that change is accepted.
+
+The completion factors are a judgment informed by measured ratios, so they stay a recorded value.
+
 **What comes next.** Phase 1 of the calibration design records the map; it runs no fits. In later phases each
 step gets a `run` function, so `lotline calibrate --quick` (reduced draws, minutes) and a full run (same seeds
 and draws, hours) re-derive the values from the fetched data and rewrite config and the lock in one command.

@@ -27,9 +27,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from lotline.adapters.national import geoparts
-from lotline.build import eligible
-from lotline.config import load_params, load_state
+from lotline.calibrate.data_steps import proxy_pairs as pairs
+from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model.eligible_proxy import PASS_BAND, proxy_test
 
@@ -39,52 +38,6 @@ STATES = ("MN", "NC", "TX", "OH", "OR")
 MAIN_THEME = "adu"
 # data dashboard: share of parcels with unknown land use, which makes E_s itself uncertain (D-056)
 UNKNOWN_LAND_USE = {"TX": 0.365, "NC": 0.192}
-
-
-def acs_rows(state: str, store: DataStore) -> pd.DataFrame:
-    """`from_acs` for every jurisdiction, built as `eligible.load` builds it (no network: cached inputs)."""
-    juris = store.read(state, "jurisdictions")
-    acs = store.read(state, "acs_geo_year")
-    cfg = load_state(state)
-    places = juris.loc[juris["kind"] == "place", "geoid"].tolist()
-    townships = juris.loc[juris["kind"] == "township", "geoid"].tolist()
-    c_shares = geoparts.county_shares(cfg.fips, places, store)
-    t_shares = geoparts.township_shares(cfg.fips, places, townships, store)
-    return eligible.from_acs(acs, juris, county_shares=c_shares, township_shares=t_shares)
-
-
-def pairs(state: str, store: DataStore, max_gap: float) -> pd.DataFrame:
-    """One row per parcel-counted jurisdiction and theme: newest roll's count and the paired ACS homes."""
-    elig = store.read(state, "eligible_parcels")
-    rolls = elig[(elig["denominator_source"] == "parcels") & (elig["rule_version"] == eligible.RULE_VERSION)]
-    newest = rolls.sort_values("year").groupby(["jurisdiction_geoid", "theme"]).tail(1)
-    acs = acs_rows(state, store)
-    series = {
-        k: g.set_index("year")["eligible_parcels"] for k, g in acs.groupby(["jurisdiction_geoid", "theme"])
-    }
-    juris = store.read(state, "jurisdictions").set_index("geoid")
-    out = []
-    for r in newest.itertuples():
-        s = series.get((r.jurisdiction_geoid, r.theme))
-        a = (
-            eligible._nearest_acs_year(int(r.year), sorted(int(y) for y in s.index), max_gap)
-            if s is not None
-            else None
-        )
-        out.append(
-            {
-                "state": state,
-                "jurisdiction_geoid": r.jurisdiction_geoid,
-                "name": juris["name"].get(r.jurisdiction_geoid),
-                "kind": juris["kind"].get(r.jurisdiction_geoid),
-                "theme": r.theme,
-                "roll_year": int(r.year),
-                "acs_end_year": a,
-                "parcels": int(r.eligible_parcels),
-                "acs_homes": float(s[a]) if a is not None else float("nan"),
-            }
-        )
-    return pd.DataFrame(out)
 
 
 def main() -> None:

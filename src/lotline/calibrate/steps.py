@@ -63,6 +63,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/adu_baseline_share.py",
         "hand",
         reads=("permits (Met Council, Austin) 2019-22",),
+        runner="lotline.calibrate.data_steps:baseline_adu_share",
     ),
     Step(
         "eligible_proxy",
@@ -71,6 +72,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/eligible_proxy_test.py (model/eligible_proxy.py)",
         "hand",
         reads=("parcels", "acs_housing"),
+        runner="lotline.calibrate.data_steps:eligible_proxy",
     ),
     Step(
         "adu_reference_values",
@@ -79,6 +81,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/adu_reference.py",
         "hand",
         reads=("ACS 2015-19 (Portland)", "FRED MORTGAGE30US", "CPI"),
+        runner="lotline.calibrate.data_steps:adu_reference_values",
     ),
     Step(
         "mortgage_rate_forecast",
@@ -87,6 +90,7 @@ STEPS: tuple[Step, ...] = (
         "FRED MORTGAGE30US 2025 annual mean (market_geo_year)",
         "hand",
         reads=("FRED MORTGAGE30US",),
+        runner="lotline.calibrate.data_steps:mortgage_rate_forecast",
     ),
     Step(
         "adu_undercount_k",
