@@ -204,7 +204,11 @@ def build(raw: pd.DataFrame, state: str = "TX") -> pd.DataFrame:
     """Raw layer attributes → `permits` rows."""
     df = raw.copy()
     df["issue_date"] = epoch_ms_to_timestamp(df["ISSUE_DATE"]).dt.normalize()
-    df["permit_id"] = pd.to_numeric(df["PERMIT_No"], errors="coerce").astype("Int64").astype("string")
+    # Numeric ids as integers ("123456", not "123456.0"), as before; any other id kept as text, never dropped
+    # (code review A29, 2026-11-25; none in the 2026-11-11 snapshot)
+    text = _clean(df["PERMIT_No"]).replace("", pd.NA)
+    numeric = pd.to_numeric(text, errors="coerce").astype("Int64").astype("string")
+    df["permit_id"] = numeric.fillna(text)
     df["status"] = _clean(df["Grouped_Status"])
     df = df.loc[df["status"].isin(KEEP_STATUS) & df["issue_date"].notna() & df["permit_id"].notna()].copy()
     df = df.sort_values(["permit_id", "issue_date", "OBJECTID"]).drop_duplicates("permit_id", keep="last")

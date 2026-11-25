@@ -80,6 +80,16 @@ def test_conforms_statuses_and_one_row_per_permit():
     assert (out.jurisdiction_geoid == "4819000").all()
 
 
+def test_permit_ids_numeric_as_integers_and_text_kept():
+    """Review A29: a doubles column gives "123456", and a non-numeric id is kept, not dropped."""
+    raw = raw_frame()
+    raw["PERMIT_No"] = raw["PERMIT_No"].astype(object)
+    raw.loc[raw.index[-1], "PERMIT_No"] = "BP-12"
+    out = dp.build(raw)
+    assert "BP-12" in set(out["permit_id"])
+    assert "1001" in set(out["permit_id"]) and all(not p.endswith(".0") for p in out["permit_id"])
+
+
 def test_dwellings_use_units_when_it_fits_else_the_type():
     p = permits()
     assert row(p, "1001") == ("SFD", 1, "reported")
