@@ -204,8 +204,45 @@ def test_remainders_draw_from_coded_remainders():
     })  # fmt: skip
     pools = mm.dose_pools(coded, min_coded=5)
     assert sorted(set(pools["remainder"])) == [0.1]
+    assert sorted(set(pools[1])) == [0.9] and sorted(set(pools["all"])) == [0.9]  # cities only (review A12)
     assert mm.remainder_pool_key("county_unincorporated", 1, pools) == "remainder"
     assert mm.remainder_pool_key("place", 1, pools) == 1
     few = mm.dose_pools(coded.iloc[1:], min_coded=5)
     assert "remainder" not in few and mm.remainder_pool_key("county_unincorporated", 1, few) == 0
     assert mm.remainder_pool_key("place", 1, few) == 1
+
+
+def test_a_state_with_no_coded_rule_draws_from_the_borrowed_pool():
+    """Review A13: an uncoded place draws its dose from `pool_places` when given. With every borrowed place
+    at dose 1 the gap is 0, so nothing is added; without it the state's empty pool gives d = 0 (gap 1)."""
+    from lotline.model.scenarios import mm
+
+    places = pd.DataFrame({"geoid": ["A"], "eligible": [1000.0], "dose": [np.nan], "band": [0],
+                           "f_ratio": [1.0], "house_share": [1.0]})  # fmt: skip
+    draws = pd.DataFrame(
+        {"theta": [0.01] * 4, "alpha": [0.1] * 4, "units": [3.0] * 4, "teardown_scale": [0.0] * 4}
+    )
+    pool = pd.DataFrame({"band": [0] * 5, "kind": ["place"] * 5, "dose": [1.0] * 5})
+    borrowed = mm.simulate(places, draws, 1.0, 1.0, seed=1, pool_places=pool)
+    own = mm.simulate(places, draws, 1.0, 1.0, seed=1)
+    assert borrowed.buildings.sum() == 0 and own.places["dose_gap_mean"].iloc[0] == 1.0
+
+
+def test_cost_index_takes_the_nearest_earlier_year():
+    from lotline.model.scenarios import mm
+
+    ci = {2016: 0.9, 2020: 1.0, 2025: 1.1}
+    assert mm.cost_index_at(ci, 2023) == 1.0 and mm.cost_index_at(ci, 2030) == 1.1
+    assert mm.cost_index_at(ci, 2014) == 0.9
+    with pytest.raises(ValueError):
+        mm.cost_index_at({}, 2025)
+
+
+def test_log_sd_refuses_a_swapped_range():
+    from types import SimpleNamespace
+
+    from lotline.model.scenarios import mm
+
+    with pytest.raises(ValueError):
+        mm.log_sd(SimpleNamespace(value=1.0, low=2.0, high=0.5))
+    assert mm.log_sd(SimpleNamespace(value=1.0, low=1.0, high=1.0)) == 0.0

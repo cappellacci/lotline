@@ -8210,3 +8210,22 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - TX and OR unchanged. Missing middle, fees and baselines unchanged in every state.
 - **Not changed:** the review's amended-rule finding was wrong. Cass County's 2016 amendment and Medford's
   2018 amendment each widen where ADUs are allowed, so their blank zone and lot limits are correct.
+
+### Deviation · 2026-11-25 · Missing-middle dose pools: two fixes from the code review (thread 17, A12–A13)
+
+- **Asked by:** Ben, 2026-11-25: "Fix them here" (the missing-middle findings in
+  `reports/review/2026-11-code-review.md`).
+- **Fixes** (`src/lotline/model/scenarios/mm.py`):
+  - **A12. Coded county remainders stay out of the city dose pools** (`dose_pools`), as A7 does for ADU
+    priors. This completes D-102 option (b).
+  - **A13. A new state borrows doses by size band.** A state outside `adu.REFORM_STATES` with no coded
+    missing-middle rule gave every place dose 0, as if no place allowed 2–4 homes today. It now draws from
+    the five states' coded places by size band (`borrowed_pool`), as ADU priors do (A5).
+  - Small fixes: the cost index takes the nearest earlier year (`cost_index_at`), and a missing index now
+    raises an error; `log_sd` refuses a range with low above high; the docstring says a place without a rent
+    takes the median F(PCR).
+- **Effect** (origin 2025, 1,000 draws, five-year missing-middle permits added P10 / P50 / P90; before = `main`
+  after #524):
+  - Wisconsin 419 / 2,757 / 16,532 → 183 / 1,327 / 7,685 (P50 −52%).
+  - NC 726 / 4,989 / 29,512 → 743 / 4,965 / 29,818.
+  - MN, OH, TX and OR unchanged. ADU, fees and baselines unchanged in every state.
