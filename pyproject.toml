@@ -26,6 +26,7 @@ lotline = "lotline.cli:main"
 dev = [
     "pip-licenses",
     "pytest",
+    "pytest-xdist>=3.8.0",
     "ruff",
 ]
 
@@ -45,6 +46,7 @@ packages = ["src/lotline"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["slow: a long simulation-recovery test (tests/slow_tests.txt); skip with -m \"not slow\""]
 
 [tool.ruff]
 line-length = 110
