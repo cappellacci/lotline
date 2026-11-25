@@ -160,8 +160,9 @@ def classify(ptype: str, sub: str, units, description: str) -> dict:
         if sub == "Duplex":
             ok = n is not None and 1 <= n <= 2
             return dict(
-                out, building_type_std="U2", type_confidence="high", units_removed=int(n) if ok else 2
-            )
+                out, building_type_std="U2", type_confidence="high", units_removed=int(n) if ok else 2,
+                units_confidence="reported" if ok else "derived",
+            )  # fmt: skip
         if sub == "Multi-Family":
             t = size_type(n)
             if t:
@@ -244,6 +245,7 @@ def build(raw: pd.DataFrame, state: str = "TX") -> pd.DataFrame:
     for col in ["is_demolition", "is_conversion"]:
         out[col] = pd.array(facts[col], dtype="boolean")
     out = out.loc[out["permit_id"].notna()]
+    out = out.sort_values(["permit_id", "issue_date"], kind="stable")  # the latest issue wins, not row order
     return out.drop_duplicates(["state", "permit_id"], keep="last").reset_index(drop=True)
 
 

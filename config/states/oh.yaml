@@ -135,3 +135,15 @@ rules:
       A roll covering 99% of a place's houses stands for the whole place. No range set.
     source: "Adapter choice, Franklin rolls (commit 3d2f526b, 2026-10-27); no outside source"
     used_by: [oh_parcels]
+  development_adu_min:
+    value: 3
+    unit: ADU-flagged permits on one parcel in one issue year
+    what: >-
+      Cincinnati: an ADU or carriage-house permit is part of a development, not a homeowner's second unit, when its
+      parcel has at least this many ADU-flagged permits (distinct numbers) in the same issue year
+      (cincy_permits.development_adus).
+    assumption: >-
+      Three or more on one lot in a year are a developer's buildings. The 2020 masterplan had 11; every true ADU in
+      the 2026-11-11 hand check was alone on its parcel that year. No range set.
+    source: "Adapter choice, Cincinnati hand check of ADU permits (2026-11-11); no outside source"
+    used_by: [cincy_permits]

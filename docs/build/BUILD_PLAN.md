@@ -99,7 +99,7 @@ lotline/
 │   ├── config/  io/  cli.py
 │   ├── adapters/national/            # bps, acs, fhfa, fred, ppi, census geographies
 │   ├── adapters/states/{mn,nc,tx,oh}/  # parcels, permits, zoning, fees, reforms
-│   ├── adapters/comparables/{portland,seattle,ca_apr,la}/
+│   ├── adapters/comparables/         # not built: D-037 uses outside studies as checks only (removed 2026-11-25)
 │   ├── build/                        # eligible parcels, jurisdiction-year panels, data tiers
 │   ├── model/                        # baseline, funnel, proforma, hazard, scenarios/, combine, aggregate, uncertainty
 │   ├── evidence/                     # did, synth, pooling, transport

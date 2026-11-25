@@ -117,6 +117,13 @@ adu_unknown_rule_age_years:
   unit: years
   source: "Choice (D-022): a sampled rule with no known date is treated as long in force (ramp ~1), so current-rules uptake under it is mature. Most coded ADU rules in force date from 2014-2023"
 
+adu_blank_field_restrict_prob:
+  value: 0.5
+  low: 0.5
+  high: 0.5
+  unit: probability
+  source: "Choice (D-022): a rule field that no place in any state has coded restricts with probability one half (no information either way); any coded share replaces it"
+
 # ---- Rule coverage (D-021) ----
 
 adu_rule_zoned_coverage_share:
@@ -133,6 +140,13 @@ adu_rule_limited_coverage_share:
   high: 0.2
   unit: share of eligible single-family lots covered
   source: "Judgment (D-021): a rule whose coverage text names a limited area (an overlay, a half-mile corridor, new subdivisions, historic districts, transit areas) with no zone list to measure it, e.g. St. Paul's 2016 Green Line rule, Raleigh's 2019 overlay"
+
+adu_rule_parcel_known_min_share:
+  value: 0.5
+  low: 0.5
+  high: 0.5
+  unit: share of a place's single-family parcels
+  source: "Choice (D-021): a rule's zone list or lot minimum is measured on the parcels only where at least half of the place's single-family parcels have their zoning (or lot size) recorded; below that the judged share is used"
 
 # ---- D-023 estimation: dose grades (choice to confirm; D-023 orders the grades but gives no values) ----
 

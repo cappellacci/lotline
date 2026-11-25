@@ -146,7 +146,7 @@ mm_roll_merge_growth:
   low: 0.20
   high: 0.20
   unit: share increase in lot area between rolls
-  source: "D-092 (proposed) §2, as wake_roll_diff.MERGE_ACRE_GROWTH: lot area up more than 20% is a possible merge, reported and left out"
+  source: "D-092 (proposed) §2: lot area up more than 20% is a possible merge, reported and left out; read by mm_counts and the Wake, Franklin and Minneapolis roll diffs"
 
 mm_coverage_interval_z:
   value: 1.6449

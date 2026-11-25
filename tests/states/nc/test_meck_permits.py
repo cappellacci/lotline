@@ -90,6 +90,7 @@ def test_units_and_types():
     assert p.loc["P3", "units_new"] == 4 and p.loc["P3", "units_confidence"] == "inferred"  # 9 does not fit
     assert p.loc["P4", "units_new"] == 48 and p.loc["P4", "building_type_std"] == "MF5"
     assert p.loc["P7", "building_type_std"] == "ADU" and p.loc["P7", "units_new"] == 1
+    assert p.loc["P7", "units_removed"] == 0  # an ADU removes nothing (review A28)
     assert (
         p.loc["P8", "is_demolition"] and p.loc["P8", "units_removed"] == 1 and p.loc["P8", "units_new"] == 0
     )

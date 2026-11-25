@@ -222,7 +222,9 @@ def classify(row: pd.Series, codes: dict[str, dict[str, str]]) -> dict:
     # hand checks found ADU permits filed under it (reports/nc/parser-handcheck-2026-11-11.md §1, §4)
     adu_ok = not isinstance(code, str) or code in ("101", "434", "437", "438")  # no code (None or NA) is fine
     if facts.building_type_std == "ADU" and adu_ok and not facts.is_demolition:
-        out.update(adu_type=facts.adu_type or "unknown", units_new=1, units_confidence="inferred")
+        out.update(
+            adu_type=facts.adu_type or "unknown", units_new=1, units_removed=0, units_confidence="inferred"
+        )
         return dict(out, building_type_std="ADU", type_confidence="inferred")
     if activity == "new":
         if code == "101":
@@ -236,8 +238,8 @@ def classify(row: pd.Series, codes: dict[str, dict[str, str]]) -> dict:
         out["units_removed"] = 0
     elif activity == "demolition":
         out.update(units_new=0, units_confidence="derived")
-        if _fits(btype, n):
-            out["units_removed"] = int(n)
+        if _fits(btype, n):  # a reported count that fits the type is "reported", as in Raleigh and Durham
+            out.update(units_removed=int(n), units_confidence="reported")
         elif info["derived_units"]:
             out["units_removed"] = int(info["derived_units"])
     elif activity == "alteration" and code == "434":

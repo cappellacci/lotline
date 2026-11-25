@@ -58,6 +58,7 @@ import re
 
 import pandas as pd
 
+from lotline.config import state_rule
 from lotline.io import DataStore
 from lotline.io.socrata import download_dataset
 from lotline.parse.permit_text import PermitTextFacts, parse_description
@@ -117,7 +118,7 @@ DROP_STATUS = {"Permit Withdrawn", "VOIDED", "REVOKED", "DENIED", "W/REFUND"}
 # A parcel with this many ADU-flagged permits in one issue year (each counted with the others) is a
 # development's buildings, not homeowners' ADUs. Cincinnati's 2020 masterplan had 11; every true ADU found by
 # the 2026-11-11 hand check was alone on its parcel that year.
-DEVELOPMENT_ADU_MIN = 3
+DEVELOPMENT_ADU_MIN = int(state_rule("OH", "development_adu_min"))  # config/states/oh.yaml rules
 # Text that places a permit inside a larger development ("within a 36 residential building masterplan").
 DEVELOPMENT_TEXT = re.compile(
     r"\bmaster\s*-?\s*plan\w*|\bwithin\s+an?\s+\d+\s+(?:\w+\s+){0,2}buildings?\b", re.I

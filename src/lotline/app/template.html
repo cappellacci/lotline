@@ -1408,7 +1408,7 @@ function placeTypeChart(b) {
       <span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Built anyway</span>
       <span><span style="display:inline-block;width:12px;height:10px;background:${scenColor("adu")};margin-right:6px"></span>Added by the reform</span></div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ADUs a year by place type, built anyway and added by the reform" style="width:100%;min-width:420px;height:auto;font-family:var(--font-mono);font-size:12px">${bars}</svg></div>
-    ${more(`<p class="source">Gross ADU permits a year, averaged over 2027–2031: midpoints across the engine's draws (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Gross ADU permits a year, averaged over ${AGG.windowLabel(b) || "the five forecast years"}: midpoints across the engine's draws (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`, "Graph details")}`;
 }
 
 
@@ -2074,7 +2074,7 @@ async function drawDeepDive() {
     const cell = (r) => (r ? `${fmtN(r.p50)}<br><span class="caption muted">${fmtN(r.p10)}–${fmtN(r.p90)}</span>` : "–");
     return `<tr><td>${esc(nameOf(b.meta.state))}</td><td class="n">${base.length ? fmtN(base.reduce((t, r) => t + r.p50, 0)) : "–"}</td><td class="n">${cell(add)}</td><td class="n">${cell(net)}</td></tr>`;
   }).join("");
-  $("adu-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, ADUs a year.</b> Statewide ADU permits a year with today's rules, and with the reform on top, averaged over 2027–2031.</p>
+  $("adu-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, ADUs a year.</b> Statewide ADU permits a year with today's rules, and with the reform on top, averaged over ${AGG.windowLabel(b) || "the five forecast years"}.</p>
     ${laneChart(rows, "Gross ADU permits a year: the average of each window year's P10, midpoint and P90.")}
     ${more(`<p class="body-small" style="margin:0">The same split, by core cities, suburbs and towns: grey is built anyway, blue is added by the reform.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${types}</div>`, "By place type, state by state")}
@@ -2102,7 +2102,7 @@ function mmDeepDive(bs) {
     const cell = (r) => (r ? `${fmtN(r.p50)}<br><span class="caption muted">${fmtN(r.p10)}–${fmtN(r.p90)}</span>` : "–");
     return `<tr><td>${esc(nameOf(b.meta.state))}</td><td class="n">${cell(st("legal"))}</td><td class="n">${cell(st("pencils"))}</td><td class="n">${cell(win("permits_added"))}</td><td class="n">${cell(win("homes_net_statewide"))}</td></tr>`;
   }).join("");
-  $("mm-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, homes a year.</b> Statewide homes permitted in 2–4 unit buildings a year with today's rules, and with the reform added on top, averaged over 2027–2031.</p>
+  $("mm-deep").innerHTML = `<p class="body-small"><b>No reform against the reform, homes a year.</b> Statewide homes permitted in 2–4 unit buildings a year with today's rules, and with the reform added on top, averaged over ${AGG.windowLabel(b) || "the five forecast years"}.</p>
     ${laneChart(rows, "Homes in 2–4 unit buildings a year: the average of each window year's P10, midpoint and P90. With the reform: the no-reform midpoint plus the reform's range.")}
     <p class="body-small" style="margin-top:var(--space-5)"><b>Each state's record and forecast.</b> Homes permitted in 2–4 unit buildings each year (bars, every city and town), then the no-reform forecast (grey) with the reform's range on top.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${years}</div>
