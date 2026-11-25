@@ -22,12 +22,13 @@ from __future__ import annotations
 import pandas as pd
 
 from lotline.adapters.states.nc.wake_roll_diff import chapman, k_undercount, wilson
+from lotline.config import load_params
 
 __all__ = ["chapman", "k_undercount", "wilson"]
 
 SINGLE_FAMILY_LUC = "510"
 TWO_FAMILY_LUC = "520"
-MERGE_ACRE_GROWTH = 0.20
+MERGE_ACRE_GROWTH = float(load_params("mm")["mm_roll_merge_growth"].value)  # area up > this: possible merge
 ADDED_AREA = 200  # sq ft of added living area on card 1 (envelope only)
 GARAGE_CODES = ("RG1", "RG2", "RG3", "RG4")  # detached garages (frame, block, masonry, metal)
 GAINED_GROUPS = ("new_card_new", "new_card_old", "unit_change", "rebuild")

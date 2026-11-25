@@ -46,7 +46,10 @@ PLACEHOLDERS = (
     "<!--__MARK_LIGHT__-->",
     "<!--__MARK_DARK__-->",
     "__FAVICON__",
-)
+    "__REPO_URL__",
+    "/*__LOTLINE_AGGREGATE__*/",
+    "/*__LOTLINE_DASHBOARD__*/",
+)  # every slot `render` fills: a template that loses one fails the build instead of shipping without it
 
 # Picker order and plain-language group labels for `results_meta.state_role` (#310 Q4).
 ROLES = {
@@ -404,8 +407,6 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
         .replace("<!--__MARK_LIGHT__-->", _svg("lotline-mark-light.svg", 24))
         .replace("<!--__MARK_DARK__-->", _svg("lotline-mark-dark.svg", 24))
         .replace("__FAVICON__", _data_uri("lotline-mark-favicon.svg"))
-        # the add-a-state page's README link, written into the page here rather than set by script (CodeQL)
-        .replace("__BYOS_URL__", html.escape(str((data.get("map") or {}).get("byos_url") or "README.md")))
         # the add-a-state guide's and the model tab's links into the repository (challenge.toml repo_url)
         .replace("__REPO_URL__", html.escape(str((data.get("map") or {}).get("repo_url") or REPO_FALLBACK)))
         .replace("/*__LOTLINE_AGGREGATE__*/", AGGREGATE_JS.read_text(encoding="utf-8"))

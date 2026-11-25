@@ -41,13 +41,13 @@ DWELLING = frozenset({MAIN}) | ALQ | MULTI | MOHO
 ATTACHED_OWNERSHIP = frozenset({"15", "16", "22"})  # CONDO (STACKED), TOWNHOMES, HIRISE CONDO/APT
 LIVING_SEGMENT = re.compile(r"^(?:[1-5](?:ST|ND|RD|TH)|RSBLW)$")
 MIN_YEAR = 1800
-UNIVERSE_BEFORE = 2019  # main house built before this year
+UNIVERSE_BEFORE = int(state_rule("TX", "austin_adu_universe_before"))  # main house built before this year
 WINDOW = (2019, 2023)  # second dwelling built in these years (inclusive) → R
 
 HOME_START = pd.Timestamp(state_rule("TX", "austin_home_start"))  # HOME phase 1 (config/states/tx.yaml rules)
 HOME_CLASSES = frozenset({"101", "102", "103", "436"})
 DEMOLITION_CLASSES = frozenset({"645", "646"})
-DEMOLITION_LOOKBACK_YEARS = 3
+DEMOLITION_LOOKBACK_YEARS = int(state_rule("TX", "austin_demolition_lookback_years"))
 
 
 def _members(zf: zipfile.ZipFile, names: tuple[str, ...]) -> str | None:

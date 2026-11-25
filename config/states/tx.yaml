@@ -116,3 +116,24 @@ rules:
     assumption: The label is applied consistently from HOME phase 1 on. No range (a label).
     source: "City of Austin issued permits (data.austintexas.gov 3syk-w9eu), use descriptions"
     used_by: [permit_theme, austin_permits]
+  austin_adu_universe_before:
+    value: 2019
+    unit: year
+    what: >-
+      The Austin TCAD ADU count's universe: lots whose main house (earliest living-floor segment) was built before
+      this year (austin_adu_roll.classify_parcels).
+    assumption: >-
+      A house standing before the 2019-2023 window can receive an ADU in it. Fixed by the pre-registered method;
+      no range.
+    source: "reports/tx/adu-coverage-and-undercount.md §0.2 (committed before any count)"
+    used_by: [austin_adu_roll]
+  austin_demolition_lookback_years:
+    value: 3
+    unit: years
+    what: >-
+      HOME rule: a new building on a lot is not counted as a second home when a residential demolition (645, 646)
+      is filed at the parcel from this many years before its issue date to the end of the data
+      (austin_adu_roll.home_adu).
+    assumption: A demolition that close to the permit means a rebuild, not an addition. Pre-registered; no range.
+    source: "reports/tx/adu-coverage-and-undercount.md §0.5 item 3 (committed before any count)"
+    used_by: [austin_adu_roll]

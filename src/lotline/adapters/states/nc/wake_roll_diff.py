@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import pandas as pd
 
+from lotline.config import load_params
 from lotline.validation.undercount import Z90, chapman, flag_share, k_undercount, wilson
 
 __all__ = ["Z90", "chapman", "flag_share", "k_undercount", "wilson"]  # re-exported (moved 2026-11-10)
@@ -28,7 +29,7 @@ __all__ = ["Z90", "chapman", "flag_share", "k_undercount", "wilson"]  # re-expor
 DWELLING_USES = frozenset({"01", "02", "03", "04", "72"})  # one/two/three/four family, mobile home
 TWO_FAMILY = "02"
 FIRST_NEW_YEAR = 2019  # a card built in or after the 2019 roll's year counts as newly built
-MERGE_ACRE_GROWTH = 0.20  # acreage up by more than 20% → possible merge, set aside
+MERGE_ACRE_GROWTH = float(load_params("mm")["mm_roll_merge_growth"].value)  # area up > this: possible merge
 GAINED_GROUPS = ("new_card_new", "new_card_old", "unit_change", "rebuild")
 GROUP_LABELS = {
     "new_card_new": "New card, built 2019 or later",

@@ -68,3 +68,12 @@ def test_dropped_rows_ids_and_privacy():
 
 def test_schema():
     assert_conforms(built().reset_index(), "permits")
+
+
+def test_duplex_demolition_count_that_fits_is_reported():
+    """Review A28: a reported 1-2 unit count on a duplex demolition is "reported", as in other adapters."""
+    ok = cs.classify("Demolition", "Duplex", "2", "")
+    assert ok["units_removed"] == 2 and ok["units_confidence"] == "reported"
+    bad = cs.classify("Demolition", "Duplex", "7", "")
+    assert bad["units_removed"] == 2 and bad["units_confidence"] == "derived"
+

@@ -171,7 +171,9 @@ def classify(row: pd.Series, occ: dict[str, dict[str, str]]) -> dict:
     if activity == "demolition":
         out.update(units_new=0)
         if role == "dwelling":
-            out.update(units_removed=int(n) if _fits(btype, n) else derived, units_confidence="derived")
+            fits = _fits(btype, n)  # a reported count that fits the type is "reported" (as Raleigh, Durham)
+            how = "reported" if fits else "derived"
+            out.update(units_removed=int(n) if fits else derived, units_confidence=how)
         elif role == "multi" and multi_type(n):
             out.update(units_removed=int(n), units_confidence="reported")
         elif role in ("foundation", "accessory", "nonresidential"):

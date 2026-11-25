@@ -21,11 +21,12 @@ from __future__ import annotations
 
 import pandas as pd
 
+from lotline.config import load_params
 from lotline.validation.undercount import chapman, k_undercount
 
 HENNEPIN = "27053"
 FIRST_NEW_YEAR = 2017  # the earlier roll's year: a main building built in or after it replaced the house
-MERGE_AREA_GROWTH = 0.20
+MERGE_AREA_GROWTH = float(load_params("mm")["mm_roll_merge_growth"].value)  # area up > this: possible merge
 ADU_LABELS = frozenset(
     {
         "R WITH ACCESSORY DWELLING",

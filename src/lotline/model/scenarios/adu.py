@@ -93,6 +93,11 @@ def specs() -> dict:
     return out | {k: agg[k] for k in AGGREGATE_KEYS}
 
 
+def _adu_value(key: str) -> float:
+    """One central value from config/params/adu.yaml (for helpers whose callers pass other param sets)."""
+    return float(load_params("adu")[key].value)
+
+
 def central_params() -> dict[str, float]:
     return {k: s.value for k, s in specs().items()}
 
@@ -447,14 +452,16 @@ def field_restrict_counts(reforms: pd.DataFrame, as_of: pd.Timestamp, min_sqft: 
 
 def field_probabilities(counts: pd.DataFrame, state: str, min_count: int) -> dict[str, float]:
     """P(blank field restricts) for one state: its own coded share if it has min_count known values,
-    else the pooled share over all states (D-022). A field nobody has coded gets 0.5 (no information)."""
+    else the pooled share over all states (D-022). A field nobody has coded gets
+    `adu_blank_field_restrict_prob` (0.5, no information)."""
+    blank = _adu_value("adu_blank_field_restrict_prob")
     out = {}
     for f in FIELDS:
         own = counts[(counts["state"] == state) & (counts["field"] == f)]
         pooled = counts[counts["field"] == f]
         use = own if len(own) and own["known"].sum() >= min_count else pooled
         known = use["known"].sum()
-        out[f] = float(use["restricting"].sum() / known) if known else 0.5
+        out[f] = float(use["restricting"].sum() / known) if known else blank
     return out
 
 
@@ -482,8 +489,9 @@ def rule_coverage(
     """Share of a place's ADU-eligible parcels a coded ADU rule covers (D-021), and how it was found.
 
     - zones (`coverage_zones`) and the lot minimum (`min_lot_sqft`) are measured on the place's single-family
-      detached parcels (latest roll) among those whose zoning / lot size is known, where at least half of them
-      have it; a zone list matching no parcel's zoning (as written or as an acronym) counts as unavailable;
+      detached parcels (latest roll) among those whose zoning / lot size is known, where at least
+      `adu_rule_parcel_known_min_share` (half) of them have it;
+      a zone list matching no parcel's zoning (as written or as an acronym) counts as unavailable;
     - otherwise each limit takes `adu_rule_zoned_coverage_share` (judgment);
     - with no zones or lot minimum: 1, unless the coverage text names a limited area explicitly ("only
       inside/within/in", "within …", new subdivisions, a half-mile corridor):
@@ -502,11 +510,12 @@ def rule_coverage(
     measured = pd.Series(True, index=sf.index)  # parcels on which every measured limit is known
     covered = pd.Series(True, index=sf.index)
     share, notes = 1.0, []
+    min_known = _adu_value("adu_rule_parcel_known_min_share")
     if zones:
         zoning = sf["zoning_raw"] if "zoning_raw" in sf else pd.Series(np.nan, index=sf.index)
         wanted = {_norm_zone(z) for z in zones}
         match = zoning.map(lambda z: bool(_zone_keys(z) & wanted) if pd.notna(z) else False)
-        if len(sf) and zoning.notna().mean() >= 0.5 and match.any():
+        if len(sf) and zoning.notna().mean() >= min_known and match.any():
             measured &= zoning.notna()
             covered &= match
             notes.append("zones from parcels")
@@ -515,7 +524,7 @@ def rule_coverage(
             notes.append("zones (judgment)")
     if min_lot is not None:
         lot = sf["lot_sqft"] if "lot_sqft" in sf else pd.Series(np.nan, index=sf.index)
-        if len(sf) and lot.notna().mean() >= 0.5:
+        if len(sf) and lot.notna().mean() >= min_known:
             measured &= lot.notna()
             covered &= lot.fillna(0) >= min_lot
             notes.append("lot minimum from parcels")
@@ -556,7 +565,7 @@ def current_rules(
 
     - **No ADU row** (local or statewide): `rule_class` 'unknown', p_* missing (filled by `apply_priors`).
     - **A coded row:** known failed conditions fix part of the type; each blank field restricts with
-      `field_probs[field]` (default 0.5), independently (`type_distribution`).
+      `field_probs[field]` (default `adu_blank_field_restrict_prob`), independently (`type_distribution`).
     - **Explicit 'no ADUs' row** (`adus_per_lot` = 0, #164): 'none'.
     - **Coverage** (D-021): `coverage[reform_id]` (else judged from the rule's text) moves the uncovered share
       of eligible lots to 'none'.
@@ -569,7 +578,7 @@ def current_rules(
     central = {k: v.value for k, v in load_params("adu").items()}
     min_sqft = central["adu_handbook_min_sqft"]
     cvals = c_values(central)
-    fp = {f: 0.5 for f in FIELDS} | dict(field_probs or {})
+    fp = {f: central["adu_blank_field_restrict_prob"] for f in FIELDS} | dict(field_probs or {})
 
     def assess(geoid: str) -> dict:
         rows = live[live["jurisdiction_geoid"].isin([geoid, state_fips])]
