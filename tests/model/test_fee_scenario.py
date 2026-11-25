@@ -159,7 +159,7 @@ def places_frame(with_parcels: bool):
 @pytest.mark.parametrize("with_parcels", [False, True])
 def test_zero_cut_equals_baseline(with_parcels):
     places = places_frame(with_parcels)
-    c = fees.central_path(places, params={"handbook_fee_cut_share": 0.0})
+    c = fees.central_path(places, params={"handbook_fee_cut_share": 0.0} | ON)
     assert np.all(c["added"] == 0)
 
 
@@ -171,17 +171,26 @@ CUTS = [m for m in fees.MODES if m != "local_rise"]
 def test_bigger_cut_never_lowers_output(with_parcels, mode):
     places = places_frame(with_parcels)
     totals = [
-        fees.central_path(places, mode, {"handbook_fee_cut_share": s})["added"].sum(axis=1)
+        fees.central_path(places, mode, {"handbook_fee_cut_share": s} | ON)["added"].sum(axis=1)
         for s in (0.0, 0.25, 0.5, 0.75, 1.0)
     ]
     assert all(np.all(b >= a - 1e-9) for a, b in zip(totals, totals[1:], strict=False))
 
 
+ON = {"fee_feasibility_channel": 1}
+
+
 def test_channel_choice():
-    c = fees.central_path(places_frame(True))
+    """The feasibility channel is off by default (A17): a place with parcel data takes the elasticity route
+    and the same %Δ as without it. Switched on, it takes the lot-feasibility route."""
+    assert fees.central_params()["fee_feasibility_channel"] == 0
+    off = fees.central_path(places_frame(True))
+    assert list(off["channel"]) == ["elasticity", "elasticity"]
+    assert np.array_equal(off["pct"], fees.central_path(places_frame(False))["pct"])
+    c = fees.central_path(places_frame(True), params=ON)
     assert list(c["channel"]) == ["feasibility", "elasticity"]
     assert list(c["fee_source"]) == ["local", "state median"]
-    assert list(fees.central_path(places_frame(False))["channel"]) == ["elasticity", "elasticity"]
+    assert list(fees.central_path(places_frame(False), params=ON)["channel"]) == ["elasticity", "elasticity"]
 
 
 @pytest.mark.parametrize("mode", fees.MODES)

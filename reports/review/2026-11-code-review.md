@@ -25,6 +25,9 @@ Status key: **proposed** = waiting for Ben's yes; **done** = acted on, with the 
 | A14 | Engine: MM | `mm.py` `places_from_store` | Missing cost-index year silently used the latest year. | A backtest origin before the series priced with today's costs. | nit | `cost_index_at`: nearest earlier year; error if empty | fixed on `ws/mm-review-fixes` |
 | A15 | Engine: MM | `mm.py` `log_sd` | low > high silently gave no range. | A config typo removes θ's uncertainty. | nit | Raise | fixed on `ws/mm-review-fixes` |
 | A16 | Engine: MM | `mm.py` docstring | Said "median rent"; code fills median F(PCR). | Reader misled. | nit | Docstring corrected | fixed on `ws/mm-review-fixes` |
+| A17 | Engine: fees | `src/lotline/model/scenarios/fees.py` `pct_change` | Places with a parcel roll took the lot-feasibility channel, whose %Δ was 4–40× the elasticity route's (Duluth +8.3% vs +0.2% at the half cut). | 42 places (MN and OR only) gave 23% of MN's and 57% of OR's added homes: a state's result leaned on which cities had parcel data. | important (design) | Ben, 2026-11-25: elasticity everywhere. Switch `fee_feasibility_channel` = 0 in `config/params/fees.yaml`; the channel's code and tests stay | fixed on `ws/fees-elasticity` |
+| A18 | Engine: fees | `fees.py` `parcel_inputs` | Land and new-home values are in the roll's own dollars, not 2025 dollars. | ~1 year of inflation on today's 2026 rolls; more in backtests on old rolls. | nit | Moot while A17's switch is off; deflate if it is switched back on | proposed |
+| A19 | Engine: fees | `fees.py` `fee_draws` | Each place's local-fee draw comes from one shared stream in row order, not keyed by geoid. | Adding or dropping a place shifts every later place's draws (ADU and MM key by place). | nit | Key the draw stream by geoid | proposed |
 
 ## Part B: cleanup lists (proposed 2026-11-24)
 

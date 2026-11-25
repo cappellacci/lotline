@@ -18,14 +18,16 @@ In the local scenarios F is drawn in each simulation draw within the place's ran
 triangular(low, central, high). The $50,000 is never a fallback there: a place with no local fee is an error.
 
 Builders keep (1 − λ) × Δ; the rest ends up in land prices (λ = `land_capture_share`, C18). That builder
-saving s moves permits through one of two channels:
+saving s moves permits through the elasticity channel (b) everywhere. Channel (a) is kept in the code but
+switched off (`fee_feasibility_channel` = 0; Ben, 2026-11-25, code review A17): it gave a %Δ 4–40 times the
+elasticity route's, so a state's result leaned on which cities had a parcel roll.
 
-- **(a) Feasibility** (places with parcel data): the single-family pro forma at the place's new-home value
-  gives the residual land value before the cut (fee F) and after it (fee F − s). A candidate lot is feasible
-  when that value beats its land value plus the margin (`proforma.is_feasible`). Permits are taken to scale
-  with the number of feasible lots:  %Δ = feasible after / feasible before − 1. Used only where at least
-  `fee_feasibility_min_lots` lots were feasible before the cut.
-- **(b) Elasticity** (everywhere else, D-010):  %Δ = ε × s / TDC, where TDC, the total development cost of a
+- **(a) Feasibility** (off by default; places with parcel data): the single-family pro forma at the place's
+  new-home value gives the residual land value before the cut (fee F) and after it (fee F − s). A candidate
+  lot is feasible when that value beats its land value plus the margin (`proforma.is_feasible`). Permits are
+  taken to scale with the number of feasible lots:  %Δ = feasible after / feasible before − 1. Used only
+  where at least `fee_feasibility_min_lots` lots were feasible before the cut.
+- **(b) Elasticity** (every place, D-010):  %Δ = ε × s / TDC, where TDC, the total development cost of a
   home at the margin of feasibility, is taken as its price: the place's median home value (2025 dollars).
 
 **Dose by building size (D-073).** When `places` carries the baseline by BPS size class
@@ -60,7 +62,12 @@ from lotline.model import fee_levels as fee_level_rules
 from lotline.model import hazard, proforma
 
 PARAM_FILES = ("fees", "proforma")
-FIXED = proforma.NOT_SAMPLED | {"fee_simulation_draws", "fee_simulation_seed", "fee_feasibility_min_lots"}
+FIXED = proforma.NOT_SAMPLED | {
+    "fee_simulation_draws",
+    "fee_simulation_seed",
+    "fee_feasibility_min_lots",
+    "fee_feasibility_channel",
+}
 MODES = ("handbook", "local_half", "local_25k", "local_rise")
 ALIASES = {"local": "local_half"}  # the name before D-065
 LABELS = {
@@ -250,11 +257,13 @@ def feasibility_change(
 
 
 def pct_change(places: pd.DataFrame, fee: np.ndarray, params: Mapping[str, float], mode: str = "handbook"):
-    """%Δ permits per place for one parameter set, and the channel used ('feasibility' or 'elasticity')."""
+    """%Δ permits per place for one parameter set, and the channel used ('feasibility' or 'elasticity'). The
+    feasibility channel is used only when `fee_feasibility_channel` is 1; it is 0 by default (A17)."""
     saving = builder_saving(fee, params, mode)
     pct = elasticity_change(saving, places["home_value"].to_numpy(dtype=float), params)
     channel = np.full(len(places), "elasticity", dtype=object)
-    if "lot_values" in places and "new_home_value" in places:
+    switched_on = bool(params.get("fee_feasibility_channel", 0))  # off by default (A17)
+    if switched_on and "lot_values" in places and "new_home_value" in places:
         for i, (lots, value) in enumerate(zip(places["lot_values"], places["new_home_value"], strict=True)):
             # a place without parcel data has NaN (from a merge) or None here, not an array
             if not isinstance(lots, np.ndarray | list) or len(lots) == 0 or not np.isfinite(value):

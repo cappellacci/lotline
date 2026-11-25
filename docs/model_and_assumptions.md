@@ -536,9 +536,7 @@ these totals will move as more rules are coded.
 
 - **Missing middle:** see "The missing-middle model" below. The scenario applies only the increment above
   what local rules already allow (the dose gap 1 − d), with the lot's feasibility F(PCR) scaling the rate.
-- **Fees:** the primary route is the pro forma threshold (validation test V6b): count lots that cross
-  feasibility when fees fall by the builder's share of the cut, (1 − λ) × $25,000. Where parcel data are
-  missing, the fallback is the elasticity form (D-010):
+- **Fees:** every place takes the elasticity form (D-010; Ben, 2026-11-25, code review A17):
   %Δ permits = ε × (1 − λ) × Δfee / TDC × ramp(t), with TDC the total development cost. At an illustrative TDC
   of $350,000 (the $25,000 cut is about 7%): central 0.3 × 0.5 × 7% ≈ +1%; high 1.75 × 0.75 × 7% ≈ +9%
   single-family permits over five years (`fees.yaml` notes). Three labeled fee scenarios (D-065): the
@@ -549,7 +547,11 @@ these totals will move as more rules are coded.
   in Oregon, against the Handbook's $50,000 (`docs/research/fee-levels-vs-handbook.md`). Each building size
   takes its own dose (D-073): houses as above; duplexes and 3-4 unit buildings by the elasticity form with
   their own fee per unit and a cost per unit scaled to the unit's size, so the same fee is a bigger share of a
-  plex unit's cost; 5+ unit buildings are unchanged (no coded fees; a stated limit). A sensitivity raises
+  plex unit's cost; 5+ unit buildings are unchanged (no coded fees; a stated limit). The pro forma
+  threshold route (count lots that cross feasibility when fees fall, validation test V6b) is kept in the code
+  but switched off (`fee_feasibility_channel` = 0): it gave a change 4–40 times the elasticity form's, only in
+  the 42 Minnesota and Oregon places with a parcel roll, so it made a state's result depend on which cities had
+  parcel data. A sensitivity raises
   local fees by half through the same machinery ("don't raise impact fees", office hours A4). The pencil-out
   table (`model/pencil_out.py`) shows for each place what a house, a duplex and a fourplex can pay for land
   at today's fees, after a cut and at the Handbook's levels, with the fee per lot and its share of cost.
@@ -1075,6 +1077,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `fee_ramp_half_years` | 1 | 0.5–2 | years after the cut until half the response shows in permits | Judgment (D-032): a cut applies to permits pulled after it takes effect, but projects already in design were… |
 | `fee_ramp_slope_years` | 0.5 | 0.25–1 | years | Judgment (D-032): the response goes from ~12% to ~88% of its full size within about 2 years of the half point |
 | `fee_feasibility_min_lots` | 20 | fixed | lots feasible before the cut | Choice (D-033): the feasibility channel divides lots feasible after the cut by lots feasible before |
+| `fee_feasibility_channel` | 0 (off) | fixed | switch | Choice (Ben, 2026-11-25; code review A17): every place takes the elasticity route. The lot-feasibility channel gave a %change 4–40 times larger, so a state's result leaned on which cities had parcel data. Set to 1 to turn it back on |
 | `fee_new_home_years` | 7 | fixed | years before the origin | Choice (D-033): a place's new-home value is the median assessed value per sq ft of detached homes built in th… |
 | `fee_simulation_draws` | 1,000 | 500–5,000 | draws | Choice: same as adu_simulation_draws |
 | `fee_simulation_seed` | 20261021 | 0–4294967295 | random seed | Choice: a fixed seed makes every run reproducible |

@@ -55,6 +55,13 @@ fee_feasibility_min_lots:
   unit: lots feasible before the cut
   source: "Choice (D-033): the feasibility channel divides lots feasible after the cut by lots feasible before; with fewer than this many feasible before, the ratio is too noisy, so the place uses the elasticity route"
 
+fee_feasibility_channel:
+  value: 0
+  low: 0
+  high: 0
+  unit: switch (1 = on, 0 = off)
+  source: "Choice (Ben, 2026-11-25; code review A17): off, so every place takes the elasticity route (D-010). With it on, places with a parcel roll use the lot-feasibility channel (D-033), which gave a %change 4-40 times the elasticity route's, so a state's fee result leaned on which cities happen to have parcel data (57% of Oregon's added homes from 19 places). Set to 1 to turn the channel back on."
+
 fee_new_home_years:
   value: 7
   low: 7

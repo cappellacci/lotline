@@ -670,14 +670,14 @@ uv run lotline results --state XX --role transfer</code></pre>
 
       <div class="model-card" id="model-fees" data-model-card="fees" hidden>
         <h5>What the model does</h5>
-        <p class="one">Cutting the fees a builder pays the city lowers the cost of every new house, duplex and fourplex. About half of the saving ends up in land prices, so builders keep the rest. Building then rises a little above its usual pace: a 10% cut in cost adds about 3% more homes, and a few more lots become worth building on.</p>
+        <p class="one">Cutting the fees a builder pays the city lowers the cost of every new house, duplex and fourplex. About half of the saving ends up in land prices, so builders keep the rest. Building then rises a little above its usual pace: a 10% cut in cost adds about 3% more homes.</p>
         <h5>How it works</h5>
-        <p class="formula">extra homes = usual homes × how strongly building responds × builder's share of the cut ÷ total cost of the home, plus lots that newly pay</p>
+        <p class="formula">extra homes = usual homes × how strongly building responds × builder's share of the cut ÷ total cost of the home</p>
         <details class="more"><summary>How each part is measured</summary><ul class="body-small steps-list">
           <li><b>The cut,</b> shown two ways on the Results page: the Challenge benchmark, $25,000 a home (half of a $50,000 fee assumed everywhere), and half of each city's real fees for houses, duplexes and fourplexes. Buildings of 5 or more homes are never covered.</li>
           <li><b>Builder's share:</b> about half of a fee cut ends up in land prices, so builders keep the other half (a quarter to three quarters).</li>
           <li><b>How strongly building responds:</b> a 10% cut in cost raises building by about 3% (Baum-Snow and Han 2024, measured neighborhood by neighborhood), from almost none (Mayer and Somerville 2000; Campbell and Alm 2006) to 17% (the metro-wide response in Saiz 2010 and Aastveit and others 2020). Each run draws one value.</li>
-          <li><b>Lots that newly pay:</b> where parcel data allow, the cost model also counts lots that cross from not paying to paying after the cut.</li>
+          <li><b>Lots that newly pay are not counted.</b> The cost model can count lots that start to pay after the cut, but only where a city has parcel data, and it gave answers many times larger than the rule above. So every place uses the same rule.</li>
         </ul></details>
         <details class="more"><summary>What it learned from</summary><ul class="body-small steps-list">
           <li><b>Fee schedules</b> coded for 58 places, which hold about a third of each state's usual building. Other places take their state's median fee ($3,900 a home in Texas to $9,100 in Minnesota).</li>
