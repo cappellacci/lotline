@@ -2224,9 +2224,22 @@ function dashScope() {
   const chip = [...d.querySelectorAll("#state-bar .chip")].find((c) => c.textContent === name);
   if (chip && chip.getAttribute("aria-pressed") !== "true") chip.click();
 }
+// The dashboard's page is dashboard.js (about 4 MB), loaded by script tag the first time the Data tab opens, so
+// the first load stays small and it still works from disk; the page embeds only whether it exists.
+let DASH_HTML = null;
+window.LotlineDashboard = (html) => { DASH_HTML = html; };
+function loadDashboard() {
+  if (DASH_HTML !== null) return Promise.resolve(DASH_HTML);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "dashboard.js";
+    s.onload = () => (DASH_HTML !== null ? resolve(DASH_HTML) : reject(new Error("dashboard.js did not load")));
+    s.onerror = () => { s.remove(); reject(new Error("could not load dashboard.js")); };
+    document.head.append(s);
+  });
+}
 function ensureDashboard() {
-  const html = JSON.parse($("lotline-dashboard").textContent);
-  if (!html) return;
+  if (!JSON.parse($("lotline-dashboard").textContent)) return;
   $("dash-host").hidden = false;
   DASH.note = `From the data dashboard summary built ${DATA.data.summary_generated}. The map needs internet access for its libraries (d3, topojson, us-atlas; all ISC).`;
   $("dash-note").textContent = DASH.note;
@@ -2247,7 +2260,8 @@ function ensureDashboard() {
     new ResizeObserver(fit).observe(doc.body);
     dashScope(); fit();
   };
-  f.srcdoc = html;
+  loadDashboard().then((html) => { f.srcdoc = html; })
+    .catch(() => { DASH.loading = false; $("dash-note").textContent = "The data dashboard could not be loaded."; });
 }
 function wireData() {}  // the dashboard keeps its own state choice
 

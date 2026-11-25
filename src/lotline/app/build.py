@@ -267,6 +267,7 @@ def order_states(bundles: Iterable[dict]) -> list[dict]:
 
 
 STATE_DIR = "states"  # under the page's folder: one script per state, loaded on demand
+DASHBOARD_FILE = "dashboard.js"  # the data dashboard's page, loaded the first time the Data tab opens
 
 
 def state_file(state: str) -> str:
@@ -391,8 +392,9 @@ def _json(x) -> str:
 def render(data: dict, template: str | None = None, dashboard: str | None = None) -> str:
     """The page HTML with `data` embedded. `</` is escaped so the JSON can't close its script tag.
 
-    `dashboard` is the data dashboard's own page (lotline.dashboard.render), embedded as a JSON string and
-    loaded into a frame only when the reader opens it.
+    `dashboard` is the data dashboard's own page (lotline.dashboard.render). The page embeds only whether it
+    exists; `build_app` writes it to DASHBOARD_FILE, which the page loads when the reader opens the Data tab
+    (nightly review, 2026-11-25: embedded, it was 4 of the page's 4.7 MB).
     """
     page = template if template is not None else TEMPLATE.read_text(encoding="utf-8")
     missing = [p for p in PLACEHOLDERS if p not in page]
@@ -410,7 +412,8 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
         # the add-a-state guide's and the model tab's links into the repository (challenge.toml repo_url)
         .replace("__REPO_URL__", html.escape(str((data.get("map") or {}).get("repo_url") or REPO_FALLBACK)))
         .replace("/*__LOTLINE_AGGREGATE__*/", AGGREGATE_JS.read_text(encoding="utf-8"))
-        .replace("/*__LOTLINE_DASHBOARD__*/", _json(dashboard))
+        # only a flag: the dashboard itself (about 4 MB) is DASHBOARD_FILE, loaded when the Data tab opens
+        .replace("/*__LOTLINE_DASHBOARD__*/", _json(dashboard is not None))
         .replace("/*__LOTLINE_DATA__*/", blob)
     )
 
@@ -455,6 +458,11 @@ def build_app(
         old.unlink()
     for b in bundles:
         (out / state_file(b["meta"]["state"])).write_text(state_script(b), encoding="utf-8")
+    dash_file = out / DASHBOARD_FILE
+    if dashboard is not None:
+        dash_file.write_text(f"LotlineDashboard({_json(dashboard)});\n", encoding="utf-8")
+    elif dash_file.exists():
+        dash_file.unlink()  # a dashboard dropped since the last build must not linger
     page = out / "index.html"
     page.write_text(html, encoding="utf-8")
     return page
