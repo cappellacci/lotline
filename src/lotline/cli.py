@@ -243,6 +243,25 @@ def _validate(args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
+def _calibrate(args: argparse.Namespace) -> int:
+    from lotline import calibrate
+
+    if args.write_lock:
+        print(f"wrote {calibrate.write_lock()}")
+    if args.list:
+        for s in calibrate.order():
+            outs = [f"{f}:{','.join(k)}" for f, k in s.produces.items()] + list(s.tables)
+            after = f" (after {', '.join(s.after)})" if s.after else ""
+            print(f"{s.name:24} {s.decision:22} {s.how:4} {s.status:7} {'; '.join(outs)}{after}")
+    problems = calibrate.check()
+    for p in problems:
+        print(f"FAIL {p}")
+    if not problems:
+        n, k = len(calibrate.produced()), len(calibrate.STEPS)
+        print(f"calibration OK: {k} steps account for {n} fitted values; the lock matches config")
+    return 1 if problems else 0
+
+
 def _schemas(args: argparse.Namespace) -> int:
     from pathlib import Path
 
@@ -426,6 +445,21 @@ def build_parser() -> argparse.ArgumentParser:
     sch = sub.add_parser("schemas", help="generate or check the data dictionary docs/schemas.md")
     sch.add_argument("--write", action="store_true", help="regenerate docs/schemas.md")
     sch.set_defaults(func=_schemas)
+
+    cal = sub.add_parser(
+        "calibrate",
+        help="trace every fitted value in config/params/ to its calibration step (phase 1: check only)",
+    )
+    cal.add_argument("--list", action="store_true", help="print the steps in run order")
+    cal.add_argument(
+        "--check", action="store_true", help="check registry, config and lock agree (the default)"
+    )
+    cal.add_argument(
+        "--write-lock",
+        action="store_true",
+        help="record config's fitted values in config/calibration.lock.json",
+    )
+    cal.set_defaults(func=_calibrate)
     return parser
 
 
