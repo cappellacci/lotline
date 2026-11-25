@@ -51,6 +51,7 @@ the range is the scenario's, not the baseline's. Places must be non-overlapping 
 
 from __future__ import annotations
 
+import zlib
 from collections.abc import Mapping
 
 import numpy as np
@@ -188,7 +189,11 @@ def fee_draws(
 ) -> np.ndarray:
     """(draws × places) fee per unit: the central value in the benchmark; triangular(low, central, high) in
     the local scenarios where a range is given (`local_fee_low`, `local_fee_high`, with the type's suffix),
-    else the central value."""
+    else the central value.
+
+    Each place draws from its own stream, seeded by `seed` and its `geoid` (the index without one), as the
+    ADU and missing-middle draws are: adding or dropping a place leaves every other place's draws unchanged
+    (code review A19, 2026-11-25; before, one shared stream ran in row order)."""
     central, _ = fee_levels(places, mode, params, building_type)
     out = np.repeat(central[None, :], n, axis=0)
     if _mode(mode) == "handbook":
@@ -199,8 +204,10 @@ def fee_draws(
     low = places[f"local_fee_low{s}"].fillna(places[f"local_fee_per_unit{s}"]).to_numpy(dtype=float)
     high = places[f"local_fee_high{s}"].fillna(places[f"local_fee_per_unit{s}"]).to_numpy(dtype=float)
     low, high = np.minimum(low, central), np.maximum(high, central)
-    rng = np.random.default_rng(seed)
+    keys = places["geoid"] if "geoid" in places else pd.Series(places.index, index=places.index)
+    keys = keys.astype(str).to_numpy()
     for i in np.flatnonzero(high > low):
+        rng = np.random.default_rng([seed, zlib.crc32(keys[i].encode())])
         out[:, i] = rng.triangular(low[i], central[i], high[i], n)
     return out
 
