@@ -240,7 +240,7 @@ const fmtI = o => !o || o.estimate === null ? "–" : o.low === null || o.high =
 // A label cut to fit `px` of room (about 6.5 px a character), with the full text on hover.
 const clip = (s, px) => { const n = Math.max(6, Math.floor(px / 6.5)); return s.length > n ? `${esc(s.slice(0, n - 1))}…<title>${esc(s)}</title>` : esc(s); };
 const title = r => r.manifest.title || r.id;
-const sw = id => `<span class="swatch" style="background:${colour(id)}"></span>`;
+const sw = id => `<span class="swatch" style="background:${esc(colour(id))}"></span>`;  // RUNS comes from the page's JSON
 const STATUS = {completed: "Completed", no_estimate: "No estimate", started: "Did not finish"};
 const kindOf = r => r.calibration ? "calibration" : "effect";
 
@@ -259,7 +259,10 @@ function renderPicker() {
         <span class="badge ${esc(r.status)}">${esc(STATUS[r.status] || r.status)}</span></label>`;
     }).join("")}</div>`).join("");
   document.querySelectorAll("#picker input").forEach(el => el.addEventListener("change", e => {
-    const id = e.target.value;
+    // the run is found in RUNS by the box's value, so only RUNS' own id is reused (CodeQL js/xss-through-dom)
+    const run = RUNS.find(r => r.id === e.target.value);
+    if (!run) return;
+    const id = run.id;
     selected = e.target.checked ? [...selected, id] : selected.filter(x => x !== id);
     selected.sort((a, b) => RUNS.findIndex(r => r.id === a) - RUNS.findIndex(r => r.id === b));
     renderAll();
@@ -617,7 +620,7 @@ function renderCalPlaces() {
     s += `<text x="${W - 12}" y="${H - 28}" text-anchor="end">predicted P50 →</text><text x="${pad + 4}" y="18">↑ observed</text>`;
     const b = c.backtest;
     box.innerHTML = `<h3>${sw(id)}${esc(title(byId(id)))}</h3>
-      <div class="muted">${b.covered} of ${b.places} places inside P10–P90 · error ${fmt(b.error, 3)} vs no effect ${fmt(b.error_none, 3)} (${esc(b.error_basis)})</div>
+      <div class="muted">${esc(b.covered)} of ${esc(b.places)} places inside P10–P90 · error ${fmt(b.error, 3)} vs no effect ${fmt(b.error_none, 3)} (${esc(b.error_basis)})</div>
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Observed against predicted, by place">${s}</svg>` +
       table(["Place", "State", "Observed", "P10", "P50", "P90", "Inside"], [...P].sort((a, b) => b.observed - a.observed).map(p =>
         [esc(p.name), esc(p.state), fmt(p.observed, 0), fmt(p.p10, 0), fmt(p.p50, 0), fmt(p.p90, 0), p.inside ? "yes" : "no"]), [2, 3, 4, 5]);

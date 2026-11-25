@@ -363,7 +363,8 @@ class Checker:
         dependabot = (self.root / ".github" / "dependabot.yml").exists() or (self.root / ".github" / "dependabot.yaml").exists()
         self.add("T6", "PASS" if (codeql or dependabot) else "WARN",
                  f"CodeQL workflow {'found' if codeql else 'not in repo (OK if default setup is on, use --github)'}; "
-                 f"dependabot.yml {'found' if dependabot else 'missing (alerts may still be on, use --github)'}")
+                 f"dependabot.yml {'found' if dependabot else 'missing (alerts may still be on, use --github)'}; "
+                 "open alerts are not checked here (only --github reads them; an open high alert fails T6)")
 
     def check_deps(self):
         if not shutil.which("pip-licenses"):

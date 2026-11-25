@@ -263,7 +263,8 @@ function moveTip(ev) {
   tip.style.left = x + "px"; tip.style.top = y + "px";
 }
 function hideTip() { tip.style.display = "none"; }
-const row = (k, v) => `<div class="row"><span>${k}</span><span>${v}</span></div>`;
+// Every tooltip row is text, so both halves are escaped (CodeQL js/xss-through-dom, 2026-11-25).
+const row = (k, v) => `<div class="row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ---------------------------------------------------------------- state bar
@@ -324,7 +325,9 @@ function colorScale(m, cs) {
 function renderMap() {
   const el = document.getElementById("map");
   if (!atlas) { el.innerHTML = `<p class="muted">Loading county boundaries…</p>`; return; }
-  const m = METRICS[document.getElementById("metric").value];
+  // the picked metric is looked up among METRICS' own keys, so the page never reuses the control's text
+  const picked = document.getElementById("metric").value;
+  const m = METRICS[Object.keys(METRICS).find((k) => k === picked) || Object.keys(METRICS)[0]];
   const cs = counties();
   const byId = new Map(cs.map(c => [c.geoid, c]));
   const fipsSet = new Set(scoped().map(s => s.fips));
@@ -429,7 +432,7 @@ function renderLandUse() {
     : `<p class="muted">No parcel roll for this selection. Eligible counts here come from the ACS fallback.</p>`;
   const src = scoped().flatMap(s => s.parcel_sources.map(p => ({ ...p, st: s.state })));
   document.getElementById("sources").innerHTML = `<thead><tr><th>State</th><th>Source</th><th class="num">Parcels (latest)</th><th class="num">Used</th><th class="num">Counties</th><th>Roll years</th><th class="num">Zoning attached</th></tr></thead><tbody>` +
-    src.map(p => `<tr><td>${p.st}</td><td>${esc(p.source)}</td><td class="num">${fmt(p.parcels_latest)}</td><td class="num">${fmt(p.parcels_used)}</td><td class="num">${p.counties}</td><td>${p.vintages.join(", ")}</td><td class="num">${pct(p.zoned_share, 0)}</td></tr>`).join("") + "</tbody>";
+    src.map(p => `<tr><td>${esc(p.st)}</td><td>${esc(p.source)}</td><td class="num">${esc(fmt(p.parcels_latest))}</td><td class="num">${esc(fmt(p.parcels_used))}</td><td class="num">${esc(p.counties)}</td><td>${esc(p.vintages.join(", "))}</td><td class="num">${esc(pct(p.zoned_share, 0))}</td></tr>`).join("") + "</tbody>";
 }
 
 // ---------------------------------------------------------------- timeline
@@ -476,7 +479,7 @@ function renderTimeline() {
     .attr("x", d => x(new Date(d.data.y, 0, 1)) + 1).attr("width", bw)
     .attr("y", d => yc(d[1])).attr("height", d => Math.max(0, yc(d[0]) - yc(d[1]) - (d[1] > d[0] ? 1 : 0)))
     .attr("fill", css(THEMES[layer.key].color))
-    .on("mousemove", (e, d) => showTip(e, `<b>${d.data.y}</b>` + keys.map(k => row(THEMES[k].label, d.data[k])).join("")))
+    .on("mousemove", (e, d) => showTip(e, `<b>${esc(d.data.y)}</b>` + keys.map(k => row(THEMES[k].label, d.data[k])).join("")))
     .on("mouseleave", hideTip));
   el.innerHTML = "";
   const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").attr("aria-label", "Reform timeline by place");
@@ -563,7 +566,7 @@ function renderGrowth() {
       hover.style("display", null).select("line").attr("x1", x(yr)).attr("x2", x(yr));
       series.forEach((s, i) => { const p = s.pts.find(p => p.year === yr); dots[i].style("display", p ? null : "none"); if (p) dots[i].attr("cx", x(yr)).attr("cy", y(p.v)); });
       const g = rows.find(g => g.year === yr) || {};
-      showTip(ev, `<b>${yr}</b>` + series.map(s => { const p = s.pts.find(p => p.year === yr); return row(s.label, p ? `${p.v.toFixed(1)} (${fmtK(p.raw)})` : "–"); }).join("") + row("Units permitted that year", fmt(g.permits || 0)));
+      showTip(ev, `<b>${esc(yr)}</b>` + series.map(s => { const p = s.pts.find(p => p.year === yr); return row(s.label, p ? `${p.v.toFixed(1)} (${fmtK(p.raw)})` : "–"); }).join("") + row("Units permitted that year", fmt(g.permits || 0)));
     }).on("mouseleave", () => { hover.style("display", "none"); hideTip(); });
   document.getElementById("growth-legend").innerHTML = series.map(s =>
     `<span><svg width="22" height="10"><line x1="0" x2="22" y1="5" y2="5" stroke="var(${s.color})" stroke-width="2" ${s.dash ? `stroke-dasharray="${s.dash}"` : ""}/></svg> ${s.label}</span>`).join("");
@@ -590,7 +593,7 @@ function renderPermits() {
     .attr("y", d => y(d[1])).attr("height", d => Math.max(0, y(d[0]) - y(d[1]) - (i < 3 ? 1 : 0)))
     .attr("fill", css(keys[i][2])));
   svg.append("g").selectAll("rect").data(rows).join("rect").attr("x", d => x(d.year)).attr("width", x.bandwidth()).attr("y", M.t).attr("height", H - M.t - M.b).attr("fill", "transparent")
-    .on("mousemove", (e, d) => showTip(e, `<b>${d.year}</b>` + keys.map(k => row(k[1], fmt(d[k[0]]))).join("") + row("Total", fmt(d.permits)) + row("Imputed by Census", pct(d.imputed_units / d.permits))))
+    .on("mousemove", (e, d) => showTip(e, `<b>${esc(d.year)}</b>` + keys.map(k => row(k[1], fmt(d[k[0]]))).join("") + row("Total", fmt(d.permits)) + row("Imputed by Census", pct(d.imputed_units / d.permits))))
     .on("mouseleave", hideTip);
   document.getElementById("permits-legend").innerHTML = keys.map(k => `<span><span class="sw" style="background:var(${k[2]})"></span>${k[1]}</span>`).join("") +
     (state.scope === "ALL" ? `<span class="muted">sum of ${scoped().length} states; held-out places excluded</span>` : `<span class="muted">held-out places excluded</span>`);
