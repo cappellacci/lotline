@@ -22,6 +22,9 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-node@v7  # the app tests run the page's JavaScript under node
+        with:
+          node-version: "22"
       # --run executes commands.setup (uv sync --frozen) and commands.test from challenge.toml.
       - name: Static + run checks
         run: python compliance_check.py --run
