@@ -631,3 +631,52 @@ def test_fee_stops_kept_only_where_a_size_is_not_linear(monkeypatch):
     assert houses[(0.2, 0)] == pytest.approx(4.0)
     assert set(out.loc[out["size"] == "2", "fee_change_share"]) == {0.5}  # linear: the page scales it
     results.validate(out.assign(state="MN"), "results_fee_types")
+
+
+def test_post_test_lists_released_tests_whose_window_the_data_reach(tmp_path):
+    """#506 by hand: a released statewide test from 2020 is listed at origin 2025, not at origin 2019; a blind
+    test is never listed; a state with no config file has none."""
+    import yaml
+
+    from lotline.config import CONFIG_DIR
+
+    doc = yaml.safe_load((CONFIG_DIR / "states" / "wi.yaml").read_text())  # a valid state file, renamed
+    doc["state"] = "ZZ"
+    base = {"outcome_until": "2099-12-31", "reason": "r"}
+    doc["holdouts"] = [
+        {**base, "test_id": "V1-ZZ-OPEN", "place": "Testland (statewide)", "geoid": doc["fips"],
+         "outcome_from": "2020-01-01", "released_on": "2026-01-02", "released_note": "scored"},
+        {**base, "test_id": "V1-ZZ-BLIND", "place": "Testville", "geoid": doc["fips"] + "00001",
+         "outcome_from": "2021-01-01"},
+    ]  # fmt: skip
+    (tmp_path / "states").mkdir()
+    (tmp_path / "states" / "zz.yaml").write_text(yaml.safe_dump(doc))
+    ids, note = results.post_test("ZZ", 2025, tmp_path)
+    assert ids == "V1-ZZ-OPEN"
+    assert note == (
+        "Built after the Testland (statewide) test was scored: these results use 2020-2025 outcomes it "
+        "predicted blind."
+    )
+    assert results.post_test("ZZ", 2019, tmp_path) == (None, None)
+    assert results.post_test("QQ", 2025, tmp_path) == (None, None)
+
+
+def test_wisconsin_is_marked_post_test():
+    ids, note = results.post_test("WI", 2025)
+    assert ids == "V8-WI-TRANSFER" and "2020-2025" in note
+
+
+def test_tree_state_is_none_outside_a_repository(tmp_path):
+    assert results.tree_state(tmp_path) is None
+
+
+def test_an_older_bundle_without_the_new_meta_fields_still_reads(tmp_path):
+    b = results.validate_bundle(make_fixture())
+    b["meta"] = b["meta"].assign(tree_clean=True, post_test=None, post_test_note=None)
+    path = results.write_bundle(results.validate_bundle(b), tmp_path / "zz" / "bundle.json")
+    doc = json.loads(path.read_text())
+    for row in doc["meta"] if isinstance(doc["meta"], list) else [doc["meta"]]:
+        for k in ("tree_clean", "post_test", "post_test_note"):
+            row.pop(k, None)
+    path.write_text(json.dumps(doc))
+    assert "tree_clean" not in results.read_bundle(path)["meta"]
