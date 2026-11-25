@@ -58,11 +58,12 @@ def test_empty_units_are_null_not_zero(permits):
     assert row.building_type_std == "MF5"
 
 
-def test_dates_are_local_days(permits):
+def test_dates_are_read_as_stored(permits):
+    """The layer stores Minneapolis clock time as if it were UTC: no time-zone shift (review 2026-11-25)."""
     assert (permits.date_precision == "day").all()
     assert permits.loc["mpls-BLDG9001", "issue_date"] == pd.Timestamp("2019-05-01")
-    late = permits.loc["mpls-BLDG9021"]  # 03:00 UTC on Jan 1 is 9 p.m. Dec 31 in Minneapolis
-    assert late.issue_date == pd.Timestamp("2019-12-31") and late.issue_year == 2019
+    early = permits.loc["mpls-BLDG9021"]  # stored 2020-01-01 03:00: an early-morning permit stays on Jan 1
+    assert early.issue_date == pd.Timestamp("2020-01-01") and early.issue_year == 2020
 
 
 def test_final_date_only_for_passed_final_inspection(permits):

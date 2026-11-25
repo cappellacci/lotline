@@ -42,7 +42,7 @@ from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.mn.mpls_permits"
-VERSION = "1.1"
+VERSION = "1.2"
 SOURCE = "mpls_ccs_permits"
 TABLE = "permits"
 LICENSE = "CC0 1.0 (City of Minneapolis open data waiver)"
@@ -52,7 +52,6 @@ ITEM_URL = "https://www.arcgis.com/home/item.html?id=df4bfccbe60b42a6a93fb7bc1fd
 
 MINNEAPOLIS = "2743000"  # place GEOID (state 27 + FIPS place 43000)
 HENNEPIN = "27053"  # county GEOID; Minneapolis APNs are 13-digit Hennepin PINs
-TIMEZONE = "America/Chicago"
 
 # Exactly what is read. Never "*": applicantName, fullName, applicantAddress1 and applicantCity identify
 # people.
@@ -151,7 +150,8 @@ PROVENANCE = {
         "One row per permitNumber: a permit listed once per parcel it touches (about 3,700 permits) is "
         "collapsed to its lowest OBJECTID row, and its unit counts are counted once, not once per parcel",
         "parcel_id: '27053' (Hennepin) + the 13-digit APN; for a multi-parcel permit, the lowest APN",
-        "issueDate / completeDate (epoch ms, UTC) → local Minneapolis calendar dates; issue_year from "
+        "issueDate / completeDate (epoch ms holding Minneapolis clock time) → calendar dates as stored, no "
+        "time-zone shift; issue_year from "
         "issue_date; date_precision=day",
         "final_date = completeDate only for Closed permits, final_date_type=final_inspection (the item "
         "description defines completeDate as the passed final inspection); cancelled permits get no "
@@ -411,6 +411,10 @@ def _units(values: pd.Series) -> pd.Series:
 
 
 def _local_date(epoch_ms: pd.Series) -> pd.Series:
-    """Epoch milliseconds (UTC) → the calendar date in Minneapolis."""
-    utc = epoch_ms_to_timestamp(epoch_ms)
-    return utc.dt.tz_localize("UTC").dt.tz_convert(TIMEZONE).dt.tz_localize(None).dt.normalize()
+    """Epoch milliseconds → the calendar date in Minneapolis.
+
+    The layer stores the city's own clock time as if it were UTC: issue times cluster at 08:00-16:00 read as
+    UTC, which is the working day in Central time. So the date is read as stored, with no time-zone shift
+    (code review, 2026-11-25: converting to Central moved early-morning permits back a day, and one 1 January
+    permit into the year before)."""
+    return epoch_ms_to_timestamp(epoch_ms).dt.normalize()

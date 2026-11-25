@@ -12,8 +12,11 @@ whatever the building type (`NEWTYPE`) or work (`NEWCLASS`). Read with the work 
 
 - New Construction of an Accessory Dwelling Unit, or of a 1-unit house-type permit: one ADU row (a new
   structure: `detached`).
-- New Construction of a Single Family Dwelling, Townhouse or Rowhouse with `NEW_UNITS` >= 2: **two rows**, the
-  new house (SFD or TH, `NEW_UNITS` - 1 units) and the ADU (1 unit).
+- New Construction of any other building type with `NEW_UNITS` >= 2: **two rows**, the main building
+  (`NEW_UNITS` - 1 units) and the ADU (1 unit). A Single Family Dwelling, Townhouse or Rowhouse keeps its type
+  (SFD or TH); any other type is typed by what is left (`main_type`: 1 unit SFD, 2 U2, 3-4 U3_4, 5+ MF5), so a
+  2-unit "Duplex" flagged IS_ADU is a house and its ADU (code review, 2026-11-25: such permits were one ADU
+  row carrying both units).
 - Alteration: one ADU row (`internal_conversion`, `is_conversion`).
 - Addition: one ADU row (`attached`, `is_conversion`).
 - Other work (Move, Replacement): one ADU row (`unknown`).
@@ -51,7 +54,7 @@ from lotline.schemas import validate
 from lotline.validation import holdout
 
 ADAPTER = "states.or.portland_permits"
-VERSION = "1.0"
+VERSION = "1.1"
 SOURCE = "portland_permits"
 TABLE = "permits"
 ITEM = "02d99db039e0428da88262bff513056a"
@@ -90,9 +93,9 @@ PROVENANCE = {
         "text)",
         "Permits without an issue date are dropped; permits outside the city limits (PDXBND = NO) are "
         "dropped",
-        "ADU = the city's IS_ADU flag; a new single-family, townhouse or rowhouse permit flagged IS_ADU with "
-        "two or more new units is split into a house row and an ADU row (permit_id #house / #adu), so "
-        "D-041's co-built rule sees both on the same parcel and year",
+        "ADU = the city's IS_ADU flag; a new-construction permit of any type but ADU flagged IS_ADU with "
+        "two or more new units is split into a main-building row (units - 1) and an ADU row (permit_id "
+        "#house / #adu), so D-041's co-built rule sees both on the same parcel and year",
         "adu_type from the work class: New Construction detached, Alteration internal_conversion, Addition "
         "attached, otherwise unknown; is_conversion True for Alteration and Addition",
         "building_type_std from NEWTYPE: Single Family Dwelling SFD; Townhouse, Rowhouse TH; Duplex U2; "
@@ -139,6 +142,15 @@ def building_type(newtype, units) -> tuple[str, str]:
     return "OTHER", "high"
 
 
+def main_type(newtype, units) -> tuple[str, str]:
+    """(building_type_std, type_confidence) of the main building on a split permit, holding `units` homes."""
+    if not pd.isna(newtype) and newtype in HOUSE_TYPES:
+        return HOUSE_TYPES[newtype], "inferred"
+    if pd.isna(units) or units < 1:
+        return "UNKNOWN", "unknown"
+    return ("SFD" if units == 1 else size_class(units)), "inferred"
+
+
 def build(raw: pd.DataFrame, state: str = "OR") -> pd.DataFrame:
     df = raw[KEEP].copy()
     df["issue_date"] = _date(df["ISSUEDATE"])
@@ -149,7 +161,8 @@ def build(raw: pd.DataFrame, state: str = "OR") -> pd.DataFrame:
     newtype = df["NEWTYPE"].astype("string").str.strip()
     is_adu = df["IS_ADU"].astype("string").str.strip().str.lower().eq("true").fillna(False).astype(bool)
     new = work.eq("New Construction").fillna(False).astype(bool)
-    split = is_adu & new & newtype.isin(list(HOUSE_TYPES)).fillna(False).astype(bool) & (units >= 2)
+    adu_type_permit = newtype.eq("Accessory Dwelling Unit").fillna(False).astype(bool)
+    split = is_adu & new & ~adu_type_permit & (units >= 2).fillna(False).astype(bool)
 
     conversion = pd.Series(pd.NA, index=df.index, dtype="boolean")
     conversion[work.isin(["Alteration", "Addition"]).fillna(False).astype(bool)] = True
@@ -185,7 +198,9 @@ def build(raw: pd.DataFrame, state: str = "OR") -> pd.DataFrame:
     rows["adu_type"] = pd.Series(pd.NA, index=rows.index, dtype="string")
     rows["units_new"] = units[plain].where(units[plain] > 0).astype("Int64")
     rows.loc[split[plain], "units_new"] = (units[split] - 1).astype("Int64")
-    rows.loc[split[plain], "type_confidence"] = "inferred"
+    mains = [main_type(t, u - 1) for t, u in zip(newtype[split], units[split], strict=True)]
+    rows.loc[split[plain], "building_type_std"] = [t for t, _ in mains]
+    rows.loc[split[plain], "type_confidence"] = [c for _, c in mains]
     rows.loc[split[plain], "permit_id"] = rows.loc[split[plain], "permit_id"] + "#house"
     rows["units_confidence"] = "reported"
     rows.loc[split[plain], "units_confidence"] = "derived"

@@ -56,7 +56,9 @@ CHART_SIZES = "V0-austin-vs-bps.png"
 
 def permit_code(permits: pd.DataFrame) -> pd.Series:
     """Census code of each permit, read back from `permit_class_raw` ('R- 106 Mixed Use|New' -> '106')."""
-    return permits["permit_class_raw"].astype("string").str.split("|").str[0].map(ap.class_code)
+    first = permits["permit_class_raw"].astype("string").str.split("|").str[0]
+    # object dtype with None for no code, so `.eq(...)` gives plain bools on every pandas version (review A4)
+    return pd.Series([ap.class_code(v) for v in first], index=permits.index, dtype=object)
 
 
 def new_units_by_line(permits: pd.DataFrame, params: dict | None = None) -> pd.DataFrame:

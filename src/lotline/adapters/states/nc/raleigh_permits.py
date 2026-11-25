@@ -245,9 +245,10 @@ def build(raw: pd.DataFrame, state: str = "NC") -> pd.DataFrame:
     adu = _adu_type(df["adu_type"])
     reported_total = pd.to_numeric(df["housingunitstotal"], errors="coerce")
     reported_exist = pd.to_numeric(df["housingunitsexist"], errors="coerce")
-    is_demo = code.isin(list(DEMOLITION_CODES)) | df["permittypemapped"].astype("string").str.strip().eq(
-        "Demolition"
-    )
+    # both sides plain bools: a blank permittypemapped made `|` raise under pandas 3 (code review 2026-11-25)
+    typed = df["permittypemapped"].astype("string").str.strip()
+    typed_demo = typed.eq("Demolition").fillna(False).astype(bool)
+    is_demo = code.isin(list(DEMOLITION_CODES)).fillna(False).astype(bool) | typed_demo
 
     rows = []
     for i in df.index:

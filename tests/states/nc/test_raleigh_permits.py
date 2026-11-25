@@ -109,6 +109,14 @@ def test_demolition(raw):
     assert row.units_new == 0 and row.units_removed == 1 and row.units_confidence == "derived"
 
 
+def test_a_blank_permit_type_does_not_break_the_load(raw):
+    """Code review 2026-11-25: a null permittypemapped made the demolition mask raise under pandas 3."""
+    blank = raw.copy()
+    blank.loc[blank.index[0], "permittypemapped"] = None
+    out = _by_id(rp.build(blank))
+    assert out.loc["DEMO-1", "is_demolition"] and len(out) == len(_by_id(rp.build(raw)))
+
+
 @pytest.mark.usefixtures("v5_blind")
 def test_load_applies_holdout_filter(raw, monkeypatch):
     """Pretend the rows are Charlotte's: everything from 2023-06-01 on must be removed."""
