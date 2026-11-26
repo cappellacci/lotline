@@ -1,0 +1,12 @@
+### LB-NNN · 2026-11-26 · Build: Forecast vs fitting split, shared part (modularity plan step 2)
+- **Question:** can a reader tell from the folder which code a forecast runs, and can that split be kept by a test?
+- **What I did:**
+  - Traced the import graph from the results bundle (with its discovered scenario modules), the app and the data dashboard. Six modules no model owns were in `model/` but not on that path; moved them: `completion`, `runs`, `dashboard` (renamed `runs_dashboard`, with its HTML) to `src/lotline/calibrate/`; `backtest`, `demand`, `sensitivity` to `src/lotline/validation/`. Tests, scripts, config source text, the calibration lock's script note and current docs point to the new paths. No code inside them changed.
+  - Added the guard test `tests/core/test_module_layout.py`: `model/` never imports `calibrate/`, and every `model/` module is on the forecast path or listed in `MOVING` with its owner. Stale `MOVING` lines fail, so the list only shrinks.
+  - Sent the ADU and missing-middle owner sessions briefs for their moves (Ben 2026-11-26: "Owners do them").
+- **Inputs:** `docs/build/modularity-plan.md` step 2.
+- **Outputs:** the moved modules and tests, `tests/core/test_module_layout.py`, `docs/build/modularity-plan.md` (step 2 progress).
+- **Findings:** the forecast reaches four fitting modules today (`calibrate_adu`, `calibrate_shape`, `estimate_adu`, `estimate_mm`) through five imports of helpers. `MOVING` holds 14 ADU and 8 MM modules. The fee model has nothing to move.
+- **Decisions:** none new; the plan's step 2 as adopted.
+- **AI:** Claude Code traced the imports, moved the files and wrote the guard test. Checked by the full test suite, `compliance_check.py` and `lotline calibrate --check`. None of the moved modules is on the forecast path, so no results bundle can change.
+- **Open / next:** ADU and MM owners empty `MOVING`; then step 2 is done.

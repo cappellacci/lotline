@@ -30,9 +30,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate import runs
 from lotline.config import CONFIG_DIR, load_params
 from lotline.io import DataStore
-from lotline.model import estimate_adu, rule_tags, runs
+from lotline.model import estimate_adu, rule_tags
 from lotline.model import estimate_mm as mm
 
 ROOT = CONFIG_DIR.parent

@@ -5,7 +5,8 @@ import pandas as pd
 import pytest
 
 from lotline.config import load_params
-from lotline.model import backtest, baseline
+from lotline.model import baseline
+from lotline.validation import backtest
 
 PARAMS = load_params("baseline")
 

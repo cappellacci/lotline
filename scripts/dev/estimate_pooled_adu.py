@@ -22,11 +22,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate import runs
 from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import estimate_adu as est
 from lotline.model import pooled_adu as pa
-from lotline.model import rule_tags, runs
+from lotline.model import rule_tags
 
 SOURCE = "metc_residential_permits"
 # D-025 four-state amendment (2026-11-02): Texas pooled in (Ben, 2026-10-30). Each place keeps only the years

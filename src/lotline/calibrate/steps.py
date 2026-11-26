@@ -52,7 +52,7 @@ STEPS: tuple[Step, ...] = (
                 "completion_factor_all",
             )
         },
-        "scripts/dev/completion_factors.py (model/completion.py)",
+        "scripts/dev/completion_factors.py (calibrate/completion.py)",
         "hand",
         reads=("FRED new residential construction",),
     ),

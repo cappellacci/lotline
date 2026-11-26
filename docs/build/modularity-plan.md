@@ -1,7 +1,8 @@
 # Modularity plan: scenario contract, engine vs fitting, smaller files
 
 Drafted 2026-11-26 in the code-review thread (handoff 17) at Ben's request. Status: **step 1 adopted by Ben
-2026-11-26 ("Yes, adopt step 1"); steps 2 and 3 not yet decided.** Every step here changes model code, so each one is done by that model's owner session (ADU =
+2026-11-26 ("Yes, adopt step 1"); steps 1.1–1.4 merged (#555, #556). Step 2 started by Ben 2026-11-26
+("Start plan step 2"; the ADU and MM moves go to their owners); step 3 not yet decided.** Every step here changes model code, so each one is done by that model's owner session (ADU =
 "ADU statewide prediction methodology", MM = "Missing Middle Analysis refresh") or by WS-CORE for the shared
 parts. No step changes a number: each one must leave every results bundle the same, draw for draw.
 
@@ -90,6 +91,22 @@ parts. No step changes a number: each one must leave every results bundle the sa
 
 **Done when:** the guard test passes, every bundle is the same draw for draw, and `lotline calibrate --check`
 still passes.
+
+**Progress (2026-11-26, Ben: "Owners do them").**
+
+- **Shared part, done (WS-CORE):** the six modules no model owns moved out of `model/`: `completion`, `runs`
+  and `dashboard` (now `runs_dashboard`) to `calibrate/`; `backtest`, `demand` and `sensitivity` to
+  `validation/`. Their tests moved with them. The fee model has nothing to move: none of its modules imports
+  fitting code.
+- **Guard test:** `tests/core/test_module_layout.py`. It reads the import graph with `ast` and fails if a
+  `model/` module imports `calibrate/`, or if a `model/` module is neither reached from the forecast (results
+  bundle with its discovered scenarios, the app, the data dashboard) nor listed in its `MOVING` table. Each
+  `MOVING` line names the owner; the owner deletes it when the module moves, and a stale line fails. The
+  holdout filter (`validation.holdout`) may still be imported from `model/`: it guards data.
+- **Owners' part (briefs sent):** ADU has 14 modules in `MOVING`, three of them on the forecast path through
+  helpers (`calibrate_adu` via `adu_owner`, `adu_screen`, `adu_types`; `calibrate_shape` via `adu_types`;
+  `estimate_adu` via `pooled_adu`). MM has 8, one on the forecast path (`estimate_mm` via `scenarios/mm.py`).
+  Step 2 is done when `MOVING` is empty.
 
 **Size:** about 1 day per model owner. It pairs with phase 6 (dead `scripts/dev` scripts), so do them
 together.

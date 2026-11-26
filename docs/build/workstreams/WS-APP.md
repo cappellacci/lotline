@@ -11,7 +11,7 @@
 - `docs/research/office-hours-2026-11-03-tomasso-notes.md` (A1–A5: headline = statewide 5-year total vs baseline as a P10–P90 range; share of housing need; SFD/duplex/fourplex pencil-out table)
 - `docs/research/lotline-validation-plan.md` §5 (scorecard) and V8/V9 (transfer tests)
 - `docs/research/podcast-upzoned-301-notes.md` (what the sponsors want)
-- `src/lotline/dashboard/` (data dashboard) and `src/lotline/model/dashboard.py` (engine results dashboard): both already embed JSON in one self-contained HTML page and draw with plain SVG/d3 in the browser. **The app follows the same pattern.** Reuse their template conventions (light/dark, no server, no network beyond the pinned CDN libraries already disclosed).
+- `src/lotline/dashboard/` (data dashboard) and `src/lotline/calibrate/runs_dashboard.py` (engine results dashboard): both already embed JSON in one self-contained HTML page and draw with plain SVG/d3 in the browser. **The app follows the same pattern.** Reuse their template conventions (light/dark, no server, no network beyond the pinned CDN libraries already disclosed).
 
 ## Shape of the product
 
@@ -36,7 +36,7 @@ Every results bundle carries `commit_sha`, `run_at`, engine version and the conf
 
 ## Tasks
 - [ ] **Agree the results bundle schema with WS-ENGINE** (issue labeled `contract-change`): per state, per scenario (incl. combined), per draw; funnel stages; housing-need denominator with source; overlap flag; scorecard rows; metadata (SHA, run time, config hash, data tier, role).
-- [ ] **`scripts/build_app.py` + `src/lotline/app/`:** load bundles, embed as JSON, render the three sections; reuse `dashboard/` for section 2 and `model/dashboard.py` output for the technical fold of section 3.
+- [ ] **`scripts/build_app.py` + `src/lotline/app/`:** load bundles, embed as JSON, render the three sections; reuse `dashboard/` for section 2 and `calibrate/runs_dashboard.py` output for the technical fold of section 3.
 - [ ] **Section 1:** headline range chart; % of housing need; funnel; pencil-out table; sliders (each with source, range, one-line "why it matters"); combined scenarios with no double counting; place vs statewide; confidence flag.
 - [ ] **Section 2:** data dashboard embedded; "available vs. used" table per state; data tier badge.
 - [ ] **Section 3:** scorecard table; blind-test charts (frozen range vs observed, once unblinded in week 7); overlap check; tornado; technical fold.

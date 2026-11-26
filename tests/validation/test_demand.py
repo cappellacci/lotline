@@ -5,7 +5,8 @@ import pandas as pd
 import pytest
 
 from lotline.config import load_params
-from lotline.model import backtest, baseline, demand
+from lotline.model import baseline
+from lotline.validation import backtest, demand
 
 # The hand-worked examples here check the mechanics with the forecast starting right after the origin (lead 0,
 # the V1 registration). The forward run's one-year lead (D-061) is tested in test_forecast_window.py.

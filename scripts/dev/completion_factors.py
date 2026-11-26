@@ -5,7 +5,7 @@
 
 Downloads monthly, not seasonally adjusted permits and completions by building size (Census New Residential
 Construction, republished by FRED) through the IO layer, so each file is cached and logged in the manifest,
-then prints the long-run completion ratios per window (see lotline.model.completion for the method).
+then prints the long-run completion ratios per window (see lotline.calibrate.completion for the method).
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from datetime import date
 import pandas as pd
 
 from lotline.adapters.national import fred
+from lotline.calibrate.completion import annual_totals, completion_ratio
 from lotline.io import DataStore, fetch
-from lotline.model.completion import annual_totals, completion_ratio
 
 SERIES = {  # FRED id: Census New Residential Construction, thousands of units, NSA
     "permits_all": "PERMITNSA",
