@@ -27,8 +27,9 @@
     anchor's fit set.
   - D-099's held-out gain reproduces the decision but not the number in config's source text
     (−0.37 vs −0.11).
-- **Decisions:** for Ben: whether the calibration range should follow the anchor's own fit place-years (rent high
-  $1,826 → $1,822).
+- **Decisions:** Ben, 2026-11-26 ("Yes, use $1,822"): the calibration range follows the anchor's own 498
+  place-years. Rent high $1,826 → $1,822, written by `lotline calibrate --run --step adu_calibration_range
+  --write`; source text and a dated note in `docs/analysis_plan.md` (D-060) corrected.
 - **AI:** Claude Opus 5.5 wrote the code and tests. Checked with a field-by-field comparison of the old chain and
   the library on the real data, `lotline calibrate --run` against config, unit tests on hand-worked fixtures,
   ruff and the compliance check.

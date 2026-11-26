@@ -42,43 +42,43 @@ adu_calibration_rent_low_usd:
   low: 1204
   high: 1204
   unit: USD per month (2025)
-  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percentile of ACS median gross rent (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 513 place-years, 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percentile of ACS median gross rent (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 498 place-years, 2016-2025; D-096's unknown years cut, rerun by lotline calibrate 2026-11-26). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
   notes: "Places outside the fit set's range are flagged and widened (hazard.widen); inside, none."
 
 adu_calibration_rent_high_usd:
-  value: 1826
-  low: 1826
-  high: 1826
+  value: 1822
+  low: 1822
+  high: 1822
   unit: USD per month (2025)
-  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th percentile of ACS median gross rent (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 513 place-years, 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th percentile of ACS median gross rent (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 498 place-years, 2016-2025; D-096's unknown years cut, rerun by lotline calibrate 2026-11-26). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
 
 adu_calibration_value_low_usd:
   value: 218001
   low: 218001
   high: 218001
   unit: USD (2025)
-  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percentile of ACS median home value (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 513 place-years, 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percentile of ACS median home value (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 498 place-years, 2016-2025; D-096's unknown years cut, rerun by lotline calibrate 2026-11-26). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
 
 adu_calibration_value_high_usd:
   value: 589593
   low: 589593
   high: 589593
   unit: USD (2025)
-  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th percentile of ACS median home value (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 513 place-years, 2016-2025). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th percentile of ACS median home value (CPI-U, 2025 dollars) over the ADU anchor's fit place-years (70 places, 498 place-years, 2016-2025; D-096's unknown years cut, rerun by lotline calibrate 2026-11-26). Before D-060: the West Coast reference cities' range (hazard.PRE_D060_CALIBRATION)"
 
 adu_calibration_rate_low:
   value: 2.96
   low: 2.96
   high: 2.96
   unit: percent (30-year fixed)
-  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): lowest annual mean of FRED MORTGAGE30US over the anchor's fit place-years (70 places, 513 place-years, 2016-2025)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): lowest annual mean of FRED MORTGAGE30US over the anchor's fit place-years (70 places, 498 place-years, 2016-2025; D-096's unknown years cut, rerun by lotline calibrate 2026-11-26)"
 
 adu_calibration_rate_high:
   value: 6.81
   low: 6.81
   high: 6.81
   unit: percent (30-year fixed)
-  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): highest annual mean of FRED MORTGAGE30US over the anchor's fit place-years (70 places, 513 place-years, 2016-2025)"
+  source: "scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): highest annual mean of FRED MORTGAGE30US over the anchor's fit place-years (70 places, 498 place-years, 2016-2025; D-096's unknown years cut, rerun by lotline calibrate 2026-11-26)"
 
 # ---- Transport: how uptake changes with local conditions ----
 

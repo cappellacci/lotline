@@ -4017,6 +4017,10 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     fitted on. Since D-097 that is 70 places in MN, NC, OH, TX and OR (`scripts/dev/adu_mx_grid.places`),
     which gives 513 place-years on today's inputs (498 when the anchor was fitted on 2026-11-16; input data
     changed since).
+    - **Corrected 2026-11-26 (calibration phase 4, PR #547; Ben: "Yes, use $1,822").** The 513 was not new
+      input data: the port read the places without D-096's `UNKNOWN-PLACEHOLDER` cut. On the anchor's own
+      498 place-years the range is the same except rent high, $1,826 → $1,822, now written by
+      `lotline calibrate --run --step adu_calibration_range --write`.
     - **Range:** rent $1,204–1,826, home value $218k–590k, rate 2.96–6.81. #327 had $1,237–1,855,
       $218k–597k and the same rates. The percentiles and w are unchanged.
     - **Gates not rerun** on the new fit set, because the range moved by under 3% at every bound. This is
